@@ -1,7 +1,8 @@
 import type {TimelineExportJobRecord} from './repository';
 import type {TimelineExportJobResponse} from './contracts';
 import {canonicalTimelineExportMediaUrl} from './media-security';
-import {query} from '@/lib/db';
+import {query, type QueryExecutor} from '@/lib/db';
+import {resolveStudioMedia} from '@/server/studio/media-resolver';
 import {extractStorageKeyFromUrl} from '@/server/storage';
 
 function nullableTimelineExportSize(value: string | number | null): number | null {
@@ -29,15 +30,36 @@ export function timelineExportJobResponse(job: TimelineExportJobRecord): Timelin
   };
 }
 
+/** Export rows historically store media_assets.id; Studio refs require public_id. */
+async function ownedOutputPublicAssetId(job: TimelineExportJobRecord, userId: string, executor: QueryExecutor): Promise<string | null> {
+  if (!job.output_asset_id || !job.output_url) return null;
+  const rows = await executor.query<{public_id: string}>(
+    `SELECT public_id FROM media_assets
+      WHERE user_id = $1 AND (id = $2 OR public_id = $2) AND url = $3
+        AND kind = 'video' AND status = 'ready' AND deleted_at IS NULL LIMIT 1`,
+    [userId,job.output_asset_id,job.output_url],
+  );
+  const publicId = rows[0]?.public_id;
+  if (!publicId) return null;
+  try {
+    const media = await resolveStudioMedia(userId,{type: 'asset',assetId: publicId,kind: 'video'},(sql,values) => executor.query(sql,values));
+    return media.url === job.output_url ? publicId : null;
+  } catch (error) {
+    if (error instanceof Error && error.message === 'MEDIA_NOT_AVAILABLE') return null;
+    throw error;
+  }
+}
+
 /** Stable projection: neither polling nor session persistence carries expiring grants. */
-export async function ownedTimelineExportJobResponse(job: TimelineExportJobRecord, userId: string) {
+export async function ownedTimelineExportJobResponse(job: TimelineExportJobRecord, userId: string, executor: QueryExecutor = {query}) {
   if (!userId || job.user_id !== userId) throw new Error('EXPORT_NOT_FOUND');
   const response = timelineExportJobResponse(job);
   if (!response.artifact) return response;
   const canonicalOriginalUrl = canonicalTimelineExportMediaUrl({
     url: response.artifact.outputUrl,userId,requestOrigin: 'https://maxvideoai.com',
   });
-  return {...response,artifact: {...response.artifact,canonicalOriginalUrl,
+  const outputAssetId = await ownedOutputPublicAssetId(job,userId,executor);
+  return {...response,artifact: {...response.artifact,canonicalOriginalUrl,outputAssetId,
     outputUrl: extractStorageKeyFromUrl(canonicalOriginalUrl)
       ? `/api/studio/timeline-exports/${encodeURIComponent(job.id)}/media`
       : canonicalOriginalUrl,

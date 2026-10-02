@@ -152,10 +152,10 @@ Checkpoint natif du 2 octobre : image, animation Wan 3 et voix Seed anglaise ré
 - [x] Raccorder ordre/coupe/audio à la persistance canonique ; une action du bot suit le même chemin qu'un geste manuel.
 - [x] Adapter la présentation du prototype : moniteur repliable au-dessus de la timeline, chat accessible sur mobile, absence de lecteur vide permanent.
 - [x] Vérifier conflit après coupe manuelle : la réponse IA ne remplace pas silencieusement la modification.
-- [ ] Raccorder estimation/réservation/rendu existants ; le navigateur récupère le même artifact après fermeture/réouverture.
+- [x] Raccorder estimation/réservation/rendu existants ; le navigateur récupère le même artifact après fermeture/réouverture.
 - [x] Vérifier desktop et mobile simulé sur les vraies sorties vidéo/voix ; garder résolution du fichier source distincte de celle du rendu final. Les appareils physiques restent hors de cette preuve.
 
-Le vrai MP4 généré passe l'insertion autonome avec mesure des octets, la coupe source (1 s → film de 4 s) et la restauration à 5 s. La voix réelle est insérée à 0 avec 372 frames à 30 fps, sans dépasser sa source mesurée ; volume 0→100 et révision 6 sont repris après reload. Les décodeurs vidéo/Audio lisent simultanément, la voix atteint sa fin sans erreur et le moniteur reste repliable. Desktop 1440 × 900 et mobile simulé 390 × 844 sont vérifiés. La musique superposée à la voix et le rendu distant restent à qualifier.
+Le vrai MP4 généré passe l'insertion autonome avec mesure des octets, la coupe source (1 s → film de 4 s) et la restauration à 5 s. La voix réelle est insérée à 0 avec 372 frames à 30 fps, sans dépasser sa source mesurée ; volume 0→100 et révision 6 sont repris après reload. Les décodeurs vidéo/Audio lisent simultanément, la voix atteint sa fin sans erreur et le moniteur reste repliable. Desktop 1440 × 900 et mobile simulé 390 × 844 sont vérifiés. La musique superposée à la voix reste à qualifier. Le checkpoint ci-dessous qualifie le rendu distant de l’ébauche de 25 s.
 
 **Vérification :** tests de commandes, conflit, manifeste/export puis navigateur. PASS signifie coupe cohérente, projet repris et fichier lisible à la durée attendue.
 
@@ -208,3 +208,12 @@ L’audit Astra séparé est terminé. Ses recettes, mémoire de continuité, ch
 La qualification finale de ce lot passe 679 tests Studio/editor/export, sans échec ni test ignoré, dont le vrai rendu local multi-pistes. Chromium, Firefox et WebKit passent le parcours intégré sur le commit `80a408152`. Les corrections suivantes stabilisent les cartes pendant une nouvelle réponse et la livraison privée des exports ; leurs tests ciblés, TypeScript, lint et contrôle d’exposition passent. La reconstruction du worker isolé et son rendu natif restent à confirmer séparément.
 
 Le worker isolé a ensuite été reconstruit depuis `2d41c1ffe`, qualifié au démarrage hors réseau et épinglé dans la définition ECS pilote `:3`. Les accès temporaires CodeBuild ont été révoqués. L’export est ouvert seulement dans le localhost pilote ; son dialogue propose un devis wallet de 0 USD pour 25 s en 720p/16:9/30 fps, Draft. La validation de cette unique exécution distante reste en attente ; aucun rendu n’a été lancé.
+
+
+## Checkpoint — export distant natif abouti
+
+Après le « Ok continue » validant l’unique devis gratuit affiché, le bouton natif a soumis un seul export de la révision 7. Le worker ECS pilote `:3`, construit depuis `2d41c1ffe`, a rendu et publié le MP4 puis quitté avec le code 0. Le job est `completed/free_completed`, montant wallet 0 USD ; un export gratuit consommé. Rechargement pendant le rendu puis réouverture après succès retrouvent le même job. Le lecteur du chat atteint réellement sa fin sans erreur.
+
+Le fichier original mesure 2 855 569 octets : H.264 1280×720, 750 frames à 30 fps, vidéo de 25 s et audio AAC stéréo 48 kHz (conteneur 25,002667 s). La voix existe, le visuel reste présent jusqu’à la fin et la fin silencieuse correspond à la timeline. Le montage canonique reste en révision 7. C’est l’export d’une ébauche, pas encore le film promotionnel terminé.
+
+Aucun nouvel appel Sol ni nouvelle génération : les cumuls restent 110 685 tokens / 0,1619952 USD d’API estimés et 0,40 USD de média net dans le ledger isolé. Le calcul Fargate CPU/RAM pour 207 secondes est estimé à 0,005677596 USD, hors autres postes AWS et factures. Les preuves natives et le fichier contrôlé sont dans `studio-native-pilot/`, hors Git. Production, pricing et publication MCP restent inchangés.

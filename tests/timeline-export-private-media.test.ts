@@ -80,15 +80,19 @@ test('private probe failures never surface their grant in errors', async () => {
   assert.equal(error.message,'EXPORT_MEDIA_UNAVAILABLE');assert.doesNotMatch(inspect(error),/X-Amz-|fixture-secret/);
 });
 
+function assetExecutor(url: string) {
+  return {query: async <T>() => [{id:'asset',public_id:'public-asset',user_id:'owner',kind:'video',status:'ready',url,mime_type:'video/mp4'}] as T[]};
+}
+
 test('artifact projection is stable across polls, separates the canonical original and preserves exact ownership', async () => {
   const module = await import('../frontend/src/server/timeline-exports/media-access').catch(() => null);
   assert.ok(module?.ownedTimelineExportJobResponse);
   const job = {id:'export',user_id:'owner',status:'completed',progress:100,message:null,output_url:`${base}/timeline-exports/owner/film.mp4`,output_asset_id:'asset',output_size_bytes:128,output_mime_type:'video/mp4'} as any;
   const before = JSON.stringify(job);
-  const response = await module.ownedTimelineExportJobResponse(job,'owner');
+  const response = await module.ownedTimelineExportJobResponse(job,'owner',assetExecutor(job.output_url));
   assert.equal(response.artifact!.outputUrl,'/api/studio/timeline-exports/export/media');
   assert.equal(response.artifact!.canonicalOriginalUrl,job.output_url);
-  assert.deepEqual(await module.ownedTimelineExportJobResponse(job,'owner'),response);
+  assert.deepEqual(await module.ownedTimelineExportJobResponse(job,'owner',assetExecutor(job.output_url)),response);
   assert.doesNotMatch(JSON.stringify(response),/X-Amz-/);
   assert.equal(JSON.stringify(job),before);
   await assert.rejects(module.ownedTimelineExportJobResponse(job,'other'),/EXPORT_NOT_FOUND/);
@@ -104,6 +108,7 @@ test('owned project history projects stable read URLs after its scoped SELECT an
   const result = await listStudioProjectTimelineExports({userId:'owner',projectId:'film'},{query: async <T>(sql: string,values: unknown[] = []) => {
     queries.push(sql);assert.match(sql,/^SELECT/);assert.doesNotMatch(sql,/INSERT|UPDATE|CREATE/);
     if (sql.includes('to_regclass')) return [{name:'app_timeline_exports'}] as T[];
+    if (sql.includes('FROM media_assets')) return assetExecutor(job.output_url).query<T>();
     assert.deepEqual(values,['film','owner']);assert.match(sql,/p.user_id=\$2/);assert.match(sql,/p.deleted_at IS NULL/);
     return [job] as T[];
   }});
@@ -111,7 +116,7 @@ test('owned project history projects stable read URLs after its scoped SELECT an
   assert.equal(result[0].artifact!.outputUrl,'/api/studio/timeline-exports/history/media');
   assert.equal(result[0].artifact!.canonicalOriginalUrl,job.output_url);
   assert.doesNotMatch(JSON.stringify(result),/X-Amz-/);
-  assert.equal(JSON.stringify(job),before);assert.equal(queries.length,2);
+  assert.equal(JSON.stringify(job),before);assert.equal(queries.length,4);
 });
 
 test('private access preserves metadata, size, timeout, URL and canonical-grant rejection guards', async () => {

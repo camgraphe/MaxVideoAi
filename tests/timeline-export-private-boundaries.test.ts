@@ -35,6 +35,7 @@ test('GET and POST replay return readable owned artifacts without recreating a j
   const utils = 'export const resolveStudioRouteContext = async () => fixture.authorized ? {userId:"owner"} : {response:new Response(null,{status:401})};';
   const route = await load(`export {GET} from './app/api/studio/timeline-exports/[exportId]/route'; export {POST} from './app/api/studio/timeline-exports/route';`,{
     ...common,
+    '@/lib/db':`export const query = async (sql,values) => {if (!sql.startsWith('SELECT') || !sql.includes('FROM media_assets')) throw Error('Unexpected DB operation');return [{id:'asset',public_id:'public-asset',user_id:'owner',kind:'video',status:'ready',url:fixture.job.output_url,mime_type:'video/mp4'}];};`,
     'next/server':'export const NextResponse = {json:(body,init) => new Response(JSON.stringify(body),init)};',
     '../../_lib/studio-route-utils':utils,'../_lib/studio-route-utils':utils,
     '@/server/timeline-exports/repository':'export const readTimelineExportJob = async input => input.userId === "owner" && input.exportId === fixture.job.id ? fixture.job : null; export const readTimelineExportJobByIdempotencyKey = async () => fixture.job; export const failTimelineExportJob = () => {throw Error("Unexpected failure write");};',
@@ -50,7 +51,7 @@ test('GET and POST replay return readable owned artifacts without recreating a j
   const body = {estimateToken:'fixture',request:{version:1,source:'maxvideoai-editor',projectId:'project',idempotencyKey:'fixture-private-replay',createdAt:manifest.createdAt,status:'ready',manifest,exportSettings:{format:'mp4-h264',qualityPreset:'draft',includeAudio:true,serverRenderMode:'server'}}};
   const response = await route.POST({json:async()=>body,nextUrl:{origin:'https://maxvideoai.com'}});
   const postPayload = await response.json();assert.equal(response.status,200,JSON.stringify(postPayload));assert.equal(postPayload.reused,true);
-  assert.deepEqual(postPayload.export,getPayload.export);assert.equal(postPayload.export.artifact.canonicalOriginalUrl,output);assert.doesNotMatch(JSON.stringify(postPayload),/X-Amz-/);
+  assert.deepEqual(postPayload.export,getPayload.export);assert.equal(postPayload.export.artifact.outputAssetId,'public-asset');assert.equal(postPayload.export.artifact.canonicalOriginalUrl,output);assert.doesNotMatch(JSON.stringify(postPayload),/X-Amz-/);
   assert.doesNotMatch(JSON.stringify(fixture.reservations),/X-Amz-/);assert.equal(JSON.stringify(fixture.job),before);
   fixture.authorized = false;
   assert.equal((await route.GET({}, {params:Promise.resolve({exportId:fixture.job.id})})).status,401);

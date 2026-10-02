@@ -185,7 +185,7 @@ export async function publishTimelineExportArtifactWithDependencies(params: {
       url: upload.url,
       kind: 'video',
       source: 'import',
-      sourceJobId: params.exportId,
+      metadata: {timelineExportId: params.exportId},
       label: fileName,
       mimeType: 'video/mp4',
       width: params.width,

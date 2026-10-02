@@ -45,7 +45,7 @@ export async function listStudioProjectTimelineExports(params: {userId: string;p
     JOIN studio_projects p ON p.id=s.project_id AND p.user_id=s.user_id
     WHERE p.id=$1 AND p.user_id=$2 AND p.deleted_at IS NULL AND s.deleted_at IS NULL
     ORDER BY e.created_at DESC,e.id LIMIT 8`,[params.projectId,params.userId]);
-  return Promise.all(jobs.map(async job => ({...await ownedTimelineExportJobResponse(job,params.userId),idempotencyKey: job.idempotency_key})));
+  return Promise.all(jobs.map(async job => ({...await ownedTimelineExportJobResponse(job,params.userId,executor),idempotencyKey: job.idempotency_key})));
 }
 
 export function timelineExportIdFromIdempotencyKey(idempotencyKey: string, userId: string): string {

@@ -35,7 +35,7 @@ test('streamed export publication creates a local thumbnail and skips remote rec
       return {
         id: 'export-asset', userId: 'user-round4', kind: 'video', url: String(params.url), thumbUrl: String(params.thumbUrl),
         previewUrl: null, mimeType: 'video/mp4', width: 1920, height: 1080, sizeBytes: 1024, durationSec: null,
-        source: 'import', sourceJobId: 'export-round4', sourceOutputId: null, status: 'ready', metadata: {},
+        source: 'import', sourceJobId: null, sourceOutputId: null, status: 'ready', metadata: {timelineExportId: 'export-round4'},
       };
     },
     deleteRemote: async () => true,
@@ -45,6 +45,8 @@ test('streamed export publication creates a local thumbnail and skips remote rec
   assert.equal(remoteFetches, 0);
   assert.equal(ensured?.trustedRemoteSource, undefined);
   assert.equal(ensured?.allowRemoteThumbnailFallback, false);
+  assert.equal(ensured?.sourceJobId, undefined);
+  assert.deepEqual(ensured?.metadata, {timelineExportId: 'export-round4'});
   assert.equal(ensured?.thumbUrl, thumbUrl);
   assert.equal(asset.thumbUrl, thumbUrl);
 
