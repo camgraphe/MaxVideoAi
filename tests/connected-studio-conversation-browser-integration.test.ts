@@ -29,15 +29,16 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     browser = await startStudioConnectedBrowserFixture({runtime,browserName});
     const owned = await browser.newContext(session,{viewport: {width: 1440,height: 900},locale: 'en-US',reducedMotion: 'reduce'});
     const page = owned.page;
+    let diagnosticPage = page;
     const mediaFailures: string[] = [];
     page.on('response',response => {if (response.status() === 403) mediaFailures.push(new URL(response.url()).pathname);});
     diagnose = async () => {
-      await proof('failure');
+      await proof('failure',diagnosticPage);
       return {
         mediaFailures,
-        monitor: await page.getByLabel('Film monitor',{exact: true}).count(),
-        alerts: await page.getByRole('alert').allTextContents(),
-        decoders: await page.locator('video').evaluateAll(elements => elements.map(element => {
+        monitor: await diagnosticPage.getByLabel('Film monitor',{exact: true}).count(),
+        alerts: await diagnosticPage.getByRole('alert').allTextContents(),
+        decoders: await diagnosticPage.locator('video').evaluateAll(elements => elements.map(element => {
           const video = element as HTMLVideoElement;
           return {id: video.dataset.playbackItemId,ready: video.readyState,time: video.currentTime,network: video.networkState,error: video.error?.code,source: video.currentSrc ? new URL(video.currentSrc).pathname : null};
         })),
@@ -49,10 +50,10 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     const auxiliary = new Map([['/api/member-status',{tier: 'Member'}],['/api/wallet',{balance: 0,balanceCents: 0,currency: 'USD'}],['/api/admin/access',{ok: false}],['/api/legal/reconsent',{ok: true,needsReconsent: false,documents: []}],['/api/legal/cookies/version',{ok: true,version: 'native-timeline',publishedAt: null}],['/api/legal/cookies',{ok: true,version: 'native-timeline'}]]);
     for (const [path,json] of auxiliary) await page.route(runtime.browserOrigin+path,route => route.fulfill({json}));
     const url = runtime.browserOrigin+'/app/studio/conversation/'+project.projectId;
-    async function proof(name: string) {
+    async function proof(name: string,target = page) {
       if (!process.env.STUDIO_PROOF_DIRECTORY) return;
       await mkdir(process.env.STUDIO_PROOF_DIRECTORY,{recursive: true});
-      await page.screenshot({path: join(process.env.STUDIO_PROOF_DIRECTORY,browserName+'-'+name+'.png')});
+      await target.screenshot({path: join(process.env.STUDIO_PROOF_DIRECTORY,browserName+'-'+name+'.png')});
     }
     // UI-only library outage/empty state. Media ownership and decoding use the real owned DB below.
     async function checkLibrary() {
@@ -147,18 +148,47 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await expect(page.locator('[data-timeline-item]')).toHaveCount(2);
     await page.getByRole('button',{name: 'Select clip Pattern B',exact: true}).click();
     await expect(page.getByLabel('Audio volume',{exact: true})).toHaveValue('0');
-    let renewalReads = 0;
-    const countRenewal = (request: import('@playwright/test').Request) => {if (request.url().includes('/conversation-timeline?preview=1')) renewalReads++;};
     await page.getByRole('button',{name: 'Collapse monitor',exact: true}).first().click();
     const blockedMedia = 'https://'+STUDIO_PRIVATE_MEDIA_HOST+'/'+STUDIO_PRIVATE_MEDIA_KEYS.b+'?*';
-    await page.route(blockedMedia,route => route.fulfill({status: 403,body: 'Fixture media unavailable'}));
-    page.on('request',countRenewal);
-    await page.getByRole('button',{name: 'Open monitor',exact: true}).click();
-    await expect(page.getByText('This clip could not be played. Reopen the monitor to retry, or remove it from the film.',{exact: true})).toBeVisible();
-    await expect(page.getByLabel('Film monitor',{exact: true})).toHaveCount(0);
-    assert.equal(renewalReads,1,'permanent decoder error triggers one automatic renewal then collapses');
-    page.off('request',countRenewal);
-    await page.unroute(blockedMedia);
+    // Fresh contexts prevent Firefox's already-decoded media cache from bypassing the injected denial.
+    for (const permanent of [false,true]) {
+      const retry = await browser.newContext(session,{viewport: {width: 390,height: 844},locale: 'en-US',reducedMotion: 'reduce'});
+      const retryPage = retry.page;
+      diagnosticPage = retryPage;
+      retryPage.on('pageerror',error => errors.push(error.message));
+      retryPage.on('console',message => {if (message.type() === 'error' && /hydration|Hydration|Each child|cannot be a descendant|Cannot update/i.test(message.text())) errors.push(message.text());});
+      retryPage.on('response',response => {if (response.status() === 403) mediaFailures.push(new URL(response.url()).pathname);});
+      for (const [path,json] of auxiliary) await retryPage.route(runtime.browserOrigin+path,route => route.fulfill({json}));
+      let denied = 0,renewalReads = 0;
+      await retryPage.route(blockedMedia,route => {
+        if (permanent || denied === 0) {denied++;return route.fulfill({status: 403,body: 'Fixture media unavailable'});}
+        return route.fallback();
+      });
+      const initialRead = retryPage.waitForResponse(response => response.url().includes('/conversation-timeline?preview=1'));
+      await retryPage.goto(url,{waitUntil: 'domcontentloaded'});
+      const originalProjection = await (await initialRead).json();
+      await expect(retryPage.locator('[data-timeline-item]')).toHaveCount(2);
+      const consent = retryPage.getByRole('button',{name: 'Reject all',exact: true});
+      if (await consent.isVisible()) await consent.click();
+      // Replay this actual owned projection to guarantee a same-URL renewal, independent of wall-clock seconds.
+      if (!permanent) await retryPage.route(runtime.browserOrigin+'/api/studio/projects/'+project.projectId+'/conversation-timeline?preview=1',route => route.fulfill({json: originalProjection}));
+      retryPage.on('request',request => {if (request.url().includes('/conversation-timeline?preview=1')) renewalReads++;});
+      await retryPage.getByRole('button',{name: 'Select clip Pattern B',exact: true}).click();
+      if (permanent) {
+        await expect(retryPage.getByText('This clip could not be played. Reopen the monitor to retry, or remove it from the film.',{exact: true})).toBeVisible();
+        await expect(retryPage.getByLabel('Film monitor',{exact: true})).toHaveCount(0);
+        assert.ok(denied >= 2,'The permanent denial reaches both decoder attempts.');
+      } else {
+        const recoveredVideo = retryPage.locator('video[data-playback-item-id="montage-clip-01"]');
+        await expect.poll(() => recoveredVideo.evaluate(element => (element as HTMLVideoElement).readyState)).toBeGreaterThanOrEqual(2);
+        await expect(recoveredVideo).toHaveAttribute('src',originalProjection.result.items[0].mediaAccessUrl);
+        await expect(retryPage.getByLabel('Film monitor',{exact: true})).toBeVisible();
+        assert.equal(denied,1,'A single denied load recovers with the same URL and real bytes.');
+      }
+      assert.equal(renewalReads,1,'One automatic renewal per explicit monitor opening.');
+      await retry.close();
+    }
+    diagnosticPage = page;
     await runtime.database.pool.query('UPDATE media_assets SET deleted_at=NOW() WHERE public_id=$1',[STUDIO_CONNECTED_ASSET_IDS.b]);
     await page.reload({waitUntil: 'domcontentloaded'});
     await expect(page.locator('[data-timeline-item]')).toHaveCount(2);
@@ -170,6 +200,22 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await expect(page.locator('[data-timeline-item]')).toHaveCount(1);
     await page.getByRole('button',{name: 'Select clip Pattern A',exact: true}).click();
     await expect.poll(() => page.locator('video[data-playback-item-id="montage-clip-02"]').evaluate(element => (element as HTMLVideoElement).readyState)).toBeGreaterThanOrEqual(2);
+    const clipBounds = await page.getByRole('button',{name: 'Select clip Pattern A',exact: true}).boundingBox();
+    assert.ok(clipBounds);
+    const grip = {x: clipBounds.x+clipBounds.width/2,y: clipBounds.y+clipBounds.height/2};
+    await page.mouse.move(grip.x,grip.y);
+    await page.mouse.down();
+    await page.mouse.move(grip.x+68,grip.y,{steps: 4});
+    await page.mouse.up();
+    await expect(page.getByLabel('Film timeline',{exact: true})).toHaveAttribute('data-revision','4');
+    await expect(page.locator('[data-timeline-item="montage-clip-02"]')).toHaveAttribute('data-timeline-start','3');
+    await page.reload({waitUntil: 'domcontentloaded'});
+    await expect(page.locator('[data-timeline-item="montage-clip-02"]')).toHaveAttribute('data-timeline-start','3');
+    for (const width of [320,768]) {
+      await page.setViewportSize({width,height: 844});
+      await expect(page.getByRole('textbox',{name: 'Message Studio',exact: true})).toBeVisible();
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth),width);
+    }
     assert.deepEqual(errors,[]);
     assert.ok(browser.readPrivateRequests().some(request => request.status === 200 || request.status === 206));
     await owned.close();

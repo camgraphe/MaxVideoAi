@@ -314,14 +314,14 @@ export default function StudioImageConversation({
             {t('A quote before each creation. You stay in control.', 'Un devis avant chaque création. Vous gardez la main.')}
           </p>
         </div>
-        <aside className={styles.visuals} aria-label="Autres images du projet">
+        <aside className={styles.visuals} aria-label={t('More project images','Autres images du projet')}>
           {images
             .filter((_, index) => index % 2 === 1)
             .map((url, index) => (
               <img
                 key={`${url}:${index}`}
                 src={url}
-                alt="Image créée dans cette conversation"
+                alt={t('Image created in this conversation','Image créée dans cette conversation')}
               />
             ))}
         </aside>
