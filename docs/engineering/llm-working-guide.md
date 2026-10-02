@@ -89,6 +89,11 @@ npm --prefix frontend run build
 Before production delivery, follow `docs/deployment/github-vercel.md` and the root
 AGENTS production policy, including `pnpm deployment:check`.
 
+Intermediate pushes can proceed while CI runs. Use the focused suites in
+`docs/engineering/ci-validation.md`; wait for the required `Quality CI` on the
+latest candidate before merging. CI selects expensive coverage conservatively and
+runs every lane nightly and on manual dispatch.
+
 Frontend `prebuild` first validates the model registry, checks production Git provenance, and then runs the offline public-rendition coherence and critical-home coverage gate. This gate does not make network, storage or database calls; use the explicit rendition command and its documented review/HTTP activation sequence for operational changes.
 
 ## Current Architecture Notes

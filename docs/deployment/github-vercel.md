@@ -15,7 +15,10 @@ workflow for normal production releases.
 
 1. Use a clean isolated worktree. Preserve the shared Desktop checkout and other
    tasks' uncommitted work. Fetch `origin/main` and incorporate it into the candidate.
-2. Run focused validation, open a GitHub PR and wait for Quality CI to pass.
+2. Run focused validation and open a GitHub PR. Intermediate pushes may continue
+   while CI runs; wait for the required Quality CI on the latest candidate before
+   merging. This check aggregates fast checks and every selected integration,
+   browser and exhaustive financial lane. See `docs/engineering/ci-validation.md`.
 3. Immediately before merging, run `git fetch origin main` and
    `pnpm deployment:check` from the committed candidate. This read-only remote
    check uses the authenticated Vercel CLI and GitHub remote; it never deploys,

@@ -5,109 +5,172 @@ on:
     branches: [main]
   push:
     branches: [main]
+  schedule:
+    - cron: '23 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Keep the newest candidate for each PR. Main, nightly and manual runs retain
+# their own coverage and never cancel a PR's required check.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event_name }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  quality:
-    name: Quality CI
+  plan:
+    name: Select validation
     runs-on: ubuntu-latest
-    # The full initial tariff cutover replays all 26,818 canonical quotes and
-    # verifies atomic failure/recovery. Keep its complete coverage on hosted CI.
-    timeout-minutes: 60
-    permissions:
-      contents: read
-    env:
-      RUNTIME_AUDIT_DATABASE_URL: ${{ secrets.RUNTIME_AUDIT_DATABASE_URL }}
+    timeout-minutes: 5
+    outputs:
+      integration: ${{ steps.select.outputs.integration }}
+      tariffs: ${{ steps.select.outputs.tariffs }}
+      browser: ${{ steps.select.outputs.browser }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: '22'
           package-manager-cache: false
+      - name: Select required lanes
+        id: select
+        run: node scripts/select-ci-validation.mjs
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Install pnpm
-        run: corepack prepare pnpm@10.18.2 --activate
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
+  fast:
+    name: Fast checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-project
       - name: Check public secret exposure
         run: pnpm run lint:exposure
-
       - name: Build engine catalog
         run: pnpm run engine:catalog
-
       - name: Check model roster drift
         run: pnpm run model:generate
-
       - name: Audit model datasets
         run: pnpm run models:audit
-
-      - name: Audit runtime overrides (non-blocking)
-        if: ${{ env.RUNTIME_AUDIT_DATABASE_URL != '' }}
-        env:
-          DATABASE_URL: ${{ env.RUNTIME_AUDIT_DATABASE_URL }}
-        run: pnpm run models:audit --runtime
-        continue-on-error: true
-
-      - name: Check sources quality (warn-only)
-        run: pnpm run sources:check
-        continue-on-error: true
-
       - name: Type check (frontend)
         run: pnpm --dir frontend exec tsc --noEmit
-
       - name: Lint (frontend)
         run: pnpm --dir frontend run lint
-
       - name: Alt quality check (frontend)
         run: pnpm --dir frontend run qa:image-alt
+      - name: Validate fast tests
+        run: pnpm run test:validate -- --suite fast
 
+  integration:
+    name: Database and media integration
+    needs: plan
+    if: ${{ needs.plan.outputs.integration == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-project
+      - uses: ./.github/actions/setup-validation-tools
+      - name: Validate database and real media tests
+        run: pnpm run test:validate -- --suite integration
+      - name: Validate isolated Studio routes
+        run: pnpm run test:validate -- --suite studio
+
+  tariffs:
+    name: Exhaustive financial cutovers
+    needs: plan
+    if: ${{ needs.plan.outputs.tariffs == 'true' }}
+    runs-on: ubuntu-latest
+    # Preserve all 26,818 canonical quotes and atomic failure/recovery checks.
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-project
+      - uses: ./.github/actions/setup-validation-tools
+      - name: Validate exhaustive tariff cutovers
+        run: pnpm run test:validate -- --suite tariffs
+
+  browser:
+    name: Browser integration
+    needs: plan
+    if: ${{ needs.plan.outputs.browser == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-project
+      - uses: ./.github/actions/setup-validation-tools
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium
-
-      - name: Install media and database validation tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install --yes --no-install-recommends ffmpeg postgresql-common
-          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
-          sudo apt-get install --yes --no-install-recommends postgresql-17
-          echo '/usr/lib/postgresql/17/bin' >> "$GITHUB_PATH"
-          /usr/lib/postgresql/17/bin/postgres --version
-          ffmpeg -hide_banner -version
-
-      - name: Validate tests
-        run: |
-          # Studio starts a disposable Next dev server and Chromium. Qualify it
-          # separately so compilation does not compete with the full test suite.
-          validation_tests=()
-          for test_file in tests/*.test.ts; do
-            if [[ "$test_file" != "tests/connected-studio-montage-browser-integration.test.ts" ]]; then
-              validation_tests+=("$test_file")
-            fi
-          done
-          pnpm exec tsx --tsconfig frontend/tsconfig.json --test "${validation_tests[@]}"
-
       - name: Validate connected Studio browser
-        run: pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/connected-studio-montage-browser-integration.test.ts
-
+        run: pnpm run test:validate -- --suite browser
       - name: Smoke test admin
         env:
-          DATABASE_URL: ${{ env.RUNTIME_AUDIT_DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.RUNTIME_AUDIT_DATABASE_URL }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         run: pnpm run test:admin-smoke
-
       - name: Upload Playwright admin report
         if: failure()
         uses: actions/upload-artifact@v6
         with:
           name: playwright-admin-report
           path: output/playwright/**
+
+  audits:
+    name: Scheduled external audits
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      RUNTIME_AUDIT_DATABASE_URL: ${{ secrets.RUNTIME_AUDIT_DATABASE_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-project
+      - name: Audit runtime overrides (non-blocking)
+        if: ${{ env.RUNTIME_AUDIT_DATABASE_URL != '' }}
+        env:
+          DATABASE_URL: ${{ env.RUNTIME_AUDIT_DATABASE_URL }}
+        run: pnpm run models:audit --runtime
+        continue-on-error: true
+      - name: Check sources quality (warn-only)
+        run: pnpm run sources:check
+        continue-on-error: true
+
+  quality:
+    # Preserve the exact branch-protection context. Never skip this job or the
+    # workflow with path filters; an omitted required lane must fail this gate.
+    name: Quality CI
+    needs: [plan, fast, integration, tariffs, browser]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - name: Check all required results
+        env:
+          CI_JOB_RESULTS: ${{ toJSON(needs) }}
+        run: node scripts/check-ci-validation.mjs

@@ -1,0 +1,15 @@
+name: Setup validation tools
+description: Install FFmpeg and PostgreSQL 17 for disposable integration fixtures.
+runs:
+  using: composite
+  steps:
+    - name: Install media and database validation tools
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install --yes --no-install-recommends ffmpeg postgresql-common
+        sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+        sudo apt-get install --yes --no-install-recommends postgresql-17
+        echo '/usr/lib/postgresql/17/bin' >> "$GITHUB_PATH"
+        /usr/lib/postgresql/17/bin/postgres --version
+        ffmpeg -hide_banner -version
