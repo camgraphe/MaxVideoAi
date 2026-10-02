@@ -1,3 +1,4 @@
+import { bytePlusInputVideoDurationSec, isBytePlusInputVideoPricingModel } from '@/server/byteplus-accounting';
 import { calculateMinimaxH3MaxReferenceTokenBudget } from '@/lib/minimax-h3-max-pricing';
 import { getWan3InputVideoDurationSec } from '@/lib/wan3-pricing';
 import type { NextRequest } from 'next/server';
@@ -31,6 +32,7 @@ import {
 } from './trusted-video-billing';
 import { resolveGoogleOmniInheritedDurationSec } from '@/server/video-providers/google-vertex-omni/pricing-context';
 import type { ResolvedReference } from '@/server/agent-api/reference-types';
+import type { PreparedSeedanceWorkflow } from '@/server/seedance-workflow-request';
 
 export type { VideoGenerationAdapters, VideoGenerationResponse } from './video-generation-contracts';
 export { executeVideoGenerationLifecycle } from './video-generation-lifecycle';
@@ -64,6 +66,7 @@ type VideoGenerationReservationOptions =
     };
 
 export type ExecuteVideoGenerationOptions = {
+  seedanceWorkflow?: PreparedSeedanceWorkflow;
   req: NextRequest;
   body: Record<string, unknown>;
   routeContext: GenerateRouteContext;
@@ -185,11 +188,14 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
       referenceProvenanceIssues,
     },
   } = attachmentProcessing;
+  const isBytePlus = isBytePlusInputVideoPricingModel(engine.id);
   const isWan3 = engine.id === 'wan-3' || engine.id === 'wan-3-prime';
-  let wanInputVideoDurationSec: number | undefined;
-  if (isWan3) {
+  let inputVideoDurationSec: number | undefined;
+  if (isWan3 || isBytePlus) {
     try {
-      wanInputVideoDurationSec = getWan3InputVideoDurationSec(attachmentProcessing.trustedMediaReferences ?? []);
+      inputVideoDurationSec = isBytePlus
+        ? bytePlusInputVideoDurationSec(engine.id, attachmentProcessing.trustedMediaReferences ?? [])
+        : getWan3InputVideoDurationSec(attachmentProcessing.trustedMediaReferences ?? []);
     } catch {
       return {
         status: 422,
@@ -206,7 +212,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     fallbackDurationLabel: durationLabel,
     maxDurationSec: engine.inputLimits?.videoMaxDurationSec ?? engine.maxDurationSec ?? null,
     maxSourcePlusOutputDurationSec: engine.inputSchema?.constraints?.maxSourcePlusOutputDurationSec,
-    inputVideoDurationSec: wanInputVideoDurationSec,
+    inputVideoDurationSec,
     engineLabel: engine.label,
   });
   if (!sourceVideoContext.ok) {
@@ -299,6 +305,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
         durationSec: effectiveDurationSec,
       })
     : await resolveGenerateBillingPreflight({
+    workflowStep: params.seedanceWorkflow?.workflow.step,
     req,
     engine,
     mode,
@@ -325,8 +332,8 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
             ? normalizedReferenceImages.length
             : 0,
     inputVideoDurationSec:
-      isWan3
-        ? wanInputVideoDurationSec
+      isWan3 || isBytePlus
+        ? inputVideoDurationSec
         : mode === 'v2v' || mode === 'extend'
           ? trustedSourceVideoDurationSec
           : 0,
@@ -343,6 +350,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
       : undefined,
     rawDurationOption,
     lumaDurationLabel: lumaDurationInfo?.label ?? null,
+    validatedExtraInputValues,
     audioEnabled,
     voiceControl,
       });
@@ -442,6 +450,8 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     elements,
     falInputs,
   });
+  if (isBytePlus && inputVideoDurationSec !== undefined) settingsSnapshot.byteplusInputVideoDurationSec = inputVideoDurationSec;
+  if (params.seedanceWorkflow) settingsSnapshot.seedanceWorkflow = params.seedanceWorkflow.workflow;
 
   return executePreparedVideoGeneration({
     body,
@@ -471,5 +481,6 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     falPayload,
     falInputSummary,
     settingsSnapshot,
+    seedanceWorkflow: params.seedanceWorkflow,
   });
 }

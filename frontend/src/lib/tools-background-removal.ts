@@ -7,6 +7,7 @@ import type {
   BackgroundRemovalOutputCodec,
   BackgroundRemovalStudioBackgroundColor,
 } from '@/types/tools-background-removal';
+import { validateToolPriceMultiplier } from '@/lib/tools-dynamic-pricing';
 
 export const BACKGROUND_REMOVAL_STUDIO_COLORS: readonly BackgroundRemovalStudioBackgroundColor[] = [
   'Transparent',
@@ -81,14 +82,14 @@ export function formatBackgroundRemovalOutputCodecLabel(codec: BackgroundRemoval
   return labels[codec] ?? codec;
 }
 
-export function getBackgroundRemovalPriceMultiplier(outputCodec?: string | null): number {
+export function getBackgroundRemovalPriceMultiplier(outputCodec?: string | null, priceMultiplier?: number): number {
   void outputCodec;
-  return BACKGROUND_REMOVAL_DYNAMIC_PRICE_MULTIPLIER;
+  return validateToolPriceMultiplier(priceMultiplier ?? BACKGROUND_REMOVAL_DYNAMIC_PRICE_MULTIPLIER);
 }
 
-export function estimateBackgroundRemovalCostUsd(durationSec: number, outputCodec?: string | null): number {
+export function estimateBackgroundRemovalCostUsd(durationSec: number, outputCodec?: string | null, priceMultiplier?: number): number {
   const seconds = Math.max(1, Math.ceil(durationSec));
-  const multiplier = getBackgroundRemovalPriceMultiplier(outputCodec);
+  const multiplier = getBackgroundRemovalPriceMultiplier(outputCodec, priceMultiplier);
   return Number(
     (
       seconds *
@@ -103,6 +104,7 @@ export function buildBackgroundRemovalPricingPreview(params: {
   currency?: string | null;
   durationSec?: number | null;
   outputCodec?: string | null;
+  priceMultiplier?: number;
 }): BackgroundRemovalPricingPreview {
   const unitPriceCents =
     typeof params.unitPriceCents === 'number' && Number.isFinite(params.unitPriceCents)
@@ -124,8 +126,8 @@ export function buildBackgroundRemovalPricingPreview(params: {
     };
   }
 
-  const priceMultiplier = getBackgroundRemovalPriceMultiplier(params.outputCodec);
-  const estimatedCostUsd = estimateBackgroundRemovalCostUsd(durationSec, params.outputCodec);
+  const priceMultiplier = getBackgroundRemovalPriceMultiplier(params.outputCodec, params.priceMultiplier);
+  const estimatedCostUsd = estimateBackgroundRemovalCostUsd(durationSec, params.outputCodec, priceMultiplier);
   const dynamicCents = Math.max(1, Math.ceil(estimatedCostUsd * 100));
 
   return {

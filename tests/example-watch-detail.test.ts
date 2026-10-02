@@ -60,7 +60,7 @@ test('measured configuration wins, references need explicit editorial approval, 
 });
 test('public comparisons use the canonical price owner while prioritizing identical configurations',async()=>{
  const {computeCanonicalPublicSnapshot}=await import('../frontend/server/pricing/quote-public');
- const detail=await projectExampleWatchDetail(video,null,context=>computeCanonicalPublicSnapshot(context,{loadOverrides:async()=>({status:'loaded',rules:[],routingRules:[]})}));
+ const detail=await projectExampleWatchDetail(video,null,context=>computeCanonicalPublicSnapshot(context,{pricingPolicy:{loadOverrides:async()=>({status:'loaded',rules:[],routingRules:[]})}}));
  assert.equal(detail?.quotes.find(quote=>quote.engineId==='wan-3-prime')?.amountCents,401);
  assert.equal(detail?.quotes.find(quote=>quote.engineId==='wan-3')?.amountCents,286);
  assert.equal(detail?.quotes.find(quote=>quote.engineId==='seedance-2-5')?.amountCents,1272);
@@ -77,7 +77,7 @@ test('unusual output sizes and aspect ratios still get three honest, executable 
   {...video, durationSec:7,hasAudio:false,outputWidth:1920,outputHeight:1080},
  ]) {
   const contexts:any[]=[];
-  const detail=await projectExampleWatchDetail(source,null,context=>{contexts.push(context);return computeCanonicalPublicSnapshot(context,{loadOverrides:async()=>({status:'loaded',rules:[],routingRules:[]})});});
+  const detail=await projectExampleWatchDetail(source,null,context=>{contexts.push(context);return computeCanonicalPublicSnapshot(context,{pricingPolicy:{loadOverrides:async()=>({status:'loaded',rules:[],routingRules:[]})}});});
   assert.equal(detail?.quotes.length,3);
   assert.equal(new Set(detail.quotes.map(q=>q.engineId)).size,3);
   assert.equal(new Set(detail.quotes.map(q=>q.amountCents)).size,3,'prefer different canonical prices where available');

@@ -172,6 +172,10 @@
     {
       "q": "Quand utiliser Seedance 2.0 Fast plutôt que Seedance 2.0 standard ?",
       "a": "Utilisez Fast quand le but est la vitesse d'itération, le shot planning, les checks de timing et les comparaisons rapides. Passez au standard quand vous voulez le rendu final le plus soigné."
+    },
+    {
+      "q": "Seedance 2.0 Fast correspond-il au mode Draft de Seedance 2.5 ?",
+      "a": "Non. Fast est un modèle Seedance 2.0 distinct. Ses aperçus d’itération en 480p ou 720p sont des générations ordinaires avec devis. BytePlus décrit le Draft de Seedance 2.5 comme un aperçu 480p facturé séparément, suivi au choix d’un nouveau rendu 1080p à partir de son identifiant de tâche. Ce workflow Draft-vers-final n’est pas proposé sur MaxVideoAI aujourd’hui."
     }
   ],
   "custom": {
@@ -265,7 +269,7 @@
   "decision": {
     "modelSlug": "seedance-2-0-fast",
     "hero": {
-      "eyebrow": "WORKFLOW DREAMINA / BYTEDANCE FAST POUR BROUILLONS",
+      "eyebrow": "ITÉRATION RAPIDE DREAMINA / BYTEDANCE",
       "title": "Seedance 2.0 Fast",
       "subtitle": "Des brouillons rapides Seedance pour tests de rythme, variantes de mouvement et planification de plans avec références.",
       "subtitleHighlights": [
@@ -275,7 +279,7 @@
       ],
       "paragraph": "Utilisez Seedance 2.0 Fast comme workflow Dreamina Seedance plus rapide pour itérer avant un rendu final : cadrer le timing, comparer des mouvements et tester textes, images ou références en cycles courts.",
       "primaryCta": {
-        "label": "Créer un brouillon Seedance Fast",
+        "label": "Générer avec Seedance Fast",
         "href": "/app?engine=seedance-2-0-fast"
       },
       "secondaryCta": {
@@ -307,7 +311,7 @@
       "renderLabel": "Voir le brouillon",
       "badges": [
         "Fast",
-        "Brouillon",
+        "Itération rapide",
         "9:16"
       ],
       "altContext": "brouillon Seedance rapide avec test de caméra produit"
@@ -393,15 +397,15 @@
       }
     ],
     "pricingCopy": {
-      "title": "Prix des brouillons Seedance 2.0 Fast",
-      "subtitle": "Prix totaux par scénario de brouillon — prix exact affiché dans l’app avant génération.",
+      "title": "Prix des générations Seedance 2.0 Fast",
+      "subtitle": "Prix totaux par scénario — prix exact affiché dans l’app avant génération.",
       "footnote": "Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.",
       "ctaLabel": "Voir tous les tarifs",
       "maxDurationNote": "Jusqu’à 720p",
       "ctaHref": "/fr/tarifs#seedance-2-0-fast-pricing"
     },
     "meta": {
-      "title": "Seedance 2.0 Fast : prix brouillons et itérations | MaxVideoAI",
+      "title": "Seedance 2.0 Fast : prix et itérations rapides | MaxVideoAI",
       "description": "Utilisez Seedance 2.0 Fast pour des brouillons rapides, tests de rythme, variantes de mouvement et plans guidés par références avant rendu final."
     }
   },

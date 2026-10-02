@@ -28,6 +28,8 @@ import {
 import { calculateLumaRay2EditPrice, calculateLumaRay2Price, type LumaRay2EditWorkflow } from '@/lib/luma-ray2-pricing';
 import { getLumaRay2BasePriceUsd, getLumaRay2EditRateUsd } from '@/lib/luma-ray2-pricing-config';
 import type { PricingContext } from '@/lib/pricing-context';
+import { projectManualTariffMedia, projectManualTariffAudio } from '@/lib/pricing-manual-media';
+import { applyEngineVariantPricing } from '@/lib/pricing-addons';
 import { applyEnginePricingOverride, buildPricingDefinition } from '@/lib/pricing-definition';
 import { isWan3EngineId, withWan3InputVideoPricing } from '@/lib/wan3-pricing';
 import { getPricingKernel } from '@/lib/pricing-kernel';
@@ -35,6 +37,7 @@ import {
   computeSeedance2TokenQuote,
   isSeedance2TokenPricing,
   roundUsdUpToCents,
+  resolveSeedance2TariffAspectRatio,
 } from '@/lib/seedance-2-pricing';
 import type { EnginePricingDetails } from '@/types/engines';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
@@ -71,6 +74,7 @@ function resultFromFacts(params: {
   base: PricingSnapshot['base'];
   addons?: PricingSnapshot['addons'];
   meta?: Record<string, unknown>;
+  factsMetadata?: Record<string, unknown>;
   compatibilityProfileId?: string;
 }): BillingPricingFacts {
   return {
@@ -80,6 +84,7 @@ function resultFromFacts(params: {
       vendorSubtotalExactCents: params.vendorSubtotalExactCents,
       unit: params.base.unit ?? 'sec',
       quantity: params.base.seconds,
+      ...(params.factsMetadata ? { metadata: params.factsMetadata } : {}),
     },
     base: { ...params.base },
     addons: (params.addons ?? []).map((addon) => ({ ...addon })),
@@ -88,7 +93,7 @@ function resultFromFacts(params: {
   };
 }
 
-export function buildBillingPricingFacts(
+function buildBillingPricingFactsInternal(
   context: PricingContext,
   pricingDetails: EnginePricingDetails | undefined,
   currency: string
@@ -435,17 +440,17 @@ export function buildBillingPricingFacts(
     return resultFromFacts({
       engineId: engine.id,
       currency,
-      vendorSubtotalExactCents: reference.vendorCostUsd * 100,
+      vendorSubtotalExactCents: reference.legacyRetailBasisUsd * 100,
       base: {
         seconds: durationSec,
-        rate: reference.vendorCostPerSecondUsd,
+        rate: reference.legacyRetailBasisPerSecondUsd,
         unit: 'sec',
-        amountCents: roundUsdUpToCents(reference.vendorCostUsd),
+        amountCents: roundUsdUpToCents(reference.legacyRetailBasisUsd),
       },
       compatibilityProfileId: 'provider-reference-current',
       meta: {
         pricing_model: 'byteplus_tokens',
-        provider_cost_source: 'byteplus_modelark_pricing_config',
+        legacy_retail_basis_source: 'byteplus_modelark_pricing_config',
         billed_resolution: resolution,
         billed_aspect_ratio: reference.aspectRatio,
         output_width: reference.width,
@@ -453,10 +458,9 @@ export function buildBillingPricingFacts(
         frame_rate: reference.frameRate,
         token_count: Number(reference.tokenCount.toFixed(3)),
         provider_tokens_estimated: Number(reference.tokenCount.toFixed(3)),
-        provider_cost_usd_estimated: reference.vendorCostUsd,
-        vendor_cost_usd: reference.vendorCostUsd,
-        vendor_cost_per_second_usd: reference.vendorCostPerSecondUsd,
-        unit_price_usd_per_1k_tokens: reference.unitPriceUsdPer1kTokens,
+        legacy_retail_basis_usd: reference.legacyRetailBasisUsd,
+        legacy_retail_basis_per_second_usd: reference.legacyRetailBasisPerSecondUsd,
+        legacy_retail_unit_price_usd_per_1k_tokens: reference.legacyRetailUnitPriceUsdPer1kTokens,
         byteplus_billing_input_type: billingInputType,
         pricing_source: pricingDetails.tokenPricing.pricingSource,
         rounding: pricingDetails.tokenPricing.rounding ?? 'ceil_cent',
@@ -505,5 +509,34 @@ export function buildBillingPricingFacts(
     base: definitionFacts.base,
     addons: definitionFacts.addons,
     meta: definitionFacts.meta,
+    factsMetadata: {
+      manualTariffAudioKey: definition.addons?.audio_off ? 'audio_off' : definition.addons?.audio ? 'audio' : null,
+      ...(context.mode && definition.referenceImages?.modes.includes(context.mode)
+        ? { manualTariffReferenceImageCount: context.referenceImageCount } : {}),
+    },
   });
+}
+
+/** The factual owner identifies whether requested orientation changes the billing amount. */
+export function buildBillingPricingFacts(context: PricingContext, pricingDetails: EnginePricingDetails | undefined, currency: string): BillingPricingFacts {
+  const engine = applyEngineVariantPricing(context.engine, context.mode);
+  const effectiveContext = engine === context.engine ? context : { ...context, engine };
+  const details = engine === context.engine ? pricingDetails : engine.pricingDetails;
+  const result = buildBillingPricingFactsInternal(effectiveContext, details, currency);
+  const identityFacts = { ...result.meta, ...result.facts.metadata };
+  const tokenBreakdown = engine.id === 'gemini-omni-flash'
+    ? result.meta.cost_breakdown_usd as { outputTokens: number; inputImageTokens: number; inputVideoTokens: number } : undefined;
+  const billedAspect = isSeedance2TokenPricing(details)
+    ? resolveSeedance2TariffAspectRatio(details, context.resolution, context.aspectRatio) : null;
+  if (billedAspect !== null && typeof billedAspect !== 'string') throw new Error('Priced aspect dimensions are unavailable');
+  result.facts.metadata = { ...result.facts.metadata, manualTariffAspectRatio: billedAspect,
+    ...(tokenBreakdown ? { manualTariffOutputTokens: tokenBreakdown.outputTokens,
+      manualTariffInputTokens: tokenBreakdown.inputImageTokens + tokenBreakdown.inputVideoTokens } : {}),
+    manualTariffDurationSec: result.facts.unit === 'sec' ? result.facts.quantity : context.durationSec,
+    manualTariffAudio: projectManualTariffAudio(effectiveContext, identityFacts),
+    manualTariffVoiceControl: result.addons.some(addon => addon.type === 'voice_control'),
+    manualTariffDynamicRange: isLumaRay32EngineId(engine.id)
+      ? (result.meta.cost_breakdown_usd as { dynamic_range?: unknown } | undefined)?.dynamic_range ?? 'sdr' : null,
+    manualTariffMedia: projectManualTariffMedia(effectiveContext, details, identityFacts) };
+  return result;
 }

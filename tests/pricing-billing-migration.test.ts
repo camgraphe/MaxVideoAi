@@ -152,7 +152,7 @@ for (const scenario of scenarios) {
 test('charge-authoritative video and image call sites use the server-only canonical quote', () => {
   const chargedConsumers = [
     'frontend/app/api/generate/_lib/billing-preflight.ts',
-    'frontend/app/api/wallet/route.ts',
+    'frontend/server/wallet-direct-checkout.ts',
     'frontend/src/server/images/image-generation-pricing.ts',
     'frontend/src/server/images/storyboard-image-billing.ts',
   ];

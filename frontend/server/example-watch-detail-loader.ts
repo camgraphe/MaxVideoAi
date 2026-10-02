@@ -8,7 +8,7 @@ import { CURATION_ELIGIBILITY } from './playlists/curation-service';
 import { mapGalleryVideoRow, type GalleryVideo, type VideoRow } from './videos-normalization';
 import { isLocalPublicExamplesEnabled, getLocalPublicExample } from './local-public-examples';
 import { getResolvedVideoSeoEditorialEntry } from './video-seo-editorial';
-import { computeCanonicalPublicSnapshot } from './pricing/quote-public';
+import { computeCurrentPublicSnapshot } from './pricing/quote-public';
 import { projectExampleWatchDetail } from './example-watch-detail';
 import { deriveWatchPageSignals, type WatchPageDerivedSignals } from './watch-page-signals';
 import { resolveWatchSourceImageOriginalUrls } from './watch-source-image-originals';
@@ -25,7 +25,7 @@ export async function prepareExampleWatchDetailContext(dependencies: {
   loadOverrides: loadPricingPolicyOverrides,
 }): Promise<ExampleWatchDetailContext> {
   const [engines, overrides] = await Promise.all([dependencies.loadEngines(), dependencies.loadOverrides()]);
-  return { engines, quote: context => computeCanonicalPublicSnapshot(context, { loadOverrides: async () => overrides }) };
+  return { engines, quote: context => computeCurrentPublicSnapshot(context, { pricingPolicy: { loadOverrides: async () => overrides } }) };
 }
 
 /** No schema/bootstrap writes on this public read path. Eligibility is rechecked on each open. */

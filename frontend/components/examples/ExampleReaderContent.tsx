@@ -54,7 +54,11 @@ export function ExampleReaderContent({ detail, copy, locale, navigation, onClose
               {detail.scenario && <span>{detail.scenario.resolution}</span>}
               <span>{detail.hasAudio ? <Volume2 size={14}/> : <VolumeX size={14}/>} {detail.hasAudio ? copy.audio : copy.silent}</span>
             </p>
-            {detail.historicalCost && <p className={styles.recorded}>{copy.recorded}<strong>{price(detail.historicalCost.amountCents, detail.historicalCost.currency)}</strong></p>}
+            {originalModel && <p className={styles.recorded}>
+              <span>{copy.currentPrice} · {copy.priceBasis}</span><strong>{price(originalModel.amountCents, originalModel.currency)}</strong>
+              <span>{originalModel.settings.durationSec} s · {originalModel.settings.resolution} · {originalModel.settings.aspectRatio} · {originalModel.settings.audio ? copy.audio : copy.silent}</span>
+              {(!detail.scenario || originalModel.changed.length > 0) && <span>{!detail.scenario ? copy.proposed : copy.adjusted}</span>}
+            </p>}
           </div>
         </header>
       </div>

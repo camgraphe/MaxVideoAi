@@ -8,6 +8,7 @@ const executorPath = join(root, 'frontend/src/server/images/execute-image-genera
 const existingJobResponsePath = join(root, 'frontend/src/server/images/existing-image-job-response.ts');
 const referenceNormalizationPath = join(root, 'frontend/src/server/images/image-reference-normalization.ts');
 const requestContextPath = join(root, 'frontend/src/server/images/image-generation-request-context.ts');
+const accountingPath = join(root, 'frontend/src/server/images/image-generation-accounting.ts');
 const referencesPath = join(root, 'frontend/src/server/images/image-generation-references.ts');
 const storyboardTemplateReferencePath = join(root, 'frontend/src/server/images/storyboard-template-reference.ts');
 const storyboardPricingPath = join(root, 'frontend/src/lib/storyboard-pricing.ts');
@@ -43,6 +44,7 @@ const executorSource = readFileSync(executorPath, 'utf8');
 const existingJobResponseSource = readFileSync(existingJobResponsePath, 'utf8');
 const referenceNormalizationSource = readFileSync(referenceNormalizationPath, 'utf8');
 const requestContextSource = readFileSync(requestContextPath, 'utf8');
+const accountingSource = readFileSync(accountingPath, 'utf8');
 const referencesSource = readFileSync(referencesPath, 'utf8');
 const storyboardTemplateReferenceSource = readFileSync(storyboardTemplateReferencePath, 'utf8');
 const storyboardPricingSource = readFileSync(storyboardPricingPath, 'utf8');
@@ -89,6 +91,7 @@ test('image generation executor delegates focused server helpers', () => {
   assert.ok(existsSync(existingJobResponsePath), 'existing image job response helpers should live in a focused module');
   assert.ok(existsSync(referenceNormalizationPath), 'image reference normalization should live in a focused module');
   assert.ok(existsSync(requestContextPath), 'image request context validation should live in a focused module');
+  assert.ok(existsSync(accountingPath), 'paid recovery and initial accounting checks should live in a focused module');
   assert.ok(existsSync(referencesPath), 'image reference preparation should live in a focused module');
   assert.ok(
     existsSync(storyboardTemplateReferencePath),
@@ -114,6 +117,7 @@ test('image generation executor delegates focused server helpers', () => {
   assert.ok(existsSync(outputStoragePath), 'generated image output storage should live in a focused module');
   assert.match(executorSource, /from '\.\/existing-image-job-response'/);
   assert.match(executorSource, /from '\.\/image-generation-request-context'/);
+  assert.match(executorSource, /from '\.\/image-generation-accounting'/);
   assert.match(executorSource, /from '\.\/image-generation-references'/);
   assert.match(executorSource, /from '\.\/image-initial-job'/);
   assert.match(executorSource, /from '\.\/image-generation-error'/);
@@ -129,6 +133,7 @@ test('image generation executor delegates focused server helpers', () => {
 });
 
 test('image generation executor does not regain extracted server ownership', () => {
+  assert.doesNotMatch(executorSource, /ensureBillingSchema|requiresMembershipPricingRefresh/, 'accounting preparation belongs in image-generation-accounting.ts');
   assert.doesNotMatch(executorSource, /function buildImagesFromExistingJob\(/, 'stored render parsing belongs in existing-image-job-response.ts');
   assert.doesNotMatch(executorSource, /function parseResolutionFromSettingsSnapshot\(/, 'settings snapshot resolution parsing belongs in existing-image-job-response.ts');
   assert.doesNotMatch(executorSource, /parseStoredImageRenders/, 'stored render parsing belongs in existing-image-job-response.ts');
@@ -170,6 +175,15 @@ test('image generation executor does not regain extracted server ownership', () 
   const lineCount = executorSource.split('\n').length;
   // One additional argument forwards private pricing evidence to the existing persistence owner.
   assert.ok(lineCount <= 641, `image generation executor should stay below 641 lines after context extraction, got ${lineCount}`);
+});
+
+test('image paid recovery precedes new request validation and stays transport-neutral', () => {
+  assert.match(accountingSource, /export async function prepareImageGenerationAccounting/);
+  assert.match(accountingSource, /job_id = \$1 AND user_id = \$2/);
+  assert.match(accountingSource, /buildResponseFromExistingJob/);
+  assert.doesNotMatch(accountingSource, /NextRequest|NextResponse|computeCanonical|fetch\(|provider\.submit/);
+  assert.ok(executorSource.indexOf('await prepareImageGenerationAccounting(') <
+    executorSource.indexOf('resolveImageGenerationRequestContext('), 'recover the stored paid quote before resolving a new model/request');
 });
 
 test('storyboard image billing uses storyboard identity instead of provider display name', () => {

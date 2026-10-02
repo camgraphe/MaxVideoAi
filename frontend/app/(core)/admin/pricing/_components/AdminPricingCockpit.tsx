@@ -1,6 +1,8 @@
 'use client';
 
-import { RefreshCw } from 'lucide-react';
+import { History, RefreshCw, Scale, SlidersHorizontal } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { useSWRConfig } from 'swr';
 
 import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptyState';
 import { AdminLoadingPanel } from '@/components/admin-system/feedback/AdminLoadingPanel';
@@ -10,43 +12,86 @@ import { AdminPricingHistory } from '@/components/admin-system/pricing/AdminPric
 import { AdminActionButton, AdminActionLink } from '@/components/admin-system/shell/AdminActionLink';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
-import { AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
+import { buildLoginHref } from '@/lib/auth-entry-href';
 import { useAdminPricingCockpitController } from '../_hooks/useAdminPricingCockpitController';
+import { pricingPolicySelectorKey, providerComparisonPolicySelectorKey, type ProviderCostComparisonRowView } from '../_lib/pricing-cockpit-view-model';
 import { PricingPolicyInspector } from './PricingPolicyInspector';
 import { PricingPolicyTable } from './PricingPolicyTable';
+import { ProviderPriceComparisonTable } from './ProviderPriceComparisonTable';
+import { ProductPricingTable } from './ProductPricingTable.client';
+import { ProductPolicyEditor } from './ProductPolicyEditor.client';
 
 export function AdminPricingCockpit() {
   const controller = useAdminPricingCockpitController();
+  const { mutate } = useSWRConfig();
+  const refresh = async () => {
+    await Promise.all([controller.refresh(), mutate(
+      (key) => typeof key === 'string' && (key.startsWith('/api/admin/pricing/tariffs/') || key.startsWith('/api/admin/pricing/products') || key.startsWith('/api/admin/billing-products')),
+      undefined, { revalidate: true },
+    )]);
+  };
+  const [activeTab, setActiveTab] = useState<'comparison' | 'rules' | 'history'>('comparison');
+  const [category, setCategory] = useState<'video' | 'image' | 'audio' | 'tools' | 'storyboard'>('video');
+  const [productLocked, setProductLocked] = useState(false);
+  const [productPolicyKey, setProductPolicyKey] = useState<string | null>(null);
+  const [inspectorOpen, setInspectorOpen] = useState(false);
+  const inspectorRef = useRef<HTMLDivElement>(null);
   const inventoryRows = controller.inventory?.rows ?? [];
   const databaseOverrideCount = inventoryRows.filter((row) => row.databaseOverride).length;
+  const inspectComparison = (row: ProviderCostComparisonRowView) => {
+    controller.setFilters({ query: '', source: 'all', status: 'all' });
+    controller.selectRow(providerComparisonPolicySelectorKey(row));
+    setInspectorOpen(true);
+    setActiveTab('rules');
+  };
+  const selectPolicyRow = (key: string) => {
+    controller.selectRow(key);
+    setInspectorOpen(true);
+  };
+  useEffect(() => {
+    if (activeTab === 'rules' && inspectorOpen) inspectorRef.current?.scrollIntoView({ block: 'start' });
+  }, [activeTab, inspectorOpen, controller.selectedKey]);
 
   return (
     <div className="flex flex-col gap-5">
       <AdminPageHeader
-        eyebrow="Commercial policy"
-        title="Canonical pricing policy"
-        description="Inspect and propose canonical engine policy changes. Every mutation requires a fresh server-computed impact preview and explicit confirmation."
+        title="Pricing"
+        description="Current customer prices, supplier evidence and margins for every creation product."
         actions={
-          <>
-            <AdminActionButton type="button" onClick={() => void controller.refresh()} disabled={controller.refreshing || controller.refreshLocked}>
-              <RefreshCw className={`h-4 w-4 ${controller.refreshing ? 'animate-spin' : ''}`} />
-              Refresh
-            </AdminActionButton>
-            <AdminActionLink href="/admin/engines">Engines</AdminActionLink>
-            <AdminActionLink href="/admin/transactions">Transactions</AdminActionLink>
-          </>
+          <AdminActionButton type="button" onClick={() => void refresh()} disabled={controller.refreshing || controller.refreshLocked || productLocked}>
+            <RefreshCw className={`h-4 w-4 ${controller.refreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </AdminActionButton>
         }
       />
 
-      <AdminMetricGrid
-        density="compact"
-        items={[
-          { label: 'Policy selectors', value: inventoryRows.length, helper: 'Canonical inventory rows' },
-          { label: 'Database-backed rows', value: databaseOverrideCount, helper: 'Rows with an effective override', tone: 'info' },
-          { label: 'Policy version', value: controller.inventory?.versionedPolicyVersion ?? '—', helper: 'Versioned fallback' },
-          { label: 'History events', value: controller.history.length, helper: 'Latest immutable events loaded' },
-        ]}
-      />
+      <div className="grid grid-cols-3 gap-1 border-b border-hairline sm:flex" role="tablist" aria-label="Pricing sections">
+        {([
+          { id: 'comparison', label: 'Pricing', icon: Scale },
+          { id: 'rules', label: 'Pricing rules', icon: SlidersHorizontal },
+          { id: 'history', label: 'History', icon: History },
+        ] as const).map(({ id, label, icon: Icon }) => (
+          <button key={id} id={`pricing-tab-${id}`} type="button" role="tab"
+            aria-selected={activeTab === id} aria-controls={`pricing-panel-${id}`}
+            tabIndex={activeTab === id ? 0 : -1}
+            disabled={productLocked || controller.refreshLocked}
+            onClick={() => setActiveTab(id)}
+            onKeyDown={(event) => {
+              const tabs = ['comparison', 'rules', 'history'] as const;
+              const index = tabs.indexOf(id);
+              const nextIndex = event.key === 'ArrowRight' ? (index + 1) % tabs.length
+                : event.key === 'ArrowLeft' ? (index - 1 + tabs.length) % tabs.length
+                  : event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : -1;
+              if (nextIndex < 0) return;
+              event.preventDefault();
+              setActiveTab(tabs[nextIndex]);
+              document.getElementById(`pricing-tab-${tabs[nextIndex]}`)?.focus();
+            }}
+            className={`inline-flex min-h-11 min-w-0 items-center justify-center gap-2 border-b-2 px-1 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:shrink-0 sm:px-4 sm:text-sm ${activeTab === id ? 'border-brand text-brand' : 'border-transparent text-text-secondary hover:text-text-primary'}`}>
+            <Icon className="hidden h-4 w-4 sm:block" aria-hidden="true" />{label}
+          </button>
+        ))}
+      </div>
 
       {controller.inventory?.warnings.map((warning) => (
         <AdminNotice key={warning} tone="warning">{warning}</AdminNotice>
@@ -57,60 +102,81 @@ export function AdminPricingCockpit() {
       ) : null}
       {controller.notice ? <AdminNotice tone="success">{controller.notice}</AdminNotice> : null}
 
-      {controller.loading ? (
-        <AdminLoadingPanel rows={6} />
-      ) : inventoryRows.length ? (
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(360px,0.75fr)]">
-          <AdminSection
-            title="Policy inventory"
-            description="Filter selectors, inspect effective provenance, and choose the exact policy row to edit."
-          >
-            {controller.rows.length ? (
-              <PricingPolicyTable
-                rows={controller.rows}
-                filters={controller.filters}
-                onFiltersChange={controller.setFilters}
-                selectedKey={controller.selectedKey}
-                onSelect={controller.selectRow}
-                disabled={controller.interactionLocked}
-              />
-            ) : (
-              <AdminEmptyState>No pricing policy rows match the current filters.</AdminEmptyState>
-            )}
-          </AdminSection>
-
-          {controller.selectedRow && controller.draft ? (
-            <PricingPolicyInspector
-              row={controller.selectedRow}
-              draft={controller.draft}
-              busy={controller.previewing || controller.confirming}
-              locked={controller.interactionLocked}
-              onChange={controller.updateDraft}
-              onPreview={() => void controller.openPreview('save')}
-              onPreviewDelete={() => void controller.openPreview('delete')}
-            />
-          ) : (
-            <AdminEmptyState>Select a pricing policy row to inspect it.</AdminEmptyState>
-          )}
-        </div>
+      {controller.loading ? <AdminLoadingPanel rows={6} /> : !controller.inventory ? (
+        <AdminEmptyState>
+          Current prices are unavailable. Refresh the page or sign in again to load an authoritative admin view.
+          <span className="mt-3 block"><AdminActionLink href={buildLoginHref({ mode: 'signin', nextPath: '/admin/pricing' })}>Sign in again</AdminActionLink></span>
+        </AdminEmptyState>
       ) : (
-        <AdminEmptyState>No canonical pricing policy rows are available.</AdminEmptyState>
-      )}
+        <>
+          <div id="pricing-panel-comparison" role="tabpanel" aria-labelledby="pricing-tab-comparison" hidden={activeTab !== 'comparison'}>
+            {activeTab === 'comparison' ? <AdminSection
+              title="Supplier cost and customer price"
+              description="Compare unit prices, preview and confirm a change. Margins are estimates unless the supplier contract is confirmed."
+            >
+              <div className="mb-3 flex flex-wrap gap-2" aria-label="Pricing product categories">
+                {([['video', 'Video'], ['image', 'Image'], ['audio', 'Audio'], ['tools', 'Tools'], ['storyboard', 'Storyboard']] as const).map(([id, label]) =>
+                  <button key={id} type="button" aria-pressed={category === id} disabled={productLocked || controller.refreshLocked}
+                    onClick={() => { setCategory(id); setProductPolicyKey(null); }} className={`rounded-lg border px-4 py-2 text-sm font-semibold ${category === id ? 'border-brand bg-brand/5 text-brand' : 'border-border bg-surface text-text-secondary'}`}>{label}</button>)}
+              </div>
+              {category === 'video' || category === 'image' ? <ProviderPriceComparisonTable key={category}
+                rows={controller.inventory.providerComparisons.filter((row) => row.mediaType === category)} fixedMediaType={category}
+                disabled={controller.interactionLocked} onInspect={inspectComparison} onSaved={controller.refresh} />
+                : <ProductPricingTable key={category} category={category} onLock={setProductLocked}
+                  policyLocked={controller.refreshLocked} policyEditorKey={productPolicyKey}
+                  policyEditor={productPolicyKey && controller.selectedKey === productPolicyKey && controller.selectedRow && controller.draft ?
+                    <ProductPolicyEditor row={controller.selectedRow} draft={controller.draft} locked={controller.interactionLocked}
+                      busy={controller.previewing || controller.confirming} onChange={controller.updateDraft}
+                      onPreview={() => void controller.openPreview('save')} onClose={() => setProductPolicyKey(null)} /> : null}
+                  onInspectPolicy={(selector) => {
+                  controller.setFilters({ query: '', source: 'all', status: 'all' });
+                  const key = pricingPolicySelectorKey(selector);
+                  controller.selectRow(key, true);
+                  setProductPolicyKey(key);
+                }} />}
+            </AdminSection> : null}
+          </div>
 
-      <AdminPricingHistory
-        events={controller.history}
-        title="Immutable pricing policy history"
-        description="Rollback derives historical state on the server and always opens a fresh impact preview."
-        emptyLabel="No pricing policy change has been recorded yet."
-        loading={controller.historyLoading}
-        locked={controller.interactionLocked}
-        onPreviewRollback={controller.previewRollback}
-      />
+          <div id="pricing-panel-rules" role="tabpanel" aria-labelledby="pricing-tab-rules" hidden={activeTab !== 'rules'}>
+            {activeTab === 'rules' ? <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-bg p-4 text-sm text-text-secondary">
+                <p><strong className="text-text-primary">{inventoryRows.length} rules</strong> · {databaseOverrideCount} database overrides · policy version {controller.inventory.versionedPolicyVersion}</p>
+                <p>{controller.inventory.modelTariffsActive ? 'Model percentage rules are historical and read-only. Edit prices in Video or Image.' : 'Preview and confirm every change. Exact customer tariff cells are not active yet.'}</p>
+              </div>
+              <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,0.8fr)]">
+                <div className="order-1 min-w-0 xl:order-1"><AdminSection title="Policy inventory" description="Search a rule, then inspect its effective price and source.">
+                  {controller.rows.length ? <PricingPolicyTable rows={controller.rows} filters={controller.filters}
+                    onFiltersChange={controller.setFilters} selectedKey={inspectorOpen ? controller.selectedKey : null}
+                    onSelect={selectPolicyRow} disabled={controller.interactionLocked} historical={controller.inventory.modelTariffsActive} />
+                    : <AdminEmptyState>No pricing policy rows match the current filters.</AdminEmptyState>}
+                </AdminSection></div>
+                <div ref={inspectorRef} className={`min-w-0 scroll-mt-4 xl:order-2 ${inspectorOpen ? 'order-first' : 'order-2'}`}>{inspectorOpen && controller.selectedRow && controller.draft ? (
+                  <PricingPolicyInspector row={controller.selectedRow} draft={controller.draft} historical={controller.inventory.modelTariffsActive}
+                    busy={controller.previewing || controller.confirming} locked={controller.interactionLocked || controller.inventory.modelTariffsActive === true}
+                    onChange={controller.updateDraft} onPreview={() => void controller.openPreview('save')}
+                    onPreviewDelete={() => void controller.openPreview('delete')} />
+                ) : <AdminEmptyState>Select a pricing policy row to inspect it.</AdminEmptyState>}</div>
+              </div>
+            </div> : null}
+          </div>
+
+          <div id="pricing-panel-history" role="tabpanel" aria-labelledby="pricing-tab-history" hidden={activeTab !== 'history'}>
+            {activeTab === 'history' ? <AdminPricingHistory events={controller.history}
+              title="Immutable pricing policy history"
+              description="Rollback opens a fresh impact preview before any change is applied."
+              emptyLabel="No pricing policy change has been recorded yet."
+              loading={controller.historyLoading} locked={controller.interactionLocked || controller.inventory.modelTariffsActive === true}
+              onPreviewRollback={controller.previewRollback} /> : null}
+          </div>
+        </>
+      )}
 
       {controller.preview ? (
         <AdminPricingChangePreviewDialog
           preview={controller.preview}
-          onConfirm={() => void controller.confirmPreview()}
+          onConfirm={() => void controller.confirmPreview().then(() => mutate(
+            (key) => typeof key === 'string' && key.startsWith('/api/admin/pricing/products'), undefined, { revalidate: true },
+          ))}
           onCancel={controller.cancelPreview}
           busy={controller.confirming}
           error={controller.error?.message}

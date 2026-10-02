@@ -98,7 +98,7 @@ test('pricing page delegates compact matrix sections and JSON-LD rendering', () 
   assert.match(pageSource, /from '\.\/_components\/PricingCreditsRefundsSection'/);
   assert.match(pageSource, /from '\.\/_components\/PricingRefundsFaqSection'/);
   assert.match(pageSource, /locale=\{locale\}/);
-  assert.match(pageSource, /from '\.\/_lib\/pricingHubData'/);
+  assert.match(pageSource, /from '\.\/_lib\/currentPricingHubData'/);
   assert.match(pageSource, /from '\.\/_lib\/pricing-jsonld'/);
   assert.match(pageSource, /export default async function PricingPage/);
   assert.match(jsonLdLibSource, /buildPricingBreadcrumbJsonLd/, 'pricing JSON-LD helper should own breadcrumb schema');

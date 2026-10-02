@@ -1,5 +1,6 @@
 import type { PricingChangeEvent, PricingChangePreview } from '@/lib/admin/pricing-change-contract';
 import type { BillingProductRecord } from '@/types/billing';
+import { resolveDynamicToolPriceMultiplier, validateToolPriceMultiplier } from '@/lib/tools-dynamic-pricing';
 
 export type BillingProductDraft = {
   productKey: string;
@@ -7,6 +8,7 @@ export type BillingProductDraft = {
   currency: string;
   unitPriceCents: string;
   active: boolean;
+  dynamicPriceMultiplier?: string;
 };
 
 export type BillingProductChangeProposal =
@@ -17,6 +19,7 @@ export type BillingProductChangeProposal =
       currency: string;
       unitPriceCents: number;
       active: boolean;
+      dynamicPriceMultiplier?: number;
     }
   | { operation: 'rollback'; targetId: string; eventId: string };
 
@@ -47,12 +50,14 @@ export type BillingProductOperationalWarning = {
 };
 
 export function createBillingProductDraft(product: BillingProductRecord): BillingProductDraft {
+  const multiplier = resolveDynamicToolPriceMultiplier(product.productKey, product.metadata);
   return {
     productKey: product.productKey,
     label: product.label,
     currency: product.currency,
     unitPriceCents: String(product.unitPriceCents),
     active: product.active,
+    ...(multiplier == null ? {} : { dynamicPriceMultiplier: String(multiplier) }),
   };
 }
 
@@ -68,6 +73,9 @@ export function buildBillingProductProposal(draft: BillingProductDraft): Billing
     currency: draft.currency,
     unitPriceCents,
     active: draft.active,
+    ...(draft.dynamicPriceMultiplier === undefined ? {} : {
+      dynamicPriceMultiplier: validateToolPriceMultiplier(Number(draft.dynamicPriceMultiplier)),
+    }),
   };
 }
 

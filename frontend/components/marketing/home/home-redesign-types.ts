@@ -99,6 +99,7 @@ export type ShotTypeCard = {
 
 export type HomeExampleCard = {
   id: string;
+  sourceVideoId?: string;
   title: string;
   engineId?: string;
   engine: string;

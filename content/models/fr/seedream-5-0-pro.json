@@ -3,14 +3,14 @@
   "versionLabel": "5.0 Pro",
   "seo": {
     "title": "Seedream 5.0 Pro - génération image professionnelle ByteDance | MaxVideoAI",
-    "description": "Créez des images professionnelles, infographies denses, edits visuels et assets 4K avec Seedream 5.0 Pro dans MaxVideoAI."
+    "description": "Créez des images professionnelles, infographies denses, edits visuels et assets 2K avec Seedream 5.0 Pro dans MaxVideoAI."
   },
   "overview": "Seedream 5.0 Pro est la route image professionnelle ByteDance dans MaxVideoAI. Utilisez-le pour les infographies denses, edits avancés, layouts multilingues, images cinématiques et frames propres avant animation.",
   "pricingNotes": "Seedream 5.0 Pro est exposé comme une sortie professionnelle à image unique. MaxVideoAI affiche le devis exact avant génération.",
   "hero": {
     "title": "Seedream 5.0 Pro - production image professionnelle",
-    "intro": "Utilisez Seedream Pro pour les stills détaillés, infographies structurées, edits contrôlés et images 4K prêtes campagne.",
-    "badge": "Texte -> Image · Image -> Image · 2K / 4K",
+    "intro": "Utilisez Seedream Pro pour les stills détaillés, infographies structurées, edits contrôlés et images 2K prêtes campagne.",
+    "badge": "Texte -> Image · Image -> Image · 2K",
     "ctaPrimary": {
       "label": "Lancer Seedream Pro",
       "href": "/app/image?engine=seedream-5-0-pro"
@@ -47,7 +47,7 @@
   "faqs": [
     {
       "q": "Quelle différence entre Seedream 5.0 Pro et Lite ?",
-      "a": "Utilisez Pro pour les finales professionnelles, infographies denses, edits complexes et stills 4K. Utilisez Lite pour les sets rapides et la préparation de références."
+      "a": "Utilisez Pro pour les finales professionnelles, infographies denses, edits complexes et stills 2K. Utilisez Lite pour les sets rapides et la préparation de références."
     },
     {
       "q": "Seedream 5.0 Pro supporte-t-il les batches ?",
@@ -63,7 +63,7 @@
       "subtitleHighlights": [
         "Composez l’image, soignez chaque détail"
       ],
-      "paragraph": "Seedream 5.0 Pro génère et retouche des images IA pour vos infographies, compositions multilingues et visuels de campagne. Créez une image en 4K ou préparez une référence à animer avec un modèle vidéo.",
+      "paragraph": "Seedream 5.0 Pro génère et retouche des images IA pour vos infographies, compositions multilingues et visuels de campagne. Créez une image en 2K ou préparez une référence à animer avec un modèle vidéo.",
       "primaryCta": {
         "label": "Lancer Seedream Pro",
         "href": "/app/image?engine=seedream-5-0-pro"
@@ -93,12 +93,12 @@
     },
     "media": {
       "caption": "Seedream 5.0 Pro exemple",
-      "description": "Utilisez Seedream Pro pour les stills détaillés, infographies structurées, edits contrôlés et images 4K prêtes campagne.",
+      "description": "Utilisez Seedream Pro pour les stills détaillés, infographies structurées, edits contrôlés et images 2K prêtes campagne.",
       "renderLabel": "Voir l’image",
       "badges": [
         "Texte -> Image",
         "Image -> Image",
-        "2K / 4K"
+        "2K"
       ],
       "altContext": "Seedream 5.0 Pro - production image professionnelle"
     },
@@ -110,12 +110,12 @@
       },
       {
         "title": "Workflow",
-        "body": "Utilisez Seedream Pro pour les stills détaillés, infographies structurées, edits contrôlés et images 4K prêtes campagne.",
+        "body": "Utilisez Seedream Pro pour les stills détaillés, infographies structurées, edits contrôlés et images 2K prêtes campagne.",
         "tone": "reference"
       },
       {
         "title": "Sortie",
-        "body": "Texte -> Image · Image -> Image · 2K / 4K",
+        "body": "Texte -> Image · Image -> Image · 2K",
         "tone": "duration"
       },
       {
@@ -135,7 +135,7 @@
       },
       {
         "title": "Animer avec Seedance 2.0",
-        "body": "Utilisez Seedream Pro pour les stills détaillés, infographies structurées, edits contrôlés et images 4K prêtes campagne.",
+        "body": "Utilisez Seedream Pro pour les stills détaillés, infographies structurées, edits contrôlés et images 2K prêtes campagne.",
         "cta": {
           "label": "Animer avec Seedance 2.0",
           "href": "/fr/modeles/seedance-2-0"
@@ -153,7 +153,7 @@
     "referenceWorkflows": [
       {
         "title": "Text-to-image",
-        "body": "Utilisez Seedream Pro pour les stills détaillés, infographies structurées, edits contrôlés et images 4K prêtes campagne."
+        "body": "Utilisez Seedream Pro pour les stills détaillés, infographies structurées, edits contrôlés et images 2K prêtes campagne."
       },
       {
         "title": "Image-to-image",
@@ -161,7 +161,7 @@
       },
       {
         "title": "Réglages de sortie",
-        "body": "Texte -> Image · Image -> Image · 2K / 4K"
+        "body": "Texte -> Image · Image -> Image · 2K"
       },
       {
         "title": "Vérification du prix",
@@ -177,7 +177,7 @@
     },
     "meta": {
       "title": "Seedream 5.0 Pro - génération image professionnelle ByteDance | MaxVideoAI",
-      "description": "Créez des images professionnelles, infographies denses, edits visuels et assets 4K avec Seedream 5.0 Pro dans MaxVideoAI."
+      "description": "Créez des images professionnelles, infographies denses, edits visuels et assets 2K avec Seedream 5.0 Pro dans MaxVideoAI."
     }
   },
   "prompting": {
@@ -196,7 +196,7 @@
     "demo": null,
     "imageExamples": {
       "title": "Prompts image Seedream 5.0 Pro",
-      "intro": "Exemples adaptés aux stills campagne, typographie, retouches et finales 4K.",
+      "intro": "Exemples adaptés aux stills campagne, typographie, retouches et finales 2K.",
       "workspaceLabel": "Ouvrir l’espace image",
       "items": [
         {
@@ -211,7 +211,7 @@
           "title": "Poster typographique",
           "badge": "Typographie",
           "kind": "typography",
-          "prompt": "Poster vertical 4K, grille éditoriale premium, fond graphite, grand titre exact \"MIDNIGHT LAUNCH\", sous-titre \"LIMITED DROP\", hiérarchie nette, marges généreuses, texte lisible."
+          "prompt": "Poster vertical 2K, grille éditoriale premium, fond graphite, grand titre exact \"MIDNIGHT LAUNCH\", sous-titre \"LIMITED DROP\", hiérarchie nette, marges généreuses, texte lisible."
         },
         {
           "id": "edit-3",
@@ -222,10 +222,10 @@
         },
         {
           "id": "layout-4",
-          "title": "2K vers 4K final",
-          "badge": "Final 4K",
+          "title": "Final 2K",
+          "badge": "Final 2K",
           "kind": "layout",
-          "prompt": "Reprendre la composition validée en 2K. Sortie 4K finale, détails plus nets, typographie identique, mêmes couleurs de marque, conserver cadrage et placement du produit."
+          "prompt": "Affiner la composition validée en 2K pour la livraison finale, détails plus nets, typographie identique, mêmes couleurs de marque, conserver cadrage et placement du produit."
         }
       ]
     }

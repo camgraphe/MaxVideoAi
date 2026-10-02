@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
+import useSWR from 'swr';
 import { listFalEngines } from '@/config/falEngines';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -8,12 +9,8 @@ import { CURRENCY_LOCALE } from '@/lib/intl';
 import { getModelByEngineId } from '@/lib/model-roster';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import type { PricingRuleLite } from '@/lib/pricing-rules';
-import { buildPublicPricingFacts } from '@/lib/pricing-public-facts';
-import {
-  projectPublicPricingSnapshot,
-  quotePublicPricing,
-  type PublicPricingMembershipTier,
-} from '@/lib/pricing-public-quote';
+import type { PublicPricingMembershipTier } from '@/lib/pricing-public-quote';
+import type { PublicModelQuote, PublicModelQuoteInput } from '@/lib/pricing-public-model-contract';
 import { formatResolutionLabel } from '@/lib/resolution-labels';
 import { Button } from '@/components/ui/Button';
 
@@ -28,6 +25,13 @@ interface PriceChipProps {
 
 const PRICING_ENTRIES = listFalEngines();
 
+async function fetchCurrentPrice(input: PublicModelQuoteInput): Promise<PublicModelQuote> {
+  const response = await fetch('/api/pricing/quote', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input), cache: 'no-store' });
+  if (!response.ok) return { status: 'unavailable' };
+  return response.json() as Promise<PublicModelQuote>;
+}
+
 function formatCurrency(currency: string, cents: number) {
   return new Intl.NumberFormat(CURRENCY_LOCALE, {
     style: 'currency',
@@ -41,65 +45,26 @@ export function PriceChip({
   engineId,
   durationSec,
   resolution,
-  memberTier = 'member',
   suffix,
-  pricingRules,
 }: PriceChipProps) {
   const { dictionary, t } = useI18n();
   const kernel = getPricingKernel();
   const [isOpen, setIsOpen] = useState(false);
   const canonicalId = normalizeEngineId(engineId) ?? engineId;
 
-  const quote = useMemo(() => {
-    const definition = kernel.getDefinition(canonicalId);
-    const entry = PRICING_ENTRIES.find(
-      (candidate) => candidate.id === canonicalId || candidate.engine.id === canonicalId
-    );
-    if (!definition || !entry) return null;
-    try {
-      const mode = entry.engine.modes.includes('t2v')
-        ? 't2v'
-        : entry.engine.modes.find((candidate) => candidate === 'i2v' || candidate === 't2i' || candidate === 'i2i');
-      const facts = buildPublicPricingFacts({
-        engine: entry.engine,
-        durationSec,
-        resolution,
-        ...(mode ? { mode } : {}),
-        useStandardDefinitionFacts: true,
-      });
-      const canonicalQuote = quotePublicPricing({
-        facts: facts.facts,
-        scenario: {
-          id: `price-chip:${canonicalId}:${durationSec}:${resolution}`,
-          engineId: facts.facts.engineId,
-          ...(mode ? { mode } : {}),
-          resolution,
-          membershipTier: (memberTier ?? 'member').toString().toLowerCase(),
-        },
-        compatibilityProfileId: 'public-rounded-vendor-current',
-        pricingRules,
-      });
-      return {
-        definition,
-        snapshot: projectPublicPricingSnapshot({
-          quote: canonicalQuote,
-          base: facts.base,
-          addons: facts.addons,
-          meta: facts.meta,
-        }),
-      };
-    } catch {
-      return null;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canonicalId, durationSec, resolution, memberTier?.toString(), pricingRules]);
+  const definition = kernel.getDefinition(canonicalId);
+  const entry = PRICING_ENTRIES.find((candidate) => candidate.id === canonicalId || candidate.engine.id === canonicalId);
+  const mode = entry?.engine.modes.includes('t2v') ? 't2v'
+    : entry?.engine.modes.find((candidate) => candidate === 'i2v' || candidate === 't2i' || candidate === 'i2i');
+  const input: PublicModelQuoteInput | null = definition && mode
+    ? { modelId: canonicalId, mode, durationSec, resolution } : null;
+  const { data: quote } = useSWR(input ? JSON.stringify(input) : null,
+    () => fetchCurrentPrice(input!), { refreshInterval: 60_000 });
 
-  if (!quote) {
+  if (!definition || quote?.status !== 'exact') {
     return null;
   }
 
-  const snapshot = quote.snapshot;
-  const definition = quote.definition;
   const rosterEntry = getModelByEngineId(canonicalId);
   const slug = rosterEntry?.modelSlug;
   const localizedMetaMap = (dictionary.models.meta ?? {}) as Record<string, { displayName?: string; versionLabel?: string }>;
@@ -107,7 +72,7 @@ export function PriceChip({
   const engineLabel = localizedMeta?.displayName ?? rosterEntry?.marketingName ?? definition.label ?? canonicalId;
   const engineVersion = localizedMeta?.versionLabel ?? rosterEntry?.versionLabel ?? (definition.version ? `v${definition.version}` : undefined);
   const displayResolution = formatResolutionLabel(canonicalId, resolution);
-  const formattedTotal = formatCurrency(snapshot.currency, snapshot.totalCents);
+  const formattedTotal = formatCurrency(quote.currency, quote.amountCents);
 
   const prefix = dictionary.pricing.priceChipPrefix ?? t('pricing.priceChipPrefix', 'This render');
   const chipSuffix = suffix ?? dictionary.pricing.priceChipSuffix ?? t('pricing.priceChipSuffix', 'Price before you generate.');
@@ -149,7 +114,7 @@ export function PriceChip({
                 {t('pricing.durationResolution', 'Duration × Resolution')}
               </span>
               <p className="text-sm font-medium text-text-primary">
-                {snapshot.base.seconds}s · {displayResolution.toUpperCase()}
+                {durationSec}s · {displayResolution.toUpperCase()}
               </p>
             </div>
             <div className="border-t border-hairline pt-2">

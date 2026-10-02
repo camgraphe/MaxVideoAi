@@ -424,16 +424,16 @@ test('Seedance 2.5 and Seedance 2.0 lead the app menu while P1 models enter mark
   assert.deepEqual(MARKETING_FOOTER_EXAMPLES.map((item) => item.key).sort(), expectedExampleFamilies.slice().sort());
 });
 
-test('Seedance 1.5 Pro stays active while Seedance 2.0 keeps the primary alias and promoted slots', () => {
+test('Seedance 1.5 Pro stays historical while Seedance 2.0 keeps the primary alias and promoted slots', () => {
   const seedance15 = listFalEngines().find((entry) => entry.id === 'seedance-1-5-pro');
 
   assert.ok(seedance15);
-  assert.equal(Boolean(seedance15.isLegacy), false);
+  assert.equal(Boolean(seedance15.isLegacy), true);
   assert.equal(seedance15.surfaces.compare.includeInHub, true);
   assert.equal(getPublishedComparisonSlugs().includes('seedance-1-5-pro-vs-seedance-2-0-fast'), true);
   assert.equal(normalizeEngineId('seedance'), 'seedance-2-0');
   assert.equal(MARKETING_NAV_MODELS.some((item) => item.key === 'seedance-1-5-pro'), false);
-  assert.equal(getHubEngines().some((engine) => engine.modelSlug === 'seedance-1-5-pro'), true);
+  assert.equal(getHubEngines().some((engine) => engine.modelSlug === 'seedance-1-5-pro'), false);
 });
 
 test('Header model menu keeps H3 and the current P1 representatives in the bounded set', () => {

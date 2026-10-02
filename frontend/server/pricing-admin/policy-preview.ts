@@ -250,6 +250,11 @@ export async function previewPricingPolicyChange(
 ): Promise<PricingChangePreview> {
   const policy = getVersionedPricingPolicy();
   const context = await buildPreviewContext(proposal, dependencies, policy);
+  if (await dependencies.loadManualTariffsActive?.()) {
+    const modelOrGlobal = (rule: PricingPolicyRule | null) => rule && (!rule.engineId || Boolean(listFalEngines().find(e => e.id === rule.engineId)));
+    if (modelOrGlobal(context.currentRule) || modelOrGlobal(context.proposedRule)) throw new PricingAdminError('model_policy_retired',
+      'Model percentage rules are read-only after cutover. Edit customer unit prices in the model pricing panel.');
+  }
   const selectorRule = context.proposedRule ?? context.currentRule;
   if (!selectorRule) {
     throw new PricingAdminError('missing_target', 'Pricing rule selector is unavailable');

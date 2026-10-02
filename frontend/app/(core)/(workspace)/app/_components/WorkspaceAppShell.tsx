@@ -61,6 +61,7 @@ type WorkspaceAppShellProps = {
   compositeOverrideSummary: PreviewDockProps['compositeOverrideSummary'];
   setViewerTarget: PreviewDockProps['setViewerTarget'];
   composerSurface: ReactNode;
+  previewSupplement?: ReactNode;
   modelReviewCommands?: ReactNode;
   recentMedia?: ReactNode;
   onOpenRecentMedia?: () => void;
@@ -101,6 +102,7 @@ export function WorkspaceAppShell({
   compositeOverrideSummary,
   setViewerTarget,
   composerSurface,
+  previewSupplement,
   modelReviewCommands,
   recentMedia,
   onOpenRecentMedia,
@@ -202,6 +204,7 @@ export function WorkspaceAppShell({
           compositeOverrideSummary={compositeOverrideSummary}
           setViewerTarget={setViewerTarget}
         />
+        {previewSupplement}
         <div {...recentDropProps}>{composerSurface}</div>
       </div>
     </WorkspaceChrome>

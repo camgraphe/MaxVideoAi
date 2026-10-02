@@ -66,6 +66,93 @@ const baseParams = {
   localKey: 'local_123',
 };
 
+test('Seedance 1.5 direct submission preserves T2V, first/last I2V, resolution and audio choices', { concurrency: false }, async () => {
+  const original = {
+    enabled: ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED,
+    provider: ENV.SEEDANCE_1_5_PROVIDER,
+  };
+  const payloads: Array<Record<string, unknown>> = [];
+  ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED = 'true';
+  ENV.SEEDANCE_1_5_PROVIDER = 'byteplus_modelark';
+  try {
+    for (const resolution of ['480p', '720p', '1080p']) {
+      for (const audioEnabled of [true, false]) {
+        const result = await submitBytePlusGenerateTask({
+          ...baseParams,
+          engineId: 'seedance-1-5-pro',
+          engineLabel: 'Seedance 1.5 Pro',
+          mode: audioEnabled ? 't2v' : 'i2v',
+          durationSec: 4,
+          effectiveResolution: resolution,
+          initialImageUrl: audioEnabled ? null : 'https://cdn.maxvideoai.com/first.png',
+          endImageUrl: audioEnabled ? null : 'https://cdn.maxvideoai.com/last.png',
+          normalizedReferenceImages: [], videoUrls: [], resolvedAudioUrl: null, audioUrls: [],
+          audioEnabled,
+          cameraFixed: true,
+          seed: 123,
+          deps: {
+            getBytePlusArkConfigFn: () => ({ seedance15ModelId: 'account-seedance-15' }) as never,
+            getBytePlusModelArkClientFn: () => ({
+              createSeedanceFastTask: async (payload) => {
+                payloads.push(payload as unknown as Record<string, unknown>);
+                return { providerJobId: 'provider_15', status: 'queued' };
+              },
+            }) as never,
+            queryFn: async () => undefined,
+          },
+        });
+        assert.equal(result.ok, true);
+      }
+    }
+    assert.equal(payloads.length, 6);
+    for (const [index, payload] of payloads.entries()) {
+      assert.equal(payload.model, 'account-seedance-15');
+      assert.equal(payload.resolution, ['480p', '720p', '1080p'][Math.floor(index / 2)]);
+      assert.equal(payload.generate_audio, index % 2 === 0);
+      assert.equal(payload.camera_fixed, true);
+      assert.equal(payload.seed, 123);
+      const content = payload.content as Array<{ type: string; role?: string }>;
+      assert.deepEqual(content.map((item) => item.role).filter(Boolean), index % 2 === 0
+        ? [] : ['first_frame', 'last_frame']);
+    }
+  } finally {
+    ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED = original.enabled;
+    ENV.SEEDANCE_1_5_PROVIDER = original.provider;
+  }
+});
+
+test('Seedance 1.5 direct rejects unsupported reference mode before provider access', { concurrency: false }, async () => {
+  const original = {
+    enabled: ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED,
+    provider: ENV.SEEDANCE_1_5_PROVIDER,
+    warn: console.warn,
+  };
+  let providerRequests = 0;
+  ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED = 'true';
+  ENV.SEEDANCE_1_5_PROVIDER = 'byteplus_modelark';
+  console.warn = () => undefined;
+  try {
+    const result = await submitBytePlusGenerateTask({
+      ...baseParams,
+      engineId: 'seedance-1-5-pro',
+      deps: {
+        getBytePlusArkConfigFn: () => ({ seedance15ModelId: 'account-seedance-15' }) as never,
+        getBytePlusModelArkClientFn: () => ({ createSeedanceFastTask: async () => {
+          providerRequests += 1;
+          return { providerJobId: 'unexpected', status: 'queued' };
+        } }) as never,
+        queryFn: async () => undefined,
+      },
+    });
+    assert.equal(result.ok, false);
+    assert.equal(providerRequests, 0);
+  } finally {
+    ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED = original.enabled;
+    ENV.SEEDANCE_1_5_PROVIDER = original.provider;
+    console.warn = original.warn;
+  }
+});
+
 test('submission only confirms a wallet refund after finding its matching ledger entry', async () => {
   for (const ledgerState of ['confirmed', 'missing', 'unavailable'] as const) {
     let rolledBack = false;

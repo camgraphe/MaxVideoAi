@@ -62,7 +62,8 @@ test('video watch modules own rendering and helper contracts', () => {
   assert.match(contentSource,/headingLevel="h1"/,'standalone reader owns one page heading');
   assert.match(contentSource,/videoJsonLd/);assert.match(contentSource,/breadcrumbJsonLd/);
   assert.match(readerSource,/DiscoveryVideoPlayer/);assert.match(readerSource,/copyTextToClipboard\(detail.prompt\)/);
-  assert.match(readerSource,/promptExpanded/);assert.match(readerSource,/historicalCost/);
+  assert.match(readerSource,/promptExpanded/);assert.match(readerSource,/originalModel\.amountCents/);
+  assert.doesNotMatch(readerSource,/detail\.historicalCost/,'public reader prices must come from the current quote');
   assert.match(contextSource,/Prompt improvement notes/);assert.match(contextSource,/Compare this model/);
   assert.match(contextSource,/Visual workflow context/);assert.match(contextSource,/ExampleReaderDisclosure/);
   assert.match(disclosureSource,/<details\b/);assert.match(disclosureSource,/'use client'/);

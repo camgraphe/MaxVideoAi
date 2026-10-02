@@ -31,4 +31,5 @@ export type ExecuteImageGenerationOptions = {
   billingProductKey?: BillingProductKey | null;
   billingQuantityMultiplier?: number;
   isAdminForDirectProvider?: boolean;
+  customerTariffRevision?: string | null;
 } & ImageGenerationReservationOptions;

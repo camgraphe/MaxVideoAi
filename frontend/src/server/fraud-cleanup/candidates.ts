@@ -1,3 +1,4 @@
+import { WALLET_FUNDED_RECEIPT_SQL } from '@/lib/wallet-funding';
 import { query } from '@/lib/db';
 import { getUserIdentity } from '@/server/supabase-admin';
 import { DEFAULT_SMALL_TOPUP_MAX_CENTS, FRAUD_REVERSAL_REASON } from './constants';
@@ -140,7 +141,7 @@ async function fetchUserStats(
             END
           ), 0)::bigint AS balance_cents
         FROM app_receipts
-        WHERE user_id = ANY($1::text[])
+        WHERE user_id = ANY($1::text[]) AND ${WALLET_FUNDED_RECEIPT_SQL}
         GROUP BY user_id, UPPER(COALESCE(NULLIF(currency, ''), 'USD'))
       `,
       [uniqueUserIds]

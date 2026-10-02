@@ -1,0 +1,137 @@
+{
+  "status": "local_proposal_not_applied",
+  "decision": "raise_only_reviewed_gpt_image_25_reference_cases_by_one_cent_to_supplier_estimate_ceiling",
+  "approval": {
+    "capturedAt": "2026-09-30T18:35:16.891Z",
+    "registryHash": "4e377d9738c1b5d83dd8edc1907b463530010f6539dbe794e0479117c1cf7611",
+    "databaseIdentity": "37c3dcefa174b815139739a6b5223fb7fe2df257726b3f1adb982228f58afcec",
+    "databaseRulesHash": "9a4dbcdd6db5ed906b2f1f96bfbc0744c43c9ca3837b92beeeaa0d4b6dab54de",
+    "changes": [
+      {
+        "scenarioId": "engineId=gpt-image-2-5-flare|mode=i2i|resolution=1024x1024|durationSec=1|quality=medium|referenceImageCount=1",
+        "currentCustomerCents": 2,
+        "proposedCustomerCents": 3
+      },
+      {
+        "scenarioId": "engineId=gpt-image-2-5-flare|mode=i2i|resolution=2560x1440|durationSec=1|quality=medium|referenceImageCount=1",
+        "currentCustomerCents": 2,
+        "proposedCustomerCents": 3
+      },
+      {
+        "scenarioId": "engineId=gpt-image-2-5-flare|mode=i2i|resolution=2560x1440|durationSec=1|quality=medium|referenceImageCount=2",
+        "currentCustomerCents": 3,
+        "proposedCustomerCents": 4
+      },
+      {
+        "scenarioId": "engineId=gpt-image-2-5-flare|mode=i2i|resolution=2560x1440|durationSec=2|quality=low|referenceImageCount=1",
+        "currentCustomerCents": 2,
+        "proposedCustomerCents": 3
+      },
+      {
+        "scenarioId": "engineId=gpt-image-2-5-flare|mode=i2i|resolution=3840x2160|durationSec=2|quality=low|referenceImageCount=1",
+        "currentCustomerCents": 3,
+        "proposedCustomerCents": 4
+      },
+      {
+        "scenarioId": "engineId=gpt-image-2-5-flare|mode=i2i|resolution=1024x768|durationSec=3|quality=low|referenceImageCount=1",
+        "currentCustomerCents": 2,
+        "proposedCustomerCents": 3
+      },
+      {
+        "scenarioId": "engineId=gpt-image-2-5-flare|mode=i2i|resolution=1024x1536|durationSec=3|quality=low|referenceImageCount=1",
+        "currentCustomerCents": 2,
+        "proposedCustomerCents": 3
+      },
+      {
+        "scenarioId": "engineId=gpt-image-2-5-flare|mode=i2i|resolution=1024x1536|durationSec=3|quality=low|referenceImageCount=2",
+        "currentCustomerCents": 3,
+        "proposedCustomerCents": 4
+      },
+      {
+        "scenarioId": "engineId=gpt-image-2-5-flare|mode=i2i|resolution=1920x1080|durationSec=3|quality=low|referenceImageCount=1",
+        "currentCustomerCents": 2,
+        "proposedCustomerCents": 3
+      },
+      {
+        "scenarioId": "engineId=gpt-image-2-5-flare|mode=i2i|resolution=1024x1024|durationSec=4|quality=low|referenceImageCount=1",
+        "currentCustomerCents": 3,
+        "proposedCustomerCents": 4
+      },
+      {
+        "scenarioId": "engineId=gpt-image-2-5-flare|mode=i2i|resolution=2560x1440|durationSec=4|quality=low|referenceImageCount=1",
+        "currentCustomerCents": 3,
+        "proposedCustomerCents": 4
+      },
+      {
+        "scenarioId": "engineId=gpt-image-2-5-flare|mode=i2i|resolution=2560x1440|durationSec=4|quality=low|referenceImageCount=2",
+        "currentCustomerCents": 4,
+        "proposedCustomerCents": 5
+      },
+      {
+        "scenarioId": "engineId=gpt-image-2-5-sunburst|mode=i2i|resolution=1024x1024|durationSec=1|quality=medium|referenceImageCount=1",
+        "currentCustomerCents": 2,
+        "proposedCustomerCents": 3
+      },
+      {
+        "scenarioId": "engineId=gpt-image-2-5-sunburst|mode=i2i|resolution=2560x1440|durationSec=1|quality=medium|referenceImageCount=1",
+        "currentCustomerCents": 2,
+        "proposedCustomerCents": 3
+      },
+      {
+        "scenarioId": "engineId=gpt-image-2-5-sunburst|mode=i2i|resolution=2560x1440|durationSec=1|quality=medium|referenceImageCount=2",
+        "currentCustomerCents": 3,
+        "proposedCustomerCents": 4
+      },
+      {
+        "scenarioId": "engineId=gpt-image-2-5-sunburst|mode=i2i|resolution=2560x1440|durationSec=2|quality=low|referenceImageCount=1",
+        "currentCustomerCents": 2,
+        "proposedCustomerCents": 3
+      },
+      {
+        "scenarioId": "engineId=gpt-image-2-5-sunburst|mode=i2i|resolution=3840x2160|durationSec=2|quality=low|referenceImageCount=1",
+        "currentCustomerCents": 3,
+        "proposedCustomerCents": 4
+      },
+      {
+        "scenarioId": "engineId=gpt-image-2-5-sunburst|mode=i2i|resolution=1024x768|durationSec=3|quality=low|referenceImageCount=1",
+        "currentCustomerCents": 2,
+        "proposedCustomerCents": 3
+      },
+      {
+        "scenarioId": "engineId=gpt-image-2-5-sunburst|mode=i2i|resolution=1024x1536|durationSec=3|quality=low|referenceImageCount=1",
+        "currentCustomerCents": 2,
+        "proposedCustomerCents": 3
+      },
+      {
+        "scenarioId": "engineId=gpt-image-2-5-sunburst|mode=i2i|resolution=1024x1536|durationSec=3|quality=low|referenceImageCount=2",
+        "currentCustomerCents": 3,
+        "proposedCustomerCents": 4
+      },
+      {
+        "scenarioId": "engineId=gpt-image-2-5-sunburst|mode=i2i|resolution=1920x1080|durationSec=3|quality=low|referenceImageCount=1",
+        "currentCustomerCents": 2,
+        "proposedCustomerCents": 3
+      },
+      {
+        "scenarioId": "engineId=gpt-image-2-5-sunburst|mode=i2i|resolution=1024x1024|durationSec=4|quality=low|referenceImageCount=1",
+        "currentCustomerCents": 3,
+        "proposedCustomerCents": 4
+      },
+      {
+        "scenarioId": "engineId=gpt-image-2-5-sunburst|mode=i2i|resolution=2560x1440|durationSec=4|quality=low|referenceImageCount=1",
+        "currentCustomerCents": 3,
+        "proposedCustomerCents": 4
+      },
+      {
+        "scenarioId": "engineId=gpt-image-2-5-sunburst|mode=i2i|resolution=2560x1440|durationSec=4|quality=low|referenceImageCount=2",
+        "currentCustomerCents": 4,
+        "proposedCustomerCents": 5
+      }
+    ]
+  },
+  "checkedScenarios": 20113,
+  "quotedScenarios": 20113,
+  "unchangedScenarioCount": 20089,
+  "activationReady": false,
+  "supplierEvidence": "catalogue_estimate_not_confirmed_contract_or_invoice"
+}

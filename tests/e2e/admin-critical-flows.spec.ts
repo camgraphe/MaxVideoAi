@@ -91,16 +91,60 @@ test.describe('admin critical flows', () => {
     assertNoClientErrors(errors);
   });
 
-  test('retired pricing editor redirects without commercial API activity', async ({ page }) => {
-    const requests: string[] = [];
+  test('pricing cockpit compares costs and previews a policy change', async ({ page }) => {
+    const confirmRequests: string[] = [];
     page.on('request', (request) => {
-      if (request.url().includes('/api/admin/pricing/')) requests.push(request.url());
+      if (request.url().includes('/api/admin/pricing/confirm')) confirmRequests.push(request.url());
     });
-    await openAdminRoute(page, '/admin/settings');
-    await page.goto('/admin/pricing');
-    await expect(page).toHaveURL(/\/admin\/settings$/);
-    await expect(page.getByRole('heading', { level: 1, name: 'Settings' })).toBeVisible();
-    expect(requests).toEqual([]);
+    await openAdminRoute(page, '/admin/pricing');
+    await expect(page.getByRole('heading', { level: 1, name: 'Pricing', exact: true })).toBeVisible();
+    await expect(page.getByText('Supplier cost and customer price', { exact: true })).toBeVisible();
+    await page.getByRole('tab', { name: 'Pricing', exact: true }).focus();
+    await page.keyboard.press('End');
+    await expect(page.getByRole('tab', { name: 'History' })).toHaveAttribute('aria-selected', 'true');
+    await page.keyboard.press('Home');
+    await expect(page.getByRole('tab', { name: 'Pricing', exact: true })).toHaveAttribute('aria-selected', 'true');
+    await page.getByRole('button', { name: 'Image', exact: true }).click();
+    await expect(page.locator('summary').filter({ hasText: 'Seedream 5.0 Lite' })).toBeVisible();
+    await page.getByRole('tab', { name: 'Pricing rules' }).click();
+    const inventory = page.getByTestId('pricing-policy-inventory');
+    await expect(inventory.locator('tbody tr').first()).toBeVisible({ timeout: 15_000 });
+    await expect(inventory.locator('tbody tr').first().locator('td').last()).toContainText(/\$\d+\.\d{2}/);
+    await expect(inventory).not.toContainText('$NaN');
+    await page.getByLabel('Search policy selectors').fill('seedance-2-5');
+    await inventory.locator('tbody tr').first().getByRole('button').click();
+    await expect(page.getByText('Policy inspector', { exact: true })).toBeVisible();
+    const margin = page.getByLabel('Margin (%)');
+    await margin.fill(String(Number(await margin.inputValue()) + 5));
+    const previewResponse = page.waitForResponse(response =>
+      new URL(response.url()).pathname === '/api/admin/pricing/preview' && response.request().method() === 'POST');
+    await page.getByRole('button', { name: 'Preview policy change' }).click();
+    const response = await previewResponse;
+    expect(response.status()).toBe(200);
+    const data = await response.json();
+    expect(data.ok).toBe(true);
+    expect(data.preview.rows.some((row: { deltaCents: number }) => row.deltaCents > 0)).toBe(true);
+    const preview = page.getByRole('dialog');
+    await expect(preview.getByText('Review price change', { exact: true })).toBeVisible();
+    await expect(preview.getByRole('columnheader', { name: 'Current', exact: true })).toBeVisible();
+    await expect(preview.getByRole('columnheader', { name: 'Proposed', exact: true })).toBeVisible();
+    await preview.getByRole('button', { name: 'Cancel' }).click();
+    expect(confirmRequests).toEqual([]);
+  });
+
+  test('expired pricing inventory does not leave cached customer prices visible', async ({ page }) => {
+    await openAdminRoute(page, '/admin/pricing');
+    await expect(page.locator('summary').filter({ hasText: 'Seedance 2.0 Mini' })).toBeVisible();
+    await page.route('**/api/admin/pricing/inventory', (route) => route.fulfill({
+      status: 401,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: false, error: 'unauthorized', message: 'Session expired.' }),
+    }));
+    const refresh = page.getByRole('button', { name: 'Refresh' });
+    await expect(refresh).toBeEnabled();
+    await refresh.click();
+    await expect(page.getByText(/Current prices are unavailable/)).toBeVisible();
+    await expect(page.locator('summary').filter({ hasText: 'Seedance 2.0 Mini' })).toHaveCount(0);
   });
 
   test('site placements support drag order and cancel without publishing changes', async ({ page }) => {
@@ -341,7 +385,15 @@ test.describe('admin critical flows', () => {
   });
 
   test('billing products filter, preview, and cancel without applying', async ({ page }) => {
+    // Include the cold preview-route compilation and the real database response.
+    test.setTimeout(60_000);
     const errors = trackClientErrors(page);
+    const confirmRequests: string[] = [];
+    page.on('request', (request) => {
+      if (new URL(request.url()).pathname === '/api/admin/billing-products/confirm') {
+        confirmRequests.push(request.url());
+      }
+    });
 
     await openAdminRoute(page, '/admin/billing-products');
     const productState = await waitForBillingProductState(page);
@@ -362,14 +414,28 @@ test.describe('admin critical flows', () => {
     const priceInput = page.getByLabel('Billing product unit price (cents)');
     const currentPrice = Number(await priceInput.inputValue());
     await priceInput.fill(String(currentPrice + 1));
+    const previewResponse = page.waitForResponse(response =>
+      new URL(response.url()).pathname === '/api/admin/billing-products/preview' && response.request().method() === 'POST');
     await page.getByRole('button', { name: 'Preview billing product change' }).click();
+    const response = await previewResponse;
+    expect(response.status()).toBe(200);
+    const data = await response.json();
+    expect(data.ok).toBe(true);
+    expect(data.preview.domain).toBe('billing_product');
+    expect(data.preview.targetId).toBe(productKey);
+    expect(data.preview.currentState.unitPriceCents).toBe(currentPrice);
+    expect(data.preview.proposedState.unitPriceCents).toBe(currentPrice + 1);
+    expect(data.preview.rows[0].deltaCents).toBe(1);
 
-    const dialog = page.getByRole('dialog', { name: /update/i });
+    const dialog = page.getByRole('dialog', { name: /^Price change ·/ });
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByText('Canonical server preview')).toBeVisible();
+    await expect(dialog.getByText('Review price change', { exact: true })).toBeVisible();
+    await expect(dialog.getByRole('columnheader', { name: 'Current', exact: true })).toBeVisible();
+    await expect(dialog.getByRole('columnheader', { name: 'Proposed', exact: true })).toBeVisible();
     await expect(dialog.getByRole('button', { name: 'Confirm and apply now' })).toBeVisible();
     await dialog.getByRole('button', { name: 'Cancel' }).click();
     await expect(dialog).toBeHidden();
+    expect(confirmRequests).toEqual([]);
 
     assertNoClientErrors(errors);
   });

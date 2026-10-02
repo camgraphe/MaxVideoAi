@@ -1,4 +1,5 @@
 import { requireCurrentWebPricingPolicy } from '@/server/pricing/web-pricing-policy';
+import { CUSTOMER_TARIFF_REVISION_HEADER } from '@/lib/customer-tariff-revision';
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -68,6 +69,7 @@ export async function POST(req: NextRequest) {
       walletReservation: 'reserve',
       jobSurface,
       isAdminForDirectProvider,
+      customerTariffRevision: req.headers.get(CUSTOMER_TARIFF_REVISION_HEADER),
     });
     return NextResponse.json(result);
   } catch (error) {

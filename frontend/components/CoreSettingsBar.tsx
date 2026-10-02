@@ -22,6 +22,7 @@ interface CoreSettingsBarProps {
   numFrames?: number | null;
   onNumFramesChange?: (value: number) => void;
   resolution: string;
+  resolutionDisplayLabel?: string;
   onResolutionChange: (value: string) => void;
   aspectRatio: string;
   onAspectRatioChange: (value: string) => void;
@@ -292,6 +293,7 @@ export function CoreSettingsBar({
   numFrames,
   onNumFramesChange,
   resolution,
+  resolutionDisplayLabel,
   onResolutionChange,
   aspectRatio,
   onAspectRatioChange,
@@ -391,7 +393,7 @@ export function CoreSettingsBar({
     } else if (engine.id.includes('pro') && resolutionCopy.proSuffix) {
       label = `${label} ${resolutionCopy.proSuffix}`;
     }
-    return { value: option, label };
+    return { value: option, label: optionKey === resolution && resolutionDisplayLabel ? resolutionDisplayLabel : label };
   });
 
   const aspectOptionsList = aspectOptions.map((option) => {

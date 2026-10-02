@@ -2,6 +2,9 @@ import type { ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryG
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { isLegacyMarketingVideoUrl, resolvePublicMarketingVideoUrl } from '@/lib/media';
 import type { GalleryVideo } from '@/server/videos';
+import type { CurrentExamplePrice } from '@/server/current-example-price';
+import type { AppLocale } from '@/i18n/locales';
+import { formatCurrentExamplePrice } from '@/lib/current-example-price-display';
 
 export type FeaturedMedia = {
   id: string | null;
@@ -27,22 +30,6 @@ export function getHeroMediaBadges(media: FeaturedMedia, authored: string[], aud
     typeof media.durationSec === 'number' && media.durationSec > 0 ? `${media.durationSec}s` : null,
     /^\d+:\d+$/.test(media.aspectRatio ?? '') ? media.aspectRatio! : null,
   ];
-}
-
-function formatPriceLabel(priceCents: number | null | undefined, currency: string | null | undefined): string | null {
-  if (typeof priceCents !== 'number' || Number.isNaN(priceCents)) {
-    return null;
-  }
-  const normalizedCurrency = typeof currency === 'string' && currency.length ? currency.toUpperCase() : 'USD';
-  try {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: normalizedCurrency,
-      maximumFractionDigits: 2,
-    }).format(priceCents / 100);
-  } catch {
-    return `${normalizedCurrency} ${(priceCents / 100).toFixed(2)}`;
-  }
 }
 
 function formatPromptExcerpt(prompt: string, maxWords = 22): string {
@@ -84,7 +71,9 @@ export function toGalleryCard(
   iconId?: string,
   engineSlug = 'sora-2',
   fromPath?: string,
-  appPath = '/app'
+  appPath = '/app',
+  currentPrice?: CurrentExamplePrice,
+  locale: AppLocale = 'en',
 ): ExampleGalleryVideo {
   const promptExcerpt = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render');
   const isImageWorkspace = appPath === '/app/image';
@@ -102,7 +91,7 @@ export function toGalleryCard(
     engineLabel: video.engineLabel || fallbackLabel || 'Sora 2',
     engineIconId: iconId ?? 'sora-2',
     engineBrandId: brandId,
-    priceLabel: formatPriceLabel(video.finalPriceCents ?? null, video.currency ?? null),
+    priceLabel: formatCurrentExamplePrice(currentPrice, locale),
     prompt: promptExcerpt,
     promptFull: video.prompt,
     aspectRatio: video.aspectRatio ?? null,

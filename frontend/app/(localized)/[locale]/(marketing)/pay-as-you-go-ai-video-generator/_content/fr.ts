@@ -251,7 +251,7 @@ export const frPayAsYouGoContent = {
     section: {
       eyebrow: 'Rendus réels sans abonnement',
       title: 'Vidéos d’exemple avec modèle et prix',
-      intro: 'Une courte sélection de rendus publics MaxVideoAI montrant le modèle, la durée et le prix enregistré lorsqu’il est disponible.',
+      intro: 'Une courte sélection de rendus publics MaxVideoAI montrant le modèle, la durée et son tarif actuel lorsqu’il est disponible.',
       preview: 'Aperçu',
       result: 'Voir le prompt et le résultat',
       cta: 'Testez votre prompt avec un devis en temps réel',

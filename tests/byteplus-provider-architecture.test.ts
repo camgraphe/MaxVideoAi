@@ -28,6 +28,23 @@ import {
   getBytePlusUnitPriceUsdPer1kTokens,
 } from '../frontend/server/byteplus-accounting';
 
+test('Seedance 1.5 direct list accounting distinguishes audio on and off', () => {
+  assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-1-5-pro', 'no_video_input', '720p', true), 0.0024);
+  assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-1-5-pro', 'no_video_input', '720p', false), 0.0012);
+  assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-1-5-pro', 'no_video_input', '1080p', true), 0.0024);
+  assert.throws(() => getBytePlusUnitPriceUsdPer1kTokens('seedance-1-5-pro', 'no_video_input', '4k', true));
+  assert.equal(expectedBytePlusTokens({
+    engine_id: 'seedance-1-5-pro',
+    duration_sec: 5,
+    settings_snapshot: { core: { resolution: '480p', aspectRatio: '16:9' } },
+  }), (864 * 496 * 5 * 24) / 1024);
+  assert.equal(expectedBytePlusTokens({
+    engine_id: 'seedance-1-5-pro',
+    duration_sec: 4,
+    settings_snapshot: { core: { resolution: '1080p', aspectRatio: '4:3' } },
+  }), (1664 * 1248 * 4 * 24) / 1024);
+});
+
 const pollPath = 'frontend/server/byteplus-poll.ts';
 const pollFailurePath = 'frontend/server/byteplus-poll-failure.ts';
 const accountingPath = 'frontend/server/byteplus-accounting.ts';
@@ -700,8 +717,8 @@ test('BytePlus Standard 4k accounting uses 4k dimensions and input-aware officia
   );
   assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-2-0', 'no_video_input', '4k'), 0.004);
   assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-2-0', 'video_input', '4k'), 0.0024);
-  assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-2-0', 'no_video_input', '1080p'), 0.007);
-  assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-2-0-fast', 'no_video_input', '4k'), 0.0056);
+  assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-2-0', 'no_video_input', '1080p'), 0.0077);
+  assert.throws(() => getBytePlusUnitPriceUsdPer1kTokens('seedance-2-0-fast', 'no_video_input', '4k'), /Unsupported/);
 });
 
 test('Seedance 2.5 accounting selects the factual rate class from video input presence', () => {
@@ -830,6 +847,7 @@ test('hidden direct Fast keeps its narrow raw runtime caps by default', () => {
 });
 
 test('Seedance early gating is independent from hidden-engine resolution', () => {
+  assert.equal(requiresBytePlusSeedanceEarlyGate('seedance-1-5-pro'), true);
   assert.equal(requiresBytePlusSeedanceEarlyGate('seedance-2-5'), true);
   assert.equal(requiresBytePlusSeedanceEarlyGate('seedance-2-0-fast-byteplus'), true);
   assert.equal(requiresBytePlusSeedanceEarlyGate('seedance-2-0'), false);

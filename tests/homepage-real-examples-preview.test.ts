@@ -45,7 +45,7 @@ test('homepage real examples preview uses compact decision-oriented copy and CTA
   assert.equal(examplesCopy.title, 'A world of stories to create.');
   assert.equal(
     examplesCopy.subtitle,
-    'Open an example to see the prompt, settings and recorded generation cost. Then use it as a starting point for your own creation.'
+    'Open an example to see its prompt, settings and current model price. Then use it as a starting point for your own creation.'
   );
   assert.equal(examplesCopy.eyebrow, 'AI video examples');
   assert.equal(examplesCopy.cta, 'Browse all examples');

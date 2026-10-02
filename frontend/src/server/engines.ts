@@ -30,6 +30,7 @@ import {
   LUMA_RAY2_ERROR_UNSUPPORTED,
 } from '@/lib/luma-ray2';
 import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-addons';
+import { videoPricingExtras } from '@/lib/pricing-video-extras';
 import { getEngineCaps } from '@/fixtures/engineCaps';
 import {
   applyConfiguredEngineRuntimeOptions,
@@ -142,6 +143,7 @@ export type TrustedPreflightMediaPricingFacts = Readonly<{
 }>;
 
 export type ComputeConfiguredPreflightOptions = Readonly<{
+  seedanceWorkflowStep?: 'draft' | 'final';
   resolvedEngine?: EngineCaps;
   trustedMediaPricingFacts?: TrustedPreflightMediaPricingFacts;
   bootstrap?: boolean;
@@ -291,21 +293,14 @@ export async function computeConfiguredPreflight(
     referenceTokenBudget,
     verifiedReferenceTokenCount,
   } = options.trustedMediaPricingFacts ?? {};
-  const booleanExtraAddon = (value: unknown): boolean | undefined => {
-    if (typeof value === 'boolean') return value;
-    if (typeof value === 'string') {
-      return ['1', 'true', 'yes', 'on'].includes(value.trim().toLowerCase());
-    }
-    return undefined;
-  };
   const pricingAddons = {
     ...(addons ?? {}),
-    ...(booleanExtraAddon(rawExtraInputValues.hdr) ? { hdr: true } : {}),
-    ...(booleanExtraAddon(rawExtraInputValues.exr_export ?? rawExtraInputValues.exrExport) ? { exr_export: true } : {}),
+    ...videoPricingExtras(pricingEngine.id, request.mode, rawExtraInputValues),
   };
   let snapshot: PricingSnapshot;
   try {
     snapshot = await computeCanonicalPublicSnapshot({
+      workflowStep: options.seedanceWorkflowStep,
       engine: pricingEngine,
       durationSec,
       resolution: effectiveResolution,

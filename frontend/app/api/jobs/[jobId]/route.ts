@@ -1,6 +1,7 @@
 import { type GeneratedVideoFacts } from '@/lib/generated-video-media-facts';
 import { claimGenerationPoll } from '@/server/generation-poll-state';
 import { refreshDirectGeneration } from '@/server/refresh-direct-generation';
+import { recoverTerminalSeedanceWorkflow } from '@/server/seedance-workflow-terminal-recovery';
 import { generationStage, type GenerationObservation } from '@/lib/generation-observation';
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured, query } from '@/lib/db';
@@ -144,6 +145,11 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
       statusCheckDegraded = true;
       console.warn('[api/jobs] direct status refresh deferred', { jobId });
     }
+  }
+  try { await recoverTerminalSeedanceWorkflow(job); }
+  catch {
+    statusCheckDegraded = true;
+    console.warn('[api/jobs] terminal workflow reconciliation deferred', { jobId });
   }
   let normalizedVideoUrl = normalizeMediaUrl(job.video_url);
   let normalizedPreviewVideoUrl = normalizeMediaUrl(job.preview_video_url);

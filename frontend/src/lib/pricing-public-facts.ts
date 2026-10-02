@@ -400,8 +400,8 @@ export function buildPublicPricingFacts(context: PublicPricingFactsContext): Pub
     return resultFromExactFacts({
       engineId: engine.id,
       currency,
-      exactCents: reference.vendorCostUsd * 100,
-      presentedBaseCents: Math.ceil(reference.vendorCostUsd * 100 - 1e-9),
+      exactCents: reference.legacyRetailBasisUsd * 100,
+      presentedBaseCents: Math.ceil(reference.legacyRetailBasisUsd * 100 - 1e-9),
       quantity: durationSec,
       unit: 'sec',
       compatibilityProfileId: 'provider-reference-current',

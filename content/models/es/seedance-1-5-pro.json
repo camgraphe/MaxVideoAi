@@ -13,8 +13,8 @@
     "intro": "Seedance 1.5 Pro sigue disponible como workflow Seedance Pro anterior aún compatible para clips cinematográficos cortos y repetibles, mientras que Seedance 2.0 es ahora el modelo Seedance principal para una mejor continuidad multi-shot, audio más rico y workflows de referencia más amplios.",
     "badge": "480p–1080p · 4–12 s · Audio on/off",
     "ctaPrimary": {
-      "label": "Generar con Seedance 1.5 Pro",
-      "href": "/app?engine=seedance-1-5-pro"
+      "label": "Explorar modelos actuales",
+      "href": "/es/modelos"
     },
     "secondaryLinks": [
       {
@@ -219,8 +219,8 @@
       ],
       "paragraph": "Usa Seedance 1.5 Pro cuando necesitas la ruta Seedance anterior aún compatible: clips cortos repetibles, audio opcional, seed, camera_fixed y cierres image-to-video. Usa Seedance 2.0 para la ruta actual.",
       "primaryCta": {
-        "label": "Generar con Seedance 1.5 Pro",
-        "href": "/app?engine=seedance-1-5-pro"
+        "label": "Explorar modelos actuales",
+        "href": "/es/modelos"
       },
       "secondaryCta": {
         "label": "Ver Seedance 2.0",
@@ -510,5 +510,34 @@
     ],
     "fallbackItems": null,
     "showWhenEmpty": true
+  },
+  "archive": {
+    "title": "Seedance 1.5 Pro: generación cerrada",
+    "intro": "Seedance 1.5 Pro está archivado en MaxVideoAI. Las nuevas generaciones se han cerrado antes de la retirada anunciada por el proveedor para el 11 de noviembre de 2026. Las comparativas históricas y tus vídeos existentes siguen disponibles. Explora Mini, Fast y Seedance 2.5 para nuevos proyectos.",
+    "alternativesTitle": "Elige un modelo Seedance actual",
+    "chooseLabel": "Explorar este modelo",
+    "historyTitle": "Tus vídeos existentes",
+    "historyBody": "Tus vídeos de Seedance 1.5 Pro permanecen en la biblioteca con su modelo y proveedor originales. Todavía puedes ver y descargar los resultados disponibles. Comprueba la configuración y el presupuesto actual antes de crear con otro modelo.",
+    "historyLabel": "Abrir mi biblioteca",
+    "examplesLabel": "Explorar ejemplos de Seedance",
+    "sourcesLabel": "Leer el aviso del proveedor",
+    "sourceUrl": "https://docs.byteplus.com/en/docs/ModelArk/1350667",
+    "alternatives": [
+      {
+        "modelId": "seedance-2-0-mini",
+        "title": "Seedance 2.0 Mini",
+        "description": "Una opción centrada en el coste para vídeos cortos compatibles hasta 720p. Compara tus ajustes y el presupuesto actual; no sustituye a 1.5 Pro función por función."
+      },
+      {
+        "modelId": "seedance-2-0-fast",
+        "title": "Seedance 2.0 Fast",
+        "description": "Una opción independiente que equilibra velocidad y coste, hasta 720p. No ofrece el flujo Draft de Seedance 2.5."
+      },
+      {
+        "modelId": "seedance-2-5",
+        "title": "Seedance 2.5",
+        "description": "Explora la creación actual en 1080p y los flujos de referencia compatibles. Revisa el modo, las capacidades y el presupuesto antes de generar."
+      }
+    ]
   }
 }

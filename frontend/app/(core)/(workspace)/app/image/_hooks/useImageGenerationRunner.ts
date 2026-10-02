@@ -2,6 +2,7 @@
 
 import { useCallback, type Dispatch, type FormEvent, type SetStateAction } from 'react';
 import { runImageGeneration } from '@/lib/api';
+import type { PricingSnapshot } from '@maxvideoai/pricing';
 import { getDefaultAspectRatio } from '@/lib/image/inputSchema';
 import { validateGptImage2CustomImageSize } from '@/lib/image/gptImage2';
 import { readLastKnownUserId } from '@/lib/last-known';
@@ -54,6 +55,7 @@ interface UseImageGenerationRunnerParams {
   numImages: number;
   outputFormat: string | null;
   prompt: string;
+  pricingSnapshot: PricingSnapshot | null;
   quality: string | null;
   readyReferenceSizes: NonNullable<ImageGenerationRequest['referenceImageSizes']>;
   readyReferenceUrls: string[];
@@ -76,6 +78,7 @@ interface UseImageGenerationRunnerParams {
 }
 
 export function useImageGenerationRunner({
+  pricingSnapshot,
   aspectRatio,
   background,
   combinedReferenceUrls,
@@ -213,7 +216,7 @@ export function useImageGenerationRunner({
             : undefined,
           limitGenerations: hasLimitGenerationsField ? limitGenerations : undefined,
           watermark: hasWatermarkField ? watermark : undefined,
-        });
+        }, pricingSnapshot);
         const entry: HistoryEntry = {
           id: response.jobId ?? response.requestId ?? crypto.randomUUID(),
           jobId: response.jobId ?? response.requestId ?? null,
@@ -285,6 +288,7 @@ export function useImageGenerationRunner({
       numImages,
       outputFormat,
       prompt,
+      pricingSnapshot,
       quality,
       readyReferenceSizes,
       readyReferenceUrls,

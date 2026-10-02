@@ -43,6 +43,15 @@ test('Seedance 2.5 uses its own factual ModelArk input rates', () => {
   );
 });
 
+test('BytePlus list-cost rates distinguish 1080p and video input', () => {
+  assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-2-5', 'no_video_input', '1080p'), 0.0117);
+  assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-2-5', 'video_input', '1080p'), 0.007);
+  assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-2-0', 'no_video_input', '1080p'), 0.0077);
+  assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-2-0', 'video_input', '1080p'), 0.0047);
+  assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-2-0', 'video_input', '720p'), 0.0043);
+  assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-2-0-fast', 'video_input', '720p'), 0.0033);
+});
+
 test('BytePlus pricing still fails closed for an unknown Seedance engine', () => {
   assert.throws(
     () => getBytePlusUnitPriceUsdPer1kTokens('seedance-9-9', 'no_video_input', '720p'),
@@ -233,8 +242,8 @@ test('Seedance 2 token quote follows dimensions and targets 2.5x BytePlus no-vid
   assert.equal(quote.height, 720);
   assert.equal(quote.frameRate, 24);
   assert.equal(quote.tokenCount, 21600);
-  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(quote.unitPriceUsdPer1kTokens), 0.0175);
-  assert.equal(quote.vendorCostUsd, 0.290769);
+  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(quote.legacyRetailUnitPriceUsdPer1kTokens), 0.0175);
+  assert.equal(quote.legacyRetailBasisUsd, 0.290769);
 });
 
 test('Seedance 2 pricing snapshot lands on the 2.5x BytePlus public target after margin', async () => {
@@ -252,12 +261,15 @@ test('Seedance 2 pricing snapshot lands on the 2.5x BytePlus public target after
   assert.equal(snapshot.base.amountCents, 291);
   assert.equal(snapshot.platformFeeCents, 87);
   assert.equal(snapshot.vendorShareCents, 291);
+  assert.equal(snapshot.meta?.legacy_retail_basis_usd, 2.907692);
+  assert.equal('provider_cost_usd_estimated' in (snapshot.meta ?? {}), false);
+  assert.equal('vendor_cost_usd' in (snapshot.meta ?? {}), false);
   assert.equal(snapshot.meta?.pricing_model, 'byteplus_tokens');
-  assert.equal(snapshot.meta?.provider_cost_source, 'byteplus_modelark_pricing_config');
+  assert.equal(snapshot.meta?.legacy_retail_basis_source, 'byteplus_modelark_pricing_config');
   assert.equal(snapshot.meta?.output_width, 1280);
   assert.equal(snapshot.meta?.output_height, 720);
   assert.equal(snapshot.meta?.token_count, 216000);
-  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(snapshot.meta?.unit_price_usd_per_1k_tokens as number), 0.0175);
+  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(snapshot.meta?.legacy_retail_unit_price_usd_per_1k_tokens as number), 0.0175);
 });
 
 test('Seedance 2 Fast uses the lower 2.5x BytePlus Fast public target', async () => {
@@ -282,7 +294,7 @@ test('Seedance 2 Fast uses the lower 2.5x BytePlus Fast public target', async ()
   assert.equal(standardSnapshot.totalCents, 189);
   assert.equal(fastSnapshot.totalCents, 152);
   assert.ok(fastSnapshot.totalCents < standardSnapshot.totalCents);
-  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(fastSnapshot.meta?.unit_price_usd_per_1k_tokens as number), 0.014);
+  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(fastSnapshot.meta?.legacy_retail_unit_price_usd_per_1k_tokens as number), 0.014);
 });
 
 test('Seedance 2 Standard uses flat 2.5x BytePlus no-video targets across video input types', async () => {
@@ -314,12 +326,12 @@ test('Seedance 2 Standard uses flat 2.5x BytePlus no-video targets across video 
   assert.equal(noVideoQuote.width, 3840);
   assert.equal(noVideoQuote.height, 2160);
   assert.equal(noVideoQuote.tokenCount, 194400);
-  assert.equal(noVideoQuote.vendorCostUsd, 1.495385);
-  assert.equal(videoQuote.vendorCostUsd, 1.495385);
-  assert.equal(hdQuote.vendorCostUsd, 0.719654);
-  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(noVideoQuote.unitPriceUsdPer1kTokens), 0.01);
-  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(videoQuote.unitPriceUsdPer1kTokens), 0.01);
-  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(hdQuote.unitPriceUsdPer1kTokens), 0.01925);
+  assert.equal(noVideoQuote.legacyRetailBasisUsd, 1.495385);
+  assert.equal(videoQuote.legacyRetailBasisUsd, 1.495385);
+  assert.equal(hdQuote.legacyRetailBasisUsd, 0.719654);
+  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(noVideoQuote.legacyRetailUnitPriceUsdPer1kTokens), 0.01);
+  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(videoQuote.legacyRetailUnitPriceUsdPer1kTokens), 0.01);
+  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(hdQuote.legacyRetailUnitPriceUsdPer1kTokens), 0.01925);
 
   const noVideoSnapshot = await computePricingSnapshot({
     engine,
@@ -340,12 +352,12 @@ test('Seedance 2 Standard uses flat 2.5x BytePlus no-video targets across video 
 
   assert.equal(noVideoSnapshot.totalCents, 195);
   assert.equal(noVideoSnapshot.base.amountCents, 150);
-  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(noVideoSnapshot.meta?.unit_price_usd_per_1k_tokens as number), 0.01);
+  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(noVideoSnapshot.meta?.legacy_retail_unit_price_usd_per_1k_tokens as number), 0.01);
   assert.equal(noVideoSnapshot.meta?.output_width, 3840);
   assert.equal(noVideoSnapshot.meta?.output_height, 2160);
   assert.equal(videoSnapshot.totalCents, 195);
   assert.equal(videoSnapshot.base.amountCents, 150);
-  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(videoSnapshot.meta?.unit_price_usd_per_1k_tokens as number), 0.01);
+  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(videoSnapshot.meta?.legacy_retail_unit_price_usd_per_1k_tokens as number), 0.01);
 });
 
 test('Seedance 2 Standard 4K uses BytePlus canonical dimensions for non-16:9 ratios', () => {
@@ -366,9 +378,9 @@ test('Seedance 2 Standard 4K uses BytePlus canonical dimensions for non-16:9 rat
       height: 2494,
       frameRate: 24,
       tokenCount: 194415.09375,
-      unitPriceUsdPer1kTokens: 0.007692307692307692,
-      vendorCostUsd: 1.495501,
-      vendorCostPerSecondUsd: 1.495501,
+      legacyRetailUnitPriceUsdPer1kTokens: 0.007692307692307692,
+      legacyRetailBasisUsd: 1.495501,
+      legacyRetailBasisPerSecondUsd: 1.495501,
       billingInputType: 'no_video_input',
       pricingSource: undefined,
     }
@@ -383,7 +395,7 @@ test('Seedance 2 Standard 4K uses BytePlus canonical dimensions for non-16:9 rat
   });
   assert.equal(ultrawide.width, 4398);
   assert.equal(ultrawide.height, 1886);
-  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(ultrawide.unitPriceUsdPer1kTokens), 0.01);
+  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(ultrawide.legacyRetailUnitPriceUsdPer1kTokens), 0.01);
 });
 
 test('Seedance 2 Mini uses one 2.5x BytePlus no-video public target for every input type', async () => {
@@ -406,10 +418,10 @@ test('Seedance 2 Mini uses one 2.5x BytePlus no-video public target for every in
   });
 
   assert.equal(noVideoQuote.tokenCount, 21600);
-  assert.equal(noVideoQuote.vendorCostUsd, 0.145385);
-  assert.equal(videoQuote.vendorCostUsd, 0.145385);
-  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(noVideoQuote.unitPriceUsdPer1kTokens), 0.00875);
-  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(videoQuote.unitPriceUsdPer1kTokens), 0.00875);
+  assert.equal(noVideoQuote.legacyRetailBasisUsd, 0.145385);
+  assert.equal(videoQuote.legacyRetailBasisUsd, 0.145385);
+  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(noVideoQuote.legacyRetailUnitPriceUsdPer1kTokens), 0.00875);
+  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(videoQuote.legacyRetailUnitPriceUsdPer1kTokens), 0.00875);
 
   const noVideoSnapshot = await computePricingSnapshot({
     engine,
@@ -431,11 +443,11 @@ test('Seedance 2 Mini uses one 2.5x BytePlus no-video public target for every in
   assert.equal(noVideoSnapshot.totalCents, 189);
   assert.equal(noVideoSnapshot.base.amountCents, 146);
   assert.equal(noVideoSnapshot.meta?.byteplus_billing_input_type, 'no_video_input');
-  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(noVideoSnapshot.meta?.unit_price_usd_per_1k_tokens as number), 0.00875);
+  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(noVideoSnapshot.meta?.legacy_retail_unit_price_usd_per_1k_tokens as number), 0.00875);
   assert.equal(videoSnapshot.totalCents, 189);
   assert.equal(videoSnapshot.base.amountCents, 146);
   assert.equal(videoSnapshot.meta?.byteplus_billing_input_type, 'video_input');
-  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(videoSnapshot.meta?.unit_price_usd_per_1k_tokens as number), 0.00875);
+  assert.equal(targetCustomerUnitPriceUsdPer1kTokens(videoSnapshot.meta?.legacy_retail_unit_price_usd_per_1k_tokens as number), 0.00875);
 });
 
 test('Seedance 2 pricing changes with aspect ratio because BytePlus pricing follows output pixels', async () => {

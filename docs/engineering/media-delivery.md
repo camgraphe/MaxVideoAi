@@ -28,7 +28,7 @@ Examples routes read24 items per logical page from the SQL catalog; all24 watch 
 
 The opening card owns the one prioritized responsive poster. No separate route hero or competing image preload is rendered. `useGalleryPreviewBudget` allows three visible short previews on desktop or one on mobile, prioritizes hover/focus intent, and supports global pause. Cards delegate playback preferences, visibility, rejection and telemetry to `useExampleCardPlayback`; absent short previews remain posters until manual playback. No original-video fallback is used for incidental gallery animation. The reader suspends this budget while open. A continuation heading and spacing distinguish the opening four from later cards without changing their media geometry. Family introductions, complete authored guidance, model links and FAQ remain visible and server-rendered below pagination; do not truncate their source text in route data. Canonical, hreflang and existing JSON-LD ownership stay with the route. Test initial loading and first Play separately; this structure alone does not establish a Core Web Vitals gain.
 
-A compact, full-width guide follows all four opening cards in reading order. It tells visitors to open any video for its prompt, settings and recorded cost, and offers a generic app entry point without implying that it will reuse the lead video's prompt. The full prompt, settings and recorded cost remain available in the reader and canonical watch page; never put a historic cost on gallery cards. Per-video reuse links still follow the source engine's app availability rule in the reader.
+A compact, full-width guide follows all four opening cards in reading order. It tells visitors to open any video for its prompt, settings and current price, and offers a generic app entry point without implying that it will reuse the lead video's prompt. The full prompt, original settings and qualified current estimates remain available in the reader and canonical watch page. Gallery cards receive exact/reference/unavailable current prices from the request-local canonical quote owner through `current-examples-gallery-data.ts`; the pure gallery builder formats the supplied map. Unavailable prices are omitted. Never display a historic charge as a current public price; stored billing history remains unchanged. Per-video reuse links still follow the source engine's app availability rule in the reader.
 
 ## Public example comparison handoff
 
@@ -36,7 +36,7 @@ A compact, full-width guide follows all four opening cards in reading order. It 
 
 `useWorkspaceVideoSettings` captures this intent before removing `from`. After the public video loads, it applies the selected model and full prompt once and skips private/original-job hydration for this comparison. Reference inputs from the source and the visitor's previous form are not carried into this explicitly text-only mode. Ordinary example links retain their existing recreation flow; their derived snapshot now includes public audio and a conventional resolution only when measured dimensions support it. Saved job snapshots remain authoritative on the ordinary path.
 
-The comparison UI shows three distinct executable model proposals, each with its own duration, resolution, aspect and audio. `server/example-comparison-quotes.ts` ranks configurations by duration distance first, then aspect, resolution and audio; exact configurations win. Explicitly highlight every adapted setting. Unknown source settings stay unknown; label those quotes as proposed configurations. Validate each proposal with the workspace handoff owner before quoting it once through the canonical public price owner. Keep historical cost separate and confirm the final quote in the app before generation. A genuine quote-service failure may leave fewer proposals; never fabricate prices to fill a slot. Preserve the full request through the existing login redirect owner. Tests: `example-recreation`, `workspace-example-recreation-dom`, `workspace-video-settings`, `workspace-shared-video-load-dom`.
+The comparison UI shows three distinct executable model proposals, each with its own duration, resolution, aspect and audio. `server/example-comparison-quotes.ts` ranks configurations by duration distance first, then aspect, resolution and audio; exact configurations win. Explicitly highlight every adapted setting. Unknown source settings stay unknown; label those quotes as proposed configurations. Validate each proposal with the workspace handoff owner before quoting it once through the canonical public price owner. Retain historical billing separately without displaying it as the public price, and confirm the final quote in the app before generation. A genuine quote-service failure may leave fewer proposals; never fabricate prices to fill a slot. Preserve the full request through the existing login redirect owner. Tests: `example-recreation`, `workspace-example-recreation-dom`, `workspace-video-settings`, `workspace-shared-video-load-dom`.
 
 ## Existing ownership
 
@@ -194,7 +194,7 @@ The opening and continuation layouts use one server-rendered page of 24 videos. 
 
 `ExampleReaderContent` is the shared video, prompt, commercial actions and editorial view. `VideoWatchContent` renders it with an H1 on direct `/video/[id]` or canonical-slug requests and keeps metadata, JSON-LD, breadcrumbs and related links on the server. From the gallery, `ExampleReader.client` wraps the same content in an accessible dialog. `useGalleryReader` creates one browser-history entry at the actual watch URL and replaces it for next/previous navigation. Closing or Back returns to the original gallery URL, filter, page and scroll; refreshing the video URL loads the standalone page. Modified clicks remain ordinary watch links. No second video identity or separate popup content is authored.
 
-`example-watch-detail-loader` rechecks public eligibility and reads the selected editorial entry only. Curation and direct SEO watch readers share `PUBLIC_VIDEO_SOURCE_ELIGIBILITY` from `videos-query.ts`, excluding incomplete jobs and deleted output/asset sources before hydration. Gallery discovery keeps its explicit indexable flag, while direct SEO readers retain the existing legacy null-indexability policy. Both modes use the watch signals owner for title, introductory copy, approved references and contextual details. `ExampleReaderContext` preserves secondary editorial information in a native disclosure. Original download, schema and recreation URLs stay intact. Prices remain absent from gallery cards; historical cost and supported prompt-only comparison estimates with explicit per-proposal settings are distinct in the reader.
+`example-watch-detail-loader` rechecks public eligibility and reads the selected editorial entry only. Curation and direct SEO watch readers share `PUBLIC_VIDEO_SOURCE_ELIGIBILITY` from `videos-query.ts`, excluding incomplete jobs and deleted output/asset sources before hydration. Gallery discovery keeps its explicit indexable flag, while direct SEO readers retain the existing legacy null-indexability policy. Both modes use the watch signals owner for title, introductory copy, approved references and contextual details. `ExampleReaderContext` preserves secondary editorial information in a native disclosure. Original download, schema and recreation URLs stay intact. Gallery cards show qualified current price labels when available. The reader shows current prompt-only estimates with their explicit priced settings and no-reference basis; adapted or suggested settings are identified beside the headline and each proposal. Missing current estimates never fall back to stored charges.
 
 `example-watch-detail-loader` loads the read-only configured video catalog used by the
 app once per response. Both the proposal selector and the workspace handoff validator
@@ -455,13 +455,16 @@ That path reuses the validated editorial/source-image projection from
 `getVideoWatchPageDataById`, without reading editorial entries or resolving source
 images again. API opens still perform their fresh lookup and source-image checks.
 
-The recorded example cost is historical. Comparison estimates use one visible
-text-to-video scenario with no references. Measured resolution/aspect take precedence;
-unknown settings produce no invented quotes. Candidates must pass the same workspace
-form coercion used by the explicit recreation handoff, without changing duration,
-resolution, aspect or audio. `computeCanonicalPublicSnapshot` owns prices and shares
-one DB policy read across the response. Show the current model when compatible and
-up to three compatible alternatives closest in price, without claiming equal quality.
+Stored example charges remain historical and immutable; public readers do not show
+them as current prices. Comparison estimates use explicit executable text-to-video
+proposals with no references. Measured source settings guide the proposal ranking;
+unknown settings remain unknown and each proposed configuration is labelled. The
+headline identifies the original model's priced settings and any adaptation, rather
+than claiming to price the historical render. `computeCurrentPublicSnapshot` owns
+current prices and shares one DB policy read across the response; an unavailable
+policy yields no price, never a legacy or historical fallback. Up to three model
+proposals are selected by duration, format, resolution, audio and distinct price,
+without claiming equal quality.
 `buildExampleRecreationHref` passes the full scalar scenario through login; generation
 always requotes. Ordinary `/app?from=…` continues the original reuse flow.
 That flow waits for the selected example to commit before exposing the composer or

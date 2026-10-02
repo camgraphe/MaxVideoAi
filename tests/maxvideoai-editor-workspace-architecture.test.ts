@@ -924,6 +924,9 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(exportStateHookSource, /export function useWorkspaceExportState/, 'workspace export state hook should expose a focused orchestration boundary');
   assert.match(shellActionsHookSource, /handleNavigateFromStudio\('\/app\/studio\/projects'\)/, 'workspace exit should navigate to the Studio projects page through the saved navigation boundary');
   assert.match(workspaceEditorLayoutSource, /onAppNavigate=\{shell\.handleNavigateFromStudio\}/, 'main app menu navigation should pass through the saved Studio navigation boundary');
+  assert.match(workspaceEditorLayoutSource, /<WorkspaceProjectMediaPanel\s+onAppNavigate=\{shell\.handleNavigateFromStudio\}/, 'Draft media navigation must use the same save/ACK owner');
+  assert.match(workspaceProjectMediaPanelSource, /onAppNavigate=\{onAppNavigate\}/, 'project media panel must pass the saved navigation boundary to its sidebar');
+  assert.match(source(timelineProjectSidebarPath), /<SeedanceDraftFinalAction[^>]*onNavigate=\{onAppNavigate\}/, 'Draft/final links must not bypass Studio saving');
   assert.match(shellActionsHookSource, /saveStudioWorkspaceToApi/, 'workspace shell action hook should save project plus sequences before returning to projects');
   assert.match(workspaceEditorLayoutSource, /focusMode === 'viewer'[\s\S]*WorkspaceProjectMediaPanel/, 'Viewer mode should own the project media panel');
   assert.match(workspaceEditorLayoutSource, /canvasEditorBody/, 'Canvas mode should use a widened body grid with no left template sidebar');

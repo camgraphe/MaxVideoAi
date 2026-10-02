@@ -9,6 +9,7 @@ import {
 } from '@maxvideoai/pricing';
 import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
 import type { BillingProductRecord, BillingProductUnitKind, JobSurface } from '@/types/billing';
+import { resolveDynamicToolPriceMultiplier } from '@/lib/tools-dynamic-pricing';
 
 const CACHE_TTL_MS = 60_000;
 
@@ -88,6 +89,7 @@ export type BillingProductMutationInput = {
   currency: string;
   unitPriceCents: number;
   active: boolean;
+  metadata?: Record<string, unknown> | null;
 };
 
 function mapBillingProductRow(row: RawBillingProductRow): BillingProductRecord {
@@ -117,7 +119,7 @@ export async function loadBillingProductsWithExecutor(
 
 export async function listBillingProducts(): Promise<BillingProductRecord[]> {
   if (!isDatabaseConfigured()) return [];
-  await ensureBillingSchema();
+  // Reads require a migrated schema; initialization remains with explicit mutation/bootstrap owners.
   if (cachedProducts && Date.now() - cacheLoadedAt < CACHE_TTL_MS) {
     return cachedProducts;
   }
@@ -185,10 +187,12 @@ export async function updateBillingProductWithExecutor(
             currency = $3,
             unit_price_cents = $4,
             active = $5,
+            ${input.metadata === undefined ? '' : 'metadata = $6::jsonb,'}
             updated_at = NOW()
       WHERE product_key = $1
       RETURNING product_key, surface, label, currency, unit_kind, unit_price_cents, active, metadata`,
-    [input.productKey, input.label, input.currency, input.unitPriceCents, input.active]
+    [input.productKey, input.label, input.currency, input.unitPriceCents, input.active,
+      ...(input.metadata === undefined ? [] : [JSON.stringify(input.metadata)])]
   );
 
   const row = rows[0];
@@ -212,6 +216,7 @@ export async function computeBillingProductSnapshot(params: {
   const quantity = product.unitKind === 'run' ? 1 : Math.max(1, Math.round(params.quantity ?? 1));
   const baseAmountCents = product.unitPriceCents * quantity;
   const engineId = params.engineId ?? product.productKey;
+  const dynamicPriceMultiplier = resolveDynamicToolPriceMultiplier(product.productKey, product.metadata);
   return buildCanonicalFixedProductSnapshot({
     engineId,
     currency: product.currency,
@@ -229,6 +234,7 @@ export async function computeBillingProductSnapshot(params: {
       unitKind: product.unitKind,
       quantity,
       engineId: params.engineId ?? null,
+      ...(dynamicPriceMultiplier == null ? {} : { dynamicPriceMultiplier }),
     },
   });
 }

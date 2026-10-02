@@ -49,13 +49,15 @@ test('Alibaba submission and polling reuse shared attempts and durable media own
   assert.match(poll, /provider-output-policy/);
   assert.match(poll, /ensureFastStartVideo/);
   assert.match(poll, /upsertLegacyJobOutputs/);
+  assert.match(poll, /server\/alibaba-job-accounting/);
+  assert.doesNotMatch(poll, /actualUnits - job.duration_sec/);
   assert.match(source(providerAttemptsPath), /sanitizeSnapshotValue/);
 });
 
 test('client components never import Alibaba provider server modules', () => {
   const clientImports = frontendTypescriptFiles()
     .filter((path) => path.endsWith('.client.tsx') || /^['"]use client['"];?/u.test(source(path).trimStart()))
-    .filter((path) => /server\/video-providers\/alibaba-model-studio|server\/alibaba-model-studio-poll/u.test(source(path)))
+    .filter((path) => /server\/video-providers\/alibaba-model-studio|server\/alibaba-model-studio-poll|server\/alibaba-job-accounting/u.test(source(path)))
     .map((path) => relative(root, path));
   assert.deepEqual(clientImports, []);
 });

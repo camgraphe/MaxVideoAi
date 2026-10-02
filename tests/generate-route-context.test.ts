@@ -188,6 +188,64 @@ test('Seedance 2.5 hard-disable and routing gates run before database and billin
   }
 });
 
+test('archived Seedance 1.5 rejects new requests before billing regardless of direct routing flags', { concurrency: false }, async () => {
+  const original = {
+    enabled: ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED,
+    provider: ENV.SEEDANCE_1_5_PROVIDER,
+    modelId: ENV.BYTEPLUS_ARK_SEEDANCE_1_5_MODEL_ID,
+    arkEnabled: ENV.BYTEPLUS_ARK_ENABLED,
+    arkApiKey: ENV.BYTEPLUS_ARK_API_KEY,
+    adminOnly: ENV.SEEDANCE_1_5_BYTEPLUS_ADMIN_ONLY,
+  };
+  try {
+    ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED = 'false';
+    ENV.SEEDANCE_1_5_PROVIDER = 'fal';
+    const result = await resolveGenerateRouteContext({
+      body: { engineId: 'seedance-1-5-pro', mode: 't2v' },
+      req: new NextRequest('http://localhost/api/generate', { method: 'POST' }),
+      boundaryOverrides: {
+        ensureBillingSchema: async () => { throw new Error('Billing must not be reached'); },
+      },
+    });
+    assert.deepEqual(result, {
+      ok: false,
+      status: 410,
+      body: { ok: false, error: 'ENGINE_RETIRED' },
+    });
+    const engine = getFalEngineById('seedance-1-5-pro')?.engine;
+    assert.ok(engine);
+    const trusted = resolveTrustedPaidGenerateRouteContext({
+      body: {}, engine, jobId: 'job_15', mode: 't2v',
+    });
+    assert.equal(trusted.ok, false);
+    if (!trusted.ok) assert.equal(trusted.body.error, 'ENGINE_RETIRED');
+
+    ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED = 'true';
+    const disabledOverride = resolveTrustedPaidGenerateRouteContext({
+      body: {}, engine, jobId: 'job_15_fal_override', mode: 't2v',
+    });
+    assert.equal(disabledOverride.ok, false);
+
+    ENV.SEEDANCE_1_5_PROVIDER = 'byteplus_modelark';
+    ENV.BYTEPLUS_ARK_SEEDANCE_1_5_MODEL_ID = 'seedance-1-5-pro-251215';
+    ENV.BYTEPLUS_ARK_ENABLED = 'true';
+    ENV.BYTEPLUS_ARK_API_KEY = 'ark-test-key';
+    ENV.SEEDANCE_1_5_BYTEPLUS_ADMIN_ONLY = 'false';
+    const direct = resolveTrustedPaidGenerateRouteContext({
+      body: {}, engine, jobId: 'job_15_direct', mode: 't2v',
+    });
+    assert.equal(direct.ok, false);
+    if (!direct.ok) assert.equal(direct.body.error, 'ENGINE_RETIRED');
+  } finally {
+    ENV.SEEDANCE_1_5_BYTEPLUS_ENABLED = original.enabled;
+    ENV.SEEDANCE_1_5_PROVIDER = original.provider;
+    ENV.BYTEPLUS_ARK_SEEDANCE_1_5_MODEL_ID = original.modelId;
+    ENV.BYTEPLUS_ARK_ENABLED = original.arkEnabled;
+    ENV.BYTEPLUS_ARK_API_KEY = original.arkApiKey;
+    ENV.SEEDANCE_1_5_BYTEPLUS_ADMIN_ONLY = original.adminOnly;
+  }
+});
+
 test('Seedance 2.5 accepts proven ModelArk modes with the Ark key but rejects V2V before LAS execution is ready', { concurrency: false }, () => {
   const extendedEnv = ENV as typeof ENV & { SEEDANCE_2_5_LAS_ENABLED?: string };
   const entry = getFalEngineById('seedance-2-5');

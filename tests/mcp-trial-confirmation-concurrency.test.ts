@@ -111,7 +111,7 @@ function pricingSnapshot() {
       kind: 'included_trial',
       customerChargeCents: 0,
       normalPriceCents: 125,
-      providerCostCents: 17,
+      providerCostCents: 18,
     },
   };
 }
@@ -230,6 +230,7 @@ test('same trial quote and two trial quotes for one user race safely in disposab
   });
   await createPaidGenerationTestSchema(postgres.pool);
   await postgres.pool.query(readFileSync('neon/migrations/31_mcp_trial_entitlements.sql', 'utf8'));
+  await postgres.pool.query(readFileSync('neon/migrations/60_mcp_trial_provider_rasters.sql', 'utf8'));
 
   const sameUser = 'same-trial-user';
   const sameClient = 'same-trial-client';
@@ -356,6 +357,7 @@ test('durable trial outcomes close unknown release races in disposable PostgreSQ
   });
   await createPaidGenerationTestSchema(postgres.pool);
   await postgres.pool.query(readFileSync('neon/migrations/31_mcp_trial_entitlements.sql', 'utf8'));
+  await postgres.pool.query(readFileSync('neon/migrations/60_mcp_trial_provider_rasters.sql', 'utf8'));
 
   const unknownUser = 'outcome-unknown-user';
   const unknownQuote = '30000000-0000-4000-8000-000000000001';
@@ -480,6 +482,7 @@ test('manual trial release and both audits commit or roll back atomically in dis
   });
   await createPaidGenerationTestSchema(postgres.pool);
   await postgres.pool.query(readFileSync('neon/migrations/31_mcp_trial_entitlements.sql', 'utf8'));
+  await postgres.pool.query(readFileSync('neon/migrations/60_mcp_trial_provider_rasters.sql', 'utf8'));
   await postgres.pool.query(`
     CREATE TABLE admin_audit (
       id bigserial PRIMARY KEY,

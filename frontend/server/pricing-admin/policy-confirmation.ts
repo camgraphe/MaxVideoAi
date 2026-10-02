@@ -62,8 +62,10 @@ export async function confirmPricingPolicyChange(
   };
   try {
     result = await dependencies.withTransaction(async (executor) => {
+      const manualTariffsActive = await dependencies.loadManualTariffsActive?.(executor);
       const transactionDependencies: PricingPolicyServiceDependencies = {
         ...dependencies,
+        loadManualTariffsActive: dependencies.loadManualTariffsActive ? async () => manualTariffsActive! : undefined,
         loadOverrides: () => dependencies.loadOverrides(executor),
         getEvent: (id, domain) =>
           dependencies.getEvent(id, domain, executor),

@@ -1,0 +1,63 @@
+# Unified Model Tariffs and Current Example Prices
+
+## Decision and scope
+
+The admin pricing cockpit becomes the place to inspect and change the customer price of every model that a customer can generate with today. The authored model registry decides membership: `publication.app.published` identifies sellable models; `publication.pricing.published` independently decides whether a model appears in public pricing discovery. On 2026-09-29 this means 48 sellable models in 15 families: 38 `current` and 10 executable `legacy`. Two legacy Luma Ray 2 variants are sellable but deliberately absent from the public Pricing page. The inventory must be derived from the registry, not a frozen list of 48 IDs. Retired or app-unpublished models retain historical records and public archive behavior but have no new customer tariff.
+
+Each model's initial explicit customer tariff must reproduce its **effective customer quote**, including today's commercial margin, fees, rounding, compatibility profile and database overrides, to the cent for every supported price-changing option. The migration itself changes no customer amount. After cutover, a model quote comes from its own explicit tariff; the generic 30% margin rule no longer sets any new model price. Price decisions made later in the admin are independent changes with visible before/after amounts.
+
+The same customer quote must supply web generation and preflight, billing, public Pricing and model pages, estimators and price chips, Product/Offer JSON-LD, MCP, Studio, and public examples. Stored receipts, refunds, job pricing snapshots and amounts actually paid remain historical evidence. This design does not publish Draft, reactivate Seedance 1.5, alter provider routing, or republish a legacy model in marketing.
+
+## Architecture choice
+
+Use the existing `@maxvideoai/pricing` manual-tariff primitive as the canonical calculation path. A tariff cell selects a model and every dimension that can change its retail price, such as mode, resolution, duration or billable units, audio, paid references, input-video class, image size/count and Draft/final step when supported. Its price is an authored unit rate with explicit rounding, or a fixed exception for a truly fixed scenario. A flat amount per model would misprice different settings; keeping a renamed percentage rule would not deliver independent prices. Supplier costs remain separate facts with their own source and confidence.
+
+Versioned tariff cells form a reviewed fallback baseline; database cells override exact selectors within nonoverlapping effective periods. The server owns effective tariff resolution and a monotonic pricing revision. The admin cannot create overlapping active cells. Once a model is activated for manual tariffs, missing, ambiguous, expired or invalid cells make that scenario unavailable before payment; they never fall back to 30%. A database outage must not silently make an edited tariff revert to a stale versioned amount in billing or public prices. The read path either resolves a known effective revision or reports the quote unavailable. The existing first-party policy-revision guard and MCP price-change reconfirmation must bind the resolved tariff revision.
+
+The manual tariff quote's customer total is independent of provider cost. Existing provider budget/estimate fields must be identified by their actual provenance; in particular Seedance 2.x's padded historical retail basis cannot appear as a supplier cost. The existing primitive currently checks `customerTotalCents` against `vendorSubtotalCents`, so implementation must review and adjust this settlement assumption before activation where the cost is estimated, unknown or higher than a planned retail price. An unknown actual supplier cost must never be represented as zero or as a verified margin. The admin may show an indicative difference against a dated list estimate and a realized difference only against confirmed effective or observed cost. A deliberately below-cost sale requires a separate, explicit commercial decision and settlement policy.
+
+## Baseline and cutover
+
+Before generating tariff cells, read the **effective** production pricing overrides through authorized read-only access and identify the deployment/database environment. The existing immutable billing baseline, public projection baseline and local configured-database ByteDance report are regression inputs, not proof of production price parity or exhaustive sellable coverage. Enumerate every sellable model's supported price-changing combinations from the registry, engine capabilities and provider adapters. Record exact current customer cents, policy provenance, currency, provider-cost provenance and quote shape for representative and boundary scenarios. Quantities that scale from a retail unit need boundary and rounding checks, not merely one sampled total.
+
+Generate proposed explicit cells from this effective customer baseline, not from a supplier cost times a new percentage. Audit the complete sellable scenario inventory for missing/ambiguous cells and cent-level differences in billing and public projections. The admin can show all models before cutover, but manual-tariff editing and activation are enabled only for a complete validated model or family. The release gate requires all 48 sellable models to have passed coverage and parity, and no new model quote to use the generic 30% rule. Non-model audio, storyboard and fixed-tool products keep their existing explicitly owned product policy until they receive a separately reviewed tariff migration; no hidden generic model fallback may be left behind.
+
+Historical charged quotes are never recalculated. A cutover records its tariff revision, effective instant, actor and parity report. Any intentional customer-price delta has a separate admin preview and event after the no-change baseline is active. Rollback creates a new effective version, not a rewrite of history.
+
+## Admin experience
+
+`/admin/pricing` lists the 15 families, their 48 sellable models and the price-changing scenarios. Family, media type, model, status and search controls work with a growing registry. Each row distinguishes:
+
+- **Supplier**: published list estimate, verified account-effective rate and observed invoice amount, each with source/date/status. Missing figures say unconfirmed; a historical padded basis is never shown as provider cost.
+- **Customer**: current total for the selected exact scenario, currency, tariff unit or fixed amount, effective source/revision and applicable options.
+- **Difference**: only a labeled indicative or realized gross difference when the corresponding supplier evidence exists.
+
+The primary action opens an editor for one exact tariff selector. It shows current value and proposed value, computed totals for every affected supported scenario, affected public/billing surfaces, rounding, supplier evidence status and coverage warnings. The existing authenticated server `preview → explicit confirmation → transactional apply` workflow, stale fingerprint protection, immutable history, rollback and cache invalidation are reused. The UI does not calculate prices or silently save on field changes. An edit to the customer tariff cannot mutate provider facts or routing. A missing or unavailable database leaves the admin in a clear read-only/error state rather than implying that the versioned price is the editable live price.
+
+## One customer price across consumers
+
+The server quote resolver combines current supplier facts, effective manual tariff and revision and returns a canonical quote/snapshot. Every chargeable path—web app, Studio, MCP and generation confirmation—calls that resolver before debit. Public server pages use the same resolver for exact supported scenarios. Public Pricing and model pages may keep their existing publication choices, but their amounts, visible scenario names and JSON-LD Offers must come from the same effective revision. Authored `pricingHint`, fallback copy and historical example amounts cannot override a successful current quote.
+
+Interactive browser estimators and chips receive server-resolved quote data or call a read-only, validated quote endpoint. They may format the returned amount; they may not select a different tariff or rerun a separate commercial formula. Responses expose enough scenario/revision metadata to avoid mixing old and new prices. Admin confirmation invalidates or revalidates affected Pricing, model, homepage, examples and watch-page caches; bounded cache lifetimes remain a backstop. A stale displayed price is re-quoted before charge and produces the existing refresh/reconfirmation flow.
+
+## Public examples and old renders
+
+A public example has two distinct prices. `final_price_cents` and its stored pricing snapshot are the historical amount paid and remain available to internal billing/history and refunds. Discovery surfaces show a **current** customer quote for the example's model:
+
+1. Resolve the original model identity without silently substituting a successor. If it is currently sellable, inspect the saved mode, duration, resolution, audio, aspect ratio and paid input/reference settings. When all tariff-relevant inputs are trustworthy, obtain an exact current quote from the server resolver and label it as the price at today's rates for those settings.
+2. When inputs needed for an exact quote are absent or private reference media is not reproducible, show a clearly named current reference scenario for that same model, including duration/resolution/mode and “from” or equivalent wording. Never call it the cost of that particular video.
+3. If that model is unavailable or no valid current quote exists, show no numeric current price and link to its model/archive or available alternatives. Do not display its old paid amount as a fallback and do not quietly price its successor.
+
+Apply this projection to homepage example cards and programmed hero, `/api/examples`, model-page galleries, pay-as-you-go showcase and public watch pages. Update visible and SEO copy in EN/FR/ES so it says “current price” or “current reference price,” while retaining accurate prompts, metadata, canonical URLs, hreflang, media and localized paths. The public watch page may still state the date of the render, but its price chip and cost detail must not expose the historical amount as if it were available today. Shared server projection and request-level batching/cache by model + exact scenario + tariff revision avoid a database query for every card in a large gallery.
+
+## Validation and release criteria
+
+- Inventory reconciles with every registry app-published model, including the 10 executable legacy entries and the two Luma variants absent from public Pricing. Registry changes automatically add/remove required coverage without hand editing generated projections.
+- Every currently supported option either resolves one active tariff cell or is explicitly unavailable before debit. Billing, public, Studio and MCP totals match to the cent for the same scenario/revision. No generic 30% fallback serves a model after cutover.
+- A price edit in admin changes the next exact quote and every relevant public projection after invalidation, triggers stale-quote handling in an already open generation flow, and can be rolled back with history intact.
+- Old example jobs retain their paid amount internally. Public examples show an exact current price only with complete settings, an identified current reference price otherwise, or no numeric price for an unavailable model. A historical Kling example cannot keep displaying its old higher charge as today's price.
+- Verify focused architecture and pricing contracts, provider/billing boundaries, public baselines, model registry, lint, TypeScript and a production build. Smoke-test admin edit/preview/confirm/rollback and representative homepage, examples, watch, Pricing, model, Studio and MCP quotes in EN/FR/ES. Check canonical, hreflang, JSON-LD and cache behavior on public routes.
+
+## Existing ownership and related work
+
+The initial ByteDance-oriented investigation and provider facts remain in `docs/superpowers/specs/2026-09-28-bytedance-direct-pricing-and-marketing-design.md` and `docs/superpowers/plans/2026-09-28-family-manual-pricing-grid.md`. This specification supersedes their ByteDance-first **customer tariff scope** for the all-model release, while preserving their separate BytePlus cost-verification and Seedance Draft/direct-routing gates. Implementation must update `docs/engineering/pricing-engine.md` and relevant architecture contracts to reflect the final owner map.

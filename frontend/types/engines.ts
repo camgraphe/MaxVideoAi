@@ -280,6 +280,7 @@ export interface EnginesResponse {
 }
 
 export interface PreflightRequest {
+  seedanceWorkflow?: { step: 'draft' } | { step: 'final'; draftJobId: string };
   engine: string;
   mode: Mode;
   durationSec: number;

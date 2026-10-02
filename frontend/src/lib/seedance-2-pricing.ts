@@ -9,9 +9,10 @@ export type Seedance2TokenQuote = {
   height: number;
   frameRate: number;
   tokenCount: number;
-  unitPriceUsdPer1kTokens: number;
-  vendorCostUsd: number;
-  vendorCostPerSecondUsd: number;
+  /** Historical customer-pricing basis, padded above the actual supplier list rate. */
+  legacyRetailUnitPriceUsdPer1kTokens: number;
+  legacyRetailBasisUsd: number;
+  legacyRetailBasisPerSecondUsd: number;
   billingInputType?: Seedance2BillingInputType;
   pricingSource?: string;
 };
@@ -108,6 +109,19 @@ export function resolveSeedance2UnitPriceUsdPer1kTokens(params: {
   return params.tokenPricing.unitPriceUsdPer1kTokens;
 }
 
+/** Canonical retail aspect for a reviewed automatic dimensions alias; the factual quote stays unchanged. */
+export function resolveSeedance2TariffAspectRatio(
+  details: EnginePricingDetails & { tokenPricing: NonNullable<EnginePricingDetails['tokenPricing']> },
+  resolution: string,
+  aspectRatio?: string | null,
+): string {
+  const resolved = resolveSeedance2Dimensions(details, resolution, aspectRatio);
+  const defaultAspect = details.tokenPricing.defaultAspectRatio ?? DEFAULT_ASPECT_RATIO;
+  const defaultDimensions = details.tokenPricing.dimensions[resolved.resolution]?.[defaultAspect];
+  return resolved.aspectRatio === 'auto' && defaultDimensions?.width === resolved.width && defaultDimensions.height === resolved.height
+    ? defaultAspect : resolved.aspectRatio;
+}
+
 export function computeSeedance2TokenQuote(params: {
   details: EnginePricingDetails & { tokenPricing: NonNullable<EnginePricingDetails['tokenPricing']> };
   durationSec: number;
@@ -123,13 +137,13 @@ export function computeSeedance2TokenQuote(params: {
   );
   const frameRate = params.details.tokenPricing.framesPerSecond;
   const tokenCount = (width * height * durationSec * frameRate) / 1024;
-  const unitPriceUsdPer1kTokens = resolveSeedance2UnitPriceUsdPer1kTokens({
+  const legacyRetailUnitPriceUsdPer1kTokens = resolveSeedance2UnitPriceUsdPer1kTokens({
     tokenPricing: params.details.tokenPricing,
     resolution,
     billingInputType: params.billingInputType,
   });
-  const vendorCostUsd = (tokenCount * unitPriceUsdPer1kTokens) / 1000;
-  const vendorCostPerSecondUsd = durationSec > 0 ? vendorCostUsd / durationSec : vendorCostUsd;
+  const legacyRetailBasisUsd = (tokenCount * legacyRetailUnitPriceUsdPer1kTokens) / 1000;
+  const legacyRetailBasisPerSecondUsd = durationSec > 0 ? legacyRetailBasisUsd / durationSec : legacyRetailBasisUsd;
 
   return {
     aspectRatio,
@@ -137,9 +151,9 @@ export function computeSeedance2TokenQuote(params: {
     height,
     frameRate,
     tokenCount,
-    unitPriceUsdPer1kTokens,
-    vendorCostUsd: Number((vendorCostUsd + EPSILON).toFixed(6)),
-    vendorCostPerSecondUsd: Number((vendorCostPerSecondUsd + EPSILON).toFixed(6)),
+    legacyRetailUnitPriceUsdPer1kTokens,
+    legacyRetailBasisUsd: Number((legacyRetailBasisUsd + EPSILON).toFixed(6)),
+    legacyRetailBasisPerSecondUsd: Number((legacyRetailBasisPerSecondUsd + EPSILON).toFixed(6)),
     billingInputType: params.billingInputType,
     pricingSource: params.details.tokenPricing.pricingSource,
   };

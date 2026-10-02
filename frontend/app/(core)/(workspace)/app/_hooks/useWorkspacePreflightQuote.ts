@@ -3,6 +3,7 @@ import { runPreflight } from '@/lib/api';
 import type { PreflightRequest, PreflightResponse } from '@/types/engines';
 import { DEBOUNCE_MS } from '../_lib/workspace-client-helpers';
 import { getSeedanceReferenceValidationMessage } from '@/lib/seedance-failure-messages';
+import { CUSTOMER_PRICING_REFRESH_EVENT } from '@/lib/customer-tariff-revision';
 
 export type WorkspacePreflightQuoteOptions = {
   request: PreflightRequest | null;
@@ -52,6 +53,10 @@ export function useWorkspacePreflightQuote(options: WorkspacePreflightQuoteOptio
     scopeRef.current = null;
     setScope({ ...scope });
   }, [scope]);
+  useEffect(() => {
+    window.addEventListener(CUSTOMER_PRICING_REFRESH_EVENT, retry);
+    return () => window.removeEventListener(CUSTOMER_PRICING_REFRESH_EVENT, retry);
+  }, [retry]);
   const eligible = Boolean(key && authChecked);
   const current = eligible && matches && observation?.scope === scope ? observation : null;
 

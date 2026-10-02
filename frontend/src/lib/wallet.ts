@@ -1,3 +1,4 @@
+import { WALLET_FUNDED_RECEIPT_SQL } from '@/lib/wallet-funding';
 import { isDatabaseConfigured, query, type QueryExecutor, withDbTransaction } from '@/lib/db';
 import { receiptsPriceOnlyEnabled } from '@/lib/env';
 import { getUserPreferredCurrency, normalizeCurrencyCode } from '@/lib/currency';
@@ -104,7 +105,7 @@ export async function getWalletBalancesByCurrency(
             END
           )::bigint, 0::bigint) AS balance_cents
         FROM app_receipts
-        WHERE user_id = $1
+        WHERE user_id = $1 AND ${WALLET_FUNDED_RECEIPT_SQL}
         GROUP BY 1
       `,
       [userId]
@@ -211,7 +212,7 @@ async function reserveWalletChargeWithQueryExecutor(
     const accountLock = await executor.query<{ id: string }>(
       `SELECT id
          FROM app_receipts
-        WHERE user_id = $1
+        WHERE user_id = $1 AND ${WALLET_FUNDED_RECEIPT_SQL}
         ORDER BY id
         LIMIT 1
         FOR UPDATE`,
@@ -237,7 +238,7 @@ async function reserveWalletChargeWithQueryExecutor(
               ELSE UPPER(currency)
             END AS currency
           FROM app_receipts
-          WHERE user_id = $1
+          WHERE user_id = $1 AND ${WALLET_FUNDED_RECEIPT_SQL}
         ),
         balances AS (
           SELECT
@@ -418,7 +419,7 @@ export async function getWalletBalanceCents(userId: string): Promise<{ balanceCe
 
   try {
     const rows = await query<{ type: string; amount_cents: number }>(
-      `SELECT type, amount_cents FROM app_receipts WHERE user_id = $1`,
+      `SELECT type, amount_cents FROM app_receipts WHERE user_id = $1 AND ${WALLET_FUNDED_RECEIPT_SQL}`,
       [userId]
     );
 

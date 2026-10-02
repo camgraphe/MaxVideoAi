@@ -5,6 +5,8 @@ import type { ComponentProps, Dispatch, SetStateAction } from 'react';
 import dynamic from 'next/dynamic';
 import { WorkspaceOptionsButton } from '@/components/composer/WorkspaceOptionsButton.client';
 import { Composer, type ComposerPromotedAction, type MultiPromptScene } from '@/components/Composer';
+import type { SeedanceDraftControls } from '@/lib/seedance-workflow-contract';
+import { SeedanceDraftLocalPreviewMode } from './SeedanceDraftLocalPreviewMode.client';
 import { CoreIterationsControl, CoreSettingsBar } from '@/components/CoreSettingsBar';
 import { SettingsControls } from '@/components/SettingsControls';
 import type { KlingElementState, KlingElementsBuilderProps } from '@/components/KlingElementsBuilder';
@@ -69,6 +71,7 @@ type WorkflowCopy = {
 };
 
 type WorkspaceComposerSurfaceProps = {
+  localDraftPreview?: SeedanceDraftControls;
   selectedEngine: EngineCaps;
   form: FormState;
   setForm: Dispatch<SetStateAction<FormState | null>>;
@@ -195,6 +198,7 @@ function isTruthyExtraInputValue(value: unknown): boolean {
 }
 
 export function WorkspaceComposerSurface({
+  localDraftPreview,
   selectedEngine,
   form,
   setForm,
@@ -306,6 +310,10 @@ export function WorkspaceComposerSurface({
     klingO3VideoToVideoSupported, klingO3AssetState.hasAnyVideoInput, guestUploadLockedReason,
     workflowCopy, showOmniStudioPanel, showLumaRay32KeyframeEditor, uiLocale, form.extraInputValues.previous_interaction_id]);
 
+  const settingsCaps = localDraftPreview?.selected
+    ? { ...capability, modes: capability?.modes ?? [submissionMode], resolution: ['480p'], resolutionLocked: true }
+    : capability;
+  const draftSettingsLocked = Boolean(localDraftPreview?.selected && localDraftPreview.phase !== 'setup');
   const omniExtraFields = useMemo(
     () => [...inputSchemaSummary.promotedFields, ...inputSchemaSummary.secondaryFields],
     [inputSchemaSummary.promotedFields, inputSchemaSummary.secondaryFields]
@@ -477,6 +485,7 @@ export function WorkspaceComposerSurface({
         messages={preflight?.ok ? preflight.messages : undefined}
         textareaRef={composerRef}
         onGenerate={startRender}
+        generateLabel={localDraftPreview ? localDraftPreview.selected ? draftSettingsLocked ? 'Draft généré' : 'Draft 480p' : 'Générer la vidéo' : undefined}
         preflight={preflight}
         promptField={inputSchemaSummary.promptField}
         promptRequired={inputSchemaSummary.promptRequired}
@@ -510,7 +519,7 @@ export function WorkspaceComposerSurface({
               }
             : null
         }
-        disableGenerate={multiPromptInvalid || audioWorkflowUnsupported || Boolean(klingO3UnsupportedVideoReason)}
+        disableGenerate={draftSettingsLocked || multiPromptInvalid || audioWorkflowUnsupported || Boolean(klingO3UnsupportedVideoReason)}
         extraFields={showExtraFields ? (
           <>
             {showLumaRay32KeyframeEditor ? (
@@ -567,96 +576,118 @@ export function WorkspaceComposerSurface({
                 videoReferenceDisabledReason={klingO3VideoReferenceDisabledReason}
               />
             ) : null}
-            <SettingsControls
-              advancedOpen={showOptionsControl && optionsOpen}
-              engine={selectedEngine}
-              caps={capability}
-              durationSec={durationSec}
-              durationOption={form.durationOption ?? null}
-              onDurationChange={handleDurationChange}
-              numFrames={form.numFrames ?? undefined}
-              onNumFramesChange={handleFramesChange}
-              resolution={form.resolution}
-              onResolutionChange={handleResolutionChange}
-              aspectRatio={form.aspectRatio}
-              onAspectRatioChange={handleAspectRatioChange}
-              fps={form.fps}
-              onFpsChange={handleFpsChange}
-              mode={submissionMode}
-              showAudioControl={supportsAudioToggle}
-              audioEnabled={form.audio}
-              audioControlDisabled={voiceControlEnabled}
-              audioControlNote={audioControlNote}
-              onAudioChange={handleAudioChange}
-              showLoopControl={showLoopControl}
-              loopEnabled={showLoopControl ? Boolean(form.loop) : undefined}
-              onLoopChange={handleLoopChange}
-              showExtendControl={false}
-              seedLocked={form.seedLocked}
-              onSeedLockedChange={handleSeedLockedChange}
-              cfgScale={cfgScale}
-              onCfgScaleChange={setCfgScale}
-              durationManaged={multiPromptActive}
-              durationManagedLabel={durationManagedLabel}
-              showKlingV3Controls={supportsKlingV3Controls}
-              showKlingV3VoiceControls={supportsKlingV3VoiceControl}
-              klingShotType={shotType}
-              onKlingShotTypeChange={setShotType}
-              voiceIdsValue={voiceIdsInput}
-              onVoiceIdsChange={setVoiceIdsInput}
-              voiceControlActive={voiceControlEnabled}
-              showSeedanceControls={isSeedance}
-              seedValue={seedValue}
-              onSeedChange={handleSeedChange}
-              cameraFixed={cameraFixedValue}
-              onCameraFixedChange={handleCameraFixedChange}
-              safetyChecker={safetyCheckerValue}
-              onSafetyCheckerChange={handleSafetyCheckerChange}
-              showSafetyCheckerControl={showSafetyCheckerControl}
-              advancedFields={advancedFields}
-              advancedFieldValues={form.extraInputValues}
-              onAdvancedFieldChange={handleExtraInputValueChange}
-              variant="advanced"
-            />
+            <fieldset disabled={draftSettingsLocked} className="min-w-0">
+              <SettingsControls
+                advancedOpen={showOptionsControl && optionsOpen}
+                engine={selectedEngine}
+                caps={settingsCaps}
+                durationSec={durationSec}
+                durationOption={form.durationOption ?? null}
+                onDurationChange={handleDurationChange}
+                numFrames={form.numFrames ?? undefined}
+                onNumFramesChange={handleFramesChange}
+                resolution={form.resolution}
+                onResolutionChange={handleResolutionChange}
+                aspectRatio={form.aspectRatio}
+                onAspectRatioChange={handleAspectRatioChange}
+                fps={form.fps}
+                onFpsChange={handleFpsChange}
+                mode={submissionMode}
+                showAudioControl={supportsAudioToggle}
+                audioEnabled={form.audio}
+                audioControlDisabled={voiceControlEnabled}
+                audioControlNote={audioControlNote}
+                onAudioChange={handleAudioChange}
+                showLoopControl={showLoopControl}
+                loopEnabled={showLoopControl ? Boolean(form.loop) : undefined}
+                onLoopChange={handleLoopChange}
+                showExtendControl={false}
+                seedLocked={form.seedLocked}
+                onSeedLockedChange={handleSeedLockedChange}
+                cfgScale={cfgScale}
+                onCfgScaleChange={setCfgScale}
+                durationManaged={multiPromptActive}
+                durationManagedLabel={durationManagedLabel}
+                showKlingV3Controls={supportsKlingV3Controls}
+                showKlingV3VoiceControls={supportsKlingV3VoiceControl}
+                klingShotType={shotType}
+                onKlingShotTypeChange={setShotType}
+                voiceIdsValue={voiceIdsInput}
+                onVoiceIdsChange={setVoiceIdsInput}
+                voiceControlActive={voiceControlEnabled}
+                showSeedanceControls={isSeedance}
+                seedValue={seedValue}
+                onSeedChange={handleSeedChange}
+                cameraFixed={cameraFixedValue}
+                onCameraFixedChange={handleCameraFixedChange}
+                safetyChecker={safetyCheckerValue}
+                onSafetyCheckerChange={handleSafetyCheckerChange}
+                showSafetyCheckerControl={showSafetyCheckerControl}
+                advancedFields={advancedFields}
+                advancedFieldValues={form.extraInputValues}
+                onAdvancedFieldChange={handleExtraInputValueChange}
+                variant="advanced"
+              />
+            </fieldset>
           </>
         ) : undefined}
         optionsControl={showOptionsControl ? <WorkspaceOptionsButton open={optionsOpen} onToggle={() => setOptionsOpen((value) => !value)} /> : undefined}
+        settingsNotice={localDraftPreview ? (
+          <div className="mt-2 border-t border-hairline pt-2">
+            <SeedanceDraftLocalPreviewMode preview={localDraftPreview} />
+            <p className="mt-1.5 text-xs leading-relaxed text-text-secondary">
+              {localDraftPreview.selected
+                ? draftSettingsLocked
+                  ? 'Durée, format et audio conservés pour le final 1080p. « Nouveau Draft » permet de changer ces réglages.'
+                  : 'Draft : première version en 480p. Si elle vous convient, finalisez-la en 1080p avec un supplément. Deux générations distinctes.'
+                : 'Activez Draft pour préparer une version 480p à finaliser ensuite en 1080p. Une vidéo 480p classique ne permet pas cette finalisation.'}
+            </p>
+            <p className="mt-1 text-[10px] text-text-muted">{localDraftPreview.live ? 'Parcours local · tarifs Draft et final séparés dans l’admin.' : 'Prototype local · aucune génération ni facturation · prix classiques de référence, tarifs Draft et final à valider.'}</p>
+          </div>
+        ) : undefined}
         settingsBar={
-          <CoreSettingsBar
-            density="workspace"
-            engine={selectedEngine}
-            mode={submissionMode}
-            caps={capability}
-            durationSec={durationSec}
-            durationOption={form.durationOption ?? null}
-            onDurationChange={handleDurationChange}
-            numFrames={form.numFrames ?? undefined}
-            onNumFramesChange={handleFramesChange}
-            resolution={form.resolution}
-            onResolutionChange={handleResolutionChange}
-            aspectRatio={form.aspectRatio}
-            onAspectRatioChange={handleAspectRatioChange}
-            fps={form.fps}
-            onFpsChange={handleFpsChange}
-            showAudioControl={supportsAudioToggle}
-            audioEnabled={form.audio}
-            audioControlDisabled={voiceControlEnabled}
-            audioControlNote={audioControlNote}
-            onAudioChange={handleAudioChange}
-            showHdrControl={Boolean(hdrFieldEntry)}
-            hdrEnabled={hdrEnabled}
-            onHdrChange={handleHdrChange}
-            durationManaged={multiPromptActive}
-            durationManagedLabel={durationManagedLabel}
-          />
+          <>
+            <fieldset disabled={draftSettingsLocked} className="contents [&>div]:contents" title={draftSettingsLocked ? 'Réglages conservés pour le final 1080p' : undefined}>
+              <CoreSettingsBar
+                density="workspace"
+                engine={selectedEngine}
+                mode={submissionMode}
+                caps={settingsCaps}
+                durationSec={durationSec}
+                durationOption={form.durationOption ?? null}
+                onDurationChange={handleDurationChange}
+                numFrames={form.numFrames ?? undefined}
+                onNumFramesChange={handleFramesChange}
+                resolution={form.resolution}
+                resolutionDisplayLabel={localDraftPreview?.selected ? 'Draft 480p 🔒' : undefined}
+                onResolutionChange={handleResolutionChange}
+                aspectRatio={form.aspectRatio}
+                onAspectRatioChange={handleAspectRatioChange}
+                fps={form.fps}
+                onFpsChange={handleFpsChange}
+                showAudioControl={supportsAudioToggle}
+                audioEnabled={form.audio}
+                audioControlDisabled={voiceControlEnabled}
+                audioControlNote={audioControlNote}
+                onAudioChange={handleAudioChange}
+                showHdrControl={Boolean(hdrFieldEntry)}
+                hdrEnabled={hdrEnabled}
+                onHdrChange={handleHdrChange}
+                durationManaged={multiPromptActive}
+                durationManagedLabel={durationManagedLabel}
+              />
+            </fieldset>
+          </>
         }
         generateControl={
-          <CoreIterationsControl
-            density="workspace"
-            iterations={form.iterations}
-            onIterationsChange={handleIterationsChange}
-            action
-          />
+          <fieldset disabled={localDraftPreview?.selected} className="contents" title={localDraftPreview?.selected ? 'Un seul Draft à la fois' : undefined}>
+            <CoreIterationsControl
+              density="workspace"
+              iterations={form.iterations}
+              onIterationsChange={handleIterationsChange}
+              action
+            />
+          </fieldset>
         }
       />
       {storyboardModalOpen ? (

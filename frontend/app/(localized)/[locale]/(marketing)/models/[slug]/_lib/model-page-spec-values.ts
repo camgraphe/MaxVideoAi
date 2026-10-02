@@ -194,16 +194,10 @@ export function buildSpecValues(
   const engineCaps = entry.engine;
   const isImage = entry.type === 'image' || engineCaps.modes?.some((mode) => mode.endsWith('i'));
   return {
-    pricePerImage: resolveKeySpecValue(
-      specs,
-      'pricePerImage',
-      pricingOverrides?.pricePerImage ?? formatPricePerImage(engineCaps)
-    ),
-    pricePerSecond: resolveKeySpecValue(
-      specs,
-      'pricePerSecond',
-      pricingOverrides?.pricePerSecond ?? formatPricePerSecond(engineCaps)
-    ),
+    // Commercial values come only from the current server quote. Authored specs
+    // describe capabilities and cannot override or replace an unavailable price.
+    pricePerImage: pricingOverrides?.pricePerImage ?? 'Data pending',
+    pricePerSecond: pricingOverrides?.pricePerSecond ?? 'Data pending',
     releaseDate: resolveKeySpecValue(specs, 'releaseDate', 'Data pending'),
     textToImage: resolveKeySpecValue(specs, 'textToImage', resolveModeSupported(engineCaps, 't2i')),
     imageToImage: resolveKeySpecValue(specs, 'imageToImage', resolveModeSupported(engineCaps, 'i2i')),

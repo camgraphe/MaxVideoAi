@@ -10,6 +10,7 @@ import type { StudioCopy } from '../../_lib/studio-copy';
 import { TimelineProjectSidebar } from './TimelineProjectSidebar';
 
 type WorkspaceProjectMediaPanelProps = {
+  onAppNavigate: (href: string) => void;
   activeTemplateName: string;
   canvas: ReturnType<typeof useWorkspaceCanvasController>;
   projectAssets: WorkspaceAssetRecord[];
@@ -23,6 +24,7 @@ type WorkspaceProjectMediaPanelProps = {
 };
 
 export function WorkspaceProjectMediaPanel({
+  onAppNavigate,
   activeTemplateName,
   canvas,
   projectAssets,
@@ -36,6 +38,7 @@ export function WorkspaceProjectMediaPanel({
 }: WorkspaceProjectMediaPanelProps) {
   return (
     <TimelineProjectSidebar
+      onAppNavigate={onAppNavigate}
       canUndoProjectMedia={projectMedia.canUndoProjectMedia}
       studioCanvasNodeCopy={studioCopy.canvas.nodes}
       copy={studioCopy.viewer.projectMedia}

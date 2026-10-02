@@ -9,11 +9,12 @@ import { resolveGenerateRouteContext } from './_lib/route-context';
 import { normalizeProviderRoutedResolution } from './_lib/provider-resolution';
 import { videoGenerationAdapters } from './_lib/video-generation-adapters';
 import { executeVideoGeneration } from '@/server/video-generation/execute-video-generation';
+import { localSeedanceWorkflowEnabled, resolveSeedanceWorkflowRequest, SeedanceWorkflowRequestError } from '@/server/seedance-workflow-request';
 
 export async function POST(req: NextRequest) {
   const requestStartedAt = Date.now();
   const { state: metricState, log: logMetric } = createGenerateMetricLogger({ requestStartedAt });
-  const body = await req.json().catch((error) => {
+  let body = await req.json().catch((error) => {
     console.error('[api/generate] invalid JSON', error);
     return null;
   });
@@ -28,6 +29,21 @@ export async function POST(req: NextRequest) {
   metricState.engineLabel = engine.label;
   metricState.jobId = jobId;
   metricState.mode = mode;
+
+  const userGate = await resolveGenerateUserGate({ req, body });
+  if (userGate.kind === 'response') {
+    if (userGate.metric) logMetric('rejected', userGate.metric);
+    return NextResponse.json(userGate.body, { status: userGate.status });
+  }
+  let seedanceWorkflow;
+  try {
+    seedanceWorkflow = await resolveSeedanceWorkflowRequest({ body, userId: userGate.userId,
+      engineId: engine.id, enabled: localSeedanceWorkflowEnabled(req.url) });
+    if (seedanceWorkflow) body = seedanceWorkflow.body;
+  } catch (error) {
+    if (!(error instanceof SeedanceWorkflowRequestError)) throw error;
+    return NextResponse.json({ ok: false, error: error.code, message: error.message }, { status: error.status });
+  }
 
   const requestOptionsResult = buildGenerateRequestOptions({ body, engine, mode, isBytePlusV1a });
   if (!requestOptionsResult.ok) {
@@ -44,11 +60,6 @@ export async function POST(req: NextRequest) {
   const requestOptions = { ...requestOptionsResult.options, ...normalizedResolution };
   metricState.resolution = requestOptions.effectiveResolution;
 
-  const userGate = await resolveGenerateUserGate({ req, body });
-  if (userGate.kind === 'response') {
-    if (userGate.metric) logMetric('rejected', userGate.metric);
-    return NextResponse.json(userGate.body, { status: userGate.status });
-  }
   metricState.userId = userGate.userId;
   const pricingPolicyError = requireCurrentWebPricingPolicy(req, 'video');
   if (pricingPolicyError) return pricingPolicyError;
@@ -65,6 +76,7 @@ export async function POST(req: NextRequest) {
     logMetric,
     walletReservation: 'reserve',
     adapters: videoGenerationAdapters,
+    seedanceWorkflow: seedanceWorkflow ?? undefined,
   });
   return NextResponse.json(result.body, result.status === undefined ? undefined : { status: result.status });
 }

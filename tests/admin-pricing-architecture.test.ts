@@ -28,6 +28,8 @@ const cockpitPaths = [
   cockpitPath,
   tablePath,
   inspectorPath,
+  join(root, 'frontend/app/(core)/admin/pricing/_components/ProductPolicyEditor.client.tsx'),
+  join(root, 'frontend/app/(core)/admin/pricing/_components/ProductPricingTable.client.tsx'),
   controllerPath,
   viewModelPath,
   previewDialogPath,
@@ -77,9 +79,10 @@ test('admin pricing route is an authenticated server orchestrator under 60 lines
   assert.match(pageSource, /await requireAdmin\(\)/, 'pricing route should explicitly require admin');
   assert.match(
     pageSource,
-    /redirect\('\/admin\/settings'\)/,
-    'retired pricing editor redirects without loading commercial data'
+    /<AdminPricingCockpit\s*\/>/,
+    'admin pricing route should render the cockpit'
   );
+  assert.doesNotMatch(pageSource, /redirect\('\/admin\/settings'\)/);
   assert.ok(pageSource.split('\n').length < 60, 'pricing route should stay below 60 lines');
 });
 
@@ -89,20 +92,66 @@ test('canonical pricing cockpit modules exist and compose shared admin-system su
   const tableSource = readOrEmpty(tablePath);
   const inspectorSource = readOrEmpty(inspectorPath);
 
-  for (const component of ['AdminMetricGrid', 'AdminNotice', 'AdminEmptyState']) {
+  for (const component of ['AdminSection', 'AdminNotice', 'AdminEmptyState']) {
     assert.match(cockpitSource, new RegExp(component), `cockpit should use ${component}`);
   }
+  assert.match(cockpitSource, /role="tablist"/, 'comparison, rules and history should have separate views');
+  assert.match(cockpitSource, /pricing-panel-comparison/);
+  assert.match(cockpitSource, /pricing-panel-rules/);
   assert.match(tableSource, /AdminDataTable/, 'policy inventory should use AdminDataTable');
   assert.match(tableSource, /AdminFilterBar/, 'policy inventory should use AdminFilterBar');
   assert.match(inspectorSource, /AdminInspectorPanel/, 'policy editor should use AdminInspectorPanel');
 });
 
-test('navigation retires pricing and membership editors while retaining billing products', () => {
+test('pricing cockpit consumes server-projected supplier comparisons without client pricing math', () => {
+  const cockpitSource = readOrEmpty(cockpitPath);
+  assert.match(cockpitSource, /ProviderPriceComparisonTable/);
+  assert.match(cockpitSource, /providerComparisons/);
+  assert.match(cockpitSource, /onInspect=/);
+  assert.doesNotMatch(cockpitSource, /vendorSubtotalCents\s*[-+*/]/);
+});
+
+test('central Pricing exposes audio, tools and Storyboard without duplicating commercial services', () => {
+  const cockpit = readOrEmpty(cockpitPath);
+  for (const label of ['Video', 'Image', 'Audio', 'Tools', 'Storyboard']) assert.ok(cockpit.includes(`'${label}'`), label);
+  const products = readOrEmpty(join(root, 'frontend/app/(core)/admin/pricing/_components/ProductPricingTable.client.tsx'));
+  assert.match(products, /useAdminBillingProductsController/);
+  assert.match(products, /AdminPricingChangePreviewDialog/);
+  assert.doesNotMatch(products, /quoteCanonicalPricing|@\/server\/|marginPercent\s*[*+/-]/);
+  const route = readOrEmpty(join(root, 'frontend/app/api/admin/pricing/products/route.ts'));
+  assert.match(route, /await requireAdmin\(\)/);
+  assert.match(route, /loadAdminProductPricing/);
+  assert.doesNotMatch(route, /charge|insert|UPDATE|ensureBillingSchema/);
+});
+
+test('exact admin supplier evidence shares a server owner and cannot author customer prices', () => {
+  const service = readOrEmpty(join(root, 'frontend/server/pricing-admin/customer-tariff-service.ts'));
+  const inventory = readOrEmpty(pricingPolicyReadModelPath);
+  assert.match(service, /providerComparisonForTariffScenario\(scenario\)/);
+  assert.match(inventory, /providerComparisonForTariffScenario\(selected\)/);
+  for (const file of ['catalog-supplier-reference.ts', 'published-supplier-tariffs.ts', 'tariff-provider-comparison.ts']) {
+    const source = readOrEmpty(join(root, 'frontend/server/pricing-admin', file));
+    assert.doesNotMatch(source, /quoteCanonicalPricing|computeCanonicalBillingSnapshot|resolveCustomerTariffQuote/,
+      `${file} must stay factual and independent from customer policy`);
+  }
+});
+
+test('local decision analysis cannot resolve or persist commercial tariffs', () => {
+  const decision = readOrEmpty(join(root, 'frontend/app/(core)/admin/pricing/_lib/pricing-decision.ts'));
+  const panel = readOrEmpty(join(root, 'frontend/app/(core)/admin/pricing/_components/PricingDecisionPanel.client.tsx'));
+  const cockpit = readOrEmpty(cockpitPath);
+  assert.doesNotMatch(decision, /quoteCanonicalPricing|quote-billing|@\/lib\/db|\bfetch\(|server-only/);
+  assert.doesNotMatch(panel, /\bfetch\(|\/api\/admin|customer-tariff-service/);
+  const editor = readOrEmpty(join(root, 'frontend/app/(core)/admin/pricing/_hooks/useCustomerTariffEditor.ts'));
+  assert.match(panel, /useCustomerTariffEditor/);
+  assert.match(editor, /previewFingerprint/);
+  assert.doesNotMatch(cockpit, /CustomerTariffPanel|pricing-panel-tariffs|label: 'Customer prices'/);
+});
+
+test('navigation exposes model pricing and billing products while membership remains historical', () => {
   const items = ADMIN_NAV_GROUPS.flatMap((group) => group.items);
-  assert.equal(
-    items.some((item) => item.href === '/admin/pricing' || item.href === '/admin/membership'),
-    false
-  );
+  assert.equal(items.some((item) => item.href === '/admin/pricing'), true);
+  assert.equal(items.some((item) => item.href === '/admin/membership'), false);
   assert.equal(
     items.some((item) => item.href === '/admin/billing-products'),
     true
@@ -164,13 +213,16 @@ test('policy inspector owns every canonical field and keeps vendor routing read-
     assert.match(inspectorSource, new RegExp(field), `policy inspector should expose ${field}`);
   }
   assert.match(inspectorSource, /Vendor account/, 'policy inspector should expose routing context');
+  assert.match(inspectorSource, /Margin \(%\)/);
+  assert.match(inspectorSource, /Audio surcharge \(%\)/);
+  assert.match(inspectorSource, /Enter 30 for 30%/);
   assert.doesNotMatch(
     inspectorSource,
     /name=["']vendorAccountId["']|onChange[^\n]*vendorAccountId/,
     'vendor account must never be editable'
   );
   for (const context of [
-    'Supplier subtotal',
+    'Legacy pricing basis',
     'Effective provenance',
     'Matched versioned rule',
     'Database override',
@@ -187,11 +239,25 @@ test('policy inspector owns every canonical field and keeps vendor routing read-
   assert.match(inspectorSource, /lastEvent\?\.createdAt/);
 });
 
-test('client cockpit stays browser-safe and policy-domain-only', () => {
+test('client cockpit stays browser-safe and delegates each pricing domain to its service', () => {
   const clientSources = cockpitPaths.map(readOrEmpty).join('\n');
   assert.doesNotMatch(clientSources, /@\/server\/|@maxvideoai\/pricing|quoteCanonicalPricing|resolvePricingPolicy/);
-  assert.doesNotMatch(clientSources, /membership-tiers|billing-products|\/api\/admin\/pricing\/rules/);
+  assert.doesNotMatch(clientSources, /membership-tiers|\/api\/admin\/pricing\/rules/);
+  assert.doesNotMatch(readOrEmpty(controllerPath), /BILLING_PRODUCTS_(?:PREVIEW|CONFIRM)_ENDPOINT/);
   assert.doesNotMatch(clientSources, /marginPercent\s*[+*/-]|surcharge(?:Audio|Upscale)Percent\s*[+*/-]/);
+});
+
+test('product policies stay inline in the selected category and refresh current product quotes', () => {
+  const cockpit = readOrEmpty(cockpitPath);
+  const products = readOrEmpty(join(root, 'frontend/app/(core)/admin/pricing/_components/ProductPricingTable.client.tsx'));
+  const editor = readOrEmpty(join(root, 'frontend/app/(core)/admin/pricing/_components/ProductPolicyEditor.client.tsx'));
+  assert.match(cockpit, /<ProductPolicyEditor/);
+  assert.match(cockpit, /setProductPolicyKey\(key\)/);
+  assert.match(cockpit, /confirmPreview\(\)\.then\(\(\) => mutate\(/);
+  assert.match(products, /row\.id === policyEditorRow/);
+  assert.match(products, /disabled=\{locked \|\| row\.totalCents == null\}/);
+  assert.doesNotMatch(editor, /onChange\('(?:engineId|mode|resolution|currency|compatibilityProfile)'/);
+  assert.match(editor, /This editor preserves the selected scope/);
 });
 
 test('controller enforces preview then fingerprint confirmation and refreshes only after success', () => {
@@ -253,7 +319,7 @@ test('policy post-commit refresh recovery is durable and blocks stale cockpit st
     cockpitSource,
     /controller\.postCommitWarning[\s\S]*tone="warning"[\s\S]*controller\.postCommitWarning\.message/
   );
-  assert.match(cockpitSource, /disabled=\{controller\.refreshing \|\| controller\.refreshLocked\}/);
+  assert.match(cockpitSource, /disabled=\{controller\.refreshing \|\| controller\.refreshLocked \|\| productLocked\}/);
 });
 
 test('generic preview dialog is read-only and requires explicit confirmation', () => {
@@ -303,10 +369,12 @@ test('preview and confirmation lock every mutable cockpit control', () => {
   assert.match(inspectorSource, /disabled=\{locked\}/g);
 });
 
-test('pricing E2E covers the retired route without commercial API activity', () => {
+test('pricing E2E covers the authorized comparison and safe policy preview', () => {
   const e2eSource = readOrEmpty(e2ePath);
-  assert.match(e2eSource, /retired pricing editor redirects without commercial API activity/);
-  assert.match(e2eSource, /expect\(requests\)\.toEqual\(\[\]\)/);
+  assert.match(e2eSource, /pricing cockpit compares costs and previews a policy change/);
+  assert.match(e2eSource, /Supplier cost and customer price/);
+  assert.match(e2eSource, /Preview policy change/);
+  assert.match(e2eSource, /expect\(confirmRequests\)\.toEqual\(\[\]\)/);
 });
 
 test('cockpit view model preserves an inherited database override selector in update proposals', () => {
@@ -336,6 +404,21 @@ test('cockpit view model preserves an inherited database override selector in up
     targetId: 'database-global',
     rule: row.databaseOverride,
   });
+});
+
+test('editing an audio product creates a scoped rule without changing an inherited global override', () => {
+  const row: PricingPolicyInventoryRow = {
+    selector: { engineId: 'audio-generation' }, versionedRule: null,
+    databaseOverride: { id: 'default', marginPercent: .3, marginFlatCents: 0, surchargeAudioPercent: .2, surchargeUpscalePercent: .5, currency: 'USD' },
+    effectiveProvenance: { source: 'database', matchedBy: 'global', sourceRuleId: 'default', compatibilityProfile: 'audio-tripled-rounded' },
+    representativeQuotes: [], routingContext: null, lastEvent: null,
+  };
+  const draft = createPricingPolicyDraft(row, true);
+  assert.equal(draft.engineId, 'audio-generation');
+  assert.equal(draft.compatibilityProfile, 'audio-tripled-rounded');
+  const proposal = buildPricingPolicyProposal(row, draft);
+  assert.equal(proposal.operation, 'create');
+  assert.equal(row.databaseOverride?.id, 'default');
 });
 
 test('cockpit view model creates selector-scoped drafts and filters inventory without pricing math', () => {

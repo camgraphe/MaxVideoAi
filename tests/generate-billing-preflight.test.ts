@@ -38,6 +38,25 @@ function createReq(country = 'US') {
   } as never;
 }
 
+test('a stale manual customer tariff rejects before currency conversion or payment preparation', async () => {
+  let converted = false;
+  const result = await resolveGenerateBillingPreflight({
+    req: createReq(), engine, mode: 't2v', userId: 'user_123', payment: { mode: 'wallet' },
+    jobId: 'stale-tariff', durationSec: 5, durationLabel: '5s', pricingResolution: '720p',
+    effectiveResolution: '720p', aspectRatio: '16:9', membershipTier: 'member', isLumaRay2: false,
+    loop: false, rawDurationOption: null, lumaDurationLabel: null, audioEnabled: false, voiceControl: false,
+    deps: { getUserPreferredCurrencyFn: async () => 'usd', resolveCurrencyFn: () => ({ currency: 'usd', source: 'user_pref' }),
+      computePricingSnapshotFn: async () => ({ ...pricing, meta: { pricingMode: 'manual_tariff', customerTariffRevision: 7 } }),
+      convertCentsFn: async () => { converted = true; return { cents: 1200, rate: 1, source: 'test' }; },
+      applyEngineVariantPricingFn: (value) => value, buildEngineAddonInputFn: () => ({}) },
+  });
+  assert.equal(result.ok, false);
+  if (result.ok) return;
+  assert.equal(result.status, 409);
+  assert.equal(result.body.error, 'PRICING_REFRESH_REQUIRED');
+  assert.equal(converted, false);
+});
+
 test('generate route delegates billing and payment preflight', () => {
   assert.ok(existsSync(helperPath), 'billing preflight should live in the generate route _lib folder');
   assert.match(serviceSource, /generate\/_lib\/billing-preflight/);
@@ -445,11 +464,13 @@ test('billing preflight accepts captured direct payment intents', async () => {
         currency: 'usd',
         latest_charge: { id: 'ch_123' },
         metadata: {
+          kind: 'run', user_id: 'user_123', direct_quote_id: 'quote_123',
           job_id: 'job_123',
           wallet_amount_cents: '1000',
           settlement_amount_cents: '1200',
         },
       }),
+      loadDirectPaymentQuoteFn: async () => directQuoteFixture(1000),
       ensureUserPreferredCurrencyFn: async (_userId, currency) => {
         ensuredCurrencies.push(currency);
       },
@@ -503,13 +524,136 @@ test('billing preflight rejects underpaid direct payment intents', async () => {
         amount_received: 800,
         currency: 'usd',
         latest_charge: 'ch_123',
-        metadata: {},
+        metadata: { kind: 'run', user_id: 'user_123', job_id: 'job_123', direct_quote_id: 'quote_123' },
       }),
+      loadDirectPaymentQuoteFn: async () => directQuoteFixture(1200),
     },
   });
 
   assert.equal(result.ok, false);
   assert.deepEqual(result.metric, { errorCode: 'PAYMENT_NOT_CAPTURED', meta: { paymentIntentId: 'pi_123' } });
   assert.equal(result.status, 402);
-  assert.deepEqual(result.body, { ok: false, error: 'Payment not captured yet' });
+  assert.deepEqual(result.body, { ok: false, error: 'PAYMENT_NOT_CAPTURED' });
+});
+
+
+test('captured direct generation keeps its original quote after a tariff edit without current-price or FX reads', async () => {
+  const original = { totalCents: 1000, currency: 'USD', meta: { pricingMode: 'manual_tariff', customerTariffRevision: 7 } } as PricingSnapshot;
+  const result = await resolveGenerateBillingPreflight({
+    req: createReq(), engine, mode: 't2v', userId: 'user_123', payment: { mode: 'direct', paymentIntentId: 'pi_123' },
+    jobId: 'job_123', durationSec: 8, durationLabel: undefined, pricingResolution: '720p', effectiveResolution: '720p',
+    aspectRatio: null, membershipTier: 'plus', isLumaRay2: false, loop: false, rawDurationOption: null,
+    lumaDurationLabel: null, audioEnabled: false, voiceControl: false,
+    deps: {
+      getUserPreferredCurrencyFn: async () => 'usd', resolveCurrencyFn: () => ({ currency: 'usd', source: 'user_pref' }),
+      computePricingSnapshotFn: async () => { throw new Error('A captured payment must not be requoted'); },
+      convertCentsFn: async () => { throw new Error('A captured payment must not use current FX'); },
+      getPlatformFeeCentsFn: () => 0, receiptsPriceOnlyEnabledFn: () => false,
+      applyEngineVariantPricingFn: (value: unknown) => value, buildEngineAddonInputFn: () => ({}),
+      retrievePaymentIntentFn: async () => ({ id: 'pi_123', status: 'succeeded', amount: 1100, amount_received: 1100,
+        currency: 'usd', latest_charge: 'ch_123', metadata: { kind: 'run', user_id: 'user_123', job_id: 'job_123', direct_quote_id: 'quote_123' } }),
+      loadDirectPaymentQuoteFn: async () => ({ id: 'quote_123', userId: 'user_123', jobId: 'job_123',
+        scenario: { engineId: 'seedance-2-0', mode: 't2v', durationSec: 8, resolution: '720p', aspectRatio: null, loop: false, audioEnabled: false, voiceControl: false },
+        pricing: original, settlement: { currency: 'USD', amountCents: 1100, fxRate: 1.1, fxSource: 'original' } }),
+    } as never,
+  });
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.preflight.pricing.totalCents, 1000);
+  assert.equal(result.preflight.pricing.meta?.customerTariffRevision, 7);
+  assert.equal(result.preflight.pendingReceipt?.amountCents, 1000);
+  assert.equal(result.preflight.pendingReceipt?.auditPricingSnapshot?.meta?.customerTariffRevision, 7);
+  assert.equal(result.preflight.pricing.meta?.settlement_amount_cents, 1100);
+  assert.equal(result.preflight.pricing.meta?.settlement_fx_source, 'original');
+});
+
+function directQuoteFixture(totalCents: number) {
+  return { id: 'quote_123', userId: 'user_123', jobId: 'job_123',
+    scenario: { engineId: engine.id, mode: 't2v' as const, durationSec: 8, resolution: '720p', aspectRatio: null, loop: false, audioEnabled: false, voiceControl: false },
+    pricing: { ...pricing, totalCents }, settlement: { currency: 'USD', amountCents: 1200, fxRate: 1.2, fxSource: 'original' } };
+}
+test('captured EUR settlement survives a later USD profile currency without current-price or FX reads', async () => {
+  const original = { totalCents: 1000, currency: 'USD', meta: { pricingMode: 'manual_tariff', customerTariffRevision: 7 } } as PricingSnapshot;
+  const result = await resolveGenerateBillingPreflight({
+    req: createReq(), engine, mode: 't2v', userId: 'user_123', payment: { mode: 'direct', paymentIntentId: 'pi_123' },
+    jobId: 'job_123', durationSec: 8, durationLabel: undefined, pricingResolution: '720p', effectiveResolution: '720p',
+    aspectRatio: null, membershipTier: 'plus', isLumaRay2: false, loop: false, rawDurationOption: null,
+    lumaDurationLabel: null, audioEnabled: false, voiceControl: false,
+    deps: {
+      getUserPreferredCurrencyFn: async () => 'usd', resolveCurrencyFn: () => ({ currency: 'usd', source: 'user_pref' }),
+      computePricingSnapshotFn: async () => { throw new Error('A captured payment must not be requoted'); },
+      convertCentsFn: async () => { throw new Error('A captured payment must not use current FX'); },
+      getPlatformFeeCentsFn: () => 0, receiptsPriceOnlyEnabledFn: () => false,
+      applyEngineVariantPricingFn: (value: unknown) => value, buildEngineAddonInputFn: () => ({}),
+      retrievePaymentIntentFn: async () => ({ id: 'pi_123', status: 'succeeded', amount: 1100, amount_received: 1100,
+        currency: 'eur', latest_charge: 'ch_123', metadata: { kind: 'run', user_id: 'user_123', job_id: 'job_123', direct_quote_id: 'quote_123' } }),
+      loadDirectPaymentQuoteFn: async () => ({ id: 'quote_123', userId: 'user_123', jobId: 'job_123',
+        scenario: { engineId: 'seedance-2-0', mode: 't2v', durationSec: 8, resolution: '720p', aspectRatio: null, loop: false, audioEnabled: false, voiceControl: false },
+        pricing: original, settlement: { currency: 'EUR', amountCents: 1100, fxRate: 1.1, fxSource: 'original' } }),
+    } as never,
+  });
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.preflight.resolvedCurrencyUpper, 'EUR');
+  assert.equal(result.preflight.pricing.meta?.settlement_currency, 'EUR');
+  assert.equal(result.preflight.pricing.totalCents, 1000);
+  assert.equal(result.preflight.pricing.meta?.customerTariffRevision, 7);
+  assert.equal(result.preflight.pendingReceipt?.amountCents, 1000);
+  assert.equal(result.preflight.pendingReceipt?.auditPricingSnapshot?.meta?.customerTariffRevision, 7);
+  assert.equal(result.preflight.pricing.meta?.settlement_amount_cents, 1100);
+  assert.equal(result.preflight.pricing.meta?.settlement_fx_source, 'original');
+});
+test('captured explicit audio-off quote cannot fund a request that omits audio and gets the provider default', async () => {
+  const original = { totalCents: 1000, currency: 'USD', meta: { pricingMode: 'manual_tariff', customerTariffRevision: 7 } } as PricingSnapshot;
+  const result = await resolveGenerateBillingPreflight({
+    req: createReq(), engine, mode: 't2v', userId: 'user_123', payment: { mode: 'direct', paymentIntentId: 'pi_123' },
+    jobId: 'job_123', durationSec: 8, durationLabel: undefined, pricingResolution: '720p', effectiveResolution: '720p',
+    aspectRatio: null, membershipTier: 'plus', isLumaRay2: false, loop: false, rawDurationOption: null,
+    lumaDurationLabel: null, audioEnabled: undefined, voiceControl: false,
+    deps: {
+      getUserPreferredCurrencyFn: async () => 'usd', resolveCurrencyFn: () => ({ currency: 'usd', source: 'user_pref' }),
+      computePricingSnapshotFn: async () => { throw new Error('A captured payment must not be requoted'); },
+      convertCentsFn: async () => { throw new Error('A captured payment must not use current FX'); },
+      getPlatformFeeCentsFn: () => 0, receiptsPriceOnlyEnabledFn: () => false,
+      applyEngineVariantPricingFn: (value: unknown) => value, buildEngineAddonInputFn: () => ({}),
+      retrievePaymentIntentFn: async () => ({ id: 'pi_123', status: 'succeeded', amount: 1100, amount_received: 1100,
+        currency: 'usd', latest_charge: 'ch_123', metadata: { kind: 'run', user_id: 'user_123', job_id: 'job_123', direct_quote_id: 'quote_123' } }),
+      loadDirectPaymentQuoteFn: async () => ({ id: 'quote_123', userId: 'user_123', jobId: 'job_123',
+        scenario: { engineId: 'seedance-2-0', mode: 't2v', durationSec: 8, resolution: '720p', aspectRatio: null, loop: false, audioEnabled: false, voiceControl: false },
+        pricing: original, settlement: { currency: 'USD', amountCents: 1100, fxRate: 1.1, fxSource: 'original' } }),
+    } as never,
+  });
+  assert.equal(result.ok, false);
+  if (result.ok) return;
+  assert.equal(result.status, 409);
+  assert.equal(result.body.error, 'PAYMENT_BINDING_MISMATCH');
+});
+test('a normalized loop survives paid continuation for engines beyond Ray 2', async () => {
+  const original = { totalCents: 1000, currency: 'USD', meta: { pricingMode: 'manual_tariff', customerTariffRevision: 7 } } as PricingSnapshot;
+  const result = await resolveGenerateBillingPreflight({
+    req: createReq(), engine, mode: 't2v', userId: 'user_123', payment: { mode: 'direct', paymentIntentId: 'pi_123' },
+    jobId: 'job_123', durationSec: 8, durationLabel: undefined, pricingResolution: '720p', effectiveResolution: '720p',
+    aspectRatio: null, membershipTier: 'plus', isLumaRay2: false, loop: true, rawDurationOption: null,
+    lumaDurationLabel: null, audioEnabled: false, voiceControl: false,
+    deps: {
+      getUserPreferredCurrencyFn: async () => 'usd', resolveCurrencyFn: () => ({ currency: 'usd', source: 'user_pref' }),
+      computePricingSnapshotFn: async () => { throw new Error('A captured payment must not be requoted'); },
+      convertCentsFn: async () => { throw new Error('A captured payment must not use current FX'); },
+      getPlatformFeeCentsFn: () => 0, receiptsPriceOnlyEnabledFn: () => false,
+      applyEngineVariantPricingFn: (value: unknown) => value, buildEngineAddonInputFn: () => ({}),
+      retrievePaymentIntentFn: async () => ({ id: 'pi_123', status: 'succeeded', amount: 1100, amount_received: 1100,
+        currency: 'usd', latest_charge: 'ch_123', metadata: { kind: 'run', user_id: 'user_123', job_id: 'job_123', direct_quote_id: 'quote_123' } }),
+      loadDirectPaymentQuoteFn: async () => ({ id: 'quote_123', userId: 'user_123', jobId: 'job_123',
+        scenario: { engineId: 'seedance-2-0', mode: 't2v', durationSec: 8, resolution: '720p', aspectRatio: null, loop: true, audioEnabled: false, voiceControl: false },
+        pricing: original, settlement: { currency: 'USD', amountCents: 1100, fxRate: 1.1, fxSource: 'original' } }),
+    } as never,
+  });
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.preflight.pricing.totalCents, 1000);
+  assert.equal(result.preflight.pricing.meta?.customerTariffRevision, 7);
+  assert.equal(result.preflight.pendingReceipt?.amountCents, 1000);
+  assert.equal(result.preflight.pendingReceipt?.auditPricingSnapshot?.meta?.customerTariffRevision, 7);
+  assert.equal(result.preflight.pricing.meta?.settlement_amount_cents, 1100);
+  assert.equal(result.preflight.pricing.meta?.settlement_fx_source, 'original');
 });

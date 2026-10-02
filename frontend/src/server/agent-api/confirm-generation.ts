@@ -481,6 +481,8 @@ async function confirmationTransaction(
         const status = error && typeof error === 'object' && 'status' in error
           ? Number((error as { status?: unknown }).status)
           : 0;
+        const responseCode = isRecord(error) && isRecord(error.body) ? error.body.error : undefined;
+        if (code === 'PRICING_REFRESH_REQUIRED' || responseCode === 'PRICING_REFRESH_REQUIRED') staleQuote();
         if (status === 402 || /insufficient/i.test(code)) {
           throw new AgentApiError('INSUFFICIENT_FUNDS', 'Add funds before confirming this generation.');
         }

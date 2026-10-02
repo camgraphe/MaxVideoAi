@@ -119,6 +119,17 @@ test('private video share links bypass marketing locale routing', () => {
   assert.equal(shouldHandleLocale(`/s/${'A'.repeat(32)}`), false);
 });
 
+test('canonical localized Pricing URLs rewrite internally without redirecting to themselves', async () => {
+  for (const [path, internalPath] of [['/fr/tarifs', '/fr/pricing'], ['/es/precios', '/es/pricing']]) {
+    const response = await middleware(new NextRequest(`http://localhost:3106${path}`, {
+      headers: { host: 'localhost:3106', 'user-agent': 'Mozilla/5.0' },
+    }));
+    assert.equal(response.status, 200, path);
+    assert.equal(response.headers.get('location'), null, path);
+    assert.equal(new URL(response.headers.get('x-middleware-rewrite')!).pathname, internalPath);
+  }
+});
+
 test('model-shaped compatibility redirects are not owned by marketing middleware', () => {
   const source = readFileSync('frontend/lib/middleware/routing-marketing.ts', 'utf8');
   assert.doesNotMatch(source, /['"]\/models\/(?:luma-dream-machine|pika-image-to-video)/);

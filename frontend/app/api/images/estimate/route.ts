@@ -15,6 +15,7 @@ type ImageEstimateBody = {
   resolution?: string;
   customImageSize?: GptImage2ImageSize | null;
   imageUrls?: unknown[];
+  referenceImageCount?: number;
   referenceImageSizes?: Array<Partial<GptImage2ImageSize> | null>;
   quality?: string;
   enableWebSearch?: boolean;
@@ -46,8 +47,10 @@ export async function POST(req: NextRequest) {
   const referenceImageSizes = Array.isArray(body?.referenceImageSizes)
     ? body.referenceImageSizes
     : [];
-  const referenceImageCount =
-    countReferenceUrls(body?.imageUrls) || countReferenceSizes(referenceImageSizes);
+  const declaredReferenceCount = body?.referenceImageCount;
+  const referenceImageCount = Math.max(countReferenceUrls(body?.imageUrls), countReferenceSizes(referenceImageSizes),
+    typeof declaredReferenceCount === 'number' && Number.isSafeInteger(declaredReferenceCount) && declaredReferenceCount >= 0
+      ? declaredReferenceCount : 0);
 
   try {
     const { pricing } = await estimateWebImageGeneration({

@@ -793,14 +793,14 @@
       },
       "examples": {
         "title": "Un mundo de historias por crear.",
-        "subtitle": "Abre un ejemplo para ver el prompt, los ajustes y el costo registrado al generarlo. Úsalo como punto de partida para tu propio proyecto.",
+        "subtitle": "Abre un ejemplo para ver el prompt, los ajustes y el precio actual del modelo. Úsalo como punto de partida para tu propio proyecto.",
         "eyebrow": "Ejemplos reales",
         "cta": "Ver todos los ejemplos",
         "modelsCta": "Ver todas las especificaciones",
         "compareLink": "Comparar modelos",
         "featuredModelCta": "Descubrir Seedance 2.5",
         "modelCta": "Descubrir {model}",
-        "costUnavailable": "Coste no registrado",
+        "costUnavailable": "Precio actual no disponible",
         "providerLabel": "Modelos compatibles:",
         "viewPrompt": "Clonar ajustes",
         "fallbackCards": [
@@ -2984,7 +2984,7 @@
       "aspectLabel": "Relación",
       "aspectAuto": "Auto",
       "createdLabel": "Creado el",
-      "priceTotalLabel": "Coste registrado del render",
+      "priceTotalLabel": "Precio actual del modelo",
       "priceTotalValue": "{value}",
       "priceTotalUnknown": "No disponible",
       "audioLabel": "Audio",
@@ -3240,10 +3240,10 @@
   },
   "gallery": {
     "meta": {
-      "title": "Ejemplos de video IA: prompts, modelos y costes registrados",
-      "description": "Explora ejemplos de video IA y abre un video para consultar su prompt, ajustes, duración y coste registrado antes de recrearlo.",
+      "title": "Ejemplos de video IA: prompts, modelos y precios actuales",
+      "description": "Explora ejemplos de video IA y abre un video para consultar su prompt, ajustes, duración y precio actual del modelo antes de recrearlo.",
       "title_engine": "Ejemplos de video IA — {engineName} | MaxVideoAI",
-      "description_engine": "Explora ejemplos de {engineName} y abre un video para consultar su prompt, duración, ajustes de audio y coste registrado."
+      "description_engine": "Explora ejemplos de {engineName} y abre un video para consultar su prompt, duración, ajustes de audio y precio actual del modelo."
     }
   },
   "workspace": {

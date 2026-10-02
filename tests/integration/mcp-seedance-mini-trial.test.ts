@@ -136,7 +136,7 @@ test('trial snapshot uses the official BytePlus no-video cost below the server s
   assert.equal(prepared.fundingMode, 'trial');
   const snapshot = inserted[0]?.pricingSnapshot as Record<string, unknown>;
   const funding = snapshot.funding as Record<string, unknown>;
-  const expectedTokens = (854 * 480 * 5 * 24) / 1024;
+  const expectedTokens = (864 * 496 * 5 * 24) / 1024;
   const expectedCostCents = Math.ceil(
     expectedTokens * BYTEPLUS_PRICE_FIXTURE.noVideoUsdPerMillionTokens / 1_000_000 * 100,
   );
@@ -144,7 +144,7 @@ test('trial snapshot uses the official BytePlus no-video cost below the server s
   assert.equal(new URL(BYTEPLUS_PRICE_FIXTURE.pricingDocUrl).hostname, 'docs.byteplus.com');
   assert.match(BYTEPLUS_PRICE_FIXTURE.retrievedAt, /^2026-07-17$/);
   assert.equal(BYTEPLUS_PRICE_FIXTURE.modelId, 'dreamina-seedance-2-0-mini-260615');
-  assert.equal(expectedCostCents, 17);
+  assert.equal(expectedCostCents, 18);
   assert.equal(funding.providerCostCents, expectedCostCents);
   assert.ok(expectedCostCents <= BYTEPLUS_PRICE_FIXTURE.serverSafetyCeilingCents);
   assert.equal(JSON.stringify(prepared).includes('providerCostCents'), false);
@@ -163,9 +163,9 @@ test('trial provider cost fails closed when its configurable safety ceiling drif
     references: [],
     outputCount: 1 as const,
   };
-  assert.equal(requireTrialProviderCostCents(request, undefined), 17);
-  assert.equal(requireTrialProviderCostCents(request, '17'), 17);
-  for (const rawCeiling of ['16', '', '0', ' 25', '25.0', '101', '9007199254740992']) {
+  assert.equal(requireTrialProviderCostCents(request, undefined), 18);
+  assert.equal(requireTrialProviderCostCents(request, '18'), 18);
+  for (const rawCeiling of ['17', '16', '', '0', ' 25', '25.0', '101', '9007199254740992']) {
     assert.throws(
       () => requireTrialProviderCostCents(request, rawCeiling),
       /provider cost is unavailable/i,
@@ -424,6 +424,7 @@ test('verified OAuth acquisition completes one local SDK trial without wallet or
   });
   await createPaidGenerationTestSchema(postgres.pool);
   await postgres.pool.query(readFileSync('neon/migrations/31_mcp_trial_entitlements.sql', 'utf8'));
+  await postgres.pool.query(readFileSync('neon/migrations/60_mcp_trial_provider_rasters.sql', 'utf8'));
 
   const identity: AgentPrincipal = {
     userId: 't9-lifecycle-user', clientId: 't9-lifecycle-client',
@@ -470,7 +471,7 @@ test('verified OAuth acquisition completes one local SDK trial without wallet or
   assert.equal(quote.price_cents, 0);
   assert.equal(
     (quote.pricing_snapshot.funding as Record<string, unknown>).providerCostCents,
-    17,
+    18,
   );
 
   const confirmed = await confirmTrial(session.client, quoteId);
@@ -567,7 +568,7 @@ test('verified OAuth acquisition completes one local SDK trial without wallet or
             (variantQuote.pricing_snapshot.funding as Record<string, unknown>).providerCostCents,
           );
           providerCosts.add(providerCost);
-          assert.equal(providerCost, aspectRatio === '1:1' ? 10 : 17);
+          assert.equal(providerCost, aspectRatio === '1:1' ? 17 : 18);
           assert.equal(JSON.stringify(variant.result).includes('providerCostCents'), false);
         } finally {
           await variantSession.close();

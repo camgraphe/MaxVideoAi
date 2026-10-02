@@ -693,14 +693,14 @@
       },
       "examples": {
         "title": "A world of stories to create.",
-        "subtitle": "Open an example to see the prompt, settings and recorded generation cost. Then use it as a starting point for your own creation.",
+        "subtitle": "Open an example to see its prompt, settings and current model price. Then use it as a starting point for your own creation.",
         "eyebrow": "AI video examples",
         "cta": "Browse all examples",
         "modelsCta": "View all model specs",
         "compareLink": "Compare engines",
         "featuredModelCta": "Discover Seedance 2.5",
         "modelCta": "Discover {model}",
-        "costUnavailable": "Cost not recorded",
+        "costUnavailable": "Current price unavailable",
         "providerLabel": "Supported engines:",
         "viewPrompt": "Clone settings",
         "fallbackCards": [
@@ -2544,7 +2544,7 @@
     "hero": {
       "title": "A world of stories to create.",
       "subtitle": "Explore real AI videos: characters, cinematic scenes, animation and visual experiments.",
-      "body": "Open an example to see the prompt, settings and recorded generation cost. Then use it as a starting point for your own creation."
+      "body": "Open an example to see its prompt, settings and current model price. Then use it as a starting point for your own creation."
     },
     "items": [
       {
@@ -2964,7 +2964,7 @@
       "aspectLabel": "Aspect ratio",
       "aspectAuto": "Auto",
       "createdLabel": "Created",
-      "priceTotalLabel": "Recorded render cost",
+      "priceTotalLabel": "Current model price",
       "priceTotalValue": "{value}",
       "priceTotalUnknown": "Unavailable",
       "audioLabel": "Audio",
@@ -3220,10 +3220,10 @@
   },
   "gallery": {
     "meta": {
-      "title": "AI Video Examples: Prompts, Models & Recorded Costs",
-      "description": "Browse real AI video examples, then open a video to inspect its prompt, settings, duration and recorded render cost before recreating it.",
+      "title": "AI Video Examples: Prompts, Models & Current Prices",
+      "description": "Browse real AI video examples, then open a video to inspect its prompt, settings, duration and current model price before recreating it.",
       "title_engine": "AI Video Examples — {engineName} | MaxVideoAI",
-      "description_engine": "Browse {engineName} examples, then open a video to inspect its prompt, duration, audio settings and recorded render cost."
+      "description_engine": "Browse {engineName} examples, then open a video to inspect its prompt, duration, audio settings and current model price."
     }
   },
   "workspace": {

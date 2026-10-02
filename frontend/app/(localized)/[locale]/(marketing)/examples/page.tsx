@@ -36,11 +36,11 @@ import {
 } from './_lib/examples-page-copy';
 import {
   buildExamplesEngineFilterState,
-  buildExamplesGalleryData,
   buildExamplesGalleryPresentation,
   buildExamplesMainVideoFeatureData,
   buildExamplesModelLinks,
 } from './_lib/examples-page-data';
+import { buildCurrentExamplesGalleryData } from './_lib/current-examples-gallery-data';
 import {
   buildExamplesEngineFilterHref,
   buildExamplesNormalizedRedirectTarget,
@@ -151,7 +151,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
   const loadMoreLabel = galleryUiCopy.loadMore;
   const longDescription = getExamplesLongDescription(appLocale);
   const HERO_BODY_FALLBACK =
-    'Browse AI video examples by model. Open an example to inspect its prompt, settings, duration, and recorded render cost, then recreate it in your workspace.';
+    'Browse AI video examples by model. Open an example to inspect its prompt, settings, duration, and current model price, then recreate it in your workspace.';
   const hubHeroBody =
     typeof content.hero?.body === 'string' && content.hero.body.trim().length ? content.hero.body : HERO_BODY_FALLBACK;
   const isSeedanceLanding = modelLanding?.slug === 'seedance';
@@ -277,7 +277,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
     pricingPath,
   });
 
-  const { videos, clientVideos } = buildExamplesGalleryData({
+  const { videos, clientVideos } = await buildCurrentExamplesGalleryData({
     allVideos,
     locale: appLocale,
     selectedEngine,

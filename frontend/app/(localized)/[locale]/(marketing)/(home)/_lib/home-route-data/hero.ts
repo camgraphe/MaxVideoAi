@@ -15,7 +15,7 @@ import {
   HERO_VIDEO_CHIPS,
   type HeroEngineId,
 } from './constants';
-import { formatCurrency, formatStartingPrice, formatVideoTime, resolveModeLabel } from './formatting';
+import { formatStartingPrice, formatVideoTime, resolveModeLabel } from './formatting';
 import type { HomepageExampleFamily, RedesignContent } from './types';
 
 const IS_PRODUCTION_BUILD = process.env.NEXT_PHASE === 'phase-production-build';
@@ -170,15 +170,6 @@ export function buildProgrammedHeroItems(
       const durationLabel = typeof video.durationSec === 'number' ? `${video.durationSec}s` : `${Number(duration.replace(/^0:/, ''))}s`;
       const mediaInfo = [mode, durationLabel, video.aspectRatio ?? null].filter(Boolean).join(' · ');
       const chips = HERO_VIDEO_CHIPS[normalizedEngineId] ?? (recommended?.bestFor ? [recommended.bestFor] : [mode]);
-      const startingPrice =
-        (engine?.pricingHint
-          ? formatStartingPrice(locale, engine.pricingHint.currency, engine.pricingHint.amountCents, engine.pricingHint.durationSeconds)
-          : null) ??
-        formatStartingPrice(locale, video.currency, video.finalPriceCents, video.durationSec) ??
-        content.hero.mockup.engineRecommendations.find((recommendation) => recommendation.engineId === normalizedEngineId)?.fallbackPrice ??
-        content.hero.mockup.quoteValue;
-      const finalQuote = formatCurrency(locale, video.currency, video.finalPriceCents);
-
       return {
         id: `programmed-${slot.key}-${video.id}`,
         engineId: normalizedEngineId,
@@ -187,9 +178,9 @@ export function buildProgrammedHeroItems(
         bestFor: chips[0] ?? mode,
         chips,
         mediaInfo,
-        price: startingPrice,
+        price: '',
         estimateLabel: content.hero.mockup.quoteLabel,
-        estimateValue: finalQuote ?? startingPrice,
+        estimateValue: '',
         estimateMeta: typeof video.durationSec === 'number' ? `${video.durationSec}s generation` : `${duration} generation`,
         examplesHref: linkMeta.examplesHref,
         modelHref: linkMeta.modelHref,

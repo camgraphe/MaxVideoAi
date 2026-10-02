@@ -146,13 +146,6 @@ export function buildDetailRows(
   if (snapshot.core.resolution) rows.push({ key: 'resolution', label: 'Resolution', value: snapshot.core.resolution });
   if (snapshot.core.fps) rows.push({ key: 'fps', label: 'FPS', value: `${snapshot.core.fps}` });
   rows.push({ key: 'audio', label: 'Audio', value: snapshot.core.audio || video.hasAudio ? 'Enabled' : 'Off' });
-  if (typeof video.finalPriceCents === 'number' && video.currency) {
-    rows.push({
-      key: 'cost',
-      label: 'Recorded render cost',
-      value: new Intl.NumberFormat('en-US', { style: 'currency', currency: video.currency }).format(video.finalPriceCents / 100),
-    });
-  }
   if (Number.isFinite(Date.parse(video.createdAt))) {
     rows.push({ key: 'created', label: 'Created', value: new Date(video.createdAt).toISOString().slice(0, 10) });
   }

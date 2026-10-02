@@ -38,6 +38,13 @@ configuration as part of a customer request.
 - `GET /api/user/exports/summary` counts the account's visible jobs and retains
   the idempotent per-user `user_preferences` initialization. It does not run the
   unrelated global billing bootstrap.
+- `listBillingProducts` reads migrated `app_billing_products` without billing
+  schema initialization or default-product seeds. `/api/billing-products`,
+  commercial admin inventory and current Pricing projections share this reader.
+  Missing schema is an explicit unavailable state. Fixed-product mutation helpers
+  retain their initialization owner. The disposable product-pricing PostgreSQL
+  test runs the application reader with default read-only transactions and checks
+  that confirmed fixture-side price changes reach admin and public projections.
 - `POST /api/preflight` resolves public/private engine configuration through the
   shared read-only engine catalog. It reads `engine_settings` and
   `engine_overrides` without global schema DDL or default-engine seed writes,

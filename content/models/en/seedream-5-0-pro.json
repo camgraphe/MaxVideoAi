@@ -3,14 +3,14 @@
   "versionLabel": "5.0 Pro",
   "seo": {
     "title": "Seedream 5.0 Pro - Professional ByteDance Image Generation | MaxVideoAI",
-    "description": "Create professional still images, dense infographics, visual edits, and 4K campaign assets with Seedream 5.0 Pro in MaxVideoAI."
+    "description": "Create professional still images, dense infographics, visual edits, and 2K campaign assets with Seedream 5.0 Pro in MaxVideoAI."
   },
   "overview": "Seedream 5.0 Pro is the professional ByteDance image route in MaxVideoAI. Use it for dense infographics, advanced edits, multilingual visual layouts, cinematic stills, and polished reference frames before animation.",
   "pricingNotes": "Seedream 5.0 Pro is exposed as a single-image professional output route. MaxVideoAI shows the exact live quote before generation.",
   "hero": {
     "title": "Seedream 5.0 Pro - professional image production",
-    "intro": "Use Seedream Pro for high-detail stills, structured infographics, controlled edits, and 4K campaign-ready images.",
-    "badge": "Text -> Image · Image -> Image · 2K / 4K",
+    "intro": "Use Seedream Pro for high-detail stills, structured infographics, controlled edits, and 2K campaign-ready images.",
+    "badge": "Text -> Image · Image -> Image · 2K",
     "ctaPrimary": {
       "label": "Launch Seedream Pro",
       "href": "/app/image?engine=seedream-5-0-pro"
@@ -42,7 +42,7 @@
         "icon": "layers"
       },
       {
-        "title": "4K reference frames before animation",
+        "title": "2K reference frames before animation",
         "icon": "imageToVideo"
       }
     ]
@@ -69,7 +69,7 @@
   "faqs": [
     {
       "q": "How is Seedream 5.0 Pro different from Seedream 5.0 Lite?",
-      "a": "Use Pro for professional finals, dense infographics, complex edits, and 4K campaign stills. Use Lite for faster image sets and reference preparation."
+      "a": "Use Pro for professional finals, dense infographics, complex edits, and 2K campaign stills. Use Lite for faster image sets and reference preparation."
     },
     {
       "q": "Does Seedream 5.0 Pro support batch output?",
@@ -78,7 +78,7 @@
   ],
   "custom": {
     "heroEyebrow": "Seedream 5.0 Pro Image Model",
-    "heroSupportLine": "Best for professional still images, dense layouts, and 4K visual production.",
+    "heroSupportLine": "Best for professional still images, dense layouts, and 2K visual production.",
     "heroSpecChips": [
       {
         "label": "Text->Image",
@@ -89,7 +89,7 @@
         "icon": "imageToVideo"
       },
       {
-        "label": "2K/4K",
+        "label": "2K",
         "icon": "resolution"
       },
       {
@@ -102,14 +102,14 @@
     "heroHighlights": [
       "Professional composition||Use Pro for dense infographics, campaign images, and visual explainers.",
       "Controlled editing||Bring multiple references into one polished image with precise preserve/change instructions.",
-      "4K-ready stills||Generate final source frames before Seedance animation."
+      "2K-ready stills||Generate final source frames before Seedance animation."
     ],
     "specSections": [
       {
         "title": "Seedream Pro options",
         "items": [
           "Direct BytePlus ModelArk model: seedream-5-0-pro-260628.",
-          "Resolution options: 2K and 4K.",
+          "Resolution: 2K.",
           "Modes: text-to-image and image-to-image.",
           "Reference input supports up to 10 images.",
           "Batch/sequential image generation is not exposed for Pro."
@@ -161,7 +161,7 @@
       "subtitleHighlights": [
         "Build a detailed image. Make it your own"
       ],
-      "paragraph": "Seedream 5.0 Pro generates and edits AI images for infographics, multilingual layouts and detailed campaign visuals. Create a 4K still or prepare a reference image to animate in a video model.",
+      "paragraph": "Seedream 5.0 Pro generates and edits AI images for infographics, multilingual layouts and detailed campaign visuals. Create a 2K still or prepare a reference image to animate in a video model.",
       "primaryCta": {
         "label": "Launch Seedream Pro",
         "href": "/app/image?engine=seedream-5-0-pro"
@@ -191,12 +191,12 @@
     },
     "media": {
       "caption": "Seedream 5.0 Pro example",
-      "description": "Use Seedream Pro for high-detail stills, structured infographics, controlled edits, and 4K campaign-ready images.",
+      "description": "Use Seedream Pro for high-detail stills, structured infographics, controlled edits, and 2K campaign-ready images.",
       "renderLabel": "View image",
       "badges": [
         "Text -> Image",
         "Image -> Image",
-        "2K / 4K"
+        "2K"
       ],
       "altContext": "Seedream 5.0 Pro - professional image production"
     },
@@ -208,12 +208,12 @@
       },
       {
         "title": "Workflow",
-        "body": "Use Seedream Pro for high-detail stills, structured infographics, controlled edits, and 4K campaign-ready images.",
+        "body": "Use Seedream Pro for high-detail stills, structured infographics, controlled edits, and 2K campaign-ready images.",
         "tone": "reference"
       },
       {
         "title": "Output",
-        "body": "Text -> Image · Image -> Image · 2K / 4K",
+        "body": "Text -> Image · Image -> Image · 2K",
         "tone": "duration"
       },
       {
@@ -233,7 +233,7 @@
       },
       {
         "title": "Animate with Seedance 2.0",
-        "body": "Use Seedream Pro for high-detail stills, structured infographics, controlled edits, and 4K campaign-ready images.",
+        "body": "Use Seedream Pro for high-detail stills, structured infographics, controlled edits, and 2K campaign-ready images.",
         "cta": {
           "label": "Animate with Seedance 2.0",
           "href": "/models/seedance-2-0"
@@ -251,7 +251,7 @@
     "referenceWorkflows": [
       {
         "title": "Text-to-image",
-        "body": "Use Seedream Pro for high-detail stills, structured infographics, controlled edits, and 4K campaign-ready images."
+        "body": "Use Seedream Pro for high-detail stills, structured infographics, controlled edits, and 2K campaign-ready images."
       },
       {
         "title": "Image-to-image",
@@ -259,7 +259,7 @@
       },
       {
         "title": "Output setup",
-        "body": "Text -> Image · Image -> Image · 2K / 4K"
+        "body": "Text -> Image · Image -> Image · 2K"
       },
       {
         "title": "Price check",
@@ -275,7 +275,7 @@
     },
     "meta": {
       "title": "Seedream 5.0 Pro - Professional ByteDance Image Generation | MaxVideoAI",
-      "description": "Create professional still images, dense infographics, visual edits, and 4K campaign assets with Seedream 5.0 Pro in MaxVideoAI."
+      "description": "Create professional still images, dense infographics, visual edits, and 2K campaign assets with Seedream 5.0 Pro in MaxVideoAI."
     }
   },
   "prompting": {
@@ -294,7 +294,7 @@
     "demo": null,
     "imageExamples": {
       "title": "Seedream 5.0 Pro image prompt examples",
-      "intro": "Use these for campaign stills, typography posters, reference edits and 2K-to-4K finals.",
+      "intro": "Use these for campaign stills, typography posters, reference edits and 2K finals.",
       "workspaceLabel": "Open image workspace",
       "items": [
         {
@@ -309,7 +309,7 @@
           "title": "Typography poster",
           "badge": "Typography",
           "kind": "typography",
-          "prompt": "Vertical 4K poster, premium editorial grid, graphite background, exact headline \"MIDNIGHT LAUNCH\", subhead \"LIMITED DROP\", crisp hierarchy, generous margins, readable text."
+          "prompt": "Vertical 2K poster, premium editorial grid, graphite background, exact headline \"MIDNIGHT LAUNCH\", subhead \"LIMITED DROP\", crisp hierarchy, generous margins, readable text."
         },
         {
           "id": "edit-3",
@@ -320,10 +320,10 @@
         },
         {
           "id": "layout-4",
-          "title": "2K to 4K final",
-          "badge": "4K final",
+          "title": "2K final",
+          "badge": "2K final",
           "kind": "layout",
-          "prompt": "Rerun the approved 2K composition as a 4K final. Sharpen fine details, keep typography identical, preserve brand colors, product position and the locked framing."
+          "prompt": "Refine the approved 2K composition for final delivery. Sharpen fine details, keep typography identical, preserve brand colors, product position and the locked framing."
         }
       ]
     }

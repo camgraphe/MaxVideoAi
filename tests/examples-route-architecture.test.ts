@@ -56,6 +56,11 @@ test('examples route delegates URL, filter, and gallery helper logic', () => {
   assert.match(pageSource, /from '\.\/_lib\/examples-route-utils'/, 'route should import examples helpers');
   assert.match(pageSource, /from '\.\/_lib\/examples-page-copy'/, 'route should import examples copy helpers');
   assert.match(pageSource, /from '\.\/_lib\/examples-page-data'/, 'route should import examples data builders');
+  assert.match(pageSource, /await buildCurrentExamplesGalleryData\(/, 'server gallery pricing should use its route-local data owner');
+  const currentGallerySource = readFileSync(join(dirname(pagePath), '_lib/current-examples-gallery-data.ts'), 'utf8');
+  assert.match(currentGallerySource, /from '@\/server\/current-example-price'/);
+  assert.match(currentGallerySource, /await quoteCurrentExamplePrices\(input\.allVideos\)/);
+  assert.doesNotMatch(pageDataSource, /import \{[^}]*quoteCurrentExamplePrices|\bgetDb\(|\bsql`/);
   assert.match(pageSource, /from '\.\/_lib\/examples-page-hrefs'/, 'route should import href builders');
   assert.match(pageSource, /from '\.\/_lib\/examples-page-jsonld'/, 'route should import JSON-LD builders');
   assert.match(pageSource, /export async function generateMetadata/, 'route should keep metadata orchestration');
@@ -96,10 +101,10 @@ test('examples route delegates URL, filter, and gallery helper logic', () => {
   assert.ok(lineCount <= 400, `examples page should stay below 400 lines after route extraction, got ${lineCount}`);
 });
 
-test('examples hub metadata sends visitors to detail pages for recorded costs', () => {
-  const title = 'AI Video Examples: Prompts, Models & Recorded Costs';
+test('examples hub metadata sends visitors to detail pages for current prices', () => {
+  const title = 'AI Video Examples: Prompts, Models & Current Prices';
   const description =
-    'Browse real AI video examples, then open a video to inspect its prompt, settings, duration and recorded render cost before recreating it.';
+    'Browse real AI video examples, then open a video to inspect its prompt, settings, duration and current model price before recreating it.';
 
   assert.equal(enMessages.gallery?.meta?.title, title);
   assert.equal(enMessages.gallery?.meta?.description, description);
@@ -120,7 +125,7 @@ test('examples hub metadata sends visitors to detail pages for recorded costs', 
 test('Kling examples landing owns motion-focused CTR metadata without a site-name suffix', () => {
   const title = 'Kling AI Video Examples: Prompts, Motion & Product Shots';
   const description =
-    'Watch Kling 3 and Kling 3.0 Omni video examples. Explore prompts, image-to-video and reference workflows, then inspect settings and recorded costs.';
+    'Watch Kling 3 and Kling 3.0 Omni video examples. Explore prompts, image-to-video and reference workflows, then inspect settings and current price estimates.';
   const landing = getExampleModelLanding('en', 'kling');
 
   assert.ok(landing);
@@ -153,7 +158,7 @@ test('Seedance examples landing leads with Seedance 2.5 while retaining the fami
   assert.equal(landing.heroTitle, 'Seedance 2.5, 2.0, Fast & Mini video examples');
   assert.match(landing.intro, /^Explore Seedance 2\.5 examples alongside Seedance 2\.0, Fast and Mini/);
   assert.match(landing.summary, /^Seedance 2\.5 supports 4–30 second videos up to 1080p/);
-  assert.match(landing.summary, /Earlier 1\.5 Pro examples keep their original labels/);
+  assert.match(landing.summary, /Earlier 1\.5 Pro videos remain labeled, although new 1\.5 generations are closed/);
   assert.doesNotMatch(landing.intro, /every example|all examples.*2\.5/i);
   assert.equal(family.defaultModelSlug, 'seedance-2-0');
   assert.deepEqual(family.routeAliases, ['seedance-1-5-pro', 'seedance-2-0', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini']);

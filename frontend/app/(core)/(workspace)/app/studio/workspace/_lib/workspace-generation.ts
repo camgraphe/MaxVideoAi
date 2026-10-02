@@ -764,6 +764,7 @@ export function buildWorkspaceShotGenerateRequest(params: {
 }
 
 export async function submitWorkspaceShotGeneration(params: {
+  pricingSnapshot?: import('@maxvideoai/pricing').PricingSnapshot | null;
   nodes: WorkspaceGraphNode[];
   edges: WorkspaceGraphEdge[];
   shotNodeId: string;
@@ -808,6 +809,7 @@ export async function submitWorkspaceShotGeneration(params: {
   }).workflowType;
   const { submitWorkspaceGenerationByFamily } = await import('./workspace-generation-routing');
   const outputs = await submitWorkspaceGenerationByFamily({
+    pricingSnapshot: params.pricingSnapshot,
     nodes: params.nodes,
     edges: params.edges,
     shotNode,

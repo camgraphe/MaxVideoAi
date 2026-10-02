@@ -129,6 +129,7 @@ function includedTrialVideoInitialParams(
     quoteId: quote.quoteId,
   };
   return {
+    auditPricingSnapshot: pricing,
     jobId: quote.quoteId,
     userId: quote.userId,
     funding,

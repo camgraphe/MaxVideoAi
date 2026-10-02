@@ -27,7 +27,7 @@ export function ModelArchivePage({ model, value, locale }: {
       <header className="max-w-3xl space-y-5">
         <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">{content.title}</h1>
         <p className="text-lg text-text-secondary">{content.intro}</p>
-        <a className="inline-block underline underline-offset-4" href="https://help.openai.com/en/articles/20001152-what-to-know-about-the-sora-discontinuation">{content.sourcesLabel}</a>
+        <a className="inline-block underline underline-offset-4" href={content.sourceUrl ?? 'https://help.openai.com/en/articles/20001152-what-to-know-about-the-sora-discontinuation'}>{content.sourcesLabel}</a>
       </header>
       <section aria-labelledby="archive-alternatives" className="space-y-6">
         <h2 id="archive-alternatives" className="text-2xl font-semibold">{content.alternativesTitle}</h2>

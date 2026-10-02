@@ -37,7 +37,7 @@ test('local watch details omit unavailable dates instead of throwing or fabricat
   const video = publicCardToVideo(card);
   const signals = deriveWatchPageSignals({ video });
   assert.equal(signals.detailRows.some(row => row.key === 'created'), false);
-  assert.ok(signals.detailRows.some(row => row.key === 'cost' && row.value === '$1.13'));
+  assert.equal(signals.detailRows.some(row => row.key === 'cost'), false, 'stored prices must not become current public prices');
   const dated = deriveWatchPageSignals({ video: { ...video, createdAt: '2026-09-01T12:00:00Z' } });
   assert.equal(dated.detailRows.find(row => row.key === 'created')?.value, '2026-09-01');
 });

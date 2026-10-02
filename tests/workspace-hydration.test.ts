@@ -222,3 +222,14 @@ test('archived engine in a saved draft or incoming link is preserved until expli
     assert.equal(result.form?.engineId, requested ?? 'sora-2');
   }
 });
+
+test('saved Seedance 1.5 settings keep their recorded model instead of silently choosing Mini or Fast', () => {
+  const result = buildInitialWorkspaceFormState({
+    engines: [makeEngine('seedance-2-0-mini'), makeEngine('seedance-2-0-fast')],
+    storedFormRaw: { engineId: 'seedance-1-5-pro', mode: 't2v', durationSec: 8 } as StoredFormState,
+    effectiveRequestedEngineId: null,
+    effectiveRequestedEngineToken: '',
+    effectiveRequestedMode: null,
+  });
+  assert.equal(result.form?.engineId, 'seedance-1-5-pro');
+});

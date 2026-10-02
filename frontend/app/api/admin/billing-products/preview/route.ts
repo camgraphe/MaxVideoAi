@@ -19,6 +19,7 @@ function pickProposal(value: Record<string, unknown>): BillingProductChangePropo
     label: value.label,
     currency: value.currency,
     unitPriceCents: value.unitPriceCents,
+    dynamicPriceMultiplier: value.dynamicPriceMultiplier,
     active: value.active,
     eventId: value.eventId,
   } as BillingProductChangeProposal;

@@ -49,6 +49,14 @@ test('watch quote preparation overlaps catalog and policy reads and reuses their
   assert.equal(detail.recreateHref, '/app?from=prepared-watch');
   assert.deepEqual(events, ['engines', 'policy'], 'building the detail does not read the context again');
 
+  const unavailableContext = await prepare({
+    loadEngines: async () => engines,
+    loadOverrides: async () => ({ status: 'unavailable', rules: [], errorCode: 'pricing_rules_query_failed' }),
+  });
+  await assert.rejects(() => unavailableContext.quote({ engine: engines[0], mode: 't2v', durationSec: 22,
+    resolution: '720p', aspectRatio: '16:9', addons: { audio: true } }), /CURRENT_PRICING_POLICY_UNAVAILABLE/);
+  const unavailableDetail = await loader.buildExampleWatchDetail(video, deriveWatchPageSignals({ video }), unavailableContext);
+  assert.deepEqual(unavailableDetail?.quotes, [], 'a current policy outage cannot produce a fallback price');
   const disabledContext = await prepare({
     loadEngines: async () => [],
     loadOverrides: async () => ({ status: 'loaded', rules: [], routingRules: [] }),

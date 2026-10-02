@@ -5,7 +5,7 @@ import { createRoot } from 'react-dom/client';
 import { JSDOM } from 'jsdom';
 import type { ExampleWatchDetail } from '../frontend/lib/example-watch-detail';
 
-test('reader distinguishes historical cost from each executable quote and recovers a blocked prompt copy', async () => {
+test('reader shows current original-model prices without historical charges and recovers a blocked prompt copy', async () => {
   const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/video/example', pretendToBeVisual: true });
   let blocked = false;
   const copied: string[] = [];
@@ -37,7 +37,11 @@ test('reader distinguishes historical cost from each executable quote and recove
     await act(async () => root.render(React.createElement(ExampleReaderContent, { detail, copy: readerCopy('en'), locale: 'en', headingLevel: 'h1' })));
     const doc = dom.window.document;
     assert.equal(doc.querySelector('h1')?.textContent, detail.title, 'the complete watch H1 survives presentation changes');
-    assert.ok(doc.body.textContent?.includes('Original render cost'));
+    assert.ok(doc.body.textContent?.includes('Current model estimate'));
+    assert.ok(!doc.body.textContent?.includes('$1.39'), 'historical paid price cannot be shown on the public reader');
+    assert.ok(doc.querySelector('.video-reader-recorded')?.textContent?.includes('$1.46'));
+    assert.ok(doc.querySelector('.video-reader-recorded')?.textContent?.includes('Text to video · No references'));
+    assert.ok(doc.querySelector('.video-reader-recorded')?.textContent?.includes('8 s · 1080p · 16:9'));
     const quotes = [...doc.querySelectorAll('article')];
     assert.equal(quotes.length, 3);
     assert.deepEqual(quotes.map(quote => quote.querySelector('a')?.getAttribute('href')), detail.quotes.map(quote => quote.href));
@@ -60,9 +64,22 @@ test('reader distinguishes historical cost from each executable quote and recove
     const fallback = doc.querySelector<HTMLTextAreaElement>('textarea[readonly]');
     assert.equal(fallback?.value, detail.prompt, 'the full prompt remains copyable if browser clipboard APIs fail');
     assert.equal(doc.activeElement, copy, 'clipboard fallback returns keyboard focus to the copy action');
+    for (const locale of ['fr', 'es'] as const) {
+      await act(async () => root.render(React.createElement(ExampleReaderContent, { detail, copy: readerCopy(locale), locale, headingLevel: 'h1' })));
+      const oldPrice = new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD' }).format(1.39);
+      assert.ok(!doc.body.textContent?.includes(oldPrice), `${locale}: hide the stored charge`);
+      assert.ok(doc.querySelector('.video-reader-recorded')?.textContent?.includes(readerCopy(locale).currentPrice));
+    }
+    await act(async () => root.render(React.createElement(ExampleReaderContent, { detail: { ...detail, quotes: [] }, copy: readerCopy('en'), locale: 'en', headingLevel: 'h1' })));
+    assert.equal(doc.querySelector('.video-reader-recorded'), null, 'an unavailable current quote must never fall back to the stored charge');
+    assert.ok(!doc.body.textContent?.includes('$1.39'));
     const matching = { ...detail, quotes: detail.quotes.map(quote => ({ ...quote, settings, changed: [] })) };
     await act(async () => root.render(React.createElement(ExampleReaderContent, { detail: matching, copy: readerCopy('en'), locale: 'en', headingLevel: 'h1' })));
     assert.equal(doc.querySelector('.video-reader-comparisonNote'), null, 'identical proposals do not display an irrelevant adaptations explanation');
+    const adapted = { ...matching, quotes: matching.quotes.map(quote => quote.original ? { ...quote, settings: { ...settings, durationSec: 10, resolution: '720p' }, changed: ['durationSec', 'resolution'] as const } : quote) } as ExampleWatchDetail;
+    await act(async () => root.render(React.createElement(ExampleReaderContent, { detail: adapted, copy: readerCopy('en'), locale: 'en', headingLevel: 'h1' })));
+    assert.ok(doc.querySelector('.video-reader-recorded')?.textContent?.includes('10 s · 720p · 16:9'), 'headline identifies the priced proposal rather than the original render settings');
+    assert.ok(doc.querySelector('.video-reader-recorded')?.textContent?.includes('Adapted video settings'));
     await act(async () => root.render(React.createElement(ExampleReaderContent, { detail: { ...matching, scenario: null }, copy: readerCopy('en'), locale: 'en', headingLevel: 'h1' })));
     assert.ok(doc.querySelector('.video-reader-comparisonNote')?.textContent?.includes('original settings are incomplete'));
     assert.ok([...doc.querySelectorAll('article')].every(quote => quote.textContent?.includes('Suggested video settings')), 'unknown originals must not claim matching settings');

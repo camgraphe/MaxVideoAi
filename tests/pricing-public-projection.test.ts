@@ -130,7 +130,7 @@ test('public pricing baseline ignores machine-specific pricing environment overr
     },
   });
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-  assert.match(result.stdout, /current \(588 rows\)/);
+  assert.match(result.stdout, /current \(577 rows\)/);
 });
 
 test('canonical public pricing adapters exist and stay browser safe', () => {
@@ -333,8 +333,8 @@ test('browser estimator and price chip delegate commercial totals to the public 
     ['PriceEstimator.tsx', estimator],
     ['PriceChip.tsx', chip],
   ] as const) {
-    assert.match(source, /pricing-public-facts/, `${path} should build provider facts`);
-    assert.match(source, /pricing-public-quote/, `${path} should quote canonically`);
+    assert.match(source, /fetchCurrentPrice/, `${path} should request the effective server quote`);
+    assert.doesNotMatch(source, /buildPublicPricingFacts|quotePublicPricing/, `${path} should not calculate commercial totals in the browser`);
     assert.doesNotMatch(source, /computePricingSnapshot/, `${path} should not call the legacy client kernel`);
     assert.doesNotMatch(source, /platformFeePct:/, `${path} should not mutate commercial policy`);
   }
@@ -353,7 +353,7 @@ test('model price rows and Product Offer JSON-LD use canonical public owners', (
     'utf8'
   );
   assert.match(modelPricing, /server\/pricing\/quote-public/);
-  assert.match(modelPricing, /computeCanonicalPublicSnapshot/);
+  assert.match(modelPricing, /computeCurrentPublicSnapshot/);
   assert.doesNotMatch(modelPricing, /from '@\/lib\/pricing'/);
   assert.match(modelSchema, /pricing-public-facts/);
   assert.match(modelSchema, /pricing-public-quote/);
