@@ -828,11 +828,11 @@ const OWNED_MEDIA_STORAGE_PREFIXES = [
 
 export function isOwnedMediaStorageKey(params: { key: string; userId: string }): boolean {
   if (!params.key || !params.userId) return false;
-  return OWNED_MEDIA_STORAGE_PREFIXES.some((prefix) => isStorageKeyWithinUserPrefix({
-    key: params.key,
-    prefix,
-    userId: params.userId,
-  }));
+  const contentOwner = createHash('sha256').update(params.userId).digest('hex').slice(0, 32);
+  return OWNED_MEDIA_STORAGE_PREFIXES.some((prefix) =>
+    isStorageKeyWithinUserPrefix({ key: params.key, prefix, userId: params.userId })
+    || isStorageKeyWithinUserPrefix({ key: params.key, prefix: `${prefix}/by-content`, userId: contentOwner }),
+  );
 }
 
 export function ownedMediaStorageKeyForUrl(params: { url: string; userId: string }): string | null {

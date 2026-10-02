@@ -2,11 +2,13 @@ import pLimit from 'p-limit';
 import sharp from 'sharp';
 import { normalizeMediaUrl } from '@/lib/media';
 import { uploadImageToStorage } from '@/server/storage';
+import { createOwnedMediaReadUrl } from '@/server/owned-media-read-access';
 
 type ThumbnailInput = {
   jobId: string;
   imageUrl: string;
   userId?: string | null;
+  allowLegacyAnonymousPublicRead?: boolean;
   index: number;
   maxDimension?: number;
   fetchTimeoutMs?: number;
@@ -16,6 +18,7 @@ type ThumbnailInput = {
 type BatchInput = {
   jobId: string;
   userId?: string | null;
+  allowLegacyAnonymousPublicRead?: boolean;
   imageUrls: string[];
   maxDimension?: number;
   concurrency?: number;
@@ -107,7 +110,12 @@ export async function createImageThumbnail(input: ThumbnailInput): Promise<strin
   );
 
   try {
-    const source = await withTimeout(fetchSourceImage(normalizedUrl, fetchTimeoutMs), fetchTimeoutMs + 500, 'fetch');
+    const sourceUrl = await createOwnedMediaReadUrl({
+      url: normalizedUrl,
+      userId: input.userId,
+      allowLegacyAnonymousPublicRead: input.allowLegacyAnonymousPublicRead,
+    });
+    const source = await withTimeout(fetchSourceImage(sourceUrl, fetchTimeoutMs), fetchTimeoutMs + 500, 'fetch');
     const encoded = await withTimeout(encodeThumb(source, maxDimension), processingTimeoutMs, 'image processing');
     const extension = encoded.mime === 'image/webp' ? 'webp' : 'jpg';
     const upload = await withTimeout(
@@ -144,6 +152,7 @@ export async function createImageThumbnailBatch(input: BatchInput): Promise<Arra
         createImageThumbnail({
           jobId: input.jobId,
           userId: input.userId ?? null,
+          allowLegacyAnonymousPublicRead: input.allowLegacyAnonymousPublicRead,
           imageUrl,
           index,
           maxDimension: input.maxDimension,

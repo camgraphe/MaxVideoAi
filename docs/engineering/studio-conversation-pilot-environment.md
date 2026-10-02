@@ -36,7 +36,19 @@ After reloading the same Project, the browser displayed and decoded that origina
 
 A later reload returned `503` on the conversation read (and `500` on a legal-document read). The existing Check result control recovered the same completed image with a subsequent `200`; browser decoding passed again and no creation was retried. The underlying transient read failure has not been attributed. Keep it as a pilot reliability finding rather than claiming every reload was error-free.
 
-Only the native image milestone is qualified. Video/audio gates and export remain disabled; the production wallet, provider invoice total and API payment-card state remain unqualified.
+Only the native image output milestone is qualified; the production wallet, provider invoice total and API payment-card state remain unqualified. The local-only video/audio gate was subsequently opened for the bounded preparation below; exports and the protected remote deployment's media gate remain closed.
+
+## Native animation preparation
+
+The ordinary English message “I love this image. Can it move a little? Keep it cheap.” let Sol choose the movement and author its own prompt. Four Responses selected the ready owned image and prepared a silent Wan 3 image-to-video request: **5 seconds, 480p, 16:9, one output**. Preparation initially failed before quoting or charging: the shared library-save owner fetched the private original using its unsigned storage URL and received 403.
+
+`server/owned-media-read-access.ts` now supplies a short-lived server read grant for exact owner-prefixed objects in configured storage. Library copies and image/video thumbnail creation use it; their persisted originals and provenance remain stable. The native Resume exchange action reused the saved draft and completed without another Sol call. It created exactly one idempotent library asset with the original job/output provenance and no stored signatures. Native quote `1a8525e5-8afe-488e-b528-85b84b7d6053` is prepared at **30 cents USD** and awaits fresh explicit approval, including any synthetic pilot credit. The ledger still contains one image job, its one top-up and charge, and zero exports; no video provider request occurred.
+
+The fourteen Responses total **28,519 tokens**, including 56 reasoning tokens already counted in output. Standard-tier estimated API cost is **$0.0482221** using the same verified rates and raw usage records; preparation of the motion exchange accounts for the increase. Saved-draft recovery incurred no model charge. The proof records are `studio-native-pilot/native-video-qualification.json`, `usage-and-quote.json` and `native-video-quote.png` outside Git.
+
+Independent review preserved operator-only public anonymous thumbnail backfills and ownership checks for existing content-addressed imports. RED/GREEN regressions exercise actual upload keys, local signing and backfill/Sharp pipelines with network doubles. Final checks passed **632 Studio tests** and **85 focused media/storage/repair tests**, typecheck, lint (seven existing image-element warnings), exposure checks and diff whitespace checks. Reload recovered the same prepared video quote; fresh paid approval remains required.
+
+Seed/Minimax voice variants are configured. Lyria music remains unavailable locally and requires renewed server credentials before live qualification. Catalog presence alone would not establish provider authentication, IAM, billing or generation readiness. The native action selects Lyria Clip for 30 seconds, later trimmed to the film; mastering also requires local FFmpeg/FFprobe. Its synchronous provider timeout exceeds the native remote route duration, so a successful bounded localhost test must not be called durable remote execution qualification.
 
 ## Callback configuration and lifecycle
 

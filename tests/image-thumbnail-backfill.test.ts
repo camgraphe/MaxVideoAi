@@ -138,6 +138,30 @@ test('--apply repairs one missing thumbnail and uses an optimistic update', asyn
   assert.match(update.sql, /RETURNING id/i);
 });
 
+test('only ownerless backfill rows opt into legacy anonymous public reads', async () => {
+  const inputs: Array<{ userId: string | null; allowLegacyAnonymousPublicRead?: boolean }> = [];
+  const state = fixture([
+    row({ user_id: null, render_ids: ['https://media.example/anonymous.png'] }),
+    row({ id: 2, job_id: 'job-2', render_ids: ['https://media.example/owned.png'] }),
+  ]);
+  const summary = await runImageThumbnailBackfill(
+    parseImageThumbnailBackfillOptions(['--apply', '--max=2'], {}),
+    {
+      ...state.dependencies,
+      async createThumbnails(input) {
+        inputs.push(input);
+        return ['https://media.example/generated.webp'];
+      },
+    },
+  );
+  assert.equal(summary.updated, 2);
+  assert.equal(summary.failed, 0);
+  assert.deepEqual(inputs.map(({ userId, allowLegacyAnonymousPublicRead }) => ({ userId, allowLegacyAnonymousPublicRead })), [
+    { userId: null, allowLegacyAnonymousPublicRead: true },
+    { userId: 'user-1', allowLegacyAnonymousPublicRead: undefined },
+  ]);
+});
+
 test('existing valid originals and thumbnails are skipped', async () => {
   const state = fixture([
     row({
