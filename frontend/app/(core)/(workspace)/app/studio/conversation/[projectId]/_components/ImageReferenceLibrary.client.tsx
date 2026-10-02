@@ -14,7 +14,7 @@ export function ImageReferenceLibrary({
   onClose,
   onSelect,
   mediaEnabled = false,
-  locale = 'fr',
+  locale = 'en',
 }: {
   onClose: () => void;
   onSelect: (asset: ImageLibraryAsset) => void;
@@ -84,7 +84,7 @@ export function ImageReferenceLibrary({
           const data = await response.json();
           if (!response.ok || !data.ok)
             throw new Error(
-              "La bibliothèque est indisponible. Vérifiez votre connexion.",
+              t('The library is unavailable. Check your connection.','La bibliothèque est indisponible. Vérifiez votre connexion.'),
             );
           if (!controller.signal.aborted) apply(data);
         })
@@ -110,12 +110,12 @@ export function ImageReferenceLibrary({
       const response = await fetch(endpoint(cursor), { cache: "no-store" });
       const data = await response.json();
       if (!response.ok || !data.ok)
-        throw new Error("Impossible de charger la suite.");
+        throw new Error(t('Unable to load more media.','Impossible de charger la suite.'));
       if (alive.current && scope.current === currentScope) apply(data, true);
     } catch (failure) {
       if (alive.current && scope.current === currentScope)
         setError(
-          failure instanceof Error ? failure.message : "Chargement interrompu.",
+          failure instanceof Error ? failure.message : t('Loading interrupted.','Chargement interrompu.'),
         );
     } finally {
       if (alive.current && scope.current === currentScope) setBusy(false);
@@ -131,7 +131,7 @@ export function ImageReferenceLibrary({
     } catch (failure) {
       if (alive.current)
         setError(
-          failure instanceof Error ? failure.message : "Sélection interrompue.",
+          failure instanceof Error ? failure.message : t('Selection interrupted.','Sélection interrompue.'),
         );
     } finally {
       if (alive.current) setBusy(false);
@@ -149,12 +149,12 @@ export function ImageReferenceLibrary({
       });
       const data = await response.json();
       if (!response.ok || !data.ok || !data.asset?.assetId)
-        throw new Error("L’image n’a pas pu être importée.");
+        throw new Error(t('The media could not be imported.','Le média n’a pas pu être importé.'));
       if (alive.current) onSelect({...data.asset, kind});
     } catch (failure) {
       if (alive.current)
         setError(
-          failure instanceof Error ? failure.message : "Import interrompu.",
+          failure instanceof Error ? failure.message : t('Import interrupted.','Import interrompu.'),
         );
     } finally {
       if (alive.current) setBusy(false);
