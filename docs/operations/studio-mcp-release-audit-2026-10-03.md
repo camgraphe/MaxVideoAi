@@ -92,10 +92,10 @@ actual updated Studio is now represented by the integrated release capture descr
 
 ## Remaining release gates and non-claims
 
-- The final integrated TypeScript check remains pending. A whole-app snapshot
-  during concurrent implementation reported JSX parse errors in the separately
-  owned `frontend/app/(core)/admin/studio/_components/AdminStudioList.tsx`;
-  this audit does not claim a passing whole-app type check.
+- The initial concurrent snapshot exposed JSX parse errors in the admin review
+  component. Those were corrected; integrated TypeScript and the isolated production
+  build subsequently passed. Final candidate evidence and remaining activation
+  gates are consolidated in [the release handoff](studio-release-candidate-2026-10-04.md).
 - Studio's `adminOnly` gate remains enabled. The public explanatory page does not
   activate customer access or certify the assistant, persistence or economics.
 - No new Codex, Claude, ChatGPT, OpenClaw or n8n host run was performed. Existing
@@ -147,6 +147,11 @@ integrated browser qualification remains with the release owner. This review
 performed no provider call, payment, migration or production activation.
 
 The integrated release includes a real Studio capture (1354 × 832, 48,132-byte WebP), made from the rendered conversation surface with demonstration media. Its caption explicitly identifies the local preview. No generated mockup or fabricated model reply is used.
+
+The public FAQ also distinguishes included assistant usage, explicit paid Sol
+budgets, the bounded Luna fallback and separate generation/export charges in all
+three languages. It points to the rates displayed in Studio rather than copying
+an independently maintained tariff into marketing content.
 
 
 ## Asset freshness review — 4 October 2026
