@@ -10,7 +10,7 @@ La direction produit est un espace où l’on peut réfléchir, prompter, créer
 - Des mentions telles que « Image 1 » liées à l’identifiant exact du média joint. Le glisser-déposer possède une alternative clavier/tactile ; les correspondances survivent aux reprises et aux renouvellements de devis.
 - Une timeline partagée entre les modifications manuelles et celles de l’assistant, repliable sans perdre le montage. L’export conserve son devis et sa confirmation explicite.
 - Une politique éditoriale commune à Studio et au MCP : modèles de référence, alternatives pertinentes et modèles sur demande. Seedance, Wan et Kling ont un poids important parmi les choix exécutables ; Pika reste disponible sur demande. Les contraintes et choix explicites du client restent prioritaires.
-- Des estimations image/vidéo issues du moteur de prix MaxVideoAI actuel, pour un scénario précis, sans remplacer le devis en cours ni déclencher un achat. Le montant final doit toujours être confirmé sur un devis frais.
+- Une lecture du prix image/vidéo calculé par le moteur tarifaire MaxVideoAI pour un modèle et des réglages précis. Le LLM ne devine pas le montant. Cette lecture ne remplace pas le devis en cours et ne déclenche pas d'achat ; avant lancement, un devis valide confirme le prix de la demande effectivement préparée. Un budget de projet dépend séparément du nombre de plans et d'essais retenus. « Actuel » désigne notre barème maintenu dans l'environnement utilisé, pas une récupération automatique des tarifs fournisseurs sur Internet.
 
 ## Ce que la comparaison a apporté
 
@@ -37,6 +37,8 @@ Après l’alignement final des instructions MCP, les 19 tests ciblés passent a
 Ces vérifications ne mesurent pas le jugement artistique d’un modèle en conditions réelles. Aucun média payant ni rendu de production n’a été lancé. L’assistant voit les images jointes ; il reçoit les identités et métadonnées des vidéos et audios, sans analyse sémantique de leur contenu. Les estimations conversationnelles ne couvrent pas encore l’audio ou les sorties non enregistrées comme références. Aucun partage public ou bouton social fictif n’est ajouté.
 
 Avant production : revue de cette version, qualification du dialogue avec la connexion modèle réelle et validation des fonctionnalités à activer. La mise en production attend le feu vert demandé par Adrien. La branche de travail est `codex/studio-creative-workspace`, isolée du dossier initial contenant ses modifications en cours.
+
+La [stratégie d'analyse des interactions Studio/MCP](2026-10-03-studio-mcp-learning-strategy.md) ajoute un préalable à la bêta instrumentée : pouvoir relire une interaction, connaître les versions et faits utilisés, recueillir un retour et transformer un problème en cas de régression. Studio est la source principale envisagée ; les outils MCP ne donnent pas automatiquement accès au dialogue complet d'un hôte externe. Cette collecte complémentaire, sa revue protégée et son protocole d'évaluation restent à implémenter. La comparaison concurrentielle consignée est une proposition de positionnement par usage ; elle n'a pas encore modifié la politique éditoriale. L'assistant possède une mission créative ; la limite actuelle concerne les preuves de qualité de son jugement, pas une interdiction d'en avoir un.
 
 ## Reprise artistique après revue visuelle
 
