@@ -37,15 +37,16 @@ The media confirmation cannot retroactively authorize chat charges incurred whil
 
 ## Current Studio baseline and deferred assistant choices
 
-These are internal workload candidates, not a recommendation to add a model selector to every Create field. Start with automatic qualified prompt assistance in Create; expose an advanced assistant choice only if evaluation and customer demand justify it. A user's explicitly selected model must never be silently replaced.
+Studio uses Sol as its default assistant, with an explicitly selected, sponsored Luna continuation when the Sol allowance or authorized budget runs out. The Create candidates below remain deferred; no assistant entry or selector is being added there. A user's explicitly selected model must never be silently replaced.
 
 | Experience | Initial candidate | Scope and commercial treatment |
 | --- | --- | --- |
 | Agent · Quick | GPT-6 Luna | Included, bounded prompt clarification/rewrite help; one compact request where possible. Candidate subject to real prompt-quality evaluation. |
 | Agent · Creative | GPT-6.1 Sol | More involved direction and iteration; discovery allowance followed by included customer entitlement or explicitly paid assistance budget. |
 | Studio Agent | GPT-6.1 Sol | Context, references, tools and editing; same usage accounting as Creative, with different observed per-turn costs. |
+| Studio continuation | GPT-6 Luna | Optional assistance at no extra chat cost within a disclosed sponsored allowance; ongoing work, not a wrap-up-only mode. Media generation remains separately priced. Subject to Studio quality and tool-use qualification. |
 
-Keep the current Studio Sol baseline for this release. The Quick/Creative split is a future candidate requiring evaluation, not an instruction to add models or a selector now. Model names remain discoverable, and a model change must not silently downgrade the client's selected experience. Store model choice centrally with a policy version; do not scatter hardcoded IDs across Create fields. Never market a cheaper tier as artistically equivalent without evidence.
+Keep Sol as Studio's default experience. Offer Luna as a continuation choice at allowance exhaustion, without adding a prominent model selector to the initial experience. The Create Quick/Creative split remains a future candidate requiring evaluation. Model names remain discoverable, and a model change must not silently downgrade the client's selected experience. Store model choice centrally with a policy version; do not scatter hardcoded IDs across Create fields. Never market a cheaper tier as artistically equivalent without evidence.
 
 OpenAI describes Luna as suited to efficient repeatable work and Sol to more complex work, and recommends evaluating representative tasks. This supports testing the split, not assuming its quality. [Deployment guidance](https://developers.openai.com/api/docs/guides/deployment-checklist#choose-a-model-for-the-workload).
 
@@ -79,18 +80,44 @@ Use a **bounded included allowance plus an optional paid assistance budget**. Do
 
 ### Studio allowance and manual recharge proposal
 
-The user's latest preferred direction is a limited allowance per customer followed by recharge on demand. This establishes the commercial mechanism to explore, not approval of a numerical allowance, retail tariff or debit implementation.
+The user's latest direction is a limited Sol allowance per customer followed by a choice between recharge and sponsored Luna continuation. Luna can continue ordinary creative work and is not restricted to finishing the current conversation. This establishes the commercial mechanism to explore, not approval of a numerical allowance, retail tariff or debit implementation.
 
 - Start with a one-time discovery allowance per eligible authenticated account. Bound both its supplier cost and the total acquisition campaign budget; account creation alone cannot prevent repeated trial abuse. Do not launch an automatically renewing free allowance before cohort economics justify it.
 - Meter actual token categories, model requests and other billable assistant work internally. A raw token count or fixed number of messages is not a reliable monetary ceiling: context, images, cache reuse, output and tool loops change the cost. A per-message API ceiling is an additional guardrail, not the customer-facing sales unit.
 - Show an understandable included-usage indicator and the customer's authorized Studio spending balance/cap. Use the existing wallet funding path for manual recharges. Avoid introducing a second cash wallet: identify Studio charges separately and require explicit authorization before consuming a wallet previously funded for media. Promotional Studio entitlement is separately tracked and does not change the customer's cash balance.
-- Warn before exhaustion. Once the included allowance is spent, pause new paid assistant requests until the customer enables a visible Studio budget. Funding the wallet and authorizing its use for Studio are distinct steps. A rejected recharge preserves the project, conversation and existing editing access. Automatic recharge is off at launch.
+- Warn before exhaustion. Once the Sol allowance or authorized budget is spent, offer an explicit choice between recharge and Luna at no extra assistance cost within its disclosed sponsored allowance. Pause new paid assistant requests until the customer enables a visible Studio budget. Funding the wallet and authorizing its use for Studio are distinct steps. A rejected recharge preserves the project, conversation and existing editing access. Automatic recharge is off at launch.
 - Give paid Studio use its own published, versioned customer tariff with enough contribution to cover provider usage and variable operating costs. Tokens can remain available in detailed usage; the main experience should make remaining money and consumption understandable. Do not promise a fixed number of messages for a recharge. Supplier rate changes inform future reviewed tariffs and do not reprice settled usage.
 - Before every provider dispatch, reserve a conservative amount within both the account's supplier-cost allowance and, for paid use, its authorized customer budget. Bound the input and output behind that reservation; settle once, release unused amounts and reconcile unknown outcomes. Concurrent sessions share the same cap. A global operational ceiling limits aggregate subsidized exposure. No ledger implementation is implied by this document.
 
 Illustrative retail arithmetic, **not a selected price**: if assistant work costs $0.05 at the provider and the published customer tariff charges $0.15 for that work, $0.10 remains before payment fees, infrastructure, support, subsidies and other costs. This is not $0.10 of net profit. Likewise, a one-time $0.50 provider-cost discovery cap gives at most $500 of trial API exposure across 1,000 eligible accounts, provided reservations enforce that cap; it is not an observed $500 spend. The actual cap must be large enough to demonstrate a useful creative task and small enough for the acquisition budget.
 
 Cursor documents a comparable included-usage then optional paid-usage mechanism with spending controls. This supports the intelligibility of the pattern, not our prices, margins or conversion assumptions. [Cursor usage-based charges](https://prod.cursor.com/help/account-and-billing/overages), checked 3 October 2026.
+
+### Luna continuation and contextual reminders
+
+The user explicitly rejected a wrap-up-only restriction. Luna is a continuing assistant, not a final-message grace mode. Keep the same project and available references; qualify the handoff of relevant conversation context before release. Luna may propose prompts, discuss creative ideas and use the Studio tools for which it passes evaluation. Existing generation authorization, ownership, quote and payment checks apply identically.
+
+At Sol allowance or budget exhaustion, proposed English copy:
+
+> **Keep creating**
+>
+> Top up to continue with Sol, or continue with Luna at no extra cost.
+>
+> Included Luna assistance has usage limits. Image and video generation are charged separately.
+>
+> **Top up for Sol** · **Continue with Luna**
+
+After the customer's choice, show a discreet persistent **Luna · Included assistance** label. For each new relevant creative-planning action or generation preparation/review, show a short inline reminder beside the action rather than an interrupting modal:
+
+> You're using Luna. For more in-depth creative guidance, top up to use Sol.
+>
+> **Top up for Sol**
+
+Continuing with Luna remains available through the normal action. Attach reminders to observable task/action types such as creative planning, storyboard development and generation preparation, not an attempt to inspect hidden reasoning. A repeated render or polling update must not repeat the notice as a new message. Simple navigation and ordinary chat need only the persistent model label.
+
+Generation review must distinguish the **assistant** (Luna) from the actual **image/video model** and show the normal media price. Switching assistant does not itself switch that generation model, imply that every generated result will be worse, or make generation free. Do not say Luna cannot be creative; the Sol recommendation is positioning to validate with representative Studio evaluations, not a measured artistic-quality guarantee.
+
+Luna's provider usage is a product-funded expense and needs a durable account-level cost cap plus an aggregate subsidy budget. New conversations do not reset the account allowance. The allowance size and renewal policy remain open; disclose the actual limits before uptake and show an approaching-limit notice. No unlimited-free claim or automatic customer wallet debit is authorized. Recharge does not retroactively authorize earlier calls, and paid Sol continuation still uses the explicitly enabled budget.
 
 - Deferred Quick assistance would need its own small acquisition/activation budget. Account creation enables continuity and enforcement; it is not sufficient anti-abuse protection or proof of conversion.
 - Studio/Creative discovery should show the real quality baseline for a bounded trial. Limit the subsidized allowance rather than silently substituting a weak model or truncating every useful answer.
@@ -120,4 +147,4 @@ Security, ownership, retention and review-export rules remain those in the learn
 
 ## What remains open
 
-The desired Agent entry, account requirement, continuity and media Generate confirmation are clear. The exact included allowance, paid assistance rate, budget renewal and supported model-quality thresholds are still proposals. No new API call, customer-data export, wallet debit, model substitution or production deployment was performed to prepare this document.
+The current scope is Studio and MCP, with all Create assistant entries deferred. Studio's direction is Sol by default, a choice of recharge or Luna continuation when its budget runs out, and contextual model reminders around demanding creative work and generation preparation. The exact Sol and Luna allowances, paid assistance rate, renewal rules and model-quality thresholds remain proposals. No new API call, customer-data export, wallet debit, model substitution or production deployment was performed to prepare this document.
