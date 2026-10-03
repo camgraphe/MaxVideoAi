@@ -18,6 +18,7 @@ export function AdminUserDetailView({ userId, overview }: AdminUserDetailViewPro
   const usage = overview.usage;
   const lifetimeTopupsUsd = wallet ? (wallet.stats.topup ?? 0) / 100 : 0;
   const lifetimeChargesUsd = wallet ? (wallet.stats.charge ?? 0) / 100 : 0;
+  const lifetimeCreditReversalsUsd = wallet ? (wallet.stats.credit_reversal ?? 0) / 100 : 0;
   const lifetimeRefundsUsd = wallet ? (wallet.stats.refund ?? 0) / 100 : 0;
   const lifetimeNetSpendUsd = lifetimeChargesUsd - lifetimeRefundsUsd;
   const metrics = buildMemberPulseItems({
@@ -94,6 +95,7 @@ export function AdminUserDetailView({ userId, overview }: AdminUserDetailViewPro
             topups={overview.topups}
             lifetimeTopupsUsd={lifetimeTopupsUsd}
             lifetimeChargesUsd={lifetimeChargesUsd}
+            lifetimeCreditReversalsUsd={lifetimeCreditReversalsUsd}
             lifetimeRefundsUsd={lifetimeRefundsUsd}
             lifetimeNetSpendUsd={lifetimeNetSpendUsd}
           />

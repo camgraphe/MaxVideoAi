@@ -1,11 +1,9 @@
-const AUTHORIZATION_ID_PATTERN = /^[A-Za-z0-9._~-]{8,512}$/;
+import { isValidAuthorizationId } from '@/lib/mcp-oauth-continuation';
+
+export { isValidAuthorizationId } from '@/lib/mcp-oauth-continuation';
 
 function isLoopback(hostname: string): boolean {
   return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]' || hostname === '::1';
-}
-
-export function isValidAuthorizationId(value: unknown): value is string {
-  return typeof value === 'string' && AUTHORIZATION_ID_PATTERN.test(value);
 }
 
 export function buildConsentLoginPath(authorizationId: string): string {
@@ -13,7 +11,7 @@ export function buildConsentLoginPath(authorizationId: string): string {
     throw new Error('Invalid OAuth authorization id.');
   }
   const nextPath = `/oauth/consent?authorization_id=${encodeURIComponent(authorizationId)}`;
-  return `/login?next=${encodeURIComponent(nextPath)}`;
+  return `/login?mode=signin&next=${encodeURIComponent(nextPath)}`;
 }
 
 function singleForwardedValue(value: string | null): string | null {

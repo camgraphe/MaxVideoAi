@@ -112,6 +112,20 @@ test('admin insights distinguish gross charges, refunds, net spend, and wallet b
   assert.equal(board.get('Wallet balance delta')?.current, '+$50');
 });
 
+test('payment-credit reversals reduce wallet deltas without changing render spend in either window', () => {
+  const withReversals = {
+    ...comparison,
+    current: { ...comparison.current, creditReversalsDaily: [{ date: currentDate, count: 1, amountCents: 500 }] },
+    previous: { ...comparison.previous, creditReversalsDaily: [{ date: previousDate, count: 1, amountCents: 200 }] },
+  };
+  const executive = new Map(buildExecutiveMetrics(metrics, withReversals, '24 hours').map(item => [item.label, item]));
+  assert.equal(executive.get('Net render spend')?.value, '$50');
+  assert.equal(executive.get('Wallet balance delta')?.value, '+$45');
+  const board = new Map(buildRevenueBoardRows(withReversals).map(row => [row.label, row]));
+  assert.equal(board.get('Wallet balance delta')?.current, '+$45');
+  assert.equal(board.get('Wallet balance delta')?.previous, '+$18');
+});
+
 test('admin user detail exposes gross charges, refunds, and net spend as separate metrics', () => {
   const items = buildMemberPulseItems({
     userId: 'user-1',

@@ -51,12 +51,12 @@ test('login page delegates localized copy and browser helpers to route-local mod
   assert.doesNotMatch(pageSource, /'use client'/);
   assert.match(pageSource, /from 'next\/headers'/);
   assert.match(pageSource, /<LoginPageClient/);
-  assert.match(pageSource, /resolveInitialAuthMode\(params\.mode\)/);
+  assert.match(pageSource, /resolveInitialAuthMode\(params\.mode, params\.next\)/);
   assert.match(pageSource, /resolveInitialAuthLocale\(/);
   assert.match(pageClientSource, /'use client'/);
   assert.match(pageClientSource, /from '\.\.\/_hooks\/useLoginPageController'/);
   assert.match(pageClientSource, /from '\.\/LoginAuthSurface'/);
-  assert.match(pageClientSource, /useLoginPageController\(\{ initialMode, initialLocale \}\)/);
+  assert.match(pageClientSource, /useLoginPageController\(\{ initialMode, initialLocale, initialMcpConnection \}\)/);
   const routeStateSource = readFileSync(routeStatePath, 'utf8');
   assert.match(routeStateSource, /export function resolveInitialAuthMode/);
   assert.match(routeStateSource, /export function resolveInitialAuthLocale/);

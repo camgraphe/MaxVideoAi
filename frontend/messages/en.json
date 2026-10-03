@@ -6741,6 +6741,11 @@
       "signin": "Sign in",
       "signup": "Create account"
     },
+    "mcpStaging": {
+      "title": "MaxVideoAI Staging — test environment",
+      "body": "Website accounts and credits are separate from this test environment. For your existing MaxVideoAI account, add the production connection in your assistant.",
+      "action": "Set up MaxVideoAI production"
+    },
     "modes": {
       "signup": {
         "title": "Create your workspace account",
@@ -6756,6 +6761,10 @@
       }
     },
     "continuation": {
+      "mcp": {
+        "title": "Connect your MaxVideoAI account",
+        "body": "Sign in with the same MaxVideoAI account you use on the website. You will review the requested access, then return to your assistant."
+      },
       "billing": {
         "title": "Your {amount} top-up is saved",
         "body": "Create an account or sign in, then you’ll return to Billing with that amount still selected."
@@ -6844,6 +6853,7 @@
       "signingIn": "Signing in…",
       "signinRedirecting": "Signed in. Redirecting…",
       "signinSuggestion": "We couldn't sign you in with those details. If you're new, create your account without retyping anything.",
+      "mcpSigninFailed": "We couldn’t sign you in. Check your email and password, use “Forgot password?”, or continue with Google if that is how you created your MaxVideoAI account.",
       "signupSuggestionReady": "Great, let's create your account.",
       "creatingAccount": "Creating account…",
       "accountRedirecting": "Account created. Redirecting…",

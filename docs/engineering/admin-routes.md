@@ -126,6 +126,16 @@ Move out of `page.tsx`:
 
 ## Detail Pages
 
+Generation-spend aggregates use `frontend/server/wallet-receipt-classification.ts`.
+Charges with `fraud_credit_reversal` or `customer_payment_refund_credit_reversal`
+as their metadata reason are payment-credit reversals, not render spending.
+Keep them in wallet balances and receipt history; exclude them from render totals,
+timeseries, customer lifetime spending and engine usage. The member wallet section
+shows their separate total only when present. Comparison windows carry their own
+`creditReversalsDaily` series so wallet deltas retain these debits while net render
+spend stays separate. `tests/admin-credit-reversal-postgres.test.ts`
+verifies the real aggregate queries against a disposable database.
+
 For pages such as `admin/users/[userId]`, prefer these sections:
 
 - identity/access section

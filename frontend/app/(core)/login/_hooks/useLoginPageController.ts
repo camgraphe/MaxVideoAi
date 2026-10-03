@@ -36,11 +36,13 @@ const LEGAL_MIN_AGE = Number.isNaN(MIN_AGE_ENV) ? 15 : MIN_AGE_ENV;
 type UseLoginPageControllerOptions = {
   initialMode: AuthMode;
   initialLocale: Locale;
+  initialMcpConnection: boolean;
 };
 
 export function useLoginPageController({
   initialMode,
   initialLocale,
+  initialMcpConnection,
 }: UseLoginPageControllerOptions) {
   const router = useRouter();
   const [locale] = useState<Locale>(initialLocale);
@@ -85,7 +87,7 @@ export function useLoginPageController({
         locale,
         nextPath: safeNextPath,
       })
-    : null;
+    : initialMcpConnection ? { kind: 'mcp' as const, ...authCopy.continuation.mcp } : null;
 
   const clearFieldError = useCallback((field: AuthFieldName) => {
     setFieldErrors((current) => {
@@ -191,7 +193,10 @@ export function useLoginPageController({
     const supabase = await loadSupabaseClient();
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      if (error.status === 400) {
+      if (continuation?.kind === 'mcp') {
+        setError(error.code === 'invalid_credentials' ? authCopy.feedback.mcpSigninFailed : error.message);
+        setStatus(null);
+      } else if (error.status === 400) {
         setSignupSuggestion({ email, password });
         setStatusTone('info');
         setStatus(authCopy.feedback.signinSuggestion);

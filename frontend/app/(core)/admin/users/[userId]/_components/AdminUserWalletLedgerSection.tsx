@@ -10,6 +10,7 @@ export function AdminUserWalletLedgerSection({
   topups,
   lifetimeTopupsUsd,
   lifetimeChargesUsd,
+  lifetimeCreditReversalsUsd,
   lifetimeRefundsUsd,
   lifetimeNetSpendUsd,
 }: {
@@ -17,6 +18,7 @@ export function AdminUserWalletLedgerSection({
   topups: AdminUserTopup[];
   lifetimeTopupsUsd: number;
   lifetimeChargesUsd: number;
+  lifetimeCreditReversalsUsd: number;
   lifetimeRefundsUsd: number;
   lifetimeNetSpendUsd: number;
 }) {
@@ -30,6 +32,9 @@ export function AdminUserWalletLedgerSection({
             title={formatCurrency(lifetimeTopupsUsd)}
             lines={[
               `Gross charges ${formatCurrency(lifetimeChargesUsd)}`,
+              ...(lifetimeCreditReversalsUsd > 0
+                ? [`Payment credit reversals ${formatCurrency(lifetimeCreditReversalsUsd)}`]
+                : []),
               `Refunds ${formatCurrency(lifetimeRefundsUsd)}`,
               `Net render spend ${formatCurrency(lifetimeNetSpendUsd)}`,
               `${topups.length} recent top-ups`,

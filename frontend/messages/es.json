@@ -6761,6 +6761,11 @@
       "signin": "Iniciar sesión",
       "signup": "Crear cuenta"
     },
+    "mcpStaging": {
+      "title": "MaxVideoAI Staging — entorno de prueba",
+      "body": "Las cuentas y créditos de la web están separados de este entorno de prueba. Para acceder a tu cuenta MaxVideoAI existente, añade la conexión de producción en tu asistente.",
+      "action": "Configurar MaxVideoAI en producción"
+    },
     "modes": {
       "signup": {
         "title": "Crea tu cuenta de workspace",
@@ -6776,6 +6781,10 @@
       }
     },
     "continuation": {
+      "mcp": {
+        "title": "Conecta tu cuenta MaxVideoAI",
+        "body": "Inicia sesión con la misma cuenta MaxVideoAI que usas en la web. Podrás revisar los permisos solicitados y volver a tu asistente."
+      },
       "billing": {
         "title": "Tu recarga de {amount} está guardada",
         "body": "Crea una cuenta o inicia sesión y volverás a Facturación con ese importe todavía seleccionado."
@@ -6864,6 +6873,7 @@
       "signingIn": "Iniciando sesión…",
       "signinRedirecting": "Sesión iniciada. Redirigiendo…",
       "signinSuggestion": "No pudimos iniciar sesión con esos datos. Si eres nuevo, crea tu cuenta sin volver a escribirlos.",
+      "mcpSigninFailed": "No pudimos iniciar sesión. Comprueba tu correo y contraseña, usa « ¿Olvidaste tu contraseña? », o continúa con Google si creaste tu cuenta MaxVideoAI así.",
       "signupSuggestionReady": "Perfecto, vamos a crear tu cuenta.",
       "creatingAccount": "Creando cuenta…",
       "accountRedirecting": "Cuenta creada. Redirigiendo…",

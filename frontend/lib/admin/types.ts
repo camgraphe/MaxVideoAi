@@ -108,6 +108,7 @@ export type AdminMetricsComparison = {
     activeAccountsDaily: TimeSeriesPoint[];
     topupsDaily: AmountSeriesPoint[];
     chargesDaily: AmountSeriesPoint[];
+    creditReversalsDaily: AmountSeriesPoint[];
     refundsDaily: AmountSeriesPoint[];
   };
   previous: {
@@ -115,6 +116,7 @@ export type AdminMetricsComparison = {
     activeAccountsDaily: TimeSeriesPoint[];
     topupsDaily: AmountSeriesPoint[];
     chargesDaily: AmountSeriesPoint[];
+    creditReversalsDaily: AmountSeriesPoint[];
     refundsDaily: AmountSeriesPoint[];
   };
 };

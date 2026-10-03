@@ -1,3 +1,4 @@
+import { RENDER_CHARGE_SQL } from '@/server/wallet-receipt-classification';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import type { EngineUsage } from '@/lib/admin/types';
@@ -31,7 +32,7 @@ export async function loadEngineUsageRows(excludedUserIds?: string[]): Promise<E
       charge_window AS (
         SELECT job_id, COALESCE(SUM(amount_cents), 0)::bigint AS amount_cents
         FROM app_receipts
-        WHERE type = 'charge'
+        WHERE ${RENDER_CHARGE_SQL}
           AND created_at >= NOW() - INTERVAL '${ENGINE_USAGE_WINDOW_DAYS} days'
         GROUP BY job_id
       )

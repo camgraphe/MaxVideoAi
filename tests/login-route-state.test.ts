@@ -20,3 +20,27 @@ test('login locale accepts the first supported cookie value', () => {
   assert.equal(resolveInitialAuthLocale(undefined, 'EN'), 'en');
   assert.equal(resolveInitialAuthLocale('pt', undefined), 'en');
 });
+
+test('legacy MCP consent links open sign-in while explicit auth choices remain available', () => {
+  const next = '/oauth/consent?authorization_id=authz_1234567890';
+  assert.equal(resolveInitialAuthMode(undefined, next), 'signin');
+  assert.equal(resolveInitialAuthMode(undefined, [next, '/app']), 'signin');
+  assert.equal(resolveInitialAuthMode('other', next), 'signin');
+  assert.equal(resolveInitialAuthMode('signup', next), 'signup');
+  assert.equal(resolveInitialAuthMode('reset', next), 'reset');
+});
+
+test('invalid or external consent targets retain the general login default', () => {
+  for (const next of [
+    'https://example.com/oauth/consent?authorization_id=authz_1234567890',
+    '//example.com/oauth/consent?authorization_id=authz_1234567890',
+    '/\\\\example.com/oauth/consent?authorization_id=authz_1234567890',
+    '/oauth/consent',
+    '/oauth/consent?authorization_id=short',
+    '/oauth/consent?authorization_id=authz_1234567890&authorization_id=other_authz',
+    '/oauth/consent/other?authorization_id=authz_1234567890',
+    '/app',
+  ]) {
+    assert.equal(resolveInitialAuthMode(undefined, next), 'signup', next);
+  }
+});

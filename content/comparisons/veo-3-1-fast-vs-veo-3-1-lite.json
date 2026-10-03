@@ -1,6 +1,10 @@
 {
   "slug": "veo-3-1-fast-vs-veo-3-1-lite",
   "en": {
+    "pricingCreditLink": {
+      "href": "/pay-as-you-go-ai-video-generator",
+      "label": "How credits work"
+    },
     "meta": {
       "title": "Veo 3.1 Lite vs Fast: Price, Quality & Best Uses",
       "description": "Compare Veo 3.1 Lite and Fast by pricing, output quality, audio control, workflow flexibility and when each tier is worth using.",
@@ -27,6 +31,10 @@
     }
   },
   "fr": {
+    "pricingCreditLink": {
+      "href": "/pay-as-you-go-ai-video-generator",
+      "label": "Comment fonctionnent les crédits"
+    },
     "meta": {
       "title": "Veo 3.1 Lite vs Fast : prix, qualité et usages",
       "description": "Comparez Veo 3.1 Lite et Fast selon le prix, la qualité de sortie, le contrôle audio, la souplesse du flux de travail et les cas où chaque version vaut le choix.",
@@ -53,6 +61,10 @@
     }
   },
   "es": {
+    "pricingCreditLink": {
+      "href": "/pay-as-you-go-ai-video-generator",
+      "label": "Cómo funcionan los créditos"
+    },
     "meta": {
       "title": "Veo 3.1 Lite vs Fast: precio, calidad y usos",
       "description": "Compara Veo 3.1 Lite y Fast por precio, calidad de salida, control de audio, flexibilidad del flujo y cuándo conviene elegir cada versión.",

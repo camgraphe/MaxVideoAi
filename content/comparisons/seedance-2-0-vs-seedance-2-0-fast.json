@@ -1,6 +1,10 @@
 {
   "slug": "seedance-2-0-vs-seedance-2-0-fast",
   "en": {
+    "pricingCreditLink": {
+      "href": "/pay-as-you-go-ai-video-generator",
+      "label": "How credits work"
+    },
     "meta": {
       "title": "Seedance 2.0 vs Fast: Quality, Speed, Price & Best Uses",
       "description": "Compare Seedance 2.0 and Fast with independent video examples, pricing, speed, quality tradeoffs and when to use each model.",
@@ -58,6 +62,10 @@
     }
   },
   "fr": {
+    "pricingCreditLink": {
+      "href": "/pay-as-you-go-ai-video-generator",
+      "label": "Comment fonctionnent les crédits"
+    },
     "meta": {
       "title": "Seedance 2.0 vs Fast : qualité, vitesse, prix et usages",
       "description": "Comparez Seedance 2.0 et Fast avec des exemples vidéo indépendants, les prix, la vitesse, les écarts de qualité et les usages de chaque modèle.",
@@ -115,6 +123,10 @@
     }
   },
   "es": {
+    "pricingCreditLink": {
+      "href": "/pay-as-you-go-ai-video-generator",
+      "label": "Cómo funcionan los créditos"
+    },
     "meta": {
       "title": "Seedance 2.0 vs Fast: calidad, velocidad, precio y usos",
       "description": "Compara Seedance 2.0 y Fast con videos lado a lado, precios, velocidad, diferencias de calidad y los mejores usos de cada modelo.",

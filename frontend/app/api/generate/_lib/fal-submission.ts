@@ -208,7 +208,7 @@ export async function submitFalGenerateTask(params: {
         ? error.providerJobId
         : typeof (error as { providerJobId?: string } | undefined)?.providerJobId === 'string'
           ? (error as { providerJobId?: string }).providerJobId!
-          : params.getLastProviderJobId() ?? params.batchId ?? null;
+          : params.getLastProviderJobId() ?? null;
     const paymentStatusOverride =
       params.pendingReceipt && params.paymentMode === 'wallet'
         ? 'refunded_wallet'
@@ -249,8 +249,9 @@ export async function submitFalGenerateTask(params: {
         providerJobId,
       });
 
+    // A request id cannot turn a definitive enqueue rejection into a pending job.
     const uncertainSubmission = params.falPayload.submissionMode === 'enqueue' &&
-      (providerJobId || !status || status >= 500 || status === 408);
+      (!status || status >= 500 || status === 408);
     if (isTimeoutError || uncertainSubmission) {
       const progressFloor = Math.min(95, FAL_PROGRESS_FLOOR + FAL_RETRY_DELAYS_MS.length * 5);
       const waitingMessage =
