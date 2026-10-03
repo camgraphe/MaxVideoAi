@@ -4,6 +4,8 @@ Date: 3 October 2026. Status: working product proposal. The user has requested s
 
 Scope update: the broader Create image/video redesign is explicitly deferred. Preserve this direction for a later coherent release: prompt assistance and reusable prompt context, image/reference selection, account continuity, and visual/interaction consistency with Studio. Do not add isolated buttons or a second incompatible media picker now. Current priority remains Studio interaction auditing and conversational cost/allowance design; the Create flow below is a future requirement, not an instruction to implement it in the current batch.
 
+UX refinement after the user's concern about complexity: recommend keeping Create's current direct workflow as the default, without a permanent Prompt/Agent mode switch. One optional Agent entry beside the prompt opens a focused helper (compact dialog on desktop, temporary sheet on mobile), then returns to the same form. Keep deeper conversation, project work and editing in Studio. Keep MCP as external access to shared capabilities, not another mode the web customer must understand. The earlier two-mode idea is exploratory and is not the recommended launch design.
+
 ## Agreed direction
 
 - Use **Agent** as the user-facing entry name.
@@ -34,6 +36,8 @@ Current foundations include `frontend/src/server/agent-api`, the Studio conversa
 The media confirmation cannot retroactively authorize chat charges incurred while discussing the prompt. If an included Agent allowance ends, continuing with paid assistance requires an explicitly enabled budget before the next paid conversation request. Keep that authorization separate from media confirmation.
 
 ## Proposed assistant choices
+
+These are internal workload candidates, not a recommendation to add a model selector to every Create field. Start with automatic qualified prompt assistance in Create; expose an advanced assistant choice only if evaluation and customer demand justify it. A user's explicitly selected model must never be silently replaced.
 
 | Experience | Initial candidate | Scope and commercial treatment |
 | --- | --- | --- |
