@@ -33,7 +33,11 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     const owned = await browser.newContext(session,{viewport: {width: 1440,height: 900},locale: 'en-US',reducedMotion: 'reduce'});
     const page = owned.page;
     async function setTheme(dark:boolean) {
-      await page.getByRole('button',{name:'Open MaxVideoAI menu',exact:true}).click();
+      await expect(page.getByLabel('Loading account',{exact:true})).toHaveCount(0);
+      await expect(async()=>{
+        if(!await page.getByRole('dialog',{name:'MaxVideoAI',exact:true}).isVisible())await page.getByRole('button',{name:'Open MaxVideoAI menu',exact:true}).click();
+        await expect(page.getByRole('switch',{name:'Dark appearance',exact:true})).toBeVisible({timeout:1000});
+      }).toPass({timeout:10000});
       const toggle=page.getByRole('switch',{name:'Dark appearance',exact:true});
       if((await toggle.getAttribute('aria-checked'))!==String(dark))await toggle.click();
       await page.getByRole('dialog',{name:'MaxVideoAI',exact:true}).getByRole('button',{name:'Close ×',exact:true}).click();

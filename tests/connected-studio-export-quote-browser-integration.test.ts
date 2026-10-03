@@ -81,7 +81,9 @@ test('native export quote stays accessible on mobile and recovers one identity a
     await expect(card).toContainText('Rendering your film…');
     await expect(card.getByRole('button')).toHaveCount(0);
     assert.deepEqual(confirmations,[{quoteId:quote.quoteId,confirmed:true},{quoteId:quote.quoteId,confirmed:true}]);
-    await page.getByRole('button',{name:'Switch to Charcoal',exact:true}).click();
+    await page.getByRole('button',{name:'Open MaxVideoAI menu',exact:true}).click();
+    await page.getByRole('switch',{name:'Dark appearance',exact:true}).click();
+    await page.getByRole('dialog',{name:'MaxVideoAI',exact:true}).getByRole('button',{name:'Close ×',exact:true}).click();
     await expect(page.locator('[data-tone]')).toHaveAttribute('data-tone','charcoal');
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth),390);
     assert.deepEqual(errors,[]);

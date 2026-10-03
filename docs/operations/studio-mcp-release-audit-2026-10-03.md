@@ -147,3 +147,17 @@ integrated browser qualification remains with the release owner. This review
 performed no provider call, payment, migration or production activation.
 
 The integrated release includes a real Studio capture (1354 × 832, 48,132-byte WebP), made from the rendered conversation surface with demonstration media. Its caption explicitly identifies the local preview. No generated mockup or fabricated model reply is used.
+
+
+## Asset freshness review — 4 October 2026
+
+The full validation found expired 30-day review metadata on the brand mark,
+editorial README hero and 0.3.0/0.3.2/0.3.3 release cards. Codex inspected the
+actual files and their captions. The unchanged mark and generated editorial hero
+remain suitable as brand artwork (neither is product/host proof); their review
+revision/date now records this check, without asserting new owner approval.
+The three old release cards are reference-only historical artwork, excluded from
+current release placements. Their pixels, hashes, original provenance and old
+editorial-plan references remain intact. Tests now distinguish archival draft
+release art from current publishable evidence and evaluate the live manifest
+against the actual check date. No native-host qualification was inferred.

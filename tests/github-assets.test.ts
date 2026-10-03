@@ -586,7 +586,7 @@ test('ships archival MCP captures with real hashes and dimensions while producti
   const mcpAssets = manifest.assets.filter((asset: { path: string }) => asset.path.startsWith('frontend/public/media/mcp/'));
   assert.equal(mcpAssets.length, 6);
   assert.ok(mcpAssets.every((asset: { state: string }) => asset.state === 'reference_only'));
-  assert.deepEqual(await validateGithubAssetManifest(manifest, { repositoryRoot, now }), []);
+  assert.deepEqual(await validateGithubAssetManifest(manifest, { repositoryRoot, now:new Date() }), []);
 
   const release = spawnSync(process.execPath, [checkCommandPath, '--release'], {
     cwd: repositoryRoot,
