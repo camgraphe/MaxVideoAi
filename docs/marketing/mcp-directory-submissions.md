@@ -1,5 +1,11 @@
 # MaxVideoAI MCP distribution packages
 
+Latest supplemental read-only checkpoint: [4 October 2026 distribution rollout](../operations/studio-mcp-distribution-rollout-2026-10-04.md).
+GitHub and the official Registry now expose 0.3.6, and n8n workflow 19591 has a
+public listing. Those observations supersede the dated version/public-visibility
+claims below; historical submission evidence is preserved. The published n8n
+payload has not yet been compared byte-for-byte with the reviewed local JSON.
+
 Checked: 2026-09-17
 Overall state: **OWNED-SITE DIRECT RELEASE + OFFICIAL MCP REGISTRY 0.3.5 ACTIVE/LATEST — MCPBEAT OWNERSHIP CONFIRMED; GLAMA OWNERSHIP AND AUTHENTICATED HEALTH CONFIRMED; N8N WORKFLOW 19591 RESUBMITTED UNDER REVIEW**
 

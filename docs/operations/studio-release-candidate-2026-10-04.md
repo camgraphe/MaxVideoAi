@@ -161,6 +161,12 @@ local verification.
 
 ## Final production review and activation
 
+The [distribution rollout checklist](studio-mcp-distribution-rollout-2026-10-04.md)
+records fresh external state and the subsequent GitHub, Registry, ClawHub, n8n and
+directory updates. In particular, reconcile this branch's 0.3.5 package metadata
+with the already-published 0.3.6 source before choosing a new release version and
+qualifying the merged candidate. The local checks above do not certify that merge.
+
 1. Approve the commercial policy above and the included-campaign amount. The
    implementation remains disabled by default; Studio public access remains gated.
 2. Apply migrations 54 and 55 to the intended staging environment through the normal
