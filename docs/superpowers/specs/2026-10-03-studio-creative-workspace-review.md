@@ -5,8 +5,8 @@ La direction produit est un espace où l’on peut réfléchir, prompter, créer
 ## Ce qui est livré
 
 - Une entrée Studio depuis les projets, un accueil léger et des propositions facultatives qui préservent le brouillon.
-- Un chat centré, une typographie plus lisible, les thèmes Charcoal et Olive, une aide liée aux commandes réelles et la suppression du pictogramme devant les réponses.
-- Un panneau média interactif et repliable. Les fichiers déposés dans le chat utilisent les imports existants. Les médias restent accessibles après l’envoi, peuvent être prévisualisés, agrandis ou cités dans le message.
+- Un chat central, une typographie légère avec un accent italique, les thèmes Charcoal et Olive, une aide liée aux commandes réelles et la suppression du pictogramme devant les réponses.
+- Une composition de références légèrement inclinées autour du chat, avec agrandissement au survol/sélection et commandes contextuelles. Une pile dépliable et une collection horizontale prennent le relais sur mobile. Les fichiers déposés dans le chat utilisent les imports existants. Les médias restent accessibles après l’envoi, peuvent être prévisualisés, agrandis ou cités dans le message.
 - Des mentions telles que « Image 1 » liées à l’identifiant exact du média joint. Le glisser-déposer possède une alternative clavier/tactile ; les correspondances survivent aux reprises et aux renouvellements de devis.
 - Une timeline partagée entre les modifications manuelles et celles de l’assistant, repliable sans perdre le montage. L’export conserve son devis et sa confirmation explicite.
 - Une politique éditoriale commune à Studio et au MCP : modèles de référence, alternatives pertinentes et modèles sur demande. Seedance, Wan et Kling ont un poids important parmi les choix exécutables ; Pika reste disponible sur demande. Les contraintes et choix explicites du client restent prioritaires.
@@ -32,8 +32,14 @@ La suite éditeur finale a exécuté 802 tests : 801 passent, un test existant e
 
 Les revues indépendantes ont conduit à corriger la perte de brouillon sur les raccourcis, les collisions de labels, la restauration d’une mention enregistrée, les références indisponibles lors d’un changement de fonctionnalités et le retour du focus dans Safari.
 
-Après l’alignement final des instructions MCP, les 19 tests ciblés passent ainsi que les 70 scénarios hors ligne et leurs 39 contrôles de politique. Ces scénarios ne constituent pas une vérification d’un hôte MCP réel. La finition responsive maintient les actions média visibles à côté de la timeline et réduit l’accueil sur les écrans de 320 pixels.
+Après l’alignement final des instructions MCP, les 19 tests ciblés passent ainsi que les 70 scénarios hors ligne et leurs 39 contrôles de politique. Ces scénarios ne constituent pas une vérification d’un hôte MCP réel. La reprise visuelle demandée par Adrien remplace le panneau rigide et les grandes cartes d’accueil par une composition ouverte. Quatre références réelles au maximum restent visibles, sans recouvrir le chat ; les autres sont accessibles dans un sélecteur. Le montage forme une bande centrée et ses réglages détaillés apparaissent après sélection explicite d’un plan.
 
 Ces vérifications ne mesurent pas le jugement artistique d’un modèle en conditions réelles. Aucun média payant ni rendu de production n’a été lancé. L’assistant voit les images jointes ; il reçoit les identités et métadonnées des vidéos et audios, sans analyse sémantique de leur contenu. Les estimations conversationnelles ne couvrent pas encore l’audio ou les sorties non enregistrées comme références. Aucun partage public ou bouton social fictif n’est ajouté.
 
 Avant production : revue de cette version, qualification du dialogue avec la connexion modèle réelle et validation des fonctionnalités à activer. La mise en production attend le feu vert demandé par Adrien. La branche de travail est `codex/studio-creative-workspace`, isolée du dossier initial contenant ses modifications en cours.
+
+## Reprise artistique après revue visuelle
+
+La référence retenue est l’étude antérieure `experiments/studio-conversation/design/constellation-precedente.png`, et non un tableau de bord générique. Les photos de démonstration viennent des fichiers parfum déjà présents dans le dépôt ; aucun résultat de modèle n’est inventé. Le projet vide reste sobre. Les rotations sont fixes et légères ; les transitions répondent au survol, au focus et à la sélection, sans mouvement perpétuel. La préférence de réduction des animations est respectée.
+
+La suite éditeur a été rejouée : 801 tests réussis, un test existant ignoré. Le premier lancement trop parallèle a dépassé la limite locale de mémoire partagée PostgreSQL ; une concurrence bornée à deux fichiers de test a permis la vérification complète, sans modifier les assertions. TypeScript, lint et le parcours navigateur complet passent. Lint conserve six avertissements sur des images natives. La vérification visuelle couvre les deux thèmes, 320/390/768/1440 pixels, la pile mobile, le glisser-déposer, les aperçus, le focus et l’espace protégé autour du chat.

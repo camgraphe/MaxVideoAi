@@ -87,3 +87,11 @@
 - Fresh independent reviews found and fixed draft replacement, late-history label collision, pending-label restoration, disabled-media attachment mismatch and Safari focus return. Final reviewed implementation has no remaining P1/P2 findings. Artistic judgment remains outside deterministic fixtures.
 - Final MCP alignment at 48549b73f: 19 focused tests passed; 70 offline tool-selection fixtures and 39 policy checks passed. No real-host qualification is claimed.
 - Visible authenticated local preview opened from product source 3e9232601, using owned disposable data and repository sample media. Sixteen empty/populated, Charcoal/Olive captures at 320/390/768/1440 pixels passed without page exceptions. Final visual review confirms narrow-screen starters fit and the main media action remains visible beside the open timeline. Preview launch instructions and captures are under output/studio-creative-workspace; production remains untouched.
+
+## Visual correction after Adrien’s review
+
+- [x] Restore the earlier constellation intent: protected centered chat, bounded asymmetric references, contextual controls and reduced-motion support.
+- [x] Replace onboarding cards with quiet text starts; center the compact timeline and show its inspector only after explicit clip interaction.
+- [x] Keep private preview access, exact mentions, keyboard/touch alternatives and narrow-screen overflow working; preserve real media ownership.
+- [x] Rerun editor QA with bounded PostgreSQL concurrency: 801 passed, one existing skip. Verify Chromium/Firefox/WebKit and capture both themes at 320/390/768/1440.
+- [ ] Leave the final motion-enabled local preview open after the mobile selection refinement.
