@@ -148,6 +148,9 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await proof('media-dock-mobile-compact');
     await shelf.getByRole('button',{name:'Open media',exact:true}).click();
     await expect(shelf.getByRole('button',{name:'Mention in message',exact:true})).toBeVisible();
+    await shelf.getByRole('button',{name:'Preview Image 2',exact:true}).click();
+    await expect.poll(async()=>{const b=await shelf.locator('[data-media-card][data-selected="true"]').boundingBox();return !!b&&b.x>=0&&b.x+b.width<=390;}).toBe(true);
+    await shelf.getByRole('button',{name:'Preview Image 1',exact:true}).click();
     await shelf.getByRole('button',{name:'Enlarge Image 1',exact:true}).click();
     await expect(page.getByRole('dialog',{name:'Image 1',exact:true})).toBeVisible();
     await proof('media-lightbox-mobile');

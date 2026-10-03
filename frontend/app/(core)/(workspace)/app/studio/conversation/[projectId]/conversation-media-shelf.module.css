@@ -60,9 +60,10 @@
 @media (max-width:600px) {
  .shelf {height:210px;}
  .content {justify-content:flex-start;gap:20px;padding:30px 10px 12px;}
- .card,.card:nth-child(n) {flex-basis:160px;width:160px;}
+ .card,.card:nth-child(n) {flex-basis:188px;width:188px;}
  .shelf[data-expanded="false"] .content {justify-content:center;}
  .shelf .caption button {min-height:44px;}
+ .shelf .actions button {min-width:44px;}
  .shelf .heading button {min-width:44px;min-height:44px;}
  .shelf[data-expanded="false"] .heading {top:18px;}
 }

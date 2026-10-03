@@ -17,6 +17,7 @@ export function ConversationReferenceCard({projectId, item, active, compact, att
   const [failed, setFailed] = useState(false), [retry, setRetry] = useState(0), [loading, setLoading] = useState(true);
   const [lightbox, setLightbox] = useState(false), [ratio, setRatio] = useState(1.25);
   const access = useRef<ConversationReferencePreview | null>(null);
+  const card = useRef<HTMLElement>(null);
   const player = useRef<HTMLMediaElement | null>(null);
   const enlargeTrigger = useRef<HTMLButtonElement>(null);
   const kind = item.kind;
@@ -41,11 +42,15 @@ export function ConversationReferenceCard({projectId, item, active, compact, att
     document.addEventListener('visibilitychange', pause);
     return () => document.removeEventListener('visibilitychange', pause);
   }, []);
+  useEffect(() => {
+    if (active && !compact && window.matchMedia('(max-width: 1100px)').matches)
+      card.current?.scrollIntoView({block: 'nearest', inline: 'center', behavior: 'instant'});
+  }, [active, compact]);
   function failPreview() {access.current = null; setFailed(true);}
   const icon = kind === 'video' ? <Film size={22}/> : kind === 'audio' ? <Music2 size={22}/> : <ImageIcon size={22}/>;
   const imageUrl = preview && (preview.thumbUrl || (kind === 'image' ? preview.url : null));
   const showPlayer = active && !compact && preview && !failed && !loading && kind !== 'image';
-  return <article className={styles.card} data-media-card={item.assetId} data-selected={active} data-compact={compact}>
+  return <article ref={card} className={styles.card} data-media-card={item.assetId} data-selected={active} data-compact={compact}>
     <div className={styles.surface} style={{aspectRatio: Math.min(1.85, Math.max(.78, ratio))}} aria-busy={loading}>
       {showPlayer ? kind === 'video' ? <video key={preview.url} ref={node => {player.current = node;}} src={preview.url} poster={preview.thumbUrl ?? undefined} controls playsInline preload="none" aria-label={item.label} onError={failPreview}/> : <div className={styles.audio}>{icon}<audio key={preview.url} ref={node => {player.current = node;}} src={preview.url} controls preload="none" aria-label={item.label} onError={failPreview}/></div> :
         <button className={styles.select} aria-label={t('Preview ', 'Aperçu de ') + item.label} aria-pressed={active} onClick={onSelect} draggable
