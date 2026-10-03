@@ -11,6 +11,7 @@ export function useConversationMediaShelf(turns:ImageConversationTurn[],locale:C
   const [uploading,setUploading]=useState(false),[error,setError]=useState<string|null>(null);
   const all=useRef(items),attached=useRef(references),busy=useRef(false),alive=useRef(true);
   const history=turns.flatMap(turn=>turn.referenceMentions??[]);
+  const latestHistory=useRef(history);latestHistory.current=history;
   const t=(en:string,fr:string)=>locale==='fr'?fr:en;
   useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
   useEffect(()=>{
@@ -18,12 +19,12 @@ export function useConversationMediaShelf(turns:ImageConversationTurn[],locale:C
     for(const mention of turns.flatMap(turn=>turn.referenceMentions??[]).slice(-24)) {
       if(next.some(item=>item.assetId===mention.assetId))continue;
       const kind=mention.label.startsWith('Video ')?'video':mention.label.startsWith('Audio ')?'audio':'image';
-      next=[...next,{...mention,kind,url:''}];
+      next=rememberShelfMedia(next,{assetId:mention.assetId,kind,url:''},latestHistory.current).items;
     }
     if(next!==all.current){all.current=next;setItems(next);}
   },[turns]);
   function remember(asset:ImageLibraryAsset) {
-    const next=rememberShelfMedia(all.current,asset,history);
+    const next=rememberShelfMedia(all.current,asset,latestHistory.current);
     all.current=next.items;setItems(next.items);return next.item;
   }
   function attach(asset:ImageLibraryAsset) {
@@ -37,14 +38,20 @@ export function useConversationMediaShelf(turns:ImageConversationTurn[],locale:C
   function detach(assetId:string) {attached.current=attached.current.filter(item=>item.assetId!==assetId);setReferences(attached.current);}
   function clear() {attached.current=[];setReferences([]);}
   function restore(input:ImageTurnInput) {
-    clear();
     const values=[...input.references.map(assetId=>({assetId,kind:'image' as const})),...(input.attachments??[]).flatMap(ref=>ref.type==='asset'?[{assetId:ref.assetId,kind:ref.kind}]:[])];
-    for(const value of values) {
-      const existing=all.current.find(item=>item.assetId===value.assetId);
+    const previous=all.current;
+    const known=[...latestHistory.current,...previous];
+    let next:ShelfMedia[]=values.flatMap(value=>{
       const label=input.referenceMentions?.find(item=>item.assetId===value.assetId)?.label;
-      if(!existing&&label) {const item={...value,url:'',label};all.current=[...all.current,item];setItems(all.current);}
-      attach(existing??{...value,url:''});
+      return label?[{url:'',...previous.find(item=>item.assetId===value.assetId),...value,label}]:[];
+    });
+    for(const value of values) {
+      if(!next.some(item=>item.assetId===value.assetId))next=rememberShelfMedia(next,{url:'',...previous.find(item=>item.assetId===value.assetId),...value},known).items;
     }
+    for(const item of previous)if(!next.some(value=>value.assetId===item.assetId))next=rememberShelfMedia(next,item,known).items;
+    all.current=next;setItems(next);
+    attached.current=values.map(value=>next.find(item=>item.assetId===value.assetId)!);setReferences(attached.current);
+    setSelectedId(attached.current.at(-1)?.assetId??null);setExpanded(true);setError(null);
   }
   async function upload(files:File[]) {
     if(busy.current)return;

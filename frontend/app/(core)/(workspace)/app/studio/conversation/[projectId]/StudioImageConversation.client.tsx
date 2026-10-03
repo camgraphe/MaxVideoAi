@@ -139,7 +139,7 @@ function StudioImageConversationWorkspace({
         onDragEnter={event=>{if(event.dataTransfer.types.includes('Files')){event.preventDefault();dragDepth.current++;setDropping(true);}}}
         onDragOver={event=>{if(event.dataTransfer.types.includes('Files')){event.preventDefault();event.dataTransfer.dropEffect='copy';}}}
         onDragLeave={event=>{if(event.dataTransfer.types.includes('Files')&&--dragDepth.current<=0){dragDepth.current=0;setDropping(false);}}}
-        onDrop={event=>{if(event.dataTransfer.types.includes('Files')){event.preventDefault();dragDepth.current=0;setDropping(false);void shelf.upload(Array.from(event.dataTransfer.files));}}}>
+        onDrop={event=>{if(event.dataTransfer.types.includes('Files')){event.preventDefault();dragDepth.current=0;setDropping(false);if(studio.loading){shelf.setError(t('Your workspace is opening. Try dropping your media again in a moment.','Votre espace s’ouvre. Déposez à nouveau vos médias dans un instant.'));return;}void shelf.upload(Array.from(event.dataTransfer.files));}}}>
         {dropping&&<div className={styles.dropSurface}><ImagePlus size={28}/><span>{t('Bring it into the conversation','Ajoutez-le à la conversation')}</span><small>{t('Drop your media here','Déposez vos médias ici')}</small></div>}
         <div className={styles.conversation}>
           <div

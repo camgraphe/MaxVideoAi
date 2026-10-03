@@ -16,6 +16,7 @@ export function ConversationMediaShelf({projectId,items,selectedId,expanded,atta
   const previews=useRef(cache);
   const player=useRef<HTMLMediaElement|null>(null);
   const kind=selected?.kind??'image';
+  const activeId=selected?.assetId;
   const preview=selected?cache[selected.assetId]:undefined;
   useEffect(()=>{
     function pause(){if(document.hidden)player.current?.pause();}
@@ -23,16 +24,16 @@ export function ConversationMediaShelf({projectId,items,selectedId,expanded,atta
     return()=>document.removeEventListener('visibilitychange',pause);
   },[]);
   useEffect(()=>{
-    if(!selected||!expanded)return;
-    const saved=previews.current[selected.assetId];
+    if(!activeId||!expanded)return;
+    const saved=previews.current[activeId];
     if(saved&&(!saved.expiresAt||Date.parse(saved.expiresAt)>Date.now()+15000)&&retry===0){setFailed(false);setLoading(false);return;}
     const controller=new AbortController();setLoading(true);setFailed(false);
-    void fetch(`/api/studio/projects/${encodeURIComponent(projectId)}/reference-previews`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({refs:[{type:'asset',assetId:selected.assetId,kind}]}),signal:controller.signal,cache:'no-store'})
-      .then(async response=>{const data=await response.json();const asset=data.assets?.[0];if(!response.ok||!data.ok||asset?.assetId!==selected.assetId||!asset.url)throw new Error('PREVIEW_UNAVAILABLE');if(!controller.signal.aborted){previews.current={...previews.current,[asset.assetId]:asset};setCache(previews.current);}})
+    void fetch(`/api/studio/projects/${encodeURIComponent(projectId)}/reference-previews`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({refs:[{type:'asset',assetId:activeId,kind}]}),signal:controller.signal,cache:'no-store'})
+      .then(async response=>{const data=await response.json();const asset=data.assets?.[0];if(!response.ok||!data.ok||asset?.assetId!==activeId||!asset.url)throw new Error('PREVIEW_UNAVAILABLE');if(!controller.signal.aborted){previews.current={...previews.current,[asset.assetId]:asset};setCache(previews.current);}})
       .catch(()=>{if(!controller.signal.aborted)setFailed(true);})
       .finally(()=>{if(!controller.signal.aborted)setLoading(false);});
     return()=>controller.abort();
-  },[projectId,selected?.assetId,kind,expanded,retry]);
+  },[projectId,activeId,kind,expanded,retry]);
   if(!items.length||!selected)return null;
   function icon(item:ShelfMedia){return item.kind==='video'?<Film size={18}/>:item.kind==='audio'?<Music2 size={18}/>:<ImageIcon size={18}/>;}
   return <aside className={styles.shelf} data-expanded={expanded} aria-label={t('Media panel','Panneau médias')}>

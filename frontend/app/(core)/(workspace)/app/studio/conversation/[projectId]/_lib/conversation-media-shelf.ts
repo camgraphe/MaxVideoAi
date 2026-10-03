@@ -6,10 +6,11 @@ export const MEDIA_SHELF_DRAG_TYPE = 'application/x-maxvideoai-reference';
 
 export function rememberShelfMedia(items: ShelfMedia[],asset: ImageLibraryAsset,history: readonly MediaMention[]) {
   const previous=items.find(item=>item.assetId===asset.assetId);
-  const known=history.find(item=>item.assetId===asset.assetId);
+  const known=history.findLast(item=>item.assetId===asset.assetId);
   const prefix=asset.kind==='video'?'Video':asset.kind==='audio'?'Audio':'Image';
   const highest=Math.max(0,...[...items,...history].map(item=>item.label.startsWith(prefix+' ')?Number(item.label.slice(prefix.length+1))||0:0));
-  const item={...previous,...asset,label:previous?.label??known?.label??`${prefix} ${highest+1}`};
+  const knownLabel=known&&!items.some(item=>item.assetId!==asset.assetId&&item.label===known.label)?known.label:undefined;
+  const item={...previous,...asset,label:previous?.label??knownLabel??`${prefix} ${highest+1}`};
   return {item,items:previous?items.map(value=>value.assetId===asset.assetId?item:value):[...items,item]};
 }
 

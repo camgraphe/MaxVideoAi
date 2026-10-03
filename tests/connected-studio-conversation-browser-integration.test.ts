@@ -12,7 +12,7 @@ import {STUDIO_PRIVATE_MEDIA_HOST,STUDIO_PRIVATE_MEDIA_KEYS} from './helpers/stu
 
 const browserName = process.env.STUDIO_BROWSER_ENGINE ?? 'chromium';
 const referenceIds=['ma_'+'e'.repeat(32),'ma_'+'f'.repeat(32)];
-const referenceUrls=referenceIds.map((_,index)=>`https://studio-reference-fixture.example/reference-${index}.webp`);
+const referenceUrls=referenceIds.map((_,index)=>`https://cdn.maxvideoai.com/studio-local-fixture/reference-${index}.webp`);
 assert.ok(browserName === 'chromium' || browserName === 'firefox' || browserName === 'webkit','Use a qualified browser engine.');
 
 test('native chat timeline, persistent app themes and mobile chat access ('+browserName+')', {timeout: 240000},async () => {
