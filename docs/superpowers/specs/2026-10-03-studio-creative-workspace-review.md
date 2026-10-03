@@ -32,6 +32,8 @@ La suite éditeur finale a exécuté 802 tests : 801 passent, un test existant e
 
 Les revues indépendantes ont conduit à corriger la perte de brouillon sur les raccourcis, les collisions de labels, la restauration d’une mention enregistrée, les références indisponibles lors d’un changement de fonctionnalités et le retour du focus dans Safari.
 
+Après l’alignement final des instructions MCP, les 19 tests ciblés passent ainsi que les 70 scénarios hors ligne et leurs 39 contrôles de politique. Ces scénarios ne constituent pas une vérification d’un hôte MCP réel. La finition responsive maintient les actions média visibles à côté de la timeline et réduit l’accueil sur les écrans de 320 pixels.
+
 Ces vérifications ne mesurent pas le jugement artistique d’un modèle en conditions réelles. Aucun média payant ni rendu de production n’a été lancé. L’assistant voit les images jointes ; il reçoit les identités et métadonnées des vidéos et audios, sans analyse sémantique de leur contenu. Les estimations conversationnelles ne couvrent pas encore l’audio ou les sorties non enregistrées comme références. Aucun partage public ou bouton social fictif n’est ajouté.
 
 Avant production : revue de cette version, qualification du dialogue avec la connexion modèle réelle et validation des fonctionnalités à activer. La mise en production attend le feu vert demandé par Adrien. La branche de travail est `codex/studio-creative-workspace`, isolée du dossier initial contenant ses modifications en cours.
