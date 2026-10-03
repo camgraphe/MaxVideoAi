@@ -483,6 +483,9 @@
   .welcome h2 {
     font-size: 36px;
   }
+  .welcome[data-drafting="true"] {min-height:0;height:100%;padding:12px 4px;gap:0;}
+  .welcome[data-drafting="true"] h2 {font-size:24px;letter-spacing:-.7px;}
+  .welcome[data-drafting="true"] .eyebrow,.welcome[data-drafting="true"] > p {display:none;}
   .quote {
     margin-left: 0;
   }

@@ -6,7 +6,7 @@ import styles from '../image-conversation.module.css';
 
 export function ConversationWelcome({locale, onDraft, onReference,hasDraft=false}: {locale: ConversationLocale; onDraft: (value: string) => void; onReference: () => void;hasDraft?:boolean}) {
   const t = (en: string,fr: string) => locale === 'fr' ? fr : en;
-  return <div className={styles.welcome}>
+  return <div className={styles.welcome} data-drafting={hasDraft}>
     <div className={styles.eyebrow}><span aria-hidden="true"/>{t('A little direction. Endless possibilities.','Un peu de direction. Toutes les possibilités.')}</div>
     <h2>{t('What would you like','Que souhaitez-vous')}<br/><span>{t('to create?','créer ?')}</span></h2>
     <p>{t('Explore an idea, shape a prompt, or make something new.','Explorez une idée, affinez un prompt ou créez quelque chose.')}<br/>{t('Start wherever you are. We’ll work on it together.','Partez de ce que vous avez. Créons ensemble.')}</p>

@@ -64,7 +64,7 @@ export function registerRecommendModelsTool(
     {
       title: 'Recommend MaxVideoAI models',
       description:
-        'Use this when the user is undecided, asks for advice, or wants a best-fit generation-enabled model plus strong alternatives from distinct model families, matched to a creative goal and factual capabilities. Every optional constraint is represented by a nullable field: send null when the user did not state it, never a placeholder. Ask only about missing goals, preferences, or budget; use calculate_project_budget before calling an alternative cheaper or lower-cost. Do not use it when the user already chose a compatible model and only wants validation, pricing, or execution. Do not use it as an exact quote, a generation command, or a claim that a provider will accept a job.',
+        'Use this when the user is undecided, asks for advice, or wants a best-fit generation-enabled model plus meaningful alternatives, matched to a creative goal, factual capabilities and dated editorialGuidance. Reference, alternative and on_request levels are product preferences, not measured quality scores; inspect review status and exact model details. Every optional constraint is represented by a nullable field: send null when the user did not state it, never a placeholder. Ask only about missing goals, preferences, or budget; use calculate_project_budget before calling an alternative cheaper or lower-cost. Do not use it when the user already chose a compatible model and only wants validation, pricing, or execution. Do not use it as an exact quote, a generation command, or a claim that a provider will accept a job.',
       inputSchema: recommendModelsInputSchema,
       annotations: {
         readOnlyHint: true,

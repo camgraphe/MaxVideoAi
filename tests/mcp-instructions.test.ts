@@ -99,6 +99,10 @@ test('instructions never advertise paid generation when its gate is closed', asy
   assert.match(instructions, /explicit model choice.*do not.*recommend_models/i);
   assert.match(instructions, /never.*substitut.*without.*user/i);
   assert.match(instructions, /user.*undecided.*recommend_models/i);
+  assert.match(instructions, /editorialGuidance.*reference.*alternative.*on_request/i);
+  assert.match(instructions, /reviewStatus.*reviewedAt.*provenance/i);
+  assert.match(instructions, /new version.*never inherits.*review/i);
+  assert.doesNotMatch(instructions, /Seedance 2\.5 as the best executable fit/i);
   assert.match(instructions, /best-fit.*available.*first/i);
   assert.match(instructions, /distinct model famil/i);
   assert.match(instructions, /calculate_project_budget.*before.*(?:cheaper|lower-cost)/i);
@@ -196,11 +200,18 @@ test('instructions cover all video workflows and distinguish private media selec
   assert.doesNotMatch(instructions, /never substitute a host attachment or local attachment/i);
 });
 
-test('instructions recommend from live executable facts without hardcoded model hype', async () => {
+test('instructions recommend executable matches with disclosed editorial preference and no hardcoded model hype', async () => {
   const instructions = await getInstructions({ paidGeneration: true, referenceUploads: true });
 
-  assert.match(instructions, /best executable fit.*first/i);
-  assert.match(instructions, /Seedance 2\.5.*only when.*live.*details.*fit/i);
+  assert.match(instructions, /best-fit available and executable model first.*alternatives from distinct model families/i);
+  assert.match(instructions, /editorialGuidance.*reference.*alternative.*on_request/i);
+  assert.match(instructions, /respect executable constraints and the user’s choice/i);
+  assert.match(instructions, /reviewStatus.*reviewedAt.*rationale.*provenance/i);
+  assert.match(instructions, /editorial preference is not measured quality or execution certification/i);
+  assert.match(instructions, /new version never inherits a review from its family/i);
+  assert.match(instructions, /recommendations are capability matches, not quotes or guarantees of provider availability/i);
+  assert.match(instructions, /ordering also includes disclosed editorial preference/i);
   assert.match(instructions, /comparable.*budget.*before.*cheaper/i);
+  assert.doesNotMatch(instructions, /Seedance 2\.5/i);
   assert.doesNotMatch(instructions, /best model|highest quality|state-of-the-art|always choose Seedance/i);
 });
