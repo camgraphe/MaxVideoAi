@@ -554,3 +554,10 @@
  .footnote {font-size:10px;line-height:1.5;}
  .help {padding:22px;}
 }
+@media(max-width:380px) {
+ .welcome {min-height:0;height:auto;gap:14px;padding:16px 3px;}
+ .welcome h2 {font-size:32px;letter-spacing:-1.3px;}
+ .welcome > p {font-size:12px;line-height:1.6;}
+ .studio .starters button {min-height:48px;padding:10px 13px;}
+ .starters small {display:none;}
+}
