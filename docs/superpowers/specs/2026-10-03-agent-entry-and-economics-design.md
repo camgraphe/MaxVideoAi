@@ -1,16 +1,16 @@
-# Agent across Create and Studio — experience and unit economics
+# Studio assistant — allowances, recharges and unit economics
 
 Date: 3 October 2026. Status: working product proposal. The user has requested shared Agent capabilities and account continuity; commercial allowances and customer prices below are hypotheses, not activated tariffs. Existing media billing remains authoritative.
 
-Scope update: the broader Create image/video redesign is explicitly deferred. Preserve this direction for a later coherent release: prompt assistance and reusable prompt context, image/reference selection, account continuity, and visual/interaction consistency with Studio. Do not add isolated buttons or a second incompatible media picker now. Current priority remains Studio interaction auditing and conversational cost/allowance design; the Create flow below is a future requirement, not an instruction to implement it in the current batch.
+Scope update: all Create assistant work is explicitly deferred, including the compact helper, its button, model selector and any Prompt/Agent mode switch. The user found the helper unclear and requested concentration on Studio and MCP. Preserve the Create concepts below as exploratory background only; they are not approved launch requirements. Current priority remains Studio interaction auditing and conversational cost/allowance design. Existing Create workflows remain the product baseline.
 
-UX refinement after the user's concern about complexity: recommend keeping Create's current direct workflow as the default, without a permanent Prompt/Agent mode switch. One optional Agent entry beside the prompt opens a focused helper (compact dialog on desktop, temporary sheet on mobile), then returns to the same form. Keep deeper conversation, project work and editing in Studio. Keep MCP as external access to shared capabilities, not another mode the web customer must understand. The earlier two-mode idea is exploratory and is not the recommended launch design.
+Earlier Create exploration (now parked): retain the direct workflow by default; an optional helper might return a proposed prompt to the existing form. Neither that helper nor the earlier two-mode idea is part of this release. Keep deeper conversation, project work and editing in Studio. Keep MCP as external access to shared capabilities, not another mode the web customer must understand.
 
-## Agreed direction
+## Studio direction and deferred Create concepts
 
-- Use **Agent** as the user-facing entry name.
+- **Agent** was an explored entry name; a new Create entry is now deferred.
 - Selecting Agent requires an authenticated MaxVideoAI account, including for an included/free allowance. Preserve the draft through login/account creation and return to the originating field.
-- Offer help wherever a creation prompt is authored, starting with Create video/image, then qualified additional surfaces. Do not attach an agent indiscriminately to unrelated text inputs.
+- Defer assistance in Create video/image and other prompt fields. Revisit these surfaces only after the Studio experience and economics are qualified.
 - The assistant can suggest a prompt, a generation model, compatible settings and references. It should understand the current surface and selected media model.
 - In Create, the existing **Generate** action is the explicit confirmation of the visible media request and price. Agent cannot silently generate or spend for the client.
 - Studio retains the deeper conversation and editing experience. GPT-6.1 Sol is the initial quality baseline, not a permanent architectural dependency.
@@ -35,7 +35,7 @@ Current foundations include `frontend/src/server/agent-api`, the Studio conversa
 
 The media confirmation cannot retroactively authorize chat charges incurred while discussing the prompt. If an included Agent allowance ends, continuing with paid assistance requires an explicitly enabled budget before the next paid conversation request. Keep that authorization separate from media confirmation.
 
-## Proposed assistant choices
+## Current Studio baseline and deferred assistant choices
 
 These are internal workload candidates, not a recommendation to add a model selector to every Create field. Start with automatic qualified prompt assistance in Create; expose an advanced assistant choice only if evaluation and customer demand justify it. A user's explicitly selected model must never be silently replaced.
 
@@ -45,7 +45,7 @@ These are internal workload candidates, not a recommendation to add a model sele
 | Agent · Creative | GPT-6.1 Sol | More involved direction and iteration; discovery allowance followed by included customer entitlement or explicitly paid assistance budget. |
 | Studio Agent | GPT-6.1 Sol | Context, references, tools and editing; same usage accounting as Creative, with different observed per-turn costs. |
 
-Launch with two underlying models if evaluations support them. Do not add a third premium model just to fill a selector. Model names remain discoverable, and a model change must not silently downgrade the client's selected experience. Store model choice centrally with a policy version; do not scatter hardcoded IDs across Create fields. Never market a cheaper tier as artistically equivalent without evidence.
+Keep the current Studio Sol baseline for this release. The Quick/Creative split is a future candidate requiring evaluation, not an instruction to add models or a selector now. Model names remain discoverable, and a model change must not silently downgrade the client's selected experience. Store model choice centrally with a policy version; do not scatter hardcoded IDs across Create fields. Never market a cheaper tier as artistically equivalent without evidence.
 
 OpenAI describes Luna as suited to efficient repeatable work and Sol to more complex work, and recommends evaluating representative tasks. This supports testing the split, not assuming its quality. [Deployment guidance](https://developers.openai.com/api/docs/guides/deployment-checklist#choose-a-model-for-the-workload).
 
@@ -77,7 +77,22 @@ Arithmetic: Quick = (5,000 × 0.125 + 1,000 × 0.50) / 1,000,000. Creative = (5,
 
 Use a **bounded included allowance plus an optional paid assistance budget**. Do not impose a subscription or charge every isolated click merely to introduce Agent. Do not fund unlimited Studio conversation by assuming every curious visitor will later generate.
 
-- Quick assistance has a small acquisition/activation budget. Account creation enables continuity and enforcement; it is not sufficient anti-abuse protection or proof of conversion.
+### Studio allowance and manual recharge proposal
+
+The user's latest preferred direction is a limited allowance per customer followed by recharge on demand. This establishes the commercial mechanism to explore, not approval of a numerical allowance, retail tariff or debit implementation.
+
+- Start with a one-time discovery allowance per eligible authenticated account. Bound both its supplier cost and the total acquisition campaign budget; account creation alone cannot prevent repeated trial abuse. Do not launch an automatically renewing free allowance before cohort economics justify it.
+- Meter actual token categories, model requests and other billable assistant work internally. A raw token count or fixed number of messages is not a reliable monetary ceiling: context, images, cache reuse, output and tool loops change the cost. A per-message API ceiling is an additional guardrail, not the customer-facing sales unit.
+- Show an understandable included-usage indicator and the customer's authorized Studio spending balance/cap. Use the existing wallet funding path for manual recharges. Avoid introducing a second cash wallet: identify Studio charges separately and require explicit authorization before consuming a wallet previously funded for media. Promotional Studio entitlement is separately tracked and does not change the customer's cash balance.
+- Warn before exhaustion. Once the included allowance is spent, pause new paid assistant requests until the customer enables a visible Studio budget. Funding the wallet and authorizing its use for Studio are distinct steps. A rejected recharge preserves the project, conversation and existing editing access. Automatic recharge is off at launch.
+- Give paid Studio use its own published, versioned customer tariff with enough contribution to cover provider usage and variable operating costs. Tokens can remain available in detailed usage; the main experience should make remaining money and consumption understandable. Do not promise a fixed number of messages for a recharge. Supplier rate changes inform future reviewed tariffs and do not reprice settled usage.
+- Before every provider dispatch, reserve a conservative amount within both the account's supplier-cost allowance and, for paid use, its authorized customer budget. Bound the input and output behind that reservation; settle once, release unused amounts and reconcile unknown outcomes. Concurrent sessions share the same cap. A global operational ceiling limits aggregate subsidized exposure. No ledger implementation is implied by this document.
+
+Illustrative retail arithmetic, **not a selected price**: if assistant work costs $0.05 at the provider and the published customer tariff charges $0.15 for that work, $0.10 remains before payment fees, infrastructure, support, subsidies and other costs. This is not $0.10 of net profit. Likewise, a one-time $0.50 provider-cost discovery cap gives at most $500 of trial API exposure across 1,000 eligible accounts, provided reservations enforce that cap; it is not an observed $500 spend. The actual cap must be large enough to demonstrate a useful creative task and small enough for the acquisition budget.
+
+Cursor documents a comparable included-usage then optional paid-usage mechanism with spending controls. This supports the intelligibility of the pattern, not our prices, margins or conversion assumptions. [Cursor usage-based charges](https://prod.cursor.com/help/account-and-billing/overages), checked 3 October 2026.
+
+- Deferred Quick assistance would need its own small acquisition/activation budget. Account creation enables continuity and enforcement; it is not sufficient anti-abuse protection or proof of conversion.
 - Studio/Creative discovery should show the real quality baseline for a bounded trial. Limit the subsidized allowance rather than silently substituting a weak model or truncating every useful answer.
 - Active paying customers can receive an included allowance calibrated against observed contribution from completed paid usage. Wallet top-ups are not generated revenue or earned margin. Existing media prices and customer wallet balances must not change implicitly.
 - Additional assistance can consume an explicitly enabled, visible wallet budget. Keep its ledger separate from media consumption even if both use the same wallet. Show allowance/budget remaining and pause before paid continuation exceeds the authorization. Do not create micro card charges; reuse the wallet funding path if this option is chosen.
