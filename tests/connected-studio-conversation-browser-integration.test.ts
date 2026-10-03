@@ -88,7 +88,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await expect(page.locator('[data-timeline-item]')).toHaveCount(2,{timeout: 45000});
     const cookies = page.getByRole('button',{name: 'Reject all',exact: true});
     if (await cookies.isVisible()) await cookies.click();
-    await expect(page.getByRole('heading',{name:'What would you like to create?'})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'What shall we create?'})).toBeVisible();
     const message = page.getByRole('textbox',{name:'Message Studio',exact:true});
     await page.getByRole('button',{name:'Shape a prompt',exact:false}).click();
     await expect(message).toBeFocused();
@@ -306,7 +306,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await proof('projects-entry');
     await page.getByRole('button',{name:'Open Studio',exact:true}).click();
     await expect(page).toHaveURL(/\/app\/studio\/conversation\/project_/,{timeout:30000});
-    await expect(page.getByRole('heading',{name:'What would you like to create?'})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'What shall we create?'})).toBeVisible();
     await expect(page.getByRole('button',{name:'Open timeline',exact:true})).toBeVisible();
     await proof('empty-workspace');
     assert.deepEqual(errors,[]);
