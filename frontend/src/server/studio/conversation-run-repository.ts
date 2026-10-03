@@ -1,4 +1,4 @@
-import {assistanceError, reserveStudioAssistanceCall, settleStudioAssistanceCall, markStudioAssistanceUnknown, type AssistanceCall} from './assistance-ledger';
+import {assistanceError, reserveStudioAssistanceCall, settleStudioAssistanceCall, markStudioAssistanceUnknown, stopStudioAssistanceReplay, type AssistanceCall} from './assistance-ledger';
 import type {StudioAssistancePolicy} from './assistance-policy';
 import {studioPreparedExportSchema} from '@/lib/studio/conversation-export-contract';
 import {createHash} from 'node:crypto';
@@ -88,7 +88,7 @@ export async function completeStudioAction(actor: StudioGenerationActor, turn: S
 }
 
 /** Checkpoint each paid text request before dispatch and its complete output before any action. */
-export async function checkpointStudioResponse(actor: StudioGenerationActor, turn: StoredImageTurn, index: number, create: () => Promise<StudioDirectorResponse>, meter?: {prepare(): Promise<{inputTokens: number;outputTokens: number;policy: StudioAssistancePolicy}>}): Promise<StudioDirectorResponse> {
+export async function checkpointStudioResponse(actor: StudioGenerationActor, turn: StoredImageTurn, index: number, create: () => Promise<StudioDirectorResponse>, meter?: {prepare(): Promise<{inputTokens: number;outputTokens: number;policy: StudioAssistancePolicy}>}, options: {replayOnly?: boolean} = {}): Promise<StudioDirectorResponse> {
   const scope = [actor.userId, actor.projectId, turn.request_id, turn.lease_id, index];
   const prior = (await query<{response_json: StudioDirectorResponse}>(`SELECT response_json FROM studio_conversation_responses
     WHERE user_id=$1 AND project_id=$2 AND request_id=$3 AND response_index=$4 AND state='reported' ORDER BY created_at DESC LIMIT 1`, [actor.userId, actor.projectId, turn.request_id, index]))[0];
@@ -98,6 +98,12 @@ export async function checkpointStudioResponse(actor: StudioGenerationActor, tur
       if (savedCall && !await settleStudioAssistanceCall(savedCall.id,actor.userId,prior.response_json)) assistanceError('usage_unresolved','Provider usage for this saved response is unresolved.');
     }
     if (isReplayableStudioResponse(prior.response_json)) return prior.response_json;
+  }
+  // Recovery beyond the model retry limit is settlement/replay only, including
+  // when a saved tool needs another response or the saved response is malformed.
+  if (options.replayOnly) {
+    if (meter) return stopStudioAssistanceReplay(actor,turn.request_id);
+    throw new AgentApiError('RATE_LIMITED','This message reached its retry limit.');
   }
   const bounds = await meter?.prepare();
   let assistanceCall: AssistanceCall | undefined;

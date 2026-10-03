@@ -59,6 +59,7 @@ test('Studio beta is discoverable while projects, workspaces, and APIs remain ad
 
   const specialRoutes = new Set([
     'frontend/app/api/studio/chat/route.ts',
+    'frontend/app/api/studio/assistance/route.ts',
     'frontend/app/api/studio/marketing-entry/route.ts',
     'frontend/app/api/studio/projects/[projectId]/image-conversation/route.ts',
     'frontend/app/api/studio/projects/[projectId]/image-conversation/confirm/route.ts',
@@ -71,6 +72,14 @@ test('Studio beta is discoverable while projects, workspaces, and APIs remain ad
   for (const path of routes.filter((candidate) => !specialRoutes.has(candidate))) {
     assert.match(read(path), /resolveStudioRouteContext\(req\)/);
   }
+  const assistanceHandler = read('frontend/app/api/studio/_lib/studio-assistance-handler.ts');
+  assert.match(assistanceHandler,/resolveStudioApiAccess/);
+  assert.match(assistanceHandler,/if\(!access.ok\)/);
+  assert.match(read('frontend/app/api/studio/assistance/route.ts'),/handleStudioAssistance/);
+  const projectListHandler=read('frontend/app/api/studio/_lib/studio-conversation-projects-handler.ts');
+  assert.match(projectListHandler,/resolveStudioApiAccess/);
+  assert.match(projectListHandler,/if\(!access.ok\)/);
+  assert.match(read('frontend/app/api/studio/conversation-projects/route.ts'),/handleStudioConversationProjects/);
   const imageHandler = read('frontend/app/api/studio/_lib/studio-image-conversation-handler.ts');
   assert.match(imageHandler, /resolveStudioApiAccess/);
   assert.match(imageHandler, /if \(!access.ok\)/);

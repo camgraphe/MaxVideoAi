@@ -62,7 +62,10 @@ when the paid authorization is disabled. Existing reservations can still settle.
    the incremental difference between cumulative message quotes. Replaying a settled
    response neither counts tokens nor calls the model nor charges again.
 5. If settlement storage fails after a response is checkpointed, a retry settles that
-   saved response before using it. Missing or invalid usage, an unknown model/tier,
+   saved response before using it. Once the two-attempt retry ceiling is reached,
+   an owned recorded response permits a recovery-only lease: it does not consume
+   another attempt and cannot count tokens, reserve funds or dispatch another model
+   call when saved responses end. Missing or invalid usage, an unknown model/tier,
    usage above the reserved token bounds, or a timeout stays unresolved. Its full
    reservation remains held. Another lease cannot resend a message with unresolved
    assistant usage. New requests share the same reduced account/campaign availability.
@@ -75,6 +78,11 @@ message is closed with a saved partial reply and `canStartFollowup=true`; after 
 explicit model/budget choice the client may clear its pending marker and compose a
 new follow-up, retaining the original prompt and partial reply in history. Never
 automatically resend the original instructions, which might repeat completed edits.
+The same saved partial closeout applies to the cumulative four-call cap and exhausted
+recovery-only replay, with `nextAction.reason=call_limit`, but only when every usage
+row for that message has settled. This technical cap needs an explicit “Start
+follow-up” action, with no additional budget or model choice. Retrying the closed
+request returns its saved reply without replaying actions or charging again.
 Unresolved usage has `canStartFollowup=false`. Do not erase its pending request or
 create a replacement automatically. Responses already saved under
 the older unmetered pilot replay without retroactive billing.
@@ -135,6 +143,9 @@ Focused tests are `tests/studio-assistance-*.test.ts`: disposable PostgreSQL cov
 account and aggregate campaign contention, isolation, funding vs authorization,
 subcent aggregation, revoked budgets, unknown transport outcomes, settlement lost
 ACK, persisted-response replay, and native action orchestration with injected Luna.
+The real-service recovery test covers repeated settlement outages past the retry
+ceiling, paid settlement exactly once, cumulative call-cap closeout, action replay
+idempotency, and mixed known/unknown usage remaining locked.
 Route tests cover session identity, CSRF, strict payloads and bounded body reads.
 Existing conversation-run, route, usage and canonical-pricing contracts also run.
 Before production review, qualify actual token-count/response parity, representative

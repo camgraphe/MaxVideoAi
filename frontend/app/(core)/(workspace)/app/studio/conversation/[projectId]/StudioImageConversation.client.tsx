@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { HelpCircle, ArrowDown, X, ImagePlus } from "lucide-react";
+import {canResumeAssistanceRequest} from './_lib/conversation-assistance';
 import {useStudioAssistance} from './_hooks/useStudioAssistance';
 import {StudioAssistance} from './_components/StudioAssistance.client';
 import { useImageConversation } from "./_hooks/useImageConversation";
@@ -53,6 +54,7 @@ function StudioImageConversationWorkspace({
   const [budgetPrompt,setBudgetPrompt]=useState(0);
   const [followupNotice,setFollowupNotice]=useState(false);
   const assistanceBlocked=!!assistance.status?.enabled&&!assistance.status.canContinue;
+  const recoveredUsage=canResumeAssistanceRequest(studio.assistanceAction,assistance.status,assistance.error);
   const luna=assistance.status?.enabled&&assistance.status.mode==='sponsored_luna';
   const exports = useConversationExports(projectId,exportsEnabled);
   const [help, setHelp] = useState(false);
@@ -249,12 +251,12 @@ function StudioImageConversationWorkspace({
                 {studio.error ??
                   t('An exchange is pending. Resume it or edit your request.', 'Un échange est resté en attente. Vous pouvez le reprendre ou le modifier.')}
               </p>
-              {studio.assistanceAction&&<button onClick={()=>setBudgetPrompt(value=>value+1)}>{t('Manage assistance','Gérer l’assistance')}</button>}
-              {studio.pending&&<button disabled={studio.busy} onClick={()=>void studio.refresh()}>{t('Check result','Vérifier le résultat')}</button>}
+              {studio.assistanceAction?.reason==='call_limit'&&studio.assistanceAction.canStartFollowup?<button disabled={studio.busy} onClick={()=>{studio.discardPending();setFollowupNotice(true);}}>{t('Start a follow-up','Continuer avec un nouveau message')}</button>:studio.assistanceAction&&<button onClick={()=>setBudgetPrompt(value=>value+1)}>{t('Manage assistance','Gérer l’assistance')}</button>}
+              {studio.pending&&<button disabled={studio.busy} onClick={()=>void Promise.all([studio.refresh(),assistance.refresh()])}>{t('Check result','Vérifier le résultat')}</button>}
               {studio.pending ? (
                 <>
                   <button
-                    disabled={studio.busy || !!studio.assistanceAction}
+                    disabled={studio.busy || (!!studio.assistanceAction&&!recoveredUsage)}
                     onClick={() => void studio.submit(studio.pending!)}
                   >
                     {t('Resume exchange', 'Reprendre l’échange')}

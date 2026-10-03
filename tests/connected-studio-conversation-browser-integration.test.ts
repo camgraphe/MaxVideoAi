@@ -32,6 +32,12 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     browser = await startStudioConnectedBrowserFixture({runtime,browserName});
     const owned = await browser.newContext(session,{viewport: {width: 1440,height: 900},locale: 'en-US',reducedMotion: 'reduce'});
     const page = owned.page;
+    async function setTheme(dark:boolean) {
+      await page.getByRole('button',{name:'Open MaxVideoAI menu',exact:true}).click();
+      const toggle=page.getByRole('switch',{name:'Dark appearance',exact:true});
+      if((await toggle.getAttribute('aria-checked'))!==String(dark))await toggle.click();
+      await page.getByRole('dialog',{name:'MaxVideoAI',exact:true}).getByRole('button',{name:'Close ×',exact:true}).click();
+    }
     let diagnosticPage = page;
     const mediaFailures: string[] = [];
     page.on('response',response => {if (response.status() === 403) mediaFailures.push(new URL(response.url()).pathname);});
@@ -165,7 +171,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await page.reload({waitUntil:'domcontentloaded'});
     await expect(page.locator('[data-timeline-item]')).toHaveCount(2);
 
-    await page.getByRole('button',{name: 'Switch to Olive',exact: true}).click();
+    await setTheme(false);
     await expect(page.locator('html')).not.toHaveAttribute('data-theme','dark');
     await checkLibrary();
     await proof('olive-desktop');
@@ -173,7 +179,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await page.reload({waitUntil: 'domcontentloaded'});
     await expect(page.locator('[data-tone]')).toHaveAttribute('data-tone','olive');
     await expect(page.locator('html')).not.toHaveAttribute('data-theme','dark');
-    await page.getByRole('button',{name: 'Switch to Charcoal',exact: true}).click();
+    await setTheme(true);
     await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
     await expect(page.getByLabel('Film monitor',{exact: true})).toHaveCount(0);
     await expect(page.locator('video[data-playback-item-id]')).toHaveCount(0);
@@ -216,7 +222,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     assert.ok(geometry.chatTop >= 0);
     assert.ok(geometry.monitorHeight <= 112);
     assert.equal(geometry.width,geometry.viewport,'The mobile document does not overflow horizontally.');
-    await page.getByRole('button',{name: 'Switch to Olive',exact: true}).click();
+    await setTheme(false);
     await expect(page.locator('[data-tone]')).toHaveAttribute('data-tone','olive');
     await proof('olive-mobile');
     await checkLibrary();
@@ -296,7 +302,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     for (const width of [320,768]) {
       await page.setViewportSize({width,height: 844});
       await expect(page.getByRole('textbox',{name: 'Message Studio',exact: true})).toBeVisible();
-      await expect(page.getByRole('link',{name:'My projects',exact:true})).toBeVisible();
+      await expect(page.getByRole('button',{name:'Projects',exact:true})).toBeVisible();
       await page.getByRole('button',{name:'Studio help',exact:true}).click();
       await expect(page.getByRole('dialog',{name:'Make it yours.',exact:true})).toBeVisible();
       await proof('help-'+width);
@@ -304,10 +310,10 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),'The document stays within the viewport, including classic WebKit scrollbars.');
     }
     await page.setViewportSize({width:1440,height:900});
-    await page.getByRole('link',{name:'My projects',exact:true}).click();
-    await expect(page.getByRole('button',{name:'Open Studio',exact:true})).toBeVisible({timeout:30000});
+    await page.getByRole('button',{name:'Projects',exact:true}).click();
+    await expect(page.getByRole('dialog',{name:'Your projects',exact:true})).toBeVisible({timeout:30000});
     await proof('projects-entry');
-    await page.getByRole('button',{name:'Open Studio',exact:true}).click();
+    await page.getByRole('button',{name:'New conversation',exact:true}).click();
     await expect(page).toHaveURL(/\/app\/studio\/conversation\/project_/,{timeout:30000});
     await expect(page.getByRole('heading',{name:'What shall we create?'})).toBeVisible();
     await expect(page.getByRole('button',{name:'Open timeline',exact:true})).toBeVisible();

@@ -88,8 +88,7 @@ Local evidence is under `output/studio-creative-workspace/`: `mcp-size-audit.ts`
 `marketing-browser-results.json`, `marketing-responsive-results.json`,
 `marketing-final-390.png`, `marketing-final-1440.png`, and `plugin-release-audit/`.
 These are working QA artifacts, not production evidence. A screenshot of the
-actual updated Studio is intentionally omitted from the public page until the
-integrated interface has a reviewed capture; no invented product image is used.
+actual updated Studio is now represented by the integrated release capture described below; no invented product image is used.
 
 ## Remaining release gates and non-claims
 
@@ -114,9 +113,7 @@ integrated interface has a reviewed capture; no invented product image is used.
 - This is a new page with responsive functional checks, not a measured Core Web
   Vitals improvement. Capture comparable production-loading evidence if hero media
   is added or changed; verify the exact reviewed image and its dimensions.
-- The conversation-learning strategy remains a proposal. MCP does not expose full
-  external-host conversations. Review/export, retention and capture-health gates
-  must be implemented and qualified before claiming instrumented creative quality.
+- Studio now has a restricted, audited review of retained visible turns and usage facts; see `docs/engineering/admin-studio-review.md`. Full context/version manifests, capture-health metrics and learning evaluation remain separate work. MCP does not expose full external-host conversations.
 
 ## Reproduce and ship
 
@@ -132,3 +129,21 @@ Public Studio content lives in
 its English wrapper is `frontend/app/studio/page.tsx`. Keep EN/FR/ES changes,
 metadata, visible FAQ/schema and preview-access claims aligned. The authenticated
 entry handler owns access and return destinations; do not bypass it from marketing.
+
+
+## Supplemental assistance-client review — 4 October 2026
+
+A focused read-only implementation review identified account-switch mutation
+ownership, stale callbacks, returning from Luna to retained paid Sol, revoking
+paid assistance during pending usage, and read-only recovery of an unresolved
+conversation as issues. The implementation owner corrected those paths. Nine
+new behavioral hook tests in `tests/studio-assistance-hook.test.ts` exercise stale
+reads, immediate repeated clicks, unknown/malformed acknowledgements, revision
+conflicts, account changes before effects and during writes, obsolete callbacks,
+lost network acknowledgements and recovery reads. The focused hook, dialog,
+client-contract and existing conversation-hook run passed **34 of 34** tests.
+The three dialog/recovery changes were also inspected in source; their final
+integrated browser qualification remains with the release owner. This review
+performed no provider call, payment, migration or production activation.
+
+The integrated release includes a real Studio capture (1354 × 832, 48,132-byte WebP), made from the rendered conversation surface with demonstration media. Its caption explicitly identifies the local preview. No generated mockup or fabricated model reply is used.

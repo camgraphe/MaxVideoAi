@@ -259,7 +259,7 @@ export function createImageConversationService(
       const input = imageTurnInputSchema.parse(value);
       if (input.attachments?.length && (!dependencies.actionsEnabled || !dependencies.mediaEnabled))
         throw new AgentApiError('ENGINE_UNAVAILABLE', 'Video and audio attachments are unavailable in this image pilot.');
-      const { turn, claimed } = await claimImageTurn(actor, input);
+      const { turn, claimed, responseReplayOnly } = await claimImageTurn(actor, input, {allowRecordedResponseRecovery: dependencies.actionsEnabled === true});
       if (!claimed) return projectTurn(turn);
       try {
         const refs = await generation.resolveReferences({
@@ -305,7 +305,7 @@ export function createImageConversationService(
         const draft =
           turn.draft_json ??
           (useActions ? await runStudioImageActions({
-            actor, turn, input, references: refs, referenceFingerprint,
+            actor, turn, input, references: refs, referenceFingerprint, responseReplayOnly,
             history: history.map(saved => ({message: saved.input_json.message, reply: saved.draft_json?.reply ?? null,
               ...(saved.input_json.referenceMentions ? {referenceMentions: saved.input_json.referenceMentions} : {})})),
             enabled: dependencies.enabled, factory, createResponse: dependencies.createActionResponse,assistancePolicy: dependencies.assistancePolicy,countInputTokens: dependencies.countInputTokens,

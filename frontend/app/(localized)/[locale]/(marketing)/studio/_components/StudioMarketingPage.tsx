@@ -6,8 +6,8 @@ import type { AppLocale } from '@/i18n/locales';
 import type { StudioMarketingCopy } from '../_lib/studio-marketing-copy';
 import styles from './studio-marketing.module.css';
 
-// Enable only after a real, reviewed capture has been added to public/assets/studio.
-const STUDIO_PREVIEW_IMAGE: string | null = null;
+// Real connected-project fixture capture, reviewed on 2026-10-04.
+const STUDIO_PREVIEW_IMAGE = '/assets/studio/studio-conversation-preview.webp';
 const icons = [MessageCircle, Sparkles, PanelsTopLeft];
 
 export function StudioMarketingPage({ copy, locale }: { copy: StudioMarketingCopy; locale: AppLocale }) {
@@ -22,7 +22,7 @@ export function StudioMarketingPage({ copy, locale }: { copy: StudioMarketingCop
       </div>
       <p className={styles.accessNote}>{copy.accessNote}</p>
       {STUDIO_PREVIEW_IMAGE ? <figure className={styles.preview}>
-        <Image src={STUDIO_PREVIEW_IMAGE} alt={copy.imageAlt} width={1440} height={1000} sizes="(max-width: 1120px) 100vw, 1120px" priority />
+        <Image src={STUDIO_PREVIEW_IMAGE} alt={copy.imageAlt} width={1354} height={832} sizes="(max-width: 1120px) 100vw, 1120px" priority />
         <figcaption>{copy.imageCaption}</figcaption>
       </figure> : null}
     </section>

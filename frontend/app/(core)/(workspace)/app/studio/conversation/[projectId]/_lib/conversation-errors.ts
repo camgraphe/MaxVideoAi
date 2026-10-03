@@ -37,6 +37,7 @@ export function conversationErrorMessage(
   const t = (en: string, fr: string) => locale === "fr" ? fr : en;
   switch (issue.code) {
     case "SPENDING_LIMIT_EXCEEDED":
+      if(issue.assistance?.reason==='call_limit')return t('This message reached its working limit. Your completed work is saved; continue with a follow-up.','Cet échange a atteint sa limite de travail. Le travail effectué est enregistré ; continuez avec un nouveau message.');
       return issue.assistance?.reason==='usage_unresolved' ? t("A previous assistance charge is still being checked. Keep this request saved while we verify it.","Le coût d’un échange précédent est en cours de vérification. Gardez cette demande enregistrée.") : t("Choose how to continue your Studio assistance. Media generation is charged separately.","Choisissez comment continuer avec Studio. La génération de médias est facturée séparément.");
     case "AUTH_REQUIRED":
     case "UNAUTHORIZED":

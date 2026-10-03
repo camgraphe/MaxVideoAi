@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {STUDIO_ASSISTANCE_TARIFF,type StudioAssistanceStatus} from '../frontend/src/lib/studio/assistance-contract';
-import {additionalAssistanceBudget,assistanceStatusSchema} from '../frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/_lib/conversation-assistance';
+import {additionalAssistanceBudget,assistanceStatusSchema,canResumeAssistanceRequest} from '../frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/_lib/conversation-assistance';
 import {ConversationRequestError,conversationIssue,conversationErrorMessage} from '../frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/_lib/conversation-errors';
 export const status:StudioAssistanceStatus={enabled:true,policyVersion:'test',revision:3,selectedModel:'gpt-6.1-sol',mode:'included_sol',tariff:STUDIO_ASSISTANCE_TARIFF,includedSol:{remainingPercent:0,renewal:'one_time'},sponsoredLuna:{remainingPercent:100,renewal:'one_time'},paid:{enabled:true,authorizedCents:300,spentCents:100,reservedCents:50,remainingCents:150,maxAdditionalBudgetCents:1850},unresolvedCalls:0,canContinue:false,blockedReason:'included_exhausted'};
 test('additional budget includes previously spent, reserved and remaining allowance',()=>{
@@ -18,4 +18,16 @@ test('quota recovery preserves only the server-validated safe replay decision',(
   assert.equal(unknown.assistance,undefined);
   const other=conversationIssue('confirm',new ConversationRequestError('INSUFFICIENT_FUNDS',action));
   assert.equal(other.assistance,undefined);
+});
+
+test('only verified reconciliation permits explicit recovery; technical limits permit a follow-up',()=>{
+ const action={type:'studio_assistance' as const,reason:'usage_unresolved' as const,safeToStartNewRequest:false};
+ assert.equal(canResumeAssistanceRequest(action,null,null),false);
+ assert.equal(canResumeAssistanceRequest(action,{...status,unresolvedCalls:1},null),false);
+ assert.equal(canResumeAssistanceRequest(action,status,'UNAVAILABLE'),false);
+ assert.equal(canResumeAssistanceRequest(action,status,null),true);
+ const limit=conversationIssue('submit',new ConversationRequestError('SPENDING_LIMIT_EXCEEDED',{...action,reason:'call_limit',canStartFollowup:true,completedModelCalls:4}));
+ assert.equal(limit.assistance?.canStartFollowup,true);
+ assert.match(conversationErrorMessage(limit,'en'),/follow-up/);
+ assert.equal(canResumeAssistanceRequest(limit.assistance!,status,null),false);
 });

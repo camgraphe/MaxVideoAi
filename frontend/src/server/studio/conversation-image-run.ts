@@ -95,6 +95,7 @@ export async function runStudioImageActions(options: {
   references: ResolvedReference[]; referenceFingerprint: string;
   history: ImageConversationHistoryTurn[]; enabled: boolean;
   factory: ImageGenerationFactory; createResponse?: StudioResponseCreator;
+  responseReplayOnly?: boolean;
   assistancePolicy?: StudioAssistancePolicy;countInputTokens?: (params: ResponseCreateParamsNonStreaming) => Promise<number>;
   factories?: StudioMediaFactories; mediaEnabled?: boolean;editingEnabled?: boolean;exportsEnabled?: boolean;
   requestOrigin?: string;exportDependencies?: Partial<StudioExportDependencies>;
@@ -178,7 +179,7 @@ export async function runStudioImageActions(options: {
       const inputTokens = options.countInputTokens ? await options.countInputTokens(params) : (await new OpenAI({apiKey: process.env.OPENAI_API_KEY,maxRetries: 0,timeout: 15000}).responses.inputTokens.count(studioTokenCountInput(params))).input_tokens;
       if (!Number.isSafeInteger(inputTokens) || inputTokens < 0 || inputTokens > 272000) throw new AgentApiError('PARAMETER_INVALID','This Studio context exceeds the supported assistance limit.');
       return {policy,inputTokens,outputTokens: params.max_output_tokens ?? 2200};
-    }} : undefined),
+    }} : undefined, {replayOnly: options.responseReplayOnly}),
     execute: async (callId: string, action: StudioActionRequest): Promise<StudioActionResult> => {
       const prior = await beginStudioAction(actor, turn, callId, action);
       if (prior) return prior;

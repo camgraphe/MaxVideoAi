@@ -64,7 +64,8 @@ async function expirePreparedCreationQuotes(actor: StudioGenerationActor, execut
 export async function claimImageTurn(
   actor: StudioGenerationActor,
   input: ImageTurnInput,
-): Promise<{ turn: StoredImageTurn; claimed: boolean }> {
+  options: {allowRecordedResponseRecovery?: boolean} = {},
+): Promise<{ turn: StoredImageTurn; claimed: boolean; responseReplayOnly?: boolean }> {
   const parsed = imageTurnInputSchema.parse(input);
   const hash = createHash("sha256").update(stableJson(parsed)).digest("hex");
   return withDbTransaction(async (executor) => {
@@ -92,11 +93,19 @@ export async function claimImageTurn(
         (existing.state === "thinking" && existing.lease_expires_at > clock))
     )
       return { turn: existing, claimed: false };
-    if (existing && !existing.draft_json && existing.model_attempts >= 2)
-      throw new AgentApiError(
+    let responseReplayOnly = false;
+    if (existing && !existing.draft_json && existing.model_attempts >= 2) {
+      // A storage outage must not permanently strand already-recorded usage.
+      // This lease can only replay durable responses; the checkpoint forbids any new dispatch.
+      responseReplayOnly = options.allowRecordedResponseRecovery === true && (await executor.query(
+        `SELECT 1 FROM studio_conversation_responses WHERE user_id=$1 AND project_id=$2 AND request_id=$3 AND state='reported' LIMIT 1`,
+        [actor.userId, actor.projectId, parsed.requestId],
+      )).length > 0;
+      if (!responseReplayOnly) throw new AgentApiError(
         "RATE_LIMITED",
         "This message reached its retry limit. Send a new message instead.",
       );
+    }
     const active = await executor.query<{ request_id: string }>(
       "SELECT request_id FROM studio_image_turns WHERE user_id = $1 AND state = 'thinking' AND lease_expires_at > clock_timestamp() LIMIT 1",
       [actor.userId],
@@ -145,8 +154,8 @@ export async function claimImageTurn(
     const lease = randomUUID();
     const rows = existing
       ? await executor.query<StoredImageTurn>(
-          `UPDATE studio_image_turns SET state = 'thinking', model_attempts = CASE WHEN draft_json IS NULL THEN model_attempts + 1 ELSE model_attempts END, lease_id = $4, lease_expires_at = clock_timestamp() + INTERVAL '3 minutes', updated_at = clock_timestamp() WHERE user_id = $1 AND project_id = $2 AND request_id = $3 RETURNING ${IMAGE_TURN_COLUMNS}`,
-          [actor.userId, actor.projectId, parsed.requestId, lease],
+          `UPDATE studio_image_turns SET state = 'thinking', model_attempts = CASE WHEN draft_json IS NULL AND NOT $5::boolean THEN model_attempts + 1 ELSE model_attempts END, lease_id = $4, lease_expires_at = clock_timestamp() + INTERVAL '3 minutes', updated_at = clock_timestamp() WHERE user_id = $1 AND project_id = $2 AND request_id = $3 RETURNING ${IMAGE_TURN_COLUMNS}`,
+          [actor.userId, actor.projectId, parsed.requestId, lease, responseReplayOnly],
         )
       : await executor.query<StoredImageTurn>(
           `INSERT INTO studio_image_turns (user_id, project_id, request_id, request_hash, input_json, lease_id, lease_expires_at, draft_json, draft_reference_fingerprint) VALUES ($1,$2,$3,$4,$5::jsonb,$6,clock_timestamp() + INTERVAL '3 minutes',$7::jsonb,$8) RETURNING ${IMAGE_TURN_COLUMNS}`,
@@ -161,7 +170,7 @@ export async function claimImageTurn(
             renewal?.draft_reference_fingerprint ?? null,
           ],
         );
-    return { turn: rows[0], claimed: true };
+    return { turn: rows[0], claimed: true, responseReplayOnly };
   });
 }
 export async function persistImageDraft(

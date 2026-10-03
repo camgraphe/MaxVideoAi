@@ -63,7 +63,10 @@ test('native export quote stays accessible on mobile and recovers one identity a
     const cookies=page.getByRole('button',{name:'Reject all',exact:true});
     if(await cookies.isVisible())await cookies.click();
     await page.setViewportSize({width:390,height:844});
-    await page.getByRole('button',{name:'Switch to Olive',exact:true}).click();
+    await page.getByRole('button',{name:'Open MaxVideoAI menu',exact:true}).click();
+    const theme=page.getByRole('switch',{name:'Dark appearance',exact:true});
+    if(await theme.getAttribute('aria-checked')==='true')await theme.click();
+    await page.getByRole('dialog',{name:'MaxVideoAI',exact:true}).getByRole('button',{name:'Close ×',exact:true}).click();
     await expect(page.locator('[data-tone]')).toHaveAttribute('data-tone','olive');
     await expect(page.getByRole('textbox',{name:'Message Studio',exact:true})).toBeVisible();
     const box=await card.boundingBox();

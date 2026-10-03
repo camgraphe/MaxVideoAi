@@ -13,6 +13,12 @@ type Account = {user_id:string;selected_model:StudioAssistantModel;paid_enabled:
 export type AssistanceTurn = {model:StudioAssistantModel;mode:StudioAssistanceMode;tariff_version:string;policy_version:string};
 export type AssistanceCall = {id:string;user_id:string;project_id:string;request_id:string;lease_id:string;response_index:number;model:StudioAssistantModel;mode:StudioAssistanceMode;state:'reserved'|'unknown'|'settled';reserved_nano_usd:string|number;reserved_cents:number;input_token_bound:number;output_token_bound:number;response_id:string|null;tariff_version:string;rate_version:string;policy_version:string};
 export function assistanceError(reason:string,message:string,safeToStartNewRequest=false,completedModelCalls=0):never {throw new AgentApiError('SPENDING_LIMIT_EXCEEDED',message,false,{type:'studio_assistance',reason,safeToStartNewRequest,canStartFollowup:!safeToStartNewRequest&&completedModelCalls>0,completedModelCalls});}
+export async function stopStudioAssistanceReplay(actor:StudioGenerationActor,requestId:string):Promise<never>{
+  const usage=(await query<{settled:string;unresolved:string}>(`SELECT count(*) FILTER(WHERE state='settled')::text settled,count(*) FILTER(WHERE state<>'settled')::text unresolved FROM studio_assistance_calls WHERE user_id=$1 AND project_id=$2 AND request_id=$3`,[actor.userId,actor.projectId,requestId]))[0];
+  if(Number(usage.unresolved)>0)assistanceError('usage_unresolved','This message still has unresolved model usage. Recover its saved response before continuing.');
+  if(Number(usage.settled)>0)assistanceError('call_limit','Saved responses have been recovered. This message reached its model-call or retry limit.',false,Number(usage.settled));
+  throw new AgentApiError('RATE_LIMITED','This message reached its retry limit.');
+}
 function requireEnabled(policy:StudioAssistancePolicy){if(!policy.enabled)throw new AgentApiError('ENGINE_UNAVAILABLE','Studio assistance is unavailable until its usage policy is enabled.');}
 function emptyAccount(userId:string,policy:StudioAssistancePolicy):Account{return {user_id:userId,selected_model:'gpt-6.1-sol',paid_enabled:false,paid_authorized_cents:0,tariff_version:null,sol_limit_nano_usd:policy.solAllowanceNanoUsd,luna_limit_nano_usd:policy.lunaAllowanceNanoUsd,revision:0};}
 async function lockAccount(tx:TransactionQueryExecutor,userId:string,policy:StudioAssistancePolicy):Promise<Account>{
@@ -92,7 +98,7 @@ export async function reserveStudioAssistanceCall(input:{userId:string;projectId
     const existing=await tx.query(`SELECT id FROM studio_assistance_calls WHERE user_id=$1 AND project_id=$2 AND request_id=$3 AND (state<>'settled' OR (lease_id=$4 AND response_index=$5))`,[input.userId,input.projectId,input.requestId,input.leaseId,input.index]);
     if(existing.length)assistanceError('usage_unresolved','This message has unresolved or already dispatched model usage. Recover its saved response before retrying.');
     const dispatched=Number((await tx.query<{n: string}>('SELECT count(*)::text n FROM studio_assistance_calls WHERE user_id=$1 AND project_id=$2 AND request_id=$3',[input.userId,input.projectId,input.requestId]))[0].n);
-    if(dispatched>=STUDIO_ASSISTANCE_TARIFF.maxCallsPerMessage)throw new AgentApiError('RATE_LIMITED','This message reached its model-call limit. Send a new message to continue.');
+    if(dispatched>=STUDIO_ASSISTANCE_TARIFF.maxCallsPerMessage)assistanceError('call_limit','This message reached its model-call limit.',false,dispatched);
     const safeToStartNewRequest=dispatched===0;
     const fail=(reason:string,message:string):never=>assistanceError(reason,message,safeToStartNewRequest,dispatched);
     const reserved=studioProviderReservation(turn.model,input.inputTokens,input.outputTokens),usage=await totals(tx,input.userId);
