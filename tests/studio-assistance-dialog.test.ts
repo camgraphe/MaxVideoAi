@@ -26,6 +26,10 @@ test('assistance choice requires a click, preserves tariff revision, and restore
    await act(async()=>button('Studio assistance and budget').click());
    const luna=Array.from(dom.window.document.querySelectorAll('button')).find(el=>el.textContent?.startsWith('Continue with Luna'))!;
    await act(async()=>luna.click());assert.deepEqual(choices[1],{action:'select_luna',expectedRevision:3});
+   await render({...status,paid:{...status.paid,enabled:false,authorizedCents:2000,spentCents:0,reservedCents:0,remainingCents:2000,maxAdditionalBudgetCents:0}});
+   await act(async()=>button('Studio assistance and budget').click());
+   const resume=button('Resume authorized Sol · $20.00');assert.ok(resume,'a stopped full budget can resume without increasing authorization');
+   await act(async()=>resume.click());assert.deepEqual(choices[2],{action:'authorize_paid',budgetCents:2000,tariffVersion:status.tariff.version,expectedRevision:3});
    await render({...status,unresolvedCalls:1});await act(async()=>button('Studio assistance and budget').click());assert.equal(button('Authorize $5.00 more').disabled,true);
    await render({...status,enabled:false});assert.equal(dom.window.document.querySelector('button'),null);
  }finally{await act(async()=>root.unmount());dom.window.close();for(const[key,value]of previous){if(value)Object.defineProperty(globalThis,key,value);else Reflect.deleteProperty(globalThis,key);}if(oldCss)require.extensions['.css']=oldCss;else delete require.extensions['.css'];}
