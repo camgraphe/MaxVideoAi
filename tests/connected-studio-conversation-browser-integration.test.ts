@@ -83,6 +83,24 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     }
     await page.goto(url,{waitUntil: 'domcontentloaded',timeout: 120000});
     await expect(page.locator('[data-timeline-item]')).toHaveCount(2,{timeout: 45000});
+    await expect(page.getByRole('heading',{name:'What would you like to create?'})).toBeVisible();
+    const message = page.getByRole('textbox',{name:'Message Studio',exact:true});
+    await page.getByRole('button',{name:'Shape a prompt',exact:false}).click();
+    await expect(message).toBeFocused();
+    await expect(message).toHaveValue('Help me write a prompt for ');
+    await message.fill('');
+    await page.getByRole('button',{name:'Studio help',exact:true}).click();
+    await expect(page.getByRole('dialog',{name:'Make it yours.',exact:true})).toBeVisible();
+    await proof('help-desktop');
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('button',{name:'Studio help',exact:true})).toBeFocused();
+    await page.getByRole('button',{name:'Collapse timeline',exact:true}).click();
+    await expect(page.getByRole('button',{name:'Select clip Pattern B',exact:true})).not.toBeVisible();
+    await expect(message).toBeVisible();
+    await proof('timeline-collapsed');
+    await page.getByRole('button',{name:'Open timeline',exact:true}).click();
+    await expect(page.getByRole('button',{name:'Select clip Pattern B',exact:true})).toBeVisible();
+
     const cookies = page.getByRole('button',{name: 'Reject all',exact: true});
     if (await cookies.isVisible()) await cookies.click();
     await page.getByRole('button',{name: 'Switch to Olive',exact: true}).click();
@@ -216,6 +234,11 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     for (const width of [320,768]) {
       await page.setViewportSize({width,height: 844});
       await expect(page.getByRole('textbox',{name: 'Message Studio',exact: true})).toBeVisible();
+      await expect(page.getByRole('link',{name:'My projects',exact:true})).toBeVisible();
+      await page.getByRole('button',{name:'Studio help',exact:true}).click();
+      await expect(page.getByRole('dialog',{name:'Make it yours.',exact:true})).toBeVisible();
+      await proof('help-'+width);
+      await page.keyboard.press('Escape');
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),'The document stays within the viewport, including classic WebKit scrollbars.');
     }
     assert.deepEqual(errors,[]);

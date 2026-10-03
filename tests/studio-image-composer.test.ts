@@ -6,7 +6,7 @@ import { createRoot } from "react-dom/client";
 import { Simulate } from "react-dom/test-utils";
 import { JSDOM } from "jsdom";
 
-async function mountComposer() {
+async function mountComposer(options: {blocked?: boolean; locale?: "en" | "fr"} = {locale: "fr"}) {
   const require = createRequire(import.meta.url);
   const previousCssLoader = require.extensions[".css"];
   require.extensions[".css"] = (module) => {
@@ -51,7 +51,8 @@ async function mountComposer() {
       text,
       onTextChange: setText,
       onSend: () => sends++,
-      blocked: false,
+      blocked: options.blocked ?? false,
+      locale: options.locale,
       onOpenLibrary: () => libraryOpens++,
       libraryTrigger,
     });
@@ -179,4 +180,24 @@ test("composer grows with content, remeasures on viewport resize, and shrinks wh
   } finally {
     await view.close();
   }
+});
+
+
+test("composer prevents keyboard and form submissions while busy or blank, and defaults to English", async () => {
+  const view = await mountComposer({blocked: true});
+  try {
+    assert.equal(view.textarea.getAttribute("aria-label"), "Message Studio");
+    await view.changeText("Keep this draft while the current work finishes");
+    const event = new view.dom.window.KeyboardEvent("keydown", {key:"Enter",bubbles:true,cancelable:true});
+    await act(async () => view.textarea.dispatchEvent(event));
+    await act(async () => view.dom.window.document.querySelector("form")!.dispatchEvent(new view.dom.window.Event("submit",{bubbles:true,cancelable:true})));
+    assert.equal(view.sends,0);
+    assert.equal(view.textarea.value,"Keep this draft while the current work finishes");
+    assert.equal(view.textarea.disabled,false);
+  } finally { await view.close(); }
+  const empty = await mountComposer({});
+  try {
+    await act(async () => empty.dom.window.document.querySelector("form")!.dispatchEvent(new empty.dom.window.Event("submit",{bubbles:true,cancelable:true})));
+    assert.equal(empty.sends,0);
+  } finally {await empty.close();}
 });

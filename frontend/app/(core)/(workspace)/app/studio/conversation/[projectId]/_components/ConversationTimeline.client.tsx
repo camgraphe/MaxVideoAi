@@ -1,7 +1,7 @@
 'use client';
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {useRouter} from 'next/navigation';
-import {Plus,Play,Pause,X,ChevronUp,ChevronDown,Trash2} from 'lucide-react';
+import {Plus,Play,Pause,X,ChevronUp,ChevronDown,Trash2,PanelBottomClose,PanelBottomOpen} from 'lucide-react';
 import {useI18n} from '@/lib/i18n/I18nProvider';
 import {resolveStudioCopy} from '../../../_lib/studio-copy';
 import {useConversationTimeline} from '../_hooks/useConversationTimeline';
@@ -25,6 +25,7 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
   const timeline = useConversationTimeline(projectId,refreshKey);
   const {view,edit} = timeline;
   const [monitor,setMonitor] = useState(false);
+  const [expanded,setExpanded] = useState<boolean | null>(null);
   const [selected,setSelected] = useState<string | null>(null);
   const [preview,setPreview] = useState<WorkspaceTimelineItem[] | null>(null);
   const [creating,setCreating] = useState(false);
@@ -36,6 +37,7 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
   const renewalAttempts = useRef(new Set<string>());
   const [mediaReloadKeys,setMediaReloadKeys] = useState<Record<string,number>>({});
   const items = useMemo(() => preview ?? view?.items ?? [],[preview,view]);
+  const timelineExpanded = expanded ?? items.length > 0;
   const settings = timeline.view?.settings ?? {fps: 30 as const,aspectRatio: '16:9' as const,resolution: '720p' as const};
   const fps = settings.fps;
   const duration = items.reduce((end,item) => Math.max(end,item.startSec+item.durationSec),0);
@@ -60,9 +62,10 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
     const kind = asset.kind ?? 'image';
     const timing = conversationLibraryInsertTiming({kind,mediaFacts: asset.mediaFacts,timelineDurationSec: duration,fps});
     if (!timing) {setLocalError(t('This media needs measured duration before insertion.','Il faut mesurer la durée de ce média avant de l’insérer.'));return;}
+    setExpanded(true);
     void edit({kind: 'insert',ref: {type: 'asset',assetId: asset.assetId,kind},...timing});
   },[insertion,view,edit,duration,fps,t]); // Explicit library selection, never auto-insert a new generation.
-  function openMonitor() {if (!monitor) {renewalAttempts.current.clear();setLocalError(null);}setMonitor(true);}
+  function openMonitor() {setExpanded(true);if (!monitor) {renewalAttempts.current.clear();setLocalError(null);}setMonitor(true);}
   function seek(second: number) {playback.stopTimelinePlayback();playback.setPlayheadSec(Math.max(0,Math.min(duration,Math.round(second*fps)/fps)));openMonitor();}
   function closeMonitor() {playback.stopTimelinePlayback();setMonitor(false);renewalAttempts.current.clear();}
   function mediaFailure(item: WorkspaceTimelineItem) {
@@ -107,6 +110,7 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
       <button className={styles.close} aria-label={t('Collapse monitor','Replier le moniteur')} onClick={closeMonitor}><X size={16}/></button>
     </div>}
     <div className={styles.tools}>
+      <button className={styles.timelineToggle} aria-expanded={timelineExpanded} aria-controls="studio-timeline-tracks" aria-label={timelineExpanded ? t('Collapse timeline','Replier la timeline') : t('Open timeline','Ouvrir la timeline')} onClick={() => {if(timelineExpanded) closeMonitor();setExpanded(!timelineExpanded);}}>{timelineExpanded ? <PanelBottomClose size={16}/> : <PanelBottomOpen size={16}/>}<strong>{t('Timeline','Timeline')}</strong></button>
       <button disabled={!items.length} aria-label={playback.isTimelinePlaying ? t('Pause film','Mettre le film en pause') : t('Play film','Lire le film')} onClick={() => {openMonitor();playback.handleToggleTimelinePlayback();}}>{playback.isTimelinePlaying ? <Pause size={17}/> : <Play size={17}/>}</button>
       <span>{playback.playheadSec.toFixed(1)} / {duration.toFixed(1)} s</span>
       <button disabled={!timeline.view || timeline.busy} aria-label={t('Add library media to film','Ajouter un média de la bibliothèque au film')} onClick={onOpenLibrary}><Plus size={17}/></button>
@@ -114,7 +118,7 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
       {timeline.busy && <small role="status">{t('Saving…','Enregistrement…')}</small>}
       {exportAvailable && timeline.view && <ConversationExport projectId={projectId} projectName={projectName} view={timeline.view} pending={exportPending || timeline.busy} jobs={exportJobs} onChange={onExportChange}/>}
     </div>
-    <div className={styles.scroll}>
+    <div className={styles.scroll} id="studio-timeline-tracks" hidden={!timelineExpanded}>
       <div className={styles.tracks} style={{width}} onClick={event => {if (items.length) seek((event.clientX-event.currentTarget.getBoundingClientRect().left)/pixelsPerSecond);}}>
         <div className={styles.ruler}>{Array.from({length: Math.ceil(width/(pixelsPerSecond*5))},(_,index) => <span key={index} style={{left: index*pixelsPerSecond*5}}>{index*5}s</span>)}</div>
         {tracks.map(track => <div key={track} className={styles.track} aria-label={track}>
@@ -123,11 +127,11 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
             {(['start','end'] as const).map(edge => <button key={edge} className={styles.handle} data-edge={edge} aria-label={`${t('Trim','Couper')} ${edge} · ${item.title}`} disabled={timeline.busy} onPointerDown={event => startDrag(event,item,edge)} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={() => {drag.current = null;setPreview(null);}} onClick={event => event.stopPropagation()}/>) }
           </div>;})}
         </div>)}
-        {!items.length && <p className={styles.empty}>{t('Your film takes shape here.','Votre film prend forme ici.')}</p>}
+        {!items.length && <p className={styles.empty}>{t('Add media when you’re ready to put a sequence together.','Ajoutez des médias pour commencer votre montage.')}</p>}
         {!!items.length && <div className={styles.playhead} style={{left: playback.playheadSec*pixelsPerSecond}}/>}
       </div>
     </div>
-    {chosen && <div className={styles.inspector}>
+    {chosen && timelineExpanded && <div className={styles.inspector}>
       <span>{chosen.title}</span>
       <button aria-pressed={trimEdge === 'start'} onClick={() => setTrimEdge('start')}>{t('Start','Début')}</button><button aria-pressed={trimEdge === 'end'} onClick={() => setTrimEdge('end')}>{t('End','Fin')}</button>
       <input key={`${chosen.id}:${chosen.durationSec}`} type="number" min="1" step={1/fps} defaultValue={chosen.durationSec} aria-label={t('Clip duration in seconds','Durée du clip en secondes')} disabled={timeline.busy} onBlur={event => {const seconds = Number(event.target.value);if (Number.isFinite(seconds) && seconds >= 1 && seconds !== chosen.durationSec) void timeline.edit({kind: 'trim',clipId: chosen.id,edge: trimEdge,durationFrames: Math.round(seconds*fps)});}}/>

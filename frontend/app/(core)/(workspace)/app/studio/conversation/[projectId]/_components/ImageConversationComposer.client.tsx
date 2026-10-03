@@ -12,7 +12,7 @@ export function ImageConversationComposer({
   blocked,
   onOpenLibrary,
   libraryTrigger,
-  locale = 'fr',
+  locale = 'en',
 }: {
   text: string;
   onTextChange: (text: string) => void;
@@ -43,7 +43,7 @@ export function ImageConversationComposer({
       className={styles.composer}
       onSubmit={(event) => {
         event.preventDefault();
-        onSend();
+        if (!blocked && text.trim()) onSend();
       }}
     >
       <button
@@ -63,6 +63,7 @@ export function ImageConversationComposer({
         onChange={(event) => onTextChange(event.target.value)}
         placeholder={t('Describe your idea…', 'Décrivez votre idée…')}
         maxLength={4000}
+        enterKeyHint="send"
         onKeyDown={(event) => {
           if (
             event.key === "Enter" &&
@@ -71,7 +72,7 @@ export function ImageConversationComposer({
             event.nativeEvent.keyCode !== 229
           ) {
             event.preventDefault();
-            onSend();
+            if (!blocked && text.trim()) onSend();
           }
         }}
       />

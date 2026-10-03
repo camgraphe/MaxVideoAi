@@ -14,25 +14,46 @@ import {
   LIVE_PRICING_POLICY_REVISION,
   PRICING_POLICY_HEADER,
 } from "@/lib/membership-policy";
+import {
+  ConversationRequestError,
+  conversationErrorMessage,
+  conversationIssue,
+  type ConversationIssue,
+} from "../_lib/conversation-errors";
 
-class ConversationRequestError extends Error {
-  constructor(public code: string | undefined, message: string) {
-    super(
-      code === "INSUFFICIENT_FUNDS"
-        ? "Votre solde est insuffisant pour cette création. Consultez le solde du devis, puis actualisez-le."
-        : message,
-    );
-  }
-}
+type ConversationRequests = {
+  scope: string;
+  initialized: boolean;
+  mutationInFlight: boolean;
+  readInFlight: boolean;
+  readVersion: number;
+  pending: ImageTurnInput | null;
+  queuedReaders: {
+    resolve: (value: ImageConversation | undefined) => void;
+    reject: (error: unknown) => void;
+  }[];
+};
 
 export function useImageConversation(
   projectId: string,
   accountKey: string,
   initialName: string,
+  locale: "en" | "fr" = "en",
 ) {
   const scope = `${accountKey}:${projectId}`;
-  const active = useRef(scope);
-  active.current = scope;
+  const active = useRef<ConversationRequests | null>(null);
+  // Each visit owns its requests, including when returning to the same project.
+  if (!active.current || active.current.scope !== scope) {
+    active.current = {
+      scope, initialized: false, mutationInFlight: false, readInFlight: false,
+      readVersion: 0, pending: null, queuedReaders: [],
+    };
+  }
+  const requests = active.current;
+  const [stateOwner, setStateOwner] = useState(requests);
+  const currentState = stateOwner === requests;
+  const name = useRef(initialName);
+  name.current = initialName;
   const storageKey = `studio-image-pending:${scope}`;
   const endpoint = `/api/studio/projects/${encodeURIComponent(projectId)}/image-conversation`;
   const [conversation, setConversation] = useState<ImageConversation>({
@@ -42,67 +63,65 @@ export function useImageConversation(
   });
   const [pending, setPending] = useState<ImageTurnInput | null>(null);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [readError, setReadError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<ConversationIssue | null>(null);
+  const [readError, setReadError] = useState<ConversationIssue | null>(null);
   const [insufficientQuote, setInsufficientQuote] = useState<{
     requestId: string;
     quoteId: string;
   } | null>(null);
-  const inFlight = useRef(false);
-  const readVersion = useRef(0);
-  const queuedRead = useRef(false);
-  const queuedReaders = useRef<
-    {
-      resolve: (value: ImageConversation | undefined) => void;
-      reject: (error: unknown) => void;
-    }[]
-  >([]);
   const mounted = useRef(true);
+  const isCurrent = useCallback(
+    () => mounted.current && active.current === requests,
+    [requests],
+  );
   const load = useCallback(async (): Promise<ImageConversation | undefined> => {
-    if (inFlight.current) {
-      queuedRead.current = true;
+    if (!isCurrent()) return;
+    if (requests.readInFlight) {
       return new Promise((resolve, reject) =>
-        queuedReaders.current.push({ resolve, reject }),
+        requests.queuedReaders.push({ resolve, reject }),
       );
     }
-    inFlight.current = true;
-    const version = readVersion.current;
+    requests.readInFlight = true;
+    const version = requests.readVersion;
     try {
       const response = await fetch(endpoint, { cache: "no-store" });
       const payload = await response.json();
       if (!response.ok || !payload.ok)
-        throw new Error(
-          payload.message ?? "Impossible de retrouver la conversation.",
-        );
+        throw new ConversationRequestError(payload.error);
       if (
-        version === readVersion.current &&
-        mounted.current &&
+        version === requests.readVersion &&
+        isCurrent() &&
         acceptsImageConversationResponse(
           scope,
-          active.current,
+          active.current!.scope,
           payload.result.projectId,
           projectId,
         )
       ) {
         setConversation(payload.result);
+        setReadError(null);
         const completedPending = payload.result.turns.find(
           (turn: { requestId: string; state: string }) =>
-            turn.requestId === pending?.requestId && turn.state === "ready",
+            turn.requestId === requests.pending?.requestId && turn.state === "ready",
         );
         if (completedPending) {
+          requests.pending = null;
           setPending(null);
+          setError((current) => current?.operation === "submit" ? null : current);
           try {
             sessionStorage.removeItem(storageKey);
           } catch {}
         }
         return payload.result as ImageConversation;
       }
+    } catch (failure) {
+      if (version === requests.readVersion && isCurrent()) throw failure;
     } finally {
-      inFlight.current = false;
-      if (queuedRead.current) {
-        queuedRead.current = false;
-        const waiting = queuedReaders.current.splice(0);
-        if (mounted.current) {
+      requests.readInFlight = false;
+      const waiting = requests.queuedReaders.splice(0);
+      if (waiting.length) {
+        if (isCurrent()) {
           void load().then(
             (result) => waiting.forEach((reader) => reader.resolve(result)),
             (failure) => waiting.forEach((reader) => reader.reject(failure)),
@@ -110,24 +129,33 @@ export function useImageConversation(
         } else waiting.forEach((reader) => reader.resolve(undefined));
       }
     }
-  }, [endpoint, scope, projectId, pending?.requestId, storageKey]);
+  }, [endpoint, scope, projectId, storageKey, requests, isCurrent]);
   useEffect(() => {
     mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
+  useEffect(() => {
+    if (requests.initialized) return;
+    requests.initialized = true;
+    setStateOwner(requests);
+    setConversation({ projectId, projectName: name.current, turns: [] });
+    setBusy(false);
+    setLoading(true);
+    setError(null);
+    setReadError(null);
+    setInsufficientQuote(null);
     try {
       const saved = sessionStorage.getItem(storageKey);
-      if (saved) setPending(imageTurnInputSchema.parse(JSON.parse(saved)));
-    } catch {}
-    return () => {
-      mounted.current = false;
-    };
-  }, [storageKey]);
-  useEffect(() => {
-    void load().catch(() => {
-      if (mounted.current && active.current === scope)
-        setReadError("La conversation est momentanément indisponible.");
+      requests.pending = saved ? imageTurnInputSchema.parse(JSON.parse(saved)) : null;
+    } catch { requests.pending = null; }
+    setPending(requests.pending);
+    void load().catch((failure) => {
+      if (isCurrent()) setReadError(conversationIssue("read", failure));
+    }).finally(() => {
+      if (isCurrent()) setLoading(false);
     });
-  }, [load, scope]);
-  const needsPolling =
+  }, [load, projectId, storageKey, requests, isCurrent]);
+  const needsPolling = currentState && (
     busy ||
     conversation.turns.some(
       (turn) =>
@@ -137,7 +165,8 @@ export function useImageConversation(
         (turn.quote &&
           ["claimed", "accepted"].includes(turn.quote.state) &&
           !turn.generation),
-    );
+    )
+  );
   useEffect(() => {
     if (!needsPolling) return;
     const timer = setInterval(() => {
@@ -146,11 +175,10 @@ export function useImageConversation(
     return () => clearInterval(timer);
   }, [needsPolling, load]);
   const refresh = useCallback(async () => {
-    if (!mounted.current || active.current !== scope) return;
+    if (!isCurrent()) return;
     try {
       const refreshed = await load();
-      if (mounted.current && active.current === scope && refreshed) {
-        setReadError(null);
+      if (isCurrent() && refreshed) {
         const quote = refreshed.turns.find(
           (turn) => turn.requestId === insufficientQuote?.requestId,
         )?.quote;
@@ -164,22 +192,19 @@ export function useImageConversation(
         }
       }
     } catch (failure) {
-      if (mounted.current && active.current === scope)
-        setReadError(
-          failure instanceof Error
-            ? failure.message
-            : "La conversation est momentanément indisponible.",
-        );
+      if (isCurrent()) setReadError(conversationIssue("read", failure));
     }
-  }, [load, scope, insufficientQuote]);
+  }, [load, isCurrent, insufficientQuote]);
   async function submit(input: ImageTurnInput) {
-    if (busy) return;
+    if (!isCurrent() || requests.mutationInFlight) return;
+    requests.mutationInFlight = true;
+    requests.pending = input;
     setBusy(true);
     setError(null);
     setInsufficientQuote(null);
     setReadError(null);
     setPending(input);
-    readVersion.current++;
+    requests.readVersion++;
     try {
       sessionStorage.setItem(storageKey, JSON.stringify(input));
     } catch {}
@@ -191,13 +216,9 @@ export function useImageConversation(
       });
       const payload = await response.json();
       if (!response.ok || !payload.ok)
-        throw new ConversationRequestError(
-          payload.error,
-          payload.message ??
-            "Studio ne peut pas encore préparer cette demande.",
-        );
-      if (mounted.current && active.current === scope) {
-        readVersion.current++;
+        throw new ConversationRequestError(payload.error);
+      if (isCurrent()) {
+        requests.readVersion++;
         setConversation((current) => ({
           ...current,
           turns: [
@@ -208,31 +229,31 @@ export function useImageConversation(
           ],
         }));
         if (payload.result.state === "ready") {
+          requests.pending = null;
           setPending(null);
           try {
             sessionStorage.removeItem(storageKey);
           } catch {}
         }
       }
-      await load();
+      await load().catch((failure) => {
+        if (isCurrent()) setReadError(conversationIssue("read", failure));
+      });
     } catch (failure) {
-      if (mounted.current && active.current === scope)
-        setError(
-          failure instanceof Error
-            ? failure.message
-            : "L’échange a été interrompu.",
-        );
+      if (isCurrent()) setError(conversationIssue("submit", failure));
     } finally {
-      if (mounted.current && active.current === scope) setBusy(false);
+      requests.mutationInFlight = false;
+      if (isCurrent()) setBusy(false);
     }
   }
   async function confirm(requestId: string, quoteId: string) {
-    if (busy) return;
+    if (!isCurrent() || requests.mutationInFlight) return;
+    requests.mutationInFlight = true;
     setBusy(true);
     setError(null);
     setInsufficientQuote(null);
     setReadError(null);
-    readVersion.current++;
+    requests.readVersion++;
     try {
       const response = await fetch(`${endpoint}/confirm`, {
         method: "POST",
@@ -244,12 +265,9 @@ export function useImageConversation(
       });
       const payload = await response.json();
       if (!response.ok || !payload.ok)
-        throw new ConversationRequestError(
-          payload.error,
-          payload.message ?? "La confirmation n’a pas pu être vérifiée.",
-        );
-      if (mounted.current && active.current === scope) {
-        readVersion.current++;
+        throw new ConversationRequestError(payload.error);
+      if (isCurrent()) {
+        requests.readVersion++;
         setConversation((current) => ({
           ...current,
           turns: current.turns.map((turn) =>
@@ -266,24 +284,23 @@ export function useImageConversation(
         }));
       }
     } catch (failure) {
-      if (mounted.current && active.current === scope) {
+      if (isCurrent()) {
         if (
           failure instanceof ConversationRequestError &&
           failure.code === "INSUFFICIENT_FUNDS"
         )
           setInsufficientQuote({ requestId, quoteId });
-        setError(
-          failure instanceof Error
-            ? failure.message
-            : "Vérifiez le résultat de la confirmation.",
-        );
+        setError(conversationIssue("confirm", failure));
       }
     } finally {
       await load().catch(() => undefined);
-      if (mounted.current && active.current === scope) setBusy(false);
+      requests.mutationInFlight = false;
+      if (isCurrent()) setBusy(false);
     }
   }
   function discardPending() {
+    if (!isCurrent()) return;
+    requests.pending = null;
     setPending(null);
     setError(null);
     setInsufficientQuote(null);
@@ -295,14 +312,17 @@ export function useImageConversation(
   const pendingTurn = conversation.turns.find(
     (turn) => turn.requestId === pending?.requestId,
   );
-  const canResumePending =
+  const canResumePending = currentState && !loading &&
     !!pending && !busy && (!pendingTurn || pendingTurn.state === "failed");
+  const visibleError = currentState ? readError ?? error : null;
   return {
-    conversation,
-    busy,
-    error: readError ?? error,
-    needsFunds: !!insufficientQuote && !readError,
-    pending,
+    conversation: currentState ? conversation : { projectId, projectName: initialName, turns: [] },
+    busy: currentState && busy,
+    loading: !currentState || loading,
+    error: visibleError ? conversationErrorMessage(visibleError, locale) : null,
+    errorCode: visibleError?.code ?? null,
+    needsFunds: currentState && !!insufficientQuote && !readError,
+    pending: currentState ? pending : null,
     canResumePending,
     submit,
     confirm,

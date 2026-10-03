@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Sparkles, Sun, Moon } from "lucide-react";
+import { Sparkles, Sun, Moon, HelpCircle, ArrowDown, FolderOpen } from "lucide-react";
 import { useImageConversation } from "./_hooks/useImageConversation";
 import {ConversationExportQuote} from "./_components/ConversationExportQuote.client";
 import { ImageQuoteCard } from "./_components/ImageQuoteCard.client";
@@ -18,6 +18,9 @@ import {useConversationExports} from './_hooks/useConversationExports';
 import {ConversationRenderCards} from './_components/ConversationRenderCards.client';
 import {imageTurnRetryInput} from '@/lib/studio/image-conversation-contract';
 import {useThemePreference} from '@/hooks/useThemePreference';
+import {ConversationWelcome} from './_components/ConversationWelcome.client';
+import {ConversationHelp} from './_components/ConversationHelp.client';
+import {ConversationReply} from './_components/ConversationReply';
 export default function StudioImageConversation({
   projectId,
   accountKey,
@@ -40,8 +43,12 @@ export default function StudioImageConversation({
   const {locale: appLocale} = useI18n();
   const locale = appLocale === 'fr' ? 'fr' : 'en';
   const t = (en: string, fr: string) => locale === 'fr' ? fr : en;
-  const studio = useImageConversation(projectId, accountKey, projectName);
+  const studio = useImageConversation(projectId, accountKey, projectName, locale);
   const exports = useConversationExports(projectId,exportsEnabled);
+  const [help, setHelp] = useState(false);
+  const [following, setFollowing] = useState(true);
+  const helpTrigger = useRef<HTMLButtonElement>(null);
+  const composerRegion = useRef<HTMLDivElement>(null);
   const [text, setText] = useState("");
   const [references, setReferences] = useState<ImageLibraryAsset[]>([]);
   const [library, setLibrary] = useState(false);
@@ -62,16 +69,14 @@ export default function StudioImageConversation({
   const follow = useRef(true);
   const bottom = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (follow.current)
-      bottom.current?.scrollIntoView({ block: "end", behavior: "smooth" });
-  }, [studio.conversation, studio.busy,exports.jobs]);
-  const images = studio.conversation.turns
-    .flatMap((turn) =>
-      turn.generation?.result?.surface === "image"
-        ? turn.generation.result.imageUrls
-        : [],
-    )
-    .slice(-6);
+    if (follow.current && (studio.conversation.turns.length || studio.pending))
+      bottom.current?.scrollIntoView({ block: "end", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+  }, [studio.conversation, studio.pending, studio.busy,exports.jobs]);
+  function openReferences() {setLibraryPurpose('reference');setLibrary(true);}
+  function startDraft(value: string) {
+    setText(value);
+    composerRegion.current?.querySelector('textarea')?.focus();
+  }
   function select(asset: ImageLibraryAsset) {
     if (libraryPurpose === 'timeline') {setTimelineInsertion({key: crypto.randomUUID(),asset});setLibrary(false);return;}
     setReferences((current) =>
@@ -82,7 +87,7 @@ export default function StudioImageConversation({
     setLibrary(false);
   }
   async function send() {
-    if (!text.trim() || studio.busy || studio.pending) return;
+    if (!text.trim() || studio.loading || studio.busy || studio.pending) return;
     const input = {
       requestId: crypto.randomUUID(),
       message: text,
@@ -102,11 +107,12 @@ export default function StudioImageConversation({
     >
       <header className={styles.header}>
         <div>
-          <h1>Studio</h1>
+          <h1>Studio<span className={styles.headerDot}>.</span></h1>
           <span>{projectName}</span>
         </div>
         <div className={styles.headerActions}>
-          <Link href="/app/studio/projects">{t('My projects', 'Mes projets')}</Link>
+          <Link href="/app/studio/projects" aria-label={t('My projects','Mes projets')} className={styles.projectsLink}><FolderOpen size={16} aria-hidden="true"/><span>{t('My projects', 'Mes projets')}</span></Link>
+          <button ref={helpTrigger} aria-label={t('Studio help','Aide Studio')} onClick={() => setHelp(true)}><HelpCircle size={18}/></button>
           <button
             aria-label={
               tone === "charcoal" ? t('Switch to Olive', 'Passer en Olive') : t('Switch to Charcoal', 'Passer en Charbon')
@@ -118,17 +124,6 @@ export default function StudioImageConversation({
         </div>
       </header>
       <div className={styles.canvas}>
-        <aside className={styles.visuals} aria-label={t('Project images','Images du projet')}>
-          {images
-            .filter((_, index) => index % 2 === 0)
-            .map((url, index) => (
-              <img
-                key={`${url}:${index}`}
-                src={url}
-                alt={t('Image created in this conversation','Image créée dans cette conversation')}
-              />
-            ))}
-        </aside>
         <div className={styles.conversation}>
           <div
             ref={log}
@@ -138,23 +133,14 @@ export default function StudioImageConversation({
             aria-live="polite"
             onScroll={() => {
               const el = log.current;
-              if (el)
-                follow.current =
-                  el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+              if (el) {
+                follow.current = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+                setFollowing(follow.current);
+              }
             }}
           >
-            {!studio.conversation.turns.length && !studio.pending && (
-              <div className={styles.welcome}>
-                <Sparkles size={24} />
-                <h2>{t('Your idea takes shape.', 'Votre idée prend forme.')}</h2>
-                <p>
-                  {mediaEnabled ? t('Tell me about your film.', 'Parlez-moi de votre film.') : t('Tell me about the first image.', 'Parlez-moi de la première image.')}
-                  <br />
-                  {t('Attach your references. I’ll find a direction.', 'Joignez vos références, je m’occupe de la direction.')}
-                </p>
-                <small>{mediaEnabled ? t('Images · video · voice · music', 'Images · vidéo · voix · musique') : t('Connected image pilot', 'Premier essai connecté · création d’image')}</small>
-              </div>
-            )}
+            {studio.loading && <div className={styles.loading} role="status"><span className={styles.loadingMark}/>{t('Opening your workspace…','Ouverture de votre espace…')}</div>}
+            {!studio.loading && !studio.error && !studio.conversation.turns.length && !studio.pending && <ConversationWelcome locale={locale} onDraft={startDraft} onReference={openReferences}/>}
             {studio.conversation.turns.map((turn) => (
               <article key={turn.requestId} className={styles.turn}>
                 <p className={styles.userMessage}>{turn.message}</p>
@@ -166,21 +152,11 @@ export default function StudioImageConversation({
                 {turn.reply && (
                   <div className={styles.reply}>
                     <Sparkles size={16} />
-                    <p>
-                      {turn.reply
-                        .split(/(\*\*[^*\n]+\*\*)/g)
-                        .map((part, index) =>
-                          part.startsWith("**") && part.endsWith("**") ? (
-                            <strong key={index}>{part.slice(2, -2)}</strong>
-                          ) : (
-                            part
-                          ),
-                        )}
-                    </p>
+                    <ConversationReply text={turn.reply} className={styles.replyBody}/>
                   </div>
                 )}
                 {turn.state === "thinking" && (
-                  <p className={styles.muted}>{t('Studio is preparing a direction…', 'Studio prépare une direction…')}</p>
+                  <p className={styles.muted}>{t('Thinking through your request…', 'Réflexion sur votre demande…')}</p>
                 )}
                 {turn.state === "failed" && (
                   <button
@@ -240,6 +216,7 @@ export default function StudioImageConversation({
             )}
             <div ref={bottom} />
           </div>
+          {!following && <button className={styles.jumpLatest} onClick={() => {follow.current = true;setFollowing(true);bottom.current?.scrollIntoView({block:'end',behavior:'instant'});}}><ArrowDown size={14}/>{t('Latest message','Dernier message')}</button>}
           {(studio.error || studio.canResumePending) && (
             <div className={styles.error} role="alert">
               <p>
@@ -294,7 +271,7 @@ export default function StudioImageConversation({
                   aria-label={t('Remove reference', 'Retirer la référence')}
                 >
                   {ref.url && (!ref.kind || ref.kind === 'image' || ref.thumbUrl) ? (
-                    <img src={ref.thumbUrl ?? ref.url} alt="Référence jointe" />
+                    <img src={ref.thumbUrl ?? ref.url} alt={t('Attached reference','Référence jointe')} />
                   ) : (
                     <span>{ref.kind ?? 'image'}</span>
                   )}
@@ -303,32 +280,24 @@ export default function StudioImageConversation({
               ))}
             </div>
           )}
+          <div ref={composerRegion} className={styles.composerRegion}>
           <ImageConversationComposer
             text={text}
             onTextChange={setText}
             onSend={() => void send()}
-            blocked={studio.busy || !!studio.pending}
+            blocked={studio.loading || studio.busy || !!studio.pending}
             libraryTrigger={libraryTrigger}
-            onOpenLibrary={() => {setLibraryPurpose('reference');setLibrary(true);}}
+            onOpenLibrary={openReferences}
             locale={locale}
           />
+          </div>
           <p className={styles.footnote}>
-            {t('A quote before each creation. You stay in control.', 'Un devis avant chaque création. Vous gardez la main.')}
+            {t('Your direction. Your decision. Review the price before you create.', 'Votre direction. Vos décisions. Vérifiez le prix avant de créer.')}
           </p>
         </div>
-        <aside className={styles.visuals} aria-label={t('More project images','Autres images du projet')}>
-          {images
-            .filter((_, index) => index % 2 === 1)
-            .map((url, index) => (
-              <img
-                key={`${url}:${index}`}
-                src={url}
-                alt={t('Image created in this conversation','Image créée dans cette conversation')}
-              />
-            ))}
-        </aside>
       </div>
       {editingEnabled && <ConversationTimeline projectId={projectId} projectName={projectName} refreshKey={studio.conversation} insertion={timelineInsertion} onOpenLibrary={() => {setLibraryPurpose('timeline');setLibrary(true);}} exportAvailable={exportAvailable} exportPending={exports.working} exportJobs={exports.jobs} onExportChange={exports.refresh}/>}
+      {help && <ConversationHelp locale={locale} editingEnabled={editingEnabled} onClose={() => setHelp(false)} trigger={helpTrigger}/>}
       {library && (
         <ImageReferenceLibrary
           onClose={() => setLibrary(false)}
