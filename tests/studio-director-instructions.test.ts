@@ -15,7 +15,13 @@ test('director sends creative purpose, current help and live quote rules with it
       assert.match(instructions,/reviewStatus/);
       assert.match(instructions,/MaxVideoAI.*quote/i);
       assert.match(instructions,/competitor|provider prices/i);
-      assert.match(instructions,/My projects/);
+      assert.match(instructions,/Projects opens/);
+      assert.doesNotMatch(instructions,/My projects/);
+      assert.match(instructions,/Sol\/Luna.*Studio assistance and budget/);
+      assert.match(instructions,/one-time.*allowance/);
+      assert.match(instructions,/Luna.*no extra assistance charge/);
+      assert.match(instructions,/cannot read.*remaining allowance|cannot see.*remaining allowance/);
+      assert.match(instructions,/assistance.*separate.*generation/i);
       assert.match(instructions,/Studio help/);
       assert.match(instructions,/Open library/);
       assert.ok(instructions.length<8500,'Keep permanent guidance bounded; exact model facts belong in tools.');
@@ -33,4 +39,21 @@ test('director sends creative purpose, current help and live quote rules with it
     assert.equal(result.image,null);
     assert.equal(calls,1);
   }
+});
+
+test('the final response knows its remaining budget without losing executable tools',async()=>{
+  let calls=0;
+  const director=createStudioConversationDirector({createResponse:async params=>{
+    calls++;
+    assert.equal(String(params.instructions).includes('This is the last Response'),calls===4);
+    assert.ok(params.tools?.some(tool=>tool.type==='function' && tool.name==='project_remember'));
+    return {id:'r'+calls,model:'gpt-6.1-sol',status:'completed',service_tier:'default',usage:null,
+      output_text:calls===4?JSON.stringify({reply:'Here is the price and a useful next step.'}):'',
+      output:calls===4?[]:[{type:'function_call' as const,name:'project_read',arguments:'{}',call_id:'call'+calls}]};
+  }});
+  const project={name:'Budget study',revision:0,memory:{revision:0,brief:'',decisions:[]}};
+  const result=await director({message:'What can I make within my budget?',references:[],history:[],project,
+    checkpoint:async(_,create)=>create(),execute:async()=>({ok:true,action:'project.read',data:project})});
+  assert.equal(calls,4);
+  assert.equal(result.reply,'Here is the price and a useful next step.');
 });

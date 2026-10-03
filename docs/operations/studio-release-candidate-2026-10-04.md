@@ -1,9 +1,13 @@
 # Studio + MCP release candidate — 4 October 2026
 
-Status: implemented on `codex/studio-creative-workspace`, awaiting final production
-review. No deployment, public plugin publication, production migration, live model
-call, real wallet debit or credential change was performed. Create assistant work
-remains deferred. English is the primary product language.
+Status: implemented on `codex/studio-creative-workspace`; expanded validation is in progress.
+**Not yet approved for production:** target-main integration and the published Sora
+public archive rollout remain explicit gates in the
+[published-baseline reconciliation](studio-published-baseline-validation-2026-10-04.md).
+No deployment, public plugin publication, production migration, real wallet debit or
+credential change was performed. Live Sol/Luna text validation is now authorized
+with the existing key and a shared $5 cap; paid media generation is excluded.
+Create assistant work remains deferred. English is the primary product language.
 
 ## Customer experience
 
@@ -89,7 +93,8 @@ host certification was inferred from these tests.
 The core production implementation was built at `247e3b6d6`. Candidate
 `2e55deb63` additionally clarifies assistant costs in the public EN/FR/ES FAQ;
 its isolated prebuild, production build and sitemap generation also passed.
-Only the handoff and plan status change after this production build. A fresh
+Those build results apply to that exact earlier candidate; the later published-baseline
+fixes and live-validation findings require a fresh gate. A fresh
 independent reviewer examined the release diff and
 rechecked both discovered defects after fixes: stopped-budget reauthorization and
 saved-response recovery after repeated settlement-storage failure. Both have

@@ -233,15 +233,15 @@ test('mode-scoped catalog filtering uses modeCaps while aggregate discovery stay
   assert.equal(aggregate.referenceImages, true);
 });
 
-test('real Sora 2 Pro never publishes ref2v without an executable mode capability', async () => {
+test('archived Sora 2 Pro retains historical modes without generation', async () => {
   const registryDeps = realRegistryDeps('test-fal-key');
   const [soraModel] = await listAgentModels({ id: 'sora-2-pro' }, registryDeps);
   const soraCapability = (await listPublicAgentGenerationEngines(registryDeps))
     .find((candidate) => candidate.engine.id === 'sora-2-pro');
   assert.ok(soraModel);
-  assert.ok(soraCapability);
+  assert.equal(soraCapability, undefined);
+  assert.equal(soraModel.generationEnabled, false);
   assert.deepEqual(soraModel.modes, ['t2v', 'i2v']);
-  assert.deepEqual(soraCapability.publicModes, ['t2v', 'i2v']);
 });
 
 test('catalog never advertises H3 generation without an effective Fal credential', async () => {

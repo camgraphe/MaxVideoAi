@@ -13,7 +13,7 @@ export function buildConsentLoginPath(authorizationId: string): string {
     throw new Error('Invalid OAuth authorization id.');
   }
   const nextPath = `/oauth/consent?authorization_id=${encodeURIComponent(authorizationId)}`;
-  return `/login?next=${encodeURIComponent(nextPath)}`;
+  return `/login?mode=signin&next=${encodeURIComponent(nextPath)}`;
 }
 
 function singleForwardedValue(value: string | null): string | null {

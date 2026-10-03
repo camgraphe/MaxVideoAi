@@ -72,7 +72,11 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         include: ['reasoning.encrypted_content'],
         parallel_tool_calls: false,
         tool_choice: 'auto',
-        instructions: buildStudioDirectorInstructions(options),
+        instructions: buildStudioDirectorInstructions(options)
+          + `\n\nResponse ${index + 1} of 4: ${4 - index} Responses remain including this one. Plan reads so you can answer the client. For a budget question, inspect one suitable model, read its exact price, then explain it; inspect a second model only if enough Responses remain for its price and a useful reply.`
+          + (index === 3
+          ? '\n\nThis is the last Response available for this message. Prefer giving the client a useful answer from the facts already read, or completing their requested preparation/edit. Defer optional memory housekeeping; do not spend this final Response on it while leaving the client without an answer.'
+          : ''),
         input,
         tools: tools.map(tool => ({type: 'function' as const, name: tool.name, description: tool.description, strict: true,
           parameters: {type: 'object', additionalProperties: false, properties: tool.properties, required: Object.keys(tool.properties)}})),

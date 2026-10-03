@@ -7,12 +7,12 @@ import {
   isFalProxyTargetAllowed,
 } from '../frontend/src/lib/fal-model-policy';
 
-test('fal proxy policy allows configured Fal targets', () => {
-  assert.ok(FAL_PROXY_ALLOWED_ENDPOINTS.includes('fal-ai/sora-2/text-to-video'));
-  assert.equal(isFalProxyTargetAllowed('https://queue.fal.run/fal-ai/sora-2/text-to-video'), true);
+test('fal proxy excludes retired Sora endpoints while preserving uploads', () => {
+  assert.equal(FAL_PROXY_ALLOWED_ENDPOINTS.includes('fal-ai/sora-2/text-to-video'), false, 'Sora submissions are retired');
+  assert.equal(isFalProxyTargetAllowed('https://queue.fal.run/fal-ai/sora-2/text-to-video'), false);
   assert.equal(
     isFalProxyTargetAllowed('https://queue.fal.run/fal-ai/sora-2/text-to-video/requests/req_123/status?logs=0'),
-    true
+    false
   );
   assert.equal(
     isFalProxyTargetAllowed('https://rest.fal.ai/storage/upload/initiate?storage_type=fal-cdn-v3'),

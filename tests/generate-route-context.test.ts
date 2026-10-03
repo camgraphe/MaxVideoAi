@@ -426,3 +426,17 @@ test('disabled Seedance 2.5 does not reach the configured-engine database bounda
     );
   }
 });
+
+test('archived Sora is rejected before configuration, billing and provider routing, including trusted requests', async () => {
+  for (const engineId of ['sora-2', 'sora-2-pro', 'sora-pro', 'sora2pro', 'runway-gen2']) {
+    const result = await resolveGenerateRouteContext({
+      body: { engineId, mode: 't2v' }, req: new NextRequest('http://localhost/api/generate', { method: 'POST' }),
+      boundaryOverrides: { getConfiguredEngine: async () => { throw new Error('Must reject before DB configuration'); } },
+    });
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.equal(result.body.error, 'ENGINE_RETIRED');
+  }
+  const engine = getFalEngineById('sora-2')!.engine;
+  const trusted = resolveTrustedPaidGenerateRouteContext({ body: {}, engine, jobId: 'historical', mode: 't2v' });
+  assert.equal(trusted.ok, false);
+});

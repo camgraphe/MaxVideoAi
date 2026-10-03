@@ -26,6 +26,7 @@ import {
 } from '@/server/mcp/operational-access';
 import { isStudioMontageCreationEnabled } from '@/server/studio/feature-access';
 import { withMcpNoindexHeaders } from '@/server/mcp/response-headers';
+import { readRequestBearerAccessToken } from '@/lib/request-auth';
 import type { TrialRiskRequestContext } from '@/server/agent-api/prepare-generation';
 
 const MAX_BODY_BYTES = 128 * 1024;
@@ -74,9 +75,33 @@ async function readBoundedJson(request: Request): Promise<{ ok: true; value: unk
     return { ok: false, response: jsonRpcError(413, -32600, 'Request body is too large.') };
   }
 
-  const text = await request.text();
-  if (new TextEncoder().encode(text).byteLength > MAX_BODY_BYTES) {
-    return { ok: false, response: jsonRpcError(413, -32600, 'Request body is too large.') };
+  const body = request.body;
+  let text = '';
+  if (body) {
+    const reader = body.getReader();
+    const chunks: Uint8Array[] = [];
+    let size = 0;
+    try {
+      while (true) {
+        const chunk = await reader.read();
+        if (chunk.done) break;
+        size += chunk.value.byteLength;
+        if (size > MAX_BODY_BYTES) {
+          await reader.cancel().catch(() => undefined);
+          return { ok: false, response: jsonRpcError(413, -32600, 'Request body is too large.') };
+        }
+        chunks.push(chunk.value);
+      }
+    } finally {
+      reader.releaseLock();
+    }
+    const bytes = new Uint8Array(size);
+    let offset = 0;
+    for (const chunk of chunks) {
+      bytes.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    text = new TextDecoder().decode(bytes);
   }
   try {
     return { ok: true, value: JSON.parse(text) };
@@ -225,9 +250,17 @@ function withPrivateCaching(response: Response): Response {
   });
 }
 
-function unauthorized(config: McpConfig): Response {
-  return jsonRpcError(401, -32001, 'Authentication required.', {
-    'WWW-Authenticate': `Bearer resource_metadata="${config.protectedResourceMetadataUrl}"`,
+function unauthorized(config: McpConfig, request: Request): Response {
+  const credentialRejected = readRequestBearerAccessToken(request) !== null;
+  const message = credentialRejected
+    ? 'Authentication required. Reconnect MaxVideoAI in your host to continue.'
+    : 'Authentication required.';
+  // Keep first-connect discovery unchanged; rejected credentials need a standard
+  // challenge the host can act on. Never expose token contents or guess expiry.
+  const challenge = `Bearer resource_metadata="${config.protectedResourceMetadataUrl}"`
+    + (credentialRejected ? `, error="invalid_token", error_description="${message}"` : '');
+  return jsonRpcError(401, -32001, message, {
+    'WWW-Authenticate': challenge,
   });
 }
 
@@ -285,13 +318,18 @@ export async function handleMcpHttpRequest(
   try {
     principal = await (injectedDeps?.resolvePrincipal ?? resolveMcpAgentPrincipal)(request);
   } catch (error) {
-    if (error instanceof AgentApiError && error.code === 'AUTH_REQUIRED') return unauthorized(config);
+    if (error instanceof AgentApiError && error.code === 'AUTH_REQUIRED') return unauthorized(config, request);
     return jsonRpcError(500, -32603, 'Authentication could not be completed.');
   }
 
   let parsedBody: unknown;
   if (request.method === 'POST') {
-    const parsed = await readBoundedJson(request);
+    let parsed: Awaited<ReturnType<typeof readBoundedJson>>;
+    try {
+      parsed = await readBoundedJson(request);
+    } catch {
+      return jsonRpcError(500, -32603, 'MCP request handling failed.');
+    }
     if (!parsed.ok) return parsed.response;
     parsedBody = parsed.value;
   }

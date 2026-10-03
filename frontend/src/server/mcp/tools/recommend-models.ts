@@ -45,7 +45,7 @@ export const recommendModelsInputSchema = z.object({
     'reference_control',
     'longer_clips',
     'lower_cost',
-  ])).max(6).nullable().default(null).describe('Ordered user-stated factual priorities, most important first, or null when unstated. highest_resolution applies only when delivery resolution matters and is not a proxy for overall creative quality. Use lower_cost to request a project budget, not a price guess.'),
+  ])).max(6).nullable().default(null).describe('Ordered user-stated factual priorities, most important first, or null when none of these values matches. For beautiful cinematography, expressive acting or smooth camera movement without an explicit listed priority, use null. highest_resolution requires a delivery-resolution preference such as 4K; it is not a proxy for overall creative quality. lower_cost requests a budget comparison when cheaper options are explicitly wanted. Asking what a project costs does not mean prefer the cheapest: keep priorities null and use calculate_project_budget for the estimate.'),
   preferredModelIds: z.array(z.string().trim().min(1).max(128)).max(10).nullable().default(null)
     .describe('Up to ten public model IDs the user would like considered when compatible, or null.'),
   excludedModelIds: z.array(z.string().trim().min(1).max(128)).max(10).nullable().default(null)

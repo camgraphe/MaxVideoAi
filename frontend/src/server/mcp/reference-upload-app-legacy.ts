@@ -1,19 +1,12 @@
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-
-import { buildLegacyReferenceUploadAppHtml } from '@/server/mcp/reference-upload-app-legacy';
-
-export const REFERENCE_UPLOAD_APP_URI = 'ui://maxvideoai/reference-upload-v2.html';
-export const LEGACY_REFERENCE_UPLOAD_APP_URIS = [
-  'ui://maxvideoai/reference-upload-v1.html',
-] as const;
-
+// Frozen v1 compatibility document. Keep the rendered bytes and the SHA-256
+// contract unchanged; publish future UI changes under a new resource URI.
 const CONNECT_DOMAINS = [
   'https://maxvideoai.com',
   'https://api.maxvideoai.com',
   'https://maxvideoai-mcp-staging.vercel.app',
 ];
 
-export function buildReferenceUploadAppHtml(): string {
+export function buildLegacyReferenceUploadAppHtml(): string {
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -60,9 +53,6 @@ export function buildReferenceUploadAppHtml(): string {
       let handoff = null;
       let requestId = 1;
       let initialized = false;
-      let uploadInProgress = false;
-      let hasUploadedBatch = false;
-      const importedAssets = new Map();
       const pendingRequests = new Map();
       const trustedOrigins = new Set(${JSON.stringify(CONNECT_DOMAINS)});
 
@@ -202,7 +192,6 @@ export function buildReferenceUploadAppHtml(): string {
       }
 
       input.addEventListener('change', () => {
-        if (uploadInProgress) return;
         const files = Array.from(input.files || []);
         if (files.length > 8) {
           error.textContent = 'Choose no more than 8 files.';
@@ -222,56 +211,45 @@ export function buildReferenceUploadAppHtml(): string {
       });
 
       upload.addEventListener('click', async () => {
-        if (uploadInProgress) return;
         const files = Array.from(input.files || []);
         if (!handoff || files.length < 1 || files.length > 8) return;
-        uploadInProgress = true;
-        const refreshBeforeBatch = hasUploadedBatch;
-        hasUploadedBatch = true;
-        try {
-          upload.disabled = true;
-          error.textContent = '';
-          results.textContent = '';
-          const assets = [];
-          const failures = [];
-          let current = handoff;
-          for (let index = 0; index < files.length; index += 1) {
-            const file = files[index];
-            try {
-              if (index > 0 || refreshBeforeBatch) current = await nextHandoff(current.mediaKind);
-              const completed = await uploadOne(file, current);
-              const asset = {
-                index,
-                fileName: file.name,
-                assetId: completed.assetId,
-                kind: completed.mediaKind,
-              };
-              assets.push(asset);
-              importedAssets.set(asset.assetId, asset);
-              const item = document.createElement('li');
-              item.textContent = file.name + ' — ready';
-              results.appendChild(item);
-            } catch (uploadError) {
-              failures.push({ index, fileName: file.name });
-              const item = document.createElement('li');
-              item.textContent = file.name + ' — failed';
-              item.className = 'error';
-              results.appendChild(item);
-            }
+        upload.disabled = true;
+        error.textContent = '';
+        results.textContent = '';
+        const assets = [];
+        const failures = [];
+        let current = handoff;
+        for (let index = 0; index < files.length; index += 1) {
+          const file = files[index];
+          try {
+            if (index > 0) current = await nextHandoff(current.mediaKind);
+            const completed = await uploadOne(file, current);
+            const asset = {
+              index,
+              fileName: file.name,
+              assetId: completed.assetId,
+              kind: completed.mediaKind,
+            };
+            assets.push(asset);
+            const item = document.createElement('li');
+            item.textContent = file.name + ' — ready';
+            results.appendChild(item);
+          } catch (uploadError) {
+            failures.push({ index, fileName: file.name });
+            const item = document.createElement('li');
+            item.textContent = file.name + ' — failed';
+            item.className = 'error';
+            results.appendChild(item);
           }
-          if (assets.length > 0) {
-            // Context updates replace the view's previous context in the host.
-            // Include earlier successes when reporting a retried file.
-            await reportAssets(Array.from(importedAssets.values()));
-          }
-          selection.textContent = assets.length + ' reference(s) ready';
-          error.textContent = failures.length
-            ? failures.length + ' file(s) failed. Select only those files to retry.'
-            : '';
-        } finally {
-          uploadInProgress = false;
-          upload.disabled = !(input.files?.length && input.files.length <= 8 && handoff);
         }
+        if (assets.length > 0) {
+          await reportAssets(assets);
+        }
+        selection.textContent = assets.length + ' reference(s) ready';
+        error.textContent = failures.length
+          ? failures.length + ' file(s) failed. Select only those files to retry.'
+          : '';
+        upload.disabled = false;
       });
 
       window.addEventListener('message', (event) => {
@@ -287,7 +265,7 @@ export function buildReferenceUploadAppHtml(): string {
         }
         if (message.method === 'ui/notifications/tool-result') {
           renderHandoff(record(message.params)?.structuredContent);
-          upload.disabled = uploadInProgress || !(input.files?.length && input.files.length <= 8 && handoff);
+          upload.disabled = !(input.files?.length && handoff);
         }
       }, { passive: true });
 
@@ -307,46 +285,4 @@ export function buildReferenceUploadAppHtml(): string {
     </script>
   </body>
 </html>`;
-}
-
-export function registerReferenceUploadApp(server: McpServer): void {
-  const resourceUris = [REFERENCE_UPLOAD_APP_URI, ...LEGACY_REFERENCE_UPLOAD_APP_URIS];
-  for (const [index, resourceUri] of resourceUris.entries()) {
-    server.registerResource(
-      `maxvideoai-reference-upload-${index + 1}`,
-      resourceUri,
-      {
-        title: 'MaxVideoAI private reference import',
-        description: 'Import up to eight private image, video, or audio references.',
-        mimeType: 'text/html;profile=mcp-app',
-        _meta: {
-          ui: {
-            prefersBorder: true,
-            csp: { connectDomains: CONNECT_DOMAINS, resourceDomains: [] },
-          },
-        },
-      },
-      async () => ({
-        contents: [{
-          uri: resourceUri,
-          mimeType: 'text/html;profile=mcp-app',
-          text: resourceUri === REFERENCE_UPLOAD_APP_URI
-            ? buildReferenceUploadAppHtml()
-            : buildLegacyReferenceUploadAppHtml(),
-          _meta: {
-            ui: {
-              prefersBorder: true,
-              csp: { connectDomains: CONNECT_DOMAINS, resourceDomains: [] },
-            },
-            'openai/widgetDescription': 'Private multi-file reference import for the connected MaxVideoAI account.',
-            'openai/widgetPrefersBorder': true,
-            'openai/widgetCSP': {
-              connect_domains: CONNECT_DOMAINS,
-              resource_domains: [],
-            },
-          },
-        }],
-      }),
-    );
-  }
 }

@@ -8,9 +8,11 @@ import { buildGenerateRequestOptions } from '@/app/api/generate/_lib/request-opt
 import { resolveTrustedPaidGenerateRouteContext } from '@/app/api/generate/_lib/route-context';
 import { videoGenerationAdapters } from '@/app/api/generate/_lib/video-generation-adapters';
 import { query } from '@/lib/db';
+import { buildUserFacingRefundDescription, toUserFacingFailureMessage } from '@/server/user-facing-failure-messages';
 import type {
   IncludedTrialVideoContinuationOptions,
   PaidGenerationExecution,
+  PaidGenerationRejection,
   PaidGenerationSubmissionDependencies,
   PaidVideoContinuationOptions,
 } from '@/server/agent-api/paid-generation-execution';
@@ -106,15 +108,19 @@ async function executePaidVideoContinuation(
   });
 }
 
-async function ensureKnownRejectionRefund(
+export async function ensureKnownRejectionRefund(
   execution: PaidGenerationExecution,
+  failure?: PaidGenerationRejection,
+  deps = { query, rollbackPendingPayment },
 ): Promise<boolean> {
   const pricing = execution.canonicalPricing as unknown as PricingSnapshot;
   const applicationFeeCents = getPlatformFeeCents(pricing);
   const vendorAccountId = typeof pricing.vendorAccountId === 'string'
     ? pricing.vendorAccountId
     : null;
-  await rollbackPendingPayment({
+  const message = toUserFacingFailureMessage(failure?.message);
+  const code = failure?.code && /^[a-z0-9_.-]{1,100}$/i.test(failure.code) ? failure.code : null;
+  await deps.rollbackPendingPayment({
     pendingReceipt: {
       userId: execution.userId,
       amountCents: pricing.totalCents,
@@ -126,24 +132,36 @@ async function ensureKnownRejectionRefund(
       vendorAccountId,
     },
     walletChargeReserved: true,
-    refundDescription: `Refund MCP ${execution.engine.label} generation`,
+    refundDescription: buildUserFacingRefundDescription({
+      engineLabel: execution.engine.label,
+      durationSec: typeof execution.request.settings.durationSec === 'number'
+        ? execution.request.settings.durationSec : null,
+      reason: message,
+    }),
   });
-  const rows = await query<{ id: unknown }>(
+  const rows = await deps.query<{ id: unknown }>(
     `SELECT id FROM app_receipts
       WHERE job_id = $1 AND type = 'refund'
       LIMIT 1`,
     [execution.quoteId],
   );
   if (!rows.length) return false;
-  await query(
+  await deps.query(
     `UPDATE app_jobs
         SET status = 'failed',
             progress = 0,
+            message = COALESCE(NULLIF(message, ''), $2),
+            settings_snapshot = jsonb_set(
+              COALESCE(settings_snapshot, '{}'::jsonb),
+              '{submissionFailure}', $3::jsonb, true
+            ),
             payment_status = 'refunded_wallet',
             provisional = FALSE,
             updated_at = NOW()
       WHERE job_id = $1`,
-    [execution.quoteId],
+    [execution.quoteId, message, JSON.stringify({
+      origin: 'submission_rejected', code, status: failure?.status ?? null, message,
+    })],
   );
   return true;
 }
