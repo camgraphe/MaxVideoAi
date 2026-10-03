@@ -18,6 +18,7 @@ export function ConversationMediaShelf({projectId,items,selectedId,expanded,atta
   const [lightbox,setLightbox]=useState(false);
   const previews=useRef(cache);
   const player=useRef<HTMLMediaElement|null>(null);
+  const enlargeTrigger=useRef<HTMLButtonElement>(null);
   const kind=selected?.kind??'image';
   const activeId=selected?.assetId;
   const preview=selected?cache[selected.assetId]:undefined;
@@ -54,7 +55,7 @@ export function ConversationMediaShelf({projectId,items,selectedId,expanded,atta
       </div>
       <div className={styles.preview} aria-busy={loading}>
         {loading?<span role="status">{t('Opening preview…','Ouverture de l’aperçu…')}</span>:failed?<div role="status"><p>{t('Preview unavailable','Aperçu indisponible')}</p><button onClick={()=>setRetry(value=>value+1)}><RefreshCw size={14}/>{t('Try again','Réessayer')}</button></div>:preview?<>
-          {kind==='image'?<button className={styles.enlarge} aria-label={t('Enlarge ','Agrandir ')+selected.label} onClick={()=>setLightbox(true)}><img key={preview.url} src={preview.url} alt={selected.name??selected.label} onError={()=>setFailed(true)}/><Expand size={15}/></button>:kind==='video'?<video key={preview.url} ref={node=>{player.current=node;}} src={preview.url} poster={preview.thumbUrl??undefined} controls playsInline preload="none" aria-label={selected.label} onError={()=>setFailed(true)}/>:<div className={styles.audio}><Music2 size={32}/><audio key={preview.url} ref={node=>{player.current=node;}} src={preview.url} controls preload="none" aria-label={selected.label} onError={()=>setFailed(true)}/></div>}
+          {kind==='image'?<button ref={enlargeTrigger} className={styles.enlarge} aria-label={t('Enlarge ','Agrandir ')+selected.label} onClick={()=>setLightbox(true)}><img key={preview.url} src={preview.url} alt={selected.name??selected.label} onError={()=>setFailed(true)}/><Expand size={15}/></button>:kind==='video'?<video key={preview.url} ref={node=>{player.current=node;}} src={preview.url} poster={preview.thumbUrl??undefined} controls playsInline preload="none" aria-label={selected.label} onError={()=>setFailed(true)}/>:<div className={styles.audio}><Music2 size={32}/><audio key={preview.url} ref={node=>{player.current=node;}} src={preview.url} controls preload="none" aria-label={selected.label} onError={()=>setFailed(true)}/></div>}
         </>:icon(selected)}
       </div>
       <div className={styles.caption}><strong>{selected.label}</strong>{selected.name&&<span title={selected.name}>{selected.name}</span>}</div>
@@ -64,6 +65,6 @@ export function ConversationMediaShelf({projectId,items,selectedId,expanded,atta
       </div>
       <p className={styles.hint}>{t('Drag a reference into your message to talk about it.','Glissez une référence dans votre message pour en parler.')}</p>
     </div>:<div className={styles.rail}>{items.slice(-3).map(item=><button key={item.assetId} aria-label={t('Preview ','Aperçu de ')+item.label} onClick={()=>{onSelect(item.assetId);onToggle();}}>{icon(item)}</button>)}</div>}
-    {lightbox&&preview&&<ConversationReferenceLightbox url={preview.url} label={selected.label} locale={locale} onClose={()=>setLightbox(false)}/>}
+    {lightbox&&preview&&<ConversationReferenceLightbox url={preview.url} label={selected.label} locale={locale} trigger={enlargeTrigger} onClose={()=>setLightbox(false)}/>}
   </aside>;
 }
