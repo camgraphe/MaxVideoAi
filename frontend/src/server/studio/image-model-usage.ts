@@ -2,7 +2,7 @@ import { query } from "@/lib/db";
 import { AgentApiError } from "@/server/agent-api/errors";
 import type { StudioGenerationActor } from "@/server/agent-api/generation-actor";
 import type { ResolvedReference } from "@/server/agent-api/reference-types";
-import type { ImageTurnInput } from "@/lib/studio/image-conversation-contract";
+import type { ImageTurnInput, ImageConversationHistoryTurn } from "@/lib/studio/image-conversation-contract";
 import type { ImageDirector, ImageDirectorTelemetry } from "./image-conversation-director";
 import type { StoredImageTurn } from "./image-conversation-repository";
 
@@ -26,7 +26,7 @@ export async function runMeteredImageDirector(
   turn: StoredImageTurn,
   director: ImageDirector,
   input: ImageTurnInput,
-  history: { message: string; reply: string | null }[],
+  history: ImageConversationHistoryTurn[],
   references: ResolvedReference[],
 ) {
   const scope = [actor.userId, actor.projectId, turn.request_id, turn.lease_id];

@@ -3,7 +3,7 @@ import {withDbTransaction,isTransactionQueryExecutor} from '@/lib/db';
 import {AgentApiError, toAgentApiFailure} from '@/server/agent-api/errors';
 import type {StudioGenerationActor} from '@/server/agent-api/generation-actor';
 import type {ResolvedReference} from '@/server/agent-api/reference-types';
-import type {ImageTurnInput} from '@/lib/studio/image-conversation-contract';
+import type {ImageTurnInput,ImageConversationHistoryTurn} from '@/lib/studio/image-conversation-contract';
 import type {StudioActionRequest, StudioActionResult} from '@/lib/studio/conversation-action-contract';
 import {createStudioConversationDirector, type StudioResponseCreator} from './conversation-director';
 import {createStudioActionExecutor} from './conversation-actions';
@@ -88,7 +88,7 @@ export async function resumeStudioImageAction(options: {
 export async function runStudioImageActions(options: {
   actor: StudioGenerationActor; turn: StoredImageTurn; input: ImageTurnInput;
   references: ResolvedReference[]; referenceFingerprint: string;
-  history: {message: string; reply: string | null}[]; enabled: boolean;
+  history: ImageConversationHistoryTurn[]; enabled: boolean;
   factory: ImageGenerationFactory; createResponse?: StudioResponseCreator;
   factories?: StudioMediaFactories; mediaEnabled?: boolean;editingEnabled?: boolean;exportsEnabled?: boolean;
   requestOrigin?: string;exportDependencies?: Partial<StudioExportDependencies>;
@@ -98,6 +98,7 @@ export async function runStudioImageActions(options: {
   const director = createStudioConversationDirector({createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled});
   let currentCallId: string;
   const execute = createStudioActionExecutor(actor, {enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
+    attachedImageIds: input.references,
     editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,
     prepareExport: async action => {
       try {return await prepareStudioTimelineExport({userId: actor.userId,authOrigin: 'studio-session',clientId: null},{projectId: actor.projectId,sequenceId: action.sequenceId,expectedRevision: action.expectedRevision,qualityPreset: action.qualityPreset,includeAudio: action.includeAudio,idempotencyKey: turn.request_id+':'+currentCallId.slice(0,80)}, {
@@ -160,7 +161,7 @@ export async function runStudioImageActions(options: {
       }).prepare(request);
     },
   });
-  const draft = await director({message: input.message, history: options.history, references: options.references,
+  const draft = await director({message: input.message, history: options.history, references: options.references, referenceMentions: input.referenceMentions,
     project: await readStudioConversationProject(actor,{exportsEnabled:options.editingEnabled&&options.exportsEnabled}),
     checkpoint: (index, create) => checkpointStudioResponse(actor, turn, index, create),
     execute: async (callId: string, action: StudioActionRequest): Promise<StudioActionResult> => {

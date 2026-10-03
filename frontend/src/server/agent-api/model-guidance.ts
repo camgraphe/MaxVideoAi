@@ -1,5 +1,6 @@
 import guidanceDocument from '@/config/agent-model-guidance.json' with { type: 'json' };
 import { getModelRegistryEntries } from '@/config/model-registry';
+export {getAgentModelEditorialGuidance,getAgentModelEditorialSummary,type AgentModelEditorialGuidance,type AgentModelEditorialSummary} from './model-editorial-policy';
 
 export type AgentModelUseCase =
   | 'cinematic_story'

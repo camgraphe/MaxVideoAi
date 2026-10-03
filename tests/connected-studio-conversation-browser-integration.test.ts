@@ -11,6 +11,8 @@ import {postStudioMcpRequest,readStudioMcpResponse} from './helpers/studio-mcp-h
 import {STUDIO_PRIVATE_MEDIA_HOST,STUDIO_PRIVATE_MEDIA_KEYS} from './helpers/studio-private-storage-fixture';
 
 const browserName = process.env.STUDIO_BROWSER_ENGINE ?? 'chromium';
+const referenceIds=['ma_'+'e'.repeat(32),'ma_'+'f'.repeat(32)];
+const referenceUrls=referenceIds.map((_,index)=>`https://studio-reference-fixture.example/reference-${index}.webp`);
 assert.ok(browserName === 'chromium' || browserName === 'firefox' || browserName === 'webkit','Use a qualified browser engine.');
 
 test('native chat timeline, persistent app themes and mobile chat access ('+browserName+')', {timeout: 240000},async () => {
@@ -18,6 +20,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await initializeStudioConnectedFixture(database);
     for (const name of ['00_create_profiles.sql','01_legal_documents.sql','02_user_consents.sql','04_profiles_timestamps.sql','12_app_settings.sql','30_mcp_paid_generation.sql','39_mcp_quote_lifetime.sql','49_studio_generation_scope.sql','50_studio_image_conversation.sql','51_studio_image_model_usage.sql','52_studio_conversation_runs.sql','53_studio_media_generation_scope.sql']) await database.pool.query(await readFile('neon/migrations/'+name,'utf8'));
     await database.pool.query('ALTER TABLE app_jobs ADD COLUMN status text');
+    for(let index=0;index<2;index++) await database.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,status,original_name,metadata) VALUES($1,$2,$3,'image',$4,'image/webp','ready',$5,'{}'::jsonb)`,[`20000000-0000-4000-8000-00000000000${index+5}`,referenceIds[index],STUDIO_FIXTURE_OWNERS[0],referenceUrls[index],index?'Night shift':'Watch study']);
   }});
   let browser: Awaited<ReturnType<typeof startStudioConnectedBrowserFixture>> | undefined;
   let diagnose = async () => ({});
@@ -83,11 +86,14 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     }
     await page.goto(url,{waitUntil: 'domcontentloaded',timeout: 120000});
     await expect(page.locator('[data-timeline-item]')).toHaveCount(2,{timeout: 45000});
+    const cookies = page.getByRole('button',{name: 'Reject all',exact: true});
+    if (await cookies.isVisible()) await cookies.click();
     await expect(page.getByRole('heading',{name:'What would you like to create?'})).toBeVisible();
     const message = page.getByRole('textbox',{name:'Message Studio',exact:true});
     await page.getByRole('button',{name:'Shape a prompt',exact:false}).click();
     await expect(message).toBeFocused();
     await expect(message).toHaveValue('Help me write a prompt for ');
+    await expect(page.getByRole('button',{name:'Explore an idea',exact:false})).toHaveCount(0);
     await message.fill('');
     await page.getByRole('button',{name:'Studio help',exact:true}).click();
     await expect(page.getByRole('dialog',{name:'Make it yours.',exact:true})).toBeVisible();
@@ -101,8 +107,49 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await page.getByRole('button',{name:'Open timeline',exact:true}).click();
     await expect(page.getByRole('button',{name:'Select clip Pattern B',exact:true})).toBeVisible();
 
-    const cookies = page.getByRole('button',{name: 'Reject all',exact: true});
-    if (await cookies.isVisible()) await cookies.click();
+    // Real owned database references and preview route; local image transport only.
+    for(const [index,file] of ['frontend/public/media/mcp/project-demo/watch-static.webp','frontend/public/assets/app-starters/night-shift-9f91929fe7da.webp'].entries()) {
+      const body=await readFile(file);
+      await page.route(referenceUrls[index],route=>route.fulfill({contentType:'image/webp',body}));
+    }
+    const libraryEndpoint=runtime.browserOrigin+'/api/media-library/assets?*';
+    await page.route(libraryEndpoint,route=>route.fulfill({json:{ok:true,assets:referenceIds.map((assetId,index)=>({assetId,kind:'image',name:index?'Night shift':'Watch study',url:referenceUrls[index]})),nextCursor:null}}));
+    for(const name of ['Watch study','Night shift']) {
+      await page.getByRole('button',{name:'Open library',exact:true}).click();
+      await page.getByRole('button',{name:'Choose '+name,exact:true}).click();
+    }
+    await page.unroute(libraryEndpoint);
+    const shelf=page.getByRole('complementary',{name:'Media panel',exact:true});
+    await expect(shelf).toBeVisible();
+    await expect(shelf.getByRole('img',{name:'Night shift',exact:true})).toBeVisible();
+    await shelf.getByRole('button',{name:'Preview Image 1',exact:true}).click();
+    await expect(shelf.getByRole('img',{name:'Watch study',exact:true})).toBeVisible();
+    const drag=await page.evaluateHandle(()=>new DataTransfer());
+    await shelf.getByRole('button',{name:'Preview Image 1',exact:true}).dispatchEvent('dragstart',{dataTransfer:drag});
+    await message.dispatchEvent('drop',{dataTransfer:drag});
+    await expect(message).toHaveValue('@Image 1 ');
+    await expect(message).toBeFocused();
+    await proof('media-dock-desktop');
+    await page.getByRole('button',{name:'Remove Image 1',exact:true}).click();
+    await expect(message).toHaveValue(' ');
+    await shelf.getByRole('button',{name:'Mention in message',exact:true}).click();
+    await expect(message).toHaveValue(' @Image 1 ');
+    await shelf.getByRole('button',{name:'Collapse media',exact:true}).click();
+    await expect(shelf.getByRole('img',{name:'Watch study',exact:true})).toHaveCount(0);
+    await expect(message).toHaveValue(' @Image 1 ');
+    await shelf.getByRole('button',{name:'Open media',exact:true}).click();
+    await page.setViewportSize({width:390,height:844});
+    await expect(message).toBeVisible();
+    await expect(shelf.getByRole('button',{name:'Mention in message',exact:true})).toBeVisible();
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth),390);
+    await proof('media-dock-mobile');
+    await page.getByRole('button',{name:'Remove Image 1',exact:true}).click();
+    await page.getByRole('button',{name:'Remove Image 2',exact:true}).click();
+    await message.fill('');
+    await page.setViewportSize({width:1440,height:900});
+    await page.reload({waitUntil:'domcontentloaded'});
+    await expect(page.locator('[data-timeline-item]')).toHaveCount(2);
+
     await page.getByRole('button',{name: 'Switch to Olive',exact: true}).click();
     await expect(page.locator('html')).not.toHaveAttribute('data-theme','dark');
     await checkLibrary();

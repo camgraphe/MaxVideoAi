@@ -35,18 +35,26 @@
 
 ## Task 2 — Request reliability and English errors (agent)
 
-- [ ] Extend tests/studio-image-conversation-hook.test.ts for duplicate submission, initial loading and locale-safe errors/recovery.
-- [ ] Update only useImageConversation and focused error presentation helpers; keep wire/storage/quote identities compatible.
-- [ ] Expose loading state and accept optional locale (English default); parent passes the active locale.
-- [ ] Verify existing pending/quote lifecycle tests and focused hook tests.
+- [x] Extend tests/studio-image-conversation-hook.test.ts for duplicate submission, initial loading and locale-safe errors/recovery.
+- [x] Update only useImageConversation and focused error presentation helpers; keep wire/storage/quote identities compatible.
+- [x] Expose loading state and accept optional locale (English default); parent passes the active locale.
+- [x] Verify existing pending/quote lifecycle tests and focused hook tests.
 
 ## Task 3 — Studio visual and interaction finish (parent)
 
-- [ ] Capture baseline using the existing authenticated disposable browser integration.
-- [ ] Add route-local welcome, help and rich reply components, conditional suggestions and focus-safe help; keep StudioImageConversation orchestration focused.
-- [ ] Replace decorative columns with clear centered hierarchy, preserve theme tokens, add accessible mobile navigation and a jump-to-latest control.
-- [ ] Add timeline collapse with retained state and edit/export access; retain existing populated timeline behavior.
+- [x] Capture baseline using the existing authenticated disposable browser integration.
+- [x] Add route-local welcome, help and rich reply components, conditional suggestions and focus-safe help; keep StudioImageConversation orchestration focused.
+- [x] Replace decorative columns with clear centered hierarchy, preserve theme tokens, add accessible mobile navigation and a jump-to-latest control.
+- [x] Add timeline collapse with retained state and edit/export access; retain existing populated timeline behavior.
 - [ ] Verify keyboard/IME/composer, disclosure/focus, pending/empty/error and both themes in browser. Store screenshots locally.
+
+## Task 3b — Reachable projects entry and read-only pricing
+
+- [ ] Add gated primary conversational project creation with stable idempotent retry and retained classic Canvas entry.
+- [ ] Route connected projects to the appropriate surface while preserving media handoffs and local projects.
+- [ ] Expose a read-only exact canonical image/video price estimate through the existing director tool loop, with no quote/payment side effects.
+- [ ] Ensure Studio catalog and estimate modes match current executable Studio authority; preserve MCP mode coverage.
+- [ ] Test project creation/retry/routing, canonical price changes, owned references and unsupported modes.
 
 ## Task 4 — Integration and review
 
@@ -62,3 +70,5 @@
 - Scope ruling: carte blanche supersedes intermediate skill approval gates. Production approval remains required.
 - Pricing ruling: improve recommendation and presentation, never commercial values or formula owners.
 - Research: Higgsfield public skill v0.13.0 explicitly defaults video to Seedance 2.5 and keeps many models for explicit/specialist requests; useful precedent for editorial levels, not independent proof of comparative quality. Source https://raw.githubusercontent.com/higgsfield-ai/skills/main/higgsfield-generate/SKILL.md, consulted 2026-10-03.
+- UI/reliability commit a08c5d49d: five composer/reply tests and 37 hook/lifecycle checks passed; connected Chromium test passed with PostgreSQL 17, including help focus, timeline collapse, saved trim/volume, library, mobile and both themes. Baseline and revised screenshots are in output/studio-creative-workspace/.
+- Integration finding: the projects entry did not expose conversational Studio, and the director lacked a side-effect-free price inquiry. Task 3b resolves those gaps within existing gates and pricing ownership. No gate is enabled by this work.

@@ -175,7 +175,10 @@ test('model details project one executable public model into the exact safe shap
     detailsDeps([engine('minimax-h3', ['t2v', 'i2v', 'ref2v'])]),
   );
 
-  assert.deepEqual(details, {
+  const {editorialGuidance,...capabilityDetails}=details;
+  assert.equal(editorialGuidance?.level,'alternative');
+  assert.equal(editorialGuidance?.basis,'product_editorial_preference');
+  assert.deepEqual(capabilityDetails, {
     id: 'minimax-h3',
     label: 'MiniMax H3',
     slug: 'minimax-h3',

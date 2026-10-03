@@ -1,6 +1,6 @@
 import type {StudioCapabilityDetails,StudioImageCapability} from '@/lib/studio/conversation-action-contract';
 import {projectAgentModelModeDetails} from '@/server/agent-api/model-details';
-import {getAgentModelGuidance} from '@/server/agent-api/model-guidance';
+import {getAgentModelGuidance,getAgentModelEditorialGuidance,getAgentModelEditorialSummary} from '@/server/agent-api/model-guidance';
 import {getAgentModelPromptingSources} from '@/server/agent-api/model-prompting-sources';
 import type {AgentPublicGenerationEngine} from '@/server/agent-api/model-catalog';
 import {projectAudioVariantSettings,projectAudioVariantFixedOutput,type listAudioCapabilities} from '@/server/agent-api/audio-capabilities';
@@ -22,6 +22,7 @@ export function studioVisualCapabilityDetails(candidate: AgentPublicGenerationEn
     }),
     referenceIdentity: candidate.surface === 'image' ? 'attached_image_asset' : 'attached_image_asset_or_ready_project_output',
     outputCount: 1,maxReferences: STUDIO_CONVERSATION_MAX_REFERENCES,guidance: getAgentModelGuidance(candidate.engine.id),
+    editorialGuidance: getAgentModelEditorialGuidance(candidate.engine.id),
     promptingSources: getAgentModelPromptingSources(candidate.engine.id).flatMap(source => {
       const modes=source.modes.filter(mode=>candidate.publicModes.includes(mode));
       return modes.length ? [{...source,modes}] : [];
@@ -30,7 +31,7 @@ export function studioVisualCapabilityDetails(candidate: AgentPublicGenerationEn
 }
 export function studioVisualCapabilitySummary(candidate: AgentPublicGenerationEngine): StudioImageCapability {
   return {modelId: candidate.engine.id,label: candidate.engine.label,modes: candidate.publicModes,formats: candidate.engine.aspectRatios,
-    bestFor: getAgentModelGuidance(candidate.engine.id)?.bestFor ?? []};
+    bestFor: getAgentModelGuidance(candidate.engine.id)?.bestFor ?? [],editorialGuidance: getAgentModelEditorialSummary(candidate.engine.id)};
 }
 export function studioAudioCapabilityDetails(capabilities: ReturnType<typeof listAudioCapabilities>,modelId: string): StudioCapabilityDetails | null {
   const modes=capabilities.modes.filter(mode => mode.engineId === modelId && mode.variants.some(variant=>variant.available));

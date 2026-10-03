@@ -175,7 +175,7 @@ export function ImageReferenceLibrary({
         </button>
       </div>
       <p className={styles.muted}>
-        {mediaEnabled ? t('Attach references or media for your film.', 'Joignez des références ou des médias pour votre film.') : t('Choose an image to guide the creation.', 'Choisissez une image pour guider la création.')}
+        {mediaEnabled ? t('Bring a reference into your conversation.', 'Apportez une référence à votre conversation.') : t('Choose an image to guide the creation.', 'Choisissez une image pour guider la création.')}
       </p>
       <div className={styles.libraryTools}>
         <button

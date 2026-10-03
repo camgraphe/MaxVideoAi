@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "version": "2026-10-03.1",
+  "basis": "product_editorial_preference",
+  "reviewedAt": "2026-10-03",
+  "reviewAfterDays": 90,
+  "provenance": [
+    {
+      "kind": "product_decision",
+      "source": "MaxVideoAI Studio editorial review",
+      "sourceVersion": null,
+      "reviewedAt": "2026-10-03",
+      "summary": "Product preference for Seedance, Wan and Kling video families, relevant alternatives and Pika on request. Exact entries require review; this is not a measured quality benchmark or execution certification."
+    },
+    {
+      "kind": "vendor_policy",
+      "source": "https://raw.githubusercontent.com/higgsfield-ai/skills/main/higgsfield-generate/SKILL.md",
+      "sourceVersion": "0.13.0",
+      "reviewedAt": "2026-10-03",
+      "summary": "Higgsfield defaults video to Seedance 2.5 and reserves many models for explicit requests. This is vendor policy, not an independent ranking or evidence for our other family preferences."
+    }
+  ],
+  "entries": [
+    {"engineId": "seedance-1-5-pro", "level": "reference", "rationale": "A reviewed Seedance family starting point when this exact version supports the brief."},
+    {"engineId": "seedance-2-0", "level": "reference", "rationale": "A reviewed Seedance family starting point when this exact version supports the brief."},
+    {"engineId": "seedance-2-0-fast", "level": "reference", "rationale": "A reviewed Seedance family starting point; use current mode facts for iteration tradeoffs."},
+    {"engineId": "seedance-2-0-mini", "level": "reference", "rationale": "A reviewed Seedance family starting point for compatible short video and reference workflows."},
+    {"engineId": "seedance-2-5", "level": "reference", "rationale": "A reviewed Seedance starting point for cinematic and reference-led briefs; confirm exact settings."},
+    {"engineId": "wan-3", "level": "reference", "rationale": "A reviewed Wan starting point when the requested motion and reference workflow is executable."},
+    {"engineId": "wan-3-prime", "level": "reference", "rationale": "A reviewed Wan starting point when this exact version supports the required references and delivery."},
+    {"engineId": "kling-3-4k", "level": "reference", "rationale": "A reviewed Kling family starting point; verify this version's exact delivery and reference controls."},
+    {"engineId": "kling-3-pro", "level": "reference", "rationale": "A reviewed Kling family starting point when this exact version supports the brief."},
+    {"engineId": "kling-3-standard", "level": "reference", "rationale": "A reviewed Kling family starting point; compare current quotes when budget matters."},
+    {"engineId": "kling-3-turbo-pro", "level": "reference", "rationale": "A reviewed Kling family starting point; use current mode facts for iteration tradeoffs."},
+    {"engineId": "kling-3-turbo-standard", "level": "reference", "rationale": "A reviewed Kling family starting point; compare current quotes when budget matters."},
+    {"engineId": "kling-o3-4k", "level": "reference", "rationale": "A reviewed Kling family starting point; verify this version's exact delivery and reference controls."},
+    {"engineId": "kling-o3-pro", "level": "reference", "rationale": "A reviewed Kling starting point for directed shots and reference-led consistency."},
+    {"engineId": "kling-o3-standard", "level": "reference", "rationale": "A reviewed Kling family starting point when this exact version supports the brief."},
+    {"engineId": "minimax-h3", "level": "alternative", "rationale": "Consider for character-led and multi-shot briefs when its exact capabilities are a better fit."},
+    {"engineId": "minimax-h3-max", "level": "alternative", "rationale": "Consider for compatible text-directed product or social clips; inspect the current delivery limits."},
+    {"engineId": "minimax-hailuo-02-text", "level": "alternative", "rationale": "Consider for a compatible text-directed brief or an explicit user preference."},
+    {"engineId": "gemini-omni-flash", "level": "alternative", "rationale": "Consider when source editing or continuation better serves the brief; surface support is required."},
+    {"engineId": "happy-horse-1-1", "level": "alternative", "rationale": "Consider for compatible reference-led motion and product shots."},
+    {"engineId": "luma-ray-3-2", "level": "alternative", "rationale": "Consider when current model details offer a useful workflow or delivery tradeoff."},
+    {"engineId": "veo-3-1", "level": "alternative", "rationale": "Consider when exact audio, reference or delivery controls are useful to the brief."},
+    {"engineId": "veo-3-1-fast", "level": "alternative", "rationale": "Consider when current latency and delivery facts suit iteration; compare live quotes for cost."},
+    {"engineId": "veo-3-1-lite", "level": "alternative", "rationale": "Consider when its exact supported settings meet the brief; compare live quotes for cost."},
+    {"engineId": "ltx-2-5-fast", "level": "alternative", "rationale": "Consider for audio-led or iterative video workflows supported by the current surface."},
+    {"engineId": "ltx-2-5-pro", "level": "alternative", "rationale": "Consider for compatible audio-led or cinematic workflows."},
+    {"engineId": "grok-imagine-video-1-5", "level": "alternative", "rationale": "Consider for compatible image-reference and character-led briefs."},
+    {"engineId": "flux-3", "level": "alternative", "rationale": "Consider when supported first/last frames or source-video continuation matter."},
+    {"engineId": "flux-3-draft", "level": "alternative", "rationale": "Consider for compatible iteration, first/last-frame direction or continuation."},
+    {"engineId": "pika-text-to-video", "level": "on_request", "rationale": "Use when the client explicitly asks for Pika and the exact executable settings fit."}
+  ]
+}

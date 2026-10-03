@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import {studioPricingReadSchema,STUDIO_PRICING_DIRECTOR_TOOL,type StudioPricingEstimate} from './conversation-pricing-contract';
 import {studioExportPrepareActionSchema,studioExportReadActionSchema,STUDIO_EXPORT_DIRECTOR_TOOLS,type StudioPreparedExport} from './conversation-export-contract';
 import type {TimelineExportJobResponse} from '@/server/timeline-exports/contracts';
 import type { PreparedGeneration } from '@/server/agent-api/prepare-generation';
@@ -14,7 +15,7 @@ import {imageSelectionSchema,imageSelectionProperties} from './conversation-crea
 import type {AgentModelModeDetails} from '@/server/agent-api/types';
 import type {listAudioCapabilities} from '@/server/agent-api/audio-capabilities';
 import type {AudioSettingDetails,projectAudioVariantFixedOutput} from '@/server/agent-api/audio-capabilities';
-import type {AgentModelGuidance} from '@/server/agent-api/model-guidance';
+import type {AgentModelGuidance,AgentModelEditorialGuidance,AgentModelEditorialSummary} from '@/server/agent-api/model-guidance';
 import type {AgentModelPromptingSource} from '@/server/agent-api/model-prompting-sources';
 
 export const studioMemorySchema = z.object({
@@ -33,6 +34,7 @@ export type StudioConversationProject = {
 export const studioActionRequestSchema = z.discriminatedUnion('action', [
   z.object({action: z.literal('project.read')}).strict(),
   z.object({action: z.literal('catalog.read')}).strict(),
+  studioPricingReadSchema,
   z.object({action: z.literal('model.details'), modelId: z.string().trim().min(1).max(128)}).strict(),
   z.object({action: z.literal('project.remember'), ...studioMemorySchema.shape}).strict(),
   z.object({action: z.literal('image.prepare'), reply: z.string().min(1).max(2400), ...imageSelectionSchema.shape}).strict(),
@@ -44,14 +46,14 @@ export const studioActionRequestSchema = z.discriminatedUnion('action', [
   studioExportPrepareActionSchema,studioExportReadActionSchema,
 ]);
 export type StudioActionRequest = z.infer<typeof studioActionRequestSchema>;
-export type StudioImageCapability = {modelId: string; label: string; modes: string[]; formats: string[]; bestFor?: readonly string[]};
+export type StudioImageCapability = {modelId: string; label: string; modes: string[]; formats: string[]; bestFor?: readonly string[]; editorialGuidance?: AgentModelEditorialSummary};
 type AudioCapabilities=ReturnType<typeof listAudioCapabilities>;
 type StudioAudioMode=Omit<AudioCapabilities['modes'][number],'variants'> & {
   variants: (AudioCapabilities['modes'][number]['variants'][number] & {parameters: AudioSettingDetails[];fixedOutput: ReturnType<typeof projectAudioVariantFixedOutput>})[];
 };
 type StudioAudioOptions={readonly [K in keyof AudioCapabilities['options']]: readonly AudioCapabilities['options'][K][number][]};
 export type StudioCapabilityDetails =
-  | {modelId: string; label: string; surface: 'image' | 'video'; modes: readonly AgentModelModeDetails[]; referenceIdentity: 'attached_image_asset' | 'attached_image_asset_or_ready_project_output'; outputCount: 1; maxReferences: number; guidance: AgentModelGuidance | null; promptingSources: readonly AgentModelPromptingSource[]}
+  | {modelId: string; label: string; surface: 'image' | 'video'; modes: readonly AgentModelModeDetails[]; referenceIdentity: 'attached_image_asset' | 'attached_image_asset_or_ready_project_output'; outputCount: 1; maxReferences: number; guidance: AgentModelGuidance | null; editorialGuidance?: AgentModelEditorialGuidance; promptingSources: readonly AgentModelPromptingSource[]}
   | {modelId: string; label: string; surface: 'audio'; modes: StudioAudioMode[]; options: StudioAudioOptions; references: []; outputCount: 1};
 export type StudioProjectMedia = {ref: ToolAssetRef; name: string; durationSec: number | null}[];
 export type StudioActionResult =
@@ -60,6 +62,7 @@ export type StudioActionResult =
   | {ok: true; action: 'project.read'; data: StudioConversationProject}
   | {ok: true; action: 'project.remember'; data: StudioConversationMemory}
   | {ok: true; action: 'catalog.read'; data: StudioImageCapability[]}
+  | {ok: true; action: 'pricing.read'; data: StudioPricingEstimate}
   | {ok: true; action: 'model.details'; data: StudioCapabilityDetails}
   | {ok: true; action: 'image.prepare'; data: Omit<PreparedGeneration, 'balance' | 'topupRequired'>}
   | {ok: true; action: 'generation.read'; data: AgentGenerationStatus | null}
@@ -72,6 +75,7 @@ export type StudioActionResult =
   | (AgentApiFailure & {action: StudioActionRequest['action']});
 
 export const STUDIO_DIRECTOR_TOOLS = [
+  STUDIO_PRICING_DIRECTOR_TOOL,
   {action: 'project.read', name: 'project_read', description: 'Read this owned project, current revision and durable brief.', properties: {}},
   {action: 'catalog.read', name: 'catalog_read', description: 'Read the bounded, executable and certified creation catalog. Inspect model_details before selecting settings or reference roles. No prices are guessed.', properties: {}},
   {action: 'model.details', name: 'model_details', description: 'Inspect exact supported modes, settings, formats, durations and reference roles of one model from catalog_read. Read-only; no quote, generation or charge.', properties: {modelId: {type: 'string'}}},

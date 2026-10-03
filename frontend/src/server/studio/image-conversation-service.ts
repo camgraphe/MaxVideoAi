@@ -206,6 +206,7 @@ export function createImageConversationService(
       message: turn.input_json.message,
       references: turn.input_json.references,
       ...(turn.input_json.attachments ? {attachments: turn.input_json.attachments} : {}),
+      ...(turn.input_json.referenceMentions ? {referenceMentions: turn.input_json.referenceMentions} : {}),
       ...(turn.input_json.renewedFromRequestId ? {renewedFromRequestId: turn.input_json.renewedFromRequestId} : {}),
       reply: turn.draft_json?.reply ?? null,
       ...(turn.draft_json?.exportQuote ? {exportQuote: turn.draft_json.exportQuote} : {}),
@@ -302,7 +303,8 @@ export function createImageConversationService(
           turn.draft_json ??
           (useActions ? await runStudioImageActions({
             actor, turn, input, references: refs, referenceFingerprint,
-            history: history.map(saved => ({message: saved.input_json.message, reply: saved.draft_json?.reply ?? null})),
+            history: history.map(saved => ({message: saved.input_json.message, reply: saved.draft_json?.reply ?? null,
+              ...(saved.input_json.referenceMentions ? {referenceMentions: saved.input_json.referenceMentions} : {})})),
             enabled: dependencies.enabled, factory, createResponse: dependencies.createActionResponse,
             factories, mediaEnabled: dependencies.mediaEnabled,editingEnabled: dependencies.editingEnabled,exportsEnabled: dependencies.exportsEnabled,requestOrigin: dependencies.requestOrigin,exportDependencies: dependencies.exportDependencies,
           }) : await runMeteredImageDirector(
@@ -313,6 +315,7 @@ export function createImageConversationService(
             history.map((saved) => ({
               message: saved.input_json.message,
               reply: saved.draft_json?.reply ?? null,
+              ...(saved.input_json.referenceMentions ? {referenceMentions: saved.input_json.referenceMentions} : {}),
             })),
             refs,
           ));

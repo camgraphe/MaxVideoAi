@@ -10,7 +10,7 @@ import {
 } from '@/lib/image/inputSchema';
 
 import { AgentApiError } from './errors';
-import { getAgentModelGuidance, type AgentModelGuidance } from './model-guidance';
+import { getAgentModelGuidance, getAgentModelEditorialGuidance, type AgentModelGuidance } from './model-guidance';
 import {
   getAgentModelPromptingSources,
   type AgentModelPromptingSource,
@@ -441,6 +441,7 @@ export async function getAgentModelDetails(
     prelaunch,
     modes: Object.freeze(candidate.publicModes.map((mode) => projectAgentModelModeDetails(candidate, mode))),
     guidance,
+    editorialGuidance: getAgentModelEditorialGuidance(candidate.engine.id),
     promptingSources,
     links: Object.freeze({
       model: prelaunch

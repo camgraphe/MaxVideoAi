@@ -14,9 +14,13 @@ Use a versioned shared editorial recommendation policy separate from model ident
 
 Prices must come from current MaxVideoAI canonical quotes for the exact settings. No provider price copied from competitors, static amount in instructions, cheapest-model assertion without quotes, client-side commercial arithmetic, or silent quote replacement. Existing expiration/reconfirmation/historical-paid-price guarantees remain unchanged. Price discussion should name what the quote buys and distinguish preparation from spending.
 
+Add a read-only exact image/video scenario estimate using the canonical preparation validation and pricing owners. It must not save a quote, reserve funds or submit a generation. Surface the observed price, settings and requirement for a fresh quote before spending. Owned references and the current Studio authority/certification constraints still apply. Unsupported audio or prior-job-reference estimates must explain their limitation rather than fabricate a price.
+
 ## Architecture
 
 Route-local welcome, guide and reply presentation components keep StudioImageConversation as an orchestrator. Client request state and localized errors belong in useImageConversation and a focused presentation helper. A shared validated editorial policy is projected through existing model guidance, Studio capabilities and MCP recommendation owners. A focused director instruction builder describes creative purpose, current surface controls, editorial evidence, price truth and limitations. No second director, renderer, wallet, registry or publication switch.
+
+The projects page must make the conversational workspace reachable when its existing three feature gates are enabled. Reuse canonical project creation with stable retry identity. Preserve classic Canvas entry, local projects, guided starters and media-handoff routing. Existing connected projects may open conversational Studio only when that surface is enabled and no media handoff requires the classic editor.
 
 ## Quality bar
 

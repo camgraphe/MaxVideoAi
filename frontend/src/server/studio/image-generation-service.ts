@@ -1,6 +1,8 @@
 import { isWorkspaceModelCertifiedForBlock } from "@/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-model-certification";
 import {
   requireGenerationActor,
+  requireStudioGenerationRequest,
+  isStudioGenerationMode,
   studioReferenceFingerprint,
   type StudioGenerationActor,
 } from "@/server/agent-api/generation-actor";
@@ -35,6 +37,12 @@ import { getWalletSummary } from "@/server/wallet-summary";
 import {STUDIO_CONVERSATION_MODEL_IDS} from '@/config/studio-conversation-catalog';
 import {projectAgentModelModeDetails} from '@/server/agent-api/model-details';
 import {STUDIO_CONVERSATION_MAX_REFERENCES} from '@/lib/studio/conversation-creation-contract';
+import type {StudioPricingEstimate} from '@/lib/studio/conversation-pricing-contract';
+import {normalizeGenerationRequest} from '@/server/agent-api/generation-normalization';
+import {readGenerationPricing} from '@/server/agent-api/generation-pricing-read';
+import {priceCanonicalGeneration} from '@/server/agent-api/generation-pricing';
+import {getUserMembershipStatus} from '@/server/membership/user-membership-status';
+import {resolveAgentGenerationRequestExecutability} from '@/server/agent-runtime/model-executability';
 
 function certified(catalog: AgentPublicGenerationEngine[], surface: 'image' | 'video') {
   return catalog
@@ -43,7 +51,7 @@ function certified(catalog: AgentPublicGenerationEngine[], surface: 'image' | 'v
       ...candidate,
       publicModes: candidate.publicModes
         .filter((mode) => Boolean(candidate.modeCaps[mode]))
-        .filter((mode) => surface === 'image' ? mode === "t2i" || mode === "i2i" : ['t2v','i2v','ref2v','fl2v'].includes(mode))
+        .filter((mode) => isStudioGenerationMode(surface,mode))
         .filter(mode => {
           const details=projectAgentModelModeDetails(candidate,mode);
           return !details.settings.some(setting=>setting.required && setting.type==='multi_prompt')
@@ -105,6 +113,7 @@ function createStudioVisualGenerationService(
   const accountUrl = "https://maxvideoai.com/account/connections";
   const prepareDeps = options.prepareDependencies ?? {};
   const confirmDeps = options.confirmDependencies ?? {};
+  const catalog = async () => certified(await (prepareDeps.listPublicEngines ?? listPublicAgentGenerationEngines)(),surface);
   async function resolveReferences(
     request: CanonicalGenerationRequest,
     executor?: TransactionQueryExecutor,
@@ -206,13 +215,27 @@ function createStudioVisualGenerationService(
   return {
     walletSummary: () =>
       (prepareDeps.getWalletSummary ?? getWalletSummary)(actor.userId),
-    catalog: async () =>
-      certified(
-        await (
-          prepareDeps.listPublicEngines ?? listPublicAgentGenerationEngines
-        )(),
-        surface,
-      ),
+    catalog,
+    async estimate(input: PrepareGenerationInput): Promise<StudioPricingEstimate> {
+      if (!options.enabled) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio estimates are unavailable.');
+      let request: CanonicalGenerationRequest;
+      try {request=normalizeGenerationRequest(input);} catch {throw new AgentApiError('PARAMETER_INVALID','The pricing scenario is invalid.');}
+      requireStudioGenerationRequest(request);
+      const settings: Record<string,string|number|boolean|null>={};
+      for (const [key,value] of Object.entries(request.settings)) {
+        if (value!==null && typeof value!=='string' && typeof value!=='number' && typeof value!=='boolean') throw new AgentApiError('PARAMETER_INVALID','Structured settings cannot be estimated in this Studio workflow.');
+        settings[key]=value;
+      }
+      if (request.surface!==surface) throw new AgentApiError('ENGINE_UNAVAILABLE','This model is not available in this Studio catalog.');
+      const {pricing}=await readGenerationPricing(request,actor,{
+        listPublicEngines:catalog,resolveGenerationReferences:request=>resolveReferences(request),
+        resolveMembershipPricing:prepareDeps.resolveMembershipPricing ?? (async userId=>(await getUserMembershipStatus(userId)).pricing),
+        priceGeneration:prepareDeps.priceGeneration ?? ((request,tier,context)=>priceCanonicalGeneration(request,tier,undefined,context)),
+        resolveRequestExecutability:prepareDeps.resolveRequestExecutability ?? ((request,candidate,references)=>resolveAgentGenerationRequestExecutability(request,candidate.engine,references)),
+      });
+      return {modelId:request.engineId,surface:request.surface,mode:request.mode,settings,outputCount:1,referenceCount:request.references.length,
+        price:{amountCents:pricing.priceCents,currency:pricing.currency},estimatedAt:(prepareDeps.now?.() ?? new Date()).toISOString(),quoteRequired:true};
+    },
     resolveReferences,
     prepare: (input: PrepareGenerationInput) => prepare(input, actor),
     async confirm(input: ConfirmGenerationInput) {

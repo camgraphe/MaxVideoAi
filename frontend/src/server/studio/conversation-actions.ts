@@ -14,6 +14,7 @@ import {readStudioConversationTimeline} from './conversation-timeline';
 import type {ConversationEditResult} from './conversation-edit-command';
 import type {StudioQuoteDiscardResult} from './conversation-quote-command';
 import {studioVisualCapabilityDetails,studioVisualCapabilitySummary,studioAudioCapabilityDetails} from './conversation-capabilities';
+import {conversationSelectionSettings} from '@/lib/studio/conversation-creation-contract';
 
 export function createStudioActionExecutor(actor: StudioGenerationActor, dependencies: {
   enabled: boolean;
@@ -29,6 +30,7 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
   readExport?(quoteId: string): Promise<TimelineExportJobResponse | null>;
   editTimeline?(request: Extract<StudioActionRequest,{action: 'timeline.edit'}>): Promise<ConversationEditResult>;
   discardQuote?(quoteId: string): Promise<StudioQuoteDiscardResult>;
+  attachedImageIds?: readonly string[];
 }) {
   requireGenerationActor(actor);
   if (actor.authMethod !== 'studio-session') throw new AgentApiError('AUTH_REQUIRED', 'Studio session required.');
@@ -39,6 +41,20 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
       if (!dependencies.enabled) throw new AgentApiError('ENGINE_UNAVAILABLE', 'Studio actions are unavailable.');
       const project = await readStudioConversationProject(actor,{exportsEnabled:dependencies.editingEnabled&&dependencies.exportsEnabled});
       switch (request.action) {
+        case 'pricing.read': {
+          if (request.references.some(selection=>selection.ref.type!=='asset' || !dependencies.attachedImageIds?.includes(selection.ref.assetId))) {
+            throw new AgentApiError('REFERENCE_INVALID','Attach this saved library image before estimating its use.');
+          }
+          const service=request.surface==='image' ? generation : dependencies.mediaEnabled && dependencies.factories
+            ? dependencies.factories.video(actor,{enabled:dependencies.enabled}) : null;
+          if (!service) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio video estimates are unavailable.');
+          const data=await service.estimate({surface:request.surface,engineId:request.modelId,mode:request.mode,prompt:'Studio pricing scenario',
+            settings:conversationSelectionSettings(request.settings),outputCount:1,references:request.references.map(selection=>{
+              if(selection.ref.type!=='asset') throw new AgentApiError('REFERENCE_INVALID','Attach a saved library image.');
+              return {kind:'asset' as const,assetId:selection.ref.assetId,role:selection.role,...(selection.slot==null?{}:{slot:selection.slot})};
+            })});
+          return {ok:true,action:request.action,data};
+        }
         case 'export.prepare':
           if (!dependencies.editingEnabled || !dependencies.exportsEnabled || !dependencies.prepareExport) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio export tools are unavailable.');
           return {ok: true,action: request.action,data: await dependencies.prepareExport(request)};

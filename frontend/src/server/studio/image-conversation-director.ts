@@ -7,13 +7,15 @@ import {
   imageDraftSchema,
   type ImageDraft,
   type ImageTurnInput,
+  type ImageConversationHistoryTurn,
 } from "@/lib/studio/image-conversation-contract";
 import { AgentApiError } from "@/server/agent-api/errors";
 import type { ResolvedReference } from "@/server/agent-api/reference-types";
+import {studioHistoryMessage,studioReferenceInputContent} from './conversation-reference-mentions';
 
 export type ImageDirector = (
   input: ImageTurnInput,
-  history: { message: string; reply: string | null }[],
+  history: ImageConversationHistoryTurn[],
   references: ResolvedReference[],
   observeResponse?: (event: ImageDirectorTelemetry) => void,
 ) => Promise<ImageDraft>;
@@ -95,7 +97,7 @@ Si le brief suffit et demande de créer, image contient un prompt précis et un 
           ...history
             .slice(-8)
             .flatMap((turn) => [
-              { role: "user" as const, content: turn.message.slice(0, 2000) },
+              { role: "user" as const, content: studioHistoryMessage(turn) },
               ...(turn.reply
                 ? [
                     {
@@ -109,11 +111,7 @@ Si le brief suffit et demande de créer, image contient un prompt précis et un 
             role: "user",
             content: [
               { type: "input_text", text: input.message },
-              ...references.map((ref) => ({
-                type: "input_image" as const,
-                image_url: ref.storageUrl,
-                detail: "low" as const,
-              })),
+              ...studioReferenceInputContent(references, input.referenceMentions, false),
             ],
           },
         ],

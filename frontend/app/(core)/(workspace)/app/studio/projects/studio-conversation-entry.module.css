@@ -1,0 +1,125 @@
+.entry {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: clamp(24px, 4vw, 48px);
+  border: 1px solid var(--studio-project-border);
+  border-radius: 16px;
+  background: var(--studio-project-surface);
+  color: var(--studio-project-text);
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--studio-project-muted);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+}
+
+.entry h1 {
+  max-width: 680px;
+  margin: 20px 0 14px;
+  font-size: clamp(28px, 3.5vw, 42px);
+  font-weight: 580;
+  line-height: 1.14;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.description {
+  max-width: 540px;
+  margin: 0;
+  color: var(--studio-project-muted);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px 22px;
+  margin-top: 28px;
+}
+
+.open {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  min-height: 46px;
+  padding: 12px 18px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: var(--studio-project-accent);
+  color: #20261b;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.open:hover:not(:disabled) { filter: brightness(1.06); }
+.open:disabled { opacity: 0.65; cursor: wait; }
+.open:focus-visible,
+.canvasOptions summary:focus-visible { outline: 2px solid var(--studio-project-text); outline-offset: 4px; }
+
+.note {
+  max-width: 270px;
+  margin: 0;
+  color: var(--studio-project-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.error {
+  max-width: 580px;
+  margin: 20px 0 0;
+  color: var(--studio-project-danger-text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.canvasOptions {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  border-top: 1px solid var(--studio-project-border);
+  padding-top: 20px;
+}
+
+.canvasOptions summary {
+  width: fit-content;
+  min-height: 44px;
+  color: var(--studio-project-text);
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.canvasOptions summary span {
+  display: block;
+  margin: 8px 0 0 16px;
+  color: var(--studio-project-muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.canvasOptions[open] summary { margin-bottom: 24px; }
+
+@media (max-width: 520px) {
+  .entry { padding: 24px 20px; }
+  .actions { align-items: stretch; flex-direction: column; }
+  .open { width: 100%; }
+  .note { max-width: none; }
+}

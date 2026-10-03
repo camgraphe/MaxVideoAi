@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Sparkles, Sun, Moon, HelpCircle, ArrowDown, FolderOpen } from "lucide-react";
+import { Sun, Moon, HelpCircle, ArrowDown, FolderOpen, X, ImagePlus } from "lucide-react";
 import { useImageConversation } from "./_hooks/useImageConversation";
 import {ConversationExportQuote} from "./_components/ConversationExportQuote.client";
 import { ImageQuoteCard } from "./_components/ImageQuoteCard.client";
@@ -21,7 +21,10 @@ import {useThemePreference} from '@/hooks/useThemePreference';
 import {ConversationWelcome} from './_components/ConversationWelcome.client';
 import {ConversationHelp} from './_components/ConversationHelp.client';
 import {ConversationReply} from './_components/ConversationReply';
-export default function StudioImageConversation({
+import {ConversationMediaShelf} from './_components/ConversationMediaShelf.client';
+import {useConversationMediaShelf} from './_hooks/useConversationMediaShelf';
+import {insertMediaMention,removeMediaMention,readShelfDrag,MEDIA_SHELF_DRAG_TYPE,type ShelfMedia} from './_lib/conversation-media-shelf';
+function StudioImageConversationWorkspace({
   projectId,
   accountKey,
   projectName,
@@ -50,7 +53,10 @@ export default function StudioImageConversation({
   const helpTrigger = useRef<HTMLButtonElement>(null);
   const composerRegion = useRef<HTMLDivElement>(null);
   const [text, setText] = useState("");
-  const [references, setReferences] = useState<ImageLibraryAsset[]>([]);
+  const shelf = useConversationMediaShelf(studio.conversation.turns,locale,mediaEnabled);
+  const references = shelf.references;
+  const [dropping,setDropping] = useState(false);
+  const dragDepth=useRef(0);
   const [library, setLibrary] = useState(false);
   const [libraryPurpose,setLibraryPurpose] = useState<'reference'|'timeline'>('reference');
   const [timelineInsertion,setTimelineInsertion] = useState<{key: string;asset: ImageLibraryAsset} | null>(null);
@@ -74,28 +80,34 @@ export default function StudioImageConversation({
   }, [studio.conversation, studio.pending, studio.busy,exports.jobs]);
   function openReferences() {setLibraryPurpose('reference');setLibrary(true);}
   function startDraft(value: string) {
-    setText(value);
+    if (!text.trim()) setText(value);
     composerRegion.current?.querySelector('textarea')?.focus();
   }
   function select(asset: ImageLibraryAsset) {
     if (libraryPurpose === 'timeline') {setTimelineInsertion({key: crypto.randomUUID(),asset});setLibrary(false);return;}
-    setReferences((current) =>
-      current.some((ref) => ref.assetId === asset.assetId)
-        ? current
-        : [...current, asset].slice(0, 8),
-    );
+    shelf.attach(asset);
     setLibrary(false);
   }
+  function mention(item:ShelfMedia) {
+    const textarea=composerRegion.current?.querySelector('textarea');
+    const inserted=insertMediaMention(text,item.label,textarea?.selectionStart??text.length,textarea?.selectionEnd??text.length);
+    if(!inserted){shelf.setError(t('Make a little room in your message to add this reference.','Raccourcissez un peu votre message pour ajouter cette référence.'));return;}
+    if(!shelf.attach(item))return;
+    setText(inserted.text);
+    requestAnimationFrame(()=>{textarea?.focus();textarea?.setSelectionRange(inserted.caret,inserted.caret);});
+  }
+  function detach(item:ShelfMedia) {shelf.detach(item.assetId);setText(current=>removeMediaMention(current,item.label));}
   async function send() {
-    if (!text.trim() || studio.loading || studio.busy || studio.pending) return;
+    if (!text.trim() || studio.loading || studio.busy || studio.pending || shelf.uploading) return;
     const input = {
       requestId: crypto.randomUUID(),
       message: text,
       references: references.filter(ref => !ref.kind || ref.kind === 'image').map((ref) => ref.assetId),
+      ...(references.length ? {referenceMentions:references.map(ref=>({assetId:ref.assetId,label:ref.label}))} : {}),
       ...(mediaEnabled ? {attachments: references.filter(ref => ref.kind === 'video' || ref.kind === 'audio').map(ref => ({type: 'asset' as const, assetId: ref.assetId, kind: ref.kind as 'video' | 'audio'}))} : {}),
     };
     setText("");
-    setReferences([]);
+    shelf.clear();
     follow.current = true;
     await studio.submit(input);
   }
@@ -123,7 +135,12 @@ export default function StudioImageConversation({
           </button>
         </div>
       </header>
-      <div className={styles.canvas}>
+      <div className={styles.canvas} data-has-media={shelf.items.length>0} data-dropping={dropping}
+        onDragEnter={event=>{if(event.dataTransfer.types.includes('Files')){event.preventDefault();dragDepth.current++;setDropping(true);}}}
+        onDragOver={event=>{if(event.dataTransfer.types.includes('Files')){event.preventDefault();event.dataTransfer.dropEffect='copy';}}}
+        onDragLeave={event=>{if(event.dataTransfer.types.includes('Files')&&--dragDepth.current<=0){dragDepth.current=0;setDropping(false);}}}
+        onDrop={event=>{if(event.dataTransfer.types.includes('Files')){event.preventDefault();dragDepth.current=0;setDropping(false);void shelf.upload(Array.from(event.dataTransfer.files));}}}>
+        {dropping&&<div className={styles.dropSurface}><ImagePlus size={28}/><span>{t('Bring it into the conversation','Ajoutez-le à la conversation')}</span><small>{t('Drop your media here','Déposez vos médias ici')}</small></div>}
         <div className={styles.conversation}>
           <div
             ref={log}
@@ -140,7 +157,7 @@ export default function StudioImageConversation({
             }}
           >
             {studio.loading && <div className={styles.loading} role="status"><span className={styles.loadingMark}/>{t('Opening your workspace…','Ouverture de votre espace…')}</div>}
-            {!studio.loading && !studio.error && !studio.conversation.turns.length && !studio.pending && <ConversationWelcome locale={locale} onDraft={startDraft} onReference={openReferences}/>}
+            {!studio.loading && !studio.error && !studio.conversation.turns.length && !studio.pending && <ConversationWelcome locale={locale} onDraft={startDraft} onReference={openReferences} hasDraft={!!text.trim()}/>}
             {studio.conversation.turns.map((turn) => (
               <article key={turn.requestId} className={styles.turn}>
                 <p className={styles.userMessage}>{turn.message}</p>
@@ -151,7 +168,6 @@ export default function StudioImageConversation({
                 )}
                 {turn.reply && (
                   <div className={styles.reply}>
-                    <Sparkles size={16} />
                     <ConversationReply text={turn.reply} className={styles.replyBody}/>
                   </div>
                 )}
@@ -182,6 +198,7 @@ export default function StudioImageConversation({
                       requestId: crypto.randomUUID(),
                       message: turn.message,
                       references: turn.references,
+                      ...(turn.referenceMentions ? {referenceMentions:turn.referenceMentions} : {}),
                       ...(turn.attachments ? {attachments: turn.attachments} : {}),
                       renewedFromRequestId: turn.requestId,
                     })
@@ -236,12 +253,7 @@ export default function StudioImageConversation({
                     onClick={() => {
                       const saved = studio.pending!;
                       setText(saved.message);
-                      setReferences(
-                        [...saved.references.map((assetId) => ({
-                          assetId,
-                          url: "",
-                        })), ...(saved.attachments ?? []).flatMap(ref => ref.type === 'asset' ? [{assetId: ref.assetId, url: '', kind: ref.kind}] : [])],
-                      );
+                      shelf.restore(saved);
                       studio.discardPending();
                     }}
                   >
@@ -259,33 +271,22 @@ export default function StudioImageConversation({
             </div>
           )}
           {!!references.length && (
-            <div className={styles.attachments}>
+            <div className={styles.attachments} aria-label={t('Attached to next message','Joints au prochain message')}>
               {references.map((ref) => (
-                <button
-                  key={ref.assetId}
-                  onClick={() =>
-                    setReferences((current) =>
-                      current.filter((asset) => asset.assetId !== ref.assetId),
-                    )
-                  }
-                  aria-label={t('Remove reference', 'Retirer la référence')}
-                >
-                  {ref.url && (!ref.kind || ref.kind === 'image' || ref.thumbUrl) ? (
-                    <img src={ref.thumbUrl ?? ref.url} alt={t('Attached reference','Référence jointe')} />
-                  ) : (
-                    <span>{ref.kind ?? 'image'}</span>
-                  )}
-                  <span>×</span>
-                </button>
+                <div key={ref.assetId} className={styles.referenceChip}><button onClick={()=>{shelf.setSelectedId(ref.assetId);shelf.setExpanded(true);}} aria-label={t('Preview ','Aperçu de ')+ref.label}>{ref.label}</button><button onClick={()=>detach(ref)} aria-label={t('Remove ','Retirer ')+ref.label}><X size={12}/></button></div>
               ))}
             </div>
           )}
-          <div ref={composerRegion} className={styles.composerRegion}>
+          {shelf.uploading&&<p className={styles.mediaStatus} role="status">{t('Importing your media…','Import de vos médias…')}</p>}
+          {shelf.error&&<p className={styles.mediaStatus} role="alert">{shelf.error}</p>}
+          <div ref={composerRegion} className={styles.composerRegion}
+            onDragOver={event=>{if(event.dataTransfer.types.includes(MEDIA_SHELF_DRAG_TYPE)){event.preventDefault();event.dataTransfer.dropEffect='copy';}}}
+            onDrop={event=>{const item=readShelfDrag(event.dataTransfer,shelf.items);if(item){event.preventDefault();event.stopPropagation();mention(item);}}}>
           <ImageConversationComposer
             text={text}
             onTextChange={setText}
             onSend={() => void send()}
-            blocked={studio.loading || studio.busy || !!studio.pending}
+            blocked={studio.loading || studio.busy || !!studio.pending || shelf.uploading}
             libraryTrigger={libraryTrigger}
             onOpenLibrary={openReferences}
             locale={locale}
@@ -295,6 +296,7 @@ export default function StudioImageConversation({
             {t('Your direction. Your decision. Review the price before you create.', 'Votre direction. Vos décisions. Vérifiez le prix avant de créer.')}
           </p>
         </div>
+        <ConversationMediaShelf projectId={projectId} items={shelf.items} selectedId={shelf.selectedId} expanded={shelf.expanded} attachedIds={references.map(ref=>ref.assetId)} locale={locale} onSelect={shelf.setSelectedId} onToggle={()=>shelf.setExpanded(current=>!current)} onMention={mention} onAttach={shelf.attach} onDetach={detach}/>
       </div>
       {editingEnabled && <ConversationTimeline projectId={projectId} projectName={projectName} refreshKey={studio.conversation} insertion={timelineInsertion} onOpenLibrary={() => {setLibraryPurpose('timeline');setLibrary(true);}} exportAvailable={exportAvailable} exportPending={exports.working} exportJobs={exports.jobs} onExportChange={exports.refresh}/>}
       {help && <ConversationHelp locale={locale} editingEnabled={editingEnabled} onClose={() => setHelp(false)} trigger={helpTrigger}/>}
@@ -308,4 +310,9 @@ export default function StudioImageConversation({
       )}
     </section>
   );
+}
+
+/** A new account/project must also discard unsent local drafts and preview grants. */
+export default function StudioImageConversation(props:Parameters<typeof StudioImageConversationWorkspace>[0]) {
+  return <StudioImageConversationWorkspace key={`${props.accountKey}:${props.projectId}`} {...props}/>;
 }

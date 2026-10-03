@@ -128,7 +128,8 @@ export async function claimImageTurn(
       if (!renewal || !hasDraftCreation(renewal.draft_json) || !renewal.quote_id
         || renewal.input_json.message !== parsed.message
         || stableJson(renewal.input_json.references) !== stableJson(parsed.references)
-        || stableJson(renewal.input_json.attachments ?? []) !== stableJson(parsed.attachments ?? []))
+        || stableJson(renewal.input_json.attachments ?? []) !== stableJson(parsed.attachments ?? [])
+        || stableJson(renewal.input_json.referenceMentions ?? []) !== stableJson(parsed.referenceMentions ?? []))
         throw new AgentApiError("PARAMETER_INVALID", "Renew the saved request without changing its message or references.");
       const quote = (await executor.query<{ state: string; expires_at: Date; job_id: string | null }>(
         `SELECT state, expires_at, job_id FROM mcp_generation_quotes WHERE quote_id = $1 AND user_id = $2 AND auth_origin = 'studio-session' AND studio_project_id = $3 FOR UPDATE`,
