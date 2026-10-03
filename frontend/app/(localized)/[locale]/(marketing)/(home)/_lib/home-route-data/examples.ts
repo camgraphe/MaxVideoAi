@@ -3,6 +3,7 @@ import { type AppLocale } from '@/i18n/locales';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
 import { MODEL_LAUNCH_READY_MODELS, type ModelLaunchReadinessEntry } from '@/config/model-launch-readiness';
 import { listRuntimeModels, type RuntimeModelEntry } from '@/config/model-runtime';
+import { isDiscoverableExampleEngine } from '@/lib/examples/discovery';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import type { AcceptedDurableModelAsset } from '@/server/model-launch-assets-validation';
 import { listExampleFamilyPage, listExamples, listPlaylistVideos, type GalleryVideo } from '@/server/videos';
@@ -78,6 +79,7 @@ export function assembleHomepageExampleCards({
   acceptedAssets?: readonly AcceptedDurableModelAsset[];
 }): HomeExampleCard[] {
   const fallbackCards = content.examples.fallbackCards.flatMap<HomeExampleCard>((fallback) => {
+    if (!isDiscoverableExampleEngine(fallback.engineId, models)) return [];
     const family = fallback.examplesSlug;
     const familyCandidates = family ? familyVideos.get(family) ?? [] : [];
     const override = HOMEPAGE_EXAMPLE_VIDEO_OVERRIDES[fallback.engineId];

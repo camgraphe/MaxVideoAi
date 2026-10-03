@@ -30,7 +30,7 @@ export const models: Dictionary['models'] = {
     hero: {
       title: 'One workspace, every video engine that matters.',
       subtitle:
-        'New provider endpoints land weekly — we pull them in automatically so your pricing and model catalog stay fresh across Sora, Veo, Pika, MiniMax, Kling, Wan, and Nano Banana.',
+        'New provider endpoints land weekly — we pull them in automatically so your pricing and model catalog stay fresh across Seedance, Veo, Pika, MiniMax, Kling, Wan, and Nano Banana.',
     },
     availabilityLabels: {
       available: 'Available',

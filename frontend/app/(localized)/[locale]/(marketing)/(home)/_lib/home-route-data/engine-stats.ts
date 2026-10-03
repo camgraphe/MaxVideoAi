@@ -1,3 +1,4 @@
+import { getRuntimeModelById } from '@/config/model-runtime';
 import { listFalEngines } from '@/config/falEngines';
 import { localeRegions, type AppLocale } from '@/i18n/locales';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
@@ -11,7 +12,7 @@ function countMode(engines: ReturnType<typeof listFalEngines>, mode: Mode) {
 }
 
 export function computeEngineStats(): EngineStats {
-  const engines = listFalEngines();
+  const engines = listFalEngines().filter((entry) => getRuntimeModelById(entry.id)?.publication.app.published);
   return {
     total: engines.length,
     providers: new Set(engines.map((entry) => entry.provider)).size,

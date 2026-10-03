@@ -1,10 +1,13 @@
+import { getRuntimeModelById } from '@/config/model-runtime';
 import { listFalEngines } from '@/config/falEngines';
 import type { ProviderItem, ToolCard } from '@/components/marketing/home/HomeRedesignSections';
 import { ALLOWED_TOOL_CARD_IDS, PROVIDER_MODEL_LINKS } from './constants';
 import type { EngineStats, RedesignContent } from './types';
 
 export function filterProviderItems(content: RedesignContent): ProviderItem[] {
-  const providers = new Set(listFalEngines().map((entry) => entry.provider.toLowerCase()));
+  const providers = new Set(listFalEngines()
+    .filter((entry) => getRuntimeModelById(entry.id)?.publication.app.published)
+    .map((entry) => entry.provider.toLowerCase()));
   return content.providers.items
     .filter((item) => providers.has(item.providerKey.toLowerCase()))
     .map(({ provider, model, href, providerKey }) => ({

@@ -100,9 +100,11 @@ function getHighlightToneClass(tone: HighlightTone): string {
 export function VideoWatchSidebar({
   createdLabel,
   signals,
+  recreationCopy,
 }: {
   createdLabel: string;
   signals: WatchPageData['signals'];
+  recreationCopy: { label: string; description: string };
 }) {
   const sidebarDetailRows = !createdLabel || signals.detailRows.some((row) => row.key === 'created')
     ? signals.detailRows
@@ -134,9 +136,9 @@ export function VideoWatchSidebar({
             data-analytics-event="cta_click" data-analytics-cta-name="reuse_example"
             data-analytics-cta-location="watch_sidebar" data-analytics-target-family="workspace">
             <Sparkles className="h-4 w-4" aria-hidden />
-            Start from this example
+            {recreationCopy.label}
           </ButtonLink>
-          <p className="text-xs leading-5 text-text-secondary">Reuse the prompt and available settings. Your next generation gets a fresh quote before you run it.</p>
+          <p className="text-xs leading-5 text-text-secondary">{recreationCopy.description}</p>
         </div>
       </VideoWatchCard>
 

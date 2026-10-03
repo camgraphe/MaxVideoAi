@@ -67,8 +67,8 @@ test('runtime model projection matches every baseline identity and surface', () 
     assert.equal(actual.slug, expected.slug);
     assert.equal(actual.family, expected.family);
     assert.equal(actual.category, expected.category);
-    const soraArchived = ['sora-2', 'sora-2-pro'].includes(expected.id);
-    assert.equal(actual.lifecycle, soraArchived ? 'deep_legacy' : expected.id === 'gpt-image-2' ? 'legacy' : expected.lifecycle);
+    const archived = ['sora-2', 'sora-2-pro', 'seedance-1-5-pro'].includes(expected.id);
+    assert.equal(actual.lifecycle, archived ? 'deep_legacy' : expected.id === 'gpt-image-2' ? 'legacy' : expected.lifecycle);
     assert.equal(
       actual.successorId,
       APPROVED_SUCCESSORS[expected.id as keyof typeof APPROVED_SUCCESSORS] ?? expected.successorId,
@@ -139,8 +139,9 @@ test('runtime model projection matches every baseline identity and surface', () 
       });
       actualPublication.examples = expected.publication.examples;
     }
-    assert.deepEqual(actualPublication, soraArchived ? {
+    assert.deepEqual(actualPublication, archived ? {
       ...expected.publication, app: { enabled: false }, pricing: { includeInEstimator: false },
+      examples: { ...expected.publication.examples, ...(expected.id === 'seedance-1-5-pro' ? { includeInFamilyCopy: false } : {}) },
     } : expected.publication);
   }
 });
@@ -230,6 +231,7 @@ test('canonical lifecycle classifies every approved non-current model and author
     lumaRay2: 'legacy',
     lumaRay2_flash: 'legacy',
     'nano-banana': 'legacy',
+    'seedance-1-5-pro': 'deep_legacy',
     'sora-2': 'deep_legacy',
     'sora-2-pro': 'deep_legacy',
     'wan-2-5': 'deep_legacy',

@@ -1,12 +1,13 @@
 # Studio + MCP release candidate — 4 October 2026
 
 Status: implemented on `codex/studio-creative-workspace`; expanded validation is in progress.
-**Not yet approved for production:** target-main integration and the published Sora
-public archive rollout remain explicit gates in the
+**Not yet approved for production:** target-main integration, staging and final activation
+remain explicit gates in the
 [published-baseline reconciliation](studio-published-baseline-validation-2026-10-04.md).
 No deployment, public plugin publication, production migration, real wallet debit or
-credential change was performed. Live Sol/Luna text validation is now authorized
-with the existing key and a shared $5 cap; paid media generation is excluded.
+credential change was performed. Live Sol/Luna text validation used the existing key under a shared $5 cap;
+83 Responses calls cost $0.490465965 in calculated supplier usage, with no
+unresolved hold. Paid media generation was excluded.
 Create assistant work remains deferred. English is the primary product language.
 
 ## Customer experience
@@ -83,12 +84,25 @@ exact quote approval and recovery remain enforced. The new `pnpm mcp:client:chec
 gate runs offline before plugin release. Old release artwork is archival rather
 than current product proof. See the [MCP audit and update procedure](studio-mcp-release-audit-2026-10-03.md).
 
-Model recommendations retain the existing versioned editorial policy and explicit
-customer preference. Current catalog facts, executable modes and quote authority
-remain separate from artistic judgments. No paid artistic benchmark or new native
-host certification was inferred from these tests.
+Model recommendations use canonical catalog facts, supported actions and a versioned
+editorial policy. Studio no longer has a separate five-model allowlist: it exposes
+29 current and 10 executable legacy models, subject to runtime readiness and existing
+certification. Current models are preferred for open briefs; legacy is labelled and
+retained for explicit requests or an explained capability exception. Sora and
+Seedance 1.5 are excluded from generation and have localized archive pages. The
+[model coverage audit](studio-model-coverage-audit-2026-10-04.md) records the nine
+current MCP models still outside Studio certification. No paid artistic benchmark
+or new native-host certification was inferred.
 
 ## Verification evidence
+
+The [expanded validation report](studio-human-validation-results-2026-10-04.md)
+records 43 real-API synthetic turns, all failures and corrections, token-count parity,
+financial simulations, current live MCP observations and connected-browser checks.
+The final combined full-suite/build qualification is recorded below after execution.
+The older results in this section are historical checkpoints, not certification of
+the later catalog/public-archive changes.
+
 
 The core production implementation was built at `247e3b6d6`. Candidate
 `2e55deb63` additionally clarifies assistant costs in the public EN/FR/ES FAQ;
@@ -160,7 +174,8 @@ MCP policy results and the full validation log. They contain controlled fixture 
 
 The independent review’s two actionable defects were corrected, with reproductions:
 existing paid-budget resumption and saved-response settlement after the retry
-ceiling. No reviewer minor finding remains deferred. The explicit live-provider,
+ceiling. The later expanded dialogue review retains a minor Luna equipment assumption;
+its price/capability findings received targeted follow-up. The staging, native-host,
 rollout and wider learning-system limitations above remain outside this candidate’s
 local verification.
 
@@ -177,10 +192,11 @@ qualifying the merged candidate. The local checks above do not certify that merg
 2. Apply migrations 54 and 55 to the intended staging environment through the normal
    migration process. Readers never initialize schema. Check real cookie/legal
    configuration, wallet reporting and existing admin role access there.
-3. Qualify the actual Sol/Luna account and token-count/response parity with bounded
-   authorized usage. Confirm standard/global processing, cache counters, output
-   usage, representative creative tasks and customer-visible wallet holds. Offline
-   mocks prove orchestration, not real creative quality or provider entitlement.
+3. Carry the verified Sol/Luna API entitlement and 83/83 token-count parity into
+   the actual staging configuration; repeat a bounded account-level smoke there.
+   Local live probes used standard/global processing and returned cache/output
+   counters, but customer-visible wallet holds used disposable-database fixtures.
+   Verify those holds and support reconciliation in the intended environment.
 4. Exercise support reconciliation with authoritative provider evidence before paid
    public access. Unknown reservations must never be expired or refunded merely
    because a timeout elapsed. Review customer-content use and audit-log retention.

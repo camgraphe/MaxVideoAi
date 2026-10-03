@@ -1,3 +1,4 @@
+import { isArchivedGenerationModel } from '@/lib/model-generation-policy';
 import { getBaseEnginesByCategory } from '@/lib/engines';
 import type { AspectRatio, EngineCaps, Resolution } from '@/types/engines';
 import type {
@@ -553,5 +554,6 @@ export function getWorkspaceModelCapability(
   modelId: string,
   capabilities: WorkspaceModelCapability[] = getWorkspaceModelCapabilities()
 ): WorkspaceModelCapability | null {
+  if (isArchivedGenerationModel(modelId)) return null;
   return capabilities.find((capability) => capability.id === modelId) ?? capabilities[0] ?? null;
 }

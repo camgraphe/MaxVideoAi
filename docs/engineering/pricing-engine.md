@@ -268,6 +268,21 @@ scenario as the visible line; it is not labeled a minimum price. Physical return
 destinations are omitted for digital generations; sales-country applicability and
 the existing consumed-generation policy are unchanged.
 
+## Archived Sora and Seedance 1.5 audit projections
+
+Sora 2, Sora 2 Pro and Seedance 1.5 Pro remain in the frozen pricing evidence after retirement.
+The historical canonical audit still reproduces their twelve billing and estimator
+scenarios, including the former membership tiers. It does not enable live quotes.
+The public baseline now checks 577 rows: it removes their estimator, pricing-hub
+and workspace-preflight entries and requires their Product offers to be unavailable.
+The original fixtures and reviewed customer-price correction amounts remain intact.
+
+Workspace-preflight audit sampling keeps the original eight model identities and
+then applies current publication. Removing Sora therefore leaves six sampled
+models; it must not silently backfill other models and report their new scenario
+IDs as price changes. No commercial rates or stored receipts change in this
+retirement projection.
+
 ## Gated Studio assistance product
 
 Studio assistant usage has a separate dated customer tariff and provider-cost ledger.

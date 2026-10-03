@@ -200,3 +200,14 @@ test('guest sample duration replaces the previous duration option', () => {
   assert.equal(next.durationSec, 12);
   assert.equal(next.durationOption, 12);
 });
+
+test('historical Sora recall preserves its engine and prompt instead of silently selecting another model', () => {
+  const engines = [seedanceEngine()];
+  const resolved = resolveVideoSettingsSnapshot({ schemaVersion: 1, surface: 'video', engineId: 'sora-2', inputMode: 't2v', prompt: 'Saved shot', core: { durationSec: 8 } }, {
+    engines, engineMap: new Map(engines.map(engine => [engine.id, engine])),
+    createLocalId: () => 'local', createFallbackScene: () => ({ id: 'scene', prompt: '', duration: 4 }),
+    createFallbackKlingElement: () => ({ id: 'element', frontal: null, references: [], video: null }),
+  });
+  assert.equal(resolved.engine.id, 'sora-2');
+  assert.equal(resolved.prompt, 'Saved shot');
+});

@@ -121,3 +121,19 @@ Commit the authored registry change and every refreshed generated projection tog
 ### Workspace quote input coverage
 
 When publishing new output resolutions, check both the engine runtime schema and the bounded request vocabulary in `frontend/app/api/preflight/_lib/preflight-request.ts`. A workspace option can otherwise be rejected before model validation and pricing (as happened with Omni 360p and H3 Max 480P). Keep model-specific resolution validation downstream; do not accept arbitrary resolution strings. Keep the Resolution type aligned instead of casting unsupported literals into it. The catalog-wide preflight test guards every declared output resolution. Exercise the configured quote path and rejection of an unknown resolution value in `tests/preflight-media-pricing.test.ts`, then smoke-test example recreation through the displayed current quote. This does not change pricing rules or authorize a paid generation.
+
+## Generation closure and archive pages
+
+`frontend/lib/model-generation-policy.ts` resolves historical input identity without following public-route replacement redirects. Generate (including trusted submissions) and preflight reject archived models before settings, billing, or provider calls. MCP uses its existing registry publication and lifecycle gates, including revalidation of pending quotes at confirmation. Preserve provider mappings for polling and accepted-job retries.
+
+The main workspace keeps saved historical capabilities and asks for an explicit model choice; Studio returns no executable capability for an archived model instead of borrowing its first available model. Never rewrite saved jobs or media identities to the alternative. Historical watch pages keep recall links but make the required model change explicit in their CTA and explanation.
+
+A `deep_legacy` model may supply an explicit localized `archive` object in every model-content locale. The model route then renders `ModelArchivePage` with WebPage metadata, current published alternatives, library and canonical family-example links, without a Product offer or generation CTA. Archive content has no English fallback. Optional external source attribution is an authored strict HTTPS `source: {label, href}` object in each locale; do not hardcode a provider announcement into the generic renderer. Historical comparison URLs remain published; executable discovery and generation controls exclude archives.
+
+### Archive discovery boundaries
+
+A published historical route is not a recommendation. Family `currentModelSlugs` must preserve an empty registry projection; never fall back to all published members. Families with no current examples remain routable/indexable but leave navigation. Example filters use discoverable families, adding an explicitly selected historical family only on its own archive route.
+
+`frontend/lib/examples/discovery.ts` derives eligible example identities and their input/provider aliases from the registry. The public hub applies that allowlist in the playlist SQL query before its limit; local review snapshots apply the same policy before sorting/pagination. Dedicated family/model playlists and watch pages retain historical media. Homepage fallback cards use the same discovery policy. Homepage engine/provider availability counts use app publication; authored provider cards must not name an archived model merely because another active model shares its provider. Do not delete playlist membership, media or historical URLs to change promotion.
+
+`tests/sora-discovery.test.ts` and `tests/sora-discovery-postgres.test.ts` cover navigation, empty-current families, archive selection, fallback/provider cards, localized alternatives, SQL limits and preserved historical readers. See [the published-baseline reconciliation](../operations/studio-published-baseline-validation-2026-10-04.md) for source provenance and release verification boundaries.

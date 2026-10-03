@@ -1,3 +1,4 @@
+import { isArchivedGenerationModel, archivedGenerationMessage } from '@/lib/model-generation-policy';
 import { SITE_ORIGIN } from '@/lib/siteOrigin';
 import type { getVideoWatchPageDataById } from '@/server/video-seo';
 
@@ -99,4 +100,13 @@ export function serializeJsonLd(data: unknown): string {
     .replace(/&/g, '\\u0026')
     .replace(/\u2028/g, '\\u2028')
     .replace(/\u2029/g, '\\u2029');
+}
+
+export function buildWatchRecreationCopy(engineId: string | null | undefined) {
+  return isArchivedGenerationModel(engineId)
+    ? { label: 'Reuse prompt with another model', description: archivedGenerationMessage('en') }
+    : {
+        label: 'Start from this example',
+        description: 'Reuse the prompt and available settings. Your next generation gets a fresh quote before you run it.',
+      };
 }

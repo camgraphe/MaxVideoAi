@@ -475,3 +475,18 @@ test('prompting sources are filtered to public modes and projected as detached i
   assert.equal(Object.isFrozen(projected), true);
   assert.equal(Object.isFrozen(projected.modes), true);
 });
+
+
+test('legacy Wan safety control projects canonical boolean values accepted by shared generation validation', async () => {
+  const entry = listFalEngines().find(entry => entry.id === 'wan-2-6')!;
+  const details = await getAgentModelDetails('wan-2-6', {
+    listEngines: async () => [entry.engine], surfaceByEngineId: () => 'video',
+    isEngineExecutable: () => true, isModeExecutable: () => true,
+  });
+  for (const mode of details.modes) {
+    const setting = mode.settings.find(setting => setting.key === 'safetyChecker');
+    assert.equal(setting?.type, 'boolean');
+    assert.equal(setting?.default, true);
+    assert.deepEqual(setting?.values, [true, false]);
+  }
+});

@@ -86,14 +86,14 @@ test('the director can inspect exact model details and returns the entire select
   assert.ok(!toolNames.some(name => /confirm|shell/.test(name)));
 });
 
-test('conversation catalogs stay bounded and expose only certified image-resolvable modes', async () => {
+test('conversation catalogs include published certified models and expose only image-resolvable modes', async () => {
   const actor = {authMethod: 'studio-session' as const, userId: 'owner', projectId: 'film', clientId: null};
   const image = createStudioImageGenerationService(actor,{enabled: true,prepareDependencies: {listPublicEngines: async () => [candidate('gpt-image-2'),candidate('seedream')]}});
-  assert.deepEqual((await image.catalog()).map(item => item.engine.id),['gpt-image-2']);
+  assert.deepEqual((await image.catalog()).map(item => item.engine.id),['gpt-image-2','seedream']);
   const makeVideo = (id: string) => {const entry=getFalEngineById(id)!; return {engine: entry.engine,surface: 'video' as const,publicModes: ['t2v','i2v','ref2v','fl2v','v2v'] as const, modeCaps: Object.fromEntries(entry.modes.map(mode=>[mode.mode,mode.ui]))};};
   const video = createStudioVideoGenerationService(actor,{enabled: true,prepareDependencies: {listPublicEngines: async () => [makeVideo('wan-3'),makeVideo('seedance-2-0-mini'),makeVideo('minimax-h3'),makeVideo('veo-3-1')] as never}});
   const result = await video.catalog();
-  assert.deepEqual(result.map(item=>item.engine.id),['wan-3','seedance-2-0-mini','minimax-h3']);
+  assert.deepEqual(result.map(item=>item.engine.id),['wan-3','seedance-2-0-mini','minimax-h3','veo-3-1']);
   assert.ok(result.every(item=>!item.publicModes.includes('v2v')));
   assert.ok(result.every(item=>item.publicModes.every(mode=>Boolean(item.modeCaps[mode]))), 'Missing schemas must not be advertised.');
   const unsupported=structuredClone(makeVideo('wan-3'));

@@ -267,21 +267,27 @@ function projectSettings(
       : CANONICAL_SETTING_BY_FIELD_ID[field.id];
     if (!key || isReferenceField(field) || !applicableToMode(field, mode, engine.id)) return [];
     if (!['boolean', 'number', 'text', 'enum'].includes(field.type)) return [];
+    // Canonical safety controls are booleans, including historical schemas
+    // whose provider enum encoded true/false as strings.
+    const booleanSafetyEnum = key === 'safetyChecker' && field.type === 'enum'
+      && Boolean(field.values?.length) && field.values!.every(value => value === 'true' || value === 'false');
+    const defaultValue = booleanSafetyEnum && (field.default === 'true' || field.default === 'false')
+      ? field.default === 'true' : field.default;
     return [Object.freeze({
       key,
       type: field.id === 'multi_prompt'
         ? 'multi_prompt'
-        : field.type as AgentModelSettingDetails['type'],
+        : booleanSafetyEnum ? 'boolean' : field.type as AgentModelSettingDetails['type'],
       required: field.requiredInModes
         ? field.requiredInModes.includes(toEngineGenerationMode(engine.id, mode))
         : required,
-      values: field.values?.length ? Object.freeze([...field.values]) : null,
+      values: field.values?.length ? Object.freeze(field.values.map(value => booleanSafetyEnum ? value === 'true' : value)) : null,
       min: typeof field.min === 'number' ? field.min : null,
       max: typeof field.max === 'number' ? field.max : null,
-      default: typeof field.default === 'string'
-        || typeof field.default === 'number'
-        || typeof field.default === 'boolean'
-        ? field.default
+      default: typeof defaultValue === 'string'
+        || typeof defaultValue === 'number'
+        || typeof defaultValue === 'boolean'
+        ? defaultValue
         : null,
     })];
   }));

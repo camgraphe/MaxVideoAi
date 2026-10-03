@@ -7,7 +7,7 @@ const loadPolicy = () => import('../frontend/src/server/agent-api/model-editoria
 const asOf = new Date('2026-10-03T12:00:00Z');
 
 function fixture() {
-  return {schemaVersion: 1,version: '2026-10-03.1',basis: 'product_editorial_preference',reviewedAt: '2026-10-03',reviewAfterDays: 90,
+  return {schemaVersion: 1,version: '2026-10-04.1',basis: 'product_editorial_preference',reviewedAt: '2026-10-03',reviewAfterDays: 90,
     provenance: [{kind: 'product_decision',source: 'MaxVideoAI Studio editorial review',sourceVersion: null,reviewedAt: '2026-10-03',summary: 'A product preference, not a comparative quality benchmark.'}],
     entries: [{engineId: 'wan-3',level: 'reference',rationale: 'Reference choice when its exact capabilities match.'}]};
 }
@@ -21,7 +21,7 @@ test('editorial review is exact-version, dated and honest about vendor evidence'
     assert.equal(entry.basis,'product_editorial_preference');
     assert.equal(entry.reviewStatus,'current');
     assert.equal(entry.reviewAgeDays,0);
-    assert.equal(entry.policyVersion,'2026-10-03.1');
+    assert.equal(entry.policyVersion,'2026-10-04.1');
     assert.ok(entry.provenance.some(source => source.kind === 'product_decision'));
     assert.ok(Object.isFrozen(entry));
   }

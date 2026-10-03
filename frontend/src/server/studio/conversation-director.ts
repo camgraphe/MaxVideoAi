@@ -73,7 +73,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         parallel_tool_calls: false,
         tool_choice: 'auto',
         instructions: buildStudioDirectorInstructions(options)
-          + `\n\nResponse ${index + 1} of 4: ${4 - index} Responses remain including this one. Plan reads so you can answer the client. For a budget question, inspect one suitable model, read its exact price, then explain it; inspect a second model only if enough Responses remain for its price and a useful reply.`
+          + `\n\nResponse ${index + 1} of 4: ${4 - index} Responses remain, including this one. Leave room to answer. For an image/video generation budget, inspect one suitable model, read its exact price, then explain; compare a second only if its price and a useful reply fit.`
           + (index === 3
           ? '\n\nThis is the last Response available for this message. Prefer giving the client a useful answer from the facts already read, or completing their requested preparation/edit. Defer optional memory housekeeping; do not spend this final Response on it while leaving the client without an answer.'
           : ''),

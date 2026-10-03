@@ -1,3 +1,4 @@
+import { getArchivedWorkspaceEngine } from './workspace-archived-engine';
 import type { MultiPromptScene } from '@/components/Composer';
 import type { KlingElementAsset, KlingElementState } from '@/components/KlingElementsBuilder';
 import type { QuadPreviewTile } from '@/components/QuadPreviewPanel';
@@ -263,6 +264,7 @@ export function resolveVideoSettingsSnapshot(
   const snapshotEngineId = typeof record.engineId === 'string' ? record.engineId : null;
   const snapshotToken = snapshotEngineId ? normalizeEngineToken(snapshotEngineId) : null;
   const engine =
+    getArchivedWorkspaceEngine(snapshotEngineId) ??
     (snapshotEngineId ? options.engineMap.get(snapshotEngineId) : null) ??
     (snapshotToken ? options.engines.find((candidate) => matchesEngineToken(candidate, snapshotToken)) : null) ??
     options.engines[0] ??

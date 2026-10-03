@@ -7,10 +7,10 @@ import {createStudioConversationDirector} from '../../frontend/src/server/studio
 import {studioTokenCountInput} from '../../frontend/src/server/studio/assistance-token-count';
 import {readStudioUsage,studioProviderReservation} from '../../frontend/src/server/studio/assistance-provider-facts';
 import {reserveLiveCall,settleLiveCall,type LiveBudget} from './studio-live-budget';
-import {getFalEngineById} from '../../frontend/src/config/falEngines';
+import {listFalEngines} from '../../frontend/src/config/falEngines';
+import {listPublicAgentGenerationEngines} from '../../frontend/src/server/agent-api/model-catalog';
 import {createStudioImageGenerationService,createStudioVideoGenerationService} from '../../frontend/src/server/studio/image-generation-service';
 import {studioVisualCapabilityDetails,studioVisualCapabilitySummary} from '../../frontend/src/server/studio/conversation-capabilities';
-import {STUDIO_CONVERSATION_MODEL_IDS} from '../../frontend/config/studio-conversation-catalog';
 import type {StudioConversationProject,StudioActionRequest,StudioActionResult} from '../../frontend/lib/studio/conversation-action-contract';
 import type {StudioAssistantModel} from '../../frontend/src/lib/studio/assistance-contract';
 
@@ -44,14 +44,18 @@ async function main() {
     const sourceDirectory=resolve(dirname(report),'source-snapshots');await mkdir(sourceDirectory,{recursive:true});
     for(const path of ['frontend/src/server/studio/conversation-director.ts','frontend/src/server/studio/conversation-director-instructions.ts',
       'frontend/config/model-registry.json','frontend/config/agent-model-editorial-policy.json',
-      'frontend/src/server/studio/assistance-provider-facts.ts','scripts/qa/studio-human-live.ts']) {
+      'frontend/src/server/studio/assistance-provider-facts.ts','frontend/src/server/studio/image-generation-service.ts',
+      'frontend/src/server/agent-api/model-details.ts','frontend/src/server/studio/conversation-capabilities.ts','scripts/qa/studio-human-live.ts']) {
       const bytes=await readFile(path);const hash=createHash('sha256').update(bytes).digest('hex');sources[path]=hash;
       await writeFile(resolve(sourceDirectory,hash),bytes,{mode:0o600});
     }
-    const candidates=(['image','video'] as const).flatMap(surface=>STUDIO_CONVERSATION_MODEL_IDS[surface].map(id=>{
-      const entry=getFalEngineById(id)!;
-      return {engine:entry.engine,surface,publicModes:entry.engine.modes,modeCaps:Object.fromEntries(entry.modes.map(m=>[m.mode,m.ui]))};
-    }));
+    const entries=listFalEngines();
+    const candidates=await listPublicAgentGenerationEngines({
+      listEngines:async()=>entries.map(entry=>entry.engine),
+      surfaceByEngineId:id=>entries.find(entry=>entry.id===id)?.category==='image'?'image':'video',
+      // Runtime readiness is controlled; registry/publication and Studio mode gates remain real.
+      isEngineExecutable:()=>true,isModeExecutable:()=>true,
+    });
     const actor={authMethod:'studio-session' as const,userId:'synthetic-live-quality',projectId:'synthetic-project',clientId:null};
     const options={enabled:true,prepareDependencies:{listPublicEngines:async()=>candidates}};
     const catalog=[...await createStudioImageGenerationService(actor,options).catalog(),...await createStudioVideoGenerationService(actor,options).catalog()];

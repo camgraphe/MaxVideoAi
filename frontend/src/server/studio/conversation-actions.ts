@@ -75,7 +75,7 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
           const video = (await dependencies.factories.video(actor, {enabled: dependencies.enabled}).catalog()).map(studioVisualCapabilitySummary);
           const audio = (await dependencies.factories.audio(actor, {enabled: dependencies.enabled}).catalog()).modes
             .filter(entry => entry.variants.some(variant => variant.available))
-            .map(entry => ({modelId: entry.engineId, label: entry.label, modes: [entry.mode], formats: []}));
+            .map(entry => ({modelId: entry.engineId, label: entry.label, lifecycle: null, modes: [entry.mode], formats: []}));
           return {ok: true, action: request.action, data: [...image, ...video, ...audio]};
         }
         case 'model.details': {

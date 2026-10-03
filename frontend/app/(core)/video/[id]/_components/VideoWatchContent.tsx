@@ -6,7 +6,7 @@ import { ButtonLink } from '@/components/ui/Button';
 import { WatchKeyFrames } from '@/components/watch/WatchKeyFrames';
 import { WatchVideoPlayer } from '@/components/watch/WatchVideoPlayer';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
-import { FALLBACK_POSTER, FALLBACK_THUMB, SITE, formatWatchDate, getDetailValue, humanizeTag, parseAspectRatio, serializeJsonLd, toAbsoluteUrl, toDurationIso, type WatchPageData } from '../_lib/video-watch-page-utils';
+import { FALLBACK_POSTER, FALLBACK_THUMB, SITE, formatWatchDate, getDetailValue, humanizeTag, buildWatchRecreationCopy, parseAspectRatio, serializeJsonLd, toAbsoluteUrl, toDurationIso, type WatchPageData } from '../_lib/video-watch-page-utils';
 import { VideoWatchCard } from './VideoWatchCard';
 import { VideoWatchRelatedExamples } from './VideoWatchRelatedExamples';
 import { VideoWatchSidebar } from './VideoWatchSidebar';
@@ -16,6 +16,7 @@ const PROMPT_CONTEXT_PREVIEW_MAX_CHARS = 280;
 
 export function VideoWatchContent({ page }: { page: WatchPageData }) {
   const { video, signals, related, isEligible } = page;
+  const recreationCopy = buildWatchRecreationCopy(video.engineId);
   const canonical = signals.canonicalUrl;
   const playbackPoster =
     buildOptimizedPosterUrl(video.thumbUrl ?? FALLBACK_POSTER, { width: 1200, quality: 72 }) ??
@@ -137,7 +138,7 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
         <ButtonLink href={signals.recreatePath} data-analytics-event="cta_click" data-analytics-cta-name="reuse_example"
           data-analytics-cta-location="watch_hero" data-analytics-target-family="workspace" size="sm" prefetch={false} className="bg-text-primary text-bg shadow-card hover:bg-text-primary/90">
           <Sparkles className="h-4 w-4" aria-hidden />
-          Start from this example
+          {recreationCopy.label}
         </ButtonLink>
       </div>
 
@@ -188,7 +189,7 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
                 <ButtonLink href={signals.recreatePath} data-analytics-event="cta_click" data-analytics-cta-name="reuse_example"
           data-analytics-cta-location="watch_hero" data-analytics-target-family="workspace" size="lg" prefetch={false} className="w-full bg-text-primary text-bg hover:bg-text-primary/90">
                   <Sparkles className="h-4 w-4" aria-hidden />
-                  Start from this example
+                  {recreationCopy.label}
                 </ButtonLink>
                 {signals.modelPath ? (
                   <ButtonLink href={signals.modelPath} variant="outline" size="lg" prefetch={false} className="w-full">
@@ -335,7 +336,7 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
           <VideoWatchRelatedExamples related={related} />
         </div>
 
-        <VideoWatchSidebar createdLabel={createdLabel} signals={signals} />
+        <VideoWatchSidebar createdLabel={createdLabel} signals={signals} recreationCopy={recreationCopy} />
       </article>
 
       {videoJsonLd ? (

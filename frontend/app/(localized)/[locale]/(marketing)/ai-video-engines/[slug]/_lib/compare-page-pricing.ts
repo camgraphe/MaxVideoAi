@@ -131,6 +131,7 @@ export function getPrelaunchCompareNotice(locale: AppLocale) {
 }
 
 export function isEngineGeneratable(entry: EngineCatalogEntry) {
+  if (entry.surfaces?.app?.enabled === false) return false;
   const availability = String(entry.availability ?? '').toLowerCase();
   return availability === 'available' || availability === 'limited';
 }
@@ -140,6 +141,9 @@ export async function resolvePricingDisplay(
   locale: AppLocale,
   pricingEngine?: EngineCaps | null
 ): Promise<ComparePricingDisplay> {
+  if (entry.surfaces?.app?.enabled === false) {
+    return { headline: locale === 'fr' ? 'Génération indisponible' : locale === 'es' ? 'Generación no disponible' : 'Generation unavailable', subline: null, prices: [], scorePrices: [] };
+  }
   const availability = String(entry.availability ?? '').toLowerCase();
   if (availability === 'waitlist') {
     return {

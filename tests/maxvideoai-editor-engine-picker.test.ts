@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 import type { EngineAvailability } from '../frontend/types/engines';
 import { getBaseEnginesByCategory } from '../frontend/src/lib/engines';
-import { getWorkspaceModelCapabilities } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-capabilities';
+import { getWorkspaceModelCapabilities, getWorkspaceModelCapability } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-capabilities';
 import { validateShotConnections } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-capabilities';
 import { WORKSPACE_BLOCK_PRESETS } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-block-presets';
 import type { WorkspaceModelCapability } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
@@ -258,4 +258,18 @@ test('empty picker uses localized unavailable copy and generation stays blocked'
     connectedInputs: ['prompt'],
     capabilities: [],
   }).canGenerate, false);
+});
+
+test('archived Sora blocks stay unavailable without borrowing another model capability', () => {
+  for (const modelId of ['sora-2', 'sora-2-pro', 'openai-sora-2']) {
+    assert.equal(getWorkspaceModelCapability(modelId, capabilities), null);
+    const settings = { ...generateVideo, modelId };
+    assert.equal(validateShotConnections({ settings, connectedInputs: [], capabilities }).canGenerate, false);
+    const state = normalizePersistedWorkspaceState({
+      nodes: [{ id: 'old-sora-shot', type: 'shot', position: { x: 0, y: 0 },
+        data: { kind: 'shot', title: 'Historical Sora', shot: settings } }],
+      edges: [], timelineItems: [], activeTemplateId: 'blank',
+    });
+    assert.equal(state?.nodes[0].data.shot?.modelId, modelId);
+  }
 });

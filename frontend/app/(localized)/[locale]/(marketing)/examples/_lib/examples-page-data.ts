@@ -2,7 +2,7 @@ import type { ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryG
 import type { AppLocale } from '@/i18n/locales';
 import { pickFirstPlayableVideo } from '@/lib/examples/heroVideo';
 import { buildExamplePosterProjection } from '@/lib/media-helpers';
-import { getExampleFamilyDescriptor } from '@/lib/model-families';
+import { getExampleFamilyDescriptor, getExampleNavFamilyIds } from '@/lib/model-families';
 import type { ExampleSort, listExamplesPage } from '@/server/videos';
 import {
   CURRENT_ENGINE_MODEL_LINKS_BY_GROUP,
@@ -65,7 +65,8 @@ export function buildExamplesEngineFilterState({
     return acc;
   }, new Map());
 
-  const engineFilterOptions = PREFERRED_ENGINE_ORDER.map((preferredId) => {
+  const visibleFamilyIds = new Set([...getExampleNavFamilyIds(), collapsedEngineParam]);
+  const engineFilterOptions = PREFERRED_ENGINE_ORDER.filter(id => visibleFamilyIds.has(id)).map((preferredId) => {
     const key = normalizeFilterId(preferredId);
     const existing = engineFilterMap.get(key);
     if (existing) {

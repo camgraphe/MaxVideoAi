@@ -208,3 +208,17 @@ test('pending render hydration derives active group and batch hero state', () =>
   assert.equal(state.activeGroupId, 'group_1');
   assert.equal(typeof state.serialized, 'string');
 });
+
+test('archived engine in a saved draft or incoming link is preserved until explicit model choice', () => {
+  const engines = [makeEngine('seedance-2-5')];
+  for (const requested of [null, 'sora-2-pro']) {
+    const result = buildInitialWorkspaceFormState({
+      engines,
+      storedFormRaw: { engineId: 'sora-2', mode: 't2v', durationSec: 8 } as StoredFormState,
+      effectiveRequestedEngineId: requested,
+      effectiveRequestedEngineToken: requested ? 'sora2pro' : '',
+      effectiveRequestedMode: null,
+    });
+    assert.equal(result.form?.engineId, requested ?? 'sora-2');
+  }
+});

@@ -118,6 +118,21 @@ test('public pricing baseline freezes the estimator per-image branch actually re
   assert.equal(nanoBanana?.customerTotalCents, 7);
 });
 
+test('Sora and Seedance 1.5 retirement removes purchasable projections without replacing the frozen workspace sample', async () => {
+  const { collectPublicPricingProjectionRows } = await import('../frontend/scripts/pricing-public-baseline-collector');
+  const rows = await collectPublicPricingProjectionRows();
+  assert.deepEqual(rows.filter((row) => row.surface === 'workspace-preflight').map((row) => row.engineId).sort(), [
+    'gemini-omni-flash', 'luma-ray-3-2', 'pika-text-to-video', 'veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite',
+  ]);
+  for (const engineId of ['sora-2', 'sora-2-pro', 'seedance-1-5-pro']) {
+    assert.equal(rows.some((row) => row.engineId === engineId
+      && ['estimator', 'pricing-hub-video', 'workspace-preflight'].includes(row.surface)), false);
+    assert.deepEqual(rows.find((row) => row.id === `json-ld:${engineId}:offer`), {
+      id: `json-ld:${engineId}:offer`, surface: 'json-ld', engineId, status: 'unavailable',
+    });
+  }
+});
+
 test('public pricing baseline ignores machine-specific pricing environment overrides', () => {
   const result = spawnSync('pnpm', ['--silent', 'pricing:public-baseline'], {
     cwd: process.cwd(),
@@ -130,7 +145,7 @@ test('public pricing baseline ignores machine-specific pricing environment overr
     },
   });
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-  assert.match(result.stdout, /current \(610 rows\)/);
+  assert.match(result.stdout, /current \(577 rows\)/);
 });
 
 test('canonical public pricing adapters exist and stay browser safe', () => {

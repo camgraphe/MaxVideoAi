@@ -43,7 +43,7 @@ test('distribution guide records live direct setup and the active Official MCP R
   assert.match(distribution, /availability[^.]*does not prove[^.]*host\s+compatibility/i);
   assert.doesNotMatch(distribution, /Do not publish ChatGPT-specific setup/i);
 
-  assert.match(registryRow, /active.*`0\.3\.3`/i);
+  assert.match(registryRow, /active.*`0\.3\.6`/i);
   assert.match(
     registryRow,
     /https:\/\/registry\.modelcontextprotocol\.io\/v0\.1\/servers\?search=com\.maxvideoai%2Fmaxvideoai/,

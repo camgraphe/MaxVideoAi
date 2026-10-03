@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "version": "2026-10-03.1",
+  "version": "2026-10-04.1",
   "basis": "product_editorial_preference",
   "reviewedAt": "2026-10-03",
   "reviewAfterDays": 90,
@@ -21,7 +21,6 @@
     }
   ],
   "entries": [
-    {"engineId": "seedance-1-5-pro", "level": "reference", "rationale": "A reviewed Seedance family starting point when this exact version supports the brief."},
     {"engineId": "seedance-2-0", "level": "reference", "rationale": "A reviewed Seedance family starting point when this exact version supports the brief."},
     {"engineId": "seedance-2-0-fast", "level": "reference", "rationale": "A reviewed Seedance family starting point; use current mode facts for iteration tradeoffs."},
     {"engineId": "seedance-2-0-mini", "level": "reference", "rationale": "A reviewed Seedance family starting point for compatible short video and reference workflows."},

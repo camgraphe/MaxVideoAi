@@ -138,6 +138,31 @@ test('the pricing audit reports the reviewed Gemini refresh without failing the 
   assert.match(result.stdout, /4 approved changes; 0 mismatches/u);
 });
 
+test('historical Sora and Seedance 1.5 billing and estimator evidence remains independently reproducible after retirement', async () => {
+  const { collectCanonicalPricingOutputs } = await import('../frontend/src/lib/pricing-audit/canonical-collectors');
+  const { buildPricingAuditScenarios } = await import('../frontend/src/lib/pricing-audit/scenarios');
+  const { quoteHistoricalCanonicalAuditScenarios } = await import('../frontend/server/pricing-admin/canonical-scenarios');
+  type AuditRow = Parameters<typeof collectCanonicalPricingOutputs>[0][number];
+  const frozen = [
+    ...readFixtureRows<AuditRow>(fixturePath),
+    ...readFixtureRows<AuditRow>(launchAdditionsFixturePath),
+  ];
+  const historical = frozen.filter((row) => /^(billing|estimator):(sora-2(?:-pro)?|seedance-1-5-pro):/.test(row.scenarioId));
+  assert.equal(historical.length, 12);
+  const scenarios = buildPricingAuditScenarios().filter((row) => ['sora-2', 'sora-2-pro', 'seedance-1-5-pro'].includes(row.engineId));
+  const quotes = new Map(quoteHistoricalCanonicalAuditScenarios({ databaseRules: [], scenarios })
+    .map((row) => [row.scenarioId, row]));
+  const reproduced = new Map(collectCanonicalPricingOutputs(frozen).map((row) => [row.scenarioId, row]));
+  for (const expected of historical) {
+    assert.equal(quotes.get(expected.scenarioId)?.status, 'quoted', 'historical evidence must be calculated, not copied by the unsupported fallback');
+    const actual = reproduced.get(expected.scenarioId);
+    assert.ok(actual, expected.scenarioId);
+    for (const [field, value] of Object.entries(expected)) {
+      assert.deepEqual(actual[field as keyof typeof actual], value, `${expected.scenarioId}.${field}`);
+    }
+  }
+});
+
 test('canonical shadow quotes match frozen outputs except the approved Gemini Omni 1.1 refresh', async () => {
   const matrixPath = 'frontend/src/lib/pricing-audit/matrix.ts';
   assert.equal(existsSync(matrixPath), true, `${matrixPath} should exist`);

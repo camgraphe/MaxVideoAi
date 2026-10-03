@@ -34,7 +34,6 @@ import type { ResolvedReference } from "@/server/agent-api/reference-types";
 import { withDbTransaction, type TransactionQueryExecutor } from "@/lib/db";
 import { resolveStudioMedia } from "./media-resolver";
 import { getWalletSummary } from "@/server/wallet-summary";
-import {STUDIO_CONVERSATION_MODEL_IDS} from '@/config/studio-conversation-catalog';
 import {projectAgentModelModeDetails} from '@/server/agent-api/model-details';
 import {STUDIO_CONVERSATION_MAX_REFERENCES} from '@/lib/studio/conversation-creation-contract';
 import type {StudioPricingEstimate} from '@/lib/studio/conversation-pricing-contract';
@@ -46,7 +45,7 @@ import {resolveAgentGenerationRequestExecutability} from '@/server/agent-runtime
 
 function certified(catalog: AgentPublicGenerationEngine[], surface: 'image' | 'video') {
   return catalog
-    .filter((candidate) => candidate.surface === surface && STUDIO_CONVERSATION_MODEL_IDS[surface].includes(candidate.engine.id))
+    .filter((candidate) => candidate.surface === surface)
     .map((candidate) => ({
       ...candidate,
       publicModes: candidate.publicModes

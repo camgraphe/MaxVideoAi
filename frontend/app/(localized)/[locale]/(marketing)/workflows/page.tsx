@@ -24,7 +24,7 @@ const FALLBACK_EXAMPLES: WorkflowExampleEntry[] = [
   { label: 'Veo 3.1', slug: 'veo-3-1', brandId: 'google-veo' },
   { label: 'LTX 2.3 Fast', slug: 'ltx-2-3-fast', brandId: 'lightricks' },
   { label: 'Kling 3 Standard', slug: 'kling-3-standard', brandId: 'kling' },
-  { label: 'Sora 2', slug: 'sora-2', brandId: 'openai' },
+  { label: 'MiniMax H3', slug: 'minimax-h3', brandId: 'minimax' },
   { label: 'Pika Text-to-Video', slug: 'pika-text-to-video', brandId: 'pika' },
   { label: 'Wan 2.6', slug: 'wan-2-6', brandId: 'wan' },
   { label: 'MiniMax Hailuo 02', slug: 'minimax-hailuo-02-text', brandId: 'minimax' },

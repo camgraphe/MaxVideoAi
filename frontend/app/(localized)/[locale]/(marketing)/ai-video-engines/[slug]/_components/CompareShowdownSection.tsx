@@ -1,3 +1,4 @@
+import { isEngineGeneratable } from '../_lib/compare-page-pricing';
 import type { AppLocale } from '@/i18n/locales';
 import { Link } from '@/i18n/navigation';
 import { DeferredSourcePrompt } from '@/components/i18n/DeferredSourcePrompt.client';
@@ -132,32 +133,36 @@ export function CompareShowdownSection({
                 <div className="flex flex-wrap items-center gap-2 text-sm text-text-secondary">
                   <span className="text-xs font-semibold uppercase tracking-micro text-text-muted">{showdownActionLabel}</span>
                   <Link
-                    href={buildGenerateHref(
+                    href={isEngineGeneratable(left) || leftIsPrelaunch ? buildGenerateHref(
                       left.modelSlug,
                       exposeSourcePrompt ? entry.prompt : null,
                       entry.aspectRatio,
                       entry.mode
-                    )}
+                    ) : { pathname: '/models/[slug]', params: { slug: left.modelSlug } }}
                     prefetch={false}
                     className="rounded-full border border-hairline bg-surface px-3 py-1 text-xs font-semibold text-text-primary transition hover:bg-surface-2"
                   >
-                    {leftIsPrelaunch
+                    {!isEngineGeneratable(left) && !leftIsPrelaunch
+                      ? `${compareCopy.scorecard?.fullProfile ?? 'Full profile'} · ${formatEngineShortName(left)}`
+                      : leftIsPrelaunch
                       ? labels.savePromptForLaunch
                       : formatTemplate(compareCopy.scorecard?.generateWith ?? 'Generate with {engine}', {
                           engine: formatEngineShortName(left),
                         })}
                   </Link>
                   <Link
-                    href={buildGenerateHref(
+                    href={isEngineGeneratable(right) || rightIsPrelaunch ? buildGenerateHref(
                       right.modelSlug,
                       exposeSourcePrompt ? entry.prompt : null,
                       entry.aspectRatio,
                       entry.mode
-                    )}
+                    ) : { pathname: '/models/[slug]', params: { slug: right.modelSlug } }}
                     prefetch={false}
                     className="rounded-full border border-hairline bg-surface px-3 py-1 text-xs font-semibold text-text-primary transition hover:bg-surface-2"
                   >
-                    {rightIsPrelaunch
+                    {!isEngineGeneratable(right) && !rightIsPrelaunch
+                      ? `${compareCopy.scorecard?.fullProfile ?? 'Full profile'} · ${formatEngineShortName(right)}`
+                      : rightIsPrelaunch
                       ? labels.savePromptForLaunch
                       : formatTemplate(compareCopy.scorecard?.generateWith ?? 'Generate with {engine}', {
                           engine: formatEngineShortName(right),

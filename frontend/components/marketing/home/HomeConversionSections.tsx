@@ -349,7 +349,7 @@ export function TransparentPricingBlock({ copy, cards }: { copy: SectionCopy; ca
             </span>
             <span>
               {copy.supportingText ??
-                'MaxVideoAI is a pay-as-you-go multi-engine AI video generator for Seedance, Kling, Veo, LTX, Wan, Pika, Sora and more.'}
+                'MaxVideoAI is a pay-as-you-go multi-engine AI video generator for Seedance, Kling, Veo, LTX, Wan, Pika, MiniMax and more.'}
             </span>
           </p>
           <nav aria-label="Pricing section links" className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-semibold text-brand">

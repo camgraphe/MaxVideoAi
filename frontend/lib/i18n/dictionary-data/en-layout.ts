@@ -25,7 +25,7 @@ export const footer: Dictionary['footer'] = {
       { label: 'Refund & Return Policy', href: '/return-policy' },
     ],
     brandNote:
-      'Independent hub for professional AI video - price before you generate, stay on the latest engines, one workspace for every shot. Works with Sora 2, Veo 3.1, Pika 2.2, MiniMax Hailuo 02, and more. Trademarks belong to their owners.',
+      'Independent hub for professional AI video - price before you generate, stay on the latest engines, one workspace for every shot. Works with Seedance 2.5, MiniMax H3, Wan 3, Veo and Kling. Trademarks belong to their owners.',
     languageLabel: 'Language',
     languages: [
       { locale: 'en', label: 'English' },

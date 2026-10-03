@@ -1,3 +1,4 @@
+import {getRuntimeModelById} from '@/config/model-runtime';
 import type {StudioCapabilityDetails,StudioImageCapability} from '@/lib/studio/conversation-action-contract';
 import {projectAgentModelModeDetails} from '@/server/agent-api/model-details';
 import {getAgentModelGuidance,getAgentModelEditorialGuidance,getAgentModelEditorialSummary} from '@/server/agent-api/model-guidance';
@@ -9,7 +10,7 @@ import {AUDIO_LYRIA3_CLIP_MAX_DURATION_SEC} from '@/lib/audio-generation';
 
 /** Called only with the authorized adapter's executable and certified catalog, never a global lookup. */
 export function studioVisualCapabilityDetails(candidate: AgentPublicGenerationEngine): StudioCapabilityDetails {
-  return {modelId: candidate.engine.id,label: candidate.engine.label,surface: candidate.surface,
+  return {modelId: candidate.engine.id,label: candidate.engine.label,lifecycle: getRuntimeModelById(candidate.engine.id)?.lifecycle ?? null,surface: candidate.surface,
     modes: candidate.publicModes.map(mode => {
       const canonical=projectAgentModelModeDetails(candidate,mode);
       return {...canonical,outputCount: {min: 1,max: 1,default: 1},
@@ -30,7 +31,7 @@ export function studioVisualCapabilityDetails(candidate: AgentPublicGenerationEn
   };
 }
 export function studioVisualCapabilitySummary(candidate: AgentPublicGenerationEngine): StudioImageCapability {
-  return {modelId: candidate.engine.id,label: candidate.engine.label,modes: candidate.publicModes,formats: candidate.engine.aspectRatios,
+  return {modelId: candidate.engine.id,label: candidate.engine.label,lifecycle: getRuntimeModelById(candidate.engine.id)?.lifecycle ?? null,modes: candidate.publicModes,formats: candidate.engine.aspectRatios,
     bestFor: getAgentModelGuidance(candidate.engine.id)?.bestFor ?? [],editorialGuidance: getAgentModelEditorialSummary(candidate.engine.id)};
 }
 export function studioAudioCapabilityDetails(capabilities: ReturnType<typeof listAudioCapabilities>,modelId: string): StudioCapabilityDetails | null {

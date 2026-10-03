@@ -4,8 +4,9 @@ The candidate at `7ffa8d8c4` diverged before the accepted plugin 0.3.6 source.
 It omitted shipped runtime fixes and still enabled Sora generation. Those bounded
 regressions have now been reconciled locally, preserving the candidate's Studio
 actors, editorial policy, seven capability gates, timeline and export tools.
-**The branch is not production-ready:** this is not a claim that the whole
-current-main application has been reconciled.
+**The branch is not production-ready:** the final combined build, full suite,
+public-page smoke and distribution gates still need qualification. This is not
+a claim that the whole current-main application has been reconciled.
 The remaining integration decisions below must be resolved before production.
 No merge, checkout, tag movement, version bump, push, deployment, publication,
 Registry write, account connection or provider call was performed by this audit.
@@ -62,7 +63,8 @@ The Sora policy comes from PR #321 (`63c5105a44aa7542b2e856c817f4df8e4ce83a04`)
 and the follow-up discovery fix #325, both contained in the accepted 0.3.6 source.
 Only `frontend/config/model-registry.json` was authored; the generated runtime,
 engine catalog and three roster files were regenerated, never hand-edited.
-`frontend/config/agent-model-editorial-policy.json` was not changed.
+This audit did not edit `frontend/config/agent-model-editorial-policy.json`; the
+separate final catalog reconciliation owns subsequent catalog/editorial changes.
 
 The released global instructions were not copied over the Studio implementation.
 The 128 capability combinations, 2,000-byte budgets, gated Studio edit/export tools,
@@ -100,6 +102,140 @@ initial root `pnpm exec tsc` lacked a root TypeScript binary. Both were correcte
 using existing local dependencies, without installing software. No skipped test
 is represented as a pass. Offline decisions do not certify real host selection.
 
+## Public retirement completion after the full-suite failures
+
+The first broad run at `eb581c5cd` exposed 11 failures (6,082 tests: 6,069 pass,
+11 fail, 2 skip). Its log remains
+`output/studio-creative-workspace/release-human-validate-eb581c5cd.log`.
+Retirement changes were held until that run completed. Public and workspace
+closure behavior was then reconciled from the two immutable 0.3.6 ancestors
+already identified above; each selected file patch passed `git apply --check`.
+This was 59 selected file patches, not a wholesale commit or current-main merge.
+The unrelated auth `confirmEmail` message changes in the same published commit
+were deliberately excluded. Pricing-audit owners and later catalog/aliases are
+owned by the other agents, not this reconciliation.
+
+- **Model archives:** EN/FR/ES Sora 2/Pro content, strict archive parser, metadata
+  builder, server component and route early return preserve canonical routes and
+  historical family links. The archive emits a WebPage with no Product/Offer or
+  generation action. Alternatives are filtered by current app/model publication.
+  The existing current brand OG fallback and newer Studio changes are preserved.
+- **Comparison and discovery:** closed app publication suppresses comparison
+  generation controls and purchasable price arrays. Historical comparison URLs
+  remain published/indexable while current recommendations exclude archives.
+  Model menus, example-family selectors and homepage fallback cards omit Sora;
+  explicit archive selection remains available. Database and local snapshot
+  discovery filter before pagination, while historical playlists/watch readers
+  and stored rows remain intact.
+- **Historical recall:** saved Sora drafts, incoming links and video settings
+  preserve their exact model identity. The workspace explains closure and blocks
+  submission until the user explicitly chooses an available model. Studio returns
+  no executable capability for archived blocks, instead of borrowing another
+  model's capability. This preserves the newer Studio gates and saved content.
+- **Public prose:** the three gallery introductions/FAQs, Sora access/prompt blogs,
+  notices on historical comparison articles, current home/workflow copy and
+  provider lists no longer promise Sora generation. Dated historical articles
+  keep their date context; undated archive/gallery/home copy uses the announced
+  September 24 shutdown date without presenting it as still upcoming.
+- **Additional concrete gaps found during review:** the published homepage
+  provider filter still promoted Sora because OpenAI also has an active image
+  model. The Sora provider card was removed in all three locales, and homepage
+  availability counts/provider eligibility now use app publication. Historical
+  watch CTAs now say “Reuse prompt with another model” and explain closure while
+  preserving the original `/app?from=` recall link, media, recorded cost and
+  VideoObject URL. These small additions are local fixes beyond the copied
+  retirement patches, with focused red/green tests.
+- **MCP evidence:** the directory messaging test now expects the separately
+  observed active 0.3.6 Registry release. No manifest bump or store-status change
+  is hidden in that assertion.
+
+| New check | Result / evidence in `published-baseline/` |
+| --- | --- |
+| Published public retirement contracts before changes | 5 pass, 14 fail, 0 skip: `public-retirement-red.log` |
+| Published workspace recall contracts before changes | 23 pass, 3 fail, 0 skip: `workspace-retirement-red.log` |
+| Watch copy before the additional fix | 3 pass, 2 fail: `watch-retirement-red.log` |
+| Homepage provider/counts before the additional fix | 6 pass, 1 fail: `home-providers-red.log` |
+| Final focused public/MCP/recall/metadata suite | 119/119 pass, 0 skip: `public-retirement-final.log` |
+| Route/media/workspace architecture and registry/catalog contracts | 164/164 pass, 0 skip: `public-retirement-contracts.log` |
+| Watch copy, original/media contracts and model pages | 58/58 pass, 0 skip: `watch-retirement-green.log` |
+| Homepage provider/counts and route/performance contracts | 14/14 pass, 0 skip: `home-providers-green.log` |
+| Frontend TypeScript | Passed: `public-retirement-typecheck-final.log` |
+| Frontend lint | 0 errors, 6 existing Studio native-image warnings: `public-retirement-lint.log` |
+| Exposure and whitespace | Passed after edits |
+
+The Sora focused suite checks all six archive canonical/hreflang sets, localized
+closure metadata (respecting the shared SEO description truncation), indexability,
+strict required archive content and historical comparison sitemap membership.
+The PostgreSQL test used a disposable database and proves unchanged stored rows,
+three retained historical aliases, and correct current-feed pagination. No live
+provider, production data or credentials were used. The React checklist found no
+new client boundary, effect, remote fetch, media source or loading-policy change.
+No performance improvement or newly rendered-page success is claimed from those
+source checks. The `eb581c5cd` preview predates this patch and is not evidence for it.
+
+### Seedance 1.5 publication follow-through
+
+The separate catalog audit then restored target-main `deep_legacy` and disabled
+app/pricing publication for Seedance 1.5 Pro. Its existing localized decision
+content still advertised `/app?engine=seedance-1-5-pro`; the model template test
+reproduced this failure (`seedance-archive-red.log`). This audit owns the bounded
+public follow-through: EN/FR/ES `seedance-1-5-pro.json` now has explicit archive
+content and historical metadata, with no active generation href. The canonical
+model page explains only MaxVideoAI availability; it does not assert a provider
+shutdown. Seedance 2.5 is the first current alternative.
+
+Archive source attribution is now an optional strict `{label, href}` block in
+localized content, with HTTPS validation. The six Sora archives retain their
+OpenAI announcement; Seedance has no irrelevant OpenAI source. The generic
+renderer no longer embeds a model-specific external source. Published historical
+URLs and current family-example destinations remain intact. The Seedance
+prelaunch/decision tests now assert archive status and no current hub membership,
+while retaining the comparison-URL and alias contracts.
+
+Seven additional source/locale/metadata tests reproduced missing archives/source
+ownership (`seedance-archive-contract-red.log`). The final combined focused run
+is **126/126 pass, zero skip** in `public-retirement-catalog-final.log`, covering
+Sora, Seedance, public navigation, MCP evidence, historical recall and strict
+archive source attribution. TypeScript passes in
+`public-retirement-catalog-typecheck.log`; lint still has zero errors and the same
+six pre-existing Studio image warnings in `public-retirement-catalog-lint.log`.
+The authored registry/projections, three compatibility aliases and Studio catalog
+matrix remain owned by the separate catalog agent; this does not certify a full
+target-main integration.
+
+### Final combined-build public smoke matrix
+
+The release owner will build and smoke the final immutable combined commit.
+For each `sora-2` and `sora-2-pro`:
+
+| Locale | Model archive | Historical family gallery |
+| --- | --- | --- |
+| EN | `/models/{slug}` | `/examples/sora` |
+| FR | `/fr/modeles/{slug}` | `/fr/galerie/sora` |
+| ES | `/es/modelos/{slug}` | `/es/galeria/sora` |
+
+Expect HTTP 200; canonical `https://maxvideoai.com` plus the localized model
+path; `en`, `fr`, `es` and `x-default` alternate links; index/follow; localized
+closure heading/intro; WebPage JSON-LD; no Product/Offer or `app?engine=sora*`
+action. Confirm model-page links for Seedance 2.5, MiniMax H3 and Wan 3, plus the
+library and localized historical family gallery. Confirm the compatibility URL
+`/fr/models/sora-2` permanently resolves to `/fr/modeles/sora-2` without changing
+identity. Keep the source announcement link intact. Also smoke
+`/models/seedance-1-5-pro`, `/fr/modeles/seedance-1-5-pro` and
+`/es/modelos/seedance-1-5-pro` with the same archive metadata/CTA rules, a
+Seedance family-example link and no OpenAI announcement. Seedance must also
+stay absent from executable picks and current comparison-hub recommendations.
+
+Smoke `/`, `/fr`, `/es`, `/models`, `/examples` and `/ai-video-engines`: no current
+Sora engine/provider card, dropdown/selector recommendation, or general-feed
+example. Direct Sora gallery/watch URLs retain historical playback and recorded
+costs. For a historical watch fixture, verify “Reuse prompt with another model”
+and that recall keeps its saved Sora identity and requests an explicit model
+choice. No paid call is necessary. For `/ai-video-engines/sora-2-vs-veo-3-1`
+(and localized comparison paths), preserve the URL and historical scores/media
+while the Sora side has no generation CTA or purchasable price. Verify a current
+comparison still has its normal generation and quoted-price behavior.
+
 ## Remaining integration and release gates
 
 1. **Choose an unused release version after final integration.** `VERSION`, Codex,
@@ -108,14 +244,12 @@ is represented as a pass. Offline decisions do not certify real host selection.
    The inspected 0.3.5 candidate archive is not publishable. Update these owners
    together for the authorized new release; never overwrite 0.3.6 or reinstall a
    stale version as an update.
-2. **Preserve the published Sora archive presentation.** Runtime spending is now
-   blocked, but the candidate still lacks the broader shipped archival rollout:
-   `models/[slug]/_components/ModelArchivePage.tsx`, its archive content/metadata
-   builders, model route decision, EN/FR/ES Sora model JSON, comparison generation
-   cards/prices, historical gallery wording and Sora blog/home copy. The source
-   commits above contain those changes. Shipping the candidate directly could
-   advertise Sora generation although the service now rejects it. Integrate the
-   relevant archive behavior and verify localized pages before production.
+2. **Requalify the completed Sora archive reconciliation in the final build.**
+   The earlier public-archive gap is now resolved in this branch, including
+   localized model pages, comparison controls/prices, public discovery,
+   historical galleries/blogs and workspace recall. The checks below establish
+   source contracts; the release owner must run the listed localized smoke
+   checks on the final combined build, not the earlier `eb581c5cd` preview.
 3. **Do not half-port new reference/prompt-expansion schemas.** Relative to 0.3.6,
    target main adds `documentUrl`, `webpageUrl`, `enablePromptExpansion` and
    `promptExpansionMode: disabled` to `mcp/tools/prepare-generation.ts`. Matching
@@ -186,3 +320,89 @@ Focused contracts and reviewed fingerprint:
 This report and the local evidence directory are the only audit documentation/output
 owners. Other concurrently created Studio QA/financial files belong to their
 respective agents and were not modified here.
+
+### Additional public-retirement ownership
+
+The exact additional paths are recorded below (all paths are repository-relative).
+`output/studio-creative-workspace/published-baseline/public-retirement-patches.json`
+records per-file source commits; `public-retirement-owned-files.json` is the
+machine-readable full ownership list for staging/review. These exclude the other
+agents' pricing, conversation-director, catalog/aliases and financial work.
+
+- `content/en/blog/access-sora-2-without-invite.mdx`
+- `content/en/blog/compare-ai-video-engines.mdx`
+- `content/en/blog/sora-2-sequenced-prompts.mdx`
+- `content/en/blog/veo-3-updates.mdx`
+- `content/es/blog/accede-a-sora-2-sin-invitacion.mdx`
+- `content/es/blog/como-comparar-motores-de-video-con-ia-sora-vs-veo-vs-pika.mdx`
+- `content/es/blog/indicaciones-secuenciadas-de-sora-2-con-sonido-e-identidad-de-marca.mdx`
+- `content/es/blog/las-actualizaciones-de-veo-3-traen-controles-cinematograficos.mdx`
+- `content/fr/blog/acceder-a-sora-2-sans-invitation.mdx`
+- `content/fr/blog/comment-comparer-les-moteurs-video-dia-sora-vs-veo-vs-pika.mdx`
+- `content/fr/blog/invites-sequencees-sora-2-avec-son-et-image-de-marque.mdx`
+- `content/fr/blog/les-mises-a-jour-de-veo-3-apportent-des-controles-cinematographiques.mdx`
+- `content/models/en/seedance-1-5-pro.json`
+- `content/models/en/sora-2-pro.json`
+- `content/models/en/sora-2.json`
+- `content/models/es/seedance-1-5-pro.json`
+- `content/models/es/sora-2-pro.json`
+- `content/models/es/sora-2.json`
+- `content/models/fr/seedance-1-5-pro.json`
+- `content/models/fr/sora-2-pro.json`
+- `content/models/fr/sora-2.json`
+- `docs/engineering/model-registry.md`
+- `docs/operations/studio-published-baseline-validation-2026-10-04.md`
+- `frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceEngineModeState.ts`
+- `frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceGenerationRunner.ts`
+- `frontend/app/(core)/(workspace)/app/_lib/workspace-archived-engine.ts`
+- `frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers.ts`
+- `frontend/app/(core)/(workspace)/app/_lib/workspace-hydration.ts`
+- `frontend/app/(core)/(workspace)/app/_lib/workspace-video-settings.ts`
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/model-capability-registry.ts`
+- `frontend/app/(core)/video/[id]/_components/VideoWatchContent.tsx`
+- `frontend/app/(core)/video/[id]/_components/VideoWatchSidebar.tsx`
+- `frontend/app/(core)/video/[id]/_lib/video-watch-page-utils.ts`
+- `frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data/engine-stats.ts`
+- `frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data/examples.ts`
+- `frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data/filters.ts`
+- `frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_components/CompareGenerateCard.tsx`
+- `frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_components/CompareShowdownSection.tsx`
+- `frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-faq.ts`
+- `frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-pricing.ts`
+- `frontend/app/(localized)/[locale]/(marketing)/examples/_components/examples-page-view.tsx`
+- `frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-page-copy.ts`
+- `frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-page-data.ts`
+- `frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelArchivePage.tsx`
+- `frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-archive-content.ts`
+- `frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-archive-metadata.ts`
+- `frontend/app/(localized)/[locale]/(marketing)/models/[slug]/page.tsx`
+- `frontend/app/(localized)/[locale]/(marketing)/workflows/page.tsx`
+- `frontend/components/marketing/home/HomeConversionSections.tsx`
+- `frontend/config/navigation.ts`
+- `frontend/lib/compare-hub/data.ts`
+- `frontend/lib/examples/discovery.ts`
+- `frontend/lib/examples/modelLandingData.en.ts`
+- `frontend/lib/examples/modelLandingData.es.ts`
+- `frontend/lib/examples/modelLandingData.fr.ts`
+- `frontend/lib/i18n/dictionary-data/en-content.ts`
+- `frontend/lib/i18n/dictionary-data/en-home.ts`
+- `frontend/lib/i18n/dictionary-data/en-layout.ts`
+- `frontend/lib/i18n/dictionary-data/en-workflows-models.ts`
+- `frontend/lib/models/i18n-normalization.ts`
+- `frontend/messages/en.json`
+- `frontend/messages/es.json`
+- `frontend/messages/fr.json`
+- `frontend/server/local-public-examples-data.ts`
+- `frontend/server/videos.ts`
+- `tests/marketing-navigation.test.ts`
+- `tests/maxvideoai-editor-engine-picker.test.ts`
+- `tests/mcp-directory-messaging.test.ts`
+- `tests/model-archive-publication.test.ts`
+- `tests/model-page-template-content.test.ts`
+- `tests/seedance-prelaunch.test.ts`
+- `tests/sora-discovery-postgres.test.ts`
+- `tests/sora-discovery.test.ts`
+- `tests/sora-sunset.test.ts`
+- `tests/watch-page-commercial-copy.test.ts`
+- `tests/workspace-hydration.test.ts`
+- `tests/workspace-video-settings.test.ts`

@@ -12,7 +12,7 @@ import {studioTimelineReadSchema,studioTimelineEditSchema,STUDIO_EDITING_DIRECTO
 import type {ConversationEditResult} from '@/server/studio/conversation-edit-command';
 import type {StudioQuoteDiscardResult} from '@/server/studio/conversation-quote-command';
 import {imageSelectionSchema,imageSelectionProperties} from './conversation-creation-contract';
-import type {AgentModelModeDetails} from '@/server/agent-api/types';
+import type {AgentModelModeDetails,AgentModelLifecycle} from '@/server/agent-api/types';
 import type {listAudioCapabilities} from '@/server/agent-api/audio-capabilities';
 import type {AudioSettingDetails,projectAudioVariantFixedOutput} from '@/server/agent-api/audio-capabilities';
 import type {AgentModelGuidance,AgentModelEditorialGuidance,AgentModelEditorialSummary} from '@/server/agent-api/model-guidance';
@@ -46,14 +46,14 @@ export const studioActionRequestSchema = z.discriminatedUnion('action', [
   studioExportPrepareActionSchema,studioExportReadActionSchema,
 ]);
 export type StudioActionRequest = z.infer<typeof studioActionRequestSchema>;
-export type StudioImageCapability = {modelId: string; label: string; modes: string[]; formats: string[]; bestFor?: readonly string[]; editorialGuidance?: AgentModelEditorialSummary};
+export type StudioImageCapability = {modelId: string; label: string; lifecycle: AgentModelLifecycle | null; modes: string[]; formats: string[]; bestFor?: readonly string[]; editorialGuidance?: AgentModelEditorialSummary};
 type AudioCapabilities=ReturnType<typeof listAudioCapabilities>;
 type StudioAudioMode=Omit<AudioCapabilities['modes'][number],'variants'> & {
   variants: (AudioCapabilities['modes'][number]['variants'][number] & {parameters: AudioSettingDetails[];fixedOutput: ReturnType<typeof projectAudioVariantFixedOutput>})[];
 };
 type StudioAudioOptions={readonly [K in keyof AudioCapabilities['options']]: readonly AudioCapabilities['options'][K][number][]};
 export type StudioCapabilityDetails =
-  | {modelId: string; label: string; surface: 'image' | 'video'; modes: readonly AgentModelModeDetails[]; referenceIdentity: 'attached_image_asset' | 'attached_image_asset_or_ready_project_output'; outputCount: 1; maxReferences: number; guidance: AgentModelGuidance | null; editorialGuidance?: AgentModelEditorialGuidance; promptingSources: readonly AgentModelPromptingSource[]}
+  | {modelId: string; label: string; lifecycle: AgentModelLifecycle | null; surface: 'image' | 'video'; modes: readonly AgentModelModeDetails[]; referenceIdentity: 'attached_image_asset' | 'attached_image_asset_or_ready_project_output'; outputCount: 1; maxReferences: number; guidance: AgentModelGuidance | null; editorialGuidance?: AgentModelEditorialGuidance; promptingSources: readonly AgentModelPromptingSource[]}
   | {modelId: string; label: string; surface: 'audio'; modes: StudioAudioMode[]; options: StudioAudioOptions; references: []; outputCount: 1};
 export type StudioProjectMedia = {ref: ToolAssetRef; name: string; durationSec: number | null}[];
 export type StudioActionResult =
