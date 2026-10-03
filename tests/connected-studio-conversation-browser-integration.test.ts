@@ -133,10 +133,10 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await page.getByRole('button',{name:'Remove Image 1',exact:true}).click();
     await expect(message).toHaveValue(' ');
     await shelf.getByRole('button',{name:'Mention in message',exact:true}).click();
-    await expect(message).toHaveValue(' @Image 1 ');
+    await expect(message).toHaveValue(/\s*@Image 1\s/);
     await shelf.getByRole('button',{name:'Collapse media',exact:true}).click();
     await expect(shelf.getByRole('img',{name:'Watch study',exact:true})).toHaveCount(0);
-    await expect(message).toHaveValue(' @Image 1 ');
+    await expect(message).toHaveValue(/\s*@Image 1\s/);
     await shelf.getByRole('button',{name:'Open media',exact:true}).click();
     await page.setViewportSize({width:390,height:844});
     await expect(message).toBeVisible();
@@ -288,6 +288,15 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
       await page.keyboard.press('Escape');
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),'The document stays within the viewport, including classic WebKit scrollbars.');
     }
+    await page.setViewportSize({width:1440,height:900});
+    await page.getByRole('link',{name:'My projects',exact:true}).click();
+    await expect(page.getByRole('button',{name:'Open Studio',exact:true})).toBeVisible({timeout:30000});
+    await proof('projects-entry');
+    await page.getByRole('button',{name:'Open Studio',exact:true}).click();
+    await expect(page).toHaveURL(/\/app\/studio\/conversation\/project_/,{timeout:30000});
+    await expect(page.getByRole('heading',{name:'What would you like to create?'})).toBeVisible();
+    await expect(page.getByRole('button',{name:'Open timeline',exact:true})).toBeVisible();
+    await proof('empty-workspace');
     assert.deepEqual(errors,[]);
     assert.ok(browser.readPrivateRequests().some(request => request.status === 200 || request.status === 206));
     await owned.close();

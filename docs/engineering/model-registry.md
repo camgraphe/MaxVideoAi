@@ -2,6 +2,8 @@
 
 `frontend/config/model-registry.json` is the only authored source for model identity, authoritative marketing label, aliases, family, category, lifecycle, successor, publication, replacement, and model-shaped tombstones.
 
+Editorial recommendation preference is separate: `frontend/config/agent-model-editorial-policy.json` records exact reviewed engine IDs, reference/alternative/on_request levels, rationale, provenance and review date. It cannot publish a model, create identity, certify execution or establish a measured quality score. `src/server/agent-api/model-editorial-policy.ts` validates entries against this registry; a new version is unreviewed until explicitly added. Current reference entries have strong recommendation weight after explicit user choices and factual requirements. Pika remains discoverable and may be explicitly selected when executable, but is omitted from automatic shortlists. A review older than the configured 90 days stops boosting ranking. Update version/date/provenance when re-reviewing; tests cover freshness, exact-version scope and exclusion/eligibility. Studio projects compact facts into its catalog and full facts into model details; MCP uses the same policy for details and recommendations.
+
 The following files are generated projections and must not be edited directly:
 
 - `frontend/config/model-runtime.json`

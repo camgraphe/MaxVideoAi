@@ -1,5 +1,11 @@
 # Pricing Engine
 
+## Studio conversational estimates
+
+`src/server/agent-api/generation-pricing-read.ts` is the shared read-only normalization-adjacent validation and canonical pricing seam used by preparation and Studio estimates. It checks current executable model/mode facts, references, settings, membership projection and pricing snapshots. It never persists a quote, checks/reserves a wallet or submits a provider request. Preparation retains those responsibilities in its existing owner.
+
+`pricing_read` exposes one exact image/video scenario through Studio's existing director loop. `image-generation-service.ts` additionally applies current Studio authority and certification. Saved image references must be explicitly attached and resolve to the current owner. Estimates return amount/currency, settings, reference count, `estimatedAt` and `quoteRequired`; the client still confirms a fresh canonical quote before spending. Audio and unsaved project-output estimates are unsupported. Advice and comparisons must leave existing prepared/accepted quotes intact. Behavioral coverage lives in `studio-conversation-pricing*.test.ts` and the existing MCP preparation/budget tests.
+
 ## Current status
 
 The pricing parity foundation, billing migration, and public projection migration are complete. The legacy pricing facade and specialized commercial snapshot layer are deleted, and an architecture contract now enforces one commercial formula owner. The three-domain admin cockpit is also complete, repository-verified, and operationally accepted against a configured isolated PostgreSQL database. The deterministic audit reports **178 scenarios, 178 matches, 0 mismatches, and 4 compatibility profiles in use**. The exhaustive public contract reports **492 unchanged rows**. Wallet/direct generation, image, audio, storyboard, tool charges, public pricing pages, model pages, estimators, chips, JSON-LD, workspace preflight, and image estimates are canonical-authoritative.
