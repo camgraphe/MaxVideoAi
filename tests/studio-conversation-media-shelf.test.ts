@@ -24,3 +24,16 @@ test('media drags contain only a known canonical identity, never a URL or foreig
   assert.equal(readShelfDrag(data,[]),null);
   assert.equal(readShelfDrag({getData:()=> 'https://example.com/private'},[]),null);
 });
+
+test('timeline insertion borrows measured facts only from the same preview without persisting its signed URLs',async()=>{
+  const module=await import('../frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/_lib/conversation-media-shelf');
+  assert.equal(typeof module.shelfTimelineAsset,'function');
+  const item={...asset('b','video'),label:'Video 1'};
+  const preview={assetId:item.assetId,kind:'video' as const,url:'https://private.test/signed?token=secret',thumbUrl:null,expiresAt:null,durationSec:5.2,mediaFacts:{source:'probe' as const,durationSec:5.2}};
+  const result=module.shelfTimelineAsset(item,preview);
+  assert.equal(result.url,item.url);
+  assert.equal(result.mediaFacts?.durationSec,5.2);
+  assert.doesNotMatch(JSON.stringify(result),/secret|signed|expiresAt/);
+  assert.equal(module.shelfTimelineAsset(item,{...preview,assetId:asset('c').assetId}).mediaFacts,undefined);
+  assert.equal(module.shelfTimelineAsset(item,{...preview,kind:'audio'}).mediaFacts,undefined);
+});

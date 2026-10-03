@@ -1,16 +1,18 @@
 'use client';
 
 import {useEffect, useRef, useState} from 'react';
-import {ArrowUpLeft, Check, Expand, Film, Image as ImageIcon, Music2, RefreshCw} from 'lucide-react';
+import {ArrowUpLeft, Check, Expand, Film, Image as ImageIcon, Music2, RefreshCw, ListVideo} from 'lucide-react';
 import type {ConversationLocale} from '@/lib/studio/conversation-quote-presentation';
 import type {ConversationReferencePreview} from '@/lib/studio/conversation-reference-previews';
-import {MEDIA_SHELF_DRAG_TYPE, type ShelfMedia} from '../_lib/conversation-media-shelf';
+import {MEDIA_SHELF_DRAG_TYPE,shelfTimelineAsset, type ShelfMedia} from '../_lib/conversation-media-shelf';
+import type {ImageLibraryAsset} from '@/lib/studio/image-library';
 import {ConversationReferenceLightbox} from './ConversationReferenceLightbox.client';
 import styles from '../conversation-media-shelf.module.css';
 
-export function ConversationReferenceCard({projectId, item, active, compact, attached, locale, onSelect, onMention, onAttach, onDetach}: {
+export function ConversationReferenceCard({projectId, item, active, compact, attached, locale, onSelect, onMention, onAttach, onDetach,onInsert}: {
   projectId: string; item: ShelfMedia; active: boolean; compact: boolean; attached: boolean; locale: ConversationLocale;
   onSelect: () => void; onMention: () => void; onAttach: () => void; onDetach: () => void;
+  onInsert?: (asset:ImageLibraryAsset)=>void;
 }) {
   const t = (en: string, fr: string) => locale === 'fr' ? fr : en;
   const [preview, setPreview] = useState<ConversationReferencePreview | null>(null);
@@ -20,7 +22,7 @@ export function ConversationReferenceCard({projectId, item, active, compact, att
   const card = useRef<HTMLElement>(null);
   const player = useRef<HTMLMediaElement | null>(null);
   const enlargeTrigger = useRef<HTMLButtonElement>(null);
-  const kind = item.kind;
+  const kind = item.kind??'image';
   useEffect(() => {
     const cached = access.current;
     if (cached && (!cached.expiresAt || Date.parse(cached.expiresAt) > Date.now() + 15000)) return;
@@ -60,9 +62,10 @@ export function ConversationReferenceCard({projectId, item, active, compact, att
       {attached && <span className={styles.attachedMark} aria-label={t('Attached', 'Joint')}><Check size={11}/></span>}
     </div>
     {!compact && <div className={styles.caption}>
-      <button onClick={onSelect} aria-label={showPlayer ? t('Preview ', 'Aperçu de ') + item.label : undefined} title={item.name}>{item.label}</button>
+      <span className={styles.captionLabel} title={item.name}>{item.label}</span>
       {active && <div className={styles.actions}>
         <button onClick={onMention} aria-label={t('Mention in message', 'Citer dans le message')} title={t('Mention in message', 'Citer dans le message')}><ArrowUpLeft size={16}/></button>
+        {onInsert&&<button onClick={()=>onInsert(shelfTimelineAsset(item,preview))} aria-label={t('Add to timeline','Ajouter à la timeline')} title={t('Add to timeline','Ajouter à la timeline')}><ListVideo size={16}/></button>}
         {kind === 'image' && preview && !failed && <button ref={enlargeTrigger} onClick={() => setLightbox(true)} aria-label={t('Enlarge ', 'Agrandir ') + item.label} title={t('Enlarge', 'Agrandir')}><Expand size={14}/></button>}
         <button aria-pressed={attached} aria-label={t('Include in next message', 'Joindre au prochain message')} title={t('Include in next message', 'Joindre au prochain message')} onClick={attached ? onDetach : onAttach}><Check size={15}/></button>
         {failed && <button onClick={() => {access.current = null; setRetry(value => value + 1);}} aria-label={t('Try again', 'Réessayer')}><RefreshCw size={14}/></button>}

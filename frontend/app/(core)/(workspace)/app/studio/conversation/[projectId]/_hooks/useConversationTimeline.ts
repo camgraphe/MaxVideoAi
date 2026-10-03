@@ -11,6 +11,7 @@ export function useConversationTimeline(projectId: string,refreshKey: unknown) {
   const [legacy,setLegacy] = useState(false);
   const [busy,setBusy] = useState(false);
   const [error,setError] = useState<string | null>(null);
+  const [editError,setEditError] = useState<string | null>(null);
   const active = useRef(true);
   const pending = useRef(false);
   const epoch = useRef(0);
@@ -31,13 +32,13 @@ export function useConversationTimeline(projectId: string,refreshKey: unknown) {
   useEffect(() => {const timer = window.setInterval(() => {if (!pending.current && !document.hidden) void refresh();},20000);return () => window.clearInterval(timer);},[refresh]);
   const edit = useCallback(async (command: ConversationTimelineCommand['edit']) => {
     if (!view || pending.current) return;
-    pending.current = true;setBusy(true);setError(null);epoch.current++;
+    pending.current = true;setBusy(true);setEditError(null);epoch.current++;
     try {
       const response = await fetch(path,{method: 'POST',headers: {'content-type': 'application/json'},body: JSON.stringify({sequenceId: view.data.sequenceId,expectedRevision: view.data.revision,idempotencyKey: crypto.randomUUID(),edit: command})});
       const result = await response.json();
       if (!response.ok || !result.ok) throw new Error(result.error ?? 'TIMELINE_UNAVAILABLE');
-    } catch (failure) {if (active.current) setError(failure instanceof Error ? failure.message : 'TIMELINE_UNAVAILABLE');}
+    } catch (failure) {if (active.current) setEditError(failure instanceof Error ? failure.message : 'TIMELINE_UNAVAILABLE');}
     finally {pending.current = false;if (active.current) {setBusy(false);await refresh();}}
   },[path,refresh,view]);
-  return {view,legacy,busy,error,edit,refresh};
+  return {view,legacy,busy,error:editError??error,edit,refresh};
 }

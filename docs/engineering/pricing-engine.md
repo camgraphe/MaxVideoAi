@@ -267,3 +267,14 @@ resolver remains the offline baseline interface. The offer name states the same
 scenario as the visible line; it is not labeled a minimum price. Physical return
 destinations are omitted for digital generations; sales-country applicability and
 the existing consumed-generation policy are unchanged.
+
+## Gated Studio assistance product
+
+Studio assistant usage has a separate dated customer tariff and provider-cost ledger.
+`frontend/server/pricing/quote-studio-assistance.ts` delegates the cumulative
+`client_message` quote to `quoteCanonicalPricing`; it does not change any media or
+MCP quote. Account/campaign reservation, explicit wallet-budget consent and unknown
+usage recovery are documented in [Studio assistance economics](studio-assistance-economics.md).
+The customer tariff is fixed per token category, and all internal calls in a message
+share one upward cent rounding. Provider cache-write uncertainty remains separately
+inspectable. Production activation stays off pending commercial and live qualification.

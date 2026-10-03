@@ -1,8 +1,15 @@
 import type {ImageLibraryAsset} from '@/lib/studio/image-library';
+import type {ConversationReferencePreview} from '@/lib/studio/conversation-reference-previews';
 
 export type ShelfMedia = ImageLibraryAsset & {label: string};
 export type MediaMention = {assetId: string;label: string};
 export const MEDIA_SHELF_DRAG_TYPE = 'application/x-maxvideoai-reference';
+
+/** Preview access grants are presentation only; timeline receives identity and measured facts. */
+export function shelfTimelineAsset(item:ShelfMedia,preview:ConversationReferencePreview|null):ImageLibraryAsset {
+  const matching=preview?.assetId===item.assetId&&preview.kind===(item.kind??'image');
+  return {...item,...(matching&&preview?.mediaFacts?{mediaFacts:preview.mediaFacts}:{})};
+}
 
 export function rememberShelfMedia(items: ShelfMedia[],asset: ImageLibraryAsset,history: readonly MediaMention[]) {
   const previous=items.find(item=>item.assetId===asset.assetId);

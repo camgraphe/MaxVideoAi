@@ -420,7 +420,7 @@ test('the package ships current setup, privacy, workflow, and recovery guides', 
     'claude.md': '2026-08-28',
     'codex.md': '2026-09-16',
     'generic-mcp.md': '2026-08-28',
-    'privacy-and-permissions.md': '2026-09-16',
+    'privacy-and-permissions.md': '2026-10-03',
     'troubleshooting.md': '2026-09-16',
     'how-it-works.md': '2026-09-16',
   };

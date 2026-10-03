@@ -43,7 +43,7 @@ export function registerPrepareMontageTool(
     {
       title: 'Prepare a montage edit plan',
       description:
-        'Validate 2–12 ordered owned video clips and return a contiguous frame-aligned edit plan. Ordering is supplied by the caller, not visual analysis. This does not render media, modify assets, or save an editable Studio project.',
+        'Validate 2–12 ordered owned ready video clips and return a contiguous frame-aligned edit plan. Ordering is supplied by the caller, not visual analysis. This does not render media, modify assets, or save an editable Studio project. It does not return a Studio URL.',
       inputSchema: prepareMontageInputSchema,
       annotations: {
         readOnlyHint: true,

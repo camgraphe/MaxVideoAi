@@ -1,3 +1,8 @@
+import OpenAI from 'openai';
+import type {ResponseCreateParamsNonStreaming} from 'openai/resources/responses/responses';
+import {studioTokenCountInput} from './assistance-token-count';
+import {openStudioAssistanceTurn} from './assistance-ledger';
+import {studioAssistancePolicy,type StudioAssistancePolicy} from './assistance-policy';
 import {prepareStudioTimelineExport,readStudioTimelineExport,asStudioExportAgentError,type StudioExportDependencies} from './conversation-export-command';
 import {withDbTransaction,isTransactionQueryExecutor} from '@/lib/db';
 import {AgentApiError, toAgentApiFailure} from '@/server/agent-api/errors';
@@ -90,12 +95,16 @@ export async function runStudioImageActions(options: {
   references: ResolvedReference[]; referenceFingerprint: string;
   history: ImageConversationHistoryTurn[]; enabled: boolean;
   factory: ImageGenerationFactory; createResponse?: StudioResponseCreator;
+  assistancePolicy?: StudioAssistancePolicy;countInputTokens?: (params: ResponseCreateParamsNonStreaming) => Promise<number>;
   factories?: StudioMediaFactories; mediaEnabled?: boolean;editingEnabled?: boolean;exportsEnabled?: boolean;
   requestOrigin?: string;exportDependencies?: Partial<StudioExportDependencies>;
 }) {
   const {actor, turn, input, factory} = options;
   const generation = factory(actor, {enabled: options.enabled});
-  const director = createStudioConversationDirector({createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled});
+  const policy = options.assistancePolicy ?? studioAssistancePolicy();
+  // Injected response creators are offline qualification seams. Native dispatch always requires the monetary gate.
+  const assistance = policy.enabled || !options.createResponse ? await openStudioAssistanceTurn(actor,turn.request_id,policy) : null;
+  const director = createStudioConversationDirector({model: assistance?.model,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled});
   let currentCallId: string;
   const execute = createStudioActionExecutor(actor, {enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
     attachedImageIds: input.references,
@@ -163,7 +172,13 @@ export async function runStudioImageActions(options: {
   });
   const draft = await director({message: input.message, history: options.history, references: options.references, referenceMentions: input.referenceMentions,
     project: await readStudioConversationProject(actor,{exportsEnabled:options.editingEnabled&&options.exportsEnabled}),
-    checkpoint: (index, create) => checkpointStudioResponse(actor, turn, index, create),
+    checkpoint: (index, create, params) => checkpointStudioResponse(actor, turn, index, create, assistance ? {prepare: async () => {
+      if (!params) throw new AgentApiError('INTERNAL_ERROR','Studio is missing its model request bounds.');
+      if (!options.countInputTokens && options.createResponse) throw new AgentApiError('ENGINE_UNAVAILABLE','Offline Studio metering requires an injected token counter.');
+      const inputTokens = options.countInputTokens ? await options.countInputTokens(params) : (await new OpenAI({apiKey: process.env.OPENAI_API_KEY,maxRetries: 0,timeout: 15000}).responses.inputTokens.count(studioTokenCountInput(params))).input_tokens;
+      if (!Number.isSafeInteger(inputTokens) || inputTokens < 0 || inputTokens > 272000) throw new AgentApiError('PARAMETER_INVALID','This Studio context exceeds the supported assistance limit.');
+      return {policy,inputTokens,outputTokens: params.max_output_tokens ?? 2200};
+    }} : undefined),
     execute: async (callId: string, action: StudioActionRequest): Promise<StudioActionResult> => {
       const prior = await beginStudioAction(actor, turn, callId, action);
       if (prior) return prior;
@@ -189,6 +204,13 @@ export async function runStudioImageActions(options: {
       if ((!action.action.endsWith('.prepare') && action.action !== 'timeline.edit' && action.action !== 'quote.discard') || !result.ok) await completeStudioAction(actor, turn, callId, result);
       return result;
     },
+  }).catch(async (error: unknown) => {
+    if (error instanceof AgentApiError && error.nextAction?.type === 'studio_assistance' && error.nextAction.canStartFollowup === true) {
+      // All prior model calls settled. Close this partial request without replaying its completed actions.
+      // Keeping the original user message and this reply in ready history gives a new explicit follow-up context.
+      await persistImageDraft(actor,turn,{image: null,reply: `${error.message} This message is not finished. Earlier completed work remains saved. Send a follow-up to continue from the current project; do not repeat completed changes.`},options.referenceFingerprint);
+    }
+    throw error;
   });
   if (!draft.image && !draft.media) await persistImageDraft(actor, turn, draft, options.referenceFingerprint);
   return draft;

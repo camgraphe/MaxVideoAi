@@ -13,6 +13,7 @@ export function ImageConversationComposer({
   onOpenLibrary,
   libraryTrigger,
   locale = 'en',
+  readOnly = false,
 }: {
   text: string;
   onTextChange: (text: string) => void;
@@ -21,6 +22,7 @@ export function ImageConversationComposer({
   onOpenLibrary: () => void;
   libraryTrigger: Ref<HTMLButtonElement>;
   locale?: ConversationLocale;
+  readOnly?: boolean;
 }) {
   const t = (en: string, fr: string) => locale === 'fr' ? fr : en;
   const textarea = useRef<HTMLTextAreaElement>(null);
@@ -60,6 +62,7 @@ export function ImageConversationComposer({
         rows={1}
         aria-label={t('Message Studio', 'Message à Studio')}
         value={text}
+        readOnly={readOnly}
         onChange={(event) => onTextChange(event.target.value)}
         placeholder={t('Describe your idea…', 'Décrivez votre idée…')}
         maxLength={4000}

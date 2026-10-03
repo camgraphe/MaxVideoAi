@@ -823,7 +823,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(projectsPageSource, /StudioProjectsPageClient/, 'projects route should delegate to a route-local project creation client');
   assert.match(projectsPageSource, /HeaderBar/, 'projects route should keep the normal app header before entering the editor workspace');
   assert.match(projectsPageSource, /AppSidebar/, 'projects route should keep the normal app sidebar before entering the editor workspace');
-  assert.match(readFileSync(join(root, 'frontend/components/app/app-navigation.ts'), 'utf8'), /id:\s*'studio'[\s\S]*href:\s*'\/app\/studio\/projects'/, 'the current shared navigation owner should expose Studio project selection');
+  assert.match(readFileSync(join(root, 'frontend/components/app/app-navigation.ts'), 'utf8'), /id:\s*'studio'[\s\S]*href:\s*'\/app\/studio'/, 'the shared navigation owner should open Studio directly');
   assert.match(projectsClientSource, /STUDIO_PROJECTS_STORAGE_KEY/, 'projects client should keep a local draft fallback');
   assert.match(projectsClientSource, /\/api\/studio\/projects/, 'projects client should sync projects with the Studio API when available');
   assert.match(projectsClientSource, /authFetch/, 'projects client should use authenticated fetches for project sync');
@@ -1102,10 +1102,8 @@ test('MaxVideoAI Studio owns route-local copy and theme boundaries', () => {
   const exportDialogSource = readFileSync(exportDialogPath, 'utf8');
 
   assert.match(projectsSource, /useI18n\(\)/, 'Studio projects should resolve localized copy from the existing app i18n provider');
-  assert.match(studioThemeHookSource, /DEFAULT_STUDIO_THEME_PREFERENCE: StudioThemePreference = 'light'/, 'Studio editor theme should default to light mode');
-  assert.match(studioThemeHookSource, /useState<StudioThemePreference>\(DEFAULT_STUDIO_THEME_PREFERENCE\)/, 'Studio theme hook should hydrate from the light default before storage is read');
-  assert.match(studioThemeHookSource, /STUDIO_THEME_USER_OVERRIDE_STORAGE_KEY/, 'Studio theme hook should distinguish explicit user choices from the old dark default');
-  assert.doesNotMatch(studioThemeHookSource, /return 'dark';/, 'Studio theme fallback paths should not silently default to dark mode');
+  assert.match(studioThemeHookSource, /useThemePreference/, 'Studio should derive appearance from the shared app preference');
+  assert.doesNotMatch(studioThemeHookSource, /localStorage|matchMedia|documentElement/, 'Studio must not own independent theme persistence, system subscriptions or root mutations');
   assert.match(workspaceSource, /resolveStudioCopy/, 'WorkspacePage should resolve Studio copy once and pass typed props down');
   assert.match(layoutSource, /data-studio-theme/, 'Workspace editor shell should scope light and dark theme through a Studio data attribute');
   assert.match(topbarSource, /studioCopy\.topbar/, 'Workspace topbar should render typed localized copy instead of inline English labels');

@@ -6,6 +6,8 @@
 .tools .timelineToggle {display:flex;align-items:center;gap:8px;padding:0 12px;border-color:transparent;}
 .timelineToggle strong {font-size:12px;font-weight:550;}
 .tools small {font-size:11px;color:var(--studio-muted);}
+.tools .addMedia {display:flex;gap:5px;padding:0 10px;white-space:nowrap;}
+.tools .addMedia span {margin:0;font-size:11px;}
 .monitorRow {position:relative;display:flex;justify-content:center;height:160px;margin-bottom:8px;}
 .monitor {position:relative;overflow:hidden;background:#090a0b;border-radius:10px;max-width:100%;height:100%;}
 .footer .close {position:absolute;top:0;right:0;padding:0;display:grid;place-items:center;}

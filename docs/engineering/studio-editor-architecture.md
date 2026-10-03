@@ -32,6 +32,10 @@ Studio code should stay route-local unless another product surface truly reuses 
 ```txt
 frontend/app/(core)/(workspace)/app/studio/
   AGENTS.md
+  page.tsx
+  _components/
+  _hooks/
+  conversation/[projectId]/
   projects/
   workspace/
 ```
@@ -65,11 +69,21 @@ workspace/
 
 `/studio` is a public, localized, server-rendered, media-driven marketing route. It owns presentation copy, metadata, structured data, and committed product media only; it does not own editor state or execute Studio workflows.
 
-`/app/studio/projects` and the authenticated Studio workspace routes remain the runtime owners for project state and execution. Public landing sections must not import workspace state, React Flow, timeline editing, persistence, generation, or billing modules.
+`/app/studio`, its conversation routes, and the authenticated classic workspace routes remain the runtime owners for project state and execution. Public landing sections must not import workspace state, React Flow, timeline editing, persistence, generation, or billing modules.
 
-Starter query mapping is the only public-to-runtime workflow contract. CTA links use the server-owned handoff at `/api/studio/marketing-entry`, which resolves the existing server session and preserves only an allowlisted starter before redirecting to login or `/app/studio/projects`. The projects entry route validates and consumes that query before creating a guided project; the marketing route does not import persistence clients or call runtime modules directly.
+Starter query mapping is the only public-to-runtime workflow contract. CTA links use the server-owned handoff at `/api/studio/marketing-entry`, which resolves the existing server session and preserves only an allowlisted starter before redirecting to login or `/app/studio` (an allowlisted starter preserves `/app/studio/projects?starter=…`). The projects entry route validates and consumes that query before creating a guided project; the marketing route does not import persistence clients or call runtime modules directly.
 
-Real Studio capture generation belongs to `scripts/capture-studio-marketing-media.ts`. The committed optimized media under `frontend/public/assets/studio/marketing/` is presentation-only and is not canonical project or workspace state.
+Only real, current product captures may be committed under `frontend/public/assets/studio/`. They are presentation data, never canonical project or workspace state. The conversational release uses the isolated connected-project browser fixture; public copy must not advertise a screenshot until its asset exists.
+
+## Conversation entry, assistance and appearance
+
+`page.tsx` authorizes access and reads bounded project summaries through `conversation-project-list.ts`; GET never creates a project. It resumes the newest connected conversation or renders `StudioStart`, which creates one empty conversation via the canonical POST with a durable session-scoped retry identity. A failed summary read is unavailable, not an empty account. `ConversationProjects` lazily opens/searches the same account-owned summaries; Canvas/templates remain at `/app/studio/projects?view=canvas`. Starter and media handoffs keep their existing project entry. Closing a dialog or changing accounts invalidates its pending navigation.
+
+`useThemePreference` owns app appearance and explicit `mv-app-theme` preference. With no explicit preference it follows the OS, defaulting to light when unavailable. The root bootstrap selects the first-paint palette; `AppExperienceRoot` applies/removes the app theme at the app/public boundary. Studio consumes this same preference through its local palette and classic theme adapter. `AppSiteMenu` owns the accessible sun/moon control. Never add a second Studio theme store or dark styling to marketing pages.
+
+`useStudioAssistance` reads the account's versioned usage and sends explicit choices. `StudioAssistance` displays the current tariff, allowance percentages and wallet spending ceiling; it never calculates model costs. `assistance-ledger.ts` owns reservation, frozen request pricing/model, settlement and unresolved exposure. See the assistance economics operating guide for activation and reconciliation. A pre-dispatch refusal may restore a draft after an explicit choice. Partially completed, fully settled work may only start a new follow-up; unresolved calls never become permission to replay or change model. Generation quotes remain separately confirmed.
+
+The media shelf's **Add to timeline** action uses the existing revisioned insertion command and measured media facts. Mention/drop in the composer only attaches a reference. Signed preview grants never enter insertion payloads. Timeline read success must not erase a mutation failure.
 
 ## Ownership Map
 

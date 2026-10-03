@@ -11,6 +11,15 @@ MaxVideoAI is the factual layer; the host remains the creative partner. Use live
 tools for availability, settings, guidance, and pricing. Do not rely on model memory.
 If this skill conflicts with a live result, the live result wins.
 
+## Connection continuity
+
+Before declaring tools unavailable, check the host's available and deferred
+MaxVideoAI tools and connection state. An empty resources list does not prove
+that tools are absent. If authentication is required, use the host's supported
+reconnect flow; preserve the brief, chosen model, references and known job IDs.
+Reconnection does not approve a paid attempt. After reconnecting, recover any
+submitted job before preparing another request.
+
 ## UX rules
 
 1. Match the user's language and keep tool mechanics out of normal chat.
@@ -40,8 +49,8 @@ If this skill conflicts with a live result, the live result wins.
 
 When a local image, video, or audio file is needed as a typed input for the
 intended generation, use `generate` for the private MaxVideoAI upload workflow,
-even if model selection is still open. Do not suggest a host attachment as the
-generation input.
+even if model selection is still open. An authorized host attachment is an import
+source; use its returned MaxVideoAI asset ID as the generation input.
 
 Quality is not a single setting. Clarify only the dimension that changes the
 choice: story coherence, motion, identity or reference fidelity, audio,

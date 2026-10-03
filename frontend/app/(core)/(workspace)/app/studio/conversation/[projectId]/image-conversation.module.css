@@ -15,7 +15,7 @@
   color: var(--studio-text);
   overflow: hidden;
 }
-.studio[data-tone="olive"] {
+:global(:root:not([data-theme="dark"])) .studio {
   color-scheme: light;
   --studio-bg: #f2f0e6;
   --studio-panel: #e7e6dc;
@@ -541,3 +541,5 @@
 @media(max-width:1100px) {
  .conversation[data-empty="true"] {padding-bottom:3vh;}
 }
+
+.assistanceNote {margin:8px 0;color:var(--studio-muted);font-size:11px;line-height:1.65;}.assistanceNote button{font-size:11px;padding:3px 8px;border:0;text-decoration:underline;text-underline-offset:3px;min-height:36px;color:var(--studio-accent);}

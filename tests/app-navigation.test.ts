@@ -42,7 +42,7 @@ test('every existing destination keeps a named complete-menu path and tools obey
   assert.deepEqual(getAppNavigationSelection('/app/studio/workspace/project_123', true, true), { primary: 'studio', activity: null });
   assert.ok(getAppMenuItems(false, true).every((item) => !item.href.startsWith('/app/tools')));
   assert.deepEqual(getAppNavigationSelection('/app/tools/angle', false), { primary: null, activity: null });
-  assert.ok(menu.some((item) => item.id === 'studio' && item.href === '/app/studio/projects'));
+  assert.ok(menu.some((item) => item.id === 'studio' && item.href === '/app/studio'));
   assert.ok(getAppMenuItems(true, false).every((item) => item.id !== 'studio'));
 });
 

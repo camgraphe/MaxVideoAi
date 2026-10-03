@@ -1,3 +1,5 @@
+import {assistanceError, reserveStudioAssistanceCall, settleStudioAssistanceCall, markStudioAssistanceUnknown, type AssistanceCall} from './assistance-ledger';
+import type {StudioAssistancePolicy} from './assistance-policy';
 import {studioPreparedExportSchema} from '@/lib/studio/conversation-export-contract';
 import {createHash} from 'node:crypto';
 import {query, withDbTransaction, type TransactionQueryExecutor} from '@/lib/db';
@@ -86,16 +88,27 @@ export async function completeStudioAction(actor: StudioGenerationActor, turn: S
 }
 
 /** Checkpoint each paid text request before dispatch and its complete output before any action. */
-export async function checkpointStudioResponse(actor: StudioGenerationActor, turn: StoredImageTurn, index: number, create: () => Promise<StudioDirectorResponse>): Promise<StudioDirectorResponse> {
+export async function checkpointStudioResponse(actor: StudioGenerationActor, turn: StoredImageTurn, index: number, create: () => Promise<StudioDirectorResponse>, meter?: {prepare(): Promise<{inputTokens: number;outputTokens: number;policy: StudioAssistancePolicy}>}): Promise<StudioDirectorResponse> {
   const scope = [actor.userId, actor.projectId, turn.request_id, turn.lease_id, index];
   const prior = (await query<{response_json: StudioDirectorResponse}>(`SELECT response_json FROM studio_conversation_responses
     WHERE user_id=$1 AND project_id=$2 AND request_id=$3 AND response_index=$4 AND state='reported' ORDER BY created_at DESC LIMIT 1`, [actor.userId, actor.projectId, turn.request_id, index]))[0];
-  if (prior && isReplayableStudioResponse(prior.response_json)) return prior.response_json;
-  const start = await query(`INSERT INTO studio_conversation_responses (user_id,project_id,request_id,lease_id,response_index)
+  if (prior) {
+    if (meter) {
+      const savedCall = (await query<{id: string}>(`SELECT id FROM studio_assistance_calls WHERE user_id=$1 AND project_id=$2 AND request_id=$3 AND response_index=$4 AND (response_id=$5 OR state<>'settled') ORDER BY created_at DESC LIMIT 1`, [actor.userId,actor.projectId,turn.request_id,index,prior.response_json.id]))[0];
+      if (savedCall && !await settleStudioAssistanceCall(savedCall.id,actor.userId,prior.response_json)) assistanceError('usage_unresolved','Provider usage for this saved response is unresolved.');
+    }
+    if (isReplayableStudioResponse(prior.response_json)) return prior.response_json;
+  }
+  const bounds = await meter?.prepare();
+  let assistanceCall: AssistanceCall | undefined;
+  await withDbTransaction(async tx => {
+    const start = await tx.query(`INSERT INTO studio_conversation_responses (user_id,project_id,request_id,lease_id,response_index)
     SELECT user_id,project_id,request_id,lease_id,$5 FROM studio_image_turns t WHERE user_id=$1 AND project_id=$2 AND request_id=$3 AND lease_id=$4 AND state='thinking'
       AND EXISTS (SELECT 1 FROM studio_projects p WHERE p.id=t.project_id AND p.user_id=t.user_id AND p.deleted_at IS NULL)
     ON CONFLICT DO NOTHING RETURNING lease_id`, scope);
-  if (!start.length) throw new AgentApiError('PARAMETER_INVALID', 'This model step is already in progress or superseded.');
+    if (!start.length) throw new AgentApiError('PARAMETER_INVALID', 'This model step is already in progress or superseded.');
+    if (bounds) assistanceCall = await reserveStudioAssistanceCall({userId: actor.userId,projectId: actor.projectId,requestId: turn.request_id,leaseId: turn.lease_id,index,inputTokens: bounds.inputTokens,outputTokens: bounds.outputTokens},bounds.policy,tx);
+  });
   const began = performance.now();
   try {
     const response = await create();
@@ -104,8 +117,10 @@ export async function checkpointStudioResponse(actor: StudioGenerationActor, tur
       [...scope, response.id, JSON.stringify({id: response.id, model: response.model, status: response.status, service_tier: response.service_tier ?? null,
         usage: response.usage ?? null, output_text: response.output_text, output: response.output,incomplete_details: response.incomplete_details ?? null}), Math.round(performance.now() - began)]);
     if (!saved.length) throw new AgentApiError('INTERNAL_ERROR', 'The model response could not be saved. No action was performed.');
+    if (assistanceCall && !await settleStudioAssistanceCall(assistanceCall.id,actor.userId,response)) assistanceError('usage_unresolved','Provider usage for this response is unresolved.');
     return response;
   } catch (error) {
+    if (assistanceCall) {try {await markStudioAssistanceUnknown(assistanceCall.id,actor.userId);} catch {/* Preserve reserved exposure if storage is unavailable. */}}
     try { await query(`UPDATE studio_conversation_responses SET state='unknown' WHERE user_id=$1 AND project_id=$2 AND request_id=$3 AND lease_id=$4 AND response_index=$5 AND state='started'`, scope); }
     catch { /* Keep unresolved started evidence; do not label it zero or repeat the call. */ }
     throw error;

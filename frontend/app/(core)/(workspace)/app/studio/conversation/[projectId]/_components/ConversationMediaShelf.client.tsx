@@ -3,12 +3,14 @@
 import {Layers3, Minus, Plus} from 'lucide-react';
 import type {ConversationLocale} from '@/lib/studio/conversation-quote-presentation';
 import type {ShelfMedia} from '../_lib/conversation-media-shelf';
+import type {ImageLibraryAsset} from '@/lib/studio/image-library';
 import {ConversationReferenceCard} from './ConversationReferenceCard.client';
 import styles from '../conversation-media-shelf.module.css';
 
-export function ConversationMediaShelf({projectId, items, selectedId, expanded, attachedIds, locale, onSelect, onToggle, onMention, onAttach, onDetach}: {
+export function ConversationMediaShelf({projectId, items, selectedId, expanded, attachedIds, locale, onSelect, onToggle, onMention, onAttach, onDetach,onInsert}: {
   projectId: string; items: ShelfMedia[]; selectedId: string | null; expanded: boolean; attachedIds: string[]; locale: ConversationLocale;
   onSelect: (id: string) => void; onToggle: () => void; onMention: (item: ShelfMedia) => void; onAttach: (item: ShelfMedia) => void; onDetach: (item: ShelfMedia) => void;
+  onInsert?: (item:ImageLibraryAsset)=>void;
 }) {
   const t = (en: string, fr: string) => locale === 'fr' ? fr : en;
   if (!items.length) return null;
@@ -23,7 +25,7 @@ export function ConversationMediaShelf({projectId, items, selectedId, expanded, 
     </div>
     <div id="studio-media-shelf-content" className={styles.content}>
       {visible.map(item => <ConversationReferenceCard key={item.assetId} projectId={projectId} item={item} active={item.assetId === selected.assetId} compact={!expanded} attached={attachedIds.includes(item.assetId)} locale={locale}
-        onSelect={() => {onSelect(item.assetId); if (!expanded) onToggle();}} onMention={() => onMention(item)} onAttach={() => onAttach(item)} onDetach={() => onDetach(item)}/>)}
+        onSelect={() => {onSelect(item.assetId); if (!expanded) onToggle();}} onMention={() => onMention(item)} onAttach={() => onAttach(item)} onDetach={() => onDetach(item)} onInsert={onInsert}/>)}
     </div>
   </aside>;
 }

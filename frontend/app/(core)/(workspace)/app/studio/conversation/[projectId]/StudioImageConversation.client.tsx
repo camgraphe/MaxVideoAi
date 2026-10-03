@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { Sun, Moon, HelpCircle, ArrowDown, FolderOpen, X, ImagePlus } from "lucide-react";
+import { HelpCircle, ArrowDown, X, ImagePlus } from "lucide-react";
+import {useStudioAssistance} from './_hooks/useStudioAssistance';
+import {StudioAssistance} from './_components/StudioAssistance.client';
 import { useImageConversation } from "./_hooks/useImageConversation";
 import {ConversationExportQuote} from "./_components/ConversationExportQuote.client";
 import { ImageQuoteCard } from "./_components/ImageQuoteCard.client";
@@ -18,6 +19,7 @@ import {useConversationExports} from './_hooks/useConversationExports';
 import {ConversationRenderCards} from './_components/ConversationRenderCards.client';
 import {imageTurnRetryInput} from '@/lib/studio/image-conversation-contract';
 import {useThemePreference} from '@/hooks/useThemePreference';
+import {ConversationProjects} from '../../_components/ConversationProjects.client';
 import {ConversationWelcome} from './_components/ConversationWelcome.client';
 import {ConversationHelp} from './_components/ConversationHelp.client';
 import {ConversationReply} from './_components/ConversationReply';
@@ -47,6 +49,11 @@ function StudioImageConversationWorkspace({
   const locale = appLocale === 'fr' ? 'fr' : 'en';
   const t = (en: string, fr: string) => locale === 'fr' ? fr : en;
   const studio = useImageConversation(projectId, accountKey, projectName, locale);
+  const assistance=useStudioAssistance(accountKey,studio.busy);
+  const [budgetPrompt,setBudgetPrompt]=useState(0);
+  const [followupNotice,setFollowupNotice]=useState(false);
+  const assistanceBlocked=!!assistance.status?.enabled&&!assistance.status.canContinue;
+  const luna=assistance.status?.enabled&&assistance.status.mode==='sponsored_luna';
   const exports = useConversationExports(projectId,exportsEnabled);
   const [help, setHelp] = useState(false);
   const [following, setFollowing] = useState(true);
@@ -61,7 +68,7 @@ function StudioImageConversationWorkspace({
   const [library, setLibrary] = useState(false);
   const [libraryPurpose,setLibraryPurpose] = useState<'reference'|'timeline'>('reference');
   const [timelineInsertion,setTimelineInsertion] = useState<{key: string;asset: ImageLibraryAsset} | null>(null);
-  const {resolvedTheme,toggleTheme} = useThemePreference();
+  const {resolvedTheme} = useThemePreference();
   const tone = resolvedTheme === 'light' ? 'olive' : 'charcoal';
   const libraryTrigger = useRef<HTMLButtonElement>(null);
   const libraryWasOpen = useRef(false);
@@ -98,8 +105,15 @@ function StudioImageConversationWorkspace({
     requestAnimationFrame(()=>{textarea?.focus();textarea?.setSelectionRange(inserted.caret,inserted.caret);});
   }
   function detach(item:ShelfMedia) {shelf.detach(item.assetId);setText(current=>removeMediaMention(current,item.label));}
+  function afterAssistanceChoice() {
+    if(studio.pending&&studio.assistanceAction?.safeToStartNewRequest) {
+      setText(studio.pending.message);shelf.restore(studio.pending);studio.discardPending();
+    } else if(studio.pending&&studio.assistanceAction?.canStartFollowup) {
+      studio.discardPending();setFollowupNotice(true);
+    }
+  }
   async function send() {
-    if (!text.trim() || studio.loading || studio.busy || studio.pending || shelf.uploading || unavailableReferences) return;
+    if (assistanceBlocked || !text.trim() || studio.loading || studio.busy || studio.pending || shelf.uploading || unavailableReferences) return;
     const input = {
       requestId: crypto.randomUUID(),
       message: text,
@@ -107,7 +121,7 @@ function StudioImageConversationWorkspace({
       ...(references.length ? {referenceMentions:references.map(ref=>({assetId:ref.assetId,label:ref.label}))} : {}),
       ...(mediaEnabled ? {attachments: references.filter(ref => ref.kind === 'video' || ref.kind === 'audio').map(ref => ({type: 'asset' as const, assetId: ref.assetId, kind: ref.kind as 'video' | 'audio'}))} : {}),
     };
-    setText("");
+    setText("");setFollowupNotice(false);
     shelf.clear();
     follow.current = true;
     await studio.submit(input);
@@ -124,16 +138,9 @@ function StudioImageConversationWorkspace({
           <span>{projectName}</span>
         </div>
         <div className={styles.headerActions}>
-          <Link href="/app/studio/projects" aria-label={t('My projects','Mes projets')} className={styles.projectsLink}><FolderOpen size={16} aria-hidden="true"/><span>{t('My projects', 'Mes projets')}</span></Link>
+          <StudioAssistance {...assistance} locale={locale} conversationBusy={studio.busy} onChoice={afterAssistanceChoice} openSignal={budgetPrompt}/>
           <button ref={helpTrigger} aria-label={t('Studio help','Aide Studio')} onClick={() => setHelp(true)}><HelpCircle size={18}/></button>
-          <button
-            aria-label={
-              tone === "charcoal" ? t('Switch to Olive', 'Passer en Olive') : t('Switch to Charcoal', 'Passer en Charbon')
-            }
-            onClick={toggleTheme}
-          >
-            {tone === "charcoal" ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
+          <ConversationProjects accountKey={accountKey} currentProjectId={projectId} locale={locale}/>
         </div>
       </header>
       <div className={styles.canvas} data-has-media={shelf.items.length>0} data-dropping={dropping}
@@ -185,6 +192,7 @@ function StudioImageConversationWorkspace({
                     {t('Resume this exchange', 'Reprendre cet échange')}
                   </button>
                 )}
+                {luna&&turn.quote&&<p className={styles.assistanceNote}>{t('Luna is active. For more nuanced creative direction, switch to Sol before refining your next request.','Luna est actif. Pour une direction créative plus fine, passez à Sol avant d’affiner votre prochaine demande.')} <button onClick={()=>setBudgetPrompt(value=>value+1)}>{t('Use Sol','Utiliser Sol')}</button></p>}
                 <ImageQuoteCard
                   turn={turn}
                   busy={studio.busy}
@@ -241,16 +249,18 @@ function StudioImageConversationWorkspace({
                 {studio.error ??
                   t('An exchange is pending. Resume it or edit your request.', 'Un échange est resté en attente. Vous pouvez le reprendre ou le modifier.')}
               </p>
+              {studio.assistanceAction&&<button onClick={()=>setBudgetPrompt(value=>value+1)}>{t('Manage assistance','Gérer l’assistance')}</button>}
+              {studio.pending&&<button disabled={studio.busy} onClick={()=>void studio.refresh()}>{t('Check result','Vérifier le résultat')}</button>}
               {studio.pending ? (
                 <>
                   <button
-                    disabled={studio.busy}
+                    disabled={studio.busy || !!studio.assistanceAction}
                     onClick={() => void studio.submit(studio.pending!)}
                   >
                     {t('Resume exchange', 'Reprendre l’échange')}
                   </button>
                   <button
-                    disabled={studio.busy}
+                    disabled={studio.busy || (!!studio.assistanceAction&&!studio.assistanceAction.safeToStartNewRequest)}
                     onClick={() => {
                       const saved = studio.pending!;
                       setText(saved.message);
@@ -271,6 +281,8 @@ function StudioImageConversationWorkspace({
               )}
             </div>
           )}
+          {assistanceBlocked&&!studio.assistanceAction&&<div className={styles.assistanceNote} role="status"><span>{t('Your assistance allowance needs attention. Choose how to continue.','Votre allocation d’assistance nécessite votre attention. Choisissez comment continuer.')}</span><button onClick={()=>setBudgetPrompt(value=>value+1)}>{t('See options','Voir les options')}</button></div>}
+          {followupNotice&&<p className={styles.assistanceNote} role="status">{t('Some work may already be saved. Send a follow-up to continue from your current project. Your original request will not be replayed.','Une partie du travail peut déjà être enregistrée. Envoyez un nouveau message pour continuer à partir du projet actuel. La demande initiale ne sera pas rejouée.')}</p>}
           {!!references.length && (
             <div className={styles.attachments} aria-label={t('Attached to next message','Joints au prochain message')}>
               {references.map((ref) => (
@@ -287,17 +299,17 @@ function StudioImageConversationWorkspace({
             text={text}
             onTextChange={setText}
             onSend={() => void send()}
-            blocked={studio.loading || studio.busy || !!studio.pending || shelf.uploading || unavailableReferences}
+            blocked={assistanceBlocked || studio.loading || studio.busy || !!studio.pending || shelf.uploading || unavailableReferences}
             libraryTrigger={libraryTrigger}
             onOpenLibrary={openReferences}
             locale={locale}
           />
           </div>
           <p className={styles.footnote}>
-            {t('Drop a reference. Follow an idea.', 'Déposez une référence. Suivez une idée.')}
+            {luna?t('Luna is active · Included assistance. Sol offers stronger creative guidance.','Luna est actif · Assistance incluse. Sol offre des conseils créatifs plus approfondis.'):t('Drop a reference. Follow an idea.', 'Déposez une référence. Suivez une idée.')}
           </p>
         </div>
-        <ConversationMediaShelf projectId={projectId} items={shelf.items} selectedId={shelf.selectedId} expanded={shelf.expanded} attachedIds={references.map(ref=>ref.assetId)} locale={locale} onSelect={shelf.setSelectedId} onToggle={()=>shelf.setExpanded(current=>!current)} onMention={mention} onAttach={shelf.attach} onDetach={detach}/>
+        <ConversationMediaShelf projectId={projectId} items={shelf.items} selectedId={shelf.selectedId} expanded={shelf.expanded} attachedIds={references.map(ref=>ref.assetId)} locale={locale} onSelect={shelf.setSelectedId} onToggle={()=>shelf.setExpanded(current=>!current)} onMention={mention} onAttach={shelf.attach} onDetach={detach} onInsert={editingEnabled?asset=>setTimelineInsertion({key:crypto.randomUUID(),asset}):undefined}/>
       </div>
       {editingEnabled && <ConversationTimeline projectId={projectId} projectName={projectName} refreshKey={studio.conversation} insertion={timelineInsertion} onOpenLibrary={() => {setLibraryPurpose('timeline');setLibrary(true);}} exportAvailable={exportAvailable} exportPending={exports.working} exportJobs={exports.jobs} onExportChange={exports.refresh}/>}
       {help && <ConversationHelp locale={locale} editingEnabled={editingEnabled} onClose={() => setHelp(false)} trigger={helpTrigger}/>}

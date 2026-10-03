@@ -40,7 +40,7 @@ export type MarketingNavDropdown = {
   heading?: string;
 };
 
-export type MarketingTopNavKey = 'models' | 'examples' | 'tools' | 'compare' | 'pricing' | 'blog' | 'connect';
+export type MarketingTopNavKey = 'models' | 'examples' | 'tools' | 'compare' | 'pricing' | 'blog' | 'connect' | 'studio';
 
 export type MarketingTopNavLink = {
   key: MarketingTopNavKey;
@@ -57,6 +57,7 @@ export const MARKETING_TOP_NAV_LINKS = [
 ] as const satisfies readonly MarketingTopNavLink[];
 
 export const MARKETING_SITE_NAV_LINKS: readonly MarketingTopNavLink[] = [
+  { key: 'studio', href: '/studio' },
   ...MARKETING_TOP_NAV_LINKS.filter((item) => item.key !== 'blog' && item.key !== 'pricing'),
   { key: 'connect', href: '/mcp' },
   { key: 'pricing', href: '/pricing' },

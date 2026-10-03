@@ -114,7 +114,7 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
       <button className={styles.timelineToggle} aria-expanded={timelineExpanded} aria-controls="studio-timeline-tracks" aria-label={timelineExpanded ? t('Collapse timeline','Replier la timeline') : t('Open timeline','Ouvrir la timeline')} onClick={() => {if(timelineExpanded) closeMonitor();setExpanded(!timelineExpanded);}}>{timelineExpanded ? <PanelBottomClose size={16}/> : <PanelBottomOpen size={16}/>}<strong>{t('Timeline','Timeline')}</strong></button>
       <button disabled={!items.length} aria-label={playback.isTimelinePlaying ? t('Pause film','Mettre le film en pause') : t('Play film','Lire le film')} onClick={() => {openMonitor();playback.handleToggleTimelinePlayback();}}>{playback.isTimelinePlaying ? <Pause size={17}/> : <Play size={17}/>}</button>
       <span>{playback.playheadSec.toFixed(1)} / {duration.toFixed(1)} s</span>
-      <button disabled={!timeline.view || timeline.busy} aria-label={t('Add library media to film','Ajouter un média de la bibliothèque au film')} onClick={onOpenLibrary}><Plus size={17}/></button>
+      <button className={styles.addMedia} disabled={!timeline.view || timeline.busy} aria-label={t('Add library media to film','Ajouter un média de la bibliothèque au film')} title={t('Add media to timeline','Ajouter un média à la timeline')} onClick={onOpenLibrary}><Plus size={15}/><span>{t('Add media','Ajouter')}</span></button>
       {!!items.length && <button aria-label={monitor ? t('Collapse monitor','Replier le moniteur') : t('Open monitor','Ouvrir le moniteur')} onClick={() => monitor ? closeMonitor() : openMonitor()}>{monitor ? <ChevronDown size={17}/> : <ChevronUp size={17}/>}</button>}
       {timeline.busy && <small role="status">{t('Saving…','Enregistrement…')}</small>}
       {exportAvailable && timeline.view && <ConversationExport projectId={projectId} projectName={projectName} view={timeline.view} pending={exportPending || timeline.busy} jobs={exportJobs} onChange={onExportChange}/>}
@@ -128,7 +128,7 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
             {(['start','end'] as const).map(edge => <button key={edge} className={styles.handle} data-edge={edge} aria-label={`${t('Trim','Couper')} ${edge} · ${item.title}`} disabled={timeline.busy} onPointerDown={event => startDrag(event,item,edge)} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={() => {drag.current = null;setPreview(null);}} onClick={event => event.stopPropagation()}/>) }
           </div>;})}
         </div>)}
-        {!items.length && <p className={styles.empty}>{t('Add media when you’re ready to put a sequence together.','Ajoutez des médias pour commencer votre montage.')}</p>}
+        {!items.length && <p className={styles.empty}>{t('Bring a reference into the timeline, or add media from your library.','Ajoutez une référence à la timeline ou un média de votre bibliothèque.')}</p>}
         {!!items.length && <div className={styles.playhead} style={{left: playback.playheadSec*pixelsPerSecond}}/>}
       </div>
     </div>

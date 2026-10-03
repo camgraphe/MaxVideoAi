@@ -64,7 +64,21 @@ export function registerRecommendModelsTool(
     {
       title: 'Recommend MaxVideoAI models',
       description:
-        'Use this when the user is undecided, asks for advice, or wants a best-fit generation-enabled model plus meaningful alternatives, matched to a creative goal, factual capabilities and dated editorialGuidance. Reference, alternative and on_request levels are product preferences, not measured quality scores; inspect review status and exact model details. Every optional constraint is represented by a nullable field: send null when the user did not state it, never a placeholder. Ask only about missing goals, preferences, or budget; use calculate_project_budget before calling an alternative cheaper or lower-cost. Do not use it when the user already chose a compatible model and only wants validation, pricing, or execution. Do not use it as an exact quote, a generation command, or a claim that a provider will accept a job.',
+        [
+        'Use this when the user is undecided or asks for advice on which AI video/image model fits a creative goal.',
+        'Present the best-fit available executable model first, then strong alternatives from distinct model families when useful.',
+        'Validate the selected mode with get_model_details.',
+        'Nullable constraints must be null or omitted when unstated, never placeholders.',
+        'Ask only for missing choices that change the result or budget.',
+        'Clarify whether quality means story coherence, multi-shot continuity, reference/character fidelity, motion, audio or delivery resolution; never rank creative quality by resolution alone.',
+        'Use calculate_project_budget on comparable proposals before calling an option cheaper or lower-cost.',
+        'Mix models only when each shot has a factual rationale; do not force diversity or dilute a quality-first plan.',
+        'Do not use when the user already chose a compatible model for validation, pricing or execution.',
+        'Never substitute a named model without user approval.',
+        'Use returned editorialGuidance: reference entries are reviewed starting points, alternative entries serve meaningful tradeoffs, and on_request entries are for explicit requests. Inspect reviewStatus, reviewedAt, rationale and provenance. Editorial preference is not measured quality or execution certification; a new version never inherits a review from its family.',
+        'An idea, a prompt or a single asset can be a complete outcome; do not require a film or a multi-step recipe.',
+        'Recommendations are capability matches with disclosed editorial preference. Do not use as an exact quote, generation command or guarantee that a provider will accept a request. Respect executable constraints and the user’s choice.',
+      ].join(' '),
       inputSchema: recommendModelsInputSchema,
       annotations: {
         readOnlyHint: true,

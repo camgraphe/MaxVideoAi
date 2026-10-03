@@ -63,6 +63,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     items: [
       { id: 'insights', label: 'Insights', href: '/admin/insights', icon: 'insights' },
       { id: 'mcp', label: 'MCP acquisition', href: '/admin/mcp', icon: 'insights' },
+      { id: 'studio-review', label: 'Studio interactions', href: '/admin/studio', icon: 'audit' },
       { id: 'gsc-seo', label: 'SEO cockpit', href: '/admin/seo/cockpit', icon: 'search' },
     ],
   },

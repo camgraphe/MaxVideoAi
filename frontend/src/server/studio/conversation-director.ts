@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import type {StudioAssistantModel} from '@/lib/studio/assistance-contract';
 import {buildStudioDirectorInstructions} from './conversation-director-instructions';
 import {STUDIO_EXPORT_DIRECTOR_TOOLS} from '@/lib/studio/conversation-export-contract';
 import type { Response, ResponseCreateParamsNonStreaming, ResponseInputItem } from 'openai/resources/responses/responses';
@@ -21,7 +22,7 @@ export type StudioDirectorContext = {
   history: ImageConversationHistoryTurn[];
   project: StudioConversationProject;
   execute(callId: string, request: StudioActionRequest): Promise<StudioActionResult>;
-  checkpoint(index: number, create: () => Promise<StudioDirectorResponse>): Promise<StudioDirectorResponse>;
+  checkpoint(index: number, create: () => Promise<StudioDirectorResponse>, params?: ResponseCreateParamsNonStreaming): Promise<StudioDirectorResponse>;
 };
 const replySchema = z.object({reply: z.string().min(1).max(2400)}).strict();
 function pendingDirectorReply(reason: 'action_limit'|'output_limit',completedEdits: number,lastResult?: StudioActionResult): ImageDraft {
@@ -47,7 +48,7 @@ export function isReplayableStudioResponse(response: StudioDirectorResponse): bo
 }
 
 /** The model chooses the next action; identity, billing and executable capabilities stay server-owned. */
-export function createStudioConversationDirector(options: {createResponse?: StudioResponseCreator; mediaEnabled?: boolean;editingEnabled?: boolean;exportsEnabled?: boolean} = {}) {
+export function createStudioConversationDirector(options: {model?: StudioAssistantModel;createResponse?: StudioResponseCreator; mediaEnabled?: boolean;editingEnabled?: boolean;exportsEnabled?: boolean} = {}) {
   return async (context: StudioDirectorContext): Promise<ImageDraft> => {
     if (!options.createResponse && !process.env.OPENAI_API_KEY)
       throw new AgentApiError('ENGINE_UNAVAILABLE', 'Studio conversation is not configured.');
@@ -66,8 +67,8 @@ export function createStudioConversationDirector(options: {createResponse?: Stud
       // Every existing tool remains available within the same four-call budget.
       // If the final call acts, durable receipts supply a truthful pending summary.
       const tools = [...STUDIO_DIRECTOR_TOOLS, ...(options.mediaEnabled ? STUDIO_MEDIA_DIRECTOR_TOOLS : []),...(options.editingEnabled ? STUDIO_EDITING_DIRECTOR_TOOLS : []),...(options.exportsEnabled ? STUDIO_EXPORT_DIRECTOR_TOOLS : [])];
-      const response = await context.checkpoint(index, () => create({
-        model: 'gpt-6.1-sol', store: false, reasoning: {effort: 'medium'}, max_output_tokens: 2200,
+      const params: ResponseCreateParamsNonStreaming = {
+        model: options.model ?? 'gpt-6.1-sol', service_tier: 'default', store: false, reasoning: {effort: 'medium'}, max_output_tokens: 2200,
         include: ['reasoning.encrypted_content'],
         parallel_tool_calls: false,
         tool_choice: 'auto',
@@ -76,7 +77,8 @@ export function createStudioConversationDirector(options: {createResponse?: Stud
         tools: tools.map(tool => ({type: 'function' as const, name: tool.name, description: tool.description, strict: true,
           parameters: {type: 'object', additionalProperties: false, properties: tool.properties, required: Object.keys(tool.properties)}})),
         text: {format: {type: 'json_schema', name: 'studio_reply', strict: true, schema: {type: 'object', additionalProperties: false, required: ['reply'], properties: {reply: {type: 'string'}}}}},
-      }));
+      };
+      const response = await context.checkpoint(index, () => create(params), params);
       if (response.status !== 'completed') {
         if (response.status === 'incomplete' && response.incomplete_details?.reason === 'max_output_tokens')
           return pendingDirectorReply('output_limit',completedEdits,lastResult);

@@ -79,8 +79,8 @@ the workspace. Raw media URLs cannot satisfy that contract.
 
 ## Specialized workflows still closed
 
-One app-published model-mode pair and two unpublished prelaunch pairs remain
-intentionally absent from MCP execution:
+Three app-published model-mode pairs remain intentionally absent from MCP
+execution. Publication of a model does not make every schema mode executable:
 
 | Model | Mode | Scope | Why it remains closed |
 | --- | --- | --- | --- |

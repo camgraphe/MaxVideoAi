@@ -7,7 +7,6 @@ import { useHeaderAccountState } from '@/components/header/useHeaderAccountState
 import { buildAuthReturnTarget, buildLoginHref } from '@/lib/auth-entry-href';
 import { StudioHeaderSession } from './StudioHeaderSession';
 import type { WorkspaceEditorSurface, WorkspaceFocusMode } from '../_state/workspace-state';
-import type { useStudioThemeMode } from '../../_hooks/useStudioThemeMode';
 import { localizeStudioGeneratedProjectDisplayName, type StudioCopy } from '../../_lib/studio-copy';
 import baseStyles from '../maxvideoai-editor.module.css';
 import shellStyles from '../_styles/shell.module.css';
@@ -23,7 +22,6 @@ type WorkspaceEditorTopbarProps = {
   onExitToProjects: () => void;
   onFocusModeChange: (focusMode: WorkspaceFocusMode) => void;
   studioCopy: StudioCopy;
-  studioTheme: ReturnType<typeof useStudioThemeMode>;
 };
 
 export function WorkspaceEditorTopbar({
@@ -35,7 +33,6 @@ export function WorkspaceEditorTopbar({
   onExitToProjects,
   onFocusModeChange,
   studioCopy,
-  studioTheme,
 }: WorkspaceEditorTopbarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -44,9 +41,6 @@ export function WorkspaceEditorTopbar({
   const authReturnTarget = buildAuthReturnTarget(pathname, searchParams);
   const signinHref = buildLoginHref({ mode: 'signin', nextPath: authReturnTarget });
   const signupHref = buildLoginHref({ mode: 'signup', nextPath: authReturnTarget });
-  const themeToggleLabel = studioTheme.resolvedTheme === 'light'
-    ? studioCopy.topbar.switchToDark
-    : studioCopy.topbar.switchToLight;
 
   return (
     <header className={styles.editorTopbar}>
@@ -57,8 +51,6 @@ export function WorkspaceEditorTopbar({
           isAdmin={account.isAdmin}
           signinHref={signinHref}
           signupHref={signupHref}
-          themeToggleLabel={themeToggleLabel}
-          onToggleTheme={studioTheme.toggleResolvedTheme}
           onSignOut={account.signOut}
           onAppNavigate={onAppNavigate}
           studioVisible

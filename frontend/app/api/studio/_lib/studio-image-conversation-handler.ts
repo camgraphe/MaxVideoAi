@@ -119,7 +119,7 @@ export async function handleStudioImageConversation(
       const status =
         error.code === "QUOTE_EXPIRED"
           ? 409
-          : error.code === "INSUFFICIENT_FUNDS"
+          : error.code === "INSUFFICIENT_FUNDS" || error.code === "SPENDING_LIMIT_EXCEEDED"
             ? 402
             : error.code === "RATE_LIMITED"
               ? 429
@@ -133,6 +133,7 @@ export async function handleStudioImageConversation(
           error: error.code,
           message: error.message,
           retryable: error.retryable,
+          nextAction: error.nextAction,
         },
         { status },
       );

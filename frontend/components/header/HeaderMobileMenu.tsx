@@ -2,7 +2,7 @@
 
 import clsx from 'clsx';
 import Link from 'next/link';
-import { ChevronDown, Moon, Sun } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
 import { NAV_ITEMS, NAV_ICON_MAP } from '@/components/AppSidebar';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
@@ -29,11 +29,8 @@ type HeaderMobileMenuProps = {
   mobileDropdownOpen: Record<string, boolean>;
   pathname: string | null;
   t: HeaderTranslate;
-  theme: 'light' | 'dark';
-  themeToggleLabel?: string;
   onClose: () => void;
   onToggleDropdown: (key: string) => void;
-  onToggleTheme: () => void;
 };
 
 export function HeaderMobileMenu({
@@ -46,11 +43,8 @@ export function HeaderMobileMenu({
   mobileDropdownOpen,
   pathname,
   t,
-  theme,
-  themeToggleLabel,
   onClose,
   onToggleDropdown,
-  onToggleTheme,
 }: HeaderMobileMenuProps) {
   const { dialogRef, onDialogKeyDown } = useAccessibleModal({ onClose });
   return (
@@ -82,18 +76,6 @@ export function HeaderMobileMenu({
       <div className="mx-auto mt-5 max-w-sm stack-gap-lg">
         <div className="flex justify-end gap-2">
           <AppLanguageToggle />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-9 w-9 p-0 text-text-primary hover:bg-surface-2"
-            aria-label={themeToggleLabel ?? (theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme')}
-            onClick={onToggleTheme}
-          >
-            <span className="inline-flex h-4 w-4 items-center justify-center">
-              <UIIcon icon={theme === 'dark' ? Sun : Moon} size={16} strokeWidth={1.75} />
-            </span>
-          </Button>
         </div>
         <nav className="flex flex-col gap-3 text-base font-semibold text-text-primary">
           {(

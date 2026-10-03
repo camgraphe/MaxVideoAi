@@ -10,6 +10,15 @@ Take one concrete request from references through delivery while preserving a
 strict paid-action boundary. Live tool results are authoritative for the model
 contract, account, quote, job, and destination.
 
+## Connection continuity
+
+Before declaring tools unavailable, check the host's available and deferred
+MaxVideoAI tools and connection state. An empty resources list does not prove
+that tools are absent. If authentication is required, use the host's supported
+reconnect flow; preserve the brief, chosen model, references and known job IDs.
+Reconnection does not approve a paid attempt. After reconnecting, recover any
+submitted job before preparing another request.
+
 ## UX rules
 
 1. Match the user's language and keep polling, schemas, and internal mechanics

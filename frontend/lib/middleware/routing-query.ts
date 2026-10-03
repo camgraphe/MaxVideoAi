@@ -11,6 +11,7 @@ const QUERY_PARAM_STRIP_PREFIXES = [
   '/legal',
   '/docs',
   '/workflows',
+  '/studio',
   '/status',
   '/tools',
   '/ai-video-engines',

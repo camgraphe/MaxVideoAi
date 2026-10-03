@@ -1,13 +1,18 @@
+import {assistanceNextActionSchema,type AssistanceNextAction} from './conversation-assistance';
 export type ConversationIssue = {
   operation: "read" | "submit" | "confirm";
   code?: string;
+  assistance?: AssistanceNextAction;
 };
 
 export class ConversationRequestError extends Error {
   readonly code: string | undefined;
-  constructor(code: unknown) {
+  readonly assistance: AssistanceNextAction | undefined;
+  constructor(code: unknown,nextAction?:unknown) {
     super("Studio conversation request failed");
     this.code = typeof code === "string" ? code : undefined;
+    const parsed=assistanceNextActionSchema.safeParse(nextAction);
+    this.assistance=this.code==='SPENDING_LIMIT_EXCEEDED'&&parsed.success?parsed.data:undefined;
   }
 }
 
@@ -17,6 +22,7 @@ export function conversationIssue(
 ): ConversationIssue {
   return {
     operation,
+    ...(operation==='submit'&&failure instanceof ConversationRequestError&&failure.assistance?{assistance:failure.assistance}:{}),
     ...(failure instanceof ConversationRequestError && failure.code
       ? { code: failure.code }
       : {}),
@@ -30,6 +36,8 @@ export function conversationErrorMessage(
 ): string {
   const t = (en: string, fr: string) => locale === "fr" ? fr : en;
   switch (issue.code) {
+    case "SPENDING_LIMIT_EXCEEDED":
+      return issue.assistance?.reason==='usage_unresolved' ? t("A previous assistance charge is still being checked. Keep this request saved while we verify it.","Le coût d’un échange précédent est en cours de vérification. Gardez cette demande enregistrée.") : t("Choose how to continue your Studio assistance. Media generation is charged separately.","Choisissez comment continuer avec Studio. La génération de médias est facturée séparément.");
     case "AUTH_REQUIRED":
     case "UNAUTHORIZED":
       return t("Your session has expired. Sign in again to continue.", "Votre session a expiré. Reconnectez-vous pour continuer.");

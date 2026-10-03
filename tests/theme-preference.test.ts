@@ -19,11 +19,10 @@ function createThemeWindow(initialDark = false) {
   return { window: dom.window as unknown as Window, setDark(value: boolean) { dark = value; listeners.forEach((listener) => listener()); }, listenerCount: () => listeners.size };
 }
 
-test('absence defaults to dark even when the OS is light; explicit system follows the OS', () => {
+test('absence follows the OS and defaults to light when the OS is light', () => {
   const browser = createThemeWindow(false);
-  assert.deepEqual(readThemeSnapshot(browser.window), { preference: 'dark', resolvedTheme: 'dark' });
+  assert.deepEqual(readThemeSnapshot(browser.window), { preference: 'system', resolvedTheme: 'light' });
   browser.setDark(true);
-  browser.window.localStorage.setItem('mv-app-theme', 'system');
   assert.deepEqual(readThemeSnapshot(browser.window), { preference: 'system', resolvedTheme: 'dark' });
 });
 
@@ -50,7 +49,6 @@ test('theme preference publishes same-tab changes and applies the resolved root 
 
 test('system changes notify subscribers and cleanup removes every listener', () => {
   const browser = createThemeWindow(false);
-  browser.window.localStorage.setItem('mv-app-theme', 'system');
   const snapshots: string[] = [];
   const cleanup = subscribeToThemePreference(browser.window, (snapshot) => snapshots.push(snapshot.resolvedTheme));
   browser.setDark(true);
@@ -69,15 +67,78 @@ test('blocked localStorage falls back to tab memory without crashing consumers',
     get() { throw new DOMException('Storage blocked', 'SecurityError'); },
   });
 
-  assert.deepEqual(readThemeSnapshot(browser.window), { preference: 'dark', resolvedTheme: 'dark' });
+  assert.deepEqual(readThemeSnapshot(browser.window), { preference: 'system', resolvedTheme: 'light' });
   assert.doesNotThrow(() => persistThemePreference(browser.window, 'dark'));
   assert.deepEqual(readThemeSnapshot(browser.window), { preference: 'dark', resolvedTheme: 'dark' });
 });
 
 test('the old marketing preference does not set the new app default', () => {
   const browser = createThemeWindow(false);
-  browser.window.localStorage.setItem('mv-theme', 'light');
-  assert.deepEqual(readThemeSnapshot(browser.window), { preference: 'dark', resolvedTheme: 'dark' });
+  browser.window.localStorage.setItem('mv-theme', 'dark');
+  assert.deepEqual(readThemeSnapshot(browser.window), { preference: 'system', resolvedTheme: 'light' });
   persistThemePreference(browser.window, 'light');
   assert.equal(readThemeSnapshot(browser.window).resolvedTheme, 'light');
+});
+
+
+test('invalid app values fall back to the OS without persisting an implicit choice', () => {
+  const browser = createThemeWindow(false);
+  browser.window.localStorage.setItem('mv-app-theme', 'invalid');
+  assert.deepEqual(readThemeSnapshot(browser.window), { preference: 'system', resolvedTheme: 'light' });
+  assert.equal(browser.window.localStorage.getItem('mv-app-theme'), 'invalid');
+});
+
+test('only an explicit legacy Studio choice migrates, and a valid app preference always wins', () => {
+  const browser = createThemeWindow(false);
+  browser.window.localStorage.setItem('maxvideoai.studio.theme.v1', 'dark');
+  assert.equal(readThemeSnapshot(browser.window).resolvedTheme, 'light');
+  browser.window.localStorage.setItem('maxvideoai.studio.theme.userOverride.v1', 'true');
+  assert.deepEqual(readThemeSnapshot(browser.window), { preference: 'dark', resolvedTheme: 'dark' });
+  assert.equal(browser.window.localStorage.getItem('mv-app-theme'), 'dark');
+  for (const appChoice of ['light', 'system']) {
+    browser.window.localStorage.setItem('mv-app-theme', appChoice);
+    assert.equal(readThemeSnapshot(browser.window).preference, appChoice);
+    assert.equal(readThemeSnapshot(browser.window).resolvedTheme, 'light');
+  }
+});
+
+test('a failed storage write keeps the manual choice even when reads still succeed', () => {
+  const browser = createThemeWindow(false);
+  browser.window.localStorage.setItem('mv-app-theme', 'system');
+  Object.defineProperty(Object.getPrototypeOf(browser.window.localStorage), 'setItem', {
+    value() { throw new DOMException('Quota exceeded', 'QuotaExceededError'); },
+  });
+  persistThemePreference(browser.window, 'dark');
+  assert.deepEqual(readThemeSnapshot(browser.window), { preference: 'dark', resolvedTheme: 'dark' });
+});
+
+test('other-tab changes and clearing storage resync subscribers, while explicit choices ignore OS changes', () => {
+  const browser = createThemeWindow(false);
+  const snapshots: string[] = [];
+  const cleanup = subscribeToThemePreference(browser.window, (snapshot) => snapshots.push(`${snapshot.preference}:${snapshot.resolvedTheme}`));
+  persistThemePreference(browser.window, 'dark');
+  browser.setDark(true);
+  browser.setDark(false);
+  assert.deepEqual(snapshots, ['dark:dark']);
+  browser.window.localStorage.setItem('mv-app-theme', 'light');
+  browser.window.dispatchEvent(new browser.window.StorageEvent('storage', { key: 'mv-app-theme', newValue: 'light', storageArea: browser.window.localStorage }));
+  browser.window.localStorage.clear();
+  browser.setDark(true);
+  browser.window.dispatchEvent(new browser.window.StorageEvent('storage', { key: null, storageArea: browser.window.localStorage }));
+  assert.deepEqual(snapshots.slice(-2), ['system:dark', 'system:dark']);
+  assert.ok(snapshots.includes('light:light'));
+  cleanup();
+});
+
+
+test('missing system APIs still resolve to light and leave explicit dark usable', () => {
+  const dom = new JSDOM('<!doctype html><html></html>', { url: 'https://maxvideoai.test' });
+  const browserWindow = dom.window as unknown as Window;
+  assert.deepEqual(readThemeSnapshot(browserWindow), { preference: 'system', resolvedTheme: 'light' });
+  const received: string[] = [];
+  const cleanup = subscribeToThemePreference(browserWindow, (snapshot) => received.push(snapshot.resolvedTheme));
+  persistThemePreference(browserWindow, 'dark');
+  assert.deepEqual(received, ['dark']);
+  cleanup();
+  dom.window.close();
 });

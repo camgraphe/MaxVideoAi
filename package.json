@@ -48,7 +48,7 @@
     "qa:mcp-launch:preview": "node scripts/run-mcp-launch-fixture.mjs --mode preview",
     "qa:mcp-launch:enabled": "node scripts/run-mcp-launch-fixture.mjs --mode enabled",
     "qa:mcp-launch:lighthouse": "node scripts/run-mcp-launch-fixture.mjs --mode enabled --lighthouse",
-    "plugin:release:build": "node scripts/build-maxvideoai-plugin-release.mjs",
+    "plugin:release:build": "pnpm mcp:client:check && node scripts/build-maxvideoai-plugin-release.mjs",
     "db:bootstrap:neon": "tsx --tsconfig frontend/tsconfig.json scripts/bootstrap-application-schema.ts",
     "db:migrate:neon": "bash scripts/apply-neon-migrations.sh",
     "neon:branches:check": "node scripts/neon-branch-guard.mjs",
@@ -68,7 +68,8 @@
     "test:editor:e2e": "playwright test -c playwright.editor.config.ts",
     "test:editor:perf": "frontend/node_modules/.bin/playwright test -c playwright.editor.config.ts tests/e2e/editor/editor-performance.spec.ts",
     "qa:editor": "npm run test:editor && frontend/node_modules/.bin/tsc --noEmit -p frontend/tsconfig.json && npm --prefix frontend run lint && git diff --check",
-    "qa:studio:english:live": "frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json scripts/qa/studio-sol-english-live.ts"
+    "qa:studio:english:live": "frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json scripts/qa/studio-sol-english-live.ts",
+    "mcp:client:check": "tsx --tsconfig frontend/tsconfig.json --test tests/mcp-instructions.test.ts tests/mcp-tools-contract.test.ts tests/mcp-transport-contract.test.ts tests/mcp-plugin-contract.test.ts tests/mcp-conversation-evals.test.ts tests/mcp-tool-selection-eval.test.ts tests/mcp-topup-handoff.test.ts tests/mcp-confirm-generation.test.ts tests/mcp-generation-recovery-tools.test.ts tests/mcp-montage-tools-contract.test.ts tests/mcp-studio-montage-tools-contract.test.ts tests/mcp-studio-timeline-schema-parity.test.ts tests/mcp-studio-export-delivery.test.ts && npm --prefix frontend run qa:mcp-tool-selection"
   },
   "pnpm": {
     "overrides": {

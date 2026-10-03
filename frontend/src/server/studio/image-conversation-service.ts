@@ -145,6 +145,8 @@ export function createImageConversationService(
     director?: ImageDirector;
     generationFactory?: ImageGenerationFactory;
     actionsEnabled?: boolean;
+    assistancePolicy?: import('./assistance-policy').StudioAssistancePolicy;
+    countInputTokens?: (params: import('openai/resources/responses/responses').ResponseCreateParamsNonStreaming) => Promise<number>;
     createActionResponse?: StudioResponseCreator;
     mediaEnabled?: boolean;
     videoGenerationFactory?: StudioMediaFactories['video'];
@@ -299,13 +301,14 @@ export function createImageConversationService(
           )
           .reverse();
         const useActions = !turn.draft_json && dependencies.actionsEnabled === true;
+        if (!turn.draft_json && !useActions && !dependencies.director) throw new AgentApiError('ENGINE_UNAVAILABLE','Enable the metered Studio conversation before requesting assistance.');
         const draft =
           turn.draft_json ??
           (useActions ? await runStudioImageActions({
             actor, turn, input, references: refs, referenceFingerprint,
             history: history.map(saved => ({message: saved.input_json.message, reply: saved.draft_json?.reply ?? null,
               ...(saved.input_json.referenceMentions ? {referenceMentions: saved.input_json.referenceMentions} : {})})),
-            enabled: dependencies.enabled, factory, createResponse: dependencies.createActionResponse,
+            enabled: dependencies.enabled, factory, createResponse: dependencies.createActionResponse,assistancePolicy: dependencies.assistancePolicy,countInputTokens: dependencies.countInputTokens,
             factories, mediaEnabled: dependencies.mediaEnabled,editingEnabled: dependencies.editingEnabled,exportsEnabled: dependencies.exportsEnabled,requestOrigin: dependencies.requestOrigin,exportDependencies: dependencies.exportDependencies,
           }) : await runMeteredImageDirector(
             actor,

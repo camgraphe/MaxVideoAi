@@ -88,7 +88,7 @@ export function useImageConversation(
       const response = await fetch(endpoint, { cache: "no-store" });
       const payload = await response.json();
       if (!response.ok || !payload.ok)
-        throw new ConversationRequestError(payload.error);
+        throw new ConversationRequestError(payload.error,payload.nextAction);
       if (
         version === requests.readVersion &&
         isCurrent() &&
@@ -216,7 +216,7 @@ export function useImageConversation(
       });
       const payload = await response.json();
       if (!response.ok || !payload.ok)
-        throw new ConversationRequestError(payload.error);
+        throw new ConversationRequestError(payload.error,payload.nextAction);
       if (isCurrent()) {
         requests.readVersion++;
         setConversation((current) => ({
@@ -265,7 +265,7 @@ export function useImageConversation(
       });
       const payload = await response.json();
       if (!response.ok || !payload.ok)
-        throw new ConversationRequestError(payload.error);
+        throw new ConversationRequestError(payload.error,payload.nextAction);
       if (isCurrent()) {
         requests.readVersion++;
         setConversation((current) => ({
@@ -321,6 +321,7 @@ export function useImageConversation(
     loading: !currentState || loading,
     error: visibleError ? conversationErrorMessage(visibleError, locale) : null,
     errorCode: visibleError?.code ?? null,
+    assistanceAction: currentState ? error?.assistance ?? null : null,
     needsFunds: currentState && !!insufficientQuote && !readError,
     pending: currentState ? pending : null,
     canResumePending,

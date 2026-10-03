@@ -54,7 +54,8 @@ test('prepare_montage is disabled by default and callable only with its explicit
   assert.equal((tool.inputSchema.properties?.settings as { additionalProperties?: unknown }).additionalProperties, false);
   const clips = tool.inputSchema.properties?.clips as { minItems?: number; maxItems?: number; items?: { additionalProperties?: unknown } };
   assert.equal(clips.minItems, 2); assert.equal(clips.maxItems, 12); assert.equal(clips.items?.additionalProperties, false);
-  assert.match(ec.getInstructions() ?? '', /caller-supplied semantic ordering.*does not inspect video contents/is);
+  assert.match(ec.getInstructions() ?? '', /prepare_montage/);
+  assert.match(tool.description ?? '', /ordering is supplied by the caller, not visual analysis/i);
 
   const args = {
     title: 'Two shots',

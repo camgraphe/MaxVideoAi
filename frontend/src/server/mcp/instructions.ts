@@ -8,116 +8,49 @@ export type MaxVideoAiMcpInstructionCapabilities = {
   studioExports?: boolean;
 };
 
+// Discovery entrypoint. Detailed rules live in each tool descriptor.
+// Keep every gate combination within 2,000 UTF-8 bytes; see mcp-client-experience.md.
 export function buildMaxVideoAiMcpInstructions(
   capabilities: MaxVideoAiMcpInstructionCapabilities,
 ): string {
   const instructions = [
-    'The host owns creative discussion, scripts, prompts, shot plans, and reference ideas.',
-    'Prompt drafting remains with the host agent.',
-    'The host may help create or select reference images and creatively plan or select image, video, and audio reference media when useful.',
-    'Use live MaxVideoAI tools for current model facts and prices instead of model memory.',
-    'For every nullable tool field, send null unless the user explicitly requested or stated that value; hosts that permit omission may omit it instead. Never fill nullable tool fields with placeholder values such as false, a maximum duration, or a guessed resolution.',
-    'MaxVideoAI owns catalog facts, evidence, pricing, quotes, execution, status, and recovery.',
-    'Ask only for missing choices that materially change the result or budget.',
-    'An explicit model choice takes precedence: when the user only wants validation, pricing, or execution for that compatible choice, do not call recommend_models.',
-    'Never substitute a named model without the user’s approval. If it is unavailable or incompatible, explain the live constraint and ask before proposing alternatives.',
-    'When the user is undecided or asks for advice, use recommend_models and discuss the factual matches and current editorial guidance. An idea, a prompt or a single asset can be a complete creative outcome; do not require a film or a multi-step recipe.',
-    'Present the best-fit available and executable model first, then strong alternatives from distinct model families when available.',
-    'Use returned editorialGuidance: reference entries are reviewed starting points, alternative entries serve meaningful tradeoffs, and on_request entries are for explicit requests. Respect executable constraints and the user’s choice; inspect reviewStatus, reviewedAt, rationale and provenance. Editorial preference is not measured quality or execution certification, and a new version never inherits a review from its family. Do not hardcode favorites or turn a contextual recommendation into a universal quality claim.',
-    'Use calculate_project_budget on comparable budget proposals with the same creative-attempt assumptions before describing an alternative as cheaper or lower-cost.',
-    'Quality is ambiguous: clarify whether story coherence, multi-shot continuity, character or reference fidelity, motion, audio, or delivery resolution matters. Never use highest resolution as a proxy for overall creative quality.',
-    'For multi-shot work, the host may compose one or more named single- or mixed-model proposals and use calculate_project_budget.',
-    'Use a mixed-model proposal only when it serves the brief or budget, and give every mixed-model shot a factual rationale. Do not force model diversity or dilute a quality-first plan merely to add a cheaper option.',
-    'Read get_model_details for the selected mode and use its exact required fields, settings, reference counts, media kinds, per-file and combined reference durations, and limits; never copy them from another model or mode.',
-    'When get_model_details returns promptingSources and the user asks for prompt help, use only the relevant reviewed official provider source and share its returned URL when useful.',
-    'When promptingSources is empty, say that no reviewed official source was returned; do not invent a provider guide or URL and do not substitute web search or browsing.',
-    'A provider guide informs prompt craft; it is not authoritative for MaxVideoAI availability, settings, pricing, or execution. Live MaxVideoAI details remain authoritative for those facts.',
-    'For video modes exposed by live details: t2v is text to video; i2v and i2v_standard animate a first or source image and may accept a last or end frame, with i2v_standard identifying a lower-cost Standard route when published; ref2v uses supported image, video, and audio references; fl2v requires first_frame and last_frame images; v2v edits a source video; r2v uses ordered reference videos; extend uses ordered source clips; a2v follows owned source audio; retake replaces part of an owned source clip; reframe changes the canvas of an owned source clip.',
-    'Read every returned reference field’s canonical roles, assetRequired value, and optional assetRequiredWhen condition. When either requirement applies to the chosen settings, select or upload a private MaxVideoAI asset and never substitute a public HTTPS URL.',
-    'For GPT Image family edits, send ordinary edit images with source or reference roles and an optional mask image with the mask role. When resolution is custom, send both imageWidth and imageHeight from the live model constraints.',
-    'When get_model_details reports that the selected mode’s aspectRatios list is empty, omit aspectRatio; when it is non-empty, include a supported aspectRatio. Never infer this rule from the mode name or another mode.',
-    'Creative attempts are explicit billable scenarios; technical failures follow the returned job and refund state.',
-    'Project estimates do not reserve price.',
-    'Project estimates use the connected environment pricing catalog and may differ between staging and production.',
-    'For project settings, when get_model_details reports audio as always_generated or unavailable, omit settings.audio; only when audio is optional, send settings.audio.',
-    'Model recommendations are capability matches, not quotes or guarantees of provider availability. Their ordering also includes disclosed editorial preference.',
-    'Use get_account_status to explain the connected account, credit balance, trial state, spending limits, and safe account destinations. Private uploads and successful generations stay in the same connected MaxVideoAI account and library.',
-    'When MaxVideoAI returns an account, upload, top-up, approval, or other open_url URL, direct the user to that exact returned destination; never invent a URL or claim the browser step completed.',
+    'MaxVideoAI plans AI video/image work, compares models, quotes generation and recovers media in one account.',
   ];
-
-  if (capabilities.referenceUploads) {
-    instructions.push(
-      'Use list_media and filter by media kind to select existing private MaxVideoAI image, video, and audio assets. Do not upload files with list_media or expose private source URLs.',
-      'MaxVideoAI accepts and manages reference media but does not create reference media. When the host provides user-authorized files, attachments, or an authorized generation result with temporary file handles, use import_reference_files for up to eight files in one call. Never invent or substitute a download URL.',
-      'Use the asset IDs returned by import_reference_files directly and preserve their input order; do not call list_media after a successful direct import. If part of a batch fails, keep the successful asset IDs and retry only the failed files.',
-      'When the host cannot expose a file handle, use create_reference_upload_link with the requested media kind (image, video, or audio). A compatible UI host can render its short-lived in-chat multi-file importer; the exact returned browser handoff remains the manual fallback.',
-      'For a local file in Codex or Claude Code, create one short-lived upload link per file and use the packaged local helper. The helper reads the local bytes itself: never send a raw local path to the MCP server, publish the media at a public URL, or depend on Computer Use.',
-      'After the browser fallback is saved to the same connected MaxVideoAI library, call list_media for that media kind. After the in-chat importer or local helper returns asset IDs, use those IDs directly without relisting.',
-      'If create_reference_upload_link fails, is denied, or is unavailable when a fallback is needed, explain that the MaxVideoAI upload handoff could not be created and ask the user to authorize or retry it.',
-    );
-  }
-
-  if (capabilities.montagePreparation) {
-    instructions.push(
-      'Use prepare_montage only for a caller-supplied semantic ordering of 2–12 owned ready videos. It validates frame-aligned trims and returns an edit plan; it does not inspect video contents, render, modify media, persist a Studio project, or return a Studio URL.',
-    );
-  }
-
-  if (capabilities.studioMontageCreation) {
-    instructions.push(
-      'Use create_studio_montage to save one editable Studio project from a caller-supplied semantic ordering of 2–12 owned ready videos. It validates measured frame-aligned trims, preserves the requested order, and returns the exact Studio destination. Reuse the exact same idempotencyKey only for an exact retry of the same request; changed content requires a new key.',
-    );
-  }
-
-  if (capabilities.studioTimelineEditing) {
-    instructions.push(
-      'Use get_studio_timeline to inspect an owned connected Studio project before editing. Use its exact projectId, sequenceId, frame rate, clip identities and revision with edit_studio_timeline; positions and source-limited durations are integer frames and audio gain is a percentage from 0 to 100. Inserts accept owned ready media assets or account-owned completed job-output references. Audio inserts layer without moving existing voice or visuals. Respect locked tracks. Reuse the exact idempotencyKey only for an exact retry; changed edits need a new key. On a revision conflict, read the current timeline and preserve manual changes before adapting the request. These tools save reversible edits; they do not generate, charge or export media.',
-    );
-  }
-
-  if (capabilities.studioExports) {
-    instructions.push(
-      'Use prepare_studio_export for an owned saved sequence at the revision just read. Its exact price snapshots the saved cut; preparation does not render or charge. Wait for explicit human approval of that exact quote before confirm_studio_export with confirmed=true. A changed or expired quote requires fresh preparation and approval. Accepted retries recover the same job; use get_studio_export for truthful status and recorded billing instead of another render. Completed output read access is temporary and refreshed by get_studio_export; artifactDelivery=unavailable is a delivery problem, not permission to render again. Never supply a caller-authored manifest, private media URL, estimate token or account identity to these tools.',
-    );
-  }
-
-  if (capabilities.audioGeneration) {
-    instructions.push(
-      'For Audio work, call list_audio_capabilities first and use only a currently available mode and its exact settings and owned reference roles.',
-      'Use prepare_audio_generation to validate the complete Audio request and display its exact cents, currency, expiry, balance, and top-up state. Wait for explicit approval of that exact quote before confirm_audio_generation.',
-      'Audio confirmation authorizes one paid attempt. A failed or refunded attempt cannot be replayed into a new generation: prepare a fresh quote and obtain new explicit approval. Never automatically retry an Audio provider failure.',
-      'Recover Audio jobs through get_generation_status or list_recent_generations with surface audio. Present completed original Audio with present_generation; use get_generation_download only from the result app.',
-    );
-  }
-
   if (capabilities.paidGeneration) {
     instructions.push(
-      'When the complete chosen request is ready, use prepare_generation to validate it and obtain its exact price before any paid action.',
-      'When a required private reference or asset is missing, an exact quote cannot be created yet. A project budget may be shown only as an estimate and never as the exact quote.',
-      'Treat the returned expiresAt timestamp as UTC. Do not declare a quote expired from a local-date comparison; report definitive expiry only when MaxVideoAI returns QUOTE_EXPIRED.',
-      'Display the exact price returned by prepare_generation and wait for explicit user approval—explicit user confirmation—of that exact quote, then use confirm_generation once with its quoted identifier. An ambiguous reply or assent is not confirmation.',
-      'That confirmation authorizes exactly one paid attempt and is consumed whether the job is accepted, failed, or refunded. A refund or recredit does not restore the authorization. Every replacement attempt requires prepare_generation, a fresh exact quote, and new explicit user approval.',
-      'If an exact quote has insufficient credits, use create_topup_link with that quote. Payment happens only on the MaxVideoAI website through the exact returned destination, and the old quote becomes invalid.',
-      'After the user says funding is complete, call get_account_status and then prepare_generation again. Display the fresh exact quote and wait for explicit user approval before confirm_generation.',
-      'Do not automatically retry or generate. An accepted job is not a completed result: use get_generation_status for a known job or list_recent_generations for recovery rather than submitting a second paid generation, and do not claim completion until MaxVideoAI reports a terminal successful status.',
-      'After MaxVideoAI reports a completed job, use present_generation once when the user asks to view it or when the completed result should be delivered. This presents inline video, image, or audio in a compatible UI host. Use the returned resource link and MaxVideoAI library destination as the fallback when the host does not render MCP Apps UI.',
-      'Never use present_generation to poll, generate, retry, confirm, or charge. It only re-reads and presents an owned generation.',
-      'For a technical failure, inspect the returned failure and refund state and do not resubmit automatically. A creative retry is a new paid attempt: call prepare_generation and wait for explicit approval of its new exact quote.',
-      'When a job is completed, explain that the result is saved in the same connected MaxVideoAI library and use only the returned library or workspace destination.',
+      'For a complete request use prepare_generation. Display its exact quote; wait for explicit user approval before confirm_generation: one paid attempt. Ambiguous assent is not approval. Failure/refund needs a fresh quote and new approval; never resubmit automatically.',
+      'Recover with get_generation_status or list_recent_generations; present_generation delivers completed results.',
     );
   } else {
-    instructions.push(
-      'Generation is not available in this rollout; do not imply that a video or image was submitted.',
-    );
+    instructions.push('Generation is not available; never imply a submission.');
   }
-
-  return instructions.join(' ');
+  instructions.push(
+    'Use list_models for discovery, get_model_details for exact modes, recommend_models for an open choice, calculate_project_budget for comparable estimates, not quotes. Never substitute a named model without approval; if unavailable or incompatible, explain and ask before alternatives.',
+    'The host owns creative discussion, prompts and reference media; an idea or single asset may be enough. Use live facts, not memory or fixed rankings. Ask only what changes the result/budget. Omit unstated nullable inputs or send null; never invent constraints.',
+    'get_account_status identifies account/credits. Use only returned URLs and private assets; never claim a browser step completed.',
+  );
+  if (capabilities.referenceUploads) {
+    instructions.push('References: list_media, import_reference_files for host files, create_reference_upload_link for browser/local helper. Keep asset order.');
+  }
+  if (capabilities.paidGeneration && capabilities.audioGeneration) {
+    instructions.push('Audio: list_audio_capabilities, prepare_audio_generation, then confirm_audio_generation after exact-quote approval; same one-attempt rule.');
+  }
+  if (capabilities.montagePreparation) {
+    instructions.push('prepare_montage plans owned clips; no render or saved project.');
+  }
+  if (capabilities.studioMontageCreation) {
+    instructions.push('create_studio_montage saves an editable project.');
+  }
+  if (capabilities.studioTimelineEditing) {
+    instructions.push('Read get_studio_timeline before edit_studio_timeline; preserve revisions/locks.');
+  }
+  if (capabilities.studioExports) {
+    instructions.push('prepare_studio_export quotes a saved cut; confirm_studio_export needs exact-quote approval. Recover with get_studio_export, never rerender.');
+  }
+  return instructions.join('\n');
 }
 
 export const MAXVIDEOAI_MCP_INSTRUCTIONS = buildMaxVideoAiMcpInstructions({
   paidGeneration: false,
   referenceUploads: false,
-  montagePreparation: false,
-  audioGeneration: false,
-  studioMontageCreation: false,
 });

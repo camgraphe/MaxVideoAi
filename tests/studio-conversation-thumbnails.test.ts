@@ -79,10 +79,10 @@ test('preview uses the resolved thumbnail rather than stale clip metadata and sh
 test('the actual conversation edit hook submits only its command, never preview thumbnail grants',async()=>{
   const dom=new JSDOM('<div id="root"></div>',{url:'https://maxvideoai.com'});
   const previous=new Map(['window','document','navigator','fetch','IS_REACT_ACT_ENVIRONMENT'].map(key=>[key,Object.getOwnPropertyDescriptor(globalThis,key)]));
-  const posts:Record<string,unknown>[]=[];
+  const posts:Record<string,unknown>[]=[];let rejectEdit=false;
   const preview={...clip('video'),thumbnailAccessUrl:'https://signed.test/thumbnail.jpg?grant=read',mediaAccessUrl:'https://signed.test/video.mp4?grant=read'};
   for(const [key,value] of Object.entries({window:dom.window,document:dom.window.document,navigator:dom.window.navigator,IS_REACT_ACT_ENVIRONMENT:true,fetch:async(_url:unknown,options?:RequestInit)=>{
-    if(options?.method==='POST') posts.push(JSON.parse(String(options.body)));
+    if(options?.method==='POST') {posts.push(JSON.parse(String(options.body)));if(rejectEdit)return Response.json({ok:false,error:'TIMELINE_REVISION_CONFLICT'},{status:409});}
     return new Response(JSON.stringify({ok:true,result:{data:{sequenceId:'main',revision:7},settings:{fps:30,aspectRatio:'16:9',resolution:'720p'},items:[preview]}}));
   }})) Object.defineProperty(globalThis,key,{value,configurable:true,writable:true});
   const root=createRoot(dom.window.document.getElementById('root')!);let state:ReturnType<typeof useConversationTimeline>;
@@ -95,6 +95,10 @@ test('the actual conversation edit hook submits only its command, never preview 
     assert.equal(posts.length,1);assert.deepEqual(posts[0].edit,edit);
     assert.deepEqual(Object.keys(posts[0]).sort(),['edit','expectedRevision','idempotencyKey','sequenceId']);
     assert.doesNotMatch(JSON.stringify(posts),/signed\.test|grant=read|thumbnailAccessUrl/);
+    rejectEdit=true;await act(async()=>{await state!.edit(edit);});
+    assert.equal(state!.error,'TIMELINE_REVISION_CONFLICT','the automatic successful read cannot erase a rejected edit');
+    await act(async()=>{await state!.refresh();});assert.equal(state!.error,'TIMELINE_REVISION_CONFLICT');
+    rejectEdit=false;await act(async()=>{await state!.edit(edit);});assert.equal(state!.error,null);
   } finally {
     await act(async()=>root.unmount());dom.window.close();
     for(const [key,descriptor] of previous){if(descriptor) Object.defineProperty(globalThis,key,descriptor);else Reflect.deleteProperty(globalThis,key);}
