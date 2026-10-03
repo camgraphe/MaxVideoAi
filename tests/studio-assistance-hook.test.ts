@@ -11,12 +11,12 @@ const initialStatus: StudioAssistanceStatus = {
   tariff: STUDIO_ASSISTANCE_TARIFF,
   includedSol: {remainingPercent: 0, renewal: 'one_time'},
   sponsoredLuna: {remainingPercent: 100, renewal: 'one_time'},
-  paid: {authorizedCents: 0, spentCents: 0, reservedCents: 0, remainingCents: 0, maxAdditionalBudgetCents: 2000},
+  paid: {enabled: false, authorizedCents: 0, spentCents: 0, reservedCents: 0, remainingCents: 0, maxAdditionalBudgetCents: 2000},
   unresolvedCalls: 0, canContinue: false, blockedReason: 'included_exhausted',
 };
 const paidStatus: StudioAssistanceStatus = {
   ...initialStatus, revision: 4, mode: 'paid_sol', canContinue: true, blockedReason: null,
-  paid: {...initialStatus.paid, authorizedCents: 500, remainingCents: 500, maxAdditionalBudgetCents: 1500},
+  paid: {...initialStatus.paid, enabled: true, authorizedCents: 500, remainingCents: 500, maxAdditionalBudgetCents: 1500},
 };
 const choice = {action: 'authorize_paid', budgetCents: 500, tariffVersion: STUDIO_ASSISTANCE_TARIFF.version, expectedRevision: 3} as const;
 type Request = {url: string; init: RequestInit; resolve: (response: Response) => void; reject: (error: Error) => void};
