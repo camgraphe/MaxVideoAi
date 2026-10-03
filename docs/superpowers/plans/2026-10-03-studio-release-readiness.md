@@ -33,9 +33,9 @@
 
 **Interfaces:** Existing `useThemePreference()` snapshot and `useStudioThemeMode()` caller shape remain; shared menu owns appearance.
 
-- [ ] Pin OS/default, explicit and legacy preference precedence, public navigation and storage failure in tests; observe expected failures.
-- [ ] Implement coherent preference and compact accessible sun/moon controls.
-- [ ] Run theme and relevant architecture checks, then integrate only this owner's files.
+- [x] Pin OS/default, explicit and legacy preference precedence, public navigation and storage failure in tests; observe expected failures.
+- [x] Implement coherent preference and compact accessible sun/moon controls.
+- [x] Run theme and relevant architecture checks, then integrate only this owner's files.
 
 ### Task 2: Direct conversation and project dialog
 
@@ -43,10 +43,10 @@
 
 **Interfaces:** `listStudioConversationProjects(userId, executor?)` returns bounded summaries `{id,name,updatedAt,persistenceMode}` without workspace JSON. `useStudioProjectCreation(accountKey,onCreated)` owns one stable pending attempt, cancellation and retry. `ConversationProjects` renders current project and lazily reads summaries.
 
-- [ ] Write behavior tests for direct entry/auth gating, summary isolation, stable retry, dialog focus/search and stale responses. Run and observe missing behavior.
-- [ ] Add read-only server summary projection and gated GET; root resumes recent connected project or renders chat opening state.
-- [ ] Add idempotent client creation and accessible project dialog; wire root navigation and remove header theme duplicate.
-- [ ] Preserve starter/media/local Canvas routing. Run focused tests and TypeScript checks; commit this bounded slice.
+- [x] Write behavior tests for direct entry/auth gating, summary isolation, stable retry, dialog focus/search and stale responses. Run and observe missing behavior.
+- [x] Add read-only server summary projection and gated GET; root resumes recent connected project or renders chat opening state.
+- [x] Add idempotent client creation and accessible project dialog; wire root navigation and remove header theme duplicate.
+- [x] Preserve starter/media/local Canvas routing. Run focused tests and TypeScript checks; commit this bounded slice.
 
 ### Task 3: Media and timeline clarity
 
@@ -54,9 +54,9 @@
 
 **Interfaces:** optional `onInsert(item: ImageLibraryAsset)` action wires existing `timelineInsertion`; previews may contribute only validated measured facts, never canonical identity replacement.
 
-- [ ] Pin explicit insertion versus mention, failed/missing facts and selection feedback in tests.
-- [ ] Add compact labeled media-to-timeline action, preserve artwork arrangement, clarify timeline empty state and preview controls.
-- [ ] Run timeline/media tests and real browser interactions in both themes and mobile; commit.
+- [x] Pin explicit insertion versus mention, failed/missing facts and selection feedback in tests.
+- [x] Add compact labeled media-to-timeline action, preserve artwork arrangement, clarify timeline empty state and preview controls.
+- [x] Run timeline/media tests and real browser interactions in both themes and mobile; commit.
 
 ### Task 4: Assistant economics and reviewability
 
@@ -64,10 +64,10 @@
 
 **Interfaces:** GET/POST `/api/studio/assistance` publishes enabled state, model/mode, dated tariff, included and sponsored allowances, authorized/spent/reserved paid budget, revisions and continuation/block reasons. All paid actions are explicit and optimistic-revision checked.
 
-- [ ] Delegate durable reservations/settlement with focused RED/GREEN concurrency, account isolation and recovery tests.
-- [ ] Wire a discreet usage control, explicit budget dialog and Luna continuation with visible limit disclosure and contextual reminders; no fabricated live pricing.
-- [ ] Add restricted read-only review projections for available Studio conversation/cost records and truthful external MCP coverage; test authorization, redaction and unavailable data.
-- [ ] Run disposable PostgreSQL and DOM integration checks. Document exact policy, migration, activation and reconciliation prerequisites.
+- [x] Delegate durable reservations/settlement with focused RED/GREEN concurrency, account isolation and recovery tests.
+- [x] Wire a discreet usage control, explicit budget dialog and Luna continuation with visible limit disclosure and contextual reminders; no fabricated live pricing.
+- [x] Add restricted read-only review projections for available Studio conversation/cost records and truthful external MCP coverage; test authorization, redaction and unavailable data.
+- [x] Run disposable PostgreSQL and DOM integration checks. Document exact policy, migration, activation and reconciliation prerequisites.
 
 ### Task 5: MCP/public-page audit and complete verification
 
@@ -75,7 +75,16 @@
 
 **Interfaces:** Public CTA `/api/studio/marketing-entry` targets `/app/studio`; explicit allowlisted starters retain their canonical handoff. Marketing never imports execution or billing state.
 
-- [ ] Run focused MCP offline discovery/mode/identity/policy tests, repair proven gaps, and record real-host limitations.
-- [ ] Ship accurate EN/FR/ES public copy/metadata and real current UI capture; run localization/SEO contracts.
-- [ ] Run focused and required broad checks, inspect rendered mobile/desktop/light/dark flows and production build.
-- [ ] Dispatch a fresh final reviewer, fix important findings with reproductions, then report exact readiness and remaining production prerequisites without deployment.
+- [x] Run focused MCP offline discovery/mode/identity/policy tests, repair proven gaps, and record real-host limitations.
+- [x] Ship accurate EN/FR/ES public copy/metadata and real current UI capture; run localization/SEO contracts.
+- [x] Run focused and required broad checks, inspect rendered mobile/desktop/light/dark flows and production build.
+- [x] Dispatch a fresh final reviewer, fix important findings with reproductions, then report exact readiness and remaining production prerequisites without deployment.
+
+## Completed candidate
+
+Implementation and final review are complete on `codex/studio-creative-workspace`.
+Production build and six localized public browser cases passed at `2e55deb63`.
+The full validation plan passed: 6,070 tests passed, zero failed, two explicit skips
+across 1,037 standard and four isolated integration files. Commercial activation
+and live-provider qualification remain gated as specified. See
+[the release handoff](../../operations/studio-release-candidate-2026-10-04.md).
