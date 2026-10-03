@@ -94,4 +94,4 @@
 - [x] Replace onboarding cards with quiet text starts; center the compact timeline and show its inspector only after explicit clip interaction.
 - [x] Keep private preview access, exact mentions, keyboard/touch alternatives and narrow-screen overflow working; preserve real media ownership.
 - [x] Rerun editor QA with bounded PostgreSQL concurrency: 801 passed, one existing skip. Verify Chromium/Firefox/WebKit and capture both themes at 320/390/768/1440.
-- [ ] Leave the final motion-enabled local preview open after the mobile selection refinement.
+- [x] Leave the final motion-enabled local preview open after the mobile selection refinement. Source 1b9dda326, 16 screenshots, no page exceptions. Chromium and WebKit reran successfully after touch-target and selected-card centering changes.
