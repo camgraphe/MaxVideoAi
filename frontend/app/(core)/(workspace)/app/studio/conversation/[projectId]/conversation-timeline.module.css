@@ -1,4 +1,4 @@
-.footer {position:relative;flex-shrink:0;border-top:1px solid var(--studio-line);padding:8px 24px 12px;color:var(--studio-text);background:var(--studio-bg);}
+.footer {position:relative;flex-shrink:0;width:min(100%,760px);align-self:center;padding:6px 24px 12px;color:var(--studio-text);background:var(--studio-bg);}
 .footer > p {font-size:12px;color:var(--studio-muted);margin:0 0 8px;}
 .tools {display:flex;align-items:center;gap:8px;min-height:44px;}
 .tools button {display:grid;place-items:center;padding:0;}
@@ -42,3 +42,9 @@
 .exportDialog > button {width:100%;background:var(--studio-accent);color:var(--studio-ink);}
 @media (max-width:767px) {.timelineToggle strong {display:none;}.tools .timelineToggle {padding:0;min-width:38px;}.footer {padding:4px 12px 6px;}.monitorRow {height:108px;margin-bottom:2px;}.inspector > span {display:none;}.footer .handle {width:16px;min-width:16px;}.inspector {gap:4px;}.tools {gap:6px;}}
 @media (prefers-reduced-motion:no-preference) {.monitorRow {animation:appear .18s ease-out;}@keyframes appear {from {opacity:0;transform:translateY(8px);}to {opacity:1;transform:translateY(0);}}}
+
+.footer[data-empty="true"][data-expanded="false"] {width:auto;min-width:180px;}
+.footer[data-empty="true"][data-expanded="false"] .tools>button:nth-child(2),.footer[data-empty="true"][data-expanded="false"] .tools>span {display:none;}
+.tools>button {border-color:transparent;}
+.tools>button:hover {background:var(--studio-panel);}
+@media(max-width:800px) {.footer {width:100%;}.footer[data-empty="true"][data-expanded="false"] {width:auto;}}

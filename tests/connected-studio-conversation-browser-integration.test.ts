@@ -129,13 +129,17 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await message.dispatchEvent('drop',{dataTransfer:drag});
     await expect(message).toHaveValue('@Image 1 ');
     await expect(message).toBeFocused();
+    const centerBounds=await message.boundingBox();
+    const referenceBounds=await shelf.locator('[data-media-card]').evaluateAll(elements=>elements.map(element=>{const b=element.getBoundingClientRect();return {left:b.left,right:b.right};}));
+    assert.ok(centerBounds && referenceBounds.every(b=>b.right<centerBounds.x || b.left>centerBounds.x+centerBounds.width),'References preserve the central writing space.');
     await proof('media-dock-desktop');
     await page.getByRole('button',{name:'Remove Image 1',exact:true}).click();
     await expect(message).toHaveValue(' ');
     await shelf.getByRole('button',{name:'Mention in message',exact:true}).click();
     await expect(message).toHaveValue(/\s*@Image 1\s/);
     await shelf.getByRole('button',{name:'Collapse media',exact:true}).click();
-    await expect(shelf.getByRole('img',{name:'Watch study',exact:true})).toHaveCount(0);
+    await expect(shelf.getByRole('button',{name:'Preview Image 1',exact:true})).toBeVisible();
+    await expect(shelf.getByRole('button',{name:'Mention in message',exact:true})).toHaveCount(0);
     await expect(message).toHaveValue(/\s*@Image 1\s/);
     await shelf.getByRole('button',{name:'Open media',exact:true}).click();
     await page.setViewportSize({width:390,height:844});

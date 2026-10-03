@@ -26,6 +26,7 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
   const {view,edit} = timeline;
   const [monitor,setMonitor] = useState(false);
   const [expanded,setExpanded] = useState<boolean | null>(null);
+  const [inspecting,setInspecting] = useState(false);
   const [selected,setSelected] = useState<string | null>(null);
   const [preview,setPreview] = useState<WorkspaceTimelineItem[] | null>(null);
   const [creating,setCreating] = useState(false);
@@ -84,7 +85,7 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
   }
   function startDrag(event: React.PointerEvent<HTMLButtonElement>,clip: WorkspaceTimelineItem,edge: Drag['edge']) {
     if (timeline.busy) return;
-    event.stopPropagation();event.currentTarget.setPointerCapture(event.pointerId);setSelected(clip.id);seek(clip.startSec);drag.current = {clip,edge,x: event.clientX};
+    setInspecting(true);event.stopPropagation();event.currentTarget.setPointerCapture(event.pointerId);setSelected(clip.id);seek(clip.startSec);drag.current = {clip,edge,x: event.clientX};
   }
   function moveDrag(event: React.PointerEvent<HTMLButtonElement>) {
     const current = drag.current;
@@ -102,7 +103,7 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
     finally {setCreating(false);}
   }
   if (timeline.legacy) return <footer className={styles.footer}><p>{t('Keep this project. Start a new film to use the connected timeline.','Ce projet reste conservé. Lancez un nouveau film pour utiliser la timeline connectée.')}</p><button disabled={creating} onClick={() => void startFilm()}>{t('Start a film','Commencer un film')}</button>{localError && <p role="alert">{localError}</p>}</footer>;
-  return <footer className={styles.footer} data-revision={timeline.view?.data.revision} aria-label={t('Film timeline','Timeline du film')}>
+  return <footer className={styles.footer} data-empty={!items.length} data-expanded={timelineExpanded} data-revision={timeline.view?.data.revision} aria-label={t('Film timeline','Timeline du film')}>
     {monitor && items.length > 0 && <div className={styles.monitorRow}>
       <div className={styles.monitor} style={{aspectRatio: settings.aspectRatio.replace(':','/')}} aria-label={t('Film monitor','Moniteur du film')}>
         <ProgramPlaybackLayers copy={copy.viewer.monitor} {...layers} mediaReloadKeys={mediaReloadKeys} onMediaAccessError={mediaFailure} />
@@ -123,7 +124,7 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
         <div className={styles.ruler}>{Array.from({length: Math.ceil(width/(pixelsPerSecond*5))},(_,index) => <span key={index} style={{left: index*pixelsPerSecond*5}}>{index*5}s</span>)}</div>
         {tracks.map(track => <div key={track} className={styles.track} aria-label={track}>
           {items.filter(item => item.track === track).map(item => {const thumbnailUrl = item.mediaAccessRequired ? item.thumbnailAccessUrl : item.thumbnailUrl;return <div key={item.id} className={styles.clip} data-timeline-item={item.id} data-timeline-start={item.startSec} data-timeline-duration={item.durationSec} data-selected={selected === item.id} data-kind={item.mediaKind} style={{left: item.startSec*pixelsPerSecond,width: Math.max(30,item.durationSec*pixelsPerSecond)}}>
-            <button className={styles.clipBody} disabled={timeline.busy} aria-label={`${t('Select clip','Sélectionner le clip')} ${item.title}`} onPointerDown={event => startDrag(event,item,null)} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={() => {drag.current = null;setPreview(null);}} onClick={event => {event.stopPropagation();setSelected(item.id);seek(item.startSec);}}>{thumbnailUrl && item.mediaKind !== 'audio' ? <img src={thumbnailUrl} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer"/> : null}<span>{item.title}</span></button>
+            <button className={styles.clipBody} disabled={timeline.busy} aria-label={`${t('Select clip','Sélectionner le clip')} ${item.title}`} onPointerDown={event => startDrag(event,item,null)} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={() => {drag.current = null;setPreview(null);}} onClick={event => {event.stopPropagation();setInspecting(true);setSelected(item.id);seek(item.startSec);}}>{thumbnailUrl && item.mediaKind !== 'audio' ? <img src={thumbnailUrl} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer"/> : null}<span>{item.title}</span></button>
             {(['start','end'] as const).map(edge => <button key={edge} className={styles.handle} data-edge={edge} aria-label={`${t('Trim','Couper')} ${edge} · ${item.title}`} disabled={timeline.busy} onPointerDown={event => startDrag(event,item,edge)} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={() => {drag.current = null;setPreview(null);}} onClick={event => event.stopPropagation()}/>) }
           </div>;})}
         </div>)}
@@ -131,7 +132,7 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
         {!!items.length && <div className={styles.playhead} style={{left: playback.playheadSec*pixelsPerSecond}}/>}
       </div>
     </div>
-    {chosen && timelineExpanded && <div className={styles.inspector}>
+    {chosen && inspecting && timelineExpanded && <div className={styles.inspector}>
       <span>{chosen.title}</span>
       <button aria-pressed={trimEdge === 'start'} onClick={() => setTrimEdge('start')}>{t('Start','Début')}</button><button aria-pressed={trimEdge === 'end'} onClick={() => setTrimEdge('end')}>{t('End','Fin')}</button>
       <input key={`${chosen.id}:${chosen.durationSec}`} type="number" min="1" step={1/fps} defaultValue={chosen.durationSec} aria-label={t('Clip duration in seconds','Durée du clip en secondes')} disabled={timeline.busy} onBlur={event => {const seconds = Number(event.target.value);if (Number.isFinite(seconds) && seconds >= 1 && seconds !== chosen.durationSec) void timeline.edit({kind: 'trim',clipId: chosen.id,edge: trimEdge,durationFrames: Math.round(seconds*fps)});}}/>
