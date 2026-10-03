@@ -55,6 +55,7 @@ function StudioImageConversationWorkspace({
   const [text, setText] = useState("");
   const shelf = useConversationMediaShelf(studio.conversation.turns,locale,mediaEnabled);
   const references = shelf.references;
+  const unavailableReferences = !mediaEnabled&&references.some(ref=>ref.kind&&ref.kind!=='image');
   const [dropping,setDropping] = useState(false);
   const dragDepth=useRef(0);
   const [library, setLibrary] = useState(false);
@@ -98,7 +99,7 @@ function StudioImageConversationWorkspace({
   }
   function detach(item:ShelfMedia) {shelf.detach(item.assetId);setText(current=>removeMediaMention(current,item.label));}
   async function send() {
-    if (!text.trim() || studio.loading || studio.busy || studio.pending || shelf.uploading) return;
+    if (!text.trim() || studio.loading || studio.busy || studio.pending || shelf.uploading || unavailableReferences) return;
     const input = {
       requestId: crypto.randomUUID(),
       message: text,
@@ -286,7 +287,7 @@ function StudioImageConversationWorkspace({
             text={text}
             onTextChange={setText}
             onSend={() => void send()}
-            blocked={studio.loading || studio.busy || !!studio.pending || shelf.uploading}
+            blocked={studio.loading || studio.busy || !!studio.pending || shelf.uploading || unavailableReferences}
             libraryTrigger={libraryTrigger}
             onOpenLibrary={openReferences}
             locale={locale}

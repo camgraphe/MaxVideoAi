@@ -140,7 +140,15 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await shelf.getByRole('button',{name:'Open media',exact:true}).click();
     await page.setViewportSize({width:390,height:844});
     await expect(message).toBeVisible();
+    await expect(shelf.getByRole('button',{name:'Open media',exact:true})).toBeVisible();
+    await proof('media-dock-mobile-compact');
+    await shelf.getByRole('button',{name:'Open media',exact:true}).click();
     await expect(shelf.getByRole('button',{name:'Mention in message',exact:true})).toBeVisible();
+    await shelf.getByRole('button',{name:'Enlarge Image 1',exact:true}).click();
+    await expect(page.getByRole('dialog',{name:'Image 1',exact:true})).toBeVisible();
+    await proof('media-lightbox-mobile');
+    await page.keyboard.press('Escape');
+    await expect(shelf.getByRole('button',{name:'Enlarge Image 1',exact:true})).toBeFocused();
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth),390);
     await proof('media-dock-mobile');
     await page.getByRole('button',{name:'Remove Image 1',exact:true}).click();

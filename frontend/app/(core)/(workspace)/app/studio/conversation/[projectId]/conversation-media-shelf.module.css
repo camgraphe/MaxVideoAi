@@ -15,6 +15,15 @@
 .attachedMark {position:absolute;right:1px;top:1px;background:var(--studio-accent);color:var(--studio-ink);border-radius:50%;padding:1px;}
 .preview {aspect-ratio:1.12;background:color-mix(in srgb,var(--studio-panel) 60%,transparent);border:1px solid var(--studio-line);border-radius:13px;display:grid;place-items:center;overflow:hidden;margin-top:5px;}
 .preview>img,.preview>video {height:100%;width:100%;object-fit:contain;max-height:290px;}
+.shelf .preview .enlarge {padding:0;border:0;border-radius:0;position:relative;width:100%;height:100%;display:grid;place-items:center;cursor:zoom-in;}
+.enlarge img {width:100%;height:100%;object-fit:contain;max-height:290px;}
+.enlarge>svg {position:absolute;right:10px;bottom:10px;color:#fff;filter:drop-shadow(0 1px 3px #000);}
+.shelf svg {stroke-width:1.6;}
+.lightbox {width:min(1100px,calc(100vw - 32px));max-height:90dvh;padding:12px;background:var(--studio-bg);color:var(--studio-text);border:1px solid var(--studio-line);border-radius:16px;}
+.lightbox::backdrop {background:#000b;backdrop-filter:blur(8px);}
+.lightbox>div {display:flex;justify-content:space-between;align-items:center;padding-left:12px;font-size:12px;}
+.lightbox button {display:grid;place-items:center;padding:0;}
+.lightbox>img {width:100%;height:auto;max-height:calc(90dvh - 80px);object-fit:contain;margin-top:8px;border-radius:7px;}
 .preview>span,.preview>div {font-size:12px;color:var(--studio-muted);text-align:center;}
 .preview button {font-size:11px;display:inline-flex;gap:8px;align-items:center;}
 .audio {width:100%;display:flex;flex-direction:column;align-items:center;gap:25px;padding:18px 10px;}
@@ -48,6 +57,7 @@
  .tiles button>svg:not(.attachedMark) {width:14px;height:14px;}
  .preview {grid-column:1;grid-row:1/3;width:96px;height:96px;aspect-ratio:auto;margin:0;}
  .preview>img,.preview>video {max-height:96px;}
+ .enlarge img {max-height:96px;}.enlarge>svg {right:5px;bottom:5px;width:12px;height:12px;}
  .preview:has(audio),.preview:has(video) {grid-column:1/-1;width:100%;height:96px;}
  .content:has(video) .caption,.content:has(video) .actions,.content:has(audio) .caption,.content:has(audio) .actions {grid-row:auto;grid-column:1/-1;}
  .audio {padding:0 10px;gap:0;}.audio>svg {display:none;}

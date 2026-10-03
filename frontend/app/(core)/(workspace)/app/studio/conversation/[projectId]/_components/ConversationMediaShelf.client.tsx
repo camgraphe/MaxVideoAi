@@ -1,11 +1,13 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
-import {ArrowUpLeft,Check,ChevronRight,Film,Image as ImageIcon,Music2,PanelRightClose,PanelRightOpen,RefreshCw} from 'lucide-react';
+import {ArrowUpLeft,Check,ChevronRight,Expand,Film,Image as ImageIcon,Music2,PanelRightClose,PanelRightOpen,RefreshCw} from 'lucide-react';
 import type {ConversationLocale} from '@/lib/studio/conversation-quote-presentation';
 import {MEDIA_SHELF_DRAG_TYPE,type ShelfMedia} from '../_lib/conversation-media-shelf';
 import styles from '../conversation-media-shelf.module.css';
+import {ConversationReferenceLightbox} from './ConversationReferenceLightbox.client';
+import type {ConversationReferencePreview} from '@/lib/studio/conversation-reference-previews';
 
-type Preview={assetId:string;kind:'image'|'video'|'audio';url:string;thumbUrl:string|null;expiresAt:string|null};
+type Preview=ConversationReferencePreview;
 export function ConversationMediaShelf({projectId,items,selectedId,expanded,attachedIds,locale,onSelect,onToggle,onMention,onAttach,onDetach}:{
   projectId:string;items:ShelfMedia[];selectedId:string|null;expanded:boolean;attachedIds:string[];locale:ConversationLocale;
   onSelect:(id:string)=>void;onToggle:()=>void;onMention:(item:ShelfMedia)=>void;onAttach:(item:ShelfMedia)=>void;onDetach:(item:ShelfMedia)=>void;
@@ -13,6 +15,7 @@ export function ConversationMediaShelf({projectId,items,selectedId,expanded,atta
   const t=(en:string,fr:string)=>locale==='fr'?fr:en;
   const selected=items.find(item=>item.assetId===selectedId)??items.at(-1);
   const [cache,setCache]=useState<Record<string,Preview>>({}),[failed,setFailed]=useState(false),[retry,setRetry]=useState(0),[loading,setLoading]=useState(false);
+  const [lightbox,setLightbox]=useState(false);
   const previews=useRef(cache);
   const player=useRef<HTMLMediaElement|null>(null);
   const kind=selected?.kind??'image';
@@ -51,7 +54,7 @@ export function ConversationMediaShelf({projectId,items,selectedId,expanded,atta
       </div>
       <div className={styles.preview} aria-busy={loading}>
         {loading?<span role="status">{t('Opening preview…','Ouverture de l’aperçu…')}</span>:failed?<div role="status"><p>{t('Preview unavailable','Aperçu indisponible')}</p><button onClick={()=>setRetry(value=>value+1)}><RefreshCw size={14}/>{t('Try again','Réessayer')}</button></div>:preview?<>
-          {kind==='image'?<img key={preview.url} src={preview.url} alt={selected.name??selected.label} onError={()=>setFailed(true)}/>:kind==='video'?<video key={preview.url} ref={node=>{player.current=node;}} src={preview.url} poster={preview.thumbUrl??undefined} controls playsInline preload="none" aria-label={selected.label} onError={()=>setFailed(true)}/>:<div className={styles.audio}><Music2 size={32}/><audio key={preview.url} ref={node=>{player.current=node;}} src={preview.url} controls preload="none" aria-label={selected.label} onError={()=>setFailed(true)}/></div>}
+          {kind==='image'?<button className={styles.enlarge} aria-label={t('Enlarge ','Agrandir ')+selected.label} onClick={()=>setLightbox(true)}><img key={preview.url} src={preview.url} alt={selected.name??selected.label} onError={()=>setFailed(true)}/><Expand size={15}/></button>:kind==='video'?<video key={preview.url} ref={node=>{player.current=node;}} src={preview.url} poster={preview.thumbUrl??undefined} controls playsInline preload="none" aria-label={selected.label} onError={()=>setFailed(true)}/>:<div className={styles.audio}><Music2 size={32}/><audio key={preview.url} ref={node=>{player.current=node;}} src={preview.url} controls preload="none" aria-label={selected.label} onError={()=>setFailed(true)}/></div>}
         </>:icon(selected)}
       </div>
       <div className={styles.caption}><strong>{selected.label}</strong>{selected.name&&<span title={selected.name}>{selected.name}</span>}</div>
@@ -61,5 +64,6 @@ export function ConversationMediaShelf({projectId,items,selectedId,expanded,atta
       </div>
       <p className={styles.hint}>{t('Drag a reference into your message to talk about it.','Glissez une référence dans votre message pour en parler.')}</p>
     </div>:<div className={styles.rail}>{items.slice(-3).map(item=><button key={item.assetId} aria-label={t('Preview ','Aperçu de ')+item.label} onClick={()=>{onSelect(item.assetId);onToggle();}}>{icon(item)}</button>)}</div>}
+    {lightbox&&preview&&<ConversationReferenceLightbox url={preview.url} label={selected.label} locale={locale} onClose={()=>setLightbox(false)}/>}
   </aside>;
 }

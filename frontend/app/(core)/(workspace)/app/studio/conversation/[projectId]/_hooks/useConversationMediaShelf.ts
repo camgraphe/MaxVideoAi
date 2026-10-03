@@ -15,6 +15,12 @@ export function useConversationMediaShelf(turns:ImageConversationTurn[],locale:C
   const t=(en:string,fr:string)=>locale==='fr'?fr:en;
   useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
   useEffect(()=>{
+    const desktop=window.matchMedia('(min-width: 801px)');
+    const collapse=()=>{if(!desktop.matches)setExpanded(false);};
+    collapse();desktop.addEventListener('change',collapse);
+    return()=>desktop.removeEventListener('change',collapse);
+  },[]);
+  useEffect(()=>{
     let next=all.current;
     for(const mention of turns.flatMap(turn=>turn.referenceMentions??[]).slice(-24)) {
       if(next.some(item=>item.assetId===mention.assetId))continue;
@@ -28,14 +34,20 @@ export function useConversationMediaShelf(turns:ImageConversationTurn[],locale:C
     all.current=next.items;setItems(next.items);return next.item;
   }
   function attach(asset:ImageLibraryAsset) {
+    if(!mediaEnabled&&asset.kind&&asset.kind!=='image') {
+      setError(t('Video and audio references are unavailable in this workspace. You can still preview them.','Les références vidéo et audio sont indisponibles dans cet espace. Vous pouvez toujours les consulter.'));return null;
+    }
     if(!attached.current.some(ref=>ref.assetId===asset.assetId)&&attached.current.length>=8) {
       setError(t('You can attach up to eight media to one message.','Vous pouvez joindre huit médias par message.'));return null;
     }
     const item=remember(asset);
     if(!attached.current.some(ref=>ref.assetId===asset.assetId)) {attached.current=[...attached.current,item];setReferences(attached.current);}
-    setSelectedId(item.assetId);setExpanded(true);setError(null);return item;
+    setSelectedId(item.assetId);setExpanded(window.matchMedia('(min-width: 801px)').matches);setError(null);return item;
   }
-  function detach(assetId:string) {attached.current=attached.current.filter(item=>item.assetId!==assetId);setReferences(attached.current);}
+  function detach(assetId:string) {
+    attached.current=attached.current.filter(item=>item.assetId!==assetId);setReferences(attached.current);
+    setError(!mediaEnabled&&attached.current.some(item=>item.kind!=='image')?t('Remove the video or audio references to send a new message in this image-only workspace.','Retirez les références vidéo ou audio pour envoyer un nouveau message dans cet espace image.'):null);
+  }
   function clear() {attached.current=[];setReferences([]);}
   function restore(input:ImageTurnInput) {
     const values=[...input.references.map(assetId=>({assetId,kind:'image' as const})),...(input.attachments??[]).flatMap(ref=>ref.type==='asset'?[{assetId:ref.assetId,kind:ref.kind}]:[])];
@@ -51,7 +63,8 @@ export function useConversationMediaShelf(turns:ImageConversationTurn[],locale:C
     for(const item of previous)if(!next.some(value=>value.assetId===item.assetId))next=rememberShelfMedia(next,item,known).items;
     all.current=next;setItems(next);
     attached.current=values.map(value=>next.find(item=>item.assetId===value.assetId)!);setReferences(attached.current);
-    setSelectedId(attached.current.at(-1)?.assetId??null);setExpanded(true);setError(null);
+    setSelectedId(attached.current.at(-1)?.assetId??null);setExpanded(window.matchMedia('(min-width: 801px)').matches);
+    setError(!mediaEnabled&&attached.current.some(item=>item.kind!=='image')?t('Remove the video or audio references to send a new message in this image-only workspace.','Retirez les références vidéo ou audio pour envoyer un nouveau message dans cet espace image.'):null);
   }
   async function upload(files:File[]) {
     if(busy.current)return;
