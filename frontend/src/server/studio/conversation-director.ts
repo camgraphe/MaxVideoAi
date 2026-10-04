@@ -12,6 +12,8 @@ import {studioHistoryMessage,studioReferenceInputContent} from './conversation-r
 import {STUDIO_MEDIA_DIRECTOR_TOOLS} from '@/lib/studio/conversation-media-contract';
 import {STUDIO_EDITING_DIRECTOR_TOOLS} from '@/lib/studio/conversation-editing-contract';
 import {imageSelectionSchema} from '@/lib/studio/conversation-creation-contract';
+import {studioToolReferenceProperties} from './conversation-tool-reference-schema';
+import {isStudioPreparationCorrection} from './conversation-preparation-validation';
 
 export type StudioDirectorResponse = Pick<Response, 'id' | 'model' | 'status' | 'service_tier' | 'usage' | 'output_text'> & {output: Response['output'];incomplete_details?: Response['incomplete_details']};
 export type StudioResponseCreator = (params: ResponseCreateParamsNonStreaming) => Promise<StudioDirectorResponse>;
@@ -80,7 +82,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
           : ''),
         input,
         tools: tools.map(tool => ({type: 'function' as const, name: tool.name, description: tool.description, strict: true,
-          parameters: {type: 'object', additionalProperties: false, properties: tool.properties, required: Object.keys(tool.properties)}})),
+          parameters: {type: 'object', additionalProperties: false, properties: studioToolReferenceProperties(tool.name,tool.properties,context.references), required: Object.keys(tool.properties)}})),
         text: {format: {type: 'json_schema', name: 'studio_reply', strict: true, schema: {type: 'object', additionalProperties: false, required: ['reply'], properties: {reply: {type: 'string'}}}}},
       };
       const response = await context.checkpoint(index, () => create(params), params);
@@ -112,6 +114,10 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         return {reply: action.reply,image: null,exportQuote: result.data};
       }
       lastResult = result;
+      if (isStudioPreparationCorrection(result)) {
+        input.push(...response.output as ResponseInputItem[], {type: 'function_call_output', call_id: call.call_id, output: JSON.stringify(result)});
+        continue;
+      }
       if (result.ok && result.action === 'timeline.edit' && result.data.changed) completedEdits++;
       if (action.action === 'image.prepare' && result.ok) {
         return {reply: action.reply,image: imageSelectionSchema.strip().parse(action)};

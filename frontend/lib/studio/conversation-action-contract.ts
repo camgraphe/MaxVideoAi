@@ -78,11 +78,11 @@ export const STUDIO_DIRECTOR_TOOLS = [
   STUDIO_PRICING_DIRECTOR_TOOL,
   {action: 'project.read', name: 'project_read', description: 'Read this owned project, current revision and durable brief.', properties: {}},
   {action: 'catalog.read', name: 'catalog_read', description: 'Read the bounded, executable and certified creation catalog. Inspect model_details before selecting settings or reference roles. No prices are guessed.', properties: {}},
-  {action: 'model.details', name: 'model_details', description: 'Inspect exact supported modes, settings, formats, durations and reference roles of one model from catalog_read. Read-only; no quote, generation or charge.', properties: {modelId: {type: 'string'}}},
+  {action: 'model.details', name: 'model_details', description: 'Inspect exact supported modes, settings, formats, durations and reference roles of one model from catalog_read. A missing setting applies to this model, not the whole catalog: inspect a suitable alternative before declaring the requested size or workflow unavailable. Read-only; no quote, generation or charge.', properties: {modelId: {type: 'string'}}},
   {action: 'project.remember', name: 'project_remember', description: 'Replace the durable brief and decisions, preserving prior constraints. Use the memory revision just read.', properties: {
     revision: {type: 'integer', minimum: 0}, brief: {type: 'string'}, decisions: {type: 'array', items: {type: 'string'}},
   }},
-  {action: 'image.prepare', name: 'image_prepare', description: 'Write your own image prompt and prepare one exact quote with a model and supported settings from model_details. Settings are name/value pairs; references are explicitly selected attached library images with supported roles. Null selection fields use defaults; an empty reference list means text-only. Does not generate or charge. Ends the turn; explain that the client reviews the quote.', properties: {
+  {action: 'image.prepare', name: 'image_prepare', description: 'Write your own image prompt and prepare one exact quote with a model and supported settings from model_details. Settings are name/value pairs; references are explicitly selected attached library images with supported roles. Null selection fields use defaults; an empty reference list means text-only. Does not generate or charge. Success ends the turn; explain that the client reviews the quote.', properties: {
     reply: conversationPreparationReplyProperty, ...imageSelectionProperties,
   }},
   {action: 'generation.read', name: 'generation_read', description: 'Recover a generation from an exact quote belonging to this project. Never starts another job.', properties: {quoteId: {type: 'string'}}},

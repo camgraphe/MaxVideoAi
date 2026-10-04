@@ -58,6 +58,8 @@ async function main() {
       'frontend/src/server/studio/assistance-provider-facts.ts','frontend/src/server/studio/image-generation-service.ts',
       'frontend/src/server/agent-api/model-details.ts','frontend/src/server/studio/conversation-capabilities.ts',
       'frontend/src/server/studio/conversation-media-generation.ts','frontend/src/server/studio/image-conversation-service.ts',
+      'frontend/src/server/studio/conversation-image-run.ts','frontend/src/server/studio/conversation-actions.ts',
+      'frontend/src/server/studio/conversation-preparation-validation.ts','frontend/src/server/studio/conversation-tool-reference-schema.ts',
       'frontend/src/server/agent-api/generation-actor.ts','scripts/qa/studio-live-budget.ts',
       'scripts/qa/studio-call-runtime.ts','scripts/qa/studio-live-queue.ts','scripts/qa/studio-human-live.ts']) {
       const bytes=await readFile(path);const hash=createHash('sha256').update(bytes).digest('hex');sources[path]=hash;

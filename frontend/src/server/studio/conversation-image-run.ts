@@ -16,7 +16,8 @@ import {createStudioActionExecutor} from './conversation-actions';
 import {beginStudioAction, completeStudioAction, checkpointStudioResponse, readStudioConversationProject, saveStudioConversationMemory} from './conversation-run-repository';
 import {attachImageQuote, persistImageDraft, type StoredImageTurn} from './image-conversation-repository';
 import {imageRequestFromDraft,imageReferenceFingerprintFromReview, type ImageGenerationFactory} from './image-conversation-service';
-import {studioMediaRequest, type StudioMediaFactories} from './conversation-media-generation';
+import {validateStudioMediaRequest, type StudioMediaFactories} from './conversation-media-generation';
+import {validateStudioPreparationInput} from './conversation-preparation-validation';
 import {draftSurface} from '@/lib/studio/image-conversation-contract';
 import type {StudioMediaIntent} from '@/lib/studio/conversation-media-contract';
 import type {TransactionQueryExecutor} from '@/lib/db';
@@ -35,8 +36,9 @@ async function prepareMediaAction(options: {
   referenceFingerprint: string; enabled: boolean; factories: StudioMediaFactories;
 }, action: StudioMediaIntent, callId: string) {
   const {actor, turn, factories} = options;
+  const selection = await validateStudioMediaRequest(actor, action, options.input, factories, options.enabled);
   if (!turn.draft_json) await persistImageDraft(actor, turn, {reply: action.reply, image: null, media: action}, options.referenceFingerprint);
-  const request = await studioMediaRequest(actor, action, options.input, factories, options.enabled);
+  const request = await selection.materialize();
   const onQuotePrepared = async (quote: McpGenerationQuote<CanonicalGenerationRequest | CanonicalAudioRequest>, executor: TransactionQueryExecutor) => {
     await attachImageQuote(actor, turn, quote.quoteId, executor);
     await completeStudioAction(actor, turn, callId, {ok: true, action: action.action, data: {
@@ -158,10 +160,13 @@ export async function runStudioImageActions(options: {
     },
     prepareImage: async action => {
       const draft = {reply: action.reply,image: imageSelectionSchema.strip().parse(action)};
-      // Persist the selected prompt before preparation. A failed preparation resumes this same intent.
+      // Validate selection before saving intent. Catalog/ownership failures remain terminal.
+      const catalog = await generation.catalog();
+      const request = validateStudioPreparationInput(() => imageRequestFromDraft(draft, input, catalog));
+      const expectedReferenceFingerprint = imageReferenceFingerprintFromReview(request,options.references);
+      // Once preparation can mutate state, recovery must preserve this exact intent.
       await persistImageDraft(actor, turn, draft, options.referenceFingerprint);
-      const request = imageRequestFromDraft(draft, input, await generation.catalog());
-      return factory(actor, {enabled: options.enabled, expectedReferenceFingerprint: imageReferenceFingerprintFromReview(request,options.references),
+      return factory(actor, {enabled: options.enabled, expectedReferenceFingerprint,
         onQuotePrepared: async (quote, executor) => {
           await attachImageQuote(actor, turn, quote.quoteId, executor);
           await completeStudioAction(actor, turn, currentCallId, {ok: true, action: 'image.prepare', data: {

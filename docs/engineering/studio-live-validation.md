@@ -96,7 +96,11 @@ copy, commit or include that key file in evidence. No SDK retries are enabled.
 
 Add `--prepare-in-isolated-db --adaptive` for actual quote preparation and adaptive
 dialogue. The append-only request array is reread after queued work completes;
-append the blind actor's next messages with the same IDs and model. Create
+append the blind actor's next messages with the same IDs and model. Publish each
+complete array through a temporary file and atomic rename; never truncate or
+rewrite the watched file in place. Earlier observed entries cannot be changed
+or removed. The runner observes `.done` before rereading the final queue, and
+closes only after consuming that final snapshot. Create
 `<requests-path>.done` when all intended rounds are queued; the process closes
 after draining them. Use `--authorized-cap-usd 15` only for the explicitly approved
 cumulative campaign. Retain one journal throughout all cohorts.
@@ -148,3 +152,30 @@ cohorts. Record cases, customer turns, provider calls, quote coverage, actual
 errors, unresolved work and cumulative cost; an estimate-only reply or an honest
 unsupported request is not a completed quote. Synthetic results do not measure
 customer satisfaction or artistic output quality.
+
+## Selection validation and recovery
+
+`conversation-preparation-validation.ts` marks only explicit input-validation
+rejections before a creation draft, source promotion or quote mutation. The
+server receipt carries `nextAction: {type: "studio_preparation_input", version: 1}`.
+The director feeds that receipt back to the model using the Responses remaining
+in the existing four-call limit. A fourth rejected selection yields an honest
+continuation without a creation draft or quote. Successfully prepared quotes
+still end the turn and require the client's confirmation.
+
+Image selection is normalized before persisting its draft. Media preflight checks
+canonical parameters and owned sources; only after validation and draft storage
+may it promote ready project images and prepare the quote. Wallet, lease,
+catalogue-read, ownership, provider, storage and ambiguous failures cannot gain a
+correction marker merely because they share a public error code. Exports and
+untyped Audio errors remain outside this correction path. Replaying a saved
+Response or action receipt never purchases it again; a new corrective Response
+uses the normal metered assistance budget.
+
+`conversation-tool-reference-schema.ts` binds asset selections to the exact
+reviewed attached image IDs in the emitted tool schemas. Server ownership and
+capability validation remain mandatory. Labels and damaged IDs are never resolved
+as aliases. Ready project output selections retain their separate identities.
+Tests `studio-preparation-correction-postgres.test.ts` and
+`studio-preparation-validation.test.ts` cover durable correction, paid-response
+replay, final-response limits and the mutation/error boundaries.

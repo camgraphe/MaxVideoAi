@@ -42,7 +42,7 @@ export const conversationSelectionProperties = {
     properties: {name: {type: 'string'}, value: {type: ['string','number','boolean','null']}}}},
   outputCount: {type: ['integer','null'], enum: [1,null],description: 'This prepares exactly one output. Multiple variants require separate requests; never describe one preparation as a two-image or batch quote.'},
 };
-export const conversationPreparationReplyProperty={type:'string',description:'Explain the direction and quote review before creation. The server computes and displays the exact price after this call; do not claim a successful preparation has no price because an earlier estimate failed, or invent an unread amount.'};
+export const conversationPreparationReplyProperty={type:'string',description:'Explain the direction and quote review before creation. The server computes and displays the exact price after this call; do not claim a successful preparation has no price because an earlier estimate failed, or invent an unread amount. A studio_preparation_input rejection created no quote: correct the selection within remaining Responses or explain the missing requirement.'};
 export const conversationCreationPromptProperty={type:'string',description:'Write the visual direction. Preserve client-supplied visible lettering verbatim, including accents and punctuation, unless a rewrite is requested.'};
 export function conversationReferencesProperties(jobOutputs: boolean) {
   return {type: ['array','null'], items: {type: 'object', additionalProperties: false, required: ['ref','role','slot'], properties: {
