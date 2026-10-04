@@ -81,7 +81,7 @@ export default function StudioPreviewAccess({ visitor = false, available = false
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const continuationParams = new URLSearchParams(searchParams.toString());
+  const continuationParams = new URLSearchParams(searchParams?.toString() ?? '');
   continuationParams.delete('preview');
   const nextPath = buildAuthReturnTarget(pathname ?? '/app/studio', continuationParams);
   const unavailable = !visitor && !available;
