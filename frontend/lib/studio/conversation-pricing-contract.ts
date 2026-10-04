@@ -13,6 +13,6 @@ export type StudioPricingEstimate=Readonly<{
 }>;
 export const STUDIO_PRICING_DIRECTOR_TOOL={action:'pricing.read',name:'pricing_read',description:'Read the current MaxVideoAI customer estimate for ONE exact supported image/video scenario. Use settings from model_details and explicitly attached saved image references only. No quote is created/replaced, no spending or media promotion. Compare current like-for-like estimates before a budget recommendation; a fresh prepare quote and client confirmation are still required. Audio and unsaved project outputs are not supported here.',properties:{
   surface:{type:'string',enum:['image','video']},modelId:{type:'string'},mode:{type:'string',enum:['t2i','i2i','t2v','i2v']},
-  settings:{type:'array',maxItems:32,items:{type:'object',additionalProperties:false,required:['name','value'],properties:{name:{type:'string'},value:{type:['string','number','boolean','null']}}}},
+  settings:{type:'array',description:'Use canonical setting names and supported values from model_details. Video duration uses durationSec (seconds), not duration. Other base settings include resolution, aspectRatio and audio; include only settings supported by the chosen mode.',maxItems:32,items:{type:'object',additionalProperties:false,required:['name','value'],properties:{name:{type:'string'},value:{type:['string','number','boolean','null']}}}},
   references:{...conversationReferencesProperties(false),type:'array',maxItems:STUDIO_CONVERSATION_MAX_REFERENCES},outputCount:{type:'integer',enum:[1]},
 }} as const;

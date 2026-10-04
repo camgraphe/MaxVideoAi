@@ -55,10 +55,44 @@ test('a fourth failed edit reports the actual failure and keeps earlier successf
   assert.match(draft.reply,/preserve the manual edit/);
 });
 
-test('read-only action exhaustion produces a pending reply without claiming any edit completed',async () => {
-  let calls = 0;
-  const draft = await createStudioConversationDirector({createResponse: async () => toolResponse(calls++,'catalog_read',{})})({message: 'Help me make this film.',references: [],history: [],project,checkpoint: async (_,create) => create(),execute: async () => ({ok: true,action: 'catalog.read',data: []})});
+test('three research actions leave the final response for an answer even when the pricing read failed',async () => {
+  const steps = [
+    ['catalog_read',{}],
+    ['model_details',{modelId: 'kling-o3-pro'}],
+    ['pricing_read',{surface: 'video',modelId: 'kling-o3-pro',mode: 't2v',settings: [{name: 'duration',value: 8},{name: 'resolution',value: '1080p'},{name: 'aspectRatio',value: '9:16'},{name: 'audio',value: false}],references: [],outputCount: 1}],
+  ] as const;
+  const actions: string[] = [];
+  let calls = 0;let outputAllowance = 0;
+  const draft = await createStudioConversationDirector({mediaEnabled: true,editingEnabled: true,exportsEnabled: true,createResponse: async params => {
+    const index = calls++;
+    outputAllowance += params.max_output_tokens!;
+    if (index < 3) return toolResponse(index,...steps[index]);
+    const names = params.tools?.filter(tool => tool.type === 'function').map(tool => tool.name) ?? [];
+    assert.deepEqual(names.sort(),['export_prepare','image_prepare','music_prepare','quote_discard','timeline_edit','video_prepare','voice_prepare'],
+      'The last request cannot spend the remaining response on a read or memory write that leaves no room for an answer.');
+    assert.equal(params.tool_choice,'auto');
+    assert.match(JSON.stringify(params.input),/The pricing scenario is invalid/,'The final answer sees the failed estimate rather than inventing a price.');
+    return {...toolResponse(index,'model_details',{modelId: 'seedance-2-5'}),output: [],output_text: JSON.stringify({reply: 'Use soft morning light and a slow camera move. Upload the product photo to guide bottle consistency. The price read failed, so I cannot yet verify the budget.'})};
+  }})({message: 'Compare two models for an eight-second vertical perfume ad under $5. Shape the direction; do not generate.',references: [],history: [],project,
+    checkpoint: async (_,create) => create(),execute: async (_,action) => {
+      actions.push(action.action);
+      if (action.action === 'pricing.read') return {ok: false,action: action.action,error: {code: 'PARAMETER_INVALID',message: 'The pricing scenario is invalid.',retryable: false}};
+      return {ok: true,action: action.action,data: []} as StudioActionResult;
+    }});
+  assert.deepEqual(actions,['catalog.read','model.details','pricing.read']);
   assert.equal(calls,4);
+  assert.equal(outputAllowance,8800);
+  assert.equal(draft.continuation,undefined);
+  assert.equal(draft.image,null);
+});
+
+test('previously checkpointed fourth reads remain replayable without another model response',async () => {
+  const receipts = Array.from({length: 4},(_,index) => toolResponse(index,'catalog_read',{}));
+  let recovered = 0;
+  assert.ok(receipts.every(isReplayableStudioResponse));
+  const draft = await createStudioConversationDirector({createResponse: async () => {throw new Error('Saved Responses must not be repurchased.');}})({message: 'Help me make this film.',references: [],history: [],project,
+    checkpoint: async index => receipts[index],execute: async () => {recovered++;return {ok: true,action: 'catalog.read',data: []};}});
+  assert.equal(recovered,4);
   assert.equal((draft as any).continuation.completedEdits,0);
   assert.match(draft.reply,/continue/i);
   assert.doesNotMatch(draft.reply,/saved/i);

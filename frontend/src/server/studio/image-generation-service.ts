@@ -37,7 +37,7 @@ import { getWalletSummary } from "@/server/wallet-summary";
 import {projectAgentModelModeDetails} from '@/server/agent-api/model-details';
 import {STUDIO_CONVERSATION_MAX_REFERENCES} from '@/lib/studio/conversation-creation-contract';
 import type {StudioPricingEstimate} from '@/lib/studio/conversation-pricing-contract';
-import {normalizeGenerationRequest} from '@/server/agent-api/generation-normalization';
+import {GenerationNormalizationError,normalizeGenerationRequest} from '@/server/agent-api/generation-normalization';
 import {readGenerationPricing} from '@/server/agent-api/generation-pricing-read';
 import {priceCanonicalGeneration} from '@/server/agent-api/generation-pricing';
 import {getUserMembershipStatus} from '@/server/membership/user-membership-status';
@@ -218,7 +218,12 @@ function createStudioVisualGenerationService(
     async estimate(input: PrepareGenerationInput): Promise<StudioPricingEstimate> {
       if (!options.enabled) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio estimates are unavailable.');
       let request: CanonicalGenerationRequest;
-      try {request=normalizeGenerationRequest(input);} catch {throw new AgentApiError('PARAMETER_INVALID','The pricing scenario is invalid.');}
+      try {request=normalizeGenerationRequest(input);} catch (error) {
+        if (error instanceof GenerationNormalizationError && error.field==='settings' && input.surface==='video' && Object.prototype.hasOwnProperty.call(input.settings ?? {},'duration')) {
+          throw new AgentApiError('PARAMETER_INVALID','Use the video setting durationSec (seconds), not duration. Choose a supported value from model_details and retry pricing_read.');
+        }
+        throw new AgentApiError('PARAMETER_INVALID','The pricing scenario is invalid.');
+      }
       requireStudioGenerationRequest(request);
       const settings: Record<string,string|number|boolean|null>={};
       for (const [key,value] of Object.entries(request.settings)) {

@@ -3,6 +3,7 @@ import test from 'node:test';
 import {getFalEngineById} from '../frontend/src/config/falEngines';
 import {createStudioImageGenerationService,createStudioVideoGenerationService} from '../frontend/src/server/studio/image-generation-service';
 import {actionFromTool} from '../frontend/lib/studio/conversation-action-contract';
+import {conversationSelectionSettings} from '../frontend/lib/studio/conversation-creation-contract';
 
 const actor={authMethod: 'studio-session' as const,userId: 'owner',projectId: 'project',clientId: null};
 const membership={tier: 'member' as const,source: 'app_receipts_rolling_30d' as const,spent30Cents: 0,thresholdCents: 0,discountPercent: 0};
@@ -72,6 +73,43 @@ test('pricing tool accepts one exact bounded scenario without caller authority o
   for(const extra of [{userId:'other'},{projectId:'other'},{confirmed:true},{priceCents:1},{quoteId:'forged'}]) assert.throws(()=>actionFromTool('pricing_read',{...args,...extra}));
   assert.throws(()=>actionFromTool('pricing_read',{...args,outputCount:2}));
   assert.throws(()=>actionFromTool('pricing_read',{...args,references:[{ref:{type:'job-output',jobId:'j',outputId:'o',kind:'image'},role:'reference',slot:null}]}));
+});
+
+test('a video estimate rejects the duration alias with actionable canonical guidance and accepts durationSec',async()=> {
+  let priceCalls=0;
+  const generation=createStudioVideoGenerationService(actor,{enabled:true,prepareDependencies:{
+    listPublicEngines:async()=>[candidate('kling-o3-pro','video')],resolveMembershipPricing:async()=>membership,
+    resolveRequestExecutability:()=>({executable:true,reason:'available'}),
+    priceGeneration:async(request)=>{
+      priceCalls++;
+      assert.deepEqual(request.settings,{durationSec:8,resolution:'1080p',aspectRatio:'9:16',audio:false});
+      return {priceCents:250,currency:'USD',membershipTier:'member',pricingSnapshot:{totalCents:250,currency:'USD',membershipTier:'member'}};
+    },
+    getWalletSummary:async()=>{throw new Error('Estimation must not read the wallet.');},withTransaction:async()=>{throw new Error('Estimation must not begin a transaction.');},
+  }});
+  const scenario={surface:'video' as const,engineId:'kling-o3-pro',mode:'t2v' as const,prompt:'Studio pricing scenario',references:[],outputCount:1};
+  const nativeAction=actionFromTool('pricing_read',{surface:'video',modelId:'kling-o3-pro',mode:'t2v',settings:[
+    {name:'duration',value:8},{name:'resolution',value:'1080p'},{name:'aspectRatio',value:'9:16'},{name:'audio',value:false},
+  ],references:[],outputCount:1});
+  assert.equal(nativeAction.action,'pricing.read');
+  if (nativeAction.action!=='pricing.read') throw new Error('Expected the native pricing action.');
+  await assert.rejects(generation.estimate({...scenario,settings:conversationSelectionSettings(nativeAction.settings)}),error=>{
+    assert.equal((error as any).code,'PARAMETER_INVALID');
+    assert.match((error as Error).message,/durationSec/);
+    assert.match((error as Error).message,/seconds/i);
+    return true;
+  });
+  assert.equal(priceCalls,0,'Invalid names must fail before pricing, not be silently rewritten.');
+  const estimate=await generation.estimate({...scenario,settings:{durationSec:8,resolution:'1080p',aspectRatio:'9:16',audio:false}});
+  assert.deepEqual(estimate.price,{amountCents:250,currency:'USD'});
+  assert.equal(estimate.quoteRequired,true);
+  assert.equal(priceCalls,1);
+  await assert.rejects(generation.estimate({...scenario,settings:{privateCustomerToken:'secret-value'}}),error=>{
+    assert.equal((error as any).code,'PARAMETER_INVALID');
+    assert.doesNotMatch((error as Error).message,/privateCustomerToken|secret-value/);
+    return true;
+  });
+  assert.equal(priceCalls,1,'Other unknown settings remain rejected.');
 });
 
 test('Studio catalog never advertises modes rejected by its existing session preparation authority',async()=> {
