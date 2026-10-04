@@ -37,10 +37,19 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
       await expect(page.getByLabel('Loading account',{exact:true})).toHaveCount(0);
       await expect(async()=>{
         if(!await page.getByRole('dialog',{name:'MaxVideoAI',exact:true}).isVisible())await page.getByRole('button',{name:'Open MaxVideoAI menu',exact:true}).click();
-        await expect(page.getByRole('switch',{name:'Dark appearance',exact:true})).toBeVisible({timeout:1000});
+        await expect(page.getByRole('button',{name:dark?'Dark':'Light',exact:true})).toBeVisible({timeout:1000});
       }).toPass({timeout:10000});
-      const toggle=page.getByRole('switch',{name:'Dark appearance',exact:true});
-      if((await toggle.getAttribute('aria-checked'))!==String(dark))await toggle.click();
+      const menu = page.getByRole('dialog',{name:'MaxVideoAI',exact:true});
+      const preferences = menu.locator('.app-site-preferences');
+      const palette = menu.getByRole('button',{name:dark?'Dark':'Light',exact:true});
+      await expect(palette).toBeInViewport();
+      await expect(menu.getByText('Language',{exact:true})).toBeInViewport();
+      assert.equal(await preferences.evaluate(element => !!element.closest('.app-site-dialog-body')),false,'preferences are outside scrolling destinations');
+      await menu.locator('.app-site-dialog-body').evaluate(element => {element.scrollTop = element.scrollHeight;});
+      await expect(palette).toBeInViewport();
+      await palette.click();
+      await expect(palette).toHaveAttribute('aria-pressed','true');
+      await proof('preferences-'+(dark?'dark':'light')+'-'+page.viewportSize()!.width);
       await page.getByRole('dialog',{name:'MaxVideoAI',exact:true}).getByRole('button',{name:'Close ×',exact:true}).click();
     }
     let diagnosticPage = page;
@@ -77,7 +86,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
       const dialog = page.getByRole('dialog',{name: 'MaxVideoAI library',exact: true});
       await expect(dialog).toBeVisible();
       await expect(dialog.getByRole('alert')).toHaveText('The library is unavailable. Check your connection.');
-      await expect(dialog.getByRole('button',{name: 'Import',exact: true})).toBeEnabled();
+      await expect(dialog.getByRole('button',{name: 'Upload from device',exact: true})).toBeEnabled();
       const bounds = await dialog.boundingBox();
       assert.ok(bounds && bounds.x >= 0 && bounds.x+bounds.width <= page.viewportSize()!.width,'Library fits the viewport.');
       await page.getByRole('button',{name: 'Close library',exact: true}).click();
@@ -85,7 +94,8 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
       await page.unroute(endpoint);
       await page.route(endpoint,route => route.fulfill({json: {ok: true,assets: [],nextCursor: null}}));
       await page.getByRole('button',{name: 'Open library',exact: true}).click();
-      await expect(dialog.getByText('No media here yet. You can import some.',{exact: true})).toBeVisible();
+      await expect(dialog.getByText('No media here yet',{exact: true})).toBeVisible();
+      await expect(dialog.getByRole('button',{name:'Add to conversation',exact:true})).toBeDisabled();
       await dialog.getByRole('button',{name: 'Audio',exact: true}).click();
       await expect(dialog.getByRole('button',{name: 'Audio',exact: true})).toHaveAttribute('aria-pressed','true');
       await expect(dialog.getByRole('alert')).toHaveCount(0);
@@ -94,6 +104,10 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
       await expect(dialog).toHaveCount(0);
       await expect(page.getByRole('button',{name: 'Open library',exact: true})).toBeFocused();
       await page.unroute(endpoint);
+      await page.getByRole('button',{name:'Add library media to film',exact:true}).click();
+      await expect(dialog.getByRole('button',{name:'Add to timeline',exact:true})).toBeDisabled();
+      await page.keyboard.press('Escape');
+      await expect(page.getByRole('button',{name:'Add library media to film',exact:true})).toBeFocused();
     }
     await page.goto(runtime.browserOrigin+'/app/studio',{waitUntil: 'domcontentloaded',timeout: 120000});
     await expect(page).toHaveURL(url);
@@ -128,7 +142,14 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await page.route(libraryEndpoint,route=>route.fulfill({json:{ok:true,assets:referenceIds.map((assetId,index)=>({assetId,kind:'image',name:index?'Night shift':'Watch study',url:referenceUrls[index]})),nextCursor:null}}));
     for(const name of ['Watch study','Night shift']) {
       await page.getByRole('button',{name:'Open library',exact:true}).click();
-      await page.getByRole('button',{name:'Choose '+name,exact:true}).click();
+      const library = page.getByRole('dialog',{name:'MaxVideoAI library',exact:true});
+      await expect(library.getByRole('button',{name:'Upload from device',exact:true})).toBeInViewport();
+      const tile = library.getByRole('button',{name:'Choose '+name,exact:true});
+      await tile.click();
+      await expect(tile).toHaveAttribute('aria-pressed','true');
+      await expect(library).toBeVisible();
+      await proof('library-selected-'+name.replaceAll(' ','-'));
+      await library.getByRole('button',{name:'Add to conversation',exact:true}).click();
     }
     await page.unroute(libraryEndpoint);
     const shelf=page.getByRole('complementary',{name:'Media panel',exact:true});
@@ -313,6 +334,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
       await expect(page.getByRole('dialog',{name:'Make it yours.',exact:true})).toBeVisible();
       await proof('help-'+width);
       await page.keyboard.press('Escape');
+      if(width===320){await setTheme(true);await checkLibrary();await setTheme(false);}
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),'The document stays within the viewport, including classic WebKit scrollbars.');
     }
     await page.setViewportSize({width:1440,height:900});

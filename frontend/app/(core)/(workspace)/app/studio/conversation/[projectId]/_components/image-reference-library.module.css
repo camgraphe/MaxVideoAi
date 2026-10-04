@@ -1,0 +1,85 @@
+.library {
+  width: min(980px, calc(100vw - 32px));
+  height: min(780px, calc(100dvh - 48px));
+  max-width: none;
+  max-height: calc(100dvh - 24px);
+  padding: 0;
+  border: 1px solid var(--studio-line);
+  border-radius: 20px;
+  background: var(--studio-bg);
+  color: var(--studio-text);
+  box-shadow: 0 24px 90px #0004;
+  overflow: hidden;
+}
+.library[open] {display: flex; flex-direction: column;}
+.library::backdrop {background: #0a0c0baa; backdrop-filter: blur(7px);}
+.header {display: flex; align-items: flex-start; gap: 16px; padding: 24px 24px 18px; flex: none;}
+.header > div {flex: 1; min-width: 0;}
+.header h2 {margin: 0; font-size: 22px; font-weight: 550; letter-spacing: -.5px;}
+.header p {margin: 7px 0 0; color: var(--studio-muted); font-size: 13px; line-height: 1.5;}
+.library .close {display: grid; place-items: center; padding: 0; width: 44px; height: 44px; flex: none; border-radius: 50%;}
+.controls {display: grid; gap: 12px; padding: 0 24px 20px; border-bottom: 1px solid var(--studio-line); flex: none;}
+.toolbar {display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;}
+.sourceGroup {display: inline-flex; gap: 3px; padding: 3px; border: 1px solid var(--studio-line); background: var(--studio-panel); border-radius: 12px;}
+.library .sourceGroup button {min-height: 44px; border: 1px solid transparent; border-radius: 9px; padding: 8px 14px; font-size: 12px; color: var(--studio-muted); white-space: nowrap;}
+.library .sourceGroup button[aria-pressed="true"] {color: var(--studio-text); background: var(--studio-bg); border-color: var(--studio-line); box-shadow: 0 1px 3px #0001;}
+.library .upload, .library .add {display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px; border: 1px solid var(--studio-accent); background: var(--studio-accent); color: var(--studio-ink); font-size: 12px; font-weight: 600; border-radius: 10px;}
+.filterRow {display: flex; align-items: center; flex-wrap: wrap; gap: 12px;}
+.typeGroup {display: flex; gap: 4px; flex: none;}
+.library .typeGroup button {display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 12px; border: 1px solid transparent; border-radius: 8px; color: var(--studio-muted); font-size: 12px;}
+.library .typeGroup button[aria-pressed="true"] {border-color: var(--studio-line); background: var(--studio-panel); color: var(--studio-text);}
+.search {display: flex; align-items: center; flex: 1; min-width: 140px; min-height: 44px; gap: 9px; padding: 0 12px; border: 1px solid var(--studio-line); background: var(--studio-panel); border-radius: 10px; color: var(--studio-muted);}
+.search svg {flex: none;}
+.library .search input {min-width: 0; width: 100%; border: 0; padding: 10px 0; background: transparent; outline: none; color: var(--studio-text); font-size: 12px;}
+.search:focus-within {outline: 2px solid var(--studio-accent); outline-offset: 2px;}
+.gallery {flex: 1; min-height: 0; padding: 22px 24px; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable;}
+.grid {display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px;}
+.library .card {display: flex; flex-direction: column; min-width: 0; padding: 0; overflow: hidden; text-align: left; border: 1px solid var(--studio-line); border-radius: 12px; background: var(--studio-panel); transition: border-color 150ms ease, box-shadow 150ms ease;}
+.library .card:hover {border-color: var(--studio-muted);}
+.library .card[aria-pressed="true"] {border-color: var(--studio-accent); box-shadow: 0 0 0 2px var(--studio-accent);}
+.preview {display: grid; place-items: center; position: relative; width: 100%; aspect-ratio: 4 / 3; overflow: hidden; background: color-mix(in srgb, var(--studio-panel), var(--studio-bg) 55%);}
+.preview > img {width: 100%; height: 100%; object-fit: contain;}
+.mediaIcon {color: var(--studio-muted); opacity: .75;}
+.kind {position: absolute; left: 8px; bottom: 8px; padding: 4px 7px; border-radius: 5px; background: #17191ac9; color: #fff; font-size: 10px; line-height: 1.2; backdrop-filter: blur(8px);}
+.check {position: absolute; top: 8px; right: 8px; display: grid; place-items: center; height: 25px; width: 25px; border-radius: 50%; color: var(--studio-ink); background: var(--studio-accent); box-shadow: 0 1px 5px #0003;}
+.cardInfo {display: grid; gap: 4px; padding: 12px; width: 100%; min-width: 0;}
+.cardInfo strong {font-size: 12px; line-height: 1.4; font-weight: 500; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;}
+.cardInfo small {font-size: 10px; color: var(--studio-muted);}
+.error {padding: 12px 14px; margin: 0 0 16px; border: 1px solid var(--studio-line); border-radius: 10px; font-size: 13px; line-height: 1.5;}
+.status {margin: 20px 0; text-align: center; color: var(--studio-muted); font-size: 13px;}
+.empty {min-height: 180px; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; text-align: center; color: var(--studio-muted);}
+.empty > span {display: grid; place-items: center; width: 60px; height: 60px; border: 1px solid var(--studio-line); border-radius: 18px; background: var(--studio-panel); margin-bottom: 4px;}
+.empty strong {font-size: 14px; font-weight: 500; color: var(--studio-text);}
+.empty p {margin: 0; font-size: 12px; line-height: 1.6; max-width: 270px;}
+.library .more {display: block; margin: 22px auto 0; font-size: 12px;}
+.footer {display: flex; align-items: center; gap: 18px; padding: 16px 24px; border-top: 1px solid var(--studio-line); background: var(--studio-panel); flex: none;}
+.selection {flex: 1; min-width: 0; display: grid; gap: 4px; color: var(--studio-muted); font-size: 12px;}
+.selection strong {overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--studio-text); font-size: 13px; font-weight: 500;}
+.selection strong + span {font-size: 11px;}
+.library .add {flex: none; min-width: 170px;}
+.library button:focus-visible {outline: 2px solid var(--studio-accent); outline-offset: 3px;}
+.library button:disabled {opacity: .45; cursor: default;}
+.srOnly {position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;}
+@media (max-width: 800px) {.grid {grid-template-columns: repeat(3, minmax(0, 1fr));}}
+@media (max-width: 560px) {
+  .library {width: calc(100vw - 16px); height: calc(100dvh - 24px); border-radius: 16px;}
+  .header {padding: 16px 14px 14px; gap: 8px;}
+  .header h2 {font-size: 19px;}
+  .header p {font-size: 12px;}
+  .controls {padding: 0 14px 14px; gap: 10px;}
+  .toolbar {gap: 10px;}
+  .sourceGroup {width: 100%;}
+  .library .sourceGroup button {flex: 1; padding-inline: 8px;}
+  .library .upload {width: 100%;}
+  .filterRow {gap: 8px;}
+  .typeGroup {width: 100%;}
+  .library .typeGroup button {flex: 1; padding-inline: 7px;}
+  .search {flex-basis: 100%;}
+  .gallery {padding: 16px 14px;}
+  .grid {grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;}
+  .cardInfo {padding: 10px;}
+  .footer {padding: 12px 14px; gap: 10px; flex-wrap: wrap;}
+  .selection {flex-basis: 100%;}
+  .library .add {width: 100%;}
+}
+@media (prefers-reduced-motion: reduce) {.library .card {transition: none;}}

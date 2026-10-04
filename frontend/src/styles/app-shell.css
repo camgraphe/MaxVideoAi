@@ -73,12 +73,15 @@
 .app-experience .app-public-menu { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px 16px; }
 .app-experience .app-public-menu a { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 7px 4px; border-bottom: 1px solid var(--app-line); font-size: 13px; }
 .app-experience .app-public-menu .app-glyph { width: 15px; height: 15px; color: var(--app-muted); }
-.app-experience .app-site-preferences > div { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 6px 0; font-size: 13px; border-bottom: 1px solid var(--app-line); }
+.app-experience .app-site-preferences { flex: none; padding: 14px 22px; border-bottom: 1px solid var(--app-line); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; }
+.app-experience .app-site-preferences > h3 { grid-column: 1 / -1; margin: 0; }
+.app-experience .app-site-preferences > div { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; font-size: 12px; }
+.app-experience .app-site-preferences > div > span { color: var(--app-muted); }
 .app-experience .app-site-preferences button { min-width: 44px; }
-.app-experience .app-site-preferences .app-appearance-toggle { display: inline-flex; align-items: center; gap: 2px; padding: 4px; border: 1px solid var(--app-line); border-radius: 999px; background: var(--app-canvas); color: var(--app-muted); }
-.app-experience .app-appearance-toggle > span { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; transition: color 160ms ease, background-color 160ms ease, box-shadow 160ms ease; }
-.app-experience .app-appearance-toggle > span[data-active="true"] { color: var(--app-ink); background: var(--app-panel); box-shadow: 0 1px 4px #0002; }
-@media (prefers-reduced-motion: reduce) { .app-experience .app-appearance-toggle > span { transition: none; } }
+.app-experience .app-appearance-options { display: inline-flex; gap: 3px; padding: 3px; border: 1px solid var(--app-line); border-radius: 9px; background: var(--app-canvas); }
+.app-experience .app-site-preferences .app-appearance-options button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; border: 1px solid transparent; border-radius: 6px; padding: 8px 10px; background: transparent; color: var(--app-muted); font-size: 12px; transition: color 160ms ease, background-color 160ms ease, box-shadow 160ms ease; }
+.app-experience .app-site-preferences .app-appearance-options button[aria-pressed="true"] { color: var(--app-ink); background: var(--app-panel); border-color: var(--app-line); box-shadow: 0 1px 4px #0002; }
+@media (prefers-reduced-motion: reduce) { .app-experience .app-site-preferences .app-appearance-options button { transition: none; } }
 
 .app-experience .app-site-auth { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 22px; font-size: 13px; }
 .app-experience .app-site-auth > span { overflow-wrap: anywhere; margin-right: auto; }
@@ -103,6 +106,10 @@
   .app-experience .app-site-dialog { width: calc(100vw - 16px); max-height: calc(100dvh - 20px); }
   .app-experience .app-site-dialog-heading { padding-inline: 14px; }
   .app-experience .app-site-dialog-body { padding: 16px; }
+  .app-experience .app-site-preferences { padding: 12px 14px; grid-template-columns: 1fr; gap: 8px; }
+  .app-experience .app-site-preferences > h3 { display: none; }
+  .app-experience .app-site-preferences > div { flex-wrap: nowrap; justify-content: space-between; }
+  .app-experience .app-site-preferences .app-appearance-options button { min-height: 44px; }
   .app-experience .app-assistant-options a { padding: 10px; gap: 8px; }
   .app-experience .app-assistant-options strong { font-size: 13px; }
 }

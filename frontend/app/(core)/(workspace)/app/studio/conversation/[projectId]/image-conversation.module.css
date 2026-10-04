@@ -359,69 +359,6 @@
 .referenceChip button {min-height:32px;min-width:32px;border:none;padding:4px 6px;font-size:11px;border-radius:5px;}
 .referenceChip button+button {display:grid;place-items:center;color:var(--studio-muted);}
 .mediaStatus {font-size:11px;color:var(--studio-muted);line-height:1.6;margin:0 4px 9px;}
-.library {
-  background: var(--studio-bg);
-  color: var(--studio-text);
-  border: 1px solid var(--studio-line);
-  border-radius: 20px;
-  width: min(700px, calc(100vw - 24px));
-  max-height: 80dvh;
-  overflow: auto;
-  padding: 22px;
-}
-.library::backdrop {
-  background: #0009;
-  backdrop-filter: blur(7px);
-}
-.libraryTop,
-.libraryTools {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.libraryTop h2 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 500;
-}
-.libraryTop button {
-  font-size: 22px;
-  padding: 0;
-}
-.libraryTools {
-  margin: 18px 0;
-}
-.libraryTools input {
-  min-width: 0;
-  flex: 1;
-  background: var(--studio-panel);
-  border: 1px solid var(--studio-line);
-  border-radius: 12px;
-  color: inherit;
-  min-height: 44px;
-  padding: 10px 12px;
-  font-size: 13px;
-}
-.libraryTools button {
-  font-size: 12px;
-}
-.libraryGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-.libraryGrid button {
-  padding: 0;
-  aspect-ratio: 1;
-  overflow: hidden;
-  border-radius: 10px;
-}
-.libraryGrid img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
 @keyframes pulse {
   50% {
     opacity: 0.3;
@@ -472,18 +409,7 @@
   .log {
     padding-top: 6px;
   }
-  .library {
-    padding: 16px;
-  }
-  .libraryGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .libraryTools {
-    flex-wrap: wrap;
-  }
-  .libraryTools input {
-    flex-basis: 100%;
-  }
+
 }
 @media (prefers-reduced-motion: reduce) {
   .starters button {transition:none;}

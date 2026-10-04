@@ -64,8 +64,7 @@ test('native export quote stays accessible on mobile and recovers one identity a
     if(await cookies.isVisible())await cookies.click();
     await page.setViewportSize({width:390,height:844});
     await page.getByRole('button',{name:'Open MaxVideoAI menu',exact:true}).click();
-    const theme=page.getByRole('switch',{name:'Dark appearance',exact:true});
-    if(await theme.getAttribute('aria-checked')==='true')await theme.click();
+    await page.getByRole('button',{name:'Light',exact:true}).click();
     await page.getByRole('dialog',{name:'MaxVideoAI',exact:true}).getByRole('button',{name:'Close ×',exact:true}).click();
     await expect(page.locator('[data-tone]')).toHaveAttribute('data-tone','olive');
     await expect(page.getByRole('textbox',{name:'Message Studio',exact:true})).toBeVisible();
@@ -82,7 +81,7 @@ test('native export quote stays accessible on mobile and recovers one identity a
     await expect(card.getByRole('button')).toHaveCount(0);
     assert.deepEqual(confirmations,[{quoteId:quote.quoteId,confirmed:true},{quoteId:quote.quoteId,confirmed:true}]);
     await page.getByRole('button',{name:'Open MaxVideoAI menu',exact:true}).click();
-    await page.getByRole('switch',{name:'Dark appearance',exact:true}).click();
+    await page.getByRole('button',{name:'Dark',exact:true}).click();
     await page.getByRole('dialog',{name:'MaxVideoAI',exact:true}).getByRole('button',{name:'Close ×',exact:true}).click();
     await expect(page.locator('[data-tone]')).toHaveAttribute('data-tone','charcoal');
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth),390);

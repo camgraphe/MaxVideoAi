@@ -320,7 +320,8 @@ function StudioImageConversationWorkspace({
           onClose={() => setLibrary(false)}
           onSelect={select}
           mediaEnabled={mediaEnabled}
-          locale={locale}
+          purpose={libraryPurpose}
+          locale={appLocale === 'es' ? 'es' : locale}
         />
       )}
     </section>
