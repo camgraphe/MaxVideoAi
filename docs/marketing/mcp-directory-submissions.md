@@ -3,8 +3,8 @@
 Latest supplemental read-only checkpoint: [4 October 2026 distribution rollout](../operations/studio-mcp-distribution-rollout-2026-10-04.md).
 GitHub and the official Registry now expose 0.3.6, and n8n workflow 19591 has a
 public listing. Those observations supersede the dated version/public-visibility
-claims below; historical submission evidence is preserved. The published n8n
-payload has not yet been compared byte-for-byte with the reviewed local JSON.
+claims below; historical submission evidence is preserved. The later n8n
+payload comparison and qualified source revision are recorded separately below.
 
 Checked: 2026-09-17; n8n public listing rechecked 2026-09-25
 Overall state: **OWNED-SITE DIRECT RELEASE + OFFICIAL MCP REGISTRY 0.3.5 ACTIVE/LATEST — MCPBEAT OWNERSHIP CONFIRMED; GLAMA OWNERSHIP AND AUTHENTICATED HEALTH CONFIRMED; N8N WORKFLOW 19591 PUBLICLY LISTED**
@@ -12,6 +12,39 @@ Overall state: **OWNED-SITE DIRECT RELEASE + OFFICIAL MCP REGISTRY 0.3.5 ACTIVE/
 This file records evidence and owner decisions. It does not authorize another submission, account creation, listing,
 deployment, feature-flag change, or use of a third party's marks. Directory rules are current and unstable; recheck all
 linked primary sources on the day an owner authorizes a new submission.
+
+## n8n qualified source revision — 2026-10-04
+
+The public [workflow 19591 payload](https://api.n8n.io/api/templates/workflows/19591)
+was compared with the historical submitted file whose SHA-256 is
+`8ff097dd42bed75d5fa95c812c71f76acbce81b522af1531460da6de4e41ce3d`.
+All authored fields were deeply equal: 20 nodes, disabled state, no credential
+references, and the original fixed 15-second recovery wait. The canonical JSON
+digest for both objects was
+`c319a482382a11f8b38a78ed7aeca631b3a09fc0d63bd36cb20579b5d7f8141a`.
+This establishes object parity; API serialization does not preserve upload bytes.
+
+The current source adds a native Rename Keys adapter for n8n's reserved
+`arguments` field and obeys returned retry delays, stop signals and the
+20-status-call bound. It has 21 nodes and passed 19 deterministic actual-engine
+cases on n8n 2.38.7 / Node.js 24.19.0, with real 5/15/30/45-second waits and
+authored-field import/export parity. See the
+[qualification scope and reproducible harness](../../distribution/n8n/README.md#october-4-recovery-revision-and-engine-qualification).
+Live OAuth, paid generation, n8n Cloud and AI Agent invocation were not repeated.
+
+| Current source candidate | SHA-256 | Distribution state |
+| --- | --- | --- |
+| `distribution/n8n/brief-to-approved-generation.json` | `56bd2f781c5935a47b5a936c04f5759256e7d62e5fcc6b38d673c0ba036cb0dc` | `qualified_source_not_submitted` |
+| `distribution/n8n/campaign-queue.json` | `7e536cdf3f6599ee01c85424d153db86e8b9874a2978542f49b72df83f7bf650` | `queued_unsubmitted` |
+| `distribution/n8n/completion-notification.json` | `845f2210ec5eda6d6d691ec4a76ec556cf4eeafcacff1282198f57b637e35bf8` | `queued_unsubmitted` |
+
+The new brief revision is not published. The existing listing retains its
+observed historical payload until the merged candidate is submitted through
+the normal owner Creator Portal flow and its public readback matches. The
+portal currently requires owner sign-in. Update existing workflow `19591`;
+do not create a duplicate or relabel the September submission hashes. The
+other two candidates remain unsubmitted, and store state stays `listed` only
+for the existing brief listing, without promoting host-compatibility claims.
 
 ## n8n public listing — 2026-09-25
 
@@ -172,7 +205,9 @@ showed `Pending` / `Under review`, dated 2026-09-17, and disabled `Share new
 template`. This proves a private review resubmission, not human approval,
 acceptance into the public workflow library, or a live public listing.
 
-| Candidate | Local SHA-256 | Current external state |
+These hashes pin the files at this September 17 checkpoint, not later source revisions.
+
+| Candidate | Historical local SHA-256 | External state on 2026-09-17 |
 | --- | --- | --- |
 | `distribution/n8n/brief-to-approved-generation.json` | `8ff097dd42bed75d5fa95c812c71f76acbce81b522af1531460da6de4e41ce3d` | `resubmitted_under_review`; existing private workflow `19591` is pending human review after the portal confirmed the correction submission. No public listing or approval yet. |
 | `distribution/n8n/campaign-queue.json` | `7e536cdf3f6599ee01c85424d153db86e8b9874a2978542f49b72df83f7bf650` | `queued_unsubmitted`; the portal currently disables the next-template action during review. |

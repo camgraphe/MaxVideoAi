@@ -100,11 +100,17 @@ test('0.3.5 evidence records the immutable source, focused release, workflow, ch
   assert.match(nextQueue, /downstream[\s\S]{0,120}(?:lag|refresh)/i);
 });
 
-test('n8n evidence pins the resubmitted candidate and distinguishes private review from a public listing', () => {
+test('n8n evidence preserves historical submission hashes independently of current source', () => {
   const candidates = new Map([
-    ['distribution/n8n/brief-to-approved-generation.json', 'resubmitted_under_review'],
-    ['distribution/n8n/campaign-queue.json', 'queued_unsubmitted'],
-    ['distribution/n8n/completion-notification.json', 'queued_unsubmitted'],
+    ['distribution/n8n/brief-to-approved-generation.json', {
+      state: 'resubmitted_under_review', digest: '8ff097dd42bed75d5fa95c812c71f76acbce81b522af1531460da6de4e41ce3d',
+    }],
+    ['distribution/n8n/campaign-queue.json', {
+      state: 'queued_unsubmitted', digest: '7e536cdf3f6599ee01c85424d153db86e8b9874a2978542f49b72df83f7bf650',
+    }],
+    ['distribution/n8n/completion-notification.json', {
+      state: 'queued_unsubmitted', digest: '845f2210ec5eda6d6d691ec4a76ec556cf4eeafcacff1282198f57b637e35bf8',
+    }],
   ]);
 
   const current = evidence.split('## n8n review follow-up — 2026-09-17')[1]?.split('## 0.3.5 observed publication')[0] ?? '';
@@ -114,19 +120,16 @@ test('n8n evidence pins the resubmitted candidate and distinguishes private revi
   assert.match(current, /Your template has been\s+re-submitted/i);
   assert.match(current, /no public listing/i);
 
-  for (const [path, state] of candidates) {
+  for (const [path, { state, digest }] of candidates) {
     const candidateRow = current
       .split('\n')
       .find((line) => line.startsWith(`| \`${path}\` |`)) ?? '';
     const documentedDigest = candidateRow.match(
       new RegExp('\\| `([a-f0-9]{64})` \\| `' + state + '`'),
     )?.[1];
-    const actualDigest = createHash('sha256').update(readFileSync(path)).digest('hex');
-
     assert.ok(candidateRow, `missing documented candidate: ${path}`);
     assert.ok(documentedDigest, `missing documented SHA-256: ${path}`);
-    assert.equal(documentedDigest, actualDigest, `documented SHA-256 drifted: ${path}`);
-    assert.equal(statSync(path).mode & 0o777, 0o644, `candidate mode must remain 100644: ${path}`);
+    assert.equal(documentedDigest, digest, `historical submission SHA-256 changed: ${path}`);
   }
 
   const n8n = row('n8n workflow library');
@@ -145,6 +148,29 @@ test('n8n evidence pins the resubmitted candidate and distinguishes private revi
   assert.doesNotMatch(n8n, /\| `(?:claimed|verified)` \|/);
   assert.match(checklist, /deterministic self-hosted MCP Client evidence is\s+public and indexable/i);
   assert.match(checklist, /MCP Client Tool invocation[\s\S]{0,180}n8n Cloud[\s\S]{0,220}outside the claim/i);
+});
+
+test('the current n8n source has its own digest and cannot inherit the historical publication result', () => {
+  const current = evidence.split('## n8n qualified source revision — 2026-10-04')[1]
+    ?.split('## n8n public listing — 2026-09-25')[0] ?? '';
+  assert.match(current, /20 nodes[\s\S]*?original fixed 15-second/);
+  assert.match(current, /21 nodes[\s\S]*?19 deterministic actual-engine/);
+  assert.match(current, /new brief revision is not published/);
+  assert.match(current, /public readback matches/);
+  assert.match(current, /do not create a duplicate or relabel the September submission hashes/i);
+
+  for (const [path, state] of [
+    ['distribution/n8n/brief-to-approved-generation.json', 'qualified_source_not_submitted'],
+    ['distribution/n8n/campaign-queue.json', 'queued_unsubmitted'],
+    ['distribution/n8n/completion-notification.json', 'queued_unsubmitted'],
+  ]) {
+    const candidateRow = current.split('\n').find((line) => line.startsWith(`| \`${path}\` |`)) ?? '';
+    const digest = candidateRow.match(new RegExp('\\| `([a-f0-9]{64})` \\| `' + state + '`'))?.[1];
+    assert.ok(digest, `missing current source digest and separate state: ${path}`);
+    assert.equal(digest, createHash('sha256').update(readFileSync(path)).digest('hex'),
+      `current source SHA-256 drifted: ${path}`);
+    assert.equal(statSync(path).mode & 0o777, 0o644, `candidate mode must remain 100644: ${path}`);
+  }
 });
 
 test('MCPBeat and Glama claim evidence keeps GitHub, health, and Docker caveats explicit', () => {
