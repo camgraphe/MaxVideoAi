@@ -24,7 +24,7 @@ export const STUDIO_SOL_PACK_CENTS = [200,500,1000] as const;
 export type StudioCreditQuantity = {total:number;remaining:number;reserved:number};
 export type StudioCreditBalance = {
   creditsPerDollar:number;
-  included:StudioCreditQuantity&{period:string;renewsAt:string};
+  included:StudioCreditQuantity&{period:string;renewsAt:string;priorReserved?:number};
   purchased:StudioCreditQuantity&{packs:Array<StudioCreditQuantity&{id:string;amountCents:number;purchasedAt:string}>};
 };
 export type StudioAssistantModel = 'gpt-6.1-sol' | 'gpt-6-luna';
@@ -37,6 +37,7 @@ export type StudioAssistanceStatus = {
   includedSol: {remainingPercent: number; renewal: 'one_time'|'monthly'};
   sponsoredLuna: {remainingPercent: number; renewal: 'one_time'|'unlimited'};
   credits?:StudioCreditBalance;
+  sponsoredAvailable?:boolean;
   /** maxAdditionalBudgetCents is the current permitted increment to authorizedCents. */
   paid: {enabled: boolean; authorizedCents: number; spentCents: number; reservedCents: number; remainingCents: number; maxAdditionalBudgetCents: number};
   unresolvedCalls: number; canContinue: boolean; blockedReason: StudioAssistanceBlockedReason;

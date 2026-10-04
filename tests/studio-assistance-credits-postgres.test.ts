@@ -72,6 +72,7 @@ test('Sol packs debit once, accumulate, and reserve free credits before purchase
   const future={query:async<T>(sql:string,params?:unknown[])=>{const result=await pg.pool.query(sql.replaceAll("transaction_timestamp() AT TIME ZONE 'UTC'","(date_trunc('month',transaction_timestamp() AT TIME ZONE 'UTC')+interval '1 month')"),params);return result.rows as T[];}};
   const renewed=await credits.readStudioCreditBalance(future,'free-race');
   assert.equal(renewed.included.remaining,500);assert.equal(renewed.included.reserved,0);
+  assert.equal(renewed.included.priorReserved,500,'An older free-credit hold remains visible separately from the new monthly grant');
   assert.equal((await pg.pool.query("SELECT sum(reserved_credits)::int held FROM studio_assistance_credit_lots WHERE user_id='free-race'")).rows[0].held,500,'Reading the next month does not erase prior holds');
   const held=(simultaneous.find(result=>result.status==='fulfilled') as PromiseFulfilledResult<Awaited<ReturnType<typeof ledger.reserveStudioAssistanceCall>>>).value;
   await ledger.settleStudioAssistanceCall(held.id,freeActor.userId,{id:randomUUID(),model:'gpt-6.1-sol',service_tier:'default',usage:{input_tokens:1000,input_tokens_details:{cached_tokens:0},output_tokens:0}});
@@ -121,4 +122,43 @@ test('Sol packs debit once, accumulate, and reserve free credits before purchase
     assert.equal((await pg.pool.query("SELECT sum(CASE WHEN type='charge' THEN -amount_cents ELSE amount_cents END)::int balance FROM app_receipts WHERE user_id=$1",[supportActor.userId])).rows[0].balance,800);
   });
   await assert.rejects(pg.pool.query("UPDATE studio_assistance_credit_lots SET total_credits=5000,amount_cents=500 WHERE user_id='race' AND kind='purchased'"),/immutable/i,'An existing purchase cannot be silently repriced');
+});
+
+test('new credit policy keeps legacy consent inactive and projects sponsored outages consistently',async t=>{
+  const pg=await startDisposablePostgres('studio-credit-status'),old=process.env.DATABASE_URL;
+  process.env.DATABASE_URL=pg.databaseUrl;
+  t.after(async()=>{await getDb().end();if(old===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=old;await pg.cleanup();});
+  await createPaidGenerationTestSchema(pg.pool);
+  for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
+  const ledger=await import('../frontend/src/server/studio/assistance-ledger');
+  const {studioAssistancePolicy}=await import('../frontend/src/server/studio/assistance-policy');
+  const {STUDIO_ASSISTANCE_TARIFF}=await import('../frontend/src/lib/studio/assistance-contract');
+  const policy=studioAssistancePolicy({STUDIO_ASSISTANCE_ENABLED:'true'});
+  const actor={userId:'legacy-consent',projectId:'film',authMethod:'studio-session' as const,clientId:null};
+  await ledger.chooseStudioAssistance(actor.userId,{action:'authorize_paid',budgetCents:200,expectedRevision:0,tariffVersion:STUDIO_ASSISTANCE_TARIFF.version},{...policy,credits:false});
+  await t.test('historic authorization does not authorize new paid credits or block free Sol',async()=>{
+    const status=await ledger.readStudioAssistanceStatus(actor.userId,policy);
+    assert.equal(status.paid.enabled,false);assert.equal(status.mode,'included_sol');assert.equal(status.canContinue,true);
+    const requestId=randomUUID(),turn=await ledger.openStudioAssistanceTurn(actor,requestId,policy);
+    assert.equal(turn.mode,'included_sol');
+    await ledger.reserveStudioAssistanceCall({...actor,requestId,leaseId:randomUUID(),index:0,inputTokens:100,outputTokens:0},policy);
+    const stored=(await pg.pool.query('SELECT paid_enabled,tariff_version FROM studio_assistance_accounts WHERE user_id=$1',[actor.userId])).rows[0];
+    assert.equal(stored.paid_enabled,true);assert.equal(stored.tariff_version,STUDIO_ASSISTANCE_TARIFF.version,'Historical authorization evidence stays intact');
+  });
+  const paidActor={...actor,userId:'pure-paid'};
+  await pg.pool.query("INSERT INTO app_receipts(user_id,type,amount_cents,currency) VALUES($1,'topup',200,'USD')",[paidActor.userId]);
+  await ledger.chooseStudioAssistance(paidActor.userId,{action:'purchase_pack',amountCents:200,expectedRevision:0,tariffVersion:policy.credits?'studio-sol-usd-2026-10-05-v2':'',purchaseKey:randomUUID()},policy);
+  await pg.pool.query("UPDATE studio_assistance_credit_lots SET consumed_credits=500 WHERE user_id=$1 AND kind='included'",[paidActor.userId]);
+  await pg.pool.query('UPDATE studio_assistance_campaigns SET limit_nano_usd=0');
+  await t.test('unavailable free funding blocks status and dispatch, while purchased-only Sol remains usable',async()=>{
+    const freeActor={...actor,userId:'outage-free'},requestId=randomUUID();
+    const status=await ledger.readStudioAssistanceStatus(freeActor.userId,policy);
+    assert.equal(status.canContinue,false);assert.equal(status.blockedReason,'campaign_exhausted');assert.equal(status.sponsoredAvailable,false);
+    await ledger.openStudioAssistanceTurn(freeActor,requestId,policy);
+    await assert.rejects(ledger.reserveStudioAssistanceCall({...freeActor,requestId,leaseId:randomUUID(),index:0,inputTokens:100,outputTokens:0},policy),error=>(error as {nextAction?:{reason:string}}).nextAction?.reason==='campaign_exhausted');
+    const paidStatus=await ledger.readStudioAssistanceStatus(paidActor.userId,policy);
+    assert.equal(paidStatus.canContinue,true);assert.equal(paidStatus.sponsoredAvailable,false);
+    const paidRequest=randomUUID();await ledger.openStudioAssistanceTurn(paidActor,paidRequest,policy);
+    await ledger.reserveStudioAssistanceCall({...paidActor,requestId:paidRequest,leaseId:randomUUID(),index:0,inputTokens:100,outputTokens:0},policy);
+  });
 });

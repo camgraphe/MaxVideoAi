@@ -16,8 +16,9 @@ export function StudioAssistance(props:Props) {
   if(status&&!status.enabled)return null;
   const luna=status?.mode==='sponsored_luna';
   const detail=status?status.mode==='paid_sol'?money(status.paid.remainingCents)+' '+t('left','restants'):Math.round((luna?status.sponsoredLuna:status.includedSol).remainingPercent)+'%':props.error?t('Unavailable','Indisponible'):'…';
+  const creditDetail=status?.credits?luna?(status.sponsoredAvailable===false?t('Unavailable','Indisponible'):t('No monthly quota','Sans quota mensuel')):new Intl.NumberFormat(locale).format(status.credits.included.remaining+(status.paid.enabled?status.credits.purchased.remaining:0))+' '+t('credits','crédits'):detail;
   return <>
-    <button ref={trigger} className={styles.trigger} aria-haspopup="dialog" aria-expanded={open} aria-label={t('Studio assistance and budget','Assistance et budget Studio')} onClick={()=>setOpen(true)}><span className={styles.dot} data-luna={luna}/><span>{luna?'GPT‑6 Luna':'GPT‑6.1 Sol'} <small>{status?.credits&&!luna?(status.credits.included.remaining+(status.paid.enabled?status.credits.purchased.remaining:0))+' '+t('credits','crédits'):detail}</small></span><ChevronDown size={12}/></button>
+    <button ref={trigger} className={styles.trigger} aria-haspopup="dialog" aria-expanded={open} aria-label={t('Studio assistance and budget','Assistance et budget Studio')} onClick={()=>setOpen(true)}><span className={styles.dot} data-luna={luna}/><span>{luna?'GPT‑6 Luna':'GPT‑6.1 Sol'} <small>{creditDetail}</small></span><ChevronDown size={12}/></button>
     {open&&(status?.credits?<StudioAssistanceCreditsDialog {...props} trigger={trigger} onClose={()=>setOpen(false)}/>:<AssistanceDialog {...props} trigger={trigger} onClose={()=>setOpen(false)}/>)}
   </>;
 }

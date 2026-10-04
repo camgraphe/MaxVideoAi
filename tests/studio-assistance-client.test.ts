@@ -15,6 +15,9 @@ test('a malformed credit balance cannot create spending authority in the browser
   assert.equal(assistanceStatusSchema.safeParse({...status,credits:{...credits,included:{...credits.included,remaining:501}}}).success,false);
   assert.equal(assistanceStatusSchema.safeParse({...status,credits:{...credits,purchased:{...credits.purchased,remaining:2000}}}).success,false);
   assert.equal(assistanceStatusSchema.safeParse({...status,credits:{...credits,creditsPerDollar:0}}).success,false);
+  assert.equal(assistanceStatusSchema.safeParse({...status,credits:{...credits,included:{...credits.included,priorReserved:-1}}}).success,false);
+  const projected=assistanceStatusSchema.parse({...status,sponsoredAvailable:false,credits:{...credits,included:{...credits.included,priorReserved:500}}});
+  assert.equal(projected.sponsoredAvailable,false);assert.equal(projected.credits?.included.priorReserved,500);
 });
 test('quota recovery preserves only the server-validated safe replay decision',()=>{
   const action={type:'studio_assistance',reason:'included_exhausted',safeToStartNewRequest:true};

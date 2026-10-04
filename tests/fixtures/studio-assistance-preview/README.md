@@ -10,16 +10,11 @@ Reload a page to rebuild after presentation changes.
   explicit demo data. Choices only update React state and the demo revision.
 - `/concept`: separate design fixture with the proposed monthly Sol allowance,
   remaining/total Sol credit bars, $2/$5/$10 packs, purchase review, and Luna fair use.
-  This proposal is not the current financial contract and is not imported by the app.
+  This fixture is not imported by the app; the root URL renders the implemented dialog.
 
-The original app still has one-time limited allowances and wallet spending-limit
-authorization. The proposal does not change those policies, tariff or ledger.
-Before implementing packs, define token quantity/conversion, allowance size,
-renewal and expiry, payment source, and enforceable Luna fair-use rules separately.
-The proposed demo unit is **1,000 Sol credits = $1**. It expresses metered spending
+The approved unit is **1,000 Sol credits = $1**. It expresses metered spending
 in one stable unit, because raw input, cached input and output tokens have different
-prices. It is not a final token conversion or an authored customer tariff.
-The 200-credit monthly grant and every starting balance are illustrative.
+prices. Monthly free allowance is 500 credits; starting consumption is illustrative.
 
 Pricing direction agreed on 2026-10-05: **+100% supplier-basis markup**, so customer
 usage costs supplier basis × 2, equivalent to 50% theoretical gross margin before
@@ -29,9 +24,9 @@ of supplier-basis usage if fully consumed. Supplier basis may be conservative; t
 is not a guarantee of an exact realized margin on every message.
 
 `quoteDemoCreditUsage` demonstrates $0.05 supplier basis → $0.10 customer usage →
-100 credits. It uses whole-cent examples only; actual token categories, rounding,
-customer tariff and financial accounting must be reviewed before implementation.
-The original application's +200% markup has not been edited or activated here.
+100 credits. It uses whole-cent examples only; the financial ledger owns actual
+token categories and rounding. The historical +200% tariff is retained for old
+settlements. The new policy is implemented and remains gated in production.
 
 The footer offers **Use your own assistant via MCP**, with direct setup-guide links
 for published ChatGPT, Claude and Codex integrations from the canonical MCP

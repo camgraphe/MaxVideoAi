@@ -31,7 +31,11 @@ changed; a different amount/tariff under that identity is refused. Distinct
 purchases with one stale revision cannot both succeed. Insufficient funds or an
 account restriction rolls back the whole purchase. `disable_paid` pauses new
 purchased usage; credits are retained, and existing holds can settle. `resume_paid`
-requires the current tariff and revision.
+requires the current tariff and revision. Selecting Sol does not resume paused
+purchased usage; the dialog provides a separately labelled resumption control.
+Legacy paid authorization is inactive for new credit-policy turns and status; its
+stored evidence remains unchanged for historical settlement. Only an explicit
+current pack purchase or resumption authorizes the new paid tariff.
 
 `assistance-credit-ledger.ts` owns grant creation, purchases, allocation holds,
 settlement and support releases. The account lock serializes these operations.
@@ -39,6 +43,8 @@ Reads project an uncreated current-month grant without writing; mutations insert
 it once. The month derives from the database transaction clock in UTC. Settlements
 and releases return unused holds to their original lots, including an expired
 free month; they cannot consume or replenish the next month's grant.
+`included.priorReserved` exposes outstanding older-month holds separately from
+the current grant and its gauge. No old free remainder becomes spendable again.
 
 Sol tariff `studio-sol-usd-2026-10-05-v2` costs $5 per million noncached input
 (tokens use the conservative cache-write supplier basis), $0.20 cached input, and
@@ -70,6 +76,12 @@ addition to policy approval. For conservative campaign protection, a Sol message
 using any included credits counts its full call supplier exposure, including calls
 with zero additional credits after cumulative cent rounding. Pure purchased
 messages do not consume sponsored exposure. Unknown exposure stays held.
+`sponsoredAvailable` projects campaign availability without exposing its budget.
+When sponsored funds are exhausted, Luna and Sol with available free credits are
+unavailable. Free-first order is preserved; buying a pack cannot bypass this
+outage, and the dialog explains and disables that purchase. Sol with no available
+free credits can still use authorized purchased lots, independently of the
+sponsored campaign.
 
 GET `/api/studio/assistance` remains private and read-only. Its `credits` projection
 adds free month/renewal, purchased totals and ordered pack quantities. The client

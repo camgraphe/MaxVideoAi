@@ -4,7 +4,7 @@ import {reserveWalletChargeInExecutor} from '@/lib/wallet';
 import {AgentApiError} from '@/server/agent-api/errors';
 import {STUDIO_SOL_MONTHLY_CREDITS,STUDIO_SOL_CREDITS_PER_DOLLAR,STUDIO_ASSISTANCE_CREDIT_TARIFF,type StudioCreditBalance} from '@/lib/studio/assistance-contract';
 
-type Lot={id:string;kind:'included'|'purchased';total_credits:string;consumed_credits:string;reserved_credits:string;amount_cents:number;created_at:Date;purchase_order:string};
+type Lot={id:string;kind:'included'|'purchased';period:string|null;total_credits:string;consumed_credits:string;reserved_credits:string;amount_cents:number;created_at:Date;purchase_order:string};
 const creditsPerCent=STUDIO_SOL_CREDITS_PER_DOLLAR/100;
 const quantity=(lot:Lot)=>({total:Number(lot.total_credits),remaining:Number(lot.total_credits)-Number(lot.consumed_credits)-Number(lot.reserved_credits),reserved:Number(lot.reserved_credits)});
 async function period(db:QueryExecutor){
@@ -17,10 +17,11 @@ export async function ensureStudioMonthlyCredits(tx:TransactionQueryExecutor,use
 }
 export async function readStudioCreditBalance(db:QueryExecutor,userId:string):Promise<StudioCreditBalance>{
   const month=await period(db);
-  const lots=await db.query<Lot>(`SELECT * FROM studio_assistance_credit_lots WHERE user_id=$1 AND (kind='purchased' OR period=$2::date) ORDER BY purchase_order`,[userId,month.period]);
-  const included=lots.find(lot=>lot.kind==='included');
+  const lots=await db.query<Lot>(`SELECT *,to_char(period,'YYYY-MM-DD') period FROM studio_assistance_credit_lots WHERE user_id=$1 AND (kind='purchased' OR period=$2::date OR (period<$2::date AND reserved_credits>0)) ORDER BY purchase_order`,[userId,month.period]);
+  const included=lots.find(lot=>lot.kind==='included'&&lot.period===month.period);
+  const priorReserved=lots.filter(lot=>lot.kind==='included'&&lot.period!==month.period).reduce((sum,lot)=>sum+Number(lot.reserved_credits),0);
   const packs=lots.filter(lot=>lot.kind==='purchased').map(lot=>({...quantity(lot),id:lot.id,amountCents:lot.amount_cents,purchasedAt:lot.created_at.toISOString()}));
-  return {creditsPerDollar:STUDIO_SOL_CREDITS_PER_DOLLAR,included:{...(included?quantity(included):{total:STUDIO_SOL_MONTHLY_CREDITS,remaining:STUDIO_SOL_MONTHLY_CREDITS,reserved:0}),period:month.period,renewsAt:month.renews_at},purchased:{total:packs.reduce((sum,p)=>sum+p.total,0),remaining:packs.reduce((sum,p)=>sum+p.remaining,0),reserved:packs.reduce((sum,p)=>sum+p.reserved,0),packs}};
+  return {creditsPerDollar:STUDIO_SOL_CREDITS_PER_DOLLAR,included:{...(included?quantity(included):{total:STUDIO_SOL_MONTHLY_CREDITS,remaining:STUDIO_SOL_MONTHLY_CREDITS,reserved:0}),period:month.period,renewsAt:month.renews_at,priorReserved},purchased:{total:packs.reduce((sum,p)=>sum+p.total,0),remaining:packs.reduce((sum,p)=>sum+p.remaining,0),reserved:packs.reduce((sum,p)=>sum+p.reserved,0),packs}};
 }
 /** Replay check precedes revision validation, so a lost acknowledgement cannot charge twice. */
 export async function existingStudioCreditPurchase(tx:TransactionQueryExecutor,userId:string,choice:{purchaseKey:string;amountCents:number;tariffVersion:string}){

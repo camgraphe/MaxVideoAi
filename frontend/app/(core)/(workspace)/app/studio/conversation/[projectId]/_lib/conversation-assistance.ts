@@ -5,7 +5,7 @@ const allowance=z.object({remainingPercent:z.number().min(0).max(100),renewal:z.
 const creditQuantity=z.object({total:cents,remaining:cents,reserved:cents});
 const creditBalance=z.object({
   creditsPerDollar:cents.positive(),
-  included:creditQuantity.extend({period:z.string().regex(/^\d{4}-\d{2}-01$/),renewsAt:z.string().datetime()}),
+  included:creditQuantity.extend({period:z.string().regex(/^\d{4}-\d{2}-01$/),renewsAt:z.string().datetime(),priorReserved:cents.optional()}),
   purchased:creditQuantity.extend({packs:z.array(creditQuantity.extend({id:z.string().min(1),amountCents:cents.positive(),purchasedAt:z.string().datetime()}))}),
 }).superRefine((value,context)=>{
   if(value.included.total===0||[value.included,value.purchased,...value.purchased.packs].some(item=>item.remaining+item.reserved>item.total))context.addIssue({code:'custom',message:'Credit quantities exceed their grants'});
@@ -18,6 +18,7 @@ export const assistanceStatusSchema=z.object({
   tariff:z.object({version:z.string(),effectiveAt:z.string(),currency:z.literal('USD'),noncachedInputUsdPerMillion:z.number().nonnegative(),cachedInputUsdPerMillion:z.number().nonnegative(),outputUsdPerMillion:z.number().nonnegative(),rounding:z.string(),maxCallsPerMessage:cents,automaticRecharge:z.literal(false)}),
   includedSol:allowance.extend({renewal:z.enum(['one_time','monthly'])}),sponsoredLuna:allowance.extend({renewal:z.enum(['one_time','unlimited'])}),
   credits:creditBalance.optional(),
+  sponsoredAvailable:z.boolean().optional(),
   paid:z.object({enabled:z.boolean(),authorizedCents:cents,spentCents:cents,reservedCents:cents,remainingCents:cents,maxAdditionalBudgetCents:cents}),
   unresolvedCalls:cents,canContinue:z.boolean(),blockedReason:z.enum(['disabled','included_exhausted','luna_exhausted','paid_budget_exhausted','campaign_exhausted']).nullable(),
 });
