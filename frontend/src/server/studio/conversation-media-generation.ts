@@ -118,6 +118,14 @@ function videoDefaults(candidate: AgentPublicGenerationEngine, mode: CanonicalGe
 export async function studioMediaRequest(actor: StudioGenerationActor, action: StudioMediaIntent, input: ImageTurnInput, factories: StudioMediaFactories, enabled: boolean, dependencies: StudioMotionSourceDependencies = {}): Promise<(CanonicalGenerationRequest & {surface: 'video'}) | CanonicalAudioRequest> {
   const settings = canonicalPreparation(() => conversationSelectionSettings(action.settings));
   if (action.action === 'video.prepare') {
+    // Recover saved director intents without rewriting their immutable draft.
+    // The canonical API remains strict and accepts only durationSec.
+    if (Object.hasOwn(settings, 'duration')) {
+      if (Object.hasOwn(settings, 'durationSec'))
+        throw new AgentApiError('PARAMETER_INVALID', 'Choose the video duration once, using durationSec.');
+      settings.durationSec = settings.duration;
+      delete settings.duration;
+    }
     if (action.source && action.references?.length)
       throw new AgentApiError('REFERENCE_INVALID', 'Choose either the source image or explicit image reference roles.');
     const selections = action.source ? [{ref: action.source, role: 'first_frame' as const, slot: null}] : action.references ?? [];

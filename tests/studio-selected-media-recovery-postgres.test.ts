@@ -40,6 +40,16 @@ const cases: RecoveryCase[] = [
       references: [{kind: 'asset', assetId: firstFrame, role: 'first_frame'}, {kind: 'asset', assetId: lastFrame, role: 'last_frame'}], outputCount: 1},
   },
   {
+    name: 'saved Seedance Mini duration alias', message: 'Make this character dance with Seedance Mini for eight seconds.',
+    action: {action: 'video.prepare', reply: 'An eight-second dance. Review the quote.', prompt: videoPrompt,
+      aspectRatio: '9:16', source: null, modelId: 'seedance-2-0-mini', mode: 'i2v', outputCount: 1,
+      settings: [{name: 'duration', value: 8}, {name: 'resolution', value: '720p'}],
+      references: [{ref: {type: 'asset', kind: 'image', assetId: firstFrame}, role: 'first_frame', slot: null}]},
+    expected: {schemaVersion: 1, surface: 'video', engineId: 'seedance-2-0-mini', mode: 'i2v', prompt: videoPrompt,
+      settings: {aspectRatio: '9:16', audio: true, durationSec: 8, resolution: '720p'},
+      references: [{kind: 'asset', assetId: firstFrame, role: 'first_frame'}], outputCount: 1},
+  },
+  {
     name: 'selected voice, WAV output and language', message: 'Prepare the Spanish narration in this voice and format.',
     action: {action: 'voice.prepare', reply: 'A calm Spanish narration in WAV. Review the quote.', script: narration, language: 'english',
       modelId: 'audio-voice-only', outputCount: 1, settings: [{name: 'voiceModel', value: 'seed'}, {name: 'seedAudioVoice', value: 'tracy_es_zh'},
@@ -92,7 +102,7 @@ test('selected media survives an interrupted canonical quote transaction and ret
     await pg.pool.query(readFileSync('neon/migrations/' + migration, 'utf8'));
   await addTopup(pg.pool, userId, 10000);
   const actor = {authMethod: 'studio-session' as const, userId, projectId: 'film', clientId: null};
-  const catalog = [capability('gpt-image-2', 'image'), capability('wan-3', 'video')];
+  const catalog = [capability('gpt-image-2', 'image'), capability('wan-3', 'video'), capability('seedance-2-0-mini', 'video')];
   const availability = () => ({executable: true as const, reason: 'available' as const});
   const provider = new ProviderHarness(pg.pool);
   const imageFactory: typeof createStudioImageGenerationService = (current, options) => createStudioImageGenerationService(current, {...options,
@@ -200,19 +210,24 @@ test('selected media survives an interrupted canonical quote transaction and ret
       assert.equal(body.durationSec, 8);
       assert.equal(body.resolution, '720p');
       assert.equal(body.audio, true);
-      assert.equal((body.extraInputValues as Record<string, unknown> | undefined)?.enable_prompt_expansion, true);
       assert.equal(body.imageUrl, 'https://cdn.maxvideoai.com/frame-0.png');
-      assert.equal(body.endImageUrl, 'https://cdn.maxvideoai.com/frame-1.png');
+      if (fixture.expected.engineId === 'wan-3') {
+        assert.equal((body.extraInputValues as Record<string, unknown> | undefined)?.enable_prompt_expansion, true);
+        assert.equal(body.endImageUrl, 'https://cdn.maxvideoai.com/frame-1.png');
+      } else {
+        assert.equal(Object.hasOwn(body, 'endImageUrl'), false);
+        assert.equal(Object.hasOwn(body, 'extraInputValues'), false);
+      }
     } else {
       const run = audioExecutions.find(execution => execution.jobId === accepted[0].jobId)!.normalized;
       for (const [name, value] of Object.entries(fixture.expected.settings))
         assert.equal(run[name as keyof typeof run], value, `Provider execution retains selected Audio ${name}.`);
     }
   });
-  assert.equal(modelCalls, 3);
-  assert.equal(provider.captures.length, 1);
+  assert.equal(modelCalls, 4);
+  assert.equal(provider.captures.length, 2);
   assert.equal(audioExecutions.length, 2);
-  assert.equal((await pg.pool.query('SELECT count(*)::int AS count FROM app_jobs')).rows[0].count, 3);
-  assert.equal((await pg.pool.query('SELECT count(*)::int AS count FROM mcp_generation_quotes')).rows[0].count, 3);
-  assert.equal((await pg.pool.query("SELECT count(*)::int AS count FROM app_receipts WHERE type='charge'")).rows[0].count, 3);
+  assert.equal((await pg.pool.query('SELECT count(*)::int AS count FROM app_jobs')).rows[0].count, 4);
+  assert.equal((await pg.pool.query('SELECT count(*)::int AS count FROM mcp_generation_quotes')).rows[0].count, 4);
+  assert.equal((await pg.pool.query("SELECT count(*)::int AS count FROM app_receipts WHERE type='charge'")).rows[0].count, 4);
 });
