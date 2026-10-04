@@ -10,6 +10,8 @@ This public page embeds controlled Claude-specific evidence and a saved-to-Libra
 
 Depending on the request, the workflow can read current model facts, authorized account status, generation status, recent generations, and private Library media you ask it to use. It should request only the information needed for planning, quoting, reference selection, recovery, or presentation.
 
+The external host owns its conversation. MaxVideoAI receives the tool requests addressed to its server and returns their results; connecting does not give MaxVideoAI the host’s full chat history, unrelated messages, or hidden model reasoning. A prompt or reference that the host explicitly sends for a requested operation is part of that operation.
+
 ## What can it write?
 
 The generation workflow can prepare a request and exact quote. After explicit approval, it can confirm one paid attempt and track the resulting job. It can also create a secure MaxVideoAI upload or top-up destination when needed. Payment details never belong in the conversation.
@@ -38,4 +40,4 @@ Disconnect or remove MaxVideoAI in the host's connector or plugin settings, then
 - [MaxVideoAI terms](https://maxvideoai.com/legal/terms)
 - [MaxVideoAI connection guide](https://maxvideoai.com/docs/mcp)
 
-Last reviewed: 2026-09-16.
+Last reviewed: 2026-10-03.

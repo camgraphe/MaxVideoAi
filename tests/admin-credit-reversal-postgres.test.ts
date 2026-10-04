@@ -12,6 +12,10 @@ test('admin render spending excludes payment-credit reversals while wallet balan
   process.env.DATABASE_URL = db.databaseUrl;
   delete process.env.SUPABASE_SERVICE_ROLE_KEY;
   try {
+    // Comparison series use UTC day keys; initdb otherwise inherits the host timezone.
+    // Pin both new application connections and the existing fixture connection.
+    await db.pool.query("ALTER DATABASE postgres SET timezone TO 'UTC'");
+    await db.pool.query("SET TIME ZONE 'UTC'");
     await ensureBillingSchema();
     await db.pool.query(`CREATE TABLE profiles (
       id text PRIMARY KEY, email text, created_at timestamptz DEFAULT NOW(),

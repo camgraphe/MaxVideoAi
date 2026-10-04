@@ -24,12 +24,15 @@ A server's catalogue is not the host's complete tool inventory. Retrieve a
 discovered tool's input schema before constructing arguments; if it is missing,
 continue discovery instead of guessing parameter names.
 
+Preserve the brief, chosen model, references and known job IDs while reconnecting.
+
 For a confirmed Codex OAuth failure, use the host's reconnect flow or its
 reported `codex mcp login maxvideoai` command. If the shell CLI is older than
 the running app, use that app's verified bundled CLI or plugin manager; do not
 change unrelated configuration to satisfy an obsolete CLI. Complete any required
-user sign-in, then rediscover tools and resume the saved request. Reconnection
-does not approve a paid attempt. If discovery still fails, preserve the prompt
+user sign-in, then rediscover tools and resume the saved request. Recover any
+submitted job before preparing another request. Reconnection does not approve
+a paid attempt. If discovery still fails, preserve the prompt
 and settings and explain the remaining blocker without inventing prices.
 
 ## UX rules

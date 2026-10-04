@@ -46,6 +46,9 @@ import {
 import { readStudioProjectCanvasPreview } from './studio-project-preview-storage';
 import styles from './studio-projects.module.css';
 import { StudioMontageBuilder } from './StudioMontageBuilder.client';
+import { StudioConversationEntry } from './StudioConversationEntry.client';
+import { studioConversationEntryCopy, studioProjectEntryUrl } from './studio-conversation-entry';
+import entryStyles from './studio-conversation-entry.module.css';
 
 const STUDIO_PROJECTS_STORAGE_KEY = 'maxvideoai.editor.projects.v1';
 const DEFAULT_STUDIO_PROJECT_TEMPLATE_ID: WorkspaceTemplateId = MINIMAL_START_WORKSPACE_TEMPLATE_ID;
@@ -204,14 +207,18 @@ function starterCanvasImageForTemplate(templateId: WorkspaceTemplateId): string 
   return starterId ? STUDIO_PROJECT_STARTER_CANVAS_IMAGES[starterId] : null;
 }
 
-export default function StudioProjectsPageClient({ initialStarterTemplateId = null, montageCreationEnabled = false }: {
+export default function StudioProjectsPageClient({ initialStarterTemplateId = null, montageCreationEnabled = false, conversationEnabled = false, hasMediaHandoff = false }: {
   initialStarterTemplateId?: WorkspaceTemplateId | null;
   montageCreationEnabled?: boolean;
+  conversationEnabled?: boolean;
+  hasMediaHandoff?: boolean;
 }) {
   const router = useRouter();
   const { locale, dictionary } = useI18n();
   const studioCopy = useMemo(() => resolveStudioCopy(dictionary), [dictionary]);
   const appLocale = locale as AppLocale;
+  const entryCopy = studioConversationEntryCopy(locale);
+  const showConversationEntry = conversationEnabled && !hasMediaHandoff && !initialStarterTemplateId;
   const marketingStarterHandledRef = useRef(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const [isProjectsLoaded, setIsProjectsLoaded] = useState(false);
@@ -376,18 +383,14 @@ export default function StudioProjectsPageClient({ initialStarterTemplateId = nu
     setApiNotice(studioProjectsApiNotice(status, studioCopy.notices));
   };
 
-  return (
-    <div className={styles.projectsShell}>
+  const starterSection = (
       <section id="studio-starter-chooser" className={styles.starterSection} aria-labelledby="studio-starter-title">
-        {apiNotice ? (
-          <div className={styles.syncNotice} role="status" aria-live="polite">
-            {apiNotice}
-          </div>
-        ) : null}
         <div className={styles.sectionHeading}>
           <span className={styles.sectionIcon} aria-hidden="true"><LayoutTemplate size={18} /></span>
           <div>
-            <h1 id="studio-starter-title">{studioCopy.projects.starterTitle}</h1>
+            {showConversationEntry
+              ? <h2 id="studio-starter-title">{studioCopy.projects.starterTitle}</h2>
+              : <h1 id="studio-starter-title">{studioCopy.projects.starterTitle}</h1>}
           </div>
         </div>
 
@@ -447,7 +450,12 @@ export default function StudioProjectsPageClient({ initialStarterTemplateId = nu
         <StudioMontageBuilder copy={studioCopy.projects.montage} enabled={montageCreationEnabled} />
         <p className={styles.starterDisclaimer}>{studioCopy.projects.starterDisclaimer}</p>
       </section>
+  );
 
+  return (
+    <div className={styles.projectsShell}>
+      {apiNotice ? <div className={styles.syncNotice} role="status" aria-live="polite">{apiNotice}</div> : null}
+      {showConversationEntry ? <StudioConversationEntry locale={locale} /> : starterSection}
       {projects.length ? (
         <section className={styles.projectSection} aria-labelledby="studio-project-list-title">
           <div className={styles.sectionHeading}>
@@ -470,7 +478,7 @@ export default function StudioProjectsPageClient({ initialStarterTemplateId = nu
                   <button
                     type="button"
                     className={styles.projectCardMain}
-                    onClick={() => router.push(studioProjectWithMediaHandoff(project.id, window.location.search))}
+                    onClick={() => router.push(studioProjectEntryUrl(project, conversationEnabled, window.location.search))}
                   >
                     {previewUrl ? (
                       <img src={previewUrl} alt="" />
@@ -539,6 +547,12 @@ export default function StudioProjectsPageClient({ initialStarterTemplateId = nu
             })}
           </div>
         </section>
+      ) : null}
+      {showConversationEntry ? (
+        <details className={entryStyles.canvasOptions}>
+          <summary>{entryCopy.canvasTitle}<span>{entryCopy.canvasDescription}</span></summary>
+          {starterSection}
+        </details>
       ) : null}
       {renameProject ? (
         <div className={styles.dialogBackdrop}>

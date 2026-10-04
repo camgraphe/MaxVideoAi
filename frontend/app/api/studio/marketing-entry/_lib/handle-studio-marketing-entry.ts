@@ -9,7 +9,7 @@ import {
 const STUDIO_PROJECTS_PATH = '/app/studio/projects';
 
 function resolveProjectsPath(starter: string | null): string {
-  if (!starter || !resolveStudioMarketingStarter(starter)) return STUDIO_PROJECTS_PATH;
+  if (!starter || !resolveStudioMarketingStarter(starter)) return '/app/studio';
   return `${STUDIO_PROJECTS_PATH}?starter=${encodeURIComponent(starter)}`;
 }
 

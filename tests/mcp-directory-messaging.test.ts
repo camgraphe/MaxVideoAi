@@ -43,10 +43,9 @@ test('distribution guide records live direct setup and the active Official MCP R
   assert.match(distribution, /availability[^.]*does not prove[^.]*host\s+compatibility/i);
   assert.doesNotMatch(distribution, /Do not publish ChatGPT-specific setup/i);
 
-  // Read-only Registry checkpoint recorded in the guide; not the next source version.
-  assert.match(registryRow, /active.*`0\.3\.5`/i);
-  assert.match(registryRow, /rechecked on \*\*2026-09-21\*\*/);
-  assert.match(registryRow, /publication on \*\*2026-09-16\*\*/);
+  // Read-only Registry checkpoint; independent from the next source version.
+  assert.match(registryRow, /active.*`0\.3\.6`/i);
+  assert.match(registryRow, /rechecked on \*\*2026-10-04\*\*/);
   assert.match(
     registryRow,
     /https:\/\/registry\.modelcontextprotocol\.io\/v0\.1\/servers\?search=com\.maxvideoai%2Fmaxvideoai/,

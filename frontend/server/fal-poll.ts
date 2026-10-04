@@ -11,6 +11,7 @@ import { toUserFacingFailureMessage } from '@/server/user-facing-failure-message
 import { getFalPollTiming } from '@/server/fal-poll-timing';
 import { reconcileStaleFalProvisionals } from '@/server/fal-stale-provisionals';
 import { extractFalErrorMessage } from '@/server/fal-webhook-errors';
+import { sanitizeProviderMediaDiagnostics } from '@/server/provider-media-diagnostics';
 
 type FalPendingJob = {
   job_id: string;
@@ -67,14 +68,14 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
             job.provider_job_id,
             engineId ?? job.engine_id ?? 'fal-unknown',
             status,
-            JSON.stringify({
+            JSON.stringify(sanitizeProviderMediaDiagnostics({
               at: new Date().toISOString(),
               ...payload,
-            }),
+            })),
           ]
         );
       } catch (logError) {
-        console.warn('[fal-poll] failed to record poll event', { jobId: job.job_id, status }, logError);
+        console.warn('[fal-poll] failed to record poll event', { jobId: job.job_id, status }, sanitizeProviderMediaDiagnostics(logError));
       }
     };
 
@@ -85,7 +86,7 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
         at: new Date().toISOString(),
         jobId: job.job_id,
         providerJobId: job.provider_job_id,
-        reason,
+        reason: sanitizeProviderMediaDiagnostics(reason),
         autoRefundEligible,
         failureOrigin: options.failureOrigin ?? 'poll_internal',
       });
@@ -100,14 +101,14 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
           failure_origin: options.failureOrigin ?? 'poll_internal',
         });
       } catch (updateError) {
-        console.warn('[fal-poll] webhook update failed, falling back to DB update', job.job_id, updateError);
+        console.warn('[fal-poll] webhook update failed, falling back to DB update', job.job_id, sanitizeProviderMediaDiagnostics(updateError));
         try {
           await query(
             `UPDATE app_jobs SET status = 'failed', progress = LEAST(progress, 1), message = $1 WHERE job_id = $2`,
             [userMessage, job.job_id]
           );
         } catch (writeError) {
-          console.warn('[fal-poll] db update failed', job.job_id, writeError);
+          console.warn('[fal-poll] db update failed', job.job_id, sanitizeProviderMediaDiagnostics(writeError));
         }
       }
       updates += 1;
@@ -200,7 +201,7 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
       const statusInfo = (await falClient.queue
         .status(falModel, { requestId: job.provider_job_id })
         .catch((error: unknown) => {
-          console.warn('[fal-poll] fal status fetch failed', job.job_id, error);
+          console.warn('[fal-poll] fal status fetch failed', job.job_id, sanitizeProviderMediaDiagnostics(error));
           return null;
         })) as Record<string, unknown> | null;
       if (statusInfo) await pollClaim.checked();
@@ -340,7 +341,7 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
       });
       updates += 1;
     } catch (error) {
-      console.warn('[fal-poll] failed to sync job', job.job_id, error);
+      console.warn('[fal-poll] failed to sync job', job.job_id, sanitizeProviderMediaDiagnostics(error));
       await recordPollEvent('poll:deferred', { reason: 'Render sync failed.' });
       await query(`UPDATE app_jobs SET updated_at = NOW() WHERE job_id = $1 AND status IN ('pending','queued','running','processing','in_progress')`, [job.job_id]);
     } finally {
@@ -374,7 +375,7 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
       durableRecoveryFailures += 1;
       console.warn('[fal-poll] durable media recovery deferred', {
         jobId: recoverable.job_id,
-        error,
+        error: sanitizeProviderMediaDiagnostics(error),
       });
     }
   }
@@ -387,7 +388,7 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
     mcpLibraryPromotionFailures = promotion.failed;
   } catch (error) {
     mcpLibraryPromotionFailures = 1;
-    console.warn('[fal-poll] MCP output library backfill deferred', { error });
+    console.warn('[fal-poll] MCP output library backfill deferred', { error: sanitizeProviderMediaDiagnostics(error) });
   }
 
   const { failed: provisionalFailures } = await reconcileStaleFalProvisionals();

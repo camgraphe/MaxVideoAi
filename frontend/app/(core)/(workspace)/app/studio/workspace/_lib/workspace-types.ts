@@ -546,8 +546,11 @@ export type WorkspaceTimelineItem = {
   mediaFacts?: import('@/lib/media-identity').MediaFacts;
   /** Ephemeral authenticated playback projection. Never persist this URL. */
   mediaAccessUrl?: string;
+  /** Ephemeral owned thumbnail projection, separate from the canonical thumbnailUrl. */
+  thumbnailAccessUrl?: string;
   mediaAccessExpiresAt?: string | null;
   mediaAccessRequired?: boolean;
+  mediaAccessError?: 'MEDIA_NOT_AVAILABLE';
   montageSource?: {
     commandKind: 'create_studio_montage';
     commandVersion: 1;

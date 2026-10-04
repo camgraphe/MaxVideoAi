@@ -1,5 +1,5 @@
 import React from 'react';
-import { AbsoluteFill, Audio, Img, Sequence, Video, useVideoConfig } from 'remotion';
+import { AbsoluteFill, Audio, Img, Sequence, OffthreadVideo, useVideoConfig } from 'remotion';
 import type { WorkspaceTimelineRenderClip } from '../../../app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
 import type { TimelineExportRenderProps } from './types';
 import {
@@ -67,7 +67,7 @@ export function TimelineComposition(props: TimelineExportRenderProps) {
                 {clip.mediaKind === 'image' ? (
                   <Img src={clip.mediaUrl} style={clipTransformStyle(clip)} />
                 ) : (
-                  <Video
+                  <OffthreadVideo
                     src={clip.mediaUrl}
                     trimBefore={trimBefore}
                     trimAfter={trimAfter}

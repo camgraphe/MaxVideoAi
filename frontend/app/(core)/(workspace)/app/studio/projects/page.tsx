@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound,redirect } from 'next/navigation';
 import { AppSidebar } from '@/components/AppSidebar';
 import { HeaderBar } from '@/components/HeaderBar';
 import { FEATURES } from '@/content/feature-flags';
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 export default async function StudioProjectsPage({ searchParams }: {
-  searchParams: Promise<{ starter?: string | string[]; preview?: string | string[] }>;
+  searchParams: Promise<{ starter?: string | string[]; preview?: string | string[]; studioMedia?: string | string[];view?:string|string[] }>;
 }) {
   if (!FEATURES.studio.maxVideoAiEditor) {
     notFound();
@@ -43,6 +43,10 @@ export default async function StudioProjectsPage({ searchParams }: {
     );
   }
   const initialStarterTemplateId = resolveStudioMarketingStarter(query.starter);
+  const conversationEnabled = process.env.STUDIO_IMAGE_CONVERSATION_ENABLED === 'true'
+    && process.env.STUDIO_CONVERSATION_ACTIONS_ENABLED === 'true'
+    && process.env.STUDIO_CONVERSATION_EDITING_ENABLED === 'true';
+  if(conversationEnabled&&query.starter===undefined&&query.studioMedia===undefined&&query.view!=='canvas')redirect('/app/studio');
   const requestHeaders = await headers();
   const montageCreationEnabled = isStudioMontageCreationEnabled(
     process.env,
@@ -59,6 +63,8 @@ export default async function StudioProjectsPage({ searchParams }: {
           <StudioProjectsPageClient
             initialStarterTemplateId={initialStarterTemplateId}
             montageCreationEnabled={montageCreationEnabled}
+            conversationEnabled={conversationEnabled}
+            hasMediaHandoff={query.studioMedia !== undefined}
           />
         </main>
       </div>

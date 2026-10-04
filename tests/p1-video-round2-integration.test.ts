@@ -374,6 +374,7 @@ async function submitRealFalFailure(input: {
   });
   (error as FalGenerationError & { code: string }).code = input.code;
   return withMutedFalLogs(() => submitFalGenerateTask({
+    userId: 'owner',
     falPayload: payload,
     jobId: `job_${input.engine.id}`,
     engineId: input.engine.id,

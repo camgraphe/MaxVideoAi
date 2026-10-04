@@ -78,7 +78,8 @@
       "pricing": "Precios",
       "docs": "Documentación",
       "blog": "Blog",
-      "connect": "Asistentes"
+      "connect": "Asistentes",
+      "studio": "Studio"
     },
     "badges": {
       "new": "Nuevo"
@@ -307,7 +308,7 @@
     "sections": [
       {
         "title": "Archivo de Sora y alternativas",
-        "body": "La generación con Sora está cerrada. OpenAI y fal.ai cierran la API el 24 de septiembre de 2026. Elige Seedance 2.5, MiniMax H3 o Wan 3 para un nuevo vídeo. Tus vídeos existentes permanecen en tu biblioteca."
+        "body": "La generación con Sora está cerrada. La fecha anunciada de cierre de la API era el 24 de septiembre de 2026. Elige Seedance 2.5, MiniMax H3 o Wan 3 para un nuevo vídeo. Tus vídeos existentes permanecen en tu biblioteca."
       },
       {
         "title": "Veo 3: texto a video cinemático",
@@ -363,7 +364,7 @@
       },
       {
         "question": "¿Se puede seguir generando con Sora?",
-        "answer": "La generación con Sora está cerrada. OpenAI y fal.ai cierran la API el 24 de septiembre de 2026. Elige Seedance 2.5, MiniMax H3 o Wan 3 para un nuevo vídeo. Tus vídeos existentes permanecen en tu biblioteca."
+        "answer": "La generación con Sora está cerrada. La fecha anunciada de cierre de la API era el 24 de septiembre de 2026. Elige Seedance 2.5, MiniMax H3 o Wan 3 para un nuevo vídeo. Tus vídeos existentes permanecen en tu biblioteca."
       },
       {
         "question": "¿Puedo seguir los cambios de los modelos sin revisar toda la documentación?",
@@ -1240,11 +1241,6 @@
             "providerKey": "Luma AI",
             "provider": "Luma",
             "model": "Luma"
-          },
-          {
-            "providerKey": "OpenAI",
-            "provider": "OpenAI",
-            "model": "Sora"
           }
         ]
       },
@@ -1602,7 +1598,7 @@
       "items": [
         {
           "q": "¿Se puede seguir generando con Sora?",
-          "a": "La generación con Sora está cerrada. OpenAI y fal.ai cierran la API el 24 de septiembre de 2026. Elige Seedance 2.5, MiniMax H3 o Wan 3 para un nuevo vídeo. Tus vídeos existentes permanecen en tu biblioteca."
+          "a": "La generación con Sora está cerrada. La fecha anunciada de cierre de la API era el 24 de septiembre de 2026. Elige Seedance 2.5, MiniMax H3 o Wan 3 para un nuevo vídeo. Tus vídeos existentes permanecen en tu biblioteca."
         },
         {
           "q": "¿Puedo activar audio?",
@@ -2138,7 +2134,7 @@
         {
           "emoji": "🎬",
           "title": "Archivo de Sora y alternativas",
-          "body": "La generación con Sora está cerrada. OpenAI y fal.ai cierran la API el 24 de septiembre de 2026. Elige Seedance 2.5, MiniMax H3 o Wan 3 para un nuevo vídeo. Tus vídeos existentes permanecen en tu biblioteca."
+          "body": "La generación con Sora está cerrada. La fecha anunciada de cierre de la API era el 24 de septiembre de 2026. Elige Seedance 2.5, MiniMax H3 o Wan 3 para un nuevo vídeo. Tus vídeos existentes permanecen en tu biblioteca."
         },
         {
           "emoji": "🎯",

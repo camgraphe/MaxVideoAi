@@ -50,6 +50,8 @@ When a worker receives `TIMELINE_EXPORT_TARGET_ID` or `--export-id <id>`, it cla
 Vercel must not render MP4s inside route handlers. The create-export API only creates the durable `app_timeline_exports` row, reserves billing, then calls AWS ECS `RunTask` to start one short-lived Fargate worker task.
 
 - Docker image: build from `Dockerfile.timeline-worker`, not the root mock API `Dockerfile`.
+- Both stages use Node 22. Include `packages/pricing` before the frozen install and retain it in the runner for the frontend's file dependency. Copy the shared `COREPACK_HOME` cache and disable Corepack networking in the runner; startup must not download its package manager.
+- Build from committed source without environment files, credentials, dependencies or Next output. Check the actual default entry point with no credentials and `--network none`: it must reach the database-not-configured preflight. This check launches no export and proves no rendering/storage integration. Pin the qualified pilot image digest.
 - Runtime command: `pnpm --prefix frontend run timeline-exports:worker:once`.
 - ECS mode: `RunTask` only; do not run an always-on ECS service.
 - Network mode: Fargate `awsvpc`, public subnets, `assignPublicIp: ENABLED`; no NAT Gateway required.
@@ -67,12 +69,14 @@ TIMELINE_EXPORT_RENDER_TIMEOUT_MS=1800000
 TIMELINE_EXPORT_ECS_REGION=us-east-1
 TIMELINE_EXPORT_ECS_CLUSTER=maxvideoai-timeline-exports
 TIMELINE_EXPORT_ECS_TASK_DEFINITION=maxvideoai-timeline-export-worker:2
-TIMELINE_EXPORT_ECS_CONTAINER_NAME=timeline-export-worker
+TIMELINE_EXPORT_ECS_CONTAINER_NAME=worker
 TIMELINE_EXPORT_ECS_SECURITY_GROUP=sg-04be7e4806ef5f77a
 TIMELINE_EXPORT_ECS_SUBNETS=subnet-056b0e21b43d5f9a0,subnet-052782533ff5c999b,subnet-0259349f2a43a61e9,subnet-02a8f9a8f9705eb93,subnet-08810baae918cd7e8,subnet-050836f43a4a5b96e
 ```
 
 `TIMELINE_EXPORT_ECS_CONTAINER_NAME` defaults to `timeline-export-worker`. Set it only when the task definition uses a different container name.
+
+Read-only inspection on 2 October 2026 found revision 2's actual container name is `worker`, as used in the example above. Its database secret targets production, while its referenced `latest` image is currently absent from ECR. Resource existence is not render readiness. See `studio-conversation-pilot-readiness.md` before using this infrastructure for a Studio pilot; use an isolated definition/database/storage instead of repointing the existing production definition.
 
 Use a dedicated AWS launcher identity for Vercel, not the storage uploader credentials. Its policy should be limited to:
 

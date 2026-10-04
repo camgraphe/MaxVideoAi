@@ -169,15 +169,20 @@ test('confirm_audio_generation reserves once, executes outside the transaction, 
     createdAt: new Date('2026-09-08T13:00:00.000Z'),
     updatedAt: new Date('2026-09-08T13:00:00.000Z'),
   };
-  let state: 'prepared' | 'claimed' | 'accepted' = 'prepared';
+  let state: 'prepared' | 'claimed' | 'accepted' | 'failed' = 'prepared';
   let jobId: string | null = null;
   let transactionActive = false;
   let reservations = 0;
   let executions = 0;
   let failAcceptedMutation = false;
   let failedMarks = 0;
+  const promotions: unknown[] = [];
+  let failPromotion = false;
+  let failExecution = false;
+  let acceptedEvidence: 'valid' | 'null' | 'foreign' | 'other-job' | 'claimed' = 'valid';
+  let jobStatus: 'completed' | 'running' | 'failed' = 'completed';
   const status = () => ({
-    jobId: jobId!, surface: 'audio' as const, status: 'completed' as const,
+    jobId: jobId!, surface: 'audio' as const, status: jobStatus,
     progress: 100, message: 'Audio render complete.', priceCents: 45,
     currency: 'USD', paymentStatus: 'paid_wallet', retryAfterSeconds: null,
   });
@@ -219,13 +224,22 @@ test('confirm_audio_generation reserves once, executes outside the transaction, 
     executeRun: async () => {
       assert.equal(transactionActive, false);
       executions += 1;
+      if (failExecution) throw new Error('provider failed');
       return { ok: true, jobId, status: 'completed' };
     },
     markQuoteAccepted: async () => {
       if (failAcceptedMutation) throw new Error('accepted mutation unavailable');
-      state = 'accepted'; return { ...quote, state, jobId };
+      state = 'accepted';
+      if (acceptedEvidence === 'null') return null;
+      return { ...quote, state: acceptedEvidence === 'claimed' ? 'claimed' : state, jobId: acceptedEvidence === 'other-job' ? 'foreign-job' : jobId, userId: acceptedEvidence === 'foreign' ? 'other' : principal.userId };
     },
     markQuoteFailed: async () => { failedMarks += 1; return null; },
+    promoteOutputs: async (input: {userId: string; jobId: string}) => {
+      assert.equal(transactionActive, false);
+      assert.equal(state, 'accepted');
+      promotions.push(input);
+      if (failPromotion) throw new Error('storage unavailable');
+    },
     readAudioStatus: async () => status(),
     accountUrl: 'https://maxvideoai.com',
     randomUUID: () => '11111111-1111-4111-8111-111111111111',
@@ -237,6 +251,17 @@ test('confirm_audio_generation reserves once, executes outside the transaction, 
   assert.equal(first.status, 'completed');
   assert.equal(reservations, 1);
   assert.equal(executions, 1);
+  assert.deepEqual(promotions, [
+    {userId: 'audio-user', jobId: 'aud_fixture_job'},
+    {userId: 'audio-user', jobId: 'aud_fixture_job'},
+  ]);
+  failPromotion = true;
+  assert.equal((await confirmAudioGeneration({quoteId: quote.quoteId, confirmed: true}, principal, dependencies)).status, 'completed');
+  assert.equal(executions, 1);
+  assert.equal(reservations, 1);
+  assert.equal(failedMarks, 0);
+  failPromotion = false;
+  const promotedBeforeUncertain = promotions.length;
 
   state = 'prepared';
   jobId = null;
@@ -246,4 +271,43 @@ test('confirm_audio_generation reserves once, executes outside the transaction, 
   );
   assert.equal(completedDespiteQuoteMutation.status, 'completed');
   assert.equal(failedMarks, 0);
+  assert.equal(promotions.length, promotedBeforeUncertain);
+  await confirmAudioGeneration({quoteId: quote.quoteId, confirmed: true}, principal, dependencies);
+  assert.equal(promotions.length, promotedBeforeUncertain, 'An indeterminate claim cannot promote outputs on replay.');
+  state = 'prepared'; jobId = null; failExecution = true;
+  await confirmAudioGeneration({quoteId: quote.quoteId, confirmed: true}, principal, dependencies);
+  assert.equal(failedMarks, 1);
+  assert.equal(promotions.length, promotedBeforeUncertain, 'Failed execution cannot promote.');
+  failExecution = false; failAcceptedMutation = false;
+  for (const invalid of ['null', 'foreign', 'other-job', 'claimed'] as const) {
+    state = 'prepared'; jobId = null; acceptedEvidence = invalid;
+    await confirmAudioGeneration({quoteId: quote.quoteId, confirmed: true}, principal, dependencies);
+    assert.equal(promotions.length, promotedBeforeUncertain, 'Only exact accepted quote evidence permits promotion.');
+  }
+  acceptedEvidence = 'valid';
+  for (const nonCompleted of ['running', 'failed'] as const) {
+    state = 'accepted'; jobStatus = nonCompleted;
+    await confirmAudioGeneration({quoteId: quote.quoteId, confirmed: true}, principal, dependencies);
+    assert.equal(promotions.length, promotedBeforeUncertain);
+  }
+  state = 'failed'; jobStatus = 'completed';
+  await confirmAudioGeneration({quoteId: quote.quoteId, confirmed: true}, principal, dependencies);
+  assert.equal(promotions.length, promotedBeforeUncertain, 'A failed quote is not repaired by promotion.');
+});
+
+test('accepted audio promotion scopes rows to the exact owner and job before library writes', async () => {
+  const module = await import('../frontend/src/server/agent-api/confirm-audio-generation');
+  assert.equal(typeof module.promoteConfirmedAudioOutputs, 'function');
+  const row = {id: 'job:audio:0', job_id: 'job', user_id: 'audio-user', kind: 'audio', status: 'ready', url: 'https://example.com/audio.mp3', storage_url: null, thumb_url: null, preview_url: null, mime_type: 'audio/mpeg', width: null, height: null, duration_sec: 8, position: 0, metadata: {}, created_at: new Date()};
+  const persisted: string[] = [];
+  await module.promoteConfirmedAudioOutputs({userId: 'audio-user', jobId: 'job'}, {
+    executor: {query: async <T>(sql: string, values: unknown[]) => {
+      assert.deepEqual(values, ['job', 'audio-user']);
+      assert.match(sql, /o.user_id = \$2/); assert.match(sql, /j.user_id = \$2/);
+      assert.match(sql, /j.status = 'completed'/);
+      return [row, {...row, id: 'foreign', user_id: 'other'}, {...row, id: 'other-job', job_id: 'other'}, {...row, id: 'unready', status: 'pending'}] as T[];
+    }},
+    promote: async outputs => {persisted.push(...outputs.map(output => output.id)); return {promoted: outputs.length, failed: 0, skipped: 0};},
+  });
+  assert.deepEqual(persisted, ['job:audio:0']);
 });

@@ -6,14 +6,14 @@ export const FR_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     "metaDescription": "Ces vidéos ont été créées avec Sora. Les nouvelles générations Sora sont fermées. Découvrez Seedance 2.5, MiniMax H3 et Wan 3 pour votre prochaine vidéo.",
     "heroTitle": "Exemples historiques Sora",
     "subtitle": "Ces vidéos ont été créées avec Sora. Les nouvelles générations Sora sont fermées. Découvrez Seedance 2.5, MiniMax H3 et Wan 3 pour votre prochaine vidéo.",
-    "intro": "La génération Sora est fermée. OpenAI et fal.ai arrêtent l’API le 24 septembre 2026. Choisissez Seedance 2.5, MiniMax H3 ou Wan 3 pour une nouvelle vidéo. Vos vidéos existantes restent dans votre bibliothèque.",
+    "intro": "La génération Sora est fermée. La date annoncée d’arrêt de l’API était le 24 septembre 2026. Choisissez Seedance 2.5, MiniMax H3 ou Wan 3 pour une nouvelle vidéo. Vos vidéos existantes restent dans votre bibliothèque.",
     "promptPatterns": "Ces vidéos ont été créées avec Sora. Les nouvelles générations Sora sont fermées. Découvrez Seedance 2.5, MiniMax H3 et Wan 3 pour votre prochaine vidéo.",
     "strengthsLimits": "Ces vidéos ont été créées avec Sora. Les nouvelles générations Sora sont fermées. Découvrez Seedance 2.5, MiniMax H3 et Wan 3 pour votre prochaine vidéo.",
     "pricingNotes": "Les modèles archivés n’ont pas de tarif de génération actuel. Choisissez un modèle disponible et consultez un nouveau devis avant de générer.",
     "faq": [
         {
             "question": "Peut-on encore générer avec Sora ?",
-            "answer": "La génération Sora est fermée. OpenAI et fal.ai arrêtent l’API le 24 septembre 2026. Choisissez Seedance 2.5, MiniMax H3 ou Wan 3 pour une nouvelle vidéo. Vos vidéos existantes restent dans votre bibliothèque."
+            "answer": "La génération Sora est fermée. La date annoncée d’arrêt de l’API était le 24 septembre 2026. Choisissez Seedance 2.5, MiniMax H3 ou Wan 3 pour une nouvelle vidéo. Vos vidéos existantes restent dans votre bibliothèque."
         },
         {
             "question": "Archives Sora et alternatives",

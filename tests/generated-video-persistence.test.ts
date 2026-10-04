@@ -147,3 +147,31 @@ test('owned raw S3 output is resolved before controlled CDN normalization', asyn
   await module.ensureReusableAsset({ userId: 'owner', url: raw, kind: 'video', source: 'saved_job_output', sourceOutputId: 'job:video:0', allowRemoteThumbnailFallback: false });
   assert.equal(copies, 1);
 });
+
+
+test('promotion never downgrades versioned generated facts into unbound legacy measurements', async () => {
+  const fixture = { mirror: [] as unknown[], query: async (sql: string, params: unknown[]) => {
+    if (sql.includes('FROM job_outputs')) return [{ id: 'job:video:0', job_id: 'job', user_id: 'owner', kind: 'video', url: originalUrl,
+      storage_url: null, status: 'ready', duration_sec: 10, metadata: { mediaFacts: facts } }];
+    if (sql.includes('FROM media_assets')) return [];
+    if (sql.includes('INSERT INTO media_assets')) return [assetRow(JSON.parse(params[14] as string))];
+    throw new Error('Unexpected query');
+  }, copy: async () => ({ url: libraryUrl, thumbUrl: null, mimeType: 'video/mp4', width: null, height: null, sizeBytes: 42, mediaFacts: null }) };
+  const module = await load('server/media-library/assets.ts', fixture, assetStubs);
+  const result = await module.saveJobOutputToLibrary({ userId: 'owner', jobId: 'job', outputId: 'job:video:0' });
+  assert.equal(result.metadata.mediaFacts, undefined, 'copy without verified facts cannot reuse source-bound measurements as legacy facts');
+});
+
+test('caller versioned facts and existing versioned facts never enter the legacy backfill path', async () => {
+  for (const existingVersioned of [false, true]) {
+    const stored = assetRow({ durationSec: 10, ...(existingVersioned ? { mediaFacts: { ...facts, durationSec: null } } : {}) });
+    const fixture = { mirror: [], query: async (sql: string) => {
+      if (sql.includes('FROM media_assets')) return [stored];
+      throw new Error('Unexpected write for versioned measurements');
+    }, copy: async () => { throw new Error('Unexpected copy'); } };
+    const module = await load('server/media-library/assets.ts', fixture, assetStubs);
+    const result = await module.ensureReusableAsset({ userId: 'owner', url: libraryUrl, kind: 'video', source: 'upload',
+      metadata: { mediaFacts: existingVersioned ? { source: 'probe', durationSec: 15 } : facts }, allowRemoteThumbnailFallback: false });
+    assert.deepEqual(result.metadata, stored.metadata);
+  }
+});

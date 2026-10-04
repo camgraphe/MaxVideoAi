@@ -98,23 +98,27 @@ test('timeline export billing reserves free quota before paid wallet charge', ()
   assert.match(source, /surface,\s*billing_product_key/);
 });
 
-test('timeline export creation reserves billing and inserts the job atomically', () => {
+test('shared timeline export creation reserves billing and inserts the job atomically', () => {
   const billingSource = readFileSync(billingPath, 'utf8');
   const createRouteSource = readFileSync(join(root, 'frontend/app/api/studio/timeline-exports/route.ts'), 'utf8');
+  const orchestrationSource = readFileSync(join(root, 'frontend/src/server/timeline-exports/orchestration.ts'), 'utf8');
   assert.match(billingSource, /createTimelineExportJobWithReservation/);
   assert.match(billingSource, /withDbTransaction/);
   assert.match(billingSource, /lockUserWalletInExecutor\(executor, params\.userId\)/);
   assert.match(billingSource, /INSERT INTO app_timeline_exports/);
-  assert.match(createRouteSource, /createTimelineExportJobWithReservation/);
+  assert.match(createRouteSource, /submitOwnedTimelineExport/);
   assert.match(createRouteSource, /export const runtime = 'nodejs'/);
-  assert.match(createRouteSource, /readTimelineExportJobByIdempotencyKey/);
-  assert.match(createRouteSource, /assertTimelineExportWorkerLauncherConfigured/);
-  assert.match(createRouteSource, /TIMELINE_EXPORT_WORKER_NOT_CONFIGURED/);
-  assert.match(createRouteSource, /launchTimelineExportWorkerTask/);
-  assert.match(createRouteSource, /!result\.reused && result\.job\.status === 'queued'/);
-  assert.match(createRouteSource, /releaseFailedTimelineExportBilling/);
-  assert.match(createRouteSource, /failTimelineExportJob/);
+  assert.match(orchestrationSource, /createTimelineExportJobWithReservation/);
+  assert.match(orchestrationSource, /readTimelineExportJobByIdempotencyKey/);
+  assert.match(orchestrationSource, /assertTimelineExportWorkerLauncherConfigured/);
+  assert.match(orchestrationSource, /TIMELINE_EXPORT_WORKER_NOT_CONFIGURED/);
+  assert.match(orchestrationSource, /launchTimelineExportWorkerTask/);
+  assert.match(orchestrationSource, /!result\.reused && result\.job\.status === 'queued'/);
+  assert.match(orchestrationSource, /releaseFailedTimelineExportBilling/);
+  assert.match(orchestrationSource, /failTimelineExportJob/);
   assert.doesNotMatch(createRouteSource, /reserveTimelineExportBilling/, 'route should not reserve billing separately from job creation');
+  assert.doesNotMatch(createRouteSource, /createTimelineExportJobWithReservation|launchTimelineExportWorkerTask|resolveOwnedTimelineExportRequest/, 'route should delegate authorized export orchestration to its shared service');
+  assert.doesNotMatch(orchestrationSource, /INSERT INTO|withDbTransaction|RunTaskCommand|renderMedia/, 'service should preserve billing, repository and worker owners');
 });
 
 test('timeline export ECS runner starts one Fargate task without long route rendering', () => {
@@ -176,7 +180,7 @@ test('timeline export worker uses Remotion renderer outside route handlers', () 
   assert.match(preflightSource, /isStorageConfigured/);
   assert.match(preflightSource, /CHROME_BIN/);
   assert.match(readFileSync(compositionPath, 'utf8'), /<Sequence/);
-  assert.match(readFileSync(compositionPath, 'utf8'), /<Video/);
+  assert.match(readFileSync(compositionPath, 'utf8'), /<OffthreadVideo/, 'server rendering must extract precise source frames instead of using the browser video compositor');
   assert.match(readFileSync(compositionPath, 'utf8'), /<Audio/);
   assert.match(readFileSync(compositionPath, 'utf8'), /clip\.composition/, 'Remotion should consume timeline clip composition geometry');
   assert.doesNotMatch(readFileSync(compositionPath, 'utf8'), /objectFit:\s*'cover'/, 'server renders should not silently stretch native source media to full sequence frame');
@@ -185,6 +189,12 @@ test('timeline export worker uses Remotion renderer outside route handlers', () 
 test('timeline export worker has a dedicated Docker image and documented env', () => {
   assert.ok(existsSync(workerDockerfilePath), 'dedicated worker Dockerfile should exist');
   const dockerfile = readFileSync(workerDockerfilePath, 'utf8');
+  assert.equal((dockerfile.match(/FROM node:22-bookworm-slim/g) ?? []).length, 2, 'both worker stages should use the project Node 22 runtime');
+  assert.equal((dockerfile.match(/ENV COREPACK_HOME="\/corepack"/g) ?? []).length, 2, 'both stages must use the same package-manager cache');
+  assert.match(dockerfile, /COPY --from=deps \/corepack \/corepack/, 'package-manager bytes must be present at runtime');
+  assert.match(dockerfile, /ENV COREPACK_ENABLE_NETWORK=0/, 'worker startup must not download a package manager');
+  assert.match(dockerfile, /COPY packages\/pricing \.\/packages\/pricing/, 'the file-based pricing dependency must exist before installing the frozen workspace');
+  assert.match(dockerfile, /COPY --from=deps \/app\/packages\/pricing \.\/packages\/pricing/, 'the runner must retain its local pricing dependency');
   assert.match(dockerfile, /pnpm.*timeline-exports:worker:once/, 'worker image should run one queued export and exit');
   assert.match(dockerfile, /chromium/, 'worker image should install Chromium for Remotion');
   assert.match(dockerfile, /ffmpeg/, 'worker image should install FFmpeg for MP4 rendering');
@@ -194,7 +204,7 @@ test('timeline export worker has a dedicated Docker image and documented env', (
   assert.match(envSource, /TIMELINE_EXPORT_ECS_REGION=us-east-1/);
   assert.match(envSource, /TIMELINE_EXPORT_ECS_CLUSTER=maxvideoai-timeline-exports/);
   assert.match(envSource, /TIMELINE_EXPORT_ECS_TASK_DEFINITION=maxvideoai-timeline-export-worker:2/);
-  assert.match(envSource, /TIMELINE_EXPORT_ECS_CONTAINER_NAME=timeline-export-worker/);
+  assert.match(envSource, /TIMELINE_EXPORT_ECS_CONTAINER_NAME=worker/);
   assert.match(envSource, /TIMELINE_EXPORT_ECS_SECURITY_GROUP=sg-04be7e4806ef5f77a/);
   assert.match(envSource, /TIMELINE_EXPORT_ECS_SUBNETS=/);
   assert.doesNotMatch(envSource, /videohub-uploader/, 'worker docs should not reuse broad uploader credentials');

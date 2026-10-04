@@ -211,7 +211,7 @@ test('maps legacy app_jobs media columns into ordered job outputs', () => {
         thumbUrl: null,
         position: 0,
         mimeType: 'audio/flac',
-        metadata: { legacy: true, surface: 'image', measuredDurationSec: 7.625 },
+        metadata: { legacy: true, surface: 'image', measuredDurationSec: 7.625, mediaFacts: { source: 'probe', durationSec: 7.625 } },
         width: null,
         height: null,
       },
@@ -237,6 +237,25 @@ test('maps legacy app_jobs media columns into ordered job outputs', () => {
       },
     ]
   );
+});
+
+test('audio outputs retain measured editing facts without certifying the historical duration', () => {
+  const row = {
+    job_id: 'voice-job', user_id: 'voice-owner', surface: 'audio',
+    audio_url: 'https://cdn.example.com/voice.mp3', audio_mime_type: 'audio/mpeg',
+    duration_sec: 13, status: 'completed',
+  };
+  const [measured] = mapLegacyJobRowToOutputs({ ...row, measured_duration_sec: 12.408 });
+  assert.equal(measured.id, 'voice-job:audio:0');
+  assert.equal(measured.durationSec, 13);
+  assert.equal(measured.metadata.measuredDurationSec, 12.408);
+  assert.deepEqual(measured.metadata.mediaFacts, { source: 'probe', durationSec: 12.408 });
+  for (const invalid of [undefined, null, 0, -1, Number.NaN, Number.POSITIVE_INFINITY]) {
+    const [unmeasured] = mapLegacyJobRowToOutputs({ ...row, measured_duration_sec: invalid });
+    assert.equal(unmeasured.metadata.mediaFacts, undefined);
+    assert.equal(unmeasured.metadata.measuredDurationSec, undefined);
+    assert.equal(unmeasured.durationSec, 13);
+  }
 });
 
 test('normalizes library sources to the canonical allowed set', () => {

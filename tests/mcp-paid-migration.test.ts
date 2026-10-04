@@ -307,6 +307,8 @@ test('migration 30 constraints, state machine, immutability, indexes, row locks,
            'prepared', created_at + INTERVAL '10 minutes', created_at, created_at
       FROM quote_time
   `, [JSON.stringify(lockRequest), lockRequestHash]);
+  // Repository qualification uses current scope columns after testing historical migration 30 above.
+  await clientA.query(readFileSync("neon/migrations/49_studio_generation_scope.sql", "utf8"));
   const executorA: QueryExecutor = {
     async query<TRecord>(text, params) {
       return (await clientA.query<TRecord>(text, params as unknown[] | undefined)).rows;
@@ -440,12 +442,12 @@ test('migration 30 constraints, state machine, immutability, indexes, row locks,
            claimed_at = CASE quote_id
              WHEN '00000000-0000-4000-8000-000000000031'
                THEN date_trunc('day', clock_timestamp() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' - INTERVAL '9 minutes'
-             ELSE date_trunc('day', clock_timestamp() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' + INTERVAL '1 minute'
+             ELSE date_trunc('day', clock_timestamp() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
            END,
            updated_at = CASE quote_id
              WHEN '00000000-0000-4000-8000-000000000031'
                THEN date_trunc('day', clock_timestamp() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' - INTERVAL '9 minutes'
-             ELSE date_trunc('day', clock_timestamp() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' + INTERVAL '1 minute'
+             ELSE date_trunc('day', clock_timestamp() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
            END
      WHERE user_id = 'spend-user';
     UPDATE mcp_generation_quotes
@@ -454,6 +456,24 @@ test('migration 30 constraints, state machine, immutability, indexes, row locks,
   `);
 
   await clientA.query('BEGIN');
+  // Exercise the real spending query during the first minute of the UTC day.
+  // Today's fixture must already be claimable; a future claim is correctly excluded.
+  let firstMinuteClockApplied = false;
+  const firstMinuteSpending = await checkMcpSpendingLimits(
+    { userId: 'spend-user', priceCents: 60, currency: 'USD' },
+    { executor: {
+      async query<TRecord>(text, params) {
+        firstMinuteClockApplied ||= text.includes('SELECT clock_timestamp() AS spending_now');
+        return executorA.query<TRecord>(text.replace(
+          'SELECT clock_timestamp() AS spending_now',
+          `SELECT (date_trunc('day', clock_timestamp() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC')
+             + INTERVAL '30 seconds' AS spending_now`,
+        ), params);
+      },
+    } as TransactionQueryExecutor },
+  );
+  assert.equal(firstMinuteClockApplied, true, 'The regression must exercise the first-minute clock.');
+  assert.equal(firstMinuteSpending.acceptedTodayCents, 30, 'today spending must count before 00:01 UTC');
   const spending = await checkMcpSpendingLimits(
     { userId: 'spend-user', priceCents: 60, currency: 'USD' },
     { executor: transactionExecutorA },

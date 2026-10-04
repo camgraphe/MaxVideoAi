@@ -1,3 +1,4 @@
+import {stripStudioMediaAccess} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-media-access';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
@@ -492,4 +493,22 @@ test('export readiness warns on missing source dimensions without inventing 1080
 
   assert.ok(manifest.issues.some((issue) => issue.code === 'missing_dimensions' && issue.severity === 'warning'));
   assert.equal(manifest.tracks[0]?.clips[0]?.composition, null);
+});
+
+
+test('completed private export preserves a canonical asset ref and a renewable delivery URL across session reload', () => {
+  const job = {id:'private-export',status:'completed' as const,progress:100,message:null,
+    outputUrl:'/api/studio/timeline-exports/private-export/media',
+    canonicalOriginalUrl:'https://storage.example/timeline-exports/owner/result.mp4',outputAssetId:'owned-output-asset'};
+  const session = snapshotWorkspaceTimelineExportSubmission({current:{activeJob:null,idempotencyKey:'same-key',submittedManifests:{}},job,manifest:readyManifest});
+  const restored = parseWorkspaceTimelineExportSession(JSON.stringify(session))!;
+  assert.deepEqual(restored.activeJob,job);
+  const asset = workspaceProjectAssetFromCompletedTimelineExport(restored.activeJob!,readyManifest)!;
+  assert.equal(asset.url,job.canonicalOriginalUrl);
+  assert.deepEqual(asset.ref,{type:'asset',assetId:'owned-output-asset',kind:'video'});
+  assert.equal(asset.mediaAccessRequired,true);assert.equal(asset.mediaAccessUrl,job.outputUrl);
+  assert.doesNotMatch(JSON.stringify(session),/X-Amz-/);
+  const persisted = stripStudioMediaAccess(asset) as typeof asset;
+  assert.equal(persisted.mediaAccessUrl,undefined);assert.equal(persisted.url,job.canonicalOriginalUrl);
+  assert.deepEqual(persisted.ref,asset.ref);
 });

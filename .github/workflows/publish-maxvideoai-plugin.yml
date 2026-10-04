@@ -89,6 +89,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          pnpm mcp:client:check
           pnpm github:assets:release-check
           node scripts/check-github-content.mjs plugins/maxvideoai/README.md
           pnpm exec tsx --tsconfig frontend/tsconfig.json --test \

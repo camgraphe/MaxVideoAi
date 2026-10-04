@@ -24,6 +24,7 @@ import {
 import { getFalEngineById } from '@/config/falEngines';
 import { fetchFalJobMedia } from '@/server/fal-job-sync';
 import { toUserFacingFailureMessage } from '@/server/user-facing-failure-messages';
+import { sanitizeProviderMediaDiagnostics } from '@/server/provider-media-diagnostics';
 import { detectHasAudioStream, detectVideoDimensions } from '@/server/media/detect-has-audio';
 import { upsertLegacyJobOutputs } from '@/server/media-library';
 import { checkUpscaleDuration, rejectTruncatedUpscale } from './upscale-duration-integrity';
@@ -39,6 +40,7 @@ import {
   inferEngineFromPayload,
   isCompletedFalStatus,
   isFailedFalStatus,
+  normalizeFalQueueLogStatus,
   normalizeRenderIdList,
   normalizeStatus,
   type FalWebhookPayload,
@@ -177,7 +179,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
       // contain only "Unprocessable Entity". Keep it available to diagnostics.
       resultFailureContext = error;
       if (nextStatus === 'completed') {
-        console.warn('[fal-webhook] Failed to fetch final result', error);
+        console.warn('[fal-webhook] Failed to fetch final result', sanitizeProviderMediaDiagnostics(error));
       }
     }
   }
@@ -262,12 +264,13 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
       console.warn('[fal-webhook] Fal media recovery failed', {
         jobId: job.job_id,
         providerJobId: requestId,
-        error,
+        error: sanitizeProviderMediaDiagnostics(error),
       });
     }
   }
 
-  const extractedErrorMessage = extractFalErrorMessage(payload, nextStatus === 'failed' ? resultFailureContext ?? finalPayload : null);
+  const rawErrorMessage = extractFalErrorMessage(payload, nextStatus === 'failed' ? resultFailureContext ?? finalPayload : null);
+  const extractedErrorMessage = rawErrorMessage ? sanitizeProviderMediaDiagnostics(rawErrorMessage) as string : null;
   let nextMessage =
     extractedErrorMessage ??
     (nextStatus === 'failed'
@@ -447,7 +450,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
         jobId: job.job_id,
         requestId,
         providerStatus,
-        previousMessage: nextMessage,
+        previousMessage: sanitizeProviderMediaDiagnostics(nextMessage),
       });
       nextStatus = 'completed';
       nextProgress = 100;
@@ -624,18 +627,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
     hasData: Boolean(payload.data),
   });
 
-  const normalizedLogStatus = (() => {
-    const baseStatus = nextStatus ?? statusInfo.status ?? payload.status ?? 'running';
-    const lower = baseStatus.toString().toLowerCase();
-    if (lower === 'completed') return 'completed';
-    if (['failed', 'error', 'errored', 'canceled', 'cancelled', 'aborted'].includes(lower)) {
-      return 'failed';
-    }
-    if (['queued', 'running', 'in_progress', 'processing', 'pending'].includes(lower)) {
-      return 'running';
-    }
-    return lower;
-  })();
+  const normalizedLogStatus = normalizeFalQueueLogStatus(nextStatus ?? statusInfo.status ?? payload.status);
 
   try {
     await query(

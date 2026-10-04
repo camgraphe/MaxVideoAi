@@ -1,6 +1,6 @@
 # MaxVideoAI plugin authoring rules
 
-Created: **2026-09-21**. Reviewed: **2026-09-22**. Owner: MaxVideoAI engineering.
+Created: **2026-09-21**. Reviewed: **2026-10-04**. Owner: MaxVideoAI engineering.
 Read `docs/engineering/mcp-client-experience.md` in the source repository before
 changing skills, installation guidance or discovery metadata.
 
@@ -26,6 +26,8 @@ changing skills, installation guidance or discovery metadata.
   Preserve the brief, selected models, settings, references and known job IDs.
 - Use the host's supported reconnect flow. Check the actual CLI version before
   offering CLI commands; a desktop app and shell can use different binaries.
+- Required references resolve to owned assets, including authorized host imports.
+  An attachment is an import source, not an already imported generation reference.
 - Never edit another plugin, disable competing tools or weaken account security
   to improve MaxVideoAI selection. Reconnection is not paid approval.
 

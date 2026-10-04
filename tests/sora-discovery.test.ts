@@ -79,3 +79,17 @@ test('historical family onward links direct EN FR ES visitors to the three avail
     for (const model of ['seedance-2-5', 'minimax-h3', 'wan-3']) assert(links.some(link => link.href.endsWith('/'+model)), `${locale}/${model}`);
   }
 });
+
+test('homepage provider cards and availability counts exclude archived execution entries', async () => {
+  const { computeEngineStats } = await import('../frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data/engine-stats');
+  const { filterProviderItems } = await import('../frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data/filters');
+  const { listFalEngines } = await import('../frontend/src/config/falEngines');
+  const available = new Set(listRuntimeModels().filter(model => model.publication.app.published).map(model => model.id));
+  const executable = listFalEngines().filter(engine => available.has(engine.id));
+  assert.equal(computeEngineStats().total, executable.length);
+  assert.equal(computeEngineStats().providers, new Set(executable.map(engine => engine.provider)).size);
+  for (const locale of ['en', 'fr', 'es']) {
+    const messages = JSON.parse((await import('node:fs')).readFileSync(`frontend/messages/${locale}.json`, 'utf8'));
+    assert(!filterProviderItems(messages.home.redesign).some(item => /sora/i.test(item.model)), locale);
+  }
+});

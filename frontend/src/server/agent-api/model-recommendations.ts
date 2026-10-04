@@ -3,7 +3,8 @@ import {
   type AgentModelCandidate,
   type AgentModelCatalogDeps,
 } from './model-catalog';
-import { getAgentModelGuidance } from './model-guidance';
+import { getAgentModelGuidance, getAgentModelEditorialGuidance, type AgentModelEditorialGuidance } from './model-guidance';
+import { isAgentModelRecommendationEligible } from './model-editorial-policy';
 import type {
   AgentModelPriority,
   AgentModelRecommendation,
@@ -11,7 +12,7 @@ import type {
   AgentModelRecommendationResult,
 } from './types';
 
-function resolutionQuality(resolutions: readonly string[]): number {
+function resolutionCapability(resolutions: readonly string[]): number {
   const normalized = resolutions.map((value) => value.toLowerCase());
   if (normalized.some((value) => value === '4k' || value.startsWith('4096') || value.startsWith('4704') || value.startsWith('5120'))) return 3;
   if (normalized.some((value) => value === '2k' || value === '3k' || value === '1440p')) return 2;
@@ -39,7 +40,7 @@ function prioritySignal(
 ): number {
   const { model } = candidate;
   if (priority === 'speed') return candidate.latencyTier === 'fast' ? 1 : 0;
-  if (priority === 'highest_resolution') return resolutionQuality(model.resolutions) / 3;
+  if (priority === 'highest_resolution') return resolutionCapability(model.resolutions) / 3;
   if (priority === 'native_audio') return model.audio ? 1 : 0;
   if (priority === 'reference_control') return model.referenceImages ? 1 : 0;
   if (priority === 'longer_clips') return (model.maxDurationSec ?? 0) / maximumDurationSec;
@@ -48,9 +49,7 @@ function prioritySignal(
 
 function scoreCandidate(
   candidate: AgentModelCandidate,
-  input: AgentModelRecommendationInput,
   priorities: readonly AgentModelPriority[],
-  preferredModelIds: ReadonlySet<string>,
   maximumDurationSec: number,
 ): number {
   const { model } = candidate;
@@ -60,8 +59,6 @@ function scoreCandidate(
     const weight = 2 ** (priorities.length - index);
     score += prioritySignal(candidate, priority, maximumDurationSec) * weight;
   });
-  if (input.useCase && getAgentModelGuidance(model.id)?.bestFor.includes(input.useCase)) score += 1;
-  if (preferredModelIds.has(model.id)) score += 0.25;
 
   return score;
 }
@@ -71,6 +68,7 @@ function describeCandidate(
   input: AgentModelRecommendationInput,
   priorities: ReadonlySet<AgentModelPriority>,
   preferredModelIds: ReadonlySet<string>,
+  editorial: AgentModelEditorialGuidance,
 ): Pick<AgentModelRecommendation, 'reasons' | 'tradeoffs'> {
   const { model } = candidate;
   const reasons: string[] = [`Supports ${model.surface} generation.`];
@@ -84,9 +82,17 @@ function describeCandidate(
   if (input.audio === true) reasons.push('Supports generated audio.');
   if (input.referenceImages === true) reasons.push('Accepts reference image input.');
   if (preferredModelIds.has(model.id)) reasons.push('Matches the user’s preferred public model choice.');
+  if (editorial.reviewStatus === 'current') {
+    reasons.push(`MaxVideoAI editorial ${editorial.level} preference: ${editorial.rationale}`);
+    tradeoffs.push('Editorial preference is not a measured quality score or execution certification.');
+  } else if (editorial.reviewStatus === 'unreviewed') {
+    tradeoffs.push('This exact version has no editorial review; family membership and release date do not establish quality.');
+  } else {
+    tradeoffs.push(`Editorial review is ${editorial.reviewStatus}; it does not boost this recommendation.`);
+  }
 
   if (priorities.has('speed') && candidate.latencyTier === 'fast') reasons.push('Classified in the fast latency tier.');
-  if (priorities.has('highest_resolution') && resolutionQuality(model.resolutions) >= 3) {
+  if (priorities.has('highest_resolution') && resolutionCapability(model.resolutions) >= 3) {
     reasons.push('Offers a 4K-class output option.');
   }
   if (priorities.has('native_audio') && model.audio && input.audio !== true) {
@@ -109,7 +115,7 @@ function describeCandidate(
   if (priorities.has('speed') && candidate.latencyTier !== 'fast') {
     tradeoffs.push('Is not classified in the fast latency tier.');
   }
-  if (priorities.has('highest_resolution') && resolutionQuality(model.resolutions) < 3) {
+  if (priorities.has('highest_resolution') && resolutionCapability(model.resolutions) < 3) {
     tradeoffs.push('Does not list a 4K-class output option.');
   }
   if (priorities.has('native_audio') && !model.audio) tradeoffs.push('Does not list generated audio support.');
@@ -148,17 +154,26 @@ function reviewedFitDiscoveryRank(
   return candidate.discoveryRank ?? Number.POSITIVE_INFINITY;
 }
 
+function editorialPreference(guidance: AgentModelEditorialGuidance): number {
+  if (guidance.reviewStatus !== 'current') return 0;
+  return guidance.level === 'reference' ? 2 : guidance.level === 'alternative' ? 1 : 0;
+}
+
 export async function recommendAgentModels(
   input: AgentModelRecommendationInput,
   deps?: AgentModelCatalogDeps,
 ): Promise<AgentModelRecommendationResult> {
   const priorities = normalizedPriorities(input.priorities);
   const prioritySet = new Set(priorities);
-  const preferredModelIds = normalizedIds(input.preferredModelIds);
+  const preferredModelIds = normalizedIds([...(input.preferredModelIds ?? []),...(input.id ? [input.id] : [])]);
   const excludedModelIds = normalizedIds(input.excludedModelIds);
   const candidates = (await listAgentModelCandidates(input, deps, { generationEnabledOnly: true }))
-    .filter((candidate) => candidate.model.recommendedByDefault)
-    .filter((candidate) => !excludedModelIds.has(candidate.model.id));
+    .filter((candidate) => !excludedModelIds.has(candidate.model.id))
+    .filter((candidate) => isAgentModelRecommendationEligible(
+      candidate.model.id,
+      candidate.model.lifecycle,
+      preferredModelIds.has(candidate.model.id),
+    ));
 
   if (!candidates.length) {
     return {
@@ -178,20 +193,25 @@ export async function recommendAgentModels(
   const rankedCandidates = candidates
     .map((candidate) => ({
       candidate,
-      score: scoreCandidate(candidate, input, rankedPriorities, preferredModelIds, maximumDurationSec),
+      editorial: getAgentModelEditorialGuidance(candidate.model.id),
+      score: scoreCandidate(candidate, rankedPriorities, maximumDurationSec),
     }))
     .sort((a, b) =>
+      Number(preferredModelIds.has(b.candidate.model.id)) - Number(preferredModelIds.has(a.candidate.model.id)) ||
       b.score - a.score ||
+      editorialPreference(b.editorial) - editorialPreference(a.editorial) ||
+      Number(Boolean(input.useCase && getAgentModelGuidance(b.candidate.model.id)?.bestFor.includes(input.useCase))) - Number(Boolean(input.useCase && getAgentModelGuidance(a.candidate.model.id)?.bestFor.includes(input.useCase))) ||
       reviewedFitDiscoveryRank(a.candidate, input) - reviewedFitDiscoveryRank(b.candidate, input) ||
       a.candidate.model.id.localeCompare(b.candidate.model.id)
     );
   const ranked = selectDiverseShortlist(rankedCandidates, 3);
 
   return {
-    recommendations: ranked.map(({ candidate }, index) => ({
+    recommendations: ranked.map(({ candidate, editorial }, index) => ({
       rank: index + 1,
       model: candidate.model,
-      ...describeCandidate(candidate, input, prioritySet, preferredModelIds),
+      ...describeCandidate(candidate, input, prioritySet, preferredModelIds, editorial),
+      editorialGuidance: editorial,
       nextAction,
     })),
     nextAction,

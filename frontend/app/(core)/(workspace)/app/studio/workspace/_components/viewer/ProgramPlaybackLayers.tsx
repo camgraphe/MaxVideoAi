@@ -19,6 +19,8 @@ type ProgramPlaybackLayersProps = {
   syncPlaybackAudios: () => void;
   syncPlaybackVideos: () => void;
   onMediaAccessError?: (item: PlaybackLayer['item']) => void;
+  /** Retry a failed decoder even when a same-second renewal returns the same signed URL. */
+  mediaReloadKeys?: Readonly<Record<string, number>>;
 };
 
 export function ProgramPlaybackLayers({
@@ -32,22 +34,24 @@ export function ProgramPlaybackLayers({
   syncPlaybackAudios,
   syncPlaybackVideos,
   onMediaAccessError,
+  mediaReloadKeys,
 }: ProgramPlaybackLayersProps) {
   return (
     <>
       {playbackLayers.map((layer) => (
         layer.mediaKind === 'image' ? (
           <img
-            key={layer.item.id}
+            key={layer.item.id+':'+(mediaReloadKeys?.[layer.item.id] ?? 0)}
             className={`${styles.viewerVideoLayer} ${layer.isVisible ? styles.viewerVideoLayerVisible : ''}`}
             data-playback-image-item-id={layer.item.id}
             src={layer.url}
             alt=""
+            onError={() => onMediaAccessError?.(layer.item)}
             style={clipVisualStyleFor(layer)}
           />
         ) : (
           <video
-            key={layer.item.id}
+            key={layer.item.id+':'+(mediaReloadKeys?.[layer.item.id] ?? 0)}
             ref={registerPlaybackVideo}
             className={`${styles.viewerVideoLayer} ${layer.isVisible ? styles.viewerVideoLayerVisible : ''}`}
             controls={false}
@@ -68,7 +72,7 @@ export function ProgramPlaybackLayers({
       ))}
       {audioPlaybackLayers.map((layer) => (
         <audio
-          key={layer.item.id}
+          key={layer.item.id+':'+(mediaReloadKeys?.[layer.item.id] ?? 0)}
           ref={registerPlaybackAudio}
           className={styles.viewerAudioLayer}
           data-playback-audio-item-id={layer.item.id}

@@ -15,7 +15,10 @@
       "height": 768,
       "sha256": "79b0cccdbb3b04aaf7241be5355390b825d6e9cbfc81c594578dd78c926180d8",
       "claim": "Reference shot of a Claude connector connected to a controlled MaxVideoAI demo; it is not current publication proof.",
-      "placements": ["marketing_shot_list", "integrations_marketing_page"],
+      "placements": [
+        "marketing_shot_list",
+        "integrations_marketing_page"
+      ],
       "alt": "Claude Desktop connector panel connected to a controlled MaxVideoAI demonstration account",
       "reviewTrigger": "Revalidate before any GitHub placement or when Claude connector setup changes.",
       "approvedBy": null
@@ -34,7 +37,10 @@
       "height": 768,
       "sha256": "fa2bf7bca9e9d1c2dd37748f9430c6055451b192fcbcefccd1e74d3c03d3ccf5",
       "claim": "Reference shot of Claude connector settings in a controlled MaxVideoAI demo; it is not current publication proof.",
-      "placements": ["marketing_shot_list", "integrations_marketing_page"],
+      "placements": [
+        "marketing_shot_list",
+        "integrations_marketing_page"
+      ],
       "alt": "Claude Desktop connector settings showing the MaxVideoAI controlled demonstration connection",
       "reviewTrigger": "Revalidate before any GitHub placement or when Claude settings change.",
       "approvedBy": null
@@ -53,7 +59,10 @@
       "height": 768,
       "sha256": "2f54400a0287e7930295718beabb7c51b93cc927eb4abdd2dd9108d268a0780e",
       "claim": "Reference shot of inline Claude playback from a controlled MaxVideoAI demo; it is not current publication proof.",
-      "placements": ["marketing_shot_list", "mcp_marketing_page"],
+      "placements": [
+        "marketing_shot_list",
+        "mcp_marketing_page"
+      ],
       "alt": "Claude Desktop conversation showing inline video playback from a controlled MaxVideoAI demonstration",
       "reviewTrigger": "Revalidate before any GitHub placement or when Claude playback, pricing, or MaxVideoAI workflow changes.",
       "approvedBy": "MaxVideoAI owner"
@@ -72,7 +81,10 @@
       "height": 1133,
       "sha256": "3c1ed2e3462792cccb1cfbcc4bc0301dd568077cf202b86da51c156bac8e2533",
       "claim": "Reference shot of the Codex plugin account connection in a controlled MaxVideoAI demo; it is not current publication proof.",
-      "placements": ["marketing_shot_list", "integrations_marketing_page"],
+      "placements": [
+        "marketing_shot_list",
+        "integrations_marketing_page"
+      ],
       "alt": "Codex plugin account panel connected to a controlled MaxVideoAI demonstration account",
       "reviewTrigger": "Revalidate before any GitHub placement or when Codex account connection changes.",
       "approvedBy": null
@@ -91,7 +103,10 @@
       "height": 1133,
       "sha256": "0eb131f888556b0387cb0739c1bace8c166bd1701d93a88f596af41378aa51d0",
       "claim": "Reference shot of the installed Codex MaxVideoAI plugin in a controlled demo; it is not current publication proof.",
-      "placements": ["marketing_shot_list", "integrations_marketing_page"],
+      "placements": [
+        "marketing_shot_list",
+        "integrations_marketing_page"
+      ],
       "alt": "Codex interface showing the MaxVideoAI plugin installed in a controlled demonstration",
       "reviewTrigger": "Revalidate before any GitHub placement or when Codex plugin installation changes.",
       "approvedBy": null
@@ -110,7 +125,10 @@
       "height": 1133,
       "sha256": "0aee27bba3d31d00210fcf481e61333ab439fc050a1c28740db0f311ecc15955",
       "claim": "Reference shot of a Codex MaxVideoAI plugin page in a controlled demo; it is not current publication proof.",
-      "placements": ["marketing_shot_list", "integrations_marketing_page"],
+      "placements": [
+        "marketing_shot_list",
+        "integrations_marketing_page"
+      ],
       "alt": "Codex plugin page for MaxVideoAI shown in a controlled demonstration environment",
       "reviewTrigger": "Revalidate before any GitHub placement or when Codex marketplace presentation changes.",
       "approvedBy": null
@@ -129,12 +147,16 @@
       "height": 548.74,
       "sha256": "42b5247999993eb56effaf768fc51f59a2d82c5382f1b7f2b8e4963cd5e8bc91",
       "claim": "Official MaxVideoAI brand mark for public plugin identity and the root GitHub lockup; it is a brand asset, not product or native host proof.",
-      "placements": ["plugin_manifest", "repository_brand", "root_readme"],
+      "placements": [
+        "plugin_manifest",
+        "repository_brand",
+        "root_readme"
+      ],
       "alt": "MaxVideoAI white monogram on a dark rounded square",
       "reviewTrigger": "Refresh after an approved MaxVideoAI identity or plugin-icon change.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-09-26",
-      "lastReviewedRevision": "9a02f9e9d21faad6f665b8b17a0c691ff2b67321",
+      "lastReviewedAt": "2026-10-03T22:18:50Z",
+      "lastReviewedRevision": "247e3b6d6404ef446c068e6a352941a4728d9fe4",
       "freshnessStatus": "current"
     },
     {
@@ -151,7 +173,10 @@
       "height": 525,
       "sha256": "148e174affcabdcb69e5a575bfaf4654c59118a4824ded6c96f279e324ca30b6",
       "claim": "Current public MaxVideoAI home page showing the light pay-as-you-go hero, primary generation and examples actions, and a colorful MiniMax H3 Max video frame.",
-      "placements": ["plugin_readme", "root_readme"],
+      "placements": [
+        "plugin_readme",
+        "root_readme"
+      ],
       "alt": "Current public MaxVideoAI home page with pay-as-you-go messaging and a colorful MiniMax H3 Max video frame",
       "reviewTrigger": "Refresh after a material home-page, primary-action, or featured-video change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
@@ -173,12 +198,14 @@
       "height": 587,
       "sha256": "56c7f2af26874a6b6345de2875ba8140dd88211a4b75406a1f60582c6854ae3f",
       "claim": "Editorial MaxVideoAI README hero with a professional cinema camera and five distinct visual directions; it is a brand image, not product UI or native host proof.",
-      "placements": ["root_readme"],
+      "placements": [
+        "root_readme"
+      ],
       "alt": "Cinematic MaxVideoAI production direction with a professional camera and five distinct visual worlds",
       "reviewTrigger": "Refresh after an approved README art-direction change; never cite this editorial image as product or host proof.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-09-27T23:35:17Z",
-      "lastReviewedRevision": "b1cc6fb9680b9356961c4a0456004f49f5a101b6",
+      "lastReviewedAt": "2026-10-03T22:18:50Z",
+      "lastReviewedRevision": "247e3b6d6404ef446c068e6a352941a4728d9fe4",
       "freshnessStatus": "current",
       "generationMethod": "OpenAI built-in ImageGen",
       "generationPrompt": "Premium ultra-wide editorial GitHub README hero for MaxVideoAI. Warm ivory-to-pearl studio architecture, restrained cool gray and cobalt accents, a professional cinema camera on the right third, generous calm space, and five distinct cinematic frames along the lower edge. No text, logo, UI, badge, fake interface, or watermark."
@@ -197,7 +224,10 @@
       "height": 595,
       "sha256": "78178525675e1f0622123531d986a0a635a6f081e2129a54a1c7ea3e5844a168",
       "claim": "Current public MaxVideoAI MCP result section showing a controlled Claude Desktop capture with a finished video, a saved-to-Library label, and a first-party MaxVideoAI action; it is Claude-specific evidence, not proof for every supported client.",
-      "placements": ["plugin_readme", "root_readme"],
+      "placements": [
+        "plugin_readme",
+        "root_readme"
+      ],
       "alt": "Public MaxVideoAI MCP result section with a finished video shown in Claude and saved to the MaxVideoAI Library",
       "reviewTrigger": "Refresh after a material MCP result-section, Claude evidence, or Library-continuity claim change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
@@ -219,7 +249,10 @@
       "height": 713,
       "sha256": "0db61a42da7a8378cd6ad0e6199e0d6d5366f74179c28f02db76e1a86e432bd3",
       "claim": "Current public MaxVideoAI home page showing the pay-as-you-go proposition, primary generation and examples actions, and a colorful MiniMax H3 Max video frame.",
-      "placements": ["plugin_readme", "root_readme"],
+      "placements": [
+        "plugin_readme",
+        "root_readme"
+      ],
       "alt": "Current public MaxVideoAI home page with pay-as-you-go messaging and a colorful MiniMax H3 Max video frame",
       "reviewTrigger": "Refresh after a material home-page, primary-action, or featured-video change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
@@ -241,7 +274,10 @@
       "height": 713,
       "sha256": "2bb35e0af2a26befcb788f5155284434ec7e0742a6ffc215dab1153c36610fe9",
       "claim": "Current public MaxVideoAI examples gallery hero and brand filters with cinematic Paris and animated runner previews and partial model labels.",
-      "placements": ["plugin_readme", "root_readme"],
+      "placements": [
+        "plugin_readme",
+        "root_readme"
+      ],
       "alt": "Public MaxVideoAI examples gallery hero and brand filters with cinematic Paris and animated runner previews and partial model labels",
       "reviewTrigger": "Refresh after a material gallery hero, brand filters, featured previews, or model labels change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
@@ -263,7 +299,10 @@
       "height": 713,
       "sha256": "4c3250adbd1ce14ae8075b6410285e6a25bf3e789bb4ba6c667637f13998871d",
       "claim": "Current public comparison detail showing MiniMax H3 and Seedance 2.5 side by side with editorial scores, strengths, and colorful independent video examples.",
-      "placements": ["plugin_readme", "root_readme"],
+      "placements": [
+        "plugin_readme",
+        "root_readme"
+      ],
       "alt": "MaxVideoAI side-by-side comparison of MiniMax H3 and Seedance 2.5 with scores, strengths, and colorful independent video examples",
       "reviewTrigger": "Refresh after a material comparison-hub, benchmark-presentation, engine, or score change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
@@ -285,7 +324,10 @@
       "height": 713,
       "sha256": "8946be5b7d566e279fd42653c91b8192c394d25511616f6f7331152d98c6eba1",
       "claim": "Current public MaxVideoAI model-directory hero showing Browse models and Compare engines actions, pricing and specification cues, and colorful model artwork.",
-      "placements": ["plugin_readme", "root_readme"],
+      "placements": [
+        "plugin_readme",
+        "root_readme"
+      ],
       "alt": "Public MaxVideoAI model-directory hero with Browse models and Compare engines actions, pricing and specification cues, and colorful model artwork",
       "reviewTrigger": "Refresh after a material model-directory hero, actions, pricing or specification cues, or artwork change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
@@ -307,7 +349,10 @@
       "height": 713,
       "sha256": "f5057762e8d55a2f8921e1c03d51413ccbbc7a3bca732cbba0324aaf28454d7f",
       "claim": "Current public MaxVideoAI pricing page showing three pay-as-you-go video starting-point prices plus navigation tabs for Image, Audio, and Tools & Upscale.",
-      "placements": ["plugin_readme", "root_readme"],
+      "placements": [
+        "plugin_readme",
+        "root_readme"
+      ],
       "alt": "MaxVideoAI pricing comparison with current scenarios and video, image, audio, and tools navigation",
       "reviewTrigger": "Refresh after a material pricing, scenario-card, or pricing-navigation change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
@@ -329,7 +374,10 @@
       "height": 713,
       "sha256": "33597a2c78736780c0e3afa8a34ee99239130f0f4c076683eb31b99584da307b",
       "claim": "Current public MaxVideoAI tools page showing character-sheet, image, and production-preparation workflows with colorful first-party examples.",
-      "placements": ["plugin_readme", "root_readme"],
+      "placements": [
+        "plugin_readme",
+        "root_readme"
+      ],
       "alt": "MaxVideoAI tools page with a character sheet and colorful image and production-preparation workflows",
       "reviewTrigger": "Refresh after a material tools-directory, featured-tool, or workflow-presentation change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
@@ -351,7 +399,10 @@
       "height": 713,
       "sha256": "6b701b4e340ed09317ac92fc2bb20a1b141e61036d68921e5e9b1786dff7114c",
       "claim": "Current public MaxVideoAI MCP page showing Claude, ChatGPT, Codex, OpenClaw, and n8n as public paths, plus Cursor, GitHub Copilot, Gemini CLI, and Microsoft Copilot marked in preparation; the page does not itself prove native execution in every client.",
-      "placements": ["plugin_readme", "root_readme"],
+      "placements": [
+        "plugin_readme",
+        "root_readme"
+      ],
       "alt": "MaxVideoAI MCP integration grid with five public paths and four clients marked in preparation",
       "reviewTrigger": "Refresh after a material assistant-entry, integration, conversation, or MCP marketing change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
@@ -373,13 +424,18 @@
       "height": 887,
       "sha256": "ba358a9dfeb78552b6fbcfd50104a7fbbdbe8f07b0bbe5b4c04d5f9201210430",
       "claim": "Draft editorial source showing controlled abstract paths converging; it is decorative design material, not product or host proof.",
-      "placements": ["design_source"],
+      "placements": [
+        "design_source"
+      ],
       "alt": "Editorial illustration: cobalt, teal, and peach paths converging into one controlled direction",
       "reviewTrigger": "Never use as product or host proof; re-review before any direct publication or material visual-system change.",
       "approvedBy": "Task 5 implementer for draft editorial use",
       "generationMethod": "OpenAI built-in ImageGen",
       "generationPrompt": "Use case: stylized-concept\nAsset type: editorial background source for MaxVideoAI GitHub launch assets\nInput images: Image 1 and Image 2 are verified MaxVideoAI product-proof screenshots used only to ground the restrained palette, real product mood, and finished glass-ribbon result; do not reproduce, redraw, or imitate their UI.\nPrimary request: one abstract visual idea — a single creative brief branching into several controlled AI video-production paths, then converging into one finished result.\nStyle/medium: premium editorial abstract image, crisp geometry, subtle cinematic depth, quiet confidence.\nComposition/framing: wide 2:1 landscape with generous negative space, designed to sit behind real screenshots and sparse copy; no device or UI framing.\nLighting/mood: subtle cinematic light, controlled contrast, calm and precise rather than futuristic spectacle.\nColor palette: clean black, white, and MaxVideoAI cobalt with restrained teal/peach accents inspired by the verified finished result.\nConstraints: no text, no letters, no numbers, no logos, no brand marks, no UI, no browser chrome, no platform marks, no fake screenshots, no price, no people presenting a product, no watermark.\nAvoid: neon sci-fi dashboard, glowing chat bubbles, robot imagery, generic AI brain/network clichés, busy particles, decorative clutter.",
-      "referenceAssetIds": ["maxvideoai-workspace-production", "maxvideoai-library-continuity-production"],
+      "referenceAssetIds": [
+        "maxvideoai-workspace-production",
+        "maxvideoai-library-continuity-production"
+      ],
       "referenceRole": "Palette, mood, and finished-result material language only; no source UI was reproduced or redrawn."
     },
     {
@@ -396,14 +452,20 @@
       "height": 900,
       "sha256": "89ac4da5122bd4d1a9f5ad4af99b39089006f89368f0dde16e9f3e7299f7d2a1",
       "claim": "Proof-led light composite pairing the current public MaxVideoAI home page with the public MCP Claude-result section; the editorial layer is decorative and the composite does not extend Claude-specific evidence to other clients.",
-      "placements": ["plugin_readme", "root_readme"],
+      "placements": [
+        "plugin_readme",
+        "root_readme"
+      ],
       "alt": "Current MaxVideoAI home page paired with the public MCP section showing a completed video result in Claude",
       "reviewTrigger": "Refresh after a material home-page or MCP result-section change, when either source proof expires, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
       "lastReviewedAt": "2026-09-16T00:07:39Z",
       "lastReviewedRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
       "freshnessStatus": "current",
-      "sourceProofIds": ["maxvideoai-workspace-production", "maxvideoai-library-continuity-production"],
+      "sourceProofIds": [
+        "maxvideoai-workspace-production",
+        "maxvideoai-library-continuity-production"
+      ],
       "editorialSourceId": "maxvideoai-editorial-branch-converge-source",
       "compositionMethod": "Deterministic Sharp composition; both complete public screenshots are downscaled only and layered with neutral borders, shadows, the MaxVideoAI logo, a cobalt rail, and a restrained light editorial background."
     },
@@ -421,14 +483,20 @@
       "height": 900,
       "sha256": "feafd6def0995f10dffed1a0f2ee25dde128c82d113fd61809f748e6cb96a7a4",
       "claim": "Proof-led light composite showing the current public MaxVideoAI home page beside the public MCP Claude-result section; it does not depict a verified brief, quote, approval, or execution in every listed client.",
-      "placements": ["plugin_readme", "root_readme"],
+      "placements": [
+        "plugin_readme",
+        "root_readme"
+      ],
       "alt": "Current MaxVideoAI home page paired with the public MCP result section for Claude",
       "reviewTrigger": "Refresh when the home-page or MCP result-section source proof changes, when either proof expires, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
       "lastReviewedAt": "2026-09-16T00:07:39Z",
       "lastReviewedRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
       "freshnessStatus": "current",
-      "sourceProofIds": ["maxvideoai-workspace-production", "maxvideoai-library-continuity-production"],
+      "sourceProofIds": [
+        "maxvideoai-workspace-production",
+        "maxvideoai-library-continuity-production"
+      ],
       "editorialSourceId": "maxvideoai-editorial-branch-converge-source",
       "compositionMethod": "Deterministic Sharp composition; both source screenshots are downscaled only and layered over a low-opacity editorial background."
     },
@@ -446,14 +514,20 @@
       "height": 640,
       "sha256": "1a801ed2e7e03397074550f8daba1d66c39f9f95611988f7fd5b8ae4349d9c0c",
       "claim": "Proof-led narrow composite pairing the current public MaxVideoAI home page with the public MCP Claude-result section; it does not prove a current budget, quote, price, approval, or native host execution.",
-      "placements": ["plugin_readme", "root_readme"],
+      "placements": [
+        "plugin_readme",
+        "root_readme"
+      ],
       "alt": "Narrow composite of the current MaxVideoAI home page and public MCP Claude-result section",
       "reviewTrigger": "Refresh after a material home-page or MCP result-section change, when source proof expires, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
       "lastReviewedAt": "2026-09-16T00:07:39Z",
       "lastReviewedRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
       "freshnessStatus": "current",
-      "sourceProofIds": ["maxvideoai-workspace-production", "maxvideoai-library-continuity-production"],
+      "sourceProofIds": [
+        "maxvideoai-workspace-production",
+        "maxvideoai-library-continuity-production"
+      ],
       "editorialSourceId": "maxvideoai-editorial-branch-converge-source",
       "compositionMethod": "Deterministic Sharp composition on a narrow 480×640 canvas; both complete public screenshots are downscaled only over a restrained light editorial background, with no annotation, redrawn interface, or screenshot upscaling."
     },
@@ -471,14 +545,20 @@
       "height": 900,
       "sha256": "d9cf166c867bbe6c71062f4b168f1d5883535669477f946608d12cd08df1d422",
       "claim": "Proof-led light composite pairing the public MCP Claude-result section with the current public MaxVideoAI home page; it supports Claude-specific result and saved-to-Library continuity only.",
-      "placements": ["plugin_readme", "root_readme"],
+      "placements": [
+        "plugin_readme",
+        "root_readme"
+      ],
       "alt": "Public MaxVideoAI MCP Claude-result section paired with the current MaxVideoAI home page",
       "reviewTrigger": "Refresh after a material home-page, MCP result-section, or Claude continuity claim change, when either proof expires, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
       "lastReviewedAt": "2026-09-16T00:07:39Z",
       "lastReviewedRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
       "freshnessStatus": "current",
-      "sourceProofIds": ["maxvideoai-workspace-production", "maxvideoai-library-continuity-production"],
+      "sourceProofIds": [
+        "maxvideoai-workspace-production",
+        "maxvideoai-library-continuity-production"
+      ],
       "editorialSourceId": "maxvideoai-editorial-branch-converge-source",
       "compositionMethod": "Deterministic Sharp composition; both current production source screenshots are downscaled only over a low-opacity editorial background."
     },
@@ -496,14 +576,19 @@
       "height": 640,
       "sha256": "35ffaa3802032ff3e740e565b6159556731516595c8a14bc05e184365999064b",
       "claim": "Repository social card using the current public MaxVideoAI home page and MCP Claude-result section; client names describe documented public paths and the image contains no native ChatGPT, Claude, or Codex host proof beyond the embedded Claude-specific public evidence.",
-      "placements": ["repository_social"],
+      "placements": [
+        "repository_social"
+      ],
       "alt": "Light MaxVideoAI GitHub social card for assistants and automations with current public product proof",
       "reviewTrigger": "Refresh after a material public-page change, integration wording change, source-proof expiry, or repository social update.",
       "approvedBy": "MaxVideoAI owner",
       "lastReviewedAt": "2026-09-16T00:07:39Z",
       "lastReviewedRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
       "freshnessStatus": "current",
-      "sourceProofIds": ["maxvideoai-workspace-production", "maxvideoai-library-continuity-production"],
+      "sourceProofIds": [
+        "maxvideoai-workspace-production",
+        "maxvideoai-library-continuity-production"
+      ],
       "editorialSourceId": "maxvideoai-editorial-branch-converge-source",
       "compositionMethod": "Deterministic Sharp composition with two complete downscaled public captures, current client-path copy, and a restrained light editorial background."
     },
@@ -511,7 +596,7 @@
       "id": "release-0-3-0",
       "path": "plugins/maxvideoai/assets/social/release-0.3.0.png",
       "kind": "product_proof",
-      "state": "publishable_proof",
+      "state": "reference_only",
       "capturedAt": "2026-08-27",
       "sourceEnvironment": "production",
       "host": "MaxVideoAI web app",
@@ -520,15 +605,19 @@
       "width": 1200,
       "height": 630,
       "sha256": "be2b2f9b021d6cad7c4b7353cc8b5ffd4dfe7803bd4294e637b307eefe2048d6",
-      "claim": "Historical 0.3.0 release card using the MaxVideoAI workspace capture dated 2026-08-27 and neutral agent-workflow copy; it illustrates this versioned release artifact, not current product UI or evidence of publication. Platform names refer only to setup guides, and the image contains no native ChatGPT, Claude, or Codex host proof.",
-      "placements": ["github_release", "launch_social"],
+      "claim": "Historical 0.3.0 release artwork with the then-current MaxVideoAI workspace. Retained as archival material; not evidence of current UI, model quality, pricing, client compatibility, or a newly published release. The image contains no native ChatGPT, Claude, or Codex host proof.",
+      "placements": [
+        "historical_release"
+      ],
       "alt": "MaxVideoAI release 0.3.0 card with the completed workspace video and production workflow promise",
-      "reviewTrigger": "Review if the historical caption or source proof changes. Replace with reviewed current evidence before promoting a new release or claiming current product UI.",
+      "reviewTrigger": "Keep unchanged as historical release artwork. Create and qualify new evidence before a new release; never reuse this card as current product proof.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-09-26",
-      "lastReviewedRevision": "9a02f9e9d21faad6f665b8b17a0c691ff2b67321",
-      "freshnessStatus": "current",
-      "sourceProofIds": ["maxvideoai-workspace-production"],
+      "lastReviewedAt": "2026-08-27",
+      "lastReviewedRevision": "5439425d8dc24d99d38409c69499d0f3d47d125c",
+      "freshnessStatus": "historical",
+      "sourceProofIds": [
+        "maxvideoai-workspace-production"
+      ],
       "editorialSourceId": "maxvideoai-editorial-branch-converge-source",
       "compositionMethod": "Deterministic Sharp composition with an unscaled completed-result crop, a downscaled full workspace capture, short agent-workflow and setup-guide copy, release label, and a restrained editorial background."
     },
@@ -536,7 +625,7 @@
       "id": "release-0-3-2",
       "path": "plugins/maxvideoai/assets/social/release-0.3.2.png",
       "kind": "product_proof",
-      "state": "publishable_proof",
+      "state": "reference_only",
       "capturedAt": "2026-08-27",
       "sourceEnvironment": "production",
       "host": "MaxVideoAI web app",
@@ -545,15 +634,19 @@
       "width": 1200,
       "height": 630,
       "sha256": "ee118c141b7a993490259f331ece099d729931d43e6cbf2f70119f4c08086b1b",
-      "claim": "Historical 0.3.2 release card using the MaxVideoAI workspace capture dated 2026-08-27 and neutral agent-workflow copy; it illustrates this versioned release artifact, not current product UI or evidence of publication. Platform names refer only to setup guides, and the image contains no native ChatGPT, Claude, or Codex host proof.",
-      "placements": ["github_release", "launch_social"],
+      "claim": "Historical 0.3.2 release artwork with the then-current MaxVideoAI workspace. Retained as archival material; not evidence of current UI, model quality, pricing, client compatibility, or a newly published release. The image contains no native ChatGPT, Claude, or Codex host proof.",
+      "placements": [
+        "historical_release"
+      ],
       "alt": "MaxVideoAI release 0.3.2 card with the completed workspace video and production workflow promise",
-      "reviewTrigger": "Review if the historical caption or source proof changes. Replace with reviewed current evidence before promoting a new release or claiming current product UI.",
+      "reviewTrigger": "Keep unchanged as historical release artwork. Create and qualify new evidence before a new release; never reuse this card as current product proof.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-09-26",
-      "lastReviewedRevision": "9a02f9e9d21faad6f665b8b17a0c691ff2b67321",
-      "freshnessStatus": "current",
-      "sourceProofIds": ["maxvideoai-workspace-production"],
+      "lastReviewedAt": "2026-08-27",
+      "lastReviewedRevision": "5439425d8dc24d99d38409c69499d0f3d47d125c",
+      "freshnessStatus": "historical",
+      "sourceProofIds": [
+        "maxvideoai-workspace-production"
+      ],
       "editorialSourceId": "maxvideoai-editorial-branch-converge-source",
       "compositionMethod": "Deterministic Sharp composition with an unscaled completed-result crop, a downscaled full workspace capture, short agent-workflow and setup-guide copy, release label, and a restrained editorial background."
     },
@@ -571,14 +664,18 @@
       "height": 630,
       "sha256": "ec45497e3603d6d08852cfd0f09313ba2b29b28b8b1482b03618fe9a08bbabae",
       "claim": "Historical 0.3.3 release card using the MaxVideoAI workspace capture dated 2026-08-27 and neutral agent-workflow copy; it is not current product proof or an active release/social asset. Platform names refer only to the release-gated setup guides, and the image contains no native ChatGPT, Claude, or Codex host proof.",
-      "placements": ["historical_release_reference"],
+      "placements": [
+        "historical_release_reference"
+      ],
       "alt": "MaxVideoAI release 0.3.3 card with the completed workspace video and production workflow promise",
       "reviewTrigger": "Retain unchanged as historical evidence after the 0.3.3 launch cycle; obtain freshly reviewed proof before any new publication.",
       "approvedBy": "MaxVideoAI owner",
       "lastReviewedAt": "2026-08-28",
       "lastReviewedRevision": "2ec21ee2d9c31dc0ee91fd3320a291a6bda3c501",
       "freshnessStatus": "historical",
-      "sourceProofIds": ["maxvideoai-workspace-production"],
+      "sourceProofIds": [
+        "maxvideoai-workspace-production"
+      ],
       "editorialSourceId": "maxvideoai-editorial-branch-converge-source",
       "compositionMethod": "Deterministic Sharp composition with an unscaled completed-result crop, a downscaled full workspace capture, short agent-workflow and setup-guide copy, release label derived from VERSION, and a restrained editorial background."
     },
@@ -596,14 +693,19 @@
       "height": 630,
       "sha256": "9af267e52a6a77eff229912d2b4685ac504914f346c342558f32e138811acf8d",
       "claim": "Historical 0.3.4 candidate card, cancelled before public repository release or Registry publication after evidence-copy review failed. It contains no native ChatGPT, Claude, or Codex host proof beyond the embedded Claude-specific public evidence and is not a current release asset.",
-      "placements": ["historical_release_candidate"],
+      "placements": [
+        "historical_release_candidate"
+      ],
       "alt": "Light MaxVideoAI release 0.3.4 card for assistants and automations with current public product proof",
       "reviewTrigger": "Retain unchanged as historical evidence of the cancelled 0.3.4 candidate; never promote or reuse as a current release card.",
       "approvedBy": "MaxVideoAI owner",
       "lastReviewedAt": "2026-09-16T00:07:39Z",
       "lastReviewedRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
       "freshnessStatus": "current",
-      "sourceProofIds": ["maxvideoai-workspace-production", "maxvideoai-library-continuity-production"],
+      "sourceProofIds": [
+        "maxvideoai-workspace-production",
+        "maxvideoai-library-continuity-production"
+      ],
       "editorialSourceId": "maxvideoai-editorial-branch-converge-source",
       "compositionMethod": "Deterministic Sharp composition with two complete downscaled public captures, current client-path copy, a VERSION-derived release label, and a restrained light editorial background."
     },
@@ -621,14 +723,20 @@
       "height": 675,
       "sha256": "dc70c17da2541172fd07747abe3a4af115928be89da6bdab0a3b1bfaa02b658e",
       "claim": "Directory thumbnail using the current public MaxVideoAI home page and MCP Claude-result section; client names describe documented public paths and it contains no native ChatGPT, Claude, or Codex host proof beyond the embedded Claude-specific public evidence.",
-      "placements": ["mcp_directories", "marketplace_directory"],
+      "placements": [
+        "mcp_directories",
+        "marketplace_directory"
+      ],
       "alt": "Light MaxVideoAI directory thumbnail for assistants and automations with current public product proof",
       "reviewTrigger": "Refresh before directory submission if dimensions, copy, compatibility status, or either source proof changes.",
       "approvedBy": "MaxVideoAI owner",
       "lastReviewedAt": "2026-09-16T00:07:39Z",
       "lastReviewedRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
       "freshnessStatus": "current",
-      "sourceProofIds": ["maxvideoai-workspace-production", "maxvideoai-library-continuity-production"],
+      "sourceProofIds": [
+        "maxvideoai-workspace-production",
+        "maxvideoai-library-continuity-production"
+      ],
       "editorialSourceId": "maxvideoai-editorial-branch-converge-source",
       "compositionMethod": "Deterministic Sharp composition using two complete downscaled public captures, current client-path copy, and a restrained light editorial background."
     }

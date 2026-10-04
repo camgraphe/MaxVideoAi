@@ -4,6 +4,11 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import {
+  MAXVIDEOAI_PUBLIC_PLUGIN_VERSION,
+  MAXVIDEOAI_PUBLIC_PLUGIN_SOURCE_TAG,
+  MAXVIDEOAI_CODEX_MARKETPLACE_ADD_COMMAND,
+} from '../frontend/config/maxvideoai-plugin-release';
 
 const root = process.cwd();
 const pluginRoot = path.join(root, 'plugins', 'maxvideoai');
@@ -91,6 +96,15 @@ function findCachedPyYamlPath(): string | null {
   }
   return null;
 }
+
+test('website installation pins the observed public release independently of the source candidate', () => {
+  const publishedVersion = read('docs/distribution.md').match(/Official MCP Registry — active at `([^`]+)`/)?.[1];
+  assert.ok(publishedVersion);
+  assert.equal(MAXVIDEOAI_PUBLIC_PLUGIN_VERSION, publishedVersion);
+  assert.equal(MAXVIDEOAI_PUBLIC_PLUGIN_SOURCE_TAG, `v${publishedVersion}`);
+  assert.equal(MAXVIDEOAI_CODEX_MARKETPLACE_ADD_COMMAND,
+    `codex plugin marketplace add camgraphe/maxvideoai-plugin --ref v${publishedVersion}`);
+});
 
 test('the MaxVideoAI plugin has thin Codex and Claude package adapters', () => {
   assert.equal(path.basename(pluginRoot), 'maxvideoai');
@@ -418,9 +432,9 @@ test('the package ships current setup, privacy, workflow, and recovery guides', 
   const expectedReviewDates: Record<(typeof guideNames)[number], string> = {
     'chatgpt.md': '2026-09-16',
     'claude.md': '2026-08-28',
-    'codex.md': '2026-09-22',
+    'codex.md': '2026-10-04',
     'generic-mcp.md': '2026-08-28',
-    'privacy-and-permissions.md': '2026-09-16',
+    'privacy-and-permissions.md': '2026-10-03',
     'troubleshooting.md': '2026-09-16',
     'how-it-works.md': '2026-09-16',
   };

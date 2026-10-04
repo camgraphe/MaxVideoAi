@@ -1,5 +1,50 @@
 [
   {
+    "engineId": "gpt-image-2-5-flare",
+    "strengths": ["Image creation and reference-guided editing."],
+    "bestFor": ["reference_guided", "conversational_refine"],
+    "considerations": ["Vendor recommendations describe intended uses, not measured quality scores. Inspect our model details for executable settings."],
+    "evidenceUrls": ["https://maxvideoai.com/models/gpt-image-2-5-flare"],
+    "reviewedAt": "2026-10-02",
+    "sourceAssessments": [{
+      "source": "higgsfield",
+      "sourceUrl": "https://raw.githubusercontent.com/higgsfield-ai/skills/main/higgsfield-generate/references/model-catalog.md",
+      "summary": "Higgsfield recommends GPT Image 2.5 for general image creation, design and typography; Flare is a documented variant.",
+      "classification": "vendor_recommendation",
+      "reviewedAt": "2026-10-02"
+    }]
+  },
+  {
+    "engineId": "gpt-image-2",
+    "strengths": ["Image creation and reference-guided editing."],
+    "bestFor": ["reference_guided", "conversational_refine"],
+    "considerations": ["External descriptions do not establish comparative quality or identical deployment settings. Inspect our model details."],
+    "evidenceUrls": ["https://maxvideoai.com/models/gpt-image-2"],
+    "reviewedAt": "2026-10-02",
+    "sourceAssessments": [{
+      "source": "higgsfield",
+      "sourceUrl": "https://raw.githubusercontent.com/higgsfield-ai/cli/main/MODELS.md",
+      "summary": "Higgsfield describes image creation and reference edits for product photography and graphic design.",
+      "classification": "documented_capability",
+      "reviewedAt": "2026-10-02"
+    }]
+  },
+  {
+    "engineId": "seedance-2-0-mini",
+    "strengths": ["Short video generation with image reference guidance."],
+    "bestFor": ["reference_guided", "social_video"],
+    "considerations": ["Use our executable mode details to choose reference roles and delivery settings. External capability descriptions are not quality ratings."],
+    "evidenceUrls": ["https://maxvideoai.com/models/dreamina-seedance-2-0-mini"],
+    "reviewedAt": "2026-10-02",
+    "sourceAssessments": [{
+      "source": "higgsfield",
+      "sourceUrl": "https://raw.githubusercontent.com/higgsfield-ai/cli/main/MODELS.md",
+      "summary": "Higgsfield documents multimodal references and optional generated audio for Seedance Mini.",
+      "classification": "documented_capability",
+      "reviewedAt": "2026-10-02"
+    }]
+  },
+  {
     "engineId": "seedance-2-5",
     "strengths": [
       "Longer cinematic scenes with a clear story arc.",
@@ -22,6 +67,13 @@
   },
   {
     "engineId": "minimax-h3",
+    "sourceAssessments": [{
+      "source": "runway",
+      "sourceUrl": "https://docs.dev.runwayml.com/guides/models/",
+      "summary": "Runway lists Hailuo 3 with text, image and video inputs; this identifies a vendor capability description, not a comparative ranking.",
+      "classification": "documented_capability",
+      "reviewedAt": "2026-10-02"
+    }],
     "strengths": [
       "Character-led cinematic scenes with expressive movement and dialogue.",
       "Multi-shot direction that keeps character, wardrobe, and setting coherent.",
@@ -134,6 +186,13 @@
   },
   {
     "engineId": "wan-3",
+    "sourceAssessments": [{
+      "source": "runway",
+      "sourceUrl": "https://docs.dev.runwayml.com/guides/models/",
+      "summary": "Runway lists Wan 3 with text and image inputs, without publishing a measured quality score on that page.",
+      "classification": "documented_capability",
+      "reviewedAt": "2026-10-02"
+    }],
     "strengths": [
       "Reference-guided motion and subject consistency across image and video briefs.",
       "Text, frame and mixed-reference generation, plus editing and extension of a source video."

@@ -1,0 +1,139 @@
+:root {
+  color-scheme: dark;
+  --bg: #19191c;
+  --surface: #242427;
+  --raised: #2c2c31;
+  --panel: #202024;
+  --top: #17171a;
+  --sidebar: #1c1c20;
+  --glow: #232327;
+  --text: #f2efeb;
+  --soft: #d0ccc7;
+  --muted: #aeaaa6;
+  --dim: #96918d;
+  --border: #3a393e;
+  --border-strong: #5b585e;
+  --accent: #e5c994;
+  --accent-border: #a78d64;
+  --accent-ink: #27221c;
+  --error: #e5a299;
+  --voice-bg: #302d38;
+  --voice-border: #57505f;
+  --voice-wave: #a296b2;
+  --music-bg: #283239;
+  --music-border: #465964;
+  --music-wave: #8caab9;
+  --overlay: #101014bd;
+  --player-bg: #101014;
+  --media-text: #fafaf8;
+  --shadow-soft: #00000033;
+}
+:root[data-palette="olive"] {
+  color-scheme: light;
+  --bg: #f4f3ec;
+  --surface: #fdfdf7;
+  --raised: #e5e6d9;
+  --panel: #eeeee4;
+  --top: #fafaf4;
+  --sidebar: #ededdf;
+  --glow: #fdfdf7;
+  --text: #30352b;
+  --soft: #4e5742;
+  --muted: #636952;
+  --dim: #676c55;
+  --border: #cccfbc;
+  --border-strong: #999e86;
+  --accent: #596440;
+  --accent-border: #818c63;
+  --accent-ink: #fafbf6;
+  --error: #9c4033;
+  --voice-bg: #e6e0eb;
+  --voice-border: #b19bbc;
+  --voice-wave: #81668b;
+  --music-bg: #dee6dd;
+  --music-border: #a1b39d;
+  --music-wave: #5f7b58;
+  --overlay: #2b302070;
+  --shadow-soft: #2b302016;
+}
+.palette-picker {
+  position: relative;
+}
+.palette-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 30;
+  margin: 0;
+  padding: 10px;
+  width: 240px;
+  max-width: calc(100vw - 28px);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 16px 45px #00000030;
+}
+.palette-menu legend {
+  float: left;
+  width: 100%;
+  padding: 5px 8px 9px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.palette-menu label {
+  clear: both;
+  position: relative;
+  display: flex;
+  gap: 11px;
+  align-items: center;
+  padding: 9px 8px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.palette-menu label:hover {
+  background: var(--raised);
+}
+.palette-menu label.chosen {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.palette-menu input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.palette-menu label:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.palette-swatch {
+  flex-shrink: 0;
+  width: 33px;
+  height: 33px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #ffffff20;
+  border-radius: 50%;
+}
+.palette-swatch > span {
+  width: 8px;
+  height: 8px;
+  background: currentColor;
+  border-radius: 50%;
+}
+.palette-label {
+  flex: 1;
+  font-size: 12px;
+}
+.palette-label small {
+  display: block;
+  font-size: 9px;
+  margin-top: 3px;
+  color: var(--muted);
+}
+.palette-menu label > svg {
+  color: var(--accent);
+  flex-shrink: 0;
+}

@@ -6,14 +6,14 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     "metaDescription": "Estos vídeos se crearon con Sora. Las nuevas generaciones con Sora están cerradas. Explora Seedance 2.5, MiniMax H3 y Wan 3 para tu próximo vídeo.",
     "heroTitle": "Ejemplos históricos de Sora",
     "subtitle": "Estos vídeos se crearon con Sora. Las nuevas generaciones con Sora están cerradas. Explora Seedance 2.5, MiniMax H3 y Wan 3 para tu próximo vídeo.",
-    "intro": "La generación con Sora está cerrada. OpenAI y fal.ai cierran la API el 24 de septiembre de 2026. Elige Seedance 2.5, MiniMax H3 o Wan 3 para un nuevo vídeo. Tus vídeos existentes permanecen en tu biblioteca.",
+    "intro": "La generación con Sora está cerrada. La fecha anunciada de cierre de la API era el 24 de septiembre de 2026. Elige Seedance 2.5, MiniMax H3 o Wan 3 para un nuevo vídeo. Tus vídeos existentes permanecen en tu biblioteca.",
     "promptPatterns": "Estos vídeos se crearon con Sora. Las nuevas generaciones con Sora están cerradas. Explora Seedance 2.5, MiniMax H3 y Wan 3 para tu próximo vídeo.",
     "strengthsLimits": "Estos vídeos se crearon con Sora. Las nuevas generaciones con Sora están cerradas. Explora Seedance 2.5, MiniMax H3 y Wan 3 para tu próximo vídeo.",
     "pricingNotes": "Los modelos archivados no tienen un precio de generación actual. Elige un modelo disponible y revisa un nuevo presupuesto antes de generar.",
     "faq": [
         {
             "question": "¿Se puede seguir generando con Sora?",
-            "answer": "La generación con Sora está cerrada. OpenAI y fal.ai cierran la API el 24 de septiembre de 2026. Elige Seedance 2.5, MiniMax H3 o Wan 3 para un nuevo vídeo. Tus vídeos existentes permanecen en tu biblioteca."
+            "answer": "La generación con Sora está cerrada. La fecha anunciada de cierre de la API era el 24 de septiembre de 2026. Elige Seedance 2.5, MiniMax H3 o Wan 3 para un nuevo vídeo. Tus vídeos existentes permanecen en tu biblioteca."
         },
         {
             "question": "Archivo de Sora y alternativas",

@@ -1,4 +1,5 @@
-import { isAllowedAssetHost } from '@/server/storage';
+import { createOwnedMediaReadUrl } from '@/server/owned-media-read-access';
+import { extractStorageKeyFromUrl, ownedMediaStorageKeyForUrl, isAllowedAssetHost } from '@/server/storage';
 import type { WorkspaceTimelineRenderManifest } from '../../../app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
 
 export const MAX_EXPORT_MEDIA_BYTES = 512 * 1024 * 1024;
@@ -50,8 +51,44 @@ function normalizeApprovedExportMediaUrl(url: string, requestOrigin: string): st
   return parsed.toString();
 }
 
+/** Validates canonical identity without issuing or persisting a transport grant. */
+export function canonicalTimelineExportMediaUrl(params: {
+  url: string; userId?: string; requestOrigin: string;
+}): string {
+  const url = normalizeApprovedExportMediaUrl(params.url, params.requestOrigin);
+  if (extractStorageKeyFromUrl(url)) {
+    if (!params.userId || !ownedMediaStorageKeyForUrl({url,userId: params.userId})) throw new Error('EXPORT_MEDIA_NOT_OWNED');
+    if ([...new URL(url).searchParams.keys()].some(key => /^x-amz-/i.test(key))) throw new Error('EXPORT_MEDIA_URL_NOT_ALLOWED');
+  }
+  return url;
+}
+
+/** Grants exist only at network boundaries. Callers keep the canonical URL. */
+export async function createTimelineExportReadUrl(params: {
+  url: string; userId?: string; requestOrigin: string; method: 'GET' | 'HEAD'; expiresInSeconds?: number;
+}): Promise<string> {
+  const url = canonicalTimelineExportMediaUrl(params);
+  try {
+    return await createOwnedMediaReadUrl({url,userId: params.userId,method: params.method,expiresInSeconds: params.expiresInSeconds ?? 300});
+  } catch { throw new Error('EXPORT_MEDIA_UNAVAILABLE'); }
+}
+
+/** Worker-only copy: validate the canonical manifest first; never persist this transport. */
+export async function prepareTimelineExportRenderMedia(params: {
+  manifest: WorkspaceTimelineRenderManifest; userId: string; requestOrigin: string;
+}): Promise<WorkspaceTimelineRenderManifest> {
+  const grants = new Map<string, string>();
+  for (const clip of params.manifest.tracks.flatMap(track => track.clips)) {
+    if (!grants.has(clip.mediaUrl)) grants.set(clip.mediaUrl, await createTimelineExportReadUrl({
+      url: clip.mediaUrl,userId: params.userId,requestOrigin: params.requestOrigin,method: 'GET',expiresInSeconds: 3600,
+    }));
+  }
+  return {...params.manifest,tracks: params.manifest.tracks.map(track => ({...track,clips: track.clips.map(clip => ({...clip,mediaUrl: grants.get(clip.mediaUrl)!}))}))};
+}
+
 async function probeLegacyTimelineExportMediaUrl(params: {
   url: string;
+  userId?: string;
   requestOrigin: string;
   fetchImpl?: typeof fetch;
   timeoutMs?: number;
@@ -62,7 +99,8 @@ async function probeLegacyTimelineExportMediaUrl(params: {
   const timeoutMs = Math.max(100, Math.min(params.timeoutMs ?? DEFAULT_MEDIA_PROBE_TIMEOUT_MS, 5000));
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await (params.fetchImpl ?? fetch)(normalizedUrl, {
+    const transportUrl = await createTimelineExportReadUrl({url: normalizedUrl,userId: params.userId,requestOrigin: params.requestOrigin,method: 'HEAD'});
+    const response = await (params.fetchImpl ?? fetch)(transportUrl, {
       method: 'HEAD',
       redirect: 'error',
       cache: 'no-store',
@@ -79,7 +117,8 @@ async function probeLegacyTimelineExportMediaUrl(params: {
     return { url: normalizedUrl, sizeBytes: contentLength };
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') throw new Error('EXPORT_MEDIA_PROBE_TIMEOUT');
-    throw error;
+    if (error instanceof Error && /^EXPORT_MEDIA_[A-Z_]+$/.test(error.message)) throw new Error(error.message);
+    throw new Error('EXPORT_MEDIA_UNAVAILABLE');
   } finally {
     clearTimeout(timeout);
   }
@@ -88,6 +127,7 @@ async function probeLegacyTimelineExportMediaUrl(params: {
 export async function validateLegacyTimelineExportMediaUrl(params: {
   url: string;
   mediaKind: ExportMediaKind;
+  userId?: string;
   requestOrigin: string;
   fetchImpl?: typeof fetch;
   timeoutMs?: number;
@@ -104,6 +144,7 @@ export async function validateLegacyTimelineExportMediaUrl(params: {
 
 export async function validateTimelineExportManifestMediaUrls(params: {
   manifest: WorkspaceTimelineRenderManifest;
+  userId?: string;
   requestOrigin: string;
   fetchImpl?: typeof fetch;
 }): Promise<WorkspaceTimelineRenderManifest> {
@@ -127,6 +168,7 @@ export async function validateTimelineExportManifestMediaUrls(params: {
       try {
         const validated = await probeLegacyTimelineExportMediaUrl({
           url: source.url,
+          userId: params.userId,
           requestOrigin: params.requestOrigin,
           fetchImpl: params.fetchImpl,
           timeoutMs: Math.min(DEFAULT_MEDIA_PROBE_TIMEOUT_MS, remainingMs),

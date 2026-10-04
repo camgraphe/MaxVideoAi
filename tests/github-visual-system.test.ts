@@ -85,7 +85,7 @@ test('ships the registered visual-system outputs at their exact target dimension
     assert.deepEqual([width, height], [expectedWidth, expectedHeight], path);
     const record = manifest.assets.find((asset) => asset.path === path);
     assert.ok(record, `${path} must be registered`);
-    assert.equal(record.state, 'publishable_proof');
+    assert.equal(record.state, /social\/release-0\.3\.[023]\.png$/.test(path)?'reference_only':'publishable_proof');
     assert.equal(record.sha256, sha256(bytes));
     assert.equal(record.editorialSourceId, 'maxvideoai-editorial-branch-converge-source');
     assert.ok(record.sourceProofIds?.length, `${path} must name its source proof`);

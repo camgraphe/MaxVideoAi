@@ -1,7 +1,7 @@
 import type { AgentApiFailure } from './errors';
 import type { CanonicalGenerationMode } from './generation-types';
 import type { CanonicalGenerationReferenceRole } from './generation-types';
-import type { AgentModelGuidance, AgentModelUseCase } from './model-guidance';
+import type { AgentModelGuidance, AgentModelUseCase, AgentModelEditorialGuidance } from './model-guidance';
 import type { AgentModelPromptingSource } from './model-prompting-sources';
 import type { RuntimeModelEntry } from '@/config/model-runtime';
 
@@ -133,6 +133,7 @@ export type AgentModelRecommendation = {
   model: AgentModel;
   reasons: string[];
   tradeoffs: string[];
+  editorialGuidance?: AgentModelEditorialGuidance;
   nextAction: 'calculate_project_budget' | 'discuss_and_choose' | 'clarify_requirements';
 };
 
@@ -220,6 +221,7 @@ export type AgentModelDetails = Readonly<{
   prelaunch: boolean;
   modes: readonly AgentModelModeDetails[];
   guidance: AgentModelGuidance | null;
+  editorialGuidance?: AgentModelEditorialGuidance;
   promptingSources: readonly AgentModelPromptingSource[];
   links: Readonly<{
     model: string | null;

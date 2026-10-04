@@ -10,7 +10,8 @@ import {
 } from '@/lib/image/inputSchema';
 
 import { AgentApiError } from './errors';
-import { getAgentModelGuidance, type AgentModelGuidance } from './model-guidance';
+import { getAgentModelGuidance, getAgentModelEditorialGuidance, type AgentModelGuidance } from './model-guidance';
+import { isAgentModelRecommendationEligible } from './model-editorial-policy';
 import {
   getAgentModelPromptingSources,
   type AgentModelPromptingSource,
@@ -187,6 +188,7 @@ function projectGuidance(
     considerations: Object.freeze([...guidance.considerations]),
     evidenceUrls: Object.freeze(includeEvidence ? [...guidance.evidenceUrls] : []),
     reviewedAt: guidance.reviewedAt,
+    ...(guidance.sourceAssessments === undefined ? {} : {sourceAssessments: Object.freeze(guidance.sourceAssessments.map(assessment=>Object.freeze({...assessment})))}),
   });
 }
 
@@ -294,28 +296,35 @@ function projectSettings(
       : CANONICAL_SETTING_BY_FIELD_ID[field.id];
     if (!key || isReferenceField(field) || !applicableToMode(field, mode, engine.id)) return [];
     if (!['boolean', 'number', 'text', 'enum'].includes(field.type)) return [];
+    // Canonical safety controls are booleans, including historical schemas
+    // whose provider enum encoded true/false as strings.
+    const booleanSafetyEnum = key === 'safetyChecker' && field.type === 'enum'
+      && Boolean(field.values?.length) && field.values!.every(value => value === 'true' || value === 'false');
+    const defaultValue = booleanSafetyEnum && (field.default === 'true' || field.default === 'false')
+      ? field.default === 'true' : field.default;
     return [Object.freeze({
       key,
       type: field.id === 'multi_prompt'
         ? 'multi_prompt'
-        : field.type as AgentModelSettingDetails['type'],
+        : booleanSafetyEnum ? 'boolean' : field.type as AgentModelSettingDetails['type'],
       required: field.requiredInModes
         ? field.requiredInModes.includes(toEngineGenerationMode(engine.id, mode))
         : required,
-      values: field.values?.length ? Object.freeze([...field.values]) : null,
+      values: field.values?.length ? Object.freeze(field.values.map(value => booleanSafetyEnum ? value === 'true' : value)) : null,
       min: typeof field.min === 'number' ? field.min : null,
       max: typeof field.max === 'number' ? field.max : null,
-      default: typeof field.default === 'string'
-        || typeof field.default === 'number'
-        || typeof field.default === 'boolean'
-        ? field.default
+      default: typeof defaultValue === 'string'
+        || typeof defaultValue === 'number'
+        || typeof defaultValue === 'boolean'
+        ? defaultValue
         : null,
     })];
   }));
 }
 
-function projectMode(
-  candidate: AgentPublicCatalogEngine,
+// Callers own authorization and model/mode eligibility; this projects canonical facts only.
+export function projectAgentModelModeDetails(
+  candidate: Pick<AgentPublicCatalogEngine, 'engine' | 'surface' | 'modeCaps'>,
   mode: AgentGenerationMode,
 ): AgentModelModeDetails {
   const caps = candidate.modeCaps[mode];
@@ -465,10 +474,11 @@ export async function getAgentModelDetails(
     generationEnabled: candidate.generationEnabled,
     lifecycle: runtime?.lifecycle ?? 'current',
     successor: successor ? Object.freeze({ id: successor.id, slug: successor.slug }) : null,
-    recommendedByDefault: runtime?.lifecycle === undefined || runtime.lifecycle === 'current',
+    recommendedByDefault: isAgentModelRecommendationEligible(candidate.engine.id, runtime?.lifecycle),
     prelaunch,
-    modes: Object.freeze(candidate.publicModes.map((mode) => projectMode(candidate, mode))),
+    modes: Object.freeze(candidate.publicModes.map((mode) => projectAgentModelModeDetails(candidate, mode))),
     guidance,
+    editorialGuidance: getAgentModelEditorialGuidance(candidate.engine.id),
     promptingSources,
     links: Object.freeze({
       model: prelaunch

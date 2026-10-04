@@ -178,6 +178,7 @@ export const routing = defineRouting({
       fr: '/docs/[slug]',
       es: '/docs/[slug]',
     },
+    '/studio': { en: '/studio', fr: '/studio', es: '/studio' },
     '/mcp': {
       en: '/mcp',
       fr: '/mcp',

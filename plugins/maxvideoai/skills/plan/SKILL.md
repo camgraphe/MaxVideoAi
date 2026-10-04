@@ -25,12 +25,15 @@ A server's catalogue is not the host's complete tool inventory. Retrieve a
 discovered tool's input schema before constructing arguments; if it is missing,
 continue discovery instead of guessing parameter names.
 
+Preserve the brief, chosen model, references and known job IDs while reconnecting.
+
 For a confirmed Codex OAuth failure, use the host's reconnect flow or its
 reported `codex mcp login maxvideoai` command. If the shell CLI is older than
 the running app, use that app's verified bundled CLI or plugin manager; do not
 change unrelated configuration to satisfy an obsolete CLI. Complete any required
-user sign-in, then rediscover tools and resume the brief. If discovery still
-fails, continue creative work while identifying unverified model facts and
+user sign-in, then rediscover tools and resume the brief. Reconnection does not
+approve a paid attempt; recover any submitted job before preparing another
+request. If discovery still fails, continue creative work while identifying unverified model facts and
 prices. Never present remembered facts as live results.
 
 ## UX rules
@@ -62,8 +65,8 @@ prices. Never present remembered facts as live results.
 
 When a local image, video, or audio file is needed as a typed input for the
 intended generation, use `generate` for the private MaxVideoAI upload workflow,
-even if model selection is still open. Do not suggest a host attachment as the
-generation input.
+even if model selection is still open. An authorized host attachment is an import
+source; use its returned MaxVideoAI asset ID as the generation input.
 
 Quality is not a single setting. Clarify only the dimension that changes the
 choice: story coherence, motion, identity or reference fidelity, audio,

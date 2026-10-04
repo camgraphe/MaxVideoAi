@@ -1,0 +1,183 @@
+# Studio — Create in conversation
+
+Creative production brief and connected QA project, 1 October 2026. Approved direction; the first reference image has been generated through the real-account MCP after explicit quote approval. The native complete film loop and publication remain unqualified.
+
+## Intent
+
+A 25-second English film promoting conversational creation: a brief becomes images, motion, a voice, music and an editable sequence. It should feel artistic, spacious and easy to understand. Every creative asset belongs to one coherent project. The film also drives the qualification of the shared Studio/MCP execution services.
+
+Working assumptions: 16:9 master with native UI and typography at 1920×1080, economical generated video sources at 480p, 30 fps final composition; a 9:16 adaptation after the master. Charcoal Studio shell, champagne accent, existing app navigation and a recognizable chat composer. Main motif: a sculptural glass ribbon crossing three cinematic worlds. No invented brand, cloned voice or generated interface lettering is needed.
+
+## 25-second film
+
+| Time | Picture | Chat / sound | What this proves when connected |
+|---|---|---|---|
+| 0–3 s | A clean Studio chat within the real app shell. Cursor types a brief; generous charcoal space. | “Create a cinematic film from one idea.” A restrained musical pulse enters. | A clear entry point, English intent and project settings. |
+| 3–8 s | Three images arrive around the chat. Each arrival becomes the focus; earlier images gently reduce and recompose. Desert light, dark water, luminous clouds; the same glass-ribbon motif. | “Start with these visual directions.” | New image generation, owned references, reuse, image metadata and stable canvas hierarchy. |
+| 8–13 s | One still starts moving in the compact monitor, then two quick cinematic cutaways. UI text remains precise. | “Bring them to life.” | Generated images used as video sources, real job/result recovery and measured media facts. |
+| 13–17 s | Compact voice and music results appear in the chat and can be played. A subtle sound accent accompanies their insertion. | “Add a warm voice and an instrumental soundtrack.” | Actual audio generation, native readers, original files and separate voice/music placement. |
+| 17–21 s | The sequence fills. The second clip visibly shortens; music level reduces. Monitor opens above the timeline while chat remains accessible. | “Shorten the second shot. Bring the music down under the voice.” | Chat editing and manual trim share one canonical sequence; no stale-state overwrite. |
+| 21–25 s | A brief full-screen view of the finished film, then an exact rendered Studio wordmark/end card. | “Studio. Create in conversation.” | A real 25-second export, readable typography and a clear final artifact. |
+
+Use real UI or a precisely authored UI composition for chat, captions and branding. Generative models supply the cinematic imagery and footage; they do not draw the app, logo or text. UI events are edited for the 25-second story and do not establish literal generation latency. Until the native loop is qualified, the review cut is labeled a product concept, with evidence of real and simulated steps recorded separately.
+
+## Voice-over
+
+English, warm, intimate and assured; restrained energy, clear diction. A human preset voice, not an imitation. Leave small pauses and a clean final brand beat. The recorded duration must be measured before fitting the timeline; the target is roughly 18–21 seconds, not an API guarantee.
+
+> An idea. A conversation. A world taking shape.
+> Create your visuals. Bring them to life. Find the voice. Set the mood.
+> Change a shot. Change the rhythm.
+> From your first thought to your final film.
+> MaxVideoAI Studio. Create in conversation.
+
+## Reference images and motion
+
+Use three owned image outputs from GPT Image 2.5 Flare at high quality, PNG, landscape 16:9. This matches the image family preferred by the current native pilot. Generate one image per native conversation turn; preserve the exact output identity. An additional edit tests reuse of an existing owned reference.
+
+### Image A — First light
+
+A fine translucent glass ribbon forms an elegant suspended loop above pale sculptural sand dunes. Restrained contemporary art direction, warm ivory and champagne light, subtle cobalt reflections inside the glass, luminous early-morning horizon, tactile matte sand, realistic refraction, spacious composition, centered focal motif with enough breathing room for a vertical adaptation. Cinematic editorial still, 16:9, no people, no typography, no logo or watermark.
+
+### Image B — Deep water
+
+Use Image A as an owned visual reference for the glass ribbon's overall design and material. Reimagine the ribbon floating just above deep cobalt water, warm dawn reflections across its transparent surface, quiet ripples below, charcoal horizon and soft atmospheric depth. Sophisticated cinematic still, calm geometry, generous negative space, no lettering or logos. Preserve the visual direction without promising pixel-identical geometry.
+
+### Image C — Above the clouds
+
+Use the previous owned glass-ribbon image as a visual reference. The transparent sculptural loop floats above a soft sea of ivory clouds, warm sun grazing the glass, fine cobalt reflections, serene scale and depth, an airy contemporary composition. Refined and photorealistic rather than a crowded fantasy scene. 16:9, no lettering or logos.
+
+### Revision test
+
+After Image B arrives: “Keep the glass-ribbon direction. Make the light warmer and the water calmer. Prepare one revised 16:9 image.” Verify the original remains available, the new asset has its own identity, and the canvas focuses the replacement without losing selected references.
+
+### Three animated sources
+
+Updated economical proposal requested by the user: one five-second 480p clip from each of Wan 3, MiniMax H3 and Dreamina Seedance 2.0 Mini. This exercises three provider routes for almost the same budget as using the least-expensive option alone. Keep the owned reference-image motif coherent across the models. This mix is proposed for qualification; it has not been generated or approved as an exact paid quote.
+
+- Wan 3: i2v, `480p`, 16:9, first-frame image, audio false. The live mode supports 30 fps. Use it for the dunes source.
+- MiniMax H3: i2v, `480P`, source image. Framing follows the image; omit aspect ratio. Audio is always generated, so omit the audio toggle. The owned private source is mandatory. Use the ocean source to assess native ambience as well as motion; it may be muted in the final mix.
+- Seedance Mini: i2v, `480p`, 16:9, source image, audio false. Omit fps because no setting is exposed. Use it for the cloud source.
+
+The final timeline normalizes measured source fps and duration to its own 30-fps composition. The UI and type can stay crisp at 1080p while the source footage is 480p; scaling does not establish native 1080p detail. A later final-quality pass is a separate choice, not a promised free upscale.
+
+- A: slow lateral camera move, slight parallax over the dunes, physically coherent refraction, ribbon gently suspended. No rapid transformations or newly introduced objects.
+- B: slow push-in over the water, delicate ripples and reflections, glass form stable, restrained motion.
+- C: gentle rising camera, subtle cloud movement and light gliding across glass, quiet cinematic finish.
+
+Each clip has five seconds of source material; use only the portions needed by the promo. Fifteen seconds of generated source footage are not a 25-second finished edit: app UI, audio-result shots, transitions and end card fill the remaining story.
+
+## Audio and typography
+
+- Voice: route the script through the existing canonical Audio preparation, quote and execution services; start with a qualified English preset. No claim of live entitlement or quality until the provider responds and the output is auditioned.
+- Music: instrumental, airy electronic pulse with organic texture, soft low end, a restrained rise, no vocals. Request the existing 30-second music route, preserve the original and trim the chosen segment to the film. Configuration and exact pricing must be validated before execution.
+- SFX: one short glass/light accent and one gentle transition sound are useful secondary tests. Keep them sparse. Qualify standalone SFX, owned audio metadata and timeline position separately.
+- Mix: voice intelligibility first; lower the music clip level and place/fade the chosen tracks. Automatic ducking is not presumed to be implemented. Verify peak levels and the actual final mix.
+- Text: concise English on-screen phrases, then “Studio. Create in conversation.” Render as real typography over the composition. Optional full narration subtitles need actual timing against the recorded voice; do not present guessed alignment as measured.
+
+## English test conversation
+
+These are planned connected scenarios, not executed evidence:
+
+1. “Create a 25-second cinematic Studio promo. Start with a glass ribbon in three worlds: dunes, ocean and clouds. Prepare the first 16:9 reference image.”
+2. “Use that image as the visual reference for the ocean scene. Keep the same artistic direction.”
+3. “Make the ocean scene warmer and calmer. Keep the earlier version in my library.”
+4. “Prepare the cloud scene using the glass-ribbon reference.”
+5. “Animate the three selected images into five-second shots.”
+6. “Create the voice-over from this approved English script.”
+7. “Create an airy instrumental soundtrack without vocals.”
+8. “Assemble the selected shots and audio for a 25-second film.”
+9. “Shorten the second shot, move the cloud shot before it, and lower the music under the voice.”
+10. Make a manual trim; then ask “Continue from my latest edit. Don’t restore the previous cut.”
+11. Reload during a pending job, then “Show the existing result. Don’t generate another attempt.”
+12. “Export the final film and create a vertical adaptation while keeping the master.”
+
+Every paid action must expose the canonical exact quote for explicit approval. A discussion or an approved storyboard is not approval of a debit. A refused/expired quote, missing funds, unavailable provider or failed job must retain a clear recoverable state, with no automatic new paid attempt.
+
+## Evidence and acceptance
+
+For each connected step record model/settings, source/result identities, quote/job states, measured duration/ratio, API usage and estimated text cost, exact media price/receipt and whether the operation was real or simulated. Never infer Codex agent cost from the Studio API counters.
+
+Required checks: library ownership; image-to-edit and image-to-video handoff; playable audio in chat; original downloads; clip in/out/start frames; shared chat/manual edit revisions; safe recovery after reload; exact-once confirmation; immutable export snapshot; 25-second measured master; vertical adaptation; desktop/mobile compact monitor and accessible composer; complete project retrieval on reopening.
+
+Publication follows qualification of the features shown. Current native Studio chat handles one image request/edit at a time. It does not yet execute the film, voice, music and assembly loop shown here. The local prototype has editing/export and audio playback but uses demonstration images and local motion/audio; it does not prove real paid provider creation.
+
+## Live discovery and budget
+
+Live MaxVideoAI read-only discovery on 1 October 2026 returned all three economical candidates as generation-enabled. Their exact image-to-video modes were checked before comparison. Every proposal contains fifteen seconds of source footage (three five-second clips), one owned input image per clip, one attempt per clip and no creative retry allowance.
+
+| Proposal | Clip cost, USD | Three-clip base production, USD |
+|---|---:|---:|
+| Wan 3, 480p | 0.33 | 0.99 |
+| MiniMax H3, 480P, native audio included | 0.33 | 0.99 |
+| Dreamina Seedance 2.0 Mini, 480p | 0.43 | 1.29 |
+| Proposed QA mix: one clip from each | 0.33 / 0.33 / 0.43 | 1.09 |
+
+The previously considered Seedance 2.5/1080p proposal was estimated at 19.53 USD. The mixed 480p proposal reduces estimated video spend by 18.44 USD (about 94%). Three clips all on Wan 3 or H3 cost 0.10 USD less than the mix. The mix is useful specifically because this project is also testing three provider routes; it is not evidence that mixing models improves creative quality.
+
+These are connected-environment estimates, not reserved prices or permission to spend. Reference images, the image edit, narration, music, optional SFX, text-model tokens and rendering remain additional lines. The first reference image has since been generated for 0.06 USD after exact quote approval; no video or paid retry has been executed. Exact quotes must be obtained for each next request when references are ready. The full live response is preserved in `studio-promo-480p-budget.json`.
+
+Reviewed prompt sources returned by the catalogue:
+
+- [GPT Image prompting guide](https://developers.openai.com/api/docs/guides/image-prompting)
+- [Wan 3 prompt guide](https://docs.modelstudio.console.alibabacloud.com/en/model-studio/wan3-video-generation-guide)
+- [MiniMax video guide](https://platform.minimax.io/docs/guides/video-generation)
+- [Seedance 2.0 series prompt guide](https://docs.byteplus.com/api/docs/ModelArk/2222480)
+
+## Complete project cost record
+
+The user requires a cost report for the entire film, including the text-model tokens consumed during creation and editing. This is an accounting/QA record, not a second customer billing authority.
+
+| Cost line | Evidence to retain | Reporting status |
+|---|---|---|
+| Conversation and tool orchestration | Actual response model/tier, input, cached input, cache writes, output and included reasoning tokens, per response and per project stage | Measure during the connected run; convert with verified model rates as an estimate |
+| Images and reference edit | Exact accepted quote, unique owned job, original output and charge/refund receipts | Pending production |
+| Three video sources | Exact accepted quotes, jobs and charge/refund receipts; selected 480p route | Budget estimate 1.09 USD for the proposed mix |
+| Voice, music and optional SFX | Each canonical Audio quote, job, original file and charge/refund receipts | Provider configuration and exact quotes still to verify |
+| Rendering and delivery | Actual export job and any applicable charge; local exports explicitly labeled | Pending production |
+| Codex planning and coding | Separate subscription/agent accounting, if available | Not exposed by Studio API usage; do not invent a token or cost figure |
+
+Record all responses in a tool-using turn, not just the user's visible final answer. Preserve counters for incomplete responses when returned. A timeout without usage stays unknown, never zero. Do not charge reasoning twice: it is already in output. Record cache writes separately from cached reads. The QA estimator `scripts/qa/studio-sol-cost.ts` already uses these buckets and returns a range when write counts are missing. Public rates are estimates; an account invoice or statement is separate evidence.
+
+Metering is now implemented for both existing owners. Native image conversations start an account/project/turn/lease-scoped attempt before calling Sol, then retain response identity, actual model/tier, raw counters and elapsed time in `studio_image_model_usage` (explicit migration 51). Incomplete replies are recorded before draft validation; transport failures remain unknown, and replay of a saved draft does not call Sol again. The local prototype preserves nullable cache fields and model/tier metadata, and checkpoints every orchestration round to a private metadata-only project history beside the current turn journal. An older recovered journal cannot erase a measured response. Earlier unmetered history cannot be reconstructed. These records estimate API cost; they never authorize or collect a customer charge.
+
+Keep film-production costs separate from unrelated QA runs. If an extra creative attempt is explicitly approved, include its charge even when the output is not used. Preserve technical failure/refund evidence and do not assume that a refund also erases a text-model cost. Report totals as measured charges plus estimated text API costs, with unknown items clearly shown; do not present a grand total while known cost lines are missing.
+
+Public Audio tools are absent from the currently exposed MCP inventory. In this checkout, `mcp-publication.json` keeps Audio and montage publication disabled. Web Audio services already exist; Studio should reuse their canonical owners rather than build a separate billing/provider path. This brief does not change publication flags or expose the new tools.
+
+## Next production step
+
+The user approved continuing with this direction. Use this project to connect and qualify one action at a time: image/reference first, video next, separate voice/music, then timeline editing and export. Keep the existing native image pilot and the broader local prototype evidence distinct. The final film becomes the outcome of the connected test, not proof invented in advance.
+
+## First live conversation and remaining handoff
+
+The local native conversation `qa-studio-promo-25s` is open for live viewing. Two actual English Sol exchanges refined the artistic direction and prepared the first dunes image prompt. They consumed 2,297 tokens; the public-rate estimate is 0.009413 USD. Both responses have complete counters, actual model/tier and no unknown attempts. This usage is separate from the earlier 33-call English QA campaign.
+
+The local provider-free session retained the image draft but could not prepare a media quote because no executable image provider is configured. It did not debit a wallet or generate media. The real-account MCP is the next quote owner, using exactly this saved Sol prompt without another text-model call. Its account wallet was read as 40.14 USD; the local QA wallet remains separate. Do not portray the MCP quote or future output as a native session quote/result. Video/audio/native editing execution still requires qualification.
+
+The MCP prepared the exact first-reference quote: one GPT Image 2.5 Flare text-to-image output, `landscape_16_9`, quality high, PNG, 0.06 USD. The user explicitly approved this quote. One confirmed job completed and was presented; payment is `paid_wallet`, the image is saved to the real library and the wallet read fell from 40.14 to 40.08 USD. Browser inspection measured 1088×608 and verified the glass-loop/dunes visual. The native conversation remains the visible real Sol dialogue; its failed local quote is not this MCP approval or output. Keep job identity, originals and receipts in the private run evidence outside Git.
+
+Validation: 594 editor tests and 11 isolated connected Studio integration tests passed. The broader standard suite reported 5,730 passes, one skip and the previously observed `tests/github-assets.test.ts` failure on stale visual review dates. Frontend typecheck/lint/exposure checks passed (six existing image warnings). Local prototype tests and build were checked separately; run evidence remains outside Git.
+
+The prototype's 49 tests and production build passed. Its evaluation reporter now preserves missing cache counters as null, and every project usage record survives a later turn or stale recovery checkpoint.
+
+The user explicitly approved the next three quotes for 0.45 USD. Wan 3 accepted one 5-second dunes animation (480p, 16:9, 30 fps, no audio) at 0.33 USD; the job completed, was presented and is saved to the real library. Both 0.06 USD Flare image-to-image confirmations returned `QUOTE_EXPIRED` with the message that the quote was no longer current; neither returned a media job or debit. Their confirmations occurred before the returned expiry timestamps, so elapsed expiry is not an established explanation. No automatic replacement was submitted. Further attempts require diagnosis, a fresh exact quote and new approval. Measured media charges are 0.39 USD; with the two initial Sol exchanges the known subtotal is 0.399413 USD. The wallet was last read as 39.75 USD. This is partial technical production, not a full-film cost.
+
+## Natural first-time-user test — 1 October 2026
+
+The user identified a bias in the initial live conversation: the test operator supplied the visual motif, composition and generation instructions. That run qualifies technical execution only; it does not establish that Studio can guide a novice to a film. Preserve its paid outputs and receipts, without forcing that artistic direction into a new user's conversation.
+
+A fresh local project, `qa-studio-newcomer-film`, received four actual browser-submitted English messages with no prior history:
+
+1. “Hi, I'm new here. I'd like to make a little video but I don't really know where to start. Can you help?”
+2. “It's for Studio, to show that you can make a film just by chatting. Something short and nice, but cheap. I don't have any images.”
+3. “What would it look like? I'd like something elegant, not too techy. You can choose, I'm not sure.”
+4. “Yes, let's try it.”
+
+Sol chose the concept “From conversation to cinema,” suggested one scene, chose a cream paper card on a walnut desk with warm light and a blurred cinema screen, selected 16:9, and authored the full image prompt itself. No operator supplied a subject, shot list, media model, resolution or hidden generation prompt. Three advice turns returned no image action; the fourth saved the model-authored draft. Its quote preparation failed because the local QA runtime has no executable image provider. No wallet was debited and no new media generation was confirmed.
+
+All four responses were measured: 3,653 tokens, including 56 reasoning tokens already counted in output, estimated public-rate API cost 0.011722 USD. This newcomer QA cost is reported separately from the earlier directed production and English scenario salve. Evidence, response counters and a browser screenshot remain outside Git.
+
+The creative handoff works in this limited case, but the full-film journey remains unqualified. The director explicitly supports only images and repeats this limit; it cannot choose or execute the video, Audio, montage and export stages here. Its cost advice is also limited to the fact that a future quote will show the image price. The failed quote leaves the user at a technical dead end. Connecting the shared action owners, capability and price reads is necessary before a novice can reach a finished film through this native chat.
+
+For future user-journey tests, the operator plays only the customer: short, imperfect messages, ordinary reactions to actual replies/results, and simple requests such as “Can it move?”, “Add some music” or “Make it shorter.” Do not dictate internal prompts, tools, model selection, exact shot construction or preparation order. Studio must supply these decisions and collect the few useful choices, while the existing quote confirmation remains the paid-action authority. Record task completion, questions asked, confusing replies, recovery, actual model usage and media receipts; judge whether the customer reached a usable film, not whether a prescribed sequence was obeyed.

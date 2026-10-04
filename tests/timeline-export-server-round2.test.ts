@@ -109,7 +109,7 @@ function persistedSequence(url: string, sourceWidth = 1920, sourceHeight = 1080)
 type ResolverDependencies = {
   readStudioProject: () => Promise<ReturnType<typeof persistedProject> | null>;
   readStudioSequence: () => Promise<ReturnType<typeof persistedSequence> | null>;
-  readOwnedLibraryAssetsByIds: () => Promise<Array<Record<string, unknown>>>;
+  readOwnedLibraryAssetsByIds: (params: { userId: string; assetIds: readonly string[] }) => Promise<Array<Record<string, unknown>>>;
   isOwnedStorageUrl: (params: { url: string; userId: string; projectId: string }) => boolean;
   validateManifestMediaUrls: <T>(params: { manifest: T }) => Promise<T>;
 };
@@ -224,6 +224,75 @@ test('server export hydration discards legacy request-derived source metadata', 
   assert.equal(clip?.sourceDurationSec, null);
   assert.equal(clip?.sourceWidth, null);
   assert.equal(clip?.sourceHeight, null);
+});
+
+test('canonical export honors saved hidden video and muted audio and rejects stale track intent before media validation', async () => {
+  const resolveOwnedRequest = await round2Resolver();
+  const videoUrl = 'https://cdn.maxvideoai.com/media-assets/user-owned/clip-1.mp4';
+  const hiddenUrl = 'https://cdn.maxvideoai.com/media-assets/user-owned/hidden.mp4';
+  const audioUrl = 'https://cdn.maxvideoai.com/media-assets/user-owned/music.m4a';
+  const project = persistedProject(videoUrl);
+  project.workspaceState.projectAssets.push(
+    { ...project.workspaceState.projectAssets[0], id: 'hidden-asset', url: hiddenUrl },
+    { ...project.workspaceState.projectAssets[0], id: 'music-asset', kind: 'audio', url: audioUrl },
+  );
+  const savedSequence = persistedSequence(videoUrl);
+  const sequence = { ...savedSequence, timelineState: {
+    ...savedSequence.timelineState,
+    videoTrackCount: 2,
+    audioTrackCount: 2,
+    hiddenVideoTracks: ['video-2', 'video-2', 'audio-2'],
+    mutedAudioTracks: ['audio-2', 'video'],
+    timelineItems: [
+      ...savedSequence.timelineState.timelineItems,
+      { ...savedSequence.timelineState.timelineItems[0], id: 'hidden-clip', assetId: 'hidden-asset',
+        outputNodeId: 'hidden-output', track: 'video-2', mediaUrl: hiddenUrl },
+      { ...savedSequence.timelineState.timelineItems[0], id: 'music-clip', assetId: 'music-asset',
+        outputNodeId: 'music-output', track: 'audio-2', title: 'Music', mediaKind: 'audio', mediaUrl: audioUrl,
+        audioMix: { volume: 42, muted: false } },
+    ],
+  } };
+  const request = requestFixture();
+  request.manifest.tracks[0].clips[0].sourceWidth = 1920;
+  request.manifest.tracks[0].clips[0].sourceHeight = 1080;
+  request.manifest.tracks[1] = {
+    id: 'audio-2', durationSec: 5,
+    clips: [{ ...request.manifest.tracks[0].clips[0], id: 'music-clip', assetId: 'music-asset',
+      outputNodeId: 'music-output', track: 'audio-2', title: 'Music', mediaKind: 'audio', mediaUrl: audioUrl,
+      audioMix: { volume: 42, muted: true } }],
+  } as never;
+  let mediaValidations = 0;
+  const hydratedAssetIds: string[][] = [];
+  const dependencies: ResolverDependencies = {
+    readStudioProject: async () => project,
+    readStudioSequence: async () => sequence,
+    readOwnedLibraryAssetsByIds: async ({ assetIds }) => { hydratedAssetIds.push([...assetIds]); return []; },
+    isOwnedStorageUrl: ({ url }) => [videoUrl, hiddenUrl, audioUrl].includes(url),
+    validateManifestMediaUrls: async ({ manifest }) => { mediaValidations += 1; return manifest; },
+  };
+  const persistedBefore = JSON.stringify(sequence);
+  assert.equal(parseTimelineExportRequest(request).status, 'ready');
+  const resolved = await resolveOwnedRequest({ userId: 'user-owned', request,
+    requestOrigin: 'https://maxvideoai.com' }, dependencies);
+  assert.equal(mediaValidations, 1);
+  assert.deepEqual(resolved.manifest.tracks.map(track => track.id), ['video', 'audio-2']);
+  assert.deepEqual(Reflect.get(resolved.manifest.tracks[1].clips[0], 'audioMix'), { volume: 42, muted: true });
+  assert.ok(hydratedAssetIds.every(assetIds => !assetIds.includes('hidden-asset')));
+  assert.equal(JSON.stringify(sequence), persistedBefore, 'export flags must not mutate the saved cut');
+
+  const staleAudible = structuredClone(request);
+  Object.assign(staleAudible.manifest.tracks[1].clips[0], { audioMix: { volume: 42, muted: false } });
+  const staleVisible = structuredClone(request);
+  staleVisible.manifest.tracks.splice(1, 0, { id: 'video-2', durationSec: 5,
+    clips: [{ ...request.manifest.tracks[0].clips[0], id: 'hidden-clip', assetId: 'hidden-asset',
+      outputNodeId: 'hidden-output', track: 'video-2', mediaUrl: hiddenUrl }],
+  });
+  for (const stale of [staleAudible, staleVisible]) {
+    assert.equal(parseTimelineExportRequest(stale).status, 'ready', 'stale intent must still be a valid export request');
+    await assert.rejects(() => resolveOwnedRequest({ userId: 'user-owned', request: stale,
+      requestOrigin: 'https://maxvideoai.com' }, dependencies), /EXPORT_PROJECT_STATE_STALE/);
+    assert.equal(mediaValidations, 1, 'stale visible or audible intent must fail before media validation');
+  }
 });
 
 function linkedAudioResolverFixtures(params: {

@@ -30,6 +30,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { id: 'hub-health', label: 'Today', href: '/admin', icon: 'dashboard' },
       { id: 'insights', label: 'Insights', href: '/admin/insights', icon: 'insights' },
       { id: 'mcp', label: 'MCP activity', href: '/admin/mcp', icon: 'insights' },
+      { id: 'studio-review', label: 'Studio interactions', href: '/admin/studio', icon: 'audit' },
     ],
   },
   { id: 'users', label: 'Users', items: [{ id: 'users', label: 'Users', href: '/admin/users', icon: 'users' }] },

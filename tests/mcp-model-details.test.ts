@@ -169,13 +169,25 @@ function realRegistryDetailsDeps(): AgentModelDetailsDeps {
   };
 }
 
+test('Pika details agree with its on-request editorial guidance', async () => {
+  const details = await getAgentModelDetails('pika-text-to-video', realRegistryDetailsDeps());
+
+  assert.equal(details.lifecycle, 'current');
+  assert.ok(details.modes.some((mode) => mode.mode === 't2v'));
+  assert.equal(details.editorialGuidance?.level, 'on_request');
+  assert.equal(details.recommendedByDefault, false);
+});
+
 test('model details project one executable public model into the exact safe shape', async () => {
   const details = await getAgentModelDetails(
     'minimax-h3',
     detailsDeps([engine('minimax-h3', ['t2v', 'i2v', 'ref2v'])]),
   );
 
-  assert.deepEqual(details, {
+  const {editorialGuidance,...capabilityDetails}=details;
+  assert.equal(editorialGuidance?.level,'alternative');
+  assert.equal(editorialGuidance?.basis,'product_editorial_preference');
+  assert.deepEqual(capabilityDetails, {
     id: 'minimax-h3',
     label: 'MiniMax H3',
     slug: 'minimax-h3',
@@ -497,4 +509,19 @@ test('prompting sources are filtered to public modes and projected as detached i
   assert.equal(Object.isFrozen(details.promptingSources), true);
   assert.equal(Object.isFrozen(projected), true);
   assert.equal(Object.isFrozen(projected.modes), true);
+});
+
+
+test('legacy Wan safety control projects canonical boolean values accepted by shared generation validation', async () => {
+  const entry = listFalEngines().find(entry => entry.id === 'wan-2-6')!;
+  const details = await getAgentModelDetails('wan-2-6', {
+    listEngines: async () => [entry.engine], surfaceByEngineId: () => 'video',
+    isEngineExecutable: () => true, isModeExecutable: () => true,
+  });
+  for (const mode of details.modes) {
+    const setting = mode.settings.find(setting => setting.key === 'safetyChecker');
+    assert.equal(setting?.type, 'boolean');
+    assert.equal(setting?.default, true);
+    assert.deepEqual(setting?.values, [true, false]);
+  }
 });

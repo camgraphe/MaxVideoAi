@@ -1,0 +1,61 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import {getDb} from '../frontend/src/lib/db';
+import {getFalEngineById} from '../frontend/src/config/falEngines';
+import {createStudioActionExecutor} from '../frontend/src/server/studio/conversation-actions';
+import {createStudioImageGenerationService,createStudioVideoGenerationService} from '../frontend/src/server/studio/image-generation-service';
+import {createStudioAudioGenerationService} from '../frontend/src/server/studio/audio-generation-service';
+import {projectAgentModelModeDetails} from '../frontend/src/server/agent-api/model-details';
+import {getAgentModelGuidance} from '../frontend/src/server/agent-api/model-guidance';
+import {createPaidGenerationTestSchema,startDisposablePostgres} from './helpers/disposable-postgres';
+
+test('exact model inspection is scoped, gated, non-spending and shares canonical MCP facts and guidance', async t => {
+  const pg = await startDisposablePostgres('studio-capability-details');
+  const prior = process.env.DATABASE_URL;
+  process.env.DATABASE_URL = pg.databaseUrl;
+  t.after(async () => {await getDb().end(); if (prior === undefined) delete process.env.DATABASE_URL; else process.env.DATABASE_URL = prior; await pg.cleanup();});
+  await createPaidGenerationTestSchema(pg.pool);
+  await pg.pool.query(`CREATE TABLE studio_projects(id text PRIMARY KEY,user_id text,name text,deleted_at timestamptz,revision bigint);
+    INSERT INTO studio_projects VALUES ('film','owner','Film',NULL,0);
+    CREATE TABLE studio_conversation_memory(user_id text,project_id text,revision bigint,brief text,decisions jsonb);
+    CREATE TABLE studio_image_turns(user_id text,project_id text,quote_id uuid,created_at timestamptz);`);
+  const actor={authMethod: 'studio-session' as const,userId: 'owner',projectId: 'film',clientId: null};
+  const entry=getFalEngineById('wan-3')!;
+  const candidate={engine: entry.engine,surface: 'video' as const,publicModes: ['t2v','i2v','ref2v','fl2v'] as never,modeCaps: Object.fromEntries(entry.modes.map(mode=>[mode.mode,mode.ui]))};
+  const image=createStudioImageGenerationService(actor,{enabled:true,prepareDependencies: {listPublicEngines:async()=>[]}});
+  const video: typeof createStudioVideoGenerationService=(current,options)=>createStudioVideoGenerationService(current,{...options,prepareDependencies:{listPublicEngines:async()=>[candidate]}});
+  const audio: typeof createStudioAudioGenerationService=()=>({catalog: async()=>({modes: [], options: {}})}) as never;
+  let preparations=0;
+  const dependencies={enabled:true,generation:image,mediaEnabled:true,factories:{image: createStudioImageGenerationService,video,audio},prepareImage:async()=>{preparations++;throw new Error('Inspection must not prepare.');}};
+  const execute=createStudioActionExecutor(actor,dependencies);
+  const details=await execute({action:'model.details',modelId:'wan-3'});
+  assert.equal(details?.ok,true);
+  assert.equal(details?.action,'model.details');
+  if (!details?.ok || details.action!=='model.details' || details.data.surface==='audio') throw new Error('Expected visual details');
+  assert.equal(details.data.modelId,'wan-3');
+  const certified=(await video(actor,{enabled:true}).catalog())[0];
+  assert.deepEqual(details.data.modes.map(mode=>mode.mode),certified.publicModes);
+  for (const mode of details.data.modes) {
+    const canonical=projectAgentModelModeDetails(certified,mode.mode);
+    assert.deepEqual(mode.duration,canonical.duration);
+    assert.deepEqual(mode.resolutions,canonical.resolutions);
+    assert.deepEqual(mode.settings,canonical.settings.filter(setting=>setting.type!=='multi_prompt'));
+    assert.deepEqual(mode.references,canonical.references.filter(reference=>reference.type==='image').map(reference=>({...reference,
+      ...(mode.mode==='ref2v' && reference.roles.includes('reference') ? {required: true,min: Math.max(1,reference.min ?? 0)} : {}),max: Math.min(reference.max ?? 8,8)})));
+  }
+  assert.deepEqual(details.data.guidance,getAgentModelGuidance('wan-3'));
+  assert.equal(details.data.outputCount,1);
+  assert.ok(details.data.promptingSources.every(source=>source.modes.every(mode=>certified.publicModes.includes(mode))));
+  assert.equal(preparations,0);
+  assert.equal((await pg.pool.query('SELECT count(*)::int AS count FROM mcp_generation_quotes')).rows[0].count,0);
+  assert.equal((await pg.pool.query("SELECT count(*)::int AS count FROM app_receipts WHERE type='charge'")).rows[0].count,0);
+  const hidden=await execute({action:'model.details',modelId:'veo-3-1'});
+  assert.equal(hidden.ok,false);
+  if (!hidden.ok) assert.equal(hidden.error.code,'ENGINE_UNAVAILABLE');
+  const gated=await createStudioActionExecutor(actor,{...dependencies,mediaEnabled:false})({action:'model.details',modelId:'wan-3'});
+  assert.equal(gated.ok,false);
+  const foreign=await createStudioActionExecutor({...actor,userId:'foreign'},dependencies)({action:'model.details',modelId:'wan-3'});
+  assert.equal(foreign.ok,false);
+  if (!foreign.ok) assert.equal(foreign.error.code,'PARAMETER_INVALID');
+  assert.throws(()=>createStudioActionExecutor({...actor,authMethod:'oauth-token'} as never,dependencies),{code:'AUTH_REQUIRED'});
+});

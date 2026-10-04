@@ -31,10 +31,17 @@ test('web Audio still reserves once then executes the same runtime, preserving o
   };
   const globals = globalThis as typeof globalThis & { __audioWebFixture?: typeof fixture };
   globals.__audioWebFixture = fixture;
-  let end: (() => Promise<void>) | undefined;
+  let end: (() => Promise<void>) | undefined = undefined;
   t.after(async () => { await end?.(); if (previousUrl === undefined) delete process.env.DATABASE_URL; else process.env.DATABASE_URL = previousUrl;
     delete globals.__audioWebFixture; rmSync(folder, { recursive: true, force: true }); await database.cleanup(); });
   await createPaidGenerationTestSchema(database.pool);
+  await database.pool.query(`CREATE TABLE job_outputs (
+    id text PRIMARY KEY, job_id text NOT NULL, user_id text, kind text NOT NULL,
+    url text NOT NULL, storage_url text, thumb_url text, preview_url text, mime_type text,
+    width integer, height integer, duration_sec double precision, position integer NOT NULL,
+    status text NOT NULL, metadata jsonb, updated_at timestamptz DEFAULT now(),
+    UNIQUE(job_id,kind,position)
+  )`);
   await database.pool.query('ALTER TABLE app_jobs ALTER COLUMN duration_sec SET NOT NULL');
   await database.pool.query('CREATE TABLE profiles(id uuid PRIMARY KEY,preferred_currency text)');
   await database.pool.query("INSERT INTO profiles VALUES ($1,'usd')", [userId]);
@@ -42,12 +49,13 @@ test('web Audio still reserves once then executes the same runtime, preserving o
   const output = join(folder, 'audio.cjs');
   const mocks: Record<string, string> = {
     './prepare-audio': `export const assertExpectedAudioQuote=globalThis.__audioWebFixture.assertExpectedAudioQuote; export const assertAudioProviderConfigured=()=>{}; export async function prepareAudioRun(){ return globalThis.__audioWebFixture.prepared; }`,
-    '@/lib/schema': `export async function ensureBillingSchema(){}`,
+    '@/lib/schema': `export async function ensureBillingSchema(){} export async function ensureMediaLibrarySchema(){}`,
     './providers/standalone': `export async function generateSongTrack(input){ const f=globalThis.__audioWebFixture; f.submitted++; if(f.failed) throw new Error('Fixture provider failure'); if(input.lyrics!==f.prepared.normalized.lyrics) throw new Error('Lyrics changed'); return {url:'https://fixture.example/original.mp3',model:'fixture-song',providerKey:'fixture',providerLabel:'Fixture'}; } export const generateAmbienceTrack=()=>{throw new Error('Wrong provider')}; export const generateMinimaxVoiceTrack=generateAmbienceTrack;`,
     '@/server/audio/media': `export async function persistOriginalAudio(input){const f=globalThis.__audioWebFixture;f.persistCalls++;if(input.url!=='https://fixture.example/original.mp3')throw new Error('Original changed');if(f.beforePersist)await f.beforePersist(input.jobId);return {audioUrl:'https://fixture.example/stored-original.mp3',durationSec:123.4};} export const mixAudioTracks=()=>{throw new Error('Unexpected transcode')}; export const mixAudioIntoVideo=mixAudioTracks; export const uploadAudioRenderAudio=mixAudioTracks; export const uploadAudioRenderVideo=mixAudioTracks;`,
     '@/server/audio/providers': `export const generateClonedVoiceTrack=()=>{throw new Error('Wrong provider')};export const generateMusicTrack=generateClonedVoiceTrack;export const generateSoundDesignTrack=generateClonedVoiceTrack;export const generateStandardVoiceTrack=generateClonedVoiceTrack;`,
     '@/server/media/detect-has-audio': `export const detectMediaBufferDuration=()=>{throw new Error('Unexpected transcode probe')};`,
-    '@/server/media-library': `export async function upsertLegacyJobOutputs(){globalThis.__audioWebFixture.outputCalls++;}`,
+    '@/server/media-library': `import {upsertLegacyJobOutputs as persist} from './frontend/server/media-library/job-outputs'; export async function upsertLegacyJobOutputs(row){await persist(row);globalThis.__audioWebFixture.outputCalls++;}`,
+    './mcp-output-assets': `export async function promoteCompletedMcpJobOutputs(){return {promoted:0,failed:0,skipped:1};}`,
   };
   await build({ stdin: { resolveDir: process.cwd(), loader: 'ts', contents: `export {generateAudioRun} from './frontend/src/server/audio/generate-audio'; export {refundAudioCharge} from './frontend/src/server/audio/audio-generate-receipts'; export {failAudioJob} from './frontend/src/server/audio/audio-generate-jobs'; export {getDb} from '@/lib/db';` },
     outfile: output, bundle: true, platform: 'node', format: 'cjs', packages: 'external', tsconfig: 'frontend/tsconfig.json',
@@ -70,6 +78,11 @@ test('web Audio still reserves once then executes the same runtime, preserving o
   assert.deepEqual((await database.pool.query("SELECT type,amount_cents FROM app_receipts WHERE job_id=$1", [response.jobId])).rows, [{ type: 'charge', amount_cents: 45 }]);
   const job = (await database.pool.query('SELECT duration_sec,settings_snapshot,status FROM app_jobs WHERE job_id=$1', [response.jobId])).rows[0];
   assert.equal(Number(job.duration_sec), 124); assert.equal(job.settings_snapshot.measuredDurationSec, 123.4); assert.deepEqual(job.settings_snapshot.mediaFacts, { source: 'probe', durationSec: 123.4 }); assert.equal(job.settings_snapshot.lyrics, prepared.normalized.lyrics); assert.equal(job.status, 'completed');
+  const audioOutput = (await database.pool.query('SELECT id,duration_sec,mime_type,metadata FROM job_outputs WHERE job_id=$1 AND kind=$2', [response.jobId, 'audio'])).rows[0];
+  assert.equal(audioOutput.id, response.jobId + ':audio:0');
+  assert.equal(Number(audioOutput.duration_sec), 124);
+  assert.equal(audioOutput.metadata.measuredDurationSec, 123.4);
+  assert.deepEqual(audioOutput.metadata.mediaFacts, { source: 'probe', durationSec: 123.4 });
   await assert.rejects(runtime.generateAudioRun({ userId, body: { expectedQuote: { inputKey: prepared.inputKey, totalCents: 44, currency: 'USD', expiresAt: Date.now() + 60_000 } } }), /quote changed/);
   assert.equal(fixture.submitted, 1);
   fixture.beforePersist = async jobId => {

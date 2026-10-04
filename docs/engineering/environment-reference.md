@@ -8,7 +8,7 @@ This reference records the environment variables and operational ownership previ
 | --- | --- | --- |
 | `FAL_KEY` / `FAL_API_KEY` | Server | Fal.ai API key used by server-side provider access. Prefer `FAL_KEY` on Vercel. |
 | `GOOGLE_VERTEX_PROJECT_ID` / `GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON` | Server | Google Vertex AI project and service account for direct Google providers such as Veo and Lyria 3. |
-| `GOOGLE_VERTEX_LYRIA_ENABLED` | Server, optional | Enables Google Vertex Lyria 3 as the primary `generate audio` music provider when credentials are configured. Set `0` to force Fal music providers. |
+| `GOOGLE_VERTEX_LYRIA_ENABLED` | Server, optional | Enables Google Vertex Lyria 3 for `generate audio` music when credentials are configured. Set `0` to make music unavailable; this does not switch to a Fal provider. |
 | `GOOGLE_VERTEX_LYRIA_LOCATION` | Server, optional | Vertex location for Lyria 3 interactions. Defaults to `global`. |
 | `NEXT_PUBLIC_SUPABASE_URL` | Public | Supabase Auth project URL used by the browser. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public | Supabase Auth anonymous key. |

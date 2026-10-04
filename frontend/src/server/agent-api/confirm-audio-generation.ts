@@ -1,3 +1,5 @@
+import { mapOutputRow, type DbJobOutputRow } from '@/server/media-library-records';
+import { promoteCompletedMcpJobOutputs } from '@/server/media-library/mcp-output-assets';
 import { getAudioPackConfig } from '@/lib/audio-generation';
 import { query, withDbTransaction, type QueryExecutor, type TransactionQueryExecutor } from '@/lib/db';
 import { loadPricingPolicyOverridesWithExecutor } from '@/lib/pricing-rule-store';
@@ -11,17 +13,18 @@ import { computeCanonicalAudioBillingSnapshot } from '@/server/pricing/quote-bil
 
 import { isAudioRunCapabilityAvailable, listAudioCapabilities } from './audio-capabilities';
 import { audioRequestToGenerationBody, hashCanonicalAudioRequest, type CanonicalAudioRequest } from './audio-normalization';
-import { audioQuoteRepository } from './audio-quote-repository';
+import { audioQuoteRepository, audioQuoteRepositoryForActor } from './audio-quote-repository';
 import {
   parseAudioQuoteExecutionEvidence,
   sameAudioReferenceEvidence,
   type AudioQuoteExecutionEvidence,
   type ResolvedAudioReference,
 } from './audio-quote-snapshot';
-import { resolveOwnedAudioReference } from './audio-reference-assets';
+import { resolveOwnedAudioReferenceForActor } from './audio-reference-assets';
 import { AgentApiError } from './errors';
 import { stableJson } from './generation-normalization';
 import type { AgentPrincipal } from './principal';
+import {requireAudioGenerationActor, quoteMatchesActor, type GenerationActor} from './generation-actor';
 import type { LockedOwnedQuote, McpGenerationQuote, OwnedQuoteInput, OwnedQuoteJobInput } from './quote-repository';
 import { checkMcpConfirmationSpendingLimits, MCP_SPENDING_APPROVAL_PATH, type McpSpendingDecision } from './spending-limits';
 
@@ -50,7 +53,7 @@ export type ConfirmAudioGenerationDependencies = {
   markQuoteExpired(input: OwnedQuoteInput, dependencies: { executor: TransactionQueryExecutor; expiredAt: Date }): Promise<AudioQuote | null>;
   getAccountRestriction(userId: string, dependencies: { executor: TransactionQueryExecutor }): Promise<AccountRestriction>;
   listCapabilities(): AudioCapabilities;
-  resolveReference(principal: AgentPrincipal, reference: CanonicalAudioRequest['references'][number], dependencies: { executor: QueryExecutor }): Promise<ResolvedAudioReference>;
+  resolveReference(principal: GenerationActor, reference: CanonicalAudioRequest['references'][number], dependencies: { executor: QueryExecutor }): Promise<ResolvedAudioReference>;
   priceCurrentRun(request: CanonicalAudioRequest, evidence: AudioQuoteExecutionEvidence, references: ResolvedAudioReference[], dependencies: { executor: TransactionQueryExecutor; userId: string }): Promise<PreparedAudioRun>;
   checkSpendingLimits(input: { userId: string; priceCents: number; currency: string }, dependencies: { executor: TransactionQueryExecutor }): Promise<McpSpendingDecision>;
   buildReservation(prepared: PreparedAudioRun, userId: string): Reservation;
@@ -59,6 +62,7 @@ export type ConfirmAudioGenerationDependencies = {
   executeRun(input: ReservedAudioRun): Promise<unknown>;
   markQuoteAccepted(input: OwnedQuoteJobInput): Promise<AudioQuote | null>;
   markQuoteFailed(input: OwnedQuoteJobInput): Promise<AudioQuote | null>;
+  promoteOutputs(input: { userId: string; jobId: string }): Promise<void>;
   readAudioStatus(input: { userId: string; jobId: string }): Promise<AudioGenerationConfirmation | null>;
   accountUrl: string;
 };
@@ -206,6 +210,34 @@ async function readAudioStatus(
   };
 }
 
+/** A bounded confirmation mutation, never a library read repair or a provider retry. */
+export async function promoteConfirmedAudioOutputs(
+  input: { userId: string; jobId: string },
+  dependencies: { executor: QueryExecutor; promote: typeof promoteCompletedMcpJobOutputs } = {
+    executor: { query }, promote: promoteCompletedMcpJobOutputs,
+  },
+): Promise<void> {
+  const rows = await dependencies.executor.query<DbJobOutputRow>(
+    `SELECT o.* FROM job_outputs o
+       JOIN app_jobs j ON j.job_id = o.job_id AND j.user_id = o.user_id
+      WHERE o.job_id = $1 AND o.user_id = $2 AND j.user_id = $2
+        AND j.surface = 'audio' AND j.status = 'completed' AND j.hidden IS NOT TRUE
+        AND o.status = 'ready'`,
+    [input.jobId, input.userId],
+  );
+  const outputs = rows.filter(row => row.user_id === input.userId && row.job_id === input.jobId && row.status === 'ready').map(mapOutputRow);
+  if (outputs.length) await dependencies.promote(outputs);
+}
+
+async function promoteCompletedStatus(status: AudioGenerationConfirmation, userId: string, dependencies: ConfirmAudioGenerationDependencies) {
+  if (status.status !== 'completed') return;
+  try { await dependencies.promoteOutputs({ userId, jobId: status.jobId }); }
+  catch {
+    // The paid result remains completed. An accepted confirmation replay can repair the library.
+    console.warn('[mcp-audio] completed output promotion awaits retry', { jobId: status.jobId });
+  }
+}
+
 const defaultDependencies: ConfirmAudioGenerationDependencies = {
   paidGenerationEnabled: () => false,
   withTransaction: callback => withDbTransaction(executor => callback(executor)),
@@ -213,7 +245,7 @@ const defaultDependencies: ConfirmAudioGenerationDependencies = {
   markQuoteExpired: audioQuoteRepository.markQuoteExpired,
   getAccountRestriction: (userId, { executor }) => getActiveAccountRestrictionInExecutor(userId, executor),
   listCapabilities: () => listAudioCapabilities(),
-  resolveReference: (principal, reference, { executor }) => resolveOwnedAudioReference(principal, reference, { executor }),
+  resolveReference: (principal, reference, { executor }) => resolveOwnedAudioReferenceForActor(principal, reference, { executor }),
   priceCurrentRun: defaultPriceCurrentRun,
   checkSpendingLimits: checkMcpConfirmationSpendingLimits,
   buildReservation: buildAudioRunReservation,
@@ -223,24 +255,25 @@ const defaultDependencies: ConfirmAudioGenerationDependencies = {
   markQuoteAccepted: audioQuoteRepository.markQuoteAccepted,
   markQuoteFailed: audioQuoteRepository.markQuoteFailed,
   readAudioStatus,
+  promoteOutputs: promoteConfirmedAudioOutputs,
   accountUrl: 'https://maxvideoai.com',
 };
 
-type TransactionResult = { kind: 'repeat'; jobId: string } | { kind: 'created'; reservation: Reservation } | { kind: 'expired' };
+type TransactionResult = { kind: 'repeat'; jobId: string; accepted: boolean } | { kind: 'created'; reservation: Reservation } | { kind: 'expired' };
 
 async function confirmationTransaction(
   input: ConfirmAudioGenerationInput,
-  principal: AgentPrincipal,
+  principal: GenerationActor,
   dependencies: ConfirmAudioGenerationDependencies,
 ): Promise<TransactionResult> {
   return dependencies.withTransaction(async executor => {
     const owner = { quoteId: input.quoteId, userId: principal.userId, oauthClientId: principal.clientId };
     const locked = await dependencies.lockOwnedQuote(owner, { executor });
-    if (!locked) staleQuote();
+    if (!locked || !quoteMatchesActor(locked.quote, principal)) staleQuote();
     const { quote, databaseNow } = locked;
     if (quote.state === 'claimed' || quote.state === 'accepted' || quote.state === 'failed') {
       if (!quote.jobId) staleQuote();
-      return { kind: 'repeat', jobId: quote.jobId };
+      return { kind: 'repeat', jobId: quote.jobId, accepted: quote.state === 'accepted' };
     }
     if (quote.state === 'expired') return { kind: 'expired' };
     if (quote.state !== 'prepared') staleQuote();
@@ -334,9 +367,23 @@ export async function confirmAudioGeneration(
 ): Promise<AudioGenerationConfirmation> {
   assertInput(input);
   requirePrincipal(principal);
+  return confirmAudioGenerationForActor(input, principal, dependencies);
+}
+
+export async function confirmAudioGenerationForActor(
+  input: ConfirmAudioGenerationInput,
+  principal: GenerationActor,
+  dependencies: ConfirmAudioGenerationDependencies = defaultDependencies,
+): Promise<AudioGenerationConfirmation> {
+  assertInput(input);
+  requireAudioGenerationActor(principal);
   const transaction = await confirmationTransaction(input, principal, dependencies);
   if (transaction.kind === 'expired') staleQuote();
-  if (transaction.kind === 'repeat') return requireStatus(principal.userId, transaction.jobId, dependencies);
+  if (transaction.kind === 'repeat') {
+    const status = await requireStatus(principal.userId, transaction.jobId, dependencies);
+    if (transaction.accepted) await promoteCompletedStatus(status, principal.userId, dependencies);
+    return status;
+  }
   const mutation = {
     quoteId: input.quoteId,
     userId: principal.userId,
@@ -349,17 +396,22 @@ export async function confirmAudioGeneration(
   } catch {
     executionFailed = true;
   }
+  let accepted = false;
   if (executionFailed) {
     await dependencies.markQuoteFailed(mutation).catch(() => null);
   } else {
-    await dependencies.markQuoteAccepted(mutation).catch(() => {
+    const quote = await dependencies.markQuoteAccepted(mutation).catch(() => {
       console.warn('[mcp-audio] completed job quote acceptance awaits reconciliation', {
         jobId: mutation.jobId,
       });
       return null;
     });
+    accepted = Boolean(quote && quote.state === 'accepted' && quote.quoteId === input.quoteId
+      && quote.jobId === mutation.jobId && quoteMatchesActor(quote, principal));
   }
-  return requireStatus(principal.userId, mutation.jobId, dependencies);
+  const status = await requireStatus(principal.userId, mutation.jobId, dependencies);
+  if (accepted) await promoteCompletedStatus(status, principal.userId, dependencies);
+  return status;
 }
 
 export function createConfirmAudioGenerationService(
@@ -369,4 +421,14 @@ export function createConfirmAudioGenerationService(
   const resolved = { ...defaultDependencies, ...dependencies, accountUrl };
   return (input: ConfirmAudioGenerationInput, principal: AgentPrincipal) =>
     confirmAudioGeneration(input, principal, resolved);
+}
+
+export function createConfirmAudioGenerationForActorService(accountUrl: string, dependencies: Partial<ConfirmAudioGenerationDependencies> = {}) {
+  return (input: ConfirmAudioGenerationInput, actor: GenerationActor) => {
+    requireAudioGenerationActor(actor);
+    const quotes = audioQuoteRepositoryForActor(actor);
+    return confirmAudioGenerationForActor(input, actor, {...defaultDependencies,
+      lockOwnedQuote: quotes.lockOwnedQuote, markQuoteExpired: quotes.markQuoteExpired, claimPreparedQuote: quotes.claimPreparedQuote,
+      markQuoteAccepted: quotes.markQuoteAccepted, markQuoteFailed: quotes.markQuoteFailed, ...dependencies, accountUrl});
+  };
 }

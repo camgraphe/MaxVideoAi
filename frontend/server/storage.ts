@@ -787,9 +787,11 @@ export async function createSignedDownloadUrl(
   {
     expiresInSeconds,
     downloadFilename,
+    method = 'GET',
   }: {
     expiresInSeconds: number;
     downloadFilename?: string;
+    method?: 'GET' | 'HEAD';
   },
 ): Promise<string> {
   const client = getS3Client();
@@ -799,7 +801,7 @@ export async function createSignedDownloadUrl(
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '')
     .slice(0, 160);
-  const command = new GetObjectCommand({
+  const command = method === 'HEAD' ? new HeadObjectCommand({ Bucket: S3_BUCKET, Key: key }) : new GetObjectCommand({
     Bucket: S3_BUCKET,
     Key: key,
     ...(safeDownloadFilename
@@ -820,6 +822,7 @@ const OWNED_MEDIA_STORAGE_PREFIXES = [
   'user-asset-thumbs',
   'media-assets',
   'user-assets',
+  'inline',
   'upscale',
   'angle',
   'renders',
@@ -828,11 +831,11 @@ const OWNED_MEDIA_STORAGE_PREFIXES = [
 
 export function isOwnedMediaStorageKey(params: { key: string; userId: string }): boolean {
   if (!params.key || !params.userId) return false;
-  return OWNED_MEDIA_STORAGE_PREFIXES.some((prefix) => isStorageKeyWithinUserPrefix({
-    key: params.key,
-    prefix,
-    userId: params.userId,
-  }));
+  const contentOwner = createHash('sha256').update(params.userId).digest('hex').slice(0, 32);
+  return OWNED_MEDIA_STORAGE_PREFIXES.some((prefix) =>
+    isStorageKeyWithinUserPrefix({ key: params.key, prefix, userId: params.userId })
+    || isStorageKeyWithinUserPrefix({ key: params.key, prefix: `${prefix}/by-content`, userId: contentOwner }),
+  );
 }
 
 export function ownedMediaStorageKeyForUrl(params: { url: string; userId: string }): string | null {

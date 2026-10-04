@@ -6,6 +6,7 @@ import { AgentApiError } from './errors';
 import type { CanonicalAudioRequest } from './audio-normalization';
 import type { ResolvedAudioReference } from './audio-quote-snapshot';
 import type { AgentPrincipal } from './principal';
+import {requireGenerationActor, type GenerationActor} from './generation-actor';
 
 type AudioReferenceRow = {
   original_url: unknown;
@@ -58,6 +59,15 @@ export async function resolveOwnedAudioReference(
   if (!principal || principal.authMethod !== 'oauth' || !principal.userId?.trim()) {
     throw new AgentApiError('AUTH_REQUIRED', 'Connect MaxVideoAI before using reference media.');
   }
+  return resolveOwnedAudioReferenceForActor(principal, reference, dependencies);
+}
+
+export async function resolveOwnedAudioReferenceForActor(
+  principal: GenerationActor,
+  reference: CanonicalAudioRequest['references'][number],
+  dependencies: {executor?: QueryExecutor} = {},
+): Promise<ResolvedAudioReference> {
+  requireGenerationActor(principal);
   const parsed = toolAssetRefSchema.safeParse(reference.asset);
   if (!parsed.success) invalidReference();
   const expectedKind = reference.role === 'source_video' ? 'video' : 'audio';

@@ -366,6 +366,8 @@ test('same-quote video/image races, distinct-quote cap race, and expiry wait exe
     '--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', quoteLifetimeMigrationPath,
   );
   assert.equal(quoteLifetimeMigration.status, 0, commandFailure(quoteLifetimeMigration));
+  const scopeMigration = psql('--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', join(root, 'neon/migrations/49_studio_generation_scope.sql'));
+  assert.equal(scopeMigration.status, 0, commandFailure(scopeMigration));
   const schema = psql('-v', 'ON_ERROR_STOP=1', '-c', `
     CREATE TABLE app_receipts (
       id bigserial PRIMARY KEY, user_id text NOT NULL, type text NOT NULL, amount_cents integer NOT NULL,

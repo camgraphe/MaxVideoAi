@@ -10,8 +10,10 @@ const archiveContentSchema = z.object({
   historyBody: text,
   historyLabel: text,
   examplesLabel: text,
-  sourcesLabel: text,
-  sourceUrl: z.string().url().optional(),
+  source: z.object({
+    label: text,
+    href: z.string().url().refine((href) => href.startsWith('https://'), 'Archive sources must use HTTPS'),
+  }).strict().optional(),
   alternatives: z.array(z.object({
     modelId: text,
     title: text,

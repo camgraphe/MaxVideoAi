@@ -161,7 +161,9 @@ test('GitHub content engine parses every proof-led calendar unit and release dra
     const manifestAsset = manifestAssets.get(relativeAsset);
     assert.ok(manifestAsset, `${unit.title} proof image must be declared in github-asset-manifest.json`);
     assert.equal(manifestAsset!.kind, 'product_proof', `${unit.title} proof image must be product proof`);
-    assert.equal(manifestAsset!.state, 'publishable_proof', `${unit.title} proof image must be publishable proof`);
+    const historicalRelease=/social\/release-0\.3\.[023]\.png$/.test(relativeAsset);
+    assert.equal(manifestAsset!.state, historicalRelease?'reference_only':'publishable_proof', `${unit.title} must preserve current versus archival evidence`);
+    if(historicalRelease)assert.match(unit.body,/draft|do not publish/i,'archival release art cannot authorize a current publication');
 
     const adjacentBoundary = unit.body.slice((image!.index ?? 0) + image![0].length, (image!.index ?? 0) + image![0].length + 750);
     assert.match(

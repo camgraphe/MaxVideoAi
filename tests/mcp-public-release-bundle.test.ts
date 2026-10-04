@@ -858,6 +858,30 @@ test('release builder rejects an output directory inside its source tree', (t) =
   assert.match(`${result.stderr}\n${result.stdout}`, /output path.*inside.*source/i);
 });
 
+// Version-gate fixtures explicitly qualify their synthetic 0.3.0 artwork. The real
+// repository record is archival and must not be promoted merely to run these tests.
+function version03ManifestFixture(temporary: string): string {
+  const path = join(temporary, 'qualified-version-03-assets.json');
+  writeManifestFixture(path, (manifest) => {
+    const asset = manifest.assets.find((asset) => asset.id === 'release-0-3-0')!;
+    asset.state = 'publishable_proof';
+    asset.freshnessStatus = 'current';
+    asset.lastReviewedAt = new Date().toISOString();
+  });
+  return path;
+}
+
+test('historical release artwork cannot authorize a new versioned bundle', (t) => {
+  const temporary = mkdtempSync(join(safeTemporaryRoot, 'maxvideoai-plugin-archival-'));
+  t.after(() => rmSync(temporary, { recursive: true, force: true }));
+  const fixture = join(temporary, 'source-copy');
+  cpSync(source, fixture, { recursive: true });
+  addVersion03Metadata(fixture);
+  const result = runBuilder(fixture, join(temporary, 'out'), defaultAssetManifest);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /exported asset must be publishable_proof.*release-0\.3\.0/);
+});
+
 test('version 0.3.0 requires discovery metadata and its release asset', async (t) => {
   const temporary = mkdtempSync(join(safeTemporaryRoot, 'maxvideoai-plugin-version-gate-'));
   t.after(() => rmSync(temporary, { recursive: true, force: true }));
@@ -870,7 +894,7 @@ test('version 0.3.0 requires discovery metadata and its release asset', async (t
       addVersion03Metadata(fixture);
       rmSync(join(fixture, missingFile), { force: true });
 
-      const result = runBuilder(fixture, join(temporary, `out-${index}`), defaultAssetManifest);
+      const result = runBuilder(fixture, join(temporary, `out-${index}`), version03ManifestFixture(temporary));
       assert.notEqual(result.status, 0, `0.3.0 package without ${missingFile} unexpectedly passed`);
       assert.match(
         `${result.stderr}\n${result.stdout}`,
@@ -888,7 +912,7 @@ test('a complete 0.3.0 fixture exports its version-aware metadata and release as
   cpSync(source, fixture, { recursive: true });
   addVersion03Metadata(fixture);
 
-  const result = runBuilder(fixture, out, defaultAssetManifest);
+  const result = runBuilder(fixture, out, version03ManifestFixture(temporary));
   assert.equal(result.status, 0, result.stderr || result.stdout);
 
   const expectedPublicFiles = expectedPublicFilesForVersion('0.3.0');
@@ -920,7 +944,7 @@ test('version 0.3.0 requires an explicit marketplace plugin version', (t) => {
   delete marketplace.plugins[0].version;
   writeFileSync(marketplacePath, `${JSON.stringify(marketplace, null, 2)}\n`);
 
-  const result = runBuilder(fixture, join(temporary, 'out'), defaultAssetManifest);
+  const result = runBuilder(fixture, join(temporary, 'out'), version03ManifestFixture(temporary));
   assert.notEqual(result.status, 0, '0.3.0 package without a marketplace plugin version unexpectedly passed');
   assert.match(`${result.stderr}\n${result.stdout}`, /marketplace.*explicit version.*0\.3\.0/i);
 });
@@ -933,7 +957,7 @@ test('marketplace version must match when the schema carries one', (t) => {
   addVersion03Metadata(fixture);
   setMarketplacePluginVersion(fixture, '9.9.9');
 
-  const result = runBuilder(fixture, join(temporary, 'out'), defaultAssetManifest);
+  const result = runBuilder(fixture, join(temporary, 'out'), version03ManifestFixture(temporary));
   assert.notEqual(result.status, 0, 'mismatched marketplace version unexpectedly passed');
   assert.match(`${result.stderr}\n${result.stdout}`, /marketplace.*version.*0\.3\.0/i);
 });

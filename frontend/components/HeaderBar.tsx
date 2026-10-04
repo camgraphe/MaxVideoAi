@@ -3,10 +3,9 @@
 import clsx from 'clsx';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState, useId } from 'react';
-import { ChevronDown, Moon, Sun } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { ReconsentPrompt } from '@/components/legal/ReconsentPrompt';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
-import { useThemePreference } from '@/hooks/useThemePreference';
 import { isAppExperiencePath } from '@/lib/app-experience-path';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -32,7 +31,7 @@ import { useHeaderAccountState } from '@/components/header/useHeaderAccountState
 import { buildAuthReturnTarget, buildLoginHref } from '@/lib/auth-entry-href';
 import { canShowStudioNavigation } from '@/components/app/app-navigation';
 
-export function HeaderBar() {
+export function HeaderBar({ localQa = false }: { localQa?: boolean } = {}) {
   const { locale, t } = useI18n();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -42,7 +41,6 @@ export function HeaderBar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState<Record<string, boolean>>({});
   const [desktopDropdownOpen, setDesktopDropdownOpen] = useState<string | null>(null);
-  const { resolvedTheme: theme, toggleTheme } = useThemePreference();
   const desktopDropdownCloseTimeout = useRef<number | null>(null);
   const avatarRef = useRef<HTMLButtonElement>(null);
 
@@ -58,10 +56,6 @@ export function HeaderBar() {
   const ctaLabel = t('nav.cta', 'Generate');
   const createAccountMobile = locale === 'fr' ? 'Créer' : locale === 'es' ? 'Crear' : 'Create';
   const signInMobile = locale === 'fr' ? 'Connexion' : locale === 'es' ? 'Entrar' : 'Sign in';
-  const themeToggleLabel =
-    theme === 'dark'
-      ? t('workspace.header.themeToggle.toLight', 'Switch to light theme')
-      : t('workspace.header.themeToggle.toDark', 'Switch to dark theme');
   const serviceNoticeEnv = process.env.NEXT_PUBLIC_SERVICE_NOTICE;
   const envNotice =
     serviceNoticeEnv && serviceNoticeEnv.toLowerCase() === 'off'
@@ -216,8 +210,8 @@ export function HeaderBar() {
       ) : null}
       {isAppExperiencePath(pathname) ? (
         <header className="app-connected-header">
-          <AppSiteMenu email={email} authResolved={authResolved} isAdmin={isAdmin} signinHref={signinHref} signupHref={signupHref} themeToggleLabel={themeToggleLabel} onToggleTheme={toggleTheme} onSignOut={handleSignOut}>
-            <HeaderWalletStatus walletLoading={walletLoading} promptId={walletPromptId} t={t} wallet={wallet} walletPromptOpen={walletPromptOpen} onOpenPrompt={openWalletPrompt} onSchedulePromptClose={scheduleWalletPromptClose} />
+          <AppSiteMenu email={email} authResolved={authResolved} isAdmin={isAdmin} signinHref={signinHref} signupHref={signupHref} onSignOut={handleSignOut}>
+            <HeaderWalletStatus localQa={localQa} walletLoading={walletLoading} promptId={walletPromptId} t={t} wallet={wallet} walletPromptOpen={walletPromptOpen} onOpenPrompt={openWalletPrompt} onSchedulePromptClose={scheduleWalletPromptClose} />
           </AppSiteMenu>
         </header>
       ) : <header
@@ -386,6 +380,7 @@ export function HeaderBar() {
 
         <div className="flex min-w-0 shrink-0 items-center justify-end gap-2 text-xs text-text-muted sm:gap-3">
           <HeaderWalletStatus
+            localQa={localQa}
             walletLoading={walletLoading}
             promptId={walletPromptId}
             t={t}
@@ -396,18 +391,6 @@ export function HeaderBar() {
           />
           <div className="hidden items-center gap-1 md:flex">
             <AppLanguageToggle />
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-10 w-10 rounded-full border border-transparent p-0 text-text-secondary hover:border-hairline hover:bg-surface-2 hover:text-text-primary"
-              aria-label={themeToggleLabel}
-              onClick={toggleTheme}
-            >
-              <span className="inline-flex h-4 w-4 items-center justify-center">
-                <UIIcon icon={theme === 'dark' ? Sun : Moon} size={16} strokeWidth={1.75} />
-              </span>
-            </Button>
           </div>
           <div className="flex w-40 shrink-0 justify-end sm:w-[205px]">
             {email ? (
@@ -450,8 +433,6 @@ export function HeaderBar() {
           mobileDropdownOpen={mobileDropdownOpen}
           pathname={pathname}
           t={t}
-          theme={theme}
-          themeToggleLabel={themeToggleLabel}
           onClose={() => setMobileMenuOpen(false)}
           onToggleDropdown={(key) =>
             setMobileDropdownOpen((prev) => ({
@@ -459,7 +440,6 @@ export function HeaderBar() {
               [key]: !prev[key],
             }))
           }
-          onToggleTheme={toggleTheme}
         />
       ) : null}
       <ReconsentPrompt enabled={authResolved && isAuthenticated} />

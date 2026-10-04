@@ -74,7 +74,9 @@ export function registerRecommendModelsTool(
         'Mix models only when each shot has a factual rationale; do not force diversity or dilute a quality-first plan.',
         'Do not use when the user already chose a compatible model for validation, pricing or execution.',
         'Never substitute a named model without user approval.',
-        'Recommendations are capability matches. Do not use them as an exact quote, generation command, or guarantee that a provider will accept a request.',
+        'Use returned editorialGuidance: reference entries are reviewed starting points, alternative entries serve meaningful tradeoffs, and on_request entries are for explicit requests. Inspect reviewStatus, reviewedAt, rationale and provenance. Editorial preference is not measured quality or execution certification; a new version never inherits a review from its family.',
+        'An idea, a prompt or a single asset can be a complete outcome; do not require a film or a multi-step recipe.',
+        'Recommendations are capability matches with disclosed editorial preference. Do not use as an exact quote, generation command or guarantee that a provider will accept a request. Respect executable constraints and the user’s choice.',
       ].join(' '),
       inputSchema: recommendModelsInputSchema,
       annotations: {

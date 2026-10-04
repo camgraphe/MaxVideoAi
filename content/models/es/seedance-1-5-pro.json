@@ -2,15 +2,15 @@
   "marketingName": "Seedance 1.5 Pro",
   "versionLabel": "v1.5 Pro",
   "seo": {
-    "title": "Seedance 1.5 Pro | Modelo de video IA, specs y precios | MaxVideoAI",
-    "description": "Usa el modelo Seedance 1.5 Pro aún compatible en MaxVideoAI para clips cortos, y pasa a Seedance 2.0 para el workflow Seedance actual.",
+    "title": "Seedance 1.5 Pro: modelo histórico",
+    "description": "Seedance 1.5 Pro ya no está disponible para nuevas generaciones en MaxVideoAI. Tus vídeos existentes permanecen en tu biblioteca. Explora Seedance 2.5 para un nuevo proyecto.",
     "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a0297366-57f7-4ca8-b3b6-f02c7da4d7f2-job_3f82e69d-ef44-4c46-aded-16d06dd4a1ab.jpg"
   },
   "overview": "Seedance 1.5 Pro sigue disponible como workflow Seedance Pro anterior aún compatible para clips cinematográficos cortos, variantes repetibles y setups camera_fixed.",
   "pricingNotes": "La tarificación varía por resolución; audio off cuesta aprox. 50% menos que audio on.",
   "hero": {
-    "title": "Seedance 1.5 Pro — modelo Seedance anterior aún compatible para clips cinematográficos cortos",
-    "intro": "Seedance 1.5 Pro sigue disponible como workflow Seedance Pro anterior aún compatible para clips cinematográficos cortos y repetibles, mientras que Seedance 2.0 es ahora el modelo Seedance principal para una mejor continuidad multi-shot, audio más rico y workflows de referencia más amplios.",
+    "title": "Seedance 1.5 Pro: modelo histórico",
+    "intro": "Seedance 1.5 Pro ya no está disponible para nuevas generaciones en MaxVideoAI. Tus vídeos existentes permanecen en tu biblioteca. Explora Seedance 2.5 para un nuevo proyecto.",
     "badge": "480p–1080p · 4–12 s · Audio on/off",
     "ctaPrimary": {
       "label": "Explorar modelos actuales",
@@ -209,7 +209,7 @@
   "decision": {
     "modelSlug": "seedance-1-5-pro",
     "hero": {
-      "eyebrow": "RUTA SEEDANCE PRO ANTERIOR COMPATIBLE",
+      "eyebrow": "MODELO SEEDANCE HISTÓRICO",
       "title": "Seedance 1.5 Pro",
       "subtitle": "Tomas camera-fixed, variantes con seed y control de frame inicial/final para workflows Seedance anteriores.",
       "subtitleHighlights": [
@@ -217,7 +217,7 @@
         "variantes con seed",
         "control de frame inicial/final"
       ],
-      "paragraph": "Usa Seedance 1.5 Pro cuando necesitas la ruta Seedance anterior aún compatible: clips cortos repetibles, audio opcional, seed, camera_fixed y cierres image-to-video. Usa Seedance 2.0 para la ruta actual.",
+      "paragraph": "Seedance 1.5 Pro ya no está disponible para nuevas generaciones en MaxVideoAI. Tus vídeos existentes permanecen en tu biblioteca. Explora Seedance 2.5 para un nuevo proyecto.",
       "primaryCta": {
         "label": "Explorar modelos actuales",
         "href": "/es/modelos"
@@ -341,8 +341,8 @@
       "ctaHref": "/es/precios#seedance-1-5-pro-pricing"
     },
     "meta": {
-      "title": "Seedance 1.5 Pro: precios y camera fixed | MaxVideoAI",
-      "description": "Explora precios de Seedance 1.5 Pro, ejemplos, camera_fixed, seed, audio on/off y workflows con frame inicial/final. Compara Seedance 1.5 Pro vs Seedance 2.0."
+      "title": "Seedance 1.5 Pro: modelo histórico",
+      "description": "Seedance 1.5 Pro ya no está disponible para nuevas generaciones en MaxVideoAI. Tus vídeos existentes permanecen en tu biblioteca. Explora Seedance 2.5 para un nuevo proyecto."
     }
   },
   "prompting": {
@@ -520,8 +520,6 @@
     "historyBody": "Tus vídeos de Seedance 1.5 Pro permanecen en la biblioteca con su modelo y proveedor originales. Todavía puedes ver y descargar los resultados disponibles. Comprueba la configuración y el presupuesto actual antes de crear con otro modelo.",
     "historyLabel": "Abrir mi biblioteca",
     "examplesLabel": "Explorar ejemplos de Seedance",
-    "sourcesLabel": "Leer el aviso del proveedor",
-    "sourceUrl": "https://docs.byteplus.com/en/docs/ModelArk/1350667",
     "alternatives": [
       {
         "modelId": "seedance-2-0-mini",
@@ -538,6 +536,10 @@
         "title": "Seedance 2.5",
         "description": "Explora la creación actual en 1080p y los flujos de referencia compatibles. Revisa el modo, las capacidades y el presupuesto antes de generar."
       }
-    ]
+    ],
+    "source": {
+      "label": "Leer el aviso del proveedor",
+      "href": "https://docs.byteplus.com/en/docs/ModelArk/1350667"
+    }
   }
 }

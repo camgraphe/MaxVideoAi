@@ -374,10 +374,10 @@ export async function inspectLiveMcpMetadata(): Promise<RegistryEvidence> {
     );
 
     const instructions = client.getInstructions() ?? '';
-    if (!/host owns creative discussion and prompts/i.test(instructions)) {
+    if (!/host owns creative discussion, prompts/i.test(instructions)) {
       throw new Error('server instructions must keep creative work with the host agent');
     }
-    if (!/use live facts, not model memory/i.test(instructions)) {
+    if (!/use live facts, not memory/i.test(instructions)) {
       throw new Error('server instructions must require live facts and prices');
     }
     const budgetDescription = toolByName.get('calculate_project_budget')?.description ?? '';
@@ -391,10 +391,10 @@ export async function inspectLiveMcpMetadata(): Promise<RegistryEvidence> {
     if (!/recommendations are capability matches.*do not use.*exact quote.*guarantee/i.test(recommendationDescription)) {
       throw new Error('recommendations description must reject quote and provider guarantees');
     }
-    if (!/recommend_models only for an open choice/i.test(instructions)) {
+    if (!/recommend_models for an open choice/i.test(instructions)) {
       throw new Error('server instructions must preserve an explicit model choice');
     }
-    if (!/never substitute a named model without user approval/i.test(instructions)) {
+    if (!/never substitute a named model without approval/i.test(instructions)) {
       throw new Error('server instructions must prohibit silent model substitution');
     }
     if (!/clarify whether quality means story coherence.*delivery resolution.*never rank creative quality by resolution/i.test(recommendationDescription)) {

@@ -140,9 +140,8 @@ test('runtime model projection matches every baseline identity and surface', () 
       actualPublication.examples = expected.publication.examples;
     }
     assert.deepEqual(actualPublication, archived ? {
-      ...expected.publication,
-      ...(expected.id === 'seedance-1-5-pro' ? { examples: { ...expected.publication.examples, includeInFamilyCopy: false } } : {}),
-      app: { enabled: false }, pricing: { includeInEstimator: false },
+      ...expected.publication, app: { enabled: false }, pricing: { includeInEstimator: false },
+      examples: { ...expected.publication.examples, ...(expected.id === 'seedance-1-5-pro' ? { includeInFamilyCopy: false } : {}) },
     } : expected.publication);
   }
 });
@@ -229,10 +228,10 @@ test('canonical lifecycle classifies every approved non-current model and author
     'ltx-2-3': 'legacy',
     'ltx-2-3-fast': 'legacy',
     'ltx-2-fast': 'deep_legacy',
-    'seedance-1-5-pro': 'deep_legacy',
     lumaRay2: 'legacy',
     lumaRay2_flash: 'legacy',
     'nano-banana': 'legacy',
+    'seedance-1-5-pro': 'deep_legacy',
     'sora-2': 'deep_legacy',
     'sora-2-pro': 'deep_legacy',
     'wan-2-5': 'deep_legacy',

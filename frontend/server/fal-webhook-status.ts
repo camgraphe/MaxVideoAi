@@ -39,3 +39,15 @@ export function isFailedFalStatus(status: string | null | undefined): boolean {
   if (!status) return false;
   return FAILED_STATUSES.has(status.toUpperCase());
 }
+
+export function normalizeFalQueueLogStatus(status: string | null | undefined): string {
+  const lower = (status ?? 'running').toString().toLowerCase();
+  if (lower === 'completed') return 'completed';
+  if (['failed', 'error', 'errored', 'canceled', 'cancelled', 'aborted'].includes(lower)) {
+    return 'failed';
+  }
+  if (['queued', 'running', 'in_progress', 'processing', 'pending'].includes(lower)) {
+    return 'running';
+  }
+  return lower;
+}

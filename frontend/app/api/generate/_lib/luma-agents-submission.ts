@@ -227,6 +227,7 @@ function falProviderJobIdFromResult(result: FalGenerateSubmissionResult, getLast
 }
 
 async function submitFalFromLumaAgents(params: {
+  userId: string;
   attemptIndex: number | null;
   fallbackFromAttemptId: number | null;
   fallbackReason?: string | null;
@@ -282,6 +283,7 @@ async function submitFalFromLumaAgents(params: {
     queryFn: params.queryFn,
   });
   const falSubmission = await params.submitFalGenerateTaskFn({
+    userId: params.userId,
     falPayload: params.falPayload,
     jobId: params.jobId,
     engineId: params.engineId,
@@ -399,6 +401,7 @@ export async function submitLumaAgentsGenerateTask(params: {
       reason: support.reason,
     });
     return submitFalFromLumaAgents({
+      userId: params.userId,
       attemptIndex: null,
       fallbackFromAttemptId: null,
       fallbackReason: support.reason,
@@ -590,6 +593,7 @@ export async function submitLumaAgentsGenerateTask(params: {
     }
 
     return submitFalFromLumaAgents({
+      userId: params.userId,
       attemptIndex: 2,
       fallbackFromAttemptId: lumaAttempt.id,
       fallbackReason: normalized.errorClass,

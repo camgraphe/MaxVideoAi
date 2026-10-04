@@ -12,6 +12,8 @@ import {
 } from '../frontend/src/server/agent-api/model-catalog';
 import type { EngineCaps } from '../frontend/types/engines';
 
+test.beforeEach(context=>context.mock.timers.enable({apis: ['Date'],now: new Date('2026-10-03T12:00:00Z')}));
+
 function candidate(
   id: string,
   options: {
@@ -102,6 +104,74 @@ test('Sora remains historical by exact choice and cannot generate or be recommen
   }
 });
 
+test('explicit Pika preference and exact ID remain eligible without default recommendation', async () => {
+  const catalogDeps = realRegistryDeps();
+  for (const input of [{ preferredModelIds: ['pika-text-to-video'] }, { id: 'pika-text-to-video' }]) {
+    const result = await recommendAgentModels({ ...input, mode: 't2v' }, catalogDeps);
+    const preferred = result.recommendations[0];
+    assert.equal(preferred?.model.id, 'pika-text-to-video');
+    assert.equal(preferred.model.recommendedByDefault, false);
+    assert.equal(preferred.editorialGuidance?.level, 'on_request');
+  }
+});
+
+test('explicit preference never restores legacy or archived models to recommendations', async () => {
+  const catalogDeps = realRegistryDeps();
+  const [legacy] = await listAgentModels({ id: 'wan-2-6' }, catalogDeps);
+  assert.equal(legacy.lifecycle, 'legacy');
+  assert.equal(legacy.generationEnabled, true);
+
+  for (const id of ['wan-2-6', 'sora-2']) {
+    const preferred = await recommendAgentModels({ preferredModelIds: [id] }, catalogDeps);
+    assert.equal(preferred.recommendations.some((entry) => entry.model.id === id), false);
+    const exact = await recommendAgentModels({ id, preferredModelIds: [id] }, catalogDeps);
+    assert.deepEqual(exact.recommendations, []);
+  }
+});
+
+test('current editorial references lead broad matches while Pika stays discoverable on request', async () => {
+  const catalogDeps = deps([candidate('pika-text-to-video'),candidate('minimax-h3'),candidate('seedance-2-5'),candidate('wan-3'),candidate('kling-o3-pro')]);
+  const broad = await recommendAgentModels({surface: 'video'},catalogDeps);
+  assert.deepEqual(new Set(broad.recommendations.map(entry=>entry.model.id)),new Set(['seedance-2-5','wan-3','kling-o3-pro']));
+  assert.ok(broad.recommendations.every(entry=>entry.editorialGuidance?.level==='reference'));
+  assert.ok(broad.recommendations.every(entry=>entry.reasons.some(reason=>/editorial/i.test(reason))));
+  const discoverable = await listAgentModels({id: 'pika-text-to-video'},catalogDeps);
+  assert.equal(discoverable[0]?.id,'pika-text-to-video');
+  const explicit = await recommendAgentModels({preferredModelIds: ['pika-text-to-video']},catalogDeps);
+  assert.equal(explicit.recommendations[0]?.model.id,'pika-text-to-video');
+  const details = await getAgentModelDetails('pika-text-to-video',catalogDeps);
+  assert.equal(details.editorialGuidance?.level,'on_request');
+});
+
+test('explicit executable choice outranks editorial and soft priorities while exclusions and hard caps win', async () => {
+  const catalogDeps = deps([candidate('seedance-2-5',{latencyTier: 'fast',modes: ['t2v','ref2v']}),candidate('pika-text-to-video')]);
+  const preferred = await recommendAgentModels({preferredModelIds: ['pika-text-to-video'],priorities: ['speed']},catalogDeps);
+  assert.equal(preferred.recommendations[0]?.model.id,'pika-text-to-video');
+  const incompatible = await recommendAgentModels({mode: 'ref2v',referenceImages: true,preferredModelIds: ['pika-text-to-video']},catalogDeps);
+  assert.deepEqual(incompatible.recommendations.map(entry=>entry.model.id),['seedance-2-5']);
+  const excluded = await recommendAgentModels({preferredModelIds: ['pika-text-to-video'],excludedModelIds: ['pika-text-to-video']},catalogDeps);
+  assert.deepEqual(excluded.recommendations.map(entry=>entry.model.id),['seedance-2-5']);
+  const unavailable = await recommendAgentModels({},deps([{...candidate('seedance-2-5'),availability: 'unavailable'},candidate('minimax-h3')]));
+  assert.deepEqual(unavailable.recommendations.map(entry=>entry.model.id),['minimax-h3']);
+});
+
+test('editorial reference preference never outweighs requested capabilities or automatically reviews new versions', async () => {
+  const catalogDeps = deps([candidate('seedance-2-5',{modes: ['t2v']}),candidate('minimax-h3',{modes: ['ref2v']}),candidate('seedance-new',{modes: ['ref2v']})]);
+  const result = await recommendAgentModels({mode: 'ref2v',referenceImages: true},catalogDeps);
+  assert.deepEqual(result.recommendations.map(entry=>entry.model.id),['minimax-h3','seedance-new']);
+  assert.equal(result.recommendations[1].editorialGuidance?.reviewStatus,'unreviewed');
+  const specific = await recommendAgentModels({priorities: ['speed']},deps([candidate('seedance-2-5'),candidate('minimax-h3',{latencyTier: 'fast'})]));
+  assert.equal(specific.recommendations[0]?.model.id,'minimax-h3');
+});
+
+test('an overdue editorial review stops boosting a reference while on-request models remain explicit', async context => {
+  context.mock.timers.setTime(new Date('2027-01-02T00:00:00Z').getTime());
+  const result=await recommendAgentModels({},deps([candidate('wan-3'),candidate('alpha'),candidate('pika-text-to-video')]));
+  assert.deepEqual(result.recommendations.map(entry=>entry.model.id),['alpha','wan-3']);
+  assert.equal(result.recommendations[1].editorialGuidance?.reviewStatus,'review_due');
+  assert.ok(result.recommendations[1].tradeoffs.some(reason=>/does not boost/i.test(reason)));
+});
+
 test('H3 Max recommendations derive executable image and reference modes from the shared runtime', async () => {
   const catalogDeps: AgentModelCatalogDeps = {
     ...realRegistryDeps(),
@@ -179,7 +249,7 @@ test('real MiniMax H3 recommendations agree with current per-mode model details'
   assert.ok(compatible.recommendations[0].reasons.some((reason) => reason.includes('16:9')));
 });
 
-test('compatible preferences are a bounded bonus while exclusions and incompatible preferences stay out', async () => {
+test('compatible preferences lead while exclusions and incompatible preferences stay out', async () => {
   const catalogDeps = deps([
     candidate('alpha-fast', { latencyTier: 'fast' }),
     candidate('zulu-preferred'),
@@ -213,7 +283,7 @@ test('factual priorities and reviewed use cases provide deterministic ranking re
   const cases = [
     { input: { priorities: ['speed' as const] }, id: 'fast', reason: /fast latency/i },
     { input: { priorities: ['highest_resolution' as const] }, id: 'four-k', reason: /4K-class/i },
-    { input: { priorities: ['native_audio' as const] }, id: 'audio', reason: /generated audio/i },
+    { input: { priorities: ['native_audio' as const] }, id: 'minimax-h3', reason: /generated audio/i },
     { input: { priorities: ['reference_control' as const] }, id: 'minimax-h3', reason: /reference image/i },
     { input: { priorities: ['longer_clips' as const] }, id: 'long', reason: /longer clip/i },
     { input: { useCase: 'multi_shot' as const }, id: 'minimax-h3', reason: /multi_shot/i },
@@ -244,7 +314,7 @@ test('recommendation reasons stay unique when requested capabilities are also pr
   assert.equal(new Set(reasons).size, reasons.length);
 });
 
-test('reviewed quality fits use the authored discovery order as a deterministic tie-breaker', async () => {
+test('reviewed use-case matches favor editorial references before the discovery tie-breaker', async () => {
   const result = await recommendAgentModels(
     { surface: 'video', mode: 'ref2v', useCase: 'multi_shot', referenceImages: true },
     deps([

@@ -1108,7 +1108,7 @@ test('Studio workspace dark theme keeps key editor surfaces readable', async ({ 
   await expectDarkReadableSurface(shell, 'dark Studio workspace shell');
   await expectDarkReadableSurface(page.locator('[class*="editorTopbar"]').first(), 'dark Studio workspace topbar');
   const appMenu = await openStudioAppMenu(page);
-  await expect(appMenu.getByRole('button', { name: 'Switch Studio to light mode' })).toBeVisible();
+  await expect(appMenu.getByRole('switch', { name: 'Dark appearance' })).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(page.getByRole('button', { name: 'Canvas', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('button', { name: 'Viewer', exact: true })).toBeVisible();
@@ -1158,7 +1158,7 @@ test('Studio workspace can switch to light appearance', async ({ page }) => {
 
   await expectLightReadableSurface(page.locator('[data-studio-theme="light"]'), 'light Studio workspace shell');
   const lightAppMenu = await openStudioAppMenu(page);
-  await expectLightReadableSurface(lightAppMenu.getByRole('button', { name: 'Switch Studio to dark mode' }), 'light Studio theme toggle');
+  await expectLightReadableSurface(lightAppMenu.getByRole('switch', { name: 'Dark appearance' }), 'light Studio theme toggle');
   await page.keyboard.press('Escape');
   await expect(page.getByRole('button', { name: 'Open export dialog' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Save canvas' })).toBeVisible();
@@ -3635,7 +3635,7 @@ test('Studio mobile app menu keeps language and appearance controls usable', asy
   await expect(shell).toBeVisible();
   const appMenu = await openStudioAppMenu(page);
   const languageToggle = appMenu.getByRole('button', { name: 'Change workspace language' });
-  const themeToggle = appMenu.getByRole('button', { name: 'Switch Studio to light mode' });
+  const themeToggle = appMenu.getByRole('switch', { name: 'Dark appearance' });
   await expect(languageToggle).toBeVisible();
   await expect(themeToggle).toBeVisible();
   await themeToggle.click();

@@ -129,6 +129,7 @@ function falProviderJobIdFromResult(result: FalGenerateSubmissionResult, getLast
 }
 
 async function submitFalFromGoogleVeo(params: {
+  userId: string;
   attemptIndex: number | null;
   fallbackFromAttemptId: number | null;
   fallbackReason?: string | null;
@@ -183,6 +184,7 @@ async function submitFalFromGoogleVeo(params: {
     queryFn: params.queryFn,
   });
   const falSubmission = await params.submitFalGenerateTaskFn({
+    userId: params.userId,
     falPayload: params.falPayload,
     jobId: params.jobId,
     engineId: params.engineId,
@@ -320,6 +322,7 @@ export async function submitGoogleVertexVeoGenerateTask(params: {
       reason: support.reason,
     });
     return submitFalFromGoogleVeo({
+      userId: params.userId,
       attemptIndex: null,
       fallbackFromAttemptId: null,
       fallbackReason: support.reason,
@@ -502,6 +505,7 @@ export async function submitGoogleVertexVeoGenerateTask(params: {
     }
 
     return submitFalFromGoogleVeo({
+      userId: params.userId,
       attemptIndex: 2,
       fallbackFromAttemptId: googleAttempt.id,
       fallbackReason: normalized.errorClass,

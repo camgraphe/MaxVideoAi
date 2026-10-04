@@ -20,13 +20,14 @@ const principal: AgentPrincipal = {
 };
 
 test('every capability combination fits the host instruction window without truncation', () => {
-  for (let mask = 0; mask < 32; mask += 1) {
+  for (let mask = 0; mask < 128; mask += 1) {
     const instructions = buildMaxVideoAiMcpInstructions({
       paidGeneration: Boolean(mask & 1),
       referenceUploads: Boolean(mask & 2),
       audioGeneration: Boolean(mask & 4),
       montagePreparation: Boolean(mask & 8),
       studioMontageCreation: Boolean(mask & 16),
+      studioTimelineEditing: Boolean(mask & 32), studioExports: Boolean(mask & 64),
     });
     assert.ok(Buffer.byteLength(instructions, 'utf8') <= 2000,
       `capabilities ${mask}: ${Buffer.byteLength(instructions, 'utf8')} bytes exceeds the 2000-byte host budget`);
@@ -45,6 +46,11 @@ test('the first kilobyte routes video requests and preserves the paid approval b
 });
 
 const services = {
+  async readStudioTimeline() { throw new Error('unused'); },
+  async editStudioTimeline() { throw new Error('unused'); },
+  async prepareStudioExport() { throw new Error('unused'); },
+  async confirmStudioExport() { throw new Error('unused'); },
+  async getStudioExport() { throw new Error('unused'); },
   async prepareMontage() { throw new Error('unused'); },
   async createStudioMontage() { throw new Error('unused'); },
   async getAccountStatus() {
@@ -124,18 +130,20 @@ async function getMetadata(options: MaxVideoAiMcpServerOptions) {
 const allCapabilities = {
   paidGeneration: true, referenceUploads: true, audioGeneration: true,
   montagePreparation: true, studioMontageCreation: true,
+  studioTimelineEditing: true, studioExports: true,
 };
 
 test('discovery routes only to tools actually advertised for every gate combination', async () => {
-  for (let mask = 0; mask < 32; mask += 1) {
+  for (let mask = 0; mask < 128; mask += 1) {
     const options = {
       paidGeneration: Boolean(mask & 1), referenceUploads: Boolean(mask & 2),
       audioGeneration: Boolean(mask & 4), montagePreparation: Boolean(mask & 8),
       studioMontageCreation: Boolean(mask & 16),
+      studioTimelineEditing: Boolean(mask & 32), studioExports: Boolean(mask & 64),
     };
     const { instructions, tools } = await getMetadata(options);
     const names = new Set(tools.map(tool => tool.name));
-    for (const name of instructions.match(/\b(?:get|list|recommend|calculate|prepare|confirm|create|import|present)_[a-z_]+\b/g) ?? []) {
+    for (const name of instructions.match(/\b(?:get|list|recommend|calculate|prepare|confirm|create|import|present|edit)_[a-z_]+\b/g) ?? []) {
       assert.ok(names.has(name), `capabilities ${mask} routes to unavailable ${name}`);
     }
     assert.equal(names.has('confirm_generation'), options.paidGeneration);
@@ -143,6 +151,8 @@ test('discovery routes only to tools actually advertised for every gate combinat
     assert.equal(names.has('create_reference_upload_link'), options.referenceUploads);
     assert.equal(names.has('prepare_montage'), options.montagePreparation);
     assert.equal(names.has('create_studio_montage'), options.studioMontageCreation);
+    assert.equal(names.has('edit_studio_timeline'), options.studioTimelineEditing);
+    assert.equal(names.has('confirm_studio_export'), options.studioExports);
     if (!options.paidGeneration) assert.match(instructions, /generation is not available/i);
   }
 });
@@ -188,8 +198,9 @@ test('recommendation and budget tools retain choice, quality and estimate bounda
   assert.match(d.calculate_project_budget, /estimates do not reserve.*authorize generation/i);
   assert.match(d.calculate_project_budget, /environment.*staging.*production/s);
   const { instructions } = await getMetadata(allCapabilities);
-  assert.match(instructions, /scripts, shot plans.*reference media/i);
-  assert.match(instructions, /named model is unavailable or incompatible.*explain.*ask before alternatives/i);
+  assert.match(instructions, /host owns creative.*prompts.*scripts, shot plans.*reference media/i);
+  assert.match(instructions, /list_recent_generations before any new attempt.*only completed results/i);
+  assert.match(instructions, /named model.*incompatible.*ask before alternatives/i);
   assert.doesNotMatch(instructions, /Seedance|Veo|Kling|best model|highest quality/i);
 });
 
@@ -234,4 +245,26 @@ test('recovery and presentation descriptors preserve status truth and UI fallbac
   assert.match(d.present_generation, /once.*completed.*original Audio/s);
   assert.match(d.present_generation, /same connected.*library.*does not render.*resource link.*fallback/s);
   assert.match(d.present_generation, /do not poll, generate, retry, confirm, or charge/i);
+});
+
+test('editorial model guidance remains dated exact-version policy rather than a measured ranking', async () => {
+  const d = (await descriptions()).recommend_models;
+  assert.match(d, /editorialGuidance.*reference.*alternative.*on_request/s);
+  assert.match(d, /reviewStatus.*reviewedAt.*rationale.*provenance/s);
+  assert.match(d, /not measured quality or execution certification/i);
+  assert.match(d, /new version never inherits a review/i);
+  assert.match(d, /idea.*prompt.*single asset.*complete outcome/i);
+  assert.doesNotMatch(d, /Seedance|Kling|Wan|Pika/);
+});
+
+test('Studio descriptors retain revision, media ownership and exact-export approval boundaries', async () => {
+  const d = await descriptions();
+  assert.match(d.edit_studio_timeline, /expectedRevision.*get_studio_timeline/);
+  assert.match(d.edit_studio_timeline, /owned ready assets.*account-owned completed job-output/);
+  assert.match(d.edit_studio_timeline, /revision conflict.*preserve manual changes.*locked tracks.*integer frames.*source duration/);
+  assert.match(d.prepare_studio_export, /never supply a manifest, media URL or estimate token/);
+  assert.match(d.confirm_studio_export, /explicit human approval.*exact.*quote/);
+  assert.match(d.confirm_studio_export, /recover.*without another render or charge.*fresh quote and new approval/);
+  assert.match(d.get_studio_export, /temporary read access.*artifactDelivery=unavailable.*completed.*checked again/);
+  assert.match(d.get_studio_export, /never starts, retries or charges/i);
 });

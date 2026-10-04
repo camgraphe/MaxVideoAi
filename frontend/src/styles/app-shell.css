@@ -75,6 +75,11 @@
 .app-experience .app-public-menu .app-glyph { width: 15px; height: 15px; color: var(--app-muted); }
 .app-experience .app-site-preferences > div { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 6px 0; font-size: 13px; border-bottom: 1px solid var(--app-line); }
 .app-experience .app-site-preferences button { min-width: 44px; }
+.app-experience .app-site-preferences .app-appearance-toggle { display: inline-flex; align-items: center; gap: 2px; padding: 4px; border: 1px solid var(--app-line); border-radius: 999px; background: var(--app-canvas); color: var(--app-muted); }
+.app-experience .app-appearance-toggle > span { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; transition: color 160ms ease, background-color 160ms ease, box-shadow 160ms ease; }
+.app-experience .app-appearance-toggle > span[data-active="true"] { color: var(--app-ink); background: var(--app-panel); box-shadow: 0 1px 4px #0002; }
+@media (prefers-reduced-motion: reduce) { .app-experience .app-appearance-toggle > span { transition: none; } }
+
 .app-experience .app-site-auth { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 22px; font-size: 13px; }
 .app-experience .app-site-auth > span { overflow-wrap: anywhere; margin-right: auto; }
 .app-experience .app-site-auth a, .app-experience .app-site-auth button { display: flex; align-items: center; padding: 0 12px; border: 1px solid var(--app-line); border-radius: 4px; }

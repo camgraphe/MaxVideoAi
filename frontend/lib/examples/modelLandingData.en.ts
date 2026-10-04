@@ -6,14 +6,14 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     "metaDescription": "These videos were generated with Sora. New Sora generations are closed. Explore Seedance 2.5, MiniMax H3 and Wan 3 for your next video.",
     "heroTitle": "Historical Sora examples",
     "subtitle": "These videos were generated with Sora. New Sora generations are closed. Explore Seedance 2.5, MiniMax H3 and Wan 3 for your next video.",
-    "intro": "Sora generation is closed. OpenAI and fal.ai end the API on September 24, 2026. Choose Seedance 2.5, MiniMax H3 or Wan 3 for a new video. Existing videos remain in your library.",
+    "intro": "Sora generation is closed. The announced API shutdown date was September 24, 2026. Choose Seedance 2.5, MiniMax H3 or Wan 3 for a new video. Existing videos remain in your library.",
     "promptPatterns": "These videos were generated with Sora. New Sora generations are closed. Explore Seedance 2.5, MiniMax H3 and Wan 3 for your next video.",
     "strengthsLimits": "These videos were generated with Sora. New Sora generations are closed. Explore Seedance 2.5, MiniMax H3 and Wan 3 for your next video.",
     "pricingNotes": "Archived models have no current generation price. Choose an available model and review a new quote before generating.",
     "faq": [
         {
             "question": "Can I still generate with Sora?",
-            "answer": "Sora generation is closed. OpenAI and fal.ai end the API on September 24, 2026. Choose Seedance 2.5, MiniMax H3 or Wan 3 for a new video. Existing videos remain in your library."
+            "answer": "Sora generation is closed. The announced API shutdown date was September 24, 2026. Choose Seedance 2.5, MiniMax H3 or Wan 3 for a new video. Existing videos remain in your library."
         },
         {
             "question": "Sora archives and alternatives",

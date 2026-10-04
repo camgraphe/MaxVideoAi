@@ -6,6 +6,46 @@ au [point de contrôle du 22 septembre](../operations/mcp-main-repository-releas
 Les deux essais réels Codex et leurs limites y sont consignés. La validation de
 chaque hôte reste distincte ; consulter le [parcours de mise à jour](../operations/mcp-client-updates.md).
 
+## Studio integration review — 4 October 2026
+
+The Studio branch adds independent timeline-editing and export gates. All **128
+combinations of seven capability gates** must keep global instructions within
+2,000 UTF-8 bytes and exact-quote, explicit-approval and one-attempt rules in the
+first 1,000 bytes when generation is active. Each descriptor keeps its own
+2,000-byte budget. Audio confirmation still requires paid generation. Preserve
+Studio revision conflicts, account-owned media, export quote approval and
+status recovery without another render. The older measurements below describe
+their dated revisions, not the current seven-gate surface.
+
+Recommendations and Studio share the same exact-ID editorial policy. Its dated
+reference/alternative/on_request levels are editorial preferences, not measured
+quality, execution certification or family-wide endorsement. A version without
+its own current review inherits no ranking. Respect a compatible explicit choice;
+compare live budgets before claiming a cheaper option. Mode support and reference
+limits come from live details, including the expanded H3 Max and Wan contracts.
+
+The host owns creative discussion, scripts, shot plans, prompts and reference
+media. An idea or a single asset can complete a request. MaxVideoAI observes only
+requests addressed to its tools and their responses, not every host message,
+hidden reasoning or complete conversations. The
+[learning strategy](../superpowers/specs/2026-10-03-studio-mcp-learning-strategy.md)
+is proposed instrumentation, not enabled collection or measured quality evidence.
+
+Run `pnpm mcp:client:check` and `pnpm model:registry:check`. The client gate must
+include Studio timeline schema parity and export delivery as well as current
+OAuth, transport, reference retry and generation-recovery checks. After reviewing
+metadata or skill changes, recompute only `policyFingerprintSha256` with
+`collectPolicyFingerprintInput` and `computePolicyFingerprintSha256` in
+`frontend/scripts/qa/mcp-tool-selection-eval.ts`; preserve curated decisions unless
+the policy intentionally changes. Never edit expected decisions merely to pass.
+
+The [Studio audit](../operations/studio-mcp-release-audit-2026-10-03.md) and
+[distribution checkpoint](../operations/studio-mcp-distribution-rollout-2026-10-04.md)
+separate local verification from deployment, immutable plugin publication,
+installation and real-host evidence. Preserve the brief and known job IDs through
+reconnection; recover submitted jobs before another request. Neither reconnection
+nor a refund authorizes a new paid attempt.
+
 ## Objectif et limite
 
 Un utilisateur qui veut produire une vidéo, animer une image, comparer des modèles

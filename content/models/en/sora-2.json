@@ -3,7 +3,7 @@
   "versionLabel": "2",
   "seo": {
     "title": "Sora 2: generation closed",
-    "description": "Sora 2 is archived on MaxVideoAI. New generations are closed ahead of the API shutdown on September 24, 2026. Compare Seedance 2.5, MiniMax H3 and Wan 3.",
+    "description": "Sora 2 is archived on MaxVideoAI. New generations are closed. OpenAI announced September 24, 2026 as the API shutdown date. Compare Seedance 2.5, MiniMax H3 and Wan 3.",
     "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg"
   },
   "hero": {
@@ -380,7 +380,7 @@
     },
     "meta": {
       "title": "Sora 2: generation closed",
-      "description": "Sora 2 is archived on MaxVideoAI. New generations are closed ahead of the API shutdown on September 24, 2026. Compare Seedance 2.5, MiniMax H3 and Wan 3."
+      "description": "Sora 2 is archived on MaxVideoAI. New generations are closed. OpenAI announced September 24, 2026 as the API shutdown date. Compare Seedance 2.5, MiniMax H3 and Wan 3."
     }
   },
   "prompting": {
@@ -550,14 +550,13 @@
   },
   "archive": {
     "title": "Sora 2: generation closed",
-    "intro": "Sora 2 is archived on MaxVideoAI. New generations are closed ahead of the API shutdown on September 24, 2026. Compare Seedance 2.5, MiniMax H3 and Wan 3.",
+    "intro": "Sora 2 is archived on MaxVideoAI. New generations are closed. OpenAI announced September 24, 2026 as the API shutdown date. Compare Seedance 2.5, MiniMax H3 and Wan 3.",
     "alternativesTitle": "Choose a model for your next video",
     "chooseLabel": "Explore this model",
     "historyTitle": "Your existing videos",
     "historyBody": "Your existing MaxVideoAI videos remain in your library. You can still view and download available results. Choose another model to create a new video; its settings and price will be reviewed before generation.",
     "historyLabel": "Open my library",
     "examplesLabel": "View historical Sora examples",
-    "sourcesLabel": "Read the official shutdown announcement",
     "alternatives": [
       {
         "modelId": "seedance-2-5",
@@ -574,6 +573,10 @@
         "title": "Wan 3",
         "description": "Explore text, image and reference workflows, with editing and extension where available."
       }
-    ]
+    ],
+    "source": {
+      "label": "Read the official shutdown announcement",
+      "href": "https://help.openai.com/en/articles/20001152-what-to-know-about-the-sora-discontinuation"
+    }
   }
 }

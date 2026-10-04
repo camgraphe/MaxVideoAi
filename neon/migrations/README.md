@@ -78,6 +78,19 @@ recovers available historical completion evidence. Apply before deploying the ad
 before promotion; see `docs/engineering/generation-observations.md` for semantics and
 rollback. The migration does not repair or update source jobs.
 
+## Studio image conversation pilot
+
+`49_studio_generation_scope.sql` separates session image quotes from historical OAuth
+quotes with immutable origin/project scope. `50_studio_image_conversation.sql` stores
+owned immutable message input, draft and reference fingerprint, lease and quote binding.
+Apply them explicitly after initialized Studio schema and migration 39. They were
+qualified only on disposable PostgreSQL 17. Keep `STUDIO_IMAGE_CONVERSATION_ENABLED`
+closed until migration completion and **all** quote reader instances use origin predicates;
+legacy null-OAuth-client readers must not read Studio session approvals.
+See `docs/engineering/studio-conversation-integration.md` for access, rollout and rollback.
+
+`51_studio_image_model_usage.sql` suit 50 et installe les preuves de consommation du modèle texte par compte/projet/tour/tentative. Appliquer avant le runtime image conversation instrumenté. Cette table ne réserve et ne débite aucun crédit média. Les réponses incomplètes restent mesurées ; les tentatives sans compteurs restent explicitement inconnues. Qualification sur PostgreSQL 17 jetable et preview QA local uniquement.
+
 ## Gallery opening slots
 
 `53_playlist_opening.sql` follows migration52 and adds optional four-video opening IDs. It is additive and replayable; it does not change any destination or media. Before applying it, test on a database branch. Runtime readers and ordinary curation retain compatibility without the column; the new admin selector appears only after migration. Do not apply migrations from a public request.

@@ -40,6 +40,7 @@ import {
 } from './timeline/timeline-selection-groups';
 
 export type { WorkspaceTimelineTrimEdge } from './timeline/timeline-trim';
+export { layerWorkspaceTimelineAudioItem } from './timeline/timeline-audio-layering';
 export {
   buildWorkspaceTimelineItemsForAsset,
   buildWorkspaceTimelineItemsForOutput,

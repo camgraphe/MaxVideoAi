@@ -1,6 +1,6 @@
 # MCP server engineering rules
 
-Created: **2026-09-21**. Reviewed: **2026-09-22**. Owner: MaxVideoAI engineering.
+Created: **2026-09-21**. Reviewed: **2026-10-04**. Owner: MaxVideoAI engineering.
 Applies to this server and its tool descriptors. Read
 `docs/engineering/mcp-client-experience.md` before changing discovery, metadata,
 authentication errors, or workflow guidance.
@@ -16,6 +16,9 @@ authentication errors, or workflow guidance.
   Use readable sentence blocks; do not repeat the global manual in every tool.
 - Put input constraints in schemas and current facts in live results. Never copy
   a provider catalogue, price list or preferred-model ranking into instructions.
+- Preserve the independent Studio timeline-editing and export gates. Returned
+  exact-ID editorial guidance is a dated preference, never measured quality or
+  execution certification; a new version cannot inherit its family’s review.
 - Only advertise tools whose capability gates are open. Audio confirmation also
   requires paid generation. Do not enable a gate to satisfy a discovery test.
 - When moving guidance, preserve the rule in its new owner and update the

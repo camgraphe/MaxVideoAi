@@ -1,6 +1,7 @@
 import { readGeneratedVideoFacts } from '@/lib/generated-video-media-facts';
 import { resolveOwnedGeneratedVideo } from './generated-video-source';
 import { randomUUID } from 'crypto';
+import { readMediaFacts } from '@/lib/media-identity';
 import { query } from '@/lib/db';
 import { ensureMediaLibrarySchema } from '@/lib/schema';
 import { recordUserAsset } from '@/server/storage';
@@ -163,11 +164,18 @@ export async function ensureReusableAsset(params: {
     const existingDurationSec = existingFacts?.durationSec ?? normalizeMetadata(existing[0].metadata).durationSec;
     const shouldBackfillDuration = Boolean(durationSec && !existingDurationSec);
     const shouldBackfillDimensions = Boolean(mediaWidth && mediaHeight && (!existing[0].width || !existing[0].height));
+    const mediaFacts = readMediaFacts(suppliedMetadata.mediaFacts);
+    const existingMetadata = normalizeMetadata(existing[0].metadata);
+    const existingVersionedFacts = existingMetadata.mediaFacts && typeof existingMetadata.mediaFacts === 'object'
+      && 'version' in existingMetadata.mediaFacts;
+    const shouldBackfillFacts = Boolean(mediaFacts && !existingVersionedFacts && !readMediaFacts(existingMetadata.mediaFacts)?.durationSec
+      && (existing[0].url === normalizedUrl || existingMetadata.originUrl === normalizedUrl)
+      && (!params.sourceOutputId || existing[0].source_output_id === params.sourceOutputId));
     if (
       (!existing[0].thumb_url && resolvedThumbUrl) ||
       (!existing[0].preview_url && resolvedPreviewUrl) ||
       shouldBackfillDuration ||
-      shouldBackfillDimensions
+      shouldBackfillDimensions || shouldBackfillFacts
     ) {
       const rows = await query<DbMediaAssetRow>(
         `UPDATE media_assets
@@ -177,14 +185,16 @@ export async function ensureReusableAsset(params: {
                 height = COALESCE(height, $7),
                 metadata = COALESCE(metadata, '{}'::jsonb)
                   || jsonb_strip_nulls(jsonb_build_object('thumbUrl', $3::text, 'previewUrl', $4::text, 'durationSec', CASE WHEN metadata->'mediaFacts'->>'version' = '1'
-                    THEN NULL ELSE $5::double precision END)),
+                    THEN NULL ELSE $5::double precision END, 'mediaFacts', $8::jsonb)),
                 updated_at = NOW()
           WHERE id = $1
             AND user_id = $2
             AND deleted_at IS NULL
+            AND ($8::jsonb IS NULL OR url = $9 OR metadata->>'originUrl' = $9)
           RETURNING id, public_id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes, source,
                     source_job_id, source_output_id, status, metadata, created_at`,
-        [identity, params.userId, resolvedThumbUrl, resolvedPreviewUrl, durationSec, mediaWidth, mediaHeight]
+        [identity, params.userId, resolvedThumbUrl, resolvedPreviewUrl, durationSec, mediaWidth, mediaHeight,
+          shouldBackfillFacts ? JSON.stringify(mediaFacts) : null, normalizedUrl]
       );
       return mapAssetRow(rows[0] ?? existing[0]);
     }
@@ -333,6 +343,10 @@ export async function saveJobOutputToLibrary(params: {
   );
   if (!rows[0]) throw new Error('OUTPUT_NOT_FOUND');
   const output = mapOutputRow(rows[0]);
+  const outputFacts = output.metadata.mediaFacts;
+  // Versioned generated facts must keep their original-byte provenance through the copy path.
+  const mediaFacts = outputFacts && typeof outputFacts === 'object' && 'version' in outputFacts
+    ? undefined : readMediaFacts(outputFacts);
   return ensureReusableAsset({
     userId: params.userId,
     url: output.url,
@@ -346,6 +360,7 @@ export async function saveJobOutputToLibrary(params: {
     durationSec: output.durationSec,
     thumbUrl: output.thumbUrl,
     previewUrl: output.previewUrl,
+    ...(mediaFacts ? { metadata: { mediaFacts } } : {}),
   });
 }
 export async function readOwnedLibraryAssetsByIds(params: {

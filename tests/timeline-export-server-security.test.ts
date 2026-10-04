@@ -170,11 +170,13 @@ test('timeline export estimate tokens bind identity, manifest, preset, idempoten
 test('timeline export routes resolve authenticated project ownership and bind quotes inside reservation transaction', () => {
   const estimateRoute = readFileSync('frontend/app/api/studio/timeline-exports/estimate/route.ts', 'utf8');
   const createRoute = readFileSync('frontend/app/api/studio/timeline-exports/route.ts', 'utf8');
+  const orchestration = readFileSync('frontend/src/server/timeline-exports/orchestration.ts', 'utf8');
   const resolver = readFileSync('frontend/src/server/timeline-exports/manifest-resolver.ts', 'utf8');
   const billing = readFileSync('frontend/src/server/timeline-exports/billing.ts', 'utf8');
 
-  assert.match(estimateRoute, /resolveOwnedTimelineExportRequest/);
-  assert.match(createRoute, /resolveOwnedTimelineExportRequest/);
+  assert.match(estimateRoute, /estimateOwnedTimelineExport/);
+  assert.match(createRoute, /submitOwnedTimelineExport/);
+  assert.match(orchestration, /resolveOwnedTimelineExportRequest/);
   assert.match(resolver, /readStudioProject/);
   assert.match(resolver, /readStudioSequence/);
   assert.match(resolver, /projectAssets/);

@@ -7,6 +7,7 @@ import { AppLanguageToggle } from '@/components/AppLanguageToggle';
 import { MARKETING_TOP_NAV_LINKS } from '@/config/navigation';
 import { getPathname } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { AppAppearanceControl } from './AppAppearanceControl.client';
 import { AppGlyph } from './AppGlyph';
 import { AppAssistantConnections, AppAssistantMarks } from './AppAssistantConnections';
 import { appNavLabel, canShowStudioNavigation, getAppMenuItems } from './app-navigation';
@@ -17,8 +18,6 @@ type AppSiteMenuCommonProps = {
   isAdmin: boolean;
   signinHref: string;
   signupHref: string;
-  themeToggleLabel: string | undefined;
-  onToggleTheme: () => void;
   onSignOut: () => void;
 };
 
@@ -36,7 +35,7 @@ type AppSiteMenuController = {
   open: (trigger: HTMLElement) => void;
 };
 
-export function AppSiteMenuButton({ email, authResolved, isAdmin, signinHref, signupHref, themeToggleLabel, onToggleTheme, onSignOut, controllerRef, onAppNavigate, studioVisible }: AppSiteMenuButtonProps) {
+export function AppSiteMenuButton({ email, authResolved, isAdmin, signinHref, signupHref, onSignOut, controllerRef, onAppNavigate, studioVisible }: AppSiteMenuButtonProps) {
   const { locale, t } = useI18n();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -98,7 +97,7 @@ export function AppSiteMenuButton({ email, authResolved, isAdmin, signinHref, si
           </section>
           <section className="app-site-preferences" aria-labelledby={`${titleId}-preferences`}><h3 id={`${titleId}-preferences`}>{copy.preferences}</h3>
             <div><span>{copy.language}</span><AppLanguageToggle /></div>
-            <div><span>{copy.theme}</span><button type="button" onClick={onToggleTheme}>{themeToggleLabel}</button></div>
+            <div><span>{copy.theme}</span><AppAppearanceControl locale={locale} /></div>
           </section>
           <div className="app-site-auth">
             {email ? <><span>{email}</span><button type="button" onClick={() => { close(); onSignOut(); }}>{copy.signOut}</button></>

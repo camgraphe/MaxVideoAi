@@ -1,4 +1,3 @@
-import { isArchivedGenerationModel } from '../frontend/lib/model-generation-policy';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -16,6 +15,7 @@ import {
   isPublishedComparisonSlug,
 } from '../frontend/lib/compare-hub/data.ts';
 import { isComparisonIndexable } from '../frontend/lib/compare-hub/indexation.ts';
+import { isArchivedGenerationModel } from '../frontend/lib/model-generation-policy.ts';
 import type {
   BestForEntry,
   RankedPick,
@@ -389,12 +389,22 @@ test('wave 1 filters every comparison hub discovery set for the active locale', 
 
   for (const locale of ['fr', 'es'] as const) {
     const excluded = comparisonIndexation.noindexByLocale[locale];
-    const historicalLowSignalExclusions = excluded.slice(0, 30)
-      .filter((slug) => !slug.split('-vs-').some(isArchivedGenerationModel));
-    assert.ok(
-      historicalLowSignalExclusions.every((slug) => unfilteredSets.directory.includes(slug)),
-      `${locale} executable exclusions should remain discoverable on the English directory`,
-    );
+    const historicalLowSignalExclusions = excluded.slice(0, 30);
+    const publishedSlugs = new Set(getHubComparisonSlugsForSitemap());
+    for (const slug of historicalLowSignalExclusions) {
+      assert.equal(isPublishedComparisonSlug(slug), true, `${slug} keeps its historical route`);
+      assert.equal(publishedSlugs.has(slug), true, `${slug} remains in the published sitemap source`);
+      assert.equal(isComparisonIndexable('en', slug), true, `${slug} keeps English indexation`);
+      assert.equal(isComparisonIndexable(locale, slug), false, `${slug} keeps its ${locale} exclusion`);
+      const includesArchivedModel = slug.split('-vs-').some(isArchivedGenerationModel);
+      assert.equal(
+        unfilteredSets.directory.includes(slug),
+        !includesArchivedModel,
+        includesArchivedModel
+          ? `${slug} must not recommend an archived model in the current English directory`
+          : `${slug} must remain discoverable in English despite its ${locale} exclusion`,
+      );
+    }
 
     for (const [surface, slugs] of Object.entries(unfilteredSets)) {
       const localizedSlugs = slugs.filter((slug) => isComparisonIndexable(locale, slug));
@@ -405,7 +415,7 @@ test('wave 1 filters every comparison hub discovery set for the active locale', 
       assert.deepEqual(
         slugs.filter((slug) => isComparisonIndexable('en', slug)),
         slugs,
-        `English ${surface} links must preserve the published pair set`,
+        `English ${surface} links must preserve the published eligible pair set`,
       );
     }
   }

@@ -62,6 +62,7 @@ const AGENT_FAILURE_COPY = {
   default: 'MaxVideoAI could not complete this render.',
   busy: 'The render queue is temporarily busy.',
   noOutput: 'The render finished without a usable output.',
+  reference: 'MaxVideoAI could not read the reference media for this render. Select the reference again or upload a new file before preparing a new request.',
   safety: 'This request was blocked by safety checks. Review the prompt and any reference images, video, or audio before preparing a new request.',
   start: 'MaxVideoAI could not start this render.',
   storage: 'The render finished, but MaxVideoAI could not prepare the output for download.',
@@ -308,6 +309,11 @@ function buildAgentMessage(
       const message = rawMessage?.trim().toLowerCase() ?? '';
       if (/responsible ai|sensitive words|content policy|policy violation|safety|moderation|prohibited|blocked/iu.test(message)) {
         failureMessage = AGENT_FAILURE_COPY.safety;
+      } else if (
+        /could not read the reference media|reference media could not be read/iu.test(message) ||
+        (/failed to download the file/iu.test(message) && /check if the url is accessible/iu.test(message))
+      ) {
+        failureMessage = AGENT_FAILURE_COPY.reference;
       } else if (/unsupported|not supported|invalid request|unprocessable|does not support/iu.test(message)) {
         failureMessage = AGENT_FAILURE_COPY.unsupported;
       } else if (/no result|no video|no usable output|returned no|without a usable output/iu.test(message)) {

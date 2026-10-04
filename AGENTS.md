@@ -39,6 +39,7 @@ Use these guides as context before changing the related areas:
 - `docs/engineering/admin-routes.md`: admin route and admin UI conventions.
 - `docs/engineering/refactor-roadmap.md`: cleanup strategy and historical context; confirm current line counts with the audit.
 - `docs/engineering/model-registry.md`: required workflow for adding, renaming, retiring, or publishing models.
+- `docs/engineering/mcp-client-experience.md`: MCP instruction ownership, metadata budgets, reconnect guidance and offline/host release checks.
 - `docs/engineering/mcp-integration-registry.md`: MCP integration identity, host evidence, publication, acquisition, installation, and store-state ownership.
 - `docs/engineering/mcp-client-experience.md`: dated MCP discovery, instruction-size, tool guidance, reconnection, and client verification rules; also read the nested server/plugin `AGENTS.md` files.
 - `docs/engineering/alibaba-model-studio-provider.md`: direct Alibaba video routing, polling, observability, canary, and rollback contracts.

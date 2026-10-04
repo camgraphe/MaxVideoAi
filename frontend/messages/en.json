@@ -78,7 +78,8 @@
       "pricing": "Pricing",
       "docs": "Docs",
       "blog": "Blog",
-      "connect": "Assistants"
+      "connect": "Assistants",
+      "studio": "Studio"
     },
     "badges": {
       "new": "New"
@@ -1140,11 +1141,6 @@
             "providerKey": "Luma AI",
             "provider": "Luma",
             "model": "Luma"
-          },
-          {
-            "providerKey": "OpenAI",
-            "provider": "OpenAI",
-            "model": "Sora"
           }
         ]
       },
@@ -1502,7 +1498,7 @@
       "items": [
         {
           "q": "Can I still generate with Sora?",
-          "a": "Sora generation is closed. OpenAI and fal.ai end the API on September 24, 2026. Choose Seedance 2.5, MiniMax H3 or Wan 3 for a new video. Existing videos remain in your library."
+          "a": "Sora generation is closed. The announced API shutdown date was September 24, 2026. Choose Seedance 2.5, MiniMax H3 or Wan 3 for a new video. Existing videos remain in your library."
         },
         {
           "q": "Can I add audio?",
@@ -2038,7 +2034,7 @@
         {
           "emoji": "🎬",
           "title": "Sora archives and alternatives",
-          "body": "Sora generation is closed. OpenAI and fal.ai end the API on September 24, 2026. Choose Seedance 2.5, MiniMax H3 or Wan 3 for a new video. Existing videos remain in your library."
+          "body": "Sora generation is closed. The announced API shutdown date was September 24, 2026. Choose Seedance 2.5, MiniMax H3 or Wan 3 for a new video. Existing videos remain in your library."
         },
         {
           "emoji": "🎯",
@@ -2470,7 +2466,7 @@
     "sections": [
       {
         "title": "Sora archives and alternatives",
-        "body": "Sora generation is closed. OpenAI and fal.ai end the API on September 24, 2026. Choose Seedance 2.5, MiniMax H3 or Wan 3 for a new video. Existing videos remain in your library."
+        "body": "Sora generation is closed. The announced API shutdown date was September 24, 2026. Choose Seedance 2.5, MiniMax H3 or Wan 3 for a new video. Existing videos remain in your library."
       },
       {
         "title": "Veo 3: cinematic text-to-video for creators",
@@ -2526,7 +2522,7 @@
       },
       {
         "question": "Can I still generate with Sora?",
-        "answer": "Sora generation is closed. OpenAI and fal.ai end the API on September 24, 2026. Choose Seedance 2.5, MiniMax H3 or Wan 3 for a new video. Existing videos remain in your library."
+        "answer": "Sora generation is closed. The announced API shutdown date was September 24, 2026. Choose Seedance 2.5, MiniMax H3 or Wan 3 for a new video. Existing videos remain in your library."
       },
       {
         "question": "Can I monitor model changes without refreshing documentation?",

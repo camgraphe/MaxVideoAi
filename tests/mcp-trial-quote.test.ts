@@ -19,6 +19,7 @@ import {
 } from '../frontend/src/server/agent-api/prepare-generation';
 import type { AgentPrincipal } from '../frontend/src/server/agent-api/principal';
 import { getOwnedQuote, insertPreparedQuote } from '../frontend/src/server/agent-api/quote-repository';
+import { anyGenerationQuoteRepository } from '../frontend/src/server/agent-api/audio-quote-repository';
 import type { TrialStatus } from '../frontend/src/server/agent-api/types';
 import * as httpHandler from '../frontend/src/server/mcp/http-handler';
 import {
@@ -627,15 +628,17 @@ test('accepted historical trial funding remains readable but cannot fund a new q
       claimed_at: new Date(now.getTime() + 1000), updated_at: new Date(now.getTime() + 1000) };
     let queries = 0;
     const executor: QueryExecutor = { async query<TRecord>() { queries += 1; return [row] as TRecord[]; } };
-    const quote = await getOwnedQuote({ quoteId, userId: principal.userId, oauthClientId: principal.clientId }, { executor });
-    assert.equal(quote?.state, 'accepted');
-    assert.equal(quote?.trialFunding?.providerCostCents, historicalCost);
-    assert.deepEqual(quote?.pricingSnapshot, snapshot);
-    await assert.rejects(insertPreparedQuote({ userId: principal.userId, oauthClientId: principal.clientId,
-      request, requestHash: hashCanonicalGenerationRequest(request), catalogRevision: 'catalog-1',
-      pricingSnapshot: snapshot, priceCents: 0, currency: 'USD', fundingMode: 'trial' },
-    { executor, now: () => now, randomUUID: () => quoteId }), /invalid prepared quote input/i);
-    assert.equal(queries, 1, 'old funding is rejected before any insert');
+    for (const repository of [{ getOwnedQuote, insertPreparedQuote }, anyGenerationQuoteRepository]) {
+      const quote = await repository.getOwnedQuote({ quoteId, userId: principal.userId, oauthClientId: principal.clientId }, { executor });
+      assert.equal(quote?.state, 'accepted');
+      assert.equal(quote?.trialFunding?.providerCostCents, historicalCost);
+      assert.deepEqual(quote?.pricingSnapshot, snapshot);
+      await assert.rejects(repository.insertPreparedQuote({ userId: principal.userId, oauthClientId: principal.clientId,
+        request, requestHash: hashCanonicalGenerationRequest(request), catalogRevision: 'catalog-1',
+        pricingSnapshot: snapshot, priceCents: 0, currency: 'USD', fundingMode: 'trial' },
+      { executor, now: () => now, randomUUID: () => quoteId }), /invalid prepared quote input/i);
+    }
+    assert.equal(queries, 2, 'both readers preserve old funding while inserts reject it before SQL');
   }
 });
 

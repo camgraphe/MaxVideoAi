@@ -321,7 +321,7 @@ test('server advertises only the five read-only discovery tools with narrow guid
   assert.match(String(aspectRatioSchema.description), /aspectRatios.*non-empty.*include/i);
   assert.match(String(aspectRatioSchema.description), /empty.*omit/i);
   assert.match(String(audioSchema.description), /omit.*always_generated/i);
-  assert.match(connected.client.getInstructions() ?? '', /host owns creative discussion and prompts/i);
+  assert.match(connected.client.getInstructions() ?? '', /host owns creative.*prompts/i);
   assert.match(connected.client.getInstructions() ?? '', /generation is not available/i);
 
   const recommendationTool = result.tools.find((tool) => tool.name === 'recommend_models');

@@ -86,7 +86,7 @@ const SAFE_MARKETING_LANDING_SURFACES = new Set([
   ...getMcpPublicIntegrationPaths(), '/legal',
   '/legal/acceptable-use', '/legal/cookies', '/legal/cookies-list', '/legal/mentions',
   '/legal/privacy', '/legal/subprocessors', '/legal/takedown', '/legal/terms', '/mcp',
-  '/models', '/pay-as-you-go-ai-video-generator', '/pricing', '/status', '/tools', '/workflows',
+  '/models', '/pay-as-you-go-ai-video-generator', '/pricing', '/status', '/studio', '/tools', '/workflows',
 ]);
 const MARKETING_OWNER_SURFACES: Readonly<Record<string, string>> = {
   '/ai-video-engines/': '/ai-video-engines',

@@ -23,7 +23,13 @@ export type McpGenerationQuoteState =
   | 'failed'
   | 'expired';
 
+export type GenerationQuoteScope =
+  | { origin: 'oauth' }
+  | { origin: 'studio-session'; projectId: string };
+
 export type McpGenerationQuote<Request = CanonicalGenerationRequest> = {
+  authOrigin?: 'oauth' | 'studio-session';
+  studioProjectId?: string | null;
   quoteId: string;
   userId: string;
   oauthClientId: string | null;
@@ -88,6 +94,8 @@ export type LockedOwnedQuote<Request = CanonicalGenerationRequest> = {
 
 type QuoteRow = {
   quote_id: unknown;
+  auth_origin?: unknown;
+  studio_project_id?: unknown;
   user_id: unknown;
   oauth_client_id: unknown;
   request_json: unknown;
@@ -260,7 +268,15 @@ export function createQuoteRepository<Request>(codec: {
   normalize(value: unknown): Request;
   hash(value: Request): string;
   parseFunding(snapshot: Record<string, unknown>, priceCents: number, currency: string, mode: GenerationFundingMode, request: Request, persistedRead?: boolean): IncludedTrialFundingSnapshot | null;
-}) {
+}, scope: GenerationQuoteScope = { origin: 'oauth' }) {
+  if (scope.origin !== 'oauth' && (scope.origin !== 'studio-session' || !isBoundedText(scope.projectId, 128))) {
+    throw new Error('Invalid quote scope.');
+  }
+  const studio = scope.origin === 'studio-session';
+  const scopePredicate = (parameter: number) => studio
+    ? `AND auth_origin = 'studio-session' AND studio_project_id = $${parameter}`
+    : `AND auth_origin = 'oauth' AND studio_project_id IS NULL`;
+  const scopedParams = (params: unknown[]) => studio ? [...params, scope.projectId] : params;
   if (!codec.surfaces.length || codec.surfaces.some(surface => !['video', 'image', 'audio'].includes(surface))) throw new Error('Invalid quote surface codec.');
   // Internal allowlisted literals; request values never enter SQL text.
   const surfacePredicate = `AND request_json->>'surface' IN (${codec.surfaces.map(surface => `'${surface}'`).join(', ')})`;
@@ -280,6 +296,9 @@ export function createQuoteRepository<Request>(codec: {
       || typeof value.fundingMode !== 'string'
       || !FUNDING_MODES.has(value.fundingMode as GenerationFundingMode)) {
       throw new Error('Invalid prepared quote input.');
+    }
+    if (studio && (value.oauthClientId !== null || value.fundingMode !== 'wallet')) {
+      throw new Error('Invalid Studio quote scope.');
     }
     let canonical: Request;
     try {
@@ -327,6 +346,11 @@ export function createQuoteRepository<Request>(codec: {
   }
 
   function parseQuoteRow(row: QuoteRow): McpGenerationQuote<Request> {
+    const origin = row.auth_origin ?? 'oauth';
+    const projectId = row.studio_project_id ?? null;
+    if (origin !== scope.origin || (studio ? projectId !== scope.projectId || row.oauth_client_id !== null || row.funding_mode !== 'wallet' : projectId !== null)) {
+      throw new Error('Invalid quote row scope.');
+    }
     const requestRecord = jsonRecord(row.request_json);
     const pricingSnapshot = jsonRecord(row.pricing_snapshot);
     const expiresAt = finiteDate(row.expires_at);
@@ -396,6 +420,8 @@ export function createQuoteRepository<Request>(codec: {
       throw new Error('Invalid quote row.');
     }
     return {
+      authOrigin: scope.origin,
+      studioProjectId: projectId as string | null,
       quoteId: row.quote_id,
       userId: row.user_id,
       oauthClientId: row.oauth_client_id,
@@ -423,7 +449,7 @@ export function createQuoteRepository<Request>(codec: {
   }
 
   const QUOTE_COLUMNS = `
-    quote_id, user_id, oauth_client_id, request_json, request_hash, catalog_revision,
+    quote_id, user_id, oauth_client_id, auth_origin, studio_project_id, request_json, request_hash, catalog_revision,
     pricing_snapshot, price_cents, currency, funding_mode, state, job_id,
     expires_at, claimed_at, created_at, updated_at
   `;
@@ -443,14 +469,14 @@ export function createQuoteRepository<Request>(codec: {
       `INSERT INTO mcp_generation_quotes (
         quote_id, user_id, oauth_client_id, request_json, request_hash, catalog_revision,
         pricing_snapshot, price_cents, currency, funding_mode, state,
-        expires_at, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4::jsonb, $5, $6, $7::jsonb, $8, $9, $10, $11, $12, $13, $13)
+        expires_at, created_at, updated_at, auth_origin, studio_project_id
+      ) VALUES ($1, $2, $3, $4::jsonb, $5, $6, $7::jsonb, $8, $9, $10, $11, $12, $13, $13, '${scope.origin}', ${studio ? '$14' : 'NULL'})
       RETURNING ${QUOTE_COLUMNS}`,
-      [
+      scopedParams([
         quoteId, input.userId, input.oauthClientId, JSON.stringify(canonicalRequest),
         input.requestHash, input.catalogRevision, JSON.stringify(input.pricingSnapshot),
         input.priceCents, input.currency, input.fundingMode, 'prepared', expiresAt, createdAt,
-      ],
+      ]),
     );
     const quote = parseOptionalQuote(rows);
     if (!quote) throw new Error('Prepared quote was not persisted.');
@@ -468,8 +494,9 @@ export function createQuoteRepository<Request>(codec: {
         WHERE quote_id = $1
           AND user_id = $2
           AND oauth_client_id IS NOT DISTINCT FROM $3
-          ${surfacePredicate}`,
-      [input.quoteId, input.userId, input.oauthClientId],
+          ${surfacePredicate}
+          ${scopePredicate(4)}`,
+      scopedParams([input.quoteId, input.userId, input.oauthClientId]),
     );
     return parseOptionalQuote(rows);
   }
@@ -486,9 +513,10 @@ export function createQuoteRepository<Request>(codec: {
           AND user_id = $2
           AND oauth_client_id IS NOT DISTINCT FROM $3
           ${surfacePredicate}
+          ${scopePredicate(4)}
           AND state = 'prepared'
         FOR UPDATE`,
-      [input.quoteId, input.userId, input.oauthClientId],
+      scopedParams([input.quoteId, input.userId, input.oauthClientId]),
     );
     const quote = parseOptionalQuote(rows);
     if (!quote) return null;
@@ -513,8 +541,9 @@ export function createQuoteRepository<Request>(codec: {
           AND user_id = $2
           AND oauth_client_id IS NOT DISTINCT FROM $3
           ${surfacePredicate}
+          ${scopePredicate(4)}
         FOR UPDATE`,
-      [input.quoteId, input.userId, input.oauthClientId],
+      scopedParams([input.quoteId, input.userId, input.oauthClientId]),
     );
     const quote = parseOptionalQuote(rows);
     if (!quote) return null;
@@ -541,12 +570,13 @@ export function createQuoteRepository<Request>(codec: {
           AND user_id = $2
           AND oauth_client_id IS NOT DISTINCT FROM $3
           ${surfacePredicate}
+          ${scopePredicate(6)}
           AND state = 'prepared'
           AND expires_at > $5
           AND job_id IS NULL
           AND claimed_at IS NULL
       RETURNING ${QUOTE_COLUMNS}`,
-      [input.quoteId, input.userId, input.oauthClientId, input.jobId, claimedAt],
+      scopedParams([input.quoteId, input.userId, input.oauthClientId, input.jobId, claimedAt]),
     );
     return parseOptionalQuote(rows);
   }
@@ -565,10 +595,11 @@ export function createQuoteRepository<Request>(codec: {
           AND user_id = $2
           AND oauth_client_id IS NOT DISTINCT FROM $3
           ${surfacePredicate}
+          ${scopePredicate(5)}
           AND state = 'prepared'
           AND expires_at <= $4
       RETURNING ${QUOTE_COLUMNS}`,
-      [input.quoteId, input.userId, input.oauthClientId, expiredAt],
+      scopedParams([input.quoteId, input.userId, input.oauthClientId, expiredAt]),
     );
     return parseOptionalQuote(rows);
   }
@@ -587,11 +618,12 @@ export function createQuoteRepository<Request>(codec: {
           AND user_id = $2
           AND oauth_client_id IS NOT DISTINCT FROM $3
           ${surfacePredicate}
+          ${scopePredicate(5)}
           AND state = 'prepared'
           AND job_id IS NULL
           AND claimed_at IS NULL
       RETURNING ${QUOTE_COLUMNS}`,
-      [input.quoteId, input.userId, input.oauthClientId, expiredAt],
+      scopedParams([input.quoteId, input.userId, input.oauthClientId, expiredAt]),
     );
     return parseOptionalQuote(rows);
   }
@@ -609,10 +641,11 @@ export function createQuoteRepository<Request>(codec: {
           AND user_id = $2
           AND oauth_client_id IS NOT DISTINCT FROM $3
           ${surfacePredicate}
+          ${scopePredicate(6)}
           AND job_id = $4
           AND state = 'claimed'
       RETURNING ${QUOTE_COLUMNS}`,
-      [input.quoteId, input.userId, input.oauthClientId, input.jobId, now],
+      scopedParams([input.quoteId, input.userId, input.oauthClientId, input.jobId, now]),
     );
     return parseOptionalQuote(rows);
   }
@@ -630,10 +663,11 @@ export function createQuoteRepository<Request>(codec: {
           AND user_id = $2
           AND oauth_client_id IS NOT DISTINCT FROM $3
           ${surfacePredicate}
+          ${scopePredicate(6)}
           AND job_id = $4
           AND state IN ('claimed', 'accepted')
       RETURNING ${QUOTE_COLUMNS}`,
-      [input.quoteId, input.userId, input.oauthClientId, input.jobId, now],
+      scopedParams([input.quoteId, input.userId, input.oauthClientId, input.jobId, now]),
     );
     return parseOptionalQuote(rows);
   }

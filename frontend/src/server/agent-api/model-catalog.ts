@@ -26,6 +26,7 @@ import { getPrivateRuntimeEngineById } from '@/server/video-generation/private-e
 
 import type { AgentGenerationMode, AgentModel, AgentModelFilter } from './types';
 import { toCanonicalGenerationMode, toEngineGenerationMode } from './generation-mode-aliases';
+import { isAgentModelRecommendationEligible } from './model-editorial-policy';
 import {
   isPublicAgentEngine,
   listPublicAgentModes,
@@ -160,7 +161,7 @@ function toCandidate(
       generationEnabled,
       lifecycle: runtime?.lifecycle ?? 'current',
       successor: successor ? { id: successor.id, slug: successor.slug } : null,
-      recommendedByDefault: runtime?.lifecycle === undefined || runtime.lifecycle === 'current',
+      recommendedByDefault: isAgentModelRecommendationEligible(engine.id, runtime?.lifecycle),
     },
     latencyTier: engine.latencyTier,
     discoveryRank: registryEntry?.publication.app.discoveryRank ?? null,

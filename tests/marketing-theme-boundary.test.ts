@@ -24,9 +24,9 @@ test('public routes use the fixed light design regardless of the app preference'
 });
 
 test('workspace first paint agrees with the hook for default, saved and system themes', () => {
-  for (const saved of [undefined, 'light', 'dark', 'system', 'invalid']) {
+  for (const systemDark of [false, true]) for (const saved of [undefined, 'light', 'dark', 'system', 'invalid']) {
     for (const path of ['/app', '/app/tools/angle', '/settings', '/billing']) {
-      const dom = runBootstrap(path, saved);
+      const dom = runBootstrap(path, saved, systemDark);
       const theme = dom.window.document.documentElement.getAttribute('data-theme') ?? 'light';
       assert.equal(theme, readThemeSnapshot(dom.window as unknown as Window).resolvedTheme, `${path}:${saved}`);
       dom.window.close();
@@ -34,10 +34,12 @@ test('workspace first paint agrees with the hook for default, saved and system t
   }
 });
 
-test('blocked storage still gives the app its dark default', () => {
-  const dom = runBootstrap('/app', undefined, false, true);
-  assert.equal(dom.window.document.documentElement.getAttribute('data-theme'), 'dark');
-  dom.window.close();
+test('blocked storage uses the OS for app first paint', () => {
+  for (const systemDark of [false, true]) {
+    const dom = runBootstrap('/app', undefined, systemDark, true);
+    assert.equal(dom.window.document.documentElement.getAttribute('data-theme'), systemDark ? 'dark' : null);
+    dom.window.close();
+  }
 });
 
 test('the fixed marketing theme does not require personalized SSR or a marketing toggle', () => {
@@ -47,5 +49,25 @@ test('the fixed marketing theme does not require personalized SSR or a marketing
   for (const file of ['MarketingNav', 'MarketingMobileMenu']) {
     assert.doesNotMatch(readFileSync(`frontend/components/marketing/${file}.tsx`, 'utf8'), /toggleTheme|onToggleTheme|useThemePreference/);
   }
-  assert.match(readFileSync('frontend/components/HeaderBar.tsx','utf8'), /useThemePreference/);
+  for (const file of ['frontend/components/HeaderBar.tsx', 'frontend/components/header/HeaderMobileMenu.tsx']) {
+    assert.doesNotMatch(readFileSync(file, 'utf8'), /toggleTheme|onToggleTheme|useThemePreference/);
+  }
+  assert.match(readFileSync('frontend/components/app/AppSiteMenu.client.tsx', 'utf8'), /AppAppearanceControl/);
+});
+
+
+test('bootstrap imports only explicit legacy Studio choices and preserves app precedence', () => {
+  for (const saved of [undefined, 'light', 'dark', 'system', 'invalid']) {
+    for (const override of [false, true]) {
+      const dom = runBootstrap('/app/studio/workspace', saved);
+      dom.window.localStorage.setItem('maxvideoai.studio.theme.v1', 'dark');
+      if (override) dom.window.localStorage.setItem('maxvideoai.studio.theme.userOverride.v1', 'true');
+      dom.window.eval(THEME_BOOTSTRAP);
+      const actual = dom.window.document.documentElement.getAttribute('data-theme') ?? 'light';
+      const expected = saved === 'dark' || (override && (saved === undefined || saved === 'invalid')) ? 'dark' : 'light';
+      assert.equal(actual, expected, `${saved}:${override}`);
+      assert.equal(actual, readThemeSnapshot(dom.window as unknown as Window).resolvedTheme);
+      dom.window.close();
+    }
+  }
 });

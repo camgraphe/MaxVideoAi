@@ -29,7 +29,7 @@ export async function switchStudioTheme(page: Page, theme: 'light' | 'dark'): Pr
   const shell = page.locator('[data-studio-theme]');
   if (await shell.getAttribute('data-studio-theme') === theme) return;
   const dialog = await openStudioAppMenu(page);
-  await dialog.getByRole('button', { name: `Switch Studio to ${theme} mode` }).click();
+  await dialog.getByRole('switch', { name: /Dark appearance|Apparence sombre|Apariencia oscura/ }).click();
   await expect(shell).toHaveAttribute('data-studio-theme', theme);
   await page.keyboard.press('Escape');
   await expect(dialog).toBeHidden();

@@ -12,6 +12,22 @@ MaxVideoAI's distributable MCP metadata names the protocol-generic endpoint
 directory distribution so that an installation path is never mistaken for a
 platform approval or a directory record.
 
+## Prepared release candidate — 2026-10-04
+
+Source package **0.3.7** is prepared locally and has not been published. A fresh
+read-only check found public tags/releases through `v0.3.6`, source tags through
+`maxvideoai-plugin-v0.3.6`, and official Registry versions 0.3.3, 0.3.5 and 0.3.6;
+0.3.6 remains active/latest. No 0.3.7 tag, release or Registry record was found.
+
+The package manifests, `server.json`, `VERSION` and its installation examples
+move together to 0.3.7. The public website installation constant separately pins
+the already published `v0.3.6` in `camgraphe/maxvideoai-plugin`. Keep that pin until
+the immutable 0.3.7 focused repository tag, release and package checksums have
+been published and read back successfully. The application repository's
+`maxvideoai-plugin-v0.3.7` tag identifies reviewed source; it is not the customer
+marketplace repository. Registry publication and server deployment remain
+separate actions. Recheck version availability immediately before publication.
+
 ## Direct installation
 
 Use the setup material on [MaxVideoAI's MCP page](https://maxvideoai.com/mcp)
@@ -51,12 +67,12 @@ verified-client evidence above.
 
 ## Directory status
 
-- **Official MCP Registry — active at `0.3.5`.** The official API record for
+- **Official MCP Registry — active at `0.3.6`.** The official API record for
   [`com.maxvideoai/maxvideoai`](https://registry.modelcontextprotocol.io/v0.1/servers?search=com.maxvideoai%2Fmaxvideoai)
   is active. This protocol registry publication is not an OpenAI, Anthropic, or
   other host-directory listing and does not prove host compatibility.
-  The version and production endpoint were rechecked on **2026-09-21**; the
-  registry reports publication on **2026-09-16**. Policy review dates below are
+  The version and production endpoint were rechecked on **2026-10-04**; this is a dated observation. Check the exact
+  public record again before release. Policy review dates below are
   separate from this registry check.
 - **ChatGPT/OpenAI directory — do not submit.** OpenAI's current plugin
   guidelines prohibit commerce for digital products or services, including

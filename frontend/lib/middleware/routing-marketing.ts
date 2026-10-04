@@ -21,6 +21,7 @@ const KNOWN_MARKETING_SEGMENTS = new Set(
     'pay-as-you-go-ai-video-generator',
     'pricing',
     'status',
+    'studio',
     'video',
     'workflows',
     'v',

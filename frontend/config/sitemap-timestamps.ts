@@ -19,6 +19,7 @@ export const SITEMAP_MANUAL_TIMESTAMPS: SitemapTimestampConfig = {
     'sitemap-models.xml': '2026-09-03',
   },
   routes: {
+    '/studio': '2026-10-03',
     '/models': '2026-09-03',
     '/pricing': '2026-09-03',
     '/pay-as-you-go-ai-video-generator': '2026-09-03',

@@ -1,25 +1,26 @@
 import type { CanonicalGenerationRequest } from './generation-types';
 import type { AgentPrincipal } from './principal';
+import { requireOAuthGenerationActor, type GenerationActor } from './generation-actor';
 import {
-  resolveOwnedReferenceAsset,
+  resolveOwnedReferenceAssetForActor,
   type OwnedReferenceAsset,
 } from './reference-assets';
 import type { ResolvedReference } from './reference-types';
 
 export type ResolveGenerationReferencesDependencies = {
   resolveOwnedReferenceAsset(
-    principal: AgentPrincipal,
+    principal: GenerationActor,
     assetId: string,
   ): Promise<OwnedReferenceAsset>;
 };
 
 const defaultDependencies: ResolveGenerationReferencesDependencies = {
-  resolveOwnedReferenceAsset: (principal, assetId) => resolveOwnedReferenceAsset(principal, assetId),
+  resolveOwnedReferenceAsset: (principal, assetId) => resolveOwnedReferenceAssetForActor(principal, assetId),
 };
 
-export async function resolveGenerationReferences(
+export async function resolveGenerationReferencesForActor(
   request: CanonicalGenerationRequest,
-  principal: AgentPrincipal,
+  principal: GenerationActor,
   dependencies: ResolveGenerationReferencesDependencies = defaultDependencies,
 ): Promise<ResolvedReference[]> {
   const resolved: ResolvedReference[] = [];
@@ -29,4 +30,9 @@ export async function resolveGenerationReferences(
     resolved.push({ ...asset, role: reference.role, ...(reference.slot === undefined ? {} : { slot: reference.slot }) });
   }
   return resolved;
+}
+
+export function resolveGenerationReferences(request: CanonicalGenerationRequest, principal: AgentPrincipal, dependencies: ResolveGenerationReferencesDependencies = defaultDependencies): Promise<ResolvedReference[]> {
+  requireOAuthGenerationActor(principal);
+  return resolveGenerationReferencesForActor(request, principal, dependencies);
 }

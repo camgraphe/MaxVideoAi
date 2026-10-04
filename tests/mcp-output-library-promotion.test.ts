@@ -94,6 +94,18 @@ test('ordinary site outputs are not auto-promoted by the MCP path', async () => 
   assert.equal(ensureCalls, 0);
 });
 
+test('promotion retains measured source facts and refuses requested or browser provenance', async () => {
+  for (const source of ['probe', 'browser', 'requested']) {
+    const facts = { source, durationSec: 4.75, width: 854, height: 480, hasAudio: false };
+    const ensured: Array<Parameters<McpOutputLibraryPromotionDependencies['ensureReusableAsset']>[0]> = [];
+    await promoteCompletedMcpJobOutputs([{ ...completedVideo, metadata: { mediaFacts: facts, unsafeExtra: 'not source evidence' } }], {
+      executor: { query: async <T>() => [{ job_id: 'quote-1' }] as T[] },
+      ensureReusableAsset: async input => { ensured.push(input); return assetRecord(input); },
+    });
+    assert.deepEqual(ensured[0].metadata, source === 'probe' ? { mcpGenerated: true, mediaFacts: facts } : { mcpGenerated: true });
+  }
+});
+
 test('asset copy failures stay retryable without failing the completed generation', async () => {
   const result = await promoteCompletedMcpJobOutputs([completedVideo], {
     executor: {

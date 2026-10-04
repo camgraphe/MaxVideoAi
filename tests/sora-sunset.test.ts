@@ -66,3 +66,28 @@ test('archive links use the localized family examples route', async () => {
     assert.equal(getPathname({ locale: 'es', href }), '/es/galeria/sora');
   }
 });
+
+test('each localized archive preserves canonical, hreflang and indexability with archive metadata', async () => {
+  const { buildModelArchiveMetadata } = await import('../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-archive-metadata');
+  const { parseModelArchiveContent } = await import('../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-archive-content');
+  for (const id of ['sora-2', 'sora-2-pro']) {
+    const paths = { en: `/models/${id}`, fr: `/fr/modeles/${id}`, es: `/es/modelos/${id}` };
+    for (const locale of ['en', 'fr', 'es'] as const) {
+      const { archive } = JSON.parse(readFileSync(`content/models/${locale}/${id}.json`, 'utf8'));
+      parseModelArchiveContent(archive);
+      const metadata = buildModelArchiveMetadata(getRuntimeModelById(id)!, archive, locale);
+      const closure = { en: /generations are closed/, fr: /générations sont fermées/, es: /generaciones están cerradas/ };
+      assert.match(metadata.description ?? '', closure[locale]);
+      assert.equal(metadata.alternates?.canonical, `https://maxvideoai.com${paths[locale]}`);
+      assert.deepEqual(metadata.alternates?.languages, {
+        en: `https://maxvideoai.com${paths.en}`,
+        fr: `https://maxvideoai.com${paths.fr}`,
+        es: `https://maxvideoai.com${paths.es}`,
+        'x-default': `https://maxvideoai.com${paths.en}`,
+      });
+      assert.deepEqual(metadata.robots, { index: true, follow: true });
+      assert.throws(() => parseModelArchiveContent({ ...archive, intro: '' }));
+    }
+  }
+  assert.throws(() => parseModelArchiveContent(undefined), 'an absent locale must not silently use English archive text');
+});

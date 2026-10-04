@@ -118,7 +118,8 @@
   height:100dvh;
 }
 
-.editorShell.editorShell[data-studio-theme="light"] {
+/* The bootstrap root is available before hydration updates data-studio-theme. */
+:global(:root:not([data-theme="dark"])) .editorShell.editorShell {
   --studio-bg:#eeeee6;
   --studio-bg-soft:#e7e8de;
   --studio-surface:#fafaf4;
@@ -148,7 +149,7 @@
   --studio-select-text:#33372d;
 }
 
-.editorShell[data-studio-theme="light"] {
+:global(:root:not([data-theme="dark"])) .editorShell {
   --studio-bg: #f6f8fc;
   --studio-bg-soft: #eef2f8;
   --studio-surface: rgba(255, 255, 255, 0.92);

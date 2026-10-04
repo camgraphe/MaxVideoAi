@@ -1,0 +1,283 @@
+{
+  "observedOn": "2026-10-01",
+  "source": "MaxVideoAI calculate_project_budget, live read-only response",
+  "purpose": "Three image-to-video sources of five seconds each for the 25-second Studio promo",
+  "notAnExactQuote": true,
+  "generationExecuted": false,
+  "result": {
+    "proposals": [
+      {
+        "name": "Wan 3 · trois plans en 480p",
+        "lines": [
+          {
+            "purpose": "Trois plans de cinq secondes depuis les images de référence du teaser",
+            "engineId": "wan-3",
+            "mode": "i2v",
+            "settings": {
+              "durationSec": 5,
+              "resolution": "480p",
+              "aspectRatio": "16:9",
+              "audio": false
+            },
+            "referenceCount": 1,
+            "clipCount": 3,
+            "attemptsPerClip": 1,
+            "unitPrice": {
+              "amountCents": 33,
+              "currency": "USD"
+            },
+            "baseProduction": {
+              "amountCents": 99,
+              "currency": "USD",
+              "attempts": 3
+            },
+            "creativeAttempts": {
+              "amountCents": 0,
+              "currency": "USD",
+              "attempts": 0
+            },
+            "total": {
+              "amountCents": 99,
+              "currency": "USD"
+            },
+            "intendedOutputDurationSec": 15
+          }
+        ],
+        "baseProduction": {
+          "amountCents": 99,
+          "currency": "USD"
+        },
+        "creativeAttempts": {
+          "amountCents": 0,
+          "currency": "USD"
+        },
+        "total": {
+          "amountCents": 99,
+          "currency": "USD"
+        },
+        "intendedOutputDurationSec": 15
+      },
+      {
+        "name": "MiniMax H3 · trois plans en 480p",
+        "lines": [
+          {
+            "purpose": "Trois plans de cinq secondes depuis les images de référence ; audio natif imposé",
+            "engineId": "minimax-h3",
+            "mode": "i2v",
+            "settings": {
+              "durationSec": 5,
+              "resolution": "480P"
+            },
+            "referenceCount": 1,
+            "clipCount": 3,
+            "attemptsPerClip": 1,
+            "unitPrice": {
+              "amountCents": 33,
+              "currency": "USD"
+            },
+            "baseProduction": {
+              "amountCents": 99,
+              "currency": "USD",
+              "attempts": 3
+            },
+            "creativeAttempts": {
+              "amountCents": 0,
+              "currency": "USD",
+              "attempts": 0
+            },
+            "total": {
+              "amountCents": 99,
+              "currency": "USD"
+            },
+            "intendedOutputDurationSec": 15
+          }
+        ],
+        "baseProduction": {
+          "amountCents": 99,
+          "currency": "USD"
+        },
+        "creativeAttempts": {
+          "amountCents": 0,
+          "currency": "USD"
+        },
+        "total": {
+          "amountCents": 99,
+          "currency": "USD"
+        },
+        "intendedOutputDurationSec": 15
+      },
+      {
+        "name": "Seedance Mini · trois plans en 480p",
+        "lines": [
+          {
+            "purpose": "Trois plans de cinq secondes depuis les images de référence du teaser",
+            "engineId": "seedance-2-0-mini",
+            "mode": "i2v",
+            "settings": {
+              "durationSec": 5,
+              "resolution": "480p",
+              "aspectRatio": "16:9",
+              "audio": false
+            },
+            "referenceCount": 1,
+            "clipCount": 3,
+            "attemptsPerClip": 1,
+            "unitPrice": {
+              "amountCents": 43,
+              "currency": "USD"
+            },
+            "baseProduction": {
+              "amountCents": 129,
+              "currency": "USD",
+              "attempts": 3
+            },
+            "creativeAttempts": {
+              "amountCents": 0,
+              "currency": "USD",
+              "attempts": 0
+            },
+            "total": {
+              "amountCents": 129,
+              "currency": "USD"
+            },
+            "intendedOutputDurationSec": 15
+          }
+        ],
+        "baseProduction": {
+          "amountCents": 129,
+          "currency": "USD"
+        },
+        "creativeAttempts": {
+          "amountCents": 0,
+          "currency": "USD"
+        },
+        "total": {
+          "amountCents": 129,
+          "currency": "USD"
+        },
+        "intendedOutputDurationSec": 15
+      },
+      {
+        "name": "Salve multi-modèle · un plan par modèle en 480p",
+        "lines": [
+          {
+            "purpose": "Dunes : route Wan 3, première image et source vidéo 30 fps",
+            "engineId": "wan-3",
+            "mode": "i2v",
+            "settings": {
+              "durationSec": 5,
+              "resolution": "480p",
+              "aspectRatio": "16:9",
+              "audio": false
+            },
+            "referenceCount": 1,
+            "clipCount": 1,
+            "attemptsPerClip": 1,
+            "unitPrice": {
+              "amountCents": 33,
+              "currency": "USD"
+            },
+            "baseProduction": {
+              "amountCents": 33,
+              "currency": "USD",
+              "attempts": 1
+            },
+            "creativeAttempts": {
+              "amountCents": 0,
+              "currency": "USD",
+              "attempts": 0
+            },
+            "total": {
+              "amountCents": 33,
+              "currency": "USD"
+            },
+            "intendedOutputDurationSec": 5
+          },
+          {
+            "purpose": "Océan : route MiniMax H3 et qualification de son audio natif",
+            "engineId": "minimax-h3",
+            "mode": "i2v",
+            "settings": {
+              "durationSec": 5,
+              "resolution": "480P"
+            },
+            "referenceCount": 1,
+            "clipCount": 1,
+            "attemptsPerClip": 1,
+            "unitPrice": {
+              "amountCents": 33,
+              "currency": "USD"
+            },
+            "baseProduction": {
+              "amountCents": 33,
+              "currency": "USD",
+              "attempts": 1
+            },
+            "creativeAttempts": {
+              "amountCents": 0,
+              "currency": "USD",
+              "attempts": 0
+            },
+            "total": {
+              "amountCents": 33,
+              "currency": "USD"
+            },
+            "intendedOutputDurationSec": 5
+          },
+          {
+            "purpose": "Nuages : route Seedance Mini, source 16:9 sans audio natif",
+            "engineId": "seedance-2-0-mini",
+            "mode": "i2v",
+            "settings": {
+              "durationSec": 5,
+              "resolution": "480p",
+              "aspectRatio": "16:9",
+              "audio": false
+            },
+            "referenceCount": 1,
+            "clipCount": 1,
+            "attemptsPerClip": 1,
+            "unitPrice": {
+              "amountCents": 43,
+              "currency": "USD"
+            },
+            "baseProduction": {
+              "amountCents": 43,
+              "currency": "USD",
+              "attempts": 1
+            },
+            "creativeAttempts": {
+              "amountCents": 0,
+              "currency": "USD",
+              "attempts": 0
+            },
+            "total": {
+              "amountCents": 43,
+              "currency": "USD"
+            },
+            "intendedOutputDurationSec": 5
+          }
+        ],
+        "baseProduction": {
+          "amountCents": 109,
+          "currency": "USD"
+        },
+        "creativeAttempts": {
+          "amountCents": 0,
+          "currency": "USD"
+        },
+        "total": {
+          "amountCents": 109,
+          "currency": "USD"
+        },
+        "intendedOutputDurationSec": 15
+      }
+    ],
+    "currency": "USD",
+    "membershipTier": "member",
+    "catalogRevision": "mcp-catalog-v2:98b8ad1895fd7142282e6479ed20230d58a12ff55991cfbfabb04dc5f601e13e",
+    "pricingScope": "connected_environment",
+    "quoteRequired": true,
+    "nextAction": "discuss_and_refine"
+  }
+}

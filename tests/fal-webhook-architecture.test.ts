@@ -70,6 +70,7 @@ test('Fal webhook handler delegates mapping, payload extraction, provisional job
     'findFirstErrorMessage',
     'extractFalErrorMessage',
     'normalizeStatus',
+    'normalizeFalQueueLogStatus',
     'coerceNumber',
     'normalizeCurrency',
     'maybeAutoRefundWalletCharge',
@@ -121,6 +122,8 @@ test('Fal webhook mapping module exposes the expected helper contract', () => {
   assert.match(mappingMediaSource, /export function normalizeRenderIdList/);
   assert.match(mappingMediaSource, /export function extractImageUrlsFromPayload/);
   assert.match(mappingStatusSource, /export function normalizeStatus/);
+  assert.match(mappingStatusSource, /export function normalizeFalQueueLogStatus/);
+  assert.match(handlerSource, /normalizeFalQueueLogStatus\(nextStatus \?\? statusInfo.status \?\? payload.status\)/);
   assert.match(mappingStatusSource, /export function isCompletedFalStatus/);
   assert.match(mappingStatusSource, /export function isFailedFalStatus/);
   assert.match(refundsSource, /function coerceNumber\(/, 'numeric coercion should be private to refund helpers');

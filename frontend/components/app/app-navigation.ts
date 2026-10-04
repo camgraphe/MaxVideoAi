@@ -17,7 +17,7 @@ export const NAV_ITEMS: readonly NavItemDefinition[] = [
   ...(FEATURES.workflows.toolsSection
     ? [{ id: 'tools', label: 'Tools', badge: null, icon: 'tools', href: '/app/tools' }]
     : []),
-  ...(FEATURES.studio.maxVideoAiEditor ? [{ id: 'studio', label: 'Studio', badge: 'Beta', icon: 'generate', href: '/app/studio/projects' }] : []),
+  ...(FEATURES.studio.maxVideoAiEditor ? [{ id: 'studio', label: 'Studio', badge: 'Beta', icon: 'generate', href: '/app/studio' }] : []),
   { id: 'library', label: 'Media', badge: null, icon: 'library', href: '/app/library' },
   { id: 'jobs', label: 'Activity', badge: null, icon: 'jobs', href: '/jobs' },
   { id: 'billing', label: 'Billing', badge: null, icon: 'billing', href: '/billing' },
@@ -38,7 +38,7 @@ const PRIMARY_ITEMS: readonly (AppNavItem & { id: AppPrimary })[] = [
   { id: 'media', label: 'Media', href: '/app/library', glyph: 'library' },
   { id: 'tools', label: 'Tools', href: '/app/tools', glyph: 'tools' },
   ...(FEATURES.studio.maxVideoAiEditor
-    ? [{ id: 'studio' as const, label: 'Studio', href: '/app/studio/projects', glyph: 'studio' as const, badge: 'Beta' }]
+    ? [{ id: 'studio' as const, label: 'Studio', href: '/app/studio', glyph: 'studio' as const, badge: 'Beta' }]
     : []),
   { id: 'activity', label: 'Activity', href: '/jobs', glyph: 'prompt' },
   { id: 'account', label: 'Account', href: '/settings', glyph: 'settings' },

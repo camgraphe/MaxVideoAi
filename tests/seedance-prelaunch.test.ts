@@ -429,6 +429,7 @@ test('Seedance 1.5 Pro stays historical while Seedance 2.0 keeps the primary ali
 
   assert.ok(seedance15);
   assert.equal(Boolean(seedance15.isLegacy), true);
+  assert.equal(seedance15.surfaces.app.enabled, false);
   assert.equal(seedance15.surfaces.compare.includeInHub, true);
   assert.equal(getPublishedComparisonSlugs().includes('seedance-1-5-pro-vs-seedance-2-0-fast'), true);
   assert.equal(normalizeEngineId('seedance'), 'seedance-2-0');

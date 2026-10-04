@@ -4,44 +4,48 @@ export type MaxVideoAiMcpInstructionCapabilities = {
   montagePreparation?: boolean;
   audioGeneration?: boolean;
   studioMontageCreation?: boolean;
+  studioTimelineEditing?: boolean;
+  studioExports?: boolean;
 };
 
-// Discovery only: clients may truncate this field at 2 KB. Keep detailed
-// workflow rules in the relevant tool descriptor and live result.
-// See docs/engineering/mcp-client-experience.md (reviewed 2026-09-21).
+// Discovery entrypoint. Detailed rules live in each tool descriptor.
+// Keep every gate combination within 2,000 UTF-8 bytes; see mcp-client-experience.md.
 export function buildMaxVideoAiMcpInstructions(
   capabilities: MaxVideoAiMcpInstructionCapabilities,
 ): string {
   const instructions = [
-    'MaxVideoAI: plan AI video/image work, compare models, budget Shorts, Reels and ads, animate images, and recover media in one account.',
+    'MaxVideoAI plans AI video/image work, compares models, quotes generation and recovers media in one account.',
   ];
-
   if (capabilities.paidGeneration) {
     instructions.push(
-      'Use prepare_generation for a complete request. Display its exact quote and wait for explicit user approval before confirm_generation: one paid attempt only. Ambiguous assent is not approval. Failure or refund requires a fresh quote and new approval; never resubmit automatically.',
+      'For a complete request use prepare_generation. Display its exact quote; wait for explicit user approval before confirm_generation: one paid attempt. Ambiguous assent is not approval. Failure/refund needs a fresh quote and new approval; never resubmit automatically.',
       'Recover with get_generation_status or list_recent_generations before any new attempt; present_generation delivers only completed results.',
     );
   } else {
-    instructions.push('Generation is not available in this rollout; do not imply a submission.');
+    instructions.push('Generation is not available; never imply a submission.');
   }
-
   instructions.push(
-    'Use list_models for discovery, get_model_details for the selected mode, recommend_models only for an open choice, and calculate_project_budget for comparable estimates, never exact quotes. Never substitute a named model without user approval. If a named model is unavailable or incompatible, explain why and ask before alternatives.',
-    'The host owns creative discussion and prompts. This includes scripts, shot plans and creating/selecting reference media. Use live facts, not model memory. Ask only for missing choices that change the result or budget. For nullable inputs, omit or send null when unstated; never invent constraints.',
-    'get_account_status identifies the connected account and credits. Use only returned URLs and private assets; never invent a destination or claim a browser step completed.',
+    'Use list_models for discovery, get_model_details for exact modes, recommend_models for an open choice only, calculate_project_budget for comparable estimates, not quotes. Never substitute a named model without approval; if unavailable or incompatible, explain and ask before alternatives.',
+    'The host owns creative discussion, prompts, scripts, shot plans and reference media creation/selection; an idea or single asset may be enough. Use live facts, not memory or fixed rankings. Ask only what changes the result/budget. Omit unstated nullable inputs or send null; never invent constraints.',
+    'get_account_status identifies account/credits. Use only returned URLs and private assets; never claim a browser step completed.',
   );
-
   if (capabilities.referenceUploads) {
-    instructions.push('Select assets with list_media; import host files with import_reference_files; use create_reference_upload_link for browser/local-helper uploads. Preserve returned asset order.');
+    instructions.push('References: list_media, import_reference_files for host files, create_reference_upload_link for browser/local helper. Keep asset order.');
   }
   if (capabilities.paidGeneration && capabilities.audioGeneration) {
-    instructions.push('Audio: list_audio_capabilities, then prepare_audio_generation; display the exact quote and wait for explicit approval before confirm_audio_generation. Same one-attempt rule.');
+    instructions.push('Audio: list_audio_capabilities, prepare_audio_generation, then confirm_audio_generation after exact-quote approval; same one-attempt rule.');
   }
   if (capabilities.montagePreparation) {
-    instructions.push('prepare_montage validates ordered owned clips without rendering or saving a project.');
+    instructions.push('prepare_montage plans ordered owned ready clips; no render or saved project.');
   }
   if (capabilities.studioMontageCreation) {
     instructions.push('create_studio_montage saves an editable project; follow its idempotency contract.');
+  }
+  if (capabilities.studioTimelineEditing) {
+    instructions.push('Read get_studio_timeline before edit_studio_timeline; preserve revisions/locks.');
+  }
+  if (capabilities.studioExports) {
+    instructions.push('prepare_studio_export quotes a saved cut; confirm_studio_export needs exact-quote approval. Recover with get_studio_export, never rerender.');
   }
   return instructions.join('\n');
 }
@@ -49,7 +53,4 @@ export function buildMaxVideoAiMcpInstructions(
 export const MAXVIDEOAI_MCP_INSTRUCTIONS = buildMaxVideoAiMcpInstructions({
   paidGeneration: false,
   referenceUploads: false,
-  montagePreparation: false,
-  audioGeneration: false,
-  studioMontageCreation: false,
 });

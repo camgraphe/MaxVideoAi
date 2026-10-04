@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.7 — 2026-10-04
+
+- Preserve the brief, selected model, references and known jobs during reconnect;
+  recover an existing submission before preparing another paid request.
+- Clarify that authorized host attachments become generation references only
+  after import returns owned MaxVideoAI asset IDs.
+- Keep live model capabilities and exact quotes authoritative while the server
+  evolves its separately gated Studio timeline and export tools. Package
+  publication does not enable those gates or establish new host verification.
+
 ## 0.3.6 — 2026-09-22
 
 - Clarify installed-package discovery, deferred tool lookup and OAuth reconnection

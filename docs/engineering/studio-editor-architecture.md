@@ -32,6 +32,10 @@ Studio code should stay route-local unless another product surface truly reuses 
 ```txt
 frontend/app/(core)/(workspace)/app/studio/
   AGENTS.md
+  page.tsx
+  _components/
+  _hooks/
+  conversation/[projectId]/
   projects/
   workspace/
 ```
@@ -65,11 +69,21 @@ workspace/
 
 `/studio` is a public, localized, server-rendered, media-driven marketing route. It owns presentation copy, metadata, structured data, and committed product media only; it does not own editor state or execute Studio workflows.
 
-`/app/studio/projects` and the authenticated Studio workspace routes remain the runtime owners for project state and execution. Public landing sections must not import workspace state, React Flow, timeline editing, persistence, generation, or billing modules.
+`/app/studio`, its conversation routes, and the authenticated classic workspace routes remain the runtime owners for project state and execution. Public landing sections must not import workspace state, React Flow, timeline editing, persistence, generation, or billing modules.
 
-Starter query mapping is the only public-to-runtime workflow contract. CTA links use the server-owned handoff at `/api/studio/marketing-entry`, which resolves the existing server session and preserves only an allowlisted starter before redirecting to login or `/app/studio/projects`. The projects entry route validates and consumes that query before creating a guided project; the marketing route does not import persistence clients or call runtime modules directly.
+Starter query mapping is the only public-to-runtime workflow contract. CTA links use the server-owned handoff at `/api/studio/marketing-entry`, which resolves the existing server session and preserves only an allowlisted starter before redirecting to login or `/app/studio` (an allowlisted starter preserves `/app/studio/projects?starter=…`). The projects entry route validates and consumes that query before creating a guided project; the marketing route does not import persistence clients or call runtime modules directly.
 
-Real Studio capture generation belongs to `scripts/capture-studio-marketing-media.ts`. The committed optimized media under `frontend/public/assets/studio/marketing/` is presentation-only and is not canonical project or workspace state.
+Only real, current product captures may be committed under `frontend/public/assets/studio/`. They are presentation data, never canonical project or workspace state. The conversational release uses the isolated connected-project browser fixture; public copy must not advertise a screenshot until its asset exists.
+
+## Conversation entry, assistance and appearance
+
+`page.tsx` authorizes access and reads bounded project summaries through `conversation-project-list.ts`; GET never creates a project. It resumes the newest connected conversation or renders `StudioStart`, which creates one empty conversation via the canonical POST with a durable session-scoped retry identity. A failed summary read is unavailable, not an empty account. `ConversationProjects` lazily opens/searches the same account-owned summaries; Canvas/templates remain at `/app/studio/projects?view=canvas`. Starter and media handoffs keep their existing project entry. Closing a dialog or changing accounts invalidates its pending navigation.
+
+`useThemePreference` owns app appearance and explicit `mv-app-theme` preference. With no explicit preference it follows the OS, defaulting to light when unavailable. The root bootstrap selects the first-paint palette; `AppExperienceRoot` applies/removes the app theme at the app/public boundary. Studio consumes this same preference through its local palette and classic theme adapter. `AppSiteMenu` owns the accessible sun/moon control. Never add a second Studio theme store or dark styling to marketing pages.
+
+`useStudioAssistance` reads the account's versioned usage and sends explicit choices. `StudioAssistance` displays the current tariff, allowance percentages and wallet spending ceiling; it never calculates model costs. `assistance-ledger.ts` owns reservation, frozen request pricing/model, settlement and unresolved exposure. See the assistance economics operating guide for activation and reconciliation. A pre-dispatch refusal may restore a draft after an explicit choice. Partially completed, fully settled work may only start a new follow-up; unresolved calls never become permission to replay or change model. Generation quotes remain separately confirmed.
+
+The media shelf's **Add to timeline** action uses the existing revisioned insertion command and measured media facts. Mention/drop in the composer only attaches a reference. Signed preview grants never enter insertion payloads. Timeline read success must not erase a mutation failure.
 
 ## Ownership Map
 
@@ -95,6 +109,16 @@ Use this map before adding new code. If a change does not fit one of these owner
 - `_lib/models/workspace-model-certification.ts`: fail-closed Studio readiness for exact model, block, and workflow tuples. Registry publication is necessary but not sufficient for Studio visibility.
 - `_lib/workspace-generation-facts.ts`: normalized mode, exact provider field assignments, media provenance, reference usage, and validation shared by pricing and submission.
 - `_lib/templates/*`: advanced graph-only Canvas templates plus compact guided project starter builders. Only guided project starter builders own canonical guide annotations.
+- `frontend/src/server/studio/conversation-quote-command.ts`: explicit withdrawal of one prepared Studio quote. It checks the account advisory lock, active turn lease and exact owner/project/session scope; accepted or claimed generations remain submitted. `conversation-image-run.ts` commits the withdrawal and action checkpoint together. Clarifications preserve quotes; cancellation uses the typed `quote.discard` tool instead of interpreting message text in persistence.
+- `conversation/[projectId]/StudioImageConversation.client.tsx` orchestrates the English-first creative workspace. Welcome, help, rich replies, media composition and the shared timeline are route-local components. `ConversationMediaShelf` arranges at most four real references around the protected center; `ConversationReferenceCard` owns cancellable per-asset preview access, manual playback and focus-safe enlargement. Selection preserves visible positions; a chooser reaches older media. Small screens use a compact fan and horizontal collection. Account/project remounts clear unsent client state and transient media grants; the conversation hook owns durable request/recovery identities. Text starters never replace a nonempty draft.
+- `useConversationMediaShelf` owns draft references, file imports through existing upload routes, retained media and friendly per-message labels. `conversation-media-shelf.ts` resolves canonical drag identities and prevents label collisions; `referenceMentions` in the existing turn input JSON binds a display label to an attached owned asset. Retry, renewal, history and both directors preserve that mapping. A media mention attaches the exact source and never submits a message or inserts a timeline clip.
+- `conversation-director-instructions.ts` owns stable creative-purpose and surface-help instructions. Live tool facts carry model versions, capabilities, current editorial guidance and prices. `conversation-capabilities.ts` projects only modes executable under current Studio session authority and certification. The conversation catalog derives from canonical published, runtime-executable models and intersects exact model/block/workflow certification with adapter representability; there is no separate model-ID pilot allowlist. It currently exposes video `t2v`/`i2v` and image `t2i`/`i2i`, one output and owned image references. Canvas certification does not certify live provider behavior or enable conversation `ref2v`, first/last frames, source-video editing or extension; new models still need certification before discovery. Visual catalog summaries and details project canonical lifecycle so the director can prefer current compatible models while preserving explicit supported legacy choices. Unavailable exact choices fail instead of silently changing model.
+- `projects/StudioConversationEntry.client.tsx` creates canonical conversational projects with stable retry identity when the existing image-conversation, action and editing gates are enabled. The route-local entry helper preserves classic Canvas routing for local projects, templates and media handoffs. This entry does not enable any gate.
+- `frontend/src/server/studio/conversation-export-command.ts`: saved sequence preparation, scoped receipts in `studio_project_commands`, human confirmation and owned status recovery. Studio-session and OAuth/client scopes remain distinct. Preparation and the canonical resolver apply saved hidden-video and muted-audio flags with the classic editor helpers. Sol receives preparation/read tools only. Estimate tokens and manifests remain private; chat receives a safe quote. Accepted retries recover stored billing before testing later revision/expiry changes.
+- `frontend/src/server/timeline-exports/orchestration.ts`: shared estimate/submit/status service for classic authenticated routes and conversation exports. It delegates source ownership, quote signing, pricing, reservation, idempotency, worker launch, release/refund and artifact projection to their existing owners. No second render or billing engine belongs in Studio or MCP adapters.
+- `conversation/[projectId]/_hooks/usePreparedConversationExport.ts` and `ConversationExportQuote.client.tsx`: explicit human confirmation, quote identity retention through lost/invalid acknowledgements and reload, saved-job price and fresh preparation for expired/stale quotes. Session storage contains only an unresolved-attempt marker. The native adapter owns same-origin, account/project, bounded body and current pricing-policy guards.
+- `frontend/src/server/studio/conversation-reference-previews.ts`: read-only preview access for up to eight explicitly selected canonical assets. The native `reference-previews` route requires the conversation gate, Studio session, same origin and an owned live project. Exact asset ownership remains in `resolveStudioMedia`; `conversation-media-read-access.ts` shares 300-second original/thumbnail signing with timeline previews. Return transient display grants and measured facts only, never storage keys or canonical private fallback URLs. Clients request previews for the bounded visible references, refresh expired access on selection/expansion or explicit retry, and do not persist grants. One failed reference does not suppress the other visible assets.
+- `workspace/_controllers/useExportController.ts` keeps an accepted export's displayed price and submitted manifest through rendering, completion and session recovery. The owned job response projects the stored reservation's amount, currency and billing kind through `timeline-exports/media-access.ts`; it wins over a local display quote when acknowledgements are lost or history reconciles a job. Opening a new export resets that session and obtains the next quote; failed/canceled retries use a fresh identity, the current cut and the new authorization price. `workspace-timeline-export-session.ts` persists a validated display estimate and job billing without signed estimate tokens. An indeterminate submission labels its original quote separately from the current resume authorization; server quote validation remains authoritative.
 
 When a feature crosses surfaces, split it by owner. For example, a generated video output used in the timeline should have canvas output metadata in node code, Project media card behavior in the media controller/sidebar, and insertion rules in timeline helpers.
 
@@ -266,6 +290,14 @@ Project media is the Viewer-mode bin. It contains root-level sequences, imported
 7. Add Playwright tests only after the pure rule is locked.
 
 Timeline UI should call named operations. It should not encode new editing rules directly in pointer handlers.
+
+Conversation library and director audio insertions use the shared pure
+`layerWorkspaceTimelineAudioItem` operation. It preserves the requested frame and
+all existing clips, selecting the first non-overlapping, unlocked, unmuted audio
+track within the sequence's eight-track limit. Capacity failure leaves the
+revision and command receipt unchanged. This layers music, voice and sound effects
+without changing the canvas's explicit insert/ripple behavior. The canonical
+command, preview and export retain those separate audio tracks.
 
 ### Timeline Invariants
 

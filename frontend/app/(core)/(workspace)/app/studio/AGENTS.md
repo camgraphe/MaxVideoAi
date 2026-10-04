@@ -2,7 +2,9 @@
 
 This folder owns the MaxVideoAI Studio product surface:
 
-- `projects/`: project creation and project list entry point.
+- `page.tsx`, `_components/`, `_hooks/`: direct conversation entry, bounded project picker and stable creation identity.
+- `conversation/[projectId]/`: artistic chat workspace, media shelf, metered assistance UI and connected timeline.
+- `projects/`: classic Canvas, guided starters and media handoff entry.
 - `workspace/`: the canvas generation editor, viewer, timeline, export dialog, and route-local editor UI.
 - `frontend/app/api/studio/`: authenticated Studio API routes.
 - `frontend/src/server/studio/`: server-only Studio persistence.

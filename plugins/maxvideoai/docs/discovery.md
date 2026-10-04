@@ -15,7 +15,7 @@ The public live surface is the server-advertised tool inventory, not a copied li
 - Transport: Streamable HTTP
 - Dedicated source repository: `https://github.com/camgraphe/maxvideoai-plugin`
 - Product and setup page: `https://maxvideoai.com/mcp`
-- Package version: `0.3.6`, authored in `VERSION` and mirrored into the manifests
+- Package version: `0.3.7`, authored in `VERSION` and mirrored into the manifests
 
 Human-facing package manifests may name the assistant hosts they are designed to help. The transport configuration, MCP Registry metadata, and routing contract remain protocol-generic so other compatible clients can discover the same service without host-specific technical claims.
 

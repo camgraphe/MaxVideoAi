@@ -3,7 +3,9 @@ import type { WorkspaceTimelineExportQualityPreset } from '../../../app/(core)/(
 export type TimelineExportStatus = 'queued' | 'rendering' | 'completed' | 'failed' | 'canceled';
 
 export type TimelineExportArtifact = {
+  /** Stable authenticated delivery endpoint; never a persisted grant. */
   outputUrl: string;
+  canonicalOriginalUrl?: string;
   outputAssetId: string | null;
   sizeBytes: number | null;
   mimeType: string | null;
@@ -18,7 +20,11 @@ export type TimelineExportJobStatus = {
 
 export type TimelineExportJobResponse = TimelineExportJobStatus & {
   artifact: TimelineExportArtifact | null;
+  /** Stored reservation price, never an estimate for the next export. */
+  billing?: {amountCents: number;currency: string;billingKind: 'free' | 'paid'};
 };
+/** Submission identity is returned only in authenticated, owned Project recovery. */
+export type StudioProjectTimelineExport = TimelineExportJobResponse & {idempotencyKey: string};
 
 export type TimelineExportBillingKind = 'free' | 'paid';
 export type TimelineExportBillingStatus =

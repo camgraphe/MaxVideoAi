@@ -19,7 +19,7 @@ export function ModelArchivePage({ model, value, locale }: {
     return candidate?.lifecycle === 'current' && candidate.publication.app.published && candidate.publication.model.published;
   });
   return (
-    <main className="mx-auto max-w-6xl space-y-12 px-6 py-16">
+    <div className="mx-auto max-w-6xl space-y-12 px-6 py-16">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd({
         '@context': 'https://schema.org', '@type': 'WebPage', '@id': `${canonical}#webpage`,
         url: canonical, name: content.title, description: content.intro, inLanguage: locale,
@@ -27,7 +27,9 @@ export function ModelArchivePage({ model, value, locale }: {
       <header className="max-w-3xl space-y-5">
         <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">{content.title}</h1>
         <p className="text-lg text-text-secondary">{content.intro}</p>
-        <a className="inline-block underline underline-offset-4" href={content.sourceUrl ?? 'https://help.openai.com/en/articles/20001152-what-to-know-about-the-sora-discontinuation'}>{content.sourcesLabel}</a>
+        {content.source ? (
+          <a className="inline-block underline underline-offset-4" href={content.source.href}>{content.source.label}</a>
+        ) : null}
       </header>
       <section aria-labelledby="archive-alternatives" className="space-y-6">
         <h2 id="archive-alternatives" className="text-2xl font-semibold">{content.alternativesTitle}</h2>
@@ -49,6 +51,6 @@ export function ModelArchivePage({ model, value, locale }: {
           <Link prefetch={false} href={getExamplesHref(model.slug) ?? { pathname: '/examples' }} className="font-medium underline underline-offset-4">{content.examplesLabel}</Link>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

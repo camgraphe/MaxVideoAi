@@ -1,6 +1,7 @@
 import { type GeneratedVideoFacts } from '@/lib/generated-video-media-facts';
 import { measureGeneratedVideoBuffer } from '@/server/media/generated-video-facts';
 import { uploadFileBuffer, uploadImageToStorage } from '@/server/storage';
+import { createOwnedMediaReadUrl } from '@/server/owned-media-read-access';
 import { createUploadVideoThumbnail } from '@/server/upload-thumbnails';
 import { inferMimeFromUrl, type MediaKind } from '../media-library-records';
 
@@ -11,12 +12,16 @@ export async function copyRemoteMedia(params: {
   mimeType?: string | null;
   fileName?: string | null;
   ownedGeneratedVideo?: { mediaFacts: GeneratedVideoFacts | null };
-}): Promise<{ mediaFacts?: GeneratedVideoFacts | null; url: string; thumbUrl: string | null; mimeType: string | null; width: number | null; height: number | null; sizeBytes: number | null }> {
-  const parsed = new URL(params.url);
+}, dependencies: { uploadImage?: typeof uploadImageToStorage } = {}): Promise<{ mediaFacts?: GeneratedVideoFacts | null; url: string; thumbUrl: string | null; mimeType: string | null; width: number | null; height: number | null; sizeBytes: number | null }> {
+  const sourceUrl = await createOwnedMediaReadUrl({ url: params.url, userId: params.userId });
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8000);
-  const response = await fetch(parsed.toString(), { signal: controller.signal });
-  clearTimeout(timeout);
+  let response: Response;
+  try {
+    response = await fetch(sourceUrl, { signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
   if (!response.ok) {
     throw new Error(`FETCH_FAILED:${response.status}`);
   }
@@ -24,7 +29,7 @@ export async function copyRemoteMedia(params: {
   const buffer = Buffer.from(await response.arrayBuffer());
   if (!buffer.length) throw new Error('EMPTY_MEDIA');
   if (params.kind === 'image') {
-    const upload = await uploadImageToStorage({
+    const upload = await (dependencies.uploadImage ?? uploadImageToStorage)({
       data: buffer,
       mime: mimeType,
       userId: params.userId,
@@ -73,11 +78,11 @@ export async function createRemoteVideoAssetThumbnail(params: {
   url: string;
   fileName?: string | null;
 }): Promise<string | null> {
-  const parsed = new URL(params.url);
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30_000);
   try {
-    const response = await fetch(parsed.toString(), { signal: controller.signal });
+    const sourceUrl = await createOwnedMediaReadUrl({ url: params.url, userId: params.userId });
+    const response = await fetch(sourceUrl, { signal: controller.signal });
     if (!response.ok) return null;
     const buffer = Buffer.from(await response.arrayBuffer());
     if (!buffer.length) return null;

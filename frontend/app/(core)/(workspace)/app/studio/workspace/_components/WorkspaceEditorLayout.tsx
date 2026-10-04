@@ -189,7 +189,7 @@ export function WorkspaceEditorLayout({
         onEditorSurfaceChange={setActiveEditorSurface} onExitToProjects={shell.handleExitToProjects}
         exitToProjectsDisabled={shell.exitToProjectsDisabled}
         onFocusModeChange={setFocusMode}
-        studioCopy={studioCopy} studioTheme={studioTheme}
+        studioCopy={studioCopy}
       />
       {notice ? (
         <div className={styles.editorToast} role="status" aria-live="polite" data-editor-status="true">

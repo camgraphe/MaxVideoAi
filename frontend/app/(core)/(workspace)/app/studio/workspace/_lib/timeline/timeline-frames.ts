@@ -15,6 +15,10 @@ export function workspaceTimelineItemEndSec(item: WorkspaceTimelineItem): number
   return item.startSec + item.durationSec;
 }
 
+export function workspaceTimelineSourceTime(item: WorkspaceTimelineItem, timelineSec: number): number {
+  return (item.sourceStartSec ?? 0) + clampTimelineValue(timelineSec - item.startSec, 0, item.durationSec);
+}
+
 export function secondsToTimelineFrame(seconds: number, fps: number): number {
   return Math.round(Math.max(0, seconds) * Math.max(1, fps));
 }

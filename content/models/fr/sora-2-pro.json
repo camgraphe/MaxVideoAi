@@ -3,7 +3,7 @@
   "versionLabel": "Pro",
   "seo": {
     "title": "Sora 2 Pro : génération fermée",
-    "description": "Sora 2 Pro est archivé sur MaxVideoAI. Les nouvelles générations sont fermées avant l’arrêt de l’API le 24 septembre 2026. Comparez Seedance 2.5, MiniMax H3 et Wan 3.",
+    "description": "Sora 2 Pro est archivé sur MaxVideoAI. Les nouvelles générations sont fermées. OpenAI a annoncé le 24 septembre 2026 comme date d’arrêt de l’API. Comparez Seedance 2.5, MiniMax H3 et Wan 3.",
     "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a5cbd8d3-33c7-47b5-8480-7f23aab89891-job_684c1b3d-2679-40d1-adb7-06151b3e8739.jpg"
   },
   "hero": {
@@ -442,7 +442,7 @@
     },
     "meta": {
       "title": "Sora 2 Pro : génération fermée",
-      "description": "Sora 2 Pro est archivé sur MaxVideoAI. Les nouvelles générations sont fermées avant l’arrêt de l’API le 24 septembre 2026. Comparez Seedance 2.5, MiniMax H3 et Wan 3."
+      "description": "Sora 2 Pro est archivé sur MaxVideoAI. Les nouvelles générations sont fermées. OpenAI a annoncé le 24 septembre 2026 comme date d’arrêt de l’API. Comparez Seedance 2.5, MiniMax H3 et Wan 3."
     }
   },
   "prompting": {
@@ -599,14 +599,13 @@
   },
   "archive": {
     "title": "Sora 2 Pro : génération fermée",
-    "intro": "Sora 2 Pro est archivé sur MaxVideoAI. Les nouvelles générations sont fermées avant l’arrêt de l’API le 24 septembre 2026. Comparez Seedance 2.5, MiniMax H3 et Wan 3.",
+    "intro": "Sora 2 Pro est archivé sur MaxVideoAI. Les nouvelles générations sont fermées. OpenAI a annoncé le 24 septembre 2026 comme date d’arrêt de l’API. Comparez Seedance 2.5, MiniMax H3 et Wan 3.",
     "alternativesTitle": "Choisissez un modèle pour votre prochaine vidéo",
     "chooseLabel": "Découvrir ce modèle",
     "historyTitle": "Vos vidéos existantes",
     "historyBody": "Vos vidéos MaxVideoAI existantes restent dans votre bibliothèque. Vous pouvez consulter et télécharger les résultats disponibles. Choisissez un autre modèle pour créer une nouvelle vidéo ; ses réglages et son prix seront présentés avant la génération.",
     "historyLabel": "Ouvrir ma bibliothèque",
     "examplesLabel": "Voir les exemples historiques Sora",
-    "sourcesLabel": "Lire l’annonce officielle de fermeture",
     "alternatives": [
       {
         "modelId": "seedance-2-5",
@@ -623,6 +622,10 @@
         "title": "Wan 3",
         "description": "Explorez les parcours texte, image et références, ainsi que l’édition et l’extension lorsqu’elles sont disponibles."
       }
-    ]
+    ],
+    "source": {
+      "label": "Lire l’annonce officielle de fermeture",
+      "href": "https://help.openai.com/en/articles/20001152-what-to-know-about-the-sora-discontinuation"
+    }
   }
 }

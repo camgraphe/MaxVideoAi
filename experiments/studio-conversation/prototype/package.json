@@ -1,0 +1,26 @@
+{
+  "name": "maxvideoai-studio-local",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx server/index.ts",
+    "test": "tsx --test",
+    "build": "tsc --noEmit && vite build",
+    "eval:live": "tsx evaluation/run-live.ts"
+  },
+  "dependencies": {
+    "lucide-react": "0.553.0",
+    "openai": "7.25.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.18.6",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "@vitejs/plugin-react": "6.1.1",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3",
+    "vite": "8.3.1"
+  }
+}

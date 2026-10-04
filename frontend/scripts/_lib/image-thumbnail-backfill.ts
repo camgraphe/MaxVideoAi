@@ -28,7 +28,12 @@ export type ImageThumbnailBackfillSummary = {
   resumeAfterId: string;
 };
 
-type ThumbnailBatchInput = { jobId: string; userId: string | null; imageUrls: string[] };
+type ThumbnailBatchInput = {
+  jobId: string;
+  userId: string | null;
+  imageUrls: string[];
+  allowLegacyAnonymousPublicRead?: boolean;
+};
 
 export type ImageThumbnailBackfillDependencies = {
   query<T>(sql: string, params?: ReadonlyArray<unknown>): Promise<T[]>;
@@ -226,6 +231,7 @@ export async function runImageThumbnailBackfill(
           ? await dependencies.createThumbnails!({
               jobId: row.job_id,
               userId: row.user_id,
+              ...(row.user_id === null ? { allowLegacyAnonymousPublicRead: true } : {}),
               imageUrls: missingIndexes.map((index) => parsed.entries[index]!.url),
             })
           : [];

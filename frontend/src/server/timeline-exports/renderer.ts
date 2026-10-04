@@ -22,13 +22,16 @@ import {
 } from './repository';
 import type { TimelineExportRenderProps } from '@/remotion/timeline-export/types';
 import { parseTimelineExportManifest } from './render-request';
-import { validateTimelineExportManifestMediaUrls } from './media-security';
+import { sanitizeProviderMediaDiagnostics } from '@/server/provider-media-diagnostics';
+import { prepareTimelineExportRenderMedia, validateTimelineExportManifestMediaUrls } from './media-security';
 
 const DEFAULT_RENDER_TIMEOUT_MS = 30 * 60 * 1000;
 const MAX_RENDER_TIMEOUT_MS = 45 * 60 * 1000;
 const MIN_RENDER_TIMEOUT_MS = 60 * 1000;
 const MAX_RENDER_CONCURRENCY = 2;
 export const MAX_TIMELINE_EXPORT_OUTPUT_BYTES = 512 * 1024 * 1024;
+// Lossless intermediate frames avoid the browser-video/JPEG color drift in high-saturation cuts.
+export const TIMELINE_EXPORT_COLOR_SETTINGS = {imageFormat: 'png',colorSpace: 'bt709'} as const;
 
 export function assertTimelineExportOutputSize(sizeBytes: number): void {
   if (!Number.isSafeInteger(sizeBytes) || sizeBytes <= 0) throw new Error('TIMELINE_EXPORT_OUTPUT_EMPTY');
@@ -102,6 +105,10 @@ function timelineExportRenderTimeoutMs(): number {
 
 function frontendRoot(): string {
   return process.cwd().endsWith('/frontend') ? process.cwd() : join(process.cwd(), 'frontend');
+}
+
+export function timelineExportEntryPoint(): string {
+  return join(frontendRoot(), 'src/remotion/timeline-export/index.ts');
 }
 
 function parseAspectRatio(value: string | null | undefined): number {
@@ -178,7 +185,7 @@ export async function publishTimelineExportArtifactWithDependencies(params: {
       url: upload.url,
       kind: 'video',
       source: 'import',
-      sourceJobId: params.exportId,
+      metadata: {timelineExportId: params.exportId},
       label: fileName,
       mimeType: 'video/mp4',
       width: params.width,
@@ -210,12 +217,13 @@ export async function renderTimelineExportJob(job: TimelineExportJobRecord): Pro
     const parsedManifest = parseTimelineExportManifest(job.render_manifest);
     const manifest = await validateTimelineExportManifestMediaUrls({
       manifest: parsedManifest,
+      userId: job.user_id,
       requestOrigin: process.env.NEXT_PUBLIC_SITE_URL?.trim() || 'https://maxvideoai.com',
     });
     const dimensions = renderDimensions(manifest, job.resolution);
     const fps = job.fps ?? manifest.projectSettings?.fps ?? 30;
     const inputProps: TimelineExportRenderProps = {
-      manifest,
+      manifest: await prepareTimelineExportRenderMedia({manifest,userId: job.user_id,requestOrigin: process.env.NEXT_PUBLIC_SITE_URL?.trim() || 'https://maxvideoai.com'}),
       width: dimensions.width,
       height: dimensions.height,
       fps,
@@ -223,12 +231,13 @@ export async function renderTimelineExportJob(job: TimelineExportJobRecord): Pro
       mediaTrust: 'server-validated',
     };
     const serveUrl = await bundle({
-      entryPoint: join(frontendRoot(), 'src/remotion/timeline-export/Root.tsx'),
+      entryPoint: timelineExportEntryPoint(),
     });
     const composition = await selectComposition({
       serveUrl,
       id: 'MaxVideoAITimelineExport',
       inputProps,
+      onBrowserLog: () => {},
     });
     await updateTimelineExportProgress({ exportId: job.id, progress: 35, message: 'Rendering frames.' });
     const { cancel, cancelSignal } = makeCancelSignal();
@@ -241,8 +250,10 @@ export async function renderTimelineExportJob(job: TimelineExportJobRecord): Pro
         composition,
         serveUrl,
         codec: 'h264',
+        ...TIMELINE_EXPORT_COLOR_SETTINGS,
         outputLocation: outputPath,
         inputProps,
+        onBrowserLog: () => {},
         chromiumOptions: { gl: 'angle' },
         concurrency: MAX_RENDER_CONCURRENCY,
         timeoutInMilliseconds: 60_000,
@@ -289,7 +300,7 @@ export async function renderTimelineExportJob(job: TimelineExportJobRecord): Pro
     });
     await failTimelineExportJob({
       exportId: job.id,
-      message: error instanceof Error ? error.message : 'RENDER_FAILED',
+      message: String(sanitizeProviderMediaDiagnostics(error instanceof Error ? error.message : 'RENDER_FAILED')),
       billingStatus: nextBillingStatus,
     });
   } finally {

@@ -1,5 +1,11 @@
 # Pricing Engine
 
+## Studio conversational estimates
+
+`src/server/agent-api/generation-pricing-read.ts` is the shared read-only normalization-adjacent validation and canonical pricing seam used by preparation and Studio estimates. It checks current executable model/mode facts, references, settings, membership projection and pricing snapshots. It never persists a quote, checks/reserves a wallet or submits a provider request. Preparation retains those responsibilities in its existing owner.
+
+`pricing_read` exposes one exact image/video scenario through Studio's existing director loop. `image-generation-service.ts` additionally applies current Studio authority and certification. Saved image references must be explicitly attached and resolve to the current owner. Estimates return amount/currency, settings, reference count, `estimatedAt` and `quoteRequired`; the client still confirms a fresh canonical quote before spending. Audio and unsaved project-output estimates are unsupported. Advice and comparisons must leave existing prepared/accepted quotes intact. Behavioral coverage lives in `studio-conversation-pricing*.test.ts` and the existing MCP preparation/budget tests.
+
 ## Approved production reader (2026-10-02)
 
 The approved release sets `config/customer-tariffs.json` to `active: true`.
@@ -560,6 +566,32 @@ resolver remains the offline baseline interface. The offer name states the same
 scenario as the visible line; it is not labeled a minimum price. Physical return
 destinations are omitted for digital generations; sales-country applicability and
 the existing consumed-generation policy are unchanged.
+
+## Archived Sora and Seedance 1.5 audit projections
+
+Sora 2, Sora 2 Pro and Seedance 1.5 Pro remain in the frozen pricing evidence after retirement.
+The historical canonical audit still reproduces their twelve billing and estimator
+scenarios, including the former membership tiers. It does not enable live quotes.
+The public baseline now checks 577 rows: it removes their estimator, pricing-hub
+and workspace-preflight entries and requires their Product offers to be unavailable.
+The original fixtures and reviewed customer-price correction amounts remain intact.
+
+Workspace-preflight audit sampling keeps the original eight model identities and
+then applies current publication. Removing Sora therefore leaves six sampled
+models; it must not silently backfill other models and report their new scenario
+IDs as price changes. No commercial rates or stored receipts change in this
+retirement projection.
+
+## Gated Studio assistance product
+
+Studio assistant usage has a separate dated customer tariff and provider-cost ledger.
+`frontend/server/pricing/quote-studio-assistance.ts` delegates the cumulative
+`client_message` quote to `quoteCanonicalPricing`; it does not change any media or
+MCP quote. Account/campaign reservation, explicit wallet-budget consent and unknown
+usage recovery are documented in [Studio assistance economics](studio-assistance-economics.md).
+The customer tariff is fixed per token category, and all internal calls in a message
+share one upward cent rounding. Provider cache-write uncertainty remains separately
+inspectable. Production activation stays off pending commercial and live qualification.
 
 ## Multimodal reference cost budgets
 
