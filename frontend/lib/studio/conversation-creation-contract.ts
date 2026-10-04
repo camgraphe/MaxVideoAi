@@ -37,18 +37,21 @@ export const conversationJobImageRefProperties = {
   properties: {type: {type: 'string', enum: ['job-output']},jobId: {type: 'string'},outputId: {type: 'string'},kind: assetProperties},
 };
 export const conversationSelectionProperties = {
-  modelId: {type: ['string','null']},
+  modelId: {type: ['string','null'],description: 'Use the exact top-level modelId returned by catalog_read or model_details. For audio, keep this modelId and choose the variant through settings; provider IDs inside modes/variants are not Studio model IDs.'},
   settings: {type: ['array','null'], items: {type: 'object', additionalProperties: false, required: ['name','value'],
     properties: {name: {type: 'string'}, value: {type: ['string','number','boolean','null']}}}},
-  outputCount: {type: ['integer','null'], enum: [1,null]},
+  outputCount: {type: ['integer','null'], enum: [1,null],description: 'This prepares exactly one output. Multiple variants require separate requests; never describe one preparation as a two-image or batch quote.'},
 };
+export const conversationPreparationReplyProperty={type:'string',description:'Explain the direction and quote review before creation. The server computes and displays the exact price after this call; do not claim a successful preparation has no price because an earlier estimate failed, or invent an unread amount.'};
+export const conversationCreationPromptProperty={type:'string',description:'Write the visual direction. Preserve client-supplied visible lettering verbatim, including accents and punctuation, unless a rewrite is requested.'};
 export function conversationReferencesProperties(jobOutputs: boolean) {
   return {type: ['array','null'], items: {type: 'object', additionalProperties: false, required: ['ref','role','slot'], properties: {
     ref: jobOutputs ? {anyOf: [conversationImageRefProperties,conversationJobImageRefProperties]} : conversationImageRefProperties,
-    role: {type: 'string',enum: ['reference','source','first_frame','last_frame','mask']},slot: {type: ['integer','null']},
+    role: {type: 'string',enum: ['reference','source','first_frame','last_frame','mask']},
+    slot: {type: 'null',description: 'Use null for these Studio modes. Image labels and positions are not ordered reference slots.'},
   }}};
 }
 export const imageSelectionProperties = {
-  prompt: {type: 'string'}, aspectRatio: {type: 'string'}, ...conversationSelectionProperties,
+  prompt: conversationCreationPromptProperty, aspectRatio: {type: 'string'}, ...conversationSelectionProperties,
   mode: {type: ['string','null'], enum: ['t2i','i2i',null]}, references: conversationReferencesProperties(false),
 };

@@ -20,3 +20,15 @@ test('unknown usage and process interruption retain the reservation and prevent 
   }
   assert.throws(()=>reserveLiveCall(JSON.parse(JSON.stringify(reserved)),1));
 });
+test('an explicitly raised cumulative cap retains earlier spend and still blocks over-budget or unresolved calls',()=>{
+  const state={settled:5_100_000_000,held:0,blocked:false,capNanoUsd:15_000_000_000};
+  assert.equal(reserveLiveCall(state,702_000_000).settled,5_100_000_000);
+  const settled=settleLiveCall(reserveLiveCall(state,702_000_000),32_000_000);
+  assert.equal(settled.capNanoUsd,state.capNanoUsd);
+  assert.equal(reserveLiveCall(settled,702_000_000).settled,5_132_000_000);
+  assert.throws(()=>reserveLiveCall({...state,settled:14_999_999_999},2));
+  assert.equal(reserveLiveCall({...state,settled:14_999_999_999},1).held,1);
+  for(const capNanoUsd of [-1,0,NaN,Infinity]) assert.throws(()=>reserveLiveCall({...state,capNanoUsd},1));
+  assert.throws(()=>reserveLiveCall({...state,held:1},1));
+  assert.throws(()=>reserveLiveCall({...state,blocked:true},1));
+});

@@ -11,7 +11,7 @@ import type {ToolAssetRef} from '@/lib/toolbox/contract';
 import {studioTimelineReadSchema,studioTimelineEditSchema,STUDIO_EDITING_DIRECTOR_TOOLS,type StudioConversationTimeline} from './conversation-editing-contract';
 import type {ConversationEditResult} from '@/server/studio/conversation-edit-command';
 import type {StudioQuoteDiscardResult} from '@/server/studio/conversation-quote-command';
-import {imageSelectionSchema,imageSelectionProperties} from './conversation-creation-contract';
+import {imageSelectionSchema,imageSelectionProperties,conversationPreparationReplyProperty} from './conversation-creation-contract';
 import type {AgentModelModeDetails,AgentModelLifecycle} from '@/server/agent-api/types';
 import type {listAudioCapabilities} from '@/server/agent-api/audio-capabilities';
 import type {AudioSettingDetails,projectAudioVariantFixedOutput} from '@/server/agent-api/audio-capabilities';
@@ -83,7 +83,7 @@ export const STUDIO_DIRECTOR_TOOLS = [
     revision: {type: 'integer', minimum: 0}, brief: {type: 'string'}, decisions: {type: 'array', items: {type: 'string'}},
   }},
   {action: 'image.prepare', name: 'image_prepare', description: 'Write your own image prompt and prepare one exact quote with a model and supported settings from model_details. Settings are name/value pairs; references are explicitly selected attached library images with supported roles. Null selection fields use defaults; an empty reference list means text-only. Does not generate or charge. Ends the turn; explain that the client reviews the quote.', properties: {
-    reply: {type: 'string'}, ...imageSelectionProperties,
+    reply: conversationPreparationReplyProperty, ...imageSelectionProperties,
   }},
   {action: 'generation.read', name: 'generation_read', description: 'Recover a generation from an exact quote belonging to this project. Never starts another job.', properties: {quoteId: {type: 'string'}}},
   {action: 'quote.discard', name: 'quote_discard', description: 'Withdraw exactly one prepared quote when the client explicitly asks to cancel or discard it. Use an exact quoteId from project facts. Never use for a clarification or cost question. An already submitted generation cannot be cancelled by this tool. No charge.', properties: {quoteId: {type: 'string'}}},

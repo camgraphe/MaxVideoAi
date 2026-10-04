@@ -77,7 +77,6 @@ export function imageRequestFromDraft(
       return {kind: 'asset',assetId: reference.ref.assetId,role: reference.role,...(reference.slot == null ? {} : {slot: reference.slot})};
     });
   const mode = selection.mode ?? (references.length ? "i2i" : "t2i");
-  if (mode === 't2i' && references.length) throw new AgentApiError('REFERENCE_INVALID','Text-to-image does not use generation references.');
   const candidate =
     selection.modelId ? catalog.find(entry => entry.engine.id === selection.modelId && entry.publicModes.includes(mode)) : catalog.find(
       (entry) =>
