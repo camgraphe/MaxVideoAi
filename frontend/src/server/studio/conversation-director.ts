@@ -64,9 +64,10 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
     let completedEdits = 0;
     let lastResult: StudioActionResult | undefined;
     for (let index = 0; index < 4; index++) {
-      // Every existing tool remains available within the same four-call budget.
-      // If the final call acts, durable receipts supply a truthful pending summary.
-      const tools = [...STUDIO_DIRECTOR_TOOLS, ...(options.mediaEnabled ? STUDIO_MEDIA_DIRECTOR_TOOLS : []),...(options.editingEnabled ? STUDIO_EDITING_DIRECTOR_TOOLS : []),...(options.exportsEnabled ? STUDIO_EXPORT_DIRECTOR_TOOLS : [])];
+      const availableTools = [...STUDIO_DIRECTOR_TOOLS, ...(options.mediaEnabled ? STUDIO_MEDIA_DIRECTOR_TOOLS : []),...(options.editingEnabled ? STUDIO_EDITING_DIRECTOR_TOOLS : []),...(options.exportsEnabled ? STUDIO_EXPORT_DIRECTOR_TOOLS : [])];
+      // A final read cannot feed another response. Offer only finishing actions,
+      // while still accepting older checkpointed reads during paid-response replay.
+      const tools = index === 3 ? availableTools.filter(tool => tool.action.endsWith('.prepare') || tool.action === 'timeline.edit' || tool.action === 'quote.discard') : availableTools;
       const params: ResponseCreateParamsNonStreaming = {
         model: options.model ?? 'gpt-6.1-sol', service_tier: 'default', store: false, reasoning: {effort: 'medium'}, max_output_tokens: 2200,
         include: ['reasoning.encrypted_content'],
@@ -75,7 +76,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         instructions: buildStudioDirectorInstructions(options)
           + `\n\nResponse ${index + 1} of 4: ${4 - index} Responses remain, including this one. Leave room to answer. For an image/video generation budget, inspect one suitable model, read its exact price, then explain; compare a second only if its price and a useful reply fit.`
           + (index === 3
-          ? '\n\nThis is the last Response available for this message. Prefer giving the client a useful answer from the facts already read, or completing their requested preparation/edit. Defer optional memory housekeeping; do not spend this final Response on it while leaving the client without an answer.'
+          ? '\n\nThis is the last Response available for this message. Give the client a useful answer from the facts already read, or complete their requested preparation/edit/cancellation. Reads and memory writes are unavailable because no response would remain to use their results. Explain any missing model or price verification accurately; do not invent facts or prepare a creation when the client only asked for advice.'
           : ''),
         input,
         tools: tools.map(tool => ({type: 'function' as const, name: tool.name, description: tool.description, strict: true,
