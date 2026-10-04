@@ -22,7 +22,7 @@ export async function stopStudioAssistanceReplay(actor:StudioGenerationActor,req
 }
 function requireEnabled(policy:StudioAssistancePolicy){if(!policy.enabled)throw new AgentApiError('ENGINE_UNAVAILABLE','Studio assistance is unavailable until its usage policy is enabled.');}
 function emptyAccount(userId:string,policy:StudioAssistancePolicy):Account{return {user_id:userId,selected_model:'gpt-6.1-sol',paid_enabled:false,paid_authorized_cents:0,tariff_version:null,sol_limit_nano_usd:policy.solAllowanceNanoUsd,luna_limit_nano_usd:policy.lunaAllowanceNanoUsd,revision:0};}
-async function lockAccount(tx:TransactionQueryExecutor,userId:string,policy:StudioAssistancePolicy):Promise<Account>{
+export async function lockAccount(tx:TransactionQueryExecutor,userId:string,policy:StudioAssistancePolicy):Promise<Account>{
   if(!userId)throw new AgentApiError('AUTH_REQUIRED','Sign in to use Studio assistance.');
   // Always campaign -> account -> wallet, including settlement. No request-time schema work.
   await tx.query('INSERT INTO studio_assistance_campaigns(id,limit_nano_usd) VALUES($1,$2) ON CONFLICT DO NOTHING',[CAMPAIGN,policy.campaignNanoUsd]);
@@ -35,9 +35,9 @@ async function totals(db:QueryExecutor,userId:string):Promise<Totals>{
   const rows=await db.query<{mode:StudioAssistanceMode;exposure:string;spent:string;reserved:string;unresolved:string}>(`SELECT mode,
     COALESCE(sum(CASE WHEN state='settled' THEN provider_max_nano_usd ELSE reserved_nano_usd END),0)::text exposure,
     COALESCE(sum(charged_cents) FILTER(WHERE state='settled'),0)::text spent,
-    COALESCE(sum(reserved_cents) FILTER(WHERE state<>'settled'),0)::text reserved,
-    count(*) FILTER(WHERE state='unknown' OR (state='reserved' AND created_at<clock_timestamp()-interval '3 minutes'))::text unresolved
-    FROM studio_assistance_calls WHERE user_id=$1 GROUP BY mode`,[userId]);
+    COALESCE(sum(reserved_cents) FILTER(WHERE state<>'settled' AND w.call_id IS NULL),0)::text reserved,
+    count(*) FILTER(WHERE w.call_id IS NULL AND (state='unknown' OR (state='reserved' AND c.created_at<clock_timestamp()-interval '3 minutes')))::text unresolved
+    FROM studio_assistance_calls c LEFT JOIN studio_assistance_resolutions w ON w.call_id=c.id AND w.action='waive_unknown' WHERE user_id=$1 GROUP BY mode`,[userId]);
   const result={sol:0,luna:0,paidSpent:0,paidReserved:0,unresolved:0};
   for(const row of rows){if(row.mode==='included_sol')result.sol=Number(row.exposure);else if(row.mode==='sponsored_luna')result.luna=Number(row.exposure);else{result.paidSpent=Number(row.spent);result.paidReserved=Number(row.reserved);}result.unresolved+=Number(row.unresolved);}
   return result;
@@ -86,7 +86,7 @@ export async function openStudioAssistanceTurn(actor:StudioGenerationActor,reque
   });
 }
 async function paidTurnBasis(tx:QueryExecutor,call:{user_id:string;project_id:string;request_id:string}){
-  const row=(await tx.query<{basis:string;charged:string}>(`SELECT COALESCE(sum(tariff_basis_nano_usd),0)::text basis,COALESCE(sum(charged_cents),0)::text charged FROM studio_assistance_calls WHERE user_id=$1 AND project_id=$2 AND request_id=$3 AND state='settled' AND mode='paid_sol'`,[call.user_id,call.project_id,call.request_id]))[0];
+  const row=(await tx.query<{basis:string;charged:string}>(`SELECT COALESCE(sum(tariff_basis_nano_usd),0)::text basis,COALESCE(sum(charged_cents),0)::text charged FROM studio_assistance_calls c WHERE user_id=$1 AND project_id=$2 AND request_id=$3 AND state='settled' AND mode='paid_sol' AND NOT EXISTS(SELECT 1 FROM studio_assistance_resolutions w WHERE w.call_id=c.id AND w.action='waive_unknown')`,[call.user_id,call.project_id,call.request_id]))[0];
   return {basis:Number(row.basis),charged:Number(row.charged)};
 }
 export async function reserveStudioAssistanceCall(input:{userId:string;projectId:string;requestId:string;leaseId:string;index:number;inputTokens:number;outputTokens:number},policy=studioAssistancePolicy(),executor?:TransactionQueryExecutor):Promise<AssistanceCall>{
@@ -99,7 +99,7 @@ export async function reserveStudioAssistanceCall(input:{userId:string;projectId
     const turn=(await tx.query<AssistanceTurn>('SELECT * FROM studio_assistance_turns WHERE user_id=$1 AND project_id=$2 AND request_id=$3',[input.userId,input.projectId,input.requestId]))[0];
     if(!turn)throw new AgentApiError('PARAMETER_INVALID','This assistance request is unavailable.');
     if(turn.tariff_version!==STUDIO_ASSISTANCE_TARIFF.version||turn.policy_version!==STUDIO_ASSISTANCE_POLICY_VERSION)assistanceError('policy_changed','Review the current assistance policy in a new message.');
-    const existing=await tx.query(`SELECT id FROM studio_assistance_calls WHERE user_id=$1 AND project_id=$2 AND request_id=$3 AND (state<>'settled' OR (lease_id=$4 AND response_index=$5))`,[input.userId,input.projectId,input.requestId,input.leaseId,input.index]);
+    const existing=await tx.query(`SELECT id FROM studio_assistance_calls c WHERE user_id=$1 AND project_id=$2 AND request_id=$3 AND (state<>'settled' OR (lease_id=$4 AND response_index=$5) OR EXISTS(SELECT 1 FROM studio_assistance_resolutions w WHERE w.call_id=c.id AND w.action='waive_unknown'))`,[input.userId,input.projectId,input.requestId,input.leaseId,input.index]);
     if(existing.length)assistanceError('usage_unresolved','This message has unresolved or already dispatched model usage. Recover its saved response before retrying.');
     const dispatched=Number((await tx.query<{n: string}>('SELECT count(*)::text n FROM studio_assistance_calls WHERE user_id=$1 AND project_id=$2 AND request_id=$3',[input.userId,input.projectId,input.requestId]))[0].n);
     if(dispatched>=STUDIO_ASSISTANCE_TARIFF.maxCallsPerMessage)assistanceError('call_limit','This message reached its model-call limit.',false,dispatched);
@@ -141,7 +141,8 @@ export async function settleStudioAssistanceCall(id:string,userId:string,respons
       await tx.query(`UPDATE studio_assistance_calls SET state='unknown',response_id=$3,returned_model=$4,service_tier=$5 WHERE id=$1 AND user_id=$2`,[id,userId,response.id,response.model,typeof response.service_tier==='string'?response.service_tier:null]);return false;
     }
     let charged=0,price:ReturnType<typeof quoteStudioAssistance>|null=null;
-    if(call.mode==='paid_sol'){
+    const waived=(await tx.query("SELECT 1 FROM studio_assistance_resolutions WHERE call_id=$1 AND action='waive_unknown'",[id])).length>0;
+    if(call.mode==='paid_sol'&&!waived){
       const total=await paidTurnBasis(tx,call);price=quoteStudioAssistance(total.basis+facts.tariffBasisNanoUsd);charged=price.customerTotalCents-total.charged;
       if(charged<0||charged>call.reserved_cents)throw new AgentApiError('INTERNAL_ERROR','Studio settlement exceeds its reservation.');
       const refund=call.reserved_cents-charged;

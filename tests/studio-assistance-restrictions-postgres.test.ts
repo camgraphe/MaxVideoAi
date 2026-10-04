@@ -26,7 +26,7 @@ test('assistance restrictions stop new supplier work while recorded responses re
   await createPaidGenerationTestSchema(pg.pool);
   await pg.pool.query(`CREATE TABLE studio_projects(id text PRIMARY KEY,user_id text NOT NULL,name text NOT NULL,deleted_at timestamptz);
     CREATE TABLE studio_sequences(id text PRIMARY KEY)`);
-  for (const file of ['50_studio_image_conversation.sql', '51_studio_image_model_usage.sql', '42_studio_connected_montages.sql', '52_studio_conversation_runs.sql', '54_studio_assistance_ledger.sql']) {
+  for (const file of ['50_studio_image_conversation.sql', '51_studio_image_model_usage.sql', '42_studio_connected_montages.sql', '52_studio_conversation_runs.sql', '54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql']) {
     await pg.pool.query(readFileSync('neon/migrations/' + file, 'utf8'));
   }
   await pg.pool.query(`CREATE FUNCTION reject_restricted_test_settlement() RETURNS trigger LANGUAGE plpgsql AS $$

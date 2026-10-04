@@ -71,9 +71,10 @@ export async function revealStudioReview(actorId: string, input: unknown): Promi
         FROM studio_conversation_responses WHERE user_id=$1 AND project_id=$2 AND request_id=$3 ORDER BY created_at,response_index LIMIT 21`, params, row => projectUsage(row, 'conversation'));
       const legacyUsage = await optionalSource(tx, `SELECT state,response_json->>'model' AS model,response_json->'usage' AS usage,response_json->>'elapsedMs' AS elapsed_ms,created_at
         FROM studio_image_model_usage WHERE user_id=$1 AND project_id=$2 AND request_id=$3 ORDER BY created_at LIMIT 21`, params, row => projectUsage(row, 'legacy'));
-      const assistance = await optionalSource(tx, `SELECT state,model,returned_model,mode,policy_version,rate_version,tariff_version,
-        reserved_nano_usd,reserved_cents,provider_min_nano_usd,provider_max_nano_usd,charged_cents,created_at
-        FROM studio_assistance_calls WHERE user_id=$1 AND project_id=$2 AND request_id=$3 ORDER BY created_at,response_index LIMIT 21`, params, projectAssistance);
+      const assistance = await optionalSource(tx, `SELECT c.state,c.model,c.returned_model,c.mode,c.policy_version,c.rate_version,c.tariff_version,
+        c.reserved_nano_usd,c.reserved_cents,c.provider_min_nano_usd,c.provider_max_nano_usd,c.charged_cents,c.created_at,w.refund_cents AS waived_cents
+        FROM studio_assistance_calls c LEFT JOIN studio_assistance_resolutions w ON w.call_id=c.id AND w.action='waive_unknown'
+        WHERE c.user_id=$1 AND c.project_id=$2 AND c.request_id=$3 ORDER BY c.created_at,c.response_index LIMIT 21`, params, projectAssistance);
       return { turn: projectTurn(rows[0]), message: redactReviewText(text?.message, 4000), reply: redactReviewText(text?.reply, 2400), actions, responses, legacyUsage, assistance, accessId, coverage: 'partial' };
     });
   } catch (error) {

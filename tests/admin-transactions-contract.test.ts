@@ -285,6 +285,42 @@ test('receipt refund preserves orphan-charge fallback and skips job update', asy
   assert.equal(harness.calls[2]!.params?.[3], 'Manual refund for receipt 30');
 });
 
+test('generic receipt refunds leave Studio assistance reservations to their reconciliation owner', async t => {
+  for (const identity of [
+    { billing_product_key: 'studio_assistance', job_id: null },
+    { billing_product_key: null, job_id: 'studio-assistance:call-1' },
+  ]) {
+    await t.test(JSON.stringify(identity), async () => {
+      const harness = refundHarness([
+        [{ id: 30, user_id: 'user_2', amount_cents: 500, currency: 'USD', description: 'Studio assistance reservation', vendor_account_id: null, pricing_snapshot: null, ...identity }],
+        [], [], [], [],
+      ]);
+      await assert.rejects(
+        issueManualWalletRefundByReceipt({ receiptId: 30, adminUserId: 'admin_1' }, harness.dependencies),
+        /Studio assistance charges require Studio assistance reconciliation/
+      );
+      assert.equal(harness.calls.length, 1, 'Only the selected charge may be read before rejecting the generic refund');
+      assert.match(harness.calls[0]!.text, /billing_product_key/);
+      assert.equal(harness.rollbackCount(), 1);
+    });
+  }
+});
+
+test('job refund selection cannot bypass the Studio assistance reconciliation boundary', async () => {
+  const harness = refundHarness([
+    [{ job_id: 'job_1', user_id: 'user_1', payment_status: 'paid_wallet', pricing_snapshot: null, vendor_account_id: null, currency: 'USD' }],
+    [{ id: 10, amount_cents: 900, currency: 'USD', description: null, billing_product_key: 'studio_assistance' }],
+    [], [], [], [],
+  ]);
+  await assert.rejects(
+    issueManualWalletRefund({ jobId: 'job_1', adminUserId: 'admin_1' }, harness.dependencies),
+    /Studio assistance charges require Studio assistance reconciliation/
+  );
+  assert.equal(harness.calls.length, 2);
+  assert.match(harness.calls[1]!.text, /billing_product_key/);
+  assert.equal(harness.rollbackCount(), 1);
+});
+
 test('duplicate refund is rejected after the charge lock and before insert', async () => {
   const harness = refundHarness([
     [{ job_id: 'job_1', user_id: 'user_1', payment_status: 'paid_wallet', pricing_snapshot: null, vendor_account_id: null, message: null, engine_label: null, duration_sec: null, currency: 'USD' }],

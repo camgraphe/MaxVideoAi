@@ -46,6 +46,7 @@ test('admin Studio review bounds metadata, scopes every read and fails closed wi
     await pg.pool.query(`INSERT INTO studio_conversation_responses VALUES ($1,$2,$3,0,'reported',$4,50,now())`, [user,project,id,{model:'gpt-6.1-sol',output:[{type:'reasoning',encrypted_content:'NEVER_REASONING'}],output_text:'NEVER_RAW_OUTPUT',usage:{input_tokens:120,output_tokens:30,total_tokens:150,output_tokens_details:{reasoning_tokens:10}}}]);
   }
   await pg.pool.query(readFileSync('neon/migrations/54_studio_assistance_ledger.sql','utf8'));
+  await pg.pool.query(readFileSync('neon/migrations/62_studio_assistance_resolutions.sql','utf8'));
   await pg.pool.query(`INSERT INTO studio_assistance_accounts(user_id,sol_limit_nano_usd,luna_limit_nano_usd) VALUES ('owner',1000000,1000000);
     CREATE TABLE user_roles(user_id text,role text); INSERT INTO user_roles VALUES ('admin','admin'),('ordinary','user');`);
   await pg.pool.query(`INSERT INTO studio_assistance_turns(user_id,project_id,request_id,model,mode,policy_version,tariff_version,tariff_snapshot)
