@@ -1,5 +1,10 @@
 # Studio + MCP release candidate — 4 October 2026
 
+Historical pre-integration handoff. Subsequent integration, hosted qualification,
+cost totals and release status are recorded in the
+[main-integration evidence](studio-main-integration-2026-10-04.md). The older
+source revisions and totals below remain attributed to their original checkpoint.
+
 Status: local implementation and expanded validation complete on `codex/studio-creative-workspace`.
 **Not yet approved for production:** target-main integration, staging and final activation
 remain explicit gates in the

@@ -1,7 +1,10 @@
 # Studio assistance accounting (gated beta)
 
-Implemented 2026-10-03; production activation remains off. No production migration,
-provider qualification call, wallet debit or environment change is part of this work.
+Implemented 2026-10-03; production activation remains off. Text-only provider and
+protected staging qualification are recorded in the
+[main-integration evidence](../operations/studio-main-integration-2026-10-04.md).
+That operational record owns migration/deployment status; this guide defines the
+accounting contract and does not authorize public paid activation.
 
 ## Policy and customer contract
 

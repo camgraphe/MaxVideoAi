@@ -104,6 +104,31 @@ test('Sora remains historical by exact choice and cannot generate or be recommen
   }
 });
 
+test('explicit Pika preference and exact ID remain eligible without default recommendation', async () => {
+  const catalogDeps = realRegistryDeps();
+  for (const input of [{ preferredModelIds: ['pika-text-to-video'] }, { id: 'pika-text-to-video' }]) {
+    const result = await recommendAgentModels({ ...input, mode: 't2v' }, catalogDeps);
+    const preferred = result.recommendations[0];
+    assert.equal(preferred?.model.id, 'pika-text-to-video');
+    assert.equal(preferred.model.recommendedByDefault, false);
+    assert.equal(preferred.editorialGuidance?.level, 'on_request');
+  }
+});
+
+test('explicit preference never restores legacy or archived models to recommendations', async () => {
+  const catalogDeps = realRegistryDeps();
+  const [legacy] = await listAgentModels({ id: 'wan-2-6' }, catalogDeps);
+  assert.equal(legacy.lifecycle, 'legacy');
+  assert.equal(legacy.generationEnabled, true);
+
+  for (const id of ['wan-2-6', 'sora-2']) {
+    const preferred = await recommendAgentModels({ preferredModelIds: [id] }, catalogDeps);
+    assert.equal(preferred.recommendations.some((entry) => entry.model.id === id), false);
+    const exact = await recommendAgentModels({ id, preferredModelIds: [id] }, catalogDeps);
+    assert.deepEqual(exact.recommendations, []);
+  }
+});
+
 test('current editorial references lead broad matches while Pika stays discoverable on request', async () => {
   const catalogDeps = deps([candidate('pika-text-to-video'),candidate('minimax-h3'),candidate('seedance-2-5'),candidate('wan-3'),candidate('kling-o3-pro')]);
   const broad = await recommendAgentModels({surface: 'video'},catalogDeps);

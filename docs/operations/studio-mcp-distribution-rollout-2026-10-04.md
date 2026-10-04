@@ -1,5 +1,10 @@
 # Studio + MCP distribution rollout
 
+Historical preparation checkpoint. For subsequent main reconciliation, package
+version 0.3.7 preparation and hosted checks, see the
+[main-integration evidence](studio-main-integration-2026-10-04.md). The
+surface-specific publication requirements below remain in force.
+
 Checked 4 October 2026, Europe/Madrid. Preparation only: no push, merge,
 deployment, registry write, package publication or external submission performed.
 This checklist extends the [candidate handoff](studio-release-candidate-2026-10-04.md).

@@ -29,9 +29,11 @@ const deps: AgentModelCatalogDeps = {
 test('default discovery is current+published while exact legacy identities preserve lifecycle and canonical successor slugs', async () => {
   const listed = await listAgentModels({}, deps);
   assert.ok(listed.length > 0);
-  assert.ok(listed.every((model) => model.lifecycle === 'current' && model.recommendedByDefault));
+  assert.ok(listed.every((model) => model.lifecycle === 'current'));
+  assert.deepEqual(listed.filter((model) => !model.recommendedByDefault).map((model) => model.id), ['pika-text-to-video']);
   assert.equal(listed.some((model) => ['ltx-2-3', 'ltx-2'].includes(model.id as never)), false);
   assert.deepEqual(listed.filter((model) => P0.includes(model.id as never)).map((model) => model.id).sort(), [...P0].sort());
+  assert.ok(listed.filter((model) => P0.includes(model.id as never)).every((model) => model.recommendedByDefault));
   const [legacy] = await listAgentModels({ id: 'ltx-2-3' }, deps);
   assert.equal(legacy?.lifecycle, 'legacy');
   assert.equal(legacy?.recommendedByDefault, false);

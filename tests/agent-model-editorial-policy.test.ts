@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {getFalEngineById} from '../frontend/src/config/falEngines';
 import {studioVisualCapabilityDetails,studioVisualCapabilitySummary} from '../frontend/src/server/studio/conversation-capabilities';
+import { isAgentModelRecommendationEligible } from '../frontend/src/server/agent-api/model-editorial-policy';
 
 const loadPolicy = () => import('../frontend/src/server/agent-api/model-editorial-policy').catch(() => null);
 const asOf = new Date('2026-10-03T12:00:00Z');
@@ -38,6 +39,17 @@ test('editorial review is exact-version, dated and honest about vendor evidence'
   assert.deepEqual(unreviewed.provenance,[]);
   assert.equal(policy.getAgentModelEditorialGuidance('wan-3',new Date('2027-01-02T00:00:00Z')).reviewStatus,'review_due');
   assert.equal(policy.getAgentModelEditorialGuidance('wan-3',new Date('2026-10-02T00:00:00Z')).reviewStatus,'not_yet_reviewed');
+});
+
+test('explicit editorial requests cannot override any non-current lifecycle', () => {
+  assert.equal(isAgentModelRecommendationEligible('wan-3', 'current'), true);
+  assert.equal(isAgentModelRecommendationEligible('pika-text-to-video', 'current'), false);
+  assert.equal(isAgentModelRecommendationEligible('pika-text-to-video', 'current', true), true);
+  for (const lifecycle of ['legacy', 'deep_legacy', 'retired'] as const) {
+    assert.equal(isAgentModelRecommendationEligible('wan-3', lifecycle), false, lifecycle);
+    assert.equal(isAgentModelRecommendationEligible('wan-3', lifecycle, true), false, lifecycle);
+    assert.equal(isAgentModelRecommendationEligible('pika-text-to-video', lifecycle, true), false, lifecycle);
+  }
 });
 
 test('editorial validation rejects fabricated scores, unknown versions and unclassified provenance', async () => {

@@ -132,3 +132,36 @@ The real hosted admin reveal endpoint also returned the exact synthetic submitte
 message and saved Sol reply, with a recorded access ID and explicit partial
 coverage. Its response excludes raw provider output, encrypted content and storage
 URLs. This test used only the dedicated test identity's own Project.
+
+The media-enabled pilot `dpl_4KhqmQHAx7A2iRqhVZzbG54hDVbK` subsequently returned
+an action-specific video recommendation after reading the live catalogue and
+model details: Seedance 2.0 for a five-second text-to-video draft, with compatible
+alternatives. No generation or quote was created. Switching the capability gate
+between probes caused the assistant to call its earlier unavailable-video answer
+incorrect; that earlier answer was accurate for the image-only configuration.
+This is a recorded conversational limitation, not a failed catalogue lookup.
+
+All seven hosted provider calls settled, with 32,489 tokens and $0.07292985 in
+supplier cost; the test account was charged $0. The single cumulative validation
+journal now contains 90 Responses calls, $0.563395815 settled and no outstanding
+hold, below the original $5 ceiling. The pilot retains five jobs, ten receipts
+and two exports, unchanged. Four synthetic conversation turns and one explicit
+admin-review access were added. The temporary staging session file was removed.
+
+The Git-backed preview of `c72a1187d32843f8e539424f6007011c52f0d3fb` passes all
+19 hosted public-route checks, covering Studio and MCP in three languages,
+current Veo/Wan model pages, nine model archives and the delivered sitemap.
+Archived Sora pages remain historical documents; they do not advertise an
+executable generation offer. This source fixes CI browser classification without
+changing the hosted pilot's product code. Final required CI and the production
+transaction, merge, deployment and protected plugin publication remain separate
+release gates; none is implied by these preview results.
+
+The final catalogue audit found that `recommendedByDefault` still reflected only
+current lifecycle, contradicting Pika's existing `on_request` editorial policy.
+List, details and recommendation selection now share the same eligibility rule.
+Pika remains discoverable and eligible when explicitly requested and compatible;
+its default flag is false. Explicit preferences cannot restore legacy,
+deep-legacy or retired entries to the recommendation shortlist. This changes no
+model identity, provider capability or price. Regression tests observed the Pika
+flag failure before the fix; focused checks and independent review pass afterward.

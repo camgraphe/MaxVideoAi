@@ -11,6 +11,7 @@ import {
 
 import { AgentApiError } from './errors';
 import { getAgentModelGuidance, getAgentModelEditorialGuidance, type AgentModelGuidance } from './model-guidance';
+import { isAgentModelRecommendationEligible } from './model-editorial-policy';
 import {
   getAgentModelPromptingSources,
   type AgentModelPromptingSource,
@@ -473,7 +474,7 @@ export async function getAgentModelDetails(
     generationEnabled: candidate.generationEnabled,
     lifecycle: runtime?.lifecycle ?? 'current',
     successor: successor ? Object.freeze({ id: successor.id, slug: successor.slug }) : null,
-    recommendedByDefault: runtime?.lifecycle === undefined || runtime.lifecycle === 'current',
+    recommendedByDefault: isAgentModelRecommendationEligible(candidate.engine.id, runtime?.lifecycle),
     prelaunch,
     modes: Object.freeze(candidate.publicModes.map((mode) => projectAgentModelModeDetails(candidate, mode))),
     guidance,

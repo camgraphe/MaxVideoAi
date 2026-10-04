@@ -4,6 +4,7 @@ import {
   type AgentModelCatalogDeps,
 } from './model-catalog';
 import { getAgentModelGuidance, getAgentModelEditorialGuidance, type AgentModelEditorialGuidance } from './model-guidance';
+import { isAgentModelRecommendationEligible } from './model-editorial-policy';
 import type {
   AgentModelPriority,
   AgentModelRecommendation,
@@ -167,9 +168,12 @@ export async function recommendAgentModels(
   const preferredModelIds = normalizedIds([...(input.preferredModelIds ?? []),...(input.id ? [input.id] : [])]);
   const excludedModelIds = normalizedIds(input.excludedModelIds);
   const candidates = (await listAgentModelCandidates(input, deps, { generationEnabledOnly: true }))
-    .filter((candidate) => candidate.model.recommendedByDefault)
     .filter((candidate) => !excludedModelIds.has(candidate.model.id))
-    .filter((candidate) => preferredModelIds.has(candidate.model.id) || getAgentModelEditorialGuidance(candidate.model.id).level !== 'on_request');
+    .filter((candidate) => isAgentModelRecommendationEligible(
+      candidate.model.id,
+      candidate.model.lifecycle,
+      preferredModelIds.has(candidate.model.id),
+    ));
 
   if (!candidates.length) {
     return {

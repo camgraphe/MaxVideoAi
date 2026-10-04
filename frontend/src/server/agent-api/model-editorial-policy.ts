@@ -1,6 +1,7 @@
 import {z} from 'zod';
 import document from '@/config/agent-model-editorial-policy.json' with {type: 'json'};
 import {getModelRegistryEntries} from '@/config/model-registry';
+import type { RuntimeModelEntry } from '@/config/model-runtime';
 
 const text = z.string().min(1).max(280).refine(value=>value===value.trim() && value===value.normalize('NFC'),'Expected trimmed NFC text');
 const reviewDate = text.refine(value=>/^\d{4}-\d{2}-\d{2}$/.test(value)).refine(value=> {
@@ -68,4 +69,14 @@ export function getAgentModelEditorialGuidance(engineId: string,asOf=new Date())
 export function getAgentModelEditorialSummary(engineId: string): AgentModelEditorialSummary {
   const {policyVersion,basis,level,rationale,reviewedAt,reviewStatus}=getAgentModelEditorialGuidance(engineId);
   return Object.freeze({policyVersion,basis,level,rationale,reviewedAt,reviewStatus});
+}
+
+/** Explicit requests override editorial preference, never lifecycle or execution guards. */
+export function isAgentModelRecommendationEligible(
+  engineId: string,
+  lifecycle: RuntimeModelEntry['lifecycle'] = 'current',
+  explicitlyRequested = false,
+): boolean {
+  return lifecycle === 'current'
+    && (explicitlyRequested || getAgentModelEditorialGuidance(engineId).level !== 'on_request');
 }

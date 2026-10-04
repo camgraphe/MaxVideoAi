@@ -169,6 +169,15 @@ function realRegistryDetailsDeps(): AgentModelDetailsDeps {
   };
 }
 
+test('Pika details agree with its on-request editorial guidance', async () => {
+  const details = await getAgentModelDetails('pika-text-to-video', realRegistryDetailsDeps());
+
+  assert.equal(details.lifecycle, 'current');
+  assert.ok(details.modes.some((mode) => mode.mode === 't2v'));
+  assert.equal(details.editorialGuidance?.level, 'on_request');
+  assert.equal(details.recommendedByDefault, false);
+});
+
 test('model details project one executable public model into the exact safe shape', async () => {
   const details = await getAgentModelDetails(
     'minimax-h3',
