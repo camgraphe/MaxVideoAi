@@ -23,14 +23,17 @@ async function mountChooser(request: typeof fetch, options: {purpose?: 'referenc
   }
   const {ImageReferenceLibrary} = await import('../frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/_components/ImageReferenceLibrary.client');
   const selected: ImageLibraryAsset[] = [];
+  dom.window.document.getElementById('opener')!.focus();
   const root = createRoot(dom.window.document.getElementById('root')!);
+  let mounted = true;
+  const unmount = async () => {if(mounted){await React.act(async () => root.unmount());mounted=false;}};
   await React.act(async () => root.render(React.createElement(ImageReferenceLibrary,{onClose: () => {},onSelect: asset => selected.push(asset),mediaEnabled: true,...options})));
   const settle = () => React.act(async () => {await new Promise(resolve => setTimeout(resolve,230));});
   const button = (label: string) => [...dom.window.document.querySelectorAll<HTMLButtonElement>('button')].find(item => item.getAttribute('aria-label') === label || item.textContent?.trim() === label);
   await settle();
-  return {dom,selected,button,settle,
+  return {dom,selected,button,settle,unmount,
     async click(label: string) {const target = button(label);assert.ok(target,'button '+label+' exists');await React.act(async () => target.click());},
-    async dispose() {await React.act(async () => root.unmount());dom.window.close();for(const [key,descriptor] of previous){if(descriptor)Object.defineProperty(globalThis,key,descriptor);else Reflect.deleteProperty(globalThis,key);}},
+    async dispose() {await unmount();dom.window.close();for(const [key,descriptor] of previous){if(descriptor)Object.defineProperty(globalThis,key,descriptor);else Reflect.deleteProperty(globalThis,key);}},
   };
 }
 
@@ -141,5 +144,14 @@ test('a late pagination response cannot replace another media kind and video ori
     assert.equal(fixture.dom.window.document.querySelectorAll('img').length,0,'video original is never treated as a thumbnail');
     await fixture.click('Choose Film study');await fixture.click('Add to conversation');
     assert.deepEqual(fixture.selected,[video]);
+  } finally {await fixture.dispose();}
+});
+
+
+test('closing the chooser returns focus to its original trigger', async () => {
+  const fixture = await mountChooser((async()=>response({ok:true,assets:[]})) as typeof fetch);
+  try {
+    await fixture.unmount();
+    assert.equal(fixture.dom.window.document.activeElement?.id,'opener');
   } finally {await fixture.dispose();}
 });

@@ -73,14 +73,6 @@ function StudioImageConversationWorkspace({
   const {resolvedTheme} = useThemePreference();
   const tone = resolvedTheme === 'light' ? 'olive' : 'charcoal';
   const libraryTrigger = useRef<HTMLButtonElement>(null);
-  const libraryWasOpen = useRef(false);
-  useEffect(() => {
-    if (library) libraryWasOpen.current = true;
-    else if (libraryWasOpen.current) {
-      libraryTrigger.current?.focus();
-      libraryWasOpen.current = false;
-    }
-  }, [library]);
   const log = useRef<HTMLDivElement>(null);
   const follow = useRef(true);
   const bottom = useRef<HTMLDivElement>(null);

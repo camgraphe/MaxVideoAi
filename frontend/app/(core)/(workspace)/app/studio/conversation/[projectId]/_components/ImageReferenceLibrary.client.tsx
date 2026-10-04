@@ -167,7 +167,7 @@ export function ImageReferenceLibrary({onClose, onSelect, mediaEnabled = false, 
     <dialog ref={dialog} className={styles.library} aria-labelledby={titleId} onCancel={onClose} onClose={onClose} onClick={event => {if (event.target === event.currentTarget) onClose();}}>
       <header className={styles.header}>
         <div><h2 id={titleId}>{t('MaxVideoAI library', 'Bibliothèque MaxVideoAI', 'Biblioteca MaxVideoAI')}</h2><p>{purpose === 'timeline' ? t('Choose media for your film.', 'Choisissez un média pour votre film.', 'Elige un archivo para tu película.') : t('Choose a reference for your next idea.', 'Choisissez une référence pour votre prochaine idée.', 'Elige una referencia para tu próxima idea.')}</p></div>
-        <button type="button" className={styles.close} onClick={onClose} aria-label={t('Close library', 'Fermer la bibliothèque', 'Cerrar biblioteca')} autoFocus><X size={20} aria-hidden="true" /></button>
+        <button type="button" className={styles.close} onClick={onClose} aria-label={t('Close library', 'Fermer la bibliothèque', 'Cerrar biblioteca')}><X size={20} aria-hidden="true" /></button>
       </header>
       <div className={styles.controls}>
         <div className={styles.toolbar}>
