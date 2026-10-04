@@ -2,7 +2,7 @@
 
 import type { FormEvent, Ref } from 'react';
 import clsx from 'clsx';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, LoaderCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import type { AuthCopy, AuthMode } from '../_lib/login-copy';
@@ -21,6 +21,7 @@ type LoginAuthSurfaceProps = {
   password: string;
   confirm: string;
   continuation: LoginContinuation | null;
+  isMcpStaging: boolean;
   status: string | null;
   statusTone: 'info' | 'success';
   error: string | null;
@@ -28,6 +29,7 @@ type LoginAuthSurfaceProps = {
   formAttention: boolean;
   signupSuggestion: SignupSuggestion | null;
   isGoogleOAuthStarting: boolean;
+  isResetSending: boolean;
   acceptTerms: boolean;
   ageConfirmed: boolean;
   marketingOptIn: boolean;
@@ -79,6 +81,7 @@ export function LoginAuthSurface({
   password,
   confirm,
   continuation,
+  isMcpStaging,
   status,
   statusTone,
   error,
@@ -86,6 +89,7 @@ export function LoginAuthSurface({
   formAttention,
   signupSuggestion,
   isGoogleOAuthStarting,
+  isResetSending,
   acceptTerms,
   ageConfirmed,
   marketingOptIn,
@@ -147,14 +151,18 @@ export function LoginAuthSurface({
         <header className="space-y-3">
           <div>
             <h1 className="text-lg font-semibold text-text-primary">
-              {mode === 'signup'
+              {mode === 'signin' && continuation?.kind === 'mcp'
+                ? continuation.title
+                : mode === 'signup'
                 ? authCopy.modes.signup.title
                 : mode === 'reset'
                   ? authCopy.modes.reset.title
                   : authCopy.modes.signin.title}
             </h1>
             <p className="text-sm text-text-secondary">
-              {mode === 'signup'
+              {mode === 'signin' && continuation?.kind === 'mcp'
+                ? continuation.body
+                : mode === 'signup'
                 ? authCopy.modes.signup.description
                 : mode === 'reset'
                   ? authCopy.modes.reset.description
@@ -162,7 +170,15 @@ export function LoginAuthSurface({
             </p>
           </div>
 
-          {mode !== 'reset' && continuation ? (
+          {isMcpStaging && continuation?.kind === 'mcp' ? (
+            <div role="alert" className="rounded-input border border-border bg-bg px-3 py-2.5 text-sm text-text-primary">
+              <p className="font-medium">{authCopy.mcpStaging.title}</p>
+              <p className="mt-1 text-text-secondary">{authCopy.mcpStaging.body}</p>
+              <a href="https://maxvideoai.com/mcp" className="mt-2 inline-block underline underline-offset-4">{authCopy.mcpStaging.action}</a>
+            </div>
+          ) : null}
+
+          {mode !== 'reset' && continuation && !(mode === 'signin' && continuation.kind === 'mcp') ? (
             <div className="flex items-start gap-2.5 rounded-input border border-border bg-bg px-3 py-2.5">
               <CheckCircle2 aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-brand" strokeWidth={1.75} />
               <div>
@@ -172,38 +188,40 @@ export function LoginAuthSurface({
             </div>
           ) : null}
 
-          <div
-            role="group"
-            aria-label={authCopy.modeGroup}
-            className="flex items-center gap-2 rounded-pill bg-bg p-1 text-sm font-medium"
-          >
-            <Button
-              type="button"
-              variant={effectiveMode === 'signin' ? 'primary' : 'ghost'}
-              size="sm"
-              aria-pressed={effectiveMode === 'signin'}
-              onClick={() => onModeChange('signin')}
-              className={clsx(
-                'min-h-11 flex-1 rounded-pill px-3 py-2',
-                effectiveMode === 'signin' ? 'shadow-card' : 'hover:bg-surface'
-              )}
+          {mode !== 'reset' && (
+            <div
+              role="group"
+              aria-label={authCopy.modeGroup}
+              className="flex items-center gap-2 rounded-pill bg-bg p-1 text-sm font-medium"
             >
-              {authCopy.tabs.signin}
-            </Button>
-            <Button
-              type="button"
-              variant={effectiveMode === 'signup' ? 'primary' : 'ghost'}
-              size="sm"
-              aria-pressed={effectiveMode === 'signup'}
-              onClick={() => onModeChange('signup')}
-              className={clsx(
-                'min-h-11 flex-1 rounded-pill px-3 py-2',
-                effectiveMode === 'signup' ? 'shadow-card' : 'hover:bg-surface'
-              )}
-            >
-              {authCopy.tabs.signup}
-            </Button>
-          </div>
+              <Button
+                type="button"
+                variant={effectiveMode === 'signin' ? 'primary' : 'ghost'}
+                size="sm"
+                aria-pressed={effectiveMode === 'signin'}
+                onClick={() => onModeChange('signin')}
+                className={clsx(
+                  'min-h-11 flex-1 rounded-pill px-3 py-2',
+                  effectiveMode === 'signin' ? 'shadow-card' : 'hover:bg-surface'
+                )}
+              >
+                {authCopy.tabs.signin}
+              </Button>
+              <Button
+                type="button"
+                variant={effectiveMode === 'signup' ? 'primary' : 'ghost'}
+                size="sm"
+                aria-pressed={effectiveMode === 'signup'}
+                onClick={() => onModeChange('signup')}
+                className={clsx(
+                  'min-h-11 flex-1 rounded-pill px-3 py-2',
+                  effectiveMode === 'signup' ? 'shadow-card' : 'hover:bg-surface'
+                )}
+              >
+                {authCopy.tabs.signup}
+              </Button>
+            </div>
+          )}
         </header>
 
         {mode !== 'reset' ? (
@@ -404,8 +422,8 @@ export function LoginAuthSurface({
                 {authCopy.links.backToSignIn}
               </Button>
             </div>
-            <Button type="submit" variant="outline" className="w-full">
-              {authCopy.actions.reset}
+            <Button type="submit" variant="outline" className="w-full gap-2" disabled={isResetSending} aria-busy={isResetSending}>
+              {isResetSending ? <><LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin motion-reduce:animate-none" />{authCopy.feedback.sendingReset}</> : authCopy.actions.reset}
             </Button>
           </form>
         )}
@@ -414,9 +432,10 @@ export function LoginAuthSurface({
           {formAttention ? authCopy.validation.formAttention : ''}
         </p>
 
-        {status && (
+        {status && !(mode === 'reset' && isResetSending) && (
           <div
-            className={clsx(
+            role="status"
+            className={mode === 'reset' ? 'text-sm leading-6 text-text-secondary' : clsx(
               'rounded-card border px-3 py-3 text-sm font-medium',
               statusTone === 'success'
                 ? 'border-brand bg-surface-2 text-brand'

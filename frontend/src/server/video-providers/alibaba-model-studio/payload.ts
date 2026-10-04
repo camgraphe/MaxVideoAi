@@ -1,5 +1,6 @@
 import { AlibabaModelStudioError } from './errors';
 import { resolveAlibabaModelRoute } from './model-map';
+import { WAN_3_REFERENCE_AUDIO_MIME_TYPES } from '../../../config/fal-engines/wan-3-shared';
 import type {
   AlibabaMedia,
   AlibabaReferenceAsset,
@@ -93,7 +94,7 @@ function normalizeAsset(value: string | AlibabaReferenceAsset, kind: string): Al
   if (kind.includes('video') && mimeType && !['video/mp4', 'video/quicktime'].includes(mimeType)) {
     invalidRequest('Alibaba reference video type is unsupported.', 'ALIBABA_REFERENCE_VIDEO_UNSUPPORTED');
   }
-  if (kind.includes('audio') && mimeType && !['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav'].includes(mimeType)) {
+  if (kind.includes('audio') && mimeType && !WAN_3_REFERENCE_AUDIO_MIME_TYPES.some((accepted) => accepted === mimeType)) {
     invalidRequest('Alibaba reference audio type is unsupported.', 'ALIBABA_REFERENCE_AUDIO_UNSUPPORTED');
   }
   return { ...asset, url };

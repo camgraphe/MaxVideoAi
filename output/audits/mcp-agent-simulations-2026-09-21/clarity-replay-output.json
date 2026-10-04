@@ -1,0 +1,49 @@
+{
+  "model": "gpt-5.6-luna",
+  "evidenceKind": "agent-generated-mocked-next-step-simulation",
+  "replay": true,
+  "cases": [
+    {
+      "id": "C01",
+      "skill": "none",
+      "actions": [
+        {
+          "type": "discover_tools",
+          "query": "Find the callable VideoOther plugin tools for the user's selected video workflow."
+        }
+      ],
+      "reply": "Je recherche les outils VideoOther disponibles dans l’inventaire de l’hôte, puis je poursuivrai avec celui correspondant à votre vidéo."
+    },
+    {
+      "id": "C02",
+      "skill": "none",
+      "actions": [
+        {
+          "type": "discover_tools",
+          "query": "Find the callable VideoOther plugin tools for the user's selected video workflow."
+        }
+      ],
+      "reply": "I’ll discover the callable VideoOther tools in the host inventory, then continue with the tool that matches your video workflow."
+    },
+    {
+      "id": "C03",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "present_generation",
+          "arguments": {
+            "jobId": "job-final"
+          }
+        }
+      ],
+      "reply": "La génération est terminée. Je vous envoie maintenant le résultat enregistré dans votre bibliothèque MaxVideoAI."
+    },
+    {
+      "id": "C04",
+      "skill": "generate",
+      "actions": [],
+      "reply": "Le devis existant couvre une seule tentative et celle-ci est déjà acceptée. Pour trois variantes, j’ai besoin de savoir si vous voulez trois tentatives distinctes et, le cas échéant, leurs différences avant de préparer de nouveaux devis exacts et demander une nouvelle approbation."
+    }
+  ]
+}

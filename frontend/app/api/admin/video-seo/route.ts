@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidateVideoSeoPages } from '@/server/video-seo-revalidation';
 import { isDatabaseConfigured } from '@/lib/db';
 import { adminErrorToResponse, requireAdmin } from '@/server/admin';
 import { getSeoVideoById } from '@/server/videos';
@@ -38,6 +39,7 @@ export async function POST(req: NextRequest) {
       adminUserId,
       'Created from admin video SEO cockpit'
     );
+    revalidateVideoSeoPages(editorial);
     return NextResponse.json({ ok: true, editorial });
   } catch (error) {
     console.error('[api/admin/video-seo] failed to create candidate', error);

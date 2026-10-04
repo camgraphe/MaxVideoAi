@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { listenForGuestCreationLogin, consumeGuestCreationFromLocation } from '@/lib/guest-creation-continuation';
 import type { EngineCaps } from '@/types/engines';
 import {
@@ -77,7 +77,8 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
   const ready = Boolean(
     account && store.account === account && phaseMatches && phase?.stage === 'ready',
   );
-  const signature = workspaceModelSetupSignature(options.current);
+  const current = options.current;
+  const signature = useMemo(() => workspaceModelSetupSignature(current), [current]);
   useEffect(() => {
     if (options.authStatus !== 'loggedOut') return;
     return listenForGuestCreationLogin('/app', () => {
@@ -219,14 +220,17 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
     setPhase({ ...phase, stage: 'ready' });
   }, [account, phaseMatches, phase, options]);
   useLayoutEffect(() => {
-    if (!ready || !valid() || !options.current || store.error) return;
-    const serialized = serializeWorkspaceModelSetup(options.current);
+    if (!ready || !valid() || !current || store.error) return;
+    // Recovery removal can free room for a previously oversized combined record.
+    // Read the latest record, but do not revalidate after this effect's own save.
+    const stored = storeRef.current;
+    const serialized = serializeWorkspaceModelSetup(current);
     if (!serialized.ok) {
       setSaveError(serialized.error);
       return;
     }
     const next = {
-      ...store,
+      ...stored,
       current: {
         modelId: serialized.setup.form.engineId,
         updatedAt: Date.now(),
@@ -234,11 +238,11 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
       },
     };
     // No debounce: a committed final edit is saved before route-unmount cleanup.
-    if (JSON.stringify(store.current?.setup) !== JSON.stringify(serialized.setup)) {
+    if (JSON.stringify(stored.current?.setup) !== JSON.stringify(serialized.setup)) {
       if (!save(next)) return;
     }
     setSaveError(null);
-  }, [ready, valid, signature, store, options, save]);
+  }, [ready, valid, current, store.error, store.recovery, save]);
   const removeRecovery = () => {
     if (!valid()) return;
     save({ ...storeRef.current, recovery: null });
@@ -246,7 +250,8 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
   const discardRejected = () => {
     if (!valid()) return;
     const next = { ...storeRef.current, error: null };
-    if (save(next)) setSaveError(null);
+    // Only successful current-setup validation can clear its separate save error.
+    save(next);
   };
   return {
     revision: signature,

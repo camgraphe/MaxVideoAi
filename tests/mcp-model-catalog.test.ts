@@ -302,7 +302,7 @@ test('catalog mirrors real execution gates for newly registered video models', {
         surface: 'video',
         modes: ['t2v', 'i2v', 'ref2v'],
         aspectRatios: ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16', 'auto'],
-        resolutions: ['768P', '2K', '4K'],
+        resolutions: ['480P', '768P', '2K', '4K'],
         maxDurationSec: 15,
         audio: true,
         referenceImages: true,

@@ -12,6 +12,7 @@ import { MarketingNavEntryContent } from '@/components/marketing/MarketingNavEnt
 import { MARKETING_NAV_DROPDOWNS } from '@/config/navigation';
 import type { MarketingTopNavLink } from '@/config/navigation';
 import { buildLoginHref } from '@/lib/auth-entry-href';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 const MENU_ICONS: Record<string, LucideIcon> = { models: Boxes, examples: Clapperboard, compare: Scale, tools: Wrench, pricing: WalletCards, connect: Plug };
 
@@ -46,7 +47,8 @@ export function MarketingMobileMenu({
   onToggleDropdown,
 }: MarketingMobileMenuProps) {
   const panelRef = useMarketingMenuFocus();
-  const loginHref = buildLoginHref({ mode: 'signin', nextPath: '/app' });
+  const { locale } = useI18n();
+  const loginHref = buildLoginHref({ mode: 'signin', nextPath: '/app', locale });
 
   return (
     <div className="marketing-menu-overlay fixed inset-0 z-50 overflow-y-auto overscroll-y-contain">

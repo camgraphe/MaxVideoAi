@@ -225,7 +225,9 @@ export function buildComposerModeToggles({
 }): ComposerModeToggle[] | undefined {
   if (!selectedEngine) return undefined;
   const explicitModes =
-    isLumaRay2EngineId(selectedEngine.id)
+    selectedEngine.id === 'wan-3' || selectedEngine.id === 'wan-3-prime'
+      ? (['ref2v', 'v2v', 'extend'] as const)
+      : isLumaRay2EngineId(selectedEngine.id)
       ? (['v2v', 'reframe'] as const)
       : isLumaRay32EngineId(selectedEngine.id)
         ? (['v2v', 'reframe'] as const)
@@ -275,6 +277,7 @@ export function getComposerWorkflowNotice({
   if (audioWorkflowUnsupported) {
     return workflowCopy.audioUnsupported;
   }
+  if (!selectedEngine.modes.includes('a2v')) return null;
   if (
     selectedEngine.id === 'ltx-2-3' ||
     selectedEngine.id === 'veo-3-1' ||

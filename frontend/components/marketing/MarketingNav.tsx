@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import clsx from 'clsx';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { Link, usePathname } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -40,11 +40,11 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
   const compactBrand = brand.replace(/\s+/g, '');
   const links = MARKETING_SITE_NAV_LINKS;
   const login = t('nav.login', 'Log in');
-  const cta = t('nav.cta', 'Generate');
-  const generateLabel = cta;
+  const cta = t('nav.startCreating', 'Start creating');
+  const generateLabel = t('nav.cta', 'Generate');
   const loginLabelMobile = locale === 'fr' ? 'Connexion' : locale === 'es' ? 'Entrar' : 'Log in';
   const generateLabelMobile = locale === 'fr' ? 'Générer' : locale === 'es' ? 'Generar' : 'Generate';
-  const loginHref = buildLoginHref({ mode: 'signin', nextPath: '/app' });
+  const loginHref = buildLoginHref({ mode: 'signin', nextPath: '/app', locale });
   const isAuthenticated = Boolean(email);
 
   const handleAdminNavigation = (event: React.MouseEvent<HTMLAnchorElement>) => {
@@ -107,7 +107,7 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
         .then(({ supabase }) => supabase.auth.getSession().then(({ data }) => ({ supabase, data })))
         .then(async ({ supabase, data }) => {
           if (logoutIntentActive) {
-            await supabase.auth.signOut().catch(() => undefined);
+            await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
             return;
           }
           const session = data.session ?? null;
@@ -163,7 +163,7 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
     clearLastKnownAccount();
     writeLastKnownUserId(null);
     void import('@/lib/supabaseClient')
-      .then(({ supabase }) => supabase.auth.signOut())
+      .then(({ supabase }) => supabase.auth.signOut({ scope: 'local' }))
       .catch(() => undefined);
     const payload = JSON.stringify({});
     if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
@@ -235,7 +235,7 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
     }
   }, [pathname]);
 
-  const closeDesktopDropdown = (delay = 0) => {
+  const closeDesktopDropdown = useCallback((delay = 0) => {
     if (desktopDropdownCloseTimeout.current) {
       window.clearTimeout(desktopDropdownCloseTimeout.current);
       desktopDropdownCloseTimeout.current = null;
@@ -248,7 +248,12 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
       setDesktopDropdownOpen(null);
       desktopDropdownCloseTimeout.current = null;
     }, delay);
-  };
+  }, []);
+
+  const openDesktopDropdown = useCallback((key: string) => {
+    if (desktopDropdownCloseTimeout.current) window.clearTimeout(desktopDropdownCloseTimeout.current);
+    setDesktopDropdownOpen(key);
+  }, []);
 
   const initials = useMemo(() => {
     if (!email) return '?';
@@ -302,7 +307,7 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
               className="h-7 w-7 shrink-0"
               priority
             />
-            <span className="text-sm font-semibold tracking-tight sm:text-lg">{compactBrand}</span>
+            <span className="text-sm font-semibold tracking-tight max-[420px]:sr-only sm:text-lg">{compactBrand}</span>
           </Link>
           <MarketingDesktopNav
             desktopDropdownOpen={desktopDropdownOpen}
@@ -310,10 +315,7 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
             pathname={pathname}
             t={t}
             onCloseDesktopDropdown={closeDesktopDropdown}
-            onOpenDesktopDropdown={(key) => {
-              if (desktopDropdownCloseTimeout.current) window.clearTimeout(desktopDropdownCloseTimeout.current);
-              setDesktopDropdownOpen(key);
-            }}
+            onOpenDesktopDropdown={openDesktopDropdown}
           />
         </div>
         <div className="flex items-center gap-2 whitespace-nowrap sm:gap-3 lg:gap-4">
@@ -350,7 +352,7 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
               <Link
                 href={loginHref}
                 prefetch={false}
-                className="inline-flex text-xs font-medium text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:text-sm"
+                className="inline-flex min-h-11 items-center text-[11px] font-medium text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:text-sm"
                 data-analytics-event="cta_click"
                 data-analytics-cta-name="marketing_nav_login"
                 data-analytics-cta-location="marketing_nav_desktop"
@@ -362,7 +364,7 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
               <Link
                 href="/app"
                 prefetch={false}
-                className="inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-[10px] bg-[image:var(--brand-gradient)] px-4 py-2 text-xs font-semibold text-on-brand shadow-[var(--shadow-brand-button)] transition hover:bg-[image:var(--brand-gradient-strong)] active:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:min-h-[48px] sm:rounded-input sm:px-6 sm:py-3 sm:text-sm"
+                className="inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-[10px] bg-[image:var(--brand-gradient)] px-2.5 py-2 text-[11px] font-semibold text-on-brand shadow-[var(--shadow-brand-button)] transition hover:bg-[image:var(--brand-gradient-strong)] active:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:min-h-[48px] sm:rounded-input sm:px-6 sm:py-3 sm:text-sm"
                 data-analytics-event="cta_click"
                 data-analytics-cta-name="marketing_nav_start_app"
                 data-analytics-cta-location="marketing_nav_desktop"
@@ -377,7 +379,7 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
     </header>
       {mobileMenuOpen ? (
         <MarketingMobileMenu
-          cta={cta ?? 'Generate'}
+          cta={cta ?? 'Start creating'}
           generateLabel={generateLabel ?? 'Generate'}
           isAuthenticated={isAuthenticated}
           isHomePage={isHomePage}

@@ -17,6 +17,9 @@ const healthPanelPath = 'frontend/app/(core)/admin/insights/_components/Insights
 const summaryPanelsPath = 'frontend/app/(core)/admin/insights/_components/InsightsSummaryPanels.tsx';
 const tablePanelsPath = 'frontend/app/(core)/admin/insights/_components/InsightsTablePanels.tsx';
 const chartSurfacesPath = 'frontend/app/(core)/admin/insights/_components/InsightsChartSurfaces.tsx';
+const lineChartPath = 'frontend/app/(core)/admin/insights/_components/InsightsLineChart.client.tsx';
+const chartModelPath = 'frontend/app/(core)/admin/insights/_lib/insights-chart-model.ts';
+const trendSummaryPath = 'frontend/app/(core)/admin/insights/_components/InsightsTrendSummary.tsx';
 
 test('admin insights page stays a route orchestrator', () => {
   assert.equal(existsSync(pagePath), true);
@@ -34,6 +37,9 @@ test('admin insights page stays a route orchestrator', () => {
   assert.equal(existsSync(summaryPanelsPath), true);
   assert.equal(existsSync(tablePanelsPath), true);
   assert.equal(existsSync(chartSurfacesPath), true);
+  assert.equal(existsSync(lineChartPath), true);
+  assert.equal(existsSync(chartModelPath), true);
+  assert.equal(existsSync(trendSummaryPath), true);
 
   const pageSource = readFileSync(pagePath, 'utf8');
   const pageLines = pageSource.split('\n').length;
@@ -125,10 +131,18 @@ test('admin insights panels own route-local JSX surfaces', () => {
 
 test('admin insights chart surfaces own chart primitives', () => {
   const chartSurfacesSource = readFileSync(chartSurfacesPath, 'utf8');
+  const lineChartSource = readFileSync(lineChartPath, 'utf8');
+  const chartModelSource = readFileSync(chartModelPath, 'utf8');
 
   assert.match(chartSurfacesSource, /export function ComparisonChart/);
   assert.match(chartSurfacesSource, /export function ShareBar/);
   assert.match(chartSurfacesSource, /export function EmptyStateCard/);
   assert.match(chartSurfacesSource, /from '\.\.\/_lib\/insights-series-helpers';/);
   assert.match(chartSurfacesSource, /buildChartTicks/);
+  assert.match(chartSurfacesSource, /aggregateChartPoints/);
+  assert.match(chartSurfacesSource, /InsightsLineChart/);
+  assert.match(lineChartSource, /^'use client';/);
+  assert.match(lineChartSource, /onPointerMove/);
+  assert.match(lineChartSource, /onKeyDown/);
+  assert.match(chartModelSource, /export function aggregateChartPoints/);
 });

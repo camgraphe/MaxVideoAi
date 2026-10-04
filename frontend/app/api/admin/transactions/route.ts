@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchAdminTransactions } from '@/server/admin-transactions';
+import { fetchTransactionHistory, fetchTransactionReceipt } from '@/server/admin-transactions/history';
+import { parseTransactionHistoryParams,TransactionHistoryInputError } from '@/lib/admin/transaction-history';
 import { adminErrorToResponse, requireAdmin } from '@/server/admin';
 
 export const runtime = 'nodejs';
@@ -17,13 +18,19 @@ export async function GET(req: NextRequest) {
   }
 
   const url = new URL(req.url);
-  const limitParam = Number(url.searchParams.get('limit') ?? '100');
-  const limit = Number.isFinite(limitParam) ? limitParam : 100;
+  let filters;
+  try {
+    filters = parseTransactionHistoryParams(url.searchParams);
+  } catch (error) {
+    return NextResponse.json({ ok: false, error: (error as Error).message }, { status: 400 });
+  }
 
   try {
-    const transactions = await fetchAdminTransactions(limit);
-    return NextResponse.json({ ok: true, transactions });
+    if (url.searchParams.has('receipt'))
+      return NextResponse.json({ ok: true, receipt: await fetchTransactionReceipt(url.searchParams.get('receipt')!) });
+    return NextResponse.json({ ok: true, ...(await fetchTransactionHistory(filters)) });
   } catch (error) {
+    if(error instanceof TransactionHistoryInputError)return NextResponse.json({ok:false,error:error.message},{status:400});
     console.error('[admin/transactions] failed to load transactions', error);
     return NextResponse.json({ ok: false, error: 'Failed to load transactions', transactions: [] }, { status: 500 });
   }

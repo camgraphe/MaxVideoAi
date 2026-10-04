@@ -1,6 +1,7 @@
 'use client';
 
 import type { FormEvent } from 'react';
+import type { PendingGeneration } from '@/lib/pending-generations';
 import { WorkspaceCreationHeading } from '../../_components/WorkspaceCreationHeading';
 import type { EngineCaps } from '@/types/engines';
 import type { ImageGenerationMode } from '@/types/image-generation';
@@ -50,7 +51,7 @@ interface ImageWorkspaceComposerSurfaceProps {
   handleRemoveReferenceSlot: (index: number) => void;
   handleRun: (event?: FormEvent<HTMLFormElement> | null) => Promise<void> | void;
   imageCountOptions: ControlOption[];
-  inProgressMessage: string | null;
+  pendingGenerations: readonly PendingGeneration[];
   isInLibrary: boolean;
   isRemovingFromLibrary: boolean;
   isResolutionLocked: boolean;
@@ -144,7 +145,7 @@ export function ImageWorkspaceComposerSurface({
   handleRemoveReferenceSlot,
   handleRun,
   imageCountOptions,
-  inProgressMessage,
+  pendingGenerations,
   isInLibrary,
   isRemovingFromLibrary,
   isResolutionLocked,
@@ -263,15 +264,7 @@ export function ImageWorkspaceComposerSurface({
       )}
 
       <form onSubmit={handleRun} className="app-image-composer space-y-4">
-        {inProgressMessage ? (
-          <p
-            role="status"
-            aria-live="polite"
-            className="rounded-card border border-success-border bg-success-bg px-3 py-2 text-sm text-success"
-          >
-            {inProgressMessage}
-          </p>
-        ) : statusMessage ? (
+        {statusMessage ? (
           <p
             role="status"
             aria-live="polite"
@@ -290,6 +283,7 @@ export function ImageWorkspaceComposerSurface({
           price={estimatedCostAmount}
           currency={currency}
           isLoading={false}
+          pendingGenerations={pendingGenerations}
           error={composerError ?? undefined}
           promptField={{
             id: 'prompt',

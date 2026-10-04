@@ -111,8 +111,7 @@ export function registerPresentGenerationTool(
     'present_generation',
     {
       title: 'Present a MaxVideoAI generation',
-      description:
-        [
+      description: [
         'Use this once to deliver a completed owned MaxVideoAI generation as inline video, image or original Audio in a compatible UI host.',
         'First verify completion with get_generation_status or list_recent_generations.',
         'Explain that the result is saved in the same connected MaxVideoAI library.',

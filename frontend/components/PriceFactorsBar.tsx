@@ -304,6 +304,7 @@ function buildAddonLabel(addon: ItemizationLine) {
   if (type === 'audio_off') return 'Audio off';
   if (type === 'extend') return 'Extend';
   if (type === 'keyframes') return 'Keyframes';
+  if (type === 'input_video_duration') return 'Input video';
   return titleCase(type);
 }
 

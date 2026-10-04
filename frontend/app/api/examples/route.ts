@@ -9,10 +9,12 @@ import { buildExamplePosterProjection } from '@/lib/media-helpers';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { localePathnames, type AppLocale } from '@/i18n/locales';
 import { getExampleFamilyDescriptor, getExampleFamilyPrimaryModelSlug } from '@/lib/model-families';
+import { quoteCurrentExamplePrices, type CurrentExamplePrice } from '@/server/current-example-price';
+import { formatCurrentExamplePrice } from '@/lib/current-example-price-display';
 
 export const dynamic = 'force-dynamic';
 
-const CACHE_CONTROL_HEADER = 'public, max-age=60, s-maxage=300, stale-while-revalidate=86400';
+const CACHE_CONTROL_HEADER = 'no-store';
 function parseSort(raw: string | null): ExampleSort {
   switch (raw) {
     case 'playlist':
@@ -100,22 +102,6 @@ function resolveFilterDescriptor(
   return getExampleFamilyDescriptor(canonicalEngineId, { brandId: engineMeta?.brandId }) ?? null;
 }
 
-function formatPrice(priceCents: number | null | undefined, currency: string | null | undefined): string | null {
-  if (typeof priceCents !== 'number' || Number.isNaN(priceCents)) {
-    return null;
-  }
-  const normalizedCurrency = typeof currency === 'string' && currency.length ? currency.toUpperCase() : 'USD';
-  try {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: normalizedCurrency,
-      maximumFractionDigits: 2,
-    }).format(priceCents / 100);
-  } catch {
-    return `${normalizedCurrency} ${(priceCents / 100).toFixed(2)}`;
-  }
-}
-
 function formatPromptExcerpt(prompt: string, maxWords = 22): string {
   const words = prompt.trim().split(/\s+/);
   if (words.length <= maxWords) return prompt.trim();
@@ -134,12 +120,12 @@ function buildModelHref(locale: AppLocale, slug: string): string {
   return `${prefix}/${segment}/${slug}`.replace(/\/{2,}/g, '/');
 }
 
-function toExampleCard(video: GalleryVideo, locale: AppLocale) {
+function toExampleCard(video: GalleryVideo, locale: AppLocale, currentPrice?: CurrentExamplePrice) {
   const canonicalEngineId = resolveEngineLinkId(video.engineId);
   const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
   const engineMeta = engineKey ? ENGINE_META.get(engineKey) ?? null : null;
   const descriptor = canonicalEngineId ? resolveFilterDescriptor(canonicalEngineId, engineMeta) : null;
-  const priceLabel = formatPrice(video.finalPriceCents ?? null, video.currency ?? null);
+  const priceLabel = formatCurrentExamplePrice(currentPrice, locale);
   const promptDisplay = formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render');
   const modelSlug = engineMeta?.modelSlug ?? (descriptor ? getExampleFamilyPrimaryModelSlug(descriptor.id) : null);
   const modelHref = modelSlug ? buildModelHref(locale, modelSlug) : null;
@@ -154,6 +140,8 @@ function toExampleCard(video: GalleryVideo, locale: AppLocale) {
     promptFull: video.prompt ?? null,
     aspectRatio: video.aspectRatio ?? null,
     durationSec: video.durationSec,
+    outputWidth: video.outputWidth,
+    outputHeight: video.outputHeight,
     hasAudio: video.hasAudio,
     ...buildExamplePosterProjection(video.thumbUrl, getPlaceholderPoster(video.aspectRatio ?? null)),
     videoUrl: video.videoUrl ?? null,
@@ -182,7 +170,8 @@ export async function GET(req: NextRequest) {
       ? await listExampleFamilyPage(engineFilter, { sort, limit, offset })
       : await listExamplesPage({ sort, limit, offset, engineGroup: engineFilter || undefined });
     const items = page.items;
-    const cards = items.map((video) => toExampleCard(video, locale));
+    const prices = await quoteCurrentExamplePrices(items);
+    const cards = items.map((video) => toExampleCard(video, locale, prices.get(video.id)));
     const response = NextResponse.json({
       ok: true,
       cards,

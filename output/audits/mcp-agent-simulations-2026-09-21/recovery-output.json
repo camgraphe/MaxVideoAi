@@ -1,0 +1,102 @@
+{
+  "model": "gpt-5.6-luna",
+  "evidenceKind": "agent-generated-mocked-next-step-simulation",
+  "cases": [
+    {
+      "id": "R01",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "get_generation_status",
+          "arguments": {"jobId": "job-known"}
+        }
+      ],
+      "reply": "Je vérifie l’état actuel de la génération existante pour éviter tout doublon. Je vous donnerai uniquement le statut retourné par MaxVideoAI."
+    },
+    {
+      "id": "R02",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "list_recent_generations",
+          "arguments": {"limit": 10, "surface": "video"}
+        }
+      ],
+      "reply": "La réponse de confirmation a disparu. Je recherche vos générations vidéo récentes dans le même compte pour retrouver celle-ci sans lancer une seconde tentative."
+    },
+    {
+      "id": "R03",
+      "skill": "generate",
+      "actions": [
+        {"type": "wait", "seconds": 28},
+        {
+          "type": "tool",
+          "name": "get_generation_status",
+          "arguments": {"jobId": "job-running"}
+        }
+      ],
+      "reply": "Je poursuis le suivi de la génération existante après le délai indiqué par le service."
+    },
+    {
+      "id": "R04",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "present_generation",
+          "arguments": {"jobId": "job-done"}
+        }
+      ],
+      "reply": "Je vous présente la vidéo terminée depuis votre génération enregistrée."
+    },
+    {
+      "id": "R05",
+      "skill": "generate",
+      "actions": [],
+      "reply": "Elle est sauvegardée dans votre bibliothèque MaxVideoAI : https://maxvideoai.com/app/library?fixture=done"
+    },
+    {
+      "id": "R06",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "prepare_generation",
+          "arguments": {
+            "surface": "video",
+            "engineId": "seedance-2-0",
+            "mode": "t2v",
+            "prompt": "Un bateau rouge traverse un lac calme au lever du soleil.",
+            "settings": {"durationSec": 8, "aspectRatio": "9:16", "resolution": "720p"},
+            "outputCount": 1
+          }
+        }
+      ],
+      "reply": "Je prépare un nouveau devis exact pour cette nouvelle tentative. Le remboursement ne rétablit pas l’autorisation précédente ; je vous montrerai le prix puis attendrai votre accord explicite avant toute génération."
+    },
+    {
+      "id": "R07",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "reconnect",
+          "detail": "L’hôte signale une réauthentification requise ; lancer son flux de reconnexion MaxVideoAI."
+        }
+      ],
+      "reply": "La connexion MaxVideoAI requiert une réauthentification. Je relance le flux de reconnexion de l’hôte, puis je retrouverai votre projet enregistré sans considérer cela comme une approbation payante."
+    },
+    {
+      "id": "R08",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "discover_tools",
+          "query": "MaxVideoAI get_model_details prepare_generation confirm_generation get_generation_status list_recent_generations present_generation"
+        }
+      ],
+      "reply": "Je recherche d’abord les outils MaxVideoAI différés, car leur absence de la liste initiale ne prouve pas qu’ils soient indisponibles. Je poursuivrai dès que l’hôte renverra le résultat."
+    }
+  ]
+}

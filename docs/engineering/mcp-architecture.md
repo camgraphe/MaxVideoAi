@@ -2,6 +2,10 @@
 
 This guide is the operating reference for the MaxVideoAI AI video plugin, its remote MCP server, and its ChatGPT, Claude, and Codex installation surfaces.
 
+For instruction ownership, metadata size budgets, OAuth recovery and host-selection
+verification, follow [MCP client experience](mcp-client-experience.md), reviewed
+2026-09-21, and the nested server/plugin `AGENTS.md` files.
+
 ## Product boundary
 
 The public product is an **AI video plugin for ChatGPT**, a **MaxVideoAI connector for Claude**, and a technical **Codex plugin** for creator workflows. MCP is the shared transport, not the lead marketing promise.
@@ -19,6 +23,8 @@ The only custom chat UI is a decoupled result presenter for an already completed
 The current presenter template uses `ui://maxvideoai/generation-result-v4.html`. Because hosts and existing conversations may cache a tool descriptor, the server must keep every previously published presenter URI readable; `v1`, `v2`, and `v3` are compatibility resources, not the current template. A widget change publishes a new URI instead of replacing the bytes behind the current cache key.
 
 Generated media is durable in the connected MaxVideoAI account. Direct S3 attachment URLs remain short-lived credentials. The result widget calls the app-only, read-only `get_generation_download` tool when the user clicks **Download**, revalidates ownership, and creates a fresh attachment URL at that moment. It then hands that vetted attachment URL to the host through `window.openai.openExternal`, with the portable MCP Apps `ui/open-link` request as fallback. The host opens the response outside the sandbox, where its `Content-Disposition: attachment` header can start the browser download. Exact configured media origins belong in the OpenAI redirect allowlist; never use wildcards. Do not solve return visits by publishing a multi-day storage credential: preserve the job/library destination and refresh the download on demand.
+
+The reference importer uses `ui://maxvideoai/reference-upload-v2.html` (2026-09-22). Its v1 URI remains readable from a frozen compatibility document, checked by rendered-byte SHA-256. New metadata selects v2 so clients refresh the widget containing the retry and cumulative-context fixes.
 
 One hosted OAuth-protected MCP server serves every client. Client-specific plugin or skill packages add installation instructions and workflow guidance; they must not fork business logic or the model catalogue.
 

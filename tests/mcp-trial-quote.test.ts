@@ -18,7 +18,8 @@ import {
   prepareGeneration,
 } from '../frontend/src/server/agent-api/prepare-generation';
 import type { AgentPrincipal } from '../frontend/src/server/agent-api/principal';
-import { insertPreparedQuote } from '../frontend/src/server/agent-api/quote-repository';
+import { getOwnedQuote, insertPreparedQuote } from '../frontend/src/server/agent-api/quote-repository';
+import { anyGenerationQuoteRepository } from '../frontend/src/server/agent-api/audio-quote-repository';
 import type { TrialStatus } from '../frontend/src/server/agent-api/types';
 import * as httpHandler from '../frontend/src/server/mcp/http-handler';
 import {
@@ -29,6 +30,7 @@ import type { EngineCaps, EngineInputField, EngineModeUiCaps } from '../frontend
 
 const paidMigrationPath = 'neon/migrations/30_mcp_paid_generation.sql';
 const trialMigrationPath = 'neon/migrations/31_mcp_trial_entitlements.sql';
+const rasterMigrationPath = 'neon/migrations/60_mcp_trial_provider_rasters.sql';
 const auditRepositoryPath = 'frontend/src/server/agent-api/trial-quote-audit-repository.ts';
 const quoteId = '123e4567-e89b-42d3-a456-426614174000';
 const now = new Date('2026-07-17T10:00:00.000Z');
@@ -238,7 +240,7 @@ test('a qualifying original request prepares a zero-charge trial without reducin
     oauthClientId: 'codex-client',
     clientIp: '203.0.113.17',
     userAgent: 'Codex/1.0',
-    providerCostCents: 17,
+    providerCostCents: 18,
   }]);
   assert.equal(captures.inserted.length, 1);
   const inserted = captures.inserted[0]!;
@@ -251,7 +253,7 @@ test('a qualifying original request prepares a zero-charge trial without reducin
     kind: 'included_trial',
     customerChargeCents: 0,
     normalPriceCents: 125,
-    providerCostCents: 17,
+    providerCostCents: 18,
   });
   assert.deepEqual(captures.audits, [{
     quoteId,
@@ -422,7 +424,7 @@ test('trial provider cost is independent from the marked-up public canonical bas
     const { captures, deps } = prepareDependencies({ paidEnabled: false, baseAmountCents });
     const prepared = await prepareGeneration(trialInput, principal, deps as never);
     assert.equal(prepared.fundingMode, 'trial');
-    assert.equal(captures.risk[0]?.providerCostCents, 17);
+    assert.equal(captures.risk[0]?.providerCostCents, 18);
     assert.equal(captures.inserted.length, 1);
   }
 
@@ -484,7 +486,7 @@ function validTrialPricingSnapshot(): Record<string, unknown> {
     canonicalPricing: pricingSnapshot(),
     funding: {
       kind: 'included_trial', customerChargeCents: 0, normalPriceCents: 125,
-      providerCostCents: 17,
+      providerCostCents: 18,
     },
   };
 }
@@ -529,8 +531,8 @@ test('quote repository requires explicit funding mode and parses a private typed
 
 test('trial quote repository accepts only the authoritative request-derived provider cost', async () => {
   for (const [aspectRatio, providerCostCents] of [
-    ['9:16', 17],
-    ['1:1', 10],
+    ['9:16', 18],
+    ['1:1', 17],
   ] as const) {
     const request = {
       ...canonicalTrialRequest(),
@@ -614,6 +616,29 @@ test('trial quote repository accepts only the authoritative request-derived prov
       }),
       /invalid quote row/i,
     );
+  }
+});
+
+test('accepted historical trial funding remains readable but cannot fund a new quote', async () => {
+  for (const [aspectRatio, historicalCost] of [['16:9', 17], ['9:16', 17], ['1:1', 10]] as const) {
+    const request = { ...canonicalTrialRequest(), settings: { ...canonicalTrialRequest().settings, aspectRatio } };
+    const snapshot = validTrialPricingSnapshot();
+    (snapshot.funding as Record<string, unknown>).providerCostCents = historicalCost;
+    const row = { ...storedTrialRow(request, snapshot), state: 'accepted', job_id: 'historical-trial-job',
+      claimed_at: new Date(now.getTime() + 1000), updated_at: new Date(now.getTime() + 1000) };
+    let queries = 0;
+    const executor: QueryExecutor = { async query<TRecord>() { queries += 1; return [row] as TRecord[]; } };
+    for (const repository of [{ getOwnedQuote, insertPreparedQuote }, anyGenerationQuoteRepository]) {
+      const quote = await repository.getOwnedQuote({ quoteId, userId: principal.userId, oauthClientId: principal.clientId }, { executor });
+      assert.equal(quote?.state, 'accepted');
+      assert.equal(quote?.trialFunding?.providerCostCents, historicalCost);
+      assert.deepEqual(quote?.pricingSnapshot, snapshot);
+      await assert.rejects(repository.insertPreparedQuote({ userId: principal.userId, oauthClientId: principal.clientId,
+        request, requestHash: hashCanonicalGenerationRequest(request), catalogRevision: 'catalog-1',
+        pricingSnapshot: snapshot, priceCents: 0, currency: 'USD', fundingMode: 'trial' },
+      { executor, now: () => now, randomUUID: () => quoteId }), /invalid prepared quote input/i);
+    }
+    assert.equal(queries, 2, 'both readers preserve old funding while inserts reject it before SQL');
   }
 });
 
@@ -900,7 +925,7 @@ test('migration 31 replaces wallet-only funding with exact trial shape and priva
   assert.match(source, /normalPriceCents/);
   assert.match(source, /providerCostCents/);
   assert.match(source, /providerCostCents[\s\S]*?::numeric\s*<=\s*100/i);
-  assert.match(source, /aspectRatio[\s\S]*?WHEN\s+'1:1'\s+THEN\s+10/i);
+  assert.match(source, /WHEN\s+'1:1'\s+THEN\s+10/i);
   assert.match(source, /WHEN\s+'16:9'\s+THEN\s+17/i);
   assert.match(source, /WHEN\s+'9:16'\s+THEN\s+17/i);
   assert.match(source, /CREATE TABLE IF NOT EXISTS mcp_trial_quote_prepared_audit/i);
@@ -1028,6 +1053,31 @@ test('migration 30 to 31, reapplication, funding attacks and audit privacy execu
   `);
   assert.equal(valid.status, 0, commandOutput(valid));
 
+  const historicalRows = () => psql('-At', '-v', 'ON_ERROR_STOP=1', '-c', `
+    SELECT jsonb_agg(to_jsonb(q) ORDER BY quote_id) FROM mcp_generation_quotes q
+    WHERE user_id NOT LIKE 'current-raster-%' AND user_id NOT LIKE 'trial-attack-%'
+  `);
+  const beforeUpgrade = historicalRows().stdout;
+  const upgrade = psql('--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', join(root, rasterMigrationPath));
+  assert.equal(upgrade.status, 0, commandOutput(upgrade));
+  assert.equal(historicalRows().stdout, beforeUpgrade, 'forward migration preserves every stored quote field');
+  for (const [sequence, aspectRatio, providerCostCents] of [[4, '16:9', 18], [5, '9:16', 18], [6, '1:1', 17]] as const) {
+    const value = { ...requestValue, settings: { ...requestValue.settings, aspectRatio } };
+    const pricing = { ...trialPricingValue, funding: { ...trialPricingValue.funding, providerCostCents } };
+    const inserted = psql('-v', 'ON_ERROR_STOP=1', '-c', `
+      INSERT INTO mcp_generation_quotes (
+        quote_id, user_id, oauth_client_id, request_json, request_hash, catalog_revision,
+        pricing_snapshot, price_cents, currency, funding_mode, state, expires_at, created_at, updated_at
+      ) VALUES (
+        '123e4567-e89b-42d3-a456-42661417400${sequence}', 'current-raster-${sequence}', 'codex-client',
+        '${JSON.stringify(value).replaceAll("'", "''")}'::jsonb, '${hashCanonicalGenerationRequest(value)}',
+        'catalog-1', '${JSON.stringify(pricing).replaceAll("'", "''")}'::jsonb, 0, 'USD', 'trial', 'prepared',
+        '2026-07-17T10:10:00Z', '2026-07-17T10:00:00Z', '2026-07-17T10:00:00Z'
+      )
+    `);
+    assert.equal(inserted.status, 0, commandOutput(inserted));
+  }
+
   const cloneQuoteAttack = (
     sequence: number,
     sourceUserId: 'trial-user' | 'wallet-user',
@@ -1105,6 +1155,7 @@ test('migration 30 to 31, reapplication, funding attacks and audit privacy execu
     }),
     cloneQuoteAttack(19, 'trial-user', {
       requestJson: `jsonb_set(request_json, '{settings,aspectRatio}', '"1:1"')`,
+      pricingSnapshot: "jsonb_set(pricing_snapshot, '{funding,providerCostCents}', '18')",
     }),
     cloneQuoteAttack(20, 'trial-user', {
       pricingSnapshot: "jsonb_set(pricing_snapshot, '{funding,providerCostCents}', '10')",
@@ -1132,10 +1183,12 @@ test('migration 30 to 31, reapplication, funding attacks and audit privacy execu
     assert.notEqual(attacked.status, 0, `${sql}\nunexpectedly succeeded`);
   }
 
-  const reapplied = psql(
-    '--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', join(root, trialMigrationPath),
-  );
-  assert.equal(reapplied.status, 0, commandOutput(reapplied));
+  const currentRows = psql('-At', '-c', 'SELECT jsonb_agg(to_jsonb(q) ORDER BY quote_id) FROM mcp_generation_quotes q').stdout;
+  for (const migration of [trialMigrationPath, rasterMigrationPath, trialMigrationPath]) {
+    const reapplied = psql('--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', join(root, migration));
+    assert.equal(reapplied.status, 0, commandOutput(reapplied));
+    assert.equal(psql('-At', '-c', 'SELECT jsonb_agg(to_jsonb(q) ORDER BY quote_id) FROM mcp_generation_quotes q').stdout, currentRows);
+  }
   const predicate = psql('-At', '-v', 'ON_ERROR_STOP=1', '-c', `
     SELECT pg_get_expr(indexprs.indpred, indexprs.indrelid)
       FROM pg_index AS indexprs
@@ -1144,4 +1197,15 @@ test('migration 30 to 31, reapplication, funding attacks and audit privacy execu
   `);
   assert.equal(predicate.status, 0, commandOutput(predicate));
   assert.match(predicate.stdout, /funding_mode.*wallet/i);
+  const tampered = psql('-v', 'ON_ERROR_STOP=1', '-c', `
+    CREATE OR REPLACE FUNCTION public.mcp_trial_provider_cost_matches_snapshot(aspect_ratio TEXT, provider_cost NUMERIC)
+    RETURNS BOOLEAN LANGUAGE sql IMMUTABLE STRICT PARALLEL SAFE AS 'SELECT true';
+  `);
+  assert.equal(tampered.status, 0, commandOutput(tampered));
+  for (const migration of [trialMigrationPath, rasterMigrationPath]) {
+    const refused = psql('--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', join(root, migration));
+    assert.notEqual(refused.status, 0);
+    assert.match(commandOutput(refused), /unexpected MCP trial provider-cost function/i);
+  }
+
 });

@@ -76,7 +76,7 @@ export function AdminMcpView({ metrics, outcomes, selectedRange }: AdminMcpViewP
         }
       />
 
-      <McpGenerationOverview outcomes={outcomes} />
+      <McpGenerationOverview outcomes={outcomes} activity={metrics.activity} pollingCalls={metrics.pollingCalls} />
 
       <AdminSection
         title="Decision overview"

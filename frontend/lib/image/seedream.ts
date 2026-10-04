@@ -2,6 +2,18 @@ export const SEEDREAM_BASE_RESOLUTION_VALUES = ['2K', '3K', '4K'] as const;
 export const SEEDREAM_MAX_REFERENCE_IMAGES = 10;
 export const SEEDREAM_MAX_IMAGE_SET_IMAGES = 15;
 
+export function isSeedreamEngineId(id: string): boolean {
+  return id === 'seedream' || id === 'seedream-5-0-pro';
+}
+
+/** Input images is the submitted total; references are additional images beyond the main edit source. */
+export function seedreamPricingInputCount(context: { mode?: string; inputImageCount?: number; referenceImageCount?: number }): number {
+  if (context.mode !== 'i2i') return 0;
+  const count = Math.max(1, context.inputImageCount ?? 1) + (context.referenceImageCount ?? 0);
+  if (!Number.isSafeInteger(count) || count > SEEDREAM_MAX_REFERENCE_IMAGES) throw new Error('Invalid Seedream input image count.');
+  return count;
+}
+
 export const SEEDREAM_ASPECT_RATIO_VALUES = [
   'auto',
   '1:1',

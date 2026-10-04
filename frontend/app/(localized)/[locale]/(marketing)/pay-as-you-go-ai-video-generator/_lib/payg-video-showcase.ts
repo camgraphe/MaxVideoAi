@@ -2,6 +2,8 @@ import { isDatabaseConfigured } from '@/lib/db';
 import type { AppLocale } from '@/i18n/locales';
 import { listGalleryVideos, listPlaylistVideos, type GalleryVideo } from '@/server/videos';
 import type { PayAsYouGoContent, PaygShowcaseTitleId } from '../_content/types';
+import { quoteCurrentExamplePrices, type CurrentExamplePrice } from '@/server/current-example-price';
+import { formatCurrentExamplePrice } from '@/lib/current-example-price-display';
 
 export const PAYG_VIDEO_PLAYLIST_SLUG = 'payg-ai-video-generator';
 const SHOWCASE_LIMIT = 7;
@@ -31,23 +33,6 @@ export type PayAsYouGoShowcaseVideo = {
 };
 
 export type PayAsYouGoShowcaseRuntimeCopy = PayAsYouGoContent['showcase']['runtime'];
-
-function formatVideoPrice(video: GalleryVideo, locale: AppLocale, copy: PayAsYouGoShowcaseRuntimeCopy) {
-  if (typeof video.finalPriceCents !== 'number' || !Number.isFinite(video.finalPriceCents)) {
-    return copy.priceUnavailable;
-  }
-
-  const currency = video.currency?.trim().toUpperCase() || 'USD';
-  try {
-    return new Intl.NumberFormat(locale === 'es' ? 'es-419' : locale === 'fr' ? 'fr-FR' : 'en-US', {
-      style: 'currency',
-      currency,
-      maximumFractionDigits: 2,
-    }).format(video.finalPriceCents / 100);
-  } catch {
-    return `${currency} ${(video.finalPriceCents / 100).toFixed(2)}`;
-  }
-}
 
 function hasMedia(video: GalleryVideo) {
   return Boolean(video.previewVideoUrl || video.videoUrl || video.thumbUrl);
@@ -154,6 +139,7 @@ export function buildPayAsYouGoShowcaseVideo(
   video: GalleryVideo,
   locale: AppLocale,
   copy: PayAsYouGoShowcaseRuntimeCopy,
+  currentPrice?: CurrentExamplePrice,
 ): PayAsYouGoShowcaseVideo {
   const duration = Math.max(1, Math.round(video.durationSec || 0));
   const engineLabel = video.engineLabel || video.engineId || copy.defaultEngineLabel;
@@ -162,7 +148,7 @@ export function buildPayAsYouGoShowcaseVideo(
     id: video.id,
     engineId: video.engineId,
     engineLabel,
-    priceLabel: formatVideoPrice(video, locale, copy),
+    priceLabel: formatCurrentExamplePrice(currentPrice, locale) ?? copy.priceUnavailable,
     durationLabel: `${duration}s`,
     title: formatVideoTitle(video.promptExcerpt || video.prompt || '', titleEngineLabel, copy),
     useCase: formatVideoUseCase(video, copy),
@@ -203,5 +189,7 @@ export async function loadPayAsYouGoVideoShowcase({
     videos = await loadFallbackVideos();
   }
 
-  return pickDiverseVideos(videos).map((video) => buildPayAsYouGoShowcaseVideo(video, locale, copy));
+  const selected = pickDiverseVideos(videos);
+  const prices = await quoteCurrentExamplePrices(selected);
+  return selected.map((video) => buildPayAsYouGoShowcaseVideo(video, locale, copy, prices.get(video.id)));
 }

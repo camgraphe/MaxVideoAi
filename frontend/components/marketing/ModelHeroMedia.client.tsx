@@ -57,16 +57,23 @@ export function ModelHeroMedia({
   const userPausedRef = useRef(false);
   const environmentPauseRef = useRef(false);
   const playIntendedRef = useRef(false);
-  const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
+  const loadGenerationRef = useRef(0);
+  const playGenerationRef = useRef(0);
+  const [loadedVideoSrc, setLoadedVideoSrc] = useState<string | null>(null);
+  const [blockedVideoSrc, setBlockedVideoSrc] = useState<string | null>(null);
+  const [isVisible, setIsVisible] = useState(true);
+  const shouldLoadVideo = Boolean(videoSrc && loadedVideoSrc === videoSrc);
+  const needsUserPlay = Boolean(videoSrc && blockedVideoSrc === videoSrc);
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [autoPlayDisabled, setAutoPlayDisabled] = useState(false);
   const {
     attempt, terminalError, begin, fail, setContext,
-    measureNode, measurePlaying, measureWaiting, measurePause,
+    measureNode, measurePlaying, measureWaiting, measurePause, restartMeasurement,
   } = usePublicVideoPlayback('model');
   const playbackAttempt = attempt?.rendition.originalSrc === videoSrc ? attempt : null;
 
   const clearScheduledLoad = useCallback(() => {
+    loadGenerationRef.current += 1;
     if (idleIdRef.current != null) {
       window.cancelIdleCallback?.(idleIdRef.current);
       idleIdRef.current = null;
@@ -88,24 +95,60 @@ export function ModelHeroMedia({
     lcpReadyRef.current = false;
   }, []);
 
+  const tryPlay = useCallback((node: HTMLVideoElement) => {
+    if (
+      videoRef.current !== node || userPausedRef.current || !playIntendedRef.current
+      || !playerVisibleRef.current || !documentVisibleRef.current || !node.paused
+    ) return;
+    const generation = ++playGenerationRef.current;
+    void node.play().catch((error: unknown) => {
+      if (
+        generation !== playGenerationRef.current || videoRef.current !== node
+        || userPausedRef.current || !playIntendedRef.current
+        || !playerVisibleRef.current || !documentVisibleRef.current
+        || (error as { name?: string } | null)?.name === 'AbortError'
+      ) return;
+      playIntendedRef.current = false;
+      setContext({ intended: false });
+      measurePause();
+      setIsVideoReady(false);
+      setBlockedVideoSrc(videoSrc ?? null);
+    });
+  }, [measurePause, setContext, videoSrc]);
+
   const requestPlayback = useCallback((trigger: 'user' | 'automatic', force = false) => {
-    if (!videoSrc || (shouldLoadVideo && !force)) return;
+    if (!videoSrc || (trigger === 'automatic' && shouldLoadVideo && !force)) return;
     clearScheduledLoad();
+    const generation = loadGenerationRef.current;
     const load = () => {
+      if (generation !== loadGenerationRef.current) return;
+      idleIdRef.current = null;
+      if (trigger === 'automatic') {
+        if (!playerVisibleRef.current || !documentVisibleRef.current || document.visibilityState === 'hidden') return;
+        const disabled = shouldDisableAutoPlay();
+        setAutoPlayDisabled(disabled);
+        if (disabled) return;
+      }
       userPausedRef.current = false;
       playIntendedRef.current = true;
+      setBlockedVideoSrc(null);
       setContext({ intended: true });
+      if (shouldLoadVideo && !force && videoRef.current) {
+        restartMeasurement(trigger);
+        tryPlay(videoRef.current);
+        return;
+      }
       begin(videoSrc, trigger, { force });
       setIsVideoReady(false);
-      setShouldLoadVideo(true);
+      setLoadedVideoSrc(videoSrc);
     };
     if (trigger === 'user') load();
     else if ('requestIdleCallback' in window) idleIdRef.current = window.requestIdleCallback(load, { timeout: 1000 });
     else load();
-  }, [begin, clearScheduledLoad, setContext, shouldLoadVideo, videoSrc]);
+  }, [begin, clearScheduledLoad, restartMeasurement, setContext, shouldLoadVideo, tryPlay, videoSrc]);
 
   useEffect(() => {
-    if (!videoSrc || !autoPlayDelayMs || autoPlayDelayMs <= 0 || shouldLoadVideo) return;
+    if (!videoSrc || !autoPlayDelayMs || autoPlayDelayMs <= 0 || shouldLoadVideo || !isVisible) return;
     const disabled = shouldDisableAutoPlay();
     setAutoPlayDisabled(disabled);
     if (disabled || timerIdRef.current != null) return;
@@ -148,15 +191,7 @@ export function ModelHeroMedia({
       }
     }
     return clearScheduledLoad;
-  }, [autoPlayDelayMs, clearScheduledLoad, requestPlayback, shouldLoadVideo, videoSrc, waitForLcp]);
-
-  const tryPlay = useCallback((node: HTMLVideoElement) => {
-    if (
-      videoRef.current !== node || userPausedRef.current || !playIntendedRef.current
-      || !playerVisibleRef.current || !documentVisibleRef.current
-    ) return;
-    void node.play().catch(() => undefined);
-  }, []);
+  }, [autoPlayDelayMs, clearScheduledLoad, isVisible, requestPlayback, shouldLoadVideo, videoSrc, waitForLcp]);
 
   useEffect(() => {
     if (!shouldLoadVideo || !playbackAttempt) return;
@@ -171,8 +206,14 @@ export function ModelHeroMedia({
     const container = containerRef.current;
     if (!container) return;
     documentVisibleRef.current = document.visibilityState !== 'hidden';
-    const syncVisible = () => setContext({ visible: playerVisibleRef.current && documentVisibleRef.current });
+    const syncVisible = () => {
+      const visible = playerVisibleRef.current && documentVisibleRef.current;
+      setContext({ visible });
+      setIsVisible(visible);
+      if (!visible) clearScheduledLoad();
+    };
     const suspend = () => {
+      playGenerationRef.current += 1;
       const node = videoRef.current;
       if (!node) return;
       measurePause();
@@ -180,6 +221,7 @@ export function ModelHeroMedia({
       environmentPauseRef.current = true;
       node.pause();
     };
+    syncVisible();
     const observer = typeof IntersectionObserver === 'undefined'
       ? null
       : new IntersectionObserver(([entry]) => {
@@ -200,7 +242,7 @@ export function ModelHeroMedia({
       observer?.disconnect();
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [measurePause, setContext, tryPlay]);
+  }, [clearScheduledLoad, measurePause, setContext, tryPlay]);
 
   useEffect(() => clearScheduledLoad, [clearScheduledLoad]);
 
@@ -213,7 +255,7 @@ export function ModelHeroMedia({
   const normalizedVideoSrc = (playbackAttempt?.rendition.src ?? videoSrc ?? '').toLowerCase();
   const sourceType = normalizedVideoSrc.includes('.webm') ? 'video/webm' : 'video/mp4';
   const shouldShowPlayButton = Boolean(videoSrc) && (
-    terminalError || (!shouldLoadVideo && (
+    terminalError || needsUserPlay || (!shouldLoadVideo && (
       showPlayButton === true || (showPlayButton === 'when-autoplay-disabled' && autoPlayDisabled)
     ))
   );
@@ -248,9 +290,14 @@ export function ModelHeroMedia({
           onLoadedData={() => {
             setIsVideoReady(true);
           }}
-          onPlaying={(event) => measurePlaying(event.currentTarget)}
+          onPlaying={(event) => {
+            if (videoRef.current !== event.currentTarget) return;
+            setIsVideoReady(true);
+            measurePlaying(event.currentTarget);
+          }}
           onWaiting={measureWaiting}
           onPause={() => {
+            playGenerationRef.current += 1;
             measurePause();
             if (environmentPauseRef.current) {
               environmentPauseRef.current = false;

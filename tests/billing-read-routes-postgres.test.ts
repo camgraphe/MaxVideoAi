@@ -41,6 +41,7 @@ test('Billing GETs read only the authenticated ledger and expose database failur
     ($1,'charge',125,'USD','Own render',NULL,NULL),
     ($1,'refund',25,'USD','Own refund',NULL,NULL),
     ($2,'topup',99999,'GBP','Other private receipt',NULL,NULL)`, [fixtureUser, otherUser]);
+  await pg.pool.query("UPDATE app_receipts SET original_amount_cents=2682, original_currency='EUR', metadata='{\"pricing_audit_snapshot\":{\"private\":true}}' WHERE description='Own top-up'");
   const dbPath = resolve('frontend/src/lib/db.ts');
   const output = join(folder, 'routes.cjs');
   await build({
@@ -128,6 +129,10 @@ test('Billing GETs read only the authenticated ledger and expose database failur
     const next = await second.json();
     assert.equal(next.receipts.length, 1);
     assert.equal(next.receipts[0].description, 'Own top-up');
+    assert.equal(next.receipts[0].payment_amount_cents, 2682);
+    assert.equal(next.receipts[0].payment_currency, 'EUR');
+    assert.equal(next.receipts[0].metadata, undefined);
+    assert.equal(next.receipts[0].pricing_snapshot, undefined);
     assert.equal(next.receipts[0].document_type, 'invoice');
     assert.equal(next.receipts[0].document_url, 'https://example.com/invoice');
     assert.equal(next.nextCursor, null);

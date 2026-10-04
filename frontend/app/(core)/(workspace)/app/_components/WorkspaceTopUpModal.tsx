@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import type { TopUpModalState } from '../_hooks/useWorkspacePricingGate';
+import { useWorkspaceTopupReviewAnalytics } from '../_hooks/useWorkspaceTopupReviewAnalytics';
 
 type WorkspaceTopUpCopy = {
   title: string;
@@ -15,6 +16,11 @@ type WorkspaceTopUpCopy = {
   suggestedTopUp: string;
   otherAmountLabel: string;
   minLabel: string;
+  creditsReceived: string;
+  paymentAmount: string;
+  quoteLoading: string;
+  quoteUnavailable: string;
+  taxNote: string;
   captchaPrompt: string;
   captchaComplete: string;
   captchaError: string;
@@ -30,7 +36,11 @@ export type WorkspaceTopUpModalProps = {
   modal: NonNullable<TopUpModalState>;
   copy: WorkspaceTopUpCopy;
   currency: string;
+  chargeCurrency: string;
   topUpAmount: number;
+  paymentAmountLabel: string | null;
+  quoteLoading: boolean;
+  quoteError: boolean;
   isTopUpLoading: boolean;
   topUpError: string | null;
   checkoutCaptchaError: boolean;
@@ -51,7 +61,11 @@ export function WorkspaceTopUpModal({
   modal,
   copy,
   currency,
+  chargeCurrency,
   topUpAmount,
+  paymentAmountLabel,
+  quoteLoading,
+  quoteError,
   isTopUpLoading,
   topUpError,
   checkoutCaptchaError,
@@ -65,6 +79,7 @@ export function WorkspaceTopUpModal({
   onSelectPresetAmount,
   onCustomAmountChange,
 }: WorkspaceTopUpModalProps) {
+  useWorkspaceTopupReviewAnalytics({ amountCents: topUpAmount, chargeCurrency, paymentAmountLabel, quoteLoading, quoteError });
   const { dialogRef, onDialogKeyDown } = useAccessibleModal<HTMLFormElement>({
     onClose,
     closeDisabled: isTopUpLoading,
@@ -163,6 +178,19 @@ export function WorkspaceTopUpModal({
                   </span>
                 </div>
               </div>
+              <dl className="mt-5 rounded-input border border-border bg-bg px-3 text-sm">
+                <div className="flex flex-wrap items-center justify-between gap-2 py-3">
+                  <dt className="text-text-secondary">{copy.creditsReceived}</dt>
+                  <dd className="font-semibold text-text-primary">{suggestedTopUpAmountLabel}</dd>
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border py-3">
+                  <dt className="text-text-secondary">{copy.paymentAmount}</dt>
+                  <dd className="font-semibold text-text-primary" aria-live="polite">
+                    {quoteLoading ? copy.quoteLoading : quoteError ? copy.quoteUnavailable : paymentAmountLabel ?? copy.quoteUnavailable}
+                  </dd>
+                </div>
+              </dl>
+              <p className="mt-2 text-xs text-text-muted">{copy.taxNote}</p>
               {checkoutCaptchaRequired ? (
                 <div className="mt-3 rounded-input border border-border bg-bg p-3">
                   <p className="text-sm font-semibold text-text-primary">{copy.captchaPrompt}</p>
@@ -214,7 +242,7 @@ export function WorkspaceTopUpModal({
           <Button
             type="submit"
             size="sm"
-            disabled={isTopUpLoading}
+            disabled={isTopUpLoading || quoteLoading}
             data-modal-initial-focus="true"
             className={clsx('px-4', !isTopUpLoading && 'hover:brightness-105')}
           >

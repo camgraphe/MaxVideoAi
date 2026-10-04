@@ -400,12 +400,27 @@
 }
 .currentSetupBody {
   display: grid;
-  grid-template-columns: minmax(170px, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 16px;
 }
 .currentSetupBody .identity {
-  margin: 8px 0 0;
+  margin: 12px 0 14px;
+}
+.comparisonSettings { min-width: 0; }
+.dialog .comparisonSettings button {
+  border-radius: 999px;
+  padding: 0 10px;
+  background: var(--app-control, var(--surface));
+}
+.modelSummary {
+  margin: -4px 0 0;
+  color: var(--app-muted, var(--text-muted));
+  font-size: 12px;
+  line-height: 1.45;
+}
+@media (min-width: 640px) {
+  .dialog .comparisonSettings button { min-height: 36px; }
 }
 .currentPrice {
   color: var(--app-ink, var(--text-primary));
@@ -572,7 +587,12 @@
 .dialog .comparisonCardFoot button { display: flex; align-items: center; gap: 8px; min-height: 38px; font-size: 12px; background: var(--app-accent-soft); }
 .dialog .addModelCard { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: 130px; border-style: dashed; border-radius: 12px; color: var(--app-muted); background: transparent; }
 .dialog .historyLink { display: flex; align-items: center; gap: 8px; padding-inline: 0; margin-top: 16px; border: 0; background: transparent; color: var(--app-muted); font-size: 12px; }
-@media (max-width: 540px) { .comparisonCards { grid-template-columns: minmax(0, 1fr); } .comparisonCard { gap: 10px; } }
+@media (max-width: 540px) {
+  .comparisonCards { grid-template-columns: minmax(0, 1fr); }
+  .comparisonCard { gap: 10px; }
+  .dialog .comparisonCardHeading button,
+  .dialog .comparisonCardFoot button { min-width: 44px; min-height: 44px; }
+}
 
 .addModelPicker { display: flex; min-width: 0; }
 .addModelPicker > button { width: 100%; height: 100%; }

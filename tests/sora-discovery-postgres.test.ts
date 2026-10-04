@@ -26,17 +26,20 @@ test('public hub excludes archived identities before SQL limit while historical 
       prompt text DEFAULT 'Example', thumb_url text DEFAULT 'https://media.maxvideoai.com/test.webp',
       video_url text DEFAULT 'https://media.maxvideoai.com/test.mp4', aspect_ratio text DEFAULT '16:9',
       has_audio boolean, can_upscale boolean, created_at timestamptz DEFAULT now(), visibility text DEFAULT 'public',
-      indexable boolean DEFAULT true, featured boolean, featured_order integer,
+      indexable boolean DEFAULT true, status text DEFAULT 'completed', surface text DEFAULT 'video',
+      featured boolean, featured_order integer,
       final_price_cents integer, currency text, pricing_snapshot jsonb, settings_snapshot jsonb
     );
+    CREATE TABLE media_assets(user_id text, url text, status text, deleted_at timestamptz);
     CREATE TABLE job_outputs (job_id text, kind text, thumb_url text, url text, storage_url text, status text, position integer, width integer, height integer, created_at timestamptz);
-    INSERT INTO playlists VALUES ('hub', 'discovery-fixture', true), ('archive', 'family-sora', true);
+    INSERT INTO playlists VALUES ('hub', 'discovery-fixture', true), ('archive', 'family-sora', true), ('seedance-archive', 'family-seedance', true);
   `);
-  const identities = ['sora-2', 'openai-sora-2-pro', 'fal-ai/sora-2/text-to-video', 'seedance-2-5', 'minimax-h3', 'wan-3'];
+  const identities = ['sora-2', 'openai-sora-2-pro', 'fal-ai/sora-2/text-to-video', 'seedance-1-5-pro', 'seedance-v1-5-pro', 'seedance-2-5', 'minimax-h3', 'wan-3'];
   for (const [index, id] of identities.entries()) {
     await pg.pool.query('INSERT INTO app_jobs(job_id, engine_id, engine_label, duration_sec) VALUES ($1,$1,$1,5)', [id]);
     await pg.pool.query('INSERT INTO playlist_items VALUES ($1,$2,$3)', ['hub', id, 100 - index]);
     if (index < 3) await pg.pool.query('INSERT INTO playlist_items VALUES ($1,$2,$3)', ['archive', id, 100 - index]);
+    if (index === 3 || index === 4) await pg.pool.query('INSERT INTO playlist_items VALUES ($1,$2,$3)', ['seedance-archive', id, 100 - index]);
   }
   const before = (await pg.pool.query('SELECT to_jsonb(j) AS row FROM app_jobs j ORDER BY job_id')).rows;
   const first = await listExamplesPage({ sort: 'playlist', limit: 2 });
@@ -44,6 +47,9 @@ test('public hub excludes archived identities before SQL limit while historical 
   assert.deepEqual((await listExamplesPage({ sort: 'playlist', limit: 2, offset: 2 })).items.map(item => item.engineId), ['wan-3']);
   const historical = await listExampleFamilyPage('sora', { sort: 'playlist', limit: 10 });
   assert.equal(historical.items.length, 3);
+  const historicalSeedance = await listExampleFamilyPage('seedance', { sort: 'playlist', limit: 10 });
+  assert.deepEqual(historicalSeedance.items.map(item => item.engineId), ['seedance-1-5-pro', 'seedance-v1-5-pro', 'seedance-2-5']);
   assert.equal((await getSeoVideoById('sora-2'))?.engineId, 'sora-2');
+  assert.equal((await getSeoVideoById('seedance-1-5-pro'))?.engineId, 'seedance-1-5-pro');
   assert.deepEqual((await pg.pool.query('SELECT to_jsonb(j) AS row FROM app_jobs j ORDER BY job_id')).rows, before);
 });

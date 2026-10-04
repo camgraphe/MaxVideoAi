@@ -80,7 +80,7 @@ export type IntegrationPageCopy = {
     eyebrow: string;
     title: string;
     intro: string;
-    items: Array<{ question: string; answer: string }>;
+    items: Array<{ question: string; answer: string; link?: { href: string; label: string } }>;
   };
   disconnect: { title: string; body: string; steps: string[] };
   support: { label: string; href: string };
@@ -115,7 +115,7 @@ export type IntegrationText = {
   helpEyebrow: string;
   helpTitle: string;
   helpIntro: string;
-  helpItems: Array<{ question: string; answer: string }>;
+  helpItems: Array<{ question: string; answer: string; link?: { href: string; label: string } }>;
   disconnectTitle: string;
   disconnectBody: string;
   disconnectSteps: string[];

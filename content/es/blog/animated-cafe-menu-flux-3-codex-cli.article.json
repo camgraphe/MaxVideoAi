@@ -1,0 +1,397 @@
+{
+  "schemaVersion": 1,
+  "canonicalSlug": "animated-cafe-menu-flux-3-codex-cli",
+  "publication": {
+    "articleId": "4e6ff9c7-1b95-4a15-9421-d1fa4bff98cc",
+    "version": 1,
+    "digest": "bf4650ebe75b5d26bbfae77300b19361b32d0fd2bfe446b3ead488a6895c3010",
+    "publishedAt": "2026-09-25T13:32:27.299Z"
+  },
+  "article": {
+    "locale": "es",
+    "audience": "es-419",
+    "slug": "animated-cafe-menu-flux-3-codex-cli",
+    "title": "Crea un menú animado de cafetería con precios editables usando MaxVideoAI, FLUX 3 y Codex CLI",
+    "description": "Un flujo de trabajo documentado para diseñar dos imágenes de referencia sin texto, solicitar mediante Codex CLI una transición cotizada de FLUX 3 en MaxVideoAI, agregar textos y precios editables en un editor externo y revisar el bucle en la pantalla de destino.",
+    "keywords": [
+      "menú animado de cafetería",
+      "menú digital para pantallas",
+      "FLUX 3",
+      "Codex CLI",
+      "MaxVideoAI",
+      "precios editables en menús",
+      "video con fotograma inicial y final",
+      "fondo de video en bucle"
+    ],
+    "blocks": [
+      {
+        "id": "editorial-hero",
+        "type": "media",
+        "assetId": "editorial-hero",
+        "heading": "",
+        "presentation": "single",
+        "alt": "Ilustración de una pantalla de cafetería con una taza humeante, un espacio vacío para el menú y una capa flotante separada.",
+        "caption": "Ilustración. Mantén la atmósfera detrás de la información."
+      },
+      {
+        "id": "menu-as-layers",
+        "type": "comparison",
+        "heading": "Separa los precios que cambian de la atmósfera",
+        "columns": [
+          "Construcción",
+          "Cuando el café pasa de $4 a $5",
+          "Resultado práctico"
+        ],
+        "rows": [
+          [
+            "Texto integrado en el video",
+            "Las letras existentes dejan de poder editarse por separado. Si la composición original está disponible, tendrás que modificarla; de lo contrario, deberás cubrir o reconstruir el área afectada antes de volver a exportar.",
+            "Es una solución sencilla como archivo terminado, pero cada cambio de precio exige corregir o modificar el diseño antes de exportarlo de nuevo."
+          ],
+          [
+            "Fondo animado con capas separadas para nombres y precios",
+            "Actualiza el precio del café en el proyecto de edición, revisa la composición y vuelve a exportar. Puedes reutilizar el fondo mientras siga siendo adecuado.",
+            "El movimiento ambiental permanece detrás de un área de menú estable, mientras Café, Tostada, $4 y $6 siguen siendo editables."
+          ],
+          [
+            "Ejemplo recomendado",
+            "Imagina una pantalla horizontal con un área crema y tranquila para el menú a la izquierda, y una taza de terracota, una tostada y vapor sutil a la derecha.",
+            "El movimiento aporta calidez sin pasar detrás de la información que los clientes necesitan leer. Considera esto un flujo de trabajo documentado, no una prueba de que este menú específico ya se haya generado ni de que vaya a formar un bucle imperceptible."
+          ]
+        ]
+      },
+      {
+        "id": "menu-composition-example",
+        "type": "media",
+        "assetId": "menu-composition-example",
+        "heading": "El mismo menú, armado de dos maneras",
+        "presentation": "single",
+        "alt": "Dos menús ilustrados de cafetería muestran los mismos precios de café y tostada: primero integrados en el video y luego en una capa separada.",
+        "caption": "Ilustración. Arriba, el texto está integrado en el video; abajo, permanece como una capa separada dentro del proyecto de edición."
+      },
+      {
+        "id": "anchor-prompt",
+        "type": "prompt",
+        "heading": "Diseña ambas imágenes de referencia como una sola composición",
+        "template": "Create two matching, text-free background images for a landscape café menu display.\n\nUse an identical locked camera, crop and perspective in both images. Reserve the entire left half as a calm, low-detail warm-cream area for menu typography that will be added later in an editing application.\n\nOn the right, place the same terracotta coffee cup and slice of toast in exactly the same positions. Use a warm cream, terracotta, espresso-brown and amber palette with stable, intimate lighting.\n\nStart image: show one short, fine curl of steam above the cup.\n\nEnd image: preserve every object, shadow and compositional boundary, changing only the steam so that it has drifted slightly upward and to the right. Keep the steam entirely outside the reserved menu area.\n\nDo not include dish names, prices, numbers, logos, labels, signage, watermarks or interface elements. Do not add, remove or reposition props between the two images.",
+        "note": "Usa estas indicaciones en una herramienta externa de diseño gráfico o creación de imágenes. Mantener fijos la cámara y los objetos, junto con una iluminación uniforme, deja un solo cambio moderado que la transición deberá resolver: el vapor. La zona despejada de la izquierda también ayuda a conservar la legibilidad del menú que agregarás después."
+      },
+      {
+        "id": "compatible-anchors",
+        "type": "steps",
+        "heading": "Prepara dos imágenes que solo cambien donde habrá movimiento",
+        "steps": [
+          {
+            "title": "Adapta la composición a la pantalla de destino",
+            "body": "Crea ambas imágenes con la misma relación de aspecto que la pantalla de la cafetería. Usa una guía de composición compartida para mantener alineados el encuadre, el borde del mostrador, la taza, la tostada y el área reservada a la izquierda."
+          },
+          {
+            "title": "Crea la Start image y deriva de ella la End image",
+            "body": "Completa primero la composición inicial sin texto en una herramienta gráfica externa. Duplícala para crear la imagen final, en lugar de reconstruir la escena, y modifica únicamente el vapor según lo planeado."
+          },
+          {
+            "title": "Elimina el texto esencial de ambas imágenes",
+            "body": "Exporta los fondos sin nombres, precios, logotipos ni letreros legibles. Las recomendaciones de FLUX 3 indican que conviene mantener el texto esencial fuera del video generado, ya que los letreros legibles, las interfaces pequeñas y las microetiquetas pueden perder fidelidad."
+          },
+          {
+            "title": "Compara las dos imágenes directamente",
+            "body": "Superpón las imágenes o altérnalas antes de exportarlas. Corrige cualquier desplazamiento involuntario en el encuadre, la posición de los objetos, la paleta o la iluminación; el vapor debe ser la única diferencia significativa."
+          },
+          {
+            "title": "Verifica las entradas requeridas por MaxVideoAI",
+            "body": "Antes de preparar la solicitud de generación, consulta la página del modelo FLUX 3 de MaxVideoAI en https://maxvideoai.com/models/flux-3. El flujo documentado en el sitio web para trabajar con el primer y el último fotograma requiere un prompt, una Start image y una End image. Este esquema del sitio describe las entradas necesarias, pero no confirma que el mismo modo esté disponible mediante la ruta conectada con Codex; verifica ese punto antes de solicitar una generación de pago."
+          }
+        ]
+      },
+      {
+        "id": "paired-menu-anchors",
+        "type": "media",
+        "assetId": "paired-menu-anchors",
+        "heading": "Cambia el vapor, no la composición",
+        "presentation": "single",
+        "alt": "Dos fondos de cafetería sin texto y con la misma composición solo se diferencian en la pequeña curva de vapor sobre la taza.",
+        "caption": "Ilustración. Arriba, la Start image; abajo, la End image: conserva la composición y limita el cambio a un movimiento sutil del vapor."
+      },
+      {
+        "id": "product-link-70f88c48154b",
+        "type": "text",
+        "heading": "FLUX 3 Video",
+        "paragraphs": [
+          {
+            "spans": [
+              {
+                "text": "Consulta las opciones de entrada disponibles actualmente en "
+              },
+              {
+                "text": "FLUX 3 Video",
+                "href": "https://maxvideoai.com/models/flux-3"
+              },
+              {
+                "text": "."
+              }
+            ],
+            "sourceIds": [
+              "source-2"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "motion-prompt",
+        "type": "prompt",
+        "heading": "Mantén el movimiento lejos del texto del menú",
+        "template": "Create a restrained, physically plausible transition from the supplied start image to the supplied end image. Keep the camera locked. Preserve the cup, toast, counter, framing, warm color palette and lighting. Animate only a slow, delicate drift of steam above the cup, following the change shown between the two anchors. Keep the blank left-hand menu area calm, empty and undisturbed. Do not introduce lettering, prices, logos, signage, new props or additional camera movement.",
+        "note": "Con las dos imágenes de referencia listas, asigna a la transición una sola tarea discreta. Concentrar el movimiento alrededor de la taza, en lugar de colocarlo detrás del área reservada para el menú, protege la legibilidad y reduce los cambios que la transición debe conciliar. Elige la duración, la resolución y los demás ajustes operativos solo después de que Codex indique qué admite el catálogo conectado y los incluya en la cotización exacta."
+      },
+      {
+        "id": "codex-request",
+        "type": "prompt",
+        "heading": "Pide a Codex que verifique la ruta antes de generar",
+        "template": "Help me plan a MaxVideoAI FLUX 3 first-and-last-frame video generation.\n\nStart image: [ATTACH OR REFERENCE THE START IMAGE]\nEnd image: [ATTACH OR REFERENCE THE END IMAGE]\nMotion prompt: [PASTE THE RESTRAINED-MOTION PROMPT]\n\nFirst inspect the connected catalog and confirm whether the requested FLUX 3 first-and-last-frame workflow is available. Preserve both supplied images as required start and end anchors. Report the settings supported by this route and present the exact quote before any paid generation.\n\nDo not generate or incur a charge until I explicitly approve that quote. If the route, the start-image input or the end-image input is unavailable, stop and explain what is missing. Do not substitute text-to-video, single-image video or another model or mode.",
+        "note": "Reemplaza las tres referencias entre corchetes antes de enviar esta solicitud en la conversación de Codex que tenga la conexión con MaxVideoAI. Así, la revisión del catálogo queda separada de la generación de pago: si la ruta no está disponible, Codex debe detenerse y explicarlo en lugar de cambiar el flujo de trabajo sin avisar."
+      },
+      {
+        "id": "quote-and-bridge",
+        "type": "steps",
+        "heading": "Aprueba la ruta y la cotización, no un resultado supuesto",
+        "steps": [
+          {
+            "title": "Sigue el flujo documentado para configurar Codex",
+            "body": "Abre la guía revisada de integración de MaxVideoAI con Codex en https://maxvideoai.com/integrations/codex y sigue su proceso de configuración. Después, inicia una nueva conversación en Codex y completa la autenticación OAuth cuando se solicite. Codex CLI aloja la solicitud; MaxVideoAI es el servicio que realiza la generación solicitada."
+          },
+          {
+            "title": "Considera la evidencia de compatibilidad como específica de una versión",
+            "body": "El extracto de integración proporcionado registra comprobaciones del contrato con Codex CLI 0.150.0-alpha.8 realizadas el 27 de agosto de 2026. Ese informe no demuestra compatibilidad con una versión actual o diferente de la CLI, Codex Desktop ni ChatGPT. Tampoco verifica de forma independiente esta solicitud concreta de FLUX 3."
+          },
+          {
+            "title": "Confirma la estructura de entrada solicitada",
+            "body": "Antes de evaluar la cotización, comprueba que el trabajo propuesto conserve el prompt de movimiento, la imagen inicial y la imagen final. La página revisada de FLUX 3 de MaxVideoAI en https://maxvideoai.com/models/flux-3 documenta esa estructura de tres elementos para su flujo con primer y último fotograma. El endpoint del distribuidor confirma la misma estructura, pero ninguna de las fuentes demuestra que la ruta conectada mediante Codex esté disponible actualmente ni que la generación vaya a completarse correctamente."
+          },
+          {
+            "title": "Revisa la cotización exacta antes de aprobar",
+            "body": "Comprueba que la cotización corresponda a la ruta solicitada de FLUX 3 con primer y último fotograma, y que solo incluya los ajustes que elegiste de forma intencional en el catálogo conectado. Aprueba expresamente la generación de pago únicamente si la ruta, las entradas, los ajustes y el costo te parecen aceptables. De lo contrario, detén o modifica la solicitud."
+          },
+          {
+            "title": "Continúa solo si recibes un clip candidato",
+            "body": "Después de la aprobación, MaxVideoAI puede devolver un clip candidato para conectar los fondos si la generación se completa correctamente. Trátalo como material que debes revisar en el editor externo, no como un bucle continuo garantizado. Si la ruta no está disponible, la autorización falla, rechazas la cotización o no recibes ningún clip, detente antes de ensamblar el menú."
+          }
+        ]
+      },
+      {
+        "id": "bridge-file-route",
+        "type": "diagram",
+        "heading": "De dos imágenes a un menú editable",
+        "nodes": [
+          {
+            "kind": "file",
+            "label": "Prompt + dos imágenes"
+          },
+          {
+            "kind": "model",
+            "label": "Codex CLI"
+          },
+          {
+            "kind": "file",
+            "label": "Cotización exacta"
+          },
+          {
+            "kind": "model",
+            "label": "MaxVideoAI · FLUX 3"
+          },
+          {
+            "kind": "video",
+            "label": "Clip de fondo candidato"
+          },
+          {
+            "kind": "file",
+            "label": "Proyecto de edición externo"
+          }
+        ],
+        "connections": [
+          "Enviar instrucciones e imágenes de referencia",
+          "Comprobar la ruta y solicitar cotización",
+          "Una persona aprueba la generación",
+          "Devolver el clip si tiene éxito",
+          "Importar y añadir texto editable"
+        ],
+        "alt": "El prompt y las dos imágenes pasan por Codex CLI y por la aprobación humana de la cotización antes de la generación en MaxVideoAI; después, el clip llega a un proyecto de edición externo.",
+        "caption": "Codex CLI aloja la solicitud; MaxVideoAI genera el fondo; la edición y las comprobaciones en pantalla se realizan fuera de ambos."
+      },
+      {
+        "id": "product-link-1520a28fb1c1",
+        "type": "text",
+        "heading": "Crear videos con IA usando Codex",
+        "paragraphs": [
+          {
+            "spans": [
+              {
+                "text": "Consulta el proceso actual de conexión y aprobación en "
+              },
+              {
+                "text": "Crear videos con IA usando Codex",
+                "href": "https://maxvideoai.com/integrations/codex"
+              },
+              {
+                "text": "."
+              }
+            ],
+            "sourceIds": [
+              "source-1"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "editable-menu",
+        "type": "steps",
+        "heading": "Arma el menú para que los precios de mañana sigan siendo editables",
+        "steps": [
+          {
+            "title": "Trabaja sobre el fondo candidato",
+            "body": "Continúa solo cuando MaxVideoAI haya devuelto un clip candidato mediante el flujo cotizado y aprobado en Codex. Si no recibiste ningún clip, detente y revisa la ruta de integración documentada en https://maxvideoai.com/integrations/codex. Coloca el clip candidato en la pista inferior de tu editor externo. Encima, agrega los nombres de los productos y los precios como gráficos creados por separado: por ejemplo, Coffee y Toast en una capa, y $4 y $6 en otra. Mantener la información comercial fuera de las imágenes generadas facilita los cambios posteriores."
+          },
+          {
+            "title": "Evita que el movimiento compita con el texto",
+            "body": "Ubica el texto dentro del área tranquila reservada en las imágenes de referencia. Si el vapor, los cambios de iluminación o los detalles del fondo reducen el contraste, añade un panel crema estable entre el clip y los gráficos del menú. Así conservarás la legibilidad sin eliminar la atmósfera de toda la pantalla."
+          },
+          {
+            "title": "Conserva el proyecto editable por capas",
+            "body": "Guarda el proyecto con el fondo, el panel de apoyo, los nombres de los productos y los precios en capas separadas. Cuando Coffee pase de $4 a $5, podrás reutilizar un fondo que todavía funcione, aunque quizá debas ajustar la tipografía, el espaciado y la exportación final."
+          },
+          {
+            "title": "Gestiona el sonido fuera del clip generado",
+            "body": "Silencia o elimina en el editor cualquier audio no deseado. Una pantalla de menú rara vez se beneficia de una banda sonora accidental, y exportar sin sonido evita depender de la configuración de volumen del reproductor de destino."
+          },
+          {
+            "title": "Prepara una propuesta de repetición",
+            "body": "Coloca varias copias del clip de fondo una después de otra y observa la unión. Si el corte se siente brusco, prueba recortar el fondo o aplicar una superposición breve solo entre los clips de fondo. Revisa esa superposición con atención: la mezcla puede duplicar el vapor, la taza u otros objetos en lugar de ocultar la transición."
+          }
+        ]
+      },
+      {
+        "id": "editable-menu-layers",
+        "type": "media",
+        "assetId": "editable-menu-layers",
+        "heading": "Mantén los nombres y los precios por encima del fondo",
+        "presentation": "single",
+        "alt": "Una vista desglosada del menú separa el fondo de la cafetería, el panel crema, los nombres de los productos y los precios en cuatro capas alineadas.",
+        "caption": "Ilustración. Arma el menú en un editor externo y mantén los nombres y los precios separados del fondo."
+      },
+      {
+        "id": "loop-and-screen",
+        "type": "steps",
+        "heading": "Decide si el bucle funciona en la pantalla real",
+        "steps": [
+          {
+            "title": "Revisa la unión entre el final y el inicio",
+            "body": "Un clip puede conectar correctamente las imágenes inicial y final proporcionadas y, aun así, dar un salto cuando el último fotograma vuelve al primero. Concéntrate en la taza, la tostada, la iluminación y el vapor en ese punto específico donde el final se une con el inicio."
+          },
+          {
+            "title": "Reproduce continuamente la repetición propuesta",
+            "body": "En Adobe Premiere, delimita la región que se repetirá con puntos In y Out, activa Loop playback en el monitor e inicia la reproducción con Espacio o L. Déjala correr varias veces mientras evalúas el ritmo de la transición: en una sola pasada es fácil pasar por alto un pequeño salto."
+          },
+          {
+            "title": "Lee el menú desde la posición del cliente",
+            "body": "Exporta una prueba y reprodúcela en la pantalla de destino. Desde la distancia de visualización prevista, confirma que Coffee, Toast y sus precios sigan siendo legibles, con contraste y espacio suficientes para leerlos de un vistazo."
+          },
+          {
+            "title": "Comprueba a la vez el movimiento, la reproducción y el sonido",
+            "body": "Observa varias repeticiones completas para detectar una unión visible, un instante congelado o una pausa introducida por el reproductor de destino. Confirma que el vapor nunca compita con los precios y escucha si quedó algún audio que debía eliminarse o silenciarse."
+          },
+          {
+            "title": "Ajusta o exporta",
+            "body": "Si la unión llama la atención, modifica el recorte, la superposición o la elección del fondo y vuelve a probar. Si el texto permanece legible, el movimiento se mantiene en segundo plano, la repetición pasa desapercibida y la reproducción es silenciosa como estaba previsto, exporta la versión de entrega. La vista previa en bucle ayuda a revelar problemas, pero solo la pantalla y el reproductor de destino muestran cómo se comportará realmente el menú."
+          }
+        ]
+      },
+      {
+        "id": "loop-seam-detail",
+        "type": "media",
+        "assetId": "loop-seam-detail",
+        "heading": "Observa con atención la unión del bucle",
+        "presentation": "single",
+        "alt": "Un menú ilustrado de cafetería aparece sobre dos detalles ampliados del vapor, que muestran un posible salto en el punto donde se repite el video.",
+        "caption": "Ilustración. Compara el final de la izquierda con el reinicio de la derecha: un pequeño salto en el vapor puede delatar la unión."
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "source-1",
+      "title": "Create AI videos with Codex",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/integrations/codex",
+      "retrievedAt": "2026-09-25"
+    },
+    {
+      "id": "source-2",
+      "title": "FLUX 3 Video",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/models/flux-3",
+      "retrievedAt": "2026-09-25"
+    },
+    {
+      "id": "source-4",
+      "title": "Flux 3 First Last Frame to Video API",
+      "publisher": "fal",
+      "url": "https://fal.ai/models/blackforestlabs/flux-3/first-last-frame-to-video",
+      "retrievedAt": "2026-09-25"
+    },
+    {
+      "id": "source-5",
+      "title": "Package Your Plugin",
+      "publisher": "OpenAI",
+      "url": "https://developers.openai.com/plugins/build/plugins",
+      "retrievedAt": "2026-09-25"
+    },
+    {
+      "id": "source-7",
+      "title": "Play Back in a Continuous Loop",
+      "publisher": "Adobe",
+      "url": "https://helpx.adobe.com/premiere/desktop/render-and-export/render-sequences-for-playback/play-back-in-a-continuous-loop.html",
+      "retrievedAt": "2026-09-25"
+    }
+  ],
+  "assets": [
+    {
+      "id": "editorial-hero",
+      "kind": "generated-illustration",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "5dc3d911b6034d357a3f365cf0fdd8c45e45022ffd8085d76b5c23e181350b34",
+      "url": "https://media.maxvideoai.com/editorial/published/5dc3d911b6034d357a3f365cf0fdd8c45e45022ffd8085d76b5c23e181350b34.webp"
+    },
+    {
+      "id": "menu-composition-example",
+      "kind": "generated-illustration",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "007f38075b40f33c6cd53dea8ba921a8a81122889dd8fd154e85c1f25b1faa44",
+      "url": "https://media.maxvideoai.com/editorial/published/007f38075b40f33c6cd53dea8ba921a8a81122889dd8fd154e85c1f25b1faa44.webp"
+    },
+    {
+      "id": "paired-menu-anchors",
+      "kind": "generated-illustration",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "03cf906ecf198132447a5c4d1d6618e34891e96f316d17109b7379c5c8028a9d",
+      "url": "https://media.maxvideoai.com/editorial/published/03cf906ecf198132447a5c4d1d6618e34891e96f316d17109b7379c5c8028a9d.webp"
+    },
+    {
+      "id": "editable-menu-layers",
+      "kind": "generated-illustration",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "9facb90030415fc1a6ceff722d736e89184ee815535f3957812192e66098ff4a",
+      "url": "https://media.maxvideoai.com/editorial/published/9facb90030415fc1a6ceff722d736e89184ee815535f3957812192e66098ff4a.webp"
+    },
+    {
+      "id": "loop-seam-detail",
+      "kind": "generated-illustration",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "36300202b1ebdf3c74be7ad21f0e3a121a08963cae5ab1bd0a6396c18d5c7551",
+      "url": "https://media.maxvideoai.com/editorial/published/36300202b1ebdf3c74be7ad21f0e3a121a08963cae5ab1bd0a6396c18d5c7551.webp"
+    }
+  ]
+}

@@ -22,8 +22,7 @@ export function registerConfirmAudioGenerationTool(
     'confirm_audio_generation',
     {
       title: 'Confirm a MaxVideoAI Audio generation',
-      description:
-        [
+      description: [
         'Use only after explicit user approval of the exact fresh quote returned by prepare_audio_generation.',
         'Display the exact price and wait for approval first; ambiguous assent is not confirmation.',
         'Consumes one quote, may debit wallet funds, and contacts external Audio providers.',

@@ -5,7 +5,7 @@ export const seedream50ProTemplateConfig: ModelPageTemplateConfig = {
   intent: 'production',
   hero: {
     eyebrow: 'PROFESSIONAL IMAGE MODEL',
-    subtitleHighlightTerms: ['professional still images', 'dense infographics', '4K visual production'],
+    subtitleHighlightTerms: ['professional still images', 'dense infographics', '2K visual production'],
     primaryCtaHref: '/app/image?engine=seedream-5-0-pro',
     secondaryCtaHref: '/models/seedream',
     quickLinks: [
@@ -18,7 +18,6 @@ export const seedream50ProTemplateConfig: ModelPageTemplateConfig = {
     anchorHref: '/pricing#seedream-5-0-pro-pricing',
     presets: [
       { id: '2k-image', imageResolution: '2K', imageQuality: 'medium', labelKey: 'twoKImage' },
-      { id: '4k-image', imageResolution: '4K', imageQuality: 'high', labelKey: 'fourKImage', highlightKey: 'mostPopular' },
     ],
   },
   sections: {

@@ -10,6 +10,7 @@ export function AdminUserWalletLedgerSection({
   topups,
   lifetimeTopupsUsd,
   lifetimeChargesUsd,
+  lifetimeCreditReversalsUsd,
   lifetimeRefundsUsd,
   lifetimeNetSpendUsd,
 }: {
@@ -17,19 +18,23 @@ export function AdminUserWalletLedgerSection({
   topups: AdminUserTopup[];
   lifetimeTopupsUsd: number;
   lifetimeChargesUsd: number;
+  lifetimeCreditReversalsUsd: number;
   lifetimeRefundsUsd: number;
   lifetimeNetSpendUsd: number;
 }) {
   return (
     <AdminSection
       title="Wallet Ledger"
-      description="Historique des top-ups avec synthèse explicite des débits bruts, remboursements et dépenses nettes."
+      description="Wallet top-ups, charges and refunds."
       action={
         wallet ? (
           <AdminSectionMeta
             title={formatCurrency(lifetimeTopupsUsd)}
             lines={[
               `Gross charges ${formatCurrency(lifetimeChargesUsd)}`,
+              ...(lifetimeCreditReversalsUsd > 0
+                ? [`Payment credit reversals ${formatCurrency(lifetimeCreditReversalsUsd)}`]
+                : []),
               `Refunds ${formatCurrency(lifetimeRefundsUsd)}`,
               `Net render spend ${formatCurrency(lifetimeNetSpendUsd)}`,
               `${topups.length} recent top-ups`,
@@ -41,7 +46,7 @@ export function AdminUserWalletLedgerSection({
       {topups.length ? (
         <AdminDataTable>
           <thead className="bg-surface">
-            <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
+            <tr className="text-xs text-text-secondary">
               <th className="px-4 py-3 font-semibold">Date</th>
               <th className="px-4 py-3 font-semibold">Amount</th>
               <th className="px-4 py-3 font-semibold">Description</th>

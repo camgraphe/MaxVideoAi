@@ -65,17 +65,24 @@ test('Wan ref2v requires any supported reference, including video-only or audio-
     settings: { durationSec: 5, resolution: '720p', aspectRatio: 'auto', audio: true },
   });
   expectCapabilityFailure(base, 'references');
-  for (const mediaKind of ['video', 'audio'] as const) {
-    assert.doesNotThrow(() => validateCanonicalGenerationCapabilities({
-      ...base,
-      references: [{
-        kind: 'https',
-        url: `https://cdn.example.com/reference.${mediaKind === 'video' ? 'mp4' : 'wav'}`,
-        role: 'reference',
-        mediaKind,
-      }],
-    }, candidate('wan-3')));
-  }
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities({
+    ...base,
+    references: [{ kind: 'asset', assetId: 'owned-reference-video', role: 'reference' }],
+  }, candidate('wan-3'), {
+    resolvedReferences: [{
+      assetId: 'owned-reference-video', role: 'reference', mediaKind: 'video',
+      storageUrl: 'https://cdn.example.com/reference.mp4',
+      width: 1280, height: 720, durationSec: 10, mimeType: 'video/mp4',
+      sizeBytes: 1024, originalName: 'reference.mp4',
+    }],
+  }));
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities({
+    ...base,
+    references: [{
+      kind: 'https', url: 'https://cdn.example.com/reference.wav',
+      role: 'reference', mediaKind: 'audio',
+    }],
+  }, candidate('wan-3')));
 });
 
 test('Wan i2v accepts its required start image without applying the ref2v reference pool', () => {
@@ -166,10 +173,15 @@ test('Wan edit and extend require exactly one source video', () => {
     expectCapabilityFailure(base, 'references');
     assert.doesNotThrow(() => validateCanonicalGenerationCapabilities({
       ...base,
-      references: [{
-        kind: 'https', url: 'https://cdn.example.com/source.mp4', role: 'source', mediaKind: 'video',
+      references: [{ kind: 'asset', assetId: 'owned-source-video', role: 'source' }],
+    }, candidate('wan-3'), {
+      resolvedReferences: [{
+        assetId: 'owned-source-video', role: 'source', mediaKind: 'video',
+        storageUrl: 'https://cdn.example.com/source.mp4',
+        width: 1280, height: 720, durationSec: 10, mimeType: 'video/mp4',
+        sizeBytes: 1024, originalName: 'source.mp4',
       }],
-    }, candidate('wan-3')));
+    }));
   }
 });
 

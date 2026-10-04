@@ -117,7 +117,9 @@ export function SelectMenu({
       return;
     }
 
-    const updatePlacement = () => {
+    const updatePlacement = (event?: Event) => {
+      // Scrolling fixed options cannot change their menu's placement or geometry.
+      if (portal && event?.type === 'scroll' && event.target instanceof Node && menuRef.current?.contains(event.target)) return;
       const container = containerRef.current;
       const menu = menuRef.current;
       if (!container || !menu) return;
@@ -138,12 +140,13 @@ export function SelectMenu({
       window.removeEventListener('resize', updatePlacement);
       window.removeEventListener('scroll', updatePlacement, true);
     };
-  }, [menuPlacement, open, filteredOptions.length]);
+  }, [menuPlacement, open, filteredOptions.length, portal]);
 
   useLayoutEffect(() => {
     if (!open || !portal) return;
 
-    const updatePortalPosition = () => {
+    const updatePortalPosition = (event?: Event) => {
+      if (event?.type === 'scroll' && event.target instanceof Node && menuRef.current?.contains(event.target)) return;
       const container = containerRef.current;
       const menu = menuRef.current;
       if (!container || !menu) return;
@@ -210,6 +213,7 @@ export function SelectMenu({
       if (event.key === 'Escape') {
         event.preventDefault();
         setOpen(false);
+        document.getElementById(triggerId)?.focus({ preventScroll: true });
         return;
       }
       if (isTypingTarget && event.key !== 'ArrowDown' && event.key !== 'ArrowUp') {
@@ -238,6 +242,7 @@ export function SelectMenu({
         if (option?.disabled) return;
         onChange(option.value);
         setOpen(false);
+        document.getElementById(triggerId)?.focus({ preventScroll: true });
       }
     };
     const handleFocusIn = (event: FocusEvent) => {
@@ -253,7 +258,7 @@ export function SelectMenu({
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('focusin', handleFocusIn);
     };
-  }, [filteredOptions, highlightedIndex, onChange, open, selectedFilteredIndex]);
+  }, [filteredOptions, highlightedIndex, onChange, open, selectedFilteredIndex, triggerId]);
 
   useEffect(() => {
     if (!open) return;
@@ -370,6 +375,7 @@ export function SelectMenu({
                         if (option.disabled) return;
                         onChange(option.value);
                         setOpen(false);
+                        document.getElementById(triggerId)?.focus({ preventScroll: true });
                       }}
                       className={clsx(
                         'min-h-0 h-auto w-full justify-between overflow-hidden rounded-input px-3 py-2 text-left',

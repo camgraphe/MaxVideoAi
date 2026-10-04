@@ -1,4 +1,4 @@
-export const PRICING_CHANGE_DOMAINS = ['policy_rule', 'membership', 'billing_product'] as const;
+export const PRICING_CHANGE_DOMAINS = ['policy_rule', 'membership', 'billing_product', 'customer_tariff'] as const;
 export const PRICING_CHANGE_OPERATIONS = ['create', 'update', 'delete', 'rollback'] as const;
 
 export type PricingChangeDomain = (typeof PRICING_CHANGE_DOMAINS)[number];
@@ -53,6 +53,7 @@ export type PricingChangePreviewProvenance = {
 
 export type PricingChangePreviewRow = {
   scenarioId: string;
+  scenarioLabel?: string;
   engineId: string;
   surface: string;
   currentTotalCents: number;

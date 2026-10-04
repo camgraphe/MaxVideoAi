@@ -61,3 +61,20 @@ export type MutablePlaylistFields = Partial<{
   isPublic: boolean;
   userId: string | null;
 }>;
+
+export type PlaylistDestination = {
+  id: string;
+  kind: 'examples' | 'starter' | 'family' | 'model' | 'image' | 'audio' | 'maintenance';
+  slug: string;
+  playlistId: string | null;
+  label: string;
+  path: string | null;
+  familyId: string | null;
+  modelSlug: string | null;
+  itemCount: number;
+  publicCount: number;
+  sourceSlugs: string[];
+  status: 'connected' | 'missing' | 'historical' | 'unconnected';
+  editable: boolean;
+  warning: string | null;
+};

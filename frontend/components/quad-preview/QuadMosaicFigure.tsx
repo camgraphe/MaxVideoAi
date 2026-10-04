@@ -2,7 +2,6 @@
 
 import clsx from 'clsx';
 import Image from 'next/image';
-import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { getAspectClass } from './quad-preview-helpers';
 import type { QuadMosaicStatus, QuadPreviewTile } from './quad-preview-types';
 
@@ -79,7 +78,7 @@ export function QuadMosaicFigure({
                     <div className="absolute inset-0 bg-gradient-to-br from-surface-2 via-surface to-surface-2" />
                   )}
                   {Boolean(preview?.hasAudio) && tileStatus !== 'failed' ? (
-                    <AudioEqualizerBadge tone="light" size="sm" label="Audio available" />
+                    <span className="sr-only">Audio available</span>
                   ) : null}
                 </div>
                 <div className="absolute inset-0 z-10" data-quad-player-root={slotKey} />

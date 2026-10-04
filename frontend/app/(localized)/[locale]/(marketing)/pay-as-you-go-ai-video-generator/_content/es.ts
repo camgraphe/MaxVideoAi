@@ -251,7 +251,7 @@ export const esPayAsYouGoContent = {
     section: {
       eyebrow: 'Resultados reales de pago por uso',
       title: 'Videos de ejemplo con modelo y precio',
-      intro: 'Una selección breve de renders públicos de MaxVideoAI que muestra el modelo, la duración y el precio registrado cuando está disponible.',
+      intro: 'Una selección breve de renders públicos de MaxVideoAI que muestra el modelo, la duración y su precio actual cuando está disponible.',
       preview: 'Vista previa',
       result: 'Ver prompt y resultado',
       cta: 'Prueba tu prompt con una cotización en tiempo real',

@@ -12,7 +12,8 @@ import type { PricingContext } from '../frontend/src/lib/pricing-context';
 import type { PricingSnapshot } from '../frontend/types/engines';
 
 test('MiniMax H3 provider calculator prices resolution, duration, and paid references exactly', () => {
-  assert.equal(calculateMinimaxH3ProviderPrice({ durationSec: 5, resolution: '768P', referenceImageCount: 0 }).subtotalUsd, 0.4);
+  assert.equal(calculateMinimaxH3ProviderPrice({ durationSec: 5, resolution: '480P', referenceImageCount: 0 }).subtotalUsd, 0.25);
+  assert.equal(calculateMinimaxH3ProviderPrice({ durationSec: 5, resolution: '768P', referenceImageCount: 0 }).subtotalUsd, 0.3);
   assert.equal(calculateMinimaxH3ProviderPrice({ durationSec: 15, resolution: '2K', referenceImageCount: 5 }).subtotalUsd, 1.95);
   assert.equal(calculateMinimaxH3ProviderPrice({ durationSec: 15, resolution: '2K', referenceImageCount: 6 }).subtotalUsd, 2.03);
   const flagship = calculateMinimaxH3ProviderPrice({ durationSec: 15, resolution: '4K', referenceImageCount: 9 });

@@ -6,7 +6,7 @@ import type { AppLocale } from '@/i18n/locales';
 import { ModelHeroMedia } from '@/components/marketing/ModelHeroMedia.client';
 import { UIIcon } from '@/components/ui/UIIcon';
 
-import type { FeaturedMedia } from '../_lib/model-page-media';
+import { getHeroMediaBadges, isPlayableVideoUrl, type FeaturedMedia } from '../_lib/model-page-media';
 import { MODEL_PAGE_ICON_ON_DARK } from '../_lib/model-page-icon-styles';
 
 type ModelDecisionMediaCardProps = {
@@ -27,10 +27,6 @@ function getDecisionMediaAlt(locale: AppLocale, altContext: string) {
   return 'Model video preview';
 }
 
-function isPlayableVideoUrl(src: string | null | undefined) {
-  return Boolean(src && /\.(?:mp4|webm|mov)(?:[?#].*)?$/i.test(src));
-}
-
 export function ModelDecisionMediaCard({
   media,
   label,
@@ -43,8 +39,7 @@ export function ModelDecisionMediaCard({
 }: ModelDecisionMediaCardProps) {
   const posterSrc = media.posterUrl ?? null;
   const resolvedAltText = getDecisionMediaAlt(locale, altContext);
-  const [audioBadge, durationBadge, ratioBadge] = badges;
-  const leadingBadge = audioBadge ?? (media.hasAudio ? audioBadgeLabel : null);
+  const [leadingBadge, durationBadge, ratioBadge] = getHeroMediaBadges(media, badges, audioBadgeLabel);
   const LeadingBadgeIcon = media.hasAudio ? Volume2 : ImageIcon;
   const videoSrc = isPlayableVideoUrl(media.videoUrl) ? media.videoUrl : null;
 

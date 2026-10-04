@@ -6,15 +6,16 @@ import { parseModelArchiveContent } from '../frontend/app/(localized)/[locale]/(
 import { buildModelArchiveMetadata } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-archive-metadata';
 
 for (const locale of ['en', 'fr', 'es'] as const) {
-  test(`Seedance 1.5 ${locale} archive explains product availability without inventing a provider shutdown`, () => {
+  test(`Seedance 1.5 ${locale} archive cites its own provider shutdown and current Seedance alternatives`, () => {
     const model = getRuntimeModelById('seedance-1-5-pro')!;
     assert.equal(model.lifecycle, 'deep_legacy');
     assert.equal(model.publication.app.published, false);
     const document = JSON.parse(readFileSync(`content/models/${locale}/seedance-1-5-pro.json`, 'utf8'));
     const archive = parseModelArchiveContent(document.archive);
     assert.doesNotMatch(JSON.stringify(archive), /OpenAI|September|septembre|septiembre|sora/i);
-    assert.equal(archive.source, undefined);
-    assert.equal(archive.alternatives[0].modelId, 'seedance-2-5');
+    assert.equal(archive.source?.href, 'https://docs.byteplus.com/en/docs/ModelArk/1350667');
+    assert.ok(archive.source?.label);
+    assert.deepEqual(archive.alternatives.map(item => item.modelId), ['seedance-2-0-mini', 'seedance-2-0-fast', 'seedance-2-5']);
     assert.doesNotMatch(JSON.stringify(document), /\/app\?engine=seedance-1-5-pro/);
     const metadata = buildModelArchiveMetadata(model, archive, locale);
     const prefix = { en: '/models', fr: '/fr/modeles', es: '/es/modelos' }[locale];

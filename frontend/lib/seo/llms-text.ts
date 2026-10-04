@@ -217,7 +217,7 @@ const MCP_SOURCE_SECTION = `## AI video plugin and MCP integration
 * [MaxVideoAI for Claude](https://maxvideoai.com/integrations/claude): Claude connector setup and revocation.
 * [MaxVideoAI for Codex](https://maxvideoai.com/integrations/codex): Codex-specific plugin and MCP setup.
 * [OpenClaw AI video skill](https://maxvideoai.com/integrations/openclaw): Direct MCP and listed ClawHub skill; private-reference imports, channel attachments and inline rendering remain unverified.
-* [n8n AI video workflows](https://maxvideoai.com/integrations/n8n): Tested self-hosted n8n 2.38.7 MCP Client workflow with explicit approval. Manual setup, no public template listing, no n8n Cloud claim.
+* [n8n AI video workflows](https://maxvideoai.com/integrations/n8n): Tested self-hosted n8n 2.38.7 MCP Client workflow with an exact quote and explicit human approval. Public n8n template 19591 is listed; OAuth setup remains manual. No n8n Cloud or AI Agent support is claimed.
 * [MaxVideoAI MCP documentation](https://maxvideoai.com/docs/mcp): MCP, OAuth, tools, credits, references, library, recovery, and troubleshooting reference.
 * [MaxVideoAI plugin repository](${MAXVIDEOAI_PLUGIN_REPOSITORY_URL}): Canonical public plugin repository.`;
 

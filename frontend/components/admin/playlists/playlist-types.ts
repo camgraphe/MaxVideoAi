@@ -45,10 +45,12 @@ export type PlaylistItemRecord = {
 };
 
 export type PlaylistsManagerProps = {
+  initialDestinations?: PlaylistDestination[];
   initialPlaylists: PlaylistSummary[];
   initialPlaylistId: string | null;
   initialItems: PlaylistItemRecord[];
   embedded?: boolean;
+  enableCuration?: boolean;
   className?: string;
 };
 
@@ -78,3 +80,5 @@ export type ModelPlaylistHelperCard = {
   status: 'ready' | 'missing' | 'empty';
   playlistId: string | null;
 };
+import type { PlaylistDestination } from '@/server/playlists/types';
+export type { PlaylistDestination } from '@/server/playlists/types';

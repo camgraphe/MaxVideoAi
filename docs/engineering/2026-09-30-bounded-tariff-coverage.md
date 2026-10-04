@@ -1,0 +1,102 @@
+# Bounded tariff coverage — 2026-09-30
+
+This continuation expands the incomplete sellable matrix on `codex/bytedance-pricing-grid`. It neither activates manual tariffs nor changes the current commercial formula. All database reads used the private local PostgreSQL socket with external runtime credentials blank. No production query, write, provider request, push or deployment was performed in this continuation.
+
+## Supported additions
+
+- Image output counts follow each applicable `num_images` schema, including four GPT outputs, eight Nano Banana outputs and fifteen Seedream Lite outputs.
+- GPT Image 2.5 edit sources, Luma Uni additional edit references, and the priced image-only H3 slice use their existing factual owners and schema bounds. Mixed H3 references remain unresolved.
+- Gemini Omni, Happy Horse 1.0/1.1, Veo 3.1/Fast and Grok image-only reference modes now enumerate bounded image counts. Seedance, Wan and Kling mixed or optional-primary reference semantics remain gaps.
+- Legacy Ray 2 loop choices are represented only where generation forwards them into pricing.
+- Selectors and quantities come from `buildManualTariffScenario`, including both video reference/input image counts and fixed GPT pixel dimensions. Tests construct independent generation-shaped contexts; rebuilding only the collector's context would miss these mismatches.
+- Admin and public quotes consume this matrix. References narrow their derived input count; the editor hides the duplicate video control. Image output controls and public quote labels use images instead of seconds. Public defaults retain zero Luma additional references, one GPT edit reference and no loop.
+
+## Read-only quote evidence
+
+The corrected local capture ran at `2026-09-30T11:17:15.810Z` in `REPEATABLE READ READ ONLY`.
+
+| Evidence | Result |
+| --- | ---: |
+| App-published models / families | 48 / 15 |
+| Current sampled local quotes | 118,007 / 118,007 |
+| Quote failures | 0 |
+| Historical baseline scenarios reconciled | 66,549 / 66,549 |
+| Unchanged selector identities / normalized identities | 65,169 / 1,380 |
+| Missing historical scenarios / changed customer cents or currency | 0 / 0 |
+| Current private database rules | 3 |
+| Global manual state / revision | inactive / 3 |
+
+Identity normalization adds the priced default reference count, video input count and fixed GPT size that charging already supplies. It does not substitute a neighboring configuration. All historical and current model rows use the effective `default` rule; the original four-rule snapshot included a rule outside these model rows. This comparison establishes parity with the reviewed 2026-09-29 capture, not a fresh production-state guarantee.
+
+Ignored raw evidence lives under `.superpowers/sdd/2026-09-29-all-model-manual-customer-tariffs/`: `effective-local-bounded-v2-2026-09-30.json` and `bounded-parity-v2-2026-09-30.json`. The original `effective-baseline-v3.json` and staged 66,549-cell database seed were preserved. The old seed must fail current complete-matrix validation rather than silently seed the expanded matrix.
+
+## Remaining coverage gates
+
+Six image-reference boundaries close and three newly identified Ray 3.2 HDR/EXR projection gates are recorded: the count changes from 122 to **119**, not to complete coverage.
+
+| Unresolved boundary | Count |
+| --- | ---: |
+| Automatic aspect ratio from trusted metadata | 59 |
+| Automatic/open output duration | 29 |
+| Mixed reference count and metadata | 12 |
+| Automatic/custom image resolution | 6 |
+| Fractional input-video duration | 4 |
+| Open input-video duration | 3 |
+| Ray 3.2 HDR/EXR generation projection | 3 |
+| Open input-audio duration | 2 |
+| Unbounded reference token budget | 1 |
+
+Continuous unit terms, verified metadata projections, a complete reviewed current seed, actual supplier settlement evidence, legacy unbound PaymentIntent reconciliation and the atomic activation certificate remain release gates. Task 1 and the overall plan remain partial. Whole-grid construction is also a future admin latency improvement; no performance acceptance is claimed here.
+
+## Acceptance
+
+Independent code review identified missing video input counts and fixed GPT pixel sizes; both were reproduced as failing charging-context tests and corrected. The focused pricing/admin/public/PostgreSQL group passes 102 tests. TypeScript, app lint, exposure and owner lint pass. The frozen billing/public baselines and pricing audit remain unchanged.
+
+Authenticated HTTP reads verify the admin page, model tariff inventory and policy inventory return 200. There are 48 models in 15 families, no missing representative customer amount, and no representative cent change versus the pre-continuation local inventory. Manual activation remains false at revision 3. After runtime restoration, exact HTTP requests verify identical admin/public cents for GPT Image 2.5 Flare (four outputs, sixteen edit sources), Veo 3.1 (two image references), and Luma Uni (zero additional edit references).
+
+The panel opener initially returned `queued`. A later browser inventory found functioning local admin tabs; tab 7 was inspected directly, showing the populated Pricing page, five categories, supplier/customer unit prices and estimated margins. The integrated browser was made visible and that tab retained as a deliverable. Old browser error tabs were not reloaded or inspected. This verifies the page's visible nonblank state, not every new variant control or a new mobile-layout acceptance.
+
+Complete committed-snapshot validation at `70eb58797`: 6,346 standard tests and 11 isolated Studio tests pass, zero failures, three standard skips. The standard validator covers 1,069 test files. The sanitized local environment was held outside the checkout during validation and restored in `finally`; no external credentials were loaded.
+
+## GPT size-tier continuation
+
+GPT Image 2, 2.5 Flare and 2.5 Sunburst now author six billing-size tiers instead of separate prices for raw dimensions, preset aliases and unpriced aspect ratios. `buildManualTariffScenario` uses the existing `resolveGptImage2PricingTier` factual owner. Requested pixels remain in the quote context and provider metadata; quality, batch size and priced edit-reference count remain independent tariff choices. The nearest-size estimate is preserved, not replaced with a new supplier formula.
+
+Public quotes validate supplied pixel dimensions before mapping. Custom sizes use the generation validator; automatic sizes use the existing positive finite source-size normalizer, whose bounds differ from custom output bounds. Without known automatic dimensions, a public quote remains unavailable. Unsupported preset names, conflicting fixed-size pixels and malformed JSON dimensions cannot silently choose a default tier. Public quoting retains the requested size context so current legacy policy selection and price metadata remain accurate. The admin labels this control **Billing size tier** and explains its shared size mapping.
+
+The private read-only capture at `2026-09-30T12:09:07.390Z` has **79,991 / 79,991** quotes, zero failures. All **118,007** previously bounded rows map to these 79,991 cells, with zero missing rows, changed cents/currency or conflicting prices. Twelve resolution/aspect boundaries close, leaving **107** explicit gaps: automatic aspect 53, auto/open output duration 29, mixed references 12, fractional input-video 4, open input-video 3, HDR/EXR projection 3, open input-audio 2 and reference token budget 1. Fewer cells reflect deduplication of price-equivalent sizes, not a loss of supported configurations.
+
+All **66,549** original baseline rows also reconcile with zero missing or changed cents/currency (64,689 unchanged identities and 1,860 normalized). Ignored raw evidence: `effective-local-gpt-tiers-2026-09-30.json`, `gpt-tier-original-parity-2026-09-30.json` and `gpt-tier-bounded-parity-2026-09-30.json`. Original captures and the old inactive staged seed remain untouched; the seed must be regenerated and reviewed before any activation.
+
+New tests reproduce missing custom/auto cell resolution before the fix, then prove six-tier selection across all three models, modes, qualities and four-output/sixteen-reference requests. An injected active authored price reaches fixed, preset, custom and automatic requests, exposes its revision and refuses an old raw-size selector. Malformed public size validation also ran RED → GREEN. Focused checks, immutable 178-row billing / 577-row public baselines and the pricing audit pass. Full committed-snapshot and browser acceptance for this continuation are recorded separately after completion.
+
+The independent review identified three important issues, all reproduced RED → GREEN in one fix pass: omitted/null GPT quality now follows the factual `high` default; GPT 2.5 delegated confirmation now retains the same source count as preparation; and the default GPT tier retains its mode-scoped fixed preset context while its selector remains canonical. A precise legacy `landscape_4_3` override test proves admin inventory/detail and the matching public quote retain the same policy and cents. Explicit fixed pixels can still have a different current legacy rule; any captured alias-price conflict must block a no-change activation.
+
+The MCP correction fixes a preexisting perpetual stale-confirmation failure, not an observed undercharge: confirmation already compared the full quote snapshot before debit. Real preparation/executor tests cover Flare/Sunburst, standard/4K tiers, 1/3/16 sources and four outputs, with injected active manual prices and revisions. Existing confirmation guards remain intact.
+
+The corrected capture at `2026-09-30T12:32:27.522Z` (`effective-local-gpt-tiers-v2-2026-09-30.json`) contains the same 79,991 identities, cents, currencies and effective policy IDs as the first capture, with zero quote gaps and 107 capability gaps. The reviewed focused group passes **221 / 221**, TypeScript and owner lint pass. Initial committed validation at `e281001d9` passed 6,350 standard + 11 isolated Studio tests; full validation of the review corrections follows before final acceptance.
+
+Final pricing-code validation at `9ed669452`: **6,353 standard + 11 isolated Studio** tests pass, zero failures, three standard skips (1,070 standard files). The sanitized environment was held/restored in `finally`. Runtime session 8825 restores the same private socket DB on localhost:3106. Authenticated HTTP acceptance verifies 48 models / 15 families, unchanged representative cents, inactive / revision 3 / 107 gaps, and **12** matching admin/public fixed/preset/custom/auto GPT requests. Unknown/invalid sizes omit prices.
+
+Actual browser acceptance then exposed an old client identity guard requiring priced aspect for GPT. A failing test using all **79,991** real coverage identities reproduced the disabled editor; the guard now permits omitted aspect only for GPT. All coverage identities open intact, invalid non-GPT identities stay refused, and the focused editor/preview/decision/tier group passes **10 / 10**, TypeScript and client owner lint pass. This small UI follow-up is after the complete pricing-code suite above; no later full-suite claim is made.
+
+The populated real admin tab is visible and retained. Its six billing-tier choices, quality, image count and reference controls appear. Changing Flare to 4K and three references reloads supplier $0.13608, customer $0.18 and estimated margin 24.4%; the price preview button becomes available. No price confirmation or write was performed. Screenshot: `/tmp/maxvideoai-gpt-tiers-admin.jpg`; HTTP report: `/tmp/gpt-tiers-final-http.json`. Responsive and latency acceptance remain separate. Before activation, current policy must be re-quoted for all price-equivalent aliases, not merely the deduplicated representative cells.
+
+
+## Exact fractional Wan input continuation
+
+Wan 3/Prime v2v and extend can compare and prepare an exact price for a decimal source duration in the same admin row. Public quote, admin scenario and billing selectors share the factual owner and preserve the existing rounding. At 720p, 5 output seconds and 3.25 input seconds give Wan basis $0.825/customer $1.08 and Prime basis $1.155/customer $1.51 under the current default policy. Input must be positive, at most 15 seconds, and input plus output at most 30 seconds. This is read-only estimation metadata; generation still derives it from owned media.
+
+Prepared fixed prices cover only that exact source/output duration. They neither define a continuous rate nor complete capability coverage: 79,991 sampled identities, 107 boundaries (including four fractional-input tariff gaps), unchanged original staged seed and global activation off. A simple nearest-rounded 13-cent/second formula would change Wan's example total to $1.07; a continuous cutover must preserve current rounding across effective policies or explicitly approve the differences.
+
+Focused tests: 86 passed, including disposable PostgreSQL confirmation/rollback and browser-component draft/approval behavior; TypeScript passes. Final independent review, complete validation and real local UI evidence are recorded below when accepted.
+
+### Fractional slice final acceptance
+
+Fresh independent review of `379c1b6f2..1f897d59e` found no actionable P1/P2 issues or minor notes (independent scenario/client tests 6/6). The complete validator at `1f897d59e` passes **6,361 standard tests + 11 isolated Studio tests**, zero failures, three standard skips, 1,073 standard files. Sanitized environment configuration was held/restored in `finally`; no remote credentials were loaded. TypeScript, app lint, exposure and diff checks pass; billing178/public577 baselines retain their prior customer cents and the pricing audit has zero mismatches.
+
+A private repeatable-read, read-only capture at **2026-09-30T13:30:21.285Z** contains 79,991 rows, zero missing/added identities, zero changed cents/currency/policy provenance and zero quote gaps versus the corrected GPT capture ; 107 capability boundaries remain. The original 66,549 staged cells are unchanged. This is local evidence, not a new production-state guarantee.
+
+Restored localhost:3106 against the same private socket database. Admin and public API acceptance covers 24 matching fractional cases: Wan/Prime, v2v/extend,480p/720p/1080p, source 3.25 s / output 5 s and source 0.75 s / output 29 s. Invalid and missing source durations return unavailable/unsupported; no confirmation or tariff writes performed. Inventory remains48 models / 15 families, unchanged representative customer cents, inactive / revision 3. Complete continuous coverage, current versioned seed, settlement evidence, legacy unbound payment reconciliation and global activation remain pending.
+
+Actual browser acceptance: reloaded the existing local admin tab and selected Video → Wan → Wan 3 → v2v, 5 s output, 720p, 3.25 s source. It displays supplier $0.825/customer $1.08/estimated gross margin 23.6%; the source field accepts decimals. A 16 s source is rejected and disables approval while remaining correctable. Restoring 3.25 s reloads the correct quote; the server preview opens without confirmation. The tab remains visible with the exact editor. Screenshot: `/tmp/maxvideoai-wan-fractional-admin.jpg`. Final private database read confirms inactive / revision 3/66,549 staged cells. This does not establish full responsive or latency acceptance.

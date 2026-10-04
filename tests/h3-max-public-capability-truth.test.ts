@@ -18,24 +18,23 @@ const specs = JSON.parse(readFileSync('data/benchmarks/engine-key-specs.v1.json'
 const catalog = JSON.parse(readFileSync('frontend/config/engine-catalog.json', 'utf8')) as EngineCatalogEntry[];
 const h3Max = listFalEngines().find((entry) => entry.id === 'minimax-h3-max')!;
 const h3 = listFalEngines().find((entry) => entry.id === 'minimax-h3')!;
-const closedCapabilities = ['imageToVideo', 'videoToVideo', 'firstLastFrame', 'referenceImageStyle', 'referenceVideo'] as const;
+const availableCapabilities = ['imageToVideo', 'firstLastFrame', 'referenceImageStyle', 'referenceVideo'] as const;
 
-test('H3 Max public specs and comparison facts reflect the web execution gate without narrowing H3', () => {
-  assert.deepEqual(h3Max.engine.modes.filter(isMinimaxH3MaxRuntimeModeAvailable), ['t2v']);
+test('H3 Max public specs and comparisons expose its executable image and reference workflows', () => {
+  assert.deepEqual(h3Max.engine.modes.filter(isMinimaxH3MaxRuntimeModeAvailable), ['t2v', 'i2v', 'ref2v']);
   const authored = specs.specs.find((entry) => entry.modelSlug === h3Max.modelSlug)!.keySpecs;
   const comparisons = compareSpecs(catalog.find((entry) => entry.modelSlug === h3Max.modelSlug)!, authored);
   const model = modelSpecs(h3Max, authored);
-  for (const key of closedCapabilities) {
-    assert.equal(resolveSupported(model[key]), false, key);
-    assert.equal(resolveSupported(comparisons[key]), false, key);
-    assert.match(model[key], /current MaxVideoAI route/, key);
-    assert.match(localizeSpecStatus(model[key], 'fr'), /Non disponible dans MaxVideoAI actuellement/);
-    assert.match(localizeSpecStatus(model[key], 'es'), /No disponible actualmente en MaxVideoAI/);
+  for (const key of availableCapabilities) {
+    assert.equal(resolveSupported(model[key]), true, key);
+    assert.equal(resolveSupported(comparisons[key]), true, key);
+    assert.doesNotMatch(localizeSpecStatus(model[key], 'fr'), /Non disponible dans MaxVideoAI actuellement/);
+    assert.doesNotMatch(localizeSpecStatus(model[key], 'es'), /No disponible actualmente en MaxVideoAI/);
   }
   assert.equal(resolveSupported(model.textToVideo), true);
   assert.equal(resolveSupported(model.audioOutput), true);
   assert.equal(resolveSupported(model.nativeAudioGeneration), true);
-  assert.deepEqual(h3Max.engine.resolutions, ['480P', '768P']);
+  assert.deepEqual(h3Max.engine.resolutions, ['480P', '768P', '1080P']);
   assert.equal(h3Max.engine.maxDurationSec, 15);
   assert.ok((resolveModelOfferAmountCents(h3Max, h3Max.engine) ?? 0) > 0);
 
@@ -45,15 +44,15 @@ test('H3 Max public specs and comparison facts reflect the web execution gate wi
   assert.ok(h3.engine.modes.includes('ref2v'));
 });
 
-test('localized H3 Max metadata and Product descriptions promote the available text workflow', () => {
+test('localized H3 Max metadata and Product descriptions agree on multimodal availability', () => {
   for (const locale of ['en', 'fr', 'es'] as const) {
     const document = JSON.parse(readFileSync(`content/models/${locale}/minimax-h3-max.json`, 'utf8'));
     assert.deepEqual(document.seo, document.decision.meta);
-    assert.doesNotMatch(JSON.stringify(document.seo), /references|références|referencias|frames|fotogramas/i);
-    assert.match(document.seo.description, /480P.*768P/);
+    assert.match(JSON.stringify(document.seo), /references|références|referencias/i);
+    assert.match(document.seo.description, /1080P/);
     assert.match(document.decision.hero.paragraph, /MCP/);
-    assert.equal(document.decision.referenceWorkflows.length, 1);
-    assert.equal(document.examples.filters.some((filter: { id: string }) => filter.id === 'reference'), false);
+    assert.ok(document.decision.referenceWorkflows.length >= 3);
+    assert.equal(document.examples.filters.some((filter: { id: string }) => filter.id === 'reference'), true);
     const product = buildProductSchema({
       engine: h3Max,
       canonical: `https://maxvideoai.com/${locale === 'en' ? 'models' : locale === 'fr' ? 'fr/modeles' : 'es/modelos'}/minimax-h3-max`,
@@ -66,8 +65,8 @@ test('localized H3 Max metadata and Product descriptions promote the available t
     assert.equal(product.description, document.seo.description);
     assert.ok(Number(product.offers.price) > 0);
   }
-  assert.doesNotMatch(h3Max.seo.description, /references|start and end frames/i);
-  assert.match(h3Max.type!, /text-to-video/);
+  assert.match(h3Max.seo.description, /references/i);
+  assert.match(h3Max.type!, /References/i);
   const guidance = getAgentModelGuidance(h3Max.id)!;
-  assert.ok(guidance.considerations.some((value) => value.includes('image and mixed-reference modes are not enabled')));
+  assert.ok(guidance.considerations.every((value) => !value.includes('image and mixed-reference modes are not enabled')));
 });

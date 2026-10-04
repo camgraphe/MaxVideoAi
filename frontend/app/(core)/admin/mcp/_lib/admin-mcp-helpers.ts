@@ -84,18 +84,6 @@ export function buildMcpOverviewCards(metrics: AdminMcpMetrics): AdminMetricItem
       tone: activity === null ? 'warning' : 'success',
     },
     {
-      label: 'Active tool users',
-      value: formatMcpNumber(activity?.activeToolUsers ?? null),
-      helper: 'Distinct connected accounts that called at least one MCP tool',
-      tone: activity === null ? 'warning' : 'info',
-    },
-    {
-      label: 'Tool calls',
-      value: formatMcpNumber(activity?.toolCalls ?? null),
-      helper: 'All authenticated MCP tool calls in the selected window',
-      tone: activity === null ? 'warning' : 'default',
-    },
-    {
       label: 'Tool success',
       value: formatMcpPercent(activity?.toolSuccessRate ?? null),
       helper: 'Successful tool responses divided by all recorded MCP tool calls',

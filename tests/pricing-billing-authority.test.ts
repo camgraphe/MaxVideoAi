@@ -7,7 +7,7 @@ const read = (path: string) => readFileSync(path, 'utf8');
 test('new generation charges enter through canonical server pricing owners', () => {
   const canonicalConsumers = new Map<string, string>([
     ['frontend/app/api/generate/_lib/billing-preflight.ts', 'computeCanonicalBillingSnapshot'],
-    ['frontend/app/api/wallet/route.ts', 'computeCanonicalBillingSnapshot'],
+    ['frontend/server/wallet-direct-checkout.ts', 'computeCanonicalBillingSnapshot'],
     ['frontend/src/server/images/image-generation-pricing.ts', 'computeCanonicalBillingSnapshot'],
     ['frontend/src/server/images/storyboard-image-billing.ts', 'computeCanonicalBillingSnapshot'],
     ['frontend/src/server/audio/prepare-audio.ts', 'computeCanonicalAudioBillingSnapshot'],
@@ -67,10 +67,10 @@ test('public projections use their canonical owner without importing billing int
     ['frontend/src/server/engines.ts', 'computeCanonicalPublicSnapshot'],
     ['frontend/app/api/images/estimate/route.ts', 'estimateWebImageGeneration'],
     ['frontend/src/server/images/estimate-image-generation.ts', 'computeCanonicalPublicSnapshot'],
-    ['frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-pricing.ts', 'computeCanonicalPublicSnapshot'],
+    ['frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-pricing.ts', 'computeCurrentPublicSnapshot'],
     ['frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema.ts', 'quotePublicPricing'],
-    ['frontend/components/marketing/PriceEstimator.tsx', 'quotePublicPricing'],
-    ['frontend/components/marketing/PriceChip.tsx', 'quotePublicPricing'],
+    ['frontend/components/marketing/PriceEstimator.tsx', 'fetchCurrentPrice'],
+    ['frontend/components/marketing/PriceChip.tsx', 'fetchCurrentPrice'],
   ]);
   for (const [path, symbol] of owners) {
     assert.match(read(path), new RegExp(symbol), `${path} should use ${symbol}`);

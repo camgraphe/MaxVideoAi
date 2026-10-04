@@ -1,0 +1,359 @@
+{
+  "schemaVersion": 1,
+  "canonicalSlug": "30-second-music-promo-two-minimax-h3-clips",
+  "publication": {
+    "articleId": "b489a156-2c41-44ea-8108-75ab768d940f",
+    "version": 1,
+    "digest": "dab27d6b24f2b3c432e2b5b2b4a6fa9a572c9db7e33d95b3f6ac7ad04b05e02f",
+    "publishedAt": "2026-09-21T19:44:46.016Z"
+  },
+  "article": {
+    "locale": "fr",
+    "audience": "fr-FR",
+    "slug": "30-second-music-promo-two-minimax-h3-clips",
+    "title": "Créez un teaser musical de 30 secondes avec deux clips MiniMax H3",
+    "description": "Imaginez deux scènes distinctes de 15 secondes, répartissez vos références visuelles et audio, préparez une transition intentionnelle, puis assemblez les clips sélectionnés sur la piste originale.",
+    "keywords": [
+      "MiniMax H3",
+      "teaser musical",
+      "clip musical par IA",
+      "création vidéo à partir de références",
+      "vidéo de 30 secondes",
+      "montage vidéo",
+      "MaxVideoAI"
+    ],
+    "blocks": [
+      {
+        "id": "editorial-hero",
+        "type": "media",
+        "assetId": "editorial-hero",
+        "heading": "",
+        "presentation": "single",
+        "alt": "Une artiste fictive entre une salle de répétition bleutée et une scène aux tons ambrés, reliées par une forme d’onde abstraite.",
+        "caption": "Illustration. Un morceau, deux scènes et un raccord pensé à l’avance."
+      },
+      {
+        "id": "one-track-two-scenes",
+        "type": "text",
+        "heading": "Transformez un même passage en deux scènes",
+        "paragraphs": [
+          {
+            "text": "Imaginez : le refrain démarre au moment précis où une salle de répétition bleutée laisse place à une scène baignée de lumière ambrée. Même artiste, même morceau, mais l’instant prend soudain une tout autre ampleur. Voilà le petit récit que nous allons construire : l’attente dans la première moitié, puis l’explosion dans la seconde.",
+            "sourceIds": []
+          },
+          {
+            "spans": [
+              {
+                "text": "Pour commencer, il vous faut un morceau que vous pouvez utiliser et quelques références visuelles. "
+              },
+              {
+                "text": "MiniMax H3 sur MaxVideoAI",
+                "href": "https://maxvideoai.com/models/minimax-h3"
+              },
+              {
+                "text": " génère des clips d’une durée maximale de 15 secondes : ce teaser de 30 secondes nécessite donc deux requêtes distinctes. Vous réunirez ensuite les prises retenues dans votre logiciel de montage, sur une piste continue du morceau original."
+              }
+            ],
+            "sourceIds": [
+              "source-1"
+            ]
+          },
+          {
+            "text": "Dans notre exemple fictif, l’artiste porte une veste anthracite et une chemise ivoire. Ces repères restent constants tandis que l’éclairage, le décor et l’énergie évoluent. Les illustrations ci-dessous présentent l’intention ; ce sont vos prises sélectionnées qui détermineront le montage final.",
+            "sourceIds": []
+          }
+        ]
+      },
+      {
+        "id": "reference-role-board",
+        "type": "media",
+        "assetId": "reference-role-board",
+        "heading": "Gardez l’artiste, changez de décor",
+        "presentation": "single",
+        "alt": "Deux groupes de références reprennent le même portrait d’artiste, mais emploient des décors, des couleurs, des gestes et des extraits audio différents.",
+        "caption": "Illustration. Préparez des références d’identité communes et des indications propres à chaque scène pour les deux requêtes MaxVideoAI."
+      },
+      {
+        "id": "give-each-half-a-job",
+        "type": "text",
+        "heading": "Donnez un rôle différent à chaque moitié",
+        "paragraphs": [
+          {
+            "text": "Commencez par écouter, avant de générer. Choisissez un passage de 30 secondes qui présente un tournant musical vers son milieu : l’arrivée d’un refrain, un changement de rythme ou un moment où l’énergie se déploie. Conservez ce passage complet pour la bande-son finale, puis créez deux extraits audio consécutifs de 15 secondes dans votre logiciel audio. Repérez les accents que vous entendez réellement.",
+            "sourceIds": [
+              "source-6"
+            ]
+          },
+          {
+            "spans": [
+              {
+                "text": "Les 15 premières secondes : créer l’attente. ",
+                "bold": true
+              },
+              {
+                "text": "Dans la salle de répétition bleue, l’artiste commence calmement devant le microphone. Un lent travelling avant nous rapproche tandis que sa main droite se lève près de sa tête. Donnez à cette scène une destination précise, plutôt qu’une liste interminable d’actions."
+              }
+            ],
+            "sourceIds": []
+          },
+          {
+            "spans": [
+              {
+                "text": "Les 15 secondes suivantes : libérer l’énergie. ",
+                "bold": true
+              },
+              {
+                "text": "La scène sur la scène ambrée commence près de cette pose, la main levée, puis s’ouvre sur un geste de performance plus ample. Le décompte du prompt repart de zéro : la seconde 3 de ce clip correspond donc à la seconde 18 du teaser final."
+              }
+            ],
+            "sourceIds": []
+          },
+          {
+            "text": "Pour chaque requête, préparez une image claire définissant l’identité et la tenue de l’artiste, une image pour le décor et la palette, puis une autre pour le geste ou la composition. Réutilisez l’image d’identité, mais remplacez la salle de répétition par la scène. Ajoutez l’extrait audio correspondant pour guider le rythme et l’ambiance. H3 exige une référence visuelle avec toute référence audio ; cet ensemble réduit permet de comprendre immédiatement le rôle de chaque entrée.",
+            "sourceIds": [
+              "source-1",
+              "source-4"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "make-the-cut-intentional",
+        "type": "comparison",
+        "heading": "Donnez un point d’appui au raccord",
+        "columns": [
+          "Type de raccord",
+          "À choisir lorsque…"
+        ],
+        "rows": [
+          [
+            "Raccorder le geste",
+            "La main levée occupe une position et une échelle similaires dans les deux prises. C’est notre premier choix."
+          ],
+          [
+            "Prolonger le regard",
+            "Les mains diffèrent, mais l’artiste regarde vers la même zone de l’image."
+          ],
+          [
+            "Conserver le sens du mouvement",
+            "Un mouvement bien visible se poursuit dans la même direction après la coupe."
+          ],
+          [
+            "Assumer le contraste",
+            "Les images offrent un net changement d’échelle, d’angle ou de pose qui accompagne la musique. Retenez le contraste réellement présent dans vos prises."
+          ]
+        ]
+      },
+      {
+        "id": "boundary-compositions",
+        "type": "media",
+        "assetId": "boundary-compositions",
+        "heading": "Raccordez le geste — ou affirmez le contraste",
+        "presentation": "single",
+        "alt": "Deux raccords préparés : une main levée relie les scènes bleue et ambrée, tandis qu’une coupe contrastée inverse la direction et élargit le cadre.",
+        "caption": "Illustration. En haut, un raccord sur le geste ; en bas, un contraste délibéré entre les compositions."
+      },
+      {
+        "id": "set-up-two-generations",
+        "type": "text",
+        "heading": "Lancez deux générations dans MaxVideoAI",
+        "paragraphs": [
+          {
+            "spans": [
+              {
+                "text": "Sélectionnez "
+              },
+              {
+                "text": "MiniMax H3 en mode reference-to-video",
+                "href": "https://maxvideoai.com/models/minimax-h3"
+              },
+              {
+                "text": ". Pour chaque génération, choisissez une durée de 15 secondes, un format 9:16 et une définition 2K. Conservez les mêmes réglages de sortie pour les deux clips, puis ajoutez les images de la scène concernée et son propre extrait audio. Dans notre exemple, chaque requête contient trois images et un extrait audio."
+              }
+            ],
+            "sourceIds": [
+              "source-1"
+            ]
+          },
+          {
+            "text": "Remplacez les repères temporels ci-dessous par les accents musicaux que vous avez identifiés, puis copiez un seul prompt dans chaque requête. La référence audio sert à guider la génération ; gardez l’enregistrement original pour la bande-son finale. Le geste commun donne une direction au raccord, sans garantir que deux clips générés séparément s’enchaîneront parfaitement.",
+            "sourceIds": []
+          }
+        ]
+      },
+      {
+        "id": "generate-two-separate-clips",
+        "type": "prompt",
+        "heading": "Prompt A · Faites monter l’attente",
+        "template": "SEQUENCE A — BLUE REHEARSAL ROOM\n\nCreate a 15-second vertical video using the supplied fictional adult performer as the identity reference: short dark curls, charcoal jacket, ivory shirt. Preserve this identity and wardrobe. The setting is a sparse rehearsal room with cool cobalt-blue lighting, acoustic treatment and a simple microphone stand. Keep the movement restrained and avoid readable background text.\n\nLocal 0–[A] seconds: the performer stands quietly near the microphone; the camera makes one slow push-in.\nLocal [A]–[B] seconds: around my marked musical accent, the performer begins raising their right hand; hold a steady medium composition.\nLocal [B]–15 seconds: the right hand settles beside the head near the planned screen position; ease into a medium-close final composition suitable for a cut.\n\nUse the attached first audio excerpt only as guidance for rhythm, energy and mood.",
+        "note": "Utilisez les références de la salle de répétition et le premier extrait audio. Remplacez [A] et [B] par des repères temporels compris entre 0 et 15 secondes."
+      },
+      {
+        "id": "generate-stage-clip",
+        "type": "prompt",
+        "heading": "Prompt B · Ouvrez la scène",
+        "template": "SEQUENCE B — AMBER STAGE\n\nCreate a separate 15-second vertical video using the same fictional adult performer identity and the same charcoal jacket and ivory shirt. The setting is a warm amber stage with a few broad beams of light. Begin with the performer’s right hand beside the head, near the same screen position planned for the end of Sequence A. Avoid readable signage or background text.\n\nLocal 0–[C] seconds: the hand opens outward into the performance; hold framing similar to Sequence A’s closing composition.\nLocal [C]–[D] seconds: around my marked musical accent, the performer expands into a broader gesture; make one controlled pullback.\nLocal [D]–15 seconds: the performer settles into an open stage pose; hold the wider composition through the end.\n\nUse the attached second audio excerpt only as guidance for rhythm, energy and mood.",
+        "note": "Créez une requête distincte avec les références de la scène et le second extrait audio. Remplacez [C] et [D] ; le chronomètre de ce clip repart de zéro."
+      },
+      {
+        "id": "finish-over-the-original-track",
+        "type": "steps",
+        "heading": "Réunissez les deux prises en un seul teaser",
+        "steps": [
+          {
+            "title": "Choisissez un duo qui s’enchaîne bien",
+            "body": "Vérifiez l’interprète, la tenue, les mains et le mouvement. Essayez d’abord la coupe sur la main levée. Si elle ne fonctionne pas, appuyez-vous sur un contraste net réellement présent dans les séquences obtenues. Une belle prise isolée reste moins utile que deux plans qui semblent faits pour aller ensemble."
+          },
+          {
+            "title": "Replacez les images sur la piste originale",
+            "body": "Dans votre logiciel de montage, placez le Clip A de 0 à 15 secondes, puis le Clip B de 15 à 30 secondes. Ajoutez dessous l’extrait musical intact et coupez le son généré des deux clips. Écoutez le passage de l’un à l’autre : la musique doit rester parfaitement continue."
+          },
+          {
+            "title": "Gardez assez d’images pour couvrir toute la musique",
+            "body": "Deux prises de 15 secondes ne laissent aucune marge. Les raccourcir ou les faire se chevaucher réduit la durée totale disponible. Comblez tout manque avec une autre prise exploitable, un plan d’insert que vous pouvez utiliser ou une nouvelle séquence générée pour remplacer les images manquantes."
+          },
+          {
+            "title": "Finalisez sans surcharger",
+            "body": "Ajoutez le nom de l’interprète ou les informations de sortie sous forme de titres modifiables, harmonisez les deux scènes, puis regardez le résultat au format téléphone. Conservez ensemble les deux prompts, les références et les prises retenues : vous disposerez ainsi d’un exemple utile pour préparer le prochain teaser."
+          }
+        ]
+      },
+      {
+        "id": "external-edit-timeline",
+        "type": "media",
+        "assetId": "external-edit-timeline",
+        "heading": "Laissez la piste originale guider le montage",
+        "presentation": "single",
+        "alt": "Une timeline de montage externe avec deux clips adjacents, l’un bleu et l’autre ambré, le son des clips coupé, une piste musicale originale continue et des titres séparés.",
+        "caption": "Illustration. Assemblez les clips MaxVideoAI dans un logiciel de montage externe, coupez leur son et placez la piste musicale originale en dessous."
+      },
+      {
+        "id": "workflow-responsibilities",
+        "type": "diagram",
+        "heading": "Des références préparées au teaser final",
+        "nodes": [
+          {
+            "kind": "file",
+            "label": "Musique autorisée et images sélectionnées"
+          },
+          {
+            "kind": "file",
+            "label": "Références A/B + musique intacte de 30 secondes"
+          },
+          {
+            "kind": "model",
+            "label": "MaxVideoAI H3 : deux requêtes distinctes de 15 secondes"
+          },
+          {
+            "kind": "video",
+            "label": "Clips A et B sélectionnés"
+          },
+          {
+            "kind": "model",
+            "label": "Logiciel de montage externe : musique originale + titres"
+          },
+          {
+            "kind": "video",
+            "label": "Teaser final de 30 secondes"
+          }
+        ],
+        "connections": [
+          "Préparer les images et deux extraits audio dans des outils externes",
+          "Envoyer chaque ensemble et conserver la musique intacte pour le montage",
+          "Générer séparément, examiner les prises et faire son choix",
+          "Importer les clips et la musique conservée, puis couper le son des clips",
+          "Vérifier que les images couvrent toute la durée et exporter"
+        ],
+        "alt": "Flux de travail allant de références préparées dans des outils externes à deux générations MaxVideoAI distinctes, puis au montage externe et au teaser final.",
+        "caption": "MaxVideoAI génère les clips sources ; la préparation et l’assemblage final s’effectuent dans des outils externes."
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "source-1",
+      "title": "MiniMax H3",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/models/minimax-h3",
+      "retrievedAt": "2026-09-21"
+    },
+    {
+      "id": "source-2",
+      "title": "ComfyUI MiniMax H3 Timeline Director",
+      "publisher": "Songssx on GitHub",
+      "url": "https://github.com/Songssx/ComfyUI-MiniMaxH3-TimelineDirector",
+      "retrievedAt": "2026-09-21"
+    },
+    {
+      "id": "source-3",
+      "title": "MiniMax H3 Model Card",
+      "publisher": "MiniMax",
+      "url": "https://huggingface.co/MiniMaxAI/MiniMax-H3",
+      "retrievedAt": "2026-09-21"
+    },
+    {
+      "id": "source-4",
+      "title": "MiniMax H3 Full-Reference Video Prompt Writing Guide",
+      "publisher": "MiniMax",
+      "url": "https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/docs/VIDEO_PROMPT_WRITING_GUIDE_ref_en.md",
+      "retrievedAt": "2026-09-21"
+    },
+    {
+      "id": "source-5",
+      "title": "MiniMax H3 Core Nodes",
+      "publisher": "Comfy-Org",
+      "url": "https://github.com/Comfy-Org/ComfyUI/blob/master/comfy_extras/nodes_minimax_h3.py",
+      "retrievedAt": "2026-09-21"
+    },
+    {
+      "id": "source-6",
+      "title": "How to Make an AI Music Video: A Production Workflow for Artists",
+      "publisher": "Leopati",
+      "url": "https://www.leopati.com/how-to-make-an-ai-music-video/",
+      "retrievedAt": "2026-09-21",
+      "publishedAt": "2026-09-05"
+    },
+    {
+      "id": "source-7",
+      "title": "SLICE: How We Made a 2-Minute AI Short Film with Seedance 2.5",
+      "publisher": "Magnific",
+      "url": "https://www.magnific.com/blog/slice-ai-short-film-seedance-2-5/",
+      "retrievedAt": "2026-09-21",
+      "publishedAt": "2026-09-06"
+    }
+  ],
+  "assets": [
+    {
+      "id": "editorial-hero",
+      "kind": "generated-illustration",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "c2c9a85d9ac915a9f81d518a0837da1ac09d14465ce79e4e5f13f15df5a716cf",
+      "url": "https://media.maxvideoai.com/editorial/published/c2c9a85d9ac915a9f81d518a0837da1ac09d14465ce79e4e5f13f15df5a716cf.webp"
+    },
+    {
+      "id": "reference-role-board",
+      "kind": "generated-illustration",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "b9b22430ab583c85ae05b6fdde4771ce048031ced9ebfcfff11ae7c2a722b813",
+      "url": "https://media.maxvideoai.com/editorial/published/b9b22430ab583c85ae05b6fdde4771ce048031ced9ebfcfff11ae7c2a722b813.webp"
+    },
+    {
+      "id": "boundary-compositions",
+      "kind": "generated-illustration",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "597aa28bedd9db1c0e337c9ecb1f327b083372478436300e5ac93175daa46747",
+      "url": "https://media.maxvideoai.com/editorial/published/597aa28bedd9db1c0e337c9ecb1f327b083372478436300e5ac93175daa46747.webp"
+    },
+    {
+      "id": "external-edit-timeline",
+      "kind": "generated-illustration",
+      "width": 1774,
+      "height": 887,
+      "sha256": "e0fe984f28105f158b309849d32c7a887cc552c6a3d2655d0123bc48887c208f",
+      "url": "https://media.maxvideoai.com/editorial/published/e0fe984f28105f158b309849d32c7a887cc552c6a3d2655d0123bc48887c208f.webp"
+    }
+  ]
+}

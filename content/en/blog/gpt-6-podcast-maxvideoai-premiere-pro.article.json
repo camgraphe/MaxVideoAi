@@ -1,0 +1,530 @@
+{
+  "schemaVersion": 1,
+  "canonicalSlug": "gpt-6-podcast-maxvideoai-premiere-pro",
+  "publication": {
+    "articleId": "013127f5-9a5e-4a3e-9650-4dc65ba0a4cd",
+    "version": 2,
+    "digest": "0589f32538e34ca762907ed0233ffa92ca03e0d4a0e2f41e426eab3b71935fd4",
+    "publishedAt": "2026-09-27T11:32:38.145Z"
+  },
+  "article": {
+    "locale": "en",
+    "audience": "en",
+    "slug": "gpt-6-podcast-maxvideoai-premiere-pro",
+    "title": "How We Made an AI Podcast with Codex and MaxVideoAI",
+    "description": "Six generated takes, one 86-second interview. Inside the prompts, character references and Premiere Pro edits behind our fictional AI podcast.",
+    "keywords": [
+      "GPT-6 video production",
+      "AI podcast",
+      "MaxVideoAI workflow",
+      "Wan 3 Prime",
+      "Premiere Pro automation",
+      "Codex video editing",
+      "AI dialogue film"
+    ],
+    "blocks": [
+      {
+        "id": "editorial-hero",
+        "type": "media",
+        "assetId": "podcast-cover",
+        "heading": "",
+        "presentation": "single",
+        "alt": "Two fictional podcast speakers face each other in a warmly lit studio, the host in charcoal and the guest in beige.",
+        "caption": "Our fictional interview, created with AI."
+      },
+      {
+        "id": "opening",
+        "type": "text",
+        "heading": "Two speakers. One very awkward reveal.",
+        "paragraphs": [
+          {
+            "text": "A confident guest tells an interviewer that he runs his video work through a conversation with AI. The interviewer wants proof. By the end, he discovers that he is part of the demonstration.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          },
+          {
+            "spans": [
+              {
+                "text": "That was the idea behind our "
+              },
+              {
+                "text": "86-second fictional podcast",
+                "bold": true
+              },
+              {
+                "text": ". GPT-6 Astra and Sol in Codex handled the production and Premiere Pro editing; Adrien directed the project and reviewed the versions. Here is the finished film, followed by the choices that made six separate generations work as one conversation."
+              }
+            ],
+            "sourceIds": [
+              "podcast-production"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "finished-interview",
+        "type": "video",
+        "heading": "Watch the 86-second film",
+        "videoId": "hwF_A1VlA_U",
+        "sourceId": "podcast-production",
+        "credit": "MaxVideoAI / Adrien",
+        "startSeconds": 0,
+        "caption": "Our fictional interview, including its closing card."
+      },
+      {
+        "id": "setup",
+        "type": "text",
+        "heading": "One project, three tools",
+        "paragraphs": [
+          {
+            "spans": [
+              {
+                "text": "The production ran from Codex. The "
+              },
+              {
+                "text": "MaxVideoAI connection for Codex",
+                "href": "https://maxvideoai.com/integrations/codex"
+              },
+              {
+                "text": " handled quotes, approved video generations and references. A separately configured set of local scripts let Codex operate Premiere Pro for the edit, subtitles, sound and exports."
+              }
+            ],
+            "sourceIds": [
+              "podcast-production",
+              "codex-plugin"
+            ]
+          },
+          {
+            "text": "Adrien supplied the idea, creative direction and feedback, approved the generation quotes, chose the music and signed off on the result. Astra and Sol executed the project, including changes to the edit. If you want to reproduce this setup, the Premiere automation needs its own configuration alongside the MaxVideoAI connection.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "casting",
+        "type": "text",
+        "heading": "The first clip became the casting reference",
+        "paragraphs": [
+          {
+            "text": "The first useful result was an 18-second studio take with both characters. It gave the project something to build on: a serious host in charcoal, an unusually self-assured guest in beige, and a shared set with warm lighting and microphones.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          },
+          {
+            "spans": [
+              {
+                "text": "Two earlier image attempts had failed because of network errors. The project moved forward by "
+              },
+              {
+                "text": "extracting reference frames from the video that already worked",
+                "bold": true
+              },
+              {
+                "text": ". A 7.5-second voice excerpt from the same take became a reference for the guest’s voice identity."
+              }
+            ],
+            "sourceIds": [
+              "podcast-production"
+            ]
+          },
+          {
+            "text": "Those references carried the faces, wardrobe and studio into later requests. The host’s notebook and pen, the guest’s watch and their opposing eyelines gave the prompts concrete continuity details to preserve. The next request could focus on a new line or a closer camera angle without describing the cast from scratch.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "cast-and-studio-reference",
+        "type": "media",
+        "assetId": "podcast-casting",
+        "heading": "",
+        "presentation": "single",
+        "alt": "Reference frame extracted from S02 showing the fictional host on the left and beige-clad guest on the right in their shared studio.",
+        "caption": "This frame from the first generated take became a cast and studio reference."
+      },
+      {
+        "id": "take-direction",
+        "type": "text",
+        "heading": "Write the prompt with the edit in mind",
+        "paragraphs": [
+          {
+            "spans": [
+              {
+                "text": "The six source takes were generated with "
+              },
+              {
+                "text": "Wan 3 Prime in MaxVideoAI",
+                "href": "https://maxvideoai.com/models/wan-3-prime"
+              },
+              {
+                "text": ". The pilot established the scene; later requests reused image and voice references. For the guest’s explanation, the prompt asked for a steady closer angle, restrained gestures and clean dialogue, leaving music and graphics for the edit."
+              }
+            ],
+            "sourceIds": [
+              "podcast-production",
+              "wan-prime"
+            ]
+          },
+          {
+            "text": "The host’s 28-second take, H01, bundled several questions into separate passages. It asked for silent listening at the beginning and end, plus short pauses between lines. These extra beats give an editor somewhere to enter, leave or cut away to the other speaker.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          },
+          {
+            "text": "The screenshot below also shows a useful imperfection: H01 asked for the host alone, but the returned shot includes both characters. The footage you receive still has to be watched and used on its own terms.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "h01-generation-record",
+        "type": "media",
+        "assetId": "podcast-h01-interface",
+        "heading": "",
+        "presentation": "single",
+        "alt": "Original H01 generation in MaxVideoAI showing both characters beside the submitted prompt, Wan 3 Prime, 28 seconds and USD 10.20 in credits.",
+        "caption": "H01 in MaxVideoAI: the prompt asks for the host alone; the returned shot includes both speakers."
+      },
+      {
+        "id": "take-prompt",
+        "type": "prompt",
+        "heading": "The part of the prompt that prepared H01 for editing",
+        "template": "PERFORMANCE: Serious and intelligent American interviewer with dry humor and genuine curiosity, firm mid-low slightly textured American English voice, crisp but conversational, not an announcer. He asks the following seven questions/replies in order. These are separate usable passages that will later be intercut with the other speaker. Only this man speaks; there is NO off-camera reply. Do not speak section labels or invent any words. Leave about 0.65 seconds of silent listening between passages. Fit all dialogue naturally within the take, roughly 155 words per minute during speech, with two seconds of quiet listening at the start and two seconds at the end.",
+        "note": "Exact performance excerpt from the submitted H01 prompt. The full request also included dialogue, camera and continuity directions. Notice the silent space before, between and after the lines."
+      },
+      {
+        "id": "editing",
+        "type": "text",
+        "heading": "The opening improved when we cut less",
+        "paragraphs": [
+          {
+            "text": "Dialogue was only part of the material the edit needed. H02 requested eight seconds of silent host reactions; W01 supplied another six seconds of wide coverage. These takes gave Premiere somewhere to go while the other character continued speaking.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          },
+          {
+            "text": "Codex operated Premiere through the project’s local automation, arranging the conversation around pauses, eyelines and reactions. The voices stayed at their original speed. The timing came from the cuts and the room left around the lines.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          },
+          {
+            "spans": [
+              {
+                "text": "The first opening felt too busy. After Adrien’s feedback, "
+              },
+              {
+                "text": "nine shots became five across the first 21.17 seconds",
+                "bold": true
+              },
+              {
+                "text": ". A continuous 13.73-second two-shot let the guest’s opening answer breathe, including the pauses around “Easily” and “On my own.” A longer host reaction then prepared the next question."
+              }
+            ],
+            "sourceIds": [
+              "podcast-production"
+            ]
+          },
+          {
+            "text": "That is the edit decision worth borrowing: give a good performance enough time to land. Having another camera angle available does not mean the scene needs a cut right now.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "reveal",
+        "type": "text",
+        "heading": "Let the scene reveal how it was made",
+        "paragraphs": [
+          {
+            "text": "For the reveal, the guest stays on screen while a side panel brings in an excerpt of the host prompt and character references. The panel was designed and added in Premiere. Its arrival follows the guest’s gesture, so the explanation becomes part of the scene.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          },
+          {
+            "text": "The finishing pass added subtitles, music and a six-second closing card, bringing the 80-second conversation to 86 seconds. After rejecting an earlier music choice, Adrien selected Aphelion for the final version.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          },
+          {
+            "spans": [
+              {
+                "text": "Aphelion by Scott Buckley",
+                "href": "https://www.scottbuckley.com.au/library/aphelion/"
+              },
+              {
+                "text": " is used under "
+              },
+              {
+                "text": "CC BY 4.0",
+                "href": "https://creativecommons.org/licenses/by/4.0/"
+              },
+              {
+                "text": ". The track was excerpted, equalized, mixed under the dialogue and faded; it rises for the closing card."
+              }
+            ],
+            "sourceIds": [
+              "podcast-production",
+              "aphelion",
+              "cc-by"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "recorded-prompt-reveal",
+        "type": "media",
+        "assetId": "podcast-prompt",
+        "heading": "",
+        "presentation": "single",
+        "alt": "A frame from the reveal keeps the guest on screen beside an editorial panel quoting the recorded host prompt.",
+        "caption": "The finished reveal: the guest stays visible while a panel introduces the prompt."
+      },
+      {
+        "id": "vertical",
+        "type": "text",
+        "heading": "Give the Short its own edit",
+        "paragraphs": [
+          {
+            "text": "The retained Short is 35.17 seconds in 1080 × 1920, cut from the existing footage. It needed a new composition: keep the speaker, microphone and captions readable, then recenter the closing logo for the narrower frame. A second proposed Short was discarded.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          },
+          {
+            "text": "For your own project, choose the passage that works as a small story on a phone. Keeping every moment of the landscape film is less useful than giving the vertical cut a clear opening and payoff.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "selected-vertical-short",
+        "type": "media",
+        "assetId": "podcast-vertical",
+        "heading": "",
+        "presentation": "single",
+        "alt": "Portrait frame from the selected 35.17-second fictional podcast Short, retaining its original English captions.",
+        "caption": "A frame from the 35-second vertical cut, with its original English captions."
+      },
+      {
+        "id": "cost-context",
+        "type": "text",
+        "heading": "What the six generations consumed",
+        "paragraphs": [
+          {
+            "spans": [
+              {
+                "text": "The six 1080p takes generated on September 26–27, 2026 total "
+              },
+              {
+                "text": "112 seconds of source footage and 40.80 USD in MaxVideoAI credits",
+                "bold": true
+              },
+              {
+                "text": ". The table shows the actual production record."
+              }
+            ],
+            "sourceIds": [
+              "podcast-production"
+            ]
+          },
+          {
+            "text": "This was a proof of concept using free credits. The total covers those six video generations; Codex usage, Premiere Pro and direction or review time are outside it. For a new project, use the quote shown before each generation.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "costs",
+        "type": "comparison",
+        "heading": "Where the 40.80 USD in credits went",
+        "columns": [
+          "Take",
+          "Purpose",
+          "Source duration",
+          "Credits (USD)"
+        ],
+        "rows": [
+          [
+            "S02",
+            "Cast, studio and opening",
+            "18 s",
+            "6.56"
+          ],
+          [
+            "H01",
+            "Host questions",
+            "28 s",
+            "10.20"
+          ],
+          [
+            "G02",
+            "Guest workflow dialogue",
+            "30 s",
+            "10.92"
+          ],
+          [
+            "G03",
+            "Reveal",
+            "22 s",
+            "8.01"
+          ],
+          [
+            "W01",
+            "Silent wide coverage",
+            "6 s",
+            "2.19"
+          ],
+          [
+            "H02",
+            "Silent host reactions",
+            "8 s",
+            "2.92"
+          ],
+          [
+            "Total",
+            "Six completed takes",
+            "112 s",
+            "40.80"
+          ]
+        ]
+      },
+      {
+        "id": "reuse",
+        "type": "text",
+        "heading": "Start with one scene you can finish",
+        "paragraphs": [
+          {
+            "text": "Keep the first attempt small: two characters, one setting and a short exchange. Establish them in one useful take, extract references, then generate the dialogue and listening coverage the edit needs. Watch the assembly early; its weak points tell you what to change.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          },
+          {
+            "spans": [
+              {
+                "text": "If your brief already lives in Codex, the "
+              },
+              {
+                "text": "MaxVideoAI assistant connection",
+                "href": "https://maxvideoai.com/mcp"
+              },
+              {
+                "text": " can bring model selection, quotes and generation into that project. Plan the editing tools alongside it. In this case, the useful result was a finished conversation shaped through several concrete revisions."
+              }
+            ],
+            "sourceIds": [
+              "podcast-production",
+              "max-mcp",
+              "codex-plugin"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "wan-prime",
+      "title": "Wan 3 Prime: inputs and reference modes",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/models/wan-3-prime",
+      "retrievedAt": "2026-09-27"
+    },
+    {
+      "id": "codex-plugin",
+      "title": "Connect the MaxVideoAI plugin in Codex",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/integrations/codex",
+      "retrievedAt": "2026-09-27"
+    },
+    {
+      "id": "max-mcp",
+      "title": "MaxVideoAI assistant workflow",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/mcp",
+      "retrievedAt": "2026-09-27"
+    },
+    {
+      "id": "podcast-production",
+      "title": "Is This the End of Video Editing? — author-supplied production records",
+      "publisher": "MaxVideoAI / Adrien",
+      "url": "https://www.youtube.com/watch?v=hwF_A1VlA_U",
+      "retrievedAt": "2026-09-27"
+    },
+    {
+      "id": "aphelion",
+      "title": "Aphelion",
+      "publisher": "Scott Buckley",
+      "url": "https://www.scottbuckley.com.au/library/aphelion/",
+      "retrievedAt": "2026-09-27"
+    },
+    {
+      "id": "cc-by",
+      "title": "Creative Commons Attribution 4.0 International",
+      "publisher": "Creative Commons",
+      "url": "https://creativecommons.org/licenses/by/4.0/",
+      "retrievedAt": "2026-09-27"
+    }
+  ],
+  "assets": [
+    {
+      "id": "podcast-cover",
+      "kind": "generated-illustration",
+      "width": 1600,
+      "height": 900,
+      "sha256": "e26fe3c3276ac7c2e410963db95382bf70ff94591ee418d1bb5bb3139cd0328e",
+      "url": "https://media.maxvideoai.com/editorial/published/e26fe3c3276ac7c2e410963db95382bf70ff94591ee418d1bb5bb3139cd0328e.webp"
+    },
+    {
+      "id": "podcast-casting",
+      "kind": "generated-illustration",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "e222c54f9da4c56d3c7d8f8a0fa8681ed0a29208bd495b73a4146b8065ec274e",
+      "url": "https://media.maxvideoai.com/editorial/published/e222c54f9da4c56d3c7d8f8a0fa8681ed0a29208bd495b73a4146b8065ec274e.webp"
+    },
+    {
+      "id": "podcast-prompt",
+      "kind": "generated-illustration",
+      "width": 1600,
+      "height": 900,
+      "sha256": "c37ca85efdb4613d817cd7bee845f133e7c7968c9c396291679abdc67b8b87be",
+      "url": "https://media.maxvideoai.com/editorial/published/c37ca85efdb4613d817cd7bee845f133e7c7968c9c396291679abdc67b8b87be.webp"
+    },
+    {
+      "id": "podcast-vertical",
+      "kind": "generated-illustration",
+      "width": 720,
+      "height": 1280,
+      "sha256": "8861d310afba62072fc362fa1386b233543a5971182b30869156c961b4c24b52",
+      "url": "https://media.maxvideoai.com/editorial/published/8861d310afba62072fc362fa1386b233543a5971182b30869156c961b4c24b52.webp"
+    },
+    {
+      "id": "podcast-h01-interface",
+      "kind": "verified-capture",
+      "width": 1122,
+      "height": 741,
+      "sha256": "54d115fb39f53d82bb6652fe2e8b2cbcb7aa44644d327185bf51abbff0399901",
+      "url": "https://media.maxvideoai.com/editorial/published/54d115fb39f53d82bb6652fe2e8b2cbcb7aa44644d327185bf51abbff0399901.webp"
+    }
+  ]
+}

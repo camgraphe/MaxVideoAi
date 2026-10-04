@@ -19,8 +19,7 @@ export function registerCreateTopupLinkTool(
     'create_topup_link',
     {
       title: 'Create a MaxVideoAI top-up handoff',
-      description:
-        [
+      description: [
         'Use this when an exact prepared quote needs more credits.',
         'It creates a short-lived MaxVideoAI web handoff and invalidates the old short-lived quote.',
         'This tool does not take payment.',

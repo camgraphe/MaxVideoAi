@@ -1,9 +1,40 @@
-Bonjour {{ .Email }},
+{{ if eq .Data.locale "fr" }}MaxVideoAI
 
-Ton lien sécurisé MaxVideoAI est prêt :
-{{ .ActionLink }}
+Votre lien de connexion
 
-Ce lien expire dans 24 heures et ne peut être utilisé qu’une seule fois. Si tu n’es pas à l’origine de cette demande, ignore simplement ce message.
+Utilisez le bouton ci-dessous pour vous connecter à votre compte MaxVideoAI.
 
-À très vite,
-L’équipe MaxVideo AI
+{{ .ConfirmationURL }}
+
+Ce lien personnel est à usage unique. Ne le partagez jamais.
+
+Si vous n’êtes pas à l’origine de cette demande, vous pouvez ignorer cet e-mail.
+
+Besoin d’aide ? Contactez support@maxvideoai.com
+{{ else if eq .Data.locale "es" }}MaxVideoAI
+
+Tu enlace de acceso
+
+Usa el botón para iniciar sesión en tu cuenta de MaxVideoAI.
+
+{{ .ConfirmationURL }}
+
+Este enlace personal solo se puede usar una vez. No lo compartas.
+
+Si no has solicitado este correo, puedes ignorarlo.
+
+¿Necesitas ayuda? Contacta con support@maxvideoai.com
+{{ else }}MaxVideoAI
+
+Your sign-in link
+
+Use the button below to sign in to your MaxVideoAI account.
+
+{{ .ConfirmationURL }}
+
+This personal link can only be used once. Never share it.
+
+If you did not request this email, you can safely ignore it.
+
+Need help? Contact support@maxvideoai.com
+{{ end }}

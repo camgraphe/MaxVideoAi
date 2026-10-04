@@ -51,6 +51,18 @@ test('localized guides expose current metadata, OAuth, and the copyable producti
   }
 });
 
+test('localized MCP guides link the published n8n template without expanding host support', () => {
+  for (const path of Object.values(DOCS)) {
+    const markdown = source(path);
+    assert.match(markdown, /https:\/\/n8n\.io\/workflows\/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review\//);
+    assert.match(markdown, /2\.38\.7/);
+    assert.match(markdown, /manual|manuelle/i);
+    assert.match(markdown, /Cloud/);
+    assert.match(markdown, /AI Agent/);
+    assert.doesNotMatch(markdown, /No public template listing|Aucun workflow publié|Sin plantilla publicada/i);
+  }
+});
+
 test('all fourteen model-visible tools and their safety boundaries are documented in every locale', () => {
   for (const path of Object.values(DOCS)) {
     const markdown = source(path);

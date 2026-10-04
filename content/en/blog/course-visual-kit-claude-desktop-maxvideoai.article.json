@@ -1,0 +1,377 @@
+{
+  "schemaVersion": 1,
+  "canonicalSlug": "course-visual-kit-claude-desktop-maxvideoai",
+  "publication": {
+    "articleId": "dcbc4abc-22f9-479a-9044-bcb74f349543",
+    "version": 1,
+    "digest": "a66051aa6601545dad6a2ca5adc87f2b0ef52f9b13225ea9b9a293b89cb7430c",
+    "publishedAt": "2026-09-23T11:42:06.359Z"
+  },
+  "article": {
+    "locale": "en",
+    "audience": "en",
+    "slug": "course-visual-kit-claude-desktop-maxvideoai",
+    "title": "Build a Course Visual Kit with Claude Desktop and MaxVideoAI",
+    "description": "Plan one visual direction, create a text-free master image and three module variations, add editable titles, and animate an approved detail into a short course opener.",
+    "keywords": [
+      "course visual kit",
+      "Claude Desktop",
+      "MaxVideoAI",
+      "GPT Image 2.5 Flare",
+      "Kling 3 Pro",
+      "course cover design",
+      "module cards",
+      "editable titles",
+      "image-to-video"
+    ],
+    "blocks": [
+      {
+        "id": "editorial-hero",
+        "type": "media",
+        "assetId": "editorial-hero",
+        "heading": "",
+        "presentation": "single",
+        "alt": "A terracotta vessel surrounded by cobalt glaze, a curved clay ribbon, and textured kiln brick.",
+        "caption": "Illustration. Clay, cobalt, and a recurring curve establish the course's visual direction."
+      },
+      {
+        "id": "visual-bible",
+        "type": "text",
+        "heading": "Choose the few visual rules every asset will share",
+        "paragraphs": [
+          {
+            "text": "Your course outline is ready, but the cover, module cards, and opening video could still look as if they came from four different projects. Imagine a ceramics course called Clay, Color, Fire, with modules on shaping, glazing, and firing. The goal is to give those distinct scenes one recognizable direction—not to assume that consistency will happen automatically.",
+            "sourceIds": []
+          },
+          {
+            "spans": [
+              {
+                "text": "Start with a compact visual bible built around repeatable choices: "
+              },
+              {
+                "text": "warm clay and chalk surfaces, restrained cobalt accents, soft light from the upper left, a recurring curved clay-line motif, and generous blank space above the subject.",
+                "bold": true
+              },
+              {
+                "text": " These anchors are specific enough to compare across images while leaving each module room for its own subject and framing."
+              }
+            ],
+            "sourceIds": []
+          },
+          {
+            "text": "Keep the wording separate from the artwork. Clay, Color, Fire and the module names Shaping, Glazing, and Firing will remain editable type added later in a graphics tool. The generated images therefore need deliberate title-safe areas, but no baked-in lettering, labels, or placeholders.",
+            "sourceIds": []
+          },
+          {
+            "spans": [
+              {
+                "text": "The workflow moves through five connected decisions: define the visual bible, approve one text-free master cover with "
+              },
+              {
+                "text": "GPT Image 2.5 Flare in MaxVideoAI",
+                "href": "https://maxvideoai.com/models/gpt-image-2-5-flare"
+              },
+              {
+                "text": ", adapt it into three module scenes, compose the titles as editable layers, and animate a text-free decorative detail for the opener. Approving the master first gives every later request a concrete reference without treating it as a guarantee of matching pixels."
+              }
+            ],
+            "sourceIds": [
+              "source-1"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "master-composition",
+        "type": "media",
+        "assetId": "master-composition",
+        "heading": "Leave room for the course title",
+        "presentation": "single",
+        "alt": "A terracotta vessel and cobalt accent sit below a large empty area at the top of a proposed cover.",
+        "caption": "Illustration. The vessel sits below a clear area reserved for an editable title."
+      },
+      {
+        "id": "visual-bible-prompt",
+        "type": "prompt",
+        "heading": "Ask Claude Desktop to organize the visual bible",
+        "template": "Help me prepare a reusable visual bible for an imagined ceramics course called “Clay, Color, Fire.” The launch kit will contain one course cover, three module cards—Shaping, Glazing, and Firing—and a short opening video.\n\nOrganize the brief under these headings:\n1. Palette\n2. Materials and surface textures\n3. Lighting\n4. Framing and subject scale\n5. Recurring visual motif\n6. Reference roles\n7. Preserve rules\n8. Change rules\n9. Editable-title zones\n10. Animation-safe decorative region\n\nUse these proposed anchors as a starting point, not as fixed facts:\n- warm clay and chalk surfaces\n- restrained cobalt accents\n- soft light from the upper left\n- a recurring curved clay-line motif\n- generous empty space above the main subject\n\nDefine the role of each future asset clearly. The approved master cover should act as a visual reference for palette, lighting character, ceramic texture, motif, and title space. The three module scenes may change their subject and framing to represent shaping, glazing, and firing. A separate text-free crop of the motif or glaze may later become the motion source.\n\nSeparate what should be preserved from what may change. Keep all course and module titles outside the image-generation instructions because they will be added later as editable text layers. Identify a decorative area that could move without containing titles, logos, instructional details, or essential course information.\n\nDo not assume that reference images, masks, layouts, fonts, or brand assets already exist. List any unresolved creative choices and ask me to choose among concise options before finalizing the visual bible. End with a short reusable summary that can be pasted into later image and motion requests.",
+        "note": "Claude Desktop is organizing the brief and later requests here. Image generation, title composition, and video finishing remain separate production steps performed by their respective connected or external tools."
+      },
+      {
+        "id": "master-cover",
+        "type": "steps",
+        "heading": "Connect the generator, then approve one master image",
+        "steps": [
+          {
+            "title": "Connect the trusted remote service",
+            "body": "Follow the official MaxVideoAI Claude integration instructions at https://maxvideoai.com/integrations/claude to add its remote MCP connector in Claude Desktop. Complete OAuth in the browser, review the requested permissions carefully, and connect only if the server and scopes are appropriate. Anthropic’s setup guidance is available at https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp."
+          },
+          {
+            "title": "Enable it for this course conversation",
+            "body": "After configuring the connector at account level, enable it for the conversation containing the approved visual bible. Keep the roles explicit: Claude Desktop prepares and validates the request as the MCP host; MaxVideoAI performs the generation."
+          },
+          {
+            "title": "Discover the live route before choosing settings",
+            "body": "Ask Claude Desktop to check the currently exposed tools, available Flare modes, account balance, and generation controls. Confirm that GPT Image 2.5 Flare supports the intended text-to-image request using its current details at https://maxvideoai.com/models/gpt-image-2-5-flare rather than relying on remembered settings."
+          },
+          {
+            "title": "Choose settings for the intended cover",
+            "body": "Select an image size that suits the vertical cover and preserves its large upper title zone. Low or Medium quality can reduce the cost of early composition exploration; use the quality appropriate for the final selected render. Choose an output format that fits the external graphics workflow and request a deliberate number of alternatives—up to four are documented per request—rather than generating variants without a comparison plan."
+          },
+          {
+            "title": "Review the exact request before paying",
+            "body": "Check the creative prompt, size, quality, output format, variant count, price, and account effect shown in the exact quote. Approve the paid generation only when those details match the visual bible and budget."
+          },
+          {
+            "title": "Select a reference, not merely a pretty image",
+            "body": "Compare the returned candidates at the intended crop. Choose the one with the clearest subject scale, earth-and-cobalt palette, upper-left lighting, recurring clay-line motif, and genuinely usable empty title space. Preserve the selected text-free still separately; it becomes the reference for the three module requests, not a promise that later outputs will match it exactly."
+          }
+        ]
+      },
+      {
+        "id": "master-image-prompt",
+        "type": "prompt",
+        "heading": "Request the artwork without generating the title",
+        "template": "Create a vertical cover image for the imagined ceramics course “Clay, Color, Fire.”\n\nShow one rounded terracotta ceramic vessel in the lower two-thirds of the composition, resting on a warm chalk surface. Add a restrained cobalt-glaze accent and one graceful curved clay-line motif near the lower edge.\n\nUse tactile ceramic textures and soft light from the upper left. Keep the earth-and-cobalt palette controlled and the arrangement quiet and sculptural.\n\nLeave the upper third pale, uncluttered, and genuinely empty so an editable course title can be added later in a graphics tool. Maintain clear separation between the vessel and this title-safe area.\n\nInclude no lettering, title placeholders, numbers, logos, watermarks, interface elements, or instructional overlays.",
+        "note": "Use this creative prompt with the size, quality, output format, and variant count chosen for the cover. Keep those operational settings outside the prompt, review the exact quote, and approve the request only when its settings and cost are correct."
+      },
+      {
+        "id": "module-variations",
+        "type": "comparison",
+        "heading": "Choose between a new scene and a bounded correction",
+        "columns": [
+          "Decision",
+          "Use it when",
+          "Ceramics-course example",
+          "What to preserve",
+          "Practical boundary"
+        ],
+        "rows": [
+          [
+            "Reference-led scene change",
+            "The module needs a different teaching subject or framing while retaining the approved direction.",
+            "Change the master vessel scene into shaping, glazing, or firing. Attach the approved master as a style and material reference, not as a composition to duplicate.",
+            "Earth-and-cobalt palette, soft upper-left light, tactile ceramic surfaces, curved clay-line motif, and a generous empty title area.",
+            "Attach at least one reference image, check the edit settings, and approve the exact quote. Compare every candidate with the master before selecting it; preservation instructions constrain the request but do not guarantee unchanged pixels."
+          ],
+          [
+            "Local masked correction",
+            "A candidate is already suitable except for one isolated background element.",
+            "Remove an unwanted background prop without redesigning the vessel, motif, lighting, or title-safe area.",
+            "Everything outside the prepared correction region, especially the subject, its shadow, palette, lighting, recurring motif, and blank title space.",
+            "Prepare the bounded region externally. Before using it, verify the currently accepted mask requirements and alignment. The documented route expects a public mask URL, so do not expose private material. A graphics-tool layer mask does not by itself establish a compatible export."
+          ]
+        ]
+      },
+      {
+        "id": "module-scene-family",
+        "type": "media",
+        "assetId": "module-scene-family",
+        "heading": "Change the subject, keep the visual anchors",
+        "presentation": "single",
+        "alt": "Three stacked ceramics scenes show shaping tools, glazing materials, and a vessel inside a kiln, with matching colors and lighting.",
+        "caption": "Illustration. Shaping, glazing, and firing change the subject while repeating the palette, light, texture, and curve."
+      },
+      {
+        "id": "module-edit-prompt",
+        "type": "prompt",
+        "heading": "Describe one new module while retaining the visual direction",
+        "template": "Use the attached approved master still as a style and material reference for a new course-module image. Do not duplicate its complete composition.\n\nMODULE SCENE\n[Describe the selected shaping, glazing, or firing scene.]\n\nPRESERVE\nPreserve the controlled earth-and-cobalt palette, warm chalk surfaces, tactile ceramic textures, soft light from the upper left, and the recurring curved clay-line motif. Retain a generous, uncluttered title-safe area at the top. Keep the image free of text, numbers, logos, watermarks, and instructional overlays.\n\nCHANGE\nReplace the central subject and adjust the framing to communicate the module scene clearly. Keep the composition restrained, with one primary ceramic subject and only the objects needed to identify the module.",
+        "note": "For Shaping, use a partly shaped clay vessel on a forming surface with one simple shaping tool. For Glazing, use a ceramic vessel with a cobalt-glaze area and a glazing brush beside it. For Firing, place a vessel on a shelf inside an unlit kiln chamber with visible refractory-brick texture, without flames, controls, temperatures, or procedural details. Attach the approved text-free master, confirm the live edit controls and route settings, and review the exact quote before generating each scene."
+      },
+      {
+        "id": "masked-repair-prompt",
+        "type": "prompt",
+        "heading": "Correct one region without redesigning the module card",
+        "template": "Use the attached module candidate and the prepared mask to make one bounded correction.\n\nCHANGE INSIDE THE MASK\nRemove the unwanted background object and reconstruct the surrounding background so it remains visually unobtrusive.\n\nPRESERVE\nOutside the prepared region, preserve the ceramic subject, its silhouette and shadow, the controlled earth-and-cobalt palette, the soft upper-left lighting, the tactile surface details, the recurring curved clay-line motif, and the empty title-safe area. Do not add text, numbers, logos, watermarks, instructional overlays, or new objects.",
+        "note": "Use this optional request only when a selected candidate has a localized defect and a mask has been prepared externally. Before submitting it, verify the route’s current mask requirements and confirm that the mask is aligned with the source image. The documented Flare route expects a public mask URL, so do not expose private course material; if you cannot provide a suitable input safely, skip the masked edit. The mask and preservation instructions constrain the request but do not guarantee that every unmasked pixel will remain unchanged."
+      },
+      {
+        "id": "bounded-mask-detail",
+        "type": "media",
+        "assetId": "bounded-mask-detail",
+        "heading": "Keep the correction away from the vessel",
+        "presentation": "single",
+        "alt": "A translucent overlay surrounds a small background prop while leaving the ceramic vessel and blank title area untouched.",
+        "caption": "Illustration. A hypothetical correction region can be prepared externally in Photoshop, away from the vessel and title space."
+      },
+      {
+        "id": "editable-titles",
+        "type": "steps",
+        "heading": "Build the cards with titles you can still change",
+        "steps": [
+          {
+            "title": "Move the selected stills into a graphics tool",
+            "body": "Create one working layout for the cover and one for each module card in Photoshop or another external graphics tool. Place the approved text-free stills without altering the originals, and use their empty upper areas for the title system."
+          },
+          {
+            "title": "Add every title as editable type",
+            "body": "Set Clay, Color, Fire as the course title on the cover. Add Shaping, Glazing, and Firing to their respective module cards, each on a separate editable text layer. Keeping words outside the generated pixels makes later corrections, localization, resizing, and reformatting possible without regenerating the artwork."
+          },
+          {
+            "title": "Repeat one clear hierarchy",
+            "body": "Use the same title position, alignment, type family, spacing logic, and relationship to the recurring motif across all four layouts. Adjust size only when the format requires it. This repetition helps the distinct scenes read as one course while leaving the artwork free to identify each module."
+          },
+          {
+            "title": "Keep working files and clean source stills",
+            "body": "Save layered working layouts with their text layers intact, then export the delivery copies externally in the formats needed for publishing. Retain the untouched text-free master and module stills separately; the master can then supply a motion-safe detail without carrying a title into the animation."
+          }
+        ]
+      },
+      {
+        "id": "motif-opener",
+        "type": "steps",
+        "heading": "Choose a decorative detail to animate, then finish the opener externally",
+        "steps": [
+          {
+            "title": "Select a motion-safe part of the approved artwork",
+            "body": "Choose a close detail where the curved clay-line motif meets a restrained cobalt-glaze area. Avoid titles, instructional information, vessel edges that must remain exact, and visually busy props. A decorative region gives the motion model fewer important elements to preserve."
+          },
+          {
+            "title": "Prepare one text-free source image",
+            "body": "Crop the chosen detail externally while retaining enough surrounding ceramic texture for a gentle camera move. Use this still as the single source image for Kling 3 Pro. The documented image-to-video route does not accept a reference video; optional end-frame guidance is useful only if you already have a suitable still for the intended landing."
+          },
+          {
+            "title": "Set up one restrained shot",
+            "body": "Propose a five-second, 1080p generation with audio off so the title and sound can be finished deliberately later. Attach the prepared crop, confirm the currently exposed duration, resolution, audio, and motion controls, and review the exact quote and account effect before approving the generation."
+          },
+          {
+            "title": "Review the movement before adding the title",
+            "body": "After generating with the dedicated motion prompt, check whether the glaze shimmer remains subtle, the clay-line motif stays recognizable, the camera push feels calm, and the final moment can hold cleanly. Preservation language guides the request but cannot promise distortion-free motion."
+          },
+          {
+            "title": "Assemble and export in a video editor",
+            "body": "Bring the accepted clip into an external video editor, add the editable course title, choose and mix the sound, and export the finished opener there. Keep the generated text-free clip and its source still alongside the layered card layouts so later title or timing changes do not require rebuilding the whole visual kit."
+          }
+        ]
+      },
+      {
+        "id": "motif-motion-study",
+        "type": "media",
+        "assetId": "motif-motion-study",
+        "heading": "Animate the glaze, not the title",
+        "presentation": "single",
+        "alt": "Three illustrated views move gently closer to a cobalt-glaze detail and curved clay motif as the highlight shifts.",
+        "caption": "Illustration. Proposed motion for Kling 3 Pro: a gentle push, subtle glaze shimmer, and a calm landing."
+      },
+      {
+        "id": "motif-animation-prompt",
+        "type": "prompt",
+        "heading": "Describe one gentle move and a quiet landing",
+        "template": "Create a single continuous opening shot from the supplied ceramic detail. Begin with the existing cobalt-glaze area and curved terracotta clay-line motif clearly recognizable. Introduce a subtle shimmer across the glaze highlight while the camera makes one slow, steady push forward. Keep the ceramic texture, earth-and-cobalt palette, soft lighting, and overall motif arrangement as close to the source image as possible. Avoid dramatic transformations, new objects, abrupt movement, or changes to the material character. Let the motion settle gradually into a calm final composition that can hold for the course title to be added later. No text, letters, logos, captions, instructional overlays, interface elements, or watermarks.",
+        "note": "Attach the approved text-free crop and set duration, resolution, and audio separately. Preservation language guides the animation but does not guarantee that every contour or texture will remain unchanged."
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "source-1",
+      "title": "GPT Image 2.5 Flare",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/models/gpt-image-2-5-flare",
+      "retrievedAt": "2026-09-23"
+    },
+    {
+      "id": "source-2",
+      "title": "Kling 3 Pro",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/models/kling-3-pro",
+      "retrievedAt": "2026-09-23"
+    },
+    {
+      "id": "source-3",
+      "title": "Create AI Videos with Claude",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/integrations/claude",
+      "retrievedAt": "2026-09-23"
+    },
+    {
+      "id": "source-4",
+      "title": "Claude for Creative Work",
+      "publisher": "Anthropic",
+      "url": "https://www.anthropic.com/news/claude-for-creative-work",
+      "retrievedAt": "2026-09-23",
+      "publishedAt": "2026-04-28"
+    },
+    {
+      "id": "source-5",
+      "title": "Introducing ChatGPT Images 2.5",
+      "publisher": "OpenAI",
+      "url": "https://openai.com/index/introducing-chatgpt-images-2-5/",
+      "retrievedAt": "2026-09-23",
+      "publishedAt": "2026-09-08"
+    },
+    {
+      "id": "source-6",
+      "title": "Get Started with Custom Connectors Using Remote MCP",
+      "publisher": "Anthropic",
+      "url": "https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp",
+      "retrievedAt": "2026-09-23",
+      "publishedAt": "2026-08-11"
+    },
+    {
+      "id": "source-7",
+      "title": "Kling VIDEO 3.0 Model Guide",
+      "publisher": "Kling AI",
+      "url": "https://kling.ai/quickstart/klingai-video-3-model-user-guide",
+      "retrievedAt": "2026-09-23",
+      "publishedAt": "2026-02-06"
+    },
+    {
+      "id": "source-8",
+      "title": "Add and Edit Layer Masks in Photoshop",
+      "publisher": "Adobe",
+      "url": "https://helpx.adobe.com/photoshop/desktop/create-masks/layer-masks/add-layer-masks.html",
+      "retrievedAt": "2026-09-23"
+    },
+    {
+      "id": "source-9",
+      "title": "Add Text in Photoshop",
+      "publisher": "Adobe",
+      "url": "https://helpx.adobe.com/photoshop/desktop/text-typography/get-started-with-text/add-text.html",
+      "retrievedAt": "2026-09-23"
+    }
+  ],
+  "assets": [
+    {
+      "id": "editorial-hero",
+      "kind": "generated-illustration",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "b9ef69f5b373515dbc08c45947fea500cc0883ffef422d90d8c6246ecbc1ce6c",
+      "url": "https://media.maxvideoai.com/editorial/published/b9ef69f5b373515dbc08c45947fea500cc0883ffef422d90d8c6246ecbc1ce6c.webp"
+    },
+    {
+      "id": "master-composition",
+      "kind": "generated-illustration",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "1be6b4b9e421dc646ad18581a8945d85f65226cb2ad5d141c844ed68c3f17ead",
+      "url": "https://media.maxvideoai.com/editorial/published/1be6b4b9e421dc646ad18581a8945d85f65226cb2ad5d141c844ed68c3f17ead.webp"
+    },
+    {
+      "id": "module-scene-family",
+      "kind": "generated-illustration",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "1707d2ae4f6a4c40cb53faaa006afeccfe7098e7016c0a24c55a08bfa1606e6c",
+      "url": "https://media.maxvideoai.com/editorial/published/1707d2ae4f6a4c40cb53faaa006afeccfe7098e7016c0a24c55a08bfa1606e6c.webp"
+    },
+    {
+      "id": "bounded-mask-detail",
+      "kind": "generated-illustration",
+      "width": 1145,
+      "height": 1374,
+      "sha256": "8850fa7d1ba64d743fea039563dfeacdc586dfd24b2fa7d4f42022e2166bcc8e",
+      "url": "https://media.maxvideoai.com/editorial/published/8850fa7d1ba64d743fea039563dfeacdc586dfd24b2fa7d4f42022e2166bcc8e.webp"
+    },
+    {
+      "id": "motif-motion-study",
+      "kind": "generated-illustration",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "0a82ea5f597b511e20f83e3f25a00ede136118ff1791562da2c5c3a8ec288e7a",
+      "url": "https://media.maxvideoai.com/editorial/published/0a82ea5f597b511e20f83e3f25a00ede136118ff1791562da2c5c3a8ec288e7a.webp"
+    }
+  ]
+}

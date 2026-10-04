@@ -1,7 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
-import { useEffect, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import { ArrowUpRight, ChevronDown } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { MarketingNavEntryContent } from '@/components/marketing/MarketingNavEntryContent';
@@ -17,7 +17,9 @@ type Props = {
   onOpenDesktopDropdown: (key: string) => void;
 };
 
-export function MarketingDesktopNav({ desktopDropdownOpen, links, pathname, t, onCloseDesktopDropdown, onOpenDesktopDropdown }: Props) {
+// Mobile/account state must not rebuild the unchanged, CSS-hidden desktop menus.
+// Keep all links server-rendered; actual desktop, route and locale changes still render.
+export const MarketingDesktopNav = memo(function MarketingDesktopNav({ desktopDropdownOpen, links, pathname, t, onCloseDesktopDropdown, onOpenDesktopDropdown }: Props) {
   const navRef = useRef<HTMLElement>(null);
   const closeRef = useRef(onCloseDesktopDropdown);
   closeRef.current = onCloseDesktopDropdown;
@@ -81,4 +83,4 @@ export function MarketingDesktopNav({ desktopDropdownOpen, links, pathname, t, o
       </div>;
     })}
   </nav>;
-}
+});

@@ -12,6 +12,7 @@ import {
 } from './byteplus-modelark-constants';
 import { BytePlusModelArkError } from './byteplus-modelark-error';
 import type { BytePlusSeedanceFastPayload } from './byteplus-modelark-payload';
+import type { Seedance25FinalRequest } from './byteplus-modelark-draft';
 import {
   firstString,
   normalizeBytePlusTask,
@@ -136,6 +137,7 @@ export function getBytePlusArkConfig() {
     baseUrl: trimTrailingSlash(ENV.BYTEPLUS_ARK_BASE_URL ?? BYTEPLUS_SEEDANCE_FAST_DEFAULT_BASE_URL),
     lasBaseUrl: trimTrailingSlash(ENV.BYTEPLUS_LAS_BASE_URL ?? BYTEPLUS_SEEDANCE_2_5_DEFAULT_BASE_URL),
     seedanceModelId: ENV.BYTEPLUS_ARK_SEEDANCE_MODEL_ID ?? BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID,
+    seedance15ModelId: ENV.BYTEPLUS_ARK_SEEDANCE_1_5_MODEL_ID ?? '',
     seedanceFastModelId: ENV.BYTEPLUS_ARK_SEEDANCE_FAST_MODEL_ID ?? BYTEPLUS_SEEDANCE_FAST_DEFAULT_MODEL_ID,
     seedanceMiniModelId: ENV.BYTEPLUS_ARK_SEEDANCE_MINI_MODEL_ID ?? BYTEPLUS_SEEDANCE_MINI_DEFAULT_MODEL_ID,
     seedance25ModelId: ENV.BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID ?? BYTEPLUS_SEEDANCE_2_5_DEFAULT_MODEL_ID,
@@ -171,7 +173,7 @@ export class BytePlusModelArkClient {
     this.baseUrl = trimTrailingSlash(params.baseUrl);
   }
 
-  async createSeedanceFastTask(payload: BytePlusSeedanceFastPayload): Promise<NormalizedVideoProviderTask> {
+  async createSeedanceFastTask(payload: BytePlusSeedanceFastPayload | Seedance25FinalRequest): Promise<NormalizedVideoProviderTask> {
     const response = await fetch(`${this.baseUrl}/contents/generations/tasks`, {
       method: 'POST',
       headers: {

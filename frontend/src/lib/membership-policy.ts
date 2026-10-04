@@ -21,5 +21,7 @@ export function requiresMembershipPricingRefresh(tier: unknown): boolean {
 
 export const MEMBERSHIP_PRICING_REFRESH_MESSAGE = 'Membership discounts have ended. Refresh the page and review the standard price before generating.';
 
-export const LIVE_PRICING_POLICY_REVISION = 'standard-2026-09-07';
+// Reject old web quotes that omitted Wan input-video costs or used earlier H3 capabilities.
+export const LIVE_PRICING_POLICY_REVISION = 'standard-references-2026-09-22';
+export const WEB_PRICING_REFRESH_MESSAGE = 'Pricing has changed. Refresh the page and review the current price before generating.';
 export const PRICING_POLICY_HEADER = 'x-maxvideoai-pricing-policy';

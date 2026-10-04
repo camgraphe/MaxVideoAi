@@ -1,4 +1,24 @@
 {
+  "passwordRecovery": {
+    "title": "Choisissez un nouveau mot de passe",
+    "intro": "Continuez pour vérifier votre lien de réinitialisation.",
+    "verify": "Continuer",
+    "verifying": "Vérification du lien…",
+    "password": "Nouveau mot de passe",
+    "confirm": "Confirmez le nouveau mot de passe",
+    "save": "Enregistrer le nouveau mot de passe",
+    "saving": "Enregistrement…",
+    "saved": "Votre mot de passe a été modifié.",
+    "continueToApp": "Accéder à l’application",
+    "requestNew": "Demander un nouveau lien",
+    "invalid": "Ce lien est invalide ou a expiré. Demandez-en un nouveau. Si vous avez changé de navigateur, essayez d’ouvrir le lien initial dans le navigateur utilisé pour le demander.",
+    "tooShort": "Utilisez au moins 6 caractères.",
+    "mismatch": "Les mots de passe ne correspondent pas.",
+    "weak": "Choisissez un mot de passe plus robuste.",
+    "same": "Choisissez un mot de passe différent du précédent.",
+    "unavailable": "Impossible de modifier votre mot de passe. Réessayez.",
+    "ready": "Saisissez et confirmez votre nouveau mot de passe."
+  },
   "nav": {
     "account": {
       "signedIn": "Connecté",
@@ -48,6 +68,7 @@
     ],
     "login": "Se connecter",
     "cta": "Générer",
+    "startCreating": "Commencer à créer",
     "linkLabels": {
       "models": "Modèles",
       "examples": "Exemples",
@@ -774,14 +795,14 @@
       },
       "examples": {
         "title": "Des histoires, des styles, des idées.",
-        "subtitle": "Ouvrez un exemple pour retrouver les instructions, les réglages et le coût enregistré lors de sa création. Inspirez-vous-en pour votre propre projet.",
+        "subtitle": "Ouvrez un exemple pour retrouver les instructions, les réglages et le tarif actuel du modèle. Inspirez-vous-en pour votre propre projet.",
         "eyebrow": "Exemples réels",
         "cta": "Parcourir tous les exemples",
         "modelsCta": "Voir les caractéristiques",
         "compareLink": "Comparer les modèles",
         "featuredModelCta": "Découvrir Seedance 2.5",
         "modelCta": "Découvrir {model}",
-        "costUnavailable": "Coût non renseigné",
+        "costUnavailable": "Tarif actuel indisponible",
         "providerLabel": "Modèles pris en charge :",
         "viewPrompt": "Cloner les réglages",
         "fallbackCards": [
@@ -2548,7 +2569,7 @@
     "hero": {
       "title": "Des histoires, des styles, des idées.",
       "subtitle": "Découvrez de vraies vidéos IA : personnages, scènes de cinéma, animation et expériences visuelles.",
-      "body": "Ouvrez un exemple pour retrouver les instructions, les réglages et le coût enregistré lors de sa création. Inspirez-vous-en pour votre propre projet."
+      "body": "Ouvrez un exemple pour retrouver les instructions, les réglages et le tarif actuel du modèle. Inspirez-vous-en pour votre propre projet."
     },
     "items": [
       {
@@ -2968,7 +2989,7 @@
       "aspectLabel": "Ratio",
       "aspectAuto": "Auto",
       "createdLabel": "Créée le",
-      "priceTotalLabel": "Coût enregistré du rendu",
+      "priceTotalLabel": "Tarif actuel du modèle",
       "priceTotalValue": "{value}",
       "priceTotalUnknown": "Indisponible",
       "audioLabel": "Audio",
@@ -3224,10 +3245,10 @@
   },
   "gallery": {
     "meta": {
-      "title": "Exemples vidéo IA : prompts, modèles et coûts enregistrés",
-      "description": "Parcourez des exemples vidéo IA, puis ouvrez une vidéo pour consulter son prompt, ses réglages, sa durée et le coût enregistré avant de la recréer.",
+      "title": "Exemples vidéo IA : prompts, modèles et tarifs actuels",
+      "description": "Parcourez des exemples vidéo IA, puis ouvrez une vidéo pour consulter son prompt, ses réglages, sa durée et le tarif actuel du modèle avant de la recréer.",
       "title_engine": "Exemples vidéo IA — {engineName} | MaxVideoAI",
-      "description_engine": "Parcourez des exemples {engineName}, puis ouvrez une vidéo pour consulter son prompt, sa durée, ses réglages audio et le coût enregistré."
+      "description_engine": "Parcourez des exemples {engineName}, puis ouvrez une vidéo pour consulter son prompt, sa durée, ses réglages audio et le tarif actuel du modèle."
     }
   },
   "workspace": {
@@ -3357,6 +3378,11 @@
         "presetsLabel": "Ajouter des crédits",
         "otherAmountLabel": "Autre montant",
         "minLabel": "Min {amount}",
+        "creditsReceived": "Crédits reçus",
+        "paymentAmount": "Montant hors taxes",
+        "quoteLoading": "Calcul en cours…",
+        "quoteUnavailable": "Affiché par Stripe avant paiement",
+        "taxNote": "Des taxes peuvent s’ajouter. Stripe affiche le total final avant le paiement.",
         "captchaPrompt": "Vérification de sécurité requise avant le Checkout.",
         "captchaComplete": "Vérification terminée. Continuez vers le paiement.",
         "captchaError": "Vérification de sécurité indisponible. Réessayez.",
@@ -3364,7 +3390,7 @@
         "startError": "Impossible de démarrer le paiement. Réessayez.",
         "close": "Fermer",
         "maybeLater": "Plus tard",
-        "submit": "Ajouter des fonds",
+        "submit": "Vérifier le paiement",
         "submitting": "Top-up en cours…"
       },
       "authGate": {
@@ -3979,6 +4005,7 @@
         "fields": {
           "total": "Total",
           "walletMovement": "Mouvement du portefeuille",
+          "paymentAmount": "Montant payé (taxes comprises)",
           "tax": "Taxe",
           "discount": "Remise",
           "document": "Document"
@@ -6738,6 +6765,11 @@
       "signin": "Connexion",
       "signup": "Créer un compte"
     },
+    "mcpStaging": {
+      "title": "MaxVideoAI Staging — environnement de test",
+      "body": "Les comptes et crédits du site sont distincts de cet environnement de test. Pour retrouver votre compte MaxVideoAI existant, ajoutez la connexion de production dans votre assistant.",
+      "action": "Configurer MaxVideoAI en production"
+    },
     "modes": {
       "signup": {
         "title": "Créez votre compte studio",
@@ -6753,6 +6785,10 @@
       }
     },
     "continuation": {
+      "mcp": {
+        "title": "Connectez votre compte MaxVideoAI",
+        "body": "Connectez-vous avec le même compte MaxVideoAI que sur le site. Vous pourrez vérifier les accès demandés, puis revenir dans votre assistant."
+      },
       "billing": {
         "title": "Votre recharge de {amount} est conservée",
         "body": "Créez un compte ou connectez-vous, puis vous reviendrez à la facturation avec ce montant toujours sélectionné."
@@ -6841,12 +6877,15 @@
       "signingIn": "Connexion…",
       "signinRedirecting": "Connexion réussie. Redirection…",
       "signinSuggestion": "Ces informations ne permettent pas de vous connecter. Si vous êtes nouveau, créez votre compte sans tout ressaisir.",
+      "mcpSigninFailed": "La connexion a échoué. Vérifiez votre e-mail et votre mot de passe, utilisez « Mot de passe oublié ? », ou continuez avec Google si vous avez créé votre compte MaxVideoAI ainsi.",
       "signupSuggestionReady": "Parfait, créons votre compte.",
       "creatingAccount": "Création du compte…",
       "accountRedirecting": "Compte créé. Redirection…",
-      "confirmEmail": "Consultez votre boîte de réception pour confirmer votre e-mail.",
+      "confirmEmail": "Si votre compte nécessite une confirmation, consultez vos e-mails. Vous avez déjà un compte ? Connectez-vous ou choisissez « Mot de passe oublié ? » sur le formulaire de connexion pour récupérer votre accès.",
       "sendingReset": "Envoi du lien…",
-      "resetSent": "E-mail de réinitialisation envoyé.",
+      "resetSent": "Si un compte existe pour cette adresse, vous recevrez un lien par email. Vérifiez aussi les indésirables.",
+      "resetUnavailable": "Impossible d’envoyer le lien de réinitialisation. Réessayez plus tard. Si le problème persiste, contactez l’assistance.",
+      "resetRateLimited": "Trop de demandes. Patientez quelques minutes avant de demander un nouveau lien.",
       "googleUnavailable": "La connexion Google est indisponible car l’URL de redirection n’a pas pu être déterminée.",
       "googleRedirecting": "Redirection vers Google…",
       "completingSignIn": "Finalisation de la connexion…",
@@ -8463,5 +8502,25 @@
     "body": "Nous ne trouvons pas cette URL. Elle est peut-etre obsolete ou n'a jamais existe. Utilisez les liens ci-dessous pour continuer a explorer MaxVideoAI.",
     "homeLabel": "Retour a l'accueil",
     "modelsLabel": "Voir les modeles video"
+  },
+  "passwordRecovery": {
+    "title": "Choisissez un nouveau mot de passe",
+    "intro": "Continuez pour vérifier votre lien de réinitialisation.",
+    "verify": "Continuer",
+    "verifying": "Vérification du lien…",
+    "password": "Nouveau mot de passe",
+    "confirm": "Confirmez le nouveau mot de passe",
+    "save": "Enregistrer le nouveau mot de passe",
+    "saving": "Enregistrement…",
+    "saved": "Votre mot de passe a été modifié.",
+    "continueToApp": "Accéder à l’application",
+    "requestNew": "Demander un nouveau lien",
+    "invalid": "Ce lien est invalide ou a expiré. Demandez-en un nouveau. Si vous avez changé de navigateur, essayez d’ouvrir le lien initial dans le navigateur utilisé pour le demander.",
+    "tooShort": "Utilisez au moins 6 caractères.",
+    "mismatch": "Les mots de passe ne correspondent pas.",
+    "weak": "Choisissez un mot de passe plus robuste.",
+    "same": "Choisissez un mot de passe différent du précédent.",
+    "unavailable": "Impossible de modifier votre mot de passe. Réessayez.",
+    "ready": "Saisissez et confirmez votre nouveau mot de passe."
   }
 }

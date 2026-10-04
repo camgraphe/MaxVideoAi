@@ -9,4 +9,3 @@ Statut : préparé, non confirmé. Aucune génération payante lancée.
 - Prompt détaillé : [mcp-4k-request.md](mcp-4k-request.md).
 - Le preset nommé 3840x2160 a été validé. La variante custom avec dimensions explicites n'avait pas pu être chiffrée.
 - L'approbation explicite de ce devis est requise avant confirm_generation. Ne pas interpréter une discussion du design comme approbation de paiement.
-

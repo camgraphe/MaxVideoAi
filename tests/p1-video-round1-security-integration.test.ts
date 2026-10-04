@@ -113,7 +113,7 @@ test('workspace engine bootstrap returns executable P1 public modes', async () =
   assert.equal(response.status, 200);
   const payload = await response.json() as { engines: typeof P1_ENGINES };
   assert.deepEqual(payload.engines.map(({ id }) => id).sort(), [...P1_IDS].sort());
-  assert.deepEqual(payload.engines.find(({ id }) => id === 'minimax-h3-max')?.modes, ['t2v']);
+  assert.deepEqual(payload.engines.find(({ id }) => id === 'minimax-h3-max')?.modes, ['t2v', 'i2v', 'ref2v']);
   assert.deepEqual(payload.engines.find(({ id }) => id === 'kling-3-turbo-standard')?.modes, ['t2v', 'i2v']);
   assert.equal(JSON.stringify(payload).toLowerCase().includes('fal-ai/'), false);
 

@@ -1,3 +1,5 @@
+import { modelExamplePlaylistKeys, projectModelPageGallery } from '@/server/model-gallery-projection';
+import { hasPlaylistCuration } from '@/server/playlists/curation-service';
 import '@/styles/marketing-models.css';
 import { ModelArchivePage } from './_components/ModelArchivePage';
 import { buildModelArchiveMetadata } from './_lib/model-page-archive-metadata';
@@ -16,12 +18,11 @@ import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveLocalesForEnglishPath } from '@/lib/seo/alternateLocales';
 import { getEngineLocalized, type EngineLocalizedContent } from '@/lib/models/i18n';
-import { normalizeEngineId } from '@/lib/engine-alias';
 import { resolvePublicMarketingVideoUrl } from '@/lib/media';
 import { listPlaylistVideos, getPublicVideosByIds, type GalleryVideo } from '@/server/videos';
+import { quoteCurrentExamplePrices, type CurrentExamplePrice } from '@/server/current-example-price';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
-import { listEnginePricingOverrides } from '@/server/engine-settings';
-import { loadBenchmarkScoreSlugs } from '@/server/benchmark-lab-data';
+import { loadModelPageInputs } from './_lib/model-page-inputs';
 import {
   buildDetailSlugMap,
   MODELS_BASE_PATH_MAP,
@@ -42,7 +43,6 @@ import {
   toGalleryCard,
   type FeaturedMedia,
 } from './_lib/model-page-media';
-import { loadEngineKeySpecs } from './_lib/model-page-key-specs';
 import { FEATURED_EXAMPLE_MEDIA, PREFERRED_MEDIA } from './_lib/model-page-static';
 import {
   DEFAULT_DETAIL_COPY,
@@ -193,13 +193,6 @@ async function renderMarketingModelPage({
   const hasImageMode = engineModes.some((mode) => mode.endsWith('i'));
   const isVideoEngine = hasVideoMode;
   const isImageEngine = hasImageMode && !hasVideoMode;
-  const benchmarkScoreSlugs = await loadBenchmarkScoreSlugs();
-  const showBenchmarkLink = isVideoEngine && benchmarkScoreSlugs.has(engine.modelSlug);
-  const enginePricingOverrides = await listEnginePricingOverrides();
-  const pricingEngine = applyEnginePricingOverride(
-    engine.engine,
-    enginePricingOverrides[engine.engine.id]
-  );
   const backPath = (() => {
     try {
       const url = new URL(canonicalUrl);
@@ -208,125 +201,43 @@ async function renderMarketingModelPage({
       return `/models/${engine.modelSlug}`;
     }
   })();
-  let examples: GalleryVideo[] = [];
-  const examplePlaylistKeys =
-    engine.modelSlug === 'ltx-2-3-pro' ? ['examples-ltx-2-3-pro', 'examples-ltx-2-3'] : [`examples-${engine.modelSlug}`];
-  try {
-    for (const playlistKey of examplePlaylistKeys) {
-      examples = await listPlaylistVideos(playlistKey, 200);
-      if (examples.length) break;
-    }
-  } catch (error) {
-    console.warn('[models/sora-2] failed to load examples', error);
-  }
-  const normalizedSlug = normalizeEngineId(engine.modelSlug) ?? engine.modelSlug;
-  const allowedEngineIds = new Set([
-    normalizedSlug,
-    engine.modelSlug,
-    engine.id,
-    ...(engine.modelSlug === 'sora-2-pro' ? ['sora-2', 'sora2'] : []),
-    ...(engine.modelSlug === 'sora-2' ? ['sora-2', 'sora2'] : []),
-  ].map((id) => (id ? id.toString().trim().toLowerCase() : '')).filter(Boolean));
-  const soraExamples = examples.filter((video) => {
-    const normalized = normalizeEngineId(video.engineId)?.trim().toLowerCase();
-    return normalized ? allowedEngineIds.has(normalized) : false;
-  });
-  const safeSoraExamples =
-    engine.modelSlug === 'sora-2'
-      ? soraExamples.filter((video) => {
-          const text = [video.prompt, video.promptExcerpt, video.id].filter(Boolean).join(' ');
-          return !/\b(john\s+lennon|lennon|beatles)\b/i.test(text);
-        })
-      : soraExamples;
-  const validatedMap = await getPublicVideosByIds(safeSoraExamples.map((video) => video.id));
-  let galleryVideos = safeSoraExamples
-    .filter((video) => validatedMap.has(video.id))
-    .map((video) =>
-      toGalleryCard(
-        video,
-        engine.brandId,
-        localizedContent.marketingName ?? engine.marketingName,
-        engine.modelSlug,
-        engine.id,
-        backPath,
-        appPath
-      )
-    )
-    .map((card) => resolveGalleryCardHref(card));
-
-  const featuredExampleIds = FEATURED_EXAMPLE_MEDIA[engine.modelSlug] ?? [];
-  const missingFeaturedExamples = featuredExampleIds.filter((id) => !galleryVideos.some((video) => video.id === id));
-  if (featuredExampleIds.length) {
-    const existingFeaturedCards = new Map(galleryVideos.map((video) => [video.id, video]));
-    const fetchedFeaturedCards = new Map<string, (typeof galleryVideos)[number]>();
-    if (missingFeaturedExamples.length) {
-      const featuredMap = await getPublicVideosByIds(missingFeaturedExamples);
-      for (const video of featuredMap.values()) {
-        fetchedFeaturedCards.set(
-          video.id,
-          resolveGalleryCardHref(
-            toGalleryCard(
-              video,
-              engine.brandId,
-              localizedContent.marketingName ?? engine.marketingName,
-              engine.modelSlug,
-              engine.id,
-              backPath,
-              appPath
-            )
-          )
-        );
+  const { benchmarkScoreSlugs, enginePricingOverrides, keySpecsMap, gallery } = await loadModelPageInputs(
+    locale,
+    async () => {
+      let examples: GalleryVideo[] = [];
+      let managedCuration=false;
+      const examplePlaylistKeys = modelExamplePlaylistKeys(engine.modelSlug);
+      try {
+        for (const playlistKey of examplePlaylistKeys) {
+          examples = await listPlaylistVideos(playlistKey, 200);
+          managedCuration=await hasPlaylistCuration(playlistKey);
+          if (examples.length || managedCuration) break;
+        }
+      } catch (error) {
+        console.warn('[models/sora-2] failed to load examples', error);
       }
+      const examplePrices = new Map<string, CurrentExamplePrice>();
+      const readPricedVideos = async (ids: string[]) => {
+        const videos = await getPublicVideosByIds(ids);
+        const prices = await quoteCurrentExamplePrices(Array.from(videos.values()));
+        for (const [id, price] of prices) examplePrices.set(id, price);
+        return videos;
+      };
+      return projectModelPageGallery({
+        engine, examples, managed: managedCuration,
+        preferred: PREFERRED_MEDIA[engine.modelSlug] ?? {hero:null,demo:null},
+        featuredIds: FEATURED_EXAMPLE_MEDIA[engine.modelSlug] ?? [],
+        getPublicVideosByIds: readPricedVideos,
+        toCard: video => resolveGalleryCardHref(toGalleryCard(
+          video, engine.brandId, localizedContent.marketingName ?? engine.marketingName,
+          engine.modelSlug, engine.id, backPath, appPath, examplePrices.get(video.id), locale,
+        )),
+      });
     }
-    const featuredCards: typeof galleryVideos = [];
-    for (const id of featuredExampleIds) {
-      const card = existingFeaturedCards.get(id) ?? fetchedFeaturedCards.get(id);
-      if (card) featuredCards.push(card);
-    }
-    if (featuredCards.length) {
-      galleryVideos = [
-        ...featuredCards,
-        ...galleryVideos.filter((video) => !featuredExampleIds.includes(video.id)),
-      ];
-    }
-  }
-
-  const preferredIds = PREFERRED_MEDIA[engine.modelSlug] ?? { hero: null, demo: null };
-  const preferredList = [preferredIds.hero, preferredIds.demo].filter((id): id is string => Boolean(id));
-  const missingPreferred = preferredList.filter((id) => !galleryVideos.some((video) => video.id === id));
-  if (missingPreferred.length) {
-    const preferredMap = await getPublicVideosByIds(missingPreferred);
-    for (const id of preferredList) {
-      if (!preferredMap.has(id) || galleryVideos.some((video) => video.id === id)) continue;
-      const video = preferredMap.get(id)!;
-      galleryVideos = [
-        ...galleryVideos,
-        toGalleryCard(
-          video,
-          engine.brandId,
-          localizedContent.marketingName ?? engine.marketingName,
-          engine.modelSlug,
-          engine.id,
-          backPath,
-          appPath
-        )
-      ];
-    }
-  }
-  if (!appGenerationEnabled) {
-    galleryVideos = galleryVideos.map((card) => resolveGalleryCardHref(card));
-  }
-  if (engine.modelSlug === 'kling-2-5-turbo') {
-    const isSixteenNine = (aspect?: string | null) => {
-      const normalized = (aspect ?? '').trim();
-      return normalized === '16:9' || normalized.startsWith('16:9');
-    };
-    galleryVideos = [...galleryVideos].sort((a, b) => {
-      const aScore = (isSixteenNine(a.aspectRatio) ? 0 : 2) + (a.videoUrl ? 0 : 1);
-      const bScore = (isSixteenNine(b.aspectRatio) ? 0 : 2) + (b.videoUrl ? 0 : 1);
-      return aScore - bScore;
-    });
-  }
+  );
+  const { galleryVideos, preferredIds, managed: managedCuration } = gallery;
+  const showBenchmarkLink = isVideoEngine && benchmarkScoreSlugs.has(engine.modelSlug);
+  const pricingEngine = applyEnginePricingOverride(engine.engine, enginePricingOverrides[engine.engine.id]);
   const modelName = localizedContent.marketingName ?? engine.marketingName;
   const fallbackMedia: FeaturedMedia = {
     id: `${engine.modelSlug}-hero-fallback`,
@@ -345,8 +256,8 @@ async function renderMarketingModelPage({
     label: modelName ?? 'Sora',
   };
 
-  let heroMedia = pickHeroMedia(galleryVideos, preferredIds.hero, fallbackMedia);
-  if (engine.modelSlug === 'kling-2-5-turbo') {
+  let heroMedia = pickHeroMedia(galleryVideos, preferredIds.hero, fallbackMedia, { preserveOrder: managedCuration });
+  if (!managedCuration && engine.modelSlug === 'kling-2-5-turbo') {
     const heroCandidate =
       galleryVideos.find((video) => video.aspectRatio === '16:9' && Boolean(video.videoUrl)) ??
       galleryVideos.find((video) => video.aspectRatio === '16:9');
@@ -364,7 +275,6 @@ async function renderMarketingModelPage({
   const faqEntries = localizedContent.faqs.length ? localizedContent.faqs : copy.faqs;
   const showPriceInSpecs =
     engine.id !== 'lumaRay2' && engine.surfaces.pricing.includeInEstimator;
-  const keySpecsMap = await loadEngineKeySpecs();
   const keySpecsEntry =
     keySpecsMap.get(engine.modelSlug) ?? keySpecsMap.get(engine.id) ?? null;
   const pricePerSecondLabel = await buildPricePerSecondLabel(pricingEngine, locale);

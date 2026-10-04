@@ -1,5 +1,7 @@
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { LOCALE_COOKIE } from '@/lib/i18n/constants';
+import { isMcpConsentTarget } from '@/lib/mcp-oauth-continuation';
+import { getMcpRequestHost, isMcpApiHost } from '@/lib/mcp-host-routing';
 import { LoginPageClient } from './_components/LoginPageClient';
 import {
   resolveInitialAuthLocale,
@@ -13,11 +15,14 @@ type LoginPageProps = {
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const [params, cookieStore] = await Promise.all([searchParams, cookies()]);
+  const [params, cookieStore, requestHeaders] = await Promise.all([searchParams, cookies(), headers()]);
+  const requestHost = getMcpRequestHost(requestHeaders);
 
   return (
     <LoginPageClient
-      initialMode={resolveInitialAuthMode(params.mode)}
+      initialMode={resolveInitialAuthMode(params.mode, params.next)}
+      initialMcpConnection={isMcpConsentTarget(Array.isArray(params.next) ? params.next[0] : params.next)}
+      isMcpStaging={Boolean(requestHost && isMcpApiHost(requestHost, 'maxvideoai-mcp-staging.vercel.app'))}
       initialLocale={resolveInitialAuthLocale(
         cookieStore.get(LOCALE_COOKIE)?.value,
         cookieStore.get('NEXT_LOCALE')?.value

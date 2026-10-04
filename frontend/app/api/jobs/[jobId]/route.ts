@@ -1,5 +1,7 @@
+import { type GeneratedVideoFacts } from '@/lib/generated-video-media-facts';
 import { claimGenerationPoll } from '@/server/generation-poll-state';
 import { refreshDirectGeneration } from '@/server/refresh-direct-generation';
+import { recoverTerminalSeedanceWorkflow } from '@/server/seedance-workflow-terminal-recovery';
 import { generationStage, type GenerationObservation } from '@/lib/generation-observation';
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured, query } from '@/lib/db';
@@ -144,6 +146,11 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
       console.warn('[api/jobs] direct status refresh deferred', { jobId });
     }
   }
+  try { await recoverTerminalSeedanceWorkflow(job); }
+  catch {
+    statusCheckDegraded = true;
+    console.warn('[api/jobs] terminal workflow reconciliation deferred', { jobId });
+  }
   let normalizedVideoUrl = normalizeMediaUrl(job.video_url);
   let normalizedPreviewVideoUrl = normalizeMediaUrl(job.preview_video_url);
   let normalizedAudioUrl = normalizeMediaUrl(job.audio_url);
@@ -283,6 +290,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
         if (typeof prog === 'number' && Number.isFinite(prog)) {
           providerPercent = { value: Math.max(0, Math.min(100, prog)), source: 'provider', provider: 'fal' };
         }
+        let polledVideoMediaFacts: GeneratedVideoFacts | undefined;
         let status = job.status ?? 'queued';
         let progress = job.progress ?? 0;
         let videoUrl = normalizedVideoUrl;
@@ -304,6 +312,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
                 jobId,
                 userId: job.user_id ?? undefined,
                 videoUrl: normalizedProviderVideoUrl,
+                onVideoMediaFacts: (facts) => { polledVideoMediaFacts = facts; },
               })
             : null;
           const providerCopyMissing = shouldFailVideoJobOnProviderCopyMiss({
@@ -379,6 +388,12 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
             const latest = await readOwnedGenerationRecord({ userId, jobId });
             return latest ? json(mapGenerationStatusRecordToWeb(latest)) : json({ ok: false, error: 'Not found' }, { status: 404 });
           }
+          if (status === 'completed' && videoUrl && polledVideoMediaFacts) {
+            await upsertLegacyJobOutputs({ job_id: job.job_id, user_id: job.user_id, surface: job.surface,
+              video_url: videoUrl, video_media_facts: polledVideoMediaFacts, thumb_url: thumbUrl,
+              preview_video_url: normalizedPreviewVideoUrl, duration_sec: job.duration_sec, status,
+            }).catch((error) => { console.warn('[api/jobs] failed to persist measured output', { jobId, error }); });
+          }
           return json(
             mapGenerationStatusRecordToWeb(job, {
               status,
@@ -403,6 +418,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
     }
   }
 
+  let repairedVideoMediaFacts: GeneratedVideoFacts | undefined;
   let responseVideoUrl = normalizedVideoUrl;
   let shouldSyncJobOutputs = false;
   if (surface !== 'audio' && job.status === 'completed' && responseVideoUrl) {
@@ -410,6 +426,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
       jobId,
       userId: job.user_id ?? undefined,
       videoUrl: responseVideoUrl,
+      onVideoMediaFacts: (facts) => { repairedVideoMediaFacts = facts; },
     });
     if (
       shouldFailVideoJobOnProviderCopyMiss({
@@ -464,6 +481,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
         user_id: job.user_id,
         surface: job.surface,
         video_url: responseVideoUrl,
+        video_media_facts: repairedVideoMediaFacts,
         audio_url: normalizedAudioUrl,
         thumb_url: normalizedThumbUrl,
         preview_frame: normalizedThumbUrl,

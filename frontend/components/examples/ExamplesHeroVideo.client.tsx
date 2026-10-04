@@ -79,6 +79,7 @@ export function ExamplesHeroVideo({
 
     const generation = ++playGenerationRef.current;
     let autoplayDisabled = shouldDisableHeroAutoplay();
+    let hasVisibilityObservation = false;
     environmentPauseRef.current = false;
     setShowPosterOverlay(Boolean(poster));
 
@@ -106,6 +107,9 @@ export function ExamplesHeroVideo({
       }
     };
     const syncPlayback = () => {
+      // A fresh observer has not established whether this hero is onscreen yet.
+      // Native/manual playback keeps its existing path while automatic play waits.
+      if (!hasVisibilityObservation && !manualPlaybackRef.current) return;
       if ((autoplayDisabled && !manualPlaybackRef.current) || !visibleNow()) {
         pauseForEnvironment();
         return;
@@ -135,6 +139,7 @@ export function ExamplesHeroVideo({
     mobileQuery?.addEventListener?.('change', handleAutoplayPreferenceChange);
 
     const observer = new IntersectionObserver((entries) => {
+      hasVisibilityObservation = true;
       playerVisibleRef.current = entries.some((entry) => entry.isIntersecting);
       syncPlayback();
     }, { threshold: 0.55 });

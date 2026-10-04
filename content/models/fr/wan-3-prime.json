@@ -2,10 +2,10 @@
   "marketingName": "Wan 3 Prime",
   "versionLabel": "3 Prime",
   "seo": {
-    "title": "Générateur vidéo IA Wan 3 Prime : workflow premium",
-    "description": "Évaluez Wan 3 Prime pour une production premium depuis texte, image ou références, avec conseils pratiques, choix du modèle frère et devis canoniques."
+    "title": "Wan 3 Prime : vidéo IA, références, édition et extension",
+    "description": "Créez avec Wan 3 Prime depuis un texte, des images ou des références en 480p–1080p. Modifiez ou prolongez une vidéo avec des références image et audio."
   },
-  "overview": "Wan 3 Prime est le modèle premium actuel de la famille Wan 3. Il conserve les workflows texte, image et références tout en répondant aux briefs qui choisissent volontairement la route Prime. Alibaba/Tongyi possède Wan ; MaxVideoAI distribue ces endpoints via Fal sans suggérer un accord direct avec le propriétaire.",
+  "overview": "Wan 3 Prime est un modèle Alibaba/Tongyi pour le texte-vers-vidéo, l’animation d’images, les références combinées, la modification et l’extension vidéo. Choisissez 2 à 30 secondes et le 480p, 720p ou 1080p, puis consultez le prix avant de générer.",
   "decision": {
     "modelSlug": "wan-3-prime",
     "hero": {
@@ -15,7 +15,7 @@
       "subtitleHighlights": [
         "Laissez votre scène se déployer"
       ],
-      "paragraph": "Wan 3 Prime génère des vidéos IA à partir de texte, d’une image de départ ou de références combinées. Choisissez de 2 à 30 secondes et une résolution de 480p à 1080p. Comparez-le à Wan 3 selon votre projet et votre budget.",
+      "paragraph": "Wan 3 Prime est un modèle Alibaba/Tongyi pour le texte-vers-vidéo, l’animation d’images, les références combinées, la modification et l’extension vidéo. Choisissez 2 à 30 secondes et le 480p, 720p ou 1080p, puis consultez le prix avant de générer.",
       "primaryCta": {
         "label": "Générer avec Wan 3 Prime",
         "href": "/app?engine=wan-3-prime"
@@ -48,9 +48,9 @@
       "description": "Les sorties Prime vérifiées paraîtront après acceptation",
       "renderLabel": "Examiner le rendu accepté",
       "badges": [
-        "Prime",
-        "Trois modes",
-        "Jusqu'à 1080p"
+        "Cinq modes",
+        "Jusqu’en 1080p",
+        "Audio natif"
       ],
       "altContext": "exemple de production Wan 3 Prime accepté"
     },
@@ -62,12 +62,12 @@
       },
       {
         "title": "Départ par prompt ou image",
-        "body": "Générez depuis un texte ou animez une image initiale, avec une image finale facultative. Décrivez la transition et la réaction physique sans redécrire chaque pixel.",
+        "body": "Utilisez une image de début obligatoire et une image de fin facultative. Gardez ces images séparées des références combinées et décrivez le mouvement entre les deux repères.",
         "tone": "reference"
       },
       {
         "title": "Références mixtes structurées",
-        "body": "Le mode référence accepte plusieurs catégories de médias sous des limites distinctes. Attribuez explicitement les rôles d'identité, mouvement, son et contexte.",
+        "body": "Guidez la scène avec jusqu’à 10 images, 5 vidéos et 5 extraits audio. Les vidéos et l’audio ont chacun une limite cumulée de 15 secondes. Toutes les vidéos fournies et la vidéo générée ne doivent pas dépasser 30 secondes au total. Un document admissible ou une page publique peut apporter du contexte ; choisissez un seul de ces deux types d’URL.",
         "tone": "continuity"
       },
       {
@@ -109,11 +109,15 @@
       },
       {
         "title": "Animation d'image premium",
-        "body": "Partez d'une image forte et dirigez le mouvement sans demander au modèle de réinventer la source."
+        "body": "Utilisez une image de début obligatoire et une image de fin facultative. Gardez ces images séparées des références combinées et décrivez le mouvement entre les deux repères."
       },
       {
-        "title": "Hiérarchie des références",
-        "body": "Indiquez quelle source gouverne l'identité, le mouvement, le rythme ou le contexte."
+        "title": "Références-vers-vidéo",
+        "body": "Guidez la scène avec jusqu’à 10 images, 5 vidéos et 5 extraits audio. Les vidéos et l’audio ont chacun une limite cumulée de 15 secondes. Toutes les vidéos fournies et la vidéo générée ne doivent pas dépasser 30 secondes au total. Un document admissible ou une page publique peut apporter du contexte ; choisissez un seul de ces deux types d’URL."
+      },
+      {
+        "title": "Modifier ou prolonger une vidéo",
+        "body": "Partez d’une vidéo source de 15 secondes maximum et ajoutez, si besoin, des références image ou audio. La durée source et la durée générée ne doivent pas dépasser 30 secondes au total."
       },
       {
         "title": "Livraison responsable",
@@ -123,13 +127,13 @@
     "pricingCopy": {
       "title": "Tarification par scénario Wan 3 Prime",
       "subtitle": "Comparez la même scène de six secondes en 720p et 1080p.",
-      "footnote": "Le prix dépend de vos réglages. MaxVideoAI confirme le devis avant de générer.",
+      "footnote": "Ajouter une vidéo augmente votre devis Wan 3 Prime : sa durée entre dans le calcul du prix avec celle de la vidéo générée, pour les références, la modification ou l’extension. MaxVideoAI confirme le devis avant de générer.",
       "ctaLabel": "Générer avec Wan 3 Prime",
       "ctaHref": "/app?engine=wan-3-prime"
     },
     "meta": {
-      "title": "Modèle vidéo IA Wan 3 Prime et workflow premium",
-      "description": "Comprenez les modes, durées, références, prompts, règles de sécurité, alternative Wan standard et scénarios tarifaires canoniques de Wan 3 Prime."
+      "title": "Wan 3 Prime : vidéo IA, références, édition et extension",
+      "description": "Créez avec Wan 3 Prime depuis un texte, des images ou des références en 480p–1080p. Modifiez ou prolongez une vidéo avec des références image et audio."
     }
   },
   "prompting": {
@@ -178,7 +182,7 @@
       },
       {
         "tabId": "control",
-        "body": "Un nombre réduit de références aux rôles nommés diminue l'ambiguïté de l'évaluation."
+        "body": "Guidez la scène avec jusqu’à 10 images, 5 vidéos et 5 extraits audio. Les vidéos et l’audio ont chacun une limite cumulée de 15 secondes. Toutes les vidéos fournies et la vidéo générée ne doivent pas dépasser 30 secondes au total. Un document admissible ou une page publique peut apporter du contexte ; choisissez un seul de ces deux types d’URL."
       }
     ],
     "globalPrinciples": [

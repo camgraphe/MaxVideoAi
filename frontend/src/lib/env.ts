@@ -42,7 +42,6 @@ export const ENV = {
   CHECKOUT_GUARD_HASH_SECRET: getOptionalEnv('CHECKOUT_GUARD_HASH_SECRET'),
   CRON_SECRET: getOptionalEnv('CRON_SECRET'),
   EMAIL_FROM: getOptionalEnv('EMAIL_FROM'),
-  EMAIL_FROM_NAME: getOptionalEnv('EMAIL_FROM_NAME'),
   BREVO_SMTP_HOST: getOptionalEnv('BREVO_SMTP_HOST') ?? 'smtp-relay.sendinblue.com',
   BREVO_SMTP_PORT: getOptionalEnv('BREVO_SMTP_PORT') ?? '587',
   BREVO_SMTP_USERNAME: getOptionalEnv('BREVO_SMTP_USERNAME'),
@@ -98,6 +97,7 @@ export const ENV = {
     'dreamina-seedance-2-0-fast-260128'
   ),
   BYTEPLUS_ARK_SEEDANCE_MODEL_ID: getOptionalEnv('BYTEPLUS_ARK_SEEDANCE_MODEL_ID', 'dreamina-seedance-2-0-260128'),
+  BYTEPLUS_ARK_SEEDANCE_1_5_MODEL_ID: getOptionalEnv('BYTEPLUS_ARK_SEEDANCE_1_5_MODEL_ID'),
   BYTEPLUS_ARK_SEEDANCE_MINI_MODEL_ID: getOptionalEnv(
     'BYTEPLUS_ARK_SEEDANCE_MINI_MODEL_ID',
     'dreamina-seedance-2-0-mini-260615'
@@ -112,6 +112,10 @@ export const ENV = {
     'dola-seedream-5-0-pro-260628'
   ),
   BYTEPLUS_ARK_ENABLED: getOptionalEnv('BYTEPLUS_ARK_ENABLED', 'false'),
+  SEEDANCE_1_5_BYTEPLUS_ENABLED: getOptionalEnv('SEEDANCE_1_5_BYTEPLUS_ENABLED', 'false'),
+  SEEDANCE_1_5_PROVIDER: getOptionalEnv('SEEDANCE_1_5_PROVIDER', 'byteplus_modelark'),
+  SEEDANCE_1_5_BYTEPLUS_ADMIN_ONLY: getOptionalEnv('SEEDANCE_1_5_BYTEPLUS_ADMIN_ONLY', 'true'),
+  SEEDANCE_1_5_BYTEPLUS_MODES: getOptionalEnv('SEEDANCE_1_5_BYTEPLUS_MODES', 't2v,i2v'),
   SEEDANCE_2_PROVIDER: getOptionalEnv('SEEDANCE_2_PROVIDER', 'fal'),
   SEEDANCE_2_BYTEPLUS_ADMIN_ONLY: getOptionalEnv('SEEDANCE_2_BYTEPLUS_ADMIN_ONLY', 'true'),
   SEEDANCE_2_BYTEPLUS_MODES: getOptionalEnv('SEEDANCE_2_BYTEPLUS_MODES', 't2v,i2v,ref2v,v2v,extend'),

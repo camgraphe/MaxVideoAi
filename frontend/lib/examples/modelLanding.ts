@@ -36,10 +36,10 @@ function buildGenericLocalizedModelData(
   if (locale === 'fr') {
     return {
       subtitle: `Exemples ${label} sur toute la famille, avec prompts réutilisables, réglages et repères de prix.`,
-      intro: `Utilisez cette page pour relire des exemples ${label} avant de lancer de nouveaux rendus. ${variantsSentence} Comparez mouvement, cadrage et durée, puis ouvrez un exemple pour voir son coût enregistré, puis ouvrez les pages modèles liées pour les specs et limites propres à chaque mode.`,
+      intro: `Utilisez cette page pour relire des exemples ${label} avant de lancer de nouveaux rendus. ${variantsSentence} Comparez mouvement, cadrage et durée, puis ouvrez un exemple pour voir son tarif actuel estimé, puis ouvrez les pages modèles liées pour les specs et limites propres à chaque mode.`,
       promptPatterns: `Les exemples ${label} sont plus fiables quand le prompt sépare sujet, mouvement caméra, environnement et durée. Commencez par un clip court, puis itérez sur le cadrage et le mouvement.`,
       strengthsLimits: `Cette galerie sert à comparer comment la famille ${label} gère le mouvement, la composition et la cohérence. Les capacités changent encore selon le modèle et le mode, donc validez le flux exact sur la page modèle avant de passer en production.`,
-      pricingNotes: `Le coût enregistré affiché sur la fiche d’un exemple varie selon le modèle, la durée, la résolution et le mode. Gardez le même brief pour comparer correctement coût et qualité dans la famille ${label}.`,
+      pricingNotes: `Le tarif actuel estimé affiché sur la fiche d’un exemple varie selon le modèle, la durée, la résolution et le mode. Gardez le même brief pour comparer correctement coût et qualité dans la famille ${label}.`,
       faq: [
         {
           question: `Quand utiliser la page d’exemples ${label} ?`,
@@ -60,10 +60,10 @@ function buildGenericLocalizedModelData(
   if (locale === 'es') {
     return {
       subtitle: `Ejemplos de ${label} en toda la familia, con prompts reutilizables, ajustes y referencias de precio.`,
-      intro: `Usa esta página para revisar ejemplos de ${label} antes de lanzar nuevos renders. ${variantsSentence} Compara movimiento, encuadre y duración, y abre un ejemplo para ver su coste registrado, y luego abre las páginas de modelo relacionadas para ver límites y especificaciones por modo.`,
+      intro: `Usa esta página para revisar ejemplos de ${label} antes de lanzar nuevos renders. ${variantsSentence} Compara movimiento, encuadre y duración, y abre un ejemplo para ver su precio actual estimado, y luego abre las páginas de modelo relacionadas para ver límites y especificaciones por modo.`,
       promptPatterns: `Los ejemplos de ${label} funcionan mejor cuando el prompt separa sujeto, movimiento de cámara, entorno y duración. Empieza con clips cortos y luego ajusta encuadre y movimiento.`,
       strengthsLimits: `La galería te ayuda a comparar cómo la familia ${label} maneja movimiento, composición y consistencia. Las capacidades siguen variando por modelo y modo, así que valida el flujo exacto en la página del modelo antes de escalar producción.`,
-      pricingNotes: `El coste registrado de la ficha de un ejemplo cambia según modelo, duración, resolución y modo. Mantén el mismo brief para comparar bien coste y calidad dentro de la familia ${label}.`,
+      pricingNotes: `El precio actual estimado de la ficha de un ejemplo cambia según modelo, duración, resolución y modo. Mantén el mismo brief para comparar bien coste y calidad dentro de la familia ${label}.`,
       faq: [
         {
           question: `¿Cuándo usar la página de ejemplos de ${label}?`,
@@ -83,10 +83,10 @@ function buildGenericLocalizedModelData(
 
   return {
     subtitle: `${label} examples across the full family, with reusable prompts, settings, and pricing signals.`,
-    intro: `Use this page to review ${label} examples before launching new renders. ${variantsSentence} Compare motion, framing, and duration, then open an example to see its recorded render cost. Use the related model pages for mode-specific specs and limits.`,
+    intro: `Use this page to review ${label} examples before launching new renders. ${variantsSentence} Compare motion, framing, and duration, then open an example to see its current price estimate. Use the related model pages for mode-specific specs and limits.`,
     promptPatterns: `${label} examples usually work best when prompts separate subject, camera movement, environment, and timing. Start with short clips, then iterate on framing and motion once the baseline looks right.`,
     strengthsLimits: `This gallery helps you compare how the ${label} family handles motion, composition, and consistency. Capabilities still vary by model and mode, so confirm the exact workflow on the related model pages before scaling production.`,
-    pricingNotes: `Recorded render costs vary by model, duration, resolution, and mode. Open example detail pages to compare cost and quality across the ${label} family with a stable brief.`,
+    pricingNotes: `Current price estimates vary by model, duration, resolution, and mode. Open example detail pages to compare cost and quality across the ${label} family with a stable brief.`,
     faq: [
       {
         question: `When should I use the ${label} examples page?`,
@@ -158,33 +158,34 @@ export function getExampleModelLanding(locale: AppLocale, slug: string): Example
     metaDescription:
       localized.metaDescription ??
       (locale === 'fr'
-        ? `Exemples vidéo IA ${label} avec prompts, réglages et coût enregistré sur chaque fiche. ${variantsSentence}`
+        ? `Exemples vidéo IA ${label} avec prompts, réglages et tarifs actuels estimés sur les fiches disponibles. ${variantsSentence}`
         : locale === 'es'
-          ? `Ejemplos de video con IA de ${label} con prompts, ajustes y coste registrado en cada ficha. ${variantsSentence}`
-          : `${label} examples with prompts, settings, and recorded cost on each detail page. ${variantsSentence}`),
+          ? `Ejemplos de video con IA de ${label} con prompts, ajustes y precios actuales estimados en las fichas disponibles. ${variantsSentence}`
+          : `${label} examples with prompts, settings, and current price estimates on available detail pages. ${variantsSentence}`),
     heroTitle:
       localized.heroTitle ??
       (locale === 'fr' ? `Exemples ${label}` : locale === 'es' ? `Ejemplos de ${label}` : `${label} Examples`),
     heroSubtitle: localized.subtitle,
+    guideTitle: localized.guideTitle,
     intro: localized.intro,
     summary:
       localized.summary ??
       (locale === 'fr'
-        ? `${variantsSentence} Ouvrez un exemple pour consulter son prompt, ses réglages et le coût enregistré avant de lancer un nouveau rendu.`
+        ? `${variantsSentence} Ouvrez un exemple pour consulter son prompt, ses réglages et le tarif actuel estimé avant de lancer un nouveau rendu.`
         : locale === 'es'
-          ? `${variantsSentence} Abre un ejemplo para consultar su prompt, ajustes y coste registrado antes de lanzar un nuevo render.`
-          : `${variantsSentence} Open an example to review its prompt, settings, and recorded render cost before running a new render.`),
+          ? `${variantsSentence} Abre un ejemplo para consultar su prompt, ajustes y precio actual estimado antes de lanzar un nuevo render.`
+          : `${variantsSentence} Open an example to review its prompt, settings, and current price estimate before running a new render.`),
     sections: [
       {
-        title: sectionPromptTitle,
+        title: localized.sectionTitles?.[0] ?? sectionPromptTitle,
         body: localized.promptPatterns,
       },
       {
-        title: sectionLimitsTitle,
+        title: localized.sectionTitles?.[1] ?? sectionLimitsTitle,
         body: localized.strengthsLimits,
       },
       {
-        title: sectionPricingTitle,
+        title: localized.sectionTitles?.[2] ?? sectionPricingTitle,
         body: localized.pricingNotes,
       },
     ],

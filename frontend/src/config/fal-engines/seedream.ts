@@ -139,11 +139,11 @@ const SEEDREAM_PRO_ENGINE: EngineCaps = {
   region: 'global',
   modes: ['t2i', 'i2i'],
   maxDurationSec: 1,
-  resolutions: ['2K', '4K'],
+  resolutions: ['2K'],
   aspectRatios: [...SEEDREAM_ASPECT_RATIO_VALUES],
   fps: [1],
   audio: false,
-  upscale4k: true,
+  upscale4k: false,
   extend: false,
   motionControls: false,
   keyframes: false,
@@ -228,14 +228,12 @@ const SEEDREAM_PRO_ENGINE: EngineCaps = {
       default: 12,
       byResolution: {
         '2K': 12,
-        '4K': 24,
       },
     },
     flatCents: {
       default: 12,
       byResolution: {
         '2K': 12,
-        '4K': 24,
       },
     },
   },
@@ -244,7 +242,6 @@ const SEEDREAM_PRO_ENGINE: EngineCaps = {
     base: 0.12,
     byResolution: {
       '2K': 0.12,
-      '4K': 0.24,
     },
     currency: 'USD',
     notes: 'Seedream 5.0 Pro is billed per successfully generated professional image.',
@@ -385,7 +382,7 @@ export const SEEDREAM_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     seo: {
       title: 'Seedream 5.0 Pro AI Image Generator | MaxVideoAI',
       description:
-        'Use Seedream 5.0 Pro in MaxVideoAI for professional ByteDance image generation, visual editing, infographics, and 4K campaign-ready stills.',
+        'Use Seedream 5.0 Pro in MaxVideoAI for professional ByteDance image generation, visual editing, infographics, and 2K campaign-ready stills.',
       canonicalPath: '/models/seedream-5-0-pro',
     },
     type: 'image',
@@ -415,7 +412,7 @@ export const SEEDREAM_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       {
         question: 'How is Seedream 5.0 Pro different from Seedream 5.0 Lite?',
         answer:
-          'Use Seedream 5.0 Pro for professional finals, dense infographics, complex edits, and 4K campaign stills. Use Lite for faster reference-image generation before Seedance.',
+          'Use Seedream 5.0 Pro for professional finals, dense infographics, complex edits, and 2K campaign stills. Use Lite for faster reference-image generation before Seedance.',
       },
       {
         question: 'Does Seedream 5.0 Pro support batch output?',

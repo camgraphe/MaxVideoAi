@@ -40,7 +40,7 @@ function registryCapability(engineId: string): AgentPublicGenerationEngine {
   };
 }
 
-test('real H3 source-framed i2v prepares and confirms with a nullable stored ratio', async (t) => {
+test('real H3 source-framed i2v and target-audio t2v prepare and confirm owned references', async (t) => {
   const missing = missingDisposablePostgresCommand();
   if (missing) {
     t.skip(`${missing} is unavailable`);
@@ -87,14 +87,24 @@ test('real H3 source-framed i2v prepares and confirms with a nullable stored rat
   )).rows[0]?.count, '0');
   assert.equal(provider.captures.length, 0);
 
-  const sourceUrl = 'https://fixtures.maxvideoai.com/h3/source-frame.png';
+  const sourceUrl = 'https://storage.googleapis.com/mcp-test/h3/source-frame.png';
+  const assetId = 'ma_11111111111111111111111111111111';
+  await postgres.pool.query(`CREATE TABLE media_assets (
+    id text PRIMARY KEY, public_id text, user_id text, kind text, url text,
+    mime_type text, size_bytes bigint, width integer, height integer,
+    status text, deleted_at timestamptz, metadata jsonb
+  )`);
+  await postgres.pool.query(`INSERT INTO media_assets
+    (id, public_id, user_id, kind, url, mime_type, size_bytes, width, height, status, metadata)
+    VALUES ('h3-frame', $1, $2, 'image', $3, 'image/png', 1024, 1280, 720, 'ready', $4::jsonb)`,
+  [assetId, identity.userId, sourceUrl, JSON.stringify({ originalName: 'source-frame.png' })]);
   const sourceFramedI2v: Omit<CanonicalGenerationRequest, 'schemaVersion'> = {
     surface: 'video',
     engineId: 'minimax-h3',
     mode: 'i2v',
     prompt: 'Animate the source image while preserving its framing',
     settings: { durationSec: 5, resolution: '2K' },
-    references: [{ kind: 'https', url: sourceUrl, role: 'source', mediaKind: 'image' }],
+    references: [{ kind: 'asset', assetId, role: 'source' }],
     outputCount: 1,
   };
   const prepared = await callPrepared(session.client, sourceFramedI2v);
@@ -124,4 +134,23 @@ test('real H3 source-framed i2v prepares and confirms with a nullable stored rat
   const capture = provider.captures.find((entry) => entry.quoteId === quoteId);
   assert.equal(capture?.body.imageUrl, sourceUrl);
   assert.equal(Object.hasOwn(capture?.body ?? {}, 'aspectRatio'), false);
+
+  const audioAssetId = 'ma_22222222222222222222222222222222';
+  const audioUrl = 'https://storage.googleapis.com/mcp-test/h3/soundtrack.wav';
+  await postgres.pool.query(`INSERT INTO media_assets
+    (id, public_id, user_id, kind, url, mime_type, size_bytes, status, metadata)
+    VALUES ('h3-audio', $1, $2, 'audio', $3, 'audio/wav', 1024, 'ready', $4::jsonb)`,
+  [audioAssetId, identity.userId, audioUrl, JSON.stringify({ originalName: 'soundtrack.wav', durationSec: 30 })]);
+  const audioPrepared = await callPrepared(session.client, {
+    ...invalidT2v,
+    settings: { durationSec: 5, resolution: '2K', aspectRatio: '16:9' },
+    references: [{ kind: 'asset', assetId: audioAssetId, role: 'reference' }],
+  });
+  const audioQuoteId = String(audioPrepared.quoteId);
+  const audioConfirmed = await callConfirmed(session.client, audioQuoteId);
+  assert.notEqual(audioConfirmed.isError, true, JSON.stringify(audioConfirmed.structuredContent));
+  assert.equal(provider.calls(audioQuoteId), 1);
+  const audioCapture = provider.captures.find((entry) => entry.quoteId === audioQuoteId);
+  assert.ok((audioCapture?.body.inputs as Array<{ assetId: string; slotId: string; durationSec: number }>).some((input) =>
+    input.assetId === audioAssetId && input.slotId === 'target_audio_url' && input.durationSec === 30));
 });

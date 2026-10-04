@@ -32,7 +32,6 @@ const VIDEO_TEXT_IMAGE_MODELS = [
   'happy-horse-1-0',
   'wan-3',
   'wan-3-prime',
-  'seedance-1-5-pro',
   'seedance-2-0',
   'seedance-2-0-fast',
   'seedance-2-0-mini',

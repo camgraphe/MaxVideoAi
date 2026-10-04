@@ -1,0 +1,105 @@
+{
+  "model": "gpt-5.6-luna",
+  "evidenceKind": "agent-generated-mocked-next-step-simulation",
+  "cases": [
+    {
+      "id": "F01",
+      "skill": "plan",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "list_models",
+          "arguments": {
+            "surface": "video"
+          }
+        }
+      ],
+      "reply": "I’ll check the currently available video models first, then compare their live camera-control capabilities and visual-quality fit for your ad."
+    },
+    {
+      "id": "F02",
+      "skill": "plan",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "list_models",
+          "arguments": {
+            "surface": "video"
+          }
+        }
+      ],
+      "reply": "Je vais d’abord vérifier les modèles vidéo actuellement disponibles, puis comparer leur adéquation à une scène cinématographique, naturelle et fluide."
+    },
+    {
+      "id": "F03",
+      "skill": "plan",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "list_models",
+          "arguments": {
+            "surface": "video"
+          }
+        }
+      ],
+      "reply": "Primero comprobaré qué modelos de vídeo están disponibles ahora y después compararé cuál encaja mejor con una escena artística, bonita y expresiva."
+    },
+    {
+      "id": "F04",
+      "skill": "plan",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "list_models",
+          "arguments": {
+            "surface": "video",
+            "resolution": "4K"
+          }
+        }
+      ],
+      "reply": "Je vais vérifier les modèles vidéo réellement disponibles avec une livraison 4K, puis valider leurs modes et limites avant de privilégier l’un d’eux."
+    },
+    {
+      "id": "F05",
+      "skill": "plan",
+      "actions": [],
+      "reply": "Para estimar los seis Shorts necesito saber la duración de cada plano, la resolución y el formato (por ejemplo, 9:16), además del modelo o si quieres que lo elija. ¿Los dos intentos son por cada plano?"
+    },
+    {
+      "id": "F06",
+      "skill": "plan",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "list_models",
+          "arguments": {
+            "surface": "video"
+          }
+        }
+      ],
+      "reply": "Je vais vérifier les modèles vidéo actuels, puis chercher une proposition qui respecte cet ordre : rapidité d’abord, coût réduit ensuite. Pour chiffrer les clips, il faudra aussi leurs durées et leur format de sortie."
+    },
+    {
+      "id": "F07",
+      "skill": "plan",
+      "actions": [
+        {
+          "type": "discover_tools",
+          "query": "MaxVideoAI list_models"
+        }
+      ],
+      "reply": "Les outils ne sont pas visibles dans l’inventaire initial, mais l’hôte prend en charge la recherche différée. Je vais rechercher MaxVideoAI et ses outils de découverte avant de conclure qu’il y a un problème de connexion."
+    },
+    {
+      "id": "F08",
+      "skill": "plan",
+      "actions": [
+        {
+          "type": "discover_tools",
+          "query": "VideoOther video model comparison"
+        }
+      ],
+      "reply": "I’ll discover the callable VideoOther tools first, then use their live model details for the comparison while keeping VideoOther as your selected plugin."
+    }
+  ]
+}

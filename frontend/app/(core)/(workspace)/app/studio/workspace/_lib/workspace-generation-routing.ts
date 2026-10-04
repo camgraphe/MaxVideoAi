@@ -31,8 +31,10 @@ import {
   buildWorkspaceUpscaleToolRequest,
 } from './workspace-tool-requests';
 import { resolveWorkspaceSelectedOutputCount } from './workspace-output-count';
+import { expectedWorkspaceAudioQuote } from './workspace-audio-pricing';
 
 type WorkspaceGenerationRouteParams = {
+  pricingSnapshot?: PricingSnapshot | null;
   nodes: WorkspaceGraphNode[];
   edges: WorkspaceGraphEdge[];
   shotNode: WorkspaceGraphNode;
@@ -233,7 +235,7 @@ async function submitVideoGeneration(params: WorkspaceGenerationRouteParams): Pr
     shotNodeId: params.shotNode.id,
     outputName: params.outputName,
     submissionId: params.submissionId,
-  }))) as VideoGenerationMediaResult;
+  }), { pricingSnapshot: params.pricingSnapshot })) as VideoGenerationMediaResult;
   const primaryImageUrl = referenceImages[0] ?? null;
   const audioUrl = result.audioUrl ?? result.audio?.url ?? null;
   const audioProvenance = resolveWorkspaceAudioProvenance({
@@ -311,7 +313,7 @@ async function submitImageGeneration(params: WorkspaceGenerationRouteParams): Pr
     prompt: params.prompt,
     referenceImages,
     policy,
-  }));
+  }), params.pricingSnapshot);
   if (!result.images.some((image) => Boolean(image.url))) {
     throw new Error('Image generation returned no image output.');
   }
@@ -413,11 +415,12 @@ export function buildWorkspaceAudioGenerationRequest({
 }
 
 async function submitAudioGeneration(params: WorkspaceGenerationRouteParams): Promise<WorkspaceOutputMetadata> {
-  const result = await runAudioGenerate(buildWorkspaceAudioGenerationRequest({
+  const request = buildWorkspaceAudioGenerationRequest({
     settings: params.settings,
     prompt: params.prompt,
     videoReferences: videoReferencesFor(params),
-  }));
+  });
+  const result = await runAudioGenerate({ ...request, expectedQuote: expectedWorkspaceAudioQuote(params.pricingSnapshot) });
   const audioUrl = result.audioUrl ?? (result.outputKind === 'audio' ? result.videoUrl : null);
   const mediaUrl = result.outputKind === 'video' ? result.videoUrl : audioUrl;
   const outputKind = result.outputKind === 'video' ? 'video' : 'audio';
@@ -557,7 +560,7 @@ async function submitStoryboardGeneration(params: WorkspaceGenerationRouteParams
     settings: params.settings,
     prompt: params.prompt,
     referenceImages,
-  }));
+  }), params.pricingSnapshot);
   if (!result.images.some((image) => Boolean(image.url))) {
     throw new Error('Storyboard generation returned no image output.');
   }

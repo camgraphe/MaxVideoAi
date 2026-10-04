@@ -58,7 +58,8 @@ test('admin engines view owns dashboard sections and table columns', () => {
   assert.match(viewSource, /function AdminEngineConfigurationPanel/);
   assert.match(viewSource, /function ConfigInlineSummary/);
   assert.match(viewSource, /<AdminSection/);
-  assert.match(viewSource, /<EngineSettingsPanel/);
+  assert.doesNotMatch(viewSource, /<EngineSettingsPanel/);
+  assert.match(viewSource, /Existing overrides remain active/);
   assert.match(viewSource, /from '\.\.\/_lib\/admin-engines-view-model';/);
   assert.doesNotMatch(viewSource, /fetchEnginePerformanceMetrics/);
   assert.doesNotMatch(viewSource, /ensureEngineSettingsSeed/);

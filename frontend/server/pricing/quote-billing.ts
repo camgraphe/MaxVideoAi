@@ -11,6 +11,7 @@ import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
 import { isGptImage25EngineId } from '@/lib/image/gptImage2';
 import { getVersionedPricingPolicy, resolveLiveAudioPricingProfile } from '@/lib/pricing-policy-defaults';
 import type { PricingContext } from '@/lib/pricing-context';
+import type { QueryExecutor } from '@/lib/db';
 import {
   buildStoryboardPricingProjection,
   STORYBOARD_BILLING_ENGINE_ID,
@@ -22,12 +23,22 @@ import {
   resolveServerBillingPolicy,
   type ResolveServerPricingPolicyDependencies,
 } from './resolve-pricing-policy';
+import {
+  customerTariffsEnabledByCode,
+  loadCustomerTariffQuoteState,
+  type EffectiveCustomerTariffState,
+} from './customer-tariff-store';
+import { resolveCustomerTariffQuote } from './resolve-customer-tariff';
+import { buildManualTariffScenario } from '@/lib/pricing-manual-scenario';
+import { assertSeedanceWorkflowPricing } from '@/lib/seedance-workflow-pricing';
+import { CustomerTariffUnavailableError } from './resolve-customer-tariff';
 
 /** Finishing tools supply vendor facts; the canonical kernel owns all customer rounding and margins. */
-export async function computeCanonicalFinishingBillingSnapshot(input: { toolId: string; quality: string; vendorBudgetUsd: number; durationSec: number; profileId: string; pricingSource: string }): Promise<PricingSnapshot> {
+export async function computeCanonicalFinishingBillingSnapshot(input: { toolId: string; quality: string; vendorBudgetUsd: number; durationSec: number; profileId: string; pricingSource: string },
+  dependencies: { pricingPolicy?: ResolveServerPricingPolicyDependencies } = {}): Promise<PricingSnapshot> {
   if (!Number.isFinite(input.vendorBudgetUsd) || input.vendorBudgetUsd <= 0) throw new Error('Invalid tool vendor budget.');
   const engineId = 'toolbox-finishing';
-  const { policy, vendorAccountId } = await resolveServerBillingPolicy({ engineId, mode: `${input.toolId}:${input.quality}`, resolution: 'video' });
+  const { policy, vendorAccountId } = await resolveServerBillingPolicy({ engineId, mode: `${input.toolId}:${input.quality}`, resolution: 'video' }, undefined, dependencies.pricingPolicy);
   // A database-wide legacy default must not silently replace this product's policy.
   if (policy.rule.engineId !== engineId) throw new Error('TOOL_PRICING_UNAVAILABLE');
   if (policy.rule.currency !== 'USD') throw new Error('Tool pricing currency is unsupported.');
@@ -47,8 +58,12 @@ export async function computeCanonicalBillingSnapshot(
   dependencies: {
     pricingPolicy?: ResolveServerPricingPolicyDependencies;
     membershipDiscounts?: Record<string, number>;
+    loadCustomerTariffState?: () => Promise<EffectiveCustomerTariffState>;
+    /** Operational cutover validates through the same selector reader before commit. */
+    customerTariffExecutor?: QueryExecutor;
   } = {}
 ): Promise<PricingSnapshot> {
+  assertSeedanceWorkflowPricing(context);
   const pricingDetails = context.engine.pricingDetails ?? (await getPricingDetails(context.engine.id));
   const { policy, vendorAccountId } = await resolveServerBillingPolicy(
     {
@@ -64,6 +79,36 @@ export async function computeCanonicalBillingSnapshot(
   const memberTierDiscounts = LIVE_MEMBERSHIP_DISCOUNTS;
 
   const billingFacts = buildBillingPricingFacts(context, pricingDetails, currency);
+  if (context.workflowStep || dependencies.loadCustomerTariffState || customerTariffsEnabledByCode()) {
+    const selector = buildManualTariffScenario(context, billingFacts.facts).selector;
+    const tariffState = await (dependencies.loadCustomerTariffState ?? (() => loadCustomerTariffQuoteState(selector, dependencies.customerTariffExecutor)))();
+    const manual = resolveCustomerTariffQuote({ context, facts: billingFacts.facts,
+      at: new Date().toISOString(), state: tariffState });
+    if (manual) {
+      return projectCanonicalQuoteToSnapshot({
+        quote: manual.quote,
+        base: manual.supplierCost ? { ...billingFacts.base, rate: manual.supplierCost.amountUsd / billingFacts.base.seconds,
+          amountCents: manual.quote.breakdown.vendorSubtotalExactCents } : billingFacts.base,
+        // This all-in factual estimate includes image references; legacy addons must not be counted again.
+        addons: manual.supplierCost ? [] : billingFacts.addons,
+        vendorAccountId,
+        meta: {
+          ...billingFacts.meta,
+          ...(context.workflowStep ? { workflowStep: context.workflowStep } : {}),
+          ...(manual.supplierCost ? { providerCostKind: manual.supplierCost.kind,
+            providerCostSource: manual.supplierCost.source, providerCostSourceUrl: manual.supplierCost.sourceUrl,
+            providerCostCheckedAt: manual.supplierCost.checkedAt, providerCostListUsd: manual.supplierCost.listAmountUsd,
+            providerCostContract: manual.supplierCost.contract, providerCostUsage: manual.supplierCost.usage } : {}),
+          pricingMode: 'manual_tariff',
+          customerTariffRevision: manual.revision,
+          customerTariffCellId: manual.quote.manualTariff.cellId,
+          engineLabel: context.engine.label,
+          engineVersion: context.engine.version,
+        },
+      });
+    }
+  }
+  if (context.workflowStep) throw new CustomerTariffUnavailableError('A separate active Draft workflow tariff is required.');
   const policyDocument = getVersionedPricingPolicy();
   const profileId = policy.rule.compatibilityProfile ?? billingFacts.compatibilityProfileId;
   const compatibilityProfile: PricingCompatibilityProfile | undefined = policyDocument.compatibilityProfiles.find(

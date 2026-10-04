@@ -6,7 +6,296 @@
 
 `pricing_read` exposes one exact image/video scenario through Studio's existing director loop. `image-generation-service.ts` additionally applies current Studio authority and certification. Saved image references must be explicitly attached and resolve to the current owner. Estimates return amount/currency, settings, reference count, `estimatedAt` and `quoteRequired`; the client still confirms a fresh canonical quote before spending. Audio and unsaved project-output estimates are unsupported. Advice and comparisons must leave existing prepared/accepted quotes intact. Behavioral coverage lives in `studio-conversation-pricing*.test.ts` and the existing MCP preparation/budget tests.
 
+## Approved production reader (2026-10-02)
+
+The approved release sets `config/customer-tariffs.json` to `active: true`.
+This authored switch enables the default database reader only when
+`NODE_ENV=production`, including Vercel production and preview builds. A migrated
+database with inactive tariff state still quotes the existing legacy policy;
+atomic initial activation installs the reviewed grid separately. Missing schema,
+unavailable database, or a missing active cell refuses a quote rather than
+silently falling back. Standalone production quote audits must explicitly select
+`NODE_ENV=production`; older baseline collectors do not select it automatically.
+
+Development still requires `PRICING_SANDBOX=1` and the exact local Unix-socket
+database gate. The production switch does not enable arbitrary development or
+test databases. This code change does not itself apply migrations or activate
+production prices. Follow the [cutover runbook](../deployment/customer-tariff-cutover.md).
+
+## Current local preproduction checkpoint (2026-10-02)
+
+The [preproduction acceptance](2026-10-02-pricing-preproduction.md) owns the latest
+validation, active-grid and browser evidence. Production remains inactive and
+requires its own current capture, reviewed activation path and deployment decision.
+BytePlus account discount activation is non-blocking for the unchanged customer
+grid verified above undiscounted LIST. Customer tariff cells remain independent
+of signed supplier discounts; effective cost/invoice reconciliation follows
+activation. Any later price reduction that relies on a discount needs effective
+supplier-cost verification before approval.
+The [cutover runbook](../deployment/customer-tariff-cutover.md) owns preparation
+and recovery. `pricing:cutover:schema` is an explicitly targeted read-only catalog
+inventory with exact migration digests; it neither applies DDL nor certifies
+production quote parity or activation readiness.
+
+The separate initial cutover owner, `server/pricing/customer-tariff-cutover.ts`,
+uses an explicitly selected pool and a branded maintenance transaction. Canonical
+quotes can receive `customerTariffExecutor` to use the normal selector database
+reader on that same uncommitted transaction. Default request readers and quote
+algorithms are unchanged. No application route invokes the maintenance writer.
+The production reader switch is described above. Migration 61 adds immutable
+initial-activation/recovery evidence without activating any price.
+The owner requires fresh complete source-bound evidence, empty inactive initial
+state, a current admin actor and locked commercial inputs. Recovery preserves
+cells, versions and paid snapshots; it is one component of a coordinated code,
+configuration and database rollback. See the runbook for exact release guards.
+
+The [October 2 deployed comparison](2026-10-02-pricing-deployed-comparison.md)
+records a fresh read-only commercial snapshot and offline reconstruction using
+the actual deployed Git source, including disclosed model and tool corrections.
+Adrien reports the BytePlus contract validated. That comparison still requires
+publication-time freshness and a separately reviewed production activation path.
+
+Seedream's factual source count is shared by actual image charging, image
+estimates, MCP settlement and provider comparison. `lib/image/seedream.ts` includes
+the main edit source and every additional reference; Pro's ten allowed totals
+have distinct guarded tariff selectors while retaining the original one-source
+identity and customer amount. Admin labels the count **Total source images**.
+
+Both media-aware and media-free preflight paths must forward the server-resolved
+`seedanceWorkflowStep` into the canonical quote. Ordinary 480p/1080p never implies
+a Draft/final step; client-declared workflow requests first resolve authorization,
+the local gate and owned Draft facts. `seedance-workflow-preflight-postgres.test.ts`
+locks this boundary using intentionally different normal and workflow amounts.
+
+## Signed BytePlus contract in the local pricing admin (2026-10-01)
+
+`server/seedance25-output-dimensions.ts` owns the published Seedance 2.5 output
+rasters for supplier accounting, manual supplier facts and admin comparisons.
+The resolution names are provider tiers: square 480p is 640×640 and square 1080p
+is 1440×1440; 16:9 is 854×480 and 1920×1080. Do not infer a fixed short side
+or reuse the historical retail dimension table as factual supplier usage.
+Duration estimates use 24 fps; provider-reported tokens take precedence at
+completion. The minimum 4s square Draft/final canary reported 97 frames, so its
+actual LIST-based estimate slightly exceeds the 96-frame preflight estimate.
+The correction preserves authored customer cents and historical receipts.
+See [the dated canary evidence](2026-10-01-seedance-draft-lifecycle.md#minimum-cost-provider-canary).
+
+`server/byteplus-accounting.ts` also owns the published Seedance 1.5/2.0
+rasters and the shared supported-output token estimator. Mini and Fast use the
+2.0 rasters at their supported 480p/720p tiers; Standard also permits 1080p/4K.
+For example, 2.0 480p 16:9 is 864×496 and 720p square is 960×960.
+Direct BytePlus accounting, manual supplier guards and admin comparisons use
+these dimensions. They do not rewrite historical retail calculations or authored
+customer prices. Another execution provider retains its own reference facts.
+
+For 2.0/2.5 video-input tasks, supplier tokens include **input plus output video
+duration** and the published minimum consumption. `estimateBytePlusBillableTokens`
+owns this estimate. The minimum expression
+`round((outputSeconds + ceil(2 × outputSeconds / 3)) × width × height × 24 / 1024)`
+is inferred from and matches all 531 rows of the [supplier's linked minimum
+tables](https://bytedance.larkoffice.com/wiki/H0fUwHPxtiHayOk6CVpcZzKqnHJ), captured
+on October 1, 2026. The provider does not publish that expression as its billing
+algorithm. Keep estimation within those published duration/resolution domains;
+reported completion/total tokens remain authoritative for completed usage.
+
+Preflight and generation derive source duration from server-resolved owned media;
+MCP uses resolved reference records. Generation persists that duration for the
+poller's fallback. Missing input duration means unavailable supplier cost/margin,
+not output-only cost. Active proportional tariffs require trusted source duration;
+an unresolved MCP HTTPS reference cannot expose a numeric current tariff by using
+caller-declared metadata. The generation path rechecks actual media and the
+canonical cost guard.
+
+### Proportional normal Seedance video-input tariffs (2026-10-02)
+
+`server/pricing/seedance-input-tariff.ts` owns authoring and whole-domain validation
+for 2.0 Standard/Mini/Fast and normal 2.5 video-input variants. Existing positive
+minimum prices remain unchanged. An unprofitable minimum instead uses the positive
+margin of the same options without video as its anchor, rounding the new minimum
+up to a cent. Edit/extend variants without a no-video counterpart use the same
+text-generation output options; the preparation report records this anchor mode.
+This is a one-time reviewed authoring operation, not a global markup.
+
+The persisted literal price is `rate × max(minimumBillableSeconds, outputSeconds +
+inputSeconds)`, rounded up once at the end. Its equivalent authored component has
+the minimum flat amount and one source-second term above the included input
+threshold. The same proportional shape is required for edits and rollback.
+Quotes never recalculate retail amounts from a future supplier rate or discount.
+
+For example, Standard 480p/16:9/4s output has a seven-second minimum: $0.68 for up
+to three source seconds, then $1.85 for fifteen source seconds. Estimated gross
+margin is approximately 55.5% in both cases, excluding payment and operating fees.
+Admin exposes one customer rate per billable second, the minimum, actual source
+and output seconds, and the proposed total. Preview, stale-review checks,
+confirmation and immutable history reuse the shared admin mutation path.
+
+Coverage uses a two-second input representative and a continuous selector; it is
+not an exact-price exception for that duration. Billing, MCP confirmation and
+public scenario quotes resolve the same authored cell for fractional input lengths,
+up to fifteen seconds for 2.0 and thirty for 2.5. Draft/final workflow tariffs and
+all variants without video input remain independent.
+
+`seed-local-seedance-input-tariffs.ts` previews a fingerprint-bound initialization.
+`apply-local-seedance-input-tariffs.ts` requires a branded transaction, development
+sandbox code flags and an actual matching Unix-socket connection. It locks and
+reproduces the reviewed state before appending new continuous cells and a batch
+audit event. It preserves all existing cells. Production activation remains a
+separate release decision.
+
+Fresh all-model preparation also requires the explicit
+`PRICING_RELEASE_SEEDANCE_MARGIN_POLICY=preserve_positive_variant_margin` policy.
+It authors the same literal rates from the captured customer cents, records any
+minimum increases separately from the approved GPT cent floors, and binds both
+to the release fingerprint. Locked local activation reproduces that policy and
+all candidate quotes before writing. Another declared provider retains its own
+captured customer amounts and factual cost guard. Preparation and activation
+share an explicit factual environment allowlist for Luma rates and Seedance
+route, region, mode and availability settings; credentials are excluded.
+
+The [October 2 local acceptance](2026-10-02-seedance-proportional-pricing.md)
+records 3,186 new continuous cells, 273 corrected minima and the actual private
+sandbox quote audit. This does not certify production state or observed invoices.
+
+Adrien accepted order form `CT20260925128931` and explicitly requested using its
+commercial terms now. The October 2 decision makes account activation a
+non-blocking cost follow-up for the unchanged, LIST-validated customer grid.
+`server/byteplus-account-contract.ts` applies the signed discount to
+the independent LIST estimate for the same Johor route, billing SKU and validity
+period. Mini pays 40% of LIST, Fast 50%, and Seedream Lite/Pro 90%. Standard 2.0
+and normal 2.5 480p/720p have no discount. This is a contract-based cost estimate;
+it is not proof of console activation or an observed invoice.
+
+Both summary inventory and selected variants use the same server projection.
+The admin compares the contract cost with the unchanged canonical customer price,
+keeps LIST visible, and derives unit cost, gross margin and price simulations from
+that contract cost. Dates use the console's UTC+8 calendar (Oct 1 through Aug 26,
+2027, inclusive). Public promotions do not stack or determine this account rate.
+Other providers/regions, ordinary 2.5 1080p, Draft/final, 2.0 4K and disabled 1.5
+do not inherit a signed rate. Observed invoice evidence remains independent.
+`server/byteplus-normal-cost.ts` shares normal-task LIST facts between the admin
+and the active manual quote. The latter replaces Seedance's padded legacy retail
+basis with factual LIST/contract cost for its below-cost guard, vendor share and
+gross difference. Its snapshot base and source metadata use that same estimate,
+including image references. This does not change authored customer cents. The
+inactive legacy quote and stored historical snapshots remain intact. Expired or
+unmatched contract SKUs use LIST without inventing a discount; another execution
+provider keeps its existing facts. The production reader requires its own runtime
+and database activation as described above.
+See [the contract checkpoint](2026-10-01-byteplus-contract-pricing.md).
+
+## ByteDance supplier facts migration (2026-09-28)
+
+`frontend/server/byteplus-list-tariff.ts` owns a dated, published ModelArk list-rate projection for Seedance 2.0/2.5, Seedance 1.5 audio and Draft, and Seedream 5.0 Lite/Pro. It records Fast and Mini's time-limited public promotion separately. The promotion is not an account-specific effective rate. Until the BytePlus contract and invoice are confirmed, effective and observed costs stay `null`; the BytePlus poller records a list-price estimate from reported tokens (or dimensions when tokens are missing), with its provenance. Draft and final are separate paid provider tasks.
+
+The Seedance 2.5 Draft request builders and owned-link reservation table now connect to the local generation and preflight paths behind `SEEDANCE_2_5_DRAFT_ENABLED=1`, development, loopback and sandbox guards. They emit a 480p text-to-video Draft and a separate 1080p final from an owned, completed Draft job. The final inherits the stored creative facts before quotation and reserves the parent inside the wallet debit/job transaction. Each step requires a distinct active manual tariff selector; ordinary 480p/1080p prices are never a billing fallback. Polling makes a Draft ready only after its durable output completes, and can recover an accepted link from server-persisted submission provenance. A final can be released for a fresh paid attempt only after its own full refund is present; the Draft and historical receipts stay intact. Uncertain submission retains payment and requires reconciliation. No public Draft launch or paid canary is implied. See [the local lifecycle checkpoint](2026-10-01-seedance-draft-lifecycle.md).
+
+Seedance 2.x's existing customer quote still uses the historical padded basis in `frontend/src/lib/seedance-2-pricing.ts`. The value and new quote metadata are named `legacyRetailBasis` so they cannot be mistaken for supplier cost. Its current pricing rule and customer totals are preserved during this preparatory slice. The authored commercial formula in `launch-config.ts` remains pending a complete, verified manual-tariff cutover. See the [dated path audit](bytedance-pricing-path-audit-2026-09-28.md) and [implementation plan](../superpowers/plans/2026-09-28-family-manual-pricing-grid.md).
+
+`packages/pricing/src/manual-tariff.ts` provides an inactive canonical manual-tariff primitive. It resolves only complete, exact selectors within a half-open effective period, chooses a precise database cell over its versioned counterpart, and rejects missing or overlapping cells. The customer amount comes from authored retail units or a fixed exception; the supplier subtotal is a separate factual input. A below-cost amount fails until settlement policy is designed. Its read-only parity audit flags missing cells, duplicate scenario IDs, invalid baselines, and any customer-cent delta in the supplied matrix. `frontend/server/pricing/quote-billing.ts` now contains an inactive manual branch, and migration 54 plus `/admin/pricing` can prepare cells without changing live quotes. Neither code nor database activates that branch in this preparatory state.
+
+The [ByteDance baseline record](bytedance-pricing-baseline-2026-09-28.md) includes the earlier 202-scenario report. The newer [all-model baseline](2026-09-29-customer-tariff-baseline.md) matched the local database identity to the configured production deployment without exposing credentials, and read 66,549 effective scenario quotes under a repeatable-read transaction. Its four effective rules and 122 unresolved capability gaps are recorded separately. The report is evidence for sampled current customer cents, not a complete tariff seed or permission to activate manual prices.
+
+The public read-only `/api/pricing/quote` route accepts bounded, catalog-supported model scenarios and returns the current database-aware billing quote with a price-sensitive revision. It requires a successful pricing-rule database read, so an outage cannot relabel a versioned fallback as the current price. The Pricing video and image tables, model decision cards, visible model offer/Product JSON-LD, browser estimator/chip and the homepage Wan 3 price demo now consume that quote; scenarios that cannot be matched exactly omit the numeric price. This does not make the inactive manual tariff cells live. Bounded image-output counts reuse the image charging convention (`durationSec` is output count); `quantity` remains 1 and labels show images, not seconds. Unreviewed bundles and open/media-dependent scenarios remain outside the exact public route. Marketing pages still use ISR; the existing admin policy confirmation revalidates the affected paths.
+
+`frontend/server/pricing-admin/provider-cost-comparison.ts` prepares read-only comparison rows from independent supplier evidence and an already-computed canonical customer quote. `/admin/pricing` now lists representative scenarios for every app-published model, grouped into 15 registry families, and the same Pricing view navigates exact supported variants and previews a unit-price edit in place. It separates published list estimates, dated public promotions, verified account-effective costs, and observed invoice amounts; a missing figure stays unknown. An unavailable tariff database disables customer-tariff editing. The existing margin-rule editor remains live until a separately gated manual-tariff cutover. This branch change is not a production deployment. Follow [supplier-rate reconciliation](byteplus-contract-rate-verification.md) for account costs and invoices. Pending account discount activation does not block unchanged customer tariffs validated above LIST; the separate production parity and delivery gates still apply.
+
+### Admin decision arithmetic (2026-09-30)
+
+The route-local `pricing-decision.ts` derives decision metrics from already quoted supplier/customer totals; it never resolves or persists a commercial tariff. Video rates divide the selected total by its duration, and image rates divide it by output quantity. These are comparable scenario rates, not a replacement for the provider's token or task billing terms. Unknown quantities/costs remain unavailable. A confirmed current account cost takes precedence over LIST/catalogue evidence; a historical observed invoice is not treated as a current supplier tariff. Cross-provider references remain explicitly marked.
+
+Gross margin is `(customer − cost) / customer`; markup is `(customer − cost) / cost`. The simulator optionally includes entered extra costs per generation and projects 100 identical generations, excluding all other fees and operating costs. Mathematical 30/50/60% targets are proposals only. Decimal coefficients are multiplied before half-up scenario-cent rounding; margin targets round up to meet the target. Non-finite derived results are rejected.
+
+`tariff-editor-selection.ts` transfers every encoded option from the compared canonical scenario ID. A proposed unit rate is converted into explicit total cents in the same model row, then requires the existing server preview and explicit confirmation. The scenario API projects that selected variant’s canonical quote and policy provenance into its supplier comparison. Changing an input/variant, closing a row or refreshing its quote/revision cancels prior approval; a cancellation epoch also discards late responses after reopening the same row. Neither this editor nor the simulator changes activation, the live quote, or historical paid amounts.
+
+### Model-specific extras in the unified editor (2026-09-30)
+
+Wan 3 and Prime `v2v`/`extend` accept a positive decimal source duration in the read-only public quote and exact admin editor, within the factual owner's 15-second input and 30-second combined limits. `wan3-tariff-scenario.ts` rebuilds identities through the same facts and selector owner as charging. Admin preview reconstructs only a supported canonical identity; extra, duplicate and unsupported dimensions are rejected. Charging continues to obtain source durations from owned media. A prepared fixed price applies precisely to that source/output duration; neighboring durations do not inherit it. The source control preserves draft digits, blocks approval during unavailable/invalid quotes, and discards approval on changes.
+
+This does **not** close continuous manual coverage. The current standard rule rounds its margin separately before the final customer total: Wan 720p, 5 output seconds and 3.25 input seconds has supplier basis 82.5 cents and customer total 108 cents; a nearest-rounded linear 13-cent/second price would produce 107 cents. A future continuous seed must preserve the effective policy's rounding for all source durations or obtain an explicitly approved price delta. The four fractional-input capability gaps, original staged seed and inactive activation state remain intact. Comparison totals include source plus output, while the displayed comparable `/s` rate is divided by output seconds and labeled accordingly.
+
+The continuous continuation adds authored `unit_components` to the canonical kernel: independent absolute rates/flats, frozen quantity precision, component rounding and final rounding. No quote-time component reads supplier amounts or a percentage rule. The migration-only Wan compiler freezes the effective standard policy into those amounts; unsupported profiles fail instead of approximating. Exact point exceptions retain precedence; a reviewed Wan 3/Prime `v2v`/`extend` lookup can then resolve the exact output/options class with `inputVideoDurationSec=continuous`, charging its trusted `input_video_seconds` quantity. Database reads fetch only these two selectors and their historical versions, never the entire grid.
+
+The inline Wan editor now distinguishes output USD/s and source USD/s. **Preserve current prices** previews the effective live rounding (or the current authored tariff after activation); **Preview unit prices** proposes an explicit output amount plus source-second rate with nearest cent rounding. Both require the shared confirmation transaction and immutable history. Changing source duration or a rate invalidates approval. Before preparation or an active edit, the server checks the entire positive source range through 15 seconds / the combined 30-second cap: nonnegative customer components are monotone, so checking the first representable duration of every supplier-ceil-cent interval proves the below-reference guard between examples as well. Unknown account costs remain unknown; this guard uses factual reference amounts and does not establish an actual contract margin.
+
+This continuation prepares continuous cells without changing the original sampled seed or activation. The four coverage boundaries remain open until the complete effective seed and its parity evidence include every affected output/options class. The local browser verified preservation at 1.08 USD and the explicit linear alternative at 1.07 USD, without confirming or writing a tariff.
+
+`frontend/lib/pricing-audit/manual-tariff-dimensions.ts` owns schema-bounded references, image-output counts and the legacy Ray 2 loop variants. The shared coverage collector expands them once; admin no longer authors a separate expansion. GPT Image 2.5 uses total submitted edit sources; Luma edit uses additional references beyond the mandatory main source; H3 keeps its included-reference threshold and its mixed-media gap. Image-only reference modes use their schema bounds; mixed video/audio references remain incomplete. Audio, quality and trusted media/token variants continue to use the existing scenario context and quote owner. No universal addon percentage or retail arithmetic is introduced.
+
+All collected selectors and quantities reuse `buildManualTariffScenario`. For priced references that owner explicitly distinguishes counts 0 and 1: omitting them would alias commercially different Luma variants. Video references carry both submitted image counts as generation does; fixed GPT sizes carry the parsed pixel size as image generation does. The admin narrows references before their derived input count and hides that duplicate video control. This changes inactive manual identity only, not the legacy live quote formula. The captured 66,549-scenario baseline and staged seed remain historical evidence, not a complete current activation seed. The [bounded local continuation](2026-09-30-bounded-tariff-coverage.md) quotes 118,007 scenarios and reconciles all original 66,549 to identical customer cents after 1,380 selector identities are normalized. It is local evidence, with 119 unresolved boundaries and activation off. Open media, auto/custom sizes and unbounded references remain release gates; Ray 3.2 HDR/EXR still requires an explicit generation-to-pricing projection.
+
+### Exact supplier comparison and catalogue references (2026-09-30)
+
+`tariff-provider-comparison.ts` shares the selected exact scenario between the inventory and scenario-detail API. It retains the complete pricing context (quality, references, media durations and addons), uses the generation route policies, and supplies image dimensions through the existing Seedream payload-size owner. Changing a control recalculates supplier evidence on the server; it no longer discards the supplier column when leaving the representative scenario. The isolated sandbox selects the intended BytePlus route for Standard/Fast while retaining blank credentials and disabled submissions.
+
+`catalog-supplier-reference.ts` projects the existing provider-fact owners without calling the customer quote or applying a margin. Its `catalog_reference_estimate` status is distinct from a verified published LIST estimate. It keeps sub-cent precision, source label, reference provider, rate breakdown and the catalogue model version. That version is **not** a supplier verification date. Cross-provider references, including Luma's Fal reference and Alibaba rates shown beside a Fal route, are labeled explicitly. Seedance's padded historical retail basis is excluded entirely.
+
+The H3 Max documented rate concerns its Fal endpoint; MiniMax is the model author, not a distinct execution route in this projection. Its admin catalogue reference retains the Fal endpoint URL without claiming fresh LIST or account verification. The sandbox explicitly selects Alibaba for Wan 3/Prime in admin and public routing, with Fal fallback off; MiniMax retains Fal. Clearing credentials must not erase this intended provider selection. `generationDisabledReason=local_sandbox` explicitly identifies deliberate local isolation; an unavailable configured route has a separate reason. Neither establishes production availability.
+
+GPT edit sources are normalized from coverage's input count into the factual owner's total reference count, without double-counting aliases or changing Luma's different reference semantics. Its output/reference itemization uses exact factual components, never rounded presentation addons. Other catalogue totals remain one all-in exact reference when no exact component split is available. Standard/Fast/Lite Veo catalogue facts retain Google Vertex provenance, independently from the reviewed Fal LIST records. Known Seedance reference contexts use `hasVideoInput`; unknown reference inputs stay unavailable. BytePlus readiness reuses allowed modes, model selectors and the selected Ark/LAS transport guards.
+
+`frontend/config/published-supplier-rates.json` owns the independently reviewed published rates for exact provider/mode/options. Its initial Fal records cover Veo 3.1 and Fast text-to-video, Kling 2.6 Pro text-to-video and Ray 2 text-to-video; each record links its primary source and UTC verification instant. Unreviewed modes stay catalogue references. These data feed admin comparison only: neither updated supplier rates nor public promotions reprice customer quotes, historical charges or settlement. BytePlus LIST remains owned by `byteplus-list-tariff.ts`. Account contracts and invoices remain unknown until evidence is supplied.
+
+The supplier view formats server amounts and itemized units in a blue box, the current customer total in purple, and catalogue/cross-provider uncertainty in amber. Missing evidence has a specific reason; it is never displayed as zero or as an unconfirmed contract. Tests compare exact duration/audio/image scenarios, an independently reviewed Fal rate, cross-provider references and unchanged customer cents after staged edits.
+
+The customer editor locks model and scenario controls while preview/confirmation is pending. It binds late preview responses and confirmation to the selected scenario; changing options discards the prior preview. A real panel DOM regression test verifies this behavior without a price write.
+
+Seedance 1.5 comparison uses its published output dimensions and schema defaults for representative supplier-list estimates. Its admin row reports whether direct execution is configured. New 1.5 generation is direct-only and remains disabled while account activation is unverified; the [direct bridge guide](byteplus-seedance-1-5-direct.md) records the 2026-09-29 canary failure. The unchanged customer quote is displayed independently from the supplier estimate.
+
+## Isolated local continuation (2026-09-29)
+
+`pnpm pricing:sandbox` starts PostgreSQL on a private Unix socket and the branch's Next.js app on `localhost:3106`. It clears all inherited/env-file credentials, points Auth and API configuration at loopback, and disables analytics. It never connects to the configured production database or calls a provider, payment, storage or email service. It also writes the sanitized configuration to the ignored `frontend/.env.local` so subsequent direct local starts and builds keep the same isolation. The previous file is retained as `original.env.local` with mode 0600 inside the printed temporary runtime directory; stopping the sandbox does not restore production credentials. The database stops with the sandbox; its files remain available for inspection.
+
+The fixture preserves intended provider selection independently of access:
+Alibaba master/public routing are on, admin-only and Fal fallback are off, while
+Alibaba/Fal credentials stay blank and the result provider remains `mock`.
+These routing flags are persisted for subsequent local restarts. The production
+router's fail-closed defaults remain unchanged.
+
+An optional `PRICING_SANDBOX_BASELINE=/absolute/path/to/reviewed-baseline.json` stages exact customer cents from the reviewed read-only baseline. Registry mismatch, duplicate/missing scenarios, invalid amounts or unknown database provenance reject the entire seed. The earlier September 29 local acceptance staged all 66,549 sampled scenarios across 48 sellable models, with 122 unresolved capability boundaries and activation false. The [October 1 local completion](2026-10-01-pricing-local-completion.md) supersedes this inactive checkpoint. Neither capture is a production activation authorization.
+
+Migration 55 preserves closed customer cell versions. Active update/rollback behavior is tested on disposable databases, and billing reads only the requested exact selector rather than the whole grid. A separate development gate enables this path for an isolated sandbox only; the authored production switch requires `NODE_ENV=production`. Local continuation does not change a production schema, tariff or deployment.
+
+The sandbox migration list also includes migration 42 for the existing qualified
+finishing rule. Its conflict handling preserves configured customer prices.
+Restoring this omitted local fixture changes the effective policy hash; any older
+release preparation artifact requires a fresh capture and approval-binding check.
+
+The first active database override of a fixed versioned-only cell records its original versioned cell in immutable event history. Rolling it back appends a new database version at the original price, preserving continuous live coverage and the prior closed version. It does not delete the active cell or rewrite its event provenance. This case is accepted on disposable PostgreSQL with an in-memory versioned fixture; authored cells remain empty, with the reviewed production grid installed separately in the database.
+
+### Displayed revision, new charges and paid recovery
+
+Manual snapshots carry `meta.customerTariffRevision`. Web, image, Studio and Storyboard submissions forward the displayed revision in `x-maxvideoai-customer-tariff`; MCP confirmation compares its persisted prepared snapshot with the transactional current quote. A manual web request with a missing or outdated revision returns `409 PRICING_REFRESH_REQUIRED` before preparing a new payment. The initial wallet reservation also takes a shared lock on the tariff state inside the charge transaction, rejecting an edit that occurred after preflight. The lock lasts through the debit commit.
+
+Browser consumers invalidate their displayed estimates on the refresh response. They request a fresh quote but never automatically resubmit generation. The customer must confirm the next request. Image estimates account for the selected aspect ratio and complete reference count; partial reference-size metadata cannot undercount the references.
+
+An existing owned paid job or recovered charge keeps its stored snapshot and amount. Image execution resolves an owned persisted image/storyboard job before current-price validation, reference access or provider submission. Included Kling first frames use the separately validated owned paid parent bundle and do not create another charge. Tests exercise a paid revision-7 image recovery while the current tariff state is revision 8, and new video/image reservations that reject stale revisions without changing the wallet or inserting a job.
+
+This is an inactive integration. Global activation still requires complete capability coverage, a reviewed versioned seed and real supplier/settlement provenance. The new direct-payment quote contract is implemented and tested locally; pre-existing unbound PaymentIntents still require inventory/reconciliation before any production cutover.
+
+### Captured direct payments and immutable original quotes (2026-09-30)
+
+Migration 56 adds `app_direct_payment_quotes`. The complete server-owned customer snapshot, exact normalized generation scenario, owner/job and original settlement cents/currency/FX are inserted before exposing a Stripe client secret. Update and delete are rejected in PostgreSQL. Creation holds the shared job reservation lock and tariff revision lock; the current tariff must match when a new quote is persisted.
+
+`wallet-direct-checkout.ts` reuses the generation options normalizer and the canonical billing owner. It currently accepts text-to-video only: image/reference/video/audio-input modes require trusted media facts from generation preflight, so the legacy direct checkout refuses them before payment creation. Audio retains three states (unspecified, off, on); provider-default audio cannot alias a paid audio-off scenario. The normalized loop is bound for all engines.
+
+A retry of an unconsumed quote within 23 hours reuses the original quote and the stable Stripe idempotency key, including its original settlement parameters. A different owner/scenario, expired creation attempt, existing paid job or receipt is refused. This time bound applies to new intent creation retries only; an already captured payment continues from its stored quote without expiry or a current-price/FX read.
+
+Paid preflight verifies Stripe `kind`, owner, job, immutable quote ID, exact scenario, captured amount and currency. The expanded latest charge must not report a partial/full refund. Those refund fields follow the [Stripe Charge object contract](https://docs.stripe.com/api/charges/object). Current tariff, membership, geo currency and FX changes do not reprice the paid request. The initial job transaction validates the original quote/receipt and rejects previously refunded jobs; an existing job tied to a different captured intent returns a conflict for the incoming payment rollback.
+
+Refund snapshots and USD ledger cents retain the original paid quote. Receipt charge/payment-intent columns are globally unique in the application schema, so refund rows retain the original Stripe references in `metadata.original_stripe_payment_intent_id` and `metadata.original_stripe_charge_id`; the dedicated `stripe_refund_id` remains on the refund row. This permits both charged and refunded receipts without weakening existing payment uniqueness constraints. Disposable PostgreSQL acceptance includes those real uniqueness indexes.
+
+`WALLET_FUNDED_RECEIPT_SQL` owns receipt funding classification for wallet balance, reservation, summary, Timeline export billing and fraud-cleanup balance reads. Topups fund the wallet even when Stripe references are present. Direct card charges and their refunds (including original references retained in refund metadata) never debit or credit the wallet. Ordinary wallet charge/refund rows still affect its balance. Business spend/history can include both payment methods; it must not be reused as a wallet balance.
+
+This work does not migrate production or activate model tariffs. Existing captured intents without `direct_quote_id` fail closed with `DIRECT_PAYMENT_QUOTE_UNAVAILABLE`; no price is reconstructed from today's tariff. Deployment requires migration 56 and an explicit reconciliation decision for such legacy payments.
+
+See the [local acceptance record](2026-09-29-pricing-local-acceptance.md) for the tested scope and remaining work.
+
 ## Current status
+
+The current five-category admin and complete private model cutover are documented
+in the [October 1 local completion](2026-10-01-pricing-local-completion.md).
+Production activation remains off. The foundation audit figures below describe
+the preserved compatibility fixtures, rather than the complete retail-cell grid.
 
 The pricing parity foundation, billing migration, and public projection migration are complete. The legacy pricing facade and specialized commercial snapshot layer are deleted, and an architecture contract now enforces one commercial formula owner. The three-domain admin cockpit is also complete, repository-verified, and operationally accepted against a configured isolated PostgreSQL database. The deterministic audit reports **178 scenarios, 178 matches, 0 mismatches, and 4 compatibility profiles in use**. The exhaustive public contract reports **492 unchanged rows**. Wallet/direct generation, image, audio, storyboard, tool charges, public pricing pages, model pages, estimators, chips, JSON-LD, workspace preflight, and image estimates are canonical-authoritative.
 
@@ -43,6 +332,16 @@ Provider facts include vendor rates, units, duration, resolution, provider tiers
 | `frontend/src/lib/pricing-public-facts.ts` | Browser-safe provider and fixed-product facts | Canonical public input | Stable factual adapter layer |
 | `frontend/src/lib/pricing-public-quote.ts` | Browser-safe policy selection, canonical quote, and projection | Canonical-authoritative for deterministic public projections | Stable public quote owner |
 | `frontend/server/pricing/quote-public.ts` | DB-aware public and live-preview orchestration | Canonical-authoritative | Stable server public quote owner |
+| `frontend/server/pricing/quote-public-model-scenario.ts` | Supported exact public scenarios and price-sensitive revisions | Current canonical public consumer | Public HTTP and marketing quote input |
+| `frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/currentPricingHubData.ts` | Effective video/image/audio/tool rows and featured cards | Current canonical public consumer | Server-rendered Pricing projection |
+| `frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-cards.ts` | Catalogue and recommendation card prices | Current canonical public consumer | Quoted range and unit display only |
+| `frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/current-model-public-offer.ts` | One current offer for visible model pricing and Product JSON-LD | Current canonical public consumer | No authored-price fallback |
+| `frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-spec-values.ts` | Capability specs plus supplied current quote labels | Presentation only | Authored capabilities cannot override customer prices |
+| `frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-pricing.ts` | Comparison price display, comparable pricing score and specs input | Current canonical public consumer | Unavailable if no current pricing engine/quote |
+| `frontend/server/current-example-price.ts` | Current recreation/reference quote for public examples and home | Current canonical public consumer | Original paid snapshot remains immutable |
+| `frontend/src/server/agent-api/generation-pricing.ts` | MCP preparation and executor-bound confirmation pricing | Shared live preflight/canonical billing consumer | Same effective customer quote |
+| `frontend/server/pricing-admin/revalidation.ts` | Confirmed price-change invalidation across actual English/localized routes | Refresh only | No commercial arithmetic |
+| `frontend/lib/pricing-unit-display.ts` | Currency formatting of a quoted total divided by quantity | Presentation only | Shared admin/public unit precision |
 | `frontend/src/lib/pricing-rule-store.ts` | DB rule persistence, fallback, routing metadata, and cache | Canonical override input | One resolver and admin-service input |
 | `frontend/src/lib/audio-generation.ts` | Audio provider facts and presentation metadata | Factual only | Stable factual adapter |
 | `frontend/src/lib/storyboard-pricing.ts` | Storyboard facts, metadata, and composition of already-canonical bundle/included projections | No commercial formulas | Stable storyboard adapter |
@@ -162,11 +461,11 @@ Two non-quote projections remain intentionally narrow: storyboard bundle code ad
 
 ## Admin commercial mutation workflow
 
-The admin navigation exposes `Pricing policy`, `Membership`, and `Billing products`. Each domain loads its own inventory and immutable history. Pricing-policy and billing-product mutations follow `preview → explicit confirmation → immediate transactional apply`; confirmation recomputes the preview and rejects a stale fingerprint. Membership is historical and read-only, and its mutation endpoints return `membership_retired`.
+The admin redesign exposes `Model pricing` and `Billing products` under Settings. `/admin/pricing` presents supplier/customer comparisons and the existing margin-rule editor; engine settings remain read-only, and historical membership remains accessible by its direct URL. The pricing service, inventory/history APIs, DB overrides and cache retain their behavior. Pricing-policy and billing-product mutations follow `preview → explicit confirmation → immediate transactional apply`; confirmation recomputes the preview and rejects a stale fingerprint. Membership is historical and read-only, and its mutation endpoints return `membership_retired`.
 
 Routing fields are excluded from commercial proposals: `vendorAccountId` is read-only context, an update preserves the stored routing value, and a new policy rule cannot create a routing override. Rollback creates a new immutable event and is a new mutation, never a history rewrite. Clients send only the target and immutable event identifiers. The server reads the event, derives the historical state, computes a fresh canonical preview, and requires the normal explicit confirmation. Event history renders actor, timestamp, operation, target, and the server-recorded scenario delta range. The former direct membership-tier and raw pricing-rule mutation routes have been removed.
 
-Read-only public quote resolution may fall back to validated versioned policy when the database is unavailable. Admin inventory surfaces must show the outage, while every database-unavailable admin mutation fails explicitly and leaves policy, history, and caches unchanged.
+Legacy rule resolution may fall back to validated versioned policy when its rule database is unavailable. An enabled production customer-tariff reader refuses a quote when its database is unavailable; it never treats that failure as inactive state. Admin inventory surfaces must show the outage, while every database-unavailable admin mutation fails explicitly and leaves policy, history, and caches unchanged.
 
 ## Operational acceptance record
 
@@ -178,11 +477,11 @@ Each domain then completed a controlled `preview → confirmation → history �
 
 Use only the owner for the value being changed:
 
-1. `/admin/pricing` for engine policy selectors, margins, surcharges, currency, and compatibility profiles.
+1. `/admin/pricing` compares representative provider/customer amounts for all app-published models. The **Pricing rules** tab edits the current margin-based rules. The unified **Pricing** view navigates exact supported scenarios and stages fixed customer-tariff cells inline with preview, confirmation, history and rollback after migration 54; those cells are not charged until the separate all-model activation gate passes. Inventory the effective DB rules first: a code fallback change does not replace a more specific DB override. Migration 55 preserves active-cell history; production requires both the authored runtime switch and active database state. An active cell cannot be deleted or silently fall through to the margin rule.
 2. `/admin/membership` to inspect historical `member`, `plus`, and `pro` thresholds, discounts, and immutable events. It cannot apply or roll back changes.
-3. `/admin/billing-products` for active fixed products referenced by production billing consumers.
+3. `/admin/pricing` → **Tools** (or the retained `/admin/billing-products` view) for active fixed products referenced by production billing consumers. Audio and Storyboard categories show their canonical effective policies and representative quotes in the same workspace.
 
-For pricing policy or billing products, inspect the current source and provenance, edit the proposed value, request the canonical server preview, review every affected row and warning, then either cancel or explicitly confirm. Confirmation applies immediately. If the server reports `preview_stale`, discard the preview, refresh current state, and preview again. To undo a committed change in either active domain, select its immutable history event and run the same preview-confirm flow; rollback never edits or deletes history. Membership history has no active rollback control.
+For the retained pricing policy service or the billing-products UI, inspect the current source and provenance, prepare the proposed value, request the canonical server preview, review every affected row and warning, then either cancel or explicitly confirm. Confirmation applies immediately. If the server reports `preview_stale`, discard the preview, refresh current state, and preview again. To undo a committed change in either active domain, select its immutable history event and run the same preview-confirm flow; rollback never edits or deletes history. Membership history has no active rollback control.
 
 Before confirming a real change, work in a configured environment with an authenticated admin and a database containing the current migrations. Record the intended policy diff, then run the read-only guards:
 
@@ -293,3 +592,282 @@ usage recovery are documented in [Studio assistance economics](studio-assistance
 The customer tariff is fixed per token category, and all internal calls in a message
 share one upward cent rounding. Provider cache-write uncertainty remains separately
 inspectable. Production activation stays off pending commercial and live qualification.
+
+## Multimodal reference cost budgets
+
+Wan 3 and Prime use actual owned input-video duration plus requested output duration as the provider cost basis. The browser-safe `wan3-pricing.ts` owner augments both public and billing facts using the existing resolved provider rate; canonical commercial policy remains the only margin owner. It preserves output duration in `base.seconds`, itemizes input video separately, and records input/output/billable duration metadata. Site preflight, generation, MCP preparation and confirmation derive these facts from owned media, never client duration claims. Source videos are deduplicated by URL and missing durations reject the quote. At 720p, a 10-second source plus 5-second output gives provider facts of $1.50/$2.10 and current standard customer quotes of $1.95/$2.73 for Wan 3/Prime. No-video scenarios retain their existing prices. See [Alibaba pricing ownership](alibaba-model-studio-provider.md#pricing-and-observability).
+
+H3 Max reference generation uses a versioned conservative supplier-cost budget from verified owned media, then the existing canonical commercial policy. The fixed customer quote is authoritative; estimated supplier tokens are never presented as an invoice. See [multimodal reference parity](multimodal-reference-parity.md) for the dated authorization, formula, examples and limitations.
+
+The same provider review adds H3 480P and H3 Max 1080P. Seven exact public projection changes are recorded in `tests/fixtures/h3-capability-pricing-change-2026-09-22.json`, preserving the historical fixture. H3's 10-second estimator entry is now $0.65 at 480P, its 768P pricing-hub entry is $0.78, and H3 Max's newly available 1080P scenarios are $1.67 for eight seconds or $2.08 for ten seconds. These apply the existing 30% markup to reviewed regular supplier rates; reference surcharges are additional and quoted from the selected media. The baseline guard validates each previous row and every field of each replacement.
+
+
+## Unified commercial workspace and current display — 2026-09-30
+
+`/admin/pricing` has Video, Image, Audio, Tools and Storyboard categories. Identity
+stays in the model registry; amounts stay in effective policy, tariff cells and
+billing products with their existing mutation services. The shared UI reads
+`product-pricing-inventory.ts` for non-model rows and never owns pricing math.
+Supplier references, current customer amounts and estimated gross margins are
+separate. Missing supplier evidence means unknown margin; catalogue/budget costs
+are not negotiated contracts or invoices. Song uses a per-song unit, MiniMax a
+1,000-character scenario, and other per-second amounts explicitly normalize a
+reference scenario. Dynamic video tools show their fixed minimum and current
+source-dependent quote; changing that minimum does not change their authored
+multiplier. The seven released finishing quality profiles reuse their canonical
+tool-specific billing snapshot with the same captured policy read as the other
+admin products. Their inline editor scopes a change to one tool/quality and
+previews actual budgets across priced options and 300-frame block boundaries.
+A missing qualified rule keeps the current quote unavailable; a global default
+cannot silently replace it in either billing or the preview.
+
+Character Builder reference rows use the same quality-to-model and standard-format
+resolution mapping as its runner, then read the underlying Nano Banana supplier
+facts independently of fixed retail billing. Angle rows use the authored Fal
+megapixel estimate at an explicit 1 MP source and the runner's one/four provider
+calls; retail remains fixed per run. These are repository catalogue estimates,
+not newly verified LIST or account prices. Storyboard supplier rows project the
+underlying GPT Image 2 base used by its canonical bundle owner, even when current
+commercial policy cannot be loaded. Notes identify the model, provider, dimensions
+and quality. Non-USD fixed prices do not reuse USD costs as converted evidence.
+No supplier comparison is reverse-engineered from customer totals or markup.
+
+Audio rows select a pack-specific `audio-generation` policy with resolution
+`audio`; inherited global rules produce a new scoped draft. This policy covers
+variants within that pack. Active previews use `product-policy-scenarios.ts`,
+shared with inventory inputs, and canonical factual Audio/Storyboard bases.
+Cloning, MiniMax characters, Lyria duration normalization and source-backed
+limits remain with the factual billing owner. Historical audit scenarios stay
+unchanged. Storyboard operation previews cover HD, 4K and Ultra generation/edit.
+
+Live model range/catalogue/compare and current example readers now opt into
+`computeCurrentPublicSnapshot`, which requires loaded effective policy and
+captures it once per quote. Failed current quotes omit numbers; historical
+fixtures retain the offline adapter. Public Pricing Audio uses
+`computeCurrentAudioSnapshot`; fixed Tools use current billing-product snapshots
+with actual quantity/format normalization. Unsupported source-backed Audio
+reference durations omit prices. No paid-history amount is recalculated.
+
+GPT Image manual identity projects requested pixels through the existing six-size
+factual tier owner and normalizes omitted quality to its `high` default. Quality,
+output count and priced edit sources remain distinct; orientation and raw pixels
+do not create another authored tariff. The collector retains a supported
+mode-scoped fixed preset as its quote context for the matching default tier,
+preserving precise legacy policy resolution. Public quotes retain the caller's
+validated size context; automatic estimates without known pixels omit the price.
+Delegated GPT 2.5 confirmation uses the same source count as preparation and web
+execution. Before any no-change cutover, re-quote equivalent aliases under the
+current effective policy and reject conflicting totals; a past default-rule
+capture cannot certify a newly added alias override. See [coverage evidence](2026-09-30-bounded-tariff-coverage.md#gpt-size-tier-continuation).
+
+Studio Audio obtains a server quote from the same normalized request used for
+submission. Its debounced hook binds responses to that request, drops superseded
+responses and submits the expected quote key, currency, total and expiry.
+`audio_quote_stale` dispatches the existing pricing refresh event. Server
+acceptance remains responsible for checking the quote before charging.
+
+Confirmed changes revalidate Pricing for model/audio/tool surfaces, localized
+model indexes, model details, current examples/home/watch and public tool routes.
+Billing-product reads require migrated schema and do not perform global bootstrap
+or seeding. The complete local audit, verification evidence and outstanding model
+activation/dynamic-rate/provider-evidence gates are recorded in
+[the all-product pricing acceptance](2026-09-30-all-product-pricing-audit.md).
+
+### Priced aspect projection (2026-09-30)
+
+Billing facts explicitly identify whether orientation changes the retail basis. Standard/image/per-second owners omit orientation from manual selectors; the quote retains the requested orientation for generation and supplier comparison. Seedance token dimensions remain distinct. An automatic Seedance aspect aliases its configured default only when both factual pixel dimensions match; inherited 2.5 i2v timing/aspect retains the current factual default. The public route validates requested catalog aspects before resolving their price class. Synthetic facts without the projection retain their previous exact-selector behavior.
+
+The private read-only capture has 28,144 unique cells and 54 unresolved capability boundaries. All 79,991 preceding local rows map with identical cents, currency and policy provenance; 53 automatic-aspect boundaries close. Existing prepared data and global activation remain unchanged. This capture is local evidence, not fresh production parity or a complete seed.
+
+### Priced media and generation parity (2026-09-30)
+
+`pricing-manual-media.ts` projects only the media quantities consumed by the factual owner. Zero/unused video metadata and unpriced image counts no longer create missing cells for real generation requests. H3, GPT 2.5, Luma Uni and configured definition reference-image surcharges retain their counted units, including zero where valid. H3 Max budget and verified tokens share the same priced quantity while keeping original provenance in the snapshot. Omni keeps its actual input-image and inherited-duration quantities. Seedance's video/no-video retail input tiers remain separate, with both mixed-reference tiers covered.
+
+Audio identities come from actual definition addon flags, matching `buildEngineAddonInput`; special factual owners that ignore generic audio flags share one price class. Kling voice control is a distinct priced extra, and its reviewed audio-on combinations are available in admin and public quotes. Public reference bounds remain catalog validated; raw requested counts/audio are retained in quote contexts.
+
+Billing facts now apply the same idempotent mode-specific engine rate projection as generation. A private read-only comparison of all 28,144 preceding cells against 18,127 current cells finds no missing identities, alias-price conflicts or differences from the generation-normalized quote. Four old collector amounts were incorrect: Happy Horse 1.0 v2v 720p/1080p 5s (91/182→182/364 cents), and Kling 2.5 Turbo i2i 5/10s (46/91→28/55 cents). Existing generation already used those mode-specific rates; stored quotes and historical fixtures are unchanged. This is a collector/comparison correction, not evidence that the old staged seed is ready. There are 44 remaining capability gates; production/manual activation stays off.
+
+### Billed timing and Ray effects (2026-09-30)
+
+Manual duration and `output_seconds` now project the factual billed quantity, retaining requested/automatic/inherited timing in the context. Reviewed automatic Flux, LTX 2.5 and Seedance modes cover their normalized integer classes. Source-timed Ray Reframe, Happy Horse edit and LTX 2.3 audio modes use their existing factual bounds; unbounded Luma Ray 2 Modify timing remains a unit-tariff gate. Explicit public durations still respect numeric catalog choices; `durationOption: auto` selects automatic billing classes without publishing unsupported explicit durations.
+
+Ray 3.2 SDR, HDR and HDR + EXR are separate supported tariff variants. Validated generation extras now feed the same priced-effect projection as preflight and direct checkout. Captured direct payments bind HDR/EXR, with missing historical flags retaining SDR semantics. This fixes an existing advanced-effect final-billing omission: at 5s/720p, SDR stays 130 cents, HDR is 260 and HDR + EXR is 390 under the current default rule. Historical paid snapshots are unchanged; this correction is explicitly separate from a zero-delta manual cutover. Unsupported 540p/10s HDR and EXR without HDR remain unavailable.
+
+The private timing capture contains 18,287 quotes with zero quote gaps and 14 remaining capability gates. Global activation and existing prepared data remain unchanged. Production parity is still a distinct release gate.
+# Wan mixed-reference continuous source continuation (2026-09-30)
+
+The reviewed Wan source-second class also covers `ref2v`, including zero video input. Image references remain unpriced dimensions. Admin and public decimal-duration readers reconstruct the same factual identity as charging; exact exceptions retain precedence. Output at 30 seconds remains covered, including source subnormals admitted by the existing floating-point sum validator. Authoring guards review each supplier-cent boundary over the whole bounded source domain. This extends the compiler/editor; it does not certify or activate a complete seed. The six Wan continuous modes remain explicit coverage gates until a complete effective-policy seed is checked. Existing private staged data and historical paid snapshots are untouched.
+
+### LTX 2.5 source-audio continuous tariffs (2026-09-30)
+
+The reviewed LTX Fast/Pro a2v class bills verified audio seconds, including decimals, within the generation catalog limits (2–20s Fast, 2–10s Pro). Its selector varies neither independently requested output timing nor unpriced aspect. Public, admin and charging identities agree; a numeric public duration can be fractional for this source-timed mode. Admin compares costs per factual billed second and offers one audio-second rate, preserving old component rounding or previewing a new linear amount. The migration compiler freezes effective absolute rates and flat cents; the monotone-domain guard checks every supplier-cent boundary. Preview, locked confirmation, versions and rollback share the continuous input service; original Wan exports remain stable. These eight continuous Wan/LTX modes still require a complete seed certificate before global activation. No existing staged or paid data was rewritten.
+
+### Omni owned-media continuous tariffs (2026-09-30)
+
+Omni edit pricing projects literal output/input token quantities. Its bounded migration compiler captures every first representable customer-cent transition as authored `unit_bands`; quote-time evaluation reads neither supplier cost nor a percentage. A subsequent admin change uses independent absolute output/source-second rates. The entire reachable cost interval, including rounding boundaries, must pass the authoring guard before confirmation. Exact exceptions retain precedence and historical versions remain append-only.
+
+Read-only admin/public controls follow generation ownership: v2v output inherits the source clip duration (3–10 seconds); retake inherits a previous interaction's output and submits no new source clip; extend keeps its chosen output and a positive source up to 10 seconds. These controls are estimates, never substitutes for charging's trusted owned metadata. Retake exposes only the inherited-output rate. The public HTTP parser now admits reviewed fractional source-timed durations, including LTX audio, while other explicit durations remain integers.
+
+The private read-only capture contains 20,113 quotes with zero quote gaps. All 18,167 unchanged preceding identities retain amounts and policy provenance. It removes 120 impossible Omni combinations, adds 56 owned Omni identities and the 1,890 Wan mixed-reference identities introduced by the preceding compiler work. No existing staged data or paid snapshot was rewritten. Eleven continuous Wan/LTX/Omni modes now have compiler/editor/domain checks; a complete seed certificate and the three unbounded pricing domains remain open gates. Global activation stays off.
+
+### Dynamic video tool coefficients (2026-09-30)
+
+`tools-dynamic-pricing.ts` owns the reviewed defaults and validated billing-product `dynamicPriceMultiplier` projection. The optional persisted coefficient applies to three video upscalers and background removal; existing missing overrides retain ×4/×2 respectively. `computeBillingProductSnapshot` binds its effective coefficient in quote metadata. Actual Tool/Studio quotes, charging and admin comparisons use that projection; pure preview helpers receive the same coefficient and preserve existing source/unit rounding. The public Pricing entries continue to label the fixed minimum and request a source-specific live quote.
+
+Admin changes reuse billing-products preview, locked confirmation, immutable event history and rollback. The preview includes source-processing examples and hashes their actual totals with complete current state. Only the coefficient is editable within metadata; rollback preserves unrelated current operational values. New events record an effective default explicitly so later default changes cannot reprice a rollback. The compact editor also shows indicative margin before rounding, minimum and fees. Existing paid job snapshots are never rewritten. This product-price work does not activate staged model tariffs.
+
+### Reviewed local seed audit and rounding correction (2026-09-30)
+
+`customer-tariff-reviewed-seed.ts` constructs an in-memory candidate from the recorded effective policy and registry hashes. Admin and migration auditing share `compile-current-continuous-tariff.ts`; neither the audit nor the compiler writes or activates tariffs. The private candidate has 14,691 cells, including 552 reviewed continuous classes across eleven model/mode pairs. It checks 20,113 recorded scenarios: 20,089 pass the actual manual quote and 24 retain their recorded fixed customer amount but fail its settlement guard. Those 24 are existing GPT Image 2.5 Flare/Sunburst i2i reference estimates above the current retail amount; they require a separate settlement/provenance decision. The audit reports them without zeroing supplier facts or repricing customers.
+
+The remaining unsupported domains are H3 Max's unbounded reference-token budget and legacy Ray 2/Flash Modify's unbounded output timing. No new generation limit was invented to conceal them. The local candidate remains incomplete and `activationReady: false`; the original staged database is unchanged.
+
+The user subsequently approved raising exactly those 24 GPT Image 2.5 fixed
+amounts by one cent to the supplier-reference ceiling. The optional
+`approvedGptImage25ReferenceFloor` audit input binds the original capture,
+database identity, policy/registry hashes and explicit before/after amounts. It
+accepts only those models' reference edits, an exact one-cent increase and the
+current reference ceiling; duplicates, stale evidence and unrelated scenarios
+fail. The settlement guard remains intact. The separate local candidate now
+accepts all 20,113 sampled quotes, with 24 disclosed changes and 20,089 unchanged
+quotes. It remains read-only and globally inactive; three open domains and the
+complete versioned seed/certificate and fresh production evidence remain gates.
+
+Billing-product confirmation previews lead with readable product/scenario names,
+current/proposed totals and deltas. Only nonzero deltas count as changed prices.
+Stable scenario IDs and full quote provenance remain available in collapsed
+audit details and in the server fingerprint. First versioned-only active
+overrides and rollback also have real PostgreSQL historical quote checks at both
+effective instants and immediately before them; historical paid snapshots are
+unchanged.
+
+### Upscale mode parity correction (2026-09-30)
+
+Provider and price estimation share supported target/factor normalization.
+Explicit `factor` is honored for SeedVR2 as well as FlashVSR; a target is ignored
+for factor processing. The server context forwards the requested mode, and the
+pure/admin previews use the same calculator. Target-mode Topaz/SeedVR2 quotes
+retain their preceding totals. FlashVSR factor scenario IDs carry `2x`/`4x` and
+preview both variants. Paid snapshots retain their captured prices; stale
+accepted amounts must refresh. This corrects a preceding source-estimation
+mismatch and has explicit cent-impact evidence in the dated all-product audit;
+it does not change product minima/coefficients or activate staged model tariffs.
+
+Independent review found that decomposing Wan source rounding into multiplied unit components can move a cent at a valid decimal boundary. Wan preservation therefore uses authored source-second bands captured from the original operation order, including each first representable transition. For the default 5s/480p ref2v quote, source 3.4999 retains 56 cents and 5.0001 retains 65 cents. The full-domain guard uses the same floating-point input+output endpoint as the existing duration validator. New linear unit prices remain a distinct, explicitly confirmed price decision.
+
+### Reproducible inactive local release artifacts (2026-10-01)
+
+`pnpm pricing:release:local` prepares a new private artifact directory from the
+existing sandbox. Set `PRICING_RELEASE_OUTPUT` to a new ignored path; optionally
+set `PRICING_RELEASE_APPROVED_FLOORS` to the recorded, approved GPT Image 2.5
+proposal. It accepts only `.env.local` with `PRICING_SANDBOX=1` and one local Unix
+socket, verifies a repeatable-read/read-only transaction and requires committed
+code. It never installs the candidate, edits the database or activates a switch.
+
+Artifacts include the fresh effective baseline, an **inactive** versioned seed,
+the full preparation report and the approval-source manifest. Hashes bind every
+candidate amount, scenario/context, baseline, registry, effective policy, source
+tariff state/revision, factual environment and code revision. The integrity and
+local-readiness helper refuses changed evidence, unresolved coverage or rejected
+settlement quotes. This is preparation evidence, **not** a trusted activation API
+or production certificate; `activationReady` is always false.
+
+The approved 24 one-cent floors can be carried across the main rebase into a
+fresh local capture only when the database/policy hashes and the exact original
+amounts still agree. The existing reviewed-seed owner then checks IDs, model/mode,
+uniqueness, exact +1 cent and the current supplier ceiling again. Other prices
+must retain exact parity. The original approval remains unchanged and its source
+hash is saved in the manifest.
+
+Three domains remain unreviewed: Ray 2 and Flash Modify round source timing to
+billed integer seconds but have no authored generation duration cap; their 9s
+generation hint is not an input-video limit. H3 Max reference pricing includes
+4,096 tokens and adds priced excess tokens from trusted media; 4,097 is a boundary
+sample, not the entire budget domain. The bounded source-band compiler cannot
+certify either open domain. An independent retail-unit representation with exact
+legacy rounding and full-domain evidence is still required. Do not copy sampled
+fixed amounts across those domains or impose new generation limits to certify
+them. A complete seed, fresh effective production parity and a locked atomic
+activation/event path remain release gates.
+
+### Current price propagation audit (2026-10-01)
+
+For an identical supported scenario, the effective server quote is the retail
+authority. Admin confirmation changes its persisted inputs; the rendered admin
+page is not a calculator or an independent source. Live generation, MCP, Studio
+and marketing retain their domain adapters around that same effective quote.
+Prepared inactive model cells are explicitly distinct from active retail prices.
+
+Model specs accept only current server price labels. Authored historical prices
+and catalogue-plus-margin amounts cannot fill an unavailable commercial value.
+Comparison pricing also requires a current pricing engine and a successful
+current-policy quote; its spec row and price score reuse that result.
+
+Video marketing rates divide the actual quoted scenario total by billed seconds
+without first rounding to whole cents. Admin, Pricing, catalogue cards, model
+specs and comparisons share `formatPricePerUnit` (two to six decimal places).
+For example, a 26-cent five-second quote displays $0.052/s, not $0.05/s. This is
+display normalization and does not alter billed totals or provider facts.
+
+Both manual and policy confirmation invalidate comparisons, model details,
+category catalogue cards, Pricing, home and current examples. Include the actual
+`/[locale]/...` route patterns behind translated external URLs, and use the real
+localized watch parameter `[videoId]`. Representative preview rows cannot be
+treated as an exhaustive cache invalidation inventory.
+
+`tests/current-price-consumer-parity-postgres.test.ts` uses real canonical owners
+and admin preview/confirmation against disposable Unix-socket PostgreSQL. Its
+temporary activation cannot touch the review sandbox or production. It checks
+before/after totals, unit labels, price revisions, offers, specs, examples and
+homepage steps while preserving an original paid amount. Global model tariff
+activation still requires the separately documented complete-domain and release
+gates.
+
+### Complete local model cutover (2026-10-01)
+
+The open Ray 2/Flash Modify and MiniMax H3 Max reference domains now use authored
+unit components. Their normalization records preserve the original decimal and
+cent operation order, with literal customer rates captured independently in each
+cell. Quote evaluation reads trusted quantities and the cell only; it never reads
+a supplier tariff or a commercial percentage. Normalization is price data until
+an explicit admin preview replaces it. Simple linear edits use literal USD/second
+or USD/1k excess tokens, retain 4,096 included reference tokens, and round the final
+total upward. Structural domain guards reject below-reference rates across the
+entire trusted integer domain. No generation cap is introduced.
+
+`pricing:activate:local` accepts only a committed, clean code revision and the
+fingerprint of a complete prepared local release. It verifies the actual Unix
+socket, locks the tariff revision/cells/policies, reproduces every effective quote
+and candidate, and then archives the complete previous staged grid, inserts the
+new grid and records immutable activation evidence in one transaction. Migration
+58 uses one interval lock for the grid; one lock per selector exhausted default
+PostgreSQL lock memory during the real full-matrix acceptance test.
+
+At this local checkpoint the production code switch remained false. Neither the command nor its artifacts
+can authorize production activation. A later production release requires a fresh
+effective production capture and review. After local activation, model/global
+percentage edits are rejected by preview and confirmation; Pricing Rules describes
+the former formula and remains readable. Product policies remain scoped to Audio,
+Tools and Storyboard. Historical payments keep their original stored quotes.
+
+The actual persistent private sandbox cutover is recorded in the
+[local completion report](2026-10-01-pricing-local-completion.md): revision 4,
+14,658 active cells, 591 reviewed continuous classes, 20,113 exact manual quotes,
+0 remaining supported-domain gaps, 20,089 unchanged amounts and 24 separately
+approved one-cent GPT reference floors. The previous 66,549 staged cells are archived
+in the immutable activation event. Production code activation remains false.
+Preparation and locked reproduction share the same baseline provenance serializer.
+The public HTTP parser uses the same open-quantity classifier as the canonical
+owner; it does not impose the former 120-second/10,000-token transport limits on
+Luma Modify/H3 reference quotes. Safe-integer and unrelated input limits remain.
+
+### Included MCP trial funding after the raster correction
+
+The Mini 5s 480p trial still charges the customer zero. Its private supplier LIST
+budget now uses the published 2.0 dimensions: 18 cents wide/portrait and 17 cents
+square, rounded upward. `quote-repository.ts` permits the known earlier 17/10-cent
+snapshots only when reading persisted quotes. New insertion and fresh confirmation
+require the current authoritative estimate. Accepted quote recovery preserves its
+stored funding; old prepared quotes must be prepared again. Migration 60 expands
+the database CHECK for historical/current tuples and migration 31 preserves that
+upgrade on replay. Do not substitute padded retail cents for this supplier budget.

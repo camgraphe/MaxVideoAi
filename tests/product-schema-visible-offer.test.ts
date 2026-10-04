@@ -14,7 +14,7 @@ const matrix = JSON.parse(readFileSync('tests/fixtures/product-schema-customer-p
 test('visible offer and Product consume the same price and selected scenario for every repaired model', () => {
   for (const row of matrix.rows) {
     const engine = engines.find((entry) => entry.id === row.engineId)!;
-    // The frozen repair matrix predates the Sora and Seedance 1.5 retirements; archived models cannot sell an offer.
+    // The frozen repair matrix predates these retirements; archived models cannot sell an offer.
     if (['sora-2', 'sora-2-pro', 'seedance-1-5-pro'].includes(engine.id)) {
       assert.equal(engine.surfaces.app.enabled, false);
       assert.equal(buildProductSchema({ engine, pricingEngine: engine.engine,
@@ -85,7 +85,7 @@ test('disabled app models have neither a purchasable Product nor a visible offer
 test('route passes one offer to both structured data and visible pricing, including legacy layouts', () => {
   const root = 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]';
   const layout = readFileSync(`${root}/_components/MarketingModelPageLayout.tsx`, 'utf8');
-  assert.equal((layout.match(/resolveModelPublicOffer\(engine, pricingEngine\)/g) ?? []).length, 1);
+  assert.equal((layout.match(/resolveCurrentModelPublicOffer\(engine, pricingEngine\)/g) ?? []).length, 1);
   assert.match(layout, /pricingEngine, publicOffer,/);
   assert.match(layout, /ModelDecisionPricingCard[^>]*offer=\{publicOffer\}[^>]*locale=\{locale\}/);
   assert.match(layout, /!templateData \? <ModelPublicOfferLine offer=\{publicOffer\} locale=\{locale\}/);

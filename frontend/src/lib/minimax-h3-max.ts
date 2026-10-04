@@ -8,7 +8,7 @@ import {
 import type { GeneratePayload } from '@/lib/fal-types';
 
 export type MinimaxH3MaxMode = 't2v' | 'i2v' | 'ref2v';
-export type PromptExpansionMode = 'balanced' | 'quality';
+export type PromptExpansionMode = 'disabled' | 'balanced' | 'quality';
 export type MinimaxH3MaxResolution = (typeof MINIMAX_H3_MAX_RESOLUTIONS)[number];
 export type MinimaxH3MaxReferenceType = 'image' | 'video' | 'audio';
 
@@ -24,6 +24,8 @@ export type MinimaxH3MaxRequestInput = {
   resolution?: string | null;
   aspectRatio?: string | null;
   promptExpansionMode?: string | null;
+  targetAudioUrl?: string | null;
+  seed?: number;
   imageUrl?: string | null;
   endImageUrl?: string | null;
   references?: readonly MinimaxH3MaxReference[];
@@ -40,7 +42,9 @@ export type NormalizedMinimaxH3MaxRequest = {
   durationSec: number;
   resolution: MinimaxH3MaxResolution;
   promptExpansionMode: PromptExpansionMode;
-  aspectRatio?: (typeof MINIMAX_H3_MAX_TEXT_ASPECT_RATIOS)[number];
+  aspectRatio?: (typeof MINIMAX_H3_MAX_TEXT_ASPECT_RATIOS)[number] | 'adaptive';
+  targetAudioUrl?: string | null;
+  seed?: number;
   imageUrl?: string;
   endImageUrl?: string;
   references: GroupedReferences;
@@ -51,7 +55,7 @@ export function isMinimaxH3MaxEngineId(id: string | null | undefined): boolean {
 }
 
 export function isMinimaxH3MaxRuntimeModeAvailable(mode: string | null | undefined): boolean {
-  return mode === 't2v';
+  return mode === 't2v' || mode === 'i2v' || mode === 'ref2v';
 }
 
 export function resolveMinimaxH3MaxEndpoint(mode: MinimaxH3MaxMode): string {
@@ -97,31 +101,32 @@ export function normalizeMinimaxH3MaxRequest(
   }
   const resolution = input.resolution?.trim() || '768P';
   if (!(MINIMAX_H3_MAX_RESOLUTIONS as readonly string[]).includes(resolution)) {
-    throw new Error('MiniMax H3 Max resolution must be 480P or 768P.');
+    throw new Error('MiniMax H3 Max resolution must be 480P, 768P, or 1080P.');
   }
   const promptExpansionMode = input.promptExpansionMode?.trim() || 'balanced';
   if (!(MINIMAX_H3_MAX_PROMPT_EXPANSION_MODES as readonly string[]).includes(promptExpansionMode)) {
-    throw new Error('MiniMax H3 Max prompt expansion mode must be balanced or quality.');
+    throw new Error('MiniMax H3 Max prompt expansion mode must be disabled, balanced, or quality.');
   }
 
   const imageUrl = input.imageUrl?.trim() ?? '';
   const endImageUrl = input.endImageUrl?.trim() ?? '';
-  if (input.mode === 'i2v' && !imageUrl) {
-    throw new Error('MiniMax H3 Max image-to-video requires a start image.');
+  if (input.mode === 'i2v' && !imageUrl && !endImageUrl) {
+    throw new Error('MiniMax H3 Max image-to-video requires a start or end image.');
   }
   if (input.mode !== 'i2v' && (imageUrl || endImageUrl)) {
     throw new Error('MiniMax H3 Max start and end images are only valid for image-to-video.');
   }
 
   let aspectRatio: NormalizedMinimaxH3MaxRequest['aspectRatio'];
-  if (input.mode === 't2v') {
-    const value = input.aspectRatio?.trim() || '16:9';
-    if (!(MINIMAX_H3_MAX_TEXT_ASPECT_RATIOS as readonly string[]).includes(value)) {
+  if (input.mode === 't2v' || (input.mode === 'ref2v' && input.aspectRatio?.trim())) {
+    const rawValue = input.aspectRatio?.trim() || '16:9';
+    const value = rawValue === 'auto' ? 'adaptive' : rawValue;
+    if (!(MINIMAX_H3_MAX_TEXT_ASPECT_RATIOS as readonly string[]).includes(value) && !(input.mode === 'ref2v' && value === 'adaptive')) {
       throw new Error('MiniMax H3 Max text aspect ratio is unsupported.');
     }
     aspectRatio = value as NormalizedMinimaxH3MaxRequest['aspectRatio'];
   } else if (input.aspectRatio?.trim()) {
-    throw new Error('MiniMax H3 Max aspect ratio is available for text-to-video only.');
+    throw new Error('MiniMax H3 Max aspect ratio is available for text-to-video and reference-to-video only.');
   }
 
   const references = groupReferences(input);
@@ -130,14 +135,19 @@ export function normalizeMinimaxH3MaxRequest(
   if (references.video.length > 3) throw new Error('MiniMax H3 Max supports up to 3 reference videos.');
   if (references.audio.length > 3) throw new Error('MiniMax H3 Max supports up to 3 reference audio clips.');
   if (referenceCount > 12) throw new Error('MiniMax H3 Max supports up to 12 references total.');
-  if (input.mode === 'ref2v' && references.image.length + references.video.length === 0) {
-    throw new Error('MiniMax H3 Max reference-to-video requires an image or video reference; audio cannot be used alone.');
+  if (input.mode === 'ref2v' && referenceCount === 0) {
+    throw new Error('MiniMax H3 Max reference-to-video requires at least one image, video, or audio reference.');
   }
   if (input.mode !== 'ref2v' && referenceCount > 0) {
     throw new Error('MiniMax H3 Max references are only valid for reference-to-video.');
   }
 
+  const targetAudioUrl = input.targetAudioUrl?.trim();
+  if (targetAudioUrl && input.mode === 'ref2v') throw new Error('Use reference audio in reference-to-video mode.');
+  if (input.seed !== undefined && (!Number.isInteger(input.seed) || input.seed < 0 || input.seed > 2147483647)) throw new Error('Seed must be an integer from 0 to 2147483647.');
   return {
+    ...(targetAudioUrl ? { targetAudioUrl } : {}),
+    ...(input.seed !== undefined ? { seed: input.seed } : {}),
     mode: input.mode,
     prompt,
     durationSec,
@@ -162,6 +172,8 @@ export function buildMinimaxH3MaxFalRequest(input: MinimaxH3MaxRequestInput): {
     prompt_expansion_mode: request.promptExpansionMode,
   };
   if (request.aspectRatio) requestBody.aspect_ratio = request.aspectRatio;
+  if (request.targetAudioUrl) requestBody.target_audio_url = request.targetAudioUrl;
+  if (request.seed !== undefined) requestBody.seed = request.seed;
   if (request.imageUrl) requestBody.image_url = request.imageUrl;
   if (request.endImageUrl) requestBody.end_image_url = request.endImageUrl;
   if (request.references.image.length) requestBody.reference_image_urls = request.references.image;
@@ -209,9 +221,11 @@ export function buildMinimaxH3MaxFalRequestFromPayload(payload: GeneratePayload)
       typeof extraInputValues.prompt_expansion_mode === 'string'
         ? extraInputValues.prompt_expansion_mode
         : null,
+    seed: payload.seed ?? (typeof extraInputValues.seed === 'number' ? extraInputValues.seed : undefined),
+    targetAudioUrl: firstImage('target_audio_url'),
     imageUrl: firstImage('image_url') ?? payload.imageUrl,
     endImageUrl: firstImage('end_image_url') ?? payload.endImageUrl,
-    referenceImageUrls: payloadAttachmentUrls(payload, 'reference_image_urls'),
+    referenceImageUrls: [...payloadAttachmentUrls(payload, 'reference_image_urls'), ...(mode === 'ref2v' ? payload.referenceImages ?? [] : [])],
     referenceVideoUrls: payloadAttachmentUrls(payload, 'reference_video_urls'),
     referenceAudioUrls: payloadAttachmentUrls(payload, 'reference_audio_urls'),
   });

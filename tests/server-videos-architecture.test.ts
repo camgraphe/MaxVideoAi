@@ -21,6 +21,8 @@ test('server videos module keeps row normalization and examples helpers focused'
   assert.ok(serverSource.split('\n').length < 420, 'videos.ts should stay under 420 lines after helper extraction');
   assert.match(serverSource, /from '\.\/videos-normalization'/);
   assert.match(serverSource, /from '\.\/videos-examples'/);
+  assert.match(serverSource, /from '\.\/videos-playlists'/);
+  assert.match(readFileSync('frontend/server/videos-playlists.ts', 'utf8'), /resolveCuratedPlaylist/);
   assert.doesNotMatch(serverSource, /function formatPromptExcerpt/);
   assert.doesNotMatch(serverSource, /function sortVideosByPreference/);
   assert.doesNotMatch(serverSource, /function paginateGalleryVideos/);
@@ -64,4 +66,16 @@ test('server videos facade keeps public gallery and SEO contracts available', ()
 
   assert.match(serverSource, /visibility = 'public'/);
   assert.match(serverSource, /COALESCE\(indexable, TRUE\)/);
+});
+
+test('direct watch and curation share the playable-source and deletion SQL gate', () => {
+  const query = readFileSync('frontend/server/videos-query.ts', 'utf8');
+  const videos = readFileSync('frontend/server/videos.ts', 'utf8');
+  const curation = readFileSync('frontend/server/playlists/curation-eligibility.ts', 'utf8');
+  assert.match(readFileSync('frontend/server/playlists/curation-service.ts', 'utf8'), /export \{ CURATION_ELIGIBILITY \} from '\.\/curation-eligibility'/);
+  assert.doesNotMatch(curation, /curation-service/);
+  assert.match(query, /export const PUBLIC_VIDEO_SOURCE_ELIGIBILITY/);
+  assert.match(query, /removed\.status='deleted'/);
+  assert.match(videos, /BASE_SELECT_WITH_SETTINGS[\s\S]*PUBLIC_VIDEO_SOURCE_ELIGIBILITY/);
+  assert.match(curation, /CURATION_ELIGIBILITY = `visibility='public' AND indexable IS TRUE AND \$\{PUBLIC_VIDEO_SOURCE_ELIGIBILITY\}/);
 });

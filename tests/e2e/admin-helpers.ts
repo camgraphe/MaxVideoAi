@@ -40,7 +40,7 @@ export function assertNoClientErrors(errors: ClientErrors) {
 export async function firstRowUserId(page: Page) {
   const row = page.locator('tbody tr').first();
   await expect(row).toBeVisible();
-  return ((await row.locator('td').nth(1).textContent()) ?? '').trim();
+  return (await row.getAttribute('data-user-id')) ?? '';
 }
 
 export async function firstRowJobId(page: Page) {
@@ -52,7 +52,7 @@ export async function firstRowJobId(page: Page) {
 export async function firstRowReceiptId(page: Page) {
   const row = page.locator('tbody tr').first();
   await expect(row).toBeVisible();
-  const receipt = ((await row.locator('td').first().locator('p').first().textContent()) ?? '').trim();
+  const receipt = ((await row.locator('td').first().getByRole('button').textContent()) ?? '').trim();
   return receipt.replace(/^#/, '');
 }
 

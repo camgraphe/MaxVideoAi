@@ -64,7 +64,7 @@ test('login page can consume a PKCE OAuth code directly', () => {
   );
   assert.match(
     loginHelpersSource,
-    /return `\$\{base\}\/auth\/callback\?next=\$\{encodeURIComponent\(sanitizeNextPath\(nextPath\)\)\}`/,
+    /return `\$\{base\}\/auth\/callback\?next=\$\{encodeURIComponent\(sanitizeNextPath\(nextPath\)\)\}/,
     'Google OAuth should use the existing allowlisted callback before forwarding the code to browser-side exchange'
   );
   assert.match(

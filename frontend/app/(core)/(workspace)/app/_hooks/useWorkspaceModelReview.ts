@@ -121,7 +121,7 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
         memoryOnly: false,
       });
   }
-  const signature = workspaceModelSetupSignature(current);
+  const signature = useMemo(() => workspaceModelSetupSignature(current), [current]);
   const mounted = useRef(true);
   useEffect(() => {
     mounted.current = true;

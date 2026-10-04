@@ -151,6 +151,7 @@ export function CompareDetailContent({
             />
             <ComparePricingQuickSection
               activeLocale={activeLocale}
+              pricingCreditLink={pageOverride?.pricingCreditLink}
               left={left}
               leftPricingDisplay={leftPricingDisplay}
               right={right}

@@ -155,6 +155,8 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     toolsEnabled,
   });
   const { pricingError, pricingSnapshot } = useImageWorkspacePricing({
+    aspectRatio,
+    referenceImageCount: combinedReferenceUrls.length,
     customImageHeight,
     customImageWidth,
     enableWebSearch,
@@ -281,6 +283,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
   });
 
   const handleRun = useImageGenerationRunner({
+    pricingSnapshot,
     aspectRatio,
     background,
     combinedReferenceUrls,
@@ -346,7 +349,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     compositePreviewEntry,
     estimatedCostAmount,
     estimatedCostCurrency,
-    inProgressMessage,
+    pendingGenerations,
     previewEntry,
   } = useImageWorkspaceDisplayState({
     error,
@@ -355,7 +358,6 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     pendingGroups,
     pricingErrorMessage: pricingError?.message ?? null,
     pricingSnapshot,
-    resolvedCopy,
     selectedEngine,
     selectedPreviewEntryId,
     suppressDefaultPreview: librarySource === 'storyboard',
@@ -449,7 +451,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
               handleRemoveReferenceSlot={handleRemoveReferenceSlot}
               handleRun={handleRun}
               imageCountOptions={effectiveImageCountOptions}
-              inProgressMessage={inProgressMessage}
+              pendingGenerations={pendingGenerations}
               isInLibrary={isInLibrary}
               isRemovingFromLibrary={isRemovingFromLibrary}
               isResolutionLocked={isResolutionLocked}

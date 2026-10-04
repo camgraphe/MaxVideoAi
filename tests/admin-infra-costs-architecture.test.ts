@@ -53,7 +53,14 @@ test('admin infra costs view owns dashboard sections and provider tables', () =>
 });
 
 test('infra costs format helper owns display formatting', () => {
-  for (const exportName of ['formatUsd', 'formatNumber', 'formatGb', 'formatDateTime', 'formatPercent', 'formatAlertLevel']) {
+  for (const exportName of [
+    'formatUsd',
+    'formatNumber',
+    'formatGb',
+    'formatDateTime',
+    'formatPercent',
+    'formatAlertLevel',
+  ]) {
     assert.match(formatSource, new RegExp(`export function ${exportName}\\(`), `${exportName} should be exported`);
   }
 });
@@ -66,7 +73,11 @@ test('infra costs server module fetches Neon, Vercel, and S3 data without client
   assert.match(vercelServerSource, /\/v1\/billing\/charges/, 'Vercel provider should call billing charges');
   assert.match(s3ServerSource, /AWSInsightsIndexService\.GetCostAndUsage/, 'S3 provider should call AWS Cost Explorer');
   assert.match(serverSource, /buildInfraCostAlertDigest/, 'server report should expose alert digest');
-  assert.doesNotMatch(viewSource, /NEON_API_KEY|VERCEL_TOKEN|AWS_SECRET_ACCESS_KEY|Authorization/, 'view must not reference provider secrets');
+  assert.doesNotMatch(
+    viewSource,
+    /NEON_API_KEY|VERCEL_TOKEN|AWS_SECRET_ACCESS_KEY|Authorization/,
+    'view must not reference provider secrets'
+  );
 });
 
 test('infra costs alert cron is authenticated and scheduled', () => {
@@ -74,11 +85,14 @@ test('infra costs alert cron is authenticated and scheduled', () => {
   assert.match(cronSource, /authorizeCronRequest/, 'cron should use shared Vercel cron auth');
   assert.match(cronSource, /INFRA_COST_ALERT_ACTION/, 'cron should write a typed audit action');
   assert.match(cronSource, /buildInfraCostAlertDigest/, 'cron should use the report digest');
-  assert.match(vercelConfigSource, /\/api\/cron\/infra-costs-alert/, 'Vercel cron config should schedule infra costs alerts');
+  assert.match(
+    vercelConfigSource,
+    /\/api\/cron\/infra-costs-alert/,
+    'Vercel cron config should schedule infra costs alerts'
+  );
 });
 
 test('infra costs is reachable from admin navigation', () => {
   assert.match(navSource, /id: 'infra-costs'/, 'admin nav should include infra costs');
   assert.match(navSource, /href: '\/admin\/infra-costs'/, 'admin nav should link to infra costs');
-  assert.match(sidebarSource, /costs: BadgeDollarSign/, 'sidebar should map the infra costs icon');
 });

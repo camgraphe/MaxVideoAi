@@ -1,0 +1,124 @@
+import assert from 'node:assert/strict';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import test from 'node:test';
+import { pathToFileURL } from 'node:url';
+import { build } from 'esbuild';
+import { startDisposablePostgres } from './helpers/disposable-postgres';
+
+const requireFrontend = createRequire(resolve('frontend/package.json'));
+test('pages_eligible_candidates_without_skips and adopts_2001_family_ids', async (t) => {
+  const pg = await startDisposablePostgres('curation-pages');
+  const folder = mkdtempSync(join(tmpdir(), 'curation-pages-'));
+  const oldUrl = process.env.DATABASE_URL;
+  let reader;
+  t.after(async () => { await reader?.getDb().end(); if(oldUrl === undefined) delete process.env.DATABASE_URL; else process.env.DATABASE_URL=oldUrl; rmSync(folder,{recursive:true,force:true}); await pg.cleanup(); });
+  await pg.pool.query(`
+    CREATE TABLE playlists(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),slug text UNIQUE,name text,description text,created_at timestamptz DEFAULT now(),is_public boolean,updated_at timestamptz DEFAULT now());
+    CREATE TABLE playlist_items(playlist_id uuid,video_id text,order_index int,pinned boolean DEFAULT false,created_at timestamptz DEFAULT now(),PRIMARY KEY(playlist_id,video_id));
+    CREATE TABLE app_jobs(job_id text PRIMARY KEY,user_id text,engine_id text,engine_label text DEFAULT 'Fixture',prompt text DEFAULT 'Needle',thumb_url text DEFAULT '/thumb.webp',video_url text DEFAULT '/video.mp4',audio_url text,render_ids jsonb,status text DEFAULT 'completed',surface text DEFAULT 'video',visibility text DEFAULT 'public',indexable boolean DEFAULT true,created_at timestamptz DEFAULT '2026-09-20 10:00:00.123456Z',aspect_ratio text DEFAULT '16:9',duration_sec int DEFAULT 5,has_audio boolean,can_upscale boolean,featured boolean,featured_order int,final_price_cents int,currency text,pricing_snapshot jsonb);
+    CREATE TABLE media_assets(user_id text,url text,status text,deleted_at timestamptz);
+    CREATE TABLE job_outputs(job_id text,kind text,status text,width int,height int,position int,created_at timestamptz,thumb_url text,url text,storage_url text);
+    INSERT INTO playlists(slug,is_public) VALUES('family-kling',true),('examples-kling-3-pro',true);
+    INSERT INTO app_jobs(job_id,engine_id) SELECT 'candidate-'||lpad(n::text,4,'0'),'kling-3-pro' FROM generate_series(1,2001) n;
+    UPDATE app_jobs SET prompt='Other' WHERE job_id > 'candidate-0101';
+    INSERT INTO app_jobs(job_id,engine_id,visibility) VALUES('private','kling-3-pro','private');
+    INSERT INTO app_jobs(job_id,engine_id) VALUES('portrait','kling-3-pro'),('foreign','wan-3');
+    INSERT INTO job_outputs(job_id,kind,status,width,height,url) VALUES('portrait','video','completed',1080,1920,'/video.mp4');
+    INSERT INTO playlist_items SELECT p.id,j.job_id,2002-substring(j.job_id from 11)::int,false,now() FROM playlists p CROSS JOIN app_jobs j WHERE p.slug='examples-kling-3-pro' AND j.job_id LIKE 'candidate-%';
+  `);
+  await pg.pool.query(readFileSync('neon/migrations/52_playlist_curations.sql','utf8'));
+  await pg.pool.query(readFileSync('neon/migrations/53_playlist_opening.sql','utf8'));
+  const out=join(folder,'reader.cjs');
+  await build({stdin:{contents:`export * from './frontend/server/playlists/curation-candidates-page'; export * from './frontend/server/videos-catalog-page'; export * from './frontend/server/videos-playlists'; export {GET as getInventory} from './frontend/app/api/admin/playlists/route'; export {GET as getCuration,POST as previewCuration} from './frontend/app/api/admin/playlists/[playlistId]/curation/route'; export {GET as getCandidates} from './frontend/app/api/admin/playlists/[playlistId]/curation/candidates/route'; export {parseCurationDraft} from './frontend/lib/admin/playlist-curation'; export {getDb,statements} from '@/lib/db';`,resolveDir:process.cwd()},define:{'import.meta.url':JSON.stringify(pathToFileURL(resolve('frontend/server/video-keyframes.ts')).href)},outfile:out,bundle:true,platform:'node',format:'cjs',packages:'external',tsconfig:'frontend/tsconfig.json',plugins:[{name:'fixture',setup(b){
+    b.onResolve({filter:/^@\/server\/admin$/},()=>({path:'admin',namespace:'fixture'}));
+    b.onLoad({filter:/^admin$/,namespace:'fixture'},()=>({contents:`export async function requireAdmin(req){if(req.headers.get('x-admin')!=='yes')throw new Error('Forbidden');return 'admin';} export function adminErrorToResponse(){return Response.json({ok:false},{status:403});}`,loader:'js'}));
+    b.onResolve({filter:/^@\/lib\/db$/},()=>({path:'db',namespace:'fixture'}));
+    b.onLoad({filter:/^db$/,namespace:'fixture'},()=>({contents:`export * from ${JSON.stringify(resolve('frontend/src/lib/db.ts'))}; import {query as run} from ${JSON.stringify(resolve('frontend/src/lib/db.ts'))}; export const statements=[]; export async function query(text,params){const rows=await run(text,params);statements.push({text,params,rows:rows.length});return rows;}`,loader:'js',resolveDir:process.cwd()}));
+    b.onResolve({filter:/^pg$/},args=>({path:requireFrontend.resolve(args.path),external:true}));
+  }}]});
+  const ro=new URL(pg.databaseUrl);ro.searchParams.set('options','-c default_transaction_read_only=on');process.env.DATABASE_URL=ro.toString();
+  reader=requireFrontend(out);
+  const {rows:[playlist]}=await pg.pool.query("SELECT id FROM playlists WHERE slug='family-kling'");
+  const context={params:Promise.resolve({playlistId:playlist.id})};
+  const req=(query='',admin=true)=>new Request('http://localhost/api?'+query,{headers:admin?{'x-admin':'yes'}:{}});
+  await t.test('admin_is_read_only_until_save', async () => {
+    reader.statements.length = 0;
+    assert.equal((await reader.getDb().query('SHOW default_transaction_read_only')).rows[0].default_transaction_read_only, 'on');
+    assert.equal((await reader.getInventory(req('', false))).status, 403);
+    const response = await reader.getInventory(req());
+    assert.equal(response.status, 200);
+    const inventory = await response.json();
+    assert.ok(inventory.destinations.length > 0);
+    assert.ok(reader.statements.filter(s=>s.text.includes('AS output_width')).every(s=>s.rows<=200),
+      'model inventory uses bounded public-page hydration, not the full membership');
+    assert.equal((await reader.getCuration(req(), context)).status, 200);
+    assert.equal((await reader.getCandidates(req(), context)).status, 200);
+    assert.ok(reader.statements.length > 0);
+    assert.ok(reader.statements.every(s => /^\s*(SELECT|WITH)\b/i.test(s.text)));
+    assert.equal((await pg.pool.query('SELECT count(*)::int AS count FROM playlist_curations')).rows[0].count, 0);
+  });
+  await t.test('pages_eligible_candidates_without_skips',async()=>{
+    const ids=[];let cursor=null;
+    do { const page=await reader.searchCurationCandidatesPage({slug:'family-kling',q:'Needle',format:'16:9',limit:48,cursor});assert.equal(page.total,101);assert.ok(page.items.length<=48);ids.push(...page.items.map(i=>i.id));cursor=page.nextCursor; }while(cursor);
+    assert.equal(ids.length,101);assert.equal(new Set(ids).size,101);assert.equal(ids[0],'candidate-0001');assert.equal(ids[100],'candidate-0101');
+    const exact=await reader.searchCurationCandidatesPage({slug:'family-kling',exactId:'candidate-2001'});assert.deepEqual(exact.items.map(i=>i.id),['candidate-2001']);
+    assert.equal((await reader.searchCurationCandidatesPage({slug:'family-kling',exactId:'private'})).total,0);
+    assert.deepEqual((await reader.searchCurationCandidatesPage({slug:'family-kling',format:'9:16'})).items.map(i=>i.id),['portrait']);
+    const selected=await reader.loadSelectedCurationItems('family-kling',['candidate-0100','private','foreign','candidate-0001']);assert.deepEqual(selected.map(i=>i.id),['candidate-0100','candidate-0001']);
+    await assert.rejects(reader.loadSelectedCurationItems('family-kling',Array.from({length:49},(_,n)=>String(n))),/48/);
+    assert.equal((await reader.getCandidates(req('',false),context)).status,403);
+    assert.equal((await reader.getCuration(req('',false),context)).status,403);
+    const window=await (await reader.getCandidates(req('ids=candidate-0100&ids=candidate-0001'),context)).json();
+    assert.deepEqual(window.items.map(i=>i.id),['candidate-0100','candidate-0001']);
+    assert.equal((await reader.getCandidates(req('ids='+Array.from({length:49},(_,n)=>String(n)).join(',')),context)).status,400);
+    assert.equal((await reader.getCandidates(req('cursor=broken'),context)).status,400);
+    const first=await reader.searchCurationCandidatesPage({slug:'family-kling',q:'Needle'});
+    await assert.rejects(reader.searchCurationCandidatesPage({slug:'family-kling',q:'Other',cursor:first.nextCursor}),/cursor/i);
+    assert.equal((await reader.searchCurationCandidatesPage({slug:'family-kling',modelSlug:'wan-3'})).total,0);
+    assert.equal((await reader.searchCurationCandidatesPage({slug:'family-kling',limit:999})).items.length,48);
+    const idPage=await (await reader.getCandidates(req('idsOnly=true&offset=2000&limit=500'),context)).json();
+    assert.deepEqual(idPage.ids,['candidate-2001','portrait']);assert.equal(idPage.total,2002);
+    const routed=await (await reader.getCandidates(req('exactId=candidate-2001'),context)).json();assert.deepEqual(routed.items.map(i=>i.id),['candidate-2001']);
+  });
+  await t.test('family_filter_pages_and_rejects_other_family_cursor', async () => {
+    const first = await (await reader.getCandidates(req('familyId=kling&q=Needle'), context)).json();
+    assert.equal(first.total, 102);
+    const second = await (await reader.getCandidates(req('familyId=kling&q=Needle&cursor='+encodeURIComponent(first.nextCursor)), context)).json();
+    assert.equal(second.items[0].id, 'candidate-0049');
+    assert.equal((await reader.getCandidates(req('familyId=wan&q=Needle&cursor='+encodeURIComponent(first.nextCursor)), context)).status, 400);
+    const foreign = await (await reader.getCandidates(req('familyId=wan'), context)).json();
+    assert.equal(foreign.total, 0, 'family filter intersects destination eligibility');
+  });
+  await t.test('adopts_2001_family_ids',async()=>{
+    reader.statements.length=0;
+    const response=await reader.getCuration(req(),context);assert.equal(response.status,200);
+    const body=await response.json();assert.equal(body.initialIds.length,2001);assert.equal(body.selectedTotal,2001);assert.equal(body.selectedItems.length,48);assert.equal(body.candidates,undefined);assert.equal(body.initialIds[0],'candidate-0001');assert.equal(body.initialIds[2000],'candidate-2001');assert.equal(body.snapshot.config,null);
+    assert.equal((await pg.pool.query('SELECT count(*)::int AS count FROM playlist_curations')).rows[0].count,0);
+    assert.ok(reader.statements.filter(s=>s.text.includes('AS output_width')).every(s=>s.rows<=48));
+    assert.ok(reader.statements.every(s=>/^\s*(SELECT|WITH)\b/i.test(s.text)));
+    assert.equal(reader.parseCurationDraft({mode:'manual',orderedIds:body.initialIds,excludedIds:[]}).orderedIds.length,2001);
+    const previewRequest=new Request('http://localhost/api',{method:'POST',headers:{'x-admin':'yes','content-type':'application/json'},body:JSON.stringify({revision:body.snapshot.revision,draft:{mode:'manual',orderedIds:body.initialIds,excludedIds:[],openingIds:['candidate-0001','portrait','candidate-0002','candidate-0003']}})});
+    const previewResponse=await reader.previewCuration(previewRequest,context);assert.equal(previewResponse.status,200);
+    assert.equal((await previewResponse.json()).preview.items.length,2002);
+    const direct=await reader.listPlaylistVideoIds('examples-kling-3-pro',{offset:2000,limit:500});assert.deepEqual(direct,{ids:['candidate-2001'],total:2001});
+    const family=await reader.listCatalogMembershipIds({familyId:'kling',offset:2000,limit:500});assert.deepEqual(family,{ids:['candidate-2001'],total:2001});
+  });
+  await t.test('saved selections filter stale IDs without changing configuration',async()=>{
+    await pg.pool.query("INSERT INTO playlist_curations(playlist_id,mode,ordered_ids,excluded_ids) VALUES($1,'manual',ARRAY['candidate-2001','private','candidate-0001'],'{}')",[playlist.id]);
+    const body=await (await reader.getCuration(req(),context)).json();
+    assert.deepEqual(body.initialIds,['candidate-2001','candidate-0001']);assert.equal(body.removedCount,1);assert.equal(body.selectedTotal,2);
+    assert.deepEqual(body.selectedItems.map(i=>i.id),['candidate-2001','candidate-0001']);
+    assert.deepEqual(body.snapshot.config.orderedIds,['candidate-2001','private','candidate-0001']);
+  });
+  await t.test('candidate format filters accept codec-rounded video dimensions',async()=>{
+    await pg.pool.query("INSERT INTO app_jobs(job_id,engine_id,prompt) VALUES('rounded-wide','kling-3-pro','Rounded'),('rounded-tall','kling-3-pro','Rounded')");
+    await pg.pool.query("INSERT INTO job_outputs(job_id,kind,status,width,height,url) VALUES('rounded-wide','video','completed',1280,704,'/video.mp4'),('rounded-tall','video','completed',704,1280,'/video.mp4')");
+    const wide=await reader.searchCurationCandidatesPage({slug:'family-kling',q:'Rounded',format:'16:9'});
+    const tall=await reader.searchCurationCandidatesPage({slug:'family-kling',q:'Rounded',format:'9:16'});
+    assert.deepEqual(wide.items.map(item=>item.id),['rounded-wide']);
+    assert.deepEqual(tall.items.map(item=>item.id),['rounded-tall']);
+  });
+});

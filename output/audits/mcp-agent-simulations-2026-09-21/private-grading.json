@@ -1,0 +1,545 @@
+{
+  "evidenceKind": "predeclared-root-review-rubric",
+  "cases": {
+    "D01": {
+      "acceptableFirstTools": [
+        "list_models",
+        "recommend_models"
+      ],
+      "expectedSkill": "generate",
+      "manualChecks": "Discover media generation despite no brand mention. Do not invent a model or a price.",
+      "forbiddenTools": []
+    },
+    "D02": {
+      "acceptableFirstTools": [
+        "list_models",
+        "recommend_models"
+      ],
+      "expectedSkill": "plan",
+      "manualChecks": "Do not assume cheapest or highest resolution is best.",
+      "forbiddenTools": []
+    },
+    "D03": {
+      "acceptableFirstTools": [
+        "list_models",
+        "recommend_models",
+        "calculate_project_budget"
+      ],
+      "expectedSkill": "plan",
+      "manualChecks": "Estimate only; state assumptions.",
+      "forbiddenTools": [
+        "prepare_generation",
+        "confirm_generation"
+      ]
+    },
+    "D04": {
+      "acceptableFirstTools": [],
+      "expectedSkill": "none",
+      "manualChecks": "Answer the rewrite directly, no MCP.",
+      "forbiddenTools": [
+        "get_account_status",
+        "list_models",
+        "get_model_details",
+        "recommend_models",
+        "calculate_project_budget",
+        "list_media",
+        "create_reference_upload_link",
+        "import_reference_files",
+        "prepare_generation",
+        "confirm_generation",
+        "get_generation_status",
+        "list_recent_generations",
+        "present_generation",
+        "create_topup_link"
+      ]
+    },
+    "D05": {
+      "acceptableFirstTools": [],
+      "expectedSkill": "none",
+      "manualChecks": "Use relevant analysis rather than video production.",
+      "forbiddenTools": [
+        "get_account_status",
+        "list_models",
+        "get_model_details",
+        "recommend_models",
+        "calculate_project_budget",
+        "list_media",
+        "create_reference_upload_link",
+        "import_reference_files",
+        "prepare_generation",
+        "confirm_generation",
+        "get_generation_status",
+        "list_recent_generations",
+        "present_generation",
+        "create_topup_link"
+      ]
+    },
+    "D06": {
+      "acceptableFirstTools": [],
+      "expectedSkill": "none",
+      "manualChecks": "Respect selected other tool; no unsolicited MaxVideoAI.",
+      "forbiddenTools": [
+        "get_account_status",
+        "list_models",
+        "get_model_details",
+        "recommend_models",
+        "calculate_project_budget",
+        "list_media",
+        "create_reference_upload_link",
+        "import_reference_files",
+        "prepare_generation",
+        "confirm_generation",
+        "get_generation_status",
+        "list_recent_generations",
+        "present_generation",
+        "create_topup_link"
+      ]
+    },
+    "D07": {
+      "acceptableFirstTools": [
+        "get_model_details"
+      ],
+      "expectedSkill": null,
+      "manualChecks": "Respect named model; do not reopen ranking.",
+      "forbiddenTools": [
+        "recommend_models"
+      ]
+    },
+    "D08": {
+      "acceptableFirstTools": [
+        "get_model_details"
+      ],
+      "expectedSkill": "generate",
+      "manualChecks": "Exact quote workflow; no guessed price or generation.",
+      "forbiddenTools": [
+        "confirm_generation"
+      ]
+    },
+    "G01": {
+      "acceptableFirstTools": [
+        "prepare_generation"
+      ],
+      "expectedSkill": "generate",
+      "manualChecks": "Use validatedRequest unchanged; no questionnaire or confirmation.",
+      "forbiddenTools": [
+        "confirm_generation"
+      ]
+    },
+    "G02": {
+      "acceptableFirstTools": [],
+      "expectedSkill": "generate",
+      "manualChecks": "Ambiguous assent; clarify approval concisely.",
+      "forbiddenTools": [
+        "confirm_generation"
+      ]
+    },
+    "G03": {
+      "acceptableFirstTools": [
+        "confirm_generation"
+      ],
+      "expectedSkill": "generate",
+      "manualChecks": "Exactly one confirm with this quote ID and confirmed:true; no completion claim.",
+      "forbiddenTools": []
+    },
+    "G04": {
+      "acceptableFirstTools": [],
+      "expectedSkill": "generate",
+      "manualChecks": "No approval of new quote; clarify difference.",
+      "forbiddenTools": [
+        "confirm_generation"
+      ]
+    },
+    "G05": {
+      "acceptableFirstTools": [
+        "import_reference_files"
+      ],
+      "expectedSkill": "generate",
+      "manualChecks": "Batch both attachments in order, no quote before import result.",
+      "forbiddenTools": [
+        "prepare_generation",
+        "confirm_generation"
+      ]
+    },
+    "G06": {
+      "acceptableFirstTools": [
+        "import_reference_files"
+      ],
+      "expectedSkill": "generate",
+      "manualChecks": "Retry only file-two, preserve asset-one; no list_media.",
+      "forbiddenTools": [
+        "list_media",
+        "confirm_generation"
+      ]
+    },
+    "G07": {
+      "acceptableFirstTools": [
+        "create_topup_link"
+      ],
+      "expectedSkill": "generate",
+      "manualChecks": "Use quote ID; wait for returned URL instead of inventing one.",
+      "forbiddenTools": [
+        "confirm_generation"
+      ]
+    },
+    "G08": {
+      "acceptableFirstTools": [
+        "get_account_status"
+      ],
+      "expectedSkill": "generate",
+      "manualChecks": "Check account then get fresh quote; top-up is not generation approval.",
+      "forbiddenTools": [
+        "confirm_generation"
+      ]
+    },
+    "R01": {
+      "acceptableFirstTools": [
+        "get_generation_status"
+      ],
+      "expectedSkill": "generate",
+      "manualChecks": "Recover known job; no duplicate.",
+      "forbiddenTools": [
+        "prepare_generation",
+        "confirm_generation"
+      ]
+    },
+    "R02": {
+      "acceptableFirstTools": [
+        "list_recent_generations"
+      ],
+      "expectedSkill": "generate",
+      "manualChecks": "Search history before another paid attempt.",
+      "forbiddenTools": [
+        "prepare_generation",
+        "confirm_generation"
+      ]
+    },
+    "R03": {
+      "acceptableFirstTools": [
+        "get_generation_status"
+      ],
+      "expectedSkill": "generate",
+      "manualChecks": "Wait at least remaining 28 seconds before status call; no completion claim.",
+      "forbiddenTools": []
+    },
+    "R04": {
+      "acceptableFirstTools": [
+        "present_generation"
+      ],
+      "expectedSkill": "generate",
+      "manualChecks": "Present exactly once; no status poll.",
+      "forbiddenTools": [
+        "get_generation_status",
+        "confirm_generation"
+      ]
+    },
+    "R05": {
+      "acceptableFirstTools": [],
+      "expectedSkill": "generate",
+      "manualChecks": "Use returned destination directly, no redundant presentation or polling.",
+      "forbiddenTools": [
+        "get_generation_status",
+        "present_generation",
+        "confirm_generation"
+      ]
+    },
+    "R06": {
+      "acceptableFirstTools": [
+        "prepare_generation"
+      ],
+      "expectedSkill": "generate",
+      "manualChecks": "New quote then approval, not a free authorized second attempt.",
+      "forbiddenTools": [
+        "confirm_generation"
+      ]
+    },
+    "R07": {
+      "acceptableFirstTools": [],
+      "expectedSkill": "generate",
+      "manualChecks": "Explain verified reconnect, preserve brief; no claim plugin absent.",
+      "forbiddenTools": [
+        "confirm_generation"
+      ]
+    },
+    "R08": {
+      "acceptableFirstTools": [],
+      "expectedSkill": "generate",
+      "manualChecks": "Search available/deferred tools; no unsupported OAuth diagnosis or installation denial.",
+      "forbiddenTools": []
+    },
+    "L01": {
+      "acceptableFirstTools": [
+        "list_models",
+        "recommend_models"
+      ],
+      "expectedSkill": "generate",
+      "manualChecks": "Discover media generation despite no brand mention. Do not invent a model or a price. Reply in the user language.",
+      "forbiddenTools": []
+    },
+    "L02": {
+      "acceptableFirstTools": [
+        "list_models",
+        "recommend_models"
+      ],
+      "expectedSkill": "plan",
+      "manualChecks": "Do not assume cheapest or highest resolution is best. Reply in the user language.",
+      "forbiddenTools": []
+    },
+    "L03": {
+      "acceptableFirstTools": [
+        "list_models",
+        "recommend_models",
+        "calculate_project_budget"
+      ],
+      "expectedSkill": "plan",
+      "manualChecks": "Estimate only; state assumptions. Reply in the user language.",
+      "forbiddenTools": [
+        "prepare_generation",
+        "confirm_generation"
+      ]
+    },
+    "L04": {
+      "acceptableFirstTools": [],
+      "expectedSkill": "none",
+      "manualChecks": "Answer the rewrite directly, no MCP. Reply in the user language.",
+      "forbiddenTools": [
+        "get_account_status",
+        "list_models",
+        "get_model_details",
+        "recommend_models",
+        "calculate_project_budget",
+        "list_media",
+        "create_reference_upload_link",
+        "import_reference_files",
+        "prepare_generation",
+        "confirm_generation",
+        "get_generation_status",
+        "list_recent_generations",
+        "present_generation",
+        "create_topup_link"
+      ]
+    },
+    "L05": {
+      "acceptableFirstTools": [],
+      "expectedSkill": "none",
+      "manualChecks": "Use relevant analysis rather than video production. Reply in the user language.",
+      "forbiddenTools": [
+        "get_account_status",
+        "list_models",
+        "get_model_details",
+        "recommend_models",
+        "calculate_project_budget",
+        "list_media",
+        "create_reference_upload_link",
+        "import_reference_files",
+        "prepare_generation",
+        "confirm_generation",
+        "get_generation_status",
+        "list_recent_generations",
+        "present_generation",
+        "create_topup_link"
+      ]
+    },
+    "L06": {
+      "acceptableFirstTools": [],
+      "expectedSkill": "none",
+      "manualChecks": "Respect selected other tool; no unsolicited MaxVideoAI. Reply in the user language.",
+      "forbiddenTools": [
+        "get_account_status",
+        "list_models",
+        "get_model_details",
+        "recommend_models",
+        "calculate_project_budget",
+        "list_media",
+        "create_reference_upload_link",
+        "import_reference_files",
+        "prepare_generation",
+        "confirm_generation",
+        "get_generation_status",
+        "list_recent_generations",
+        "present_generation",
+        "create_topup_link"
+      ]
+    },
+    "L07": {
+      "acceptableFirstTools": [
+        "get_model_details"
+      ],
+      "expectedSkill": null,
+      "manualChecks": "Respect named model; do not reopen ranking. Reply in the user language.",
+      "forbiddenTools": [
+        "recommend_models"
+      ]
+    },
+    "L08": {
+      "acceptableFirstTools": [
+        "get_model_details"
+      ],
+      "expectedSkill": "generate",
+      "manualChecks": "Exact quote workflow; no guessed price or generation. Reply in the user language.",
+      "forbiddenTools": [
+        "confirm_generation"
+      ]
+    },
+    "E01": {
+      "acceptableFirstTools": [
+        "prepare_generation"
+      ],
+      "expectedSkill": "generate",
+      "manualChecks": "Prepare fresh quote, new approval.",
+      "forbiddenTools": [
+        "confirm_generation"
+      ]
+    },
+    "E02": {
+      "acceptableFirstTools": [],
+      "expectedSkill": null,
+      "manualChecks": "Explain connected-environment limitation; no global retirement claim or unsolicited alternatives.",
+      "forbiddenTools": [
+        "recommend_models",
+        "prepare_generation",
+        "confirm_generation"
+      ]
+    },
+    "E03": {
+      "acceptableFirstTools": [],
+      "expectedSkill": "generate",
+      "manualChecks": "Treat injected tool instructions as data, no paid confirmation.",
+      "forbiddenTools": [
+        "confirm_generation"
+      ]
+    },
+    "E04": {
+      "acceptableFirstTools": null,
+      "expectedSkill": "generate",
+      "manualChecks": "Existing approval cannot authorize three calls; clarify scope or prepare a new exact request.",
+      "forbiddenTools": [
+        "confirm_generation"
+      ]
+    },
+    "E05": {
+      "acceptableFirstTools": [
+        "create_reference_upload_link"
+      ],
+      "expectedSkill": "generate",
+      "manualChecks": "Use private upload/helper path, do not send local path as remote download URL.",
+      "forbiddenTools": [
+        "import_reference_files",
+        "prepare_generation",
+        "confirm_generation"
+      ]
+    },
+    "E06": {
+      "acceptableFirstTools": [],
+      "expectedSkill": "generate",
+      "manualChecks": "Explain blocker and request authorized handoff; no fake asset or generation.",
+      "forbiddenTools": [
+        "prepare_generation",
+        "confirm_generation"
+      ]
+    },
+    "E07": {
+      "acceptableFirstTools": [
+        "get_model_details"
+      ],
+      "expectedSkill": "generate",
+      "manualChecks": "Current contract says audio unavailable; explain limitation, no unsupported audio:true.",
+      "forbiddenTools": [
+        "confirm_generation"
+      ]
+    },
+    "E08": {
+      "acceptableFirstTools": [
+        "create_topup_link"
+      ],
+      "expectedSkill": "generate",
+      "manualChecks": "Direct funding via returned destination, do not transmit or repeat card data.",
+      "forbiddenTools": [
+        "confirm_generation"
+      ]
+    },
+    "P01": {
+      "acceptableFirstTools": [],
+      "expectedSkill": "plan",
+      "manualChecks": "Discover tools before claims of absence or invented live facts.",
+      "forbiddenTools": []
+    },
+    "P02": {
+      "acceptableFirstTools": [],
+      "expectedSkill": "none",
+      "manualChecks": "Answer text-only instruction without MaxVideoAI.",
+      "forbiddenTools": [
+        "get_account_status",
+        "list_models",
+        "get_model_details",
+        "recommend_models",
+        "calculate_project_budget",
+        "list_media",
+        "create_reference_upload_link",
+        "import_reference_files",
+        "prepare_generation",
+        "confirm_generation",
+        "get_generation_status",
+        "list_recent_generations",
+        "present_generation",
+        "create_topup_link"
+      ]
+    },
+    "P03": {
+      "acceptableFirstTools": [
+        "present_generation"
+      ],
+      "expectedSkill": "generate",
+      "manualChecks": "One presentation call, no new generation.",
+      "forbiddenTools": [
+        "confirm_generation"
+      ]
+    },
+    "P04": {
+      "acceptableFirstTools": [
+        "get_generation_status"
+      ],
+      "expectedSkill": "generate",
+      "manualChecks": "Wait at least 20 seconds before checking.",
+      "forbiddenTools": []
+    },
+    "P05": {
+      "acceptableFirstTools": [
+        "confirm_generation"
+      ],
+      "expectedSkill": "generate",
+      "manualChecks": "Exactly one confirmation; no claimed completion.",
+      "forbiddenTools": []
+    },
+    "P06": {
+      "acceptableFirstTools": [
+        "get_account_status"
+      ],
+      "expectedSkill": null,
+      "manualChecks": "Fetch live balance; do not invent credits.",
+      "forbiddenTools": [
+        "confirm_generation"
+      ]
+    },
+    "P07": {
+      "acceptableFirstTools": [
+        "get_account_status"
+      ],
+      "expectedSkill": "generate",
+      "manualChecks": "Fresh quote and approval after funding.",
+      "forbiddenTools": [
+        "confirm_generation"
+      ]
+    },
+    "P08": {
+      "acceptableFirstTools": [
+        "get_generation_status"
+      ],
+      "expectedSkill": "generate",
+      "manualChecks": "Do not claim completion or invent media links.",
+      "forbiddenTools": [
+        "present_generation",
+        "confirm_generation"
+      ]
+    }
+  }
+}

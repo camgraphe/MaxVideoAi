@@ -22,6 +22,8 @@ export type HeroVideoShowcaseItem = {
   estimateValue: string;
   estimateMeta: string;
   priceNote?: string;
+  priceKind?: 'exact' | 'reference' | 'unavailable';
+  quoteScenario?: string;
   examplesHref?: LocalizedLinkHref;
   modelHref?: LocalizedLinkHref;
   examplesLabel?: string;
@@ -117,10 +119,12 @@ export function HeroVideoShowcase({
   const primaryPrice = selected.estimateValue || selected.price;
   const ratePrice = selected.price && selected.price !== primaryPrice ? selected.price : null;
   const [modeLabel, , formatLabelFromMedia] = (selected.mediaInfo ?? '').split(' · ');
-  const quoteRenderMeta = [getDurationShortLabel(selected.duration), modeLabel?.toLowerCase(), formatLabelFromMedia ?? selected.resolution]
+  const quoteRenderMeta = selected.quoteScenario ?? [getDurationShortLabel(selected.duration), modeLabel?.toLowerCase(), formatLabelFromMedia ?? selected.resolution]
     .filter(Boolean)
     .join(' · ');
-  const ratePerSecond = buildRatePerSecondLabel(selected, primaryPrice, ratePrice);
+  const ratePerSecond = selected.priceKind === 'reference' || selected.priceKind === 'unavailable'
+    ? null
+    : buildRatePerSecondLabel(selected, primaryPrice, ratePrice);
 
   const timeLabel = formatPlaybackTime(currentTime);
 

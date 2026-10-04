@@ -19,8 +19,7 @@ type PriceEstimatorSummaryPanelProps = {
   durationDisplay: string;
   estimateLabels: Record<string, string>;
   labels: PriceEstimatorSummaryLabels;
-  priceTotal: number;
-  rate: number;
+  priceTotal: number | null;
   selectedEngine?: {
     audioIncluded?: boolean;
     label?: string;
@@ -39,7 +38,6 @@ export function PriceEstimatorSummaryPanel({
   estimateLabels,
   labels,
   priceTotal,
-  rate,
   selectedEngine,
   selectedResolution,
   audioEnabled,
@@ -55,7 +53,7 @@ export function PriceEstimatorSummaryPanel({
             {estimateLabels.heading}
           </span>
           <p className="text-5xl font-semibold tracking-tight text-text-primary sm:text-6xl">
-            {formatCurrency(priceTotal, currency)}
+            {priceTotal == null ? '—' : formatCurrency(priceTotal, currency)}
           </p>
           <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-text-muted">
             {labels.priceChipSuffix}
@@ -85,13 +83,6 @@ export function PriceEstimatorSummaryPanel({
             <dt className="text-text-secondary">{labels.audio}</dt>
             <dd className="text-right font-semibold text-text-primary">
               {selectedEngine?.audioIncluded || audioEnabled ? labels.audioOn : labels.audioOff}
-            </dd>
-          </div>
-          <div className="flex items-center justify-between gap-4">
-            <dt className="text-text-secondary">{labels.engineRate}</dt>
-            <dd className="text-right font-semibold text-text-primary">
-              {formatCurrency(rate, currency)}
-              {selectedEngine?.rateUnit ?? '/s'}
             </dd>
           </div>
         </dl>

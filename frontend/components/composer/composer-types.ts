@@ -1,5 +1,6 @@
 import type { Ref, ReactNode } from 'react';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps as CapabilityCaps, Mode, PreflightResponse } from '@/types/engines';
+import type { PendingGeneration } from '@/lib/pending-generations';
 import type {
   AssetFieldConfig,
   AssetFieldRole,
@@ -66,6 +67,7 @@ export interface ComposerProps {
   onOpenLibrary?: (field: EngineInputField, slotIndex: number) => void;
   onAssetUrlSelect?: (field: EngineInputField, url: string, slotIndex: number) => void;
   settingsBar?: ReactNode;
+  settingsNotice?: ReactNode;
   generateControl?: ReactNode;
   optionsControl?: ReactNode;
   modeToggles?: ComposerModeToggle[];
@@ -91,4 +93,5 @@ export interface ComposerProps {
   workflowNotice?: string | null;
   generateLabel?: string;
   generateLoadingLabel?: string;
+  pendingGenerations?: readonly PendingGeneration[];
 }

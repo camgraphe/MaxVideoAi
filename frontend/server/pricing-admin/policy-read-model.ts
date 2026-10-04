@@ -8,8 +8,13 @@ import type {
   ListPricingChangeEventsInput,
   PricingChangeEvent,
 } from '@/lib/admin/pricing-change-contract';
+import { getFalEngineById, listFalEngines } from '@/config/falEngines';
+import { listRuntimeModels } from '@/config/model-runtime';
 import { buildPricingAuditScenarios } from '@/lib/pricing-audit/scenarios';
+import { collectSellableManualTariffCoverage, type ManualTariffCoverageScenario } from '@/lib/pricing-audit/manual-tariff-coverage';
+import type { PricingAuditScenario } from '@/lib/pricing-audit/types';
 import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
+import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
 
 import {
   quoteCanonicalAdminScenarios,
@@ -25,11 +30,76 @@ import type {
 } from './policy-contract';
 import { DEFAULT_POLICY_SERVICE_DEPENDENCIES } from './policy-dependencies';
 import {
+  buildProviderCostComparisonRows,
+} from './provider-cost-comparison';
+import { providerComparisonForTariffScenario } from './tariff-provider-comparison';
+import { isGptImageFamilyEngineId, resolveGptImage2PricingTier } from '@/lib/image/gptImage2';
+import {
   canonicalRule,
   scenarioSelectorKey,
   selectorKey,
   selectorOf,
 } from './policy-rules';
+
+export function buildAllModelComparisonScenarios(auditScenarios: PricingAuditScenario[] = buildPricingAuditScenarios()) {
+  const appPublished = new Set(listRuntimeModels().filter((model) => model.publication.app.published).map((model) => model.id));
+  return listFalEngines().flatMap((entry) => {
+    if (!appPublished.has(entry.id)) return [];
+    const baseline = auditScenarios.find((scenario) => scenario.engineId === entry.id
+      && scenario.surface === 'billing' && scenario.membershipTier === 'member'
+      && scenario.id.startsWith(`billing:${entry.id}:`));
+    const image = entry.category === 'image';
+    const mode = baseline?.mode ?? (image ? 't2i' : 't2v');
+    const resolution = !image && entry.engine.resolutions.includes('720p') ? '720p' : baseline?.resolution ?? entry.engine.resolutions[0];
+    const durationSec = image ? 1 : 5;
+    if (!resolution || !entry.modes.some((item) => item.mode === mode)) return [];
+    const scenario: PricingAuditScenario = {
+      ...(baseline ?? {
+        surface: 'billing' as const,
+        engineId: entry.id,
+        membershipTier: 'member' as const,
+        input: {},
+      }),
+      id: `provider-comparison:${entry.id}:${mode}:${image ? '1-image' : `${durationSec}s`}:${resolution}:member`,
+      mode,
+      resolution,
+      durationSec,
+      input: image ? { quantity: 1, referenceImageCount: 0 } : { audio: false, aspectRatio: entry.engine.aspectRatios[0] ?? '16:9' },
+    };
+    return [{ scenario, entry }];
+  });
+}
+
+export function selectRepresentativeTariffScenario(
+  entry: ReturnType<typeof listFalEngines>[number], scenario: PricingAuditScenario,
+  options: readonly ManualTariffCoverageScenario[],
+): ManualTariffCoverageScenario | null {
+  const fields = [...(entry.engine.inputSchema?.required ?? []), ...(entry.engine.inputSchema?.optional ?? [])];
+  const defaultAspect = fields.find((field) => field.id === 'aspect_ratio' && typeof field.default === 'string' && field.default !== 'auto')?.default
+    ?? (typeof scenario.input.aspectRatio === 'string' && scenario.input.aspectRatio !== 'auto' ? scenario.input.aspectRatio : undefined)
+    ?? (entry.engine.aspectRatios.includes('16:9') ? '16:9' : entry.engine.aspectRatios.includes('1:1') ? '1:1' : undefined);
+  const defaultQuality = fields.find((field) => field.id === 'quality' && typeof field.default === 'string')?.default;
+  const resolution = isGptImageFamilyEngineId(entry.id)
+    ? resolveGptImage2PricingTier(scenario.resolution).billingKey : scenario.resolution;
+  let chosen: ManualTariffCoverageScenario | null = null;
+  let best = Infinity;
+  for (const candidate of options) {
+    const selector = candidate.selector;
+    const score = (selector.mode === scenario.mode ? 0 : 10_000)
+      + (selector.resolution.toLowerCase() === resolution?.toLowerCase() ? 0 : 1_000)
+      + Math.abs(Number(selector.durationSec) - (scenario.durationSec ?? 1)) * 10
+      + (defaultAspect && selector.aspectRatio !== defaultAspect ? 4 : 0)
+      + (defaultQuality && selector.quality !== defaultQuality ? 3 : 0)
+      + (scenario.input.audio === false && selector.audio === 'true' ? 2 : 0);
+    if (score < best) { chosen = candidate; best = score; }
+  }
+  return chosen;
+}
+
+function isActivePolicyRule(rule: PricingPolicyRule): boolean {
+  if (!rule.engineId) return true;
+  return getFalEngineById(rule.engineId)?.surfaces.pricing.includeInEstimator !== false;
+}
 
 export async function loadPricingPolicyHistory(
   filter: Omit<ListPricingChangeEventsInput, 'domain'> = {},
@@ -45,17 +115,21 @@ export async function loadPricingPolicyInventory(
   const loaded = await dependencies.loadOverrides();
   const databaseRules = loaded.status === 'loaded' ? loaded.rules.map(canonicalRule) : [];
   const routingRules = loaded.status === 'loaded' ? loaded.routingRules ?? [] : [];
+  const auditScenarios = selectAffectedPricingScenarios({}).filter((scenario) => {
+    const engine = getFalEngineById(scenario.engineId);
+    return !engine || engine.surfaces.pricing.includeInEstimator;
+  });
   const bySelector = new Map<string, {
     selector: PricingScenarioSelector;
     versionedRule: PricingPolicyRule | null;
     databaseOverride: PricingPolicyRule | null;
   }>();
-  policy.rules.forEach((rule) => bySelector.set(selectorKey(rule), {
+  policy.rules.filter(isActivePolicyRule).forEach((rule) => bySelector.set(selectorKey(rule), {
     selector: selectorOf(rule),
     versionedRule: canonicalRule(rule),
     databaseOverride: null,
   }));
-  databaseRules.forEach((rule) => {
+  databaseRules.filter(isActivePolicyRule).forEach((rule) => {
     const key = selectorKey(rule);
     const existing = bySelector.get(key) ?? {
       selector: selectorOf(rule),
@@ -64,7 +138,7 @@ export async function loadPricingPolicyInventory(
     };
     bySelector.set(key, { ...existing, databaseOverride: canonicalRule(rule) });
   });
-  buildPricingAuditScenarios().forEach((scenario) => {
+  auditScenarios.forEach((scenario) => {
     const selector: PricingScenarioSelector = {
       engineId: scenario.engineId,
       ...(scenario.mode ? { mode: scenario.mode } : {}),
@@ -185,12 +259,49 @@ export async function loadPricingPolicyInventory(
     };
   });
 
+  const allModelScenarios = buildAllModelComparisonScenarios(buildPricingAuditScenarios());
+  const coverageByModel = new Map<string, ReturnType<typeof collectSellableManualTariffCoverage>['scenarios']>();
+  for (const candidate of collectSellableManualTariffCoverage().scenarios) {
+    const bucket = coverageByModel.get(candidate.modelId) ?? [];
+    bucket.push(candidate);
+    coverageByModel.set(candidate.modelId, bucket);
+  }
+  const comparisons = await Promise.all(allModelScenarios.map(async ({ scenario, entry }) => {
+    const options = coverageByModel.get(entry.id) ?? [];
+    const selected = selectRepresentativeTariffScenario(entry, scenario, options);
+    if (!selected) throw new Error(`No supported supplier comparison scenario for ${entry.id}`);
+    const comparison = providerComparisonForTariffScenario(selected);
+    if (selected && loaded.status === 'loaded') {
+      try {
+        const snapshot = await computeCanonicalBillingSnapshot(selected.context, {
+          pricingPolicy: { loadOverrides: async () => loaded },
+        });
+        const provenance = snapshot.meta?.pricingPolicy as { source?: unknown; sourceRuleId?: unknown } | undefined;
+        if (Number.isSafeInteger(snapshot.totalCents) && typeof provenance?.sourceRuleId === 'string' &&
+          (provenance.source === 'database' || provenance.source === 'versioned')) {
+          comparison.customerQuote = {
+            totalCents: snapshot.totalCents, currency: snapshot.currency,
+            source: provenance.source, ruleId: provenance.sourceRuleId,
+            pricingMode: snapshot.meta?.pricingMode === 'manual_tariff' ? 'manual_tariff' : 'legacy_margin_rule',
+          };
+        }
+      } catch {
+        // No numeric customer price when an exact billing quote cannot be produced.
+      }
+    }
+    return comparison;
+  }));
+
   return {
     versionedPolicyVersion: policy.version,
+    modelTariffsActive: await dependencies.loadManualTariffsActive?.() ?? false,
     databaseStatus: loaded.status,
-    warnings: loaded.status === 'unavailable' ? ['Pricing policy database is unavailable; showing versioned policy only.'] : [],
+    warnings: loaded.status === 'unavailable'
+      ? ['Pricing policy database is unavailable; showing versioned policy only; effective customer quotes unavailable.']
+      : [],
     rows: rows.sort((left, right) => scenarioSelectorKey(left.selector).localeCompare(
       scenarioSelectorKey(right.selector)
     )),
+    providerComparisons: buildProviderCostComparisonRows(comparisons, new Date().toISOString()),
   };
 }

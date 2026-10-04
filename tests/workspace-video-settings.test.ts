@@ -211,3 +211,29 @@ test('historical Sora recall preserves its engine and prompt instead of silently
   assert.equal(resolved.engine.id, 'sora-2');
   assert.equal(resolved.prompt, 'Saved shot');
 });
+
+test('public example recreation carries measured resolution and explicit audio instead of the previous draft', () => {
+  const engine = seedanceEngine();
+  engine.resolutions = ['480p', '720p'];
+  engine.modeCaps!.t2v!.resolution = ['480p', '720p'];
+  const snapshot = buildVideoSettingsSnapshotFromSharedVideo({
+    id: 'example', engineId: engine.id, engineLabel: engine.label, durationSec: 12,
+    prompt: 'The complete original prompt', aspectRatio: '16:9', createdAt: '',
+    outputWidth: 1280, outputHeight: 720, hasAudio: false,
+  } as Parameters<typeof buildVideoSettingsSnapshotFromSharedVideo>[0]);
+  const previous = { ...previousForm(), resolution: '480p', audio: true };
+  const form = buildVideoSettingsFormState(resolveForEngine(snapshot, engine), previous);
+  assert.equal(form.resolution, '720p');
+  assert.equal(form.audio, false);
+});
+
+test('derived public resolution maps to the engine token without dropping 1080p to 768P', () => {
+  const engine = getBaseEngines().find(candidate => candidate.id === 'minimax-h3-max');
+  assert.ok(engine);
+  const snapshot = buildVideoSettingsSnapshotFromSharedVideo({
+    id: 'example', engineId: engine.id, engineLabel: engine.label, durationSec: 15,
+    prompt: 'Example', aspectRatio: '16:9', createdAt: '', outputWidth: 1920, outputHeight: 1080, hasAudio: true,
+  });
+  const form = buildVideoSettingsFormState(resolveForEngine(snapshot, engine), { ...previousForm(), resolution: '768P' });
+  assert.equal(form.resolution, '1080P');
+});

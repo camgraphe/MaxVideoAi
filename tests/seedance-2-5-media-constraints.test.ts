@@ -110,6 +110,7 @@ async function validateStoredVideo(width: number, height: number) {
         size_bytes: 425_179,
         width,
         height,
+        duration_sec: 10,
       }] as T[],
     },
   });
@@ -158,7 +159,10 @@ test('Seedance 2.5 audio field resolves an exact 15 MB MP3/WAV contract', () => 
 
 test('generation validation uses stored user-owned metadata instead of client size or MIME', async () => {
   const exactMp3 = await validateStoredAudio({ row: storedRow() });
-  assert.deepEqual(exactMp3.result, { ok: true });
+  assert.deepEqual(exactMp3.result, {
+    ok: true,
+    trustedMediaReferences: [{ kind: 'audio', url: AUDIO_URL, width: null, height: null, durationSec: null }],
+  });
   assert.equal(exactMp3.calls.length, 1);
   assert.match(exactMp3.calls[0].sql, /user_assets/);
   assert.match(exactMp3.calls[0].sql, /media_assets/);
@@ -179,7 +183,11 @@ test('generation validation uses stored user-owned metadata instead of client si
     }),
     reference: referenceItem('https://media.maxvideoai.com/library/original.wav'),
   });
-  assert.deepEqual(exactWav.result, { ok: true });
+  assert.deepEqual(exactWav.result, {
+    ok: true,
+    trustedMediaReferences: [{ kind: 'audio', url: 'https://media.maxvideoai.com/library/original.wav',
+      width: null, height: null, durationSec: null }],
+  });
 
   const tooLarge = await validateStoredAudio({
     row: storedRow({ size_bytes: 15 * MB + 1 }),
@@ -222,7 +230,11 @@ test('Seedance 2.5 rejects source videos below the provider pixel floor before s
   });
 
   const aboveFloor = await validateStoredVideo(638, 640);
-  assert.deepEqual(aboveFloor, { ok: true });
+  assert.deepEqual(aboveFloor, {
+    ok: true,
+    trustedDurationSecByField: { video_url: [10] },
+    trustedMediaReferences: [{ kind: 'video', url: VIDEO_URL, width: 638, height: 640, durationSec: 10 }],
+  });
 });
 
 test('Seedance 2.5 probes a trusted stored video when dimension metadata is missing', async () => {
@@ -253,12 +265,17 @@ test('Seedance 2.5 probes a trusted stored video when dimension metadata is miss
         size_bytes: 425_179,
         width: null,
         height: null,
+        duration_sec: 10,
       }] as T[],
       detectVideoDimensionsFn: async () => ({ width: 638, height: 640 }),
     },
   });
 
-  assert.deepEqual(result, { ok: true });
+  assert.deepEqual(result, {
+    ok: true,
+    trustedDurationSecByField: { video_url: [10] },
+    trustedMediaReferences: [{ kind: 'video', url: VIDEO_URL, width: null, height: null, durationSec: 10 }],
+  });
 });
 
 async function uploadRequest(params: {

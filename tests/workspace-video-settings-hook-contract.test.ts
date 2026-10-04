@@ -30,6 +30,7 @@ test('workspace video settings hydration is owned by a route-local hook', () => 
   assert.match(appSource, /import \{ useWorkspaceVideoSettings \} from '\.\/_hooks\/useWorkspaceVideoSettings';/);
   assert.match(appSource, /useWorkspaceVideoSettings\(\{/);
   assert.match(appSource, /useWorkspaceVideoSettings\(\{[\s\S]*?accountScope: draftOwner,/);
+  assert.match(appSource, /hasForm: activeDraft.ready && Boolean\(routeForm.form\) && !videoSettings.sharedVideoImportPending,/);
   assert.doesNotMatch(appSource, /const applyVideoSettingsSnapshot = useCallback/);
   assert.doesNotMatch(appSource, /const hydrateVideoSettingsFromJob = useCallback/);
   assert.doesNotMatch(appSource, /const applyVideoSettingsFromTile = useCallback/);
@@ -60,6 +61,7 @@ test('workspace video settings hydration is owned by a route-local hook', () => 
   );
 
   assert.match(settingsSource, /from '\.\/workspace-derived-aspect-ratio'/);
+  assert.match(settingsSource, /export \{ buildVideoSettingsSnapshotFromSharedVideo \} from '\.\/workspace-shared-video-snapshot'/);
   assert.match(settingsSource, /from '\.\/workspace-video-job-media'/);
   assert.match(jobMediaSource, /export function buildVideoJobMediaPatch/);
   assert.match(jobMediaSource, /export function buildRequestedJobPreview/);

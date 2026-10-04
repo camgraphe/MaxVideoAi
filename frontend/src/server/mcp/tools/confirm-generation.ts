@@ -23,8 +23,7 @@ export function registerConfirmGenerationTool(
     'confirm_generation',
     {
       title: 'Confirm a MaxVideoAI generation',
-      description:
-        [
+      description: [
         'Use only after explicit user approval of the exact fresh quote returned by prepare_generation.',
         'Display its exact price and wait for that approval first; ambiguous assent is not confirmation.',
         'This consumes the funding locked into the quote: wallet quotes may spend credits; an included trial does not. It contacts an external generation provider.',

@@ -19,9 +19,26 @@ import {
   type PricingPolicyServiceDependencies,
 } from '../frontend/server/pricing-admin/policy-service.ts';
 import { revalidatePricingChangeSurfaces } from '../frontend/server/pricing-admin/revalidation.ts';
+import { formatProviderComparisonScenario } from '../frontend/app/(core)/admin/pricing/_lib/pricing-cockpit-view-model.ts';
 import type { PricingRule } from '../frontend/src/lib/pricing-rule-store.ts';
 
 const actorId = '00000000-0000-0000-0000-000000000001';
+
+test('after cutover model and global percentage rules are read-only, while scoped product pricing remains editable', async () => {
+  const harness = createMemoryHarness([policyRule('kling')]);
+  const deps = { ...harness.deps, loadManualTariffsActive: async () => true };
+  await assert.rejects(previewPricingPolicyChange({ operation: 'update', targetId: 'kling', rule: policyRule('kling', { marginPercent: .5 }) }, deps),
+    (error: unknown) => error instanceof PricingAdminError && error.code === 'model_policy_retired');
+  await assert.rejects(previewPricingPolicyChange({ operation: 'create', rule: policyRule('new-global', { engineId: undefined, mode: undefined, resolution: undefined }) }, deps), /read.only/i);
+  const inventory = await loadPricingPolicyInventory(deps);
+  assert.equal(inventory.modelTariffsActive, true);
+  const product = await previewPricingPolicyChange({ operation: 'create', rule: policyRule('audio-local', {
+    engineId: 'audio-generation', mode: 'voice_only', resolution: 'audio', marginFlatCents: 10,
+    compatibilityProfile: 'audio-tripled-rounded',
+  }) }, deps);
+  assert.ok(product.rows.length > 0);
+  assert.ok(product.rows.every(row => row.engineId === 'audio-generation'));
+});
 
 function policyRule(id: string, overrides: Partial<PricingPolicyRule> = {}): PricingPolicyRule {
   return {
@@ -182,6 +199,23 @@ test('create preview normalizes the complete rule and quotes through the canonic
   assert.ok(preview.affectedScenarioIds.length > 0);
   assert.match(preview.previewFingerprint, /^[a-f0-9]{64}$/);
   assert.equal(harness.rules.length, 0, 'preview must not persist');
+});
+
+test('a scoped Audio pack rule validates live selectors and previews every billed voice variant', async () => {
+  const globalRule = { ...policyRule('default'), engineId: undefined, mode: undefined, resolution: undefined };
+  const harness = createMemoryHarness([globalRule]);
+  const proposal: PricingPolicyChangeProposal = { operation: 'create', rule: {
+    ...globalRule, id: 'admin-voice', engineId: 'audio-generation', mode: 'voice_only', resolution: 'audio',
+    marginFlatCents: 10, compatibilityProfile: 'audio-tripled-rounded',
+  } };
+  const preview = await previewPricingPolicyChange(proposal, harness.deps);
+  assert.ok(preview.rows.length > 0);
+  assert.ok(preview.rows.every((row) => row.engineId === 'audio-generation' && row.scenarioId.startsWith('admin-audio:voice_only:')));
+  assert.equal((preview.proposedState as Record<string, unknown>).resolution, 'audio');
+  assert.ok(preview.rows.some((row) => row.scenarioId.includes('voice_only:2:')), 'MiniMax character variant must be included');
+  assert.ok(preview.rows.some((row) => row.scenarioId.includes('voice_only:1:')), 'reference voice variant must be included');
+  assert.equal(harness.rules.length, 1, 'preview does not create a rule');
+  assert.deepEqual(harness.rules[0], globalRule, 'inherited global policy is untouched');
 });
 
 test('update and delete previews use fresh database state and default deletion is forbidden', async () => {
@@ -667,6 +701,90 @@ test('inventory scenario rows inherit the effective database override routing an
   assert.equal(inherited?.lastEvent?.id, event.id);
 });
 
+test('inventory compares ByteDance billing scenarios with their actual execution route and independent supplier evidence', async () => {
+  const inventory = await loadPricingPolicyInventory({ ...createMemoryHarness().deps,
+    now: () => new Date('2026-10-01T12:00:00Z') });
+  const rows = inventory.providerComparisons;
+  assert.equal(inventory.rows.some((row) => row.selector.engineId === 'seedance-1-5-pro'), false);
+  const seedance25 = rows.find((row) => row.engineId === 'seedance-2-5' && row.mode === 't2v');
+  const seedream = rows.find((row) => row.engineId === 'seedream');
+
+  assert.ok(seedance25);
+  assert.equal(seedance25.brandId, 'bytedance');
+  assert.equal(seedance25.executionProvider, 'byteplus_modelark');
+  assert.equal(seedance25.supplierList.status, 'published_list_estimate');
+  assert.ok((seedance25.supplierList.amountUsd ?? 0) > 0);
+  assert.equal(seedance25.supplierEffective.amountUsd, seedance25.supplierList.amountUsd);
+  assert.equal(seedance25.supplierEffective.contract?.discountPercent, 0);
+  assert.equal(seedance25.supplierObserved.amountUsd, null);
+  assert.equal(seedance25.customerQuote?.source, 'versioned');
+  assert.ok((seedance25.customerQuote?.totalCents ?? 0) > 0);
+
+  assert.equal(rows.some((row) => row.engineId === 'seedance-1-5-pro'), false);
+  for (const engineId of ['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'seedance-2-5']) {
+    const row = rows.find((candidate) => candidate.engineId === engineId && candidate.mode === 't2v');
+    assert.ok(row, `${engineId} comparison row`);
+    assert.equal(row.durationSec, 5, `${engineId} supported comparable duration`);
+    assert.equal(row.resolution, '720p', `${engineId} comparable resolution`);
+    assert.equal(row.audio, false, `${engineId} comparable silent quote`);
+    assert.ok(row.customerQuote, `${engineId} canonical customer quote`);
+  }
+  assert.ok(seedream);
+  assert.equal(seedream.durationSec, null);
+  assert.equal(seedream.outputQuantity, 1);
+  assert.match(formatProviderComparisonScenario(seedream), /1 image/);
+  assert.doesNotMatch(formatProviderComparisonScenario(seedream), /\d+ s/);
+  assert.equal(seedream.executionProvider, 'byteplus_modelark');
+  assert.equal(seedream.supplierList.amountUsd, 0.035);
+  assert.equal(seedream.supplierList.reason, null);
+  const kling = rows.find((row) => row.engineId === 'kling-2-6-pro');
+  assert.equal(kling?.supplierList.amountUsd, 0.35);
+  assert.equal(kling?.supplierList.status, 'published_list_estimate');
+  const banana = rows.find((row) => row.engineId === 'nano-banana');
+  assert.equal(banana?.executionProvider, 'google_vertex_image');
+});
+
+test('an archived model database override remains out of the active price inventory', async () => {
+  const legacy = policyRule('db-seedance-15-historical', {
+    engineId: 'seedance-1-5-pro', mode: 't2v', resolution: '720p',
+  });
+  const inventory = await loadPricingPolicyInventory(createMemoryHarness([legacy]).deps);
+  assert.equal(inventory.rows.some((row) => row.selector.engineId === legacy.engineId), false);
+  assert.equal(inventory.providerComparisons.some((row) => row.engineId === legacy.engineId), false);
+});
+
+test('inventory supplier facts never reprice an effective database customer quote', async () => {
+  const baseline = await loadPricingPolicyInventory(createMemoryHarness().deps);
+  const override = policyRule('db-seedance-25', {
+    engineId: 'seedance-2-5', mode: 't2v', resolution: '720p', marginFlatCents: 137,
+  });
+  const changed = await loadPricingPolicyInventory(createMemoryHarness([override]).deps);
+  const current = changed.providerComparisons.find((row) =>
+    row.engineId === 'seedance-2-5' && row.mode === 't2v' && row.resolution === '720p');
+  const prior = baseline.providerComparisons.find((row) => row.scenarioId === current?.scenarioId);
+
+  assert.ok(current?.customerQuote);
+  assert.ok(prior?.customerQuote);
+  assert.equal(current.customerQuote.source, 'database');
+  assert.equal(current.customerQuote.ruleId, override.id);
+  assert.equal(current.customerQuote.totalCents, prior.customerQuote.totalCents + 137);
+  assert.equal(current.supplierList.amountUsd, prior.supplierList.amountUsd);
+});
+
+test('unavailable production overrides leave the customer side unknown', async () => {
+  const harness = createMemoryHarness();
+  const inventory = await loadPricingPolicyInventory({
+    ...harness.deps,
+    loadOverrides: async () => ({ status: 'unavailable' }),
+  });
+  const row = inventory.providerComparisons.find((candidate) => candidate.engineId === 'seedance-2-5');
+
+  assert.equal(inventory.databaseStatus, 'unavailable');
+  assert.equal(row?.customerQuote, null);
+  assert.equal(row?.indicativeDifferenceVsListCents, null);
+  assert.ok(inventory.warnings.some((warning) => warning.includes('customer quotes unavailable')));
+});
+
 test('inventory enriches a seeded versioned selector from its effective database global override', async () => {
   const dbGlobal = {
     ...policyRule('db-global', { engineId: undefined, mode: undefined, resolution: undefined }),
@@ -765,7 +883,7 @@ test('rollback uses direct event lookup beyond the 200-row history window and re
   assert.equal(harness.rules[0]?.vendorAccountId, undefined);
 });
 
-test('targeted revalidation maps pricing hub and model rows to exact localized public paths only', () => {
+test('pricing edits revalidate localized prices, examples, model pages and watch pages', () => {
   const paths: string[] = [];
   revalidatePricingChangeSurfaces(
     {
@@ -796,13 +914,19 @@ test('targeted revalidation maps pricing hub and model rows to exact localized p
     (path) => paths.push(path)
   );
 
-  assert.deepEqual(paths, [
+  for (const expected of [
+    '/', '/fr', '/es',
+    '/examples', '/fr/galerie', '/es/galeria',
+    '/pay-as-you-go-ai-video-generator', '/fr/pay-as-you-go-ai-video-generator', '/es/pay-as-you-go-ai-video-generator',
+    '/models', '/fr/modeles', '/es/modelos',
     '/pricing',
     '/fr/tarifs',
     '/es/precios',
     '/models/kling-3-pro',
     '/fr/modeles/kling-3-pro',
     '/es/modelos/kling-3-pro',
-  ]);
+    '/examples/[model]', '/fr/galerie/[model]', '/es/galeria/[model]', '/[locale]/video/[videoId]',
+    '/models/video', '/models/image', '/ai-video-engines/[slug]', '/[locale]/ai-video-engines/[slug]',
+  ]) assert.ok(paths.includes(expected), `Missing current-price invalidation: ${expected}`);
   assert.ok(paths.every((path) => !path.includes('/admin') && !path.includes('/blog') && !path.includes('/app')));
 });

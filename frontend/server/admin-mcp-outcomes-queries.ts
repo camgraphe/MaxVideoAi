@@ -25,6 +25,67 @@ export const MCP_OUTCOME_RELATIONS_SQL = `/* admin-mcp:outcome-relations */
       WHERE table_schema = 'public' AND table_name = 'mcp_audit_events'
         AND column_name = 'client_family') AS "clientFamily"`;
 
+export function buildMcpGenerationItemsSql(relations: McpOutcomeRelations): string {
+  const reportedClients = relations.clientFamily
+    ? `SELECT user_id, oauth_client_id, client_family AS client,
+              created_at AS observed_at, 0 AS priority
+         FROM mcp_audit_events
+        WHERE event_type = 'connection_initialized'
+          AND outcome = 'success'
+          AND client_family IN (${REPORTED_CLIENTS_SQL})`
+    : `SELECT NULL::text AS user_id, NULL::text AS oauth_client_id,
+              NULL::text AS client, NULL::timestamptz AS observed_at,
+              0 AS priority WHERE FALSE`;
+  const landingClients = relations.funnel
+    ? `UNION ALL
+       SELECT user_id, oauth_client_id, acquisition_client, occurred_at, 1
+         FROM mcp_funnel_events
+        WHERE event_type = 'oauth_connection_completed'
+          AND acquisition_client IN ('chatgpt', 'claude', 'codex')`
+    : '';
+  return `/* admin-mcp:generation-items */
+  WITH auth_clients AS (
+    SELECT * FROM jsonb_to_recordset($3::jsonb -> 'clients')
+      AS c(oauth_client_id text, family text)
+  ), client_evidence AS (
+    ${reportedClients}
+    ${landingClients}
+  ), attributed_jobs AS (
+    SELECT DISTINCT ON (job.job_id)
+           job.job_id,
+           job.surface,
+           job.engine_id,
+           job.engine_label,
+           job.status,
+           job.created_at,
+           COALESCE(identity.client, auth_client.family, 'other') AS client
+      FROM mcp_generation_quotes quote
+      JOIN app_jobs job
+        ON job.job_id = quote.job_id
+       AND job.user_id = quote.user_id
+      LEFT JOIN auth_clients auth_client
+        ON auth_client.oauth_client_id = quote.oauth_client_id
+      LEFT JOIN LATERAL (
+        SELECT evidence.client
+          FROM client_evidence evidence
+         WHERE evidence.user_id = job.user_id
+           AND quote.oauth_client_id IS NOT NULL
+           AND evidence.oauth_client_id = quote.oauth_client_id
+           AND evidence.observed_at <= job.created_at
+         ORDER BY evidence.priority, evidence.observed_at DESC, evidence.client
+         LIMIT 1
+      ) identity ON TRUE
+     WHERE job.created_at >= $1
+       AND job.created_at < $2
+       AND job.surface IN ('video', 'image')
+     ORDER BY job.job_id, quote.created_at DESC, quote.oauth_client_id DESC
+  )
+  SELECT job_id, surface, engine_id, engine_label, status, created_at, client
+    FROM attributed_jobs
+   ORDER BY created_at DESC, job_id DESC
+   LIMIT $4`;
+}
+
 // Only fixed SQL fragments depend on schema readiness. All reporting dates are parameters.
 export function buildMcpOutcomesSql(relations: McpOutcomeRelations): string {
   const reportedClients = relations.clientFamily
@@ -55,15 +116,22 @@ export function buildMcpOutcomesSql(relations: McpOutcomeRelations): string {
     ), latest_accounts AS (
       SELECT MAX(observed_at) AS observed_at, user_id, oauth_client_id
         FROM account_activity GROUP BY user_id, oauth_client_id
+    ), generation_jobs AS (
+      SELECT DISTINCT ON (job.job_id)
+             job.created_at, job.user_id, quote.oauth_client_id,
+             job.surface, job.job_id, job.status
+        FROM mcp_generation_quotes quote
+        JOIN app_jobs job ON job.job_id = quote.job_id AND job.user_id = quote.user_id
+       WHERE job.created_at >= $1 AND job.created_at < $2
+         AND job.surface IN ('video', 'image')
+       ORDER BY job.job_id, quote.created_at DESC, quote.oauth_client_id DESC
     ), facts AS (
       SELECT account.observed_at, account.user_id, account.oauth_client_id,
              'account'::text AS kind, NULL::text AS job_id, NULL::text AS status
         FROM latest_accounts account
       UNION ALL
-      SELECT job.created_at, job.user_id, quote.oauth_client_id, 'video', job.job_id, job.status
-        FROM mcp_generation_quotes quote
-        JOIN app_jobs job ON job.job_id = quote.job_id AND job.user_id = quote.user_id
-       WHERE job.created_at >= $1 AND job.created_at < $2 AND job.surface = 'video'
+      SELECT created_at, user_id, oauth_client_id, surface, job_id, status
+        FROM generation_jobs
     ), attributed AS (
       SELECT facts.*, COALESCE(identity.client, auth_client.family, 'other') AS client,
              COALESCE(${relations.profiles ? 'CASE WHEN profile.synced_from_supabase THEN profile.created_at END' : 'NULL::timestamptz'}, auth_profile.registered_at) AS registered_at,
@@ -93,6 +161,11 @@ export function buildMcpOutcomesSql(relations: McpOutcomeRelations): string {
       COUNT(DISTINCT job_id) FILTER (WHERE kind = 'video')::bigint AS submitted,
       COUNT(DISTINCT job_id) FILTER (WHERE kind = 'video' AND status = 'completed')::bigint AS videos,
       COUNT(DISTINCT job_id) FILTER (WHERE kind = 'video' AND status IN ('failed', 'error', 'cancelled', 'canceled'))::bigint AS failed,
-      COUNT(DISTINCT job_id) FILTER (WHERE kind = 'video' AND status NOT IN ('completed', 'failed', 'error', 'cancelled', 'canceled'))::bigint AS pending
+      COUNT(DISTINCT job_id) FILTER (WHERE kind = 'video' AND status NOT IN ('completed', 'failed', 'error', 'cancelled', 'canceled'))::bigint AS pending,
+      COUNT(DISTINCT user_id) FILTER (WHERE kind = 'image' AND status = 'completed')::bigint AS image_generators,
+      COUNT(DISTINCT job_id) FILTER (WHERE kind = 'image')::bigint AS images_submitted,
+      COUNT(DISTINCT job_id) FILTER (WHERE kind = 'image' AND status = 'completed')::bigint AS images,
+      COUNT(DISTINCT job_id) FILTER (WHERE kind = 'image' AND status IN ('failed', 'error', 'cancelled', 'canceled'))::bigint AS image_failed,
+      COUNT(DISTINCT job_id) FILTER (WHERE kind = 'image' AND status NOT IN ('completed', 'failed', 'error', 'cancelled', 'canceled'))::bigint AS image_pending
     FROM attributed GROUP BY GROUPING SETS ((), (client))`;
 }

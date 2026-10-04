@@ -69,19 +69,13 @@ have not been verified.
 n8n is `live`, indexable, and acquisition-enabled only for the tested
 self-hosted deterministic MCP Client workflow. The MCP Client host remains
 `tested_with_limits`; MCP Client Tool remains `not-run`, n8n Cloud is not
-claimed. The template-library store state is `submitted` only for private
-Creator Portal workflow `19591`, which is now `Pending` / `Under review` dated
-2026-09-17. After the reviewer requested explanatory Sticky Notes, the local
-credential-free JSON was aligned with n8n's overview and section-note rules.
-Four earlier `Upload new version` attempts returned the portal's generic error
-and did not resubmit the workflow; their exact cause remains unknown. The
-owner-authorized correction then used the existing workflow's distinct
-`Implement changes` → `Upload workflow JSON file` → `Submit for human review`
-path once. The portal confirmed `Your template has been re-submitted` and
-returned the dashboard to `Pending` / `Under review`. That is private review,
-not human approval or a public library listing. The other two reviewed JSON
-workflows remain unsubmitted, and `Share new template` is disabled again during
-review. No public listing or verification is claimed.
+claimed. The template-library store state is `listed` for
+[public workflow 19591](https://n8n.io/workflows/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/),
+observed on 2026-09-25. This changes distribution state only; users still
+configure OAuth manually, and the self-hosted 2.38.7 MCP Client checkpoint
+remains `tested_with_limits`. The other two reviewed JSON workflows have no
+verified public listing. The earlier private review and submission history is
+recorded in `docs/marketing/mcp-directory-submissions.md`.
 
 ## Later-host promotion sequence
 

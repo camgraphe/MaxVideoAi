@@ -1,0 +1,82 @@
+{
+  "checkedAt": "2026-09-22T17:01:11.136348+00:00",
+  "requestedWindowDays": 15,
+  "cutoff": "2026-09-07T17:01:11.136348+00:00",
+  "project": "maxvideoai",
+  "mainAtAudit": "772eb4d8a4744e2bd829324ce929c0fab2cf7875",
+  "records": 58,
+  "gitRecords": 53,
+  "gitRevisionsAllAncestorsOfMain": true,
+  "cliRecords": [
+    {
+      "id": "dpl_5ucWc1py4Lt3bTnVhqJwNjKwbAiF",
+      "created": 1790090348639,
+      "source": "cli",
+      "state": "READY",
+      "aliasAssigned": 1790090842779,
+      "sha": null,
+      "branch": null,
+      "dirty": null,
+      "action": null,
+      "original": null,
+      "ancestorMain": null,
+      "date": "2026-09-22T15:19:08.639000+00:00"
+    },
+    {
+      "id": "dpl_8TJ7RM1hLTiooLiK941JDG8NMKNQ",
+      "created": 1790090284782,
+      "source": "cli",
+      "state": "ERROR",
+      "aliasAssigned": null,
+      "sha": null,
+      "branch": null,
+      "dirty": null,
+      "action": null,
+      "original": null,
+      "ancestorMain": null,
+      "date": "2026-09-22T15:18:04.782000+00:00"
+    },
+    {
+      "id": "dpl_73TrW3UkQ5meTuifMUcjaVkryxVn",
+      "created": 1790001173433,
+      "source": "cli",
+      "state": "BLOCKED",
+      "aliasAssigned": null,
+      "sha": "b709f27f35f96aff0f12d828f1c91d72f6a8038d",
+      "branch": "codex/auth-email-recovery",
+      "dirty": null,
+      "action": null,
+      "original": null,
+      "ancestorMain": false,
+      "date": "2026-09-21T14:32:53.433000+00:00"
+    },
+    {
+      "id": "dpl_FkuGKE2moiwuWibVwTjuLuL1axhQ",
+      "created": 1789665972378,
+      "source": "cli",
+      "state": "READY",
+      "aliasAssigned": 1789666346605,
+      "sha": "21b3393183b598e1f771edaad0efcad6a15ec056",
+      "branch": "main",
+      "dirty": null,
+      "action": "redeploy",
+      "original": "dpl_8hcsz9kAv5AGbchrVdaeL5Xy2FGL",
+      "ancestorMain": true,
+      "date": "2026-09-17T17:26:12.378000+00:00"
+    },
+    {
+      "id": "dpl_tYUpjDQ3xboXZn2N9LsBeyPbL6jH",
+      "created": 1788960583410,
+      "source": "cli",
+      "state": "READY",
+      "aliasAssigned": 1788960947140,
+      "sha": "bdd544e9f3233946b42694fc1307a282206702e0",
+      "branch": "main",
+      "dirty": null,
+      "action": "redeploy",
+      "original": "dpl_2D4S1ge9KXTjrTcLD8R3ieyNfUSV",
+      "ancestorMain": true,
+      "date": "2026-09-09T13:29:43.410000+00:00"
+    }
+  ]
+}

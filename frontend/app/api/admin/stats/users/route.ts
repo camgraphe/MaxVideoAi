@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/server/admin';
+import { adminReportingWindow } from '@/lib/admin/reporting-window';
 import { getSupabaseAdmin } from '@/server/supabase-admin';
 
 export const runtime = 'nodejs';
@@ -33,8 +34,9 @@ export async function GET(req: NextRequest) {
   const admin = getSupabaseAdmin();
 
   const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const inLastDays = (createdAt: Date, days: number) => createdAt >= new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+  const startOfToday = new Date(adminReportingWindow('today', now).from);
+  const inLastDays = (createdAt: Date, days: number) =>
+    createdAt >= new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 
   const accumulator: CountAccumulator = {
     total: 0,

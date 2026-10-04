@@ -1,0 +1,496 @@
+{
+  "date": "2026-09-22",
+  "evidenceKind": "paired-agent-next-step-simulations",
+  "realHostEvidence": false,
+  "caseResponses": 48,
+  "pairedCases": 24,
+  "rows": [
+    {
+      "variant": "a",
+      "group": "priorities",
+      "id": "F01",
+      "tools": [
+        "list_models"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "I’ll check the currently available video models first, then compare their live camera-control capabilities and visual-quality fit for your ad."
+    },
+    {
+      "variant": "a",
+      "group": "priorities",
+      "id": "F02",
+      "tools": [
+        "list_models"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je vais d’abord vérifier les modèles vidéo actuellement disponibles, puis comparer leur adéquation à une scène cinématographique, naturelle et fluide."
+    },
+    {
+      "variant": "a",
+      "group": "priorities",
+      "id": "F03",
+      "tools": [
+        "list_models"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Primero comprobaré qué modelos de vídeo están disponibles ahora y después compararé cuál encaja mejor con una escena artística, bonita y expresiva."
+    },
+    {
+      "variant": "a",
+      "group": "priorities",
+      "id": "F04",
+      "tools": [
+        "list_models"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je vais vérifier les modèles vidéo réellement disponibles avec une livraison 4K, puis valider leurs modes et limites avant de privilégier l’un d’eux."
+    },
+    {
+      "variant": "a",
+      "group": "priorities",
+      "id": "F05",
+      "tools": [],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Para estimar los seis Shorts necesito saber la duración de cada plano, la resolución y el formato (por ejemplo, 9:16), además del modelo o si quieres que lo elija. ¿Los dos intentos son por cada plano?"
+    },
+    {
+      "variant": "a",
+      "group": "priorities",
+      "id": "F06",
+      "tools": [
+        "list_models"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je vais vérifier les modèles vidéo actuels, puis chercher une proposition qui respecte cet ordre : rapidité d’abord, coût réduit ensuite. Pour chiffrer les clips, il faudra aussi leurs durées et leur format de sortie."
+    },
+    {
+      "variant": "a",
+      "group": "priorities",
+      "id": "F07",
+      "tools": [],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Les outils ne sont pas visibles dans l’inventaire initial, mais l’hôte prend en charge la recherche différée. Je vais rechercher MaxVideoAI et ses outils de découverte avant de conclure qu’il y a un problème de connexion."
+    },
+    {
+      "variant": "a",
+      "group": "priorities",
+      "id": "F08",
+      "tools": [],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "I’ll discover the callable VideoOther tools first, then use their live model details for the comparison while keeping VideoOther as your selected plugin."
+    },
+    {
+      "variant": "a",
+      "group": "workflow",
+      "id": "W01",
+      "tools": [
+        "prepare_generation"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je prépare maintenant le devis exact avec ces réglages. Je vous montrerai le prix retourné et attendrai votre approbation explicite avant toute tentative payante."
+    },
+    {
+      "variant": "a",
+      "group": "workflow",
+      "id": "W02",
+      "tools": [
+        "confirm_generation"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Votre approbation explicite du devis de 1,25 USD autorise une seule tentative. Je la transmets maintenant et vous communiquerai uniquement le statut retourné."
+    },
+    {
+      "variant": "a",
+      "group": "workflow",
+      "id": "W03",
+      "tools": [
+        "import_reference_files"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je réimporte uniquement le fichier manquant fin.png et conserve le premier asset déjà importé. Je vous indiquerai le résultat de cette reprise."
+    },
+    {
+      "variant": "a",
+      "group": "workflow",
+      "id": "W04",
+      "tools": [
+        "get_account_status"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je vérifie d’abord le compte et le crédit après la recharge. L’ancien devis est invalide ; je demanderai ensuite un nouveau devis exact avant toute approbation."
+    },
+    {
+      "variant": "a",
+      "group": "workflow",
+      "id": "W05",
+      "tools": [
+        "get_generation_status"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je respecte le délai de reprise restant de 28 secondes, puis je vérifierai le statut du même travail sans créer de nouvelle tentative."
+    },
+    {
+      "variant": "a",
+      "group": "workflow",
+      "id": "W06",
+      "tools": [
+        "present_generation"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Le travail est indiqué comme terminé. Je présente maintenant ce résultat enregistré dans votre bibliothèque MaxVideoAI."
+    },
+    {
+      "variant": "a",
+      "group": "workflow",
+      "id": "W07",
+      "tools": [],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "La connexion MaxVideoAI exige une réauthentification. Je lance le flux de reconnexion signalé par l’hôte ; le brief du Reel de 8 secondes reste conservé et aucune génération n’est approuvée."
+    },
+    {
+      "variant": "a",
+      "group": "workflow",
+      "id": "W08",
+      "tools": [],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je recherche les outils MaxVideoAI différés, notamment list_models, avant de poursuivre. Je ne présume pas encore de leur disponibilité ni des modèles actuels."
+    },
+    {
+      "variant": "a",
+      "group": "boundaries",
+      "id": "B01",
+      "tools": [],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Claro: «Mi primera cámara: lo que aprendí al empezar». También podrías usar «Mi primera cámara: primeras impresiones y consejos»."
+    },
+    {
+      "variant": "a",
+      "group": "boundaries",
+      "id": "B02",
+      "tools": [],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "I’ll inspect the attached CSV for retention trends, drop-off points, and strongest segments. I’m checking which CSV analysis capability is available before reporting findings."
+    },
+    {
+      "variant": "a",
+      "group": "boundaries",
+      "id": "B03",
+      "tools": [],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je vérifie les outils disponibles pour VideoOther, puis je poursuivrai avec ce plugin si ses outils sont bien accessibles."
+    },
+    {
+      "variant": "a",
+      "group": "boundaries",
+      "id": "B04",
+      "tools": [],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je respecte votre choix de seedance-2-0. Il n’est pas activé dans l’environnement MaxVideoAI connecté actuellement. Voulez-vous que je vous aide à réessayer plus tard, ou souhaitez-vous changer de modèle ?"
+    },
+    {
+      "variant": "a",
+      "group": "boundaries",
+      "id": "B05",
+      "tools": [
+        "create_reference_upload_link"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je vais créer une passerelle privée pour votre image afin de l’utiliser comme référence i2v. Je vous indiquerai ensuite la suite à partir du résultat retourné, sans exposer votre chemin local."
+    },
+    {
+      "variant": "a",
+      "group": "boundaries",
+      "id": "B06",
+      "tools": [
+        "prepare_generation"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je prépare maintenant le devis exact pour ces réglages et cette image. Je vous montrerai le prix retourné avant toute génération."
+    },
+    {
+      "variant": "a",
+      "group": "boundaries",
+      "id": "B07",
+      "tools": [],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Les deux tentatives d’import ont échoué avec le même délai d’attente technique. Je m’arrête ici pour éviter une répétition automatique. Voulez-vous autoriser une nouvelle tentative de transfert ?"
+    },
+    {
+      "variant": "a",
+      "group": "boundaries",
+      "id": "B08",
+      "tools": [],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Cinematic rewrite: “A red boat glides across a glassy lake at dawn, soft mist drifting over the water, warm sunlight breaking through distant mountains, slow tracking camera, subtle ripples, natural cinematic color and atmosphere.” No reviewed prompting source was returned for this model."
+    },
+    {
+      "variant": "b",
+      "group": "priorities",
+      "id": "F01",
+      "tools": [
+        "list_models"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je vais comparer les modèles vidéo actuellement disponibles selon leur contrôle des mouvements de caméra et leur qualité visuelle. Je vérifie d’abord leurs capacités en direct, puis je vous proposerai le meilleur choix et des alternatives pertinentes."
+    },
+    {
+      "variant": "b",
+      "group": "priorities",
+      "id": "F02",
+      "tools": [
+        "list_models"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je vais comparer les modèles vidéo disponibles pour une scène cinématographique, une lumière naturelle et un mouvement fluide. Je consulte leurs capacités actuelles avant de vous recommander le modèle le plus adapté."
+    },
+    {
+      "variant": "b",
+      "group": "priorities",
+      "id": "F03",
+      "tools": [
+        "list_models"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Voy a comparar los modelos de vídeo disponibles para una escena artística, bonita y expresiva. Consulto primero sus capacidades actuales para recomendar una opción basada en datos live, no en memoria."
+    },
+    {
+      "variant": "b",
+      "group": "priorities",
+      "id": "F04",
+      "tools": [
+        "list_models"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je vais rechercher les modèles vidéo qui prennent actuellement en charge une livraison d’au moins 4K, puis vérifier leurs limites exactes avant de vous conseiller celui à privilégier."
+    },
+    {
+      "variant": "b",
+      "group": "priorities",
+      "id": "F05",
+      "tools": [
+        "list_models"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Voy a consultar los modelos de vídeo disponibles para Shorts. Después necesitaré elegir una propuesta concreta y validar su presupuesto con seis clips y dos intentos creativos por plano."
+    },
+    {
+      "variant": "b",
+      "group": "priorities",
+      "id": "F06",
+      "tools": [
+        "list_models"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je vais d’abord vérifier les modèles vidéo disponibles, puis comparer une option rapide et une option moins coûteuse dans cet ordre de priorité. Je confirmerai les capacités et les estimations avec les données actuelles."
+    },
+    {
+      "variant": "b",
+      "group": "priorities",
+      "id": "F07",
+      "tools": [],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je vais rechercher les outils MaxVideoAI différés disponibles sur cet hôte. L’absence de résultats initiaux et de ressources ne suffit pas à conclure qu’ils sont indisponibles ; je vérifierai d’abord la découverte d’outils avant de comparer les modèles."
+    },
+    {
+      "variant": "b",
+      "group": "priorities",
+      "id": "F08",
+      "tools": [],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je vais découvrir les outils VideoOther disponibles sur l’hôte, puisque vous avez sélectionné ce plugin. Je vérifierai ensuite son modèle et son contrat en direct avant de poursuivre la demande vidéo."
+    },
+    {
+      "variant": "b",
+      "group": "workflow",
+      "id": "W01",
+      "tools": [
+        "prepare_generation"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je prépare maintenant le devis exact avec les réglages validés. Je vous afficherai le prix retourné, puis j’attendrai votre approbation explicite avant tout lancement."
+    },
+    {
+      "variant": "b",
+      "group": "workflow",
+      "id": "W02",
+      "tools": [
+        "confirm_generation"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Merci pour votre approbation explicite du devis de 1,25 USD. Je lance exactement une tentative avec cette demande."
+    },
+    {
+      "variant": "b",
+      "group": "workflow",
+      "id": "W03",
+      "tools": [
+        "import_reference_files"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je réimporte uniquement le fichier manquant fin.png. Le premier fichier déjà importé reste conservé et ne sera pas réimporté."
+    },
+    {
+      "variant": "b",
+      "group": "workflow",
+      "id": "W04",
+      "tools": [
+        "get_account_status",
+        "prepare_generation"
+      ],
+      "errors": [],
+      "needsUnseenResult": true,
+      "reply": "Je vérifie d’abord l’état actuel du compte, puis je créerai un nouveau devis exact pour la même demande. L’ancien devis n’est plus valable après la recharge."
+    },
+    {
+      "variant": "b",
+      "group": "workflow",
+      "id": "W05",
+      "tools": [
+        "get_generation_status"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je poursuis le suivi après le délai indiqué par le service, puis je vérifie l’état de ce même travail."
+    },
+    {
+      "variant": "b",
+      "group": "workflow",
+      "id": "W06",
+      "tools": [
+        "present_generation"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Le travail est terminé. J’affiche maintenant le résultat enregistré dans votre bibliothèque MaxVideoAI."
+    },
+    {
+      "variant": "b",
+      "group": "workflow",
+      "id": "W07",
+      "tools": [],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "La connexion MaxVideoAI nécessite une nouvelle authentification. Je lance le flux de reconnexion signalé par l’hôte ; après réussite, je redécouvrirai les outils et reprendrai votre Reel de 8 secondes."
+    },
+    {
+      "variant": "b",
+      "group": "workflow",
+      "id": "W08",
+      "tools": [],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je recherche les outils MaxVideoAI différés, notamment get_model_details. Je m’arrêterai dès que le premier résultat nécessaire sera disponible avant de préparer la suite."
+    },
+    {
+      "variant": "b",
+      "group": "boundaries",
+      "id": "B01",
+      "tools": [],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Mi primera cámara: lo que aprendí al empezar a grabar"
+    },
+    {
+      "variant": "b",
+      "group": "boundaries",
+      "id": "B02",
+      "tools": [],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Sí, puedo analizar la retención de audiencia del CSV adjunto. Te devolveré los puntos de caída, los momentos de mayor interés y acciones concretas para mejorar la retención."
+    },
+    {
+      "variant": "b",
+      "group": "boundaries",
+      "id": "B03",
+      "tools": [],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je vais d’abord vérifier les outils VideoOther disponibles et leur schéma exact, puis je poursuivrai avec celui que vous avez choisi."
+    },
+    {
+      "variant": "b",
+      "group": "boundaries",
+      "id": "B04",
+      "tools": [],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Le modèle seedance-2-0 n’est pas activé dans cet environnement connecté. Je respecte votre choix et ne propose pas d’alternative sans votre accord."
+    },
+    {
+      "variant": "b",
+      "group": "boundaries",
+      "id": "B05",
+      "tools": [
+        "create_reference_upload_link"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je prépare le transfert privé de votre image locale pour l’utiliser comme référence. Je vous indiquerai ensuite si elle est prête pour le devis."
+    },
+    {
+      "variant": "b",
+      "group": "boundaries",
+      "id": "B06",
+      "tools": [
+        "prepare_generation"
+      ],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je demande maintenant le devis exact pour ces réglages. Dès qu’il revient, je vous présenterai le prix et j’attendrai votre approbation explicite avant toute génération payante."
+    },
+    {
+      "variant": "b",
+      "group": "boundaries",
+      "id": "B07",
+      "tools": [],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Après deux timeouts techniques identiques lors de l’import, j’arrête la tentative pour éviter de répéter l’échec. La référence requise n’est pas encore disponible. Autorisez-vous une nouvelle tentative de transfert ?"
+    },
+    {
+      "variant": "b",
+      "group": "boundaries",
+      "id": "B08",
+      "tools": [],
+      "errors": [],
+      "needsUnseenResult": false,
+      "reply": "Je n’ai reçu aucune source officielle révisée pour ce modèle. Proposition : « Un bateau traverse un lac calme au lever du soleil, lumière dorée, brume légère, mouvement de caméra lent et fluide, reflets naturels sur l’eau, composition cinématographique, profondeur de champ subtile, ambiance contemplative, rendu réaliste. »"
+    }
+  ]
+}

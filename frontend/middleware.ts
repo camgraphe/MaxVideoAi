@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { isbot as detectBot } from 'isbot';
+import { createIsbotFromList, list as botPatterns } from 'isbot';
 import { defaultLocale, localePathnames } from '@/i18n/locales';
 import mcpPublication from '@/config/mcp-publication.json';
 import { FEATURES } from '@/content/feature-flags';
@@ -8,6 +8,7 @@ import { LOGOUT_INTENT_COOKIE } from '@/lib/logout-intent-cookie';
 import { getMcpApiRewritePath } from '@/lib/mcp-host-routing';
 import { isMcpPublicSourcePath } from '@/lib/mcp-publication';
 import { canVisitorBrowseWorkspacePath } from '@/lib/visitor-access';
+import { editorialSignInRedirect } from '@/lib/editorial/login';
 import {
   LOGIN_PATH,
   LOCALE_STRIPPABLE_PREFIXES,
@@ -25,6 +26,9 @@ import {
   normalizeLeadingLocaleSegments,
   normalizePublicQueryParams,
   resolveLangParamRedirect,
+  createCoreLocaleResponse,
+  resolveSharedLocaleCookieDomain,
+  setLocaleCookies,
   resolveNonPrefixedLocalizedMarketingRedirect,
   rewriteToNotFound,
   shouldHandleLocale,
@@ -35,6 +39,11 @@ import {
 
 const DOTTED_LOCALIZED_ENGLISH_MODEL_CANDIDATE = /^\/(?:fr|es)\/models\/[^/]*\.[^/]*$/;
 const MCP_GATED_NOT_FOUND_SEGMENT = '__mcp-publication-gated__';
+// Browser performance tools must take the visitor routing path. The upstream
+// bot list also classifies these browsers as bots, independently of our code.
+const detectBot = createIsbotFromList(
+  botPatterns.filter((pattern) => !['chrome-lighthouse', 'headless', 'pagespeed'].includes(pattern))
+);
 
 function rewriteGatedMcpRouteToNotFound(req: NextRequest, localePrefix: string) {
   const notFoundUrl = req.nextUrl.clone();
@@ -49,11 +58,9 @@ function rewriteGatedMcpRouteToNotFound(req: NextRequest, localePrefix: string) 
 export async function middleware(req: NextRequest) {
   const host = req.headers.get('host') ?? '';
   const userAgent = req.headers.get('user-agent') ?? '';
-  const isLighthouseAudit = /lighthouse/i.test(userAgent);
   const isLoopbackRequest = isLoopbackHost(req.headers.get('x-forwarded-host') ?? host);
   const bypassLocaleRedirect =
     isLoopbackRequest ||
-    isLighthouseAudit ||
     req.nextUrl.pathname === '/' ||
     req.nextUrl.searchParams.get('nolocale') === '1';
   const logoutIntentCookieValue = req.cookies.get(LOGOUT_INTENT_COOKIE)?.value;
@@ -79,7 +86,7 @@ export async function middleware(req: NextRequest) {
     return finalizeResponse(NextResponse.redirect(url, 308), hasLogoutIntentCookie);
   }
   const authCode = req.nextUrl.searchParams.get('code');
-  if (authCode && req.nextUrl.pathname !== '/auth/callback' && req.nextUrl.pathname !== LOGIN_PATH) {
+  if (authCode && req.nextUrl.pathname !== '/auth/callback' && req.nextUrl.pathname !== LOGIN_PATH && req.nextUrl.pathname !== '/auth/reset-password') {
     const callbackUrl = req.nextUrl.clone();
     callbackUrl.pathname = '/auth/callback';
     callbackUrl.search = '';
@@ -138,7 +145,13 @@ export async function middleware(req: NextRequest) {
     const redirectUrl = req.nextUrl.clone();
     redirectUrl.pathname = normalizedPathname;
     redirectUrl.search = req.nextUrl.search;
-    return finalizeResponse(NextResponse.redirect(redirectUrl, 301), hasLogoutIntentCookie);
+    const redirectResponse = NextResponse.redirect(redirectUrl, hasNonLocalizedPrefix ? 307 : 301);
+    if (hasNonLocalizedPrefix) {
+      setLocaleCookies(redirectResponse, localePrefix.slice(1), resolveSharedLocaleCookieDomain(req.nextUrl.hostname));
+      redirectResponse.headers.set('Cache-Control', 'private, no-store, max-age=0');
+      redirectResponse.headers.set('Referrer-Policy', 'no-referrer');
+    }
+    return finalizeResponse(redirectResponse, hasLogoutIntentCookie);
   }
 
   pathname = normalizedPathname;
@@ -187,7 +200,7 @@ export async function middleware(req: NextRequest) {
       response = handleI18nRouting(req);
     }
   } else {
-    response = NextResponse.next();
+    response = createCoreLocaleResponse(req, pathname) ?? NextResponse.next();
   }
 
   if (isOAuthConsentRoute) {
@@ -229,6 +242,11 @@ export async function middleware(req: NextRequest) {
 
   if (isAdminRoute) {
     const unauthorized = new NextResponse(null, { status: 401 });
+    const signIn = editorialSignInRedirect(req);
+    if (signIn) {
+      mergeResponseCookies(signIn, response);
+      return finalizeResponse(signIn, hasLogoutIntentCookie, trackingNoindex, appNoindex);
+    }
     unauthorized.headers.set('X-Robots-Tag', 'noindex, nofollow');
     unauthorized.headers.set('Cache-Control', 'private, no-store, max-age=0');
     unauthorized.headers.set('Pragma', 'no-cache');

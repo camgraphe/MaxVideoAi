@@ -1,4 +1,24 @@
 {
+  "passwordRecovery": {
+    "title": "Choose a new password",
+    "intro": "Continue to verify your reset link securely.",
+    "verify": "Continue",
+    "verifying": "Verifying your link…",
+    "password": "New password",
+    "confirm": "Confirm new password",
+    "save": "Save new password",
+    "saving": "Saving…",
+    "saved": "Your password has been updated.",
+    "continueToApp": "Continue to the app",
+    "requestNew": "Request a new link",
+    "invalid": "This link is invalid or has expired. Request a new one. If you used another browser, try opening the original link in the browser where you requested it.",
+    "tooShort": "Use at least 6 characters.",
+    "mismatch": "The passwords do not match.",
+    "weak": "Choose a stronger password.",
+    "same": "Choose a password different from your current one.",
+    "unavailable": "We could not update your password. Please try again.",
+    "ready": "Enter and confirm your new password."
+  },
   "nav": {
     "account": {
       "signedIn": "Signed in",
@@ -48,6 +68,7 @@
     ],
     "login": "Log in",
     "cta": "Generate",
+    "startCreating": "Start creating",
     "linkLabels": {
       "models": "Models",
       "examples": "Examples",
@@ -674,14 +695,14 @@
       },
       "examples": {
         "title": "A world of stories to create.",
-        "subtitle": "Open an example to see the prompt, settings and recorded generation cost. Then use it as a starting point for your own creation.",
+        "subtitle": "Open an example to see its prompt, settings and current model price. Then use it as a starting point for your own creation.",
         "eyebrow": "AI video examples",
         "cta": "Browse all examples",
         "modelsCta": "View all model specs",
         "compareLink": "Compare engines",
         "featuredModelCta": "Discover Seedance 2.5",
         "modelCta": "Discover {model}",
-        "costUnavailable": "Cost not recorded",
+        "costUnavailable": "Current price unavailable",
         "providerLabel": "Supported engines:",
         "viewPrompt": "Clone settings",
         "fallbackCards": [
@@ -2520,7 +2541,7 @@
     "hero": {
       "title": "A world of stories to create.",
       "subtitle": "Explore real AI videos: characters, cinematic scenes, animation and visual experiments.",
-      "body": "Open an example to see the prompt, settings and recorded generation cost. Then use it as a starting point for your own creation."
+      "body": "Open an example to see its prompt, settings and current model price. Then use it as a starting point for your own creation."
     },
     "items": [
       {
@@ -2940,7 +2961,7 @@
       "aspectLabel": "Aspect ratio",
       "aspectAuto": "Auto",
       "createdLabel": "Created",
-      "priceTotalLabel": "Recorded render cost",
+      "priceTotalLabel": "Current model price",
       "priceTotalValue": "{value}",
       "priceTotalUnknown": "Unavailable",
       "audioLabel": "Audio",
@@ -3196,10 +3217,10 @@
   },
   "gallery": {
     "meta": {
-      "title": "AI Video Examples: Prompts, Models & Recorded Costs",
-      "description": "Browse real AI video examples, then open a video to inspect its prompt, settings, duration and recorded render cost before recreating it.",
+      "title": "AI Video Examples: Prompts, Models & Current Prices",
+      "description": "Browse real AI video examples, then open a video to inspect its prompt, settings, duration and current model price before recreating it.",
       "title_engine": "AI Video Examples — {engineName} | MaxVideoAI",
-      "description_engine": "Browse {engineName} examples, then open a video to inspect its prompt, duration, audio settings and recorded render cost."
+      "description_engine": "Browse {engineName} examples, then open a video to inspect its prompt, duration, audio settings and current model price."
     }
   },
   "workspace": {
@@ -3329,6 +3350,11 @@
         "presetsLabel": "Add credits",
         "otherAmountLabel": "Other amount",
         "minLabel": "Min {amount}",
+        "creditsReceived": "Credits received",
+        "paymentAmount": "Amount before tax",
+        "quoteLoading": "Calculating…",
+        "quoteUnavailable": "Shown by Stripe before payment",
+        "taxNote": "Tax may be added. Stripe shows the final total before payment.",
         "captchaPrompt": "Security check required before Checkout.",
         "captchaComplete": "Security check complete. Continue to payment.",
         "captchaError": "Security check unavailable. Try again.",
@@ -3336,7 +3362,7 @@
         "startError": "Unable to start payment. Try again.",
         "close": "Close",
         "maybeLater": "Maybe later",
-        "submit": "Add funds",
+        "submit": "Review payment",
         "submitting": "Starting top-up…"
       },
       "authGate": {
@@ -4120,6 +4146,7 @@
         "fields": {
           "total": "Total",
           "walletMovement": "Wallet movement",
+          "paymentAmount": "Amount paid (including tax)",
           "tax": "Tax",
           "discount": "Discount",
           "document": "Document"
@@ -6710,6 +6737,11 @@
       "signin": "Sign in",
       "signup": "Create account"
     },
+    "mcpStaging": {
+      "title": "MaxVideoAI Staging — test environment",
+      "body": "Website accounts and credits are separate from this test environment. For your existing MaxVideoAI account, add the production connection in your assistant.",
+      "action": "Set up MaxVideoAI production"
+    },
     "modes": {
       "signup": {
         "title": "Create your workspace account",
@@ -6725,6 +6757,10 @@
       }
     },
     "continuation": {
+      "mcp": {
+        "title": "Connect your MaxVideoAI account",
+        "body": "Sign in with the same MaxVideoAI account you use on the website. You will review the requested access, then return to your assistant."
+      },
       "billing": {
         "title": "Your {amount} top-up is saved",
         "body": "Create an account or sign in, then you’ll return to Billing with that amount still selected."
@@ -6813,12 +6849,15 @@
       "signingIn": "Signing in…",
       "signinRedirecting": "Signed in. Redirecting…",
       "signinSuggestion": "We couldn't sign you in with those details. If you're new, create your account without retyping anything.",
+      "mcpSigninFailed": "We couldn’t sign you in. Check your email and password, use “Forgot password?”, or continue with Google if that is how you created your MaxVideoAI account.",
       "signupSuggestionReady": "Great, let's create your account.",
       "creatingAccount": "Creating account…",
       "accountRedirecting": "Account created. Redirecting…",
-      "confirmEmail": "Check your inbox to confirm your email.",
+      "confirmEmail": "If your account needs confirmation, check your inbox. Already have an account? Log in, or choose “Forgot password?” on the login form to recover access.",
       "sendingReset": "Sending reset link…",
-      "resetSent": "Password reset email sent.",
+      "resetSent": "If an account exists for this email, you’ll receive a reset link. Check your inbox and spam.",
+      "resetUnavailable": "We couldn't send the reset link. Please try again later. If the problem persists, contact support.",
+      "resetRateLimited": "Too many requests. Please wait a few minutes before requesting another link.",
       "googleUnavailable": "Google sign-in is unavailable because the auth redirect URL could not be resolved.",
       "googleRedirecting": "Redirecting to Google…",
       "completingSignIn": "Completing sign-in…",
@@ -8435,5 +8474,25 @@
     "body": "We can't find that URL. It might be outdated, or it never existed. Use the links below to keep exploring MaxVideoAI.",
     "homeLabel": "Back to homepage",
     "modelsLabel": "Browse video models"
+  },
+  "passwordRecovery": {
+    "title": "Choose a new password",
+    "intro": "Continue to verify your reset link securely.",
+    "verify": "Continue",
+    "verifying": "Verifying your link…",
+    "password": "New password",
+    "confirm": "Confirm new password",
+    "save": "Save new password",
+    "saving": "Saving…",
+    "saved": "Your password has been updated.",
+    "continueToApp": "Continue to the app",
+    "requestNew": "Request a new link",
+    "invalid": "This link is invalid or has expired. Request a new one. If you used another browser, try opening the original link in the browser where you requested it.",
+    "tooShort": "Use at least 6 characters.",
+    "mismatch": "The passwords do not match.",
+    "weak": "Choose a stronger password.",
+    "same": "Choose a password different from your current one.",
+    "unavailable": "We could not update your password. Please try again.",
+    "ready": "Enter and confirm your new password."
   }
 }

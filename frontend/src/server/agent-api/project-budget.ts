@@ -494,6 +494,25 @@ export async function calculateAgentProjectBudget(
           'mode',
         );
       }
+      if (engineId === 'minimax-h3-max' && mode === 'ref2v') {
+        editProjectLine(
+          'REFERENCE_REQUIRED',
+          'MiniMax H3 Max reference pricing requires the actual owned media. Use prepare_generation with asset references for a fixed customer quote.',
+          proposalIndex,
+          lineIndex,
+          'references',
+        );
+      }
+      if ((engineId === 'wan-3' || engineId === 'wan-3-prime')
+        && (mode === 'ref2v' || mode === 'v2v' || mode === 'extend')) {
+        editProjectLine(
+          'REFERENCE_REQUIRED',
+          'Wan reference and source-video pricing requires the actual media to include input video duration. Use prepare_generation with asset references for a fixed customer quote.',
+          proposalIndex,
+          lineIndex,
+          'references',
+        );
+      }
       const settings = normalizeSettings(rawLine.settings, proposalIndex, lineIndex);
       const clipCount = requireLineInteger(
         rawLine.clipCount, 1, MAX_PROJECT_CLIPS_PER_LINE, proposalIndex, lineIndex, 'clipCount',

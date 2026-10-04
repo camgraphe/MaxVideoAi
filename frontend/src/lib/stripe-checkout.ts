@@ -15,6 +15,7 @@ const WALLET_TOPUP_CHECKOUT_SESSION_TTL_SECONDS = 31 * 60;
 const WALLET_TOPUP_MIN_AMOUNT_CENTS = 1000;
 
 type BuildWalletTopUpCheckoutSessionParamsArgs = {
+  fxQuote?: { rate: number; source: string; marginBps?: number; rateTimestamp?: string };
   currency: string;
   settlementAmountCents: number;
   checkoutUiMode?: CheckoutUiMode;
@@ -43,6 +44,7 @@ export function normalizeWalletTopUpAmountCents(value: unknown): number | null {
 }
 
 export function buildWalletTopUpCheckoutSessionParams({
+  fxQuote,
   currency,
   settlementAmountCents,
   checkoutUiMode = 'hosted',
@@ -57,8 +59,13 @@ export function buildWalletTopUpCheckoutSessionParams({
   customer,
   customerUpdate,
 }: BuildWalletTopUpCheckoutSessionParamsArgs): WalletTopUpCheckoutSessionParams {
+  const fxMetadata: Record<string, string> = fxQuote ? {
+    fx_rate: String(fxQuote.rate), fx_source: fxQuote.source,
+    ...(fxQuote.marginBps != null ? { fx_margin_bps: String(fxQuote.marginBps) } : {}),
+    ...(fxQuote.rateTimestamp ? { rate_timestamp: fxQuote.rateTimestamp } : {}),
+  } : {};
   const paymentIntentData: Stripe.Checkout.SessionCreateParams.PaymentIntentData = {
-    metadata: paymentIntentMetadata,
+    metadata: { ...paymentIntentMetadata, ...fxMetadata },
   };
 
   const params: WalletTopUpCheckoutSessionParams = {
@@ -68,7 +75,10 @@ export function buildWalletTopUpCheckoutSessionParams({
     billing_address_collection: 'auto',
     automatic_tax: { enabled: true },
     tax_id_collection: { enabled: true },
-    invoice_creation: { enabled: true },
+    invoice_creation: { enabled: true, invoice_data: { metadata: {
+      kind: 'topup',
+      ...(sessionMetadata.user_id ? { user_id: sessionMetadata.user_id } : {}),
+    } } },
     line_items: [
       {
         price_data: {
@@ -80,7 +90,7 @@ export function buildWalletTopUpCheckoutSessionParams({
         quantity: 1,
       },
     ],
-    metadata: sessionMetadata,
+    metadata: { ...sessionMetadata, ...fxMetadata },
     payment_intent_data: paymentIntentData,
   };
 

@@ -3,7 +3,6 @@ import { buildMultiPromptSummary, MULTI_PROMPT_MIN_SEC, MULTI_PROMPT_MAX_SEC } f
 import { getWorkspaceMultiPromptState } from './workspace-multi-prompt-state';
 import type { KlingElementState } from '@/components/KlingElementsBuilder';
 import {
-  getSeedanceAssetState,
   getUnifiedSeedanceMode,
   isUnifiedSeedanceEngineId,
 } from '@/lib/seedance-workflow';
@@ -25,8 +24,13 @@ import {
 } from './gemini-omni-unified-workflow';
 import {
   isUnifiedMinimaxH3EngineId,
-  resolveMinimaxH3UnifiedMode,
 } from './minimax-h3-unified-workflow';
+import {
+  getWorkspaceMediaFields,
+  hasMultimodalReferenceFields,
+  resolveMultimodalReferenceMode,
+  workspaceAssetsSupportMode,
+} from './workspace-multimodal-workflow';
 import {
   getReferenceInputStatus,
   hasInputAssetInSlots,
@@ -101,7 +105,8 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, form, inputAs
 
   const referenceInputStatus = getReferenceInputStatus(inputAssets);
 
-  const seedanceAssetState = getSeedanceAssetState(inputAssets);
+  const mediaFields = getWorkspaceMediaFields(selectedEngine);
+  const hasMultimodalReferences = hasMultimodalReferenceFields(mediaFields);
 
   const hasPrimaryImageInput = hasInputAssetInSlots(inputAssets, [...PRIMARY_IMAGE_SLOT_IDS, 'start_image_url'], 'image');
 
@@ -109,9 +114,6 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, form, inputAs
 
   const implicitMode = (() => {
     if (!selectedEngine) return form?.mode ?? 't2v';
-    if (isUnifiedMinimaxH3) {
-      return resolveMinimaxH3UnifiedMode(inputAssets);
-    }
     if (isUnifiedSeedance) {
       return getUnifiedSeedanceMode(inputAssets);
     }
@@ -134,6 +136,10 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, form, inputAs
         supportsVideoEdit: supportsHappyHorseVideoEdit(selectedEngine.id),
       });
     }
+    if (hasMultimodalReferences) {
+      const mode = resolveMultimodalReferenceMode(selectedEngine, inputAssets);
+      if (mode) return mode;
+    }
     const modes = workspaceExecutableModes;
     if (referenceInputStatus.hasAudio && modes.includes('a2v')) return 'a2v';
     if (referenceInputStatus.hasVideo && modes.includes('v2v')) return 'v2v';
@@ -148,12 +154,6 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, form, inputAs
 
   const audioWorkflowLocked = referenceInputStatus.hasAudio && audioToVideoSupported;
 
-  const audioWorkflowUnsupported = referenceInputStatus.hasAudio &&
-    Boolean(selectedEngine) &&
-    !audioToVideoSupported &&
-    !(isUnifiedSeedance && seedanceAssetState.hasReferenceAudio) &&
-    !isUnifiedMinimaxH3;
-
   const activeManualMode = (() => {
     if (!selectedEngine) return null;
     const currentMode = form?.mode ?? null;
@@ -162,8 +162,10 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, form, inputAs
     }
     if (isUnifiedKlingO3) return null;
     if (isUnifiedGeminiOmni) return null;
-    if (isUnifiedMinimaxH3) return null;
-    if (referenceInputStatus.hasAudio) return null;
+    if (hasMultimodalReferences && currentMode
+      && !workspaceAssetsSupportMode(mediaFields, inputAssets, currentMode)) return null;
+    if (referenceInputStatus.hasAudio
+      && (!currentMode || !workspaceAssetsSupportMode(mediaFields, inputAssets, currentMode, 'audio'))) return null;
     if ((currentMode === 'v2v' ||
       currentMode === 'reframe' ||
       currentMode === 'ref2v' ||
@@ -178,6 +180,8 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, form, inputAs
   })();
 
   const activeMode: Mode = activeManualMode ?? implicitMode;
+  const audioWorkflowUnsupported = referenceInputStatus.hasAudio && Boolean(selectedEngine)
+    && !workspaceAssetsSupportMode(mediaFields, inputAssets, activeMode, 'audio');
 
   const unifiedFirstFrameField = resolveActiveVideoInputField({
     inputSchema: selectedEngine?.inputSchema,
@@ -287,7 +291,9 @@ export function resolveWorkspaceComposerFacts({
   const effectiveDurationSec = (() => {
     if (multiPromptActive) return multiPromptTotalSec;
     if (submissionMode === 'a2v' && typeof primaryAudioDurationSec === 'number') return primaryAudioDurationSec;
-    if ((submissionMode === 'v2v' || submissionMode === 'reframe') && typeof primaryVideoDurationSec === 'number') {
+    const hasSeparateOutputDuration = typeof selectedEngine?.inputSchema?.constraints?.maxSourcePlusOutputDurationSec === 'number';
+    if ((submissionMode === 'v2v' || submissionMode === 'reframe') && typeof primaryVideoDurationSec === 'number'
+      && !hasSeparateOutputDuration) {
       return primaryVideoDurationSec;
     }
     return form?.durationSec ?? 0;

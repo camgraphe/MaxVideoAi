@@ -162,6 +162,7 @@ const EXTRA_INPUT_FIELD_BY_SETTING: Readonly<Record<string, string>> = Object.fr
   cropEndY: 'y_end',
   cropStartX: 'x_start',
   cropStartY: 'y_start',
+  documentUrl: 'file_url',
   editDepthBlur: 'edit_depth_blur',
   editFace: 'edit_face',
   editKeyframeIndexes: 'edit_keyframe_indexes',
@@ -170,6 +171,7 @@ const EXTRA_INPUT_FIELD_BY_SETTING: Readonly<Record<string, string>> = Object.fr
   editStrength: 'edit_strength',
   editTrajectorySparsity: 'edit_trajectory_sparsity',
   exrExport: 'exr_export',
+  enablePromptExpansion: 'enable_prompt_expansion',
   extendPosition: 'mode',
   guidanceScale: 'guidance_scale',
   hdr: 'hdr',
@@ -183,6 +185,7 @@ const EXTRA_INPUT_FIELD_BY_SETTING: Readonly<Record<string, string>> = Object.fr
   sourcePositionX: 'source_position_x_norm',
   sourcePositionY: 'source_position_y_norm',
   startTimeSec: 'start_time',
+  webpageUrl: 'web_url',
 });
 
 function projectExtraInputValues(settings: Record<string, unknown>): Record<string, unknown> {
@@ -230,7 +233,12 @@ export function buildPaidVideoRequestBody(
   };
 
   if (execution.request.mode === 't2v') {
-    if (references.length) invalidModeReferences();
+    const targetAudioFieldId = activeReferenceFieldId(execution, 'audio', ['target_audio_url']);
+    if (references.length) {
+      if (!targetAudioFieldId || references.length !== 1
+        || references[0]!.kind !== 'audio' || references[0]!.role !== 'reference') invalidModeReferences();
+      body.inputs = [input(references[0]!, targetAudioFieldId)];
+    }
     return body;
   }
 
@@ -240,19 +248,27 @@ export function buildPaidVideoRequestBody(
       && (reference.role === 'source' || reference.role === 'first_frame'));
     const end = references.filter((reference) =>
       reference.kind === 'image' && reference.role === 'last_frame');
-    if (start.length !== 1 || end.length > 1 || start.length + end.length !== references.length) {
+    const audio = references.filter((reference) =>
+      reference.kind === 'audio' && reference.role === 'reference');
+    const alternatives = execution.engine.inputSchema?.constraints?.atLeastOneReferenceField;
+    const allowsEndOnly = Array.isArray(alternatives) && alternatives.includes('end_image_url');
+    if (start.length > 1 || (!start.length && (!allowsEndOnly || !end.length))
+      || end.length > 1 || audio.length > 1
+      || start.length + end.length + audio.length !== references.length) {
       invalidModeReferences();
     }
-    body.imageUrl = start[0]!.url;
+    if (start[0]) body.imageUrl = start[0].url;
     if (end[0]) body.endImageUrl = end[0].url;
     const startFieldId = activeReferenceFieldId(
       execution, 'image', ['start_image_url', 'image_url', 'first_frame_url']);
     const endFieldId = activeReferenceFieldId(
       execution, 'image', ['end_image_url', 'last_frame_url']);
-    if (!startFieldId || (end[0] && !endFieldId)) invalidModeReferences();
+    const audioFieldId = activeReferenceFieldId(execution, 'audio', ['target_audio_url']);
+    if ((start[0] && !startFieldId) || (end[0] && !endFieldId) || (audio[0] && !audioFieldId)) invalidModeReferences();
     body.inputs = [
-      input(start[0]!, startFieldId),
+      ...(start[0] && startFieldId ? [input(start[0], startFieldId)] : []),
       ...(end[0] && endFieldId ? [input(end[0], endFieldId)] : []),
+      ...(audio[0] && audioFieldId ? [input(audio[0], audioFieldId)] : []),
     ];
     return body;
   }
@@ -292,7 +308,9 @@ export function buildPaidVideoRequestBody(
     const audioReferences = referenceMedia.filter((reference) => reference.kind === 'audio');
     const videos = videoReferences.map(({ url }) => url);
     const audio = audioReferences.map(({ url }) => url);
-    if (!referenceMedia.length && !start.length) invalidModeReferences();
+    const hasDocumentReference = typeof extraInputValues.file_url === 'string'
+      || typeof extraInputValues.web_url === 'string';
+    if (!referenceMedia.length && !start.length && !hasDocumentReference) invalidModeReferences();
     if (start[0]) body.imageUrl = start[0].url;
     if (end[0]) body.endImageUrl = end[0].url;
     if (images.length) body.referenceImages = images;
@@ -355,6 +373,8 @@ export function buildPaidVideoRequestBody(
       'image',
       ['image_url', 'edit_keyframe_urls', 'image_urls', 'reference_image_urls'],
     );
+    const audioFieldId = activeReferenceFieldId(execution, 'audio', VIDEO_MEDIA_FIELD_CANDIDATES.referenceAudio);
+    if ((images.length && !imageFieldId) || (audio.length && !audioFieldId)) invalidModeReferences();
     if (images.length) {
       if (imageFieldId === 'start_image_url' || imageFieldId === 'image_url') {
         if (images.length !== 1) invalidModeReferences();
@@ -367,11 +387,9 @@ export function buildPaidVideoRequestBody(
     body.inputs = [
       input(source[0]!, 'video_url'),
       ...(guideFrames[0] && guideFieldId ? [input(guideFrames[0], guideFieldId)] : []),
-      ...(imageFieldId === 'image_url'
-        || imageFieldId === 'edit_keyframe_urls'
-        ? imageReferences.map((reference) => input(reference, imageFieldId))
-        : []),
-      ...audioReferences.map((reference) => input(reference, 'audio_urls')),
+      ...(imageFieldId && imageFieldId !== 'image_urls'
+        ? imageReferences.map((reference) => input(reference, imageFieldId)) : []),
+      ...(audioFieldId ? audioReferences.map((reference) => input(reference, audioFieldId)) : []),
     ];
     return body;
   }
@@ -391,7 +409,9 @@ export function buildPaidVideoRequestBody(
   if (execution.request.mode === 'extend') {
     const sources = references.filter((reference) =>
       reference.kind === 'video' && reference.role === 'source');
-    if (sources.length < 1 || sources.length > 3 || sources.length !== references.length) {
+    const images = references.filter((reference) => reference.kind === 'image' && reference.role === 'reference');
+    const audio = references.filter((reference) => reference.kind === 'audio' && reference.role === 'reference');
+    if (sources.length < 1 || sources.length > 3 || sources.length + images.length + audio.length !== references.length) {
       invalidModeReferences();
     }
     const urls = sources.map(({ url }) => url);
@@ -409,7 +429,16 @@ export function buildPaidVideoRequestBody(
     } else {
       body.referenceVideos = urls;
     }
-    body.inputs = sources.map((reference) => input(reference, fieldId));
+    const imageFieldId = activeReferenceFieldId(execution, 'image', VIDEO_MEDIA_FIELD_CANDIDATES.referenceImage);
+    const audioFieldId = activeReferenceFieldId(execution, 'audio', VIDEO_MEDIA_FIELD_CANDIDATES.referenceAudio);
+    if ((images.length && !imageFieldId) || (audio.length && !audioFieldId)) invalidModeReferences();
+    if (images.length) body.referenceImages = images.map(({ url }) => url);
+    if (audio.length) body.referenceAudio = audio.map(({ url }) => url);
+    body.inputs = [
+      ...sources.map((reference) => input(reference, fieldId)),
+      ...(imageFieldId ? images.map((reference) => input(reference, imageFieldId)) : []),
+      ...(audioFieldId ? audio.map((reference) => input(reference, audioFieldId)) : []),
+    ];
     return body;
   }
 

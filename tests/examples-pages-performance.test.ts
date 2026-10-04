@@ -6,10 +6,6 @@ const examplesPageViewSource = readFileSync(
   "frontend/app/(localized)/[locale]/(marketing)/examples/_components/examples-page-view.tsx",
   'utf8'
 );
-const examplesMainVideoFeatureSource = readFileSync(
-  "frontend/app/(localized)/[locale]/(marketing)/examples/_components/examples-main-video-feature.tsx",
-  'utf8'
-);
 const examplesHeroVideoSource = readFileSync('frontend/components/examples/ExamplesHeroVideo.client.tsx', 'utf8');
 const marketingNavSource = readFileSync('frontend/components/marketing/MarketingNav.tsx', 'utf8');
 const marketingMobileMenuSource = readFileSync('frontend/components/marketing/MarketingMobileMenu.tsx', 'utf8');
@@ -24,21 +20,15 @@ test('examples hero video avoids fetching the raw poster in addition to the opti
   assert.doesNotMatch(examplesHeroVideoSource, /<video[\s\S]*poster=\{poster \?\? undefined\}/);
 });
 
-test('examples model landing hero links do not prefetch RSC routes during initial render', () => {
-  assert.match(examplesPageViewSource, /<ExamplesMainVideoFeature/);
-  assert.match(
-    examplesMainVideoFeatureSource,
-    /<Link\s+[\s\S]{0,180}?href=\{exampleHref\}[\s\S]{0,220}?prefetch=\{false\}/
-  );
-  assert.match(
-    examplesMainVideoFeatureSource,
-    /<Link\s+[\s\S]{0,180}?href=\{modelHref\}[\s\S]{0,220}?prefetch=\{false\}/
-  );
+test('examples gallery links do not prefetch RSC routes during initial render', () => {
+  assert.match(examplesPageViewSource, /<ExamplesGallerySection/);
+  const card=readFileSync('frontend/components/examples/ExampleGalleryCard.tsx','utf8');
+  assert.match(card, /<Link href=\{video.href\}[\s\S]{0,100}prefetch=\{false\}/);
 });
 
 test('marketing nav login links avoid prefetching app redirects on public pages', () => {
   for (const source of [marketingNavSource, marketingMobileMenuSource]) {
-    assert.match(source, /buildLoginHref\(\{ mode: 'signin', nextPath: '\/app' \}\)/);
+    assert.match(source, /buildLoginHref\(\{ mode: 'signin', nextPath: '\/app', locale \}\)/);
     assert.match(source, /<Link\s+href=\{loginHref\}[\s\S]{0,220}?prefetch=\{false\}/);
   }
 });

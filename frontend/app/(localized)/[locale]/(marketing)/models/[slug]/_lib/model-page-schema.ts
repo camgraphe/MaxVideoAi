@@ -157,7 +157,7 @@ export type ModelPublicOffer = {
   scenario: ModelPublicOfferScenario;
 };
 
-function resolveModelOfferScenario(engine: FalEngineEntry, pricingEngine: EngineCaps): ModelPublicOfferScenario | null {
+export function resolveModelOfferScenario(engine: FalEngineEntry, pricingEngine: EngineCaps): ModelPublicOfferScenario | null {
   const hint = engine.pricingHint;
   const resolution = resolveOfferResolution(pricingEngine, hint?.resolution);
   if (!resolution) return null;

@@ -46,7 +46,7 @@ test('MiniMax H3 Max validation and pricing metadata do not expose infrastructur
   } catch (error) {
     validationMessage = error instanceof Error ? error.message : String(error);
   }
-  assert.match(validationMessage, /start image/i);
+  assert.match(validationMessage, /start or end image/i);
   assertPublicSafe(validationMessage, 'validation message');
 
   const context = {

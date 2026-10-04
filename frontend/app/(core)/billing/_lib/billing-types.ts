@@ -2,6 +2,8 @@ export type ReceiptItem = {
   id: number;
   type: string;
   amount_cents: number;
+  payment_amount_cents?: number | null;
+  payment_currency?: string | null;
   currency: string;
   description: string | null;
   created_at: string;

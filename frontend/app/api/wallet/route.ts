@@ -1,17 +1,13 @@
+import { createWalletDirectPaymentIntent } from '@/server/wallet-direct-checkout';
 import { requireCurrentWalletDirectPricingPolicy } from '@/server/pricing/wallet-direct-policy';
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import Stripe from 'stripe';
 import { ENV } from '@/lib/env';
-import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
-import { randomUUID } from 'crypto';
 import { ensureBillingSchema } from '@/lib/schema';
 import { applyMockWalletTopUp } from '@/lib/wallet';
-import { getConfiguredEngine } from '@/server/engines';
-import { getSoraVariantForEngine, isSoraEngineId, parseSoraRequest, type SoraRequest } from '@/lib/sora';
 import { getUserPreferredCurrency, normalizeCurrencyCode, resolveCurrency, resolveEnabledCurrencies, type Currency } from '@/lib/currency';
 import { convertCents } from '@/lib/exchange';
-import { applyEngineVariantPricing } from '@/lib/pricing-addons';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { CONSENT_COOKIE_NAME, parseConsent } from '@/lib/consent';
 import { findTopupTier } from '@/config/topupTiers';
@@ -34,7 +30,6 @@ import { findReusableExpressCheckoutSession } from '@/server/checkout-session-re
 import { withCheckoutSessionPreparationLock } from '@/server/checkout-session-coordination';
 import { getWalletSummary } from '@/server/wallet-summary';
 import { buildCheckoutAttemptAttributionMetadata, buildWalletAttributionMetadata, normalizeWalletAttribution } from '@/server/wallet-attribution';
-import { resolveWalletDirectPricingGate } from '@/lib/wallet-direct-pricing';
 const WALLET_DISPLAY_CURRENCY = 'USD';
 const WALLET_DISPLAY_CURRENCY_LOWER = 'usd';
 const STRIPE_TAX_CODE_ELECTRONIC_SERVICES = ENV.STRIPE_TAX_CODE_ELECTRONIC_SERVICES ?? 'txcd_10103001';
@@ -243,153 +238,7 @@ export async function POST(req: NextRequest) {
   });
 
   if (body.mode === 'direct') {
-    const engineId = String(body.engineId || '');
-    const engine = await getConfiguredEngine(engineId);
-    if (!engine) {
-      return NextResponse.json({ error: 'Unknown engine' }, { status: 400 });
-    }
-    let durationSec = Number(body.durationSec ?? engine.maxDurationSec ?? 4);
-    let resolution = String(body.resolution || engine.resolutions?.[0] || '1080p');
-    const { mode, refusal } = resolveWalletDirectPricingGate(engine, body.generationMode ?? body.engineMode ?? body.videoMode);
-    if (refusal) return NextResponse.json({ error: 'This mode must be quoted through validated generation preflight.', code: refusal }, { status: 422 });
-    let soraRequest: SoraRequest | null = null;
-
-    if (isSoraEngineId(engine.id)) {
-      const variant = getSoraVariantForEngine(engine.id);
-      const defaultResolution =
-        engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '720p';
-      const candidate: Record<string, unknown> = {
-        variant,
-        mode,
-        prompt: typeof body.prompt === 'string' && body.prompt.trim().length ? body.prompt : '',
-        resolution: resolution === 'auto' && mode === 't2v' ? defaultResolution : resolution,
-        aspect_ratio:
-          typeof body.aspectRatio === 'string' && body.aspectRatio.trim().length ? body.aspectRatio.trim() : 'auto',
-        duration: durationSec,
-        api_key: typeof body.apiKey === 'string' && body.apiKey.trim().length ? body.apiKey.trim() : undefined,
-      };
-      if (mode === 'i2v') {
-        const imageUrl =
-          typeof body.imageUrl === 'string' && body.imageUrl.trim().length
-            ? body.imageUrl.trim()
-            : typeof body.image_url === 'string' && body.image_url.trim().length
-              ? body.image_url.trim()
-              : undefined;
-        if (!imageUrl) {
-          return NextResponse.json({ error: 'Image URL is required for Sora image-to-video' }, { status: 400 });
-        }
-        candidate.image_url = imageUrl;
-      }
-
-      try {
-        soraRequest = parseSoraRequest(candidate);
-      } catch (error) {
-        return NextResponse.json(
-          {
-            error: 'Invalid Sora payload',
-            details: error instanceof Error ? error.message : undefined,
-          },
-          { status: 400 }
-        );
-      }
-
-      durationSec = soraRequest.duration;
-      resolution = soraRequest.resolution === 'auto' ? defaultResolution : soraRequest.resolution;
-    }
-
-    const pricingEngine = applyEngineVariantPricing(engine, mode);
-    const pricing = await computeCanonicalBillingSnapshot({
-      engine: pricingEngine,
-      durationSec,
-      resolution,
-      mode,
-      membershipTier: body.membershipTier,
-    });
-
-    const settlementCurrencyUpper = resolvedCurrencyUpper;
-    const { cents: settlementAmountCents, rate: fxRate, source: fxSource } = await convertCents(
-      pricing.totalCents,
-      WALLET_DISPLAY_CURRENCY_LOWER,
-      resolvedCurrencyLower
-    );
-    const jobId = typeof body.jobId === 'string' && body.jobId.trim() ? String(body.jobId).trim() : `job_${randomUUID()}`;
-    const metadata: Record<string, string> = {
-      kind: 'run',
-      user_id: userId,
-      engine_id: engine.id,
-      job_id: jobId,
-      engine_label: engine.label,
-      duration_sec: String(durationSec),
-      resolution,
-      pricing_total_cents: String(pricing.totalCents),
-      pricing_currency: pricing.currency,
-      display_currency: WALLET_DISPLAY_CURRENCY,
-      wallet_currency: WALLET_DISPLAY_CURRENCY,
-      wallet_amount_cents: String(pricing.totalCents),
-      settlement_currency: settlementCurrencyUpper,
-      settlement_amount_cents: String(settlementAmountCents),
-      fx_rate: fxRate.toString(),
-      fx_source: fxSource,
-      currency: settlementCurrencyUpper,
-      currency_source: currencyResolution.source,
-      currency_country: currencyResolution.country ?? '',
-    };
-
-    if (soraRequest) {
-      metadata.variant = soraRequest.variant;
-      metadata.mode = soraRequest.mode;
-    }
-
-    if (pricing.meta?.ruleId) {
-      metadata.rule_id = String(pricing.meta.ruleId);
-    }
-    const pricingSnapshotJson = JSON.stringify(pricing);
-    if (pricingSnapshotJson.length <= 450) {
-      metadata.pricing_snapshot = pricingSnapshotJson;
-    }
-
-    try {
-      const params: Stripe.PaymentIntentCreateParams = {
-        amount: settlementAmountCents,
-        currency: resolvedCurrencyLower,
-        automatic_payment_methods: { enabled: true },
-        metadata,
-      };
-
-      const intent = await stripe.paymentIntents.create(params);
-
-      console.info('[payments] payment_intent created', {
-        paymentIntentId: intent.id,
-        jobId,
-        amountCents: pricing.totalCents,
-        settlementAmountCents,
-        settlementCurrency: settlementCurrencyUpper,
-        currency: WALLET_DISPLAY_CURRENCY,
-        fxRate,
-        fxSource,
-        currencySource: currencyResolution.source,
-        currencyCountry: currencyResolution.country ?? null,
-        mode: 'platform',
-      });
-
-      return NextResponse.json({
-        ok: true,
-        paymentIntentId: intent.id,
-        clientSecret: intent.client_secret,
-        amountCents: pricing.totalCents,
-        currency: WALLET_DISPLAY_CURRENCY,
-        settlementCurrency: settlementCurrencyUpper,
-        settlementAmountCents,
-        fxRate,
-        fxSource,
-        jobId,
-        pricing,
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Stripe error creating PaymentIntent';
-      console.error('POST /api/wallet direct error:', message);
-      return NextResponse.json({ error: message }, { status: 500 });
-    }
+    return createWalletDirectPaymentIntent({ req, body, stripe, userId, resolvedCurrencyLower, resolvedCurrencyUpper, currencyResolution });
   }
 
   let checkoutAttemptId: number | null = null;
@@ -501,14 +350,13 @@ export async function POST(req: NextRequest) {
     if (currencyResolution.country) {
       sessionMetadata.currency_country = currencyResolution.country;
     }
-    const { cents: settlementAmountCents, rate: fxRate, source: fxSource } = await convertCents(
+    const fxQuote = await convertCents(
       amountCents,
       WALLET_DISPLAY_CURRENCY_LOWER,
       resolvedCurrencyLower
     );
+    const { cents: settlementAmountCents, rate: fxRate, source: fxSource } = fxQuote;
     sessionMetadata.settlement_amount_cents = String(settlementAmountCents);
-    sessionMetadata.fx_rate = fxRate.toString();
-    sessionMetadata.fx_source = fxSource;
 
     const topupRedirectParams = new URLSearchParams({
       amount: (amountCents / 100).toFixed(2),
@@ -525,6 +373,7 @@ export async function POST(req: NextRequest) {
       ...sessionMetadata,
     };
     const sessionParams = buildWalletTopUpCheckoutSessionParams({
+      fxQuote,
       currency: resolvedCurrencyLower,
       settlementAmountCents,
       checkoutUiMode: isExpressCheckoutTopUp ? 'elements' : 'hosted',

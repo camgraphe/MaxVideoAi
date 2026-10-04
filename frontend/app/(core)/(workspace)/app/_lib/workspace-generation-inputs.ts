@@ -14,6 +14,8 @@ import type { ReferenceAsset } from './workspace-assets';
 import { normalizeExtraInputValue, type FormState } from './workspace-form-state';
 import type { WorkspaceInputFieldEntry, WorkspaceInputSchemaSummary } from './workspace-input-schema';
 import { resolveActiveVideoInputField, VIDEO_MEDIA_FIELD_CANDIDATES } from '@/lib/video-input-schema';
+import { isUnifiedSeedanceEngineId } from '@/lib/seedance-workflow';
+import { hasMultimodalReferenceFields, workspaceAssetsSupportMode } from './workspace-multimodal-workflow';
 
 export type GenerationAttachmentPayload = {
   name: string;
@@ -209,6 +211,11 @@ function buildKlingElementsPayload(
 }
 
 export function prepareGenerationInputs(options: PrepareGenerationInputsOptions): GenerationInputPreparationResult {
+  const schemaFields = [...(options.inputSchema?.required ?? []), ...(options.inputSchema?.optional ?? [])];
+  if (!isUnifiedSeedanceEngineId(options.selectedEngineId) && hasMultimodalReferenceFields(schemaFields)
+    && !workspaceAssetsSupportMode(schemaFields, options.inputAssets, options.submissionMode)) {
+    return { ok: false, message: 'Remove incompatible media before running this mode.' };
+  }
   const referenceBudget = resolveEngineReferenceBudget(
     options.inputSchema,
     options.submissionMode

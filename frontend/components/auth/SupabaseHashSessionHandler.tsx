@@ -41,6 +41,8 @@ export function SupabaseHashSessionHandler() {
   const router = useRouter();
 
   useEffect(() => {
+    // The recovery form owns proof verification; never race its session exchange.
+    if (window.location.pathname === '/auth/reset-password') return;
     const hashSession = readSupabaseHashSession();
     if (!hashSession) return;
 

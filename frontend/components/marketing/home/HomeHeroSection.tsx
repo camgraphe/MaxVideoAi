@@ -10,7 +10,10 @@ import {
   HERO_VIDEO_ORDER,
 } from '@/components/marketing/home/home-redesign-visuals';
 import { HOME_LCP_POSTER_SRC } from '@/components/marketing/home/home-lcp-image';
-import type { HomeExampleCard, HomeHeroContent, ProofStat } from '@/components/marketing/home/home-redesign-types';
+import type { HomeExampleCard, HomeHeroContent } from '@/components/marketing/home/home-redesign-types';
+import type { CurrentExamplePrice } from '@/server/current-example-price';
+import type { AppLocale } from '@/i18n/locales';
+import { formatCurrentExampleAmount, formatCurrentExampleScenario } from '@/lib/current-example-price-display';
 
 function normalizeHeroText(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '');
@@ -105,11 +108,14 @@ export function HomeHero({
   copy,
   previews,
   programmedHeroItems = [],
+  currentHeroPrices,
+  locale = 'en',
 }: {
   copy: HomeHeroContent;
-  proofStats: ProofStat[];
   previews: HomeExampleCard[];
   programmedHeroItems?: HeroVideoShowcaseItem[];
+  currentHeroPrices?: ReadonlyMap<string, CurrentExamplePrice>;
+  locale?: AppLocale;
 }) {
   const fallbackItems = buildHeroVideoItems(copy.mockup, previews);
   const programmedByEngine = new Map<string, HeroVideoShowcaseItem>();
@@ -135,7 +141,25 @@ export function HomeHero({
         }
       : curatedItem;
 
-    return [applyHomeLcpPoster(localizedItem)];
+    const currentPrice = currentHeroPrices?.get(engineId);
+    const amount = currentPrice ? formatCurrentExampleAmount(currentPrice, locale) : null;
+    const quoteScenario = currentPrice ? formatCurrentExampleScenario(currentPrice, locale) : null;
+    const currentItem = currentHeroPrices
+      ? {
+          ...localizedItem,
+          price: amount ?? '',
+          estimateValue: amount ?? (locale === 'fr' ? 'Indisponible' : locale === 'es' ? 'No disponible' : 'Unavailable'),
+          estimateLabel: currentPrice?.kind === 'exact'
+            ? (locale === 'fr' ? 'Prix actuel' : locale === 'es' ? 'Precio actual' : 'Current price')
+            : currentPrice?.kind === 'reference'
+              ? (locale === 'fr' ? 'Tarif actuel dès' : locale === 'es' ? 'Precio actual desde' : 'Current price from')
+              : (locale === 'fr' ? 'Tarif actuel' : locale === 'es' ? 'Precio actual' : 'Current price'),
+          quoteScenario: quoteScenario ?? undefined,
+          priceKind: currentPrice?.kind ?? 'unavailable',
+          priceNote: undefined,
+        }
+      : localizedItem;
+    return [applyHomeLcpPoster(currentItem)];
   });
   return (
     <section className="home-hero-section cinema-opening">

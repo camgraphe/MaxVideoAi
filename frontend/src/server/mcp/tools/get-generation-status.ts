@@ -22,8 +22,7 @@ export function registerGetGenerationStatusTool(
     'get_generation_status',
     {
       title: 'Get a MaxVideoAI generation status',
-      description:
-        [
+      description: [
         'Use this to follow or recover one known owned generation, including after interruption or an ambiguous submission response.',
         'It returns safe current status, failure/refund state and MaxVideoAI library/workspace destinations without exposing prompts, provider details or private media.',
         'An accepted or running job is not completed: do not claim completion until terminal success.',

@@ -74,5 +74,17 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: false, error: 'unauthorized' }, { status: 401 });
   }
 
-  return runTest();
+  const mailer = getMailer();
+  if (!mailer) {
+    return NextResponse.json({ success: false, error: 'smtp_not_configured' }, { status: 503 });
+  }
+  try {
+    await mailer.verify();
+    return NextResponse.json(
+      { success: true, provider: 'brevo', scope: 'application_smtp', emailSent: false },
+      { headers: { 'Cache-Control': 'private, no-store' } }
+    );
+  } catch {
+    return NextResponse.json({ success: false, error: 'smtp_verification_failed', emailSent: false }, { status: 503 });
+  }
 }

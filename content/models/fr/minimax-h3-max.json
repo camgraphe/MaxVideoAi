@@ -2,10 +2,10 @@
   "marketingName": "MiniMax H3 Max",
   "versionLabel": "H3 Max",
   "seo": {
-    "title": "MiniMax H3 Max : vidéo 768P rapide et audio natif",
-    "description": "Générez depuis un texte des vidéos MiniMax H3 Max de 5 à 15 secondes en 480P ou 768P avec audio natif. Paiement à la génération sur MaxVideoAI."
+    "title": "MiniMax H3 Max : vidéo 1080P, références et audio",
+    "description": "Générez des vidéos MiniMax H3 Max de 5 à 15 secondes depuis un texte, des images clés ou des références multimodales, jusqu’en 1080P avec audio natif."
   },
-  "overview": "MiniMax H3 Max crée des vidéos courtes depuis un texte avec expansion du prompt, sortie 480P ou 768P et audio natif.",
+  "overview": "Créez des vidéos de 5 à 15 secondes depuis un texte, une image de début ou de fin, ou des références combinées. H3 Max propose le 480P, le 768P et le 1080P, l’expansion du prompt, l’audio natif et une bande-son facultative en modes texte et image.",
   "decision": {
     "modelSlug": "minimax-h3-max",
     "hero": {
@@ -15,7 +15,7 @@
       "subtitleHighlights": [
         "Donnez vie à plus d’idées"
       ],
-      "paragraph": "MiniMax H3 Max génère depuis un texte des vidéos IA de 5 à 15 secondes en 480P ou 768P, avec audio natif. Le texte-vers-vidéo est actuellement disponible sur le site et via MCP. Choisissez MiniMax H3 pour les images, les références combinées ou une sortie 2K ou 4K.",
+      "paragraph": "MiniMax H3 Max crée des vidéos de 5 à 15 secondes depuis un texte, des images clés ou des références image, vidéo et audio, en 480P, 768P ou 1080P. Utilisez-le sur le site ou via MCP. Générez l’audio natif ou fournissez une bande-son en modes texte et image ; choisissez MiniMax H3 pour la 2K ou la 4K.",
       "primaryCta": {
         "label": "Générer avec MiniMax H3 Max",
         "href": "/app?engine=minimax-h3-max"
@@ -48,39 +48,39 @@
       "description": "Danse contemporaine sur une scène réfléchissante",
       "renderLabel": "Voir le rendu",
       "badges": [
-        "480P / 768P",
+        "480P / 768P / 1080P",
         "5–15s",
-        "Texte-vers-vidéo",
+        "Avec références",
         "Audio natif"
       ],
       "altContext": "MiniMax H3 Max: Danse contemporaine sur une scène réfléchissante"
     },
     "features": [
       {
-        "title": "Sortie rapide et soignée",
-        "body": "Utilisez H3 Max pour le respect du prompt et la production rapide en 480P ou 768P.",
+        "title": "Choisissez votre résolution",
+        "body": "Produisez en 480P, 768P ou 1080P et choisissez une expansion du prompt équilibrée ou de qualité pour développer la scène.",
         "tone": "quality"
       },
       {
-        "title": "Dirigez votre scène par le texte",
-        "body": "Décrivez le sujet, l’action, la caméra et le son. Choisissez une expansion du prompt équilibrée ou de qualité pour développer la scène.",
-        "tone": "quality"
+        "title": "Dirigez avec des images ou des références",
+        "body": "Utilisez une image de début, de fin ou les deux. En mode références, guidez l’identité, le mouvement et le son avec des images, des vidéos et des extraits audio.",
+        "tone": "reference"
       },
       {
         "title": "Clips de 5 à 15 secondes",
-        "body": "Choisissez chaque seconde entière et six formats paysage, carré ou vertical en texte-vers-vidéo.",
+        "body": "Choisissez chaque seconde entière et un format horizontal, carré ou vertical en texte-vers-vidéo.",
         "tone": "duration"
       },
       {
-        "title": "Audio natif",
-        "body": "Générez dialogue, ambiance, musique et effets synchronisés.",
+        "title": "Audio natif ou votre bande-son",
+        "body": "Générez dialogues, ambiance, musique et effets, ou fournissez une bande-son en modes texte et image. Le mode références accepte aussi l’audio seul.",
         "tone": "audio"
       }
     ],
     "decisionCards": [
       {
-        "title": "Choisir H3 Max pour la vitesse ciblée",
-        "body": "Utilisez H3 Max quand la production rapide en 768P, le respect du prompt et l’audio comptent plus que la 2K ou 4K.",
+        "title": "Choisissez H3 Max jusqu’en 1080P",
+        "body": "Choisissez H3 Max pour le texte, les images clés et les références combinées jusqu’en 1080P. Comparez MiniMax H3 pour une livraison en 2K ou 4K.",
         "cta": {
           "label": "Générer avec MiniMax H3 Max",
           "href": "/app?engine=minimax-h3-max"
@@ -88,7 +88,7 @@
       },
       {
         "title": "Voir MiniMax H3 pour la 2K et 4K",
-        "body": "Choisissez H3 Max pour produire vite en 480P ou 768P avec expansion du prompt et bonne finition. Conservez MiniMax H3 pour l’intention large 2K/4K.",
+        "body": "MiniMax H3 ajoute les sorties 2K et 4K tout en conservant les modes texte, image et références multimodales. Comparez les deux modèles avec le même brief et leur devis actuel.",
         "cta": {
           "label": "Voir les specs H3 Max",
           "href": "#specs"
@@ -98,7 +98,19 @@
     "referenceWorkflows": [
       {
         "title": "Texte-vers-vidéo",
-        "body": "Définissez le sujet, le changement visible, la caméra et la réponse sonore."
+        "body": "Décrivez le sujet, l’action, la caméra et le son. Ajoutez une bande-son facultative pour guider l’audio."
+      },
+      {
+        "title": "Image-vers-vidéo",
+        "body": "Utilisez une image de début, de fin ou les deux, avec une bande-son facultative. Gardez les images clés séparées des références combinées."
+      },
+      {
+        "title": "Références-vers-vidéo",
+        "body": "Utilisez jusqu’à 9 images, 3 vidéos et 3 extraits audio, dans une limite de 12 références uniques. L’audio seul est accepté ; les vidéos et l’audio ont chacun une limite cumulée de 15 secondes."
+      },
+      {
+        "title": "Audio natif ou bande-son fournie",
+        "body": "Utilisez une bande-son en mode texte ou image, ou des références audio en mode références. Décrivez dialogues, ambiance et sons synchronisés dans le prompt."
       }
     ],
     "pricingCopy": {
@@ -109,8 +121,8 @@
       "ctaHref": "/app?engine=minimax-h3-max"
     },
     "meta": {
-      "title": "MiniMax H3 Max : vidéo 768P rapide et audio natif",
-      "description": "Générez depuis un texte des vidéos MiniMax H3 Max de 5 à 15 secondes en 480P ou 768P avec audio natif. Paiement à la génération sur MaxVideoAI."
+      "title": "MiniMax H3 Max : vidéo 1080P, références et audio",
+      "description": "Générez des vidéos MiniMax H3 Max de 5 à 15 secondes depuis un texte, des images clés ou des références multimodales, jusqu’en 1080P avec audio natif."
     }
   },
   "prompting": {
@@ -142,7 +154,7 @@
       "Répétez uniquement les repères de continuité indispensables."
     ],
     "engineWhy": [
-      "MiniMax H3 Max crée des vidéos courtes depuis un texte avec expansion du prompt, sortie 480P ou 768P et audio natif."
+      "Créez des vidéos de 5 à 15 secondes depuis un texte, une image de début ou de fin, ou des références combinées. H3 Max propose le 480P, le 768P et le 1080P, l’expansion du prompt, l’audio natif et une bande-son facultative en modes texte et image."
     ],
     "demo": {
       "title": "Lampe en céramique transformable",
@@ -191,6 +203,10 @@
       {
         "id": "product",
         "label": "Produit"
+      },
+      {
+        "id": "reference",
+        "label": "Avec références"
       }
     ],
     "proofItems": [

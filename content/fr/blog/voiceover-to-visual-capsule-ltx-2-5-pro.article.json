@@ -1,0 +1,584 @@
+{
+  "schemaVersion": 1,
+  "canonicalSlug": "voiceover-to-visual-capsule-ltx-2-5-pro",
+  "publication": {
+    "articleId": "6bde4b19-e99e-4fe2-8e67-7ac176782adb",
+    "version": 1,
+    "digest": "e44b0cf4b841630f363f230554d0e1decae6ee6c22c0385cfcb3bc834484de70",
+    "publishedAt": "2026-09-28T13:07:12.542Z"
+  },
+  "article": {
+    "locale": "fr",
+    "audience": "fr-FR",
+    "slug": "voiceover-to-visual-capsule-ltx-2-5-pro",
+    "title": "Transformez une voix off en capsule visuelle ciblée avec LTX 2.5 Pro",
+    "description": "Apprenez à traduire un passage de narration en idée visuelle claire, à préparer l’audio requis et l’éventuelle image d’ouverture, à évaluer le clip obtenu, puis à finaliser la capsule avec des titres et des sous-titres dans un éditeur externe.",
+    "keywords": [
+      "transformer une voix off en vidéo",
+      "LTX 2.5 Pro",
+      "audio vers vidéo",
+      "capsule visuelle",
+      "prompt vidéo",
+      "vidéo avec narration",
+      "vidéo sous-titrée",
+      "MaxVideoAI"
+    ],
+    "blocks": [
+      {
+        "id": "editorial-hero",
+        "type": "media",
+        "assetId": "editorial-hero",
+        "heading": "",
+        "presentation": "single",
+        "alt": "Une illustration montre une personne examinant une page, à côté d’une forme d’onde audio distincte.",
+        "caption": "Illustration. Un passage de narration, une idée visuelle délibérée."
+      },
+      {
+        "id": "one-cue-one-action",
+        "type": "text",
+        "heading": "Confiez une seule mission visuelle à chaque passage",
+        "paragraphs": [
+          {
+            "text": "Votre voix off est validée, mais il manque encore à la capsule une image qui mérite vraiment sa place. Plutôt que d’illustrer chaque nom prononcé, associez une action visible à un passage utile de la narration. Vous obtiendrez ainsi un plan ciblé, que vous pourrez ensuite réunir avec la narration approuvée, les titres et les sous-titres dans un éditeur externe.",
+            "sourceIds": []
+          },
+          {
+            "text": "Imaginez cette phrase dans une vidéo de formation : « Avant de partager un document, prenez un instant pour vérifier qu’il s’agit bien de la version que vous souhaitez envoyer. » Un plan sobre montrant une personne examiner une page appuie clairement cette consigne, sans chercher à reproduire chaque mot. La narration reste le repère temporel du montage : elle ne garantit pas une synchronisation automatique mot à mot.",
+            "sourceIds": []
+          },
+          {
+            "text": "Avant de rédiger votre prompt, définissez le plan à l’aide d’une fiche très simple. Vous séparerez ainsi le message des idées purement décoratives et disposerez d’une intention précise pour évaluer chaque clip proposé.",
+            "sourceIds": []
+          },
+          {
+            "spans": [
+              {
+                "text": "Passage audio : ",
+                "bold": true
+              },
+              {
+                "text": "la phrase validée qui invite à vérifier un document avant de le partager. "
+              },
+              {
+                "text": "Message visé : ",
+                "bold": true
+              },
+              {
+                "text": "marquer une pause et confirmer qu’il s’agit de la bonne version. "
+              },
+              {
+                "text": "Action visible : ",
+                "bold": true
+              },
+              {
+                "text": "une personne examine lentement une page. "
+              },
+              {
+                "text": "Scène : ",
+                "bold": true
+              },
+              {
+                "text": "un bureau calme, sans activité concurrente. "
+              },
+              {
+                "text": "Caméra : ",
+                "bold": true
+              },
+              {
+                "text": "un plan moyen sobre, légèrement de biais. "
+              },
+              {
+                "text": "Éléments à préserver : ",
+                "bold": true
+              },
+              {
+                "text": "une personne, une page, un point focal net et une fin de plan maîtrisée."
+              }
+            ],
+            "sourceIds": []
+          },
+          {
+            "text": "Comparez maintenant trois scènes possibles en gardant la même mission en tête : rendre immédiatement compréhensible l’action de vérification.",
+            "sourceIds": []
+          }
+        ]
+      },
+      {
+        "id": "three-visual-intentions",
+        "type": "media",
+        "assetId": "three-visual-intentions",
+        "heading": "Trois façons de représenter le même message",
+        "presentation": "single",
+        "alt": "Trois propositions illustrées : une personne vérifiant une page, un bureau calme et un tourbillon distrayant de documents.",
+        "caption": "Illustration. Une action de vérification, une ambiance de bureau et un montage de documents n’appuient pas la même narration de la même manière."
+      },
+      {
+        "id": "choose-the-supporting-scene",
+        "type": "comparison",
+        "heading": "Choisissez la scène qui rend le message le plus clair",
+        "columns": [
+          "Choix visuel",
+          "Ce que la scène communique",
+          "Décision pour ce passage"
+        ],
+        "rows": [
+          [
+            "Une personne vérifie une page",
+            "Le spectateur voit la pause et la vérification décrites par la narration.",
+            "Choisissez cette option. Elle transforme l’instruction en une action immédiatement lisible, sans détourner l’attention de la voix off."
+          ],
+          [
+            "Une ambiance de bureau calme",
+            "Le décor évoque le calme et le professionnalisme, mais la vérification du document reste implicite.",
+            "Gardez cette idée pour installer une ambiance ou créer un plan de coupe distinct. Elle est trop indirecte pour servir de plan principal."
+          ],
+          [
+            "Un montage rapide de documents",
+            "Le mouvement suggère les formalités et l’activité, mais la multiplication des pages disperse l’attention.",
+            "Écartez cette option pour ce passage. Son côté spectaculaire entre en concurrence avec l’instruction toute simple : vérifier une seule version."
+          ]
+        ]
+      },
+      {
+        "id": "prepare-the-inputs",
+        "type": "comparison",
+        "heading": "Décidez si l’ouverture a besoin d’une image",
+        "columns": [
+          "Point à trancher",
+          "Sans image d’orientation",
+          "Avec une image d’orientation"
+        ],
+        "rows": [
+          [
+            "Éléments requis et facultatifs",
+            "Fournissez un fichier audio source privé. Le prompt est facultatif, mais la description de scène recommandée aide à définir cette action unique de vérification.",
+            "Fournissez un fichier audio source privé et, au maximum, une première image facultative. Le prompt reste facultatif, mais la description de scène recommandée aide à relier l’image à l’action prévue."
+          ],
+          [
+            "Rôle de chaque élément",
+            "La narration approuvée sert de référence temporelle. La description visuelle demande de montrer une personne examinant lentement une seule page, avec un cadrage sobre.",
+            "La narration et la description visuelle conservent les mêmes rôles. L’image précise en plus la composition d’ouverture ou l’apparence du sujet."
+          ],
+          [
+            "Quand choisir cette approche",
+            "Choisissez cette option si la disposition exacte du plan d’ouverture peut rester souple et si la description visuelle suffit à orienter la scène.",
+            "Choisissez cette option si la position de la personne, l’emplacement de la page, une référence d’identité ou le cadrage d’ouverture doivent être précisés visuellement."
+          ],
+          [
+            "Limite pratique",
+            "La composition d’ouverture est moins précisément dirigée. Évaluez donc le clip obtenu par rapport à la narration, sans supposer que la synchronisation sera automatique.",
+            "L’image sert de guide, sans garantir que sa composition, les détails d’identité ou l’emplacement de la page seront conservés."
+          ],
+          [
+            "Choix pour l’exemple fictif",
+            "Commencez ici si une scène sobre montrant une personne et une page suffit.",
+            "Ne choisissez cette variante que si vous devez établir des détails précis : la personne à gauche, la page près du centre ou un espace bien dégagé dans le bas de l’image pour les sous-titres."
+          ],
+          [
+            "Ce qu’il faut préparer en amont",
+            "Enregistrez et nettoyez la narration hors de MaxVideoAI, puis fournissez le segment approuvé ainsi que la description visuelle recommandée.",
+            "Préparez la narration et l’éventuelle image de référence hors de MaxVideoAI, puis fournissez-les au même workflow audio vers vidéo de LTX 2.5 Pro."
+          ],
+          [
+            "Ce que l’acceptation des fichiers établit",
+            "La durée du fichier audio source accepté sert de base au calcul du prix. Elle ne permet pas de savoir si les images illustreront correctement chaque phrase prononcée.",
+            "L’acceptation des fichiers audio et image fournit la matière nécessaire pour générer une proposition. Elle ne garantit ni leur préservation, ni leur pertinence sémantique, ni leur synchronisation."
+          ]
+        ]
+      },
+      {
+        "id": "audio-to-candidate-flow",
+        "type": "diagram",
+        "heading": "De l’audio source à une première proposition vidéo",
+        "nodes": [
+          {
+            "kind": "file",
+            "label": "Audio source privé"
+          },
+          {
+            "kind": "model",
+            "label": "LTX 2.5 Pro audio vers vidéo"
+          },
+          {
+            "kind": "video",
+            "label": "Clip à évaluer"
+          }
+        ],
+        "connections": [
+          "Fournissez l’audio ; ajoutez éventuellement un prompt et une première image",
+          "Lancez la génération, puis évaluez le résultat par rapport à la narration"
+        ],
+        "alt": "Un fichier audio source privé est fourni à LTX 2.5 Pro audio vers vidéo, qui produit un clip à évaluer.",
+        "caption": "L’audio source est requis. Le prompt et l’image d’ouverture sont facultatifs."
+      },
+      {
+        "id": "orientation-image-decision",
+        "type": "comparison",
+        "heading": "Décidez si la composition d’ouverture a besoin d’une image",
+        "columns": [
+          "Décision",
+          "Sans image de référence",
+          "Avec une image de référence"
+        ],
+        "rows": [
+          [
+            "Ce que vous fournissez",
+            "L’audio et la description de scène recommandée, sans image pour définir le premier plan.",
+            "L’audio, la description de scène et une image d’ouverture servant de référence pour le cadrage ou l’apparence du sujet."
+          ],
+          [
+            "Quand cette option est utile",
+            "Choisissez cette voie si la disposition exacte du premier plan reste flexible et que le prompt donne suffisamment d’indications visuelles.",
+            "Choisissez cette voie si la position de la personne, l’emplacement de la page ou le cadrage d’ouverture sont assez importants pour être montrés visuellement."
+          ],
+          [
+            "Limite pratique",
+            "La composition d’ouverture reste moins précisément dirigée.",
+            "L’image sert de guide, sans garantir la conservation de sa composition ni de ses détails."
+          ],
+          [
+            "Choix pour cet exemple",
+            "Commencez ici si une scène sobre montrant une personne examinant une page suffit.",
+            "Retenez cette option uniquement si vous devez placer la personne à gauche, la page près du centre et conserver un espace dégagé en bas de l’image pour ajouter les sous-titres plus tard."
+          ]
+        ]
+      },
+      {
+        "id": "opening-composition-detail",
+        "type": "media",
+        "assetId": "opening-composition-detail",
+        "heading": "Donnez à la page une place claire dans le cadre",
+        "presentation": "single",
+        "alt": "Une personne examinant une page unique occupe une composition sobre, avec un espace dégagé le long du bord inférieur.",
+        "caption": "Illustration. Une référence d’ouverture possible pour LTX 2.5 Pro : une personne, une page et de la place pour les sous-titres ajoutés ultérieurement."
+      },
+      {
+        "id": "describe-the-shot",
+        "type": "text",
+        "heading": "Décrivez une action facile à évaluer au montage",
+        "paragraphs": [
+          {
+            "text": "Quelle que soit l’option retenue, reliez la composition d’ouverture à une seule action visible : une personne adulte examine lentement une page unique. En vous limitant à une personne, une page et une action, vous pourrez plus facilement déterminer si l’image soutient la narration au lieu de simplement ajouter du mouvement.",
+            "sourceIds": []
+          },
+          {
+            "spans": [
+              {
+                "text": "Gardez une caméra discrète. ",
+                "bold": true
+              },
+              {
+                "text": "Un plan moyen en légère oblique peut maintenir le visage de la personne et la page comme deux points d’attention, tout en laissant l’action de vérification bien lisible. Terminez avec la personne immobile et la page toujours visible : le montage disposera ainsi d’un cadre posé sur lequel couper ou marquer une pause."
+              }
+            ],
+            "sourceIds": [
+              "source-1"
+            ]
+          },
+          {
+            "text": "N’incluez dans la demande visuelle ni le texte du document, ni les titres, ni les sous-titres, ni le minutage de la narration. Demandez plutôt des marques abstraites et illisibles sur la page, sans réclamer de synchronisation mot à mot ni de performance parlée. La voix off approuvée reste séparée ; les éléments de texte modifiables et le minutage final seront ajoutés dans l’éditeur externe.",
+            "sourceIds": []
+          }
+        ]
+      },
+      {
+        "id": "visual-prompt",
+        "type": "prompt",
+        "heading": "Copiez puis adaptez ce prompt centré sur une seule action",
+        "template": "An adult reviewer with short dark hair and a muted teal shirt sits at a pale wood desk, slowly examining one cream-colored page. The reviewer’s face and the page remain the clear focal subjects. Show the scene in a restrained oblique medium view with steady, subtle camera movement. The reviewer makes one small hand adjustment while checking the page, then settles into a composed ending with the page still clearly visible. Use quiet warm lighting and an uncluttered setting. Keep all page markings abstract and unreadable. No speaking, no additional documents, no added titles or on-screen text.",
+        "note": "Ce prompt définit une intention visuelle précise, sans garantir chaque détail du résultat. Si vous utilisez une image d’orientation, veillez à ce que la position de la personne, l’emplacement de la page et l’angle de caméra restent compatibles avec cette description."
+      },
+      {
+        "id": "before-you-generate",
+        "type": "text",
+        "heading": "Vérifiez les entrées et le tarif avant de générer",
+        "paragraphs": [
+          {
+            "spans": [
+              {
+                "text": "Une fois l’intention visuelle définie, ouvrez le "
+              },
+              {
+                "text": "flux audio vers vidéo documenté de LTX 2.5 Pro",
+                "href": "https://maxvideoai.com/models/ltx-2-5-pro"
+              },
+              {
+                "text": " et préparez le passage de narration approuvé comme audio source privé. Ajoutez le prompt visuel, puis une seule image d’ouverture si vous avez décidé que la composition initiale avait besoin d’une référence visuelle."
+              }
+            ],
+            "sourceIds": [
+              "source-1"
+            ]
+          },
+          {
+            "spans": [
+              {
+                "text": "Avant de lancer la génération, vérifiez que MaxVideoAI accepte les entrées actuelles et consultez le tarif affiché. "
+              },
+              {
+                "text": "Le prix repose sur la durée reconnue de l’audio source",
+                "bold": true
+              },
+              {
+                "text": ", et MaxVideoAI confirme le tarif avant la génération. L’acceptation des entrées ou la durée de l’audio ne garantit toutefois pas que les images suivront chaque phrase prononcée ni qu’elles soutiendront le message prévu."
+              }
+            ],
+            "sourceIds": [
+              "source-1"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "generate-in-maxvideoai",
+        "type": "steps",
+        "heading": "Générez un clip candidat dans MaxVideoAI",
+        "steps": [
+          {
+            "title": "Ouvrez le flux audio vers vidéo",
+            "body": "Choisissez le flux audio vers vidéo documenté de LTX 2.5 Pro, sans reprendre les réglages d’un projet texte vers vidéo."
+          },
+          {
+            "title": "Ajoutez le passage de narration approuvé",
+            "body": "Importez l’audio source privé contenant le passage délimité que ce plan doit accompagner."
+          },
+          {
+            "title": "Indiquez la direction visuelle",
+            "body": "Utilisez le prompt centré sur une seule action : une personne examine une page, dans un cadrage sobre, avant une fin posée."
+          },
+          {
+            "title": "N’ajoutez une image d’ouverture que si vous l’avez prévu",
+            "body": "Fournissez au maximum une image dans Optional first frame. Utilisez-la lorsque la position initiale de la personne et de la page mérite d’être précisée visuellement, sans supposer que chaque détail sera conservé."
+          },
+          {
+            "title": "Contrôlez les informations avant génération",
+            "body": "Confirmez que les entrées actuelles sont acceptées et vérifiez le tarif annoncé avant de générer. Si l’un de ces éléments diffère de vos attentes, faites une pause et ajustez les entrées plutôt que de deviner des limites ou des réglages non documentés."
+          },
+          {
+            "title": "Générez un clip à évaluer",
+            "body": "Considérez la vidéo obtenue comme un clip candidat, et non comme une capsule terminée. Son utilité dépend de la capacité de l’action visible à soutenir la narration approuvée."
+          }
+        ]
+      },
+      {
+        "id": "review-and-finish",
+        "type": "steps",
+        "heading": "Gardez l’image utile, puis finalisez la capsule",
+        "steps": [
+          {
+            "title": "Évaluez le clip au regard de la narration",
+            "body": "Revenez à l’instruction invitant à faire une pause et à vérifier un document avant de le partager. Regardez le clip candidat avec la narration approuvée : comprend-on immédiatement qu’une personne examine une page ? Puisque la scène ne comporte pas de parole à l’image, jugez sa capacité à soutenir le sens plutôt que la synchronisation labiale."
+          },
+          {
+            "title": "Vérifiez le début, l’action et la fin",
+            "body": "Au début, la personne et la page doivent être faciles à repérer. L’examen du document doit ensuite rester au centre de l’attention, avant une fin posée où la page demeure visible. Le storyboard illustré associé sert de référence pour cette progression : il ne présente pas un résultat généré."
+          },
+          {
+            "title": "Décidez clairement de garder ou d’écarter le clip",
+            "body": "Gardez-le si son cadrage rend la vérification du document plus claire et offre un point de montage propre. Écartez-le ou révisez-le si le spectaculaire masque l’action, si des lettres indésirables attirent l’œil, si d’autres documents dispersent l’attention, si des détails dérivent de façon gênante ou si une image soignée exprime une autre idée. Ce sont des questions à vous poser pendant l’évaluation, pas des défauts supposés du clip."
+          },
+          {
+            "title": "Écoutez la bande-son existante",
+            "body": "Avant de placer la narration approuvée, écoutez l’audio déjà présent dans le clip. Choisissez délibérément de le couper, de le remplacer ou de le conserver, afin que des voix superposées ou des sons involontaires ne concurrencent pas le message."
+          },
+          {
+            "title": "Piste image : préservez l’action utile",
+            "body": "Importez le clip retenu dans un éditeur externe, puis raccourcissez-le ou décalez-le en fonction du passage prononcé. Gardez la personne et la page bien lisibles, ménagez de la place pour les sous-titres et utilisez la composition finale comme un point d’arrêt ou de coupe volontaire."
+          },
+          {
+            "title": "Piste narration : protégez le message approuvé",
+            "body": "Ajoutez la narration nettoyée et approuvée comme référence temporelle. L’enregistrement et le nettoyage restent réalisés en dehors de MaxVideoAI, tout comme les décisions finales de synchronisation et de mixage."
+          },
+          {
+            "title": "Piste titres et sous-titres : gardez le texte modifiable",
+            "body": "Ajoutez les titres séparément et créez les sous-titres à partir de la transcription de la narration. Dans Premiere, les sous-titres produits depuis une transcription peuvent être ajustés en longueur, en durée, en intervalles entre les sous-titres, en nombre de lignes et en style. Vérifiez chaque mot et sa synchronisation avec l’enregistrement approuvé, sans considérer la transcription comme définitive."
+          },
+          {
+            "title": "Vérifiez la capsule assemblée",
+            "body": "Lisez le montage avec le son. Assurez-vous que l’examen du document coïncide avec la phrase concernée, que la narration reste intelligible, que les sous-titres ne recouvrent pas la page et que la fin offre toujours un point propre pour conclure ou enchaîner."
+          }
+        ]
+      },
+      {
+        "id": "checking-action-storyboard",
+        "type": "media",
+        "assetId": "checking-action-storyboard",
+        "heading": "Une pause, une vérification, puis une fin posée",
+        "presentation": "single",
+        "alt": "Trois plans de storyboard montrent une personne tenant une page, l’examinant, puis s’immobilisant dans une composition finale posée.",
+        "caption": "Illustration. La progression de l’action et sa fin servent de référence pour évaluer un clip candidat."
+      },
+      {
+        "id": "retain-or-reject-choice",
+        "type": "comparison",
+        "heading": "Ne gardez le clip que s’il clarifie la vérification",
+        "columns": [
+          "Question à vous poser",
+          "Gardez le clip si…",
+          "Écartez-le ou révisez-le si…"
+        ],
+        "rows": [
+          [
+            "L’action est-elle immédiatement compréhensible ?",
+            "La personne examine clairement une seule page.",
+            "Le mouvement ou le spectaculaire masque la vérification du document."
+          ],
+          [
+            "Le cadrage soutient-il le message ?",
+            "La personne et la page restent les sujets évidents de l’image.",
+            "D’autres documents, des sujets concurrents ou des mouvements de caméra détournent l’attention."
+          ],
+          [
+            "Les détails restent-ils utiles ?",
+            "La page, la personne et le bureau conservent une cohérence suffisante pour soutenir la scène.",
+            "La position de la page change, des détails du sujet dérivent ou des lettres indésirables trop visibles deviennent gênantes."
+          ],
+          [
+            "Le clip est-il pertinent, et pas seulement impressionnant ?",
+            "L’image renforce l’instruction invitant à faire une pause et à vérifier un document.",
+            "L’image paraît soignée, mais communique une autre idée."
+          ],
+          [
+            "La fin offre-t-elle un point de montage ?",
+            "La personne s’immobilise alors que la page reste visible.",
+            "Une nouvelle action commence, la composition se désorganise ou le plan se termine sans point de coupe propre."
+          ]
+        ]
+      },
+      {
+        "id": "finish-in-your-editor",
+        "type": "text",
+        "heading": "Réunissez l’image retenue et la narration validée",
+        "paragraphs": [
+          {
+            "text": "Avant d’ajouter la narration validée, regardez et écoutez attentivement tout son déjà présent dans le clip candidat. Choisissez explicitement de le couper, de le remplacer ou de le conserver. Sans cette décision, des voix superposées ou des sons imprévus risquent de brouiller le message.",
+            "sourceIds": []
+          },
+          {
+            "text": "Placez l’image retenue dans votre éditeur externe, puis utilisez la narration validée comme repère temporel. Raccourcissez ou décalez le plan en fonction du passage prononcé, tout en préservant la vue la plus lisible de la personne et de la page. Réservez les titres, le calage final et le mixage à cette étape de montage : la génération fournit la matière première, pas la capsule terminée.",
+            "sourceIds": []
+          },
+          {
+            "spans": [
+              {
+                "text": "Par exemple, "
+              },
+              {
+                "text": "Premiere peut créer des sous-titres à partir d’une transcription",
+                "href": "https://helpx.adobe.com/premiere/desktop/add-text-images/insert-captions/create-captions.html"
+              },
+              {
+                "text": " et permet d’en régler la longueur, la durée, les intervalles entre les sous-titres, le nombre de lignes et le style. Vérifiez ensuite le texte et la synchronisation par rapport à la narration validée, sans considérer la transcription comme définitive."
+              }
+            ],
+            "sourceIds": [
+              "source-6"
+            ]
+          },
+          {
+            "text": "Profitez de la zone calme de la composition pour placer des sous-titres lisibles, mais contrôlez chaque image plutôt que de compter sur un seul emplacement supposé sûr. La capsule finale doit préserver l’action de vérification, garder la narration intelligible et permettre la lecture sans recouvrir la page qui porte l’idée.",
+            "sourceIds": []
+          }
+        ]
+      },
+      {
+        "id": "external-edit-map",
+        "type": "steps",
+        "heading": "Attribuez une piste de montage à chaque élément",
+        "steps": [
+          {
+            "title": "Piste image : conservez l’action utile",
+            "body": "Importez le clip candidat retenu et raccourcissez-le pour que la vérification du document reste parfaitement compréhensible. Faites coïncider le début avec le passage de narration, préservez de l’espace pour les sous-titres et conservez la composition finale stable pour disposer d’un point de coupe net."
+          },
+          {
+            "title": "Piste narration : protégez le message validé",
+            "body": "Ajoutez la narration nettoyée et validée comme repère temporel. Après avoir examiné le son existant du clip candidat, coupez-le, remplacez-le ou conservez-le délibérément afin d’éviter le dédoublement des voix et toute concurrence entre les sons accessoires et l’instruction."
+          },
+          {
+            "title": "Piste titres et sous-titres : gardez le texte modifiable",
+            "body": "Créez les sous-titres à partir de la transcription de la narration, puis comparez chaque mot à l’enregistrement validé. Ajustez la synchronisation, la longueur, les intervalles entre les sous-titres, les retours à la ligne et le style pour faciliter la lecture. Ajoutez le titre séparément, plutôt que d’intégrer un texte indispensable dans l’image générée."
+          },
+          {
+            "title": "Vérification finale : contrôlez ensemble l’image et le son",
+            "body": "Regardez la capsule assemblée avec le son activé. Vérifiez que l’action de contrôle correspond bien à la phrase concernée, que les sous-titres ne recouvrent pas la page, que le mixage laisse la narration parfaitement claire et que la fin permet toujours de conclure ou d’enchaîner au moment choisi."
+          }
+        ]
+      },
+      {
+        "id": "external-finishing-handoff",
+        "type": "diagram",
+        "heading": "Finalisez la capsule en dehors de la génération",
+        "nodes": [
+          {
+            "kind": "video",
+            "label": "Clip candidat retenu"
+          },
+          {
+            "kind": "file",
+            "label": "Projet de montage externe"
+          },
+          {
+            "kind": "video",
+            "label": "Capsule finale sous-titrée"
+          }
+        ],
+        "connections": [
+          "Importer le clip et la narration validée ; vérifier le son du clip",
+          "Agencer l’image, les titres et les sous-titres ; mixer et exporter"
+        ],
+        "alt": "Un clip retenu et la narration validée entrent dans un projet de montage externe pour devenir une capsule finale sous-titrée.",
+        "caption": "Après avoir vérifié le son existant du clip, agencez la narration, les titres et les sous-titres dans le montage externe."
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "source-1",
+      "title": "LTX 2.5 Pro",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/models/ltx-2-5-pro",
+      "retrievedAt": "2026-09-28"
+    },
+    {
+      "id": "source-6",
+      "title": "Create Captions in Premiere",
+      "publisher": "Adobe",
+      "url": "https://helpx.adobe.com/premiere/desktop/add-text-images/insert-captions/create-captions.html",
+      "retrievedAt": "2026-09-28"
+    }
+  ],
+  "assets": [
+    {
+      "id": "editorial-hero",
+      "kind": "generated-illustration",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "a40fb8ffc810466e11339b091fdff5d5b1cc83835544c7fb9725f2e5dab763dc",
+      "url": "https://media.maxvideoai.com/editorial/published/a40fb8ffc810466e11339b091fdff5d5b1cc83835544c7fb9725f2e5dab763dc.webp"
+    },
+    {
+      "id": "three-visual-intentions",
+      "kind": "generated-illustration",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "5aba2c7579ad54696a983007d6b2b161c9a455c0e08d416f82dc829f68bcf1a2",
+      "url": "https://media.maxvideoai.com/editorial/published/5aba2c7579ad54696a983007d6b2b161c9a455c0e08d416f82dc829f68bcf1a2.webp"
+    },
+    {
+      "id": "opening-composition-detail",
+      "kind": "generated-illustration",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "b27bb40b69773f497f50f7c148a149cc0fda03d60dd312864eb7eb3dbc7f8f1b",
+      "url": "https://media.maxvideoai.com/editorial/published/b27bb40b69773f497f50f7c148a149cc0fda03d60dd312864eb7eb3dbc7f8f1b.webp"
+    },
+    {
+      "id": "checking-action-storyboard",
+      "kind": "generated-illustration",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "1413af086007e55c46a2b08a02c19f0b256ff632de45abfe9936fe69405faceb",
+      "url": "https://media.maxvideoai.com/editorial/published/1413af086007e55c46a2b08a02c19f0b256ff632de45abfe9936fe69405faceb.webp"
+    }
+  ]
+}

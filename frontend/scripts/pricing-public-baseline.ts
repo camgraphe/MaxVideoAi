@@ -59,6 +59,14 @@ async function main(): Promise<void> {
     throw new Error('Invalid reviewed Product customer-price repair matrix.');
   }
   const appliedCustomerOfferRepairs = new Set<string>();
+  const h3Change = JSON.parse(await readFile(new URL('../../tests/fixtures/h3-capability-pricing-change-2026-09-22.json', import.meta.url), 'utf8')) as {
+    rows: Array<{ previous: typeof rows[number]; current: typeof rows[number] }>;
+  };
+  const h3Changes = new Map(h3Change.rows.map((row) => [row.previous.id, row]));
+  if (h3Changes.size !== 7 || h3Changes.size !== h3Change.rows.length || h3Change.rows.some((row) =>
+    row.previous.id !== row.current.id || !['minimax-h3', 'minimax-h3-max'].includes(row.current.engineId)
+  )) throw new Error('Invalid reviewed H3 capability pricing matrix.');
+  const appliedH3Changes = new Set<string>();
   const byId = new Map(fixture.rows.map((row) => [row.id, row]));
   const expected = fixture.rows.map((row) => {
     const standardId = row.id.replace(/:(plus|pro):/u, ':member:');
@@ -104,8 +112,8 @@ async function main(): Promise<void> {
   ) {
     throw new Error('Invalid reviewed GPT Image 2.5 public pricing launch matrix.');
   }
-  // Approved Sora and Seedance 1.5 retirements: remove purchasable surfaces and invalidate Product offers.
-  // Keep the pre-sunset fixtures intact as historical pricing evidence.
+  // Approved archive sunsets: remove purchasable surfaces and invalidate Product offers.
+  // Keep the pre-archive fixtures intact as historical pricing evidence.
   const expectedWithLaunch = [...expected, ...launchAdditions.rows].map((row) => {
     const repair = customerOfferRepairs.get(row.id);
     if (!repair) return row;
@@ -119,12 +127,30 @@ async function main(): Promise<void> {
     .map((row) => ['sora-2', 'sora-2-pro', 'seedance-1-5-pro'].includes(row.engineId) && row.surface === 'json-ld'
       ? { id: row.id, surface: row.surface, engineId: row.engineId, status: 'unavailable' as const }
       : row)
+    .map((row) => {
+      const change = h3Changes.get(row.id);
+      if (!change) return row;
+      if (!isDeepStrictEqual(row, change.previous)) throw new Error(`H3 change does not match historical evidence: ${row.id}`);
+      appliedH3Changes.add(row.id);
+      return change.current;
+    })
+    .map((row) => {
+      // Seedream Pro's high sample now selects its supported 2K tier. The frozen row quoted an unsupported 4K choice.
+      if (row.id !== 'pricing-hub-image:seedream-5-0-pro:high') return row;
+      if (row.customerTotalCents !== 32 || row.displayedAmount !== '$0.32') {
+        throw new Error(`Unexpected historical Seedream Pro high sample: ${row.id}`);
+      }
+      return { ...row, customerTotalCents: 16, displayedAmount: '$0.16' };
+    })
     .sort((left, right) => left.id.localeCompare(right.id));
+  if (appliedH3Changes.size !== h3Changes.size) throw new Error('Missing H3 capability pricing scenario.');
   if (appliedCustomerOfferRepairs.size !== customerOfferRepairs.size) throw new Error('Missing Product customer-price repair scenario.');
   if (!isDeepStrictEqual(rows, expectedWithLaunch)) {
     const expectedById = new Map(expectedWithLaunch.map((row) => [row.id, row]));
     const changed = rows.filter((row) => !isDeepStrictEqual(row, expectedById.get(row.id))).map((row) => row.id);
-    console.error('[pricing-public-baseline] unexpected drift from standard pricing policy', changed);
+    const actualIds = new Set(rows.map((row) => row.id));
+    const missing = expectedWithLaunch.filter((row) => !actualIds.has(row.id)).map((row) => row.id);
+    console.error('[pricing-public-baseline] unexpected drift from standard pricing policy', JSON.stringify({ changed, missing, details: rows.filter((row) => changed.includes(row.id)).map((row) => ({ actual: row, expected: expectedById.get(row.id) })) }, null, 2));
     process.exitCode = 1;
     return;
   }

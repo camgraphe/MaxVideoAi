@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 
-import sharp from 'sharp';
+import sharp, { type SharpOptions } from 'sharp';
 
 import { query } from '@/lib/db';
 import { ensureAssetSchema } from '@/lib/schema';
@@ -293,7 +293,7 @@ export async function decodeImageUpload(params: {
   }
 
   try {
-    const inputOptions: sharp.SharpOptions = {
+    const inputOptions: SharpOptions = {
       failOn: 'error',
       limitInputPixels: MAX_IMAGE_UPLOAD_PIXELS,
       page: 0,

@@ -1,6 +1,7 @@
+import { isMcpConsentTarget } from '@/lib/mcp-oauth-continuation';
 import type { AuthCopy, Locale } from './login-copy';
 
-export type LoginContinuationKind = 'billing' | 'video' | 'image' | 'audio' | 'library' | 'tool';
+export type LoginContinuationKind = 'billing' | 'video' | 'image' | 'audio' | 'library' | 'tool' | 'mcp';
 
 export type LoginContinuation = {
   kind: LoginContinuationKind;
@@ -33,6 +34,8 @@ function isRoute(pathname: string, route: string): boolean {
 
 export function buildLoginContinuation({ copy, locale, nextPath }: LoginContinuationOptions): LoginContinuation | null {
   if (!nextPath.startsWith('/') || nextPath.startsWith('//')) return null;
+
+  if (isMcpConsentTarget(nextPath)) return { kind: 'mcp', ...copy.mcp };
 
   const target = new URL(nextPath, 'https://maxvideoai.local');
   const pathname = target.pathname;

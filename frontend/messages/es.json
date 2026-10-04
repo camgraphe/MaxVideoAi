@@ -1,4 +1,24 @@
 {
+  "passwordRecovery": {
+    "title": "Elige una nueva contraseña",
+    "intro": "Continúa para verificar tu enlace de restablecimiento.",
+    "verify": "Continuar",
+    "verifying": "Verificando el enlace…",
+    "password": "Nueva contraseña",
+    "confirm": "Confirma la nueva contraseña",
+    "save": "Guardar nueva contraseña",
+    "saving": "Guardando…",
+    "saved": "Tu contraseña se ha actualizado.",
+    "continueToApp": "Ir a la aplicación",
+    "requestNew": "Solicitar otro enlace",
+    "invalid": "Este enlace no es válido o ha caducado. Solicita uno nuevo. Si cambiaste de navegador, prueba a abrir el enlace original en el navegador donde lo solicitaste.",
+    "tooShort": "Usa al menos 6 caracteres.",
+    "mismatch": "Las contraseñas no coinciden.",
+    "weak": "Elige una contraseña más segura.",
+    "same": "Elige una contraseña diferente de la actual.",
+    "unavailable": "No pudimos actualizar tu contraseña. Inténtalo de nuevo.",
+    "ready": "Introduce y confirma tu nueva contraseña."
+  },
   "nav": {
     "account": {
       "signedIn": "Sesión iniciada",
@@ -48,6 +68,7 @@
     ],
     "login": "Iniciar sesión",
     "cta": "Generar",
+    "startCreating": "Empezar a crear",
     "linkLabels": {
       "models": "Modelos",
       "examples": "Ejemplos",
@@ -774,14 +795,14 @@
       },
       "examples": {
         "title": "Un mundo de historias por crear.",
-        "subtitle": "Abre un ejemplo para ver el prompt, los ajustes y el costo registrado al generarlo. Úsalo como punto de partida para tu propio proyecto.",
+        "subtitle": "Abre un ejemplo para ver el prompt, los ajustes y el precio actual del modelo. Úsalo como punto de partida para tu propio proyecto.",
         "eyebrow": "Ejemplos reales",
         "cta": "Ver todos los ejemplos",
         "modelsCta": "Ver todas las especificaciones",
         "compareLink": "Comparar modelos",
         "featuredModelCta": "Descubrir Seedance 2.5",
         "modelCta": "Descubrir {model}",
-        "costUnavailable": "Coste no registrado",
+        "costUnavailable": "Precio actual no disponible",
         "providerLabel": "Modelos compatibles:",
         "viewPrompt": "Clonar ajustes",
         "fallbackCards": [
@@ -2960,7 +2981,7 @@
       "aspectLabel": "Relación",
       "aspectAuto": "Auto",
       "createdLabel": "Creado el",
-      "priceTotalLabel": "Coste registrado del render",
+      "priceTotalLabel": "Precio actual del modelo",
       "priceTotalValue": "{value}",
       "priceTotalUnknown": "No disponible",
       "audioLabel": "Audio",
@@ -3216,10 +3237,10 @@
   },
   "gallery": {
     "meta": {
-      "title": "Ejemplos de video IA: prompts, modelos y costes registrados",
-      "description": "Explora ejemplos de video IA y abre un video para consultar su prompt, ajustes, duración y coste registrado antes de recrearlo.",
+      "title": "Ejemplos de video IA: prompts, modelos y precios actuales",
+      "description": "Explora ejemplos de video IA y abre un video para consultar su prompt, ajustes, duración y precio actual del modelo antes de recrearlo.",
       "title_engine": "Ejemplos de video IA — {engineName} | MaxVideoAI",
-      "description_engine": "Explora ejemplos de {engineName} y abre un video para consultar su prompt, duración, ajustes de audio y coste registrado."
+      "description_engine": "Explora ejemplos de {engineName} y abre un video para consultar su prompt, duración, ajustes de audio y precio actual del modelo."
     }
   },
   "workspace": {
@@ -3349,6 +3370,11 @@
         "presetsLabel": "Añadir créditos",
         "otherAmountLabel": "Otro importe",
         "minLabel": "Mín. {amount}",
+        "creditsReceived": "Créditos recibidos",
+        "paymentAmount": "Importe sin impuestos",
+        "quoteLoading": "Calculando…",
+        "quoteUnavailable": "Stripe lo muestra antes del pago",
+        "taxNote": "Pueden añadirse impuestos. Stripe muestra el total final antes del pago.",
         "captchaPrompt": "Verificación de seguridad requerida antes del Checkout.",
         "captchaComplete": "Verificación completada. Continúa al pago.",
         "captchaError": "Verificación de seguridad no disponible. Inténtalo de nuevo.",
@@ -3356,7 +3382,7 @@
         "startError": "No se pudo iniciar el pago. Inténtalo de nuevo.",
         "close": "Cerrar",
         "maybeLater": "Más tarde",
-        "submit": "Añadir fondos",
+        "submit": "Revisar el pago",
         "submitting": "Iniciando recarga…"
       },
       "authGate": {
@@ -3971,6 +3997,7 @@
         "fields": {
           "total": "Total",
           "walletMovement": "Movimiento de la billetera",
+          "paymentAmount": "Importe pagado (impuestos incluidos)",
           "tax": "Impuestos",
           "discount": "Descuento",
           "document": "Documento"
@@ -6730,6 +6757,11 @@
       "signin": "Iniciar sesión",
       "signup": "Crear cuenta"
     },
+    "mcpStaging": {
+      "title": "MaxVideoAI Staging — entorno de prueba",
+      "body": "Las cuentas y créditos de la web están separados de este entorno de prueba. Para acceder a tu cuenta MaxVideoAI existente, añade la conexión de producción en tu asistente.",
+      "action": "Configurar MaxVideoAI en producción"
+    },
     "modes": {
       "signup": {
         "title": "Crea tu cuenta de workspace",
@@ -6745,6 +6777,10 @@
       }
     },
     "continuation": {
+      "mcp": {
+        "title": "Conecta tu cuenta MaxVideoAI",
+        "body": "Inicia sesión con la misma cuenta MaxVideoAI que usas en la web. Podrás revisar los permisos solicitados y volver a tu asistente."
+      },
       "billing": {
         "title": "Tu recarga de {amount} está guardada",
         "body": "Crea una cuenta o inicia sesión y volverás a Facturación con ese importe todavía seleccionado."
@@ -6833,12 +6869,15 @@
       "signingIn": "Iniciando sesión…",
       "signinRedirecting": "Sesión iniciada. Redirigiendo…",
       "signinSuggestion": "No pudimos iniciar sesión con esos datos. Si eres nuevo, crea tu cuenta sin volver a escribirlos.",
+      "mcpSigninFailed": "No pudimos iniciar sesión. Comprueba tu correo y contraseña, usa « ¿Olvidaste tu contraseña? », o continúa con Google si creaste tu cuenta MaxVideoAI así.",
       "signupSuggestionReady": "Perfecto, vamos a crear tu cuenta.",
       "creatingAccount": "Creando cuenta…",
       "accountRedirecting": "Cuenta creada. Redirigiendo…",
-      "confirmEmail": "Revisa tu bandeja de entrada para confirmar el correo.",
+      "confirmEmail": "Si tu cuenta necesita confirmación, revisa tu correo. ¿Ya tienes una cuenta? Inicia sesión o elige «¿Olvidaste tu contraseña?» en el formulario de acceso para recuperarla.",
       "sendingReset": "Enviando enlace…",
-      "resetSent": "Correo de restablecimiento enviado.",
+      "resetSent": "Si existe una cuenta con este correo, recibirás un enlace para restablecer la contraseña. Revisa también la carpeta de spam.",
+      "resetUnavailable": "No pudimos enviar el enlace de restablecimiento. Inténtalo más tarde. Si el problema persiste, contacta con soporte.",
+      "resetRateLimited": "Demasiadas solicitudes. Espera unos minutos antes de solicitar otro enlace.",
       "googleUnavailable": "El acceso con Google no está disponible porque no se pudo resolver la URL de redirección.",
       "googleRedirecting": "Redirigiendo a Google…",
       "completingSignIn": "Completando el inicio de sesión…",
@@ -8455,5 +8494,25 @@
     "body": "No encontramos esa URL. Es posible que ya no exista o que nunca haya existido. Usa los enlaces de abajo para seguir explorando MaxVideoAI.",
     "homeLabel": "Volver al inicio",
     "modelsLabel": "Ver modelos de video"
+  },
+  "passwordRecovery": {
+    "title": "Elige una nueva contraseña",
+    "intro": "Continúa para verificar tu enlace de restablecimiento.",
+    "verify": "Continuar",
+    "verifying": "Verificando el enlace…",
+    "password": "Nueva contraseña",
+    "confirm": "Confirma la nueva contraseña",
+    "save": "Guardar nueva contraseña",
+    "saving": "Guardando…",
+    "saved": "Tu contraseña se ha actualizado.",
+    "continueToApp": "Ir a la aplicación",
+    "requestNew": "Solicitar otro enlace",
+    "invalid": "Este enlace no es válido o ha caducado. Solicita uno nuevo. Si cambiaste de navegador, prueba a abrir el enlace original en el navegador donde lo solicitaste.",
+    "tooShort": "Usa al menos 6 caracteres.",
+    "mismatch": "Las contraseñas no coinciden.",
+    "weak": "Elige una contraseña más segura.",
+    "same": "Elige una contraseña diferente de la actual.",
+    "unavailable": "No pudimos actualizar tu contraseña. Inténtalo de nuevo.",
+    "ready": "Introduce y confirma tu nueva contraseña."
   }
 }

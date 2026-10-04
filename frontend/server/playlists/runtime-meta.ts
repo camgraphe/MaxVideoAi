@@ -1,3 +1,4 @@
+import { isHistoricalCoreSlug } from './destination-protection';
 import {
   getExampleFamilyDescriptor,
   getExampleFamilyModelSlugs,
@@ -13,7 +14,6 @@ import type {
 } from './types';
 import {
   getExamplesHubPlaylistSlug,
-  getFamilyPlaylistSlug,
   getModelPlaylistSlug,
   getStarterPlaylistSlug,
 } from './slugs';
@@ -65,6 +65,7 @@ export function getPlaylistUsageTargets(slug: string): string[] {
 export function isLockedPlaylistSlug(slug: string): boolean {
   const normalizedSlug = slug.trim().toLowerCase();
   if (!normalizedSlug) return false;
+  if (isHistoricalCoreSlug(normalizedSlug)) return true;
   if (Object.values(STARTER_MEDIA_SLUGS).some(value => value === normalizedSlug)) return true;
   if (normalizedSlug === getStarterPlaylistSlug().toLowerCase()) {
     return true;

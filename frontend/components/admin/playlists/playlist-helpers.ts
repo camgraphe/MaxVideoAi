@@ -82,6 +82,15 @@ export function sortPlaylists(playlists: EditablePlaylist[]): EditablePlaylist[]
   return [...playlists].sort(comparePlaylists);
 }
 
+export function groupPlaylists(playlists: EditablePlaylist[]) {
+  return {
+    runtime: playlists.filter(playlist => getPlaylistGroup(playlist) === 'runtime'),
+    family: playlists.filter(playlist => getPlaylistGroup(playlist) === 'family'),
+    model: playlists.filter(playlist => getPlaylistGroup(playlist) === 'model'),
+    draft: playlists.filter(playlist => getPlaylistGroup(playlist) === 'draft'),
+  };
+}
+
 export function getUsageLabel(target: string): string {
   if (target === 'starter-tab') return 'Starter tab';
   if (target === 'examples-hub') return 'Examples hub';

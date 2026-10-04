@@ -154,9 +154,9 @@ export async function markProviderAttemptAccepted(params: {
   const queryFn = params.queryFn ?? query;
   await queryFn(
     `UPDATE provider_attempts
-        SET status = 'accepted',
+        SET status = CASE WHEN status IN ('completed', 'failed') THEN status ELSE 'accepted' END,
             provider_job_id = $2,
-            accepted_at = NOW(),
+            accepted_at = COALESCE(accepted_at, NOW()),
             response_snapshot = COALESCE($3::jsonb, response_snapshot),
             updated_at = NOW()
       WHERE id = $1`,
@@ -260,4 +260,29 @@ export async function findProviderAttemptForJob(params: {
   return row
     ? { id: Number(row.id), attemptIndex: Number(row.attempt_index), requestSnapshot: row.request_snapshot }
     : null;
+}
+
+/** Reconcile only the attempt bound to the job's current provider request. */
+export async function syncProviderAttemptTerminalStatus(params: {
+  publicJobId: string;
+  provider: VideoProviderKey;
+  providerJobId: string;
+  queryFn?: QueryFn;
+}): Promise<void> {
+  const queryFn = params.queryFn ?? query;
+  await queryFn(
+    `UPDATE provider_attempts pa
+        SET status = aj.status,
+            finished_at = COALESCE(pa.finished_at, NOW()),
+            updated_at = NOW()
+       FROM app_jobs aj
+      WHERE aj.id = pa.job_id
+        AND aj.job_id = $1
+        AND aj.provider = $2 AND pa.provider = $2
+        AND aj.provider_job_id = $3 AND pa.provider_job_id = $3
+        AND aj.status IN ('completed', 'failed')
+        AND pa.status <> aj.status
+        AND pa.status <> 'completed'`,
+    [params.publicJobId, params.provider, params.providerJobId]
+  );
 }

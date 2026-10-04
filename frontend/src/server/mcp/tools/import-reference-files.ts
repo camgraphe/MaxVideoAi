@@ -29,8 +29,7 @@ export function registerImportReferenceFilesTool(
     'import_reference_files',
     {
       title: 'Import private reference files',
-      description:
-        [
+      description: [
         'Use this to import up to eight user-authorized image, video or audio files from temporary host file handles, including attachments or authorized generation results, into the connected private MaxVideoAI library.',
         'MaxVideoAI manages these references; the host owns creating or selecting reference media.',
         'Use returned asset IDs directly and preserve input order; do not call list_media after a successful direct import.',

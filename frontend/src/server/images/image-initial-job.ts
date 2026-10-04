@@ -6,6 +6,7 @@ import type { BillingProductKey, JobSurface } from '@/types/billing';
 import type { ExistingImageJobRow } from './existing-image-job-response';
 import { ImageGenerationExecutionError } from './image-generation-error';
 import { lockInitialJobReservation, runInitialJobTransaction, type WalletReservation } from '@/server/generations/initial-job-reservation';
+import { lockQuotedCustomerTariffRevision, CustomerTariffRevisionError } from '@/server/pricing/customer-tariff-revision';
 
 export const PLACEHOLDER_THUMB = '/assets/frames/thumb-1x1.svg';
 
@@ -143,6 +144,7 @@ async function insertProvisionalImageJob(executor: QueryExecutor, params: Provis
 }
 
 export type CreateImageInitialJobParams = {
+  auditPricingSnapshot?: unknown;
   userId: string;
   mode: ImageGenerationMode;
   jobId: string;
@@ -170,6 +172,17 @@ export type CreateImageInitialJobParams = {
   walletChargeMode?: ImageWalletChargeMode;
   includedPaymentStatus?: string;
 };
+
+async function validateInitialImageTariffRevision(executor: TransactionQueryExecutor, params: CreateImageInitialJobParams) {
+  try {
+    await lockQuotedCustomerTariffRevision(executor, params.engineId,
+      params.auditPricingSnapshot ?? JSON.parse(params.pricingSnapshotJson));
+  } catch (error) {
+    if (!(error instanceof CustomerTariffRevisionError)) throw error;
+    throw new ImageGenerationExecutionError(error.message, { mode: params.mode, status: 409, code: error.code });
+  }
+
+}
 
 export async function createInitialImageJobInExecutor(
   executor: TransactionQueryExecutor,
@@ -214,6 +227,7 @@ export async function createInitialImageJobInExecutor(
     }
     return { kind: 'existing_job', job: existingJob };
   }
+
 
   const existingRefunds = await executor.query<{ id: number }>(
     `SELECT id
@@ -294,6 +308,7 @@ export async function createInitialImageJobInExecutor(
       extras: { jobId: params.jobId },
     });
   } else if (walletChargeMode === 'charge' && params.walletReservation === 'reserve') {
+    await validateInitialImageTariffRevision(executor, params);
     const reserveResult = await reserveWalletChargeInExecutor(
       executor,
       {
@@ -305,6 +320,7 @@ export async function createInitialImageJobInExecutor(
         surface: params.surface,
         billingProductKey: params.billingProductKey,
         pricingSnapshotJson: params.pricingSnapshotJson,
+        auditPricingSnapshot: params.auditPricingSnapshot,
         applicationFeeCents: params.applicationFeeCents,
         vendorAccountId: params.vendorAccountId,
         stripePaymentIntentId: null,
@@ -334,6 +350,7 @@ export async function createInitialImageJobInExecutor(
     }
   }
 
+  if (walletChargeMode === 'included') await validateInitialImageTariffRevision(executor, params);
   const paymentStatus = walletChargeMode === 'included' ? (params.includedPaymentStatus ?? 'included') : 'paid_wallet';
   await insertProvisionalImageJob(executor, {
     userId: params.userId,

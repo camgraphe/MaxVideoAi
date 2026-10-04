@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import { getDb } from '../frontend/src/lib/db';
+import { startDisposablePostgres, createPaidGenerationTestSchema } from './helpers/disposable-postgres';
 
 import {
   buildModelDecisionData,
@@ -302,10 +304,10 @@ test('LTX 2.3 Fast SEO metadata can omit the site-name suffix', async () => {
     englishPath: '/models/ltx-2-3-fast',
     titleBranding: 'none',
   });
-  const rows = await buildPricePerSecondRows(ltx.engine, 'en', 'Price per second', {
+  const rows = await withCurrentPriceFixture(() => buildPricePerSecondRows(ltx.engine, 'en', 'Price per second', {
     on: 'Audio on',
     off: 'Audio off',
-  });
+  }));
   const modelPageSource = readFileSync(
     'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/page.tsx',
     'utf8'
@@ -318,8 +320,8 @@ test('LTX 2.3 Fast SEO metadata can omit the site-name suffix', async () => {
       id: 'pricePerSecond',
       key: 'pricePerSecond',
       label: 'Price per second',
-      value: '1080p: $0.05 per second',
-      valueLines: ['1080p: $0.05 per second', '1440p: $0.11 per second', '4k: $0.21 per second'],
+      value: '1080p: $0.053333 per second',
+      valueLines: ['1080p: $0.053333 per second', '1440p: $0.105 per second', '4k: $0.208333 per second'],
     },
   ]);
   assert.match(modelPageSource, /ltx-2-3-fast/);
@@ -474,18 +476,18 @@ test('remaining video templates preserve Happy Horse, Hailuo, and Pika route int
 
 test('Pika price rows keep per-second context visible for Google snippets', async () => {
   const pika = getEngine('pika-text-to-video');
-  const rows = await buildPricePerSecondRows(pika.engine, 'en', 'Price per second', {
+  const rows = await withCurrentPriceFixture(() => buildPricePerSecondRows(pika.engine, 'en', 'Price per second', {
     on: 'Audio on',
     off: 'Audio off',
-  });
+  }));
 
   assert.deepEqual(rows, [
     {
       id: 'pricePerSecond',
       key: 'pricePerSecond',
       label: 'Pika 2.2 price per second',
-      value: '720p: $0.05 per second',
-      valueLines: ['720p: $0.05 per second', '1080p: $0.12 per second'],
+      value: '720p: $0.052 per second',
+      valueLines: ['720p: $0.052 per second', '1080p: $0.118 per second'],
     },
   ]);
 });
@@ -1049,3 +1051,19 @@ test('Seedance 2.0 schema omits Product when no truthful offer is available', ()
   assert.equal(webPage?.description, decision.meta.description);
   assert.equal(product, undefined, 'variable pay-as-you-go model schema should omit an ineligible Product node');
 });
+
+
+// Current-price rendering requires a real effective policy; never depend on a developer's env file.
+async function withCurrentPriceFixture<T>(render: () => Promise<T>): Promise<T> {
+  const db = await startDisposablePostgres('model-current-prices');
+  const previous = process.env.DATABASE_URL;
+  process.env.DATABASE_URL = db.databaseUrl;
+  try {
+    await createPaidGenerationTestSchema(db.pool);
+    await db.pool.query('UPDATE app_pricing_rules SET margin_percent = 0.3');
+    return await render();
+  } finally {
+    await getDb().end().catch(() => undefined); await db.cleanup();
+    if (previous === undefined) delete process.env.DATABASE_URL; else process.env.DATABASE_URL = previous;
+  }
+}

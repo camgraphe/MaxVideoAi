@@ -1,17 +1,8 @@
 import '@/styles/marketing-redesign.css';
 import '@/styles/marketing-navigation.css';
-import { MarketingNav } from '@/components/marketing/MarketingNav';
-import { MarketingFooter } from '@/components/marketing/MarketingFooter';
-import { getMarketingAuthSnapshot } from '@/server/marketing-auth';
+import { MarketingVideoLayout } from '@/components/marketing/MarketingVideoLayout';
+import { ExampleReaderStyles } from '@/components/examples/example-reader-styles';
 
-export default async function VideoLayout({ children }: { children: React.ReactNode }) {
-  const auth = await getMarketingAuthSnapshot();
-
-  return (
-    <div className="marketing-site flex min-h-screen flex-col bg-bg">
-      <MarketingNav initialEmail={auth.email} initialIsAdmin={auth.isAdmin} />
-      <main className="flex-1">{children}</main>
-      <MarketingFooter />
-    </div>
-  );
+export default function VideoLayout({ children }: { children: React.ReactNode }) {
+  return <><ExampleReaderStyles /><MarketingVideoLayout>{children}</MarketingVideoLayout></>;
 }

@@ -31,7 +31,7 @@ export default async function AdminMarketingOptInsPage() {
         <AdminPageHeader
           eyebrow="Growth ops"
           title="Marketing opt-ins"
-          description="Suivi des consentements marketing exportables vers les outils CRM et emailing."
+          description="Review marketing consent records available for export."
           actions={
             <>
               <AdminActionLink href="/admin/legal">
@@ -67,7 +67,7 @@ export default async function AdminMarketingOptInsPage() {
       <AdminPageHeader
         eyebrow="Growth ops"
         title="Marketing opt-ins"
-        description="Tracke les membres qui ont accepté les emails promotionnels. La table reste exportable pour synchroniser CRM, ESP ou campagnes one-off."
+        description="Review members who accepted promotional email and export the records for approved marketing tools."
         actions={
           <>
             <AdminActionLink href="/admin/legal">
@@ -85,7 +85,7 @@ export default async function AdminMarketingOptInsPage() {
 
       <AdminSection
         title="Consent Pulse"
-        description="Lecture rapide du volume d’opt-ins et de leur fraîcheur avant export ou investigation utilisateur."
+        description="Check consent volume and freshness before exporting or investigating an account."
       >
         <AdminMetricGrid items={metrics} columnsClassName="sm:grid-cols-2 xl:grid-cols-4" density="compact" />
       </AdminSection>
@@ -96,7 +96,7 @@ export default async function AdminMarketingOptInsPage() {
 
       <AdminSection
         title="Subscriber Ledger"
-        description="Historique exportable des membres ayant accepté les communications marketing."
+        description="Exportable history of members who accepted marketing communications."
         action={
           <AdminSectionMeta
             title={`${records.length} subscribed members`}

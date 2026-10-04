@@ -16,6 +16,8 @@ const CAPABILITY_COPY: Record<string, { fr: string; es: string }> = {
   'optional native audio': { fr: 'Audio natif en option', es: 'Audio nativo opcional' },
   'supported as a reference-to-video input': { fr: 'Vidéo acceptée comme référence pour la génération', es: 'Video aceptado como referencia para la generación' },
   'start image + optional end image': { fr: 'image de départ et image de fin facultative', es: 'imagen inicial e imagen final opcional' },
+  'start image, end image, or both': { fr: 'image de début, image de fin ou les deux', es: 'imagen inicial, imagen final o ambas' },
+  'video editing and extension': { fr: 'modification et extension vidéo', es: 'edición y extensión de video' },
   'prompt-based camera and multi-shot control': { fr: 'Caméra et séquence de plans guidées par le prompt', es: 'Cámara y secuencia de tomas guiadas por el prompt' },
   'prompt-based camera control': { fr: 'Caméra guidée par le prompt', es: 'Cámara guiada por el prompt' },
 };

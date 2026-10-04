@@ -1,3 +1,4 @@
+import { factsFromProbe } from '../frontend/lib/generated-video-media-facts';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
@@ -63,8 +64,8 @@ function mediaFixture(params: {
     mime_type: attachment.type,
     size_bytes: params.sizeMB * MB,
     duration_sec: params.durationSec ?? null,
-    width: params.kind === 'image' ? 1024 : null,
-    height: params.kind === 'image' ? 1024 : null,
+    width: params.kind === 'audio' ? null : 1024,
+    height: params.kind === 'audio' ? null : 1024,
   };
   return { attachment, reference, row };
 }
@@ -157,6 +158,22 @@ test('MiniMax H3 enforces 15-second combined video and audio reference budgets',
   }
 });
 
+test('MiniMax H3 soundtrack validation allows long owned audio and enforces its minimum and size', async () => {
+  for (const [durationSec, sizeMB, expected] of [[60, 15, true], [1.99, 1, false], [60, 15.01, false]] as const) {
+    const fixture = mediaFixture({ kind: 'audio', durationSec, sizeMB });
+    fixture.attachment.slotId = 'target_audio_url';
+    fixture.reference.fieldId = 'target_audio_url';
+    for (const mode of ['t2v', 'i2v'] as const) {
+      const result = await validateGenerationMediaConstraints({
+        engineId: 'minimax-h3', mode, userId: 'user-h3', inputSchema,
+        attachments: [fixture.attachment], referenceMediaItems: [fixture.reference],
+        deps: { queryFn: async <T>() => [fixture.row] as T[] },
+      });
+      assert.equal(result.ok, expected, `${mode}: ${durationSec}s / ${sizeMB} MB`);
+    }
+  }
+});
+
 test('audio uploads persist trusted duration metadata for MiniMax H3 references', () => {
   const routeSource = readFileSync(
     'frontend/app/api/uploads/audio/_lib/audio-upload-handler.ts',
@@ -201,4 +218,15 @@ test('trusted audio duration probing reads an uploaded WAV buffer', async () => 
     await detectMediaBufferDuration(wav, { fileName: 'reference.wav', mimeType: 'audio/wav' }),
     durationSec
   );
+});
+
+test('MiniMax H3 validates measured original precision rather than nominal generation duration', async () => {
+  for (const duration of [15, 15.001]) {
+    const fixture = mediaFixture({ kind: 'video', sizeMB: 1, durationSec: 10 });
+    fixture.row.media_metadata = { mediaFacts: factsFromProbe({ streams: [{ codec_type: 'video', duration: String(duration) }] },
+      { url: fixture.row.url, sha256: 'a'.repeat(64), sizeBytes: MB }) };
+    const result = await validate([fixture]);
+    assert.equal(result.ok, duration === 15);
+    if (!result.ok) assert.equal(result.body.error, 'MEDIA_DURATION_UNSUPPORTED');
+  }
 });

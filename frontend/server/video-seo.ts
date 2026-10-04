@@ -21,6 +21,7 @@ import {
   type WatchPageRelatedLink,
 } from '@/server/watch-page-signals';
 import { resolveWatchSourceImageOriginalUrls } from '@/server/watch-source-image-originals';
+import { quoteCurrentExamplePrice, type CurrentExamplePrice } from '@/server/current-example-price';
 
 const BASE_WATCH_VIDEOS = [...VIDEO_SEO_WATCHLIST].sort((a, b) => b.priority - a.priority);
 const BASE_WATCH_VIDEO_MAP = new Map(BASE_WATCH_VIDEOS.map((entry) => [entry.id, entry] as const));
@@ -49,6 +50,7 @@ export type VideoWatchPageData = {
   related: WatchPageRelatedLink[];
   isSelected: boolean;
   isEligible: boolean;
+  currentPrice: CurrentExamplePrice;
 };
 
 function decodeIdentifier(value: string): string {
@@ -225,7 +227,7 @@ export async function getSeoWatchVideoRowById(id?: string | null): Promise<SeoWa
 export async function getVideoWatchPageDataById(id: string): Promise<VideoWatchPageData | null> {
   if (isLocalPublicExamplesEnabled()) {
     const video = getLocalPublicExample(id);
-    return video ? { entry: null, video, signals: deriveWatchPageSignals({ video }), related: [], isSelected: false, isEligible: false } : null;
+    return video ? { entry: null, video, signals: deriveWatchPageSignals({ video }), related: [], isSelected: false, isEligible: false, currentPrice: await quoteCurrentExamplePrice(video) } : null;
   }
   const selectedRows = await listSeoWatchVideoRows();
   const requestedSlug = normalizeVideoSeoCanonicalSlug(decodeIdentifier(id));
@@ -236,6 +238,7 @@ export async function getVideoWatchPageDataById(id: string): Promise<VideoWatchP
   const resolvedId = selectedRow?.entry.id ?? excludedEditorial?.id ?? id;
   const video = selectedRow?.video ?? (await getSeoVideoById(resolvedId));
   if (!video) return null;
+  const currentPrice = await quoteCurrentExamplePrice(video);
 
   const editorial = selectedRow?.editorial ?? excludedEditorial;
   const entry =
@@ -260,6 +263,7 @@ export async function getVideoWatchPageDataById(id: string): Promise<VideoWatchP
     entry,
     video,
     signals,
+    currentPrice,
     related: pickRelatedWatchPages({
       currentId: resolvedId,
       currentSignals: signals,

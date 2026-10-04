@@ -82,6 +82,10 @@ test('Alibaba poll copies the expiring provider output before completing the exi
   assert.equal(cost.provider, 'alibaba_model_studio');
   assert.equal(cost.provider_cost_units, 15);
   assert.equal(cost.provider_cost_usd, 3);
+  assert.equal(cost.provider_cost_status, 'list_estimate_from_provider_usage');
+  assert.equal(cost.input_video_duration_sec, 5);
+  assert.equal(cost.output_video_duration_sec, 10);
+  assert.equal(cost.provider_cost_usd_effective, null, 'LIST is not account or invoice evidence');
   assert.match(JSON.stringify(outputs[0]), /cdn\.maxvideoai\.com/);
   const attempt = queries.find((entry) => /provider_cost_usd/.test(entry.sql));
   assert.equal(attempt?.params?.[0], 31);

@@ -1,3 +1,5 @@
+import { readGeneratedVideoFacts } from '@/lib/generated-video-media-facts';
+import { resolveOwnedGeneratedVideo } from './generated-video-source';
 import { randomUUID } from 'crypto';
 import { readMediaFacts } from '@/lib/media-identity';
 import { query } from '@/lib/db';
@@ -93,6 +95,14 @@ export async function ensureReusableAsset(params: {
   const source = normalizeMediaAssetSource(params.source);
   const normalizedUrl = normalizeString(params.url);
   if (!normalizedUrl) throw new Error('URL_REQUIRED');
+  const ownedGeneratedVideo = params.kind === 'video' && source === 'saved_job_output' && params.sourceOutputId
+    ? await resolveOwnedGeneratedVideo({ userId: params.userId, sourceOutputId: params.sourceOutputId,
+        sourceJobId: params.sourceJobId, url: params.url.trim() }) : undefined;
+  const suppliedMetadata = { ...(params.metadata ?? {}) };
+  // Generated measurements come only from the verified output or received bytes.
+  if (suppliedMetadata.mediaFacts && typeof suppliedMetadata.mediaFacts === 'object' && 'version' in suppliedMetadata.mediaFacts) {
+    delete suppliedMetadata.mediaFacts;
+  }
   const identity = resolveLibraryAssetIdentity({
     userId: params.userId,
     kind: params.kind,
@@ -137,7 +147,12 @@ export async function ensureReusableAsset(params: {
       LIMIT 1`,
     [identity, params.userId]
   );
-  if (existing[0]) {
+  const sameOriginal = existing[0] && (existing[0].url === normalizedUrl
+    || normalizeMetadata(existing[0].metadata).originUrl === normalizedUrl);
+  const existingMeasuredFacts = existing[0]
+    ? readGeneratedVideoFacts(normalizeMetadata(existing[0].metadata).mediaFacts, existing[0].url) : null;
+  const shouldRefreshMeasuredCopy = Boolean(sameOriginal && ownedGeneratedVideo?.mediaFacts && !existingMeasuredFacts);
+  if (existing[0] && (!ownedGeneratedVideo || (sameOriginal && !shouldRefreshMeasuredCopy))) {
     if (!existing[0].thumb_url && !resolvedThumbUrl && params.kind === 'video' && params.allowRemoteThumbnailFallback !== false) {
       resolvedThumbUrl = await createRemoteVideoAssetThumbnail({
         userId: params.userId,
@@ -145,12 +160,15 @@ export async function ensureReusableAsset(params: {
         fileName: params.label ?? existing[0].id,
       });
     }
-    const existingDurationSec = normalizeMetadata(existing[0].metadata).durationSec;
+    const existingFacts = readGeneratedVideoFacts(normalizeMetadata(existing[0].metadata).mediaFacts, existing[0].url);
+    const existingDurationSec = existingFacts?.durationSec ?? normalizeMetadata(existing[0].metadata).durationSec;
     const shouldBackfillDuration = Boolean(durationSec && !existingDurationSec);
     const shouldBackfillDimensions = Boolean(mediaWidth && mediaHeight && (!existing[0].width || !existing[0].height));
-    const mediaFacts = readMediaFacts(params.metadata?.mediaFacts);
+    const mediaFacts = readMediaFacts(suppliedMetadata.mediaFacts);
     const existingMetadata = normalizeMetadata(existing[0].metadata);
-    const shouldBackfillFacts = Boolean(mediaFacts && !readMediaFacts(existingMetadata.mediaFacts)?.durationSec
+    const existingVersionedFacts = existingMetadata.mediaFacts && typeof existingMetadata.mediaFacts === 'object'
+      && 'version' in existingMetadata.mediaFacts;
+    const shouldBackfillFacts = Boolean(mediaFacts && !existingVersionedFacts && !readMediaFacts(existingMetadata.mediaFacts)?.durationSec
       && (existing[0].url === normalizedUrl || existingMetadata.originUrl === normalizedUrl)
       && (!params.sourceOutputId || existing[0].source_output_id === params.sourceOutputId));
     if (
@@ -166,7 +184,8 @@ export async function ensureReusableAsset(params: {
                 width = COALESCE(width, $6),
                 height = COALESCE(height, $7),
                 metadata = COALESCE(metadata, '{}'::jsonb)
-                  || jsonb_strip_nulls(jsonb_build_object('thumbUrl', $3::text, 'previewUrl', $4::text, 'durationSec', $5::double precision, 'mediaFacts', $8::jsonb)),
+                  || jsonb_strip_nulls(jsonb_build_object('thumbUrl', $3::text, 'previewUrl', $4::text, 'durationSec', CASE WHEN metadata->'mediaFacts'->>'version' = '1'
+                    THEN NULL ELSE $5::double precision END, 'mediaFacts', $8::jsonb)),
                 updated_at = NOW()
           WHERE id = $1
             AND user_id = $2
@@ -191,6 +210,11 @@ export async function ensureReusableAsset(params: {
         kind: params.kind,
         mimeType: params.mimeType,
         fileName: params.label,
+        ownedGeneratedVideo,
+      }).catch((error) => {
+        // An optional metadata refresh must not invalidate an already saved original.
+        if (shouldRefreshMeasuredCopy && existing[0]) return null;
+        throw error;
       })
     : {
         url: normalizedUrl,
@@ -199,7 +223,9 @@ export async function ensureReusableAsset(params: {
         width: mediaWidth,
         height: mediaHeight,
         sizeBytes: params.sizeBytes ?? null,
+        mediaFacts: ownedGeneratedVideo?.mediaFacts,
       };
+  if (!copied) return mapAssetRow(existing[0]);
   if (!resolvedThumbUrl && copied.thumbUrl) {
     resolvedThumbUrl = copied.thumbUrl;
   }
@@ -221,7 +247,7 @@ export async function ensureReusableAsset(params: {
     width: copied.width ?? mediaWidth,
     height: copied.height ?? mediaHeight,
     sizeBytes: copied.sizeBytes ?? params.sizeBytes ?? null,
-    durationSec,
+    durationSec: copied.mediaFacts?.durationSec ?? durationSec,
     source,
     sourceJobId: params.sourceJobId ?? null,
     sourceOutputId: params.sourceOutputId ?? null,
@@ -233,7 +259,8 @@ export async function ensureReusableAsset(params: {
       thumbUrl: resolvedThumbUrl,
       previewUrl: resolvedPreviewUrl,
       durationSec,
-      ...(params.metadata ?? {}),
+      ...suppliedMetadata,
+      ...(copied.mediaFacts ? { mediaFacts: copied.mediaFacts } : {}),
     },
   });
   insert.id = identity;
@@ -258,7 +285,9 @@ export async function ensureReusableAsset(params: {
        source_job_id = EXCLUDED.source_job_id,
        source_output_id = EXCLUDED.source_output_id,
        status = EXCLUDED.status,
-       metadata = COALESCE(media_assets.metadata, '{}'::jsonb) || EXCLUDED.metadata,
+       metadata = (CASE WHEN media_assets.url IS NOT DISTINCT FROM EXCLUDED.url
+                        THEN COALESCE(media_assets.metadata, '{}'::jsonb)
+                        ELSE COALESCE(media_assets.metadata, '{}'::jsonb) - 'mediaFacts' END) || EXCLUDED.metadata,
        updated_at = NOW()
      RETURNING id, public_id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes, source,
                source_job_id, source_output_id, status, metadata, created_at`,
@@ -314,7 +343,10 @@ export async function saveJobOutputToLibrary(params: {
   );
   if (!rows[0]) throw new Error('OUTPUT_NOT_FOUND');
   const output = mapOutputRow(rows[0]);
-  const mediaFacts = readMediaFacts(output.metadata.mediaFacts);
+  const outputFacts = output.metadata.mediaFacts;
+  // Versioned generated facts must keep their original-byte provenance through the copy path.
+  const mediaFacts = outputFacts && typeof outputFacts === 'object' && 'version' in outputFacts
+    ? undefined : readMediaFacts(outputFacts);
   return ensureReusableAsset({
     userId: params.userId,
     url: output.url,

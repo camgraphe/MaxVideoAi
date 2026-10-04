@@ -1,0 +1,105 @@
+{
+  "model": "gpt-5.6-luna",
+  "evidenceKind": "agent-generated-mocked-next-step-simulation",
+  "replay": true,
+  "cases": [
+    {
+      "id": "L01",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "list_models",
+          "arguments": {
+            "surface": "video",
+            "mode": "i2v",
+            "aspectRatio": "9:16",
+            "maxDurationSec": 8,
+            "referenceImages": true
+          }
+        }
+      ],
+      "reply": "Voy a consultar los modelos de imagen a vídeo compatibles con 8 segundos, formato vertical y una imagen de referencia. Luego necesitaré que elijas uno antes de preparar el presupuesto exacto."
+    },
+    {
+      "id": "L02",
+      "skill": "plan",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "recommend_models",
+          "arguments": {
+            "id": null,
+            "surface": "video",
+            "mode": null,
+            "aspectRatio": null,
+            "resolution": null,
+            "maxDurationSec": null,
+            "audio": null,
+            "referenceImages": null,
+            "useCase": "product_video",
+            "priorities": ["highest_resolution"],
+            "preferredModelIds": null,
+            "excludedModelIds": null,
+            "budgetCeilingCents": null
+          }
+        }
+      ],
+      "reply": "I’ll check current executable models for a product ad and prioritize delivery quality, then validate the best fit before estimating cost."
+    },
+    {
+      "id": "L03",
+      "skill": "plan",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "recommend_models",
+          "arguments": {
+            "id": null,
+            "surface": "video",
+            "mode": null,
+            "aspectRatio": null,
+            "resolution": null,
+            "maxDurationSec": null,
+            "audio": null,
+            "referenceImages": null,
+            "useCase": "social_video",
+            "priorities": ["lower_cost"],
+            "preferredModelIds": null,
+            "excludedModelIds": null,
+            "budgetCeilingCents": null
+          }
+        }
+      ],
+      "reply": "Primero consultaré opciones actuales para Shorts con prioridad de coste. Para un presupuesto comparable aún necesitaremos fijar la duración de cada plano y elegir un modelo."
+    },
+    {
+      "id": "L07",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "get_model_details",
+          "arguments": {
+            "id": "seedance-2-0"
+          }
+        }
+      ],
+      "reply": "Voy a comprobar los detalles actuales de Seedance 2.0 para confirmar su modo imagen a vídeo, referencias y ajustes admitidos."
+    },
+    {
+      "id": "L08",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "get_model_details",
+          "arguments": {
+            "id": "seedance-2-0"
+          }
+        }
+      ],
+      "reply": "I’ll first verify the live Seedance 2.0 details and supported eight-second settings. Then I can prepare the exact quote for your prompt."
+    }
+  ]
+}

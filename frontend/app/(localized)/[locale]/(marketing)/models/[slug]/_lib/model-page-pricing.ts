@@ -1,7 +1,8 @@
 import { localeRegions, type AppLocale } from '@/i18n/locales';
-import { computeCanonicalPublicSnapshot } from '@/server/pricing/quote-public';
+import { computeCurrentPublicSnapshot } from '@/server/pricing/quote-public';
 import { computeMarketingPricePoints, computeMarketingPriceRange, type MarketingPricePoint } from '@/lib/pricing-marketing';
 import { formatResolutionLabel } from '@/lib/resolution-labels';
+import { formatPricePerUnit } from '@/lib/pricing-unit-display';
 import type { EngineCaps } from '@/types/engines';
 
 type PriceSpecRow = {
@@ -18,13 +19,7 @@ type AudioPriceLabels = {
 };
 
 function formatPerSecond(locale: AppLocale, currency: string, amount: number) {
-  const region = localeRegions[locale] ?? 'en-US';
-  return new Intl.NumberFormat(region, {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
+  return formatPricePerUnit(locale, currency, amount);
 }
 
 function formatCurrency(locale: AppLocale, currency: string, amount: number) {
@@ -150,7 +145,7 @@ async function computePerSecondValue(
 ): Promise<{ label: string; perSecond: number } | null> {
   const durationSec = selectQuickDurations(engineCaps)[0] ?? 5;
   try {
-    const snapshot = await computeCanonicalPublicSnapshot({
+    const snapshot = await computeCurrentPublicSnapshot({
       engine: engineCaps,
       durationSec,
       resolution,
@@ -173,7 +168,7 @@ export async function buildPricePerSecondLabel(engine: EngineCaps, locale: AppLo
   const durationOptions = selectQuickDurations(engine);
   const durationSec = durationOptions[0] ?? 5;
   try {
-    const snapshot = await computeCanonicalPublicSnapshot({
+    const snapshot = await computeCurrentPublicSnapshot({
       engine,
       durationSec,
       resolution,
@@ -190,7 +185,7 @@ export async function buildPricePerSecondLabel(engine: EngineCaps, locale: AppLo
 
 export async function buildPricePerImageLabel(engine: EngineCaps, locale: AppLocale): Promise<string | null> {
   try {
-    const range = await computeMarketingPriceRange(engine, { memberTier: 'member', limit: null });
+    const range = await computeMarketingPriceRange(engine, { memberTier: 'member', limit: null, requireCurrentPolicy: true });
     if (!range) return null;
     return `${formatCurrency(locale, range.currency, range.min.cents / 100)}/image`;
   } catch {
@@ -314,7 +309,7 @@ export async function buildPricePerImageRows(
   locale: AppLocale,
   rowLabel: string
 ): Promise<PriceSpecRow[]> {
-  const points = await computeMarketingPricePoints(engineCaps, { memberTier: 'member', limit: null });
+  const points = await computeMarketingPricePoints(engineCaps, { memberTier: 'member', limit: null, requireCurrentPolicy: true });
 
   if (!points.length) return [];
   const values = points.map((point) => `${formatCurrency(locale, point.currency, point.cents / 100)}/image`);

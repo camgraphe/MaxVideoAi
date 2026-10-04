@@ -23,8 +23,12 @@ import { useWorkspaceVideoSettings } from './_hooks/useWorkspaceVideoSettings';
 
 export default function AppClientPage({
   initialPreviewGroup = null,
+  localSeedanceDraftPreview = false,
+  seedanceDraftWorkflowEnabled = false,
 }: {
   initialPreviewGroup?: VideoGroup | null;
+  localSeedanceDraftPreview?: boolean;
+  seedanceDraftWorkflowEnabled?: boolean;
 }) {
   const app = useWorkspaceAppBootstrap();
   const confirmedAccount =
@@ -50,6 +54,7 @@ export default function AppClientPage({
     compositeOverrideSummary: routeForm.compositeOverrideSummary,
     writeScopedStorage: draft.writeScopedStorage,
     workspaceCopy: app.workspaceCopy,
+    uiLocale: app.uiLocale,
   });
 
   const activeDraft = useWorkspaceDraftHydration({
@@ -284,7 +289,7 @@ export default function AppClientPage({
     authLoading: app.authLoading,
     engineCount: app.engines.length,
     enginesError: app.enginesError,
-    hasForm: activeDraft.ready && Boolean(routeForm.form),
+    hasForm: activeDraft.ready && Boolean(routeForm.form) && !videoSettings.sharedVideoImportPending,
     hasSelectedEngine: Boolean(composer.selectedEngine),
     initialPreviewFallbackGroup: previewState.initialPreviewFallbackGroup,
     initialPreviewPosterSrc: previewState.compositePreviewPosterSrc,
@@ -297,6 +302,8 @@ export default function AppClientPage({
     <>
       {loadState}
       <WorkspaceAppReadyView
+        seedanceDraftWorkflowEnabled={seedanceDraftWorkflowEnabled}
+        localSeedanceDraftPreview={localSeedanceDraftPreview}
         suspended={Boolean(loadState)}
         activeDraft={activeDraft}
         app={app}

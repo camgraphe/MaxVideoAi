@@ -10,6 +10,7 @@ import {
   resolveRuntimePublicSlug,
 } from '../frontend/config/model-runtime.ts';
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
+import { isAlibabaDirectEngine } from '../frontend/src/server/video-providers/alibaba-model-studio/model-map';
 import { isPublishedComparisonSlug } from '../frontend/lib/compare-hub/data.ts';
 import { buildModelDecisionData } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-data.ts';
 import { parseModelDecisionContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-content.ts';
@@ -224,15 +225,19 @@ test('P0 pages contain useful page-specific localized copy and unique metadata',
   }
 });
 
-test('P0 copy distinguishes model ownership from Fal distribution and cites the reviewed owner guide', () => {
+test('P0 copy attributes the model owner and requires Fal attribution only for Fal-distributed routes', () => {
   for (const slug of P0_SLUGS) {
     for (const locale of LOCALES) {
       const document = readDocument(locale, slug);
       const visible = collectVisibleStrings(document).join(' ');
       const prompting = parseModelPromptingContent(document.prompting, slug, locale);
       assert.match(visible, EXPECTED_OWNER[slug], `${slug}/${locale} owner attribution`);
-      assert.match(visible, /\bFal\b/, `${slug}/${locale} Fal distribution attribution`);
-      assert.doesNotMatch(visible, /direct(?:ly)? (?:with|through|via) (?:Alibaba|Lightricks|xAI|Black Forest Labs)/i);
+      // Wan also runs directly through Alibaba Model Studio; Fal is an eligible
+      // pre-acceptance fallback, so public copy must not imply Fal-only delivery.
+      if (!isAlibabaDirectEngine(slug)) {
+        assert.match(visible, /\bFal\b/, `${slug}/${locale} Fal distribution attribution`);
+        assert.doesNotMatch(visible, /direct(?:ly)? (?:with|through|via) (?:Alibaba|Lightricks|xAI|Black Forest Labs)/i);
+      }
       assert.equal(prompting.section.guide?.href, OFFICIAL_GUIDE[slug], `${slug}/${locale} guide`);
     }
   }

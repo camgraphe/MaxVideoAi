@@ -13,8 +13,8 @@
     "intro": "Seedance 1.5 Pro n’est plus disponible pour de nouvelles générations sur MaxVideoAI. Vos vidéos existantes restent dans votre bibliothèque. Découvrez Seedance 2.5 pour un nouveau projet.",
     "badge": "480p–1080p · 4–12 s · Audio on/off",
     "ctaPrimary": {
-      "label": "Voir les archives Seedance 1.5 Pro",
-      "href": "/fr/modeles/seedance-1-5-pro"
+      "label": "Découvrir les modèles actuels",
+      "href": "/fr/modeles"
     },
     "secondaryLinks": [
       {
@@ -219,8 +219,8 @@
       ],
       "paragraph": "Seedance 1.5 Pro n’est plus disponible pour de nouvelles générations sur MaxVideoAI. Vos vidéos existantes restent dans votre bibliothèque. Découvrez Seedance 2.5 pour un nouveau projet.",
       "primaryCta": {
-        "label": "Voir les archives Seedance 1.5 Pro",
-        "href": "/fr/modeles/seedance-1-5-pro"
+        "label": "Découvrir les modèles actuels",
+        "href": "/fr/modeles"
       },
       "secondaryCta": {
         "label": "Voir Seedance 2.0",
@@ -512,30 +512,34 @@
     "showWhenEmpty": true
   },
   "archive": {
-    "title": "Seedance 1.5 Pro : modèle historique",
-    "intro": "Seedance 1.5 Pro n’est plus disponible pour de nouvelles générations sur MaxVideoAI. Vos vidéos existantes restent dans votre bibliothèque. Découvrez Seedance 2.5 pour un nouveau projet.",
-    "alternativesTitle": "Choisissez un modèle pour votre prochaine vidéo",
+    "title": "Seedance 1.5 Pro : génération arrêtée",
+    "intro": "Seedance 1.5 Pro est archivé sur MaxVideoAI. Les nouvelles générations sont arrêtées avant la fermeture annoncée par le fournisseur pour le 11 novembre 2026. Les anciens comparatifs et vos vidéos existantes restent accessibles. Découvrez Mini, Fast et Seedance 2.5 pour vos nouveaux projets.",
+    "alternativesTitle": "Choisir un modèle Seedance actuel",
     "chooseLabel": "Découvrir ce modèle",
     "historyTitle": "Vos vidéos existantes",
-    "historyBody": "Vos vidéos MaxVideoAI existantes restent dans votre bibliothèque. Vous pouvez consulter et télécharger les résultats disponibles. Choisissez un autre modèle pour créer une nouvelle vidéo ; ses réglages et son prix seront présentés avant la génération.",
+    "historyBody": "Vos vidéos Seedance 1.5 Pro restent dans votre bibliothèque avec leur modèle et fournisseur d’origine. Vous pouvez toujours consulter et télécharger les résultats disponibles. Vérifiez les réglages et le devis actuel avant de créer avec un autre modèle.",
     "historyLabel": "Ouvrir ma bibliothèque",
-    "examplesLabel": "Voir les exemples Seedance",
+    "examplesLabel": "Parcourir les exemples Seedance",
     "alternatives": [
+      {
+        "modelId": "seedance-2-0-mini",
+        "title": "Seedance 2.0 Mini",
+        "description": "Une option axée sur le coût pour les courtes vidéos prises en charge jusqu’à 720p. Comparez vos réglages et le devis actuel : ce n’est pas un remplacement équivalent de 1.5 Pro."
+      },
+      {
+        "modelId": "seedance-2-0-fast",
+        "title": "Seedance 2.0 Fast",
+        "description": "Une option distincte qui équilibre vitesse et coût, jusqu’à 720p. Elle ne propose pas le workflow Draft de Seedance 2.5."
+      },
       {
         "modelId": "seedance-2-5",
         "title": "Seedance 2.5",
-        "description": "Explorez les plans longs et les références multimodales. Vérifiez le mode choisi et le devis avant de générer."
-      },
-      {
-        "modelId": "minimax-h3",
-        "title": "MiniMax H3",
-        "description": "Créez depuis un texte, une image ou des références, avec audio natif. Vérifiez les réglages adaptés à votre plan."
-      },
-      {
-        "modelId": "wan-3",
-        "title": "Wan 3",
-        "description": "Explorez les parcours texte, image et références, ainsi que l’édition et l’extension lorsqu’elles sont disponibles."
+        "description": "Explorez la création actuelle en 1080p et les workflows de référence pris en charge. Vérifiez le mode, les capacités et le devis avant de générer."
       }
-    ]
+    ],
+    "source": {
+      "label": "Lire l’annonce du fournisseur",
+      "href": "https://docs.byteplus.com/en/docs/ModelArk/1350667"
+    }
   }
 }

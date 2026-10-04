@@ -37,6 +37,14 @@ Always author `successorId` explicitly, using `null` when there is no successor.
 4. Run `pnpm model:registry:generate`, `pnpm engine:catalog`, and `pnpm model:generate:write` to refresh the generated projections.
 5. Run `pnpm model:registry:check` and the focused model/page tests.
 
+For a newly published model page in an examples family, verify that admin Gallery
+lists its `examples-<model-slug>` collection. The registry and route do not create
+database playlists. After deployment, an admin must explicitly create missing
+model collections in the gallery selector, then review their media order before
+adopting Manual or Featured + Automatic curation. Creating an empty collection
+does not replace the route's existing editorial media; saving a managed curation
+does, so preview its effective gallery before saving.
+
 When a model becomes visible in a family gallery, review the family introduction, examples guidance and FAQ in `frontend/lib/examples/modelLandingData.{en,fr,es}.ts` as part of the same launch. Registry-derived model links do not update authored prose. Keep the gallery's existing canonical owner and metadata unless a separate SEO change is intended; distinguish different models grouped in one gallery. Route-local onward links live in `examples/_lib/examples-page-copy.ts` and must use the existing localized model/comparison href builders. Link to the example detail page for its recorded cost and recreation action; the workspace owns required inputs and the current quote. Verify the new comparison destinations and FAQ/JSON-LD consistency in all three locales. `tests/examples-family-journeys.test.ts` covers the Veo/Omni and Hailuo/H3 entry paths.
 
 `pnpm model:setup -- --from <source-slug> --slug <target-slug> --name "<Marketing Name>" --family <family-id>` can scaffold the localized content, provider/execution stub, registry entry skeleton, and optional presentation-only family stub.
@@ -126,9 +134,11 @@ When publishing new output resolutions, check both the engine runtime schema and
 
 `frontend/lib/model-generation-policy.ts` resolves historical input identity without following public-route replacement redirects. Generate (including trusted submissions) and preflight reject archived models before settings, billing, or provider calls. MCP uses its existing registry publication and lifecycle gates, including revalidation of pending quotes at confirmation. Preserve provider mappings for polling and accepted-job retries.
 
-The main workspace keeps saved historical capabilities and asks for an explicit model choice; Studio returns no executable capability for an archived model instead of borrowing its first available model. Never rewrite saved jobs or media identities to the alternative. Historical watch pages keep recall links but make the required model change explicit in their CTA and explanation.
+The main workspace keeps saved historical capabilities and asks for an explicit model choice; Studio returns no executable capability for an archived model instead of borrowing its first available model. Never rewrite saved jobs or media identities to the alternative. Historical watch pages retain their prompt and original model identity, omit same-model recreation, and offer current executable alternatives with explicit model and settings in each handoff.
 
 A `deep_legacy` model may supply an explicit localized `archive` object in every model-content locale. The model route then renders `ModelArchivePage` with WebPage metadata, current published alternatives, library and canonical family-example links, without a Product offer or generation CTA. Archive content has no English fallback. Optional external source attribution is an authored strict HTTPS `source: {label, href}` object in each locale; do not hardcode a provider announcement into the generic renderer. Historical comparison URLs remain published; executable discovery and generation controls exclude archives.
+
+See [the Sora sunset audit](sora-sunset-audit-2026-09-21.md) for the September 2026 retirement and verification scope.
 
 ### Archive discovery boundaries
 

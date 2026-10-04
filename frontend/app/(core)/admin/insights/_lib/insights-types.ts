@@ -1,16 +1,22 @@
 export type FocusMetric = 'signups' | 'active' | 'topups' | 'charges';
+export type ChartGranularity = 'daily' | 'weekly';
 
 export type PageProps = {
   searchParams?: Promise<{
     range?: string;
+    days?: string | string[];
+    grain?: string | string[];
+    compare?: string | string[];
     excludeAdmin?: string | string[];
     focus?: string | string[];
   }>;
 };
 
 export type ChartPoint = {
+  date: string;
   label: string;
   value: number;
+  bucketDays?: number;
 };
 
 export type SmallStat = {
@@ -85,6 +91,5 @@ export type FocusMetricData = {
   currentPoints: ChartPoint[];
   previousPoints: ChartPoint[];
   stats: SmallStat[];
-  axisFormatter?: (value: number) => string;
-  tooltipFormatter?: (value: number) => string;
+  valueKind: 'count' | 'currency';
 };

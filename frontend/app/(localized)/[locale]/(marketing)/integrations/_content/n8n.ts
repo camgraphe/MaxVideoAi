@@ -1,4 +1,5 @@
 import type { AppLocale } from '@/i18n/locales';
+import { MCP_N8N_PUBLIC_TEMPLATE_URL } from '@/lib/mcp-n8n-template';
 import { MCP_PRODUCTION_RESOURCE_URL } from '@/server/mcp/config';
 import { buildIntegrationCopy, getIntegrationInstallInstruction } from './shared';
 import type { IntegrationPageCopy, IntegrationText } from './types';
@@ -34,7 +35,7 @@ function english(): IntegrationText {
     metaDescription: 'Run approval-safe AI video workflows with MaxVideoAI and the deterministic MCP Client in tested self-hosted n8n deployments.',
     eyebrow: 'N8N AI VIDEO AUTOMATION',
     heroTitle: 'Design repeatable AI video workflows in n8n with MaxVideoAI',
-    heroIntro: 'The supported path uses deterministic MCP Client nodes in tested self-hosted n8n 2.38.7. One private workflow, ID 19591, is Pending / Under review; the other two are not submitted while the portal blocks another submission. This is not a public listing.',
+    heroIntro: 'The supported path uses deterministic MCP Client nodes in tested self-hosted n8n 2.38.7. Workflow 19591 is publicly listed in the n8n template library; its OAuth credential still needs manual setup.',
     unavailable: 'The self-hosted deterministic MCP Client path is available with explicit approval before confirmation. n8n Cloud and AI Agent invocation through MCP Client Tool are not part of the supported scope.',
     setupLabel: 'Connect self-hosted n8n',
     backLabel: 'See all supported workflows',
@@ -72,8 +73,9 @@ function english(): IntegrationText {
     referencesGated: 'Do not add signed media, credentials or private bytes to an exported template. A separate recorded test is required before claiming a private-reference workflow.',
     helpEyebrow: 'WORKFLOW SAFETY',
     helpTitle: 'Avoid duplicate spend and hidden credentials',
-    helpIntro: 'The tested self-hosted deterministic scope is published on MaxVideoAI. Only private workflow 19591 is Pending / Under review; the other two exact candidates are not submitted, and no public n8n library listing is claimed.',
+    helpIntro: 'The tested self-hosted deterministic scope is published on MaxVideoAI. Workflow 19591 is now publicly listed in the n8n template library. The two other reviewed candidates are not part of this listing.',
     helpItems: [
+      { question: 'Is there a public n8n template?', answer: 'Yes. Workflow 19591 is listed publicly. Import it and configure its OAuth credential manually for the tested self-hosted path.', link: { href: MCP_N8N_PUBLIC_TEMPLATE_URL, label: 'View the public n8n template.' } },
       { question: 'Which n8n node should I use?', answer: 'Use MCP Client for the supported deterministic steps. MCP Client Tool for an AI Agent remains not run and unsupported.' },
       { question: 'Does this work on n8n Cloud?', answer: 'No n8n Cloud support is claimed. The tested scope is self-hosted n8n 2.38.7.' },
       { question: 'Can the workflow confirm automatically?', answer: 'No. The candidate templates require a POST approval that matches the fresh quoteId. MaxVideoAI keeps confirmation idempotent for that quote.' },
@@ -94,7 +96,7 @@ function french(): IntegrationText {
     metaDescription: 'Exécutez des workflows vidéo IA sûrs avec MaxVideoAI et MCP Client déterministe sur les déploiements n8n auto-hébergés testés.',
     eyebrow: 'AUTOMATISATION VIDÉO IA N8N',
     heroTitle: 'Concevez des workflows vidéo IA répétables dans n8n avec MaxVideoAI',
-    heroIntro: 'Le parcours compatible utilise les nœuds MCP Client déterministes sur n8n auto-hébergé 2.38.7. Un workflow privé, ID 19591, est Pending / En révision ; les deux autres ne sont pas soumis tant que le portail bloque une nouvelle soumission. Il ne s’agit pas d’une publication publique.',
+    heroIntro: 'Le parcours compatible utilise les nœuds MCP Client déterministes sur n8n auto-hébergé 2.38.7. Le workflow 19591 est publié dans le catalogue n8n ; son identifiant OAuth doit toujours être configuré manuellement.',
     unavailable: 'Le parcours MCP Client déterministe auto-hébergé est disponible avec accord explicite avant confirmation. n8n Cloud et l’appel par agent via MCP Client Tool restent hors du périmètre compatible.',
     setupLabel: 'Connecter n8n auto-hébergé',
     backLabel: 'Voir tous les workflows compatibles',
@@ -132,8 +134,9 @@ function french(): IntegrationText {
     referencesGated: 'N’ajoutez ni média signé, ni identifiant, ni octets privés à un modèle exporté. Un test séparé et consigné est requis avant toute revendication sur les références privées.',
     helpEyebrow: 'SÉCURITÉ DU WORKFLOW',
     helpTitle: 'Évitez les dépenses doubles et les identifiants cachés',
-    helpIntro: 'Le périmètre déterministe auto-hébergé testé est publié sur MaxVideoAI. Seul le workflow privé 19591 est Pending / En révision ; les deux autres candidats exacts ne sont pas soumis et aucune publication dans la bibliothèque n8n n’est revendiquée.',
+    helpIntro: 'Le périmètre déterministe auto-hébergé testé est publié sur MaxVideoAI. Le workflow 19591 est désormais publié dans le catalogue n8n. Les deux autres candidats examinés ne font pas partie de cette publication.',
     helpItems: [
+      { question: 'Existe-t-il un modèle n8n public ?', answer: 'Oui. Le workflow 19591 est publié. Importez-le et configurez manuellement son identifiant OAuth pour le parcours auto-hébergé testé.', link: { href: MCP_N8N_PUBLIC_TEMPLATE_URL, label: 'Voir le modèle public n8n.' } },
       { question: 'Quel nœud n8n utiliser ?', answer: 'MCP Client pour les étapes déterministes compatibles. MCP Client Tool pour agent IA reste non testé et non compatible.' },
       { question: 'Cela fonctionne-t-il sur n8n Cloud ?', answer: 'Aucune compatibilité n8n Cloud n’est revendiquée. Le périmètre testé est n8n auto-hébergé 2.38.7.' },
       { question: 'Le workflow peut-il confirmer automatiquement ?', answer: 'Non. Il exige un POST d’accord correspondant au quoteId récent. MaxVideoAI rend la confirmation de ce devis idempotente.' },
@@ -154,7 +157,7 @@ function spanish(): IntegrationText {
     metaDescription: 'Ejecuta flujos seguros de vídeo IA con MaxVideoAI y MCP Client determinista en despliegues n8n self-hosted probados.',
     eyebrow: 'AUTOMATIZACIÓN DE VÍDEO IA N8N',
     heroTitle: 'Diseña flujos repetibles de vídeo IA en n8n con MaxVideoAI',
-    heroIntro: 'La ruta compatible usa nodos MCP Client deterministas en n8n self-hosted 2.38.7. Un flujo privado, ID 19591, está Pending / En revisión; los otros dos siguen sin enviar mientras el portal bloquea otra presentación. No es una publicación pública.',
+    heroIntro: 'La ruta compatible usa nodos MCP Client deterministas en n8n self-hosted 2.38.7. El flujo 19591 está publicado en el catálogo de n8n; su credencial OAuth sigue requiriendo configuración manual.',
     unavailable: 'La ruta MCP Client determinista self-hosted está disponible con aprobación explícita antes de confirmar. n8n Cloud y la invocación de agentes mediante MCP Client Tool quedan fuera del alcance compatible.',
     setupLabel: 'Conectar n8n self-hosted',
     backLabel: 'Ver todos los flujos compatibles',
@@ -192,8 +195,9 @@ function spanish(): IntegrationText {
     referencesGated: 'No añadas medios firmados, credenciales ni bytes privados a una plantilla exportada. Hace falta una prueba separada y registrada antes de afirmar compatibilidad con referencias privadas.',
     helpEyebrow: 'SEGURIDAD DEL FLUJO',
     helpTitle: 'Evita gasto duplicado y credenciales ocultas',
-    helpIntro: 'El alcance determinista self-hosted probado está publicado en MaxVideoAI. Solo el flujo privado 19591 está Pending / En revisión; los otros dos candidatos exactos siguen sin enviar y no se afirma una publicación en la biblioteca de n8n.',
+    helpIntro: 'El alcance determinista self-hosted probado está publicado en MaxVideoAI. El flujo 19591 ya está publicado en el catálogo de n8n. Los otros dos candidatos revisados no forman parte de esta publicación.',
     helpItems: [
+      { question: '¿Hay una plantilla pública de n8n?', answer: 'Sí. El flujo 19591 está publicado. Impórtalo y configura manualmente su credencial OAuth para la ruta autoalojada probada.', link: { href: MCP_N8N_PUBLIC_TEMPLATE_URL, label: 'Ver la plantilla pública de n8n.' } },
       { question: '¿Qué nodo n8n debo usar?', answer: 'MCP Client para los pasos deterministas compatibles. MCP Client Tool para agentes sigue sin probar y sin soporte.' },
       { question: '¿Funciona en n8n Cloud?', answer: 'No se afirma soporte para n8n Cloud. El alcance probado es n8n self-hosted 2.38.7.' },
       { question: '¿Puede confirmar automáticamente?', answer: 'No. Exige un POST de aprobación que coincida con el quoteId reciente. MaxVideoAI mantiene idempotente la confirmación de esa cotización.' },

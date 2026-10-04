@@ -38,7 +38,7 @@ const imageMaxResolutionExpectations: Record<(typeof imageModelPageSlugs)[number
   'nano-banana-lite': '1K',
   'nano-banana-pro': '4K',
   seedream: '4K',
-  'seedream-5-0-pro': '4K',
+  'seedream-5-0-pro': '2K',
 };
 const keySpecsFile = JSON.parse(readFileSync('data/benchmarks/engine-key-specs.v1.json', 'utf8')) as {
   specs?: Array<{ modelSlug?: string; keySpecs?: { maxResolution?: unknown } }>;
@@ -281,7 +281,7 @@ test('template registry enables Seedance production and draft model templates', 
   );
   assert.deepEqual(
     seedreamPro.pricing.presets.map((preset) => preset.id),
-    ['2k-image', '4k-image']
+    ['2k-image']
   );
   assert.deepEqual(listModelPageTemplateSlugs().sort(), [
     'dreamina-seedance-2-0-mini',

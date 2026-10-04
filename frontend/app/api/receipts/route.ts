@@ -51,6 +51,8 @@ export async function GET(req: NextRequest) {
     id: number;
     kind: string;
     amount_cents: number;
+    original_amount_cents: number | null;
+    original_currency: string | null;
     currency: string;
     description: string | null;
     created_at: string;
@@ -74,6 +76,8 @@ export async function GET(req: NextRequest) {
          id,
          type AS kind,
          amount_cents,
+         original_amount_cents,
+         original_currency,
          currency,
          description,
          created_at,
@@ -123,6 +127,8 @@ export async function GET(req: NextRequest) {
         type: row.kind,
         amount_cents: row.amount_cents,
         currency: row.currency,
+        payment_amount_cents: row.kind === 'topup' ? row.original_amount_cents : null,
+        payment_currency: row.kind === 'topup' ? row.original_currency : null,
         description: row.description,
         created_at: row.created_at,
         job_id: row.job_id,

@@ -172,6 +172,10 @@
     {
       "q": "¿Cuándo usar Seedance 2.0 Fast en lugar de Seedance 2.0 estándar?",
       "a": "Usa Fast cuando el objetivo sea iteración rápida, planificación de planos, checks de timing y comparativas. Pasa al estándar cuando quieras la toma final más pulida."
+    },
+    {
+      "q": "¿Es Seedance 2.0 Fast el modo Draft de Seedance 2.5?",
+      "a": "No. Fast es un modelo Seedance 2.0 independiente. Sus vistas previas de iteración en 480p o 720p son generaciones normales con presupuesto. BytePlus describe Draft de Seedance 2.5 como una vista previa de 480p facturada por separado, seguida opcionalmente de un nuevo render de 1080p a partir del ID de esa tarea. Ese flujo Draft-a-final no se ofrece hoy en MaxVideoAI."
     }
   ],
   "custom": {
@@ -265,7 +269,7 @@
   "decision": {
     "modelSlug": "seedance-2-0-fast",
     "hero": {
-      "eyebrow": "RUTA DREAMINA / BYTEDANCE FAST PARA BORRADORES",
+      "eyebrow": "ITERACIÓN RÁPIDA DREAMINA / BYTEDANCE",
       "title": "Seedance 2.0 Fast",
       "subtitle": "Ciclos de borradores rápidos de Seedance para pruebas de ritmo, variantes de movimiento y planificación con referencias.",
       "subtitleHighlights": [
@@ -275,7 +279,7 @@
       ],
       "paragraph": "Usa Seedance 2.0 Fast como la ruta más rápida de Dreamina Seedance para iterar antes del render final: ajustar timing, comparar movimiento y probar texto, imagen o referencias en ciclos cortos.",
       "primaryCta": {
-        "label": "Crear borrador con Seedance Fast",
+        "label": "Generar con Seedance Fast",
         "href": "/app?engine=seedance-2-0-fast"
       },
       "secondaryCta": {
@@ -307,7 +311,7 @@
       "renderLabel": "Ver borrador",
       "badges": [
         "Fast",
-        "Borrador",
+        "Iteración rápida",
         "9:16"
       ],
       "altContext": "borrador rápido de Seedance con prueba de cámara para producto"
@@ -393,15 +397,15 @@
       }
     ],
     "pricingCopy": {
-      "title": "Precios de borradores Seedance 2.0 Fast",
-      "subtitle": "Precios totales por escenario de borrador. Consulta el precio exacto en la app antes de generar.",
+      "title": "Precios de generación Seedance 2.0 Fast",
+      "subtitle": "Precios totales por escenario. Consulta el precio exacto en la app antes de generar.",
       "footnote": "Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.",
       "ctaLabel": "Ver precios completos",
       "maxDurationNote": "Hasta 720p",
       "ctaHref": "/es/precios#seedance-2-0-fast-pricing"
     },
     "meta": {
-      "title": "Seedance 2.0 Fast: precios de borradores e iteración | MaxVideoAI",
+      "title": "Seedance 2.0 Fast: precios e iteración rápida | MaxVideoAI",
       "description": "Usa Seedance 2.0 Fast para borradores rápidos, pruebas de ritmo, variantes de movimiento y planificación con referencias antes del render final."
     }
   },

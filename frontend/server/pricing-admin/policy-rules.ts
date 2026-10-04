@@ -12,6 +12,7 @@ import { buildPricingAuditScenarios } from '@/lib/pricing-audit/scenarios';
 
 import type { PricingScenarioSelector } from './canonical-scenarios';
 import { PricingAdminError } from './errors';
+import { buildLiveProductPolicyScenarios } from './product-policy-scenarios';
 
 export function asRecord(
   value: unknown,
@@ -106,7 +107,7 @@ function buildReferences(
       );
     });
   });
-  buildPricingAuditScenarios().forEach((scenario) =>
+  [...buildPricingAuditScenarios(), ...buildLiveProductPolicyScenarios()].forEach((scenario) =>
     add(scenario.engineId, scenario.mode, scenario.resolution)
   );
   policy.rules.forEach((rule) =>

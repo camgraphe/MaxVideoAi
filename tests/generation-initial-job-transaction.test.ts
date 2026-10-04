@@ -354,7 +354,7 @@ test('concurrent video reservations serialize on one job id in disposable Postgr
       currency text, description text, job_id text, surface text, billing_product_key text,
       pricing_snapshot jsonb, application_fee_cents integer, vendor_account_id text,
       stripe_payment_intent_id text, stripe_charge_id text, platform_revenue_cents integer,
-      destination_acct text, created_at timestamptz NOT NULL DEFAULT now()
+      destination_acct text, metadata jsonb, created_at timestamptz NOT NULL DEFAULT now()
     );
     CREATE TABLE app_jobs (
       job_id text PRIMARY KEY, user_id text, surface text, billing_product_key text, engine_id text,

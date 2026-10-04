@@ -29,3 +29,14 @@ test('local callback keeps rejecting external continuation targets', () => {
   assert.equal(buildAuthCallbackRedirect('http://localhost:3000', '//evil.example/app'),
     'http://localhost:3000/login?mode=signin&next=%2Fgenerate');
 });
+
+
+test('localized Studio login retains its language through local and hosted callbacks', () => {
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    for (const origin of ['http://localhost:3000', 'https://maxvideoai.com']) {
+      const redirect = new URL(buildAuthCallbackRedirect(origin, '/app/studio', locale)!);
+      assert.equal(redirect.searchParams.get('lang'), locale);
+      assert.equal(redirect.searchParams.get('next'), '/app/studio');
+    }
+  }
+});

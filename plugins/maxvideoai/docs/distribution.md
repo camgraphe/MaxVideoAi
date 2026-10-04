@@ -12,6 +12,22 @@ MaxVideoAI's distributable MCP metadata names the protocol-generic endpoint
 directory distribution so that an installation path is never mistaken for a
 platform approval or a directory record.
 
+## Prepared release candidate — 2026-10-04
+
+Source package **0.3.7** is prepared locally and has not been published. A fresh
+read-only check found public tags/releases through `v0.3.6`, source tags through
+`maxvideoai-plugin-v0.3.6`, and official Registry versions 0.3.3, 0.3.5 and 0.3.6;
+0.3.6 remains active/latest. No 0.3.7 tag, release or Registry record was found.
+
+The package manifests, `server.json`, `VERSION` and its installation examples
+move together to 0.3.7. The public website installation constant separately pins
+the already published `v0.3.6` in `camgraphe/maxvideoai-plugin`. Keep that pin until
+the immutable 0.3.7 focused repository tag, release and package checksums have
+been published and read back successfully. The application repository's
+`maxvideoai-plugin-v0.3.7` tag identifies reviewed source; it is not the customer
+marketplace repository. Registry publication and server deployment remain
+separate actions. Recheck version availability immediately before publication.
+
 ## Direct installation
 
 Use the setup material on [MaxVideoAI's MCP page](https://maxvideoai.com/mcp)

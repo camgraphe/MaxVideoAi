@@ -50,7 +50,7 @@ export async function linkFalJob(options: {
     throw new Error(`Job ${jobId} has no provider_job_id.`);
   }
 
-  const { normalizedResult, videoUrl, thumbUrl } = await fetchFalJobMedia({
+  const { normalizedResult, videoUrl, thumbUrl, videoMediaFacts } = await fetchFalJobMedia({
     jobId: job.job_id,
     engineId: job.engine_id,
     providerJobId,
@@ -69,7 +69,7 @@ export async function linkFalJob(options: {
     status: 'completed',
     job_id: job.job_id,
     result: normalizedResult as unknown,
-  });
+  }, videoMediaFacts);
 
   return {
     jobId: job.job_id,

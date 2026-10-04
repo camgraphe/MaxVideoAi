@@ -1,3 +1,6 @@
+import { bytePlusInputVideoDurationSec, isBytePlusInputVideoPricingModel } from '@/server/byteplus-accounting';
+import { calculateMinimaxH3MaxReferenceTokenBudget } from '@/lib/minimax-h3-max-pricing';
+import { getWan3InputVideoDurationSec } from '@/lib/wan3-pricing';
 import type { NextRequest } from 'next/server';
 import { validateExtraInputValues } from '@/app/api/generate/_lib/extra-input-values';
 import { processAndValidateGenerationAttachments } from '@/app/api/generate/_lib/generation-attachment-processing';
@@ -29,6 +32,7 @@ import {
 } from './trusted-video-billing';
 import { resolveGoogleOmniInheritedDurationSec } from '@/server/video-providers/google-vertex-omni/pricing-context';
 import type { ResolvedReference } from '@/server/agent-api/reference-types';
+import type { PreparedSeedanceWorkflow } from '@/server/seedance-workflow-request';
 
 export type { VideoGenerationAdapters, VideoGenerationResponse } from './video-generation-contracts';
 export { executeVideoGenerationLifecycle } from './video-generation-lifecycle';
@@ -62,6 +66,7 @@ type VideoGenerationReservationOptions =
     };
 
 export type ExecuteVideoGenerationOptions = {
+  seedanceWorkflow?: PreparedSeedanceWorkflow;
   req: NextRequest;
   body: Record<string, unknown>;
   routeContext: GenerateRouteContext;
@@ -183,6 +188,21 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
       referenceProvenanceIssues,
     },
   } = attachmentProcessing;
+  const isBytePlus = isBytePlusInputVideoPricingModel(engine.id);
+  const isWan3 = engine.id === 'wan-3' || engine.id === 'wan-3-prime';
+  let inputVideoDurationSec: number | undefined;
+  if (isWan3 || isBytePlus) {
+    try {
+      inputVideoDurationSec = isBytePlus
+        ? bytePlusInputVideoDurationSec(engine.id, attachmentProcessing.trustedMediaReferences ?? [])
+        : getWan3InputVideoDurationSec(attachmentProcessing.trustedMediaReferences ?? []);
+    } catch {
+      return {
+        status: 422,
+        body: { ok: false, error: 'MEDIA_DURATION_UNVERIFIED', message: 'Verified video duration is required to calculate this price.' },
+      };
+    }
+  }
   const sourceVideoContext = resolveGenerateSourceVideoContext({
     mode,
     attachments: processedAttachments,
@@ -191,6 +211,8 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     fallbackDurationSec: durationSec,
     fallbackDurationLabel: durationLabel,
     maxDurationSec: engine.inputLimits?.videoMaxDurationSec ?? engine.maxDurationSec ?? null,
+    maxSourcePlusOutputDurationSec: engine.inputSchema?.constraints?.maxSourcePlusOutputDurationSec,
+    inputVideoDurationSec,
     engineLabel: engine.label,
   });
   if (!sourceVideoContext.ok) {
@@ -283,6 +305,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
         durationSec: effectiveDurationSec,
       })
     : await resolveGenerateBillingPreflight({
+    workflowStep: params.seedanceWorkflow?.workflow.step,
     req,
     engine,
     mode,
@@ -309,13 +332,25 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
             ? normalizedReferenceImages.length
             : 0,
     inputVideoDurationSec:
-      mode === 'v2v' || mode === 'extend'
-        ? trustedSourceVideoDurationSec
-        : 0,
+      isWan3 || isBytePlus
+        ? inputVideoDurationSec
+        : mode === 'v2v' || mode === 'extend'
+          ? trustedSourceVideoDurationSec
+          : 0,
     inheritedDurationSec,
     inputAudioDurationSec: trustedDurationSecByField.audio_url?.[0],
+    trustedMediaPricingFacts: engine.id === 'minimax-h3-max' && mode === 'ref2v'
+      ? {
+          referenceTokenBudget: calculateMinimaxH3MaxReferenceTokenBudget({
+            resolution: effectiveResolution,
+            durationSec: effectiveDurationSec,
+            references: attachmentProcessing.trustedMediaReferences ?? [],
+          }),
+        }
+      : undefined,
     rawDurationOption,
     lumaDurationLabel: lumaDurationInfo?.label ?? null,
+    validatedExtraInputValues,
     audioEnabled,
     voiceControl,
       });
@@ -415,6 +450,8 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     elements,
     falInputs,
   });
+  if (isBytePlus && inputVideoDurationSec !== undefined) settingsSnapshot.byteplusInputVideoDurationSec = inputVideoDurationSec;
+  if (params.seedanceWorkflow) settingsSnapshot.seedanceWorkflow = params.seedanceWorkflow.workflow;
 
   return executePreparedVideoGeneration({
     body,
@@ -444,5 +481,6 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     falPayload,
     falInputSummary,
     settingsSnapshot,
+    seedanceWorkflow: params.seedanceWorkflow,
   });
 }

@@ -107,7 +107,7 @@ function includedSnapshot() {
       kind: 'included_trial',
       customerChargeCents: 0,
       normalPriceCents: 125,
-      providerCostCents: 17,
+      providerCostCents: 18,
     },
   };
 }
@@ -125,7 +125,7 @@ function trialQuote(options: Partial<McpGenerationQuote> = {}): McpGenerationQuo
     currency: 'USD',
     fundingMode: 'trial',
     trialFunding: {
-      kind: 'included_trial', customerChargeCents: 0, normalPriceCents: 125, providerCostCents: 17,
+      kind: 'included_trial', customerChargeCents: 0, normalPriceCents: 125, providerCostCents: 18,
     },
     state: 'prepared',
     jobId: null,
@@ -198,7 +198,7 @@ function dependencies(
         oauthClientId: CLIENT_ID,
         clientIp: riskContext.clientIp,
         userAgent: riskContext.userAgent,
-        providerCostCents: 17,
+        providerCostCents: 18,
       });
       return { allowed: true };
     },

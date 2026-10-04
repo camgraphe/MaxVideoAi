@@ -18,6 +18,15 @@ function row(surface: string): string {
     .find((line) => line.startsWith(`| ${surface} |`)) ?? '';
 }
 
+test('the latest n8n distribution note records the public listing without promoting host evidence', () => {
+  const latest = evidence.split('## n8n public listing — 2026-09-25')[1]?.split('## Store website links')[0] ?? '';
+  assert.match(latest, /https:\/\/n8n\.io\/workflows\/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review\//);
+  assert.match(latest, /`submitted` to `listed`/);
+  assert.match(latest, /2\.38\.7.*MCP Client checkpoint[\s\S]*?`tested_with_limits`/);
+  assert.match(latest, /no n8n Cloud, MCP Client[\s\S]*?AI Agent/);
+  assert.match(latest, /OAuth2[\s\S]*?credential manually/);
+});
+
 test('Task 15 checklist advances only externally observed distribution results', () => {
   assert.ok(checklist, 'missing dated Task 15 observed-results checklist');
 

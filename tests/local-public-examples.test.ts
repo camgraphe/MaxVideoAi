@@ -37,7 +37,7 @@ test('local watch details omit unavailable dates instead of throwing or fabricat
   const video = publicCardToVideo(card);
   const signals = deriveWatchPageSignals({ video });
   assert.equal(signals.detailRows.some(row => row.key === 'created'), false);
-  assert.ok(signals.detailRows.some(row => row.key === 'cost' && row.value === '$1.13'));
+  assert.equal(signals.detailRows.some(row => row.key === 'cost'), false, 'stored prices must not become current public prices');
   const dated = deriveWatchPageSignals({ video: { ...video, createdAt: '2026-09-01T12:00:00Z' } });
   assert.equal(dated.detailRows.find(row => row.key === 'created')?.value, '2026-09-01');
 });
@@ -51,4 +51,32 @@ test('local model previews never substitute a family sibling or invent missing m
   assert.deepEqual(selectLocalModelExamples(modelSnapshot, 'seedance-2-5').map(video => video.id), ['current']);
   assert.deepEqual(selectLocalModelExamples(modelSnapshot, 'ltx-2-5-pro'), []);
   assert.deepEqual(selectLocalModelExamples(modelSnapshot, 'seedance-2-5', 0), []);
+});
+
+test('complete local catalog paginates beyond 120 and keeps independent family media', () => {
+  const cards=Object.fromEntries(Array.from({length:145},(_,i)=>[String(i),{...card,id:`public-${i}`,engineIconId:'kling-3-pro'}]));
+  const ids=Object.keys(cards);
+  const complete={...snapshot,cards,feeds:{'':{playlist:ids,'date-desc':ids},kling:{playlist:ids,'date-desc':ids}}};
+  const tail=selectLocalPublicExamples(complete,'','playlist',24,120);
+  assert.equal(tail.total,145);assert.equal(tail.items.length,24);assert.equal(tail.items[0].id,'public-120');assert.equal(tail.hasMore,true);
+  assert.equal(selectLocalPublicExamples(complete,'kling','playlist',24,144).items[0].id,'public-144');
+});
+
+test('historical stored IDs retain their registry family and discovery eligibility',async()=>{
+ const {resolveExampleFamilyId}=await import('../frontend/lib/model-families');
+ const {normalizeEngineId}=await import('../frontend/src/lib/engine-alias');
+ const {isDiscoverableExampleEngine}=await import('../frontend/lib/examples/discovery');
+ for(const [input,canonical,family] of [['veo-3-fast','veo-3-1-fast','veo'],['veo3fast','veo-3-1-fast','veo'],['pika-image-to-video','pika-text-to-video','pika'],['lumaRay2','lumaRay2','luma'],['lumaRay2_flash','lumaRay2_flash','luma']]){
+  assert.equal(normalizeEngineId(input),canonical);assert.equal(resolveExampleFamilyId(input),family);assert.equal(isDiscoverableExampleEngine(input),true);
+ }
+});
+
+test('model previews accept registry aliases for the same model without choosing a sibling',()=>{
+ const aliases={...snapshot,cards:{
+  a:{...card,id:'luma-old',engineIconId:'lumaRay2'},
+  b:{...card,id:'luma-flash',engineIconId:'lumaRay2_flash'},
+  c:{...card,id:'veo-old',engineIconId:'veo3fast'},
+ }};
+ assert.deepEqual(selectLocalModelExamples(aliases,'luma-ray-2').map(v=>v.id),['luma-old']);
+ assert.deepEqual(selectLocalModelExamples(aliases,'veo-3-1-fast').map(v=>v.id),['veo-old']);
 });

@@ -63,12 +63,6 @@ export function HeaderBar({ localQa = false }: { localQa?: boolean } = {}) {
       : serviceNoticeEnv
         ? serviceNoticeEnv.trim()
         : '';
-  const localizedNotice =
-    t(
-      'workspace.header.serviceNotice',
-      'Nous rencontrons actuellement des problèmes avec certains fournisseurs vidéo. Les rendus peuvent être retardés pendant que nous travaillons à la résolution.'
-    ) ?? '';
-  const defaultNotice: string = envNotice || localizedNotice || '';
   const [serviceNotice, setServiceNotice] = useState<string>(envNotice);
   const bannerMessage = serviceNotice?.trim() ?? '';
   const showServiceNotice = Boolean(bannerMessage);
@@ -119,11 +113,7 @@ export function HeaderBar({ localQa = false }: { localQa?: boolean } = {}) {
           setServiceNotice('');
         }
       } catch {
-        if (isActive && !envNotice) {
-          setServiceNotice(defaultNotice);
-        } else if (isActive && envNotice) {
-          setServiceNotice(envNotice);
-        }
+        // A failed status request does not change the last known notice.
       }
     };
     fetchNotice();
@@ -132,8 +122,7 @@ export function HeaderBar({ localQa = false }: { localQa?: boolean } = {}) {
       isActive = false;
       window.clearInterval(interval);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [envNotice, defaultNotice]);
+  }, []);
 
   useEffect(() => {
     if (!accountMenuOpen) return;

@@ -1,6 +1,13 @@
 'use client';
 
+import { useSeedanceDraftWorkflow } from '../_hooks/useSeedanceDraftWorkflow';
+import { SeedanceDraftFinalAction } from '@/components/library/SeedanceDraftFinalAction.client';
+import { Button } from '@/components/ui/Button';
+import { useMemo } from 'react';
+import { useSeedanceDraftLocalPreview } from '../_hooks/useSeedanceDraftLocalPreview';
+import { SeedanceDraftLocalPreviewResult } from './SeedanceDraftLocalPreviewResult.client';
 import dynamic from 'next/dynamic';
+import { WorkspaceComparisonSettings } from './WorkspaceComparisonSettings';
 import type { useWorkspaceDraftHydration } from '../_hooks/useWorkspaceDraftHydration';
 import { WorkspaceActiveDraftStatus } from './WorkspaceActiveDraftStatus';
 import { useWorkspaceModelReview } from '../_hooks/useWorkspaceModelReview';
@@ -23,11 +30,14 @@ import type { useWorkspacePreviewState } from '../_hooks/useWorkspacePreviewStat
 import type { useWorkspacePricingGate } from '../_hooks/useWorkspacePricingGate';
 import type { useWorkspaceRenderState } from '../_hooks/useWorkspaceRenderState';
 import type { useWorkspaceRouteFormState } from '../_hooks/useWorkspaceRouteFormState';
-import { buildWorkspaceInProgressMessage } from '../_lib/workspace-copy';
+import { formatWorkspaceTopupPaymentAmount } from '../_lib/workspace-topup';
+import { buildPendingGenerations } from '@/lib/pending-generations';
 
 const WorkspaceModelReview = dynamic(() => import('./WorkspaceModelReview.client').then(module => module.WorkspaceModelReview), { ssr: false });
 
 type WorkspaceAppReadyViewProps = {
+  localSeedanceDraftPreview?: boolean;
+  seedanceDraftWorkflowEnabled?: boolean;
   suspended: boolean;
   activeDraft: ReturnType<typeof useWorkspaceDraftHydration>;
   app: ReturnType<typeof useWorkspaceAppBootstrap>;
@@ -46,6 +56,8 @@ type WorkspaceAppReadyViewProps = {
 };
 
 export function WorkspaceAppReadyView({
+  localSeedanceDraftPreview = false,
+  seedanceDraftWorkflowEnabled = false,
   suspended,
   activeDraft,
   app,
@@ -100,7 +112,7 @@ export function WorkspaceAppReadyView({
     renderGroups,
     setViewMode,
   } = renderState;
-  const inProgressMessage = buildWorkspaceInProgressMessage(pendingGroups.length, workspaceCopy);
+  const pendingGenerations = buildPendingGenerations(pendingGroups);
   const { displayCompositeGroup, setViewerTarget, viewerGroup } = previewState;
   const {
     form,
@@ -191,9 +203,17 @@ export function WorkspaceAppReadyView({
     price,
     setAuthModalOpen,
     topUpAmount,
+    topUpChargeCurrency,
     topUpError,
     topUpModal,
+    topUpPaymentAmountMinor,
+    topUpQuoteError,
+    topUpQuoteLoading,
   } = pricing;
+  const topUpPaymentAmountLabel = topUpModal && typeof topUpPaymentAmountMinor === 'number'
+    && Number.isFinite(topUpPaymentAmountMinor) && topUpChargeCurrency
+      ? formatWorkspaceTopupPaymentAmount(topUpPaymentAmountMinor, topUpChargeCurrency, uiLocale)
+      : null;
   const {
     guidedNavigation,
     handleActiveGroupAction,
@@ -205,10 +225,14 @@ export function WorkspaceAppReadyView({
     previewAutoPlayRequestId,
   } = gallery;
 
+  const currentSetup = useMemo(
+    () => form ? { form, inputAssets, klingElements, prompt, negativePrompt, multiPromptEnabled, multiPromptScenes, shotType, voiceIdsInput, cfgScale } : null,
+    [form, inputAssets, klingElements, prompt, negativePrompt, multiPromptEnabled, multiPromptScenes, shotType, voiceIdsInput, cfgScale],
+  );
   const modelReview = useWorkspaceModelReview({
     recoverySetup: activeDraft.recoverySetup,
     onRemoveRecovery: activeDraft.removeRecovery,
-    current: form ? {form, inputAssets, klingElements, prompt, negativePrompt, multiPromptEnabled, multiPromptScenes, shotType, voiceIdsInput, cfgScale} : null,
+    current: currentSetup,
     engines, locale: uiLocale, authStatus: app.authStatus,
     onGuestEngineChange: composer.handleEngineChange, onRequestAuth: () => setAuthModalOpen(true),
     onModelSwitchNotice: showNotice,
@@ -219,6 +243,18 @@ export function WorkspaceAppReadyView({
     setKlingElements: routeForm.setKlingElements, setPrompt, setNegativePrompt, setMultiPromptEnabled,
     setMultiPromptScenes: routeForm.setMultiPromptScenes, setShotType, setVoiceIdsInput, setCfgScale,
   });
+  const draftPreview = useSeedanceDraftLocalPreview({
+    enabled: localSeedanceDraftPreview,
+    form, engineId: selectedEngine?.id, mode: submissionMode, prompt,
+    onResolutionChange: handleResolutionChange, showNotice,
+  });
+  const workflowAccount = app.authStatus === 'authed' && app.user?.id && app.session?.access_token
+    ? { userId: app.user.id, token: app.session.access_token } : null;
+  const draftWorkflow = useSeedanceDraftWorkflow({ enabled: seedanceDraftWorkflowEnabled && !localSeedanceDraftPreview,
+    form, engineId: selectedEngine?.id, mode: submissionMode, prompt, account: workflowAccount,
+    onResolutionChange: handleResolutionChange, showNotice });
+  const candidateDraftControls = localSeedanceDraftPreview ? draftPreview : seedanceDraftWorkflowEnabled ? draftWorkflow : undefined;
+  const draftControls = candidateDraftControls?.available ? candidateDraftControls : undefined;
   if (suspended || !selectedEngine || !form) return null;
 
   return (
@@ -265,7 +301,12 @@ export function WorkspaceAppReadyView({
         handleEngineChange={modelReview.switchModel}
         modelReviewCommands={
           <>
-            <WorkspaceModelReviewCommands review={modelReview} locale={uiLocale} />
+            {draftControls?.selected ? (
+              <div className="relative">
+                <span className="pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded-full bg-[var(--app-accent-soft)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--app-accent)]">Mode Draft</span>
+                <WorkspaceModelReviewCommands review={modelReview} locale={uiLocale} />
+              </div>
+            ) : <WorkspaceModelReviewCommands review={modelReview} locale={uiLocale} />}
             <WorkspaceActiveDraftStatus draft={activeDraft} locale={uiLocale} openRecovery={() => modelReview.open('saved')} />
           </>
         }
@@ -277,6 +318,7 @@ export function WorkspaceAppReadyView({
         setViewerTarget={setViewerTarget}
         composerSurface={
           <WorkspaceComposerSurface
+            localDraftPreview={draftControls}
             selectedEngine={selectedEngine}
             form={form}
             setForm={setForm}
@@ -284,14 +326,14 @@ export function WorkspaceAppReadyView({
             setPrompt={setPrompt}
             negativePrompt={negativePrompt}
             setNegativePrompt={setNegativePrompt}
-            price={price}
-            currency={currency}
-            isPricing={isPricing}
-            isSubmitting={generation.isSubmitting}
-            preflightError={preflightError}
-            preflight={preflight}
+            price={draftWorkflow.selected ? draftWorkflow.price : price}
+            currency={draftWorkflow.selected ? draftWorkflow.currency : currency}
+            isPricing={draftWorkflow.selected ? draftWorkflow.isPricing : isPricing}
+            isSubmitting={generation.isSubmitting || draftWorkflow.pending}
+            preflightError={draftWorkflow.selected ? draftWorkflow.error ?? undefined : preflightError}
+            preflight={draftWorkflow.selected ? draftWorkflow.preflight : preflight}
             composerRef={composerRef}
-            startRender={generation.startRender}
+            startRender={localSeedanceDraftPreview ? draftPreview.generate : draftWorkflow.selected ? draftWorkflow.generate : generation.startRender}
             inputSchemaSummary={inputSchemaSummary}
             inputAssets={inputAssets}
             isUnifiedSeedance={isUnifiedSeedance}
@@ -304,7 +346,7 @@ export function WorkspaceAppReadyView({
             activeManualMode={activeManualMode}
             handleComposerModeToggle={handleComposerModeToggle}
             composerWorkflowNotice={composerWorkflowNotice}
-            inProgressMessage={inProgressMessage}
+            pendingGenerations={pendingGenerations}
             handleAssetAdd={handleAssetAdd}
             handleAssetRemove={handleAssetRemove}
             handleOpenAssetLibrary={handleOpenAssetLibrary}
@@ -357,10 +399,37 @@ export function WorkspaceAppReadyView({
             setViewMode={setViewMode}
           />
         }
+        previewSupplement={draftWorkflow.selected && draftWorkflow.draftId ? <div>
+          {draftWorkflow.canResume ? <Button size="sm" variant="outline" onClick={() => void draftWorkflow.resume()}>Réessayer l’envoi du même Draft</Button> : null}
+          <SeedanceDraftFinalAction jobId={draftWorkflow.draftId} locale={uiLocale} account={workflowAccount} />
+          <Button size="sm" variant="outline" disabled={draftWorkflow.pending || !draftWorkflow.view || ['pending', 'finalizing', 'unavailable'].includes(draftWorkflow.view.eligibility)} onClick={draftWorkflow.restart}>Nouveau Draft</Button>
+        </div> : <SeedanceDraftLocalPreviewResult preview={draftPreview} />}
       />}
       </WorkspaceRecentReferences>
       {modelReview.panel ? <WorkspaceModelReview review={modelReview} engines={engines} locale={uiLocale}
-        currentPrice={price} currentCurrency={currency} currentPricing={isPricing} currentError={preflightError} /> : null}
+        currentPrice={draftWorkflow.selected ? draftWorkflow.price : price}
+        currentCurrency={draftWorkflow.selected ? draftWorkflow.currency : currency}
+        currentPricing={draftWorkflow.selected ? draftWorkflow.isPricing : isPricing}
+        currentError={draftWorkflow.selected ? draftWorkflow.error : preflightError}
+        comparisonSettings={<WorkspaceComparisonSettings draftControls={draftControls}
+          density="comparison" engine={selectedEngine} mode={submissionMode} caps={capability}
+          durationSec={multiPromptActive ? multiPromptTotalSec : form.durationSec}
+          durationOption={form.durationOption ?? null} onDurationChange={handleDurationChange}
+          numFrames={form.numFrames} onNumFramesChange={handleFramesChange}
+          resolution={form.resolution} onResolutionChange={handleResolutionChange}
+          aspectRatio={form.aspectRatio} onAspectRatioChange={handleAspectRatioChange}
+          fps={form.fps} onFpsChange={handleFpsChange}
+          showAudioControl={supportsAudioToggle} audioEnabled={form.audio}
+          audioControlDisabled={voiceControlEnabled}
+          audioControlNote={voiceControlEnabled ? 'Audio locked by voice control' : undefined}
+          onAudioChange={audio => setForm(current => current ? { ...current, audio } : current)}
+          durationManaged={multiPromptActive}
+          durationManagedLabel={`Duration managed by multi-prompt · ${multiPromptTotalSec}s`}
+          iterations={form.iterations} onIterationsChange={iterations => {
+            setForm(current => current ? { ...current, iterations } : current);
+            if (iterations <= 1) setViewMode('single');
+          }}
+        />} /> : null}
       <WorkspaceRuntimeModals
         viewerGroup={viewerGroup}
         onCloseViewer={() => setViewerTarget(null)}
@@ -369,6 +438,10 @@ export function WorkspaceAppReadyView({
         topUpCopy={workspaceCopy.topUp}
         currency="USD"
         topUpAmount={topUpAmount}
+        paymentAmountLabel={topUpPaymentAmountLabel}
+        chargeCurrency={topUpChargeCurrency}
+        quoteLoading={topUpQuoteLoading}
+        quoteError={topUpQuoteError}
         isTopUpLoading={isTopUpLoading}
         topUpError={topUpError}
         checkoutCaptchaError={checkoutCaptchaError}

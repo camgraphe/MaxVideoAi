@@ -46,7 +46,8 @@ test('real webhook persists the same content refusal in job, output, refund and 
           status: 'running', progress: 30, payment_status: 'paid_wallet', user_id: 'fixture-owner',
           video_url: null, render_ids: [], created_at: '2026-09-11T12:00:00Z',
         }];
-        if (sql.startsWith('UPDATE')) { updates.push(params); return [{ job_id: 'job_fixture' }]; }
+        if (sql.startsWith('UPDATE provider_attempts')) return [];
+        if (sql.startsWith('UPDATE app_jobs')) { updates.push(params); return [{ job_id: 'job_fixture' }]; }
         if (sql.startsWith('INSERT INTO fal_queue_log')) { logs.push(params); return []; }
         throw new Error('Unexpected SQL boundary');
       },

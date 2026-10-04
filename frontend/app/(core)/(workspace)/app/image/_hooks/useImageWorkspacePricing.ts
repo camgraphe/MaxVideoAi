@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
+import { CUSTOMER_PRICING_REFRESH_EVENT } from '@/lib/customer-tariff-revision';
 import useSWR from 'swr';
 
 import { authFetch } from '@/lib/authFetch';
@@ -19,6 +20,8 @@ type ImagePricingKey = [
   string,
   string,
   string,
+  string,
+  number,
 ];
 
 export function useImageWorkspacePricing({
@@ -32,6 +35,8 @@ export function useImageWorkspacePricing({
   referenceSizeSignature,
   resolution,
   selectedEngineId,
+  aspectRatio,
+  referenceImageCount,
 }: {
   customImageHeight: string;
   customImageWidth: string;
@@ -43,6 +48,8 @@ export function useImageWorkspacePricing({
   referenceSizeSignature: string;
   resolution: string | null;
   selectedEngineId?: string | null;
+  aspectRatio: string | null;
+  referenceImageCount: number;
 }) {
   const priceEstimateKey = useMemo<ImagePricingKey | null>(() => {
     if (!selectedEngineId) return null;
@@ -57,6 +64,8 @@ export function useImageWorkspacePricing({
       customImageWidth,
       customImageHeight,
       referenceSizeSignature,
+      aspectRatio ?? '',
+      referenceImageCount,
     ];
   }, [
     customImageHeight,
@@ -68,11 +77,14 @@ export function useImageWorkspacePricing({
     referenceSizeSignature,
     resolution,
     selectedEngineId,
+    aspectRatio,
+    referenceImageCount,
   ]);
 
   const {
     data: pricingData,
     error: pricingError,
+    mutate,
   } = useSWR(
     priceEstimateKey,
     async ([
@@ -85,6 +97,9 @@ export function useImageWorkspacePricing({
       requestEnableWebSearch,
       requestCustomWidth,
       requestCustomHeight,
+      ,
+      requestAspectRatio,
+      requestReferenceImageCount,
     ]) => {
       const requestCustomImageSize =
         requestResolution === 'custom'
@@ -100,6 +115,8 @@ export function useImageWorkspacePricing({
           resolution: requestResolution || undefined,
           customImageSize: requestCustomImageSize,
           referenceImageSizes: readyReferenceSizes.length ? readyReferenceSizes : undefined,
+          aspectRatio: requestAspectRatio || undefined,
+          referenceImageCount: requestReferenceImageCount,
           quality: requestQuality || undefined,
           enableWebSearch: requestEnableWebSearch || undefined,
         }),
@@ -111,9 +128,14 @@ export function useImageWorkspacePricing({
       return payload;
     },
     {
-      keepPreviousData: true,
+      keepPreviousData: false,
     }
   );
+  useEffect(() => {
+    const refresh = () => { void mutate(undefined, { revalidate: true }); };
+    window.addEventListener(CUSTOMER_PRICING_REFRESH_EVENT, refresh);
+    return () => window.removeEventListener(CUSTOMER_PRICING_REFRESH_EVENT, refresh);
+  }, [mutate]);
 
   return {
     pricingData,

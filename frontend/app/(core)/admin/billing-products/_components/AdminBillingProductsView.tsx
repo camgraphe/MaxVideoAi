@@ -1,4 +1,5 @@
 'use client';
+import { AdminDynamicToolPriceField } from '@/components/admin-system/pricing/AdminDynamicToolPriceField.client';
 
 import { RefreshCw } from 'lucide-react';
 
@@ -124,10 +125,12 @@ export function AdminBillingProductsView() {
                     <Input aria-label="Billing product currency" value={controller.draft.currency} disabled={controller.interactionLocked} onChange={(event) => controller.updateDraft('currency', event.target.value)} />
                   </label>
                   <label className="block space-y-1 text-xs text-text-secondary">
-                    <span>Unit price (cents)</span>
+                    <span>{controller.draft.dynamicPriceMultiplier === undefined ? 'Unit price' : 'Minimum'} (cents)</span>
                     <Input aria-label="Billing product unit price (cents)" type="number" min={0} step={1} value={controller.draft.unitPriceCents} disabled={controller.interactionLocked} onChange={(event) => controller.updateDraft('unitPriceCents', event.target.value)} />
                   </label>
                 </div>
+                <AdminDynamicToolPriceField value={controller.draft.dynamicPriceMultiplier} disabled={controller.interactionLocked}
+                  onChange={value => controller.updateDraft('dynamicPriceMultiplier', value)} />
                 <label className="flex items-center gap-2 text-sm text-text-secondary">
                   <input type="checkbox" checked={controller.draft.active} disabled={controller.interactionLocked} onChange={(event) => controller.updateActive(event.target.checked)} />
                   Active in production billing

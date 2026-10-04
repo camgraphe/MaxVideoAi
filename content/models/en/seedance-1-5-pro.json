@@ -13,8 +13,8 @@
     "intro": "Seedance 1.5 Pro is no longer available for new generations on MaxVideoAI. Existing videos remain in your library. Explore Seedance 2.5 for a new project.",
     "badge": "480p–1080p · 4–12s · Audio on/off",
     "ctaPrimary": {
-      "label": "View the Seedance 1.5 Pro archive",
-      "href": "/models/seedance-1-5-pro"
+      "label": "Explore current models",
+      "href": "/models"
     },
     "secondaryLinks": [
       {
@@ -219,8 +219,8 @@
       ],
       "paragraph": "Seedance 1.5 Pro is no longer available for new generations on MaxVideoAI. Existing videos remain in your library. Explore Seedance 2.5 for a new project.",
       "primaryCta": {
-        "label": "View the Seedance 1.5 Pro archive",
-        "href": "/models/seedance-1-5-pro"
+        "label": "Explore current models",
+        "href": "/models"
       },
       "secondaryCta": {
         "label": "View Seedance 2.0",
@@ -512,30 +512,34 @@
     "showWhenEmpty": true
   },
   "archive": {
-    "title": "Seedance 1.5 Pro: historical model",
-    "intro": "Seedance 1.5 Pro is no longer available for new generations on MaxVideoAI. Existing videos remain in your library. Explore Seedance 2.5 for a new project.",
-    "alternativesTitle": "Choose a model for your next video",
+    "title": "Seedance 1.5 Pro: generation closed",
+    "intro": "Seedance 1.5 Pro is archived on MaxVideoAI. New generations are closed ahead of the provider’s scheduled shutdown on November 11, 2026. Historical comparisons and your existing videos remain available. Explore Mini, Fast and Seedance 2.5 for new work.",
+    "alternativesTitle": "Choose a current Seedance model",
     "chooseLabel": "Explore this model",
     "historyTitle": "Your existing videos",
-    "historyBody": "Your existing MaxVideoAI videos remain in your library. You can still view and download available results. Choose another model to create a new video; its settings and price will be reviewed before generation.",
+    "historyBody": "Your existing Seedance 1.5 Pro videos stay in your library with their original model and provider. You can still view and download available results. Check the settings and current quote before creating with another model.",
     "historyLabel": "Open my library",
-    "examplesLabel": "View Seedance examples",
+    "examplesLabel": "Browse Seedance examples",
     "alternatives": [
+      {
+        "modelId": "seedance-2-0-mini",
+        "title": "Seedance 2.0 Mini",
+        "description": "A cost-focused choice for supported short videos up to 720p. Compare your exact settings and live quote; it is not a like-for-like 1.5 Pro replacement."
+      },
+      {
+        "modelId": "seedance-2-0-fast",
+        "title": "Seedance 2.0 Fast",
+        "description": "A separate speed and cost option for supported videos up to 720p. It does not offer the Seedance 2.5 Draft workflow."
+      },
       {
         "modelId": "seedance-2-5",
         "title": "Seedance 2.5",
-        "description": "Explore longer shots and multimodal references. Check the selected mode and quote before generating."
-      },
-      {
-        "modelId": "minimax-h3",
-        "title": "MiniMax H3",
-        "description": "Create from text, an image or references with native audio. Check the settings for your shot."
-      },
-      {
-        "modelId": "wan-3",
-        "title": "Wan 3",
-        "description": "Explore text, image and reference workflows, with editing and extension where available."
+        "description": "Explore current 1080p creation and supported reference workflows. Review the selected mode, capabilities and quote before generating."
       }
-    ]
+    ],
+    "source": {
+      "label": "Read the provider deprecation notice",
+      "href": "https://docs.byteplus.com/en/docs/ModelArk/1350667"
+    }
   }
 }

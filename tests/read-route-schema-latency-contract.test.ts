@@ -31,6 +31,13 @@ test('Billing GETs read migrated tables and preserve currency POST initializatio
   assert.match(get, /getWalletBalancesByCurrency\(userId, \{ throwOnError: true \}\)/);
 });
 
+test('shared video GET reads migrated storage while indexing PATCH retains initialization', () => {
+  const video = readFileSync('frontend/app/api/videos/[videoId]/route.ts', 'utf8');
+  const [get, patch] = video.split('export async function PATCH');
+  assert.doesNotMatch(get, /await ensureBillingSchema/);
+  assert.match(patch, /await ensureBillingSchema/);
+});
+
 test('pricing preflight uses the read-only engine catalog and disables fallback bootstrap', () => {
   assert.match(
     mediaAwarePreflightSource,
@@ -50,4 +57,16 @@ test('seed writer and read-only preflight share a pure system-defaults projectio
   assert.match(catalog, /from '@\/server\/engine-settings-defaults'/);
   assert.doesNotMatch(defaults, /\b(?:async|await|query|process)\b/);
   assert.match(preflight, /if \(bootstrap\) return getConfiguredEngine\(engineId, includeDisabled\);\s*return getReadOnlyConfiguredEngine\(engineId, includeDisabled\);/);
+});
+
+test('homepage section reads use the explicit baseline while mutations retain initialization', () => {
+  const homepage = readFileSync('frontend/server/homepage.ts', 'utf8');
+  const read = homepage.slice(homepage.indexOf('export async function listHomepageSections'), homepage.indexOf('export async function createHomepageSection'));
+  assert.doesNotMatch(read, /ensureBillingSchema/);
+  for (const name of ['createHomepageSection', 'updateHomepageSection', 'deleteHomepageSection', 'reorderHomepageSections']) {
+    const owner = homepage.slice(homepage.indexOf(`export async function ${name}`)).split(/\nexport async function /)[0];
+    assert.match(owner, /await ensureBillingSchema\(\)/, name);
+  }
+  const bootstrap = readFileSync('scripts/bootstrap-application-schema.ts', 'utf8');
+  assert.match(bootstrap, /await ensureBillingSchema\(\)/);
 });

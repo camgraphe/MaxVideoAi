@@ -63,8 +63,7 @@ export function registerRecommendModelsTool(
     'recommend_models',
     {
       title: 'Recommend MaxVideoAI models',
-      description:
-        [
+      description: [
         'Use this when the user is undecided or asks for advice on which AI video/image model fits a creative goal.',
         'Present the best-fit available executable model first, then strong alternatives from distinct model families when useful.',
         'Validate the selected mode with get_model_details.',

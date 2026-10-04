@@ -1,4 +1,6 @@
+import { readGeneratedVideoFacts, type GeneratedVideoFacts } from '@/lib/generated-video-media-facts';
 import { query } from '@/lib/db';
+import { syncProviderAttemptTerminalStatus } from '@/server/video-providers/provider-attempts';
 import { maybeAutoRefundWalletCharge } from './fal-webhook-refunds';
 import { createProvisionalJobFromWebhook } from './fal-webhook-provisional';
 import type { AppJobRow } from './fal-webhook-types';
@@ -42,7 +44,7 @@ import {
   normalizeStatus,
   type FalWebhookPayload,
 } from './fal-webhook-mapping';
-export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void> {
+export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFacts?: GeneratedVideoFacts): Promise<void> {
   const payload = (rawPayload ?? {}) as FalWebhookPayload;
   const requestId = payload.request_id ?? payload.requestId;
   if (!requestId) {
@@ -218,7 +220,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     nextThumbUrl = heroImageUrl;
   }
   const hasImageMedia = isImageEngine && imageUrls.length > 0;
-  let providerVideoCopyFailed = false;
+  let videoMediaFacts = copiedVideoFacts, providerVideoCopyFailed = false;
   let providerVideoCopyDeferred = false;
   let providerVideoCopyStateJson: string | null = null;
 
@@ -245,6 +247,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
       }
       if (!nextVideoUrl && fallback.videoUrl) {
         nextVideoUrl = normalizeMediaUrl(fallback.videoUrl) ?? fallback.videoUrl;
+        videoMediaFacts = fallback.videoMediaFacts;
       }
       if (!nextThumbUrl && fallback.thumbUrl) {
         nextThumbUrl = normalizeMediaUrl(fallback.thumbUrl) ?? fallback.thumbUrl;
@@ -331,7 +334,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
       const fastStartVideo = await ensureFastStartVideo({
         jobId: job.job_id,
         userId: job.user_id ?? undefined,
-        videoUrl: finalVideoUrl,
+        videoUrl: finalVideoUrl, onVideoMediaFacts: (facts) => { videoMediaFacts = facts; },
       });
       if (fastStartVideo) {
         finalVideoUrl = fastStartVideo;
@@ -553,6 +556,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
       providerVideoCopyStateJson,
     ]
   );
+  await syncProviderAttemptTerminalStatus({ publicJobId: job.job_id, provider: 'fal', providerJobId: requestId });
   if (!applied.length) return;
 
   await upsertLegacyJobOutputs({
@@ -560,6 +564,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown): Promise<void
     user_id: job.user_id,
     surface: isImageEngine ? 'image' : 'video',
     video_url: shouldClearVideo ? null : finalVideoUrl ?? job.video_url,
+    video_media_facts: readGeneratedVideoFacts(videoMediaFacts, finalVideoUrl ?? ''),
     audio_url: null,
     thumb_url: shouldClearThumb ? null : finalThumbUrl ?? job.thumb_url,
     preview_frame: shouldClearThumb ? null : finalPreviewFrame ?? job.preview_frame,

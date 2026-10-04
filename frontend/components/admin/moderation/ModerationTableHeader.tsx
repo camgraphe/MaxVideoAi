@@ -3,7 +3,7 @@
 import clsx from 'clsx';
 import { BUCKET_OPTIONS, SURFACE_OPTIONS } from '@/components/admin/moderation/moderation-table-utils';
 import type { ModerationBucket, ModerationSurface, ModerationViewMode } from '@/components/admin/moderation/moderation-types';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { Button } from '@/components/ui/Button';
 
 type ModerationStats = {
   total: number;
@@ -33,7 +33,7 @@ export function ModerationTableHeader({
   viewMode: ModerationViewMode;
 }) {
   return (
-    <header className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+    <header className="flex flex-col gap-3 border-b border-border pb-4 xl:flex-row xl:items-start xl:justify-between">
       <div className="space-y-2">
         {!embedded ? (
           <div>
@@ -52,6 +52,7 @@ export function ModerationTableHeader({
               size="sm"
               variant="outline"
               disabled={isLoadingBucket}
+              aria-pressed={surface === option.id}
               onClick={() => onLoadBucket(bucket, { surface: option.id })}
               className={clsx(
                 'gap-2 border-border px-3 text-left',
@@ -70,6 +71,7 @@ export function ModerationTableHeader({
               size="sm"
               variant="outline"
               disabled={isLoadingBucket}
+              aria-pressed={bucket === option.id}
               onClick={() => onLoadBucket(option.id)}
               className={clsx(
                 'gap-2 border-border px-3 text-left',
@@ -81,14 +83,7 @@ export function ModerationTableHeader({
           ))}
         </div>
         <p className="text-xs text-text-muted">{BUCKET_OPTIONS.find((option) => option.id === bucket)?.helper ?? 'Moderation queue'}</p>
-        <div className="flex flex-wrap gap-2 pt-1">
-          <ButtonLink href="/admin/jobs?outcome=failed_action_required" variant="outline" size="sm" prefetch={false}>
-            Open job issues
-          </ButtonLink>
-          <ButtonLink href="/admin/jobs?outcome=refunded_failure_resolved" variant="outline" size="sm" prefetch={false}>
-            Refunded failures
-          </ButtonLink>
-        </div>
+
       </div>
 
       <div className="flex flex-col gap-3 xl:items-end">
@@ -98,6 +93,7 @@ export function ModerationTableHeader({
               <button
                 key={mode}
                 type="button"
+                aria-pressed={viewMode === mode}
                 onClick={() => onSetViewMode(mode)}
                 className={clsx(
                   'rounded-sm px-3 py-1.5 text-xs font-medium capitalize transition',
@@ -108,16 +104,11 @@ export function ModerationTableHeader({
               </button>
             ))}
           </div>
-          <ButtonLink href="/admin/video-seo" variant="outline" size="sm" prefetch={false}>
-            Open Video SEO
-          </ButtonLink>
+
         </div>
         <div className="grid gap-1 text-right text-xs text-text-muted sm:grid-cols-2 xl:grid-cols-3">
-          <span>Rows: {stats.total}</span>
-          <span>Not published: {stats.notPublishedCount}</span>
-          <span>Published: {stats.publishedCount}</span>
-          <span>Legacy mismatch: {stats.legacyMismatchCount}</span>
-          <span>In Google Video rollout: {stats.seoWatchCount}</span>
+          <span>{stats.total} loaded media</span>
+          {stats.legacyMismatchCount > 0 ? <span>{stats.legacyMismatchCount} legacy mismatches</span> : null}
         </div>
       </div>
     </header>

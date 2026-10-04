@@ -1,3 +1,4 @@
+import type { MinimaxH3MaxPricingReference } from '@/lib/minimax-h3-max-pricing';
 import { deriveGenerationAttachmentReferences } from './attachment-references';
 import type { NormalizedAttachment } from './generation-attachment-types';
 import {
@@ -27,6 +28,7 @@ export type NormalizedGenerationAttachmentValidationResult =
       attachments: NormalizedAttachment[];
       references: ReturnType<typeof deriveGenerationAttachmentReferences>;
       trustedDurationSecByField: Record<string, number[]>;
+      trustedMediaReferences?: MinimaxH3MaxPricingReference[];
     }
   | MediaConstraintFailure;
 
@@ -50,10 +52,24 @@ export async function validateNormalizedGenerationAttachments(
   });
   if (!mediaConstraints.ok) return mediaConstraints;
 
+  const trustedMediaByUrl = new Map((mediaConstraints.trustedMediaReferences ?? []).map((reference) =>
+    [`${reference.kind}:${reference.url}`, reference]));
+  const validatedAttachments = attachments.map((attachment) => {
+    const trusted = trustedMediaByUrl.get(`${attachment.kind}:${attachment.url?.trim()}`);
+    if (!trusted) return attachment;
+    return {
+      ...attachment,
+      width: trusted.width ?? undefined,
+      height: trusted.height ?? undefined,
+      durationSec: trusted.durationSec ?? undefined,
+    };
+  });
+
   return {
     ok: true,
-    attachments,
+    attachments: validatedAttachments,
     references,
     trustedDurationSecByField: mediaConstraints.trustedDurationSecByField ?? {},
+    trustedMediaReferences: mediaConstraints.trustedMediaReferences ?? [],
   };
 }

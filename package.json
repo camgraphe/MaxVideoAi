@@ -18,7 +18,9 @@
     "start": "node mock-server.js",
     "healthcheck": "tsx scripts/healthcheck.ts",
     "sanitize:jobs": "node scripts/sanitize-jobs.js",
+    "deployment:check": "node scripts/check-production-alignment.mjs",
     "lint:exposure": "node scripts/check-public-exposure.mjs",
+    "mcp:client:check": "tsx --tsconfig frontend/tsconfig.json --test tests/mcp-instructions.test.ts tests/mcp-oauth-principal.test.ts tests/mcp-tools-contract.test.ts tests/mcp-transport-contract.test.ts tests/mcp-reference-upload-app.test.ts tests/mcp-result-serialization.test.ts tests/mcp-plugin-contract.test.ts tests/mcp-conversation-evals.test.ts tests/mcp-tool-selection-eval.test.ts tests/mcp-topup-handoff.test.ts tests/mcp-confirm-generation.test.ts tests/mcp-generation-recovery-tools.test.ts tests/mcp-montage-tools-contract.test.ts tests/mcp-studio-montage-tools-contract.test.ts tests/mcp-studio-timeline-schema-parity.test.ts tests/mcp-studio-export-delivery.test.ts && npm --prefix frontend run qa:mcp-tool-selection",
     "seo:machine:check": "tsx --tsconfig frontend/tsconfig.json scripts/llms-guard.ts && tsx --tsconfig frontend/tsconfig.json --test tests/p1-llms-discovery.test.ts tests/marketing-jsonld-schema-audit.test.ts tests/mcp-seo-review-remediation.test.ts tests/jsonld-serialization.test.ts tests/mcp-model-recommendations.test.ts tests/product-schema-customer-price.test.ts tests/product-schema-visible-offer.test.ts tests/h3-max-public-capability-truth.test.ts tests/docs-product-truth.test.ts tests/markdown-content-cache.test.ts tests/editorial-jsonld-ssr.test.ts",
     "vercel-build": "pnpm model:launch-assets:check && NEXT_SKIP_ESLINT=1 npm --prefix frontend run build && rm -rf frontend/.next/cache frontend/tsconfig.tsbuildinfo",
     "model:generate": "node scripts/generate-model-roster.mjs",
@@ -34,6 +36,12 @@
     "model:setup": "node scripts/model-setup.mjs",
     "models:audit": "tsx --tsconfig frontend/tsconfig.json scripts/models-audit.mjs",
     "pricing:baseline": "tsx --tsconfig frontend/tsconfig.json scripts/pricing-baseline.ts",
+    "pricing:sandbox": "tsx --tsconfig frontend/tsconfig.json frontend/scripts/run-pricing-sandbox.ts",
+    "pricing:release:local": "tsx --tsconfig frontend/tsconfig.json frontend/scripts/prepare-local-customer-tariffs.ts",
+    "pricing:activate:local": "tsx --tsconfig frontend/tsconfig.json frontend/scripts/activate-local-customer-tariffs.ts",
+    "pricing:cutover:execute": "tsx --tsconfig frontend/tsconfig.json frontend/scripts/execute-customer-tariff-cutover.ts",
+    "pricing:cutover:schema": "tsx --tsconfig frontend/tsconfig.json frontend/scripts/inspect-pricing-cutover-schema.ts",
+    "pricing:bytedance-effective-baseline": "tsx --tsconfig frontend/tsconfig.json frontend/scripts/pricing-effective-bytedance-baseline.ts",
     "pricing:public-baseline": "tsx --tsconfig frontend/tsconfig.json frontend/scripts/pricing-public-baseline.ts",
     "pricing:public-baseline:generate": "tsx --tsconfig frontend/tsconfig.json frontend/scripts/pricing-public-baseline.ts --write",
     "pricing:shadow-additions": "tsx --tsconfig frontend/tsconfig.json scripts/pricing-shadow-additions.ts",
@@ -69,7 +77,9 @@
     "test:editor:perf": "frontend/node_modules/.bin/playwright test -c playwright.editor.config.ts tests/e2e/editor/editor-performance.spec.ts",
     "qa:editor": "npm run test:editor && frontend/node_modules/.bin/tsc --noEmit -p frontend/tsconfig.json && npm --prefix frontend run lint && git diff --check",
     "qa:studio:english:live": "frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json scripts/qa/studio-sol-english-live.ts",
-    "mcp:client:check": "tsx --tsconfig frontend/tsconfig.json --test tests/mcp-instructions.test.ts tests/mcp-tools-contract.test.ts tests/mcp-transport-contract.test.ts tests/mcp-reference-upload-app.test.ts tests/mcp-result-serialization.test.ts tests/mcp-plugin-contract.test.ts tests/mcp-conversation-evals.test.ts tests/mcp-tool-selection-eval.test.ts tests/mcp-topup-handoff.test.ts tests/mcp-confirm-generation.test.ts tests/mcp-generation-recovery-tools.test.ts tests/mcp-montage-tools-contract.test.ts tests/mcp-studio-montage-tools-contract.test.ts tests/mcp-studio-timeline-schema-parity.test.ts tests/mcp-studio-export-delivery.test.ts && npm --prefix frontend run qa:mcp-tool-selection"
+    "cwv:crux": "node scripts/performance/export-crux.mjs",
+    "cwv:vercel": "node scripts/performance/export-vercel.mjs",
+    "cwv:check": "tsx --tsconfig frontend/tsconfig.json --test tests/cwv-audit-parity.test.ts tests/crux-export.test.ts tests/vercel-cwv-export.test.ts tests/public-page-timing.test.ts tests/compare-loading-performance.test.ts"
   },
   "pnpm": {
     "overrides": {

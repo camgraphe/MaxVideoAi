@@ -1,4 +1,6 @@
 import Image from 'next/image';
+import '@/components/editorial/editorial-article.css';
+import { PublicEditorialArticleView } from '@/components/editorial/PublicEditorialArticleView';
 import { Link } from '@/i18n/navigation';
 import { TextLink } from '@/components/ui/TextLink';
 import type { ContentEntry } from '@/lib/content/markdown';
@@ -45,13 +47,13 @@ export function BlogPostView({
   relatedPosts,
 }: BlogPostViewProps) {
   return (
-    <div className="container-page max-w-5xl section">
+    <div className={post.editorial ? 'editorial-blog-page section' : 'container-page max-w-5xl section'}>
       <div className="stack-gap-lg">
         <TextLink href="/blog" className="text-sm" linkComponent={Link}>
           {articleCopy.backLink}
         </TextLink>
 
-        <article className="blog-editorial-article overflow-hidden rounded-[28px] border border-hairline bg-surface/90 shadow-card backdrop-blur">
+        {post.editorial ? <PublicEditorialArticleView article={post.editorial} byline={<BlogAuthorByline copy={editorialCopy} locale={locale} modifiedLabel={modifiedLabel} profile={editorialProfile} publishedLabel={publishedLabel} />} /> : <article className="blog-editorial-article overflow-hidden rounded-[28px] border border-hairline bg-surface/90 shadow-card backdrop-blur">
           <header className="relative border-b border-hairline bg-gradient-to-br from-surface to-bg/60">
             {post.image ? (
               <div className="relative h-64 w-full overflow-hidden bg-bg sm:h-80">
@@ -95,7 +97,7 @@ export function BlogPostView({
           </header>
 
           <div className="blog-prose px-6 py-10 sm:px-10" dangerouslySetInnerHTML={{ __html: demotedContent }} />
-        </article>
+        </article>}
 
         <BlogAuthorCard copy={editorialCopy} locale={locale} profile={editorialProfile} />
 

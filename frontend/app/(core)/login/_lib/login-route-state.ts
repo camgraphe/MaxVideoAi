@@ -1,12 +1,13 @@
+import { isMcpConsentTarget } from '@/lib/mcp-oauth-continuation';
 import { LOCALE_OPTIONS, type AuthMode, type Locale } from './login-copy';
 
 export type LoginQueryValue = string | string[] | undefined;
 
-export function resolveInitialAuthMode(value: LoginQueryValue): AuthMode {
+export function resolveInitialAuthMode(value: LoginQueryValue, next: LoginQueryValue = undefined): AuthMode {
   const candidate = Array.isArray(value) ? value[0] : value;
   return candidate === 'signin' || candidate === 'reset' || candidate === 'signup'
     ? candidate
-    : 'signup';
+    : isMcpConsentTarget(Array.isArray(next) ? next[0] : next) ? 'signin' : 'signup';
 }
 
 export function resolveInitialAuthLocale(

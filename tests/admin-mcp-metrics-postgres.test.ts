@@ -19,7 +19,7 @@ import {
   TOOL_USAGE_SQL,
 } from '../frontend/server/admin-mcp-metrics-queries.ts';
 
-import { buildMcpOutcomesSql } from '../frontend/server/admin-mcp-outcomes-queries.ts';
+import { buildMcpGenerationItemsSql, buildMcpOutcomesSql } from '../frontend/server/admin-mcp-outcomes-queries.ts';
 import type { readMcpAuthMetadata } from '../frontend/server/admin-mcp-auth-metadata.ts';
 import { loadAdminMcpOutcomes } from '../frontend/server/admin-mcp-outcomes.ts';
 
@@ -275,8 +275,8 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
       SET search_path TO outcomes_fixture;
       CREATE TABLE mcp_audit_events (event_type text, user_id text, oauth_client_id text, outcome text, client_family text, created_at timestamptz);
       CREATE TABLE mcp_funnel_events (event_type text, user_id text, oauth_client_id text, acquisition_client text, occurred_at timestamptz);
-      CREATE TABLE mcp_generation_quotes (user_id text, oauth_client_id text, job_id text UNIQUE, created_at timestamptz);
-      CREATE TABLE app_jobs (job_id text UNIQUE, user_id text, surface text, status text, created_at timestamptz);
+      CREATE TABLE mcp_generation_quotes (user_id text, oauth_client_id text, job_id text, created_at timestamptz);
+      CREATE TABLE app_jobs (job_id text UNIQUE, user_id text, surface text, engine_id text, engine_label text, status text, created_at timestamptz);
       CREATE TABLE profiles (id text PRIMARY KEY, created_at timestamptz, synced_from_supabase boolean);
       INSERT INTO profiles VALUES
         ('a', '2026-06-01Z', true), ('b', '2026-07-01Z', true), ('c', '2026-07-02Z', true),
@@ -292,26 +292,30 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
         ('connection_initialized', 'future', 'codex-id', 'success', 'codex', '2026-07-08Z');
       INSERT INTO mcp_funnel_events VALUES ('oauth_connection_completed', 'b', 'chatgpt-id', 'chatgpt', '2026-07-01Z');
       INSERT INTO app_jobs VALUES
-        ('a1', 'a', 'video', 'completed', '2026-07-01Z'),
-        ('a2', 'a', 'video', 'completed', '2026-07-02Z'),
-        ('a3', 'a', 'video', 'completed', '2026-07-04Z'),
-        ('image', 'a', 'image', 'completed', '2026-07-04Z'),
-        ('b1', 'b', 'video', 'queued', '2026-07-02Z'),
-        ('b2', 'b', 'video', 'failed', '2026-07-03Z'),
-        ('c1', 'c', 'video', 'completed', '2026-07-04Z'),
-        ('d1', 'd', 'video', 'completed', '2026-07-05Z'),
-        ('e1', 'e', 'video', 'queued', '2026-07-05Z'),
-        ('web', 'a', 'video', 'completed', '2026-07-04Z'),
-        ('wrong-owner', 'outsider', 'video', 'completed', '2026-07-04Z'),
-        ('before', 'a', 'video', 'completed', '2026-06-30Z'),
-        ('after', 'a', 'video', 'completed', '2026-07-08Z');
+        ('a1', 'a', 'video', 'veo-3', 'Veo 3', 'completed', '2026-07-01Z'),
+        ('a2', 'a', 'video', 'sora-2', 'Sora 2', 'completed', '2026-07-02Z'),
+        ('a3', 'a', 'video', 'seedance-2', 'Seedance 2', 'completed', '2026-07-04Z'),
+        ('image', 'a', 'image', 'gpt-image-2', 'GPT Image 2', 'completed', '2026-07-04Z'),
+        ('b1', 'b', 'video', 'veo-3', 'Veo 3', 'queued', '2026-07-02Z'),
+        ('b2', 'b', 'video', 'sora-2', 'Sora 2', 'failed', '2026-07-03Z'),
+        ('c1', 'c', 'video', 'veo-3', 'Veo 3', 'completed', '2026-07-04Z'),
+        ('d1', 'd', 'video', 'veo-3', 'Veo 3', 'completed', '2026-07-05Z'),
+        ('e1', 'e', 'video', 'veo-3', 'Veo 3', 'queued', '2026-07-05Z'),
+        ('image-pending', 'a', 'image', 'gpt-image-2', 'GPT Image 2', 'queued', '2026-07-05Z'),
+        ('image-failed', 'a', 'image', 'gpt-image-2', 'GPT Image 2', 'failed', '2026-07-06Z'),
+        ('web', 'a', 'video', 'veo-3', 'Veo 3', 'completed', '2026-07-04Z'),
+        ('wrong-owner', 'outsider', 'video', 'veo-3', 'Veo 3', 'completed', '2026-07-04Z'),
+        ('before', 'a', 'video', 'veo-3', 'Veo 3', 'completed', '2026-06-30Z'),
+        ('after', 'a', 'video', 'veo-3', 'Veo 3', 'completed', '2026-07-08Z');
       INSERT INTO mcp_generation_quotes
         SELECT 'a', CASE WHEN job_id IN ('a3', 'image') THEN 'claude-id' ELSE 'codex-id' END, job_id, '2026-06-30Z'
           FROM app_jobs WHERE job_id IN ('a1', 'a2', 'a3', 'image', 'before', 'after', 'wrong-owner');
+      INSERT INTO mcp_generation_quotes VALUES ('a', 'codex-id', 'a1', '2026-07-01 00:30Z');
       INSERT INTO mcp_generation_quotes VALUES
         ('b', 'chatgpt-id', 'b1', '2026-07-02Z'), ('b', 'chatgpt-id', 'b2', '2026-07-03Z'),
         ('c', 'unknown-id', 'c1', '2026-07-04Z'), ('c', 'unknown-id', NULL, '2026-07-04Z'),
-        ('d', 'openclaw-id', 'd1', '2026-07-05Z'), ('e', 'n8n-id', 'e1', '2026-07-05Z');
+        ('d', 'openclaw-id', 'd1', '2026-07-05Z'), ('e', 'n8n-id', 'e1', '2026-07-05Z'),
+        ('a', 'codex-id', 'image-pending', '2026-07-05Z'), ('a', 'codex-id', 'image-failed', '2026-07-06Z');
     `);
     const relations = { audit: true, quotes: true, jobs: true, profiles: true, funnel: true, clientFamily: true };
     const load = (readAuthMetadata?: typeof readMcpAuthMetadata) => loadAdminMcpOutcomes({ from: params[0], to: params[1], timeZone: 'UTC', conversionWindowSeconds: 60 }, {
@@ -323,14 +327,44 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
     });
     const result = await load();
     assert.deepEqual(result.notices, []);
-    assert.deepEqual(result.totals, { accounts: 5, newSignups: 4, generators: 3, submitted: 8, videos: 5, failed: 1, pending: 2 });
+    assert.deepEqual(result.totals, { accounts: 5, newSignups: 4, generators: 3, submitted: 8, videos: 5, failed: 1, pending: 2, imageGenerators: 1, imagesSubmitted: 3, images: 1, imageFailed: 1, imagePending: 1 });
     assert.equal(result.clients.find((row) => row.client === 'codex')?.videos, 2);
     assert.equal(result.clients.find((row) => row.client === 'claude')?.videos, 1);
     assert.equal(result.clients.find((row) => row.client === 'chatgpt')?.newSignups, 1);
     assert.equal(result.clients.find((row) => row.client === 'openclaw')?.videos, 1);
     assert.equal(result.clients.find((row) => row.client === 'n8n')?.pending, 1);
+    assert.equal(result.clients.find((row) => row.client === 'claude')?.images, 1);
+    assert.equal(result.generations.find((row) => row.jobId === 'image')?.surface, 'image');
+    assert.equal(result.generations.find((row) => row.jobId === 'image')?.engineId, 'gpt-image-2');
+    assert.equal(result.generations.length, 11);
+    assert.equal(result.generations.filter((row) => row.jobId === 'a1').length, 1, 'quote retries must not duplicate a generation row');
     assert.equal(result.clients.find((row) => row.client === 'other')?.videos, 1);
     assert.equal(result.clients.reduce((sum, row) => sum + row.generators, 0), 4, 'one user uses two applications while the global count remains distinct');
+
+    await (async () => {
+      await client.query(`
+        INSERT INTO app_jobs
+        SELECT 'bulk-' || n, 'a', CASE WHEN n % 2 = 0 THEN 'image' ELSE 'video' END,
+               CASE WHEN n % 2 = 0 THEN 'gpt-image-2' ELSE 'veo-3' END,
+               CASE WHEN n % 2 = 0 THEN 'GPT Image 2' ELSE 'Veo 3' END,
+               'completed', '2026-07-07Z'::timestamptz + n * interval '1 minute'
+          FROM generate_series(1, 35) AS series(n);
+        INSERT INTO mcp_generation_quotes
+        SELECT 'a', 'codex-id', 'bulk-' || n, '2026-07-07Z'::timestamptz + n * interval '1 minute'
+          FROM generate_series(1, 35) AS series(n);
+        INSERT INTO mcp_generation_quotes VALUES ('a', 'codex-id', 'bulk-35', '2026-07-07 01:00Z');
+      `);
+      const rows = (await client.query(buildMcpGenerationItemsSql({ audit: true, quotes: true, jobs: true, profiles: true, funnel: true, clientFamily: true }), [
+        ...params, JSON.stringify({ profiles: [], clients: [] }), 30,
+      ])).rows;
+      assert.equal(rows.length, 30);
+      assert.equal(rows[0].job_id, 'bulk-35');
+      assert.equal(new Set(rows.map((row) => row.job_id)).size, 30);
+      assert.ok(rows.some((row) => row.surface === 'image'));
+      assert.ok(rows.some((row) => row.surface === 'video'));
+      assert.ok(rows.every((row) => row.created_at >= params[0] && row.created_at < params[1]));
+      await client.query(`DELETE FROM mcp_generation_quotes WHERE job_id LIKE 'bulk-%'; DELETE FROM app_jobs WHERE job_id LIKE 'bulk-%';`);
+    })();
 
     await client.query(`INSERT INTO mcp_audit_events VALUES ('connection_initialized', 'c', 'unknown-id', 'success', 'codex', '2026-07-06Z')`);
     const laterIdentity = await load();
@@ -357,7 +391,7 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
     await client.query(`
       INSERT INTO profiles VALUES ('glama-user', '2026-07-04Z', true);
       INSERT INTO mcp_audit_events VALUES ('connection_initialized', 'glama-user', 'glama-id', 'success', 'glama', '2026-07-04Z');
-      INSERT INTO app_jobs VALUES ('glama-video', 'glama-user', 'video', 'completed', '2026-07-05Z');
+      INSERT INTO app_jobs VALUES ('glama-video', 'glama-user', 'video', 'veo-3', 'Veo 3', 'completed', '2026-07-05Z');
       INSERT INTO mcp_generation_quotes VALUES ('glama-user', 'glama-id', 'glama-video', '2026-07-04Z');
     `);
     const glamaOutcome = await load();

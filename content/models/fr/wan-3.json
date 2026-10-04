@@ -2,10 +2,10 @@
   "marketingName": "Wan 3",
   "versionLabel": "3",
   "seo": {
-    "title": "Générateur vidéo IA Wan 3 : texte, image et références",
-    "description": "Découvrez quand choisir Wan 3 pour générer depuis un texte, animer une image ou guider une scène avec des références, avec conseils et tarifs calculés."
+    "title": "Wan 3 : vidéo IA, références, édition et extension",
+    "description": "Créez avec Wan 3 depuis un texte, des images ou des références en 480p–1080p. Modifiez ou prolongez une vidéo avec des références image et audio."
   },
-  "overview": "Wan 3 est la route standard actuelle de la famille Wan pour les équipes qui souhaitent réunir texte, image et références dans un même modèle. Alibaba/Tongyi possède le modèle ; MaxVideoAI distribue ces endpoints de lancement via Fal, sans revendiquer une intégration directe avec Alibaba.",
+  "overview": "Wan 3 est un modèle Alibaba/Tongyi pour le texte-vers-vidéo, l’animation d’images, les références combinées, la modification et l’extension vidéo. Choisissez 2 à 30 secondes et le 480p, 720p ou 1080p, puis consultez le prix avant de générer.",
   "decision": {
     "modelSlug": "wan-3",
     "hero": {
@@ -15,7 +15,7 @@
       "subtitleHighlights": [
         "Vos idées, vos références, vos réglages"
       ],
-      "paragraph": "Wan 3 est un modèle de vidéo IA d’Alibaba/Tongyi. Partez d’un texte, animez une image ou combinez des références pour guider votre scène. Choisissez 480p, 720p ou 1080p et voyez le prix évoluer selon vos réglages avant de générer.",
+      "paragraph": "Wan 3 est un modèle Alibaba/Tongyi pour le texte-vers-vidéo, l’animation d’images, les références combinées, la modification et l’extension vidéo. Choisissez 2 à 30 secondes et le 480p, 720p ou 1080p, puis consultez le prix avant de générer.",
       "primaryCta": {
         "label": "Générer avec Wan 3",
         "href": "/app?engine=wan-3"
@@ -48,9 +48,9 @@
       "description": "Les exemples Wan 3 validés apparaîtront après la revue de lancement",
       "renderLabel": "Examiner le rendu accepté",
       "badges": [
-        "Texte",
-        "Image",
-        "Références"
+        "Cinq modes",
+        "Jusqu’en 1080p",
+        "Audio natif"
       ],
       "altContext": "exemple vidéo Wan 3 vérifié avec le mode de génération sélectionné"
     },
@@ -62,12 +62,12 @@
       },
       {
         "title": "Contrôle des images de début et de fin",
-        "body": "Animez une image initiale et ajoutez une image finale lorsque la composition d'arrivée compte. Concentrez l'instruction sur le mouvement qui relie ces deux repères.",
+        "body": "Utilisez une image de début obligatoire et une image de fin facultative. Gardez ces images séparées des références combinées et décrivez le mouvement entre les deux repères.",
         "tone": "reference"
       },
       {
         "title": "Workflow de références mixtes",
-        "body": "Le mode référence combine des médias pris en charge selon des limites distinctes. Attribuez à chaque source un rôle clair d'identité, de mouvement, de rythme ou de contexte.",
+        "body": "Guidez la scène avec jusqu’à 10 images, 5 vidéos et 5 extraits audio. Les vidéos et l’audio ont chacun une limite cumulée de 15 secondes. Toutes les vidéos fournies et la vidéo générée ne doivent pas dépasser 30 secondes au total. Un document admissible ou une page publique peut apporter du contexte ; choisissez un seul de ces deux types d’URL.",
         "tone": "continuity"
       },
       {
@@ -109,11 +109,15 @@
       },
       {
         "title": "Image vers vidéo",
-        "body": "Protégez la composition importée et décrivez seulement le mouvement, la caméra et la réaction du décor."
+        "body": "Utilisez une image de début obligatoire et une image de fin facultative. Gardez ces images séparées des références combinées et décrivez le mouvement entre les deux repères."
       },
       {
-        "title": "Références vers vidéo",
-        "body": "Utilisez au moins une référence valide et respectez les limites propres aux images, clips, sons, fichiers et pages publiques."
+        "title": "Références-vers-vidéo",
+        "body": "Guidez la scène avec jusqu’à 10 images, 5 vidéos et 5 extraits audio. Les vidéos et l’audio ont chacun une limite cumulée de 15 secondes. Toutes les vidéos fournies et la vidéo générée ne doivent pas dépasser 30 secondes au total. Un document admissible ou une page publique peut apporter du contexte ; choisissez un seul de ces deux types d’URL."
+      },
+      {
+        "title": "Modifier ou prolonger une vidéo",
+        "body": "Partez d’une vidéo source de 15 secondes maximum et ajoutez, si besoin, des références image ou audio. La durée source et la durée générée ne doivent pas dépasser 30 secondes au total."
       },
       {
         "title": "Sécurité et droits",
@@ -123,13 +127,13 @@
     "pricingCopy": {
       "title": "Tarification par scénario Wan 3",
       "subtitle": "Comparez une scène en 720p avec la même scène en 1080p.",
-      "footnote": "Le prix dépend de vos réglages. MaxVideoAI confirme le devis avant de générer.",
+      "footnote": "Ajouter une vidéo augmente votre devis Wan 3 : sa durée entre dans le calcul du prix avec celle de la vidéo générée, pour les références, la modification ou l’extension. MaxVideoAI confirme le devis avant de générer.",
       "ctaLabel": "Générer avec Wan 3",
       "ctaHref": "/app?engine=wan-3"
     },
     "meta": {
-      "title": "Modèle vidéo IA Wan 3, workflows et tarifs",
-      "description": "Évaluez Wan 3 pour le texte, l'image et les références mixtes avec limites, structure de prompt, sécurité, choix du modèle frère et devis canoniques."
+      "title": "Wan 3 : vidéo IA, références, édition et extension",
+      "description": "Créez avec Wan 3 depuis un texte, des images ou des références en 480p–1080p. Modifiez ou prolongez une vidéo avec des références image et audio."
     }
   },
   "prompting": {
@@ -178,7 +182,7 @@
       },
       {
         "tabId": "references",
-        "body": "Le mode référence demande une hiérarchie : indiquez la source qui gouverne l'identité, le mouvement ou le rythme."
+        "body": "Guidez la scène avec jusqu’à 10 images, 5 vidéos et 5 extraits audio. Les vidéos et l’audio ont chacun une limite cumulée de 15 secondes. Toutes les vidéos fournies et la vidéo générée ne doivent pas dépasser 30 secondes au total. Un document admissible ou une page publique peut apporter du contexte ; choisissez un seul de ces deux types d’URL."
       }
     ],
     "globalPrinciples": [

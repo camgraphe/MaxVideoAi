@@ -2,6 +2,7 @@ import type { AssetFieldConfig } from '@/components/Composer';
 import { getSeedanceFieldBlockKey } from '@/lib/seedance-workflow';
 import { getGeminiOmniAssetFieldDisabledReason, getGeminiOmniAssetState, hasGeminiOmniPreviousInteraction } from './gemini-omni-unified-workflow';
 import type { ReferenceAsset } from './workspace-assets';
+import { fieldAcceptsMode, hasMultimodalReferenceFields } from './workspace-multimodal-workflow';
 import {
   isKlingO3FrameFieldId,
   KLING_O3_SOURCE_VIDEO_UNSUPPORTED_MESSAGE,
@@ -15,7 +16,7 @@ export type WorkspaceReferenceAvailability = {
   klingO3VideoToVideoSupported: boolean;
   hasAnyVideoInput: boolean;
   guestUploadLockedReason: string | null;
-  workflowCopy: { clearReferencesToUseStartEnd: string; clearStartEndToUseReferences: string };
+  workflowCopy: { clearReferencesToUseStartEnd: string; clearStartEndToUseReferences: string; clearIncompatibleMedia?: string };
   showOmniStudioPanel: boolean;
   previousInteractionId?: unknown;
   showLumaRay32KeyframeEditor: boolean;
@@ -26,6 +27,10 @@ const LUMA_CUSTOM_ASSETS = new Set(['video_url', 'start_image_url', 'edit_keyfra
 export function getWorkspaceReferenceFields(fields: AssetFieldConfig[], options: WorkspaceReferenceAvailability): AssetFieldConfig[] {
   const { inputAssets, isUnifiedSeedance, isUnifiedKlingO3, klingO3VideoToVideoSupported, hasAnyVideoInput,
     guestUploadLockedReason, workflowCopy, showOmniStudioPanel, showLumaRay32KeyframeEditor } = options;
+  const applySchemaCompatibility = !isUnifiedSeedance && !isUnifiedKlingO3 && !showOmniStudioPanel
+    && hasMultimodalReferenceFields(fields.map(({ field }) => field));
+  const populatedFields = fields.filter(({ field }) =>
+    (inputAssets[field.id] ?? []).some((asset) => asset?.kind === field.type));
   return fields.filter(({ field }) => !(showLumaRay32KeyframeEditor && LUMA_CUSTOM_ASSETS.has(field.id))).map((entry) => {
       const fieldHasOwnAssets = (inputAssets[entry.field.id] ?? []).some((asset) => asset != null);
       const blockKey = isUnifiedSeedance
@@ -49,7 +54,17 @@ export function getWorkspaceReferenceFields(fields: AssetFieldConfig[], options:
             hasPreviousInteraction: hasGeminiOmniPreviousInteraction(options.previousInteractionId),
           })
         : null;
-      const derivedDisabledReason = omniDisabledReason ?? klingO3DisabledReason ?? workflowDisabledReason ?? guestUploadLockedReason;
+      const incompatibleFields = applySchemaCompatibility && !fieldHasOwnAssets
+        && entry.field.modes?.length
+        && !entry.field.modes.some((mode) => populatedFields.every(({ field }) => fieldAcceptsMode(field, mode)));
+      const schemaDisabledReason = incompatibleFields
+        ? entry.role === 'frame' || entry.role === 'primary'
+          ? workflowCopy.clearReferencesToUseStartEnd
+          : populatedFields.some(({ role }) => role === 'frame' || role === 'primary')
+            ? workflowCopy.clearStartEndToUseReferences
+            : workflowCopy.clearIncompatibleMedia ?? 'Remove incompatible media before adding this reference.'
+        : null;
+      const derivedDisabledReason = omniDisabledReason ?? klingO3DisabledReason ?? workflowDisabledReason ?? schemaDisabledReason ?? guestUploadLockedReason;
       const preservesIncomingRestriction = entry.disabled === true;
       const disabledReason = preservesIncomingRestriction
         ? entry.disabledReason ?? derivedDisabledReason

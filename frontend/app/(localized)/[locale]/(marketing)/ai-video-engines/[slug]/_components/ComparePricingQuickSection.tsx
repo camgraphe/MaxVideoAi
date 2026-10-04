@@ -5,9 +5,11 @@ import { getCompareEditorialCopy, getCompareDetailActions } from '../_lib/compar
 import type { AppLocale } from '@/i18n/locales';
 import { formatEngineName } from '../_lib/compare-page-helpers';
 import type { ComparePricingDisplay, EngineCatalogEntry } from '../_lib/compare-page-types';
+import type { ComparePageOverride } from '../_lib/compare-page-overrides-types';
 
 type ComparePricingQuickSectionProps = {
   activeLocale: AppLocale;
+  pricingCreditLink?: ComparePageOverride['pricingCreditLink'];
   left: EngineCatalogEntry;
   leftPricingDisplay: ComparePricingDisplay;
   right: EngineCatalogEntry;
@@ -21,6 +23,7 @@ function getPricingLines(display: ComparePricingDisplay) {
 
 export function ComparePricingQuickSection({
   activeLocale,
+  pricingCreditLink,
   left,
   leftPricingDisplay,
   right,
@@ -53,7 +56,13 @@ export function ComparePricingQuickSection({
           </article>
         ))}
       </div>
-      <div className="compare-price-next"><p>{actions.pricingNote}</p><Link href="/pricing">{actions.priceLink}<ArrowRight size={16} aria-hidden="true" /></Link></div>
+      <div className="compare-price-next">
+        <p>{actions.pricingNote}</p>
+        <div className="flex shrink-0 flex-wrap items-center gap-x-6 gap-y-2">
+          {pricingCreditLink ? <Link href={pricingCreditLink.href}>{pricingCreditLink.label}<ArrowRight size={16} aria-hidden="true" /></Link> : null}
+          <Link href="/pricing">{actions.priceLink}<ArrowRight size={16} aria-hidden="true" /></Link>
+        </div>
+      </div>
       {hasComparableLine ? (
         <p className="mt-3 text-center text-xs font-semibold text-text-muted">
           {copy.comparable}: {leftPricingDisplay.scoreLine} vs {rightPricingDisplay.scoreLine}

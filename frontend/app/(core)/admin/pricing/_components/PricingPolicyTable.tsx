@@ -12,6 +12,7 @@ import {
 } from '../_lib/pricing-cockpit-view-model';
 
 type PricingPolicyTableProps = {
+  historical?: boolean;
   rows: PricingPolicyInventoryRow[];
   filters: PricingCockpitFilters;
   onFiltersChange: (filters: PricingCockpitFilters) => void;
@@ -27,6 +28,7 @@ export function PricingPolicyTable({
   selectedKey,
   onSelect,
   disabled,
+  historical,
 }: PricingPolicyTableProps) {
   return (
     <div className="space-y-4">
@@ -84,7 +86,7 @@ export function PricingPolicyTable({
               <th className="px-4 py-3 font-semibold">Margin</th>
               <th className="px-4 py-3 font-semibold">Flat</th>
               <th className="px-4 py-3 font-semibold">Profile</th>
-              <th className="px-4 py-3 font-semibold">Representative total</th>
+              <th className="px-4 py-3 font-semibold">{historical ? 'Former formula total' : 'Representative total'}</th>
             </tr>
           </thead>
           <tbody>
@@ -113,7 +115,7 @@ export function PricingPolicyTable({
                   <td className="px-4 py-3 text-text-secondary">{rule ? formatUsdCents(rule.marginFlatCents) : '—'}</td>
                   <td className="px-4 py-3 text-text-secondary">{rule?.compatibilityProfile ?? 'standard'}</td>
                   <td className="px-4 py-3 text-text-secondary">
-                    {row.representativeQuotes[0] ? formatUsdCents(row.representativeQuotes[0].totalCents) : 'Unavailable'}
+                    {row.representativeQuotes[0] ? formatUsdCents(row.representativeQuotes[0].customerTotalCents) : 'Unavailable'}
                   </td>
                 </tr>
               );

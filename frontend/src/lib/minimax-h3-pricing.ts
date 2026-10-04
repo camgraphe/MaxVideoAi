@@ -1,11 +1,12 @@
 export type MinimaxH3PricingInput = {
   durationSec: number;
-  resolution: '768P' | '2K' | '4K';
+  resolution: '480P' | '768P' | '2K' | '4K';
   referenceImageCount?: number;
 };
 
 const RATE_PER_SECOND_USD: Record<MinimaxH3PricingInput['resolution'], number> = {
-  '768P': 0.08,
+  '480P': 0.05,
+  '768P': 0.06,
   '2K': 0.13,
   '4K': 0.16,
 };

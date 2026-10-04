@@ -22,8 +22,7 @@ export function registerCreateReferenceUploadLinkTool(
     'create_reference_upload_link',
     {
       title: 'Upload private reference media',
-      description:
-        [
+      description: [
         'Use this when the host cannot expose a file handle and the user needs a private image, video or audio reference.',
         'It creates a short-lived handoff for the requested media kind.',
         'A compatible UI host can show the in-chat multi-file importer; the exact returned browser destination is the manual fallback.',

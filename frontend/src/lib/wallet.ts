@@ -1,3 +1,4 @@
+import { WALLET_FUNDED_RECEIPT_SQL } from '@/lib/wallet-funding';
 import { isDatabaseConfigured, query, type QueryExecutor, withDbTransaction } from '@/lib/db';
 import { receiptsPriceOnlyEnabled } from '@/lib/env';
 import { getUserPreferredCurrency, normalizeCurrencyCode } from '@/lib/currency';
@@ -104,7 +105,7 @@ export async function getWalletBalancesByCurrency(
             END
           )::bigint, 0::bigint) AS balance_cents
         FROM app_receipts
-        WHERE user_id = $1
+        WHERE user_id = $1 AND ${WALLET_FUNDED_RECEIPT_SQL}
         GROUP BY 1
       `,
       [userId]
@@ -130,6 +131,7 @@ export type ReserveWalletChargeParams = {
   surface?: JobSurface | null;
   billingProductKey?: BillingProductKey | null;
   pricingSnapshotJson: string;
+  auditPricingSnapshot?: unknown;
   applicationFeeCents: number | null;
   vendorAccountId: string | null;
   stripePaymentIntentId?: string | null;
@@ -210,7 +212,7 @@ async function reserveWalletChargeWithQueryExecutor(
     const accountLock = await executor.query<{ id: string }>(
       `SELECT id
          FROM app_receipts
-        WHERE user_id = $1
+        WHERE user_id = $1 AND ${WALLET_FUNDED_RECEIPT_SQL}
         ORDER BY id
         LIMIT 1
         FOR UPDATE`,
@@ -236,7 +238,7 @@ async function reserveWalletChargeWithQueryExecutor(
               ELSE UPPER(currency)
             END AS currency
           FROM app_receipts
-          WHERE user_id = $1
+          WHERE user_id = $1 AND ${WALLET_FUNDED_RECEIPT_SQL}
         ),
         balances AS (
           SELECT
@@ -284,7 +286,8 @@ async function reserveWalletChargeWithQueryExecutor(
             stripe_payment_intent_id,
             stripe_charge_id,
             platform_revenue_cents,
-            destination_acct
+            destination_acct,
+            metadata
           )
           SELECT
             $1,
@@ -301,7 +304,8 @@ async function reserveWalletChargeWithQueryExecutor(
             $11,
             $12,
             $9::integer,
-            $10
+            $10,
+            $13::jsonb
           FROM balance
           WHERE balance.balance_cents >= $2::bigint
             AND COALESCE(balance.has_mismatch, 0) = 0
@@ -327,6 +331,7 @@ async function reserveWalletChargeWithQueryExecutor(
         vendorAccountParam,
         params.stripePaymentIntentId ?? null,
         params.stripeChargeId ?? null,
+        params.auditPricingSnapshot == null ? null : JSON.stringify({ pricing_audit_snapshot: params.auditPricingSnapshot }),
       ]
     );
 
@@ -414,7 +419,7 @@ export async function getWalletBalanceCents(userId: string): Promise<{ balanceCe
 
   try {
     const rows = await query<{ type: string; amount_cents: number }>(
-      `SELECT type, amount_cents FROM app_receipts WHERE user_id = $1`,
+      `SELECT type, amount_cents FROM app_receipts WHERE user_id = $1 AND ${WALLET_FUNDED_RECEIPT_SQL}`,
       [userId]
     );
 

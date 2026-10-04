@@ -28,6 +28,8 @@ Wan 2.5, Wan 2.6, and HappyHorse 1.0 are intentionally outside this direct route
 
 Wan 3 Standard and Prime share the same authored capability schema. Reference mode accepts image, video, audio, one public HTTPS document URL, or one public HTTPS webpage URL. Document and webpage references are mutually exclusive and require prompt expansion. The direct adapter maps them to Alibaba `file` and `link` media; the Fal pre-acceptance fallback adds Fal's required `enable_thinking=true` internally, so that transport-specific switch is not exposed as a MaxVideoAI product control.
 
+Reference audio is limited to MP3 and WAV. Keep the authored field formats aligned with the direct adapter so M4A and other unsupported uploads fail with a clear format message before wallet reservation. The adapter retains a specific MP3/WAV message for requests that bypass that early check.
+
 The workspace prompt-expansion control maps to Alibaba `prompt_extend`. Fal's `enable_safety_checker` has no documented direct Alibaba equivalent and remains transport-specific rather than a public cross-provider option.
 
 Alibaba's smart duration (`duration=-1`) is deliberately not exposed. MaxVideoAI quotes and reserves an exact customer amount before submission, while smart duration makes the billed output length unknown at quote time. Keep the explicit 2–30 second duration until a separately reviewed estimate-and-reconciliation billing contract exists.
@@ -78,13 +80,37 @@ A provider success is not an application completion. The output video is first c
 
 ## Pricing and observability
 
-Customer quotes continue to come from the canonical MaxVideoAI pricing pipeline. They are not derived from the Alibaba provider-cost calculation. The attempt ledger stores a catalog-rate provider-cost estimate separately for margin and operational reporting:
+Customer quotes come from the canonical MaxVideoAI pricing pipeline. For Wan 3 and Prime, `wan3-pricing.ts` adds verified input-video seconds to output cost at the same resolved per-second rate, before the existing commercial policy applies. This follows [Alibaba's input-plus-output billing rule](https://www.alibabacloud.com/help/en/model-studio/model-pricing), including video-bearing reference mode, editing and extension. Owned metadata supplies input duration; repeated URLs count once, using the largest persisted duration when aliases disagree. Missing video duration fails closed. The output base remains the requested output duration and an `input_video_duration` addon itemizes the source cost. Explicit provider-rate overrides remain authoritative.
+
+The [Wan API duration contract](https://www.alibabacloud.com/help/en/model-studio/wan3-video-generation-api-reference) caps input videos at 15 seconds combined and input plus output at 30 seconds whenever videos are supplied, including reference mode. Quotes and generation enforce that contract before billing. Images, audio, document and webpage references add no video-duration charge.
+
+The attempt ledger separately stores a catalog-rate provider-cost estimate for margin and operational reporting:
 
 - Wan 3 and Wan 3 Prime count source-video plus generated duration where applicable;
 - HappyHorse 1.1 counts generated output duration;
 - returned provider usage units replace estimated units when available.
 
 This estimate uses the dated Singapore catalog rates encoded in the adapter. It does not know the Alibaba account's remaining free quota, temporary promotions, negotiated discounts, credits, taxes, or final invoice adjustments. Alibaba billing is therefore authoritative for cash cost and reconciliation; do not present `provider_cost_usd` as an invoiced amount when one of those account-level adjustments applies.
+
+October 1 verification: Singapore LIST remains $0.05/$0.10/$0.20 per second for
+Wan 3 at 480p/720p/1080p, and $0.068/$0.14/$0.28 for Prime. Both input and output
+consume seconds. The private active manual grid quotes a 10-second source plus a
+5-second 720p output at $1.95/$2.73 customer, against $1.50/$2.10 LIST estimates.
+This is a price/quote check, not a new paid generation or invoice reconciliation.
+
+`server/alibaba-job-accounting.ts` owns polling cost projection. A complete
+provider-reported duration replaces the forecast. If provider usage is partial,
+it combines reported output duration (or requested output) with the source
+duration stored in the server's immutable pricing snapshot. Unknown source
+duration leaves full cost unavailable. The poller stores input/output seconds,
+the aggregate units and estimate status; it never marks the dated LIST rate as
+account-effective cost. Customer receipts are not repriced at completion.
+
+The [savings-plan guide](https://www.alibabacloud.com/help/en/model-studio/savings-plan-and-resource-package)
+distinguishes eligible video usage under the AI General-purpose plan from the
+LLM-only plan, which does not cover Wan. Plan coverage, remaining quota and
+settlement must be confirmed for the actual account before applying a discount.
+No assumed plan discount is included in these LIST estimates.
 
 Admin metrics group the shared attempt ledger by provider and report only aggregate attempts, acceptances, completions, failures, fallbacks, stalled polls, cost coverage, and latency. They never select raw request/response snapshots, task IDs, URLs, prompts, or user identities.
 

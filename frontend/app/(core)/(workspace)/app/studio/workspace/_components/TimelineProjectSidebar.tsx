@@ -1,5 +1,6 @@
 'use client';
 
+import { SeedanceDraftFinalAction } from '@/components/library/SeedanceDraftFinalAction.client';
 import { ArrowLeft, Check, FileVideo2, Film, Folder, FolderOpen, FolderPlus, Layers3, MoreHorizontal, Plus, Search, Trash2, Upload, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
 import baseStyles from '../maxvideoai-editor.module.css';
@@ -32,6 +33,7 @@ export type { WorkspaceProjectSequenceSummary };
 const styles = { ...baseStyles, ...mediaStyles };
 
 type TimelineProjectSidebarProps = {
+  onAppNavigate?: (href: string) => void;
   canUndoProjectMedia: boolean;
   studioCanvasNodeCopy: StudioCopy['canvas']['nodes'];
   copy: StudioCopy['viewer']['projectMedia'];
@@ -488,6 +490,7 @@ function ProjectMediaFooterAction({
 }
 
 export function TimelineProjectSidebar({
+  onAppNavigate,
   canUndoProjectMedia,
   studioCanvasNodeCopy,
   copy,
@@ -797,6 +800,7 @@ export function TimelineProjectSidebar({
                 thumbnailUrl={thumbnailUrl}
                 title={node.data.title}
               />
+              {node.data.output?.jobId ? <SeedanceDraftFinalAction jobId={node.data.output.jobId} onNavigate={onAppNavigate} /> : null}
             </div>
           );
         })}

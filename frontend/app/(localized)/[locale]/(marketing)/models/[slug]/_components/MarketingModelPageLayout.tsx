@@ -21,7 +21,9 @@ import {
   type DetailCopy,
 } from '../_lib/model-page-copy';
 import { type FeaturedMedia } from '../_lib/model-page-media';
-import { resolveProviderInfo, resolveModelPublicOffer } from '../_lib/model-page-schema';
+import { resolveProviderInfo } from '../_lib/model-page-schema';
+import { resolveCurrentModelPublicOffer } from '../_lib/current-model-public-offer';
+import { buildCurrentModelDecisionData } from '../_lib/current-model-decision-pricing';
 import { resolveFocusVsConfig } from '../_lib/model-page-static';
 import {
   buildCanonicalComparePath,
@@ -61,19 +63,17 @@ import {
 import { buildModelPrepLinksSection } from '../_lib/model-page-prep-links';
 import { buildModelPricingCallout } from '../_lib/model-page-pricing-callouts';
 import { buildModelSchemaPayloads } from '../_lib/model-page-schema-payloads';
-import { buildModelDecisionData } from '../_lib/model-page-decision-data';
 import { buildDecisionTocItems, resolveDecisionTocOverviewLabel } from '../_lib/model-page-decision-toc';
 import { parseModelPromptingContent } from '../_lib/model-page-prompting-content';
 import { resolveDefaultModelPromptingDemoPromptSource, resolveModelPromptingDemoPromptSource } from '../_lib/model-page-prompting-prompt-source';
 import { buildModelPromptingViewModel } from '../_lib/model-page-prompting-view-model';
-import { getModelPageTemplateConfig } from '../_lib/model-page-template-registry';
 import { parseModelExamplesContent } from '../_lib/model-page-examples-content';
 import { getModelExamplesUiCopy } from '../_lib/model-page-examples-ui-copy';
 import { resolveModelExampleFallbackPosters } from '../_lib/model-page-example-media';
 import { buildModelExamplePreviewAlts, resolveModelExamplesRuntimePolicy } from '../_lib/model-page-examples-runtime-policy';
 import { buildModelExamplesViewModel } from '../_lib/model-page-examples-view-model';
 
-export function MarketingModelPageLayout({
+export async function MarketingModelPageLayout({
   engine,
   pricingEngine,
   backLabel,
@@ -290,12 +290,8 @@ export function MarketingModelPageLayout({
   const faqJsonLdEntries = faqList.slice(0, 6);
   const prepLinksSection = buildModelPrepLinksSection(engine.modelSlug, locale);
   const pricingCallout = buildModelPricingCallout(engine.modelSlug, locale);
-  const templateData = buildModelDecisionData({
-    engine,
-    locale,
-    decisionContent: localizedContent.decision,
-  });
-  const templateConfig = templateData ? getModelPageTemplateConfig(engine.modelSlug) : null;
+  const { data: templateData, config: templateConfig } =
+    await buildCurrentModelDecisionData(engine, locale, localizedContent.decision);
   const sectionLabels = resolveSectionLabels(locale);
   const compareCopy = resolveCompareCopy(locale, heroTitle, supportsNativeAudio);
   const statusLabels = resolveSpecStatusLabels(locale);
@@ -399,7 +395,7 @@ export function MarketingModelPageLayout({
   ].filter((item) => item.visible);
   const decisionTocItems = buildDecisionTocItems({ locale, sectionLabels, textAnchorId, imageAnchorId, compareAnchorId, hasExamples, hasSpecs, hasTextSection, hasTipsSection, hasCompareSection, hasSafetySection, hasFaqSection });
   const decisionTocOverviewLabel = resolveDecisionTocOverviewLabel(locale);
-  const publicOffer = resolveModelPublicOffer(engine, pricingEngine);
+  const publicOffer = await resolveCurrentModelPublicOffer(engine, pricingEngine);
   const schemaPayloads = buildModelSchemaPayloads({
     canonical,
     description: templateData?.meta.description ?? pageDescription,

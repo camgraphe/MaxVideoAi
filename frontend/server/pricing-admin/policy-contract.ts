@@ -19,6 +19,7 @@ import type {
   PricingChangePreviewRow,
   PricingScenarioSelector,
 } from './canonical-scenarios';
+import type { ProviderCostComparisonRow } from './provider-cost-comparison';
 
 export type PricingPolicyChangeProposal =
   | { operation: 'create'; rule: unknown }
@@ -65,13 +66,16 @@ export type PricingPolicyInventoryRow = {
 };
 
 export type PricingPolicyInventoryResponse = {
+  modelTariffsActive?: boolean;
   versionedPolicyVersion: number;
   databaseStatus: PricingPolicyOverrideLoadResult['status'];
   warnings: string[];
   rows: PricingPolicyInventoryRow[];
+  providerComparisons: ProviderCostComparisonRow[];
 };
 
 export type PricingPolicyServiceDependencies = {
+  loadManualTariffsActive?(executor?: QueryExecutor): Promise<boolean>;
   loadOverrides(executor?: QueryExecutor): Promise<PricingPolicyOverrideLoadResult>;
   getEvent(
     id: string,

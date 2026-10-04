@@ -93,8 +93,7 @@ export function registerCalculateProjectBudgetTool(
     'calculate_project_budget',
     {
       title: 'Calculate a MaxVideoAI project budget',
-      description:
-        [
+      description: [
         'Use this when the user needs current pricing estimates of concrete video production proposals, including single- or mixed-model shots, clip counts and explicit creative attempts.',
         'The host owns the creative plan and names each proposal; give mixed-model shots a factual rationale.',
         'Validate each selected mode with get_model_details.',

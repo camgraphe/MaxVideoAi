@@ -77,11 +77,17 @@ export function useEngineSelectDropdownState({
       updatePosition();
     }
 
+    function handleScroll(event: Event) {
+      // Scrolling inside the fixed portal cannot move its trigger.
+      if (event.target instanceof Node && contentRef.current?.contains(event.target)) return;
+      updatePosition();
+    }
+
     window.addEventListener('resize', handleResize, { passive: true });
-    window.addEventListener('scroll', handleResize, { passive: true, capture: true });
+    window.addEventListener('scroll', handleScroll, { passive: true, capture: true });
     return () => {
       window.removeEventListener('resize', handleResize);
-      window.removeEventListener('scroll', handleResize, true);
+      window.removeEventListener('scroll', handleScroll, true);
     };
   }, [open, updatePosition]);
 

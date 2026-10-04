@@ -2,26 +2,24 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import clsx from 'clsx';
+import useSWR from 'swr';
 import type { EngineCaps, EnginePricingDetails, Mode } from '@/types/engines';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import { getEngineSelectFamilyRank } from '@/lib/engine-family-priority';
 import type { PricingRuleLite } from '@/lib/pricing-rules';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
-import { buildPublicPricingFacts, buildPublicUnitPricingFacts } from '@/lib/pricing-public-facts';
-import { projectPublicPricingSnapshot, quotePublicPricing } from '@/lib/pricing-public-quote';
+import type { PublicModelQuote, PublicModelQuoteInput } from '@/lib/pricing-public-model-contract';
 import { EngineSelect } from '@/components/ui/EngineSelect';
 import type { SelectOption } from '@/components/ui/SelectMenu';
 import { PriceEstimatorSelectGroup } from '@/components/marketing/price-estimator/PriceEstimatorSelectGroup';
 import { PriceEstimatorSummaryPanel } from '@/components/marketing/price-estimator/PriceEstimatorSummaryPanel';
 import { buildPriceEstimatorSummaryLabels } from '@/components/marketing/price-estimator/price-estimator-summary-labels';
 import {
-  buildAudioAddonPayload,
   buildEngineOption,
   FAL_ENGINE_DISCOVERY_RANK,
   FAL_ENGINE_META_BY_ID,
   FAL_ENGINE_REGISTRY,
-  formatCurrency,
   PER_IMAGE_ENGINE_IDS,
   SUPPORTED_MODES,
   type EngineOption,
@@ -33,6 +31,14 @@ export interface PriceEstimatorProps {
   defaultEngineId?: string;
   defaultDurationSec?: number;
 }
+
+async function fetchCurrentPrice(input: PublicModelQuoteInput): Promise<PublicModelQuote> {
+  const response = await fetch('/api/pricing/quote', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input), cache: 'no-store' });
+  if (!response.ok) return { status: 'unavailable' };
+  return response.json() as Promise<PublicModelQuote>;
+}
+
 export function PriceEstimator({
   variant = 'full',
   pricingRules,
@@ -195,7 +201,6 @@ export function PriceEstimator({
   const activeResolution =
     selectedEngine?.resolutions.find((resolution) => resolution.value === selectedResolution) ??
     selectedEngine?.resolutions[0];
-  const rate = activeResolution?.rate ?? 0;
   const filteredDurationOptions = useMemo(() => {
     if (!selectedEngine) return [];
     const cap =
@@ -230,78 +235,21 @@ export function PriceEstimator({
   }, [selectedEngine]);
 
 
-  const pricingQuote = useMemo(() => {
+  const quoteInput = useMemo<PublicModelQuoteInput | null>(() => {
     if (!selectedEngine || !activeResolution) return null;
-    const pricingCaps = selectedEngine.pricingEngineCaps ?? null;
+    const pricingCaps = selectedEngine.pricingEngineCaps;
     if (!pricingCaps) return null;
-    try {
-      const addons = buildAudioAddonPayload(selectedEngine.audioAddonKey, audioEnabled);
-      const perImage = PER_IMAGE_ENGINE_IDS.has(selectedEngine.id);
-      const mode = pricingCaps.modes.includes(engineMode)
-        ? engineMode
-        : pricingCaps.modes.find((candidate) => SUPPORTED_MODES.has(candidate)) ?? pricingCaps.modes[0];
-      const facts = perImage
-        ? buildPublicUnitPricingFacts({
-            engineId: selectedEngine.pricingEngineId,
-            currency: selectedEngine.currency,
-            unitPriceCents: activeResolution.providerRate * 100,
-            unit: 'image',
-          })
-        : buildPublicPricingFacts({
-            engine: pricingCaps,
-            durationSec: duration,
-            resolution: selectedResolution,
-            mode,
-            ...(addons ? { addons } : {}),
-            useStandardDefinitionFacts: true,
-          });
-      const quote = quotePublicPricing({
-        facts: facts.facts,
-        scenario: {
-          id: `estimator:${selectedEngine.pricingEngineId}:${duration}:${selectedResolution}`,
-          engineId: facts.facts.engineId,
-          ...(mode ? { mode } : {}),
-          resolution: selectedResolution,
-          membershipTier: 'member',
-        },
-        compatibilityProfileId: perImage
-          ? facts.compatibilityProfileId
-          : 'public-rounded-vendor-current',
-        pricingRules,
-      });
-      return {
-        quote,
-        snapshot: projectPublicPricingSnapshot({
-          quote,
-          base: facts.base,
-          addons: facts.addons,
-          meta: facts.meta,
-        }),
-      };
-    } catch {
-      return null;
-    }
-  }, [selectedEngine, activeResolution, audioEnabled, engineMode, duration, selectedResolution, pricingRules]);
-
-  const pricingSnapshot = pricingQuote?.snapshot ?? null;
-
-  const pricing = useMemo(() => {
-    if (!pricingSnapshot) {
-      return {
-        base: 0,
-        discountRate: 0,
-        discountValue: 0,
-        total: 0,
-      };
-    }
-    const base = pricingSnapshot.base.amountCents / 100;
-    const discountRate = pricingSnapshot.discount?.percentApplied ?? 0;
-    const discountValue = (pricingSnapshot.discount?.amountCents ?? 0) / 100;
-    const total = pricingSnapshot.totalCents / 100;
-    return { base, discountRate, discountValue, total };
-  }, [pricingSnapshot]);
-
-  const currency = pricingSnapshot?.currency ?? selectedEngine?.currency ?? 'USD';
+    const mode = pricingCaps.modes.includes(engineMode)
+      ? engineMode : pricingCaps.modes.find((candidate) => SUPPORTED_MODES.has(candidate)) ?? pricingCaps.modes[0];
+    if (!mode) return null;
+    return { modelId: selectedEngine.baseEngineId, mode,
+      durationSec: PER_IMAGE_ENGINE_IDS.has(selectedEngine.id) ? 1 : duration,
+      resolution: selectedResolution,
+      ...(selectedEngine.audioToggle ? { audio: audioEnabled } : {}) };
+  }, [selectedEngine, activeResolution, engineMode, duration, selectedResolution, audioEnabled]);
+  const { data: currentQuote } = useSWR(quoteInput ? JSON.stringify(quoteInput) : null,
+    () => fetchCurrentPrice(quoteInput!), { refreshInterval: 60_000 });
+  const currency = currentQuote?.status === 'exact' ? currentQuote.currency : selectedEngine?.currency ?? 'USD';
   const chargedNote =
     dictionary.pricing.estimator.chargedNote ?? t('pricing.estimator.chargedNote', 'Charged only if render succeeds.') ??
     'Charged only if render succeeds.';
@@ -389,23 +337,9 @@ export function PriceEstimator({
                       value={selectedResolution}
                       onChange={(value) => setSelectedResolution(String(value))}
                     />
-                    {activeResolution ? (
-                      <p className="mt-0.5 text-xs text-text-muted">
-                        {t('pricing.estimator.engineRateLabel', 'Engine rate')}{' '}
-                        {formatCurrency(rate, currency)}
-                        {selectedEngine?.rateUnit ?? '/s'}
-                      </p>
-                    ) : null}
                   </div>
                 ) : (
                   <div className="price-estimator-border price-estimator-surface relative rounded-[16px] border border-hairline bg-bg p-3 focus-within:z-20">
-                    <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
-                      {t('pricing.estimator.engineRateLabel', 'Engine rate')}
-                    </span>
-                    <p className="mt-1 text-2xl font-semibold text-text-primary">
-                      {formatCurrency(rate, currency)}
-                      {selectedEngine?.rateUnit ?? ''}
-                    </p>
                     <p className="mt-1 text-xs text-text-muted">
                       {t('pricing.estimator.perImageLabel', 'Applies per generated image inside Generate.')}
                     </p>
@@ -458,8 +392,7 @@ export function PriceEstimator({
             durationDisplay={durationDisplay}
             estimateLabels={estimateLabels}
             labels={summaryLabels}
-            priceTotal={pricing.total}
-            rate={rate}
+            priceTotal={currentQuote?.status === 'exact' ? currentQuote.amountCents / 100 : null}
             selectedEngine={selectedEngine}
             selectedResolution={selectedResolution}
           />

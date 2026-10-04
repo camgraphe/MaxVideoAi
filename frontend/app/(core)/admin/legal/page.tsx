@@ -110,7 +110,7 @@ export default function AdminLegalPage() {
       <AdminPageHeader
         eyebrow="Compliance"
         title="Legal documents"
-        description="Pilote les versions légales et la politique de re-consentement. Cette surface sert à publier les nouvelles versions sans perdre la lisibilité opérationnelle."
+        description="Manage legal document versions and reconsent rules before publishing changes."
         actions={
           <>
             <AdminActionLink href={`/admin/consents.csv?from=${today}`} prefetch={false}>
@@ -125,7 +125,7 @@ export default function AdminLegalPage() {
 
       <AdminSection
         title="Compliance Pulse"
-        description="Lecture courte de l’état des documents publiés et du mode de re-consentement actif."
+        description="Review published documents and the active reconsent policy."
       >
         <AdminMetricGrid items={metrics} columnsClassName="sm:grid-cols-2 xl:grid-cols-4" density="compact" />
       </AdminSection>
@@ -143,7 +143,7 @@ export default function AdminLegalPage() {
 
       <AdminSection
         title="Document Registry"
-        description="Mets à jour version, date de publication et URL publique pour chaque document piloté par le consentement."
+        description="Update the version, publication date and public URL of each consent document."
         action={
           <AdminSectionMeta
             title={`${docs.length} tracked documents`}

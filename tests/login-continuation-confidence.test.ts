@@ -56,6 +56,21 @@ test('direct login and unsafe targets do not invent continuation claims', () => 
   );
 });
 
+test('MCP consent explains account connection in every locale without claiming installation or payment', () => {
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const result = buildLoginContinuation({
+      copy: AUTH_COPY[locale].continuation,
+      locale,
+      nextPath: '/oauth/consent?authorization_id=authz_1234567890',
+    });
+    assert.equal(result?.kind, 'mcp');
+    assert.ok(result?.title.includes('MaxVideoAI'));
+    assert.ok(result?.body.includes('MaxVideoAI'));
+    assert.doesNotMatch(result?.body ?? '', /ChatGPT|Claude|installed|payment|paiement|pago/i);
+  }
+  assert.equal(buildLoginContinuation({ copy: AUTH_COPY.en.continuation, locale: 'en', nextPath: '/oauth/consent' }), null);
+});
+
 test('all supported auth locales expose continuation copy', () => {
   for (const locale of ['en', 'fr', 'es'] as const) {
     const copy = AUTH_COPY[locale].continuation;

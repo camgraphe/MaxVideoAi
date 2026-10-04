@@ -198,7 +198,8 @@ test('recommendation and budget tools retain choice, quality and estimate bounda
   assert.match(d.calculate_project_budget, /estimates do not reserve.*authorize generation/i);
   assert.match(d.calculate_project_budget, /environment.*staging.*production/s);
   const { instructions } = await getMetadata(allCapabilities);
-  assert.match(instructions, /host owns creative.*reference media/i);
+  assert.match(instructions, /host owns creative.*prompts.*scripts, shot plans.*reference media/i);
+  assert.match(instructions, /list_recent_generations before any new attempt.*only completed results/i);
   assert.match(instructions, /named model.*incompatible.*ask before alternatives/i);
   assert.doesNotMatch(instructions, /Seedance|Veo|Kling|best model|highest quality/i);
 });

@@ -154,6 +154,9 @@ export type AgentModelReferenceFieldDetails = Readonly<{
   type: 'image' | 'video' | 'audio';
   roles: readonly CanonicalGenerationReferenceRole[];
   assetRequired: boolean;
+  maxSizeMB?: number;
+  acceptedMimeTypes?: readonly string[];
+  acceptedFileExtensions?: readonly string[];
   imageAspectRatio?: Readonly<{ min: number; max: number }>;
   assetRequiredWhen?: Readonly<{
     setting: 'resolution';
@@ -196,6 +199,13 @@ export type AgentModelModeDetails = Readonly<{
   outputCount: AgentModelOutputCountDetails;
   settings: readonly AgentModelSettingDetails[];
   references: readonly AgentModelReferenceFieldDetails[];
+  referenceRequirement?: Readonly<{
+    min: number;
+    alternatives: readonly Readonly<{
+      type: 'image' | 'video' | 'audio';
+      roles: readonly CanonicalGenerationReferenceRole[];
+    } | { setting: string }>[];
+  }>;
 }>;
 
 export type AgentModelDetails = Readonly<{

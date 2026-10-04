@@ -54,7 +54,7 @@ test('provider attempt helper inserts attempts by public app job id and updates 
     'submit_started',
     JSON.stringify({ promptLength: 12 }),
   ]);
-  assert.match(queries[1]?.sql ?? '', /accepted_at = NOW\(\)/);
+  assert.match(queries[1]?.sql ?? '', /accepted_at = COALESCE\(accepted_at, NOW\(\)\)/);
   assert.deepEqual(queries[1]?.params, [42, 'task_123', JSON.stringify({ task_id: 'task_123' })]);
   assert.match(queries[2]?.sql ?? '', /provider_cost_units = \$4/);
   assert.deepEqual(queries[2]?.params, [42, 'completed', JSON.stringify({ final_unit_deduction: 8 }), 8, 1.12]);

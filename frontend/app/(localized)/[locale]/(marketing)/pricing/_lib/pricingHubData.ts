@@ -1,4 +1,5 @@
 import type { AppLocale } from '@/i18n/locales';
+import type { PublicModelQuoteInput } from '@/lib/pricing-public-model-contract';
 import { localePathnames } from '@/i18n/locales';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
 import { listAngleToolEngines } from '@/config/tools-angle-engines';
@@ -538,6 +539,20 @@ export function getPresetQuote(entry: FalEngineEntry, preset: VideoPriceScenario
   };
 }
 
+export function getExactVideoPresetInput(entry: FalEngineEntry, preset: VideoPriceScenario, locale: AppLocale) {
+  if (getPresetQuote(entry, preset, locale).status !== 'exact') return null;
+  const resolution = preset.id === 'entry-route'
+    ? chooseEntryResolution(entry.engine)
+    : resolveResolutionSupport(entry.engine, preset.resolution, locale).resolution;
+  const durationSec = resolvePresetDuration(entry, preset);
+  const mode = preset.mode ?? (entry.engine.modes.includes('t2v') ? 't2v' : entry.engine.modes[0]);
+  if (!durationSec || !mode) return null;
+  const togglesAudio = entry.modes.find((candidate) => candidate.mode === mode)?.ui.audioToggle;
+  return { modelId: entry.id, mode, durationSec, resolution,
+    ...(togglesAudio ? { audio: preset.audio } : {}),
+    ...(preset.referenceImageCount ? { referenceImageCount: preset.referenceImageCount } : {}) };
+}
+
 function buildLocalizedMarketingHref(locale: AppLocale, key: keyof typeof LOCALIZED_BASE_SLUGS, slug?: string) {
   const prefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
   const segment = LOCALIZED_BASE_SLUGS[key][locale] ?? LOCALIZED_BASE_SLUGS[key].en;
@@ -652,7 +667,7 @@ function getPricingDisplayRank(entry: FalEngineEntry) {
   return 9_000;
 }
 
-function markCheapestQuotes(rows: VideoPricingRow[]) {
+export function markCheapestQuotes(rows: VideoPricingRow[]) {
   VIDEO_PRICE_PRESETS.forEach((preset) => {
     const exactQuotes = rows
       .map((row) => ({ row, quote: row.quotes[preset.id] }))
@@ -677,7 +692,7 @@ function comparePricingRowsByQuote(first: VideoPricingRow, second: VideoPricingR
     || first.id.localeCompare(second.id);
 }
 
-function orderPricingRows(rows: VideoPricingRow[]) {
+export function orderPricingRows(rows: VideoPricingRow[]) {
   let orderedRows = [...rows].sort(comparePricingRowsByQuote);
   Object.entries(PRICING_FAMILY_VARIANT_ORDER).forEach(([family, variantOrder]) => {
     const familyRows = orderedRows
@@ -765,7 +780,7 @@ function cheapestExactRow(rows: VideoPricingRow[], presetId: VideoPricePresetId)
   );
 }
 
-function buildVideoHighlights(rows: VideoPricingRow[], locale: AppLocale): VideoPricingHighlight[] {
+export function buildVideoHighlights(rows: VideoPricingRow[], locale: AppLocale): VideoPricingHighlight[] {
   const copy = getPricingHubCopy(locale);
   const eligibleRows = rows.filter((row) => row.highlightEligible);
   const bestDraft = cheapestExactRow(eligibleRows, '5s-720p');
@@ -982,28 +997,32 @@ function formatImageSizeSummary(resolutions: string[], locale: AppLocale) {
   return labels.size ? [...labels].join(' · ') : copy.quote.appPresets;
 }
 
+export function getImagePricePresetInput(entry: FalEngineEntry, highQuality: boolean): PublicModelQuoteInput {
+  const engine = entry.engine;
+  const resolutions = engine.resolutions.map(String);
+  const standardResolution = isGptImageFamilyEngineId(engine.id) ? '1024x768'
+    : resolutions.includes('1k') ? '1k'
+      : resolutions.includes('square_hd') ? 'square_hd' : resolutions[0] ?? 'auto';
+  const highResolution = isGptImageFamilyEngineId(engine.id) ? '3840x2160'
+    : resolutions.includes('4k') ? '4k'
+      : resolutions.includes('2k') ? '2k' : resolutions[resolutions.length - 1] ?? standardResolution;
+  const quality = highQuality ? 'high' : 'medium';
+  const qualityField = [...(engine.inputSchema?.required ?? []), ...(engine.inputSchema?.optional ?? [])]
+    .find((field) => field.id === 'quality' && (!field.modes || field.modes.includes('t2i')));
+  return { modelId: entry.id, mode: 't2i', durationSec: 1,
+    resolution: highQuality ? highResolution : standardResolution,
+    quantity: 1,
+    ...(qualityField?.values?.includes(quality) ? { quality } : {}) };
+}
+
 function buildImagePricingRows(locale: AppLocale): ImagePricingRow[] {
   return listFalEngines()
     .filter((entry) => supportsImageGeneration(entry) && isPublicMarketingEntry(entry))
     .map((entry): ImagePricingRow => {
       const engine = entry.engine;
       const resolutions = engine.resolutions.map(String);
-      const standardResolution =
-        isGptImageFamilyEngineId(engine.id)
-          ? '1024x768'
-          : resolutions.includes('1k')
-            ? '1k'
-            : resolutions.includes('square_hd')
-              ? 'square_hd'
-              : resolutions[0] ?? 'auto';
-      const highResolution =
-        isGptImageFamilyEngineId(engine.id)
-          ? '3840x2160'
-          : resolutions.includes('4k')
-            ? '4k'
-            : resolutions.includes('2k')
-              ? '2k'
-              : resolutions[resolutions.length - 1] ?? standardResolution;
+      const standardResolution = getImagePricePresetInput(entry, false).resolution;
+      const highResolution = getImagePricePresetInput(entry, true).resolution;
       return {
         id: entry.id,
         anchorId: anchorFromSlug(entry.modelSlug),
@@ -1213,7 +1232,7 @@ function buildToolPricingRows(locale: AppLocale): ToolPricingRow[] {
   ];
 }
 
-function buildPopularChecks(
+export function buildPopularChecks(
   locale: AppLocale,
   videoRows: VideoPricingRow[],
   imageRows: ImagePricingRow[],

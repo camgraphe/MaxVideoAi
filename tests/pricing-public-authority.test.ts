@@ -12,11 +12,11 @@ test('all customer-visible pricing surfaces delegate to canonical public owners'
       'frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts',
       'quotePublicPricing',
     ],
-    ['frontend/components/marketing/PriceEstimator.tsx', 'quotePublicPricing'],
-    ['frontend/components/marketing/PriceChip.tsx', 'quotePublicPricing'],
+    ['frontend/components/marketing/PriceEstimator.tsx', '/api/pricing/quote'],
+    ['frontend/components/marketing/PriceChip.tsx', '/api/pricing/quote'],
     [
       'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-pricing.ts',
-      'computeCanonicalPublicSnapshot',
+      'computeCurrentPublicSnapshot',
     ],
     [
       'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema.ts',

@@ -29,11 +29,13 @@ export function buildRevenueBoardRows(comparison: AdminMetricsComparison): Reven
     topups: comparison.current.topupsDaily,
     grossCharges: comparison.current.chargesDaily,
     refunds: comparison.current.refundsDaily,
+    creditReversals: comparison.current.creditReversalsDaily,
   });
   const previousFlow = summarizeWalletFlow({
     topups: comparison.previous.topupsDaily,
     grossCharges: comparison.previous.chargesDaily,
     refunds: comparison.previous.refundsDaily,
+    creditReversals: comparison.previous.creditReversalsDaily,
   });
 
   const rows: Array<{
@@ -92,7 +94,7 @@ export function buildRevenueBoardRows(comparison: AdminMetricsComparison): Reven
       current: currentFlow.walletBalanceDeltaUsd,
       previous: previousFlow.walletBalanceDeltaUsd,
       formatValue: (value) => formatSignedCurrency(value),
-      helper: 'Top-ups plus refunds minus gross charges within each comparison window',
+      helper: 'Top-ups plus refunds minus generation charges and payment-credit reversals',
     },
     {
       label: 'Avg wallet ticket',
@@ -134,11 +136,13 @@ export function buildPulseCards(metrics: AdminMetrics, comparison: AdminMetricsC
     topups: comparison.current.topupsDaily,
     grossCharges: comparison.current.chargesDaily,
     refunds: comparison.current.refundsDaily,
+    creditReversals: comparison.current.creditReversalsDaily,
   });
   const previousFlow = summarizeWalletFlow({
     topups: comparison.previous.topupsDaily,
     grossCharges: comparison.previous.chargesDaily,
     refunds: comparison.previous.refundsDaily,
+    creditReversals: comparison.previous.creditReversalsDaily,
   });
 
   const signupsPeak = findPeakTimeSeriesPoint(comparison.current.signupsDaily);

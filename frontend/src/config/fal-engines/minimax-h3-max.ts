@@ -11,7 +11,7 @@ export const MINIMAX_H3_MAX_ENDPOINTS = {
 
 export const MINIMAX_H3_MAX_MODES = ['t2v', 'i2v', 'ref2v'] as const;
 export const MINIMAX_H3_MAX_DURATION_OPTIONS = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] as const;
-export const MINIMAX_H3_MAX_RESOLUTIONS = ['480P', '768P'] as const;
+export const MINIMAX_H3_MAX_RESOLUTIONS = ['480P', '768P', '1080P'] as const;
 export const MINIMAX_H3_MAX_TEXT_ASPECT_RATIOS = [
   '21:9',
   '16:9',
@@ -20,7 +20,11 @@ export const MINIMAX_H3_MAX_TEXT_ASPECT_RATIOS = [
   '3:4',
   '9:16',
 ] as const satisfies readonly AspectRatio[];
-export const MINIMAX_H3_MAX_PROMPT_EXPANSION_MODES = ['balanced', 'quality'] as const;
+export const MINIMAX_H3_MAX_PROMPT_EXPANSION_MODES = ['disabled', 'balanced', 'quality'] as const;
+
+// Supported MaxVideoAI upload formats; Fal does not publish general file-size limits for H3 Max.
+const IMAGE_UPLOAD = { acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'], acceptedFileExtensions: ['jpg', 'jpeg', 'png', 'webp'] };
+const AUDIO_UPLOAD = { acceptedMimeTypes: ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/wave', 'audio/vnd.wave'], acceptedFileExtensions: ['mp3', 'wav'] };
 
 const COMMON_MODES = [...MINIMAX_H3_MAX_MODES];
 
@@ -34,24 +38,25 @@ const inputSchema: NonNullable<EngineCaps['inputSchema']> = {
       modes: COMMON_MODES,
       requiredInModes: COMMON_MODES,
     },
-    {
-      id: 'image_url',
-      type: 'image',
-      label: 'Start image',
-      description: 'Required first frame for image-to-video.',
-      modes: ['i2v'],
-      requiredInModes: ['i2v'],
-      minCount: 1,
-      maxCount: 1,
-      source: 'either',
-    },
   ],
   optional: [
     {
+      id: 'image_url',
+      type: 'image',
+      ...IMAGE_UPLOAD,
+      label: 'Start image',
+      description: 'First frame; supply a start image, an end image, or both.',
+      modes: ['i2v'],
+      minCount: 0,
+      maxCount: 1,
+      source: 'either',
+    },
+    {
       id: 'end_image_url',
       type: 'image',
+      ...IMAGE_UPLOAD,
       label: 'End image',
-      description: 'Optional final frame for first-to-last-frame generation.',
+      description: 'Final frame; may be supplied alone or with a start image.',
       modes: ['i2v'],
       minCount: 0,
       maxCount: 1,
@@ -60,7 +65,9 @@ const inputSchema: NonNullable<EngineCaps['inputSchema']> = {
     {
       id: 'reference_image_urls',
       type: 'image',
+      ...IMAGE_UPLOAD,
       label: 'Reference images',
+      imageAspectRatio: { min: 0.4, max: 2.5 },
       modes: ['ref2v'],
       minCount: 0,
       maxCount: 9,
@@ -69,6 +76,8 @@ const inputSchema: NonNullable<EngineCaps['inputSchema']> = {
     {
       id: 'reference_video_urls',
       type: 'video',
+      acceptedMimeTypes: ['video/mp4', 'video/quicktime'],
+      acceptedFileExtensions: ['mp4', 'mov'],
       label: 'Reference videos',
       description: 'Each clip must be 2–15 seconds, with at most 15 seconds combined.',
       modes: ['ref2v'],
@@ -81,8 +90,9 @@ const inputSchema: NonNullable<EngineCaps['inputSchema']> = {
     {
       id: 'reference_audio_urls',
       type: 'audio',
+      ...AUDIO_UPLOAD,
       label: 'Reference audio',
-      description: 'Each clip must be 2–15 seconds, with at most 15 seconds combined. Audio requires an image or video reference.',
+      description: 'Each clip must be 2–15 seconds, with at most 15 seconds combined. Audio may be used alone or with visual references.',
       modes: ['ref2v'],
       minCount: 0,
       maxCount: 3,
@@ -90,6 +100,12 @@ const inputSchema: NonNullable<EngineCaps['inputSchema']> = {
       maxDurationSec: 15,
       source: 'either',
     },
+    {
+      id: 'target_audio_url', type: 'audio', ...AUDIO_UPLOAD, label: 'Soundtrack',
+      description: 'Use this audio as the soundtrack. It is trimmed or padded to the video duration, without changing playback speed.',
+      modes: ['t2v', 'i2v'], minCount: 0, maxCount: 1, minDurationSec: 2, maxSizeMB: 15, source: 'either',
+    },
+    { id: 'seed', type: 'number', label: 'Seed', modes: COMMON_MODES, min: 0, max: 2147483647, step: 1 },
     {
       id: 'duration',
       type: 'enum',
@@ -117,6 +133,10 @@ const inputSchema: NonNullable<EngineCaps['inputSchema']> = {
       default: '16:9',
     },
     {
+      id: 'aspect_ratio', type: 'enum', label: 'Aspect ratio', modes: ['ref2v'],
+      values: [...MINIMAX_H3_MAX_TEXT_ASPECT_RATIOS, 'auto'], default: 'auto',
+    },
+    {
       id: 'prompt_expansion_mode',
       type: 'enum',
       label: 'Prompt expansion',
@@ -134,7 +154,10 @@ const inputSchema: NonNullable<EngineCaps['inputSchema']> = {
   constraints: {
     maxCombinedVideoDurationSec: 15,
     maxCombinedAudioDurationSec: 15,
-    referenceAudioRequiresVisual: true,
+    ownedAssetModes: COMMON_MODES,
+    combinedDurationModes: ['ref2v'],
+    atLeastOneReferenceField: ['image_url', 'end_image_url', 'reference_image_urls', 'reference_video_urls', 'reference_audio_urls'],
+    referenceAudioRequiresVisual: false,
   },
 };
 
@@ -152,14 +175,15 @@ const modeCaps: NonNullable<EngineCaps['modeCaps']> = {
     duration: { options: [...MINIMAX_H3_MAX_DURATION_OPTIONS], default: 5 },
     resolution: [...MINIMAX_H3_MAX_RESOLUTIONS],
     audioToggle: false,
-    notes: 'Animate one required start image with an optional end image and automatic native audio.',
+    notes: 'Animate a start image, end image, or both, with native audio or an imposed soundtrack.',
   },
   ref2v: {
     modes: ['ref2v'],
+    aspectRatio: [...MINIMAX_H3_MAX_TEXT_ASPECT_RATIOS, 'auto'],
     duration: { options: [...MINIMAX_H3_MAX_DURATION_OPTIONS], default: 5 },
     resolution: [...MINIMAX_H3_MAX_RESOLUTIONS],
     audioToggle: false,
-    notes: 'Combine image, video, and audio references within the Hailuo reference limits; audio requires a visual reference.',
+    notes: 'Combine image, video, and audio references, including audio-only references.',
   },
 };
 
@@ -175,7 +199,7 @@ export const MINIMAX_H3_MAX_ENGINE: EngineCaps = {
   modes: [...MINIMAX_H3_MAX_MODES],
   maxDurationSec: 15,
   resolutions: [...MINIMAX_H3_MAX_RESOLUTIONS],
-  aspectRatios: [...MINIMAX_H3_MAX_TEXT_ASPECT_RATIOS],
+  aspectRatios: [...MINIMAX_H3_MAX_TEXT_ASPECT_RATIOS, 'auto'],
   fps: [24],
   audio: true,
   upscale4k: false,
@@ -185,7 +209,6 @@ export const MINIMAX_H3_MAX_ENGINE: EngineCaps = {
   params: {},
   inputLimits: {
     videoMaxDurationSec: 15,
-    audioMaxDurationSec: 15,
     promptMaxChars: 50_000,
     promptMaxCharsSource: 'official',
   },
@@ -194,19 +217,19 @@ export const MINIMAX_H3_MAX_ENGINE: EngineCaps = {
     currency: 'USD',
     perSecondCents: {
       default: 8,
-      byResolution: { '480P': 5, '768P': 8 },
+      byResolution: { '480P': 5, '768P': 8, '1080P': 16 },
     },
     byMode: {
-      ref2v: { perSecondCents: { default: 8 } },
+      ref2v: { perSecondCents: { default: 8, byResolution: { '480P': 5, '768P': 8, '1080P': 16 } } },
     },
     maxDurationSec: 15,
   },
   pricing: {
     unit: 'USD/s',
     base: 0.08,
-    byResolution: { '480P': 0.05, '768P': 0.08 },
+    byResolution: { '480P': 0.05, '768P': 0.08, '1080P': 0.16 },
     currency: 'USD',
-    notes: 'Normal output is $0.05/s at 480P or $0.08/s at 768P. Reference output is $0.08/s plus reference tokens above the included 4,096-token pool.',
+    notes: 'Output catalog rates are $0.05/s at 480P, $0.08/s at 768P, and $0.16/s at 1080P. Reference generation also bills normalized media tokens above 4,096; MaxVideoAI quotes a fixed price from a conservative budget based on verified reference metadata.',
   },
   updatedAt: '2026-09-03T00:00:00Z',
   ttlSec: 600,
@@ -234,7 +257,7 @@ export const MINIMAX_H3_MAX_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [{
   versionLabel: 'H3 Max',
   availability: 'limited',
   logoPolicy: 'textOnly',
-  billingNote: 'Your exact text-to-video price is calculated before generation from output duration and resolution.',
+  billingNote: 'Review your fixed quote before generation, based on the selected mode, duration, resolution, and references.',
   engine: MINIMAX_H3_MAX_ENGINE,
   modes: MINIMAX_H3_MAX_MODES.map((mode) => ({
     mode,
@@ -243,11 +266,11 @@ export const MINIMAX_H3_MAX_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [{
   })),
   defaultFalModelId: MINIMAX_H3_MAX_ENDPOINTS.t2v,
   seo: {
-    title: 'MiniMax H3 Max – Premium Hailuo AI Video',
-    description: 'Create 5–15-second videos from text with MiniMax H3 Max at 480P or 768P, with prompt expansion and native audio.',
+    title: 'MiniMax H3 Max – 1080P Video, References and Audio',
+    description: 'Create 5–15-second MiniMax H3 Max videos from text, frames or mixed references at 480P, 768P or 1080P, with native audio or a supplied soundtrack.',
     canonicalPath: '/models/minimax-h3-max',
   },
-  type: 'Hailuo text-to-video · Native audio',
-  seoText: 'Create premium Hailuo video with strong prompt adherence, polished visual finish, and automatic native audio.',
+  type: 'Text + Image + References · Native audio',
+  seoText: 'Create MiniMax H3 Max video from text, opening or ending frames, or image, video and audio references. Supply a soundtrack in text and image modes or generate native audio.',
   prompts: [],
 }];

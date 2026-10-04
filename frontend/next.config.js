@@ -90,9 +90,15 @@ const imageOptimizer = require('./config/image-optimizer.json');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Keep loopback auth redirects on the browser's cookie origin in local dev.
+  // Production retains Next.js URL normalization and its public routing policy.
+  skipMiddlewareUrlNormalize: process.env.NODE_ENV === 'development',
   compress: true,
   trailingSlash: false,
   transpilePackages: ['@maxvideoai/pricing'],
+  experimental: {
+    webpackMemoryOptimizations: true,
+  },
   images: {
     deviceSizes: imageOptimizer.deviceSizes,
     imageSizes: imageOptimizer.imageSizes,

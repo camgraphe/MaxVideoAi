@@ -29,8 +29,8 @@ export const anyGenerationQuoteRepository = createQuoteRepository<CanonicalAnyGe
       ? audioQuoteCodec.normalize(value) : generationQuoteCodec.normalize(value);
   },
   hash(value) { return value.surface === 'audio' ? audioQuoteCodec.hash(value) : generationQuoteCodec.hash(value); },
-  parseFunding(snapshot, priceCents, currency, mode, request) {
+  parseFunding(snapshot, priceCents, currency, mode, request, persistedRead) {
     return request.surface === 'audio' ? audioQuoteCodec.parseFunding(snapshot, priceCents, currency, mode)
-      : generationQuoteCodec.parseFunding(snapshot, priceCents, currency, mode, request);
+      : generationQuoteCodec.parseFunding(snapshot, priceCents, currency, mode, request, persistedRead);
   },
 });

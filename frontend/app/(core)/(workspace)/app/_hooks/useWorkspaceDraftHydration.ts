@@ -1,6 +1,6 @@
 import { useWorkspaceActiveDraft } from './useWorkspaceActiveDraft';
 import type { WorkspaceModelSetup } from '../_lib/workspace-model-candidate';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { MultiPromptScene } from '@/components/Composer';
 import type { SelectedVideoPreview } from '@/lib/video-preview-group';
@@ -116,26 +116,42 @@ export function useWorkspaceDraftHydration({
   hydratePendingRendersFromStorage,
   resetRenderState,
 }: UseWorkspaceDraftHydrationOptions) {
+  const current = useMemo<WorkspaceModelSetup | null>(
+    () =>
+      form
+        ? {
+            form,
+            inputAssets,
+            klingElements,
+            cfgScale,
+            prompt,
+            negativePrompt,
+            multiPromptEnabled,
+            multiPromptScenes,
+            shotType,
+            voiceIdsInput,
+          }
+        : null,
+    [
+      form,
+      inputAssets,
+      klingElements,
+      cfgScale,
+      prompt,
+      negativePrompt,
+      multiPromptEnabled,
+      multiPromptScenes,
+      shotType,
+      voiceIdsInput,
+    ],
+  );
   const activeDraft = useWorkspaceActiveDraft({
     authStatus,
     accountId,
     accessToken,
     locale,
     engines,
-    current: form
-      ? {
-          form,
-          inputAssets,
-          klingElements,
-          cfgScale,
-          prompt,
-          negativePrompt,
-          multiPromptEnabled,
-          multiPromptScenes,
-          shotType,
-          voiceIdsInput,
-        }
-      : null,
+    current,
     setForm,
     setInputAssets,
     setKlingElements,

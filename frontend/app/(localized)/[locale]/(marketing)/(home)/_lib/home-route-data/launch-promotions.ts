@@ -8,7 +8,8 @@ import type { AppLocale } from '@/i18n/locales';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import type { AcceptedDurableModelAsset } from '@/server/model-launch-assets-validation';
 import type { GalleryVideo } from '@/server/videos';
-import { formatCurrency } from './formatting';
+import { formatCurrentExamplePrice } from '@/lib/current-example-price-display';
+import type { CurrentExamplePrice } from '@/server/current-example-price';
 import type { HomepageExampleFamily, RedesignContent } from './types';
 
 const P0_PROMOTION_CANDIDATES = [
@@ -82,12 +83,14 @@ export function buildHomepageP0PromotionCards({
   targets,
   modelVideos,
   acceptedAssets,
+  currentPrices = new Map(),
 }: {
   locale: AppLocale;
   content: RedesignContent;
   targets: readonly HomepageP0PromotionTarget[];
   modelVideos: ReadonlyMap<string, GalleryVideo[]>;
   acceptedAssets: readonly AcceptedDurableModelAsset[];
+  currentPrices?: ReadonlyMap<string, CurrentExamplePrice>;
 }): HomeExampleCard[] {
   return targets.flatMap<HomeExampleCard>((target) => {
     const video = findPublicLaunchVideo(
@@ -98,12 +101,13 @@ export function buildHomepageP0PromotionCards({
     if (!video?.thumbUrl || !video.videoUrl) return [];
     return [{
       id: `launch-${target.modelId}`,
+      sourceVideoId: video.id,
       title: target.label,
       engineId: target.modelId,
       engine: target.label,
       mode: content.modeLabels?.t2v ?? 'Text-to-video',
       duration: `${video.durationSec}${locale === 'fr' ? ' s' : 's'}`,
-      price: formatCurrency(locale, video.currency, video.finalPriceCents),
+      price: formatCurrentExamplePrice(currentPrices.get(video.id), locale),
       useCase: locale === 'fr' ? 'Nouvelle génération' : locale === 'es' ? 'Nueva generación' : 'New generation',
       imageSrc: video.thumbUrl,
       videoSrc: video.videoUrl,

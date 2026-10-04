@@ -1,6 +1,46 @@
 export type BlogSlugLocale = 'en' | 'fr' | 'es';
 
 export const BLOG_SLUGS_BY_CANONICAL = {
+  "website-images-30-second-social-ad-chatgpt-work-maxvideoai": {
+    en: "website-images-30-second-social-ad-chatgpt-work-maxvideoai",
+    fr: "website-images-30-second-social-ad-chatgpt-work-maxvideoai",
+    es: "website-images-30-second-social-ad-chatgpt-work-maxvideoai",
+  },
+  "voiceover-to-visual-capsule-ltx-2-5-pro": {
+    en: "voiceover-to-visual-capsule-ltx-2-5-pro",
+    fr: "voiceover-to-visual-capsule-ltx-2-5-pro",
+    es: "voiceover-to-visual-capsule-ltx-2-5-pro",
+  },
+  "gpt-6-podcast-maxvideoai-premiere-pro": {
+    en: "gpt-6-podcast-maxvideoai-premiere-pro",
+    fr: "gpt-6-podcast-maxvideoai-premiere-pro",
+    es: "gpt-6-podcast-maxvideoai-premiere-pro",
+  },
+  "animated-cafe-menu-flux-3-codex-cli": {
+    en: "animated-cafe-menu-flux-3-codex-cli",
+    fr: "animated-cafe-menu-flux-3-codex-cli",
+    es: "animated-cafe-menu-flux-3-codex-cli",
+  },
+  "blender-animatic-ai-product-reveal-source-vs-reference": {
+    en: "blender-animatic-ai-product-reveal-source-vs-reference",
+    fr: "blender-animatic-ai-product-reveal-source-vs-reference",
+    es: "blender-animatic-ai-product-reveal-source-vs-reference",
+  },
+  "course-visual-kit-claude-desktop-maxvideoai": {
+    en: "course-visual-kit-claude-desktop-maxvideoai",
+    fr: "course-visual-kit-claude-desktop-maxvideoai",
+    es: "course-visual-kit-claude-desktop-maxvideoai",
+  },
+  "pack-broll-codex-cli-maxvideoai": {
+    en: "pack-broll-codex-cli-maxvideoai",
+    fr: "pack-broll-codex-cli-maxvideoai",
+    es: "pack-broll-codex-cli-maxvideoai",
+  },
+  "30-second-music-promo-two-minimax-h3-clips": {
+    en: "30-second-music-promo-two-minimax-h3-clips",
+    fr: "30-second-music-promo-two-minimax-h3-clips",
+    es: "30-second-music-promo-two-minimax-h3-clips",
+  },
   'access-sora-2-without-invite': {
     en: 'access-sora-2-without-invite',
     fr: 'acceder-a-sora-2-sans-invitation',

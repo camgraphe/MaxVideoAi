@@ -1,0 +1,96 @@
+{
+  "model": "gpt-5.6-luna",
+  "evidenceKind": "agent-generated-mocked-next-step-simulation",
+  "cases": [
+    {
+      "id": "B01",
+      "skill": "none",
+      "actions": [],
+      "reply": "Claro: «Mi primera cámara: lo que aprendí al empezar». También podrías usar «Mi primera cámara: primeras impresiones y consejos»."
+    },
+    {
+      "id": "B02",
+      "skill": "none",
+      "actions": [
+        {
+          "type": "discover_tools",
+          "query": "analyze the attached CSV for video audience retention"
+        }
+      ],
+      "reply": "I’ll inspect the attached CSV for retention trends, drop-off points, and strongest segments. I’m checking which CSV analysis capability is available before reporting findings."
+    },
+    {
+      "id": "B03",
+      "skill": "none",
+      "actions": [
+        {
+          "type": "discover_tools",
+          "query": "VideoOther video generation plugin tools"
+        }
+      ],
+      "reply": "Je vérifie les outils disponibles pour VideoOther, puis je poursuivrai avec ce plugin si ses outils sont bien accessibles."
+    },
+    {
+      "id": "B04",
+      "skill": "plan",
+      "actions": [],
+      "reply": "Je respecte votre choix de seedance-2-0. Il n’est pas activé dans l’environnement MaxVideoAI connecté actuellement. Voulez-vous que je vous aide à réessayer plus tard, ou souhaitez-vous changer de modèle ?"
+    },
+    {
+      "id": "B05",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "create_reference_upload_link",
+          "arguments": {
+            "kind": "image"
+          }
+        }
+      ],
+      "reply": "Je vais créer une passerelle privée pour votre image afin de l’utiliser comme référence i2v. Je vous indiquerai ensuite la suite à partir du résultat retourné, sans exposer votre chemin local."
+    },
+    {
+      "id": "B06",
+      "skill": "generate",
+      "actions": [
+        {
+          "type": "tool",
+          "name": "prepare_generation",
+          "arguments": {
+            "surface": "video",
+            "engineId": "seedance-2-0",
+            "mode": "i2v",
+            "prompt": "Un bateau rouge traverse un lac calme au lever du soleil.",
+            "settings": {
+              "durationSec": 8,
+              "aspectRatio": "9:16",
+              "resolution": "720p"
+            },
+            "references": [
+              {
+                "kind": "asset",
+                "assetId": "fixture-owned-image",
+                "role": "source"
+              }
+            ],
+            "outputCount": 1
+          }
+        }
+      ],
+      "reply": "Je prépare maintenant le devis exact pour ces réglages et cette image. Je vous montrerai le prix retourné avant toute génération."
+    },
+    {
+      "id": "B07",
+      "skill": "generate",
+      "actions": [],
+      "reply": "Les deux tentatives d’import ont échoué avec le même délai d’attente technique. Je m’arrête ici pour éviter une répétition automatique. Voulez-vous autoriser une nouvelle tentative de transfert ?"
+    },
+    {
+      "id": "B08",
+      "skill": "plan",
+      "actions": [],
+      "reply": "Cinematic rewrite: “A red boat glides across a glassy lake at dawn, soft mist drifting over the water, warm sunlight breaking through distant mountains, slow tracking camera, subtle ripples, natural cinematic color and atmosphere.” No reviewed prompting source was returned for this model."
+    }
+  ]
+}

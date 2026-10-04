@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { cache } from 'react';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getVideoWatchPageDataById } from '@/server/video-seo';
+import { prepareExampleWatchDetailContext } from '@/server/example-watch-detail-loader';
 import { buildExpectedVideoCanonicalUrl, getVideoCanonicalRedirectPath } from '@/lib/video-seo-canonical';
 import { VideoUnavailableState } from './_components/VideoUnavailableState';
 import { VideoWatchContent } from './_components/VideoWatchContent';
@@ -14,9 +15,7 @@ import {
   toAbsoluteUrl,
 } from './_lib/video-watch-page-utils';
 
-type PageProps = {
-  params: Promise<{ id: string }>;
-};
+type PageProps = { params: Promise<{ id: string }> };
 
 const getWatchPageData = cache(async (id: string) => getVideoWatchPageDataById(id));
 
@@ -72,6 +71,10 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
 
 export default async function VideoPage(props: PageProps) {
   const params = await props.params;
+  // Observe rejection now, but only wait or throw after the existing route guards.
+  const quotePreparation = prepareExampleWatchDetailContext().then(
+    value => ({ value }), error => ({ error }),
+  );
   const page = await getWatchPageData(params.id);
   if (!page) notFound();
 
@@ -90,5 +93,7 @@ export default async function VideoPage(props: PageProps) {
     return <VideoUnavailableState backHref={backHref} />;
   }
 
-  return <VideoWatchContent page={page} />;
+  const quoteResult = await quotePreparation;
+  if ('error' in quoteResult) throw quoteResult.error;
+  return <VideoWatchContent page={page} quoteContext={quoteResult.value} />;
 }

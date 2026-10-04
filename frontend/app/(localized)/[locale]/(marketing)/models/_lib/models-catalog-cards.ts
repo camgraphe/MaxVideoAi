@@ -10,6 +10,7 @@ import {
   selectCurrentModelCatalogSlugs,
 } from '@/lib/models/catalog';
 import { computeMarketingPriceRange } from '@/lib/pricing-marketing';
+import { formatPricePerUnit } from '@/lib/pricing-unit-display';
 import type { ModelGalleryCard, ModelsGalleryCopy } from '@/components/marketing/ModelsGallery';
 
 import {
@@ -37,7 +38,6 @@ import {
   getCatalogBySlug,
   getEngineDisplayName,
   getEngineTypeKey,
-  getMinPricePerSecond,
   getPrelaunchPricingLabel,
   getPrelaunchPricingNote,
   loadEngineKeySpecs,
@@ -75,7 +75,7 @@ const DECISION_DESCRIPTION_OVERRIDES: Record<string, string> = {
   'gpt-image-2-5-flare': 'Best for fast high-quality stills, readable text, product work, and everyday edits.',
   'gpt-image-2-5-sunburst': 'Best for maximum detail, precision edits, typography, and premium campaign finals.',
   seedream: 'Best for clean reference images, product visuals, and Seedance-ready stills.',
-  'seedream-5-0-pro': 'Best for professional stills, dense infographics, and 4K campaign-ready images.',
+  'seedream-5-0-pro': 'Best for professional stills, dense infographics, and 2K campaign-ready images.',
   'nano-banana-lite': 'Best for fast 1K image drafts, social visuals, and local reference edits.',
   'nano-banana-2': 'Best for grounded stills, wide-format edits, and image references for video workflows.',
   'nano-banana-pro': 'Best for campaign stills, typography-focused edits, and polished product visuals.',
@@ -150,7 +150,7 @@ export async function buildModelsCatalogCards({
   const pricingRangeMap = new Map(
     await Promise.all(
       engines.map(async (engine) => {
-        const range = await computeMarketingPriceRange(engine.engine, { durationSec: 5, memberTier: 'member' });
+        const range = await computeMarketingPriceRange(engine.engine, { durationSec: 5, memberTier: 'member', requireCurrentPolicy: true });
         return [engine.modelSlug, range] as const;
       })
     )
@@ -226,14 +226,14 @@ export async function buildModelsCatalogCards({
       catalogEntry?.engine?.maxDurationSec ?? null
     );
     const pricingRange = pricingRangeMap.get(engine.modelSlug) ?? null;
-    const priceFromCents = pricingRange?.min.cents ?? getMinPricePerSecond(catalogEntry);
+    const priceFromCents = pricingRange?.min.cents ?? null;
     const isPrelaunchWaitlist = engine.availability === 'waitlist';
     const hasConfirmedPricing = !isPrelaunchWaitlist && typeof priceFromCents === 'number' && priceFromCents > 0;
     const showPrelaunchPricePlaceholder = isPrelaunchWaitlist;
     const priceFrom = hasConfirmedPricing
       ? isImageOnly
         ? `$${(priceFromCents / 100).toFixed(2)}`
-        : `$${(priceFromCents / 100).toFixed(2)}/s`
+        : `${formatPricePerUnit(activeLocale, pricingRange!.currency, priceFromCents / 100)}/s`
       : showPrelaunchPricePlaceholder
         ? getPrelaunchPricingLabel(activeLocale)
         : 'Data pending';

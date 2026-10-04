@@ -168,11 +168,10 @@ decision: OpenClaw became live, indexable, and acquisition-enabled for direct
 MCP and its listed ClawHub package, while n8n became live, indexable, and
 acquisition-enabled only for the tested self-hosted deterministic MCP Client
 workflow. OpenClaw private-reference/channel paths, n8n Cloud, and n8n MCP
-Client Tool remain outside the claimed scopes. The n8n store state is
-`submitted` only for private Creator Portal workflow `19591`, which is
-`Pending` / `Under review`; the other two reviewed workflows are not submitted
-while the portal blocks another submission. No public listing or verification
-is claimed. None of those three JSON workflows calls `list_media` or
+Client Tool remain outside the claimed scopes. As of 2026-09-25, the n8n store
+state is `listed` for [public workflow 19591](https://n8n.io/workflows/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/).
+The other two reviewed workflows have no verified public listing. None of those
+three JSON workflows calls `list_media` or
 `create_reference_upload_link`, so private-reference automation in n8n remains
 unverified.
 

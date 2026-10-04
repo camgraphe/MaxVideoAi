@@ -39,6 +39,8 @@ export type BytePlusSeedanceFastPayload = {
   ratio?: '21:9' | '16:9' | '4:3' | '1:1' | '3:4' | '9:16';
   duration: number;
   generate_audio: boolean;
+  camera_fixed?: boolean;
+  seed?: number;
   watermark: false;
 };
 
@@ -88,7 +90,10 @@ export function buildBytePlusSeedancePayload(params: {
   referenceAudioUrls?: string[];
   resolution?: string | null;
   ratio?: string | null;
+  inheritSourceAspectRatio?: boolean;
   generateAudio?: boolean;
+  cameraFixed?: boolean;
+  seed?: number;
   allowedModes?: readonly Mode[];
   allowedAspectRatios?: readonly AspectRatio[];
   allowedResolutions?: Resolution[];
@@ -250,7 +255,8 @@ export function buildBytePlusSeedancePayload(params: {
   const requestedRatio = (typeof params.ratio === 'string' && params.ratio.trim() ? params.ratio.trim() : '16:9') as AspectRatio;
   const inheritsSourceAspectRatio =
     mode === 'i2v' &&
-    params.modelId.trim().toLowerCase().includes('seedance-2-5');
+    (params.inheritSourceAspectRatio === true ||
+      params.modelId.trim().toLowerCase().includes('seedance-2-5'));
   if (!prompt) {
     throw new BytePlusModelArkError('Prompt is required for BytePlus Seedance.', { code: 'PROMPT_REQUIRED' });
   }
@@ -289,6 +295,11 @@ export function buildBytePlusSeedancePayload(params: {
   if (!params.modelId.trim()) {
     throw new BytePlusModelArkError('BytePlus Seedance model id is not configured.', {
       code: 'BYTEPLUS_MODEL_MISSING',
+    });
+  }
+  if (params.seed !== undefined && (!Number.isSafeInteger(params.seed) || params.seed < -1)) {
+    throw new BytePlusModelArkError('BytePlus Seedance seed is invalid.', {
+      code: 'BYTEPLUS_SEED_INVALID',
     });
   }
   if (!allowedResolutions.includes(requestedResolution)) {
@@ -352,6 +363,8 @@ export function buildBytePlusSeedancePayload(params: {
       : { ratio: requestedRatio as BytePlusSeedancePayload['ratio'] }),
     duration,
     generate_audio: params.generateAudio === true,
+    ...(typeof params.cameraFixed === 'boolean' ? { camera_fixed: params.cameraFixed } : {}),
+    ...(params.seed !== undefined ? { seed: params.seed } : {}),
     watermark: false,
   };
 }

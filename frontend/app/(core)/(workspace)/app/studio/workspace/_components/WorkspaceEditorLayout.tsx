@@ -236,6 +236,7 @@ export function WorkspaceEditorLayout({
               onClose={mobilePanels.closePanel}
             >
               <WorkspaceProjectMediaPanel
+                onAppNavigate={shell.handleNavigateFromStudio}
                 activeTemplateName={activeTemplateName}
                 canvas={canvas}
                 projectAssets={projectAssets}

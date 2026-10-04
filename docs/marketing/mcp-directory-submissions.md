@@ -6,12 +6,26 @@ public listing. Those observations supersede the dated version/public-visibility
 claims below; historical submission evidence is preserved. The published n8n
 payload has not yet been compared byte-for-byte with the reviewed local JSON.
 
-Checked: 2026-09-17
-Overall state: **OWNED-SITE DIRECT RELEASE + OFFICIAL MCP REGISTRY 0.3.5 ACTIVE/LATEST — MCPBEAT OWNERSHIP CONFIRMED; GLAMA OWNERSHIP AND AUTHENTICATED HEALTH CONFIRMED; N8N WORKFLOW 19591 RESUBMITTED UNDER REVIEW**
+Checked: 2026-09-17; n8n public listing rechecked 2026-09-25
+Overall state: **OWNED-SITE DIRECT RELEASE + OFFICIAL MCP REGISTRY 0.3.5 ACTIVE/LATEST — MCPBEAT OWNERSHIP CONFIRMED; GLAMA OWNERSHIP AND AUTHENTICATED HEALTH CONFIRMED; N8N WORKFLOW 19591 PUBLICLY LISTED**
 
 This file records evidence and owner decisions. It does not authorize another submission, account creation, listing,
 deployment, feature-flag change, or use of a third party's marks. Directory rules are current and unstable; recheck all
 linked primary sources on the day an owner authorizes a new submission.
+
+## n8n public listing — 2026-09-25
+
+[Workflow 19591](https://n8n.io/workflows/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/)
+is now publicly readable in n8n's workflow library. Its title, overview and
+setup describe the brief, exact `quoteId`, explicit human approval, one
+confirmation and bounded status recovery of the reviewed brief candidate.
+The public page instructs users to attach their own MaxVideoAI OAuth2
+credential manually. This advances only the n8n template-library store state
+from `submitted` to `listed`; the self-hosted n8n 2.38.7 MCP Client checkpoint
+remains `tested_with_limits`. This listing supplies no n8n Cloud, MCP Client
+Tool / AI Agent, private-reference or token-refresh validation. The two other
+reviewed JSON candidates have no public listing verified in this check. Earlier
+`Pending` / `Under review` records below are dated historical checkpoints.
 
 ## Store website links — 2026-09-17
 
@@ -432,6 +446,41 @@ The current blockers are all release-critical:
   no real decision evidence;
 - production monitoring, status ownership, refresh evidence, and migration prerequisites are incomplete.
 - written OpenAI clarification or a policy change has not resolved the commerce eligibility inference.
+
+### 2026-10-01 policy and production-onboarding review
+
+The [current OpenAI plugin guidelines](https://developers.openai.com/plugins/plugin-guidelines#commerce-and-monetization)
+still prohibit selling digital services or credits and linking to transactional
+checkout. They now explicitly allow users to sign in to existing paid accounts
+and access already-included subscription features. This exception must be
+considered in the eligibility review; it is not an OpenAI approval of
+MaxVideoAI's metered, credit-funded generation workflow. The production MCP
+still exposes `create_topup_link`, so the full intended submission cannot be
+represented as already compliant. Store state remains `policy_blocked`; no
+submission or listing occurred.
+
+A concrete production custom-MCP installation was completed in ChatGPT web on
+2026-10-01, including browser sign-in/consent, return to ChatGPT and read-only
+account/model discovery. That resolves the earlier lack of graphical onboarding
+evidence for that limited path. It does not resolve paid-generation, private
+reference, refresh or revocation review requirements. The public directory
+returned no MaxVideoAI result in the tested anonymous and signed-in searches.
+See [the onboarding investigation](../operations/mcp-onboarding-2026-10-01.md).
+
+Review target: product name **MaxVideoAI**, production server
+`https://api.maxvideoai.com/mcp`, OAuth account login on `maxvideoai.com`, and
+first-run read-only account/model verification. Any proposed published package
+must describe its exact tools and intended generation/payment behavior. Do not
+hide a checkout tool or paid workflow from review. Resolve the existing-account
+exception against prepaid credits and confirmation before creating a portal
+submission. This review requires a platform determination or a Legal-approved
+policy interpretation; the direct MCP setup improvements can ship independently.
+
+The [current Anthropic Software Directory Policy](https://support.claude.com/en/articles/13145358-anthropic-software-directory-policy)
+was also rechecked on 2026-10-01. Section 4.B still excludes AI image/video/audio
+generation except limited design workflows. Claude custom remote connectors
+and Claude Code configuration therefore remain the documented direct paths;
+there is no new Anthropic directory eligibility or submission claim.
 
 ChatGPT plugin approval is not a Codex host decision test. A future approval must not be described as “listed in
 Codex” unless the exact Codex distribution surface and behavior are separately verified.

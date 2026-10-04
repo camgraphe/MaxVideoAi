@@ -1,18 +1,30 @@
 {
   "slug": "gemini-omni-flash-vs-veo-3-1",
   "en": {
+    "pricingCreditLink": {
+      "href": "/pay-as-you-go-ai-video-generator",
+      "label": "How credits work"
+    },
     "meta": { "title": "Gemini Omni Flash 1.1 vs Veo 3.1: Scores & Specs", "description": "Compare Gemini Omni Flash 1.1 and Veo 3.1 for 4K video, editing, references, audio, controls and price.", "titleBranding": "none" },
     "quickVerdict": { "title": "Quick verdict", "body": "Choose Gemini Omni Flash 1.1 for conversational refine, larger reference stacks and flexible video editing. Choose Veo 3.1 for the established Veo production workflow and cinematic first-pass generation." },
     "primaryLinksTitle": "Explore the models",
     "primaryLinks": [{ "href": "/models/gemini-omni-flash", "label": "Gemini Omni Flash 1.1" }, { "href": "/models/veo-3-1", "label": "Veo 3.1" }]
   },
   "fr": {
+    "pricingCreditLink": {
+      "href": "/pay-as-you-go-ai-video-generator",
+      "label": "Comment fonctionnent les crédits"
+    },
     "meta": { "title": "Gemini Omni Flash 1.1 vs Veo 3.1 : notes et specs", "description": "Comparez Gemini Omni Flash 1.1 et Veo 3.1 sur la 4K, édition, références, audio, contrôles et prix.", "titleBranding": "none" },
     "quickVerdict": { "title": "Verdict rapide", "body": "Choisissez Gemini Omni Flash 1.1 pour le raffinement conversationnel, les grandes piles de références et l’édition vidéo flexible. Choisissez Veo 3.1 pour son workflow de production établi et sa génération cinématographique dès le premier rendu." },
     "primaryLinksTitle": "Explorer les modèles",
     "primaryLinks": [{ "href": "/fr/modeles/gemini-omni-flash", "label": "Gemini Omni Flash 1.1" }, { "href": "/fr/modeles/veo-3-1", "label": "Veo 3.1" }]
   },
   "es": {
+    "pricingCreditLink": {
+      "href": "/pay-as-you-go-ai-video-generator",
+      "label": "Cómo funcionan los créditos"
+    },
     "meta": { "title": "Gemini Omni Flash 1.1 vs Veo 3.1: notas y specs", "description": "Compara Gemini Omni Flash 1.1 y Veo 3.1 en vídeo 4K, edición, referencias, audio, controles y precio.", "titleBranding": "none" },
     "quickVerdict": { "title": "Veredicto rápido", "body": "Elige Gemini Omni Flash 1.1 para refinado conversacional, grandes pilas de referencias y edición flexible. Elige Veo 3.1 para el flujo de producción Veo establecido y generación cinematográfica desde el primer render." },
     "primaryLinksTitle": "Explorar los modelos",

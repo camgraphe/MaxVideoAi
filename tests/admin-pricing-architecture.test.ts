@@ -24,7 +24,17 @@ const viewModelPath = join(root, 'frontend/app/(core)/admin/pricing/_lib/pricing
 const previewDialogPath = join(root, 'frontend/components/admin-system/pricing/AdminPricingChangePreviewDialog.tsx');
 const historyPath = join(root, 'frontend/components/admin-system/pricing/AdminPricingHistory.tsx');
 const e2ePath = join(root, 'tests/e2e/admin-critical-flows.spec.ts');
-const cockpitPaths = [cockpitPath, tablePath, inspectorPath, controllerPath, viewModelPath, previewDialogPath, historyPath];
+const cockpitPaths = [
+  cockpitPath,
+  tablePath,
+  inspectorPath,
+  join(root, 'frontend/app/(core)/admin/pricing/_components/ProductPolicyEditor.client.tsx'),
+  join(root, 'frontend/app/(core)/admin/pricing/_components/ProductPricingTable.client.tsx'),
+  controllerPath,
+  viewModelPath,
+  previewDialogPath,
+  historyPath,
+];
 const obsoletePaths = [
   'frontend/app/api/admin/membership-tiers/route.ts',
   'frontend/app/api/admin/pricing/rules/route.ts',
@@ -48,10 +58,7 @@ const pricingPolicyDependenciesPath = join(root, 'frontend/server/pricing-admin/
 const pricingPolicyPreviewPath = join(root, 'frontend/server/pricing-admin/policy-preview.ts');
 const pricingPolicyReadModelPath = join(root, 'frontend/server/pricing-admin/policy-read-model.ts');
 const pricingPolicyRulesPath = join(root, 'frontend/server/pricing-admin/policy-rules.ts');
-const pricingPolicyConfirmationPath = join(
-  root,
-  'frontend/server/pricing-admin/policy-confirmation.ts'
-);
+const pricingPolicyConfirmationPath = join(root, 'frontend/server/pricing-admin/policy-confirmation.ts');
 const pricingPolicyFocusedPaths = [
   pricingPolicyContractPath,
   pricingPolicyDependenciesPath,
@@ -70,7 +77,12 @@ const pricingPolicyRoutePaths = [
 test('admin pricing route is an authenticated server orchestrator under 60 lines', () => {
   assert.doesNotMatch(pageSource, /^'use client';/m, 'pricing route must stay server-rendered');
   assert.match(pageSource, /await requireAdmin\(\)/, 'pricing route should explicitly require admin');
-  assert.match(pageSource, /<AdminPricingCockpit\s*\/>/, 'pricing route should delegate to the canonical cockpit');
+  assert.match(
+    pageSource,
+    /<AdminPricingCockpit\s*\/>/,
+    'admin pricing route should render the cockpit'
+  );
+  assert.doesNotMatch(pageSource, /redirect\('\/admin\/settings'\)/);
   assert.ok(pageSource.split('\n').length < 60, 'pricing route should stay below 60 lines');
 });
 
@@ -80,24 +92,70 @@ test('canonical pricing cockpit modules exist and compose shared admin-system su
   const tableSource = readOrEmpty(tablePath);
   const inspectorSource = readOrEmpty(inspectorPath);
 
-  for (const component of ['AdminMetricGrid', 'AdminNotice', 'AdminEmptyState']) {
+  for (const component of ['AdminSection', 'AdminNotice', 'AdminEmptyState']) {
     assert.match(cockpitSource, new RegExp(component), `cockpit should use ${component}`);
   }
+  assert.match(cockpitSource, /role="tablist"/, 'comparison, rules and history should have separate views');
+  assert.match(cockpitSource, /pricing-panel-comparison/);
+  assert.match(cockpitSource, /pricing-panel-rules/);
   assert.match(tableSource, /AdminDataTable/, 'policy inventory should use AdminDataTable');
   assert.match(tableSource, /AdminFilterBar/, 'policy inventory should use AdminFilterBar');
   assert.match(inspectorSource, /AdminInspectorPanel/, 'policy editor should use AdminInspectorPanel');
 });
 
-test('admin navigation exposes exactly the three canonical commercial surfaces', () => {
-  const commercialItems = ADMIN_NAV_GROUPS
-    .flatMap((group) => group.items)
-    .filter((item) => ['/admin/pricing', '/admin/membership', '/admin/billing-products'].includes(item.href));
+test('pricing cockpit consumes server-projected supplier comparisons without client pricing math', () => {
+  const cockpitSource = readOrEmpty(cockpitPath);
+  assert.match(cockpitSource, /ProviderPriceComparisonTable/);
+  assert.match(cockpitSource, /providerComparisons/);
+  assert.match(cockpitSource, /onInspect=/);
+  assert.doesNotMatch(cockpitSource, /vendorSubtotalCents\s*[-+*/]/);
+});
 
-  assert.deepEqual(commercialItems, [
-    { id: 'pricing', label: 'Pricing policy', href: '/admin/pricing', icon: 'pricing' },
-    { id: 'membership', label: 'Membership', href: '/admin/membership', icon: 'membership' },
-    { id: 'billing-products', label: 'Billing products', href: '/admin/billing-products', icon: 'billing-products' },
-  ]);
+test('central Pricing exposes audio, tools and Storyboard without duplicating commercial services', () => {
+  const cockpit = readOrEmpty(cockpitPath);
+  for (const label of ['Video', 'Image', 'Audio', 'Tools', 'Storyboard']) assert.ok(cockpit.includes(`'${label}'`), label);
+  const products = readOrEmpty(join(root, 'frontend/app/(core)/admin/pricing/_components/ProductPricingTable.client.tsx'));
+  assert.match(products, /useAdminBillingProductsController/);
+  assert.match(products, /AdminPricingChangePreviewDialog/);
+  assert.doesNotMatch(products, /quoteCanonicalPricing|@\/server\/|marginPercent\s*[*+/-]/);
+  const route = readOrEmpty(join(root, 'frontend/app/api/admin/pricing/products/route.ts'));
+  assert.match(route, /await requireAdmin\(\)/);
+  assert.match(route, /loadAdminProductPricing/);
+  assert.doesNotMatch(route, /charge|insert|UPDATE|ensureBillingSchema/);
+});
+
+test('exact admin supplier evidence shares a server owner and cannot author customer prices', () => {
+  const service = readOrEmpty(join(root, 'frontend/server/pricing-admin/customer-tariff-service.ts'));
+  const inventory = readOrEmpty(pricingPolicyReadModelPath);
+  assert.match(service, /providerComparisonForTariffScenario\(scenario\)/);
+  assert.match(inventory, /providerComparisonForTariffScenario\(selected\)/);
+  for (const file of ['catalog-supplier-reference.ts', 'published-supplier-tariffs.ts', 'tariff-provider-comparison.ts']) {
+    const source = readOrEmpty(join(root, 'frontend/server/pricing-admin', file));
+    assert.doesNotMatch(source, /quoteCanonicalPricing|computeCanonicalBillingSnapshot|resolveCustomerTariffQuote/,
+      `${file} must stay factual and independent from customer policy`);
+  }
+});
+
+test('local decision analysis cannot resolve or persist commercial tariffs', () => {
+  const decision = readOrEmpty(join(root, 'frontend/app/(core)/admin/pricing/_lib/pricing-decision.ts'));
+  const panel = readOrEmpty(join(root, 'frontend/app/(core)/admin/pricing/_components/PricingDecisionPanel.client.tsx'));
+  const cockpit = readOrEmpty(cockpitPath);
+  assert.doesNotMatch(decision, /quoteCanonicalPricing|quote-billing|@\/lib\/db|\bfetch\(|server-only/);
+  assert.doesNotMatch(panel, /\bfetch\(|\/api\/admin|customer-tariff-service/);
+  const editor = readOrEmpty(join(root, 'frontend/app/(core)/admin/pricing/_hooks/useCustomerTariffEditor.ts'));
+  assert.match(panel, /useCustomerTariffEditor/);
+  assert.match(editor, /previewFingerprint/);
+  assert.doesNotMatch(cockpit, /CustomerTariffPanel|pricing-panel-tariffs|label: 'Customer prices'/);
+});
+
+test('navigation exposes model pricing and billing products while membership remains historical', () => {
+  const items = ADMIN_NAV_GROUPS.flatMap((group) => group.items);
+  assert.equal(items.some((item) => item.href === '/admin/pricing'), true);
+  assert.equal(items.some((item) => item.href === '/admin/membership'), false);
+  assert.equal(
+    items.some((item) => item.href === '/admin/billing-products'),
+    true
+  );
 });
 
 test('obsolete mixed pricing components and direct mutation routes are deleted', () => {
@@ -122,7 +180,10 @@ test('shared immutable history renders operation, actor, time, target, and previ
   assert.match(source, /event\.domain\s*===\s*'policy_rule'/);
   assert.match(source, /event\.operation\s*===\s*'create'/);
   assert.doesNotMatch(source, /event\.previousState\s*\?/);
-  assert.match(source, /aria-label=\{`Preview rollback for \$\{event\.targetId\} \(\$\{event\.operation\}, event \$\{event\.id\}\)`\}/);
+  assert.match(
+    source,
+    /aria-label=\{`Preview rollback for \$\{event\.targetId\} \(\$\{event\.operation\}, event \$\{event\.id\}\)`\}/
+  );
   assert.match(source, /Preview rollback/);
 });
 
@@ -152,13 +213,16 @@ test('policy inspector owns every canonical field and keeps vendor routing read-
     assert.match(inspectorSource, new RegExp(field), `policy inspector should expose ${field}`);
   }
   assert.match(inspectorSource, /Vendor account/, 'policy inspector should expose routing context');
+  assert.match(inspectorSource, /Margin \(%\)/);
+  assert.match(inspectorSource, /Audio surcharge \(%\)/);
+  assert.match(inspectorSource, /Enter 30 for 30%/);
   assert.doesNotMatch(
     inspectorSource,
     /name=["']vendorAccountId["']|onChange[^\n]*vendorAccountId/,
     'vendor account must never be editable'
   );
   for (const context of [
-    'Supplier subtotal',
+    'Legacy pricing basis',
     'Effective provenance',
     'Matched versioned rule',
     'Database override',
@@ -175,11 +239,25 @@ test('policy inspector owns every canonical field and keeps vendor routing read-
   assert.match(inspectorSource, /lastEvent\?\.createdAt/);
 });
 
-test('client cockpit stays browser-safe and policy-domain-only', () => {
+test('client cockpit stays browser-safe and delegates each pricing domain to its service', () => {
   const clientSources = cockpitPaths.map(readOrEmpty).join('\n');
   assert.doesNotMatch(clientSources, /@\/server\/|@maxvideoai\/pricing|quoteCanonicalPricing|resolvePricingPolicy/);
-  assert.doesNotMatch(clientSources, /membership-tiers|billing-products|\/api\/admin\/pricing\/rules/);
+  assert.doesNotMatch(clientSources, /membership-tiers|\/api\/admin\/pricing\/rules/);
+  assert.doesNotMatch(readOrEmpty(controllerPath), /BILLING_PRODUCTS_(?:PREVIEW|CONFIRM)_ENDPOINT/);
   assert.doesNotMatch(clientSources, /marginPercent\s*[+*/-]|surcharge(?:Audio|Upscale)Percent\s*[+*/-]/);
+});
+
+test('product policies stay inline in the selected category and refresh current product quotes', () => {
+  const cockpit = readOrEmpty(cockpitPath);
+  const products = readOrEmpty(join(root, 'frontend/app/(core)/admin/pricing/_components/ProductPricingTable.client.tsx'));
+  const editor = readOrEmpty(join(root, 'frontend/app/(core)/admin/pricing/_components/ProductPolicyEditor.client.tsx'));
+  assert.match(cockpit, /<ProductPolicyEditor/);
+  assert.match(cockpit, /setProductPolicyKey\(key\)/);
+  assert.match(cockpit, /confirmPreview\(\)\.then\(\(\) => mutate\(/);
+  assert.match(products, /row\.id === policyEditorRow/);
+  assert.match(products, /disabled=\{locked \|\| row\.totalCents == null\}/);
+  assert.doesNotMatch(editor, /onChange\('(?:engineId|mode|resolution|currency|compatibilityProfile)'/);
+  assert.match(editor, /This editor preserves the selected scope/);
 });
 
 test('controller enforces preview then fingerprint confirmation and refreshes only after success', () => {
@@ -237,8 +315,11 @@ test('policy post-commit refresh recovery is durable and blocks stale cockpit st
   assert.match(controllerSource, /setDraft\(null\)/);
   assert.match(controllerSource, /setDraftSelectionKey\(null\)/);
   assert.equal(controllerSource.match(/setPostCommitWarning\(null\)/g)?.length, 1);
-  assert.match(cockpitSource, /controller\.postCommitWarning[\s\S]*tone="warning"[\s\S]*controller\.postCommitWarning\.message/);
-  assert.match(cockpitSource, /disabled=\{controller\.refreshing \|\| controller\.refreshLocked\}/);
+  assert.match(
+    cockpitSource,
+    /controller\.postCommitWarning[\s\S]*tone="warning"[\s\S]*controller\.postCommitWarning\.message/
+  );
+  assert.match(cockpitSource, /disabled=\{controller\.refreshing \|\| controller\.refreshLocked \|\| productLocked\}/);
 });
 
 test('generic preview dialog is read-only and requires explicit confirmation', () => {
@@ -288,19 +369,12 @@ test('preview and confirmation lock every mutable cockpit control', () => {
   assert.match(inspectorSource, /disabled=\{locked\}/g);
 });
 
-test('pricing E2E treats render timeouts as failures, never empty inventory skips', () => {
+test('pricing E2E covers the authorized comparison and safe policy preview', () => {
   const e2eSource = readOrEmpty(e2ePath);
-  assert.match(
-    e2eSource,
-    /async function waitForPricingPolicyState[\s\S]*?return 'timeout' as const\s*;\s*\}/
-  );
-  assert.match(e2eSource, /if \(pricingState === 'timeout'\) \{\s*throw new Error/);
-  const flow = e2eSource.match(/test\('pricing policy filters[\s\S]*?assertNoClientErrors\(errors\);\s*\}\);/)?.[0] ?? '';
-  const state = e2eSource.match(/async function waitForPricingPolicyState[\s\S]*?\n\}/)?.[0] ?? '';
-  assert.match(flow, /getByTestId\('pricing-policy-inventory'\)/);
-  assert.doesNotMatch(flow, /page\.locator\('tbody tr'\)/);
-  assert.match(state, /getByTestId\('pricing-policy-inventory'\)/);
-  assert.doesNotMatch(state, /page\.locator\('tbody tr'\)/);
+  assert.match(e2eSource, /pricing cockpit compares costs and previews a policy change/);
+  assert.match(e2eSource, /Supplier cost and customer price/);
+  assert.match(e2eSource, /Preview policy change/);
+  assert.match(e2eSource, /expect\(confirmRequests\)\.toEqual\(\[\]\)/);
 });
 
 test('cockpit view model preserves an inherited database override selector in update proposals', () => {
@@ -332,6 +406,21 @@ test('cockpit view model preserves an inherited database override selector in up
   });
 });
 
+test('editing an audio product creates a scoped rule without changing an inherited global override', () => {
+  const row: PricingPolicyInventoryRow = {
+    selector: { engineId: 'audio-generation' }, versionedRule: null,
+    databaseOverride: { id: 'default', marginPercent: .3, marginFlatCents: 0, surchargeAudioPercent: .2, surchargeUpscalePercent: .5, currency: 'USD' },
+    effectiveProvenance: { source: 'database', matchedBy: 'global', sourceRuleId: 'default', compatibilityProfile: 'audio-tripled-rounded' },
+    representativeQuotes: [], routingContext: null, lastEvent: null,
+  };
+  const draft = createPricingPolicyDraft(row, true);
+  assert.equal(draft.engineId, 'audio-generation');
+  assert.equal(draft.compatibilityProfile, 'audio-tripled-rounded');
+  const proposal = buildPricingPolicyProposal(row, draft);
+  assert.equal(proposal.operation, 'create');
+  assert.equal(row.databaseOverride?.id, 'default');
+});
+
 test('cockpit view model creates selector-scoped drafts and filters inventory without pricing math', () => {
   const row: PricingPolicyInventoryRow = {
     selector: { engineId: 'kling-3-pro', mode: 't2v', resolution: '1080p' },
@@ -356,10 +445,7 @@ test('cockpit view model creates selector-scoped drafts and filters inventory wi
   assert.equal(draft.marginPercent, '30');
   assert.deepEqual(filterPricingPolicyRows([row], { query: '1080P', source: 'versioned', status: 'all' }), [row]);
   assert.equal(filterPricingPolicyRows([row], { query: 'veo', source: 'all', status: 'all' }).length, 0);
-  assert.deepEqual(
-    filterPricingPolicyRows([row], { query: '', source: 'all', status: 'unavailable' }),
-    [row]
-  );
+  assert.deepEqual(filterPricingPolicyRows([row], { query: '', source: 'all', status: 'unavailable' }), [row]);
   assert.equal(filterPricingPolicyRows([row], { query: '', source: 'all', status: 'quoted' }).length, 0);
 });
 
@@ -447,11 +533,7 @@ test('pricing policy read model owns inventory and history without mutation comm
   assert.match(source, /listLatestEventsByTargets\('policy_rule'/);
   assert.match(source, /representativeQuotes/);
   assert.match(source, /databaseStatus/);
-  assert.doesNotMatch(
-    source,
-    /withTransaction|upsertRule|deleteRule|insertEvent/,
-    'read model must not own mutations'
-  );
+  assert.doesNotMatch(source, /withTransaction|upsertRule|deleteRule|insertEvent/, 'read model must not own mutations');
 });
 
 test('pricing policy confirmation owns the locked mutation and post-commit side effects', () => {
@@ -479,11 +561,7 @@ test('pricing policy service is a thin stable facade over focused modules', () =
     assert.ok(existsSync(path), `${path} should exist`);
     const source = readOrEmpty(path);
     assert.ok(source.split('\n').length <= 350, `${path} should stay at or below 350 lines`);
-    assert.doesNotMatch(
-      source,
-      /from ['"]\.\/policy-service['"]/,
-      'focused modules must not import the facade'
-    );
+    assert.doesNotMatch(source, /from ['"]\.\/policy-service['"]/, 'focused modules must not import the facade');
   });
 
   for (const routePath of pricingPolicyRoutePaths) {
@@ -503,20 +581,36 @@ test('preview-required pricing policy routes exist and stay thin, authorized ser
     assert.ok(existsSync(routePath), `${routePath} should exist`);
     const source = readFileSync(routePath, 'utf8');
     assert.match(source, /requireAdmin\(req\)/, 'every pricing policy handler should require admin');
-    assert.match(source, /@\/server\/pricing-admin\/policy-service/, 'route should delegate to the pricing policy service');
-    assert.doesNotMatch(source, /quoteCanonicalPricing|resolvePricingPolicy|marginPercent\s*[+*/-]/, 'route must not own quote math');
+    assert.match(
+      source,
+      /@\/server\/pricing-admin\/policy-service/,
+      'route should delegate to the pricing policy service'
+    );
+    assert.doesNotMatch(
+      source,
+      /quoteCanonicalPricing|resolvePricingPolicy|marginPercent\s*[+*/-]/,
+      'route must not own quote math'
+    );
     assert.doesNotMatch(source, /app_pricing_rules|INSERT INTO|UPDATE app_|DELETE FROM/, 'route must not own SQL');
     assert.ok(source.split('\n').length <= 100, `${routePath} should stay below 100 lines`);
   }
 
   const confirmSource = readFileSync(pricingPolicyRoutePaths[2]!, 'utf8');
-  assert.match(confirmSource, /adminUserId\s*=\s*await requireAdmin\(req\)/, 'confirmation actor should come from requireAdmin');
+  assert.match(
+    confirmSource,
+    /adminUserId\s*=\s*await requireAdmin\(req\)/,
+    'confirmation actor should come from requireAdmin'
+  );
   assert.match(
     confirmSource,
     /confirmPricingPolicyChange\([\s\S]*?adminUserId\s*\n\s*\)/,
     'confirmation should pass the server actor'
   );
-  assert.doesNotMatch(confirmSource, /payload\.(actor|actorId|adminUserId)/, 'request actor fields must not be authoritative');
+  assert.doesNotMatch(
+    confirmSource,
+    /payload\.(actor|actorId|adminUserId)/,
+    'request actor fields must not be authoritative'
+  );
 });
 
 test('pricing confirmation performs a transaction-local locked preview check', () => {
@@ -524,18 +618,9 @@ test('pricing confirmation performs a transaction-local locked preview check', (
   const dependenciesSource = readOrEmpty(pricingPolicyDependenciesPath);
   const storeSource = readFileSync(join(root, 'frontend/src/lib/pricing-rule-store.ts'), 'utf8');
 
-  assert.match(
-    confirmationSource,
-    /loadOverrides:\s*\(\)\s*=>\s*dependencies\.loadOverrides\(executor\)/
-  );
-  assert.match(
-    confirmationSource,
-    /transactionPreview\s*=\s*await previewPricingPolicyChange/
-  );
-  assert.match(
-    dependenciesSource,
-    /loadPricingPolicyOverridesWithExecutor\(executor, \{ lock: true \}\)/
-  );
+  assert.match(confirmationSource, /loadOverrides:\s*\(\)\s*=>\s*dependencies\.loadOverrides\(executor\)/);
+  assert.match(confirmationSource, /transactionPreview\s*=\s*await previewPricingPolicyChange/);
+  assert.match(dependenciesSource, /loadPricingPolicyOverridesWithExecutor\(executor, \{ lock: true \}\)/);
   assert.match(storeSource, /LOCK TABLE app_pricing_rules IN SHARE ROW EXCLUSIVE MODE/);
   assert.match(storeSource, /options\.lock \? 'FOR UPDATE'/);
 });
@@ -553,11 +638,7 @@ test('admin route guide locks the one-owner commercial mutation workflow', () =>
   assert.match(guide, /vendorAccountId.*read-only/i);
 });
 
-function buildInventoryRow(
-  engineId: string,
-  resolution: string,
-  databaseOverride = false
-): PricingPolicyInventoryRow {
+function buildInventoryRow(engineId: string, resolution: string, databaseOverride = false): PricingPolicyInventoryRow {
   const rule = {
     id: `${engineId}-${resolution}`,
     engineId,

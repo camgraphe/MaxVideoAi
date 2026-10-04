@@ -6,12 +6,12 @@ import { buildMinimaxH3MaxFalRequest } from '../frontend/src/lib/minimax-h3-max'
 import { buildBillingPricingFacts } from '../frontend/src/lib/pricing-billing-facts';
 import { buildPublicPricingFacts } from '../frontend/src/lib/pricing-public-facts';
 
-test('MiniMax H3 Max rejects image-to-video without a start image', () => {
+test('MiniMax H3 Max rejects image-to-video without either frame', () => {
   assert.throws(() => buildMinimaxH3MaxFalRequest({
     mode: 'i2v',
     prompt: 'The still life starts to move.',
     durationSec: 5,
-  }), /start image/i);
+  }), /start or end image/i);
 });
 
 test('MiniMax H3 Max rejects reference media outside image, video, and audio', () => {
@@ -35,8 +35,8 @@ test('MiniMax H3 Max rejects unsupported duration and resolution values', () => 
     mode: 't2v',
     prompt: 'A lighthouse rotates through fog.',
     durationSec: 5,
-    resolution: '1080P',
-  }), /480P or 768P/);
+    resolution: '2K',
+  }), /480P, 768P, or 1080P/);
 });
 
 test('MiniMax H3 Max exact reference quotes fail closed without trusted token metadata', () => {

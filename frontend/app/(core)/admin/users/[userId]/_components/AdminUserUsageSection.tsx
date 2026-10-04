@@ -10,7 +10,7 @@ export function AdminUserUsageSection({ usage }: { usage: AdminUserUsage | null 
   return (
     <AdminSection
       title="Usage & Spend"
-      description="Derniers rendus et répartition par engine pour comprendre rapidement où part la dépense."
+      description="Recent generations and model usage."
       action={
         usage ? (
           <AdminSectionMeta
@@ -21,9 +21,9 @@ export function AdminUserUsageSection({ usage }: { usage: AdminUserUsage | null 
       }
     >
       {usage ? (
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_340px]">
+        <div className="min-w-0 space-y-4">
           <RecentJobsTable usage={usage} />
-          <EngineMixPanel usage={usage} />
+          <details><summary className="cursor-pointer text-sm font-medium">Model breakdown</summary><EngineMixPanel usage={usage} /></details>
         </div>
       ) : (
         <AdminEmptyState>Render and spend aggregates are unavailable.</AdminEmptyState>
@@ -36,7 +36,7 @@ function RecentJobsTable({ usage }: { usage: AdminUserUsage }) {
   return (
     <AdminDataTable>
       <thead className="bg-surface">
-        <tr className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
+        <tr className="text-xs text-text-secondary">
           <th className="px-4 py-3 font-semibold">Job</th>
           <th className="px-4 py-3 font-semibold">Created</th>
           <th className="px-4 py-3 font-semibold">Engine</th>
@@ -75,7 +75,7 @@ function RecentJobsTable({ usage }: { usage: AdminUserUsage }) {
 
 function EngineMixPanel({ usage }: { usage: AdminUserUsage }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-hairline bg-bg/40">
+    <div className="min-w-0 border-t border-hairline">
       <div className="border-b border-hairline px-4 py-3">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">Engine mix</p>
         <p className="mt-1 text-sm text-text-secondary">Lifetime completed renders and spend by provider.</p>

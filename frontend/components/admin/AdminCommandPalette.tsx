@@ -49,17 +49,7 @@ function buildCommands(navGroups: AdminNavGroup[], router: ReturnType<typeof use
     }))
   );
 
-  const quick: CommandItem[] = [
-    {
-      id: 'go-admin',
-      label: 'Admin dashboard',
-      group: 'Dashboard',
-      href: '/admin',
-      keywords: ['hub', 'health', 'overview'],
-    },
-  ];
-
-  return [...quick, ...JOB_STATUS_COMMANDS, ...navItems].map((item) => ({
+  return [...JOB_STATUS_COMMANDS, ...navItems].map((item) => ({
     ...item,
     action: item.href ? () => router.push(item.href as string) : item.action,
   }));

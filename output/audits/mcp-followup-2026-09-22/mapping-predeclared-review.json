@@ -1,0 +1,31 @@
+{
+  "date": "2026-09-22",
+  "kind": "controlled-field-mapping-only",
+  "cases": {
+    "F01": {
+      "priorities": null
+    },
+    "F02": {
+      "priorities": null
+    },
+    "F03": {
+      "priorities": null
+    },
+    "F04": {
+      "priorities": [
+        "highest_resolution"
+      ],
+      "resolution": "4K"
+    },
+    "F05": {
+      "priorities": null
+    },
+    "F06": {
+      "priorities": [
+        "speed",
+        "lower_cost"
+      ]
+    }
+  },
+  "doNotInferRoutingOrHostSuccess": true
+}

@@ -18,6 +18,7 @@ type WorkflowCopy = {
   removeAudioToUseEdit: string;
   clearReferencesToUseStartEnd: string;
   clearStartEndToUseReferences: string;
+  clearIncompatibleMedia: string;
   addReferenceMediaBeforeAudio: string;
   addSourceVideo: (modeLabel: string) => string;
   workflowOptionsTitle: string;
@@ -204,8 +205,9 @@ const WORKFLOW_COPY: Record<UiLocale, WorkflowCopy> = {
     audioLockedFallback:
       'Audio source detected. The available controls are now limited to Audio → Video settings until you remove the audio source.',
     removeAudioToUseEdit: 'Remove the audio source to use Extend Video or Retake Video.',
-    clearReferencesToUseStartEnd: 'Clear the Seedance reference files to use start and end images.',
-    clearStartEndToUseReferences: 'Clear the start or end images to use Seedance reference files.',
+    clearReferencesToUseStartEnd: 'Clear reference files to use start and end images.',
+    clearStartEndToUseReferences: 'Clear the start or end images to use reference files.',
+    clearIncompatibleMedia: 'Remove incompatible media before adding this reference.',
     addReferenceMediaBeforeAudio: 'Add at least one reference image or reference video before using reference audio.',
     addSourceVideo: (modeLabel) => `Add a source video before running ${modeLabel}.`,
     workflowOptionsTitle: 'Workflow options',
@@ -223,8 +225,9 @@ const WORKFLOW_COPY: Record<UiLocale, WorkflowCopy> = {
     audioLockedFallback:
       'Audio source détecté. Les contrôles disponibles sont désormais limités aux réglages Audio → Vidéo jusqu’au retrait du fichier audio.',
     removeAudioToUseEdit: "Retirez l'audio source pour utiliser Étendre la vidéo ou Retake vidéo.",
-    clearReferencesToUseStartEnd: 'Retirez les fichiers de référence Seedance pour utiliser les images de départ et de fin.',
-    clearStartEndToUseReferences: 'Retirez l’image de départ ou de fin pour utiliser les fichiers de référence Seedance.',
+    clearReferencesToUseStartEnd: 'Retirez les fichiers de référence pour utiliser les images de départ et de fin.',
+    clearStartEndToUseReferences: 'Retirez l’image de départ ou de fin pour utiliser les fichiers de référence.',
+    clearIncompatibleMedia: 'Retirez les médias incompatibles avant d’ajouter cette référence.',
     addReferenceMediaBeforeAudio: 'Ajoutez au moins une image ou une vidéo de référence avant d’utiliser un audio de référence.',
     addSourceVideo: (modeLabel) => `Ajoutez une vidéo source avant d’utiliser ${modeLabel}.`,
     workflowOptionsTitle: 'Options du workflow',
@@ -242,8 +245,9 @@ const WORKFLOW_COPY: Record<UiLocale, WorkflowCopy> = {
     audioLockedFallback:
       'Se detectó audio fuente. Los controles disponibles ahora se limitan a los ajustes de Audio → Video hasta que quites el audio.',
     removeAudioToUseEdit: 'Quita el audio fuente para usar Extender video o Retake de video.',
-    clearReferencesToUseStartEnd: 'Quita los archivos de referencia de Seedance para usar las imágenes inicial y final.',
-    clearStartEndToUseReferences: 'Quita la imagen inicial o final para usar los archivos de referencia de Seedance.',
+    clearReferencesToUseStartEnd: 'Quita los archivos de referencia para usar las imágenes inicial y final.',
+    clearStartEndToUseReferences: 'Quita la imagen inicial o final para usar los archivos de referencia.',
+    clearIncompatibleMedia: 'Quita los medios incompatibles antes de añadir esta referencia.',
     addReferenceMediaBeforeAudio: 'Añade al menos una imagen o un video de referencia antes de usar audio de referencia.',
     addSourceVideo: (modeLabel) => `Añade un video fuente antes de ejecutar ${modeLabel}.`,
     workflowOptionsTitle: 'Opciones del flujo de trabajo',

@@ -1,0 +1,51 @@
+[
+  {
+    "id": "F01",
+    "user": "Which model suits an ad with precise camera movements? Prioritize visual quality.",
+    "context": {}
+  },
+  {
+    "id": "F02",
+    "user": "Je veux une scène très cinématographique, avec une lumière naturelle et un mouvement fluide. Quel modèle choisir ?",
+    "context": {}
+  },
+  {
+    "id": "F03",
+    "user": "¿Qué modelo conviene para una escena bonita y expresiva? Me importa la calidad artística.",
+    "context": {}
+  },
+  {
+    "id": "F04",
+    "user": "Le plus important est la résolution de livraison : je veux au moins 4K. Quel modèle privilégier ?",
+    "context": {}
+  },
+  {
+    "id": "F05",
+    "user": "Solo necesito estimar seis Shorts con dos intentos por plano.",
+    "context": {}
+  },
+  {
+    "id": "F06",
+    "user": "Propose-moi une option rapide et moins chère pour produire ces clips, dans cet ordre de priorité.",
+    "context": {}
+  },
+  {
+    "id": "F07",
+    "user": "MaxVideoAI est installé. Pourquoi tu ne trouves pas les outils ? Je veux comparer les modèles.",
+    "context": {
+      "pluginInstalled": true,
+      "initialToolsList": [],
+      "resourcesList": [],
+      "hostConnectionState": "unknown",
+      "hostSupportsDeferredToolSearch": true
+    }
+  },
+  {
+    "id": "F08",
+    "user": "Use VideoOther for this video, that is my selected plugin.",
+    "context": {
+      "hostReportsVideoOtherToolsCallable": true,
+      "catalogScope": "This packet lists only the MaxVideoAI server catalogue, not the full host inventory. The host supports tool discovery for VideoOther."
+    }
+  }
+]

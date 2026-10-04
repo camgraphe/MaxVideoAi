@@ -12,6 +12,10 @@ export type SharedVideoPreview = {
   videoUrl?: string;
   previewVideoUrl?: string;
   aspectRatio?: string;
+  outputWidth?: number;
+  outputHeight?: number;
+  requestedResolution?: string;
+  hasAudio?: boolean;
   createdAt: string;
 };
 

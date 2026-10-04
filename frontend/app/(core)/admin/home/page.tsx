@@ -58,7 +58,7 @@ export default async function AdminHomepagePage() {
       <AdminPageHeader
         eyebrow="Curation"
         title="Homepage programming"
-        description="Pilote les hero slots visibles sur la homepage marketing. Cette surface doit rester courte, visuelle et orientée couverture éditoriale."
+        description="Choose and preview the videos shown on the marketing homepage."
         actions={
           <>
             <AdminActionLink href="/">
@@ -75,16 +75,16 @@ export default async function AdminHomepagePage() {
       />
 
       <AdminSection
-        title="Programming Pulse"
-        description="Lecture rapide de la couverture hero et du niveau de preview prêt pour la homepage."
+        title="Homepage status"
+        description="Check which homepage slots have a video and preview."
       >
         <AdminMetricGrid items={metrics} columnsClassName="sm:grid-cols-2 xl:grid-cols-4" density="compact" />
       </AdminSection>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_340px] xl:items-start">
         <AdminSection
-          title="Hero Workspace"
-          description="Assigne un rendu aux cinq sélecteurs hero, contrôle le titre affiché et valide immédiatement la preview."
+          title="Hero videos"
+          description="Assign a render to each hero slot, edit its title and check the preview."
           action={
             <AdminSectionMeta
               title={`${assignedHeroCount}/${hero.length} hero slots assigned`}
@@ -108,8 +108,8 @@ export default async function AdminHomepagePage() {
         </AdminSection>
 
         <AdminInspectorPanel
-          title="Programming Notes"
-          description="Repères rapides pour garder la homepage compacte, cohérente et éditorialement forte."
+          title="Publishing guidance"
+          description="Keep the homepage concise and visually varied."
         >
           <div className="space-y-4">
             <div className="space-y-3 rounded-2xl border border-hairline bg-bg/40 px-4 py-4 text-sm text-text-secondary">
@@ -128,11 +128,8 @@ export default async function AdminHomepagePage() {
             </div>
 
             <div className="space-y-3">
-              <AdminActionLink href="/admin/theme" className="w-full justify-center">
-                Theme tokens
-              </AdminActionLink>
               <AdminActionLink href="/admin/video-seo" className="w-full justify-center">
-                Video SEO
+                Video publishing
               </AdminActionLink>
             </div>
           </div>

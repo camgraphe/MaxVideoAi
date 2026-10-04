@@ -124,7 +124,7 @@ const representative = {
     lookupHref: '/fr/tarifs#seedance-2-0-pricing',
     showcase: {
       title: 'Vidéos d’exemple avec modèle et prix',
-      intro: 'Une courte sélection de rendus publics MaxVideoAI montrant le modèle, la durée et le prix enregistré lorsqu’il est disponible.',
+      intro: 'Une courte sélection de rendus publics MaxVideoAI montrant le modèle, la durée et son tarif actuel lorsqu’il est disponible.',
       cta: 'Testez votre prompt avec un devis en temps réel',
       mediaPhrase: 'vidéo d’exemple générée avec',
     },
@@ -159,7 +159,7 @@ const representative = {
     lookupHref: '/es/precios#seedance-2-0-pricing',
     showcase: {
       title: 'Videos de ejemplo con modelo y precio',
-      intro: 'Una selección breve de renders públicos de MaxVideoAI que muestra el modelo, la duración y el precio registrado cuando está disponible.',
+      intro: 'Una selección breve de renders públicos de MaxVideoAI que muestra el modelo, la duración y su precio actual cuando está disponible.',
       cta: 'Prueba tu prompt con una cotización en tiempo real',
       mediaPhrase: 'video de ejemplo generado con',
     },

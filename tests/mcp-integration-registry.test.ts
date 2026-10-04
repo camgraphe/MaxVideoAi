@@ -96,7 +96,7 @@ test('OpenClaw and n8n publish without upgrading their independent host evidence
   assert.equal(getMcpHost('n8nMcpClientTool').evidence.lastChecked, '2026-09-14');
 
   assert.equal(getMcpIntegration('openclaw').store.status, 'listed');
-  assert.equal(getMcpIntegration('n8n').store.status, 'submitted');
+  assert.equal(getMcpIntegration('n8n').store.status, 'listed');
 
   for (const id of ['cursor', 'githubCopilot', 'geminiCli', 'microsoftCopilot'] as const) {
     assert.equal(getMcpIntegration(id).site.publication, 'hidden');

@@ -1,10 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { Session } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/Button';
 import { readLastKnownUserId } from '@/lib/last-known';
 import { readBrowserSession } from '@/lib/supabase-auth-cleanup';
 import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
+import { loadSupabaseClient } from '@/lib/supabaseClientLoader';
 
 type DocumentStatus = {
   key: 'terms' | 'privacy' | 'cookies';
@@ -33,16 +35,14 @@ type ApiResponse = {
   error?: string;
 };
 
-async function resolveReconsentRequestHeaders(): Promise<Headers | null> {
+async function resolveReconsentSession(): Promise<Session | null> {
   if (!readLastKnownUserId() && !hasSupabaseAuthCookie()) {
     return null;
   }
+  return readBrowserSession();
+}
 
-  const session = await readBrowserSession();
-  if (!session?.user) {
-    return null;
-  }
-
+function sessionHeaders(session: Session): Headers {
   const headers = new Headers();
   if (session.access_token) {
     headers.set('Authorization', `Bearer ${session.access_token}`);
@@ -91,11 +91,8 @@ function useCountdown(targetIso: string | null): string | null {
   }, [targetIso, now]);
 }
 
-async function fetchStatus(): Promise<ReconsentStatus> {
+async function fetchStatus(headers: Headers): Promise<ReconsentStatus> {
   try {
-    const headers = await resolveReconsentRequestHeaders();
-    if (!headers) return null;
-
     const res = await fetch('/api/legal/reconsent', { credentials: 'include', headers });
     if (res.status === 401) return null;
     const json = (await res.json()) as ApiResponse;
@@ -124,12 +121,8 @@ async function fetchStatus(): Promise<ReconsentStatus> {
   }
 }
 
-async function acceptDocuments(documents: DocumentStatus[]): Promise<ReconsentStatus> {
+async function acceptDocuments(documents: DocumentStatus[], headers: Headers): Promise<ReconsentStatus> {
   const locale = typeof navigator !== 'undefined' ? navigator.language ?? null : null;
-  const headers = await resolveReconsentRequestHeaders();
-  if (!headers) {
-    throw new Error('Please sign in again to accept the updated legal terms.');
-  }
   headers.set('Content-Type', 'application/json');
 
   const res = await fetch('/api/legal/reconsent', {
@@ -170,65 +163,157 @@ type ReconsentPromptProps = {
 
 export function ReconsentPrompt({ enabled = true }: ReconsentPromptProps) {
   const [status, setStatus] = useState<ReconsentStatus>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-
-  const loadStatus = useCallback(async () => {
-    if (!enabled) {
-      setStatus(null);
-      setError(null);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const next = await fetchStatus();
-      setStatus(next);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to load legal status.');
-    } finally {
-      setLoading(false);
-    }
-  }, [enabled]);
+  const acceptRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    if (!enabled) {
-      setStatus(null);
-      setError(null);
-      setLoading(false);
-      return;
-    }
-    void loadStatus();
-    const handleFocus = () => {
-      void loadStatus();
+    setStatus(null);
+    setError(null);
+    setSubmitting(false);
+    if (!enabled) return;
+
+    // Requests and displayed status belong to this mounted auth lifecycle only.
+    let active = true;
+    let generation = 0;
+    let pendingRead: number | null = null;
+    let pendingWrite: number | null = null;
+    let scope: { userId: string; token: string } | null | undefined;
+    let currentStatus: ReconsentStatus = null;
+    let subscription: { unsubscribe: () => void } | null = null;
+    let subscriptionPromise: Promise<void> | null = null;
+
+    const commitStatus = (next: ReconsentStatus) => {
+      currentStatus = next;
+      setStatus(next);
     };
+    const retireRequests = () => {
+      generation += 1;
+      pendingRead = null;
+      pendingWrite = null;
+      setSubmitting(false);
+      setError(null);
+    };
+    const observeSession = (session: Session | null) => {
+      if (!active) return;
+      const userId = session?.user?.id ?? null;
+      const token = session?.access_token ?? null;
+      // Rotating credentials cannot cancel a write already owned by this account.
+      // Wait for its authoritative result before allowing another read or write.
+      if (userId && scope?.userId === userId && pendingWrite !== null) {
+        scope = { userId, token: token ?? '' };
+        return;
+      }
+      if (scope?.userId !== userId || scope?.token !== token) {
+        retireRequests();
+        if (scope?.userId !== userId) commitStatus(null);
+        scope = userId ? { userId, token: token ?? '' } : null;
+      }
+      if (!userId) {
+        commitStatus(null);
+        return;
+      }
+      // The auth callback uses its supplied session and never awaits another SDK call.
+      void loadStatus(session);
+    };
+    const ensureSubscription = async () => {
+      if (!readLastKnownUserId() && !hasSupabaseAuthCookie()) return;
+      if (!subscriptionPromise) {
+        subscriptionPromise = loadSupabaseClient().then((supabase) => {
+          if (!active) return;
+          const { data } = supabase.auth.onAuthStateChange((event, session) => {
+            observeSession(event === 'SIGNED_OUT' ? null : session);
+          });
+          subscription = data.subscription;
+        }).catch((err) => {
+          subscriptionPromise = null;
+          throw err;
+        });
+      }
+      await subscriptionPromise;
+    };
+    async function loadStatus(providedSession?: Session | null) {
+      if (!active || pendingRead !== null || pendingWrite !== null) return;
+      const requestId = ++generation;
+      pendingRead = requestId;
+      const isCurrent = () => active && generation === requestId && pendingRead === requestId;
+      setError(null);
+      try {
+        let session = providedSession;
+        if (session === undefined) {
+          await ensureSubscription();
+          if (!isCurrent()) return;
+          session = await resolveReconsentSession();
+        }
+        if (!isCurrent()) return;
+        const userId = session?.user?.id ?? null;
+        if (scope?.userId !== userId) commitStatus(null);
+        scope = userId ? { userId, token: session?.access_token ?? '' } : null;
+        if (!session?.user) {
+          commitStatus(null);
+          return;
+        }
+        const next = await fetchStatus(sessionHeaders(session));
+        if (isCurrent()) commitStatus(next);
+      } catch (err) {
+        if (isCurrent()) setError(err instanceof Error ? err.message : 'Unable to load legal status.');
+      } finally {
+        if (isCurrent()) pendingRead = null;
+      }
+    }
+
+    acceptRef.current = async () => {
+      if (!active || pendingWrite !== null || !scope || !currentStatus?.documents.length) return;
+      const userId = scope.userId;
+      const documents = currentStatus.documents;
+      // A response read before acceptance must never undo its authoritative result.
+      pendingRead = null;
+      const requestId = ++generation;
+      pendingWrite = requestId;
+      const isCurrent = () => active && generation === requestId && pendingWrite === requestId;
+      setSubmitting(true);
+      setError(null);
+      try {
+        const session = await resolveReconsentSession();
+        if (!isCurrent()) return;
+        if (!session?.user) {
+          throw new Error('Unable to confirm your session. Please try again or sign in again to accept the updated legal terms.');
+        }
+        if (session.user.id !== userId) {
+          observeSession(session);
+          return;
+        }
+        scope = { userId, token: session.access_token };
+        const next = await acceptDocuments(documents, sessionHeaders(session));
+        if (isCurrent()) commitStatus(next);
+      } catch (err) {
+        if (isCurrent()) setError(err instanceof Error ? err.message : 'Failed to record consent.');
+      } finally {
+        if (isCurrent()) {
+          pendingWrite = null;
+          setSubmitting(false);
+        }
+      }
+    };
+
+    void loadStatus();
+    const handleFocus = () => { void loadStatus(); };
     window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, [enabled, loadStatus]);
+    return () => {
+      active = false;
+      generation += 1;
+      acceptRef.current = null;
+      subscription?.unsubscribe();
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [enabled]);
 
   const countdown = useCountdown(status?.graceEndsAt ?? null);
 
-  if (loading || !status || !status.needsReconsent) {
-    return null;
-  }
+  if (!enabled || !status?.needsReconsent) return null;
 
   const documents = status.documents;
-
-  const handleAccept = async () => {
-    if (!documents.length) return;
-    setSubmitting(true);
-    setError(null);
-    try {
-      const next = await acceptDocuments(documents);
-      setStatus(next);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to record consent.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  const handleAccept = () => { acceptRef.current?.(); };
 
   const content = (
     <div className="space-y-4">

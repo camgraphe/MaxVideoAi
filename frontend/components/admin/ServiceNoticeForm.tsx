@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import { Button } from '@/components/ui/Button';
 
@@ -14,6 +15,7 @@ type ServiceNoticeFormProps = {
 };
 
 export function ServiceNoticeForm({ initialNotice, embedded = false, className }: ServiceNoticeFormProps) {
+  const router = useRouter();
   const [enabled, setEnabled] = useState(initialNotice.enabled);
   const [message, setMessage] = useState(initialNotice.message);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -37,32 +39,38 @@ export function ServiceNoticeForm({ initialNotice, embedded = false, className }
         });
         if (!response.ok) {
           const data = await response.json().catch(() => null);
-          throw new Error(data?.error ?? 'Impossible de sauvegarder la bannière.');
+          throw new Error(data?.error ?? 'Could not save the service notice.');
         }
         setStatus('success');
+        router.refresh();
       } catch (err) {
         setStatus('error');
-        setError(err instanceof Error ? err.message : 'Impossible de sauvegarder la bannière.');
+        setError(err instanceof Error ? err.message : 'Could not save the service notice.');
       }
     });
   };
 
   const disableNotice = () => {
-    setEnabled(false);
-    setMessage('');
     startTransition(async () => {
       setStatus('idle');
       setError(null);
       try {
-        await fetch('/api/admin/service-notice', {
+        const response = await fetch('/api/admin/service-notice', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ enabled: false, message: '' }),
         });
+        if (!response.ok) {
+          const data = await response.json().catch(() => null);
+          throw new Error(data?.error ?? 'Could not disable the service notice.');
+        }
+        setEnabled(false);
+        setMessage('');
         setStatus('success');
+        router.refresh();
       } catch (err) {
         setStatus('error');
-        setError(err instanceof Error ? err.message : 'Impossible de désactiver la bannière.');
+        setError(err instanceof Error ? err.message : 'Could not disable the service notice.');
       }
     });
   };
@@ -75,12 +83,14 @@ export function ServiceNoticeForm({ initialNotice, embedded = false, className }
         className
       )}
     >
-      <div className="space-y-1">
-        <h2 className="text-lg font-semibold text-text-primary">Bannière de service</h2>
-        <p className="text-sm text-text-secondary">
-          Affiche un message global dans le dashboard pour prévenir les utilisateurs des incidents en cours.
-        </p>
-      </div>
+      {!embedded ? (
+        <div className="space-y-1">
+          <h2 className="text-lg font-semibold text-text-primary">Service notice</h2>
+          <p className="text-sm text-text-secondary">
+            Show a message across the workspace when an incident affects members.
+          </p>
+        </div>
+      ) : null}
       <label className="flex items-center gap-2 text-sm font-medium text-text-primary">
         <input
           type="checkbox"
@@ -88,7 +98,7 @@ export function ServiceNoticeForm({ initialNotice, embedded = false, className }
           checked={enabled}
           onChange={(event) => setEnabled(event.target.checked)}
         />
-        Afficher la bannière dans le dashboard
+        Show the notice in the workspace
       </label>
       <div className="space-y-2">
         <label htmlFor="service-notice-message" className="text-xs font-semibold uppercase tracking-micro text-text-muted">
@@ -102,13 +112,13 @@ export function ServiceNoticeForm({ initialNotice, embedded = false, className }
           rows={3}
           maxLength={500}
           className="w-full rounded-input border border-border bg-surface-glass-80 px-3 py-2 text-sm text-text-primary shadow-inner focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:bg-muted/40"
-          placeholder="Ex : Certains fournisseurs rencontrent un incident. Les nouveaux rendus sont temporairement retardés."
+          placeholder="Some providers are experiencing an issue. New renders may be delayed."
         />
-        <p className="text-xs text-text-muted">Max 500 caractères. Le message doit être renseigné pour activer la bannière.</p>
+        <p className="text-xs text-text-muted">Maximum 500 characters. Add a message before enabling the notice.</p>
       </div>
       {status === 'success' ? (
         <div className="rounded-input border border-state-success/40 bg-state-success/10 px-3 py-2 text-sm text-state-success">
-          Bannière mise à jour.
+          Service notice updated.
         </div>
       ) : null}
       {error ? (
@@ -124,7 +134,7 @@ export function ServiceNoticeForm({ initialNotice, embedded = false, className }
             embedded ? 'rounded-xl' : 'rounded-full shadow-card'
           )}
         >
-          {isPending ? 'Enregistrement…' : 'Enregistrer'}
+          {isPending ? 'Saving…' : 'Save changes'}
         </Button>
         <Button
           type="button"
@@ -134,7 +144,7 @@ export function ServiceNoticeForm({ initialNotice, embedded = false, className }
           disabled={isPending}
           className="min-h-0 h-auto p-0 text-sm font-semibold text-text-secondary underline-offset-2 hover:text-text-primary"
         >
-          Désactiver
+          Disable
         </Button>
       </div>
     </form>

@@ -53,38 +53,24 @@ test('video watch page stays a route orchestrator', () => {
 });
 
 test('video watch modules own rendering and helper contracts', () => {
-  assert.match(contentSource, /export function VideoWatchContent/, 'content component should be exported');
-  assert.match(contentSource, /WatchVideoPlayer/, 'content component should own video player rendering');
-  assert.match(contentSource, /WatchKeyFrames/, 'content component should own keyframe rendering');
-  assert.match(contentSource, /CopyPromptButton/, 'content component should own prompt copy UI');
-  assert.match(contentSource, /Prompt improvement notes/, 'watch page should include prompt improvement notes');
-  assert.match(contentSource, /Compare this model/, 'watch page should include compare links');
-  assert.match(contentSource, /Recorded render cost/, 'watch page should identify the historical job cost');
-  assert.doesNotMatch(contentSource, /Estimated price/, 'watch page should not present recorded cost as a live estimate');
-  assert.match(contentSource, /Visual workflow context/, 'public watch page should name editorial visual context without exposing SEO jargon');
-  assert.match(contentSource, /promptIsExpandable/, 'long prompts should be expandable from the primary prompt panel');
-  assert.match(contentSource, /PROMPT_CONTEXT_PREVIEW_MAX_CHARS/, 'long visual workflow context should use a bounded preview length');
-  assert.match(contentSource, /promptContextIsLong/, 'visual workflow context should be expandable when the context itself is too long');
-  assert.match(contentSource, /promptContextPreviewText/, 'collapsed prompt panel should render the bounded visual context preview');
-  assert.match(contentSource, /signals\.seoPromptContext \? 'Show full context' : 'Show full prompt'/, 'visual workflow context disclosure should use context-specific expand copy');
-  assert.match(contentSource, /CopyPromptButton prompt=\{signals\.promptText\}/, 'copy action should copy the full prompt without relying on the removed bottom prompt block');
-  assert.doesNotMatch(contentSource, /SEO context/, 'public watch page should not expose SEO implementation labels');
-  assert.doesNotMatch(contentSource, /signals\.seoPromptContext \? 'SEO context'/, 'editorial context should not be repeated as a table row');
-  assert.doesNotMatch(contentSource, /label: 'Subject', value: promptContextText/, 'watch page should not repeat the prompt as a Subject row');
-  assert.doesNotMatch(contentSource, /className="group mt-4 rounded-input/, 'full prompt disclosure should not sit below the prompt breakdown table');
-  assert.ok(
-    contentSource.indexOf('<VideoWatchSourceImages') < contentSource.indexOf('{promptContextTitle}'),
-    'storyboard and source images should render above the prompt breakdown card',
-  );
-  assert.match(contentSource, /dangerouslySetInnerHTML/, 'content component should own JSON-LD script rendering');
-  assert.match(contentSource, /from '\.\/VideoWatchCard'/, 'content component should compose the watch card shell');
-  assert.match(contentSource, /from '\.\/VideoWatchRelatedExamples'/, 'content component should compose related examples');
-  assert.doesNotMatch(contentSource, /<VideoWatchRelatedExamples engineLabel=/, 'related cards should not receive the current video engine as a shared badge label');
-  assert.match(contentSource, /from '\.\/VideoWatchSidebar'/, 'content component should compose the sidebar');
-  assert.doesNotMatch(contentSource, /function WatchCard/, 'watch card UI belongs in VideoWatchCard');
-  assert.doesNotMatch(contentSource, /function buildHighlightItems/, 'highlight view model belongs in VideoWatchSidebar');
-  assert.doesNotMatch(contentSource, /Related examples/, 'related examples markup belongs in VideoWatchRelatedExamples');
-  assert.ok(contentSource.split('\n').length <= 360, `video watch content should stay below 360 lines, got ${contentSource.split('\n').length}`);
+  const readerSource = readFileSync(join(root,'frontend/components/examples/ExampleReaderContent.tsx'),'utf8');
+  const contextSource = readFileSync(join(root,'frontend/components/examples/ExampleReaderContext.tsx'),'utf8');
+  const disclosureSource = readFileSync(join(root,'frontend/components/examples/ExampleReaderDisclosure.client.tsx'),'utf8');
+  assert.match(contentSource,/export async function VideoWatchContent/);
+  assert.match(contentSource,/ExampleReaderContent/,'direct page shares the gallery reader');
+  assert.match(contentSource,/buildExampleWatchDetail/,'server owns public projection and quotes');
+  assert.match(contentSource,/headingLevel="h1"/,'standalone reader owns one page heading');
+  assert.match(contentSource,/videoJsonLd/);assert.match(contentSource,/breadcrumbJsonLd/);
+  assert.match(readerSource,/DiscoveryVideoPlayer/);assert.match(readerSource,/copyTextToClipboard\(detail.prompt\)/);
+  assert.match(readerSource,/promptExpanded/);assert.match(readerSource,/originalModel\.amountCents/);
+  assert.doesNotMatch(readerSource,/detail\.historicalCost/,'public reader prices must come from the current quote');
+  assert.match(contextSource,/Prompt improvement notes/);assert.match(contextSource,/Compare this model/);
+  assert.match(contextSource,/Visual workflow context/);assert.match(contextSource,/ExampleReaderDisclosure/);
+  assert.match(disclosureSource,/<details\b/);assert.match(disclosureSource,/'use client'/);
+  assert.doesNotMatch(contextSource,/'use client'|scrollIntoView/,'editorial projection remains server-renderable');
+  assert.match(contextSource,/WatchKeyFrames/);assert.match(contextSource,/context.details/);
+  assert.doesNotMatch(contentSource,/VideoWatchSidebar|WatchVideoPlayer/,'no second reader presentation');
+  assert.ok(contentSource.split('\n').length <= 120,'watch wrapper stays a server orchestrator');
   assert.match(cardSource, /export function VideoWatchCard/, 'watch card shell should be exported');
   assert.match(relatedSource, /export function VideoWatchRelatedExamples/, 'related examples component should be exported');
   assert.match(relatedSource, /\{item\.engineLabel\}/, 'related example badges should use each related video engine label');
@@ -114,4 +100,14 @@ test('video watch modules own rendering and helper contracts', () => {
   assert.match(utilsSource, /export function serializeJsonLd/, 'helper module should own JSON-LD serialization');
   assert.match(utilsSource, /export function isRenderable/, 'helper module should own renderability guard');
   assert.match(utilsSource, /export type WatchPageData/, 'helper module should export route data type');
+});
+
+test('watch quote reads overlap video data without entering metadata or the public reader payload', () => {
+  const metadata = pageSource.slice(pageSource.indexOf('export async function generateMetadata'), pageSource.indexOf('export default async function VideoPage'));
+  assert.doesNotMatch(metadata, /prepareExampleWatchDetailContext/, 'metadata remains independent of live price policy');
+  assert.ok(pageSource.indexOf('const quotePreparation = prepareExampleWatchDetailContext()') < pageSource.indexOf('const page = await getWatchPageData(params.id);', pageSource.indexOf('export default async function VideoPage')));
+  assert.ok(pageSource.indexOf('const quoteResult = await quotePreparation') > pageSource.indexOf('if (!isRenderable(page))', pageSource.indexOf('export default async function VideoPage')), 'price preparation cannot delay or replace route guards');
+  assert.match(pageSource, /<VideoWatchContent page=\{page\} quoteContext=\{quoteResult\.value\}/);
+  assert.match(contentSource, /buildExampleWatchDetail\(video, signals, quoteContext\)/);
+  assert.doesNotMatch(contentSource, /<ExampleReaderContent[^>]*quoteContext/, 'functions and configuration remain on the server');
 });

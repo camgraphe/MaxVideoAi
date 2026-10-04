@@ -20,8 +20,7 @@ export function registerGetModelDetailsTool(
     'get_model_details',
     {
       title: 'Get MaxVideoAI model details',
-      description:
-        [
+      description: [
         'Use this when the user needs exact current capabilities, limits, evidence and reviewed official promptingSources for one known public MaxVideoAI model.',
         'Read the selected mode before budgeting or quoting: required fields, settings, reference roles/counts/kinds, per-file and combined durations, audio policy and limits.',
         't2v creates video from text; i2v and i2v_standard animate a first/source image and may accept a last frame; ref2v uses image/video/audio references; fl2v requires first_frame and last_frame images; v2v edits source video; r2v uses ordered reference videos; extend uses ordered clips; a2v follows owned audio; retake replaces part of an owned clip; reframe changes its canvas.',

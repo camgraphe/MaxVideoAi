@@ -1,0 +1,64 @@
+{
+  "case": "implicit",
+  "host": "Codex CLI 0.155.0-alpha.9.2",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "low",
+  "pluginVersion": "0.3.6",
+  "prompt": "Je prépare un Reel vertical de 8 secondes pour montrer une tasse en céramique. Je veux choisir un modèle de génération vidéo IA utilisable aujourd’hui, avec un mouvement de caméra fluide. Compare deux options à partir de leurs capacités actuelles et conseille-moi. Il ne faut rien générer, importer, acheter ni préparer de devis exact. Réponds en français et reste concis.",
+  "completed": true,
+  "calls": [
+    {
+      "server": "maxvideoai",
+      "tool": "recommend_models",
+      "arguments": {
+        "surface": "video",
+        "mode": "t2v",
+        "aspectRatio": "9:16",
+        "maxDurationSec": 8,
+        "referenceImages": false,
+        "audio": false,
+        "useCase": "product_video",
+        "priorities": null
+      },
+      "status": "completed"
+    },
+    {
+      "server": "maxvideoai",
+      "tool": "get_model_details",
+      "arguments": {
+        "engineId": "luma-ray-3-2"
+      },
+      "status": "failed"
+    },
+    {
+      "server": "maxvideoai",
+      "tool": "get_model_details",
+      "arguments": {
+        "engineId": "minimax-hailuo-02-text"
+      },
+      "status": "failed"
+    },
+    {
+      "server": "maxvideoai",
+      "tool": "get_model_details",
+      "arguments": {
+        "id": "minimax-hailuo-02-text"
+      },
+      "status": "completed"
+    },
+    {
+      "server": "maxvideoai",
+      "tool": "get_model_details",
+      "arguments": {
+        "id": "luma-ray-3-2"
+      },
+      "status": "completed"
+    }
+  ],
+  "answer": "Pour ce Reel, je conseille **Luma Ray 3.2**.\n\n- **Luma Ray 3.2** : disponible aujourd’hui, génération texte→vidéo, vertical **9:16**, jusqu’à **1080p**, durées **5 ou 10 s**. Choisir 10 s puis conserver 8 s permet une mise en scène plus progressive. Meilleur choix pour un rendu produit propre et un travelling fluide décrit dans le prompt.\n- **MiniMax Hailuo 02 Standard** : également disponible en **9:16**, mais limité à **768P** et aux durées **6 ou 10 s**, avec 25 i/s. Option correcte si la résolution est moins importante.\n\nVerdict : **Luma Ray 3.2, 9:16, 1080p, 10 s puis recadrage à 8 s**. Décrire un lent travelling circulaire autour de la tasse, sans zoom brusque. Aucun des deux modèles ne documente ici un contrôle caméra spécialisé : la fluidité dépendra donc surtout du prompt.",
+  "limits": "One real-host observation; no statistical routing claim, no paid generation or full OAuth lifecycle test.",
+  "observedLimitations": [
+    "Two get_model_details calls used engineId instead of id, then recovered with the correct schema key.",
+    "Recommendation sent audio=false and referenceImages=false although those exclusions were not explicitly requested; argument fidelity is not a complete pass."
+  ]
+}

@@ -16,7 +16,7 @@ export function AdminUserSupportActionsSection({
   serviceRoleConfigured: boolean;
 }) {
   return (
-    <AdminInspectorPanel title="Support Actions" description="Opérations directes pour corriger un wallet ou reproduire l’expérience membre.">
+    <AdminInspectorPanel title="Support Actions" description="Adjust credits or investigate the account experience.">
       <div className="space-y-5">
         {wallet ? (
           <ManualCreditForm userId={userId} embedded />
@@ -46,7 +46,7 @@ function ImpersonationPanel({
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">Impersonation</p>
+        <p className="text-xs font-medium text-text-secondary">Impersonation</p>
         <p className="text-sm text-text-secondary">
           Sign into the workspace as this user to debug renders, wallet issues, or onboarding flow. Your admin session is preserved and can be restored at any time.
         </p>

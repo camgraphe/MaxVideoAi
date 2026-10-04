@@ -34,12 +34,14 @@ Use these guides as context before changing the related areas:
 - `docs/engineering/page-architecture.md`: how route files, metadata, data builders, and page sections should be split.
 - `docs/engineering/activity-feed.md`: Activity pagination, account isolation, read-path latency, and output enrichment contracts.
 - `docs/engineering/read-route-schema-bootstrap.md`: request-time read paths versus explicit schema/bootstrap ownership.
+- `docs/engineering/ci-validation.md`: fast feedback, conditional integration and exhaustive financial checks, and required CI ownership.
 - `docs/engineering/media-delivery.md`: media ownership, original/preview contracts, image optimizer settings, safe repairs, and Core Web Vitals validation.
 - `docs/engineering/admin-routes.md`: admin route and admin UI conventions.
 - `docs/engineering/refactor-roadmap.md`: cleanup strategy and historical context; confirm current line counts with the audit.
 - `docs/engineering/model-registry.md`: required workflow for adding, renaming, retiring, or publishing models.
 - `docs/engineering/mcp-client-experience.md`: MCP instruction ownership, metadata budgets, reconnect guidance and offline/host release checks.
 - `docs/engineering/mcp-integration-registry.md`: MCP integration identity, host evidence, publication, acquisition, installation, and store-state ownership.
+- `docs/engineering/mcp-client-experience.md`: dated MCP discovery, instruction-size, tool guidance, reconnection, and client verification rules; also read the nested server/plugin `AGENTS.md` files.
 - `docs/engineering/alibaba-model-studio-provider.md`: direct Alibaba video routing, polling, observability, canary, and rollback contracts.
 - `docs/engineering/mcp-mode-coverage.md`: public MCP mode projection, intentional exclusions, and parity guard.
 - `docs/engineering/mcp-reference-imports.md`: private host attachments, MCP App uploads, and local helper trust boundaries.
@@ -180,7 +182,7 @@ Read `docs/engineering/media-delivery.md` before changing media presentation, im
 
 Keep original download, edit and schema URLs distinct from immutable display derivatives. Public playback policy belongs in `frontend/lib/public-video-playback.ts`, browser attempt lifecycle in `frontend/components/media/usePublicVideoPlayback.ts`, and encoding/storage/database work outside browser modules. Preserve the critical server-rendered poster, fixed geometry and lazy mobile loading. Unknown or signed media must retain exact-original fallback behavior; do not introduce model-specific playback branches or per-route optimizer settings.
 
-For examples pages, keep the route hero's responsive poster explicitly prioritized in `ExamplesHeroVideo`. Do not add a competing route-head preload or prioritize the first gallery poster when that hero is present; `tests/examples-lcp-performance.test.ts` covers this boundary.
+For examples pages, the four-video opening lives inside the 24-card SSR gallery. Prioritize only its first visible poster; do not add a competing route-head preload or separate hero. `tests/examples-lcp-performance.test.ts` covers this boundary. Other readers that still use `ExamplesHeroVideo` retain their own explicit poster priority.
 
 For below-fold manual demonstrations, preserve the poster and geometry but default to `preload="none"`. `metadata` does not guarantee a small transfer. Check real network requests and first-Play behavior before adding or changing these readers; Character Builder's workflow is a native manual reader.
 
@@ -215,6 +217,21 @@ If a test asserts that a file should import a helper or stay under a line thresh
 
 ## Verification
 
+### Production delivery (reviewed 2026-09-22)
+
+Read `docs/deployment/github-vercel.md` before a production merge, deployment,
+promotion, rollback, or domain reassignment. The normal path is an isolated clean
+branch → GitHub PR → passing Quality CI → merge to `main` → Vercel Git deployment.
+Run `git fetch origin main` and `pnpm deployment:check` from the committed candidate
+before merging. Stop the release if deployed source is missing from GitHub or the
+candidate omits current `main`; reconcile it first and coordinate concurrent tasks.
+Never upload the shared Desktop checkout or copy its uncommitted files to production.
+A generic request to deploy does not authorize bypassing this delivery policy with
+`vercel --prod`, `--prebuilt`, promotion, or manual aliases. An emergency exception
+must identify the published source commit, exact action, validation and rollback.
+After deployment, verify both `maxvideoai.com` and `api.maxvideoai.com` against the
+merged commit; a successful build alone does not establish domain alignment.
+
 Use focused checks first:
 
 ```bash
@@ -222,6 +239,14 @@ npm --prefix frontend run lint
 npm run lint:exposure
 git diff --check
 ```
+
+Choose additional tests according to the changed responsibilities. Intermediate
+commits and pushes do not require rerunning or waiting for the complete suite;
+continue working while CI validates the candidate. Before merging, the latest
+candidate must include current `main` and have a successful required `Quality CI`.
+Its selected integration, browser and exhaustive financial lanes remain mandatory.
+Do not use `[skip ci]` or bypass branch protection to accelerate delivery.
+See `docs/engineering/ci-validation.md` for selection rules and local suite commands.
 
 For architecture refactors, also run the related architecture or contract tests directly before broader validation.
 

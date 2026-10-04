@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
 import { adminErrorToResponse, requireAdmin } from '@/server/admin';
 import { createPlaylist, listPlaylists } from '@/server/playlists';
+import { loadPlaylistDestinations } from '@/server/playlists/destinations';
 
 export async function GET(req: NextRequest) {
   if (!isDatabaseConfigured()) {
@@ -16,7 +17,8 @@ export async function GET(req: NextRequest) {
 
   try {
     const playlists = await listPlaylists();
-    return NextResponse.json({ ok: true, playlists });
+    const destinations = await loadPlaylistDestinations(playlists);
+    return NextResponse.json({ ok: true, playlists, destinations });
   } catch (error) {
     console.error('[admin/playlists] failed to list', error);
     return NextResponse.json({ ok: false, error: 'Server error' }, { status: 500 });

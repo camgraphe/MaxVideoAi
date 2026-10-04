@@ -1,0 +1,124 @@
+{
+  "cases": [
+    {
+      "id": "F01",
+      "arguments": {
+        "id": null,
+        "surface": "video",
+        "mode": null,
+        "aspectRatio": null,
+        "resolution": null,
+        "maxDurationSec": null,
+        "audio": null,
+        "referenceImages": null,
+        "useCase": "product_video",
+        "priorities": null,
+        "preferredModelIds": null,
+        "excludedModelIds": null,
+        "budgetCeilingCents": null
+      },
+      "reply": "For an ad with precise camera movements, I’d compare video models suited to product-focused work; visual quality is the main criterion.",
+      "reasoningSummary": "The ad maps to product_video, while precise camera movement and general visual quality do not match a specific enumerated priority."
+    },
+    {
+      "id": "F02",
+      "arguments": {
+        "id": null,
+        "surface": "video",
+        "mode": null,
+        "aspectRatio": null,
+        "resolution": null,
+        "maxDurationSec": null,
+        "audio": null,
+        "referenceImages": null,
+        "useCase": "cinematic_story",
+        "priorities": null,
+        "preferredModelIds": null,
+        "excludedModelIds": null,
+        "budgetCeilingCents": null
+      },
+      "reply": "Pour une scène très cinématographique, avec une lumière naturelle et un mouvement fluide, je comparerais les modèles adaptés aux récits cinématographiques.",
+      "reasoningSummary": "The scene is cinematic_story, while natural lighting and fluid movement are creative qualities without a matching enumerated priority."
+    },
+    {
+      "id": "F03",
+      "arguments": {
+        "id": null,
+        "surface": "video",
+        "mode": null,
+        "aspectRatio": null,
+        "resolution": null,
+        "maxDurationSec": null,
+        "audio": null,
+        "referenceImages": null,
+        "useCase": "cinematic_story",
+        "priorities": null,
+        "preferredModelIds": null,
+        "excludedModelIds": null,
+        "budgetCeilingCents": null
+      },
+      "reply": "Para una escena bonita y expresiva, compararía modelos orientados a una narrativa cinematográfica; la calidad artística guía la elección.",
+      "reasoningSummary": "The request describes a cinematic scene, and artistic quality is not one of the schema’s enumerated factual priorities."
+    },
+    {
+      "id": "F04",
+      "arguments": {
+        "id": null,
+        "surface": "video",
+        "mode": null,
+        "aspectRatio": null,
+        "resolution": "4K",
+        "maxDurationSec": null,
+        "audio": null,
+        "referenceImages": null,
+        "useCase": "high_resolution",
+        "priorities": ["highest_resolution"],
+        "preferredModelIds": null,
+        "excludedModelIds": null,
+        "budgetCeilingCents": null
+      },
+      "reply": "Pour une livraison d’au moins 4K, je privilégierais les modèles vidéo compatibles avec cette résolution.",
+      "reasoningSummary": "The explicit 4K delivery requirement maps to resolution 4K, high_resolution, and highest_resolution priority."
+    },
+    {
+      "id": "F05",
+      "arguments": {
+        "id": null,
+        "surface": "video",
+        "mode": null,
+        "aspectRatio": null,
+        "resolution": null,
+        "maxDurationSec": null,
+        "audio": null,
+        "referenceImages": null,
+        "useCase": "social_video",
+        "priorities": null,
+        "preferredModelIds": null,
+        "excludedModelIds": null,
+        "budgetCeilingCents": null
+      },
+      "reply": "Para estimar seis Shorts con dos intentos por plano, tomaría el formato social como contexto del proyecto y conservaría esos conteos para el cálculo de presupuesto.",
+      "reasoningSummary": "Shorts map to social_video; the schema has no fields for clip count or attempts per clip, so those details remain outside the argument object."
+    },
+    {
+      "id": "F06",
+      "arguments": {
+        "id": null,
+        "surface": "video",
+        "mode": null,
+        "aspectRatio": null,
+        "resolution": null,
+        "maxDurationSec": null,
+        "audio": null,
+        "referenceImages": null,
+        "useCase": "social_video",
+        "priorities": ["speed", "lower_cost"],
+        "preferredModelIds": null,
+        "excludedModelIds": null,
+        "budgetCeilingCents": null
+      },
+      "reply": "Je privilégierais une option vidéo rapide et moins chère, dans cet ordre de priorité.",
+      "reasoningSummary": "The requested ordering maps directly to speed first and lower_cost second, with clips implying social_video."
+    }
+  ]
+}

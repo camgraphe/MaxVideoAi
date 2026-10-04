@@ -1,3 +1,4 @@
+import { CurationError } from '@/server/playlists/curation-store';
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
 import { submitToIndexNow } from '@/lib/indexnow';
@@ -49,6 +50,7 @@ export async function POST(req: NextRequest, props: RouteParams) {
     await submitToIndexNow('/examples');
     return NextResponse.json({ ok: true });
   } catch (error) {
+    if (error instanceof CurationError) return NextResponse.json({ok:false,error:error.message},{status:error.status});
     console.error('[admin/playlists/:id/items] failed to append', error);
     return NextResponse.json({ ok: false, error: 'Server error' }, { status: 500 });
   }
@@ -92,6 +94,7 @@ export async function DELETE(req: NextRequest, props: RouteParams) {
     await submitToIndexNow('/examples');
     return NextResponse.json({ ok: true });
   } catch (error) {
+    if (error instanceof CurationError) return NextResponse.json({ok:false,error:error.message},{status:error.status});
     console.error('[admin/playlists/:id/items] failed to remove', error);
     return NextResponse.json({ ok: false, error: 'Server error' }, { status: 500 });
   }
@@ -142,6 +145,7 @@ export async function PUT(req: NextRequest, props: RouteParams) {
     await submitToIndexNow('/examples');
     return NextResponse.json({ ok: true });
   } catch (error) {
+    if (error instanceof CurationError) return NextResponse.json({ok:false,error:error.message},{status:error.status});
     console.error('[admin/playlists/:id/items] failed to reorder', error);
     return NextResponse.json({ ok: false, error: 'Server error' }, { status: 500 });
   }

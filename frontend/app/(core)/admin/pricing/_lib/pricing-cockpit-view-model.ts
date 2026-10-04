@@ -25,7 +25,7 @@ export type PricingPolicyRepresentativeQuote = {
   engineId: string;
   surface: string;
   vendorSubtotalCents: number;
-  totalCents: number;
+  customerTotalCents: number;
   policyProvenance: PricingChangePreviewProvenance;
 };
 
@@ -45,11 +45,157 @@ export type PricingPolicyInventoryRow = {
 };
 
 export type PricingPolicyInventory = {
+  modelTariffsActive?: boolean;
   versionedPolicyVersion: number;
   databaseStatus: 'loaded' | 'unavailable';
   warnings: string[];
   rows: PricingPolicyInventoryRow[];
+  providerComparisons: ProviderCostComparisonRowView[];
 };
+
+export type ProviderCostComparisonRowView = {
+  scenarioId: string;
+  brandId: string;
+  familyId?: string;
+  engineId: string;
+  executionProvider: string;
+  routeConfigured: boolean | null;
+  generationDisabledReason?: 'local_sandbox' | 'route_unavailable' | null;
+  mediaType: 'video' | 'image';
+  workflowPairId: string | null;
+  mode: string;
+  resolution: string;
+  step: 'normal' | 'draft' | 'final';
+  durationSec: number | null;
+  inputVideoDurationSec?: number | null;
+  outputQuantity?: number | null;
+  aspectRatio: string | null;
+  billingInputType: 'no_video_input' | 'video_input' | null;
+  audio: boolean | null;
+  videoTokens: number | null;
+  tokenEvidence: 'scenario_estimate' | 'provider_reported' | null;
+  outputPixels: number[] | null;
+  inputImages: number | null;
+  supplierList: {
+    status: 'published_list_estimate' | 'published_list_from_usage' | 'catalog_reference_estimate' | 'unavailable';
+    amountUsd: number | null;
+    unitPriceUsdPer1kTokens: number | null;
+    sourceUrl: string | null;
+    checkedAt: string | null;
+    reason: string | null;
+    sourceLabel?: string;
+    referenceProvider?: string;
+    routeMatches?: boolean;
+    versionedAt?: string | null;
+    rateBreakdown?: Array<{ label: string; quantity: number; unit: 'second' | 'image' | '1000_tokens' | 'task';
+      unitPriceUsd: number; amountUsd: number }>;
+  };
+  publicPromotion: {
+    amountUsd: number | null;
+    unitPriceUsdPer1kTokens: number;
+    startsAt: string;
+    endsAt: string;
+  } | null;
+  supplierEffective: {
+    status: 'confirmed' | 'account_contract_unconfirmed' | 'unavailable';
+    amountUsd: number | null;
+    source: string | null;
+    confirmedAt: string | null;
+    contract?: { id: string; sourceUrl: string; startsAt: string; endsAt: string; region: string;
+      discountPercent: number; billingUnits: string[]; unitPriceUsdPer1kTokens: number | null };
+  };
+  supplierObserved: {
+    status: 'invoice_observed' | 'unavailable';
+    amountUsd: number | null;
+    source: string | null;
+    observedAt: string | null;
+  };
+  customerQuote: {
+    totalCents: number;
+    currency: string;
+    source: 'database' | 'versioned';
+    ruleId: string;
+    pricingMode: 'legacy_margin_rule' | 'manual_tariff';
+  } | null;
+  indicativeDifferenceVsListCents: number | null;
+  realizedGrossDifferenceCents: number | null;
+};
+
+export type ProviderComparisonFilters = {
+  brandId: string;
+  executionProvider: string;
+  mediaType: 'all' | 'video' | 'image';
+  query: string;
+};
+
+export function filterProviderComparisonRows(
+  rows: ProviderCostComparisonRowView[], filters: ProviderComparisonFilters,
+): ProviderCostComparisonRowView[] {
+  const query = filters.query.trim().toLowerCase();
+  return rows.filter((row) =>
+    (filters.brandId === 'all' || (row.familyId ?? row.brandId) === filters.brandId) &&
+    (filters.executionProvider === 'all' || row.executionProvider === filters.executionProvider) &&
+    (filters.mediaType === 'all' || row.mediaType === filters.mediaType) &&
+    (!query || [row.engineId, row.mode, row.resolution, row.scenarioId]
+      .some((value) => value.toLowerCase().includes(query))));
+}
+
+export function formatProviderComparisonScenario(row: ProviderCostComparisonRowView): string {
+  const modeLabels: Record<string, string> = {
+    t2v: 'Text to video', i2v: 'Image to video', v2v: 'Video to video', a2v: 'Audio to video',
+    ref2v: 'Reference to video', t2i: 'Text to image', i2i: 'Image to image',
+  };
+  return [
+    row.step === 'draft' ? 'Draft' : row.step === 'final' ? 'Final' : null,
+    modeLabels[row.mode] ?? row.mode.toUpperCase(),
+    row.mediaType === 'image' && row.outputQuantity != null
+      ? `${row.outputQuantity} ${row.outputQuantity === 1 ? 'image' : 'images'}`
+      : row.durationSec != null ? `${row.durationSec} s` : null,
+    row.resolution,
+    row.aspectRatio,
+    (row.inputVideoDurationSec ?? 0) > 0 ? `${row.inputVideoDurationSec} s input`
+      : row.billingInputType === 'video_input' ? 'video input' : null,
+    row.audio === true ? 'with audio' : row.audio === false ? 'silent' : null,
+  ].filter(Boolean).join(' · ');
+}
+
+export function providerComparisonPolicySelectorKey(row: ProviderCostComparisonRowView): string {
+  return pricingPolicySelectorKey({ engineId: row.engineId, mode: row.mode, resolution: row.resolution });
+}
+
+export type ProviderDraftFinalSummary = {
+  workflowPairId: string;
+  draftScenarioId: string;
+  finalScenarioId: string;
+  customerTotalCents: number | null;
+  supplierListUsd: number | null;
+};
+
+export function summarizeProviderDraftFinalPairs(
+  rows: ProviderCostComparisonRowView[],
+): ProviderDraftFinalSummary[] {
+  const byPair = new Map<string, { draft?: ProviderCostComparisonRowView; final?: ProviderCostComparisonRowView }>();
+  for (const row of rows) {
+    if (!row.workflowPairId || row.step === 'normal') continue;
+    const pair = byPair.get(row.workflowPairId) ?? {};
+    pair[row.step] = row;
+    byPair.set(row.workflowPairId, pair);
+  }
+  return [...byPair].flatMap(([workflowPairId, pair]) => {
+    if (!pair.draft || !pair.final) return [];
+    const { draft, final } = pair;
+    return [{
+      workflowPairId,
+      draftScenarioId: draft.scenarioId,
+      finalScenarioId: final.scenarioId,
+      customerTotalCents: draft.customerQuote && final.customerQuote &&
+        draft.customerQuote.currency === final.customerQuote.currency
+        ? draft.customerQuote.totalCents + final.customerQuote.totalCents : null,
+      supplierListUsd: draft.supplierList.amountUsd != null && final.supplierList.amountUsd != null
+        ? Number((draft.supplierList.amountUsd + final.supplierList.amountUsd).toFixed(6)) : null,
+    }];
+  });
+}
 
 export type PricingPolicyDraft = {
   id: string;
@@ -170,13 +316,14 @@ function selectorsMatch(left: PricingPolicySelector, right: PricingPolicySelecto
   return left.engineId === right.engineId && left.mode === right.mode && left.resolution === right.resolution;
 }
 
-export function createPricingPolicyDraft(row: PricingPolicyInventoryRow): PricingPolicyDraft {
+export function createPricingPolicyDraft(row: PricingPolicyInventoryRow, scopeToSelector = false): PricingPolicyDraft {
   const base = row.databaseOverride ?? row.versionedRule;
   if (!base) {
     throw new Error('Pricing inventory row has no policy rule');
   }
-  const draftSelector = row.databaseOverride ?? row.selector;
-  const id = row.databaseOverride?.id ?? (selectorsMatch(base, row.selector) ? base.id : makeGeneratedRuleId(row.selector));
+  const createScoped = scopeToSelector && row.databaseOverride && !selectorsMatch(row.databaseOverride, row.selector);
+  const draftSelector = createScoped ? row.selector : row.databaseOverride ?? row.selector;
+  const id = createScoped ? makeGeneratedRuleId(row.selector) : row.databaseOverride?.id ?? (selectorsMatch(base, row.selector) ? base.id : makeGeneratedRuleId(row.selector));
   return {
     id,
     engineId: draftSelector.engineId ?? '',
@@ -187,7 +334,7 @@ export function createPricingPolicyDraft(row: PricingPolicyInventoryRow): Pricin
     surchargeAudioPercent: ratioToPercentInput(base.surchargeAudioPercent),
     surchargeUpscalePercent: ratioToPercentInput(base.surchargeUpscalePercent),
     currency: base.currency,
-    compatibilityProfile: base.compatibilityProfile ?? 'standard',
+    compatibilityProfile: (createScoped ? row.effectiveProvenance?.compatibilityProfile : undefined) ?? base.compatibilityProfile ?? 'standard',
   };
 }
 
@@ -227,7 +374,7 @@ export function buildPricingPolicyProposal(
       : {}),
   };
   if (!rule.id) throw new Error('Rule ID is required.');
-  return row.databaseOverride
+  return row.databaseOverride && draft.id === row.databaseOverride.id
     ? { operation: 'update', targetId: row.databaseOverride.id, rule }
     : { operation: 'create', rule };
 }

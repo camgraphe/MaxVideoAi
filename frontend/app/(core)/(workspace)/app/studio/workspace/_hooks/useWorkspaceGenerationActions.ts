@@ -202,6 +202,7 @@ export function useWorkspaceGenerationActions({
       }));
       try {
         const results = await submitWorkspaceShotGeneration({
+          pricingSnapshot: estimate?.pricing,
           nodes,
           edges,
           shotNodeId: nodeId,

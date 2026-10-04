@@ -27,6 +27,21 @@ export {
   type PricingScenario,
 } from './canonical';
 export {
+  ManualTariffError,
+  resolveManualTariffCell,
+  quoteCanonicalManualTariff,
+  auditManualTariffParity,
+  isValidManualTariffPrice,
+  manualTariffUnitNames,
+  type ManualTariffPrice,
+  type ManualTariffComponent,
+  type ManualTariffCell,
+  type ManualTariffSelector,
+  type ManualTariffQuote,
+  type ManualTariffParityScenario,
+  type ManualTariffParityIssue,
+} from './manual-tariff';
+export {
   getPlatformFeeCents,
   getVendorShareCents,
   projectCanonicalQuoteToSnapshot,

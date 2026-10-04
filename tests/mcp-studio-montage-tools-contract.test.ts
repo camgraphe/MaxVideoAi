@@ -66,7 +66,9 @@ test('create_studio_montage is separately gated, strict, persisted and explicitl
   assert.equal((tool.inputSchema.properties?.settings as { additionalProperties?: unknown }).additionalProperties, false);
   assert.equal((tool.inputSchema.properties?.clips as { items?: { additionalProperties?: unknown } }).items?.additionalProperties, false);
   assert.match(enabledClient.getInstructions() ?? '', /create_studio_montage.*editable project/is);
-  assert.match(tool.description ?? '', /editable Studio project.*exact idempotencyKey.*exact retry/is);
+  assert.match(tool.description ?? '', /editable Studio project.*exact idempotencyKey.*exact retry of the same request/is);
+  assert.match(tool.description ?? '', /changed content requires a new key/i);
+  assert.match(tool.description ?? '', /preserves.*requested order.*exact Studio destination/i);
 
   const input = {
     title: 'Two shots', settings: { fps: 24, aspectRatio: '16:9', resolution: '1080p', audioMode: 'preserve' },

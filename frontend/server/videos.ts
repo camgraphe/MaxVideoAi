@@ -1,4 +1,7 @@
-import { getLocalPublicExample, listLocalModelExamples, isLocalPublicExamplesEnabled, listLocalPublicExamples } from './local-public-examples';
+import { listCatalogPage } from './videos-catalog-page';
+import { createCurationReadScope, listPlaylistVideosWithOptions, listCuratedGalleryVideos, type CurationReadScope } from './videos-playlists';
+import { BASE_SELECT, BASE_SELECT_WITH_SETTINGS, PUBLIC_VIDEO_SOURCE_ELIGIBILITY } from './videos-query';
+import { getLocalPublicExample, isLocalPublicExamplesEnabled, listLocalPublicExamples } from './local-public-examples';
 import { query } from '@/lib/db';
 import { getDiscoverableExampleEngineAliases } from '@/lib/examples/discovery';
 import { getExampleFamilyEngineAliases } from '@/lib/model-families';
@@ -25,51 +28,11 @@ export type { GalleryVideo } from './videos-normalization';
 export { mergeUniqueGalleryVideos } from './videos-examples';
 export type GalleryTab = 'starter' | 'latest' | 'trending';
 function shouldSkipBuildTimeMarketingVideoQueries() { return process.env.NEXT_PHASE === 'phase-production-build'; }
-const imageThumbFallbackSelect = (jobAlias: string) => `
-             SELECT COALESCE(NULLIF(jo.thumb_url, ''), NULLIF(jo.url, ''), NULLIF(jo.storage_url, ''))
-               FROM job_outputs jo
-              WHERE jo.job_id = ${jobAlias}.job_id
-                AND jo.kind = 'image'
-              ORDER BY jo.created_at ASC
-              LIMIT 1
-`;
-
-const videoOutputDimensionSelect = (jobAlias: string, column: 'width' | 'height') =>
-  `SELECT jo.${column} FROM job_outputs jo WHERE jo.job_id = ${jobAlias}.job_id AND jo.kind = 'video' AND jo.status <> 'deleted' AND jo.width IS NOT NULL AND jo.height IS NOT NULL ORDER BY jo.position ASC, jo.created_at ASC LIMIT 1`;
-
-const BASE_SELECT = `
-  SELECT job_id, user_id, engine_id, engine_label, duration_sec, prompt,
-         COALESCE(NULLIF(thumb_url, ''), (${imageThumbFallbackSelect('app_jobs')})) AS thumb_url,
-         video_url,
-         to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url,
-         to_jsonb(app_jobs)->'keyframe_urls' AS keyframe_urls,
-         aspect_ratio, (${videoOutputDimensionSelect('app_jobs', 'width')}) AS output_width, (${videoOutputDimensionSelect('app_jobs', 'height')}) AS output_height,
-         has_audio, can_upscale, created_at, visibility, indexable, featured, featured_order,
-         final_price_cents, currency, pricing_snapshot
-  FROM app_jobs
-`;
-
-const BASE_SELECT_WITH_SETTINGS = `
-  SELECT job_id, user_id, engine_id, engine_label, duration_sec, prompt,
-         COALESCE(NULLIF(thumb_url, ''), (${imageThumbFallbackSelect('app_jobs')})) AS thumb_url,
-         video_url,
-         to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url,
-         to_jsonb(app_jobs)->'keyframe_urls' AS keyframe_urls,
-         aspect_ratio, (${videoOutputDimensionSelect('app_jobs', 'width')}) AS output_width, (${videoOutputDimensionSelect('app_jobs', 'height')}) AS output_height,
-         has_audio, can_upscale, created_at, visibility, indexable, featured, featured_order,
-         final_price_cents, currency, settings_snapshot
-  FROM app_jobs
-`;
-
 const PUBLIC_VIDEO_PREDICATE = `
   visibility = 'public'
   AND COALESCE(indexable, TRUE)
 `;
 
-const PUBLIC_VIDEO_PREDICATE_PLAYLIST = `
-  aj.visibility = 'public'
-  AND COALESCE(aj.indexable, TRUE)
-`;
 
 export async function getVideoById(videoId: string): Promise<GalleryVideo | null> {
   const rows = await query<VideoRow>(
@@ -81,7 +44,7 @@ export async function getVideoById(videoId: string): Promise<GalleryVideo | null
 
 export async function getSeoVideoById(videoId: string): Promise<GalleryVideo | null> {
   const rows = await query<VideoRow>(
-    `${BASE_SELECT_WITH_SETTINGS} WHERE job_id = $1 AND ${PUBLIC_VIDEO_PREDICATE} LIMIT 1`,
+    `${BASE_SELECT_WITH_SETTINGS} WHERE job_id = $1 AND ${PUBLIC_VIDEO_PREDICATE} AND ${PUBLIC_VIDEO_SOURCE_ELIGIBILITY} LIMIT 1`,
     [videoId]
   );
   return rows[0] ? mapGalleryVideoRow(rows[0]) : null;
@@ -105,7 +68,7 @@ export async function getSeoVideosByIds(videoIds: string[]): Promise<Map<string,
   }
   const uniqueIds = Array.from(new Set(videoIds));
   const rows = await query<VideoRow>(
-    `${BASE_SELECT_WITH_SETTINGS} WHERE job_id = ANY($1::text[]) AND ${PUBLIC_VIDEO_PREDICATE}`,
+    `${BASE_SELECT_WITH_SETTINGS} WHERE job_id = ANY($1::text[]) AND ${PUBLIC_VIDEO_PREDICATE} AND ${PUBLIC_VIDEO_SOURCE_ELIGIBILITY}`,
     [uniqueIds]
   );
   return new Map(rows.map((row) => [row.job_id, mapGalleryVideoRow(row)]));
@@ -175,69 +138,13 @@ export async function getLatestPublicVideoByPromptAndEngine(
   return rows[0] ? mapGalleryVideoRow(rows[0]) : null;
 }
 
-type PlaylistVideoQueryOptions = {
-  slug: string;
-  limit?: number;
-  engineAliases?: string[] | null;
-};
-
-async function listPlaylistVideosWithOptions({
-  slug,
-  limit,
-  engineAliases,
-}: PlaylistVideoQueryOptions): Promise<GalleryVideo[]> {
-  if (isLocalPublicExamplesEnabled()) {
-    return slug.startsWith('examples-') ? listLocalModelExamples(slug.slice('examples-'.length), limit) : [];
-  }
-  const params: unknown[] = [slug];
-  const aliasFilter =
-    Array.isArray(engineAliases)
-      ? (() => {
-          params.push(engineAliases.map((value) => value.trim().toLowerCase()).filter(Boolean));
-          return `AND LOWER(aj.engine_id) = ANY($${params.length}::text[])`;
-        })()
-      : '';
-  const limitClause =
-    typeof limit === 'number'
-      ? (() => {
-          params.push(limit);
-          return `LIMIT $${params.length}`;
-        })()
-      : '';
-
-  const rows = await query<VideoRow & { order_index: number }>(
-    `
-      SELECT aj.job_id, aj.user_id, aj.engine_id, aj.engine_label, aj.duration_sec, aj.prompt,
-             COALESCE(NULLIF(aj.thumb_url, ''), (${imageThumbFallbackSelect('aj')})) AS thumb_url,
-             aj.video_url, to_jsonb(aj)->>'preview_video_url' AS preview_video_url, to_jsonb(aj)->'keyframe_urls' AS keyframe_urls,
-             aj.aspect_ratio, (${videoOutputDimensionSelect('aj', 'width')}) AS output_width, (${videoOutputDimensionSelect('aj', 'height')}) AS output_height,
-             aj.has_audio, aj.can_upscale, aj.created_at, aj.visibility,
-             aj.indexable, aj.featured, aj.featured_order, aj.final_price_cents, aj.currency, aj.pricing_snapshot, pi.order_index
-      FROM playlists p
-      JOIN playlist_items pi ON pi.playlist_id = p.id
-      JOIN app_jobs aj ON aj.job_id = pi.video_id
-      WHERE p.slug = $1
-        AND p.is_public = TRUE
-        AND ${PUBLIC_VIDEO_PREDICATE_PLAYLIST}
-        ${aliasFilter}
-      ORDER BY
-        CASE WHEN pi.order_index IS NULL THEN 1 ELSE 0 END,
-        pi.order_index DESC,
-        aj.created_at DESC
-      ${limitClause}
-    `,
-    params
-  );
-  return rows.map(mapGalleryVideoRow);
-}
-
-export async function listPlaylistVideos(slug: string, limit: number): Promise<GalleryVideo[]> {
+export async function listPlaylistVideos(slug: string, limit: number, curationScope?: CurationReadScope): Promise<GalleryVideo[]> {
   if (shouldSkipBuildTimeMarketingVideoQueries()) return [];
-  return listPlaylistVideosWithOptions({ slug, limit });
+  return listPlaylistVideosWithOptions({ slug, limit }, curationScope);
 }
 
-async function listAllPlaylistVideos(slug: string): Promise<GalleryVideo[]> {
-  return listPlaylistVideosWithOptions({ slug });
+async function listAllPlaylistVideos(slug: string, curationScope?: CurationReadScope): Promise<GalleryVideo[]> {
+  return listPlaylistVideosWithOptions({ slug }, curationScope);
 }
 
 async function listLatest(limit: number): Promise<GalleryVideo[]> {
@@ -288,9 +195,14 @@ export async function listStarterPlaylistVideos(limit: number): Promise<GalleryV
 
 async function loadExampleFamilyFeed(
   familyId: string,
-  options?: { includeFamilyPlaylist?: boolean }
+  options?: { includeFamilyPlaylist?: boolean },
+  curationScope?: CurationReadScope,
 ): Promise<GalleryVideo[]> {
   const includeFamilyPlaylist = options?.includeFamilyPlaylist ?? true;
+  if (includeFamilyPlaylist) {
+    const curated = await listCuratedGalleryVideos(`family-${familyId}`, {}, curationScope);
+    if (curated !== null) return curated;
+  }
   const sourceSlugs = getFamilyFeedSourceSlugs(familyId);
   if (!sourceSlugs.length) {
     return [];
@@ -302,13 +214,13 @@ async function loadExampleFamilyFeed(
   const engineAliases = getExampleFamilyEngineAliases(familyId);
 
   const familyVideosPromise =
-    includeFamilyPlaylist && familySlug ? listAllPlaylistVideos(familySlug).catch(() => [] as GalleryVideo[]) : Promise.resolve([]);
+    includeFamilyPlaylist && familySlug ? listAllPlaylistVideos(familySlug, curationScope).catch(() => [] as GalleryVideo[]) : Promise.resolve([]);
   const modelVideosPromise = Promise.all(
-    modelSlugs.map(async (slug) => listAllPlaylistVideos(slug).catch(() => [] as GalleryVideo[]))
+    modelSlugs.map(async (slug) => listAllPlaylistVideos(slug, curationScope).catch(() => [] as GalleryVideo[]))
   );
   const hubVideosPromise =
     hubSlug && engineAliases.length
-      ? listPlaylistVideosWithOptions({ slug: hubSlug, engineAliases }).catch(() => [] as GalleryVideo[])
+      ? listPlaylistVideosWithOptions({ slug: hubSlug, engineAliases }, curationScope).catch(() => [] as GalleryVideo[])
       : Promise.resolve([] as GalleryVideo[]);
 
   const [familyVideos, modelVideos, hubVideos] = await Promise.all([
@@ -338,26 +250,34 @@ export async function listExampleModelCurrentPublicOrder(modelSlug: string): Pro
 
 export async function listExampleFamilyPage(
   familyId: string,
-  options: Omit<ListExamplesPageOptions, 'engineGroup'>
+  options: Omit<ListExamplesPageOptions, 'engineGroup'>,
+  curationScope?: CurationReadScope,
 ): Promise<ListExamplesPageResult> {
   const { sort, limit = 150, offset = 0 } = options;
   if (isLocalPublicExamplesEnabled()) return listLocalPublicExamples(familyId, sort, limit, offset);
   if (shouldSkipBuildTimeMarketingVideoQueries()) return { items: [], total: 0, limit, offset, hasMore: false };
-  const merged = await loadExampleFamilyFeed(familyId, { includeFamilyPlaylist: true });
+  if (!curationScope) return listCatalogPage({ familyId, sort, limit, offset });
+  const readScope = curationScope ?? createCurationReadScope();
+  const merged = await loadExampleFamilyFeed(familyId, { includeFamilyPlaylist: true }, readScope);
   const sorted = sortVideosByPreference(merged, sort);
   return paginateGalleryVideos(sorted, limit, offset);
 }
 
-export async function listExamplesPage(options: ListExamplesPageOptions): Promise<ListExamplesPageResult> {
+export async function listExamplesPage(options: ListExamplesPageOptions, curationScope?: CurationReadScope): Promise<ListExamplesPageResult> {
   const { sort, limit = 150, offset = 0, engineGroup } = options;
   if (isLocalPublicExamplesEnabled()) return listLocalPublicExamples(engineGroup ?? '', sort, limit, offset);
   if (shouldSkipBuildTimeMarketingVideoQueries()) return { items: [], total: 0, limit, offset, hasMore: false };
+  if (!curationScope) return listCatalogPage({ sort, limit, offset,
+    engineAliases: engineGroup ? getExampleFamilyEngineAliases(engineGroup.trim().toLowerCase()) : undefined });
   const hubSlug = getExamplesHubPlaylistSlug();
   if (!hubSlug) {
     return { items: [], total: 0, limit, offset, hasMore: false };
   }
 
+  const readScope = curationScope ?? createCurationReadScope();
   const normalizedGroup = engineGroup ? engineGroup.trim().toLowerCase() : null;
+  const curated = await listCuratedGalleryVideos(hubSlug, {engineAliases: normalizedGroup ? getExampleFamilyEngineAliases(normalizedGroup) : getDiscoverableExampleEngineAliases()}, readScope);
+  if (curated !== null) return paginateGalleryVideos(sortVideosByPreference(curated, sort), limit, offset);
   const baseFetchLimit = Math.max(limit + Math.max(offset, 0), limit);
   const playlistFetchLimit = normalizedGroup
     ? Math.min(baseFetchLimit * ENGINE_GROUP_FETCH_MULTIPLIER, ENGINE_GROUP_FETCH_CAP)
@@ -365,7 +285,7 @@ export async function listExamplesPage(options: ListExamplesPageOptions): Promis
 
   const aggregated = await listPlaylistVideosWithOptions({
     slug: hubSlug, limit: playlistFetchLimit, engineAliases: normalizedGroup ? getExampleFamilyEngineAliases(normalizedGroup) : getDiscoverableExampleEngineAliases(),
-  }).catch((error) => {
+  }, readScope).catch((error) => {
     console.warn(`[examples] failed to load playlist "${hubSlug}"`, error);
     return [] as GalleryVideo[];
   });
@@ -381,8 +301,8 @@ export async function listExamplesPage(options: ListExamplesPageOptions): Promis
   return paginateGalleryVideos(sorted, limit, offset);
 }
 
-export async function listExamples(sort: ExampleSort, limit = 150): Promise<GalleryVideo[]> {
-  const result = await listExamplesPage({ sort, limit, offset: 0 });
+export async function listExamples(sort: ExampleSort, limit = 150, curationScope?: CurationReadScope): Promise<GalleryVideo[]> {
+  const result = await listExamplesPage({ sort, limit, offset: 0 }, curationScope);
   return result.items;
 }
 

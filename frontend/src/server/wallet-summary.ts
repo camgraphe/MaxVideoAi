@@ -1,3 +1,4 @@
+import { WALLET_FUNDED_RECEIPT_SQL } from '@/lib/wallet-funding';
 import { query, type QueryExecutor } from '@/lib/db';
 import { normalizeCurrencyCode, type Currency } from '@/lib/currency';
 
@@ -36,7 +37,7 @@ export async function getWalletSummary(
       COUNT(*) FILTER (WHERE type = 'topup' AND amount_cents > 0)::int AS completed_topups,
       COALESCE(STRING_AGG(DISTINCT LOWER(currency), ',') FILTER (WHERE currency IS NOT NULL AND LOWER(currency) <> $3), '') AS mismatched_currencies
      FROM app_receipts
-    WHERE user_id = $1`;
+    WHERE user_id = $1 AND ${WALLET_FUNDED_RECEIPT_SQL}`;
   const rows = executor
     ? await executor.query<WalletLedgerSummaryRow>(sql, params)
     : await query<WalletLedgerSummaryRow>(sql, params);

@@ -10,6 +10,7 @@ import { getMcpCompatibilityEvidence } from '../frontend/app/(localized)/[locale
 import { McpPageView } from '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpPageView';
 import { IntegrationPageView } from '../frontend/app/(localized)/[locale]/(marketing)/integrations/_components/IntegrationPageView';
 import { getMcpHostProof } from '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-host-proof';
+import { getIntegrationInstallInstruction } from '../frontend/app/(localized)/[locale]/(marketing)/integrations/_content/shared';
 (globalThis as typeof globalThis & {React:typeof React}).React=React;
 const locales=['en','fr','es'] as const;
 const live={renderPublicPage:true,connectionAvailable:true,indexable:true,showTrialClaim:false,showPaidGenerationClaim:true,showReferenceClaim:true};
@@ -22,7 +23,8 @@ test('the hub exposes five localized setup routes and four unlinked preparation 
   for(const client of ['cursor','github-copilot','gemini-cli','microsoft-copilot']) assert.ok(!html.includes(`/integrations/${client}"`));
   assert.equal((html.match(/<h1\b/g)??[]).length,1);
   assert.equal((html.match(/data-faq-item="true"/g)??[]).length,8);
-  assert.doesNotMatch(html,/19591|Pending \/ Under review|trial included/i);
+  assert.match(html,/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/);
+  assert.doesNotMatch(html,/Pending \/ Under review|no public template listing|aucun modèle de workflow n’est publié|no hay una plantilla publicada|trial included/i);
  }
 });
 test('each integration has a distinct searchable title and truthful installation context',()=>{
@@ -47,9 +49,10 @@ test('host eligibility is visible and automation never becomes a generic one-cli
   const html=renderToStaticMarkup(React.createElement(IntegrationPageView,{copy:n8n,compatibility:evidence.clients.n8n!,locale,publication:live}));
   assert.doesNotMatch(html,/data-copy-install-instructions/);
   assert.match(html,/data-copy-endpoint/);
-  assert.doesNotMatch(html,/19591|Pending \/ Under review/);
+  assert.match(html,/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/);
+  assert.doesNotMatch(html,/Pending \/ Under review|no public n8n library listing/i);
   const faq=getMcpEditorialCopy(locale).faq.map(item=>item.answer).join(' ');
-  assert.match(faq,/Business.*Enterprise.*Edu/);assert.match(faq,/Pro/);assert.match(faq,/2\.38\.7/);assert.match(faq,/Cloud/);
+  assert.match(faq,/Business.*Enterprise.*Edu/);assert.match(faq,/Pro/);assert.match(faq,/2\.38\.7/);assert.match(faq,/Cloud/);assert.match(faq,/19591/);assert.match(faq,/manual|manuelle/i);
  }
 });
 test('gated views do not show paid workflow, historical proof or price examples',()=>{
@@ -81,5 +84,28 @@ test('localized host setup titles and introductions do not inherit the English g
         }
       }
     }
+  }
+});
+
+test('installation requests name the production server and the correct setup mechanism for each host', () => {
+  for (const locale of locales) {
+    const chatgpt = getIntegrationInstallInstruction(locale, 'chatgptWeb');
+    const claude = getIntegrationInstallInstruction(locale, 'claudeDesktop');
+    const code = getIntegrationInstallInstruction(locale, 'claudeCode');
+    const openclaw = getIntegrationInstallInstruction(locale, 'openclawGateway');
+    for (const instruction of [chatgpt, claude, code, openclaw]) {
+      assert.match(instruction, /https:\/\/api\.maxvideoai\.com\/mcp/);
+      assert.match(instruction, /https:\/\/maxvideoai\.com\//);
+      assert.match(instruction, /get_account_status.*list_models/s);
+      assert.match(instruction, /Staging/);
+    }
+    assert.match(chatgpt, /OAuth/);
+    assert.doesNotMatch(chatgpt, /claude mcp|openclaw mcp|codex plugin/);
+    assert.match(claude, /Customize.*Connectors/);
+    assert.match(code, /claude mcp add --transport http maxvideoai/);
+    assert.match(code, /\/mcp/);
+    assert.match(openclaw, /openclaw mcp login maxvideoai/);
+    assert.match(getIntegrationInstallInstruction(locale, 'codexCli'), /codex plugin marketplace add/);
+    assert.match(getIntegrationInstallInstruction(locale, 'n8nMcpClient'), /OAuth2/);
   }
 });

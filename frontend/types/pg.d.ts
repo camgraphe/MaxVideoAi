@@ -1,6 +1,8 @@
 declare module 'pg' {
   export interface PoolConfig {
     connectionString?: string;
+    options?: string;
+    max?: number;
   }
 
   export interface QueryResult<T = unknown> {
@@ -9,7 +11,9 @@ declare module 'pg' {
 
   export interface PoolClient {
     query<T = unknown>(text: string, params?: ReadonlyArray<unknown>): Promise<QueryResult<T>>;
-    release(): void;
+    on(event: 'error', listener: (error: Error) => void): this;
+    removeListener(event: 'error', listener: (error: Error) => void): this;
+    release(error?: Error | boolean): void;
   }
 
   export class Pool {

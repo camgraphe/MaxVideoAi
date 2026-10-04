@@ -20,7 +20,7 @@ const engine = createWan3Engine({
 export const WAN_3_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [{
   id: 'wan-3', marketingName: 'Wan 3', cardTitle: 'Wan 3', provider: 'Alibaba', brandId: 'wan',
   versionLabel: '3.0', availability: 'available', logoPolicy: 'textOnly',
-  billingNote: 'Customer quotes use each generated output second at $0.05 (480p), $0.10 (720p), or $0.20 (1080p); direct-provider input duration is tracked separately as an internal cost fact.',
+  billingNote: 'Provider cost uses input video plus generated output seconds at $0.05 (480p), $0.10 (720p), or $0.20 (1080p). Customer quotes include the configured margin and verified input-video duration.',
   engine,
   modes: [
     { mode: 't2v', falModelId: WAN_3_ENDPOINTS.t2v, ui: WAN_3_MODE_CAPS.t2v! },

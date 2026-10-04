@@ -50,7 +50,7 @@ function extractPricing(engine: EngineCaps): EnginePricingDetails | null {
   };
 }
 
-// The writer and preflight share the effective system defaults. Administrator
+// The writer and read-only catalogs share effective system defaults. Administrator
 // rows are never refreshed; JSON normalization matches the persisted payload.
 export function buildEngineSettingsSeedPayload(
   engine: EngineCaps,

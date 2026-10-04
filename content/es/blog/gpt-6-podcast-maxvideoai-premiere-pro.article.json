@@ -1,0 +1,530 @@
+{
+  "schemaVersion": 1,
+  "canonicalSlug": "gpt-6-podcast-maxvideoai-premiere-pro",
+  "publication": {
+    "articleId": "013127f5-9a5e-4a3e-9650-4dc65ba0a4cd",
+    "version": 2,
+    "digest": "0589f32538e34ca762907ed0233ffa92ca03e0d4a0e2f41e426eab3b71935fd4",
+    "publishedAt": "2026-09-27T11:32:38.145Z"
+  },
+  "article": {
+    "locale": "es",
+    "audience": "es-419",
+    "slug": "gpt-6-podcast-maxvideoai-premiere-pro",
+    "title": "Cómo creamos un podcast con IA, de la idea al montaje",
+    "description": "Seis tomas generadas y una entrevista de 86 segundos: prompts, referencias y edición en Premiere Pro con GPT-6 en Codex y MaxVideoAI.",
+    "keywords": [
+      "producción de video con GPT-6",
+      "pódcast con IA",
+      "flujo de trabajo con MaxVideoAI",
+      "Wan 3 Prime",
+      "automatización de Premiere Pro",
+      "edición de video con Codex",
+      "video de diálogo con IA"
+    ],
+    "blocks": [
+      {
+        "id": "editorial-hero",
+        "type": "media",
+        "assetId": "podcast-cover",
+        "heading": "",
+        "presentation": "single",
+        "alt": "Dos participantes de un pódcast ficticio conversan frente a frente en un estudio con iluminación cálida; el anfitrión viste de gris carbón y el invitado, de beige.",
+        "caption": "Nuestra entrevista ficticia, creada con IA."
+      },
+      {
+        "id": "opening",
+        "type": "text",
+        "heading": "Dos personajes y una revelación incómoda",
+        "paragraphs": [
+          {
+            "text": "Un invitado muy seguro de sí mismo cuenta que produce sus videos conversando con una IA. El conductor quiere pruebas. Al final del intercambio, descubre que él mismo forma parte de la demostración.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          },
+          {
+            "spans": [
+              {
+                "text": "Esa fue la idea de nuestro "
+              },
+              {
+                "text": "podcast ficticio de 86 segundos",
+                "bold": true
+              },
+              {
+                "text": ". GPT-6 Astra y Sol en Codex ejecutaron la producción y la edición en Premiere Pro, con la dirección y las revisiones de Adrien. Primero, el video terminado; después, las decisiones que convirtieron seis generaciones independientes en una conversación."
+              }
+            ],
+            "sourceIds": [
+              "podcast-production"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "finished-interview",
+        "type": "video",
+        "heading": "Mira el video de 86 segundos",
+        "videoId": "hwF_A1VlA_U",
+        "sourceId": "podcast-production",
+        "credit": "MaxVideoAI / Adrien",
+        "startSeconds": 0,
+        "caption": "Nuestra entrevista ficticia completa, incluido el cierre."
+      },
+      {
+        "id": "setup",
+        "type": "text",
+        "heading": "Un proyecto, tres herramientas",
+        "paragraphs": [
+          {
+            "spans": [
+              {
+                "text": "La producción se coordinó desde Codex. La "
+              },
+              {
+                "text": "conexión de MaxVideoAI para Codex",
+                "href": "https://maxvideoai.com/integrations/codex"
+              },
+              {
+                "text": " permitió gestionar cotizaciones, generaciones de video aprobadas y referencias. Un conjunto de scripts locales, configurado por separado, permitió a Codex controlar Premiere Pro para la edición, los subtítulos, el sonido y las exportaciones."
+              }
+            ],
+            "sourceIds": [
+              "podcast-production",
+              "codex-plugin"
+            ]
+          },
+          {
+            "text": "Adrien aportó la idea, la dirección creativa y los comentarios sobre cada versión. También aprobó las cotizaciones, eligió la música y validó el resultado. Astra y Sol ejecutaron el proyecto, incluidos los cambios de montaje. Si quieres reproducir esta configuración, debes preparar la automatización de Premiere además de la conexión con MaxVideoAI.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "casting",
+        "type": "text",
+        "heading": "El primer clip definió a los personajes",
+        "paragraphs": [
+          {
+            "text": "El primer resultado útil fue una toma de 18 segundos con ambos personajes en el estudio: un conductor serio con camisa oscura y un invitado de suéter beige, bastante satisfecho consigo mismo. Los rostros, la iluminación y el set dieron al proyecto una base concreta.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          },
+          {
+            "spans": [
+              {
+                "text": "Dos intentos previos de generar imágenes habían fallado por problemas de red. La producción avanzó al "
+              },
+              {
+                "text": "extraer referencias del video que ya funcionaba",
+                "bold": true
+              },
+              {
+                "text": ". Un fragmento de voz de 7.5 segundos de esa misma toma sirvió como referencia para la identidad vocal del invitado."
+              }
+            ],
+            "sourceIds": [
+              "podcast-production"
+            ]
+          },
+          {
+            "text": "Las siguientes solicitudes podían conservar los rostros, el vestuario y el estudio. El cuaderno y la pluma del conductor, el reloj del invitado y sus miradas en direcciones opuestas daban a los prompts detalles de continuidad específicos. Así, la nueva instrucción podía centrarse en otra línea de diálogo o un encuadre más cercano.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "cast-and-studio-reference",
+        "type": "media",
+        "assetId": "podcast-casting",
+        "heading": "",
+        "presentation": "single",
+        "alt": "Fotograma de referencia extraído de S02, con el conductor ficticio a la izquierda y el invitado vestido de beige a la derecha en el estudio que comparten.",
+        "caption": "Este fotograma de la primera toma generada sirvió como referencia para los personajes y el estudio."
+      },
+      {
+        "id": "take-direction",
+        "type": "text",
+        "heading": "Escribe el prompt pensando en la edición",
+        "paragraphs": [
+          {
+            "spans": [
+              {
+                "text": "Las seis tomas se generaron con "
+              },
+              {
+                "text": "Wan 3 Prime en MaxVideoAI",
+                "href": "https://maxvideoai.com/models/wan-3-prime"
+              },
+              {
+                "text": ". La primera estableció la escena; las siguientes reutilizaron referencias de imagen y voz. Para la explicación del invitado, el prompt pidió un encuadre cercano y estable, gestos contenidos y diálogo limpio. La música y los gráficos se añadirían durante la edición."
+              }
+            ],
+            "sourceIds": [
+              "podcast-production",
+              "wan-prime"
+            ]
+          },
+          {
+            "text": "La toma del conductor, H01, reunió varias preguntas en 28 segundos. El prompt pidió momentos de escucha silenciosa al principio y al final, además de pausas cortas entre las líneas. Ese margen le da al editor espacio para entrar en una toma, salir de ella o mostrar la reacción del otro personaje.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          },
+          {
+            "text": "La captura de abajo también muestra una diferencia útil: el prompt pidió al conductor solo, pero el plano obtenido incluye a los dos personajes. Hay que revisar el material recibido y decidir cómo aprovecharlo en el montaje.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "h01-generation-record",
+        "type": "media",
+        "assetId": "podcast-h01-interface",
+        "heading": "",
+        "presentation": "single",
+        "alt": "Registro original de H01 en MaxVideoAI: los dos personajes junto al prompt enviado, Wan 3 Prime, 28 segundos y 10.20 USD en créditos.",
+        "caption": "H01 en MaxVideoAI: el prompt pide al conductor solo; el resultado incluye a ambos personajes."
+      },
+      {
+        "id": "take-prompt",
+        "type": "prompt",
+        "heading": "El fragmento del prompt H01 que preparó la edición",
+        "template": "PERFORMANCE: Serious and intelligent American interviewer with dry humor and genuine curiosity, firm mid-low slightly textured American English voice, crisp but conversational, not an announcer. He asks the following seven questions/replies in order. These are separate usable passages that will later be intercut with the other speaker. Only this man speaks; there is NO off-camera reply. Do not speak section labels or invent any words. Leave about 0.65 seconds of silent listening between passages. Fit all dialogue naturally within the take, roughly 155 words per minute during speech, with two seconds of quiet listening at the start and two seconds at the end.",
+        "note": "Extracto exacto de las instrucciones de actuación enviadas para H01. La solicitud completa también incluía el diálogo, la cámara y la continuidad. Observa los silencios antes, entre y después de las líneas."
+      },
+      {
+        "id": "editing",
+        "type": "text",
+        "heading": "La apertura mejoró con menos cortes",
+        "paragraphs": [
+          {
+            "text": "Los diálogos no daban todo el material necesario para editar la conversación. Para H02 se solicitaron ocho segundos de reacciones silenciosas del conductor; W01 aportó otros seis segundos en plano general. Esas tomas permitían mostrar a quien escucha mientras el otro personaje seguía hablando.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          },
+          {
+            "text": "Codex controló Premiere mediante la automatización local del proyecto y organizó el intercambio alrededor de las miradas, las pausas y las reacciones. Las voces conservaron su velocidad original. El ritmo se construyó con los cortes y el espacio entre las frases.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          },
+          {
+            "spans": [
+              {
+                "text": "La primera apertura tenía demasiados cambios de plano. Después de los comentarios de Adrien, "
+              },
+              {
+                "text": "nueve planos se redujeron a cinco en los primeros 21.17 segundos",
+                "bold": true
+              },
+              {
+                "text": ". Un plano de ambos personajes, sostenido durante 13.73 segundos, dejó respirar la respuesta inicial del invitado, incluidas las pausas de “Easily” y “On my own”. Una reacción más larga del conductor preparó la siguiente pregunta."
+              }
+            ],
+            "sourceIds": [
+              "podcast-production"
+            ]
+          },
+          {
+            "text": "Vale la pena aplicar esa decisión a tus propios videos: dale tiempo a una buena interpretación para que funcione. Tener otro ángulo disponible no significa que necesites cortar en ese momento.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "reveal",
+        "type": "text",
+        "heading": "Integra el proceso en la propia escena",
+        "paragraphs": [
+          {
+            "text": "Durante la revelación, el invitado permanece en pantalla mientras un panel lateral presenta un extracto del prompt del conductor y las referencias de los personajes. El panel se diseñó y añadió en Premiere. Su entrada acompaña el gesto del invitado, así que la explicación forma parte de la escena.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          },
+          {
+            "text": "La etapa final añadió subtítulos, música y una tarjeta de cierre de seis segundos, que llevó la conversación de 80 a 86 segundos. Tras descartar una primera propuesta musical, Adrien eligió Aphelion para la versión final.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          },
+          {
+            "spans": [
+              {
+                "text": "Aphelion, de Scott Buckley",
+                "href": "https://www.scottbuckley.com.au/library/aphelion/"
+              },
+              {
+                "text": ", se utiliza bajo la licencia "
+              },
+              {
+                "text": "CC BY 4.0",
+                "href": "https://creativecommons.org/licenses/by/4.0/"
+              },
+              {
+                "text": ". Un fragmento de la pieza se ecualizó, mezcló por debajo de las voces y cerró con un desvanecimiento; su nivel sube durante la tarjeta final."
+              }
+            ],
+            "sourceIds": [
+              "podcast-production",
+              "aphelion",
+              "cc-by"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "recorded-prompt-reveal",
+        "type": "media",
+        "assetId": "podcast-prompt",
+        "heading": "",
+        "presentation": "single",
+        "alt": "Un fotograma de la revelación mantiene al invitado en pantalla junto a un panel editorial que cita el prompt registrado del conductor.",
+        "caption": "La revelación editada: el invitado sigue visible mientras el panel presenta el prompt."
+      },
+      {
+        "id": "vertical",
+        "type": "text",
+        "heading": "El Short necesitó su propia edición",
+        "paragraphs": [
+          {
+            "text": "El Short seleccionado dura 35.17 segundos, en 1080 × 1920, y usa el material ya generado. El encuadre se ajustó para mantener legibles al personaje, el micrófono y los subtítulos; el logotipo final se volvió a centrar. Se descartó una segunda propuesta de Short.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          },
+          {
+            "text": "Para tu proyecto, busca un fragmento que cuente una pequeña historia en el teléfono. Una entrada clara y un buen remate sirven más que conservar cada momento del video horizontal.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "selected-vertical-short",
+        "type": "media",
+        "assetId": "podcast-vertical",
+        "heading": "",
+        "presentation": "single",
+        "alt": "Fotograma vertical del Short seleccionado de 35.17 segundos del pódcast ficticio, con sus subtítulos originales en inglés.",
+        "caption": "Un fotograma del corte vertical de 35 segundos, con sus subtítulos originales en inglés."
+      },
+      {
+        "id": "cost-context",
+        "type": "text",
+        "heading": "Cuántos créditos consumieron las seis generaciones",
+        "paragraphs": [
+          {
+            "spans": [
+              {
+                "text": "Las seis tomas en 1080p, generadas entre el 26 y el 27 de septiembre de 2026, suman "
+              },
+              {
+                "text": "112 segundos de material y 40.80 USD en créditos de MaxVideoAI",
+                "bold": true
+              },
+              {
+                "text": ". La tabla muestra el registro real de esta producción."
+              }
+            ],
+            "sourceIds": [
+              "podcast-production"
+            ]
+          },
+          {
+            "text": "Esta prueba de concepto utilizó créditos gratuitos. El total cubre las seis generaciones de video; el uso de Codex, Premiere Pro y el tiempo de dirección o revisión se contabilizan por separado. Para un proyecto nuevo, consulta la cotización que aparece antes de cada generación.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "costs",
+        "type": "comparison",
+        "heading": "Cómo se distribuyeron los 40.80 USD en créditos",
+        "columns": [
+          "Toma",
+          "Propósito",
+          "Duración fuente",
+          "Créditos (USD)"
+        ],
+        "rows": [
+          [
+            "S02",
+            "Elenco, estudio y apertura",
+            "18 s",
+            "6.56"
+          ],
+          [
+            "H01",
+            "Preguntas del conductor",
+            "28 s",
+            "10.20"
+          ],
+          [
+            "G02",
+            "Diálogo del invitado sobre el flujo de trabajo",
+            "30 s",
+            "10.92"
+          ],
+          [
+            "G03",
+            "Revelación",
+            "22 s",
+            "8.01"
+          ],
+          [
+            "W01",
+            "Plano general silencioso de apoyo",
+            "6 s",
+            "2.19"
+          ],
+          [
+            "H02",
+            "Reacciones silenciosas del conductor",
+            "8 s",
+            "2.92"
+          ],
+          [
+            "Total",
+            "Seis tomas completadas",
+            "112 s",
+            "40.80"
+          ]
+        ]
+      },
+      {
+        "id": "reuse",
+        "type": "text",
+        "heading": "Empieza con una escena que puedas terminar",
+        "paragraphs": [
+          {
+            "text": "Para el primer intento, elige dos personajes, un escenario y un intercambio breve. Defínelos en una primera toma útil, extrae las referencias y genera los diálogos y las reacciones que necesita la edición. Revisa pronto el montaje: sus puntos débiles te mostrarán qué conviene ajustar.",
+            "sourceIds": [
+              "podcast-production"
+            ]
+          },
+          {
+            "spans": [
+              {
+                "text": "Si tu brief ya está en Codex, la "
+              },
+              {
+                "text": "conexión de MaxVideoAI con tu asistente",
+                "href": "https://maxvideoai.com/mcp"
+              },
+              {
+                "text": " permite incorporar al proyecto la selección del modelo, las cotizaciones y la generación. Prepara también tus herramientas de edición. En este caso, una serie de decisiones y revisiones concretas dio forma a la conversación terminada."
+              }
+            ],
+            "sourceIds": [
+              "podcast-production",
+              "max-mcp",
+              "codex-plugin"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "wan-prime",
+      "title": "Wan 3 Prime: inputs and reference modes",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/models/wan-3-prime",
+      "retrievedAt": "2026-09-27"
+    },
+    {
+      "id": "codex-plugin",
+      "title": "Connect the MaxVideoAI plugin in Codex",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/integrations/codex",
+      "retrievedAt": "2026-09-27"
+    },
+    {
+      "id": "max-mcp",
+      "title": "MaxVideoAI assistant workflow",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/mcp",
+      "retrievedAt": "2026-09-27"
+    },
+    {
+      "id": "podcast-production",
+      "title": "Is This the End of Video Editing? — author-supplied production records",
+      "publisher": "MaxVideoAI / Adrien",
+      "url": "https://www.youtube.com/watch?v=hwF_A1VlA_U",
+      "retrievedAt": "2026-09-27"
+    },
+    {
+      "id": "aphelion",
+      "title": "Aphelion",
+      "publisher": "Scott Buckley",
+      "url": "https://www.scottbuckley.com.au/library/aphelion/",
+      "retrievedAt": "2026-09-27"
+    },
+    {
+      "id": "cc-by",
+      "title": "Creative Commons Attribution 4.0 International",
+      "publisher": "Creative Commons",
+      "url": "https://creativecommons.org/licenses/by/4.0/",
+      "retrievedAt": "2026-09-27"
+    }
+  ],
+  "assets": [
+    {
+      "id": "podcast-cover",
+      "kind": "generated-illustration",
+      "width": 1600,
+      "height": 900,
+      "sha256": "e26fe3c3276ac7c2e410963db95382bf70ff94591ee418d1bb5bb3139cd0328e",
+      "url": "https://media.maxvideoai.com/editorial/published/e26fe3c3276ac7c2e410963db95382bf70ff94591ee418d1bb5bb3139cd0328e.webp"
+    },
+    {
+      "id": "podcast-casting",
+      "kind": "generated-illustration",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "e222c54f9da4c56d3c7d8f8a0fa8681ed0a29208bd495b73a4146b8065ec274e",
+      "url": "https://media.maxvideoai.com/editorial/published/e222c54f9da4c56d3c7d8f8a0fa8681ed0a29208bd495b73a4146b8065ec274e.webp"
+    },
+    {
+      "id": "podcast-prompt",
+      "kind": "generated-illustration",
+      "width": 1600,
+      "height": 900,
+      "sha256": "c37ca85efdb4613d817cd7bee845f133e7c7968c9c396291679abdc67b8b87be",
+      "url": "https://media.maxvideoai.com/editorial/published/c37ca85efdb4613d817cd7bee845f133e7c7968c9c396291679abdc67b8b87be.webp"
+    },
+    {
+      "id": "podcast-vertical",
+      "kind": "generated-illustration",
+      "width": 720,
+      "height": 1280,
+      "sha256": "8861d310afba62072fc362fa1386b233543a5971182b30869156c961b4c24b52",
+      "url": "https://media.maxvideoai.com/editorial/published/8861d310afba62072fc362fa1386b233543a5971182b30869156c961b4c24b52.webp"
+    },
+    {
+      "id": "podcast-h01-interface",
+      "kind": "verified-capture",
+      "width": 1122,
+      "height": 741,
+      "sha256": "54d115fb39f53d82bb6652fe2e8b2cbcb7aa44644d327185bf51abbff0399901",
+      "url": "https://media.maxvideoai.com/editorial/published/54d115fb39f53d82bb6652fe2e8b2cbcb7aa44644d327185bf51abbff0399901.webp"
+    }
+  ]
+}

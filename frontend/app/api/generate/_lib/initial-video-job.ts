@@ -3,6 +3,10 @@ import { reserveWalletChargeInExecutor } from '@/lib/wallet';
 import type { Currency } from '@/lib/currency';
 import { lockInitialJobReservation, runInitialJobTransaction, type WalletReservation } from '@/server/generations/initial-job-reservation';
 import { validateInitialVideoFunding } from './initial-video-job-funding';
+import { reserveInitialSeedanceFinal, type SeedanceFinalReservation } from './initial-seedance-final';
+import { lockQuotedCustomerTariffRevision, CustomerTariffRevisionError } from '@/server/pricing/customer-tariff-revision';
+
+import { validateCapturedDirectJobQuote, DirectPaymentQuoteError } from '@/server/pricing/direct-payment-quotes';
 
 const DISPLAY_CURRENCY = 'USD';
 
@@ -46,6 +50,7 @@ export type PendingReceipt = {
   description: string;
   jobId: string;
   snapshot: unknown;
+  auditPricingSnapshot?: unknown;
   applicationFeeCents: number | null;
   vendorAccountId: string | null;
   stripePaymentIntentId?: string | null;
@@ -67,6 +72,7 @@ export type ExistingVideoJobRow = {
   iteration_count: number | null;
   render_ids: unknown;
   hero_render_id: string | null;
+  stripe_payment_intent_id?: string | null;
 };
 
 type ExistingVideoChargeRow = {
@@ -115,6 +121,8 @@ export type ProvisionalVideoJobInsert = {
 };
 
 type CreateVideoInitialJobBaseParams = {
+  seedanceFinal?: SeedanceFinalReservation;
+  auditPricingSnapshot?: unknown;
   jobId: string;
   userId: string;
   pendingReceipt: PendingReceipt | null;
@@ -270,6 +278,18 @@ async function insertProvisionalVideoJob(executor: QueryExecutor, params: Provis
   );
 }
 
+async function validateInitialVideoTariffRevision(executor: TransactionQueryExecutor, params: CreateVideoInitialJobParams) {
+  try {
+    await lockQuotedCustomerTariffRevision(executor, params.jobInsert.engineId,
+      params.auditPricingSnapshot ?? params.pendingReceipt?.auditPricingSnapshot ?? JSON.parse(params.jobInsert.pricingSnapshotJson));
+  } catch (error) {
+    if (!(error instanceof CustomerTariffRevisionError)) throw error;
+    throw new VideoInitialJobError(error.message, { status: 409,
+      body: { ok: false, error: error.code, message: error.message }, metricKind: 'rejected', metricCode: error.code });
+  }
+
+}
+
 export async function createInitialVideoJobInExecutor(
   executor: TransactionQueryExecutor,
   params: CreateVideoInitialJobParams
@@ -292,7 +312,8 @@ export async function createInitialVideoJobInExecutor(
        iteration_index,
        iteration_count,
        render_ids,
-       hero_render_id
+       hero_render_id,
+       stripe_payment_intent_id
      FROM app_jobs
      WHERE job_id = $1
      LIMIT 1`,
@@ -309,10 +330,24 @@ export async function createInitialVideoJobInExecutor(
         metricCode: 'JOB_ID_CONFLICT',
       });
     }
+    if (params.paymentMode === 'direct' && existingJob.stripe_payment_intent_id !== params.pendingReceipt?.stripePaymentIntentId) {
+      throw new VideoInitialJobError('This job belongs to another payment.', { status: 409,
+        body: { ok: false, error: 'PAYMENT_JOB_CONFLICT' }, metricKind: 'rejected', metricCode: 'PAYMENT_JOB_CONFLICT' });
+    }
     return { kind: 'existing_job', job: existingJob };
   }
 
   let walletChargeReserved = false;
+
+  try {
+    await reserveInitialSeedanceFinal(executor, params);
+  } catch (error) {
+    throw new VideoInitialJobError(error instanceof Error ? error.message : 'This Draft is unavailable.', {
+      status: 409, body: { ok: false, error: 'SEEDANCE_DRAFT_UNAVAILABLE' },
+      metricKind: 'rejected', metricCode: 'SEEDANCE_DRAFT_UNAVAILABLE',
+    });
+  }
+
 
   if (!includedTrialFunding && params.paymentMode === 'wallet') {
     const existingRefunds = await executor.query<{ id: number }>(
@@ -397,6 +432,7 @@ export async function createInitialVideoJobInExecutor(
         });
       }
 
+      await validateInitialVideoTariffRevision(executor, params);
       const reserveResult = await reserveWalletChargeInExecutor(
         executor,
         {
@@ -408,6 +444,7 @@ export async function createInitialVideoJobInExecutor(
           surface: 'video',
           billingProductKey: null,
           pricingSnapshotJson: params.jobInsert.pricingSnapshotJson,
+          auditPricingSnapshot: params.pendingReceipt.auditPricingSnapshot,
           applicationFeeCents: params.pendingReceipt.applicationFeeCents,
           vendorAccountId: params.pendingReceipt.vendorAccountId,
           stripePaymentIntentId: null,
@@ -446,6 +483,16 @@ export async function createInitialVideoJobInExecutor(
     }
   }
 
+  if (params.paymentMode === 'direct') {
+    try {
+      await validateCapturedDirectJobQuote(executor, { userId: params.userId, jobId: params.jobId, engineId: params.jobInsert.engineId,
+        amountCents: params.jobInsert.finalPriceCents, receipt: params.pendingReceipt });
+    } catch (error) {
+      if (!(error instanceof DirectPaymentQuoteError)) throw error;
+      throw new VideoInitialJobError(error.code === 'JOB_ALREADY_REFUNDED' ? 'This request was already refunded.' : error.message,
+        { status: error.status, body: { ok: false, error: error.code }, metricKind: 'rejected', metricCode: error.code });
+    }
+  } else if (includedTrialFunding || params.paymentMode !== 'wallet') await validateInitialVideoTariffRevision(executor, params);
   await insertProvisionalVideoJob(executor, params.jobInsert);
 
   if (includedTrialFunding) {

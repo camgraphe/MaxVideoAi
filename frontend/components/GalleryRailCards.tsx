@@ -1,7 +1,7 @@
 'use client';
 
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import type { Ref } from 'react';
+import { memo, type Ref } from 'react';
 import type { EngineCaps } from '@/types/engines';
 import type { GroupSummary } from '@/types/groups';
 import { GroupedJobCard, type GroupedJobAction } from '@/components/GroupedJobCard';
@@ -21,7 +21,7 @@ interface GalleryRailCardsProps {
   sentinelRef: Ref<HTMLDivElement>;
 }
 
-export function GalleryRailCards({
+export const GalleryRailCards = memo(function GalleryRailCards({
   backgroundWarmCount,
   engineMap,
   feedType,
@@ -75,4 +75,4 @@ export function GalleryRailCards({
       <div ref={sentinelRef} className="app-gallery-rail-sentinel h-1 w-full" aria-hidden />
     </>
   );
-}
+});

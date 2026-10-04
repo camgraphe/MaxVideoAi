@@ -98,7 +98,7 @@ test('video pricing and submission facts share mode, media presence, and referen
   assert.equal(preflight.hasVideoInput, facts.hasVideoInput);
 });
 
-test('MiniMax H3 generation facts enforce reference duration, dependency, and shared-budget limits', () => {
+test('MiniMax H3 generation facts enforce duration and shared budgets while allowing audio-only references', () => {
   const settings = {
     ...defaultShot('generate-video'),
     modelId: 'minimax-h3',
@@ -133,7 +133,7 @@ test('MiniMax H3 generation facts enforce reference duration, dependency, and sh
   });
   assert.equal(combined.issues.filter((issue) => issue.code === 'combined_duration').length, 2);
 
-  const missingVisual = resolveWorkspaceGenerationFacts({
+  const audioOnly = resolveWorkspaceGenerationFacts({
     settings,
     capability,
     connectedInputs: ['prompt', 'reference', 'audio'],
@@ -141,7 +141,7 @@ test('MiniMax H3 generation facts enforce reference duration, dependency, and sh
       { semanticKind: 'audio', kind: 'audio', url: 'https://example.com/audio.wav', durationSec: 4 },
     ],
   });
-  assert.equal(missingVisual.issues.some((issue) => issue.code === 'visual_reference_required'), true);
+  assert.equal(audioOnly.issues.some((issue) => issue.code === 'visual_reference_required'), false);
 
   const overBudget = resolveWorkspaceGenerationFacts({
     settings,

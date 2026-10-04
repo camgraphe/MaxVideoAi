@@ -2,10 +2,10 @@
   "marketingName": "Wan 3",
   "versionLabel": "3",
   "seo": {
-    "title": "Wan 3 AI Video Generator: Text, Image and References",
-    "description": "Learn when to use Wan 3 for text-to-video, image animation or mixed reference direction, with current constraints, prompting guidance and canonical pricing."
+    "title": "Wan 3: AI Video, References, Editing & Extension",
+    "description": "Create Wan 3 videos from text, frames or references at 480p–1080p. Edit or extend a source video with optional image and audio references."
   },
-  "overview": "Wan 3 is the current standard route in the Wan family for teams that want one model across text, image and reference-led production. Alibaba/Tongyi owns the model; MaxVideoAI distributes these launch endpoints through Fal rather than claiming a direct Alibaba integration.",
+  "overview": "Wan 3 is an Alibaba/Tongyi model for text-to-video, image animation, mixed references, video editing and extension. Choose 2–30 seconds and 480p, 720p or 1080p, then review the price before generation.",
   "decision": {
     "modelSlug": "wan-3",
     "hero": {
@@ -15,7 +15,7 @@
       "subtitleHighlights": [
         "Your idea. Your references. Your settings"
       ],
-      "paragraph": "Wan 3 is an AI video model from Alibaba/Tongyi. Start with text, animate an image or combine references to guide your scene. Choose 480p, 720p or 1080p and see how your settings affect the price before generating.",
+      "paragraph": "Wan 3 is an Alibaba/Tongyi model for text-to-video, image animation, mixed references, video editing and extension. Choose 2–30 seconds and 480p, 720p or 1080p, then review the price before generation.",
       "primaryCta": {
         "label": "Generate with Wan 3",
         "href": "/app?engine=wan-3"
@@ -48,9 +48,9 @@
       "description": "Accepted Wan 3 examples will appear after launch review",
       "renderLabel": "Review accepted render",
       "badges": [
-        "Text",
-        "Image",
-        "References"
+        "Five modes",
+        "Up to 1080p",
+        "Native audio"
       ],
       "altContext": "reviewed Wan 3 video example using the selected generation mode"
     },
@@ -62,12 +62,12 @@
       },
       {
         "title": "Opening and ending frame control",
-        "body": "Animate a start image and add an end image when the final composition matters. Keep the motion instruction focused on the transition between those two visual anchors.",
+        "body": "Use a required start image and an optional end image. Keep these frames separate from mixed-reference inputs; describe the motion between the visual anchors.",
         "tone": "reference"
       },
       {
         "title": "Mixed reference workflow",
-        "body": "Reference mode can combine supported images, videos and audio, or use one eligible file or public page when thinking is enabled. Keep every source purposeful and within the documented count and duration limits.",
+        "body": "Guide the scene with up to 10 images, 5 video clips and 5 audio clips. Video and audio each have a 15-second combined limit. All input videos plus the generated video must total no more than 30 seconds. An eligible document or public webpage can provide context; choose one of those two URL types.",
         "tone": "continuity"
       },
       {
@@ -109,11 +109,15 @@
       },
       {
         "title": "Image-to-video",
-        "body": "Protect the uploaded composition while describing only the movement, camera behavior and environmental response that should develop."
+        "body": "Use a required start image and an optional end image. Keep these frames separate from mixed-reference inputs; describe the motion between the visual anchors."
       },
       {
         "title": "Reference-to-video",
-        "body": "Use at least one valid reference and respect the separate limits for images, clips, audio, files and public pages."
+        "body": "Guide the scene with up to 10 images, 5 video clips and 5 audio clips. Video and audio each have a 15-second combined limit. All input videos plus the generated video must total no more than 30 seconds. An eligible document or public webpage can provide context; choose one of those two URL types."
+      },
+      {
+        "title": "Edit or extend a video",
+        "body": "Start with one source video of up to 15 seconds and optionally add image or audio references. Source and generated duration together must stay within 30 seconds."
       },
       {
         "title": "Safety and rights",
@@ -123,13 +127,13 @@
     "pricingCopy": {
       "title": "Wan 3 scenario pricing",
       "subtitle": "Compare a scene in 720p with the same scene in 1080p.",
-      "footnote": "Prices depend on your selected settings. MaxVideoAI confirms the quote before you generate.",
+      "footnote": "Adding video increases your Wan 3 quote: its duration is priced alongside the generated video, whether you use it as a reference, for editing or for extension. MaxVideoAI confirms the quote before you generate.",
       "ctaLabel": "Generate with Wan 3",
       "ctaHref": "/app?engine=wan-3"
     },
     "meta": {
-      "title": "Wan 3 AI Video Model, Workflows and Pricing",
-      "description": "Evaluate Wan 3 for text, image and mixed-reference video, including mode limits, prompting structure, safety, sibling choice and live canonical quotes."
+      "title": "Wan 3: AI Video, References, Editing & Extension",
+      "description": "Create Wan 3 videos from text, frames or references at 480p–1080p. Edit or extend a source video with optional image and audio references."
     }
   },
   "prompting": {
@@ -178,7 +182,7 @@
       },
       {
         "tabId": "references",
-        "body": "Reference mode still needs a hierarchy: name the source that controls identity, motion or rhythm."
+        "body": "Guide the scene with up to 10 images, 5 video clips and 5 audio clips. Video and audio each have a 15-second combined limit. All input videos plus the generated video must total no more than 30 seconds. An eligible document or public webpage can provide context; choose one of those two URL types."
       }
     ],
     "globalPrinciples": [

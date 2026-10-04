@@ -17,7 +17,6 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { GenerationPendingStatus } from '@/components/groups/GenerationPendingStatus';
 import { CopyPromptButton } from '@/components/CopyPromptButton';
 import { Button, ButtonLink } from '@/components/ui/Button';
@@ -213,7 +212,7 @@ export function MediaLightboxEntryCard({
                 {t('workspace.result.unavailable', 'Preview unavailable')}
               </div>
             ) : null}
-            {entry.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available" /> : null}
+            {entry.hasAudio ? <span className="sr-only">Audio available</span> : null}
             {isProcessing ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-on-media-dark-45 px-3 text-center text-on-inverse backdrop-blur-sm">
                 <GenerationPendingStatus

@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { safeInternalReturnTarget } from '@/lib/auth-return-target';
+import { getAuthRequestUrl } from '@/lib/auth-request-url';
 import { createSupabaseMiddlewareClient } from '@/lib/supabase-ssr';
+import { PASSWORD_RECOVERY_PATH, safeRecoveryNext } from '@/lib/password-recovery';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +21,7 @@ function sanitizeNextPath(value: string | null): string {
 function markAuthRedirectResponse(response: NextResponse): NextResponse {
   response.headers.set('Cache-Control', 'private, no-store, max-age=0');
   response.headers.set('Pragma', 'no-cache');
+  response.headers.set('Referrer-Policy', 'no-referrer');
   response.headers.append('Vary', 'Cookie');
   return response;
 }
@@ -33,7 +36,7 @@ function buildLoginRedirect(origin: string, nextPath: string): URL {
 }
 
 async function exchangeCodeOnServer(req: NextRequest, code: string, nextPath: string): Promise<NextResponse | null> {
-  const redirectUrl = new URL(nextPath, req.url);
+  const redirectUrl = new URL(nextPath, getAuthRequestUrl(req));
   const response = markAuthRedirectResponse(NextResponse.redirect(redirectUrl));
   const supabase = createSupabaseMiddlewareClient(req, response);
 
@@ -49,12 +52,24 @@ async function exchangeCodeOnServer(req: NextRequest, code: string, nextPath: st
 }
 
 export async function GET(req: NextRequest) {
-  const requestUrl = new URL(req.url);
+  const requestUrl = getAuthRequestUrl(req);
   const code = requestUrl.searchParams.get('code');
   const state = requestUrl.searchParams.get('state');
   const providerError = requestUrl.searchParams.get('error');
   const nextParam = requestUrl.searchParams.get('next');
   const nextPath = sanitizeNextPath(nextParam);
+
+  // Recovery must not use OAuth's existing-session fallback or leave for the app.
+  // The dedicated form verifies the proof after an explicit user action.
+  if (requestUrl.searchParams.get('flow') === 'recovery') {
+    const recoveryUrl = new URL(PASSWORD_RECOVERY_PATH, requestUrl.origin);
+    recoveryUrl.searchParams.set('next', safeRecoveryNext(nextParam));
+    for (const name of ['code', 'token_hash', 'error', 'lang']) {
+      const value = requestUrl.searchParams.get(name);
+      if (value) recoveryUrl.searchParams.set(name, value);
+    }
+    return markAuthRedirectResponse(NextResponse.redirect(recoveryUrl));
+  }
 
   if (providerError || code) {
     const loginUrl = buildLoginRedirect(requestUrl.origin, nextPath);
