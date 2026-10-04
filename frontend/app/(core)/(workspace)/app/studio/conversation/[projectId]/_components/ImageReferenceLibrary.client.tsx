@@ -34,6 +34,7 @@ export function ImageReferenceLibrary({onClose, onSelect, mediaEnabled = false, 
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const input = useRef<HTMLInputElement>(null);
+  const opener = useRef<HTMLElement | null>(null);
   const titleId = useId();
   const [query, setQuery] = useState('');
   const [source, setSource] = useState<'assets' | 'recent'>('assets');
@@ -60,13 +61,15 @@ export function ImageReferenceLibrary({onClose, onSelect, mediaEnabled = false, 
 
   useEffect(() => {
     alive.current = true;
-    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    // Retain the original trigger across Strict Mode effect probing: a modal
+    // prevents the simulated cleanup from focusing outside its inert boundary.
+    if (!opener.current && document.activeElement instanceof HTMLElement) opener.current = document.activeElement;
     dialog.current?.showModal();
     return () => {
       alive.current = false;
       operation.current?.abort();
       pagination.current?.abort();
-      opener?.focus();
+      opener.current?.focus();
     };
   }, []);
 

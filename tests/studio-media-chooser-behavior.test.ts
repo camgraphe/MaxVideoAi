@@ -13,9 +13,18 @@ const video = {assetId: 'ma_'+'b'.repeat(32),url: 'https://media.test/original.m
 const output = {id: 'out-1',jobId: 'job-1',url: image.url,thumbUrl: image.thumbUrl,status: 'ready'};
 const response = (payload: unknown, ok = true) => ({ok,json: async () => payload}) as Response;
 
-async function mountChooser(request: typeof fetch, options: {purpose?: 'reference'|'timeline';locale?: 'en'|'fr'|'es'} = {}) {
+async function mountChooser(request: typeof fetch, options: {purpose?: 'reference'|'timeline';locale?: 'en'|'fr'|'es'} = {}, strict = false) {
   const dom = new JSDOM('<button id="opener">Open</button><div id="root"></div>', {url: 'https://maxvideoai.test/app/studio'});
-  dom.window.HTMLDialogElement.prototype.showModal = function() {this.setAttribute('open','');};
+  if (strict) {
+    // JSDOM lacks modal inertness. Native dialogs reject outside focus while open,
+    // including React's simulated Strict Mode cleanup before the real unmount.
+    const nativeFocus = dom.window.HTMLElement.prototype.focus;
+    dom.window.HTMLElement.prototype.focus = function() {
+      const modal = dom.window.document.querySelector('dialog[open]');
+      if (!modal || modal.contains(this)) nativeFocus.call(this);
+    };
+  }
+  dom.window.HTMLDialogElement.prototype.showModal = function() {this.setAttribute('open','');this.querySelector('button')?.focus();};
   const previous = new Map<string,PropertyDescriptor|undefined>();
   for (const [key,value] of Object.entries({window: dom.window,HTMLElement: dom.window.HTMLElement,document: dom.window.document,React,fetch: request,FormData: dom.window.FormData,IS_REACT_ACT_ENVIRONMENT: true})) {
     previous.set(key,Object.getOwnPropertyDescriptor(globalThis,key));
@@ -27,7 +36,8 @@ async function mountChooser(request: typeof fetch, options: {purpose?: 'referenc
   const root = createRoot(dom.window.document.getElementById('root')!);
   let mounted = true;
   const unmount = async () => {if(mounted){await React.act(async () => root.unmount());mounted=false;}};
-  await React.act(async () => root.render(React.createElement(ImageReferenceLibrary,{onClose: () => {},onSelect: asset => selected.push(asset),mediaEnabled: true,...options})));
+  const element = React.createElement(ImageReferenceLibrary,{onClose: () => {},onSelect: asset => selected.push(asset),mediaEnabled: true,...options});
+  await React.act(async () => root.render(strict ? React.createElement(React.StrictMode,null,element) : element));
   const settle = () => React.act(async () => {await new Promise(resolve => setTimeout(resolve,230));});
   const button = (label: string) => [...dom.window.document.querySelectorAll<HTMLButtonElement>('button')].find(item => item.getAttribute('aria-label') === label || item.textContent?.trim() === label);
   await settle();
@@ -151,6 +161,16 @@ test('a late pagination response cannot replace another media kind and video ori
 test('closing the chooser returns focus to its original trigger', async () => {
   const fixture = await mountChooser((async()=>response({ok:true,assets:[]})) as typeof fetch);
   try {
+    await fixture.unmount();
+    assert.equal(fixture.dom.window.document.activeElement?.id,'opener');
+  } finally {await fixture.dispose();}
+});
+
+
+test('Strict Mode effect probing preserves the original opener while native modal inertness blocks outside focus', async () => {
+  const fixture = await mountChooser((async()=>response({ok:true,assets:[]})) as typeof fetch,{},true);
+  try {
+    assert.equal(fixture.dom.window.document.activeElement?.getAttribute('aria-label'),'Close library');
     await fixture.unmount();
     assert.equal(fixture.dom.window.document.activeElement?.id,'opener');
   } finally {await fixture.dispose();}
