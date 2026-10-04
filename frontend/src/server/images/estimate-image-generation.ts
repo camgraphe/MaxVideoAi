@@ -253,6 +253,7 @@ export async function estimateImageGeneration(
       mode: input.mode,
       numImages: input.numImages,
       resolution: input.resolution,
+      customImageSize: input.customImageSize,
       quality: input.quality,
       aspectRatio: input.aspectRatio,
       referenceImageCount: input.referenceImageCount,

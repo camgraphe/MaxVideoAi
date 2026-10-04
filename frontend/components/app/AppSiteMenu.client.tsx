@@ -82,6 +82,10 @@ export function AppSiteMenuButton({ email, authResolved, isAdmin, signinHref, si
       </button>
       <dialog ref={dialogRef} className="app-site-dialog" aria-labelledby={titleId} onClick={(event) => { if (event.target === event.currentTarget) close(); }}>
         <div className="app-site-dialog-heading"><h2 id={titleId}>MaxVideoAI</h2><button type="button" onClick={close} autoFocus>{copy.close} ×</button></div>
+        <section className="app-site-preferences" aria-labelledby={`${titleId}-preferences`}><h3 id={`${titleId}-preferences`}>{copy.preferences}</h3>
+          <div><span>{copy.language}</span><AppLanguageToggle /></div>
+          <div><span>{copy.theme}</span><AppAppearanceControl locale={locale} /></div>
+        </section>
         <div ref={bodyRef} className="app-site-dialog-body">
           <AppAssistantConnections locale={locale} onNavigate={close} />
           <section aria-labelledby={`${titleId}-app`}><h3 id={`${titleId}-app`}>{copy.app}</h3>
@@ -94,10 +98,6 @@ export function AppSiteMenuButton({ email, authResolved, isAdmin, signinHref, si
             <nav className="app-public-menu" aria-label={copy.site}>
               {publicLinks.map((item) => <Link key={item.key} href={getPathname({ locale, href: item.href })} prefetch={false} target="_blank" rel="noopener noreferrer" onClick={close}><span>{item.label}</span><AppGlyph name="external" /><span className="sr-only"> ({copy.newTab})</span></Link>)}
             </nav>
-          </section>
-          <section className="app-site-preferences" aria-labelledby={`${titleId}-preferences`}><h3 id={`${titleId}-preferences`}>{copy.preferences}</h3>
-            <div><span>{copy.language}</span><AppLanguageToggle /></div>
-            <div><span>{copy.theme}</span><AppAppearanceControl locale={locale} /></div>
           </section>
           <div className="app-site-auth">
             {email ? <><span>{email}</span><button type="button" onClick={() => { close(); onSignOut(); }}>{copy.signOut}</button></>

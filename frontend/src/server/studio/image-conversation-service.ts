@@ -105,7 +105,12 @@ export function imageRequestFromDraft(
   const allowed =
     candidate.modeCaps[mode]?.resolution ?? candidate.engine.resolutions;
   const details = projectAgentModelModeDetails(candidate,mode);
-  const resolution = selected.resolution ?? choices[ratio]?.find((value) => allowed.includes(value)) ?? details.resolutions[0];
+  // Explicit dimensions describe a custom size. Preserve that saved intent on
+  // resume instead of pairing it with an incompatible aspect-ratio preset.
+  const hasDimensions = selected.imageWidth !== undefined || selected.imageHeight !== undefined;
+  const resolution = selected.resolution
+    ?? (hasDimensions && details.resolutions.includes('custom') ? 'custom' : undefined)
+    ?? choices[ratio]?.find((value) => allowed.includes(value)) ?? details.resolutions[0];
   if (!resolution)
     throw new AgentApiError(
       "PARAMETER_INVALID",

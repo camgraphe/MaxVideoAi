@@ -17,7 +17,7 @@ import {consumeConversationMediaRenewal} from '@/lib/studio/conversation-preview
 import type {StudioProjectTimelineExport} from '@/server/timeline-exports/contracts';
 
 type Drag = {clip: WorkspaceTimelineItem;edge: 'start'|'end'|null;x: number;edit?: ConversationTimelineEdit};
-export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLibrary,insertion,exportAvailable = false,exportPending = false,exportJobs = [],onExportChange}: {projectId: string;projectName: string;refreshKey: unknown;onOpenLibrary: () => void;insertion?: {key: string;asset: ImageLibraryAsset} | null;exportAvailable?: boolean;exportPending?: boolean;exportJobs?: StudioProjectTimelineExport[];onExportChange: () => void}) {
+export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLibrary,insertion,exportAvailable = false,exportPending = false,exportJobs = [],onExportChange}: {projectId: string;projectName: string;refreshKey: unknown;onOpenLibrary: (trigger: HTMLButtonElement) => void;insertion?: {key: string;asset: ImageLibraryAsset} | null;exportAvailable?: boolean;exportPending?: boolean;exportJobs?: StudioProjectTimelineExport[];onExportChange: () => void}) {
   const router = useRouter();
   const {dictionary,locale} = useI18n();
   const t = useCallback((en: string,fr: string) => locale === 'fr' ? fr : en,[locale]);
@@ -114,7 +114,7 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
       <button className={styles.timelineToggle} aria-expanded={timelineExpanded} aria-controls="studio-timeline-tracks" aria-label={timelineExpanded ? t('Collapse timeline','Replier la timeline') : t('Open timeline','Ouvrir la timeline')} onClick={() => {if(timelineExpanded) closeMonitor();setExpanded(!timelineExpanded);}}>{timelineExpanded ? <PanelBottomClose size={16}/> : <PanelBottomOpen size={16}/>}<strong>{t('Timeline','Timeline')}</strong></button>
       <button disabled={!items.length} aria-label={playback.isTimelinePlaying ? t('Pause film','Mettre le film en pause') : t('Play film','Lire le film')} onClick={() => {openMonitor();playback.handleToggleTimelinePlayback();}}>{playback.isTimelinePlaying ? <Pause size={17}/> : <Play size={17}/>}</button>
       <span>{playback.playheadSec.toFixed(1)} / {duration.toFixed(1)} s</span>
-      <button className={styles.addMedia} disabled={!timeline.view || timeline.busy} aria-label={t('Add library media to film','Ajouter un média de la bibliothèque au film')} title={t('Add media to timeline','Ajouter un média à la timeline')} onClick={onOpenLibrary}><Plus size={15}/><span>{t('Add media','Ajouter')}</span></button>
+      <button className={styles.addMedia} disabled={!timeline.view || timeline.busy} aria-label={t('Add library media to film','Ajouter un média de la bibliothèque au film')} title={t('Add media to timeline','Ajouter un média à la timeline')} onClick={event => onOpenLibrary(event.currentTarget)}><Plus size={15}/><span>{t('Add media','Ajouter')}</span></button>
       {!!items.length && <button aria-label={monitor ? t('Collapse monitor','Replier le moniteur') : t('Open monitor','Ouvrir le moniteur')} onClick={() => monitor ? closeMonitor() : openMonitor()}>{monitor ? <ChevronDown size={17}/> : <ChevronUp size={17}/>}</button>}
       {timeline.busy && <small role="status">{t('Saving…','Enregistrement…')}</small>}
       {exportAvailable && timeline.view && <ConversationExport projectId={projectId} projectName={projectName} view={timeline.view} pending={exportPending || timeline.busy} jobs={exportJobs} onChange={onExportChange}/>}

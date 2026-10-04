@@ -73,14 +73,7 @@ function StudioImageConversationWorkspace({
   const {resolvedTheme} = useThemePreference();
   const tone = resolvedTheme === 'light' ? 'olive' : 'charcoal';
   const libraryTrigger = useRef<HTMLButtonElement>(null);
-  const libraryWasOpen = useRef(false);
-  useEffect(() => {
-    if (library) libraryWasOpen.current = true;
-    else if (libraryWasOpen.current) {
-      libraryTrigger.current?.focus();
-      libraryWasOpen.current = false;
-    }
-  }, [library]);
+  const libraryOpener = useRef<HTMLButtonElement | null>(null);
   const log = useRef<HTMLDivElement>(null);
   const follow = useRef(true);
   const bottom = useRef<HTMLDivElement>(null);
@@ -88,7 +81,7 @@ function StudioImageConversationWorkspace({
     if (follow.current && (studio.conversation.turns.length || studio.pending))
       bottom.current?.scrollIntoView({ block: "end", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
   }, [studio.conversation, studio.pending, studio.busy,exports.jobs]);
-  function openReferences() {setLibraryPurpose('reference');setLibrary(true);}
+  function openReferences(trigger: HTMLButtonElement) {libraryOpener.current=trigger;setLibraryPurpose('reference');setLibrary(true);}
   function startDraft(value: string) {
     if (!text.trim()) setText(value);
     composerRegion.current?.querySelector('textarea')?.focus();
@@ -313,14 +306,16 @@ function StudioImageConversationWorkspace({
         </div>
         <ConversationMediaShelf projectId={projectId} items={shelf.items} selectedId={shelf.selectedId} expanded={shelf.expanded} attachedIds={references.map(ref=>ref.assetId)} locale={locale} onSelect={shelf.setSelectedId} onToggle={()=>shelf.setExpanded(current=>!current)} onMention={mention} onAttach={shelf.attach} onDetach={detach} onInsert={editingEnabled?asset=>setTimelineInsertion({key:crypto.randomUUID(),asset}):undefined}/>
       </div>
-      {editingEnabled && <ConversationTimeline projectId={projectId} projectName={projectName} refreshKey={studio.conversation} insertion={timelineInsertion} onOpenLibrary={() => {setLibraryPurpose('timeline');setLibrary(true);}} exportAvailable={exportAvailable} exportPending={exports.working} exportJobs={exports.jobs} onExportChange={exports.refresh}/>}
+      {editingEnabled && <ConversationTimeline projectId={projectId} projectName={projectName} refreshKey={studio.conversation} insertion={timelineInsertion} onOpenLibrary={trigger => {libraryOpener.current=trigger;setLibraryPurpose('timeline');setLibrary(true);}} exportAvailable={exportAvailable} exportPending={exports.working} exportJobs={exports.jobs} onExportChange={exports.refresh}/>}
       {help && <ConversationHelp locale={locale} editingEnabled={editingEnabled} onClose={() => setHelp(false)} trigger={helpTrigger}/>}
       {library && (
         <ImageReferenceLibrary
           onClose={() => setLibrary(false)}
           onSelect={select}
           mediaEnabled={mediaEnabled}
-          locale={locale}
+          purpose={libraryPurpose}
+          returnFocusTo={libraryOpener.current}
+          locale={appLocale === 'es' ? 'es' : locale}
         />
       )}
     </section>

@@ -9,7 +9,7 @@ import { AppExperienceRoot } from '../frontend/components/AppExperienceRoot';
 import { useThemePreference } from '../frontend/src/hooks/useThemePreference';
 import { useStudioThemeMode } from '../frontend/app/(core)/(workspace)/app/studio/_hooks/useStudioThemeMode';
 
-async function mountAppearance() {
+async function mountAppearance(locale = 'en') {
   const dom = new JSDOM('<div id="root"></div>', { url: 'https://maxvideoai.test/app' });
   let dark = false;
   const listeners = new Set<() => void>();
@@ -28,7 +28,7 @@ async function mountAppearance() {
   function Consumer() {
     app = useThemePreference();
     studio = useStudioThemeMode();
-    return React.createElement('div', { 'data-studio-theme': studio.resolvedTheme }, React.createElement(AppAppearanceControl, { locale: 'en' }));
+    return React.createElement('div', { 'data-studio-theme': studio.resolvedTheme }, React.createElement(AppAppearanceControl, { locale }));
   }
   const root = createRoot(dom.window.document.getElementById('root')!);
   const render = async (path: string, publicLayout = false) => {
@@ -101,19 +101,32 @@ test('leaving the core layout clears app appearance before the public layout pai
 });
 
 
-test('the compact appearance switch exposes state, toggles manually and preserves choice after remount', async () => {
+test('labeled appearance choices set an explicit palette and preserve it after remount', async () => {
   const fixture = await mountAppearance();
   try {
-    const switchButton = fixture.dom.window.document.querySelector<HTMLButtonElement>('[role="switch"]')!;
-    assert.equal(switchButton.getAttribute('aria-label'), 'Dark appearance');
-    assert.equal(switchButton.getAttribute('aria-checked'), 'false');
-    await React.act(async () => switchButton.click());
-    assert.equal(switchButton.getAttribute('aria-checked'), 'true');
+    const choices = () => [...fixture.dom.window.document.querySelectorAll<HTMLButtonElement>('button[aria-pressed]')];
+    assert.deepEqual(choices().map(button => button.textContent), ['Light', 'Dark']);
+    assert.deepEqual(choices().map(button => button.getAttribute('aria-pressed')), ['true', 'false']);
+    assert.equal(fixture.dom.window.localStorage.getItem('mv-app-theme'), null, 'rendering keeps the system default');
+    await React.act(async () => choices()[1].click());
     assert.equal(fixture.studio.resolvedTheme, 'dark');
     assert.equal(fixture.dom.window.localStorage.getItem('mv-app-theme'), 'dark');
+    await React.act(async () => choices()[1].click());
+    assert.equal(fixture.app.resolvedTheme, 'dark', 'choosing the active palette never toggles away');
     await fixture.render('/pricing', true);
     await fixture.render('/app');
-    assert.equal(fixture.app.resolvedTheme, 'dark');
-    assert.equal(fixture.dom.window.document.querySelector('[role="switch"]')!.getAttribute('aria-checked'), 'true');
+    assert.deepEqual(choices().map(button => button.getAttribute('aria-pressed')), ['false', 'true']);
+    await React.act(async () => choices()[0].click());
+    assert.equal(fixture.app.resolvedTheme, 'light');
+    assert.equal(fixture.dom.window.localStorage.getItem('mv-app-theme'), 'light');
   } finally { await fixture.dispose(); }
 });
+
+for (const [locale, labels] of [['fr', ['Clair', 'Sombre']], ['es', ['Claro', 'Oscuro']]] as const) {
+  test('appearance choices have visible '+locale+' labels', async () => {
+    const fixture = await mountAppearance(locale);
+    try {
+      assert.deepEqual([...fixture.dom.window.document.querySelectorAll('button[aria-pressed]')].map(button => button.textContent), labels);
+    } finally { await fixture.dispose(); }
+  });
+}
