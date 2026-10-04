@@ -49,7 +49,7 @@
     },
     "media": {
       "caption": "Galerie de preuves LTX 2.5 Pro",
-      "description": "Les sorties Pro acceptées apparaîtront après revue",
+      "description": "Découvrez les vidéos réalisées avec LTX 2.5 Pro et les prompts qui les accompagnent.",
       "renderLabel": "Examiner la sortie acceptée",
       "badges": [
         "Pro",
@@ -228,7 +228,7 @@
     "showWhenEmpty": false,
     "section": {
       "title": "Exemples LTX 2.5 Pro vérifiés",
-      "intro": "La galerie Pro reste masquée tant que deux sorties durables n'ont pas passé la revue et rejoint la playlist du modèle.",
+      "intro": "Explorez les exemples LTX 2.5 Pro et comparez les cadrages, les mouvements et le son.",
       "defaultCtaLabel": "Voir tous les exemples LTX",
       "recreateLabel": null
     },

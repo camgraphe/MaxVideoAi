@@ -49,7 +49,7 @@
     },
     "media": {
       "caption": "LTX 2.5 Fast evidence gallery",
-      "description": "Accepted Fast drafts will appear after review",
+      "description": "See LTX 2.5 Fast in motion, with finished examples and their prompts.",
       "renderLabel": "Review accepted draft",
       "badges": [
         "Fast",
@@ -228,7 +228,7 @@
     "showWhenEmpty": false,
     "section": {
       "title": "Reviewed LTX 2.5 Fast examples",
-      "intro": "The section stays hidden until two accepted Fast outputs are durable and attached to the correct playlist.",
+      "intro": "Compare camera movement, subject detail and scene rhythm across LTX 2.5 Fast examples.",
       "defaultCtaLabel": "View all LTX examples",
       "recreateLabel": null
     },
