@@ -61,6 +61,7 @@ type UseWorkspaceVideoSettingsOptions = {
   activeDraftReady?: boolean;
   hasActiveSetup?: boolean;
   draftRevision?: string;
+  initialPreviewGroup?: VideoGroup | null;
   engines: EngineCaps[];
   engineMap: Map<string, EngineCaps>;
   provider: ResultProvider;
@@ -105,6 +106,7 @@ export function useWorkspaceVideoSettings({
   activeDraftReady = true,
   hasActiveSetup = false,
   draftRevision = '',
+  initialPreviewGroup = null,
   engines,
   engineMap,
   provider,
@@ -596,6 +598,9 @@ export function useWorkspaceVideoSettings({
     if (effectiveRequestedEngineId || effectiveRequestedEngineToken) return;
     if (requestedJobId) return;
     if (fromVideoId) return;
+    // The server already chose the latest render for this visit. A remembered
+    // gallery selection is only a fallback when that initial preview is absent.
+    if (initialPreviewGroup) return;
     if (rendersLength > 0) return;
     if (compositeOverride) return;
     if (compositeOverrideSummary) return;
@@ -646,6 +651,7 @@ export function useWorkspaceVideoSettings({
     engines.length,
     fromVideoId,
     hydratedForScope,
+    initialPreviewGroup,
     provider,
     readScopedStorage,
     rendersLength,

@@ -108,6 +108,7 @@ export default function AppClientPage({
     activeDraftReady: activeDraft.ready,
     hasActiveSetup: activeDraft.hasActiveSetup,
     draftRevision: activeDraft.revision,
+    initialPreviewGroup,
     engines: app.engines,
     engineMap: app.engineMap,
     provider: app.provider,
