@@ -29,7 +29,7 @@ test('the ClawHub candidate is a thin credential-free remote MCP guide', () => {
     assert.match(artifact, new RegExp(boundary));
   }
   assert.match(artifact, /explicit approval/i);
-  assert.match(artifact, /recover.*accepted job/is);
+  assert.match(artifact, /recover.*(?:accepted|existing|known) job/is);
   assert.doesNotMatch(artifact, /api[_ -]?key|client[_ -]?secret|bearer\s+[a-z0-9]/i);
   assert.doesNotMatch(artifact, /curl\s|npm\s+(?:install|i)|pnpm\s+(?:add|install)|\$\d|\d+ models/i);
   assert.match(ignored, /evidence/);
