@@ -2,6 +2,7 @@ import {randomUUID} from 'node:crypto';
 import {query,withDbTransaction,type QueryExecutor,type TransactionQueryExecutor} from '@/lib/db';
 import {reserveWalletChargeInExecutor} from '@/lib/wallet';
 import {AgentApiError} from '@/server/agent-api/errors';
+import {getActiveAccountRestrictionInExecutor} from '@/server/fraud-cleanup/restrictions';
 import type {StudioGenerationActor} from '@/server/agent-api/generation-actor';
 import {STUDIO_ASSISTANCE_POLICY_VERSION,STUDIO_ASSISTANCE_TARIFF,studioAssistanceChoiceSchema,type StudioAssistanceStatus,type StudioAssistanceMode,type StudioAssistantModel,type StudioAssistanceChoice} from '@/lib/studio/assistance-contract';
 import {quoteStudioAssistance} from '../../../server/pricing/quote-studio-assistance';
@@ -91,6 +92,9 @@ async function paidTurnBasis(tx:QueryExecutor,call:{user_id:string;project_id:st
 export async function reserveStudioAssistanceCall(input:{userId:string;projectId:string;requestId:string;leaseId:string;index:number;inputTokens:number;outputTokens:number},policy=studioAssistancePolicy(),executor?:TransactionQueryExecutor):Promise<AssistanceCall>{
   requireEnabled(policy);
   const reserve=async(tx:TransactionQueryExecutor)=>{
+    if(await getActiveAccountRestrictionInExecutor(input.userId,tx)) {
+      throw new AgentApiError('ACCOUNT_RESTRICTED','This account is temporarily restricted. Open MaxVideoAI for help.');
+    }
     const account=await lockAccount(tx,input.userId,policy);
     const turn=(await tx.query<AssistanceTurn>('SELECT * FROM studio_assistance_turns WHERE user_id=$1 AND project_id=$2 AND request_id=$3',[input.userId,input.projectId,input.requestId]))[0];
     if(!turn)throw new AgentApiError('PARAMETER_INVALID','This assistance request is unavailable.');

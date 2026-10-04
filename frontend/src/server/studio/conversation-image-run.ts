@@ -6,6 +6,7 @@ import {studioAssistancePolicy,type StudioAssistancePolicy} from './assistance-p
 import {prepareStudioTimelineExport,readStudioTimelineExport,asStudioExportAgentError,type StudioExportDependencies} from './conversation-export-command';
 import {withDbTransaction,isTransactionQueryExecutor} from '@/lib/db';
 import {AgentApiError, toAgentApiFailure} from '@/server/agent-api/errors';
+import {getActiveAccountRestrictionStrict} from '@/server/fraud-cleanup/restrictions';
 import type {StudioGenerationActor} from '@/server/agent-api/generation-actor';
 import type {ResolvedReference} from '@/server/agent-api/reference-types';
 import type {ImageTurnInput,ImageConversationHistoryTurn} from '@/lib/studio/image-conversation-contract';
@@ -174,6 +175,9 @@ export async function runStudioImageActions(options: {
   const draft = await director({message: input.message, history: options.history, references: options.references, referenceMentions: input.referenceMentions,
     project: await readStudioConversationProject(actor,{exportsEnabled:options.editingEnabled&&options.exportsEnabled}),
     checkpoint: (index, create, params) => checkpointStudioResponse(actor, turn, index, create, assistance ? {prepare: async () => {
+      if (await getActiveAccountRestrictionStrict(actor.userId)) {
+        throw new AgentApiError('ACCOUNT_RESTRICTED','This account is temporarily restricted. Open MaxVideoAI for help.');
+      }
       if (!params) throw new AgentApiError('INTERNAL_ERROR','Studio is missing its model request bounds.');
       if (!options.countInputTokens && options.createResponse) throw new AgentApiError('ENGINE_UNAVAILABLE','Offline Studio metering requires an injected token counter.');
       const inputTokens = options.countInputTokens ? await options.countInputTokens(params) : (await new OpenAI({apiKey: process.env.OPENAI_API_KEY,maxRetries: 0,timeout: 15000}).responses.inputTokens.count(studioTokenCountInput(params))).input_tokens;

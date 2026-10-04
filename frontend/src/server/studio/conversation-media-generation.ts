@@ -123,7 +123,7 @@ export async function studioMediaRequest(actor: StudioGenerationActor, action: S
     const selections = action.source ? [{ref: action.source, role: 'first_frame' as const, slot: null}] : action.references ?? [];
     if (selections.some(selection => selection.ref.kind !== 'image'))
       throw new AgentApiError('REFERENCE_INVALID', 'Only image references are available in this Studio workflow.');
-    const mode = action.mode ?? (action.source || selections.some(selection => selection.role === 'first_frame') ? 'i2v' : selections.length ? 'ref2v' : 't2v');
+    const mode = action.mode ?? (action.source || selections.some(selection => ['source', 'first_frame', 'last_frame'].includes(selection.role)) ? 'i2v' : selections.length ? 'ref2v' : 't2v');
     if (mode==='ref2v' && !selections.length)
       throw new AgentApiError('REFERENCE_REQUIRED','Reference-to-video requires an attached or ready project reference image.');
     const catalog = await factories.video(actor, {enabled}).catalog();

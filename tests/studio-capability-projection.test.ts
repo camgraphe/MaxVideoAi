@@ -46,6 +46,7 @@ const wanFacts = {
   outputCount: { min: 1, max: 1, default: 1 },
   settings: [
     { key: 'seed', type: 'number', required: false, values: null, min: 0, max: 2147483647, default: null },
+    { key: 'enablePromptExpansion', type: 'boolean', required: false, values: null, min: null, max: null, default: true },
   ],
 } as const;
 
@@ -100,8 +101,12 @@ const cases: { modelId: 'wan-3' | 'gpt-image-2-5-flare'; expected: AgentModelMod
           type: 'image', roles: ['reference'], assetRequired: false,
           assetRequiredWhen: { setting: 'resolution', values: ['auto'] },
           required: true, min: 1, max: 16,
+          maxSizeMB: 25, acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+          acceptedFileExtensions: ['jpg', 'jpeg', 'png', 'webp'],
         },
-        { type: 'image', roles: ['mask'], assetRequired: false, required: false, min: 0, max: 1 },
+        { type: 'image', roles: ['mask'], assetRequired: false, required: false, min: 0, max: 1,
+          maxSizeMB: 25, acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+          acceptedFileExtensions: ['jpg', 'jpeg', 'png', 'webp'] },
       ],
     },
   },
@@ -135,12 +140,16 @@ test('mode facts projection detaches immutable settings and reference constraint
   quality.values[0] = 'changed';
   reference.maxCount = 99;
   candidate.engine.aspectRatios[0] = 'changed';
+  const formats = candidate.engine.inputSchema?.constraints?.supportedFormats;
+  assert.ok(Array.isArray(formats));
+  formats[0] = 'changed';
 
   assert.deepEqual(projected, cases[3].expected);
   for (const value of [
     projected, projected.resolutions, projected.aspectRatios, projected.fps, projected.outputCount,
     projected.settings, ...projected.settings, projected.references, ...projected.references,
-    ...projected.references.map((field) => field.roles), projected.references[0].assetRequiredWhen,
+    ...projected.references.flatMap((field) => [field.roles, field.acceptedMimeTypes, field.acceptedFileExtensions]),
+    projected.references[0].assetRequiredWhen,
     projected.references[0].assetRequiredWhen?.values,
   ]) assert.equal(Object.isFrozen(value), true);
   for (const setting of projected.settings) {

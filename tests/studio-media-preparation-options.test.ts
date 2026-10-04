@@ -4,6 +4,7 @@ import {getFalEngineById} from '../frontend/src/config/falEngines';
 import type {ToolAssetRef} from '../frontend/src/lib/toolbox/contract';
 import {listAudioCapabilities} from '../frontend/src/server/agent-api/audio-capabilities';
 import {normalizeAudioGenerationRequest} from '../frontend/src/server/agent-api/audio-normalization';
+import {buildPaidVideoRequestBody} from '../frontend/src/server/agent-api/paid-video-request-body';
 import {validateCanonicalGenerationCapabilities} from '../frontend/src/server/agent-api/generation-capability-validation';
 import type {CanonicalGenerationRequest} from '../frontend/src/server/agent-api/generation-types';
 import type {AgentPublicGenerationEngine} from '../frontend/src/server/agent-api/model-catalog';
@@ -67,12 +68,47 @@ test('explicit Wan duration, resolution, audio and ratio override the legacy def
   const request = await studioMediaRequest(actor, {...video, modelId: 'wan-3', settings: [
     {name: 'durationSec', value: 8}, {name: 'resolution', value: '720p'}, {name: 'audio', value: true}, {name: 'aspectRatio', value: '9:16'},
   ]} as never, input, factories(), true);
-  assert.deepEqual(request.settings, {aspectRatio: '9:16', audio: true, durationSec: 8, resolution: '720p'});
+  assert.deepEqual(request.settings, {aspectRatio: '9:16', audio: true, durationSec: 8, enablePromptExpansion: true, resolution: '720p'});
   assert.equal(request.outputCount, 1);
   validateCanonicalGenerationCapabilities(request as CanonicalGenerationRequest, videoCapability('wan-3'));
   const legacy = await studioMediaRequest(actor, video as never, input, factories(), true);
-  assert.deepEqual(legacy.settings, {aspectRatio: '16:9', audio: false, durationSec: 5, resolution: '480p'});
+  assert.deepEqual(legacy.settings, {aspectRatio: '16:9', audio: false, durationSec: 5, enablePromptExpansion: true, resolution: '480p'});
 });
+
+test('Wan prompt expansion choices survive Studio preparation and provider request projection', async () => {
+  const candidate = videoCapability('wan-3');
+  for (const enabled of [true, false]) {
+    const request = await studioMediaRequest(actor, {...video, modelId: 'wan-3', settings: [
+      {name: 'enablePromptExpansion', value: enabled},
+    ]} as never, input, factories(), true) as CanonicalGenerationRequest;
+    assert.equal(request.settings.enablePromptExpansion, enabled);
+    validateCanonicalGenerationCapabilities(request, candidate);
+    const body = buildPaidVideoRequestBody({request, engine: candidate.engine, quoteId: input.requestId,
+      canonicalPricing: {membershipTier: 'member'}});
+    assert.deepEqual(body.extraInputValues, {enable_prompt_expansion: enabled});
+    assert.equal(Object.hasOwn(body, 'enablePromptExpansion'), false);
+  }
+});
+
+for (const role of ['first_frame', 'last_frame', 'source'] as const) {
+  test(`H3 ${role} alone infers image-to-video and retains the selected provider field`, async () => {
+    const candidate = videoCapability('minimax-h3');
+    const {dependencies} = mediaDependencies();
+    const request = await studioMediaRequest(actor, {...video, modelId: candidate.engine.id,
+      references: [{ref: image, role, slot: null}],
+    } as never, input, factories(), true, dependencies) as CanonicalGenerationRequest;
+    assert.equal(request.mode, 'i2v');
+    assert.deepEqual(request.references, [{kind: 'asset', assetId: image.assetId, role}]);
+    validateCanonicalGenerationCapabilities(request, candidate);
+    const body = buildPaidVideoRequestBody({request, engine: candidate.engine, quoteId: input.requestId,
+      canonicalPricing: {membershipTier: 'member'}, resolvedReferences: [{
+        assetId: image.assetId, role, mediaKind: 'image', storageUrl: 'https://cdn.maxvideoai.com/image.png',
+        mimeType: 'image/png', width: 1280, height: 720, durationSec: null,
+      }]});
+    assert.equal(body[role === 'last_frame' ? 'endImageUrl' : 'imageUrl'], 'https://cdn.maxvideoai.com/image.png');
+    assert.deepEqual((body.inputs as {slotId: string}[]).map(value => value.slotId), [role === 'last_frame' ? 'end_image_url' : 'image_url']);
+  });
+}
 
 test('image reference roles are retained and infer reference-to-video without becoming first frames', async () => {
   const {dependencies, events} = mediaDependencies();

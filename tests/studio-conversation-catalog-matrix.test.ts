@@ -86,7 +86,7 @@ test('published retirement and legacy aliases survive the Studio integration',as
 });
 
 const assetId='ma_'+'a'.repeat(32);
-const source:ResolvedReference={assetId,role:'reference',mediaKind:'image',storageUrl:'https://fixture.invalid/owned.png',mimeType:'image/png',width:1024,height:1024,durationSec:null};
+const source:ResolvedReference={assetId,role:'reference',mediaKind:'image',storageUrl:'https://fixture.invalid/owned.png',mimeType:'image/png',width:1024,height:1024,durationSec:null,sizeBytes:1024,originalName:'owned.png'};
 const input={requestId:'123e4567-e89b-42d3-a456-426614174000',message:'A quiet product shot with warm window light',references:[assetId]};
 const membership={tier:'member' as const,source:'app_receipts_rolling_30d' as const,spent30Cents:0,thresholdCents:0,discountPercent:0};
 function quoteDependencies(catalog:AgentPublicGenerationEngine[]){
@@ -114,7 +114,10 @@ test('every exposed Studio mode maps visible options through the real request bu
       const settings=mode.settings.filter(setting=>setting.default!==null&&setting.type!=='multi_prompt'&&!['imageWidth','imageHeight'].includes(setting.key)).map(setting=>({name:setting.key,value:setting.default}));
       settings.push({name:'resolution',value:mode.resolutions[0]});
       if(mode.duration)settings.push({name:'durationSec',value:mode.duration.options?.[0]??mode.duration.range?.min??5});
-      const reference=mode.references.find(ref=>ref.required&&ref.type==='image');
+      // Some modes require one of several inputs (H3 accepts a start OR end frame).
+      const reference=mode.references.find(ref=>ref.required&&ref.type==='image')
+        ?? mode.references.find(ref=>ref.type==='image'&&mode.referenceRequirement?.alternatives.some(alternative=>
+          'type' in alternative&&alternative.type==='image'&&alternative.roles.some(role=>ref.roles.includes(role))));
       const references=reference?[{ref:{type:'asset' as const,assetId,kind:'image' as const},role:reference.roles[0],slot:null}]:[];
       const selection={modelId:candidate.engine.id,mode:mode.mode,prompt:input.message,aspectRatio,settings,references,outputCount:1 as const};
       const request=candidate.surface==='image'

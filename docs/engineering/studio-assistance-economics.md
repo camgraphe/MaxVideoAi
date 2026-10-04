@@ -70,6 +70,16 @@ when the paid authorization is disabled. Existing reservations can still settle.
    reservation remains held. Another lease cannot resend a message with unresolved
    assistant usage. New requests share the same reduced account/campaign availability.
 
+New assistance calls use the same account-restriction policy as media generation,
+including included Sol, sponsored Luna and paid Sol. A strict read in the new-call
+preflight stops before token counting when the account is restricted or the lookup
+is unavailable. Reservation checks the restriction again inside its transaction,
+before campaign/account/wallet locks, using the existing restriction table lock.
+A restriction committed during preflight therefore prevents spending and dispatch.
+The gate returns `ACCOUNT_RESTRICTED`; it does not apply to turn reopening or
+settlement. Saved responses remain replayable and existing reservations can settle
+or refund their unused portion after a restriction, without new supplier work.
+
 A request rejected before any model dispatch returns a depletion error with
 `nextAction.safeToStartNewRequest=true`. After the explicit budget/model choice,
 the UI can preserve its draft and references and send a new request ID. If any call

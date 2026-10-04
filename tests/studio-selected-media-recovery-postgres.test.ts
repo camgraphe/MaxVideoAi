@@ -36,7 +36,7 @@ const cases: RecoveryCase[] = [
       references: [{ref: {type: 'asset', kind: 'image', assetId: firstFrame}, role: 'first_frame', slot: null},
         {ref: {type: 'asset', kind: 'image', assetId: lastFrame}, role: 'last_frame', slot: null}]},
     expected: {schemaVersion: 1, surface: 'video', engineId: 'wan-3', mode: 'i2v', prompt: videoPrompt,
-      settings: {aspectRatio: '9:16', audio: true, durationSec: 8, resolution: '720p'},
+      settings: {aspectRatio: '9:16', audio: true, durationSec: 8, resolution: '720p', enablePromptExpansion: true},
       references: [{kind: 'asset', assetId: firstFrame, role: 'first_frame'}, {kind: 'asset', assetId: lastFrame, role: 'last_frame'}], outputCount: 1},
   },
   {
@@ -200,6 +200,7 @@ test('selected media survives an interrupted canonical quote transaction and ret
       assert.equal(body.durationSec, 8);
       assert.equal(body.resolution, '720p');
       assert.equal(body.audio, true);
+      assert.equal((body.extraInputValues as Record<string, unknown> | undefined)?.enable_prompt_expansion, true);
       assert.equal(body.imageUrl, 'https://cdn.maxvideoai.com/frame-0.png');
       assert.equal(body.endImageUrl, 'https://cdn.maxvideoai.com/frame-1.png');
     } else {

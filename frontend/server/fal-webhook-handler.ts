@@ -40,6 +40,7 @@ import {
   inferEngineFromPayload,
   isCompletedFalStatus,
   isFailedFalStatus,
+  normalizeFalQueueLogStatus,
   normalizeRenderIdList,
   normalizeStatus,
   type FalWebhookPayload,
@@ -626,18 +627,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
     hasData: Boolean(payload.data),
   });
 
-  const normalizedLogStatus = (() => {
-    const baseStatus = nextStatus ?? statusInfo.status ?? payload.status ?? 'running';
-    const lower = baseStatus.toString().toLowerCase();
-    if (lower === 'completed') return 'completed';
-    if (['failed', 'error', 'errored', 'canceled', 'cancelled', 'aborted'].includes(lower)) {
-      return 'failed';
-    }
-    if (['queued', 'running', 'in_progress', 'processing', 'pending'].includes(lower)) {
-      return 'running';
-    }
-    return lower;
-  })();
+  const normalizedLogStatus = normalizeFalQueueLogStatus(nextStatus ?? statusInfo.status ?? payload.status);
 
   try {
     await query(
