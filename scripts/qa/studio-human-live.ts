@@ -15,7 +15,7 @@ import {studioVisualCapabilityDetails,studioVisualCapabilitySummary} from '../..
 import type {StudioConversationProject,StudioActionRequest,StudioActionResult} from '../../frontend/lib/studio/conversation-action-contract';
 import type {StudioAssistantModel} from '../../frontend/src/lib/studio/assistance-contract';
 
-type Turn={message:string;reply:string;actions:unknown[];toolProposals?:{name:string;arguments:unknown}[];error?:unknown;draft?:unknown;validation?:unknown};
+type Turn={message:string;reply:string;actions:unknown[];toolProposals?:{name:string;arguments:unknown}[];emittedReplies?:string[];error?:unknown;draft?:unknown;validation?:unknown};
 type Journal={budget:LiveBudget;calls:unknown[];cases:Record<string,{model:StudioAssistantModel;project:StudioConversationProject;turns:Turn[]}>};
 async function main() {
   const args=process.argv.slice(2);
@@ -49,6 +49,7 @@ async function main() {
     if(!Array.isArray(requests) || requests.some(r=>!r.id || !r.message || !['gpt-6.1-sol','gpt-6-luna'].includes(r.model))) throw new Error('Invalid live requests');
     const revision=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8',env:{...process.env,GIT_WORK_TREE:process.cwd()}}).trim();
     const sources:Record<string,string>={};
+    const toolSchemas=new Set<string>();
     const sourceDirectory=resolve(dirname(report),'source-snapshots');await mkdir(sourceDirectory,{recursive:true});
     for(const path of ['frontend/src/server/studio/conversation-director.ts','frontend/src/server/studio/conversation-director-instructions.ts',
       'frontend/lib/studio/conversation-creation-contract.ts','frontend/lib/studio/conversation-action-contract.ts',
@@ -108,12 +109,19 @@ async function main() {
         const selected={...original,model:request.model,reasoning:{effort:request.model==='gpt-6.1-sol'?'medium' as const:'low' as const}};
         const params=runtime?runtime.responseParams(selected):selected;
         const payloadHash=createHash('sha256').update(JSON.stringify(params)).digest('hex');
+        const toolSchemaJson=JSON.stringify(params.tools??[]);
+        const toolSchemaHash=createHash('sha256').update(toolSchemaJson).digest('hex');
+        if(!toolSchemas.has(toolSchemaHash)) {
+          await writeFile(resolve(sourceDirectory,toolSchemaHash),toolSchemaJson,{mode:0o600});
+          toolSchemas.add(toolSchemaHash);
+        }
         const count=await client.responses.inputTokens.count(studioTokenCountInput(params));
         if(!Number.isSafeInteger(count.input_tokens) || count.input_tokens>272000) throw new Error('Unpriced context size');
         // Reserve the full standard-context ceiling, rather than assuming an exact tokenizer bound.
         state.budget=reserveLiveCall(state.budget,studioProviderReservation(request.model,272000,2200));await save();
         try {
           const response=await client.responses.create(params);
+          if(response.output_text)(turn.emittedReplies??=[]).push(response.output_text);
           // Retain emitted tool arguments even if the product parser rejects them.
           // Do not retain the raw response or private reasoning items.
           turn.toolProposals??=[];
@@ -124,7 +132,7 @@ async function main() {
           }
           const usage=readStudioUsage(response.usage,response.model,response.service_tier);
           state.budget=settleLiveCall(state.budget,usage?.providerMaxNanoUsd??null);
-          state.calls.push({caseId:request.id,turn:current.turns.length,revision,sources,payloadHash,model:response.model,tier:response.service_tier,status:response.status,countedInput:count.input_tokens,usage,at:new Date().toISOString()});
+          state.calls.push({caseId:request.id,turn:current.turns.length,revision,sources,toolSchemaHash,payloadHash,model:response.model,tier:response.service_tier,status:response.status,countedInput:count.input_tokens,usage,at:new Date().toISOString()});
           await save();
           if(state.budget.blocked) throw new Error('Unpriced response; live validation stopped');
           return response;
@@ -132,7 +140,7 @@ async function main() {
           // An explicit client rejection is not a generated response. Unknown outcomes keep the reservation.
           const status=(error as {status?:number}).status;
           if(state.budget.held) state.budget=settleLiveCall(state.budget,status && [400,401,403,404,422].includes(status)?0:null);
-          state.calls.push({caseId:request.id,payloadHash,error:{status,code:(error as {code?:string}).code??'unknown'},at:new Date().toISOString()});
+          state.calls.push({caseId:request.id,toolSchemaHash,payloadHash,error:{status,code:(error as {code?:string}).code??'unknown'},at:new Date().toISOString()});
           await save();throw error;
         }
       };

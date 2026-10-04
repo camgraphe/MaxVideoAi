@@ -74,6 +74,14 @@ or `abstract`. Models must be
 `gpt-6.1-sol` or `gpt-6-luna`. Reuse an ID for the next customer turn; use a distinct
 ID for a fresh experiment or another model. Keep all data synthetic.
 
+`scripts/qa/fixtures/studio-human-personas.json` retains the 50 blind-authored
+customer briefs from the October campaign. It is a seed corpus, not fixed
+assistant prompts or expected answers. Project each brief into one fresh case per
+assistant model, keeping its `message` and mapping `references` to `referenceKeys`.
+Prefix case IDs with a unique cohort identity. The blind customer actor then writes
+follow-ups from the actual visible exchange and quote card; it must not read the
+backend journal, schemas or grader. Keep unsupported requests in the denominator.
+
 ```sh
 pnpm exec tsx --tsconfig frontend/tsconfig.json scripts/qa/studio-human-live.ts \
   --live \
@@ -106,11 +114,15 @@ process crash requires trusted reconciliation before reuse.
 
 The journal retains synthetic visible messages, replies, tool requests/results,
 and emitted tool arguments (including proposals rejected by the product parser),
-usage, cost bounds, request hashes and source revision. It never persists raw
-provider output or encrypted/private reasoning. Later runner versions also retain
+attempted visible reply text, usage, cost bounds, request hashes and source
+revision. It never persists full provider responses or encrypted/private
+reasoning. Later runner versions also retain
 content-addressed snapshots of explicitly whitelisted source files; these identify local
 changes beyond HEAD. Older entries without those snapshots retain their weaker
 provenance and must not be retroactively described as exact clean-commit runs.
+Newer runs also snapshot the exact emitted tool schemas under `toolSchemaHash`,
+so a subsequent metadata fix cannot be confused with the schemas used by an
+already-running process.
 
 Report failed and interrupted dialogues alongside successful ones. Distinguish
 the customer-visible review from backend receipts: a blind actor cannot verify

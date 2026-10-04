@@ -45,7 +45,7 @@ const wanFacts = {
   audio: 'optional',
   outputCount: { min: 1, max: 1, default: 1 },
   settings: [
-    { key: 'seed', type: 'number', required: false, values: null, min: 0, max: 2147483647, default: null },
+    { key: 'seed', type: 'number', required: false, values: null, min: 0, max: 2147483647, step: 1, default: null },
     { key: 'enablePromptExpansion', type: 'boolean', required: false, values: null, min: null, max: null, default: true },
   ],
 } as const;
@@ -62,9 +62,10 @@ const flareFacts = {
   fps: [],
   audio: 'unavailable',
   outputCount: { min: 1, max: 4, default: 1 },
+  imageSize: { multipleOf: 16, minPixels: 655360, maxPixels: 8294400, maxEdge: 3840, maxAspectRatio: 3 },
   settings: [
-    { key: 'imageWidth', type: 'number', required: false, values: null, min: 16, max: 3840, default: 1024 },
-    { key: 'imageHeight', type: 'number', required: false, values: null, min: 16, max: 3840, default: 768 },
+    { key: 'imageWidth', type: 'number', required: false, values: null, min: 16, max: 3840, step: 16, default: 1024 },
+    { key: 'imageHeight', type: 'number', required: false, values: null, min: 16, max: 3840, step: 16, default: 768 },
     { key: 'quality', type: 'enum', required: false, values: ['low', 'medium', 'high', 'xhigh', 'max'], min: null, max: null, default: 'high' },
     { key: 'outputFormat', type: 'enum', required: false, values: ['png', 'jpeg', 'webp'], min: null, max: null, default: 'png' },
   ],
@@ -148,6 +149,7 @@ test('mode facts projection detaches immutable settings and reference constraint
   for (const value of [
     projected, projected.resolutions, projected.aspectRatios, projected.fps, projected.outputCount,
     projected.settings, ...projected.settings, projected.references, ...projected.references,
+    projected.imageSize,
     ...projected.references.flatMap((field) => [field.roles, field.acceptedMimeTypes, field.acceptedFileExtensions]),
     projected.references[0].assetRequiredWhen,
     projected.references[0].assetRequiredWhen?.values,

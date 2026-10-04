@@ -38,7 +38,7 @@ export const conversationJobImageRefProperties = {
 };
 export const conversationSelectionProperties = {
   modelId: {type: ['string','null'],description: 'Use the exact top-level modelId returned by catalog_read or model_details. For audio, keep this modelId and choose the variant through settings; provider IDs inside modes/variants are not Studio model IDs.'},
-  settings: {type: ['array','null'], items: {type: 'object', additionalProperties: false, required: ['name','value'],
+  settings: {type: ['array','null'],description: 'Use supported setting names and values from model_details for this mode, respecting min/max/step and imageSize constraints. Prefer a supported preset for a matching predefined image size. Explicit imageWidth/imageHeight require supported resolution:custom; never combine them with a preset. Do not silently change a requested size to pass validation.', items: {type: 'object', additionalProperties: false, required: ['name','value'],
     properties: {name: {type: 'string'}, value: {type: ['string','number','boolean','null']}}}},
   outputCount: {type: ['integer','null'], enum: [1,null],description: 'This prepares exactly one output. Multiple variants require separate requests; never describe one preparation as a two-image or batch quote.'},
 };

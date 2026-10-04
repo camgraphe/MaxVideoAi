@@ -313,6 +313,8 @@ function projectSettings(
       values: field.values?.length ? Object.freeze(field.values.map(value => booleanSafetyEnum ? value === 'true' : value)) : null,
       min: typeof field.min === 'number' ? field.min : null,
       max: typeof field.max === 'number' ? field.max : null,
+      ...(field.type === 'number' && typeof field.step === 'number' && Number.isFinite(field.step)
+        ? { step: field.step } : {}),
       default: typeof defaultValue === 'string'
         || typeof defaultValue === 'number'
         || typeof defaultValue === 'boolean'
@@ -320,6 +322,18 @@ function projectSettings(
         : null,
     })];
   }));
+}
+
+function projectImageSize(engine: EngineCaps): AgentModelModeDetails['imageSize'] {
+  const source = engine.inputSchema?.constraints?.imageSize;
+  if (!source || typeof source !== 'object' || Array.isArray(source)) return undefined;
+  const keys = ['multipleOf', 'minPixels', 'maxPixels', 'maxEdge', 'maxAspectRatio'] as const;
+  const projected: Partial<Record<(typeof keys)[number], number>> = {};
+  for (const key of keys) {
+    const value = (source as Record<string, unknown>)[key];
+    if (typeof value === 'number' && Number.isFinite(value)) projected[key] = value;
+  }
+  return Object.keys(projected).length ? Object.freeze(projected) : undefined;
 }
 
 // Callers own authorization and model/mode eligibility; this projects canonical facts only.
@@ -335,6 +349,7 @@ export function projectAgentModelModeDetails(
   const isImage = candidate.surface === 'image';
   const imageMode = mode as ImageGenerationMode;
   const imageResolutions = isImage ? getResolutionOptions(candidate.engine, imageMode) : [];
+  const imageSize = isImage && imageResolutions.includes('custom') ? projectImageSize(candidate.engine) : undefined;
   const outputCount = isImage
     ? getImageCountConstraints(candidate.engine, imageMode)
     : { min: 1, max: 1, defaultValue: 1 };
@@ -371,6 +386,7 @@ export function projectAgentModelModeDetails(
       default: outputCount.defaultValue,
     }),
     settings: projectSettings(candidate.engine, mode),
+    ...(imageSize ? { imageSize } : {}),
     references: projectReferences(candidate.engine, mode),
     ...(referenceRequirement ? { referenceRequirement } : {}),
   });

@@ -155,3 +155,11 @@ Mode details normalize provider duration labels to executable numeric seconds;
 provider-only values such as `auto` are never advertised as MCP inputs. P0 and
 P1 modes continue to derive settings, references, prices, and paid request
 bodies from the shared engine, pricing, and site execution owners.
+
+Numeric mode settings also project their authored `step`. Custom image modes
+project the five public `imageSize` limits (pixel multiples, total pixel bounds,
+maximum edge and aspect ratio) from the same input schema. Studio uses this exact
+projection. Never infer arbitrary custom dimensions from min/max alone, silently
+round a client size or weaken canonical validation: a supported predefined size
+may remain valid even when those dimensions are invalid as a custom request.
+`tests/mcp-model-details-custom-size.test.ts` guards this distinction and parity.

@@ -185,7 +185,16 @@ export type AgentModelSettingDetails = Readonly<{
   values: readonly (string | number | boolean)[] | null;
   min: number | null;
   max: number | null;
+  step?: number;
   default: string | number | boolean | null;
+}>;
+
+export type AgentModelImageSizeConstraints = Readonly<{
+  multipleOf?: number;
+  minPixels?: number;
+  maxPixels?: number;
+  maxEdge?: number;
+  maxAspectRatio?: number;
 }>;
 
 export type AgentModelModeDetails = Readonly<{
@@ -198,6 +207,7 @@ export type AgentModelModeDetails = Readonly<{
   audio: AgentModelAudioPolicy;
   outputCount: AgentModelOutputCountDetails;
   settings: readonly AgentModelSettingDetails[];
+  imageSize?: AgentModelImageSizeConstraints;
   references: readonly AgentModelReferenceFieldDetails[];
   referenceRequirement?: Readonly<{
     min: number;
