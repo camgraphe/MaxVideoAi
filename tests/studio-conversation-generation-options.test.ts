@@ -115,3 +115,19 @@ test('omitted image resolution follows each selected format instead of defaultin
     assert.equal(request.settings.resolution,resolution,aspectRatio);
   }
 });
+
+test('explicit image dimensions select custom resolution when the director omits it', () => {
+  const catalog = [candidate('gpt-image-2-5-flare')];
+  const image = {...selection, modelId: 'gpt-image-2-5-flare', aspectRatio: '3:4', settings: [
+    {name: 'imageWidth', value: 1024}, {name: 'imageHeight', value: 1360},
+    {name: 'quality', value: 'high'}, {name: 'outputFormat', value: 'png'},
+  ]};
+  const request = imageRequestFromDraft({reply: 'Review the character reference.', image} as never, input, catalog);
+  assert.deepEqual(request.settings, {aspectRatio: '3:4', resolution: 'custom', imageWidth: 1024, imageHeight: 1360, quality: 'high', outputFormat: 'png'});
+  validateCanonicalGenerationCapabilities(request, catalog[0], {resolvedReferences: []});
+  for (const settings of [
+    [{name: 'imageWidth', value: 1024}],
+    [{name: 'imageWidth', value: 1024}, {name: 'imageHeight', value: 3}],
+    [...image.settings, {name: 'resolution', value: 'portrait_4_3'}],
+  ]) assert.throws(() => imageRequestFromDraft({reply: 'Review.', image: {...image, settings}} as never, input, catalog), {code: 'PARAMETER_INVALID'});
+});

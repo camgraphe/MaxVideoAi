@@ -7,6 +7,20 @@ import { computeMarketingPricePoints, computeMarketingPriceRange } from '../fron
 import { POST as estimateImagePricing } from '../frontend/app/api/images/estimate/route.ts';
 import { resolveGptImage2AutoInputImageSize } from '../frontend/lib/image/gptImage2.ts';
 import { getStoryboardOutputConfig } from '../frontend/src/components/tools/storyboard/_lib/storyboard-templates.ts';
+import { estimateImageGeneration, estimateWebImageGeneration } from '../frontend/src/server/images/estimate-image-generation.ts';
+
+test('canonical image estimates preserve explicit custom dimensions and match the web quote', async () => {
+  for (const engineId of ['gpt-image-2', 'gpt-image-2-5-flare']) {
+    const input = {engineId, mode: 't2i' as const, numImages: 1, resolution: 'custom', customImageSize: {width: 1024, height: 1360}, quality: 'high', aspectRatio: '3:4'};
+    const canonical = await estimateImageGeneration(input);
+    const web = await estimateWebImageGeneration(input);
+    assert.deepEqual(canonical.normalized.customImageSize, {width: 1024, height: 1360});
+    assert.equal(canonical.pricing.meta?.requested_image_width, 1024);
+    assert.equal(canonical.pricing.meta?.requested_image_height, 1360);
+    assert.equal(canonical.pricing.totalCents, web.pricing.totalCents);
+    await assert.rejects(estimateImageGeneration({...input, customImageSize: {width: 1024, height: 3}}), {code: 'image_size_invalid'});
+  }
+});
 
 test('GPT Image 2 pricing responds to Fal quality and image_size', async () => {
   const engine = listFalEngines().find((entry) => entry.id === 'gpt-image-2')?.engine;

@@ -6,7 +6,8 @@ import {getDb} from '../frontend/src/lib/db';
 import {getFalEngineById} from '../frontend/src/config/falEngines';
 import {createImageConversationService, type ImageGenerationFactory} from '../frontend/src/server/studio/image-conversation-service';
 import {createStudioImageGenerationService} from '../frontend/src/server/studio/image-generation-service';
-import {claimImageTurn, persistImageDraft} from '../frontend/src/server/studio/image-conversation-repository';
+import {claimImageTurn, persistImageDraft, failImageTurn} from '../frontend/src/server/studio/image-conversation-repository';
+import {studioReferenceFingerprint} from '../frontend/src/server/agent-api/generation-actor';
 import type {ImageDraft} from '../frontend/src/lib/studio/image-conversation-contract';
 import {createPaidGenerationTestSchema, startDisposablePostgres} from './helpers/disposable-postgres';
 import {addTopup, ProviderHarness} from './helpers/mcp-paid-e2e-harness';
@@ -37,6 +38,34 @@ test('conversation quote lifetime follows creation intent, not every message', a
     return {authMethod:'studio-session' as const,userId:'owner',projectId,clientId:null};
   };
   const quoteRow = async (id: string) => (await pg.pool.query('SELECT state,request_hash,price_cents,expires_at FROM mcp_generation_quotes WHERE quote_id=$1',[id])).rows[0];
+
+  await t.test('a saved custom-size character request resumes to one quote without another paid response', async () => {
+    const actor = await actorFor('custom-character');
+    const original = input('3D');
+    const saved: ImageDraft = {reply: 'A stylized 3D character reference. Review the quote.', image: {
+      modelId: 'gpt-image-2', mode: 't2i', prompt: 'A full-body adult streetwear character in stylized 3D on a neutral background', aspectRatio: '3:4',
+      settings: [{name: 'imageWidth', value: 1024}, {name: 'imageHeight', value: 1360}, {name: 'quality', value: 'high'}, {name: 'outputFormat', value: 'png'}], references: [], outputCount: 1,
+    }};
+    const claimed = await claimImageTurn(actor, original);
+    await persistImageDraft(actor, claimed.turn, saved, studioReferenceFingerprint([]));
+    await failImageTurn(actor, claimed.turn);
+    const service = createImageConversationService(actor, {enabled: true, actionsEnabled: true, generationFactory: factory,
+      createActionResponse: async () => {throw new Error('A saved draft must not buy a replacement response');},
+    });
+    const beforeJobs = provider.captures.length;
+    const resumed = await service.submit(original);
+    assert.equal(resumed.state, 'ready');
+    assert.equal(resumed.reply, saved.reply);
+    assert.ok(resumed.quote);
+    assert.equal(resumed.quote.summary.settings.resolution, 'custom');
+    assert.equal(resumed.quote.summary.settings.imageWidth, 1024);
+    assert.equal(resumed.quote.summary.settings.imageHeight, 1360);
+    assert.equal((await service.submit(original)).quote?.quoteId, resumed.quote.quoteId);
+    assert.deepEqual((await pg.pool.query('SELECT draft_json FROM studio_image_turns WHERE request_id=$1',[original.requestId])).rows[0].draft_json, saved);
+    assert.equal((await pg.pool.query('SELECT count(*)::int AS n FROM studio_conversation_responses WHERE project_id=$1',[actor.projectId])).rows[0].n, 0);
+    assert.equal((await pg.pool.query('SELECT count(*)::int AS n FROM mcp_generation_quotes WHERE studio_project_id=$1',[actor.projectId])).rows[0].n, 1);
+    assert.equal(provider.captures.length, beforeJobs);
+  });
 
   for (const actionsEnabled of [false,true]) await t.test(`${actionsEnabled ? 'tool director' : 'image director'} keeps a valid quote through clarification, failure and reload`, async () => {
     const actor = await actorFor(actionsEnabled ? 'tool-chat' : 'image-chat');
