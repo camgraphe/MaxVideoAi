@@ -75,6 +75,35 @@ test('explicit Wan duration, resolution, audio and ratio override the legacy def
   assert.deepEqual(legacy.settings, {aspectRatio: '16:9', audio: false, durationSec: 5, enablePromptExpansion: true, resolution: '480p'});
 });
 
+test('a saved eight-second Seedance Mini intent keeps its duration alias through canonical preparation', async () => {
+  const {dependencies} = mediaDependencies();
+  const action = {...video, modelId: 'seedance-2-0-mini', mode: 'i2v', aspectRatio: '9:16',
+    settings: [{name: 'duration', value: 8}, {name: 'resolution', value: '720p'}],
+    references: [{ref: output, role: 'first_frame', slot: null}]};
+  const saved = structuredClone(action);
+  const request = await studioMediaRequest(actor, action as never, input, factories(), true, dependencies) as CanonicalGenerationRequest;
+  assert.deepEqual(request.settings, {aspectRatio: '9:16', audio: true, durationSec: 8, resolution: '720p'});
+  assert.deepEqual(request.references, [{kind: 'asset', assetId: image.assetId, role: 'first_frame'}]);
+  assert.deepEqual(action, saved, 'Preparation must not rewrite an immutable saved intent.');
+  validateCanonicalGenerationCapabilities(request, videoCapability('seedance-2-0-mini'));
+  const body = buildPaidVideoRequestBody({request, engine: videoCapability('seedance-2-0-mini').engine, quoteId: input.requestId,
+    canonicalPricing: {membershipTier: 'member'}, resolvedReferences: [{assetId: image.assetId, role: 'first_frame', mediaKind: 'image',
+      storageUrl: 'https://cdn.maxvideoai.com/image.png', mimeType: 'image/png', width: 720, height: 1280, durationSec: null}]});
+  assert.equal(body.durationSec, 8);
+});
+
+test('duration aliases cannot hide conflicting, invalid or unknown video settings before output promotion', async () => {
+  const {dependencies, events} = mediaDependencies();
+  for (const settings of [
+    [{name: 'duration', value: 8}, {name: 'durationSec', value: 5}],
+    [{name: 'duration', value: 30}],
+    [{name: 'duration', value: null}],
+    [{name: 'duration', value: 8}, {name: 'unknownSetting', value: true}],
+  ]) await assert.rejects(studioMediaRequest(actor, {...video, modelId: 'seedance-2-0-mini', mode: 'i2v', settings,
+    references: [{ref: output, role: 'first_frame', slot: null}]} as never, input, factories(), true, dependencies), {code: 'PARAMETER_INVALID'});
+  assert.equal(events.length, 0, 'Invalid options must fail before accessing or saving the ready output.');
+});
+
 test('Wan prompt expansion choices survive Studio preparation and provider request projection', async () => {
   const candidate = videoCapability('wan-3');
   for (const enabled of [true, false]) {
