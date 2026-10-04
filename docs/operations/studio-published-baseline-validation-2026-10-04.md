@@ -236,6 +236,57 @@ choice. No paid call is necessary. For `/ai-video-engines/sora-2-vs-veo-3-1`
 while the Sora side has no generation CTA or purchasable price. Verify a current
 comparison still has its normal generation and quoted-price behavior.
 
+### Comparison indexation contract follow-up at `66934ab3c`
+
+The final broad validation exposed one stale discovery assertion in
+`tests/comparison-indexation-wave-1.test.ts`: every original FR/ES exclusion was
+required to remain recommended in the English comparison directory, including
+newly archived Sora and Seedance identities. The isolated test reproduced the
+failure (13 pass, 1 fail in `comparison-indexation-retirement-red.log`). Product
+behavior already correctly separated historical publication from current
+recommendations; no product code changed in this follow-up.
+
+The test now requires every original excluded pair to retain its published route,
+English indexability and published sitemap membership, as well as its FR/ES
+exclusion. Current pairs must remain discoverable in English; pairs with an
+archived model must be absent from the current English directory. Existing
+locale filtering checks for popular, use-case, directory and quick-start
+recommendations remain intact. The comparison/archival/architecture suite passes
+**56/56, zero skip** (`comparison-indexation-retirement-green.log`), and
+`git diff --check` is clean. The broader final gate is owned by the release owner.
+
+### Production snapshot routing probe and landmark correction
+
+The `66934ab3c` production snapshot initially returned self-redirects for localized
+model/gallery URLs when `next start` bound to `127.0.0.1`. This was a local QA
+origin mismatch, not an archive redirect defect. Installed Next.js 15.5.18
+normalizes loopback IPs to `localhost` in `server/web/next-url.js`, while the
+router constructs `initURL` from the configured server hostname. The resulting
+absolute rewrite was treated as external and re-entered canonical routing.
+The middleware, route helpers, i18n routing and Next config are unchanged between
+`7ffa8d8c4` and `66934ab3c` (empty git diff for those owners).
+
+The same immutable snapshot and sanitized environment, served temporarily with
+`--hostname localhost --port 3101`, returned 200 for all nine EN/FR/ES Sora and
+Seedance 1.5 archives, both localized Sora galleries, `/fr/studio`, and the current
+`/fr/modeles/seedance-2-5`. Wrong-English compatibility paths retained a single
+301 to the localized canonical model path. Exact HTTP/canonical/hreflang evidence
+is in `localhost-rewrite-probe-66934ab3c.json`. The release owner corrected the
+untracked QA runner, retaining its previous copy for provenance. No product
+routing change was made. The temporary server was stopped after this probe.
+Veo FR and Wan ES reached their renderers but returned 500 because this isolated
+fixture deliberately lacks `DATABASE_URL`; they are not represented as validated
+current-model pages or as additional routing failures.
+
+The same rendered archive review found a separate accessibility defect: both
+`ModelArchivePage` and the marketing layout emitted a main landmark. The archive
+root is now a styled `div`, leaving the layout's `main` intact. The bounded
+architecture regression failed before the change (`archive-landmark-red.log`)
+and the combined archive/indexation suite passes **35/35, zero skip** after it
+(`archive-landmark-green.log`). `git diff --check` passes. This small source
+change requires a new final build; the prior HTTP probe does not claim it was
+already rendered. The release owner owns that rebuild and full qualification.
+
 ## Remaining integration and release gates
 
 1. **Choose an unused release version after final integration.** `VERSION`, Codex,
@@ -406,3 +457,5 @@ agents' pricing, conversation-director, catalog/aliases and financial work.
 - `tests/watch-page-commercial-copy.test.ts`
 - `tests/workspace-hydration.test.ts`
 - `tests/workspace-video-settings.test.ts`
+
+- Additional follow-up owner: `tests/comparison-indexation-wave-1.test.ts`.

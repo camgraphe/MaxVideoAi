@@ -39,3 +39,10 @@ test('generic archive renderer gets optional source attribution from localized c
   assert.match(source, /content\.source\.href/);
   assert.match(source, /content\.source\.label/);
 });
+
+test('archive page leaves the main landmark to the marketing layout', () => {
+  const archive = readFileSync('frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelArchivePage.tsx', 'utf8');
+  const layout = readFileSync('frontend/app/(localized)/[locale]/(marketing)/layout.tsx', 'utf8');
+  assert.match(layout, /<main(?:\s|>)/);
+  assert.doesNotMatch(archive, /<main(?:\s|>)/);
+});

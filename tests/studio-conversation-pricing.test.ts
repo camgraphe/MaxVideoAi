@@ -37,15 +37,25 @@ test('Studio reads a fresh canonical price without quote, wallet or transaction 
   assert.doesNotMatch(JSON.stringify(second),/providerCost|pricingSnapshot|quoteId|balance|storageUrl/);
 });
 
-test('Studio price reads fail closed for disabled or uncertified models, settings and inconsistent canonical prices',async()=> {
+test('Studio price reads accept certified choices and reject unavailable models, invalid settings and inconsistent prices',async()=> {
   let malformed=false;
   let executable=true;
-  const deps={listPublicEngines: async()=>[candidate('gpt-image-2','image'),candidate('seedream','image')],resolveMembershipPricing: async()=>membership,
+  let priceCalls=0;
+  const deps={listPublicEngines: async()=>[candidate('gpt-image-2','image'),candidate('seedream','image'),candidate('gpt-image-2-5-sunburst','image')],resolveMembershipPricing: async()=>membership,
     resolveRequestExecutability:()=>({executable,reason:executable?'available' as const:'provider_unavailable' as const}),
-    priceGeneration:async()=>({priceCents:100,currency:'USD',membershipTier:'member' as const,pricingSnapshot:{totalCents:malformed?99:100,currency:'USD',membershipTier:'member'}})};
+    priceGeneration:async()=>{priceCalls++;return {priceCents:100,currency:'USD',membershipTier:'member' as const,pricingSnapshot:{totalCents:malformed?99:100,currency:'USD',membershipTier:'member'}};}};
   const generation=createStudioImageGenerationService(actor,{enabled:true,prepareDependencies:deps});
   assert.equal(typeof generation.estimate,'function');
-  await assert.rejects(generation.estimate({...input,engineId:'seedream'}),{code:'ENGINE_UNAVAILABLE'});
+  await assert.rejects(generation.estimate({...input,engineId:'gpt-image-2-5-sunburst'}),{code:'ENGINE_UNAVAILABLE'});
+  assert.equal(priceCalls,0,'Uncertified models must fail before the pricing function.');
+  const seedreamInput={...input,engineId:'seedream',settings:{resolution:'2K',aspectRatio:'1:1'}};
+  const seedreamPrice=await generation.estimate(seedreamInput);
+  assert.equal(seedreamPrice.modelId,'seedream','A compatible model exposed by canonical certification keeps its exact identity.');
+  assert.deepEqual(seedreamPrice.settings,seedreamInput.settings);
+  assert.deepEqual(seedreamPrice.price,{amountCents:100,currency:'USD'});
+  assert.equal(priceCalls,1);
+  await assert.rejects(generation.estimate({...input,engineId:'seedream'}),{code:'PARAMETER_INVALID'});
+  assert.equal(priceCalls,1,'Certification does not bypass model-specific settings validation.');
   await assert.rejects(generation.estimate({...input,settings:{...input.settings,quality:'invented'}}),{code:'PARAMETER_INVALID'});
   await assert.rejects(createStudioImageGenerationService(actor,{enabled:false,prepareDependencies:deps}).estimate(input),{code:'ENGINE_UNAVAILABLE'});
   executable=false;

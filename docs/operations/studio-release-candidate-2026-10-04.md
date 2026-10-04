@@ -97,61 +97,46 @@ or new native-host certification was inferred.
 ## Verification evidence
 
 The [expanded validation report](studio-human-validation-results-2026-10-04.md)
-records 43 real-API synthetic turns, all failures and corrections, token-count parity,
-financial simulations, current live MCP observations and connected-browser checks.
-The final combined full-suite/build qualification is recorded below after execution.
-The older results in this section are historical checkpoints, not certification of
-the later catalog/public-archive changes.
+records 43 synthetic customer turns through the real Sol/Luna API, all failed
+probes and corrections, 83/83 input-token count parity, financial simulations,
+current live MCP observations and connected-browser checks. Calculated supplier
+cost is $0.490465965 under the single $5 authorization; no media generation ran.
 
+The combined product candidate is `66934ab3cc13cc6e5ecf6dc80c781435f647e862`.
+Final full-suite, production build and public smoke results are being recorded
+against this immutable source. The root's integrated focused check passed
+**177/177 tests**, including the 78 model/mode pipelines, retirement/discovery,
+archive metadata, canonical price evidence, director behavior and shared budget.
+Fresh `pnpm mcp:client:check` passed **134 tests with one explicit unavailable
+combined-validator skip**, plus all 70 offline policy scenarios. Neither this skip
+nor those offline scenarios establish native-host certification.
 
-The core production implementation was built at `247e3b6d6`. Candidate
-`2e55deb63` additionally clarifies assistant costs in the public EN/FR/ES FAQ;
-its isolated prebuild, production build and sitemap generation also passed.
-Those build results apply to that exact earlier candidate; the later published-baseline
-fixes and live-validation findings require a fresh gate. A fresh
-independent reviewer examined the release diff and
-rechecked both discovered defects after fixes: stopped-budget reauthorization and
-saved-response recovery after repeated settlement-storage failure. Both have
-reproduction tests; no important finding remained in the reviewed changes.
+The earlier `2e55deb63` full suite passed 6,070 tests with two explicit skips,
+and its isolated production build generated 895 pages. Its EN/FR/ES Studio public
+FAQ checks passed at 390/1440 pixels, matching visible FAQ text and JSON-LD, with
+light public appearance and no overflow. These remain historical checkpoints;
+their results are not attributed to the later catalog/public-archive changes.
 
-- Isolated production prebuild, Next.js build (895 static pages), types/lint and
-  sitemap generation passed. Six native-image lint warnings and the existing
-  Supabase Edge/Browserslist warnings remain; they are not build errors.
-- Real connected-project Chromium checks passed for owned media insertion, direct
-  entry, project popup, new project, theme switching and no document overflow at
-  320/390/768/1440 pixels. No page exceptions. Budget-dialog/browser checks used
-  explicit mock assistance responses; actual money behavior was checked separately
-  against disposable PostgreSQL, never against a customer wallet.
-- Production-mode public browser checks at `2e55deb63` passed in EN/FR/ES at
-  390/1440 pixels. The assistant-cost FAQ opens in all six cases and its answer
-  exactly matches the localized JSON-LD. The 48,132-byte optimized hero loads;
-  pages stay light even with dark OS/app preference,
-  and no page exceptions or horizontal overflow were observed. These are local
-  functional checks, not field Core Web Vitals or a comparative performance claim.
-- The sanitized production browser lacked cookie-policy database data and local
-  Vercel analytics endpoints; their 500/404 responses are recorded as fixture limits.
-- The complete standard discovery plan (1,037 test files) passed: 6,061 tests,
-  6,059 passed, zero failed, two explicit skips. The absent combined Codex plugin
-  authoring validator and opt-in multitrack local-render test are the skipped
-  cases; neither is claimed as executed. Skill validation and separate real
-  connected-browser/render checks did run. All four isolated Studio integration
-  files then passed: 11 tests, no failures or skips. Combined: **6,072 tests,
-  6,070 passed, zero failed, two skipped**. The runner exited successfully.
-- Fresh `pnpm mcp:client:check`: 121 passed, one unavailable-validator skip, and
-  all 70 offline policy scenarios passed. Final exposure and TypeScript checks
-  passed; the final production build also ran lint and type validation.
+The connected-browser pass at `eb581c5cd` verified direct conversation entry,
+project selection, image attachment and mention without sending, explicit timeline
+insertion, collapse and theme switching. It used synthetic authentication,
+disposable PostgreSQL and local media. Real financial services were verified
+separately against disposable databases; no customer wallet was used. Browser
+appearance and media fixtures do not establish real authentication, production
+balances, artistic quality or field Core Web Vitals.
 
-The final broad run is `release-validate-candidate.log`, using the complete plan
-from `node scripts/run-validation-tests.mjs --plan`, with standard concurrency two
-and isolated integration concurrency one. `GIT_WORK_TREE` was unset for child
-fixture repositories; `TMPDIR=/tmp` and PostgreSQL 17 were used. Earlier runs are
-retained: inherited Git fixture configuration, outdated browser selectors and
-archival release-art fixture assumptions were corrected before the successful run.
-No production behavior was weakened to satisfy those fixtures.
+The first expanded full attempt at `eb581c5cd` failed 11 standard tests before
+isolated integrations ran. The failures led to complete public Sora retirement
+and preserved historical pricing evidence. A later integrated focused run also
+caught the matching Seedance 1.5 audit dependency; that was fixed without changing
+frozen price fixtures or commercial arithmetic. Failure logs remain available.
 
-Local verification artifacts are in `output/studio-creative-workspace/` (not
-committed): production-build summaries, browser screenshots/results, focused logs,
-MCP policy results and the full validation log. They contain controlled fixture data.
+The complete discovery plan comes from `node scripts/run-validation-tests.mjs
+--plan`: 1,046 standard files at concurrency two, then four isolated Studio
+integration files at concurrency one. Child fixture repositories unset
+`GIT_WORK_TREE`; PostgreSQL 17, `TMPDIR=/tmp`, `LC_ALL=C`, and frontend React module
+resolution are explicit. Local evidence stays in the uncommitted
+`output/studio-creative-workspace/` directory.
 
 ## Execution decisions
 

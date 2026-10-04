@@ -106,7 +106,7 @@ Local, uncommitted evidence is under `output/studio-creative-workspace/`:
   captures record browser appearance; the runtime cleanup logs preserve lifecycle.
 - Financial and published-baseline focused logs identify their separate fixtures.
 
-The first expanded full suite at `eb581c5cd` failed 11 tests (6,069 passed, two
+The first expanded full attempt at `eb581c5cd` failed 11 standard tests (6,069 passed, two
 skipped). Failures exposed incomplete Sora public retirement and stale active-model
 pricing fixtures. Those were corrected rather than deleting historical billing
 coverage or changing commercial arithmetic. The final combined suite/build
@@ -118,3 +118,19 @@ reconciliation or production activation. The
 [published-baseline report](studio-published-baseline-validation-2026-10-04.md)
 and [distribution checklist](studio-mcp-distribution-rollout-2026-10-04.md)
 retain those concrete release steps.
+
+A later complete standard pass at `66934ab3c` ran 6,204 tests: 6,199 passed,
+three failed, two skipped. Two expectations still treated newly available or
+archived models as the old catalog; they were updated while preserving actual
+unavailable-model rejection, historical routes and locale indexation. The third
+was a midnight-only fixture error: spending dated 00:01 UTC was correctly excluded
+before that time. The test now dates the claim at day start and exercises the
+first minute through the real spending query. No financial owner changed.
+
+The production browser check also exposed nested main landmarks on archive pages,
+now corrected. Apparent localized redirect loops came from the QA runner binding
+Next to 127.0.0.1 while NextURL normalized rewrite targets to localhost. The same
+immutable build served all nine localized archives with HTTP 200 when bound to
+localhost. The runner was corrected; product routing was unchanged. Current
+Veo/Wan marketing pages requiring DATABASE_URL remain outside this sanitized
+no-database fixture; their 500 responses are not attributed to an archive defect.

@@ -19,7 +19,7 @@ export function ModelArchivePage({ model, value, locale }: {
     return candidate?.lifecycle === 'current' && candidate.publication.app.published && candidate.publication.model.published;
   });
   return (
-    <main className="mx-auto max-w-6xl space-y-12 px-6 py-16">
+    <div className="mx-auto max-w-6xl space-y-12 px-6 py-16">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd({
         '@context': 'https://schema.org', '@type': 'WebPage', '@id': `${canonical}#webpage`,
         url: canonical, name: content.title, description: content.intro, inLanguage: locale,
@@ -51,6 +51,6 @@ export function ModelArchivePage({ model, value, locale }: {
           <Link prefetch={false} href={getExamplesHref(model.slug) ?? { pathname: '/examples' }} className="font-medium underline underline-offset-4">{content.examplesLabel}</Link>
         </div>
       </section>
-    </main>
+    </div>
   );
 }
