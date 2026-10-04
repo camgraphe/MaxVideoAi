@@ -1,8 +1,18 @@
 // Illustrative design units only. This is not an application tariff or ledger.
 export const DEMO_CREDITS_PER_DOLLAR = 1000;
 export const DEMO_PACK_PRICES = [2, 5, 10] as const;
+export const PROPOSED_ASSISTANCE_MARKUP_PERCENT = 100;
 export type DemoCreditPack = {id: number; dollars: number; total: number; remaining: number};
 export type DemoCreditWallet = {included: {total: number; remaining: number}; packs: DemoCreditPack[]};
+
+/** Whole-cent supplier basis for this local example; production rounding is unchanged. */
+export function quoteDemoCreditUsage(supplierBasisCents: number) {
+  if (!Number.isSafeInteger(supplierBasisCents) || supplierBasisCents < 0) throw new Error('INVALID_DEMO_COST');
+  const customerCents = supplierBasisCents * (1 + PROPOSED_ASSISTANCE_MARKUP_PERCENT / 100);
+  const credits = customerCents * DEMO_CREDITS_PER_DOLLAR / 100;
+  if (!Number.isSafeInteger(credits)) throw new Error('INVALID_DEMO_COST');
+  return {supplierBasisCents, customerCents, credits};
+}
 
 export function createDemoCreditWallet(): DemoCreditWallet {
   return {included: {total: 200, remaining: 144}, packs: [{id: 1, dollars: 2, total: 2000, remaining: 1280}]};

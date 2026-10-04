@@ -14,12 +14,31 @@ Reload a page to rebuild after presentation changes.
 
 The original app still has one-time limited allowances and wallet spending-limit
 authorization. The proposal does not change those policies, tariff or ledger.
-Before implementing packs, define token quantity/conversion, margin, allowance size,
+Before implementing packs, define token quantity/conversion, allowance size,
 renewal and expiry, payment source, and enforceable Luna fair-use rules separately.
 The proposed demo unit is **1,000 Sol credits = $1**. It expresses metered spending
 in one stable unit, because raw input, cached input and output tokens have different
 prices. It is not a final token conversion or an authored customer tariff.
 The 200-credit monthly grant and every starting balance are illustrative.
+
+Pricing direction agreed on 2026-10-05: **+100% supplier-basis markup**, so customer
+usage costs supplier basis × 2, equivalent to 50% theoretical gross margin before
+payment fees, sponsored allowances, Luna and other costs. Pack-to-credit conversion
+stays 1,000 credits per customer dollar. A $2 pack therefore represents roughly $1
+of supplier-basis usage if fully consumed. Supplier basis may be conservative; this
+is not a guarantee of an exact realized margin on every message.
+
+`quoteDemoCreditUsage` demonstrates $0.05 supplier basis → $0.10 customer usage →
+100 credits. It uses whole-cent examples only; actual token categories, rounding,
+customer tariff and financial accounting must be reviewed before implementation.
+The original application's +200% markup has not been edited or activated here.
+
+The footer offers **Use your own assistant via MCP**, with direct setup-guide links
+for published ChatGPT, Claude and Codex integrations from the canonical MCP
+integration registry. These open the existing public `#setup` sections in a new
+tab; they do not install or authorize a connection. The wording refers to the
+assistant account/plan, never interchangeable credits or unlimited free service.
+MaxVideoAI media and export prices remain separate.
 
 Purchases append a new pack and retain all existing remaining credits. The total
 purchased balance sums the pack totals and remainders; each expandable pack row has

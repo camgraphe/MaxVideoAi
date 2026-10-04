@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {addDemoCreditPack,consumeDemoCredits,createDemoCreditWallet,demoPurchasedBalance} from './fixtures/studio-assistance-preview/demo-credit-wallet';
+import {addDemoCreditPack,consumeDemoCredits,createDemoCreditWallet,demoPurchasedBalance,quoteDemoCreditUsage} from './fixtures/studio-assistance-preview/demo-credit-wallet';
+
+test('proposed 100% markup doubles supplier basis and preserves the credit value', () => {
+  assert.deepEqual(quoteDemoCreditUsage(5), {supplierBasisCents: 5, customerCents: 10, credits: 100});
+  assert.deepEqual(quoteDemoCreditUsage(100), {supplierBasisCents: 100, customerCents: 200, credits: 2000});
+  assert.deepEqual(quoteDemoCreditUsage(0), {supplierBasisCents: 0, customerCents: 0, credits: 0});
+  for (const cost of [-1, 0.5, NaN, Infinity, Number.MAX_SAFE_INTEGER]) assert.throws(() => quoteDemoCreditUsage(cost));
+});
 
 test('a $2 pack plus a $10 pack retains prior usage and accumulates 12,000 demo credits', () => {
   const before = createDemoCreditWallet();
