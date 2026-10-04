@@ -49,14 +49,30 @@ test('Studio is discoverable as a public page while app access keeps its existin
   }
 });
 
-test('Studio copy keeps preview, exact-price and host-history boundaries in every locale', () => {
-  assert.match(getStudioMarketingCopy('en').accessNote, /private preview.*account/);
-  assert.match(getStudioMarketingCopy('fr').accessNote, /aperçu privé.*compte/);
-  assert.match(getStudioMarketingCopy('es').accessNote, /vista previa privada.*cuenta/);
+test('Studio copy describes public account access, demonstration media and unavailable MP4 export in every locale', () => {
+  const expectations = {
+    en: { access: /public beta.*account/, cta: 'Open Studio', capture: /captured locally.*demonstration/, export: /MP4 export is not yet available/, allowance: /remaining percentage/, choice: /explicitly choose Luna/ },
+    fr: { access: /bêta publique.*compte/, cta: 'Ouvrir Studio', capture: /capturée localement.*démonstration/, export: /export MP4 n’est pas encore disponible/, allowance: /pourcentage restant/, choice: /choisir explicitement Luna/ },
+    es: { access: /beta pública.*cuenta/, cta: 'Abrir Studio', capture: /capturada localmente.*demostración/, export: /exportación MP4 aún no está disponible/, allowance: /porcentaje restante/, choice: /elegir Luna expresamente/ },
+  };
   for (const locale of ['en', 'fr', 'es'] as const) {
-    const source = JSON.stringify(getStudioMarketingCopy(locale));
+    const copy = getStudioMarketingCopy(locale);
+    const expected = expectations[locale];
+    assert.match(copy.accessNote, expected.access);
+    assert.equal(copy.primaryCta, expected.cta);
+    assert.match(copy.imageCaption, expected.capture);
+    assert.match(copy.capabilities.items[2].body, expected.export);
+    assert.match(copy.faq.items.find(item => item.question.includes('MP4'))?.answer ?? '', expected.export);
+    const assistance = copy.faq.items.find(item => item.answer.includes('Sol'))?.answer ?? '';
+    assert.match(assistance, expected.allowance);
+    assert.match(assistance, expected.choice);
+    assert.match(assistance, /budget|presupuesto/);
+    assert.match(assistance, /token/);
+    const source = JSON.stringify(copy);
+    assert.doesNotMatch(source, /private preview|aperçu privé|vista previa privada|eligible|éligible|elegible|invitation|invitación|restricted|restreint|restringido/i);
     assert.doesNotMatch(source, /unlimited|illimité|ilimitad|\$\d|€\d|best model|meilleur modèle|mejor modelo/i);
-    assert.ok(getStudioMarketingCopy(locale).faq.items.at(-1)?.answer.includes('MaxVideoAI'));
+    assert.doesNotMatch(source, /export quote|devis d’export|presupuesto de exportación/);
+    assert.ok(copy.faq.items.at(-1)?.answer.includes('MaxVideoAI'));
   }
 });
 

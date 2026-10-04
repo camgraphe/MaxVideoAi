@@ -72,7 +72,8 @@
 }
 
 .accessStatus,
-.actions a {
+.actions a,
+.actions button {
   min-height: 44px;
   padding: 0 15px;
   border-radius: 7px;
@@ -91,16 +92,19 @@
   height: 15px;
 }
 
-.actions a {
+.actions a,
+.actions button {
   display: inline-flex;
   align-items: center;
   border: 1px solid var(--app-line);
   color: var(--app-ink);
   background: color-mix(in srgb, var(--app-panel) 84%, transparent);
   text-decoration: none;
+  cursor: pointer;
 }
 
-.actions a:hover {
+.actions a:hover,
+.actions button:hover {
   border-color: #8b5cf6;
 }
 

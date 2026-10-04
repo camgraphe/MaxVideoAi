@@ -41,6 +41,12 @@ test('Studio permits only its presentation to visitors and independently gates b
   }
   const preview = read('frontend/app/(core)/(workspace)/app/studio/projects/StudioPreviewAccess.client.tsx');
   assert.doesNotMatch(preview, /\/api\/studio|WorkspacePage|StudioProjectsPageClient/);
+  assert.doesNotMatch(preview, /invitation|invited|invitación|invité/i);
+  assert.match(preview, /buildAuthReturnTarget\(pathname \?\? '\/app\/studio', continuationParams\)/);
+  assert.match(preview, /continuationParams\.delete\('preview'\)/);
+  assert.match(preview, /buildLoginHref\(\{ mode: 'signin', nextPath \}\)/);
+  assert.match(preview, /const unavailable = !visitor && !available/);
+  assert.match(preview, /onClick=\{\(\) => router\.refresh\(\)\}/);
 });
 
 test('Activity separates starter examples from owned jobs without discarding real history', () => {
