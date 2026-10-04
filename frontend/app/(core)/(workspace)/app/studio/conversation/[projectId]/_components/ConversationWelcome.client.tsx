@@ -4,7 +4,7 @@ import {ArrowUpRight} from 'lucide-react';
 import type {ConversationLocale} from '@/lib/studio/conversation-quote-presentation';
 import styles from '../image-conversation.module.css';
 
-export function ConversationWelcome({locale, onDraft, onReference,hasDraft=false}: {locale: ConversationLocale; onDraft: (value: string) => void; onReference: () => void;hasDraft?:boolean}) {
+export function ConversationWelcome({locale, onDraft, onReference,hasDraft=false}: {locale: ConversationLocale; onDraft: (value: string) => void; onReference: (trigger: HTMLButtonElement) => void;hasDraft?:boolean}) {
   const t = (en: string,fr: string) => locale === 'fr' ? fr : en;
   return <div className={styles.welcome} data-drafting={hasDraft}>
     <h2>{t('What shall we','Et si l’on')} <span>{t('create?','créait ?')}</span></h2>
@@ -16,7 +16,7 @@ export function ConversationWelcome({locale, onDraft, onReference,hasDraft=false
       <button onClick={() => onDraft(t('Help me write a prompt for ','Aide-moi à écrire un prompt pour '))}>
         <span>{t('Shape a prompt','Affiner un prompt')}</span><ArrowUpRight size={12} aria-hidden="true"/>
       </button>
-      <button onClick={onReference}>
+      <button onClick={event => onReference(event.currentTarget)}>
         <span>{t('Start with a reference','Partir d’une référence')}</span><ArrowUpRight size={12} aria-hidden="true"/>
       </button>
     </div>}

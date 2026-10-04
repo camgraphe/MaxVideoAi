@@ -19,7 +19,7 @@ export function ImageConversationComposer({
   onTextChange: (text: string) => void;
   onSend: () => void;
   blocked: boolean;
-  onOpenLibrary: () => void;
+  onOpenLibrary: (trigger: HTMLButtonElement) => void;
   libraryTrigger: Ref<HTMLButtonElement>;
   locale?: ConversationLocale;
   readOnly?: boolean;
@@ -53,7 +53,7 @@ export function ImageConversationComposer({
         disabled={blocked}
         ref={libraryTrigger}
         aria-label={t('Open library', 'Ouvrir la bibliothèque')}
-        onClick={onOpenLibrary}
+        onClick={event => onOpenLibrary(event.currentTarget)}
       >
         <Plus size={21} />
       </button>

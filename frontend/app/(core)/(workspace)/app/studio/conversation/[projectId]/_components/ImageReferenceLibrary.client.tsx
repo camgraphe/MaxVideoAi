@@ -25,16 +25,17 @@ function MediaPreview({item, kind, name}: {item: ImageLibraryAsset | RecentImage
   return kind === 'video' ? <Film className={styles.mediaIcon} size={34} aria-hidden="true" /> : <AudioWaveform className={styles.mediaIcon} size={42} aria-hidden="true" />;
 }
 
-export function ImageReferenceLibrary({onClose, onSelect, mediaEnabled = false, locale = 'en', purpose = 'reference'}: {
+export function ImageReferenceLibrary({onClose, onSelect, mediaEnabled = false, locale = 'en', purpose = 'reference', returnFocusTo}: {
   onClose: () => void;
   onSelect: (asset: ImageLibraryAsset) => void;
   mediaEnabled?: boolean;
   locale?: ConversationLocale | 'es';
   purpose?: 'reference' | 'timeline';
+  returnFocusTo?: HTMLElement | null;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const input = useRef<HTMLInputElement>(null);
-  const opener = useRef<HTMLElement | null>(null);
+  const opener = useRef<HTMLElement | null>(returnFocusTo ?? null);
   const titleId = useId();
   const [query, setQuery] = useState('');
   const [source, setSource] = useState<'assets' | 'recent'>('assets');

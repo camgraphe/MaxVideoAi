@@ -13,8 +13,8 @@ const video = {assetId: 'ma_'+'b'.repeat(32),url: 'https://media.test/original.m
 const output = {id: 'out-1',jobId: 'job-1',url: image.url,thumbUrl: image.thumbUrl,status: 'ready'};
 const response = (payload: unknown, ok = true) => ({ok,json: async () => payload}) as Response;
 
-async function mountChooser(request: typeof fetch, options: {purpose?: 'reference'|'timeline';locale?: 'en'|'fr'|'es'} = {}, strict = false) {
-  const dom = new JSDOM('<button id="opener">Open</button><div id="root"></div>', {url: 'https://maxvideoai.test/app/studio'});
+async function mountChooser(request: typeof fetch, options: {purpose?: 'reference'|'timeline';locale?: 'en'|'fr'|'es'} = {}, strict = false, explicitOpener = false) {
+  const dom = new JSDOM('<button id="opener">Open</button><textarea id="composer"></textarea><div id="root"></div>', {url: 'https://maxvideoai.test/app/studio'});
   if (strict) {
     // JSDOM lacks modal inertness. Native dialogs reject outside focus while open,
     // including React's simulated Strict Mode cleanup before the real unmount.
@@ -24,7 +24,8 @@ async function mountChooser(request: typeof fetch, options: {purpose?: 'referenc
       if (!modal || modal.contains(this)) nativeFocus.call(this);
     };
   }
-  dom.window.HTMLDialogElement.prototype.showModal = function() {this.setAttribute('open','');this.querySelector('button')?.focus();};
+  let focusBeforeModal: string | null = null;
+  dom.window.HTMLDialogElement.prototype.showModal = function() {if(!this.hasAttribute('open'))focusBeforeModal=dom.window.document.activeElement?.id??null;this.setAttribute('open','');this.querySelector('button')?.focus();};
   const previous = new Map<string,PropertyDescriptor|undefined>();
   for (const [key,value] of Object.entries({window: dom.window,HTMLElement: dom.window.HTMLElement,document: dom.window.document,React,fetch: request,FormData: dom.window.FormData,IS_REACT_ACT_ENVIRONMENT: true})) {
     previous.set(key,Object.getOwnPropertyDescriptor(globalThis,key));
@@ -32,16 +33,17 @@ async function mountChooser(request: typeof fetch, options: {purpose?: 'referenc
   }
   const {ImageReferenceLibrary} = await import('../frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/_components/ImageReferenceLibrary.client');
   const selected: ImageLibraryAsset[] = [];
-  dom.window.document.getElementById('opener')!.focus();
+  const originalTrigger = dom.window.document.getElementById('opener')!;
+  dom.window.document.getElementById(explicitOpener ? 'composer' : 'opener')!.focus();
   const root = createRoot(dom.window.document.getElementById('root')!);
   let mounted = true;
   const unmount = async () => {if(mounted){await React.act(async () => root.unmount());mounted=false;}};
-  const element = React.createElement(ImageReferenceLibrary,{onClose: () => {},onSelect: asset => selected.push(asset),mediaEnabled: true,...options});
+  const element = React.createElement(ImageReferenceLibrary,{onClose: () => {},onSelect: asset => selected.push(asset),mediaEnabled: true,...options,...(explicitOpener ? {returnFocusTo: originalTrigger} : {})});
   await React.act(async () => root.render(strict ? React.createElement(React.StrictMode,null,element) : element));
   const settle = () => React.act(async () => {await new Promise(resolve => setTimeout(resolve,230));});
   const button = (label: string) => [...dom.window.document.querySelectorAll<HTMLButtonElement>('button')].find(item => item.getAttribute('aria-label') === label || item.textContent?.trim() === label);
   await settle();
-  return {dom,selected,button,settle,unmount,
+  return {dom,selected,button,settle,unmount,focusBeforeModal,
     async click(label: string) {const target = button(label);assert.ok(target,'button '+label+' exists');await React.act(async () => target.click());},
     async dispose() {await unmount();dom.window.close();for(const [key,descriptor] of previous){if(descriptor)Object.defineProperty(globalThis,key,descriptor);else Reflect.deleteProperty(globalThis,key);}},
   };
@@ -173,5 +175,15 @@ test('Strict Mode effect probing preserves the original opener while native moda
     assert.equal(fixture.dom.window.document.activeElement?.getAttribute('aria-label'),'Close library');
     await fixture.unmount();
     assert.equal(fixture.dom.window.document.activeElement?.id,'opener');
+  } finally {await fixture.dispose();}
+});
+
+
+test('an explicit clicked trigger receives focus when Safari leaves the active element in the composer', async () => {
+  const fixture = await mountChooser((async()=>response({ok:true,assets:[]})) as typeof fetch,{},true,true);
+  try {
+    assert.equal(fixture.focusBeforeModal,'composer','the chooser opens while the text box retains focus');
+    await fixture.unmount();
+    assert.equal(fixture.dom.window.document.activeElement?.id,'opener','the actual clicked button takes precedence over activeElement');
   } finally {await fixture.dispose();}
 });
