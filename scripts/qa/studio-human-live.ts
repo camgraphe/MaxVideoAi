@@ -8,6 +8,7 @@ import {createStudioCallRuntime} from './studio-call-runtime';
 import {studioTokenCountInput} from '../../frontend/src/server/studio/assistance-token-count';
 import {readStudioUsage,studioProviderReservation} from '../../frontend/src/server/studio/assistance-provider-facts';
 import {reserveLiveCall,settleLiveCall,type LiveBudget} from './studio-live-budget';
+import {parseStudioLiveRequests,readStudioLiveQueue} from './studio-live-queue';
 import {listFalEngines} from '../../frontend/src/config/falEngines';
 import {listPublicAgentGenerationEngines} from '../../frontend/src/server/agent-api/model-catalog';
 import {createStudioImageGenerationService,createStudioVideoGenerationService} from '../../frontend/src/server/studio/image-generation-service';
@@ -45,8 +46,7 @@ async function main() {
     const key=match?.[1]?.trim().replace(/^['"]|['"]$/g,'');
     if(!key) throw new Error('Authorized key unavailable');
     const client=new OpenAI({apiKey:key,baseURL:'https://api.openai.com/v1',maxRetries:0,timeout:65000});
-    let requests=JSON.parse(await readFile(requestsPath,'utf8')) as {id:string;model:StudioAssistantModel;message:string;referenceKeys?:string[]}[];
-    if(!Array.isArray(requests) || requests.some(r=>!r.id || !r.message || !['gpt-6.1-sol','gpt-6-luna'].includes(r.model))) throw new Error('Invalid live requests');
+    let requests=parseStudioLiveRequests(await readFile(requestsPath,'utf8'));
     const revision=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8',env:{...process.env,GIT_WORK_TREE:process.cwd()}}).trim();
     const sources:Record<string,string>={};
     const toolSchemas=new Set<string>();
@@ -59,7 +59,7 @@ async function main() {
       'frontend/src/server/agent-api/model-details.ts','frontend/src/server/studio/conversation-capabilities.ts',
       'frontend/src/server/studio/conversation-media-generation.ts','frontend/src/server/studio/image-conversation-service.ts',
       'frontend/src/server/agent-api/generation-actor.ts','scripts/qa/studio-live-budget.ts',
-      'scripts/qa/studio-call-runtime.ts','scripts/qa/studio-human-live.ts']) {
+      'scripts/qa/studio-call-runtime.ts','scripts/qa/studio-live-queue.ts','scripts/qa/studio-human-live.ts']) {
       const bytes=await readFile(path);const hash=createHash('sha256').update(bytes).digest('hex');sources[path]=hash;
       await writeFile(resolve(sourceDirectory,hash),bytes,{mode:0o600});
     }
@@ -78,10 +78,13 @@ async function main() {
     for(let requestIndex=0;;requestIndex++) {
       if(requestIndex>=requests.length) {
         if(!args.includes('--adaptive')) break;
-        try{await readFile(requestsPath+'.done');break;}catch{}
-        await new Promise(resolve=>setTimeout(resolve,1000));
-        requests=JSON.parse(await readFile(requestsPath,'utf8'));
-        requestIndex--;continue;
+        const refreshed=await readStudioLiveQueue(requestsPath,requests,requestIndex);
+        requests=refreshed.requests;
+        if(refreshed.drained) break;
+        if(requestIndex>=requests.length) {
+          await new Promise(resolve=>setTimeout(resolve,1000));
+          requestIndex--;continue;
+        }
       }
       const request=requests[requestIndex];
       if(!request?.id||!request.message||!['gpt-6.1-sol','gpt-6-luna'].includes(request.model)) throw new Error('Invalid adaptive request');
@@ -127,7 +130,7 @@ async function main() {
           turn.toolProposals??=[];
           for(const item of response.output)if(item.type==='function_call') {
             let argumentsValue:unknown;
-            try{argumentsValue=JSON.parse(item.arguments);}catch{argumentsValue={invalidJson:true};}
+            try{argumentsValue=JSON.parse(item.arguments);}catch{argumentsValue={invalidJson:true,raw:item.arguments};}
             turn.toolProposals.push({name:item.name,arguments:argumentsValue});
           }
           const usage=readStudioUsage(response.usage,response.model,response.service_tier);

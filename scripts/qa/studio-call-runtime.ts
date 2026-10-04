@@ -26,8 +26,6 @@ export async function createStudioCallRuntime(catalog:AgentPublicGenerationEngin
   if(process.env.DATABASE_URL) throw new Error('Unset DATABASE_URL: live call qualification uses only disposable PostgreSQL.');
   const previousCases=new Set(previousCaseIds);
   const requireCurrentCase=(id:string)=>{if(previousCases.has(id))throw new Error('A restarted disposable runtime requires a fresh case ID; prior database continuity is unavailable.');};
-  const pg=await startDisposablePostgres('studio-call-qualification');
-  process.env.DATABASE_URL=pg.databaseUrl;
   const fixtures=[
     {key:'watch',id:'8',path:'/media/mcp/project-demo/watch-static.png',width:1672,height:941,mime:'image/png'},
     {key:'watch_end',id:'9',path:'/media/mcp/project-demo/watch-motion-poster.png',width:1672,height:941,mime:'image/png'},
@@ -39,6 +37,8 @@ export async function createStudioCallRuntime(catalog:AgentPublicGenerationEngin
   const referenceId=(id:string,key:string)=>'ma_'+hash(id+'\0'+key);
   const fixtureUrl=(id:string,fixture:typeof fixtures[number])=>'https://cdn.maxvideoai.com/qa/'+hash(id)+'/'+fixture.key+(fixture.mime==='image/png'?'.png':'.webp');
   const fixtureBytes=Object.fromEntries(fixtures.map(f=>[f.key,readFileSync('frontend/public'+f.path)]));
+  const pg=await startDisposablePostgres('studio-call-qualification');
+  process.env.DATABASE_URL=pg.databaseUrl;
   const fixtureImages:Record<string,string>={};
   const ensuredCases=new Set<string>();
   const parityQuotes=new Map<string,{requestHash:string;priceCents:number;currency:string}>();
