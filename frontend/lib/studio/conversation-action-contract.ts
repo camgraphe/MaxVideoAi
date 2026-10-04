@@ -24,12 +24,29 @@ export const studioMemorySchema = z.object({
   decisions: z.array(z.string().min(1).max(400)).max(12),
 }).strict();
 export type StudioConversationMemory = z.infer<typeof studioMemorySchema>;
+export type StudioConversationQuoteSettings = {
+  audio?: boolean; durationSec?: number; resolution?: string; aspectRatio?: string;
+  quality?: string; imageWidth?: number; imageHeight?: number; outputFormat?: string;
+  fps?: number; loop?: boolean; hdr?: boolean; exrExport?: boolean; enableWebSearch?: boolean;
+  voiceModel?: string; musicModel?: string; seedAudioOutputFormat?: string; seedAudioSampleRate?: number;
+};
+export type StudioConversationQuoteFacts = {
+  price: {amountCents: number; currency: string};
+  expiresAt: string;
+  /** Prepared TTL elapsed or stored expired state; never authorizes another purchase. */
+  expiredUnconfirmedQuote: boolean;
+  modelId: string; mode: string;
+  settings: StudioConversationQuoteSettings;
+  outputCount: number;
+  referenceCount: number;
+  referenceRoles: ('source' | 'reference' | 'first_frame' | 'last_frame' | 'mask' | 'source_video' | 'voice_sample')[];
+};
 export type StudioConversationProject = {
   name: string;
   revision: number;
   exports?: StudioPreparedExport[];
   memory: StudioConversationMemory;
-  generations?: {quoteId: string; surface: string; quoteState: string; jobId: string | null; status: string | null}[];
+  generations?: {quoteId: string; surface: string; quoteState: string; jobId: string | null; status: string | null; quote?: StudioConversationQuoteFacts}[];
 };
 export const studioActionRequestSchema = z.discriminatedUnion('action', [
   z.object({action: z.literal('project.read')}).strict(),
@@ -46,7 +63,7 @@ export const studioActionRequestSchema = z.discriminatedUnion('action', [
   studioExportPrepareActionSchema,studioExportReadActionSchema,
 ]);
 export type StudioActionRequest = z.infer<typeof studioActionRequestSchema>;
-export type StudioImageCapability = {modelId: string; label: string; lifecycle: AgentModelLifecycle | null; modes: string[]; formats: string[]; bestFor?: readonly string[]; editorialGuidance?: AgentModelEditorialSummary};
+export type StudioImageCapability = {modelId: string; label: string; lifecycle: AgentModelLifecycle | null; modes: string[]; formats: string[]; customImageSize?: boolean; bestFor?: readonly string[]; editorialGuidance?: AgentModelEditorialSummary};
 type AudioCapabilities=ReturnType<typeof listAudioCapabilities>;
 type StudioAudioMode=Omit<AudioCapabilities['modes'][number],'variants'> & {
   variants: (AudioCapabilities['modes'][number]['variants'][number] & {parameters: AudioSettingDetails[];fixedOutput: ReturnType<typeof projectAudioVariantFixedOutput>})[];
@@ -76,9 +93,9 @@ export type StudioActionResult =
 
 export const STUDIO_DIRECTOR_TOOLS = [
   STUDIO_PRICING_DIRECTOR_TOOL,
-  {action: 'project.read', name: 'project_read', description: 'Read this owned project, current revision and durable brief.', properties: {}},
+  {action: 'project.read', name: 'project_read', description: 'Read this owned project, current revision, durable brief and recorded quote facts. Use the recorded price and configuration to explain an existing quote; amountCents is cents, not whole currency units. A prepared or expired quote is not a purchase, and an expired quote requires fresh preparation before confirmation.', properties: {}},
   {action: 'catalog.read', name: 'catalog_read', description: 'Read the bounded, executable and certified creation catalog. Inspect model_details before selecting settings or reference roles. No prices are guessed.', properties: {}},
-  {action: 'model.details', name: 'model_details', description: 'Inspect exact supported modes, settings, formats, durations and reference roles of one model from catalog_read. A missing setting applies to this model, not the whole catalog: inspect a suitable alternative before declaring the requested size or workflow unavailable. Read-only; no quote, generation or charge.', properties: {modelId: {type: 'string'}}},
+  {action: 'model.details', name: 'model_details', description: 'Inspect exact supported modes, settings, formats, durations and reference roles of one model from catalog_read. Numeric min/max are range boundaries, not discrete choices; values lists are allowed choices when present, and suggested durations are examples. A missing setting applies to this model, not the whole catalog: inspect a suitable alternative before declaring the requested size or workflow unavailable. Use customImageSize in discovery for exact image dimensions, then check these constraints. Never prepare a different size or duration without the client accepting that change. Read-only; no quote, generation or charge.', properties: {modelId: {type: 'string'}}},
   {action: 'project.remember', name: 'project_remember', description: 'Replace the durable brief and decisions, preserving prior constraints. Use the memory revision just read.', properties: {
     revision: {type: 'integer', minimum: 0}, brief: {type: 'string'}, decisions: {type: 'array', items: {type: 'string'}},
   }},

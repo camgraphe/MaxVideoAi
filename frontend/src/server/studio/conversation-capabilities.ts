@@ -31,7 +31,12 @@ export function studioVisualCapabilityDetails(candidate: AgentPublicGenerationEn
   };
 }
 export function studioVisualCapabilitySummary(candidate: AgentPublicGenerationEngine): StudioImageCapability {
+  const customImageSize=candidate.surface==='image' ? candidate.publicModes.some(mode=>{
+    const facts=projectAgentModelModeDetails(candidate,mode);
+    return facts.resolutions.includes('custom')&&['imageWidth','imageHeight'].every(key=>facts.settings.some(setting=>setting.key===key));
+  }) : undefined;
   return {modelId: candidate.engine.id,label: candidate.engine.label,lifecycle: getRuntimeModelById(candidate.engine.id)?.lifecycle ?? null,modes: candidate.publicModes,formats: candidate.engine.aspectRatios,
+    ...(customImageSize===undefined ? {} : {customImageSize}),
     bestFor: getAgentModelGuidance(candidate.engine.id)?.bestFor ?? [],editorialGuidance: getAgentModelEditorialSummary(candidate.engine.id)};
 }
 export function studioAudioCapabilityDetails(capabilities: ReturnType<typeof listAudioCapabilities>,modelId: string): StudioCapabilityDetails | null {

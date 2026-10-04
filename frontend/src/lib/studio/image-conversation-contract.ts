@@ -6,6 +6,7 @@ import {studioMediaIntentSchema} from '@/lib/studio/conversation-media-contract'
 import {toolAssetRefSchema} from '@/lib/toolbox/contract';
 import type {PreparedAudioGeneration} from '@/server/agent-api/prepare-audio-generation';
 import {imageSelectionSchema,STUDIO_CONVERSATION_MAX_REFERENCES} from '@/lib/studio/conversation-creation-contract';
+import {projectStudioReply} from './conversation-reply';
 
 export const studioReferenceMentionSchema = z.object({
   assetId: z.string().min(1).max(256),
@@ -43,9 +44,9 @@ export const studioContinuationSchema = z.object({
 }).strict();
 export const imageDraftSchema = z
   .object({
-    reply: z.string().min(1).max(2400),
+    reply: z.string().min(1).max(2400).transform(projectStudioReply),
     image: imageSelectionSchema.nullable(),
-    media: studioMediaIntentSchema.optional(),
+    media: studioMediaIntentSchema.transform(media=>({...media,reply:projectStudioReply(media.reply)})).optional(),
     continuation: studioContinuationSchema.optional(),
     exportQuote: studioPreparedExportSchema.optional(),
   })

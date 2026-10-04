@@ -42,6 +42,7 @@ import {projectAgentModelModeDetails} from '@/server/agent-api/model-details';
 import {GenerationNormalizationError,normalizeGenerationRequest} from '@/server/agent-api/generation-normalization';
 import {GenerationCapabilityError,validateCanonicalGenerationCapabilities} from '@/server/agent-api/generation-capability-validation';
 import {getDefaultResolution} from '@/lib/image/inputSchema';
+import {projectStudioReply} from '@/lib/studio/conversation-reply';
 
 export const imageConfirmationSchema = z
   .object({
@@ -214,7 +215,7 @@ export function createImageConversationService(
       ...(turn.input_json.attachments ? {attachments: turn.input_json.attachments} : {}),
       ...(turn.input_json.referenceMentions ? {referenceMentions: turn.input_json.referenceMentions} : {}),
       ...(turn.input_json.renewedFromRequestId ? {renewedFromRequestId: turn.input_json.renewedFromRequestId} : {}),
-      reply: turn.draft_json?.reply ?? null,
+      reply: turn.draft_json ? projectStudioReply(turn.draft_json.reply) : null,
       ...(turn.draft_json?.exportQuote ? {exportQuote: turn.draft_json.exportQuote} : {}),
       ...(turn.draft_json?.continuation ? {continuation: turn.draft_json.continuation} : {}),
       state: expiredLease ? "failed" : turn.state,
@@ -310,7 +311,7 @@ export function createImageConversationService(
           turn.draft_json ??
           (useActions ? await runStudioImageActions({
             actor, turn, input, references: refs, referenceFingerprint, responseReplayOnly,
-            history: history.map(saved => ({message: saved.input_json.message, reply: saved.draft_json?.reply ?? null,
+            history: history.map(saved => ({message: saved.input_json.message, reply: saved.draft_json ? projectStudioReply(saved.draft_json.reply) : null,
               ...(saved.input_json.referenceMentions ? {referenceMentions: saved.input_json.referenceMentions} : {})})),
             enabled: dependencies.enabled, factory, createResponse: dependencies.createActionResponse,assistancePolicy: dependencies.assistancePolicy,countInputTokens: dependencies.countInputTokens,
             factories, mediaEnabled: dependencies.mediaEnabled,editingEnabled: dependencies.editingEnabled,exportsEnabled: dependencies.exportsEnabled,requestOrigin: dependencies.requestOrigin,exportDependencies: dependencies.exportDependencies,
@@ -321,7 +322,7 @@ export function createImageConversationService(
             input,
             history.map((saved) => ({
               message: saved.input_json.message,
-              reply: saved.draft_json?.reply ?? null,
+              reply: saved.draft_json ? projectStudioReply(saved.draft_json.reply) : null,
               ...(saved.input_json.referenceMentions ? {referenceMentions: saved.input_json.referenceMentions} : {}),
             })),
             refs,

@@ -172,3 +172,23 @@ test('action-specific recommendations preserve a single compatible explicit choi
   await assert.rejects(studioMediaRequest(actor,{action:'video.prepare',modelId:'kling-3-turbo-pro',mode:'t2v',prompt:input.message,aspectRatio:'16:9'} as never,input,factories,true),{code:'ENGINE_UNAVAILABLE'});
   for(const mode of ['ref2v','fl2v','v2v','extend'])await assert.rejects(studioMediaRequest(actor,{action:'video.prepare',modelId:'wan-3',mode,prompt:input.message,aspectRatio:'16:9',references:[{ref:{type:'asset',assetId,kind:'image'},role:'first_frame',slot:null}]} as never,input,factories,true),{code:'MODE_UNSUPPORTED'});
 });
+
+test('compact discovery finds a current custom-size model whose real preparation retains exact client dimensions',async()=>{
+  const {catalog}=await services();
+  const candidate=catalog.find(candidate=>candidate.surface==='image'&&getRuntimeModelById(candidate.engine.id)?.lifecycle==='current'
+    &&'customImageSize' in studioVisualCapabilitySummary(candidate)&&studioVisualCapabilitySummary(candidate).customImageSize===true);
+  assert.ok(candidate,'An exact-size client must be able to discover a compatible current model before spending a model-details call.');
+  const details=studioVisualCapabilityDetails(candidate);
+  assert.ok(details.surface==='image');
+  const mode=details.modes.find(mode=>mode.mode==='t2i');assert.ok(mode);
+  assert.ok(mode.resolutions.includes('custom'));
+  assert.ok(mode.settings.some(setting=>setting.key==='imageWidth'));
+  assert.ok(mode.settings.some(setting=>setting.key==='imageHeight'));
+  const request=imageRequestFromDraft({reply:'Review this exact-size image quote.',image:{prompt:'A quiet illustrated phone flyer',aspectRatio:'3:4',modelId:candidate.engine.id,mode:'t2i',settings:[{name:'resolution',value:'custom'},{name:'imageWidth',value:1024},{name:'imageHeight',value:1360}],references:[],outputCount:1}},
+    {requestId:'00000000-0000-4000-8000-000000000099',message:'My phone flyer must be exactly1024 by1360 pixels.',references:[]},catalog);
+  assert.equal(request.settings.imageWidth,1024);assert.equal(request.settings.imageHeight,1360);assert.equal(request.settings.resolution,'custom');
+  const fixed=catalog.find(candidate=>candidate.engine.id==='nano-banana-2');assert.ok(fixed);
+  assert.equal(studioVisualCapabilitySummary(fixed).customImageSize,false);
+  const video=catalog.find(candidate=>candidate.surface==='video');assert.ok(video);
+  assert.equal(studioVisualCapabilitySummary(video).customImageSize,undefined);
+});

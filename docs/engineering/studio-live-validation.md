@@ -179,3 +179,41 @@ as aliases. Ready project output selections retain their separate identities.
 Tests `studio-preparation-correction-postgres.test.ts` and
 `studio-preparation-validation.test.ts` cover durable correction, paid-response
 replay, final-response limits and the mutation/error boundaries.
+
+## Visible reply projection and capability discovery
+
+`conversation-reply.ts` projects an explanation containing explicit model protocol
+delimiters to a neutral unavailable-explanation message. It applies to new drafts,
+legacy reads and assistant history; user messages, creative prompts, scripts,
+canonical requests and raw paid response/action checkpoints remain exact. Ordinary
+prose and creative HTML are not stripped. A valid checkpoint with unusable visible
+text remains replayable, so an interruption cannot purchase the same Response again.
+`studio-reply-projection*.test.ts` exercise the actual directors, draft persistence,
+old readers, history and paid PostgreSQL replay. This addresses malformed visible
+text, not evidence of a leaked private reasoning field.
+
+Compact Studio discovery reports `customImageSize` for images from the authorized
+catalog's canonical resolution and width/height settings. Exact geometry constraints
+still come from `model_details` and the shared validator; discovery does not certify
+arbitrary dimensions. Numeric bounds are ranges, and suggested durations are examples.
+Do not silently substitute a size or duration when the client requires an exact one.
+
+## Recorded quote context
+
+`conversation-run-repository.ts` reads the persisted customer amount, currency,
+expiration and a bounded configuration through `conversation-quote-facts.ts`. The
+existing thirty generation summaries remain; only the eight most recent include
+these quote facts. The query enforces the current user, project and Studio session
+origin. It selects an explicit settings whitelist and reference counts/roles,
+without creative prompts, narration, reference IDs/URLs, provider costs or private
+pricing snapshots. Omitted settings are unknown, not a claim that a feature is absent.
+
+A new assistant Response receives these facts even when the previous successful
+preparation stopped before its result entered model history. `amountCents` remains
+recorded cents, never whole dollars or a fresh estimate. `expiredUnconfirmedQuote`
+marks prepared TTL expiry or a persisted expired state; accepted/claimed amounts
+remain their historical recorded prices. The projection cannot confirm or purchase
+a quote, including when the flag is false. It never reprices or mutates one.
+`studio-conversation-quote-facts-postgres.test.ts` verifies the real service context,
+expiry semantics, ownership isolation, the bounded whitelist and replay without
+a second Response, job or charge.

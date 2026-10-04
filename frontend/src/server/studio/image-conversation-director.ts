@@ -12,6 +12,7 @@ import {
 import { AgentApiError } from "@/server/agent-api/errors";
 import type { ResolvedReference } from "@/server/agent-api/reference-types";
 import {studioHistoryMessage,studioReferenceInputContent} from './conversation-reference-mentions';
+import {projectStudioReply} from '@/lib/studio/conversation-reply';
 
 export type ImageDirector = (
   input: ImageTurnInput,
@@ -102,7 +103,7 @@ Si le brief suffit et demande de créer, image contient un prompt précis et un 
                 ? [
                     {
                       role: "assistant" as const,
-                      content: turn.reply.slice(0, 2400),
+                      content: projectStudioReply(turn.reply).slice(0, 2400),
                     },
                   ]
                 : []),
