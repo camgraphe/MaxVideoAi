@@ -46,7 +46,7 @@ export default async function StudioProjectsPage({ searchParams }: {
   const conversationEnabled = process.env.STUDIO_IMAGE_CONVERSATION_ENABLED === 'true'
     && process.env.STUDIO_CONVERSATION_ACTIONS_ENABLED === 'true'
     && process.env.STUDIO_CONVERSATION_EDITING_ENABLED === 'true';
-  if(conversationEnabled&&query.starter===undefined&&query.studioMedia===undefined&&query.view!=='canvas')redirect('/app/studio');
+  if(query.starter===undefined&&query.studioMedia===undefined&&query.view!=='canvas')redirect('/app/studio');
   const requestHeaders = await headers();
   const montageCreationEnabled = isStudioMontageCreationEnabled(
     process.env,

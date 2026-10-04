@@ -10,6 +10,16 @@ import {
 
 const enabledAdminOnly: StudioAccessPolicy = { enabled: true, adminOnly: true };
 
+test('public Studio admits signed-in members with the production policy and still rejects visitors', async () => {
+  const member = dependencies({ resolvePageUserId: async () => 'member-user', isAdmin: async () => { throw new Error('Public access must not require an admin role'); } });
+  assert.deepEqual(await resolveStudioPageAccess(undefined, member), { ok: true, userId: 'member-user' });
+  assert.deepEqual(await resolveStudioApiAccess(new NextRequest('http://localhost/api/studio/projects', {
+    headers: { Authorization: 'Bearer member-token' },
+  }), undefined, member), { ok: true, userId: 'member-user' });
+  assert.deepEqual(await resolveStudioPageAccess(undefined, dependencies()), { ok: false, status: 401, error: 'UNAUTHORIZED' });
+  assert.deepEqual(await resolveStudioApiAccess(new NextRequest('http://localhost/api/studio/projects'), undefined, dependencies()), { ok: false, status: 401, error: 'UNAUTHORIZED' });
+});
+
 function dependencies(overrides: Partial<StudioAccessDependencies> = {}): StudioAccessDependencies {
   return {
     resolveRequestUserId: async (request) => {

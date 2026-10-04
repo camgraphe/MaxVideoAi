@@ -13,8 +13,7 @@ function routeFiles(directory: string): string[] {
   });
 }
 
-test('Studio beta is discoverable while projects, workspaces, and APIs remain admin-only', () => {
-  const flags = read('frontend/content/feature-flags.ts');
+test('Studio beta is discoverable while projects, workspaces, and APIs retain shared account access', () => {
   const navigation = read('frontend/components/app/app-navigation.ts');
   const sidebar = read('frontend/components/AppSidebar.tsx');
   const header = read('frontend/components/HeaderBar.tsx');
@@ -22,7 +21,6 @@ test('Studio beta is discoverable while projects, workspaces, and APIs remain ad
   const visitorAccess = read('frontend/lib/visitor-access.ts');
   const middleware = read('frontend/middleware.ts');
 
-  assert.match(flags, /studio:\s*\{[\s\S]*maxVideoAiEditor:\s*true,[\s\S]*adminOnly:\s*true/);
   assert.match(navigation, /canShowStudioNavigation\(\)/);
   assert.match(navigation, /return FEATURES\.studio\.maxVideoAiEditor/);
   assert.doesNotMatch(sidebar, /useAdminNavigationAccess/, 'public beta discovery should not require an admin lookup');

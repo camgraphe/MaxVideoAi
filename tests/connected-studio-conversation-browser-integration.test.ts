@@ -25,6 +25,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
   let browser: Awaited<ReturnType<typeof startStudioConnectedBrowserFixture>> | undefined;
   let diagnose = async () => ({});
   try {
+    await runtime.database.pool.query('DELETE FROM user_roles');
     const session = runtime.auth.createSession(STUDIO_FIXTURE_OWNERS[0],{clientId: 'studio-native-timeline-fixture'});
     const created = await postStudioMcpRequest(runtime,{jsonrpc: '2.0',id: 1,method: 'tools/call',params: {name: 'create_studio_montage',arguments: STUDIO_CONNECTED_MONTAGE_INPUT}},{token: session.access_token}).then(readStudioMcpResponse);
     assert.notEqual(created.result.isError,true,JSON.stringify(created.result));
@@ -94,7 +95,8 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
       await expect(page.getByRole('button',{name: 'Open library',exact: true})).toBeFocused();
       await page.unroute(endpoint);
     }
-    await page.goto(url,{waitUntil: 'domcontentloaded',timeout: 120000});
+    await page.goto(runtime.browserOrigin+'/app/studio',{waitUntil: 'domcontentloaded',timeout: 120000});
+    await expect(page).toHaveURL(url);
     await expect(page.locator('[data-timeline-item]')).toHaveCount(2,{timeout: 45000});
     const cookies = page.getByRole('button',{name: 'Reject all',exact: true});
     if (await cookies.isVisible()) await cookies.click();

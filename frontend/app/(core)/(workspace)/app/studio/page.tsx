@@ -4,6 +4,7 @@ import {HeaderBar} from '@/components/HeaderBar';
 import {AppSidebar} from '@/components/AppSidebar';
 import {resolveStudioPageAccess} from '@/server/studio/access';
 import {listStudioConversationProjects} from '@/server/studio/conversation-project-list';
+import {buildLoginHref} from '@/lib/auth-entry-href';
 import {StudioStart} from './_components/StudioStart.client';
 import StudioPreviewAccess from './projects/StudioPreviewAccess.client';
 
@@ -14,10 +15,10 @@ export const metadata:Metadata={title:'Studio | MaxVideoAI',robots:{index:false,
 export default async function StudioPage() {
   const access=await resolveStudioPageAccess();
   if(!access.ok&&access.status===404)notFound();
+  if(!access.ok&&access.status===401)redirect(buildLoginHref({mode:'signin',nextPath:'/app/studio'}));
   const conversationEnabled=process.env.STUDIO_IMAGE_CONVERSATION_ENABLED==='true'&&process.env.STUDIO_CONVERSATION_ACTIONS_ENABLED==='true'&&process.env.STUDIO_CONVERSATION_EDITING_ENABLED==='true';
-  if(access.ok&&!conversationEnabled)redirect('/app/studio/projects?view=canvas');
-  let unavailable=false;
-  if(access.ok){
+  let unavailable=!conversationEnabled;
+  if(access.ok&&conversationEnabled){
     const projects=await listStudioConversationProjects(access.userId).catch(()=>{unavailable=true;return [];});
     const recent=projects.find(project=>project.persistenceMode==='connected');
     if(recent)redirect('/app/studio/conversation/'+encodeURIComponent(recent.id));
