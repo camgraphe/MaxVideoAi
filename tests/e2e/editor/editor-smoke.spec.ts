@@ -656,7 +656,7 @@ async function openGuideProject(
     window.localStorage.removeItem('maxvideoai.editor.projects.v1');
     window.sessionStorage.setItem('last-known:user-id', 'studio-smoke-user');
   });
-  await page.goto('/app/studio/projects', { waitUntil: 'domcontentloaded' });
+  await page.goto('/app/studio/projects?view=canvas', { waitUntil: 'domcontentloaded' });
   await dismissCookieBanner(page);
 
   await page.getByRole('button', { name: options.starterButtonName }).click();
@@ -810,7 +810,7 @@ test('Studio projects uses localized copy', async ({ page, context }) => {
     { name: 'NEXT_LOCALE', value: 'fr', domain: 'localhost', path: '/' },
     { name: 'mvid_locale', value: 'fr', domain: 'localhost', path: '/' },
   ]);
-  await page.goto('/app/studio/projects', { waitUntil: 'domcontentloaded' });
+  await page.goto('/app/studio/projects?view=canvas', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'Mes projets' })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Studio Editor' })).toBeVisible();
   await expect(page.getByRole('button', { name: /Démarrer Publicité produit/ })).toBeVisible();
@@ -838,7 +838,7 @@ test('unauthenticated Studio API responses keep local draft mode quiet', async (
     window.localStorage.removeItem('maxvideoai.editor.projects.v1');
     window.localStorage.removeItem('maxvideoai.editor.workspace.v1.project_unauthorized');
   });
-  await page.goto('/app/studio/projects', { waitUntil: 'domcontentloaded' });
+  await page.goto('/app/studio/projects?view=canvas', { waitUntil: 'domcontentloaded' });
   await dismissCookieBanner(page);
 
   await expect(page.getByRole('heading', { name: 'My projects' })).toHaveCount(0);
@@ -894,7 +894,7 @@ test('Studio projects dark theme keeps core surfaces readable', async ({ page })
     window.localStorage.setItem('maxvideoai.studio.theme.userOverride.v1', 'true');
   });
 
-  await page.goto('/app/studio/projects', { waitUntil: 'domcontentloaded' });
+  await page.goto('/app/studio/projects?view=canvas', { waitUntil: 'domcontentloaded' });
   await dismissCookieBanner(page);
 
   const shell = page.locator('[class*="projectsShell"]');
@@ -2140,7 +2140,7 @@ test('studio projects page creates a project-scoped clean workspace', async ({ p
     window.localStorage.removeItem('maxvideoai.editor.projects.v1');
     window.sessionStorage.setItem('last-known:user-id', 'studio-smoke-user');
   });
-  await page.goto('/app/studio/projects', { waitUntil: 'domcontentloaded' });
+  await page.goto('/app/studio/projects?view=canvas', { waitUntil: 'domcontentloaded' });
   await dismissCookieBanner(page);
 
   await expect(page.getByRole('heading', { name: 'My projects' })).toHaveCount(0);
@@ -2326,12 +2326,12 @@ test('marketing starter query creates one guided project after hydration', async
   releaseFirstProjectsGet();
   await postStarted;
   expect(postedTemplates).toEqual(['guided-storyboard-to-video']);
-  expect(postStartUrl).toBe('/app/studio/projects');
+  expect(postStartUrl).toBe('/app/studio/projects?view=canvas');
   expect(postSawHydratedProject).toBe(true);
   expect(postedProject?.id).toMatch(/^project_/);
 
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await expect(page).toHaveURL('/app/studio/projects');
+  await expect(page).toHaveURL('/app/studio/projects?view=canvas');
   await expect(page.getByText('Hydrated server project')).toBeVisible();
   await expect.poll(() => projectsGetCount).toBe(2);
   await page.evaluate(() => new Promise<void>((resolve) => {
@@ -3774,7 +3774,7 @@ test('studio projects page keeps template choices compact and supports recent pr
   }));
   await page.route('**/api/legal/cookies', (route) => route.fulfill({ json: { ok: true } }));
 
-  await page.goto('/app/studio/projects', { waitUntil: 'domcontentloaded' });
+  await page.goto('/app/studio/projects?view=canvas', { waitUntil: 'domcontentloaded' });
   await dismissCookieBanner(page);
 
   await expect(page.getByText('Action Cut')).toBeVisible();

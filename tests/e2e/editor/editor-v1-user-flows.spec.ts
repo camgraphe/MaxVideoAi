@@ -248,7 +248,7 @@ test('creator generates a fixture shot in mock mode and sends its output to the 
     window.localStorage.removeItem('maxvideoai.editor.workspace.v1');
     window.localStorage.removeItem('maxvideoai.editor.projects.v1');
   });
-  await page.goto('/app/studio/projects', { waitUntil: 'domcontentloaded' });
+  await page.goto('/app/studio/projects?view=canvas', { waitUntil: 'domcontentloaded' });
   await page.getByRole('button', { name: /Start Product Ad/ }).click();
   await expect(page).toHaveURL(/\/app\/studio\/workspace\/project_/);
 

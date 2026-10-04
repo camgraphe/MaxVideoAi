@@ -38,7 +38,7 @@ for (const { status, historical, serverReturns } of cases) {
     await page.route('**/api/admin/access', (route) => route.fulfill({ json: { ok: false } }));
     await page.route('**/api/legal/cookies/version', (route) => route.fulfill({ json: { ok: true, version: 'studio-local-fixture', publishedAt: null } }));
     await page.route('**/api/legal/cookies', (route) => route.fulfill({ json: { ok: true } }));
-    await page.goto('/app/studio/projects', { waitUntil: 'domcontentloaded' });
+    await page.goto('/app/studio/projects?view=canvas', { waitUntil: 'domcontentloaded' });
     await page.getByRole('button', { name: 'Reject all', exact: true }).click();
     await page.getByRole('button', { name: /Blank project/ }).click();
     await expect(page).toHaveURL(/\/app\/studio\/workspace\/project_/);
@@ -80,8 +80,10 @@ for (const { status, historical, serverReturns } of cases) {
     await expect(exit, 'Known local projects must not remain trapped behind unresolved connected hydration.').toBeEnabled();
     const writesBeforeExit = writes.length;
     await exit.click();
-    await expect(page).toHaveURL(/\/app\/studio\/projects$/);
+    await expect(page).toHaveURL(/\/app\/studio$/);
     expect(writes.length, 'A local-only exit must not attempt a server writer while persistence mode is unavailable.').toBe(writesBeforeExit);
+    expect(await page.evaluate((id) => localStorage.getItem(`maxvideoai.editor.workspace.v1.${id}`), projectId)).toContain(`Local edit survives ${status}`);
+    await page.goto('/app/studio/projects?view=canvas', { waitUntil: 'domcontentloaded' });
     if (serverReturns) await expect(page.locator('[class*="projectCardMain"]'), 'All 40 server projects and the unmatched local project must remain reachable.').toHaveCount(41);
     await page.locator('[class*="projectCardMain"]').filter({ hasText: localProject.name }).click();
     await expect(page).toHaveURL(projectUrl);
@@ -126,7 +128,7 @@ test('a delayed server listing preserves a local project created after that list
     return pending;
   });
   try {
-    await page.goto('/app/studio/projects', { waitUntil: 'domcontentloaded' });
+    await page.goto('/app/studio/projects?view=canvas', { waitUntil: 'domcontentloaded' });
     await page.getByRole('button', { name: 'Reject all', exact: true }).click();
     await listingStarted;
     await page.getByRole('button', { name: /Blank project/ }).click();
@@ -143,7 +145,9 @@ test('a delayed server listing preserves a local project created after that list
     await expect(page).toHaveURL(new RegExp(`/app/studio/workspace/${localProject.id}$`));
     await expect(page.locator('.react-flow__node')).toHaveCount(2);
     await page.locator('header').getByRole('button', { name: 'Projects', exact: true }).click();
-    await expect(page).toHaveURL(/\/app\/studio\/projects$/);
+    await expect(page).toHaveURL(/\/app\/studio$/);
+    expect(await page.evaluate((id) => localStorage.getItem(`maxvideoai.editor.workspace.v1.${id}`), localProject.id)).not.toBeNull();
+    await page.goto('/app/studio/projects?view=canvas', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('[class*="projectCardMain"]')).toHaveCount(41);
     await page.locator('[class*="projectCardMain"]').filter({ hasText: localProject.name }).click();
     await expect(page).toHaveURL(new RegExp(`/app/studio/workspace/${localProject.id}$`));

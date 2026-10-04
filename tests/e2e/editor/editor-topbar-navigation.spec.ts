@@ -14,7 +14,7 @@ test('Studio exposes the app menu and a persistent saved exit without a Mock con
 
   const menu = page.getByRole('dialog', { name: 'MaxVideoAI' });
   await expect(menu).toBeVisible();
-  await expect(menu.getByRole('link', { name: 'Studio' })).toHaveAttribute('href', '/app/studio/projects');
+  await expect(menu.getByRole('link', { name: 'Studio' })).toHaveAttribute('href', '/app/studio');
   await expect(menu.getByRole('link', { name: 'Video' })).toHaveAttribute('href', '/app');
   await expect(menu.getByText('Preferences', { exact: true })).toBeVisible();
   await expect(menu.getByText('Language', { exact: true })).toBeVisible();
@@ -31,5 +31,5 @@ test('Studio app-menu navigation uses the saved workspace exit boundary', async 
   await page.getByRole('button', { name: 'Open MaxVideoAI menu' }).click();
   await page.getByRole('dialog', { name: 'MaxVideoAI' }).getByRole('link', { name: 'Studio' }).click();
 
-  await expect(page).toHaveURL(/\/app\/studio\/projects(?:\?|$)/);
+  await expect(page).toHaveURL(/\/app\/studio(?:\?|$)/);
 });

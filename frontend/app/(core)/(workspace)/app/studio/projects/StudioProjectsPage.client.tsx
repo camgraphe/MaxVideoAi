@@ -316,7 +316,7 @@ export default function StudioProjectsPageClient({ initialStarterTemplateId = nu
   useEffect(() => {
     if (!isProjectsLoaded || !initialStarterTemplateId || marketingStarterHandledRef.current) return;
     marketingStarterHandledRef.current = true;
-    window.history.replaceState(window.history.state, '', '/app/studio/projects');
+    window.history.replaceState(window.history.state, '', '/app/studio/projects?view=canvas');
     void createProjectFromTemplate(initialStarterTemplateId);
   }, [createProjectFromTemplate, initialStarterTemplateId, isProjectsLoaded]);
 
