@@ -23,29 +23,29 @@ test('a $2 pack plus a $10 pack retains prior usage and accumulates 12,000 demo 
 
 test('demo usage exhausts included credits before touching purchased packs', () => {
   const before = addDemoCreditPack(createDemoCreditWallet(), 10);
-  const first = consumeDemoCredits(before, 100);
-  assert.equal(first.wallet.included.remaining, 44);
-  assert.equal(first.includedUsed, 100);
+  const first = consumeDemoCredits(before, 300);
+  assert.equal(first.wallet.included.remaining, 60);
+  assert.equal(first.includedUsed, 300);
   assert.equal(first.purchasedUsed, 0);
   assert.deepEqual(first.wallet.packs, before.packs);
   const second = consumeDemoCredits(first.wallet, 100);
   assert.equal(second.wallet.included.remaining, 0);
-  assert.equal(second.includedUsed, 44);
-  assert.equal(second.purchasedUsed, 56);
-  assert.equal(second.wallet.packs[0].remaining, 1224);
+  assert.equal(second.includedUsed, 60);
+  assert.equal(second.purchasedUsed, 40);
+  assert.equal(second.wallet.packs[0].remaining, 1240);
   assert.equal(second.wallet.packs[1].remaining, 10000);
-  assert.equal(before.included.remaining, 144);
+  assert.equal(before.included.remaining, 360);
 });
 
 test('demo consumption crosses purchased packs in order and never creates a negative balance', () => {
   const wallet = addDemoCreditPack(createDemoCreditWallet(), 10);
-  const result = consumeDemoCredits(wallet, 1500);
+  const result = consumeDemoCredits(wallet, 1700);
   assert.equal(result.wallet.included.remaining, 0);
-  assert.deepEqual(result.wallet.packs.map(pack => pack.remaining), [0, 9924]);
+  assert.deepEqual(result.wallet.packs.map(pack => pack.remaining), [0, 9940]);
   assert.equal(result.unfulfilled, 0);
   const exhausted = consumeDemoCredits(result.wallet, 10000);
   assert.deepEqual(demoPurchasedBalance(exhausted.wallet), {total: 12000, remaining: 0});
-  assert.equal(exhausted.unfulfilled, 76);
+  assert.equal(exhausted.unfulfilled, 60);
 });
 
 test('invalid demo purchases and usage are rejected', () => {

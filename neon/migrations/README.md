@@ -118,3 +118,14 @@ and preserves all canonical request, zero-customer-charge, private funding and
 audit constraints. Replaying 31/60 does not rewrite quote or audit rows. Both
 refuse an unfamiliar helper definition. This change has only been applied to
 disposable local PostgreSQL fixtures, not a hosted database.
+
+## Studio assistance credits (migration 63)
+
+`63_studio_assistance_credits.sql` follows 54 and 62. Apply explicitly before a
+credits-enabled runtime; it adds monthly/purchased lots, call funding and credit
+allocations, plus immutable support refund-credit evidence. It does not debit a
+wallet, create grants, convert old budgets, alter old calls or activate pricing.
+The new production policy requires its own `studio-credits-2026-10-05-v2` approval.
+Retain this additive financial evidence on rollback. Qualification is local
+disposable PostgreSQL only; no hosted migration was run for this implementation.
+See `docs/engineering/studio-assistance-economics.md`.

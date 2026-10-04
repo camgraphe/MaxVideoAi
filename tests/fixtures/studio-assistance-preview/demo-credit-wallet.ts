@@ -5,7 +5,7 @@ export const PROPOSED_ASSISTANCE_MARKUP_PERCENT = 100;
 export type DemoCreditPack = {id: number; dollars: number; total: number; remaining: number};
 export type DemoCreditWallet = {included: {total: number; remaining: number}; packs: DemoCreditPack[]};
 
-/** Whole-cent supplier basis for this local example; production rounding is unchanged. */
+/** Whole-cent supplier basis for this local example; the application quote remains the authority for real usage. */
 export function quoteDemoCreditUsage(supplierBasisCents: number) {
   if (!Number.isSafeInteger(supplierBasisCents) || supplierBasisCents < 0) throw new Error('INVALID_DEMO_COST');
   const customerCents = supplierBasisCents * (1 + PROPOSED_ASSISTANCE_MARKUP_PERCENT / 100);
@@ -15,7 +15,7 @@ export function quoteDemoCreditUsage(supplierBasisCents: number) {
 }
 
 export function createDemoCreditWallet(): DemoCreditWallet {
-  return {included: {total: 200, remaining: 144}, packs: [{id: 1, dollars: 2, total: 2000, remaining: 1280}]};
+  return {included: {total: 500, remaining: 360}, packs: [{id: 1, dollars: 2, total: 2000, remaining: 1280}]};
 }
 
 export function demoPurchasedBalance(wallet: DemoCreditWallet) {

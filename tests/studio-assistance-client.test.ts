@@ -9,6 +9,13 @@ test('additional budget includes previously spent, reserved and remaining allowa
   assert.throws(()=>additionalAssistanceBudget(status,2000));assert.throws(()=>additionalAssistanceBudget(status,-1));
   assert.equal(assistanceStatusSchema.safeParse({...status,paid:{...status.paid,remainingCents:-1}}).success,false);
 });
+test('a malformed credit balance cannot create spending authority in the browser',()=>{
+  const credits={creditsPerDollar:1000,included:{total:500,remaining:360,reserved:0,period:'2026-10-01',renewsAt:'2026-11-01T00:00:00Z'},purchased:{total:2000,remaining:1280,reserved:0,packs:[{id:'pack',total:2000,remaining:1280,reserved:0,amountCents:200,purchasedAt:'2026-10-05T00:00:00Z'}]}};
+  assert.equal(assistanceStatusSchema.safeParse({...status,credits}).success,true);
+  assert.equal(assistanceStatusSchema.safeParse({...status,credits:{...credits,included:{...credits.included,remaining:501}}}).success,false);
+  assert.equal(assistanceStatusSchema.safeParse({...status,credits:{...credits,purchased:{...credits.purchased,remaining:2000}}}).success,false);
+  assert.equal(assistanceStatusSchema.safeParse({...status,credits:{...credits,creditsPerDollar:0}}).success,false);
+});
 test('quota recovery preserves only the server-validated safe replay decision',()=>{
   const action={type:'studio_assistance',reason:'included_exhausted',safeToStartNewRequest:true};
   const issue=conversationIssue('submit',new ConversationRequestError('SPENDING_LIMIT_EXCEEDED',action));

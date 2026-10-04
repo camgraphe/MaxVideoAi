@@ -1,4 +1,4 @@
-# Studio assistance accounting (gated beta)
+# Studio assistance credits (gated beta)
 
 Implemented 2026-10-03; production activation remains off. Text-only provider and
 protected staging qualification are recorded in the
@@ -6,44 +6,81 @@ protected staging qualification are recorded in the
 That operational record owns migration/deployment status; this guide defines the
 accounting contract and does not authorize public paid activation.
 
-## Policy and customer contract
+## Policy and customer contract (2026-10-05)
 
-`frontend/src/server/studio/assistance-policy.ts` owns the initial versioned policy:
-$1 maximum supplier-cost discovery allowance for Sol, $0.25 maximum sponsored Luna
-allowance, both once per account, and one $100 aggregate sponsored campaign. These
-are product-funded cost ceilings, not wallet credit. The customer projection shows
-remaining percentages. Reservations consume the available percentage until settled.
-The server may stop a request with a positive remainder when its conservative next
-call reservation cannot fit. New projects and browser sessions do not renew grants.
-Existing account limits and the campaign limit persist in PostgreSQL; changing a
-code default does not silently reset them.
+The current proposed runtime policy is `studio-credits-2026-10-05-v2`. It remains
+closed in production until separately approved. `assistance-policy.ts` selects
+monthly credits and Luna fair use; the public contract lives in
+`frontend/src/lib/studio/assistance-contract.ts`.
 
-`frontend/src/lib/studio/assistance-contract.ts` owns the dated customer disclosure.
-Sol costs USD $7.50 per million noncached input tokens, $0.30 per million cache-read
-input tokens, and $30 per million output tokens. Output includes reasoning tokens
-once. The price includes all provider calls and retries within the same client
-message; exact nanodollar facts are aggregated before the next-cent rounding.
-Noncached input has one fixed customer rate whether or not the provider reports a
-cache write. Image tokens, instructions, schemas, tool results and repeated history
-are input. This tariff is not an assertion that supplier cost is always exact.
+GPT‑6.1 Sol receives **500 free credits per UTC calendar month**. 1,000 credits
+represent USD $1 of customer usage, not 1,000 raw model tokens. Free credits do not
+carry forward. Purchased $2/$5/$10 packs grant 2,000/5,000/10,000 credits, accumulate
+without expiry and are consumed in purchase order, after available free credits.
+The dialog displays available/total quantities, reserved quantities, and per-pack
+history. A $2 pack followed by $10 increases total purchased credits to 12,000;
+previous consumption is retained in the available amount and gauges.
 
-`frontend/server/pricing/quote-studio-assistance.ts` projects the conservative
-standard provider basis through `quoteCanonicalPricing`, with a 200% markup,
-zero discounts/surcharges, and message-level upward subtotal rounding. This is the
-new Studio assistant product and `client_message` unit; media prices are unchanged.
-Every call stores the tariff/rate/policy versions and the cumulative canonical quote.
-Receipts use `billing_product_key=studio_assistance` and `surface=tool`.
+A `purchase_pack` POST includes fixed `amountCents`, current tariff and expected
+account revision, plus a UUID `purchaseKey`. It debits the existing USD MaxVideoAI
+wallet once and records a durable purchased lot in the same transaction. It also
+explicitly enables purchased Sol usage after free credits. It neither charges a
+card nor automatically refills. Replaying the same account/purchase identity
+returns current status without another debit, even after the original revision
+changed; a different amount/tariff under that identity is refused. Distinct
+purchases with one stale revision cannot both succeed. Insufficient funds or an
+account restriction rolls back the whole purchase. `disable_paid` pauses new
+purchased usage; credits are retained, and existing holds can settle. `resume_paid`
+requires the current tariff and revision.
 
-GET `/api/studio/assistance` returns `{ok:true,result:StudioAssistanceStatus}`.
-POST uses the strict `StudioAssistanceChoice` union: explicit budget authorization
-with current tariff/revision, explicit Luna/Sol choice, or paid-budget disable.
-`budgetCents` is the absolute cumulative authorized ceiling; it must cover money
-already spent/reserved and may leave at most $20 unspent, including pending reservations.
-`maxAdditionalBudgetCents` is the maximum amount the customer may add to the current
-authorization, after counting its remaining and reserved amounts. It does not fund
-the wallet. Funding the wallet does not authorize assistance. No automatic reload,
-card charge, or automatic switch to Luna exists. New paid calls stop immediately
-when the paid authorization is disabled. Existing reservations can still settle.
+`assistance-credit-ledger.ts` owns grant creation, purchases, allocation holds,
+settlement and support releases. The account lock serializes these operations.
+Reads project an uncreated current-month grant without writing; mutations insert
+it once. The month derives from the database transaction clock in UTC. Settlements
+and releases return unused holds to their original lots, including an expired
+free month; they cannot consume or replenish the next month's grant.
+
+Sol tariff `studio-sol-usd-2026-10-05-v2` costs $5 per million noncached input
+(tokens use the conservative cache-write supplier basis), $0.20 cached input, and
+$20 output, including reasoning once. `quote-studio-assistance.ts` applies **100%
+markup** through the canonical pricing kernel: basis ×2, then one upward cent
+rounding for the cumulative client message. This implies 50% theoretical gross
+margin before other costs when actual supplier cost equals that basis. The earlier
+`studio-sol-usd-2026-10-03-v1` quote remains available for historical settlements
+at its original 200% markup. Media tariffs are unchanged. Reservations and
+settlements always use the call's frozen tariff; unsupported versions fail closed.
+
+Current Sol usage reserves credits, then settles the actual incremental cumulative
+message quote. It **never debits the wallet a second time**. Purchases use
+`billing_product_key=studio_assistance_pack`; legacy per-call wallet receipts retain
+`studio_assistance`. Do not add pack purchase debits to credit usage as two customer
+charges. Credit funding stores total quoted/settled customer cents (including free
+usage); the call's `charged_cents` records only the purchased portion consumed.
+
+GPT‑6 Luna has **no monthly per-account quota**. The existing owned conversation
+lease admits one active message per account. Reservation also refuses another
+request while a Luna call has unresolved usage. Its generous context bound is
+128,000 input tokens; the existing 2,200 output-token and four-call message bounds
+remain. Complex creative direction may recommend GPT‑6.1 Sol; a change requires
+an explicit customer choice. Luna uses `reasoning.effort=medium`, like the existing
+director. The sponsored campaign remains an operational availability gate, with
+its existing persisted $100 supplier ceiling; this code does not increase or renew
+it. Production launch requires an explicit operational funding decision, in
+addition to policy approval. For conservative campaign protection, a Sol message
+using any included credits counts its full call supplier exposure, including calls
+with zero additional credits after cumulative cent rounding. Pure purchased
+messages do not consume sponsored exposure. Unknown exposure stays held.
+
+GET `/api/studio/assistance` remains private and read-only. Its `credits` projection
+adds free month/renewal, purchased totals and ordered pack quantities. The client
+schema refuses inconsistent balances. The earlier `authorize_paid` ceiling is
+retained only for the legacy injected policy, and is refused by the new policy.
+Existing wallet ceilings are not converted into purchased lots: they were never
+prepaid. No customer or historical balance is rewritten by the migration.
+
+The discreet footer uses the live MCP integration registry and localized setup
+paths for ChatGPT, Claude and Codex. Links open separately from the editor; the
+external assistant's plan/limits apply. They do not install, authorize or spend.
 
 ## Dispatch and recovery
 
@@ -56,12 +93,13 @@ when the paid authorization is disabled. Existing reservations can still settle.
    Native requests use `service_tier=default`, global OpenAI processing, no SDK
    retries, no built-in billable tools, and at most four dispatched responses per client message, including retries.
 3. Each model dispatch requires a committed conversation-response checkpoint and
-   a monetary reservation in one transaction. The campaign lock, account lock,
-   then the existing wallet reservation lock serialize competing work. Paid work
-   reserves the canonical maximum incremental cents from the same receipt wallet.
+   a monetary reservation in one transaction. The restriction lock, campaign lock, and account lock serialize competing work.
+   Current Sol calls reserve the maximum incremental credits across owned lots.
+   Wallet locks apply at pack purchase; legacy paid calls retain their original
+   per-call wallet reservation contract.
 4. The complete response checkpoint precedes any proposed tool execution. Settlement
    records only numeric usage and model/tier/version facts, releases unused supplier
-   allowance, and refunds unused wallet reservation atomically. Customer cents are
+   exposure, and releases unused credit holds (or legacy wallet holds) atomically. Customer cents are
    the incremental difference between cumulative message quotes. Replaying a settled
    response neither counts tokens nor calls the model nor charges again.
 5. If settlement storage fails after a response is checkpointed, a retry settles that
@@ -107,7 +145,8 @@ supplier reconciliation is deliberately unavailable. A wall-clock timeout is not
 evidence that usage was zero. The separate `assistance-resolution.ts` owner and
 [support command/runbook](../operations/studio-assistance-support.md) provide
 scoped recorded-response settlement or an audited customer waiver. The latter
-refunds the exact unresolved customer reservation and closes its inactive message,
+returns the exact unresolved customer reservation to its original credit lots
+(or refunds its legacy wallet reservation) and closes its inactive message,
 while retaining unknown supplier usage and full supplier exposure. Late trusted
 usage may settle provider facts without another customer charge or refund. Active
 thinking leases, unfinished actions and saved creation intents are refused. An
@@ -116,7 +155,7 @@ database clock before closing the message; late workers cannot execute with the
 revoked identity. Generic admin refunds cannot bypass this owner. There is no automatic
 expiration or release of unknown holds.
 
-The reservation initially appears as an `app_receipts` charge and its unused part
+For legacy wallet-funded calls, the reservation appears as an `app_receipts` charge and its unused part
 as a refund, using the existing wallet locking contract. Reporting must distinguish
 unresolved holds from recognized assistance revenue, using settled `charged_cents`
 in the Studio ledger; do not sum gross reservation receipts as revenue. No unrelated
@@ -139,8 +178,10 @@ regional and nonstandard tiers are not supported by this tariff and fail closed.
 Provider-returned aliases must be explicitly recognized before settlement; never
 infer their rates from string prefixes.
 
-Migrations `54_studio_assistance_ledger.sql` and
-`62_studio_assistance_resolutions.sql` are explicit and never run by readers.
+Migrations `54_studio_assistance_ledger.sql`,
+`62_studio_assistance_resolutions.sql` and `63_studio_assistance_credits.sql` are
+explicit and never run by readers. Migration 63 adds immutable lot identity,
+funding/allocation outcomes and support `refund_credits` evidence.
 It stores account choices, immutable requested call identity and settled outcomes,
 provider nanodollar min/max, customer cents, response/request identity and versions.
 New usage facts contain no prompt, output, reference URL, key or reasoning content.
@@ -151,11 +192,12 @@ This ledger does not claim an immutable complete historical prompt/context manif
 
 ## Activation and validation
 
-Local/preview integration requires `STUDIO_ASSISTANCE_ENABLED=true` and migrations 54 and 62.
+Local/preview integration requires `STUDIO_ASSISTANCE_ENABLED=true` and migrations 54, 62 and 63.
 Configured non-global `OPENAI_BASE_URL` endpoints are rejected by this policy; regional
 processing needs its own reviewed rates and must not be silently rerouted.
 Production additionally requires
-`STUDIO_ASSISTANCE_APPROVED_POLICY=studio-beta-2026-10-03-v1`. Merely enabling the
+`STUDIO_ASSISTANCE_APPROVED_POLICY=studio-credits-2026-10-05-v2`. The earlier
+production approval does not activate this version. Merely enabling the
 old conversation flag can no longer dispatch an unmetered native model. The older
 image-only native path fails closed; the action director is the metered path.
 Offline tests explicitly inject response/token-count providers. They do not prove

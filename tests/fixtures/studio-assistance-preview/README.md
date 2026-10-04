@@ -51,3 +51,13 @@ to verify the order without an assistant call. `demo-credit-wallet.ts` owns only
 fixture arithmetic; it is not imported by the product or financial ledger.
 Run its focused checks with:
 `frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test tests/studio-assistance-preview-wallet.test.ts`.
+
+### Implemented policy checkpoint — 2026-10-05
+
+The root review URL now renders the actual new credits dialog, with browser-only
+demo callbacks and 500 monthly free credits (360 remaining in the fixture).
+`/concept` retains the approved prototype, updated to the same allowance.
+Production code now includes cumulative prepaid packs from the MaxVideoAI wallet,
+100% markup, monthly grants, free-first reservations, historical tariff settlement,
+Luna fair use and MCP links. Migration 63 and a new production policy approval are
+required separately; this server neither calls these APIs nor activates them.
