@@ -30,6 +30,7 @@ test('workspace video settings hydration is owned by a route-local hook', () => 
   assert.match(appSource, /import \{ useWorkspaceVideoSettings \} from '\.\/_hooks\/useWorkspaceVideoSettings';/);
   assert.match(appSource, /useWorkspaceVideoSettings\(\{/);
   assert.match(appSource, /useWorkspaceVideoSettings\(\{[\s\S]*?accountScope: draftOwner,/);
+  assert.match(appSource, /useWorkspaceVideoSettings\(\{[\s\S]*?initialPreviewGroup,/);
   assert.match(appSource, /hasForm: activeDraft.ready && Boolean\(routeForm.form\) && !videoSettings.sharedVideoImportPending,/);
   assert.doesNotMatch(appSource, /const applyVideoSettingsSnapshot = useCallback/);
   assert.doesNotMatch(appSource, /const hydrateVideoSettingsFromJob = useCallback/);
