@@ -134,3 +134,9 @@ immutable build served all nine localized archives with HTTP 200 when bound to
 localhost. The runner was corrected; product routing was unchanged. Current
 Veo/Wan marketing pages requiring DATABASE_URL remain outside this sanitized
 no-database fixture; their 500 responses are not attributed to an archive defect.
+
+Final immutable product/test candidate `48d2796c4` passes the complete standard
+and isolated plan: 6,214 passed, zero failures, two explicit skips (6,216 total).
+Its full production build generates 895 pages; 17 HTTP checks pass. The final
+handoff records the detailed build/browser evidence and remaining environment
+limitations. No more live API calls were made after the 83-call cost summary.

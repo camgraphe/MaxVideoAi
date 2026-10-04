@@ -1,6 +1,6 @@
 # Studio + MCP release candidate — 4 October 2026
 
-Status: implemented on `codex/studio-creative-workspace`; expanded validation is in progress.
+Status: local implementation and expanded validation complete on `codex/studio-creative-workspace`.
 **Not yet approved for production:** target-main integration, staging and final activation
 remain explicit gates in the
 [published-baseline reconciliation](studio-published-baseline-validation-2026-10-04.md).
@@ -102,9 +102,46 @@ probes and corrections, 83/83 input-token count parity, financial simulations,
 current live MCP observations and connected-browser checks. Calculated supplier
 cost is $0.490465965 under the single $5 authorization; no media generation ran.
 
-The combined product candidate is `66934ab3cc13cc6e5ecf6dc80c781435f647e862`.
-Final full-suite, production build and public smoke results are being recorded
-against this immutable source. The root's integrated focused check passed
+The final product candidate is `48d2796c473c32c465e77916e8e39df5fd1900e8`.
+Its isolated prebuild, production build, lint/types and postbuild passed, generating
+895 static pages. Six existing Studio native-image warnings and the existing
+Supabase Edge/Browserslist warnings remain. No environment files, database or
+provider credentials were included in the build. Installed dependencies were
+reused, with the pricing package resolved inside the committed snapshot.
+
+Seventeen local HTTP checks pass: nine archives in EN/FR/ES with canonical,
+hreflang, indexation and WebPage JSON-LD, no Product/Offer or archived-generation
+CTA; one permanent compatibility redirect preserving tracking; three Studio
+pages, three historical Sora galleries and one historical comparison. Browser
+checks confirm French Sora and Spanish Seedance archive copy, localized links,
+a single main landmark, no document overflow at 1280 pixels, and no page errors.
+The first runner used 127.0.0.1 and caused Next's localhost rewrite normalization
+to loop; serving the identical source with `--hostname localhost` resolved it.
+No product routing change was made. The cookie panel used English fallback copy
+because the sanitized fixture has no legal database.
+
+Sitemap publication remains true in the registry for all three archived models,
+and source contracts cover historical comparison publication. The live sitemap
+returned 503 without its database/snapshot, while additional Veo/Wan model-page
+probes returned 500 without DATABASE_URL. Verify actual sitemap delivery and these
+data-dependent pages in staging; the 17 passing HTTP checks do not cover them.
+
+The complete final run exited successfully: **6,216 tests total, 6,214 passed,
+zero failed, two skipped**. Standard discovery ran 1,046 files (6,205 tests,
+6,203 passed, two skipped); all four isolated Studio integration files then
+passed (11 tests, no skips). The skips are the unavailable combined Codex
+plugin authoring validator and the opt-in multitrack render test; neither is
+claimed as executed. Separate connected-browser, private playback, revision,
+MCP authentication and PostgreSQL route tests did execute.
+
+The exact full log is `release-final-48d2796c4.log`. Production build evidence is
+`production-build/48d2796c4/20261004T001019Z-b2d9ccd8/summary.json`;
+`public-final-smoke.json` records the 17 HTTP checks and `public-final-sitemap.json`
+records the database limitation. Both temporary production build servers were
+stopped and their owned snapshots removed, preserving logs and captures.
+Final exposure/whitespace checks passed. Subsequent changes are handoff
+documentation only, leaving the verified product and test sources unchanged.
+ The root's integrated focused check passed
 **177/177 tests**, including the 78 model/mode pipelines, retirement/discovery,
 archive metadata, canonical price evidence, director behavior and shared budget.
 Fresh `pnpm mcp:client:check` passed **134 tests with one explicit unavailable
