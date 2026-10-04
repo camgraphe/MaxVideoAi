@@ -2306,7 +2306,7 @@ test('marketing starter query creates one guided project after hydration', async
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ ok: false }),
+      body: JSON.stringify({ ok: true, project: postedProject }),
     });
   });
   await page.addInitScript(() => {
