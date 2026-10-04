@@ -32,6 +32,7 @@ test('real Studio routes authenticate cookie and bearer owners against a fresh P
   try {
     const sessionA = runtime.auth.createSession(STUDIO_FIXTURE_OWNERS[0]);
     const sessionB = runtime.auth.createSession(STUDIO_FIXTURE_OWNERS[1]);
+    await runtime.database.pool.query('DELETE FROM user_roles');
     const endpoint = `${runtime.origin}/api/studio/projects`;
     assert.equal((await fetch(endpoint)).status, 401);
     const created = await fetch(endpoint, {
@@ -46,6 +47,10 @@ test('real Studio routes authenticate cookie and bearer owners against a fresh P
     const saved = await created.json();
     assert.equal(saved.project.userId, STUDIO_FIXTURE_OWNERS[0]);
     const cookieA = runtime.auth.cookiesFor(sessionA).map((item) => `${item.name}=${item.value}`).join('; ');
+    const entry = await fetch(`${runtime.origin}/app/studio`, { headers: { cookie: cookieA }, redirect: 'manual' });
+    assert.equal(entry.status, 200, 'Disabled conversation flags must show the new Studio unavailable state, never redirect to classic Canvas.');
+    assert.equal(entry.headers.get('location'), null);
+    assert.match(await entry.text(), /Studio is temporarily unavailable/);
     const mediaEndpoint = `${runtime.origin}/api/studio/media/resolve`;
     const assetRef = { type: 'asset', assetId: `ma_${'a'.repeat(32)}`, kind: 'video' };
     const outputRef = { type: 'job-output', jobId: 'fixture-job', outputId: 'fixture-output', kind: 'video' };

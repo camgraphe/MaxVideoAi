@@ -39,7 +39,7 @@ test('human assistance sequences preserve consent, money and completed work acro
   t.after(async()=>{await getDb().end();if(previous===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=previous;await pg.cleanup();});
   await createPaidGenerationTestSchema(pg.pool);
   await pg.pool.query('CREATE TABLE studio_projects(id text PRIMARY KEY,user_id text NOT NULL,name text NOT NULL,deleted_at timestamptz);CREATE TABLE studio_sequences(id text PRIMARY KEY)');
-  for(const file of ['50_studio_image_conversation.sql','51_studio_image_model_usage.sql','42_studio_connected_montages.sql','52_studio_conversation_runs.sql','54_studio_assistance_ledger.sql'])
+  for(const file of ['50_studio_image_conversation.sql','51_studio_image_model_usage.sql','42_studio_connected_montages.sql','52_studio_conversation_runs.sql','54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql'])
     await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
   async function account(userId:string,balance=1000,currentPolicy=policy){
     const actor={userId,projectId:userId+'-film',authMethod:'studio-session' as const,clientId:null};

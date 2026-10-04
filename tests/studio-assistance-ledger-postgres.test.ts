@@ -14,6 +14,7 @@ test('account-wide allowances, exact cumulative billing, unresolved exposure and
   t.after(async()=>{await getDb().end();if(old===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=old;await pg.cleanup();});
   await createPaidGenerationTestSchema(pg.pool);
   await pg.pool.query(readFileSync('neon/migrations/54_studio_assistance_ledger.sql','utf8'));
+  await pg.pool.query(readFileSync('neon/migrations/62_studio_assistance_resolutions.sql','utf8'));
   const policy={enabled:true,solAllowanceNanoUsd:10_000_000,lunaAllowanceNanoUsd:5_000_000,campaignNanoUsd:100_000_000,maxAdditionalBudgetCents:2000};
   const actor={userId:'owner',projectId:'film',authMethod:'studio-session' as const,clientId:null};
   const request=randomUUID();

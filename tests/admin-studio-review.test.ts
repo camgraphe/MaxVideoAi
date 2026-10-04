@@ -33,6 +33,9 @@ test('usage projection excludes raw output and preserves unknown unsettled charg
   assert.doesNotMatch(JSON.stringify(usage),/encrypted|secret|raw/);
   const reserved = projectAssistance({...common,state:'unknown',reserved_cents:4,charged_cents:4,provider_min_nano_usd:null,provider_max_nano_usd:null});
   assert.equal(reserved.chargedCents,null); assert.equal(reserved.providerMaxNanoUsd,null);
+  const waived = projectAssistance({...common,state:'unknown',reserved_cents:4,waived_cents:4,provider_min_nano_usd:null,provider_max_nano_usd:null});
+  assert.equal(waived.waivedCents,4); assert.equal(waived.chargedCents,null); assert.equal(waived.providerMaxNanoUsd,null);
+  assert.equal(reserved.waivedCents,null);
   const settled = projectAssistance({...common,state:'settled',charged_cents:0,provider_min_nano_usd:'12345',provider_max_nano_usd:'67890'});
   assert.equal(settled.chargedCents,0); assert.equal(settled.providerMinNanoUsd,'12345'); assert.equal(settled.providerMaxNanoUsd,'67890');
 });

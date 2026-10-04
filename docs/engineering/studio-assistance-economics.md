@@ -103,10 +103,18 @@ the older unmetered pilot replay without retroactive billing.
 `settleStudioAssistanceCall` is the idempotent internal reconciliation seam. It
 requires trusted provider evidence and has no public endpoint. For a transport
 failure with neither durable response nor trusted usage evidence, automatic
-reconciliation is deliberately unavailable; operations must obtain authoritative
-provider evidence. A wall-clock timeout is not evidence that usage was zero. There
-is no automatic expiration/release of unknown holds. This operational resolution
-workflow still requires review before a public paid launch.
+supplier reconciliation is deliberately unavailable. A wall-clock timeout is not
+evidence that usage was zero. The separate `assistance-resolution.ts` owner and
+[support command/runbook](../operations/studio-assistance-support.md) provide
+scoped recorded-response settlement or an audited customer waiver. The latter
+refunds the exact unresolved customer reservation and closes its inactive message,
+while retaining unknown supplier usage and full supplier exposure. Late trusted
+usage may settle provider facts without another customer charge or refund. Active
+thinking leases, unfinished actions and saved creation intents are refused. An
+expired thinking lease can be explicitly revoked under the locked turn and
+database clock before closing the message; late workers cannot execute with the
+revoked identity. Generic admin refunds cannot bypass this owner. There is no automatic
+expiration or release of unknown holds.
 
 The reservation initially appears as an `app_receipts` charge and its unused part
 as a refund, using the existing wallet locking contract. Reporting must distinguish
@@ -131,7 +139,8 @@ regional and nonstandard tiers are not supported by this tariff and fail closed.
 Provider-returned aliases must be explicitly recognized before settlement; never
 infer their rates from string prefixes.
 
-Migration `54_studio_assistance_ledger.sql` is explicit and is never run by readers.
+Migrations `54_studio_assistance_ledger.sql` and
+`62_studio_assistance_resolutions.sql` are explicit and never run by readers.
 It stores account choices, immutable requested call identity and settled outcomes,
 provider nanodollar min/max, customer cents, response/request identity and versions.
 New usage facts contain no prompt, output, reference URL, key or reasoning content.
@@ -142,7 +151,7 @@ This ledger does not claim an immutable complete historical prompt/context manif
 
 ## Activation and validation
 
-Local/preview integration requires `STUDIO_ASSISTANCE_ENABLED=true` and migration 54.
+Local/preview integration requires `STUDIO_ASSISTANCE_ENABLED=true` and migrations 54 and 62.
 Configured non-global `OPENAI_BASE_URL` endpoints are rejected by this policy; regional
 processing needs its own reviewed rates and must not be silently rerouted.
 Production additionally requires

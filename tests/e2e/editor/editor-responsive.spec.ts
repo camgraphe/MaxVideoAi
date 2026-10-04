@@ -66,7 +66,7 @@ async function openResponsiveGuideProject(page: Page): Promise<void> {
     window.localStorage.removeItem('maxvideoai.editor.workspace.v1');
     window.localStorage.removeItem('maxvideoai.editor.projects.v1');
   });
-  await page.goto('/app/studio/projects', { waitUntil: 'domcontentloaded' });
+  await page.goto('/app/studio/projects?view=canvas', { waitUntil: 'domcontentloaded' });
   await page.getByRole('button', { name: /Start Storyboard to Video/ }).click();
   await expect(page).toHaveURL(/\/app\/studio\/workspace\/project_/);
   await expect(page.locator('[data-canvas-guide-annotation]')).toHaveCount(5);

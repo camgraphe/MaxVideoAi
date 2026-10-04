@@ -446,7 +446,8 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
         void successfulExit.catch(() => undefined);
         await offline.page.getByRole('button', { name: 'Projects', exact: true }).click();
         await successfulExit;
-        await expect(offline.page).toHaveURL(`${runtime.browserOrigin}/app/studio/projects`, { timeout: 25_000 });
+        // The default Projects destination now enters conversational Studio after the save ACK.
+        await expect(offline.page).toHaveURL(`${runtime.browserOrigin}/app/studio`, { timeout: 25_000 });
         const recovered = await runtime.database.pool.query('SELECT timeline_state FROM studio_sequences WHERE id=$1', [montage.sequenceId]);
         assert.equal(recovered.rows[0].timeline_state.timelineItems[0].title, 'Recovered offline browser draft');
         assert.deepEqual(offline.errors, []);
@@ -525,7 +526,8 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
           })),
           } });
         });
-        await creator.page.goto(`${runtime.browserOrigin}/app/studio/projects`, { waitUntil: 'domcontentloaded' });
+        // This fixture exercises the retained classic Canvas montage launcher explicitly.
+        await creator.page.goto(`${runtime.browserOrigin}/app/studio/projects?view=canvas`, { waitUntil: 'domcontentloaded' });
         await creator.page.getByRole('button', { name: 'Reject all', exact: true }).click();
         await expect(creator.page.locator('html')).toHaveAttribute('data-theme', 'dark');
         const open = creator.page.locator('[data-studio-montage-open="true"]');

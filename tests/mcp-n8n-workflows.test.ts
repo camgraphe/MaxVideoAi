@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
+import { runInNewContext } from 'node:vm';
 
 import { getMcpIntegration } from '../frontend/lib/mcp-integration-registry';
 
@@ -49,6 +50,22 @@ function reachable(workflow: Workflow, from: string, to: string): boolean {
 
 function directTargets(workflow: Workflow, from: string, output = 0): string[] {
   return (workflow.connections[from]?.main?.[output] ?? []).map((edge) => edge.node);
+}
+
+// Fast contract checks only. Actual n8n sandbox, Wait, item lineage and run-index
+// behavior require the separately documented real-engine qualification.
+function evaluateRecoveryExpression(expression: unknown, structuredContent: unknown, runIndex = 0): unknown {
+  assert.equal(typeof expression, 'string');
+  const source = expression as string;
+  assert.ok(source.startsWith('={{ ') && source.endsWith(' }}'));
+  return runInNewContext(source.slice(4, -3), {
+    $json: { structuredContent },
+    $runIndex: runIndex,
+    $: (name: string) => {
+      assert.equal(name, 'Confirm Generation');
+      return { item: { json: { structuredContent: { jobId: 'accepted-job' } } } };
+    },
+  });
 }
 
 test('each n8n candidate includes one isolated submission-guideline note with complete setup guidance', () => {
@@ -189,8 +206,15 @@ test('n8n candidates are import-shaped, credential-free and internally connected
     assert.doesNotMatch(serialized, /"credentials"|access[_ -]?token|client[_ -]?secret|bearer\s+[a-z0-9]/i);
     assert.doesNotMatch(serialized, /\$\d|Seedance|Luma|Kling|Veo|H3|\d+ models/i);
     for (const node of workflow.nodes.filter((entry) => entry.type === 'n8n-nodes-base.wait')) {
-      assert.equal(typeof node.parameters.amount, 'number');
-      assert.ok(Number(node.parameters.amount) > 0 && Number(node.parameters.amount) <= 60);
+      if (file === 'brief-to-approved-generation.json' && node.name === 'Wait Before Status') {
+        for (const afterSeconds of [5, 15, 30, 45]) {
+          assert.equal(evaluateRecoveryExpression(node.parameters.amount, { retry: { afterSeconds } }), afterSeconds,
+            'status waits must honor the returned delay, including delays longer than the former 15 seconds');
+        }
+      } else {
+        assert.equal(typeof node.parameters.amount, 'number');
+        assert.ok(Number(node.parameters.amount) > 0 && Number(node.parameters.amount) <= 60);
+      }
     }
   }
 });
@@ -218,28 +242,85 @@ test('generation candidates put a human gate between prepare and one exact confi
     assert.match(String(confirm.parameters.jsonInput), /structuredContent\.quoteId/);
     assert.match(String(confirm.parameters.jsonInput), /confirmed:\s*true/);
     assert.doesNotMatch(String(confirm.parameters.jsonInput), /idempotencyKey|explicitApproval/);
-    assert.match(
-      String(workflow.nodes.find((node) => node.name === 'Get Generation Status')?.parameters.jsonInput),
-      /structuredContent\.jobId/,
-    );
+    const statusInput = workflow.nodes.find((node) => node.name === 'Get Generation Status')?.parameters.jsonInput;
+    if (file === 'brief-to-approved-generation.json') {
+      assert.deepEqual(JSON.parse(String(evaluateRecoveryExpression(statusInput, {
+        retry: { parameters: { jobId: 'accepted-job' } },
+      }))), { jobId: 'accepted-job' });
+      assert.deepEqual(directTargets(workflow, 'Confirm Generation'), ['Normalize Retry Fields']);
+      assert.deepEqual(directTargets(workflow, 'Get Generation Status'), ['Normalize Retry Fields']);
+      assert.deepEqual(directTargets(workflow, 'Normalize Retry Fields'), ['Generation Terminal?']);
+      assert.equal(reachable(workflow, 'Get Generation Status', 'Confirm Generation'), false,
+        'every recovery branch must remain disconnected from paid confirmation');
+    } else {
+      assert.match(String(statusInput), /structuredContent\.jobId/);
+      assert.deepEqual(directTargets(workflow, 'Get Generation Status'), ['Generation Terminal?']);
+    }
     assert.match(
       String(workflow.nodes.find((node) => node.name === 'Present Result')?.parameters.jsonInput),
       /structuredContent\.jobId/,
     );
-    assert.deepEqual(directTargets(workflow, 'Get Generation Status'), ['Generation Terminal?']);
     assert.deepEqual(directTargets(workflow, 'Generation Terminal?', 0), ['Present Result']);
     assert.deepEqual(directTargets(workflow, 'Generation Terminal?', 1), ['Continue Polling?']);
     assert.deepEqual(directTargets(workflow, 'Continue Polling?', 0), ['Wait Before Status']);
     assert.deepEqual(directTargets(workflow, 'Continue Polling?', 1), ['Polling Timed Out']);
     assert.match(
       JSON.stringify(workflow.nodes.find((node) => node.name === 'Continue Polling?')?.parameters),
-      /\$runIndex\s*<\s*19/,
+      file === 'brief-to-approved-generation.json' ? /\$runIndex\s*<\s*20/ : /\$runIndex\s*<\s*19/,
     );
     const recoveryTargets = (workflow.connections['Get Generation Status']?.main ?? [])
       .flatMap((branch) => branch ?? [])
       .map((edge) => edge.node);
     assert.equal(recoveryTargets.includes('Confirm Generation'), false);
   }
+});
+
+test('brief recovery adapts reserved JSON fields through a native node before evaluating expressions', () => {
+  const workflow = load('brief-to-approved-generation.json');
+  const adapter = workflow.nodes.find((node) => node.name === 'Normalize Retry Fields');
+  assert.ok(adapter);
+  assert.equal(adapter.type, 'n8n-nodes-base.renameKeys');
+  assert.deepEqual(adapter.parameters.keys, {
+    key: [{ currentKey: 'structuredContent.retry.arguments', newKey: 'structuredContent.retry.parameters' }],
+  });
+  // n8n 2.38.7 rejects this property in its expression sandbox even though it
+  // is legitimate JSON response data. Keep the conversion in Rename Keys.
+  for (const node of workflow.nodes) {
+    const expressions = JSON.stringify(node.parameters).match(/=\{\{[\s\S]*?\}\}/g) ?? [];
+    for (const expression of expressions) assert.doesNotMatch(expression, /\.arguments\b|\[['"]arguments['"]\]/);
+  }
+});
+
+test('brief recovery stops on missing or unsafe retry instructions and after twenty status calls', () => {
+  const workflow = load('brief-to-approved-generation.json');
+  const conditions = workflow.nodes.find((node) => node.name === 'Continue Polling?')?.parameters.conditions as {
+    conditions: Array<{ leftValue: unknown }>;
+  };
+  const guard = conditions.conditions[0].leftValue;
+  const running = {
+    jobId: 'accepted-job', status: 'running',
+    retry: { tool: 'get_generation_status', parameters: { jobId: 'accepted-job' }, afterSeconds: 30 },
+  };
+  for (const status of ['accepted', 'running']) {
+    for (const runIndex of [0, 1, 19]) {
+      assert.equal(evaluateRecoveryExpression(guard, { ...running, status }, runIndex), true);
+    }
+  }
+  for (const invalid of [
+    null, {}, { ...running, retry: null }, { ...running, retry: undefined },
+    { ...running, status: 'completed' }, { ...running, status: 'failed' },
+    { ...running, status: 'unknown' },
+    { ...running, retry: { ...running.retry, tool: 'confirm_generation' } },
+    { ...running, retry: { ...running.retry, parameters: null } },
+    { ...running, retry: { ...running.retry, parameters: {} } },
+    { ...running, retry: { ...running.retry, parameters: { jobId: 'another-job' } } },
+    ...[0, -1, Infinity, NaN, '30'].map((afterSeconds) => ({ ...running, retry: { ...running.retry, afterSeconds } })),
+  ]) {
+    assert.equal(evaluateRecoveryExpression(guard, invalid), false,
+      'an invalid retry must stop automatic recovery without a replacement confirmation');
+  }
+  assert.equal(evaluateRecoveryExpression(guard, running, 20), false);
+  assert.equal(evaluateRecoveryExpression(guard, running, 21), false);
 });
 
 test('campaign processing is bounded and sequential by default', () => {

@@ -91,6 +91,15 @@ See `docs/engineering/studio-conversation-integration.md` for access, rollout an
 
 `51_studio_image_model_usage.sql` suit 50 et installe les preuves de consommation du modèle texte par compte/projet/tour/tentative. Appliquer avant le runtime image conversation instrumenté. Cette table ne réserve et ne débite aucun crédit média. Les réponses incomplètes restent mesurées ; les tentatives sans compteurs restent explicitement inconnues. Qualification sur PostgreSQL 17 jetable et preview QA local uniquement.
 
+`62_studio_assistance_resolutions.sql` follows `54_studio_assistance_ledger.sql`.
+Apply it explicitly before the support-aware assistance readers. It adds immutable
+operator decisions for recorded-response settlement and customer reservation
+waivers, retaining supplier usage independently; it does not change existing
+wallets, calls or allowances. Keep this additive financial evidence on rollback.
+See `docs/operations/studio-assistance-support.md` for the target-bound preview/apply
+command and expired-lease revocation rules. Qualification uses disposable local
+PostgreSQL; this file does not record production application.
+
 ## Gallery opening slots
 
 `53_playlist_opening.sql` follows migration52 and adds optional four-video opening IDs. It is additive and replayable; it does not change any destination or media. Before applying it, test on a database branch. Runtime readers and ordinary curation retain compatibility without the column; the new admin selector appears only after migration. Do not apply migrations from a public request.

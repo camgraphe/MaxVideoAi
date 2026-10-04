@@ -50,6 +50,7 @@ type JobChargeRow = {
   amount_cents: number | string | null;
   currency: string | null;
   description: string | null;
+  billing_product_key: string | null;
 };
 
 type ReceiptChargeRow = JobChargeRow & {
@@ -64,6 +65,13 @@ type RefundAuditParams = {
   adminEmail?: string | null;
   note?: string | null;
 };
+
+function requireGenericRefund(charge: JobChargeRow, jobId: string | null) {
+  // Assistance settlement owns partial reservation release and any later recovery.
+  if (charge.billing_product_key === 'studio_assistance' || jobId?.startsWith('studio-assistance:')) {
+    throw new Error('Studio assistance charges require Studio assistance reconciliation.');
+  }
+}
 
 async function lockRefundJobScope(executor: QueryExecutor, jobId: string | null) {
   if (!jobId) return;
@@ -91,7 +99,7 @@ async function resolveJobRefundContext(
   }
 
   const chargeRows = await executor.query<JobChargeRow>(
-    `SELECT id, amount_cents, currency, description
+    `SELECT id, amount_cents, currency, description, billing_product_key
      FROM app_receipts
      WHERE job_id = $1
        AND type = 'charge'
@@ -104,6 +112,7 @@ async function resolveJobRefundContext(
   if (!charge) {
     throw new Error('Job or wallet charge not found, or refund already issued.');
   }
+  requireGenericRefund(charge, jobId);
 
   await lockRefundJobScope(executor, jobId);
 
@@ -143,7 +152,7 @@ async function resolveReceiptRefundContext(
   receiptId: number
 ): Promise<RefundContext> {
   const chargeRows = await executor.query<ReceiptChargeRow>(
-    `SELECT id, user_id, job_id, amount_cents, currency, description,
+    `SELECT id, user_id, job_id, amount_cents, currency, description, billing_product_key,
             vendor_account_id, pricing_snapshot
      FROM app_receipts
      WHERE id = $1 AND type = 'charge'
@@ -153,6 +162,7 @@ async function resolveReceiptRefundContext(
   );
   const charge = chargeRows.at(0);
   if (!charge) throw new Error('Charge receipt not found.');
+  requireGenericRefund(charge, charge.job_id);
   await lockRefundJobScope(executor, charge.job_id);
   if (!charge.user_id) throw new Error('Charge does not belong to a wallet user.');
 

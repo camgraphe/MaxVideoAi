@@ -24,7 +24,8 @@ export function StudioReviewEvidence({ detail }: { detail: ReviewDetail }) {
       <div><dt className="text-text-muted">Provider cost estimate range</dt><dd>{usdNano(row.providerMinNanoUsd)} – {usdNano(row.providerMaxNanoUsd)}</dd></div>
       <div><dt className="text-text-muted">Settled customer charge</dt><dd>{row.state === 'settled' ? usdCents(row.chargedCents) : 'Unknown / not settled'}</dd></div>
       <div><dt className="text-text-muted">Reserved provider exposure</dt><dd>{usdNano(row.reservedNanoUsd)}</dd></div>
-      <div><dt className="text-text-muted">Reserved customer amount (not a settled charge)</dt><dd>{usdCents(row.reservedCents)}</dd></div>
+      <div><dt className="text-text-muted">Original customer reservation (not a settled charge)</dt><dd>{usdCents(row.reservedCents)}</dd></div>
+      {typeof row.waivedCents === 'number' && <div><dt className="text-text-muted">Customer reservation released by support</dt><dd>{usdCents(row.waivedCents)} · Supplier usage remains separate.</dd></div>}
       <div><dt className="text-text-muted">Returned model</dt><dd>{value(row.returnedModel)}</dd></div>
       <div><dt className="text-text-muted">Policy / provider rates / tariff</dt><dd>{value(row.policyVersion)} / {value(row.rateVersion)} / {value(row.tariffVersion)}</dd></div>
     </dl></article>)}</div>}</Source>

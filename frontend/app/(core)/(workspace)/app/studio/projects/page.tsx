@@ -36,7 +36,7 @@ export default async function StudioProjectsPage({ searchParams }: {
         <div className="flex min-w-0 flex-1 flex-col md:flex-row">
           <AppSidebar />
           <main className="min-w-0 flex-1 overflow-y-auto">
-            <StudioPreviewAccess visitor={!access.ok && access.status === 401} />
+            <StudioPreviewAccess visitor={!access.ok && access.status === 401} available={access.ok} />
           </main>
         </div>
       </div>
@@ -46,7 +46,7 @@ export default async function StudioProjectsPage({ searchParams }: {
   const conversationEnabled = process.env.STUDIO_IMAGE_CONVERSATION_ENABLED === 'true'
     && process.env.STUDIO_CONVERSATION_ACTIONS_ENABLED === 'true'
     && process.env.STUDIO_CONVERSATION_EDITING_ENABLED === 'true';
-  if(conversationEnabled&&query.starter===undefined&&query.studioMedia===undefined&&query.view!=='canvas')redirect('/app/studio');
+  if(query.starter===undefined&&query.studioMedia===undefined&&query.view!=='canvas')redirect('/app/studio');
   const requestHeaders = await headers();
   const montageCreationEnabled = isStudioMontageCreationEnabled(
     process.env,
