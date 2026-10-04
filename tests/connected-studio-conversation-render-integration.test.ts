@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
+import {existsSync} from 'node:fs';
 import {mkdtemp,readFile,rm,mkdir,copyFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {resolve,join} from 'node:path';
@@ -17,6 +18,10 @@ import {studioMediaByteResponse} from './helpers/studio-media-byte-fixture';
 const run = promisify(execFile);
 
 test('the production composition renders the same native cut, length and embedded sound into a real MP4', {timeout: 180000},async () => {
+  const browserExecutable = chromium.executablePath();
+  // Remotion starts its HTTP server alongside Chromium; a missing executable
+  // rejects before its server cleanup is installed. Fail before allocating either.
+  assert.ok(existsSync(browserExecutable),'An installed Playwright Chromium is required; run pnpm exec playwright install chromium before this real render test.');
   const temporary = await mkdtemp(join(tmpdir(),'studio-native-render-'));
   const bytes = new Map(await Promise.all(['a','b'].map(async letter => [`/pattern-${letter}.mp4`,await readFile(resolve(`tests/fixtures/studio-media/pattern-${letter}.mp4`))] as const)));
   // Exact local test bytes, no arbitrary URL or provider. Ownership/security gateways have separate PG/HTTP suites.
@@ -37,7 +42,6 @@ test('the production composition renders the same native cut, length and embedde
     const publicDir = join(temporary,'public');await mkdir(publicDir);
     const serveUrl = await bundle({entryPoint: entry,publicDir});
     const inputProps = {manifest,width: 1280,height: 720,fps: 30,includeAudio: true,mediaTrust: 'server-validated' as const};
-    const browserExecutable = chromium.executablePath();
     const composition = await selectComposition({serveUrl,id: 'MaxVideoAITimelineExport',inputProps,browserExecutable});
     const output = join(temporary,'native-cut-3s.mp4');
     await renderMedia({serveUrl,composition,inputProps,codec: 'h264',outputLocation: output,browserExecutable,concurrency: 2,chromiumOptions: {gl: 'angle'},...renderer.TIMELINE_EXPORT_COLOR_SETTINGS});

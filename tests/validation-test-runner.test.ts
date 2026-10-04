@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
-import { readdirSync } from 'node:fs';
+import { mkdtempSync, readdirSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 
 test('validation runner isolates Next-backed Studio integrations from the standard test process', () => {
   const result = spawnSync(process.execPath, ['scripts/run-validation-tests.mjs', '--plan'], {
@@ -38,17 +40,41 @@ test('CI suites partition every validation file without losing expensive financi
   assert.equal(plan.fast.includes('tests/customer-tariff-initial-cutover-postgres.test.ts'), false);
   for (const file of [
     'tests/connected-studio-montage-browser-integration.test.ts',
+    'tests/connected-studio-conversation-render-integration.test.ts',
     'tests/editorial-reader-media.test.ts',
     'tests/sora-prompting-tabs-behavior.test.ts',
     'tests/studio-connected-browser-fixture.test.ts',
   ]) {
     assert.ok(plan.browser.includes(file), file);
     assert.equal(plan.fast.includes(file), false);
+    assert.equal(plan.integration.includes(file), false);
   }
   const files = [...plan.fast, ...plan.integration, ...plan.tariffs, ...plan.studio, ...plan.browser];
   const expected = readdirSync('tests').filter(file => file.endsWith('.test.ts')).map(file => `tests/${file}`).sort();
   assert.deepEqual(files.sort(), expected);
   assert.equal(new Set(files).size, files.length);
+});
+
+test('the real composition test fails promptly when its installed browser is missing', () => {
+  const browserDirectory = mkdtempSync(join(tmpdir(), 'studio-missing-browser-'));
+  try {
+    // Run node:test directly in one child so a failure cannot hide behind a
+    // worker that remains alive with a Remotion HTTP server.
+    const result = spawnSync(process.execPath, [
+      '--import', 'tsx', 'tests/connected-studio-conversation-render-integration.test.ts',
+    ], {
+      encoding: 'utf8', timeout: 10_000, killSignal: 'SIGKILL', detached: process.platform !== 'win32',
+      env: { ...process.env, TSX_TSCONFIG_PATH: resolve('frontend/tsconfig.json'), PLAYWRIGHT_BROWSERS_PATH: browserDirectory },
+    });
+    if (result.error && result.pid > 0 && process.platform !== 'win32') {
+      try { process.kill(-result.pid, 'SIGKILL'); } catch { /* The owned process group already exited. */ }
+    }
+    assert.equal(result.error, undefined, 'Missing browser must fail without leaving a render server alive.');
+    assert.equal(result.status, 1, result.stdout + result.stderr);
+    assert.match(result.stdout + result.stderr, /installed Playwright Chromium/i);
+  } finally {
+    rmSync(browserDirectory, { recursive: true, force: true });
+  }
 });
 
 test('a misspelled suite refuses to run instead of silently omitting validations', () => {

@@ -71,8 +71,11 @@ node scripts/run-validation-tests.mjs --plan
 
 The runner automatically places `*-postgres.test.ts` files and tests importing
 the disposable PostgreSQL/Studio runtime helpers or using initdb/FFmpeg in the
-integration lane. Tests directly launching Chromium, Firefox or WebKit belong in
-the browser lane, as do tests importing the connected browser fixture helper.
+integration lane. Tests directly launching Chromium, Firefox or WebKit, or using
+their installed executable paths for a renderer, belong in the browser lane, as
+do tests importing the connected browser fixture helper. The real composition
+render test checks that Chromium is installed before allocating servers, so a
+missing browser fails promptly without leaving a Remotion server open.
 The two exhaustive financial files and the four Studio files
 have explicit owners. When adding another slow fixture helper, update this
 classification and its partition test. No test may disappear between lanes.

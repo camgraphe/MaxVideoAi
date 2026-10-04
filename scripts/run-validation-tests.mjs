@@ -28,7 +28,7 @@ for (const file of tariffs) {
 const tariffSet = new Set(tariffs);
 const browser = [
   'tests/connected-studio-montage-browser-integration.test.ts',
-  ...standard.filter(file => /\b(?:chromium|firefox|webkit)\s*\.\s*(?:launch|launchPersistentContext)\s*\(|\bfrom\s*['"][^'"]*studio-connected-browser-fixture/.test(readFileSync(file, 'utf8'))),
+  ...standard.filter(file => /\b(?:chromium|firefox|webkit)\s*\.\s*(?:launch|launchPersistentContext|executablePath)\s*\(|\bfrom\s*['"][^'"]*studio-connected-browser-fixture/.test(readFileSync(file, 'utf8'))),
 ];
 const browserSet = new Set(browser);
 // Include tests with older names that start PostgreSQL or encode real media.

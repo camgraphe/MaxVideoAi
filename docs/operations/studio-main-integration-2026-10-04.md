@@ -73,3 +73,62 @@ still pending. Existing Vercel Secret values cannot be read back; no protection
 was downgraded to recover them. The pilot can reuse its existing runtime
 configuration. No new model call, production activation, source tag or MCP
 package publication has occurred at this checkpoint.
+
+## Hosted account and CI environment qualification
+
+Corrected product source `8469309b6b79b501a5c32a8fd7bee2cdb0aaa336` passes
+132 affected catalogue/webhook/recovery checks, final TypeScript/registry/exposure
+checks and frontend lint (six existing warnings). Four isolated Studio route cases
+also pass. Its Git-backed public preview built successfully, and GitHub fast and
+browser lanes passed.
+
+A separate protected pilot deployment `dpl_HwWLLG8kCQQ3SkfQMvwypc4BeZ1E` runs the
+exact committed archive with production schedules removed and a noindex header.
+The existing disposable staging Auth identity was signed in through its normal
+password endpoint, using its Keychain credential and publicly served client
+configuration. Only this candidate uses that staging Auth configuration; the
+existing owner pilot and production Auth were not changed. The test identity has
+an isolated pilot profile and admin role, no imported wallet balance, no copied
+customer content and no fabricated legal acceptance.
+
+Authenticated HTTP acceptance verifies one idempotent empty Project, a creative
+Sol reply, explicit selection of Luna, a useful simpler follow-up and durable
+conversation reads. Reposting the same Sol request returns the same saved reply:
+the ledger remains one provider call with exactly the same settled cost. A video
+recommendation probe against the image-only pilot correctly reports the closed
+video capability rather than inventing availability. A second candidate enables
+the media gate for the separate catalogue probe; no confirmation/export endpoint
+is used. Production gates remain unchanged.
+
+The full finite Sol/Luna allowance for this test account ($1.25 supplier exposure)
+is reserved in the original cumulative $5 journal before hosted calls. Actual
+settled usage and unresolved holds are reconciled from the isolated assistance
+ledger; this is not a second $5 authorization. Existing pilot media remain five
+jobs, ten receipts and two exports. No media dispatch, synthetic credit, customer
+wallet charge or render is part of this qualification.
+
+The integration CI lane also revealed an environment classification defect:
+`connected-studio-conversation-render-integration.test.ts` uses Chromium through
+`executablePath()` and Remotion, but the lane selector recognized only direct
+browser launches. The database lane did not install Chromium. Reproduction with
+an empty browser directory failed promptly but left Remotion's concurrently
+created server alive. The correction assigns the test to the browser lane and
+fails before bundling/server creation when its required binary is missing. This
+preserves mandatory real rendering coverage; it does not skip the test or extend
+a timeout to conceal the missing dependency.
+
+Read-only production schema preflight at 01:17:47 UTC found all prerequisites,
+553 OAuth quotes (none with a null client), no new Studio tables/columns, and no
+competing locks. The seven exact Studio migrations must run in one bounded
+transaction before candidate readers are deployed: 49, 50, 51, 52, 53, 54, 55.
+Use `lock_timeout=5s` and per-statement `statement_timeout=60s`. The quote table
+receives an ACCESS EXCLUSIVE lock through commit; the observed table is about
+2.1 MiB. The migrations do not debit wallets, backfill customer content, mutate
+jobs or convert existing projects. Preserve this additive schema on rollback;
+after Studio quotes exist, retain origin-aware readers. Do not replay migration
+49 or the blanket migration runner after video/audio Studio rows exist.
+
+The real hosted admin reveal endpoint also returned the exact synthetic submitted
+message and saved Sol reply, with a recorded access ID and explicit partial
+coverage. Its response excludes raw provider output, encrypted content and storage
+URLs. This test used only the dedicated test identity's own Project.
