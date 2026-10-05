@@ -14,8 +14,24 @@ import type {PrepareGenerationDependencies} from './prepare-generation';
 
 export type GenerationPricingReadDependencies=Pick<PrepareGenerationDependencies,'listPublicEngines' | 'resolveGenerationReferences' | 'resolveRequestExecutability' | 'resolveMembershipPricing' | 'priceGeneration'>;
 
-function invalidParameter(): never {
-  throw new AgentApiError('PARAMETER_INVALID','One or more generation settings are invalid for the selected model.');
+// Error presentation only: never expose provider aliases, arbitrary field names or values.
+const PUBLIC_CANONICAL_PARAMETER_FIELDS = new Set([
+  'engineId','mode','prompt','settings','references','outputCount',
+  'aspectRatio','audio','durationSec','resolution','fps','loop','seed',
+  'cameraFixed','cfgScale','contextSec','cropEndX','cropEndY','cropStartX','cropStartY',
+  'documentUrl','enablePromptExpansion','guidanceScale','hdr','negativePrompt','numFrames',
+  'promptExpansionMode','reframeGridPositionX','reframeGridPositionY','retakeMode','safetyChecker',
+  'shotType','webpageUrl','sourcePositionHeight','sourcePositionWidth','sourcePositionX','sourcePositionY',
+  'startTimeSec','extendPosition','modifyStrength','multiPrompt','exrExport','editDepthBlur','editFace',
+  'editKeyframeIndexes','editNormalsAugmentation','editPoseStrength','editStrength','editTrajectorySparsity',
+  'enableWebSearch','limitGenerations','imageHeight','imageWidth','outputFormat','quality','style','thinkingLevel','watermark',
+]);
+
+function invalidParameter(field?: string): never {
+  const message = field && PUBLIC_CANONICAL_PARAMETER_FIELDS.has(field)
+    ? `The generation field "${field}" is invalid or missing for the selected model.`
+    : 'One or more generation settings are invalid for the selected model.';
+  throw new AgentApiError('PARAMETER_INVALID',message);
 }
 
 function validateCapabilities(
@@ -37,7 +53,7 @@ function validateCapabilities(
       if (error.kind === 'reference_invalid') {
         throw new AgentApiError('REFERENCE_INVALID', 'The reference media is invalid for this model mode.');
       }
-      invalidParameter();
+      invalidParameter(error.field);
     }
     throw error;
   }

@@ -10,6 +10,7 @@ import {studioMemorySchema, type StudioActionRequest, type StudioActionResult, t
 import type {StoredImageTurn} from './image-conversation-repository';
 import {isReplayableStudioResponse, type StudioDirectorResponse} from './conversation-director';
 import type {ImageModelUsage} from './image-model-usage';
+import {projectStudioConversationQuotes,STUDIO_QUOTE_SETTING_KEYS,type StudioConversationQuoteRow} from './conversation-quote-facts';
 
 export async function readStudioConversationProject(actor: StudioGenerationActor,options:{exportsEnabled?:boolean}={}): Promise<StudioConversationProject> {
   requireGenerationActor(actor);
@@ -18,11 +19,18 @@ export async function readStudioConversationProject(actor: StudioGenerationActor
     LEFT JOIN studio_conversation_memory m ON m.project_id = p.id AND m.user_id = p.user_id
     WHERE p.id = $1 AND p.user_id = $2 AND p.deleted_at IS NULL`, [actor.projectId, actor.userId]))[0];
   if (!row) throw new AgentApiError('PARAMETER_INVALID', 'This Studio project is not available.');
-  const generations = await query<{quoteId: string; surface: string; quoteState: string; jobId: string | null; status: string | null}>(`
-    SELECT q.quote_id AS "quoteId",q.request_json->>'surface' AS surface,q.state AS "quoteState",q.job_id AS "jobId",j.status
+  const quoteRows = await query<StudioConversationQuoteRow>(`
+    SELECT q.quote_id AS "quoteId",q.request_json->>'surface' AS surface,q.state AS "quoteState",q.job_id AS "jobId",j.status,
+      q.price_cents AS "amountCents",q.currency,q.expires_at AS "expiresAt",clock_timestamp() AS "databaseNow",
+      q.request_json->>'engineId' AS "modelId",q.request_json->>'mode' AS mode,q.request_json->'outputCount' AS "outputCount",
+      q.pricing_snapshot->'canonicalPricing'->'meta'->'output_duration_sec' AS "outputDurationSec",
+      (SELECT jsonb_object_agg(key,value) FROM jsonb_each(q.request_json->'settings') WHERE key=ANY($3::text[])) AS settings,
+      jsonb_array_length(q.request_json->'references') AS "referenceCount",
+      ARRAY(SELECT reference->>'role' FROM jsonb_array_elements(q.request_json->'references') AS reference) AS "referenceRoles"
     FROM studio_image_turns t JOIN mcp_generation_quotes q ON q.quote_id=t.quote_id AND q.user_id=t.user_id AND q.studio_project_id=t.project_id
     LEFT JOIN app_jobs j ON j.job_id=q.job_id AND j.user_id=q.user_id
-    WHERE t.user_id=$1 AND t.project_id=$2 AND q.auth_origin='studio-session' ORDER BY t.created_at DESC LIMIT 30`, [actor.userId, actor.projectId]);
+    WHERE t.user_id=$1 AND t.project_id=$2 AND q.auth_origin='studio-session' ORDER BY t.created_at DESC LIMIT 30`, [actor.userId, actor.projectId,STUDIO_QUOTE_SETTING_KEYS]);
+  const generations = projectStudioConversationQuotes(quoteRows);
   const exports = options.exportsEnabled ? await query<{safe_result: unknown}>(`SELECT safe_result FROM studio_project_commands WHERE user_id=$1 AND project_id=$2 AND command_kind='timeline_export_prepare' AND command_version=1 AND request_payload->'scope'->>'authOrigin'='studio-session' AND request_payload->'scope'->>'clientId' IS NULL ORDER BY created_at DESC LIMIT 8`,[actor.userId,actor.projectId]) : null;
   return {...(exports ? {exports: exports.flatMap(value => {const parsed=studioPreparedExportSchema.safeParse(value.safe_result);return parsed.success ? [parsed.data] : [];})} : {}),name: row.name, revision: Number(row.revision), memory: studioMemorySchema.parse({revision: Number(row.memory_revision ?? 0), brief: row.brief ?? '', decisions: row.decisions ?? []}), generations};
 }

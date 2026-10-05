@@ -4,6 +4,9 @@ import {getFalEngineById} from '../frontend/src/config/falEngines';
 import {createStudioImageGenerationService,createStudioVideoGenerationService} from '../frontend/src/server/studio/image-generation-service';
 import {actionFromTool} from '../frontend/lib/studio/conversation-action-contract';
 import {conversationSelectionSettings} from '../frontend/lib/studio/conversation-creation-contract';
+import {requireStudioGenerationRequest} from '../frontend/src/server/agent-api/generation-actor';
+import {normalizeGenerationRequest} from '../frontend/src/server/agent-api/generation-normalization';
+import {isStudioConversationVideoModeCertified} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-model-certification';
 
 const actor={authMethod: 'studio-session' as const,userId: 'owner',projectId: 'project',clientId: null};
 const membership={tier: 'member' as const,source: 'app_receipts_rolling_30d' as const,spent30Cents: 0,thresholdCents: 0,discountPercent: 0};
@@ -27,8 +30,8 @@ test('Studio reads a fresh canonical price without quote, wallet or transaction 
   const first=await generation.estimate(input);
   price=167;
   const second=await generation.estimate(input);
-  assert.deepEqual(first.price,{amountCents:123,currency:'USD'});
-  assert.deepEqual(second.price,{amountCents:167,currency:'USD'});
+  assert.deepEqual(first.price,{amountCents:123,currency:'USD',formattedAmount:'$1.23'});
+  assert.deepEqual(second.price,{amountCents:167,currency:'USD',formattedAmount:'$1.67'});
   assert.deepEqual(second.settings,input.settings);
   assert.equal(second.quoteRequired,true);
   assert.equal(second.estimatedAt,'2026-10-03T12:00:00.000Z');
@@ -53,7 +56,7 @@ test('Studio price reads accept certified choices and reject unavailable models,
   const seedreamPrice=await generation.estimate(seedreamInput);
   assert.equal(seedreamPrice.modelId,'seedream','A compatible model exposed by canonical certification keeps its exact identity.');
   assert.deepEqual(seedreamPrice.settings,seedreamInput.settings);
-  assert.deepEqual(seedreamPrice.price,{amountCents:100,currency:'USD'});
+  assert.deepEqual(seedreamPrice.price,{amountCents:100,currency:'USD',formattedAmount:'$1.00'});
   assert.equal(priceCalls,1);
   await assert.rejects(generation.estimate({...input,engineId:'seedream'}),{code:'PARAMETER_INVALID'});
   assert.equal(priceCalls,1,'Certification does not bypass model-specific settings validation.');
@@ -94,18 +97,18 @@ test('a video estimate rejects the duration alias with actionable canonical guid
   assert.equal(nativeAction.action,'pricing.read');
   if (nativeAction.action!=='pricing.read') throw new Error('Expected the native pricing action.');
   await assert.rejects(generation.estimate({...scenario,settings:conversationSelectionSettings(nativeAction.settings)}),error=>{
-    assert.equal((error as any).code,'PARAMETER_INVALID');
+    assert.equal((error as {code?:string}).code,'PARAMETER_INVALID');
     assert.match((error as Error).message,/durationSec/);
     assert.match((error as Error).message,/seconds/i);
     return true;
   });
   assert.equal(priceCalls,0,'Invalid names must fail before pricing, not be silently rewritten.');
   const estimate=await generation.estimate({...scenario,settings:{durationSec:8,resolution:'1080p',aspectRatio:'9:16',audio:false}});
-  assert.deepEqual(estimate.price,{amountCents:250,currency:'USD'});
+  assert.deepEqual(estimate.price,{amountCents:250,currency:'USD',formattedAmount:'$2.50'});
   assert.equal(estimate.quoteRequired,true);
   assert.equal(priceCalls,1);
   await assert.rejects(generation.estimate({...scenario,settings:{privateCustomerToken:'secret-value'}}),error=>{
-    assert.equal((error as any).code,'PARAMETER_INVALID');
+    assert.equal((error as {code?:string}).code,'PARAMETER_INVALID');
     assert.doesNotMatch((error as Error).message,/privateCustomerToken|secret-value/);
     return true;
   });
@@ -116,5 +119,12 @@ test('Studio catalog never advertises modes rejected by its existing session pre
   const generation=createStudioVideoGenerationService(actor,{enabled:true,prepareDependencies:{listPublicEngines:async()=>[candidate('wan-3','video')]}});
   const catalog=await generation.catalog();
   assert.ok(catalog.length);
-  assert.ok(catalog.every(entry=>entry.publicModes.every(mode=>mode==='t2v'||mode==='i2v')));
+  assert.ok(catalog[0].publicModes.includes('v2v'));
+  assert.ok(catalog[0].publicModes.includes('extend'));
+  for(const entry of catalog)for(const mode of entry.publicModes){
+    assert.equal(isStudioConversationVideoModeCertified(entry.engine.id,mode),true);
+    const request=normalizeGenerationRequest({surface:'video',engineId:entry.engine.id,mode,prompt:'Inspect the qualified scenario.',references:[],outputCount:1});
+    assert.doesNotThrow(()=>requireStudioGenerationRequest(request));
+    assert.throws(()=>requireStudioGenerationRequest({...request,outputCount:2}),{code:'PARAMETER_INVALID'});
+  }
 });

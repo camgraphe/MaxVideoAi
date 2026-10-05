@@ -15,6 +15,7 @@ import type {ConversationEditResult} from './conversation-edit-command';
 import type {StudioQuoteDiscardResult} from './conversation-quote-command';
 import {studioVisualCapabilityDetails,studioVisualCapabilitySummary,studioAudioCapabilityDetails} from './conversation-capabilities';
 import {conversationSelectionSettings} from '@/lib/studio/conversation-creation-contract';
+import {studioAudioCapabilitySummary} from './conversation-audio-discovery';
 
 export function createStudioActionExecutor(actor: StudioGenerationActor, dependencies: {
   enabled: boolean;
@@ -31,6 +32,7 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
   editTimeline?(request: Extract<StudioActionRequest,{action: 'timeline.edit'}>): Promise<ConversationEditResult>;
   discardQuote?(quoteId: string): Promise<StudioQuoteDiscardResult>;
   attachedImageIds?: readonly string[];
+  attachedMedia?:readonly {assetId:string;mediaKind:'image'|'video'|'audio'}[];
 }) {
   requireGenerationActor(actor);
   if (actor.authMethod !== 'studio-session') throw new AgentApiError('AUTH_REQUIRED', 'Studio session required.');
@@ -42,8 +44,8 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
       const project = await readStudioConversationProject(actor,{exportsEnabled:dependencies.editingEnabled&&dependencies.exportsEnabled});
       switch (request.action) {
         case 'pricing.read': {
-          if (request.references.some(selection=>selection.ref.type!=='asset' || !dependencies.attachedImageIds?.includes(selection.ref.assetId))) {
-            throw new AgentApiError('REFERENCE_INVALID','Attach this saved library image before estimating its use.');
+          if (request.references.some(({ref})=>ref.type!=='asset'||!(ref.kind==='image'?dependencies.attachedImageIds?.includes(ref.assetId):dependencies.attachedMedia?.some(attached=>attached.assetId===ref.assetId&&attached.mediaKind===ref.kind)))) {
+            throw new AgentApiError('REFERENCE_INVALID','Attach this saved library media before estimating its use.');
           }
           const service=request.surface==='image' ? generation : dependencies.mediaEnabled && dependencies.factories
             ? dependencies.factories.video(actor,{enabled:dependencies.enabled}) : null;
@@ -75,7 +77,7 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
           const video = (await dependencies.factories.video(actor, {enabled: dependencies.enabled}).catalog()).map(studioVisualCapabilitySummary);
           const audio = (await dependencies.factories.audio(actor, {enabled: dependencies.enabled}).catalog()).modes
             .filter(entry => entry.variants.some(variant => variant.available))
-            .map(entry => ({modelId: entry.engineId, label: entry.label, lifecycle: null, modes: [entry.mode], formats: []}));
+            .map(studioAudioCapabilitySummary);
           return {ok: true, action: request.action, data: [...image, ...video, ...audio]};
         }
         case 'model.details': {
@@ -98,7 +100,7 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
           if (!dependencies.mediaEnabled) throw new AgentApiError('ENGINE_UNAVAILABLE', 'Studio media tools are unavailable.');
           return {ok: true, action: request.action, data: await readStudioProjectMedia(actor)};
         }
-        case 'video.prepare': case 'voice.prepare': case 'music.prepare': {
+        case 'video.prepare': case 'voice.prepare': case 'music.prepare': case 'audio.prepare': {
           if (!dependencies.mediaEnabled || !dependencies.prepareMedia) throw new AgentApiError('ENGINE_UNAVAILABLE', 'Studio media tools are unavailable.');
           return {ok: true, action: request.action, data: await dependencies.prepareMedia(request)} as StudioActionResult;
         }

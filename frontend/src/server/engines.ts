@@ -140,6 +140,8 @@ export type TrustedPreflightMediaPricingFacts = Readonly<{
   inputVideoDurationSec?: number;
   referenceTokenBudget?: number;
   verifiedReferenceTokenCount?: number;
+  inputImageCount?: number;
+  inheritedDurationSec?: number;
 }>;
 
 export type ComputeConfiguredPreflightOptions = Readonly<{
@@ -272,6 +274,8 @@ export async function computeConfiguredPreflight(
       : {};
   if (
     Object.prototype.hasOwnProperty.call(rawExtraInputValues, 'referenceImageCount')
+    || Object.prototype.hasOwnProperty.call(rawExtraInputValues,'inputImageCount')
+    || Object.prototype.hasOwnProperty.call(rawExtraInputValues,'inheritedDurationSec')
     || Object.prototype.hasOwnProperty.call(rawExtraInputValues, 'inputAudioDurationSec')
     || Object.prototype.hasOwnProperty.call(rawExtraInputValues, 'inputVideoDurationSec')
     || Object.prototype.hasOwnProperty.call(rawExtraInputValues, 'verifiedReferenceTokenCount')
@@ -292,6 +296,8 @@ export async function computeConfiguredPreflight(
     inputVideoDurationSec,
     referenceTokenBudget,
     verifiedReferenceTokenCount,
+    inputImageCount,
+    inheritedDurationSec,
   } = options.trustedMediaPricingFacts ?? {};
   const pricingAddons = {
     ...(addons ?? {}),
@@ -316,6 +322,8 @@ export async function computeConfiguredPreflight(
       inputVideoDurationSec,
       referenceTokenBudget,
       verifiedReferenceTokenCount,
+      inputImageCount,
+      inheritedDurationSec,
     });
   } catch (error) {
     return {

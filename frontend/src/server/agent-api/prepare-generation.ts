@@ -1,4 +1,5 @@
 import { withDbTransaction, type QueryExecutor, type TransactionQueryExecutor } from '@/lib/db';
+import {customerDisplayPrice,type CustomerDisplayPrice} from '@/lib/customer-price-presentation';
 import { getActiveAccountRestriction } from '@/server/fraud-cleanup';
 import {
   getUserMembershipStatus,
@@ -77,7 +78,7 @@ export type PreparedGeneration = {
   expiresAt: string;
   requestHash: string;
   summary: CanonicalGenerationRequest;
-  price: { amountCents: number; currency: string };
+  price: CustomerDisplayPrice;
   balance: { beforeCents: number; afterCents: number };
   fundingMode: GenerationFundingMode;
   confirmationRequired: true;
@@ -417,7 +418,7 @@ export async function prepareGenerationForActor(
     expiresAt: quote.expiresAt.toISOString(),
     requestHash,
     summary: request,
-    price: { amountCents: customerChargeCents, currency: pricing.currency },
+    price: customerDisplayPrice(customerChargeCents,pricing.currency),
     balance: {
       beforeCents: balanceBefore,
       afterCents: Math.max(0, balanceBefore - customerChargeCents),

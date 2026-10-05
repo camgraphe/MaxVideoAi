@@ -6,6 +6,29 @@ au [point de contrôle du 22 septembre](../operations/mcp-main-repository-releas
 Les deux essais réels Codex et leurs limites y sont consignés. La validation de
 chaque hôte reste distincte ; consulter le [parcours de mise à jour](../operations/mcp-client-updates.md).
 
+## Customer price presentation — 5 October 2026
+
+Image/video and Audio preparation results add an optional `price.formattedAmount`
+from the same pure customer-price formatter used by Studio. Exact integer cents
+and currency remain the authority; the display string performs no estimation,
+conversion, repricing or authorization. Stored request hashes, pricing snapshots
+and balances are unchanged. The addition is backward compatible and retained by
+the complete structured result and compact JSON fallback.
+
+Tool names, descriptors and capability gates are unchanged by this presentation
+addition. Public Audio still requires its independent publication gate. A deployed
+server result is distinct from a plugin package release or a verified host session;
+do not claim new host qualification from deterministic client checks alone.
+
+Canonical image/video pricing validation errors may identify a strictly
+whitelisted public field such as `aspectRatio`. The existing `PARAMETER_INVALID`
+code and error shape are retained; raw values, provider messages, private URLs
+and unknown/internal field names remain undisclosed. This helps a host correct
+its next proposal using live model details without defaulting controls or
+weakening validation. Studio Audio preparation metadata distinguishes required,
+optional and unsupported references; cinematic packs require an existing clip,
+while image/prompt-to-video uses the video preparation tool.
+
 ## Studio integration review — 4 October 2026
 
 The Studio branch adds independent timeline-editing and export gates. All **128

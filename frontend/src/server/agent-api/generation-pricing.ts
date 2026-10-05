@@ -33,6 +33,7 @@ import type { AgentPublicGenerationEngine } from './model-catalog';
 import type { ResolvedReference } from './reference-types';
 import type { AuthoritativeMembershipTier } from '../membership/user-membership-status';
 import { toEngineGenerationMode } from './generation-mode-aliases';
+import {canonicalOmniPricingFacts} from './generation-omni-pricing-facts';
 
 export type GenerationPricingResult = {
   priceCents: number;
@@ -265,6 +266,7 @@ function canonicalVideoTrustedMediaPricingFacts(
     ...(inputAudioDurationSec !== undefined ? { inputAudioDurationSec } : {}),
     ...(inputVideoDurationSec !== undefined ? { inputVideoDurationSec } : {}),
     ...(referenceTokenBudget !== undefined ? { referenceTokenBudget } : {}),
+    ...canonicalOmniPricingFacts(request,context.resolvedReferences),
   };
 }
 
@@ -420,6 +422,7 @@ export async function priceCanonicalGenerationInExecutor(
       inputAudioDurationSec: canonicalInputAudioDurationSec(request, dependencies),
       inputVideoDurationSec: canonicalInputVideoDurationSec(request, dependencies),
       referenceTokenBudget: canonicalReferenceTokenBudget(request, dependencies),
+      ...canonicalOmniPricingFacts(request,dependencies.resolvedReferences),
       membershipTier,
       loop: isLumaRay2EngineId(engine.id) && request.settings.loop === true,
       durationOption: isLumaRay2EngineId(engine.id)

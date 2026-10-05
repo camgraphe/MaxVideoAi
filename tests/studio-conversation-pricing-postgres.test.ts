@@ -43,11 +43,11 @@ test('price comparison reads owned attached images and preserves prepared quotes
   const first=await execute(scenario);
   assert.equal(first.ok,true);
   if(!first.ok||first.action!=='pricing.read')throw new Error('Expected a price read');
-  assert.deepEqual(first.data.price,{amountCents:123,currency:'USD'});
+  assert.deepEqual(first.data.price,{amountCents:123,currency:'USD',formattedAmount:'$1.23'});
   currentPrice=167;
   const second=await execute(scenario);
   if(!second.ok||second.action!=='pricing.read')throw new Error('Expected refreshed pricing');
-  assert.deepEqual(second.data.price,{amountCents:167,currency:'USD'});
+  assert.deepEqual(second.data.price,{amountCents:167,currency:'USD',formattedAmount:'$1.67'});
   assert.doesNotMatch(JSON.stringify(second),/quoteId|storageUrl|reference\.png/);
   let calls=0;
   const director=createStudioConversationDirector({createResponse:async()=>{

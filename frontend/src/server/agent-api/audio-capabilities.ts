@@ -4,7 +4,7 @@ import {
   AUDIO_CINEMATIC_MAX_DURATION_SEC, AUDIO_LYRIA3_CLIP_MAX_DURATION_SEC, AUDIO_MUSIC_DURATION_OPTIONS_SEC,
   AUDIO_SCRIPT_MAX_LENGTH, AUDIO_LYRICS_MAX_LENGTH, AUDIO_PROMPT_MAX_LENGTH,
   AUDIO_SEED_AUDIO_VOICE_VALUES, AUDIO_SEED_AUDIO_OUTPUT_FORMAT_VALUES, AUDIO_SEED_AUDIO_SAMPLE_RATE_VALUES,
-  AUDIO_MOOD_VALUES, AUDIO_LYRIA3_BPM_VALUES, AUDIO_LANGUAGE_VALUES,
+  AUDIO_MOOD_VALUES, AUDIO_LYRIA3_BPM_VALUES, AUDIO_LYRIA3_MODEL_VALUES, AUDIO_LANGUAGE_VALUES,
   AUDIO_SEED_AUDIO_RANGE_CONSTRAINTS, AUDIO_SEED_AUDIO_DECIMAL_PRECISION, AUDIO_VOICE_GENDER_VALUES, AUDIO_VOICE_PROFILE_VALUES, AUDIO_VOICE_DELIVERY_VALUES, AUDIO_INTENSITY_VALUES,
   buildAudioVendorCostFacts, getAudioPackConfig, type AudioPackId, type AudioGenerateRequestBody,
 } from '@/lib/audio-generation';
@@ -17,8 +17,8 @@ import type {CanonicalAudioRequest} from './audio-normalization';
 
 export type AudioSettingDetails = {
   key: keyof CanonicalAudioRequest['settings']; type: 'text' | 'enum' | 'number'; required: boolean;
-  values: readonly (string | number)[] | null; min: number | null; max: number | null;
-  default: string | number | null; integer?: boolean; step?: number; maxChars?: number;
+  values: readonly (string | number | boolean)[] | null; min: number | null; max: number | null;
+  default: string | number | boolean | null; integer?: boolean; step?: number; maxChars?: number;
 };
 type AudioVariant=ReturnType<typeof listAudioCapabilities>['modes'][number]['variants'][number];
 function normalizeCapabilityVariant(mode: AudioPackId,variant: AudioVariant) {
@@ -34,9 +34,10 @@ export function projectAudioVariantFixedOutput(mode: AudioPackId,variant: AudioV
 /** Discovery facts from the same variant inputs and validator, without changing quote catalog revisions. */
 export function projectAudioVariantSettings(mode: AudioPackId,variant: AudioVariant): AudioSettingDetails[] {
   const normalized=normalizeCapabilityVariant(mode,variant);
-  if (!normalized || !['voice_only','music_only'].includes(mode)) return [];
-  const choice=(key: AudioSettingDetails['key'],values: readonly (string | number)[],required=false): AudioSettingDetails=>({key,type: 'enum',required,values: Object.freeze([...values]),min: null,max: null,
-    default: normalized[key as keyof ValidatedAudioGenerateRequest] as string | number | null});
+  if (!normalized) return [];
+  const config=getAudioPackConfig(mode);
+  const choice=(key: AudioSettingDetails['key'],values: readonly (string | number | boolean)[],required=false): AudioSettingDetails=>({key,type: 'enum',required,values: Object.freeze([...values]),min: null,max: null,
+    default: normalized[key as keyof ValidatedAudioGenerateRequest] as string | number | boolean | null});
   if (mode==='music_only') return [
     choice('musicModel',[normalized.musicModel!]),choice('mood',AUDIO_MOOD_VALUES,true),choice('musicBpm',AUDIO_LYRIA3_BPM_VALUES),choice('intensity',AUDIO_INTENSITY_VALUES),
     {key: 'durationSec',type: 'number',required: true,default: normalized.durationSec,integer: true,
@@ -44,7 +45,19 @@ export function projectAudioVariantSettings(mode: AudioPackId,variant: AudioVari
       min: normalized.musicModel==='clip' ? AUDIO_LYRIA3_CLIP_MAX_DURATION_SEC : AUDIO_MIN_DURATION_SEC,
       max: normalized.musicModel==='clip' ? AUDIO_LYRIA3_CLIP_MAX_DURATION_SEC : AUDIO_MAX_DURATION_SEC},
   ];
-  const voice: AudioSettingDetails[]=[
+  const fields:AudioSettingDetails[]=[];
+  if(config.requiresMood)fields.push(choice('mood',AUDIO_MOOD_VALUES,true));
+  if(config.supportsMusicToggle)fields.push(choice('musicEnabled',[normalized.musicEnabled]));
+  if(config.supportsAudioExport)fields.push(choice('exportAudioFile',[false,true]));
+  if(config.requiresVideo){
+    fields.push(choice('intensity',AUDIO_INTENSITY_VALUES));
+    if(normalized.musicEnabled)fields.push(choice('musicModel',AUDIO_LYRIA3_MODEL_VALUES),choice('musicBpm',AUDIO_LYRIA3_BPM_VALUES));
+  }
+  if(mode==='song')fields.push({key:'lyrics',type:'text',required:true,values:null,min:null,max:null,default:null,maxChars:AUDIO_LYRICS_MAX_LENGTH});
+  if(mode==='sfx_only'||mode==='ambience_only')fields.push({key:'durationSec',type:'number',required:true,values:null,
+    min:AUDIO_MIN_DURATION_SEC,max:mode==='sfx_only'?AUDIO_SFX_MAX_DURATION_SEC:AUDIO_MAX_DURATION_SEC,default:normalized.durationSec,integer:true});
+  if(!config.includesVoice)return fields;
+  const voice: AudioSettingDetails[]=[...fields,
     choice('voiceModel',[normalized.voiceModel!]),choice('language',AUDIO_LANGUAGE_VALUES),
     choice('voiceGender',AUDIO_VOICE_GENDER_VALUES),choice('voiceProfile',AUDIO_VOICE_PROFILE_VALUES),choice('voiceDelivery',AUDIO_VOICE_DELIVERY_VALUES),
     {key: 'script',type: 'text',required: true,values: null,min: null,max: null,default: null,maxChars: AUDIO_SCRIPT_MAX_LENGTH},

@@ -7,6 +7,7 @@ import {
 } from "@/lib/studio/image-quote-ui";
 import styles from "../image-conversation.module.css";
 import {conversationFailurePresentation, conversationQuotePresentation, type ConversationLocale} from '@/lib/studio/conversation-quote-presentation';
+import {formatCustomerAmount} from '@/lib/customer-price-presentation';
 export function ImageQuoteCard({
   turn,
   busy,
@@ -32,7 +33,7 @@ export function ImageQuoteCard({
   const quote = turn.quote;
   if (!quote) return null;
   const t = (en: string, fr: string) => locale === 'fr' ? fr : en;
-  const presentation = conversationQuotePresentation(quote.summary, locale);
+  const presentation = conversationQuotePresentation(quote.summary, locale, quote.outputDurationSec);
   const referenceCount = quote.summary.references.length;
   const ready = canConfirmImageQuote(quote, now, busy);
   const walletState = imageQuoteWalletState(quote);
@@ -40,9 +41,7 @@ export function ImageQuoteCard({
     quote.state === "expired" ||
     (quote.state === "prepared" && Date.parse(quote.expiresAt) <= now);
   const formatMoney = (amountCents: number, currency: string) =>
-    new Intl.NumberFormat(locale === 'fr' ? 'fr-FR' : 'en-US', { style: "currency", currency }).format(
-      amountCents / 100,
-    );
+    formatCustomerAmount(amountCents,currency,locale) ?? t('unavailable','indisponible');
   const price = formatMoney(quote.price.amountCents, quote.price.currency);
   return (
     <div className={styles.quote} aria-label={t('Creation quote', 'Devis de création')}>
@@ -53,12 +52,12 @@ export function ImageQuoteCard({
       <p className={styles.muted}>
         {quote.modelLabel} · {presentation.settings} ·{" "}
         {referenceCount
-          ? `${referenceCount} ${t('reference', 'référence')}${referenceCount > 1 ? "s" : ""}`
+          ? presentation.referenceSummary || `${referenceCount} ${t('reference', 'référence')}${referenceCount > 1 ? "s" : ""}`
           : t('Original creation', 'Création originale')}
       </p>
       <details>
         <summary>{t('View direction and settings', 'Voir la direction et les réglages')}</summary>
-        <p>{presentation.direction}</p>
+        <p style={{whiteSpace:'pre-wrap'}}>{presentation.direction}</p>
       </details>
       {quote.state === "prepared" && !expired && (
         <p className={styles.muted}>

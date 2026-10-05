@@ -10,6 +10,7 @@ import type {CanonicalGenerationRequest} from '../frontend/src/server/agent-api/
 import type {AgentPublicGenerationEngine} from '../frontend/src/server/agent-api/model-catalog';
 import {studioMediaRequest, studioMotionSource, type StudioMediaFactories} from '../frontend/src/server/studio/conversation-media-generation';
 import {studioVisualCapabilityDetails,studioAudioCapabilityDetails} from '../frontend/src/server/studio/conversation-capabilities';
+import {projectAgentModelModeDetails} from '../frontend/src/server/agent-api/model-details';
 
 const actor = {authMethod: 'studio-session' as const, userId: 'owner', projectId: 'film', clientId: null};
 const image = {type: 'asset' as const, kind: 'image' as const, assetId: 'ma_' + '1'.repeat(32)};
@@ -44,11 +45,11 @@ function mediaDependencies(ready: ToolAssetRef[] = [output]) {
     resolveMedia: async (_userId: string, ref: ToolAssetRef) => {
       events.push(`resolve:${ref.type === 'asset' ? ref.assetId : ref.outputId}`);
       return {id: ref.type === 'asset' ? ref.assetId : ref.outputId, ref, kind: ref.kind, url: 'https://cdn.maxvideoai.com/image.png',
-        thumbUrl: null, previewUrl: null, mime: 'image/png', mediaFacts: {source: 'probe' as const, width: 1280, height: 720}, originalAccess: {type: 'external' as const}};
+        thumbUrl: null, previewUrl: null, mime: 'image/png', sizeBytes:1024,originalName:'image.png',mediaFacts: {source: 'probe' as const, width: 1280, height: 720}, originalAccess: {type: 'external' as const}};
     },
     saveOutput: async (identity: {userId: string; jobId: string; outputId: string}) => {
       events.push(`save:${identity.jobId}:${identity.outputId}`);
-      return {publicId: image.assetId} as never;
+      return {publicId:image.assetId,userId:identity.userId,kind:'image',sourceJobId:identity.jobId,sourceOutputId:identity.outputId,status:'ready',metadata:{originUrl:'https://cdn.maxvideoai.com/image.png'}} as never;
     },
   }};
 }
@@ -150,13 +151,13 @@ test('image reference roles are retained and infer reference-to-video without be
   validateCanonicalGenerationCapabilities(request as CanonicalGenerationRequest, videoCapability('seedance-2-0-mini'));
 });
 
-test('advertised image-only reference-to-video minima are executable for each selected model', async () => {
+test('reference-to-video facts preserve canonical media alternatives and remain executable', async () => {
   for (const modelId of ['wan-3','minimax-h3','seedance-2-0-mini']) {
     const details=studioVisualCapabilityDetails(videoCapability(modelId));
     assert.ok(details.surface!=='audio');
     const refs=details.modes.find(mode=>mode.mode==='ref2v')!.references;
-    assert.equal(refs[0].required,true,modelId);
-    assert.equal(refs[0].min,1,modelId);
+    assert.ok(refs.some(ref=>ref.type==='image'&&ref.roles.includes('reference')),modelId);
+    assert.deepEqual(refs.map(ref=>[ref.type,ref.required,ref.min]),projectAgentModelModeDetails(videoCapability(modelId),'ref2v').references.map(ref=>[ref.type,ref.required,ref.min]));
     const {dependencies}=mediaDependencies();
     const request=await studioMediaRequest(actor,{...video,modelId,mode:'ref2v',references:[{ref:image,role:'reference',slot:null}]} as never,input,factories(),true,dependencies);
     validateCanonicalGenerationCapabilities(request as CanonicalGenerationRequest,videoCapability(modelId));
@@ -282,7 +283,8 @@ test('Audio inspection exposes canonical settings scoped to each available varia
   const musicCaps=await factories(undefined,['pro']).audio(actor,{enabled:true}).catalog();
   const musicDetails=studioAudioCapabilityDetails(musicCaps,'audio-music-only');
   assert.ok(musicDetails?.surface==='audio');
-  assert.deepEqual(musicDetails.modes[0].duration,{source:'requested',minSeconds:30,maxSeconds:30,clipSeconds:30,suggestedSeconds:[30]});
+  assert.deepEqual(musicDetails.modes[0].duration,musicCaps.modes.find(mode=>mode.mode==='music_only')!.duration);
+  assert.equal(musicDetails.modes[0].references.sourceVideo,'optional');
   const duration=musicDetails.modes[0].variants[0].parameters.find(parameter=>parameter.key==='durationSec')!;
   assert.deepEqual(duration.values,[30]);
   const clip=await studioMediaRequest(actor,{...music,settings:[{name:'musicModel',value:'clip'},{name:duration.key,value:duration.values![0]}]} as never,input,factories(undefined,['pro']),true);

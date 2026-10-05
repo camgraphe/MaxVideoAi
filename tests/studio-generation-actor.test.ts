@@ -12,7 +12,7 @@ test('public OAuth adapters reject a Studio actor before any dependency work', a
 });
 test('session core bounds visual workflows, one output, owned references and wallet only', async () => {
   for (const input of [
-    { ...image, surface: 'video', mode: 'ref2v' },
+    { ...image, surface: 'image', mode: 'ref2v' },
     { ...image, outputCount: 2 },
     { ...image, mode: 'i2i', references: [{ kind: 'https', url: 'https://cdn.example.com/unowned.png', role: 'reference', mediaKind: 'image' }] },
   ]) {

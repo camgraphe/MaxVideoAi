@@ -1,0 +1,673 @@
+[
+  {
+    "id": "01_vague",
+    "persona": "Maya, novice café owner",
+    "objective": "A café reopening Instagram post",
+    "constraints": [
+      "small budget",
+      "Friday deadline",
+      "no concept yet"
+    ],
+    "message": "My little café is reopening Friday and I want something nice for Instagram. I’m terrible at this stuff. Can you help me figure out what to make?",
+    "references": []
+  },
+  {
+    "id": "02_product_image",
+    "persona": "Daniel, watch retailer",
+    "objective": "A watch promotional image",
+    "constraints": [
+      "accurate watch and strap",
+      "maximum $8"
+    ],
+    "message": "Here’s the blue sports watch I sell. Could you make a nice promotional picture of it on a clean desk, with soft morning light? Please keep the actual watch and strap looking like mine. I can spend about $8.",
+    "references": [
+      "watch"
+    ]
+  },
+  {
+    "id": "03_custom_image",
+    "persona": "Léa, mother",
+    "objective": "Zoé’s eighth birthday invitation",
+    "constraints": [
+      "correct lettering",
+      "fox and space",
+      "phone invitation"
+    ],
+    "message": "Je voudrais une image pour l’anniversaire de ma fille Zoé, qui va avoir 8 ans. Elle adore les renards et l’espace. Tu pourrais imaginer un renard astronaute avec « Zoé fête ses 8 ans » ?",
+    "references": []
+  },
+  {
+    "id": "04_reference_edit",
+    "persona": "Hannah, photographer",
+    "objective": "Change only portrait wall color",
+    "constraints": [
+      "preserve person, red hair, black jacket and green bubble",
+      "pale blue wall"
+    ],
+    "message": "Could you make the orange tiled wall in this portrait pale blue? I want to keep the person, their red hair, black jacket and green bubble exactly as they are. I’m just trying a different color for the background.",
+    "references": [
+      "portrait"
+    ]
+  },
+  {
+    "id": "05_animate_image",
+    "persona": "Omar, music creator",
+    "objective": "Subtle portrait animation",
+    "constraints": [
+      "recognizable person",
+      "green bubble",
+      "around five seconds"
+    ],
+    "message": "Can you bring this portrait to life for a little teaser? Maybe the person blinks, their red hair moves slightly, and the green chewing-gum bubble gently wobbles. Around five seconds would be enough. I like this exact picture, so nothing too wild.",
+    "references": [
+      "portrait"
+    ]
+  },
+  {
+    "id": "06_prompt_video",
+    "persona": "Ben, game creator",
+    "objective": "Fantasy castle teaser",
+    "constraints": [
+      "no existing artwork",
+      "around eight seconds",
+      "around $15"
+    ],
+    "message": "I’m making a fantasy game and need a short teaser: a tiny lantern-lit boat drifting toward a huge ruined castle in the fog. Maybe eight seconds? I don’t have any pictures to give you. Can we do that for around $15?",
+    "references": []
+  },
+  {
+    "id": "07_explicit_model",
+    "persona": "Sophie, travel creator",
+    "objective": "Vertical beach clip",
+    "constraints": [
+      "Veo 3 specifically",
+      "price before generation"
+    ],
+    "message": "A friend told me to try Veo 3, so I’d like to use that. Could it make a vertical clip of someone walking barefoot along a beach at sunrise? I want to know what it’ll cost before making it.",
+    "references": []
+  },
+  {
+    "id": "08_start_end",
+    "persona": "Marc, online retailer",
+    "objective": "Product rotation between two watch views",
+    "constraints": [
+      "start on first view, finish on second",
+      "preserve watch and blue strap"
+    ],
+    "message": "J’ai joint deux vues de la même montre bleue. J’aimerais une petite vidéo qui commence sur la première et termine sur la deuxième, avec une rotation douce entre les deux. C’est pour ma boutique, donc il faut qu’on reconnaisse bien la montre.",
+    "references": [
+      "watch",
+      "watch_end"
+    ]
+  },
+  {
+    "id": "09_multiple_references",
+    "persona": "Priya, brand coordinator",
+    "objective": "Fashion ad combining watch, person and abstract mood",
+    "constraints": [
+      "watch easy to see",
+      "person recognizable",
+      "budget $10"
+    ],
+    "message": "I’ve attached the blue watch, a portrait of the person I want in the ad, and a light abstract picture for the mood. Could you make a fashion-style image of that person wearing the watch, with a background inspired by those flowing lines? The watch needs to be easy to see. My budget is $10.",
+    "references": [
+      "watch",
+      "portrait",
+      "abstract"
+    ]
+  },
+  {
+    "id": "10_voiceover",
+    "persona": "Chloe, podcast host",
+    "objective": "Spoken podcast intro",
+    "constraints": [
+      "voice only",
+      "warm British woman",
+      "relaxed"
+    ],
+    "message": "Can you make a voice recording saying, ‘Welcome to Small Steps, the podcast about making everyday life a little easier’? I’d like a warm British woman’s voice, relaxed rather than sounding like an advert. I only need the audio.",
+    "references": []
+  },
+  {
+    "id": "11_music",
+    "persona": "Nicolas, recipe creator",
+    "objective": "Cookie recipe backing music",
+    "constraints": [
+      "instrumental",
+      "about twenty seconds",
+      "kitchen sounds audible"
+    ],
+    "message": "Il me faudrait une petite musique pour une vidéo où je prépare des cookies. Quelque chose de léger et joyeux, sans chant, pendant une vingtaine de secondes. Je veux quand même qu’on entende les bruits de cuisine.",
+    "references": []
+  },
+  {
+    "id": "12_video_and_voice",
+    "persona": "Elena, shelter volunteer",
+    "objective": "Adoption video with friendly narration",
+    "constraints": [
+      "ten seconds",
+      "total $25",
+      "hopeful"
+    ],
+    "message": "We need a short video for our shelter: a shy dog slowly getting comfortable in a new home, with a friendly voice saying, ‘Sometimes, a second chance starts with an open door.’ Could you make the video and the voice together? We have $25 for the whole thing.",
+    "references": []
+  },
+  {
+    "id": "13",
+    "persona": "Grace, novice craft fair organizer",
+    "objective": "Create an illustrated announcement for a weekend craft fair",
+    "constraints": [
+      "Friendly handmade feel",
+      "Needs space for event details",
+      "Budget $6"
+    ],
+    "message": "I need a cheerful picture for our village craft fair, maybe little stalls with bunting and flowers. I’ll add the date myself, so could you leave some room for that? What would it cost? I’ve got about $6.",
+    "references": []
+  },
+  {
+    "id": "14",
+    "persona": "Luis, first-time online seller",
+    "objective": "Create a clean catalog image of the supplied watch",
+    "constraints": [
+      "Plain white background",
+      "Preserve watch details",
+      "Budget $5"
+    ],
+    "message": "Can you put this blue watch on a plain white background so I can use it in my shop? I don’t want the watch itself changed. Please tell me the price before making it; I’m hoping to keep it under $5.",
+    "references": [
+      "watch"
+    ]
+  },
+  {
+    "id": "15",
+    "persona": "Camille, étudiante en communication",
+    "objective": "Retoucher un portrait pour obtenir une version plus sobre",
+    "constraints": [
+      "Retirer la bulle verte",
+      "Préserver le visage et les cheveux rouges",
+      "Budget de 6 euros"
+    ],
+    "message": "Pour mon exercice de communication, je voudrais une version de ce portrait sans la bulle de chewing-gum. Il faudrait garder la même personne et ses cheveux rouges. Ça coûterait combien ? J’ai 6 euros maximum.",
+    "references": [
+      "portrait"
+    ]
+  },
+  {
+    "id": "16",
+    "persona": "Lucía, profesora de yoga principiante en creación de contenido",
+    "objective": "Animar una imagen abstracta para una pantalla de bienvenida",
+    "constraints": [
+      "Movimiento lento",
+      "Sin sonido",
+      "Pantalla horizontal",
+      "Duración aproximada de diez segundos"
+    ],
+    "message": "Quiero que estas líneas se muevan suavemente para ponerlas en la pantalla de mi clase de yoga. Nada que maree y sin sonido. Pensaba en unos diez segundos, pero no sé si eso se puede elegir. ¿Cuánto saldría?",
+    "references": [
+      "abstract"
+    ]
+  },
+  {
+    "id": "17",
+    "persona": "Jake, returning small shop owner",
+    "objective": "Create a short watch video for a website header",
+    "constraints": [
+      "Used the service before",
+      "Wide website placement",
+      "Gentle camera movement",
+      "Budget $10"
+    ],
+    "message": "I used this once for a shop picture and now I’d like a little video for the top of my website. Could the camera move slowly toward this watch? Maybe six seconds, or whatever length makes sense. Can you show me the price first? I have $10.",
+    "references": [
+      "watch"
+    ]
+  },
+  {
+    "id": "18",
+    "persona": "Nina, student making a class presentation",
+    "objective": "Create an affordable visual of an imaginary future city",
+    "constraints": [
+      "Budget reduced from $20 to $4",
+      "Still image acceptable",
+      "Needs it tomorrow"
+    ],
+    "message": "I was going to spend $20 on a video of a green future city, but my budget has dropped to $4. Would a single picture be a better option? It’s for a school presentation tomorrow. I’d like to know the cost before deciding.",
+    "references": []
+  },
+  {
+    "id": "19",
+    "persona": "Ethan, watch collector with no video experience",
+    "objective": "Create a watch video connecting two supplied views",
+    "constraints": [
+      "Use both supplied views",
+      "Possibly loop",
+      "Unsure about duration",
+      "Budget $12"
+    ],
+    "message": "These are two views of the same watch. Could you make it turn from the first view to the second, then maybe back again so it loops? I don’t know whether five or ten seconds would look better. What would that cost within $12?",
+    "references": [
+      "watch",
+      "watch_end"
+    ]
+  },
+  {
+    "id": "20",
+    "persona": "Ruby, independent fashion newsletter editor",
+    "objective": "Create a portrait graphic using an abstract reference",
+    "constraints": [
+      "Keep the portrait recognizable",
+      "Use flowing lines as background inspiration",
+      "No added writing",
+      "Budget $7"
+    ],
+    "message": "I like the person in this portrait, but I’d love a lighter background inspired by the other picture’s flowing lines. Could you combine those ideas into one image for my newsletter? No writing on it. Can I get a price first? My limit is $7.",
+    "references": [
+      "portrait",
+      "abstract"
+    ]
+  },
+  {
+    "id": "21",
+    "persona": "Peter, novice community radio volunteer",
+    "objective": "Create a brief spoken station announcement",
+    "constraints": [
+      "Audio only",
+      "Calm adult male voice",
+      "Clear pronunciation",
+      "Budget $3"
+    ],
+    "message": "I need a recording that says, “You’re listening to Riverside Radio. Local voices, local stories.” Could it be a calm man’s voice, without sounding too salesy? Just the recording, please. How much would it be? I have about $3.",
+    "references": []
+  },
+  {
+    "id": "22",
+    "persona": "Andrés, dueño de una pequeña librería",
+    "objective": "Crear una locución breve para anunciar un evento",
+    "constraints": [
+      "Español de España",
+      "Voz cercana",
+      "Solo audio",
+      "Quiere conocer el precio"
+    ],
+    "message": "¿Puedes hacer una voz que diga: «Este sábado te esperamos en Librería Luna para una tarde de cuentos en familia»? Me gustaría un español de España, cercano y tranquilo. Solo necesito el audio. Antes de hacerlo, dime cuánto cuesta.",
+    "references": []
+  },
+  {
+    "id": "23",
+    "persona": "Élodie, créatrice débutante de vidéos de lecture",
+    "objective": "Créer une musique douce pour accompagner une vidéo",
+    "constraints": [
+      "Sans chant",
+      "Environ trente secondes",
+      "Piano discret",
+      "Budget de 5 euros"
+    ],
+    "message": "Je cherche une petite musique au piano pour une vidéo où je lis au bord d’une fenêtre. Quelque chose de doux, sans voix, pendant environ trente secondes. Tu peux me dire le prix avant de la créer ? Je peux mettre 5 euros.",
+    "references": []
+  },
+  {
+    "id": "24",
+    "persona": "Sam, parent creating a bedtime surprise",
+    "objective": "Create a short animated scene of an imaginary animal",
+    "constraints": [
+      "Gentle and suitable for a young child",
+      "No speech or text",
+      "Budget $9"
+    ],
+    "message": "My son keeps talking about a tiny dragon who lives in a teacup. Could you make a little video of it waking up and yawning? Something gentle, with no talking or words on screen. What would it cost? I can spend $9.",
+    "references": []
+  },
+  {
+    "id": "25",
+    "persona": "Aisha, novice neighborhood café manager",
+    "objective": "Create a café promotion with a spoken invitation",
+    "constraints": [
+      "About ten seconds",
+      "Warm natural narration",
+      "Total budget $12"
+    ],
+    "message": "Could you make a short clip of coffee being poured in a cozy café, with a voice saying, “Take a little break. We’ll put the kettle on”? Around ten seconds would be nice. I’ve got $12 altogether, so please tell me what the video and voice would cost.",
+    "references": []
+  },
+  {
+    "id": "26",
+    "persona": "Noah, beginner science club organizer",
+    "objective": "Create a space video using Veo 3",
+    "constraints": [
+      "Explicit interest in Veo 3",
+      "No writing on screen",
+      "Maximum $20"
+    ],
+    "message": "I’d like to try Veo 3 for a short clip of a little rover exploring an icy moon. It’s for our science club, so no dramatic explosions or words on screen. Could you give me a price before starting? I can spend up to $20.",
+    "references": []
+  },
+  {
+    "id": "27",
+    "persona": "Mei, returning seller trying a new model",
+    "objective": "Animate the supplied watch using Kling if available",
+    "constraints": [
+      "Wants to try Kling",
+      "Preserve product shape",
+      "Simple movement",
+      "Budget $10"
+    ],
+    "message": "Someone in my seller group recommended Kling. Could I try that for a short video of this watch turning slightly under a light? I really need the strap and watch face to stay consistent. What would the price be before I commit? Around $10 is my limit.",
+    "references": [
+      "watch"
+    ]
+  },
+  {
+    "id": "28",
+    "persona": "Oliver, amateur filmmaker",
+    "objective": "Create a cinematic rainy street scene using Sora if available",
+    "constraints": [
+      "Explicit model preference",
+      "No dialogue",
+      "Flexible duration",
+      "Wants a quote"
+    ],
+    "message": "Can I use Sora here? I want a short scene of a cyclist stopping outside a warmly lit bookshop on a rainy evening. No dialogue. I’m flexible about the length, but I’d like to see the price before making anything.",
+    "references": []
+  },
+  {
+    "id": "29",
+    "persona": "Fatima, first-time children's activity designer",
+    "objective": "Create an original illustrated animal image using FLUX if available",
+    "constraints": [
+      "Interested in FLUX after hearing about it",
+      "Friendly illustration",
+      "No writing",
+      "Budget $4"
+    ],
+    "message": "A friend mentioned FLUX for pictures. Could it make a friendly otter in a yellow raincoat holding a tiny umbrella? I need an illustration for a children’s activity sheet, with no words on it. How much would one picture cost? My budget is $4.",
+    "references": []
+  },
+  {
+    "id": "30",
+    "persona": "Beth, small business owner considering her own voice",
+    "objective": "Understand the price and feasibility of narration resembling her voice",
+    "constraints": [
+      "Has a recording but has not uploaded it",
+      "Twenty-second message",
+      "Needs an estimate first"
+    ],
+    "message": "I’d love an introduction in a voice that sounds like me. I have a recording on my phone, but I haven’t uploaded it here. The introduction would be about twenty seconds. Is that something you can help with, and what would it cost? Please don’t start yet.",
+    "references": []
+  },
+  {
+    "id": "31",
+    "persona": "Diego, dueño de un restaurante",
+    "objective": "Consultar si puede mejorar un vídeo existente de su local",
+    "constraints": [
+      "Tiene un vídeo pero no lo ha adjuntado",
+      "Quiere conservar el restaurante real",
+      "Necesita un presupuesto orientativo"
+    ],
+    "message": "Tengo un vídeo del restaurante grabado con el móvil, pero todavía no lo he subido. Querría que se viera más luminoso y quizá quitar un poco el movimiento de la cámara. ¿Eso se puede hacer aquí? Antes de subirlo, me gustaría saber aproximadamente cuánto cuesta.",
+    "references": []
+  },
+  {
+    "id": "32",
+    "persona": "Jules, novice campaign assistant",
+    "objective": "Create a short fashion video featuring a referenced person and watch",
+    "constraints": [
+      "Use the person and watch from separate pictures",
+      "Keep the watch recognizable",
+      "Budget $18"
+    ],
+    "message": "Could you make a short video of the person in this portrait showing the blue watch on their wrist? I’ve attached the watch separately so you can see the details. I’m not sure how much movement is realistic. Can you give me a price first? I have $18.",
+    "references": [
+      "portrait",
+      "watch"
+    ]
+  },
+  {
+    "id": "33",
+    "persona": "Tara, first-time social media volunteer",
+    "objective": "Choose a suitable format for a short community garden video",
+    "constraints": [
+      "Needs to post to Instagram and a website",
+      "Unsure about shape and duration",
+      "Budget $10"
+    ],
+    "message": "I want a little video of a community garden coming to life, with people planting flowers. It needs to go on Instagram and our website, but I don’t know whether it should be tall or wide, or how long. Could you help me choose and then tell me the price? We have $10.",
+    "references": []
+  },
+  {
+    "id": "34",
+    "persona": "Manon, organisatrice d’une fête familiale",
+    "objective": "Créer une affiche illustrée personnalisée",
+    "constraints": [
+      "Texte en français",
+      "Prénom et âge exacts",
+      "Budget de 5 euros"
+    ],
+    "message": "Je voudrais une image pour les 60 ans de mon père, Alain. Il adore les vélos anciens et les montagnes. On pourrait mettre « Alain, 60 ans et toujours en selle » ? Dis-moi combien ça coûterait avant de la faire, j’ai 5 euros.",
+    "references": []
+  },
+  {
+    "id": "35",
+    "persona": "Sergio, vendedor de accesorios deportivos",
+    "objective": "Crear una imagen de producto con ambiente exterior",
+    "constraints": [
+      "Mantener el reloj azul intacto",
+      "Ambiente de senderismo",
+      "Presupuesto de 7 euros"
+    ],
+    "message": "Quiero una imagen de este reloj azul sobre una roca, con una montaña al fondo. Es para venderlo, así que no deberían cambiar ni la pantalla ni la correa. ¿Me puedes dar el precio primero? Tengo un máximo de 7 euros.",
+    "references": [
+      "watch"
+    ]
+  },
+  {
+    "id": "36",
+    "persona": "Alice, beginner fashion blogger",
+    "objective": "Create two coordinated portrait variations",
+    "constraints": [
+      "Same recognizable person in both",
+      "Different backgrounds",
+      "Keep red hair and black jacket",
+      "Budget $8 for both"
+    ],
+    "message": "Could I get two versions of this portrait, one with a cream background and one with a dark blue background? I want them to clearly look like the same person, with the same red hair and black jacket. Would $8 cover both pictures? Please quote first.",
+    "references": [
+      "portrait"
+    ]
+  },
+  {
+    "id": "37",
+    "persona": "Tom, student designing a magazine cover",
+    "objective": "Modify the expression and chewing-gum bubble in a portrait",
+    "constraints": [
+      "Keep the same person",
+      "Remove bubble",
+      "Natural smile",
+      "No added text"
+    ],
+    "message": "I’m using this portrait for a pretend magazine cover. Could you remove the green bubble and give the person a small, natural smile? I’ll add the cover wording myself. Is that a simple edit, and what would it cost before we do it?",
+    "references": [
+      "portrait"
+    ]
+  },
+  {
+    "id": "38",
+    "persona": "Inès, décoratrice indépendante",
+    "objective": "Adapter les couleurs d’une image abstraite",
+    "constraints": [
+      "Garder les lignes fluides",
+      "Palette pêche et crème",
+      "Image fixe",
+      "Budget de 4 euros"
+    ],
+    "message": "J’aime les lignes de cette image, mais j’aurais besoin de couleurs pêche et crème pour aller avec une décoration de salon. Je veux juste une image fixe avec le même esprit. Quel serait le prix ? Mon budget est de 4 euros.",
+    "references": [
+      "abstract"
+    ]
+  },
+  {
+    "id": "39",
+    "persona": "Josh, amateur game streamer",
+    "objective": "Create original instrumental intro music",
+    "constraints": [
+      "Energetic retro arcade mood",
+      "No vocals",
+      "About twelve seconds",
+      "Budget $6"
+    ],
+    "message": "Could you make me a little original music intro for my gaming streams? I’m imagining that cheerful old arcade feeling, but with a bit more punch. No singing, maybe twelve seconds. What would it cost? I have $6.",
+    "references": []
+  },
+  {
+    "id": "40",
+    "persona": "Doris, volunteer museum guide",
+    "objective": "Create a longer spoken museum introduction",
+    "constraints": [
+      "Approximately two minutes",
+      "Clear slow delivery",
+      "Will supply final text later",
+      "Budget $8"
+    ],
+    "message": "I need a clear, fairly slow voice recording for a museum introduction. The script will be about two minutes long; I’m still finishing the wording. Can you estimate the cost before I send the final text? We have about $8 for it.",
+    "references": []
+  },
+  {
+    "id": "41",
+    "persona": "Henry, amateur local history presenter",
+    "objective": "Explore a longer generated video of an imagined historical street",
+    "constraints": [
+      "Would like thirty seconds",
+      "Wide format for a projector",
+      "No voice needed",
+      "Budget $20"
+    ],
+    "message": "Could you make a thirty-second video of a quiet Victorian shopping street, with people strolling past the windows? It would be shown on a projector, so a wide picture would be best. I don’t need a voice. Is that length possible for $20? I’d like the cost first.",
+    "references": []
+  },
+  {
+    "id": "42",
+    "persona": "Anaïs, débutante en publicité produit",
+    "objective": "Comparer le coût d’une animation libre et d’une transition entre deux vues",
+    "constraints": [
+      "Deux vues de la même montre",
+      "Résultat de cinq secondes environ",
+      "Veut comprendre la différence de prix"
+    ],
+    "message": "Avec ces deux photos de la montre, j’aimerais commencer sur la première et finir sur la seconde. Est-ce que ça coûte plus cher que d’animer seulement la première photo ? Je pensais à cinq secondes environ. Donne-moi le prix avant de lancer quoi que ce soit.",
+    "references": [
+      "watch",
+      "watch_end"
+    ]
+  },
+  {
+    "id": "43",
+    "persona": "Leo, student with a very small budget",
+    "objective": "Create an original cover image for a study playlist",
+    "constraints": [
+      "Under €3",
+      "Single image",
+      "No words needed"
+    ],
+    "message": "I’ve only got €3, but I’d like a picture for my study playlist: a sleepy cat beside a rainy window at night. No writing needed. Is one image possible within that budget? Please tell me before making it.",
+    "references": []
+  },
+  {
+    "id": "44",
+    "persona": "Romain, créateur d’une petite boutique",
+    "objective": "Combiner une montre et une ambiance abstraite pour une bannière",
+    "constraints": [
+      "Montre fidèle à la photo",
+      "Bannière large",
+      "Fond inspiré des lignes abstraites",
+      "Budget de 8 euros"
+    ],
+    "message": "Je voudrais une bannière pour ma boutique avec cette montre bleue bien visible, et un fond léger inspiré de l’autre image avec les lignes. Il faut un format assez large. Tu peux me donner un devis ? J’ai 8 euros maximum.",
+    "references": [
+      "watch",
+      "abstract"
+    ]
+  },
+  {
+    "id": "45",
+    "persona": "Valeria, estudiante de publicidad",
+    "objective": "Explorar un retrato animado con una frase hablada",
+    "constraints": [
+      "Usar el retrato adjunto",
+      "No dispone de una grabación de voz",
+      "Frase breve",
+      "Quiere conocer el coste total"
+    ],
+    "message": "¿Se podría animar a la persona de este retrato para que diga «Atrévete a ser diferente»? Supongo que habría que quitar la burbuja de chicle. No tengo ninguna grabación de voz. Me gustaría saber si es posible y cuánto costaría todo antes de hacerlo.",
+    "references": [
+      "portrait"
+    ]
+  },
+  {
+    "id": "46",
+    "persona": "Kim, returning novice who forgot the previous model",
+    "objective": "Create an inexpensive new travel video",
+    "constraints": [
+      "Cannot remember the model used previously",
+      "Maximum $7",
+      "Flexible about length"
+    ],
+    "message": "I made a clip here a while ago with one of the cheaper options, but I can’t remember which one. This time I want a little red train winding through snowy mountains. Could you find something suitable within $7 and show me the price? I’m happy to keep it short.",
+    "references": []
+  },
+  {
+    "id": "47",
+    "persona": "Arjun, small marketplace seller",
+    "objective": "Create a consistent set of watch product images",
+    "constraints": [
+      "Three images of the same watch",
+      "Keep exact product appearance",
+      "Different simple settings",
+      "Budget $12 total"
+    ],
+    "message": "I need three pictures of this same watch for my shop: one on white, one on a wooden desk, and one with a dark background. It has to look like the same product in all three. What would the whole set cost? My total budget is $12.",
+    "references": [
+      "watch"
+    ]
+  },
+  {
+    "id": "48",
+    "persona": "Emma, novice meditation app contributor",
+    "objective": "Create a seamless-looking abstract background loop",
+    "constraints": [
+      "Use the supplied abstract image",
+      "Gentle movement",
+      "Tall phone display",
+      "About five seconds",
+      "Budget $8"
+    ],
+    "message": "Could these flowing lines move slowly and repeat without a noticeable jump? It’s for a meditation screen on a phone, so it needs to be tall. Five seconds might be enough. Can you tell me what it would cost first? I have $8.",
+    "references": [
+      "abstract"
+    ]
+  },
+  {
+    "id": "49",
+    "persona": "Patrick, owner of a neighborhood repair shop",
+    "objective": "Create an audio advert combining speech and background music",
+    "constraints": [
+      "Audio only",
+      "Short spoken message",
+      "Music quieter than speech",
+      "Total budget $10"
+    ],
+    "message": "I need a little audio advert saying, “Broken bike? Bring it to Pat’s. We’ll get you rolling again,” with some cheerful music underneath. Nothing to look at, just sound. Could you price the voice and music together before making it? I have $10.",
+    "references": []
+  },
+  {
+    "id": "50",
+    "persona": "Sarah, bénévole d’une association locale",
+    "objective": "Créer une vidéo d’appel au bénévolat avec narration",
+    "constraints": [
+      "Vidéo courte et positive",
+      "Voix française",
+      "Budget total de 15 euros",
+      "Veut un montant global avant création"
+    ],
+    "message": "On voudrait une petite vidéo montrant des bénévoles qui préparent des paniers de légumes, avec une voix qui dit «Une heure de votre temps peut faire une belle différence». Quelque chose de chaleureux, autour de dix secondes. Est-ce que la vidéo et la voix rentrent dans 15 euros ? J’aimerais le prix total avant de créer.",
+    "references": []
+  }
+]

@@ -1,3 +1,4 @@
+import {customerDisplayPrice} from '@/lib/customer-price-presentation';
 import OpenAI from 'openai';
 import type {ResponseCreateParamsNonStreaming} from 'openai/resources/responses/responses';
 import {studioTokenCountInput} from './assistance-token-count';
@@ -9,14 +10,15 @@ import {AgentApiError, toAgentApiFailure} from '@/server/agent-api/errors';
 import {getActiveAccountRestrictionStrict} from '@/server/fraud-cleanup/restrictions';
 import type {StudioGenerationActor} from '@/server/agent-api/generation-actor';
 import type {ResolvedReference} from '@/server/agent-api/reference-types';
-import type {ImageTurnInput,ImageConversationHistoryTurn} from '@/lib/studio/image-conversation-contract';
+import type {ImageTurnInput,ImageConversationHistoryTurn,StudioConversationHistoryFacts} from '@/lib/studio/image-conversation-contract';
 import type {StudioActionRequest, StudioActionResult} from '@/lib/studio/conversation-action-contract';
 import {createStudioConversationDirector, type StudioResponseCreator} from './conversation-director';
 import {createStudioActionExecutor} from './conversation-actions';
 import {beginStudioAction, completeStudioAction, checkpointStudioResponse, readStudioConversationProject, saveStudioConversationMemory} from './conversation-run-repository';
 import {attachImageQuote, persistImageDraft, type StoredImageTurn} from './image-conversation-repository';
 import {imageRequestFromDraft,imageReferenceFingerprintFromReview, type ImageGenerationFactory} from './image-conversation-service';
-import {studioMediaRequest, type StudioMediaFactories} from './conversation-media-generation';
+import {validateStudioMediaRequest, type StudioMediaFactories} from './conversation-media-generation';
+import {validateStudioPreparationInput} from './conversation-preparation-validation';
 import {draftSurface} from '@/lib/studio/image-conversation-contract';
 import type {StudioMediaIntent} from '@/lib/studio/conversation-media-contract';
 import type {TransactionQueryExecutor} from '@/lib/db';
@@ -32,19 +34,21 @@ import {imageSelectionSchema} from '@/lib/studio/conversation-creation-contract'
 
 async function prepareMediaAction(options: {
   actor: StudioGenerationActor; turn: StoredImageTurn; input: ImageTurnInput;
+  references:ResolvedReference[];
   referenceFingerprint: string; enabled: boolean; factories: StudioMediaFactories;
 }, action: StudioMediaIntent, callId: string) {
   const {actor, turn, factories} = options;
+  const selection = await validateStudioMediaRequest(actor, action, options.input, factories, options.enabled,{reviewedReferences:options.references});
   if (!turn.draft_json) await persistImageDraft(actor, turn, {reply: action.reply, image: null, media: action}, options.referenceFingerprint);
-  const request = await studioMediaRequest(actor, action, options.input, factories, options.enabled);
+  const request = await selection.materialize();
   const onQuotePrepared = async (quote: McpGenerationQuote<CanonicalGenerationRequest | CanonicalAudioRequest>, executor: TransactionQueryExecutor) => {
     await attachImageQuote(actor, turn, quote.quoteId, executor);
     await completeStudioAction(actor, turn, callId, {ok: true, action: action.action, data: {
       quoteId: quote.quoteId, expiresAt: quote.expiresAt.toISOString(), requestHash: quote.requestHash, summary: quote.request,
-      price: {amountCents: quote.priceCents, currency: quote.currency}, fundingMode: quote.fundingMode, confirmationRequired: true,
+      price: customerDisplayPrice(quote.priceCents,quote.currency), fundingMode: quote.fundingMode, confirmationRequired: true,
     }} as StudioActionResult, executor);
   };
-  if (request.surface === 'video') return factories.video(actor, {enabled: options.enabled, onQuotePrepared}).prepare(request);
+  if (request.surface === 'video') return factories.video(actor, {enabled: options.enabled, onQuotePrepared,expectedReferenceFingerprint:selection.referenceFingerprint?.()}).prepare(request);
   return factories.audio(actor, {enabled: options.enabled, onQuotePrepared}).prepare(request);
 }
 
@@ -79,7 +83,7 @@ export async function resumeStudioImageAction(options: {
         await attachImageQuote(actor, turn, quote.quoteId, executor);
         await completeStudioAction(actor, turn, callId, {ok: true, action: 'image.prepare', data: {
           quoteId: quote.quoteId, expiresAt: quote.expiresAt.toISOString(), requestHash: quote.requestHash, summary: quote.request,
-          price: {amountCents: quote.priceCents, currency: quote.currency}, fundingMode: quote.fundingMode, confirmationRequired: true,
+          price: customerDisplayPrice(quote.priceCents,quote.currency), fundingMode: quote.fundingMode, confirmationRequired: true,
         }}, executor);
       },
     }).prepare(request);
@@ -95,6 +99,7 @@ export async function runStudioImageActions(options: {
   actor: StudioGenerationActor; turn: StoredImageTurn; input: ImageTurnInput;
   references: ResolvedReference[]; referenceFingerprint: string;
   history: ImageConversationHistoryTurn[]; enabled: boolean;
+  historyFacts?:StudioConversationHistoryFacts;
   factory: ImageGenerationFactory; createResponse?: StudioResponseCreator;
   responseReplayOnly?: boolean;
   assistancePolicy?: StudioAssistancePolicy;countInputTokens?: (params: ResponseCreateParamsNonStreaming) => Promise<number>;
@@ -106,10 +111,10 @@ export async function runStudioImageActions(options: {
   const policy = options.assistancePolicy ?? studioAssistancePolicy();
   // Injected response creators are offline qualification seams. Native dispatch always requires the monetary gate.
   const assistance = policy.enabled || !options.createResponse ? await openStudioAssistanceTurn(actor,turn.request_id,policy) : null;
-  const director = createStudioConversationDirector({model: assistance?.model,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled});
+  const director = createStudioConversationDirector({model: assistance?.model,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,assistanceCreditsEnabled:policy.credits===true});
   let currentCallId: string;
   const execute = createStudioActionExecutor(actor, {enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
-    attachedImageIds: input.references,
+    attachedImageIds: input.references,attachedMedia:options.references,
     editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,
     prepareExport: async action => {
       try {return await prepareStudioTimelineExport({userId: actor.userId,authOrigin: 'studio-session',clientId: null},{projectId: actor.projectId,sequenceId: action.sequenceId,expectedRevision: action.expectedRevision,qualityPreset: action.qualityPreset,includeAudio: action.includeAudio,idempotencyKey: turn.request_id+':'+currentCallId.slice(0,80)}, {
@@ -158,21 +163,24 @@ export async function runStudioImageActions(options: {
     },
     prepareImage: async action => {
       const draft = {reply: action.reply,image: imageSelectionSchema.strip().parse(action)};
-      // Persist the selected prompt before preparation. A failed preparation resumes this same intent.
+      // Validate selection before saving intent. Catalog/ownership failures remain terminal.
+      const catalog = await generation.catalog();
+      const request = validateStudioPreparationInput(() => imageRequestFromDraft(draft, input, catalog));
+      const expectedReferenceFingerprint = imageReferenceFingerprintFromReview(request,options.references);
+      // Once preparation can mutate state, recovery must preserve this exact intent.
       await persistImageDraft(actor, turn, draft, options.referenceFingerprint);
-      const request = imageRequestFromDraft(draft, input, await generation.catalog());
-      return factory(actor, {enabled: options.enabled, expectedReferenceFingerprint: imageReferenceFingerprintFromReview(request,options.references),
+      return factory(actor, {enabled: options.enabled, expectedReferenceFingerprint,
         onQuotePrepared: async (quote, executor) => {
           await attachImageQuote(actor, turn, quote.quoteId, executor);
           await completeStudioAction(actor, turn, currentCallId, {ok: true, action: 'image.prepare', data: {
             quoteId: quote.quoteId, expiresAt: quote.expiresAt.toISOString(), requestHash: quote.requestHash,
-            summary: quote.request, price: {amountCents: quote.priceCents, currency: quote.currency}, fundingMode: quote.fundingMode, confirmationRequired: true,
+            summary: quote.request, price: customerDisplayPrice(quote.priceCents,quote.currency), fundingMode: quote.fundingMode, confirmationRequired: true,
           }}, executor);
         },
       }).prepare(request);
     },
   });
-  const draft = await director({message: input.message, history: options.history, references: options.references, referenceMentions: input.referenceMentions,
+  const draft = await director({message: input.message, history: options.history, references: options.references, referenceMentions: input.referenceMentions, historyFacts: options.historyFacts,
     project: await readStudioConversationProject(actor,{exportsEnabled:options.editingEnabled&&options.exportsEnabled}),
     checkpoint: (index, create, params) => checkpointStudioResponse(actor, turn, index, create, assistance ? {prepare: async () => {
       if (await getActiveAccountRestrictionStrict(actor.userId)) {

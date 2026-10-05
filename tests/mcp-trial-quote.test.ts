@@ -229,7 +229,7 @@ test('a qualifying original request prepares a zero-charge trial without reducin
   const prepared = await prepareGeneration(trialInput, principal, deps as never);
 
   assert.equal(prepared.fundingMode, 'trial');
-  assert.deepEqual(prepared.price, { amountCents: 0, currency: 'USD' });
+  assert.deepEqual(prepared.price, { amountCents: 0, currency: 'USD', formattedAmount: '$0.00' });
   assert.deepEqual(prepared.balance, { beforeCents: 500, afterCents: 500 });
   assert.equal(prepared.topupRequired, false);
   assert.equal(JSON.stringify(prepared).includes('providerCostCents'), false);

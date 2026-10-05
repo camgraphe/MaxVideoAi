@@ -83,6 +83,56 @@ const CHARACTER_VIDEO_MODELS = new Set<string>([
   'ltx-2-3-fast',
   'ltx-2-3',
 ]);
+const VIDEO_EDIT_MODELS = new Set(['luma-ray-3-2', 'seedance-2-5', 'wan-3', 'wan-3-prime']);
+const VIDEO_EXTEND_MODELS = new Set(['seedance-2-5', 'wan-3', 'wan-3-prime']);
+
+// Conversation payload, quote and dispatch qualification is independent of Canvas UI qualification.
+// These proofs only intersect the canonical published catalog; they do not define model capabilities.
+const CONVERSATION_VIDEO_MODELS = new Set<string>([
+  ...VIDEO_TEXT_IMAGE_MODELS,
+  'kling-3-turbo-pro', 'kling-3-turbo-standard', 'minimax-h3-max',
+  'ltx-2-5-fast', 'ltx-2-5-pro', 'grok-imagine-video-1-5', 'flux-3', 'flux-3-draft',
+]);
+const CONVERSATION_REFERENCE_VIDEO_MODELS = new Set<string>([
+  ...REFERENCE_VIDEO_MODELS, 'minimax-h3-max', 'grok-imagine-video-1-5',
+]);
+const CONVERSATION_VIDEO_EDIT_MODELS = new Set([
+  'gemini-omni-flash', 'lumaRay2', 'lumaRay2_flash', 'luma-ray-3-2',
+  'kling-o3-standard', 'kling-o3-pro', 'happy-horse-1-0',
+  'seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'seedance-2-5',
+  'wan-3', 'wan-3-prime', 'ltx-2-3',
+]);
+const CONVERSATION_VIDEO_EXTEND_MODELS = new Set([
+  'veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite', 'gemini-omni-flash',
+  'seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'seedance-2-5',
+  'wan-3', 'wan-3-prime', 'ltx-2-3', 'flux-3', 'flux-3-draft',
+]);
+const CONVERSATION_AUDIO_TUPLES = new Set([
+  'audio-music-only:music_only', 'audio-voice-only:voice_only', 'audio-sfx-only:sfx_only',
+  'audio-song:song', 'audio-ambience:ambience_only',
+  'audio-cinematic:cinematic', 'audio-cinematic-voice:cinematic_voice',
+]);
+
+export function isStudioConversationVideoModeCertified(modelId: string, mode: string): boolean {
+  switch (mode) {
+    case 't2v': case 'i2v': case 'i2v_standard': case 'fl2v':
+      return CONVERSATION_VIDEO_MODELS.has(modelId);
+    case 'ref2v': case 'r2v':
+      return CONVERSATION_REFERENCE_VIDEO_MODELS.has(modelId);
+    case 'v2v': case 'retake': case 'reframe':
+      return CONVERSATION_VIDEO_EDIT_MODELS.has(modelId);
+    case 'extend':
+      return CONVERSATION_VIDEO_EXTEND_MODELS.has(modelId);
+    case 'a2v':
+      return ['ltx-2-3', 'ltx-2-5-fast', 'ltx-2-5-pro'].includes(modelId);
+    default:
+      return false;
+  }
+}
+
+export function isStudioConversationAudioModeCertified(modelId: string, mode: string): boolean {
+  return CONVERSATION_AUDIO_TUPLES.has(`${modelId}:${mode}`);
+}
 
 const IMAGE_MODELS = [
   'luma-uni-1',
@@ -126,10 +176,10 @@ export const WORKSPACE_MODEL_CERTIFICATIONS: readonly WorkspaceModelCertificatio
       modelId,
       blocks: {
         'generate-video': workflows,
-        ...(modelId === 'luma-ray-3-2' || modelId === 'seedance-2-5' || modelId === 'wan-3' || modelId === 'wan-3-prime'
+        ...(VIDEO_EDIT_MODELS.has(modelId)
           ? { 'modify-video': ['video_to_video'] as const }
           : {}),
-        ...(modelId === 'seedance-2-5' || modelId === 'wan-3' || modelId === 'wan-3-prime'
+        ...(VIDEO_EXTEND_MODELS.has(modelId)
           ? { 'extend-video': ['video_to_video'] as const }
           : {}),
       },

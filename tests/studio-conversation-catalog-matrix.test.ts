@@ -30,10 +30,10 @@ const currentCertified=[
   'nano-banana-2','nano-banana-lite','nano-banana-pro','pika-text-to-video',
   'seedance-2-0','seedance-2-0-fast','seedance-2-0-mini','seedance-2-5','seedream','seedream-5-0-pro',
   'veo-3-1','veo-3-1-fast','veo-3-1-lite','wan-3','wan-3-prime',
+  'kling-3-turbo-pro','kling-3-turbo-standard','minimax-h3-max','ltx-2-5-fast','ltx-2-5-pro','grok-imagine-video-1-5','flux-3','flux-3-draft',
 ];
 const uncertified=[
-  'kling-3-turbo-pro','kling-3-turbo-standard','minimax-h3-max','ltx-2-5-fast','ltx-2-5-pro',
-  'grok-imagine-video-1-5','flux-3','flux-3-draft','gpt-image-2-5-sunburst',
+  'gpt-image-2-5-sunburst',
 ];
 const executableLegacy=['gpt-image-2','happy-horse-1-0','kling-2-5-turbo','kling-2-6-pro','ltx-2-3','ltx-2-3-fast','lumaRay2','lumaRay2_flash','nano-banana','wan-2-6'];
 const archive=['seedance-1-5-pro','sora-2','sora-2-pro','ltx-2','ltx-2-fast','wan-2-5'];
@@ -52,7 +52,8 @@ test('the real published catalog reaches Studio without the five-model pilot res
     assert.equal(catalog.some(entry=>entry.engine.id===id),false,id);
   assert.deepEqual(catalog.filter(entry=>getRuntimeModelById(entry.engine.id)?.lifecycle==='legacy').map(entry=>entry.engine.id).sort(),executableLegacy.slice().sort(),'Published legacy explicit choices remain executable.');
   for(const candidate of catalog){
-    assert.deepEqual(candidate.publicModes,candidate.surface==='image'?['t2i','i2i']:['t2v','i2v'],candidate.engine.id);
+    if(candidate.surface==='image')assert.deepEqual(candidate.publicModes,['t2i','i2i'],candidate.engine.id);
+    else assert.ok(candidate.publicModes.includes('t2v')&&candidate.publicModes.includes('i2v'),candidate.engine.id);
     const summary=studioVisualCapabilitySummary(candidate);
     assert.deepEqual(summary.modes,candidate.publicModes);
     assert.equal(summary.lifecycle,getRuntimeModelById(candidate.engine.id)?.lifecycle);
@@ -101,7 +102,7 @@ function quoteDependencies(catalog:AgentPublicGenerationEngine[]){
   };
 }
 
-test('every exposed Studio mode maps visible options through the real request builder and quote validation',async t=>{
+test('original image and text/first-frame video creation preserve request and quote validation',async t=>{
   const {catalog,image,video}=await services();
   const factories={image:()=>image,video:()=>video,audio:()=>{throw new Error('Audio is outside this matrix');}} as StudioMediaFactories;
   assert.ok(catalog.some(entry=>entry.engine.id==='seedance-2-5'),'Exercise the newly visible current catalog.');
@@ -109,7 +110,9 @@ test('every exposed Studio mode maps visible options through the real request bu
     const details=studioVisualCapabilityDetails(candidate);
     assert.notEqual(details.surface,'audio');
     if(details.surface==='audio')throw new Error('Expected visual facts');
-    for(const mode of details.modes)await t.test(candidate.engine.id+' '+mode.mode,async()=>{
+    // Source-media modes have their complete owned-media matrix in
+    // studio-video-catalog-workflows and studio-video-workflows-postgres.
+    for(const mode of details.modes.filter(mode=>candidate.surface==='image'||['t2v','i2v'].includes(mode.mode)))await t.test(candidate.engine.id+' '+mode.mode,async()=>{
       const aspectRatio=mode.aspectRatios.includes(candidate.surface==='image'?'1:1':'16:9')?(candidate.surface==='image'?'1:1':'16:9'):mode.aspectRatios[0]??'16:9';
       const settings=mode.settings.filter(setting=>setting.default!==null&&setting.type!=='multi_prompt'&&!['imageWidth','imageHeight'].includes(setting.key)).map(setting=>({name:setting.key,value:setting.default}));
       settings.push({name:'resolution',value:mode.resolutions[0]});
@@ -123,7 +126,7 @@ test('every exposed Studio mode maps visible options through the real request bu
       const request=candidate.surface==='image'
         ?imageRequestFromDraft({reply:'Review the selected request.',image:selection} as never,input,catalog)
         :await studioMediaRequest(actor,{action:'video.prepare',...selection} as never,input,factories,true,{
-          resolveMedia:async()=>({kind:'image',url:source.storageUrl,mime:'image/png',mediaFacts:{width:1024,height:1024}}) as never,
+          resolveMedia:async()=>({kind:'image',url:source.storageUrl,mime:'image/png',sizeBytes:source.sizeBytes,originalName:source.originalName,mediaFacts:{width:1024,height:1024}}) as never,
         });
       assert.equal(request.surface,candidate.surface);
       const visual=request as CanonicalGenerationRequest;
@@ -165,10 +168,30 @@ test('action-specific recommendations preserve a single compatible explicit choi
   assert.ok(fourK.recommendations.length>0);
   assert.notEqual(fourK.recommendations[0].model.id,'seedance-2-5');
   assert.ok(fourK.recommendations[0].model.resolutions.includes('4k'));
-  const unavailable=await recommendAgentModels({id:'kling-3-turbo-pro',surface:'video',mode:'t2v'},deps);
+  const unavailable=await recommendAgentModels({id:'seedance-2-0-fast-byteplus',surface:'video',mode:'t2v'},deps);
   assert.deepEqual(unavailable.recommendations,[],'An exact unavailable choice must not silently become another model.');
   assert.throws(()=>imageRequestFromDraft({reply:'Review.',image:{prompt:input.message,aspectRatio:'1:1',modelId:'gpt-image-2-5-sunburst'}} as never,{...input,references:[]},catalog),{code:'ENGINE_UNAVAILABLE'});
   const factories={image:()=>image,video:()=>video,audio:()=>{throw new Error('Audio is outside this matrix');}} as StudioMediaFactories;
-  await assert.rejects(studioMediaRequest(actor,{action:'video.prepare',modelId:'kling-3-turbo-pro',mode:'t2v',prompt:input.message,aspectRatio:'16:9'} as never,input,factories,true),{code:'ENGINE_UNAVAILABLE'});
-  for(const mode of ['ref2v','fl2v','v2v','extend'])await assert.rejects(studioMediaRequest(actor,{action:'video.prepare',modelId:'wan-3',mode,prompt:input.message,aspectRatio:'16:9',references:[{ref:{type:'asset',assetId,kind:'image'},role:'first_frame',slot:null}]} as never,input,factories,true),{code:'MODE_UNSUPPORTED'});
+  await assert.rejects(studioMediaRequest(actor,{action:'video.prepare',modelId:'seedance-2-0-fast-byteplus',mode:'t2v',prompt:input.message,aspectRatio:'16:9'} as never,input,factories,true),{code:'ENGINE_UNAVAILABLE'});
+  await assert.rejects(studioMediaRequest(actor,{action:'video.prepare',modelId:'wan-3',mode:'fl2v',prompt:input.message,aspectRatio:'16:9',references:[]} as never,input,factories,true),{code:'MODE_UNSUPPORTED'});
+});
+
+test('compact discovery finds a current custom-size model whose real preparation retains exact client dimensions',async()=>{
+  const {catalog}=await services();
+  const candidate=catalog.find(candidate=>candidate.surface==='image'&&getRuntimeModelById(candidate.engine.id)?.lifecycle==='current'
+    &&'customImageSize' in studioVisualCapabilitySummary(candidate)&&studioVisualCapabilitySummary(candidate).customImageSize===true);
+  assert.ok(candidate,'An exact-size client must be able to discover a compatible current model before spending a model-details call.');
+  const details=studioVisualCapabilityDetails(candidate);
+  assert.ok(details.surface==='image');
+  const mode=details.modes.find(mode=>mode.mode==='t2i');assert.ok(mode);
+  assert.ok(mode.resolutions.includes('custom'));
+  assert.ok(mode.settings.some(setting=>setting.key==='imageWidth'));
+  assert.ok(mode.settings.some(setting=>setting.key==='imageHeight'));
+  const request=imageRequestFromDraft({reply:'Review this exact-size image quote.',image:{prompt:'A quiet illustrated phone flyer',aspectRatio:'3:4',modelId:candidate.engine.id,mode:'t2i',settings:[{name:'resolution',value:'custom'},{name:'imageWidth',value:1024},{name:'imageHeight',value:1360}],references:[],outputCount:1}},
+    {requestId:'00000000-0000-4000-8000-000000000099',message:'My phone flyer must be exactly1024 by1360 pixels.',references:[]},catalog);
+  assert.equal(request.settings.imageWidth,1024);assert.equal(request.settings.imageHeight,1360);assert.equal(request.settings.resolution,'custom');
+  const fixed=catalog.find(candidate=>candidate.engine.id==='nano-banana-2');assert.ok(fixed);
+  assert.equal(studioVisualCapabilitySummary(fixed).customImageSize,false);
+  const video=catalog.find(candidate=>candidate.surface==='video');assert.ok(video);
+  assert.equal(studioVisualCapabilitySummary(video).customImageSize,undefined);
 });

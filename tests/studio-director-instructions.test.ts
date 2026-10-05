@@ -6,7 +6,7 @@ import {createStudioConversationDirector} from '../frontend/src/server/studio/co
 test('director sends creative purpose, current help and live quote rules with its gated tools', async () => {
   for (const enabled of [false,true]) {
     let calls=0;
-    const director=createStudioConversationDirector({mediaEnabled: enabled,editingEnabled: enabled,exportsEnabled: enabled,createResponse: async params=> {
+    const director=createStudioConversationDirector({assistanceCreditsEnabled:true,mediaEnabled: enabled,editingEnabled: enabled,exportsEnabled: enabled,createResponse: async params=> {
       calls++;
       const instructions=String(params.instructions);
       assert.match(instructions,/creative partner/i);
@@ -17,10 +17,11 @@ test('director sends creative purpose, current help and live quote rules with it
       assert.match(instructions,/competitor|provider prices/i);
       assert.match(instructions,/Projects opens/);
       assert.doesNotMatch(instructions,/My projects/);
-      assert.match(instructions,/Sol\/Luna.*Studio assistance and budget/);
-      assert.match(instructions,/one-time.*allowance/);
-      assert.match(instructions,/Luna.*no extra assistance charge/);
-      assert.match(instructions,/cannot read.*remaining allowance|cannot see.*remaining allowance/);
+      assert.match(instructions,/GPT-6\.1 Sol.*GPT-6 Luna.*Studio assistance/);
+      assert.match(instructions,/monthly free credits.*before purchased/);
+      assert.match(instructions,/purchase debits.*once.*usage consumes.*credits/);
+      assert.match(instructions,/Luna.*no monthly quota.*one active message/);
+      assert.match(instructions,/cannot read current credits.*wallet.*tariff/);
       assert.match(instructions,/assistance.*separate.*generation/i);
       assert.match(instructions,/Studio help/);
       assert.match(instructions,/Open library/);
@@ -30,7 +31,18 @@ test('director sends creative purpose, current help and live quote rules with it
       assert.equal(names.includes('video_prepare'),enabled);
       assert.equal(names.includes('timeline_read'),enabled);
       assert.equal(names.includes('export_prepare'),enabled);
-      if (enabled) assert.match(instructions,/Timeline.*collapse/i);
+      if (enabled) {
+        assert.match(instructions,/Timeline.*collapse/i);
+        assert.match(instructions,/extension.*edits/i);
+        assert.match(instructions,/voice cloning.*owned sample/i);
+        assert.match(instructions,/songs.*effects.*ambience.*soundtracks/i);
+        assert.match(instructions,/attached saved media.*exact kinds.*roles/i);
+        assert.match(instructions,/sound-only.*source video.*soundtrack.*preserv/i);
+        assert.match(instructions,/missing.*audio.*framing.*model_details/i);
+        assert.match(instructions,/always_generated.*sound/i);
+        assert.match(instructions,/formattedAmount/);
+        assert.match(instructions,/explain.*model.*chang/i);
+      }
       else assert.match(instructions,/Timeline editing is unavailable/i);
       assert.ok(!names.some(name=>/confirm|purchase|shell/.test(name)));
       return {id:'creative-reply',model:'gpt-6.1-sol',status:'completed',service_tier:'default',usage:null,output_text:JSON.stringify({reply:'A paper city unfolds in morning light.'}),output:[]};

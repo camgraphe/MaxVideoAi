@@ -86,7 +86,7 @@ test('the director can inspect exact model details and returns the entire select
   assert.ok(!toolNames.some(name => /confirm|shell/.test(name)));
 });
 
-test('conversation catalogs include published certified models and expose only image-resolvable modes', async () => {
+test('conversation catalogs include qualified owned-media modes but exclude required inputs the adapter cannot represent', async () => {
   const actor = {authMethod: 'studio-session' as const, userId: 'owner', projectId: 'film', clientId: null};
   const image = createStudioImageGenerationService(actor,{enabled: true,prepareDependencies: {listPublicEngines: async () => [candidate('gpt-image-2'),candidate('seedream')]}});
   assert.deepEqual((await image.catalog()).map(item => item.engine.id),['gpt-image-2','seedream']);
@@ -94,12 +94,13 @@ test('conversation catalogs include published certified models and expose only i
   const video = createStudioVideoGenerationService(actor,{enabled: true,prepareDependencies: {listPublicEngines: async () => [makeVideo('wan-3'),makeVideo('seedance-2-0-mini'),makeVideo('minimax-h3'),makeVideo('veo-3-1')] as never}});
   const result = await video.catalog();
   assert.deepEqual(result.map(item=>item.engine.id),['wan-3','seedance-2-0-mini','minimax-h3','veo-3-1']);
-  assert.ok(result.every(item=>!item.publicModes.includes('v2v')));
+  assert.ok(result.find(item=>item.engine.id==='wan-3')!.publicModes.includes('v2v'),'Owned-video preparation is qualified independently of Canvas.');
+  assert.ok(!result.find(item=>item.engine.id==='minimax-h3')!.publicModes.includes('v2v'),'Certification never invents a missing canonical mode.');
   assert.ok(result.every(item=>item.publicModes.every(mode=>Boolean(item.modeCaps[mode]))), 'Missing schemas must not be advertised.');
   const unsupported=structuredClone(makeVideo('wan-3'));
-  unsupported.engine.inputSchema!.required.push({id: 'video_url',label: 'Video source',type: 'video',modes: ['t2v']});
+  unsupported.engine.inputSchema!.required.push({id: 'multi_prompt',label: 'Shot prompts',type: 'text',modes: ['t2v']});
   const limited=createStudioVideoGenerationService(actor,{enabled: true,prepareDependencies:{listPublicEngines:async()=>[unsupported] as never}});
-  assert.ok(!(await limited.catalog())[0].publicModes.includes('t2v'),'Modes that require an unsupported media resolver must not be advertised.');
+  assert.ok(!(await limited.catalog())[0].publicModes.includes('t2v'),'Required multi-shot prompts cannot be represented by the bounded conversation settings contract.');
 });
 
 test('Studio model details intersect canonical reference limits with the conversation attachment budget', () => {

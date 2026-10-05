@@ -1,4 +1,7 @@
+import {customerDisplayPrice} from '@/lib/customer-price-presentation';
 import type {StudioExportDependencies} from './conversation-export-command';
+import {recordedStudioOutputDuration} from './conversation-quote-facts';
+import {projectStudioQuoteDirections,readStudioHistoricalEstimates} from './conversation-history-facts';
 import { getBaseEngineIncludingHidden } from "@/lib/engines";
 import { z } from "zod";
 import {
@@ -42,6 +45,7 @@ import {projectAgentModelModeDetails} from '@/server/agent-api/model-details';
 import {GenerationNormalizationError,normalizeGenerationRequest} from '@/server/agent-api/generation-normalization';
 import {GenerationCapabilityError,validateCanonicalGenerationCapabilities} from '@/server/agent-api/generation-capability-validation';
 import {getDefaultResolution} from '@/lib/image/inputSchema';
+import {projectStudioReply} from '@/lib/studio/conversation-reply';
 
 export const imageConfirmationSchema = z
   .object({
@@ -77,7 +81,6 @@ export function imageRequestFromDraft(
       return {kind: 'asset',assetId: reference.ref.assetId,role: reference.role,...(reference.slot == null ? {} : {slot: reference.slot})};
     });
   const mode = selection.mode ?? (references.length ? "i2i" : "t2i");
-  if (mode === 't2i' && references.length) throw new AgentApiError('REFERENCE_INVALID','Text-to-image does not use generation references.');
   const candidate =
     selection.modelId ? catalog.find(entry => entry.engine.id === selection.modelId && entry.publicModes.includes(mode)) : catalog.find(
       (entry) =>
@@ -215,7 +218,7 @@ export function createImageConversationService(
       ...(turn.input_json.attachments ? {attachments: turn.input_json.attachments} : {}),
       ...(turn.input_json.referenceMentions ? {referenceMentions: turn.input_json.referenceMentions} : {}),
       ...(turn.input_json.renewedFromRequestId ? {renewedFromRequestId: turn.input_json.renewedFromRequestId} : {}),
-      reply: turn.draft_json?.reply ?? null,
+      reply: turn.draft_json ? projectStudioReply(turn.draft_json.reply) : null,
       ...(turn.draft_json?.exportQuote ? {exportQuote: turn.draft_json.exportQuote} : {}),
       ...(turn.draft_json?.continuation ? {continuation: turn.draft_json.continuation} : {}),
       state: expiredLease ? "failed" : turn.state,
@@ -226,7 +229,9 @@ export function createImageConversationService(
             expiresAt: quote.expiresAt.toISOString(),
             requestHash: quote.requestHash,
             summary: quote.request,
-            price: { amountCents: quote.priceCents, currency: quote.currency },
+            ...(quote.request.surface==='video'&&recordedStudioOutputDuration(quote.pricingSnapshot)!==undefined
+              ? {outputDurationSec:recordedStudioOutputDuration(quote.pricingSnapshot)} : {}),
+            price: customerDisplayPrice(quote.priceCents,quote.currency),
             fundingMode: "wallet",
             confirmationRequired: true,
             wallet: balance?.currency === quote.currency ? balance : null,
@@ -286,7 +291,7 @@ export function createImageConversationService(
             const media = await resolveStudioMedia(actor.userId, attachment);
             refs.push({assetId: attachment.type === 'asset' ? attachment.assetId : attachment.outputId,
               role: 'reference', mediaKind: media.kind, storageUrl: media.url, mimeType: media.mime,
-              width: media.mediaFacts?.width ?? null, height: media.mediaFacts?.height ?? null, durationSec: media.mediaFacts?.durationSec ?? null,
+              width: media.width ?? media.mediaFacts?.width ?? null, height: media.height ?? media.mediaFacts?.height ?? null, durationSec: media.durationSec ?? media.mediaFacts?.durationSec ?? null, sizeBytes: media.sizeBytes ?? null,
               originalName: media.originalName ?? null} satisfies ResolvedReference);
           } catch {throw new AgentApiError('REFERENCE_INVALID', 'The attached media is no longer available.');}
         }
@@ -306,12 +311,15 @@ export function createImageConversationService(
           )
           .reverse();
         const useActions = !turn.draft_json && dependencies.actionsEnabled === true;
+        const recentHistory=history.slice(-8);
+        const historyFacts=useActions?{quoteDirections:projectStudioQuoteDirections(recentHistory),estimates:await readStudioHistoricalEstimates(actor,recentHistory.map(saved=>saved.request_id))}:undefined;
         if (!turn.draft_json && !useActions && !dependencies.director) throw new AgentApiError('ENGINE_UNAVAILABLE','Enable the metered Studio conversation before requesting assistance.');
         const draft =
           turn.draft_json ??
           (useActions ? await runStudioImageActions({
             actor, turn, input, references: refs, referenceFingerprint, responseReplayOnly,
-            history: history.map(saved => ({message: saved.input_json.message, reply: saved.draft_json?.reply ?? null,
+            historyFacts,
+            history: history.map(saved => ({message: saved.input_json.message, reply: saved.draft_json ? projectStudioReply(saved.draft_json.reply) : null,
               ...(saved.input_json.referenceMentions ? {referenceMentions: saved.input_json.referenceMentions} : {})})),
             enabled: dependencies.enabled, factory, createResponse: dependencies.createActionResponse,assistancePolicy: dependencies.assistancePolicy,countInputTokens: dependencies.countInputTokens,
             factories, mediaEnabled: dependencies.mediaEnabled,editingEnabled: dependencies.editingEnabled,exportsEnabled: dependencies.exportsEnabled,requestOrigin: dependencies.requestOrigin,exportDependencies: dependencies.exportDependencies,
@@ -322,7 +330,7 @@ export function createImageConversationService(
             input,
             history.map((saved) => ({
               message: saved.input_json.message,
-              reply: saved.draft_json?.reply ?? null,
+              reply: saved.draft_json ? projectStudioReply(saved.draft_json.reply) : null,
               ...(saved.input_json.referenceMentions ? {referenceMentions: saved.input_json.referenceMentions} : {}),
             })),
             refs,

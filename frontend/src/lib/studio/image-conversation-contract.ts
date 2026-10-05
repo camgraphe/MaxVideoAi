@@ -6,6 +6,8 @@ import {studioMediaIntentSchema} from '@/lib/studio/conversation-media-contract'
 import {toolAssetRefSchema} from '@/lib/toolbox/contract';
 import type {PreparedAudioGeneration} from '@/server/agent-api/prepare-audio-generation';
 import {imageSelectionSchema,STUDIO_CONVERSATION_MAX_REFERENCES} from '@/lib/studio/conversation-creation-contract';
+import {projectStudioReply} from './conversation-reply';
+import type {StudioPricingEstimate} from '@/lib/studio/conversation-pricing-contract';
 
 export const studioReferenceMentionSchema = z.object({
   assetId: z.string().min(1).max(256),
@@ -43,9 +45,9 @@ export const studioContinuationSchema = z.object({
 }).strict();
 export const imageDraftSchema = z
   .object({
-    reply: z.string().min(1).max(2400),
+    reply: z.string().min(1).max(2400).transform(projectStudioReply),
     image: imageSelectionSchema.nullable(),
-    media: studioMediaIntentSchema.optional(),
+    media: studioMediaIntentSchema.transform(media=>({...media,reply:projectStudioReply(media.reply)})).optional(),
     continuation: studioContinuationSchema.optional(),
     exportQuote: studioPreparedExportSchema.optional(),
   })
@@ -68,6 +70,8 @@ export type ImageConversationTurn = {
         state: "prepared" | "claimed" | "accepted" | "failed" | "expired";
         modelLabel: string;
         wallet: { amountCents: number; currency: string } | null;
+        /** Recorded canonical output timing; distinct from a model's ignored request default. */
+        outputDurationSec?: number;
       })
     | null;
   generation: AgentGenerationStatus | null;
@@ -79,6 +83,10 @@ export type ImageConversation = {
   turns: ImageConversationTurn[];
 };
 export type ImageConversationHistoryTurn = Pick<ImageConversationTurn, 'message' | 'reply' | 'referenceMentions'>;
+export type StudioConversationHistoryFacts = {
+  quoteDirections:{requestId:string;quoteId:string;text:string;truncated:boolean}[];
+  estimates:(StudioPricingEstimate & {requestId:string;historical:true})[];
+};
 export function hasDraftCreation(draft: ImageDraft | null) {return !!(draft?.image || draft?.media);}
 export function draftSurface(draft: ImageDraft | null) {return draft?.media?.action === 'video.prepare' ? 'video' : draft?.media ? 'audio' : 'image';}
 /** Reproduce the saved immutable request, including renewal identity, in a fresh tab. */
