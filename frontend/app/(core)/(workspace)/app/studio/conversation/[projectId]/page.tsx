@@ -4,7 +4,7 @@ import { HeaderBar } from "@/components/HeaderBar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { resolveStudioPageAccess } from "@/server/studio/access";
 import { readImageConversationProject } from "@/server/studio/image-conversation-repository";
-import StudioPreviewAccess from "../../projects/StudioPreviewAccess.client";
+import StudioPreviewAccess from "../../_components/StudioPreviewAccess.client";
 import StudioImageConversation from "./StudioImageConversation.client";
 import {assertTimelineExportWorkerLauncherConfigured} from '@/server/timeline-exports/ecs-runner';
 export const runtime = "nodejs";
@@ -15,8 +15,10 @@ export const metadata: Metadata = {
 };
 export default async function StudioConversationPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ projectId: string }>;
+  searchParams: Promise<{starter?: string | string[]}>;
 }) {
   if (process.env.STUDIO_IMAGE_CONVERSATION_ENABLED !== "true") notFound();
   const access = await resolveStudioPageAccess();
@@ -43,6 +45,7 @@ export default async function StudioConversationPage({
           {access.ok && project ? (
             <StudioImageConversation
               key={`${access.userId}:${projectId}`}
+              starter={(await searchParams).starter}
               projectId={projectId}
               accountKey={access.userId}
               projectName={project.name}

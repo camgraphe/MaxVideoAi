@@ -1,4 +1,4 @@
-import type {WorkspaceTimelineItem} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
+import type {WorkspaceTimelineItem} from '@/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
 import {resolveStudioMedia} from './media-resolver';
 import type {createSignedDownloadUrl} from '@/server/storage';
 import {createConversationMediaReadAccess, type ConversationMediaReadAccess} from './conversation-media-read-access';

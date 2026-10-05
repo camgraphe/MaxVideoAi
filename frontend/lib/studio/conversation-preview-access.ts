@@ -1,4 +1,4 @@
-import type {WorkspaceTimelineItem} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
+import type {WorkspaceTimelineItem} from '@/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
 
 /** Polling canonical edits must not reload a still-valid mounted private decoder. */
 export function retainConversationMediaAccess(previous: WorkspaceTimelineItem[],fresh: WorkspaceTimelineItem[],nowMs: number,forceRenewItemId?: string): WorkspaceTimelineItem[] {

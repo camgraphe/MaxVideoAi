@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {isWorkspaceModelCertifiedForBlock,isStudioConversationAudioModeCertified} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-model-certification';
+import {isWorkspaceModelCertifiedForBlock,isStudioConversationAudioModeCertified} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/models/workspace-model-certification';
 import {normalizeAudioGenerationRequest,audioRequestToGenerationBody} from '../frontend/src/server/agent-api/audio-normalization';
 import {listAudioCapabilities} from '../frontend/src/server/agent-api/audio-capabilities';
 import {prepareAudioRun} from '../frontend/src/server/audio/prepare-audio';

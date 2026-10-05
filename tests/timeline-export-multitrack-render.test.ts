@@ -7,8 +7,8 @@ import {join,resolve} from 'node:path';
 import {homedir,tmpdir} from 'node:os';
 import {bundle} from '@remotion/bundler';
 import {makeCancelSignal,renderMedia,selectComposition} from '@remotion/renderer';
-import {buildWorkspaceTimelineRenderManifest} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
-import type {WorkspaceTimelineItem} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
+import {buildWorkspaceTimelineRenderManifest} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-render';
+import type {WorkspaceTimelineItem} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
 import type {TimelineExportRenderProps} from '../frontend/src/remotion/timeline-export/types';
 
 // Explicit opt-in: a real local Chromium/FFmpeg render, never a provider or worker dispatch.

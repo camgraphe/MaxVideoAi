@@ -6,7 +6,7 @@ import {actionFromTool} from '../frontend/lib/studio/conversation-action-contrac
 import {conversationSelectionSettings} from '../frontend/lib/studio/conversation-creation-contract';
 import {requireStudioGenerationRequest} from '../frontend/src/server/agent-api/generation-actor';
 import {normalizeGenerationRequest} from '../frontend/src/server/agent-api/generation-normalization';
-import {isStudioConversationVideoModeCertified} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-model-certification';
+import {isStudioConversationVideoModeCertified} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/models/workspace-model-certification';
 
 const actor={authMethod: 'studio-session' as const,userId: 'owner',projectId: 'project',clientId: null};
 const membership={tier: 'member' as const,source: 'app_receipts_rolling_30d' as const,spent30Cents: 0,thresholdCents: 0,discountPercent: 0};

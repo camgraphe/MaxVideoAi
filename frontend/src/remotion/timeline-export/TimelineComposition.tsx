@@ -1,11 +1,11 @@
 import React from 'react';
 import { AbsoluteFill, Audio, Img, Sequence, OffthreadVideo, useVideoConfig } from 'remotion';
-import type { WorkspaceTimelineRenderClip } from '../../../app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
+import type { WorkspaceTimelineRenderClip } from '../../../app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-render';
 import type { TimelineExportRenderProps } from './types';
 import {
   resolveWorkspaceAudioProvenance,
   shouldMuteWorkspaceTimelineVideo,
-} from '../../../app/(core)/(workspace)/app/studio/workspace/_lib/workspace-audio-provenance';
+} from '../../../app/(core)/(workspace)/app/studio/_shared/_lib/workspace-audio-provenance';
 
 function secondsToFrames(seconds: number, fps: number): number {
   return Math.max(0, Math.round(seconds * fps));

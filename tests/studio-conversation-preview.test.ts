@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import type {WorkspaceTimelineItem} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
+import type {WorkspaceTimelineItem} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
 const item = (id: string): WorkspaceTimelineItem => ({id,title: id,track: 'video',startSec: 0,durationSec: 3,mediaKind: 'video',assetNodeId: id,mediaUrl: 'https://media.maxvideoai.com/'+id,ref: {type: 'asset',assetId: 'ma_'+'1'.repeat(32),kind: 'video'},thumbnailUrl: 'https://media.maxvideoai.com/thumb',mediaAccessRequired: true,mediaAccessUrl: 'https://signed.test/old',mediaAccessExpiresAt: new Date(300000).toISOString()} as WorkspaceTimelineItem);
 test('private video/audio sources survive ordinary refresh, while expiry, invalidation and changed references replace them',async () => {
   const module = await import('../frontend/lib/studio/conversation-preview-access').catch(() => null);assert.ok(module?.retainConversationMediaAccess);

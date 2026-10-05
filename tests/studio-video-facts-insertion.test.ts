@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFile } from 'node:fs/promises';
 import { editStudioConversationTimeline } from '../frontend/src/server/studio/conversation-edit-command';
-import { createWorkspaceSequenceRecord } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-state';
+import { createWorkspaceSequenceRecord } from '../frontend/app/(core)/(workspace)/app/studio/_shared/_state/workspace-state';
 
 const facts = { source: 'probe' as const, durationSec: 6, width: 320, height: 180, hasAudio: true };
 const ref = { type: 'job-output' as const, jobId: 'job', outputId: 'job:video:0', kind: 'video' as const };

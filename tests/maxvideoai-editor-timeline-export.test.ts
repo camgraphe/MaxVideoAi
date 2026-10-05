@@ -1,4 +1,3 @@
-import {stripStudioMediaAccess} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-media-access';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
@@ -9,27 +8,27 @@ import {
   workspaceTimelineExportArtifactUrl,
   workspaceTimelineVideoExportSubmitDisabled,
   workspaceProjectAssetFromCompletedTimelineExport,
-} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-export';
+} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-export';
 import {
   parseWorkspaceTimelineExportSession,
   snapshotWorkspaceTimelineExportSubmission,
   workspaceTimelineExportSubmittedManifest,
-} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-export-session';
+} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-export-session';
 import {
   buildWorkspaceTimelineRenderManifest,
   serializeWorkspaceTimelineRenderManifest,
-} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
+} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-render';
 import {
   buildWorkspaceClipComposition,
   resolveWorkspaceClipFitHeightScale,
-} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-clip-composition';
+} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-clip-composition';
 import type {
   WorkspaceTimelineRenderManifest,
-} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
+} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-render';
 import type {
   WorkspaceGraphNode,
   WorkspaceTimelineItem,
-} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
+} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
 
 const readyManifest: WorkspaceTimelineRenderManifest = {
   version: 1,
@@ -55,7 +54,7 @@ const readyManifest: WorkspaceTimelineRenderManifest = {
   issues: [],
 };
 
-const exportControllerPath = 'frontend/app/(core)/(workspace)/app/studio/workspace/_controllers/useExportController.ts';
+const exportControllerPath = 'frontend/app/(core)/(workspace)/app/studio/_shared/_controllers/useExportController.ts';
 
 test('viewer composition keeps source dimensions separate from sequence dimensions', () => {
   const composition = buildWorkspaceClipComposition({
@@ -508,7 +507,4 @@ test('completed private export preserves a canonical asset ref and a renewable d
   assert.deepEqual(asset.ref,{type:'asset',assetId:'owned-output-asset',kind:'video'});
   assert.equal(asset.mediaAccessRequired,true);assert.equal(asset.mediaAccessUrl,job.outputUrl);
   assert.doesNotMatch(JSON.stringify(session),/X-Amz-/);
-  const persisted = stripStudioMediaAccess(asset) as typeof asset;
-  assert.equal(persisted.mediaAccessUrl,undefined);assert.equal(persisted.url,job.canonicalOriginalUrl);
-  assert.deepEqual(persisted.ref,asset.ref);
 });

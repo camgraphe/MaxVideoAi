@@ -29,7 +29,7 @@ function services(calls: unknown[]): MaxVideoAiMcpServices {
       return {
         schemaVersion: 1, status: 'studio_project', persisted: true, title: input.title,
         projectId: 'project-1', sequenceId: 'sequence-1', revision: 0,
-        studioUrl: '/app/studio/workspace/project-1', clipCount: 2,
+        studioUrl: '/app/studio/conversation/project-1', clipCount: 2,
         totalFrames: 48, totalSeconds: 2, orderingBasis: 'caller_supplied',
       };
     },
@@ -83,7 +83,7 @@ test('create_studio_montage is separately gated, strict, persisted and explicitl
   assert.deepEqual(result.structuredContent, {
     schemaVersion: 1, status: 'studio_project', persisted: true, title: input.title,
     projectId: 'project-1', sequenceId: 'sequence-1', revision: 0,
-    studioUrl: '/app/studio/workspace/project-1', clipCount: 2,
+    studioUrl: '/app/studio/conversation/project-1', clipCount: 2,
     totalFrames: 48, totalSeconds: 2, orderingBasis: 'caller_supplied',
   });
   assert.deepEqual(calls, [{ input, principal }]);

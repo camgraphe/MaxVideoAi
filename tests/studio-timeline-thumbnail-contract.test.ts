@@ -4,7 +4,7 @@ import test from 'node:test';
 import {
   buildWorkspaceTimelineItemsForAsset,
   buildWorkspaceTimelineItemsForOutput,
-} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-builders';
+} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/timeline/timeline-builders';
 
 test('timeline builders never promote a video original to an image thumbnail', () => {
   const [assetVideo] = buildWorkspaceTimelineItemsForAsset({

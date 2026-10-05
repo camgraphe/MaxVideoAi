@@ -7,10 +7,10 @@ import { createRoot } from 'react-dom/client';
 import {
   normalizeTimelineExportClientJob,
   useExportController,
-} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_controllers/useExportController';
+} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_controllers/useExportController';
 import { resolveStudioCopy } from '../frontend/app/(core)/(workspace)/app/studio/_lib/studio-copy';
-import { parseWorkspaceTimelineExportSession } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-export-session';
-import type { WorkspaceTimelineRenderManifest } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
+import { parseWorkspaceTimelineExportSession } from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-export-session';
+import type { WorkspaceTimelineRenderManifest } from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-render';
 import type { TimelineExportJobRecord } from '../frontend/src/server/timeline-exports/repository';
 
 const manifest: WorkspaceTimelineRenderManifest = {

@@ -3,13 +3,13 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {Download,X} from 'lucide-react';
 import {useI18n} from '@/lib/i18n/I18nProvider';
 import {resolveStudioCopy} from '../../../_lib/studio-copy';
-import {useExportController,normalizeTimelineExportClientJob} from '../../../workspace/_controllers/useExportController';
-import {buildWorkspaceTimelineRenderManifest} from '../../../workspace/_lib/workspace-timeline-render';
-import type {WorkspaceTimelineExportQualityPreset} from '../../../workspace/_lib/workspace-timeline-export';
+import {useExportController,normalizeTimelineExportClientJob} from '../../../_shared/_controllers/useExportController';
+import {buildWorkspaceTimelineRenderManifest} from '../../../_shared/_lib/workspace-timeline-render';
+import type {WorkspaceTimelineExportQualityPreset} from '../../../_shared/_lib/workspace-timeline-export';
 import type {ConversationTimelineView} from '../_hooks/useConversationTimeline';
 import styles from '../conversation-timeline.module.css';
 import type {StudioProjectTimelineExport} from '@/server/timeline-exports/contracts';
-import type {TimelineExportClientJob} from '../../../workspace/_state/workspace-state';
+import type {TimelineExportClientJob} from '../../../_shared/_state/workspace-state';
 
 export function ConversationExport({projectId,projectName,view,pending,jobs,onChange}: {projectId: string;projectName: string;view: ConversationTimelineView;pending: boolean;jobs: StudioProjectTimelineExport[];onChange: () => void}) {
   const {dictionary,locale} = useI18n();

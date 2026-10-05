@@ -15,7 +15,7 @@ import {studioVisualCapabilityDetails} from '../frontend/src/server/studio/conve
 import type {CanonicalGenerationRequest} from '../frontend/src/server/agent-api/generation-types';
 import type {ResolvedReference} from '../frontend/src/server/agent-api/reference-types';
 import {toolAssetRefSchema,type ToolAssetRef} from '../frontend/src/lib/toolbox/contract';
-import {isWorkspaceModelCertifiedForBlock} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-model-certification';
+import {isWorkspaceModelCertifiedForBlock} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/models/workspace-model-certification';
 import {resolveStudioMedia} from '../frontend/src/server/studio/media-resolver';
 import {projectAgentModelModeDetails} from '../frontend/src/server/agent-api/model-details';
 import {workflowCatalog,workflowAction,workflowInput,workflowActor,workflowReference,workflowResolved} from './helpers/studio-video-workflow-fixtures';

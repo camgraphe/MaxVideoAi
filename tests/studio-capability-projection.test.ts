@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { getFalEngineById } from '../frontend/src/config/falEngines';
-import { isWorkspaceModelCertifiedForBlock } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-model-certification';
+import { isWorkspaceModelCertifiedForBlock } from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/models/workspace-model-certification';
 import { AgentApiError } from '../frontend/src/server/agent-api/errors';
 import * as modelDetails from '../frontend/src/server/agent-api/model-details';
 import type { AgentPublicCatalogEngine } from '../frontend/src/server/agent-api/model-catalog';

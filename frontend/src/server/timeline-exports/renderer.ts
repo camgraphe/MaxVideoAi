@@ -12,7 +12,7 @@ import {
 } from '@/server/storage';
 import { createVideoThumbnailFromFile } from '@/server/upload-thumbnails';
 import type { MediaAssetRecord } from '@/server/media-library-records';
-import type { WorkspaceTimelineRenderManifest } from '../../../app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
+import type { WorkspaceTimelineRenderManifest } from '../../../app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-render';
 import { releaseFailedTimelineExportBilling } from './billing';
 import {
   completeTimelineExportJob,

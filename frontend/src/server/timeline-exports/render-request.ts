@@ -3,8 +3,8 @@ import { timelineExportIdempotencyKeySchema } from './idempotency';
 import type {
   WorkspaceTimelineVideoExportRequest,
   WorkspaceTimelineVideoExportSettings,
-} from '../../../app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-export';
-import type { WorkspaceTimelineRenderManifest } from '../../../app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
+} from '../../../app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-export';
+import type { WorkspaceTimelineRenderManifest } from '../../../app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-render';
 
 export const MAX_EXPORT_DURATION_SEC = 30 * 60;
 export const MAX_EXPORT_CLIPS = 120;

@@ -2,7 +2,7 @@ import { WALLET_FUNDED_RECEIPT_SQL } from '@/lib/wallet-funding';
 import { query, withDbTransaction } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import { lockUserWalletInExecutor } from '@/lib/wallet';
-import type { WorkspaceTimelineExportQualityPreset } from '../../../app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-export';
+import type { WorkspaceTimelineExportQualityPreset } from '../../../app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-export';
 import type { TimelineExportBillingStatus } from './contracts';
 import { estimateTimelineExportPrice, resolveTimelineExportQuota } from './pricing';
 import {

@@ -1,6 +1,6 @@
 import { createOwnedMediaReadUrl } from '@/server/owned-media-read-access';
 import { extractStorageKeyFromUrl, ownedMediaStorageKeyForUrl, isAllowedAssetHost } from '@/server/storage';
-import type { WorkspaceTimelineRenderManifest } from '../../../app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
+import type { WorkspaceTimelineRenderManifest } from '../../../app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-render';
 
 export const MAX_EXPORT_MEDIA_BYTES = 512 * 1024 * 1024;
 export const MAX_EXPORT_AGGREGATE_MEDIA_BYTES = 2 * 1024 * 1024 * 1024;

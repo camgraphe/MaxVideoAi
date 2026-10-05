@@ -51,15 +51,20 @@ test('all released finishing tools are discoverable from Toolbox, the app menu a
   for (const tool of finishingDefinitions) assert.ok(menuHrefs.has(tool.href), `${tool.id} should be in the app tool menu`);
   assert.ok(NAV_ITEMS.some((item) => item.id === 'tools' && item.href === '/app/tools'), 'Studio account navigation should expose Toolbox');
 
-  const studioTopbarSource = readFileSync(
-    join(process.cwd(), 'frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceEditorTopbar.tsx'),
+  const headerSource = readFileSync(
+    join(process.cwd(), 'frontend/components/HeaderBar.tsx'),
     'utf8'
   );
   const appMenuSource = readFileSync(
     join(process.cwd(), 'frontend/components/app/AppSiteMenu.client.tsx'),
     'utf8'
   );
-  assert.match(studioTopbarSource, /AppSiteMenuButton/);
+  for (const page of ['page.tsx', 'conversation/[projectId]/page.tsx']) {
+    const studioSource = readFileSync(join(process.cwd(), `frontend/app/(core)/(workspace)/app/studio/${page}`), 'utf8');
+    assert.match(studioSource, /<HeaderBar\b/);
+    assert.match(studioSource, /<AppSidebar\s*\/>/);
+  }
+  assert.match(headerSource, /<AppSiteMenu\b/);
   assert.match(appMenuSource, /getAppMenuItems\([^)]*studioVisible/);
 });
 test('versioned blocks preserve exact typed IDs and reject ambiguous references and provider settings', () => {

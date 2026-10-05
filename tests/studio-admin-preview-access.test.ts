@@ -13,7 +13,7 @@ function routeFiles(directory: string): string[] {
   });
 }
 
-test('Studio beta is discoverable while projects, workspaces, and APIs retain shared account access', () => {
+test('Studio beta is discoverable while conversations and APIs retain shared account access', () => {
   const navigation = read('frontend/components/app/app-navigation.ts');
   const sidebar = read('frontend/components/AppSidebar.tsx');
   const header = read('frontend/components/HeaderBar.tsx');
@@ -30,21 +30,38 @@ test('Studio beta is discoverable while projects, workspaces, and APIs retain sh
   assert.doesNotMatch(visitorAccess, /normalized\.startsWith\('\/app\/studio/);
   assert.match(middleware, /canUseLocalAdminBypassForProtectedPath\(req, pathname, FEATURES\.studio\.adminOnly\)/);
 
-  const projectsPage = read('frontend/app/(core)/(workspace)/app/studio/projects/page.tsx');
-  assert.match(projectsPage, /resolveStudioPageAccess\(\)/);
-  assert.match(projectsPage, /StudioPreviewAccess/);
-  assert.match(projectsPage, /access\.ok/);
-  assert.match(projectsPage, /query\.preview === 'studio-beta'/, 'admins should be able to review the gated surface without changing access');
-
   for (const path of [
-    'frontend/app/(core)/(workspace)/app/studio/workspace/page.tsx',
-    'frontend/app/(core)/(workspace)/app/studio/workspace/[projectId]/page.tsx',
+    'frontend/app/(core)/(workspace)/app/studio/page.tsx',
+    'frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/page.tsx',
   ]) {
     const source = read(path);
-    assert.match(source, /resolveStudioPageAccess/);
-    assert.match(source, /if \(!access.ok\) notFound\(\)/);
-    assert.match(source, /notFound\(\)/);
+    assert.match(source, /await resolveStudioPageAccess\(\)/);
+    assert.match(source, /if\s*\(!access.ok\s*&&\s*access.status\s*===\s*404\)\s*notFound\(\)/);
+    assert.match(source, /StudioPreviewAccess/);
+    assert.match(source, /access\.ok/);
   }
+  const entry = read('frontend/app/(core)/(workspace)/app/studio/page.tsx');
+  assert.match(entry, /if\s*\(!access.ok\s*&&\s*access.status\s*===\s*401\)\s*redirect\(buildLoginHref/);
+  assert.match(entry, /access.ok\s*&&\s*conversationEnabled/);
+  assert.match(entry, /listStudioConversationProjects\(access.userId\)/);
+  const conversation = read('frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/page.tsx');
+  assert.match(conversation, /const project = access.ok\s*\? await readImageConversationProject\(access.userId, projectId\)/);
+  assert.match(conversation, /if \(access.ok && !project\) notFound\(\)/);
+  assert.match(conversation, /visitor=\{!access.ok && access.status === 401\}/);
+
+  const projectsRedirect = read('frontend/app/(core)/(workspace)/app/studio/projects/page.tsx');
+  assert.match(projectsRedirect, /resolveStudioMarketingStarter/);
+  assert.match(projectsRedirect, /redirect\(starter\s*\?/);
+  assert.match(projectsRedirect, /encodeURIComponent\(starter\)/);
+  assert.match(projectsRedirect, /'\/app\/studio'/);
+  assert.doesNotMatch(projectsRedirect, /readStudioProject|StudioProjectsPageClient/);
+  assert.match(read('frontend/app/(core)/(workspace)/app/studio/workspace/page.tsx'), /redirect\('\/app\/studio'\)/);
+  const projectRedirect = read('frontend/app/(core)/(workspace)/app/studio/workspace/[projectId]/page.tsx');
+  assert.match(projectRedirect, /await resolveStudioPageAccess\(\)/);
+  assert.match(projectRedirect, /if\s*\(!access.ok\)\s*redirect\('\/app\/studio'\)/);
+  assert.match(projectRedirect, /readStudioConversationProjectId\(access.userId,\s*projectId\)/);
+  assert.match(projectRedirect, /redirect\(connectedProjectId/);
+  assert.match(projectRedirect, /\/app\/studio\/conversation\/\$\{encodeURIComponent\(connectedProjectId\)\}/);
 
   const access = read('frontend/src/server/studio/access.ts');
   assert.match(access, /getRouteAuthContext\(request\)/);

@@ -71,7 +71,7 @@ async function main() {
       'frontend/src/server/audio/media.ts','frontend/src/server/audio/video-mux-args.ts',
       'frontend/src/server/studio/media-resolver.ts',
       'frontend/src/server/studio/output-reference-facts.ts',
-      'frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-model-certification.ts',
+      'frontend/app/(core)/(workspace)/app/studio/_shared/_lib/models/workspace-model-certification.ts',
       'frontend/src/server/agent-api/model-details.ts','frontend/src/server/studio/conversation-capabilities.ts',
       'frontend/src/server/agent-api/generation-pricing.ts','frontend/src/server/agent-api/generation-pricing-read.ts',
       'frontend/src/server/agent-api/generation-omni-pricing-facts.ts','frontend/src/server/engines.ts',

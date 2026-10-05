@@ -27,7 +27,9 @@ import {ConversationReply} from './_components/ConversationReply';
 import {ConversationMediaShelf} from './_components/ConversationMediaShelf.client';
 import {useConversationMediaShelf} from './_hooks/useConversationMediaShelf';
 import {insertMediaMention,removeMediaMention,readShelfDrag,MEDIA_SHELF_DRAG_TYPE,type ShelfMedia} from './_lib/conversation-media-shelf';
+import {studioMarketingStarterMessage} from '../../_lib/studio-project-marketing-entry';
 function StudioImageConversationWorkspace({
+  starter,
   projectId,
   accountKey,
   projectName,
@@ -37,6 +39,7 @@ function StudioImageConversationWorkspace({
   exportsEnabled = false,
   exportAvailable = false,
 }: {
+  starter?: string | string[];
   projectId: string;
   accountKey: string;
   projectName: string;
@@ -61,7 +64,7 @@ function StudioImageConversationWorkspace({
   const [following, setFollowing] = useState(true);
   const helpTrigger = useRef<HTMLButtonElement>(null);
   const composerRegion = useRef<HTMLDivElement>(null);
-  const [text, setText] = useState("");
+  const [text, setText] = useState(() => studioMarketingStarterMessage(starter,locale));
   const shelf = useConversationMediaShelf(studio.conversation.turns,locale,mediaEnabled);
   const references = shelf.references;
   const unavailableReferences = !mediaEnabled&&references.some(ref=>ref.kind&&ref.kind!=='image');
