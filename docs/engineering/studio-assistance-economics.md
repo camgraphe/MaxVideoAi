@@ -1,16 +1,18 @@
-# Studio assistance credits (gated beta)
+# Studio assistance credits
 
-Implemented 2026-10-03; the new credit policy remains gated. The approved legacy
-assistance policy remains supported until an explicit credit-policy activation. Text-only provider and
+Implemented 2026-10-03; public credit-policy activation was approved by the product
+owner on 2026-10-05. The approved legacy assistance policy remains supported for
+historical recovery and a controlled rollback. Text-only provider and
 protected staging qualification are recorded in the
 [main-integration evidence](../operations/studio-main-integration-2026-10-04.md).
-That operational record owns migration/deployment status; this guide defines the
-accounting contract and does not authorize public paid activation.
+The [credit activation runbook](../operations/studio-assistance-activation-2026-10-05.md)
+owns this release's migration, funding decision and deployment procedure. This
+guide defines the accounting contract; it is not an independent activation approval.
 
 ## Policy and customer contract (2026-10-05)
 
-The new credit policy is `studio-credits-2026-10-05-v2`. It remains closed in
-production until separately approved. An existing
+The new credit policy is `studio-credits-2026-10-05-v2`. Its production activation
+requires the separately approved environment change and migration 63. An existing
 `studio-beta-2026-10-03-v1` approval continues the legacy allowance and wallet-limit
 policy without reading credit tables or changing its tariff. Unknown approvals
 remain disabled; neither approval implies the other. `assistance-policy.ts` selects
