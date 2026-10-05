@@ -1,0 +1,76 @@
+# Acquisition measurement preparation — 2026-10-05
+
+Status: local implementation and focused verification prepared; **first-payer paid-acquisition readiness remains incomplete**. No production analytics/Stripe configuration, live payment, generation, database migration, push or deployment was performed. GA4, wallet credit, Stripe cash and contribution margin remain different evidence sources.
+
+## What changed locally
+
+- Browser and server GA4 transport share a strict 25-parameter budget. Transport/payment core, first/last source/medium/campaign/content and milestone evidence precede optional diagnostics. A fully attributed purchase no longer blindly sends every receipt diagnostic.
+- Marketing primary actions use existing bounded `cta_click` attributes. Studio uses `studio_open` at `studio_hero`/`studio_closing`; integration setup uses `mcp_setup_guide` at `integration_hero`; MCP choice uses `mcp_choose_integration` at `mcp_hero`. Setup clicks remain observations.
+- Authenticated Studio entry emits `studio_entered`; public `/studio` does not. The safe path and workspace taxonomy now preserve Studio context.
+- `first_media_completed_in_journey` means the first observed successful media result in the consented 90-day browser journey. It persists an optional v1 marker, so existing journey attribution survives without a storage migration. Failed first attempts and payment-before-media are allowed. Correlated video jobs, existing emitting tools and positively completed Studio generations confirmed in the current visit are covered. Merely loading historical jobs/media cannot invent a new success.
+- Google creation classification uses the verified account `created_at` during a valid 10-minute pending Google intent, independent of the signup/signin UI mode. Cookie-only fallback preserves the intent; the verified destination user consumes it once. Password completion retains legal-consent persistence before its event. Email-confirmation-required signup responses do not prove an authenticated active account.
+- Authenticated milestones defer while commercial role eligibility is unknown. The existing read-only `/api/admin/access` adds a bounded `commercialAnalyticsEligible` projection from both authoritative current and legacy admin tables. Browser role reads require analytics or Ads consent, dedupe for 30 seconds and use the bearer session when available; later consent updates resume the strict lookup from the current session. Metadata admins, DB-only admins, missing/error role data and failed lookups are suppressed without delaying authentication, rendering or payment. Actual account changes clear deferred events/correlation; initial auth continuation and same-user revalidation retain them. Anonymous public visits can include unidentified admins and must not be called a clean commercial denominator.
+- Stripe payment and refund measurement requires trusted object `livemode === true`, consent and strict non-admin role eligibility. Metadata cannot spoof live mode. Unknown/test objects are suppressed even if a test GA4 collector is configured.
+- Canonical wallet receipts retain trusted mode and `first_recorded_external_payment`. Positive manual/test credit does not create an external payer. Existing positive external wallet/direct-charge receipts, including unknown legacy mode, conservatively prevent a new-payer classification. The existing per-user wallet transaction lock serializes concurrent wallet receipts. A savepoint isolates optional history-query failures: history becomes unknown, GA4 is suppressed and the real receipt can still commit.
+
+## Milestone semantics
+
+| Milestone | Evidence | Use in acquisition readout |
+| --- | --- | --- |
+| Visit | `funnel_entry`, safe `page_view` | Consented browser reach only; no forced ordered denominator. |
+| Primary action | Bounded `cta_click` | Intent/interaction, independently observed. |
+| Account creation | `sign_up_completed`, account creation timestamp and persisted consent | Separate creation from login and email confirmation; validate authenticated acceptance before optimization. |
+| Studio entered | `studio_entered` after eligible account resolution | Authenticated Studio visit, not generated output. |
+| Effective MCP connection | Existing server `oauth_connection_completed` after authenticated binding | Independent effective connection; never installation inferred from setup clicks. Filter authoritative admin/test evidence in server readouts. |
+| First observed successful media | `first_media_completed_in_journey`; MCP internal trial/paid completion separately | Journey scope and covered surfaces must be explicit; not lifetime-account first media or universal cross-client coverage. |
+| Confirmed wallet funding | Canonical live Stripe receipt and `purchase`/`topup_completed` attempt | Deduped receipt evidence; GA4 collector acceptance still requires validation. |
+| First recorded external receipt | `is_first_recorded_external_payment` on wallet purchase | Known recorded history only; unavailable as proven lifetime first payer while direct-card coverage is incomplete. |
+| Repeat wallet funding | Recorded-history flag false, receipt identity | Separate repeat top-ups from first wallet credit and manual/test ledger operations. |
+
+The existing `is_first_generation` denotes first **attempt**, and `is_first_wallet_topup` denotes first positive wallet credit under its older ledger contract. Neither is interchangeable with first successful media or first external cash payment. No required signup → generation → payment sequence is invented.
+
+## Exact attribution candidate
+
+One draft campaign is `claude_desktop_clip_20261005`; channel selection remains open. The bounded taxonomy accepts this exact campaign/content set for candidate `youtube/paid_video` and `google/cpc`, preserving campaign preparation beyond Search. It does not activate a campaign or assert delivery.
+
+| `utm_content` | Draft creative |
+| --- | --- |
+| `result_horizontal48` | Result, horizontal, 48 seconds |
+| `result_vertical48` | Result, vertical, 48 seconds |
+| `quote_horizontal48` | Quote, horizontal, 48 seconds |
+| `quote_vertical48` | Quote, vertical, 48 seconds |
+| `result_horizontal24` | Result, horizontal, 24 seconds |
+| `result_vertical24` | Result, vertical, 24 seconds |
+| `quote_horizontal24` | Quote, horizontal, 24 seconds |
+| `quote_vertical24` | Quote, vertical, 24 seconds |
+
+Local candidate fixture:
+
+```text
+https://maxvideoai.com/integrations/claude?utm_source=youtube&utm_medium=paid_video&utm_campaign=claude_desktop_clip_20261005&utm_content=result_horizontal48
+```
+
+The behavior test starts with denied consent, grants consent, preserves exact approved fields through a simulated OAuth return and wallet projection, and excludes the private OAuth query value. First touch is immutable within the journey; last touch follows the existing browser touch resolver. An older open tab can still overwrite a newer last touch because the resolver rereads that tab's original referrer/URL; this preparation does not claim person-level attribution across tabs/devices. Consent withdrawal starts a new journey on regrant.
+
+## Remaining launch blockers and limits
+
+1. **Active direct-card coverage:** authenticated `POST /api/wallet` with `mode=direct` reaches `createWalletDirectPaymentIntent`, creating a captured `kind=run` payment before generation. The direct helper currently omits analytics consent/source metadata; `payment_intent.succeeded` top-up handling skips `kind=run`. `persistFinalChargeReceipt` occurs only after generation submission, lacks the shared wallet measurement lock/idempotent emission owner, and cannot observe a capture abandoned before submission. Adding GA4 only there would falsely equate media submission with payment confirmation. Required follow-up: preserve consent/attribution on direct intent creation; add a trusted confirmed-payment evidence owner with unique PI identity for both flows; use common account serialization and conservative historical completeness; then measure the first external payer separately from repeat top-ups. No fulfillment rewrite or migration was attempted here.
+2. **Coverage of media:** dedicated image/audio workspaces lack a correlated browser start/completion owner; MCP server completion is a different internal source. A Studio confirmation during unresolved eligibility with no existing journey can be omitted. Do not report the new browser milestone as all first media, account lifetime or cross-client activation. Add specific accepted/result owners and consent/account lifecycle tests before making that claim.
+3. **GA4 reliability:** canonical receipt dedupe permits at most one GA4 emission attempt, not guaranteed delivery. A role lookup/collector failure after insertion is not retried by the duplicate receipt or processed webhook path. No GA4 outbox exists; receipt flags remain the payment evidence. Refund collection likewise remains best effort. Reconcile Stripe captured/live payments and canonical receipts independently from GA4; revenue is not margin.
+4. **Acceptance validation:** no authenticated live Google/new-vs-existing account flow, ordinary/admin role flow, effective Claude connection, generation or live Stripe payment/refund was exercised. Test-mode Stripe objects are deliberately excluded from commercial collection. Use local mock-collector tests for payload validation and a separately authorized acceptance plan for live evidence. Verify GA4 property custom definitions, key events, unwanted referrals, actual source/session and delayed-method attribution before paid optimization.
+5. **Session attribution:** checkout preserves the configured GA4 client and bounded session IDs, but Google documents a 24-hour limit for associating Measurement Protocol events with an online session. Delayed settlement cannot be promised a joined acquisition session. HTTP 2xx alone does not prove accepted GA4 event data.
+6. **Legacy Google Ads return conversion:** the browser success-return helper now suppresses unknown/excluded roles, including later retry transitions. Its return-page signal still does not verify a live captured payment, canonical transaction identity or lifetime first payer. Do not import it as authoritative purchase evidence or use it for CPA/first-payer optimization. Select a channel and a separately verified conversion contract before enabling purchase optimization; the present draft permits website-visit learning only.
+
+## Local evidence and historical dependency review
+
+Final focused analytics/auth/webhook/Studio tests passed 202/202, including deferred role/correlation, initial auth continuation, same-user revalidation, account switching and metadata-admin return regressions. Dedicated disposable PostgreSQL checks passed 2/2, exercising concurrent wallet locks, manual/test/legacy/direct receipt history, current/legacy admin policy and recovery from a real SQL measurement error followed by successful receipt commit. A transient macOS shared-memory exhaustion at initdb was retried serially and passed; unrelated disposable servers were untouched. Final frontend TypeScript, focused ESLint and git diff whitespace checks passed. Full lint/build and browser/performance acceptance are coordinator-owned.
+
+The coordinator's broader suite then exposed two added-client regressions, both reproduced before correction: a measurement-only role GET without analytics/Ads consent crossed the existing auth/legal request contract; direct public env access required a Node `process` shim in a real gallery browser bundle. The role lookup is now consent-gated with a tested later-grant observer, and public env lookup preserves literal build substitution while tolerating a browser without `process`. Both original behavioral tests and the added deny→grant/configured-GA-disable checks passed. The subsequent focused analytics/auth/header/gallery/Studio rerun passed 129/129, with TypeScript, focused ESLint and whitespace checks passing again.
+
+A final shared-auth dependency check exposed an unnecessary runtime import of all three complete locale dictionaries through login helpers. The helpers now reuse the existing bounded locale list and retain copy types only. The actual browser dependency-graph test failed before correction and passed afterward with 25 local inputs and zero complete message dictionaries. The relevant login/auth/role suite passed 87/87; consent withdrawal and regrant also verify a fresh authoritative role lookup. TypeScript and focused ESLint passed again. This graph check establishes the dependency boundary, not a measured Core Web Vitals gain.
+
+The 2026-09-25 `BK05-GA4-DIAGNOSTIC.md` and the 2026-10-05 paid-ads `ETUDE.md` are historical analysis inputs, not proof of current instrumentation defects or fresh non-admin commercial cohorts. Current code already preserved configured GA4 session/client IDs; this change addresses the observed parameter budget and current milestone/classification gaps. No historical GA4=wallet=Stripe reconciliation or profitable CPA is asserted.
+
+Read-only Desktop comparison found only a scoped analytics-route recovery exclusion (+1/-1) and already present callback logic; unrelated Desktop changes were not imported. Existing canonical receipt/lock, wallet attribution and MCP effective-binding contracts remain dependencies. The Desktop-only wallet classification helper covers refund reversals, not a current general first-payer owner.
+
+Official sources reviewed today: [GA4 Measurement Protocol reference](https://developers.google.com/analytics/devguides/collection/protocol/ga4/reference), [session attribution use cases](https://developers.google.com/analytics/devguides/collection/protocol/ga4/use-cases), [Stripe webhook behavior](https://docs.stripe.com/webhooks). See [the GA4 operating guide](../../analytics/ga4-topups.md) for report setup and release acceptance.

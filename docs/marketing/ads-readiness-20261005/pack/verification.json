@@ -1,0 +1,168 @@
+{
+  "builtAt": "2026-10-05T11:43:25.200Z",
+  "mode": "all",
+  "ffmpegVersion": "ffmpeg version 7.1.1 Copyright (c) 2000-2025 the FFmpeg developers",
+  "sharpVersion": "0.35.4",
+  "outputs": [
+    {
+      "path": "exports/claude-clip-a-horizontal-review.mp4",
+      "sha256": "a0c893623802a28d5153b31f9498dbf88bd1651f99bf324a8607e827f4eb62ff",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1920,
+          "height": 1080,
+          "pix_fmt": "yuv420p",
+          "r_frame_rate": "30/1"
+        }
+      ],
+      "format": {
+        "duration": "48.000000",
+        "size": "2741948"
+      }
+    },
+    {
+      "path": "exports/claude-clip-a-horizontal-short24-review.mp4",
+      "sha256": "2c15ab4deb5ca94bc746474b61fe42d68d4f06b2fb662835bc675d72d5b9fa7a",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1920,
+          "height": 1080,
+          "pix_fmt": "yuv420p",
+          "r_frame_rate": "30/1"
+        }
+      ],
+      "format": {
+        "duration": "24.000000",
+        "size": "1903970"
+      }
+    },
+    {
+      "path": "exports/claude-clip-b-horizontal-review.mp4",
+      "sha256": "b334951fca06ad3be651c7494acc042f2e54fb59a96e265e575e5fb8f20c4946",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1920,
+          "height": 1080,
+          "pix_fmt": "yuv420p",
+          "r_frame_rate": "30/1"
+        }
+      ],
+      "format": {
+        "duration": "48.000000",
+        "size": "2758194"
+      }
+    },
+    {
+      "path": "exports/claude-clip-b-horizontal-short24-review.mp4",
+      "sha256": "406e03c8f00b16d50e5a167fd3583e9f92b0ecf318a8bbabee5487cf353fc337",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1920,
+          "height": 1080,
+          "pix_fmt": "yuv420p",
+          "r_frame_rate": "30/1"
+        }
+      ],
+      "format": {
+        "duration": "24.000000",
+        "size": "1914147"
+      }
+    },
+    {
+      "path": "exports/claude-clip-a-vertical-review.mp4",
+      "sha256": "a8db73b73696480756e577c462aa7b30dea383ef1020c50592d00c7e0d936c1d",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1920,
+          "pix_fmt": "yuv420p",
+          "r_frame_rate": "30/1"
+        }
+      ],
+      "format": {
+        "duration": "48.000000",
+        "size": "2801081"
+      }
+    },
+    {
+      "path": "exports/claude-clip-a-vertical-short24-review.mp4",
+      "sha256": "cbb2eda69a7bbd7a648822757811204c46a0427f6e4ecb3cab079f02fe7c3908",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1920,
+          "pix_fmt": "yuv420p",
+          "r_frame_rate": "30/1"
+        }
+      ],
+      "format": {
+        "duration": "24.000000",
+        "size": "1935474"
+      }
+    },
+    {
+      "path": "exports/claude-clip-b-vertical-review.mp4",
+      "sha256": "c6317dd1c6ae39c5a0b3ee022324278967527c5b47c94027811448beec1a5e8c",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1920,
+          "pix_fmt": "yuv420p",
+          "r_frame_rate": "30/1"
+        }
+      ],
+      "format": {
+        "duration": "48.000000",
+        "size": "2829889"
+      }
+    },
+    {
+      "path": "exports/claude-clip-b-vertical-short24-review.mp4",
+      "sha256": "c9c47da57816694bb04dbb79451ba54d949f935f534e2cc65f04403609cc2969",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1920,
+          "pix_fmt": "yuv420p",
+          "r_frame_rate": "30/1"
+        }
+      ],
+      "format": {
+        "duration": "24.000000",
+        "size": "1954921"
+      }
+    }
+  ]
+}

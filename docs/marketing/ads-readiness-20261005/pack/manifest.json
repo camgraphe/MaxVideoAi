@@ -1,0 +1,130 @@
+{
+  "version": 1,
+  "createdAt": "2026-10-05",
+  "purpose": "Reviewable offline creative pack for a single Claude Desktop clip hypothesis",
+  "state": "local_review_only",
+  "localCreationAuthorized": true,
+  "paidGenerationPerformed": false,
+  "externalPublicationPerformed": false,
+  "campaignCreated": false,
+  "paidAdvertisingCleared": false,
+  "releaseBlockers": [
+    "Fresh authenticated Claude Desktop end-to-end recording for the advertised flow is missing.",
+    "Advertising reuse authorization and third-party/model usage rights for the existing assets are not established.",
+    "Platform and placement specifications have not been selected or checked."
+  ],
+  "workingHypothesis": "Claude Desktop users developing a project want to turn its brief into one quoted clip, connect and authorize MaxVideoAI, approve the exact quote and retrieve the completed clip. No conversion gain is established.",
+  "destination": "https://maxvideoai.com/integrations/claude",
+  "cta": "See the Claude Desktop setup",
+  "visualSystem": {
+    "method": "Deterministic SVG + Sharp composition and FFmpeg editing of existing local footage",
+    "palette": ["#080E1A", "#121E32", "#F7FAFF", "#497BFF", "#D8EE79"],
+    "fonts": "Installed Inter with Arial fallback. Raster exports do not embed font files; SVG text remains editable. Check local font licensing before paid release.",
+    "imagePolicy": "Proportional fitting of the full watch frame; no redraw, recoloring, brand replacement, new crop or AI edit.",
+    "logoPolicy": "Exact copied repository SVG, unchanged geometry and colors. No separate assistant/provider logo added.",
+    "labels": ["REVIEW CUT", "EXISTING PRODUCT SAMPLE", "WORKFLOW ILLUSTRATION", "HISTORICAL CAPTURE"],
+    "audio": "Silent. No music, voice, sound effect or borrowed audio.",
+    "motion": "Existing watch plays at normal speed. Generation wait explicitly omitted. No live status simulation."
+  },
+  "assets": [
+    {
+      "id": "watch-video",
+      "path": "../../../../frontend/public/media/mcp/project-demo/watch-wan-3-prime-scroll.mp4",
+      "originalRepositoryPath": "frontend/public/media/mcp/project-demo/watch-wan-3-prime-scroll.mp4",
+      "sha256": "474ff57fb18dbb02bd6e3e3a3eb4bfa61fe093bf98722b4b5c6fd017f3438eba",
+      "sourceUrl": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/0df5ede1-5a37-4b32-b4bf-2a8c67b69448.mp4",
+      "sourceDate": "2026-09-06",
+      "dateMeaning": "Dated provenance document state and repository introduction, not invented exact generation time",
+      "provenance": "docs/marketing/2026-09-05-mcp-project-demo.md",
+      "creatorContext": "Existing owner-approved Wan 3 Prime replacement render from supplied ImageGen watch photograph; accepted for the MCP project illustration.",
+      "settings": { "model": "Wan 3 Prime", "durationSec": 6, "resolution": "1080p", "aspectRatio": "16:9", "audio": false, "reference": "Same watch photograph supplied as first and last frame" },
+      "historicalApprovedQuote": { "amount": 2.08, "currency": "USD", "context": "Existing September replacement attempt only; never placed in the creative as a current quote" },
+      "measuredMedia": { "codec": "h264", "width": 1920, "height": 1080, "fps": 30, "durationSec": 6, "bytes": 4221289, "audioStreams": 0 },
+      "rights": { "existingSiteMarketingApproval": "Owner acceptance recorded in dated provenance", "paidAdvertisingReuse": "unknown_not_cleared", "localEditing": "authorized_for_this_task", "thirdPartyOrModelTerms": "not_revalidated_for_advertising" },
+      "proofBoundary": "A real existing product render; not a new authenticated Claude Desktop end-to-end capture and not a customer case study.",
+      "treatment": "Referenced in place, not duplicated; normal-speed fitted video window at beginning and end."
+    },
+    {
+      "id": "watch-source",
+      "path": "assets/watch-source.webp",
+      "originalRepositoryPath": "frontend/public/media/mcp/project-demo/watch-static.webp",
+      "sha256": "d0eda8bfe32413a742785f2408e0461dfaa120b551f08312b8ff92a87f71ee27",
+      "sourceDate": "2026-09-06",
+      "dateMeaning": "Dated project-demo documentation state",
+      "provenance": "docs/marketing/2026-09-05-mcp-project-demo.md",
+      "creatorContext": "Existing ImageGen photograph derived from an approved watch mockup; exact source asset for the recorded demo.",
+      "rights": { "existingSiteMarketingApproval": "Recorded", "paidAdvertisingReuse": "unknown_not_cleared", "localEditing": "authorized_for_this_task" },
+      "proofBoundary": "An AI-created source image, not a photographed customer product or proof of Claude execution.",
+      "treatment": "Exact copied WebP, proportionally fitted; only rasterized to an in-memory PNG buffer for SVG composition."
+    },
+    {
+      "id": "watch-result",
+      "path": "assets/watch-result.webp",
+      "originalRepositoryPath": "frontend/public/media/mcp/project-demo/watch-wan-3-prime-poster.webp",
+      "sha256": "5079bdbd9db4a05f2193dc4ba7e201399363ee01a661342ca241eddd6d823ba9",
+      "sourceDate": "2026-09-06",
+      "dateMeaning": "Existing poster extracted at 2.5 seconds in the dated source documentation",
+      "provenance": "docs/marketing/2026-09-05-mcp-project-demo.md",
+      "rights": { "inherits": "watch-video", "paidAdvertisingReuse": "unknown_not_cleared", "localEditing": "authorized_for_this_task" },
+      "treatment": "Exact copied poster for thumbnails and video opening previews; full frame fitted, no new image generation."
+    },
+    {
+      "id": "claude-host-historical",
+      "path": "assets/claude-host-historical.jpg",
+      "originalRepositoryPath": "frontend/public/media/mcp/claude-inline-video-proof.jpg",
+      "sha256": "2f54400a0287e7930295718beabb7c51b93cc927eb4abdd2dd9108d268a0780e",
+      "capturedAt": "2026-08-26T16:31:42+02:00",
+      "host": "Claude Desktop",
+      "hostVersion": "1.37937.1",
+      "hostLocale": "fr-FR",
+      "operatingSystem": "macOS 26.5.1",
+      "environment": "controlled-staging",
+      "provenance": "docs/marketing/mcp-demo-evidence.md and docs/marketing/mcp-asset-provenance.md",
+      "rights": { "existingOwnerMarketingPermission": true, "paidAdvertisingReuse": "unknown_not_cleared", "privacyReview": "Existing source reviewed; no visible account identifier", "thirdPartyUiAndMarks": "Nominative host evidence only; advertising reuse requires review" },
+      "proofBoundary": "Historic inline-player rendering and Library handoff only. A separate result from the watch. Not a new generation proof, not current-version compatibility, not production proof, not proof of all Claude environments.",
+      "historicalAmount": { "amount": 0.95, "currency": "USD", "meaning": "Visible capture amount only, not a current quote" },
+      "treatment": "Whole JPEG downscaled without UI redrawing or price replacement. Visible date/environment/price qualifications in 48s cuts; omitted from 24s cuts."
+    },
+    {
+      "id": "maxvideoai-logo",
+      "path": "assets/maxvideoai-logo.svg",
+      "originalRepositoryPath": "frontend/public/assets/branding/logo-mark.svg",
+      "sha256": "bb69af122e18722aa8cb45d97604c11a7b84209d46c60911bbe71f5c2d7c19c7",
+      "sourceDate": null,
+      "verifiedAt": "2026-10-05",
+      "dateMeaning": "Original creation/retrieval date unknown; exact repository bytes checked today",
+      "rights": { "brand": "MaxVideoAI", "localReuse": "authorized_for_this_task", "paidAdvertisingReuse": "owner_review_pending" },
+      "treatment": "Exact SVG reused without shape or color changes."
+    }
+  ],
+  "claimSources": [
+    { "url": "https://maxvideoai.com/integrations/claude", "checkedAt": "2026-10-05", "supports": "Documented connector/account setup, exact-quote approval and completed media retrieval; compatibility evidence remains dated August controlled staging." },
+    { "url": "https://maxvideoai.com/mcp", "checkedAt": "2026-10-05", "supports": "Account authorization and quote boundary; display depends on host." }
+  ],
+  "planningSources": [
+    { "path": "/Users/adrienmillot/Documents/ChatGPT/OUTREACH/KIT-OUTREACH.md", "date": "2026-10-02", "role": "Reusable product copy and source limits" },
+    { "path": "/Users/adrienmillot/Documents/ChatGPT/OUTREACH/ACTIFS-EXISTANTS.md", "date": "2026-09-25", "role": "Existing asset inventory and paused-generation decision" },
+    { "path": "/Users/adrienmillot/Documents/ChatGPT/OUTREACH/VISUELS-OUTREACH.md", "date": "2026-09-25", "role": "Current capture versus illustration policy" },
+    { "path": "/Users/adrienmillot/Documents/ChatGPT/OUTREACH/PERFORMANCE-INTERNE.md", "date": "2026-09-25", "role": "No conversion or revenue claim drawn from analytical transactions" },
+    { "path": "/Users/adrienmillot/Documents/ChatGPT/OUTREACH/AUDIT-PRIX-MOTEURS.md", "date": "2026-09-25", "role": "No margin, universal price or ROI claim" },
+    { "path": "/Users/adrienmillot/Documents/ChatGPT/OUTREACH/sources/2026-10-05/paid-ads-study/TRAVAUX-AVANT-PUBLICITE.md", "date": "2026-10-05", "role": "Two openings, aspect adaptations, captions, thumbnails and exact rights/provenance requirements" },
+    { "path": "/Users/adrienmillot/Documents/ChatGPT/OUTREACH/sources/2026-10-05/paid-ads-study/REVISION-STUDIO-MCP.md", "date": "2026-10-05", "role": "Single-host working hypothesis; installation and authorization friction" },
+    { "path": "/Users/adrienmillot/Documents/ChatGPT/OUTREACH/sources/2026-10-05/paid-ads-study/ETUDE.md", "date": "2026-10-05", "role": "No channel declared winning and no paid-performance claim" }
+  ],
+  "exportContract": {
+    "video": "8 local MP4s: A/B × horizontal/vertical × 48s/24s; H.264, yuv420p, 30fps, no audio, faststart",
+    "dimensions": { "horizontal": [1920, 1080], "vertical": [1080, 1920], "thumbnails": [1280, 720] },
+    "captions": "Matching English SRT + VTT for every MP4",
+    "editable": "source/copy.json, source/build.mjs, source/scenes/*.svg, exports/thumbnail-{a,b}.svg",
+    "versioned": "Sources, copied small assets, poster/thumbnail PNGs, captions and manifests",
+    "ignored": "exports/*.mp4 and build/ to avoid large derived-media commits",
+    "portable": "Keep linked assets with editable SVGs. Source video remains a repository reference."
+  },
+  "draftMeasurementTags": {
+    "utm_campaign": "claude_desktop_clip_20261005",
+    "utm_content": ["result_horizontal48", "result_vertical48", "quote_horizontal48", "quote_vertical48", "result_horizontal24", "result_vertical24", "quote_horizontal24", "quote_vertical24"],
+    "utm_source": null,
+    "utm_medium": null,
+    "status": "Draft identifiers only; channel unselected, no campaign activated."
+  }
+}

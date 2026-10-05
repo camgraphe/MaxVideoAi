@@ -1,0 +1,72 @@
+{
+  "videos": [
+    {
+      "label": "Opening A \u00b7 horizontal \u00b7 24 seconds",
+      "src": "pack/exports/claude-clip-a-horizontal-short24-review.mp4",
+      "poster": "pack/exports/opening-a-horizontal-poster.png",
+      "captions": "pack/exports/claude-clip-a-horizontal-short24-review.vtt",
+      "note": "Review cut: existing sample + illustrated stages; historical Claude still omitted. Silent with captions."
+    },
+    {
+      "label": "Opening A \u00b7 vertical \u00b7 24 seconds",
+      "src": "pack/exports/claude-clip-a-vertical-short24-review.mp4",
+      "poster": "pack/exports/opening-a-vertical-poster.png",
+      "captions": "pack/exports/claude-clip-a-vertical-short24-review.vtt",
+      "note": "Review cut: existing sample + illustrated stages; historical Claude still omitted. Silent with captions."
+    },
+    {
+      "label": "Opening B \u00b7 horizontal \u00b7 24 seconds",
+      "src": "pack/exports/claude-clip-b-horizontal-short24-review.mp4",
+      "poster": "pack/exports/opening-b-horizontal-poster.png",
+      "captions": "pack/exports/claude-clip-b-horizontal-short24-review.vtt",
+      "note": "Review cut: existing sample + illustrated stages; historical Claude still omitted. Silent with captions."
+    },
+    {
+      "label": "Opening B \u00b7 vertical \u00b7 24 seconds",
+      "src": "pack/exports/claude-clip-b-vertical-short24-review.mp4",
+      "poster": "pack/exports/opening-b-vertical-poster.png",
+      "captions": "pack/exports/claude-clip-b-vertical-short24-review.vtt",
+      "note": "Review cut: existing sample + illustrated stages; historical Claude still omitted. Silent with captions."
+    },
+    {
+      "label": "Opening A \u00b7 horizontal \u00b7 48 seconds",
+      "src": "pack/exports/claude-clip-a-horizontal-review.mp4",
+      "poster": "pack/exports/opening-a-horizontal-poster.png",
+      "captions": "pack/exports/claude-clip-a-horizontal-review.vtt",
+      "note": "Review cut: existing sample + illustrated stages + dated Claude evidence. Silent with captions."
+    },
+    {
+      "label": "Opening A \u00b7 vertical \u00b7 48 seconds",
+      "src": "pack/exports/claude-clip-a-vertical-review.mp4",
+      "poster": "pack/exports/opening-a-vertical-poster.png",
+      "captions": "pack/exports/claude-clip-a-vertical-review.vtt",
+      "note": "Review cut: existing sample + illustrated stages + dated Claude evidence. Silent with captions."
+    },
+    {
+      "label": "Opening B \u00b7 horizontal \u00b7 48 seconds",
+      "src": "pack/exports/claude-clip-b-horizontal-review.mp4",
+      "poster": "pack/exports/opening-b-horizontal-poster.png",
+      "captions": "pack/exports/claude-clip-b-horizontal-review.vtt",
+      "note": "Review cut: existing sample + illustrated stages + dated Claude evidence. Silent with captions."
+    },
+    {
+      "label": "Opening B \u00b7 vertical \u00b7 48 seconds",
+      "src": "pack/exports/claude-clip-b-vertical-review.mp4",
+      "poster": "pack/exports/opening-b-vertical-poster.png",
+      "captions": "pack/exports/claude-clip-b-vertical-review.vtt",
+      "note": "Review cut: existing sample + illustrated stages + dated Claude evidence. Silent with captions."
+    }
+  ],
+  "thumbnails": [
+    {
+      "label": "Thumbnail A",
+      "src": "pack/exports/thumbnail-a.png",
+      "editable": "pack/exports/thumbnail-a.svg"
+    },
+    {
+      "label": "Thumbnail B",
+      "src": "pack/exports/thumbnail-b.png",
+      "editable": "pack/exports/thumbnail-b.svg"
+    }
+  ]
+}

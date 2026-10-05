@@ -1,0 +1,244 @@
+{
+  "verifiedAt": "2026-10-05T11:46:57.116Z",
+  "outcome": "passed",
+  "publicationState": "local_review_only",
+  "checks": [
+    {
+      "check": "preserved_source",
+      "asset": "watch-video",
+      "sha256": "474ff57fb18dbb02bd6e3e3a3eb4bfa61fe093bf98722b4b5c6fd017f3438eba",
+      "passed": true
+    },
+    {
+      "check": "preserved_source",
+      "asset": "watch-source",
+      "sha256": "d0eda8bfe32413a742785f2408e0461dfaa120b551f08312b8ff92a87f71ee27",
+      "passed": true
+    },
+    {
+      "check": "preserved_source",
+      "asset": "watch-result",
+      "sha256": "5079bdbd9db4a05f2193dc4ba7e201399363ee01a661342ca241eddd6d823ba9",
+      "passed": true
+    },
+    {
+      "check": "preserved_source",
+      "asset": "claude-host-historical",
+      "sha256": "2f54400a0287e7930295718beabb7c51b93cc927eb4abdd2dd9108d268a0780e",
+      "passed": true
+    },
+    {
+      "check": "preserved_source",
+      "asset": "maxvideoai-logo",
+      "sha256": "bb69af122e18722aa8cb45d97604c11a7b84209d46c60911bbe71f5c2d7c19c7",
+      "passed": true
+    },
+    {
+      "check": "video_artifact",
+      "file": "exports/claude-clip-a-horizontal-review.mp4",
+      "passed": true,
+      "fullyDecoded": true,
+      "faststart": true,
+      "sha256": "a0c893623802a28d5153b31f9498dbf88bd1651f99bf324a8607e827f4eb62ff",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1920,
+          "height": 1080,
+          "pix_fmt": "yuv420p",
+          "r_frame_rate": "30/1"
+        }
+      ],
+      "format": {
+        "duration": "48.000000",
+        "size": "2741948"
+      }
+    },
+    {
+      "check": "video_artifact",
+      "file": "exports/claude-clip-a-horizontal-short24-review.mp4",
+      "passed": true,
+      "fullyDecoded": true,
+      "faststart": true,
+      "sha256": "2c15ab4deb5ca94bc746474b61fe42d68d4f06b2fb662835bc675d72d5b9fa7a",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1920,
+          "height": 1080,
+          "pix_fmt": "yuv420p",
+          "r_frame_rate": "30/1"
+        }
+      ],
+      "format": {
+        "duration": "24.000000",
+        "size": "1903970"
+      }
+    },
+    {
+      "check": "video_artifact",
+      "file": "exports/claude-clip-a-vertical-review.mp4",
+      "passed": true,
+      "fullyDecoded": true,
+      "faststart": true,
+      "sha256": "a8db73b73696480756e577c462aa7b30dea383ef1020c50592d00c7e0d936c1d",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1920,
+          "pix_fmt": "yuv420p",
+          "r_frame_rate": "30/1"
+        }
+      ],
+      "format": {
+        "duration": "48.000000",
+        "size": "2801081"
+      }
+    },
+    {
+      "check": "video_artifact",
+      "file": "exports/claude-clip-a-vertical-short24-review.mp4",
+      "passed": true,
+      "fullyDecoded": true,
+      "faststart": true,
+      "sha256": "cbb2eda69a7bbd7a648822757811204c46a0427f6e4ecb3cab079f02fe7c3908",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1920,
+          "pix_fmt": "yuv420p",
+          "r_frame_rate": "30/1"
+        }
+      ],
+      "format": {
+        "duration": "24.000000",
+        "size": "1935474"
+      }
+    },
+    {
+      "check": "video_artifact",
+      "file": "exports/claude-clip-b-horizontal-review.mp4",
+      "passed": true,
+      "fullyDecoded": true,
+      "faststart": true,
+      "sha256": "b334951fca06ad3be651c7494acc042f2e54fb59a96e265e575e5fb8f20c4946",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1920,
+          "height": 1080,
+          "pix_fmt": "yuv420p",
+          "r_frame_rate": "30/1"
+        }
+      ],
+      "format": {
+        "duration": "48.000000",
+        "size": "2758194"
+      }
+    },
+    {
+      "check": "video_artifact",
+      "file": "exports/claude-clip-b-horizontal-short24-review.mp4",
+      "passed": true,
+      "fullyDecoded": true,
+      "faststart": true,
+      "sha256": "406e03c8f00b16d50e5a167fd3583e9f92b0ecf318a8bbabee5487cf353fc337",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1920,
+          "height": 1080,
+          "pix_fmt": "yuv420p",
+          "r_frame_rate": "30/1"
+        }
+      ],
+      "format": {
+        "duration": "24.000000",
+        "size": "1914147"
+      }
+    },
+    {
+      "check": "video_artifact",
+      "file": "exports/claude-clip-b-vertical-review.mp4",
+      "passed": true,
+      "fullyDecoded": true,
+      "faststart": true,
+      "sha256": "c6317dd1c6ae39c5a0b3ee022324278967527c5b47c94027811448beec1a5e8c",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1920,
+          "pix_fmt": "yuv420p",
+          "r_frame_rate": "30/1"
+        }
+      ],
+      "format": {
+        "duration": "48.000000",
+        "size": "2829889"
+      }
+    },
+    {
+      "check": "video_artifact",
+      "file": "exports/claude-clip-b-vertical-short24-review.mp4",
+      "passed": true,
+      "fullyDecoded": true,
+      "faststart": true,
+      "sha256": "c9c47da57816694bb04dbb79451ba54d949f935f534e2cc65f04403609cc2969",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1920,
+          "pix_fmt": "yuv420p",
+          "r_frame_rate": "30/1"
+        }
+      ],
+      "format": {
+        "duration": "24.000000",
+        "size": "1954921"
+      }
+    },
+    {
+      "check": "thumbnail_dimensions",
+      "file": "exports/thumbnail-a.png",
+      "passed": true,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "check": "thumbnail_dimensions",
+      "file": "exports/thumbnail-b.png",
+      "passed": true,
+      "width": 1280,
+      "height": 720
+    }
+  ],
+  "manualVisualReview": "See creative.md; proof labels and image fidelity checked from opening posters, scene frames and exported MP4 snapshots. No live exact-host test performed."
+}

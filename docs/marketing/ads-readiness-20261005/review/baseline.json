@@ -1,0 +1,786 @@
+{
+  "base": "http://127.0.0.1:3019",
+  "date": "2026-10-05",
+  "source": "e50fb575a60b15f0350e3324e045a43f87a39306",
+  "server": "Next production build",
+  "cohort": "Fresh no stored consent baseline",
+  "copyDisclosureState": "Existing main disclosures opened for text capture then restored; screenshots preserve initial disclosure state",
+  "rows": [
+    {
+      "route": "/studio",
+      "device": "desktop",
+      "status": 200,
+      "fresh": {
+        "overflow": false,
+        "mainCount": 1
+      },
+      "h1": "Start with an idea.\nMake it yours.",
+      "title": "Studio — a creative conversation for image and video",
+      "canonical": "https://maxvideoai.com/studio",
+      "alternates": [
+        {
+          "lang": "en",
+          "href": "https://maxvideoai.com/studio"
+        },
+        {
+          "lang": "fr",
+          "href": "https://maxvideoai.com/fr/studio"
+        },
+        {
+          "lang": "es",
+          "href": "https://maxvideoai.com/es/studio"
+        },
+        {
+          "lang": "x-default",
+          "href": "https://maxvideoai.com/studio"
+        }
+      ],
+      "jsonld": [
+        {
+          "valid": true
+        },
+        {
+          "valid": true,
+          "type": "Organization"
+        },
+        {
+          "valid": true,
+          "type": "WebSite"
+        }
+      ],
+      "copy": "MAXVIDEOAI STUDIO · PUBLIC BETA\n\nStart with an idea.\nMake it yours.\n\nA conversation at the center. Your references and results around it. Explore a direction, create an image or video, and bring the pieces together when you are ready.\n\nOpen Studio\nExplore the workflow\n↓\n\nStudio is in public beta. Sign in or create a MaxVideoAI account to start a conversation. Opening Studio does not launch a generation.\n\nStudio interface captured locally with demonstration media.\n\nFROM THE FIRST THOUGHT TO THE NEXT FRAME\n\nYour brief sets the pace.\n01\nBring an idea\n\nDescribe the feeling, scene or result you want. Add references from your media library when they help explain the direction.\n\n02\nFind the right approach\n\nDevelop a prompt, explore an image or plan a sequence. Model suggestions follow your request, available modes and reference needs.\n\n03\nReview, then create\n\nReview the model, settings and exact generation quote. Confirm that quote when you are ready to start the paid attempt.\n\nRoom to explore. Tools to shape your idea.\nA conversation with context\n\nKeep the creative discussion alongside project references and results. An idea, a prompt or a single image can be the whole project.\n\nImages, clips and sound\n\nCreate images, extend or reshape clips, and work on voices, music and sound. Studio offers compatible models and reference options, with a separate quote for each creation.\n\nA sequence you can shape\n\nBring ready media into the timeline and adjust the cut. The advanced canvas remains available for structured project work. MP4 export is not yet available during the public beta.\n\nThe next paid step stays yours.\n\nEach generation has an exact quote for you to confirm. Changing a request can change its price. A failed attempt or a refund never authorizes a new generation.\n\nMCP\n\nAlready working with an assistant?\n\nThe MaxVideoAI MCP connection brings current model facts, quotes and generation recovery into supported assistant workflows. Setup and verified capabilities vary by host.\n\nExplore assistant connections\nBefore you start\nCan everyone use Studio today?\n+\n\nStudio is open in public beta. Sign in or create a MaxVideoAI account to start a new creative conversation. You can also reopen your existing projects.\n\nDo I need a complete video plan?\n+\n\nNo. Start with a brief, a reference, a prompt to refine or one image. Build a sequence only when it serves your idea.\n\nDoes the Studio assistant cost money?\n+\n\nStudio shows the remaining percentage of your included assistance allowances. These are limited allowances per account, not wallet credit; new projects do not reset them. Paid Sol assistance uses a budget you explicitly authorize from your MaxVideoAI wallet, at the token rates shown in Studio. You can explicitly choose Luna at no extra assistant fee while its included allowance is available. Assistance has no automatic recharge. Media generation is charged separately.\n\nHow do I know what a generation costs?\n+\n\nStudio prepares a quote for the selected model, settings and references. Review the exact amount before confirming. An estimate is not an authorization to spend.\n\nCan I export my sequence as an MP4?\n+\n\nYou can arrange and edit media on the timeline. MP4 export is not yet available during the public beta.\n\nIs Studio the same as the MCP connection?\n+\n\nStudio is a MaxVideoAI workspace. MCP connects an external assistant to specific MaxVideoAI tools. The external host keeps its own conversation; the connection does not give MaxVideoAI its full chat history.\n\nGive your next idea some space.\n\nSign in or create an account, then start a new conversation in Studio.\n\nOpen Studio",
+      "images": [],
+      "lazyPending": [],
+      "links": [
+        {
+          "text": "Open Studio",
+          "href": "/api/studio/marketing-entry"
+        },
+        {
+          "text": "Explore the workflow↓",
+          "href": "#workflow"
+        },
+        {
+          "text": "Explore assistant connections",
+          "href": "/en/mcp"
+        },
+        {
+          "text": "Open Studio",
+          "href": "/api/studio/marketing-entry"
+        }
+      ],
+      "overflow": false,
+      "faqKeyboard": true,
+      "ctaKeyboardFocus": true,
+      "errors": []
+    },
+    {
+      "route": "/studio",
+      "device": "mobile",
+      "status": 200,
+      "fresh": {
+        "overflow": false,
+        "mainCount": 1
+      },
+      "h1": "Start with an idea.\nMake it yours.",
+      "title": "Studio — a creative conversation for image and video",
+      "canonical": "https://maxvideoai.com/studio",
+      "alternates": [
+        {
+          "lang": "en",
+          "href": "https://maxvideoai.com/studio"
+        },
+        {
+          "lang": "fr",
+          "href": "https://maxvideoai.com/fr/studio"
+        },
+        {
+          "lang": "es",
+          "href": "https://maxvideoai.com/es/studio"
+        },
+        {
+          "lang": "x-default",
+          "href": "https://maxvideoai.com/studio"
+        }
+      ],
+      "jsonld": [
+        {
+          "valid": true
+        },
+        {
+          "valid": true,
+          "type": "Organization"
+        },
+        {
+          "valid": true,
+          "type": "WebSite"
+        }
+      ],
+      "copy": "MAXVIDEOAI STUDIO · PUBLIC BETA\n\nStart with an idea.\nMake it yours.\n\nA conversation at the center. Your references and results around it. Explore a direction, create an image or video, and bring the pieces together when you are ready.\n\nOpen Studio\nExplore the workflow\n↓\n\nStudio is in public beta. Sign in or create a MaxVideoAI account to start a conversation. Opening Studio does not launch a generation.\n\nStudio interface captured locally with demonstration media.\n\nFROM THE FIRST THOUGHT TO THE NEXT FRAME\n\nYour brief sets the pace.\n01\nBring an idea\n\nDescribe the feeling, scene or result you want. Add references from your media library when they help explain the direction.\n\n02\nFind the right approach\n\nDevelop a prompt, explore an image or plan a sequence. Model suggestions follow your request, available modes and reference needs.\n\n03\nReview, then create\n\nReview the model, settings and exact generation quote. Confirm that quote when you are ready to start the paid attempt.\n\nRoom to explore. Tools to shape your idea.\nA conversation with context\n\nKeep the creative discussion alongside project references and results. An idea, a prompt or a single image can be the whole project.\n\nImages, clips and sound\n\nCreate images, extend or reshape clips, and work on voices, music and sound. Studio offers compatible models and reference options, with a separate quote for each creation.\n\nA sequence you can shape\n\nBring ready media into the timeline and adjust the cut. The advanced canvas remains available for structured project work. MP4 export is not yet available during the public beta.\n\nThe next paid step stays yours.\n\nEach generation has an exact quote for you to confirm. Changing a request can change its price. A failed attempt or a refund never authorizes a new generation.\n\nMCP\n\nAlready working with an assistant?\n\nThe MaxVideoAI MCP connection brings current model facts, quotes and generation recovery into supported assistant workflows. Setup and verified capabilities vary by host.\n\nExplore assistant connections\nBefore you start\nCan everyone use Studio today?\n+\n\nStudio is open in public beta. Sign in or create a MaxVideoAI account to start a new creative conversation. You can also reopen your existing projects.\n\nDo I need a complete video plan?\n+\n\nNo. Start with a brief, a reference, a prompt to refine or one image. Build a sequence only when it serves your idea.\n\nDoes the Studio assistant cost money?\n+\n\nStudio shows the remaining percentage of your included assistance allowances. These are limited allowances per account, not wallet credit; new projects do not reset them. Paid Sol assistance uses a budget you explicitly authorize from your MaxVideoAI wallet, at the token rates shown in Studio. You can explicitly choose Luna at no extra assistant fee while its included allowance is available. Assistance has no automatic recharge. Media generation is charged separately.\n\nHow do I know what a generation costs?\n+\n\nStudio prepares a quote for the selected model, settings and references. Review the exact amount before confirming. An estimate is not an authorization to spend.\n\nCan I export my sequence as an MP4?\n+\n\nYou can arrange and edit media on the timeline. MP4 export is not yet available during the public beta.\n\nIs Studio the same as the MCP connection?\n+\n\nStudio is a MaxVideoAI workspace. MCP connects an external assistant to specific MaxVideoAI tools. The external host keeps its own conversation; the connection does not give MaxVideoAI its full chat history.\n\nGive your next idea some space.\n\nSign in or create an account, then start a new conversation in Studio.\n\nOpen Studio",
+      "images": [],
+      "lazyPending": [],
+      "links": [
+        {
+          "text": "Open Studio",
+          "href": "/api/studio/marketing-entry"
+        },
+        {
+          "text": "Explore the workflow↓",
+          "href": "#workflow"
+        },
+        {
+          "text": "Explore assistant connections",
+          "href": "/en/mcp"
+        },
+        {
+          "text": "Open Studio",
+          "href": "/api/studio/marketing-entry"
+        }
+      ],
+      "overflow": false,
+      "faqKeyboard": true,
+      "ctaKeyboardFocus": true,
+      "errors": []
+    },
+    {
+      "route": "/mcp",
+      "device": "desktop",
+      "status": 200,
+      "fresh": {
+        "overflow": false,
+        "mainCount": 1
+      },
+      "h1": "AI video. In your assistant.",
+      "title": "AI Video MCP: Claude, ChatGPT, Codex & n8n | MaxVideoAI",
+      "canonical": "https://maxvideoai.com/mcp",
+      "robots": "index, follow",
+      "alternates": [
+        {
+          "lang": "en",
+          "href": "https://maxvideoai.com/mcp"
+        },
+        {
+          "lang": "fr",
+          "href": "https://maxvideoai.com/fr/mcp"
+        },
+        {
+          "lang": "es",
+          "href": "https://maxvideoai.com/es/mcp"
+        },
+        {
+          "lang": "x-default",
+          "href": "https://maxvideoai.com/mcp"
+        }
+      ],
+      "jsonld": [
+        {
+          "valid": true,
+          "type": "WebApplication"
+        },
+        {
+          "valid": true,
+          "type": "BreadcrumbList"
+        },
+        {
+          "valid": true,
+          "type": "Organization"
+        },
+        {
+          "valid": true,
+          "type": "WebSite"
+        }
+      ],
+      "copy": "YOUR ASSISTANT. YOUR VIDEO STUDIO.\n\nAI video. In your assistant.\n\nTurn the idea you are working on into an AI video. Your assistant helps you choose the model and settings. MaxVideoAI shows the price. You give the go-ahead.\n\nChoose your integration\nSee it in Claude\n\nOne MaxVideoAI account. Pay as you go. No additional MaxVideoAI subscription.\n\nILLUSTRATED WORKFLOW\n\nHelp me turn this idea into a cinematic video.\n\n01 / 03\nStart with your idea.\n\nA prompt, a reference, a project already in your conversation.\n\nDescribe\nReview\n02\nCreate\n03\n\nCONNECT YOUR WAY\n\nWhere do you want to create?\n\nChoose your assistant or automation tool. Each integration has its own setup guide and availability details.\n\nCustom MCP connector\nClaude\n\nBuild on the ideas in your conversation.\n\nClaude Desktop tested\nSetup guide\nCustom MCP app\nChatGPT\n\nAdd AI video to your project in ChatGPT.\n\nFull MCP: eligible Business / Enterprise / Edu workspaces\nSetup guide\nPlugin + MCP\nCodex\n\nCreate assets alongside your code.\n\nCodex CLI tested · plugin available\nSetup guide\nSkill + MCP\nOpenClaw\n\nGive your agent a video creation workflow.\n\nTested with limits · ClawHub skill available\nSetup guide\nMCP workflow\nn8n\n\nConnect briefs, approvals and video jobs.\n\nSelf-hosted 2.38.7 · manual setup\nSetup guide\nIn preparation\n\nMore clients are being evaluated. Setup is not published yet.\n\nCursor\nGitHub Copilot\nGemini CLI\nMicrosoft Copilot\n\nFROM THE IDEA TO THE FINAL FILE\n\nThe conversation moves forward. You stay in control.\n\nMaxVideoAI is a remote MCP server for AI video and image generation. It connects compatible assistants to current models, quotes and the media in your account.\n\n01\nStart with your idea.\n\nA prompt, a reference, a project already in your conversation.\n\n02\nKnow what you will spend.\n\nChoose the model, duration and resolution. Approve the exact quote before generation.\n\n03\nKeep your creation.\n\nFind the finished video in your MaxVideoAI library. Display in chat depends on your client.\n\nExplore AI video examples\nCompare video models\nSee generation prices\n\nA REAL RESULT\n\nFrom a request to a video in Claude.\n\nA recorded Claude Desktop test shows the finished video and access to the MaxVideoAI library. Other clients may return a link instead of an inline player.\n\nSetup guide Claude\nVideo result shown in Claude\n\nA completed MaxVideoAI video displayed inline in Claude Desktop during a controlled test. The result is saved to the connected MaxVideoAI library. The $0.95 shown is the amount recorded for this capture, not a current quote.\n\nCONNECTED, WITH YOUR PERMISSION\n\nYour account. Your decisions.\nSign in to MaxVideoAI\n\nAuthorization opens on MaxVideoAI. Do not paste a password, API key or payment details into the conversation.\n\nApprove the exact price\n\nA recommendation or budget does not start a paid generation. Review the settings and exact quote before confirming.\n\nDisconnect when you want\n\nRemove the integration from your assistant and revoke its authorization in your MaxVideoAI account.\n\nYOUR FIRST VIDEO\n\nStart with the project already in your conversation.\n\nOnce MaxVideoAI is connected, paste this request into the conversation where you are preparing your site, product or campaign.\n\nUse the project we are working on to propose a short launch video with MaxVideoAI. Compare two suitable, currently available models, including their trade-offs and prices for the proposed settings. Ask me for any missing context or references. Wait for my choice, then my approval of the exact quote, before generating anything.\n\nCOPY MY FIRST REQUEST\n\nPlanning is free on MaxVideoAI. Generation uses your MaxVideoAI credits after you approve the exact price.\n\nMCP · MAXVIDEOAI\n\nBefore you connect.\n\nCapability review : September 14, 2026\n\nMCP documentation\nPlugin source & releases\nTalk to us\nIs MaxVideoAI a connector, an app or a plugin?\nIs there a MaxVideoAI plugin in the ChatGPT directory?\nCan I automate video generation in n8n?\nCan I generate images and audio too?\nCan I use image, video or audio references?\nHow do I add MaxVideoAI credits?\nWhere are my generated images and videos saved?\nHow do I disconnect MaxVideoAI?\n\nRemove MaxVideoAI from the assistant, then revoke the saved grant in MaxVideoAI account connections. A later protected action will require a new browser approval.",
+      "images": [],
+      "lazyPending": [],
+      "links": [
+        {
+          "text": "Choose your integration",
+          "href": "#integrations"
+        },
+        {
+          "text": "See it in Claude",
+          "href": "#real-result"
+        },
+        {
+          "text": "Custom MCP connectorClaudeBuild on the ideas in your conversation.Claude Desktop testedSetup guide",
+          "href": "/integrations/claude"
+        },
+        {
+          "text": "Custom MCP appChatGPTAdd AI video to your project in ChatGPT.Full MCP: eligible Business / Enterprise / Edu workspacesSetup guide",
+          "href": "/integrations/chatgpt"
+        },
+        {
+          "text": "Plugin + MCPCodexCreate assets alongside your code.Codex CLI tested · plugin availableSetup guide",
+          "href": "/integrations/codex"
+        },
+        {
+          "text": "Skill + MCPOpenClawGive your agent a video creation workflow.Tested with limits · ClawHub skill availableSetup guide",
+          "href": "/integrations/openclaw"
+        },
+        {
+          "text": "MCP workflown8nConnect briefs, approvals and video jobs.Self-hosted 2.38.7 · manual setupSetup guide",
+          "href": "/integrations/n8n"
+        },
+        {
+          "text": "Explore AI video examples",
+          "href": "/examples"
+        },
+        {
+          "text": "Compare video models",
+          "href": "/ai-video-engines"
+        },
+        {
+          "text": "See generation prices",
+          "href": "/pricing"
+        },
+        {
+          "text": "Setup guide Claude",
+          "href": "/integrations/claude"
+        },
+        {
+          "text": "MCP documentation",
+          "href": "/docs/mcp"
+        },
+        {
+          "text": "Plugin source & releases",
+          "href": "https://github.com/camgraphe/maxvideoai-plugin"
+        },
+        {
+          "text": "Talk to us",
+          "href": "/contact"
+        },
+        {
+          "text": "View the public n8n template.",
+          "href": "https://n8n.io/workflows/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/"
+        }
+      ],
+      "overflow": false,
+      "faqKeyboard": true,
+      "ctaKeyboardFocus": true,
+      "errors": []
+    },
+    {
+      "route": "/mcp",
+      "device": "mobile",
+      "status": 200,
+      "fresh": {
+        "overflow": false,
+        "mainCount": 1
+      },
+      "h1": "AI video. In your assistant.",
+      "title": "AI Video MCP: Claude, ChatGPT, Codex & n8n | MaxVideoAI",
+      "canonical": "https://maxvideoai.com/mcp",
+      "robots": "index, follow",
+      "alternates": [
+        {
+          "lang": "en",
+          "href": "https://maxvideoai.com/mcp"
+        },
+        {
+          "lang": "fr",
+          "href": "https://maxvideoai.com/fr/mcp"
+        },
+        {
+          "lang": "es",
+          "href": "https://maxvideoai.com/es/mcp"
+        },
+        {
+          "lang": "x-default",
+          "href": "https://maxvideoai.com/mcp"
+        }
+      ],
+      "jsonld": [
+        {
+          "valid": true,
+          "type": "WebApplication"
+        },
+        {
+          "valid": true,
+          "type": "BreadcrumbList"
+        },
+        {
+          "valid": true,
+          "type": "Organization"
+        },
+        {
+          "valid": true,
+          "type": "WebSite"
+        }
+      ],
+      "copy": "YOUR ASSISTANT. YOUR VIDEO STUDIO.\n\nAI video. In your assistant.\n\nTurn the idea you are working on into an AI video. Your assistant helps you choose the model and settings. MaxVideoAI shows the price. You give the go-ahead.\n\nChoose your integration\nSee it in Claude\n\nOne MaxVideoAI account. Pay as you go. No additional MaxVideoAI subscription.\n\nILLUSTRATED WORKFLOW\n\nHelp me turn this idea into a cinematic video.\n\n01 / 03\nStart with your idea.\n\nA prompt, a reference, a project already in your conversation.\n\nDescribe\nReview\nCreate\n\nCONNECT YOUR WAY\n\nWhere do you want to create?\n\nChoose your assistant or automation tool. Each integration has its own setup guide and availability details.\n\nCustom MCP connector\nClaude\n\nBuild on the ideas in your conversation.\n\nClaude Desktop tested\nSetup guide\nCustom MCP app\nChatGPT\n\nAdd AI video to your project in ChatGPT.\n\nFull MCP: eligible Business / Enterprise / Edu workspaces\nSetup guide\nPlugin + MCP\nCodex\n\nCreate assets alongside your code.\n\nCodex CLI tested · plugin available\nSetup guide\nSkill + MCP\nOpenClaw\n\nGive your agent a video creation workflow.\n\nTested with limits · ClawHub skill available\nSetup guide\nMCP workflow\nn8n\n\nConnect briefs, approvals and video jobs.\n\nSelf-hosted 2.38.7 · manual setup\nSetup guide\nIn preparation\n\nMore clients are being evaluated. Setup is not published yet.\n\nCursor\nGitHub Copilot\nGemini CLI\nMicrosoft Copilot\n\nFROM THE IDEA TO THE FINAL FILE\n\nThe conversation moves forward. You stay in control.\n\nMaxVideoAI is a remote MCP server for AI video and image generation. It connects compatible assistants to current models, quotes and the media in your account.\n\n01\nStart with your idea.\n\nA prompt, a reference, a project already in your conversation.\n\n02\nKnow what you will spend.\n\nChoose the model, duration and resolution. Approve the exact quote before generation.\n\n03\nKeep your creation.\n\nFind the finished video in your MaxVideoAI library. Display in chat depends on your client.\n\nExplore AI video examples\nCompare video models\nSee generation prices\n\nA REAL RESULT\n\nFrom a request to a video in Claude.\n\nA recorded Claude Desktop test shows the finished video and access to the MaxVideoAI library. Other clients may return a link instead of an inline player.\n\nSetup guide Claude\nVideo result shown in Claude\n\nA completed MaxVideoAI video displayed inline in Claude Desktop during a controlled test. The result is saved to the connected MaxVideoAI library. The $0.95 shown is the amount recorded for this capture, not a current quote.\n\nCONNECTED, WITH YOUR PERMISSION\n\nYour account. Your decisions.\nSign in to MaxVideoAI\n\nAuthorization opens on MaxVideoAI. Do not paste a password, API key or payment details into the conversation.\n\nApprove the exact price\n\nA recommendation or budget does not start a paid generation. Review the settings and exact quote before confirming.\n\nDisconnect when you want\n\nRemove the integration from your assistant and revoke its authorization in your MaxVideoAI account.\n\nYOUR FIRST VIDEO\n\nStart with the project already in your conversation.\n\nOnce MaxVideoAI is connected, paste this request into the conversation where you are preparing your site, product or campaign.\n\nUse the project we are working on to propose a short launch video with MaxVideoAI. Compare two suitable, currently available models, including their trade-offs and prices for the proposed settings. Ask me for any missing context or references. Wait for my choice, then my approval of the exact quote, before generating anything.\n\nCOPY MY FIRST REQUEST\n\nPlanning is free on MaxVideoAI. Generation uses your MaxVideoAI credits after you approve the exact price.\n\nMCP · MAXVIDEOAI\n\nBefore you connect.\n\nCapability review : September 14, 2026\n\nMCP documentation\nPlugin source & releases\nTalk to us\nIs MaxVideoAI a connector, an app or a plugin?\nIs there a MaxVideoAI plugin in the ChatGPT directory?\nCan I automate video generation in n8n?\nCan I generate images and audio too?\nCan I use image, video or audio references?\nHow do I add MaxVideoAI credits?\nWhere are my generated images and videos saved?\nHow do I disconnect MaxVideoAI?\n\nRemove MaxVideoAI from the assistant, then revoke the saved grant in MaxVideoAI account connections. A later protected action will require a new browser approval.",
+      "images": [],
+      "lazyPending": [
+        "/_next/image?url=%2Fmedia%2Fmcp%2Fclaude-inline-video-proof.jpg&w=3840&q=75"
+      ],
+      "links": [
+        {
+          "text": "Choose your integration",
+          "href": "#integrations"
+        },
+        {
+          "text": "See it in Claude",
+          "href": "#real-result"
+        },
+        {
+          "text": "Custom MCP connectorClaudeBuild on the ideas in your conversation.Claude Desktop testedSetup guide",
+          "href": "/integrations/claude"
+        },
+        {
+          "text": "Custom MCP appChatGPTAdd AI video to your project in ChatGPT.Full MCP: eligible Business / Enterprise / Edu workspacesSetup guide",
+          "href": "/integrations/chatgpt"
+        },
+        {
+          "text": "Plugin + MCPCodexCreate assets alongside your code.Codex CLI tested · plugin availableSetup guide",
+          "href": "/integrations/codex"
+        },
+        {
+          "text": "Skill + MCPOpenClawGive your agent a video creation workflow.Tested with limits · ClawHub skill availableSetup guide",
+          "href": "/integrations/openclaw"
+        },
+        {
+          "text": "MCP workflown8nConnect briefs, approvals and video jobs.Self-hosted 2.38.7 · manual setupSetup guide",
+          "href": "/integrations/n8n"
+        },
+        {
+          "text": "Explore AI video examples",
+          "href": "/examples"
+        },
+        {
+          "text": "Compare video models",
+          "href": "/ai-video-engines"
+        },
+        {
+          "text": "See generation prices",
+          "href": "/pricing"
+        },
+        {
+          "text": "Setup guide Claude",
+          "href": "/integrations/claude"
+        },
+        {
+          "text": "MCP documentation",
+          "href": "/docs/mcp"
+        },
+        {
+          "text": "Plugin source & releases",
+          "href": "https://github.com/camgraphe/maxvideoai-plugin"
+        },
+        {
+          "text": "Talk to us",
+          "href": "/contact"
+        },
+        {
+          "text": "View the public n8n template.",
+          "href": "https://n8n.io/workflows/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/"
+        }
+      ],
+      "overflow": false,
+      "faqKeyboard": true,
+      "ctaKeyboardFocus": true,
+      "errors": []
+    },
+    {
+      "route": "/integrations/claude",
+      "device": "desktop",
+      "status": 200,
+      "fresh": {
+        "overflow": false,
+        "mainCount": 1
+      },
+      "h1": "Create AI videos with Claude.",
+      "title": "Claude AI Video Connector: MaxVideoAI MCP",
+      "canonical": "https://maxvideoai.com/integrations/claude",
+      "robots": "index, follow",
+      "alternates": [
+        {
+          "lang": "en",
+          "href": "https://maxvideoai.com/integrations/claude"
+        },
+        {
+          "lang": "fr",
+          "href": "https://maxvideoai.com/fr/integrations/claude"
+        },
+        {
+          "lang": "es",
+          "href": "https://maxvideoai.com/es/integraciones/claude"
+        },
+        {
+          "lang": "x-default",
+          "href": "https://maxvideoai.com/integrations/claude"
+        }
+      ],
+      "jsonld": [
+        {
+          "valid": true,
+          "type": "WebApplication"
+        },
+        {
+          "valid": true,
+          "type": "BreadcrumbList"
+        },
+        {
+          "valid": true,
+          "type": "Organization"
+        },
+        {
+          "valid": true,
+          "type": "WebSite"
+        }
+      ],
+      "copy": "×\nMaxVideoAI\n\nCUSTOM MCP CONNECTOR · MAXVIDEOAI\n\nCreate AI videos with Claude.\n\nDevelop your idea in Claude, compare suitable video models and approve the exact price. Find the finished creation in your MaxVideoAI account.\n\nSet up MaxVideoAI in Claude\nSee the complete AI assistant workflow\n\nClaude Desktop tested\n\nILLUSTRATED WORKFLOW\n\nHelp me turn this idea into a cinematic video.\n\n01 / 03\nStart with your idea.\n\nA prompt, a reference, a project already in your conversation.\n\nDescribe\nReview\n02\nCreate\n03\n\nA REAL RESULT\n\nFrom a request to a video in Claude.\n\nA recorded Claude Desktop test shows the finished video and access to the MaxVideoAI library. Other clients may return a link instead of an inline player.\n\nVideo result shown in Claude\n\nA completed MaxVideoAI video displayed inline in Claude Desktop during a controlled test. The result is saved to the connected MaxVideoAI library. The $0.95 shown is the amount recorded for this capture, not a current quote.\n\nCONNECT YOUR ACCOUNT\n\nConnect once. Start creating.\n\nFollow the steps for your environment, then authorize your MaxVideoAI account.\n\nClaude Desktop\nConnect MaxVideoAI to Claude\nClaude Code\nUse the same connector in Claude Code\n\nRegister the remote server, then authenticate from Claude Code’s MCP panel.\n\n01\nAdd the server\n\nRun the command below once from the project or user scope you prefer.\n\n02\nOpen the MCP panel\n\nOpen /mcp and select MaxVideoAI to start browser authorization.\n\n03\nStart with discovery\n\nAsk for account status or current video models before preparing a paid generation.\n\nClaude Code commands\n\nclaude mcp add --transport http maxvideoai https://api.maxvideoai.com/mcp\nclaude mcp get maxvideoai\nCopy it, and Claude guides you\n\nPaste the request into Claude. It will show you exactly where to add MaxVideoAI and finish connecting.\n\nCopy for guidance in Claude\nCopy MCP address\n\nSee what will be copied\n+\n\nConfigure Claude Code with: claude mcp add --transport http maxvideoai https://api.maxvideoai.com/mcp. Then guide me through /mcp to authorize my account.\nUse production only: https://api.maxvideoai.com/mcp. Guide: https://maxvideoai.com/integrations/claude\nIf MaxVideoAI Staging appears, do not use that entry: its accounts are separate. I will sign in with my existing MaxVideoAI account and approve access in the browser. Never ask for my password in chat. After returning, check get_account_status and list_models only, without quoting, generating or making a payment.\n\nAfter adding the server, open /mcp in Claude Code to authenticate.\n\nClaude Code uses the same MaxVideoAI account, current model catalog, exact quotes and confirmation boundary.\n\nCompatibility & limits\n\nThe shared connector configuration is ready, but a direct Claude Code production check has not yet been recorded.\n\nCompatibility checked: August 27, 2026\n\nHost evidence state: not-run\n\nWHAT YOU AUTHORIZE\n\nYou authorize your account.\n\nThe browser opens MaxVideoAI sign-in and consent. Approval identifies the connected account; the assistant never receives your password, payment details or direct database access.\n\n01\nSign in with the same MaxVideoAI account you use on the website; create one only if needed\n02\nReview and approve access on MaxVideoAI; confirm your email if you just created an account\n03\nReturn to Claude and check account status and models without generating\nClaude\n→\nmaxvideoai.com\n\nYOUR FIRST VIDEO\n\nStart with the project already in your conversation.\n\nOnce MaxVideoAI is connected, paste this request into the conversation where you are preparing your site, product or campaign.\n\nUse the project we are working on to propose a short launch video with MaxVideoAI. Compare two suitable, currently available models, including their trade-offs and prices for the proposed settings. Ask me for any missing context or references. Wait for my choice, then my approval of the exact quote, before generating anything.\n\nCOPY MY FIRST REQUEST\n\nPlanning is free on MaxVideoAI. Generation uses your MaxVideoAI credits after you approve the exact price.\n\nFROM IDEA TO RESULT\n\nCreate with Claude; generate with MaxVideoAI\n\nKeep the creative conversation in your assistant. MaxVideoAI handles the changing product facts and the paid execution boundary.\n\nMaxVideoAI × Claude\n01\nDevelop the creative brief\n\nClaude asks for the missing creative, format, quality and budget choices.\n\n02\nCompare current models\n\nMaxVideoAI returns a best-fit recommendation plus credible alternatives with concrete trade-offs.\n\n03\nReview the exact quote\n\nCheck prompt, settings, references, price and account effect before approving.\n\n04\nGenerate and follow the job\n\nApprove once, recover status safely, and find the result in your MaxVideoAI Library.\n\nUse image, video or audio references when the model supports them\n\nSelect an existing private image, video or audio asset from your MaxVideoAI Library, or open a secure upload handoff. Supported kinds and limits come from the selected model’s live details.\n\nHELP\n\nClaude connection help\n\nAnswers to help you connect your account and make your first creation.\n\nDisconnect Claude\n\nRemove the connection in the assistant and revoke the saved grant in MaxVideoAI account settings. Both steps prevent an old client entry from retaining access.\n\nRemove MaxVideoAI from Claude\nOpen MaxVideoAI account connections and revoke the grant\nReconnect later through a new browser approval if needed\nI see MaxVideoAI Staging or my website password is refused\nCan the assistant install MaxVideoAI for me?\nThe assistant asks me to sign in again\nMy balance is too low\nI cannot find a completed result\n\nAsk the assistant to list recent generations or open MaxVideoAI Library. Do not submit a duplicate paid job.\n\nRead the MCP technical guide\nContact MaxVideoAI support\n\nCONNECT YOUR WAY\n\nWhere do you want to create?\nCustom MCP connector\nClaude\nSetup guide\nCustom MCP app\nChatGPT\nSetup guide\nPlugin + MCP\nCodex\nSetup guide\nSkill + MCP\nOpenClaw\nSetup guide\nMCP workflow\nn8n\nSetup guide",
+      "images": [],
+      "lazyPending": [
+        "/brand/partners/anthropic/claude-mark-light.svg",
+        "/brand/partners/openai/openai-mark-light.svg",
+        "/brand/partners/openai/openai-mark-light.svg",
+        "/brand/partners/mcp/openclaw-mark.svg",
+        "/brand/partners/mcp/n8n-mark.svg"
+      ],
+      "links": [
+        {
+          "text": "Set up MaxVideoAI in Claude",
+          "href": "#setup"
+        },
+        {
+          "text": "See the complete AI assistant workflow",
+          "href": "/mcp"
+        },
+        {
+          "text": "Read the MCP technical guide",
+          "href": "/docs/mcp"
+        },
+        {
+          "text": "Contact MaxVideoAI support",
+          "href": "/contact"
+        },
+        {
+          "text": "Custom MCP connectorClaudeBuild on the ideas in your conversation.Claude Desktop testedSetup guide",
+          "href": "/integrations/claude"
+        },
+        {
+          "text": "Custom MCP appChatGPTAdd AI video to your project in ChatGPT.Full MCP: eligible Business / Enterprise / Edu workspacesSetup guide",
+          "href": "/integrations/chatgpt"
+        },
+        {
+          "text": "Plugin + MCPCodexCreate assets alongside your code.Codex CLI tested · plugin availableSetup guide",
+          "href": "/integrations/codex"
+        },
+        {
+          "text": "Skill + MCPOpenClawGive your agent a video creation workflow.Tested with limits · ClawHub skill availableSetup guide",
+          "href": "/integrations/openclaw"
+        },
+        {
+          "text": "MCP workflown8nConnect briefs, approvals and video jobs.Self-hosted 2.38.7 · manual setupSetup guide",
+          "href": "/integrations/n8n"
+        }
+      ],
+      "overflow": false,
+      "faqKeyboard": true,
+      "ctaKeyboardFocus": true,
+      "errors": []
+    },
+    {
+      "route": "/integrations/claude",
+      "device": "mobile",
+      "status": 200,
+      "fresh": {
+        "overflow": false,
+        "mainCount": 1
+      },
+      "h1": "Create AI videos with Claude.",
+      "title": "Claude AI Video Connector: MaxVideoAI MCP",
+      "canonical": "https://maxvideoai.com/integrations/claude",
+      "robots": "index, follow",
+      "alternates": [
+        {
+          "lang": "en",
+          "href": "https://maxvideoai.com/integrations/claude"
+        },
+        {
+          "lang": "fr",
+          "href": "https://maxvideoai.com/fr/integrations/claude"
+        },
+        {
+          "lang": "es",
+          "href": "https://maxvideoai.com/es/integraciones/claude"
+        },
+        {
+          "lang": "x-default",
+          "href": "https://maxvideoai.com/integrations/claude"
+        }
+      ],
+      "jsonld": [
+        {
+          "valid": true,
+          "type": "WebApplication"
+        },
+        {
+          "valid": true,
+          "type": "BreadcrumbList"
+        },
+        {
+          "valid": true,
+          "type": "Organization"
+        },
+        {
+          "valid": true,
+          "type": "WebSite"
+        }
+      ],
+      "copy": "×\nMaxVideoAI\n\nCUSTOM MCP CONNECTOR · MAXVIDEOAI\n\nCreate AI videos with Claude.\n\nDevelop your idea in Claude, compare suitable video models and approve the exact price. Find the finished creation in your MaxVideoAI account.\n\nSet up MaxVideoAI in Claude\nSee the complete AI assistant workflow\n\nClaude Desktop tested\n\nILLUSTRATED WORKFLOW\n\nHelp me turn this idea into a cinematic video.\n\n01 / 03\nStart with your idea.\n\nA prompt, a reference, a project already in your conversation.\n\nDescribe\nReview\nCreate\n\nA REAL RESULT\n\nFrom a request to a video in Claude.\n\nA recorded Claude Desktop test shows the finished video and access to the MaxVideoAI library. Other clients may return a link instead of an inline player.\n\nVideo result shown in Claude\n\nA completed MaxVideoAI video displayed inline in Claude Desktop during a controlled test. The result is saved to the connected MaxVideoAI library. The $0.95 shown is the amount recorded for this capture, not a current quote.\n\nCONNECT YOUR ACCOUNT\n\nConnect once. Start creating.\n\nFollow the steps for your environment, then authorize your MaxVideoAI account.\n\nClaude Desktop\nConnect MaxVideoAI to Claude\nClaude Code\nUse the same connector in Claude Code\n\nRegister the remote server, then authenticate from Claude Code’s MCP panel.\n\n01\nAdd the server\n\nRun the command below once from the project or user scope you prefer.\n\n02\nOpen the MCP panel\n\nOpen /mcp and select MaxVideoAI to start browser authorization.\n\n03\nStart with discovery\n\nAsk for account status or current video models before preparing a paid generation.\n\nClaude Code commands\n\nclaude mcp add --transport http maxvideoai https://api.maxvideoai.com/mcp\nclaude mcp get maxvideoai\nCopy it, and Claude guides you\n\nPaste the request into Claude. It will show you exactly where to add MaxVideoAI and finish connecting.\n\nCopy for guidance in Claude\nCopy MCP address\n\nSee what will be copied\n+\n\nConfigure Claude Code with: claude mcp add --transport http maxvideoai https://api.maxvideoai.com/mcp. Then guide me through /mcp to authorize my account.\nUse production only: https://api.maxvideoai.com/mcp. Guide: https://maxvideoai.com/integrations/claude\nIf MaxVideoAI Staging appears, do not use that entry: its accounts are separate. I will sign in with my existing MaxVideoAI account and approve access in the browser. Never ask for my password in chat. After returning, check get_account_status and list_models only, without quoting, generating or making a payment.\n\nAfter adding the server, open /mcp in Claude Code to authenticate.\n\nClaude Code uses the same MaxVideoAI account, current model catalog, exact quotes and confirmation boundary.\n\nCompatibility & limits\n\nThe shared connector configuration is ready, but a direct Claude Code production check has not yet been recorded.\n\nCompatibility checked: August 27, 2026\n\nHost evidence state: not-run\n\nWHAT YOU AUTHORIZE\n\nYou authorize your account.\n\nThe browser opens MaxVideoAI sign-in and consent. Approval identifies the connected account; the assistant never receives your password, payment details or direct database access.\n\n01\nSign in with the same MaxVideoAI account you use on the website; create one only if needed\n02\nReview and approve access on MaxVideoAI; confirm your email if you just created an account\n03\nReturn to Claude and check account status and models without generating\nClaude\n→\nmaxvideoai.com\n\nYOUR FIRST VIDEO\n\nStart with the project already in your conversation.\n\nOnce MaxVideoAI is connected, paste this request into the conversation where you are preparing your site, product or campaign.\n\nUse the project we are working on to propose a short launch video with MaxVideoAI. Compare two suitable, currently available models, including their trade-offs and prices for the proposed settings. Ask me for any missing context or references. Wait for my choice, then my approval of the exact quote, before generating anything.\n\nCOPY MY FIRST REQUEST\n\nPlanning is free on MaxVideoAI. Generation uses your MaxVideoAI credits after you approve the exact price.\n\nFROM IDEA TO RESULT\n\nCreate with Claude; generate with MaxVideoAI\n\nKeep the creative conversation in your assistant. MaxVideoAI handles the changing product facts and the paid execution boundary.\n\nMaxVideoAI × Claude\n01\nDevelop the creative brief\n\nClaude asks for the missing creative, format, quality and budget choices.\n\n02\nCompare current models\n\nMaxVideoAI returns a best-fit recommendation plus credible alternatives with concrete trade-offs.\n\n03\nReview the exact quote\n\nCheck prompt, settings, references, price and account effect before approving.\n\n04\nGenerate and follow the job\n\nApprove once, recover status safely, and find the result in your MaxVideoAI Library.\n\nUse image, video or audio references when the model supports them\n\nSelect an existing private image, video or audio asset from your MaxVideoAI Library, or open a secure upload handoff. Supported kinds and limits come from the selected model’s live details.\n\nHELP\n\nClaude connection help\n\nAnswers to help you connect your account and make your first creation.\n\nDisconnect Claude\n\nRemove the connection in the assistant and revoke the saved grant in MaxVideoAI account settings. Both steps prevent an old client entry from retaining access.\n\nRemove MaxVideoAI from Claude\nOpen MaxVideoAI account connections and revoke the grant\nReconnect later through a new browser approval if needed\nI see MaxVideoAI Staging or my website password is refused\nCan the assistant install MaxVideoAI for me?\nThe assistant asks me to sign in again\nMy balance is too low\nI cannot find a completed result\n\nAsk the assistant to list recent generations or open MaxVideoAI Library. Do not submit a duplicate paid job.\n\nRead the MCP technical guide\nContact MaxVideoAI support\n\nCONNECT YOUR WAY\n\nWhere do you want to create?\nCustom MCP connector\nClaude\nSetup guide\nCustom MCP app\nChatGPT\nSetup guide\nPlugin + MCP\nCodex\nSetup guide\nSkill + MCP\nOpenClaw\nSetup guide\nMCP workflow\nn8n\nSetup guide",
+      "images": [],
+      "lazyPending": [
+        "/_next/image?url=%2Fhero%2Fbest-for-image-to-video.webp&w=3840&q=75",
+        "/brand/partners/anthropic/claude-mark-light.svg",
+        "/brand/partners/openai/openai-mark-light.svg",
+        "/brand/partners/openai/openai-mark-light.svg",
+        "/brand/partners/mcp/openclaw-mark.svg",
+        "/brand/partners/mcp/n8n-mark.svg"
+      ],
+      "links": [
+        {
+          "text": "Set up MaxVideoAI in Claude",
+          "href": "#setup"
+        },
+        {
+          "text": "See the complete AI assistant workflow",
+          "href": "/mcp"
+        },
+        {
+          "text": "Read the MCP technical guide",
+          "href": "/docs/mcp"
+        },
+        {
+          "text": "Contact MaxVideoAI support",
+          "href": "/contact"
+        },
+        {
+          "text": "Custom MCP connectorClaudeBuild on the ideas in your conversation.Claude Desktop testedSetup guide",
+          "href": "/integrations/claude"
+        },
+        {
+          "text": "Custom MCP appChatGPTAdd AI video to your project in ChatGPT.Full MCP: eligible Business / Enterprise / Edu workspacesSetup guide",
+          "href": "/integrations/chatgpt"
+        },
+        {
+          "text": "Plugin + MCPCodexCreate assets alongside your code.Codex CLI tested · plugin availableSetup guide",
+          "href": "/integrations/codex"
+        },
+        {
+          "text": "Skill + MCPOpenClawGive your agent a video creation workflow.Tested with limits · ClawHub skill availableSetup guide",
+          "href": "/integrations/openclaw"
+        },
+        {
+          "text": "MCP workflown8nConnect briefs, approvals and video jobs.Self-hosted 2.38.7 · manual setupSetup guide",
+          "href": "/integrations/n8n"
+        }
+      ],
+      "overflow": false,
+      "faqKeyboard": true,
+      "ctaKeyboardFocus": true,
+      "errors": []
+    },
+    {
+      "route": "/integrations/codex",
+      "device": "desktop",
+      "status": 200,
+      "fresh": {
+        "overflow": false,
+        "mainCount": 1
+      },
+      "h1": "Create AI videos with Codex.",
+      "title": "Codex AI Video Plugin: MaxVideoAI MCP",
+      "canonical": "https://maxvideoai.com/integrations/codex",
+      "robots": "index, follow",
+      "alternates": [
+        {
+          "lang": "en",
+          "href": "https://maxvideoai.com/integrations/codex"
+        },
+        {
+          "lang": "fr",
+          "href": "https://maxvideoai.com/fr/integrations/codex"
+        },
+        {
+          "lang": "es",
+          "href": "https://maxvideoai.com/es/integraciones/codex"
+        },
+        {
+          "lang": "x-default",
+          "href": "https://maxvideoai.com/integrations/codex"
+        }
+      ],
+      "jsonld": [
+        {
+          "valid": true,
+          "type": "WebApplication"
+        },
+        {
+          "valid": true,
+          "type": "BreadcrumbList"
+        },
+        {
+          "valid": true,
+          "type": "Organization"
+        },
+        {
+          "valid": true,
+          "type": "WebSite"
+        }
+      ],
+      "copy": "×\nMaxVideoAI\n\nPLUGIN + MCP · MAXVIDEOAI\n\nCreate AI videos with Codex.\n\nA launch video, an animated reference or a scene for your site: use the MaxVideoAI plugin alongside your project, with a quote before every generation.\n\nSet up MaxVideoAI in Codex\nSee the complete AI assistant workflow\n\nCodex CLI tested · plugin available\n\nILLUSTRATED WORKFLOW\n\nHelp me turn this idea into a cinematic video.\n\n01 / 03\nStart with your idea.\n\nA prompt, a reference, a project already in your conversation.\n\nDescribe\nReview\n02\nCreate\n03\n\nCONNECT YOUR ACCOUNT\n\nConnect once. Start creating.\n\nFollow the steps for your environment, then authorize your MaxVideoAI account.\n\nCodex CLI\nInstall the MaxVideoAI plugin in Codex\n\nAdd the tagged MaxVideoAI marketplace, install the plugin, then authorize your account from a new Codex conversation.\n\n01\nAdd the marketplace\n\nRegister the public MaxVideoAI repository at the reviewed 0.3.6 release tag.\n\n02\nInstall the plugin\n\nInstall MaxVideoAI once to get the plan and generate skills plus the production MCP connection.\n\n03\nStart a new task\n\nOpen a new Codex conversation, use $maxvideoai:plan or $maxvideoai:generate, and complete OAuth when prompted.\n\nCodex plugin commands\n\ncodex plugin marketplace add camgraphe/maxvideoai-plugin --ref v0.3.6\ncodex plugin add maxvideoai@maxvideoai\nCopy it, and Codex installs the plugin\n\nPaste the request into Codex. It can run the commands after you approve them.\n\nCopy and install in Codex\nCopy MCP address\n\nSee what will be copied\n+\n\nInstall the MaxVideoAI plugin for me with these commands, then guide me through connecting my account:\ncodex plugin marketplace add camgraphe/maxvideoai-plugin --ref v0.3.6\ncodex plugin add maxvideoai@maxvideoai\n\nOAuth starts when the new conversation first uses MaxVideoAI. Sign in or create the MaxVideoAI account you want to connect.\n\nThe tagged GitHub package includes both plan and generate skills and the production MCP connection. Generation still waits for an exact quote and explicit approval.\n\nCompatibility & limits\n\nCodex CLI 0.150.0-alpha.8 completed production installation, OAuth, account, catalog, recommendation, budgeting, exact-quote, paid-generation, recovery and inline-player contract checks.\n\nCompatibility checked: August 27, 2026\n\nHost evidence state: verified\n\nWHAT YOU AUTHORIZE\n\nYou authorize your account.\n\nThe browser opens MaxVideoAI sign-in and consent. Approval identifies the connected account; the assistant never receives your password, payment details or direct database access.\n\n01\nSign in with the same MaxVideoAI account you use on the website; create one only if needed\n02\nReview and approve access on MaxVideoAI; confirm your email if you just created an account\n03\nReturn to Codex and check account status and models without generating\nCodex\n→\nmaxvideoai.com\n\nYOUR FIRST VIDEO\n\nStart with the project already in your conversation.\n\nOnce MaxVideoAI is connected, paste this request into the conversation where you are preparing your site, product or campaign.\n\nUse the project we are working on to propose a short launch video with MaxVideoAI. Compare two suitable, currently available models, including their trade-offs and prices for the proposed settings. Ask me for any missing context or references. Wait for my choice, then my approval of the exact quote, before generating anything.\n\nCOPY MY FIRST REQUEST\n\nPlanning is free on MaxVideoAI. Generation uses your MaxVideoAI credits after you approve the exact price.\n\nFROM IDEA TO RESULT\n\nCreate with Codex; generate with MaxVideoAI\n\nKeep the creative conversation in your assistant. MaxVideoAI handles the changing product facts and the paid execution boundary.\n\nMaxVideoAI × Codex\n01\nDevelop the creative brief\n\nCodex asks for the missing creative, format, quality and budget choices.\n\n02\nCompare current models\n\nMaxVideoAI returns a best-fit recommendation plus credible alternatives with concrete trade-offs.\n\n03\nReview the exact quote\n\nCheck prompt, settings, references, price and account effect before approving.\n\n04\nGenerate and follow the job\n\nApprove once, recover status safely, and find the result in your MaxVideoAI Library.\n\nUse image, video or audio references when the model supports them\n\nSelect an existing private image, video or audio asset from your MaxVideoAI Library, or open a secure upload handoff. Supported kinds and limits come from the selected model’s live details.\n\nHELP\n\nCodex connection help\n\nAnswers to help you connect your account and make your first creation.\n\nDisconnect Codex\n\nRemove the connection in the assistant and revoke the saved grant in MaxVideoAI account settings. Both steps prevent an old client entry from retaining access.\n\nRemove MaxVideoAI from Codex\nOpen MaxVideoAI account connections and revoke the grant\nReconnect later through a new browser approval if needed\nI see MaxVideoAI Staging or my website password is refused\nCan the assistant install MaxVideoAI for me?\nThe assistant asks me to sign in again\nMy balance is too low\nI cannot find a completed result\n\nAsk the assistant to list recent generations or open MaxVideoAI Library. Do not submit a duplicate paid job.\n\nRead the MCP technical guide\nContact MaxVideoAI support\n\nCONNECT YOUR WAY\n\nWhere do you want to create?\nCustom MCP connector\nClaude\nSetup guide\nCustom MCP app\nChatGPT\nSetup guide\nPlugin + MCP\nCodex\nSetup guide\nSkill + MCP\nOpenClaw\nSetup guide\nMCP workflow\nn8n\nSetup guide",
+      "images": [],
+      "lazyPending": [
+        "/brand/partners/anthropic/claude-mark-light.svg",
+        "/brand/partners/openai/openai-mark-light.svg",
+        "/brand/partners/openai/openai-mark-light.svg",
+        "/brand/partners/mcp/openclaw-mark.svg",
+        "/brand/partners/mcp/n8n-mark.svg"
+      ],
+      "links": [
+        {
+          "text": "Set up MaxVideoAI in Codex",
+          "href": "#setup"
+        },
+        {
+          "text": "See the complete AI assistant workflow",
+          "href": "/mcp"
+        },
+        {
+          "text": "Read the MCP technical guide",
+          "href": "/docs/mcp"
+        },
+        {
+          "text": "Contact MaxVideoAI support",
+          "href": "/contact"
+        },
+        {
+          "text": "Custom MCP connectorClaudeBuild on the ideas in your conversation.Claude Desktop testedSetup guide",
+          "href": "/integrations/claude"
+        },
+        {
+          "text": "Custom MCP appChatGPTAdd AI video to your project in ChatGPT.Full MCP: eligible Business / Enterprise / Edu workspacesSetup guide",
+          "href": "/integrations/chatgpt"
+        },
+        {
+          "text": "Plugin + MCPCodexCreate assets alongside your code.Codex CLI tested · plugin availableSetup guide",
+          "href": "/integrations/codex"
+        },
+        {
+          "text": "Skill + MCPOpenClawGive your agent a video creation workflow.Tested with limits · ClawHub skill availableSetup guide",
+          "href": "/integrations/openclaw"
+        },
+        {
+          "text": "MCP workflown8nConnect briefs, approvals and video jobs.Self-hosted 2.38.7 · manual setupSetup guide",
+          "href": "/integrations/n8n"
+        }
+      ],
+      "overflow": false,
+      "faqKeyboard": true,
+      "ctaKeyboardFocus": true,
+      "errors": []
+    },
+    {
+      "route": "/integrations/codex",
+      "device": "mobile",
+      "status": 200,
+      "fresh": {
+        "overflow": false,
+        "mainCount": 1
+      },
+      "h1": "Create AI videos with Codex.",
+      "title": "Codex AI Video Plugin: MaxVideoAI MCP",
+      "canonical": "https://maxvideoai.com/integrations/codex",
+      "robots": "index, follow",
+      "alternates": [
+        {
+          "lang": "en",
+          "href": "https://maxvideoai.com/integrations/codex"
+        },
+        {
+          "lang": "fr",
+          "href": "https://maxvideoai.com/fr/integrations/codex"
+        },
+        {
+          "lang": "es",
+          "href": "https://maxvideoai.com/es/integraciones/codex"
+        },
+        {
+          "lang": "x-default",
+          "href": "https://maxvideoai.com/integrations/codex"
+        }
+      ],
+      "jsonld": [
+        {
+          "valid": true,
+          "type": "WebApplication"
+        },
+        {
+          "valid": true,
+          "type": "BreadcrumbList"
+        },
+        {
+          "valid": true,
+          "type": "Organization"
+        },
+        {
+          "valid": true,
+          "type": "WebSite"
+        }
+      ],
+      "copy": "×\nMaxVideoAI\n\nPLUGIN + MCP · MAXVIDEOAI\n\nCreate AI videos with Codex.\n\nA launch video, an animated reference or a scene for your site: use the MaxVideoAI plugin alongside your project, with a quote before every generation.\n\nSet up MaxVideoAI in Codex\nSee the complete AI assistant workflow\n\nCodex CLI tested · plugin available\n\nILLUSTRATED WORKFLOW\n\nHelp me turn this idea into a cinematic video.\n\n01 / 03\nStart with your idea.\n\nA prompt, a reference, a project already in your conversation.\n\nDescribe\nReview\nCreate\n\nCONNECT YOUR ACCOUNT\n\nConnect once. Start creating.\n\nFollow the steps for your environment, then authorize your MaxVideoAI account.\n\nCodex CLI\nInstall the MaxVideoAI plugin in Codex\n\nAdd the tagged MaxVideoAI marketplace, install the plugin, then authorize your account from a new Codex conversation.\n\n01\nAdd the marketplace\n\nRegister the public MaxVideoAI repository at the reviewed 0.3.6 release tag.\n\n02\nInstall the plugin\n\nInstall MaxVideoAI once to get the plan and generate skills plus the production MCP connection.\n\n03\nStart a new task\n\nOpen a new Codex conversation, use $maxvideoai:plan or $maxvideoai:generate, and complete OAuth when prompted.\n\nCodex plugin commands\n\ncodex plugin marketplace add camgraphe/maxvideoai-plugin --ref v0.3.6\ncodex plugin add maxvideoai@maxvideoai\nCopy it, and Codex installs the plugin\n\nPaste the request into Codex. It can run the commands after you approve them.\n\nCopy and install in Codex\nCopy MCP address\n\nSee what will be copied\n+\n\nInstall the MaxVideoAI plugin for me with these commands, then guide me through connecting my account:\ncodex plugin marketplace add camgraphe/maxvideoai-plugin --ref v0.3.6\ncodex plugin add maxvideoai@maxvideoai\n\nOAuth starts when the new conversation first uses MaxVideoAI. Sign in or create the MaxVideoAI account you want to connect.\n\nThe tagged GitHub package includes both plan and generate skills and the production MCP connection. Generation still waits for an exact quote and explicit approval.\n\nCompatibility & limits\n\nCodex CLI 0.150.0-alpha.8 completed production installation, OAuth, account, catalog, recommendation, budgeting, exact-quote, paid-generation, recovery and inline-player contract checks.\n\nCompatibility checked: August 27, 2026\n\nHost evidence state: verified\n\nWHAT YOU AUTHORIZE\n\nYou authorize your account.\n\nThe browser opens MaxVideoAI sign-in and consent. Approval identifies the connected account; the assistant never receives your password, payment details or direct database access.\n\n01\nSign in with the same MaxVideoAI account you use on the website; create one only if needed\n02\nReview and approve access on MaxVideoAI; confirm your email if you just created an account\n03\nReturn to Codex and check account status and models without generating\nCodex\n→\nmaxvideoai.com\n\nYOUR FIRST VIDEO\n\nStart with the project already in your conversation.\n\nOnce MaxVideoAI is connected, paste this request into the conversation where you are preparing your site, product or campaign.\n\nUse the project we are working on to propose a short launch video with MaxVideoAI. Compare two suitable, currently available models, including their trade-offs and prices for the proposed settings. Ask me for any missing context or references. Wait for my choice, then my approval of the exact quote, before generating anything.\n\nCOPY MY FIRST REQUEST\n\nPlanning is free on MaxVideoAI. Generation uses your MaxVideoAI credits after you approve the exact price.\n\nFROM IDEA TO RESULT\n\nCreate with Codex; generate with MaxVideoAI\n\nKeep the creative conversation in your assistant. MaxVideoAI handles the changing product facts and the paid execution boundary.\n\nMaxVideoAI × Codex\n01\nDevelop the creative brief\n\nCodex asks for the missing creative, format, quality and budget choices.\n\n02\nCompare current models\n\nMaxVideoAI returns a best-fit recommendation plus credible alternatives with concrete trade-offs.\n\n03\nReview the exact quote\n\nCheck prompt, settings, references, price and account effect before approving.\n\n04\nGenerate and follow the job\n\nApprove once, recover status safely, and find the result in your MaxVideoAI Library.\n\nUse image, video or audio references when the model supports them\n\nSelect an existing private image, video or audio asset from your MaxVideoAI Library, or open a secure upload handoff. Supported kinds and limits come from the selected model’s live details.\n\nHELP\n\nCodex connection help\n\nAnswers to help you connect your account and make your first creation.\n\nDisconnect Codex\n\nRemove the connection in the assistant and revoke the saved grant in MaxVideoAI account settings. Both steps prevent an old client entry from retaining access.\n\nRemove MaxVideoAI from Codex\nOpen MaxVideoAI account connections and revoke the grant\nReconnect later through a new browser approval if needed\nI see MaxVideoAI Staging or my website password is refused\nCan the assistant install MaxVideoAI for me?\nThe assistant asks me to sign in again\nMy balance is too low\nI cannot find a completed result\n\nAsk the assistant to list recent generations or open MaxVideoAI Library. Do not submit a duplicate paid job.\n\nRead the MCP technical guide\nContact MaxVideoAI support\n\nCONNECT YOUR WAY\n\nWhere do you want to create?\nCustom MCP connector\nClaude\nSetup guide\nCustom MCP app\nChatGPT\nSetup guide\nPlugin + MCP\nCodex\nSetup guide\nSkill + MCP\nOpenClaw\nSetup guide\nMCP workflow\nn8n\nSetup guide",
+      "images": [],
+      "lazyPending": [
+        "/_next/image?url=%2Fhero%2Fbest-for-image-to-video.webp&w=3840&q=75",
+        "/brand/partners/anthropic/claude-mark-light.svg",
+        "/brand/partners/openai/openai-mark-light.svg",
+        "/brand/partners/openai/openai-mark-light.svg",
+        "/brand/partners/mcp/openclaw-mark.svg",
+        "/brand/partners/mcp/n8n-mark.svg"
+      ],
+      "links": [
+        {
+          "text": "Set up MaxVideoAI in Codex",
+          "href": "#setup"
+        },
+        {
+          "text": "See the complete AI assistant workflow",
+          "href": "/mcp"
+        },
+        {
+          "text": "Read the MCP technical guide",
+          "href": "/docs/mcp"
+        },
+        {
+          "text": "Contact MaxVideoAI support",
+          "href": "/contact"
+        },
+        {
+          "text": "Custom MCP connectorClaudeBuild on the ideas in your conversation.Claude Desktop testedSetup guide",
+          "href": "/integrations/claude"
+        },
+        {
+          "text": "Custom MCP appChatGPTAdd AI video to your project in ChatGPT.Full MCP: eligible Business / Enterprise / Edu workspacesSetup guide",
+          "href": "/integrations/chatgpt"
+        },
+        {
+          "text": "Plugin + MCPCodexCreate assets alongside your code.Codex CLI tested · plugin availableSetup guide",
+          "href": "/integrations/codex"
+        },
+        {
+          "text": "Skill + MCPOpenClawGive your agent a video creation workflow.Tested with limits · ClawHub skill availableSetup guide",
+          "href": "/integrations/openclaw"
+        },
+        {
+          "text": "MCP workflown8nConnect briefs, approvals and video jobs.Self-hosted 2.38.7 · manual setupSetup guide",
+          "href": "/integrations/n8n"
+        }
+      ],
+      "overflow": false,
+      "faqKeyboard": true,
+      "ctaKeyboardFocus": true,
+      "errors": []
+    }
+  ]
+}

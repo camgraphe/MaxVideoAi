@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "date": "2026-10-05",
+  "audience": "English-speaking Claude Desktop users developing a product, project or campaign",
+  "hypothesis": "A project brief can become a quoted clip through a connected MaxVideoAI account, with explicit quote approval and media retrieval. This is a working hypothesis, not proven advertising conversion.",
+  "status": "LOCAL REVIEW ONLY — paid rights and fresh exact-host capture unresolved",
+  "destination": "https://maxvideoai.com/integrations/claude",
+  "cta": "See the Claude Desktop setup",
+  "headlines": {
+    "a": ["Your project", "needs a clip."],
+    "b": ["The quote first.", "Your approval next."]
+  },
+  "opening_subtitle": "For the project you develop in Claude Desktop.",
+  "opening_evidence": "Existing product sample · September 2026",
+  "opening_limit": "This sample is not from a new Claude session.",
+  "description": "Turn a project brief into a clip with Claude Desktop and MaxVideoAI. Connect your account, review the exact quote and approve before generation. Account, connector and credits required; assistant requirements vary.",
+  "short_description": "Brief. Connect. Review the quote. Approve. Retrieve the clip. See the Claude Desktop setup.",
+  "scenes": [
+    {
+      "id": "opening",
+      "start": 0,
+      "end": 6,
+      "label": "EXISTING PRODUCT SAMPLE",
+      "evidence": "Owner-approved September 2026 Wan 3 Prime watch demo; not proof of a new Claude session.",
+      "asset": "watch-video"
+    },
+    {
+      "id": "brief",
+      "start": 6,
+      "end": 12,
+      "step": "01 / BRIEF",
+      "title": ["Describe", "the clip."],
+      "subtitle": ["Start with the project", "already in your conversation."],
+      "label": "WORKFLOW ILLUSTRATION",
+      "evidence": "Editable editorial diagram, not Claude UI or a captured prompt.",
+      "asset": "watch-source"
+    },
+    {
+      "id": "connect",
+      "start": 12,
+      "end": 18,
+      "step": "02 / CONNECT",
+      "title": ["Connect.", "Authorize."],
+      "subtitle": ["Sign in on MaxVideoAI.", "Then return to Claude Desktop."],
+      "label": "WORKFLOW ILLUSTRATION",
+      "evidence": "No account was created or authorized for this pack. This is a diagram of documented setup."
+    },
+    {
+      "id": "quote",
+      "start": 18,
+      "end": 24,
+      "step": "03 / QUOTE",
+      "title": ["Choose the model.", "Review the quote."],
+      "subtitle": ["Check the clip settings", "and exact price before generating."],
+      "label": "WORKFLOW ILLUSTRATION",
+      "evidence": "No current amount, model quote or price was generated. The diagram has no numeric price."
+    },
+    {
+      "id": "approval",
+      "start": 24,
+      "end": 30,
+      "step": "04 / APPROVE",
+      "title": ["Your approval", "starts generation."],
+      "subtitle": ["Review prompt, settings and price.", "Confirm the exact quote once."],
+      "label": "WORKFLOW ILLUSTRATION",
+      "evidence": "No approval or paid generation performed. Diagram only."
+    },
+    {
+      "id": "wait",
+      "start": 30,
+      "end": 36,
+      "step": "05 / FOLLOW THE JOB",
+      "title": ["Generation", "takes time."],
+      "subtitle": ["Follow the accepted job.", "This montage omits the wait."],
+      "label": "WORKFLOW ILLUSTRATION",
+      "evidence": "No invented duration, speed promise or simulated live progress."
+    },
+    {
+      "id": "historical",
+      "start": 36,
+      "end": 42,
+      "step": "HISTORICAL HOST EVIDENCE",
+      "title": ["Result + library", "handoff in Claude."],
+      "subtitle": ["A separate controlled staging test.", "Claude Desktop · 26 August 2026."],
+      "label": "HISTORICAL CAPTURE",
+      "evidence": "Screenshot proves host rendering and library handoff only. Its $0.95 is historical, not a current quote; it is a separate result, not the watch job.",
+      "asset": "claude-host-historical"
+    },
+    {
+      "id": "cta",
+      "start": 42,
+      "end": 48,
+      "step": "YOUR NEXT STEP",
+      "title": ["See the Claude", "Desktop setup."],
+      "subtitle": ["Account + connector required.", "Generation uses MaxVideoAI credits."],
+      "label": "EXISTING SAMPLE / SETUP GUIDE",
+      "evidence": "The replay is the same existing September watch demo; setup guide is the sole CTA.",
+      "asset": "watch-video"
+    }
+  ]
+}
