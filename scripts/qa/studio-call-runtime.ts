@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {randomUUID,createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+import {basename,extname} from 'node:path';
 import {startDisposablePostgres, createPaidGenerationTestSchema} from '../../tests/helpers/disposable-postgres';
 import {getDb} from '../../frontend/src/lib/db';
 import {createImageConversationService} from '../../frontend/src/server/studio/image-conversation-service';
@@ -17,29 +19,55 @@ import {createPrepareGenerationService,type PrepareGenerationInput} from '../../
 import type {CanonicalGenerationRequest} from '../../frontend/src/server/agent-api/generation-types';
 import type {StudioActionRequest,StudioActionResult} from '../../frontend/lib/studio/conversation-action-contract';
 import type {CanonicalAudioRequest} from '../../frontend/src/server/agent-api/audio-normalization';
+import {resolveSupportedReferenceMedia} from '../../frontend/src/server/agent-api/reference-media-policy';
 
 type QuoteRow={quote_id:string;state:string;request_json:CanonicalGenerationRequest|CanonicalAudioRequest;price_cents:number;currency:string;job_id:string|null};
 type McpQuoteRow={request_json:CanonicalGenerationRequest;price_cents:number;currency:string;auth_origin:string;studio_project_id:string|null};
+type FixtureKind='image'|'video'|'audio';
+export type StudioCallFixtureReference={key:string;kind:FixtureKind;mime:string;width:number|null;height:number|null;durationSec:number|null;sizeBytes:number;sha256:string};
+type FixtureProbe={streams?:Array<{codec_type?:string;width?:number;height?:number;duration?:string;disposition?:{attached_pic?:number}}>;format?:{duration?:string}};
+
+function readFixture(fixture:{key:string;kind:FixtureKind;path:string}) {
+  const path='frontend/public'+fixture.path;
+  const bytes=readFileSync(path);
+  const detectedMime=execFileSync('file',['--mime-type','-b',path],{encoding:'utf8'}).trim();
+  const media=resolveSupportedReferenceMedia(fixture.kind,detectedMime);
+  assert.ok(media,'Unsupported local QA fixture MIME: '+fixture.key);
+  const probe:FixtureProbe=JSON.parse(execFileSync('ffprobe',['-v','error','-show_entries','format=duration:stream=codec_type,width,height,duration:stream_disposition=attached_pic','-of','json',path],{encoding:'utf8'}));
+  const stream=probe.streams?.find(item=>item.codec_type===(fixture.kind==='audio'?'audio':'video')&&item.disposition?.attached_pic!==1);
+  assert.ok(stream,'Missing local QA media stream: '+fixture.key);
+  const width=fixture.kind==='audio'?null:stream.width??null;
+  const height=fixture.kind==='audio'?null:stream.height??null;
+  const durationSec=fixture.kind==='image'?null:Number(probe.format?.duration??stream.duration);
+  assert.ok(fixture.kind==='audio'||(Number.isSafeInteger(width)&&Number(width)>0&&Number.isSafeInteger(height)&&Number(height)>0),'Missing measured QA image/video dimensions.');
+  assert.ok(durationSec===null||(Number.isFinite(durationSec)&&durationSec>0),'Missing measured QA media duration.');
+  const reference:StudioCallFixtureReference={key:fixture.key,kind:fixture.kind,mime:media.canonicalMime,width,height,durationSec,sizeBytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')};
+  return {...fixture,...reference,bytes,hasAudio:probe.streams?.some(item=>item.codec_type==='audio')??false,reference};
+}
 
 /** QA only: real conversation persistence/adapters/pricing, controlled availability, no provider submission. */
 export async function createStudioCallRuntime(catalog:AgentPublicGenerationEngine[],previousCaseIds:readonly string[]=[]) {
   if(process.env.DATABASE_URL) throw new Error('Unset DATABASE_URL: live call qualification uses only disposable PostgreSQL.');
   const previousCases=new Set(previousCaseIds);
   const requireCurrentCase=(id:string)=>{if(previousCases.has(id))throw new Error('A restarted disposable runtime requires a fresh case ID; prior database continuity is unavailable.');};
+  // Read and probe every fixed local fixture before allocating a PostgreSQL cluster.
   const fixtures=[
-    {key:'watch',id:'8',path:'/media/mcp/project-demo/watch-static.png',width:1672,height:941,mime:'image/png'},
-    {key:'watch_end',id:'9',path:'/media/mcp/project-demo/watch-motion-poster.png',width:1672,height:941,mime:'image/png'},
-    {key:'portrait',id:'a',path:'/assets/app-starters/acid-portrait-f5440c7f5eb0.webp',width:1024,height:1024,mime:'image/webp'},
-    {key:'abstract',id:'b',path:'/assets/marketing/reference-workflow-source-image.webp',width:900,height:620,mime:'image/webp'},
-  ];
+    {key:'watch',kind:'image',path:'/media/mcp/project-demo/watch-static.png'},
+    {key:'watch_end',kind:'image',path:'/media/mcp/project-demo/watch-motion-poster.png'},
+    {key:'portrait',kind:'image',path:'/assets/app-starters/acid-portrait-f5440c7f5eb0.webp'},
+    {key:'abstract',kind:'image',path:'/assets/marketing/reference-workflow-source-image.webp'},
+    {key:'watch_video',kind:'video',path:'/media/mcp/project-demo/watch-wan-3-prime-scroll.mp4'},
+    {key:'ambient_audio',kind:'audio',path:'/studio/demo-ambient.wav'},
+    {key:'voice_sample',kind:'audio',path:'/assets/audio/seed-audio/quentin_en_zh.mp3'},
+  ].map(fixture=>readFixture({...fixture,kind:fixture.kind as FixtureKind}));
   const hash=(value:string)=>createHash('sha256').update(value).digest('hex').slice(0,32);
   const ownerFor=(id:string)=>{const digest=hash('owner:'+id);return digest.slice(0,8)+'-'+digest.slice(8,12)+'-4'+digest.slice(13,16)+'-8'+digest.slice(17,20)+'-'+digest.slice(20);};
   const referenceId=(id:string,key:string)=>'ma_'+hash(id+'\0'+key);
-  const fixtureUrl=(id:string,fixture:typeof fixtures[number])=>'https://cdn.maxvideoai.com/qa/'+hash(id)+'/'+fixture.key+(fixture.mime==='image/png'?'.png':'.webp');
-  const fixtureBytes=Object.fromEntries(fixtures.map(f=>[f.key,readFileSync('frontend/public'+f.path)]));
+  const fixtureUrl=(id:string,fixture:typeof fixtures[number])=>'https://cdn.maxvideoai.com/qa/'+hash(id)+'/'+fixture.key+extname(fixture.path);
   const pg=await startDisposablePostgres('studio-call-qualification');
   process.env.DATABASE_URL=pg.databaseUrl;
   const fixtureImages:Record<string,string>={};
+  const fixtureVideoProbes=new Map<string,{durationSec:number;width:number;height:number;hasAudio:boolean}>();
   const ensuredCases=new Set<string>();
   const parityQuotes=new Map<string,{requestHash:string;priceCents:number;currency:string}>();
   try {
@@ -57,9 +85,16 @@ export async function createStudioCallRuntime(catalog:AgentPublicGenerationEngin
       await pg.pool.query("INSERT INTO profiles VALUES ($1,'usd')",[userId]);
       for(const fixture of fixtures){
         const url=fixtureUrl(id,fixture);
-        fixtureImages[url]='data:'+fixture.mime+';base64,'+fixtureBytes[fixture.key].toString('base64');
+        if(fixture.kind==='image')fixtureImages[url]='data:'+fixture.mime+';base64,'+fixture.bytes.toString('base64');
+        if(fixture.kind==='video'){
+          assert.ok(fixture.durationSec&&fixture.width&&fixture.height);
+          fixtureVideoProbes.set(url,{durationSec:fixture.durationSec,width:fixture.width,height:fixture.height,hasAudio:fixture.hasAudio});
+        }
+        const metadata={originalName:basename(fixture.path),durationSec:fixture.durationSec,mediaFacts:{source:'probe',
+          ...(fixture.durationSec===null?{}:{durationSec:fixture.durationSec}),
+          ...(fixture.width===null?{}:{width:fixture.width,height:fixture.height}),hasAudio:fixture.hasAudio}};
         await pg.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,size_bytes,width,height,status,metadata)
-          VALUES ($1,$1,$2,'image',$3,$4,$5,$6,$7,'ready','{}')`,[referenceId(id,fixture.key),userId,url,fixture.mime,fixtureBytes[fixture.key].length,fixture.width,fixture.height]);
+          VALUES ($1,$1,$2,$3,$4,$5,$6,$7,$8,'ready',$9::jsonb)`,[referenceId(id,fixture.key),userId,fixture.kind,url,fixture.mime,fixture.bytes.length,fixture.width,fixture.height,JSON.stringify(metadata)]);
       }
       await pg.pool.query("INSERT INTO app_receipts(user_id,type,amount_cents,currency,description) VALUES ($1,'topup',10000,'USD','Isolated QA funding fixture')",[userId]);
       ensuredCases.add(id);
@@ -75,7 +110,8 @@ export async function createStudioCallRuntime(catalog:AgentPublicGenerationEngin
     const audioEnv={FAL_KEY:'test-only-no-network',GOOGLE_VERTEX_PROJECT_ID:'test-only',GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON:'test-only-no-network'};
     const executor={query:async<TRecord=unknown>(sql:string,values?:ReadonlyArray<unknown>)=>(await pg.pool.query<TRecord>(sql,values)).rows};
     const audioFactory:typeof createStudioAudioGenerationService=(actor,options)=>createStudioAudioGenerationService(actor,{...options,
-      prepareDependencies:{listCapabilities:()=>listAudioCapabilities(audioEnv),prepareRun:(body,owner)=>prepareAudioRun(body,owner,{env:audioEnv,pricingPolicy:{loadOverrides:()=>loadPricingPolicyOverridesWithExecutor(executor)}})},
+      prepareDependencies:{listCapabilities:()=>listAudioCapabilities(audioEnv),prepareRun:(body,owner)=>prepareAudioRun(body,owner,{env:audioEnv,pricingPolicy:{loadOverrides:()=>loadPricingPolicyOverridesWithExecutor(executor)},
+        inspectSourceVideo:async url=>{const probe=fixtureVideoProbes.get(url);assert.ok(probe,'Only an exact locally measured owned QA video may be probed.');return {...probe};}})},
       confirmDependencies:{executeRun:neverSubmit}});
     const actorFor=(id:string)=>({authMethod:'studio-session' as const,userId:ownerFor(id),projectId:id,clientId:null});
     async function prepareMcp(request:PrepareGenerationInput,id:string){
@@ -116,16 +152,20 @@ export async function createStudioCallRuntime(catalog:AgentPublicGenerationEngin
       },
       async submit(id:string,message:string,referenceKeys:string[],createResponse:StudioResponseCreator,requestId=randomUUID()){
         requireCurrentCase(id);
-        const references=referenceKeys.map(key=>{const fixture=fixtures.find(f=>f.key===key);if(!fixture)throw new Error('Unknown QA reference');return referenceId(id,fixture.key);});
+        const selected=referenceKeys.map(key=>{const fixture=fixtures.find(f=>f.key===key);if(!fixture)throw new Error('Unknown QA reference');return fixture;});
+        const references=selected.filter(f=>f.kind==='image').map(f=>referenceId(id,f.key));
+        const attachments=selected.filter(f=>f.kind!=='image').map(f=>({type:'asset' as const,kind:f.kind,assetId:referenceId(id,f.key)}));
+        const countsByKind={image:0,video:0,audio:0};
+        const referenceMentions=selected.map(f=>({assetId:referenceId(id,f.key),label:f.kind[0].toUpperCase()+f.kind.slice(1)+' '+(++countsByKind[f.kind])}));
         await ensureCase(id);
         await pg.pool.query("INSERT INTO studio_projects(id,user_id,name) VALUES ($1,$2,'Call qualification') ON CONFLICT DO NOTHING",[id,ownerFor(id)]);
         const service=createImageConversationService(actorFor(id),{enabled:true,actionsEnabled:true,mediaEnabled:true,
           generationFactory:imageFactory,videoGenerationFactory:videoFactory,audioGenerationFactory:audioFactory,
           assistancePolicy:{enabled:false,solAllowanceNanoUsd:0,lunaAllowanceNanoUsd:0,campaignNanoUsd:0,maxAdditionalBudgetCents:0},createActionResponse:createResponse});
         let result:Awaited<ReturnType<typeof service.submit>>|undefined,error:{code:string}|undefined;
-        try{result=await service.submit({requestId,message,references,referenceMentions:references.map((assetId,index)=>({assetId,label:'Image '+(index+1)}))});}
+        try{result=await service.submit({requestId,message,references,...(attachments.length?{attachments}:{}),referenceMentions});}
         catch(e){error={code:(e as {code?:string}).code??'quality-run-error'};}
-        return {result,error,project:await readStudioConversationProject(actorFor(id)),...await inspect(id,requestId)};
+        return {result,error,fixtureReferences:selected.map(f=>({...f.reference})),project:await readStudioConversationProject(actorFor(id)),...await inspect(id,requestId)};
       },
       async close(){await getDb().end();delete process.env.DATABASE_URL;await pg.cleanup();},
     };

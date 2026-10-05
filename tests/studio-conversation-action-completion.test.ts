@@ -68,7 +68,7 @@ test('three research actions leave the final response for an answer even when th
     outputAllowance += params.max_output_tokens!;
     if (index < 3) return toolResponse(index,...steps[index]);
     const names = params.tools?.filter(tool => tool.type === 'function').map(tool => tool.name) ?? [];
-    assert.deepEqual(names.sort(),['export_prepare','image_prepare','music_prepare','quote_discard','timeline_edit','video_prepare','voice_prepare'],
+    assert.deepEqual(names.sort(),['audio_prepare','export_prepare','image_prepare','music_prepare','quote_discard','timeline_edit','video_prepare','voice_prepare'],
       'The last request cannot spend the remaining response on a read or memory write that leaves no room for an answer.');
     assert.equal(params.tool_choice,'auto');
     assert.match(JSON.stringify(params.input),/The pricing scenario is invalid/,'The final answer sees the failed estimate rather than inventing a price.');

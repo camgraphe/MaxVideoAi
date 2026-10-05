@@ -39,9 +39,9 @@ test('exact model inspection is scoped, gated, non-spending and shares canonical
     const canonical=projectAgentModelModeDetails(certified,mode.mode);
     assert.deepEqual(mode.duration,canonical.duration);
     assert.deepEqual(mode.resolutions,canonical.resolutions);
-    assert.deepEqual(mode.settings,canonical.settings.filter(setting=>setting.type!=='multi_prompt'));
-    assert.deepEqual(mode.references,canonical.references.filter(reference=>reference.type==='image').map(reference=>({...reference,
-      ...(mode.mode==='ref2v' && reference.roles.includes('reference') ? {required: true,min: Math.max(1,reference.min ?? 0)} : {}),max: Math.min(reference.max ?? 8,8)})));
+    assert.deepEqual(mode.settings,canonical.settings.filter(setting=>setting.type!=='multi_prompt'&&!['documentUrl','webpageUrl'].includes(setting.key)));
+    assert.deepEqual(mode.references,canonical.references.map(reference=>({...reference,max: Math.min(reference.max ?? 8,8)})));
+    assert.ok(mode.settings.every(setting=>!['documentUrl','webpageUrl'].includes(setting.key)),'The model cannot supply external media URLs.');
   }
   assert.deepEqual(details.data.guidance,getAgentModelGuidance('wan-3'));
   assert.equal(details.data.outputCount,1);

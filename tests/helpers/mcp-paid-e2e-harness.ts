@@ -13,6 +13,7 @@ import { getAgentGenerationStatus, listAgentRecentGenerations } from '../../fron
 import { normalizeGenerationRequest } from '../../frontend/src/server/agent-api/generation-normalization';
 import { priceCanonicalGeneration } from '../../frontend/src/server/agent-api/generation-pricing';
 import { listAgentModels, type AgentPublicGenerationEngine } from '../../frontend/src/server/agent-api/model-catalog';
+import { getAgentModelDetails } from '../../frontend/src/server/agent-api/model-details';
 import { recommendAgentModels } from '../../frontend/src/server/agent-api/model-recommendations';
 import {
   submitReservedPaidGeneration,
@@ -58,6 +59,7 @@ export async function sharedWebPrice(
     async computeVideoPreflight(input) {
       const selected = catalog.find((entry) => entry.engine.id === input.engine);
       assert.ok(selected && selected.surface === 'video');
+      assert.ok(typeof input.resolution==='string','The canonical video fixture requires an exact resolution.');
       const engine = applyEngineVariantPricing(selected.engine, input.mode);
       const pricing = await computeCanonicalPublicSnapshot({
         engine,
@@ -66,7 +68,7 @@ export async function sharedWebPrice(
         aspectRatio: input.aspectRatio,
         mode: input.mode,
         hasVideoInput: input.hasVideoInput,
-        membershipTier: input.user?.memberTier,
+        membershipTier: input.user?.memberTier ?? tier,
         addons: buildEngineAddonInput(engine, { audioEnabled: input.audio }),
       });
       return { ok: true, total: pricing.totalCents, currency: pricing.currency, pricing };
@@ -97,6 +99,7 @@ export function createServices(options: {
       accountUrl: 'https://maxvideoai.com/account/connections',
     }),
     listModels: (filter) => listAgentModels(filter, publicCatalogDependencies),
+    getModelDetails: (engineId) => getAgentModelDetails(engineId, publicCatalogDependencies),
     recommendModels: (input) => recommendAgentModels(input, publicCatalogDependencies),
     prepareGeneration: createPrepareGenerationService(
       'https://maxvideoai.com/account/connections',
@@ -252,7 +255,8 @@ export function errorCode(result: CallToolResult): string {
 export async function callPrepared(client: Client, input: Record<string, unknown>) {
   const result = await client.callTool({ name: 'prepare_generation', arguments: input });
   assert.notEqual(result.isError, true, JSON.stringify(result.structuredContent));
-  return structured(result);
+  assert.ok('content' in result, 'Synchronous preparation must return a tool result.');
+  return structured(result as CallToolResult);
 }
 
 export async function callConfirmed(client: Client, quoteId: string): Promise<CallToolResult> {

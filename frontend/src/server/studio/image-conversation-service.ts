@@ -1,4 +1,5 @@
 import type {StudioExportDependencies} from './conversation-export-command';
+import {recordedStudioOutputDuration} from './conversation-quote-facts';
 import { getBaseEngineIncludingHidden } from "@/lib/engines";
 import { z } from "zod";
 import {
@@ -226,6 +227,8 @@ export function createImageConversationService(
             expiresAt: quote.expiresAt.toISOString(),
             requestHash: quote.requestHash,
             summary: quote.request,
+            ...(quote.request.surface==='video'&&recordedStudioOutputDuration(quote.pricingSnapshot)!==undefined
+              ? {outputDurationSec:recordedStudioOutputDuration(quote.pricingSnapshot)} : {}),
             price: { amountCents: quote.priceCents, currency: quote.currency },
             fundingMode: "wallet",
             confirmationRequired: true,
@@ -286,7 +289,7 @@ export function createImageConversationService(
             const media = await resolveStudioMedia(actor.userId, attachment);
             refs.push({assetId: attachment.type === 'asset' ? attachment.assetId : attachment.outputId,
               role: 'reference', mediaKind: media.kind, storageUrl: media.url, mimeType: media.mime,
-              width: media.mediaFacts?.width ?? null, height: media.mediaFacts?.height ?? null, durationSec: media.mediaFacts?.durationSec ?? null,
+              width: media.width ?? media.mediaFacts?.width ?? null, height: media.height ?? media.mediaFacts?.height ?? null, durationSec: media.durationSec ?? media.mediaFacts?.durationSec ?? null, sizeBytes: media.sizeBytes ?? null,
               originalName: media.originalName ?? null} satisfies ResolvedReference);
           } catch {throw new AgentApiError('REFERENCE_INVALID', 'The attached media is no longer available.');}
         }

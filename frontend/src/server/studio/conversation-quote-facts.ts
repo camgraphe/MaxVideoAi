@@ -5,6 +5,7 @@ const settingTypes: Record<keyof StudioConversationQuoteSettings,'boolean'|'numb
   imageWidth:'number',imageHeight:'number',outputFormat:'string',fps:'number',loop:'boolean',
   hdr:'boolean',exrExport:'boolean',enableWebSearch:'boolean',voiceModel:'string',musicModel:'string',
   seedAudioOutputFormat:'string',seedAudioSampleRate:'number',
+  musicEnabled:'boolean',exportAudioFile:'boolean',language:'string',startTimeSec:'number',retakeMode:'string',extendPosition:'string',
 };
 export const STUDIO_QUOTE_SETTING_KEYS = Object.freeze(Object.keys(settingTypes));
 const referenceRoles = new Set<StudioConversationQuoteFacts['referenceRoles'][number]>([
@@ -17,7 +18,22 @@ export type StudioConversationQuoteRow = {
   amountCents: unknown; currency: unknown; expiresAt: Date | string; databaseNow: Date | string;
   modelId: unknown; mode: unknown; settings: unknown; outputCount: unknown;
   referenceCount: unknown; referenceRoles: unknown;
+  outputDurationSec?: unknown;
 };
+
+function positiveDuration(value:unknown):number|undefined {
+  return typeof value==='number'&&Number.isFinite(value)&&value>0?value:undefined;
+}
+
+/** A descriptive receipt field only; never recompute timing from requested settings. */
+export function recordedStudioOutputDuration(snapshot:unknown):number|undefined {
+  if(!snapshot||typeof snapshot!=='object'||Array.isArray(snapshot))return undefined;
+  const canonical=(snapshot as Record<string,unknown>).canonicalPricing;
+  if(!canonical||typeof canonical!=='object'||Array.isArray(canonical))return undefined;
+  const meta=(canonical as Record<string,unknown>).meta;
+  if(!meta||typeof meta!=='object'||Array.isArray(meta))return undefined;
+  return positiveDuration((meta as Record<string,unknown>).output_duration_sec);
+}
 
 function boundedToken(value: unknown,maxLength: number): value is string {
   return typeof value === 'string' && value.length <= maxLength && /^[A-Za-z0-9][A-Za-z0-9_.:-]*$/.test(value);
@@ -36,15 +52,17 @@ function safeQuoteFacts(row: StudioConversationQuoteRow): StudioConversationQuot
   const settings = Object.fromEntries(Object.entries(settingTypes).flatMap(([key,type]) => {
     const value = storedSettings[key];
     const safe = type === 'string' ? boundedToken(value,64)
-      : type === 'number' ? typeof value === 'number' && Number.isFinite(value) && value > 0
+      : type === 'number' ? typeof value === 'number' && Number.isFinite(value) && (key==='startTimeSec'?value>=0:value>0)
       : typeof value === 'boolean';
     return safe ? [[key,value]] : [];
   })) as StudioConversationQuoteSettings;
   const roles = Array.isArray(row.referenceRoles) ? row.referenceRoles.filter((role): role is StudioConversationQuoteFacts['referenceRoles'][number] =>
     typeof role === 'string' && referenceRoles.has(role as StudioConversationQuoteFacts['referenceRoles'][number])) : [];
+  const outputDurationSec=row.surface==='video'?positiveDuration(row.outputDurationSec):undefined;
   return {price:{amountCents:row.amountCents,currency:row.currency},expiresAt:expiresAt.toISOString(),
     expiredUnconfirmedQuote:row.quoteState === 'expired' || (row.quoteState === 'prepared' && expiresAt.getTime() <= now.getTime()),
     modelId:row.modelId,mode:row.mode,settings,outputCount:row.outputCount,
+    ...(outputDurationSec===undefined?{}:{outputDurationSec}),
     referenceCount:row.referenceCount,referenceRoles:[...new Set(roles)]};
 }
 

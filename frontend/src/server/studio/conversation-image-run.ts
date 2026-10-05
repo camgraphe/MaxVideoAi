@@ -33,10 +33,11 @@ import {imageSelectionSchema} from '@/lib/studio/conversation-creation-contract'
 
 async function prepareMediaAction(options: {
   actor: StudioGenerationActor; turn: StoredImageTurn; input: ImageTurnInput;
+  references:ResolvedReference[];
   referenceFingerprint: string; enabled: boolean; factories: StudioMediaFactories;
 }, action: StudioMediaIntent, callId: string) {
   const {actor, turn, factories} = options;
-  const selection = await validateStudioMediaRequest(actor, action, options.input, factories, options.enabled);
+  const selection = await validateStudioMediaRequest(actor, action, options.input, factories, options.enabled,{reviewedReferences:options.references});
   if (!turn.draft_json) await persistImageDraft(actor, turn, {reply: action.reply, image: null, media: action}, options.referenceFingerprint);
   const request = await selection.materialize();
   const onQuotePrepared = async (quote: McpGenerationQuote<CanonicalGenerationRequest | CanonicalAudioRequest>, executor: TransactionQueryExecutor) => {
@@ -46,7 +47,7 @@ async function prepareMediaAction(options: {
       price: {amountCents: quote.priceCents, currency: quote.currency}, fundingMode: quote.fundingMode, confirmationRequired: true,
     }} as StudioActionResult, executor);
   };
-  if (request.surface === 'video') return factories.video(actor, {enabled: options.enabled, onQuotePrepared}).prepare(request);
+  if (request.surface === 'video') return factories.video(actor, {enabled: options.enabled, onQuotePrepared,expectedReferenceFingerprint:selection.referenceFingerprint?.()}).prepare(request);
   return factories.audio(actor, {enabled: options.enabled, onQuotePrepared}).prepare(request);
 }
 
@@ -108,10 +109,10 @@ export async function runStudioImageActions(options: {
   const policy = options.assistancePolicy ?? studioAssistancePolicy();
   // Injected response creators are offline qualification seams. Native dispatch always requires the monetary gate.
   const assistance = policy.enabled || !options.createResponse ? await openStudioAssistanceTurn(actor,turn.request_id,policy) : null;
-  const director = createStudioConversationDirector({model: assistance?.model,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled});
+  const director = createStudioConversationDirector({model: assistance?.model,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,assistanceCreditsEnabled:policy.credits===true});
   let currentCallId: string;
   const execute = createStudioActionExecutor(actor, {enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
-    attachedImageIds: input.references,
+    attachedImageIds: input.references,attachedMedia:options.references,
     editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,
     prepareExport: async action => {
       try {return await prepareStudioTimelineExport({userId: actor.userId,authOrigin: 'studio-session',clientId: null},{projectId: actor.projectId,sequenceId: action.sequenceId,expectedRevision: action.expectedRevision,qualityPreset: action.qualityPreset,includeAudio: action.includeAudio,idempotencyKey: turn.request_id+':'+currentCallId.slice(0,80)}, {

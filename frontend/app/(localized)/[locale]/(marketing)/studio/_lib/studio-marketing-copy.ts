@@ -36,7 +36,7 @@ const copy: Record<AppLocale, StudioMarketingCopy> = {
     ] },
     capabilities: { title: 'Room to explore. Tools to shape your idea.', items: [
       { title: 'A conversation with context', body: 'Keep the creative discussion alongside project references and results. An idea, a prompt or a single image can be the whole project.' },
-      { title: 'Images and video, together', body: 'Create with the models and modes available to your account. Keep your chosen model, or ask for a suitable alternative when a constraint changes.' },
+      { title: 'Images, clips and sound', body: 'Create images, extend or reshape clips, and work on voices, music and sound. Studio offers compatible models and reference options, with a separate quote for each creation.' },
       { title: 'A sequence you can shape', body: 'Bring ready media into the timeline and adjust the cut. The advanced canvas remains available for structured project work. MP4 export is not yet available during the public beta.' },
     ] },
     control: { title: 'The next paid step stays yours.', body: 'Each generation has an exact quote for you to confirm. Changing a request can change its price. A failed attempt or a refund never authorizes a new generation.' },
@@ -66,7 +66,7 @@ const copy: Record<AppLocale, StudioMarketingCopy> = {
     ] },
     capabilities: { title: 'De l’espace pour explorer. Des outils pour façonner votre idée.', items: [
       { title: 'Une conversation en contexte', body: 'Gardez l’échange créatif aux côtés des références et résultats du projet. Une idée, un prompt ou une image peut constituer le projet entier.' },
-      { title: 'Images et vidéos, ensemble', body: 'Créez avec les modèles et modes accessibles à votre compte. Gardez le modèle choisi, ou demandez une alternative adaptée lorsqu’une contrainte change.' },
+      { title: 'Images, clips et son', body: 'Créez des images, prolongez ou transformez vos clips, et travaillez les voix, la musique et le son. Studio propose les modèles et références compatibles, avec un devis distinct pour chaque création.' },
       { title: 'Une séquence à votre main', body: 'Placez vos médias prêts dans la timeline et ajustez le montage. Le canvas avancé reste disponible pour les projets structurés. L’export MP4 n’est pas encore disponible pendant la bêta publique.' },
     ] },
     control: { title: 'Vous décidez de la prochaine étape payante.', body: 'Chaque génération dispose d’un devis exact à confirmer. Une modification de la demande peut changer son prix. Un échec ou un remboursement n’autorise jamais une nouvelle génération.' },
@@ -96,7 +96,7 @@ const copy: Record<AppLocale, StudioMarketingCopy> = {
     ] },
     capabilities: { title: 'Espacio para explorar. Herramientas para dar forma a tu idea.', items: [
       { title: 'Una conversación con contexto', body: 'Mantén el diálogo creativo junto a las referencias y los resultados del proyecto. Una idea, un prompt o una imagen puede ser todo el proyecto.' },
-      { title: 'Imágenes y vídeo, juntos', body: 'Crea con los modelos y modos disponibles para tu cuenta. Conserva el modelo elegido o pide una alternativa adecuada cuando cambie una limitación.' },
+      { title: 'Imágenes, clips y sonido', body: 'Crea imágenes, prolonga o transforma tus clips y trabaja con voces, música y sonido. Studio propone modelos y referencias compatibles, con un presupuesto separado para cada creación.' },
       { title: 'Una secuencia a tu manera', body: 'Lleva los medios listos a la línea de tiempo y ajusta el montaje. El lienzo avanzado sigue disponible para proyectos estructurados. La exportación MP4 aún no está disponible durante la beta pública.' },
     ] },
     control: { title: 'El siguiente paso de pago lo decides tú.', body: 'Cada generación tiene un presupuesto exacto que debes confirmar. Cambiar una petición puede cambiar su precio. Un fallo o un reembolso nunca autoriza otra generación.' },

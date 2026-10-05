@@ -1,18 +1,24 @@
 import type {ResolvedReference} from '@/server/agent-api/reference-types';
 
-type ReferenceSchema = {
-  properties?: {type?: {enum?: readonly string[]}; assetId?: Record<string, unknown>};
-  anyOf?: ReferenceSchema[];
-};
-type ReferenceToolProperties = {
-  source?: ReferenceSchema;
-  references: {items: {properties: {ref: ReferenceSchema}}};
-};
-
-function scopeAssetIds(schema: ReferenceSchema, assetIds: readonly string[]): void {
-  if (schema.properties?.type?.enum?.includes('asset') && schema.properties.assetId)
-    schema.properties.assetId.enum = assetIds;
-  for (const branch of schema.anyOf ?? []) scopeAssetIds(branch, assetIds);
+type ReferenceSchema={properties?:Record<string,ReferenceSchema>;enum?:readonly unknown[];anyOf?:ReferenceSchema[];[key:string]:unknown};
+function assetKind(schema:ReferenceSchema):string|undefined {
+  return schema.properties?.type?.enum?.includes('asset')?schema.properties.kind?.enum?.[0] as string|undefined:undefined;
+}
+function scopeReferences(schema:ReferenceSchema,references:readonly ResolvedReference[]):void {
+  const kind=assetKind(schema);
+  if(kind&&schema.properties?.assetId){
+    const ids=[...new Set(references.filter(reference=>reference.mediaKind===kind).map(reference=>reference.assetId))];
+    if(ids.length)schema.properties.assetId.enum=ids;
+  }
+  if(schema.anyOf){
+    // Missing media kinds lose only their asset branch. Ready job outputs keep
+    // their independent identities and project ownership validation.
+    schema.anyOf=schema.anyOf.filter(branch=>!assetKind(branch)||references.some(reference=>reference.mediaKind===assetKind(branch)));
+  }
+  for(const child of Object.values(schema)){
+    if(Array.isArray(child)){for(const item of child)if(item&&typeof item==='object')scopeReferences(item as ReferenceSchema,references);}
+    else if(child&&typeof child==='object')scopeReferences(child as ReferenceSchema,references);
+  }
 }
 
 function freezeProperties<T>(value: T): Readonly<T> {
@@ -23,20 +29,18 @@ function freezeProperties<T>(value: T): Readonly<T> {
   return value;
 }
 
-/** Limit saved-image selection to this context; executable authority remains server-owned. */
+/** Current reviewed media only; server ownership and executable authority remain independent. */
 export function studioToolReferenceProperties<T extends Record<string, unknown>>(
   name: string,
   properties: T,
   references: readonly ResolvedReference[],
 ): Readonly<T> {
-  if (name !== 'image_prepare' && name !== 'pricing_read' && name !== 'video_prepare') return properties;
-  const assetIds = [...new Set(references.filter(ref => ref.mediaKind === 'image').map(ref => ref.assetId))];
-  if (!assetIds.length) return properties;
+  if (!['image_prepare','pricing_read','video_prepare','voice_prepare','music_prepare','audio_prepare'].includes(name)) return properties;
+  const eligible=name==='image_prepare'?references.filter(ref=>ref.mediaKind==='image'):references;
+  if (!eligible.length) return properties;
 
   // Clone before freezing: shared tool definitions must remain context-independent.
-  const scoped = structuredClone(properties) as T & ReferenceToolProperties;
-  scopeAssetIds(scoped.references.items.properties.ref, assetIds);
-  // Ready project outputs keep their independent jobId/outputId contract.
-  if (name === 'video_prepare' && scoped.source) scopeAssetIds(scoped.source, assetIds);
+  const scoped = structuredClone(properties);
+  scopeReferences(scoped as ReferenceSchema,eligible);
   return freezeProperties(scoped);
 }

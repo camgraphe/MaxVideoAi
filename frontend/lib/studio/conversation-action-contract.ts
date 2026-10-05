@@ -5,7 +5,7 @@ import type {TimelineExportJobResponse} from '@/server/timeline-exports/contract
 import type { PreparedGeneration } from '@/server/agent-api/prepare-generation';
 import type { AgentGenerationStatus } from '@/server/generations/generation-status';
 import type { AgentApiFailure } from '@/server/agent-api/errors';
-import {studioVideoActionSchema, studioVoiceActionSchema, studioMusicActionSchema, STUDIO_MEDIA_DIRECTOR_TOOLS} from './conversation-media-contract';
+import {studioVideoActionSchema, studioVoiceActionSchema, studioMusicActionSchema,studioAudioActionSchema, STUDIO_MEDIA_DIRECTOR_TOOLS} from './conversation-media-contract';
 import type {PreparedAudioGeneration} from '@/server/agent-api/prepare-audio-generation';
 import type {ToolAssetRef} from '@/lib/toolbox/contract';
 import {studioTimelineReadSchema,studioTimelineEditSchema,STUDIO_EDITING_DIRECTOR_TOOLS,type StudioConversationTimeline} from './conversation-editing-contract';
@@ -29,6 +29,8 @@ export type StudioConversationQuoteSettings = {
   quality?: string; imageWidth?: number; imageHeight?: number; outputFormat?: string;
   fps?: number; loop?: boolean; hdr?: boolean; exrExport?: boolean; enableWebSearch?: boolean;
   voiceModel?: string; musicModel?: string; seedAudioOutputFormat?: string; seedAudioSampleRate?: number;
+  musicEnabled?: boolean; exportAudioFile?: boolean; language?: string;
+  startTimeSec?: number; retakeMode?: string; extendPosition?: string;
 };
 export type StudioConversationQuoteFacts = {
   price: {amountCents: number; currency: string};
@@ -38,6 +40,7 @@ export type StudioConversationQuoteFacts = {
   modelId: string; mode: string;
   settings: StudioConversationQuoteSettings;
   outputCount: number;
+  outputDurationSec?: number;
   referenceCount: number;
   referenceRoles: ('source' | 'reference' | 'first_frame' | 'last_frame' | 'mask' | 'source_video' | 'voice_sample')[];
 };
@@ -58,7 +61,7 @@ export const studioActionRequestSchema = z.discriminatedUnion('action', [
   z.object({action: z.literal('generation.read'), quoteId: z.string().uuid()}).strict(),
   z.object({action: z.literal('quote.discard'), quoteId: z.string().uuid()}).strict(),
   z.object({action: z.literal('media.read')}).strict(),
-  studioVideoActionSchema, studioVoiceActionSchema, studioMusicActionSchema,
+  studioVideoActionSchema, studioVoiceActionSchema, studioMusicActionSchema,studioAudioActionSchema,
   studioTimelineReadSchema,studioTimelineEditSchema,
   studioExportPrepareActionSchema,studioExportReadActionSchema,
 ]);
@@ -70,8 +73,8 @@ type StudioAudioMode=Omit<AudioCapabilities['modes'][number],'variants'> & {
 };
 type StudioAudioOptions={readonly [K in keyof AudioCapabilities['options']]: readonly AudioCapabilities['options'][K][number][]};
 export type StudioCapabilityDetails =
-  | {modelId: string; label: string; lifecycle: AgentModelLifecycle | null; surface: 'image' | 'video'; modes: readonly AgentModelModeDetails[]; referenceIdentity: 'attached_image_asset' | 'attached_image_asset_or_ready_project_output'; outputCount: 1; maxReferences: number; guidance: AgentModelGuidance | null; editorialGuidance?: AgentModelEditorialGuidance; promptingSources: readonly AgentModelPromptingSource[]}
-  | {modelId: string; label: string; surface: 'audio'; modes: StudioAudioMode[]; options: StudioAudioOptions; references: []; outputCount: 1};
+  | {modelId: string; label: string; lifecycle: AgentModelLifecycle | null; surface: 'image' | 'video'; modes: readonly AgentModelModeDetails[]; referenceIdentity: 'attached_image_asset' | 'attached_owned_media_or_ready_project_output'; outputCount: 1; maxReferences: number; guidance: AgentModelGuidance | null; editorialGuidance?: AgentModelEditorialGuidance; promptingSources: readonly AgentModelPromptingSource[]}
+  | {modelId: string; label: string; surface: 'audio'; modes: StudioAudioMode[]; options: StudioAudioOptions; references: ('source_video'|'voice_sample')[]; outputCount: 1};
 export type StudioProjectMedia = {ref: ToolAssetRef; name: string; durationSec: number | null}[];
 export type StudioActionResult =
   | {ok: true; action: 'export.prepare'; data: StudioPreparedExport}
@@ -88,7 +91,7 @@ export type StudioActionResult =
   | {ok: true; action: 'timeline.read'; data: StudioConversationTimeline}
   | {ok: true; action: 'timeline.edit'; data: ConversationEditResult}
   | {ok: true; action: 'video.prepare'; data: Omit<PreparedGeneration, 'balance' | 'topupRequired'>}
-  | {ok: true; action: 'voice.prepare' | 'music.prepare'; data: Omit<PreparedAudioGeneration, 'balance' | 'topupRequired'>}
+  | {ok: true; action: 'voice.prepare' | 'music.prepare' | 'audio.prepare'; data: Omit<PreparedAudioGeneration, 'balance' | 'topupRequired'>}
   | (AgentApiFailure & {action: StudioActionRequest['action']});
 
 export const STUDIO_DIRECTOR_TOOLS = [

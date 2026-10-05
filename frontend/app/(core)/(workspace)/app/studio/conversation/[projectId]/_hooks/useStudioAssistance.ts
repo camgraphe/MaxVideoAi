@@ -28,10 +28,10 @@ export function useStudioAssistance(accountKey:string,conversationBusy:boolean) 
     try {
       const response=await fetch('/api/studio/assistance',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(choice),signal:request.signal});
       const body=await response.json(),parsed=assistanceStatusSchema.safeParse(body.result);
-      if(!response.ok||!body.ok||!parsed.success)throw new Error(body.error==='CONFIRMATION_REQUIRED'?'STALE':'UNAVAILABLE');
+      if(!response.ok||!body.ok||!parsed.success)throw new Error(body.error==='INSUFFICIENT_FUNDS'?'WALLET_INSUFFICIENT':body.error==='CONFIRMATION_REQUIRED'||body.error==='PARAMETER_INVALID'?'STALE':'UNAVAILABLE');
       if(!isCurrent()||version!==session.epoch)return false;
       update({status:parsed.data});return true;
-    }catch(failure){if(isCurrent()&&version===session.epoch)update({error:failure instanceof Error&&failure.message==='STALE'?'STALE':'UNAVAILABLE'});return false;}
+    }catch(failure){if(isCurrent()&&version===session.epoch)update({error:failure instanceof Error&&['STALE','WALLET_INSUFFICIENT'].includes(failure.message)?failure.message:'UNAVAILABLE'});return false;}
     finally{window.clearTimeout(timeout);session.mutation=false;update({busy:false});}
   },[isCurrent,session,update]);
   return {status:state.owner===session?state.status:null,busy:state.owner===session&&state.busy,error:state.owner===session?state.error:null,refresh,choose};

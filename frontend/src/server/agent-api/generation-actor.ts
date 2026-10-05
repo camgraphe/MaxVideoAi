@@ -4,13 +4,13 @@ import type { ResolvedReference } from "./reference-types";
 import { AgentApiError } from "./errors";
 import type { AgentPrincipal } from "./principal";
 import type { McpGenerationQuote } from "./quote-repository";
-import type {CanonicalGenerationRequest} from './generation-types';
+import {CANONICAL_VIDEO_GENERATION_MODES,type CanonicalGenerationRequest} from './generation-types';
 
 export function isStudioGenerationMode(surface: 'image' | 'video',mode: string): boolean {
-  return (surface === 'image' ? ['t2i','i2i'] : ['t2v','i2v']).includes(mode);
+  return (surface === 'image' ? ['t2i','i2i'] : CANONICAL_VIDEO_GENERATION_MODES).includes(mode as never);
 }
 
-/** Preserve the existing Studio session authority across catalogs, estimates and preparation. */
+/** Studio uses the public canonical modes, one output and owned assets; runtime/certification remain separate gates. */
 export function requireStudioGenerationRequest(request: CanonicalGenerationRequest): void {
   if (!isStudioGenerationMode(request.surface,request.mode) || request.outputCount !== 1 || request.references.some(ref=>ref.kind !== 'asset')) {
     throw new AgentApiError('PARAMETER_INVALID','One or more generation settings are invalid for the selected model.');

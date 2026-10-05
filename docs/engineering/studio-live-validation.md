@@ -50,15 +50,23 @@ public MCP parity assertion.
 Pricing uses the actual engine and branch supplier facts with the integration
 fixture's commercial policy and membership tables. These amounts are **not current
 production tariffs** and must not appear in customer pricing evidence. Provider
-availability is controlled. The four images are existing public repository
-fixtures with measured dimensions and file sizes. Stored CDN URLs are local
-fixture aliases; Responses receives exact fixture bytes as data URLs. No private
+availability is controlled. Seven existing public repository fixtures have
+measured file sizes, MIME types, durations and applicable dimensions: four images,
+one six-second product video, a 28-second ambient recording and a 15.216-second
+voice sample. The runner checks their bytes and measures metadata before allocating
+PostgreSQL. Stored CDN URLs are local fixture aliases; Responses receives the
+four images as exact data URLs. Video and audio attachments are typed identities
+and measured metadata, without video/audio bytes or a claim of content analysis.
+Each turn records its selected fixtures' metadata and SHA-256 hashes. No private
 customer media or production database is read.
 
 Paid submission functions throw, and the runtime asserts zero generation jobs,
 zero charge receipts and no submitted quote. Editing/export are disabled here.
-Assistance billing is intentionally disabled; the Response wrapper selects
-Sol/medium or Luna/low. Qualify production assistance allowances, refunds, model
+Assistance billing is intentionally disabled. Starting with the October 5 workflow
+cohort, the Response wrapper preserves the director's production medium reasoning
+effort for both Sol and Luna and records the requested effort. Earlier cohorts
+used Sol/medium and Luna/low; they are not evidence for medium-effort Luna.
+Qualify production assistance allowances, refunds, model
 selection and ambiguous outcomes separately with financial service integrations.
 
 The disposable database is not reconstructed from the journal after a restart.
@@ -69,8 +77,8 @@ A journal transcript alone is not proof of restored continuity.
 ## Execution
 
 Create a JSON request array with `{id, model, message}` entries. In isolated
-preparation mode, optional `referenceKeys` selects `watch`, `watch_end`, `portrait`
-or `abstract`. Models must be
+preparation mode, optional `referenceKeys` selects `watch`, `watch_end`, `portrait`,
+`abstract`, `watch_video`, `ambient_audio` or `voice_sample`. Models must be
 `gpt-6.1-sol` or `gpt-6-luna`. Reuse an ID for the next customer turn; use a distinct
 ID for a fresh experiment or another model. Keep all data synthetic.
 
@@ -217,3 +225,18 @@ a quote, including when the flag is false. It never reprices or mutates one.
 `studio-conversation-quote-facts-postgres.test.ts` verifies the real service context,
 expiry semantics, ownership isolation, the bounded whitelist and replay without
 a second Response, job or charge.
+
+## Assistance-policy integration
+
+The credit-policy branch is integrated without activating it in production.
+Production approval v1 continues its existing one-time allowances and wallet
+authorization; v2 explicitly selects monthly credits and prepaid packs after its
+migration and activation review. Unknown policies stay disabled. The director's
+interface guidance must follow that effective policy. Recorded calls settle at
+their original tariff, and a v1 service must work with migrations 54/62 before
+credit tables exist. Switching policies cannot silently convert a wallet limit
+into prepaid credits or enable a different paid tariff.
+
+Live dialogue preparation still uses disabled assistance billing in a disposable
+fixture. It qualifies creation and quote behavior; it does not establish a live
+credit-policy rollout or a production pack purchase.

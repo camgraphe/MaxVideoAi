@@ -4,7 +4,17 @@
 
 `src/server/agent-api/generation-pricing-read.ts` is the shared read-only normalization-adjacent validation and canonical pricing seam used by preparation and Studio estimates. It checks current executable model/mode facts, references, settings, membership projection and pricing snapshots. It never persists a quote, checks/reserves a wallet or submits a provider request. Preparation retains those responsibilities in its existing owner.
 
-`pricing_read` exposes one exact image/video scenario through Studio's existing director loop. `image-generation-service.ts` additionally applies current Studio authority and certification. Saved image references must be explicitly attached and resolve to the current owner. Estimates return amount/currency, settings, reference count, `estimatedAt` and `quoteRequired`; the client still confirms a fresh canonical quote before spending. Audio and unsaved project-output estimates are unsupported. Advice and comparisons must leave existing prepared/accepted quotes intact. Behavioral coverage lives in `studio-conversation-pricing*.test.ts` and the existing MCP preparation/budget tests.
+`pricing_read` exposes one exact image/video scenario through Studio's existing director loop. `image-generation-service.ts` additionally applies current Studio authority and certification. Saved media references must be explicitly attached, carry their exact supported kinds and roles, and resolve to the current owner. Estimates return amount/currency, settings, reference count, `estimatedAt` and `quoteRequired`; the client still confirms a fresh canonical quote before spending. Audio and unsaved project-output estimates are unsupported. Advice and comparisons must leave existing prepared/accepted quotes intact. Behavioral coverage lives in `studio-conversation-pricing*.test.ts` and the existing MCP preparation/budget tests.
+
+`src/server/agent-api/generation-omni-pricing-facts.ts` supplies Gemini Omni source
+image counts and measured input-video duration to the shared preparation/estimate
+price path. Video edits also inherit the measured source timing. Measurements
+come from exact server-resolved owned references; missing duration fails closed.
+The server preflight carries those trusted facts separately from caller settings.
+The helper reuses the existing Omni factual contract and canonical calculator;
+it owns no tariff or pricing formula. Confirmation revalidates reference facts
+before spending. `mcp-omni-owned-pricing.test.ts` and the Studio workflow PostgreSQL
+matrix cover these inputs and shared quote parity.
 
 ## Approved production reader (2026-10-02)
 

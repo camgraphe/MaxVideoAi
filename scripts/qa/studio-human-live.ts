@@ -55,8 +55,25 @@ async function main() {
       'frontend/lib/studio/conversation-creation-contract.ts','frontend/lib/studio/conversation-action-contract.ts',
       'frontend/lib/studio/conversation-media-contract.ts','frontend/lib/studio/conversation-pricing-contract.ts',
       'frontend/config/model-registry.json','frontend/config/agent-model-editorial-policy.json',
-      'frontend/src/server/studio/assistance-provider-facts.ts','frontend/src/server/studio/image-generation-service.ts',
+      'frontend/src/server/studio/assistance-provider-facts.ts','frontend/src/server/studio/assistance-policy.ts',
+      'frontend/src/server/studio/assistance-ledger.ts','frontend/src/server/studio/assistance-credit-ledger.ts',
+      'frontend/src/lib/studio/assistance-contract.ts','frontend/server/pricing/quote-studio-assistance.ts',
+      'frontend/src/server/studio/image-generation-service.ts',
+      'frontend/src/server/studio/audio-generation-service.ts',
+      'frontend/src/server/studio/conversation-audio-generation.ts',
+      'frontend/src/server/agent-api/audio-capabilities.ts',
+      'frontend/src/server/agent-api/audio-generation-capabilities.ts',
+      'frontend/src/server/agent-api/audio-normalization.ts',
+      'frontend/src/server/agent-api/prepare-audio-generation.ts',
+      'frontend/src/server/agent-api/confirm-audio-generation.ts',
+      'frontend/src/server/audio/prepare-audio.ts',
+      'frontend/src/server/studio/media-resolver.ts',
+      'frontend/src/server/studio/output-reference-facts.ts',
+      'frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-model-certification.ts',
       'frontend/src/server/agent-api/model-details.ts','frontend/src/server/studio/conversation-capabilities.ts',
+      'frontend/src/server/agent-api/generation-pricing.ts','frontend/src/server/agent-api/generation-pricing-read.ts',
+      'frontend/src/server/agent-api/generation-omni-pricing-facts.ts','frontend/src/server/engines.ts',
+      'frontend/src/lib/pricing-billing-facts.ts','frontend/src/lib/studio/conversation-quote-presentation.ts',
       'frontend/src/server/studio/conversation-media-generation.ts','frontend/src/server/studio/image-conversation-service.ts',
       'frontend/src/server/studio/conversation-image-run.ts','frontend/src/server/studio/conversation-actions.ts',
       'frontend/src/server/studio/conversation-preparation-validation.ts','frontend/src/server/studio/conversation-tool-reference-schema.ts',
@@ -114,7 +131,8 @@ async function main() {
         turn.actions.push({request:action,result});await save();return result;
       };
       const createResponse:StudioResponseCreator=async original=>{
-        const selected={...original,model:request.model,reasoning:{effort:request.model==='gpt-6.1-sol'?'medium' as const:'low' as const}};
+        // Keep the director's production reasoning effort for both models.
+        const selected={...original,model:request.model};
         const params=runtime?runtime.responseParams(selected):selected;
         const payloadHash=createHash('sha256').update(JSON.stringify(params)).digest('hex');
         const toolSchemaJson=JSON.stringify(params.tools??[]);
@@ -140,7 +158,7 @@ async function main() {
           }
           const usage=readStudioUsage(response.usage,response.model,response.service_tier);
           state.budget=settleLiveCall(state.budget,usage?.providerMaxNanoUsd??null);
-          state.calls.push({caseId:request.id,turn:current.turns.length,revision,sources,toolSchemaHash,payloadHash,model:response.model,tier:response.service_tier,status:response.status,countedInput:count.input_tokens,usage,at:new Date().toISOString()});
+          state.calls.push({caseId:request.id,turn:current.turns.length,revision,sources,toolSchemaHash,payloadHash,requestedReasoningEffort:params.reasoning?.effort,model:response.model,tier:response.service_tier,status:response.status,countedInput:count.input_tokens,usage,at:new Date().toISOString()});
           await save();
           if(state.budget.blocked) throw new Error('Unpriced response; live validation stopped');
           return response;
@@ -158,7 +176,7 @@ async function main() {
           const result=await runtime.submit(request.id,request.message,request.referenceKeys??[],createResponse);
           turn.reply=result.result?.reply??'';turn.draft=result.result;turn.error=result.error;
           turn.actions=result.steps;current.project=result.project;
-          turn.validation={kind:'actual-preparation-disposable-postgres',quotes:result.quotes,counts:result.counts,
+          turn.validation={kind:'actual-preparation-disposable-postgres',fixtureReferences:result.fixtureReferences,quotes:result.quotes,counts:result.counts,
             parity:result.parity,
             availability:'controlled branch catalog, not provider availability',pricing:'real pricing engine with isolated fixture commercial policy'};
         } else {

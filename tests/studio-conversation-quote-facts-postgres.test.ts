@@ -28,11 +28,11 @@ test('persisted Studio quote facts stay exact, bounded, isolated and available t
     references:[{kind:'asset',assetId:'PRIVATE_ASSET_ID',role:'first_frame'},{kind:'https',url:'https://example.com/PRIVATE_SOURCE_URL',mediaKind:'image',role:'last_frame'}],outputCount:1});
   const baseDate=new Date(Date.now()-2*60*60*1000);
   let turnOrder=0;
-  async function linkQuote(quoteId:string,userId='owner',projectId='film'){
+  async function linkQuote(quoteId:string,userId='owner',projectId='film',draft:unknown={reply:'Review the quote.',image:null}){
     const requestId=randomUUID();
     await pg.pool.query(`INSERT INTO studio_image_turns(user_id,project_id,request_id,request_hash,input_json,draft_json,draft_reference_fingerprint,quote_id,state,lease_id,lease_expires_at,created_at)
-      VALUES($1,$2,$3,$4,$5::jsonb,'{"reply":"Review the quote.","image":null}',$4,$6,'ready',$7,clock_timestamp(),$8)`,
-    [userId,projectId,requestId,'0'.repeat(64),JSON.stringify({requestId,message:'A synthetic quote request.',references:[]}),quoteId,randomUUID(),new Date(baseDate.getTime()+ ++turnOrder*1000)]);
+      VALUES($1,$2,$3,$4,$5::jsonb,$9::jsonb,$4,$6,'ready',$7,clock_timestamp(),$8)`,
+    [userId,projectId,requestId,'0'.repeat(64),JSON.stringify({requestId,message:'A synthetic quote request.',references:[]}),quoteId,randomUUID(),new Date(baseDate.getTime()+ ++turnOrder*1000),JSON.stringify(draft)]);
   }
   async function insertQuote(now=new Date(),repo=repository,userId='owner',clientId:string|null=null){
     const quote=await repo.insertPreparedQuote({userId,oauthClientId:clientId,request,requestHash:hashCanonicalGenerationRequest(request),catalogRevision:'fixture',
@@ -61,6 +61,30 @@ test('persisted Studio quote facts stay exact, bounded, isolated and available t
       assert.deepEqual(summary,{quoteId:quote.quoteId,surface:'video',quoteState:state,jobId:['claimed','accepted','failed'].includes(state)?'recorded-'+state:null,status:null,
         quote:{...expectedFresh,expiresAt:quote.expiresAt.toISOString(),expiredUnconfirmedQuote:state==='prepared'||state==='expired'}});
     }
+  });
+
+  await t.test('recorded inherited output timing reaches the quote card and director without changing the request',async()=>{
+    await pg.pool.query("INSERT INTO studio_projects(id,user_id,name) VALUES('timing','owner','Timing')");
+    const timingActor={...actor,projectId:'timing'};
+    const timingRepository=createQuoteRepository(generationQuoteCodec,{origin:'studio-session',projectId:'timing'});
+    const edit=normalizeGenerationRequest({surface:'video',engineId:'gemini-omni-flash',mode:'v2v',prompt:'PRIVATE_EDIT',
+      settings:{durationSec:3,resolution:'720p'},references:[{kind:'asset',assetId:'ma_'+'a'.repeat(32),role:'source'}],outputCount:1});
+    const quote=await timingRepository.insertPreparedQuote({userId:actor.userId,oauthClientId:null,request:edit,requestHash:hashCanonicalGenerationRequest(edit),catalogRevision:'fixture',
+      pricingSnapshot:{canonicalPricing:{meta:{output_duration_sec:3.25}},privateToken:'PRIVATE_TOKEN'},priceCents:48,currency:'USD',fundingMode:'wallet'},{executor});
+    await linkQuote(quote.quoteId,actor.userId,'timing',{reply:'Review the edit.',image:null,
+      media:{action:'video.prepare',reply:'Review the edit.',mode:'v2v',modelId:edit.engineId,prompt:edit.prompt,aspectRatio:'16:9',source:null,
+        settings:Object.entries(edit.settings).map(([name,value])=>({name,value})),references:[{ref:{type:'asset',assetId:'ma_'+'a'.repeat(32),kind:'video'},role:'source'}]}});
+    const project=await readStudioConversationProject(timingActor);
+    const fact=project.generations?.find(row=>row.quoteId===quote.quoteId)?.quote;
+    assert.equal(fact?.outputDurationSec,3.25);
+    assert.equal(fact?.settings.durationSec,3,'The recorded request remains distinct from effective output timing');
+    assert.doesNotMatch(JSON.stringify(project),/PRIVATE_|privateToken|canonicalPricing|pricingSnapshot/);
+    const service=createImageConversationService(timingActor,{enabled:true,mediaEnabled:true});
+    const shown=(await service.read()).turns.find(turn=>turn.quote?.quoteId===quote.quoteId)?.quote;
+    assert.equal(shown?.outputDurationSec,3.25);
+    assert.deepEqual(shown?.summary,edit);
+    assert.equal(shown?.price.amountCents,48);
+    assert.equal(shown?.requestHash,hashCanonicalGenerationRequest(edit));
   });
 
   await t.test('same-account other-project, foreign-account and OAuth quote links cannot leak into this context',async()=>{

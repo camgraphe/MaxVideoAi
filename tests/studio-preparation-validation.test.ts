@@ -6,6 +6,7 @@ import {validateStudioMediaRequest,type StudioMediaFactories} from '../frontend/
 import {isStudioPreparationCorrection} from '../frontend/src/server/studio/conversation-preparation-validation';
 import type {StudioMediaIntent} from '../frontend/lib/studio/conversation-media-contract';
 import {listAudioCapabilities} from '../frontend/src/server/agent-api/audio-capabilities';
+import type {StudioResolvedMedia} from '../frontend/src/server/studio/media-resolver';
 
 const actor={userId:'owner',projectId:'project',authMethod:'studio-session' as const,clientId:null};
 const source={type:'job-output' as const,kind:'image' as const,jobId:'job',outputId:'output'};
@@ -15,6 +16,8 @@ const factories={video:()=>({catalog:async()=>[candidate]})} as unknown as Studi
 const input={requestId:'123e4567-e89b-42d3-a456-426614174000',message:'Animate this image.',references:[]};
 const action:StudioMediaIntent={action:'video.prepare',reply:'Review the quote.',prompt:'Slow cinematic motion',aspectRatio:'16:9',source,modelId:'wan-3',mode:'i2v',references:[],outputCount:1,settings:[{name:'resolution',value:'720p'},{name:'durationSec',value:5}]};
 const corrective=(error:unknown)=>error instanceof AgentApiError&&isStudioPreparationCorrection({...toAgentApiFailure(error),action:'video.prepare'});
+const imageUrl='https://cdn.maxvideoai.com/owned-ready-image.png';
+const ownedImage:StudioResolvedMedia={id:source.outputId,ref:source,kind:'image',url:imageUrl,thumbUrl:null,previewUrl:null,mime:'image/png',mediaFacts:undefined,originalAccess:{type:'external'},width:1280,height:720,durationSec:null,sizeBytes:1024,originalName:'ready-image.png'};
 
 test('invalid video selections are rejected before reading, resolving or promoting any source',async()=>{
   let touched=0;
@@ -35,8 +38,8 @@ test('valid video preflight checks owned sources but defers library promotion to
   let writes=0;
   const selected=await validateStudioMediaRequest(actor,action,input,factories,true,{
     readProjectMedia:async()=>[{ref:source,name:'Ready image',durationSec:null}],
-    resolveMedia:async()=>({}) as never,
-    saveOutput:async()=>{writes++;return {publicId:'ma_'+'a'.repeat(32)} as never;},
+    resolveMedia:async(_userId,ref)=>({...ownedImage,ref:ref as StudioResolvedMedia['ref']}),
+    saveOutput:async()=>{writes++;return {publicId:'ma_'+'a'.repeat(32),userId:actor.userId,kind:'image',sourceJobId:source.jobId,sourceOutputId:source.outputId,status:'ready',metadata:{originUrl:imageUrl}} as never;},
   });
   assert.equal(writes,0);
   const request=await selected.materialize();
@@ -54,7 +57,7 @@ test('catalog, ownership and post-promotion errors cannot acquire a correction m
     saveOutput:async()=>{throw new Error('No promotion is allowed after ownership refusal');},
   }),plain);
   const selection=await validateStudioMediaRequest(actor,action,input,factories,true,{
-    readProjectMedia:async()=>[{ref:source,name:'Ready image',durationSec:null}],resolveMedia:async()=>({}) as never,
+    readProjectMedia:async()=>[{ref:source,name:'Ready image',durationSec:null}],resolveMedia:async()=>ownedImage,
     saveOutput:async()=>{throw failure;},
   });
   await assert.rejects(selection.materialize(),error=>error===failure&&!corrective(error));

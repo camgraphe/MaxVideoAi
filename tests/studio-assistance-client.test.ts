@@ -1,13 +1,23 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {STUDIO_ASSISTANCE_TARIFF,type StudioAssistanceStatus} from '../frontend/src/lib/studio/assistance-contract';
-import {additionalAssistanceBudget,assistanceStatusSchema,canResumeAssistanceRequest} from '../frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/_lib/conversation-assistance';
+import {additionalAssistanceBudget,assistanceStatusSchema,canResumeAssistanceRequest,canStartAssistanceFollowupWithoutChoice} from '../frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/_lib/conversation-assistance';
 import {ConversationRequestError,conversationIssue,conversationErrorMessage} from '../frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/_lib/conversation-errors';
 export const status:StudioAssistanceStatus={enabled:true,policyVersion:'test',revision:3,selectedModel:'gpt-6.1-sol',mode:'included_sol',tariff:STUDIO_ASSISTANCE_TARIFF,includedSol:{remainingPercent:0,renewal:'one_time'},sponsoredLuna:{remainingPercent:100,renewal:'one_time'},paid:{enabled:true,authorizedCents:300,spentCents:100,reservedCents:50,remainingCents:150,maxAdditionalBudgetCents:1850},unresolvedCalls:0,canContinue:false,blockedReason:'included_exhausted'};
 test('additional budget includes previously spent, reserved and remaining allowance',()=>{
   assert.equal(additionalAssistanceBudget(status,500),800);
   assert.throws(()=>additionalAssistanceBudget(status,2000));assert.throws(()=>additionalAssistanceBudget(status,-1));
   assert.equal(assistanceStatusSchema.safeParse({...status,paid:{...status.paid,remainingCents:-1}}).success,false);
+});
+test('a malformed credit balance cannot create spending authority in the browser',()=>{
+  const credits={creditsPerDollar:1000,included:{total:500,remaining:360,reserved:0,period:'2026-10-01',renewsAt:'2026-11-01T00:00:00Z'},purchased:{total:2000,remaining:1280,reserved:0,packs:[{id:'pack',total:2000,remaining:1280,reserved:0,amountCents:200,purchasedAt:'2026-10-05T00:00:00Z'}]}};
+  assert.equal(assistanceStatusSchema.safeParse({...status,credits}).success,true);
+  assert.equal(assistanceStatusSchema.safeParse({...status,credits:{...credits,included:{...credits.included,remaining:501}}}).success,false);
+  assert.equal(assistanceStatusSchema.safeParse({...status,credits:{...credits,purchased:{...credits.purchased,remaining:2000}}}).success,false);
+  assert.equal(assistanceStatusSchema.safeParse({...status,credits:{...credits,creditsPerDollar:0}}).success,false);
+  assert.equal(assistanceStatusSchema.safeParse({...status,credits:{...credits,included:{...credits.included,priorReserved:-1}}}).success,false);
+  const projected=assistanceStatusSchema.parse({...status,sponsoredAvailable:false,credits:{...credits,included:{...credits.included,priorReserved:500}}});
+  assert.equal(projected.sponsoredAvailable,false);assert.equal(projected.credits?.included.priorReserved,500);
 });
 test('quota recovery preserves only the server-validated safe replay decision',()=>{
   const action={type:'studio_assistance',reason:'included_exhausted',safeToStartNewRequest:true};
@@ -30,4 +40,26 @@ test('only verified reconciliation permits explicit recovery; technical limits p
  assert.equal(limit.assistance?.canStartFollowup,true);
  assert.match(conversationErrorMessage(limit,'en'),/follow-up/);
  assert.equal(canResumeAssistanceRequest(limit.assistance!,status,null),false);
+});
+
+test('a policy change retains its server safety decision instead of enabling generic request editing',()=>{
+ for(const action of [
+  {type:'studio_assistance',reason:'policy_changed',safeToStartNewRequest:true,canStartFollowup:false,completedModelCalls:0},
+  {type:'studio_assistance',reason:'policy_changed',safeToStartNewRequest:false,canStartFollowup:true,completedModelCalls:1},
+  {type:'studio_assistance',reason:'policy_changed',safeToStartNewRequest:false,canStartFollowup:false,completedModelCalls:1},
+ ]){
+  const issue=conversationIssue('submit',new ConversationRequestError('SPENDING_LIMIT_EXCEEDED',action));
+  assert.deepEqual(issue.assistance,action);
+  assert.equal(canResumeAssistanceRequest(issue.assistance!,status,null),false,'A policy change cannot authorize redispatch of the old request');
+ }
+});
+
+test('settled policy changes offer a follow-up without requiring another budget or model choice',()=>{
+ for(const reason of ['policy_changed','call_limit'] as const){
+  const action={type:'studio_assistance' as const,reason,safeToStartNewRequest:false,canStartFollowup:true,completedModelCalls:1};
+  assert.equal(canStartAssistanceFollowupWithoutChoice(action),true);
+  assert.equal(canStartAssistanceFollowupWithoutChoice({...action,canStartFollowup:false}),false,'Unknown usage cannot offer a replacement request');
+ }
+ assert.equal(canStartAssistanceFollowupWithoutChoice(null),false);
+ assert.equal(canStartAssistanceFollowupWithoutChoice({type:'studio_assistance',reason:'paid_budget_exhausted',safeToStartNewRequest:false,canStartFollowup:true,completedModelCalls:1}),false,'Depletion still requires the customer to choose funding or a model');
 });

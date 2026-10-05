@@ -23,6 +23,7 @@ export async function readStudioConversationProject(actor: StudioGenerationActor
     SELECT q.quote_id AS "quoteId",q.request_json->>'surface' AS surface,q.state AS "quoteState",q.job_id AS "jobId",j.status,
       q.price_cents AS "amountCents",q.currency,q.expires_at AS "expiresAt",clock_timestamp() AS "databaseNow",
       q.request_json->>'engineId' AS "modelId",q.request_json->>'mode' AS mode,q.request_json->'outputCount' AS "outputCount",
+      q.pricing_snapshot->'canonicalPricing'->'meta'->'output_duration_sec' AS "outputDurationSec",
       (SELECT jsonb_object_agg(key,value) FROM jsonb_each(q.request_json->'settings') WHERE key=ANY($3::text[])) AS settings,
       jsonb_array_length(q.request_json->'references') AS "referenceCount",
       ARRAY(SELECT reference->>'role' FROM jsonb_array_elements(q.request_json->'references') AS reference) AS "referenceRoles"

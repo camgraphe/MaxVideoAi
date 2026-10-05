@@ -21,7 +21,7 @@ export function validateStudioPreparationInput<T>(validate:()=>T):T {
 }
 
 export function isStudioPreparationCorrection(result:StudioActionResult):boolean {
-  return !result.ok&&['image.prepare','video.prepare','voice.prepare','music.prepare'].includes(result.action)
+  return !result.ok&&['image.prepare','video.prepare','voice.prepare','music.prepare','audio.prepare'].includes(result.action)
     &&selectionCodes.includes(result.error.code)&&result.error.retryable===false
     &&result.error.nextAction?.type==='studio_preparation_input'&&result.error.nextAction.version===1;
 }

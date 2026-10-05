@@ -17,14 +17,17 @@ function buttonMatching(
   );
 }
 
-const quote = {
+const quote: NonNullable<ImageConversationTurn["quote"]> = {
   quoteId: "quote-1",
   state: "prepared" as const,
   expiresAt: "2099-01-01T00:00:00.000Z",
   requestHash: "request-hash",
   summary: {
+    schemaVersion: 1,
+    surface: "image",
+    engineId: "gpt-image-1",
+    mode: "t2i",
     prompt: "Un paysage au crépuscule",
-    model: "gpt-image-1",
     settings: {
       aspectRatio: "1:1",
       resolution: "1024x1024",
@@ -34,10 +37,8 @@ const quote = {
     outputCount: 1,
   },
   price: { amountCents: 600, currency: "USD" },
-  balance: { beforeCents: 2_500, afterCents: 1_900 },
   fundingMode: "wallet" as const,
   confirmationRequired: true as const,
-  topupRequired: false,
   modelLabel: "GPT Image",
   wallet: { amountCents: 2_500, currency: "USD" },
 };
@@ -200,7 +201,7 @@ test("a completed creation stays ready while Studio answers another message", as
   } finally { await view.close(); }
 });
 
-test("a reference selected by Studio is counted from the canonical quote", async () => {
+test("a reference selected by Studio shows its exact role from the canonical quote", async () => {
   const view = await mountCard({
     locale: "en",
     turn: makeTurn({ summary: { ...quote.summary, references: [
@@ -209,8 +210,28 @@ test("a reference selected by Studio is counted from the canonical quote", async
   });
   try {
     const text = view.dom.window.document.body.textContent ?? "";
-    assert.match(text, /1 reference/);
+    assert.match(text, /start frame/);
     assert.doesNotMatch(text, /Original creation/);
+  } finally { await view.close(); }
+});
+
+test("an inherited video duration displays the priced receipt instead of the request placeholder", async () => {
+  const view = await mountCard({
+    locale: "en",
+    turn: makeTurn({ outputDurationSec: 7.75, summary: {
+      schemaVersion: 1, surface: "video", engineId: "gemini-omni-flash", mode: "v2v",
+      prompt: "Keep the watch movement and change only the lighting.",
+      settings: { durationSec: 3, resolution: "720p", aspectRatio: "16:9", audio: false },
+      references: [{ kind: "asset", assetId: "ma_0123456789abcdef0123456789abcdef", role: "source" }],
+      outputCount: 1,
+    } }),
+  });
+  try {
+    const text = view.dom.window.document.body.textContent ?? "";
+    assert.match(text, /7\.75 s/);
+    assert.doesNotMatch(text, /\b3 s\b/);
+    assert.match(text, /source clip/);
+    assert.equal(view.confirms, 0);
   } finally { await view.close(); }
 });
 

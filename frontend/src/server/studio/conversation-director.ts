@@ -51,7 +51,7 @@ export function isReplayableStudioResponse(response: StudioDirectorResponse): bo
 }
 
 /** The model chooses the next action; identity, billing and executable capabilities stay server-owned. */
-export function createStudioConversationDirector(options: {model?: StudioAssistantModel;createResponse?: StudioResponseCreator; mediaEnabled?: boolean;editingEnabled?: boolean;exportsEnabled?: boolean} = {}) {
+export function createStudioConversationDirector(options: {model?: StudioAssistantModel;createResponse?: StudioResponseCreator; mediaEnabled?: boolean;editingEnabled?: boolean;exportsEnabled?: boolean;assistanceCreditsEnabled?: boolean} = {}) {
   return async (context: StudioDirectorContext): Promise<ImageDraft> => {
     if (!options.createResponse && !process.env.OPENAI_API_KEY)
       throw new AgentApiError('ENGINE_UNAVAILABLE', 'Studio conversation is not configured.');
@@ -125,7 +125,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       }
       if (action.action === 'image.prepare' && !result.ok)
         throw new AgentApiError(result.error.code, result.error.message, result.error.retryable, result.error.nextAction);
-      if (action.action === 'video.prepare' || action.action === 'voice.prepare' || action.action === 'music.prepare') {
+      if (action.action === 'video.prepare' || action.action === 'voice.prepare' || action.action === 'music.prepare' || action.action === 'audio.prepare') {
         if (!result.ok) throw new AgentApiError(result.error.code, result.error.message, result.error.retryable, result.error.nextAction);
         return {reply: projectStudioReply(action.reply), image: null, media: {...action,reply:projectStudioReply(action.reply)}};
       }

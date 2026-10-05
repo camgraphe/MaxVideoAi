@@ -1,5 +1,5 @@
-import {isWorkspaceModelCertifiedForBlock} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-model-certification';
-import {withDbTransaction, type TransactionQueryExecutor} from '@/lib/db';
+import {isStudioConversationAudioModeCertified} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-model-certification';
+import {query,withDbTransaction, type QueryExecutor,type TransactionQueryExecutor} from '@/lib/db';
 import {AgentApiError} from '@/server/agent-api/errors';
 import {requireAudioGenerationActor, type StudioGenerationActor} from '@/server/agent-api/generation-actor';
 import {listAudioCapabilities} from '@/server/agent-api/audio-capabilities';
@@ -15,10 +15,7 @@ import {readImageConversationProject} from './image-conversation-repository';
 import {resolveStudioMedia} from './media-resolver';
 
 function qualified(capabilities: ReturnType<typeof listAudioCapabilities>) {
-  return {...capabilities, modes: capabilities.modes.filter(mode => (mode.mode === 'voice_only' || mode.mode === 'music_only') && isWorkspaceModelCertifiedForBlock({
-    modelId: mode.engineId, presetId: mode.mode === 'voice_only' ? 'audio-voiceover' : 'audio-music',
-    workflowType: mode.mode === 'voice_only' ? 'voiceover_generation' : 'music_generation',
-  }))};
+  return {...capabilities,modes:capabilities.modes.filter(mode=>isStudioConversationAudioModeCertified(mode.engineId,mode.mode))};
 }
 
 export type StudioAudioGenerationOptions = {
@@ -35,7 +32,22 @@ export function createStudioAudioGenerationService(actor: StudioGenerationActor,
   const quotes = audioQuoteRepositoryForActor(actor);
   const prepareDeps = options.prepareDependencies ?? {};
   const confirmDeps = options.confirmDependencies ?? {};
+  const requireProjectOutput = async (reference: CanonicalAudioRequest['references'][number],executor: QueryExecutor={query},lock=false) => {
+    const ref=reference.asset;
+    if(ref.type!=='job-output')return;
+    const rows=await executor.query<{id:string}>(`SELECT o.id FROM job_outputs o
+      JOIN app_jobs j ON j.job_id=o.job_id AND j.user_id=o.user_id
+      WHERE o.id=$1 AND o.job_id=$2 AND o.user_id=$3 AND o.kind=$4
+        AND o.status='ready' AND j.status='completed' AND j.hidden IS NOT TRUE
+        AND EXISTS (SELECT 1 FROM mcp_generation_quotes q
+          JOIN studio_projects p ON p.id=q.studio_project_id AND p.user_id=q.user_id
+          WHERE q.job_id=j.job_id AND q.user_id=j.user_id AND q.studio_project_id=$5
+            AND q.auth_origin='studio-session' AND q.state='accepted' AND p.deleted_at IS NULL)
+      LIMIT 1${lock?' FOR SHARE OF o,j':''}`,[ref.outputId,ref.jobId,actor.userId,ref.kind,actor.projectId]);
+    if(!rows[0])throw new AgentApiError('REFERENCE_INVALID','This Audio reference is not a ready output in this project.');
+  };
   const resolve: PrepareAudioGenerationDependencies['resolveReference'] = async (_actor, reference) => {
+    await requireProjectOutput(reference);
     await resolveStudioMedia(actor.userId, reference.asset);
     return resolveOwnedAudioReferenceForActor(actor, reference);
   };
@@ -52,6 +64,7 @@ export function createStudioAudioGenerationService(actor: StudioGenerationActor,
     ...confirmDeps, paidGenerationEnabled: () => options.enabled,
     listCapabilities: () => qualified((confirmDeps.listCapabilities ?? listAudioCapabilities)()),
     resolveReference: confirmDeps.resolveReference ?? (async (_actor, reference, {executor}) => {
+      await requireProjectOutput(reference,executor,true);
       await resolveStudioMedia(actor.userId, reference.asset, (sql, values) => executor.query(sql, values), {lockAsset: true});
       return resolveOwnedAudioReferenceForActor(actor, reference, {executor});
     }),

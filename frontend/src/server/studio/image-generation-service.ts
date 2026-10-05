@@ -1,4 +1,5 @@
-import { isWorkspaceModelCertifiedForBlock } from "@/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-model-certification";
+import { isWorkspaceModelCertifiedForBlock, isStudioConversationVideoModeCertified } from "@/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-model-certification";
+import {recordedStudioOutputDuration} from './conversation-quote-facts';
 import {
   requireGenerationActor,
   requireStudioGenerationRequest,
@@ -54,13 +55,13 @@ function certified(catalog: AgentPublicGenerationEngine[], surface: 'image' | 'v
         .filter(mode => {
           const details=projectAgentModelModeDetails(candidate,mode);
           return !details.settings.some(setting=>setting.required && setting.type==='multi_prompt')
-            && !details.references.some(ref=>ref.required && (ref.type!=='image' || (ref.min ?? 1)>STUDIO_CONVERSATION_MAX_REFERENCES));
+            && !details.references.some(ref=>ref.required && ((surface==='image'&&ref.type!=='image') || (ref.min ?? 1)>STUDIO_CONVERSATION_MAX_REFERENCES));
         })
         .filter((mode) =>
-          isWorkspaceModelCertifiedForBlock({
+          surface === 'video' ? isStudioConversationVideoModeCertified(candidate.engine.id, mode) : isWorkspaceModelCertifiedForBlock({
             modelId: candidate.engine.id,
-            presetId: surface === 'video' ? 'generate-video' : mode === "t2i" ? "generate-image" : "modify-image",
-            workflowType: mode === 't2v' ? 'text_to_video' : mode === 'i2v' || mode === 'fl2v' ? 'image_to_video' : mode === 'ref2v' ? 'storyboard_to_video' : mode === "t2i" ? "text_to_image" : "image_to_image",
+            presetId: mode === "t2i" ? "generate-image" : "modify-image",
+            workflowType: mode === "t2i" ? "text_to_image" : "image_to_image",
           }),
         ),
     }))
@@ -122,22 +123,26 @@ function createStudioVisualGenerationService(
       if (reference.kind !== "asset")
         throw new AgentApiError(
           "REFERENCE_INVALID",
-          "Select an owned image from your library.",
+          "Select owned reference media from your library.",
         );
-      const ref = { type: "asset", assetId: reference.assetId, kind: "image" };
       try {
+        const observed = await resolveOwnedReferenceAssetForActor(
+          actor,
+          reference.assetId,
+          executor ? { executor } : {},
+        );
+        const ref = { type: 'asset', assetId: reference.assetId, kind: observed.mediaKind };
         await resolveStudioMedia(
           actor.userId,
           ref,
           executor ? (sql, params) => executor.query(sql, params) : undefined,
           { lockAsset: !!executor },
         );
-        const asset = await resolveOwnedReferenceAssetForActor(
-          actor,
-          reference.assetId,
-          executor ? { executor } : {},
-        );
-        if (asset.mediaKind !== "image") throw new Error("IMAGE_REQUIRED");
+        // Confirmation locks the strict asset and source provenance first.
+        // Read canonical facts again under that lock; the initial kind lookup
+        // must never supply stale URL/duration facts to pricing or dispatch.
+        const asset=executor?await resolveOwnedReferenceAssetForActor(actor,reference.assetId,{executor}):observed;
+        if (surface==='image'&&asset.mediaKind !== "image") throw new Error("IMAGE_REQUIRED");
         references.push({
           ...asset,
           role: reference.role,
@@ -237,7 +242,10 @@ function createStudioVisualGenerationService(
         priceGeneration:prepareDeps.priceGeneration ?? ((request,tier,context)=>priceCanonicalGeneration(request,tier,undefined,context)),
         resolveRequestExecutability:prepareDeps.resolveRequestExecutability ?? ((request,candidate,references)=>resolveAgentGenerationRequestExecutability(request,candidate.engine,references)),
       });
+      const outputDurationSec=request.surface==='video'
+        ? recordedStudioOutputDuration({canonicalPricing:pricing.pricingSnapshot}) : undefined;
       return {modelId:request.engineId,surface:request.surface,mode:request.mode,settings,outputCount:1,referenceCount:request.references.length,
+        ...(outputDurationSec!==undefined ? {outputDurationSec} : {}),
         price:{amountCents:pricing.priceCents,currency:pricing.currency},estimatedAt:(prepareDeps.now?.() ?? new Date()).toISOString(),quoteRequired:true};
     },
     resolveReferences,

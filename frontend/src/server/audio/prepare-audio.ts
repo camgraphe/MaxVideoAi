@@ -25,7 +25,7 @@ export function assertExpectedAudioQuote(expected: AudioGenerateRequestBody['exp
   }
 }
 
-export async function prepareAudioRun(body: AudioGenerateRequestBody, userId: string, dependencies: { pricingPolicy?: ResolveServerPricingPolicyDependencies; env?: NodeJS.ProcessEnv } = {}) {
+export async function prepareAudioRun(body: AudioGenerateRequestBody, userId: string, dependencies: { pricingPolicy?: ResolveServerPricingPolicyDependencies; env?: NodeJS.ProcessEnv; inspectSourceVideo?: typeof inspectSourceVideo } = {}) {
   const normalized = validateAudioGenerateRequest(body);
   const packConfig = getAudioPackConfig(normalized.pack);
   const sourceJob =
@@ -51,7 +51,7 @@ export async function prepareAudioRun(body: AudioGenerateRequestBody, userId: st
   }
 
   const needsSourceProbe = Boolean(sourceVideoUrl) && (packConfig.requiresVideo || normalized.pack === 'music_only');
-  const sourceProbe = needsSourceProbe && sourceVideoUrl ? await inspectSourceVideo(sourceVideoUrl) : null;
+  const sourceProbe = needsSourceProbe && sourceVideoUrl ? await (dependencies.inspectSourceVideo ?? inspectSourceVideo)(sourceVideoUrl) : null;
   const probedDurationSec = sourceProbe?.durationSec ?? null;
   const durationSec = resolveAudioRenderDuration({
     pack: normalized.pack,
