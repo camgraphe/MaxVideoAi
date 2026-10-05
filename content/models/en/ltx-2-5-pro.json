@@ -49,7 +49,7 @@
     },
     "media": {
       "caption": "LTX 2.5 Pro evidence gallery",
-      "description": "Approved production examples will appear after review",
+      "description": "Watch finished LTX 2.5 Pro videos and explore their prompts.",
       "renderLabel": "Review accepted output",
       "badges": [
         "Pro",
@@ -228,7 +228,7 @@
     "showWhenEmpty": false,
     "section": {
       "title": "Reviewed LTX 2.5 Pro examples",
-      "intro": "The gallery remains hidden until two durable Pro outputs pass the launch acceptance rubric.",
+      "intro": "Explore LTX 2.5 Pro examples and compare their framing, motion and sound.",
       "defaultCtaLabel": "View the LTX family gallery",
       "recreateLabel": null
     },

@@ -49,7 +49,7 @@
     },
     "media": {
       "caption": "Galería de pruebas de LTX 2.5 Fast",
-      "description": "Los borradores Fast aprobados aparecerán después de la revisión",
+      "description": "Descubre LTX 2.5 Fast en movimiento, con videos y sus prompts.",
       "renderLabel": "Revisar el borrador aceptado",
       "badges": [
         "Fast",
@@ -228,7 +228,7 @@
     "showWhenEmpty": false,
     "section": {
       "title": "Ejemplos revisados de LTX 2.5 Fast",
-      "intro": "La sección permanece oculta hasta que dos resultados Fast aceptados sean duraderos y estén vinculados a la lista correcta.",
+      "intro": "Compara los movimientos de cámara, los detalles de los personajes y el ritmo de las escenas de LTX 2.5 Fast.",
       "defaultCtaLabel": "Ver todos los ejemplos de LTX",
       "recreateLabel": null
     },
