@@ -1,5 +1,6 @@
 {
   "date": "2026-10-05",
+  "scope": "Final dossier UI, refreshed source links and unchanged creative first Play. Application captures are separately attributed in after.json.",
   "videoCount": 8,
   "rows": [
     {
@@ -110,73 +111,73 @@
       "page": "studio",
       "loaded": true,
       "beforeHidden": false,
-      "href": "http://127.0.0.1:3017/studio"
+      "href": "http://localhost:3017/studio"
     },
     {
       "page": "integrations-claude",
       "loaded": true,
       "beforeHidden": false,
-      "href": "http://127.0.0.1:3017/integrations/claude"
+      "href": "http://localhost:3017/integrations/claude"
     },
     {
       "page": "integrations-codex",
       "loaded": true,
       "beforeHidden": false,
-      "href": "http://127.0.0.1:3017/integrations/codex"
+      "href": "http://localhost:3017/integrations/codex"
     },
     {
       "page": "mcp",
       "loaded": true,
       "beforeHidden": false,
-      "href": "http://127.0.0.1:3017/mcp"
+      "href": "http://localhost:3017/mcp"
     },
     {
       "page": "fr-studio",
       "loaded": true,
       "beforeHidden": true,
-      "href": "http://127.0.0.1:3017/fr/studio"
+      "href": "http://localhost:3017/fr/studio"
     },
     {
       "page": "fr-integrations-claude",
       "loaded": true,
       "beforeHidden": true,
-      "href": "http://127.0.0.1:3017/fr/integrations/claude"
+      "href": "http://localhost:3017/fr/integrations/claude"
     },
     {
       "page": "fr-integrations-codex",
       "loaded": true,
       "beforeHidden": true,
-      "href": "http://127.0.0.1:3017/fr/integrations/codex"
+      "href": "http://localhost:3017/fr/integrations/codex"
     },
     {
       "page": "fr-mcp",
       "loaded": true,
       "beforeHidden": true,
-      "href": "http://127.0.0.1:3017/fr/mcp"
+      "href": "http://localhost:3017/fr/mcp"
     },
     {
       "page": "es-studio",
       "loaded": true,
       "beforeHidden": true,
-      "href": "http://127.0.0.1:3017/es/studio"
+      "href": "http://localhost:3017/es/studio"
     },
     {
       "page": "es-integraciones-claude",
       "loaded": true,
       "beforeHidden": true,
-      "href": "http://127.0.0.1:3017/es/integraciones/claude"
+      "href": "http://localhost:3017/es/integraciones/claude"
     },
     {
       "page": "es-integraciones-codex",
       "loaded": true,
       "beforeHidden": true,
-      "href": "http://127.0.0.1:3017/es/integraciones/codex"
+      "href": "http://localhost:3017/es/integraciones/codex"
     },
     {
       "page": "es-mcp",
       "loaded": true,
       "beforeHidden": true,
-      "href": "http://127.0.0.1:3017/es/mcp"
+      "href": "http://localhost:3017/es/mcp"
     }
   ],
   "links": [
@@ -242,6 +243,10 @@
     },
     {
       "path": "/ads-readiness-20261005/pack/exports/thumbnail-b.svg",
+      "status": 200
+    },
+    {
+      "path": "/ads-readiness-plan.md",
       "status": 200
     },
     {
