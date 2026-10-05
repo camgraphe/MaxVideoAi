@@ -122,7 +122,7 @@ export function GtmLazyLoader({
     return () => {
       window.clearTimeout(timer);
     };
-  }, [analyticsConsentGranted, delayMs, routeContext.excludedFromGa4]);
+  }, [analyticsConsentGranted, consentGrantedValue, consentStorageKey, delayMs, routeContext.excludedFromGa4]);
 
   return null;
 }
