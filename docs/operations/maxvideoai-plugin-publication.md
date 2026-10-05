@@ -10,7 +10,20 @@ repository settings, adding a secret, pushing a tag, or publishing a release.
 Obtain the owner approval required by the GitHub commercial-presence plan before
 each external mutation.
 
-## Current release state — 2026-08-29
+## Latest verified release — 2026-10-05
+
+Protected run [37341472219](https://github.com/camgraphe/MaxVideoAi/actions/runs/37341472219),
+attempt 2, published [v0.3.7](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.7)
+from immutable source `a833d985a81f9d523e08917674a01f1e220337b1` to public commit
+`67dfbedad6e32377287b55ba005296e73206b23a`. The downloaded ZIP matches its
+qualified bytes and attached checksum. Official Registry metadata was separately
+published and read back as active/latest 0.3.7. The existing Codex installation
+was updated through supported marketplace commands; all 60 installed package
+files match the verified ZIP. See the
+[publication checkpoint](mcp-distribution-publication-2026-10-05.md) for exact
+artifact and remaining website/n8n gates. This does not certify other hosts.
+
+## Historical release state — 2026-08-29
 
 The focused repository now contains public package history:
 

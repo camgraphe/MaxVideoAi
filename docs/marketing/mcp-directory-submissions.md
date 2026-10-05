@@ -1,8 +1,9 @@
 # MaxVideoAI MCP distribution packages
 
 Latest submission checkpoint: [5 October 2026 n8n update](#n8n-update-submission--2026-10-05).
+Latest package publication: [5 October 2026 plugin and Registry checkpoint](../operations/mcp-distribution-publication-2026-10-05.md).
 Earlier read-only checkpoint: [4 October 2026 distribution rollout](../operations/studio-mcp-distribution-rollout-2026-10-04.md).
-GitHub and the official Registry still expose 0.3.6. The October 5 update to
+GitHub and the official Registry now expose 0.3.7. The October 5 update to
 n8n workflow 19591 has been submitted and is under review; the public endpoint
 still returns the earlier payload. These observations supersede the dated
 version/public-visibility claims below; historical evidence is preserved.
