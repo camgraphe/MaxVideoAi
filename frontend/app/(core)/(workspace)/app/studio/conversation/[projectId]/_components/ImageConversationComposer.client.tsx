@@ -14,6 +14,7 @@ export function ImageConversationComposer({
   libraryTrigger,
   locale = 'en',
   readOnly = false,
+  libraryLabel,
 }: {
   text: string;
   onTextChange: (text: string) => void;
@@ -21,10 +22,11 @@ export function ImageConversationComposer({
   blocked: boolean;
   onOpenLibrary: (trigger: HTMLButtonElement) => void;
   libraryTrigger: Ref<HTMLButtonElement>;
-  locale?: ConversationLocale;
+  locale?: ConversationLocale | 'es';
   readOnly?: boolean;
+  libraryLabel?: string;
 }) {
-  const t = (en: string, fr: string) => locale === 'fr' ? fr : en;
+  const t = (en: string, fr: string, es=en) => locale === 'fr' ? fr : locale === 'es' ? es : en;
   const textarea = useRef<HTMLTextAreaElement>(null);
   const resizeTextarea = useCallback(() => {
     const element = textarea.current;
@@ -52,7 +54,7 @@ export function ImageConversationComposer({
         type="button"
         disabled={blocked}
         ref={libraryTrigger}
-        aria-label={t('Open library', 'Ouvrir la bibliothèque')}
+        aria-label={libraryLabel??t('Open library', 'Ouvrir la bibliothèque')}
         onClick={event => onOpenLibrary(event.currentTarget)}
       >
         <Plus size={21} />
@@ -60,11 +62,11 @@ export function ImageConversationComposer({
       <textarea
         ref={textarea}
         rows={1}
-        aria-label={t('Message Studio', 'Message à Studio')}
+        aria-label={t('Message Studio', 'Message à Studio', 'Mensaje a Studio')}
         value={text}
         readOnly={readOnly}
         onChange={(event) => onTextChange(event.target.value)}
-        placeholder={t('Describe your idea…', 'Décrivez votre idée…')}
+        placeholder={t('Describe your idea…', 'Décrivez votre idée…', 'Describe tu idea…')}
         maxLength={4000}
         enterKeyHint="send"
         onKeyDown={(event) => {
@@ -83,7 +85,7 @@ export function ImageConversationComposer({
         className={styles.send}
         type="submit"
         disabled={!text.trim() || blocked}
-        aria-label={t('Send to Studio', 'Envoyer à Studio')}
+        aria-label={t('Send to Studio', 'Envoyer à Studio', 'Enviar a Studio')}
       >
         <ArrowUp size={20} />
       </button>

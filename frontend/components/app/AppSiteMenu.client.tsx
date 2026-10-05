@@ -9,7 +9,8 @@ import { getPathname } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { AppAppearanceControl } from './AppAppearanceControl.client';
 import { AppGlyph } from './AppGlyph';
-import { AppAssistantConnections, AppAssistantMarks } from './AppAssistantConnections';
+import { AppAssistantConnections } from './AppAssistantConnections';
+import { AppMcpShortcuts } from './AppMcpShortcuts.client';
 import { appNavLabel, canShowStudioNavigation, getAppMenuItems } from './app-navigation';
 
 type AppSiteMenuCommonProps = {
@@ -113,17 +114,15 @@ export function AppSiteMenu({ children, ...props }: Props) {
   const { locale, t } = useI18n();
   const controllerRef = useRef<AppSiteMenuController | null>(null);
   const copy = locale === 'fr'
-    ? { connect: 'Connexions', account: 'Compte', signIn: 'Connexion' }
+    ? { account: 'Compte', signIn: 'Connexion' }
     : locale === 'es'
-      ? { connect: 'Conectar', account: 'Cuenta', signIn: 'Entrar' }
-      : { connect: 'Connect', account: 'Account', signIn: 'Sign in' };
+      ? { account: 'Cuenta', signIn: 'Entrar' }
+      : { account: 'Account', signIn: 'Sign in' };
   return (
     <>
       <AppSiteMenuButton {...props} controllerRef={controllerRef} />
       <div className="app-header-actions">
-        <button className="app-assistant-shortcut" type="button" aria-haspopup="dialog" onClick={(event) => controllerRef.current?.open(event.currentTarget)}>
-          <AppAssistantMarks /><span>{copy.connect}</span>
-        </button>
+        <AppMcpShortcuts locale={locale} />
         {children}
         <div className="app-header-account">
           {props.email ? <button type="button" onClick={(event) => controllerRef.current?.open(event.currentTarget)} aria-haspopup="dialog"><AppGlyph name="settings" /><span>{copy.account}</span></button>

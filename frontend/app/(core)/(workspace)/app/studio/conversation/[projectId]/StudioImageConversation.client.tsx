@@ -28,6 +28,8 @@ import {ConversationMediaShelf} from './_components/ConversationMediaShelf.clien
 import {useConversationMediaShelf} from './_hooks/useConversationMediaShelf';
 import {insertMediaMention,removeMediaMention,readShelfDrag,MEDIA_SHELF_DRAG_TYPE,type ShelfMedia} from './_lib/conversation-media-shelf';
 import {studioMarketingStarterMessage} from '../../_lib/studio-project-marketing-entry';
+import {consumeGuestCreationFromLocation} from '@/lib/guest-creation-continuation';
+import {parseStudioGuestDraft} from '../../_lib/studio-guest-draft';
 function StudioImageConversationWorkspace({
   starter,
   projectId,
@@ -65,6 +67,10 @@ function StudioImageConversationWorkspace({
   const helpTrigger = useRef<HTMLButtonElement>(null);
   const composerRegion = useRef<HTMLDivElement>(null);
   const [text, setText] = useState(() => studioMarketingStarterMessage(starter,appLocale));
+  useEffect(()=>{
+    const draft=parseStudioGuestDraft(consumeGuestCreationFromLocation('/app/studio'));
+    if(draft)setText(draft);
+  },[]);
   const shelf = useConversationMediaShelf(studio.conversation.turns,locale,mediaEnabled);
   const references = shelf.references;
   const unavailableReferences = !mediaEnabled&&references.some(ref=>ref.kind&&ref.kind!=='image');

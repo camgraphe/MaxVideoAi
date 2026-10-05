@@ -41,7 +41,7 @@ test('Studio is discoverable while conversations and APIs retain shared account 
     assert.match(source, /access\.ok/);
   }
   const entry = read('frontend/app/(core)/(workspace)/app/studio/page.tsx');
-  assert.match(entry, /if\s*\(!access.ok\s*&&\s*access.status\s*===\s*401\)\s*redirect\(buildLoginHref/);
+  assert.match(entry, /access.status===401\?<StudioGuestDemo/);
   assert.match(entry, /access.ok\s*&&\s*conversationEnabled/);
   assert.match(entry, /listStudioConversationProjects\(access.userId\)/);
   const conversation = read('frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/page.tsx');
