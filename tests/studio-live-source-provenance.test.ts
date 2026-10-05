@@ -17,6 +17,7 @@ test('every declared live validation snapshot is an existing, unique source file
     'frontend/src/server/studio/audio-generation-service.ts',
     'frontend/src/server/agent-api/audio-capabilities.ts',
     'frontend/src/server/agent-api/prepare-generation.ts',
+    'frontend/src/server/agent-api/generation-pricing-read.ts',
     'frontend/src/lib/customer-price-presentation.ts',
     'frontend/src/server/studio/conversation-history-facts.ts',
     'frontend/src/server/studio/conversation-audio-discovery.ts',

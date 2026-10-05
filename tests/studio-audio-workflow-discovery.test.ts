@@ -7,8 +7,20 @@ import {getAudioPackConfig} from '../frontend/src/lib/audio-generation';
 import {resolveAudioRenderDuration,validateAudioGenerateRequest} from '../frontend/src/server/audio/audio-generate-validation';
 import {buildAudioMixFilterGraph} from '../frontend/src/server/audio/media';
 import {buildVideoPreservingMuxArgs} from '../frontend/src/server/audio/video-mux-args';
+import {STUDIO_MEDIA_DIRECTOR_TOOLS} from '../frontend/lib/studio/conversation-media-contract';
 
 const env={FAL_KEY:'test-only',GOOGLE_VERTEX_PROJECT_ID:'test-only',GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON:'test-only'};
+
+test('Audio preparation guidance preserves pack-specific required media and distinguishes new video generation',()=>{
+  const tool=STUDIO_MEDIA_DIRECTOR_TOOLS.find(tool=>tool.action==='audio.prepare');
+  assert.ok(tool);
+  const sourceRequired=listAudioCapabilities(env).modes.filter(mode=>mode.references.sourceVideo==='required');
+  assert.deepEqual(sourceRequired.map(mode=>mode.mode),['cinematic','cinematic_voice']);
+  assert.match(tool.description,/required, optional or unsupported source_video and voice_sample roles/);
+  assert.match(tool.description,/Cinematic packs require source_video/);
+  assert.match(tool.description,/new video from an image or prompt, use video_prepare/);
+  assert.doesNotMatch(tool.description,/optional source_video or voice_sample roles/);
+});
 
 test('cinematic voice discovery identifies the existing-clip soundtrack workflow and its limits',()=>{
   const details=studioAudioCapabilityDetails(listAudioCapabilities(env),'audio-cinematic-voice');
