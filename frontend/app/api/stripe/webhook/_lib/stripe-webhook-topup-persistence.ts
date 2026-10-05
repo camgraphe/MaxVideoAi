@@ -9,7 +9,11 @@ import {
   resolveMcpTrialToWalletWindowSeconds,
 } from '@/server/agent-api/mcp-funnel';
 import { buildTopupAttributionGa4Params } from '@/server/wallet-attribution';
-import { lockAndResolveFirstWalletTopup } from '@/server/wallet-first-topup';
+import {
+  isCommercialPaymentAnalyticsEligible,
+  lockAndResolveFirstWalletTopup,
+  resolveFirstExternalPaymentUnderWalletLock,
+} from '@/server/wallet-first-topup';
 import {
   normalizeStripeId,
   normalizeStripeUrl,
@@ -18,6 +22,7 @@ import {
 
 export type CanonicalStripeTopupInput = {
   userId: string;
+  stripeLiveMode?: boolean;
   walletAmountCents: number;
   walletCurrency: string;
   settlementAmountCents: number | null;
@@ -171,6 +176,7 @@ export async function recordStripeTopup(
 ): Promise<void> {
   const {
     userId,
+    stripeLiveMode,
     walletAmountCents,
     walletCurrency,
     settlementAmountCents,
@@ -249,8 +255,12 @@ export async function recordStripeTopup(
         }
       }
 
+      const isFirstExternalPayment = stripeLiveMode === true
+        ? await resolveFirstExternalPaymentUnderWalletLock(executor, userId) : null;
       const combinedMetadata = {
         ...(metadata ?? {}),
+        stripe_livemode: stripeLiveMode ?? null,
+        first_recorded_external_payment: isFirstExternalPayment === null ? 'unknown' : String(isFirstExternalPayment),
         first_wallet_topup: String(isFirstWalletTopup),
         wallet_amount_cents: normalizedWalletAmount,
         wallet_currency: walletCurrencyUpper,
@@ -327,6 +337,7 @@ export async function recordStripeTopup(
         receipt: toCanonicalReceipt(rows[0]),
         combinedMetadata,
         isFirstWalletTopup,
+        isFirstExternalPayment,
       };
     });
 
@@ -364,7 +375,8 @@ export async function recordStripeTopup(
     const metadataRecord = combinedMetadata as Record<string, unknown>;
     const consentValue = typeof metadataRecord.analytics_consent === 'string' ? metadataRecord.analytics_consent : '';
     const analyticsConsentGranted = consentValue.toLowerCase() === 'granted';
-    if (analyticsConsentGranted) {
+    if (analyticsConsentGranted && persistenceResult.isFirstExternalPayment !== null
+      && await isCommercialPaymentAnalyticsEligible({ query }, userId, stripeLiveMode)) {
       const attributionParams = buildTopupAttributionGa4Params(metadataRecord);
       const gaClientId = extractGaClientId(
         typeof metadataRecord.ga_client_id === 'string' ? metadataRecord.ga_client_id : null
@@ -382,6 +394,7 @@ export async function recordStripeTopup(
         ...attributionParams,
         funnel_stage: 'topup_completed',
         is_first_wallet_topup: persistenceResult.isFirstWalletTopup,
+        is_first_recorded_external_payment: persistenceResult.isFirstExternalPayment,
         value: minorToMajorAmount(purchaseValueMinor),
         currency: purchaseCurrency,
         wallet_currency: walletCurrencyUpper,

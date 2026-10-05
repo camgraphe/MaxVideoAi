@@ -2,6 +2,8 @@
 
 Studio has one public interface: the conversational workspace. The owner explicitly retired the private Canvas and authorized deleting its personal projects on 2026-10-05; do not rebuild it or introduce a project-migration flow.
 
+The owner also approved retiring public beta presentation on 2026-10-05. Use introductory allowance wording without changing immutable financial policy versions, flags or technical preview grants. Public promises must follow the actual enabled actions; the dated production check in the architecture guide has conversation exports disabled. Preserve contextual help and existing exact-price confirmations.
+
 ## Ownership
 
 - `page.tsx`, `_components/`, `_hooks/`, `_lib/`: direct chat entry, bounded owned project picker, stable creation identity and optional editable marketing briefs.

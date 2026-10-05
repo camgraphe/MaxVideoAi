@@ -1,11 +1,9 @@
 import { useEffect, type Dispatch, type SetStateAction } from 'react';
-import { persistPendingAnalyticsEvent } from '@/lib/analytics-client';
+import { persistGoogleAuthCompleted } from '../_lib/login-auth-analytics';
 import { writeLastKnownUserId } from '@/lib/last-known';
 import { loadSupabaseClient } from '@/lib/supabaseClientLoader';
 import {
   clearPendingGoogleLogin,
-  consumePendingGoogleLogin,
-  resolveGoogleAuthCompletionEvent,
 } from '../_lib/login-helpers';
 import type { AuthCopy } from '../_lib/login-copy';
 
@@ -65,18 +63,7 @@ export function useLoginAuthHashSession({
         if (userId) {
           writeLastKnownUserId(userId);
         }
-        const pendingMode = consumePendingGoogleLogin();
-        if (pendingMode) {
-          const eventName = resolveGoogleAuthCompletionEvent(pendingMode);
-          persistPendingAnalyticsEvent(eventName, {
-            route_family: 'auth',
-            auth_surface: 'login',
-            method: 'google',
-            ...(eventName === 'sign_up_completed'
-              ? { email_confirmation_required: false }
-              : {}),
-          });
-        }
+        persistGoogleAuthCompleted(data.session.user?.created_at, data.session.user?.app_metadata, data.session.user?.id, data.session.access_token);
       })
       .catch((err) => {
         clearPendingGoogleLogin();

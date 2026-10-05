@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { applyAnalyticsTouch, createAnalyticsJourneyRecord, prepareJourneyEvents, resolveAnalyticsTouch } from '../frontend/lib/analytics/journey';
+import { applyAnalyticsTouch, createAnalyticsJourneyRecord, prepareJourneyEvents, projectAllowedAnalyticsPayload, resolveAnalyticsTouch } from '../frontend/lib/analytics/journey';
 
 const route = { landingRouteFamily: 'marketing', landingSurface: '/pricing', locale: 'en' };
 const uuid = '7df6d42a-4b70-4eca-82fe-3a320c4a6eb9';
@@ -151,4 +151,50 @@ test('topup preparation increments attempts without confusing checkout-opened', 
   assert.equal(started.events.at(-1)?.payload.is_first_topup_attempt, true);
   const opened = prepareJourneyEvents(started.record, 'topup_checkout_opened', {}, Date.UTC(2026, 6, 7));
   assert.equal(opened.record.topupStartedCount, 1);
+});
+
+test('Studio entry measures the authenticated workspace and keeps a safe public landing distinct', () => {
+  const touch = resolveAnalyticsTouch({ href: 'https://maxvideoai.com/studio', referrer: '', siteOrigin: 'https://maxvideoai.com', ...route });
+  const record = createAnalyticsJourneyRecord({ journeyId: uuid, now: 1_000, touch });
+  const publicPage = prepareJourneyEvents(record, 'page_view', { route_family: 'marketing', page_path: '/studio' }, 2_000);
+  assert.equal(publicPage.events.some((entry) => entry.event === 'studio_entered'), false);
+  const entered = prepareJourneyEvents(publicPage.record, 'page_view', { route_family: 'workspace', page_path: '/app/studio', workspace_section: 'studio' }, 3_000);
+  assert.deepEqual(entered.events.map((entry) => entry.event), ['page_view', 'studio_entered']);
+  assert.equal(entered.events[0]?.payload.page_path, '/app/studio');
+  assert.equal(entered.events[1]?.payload.route_family, 'workspace');
+});
+
+test('first completed media in a journey is independent of failed attempts and payment order', () => {
+  const touch = resolveAnalyticsTouch({ href: 'https://maxvideoai.com/studio', referrer: '', siteOrigin: 'https://maxvideoai.com', ...route });
+  let record = createAnalyticsJourneyRecord({ journeyId: uuid, now: 1_000, touch });
+  record = prepareJourneyEvents(record, 'topup_started', {}, 2_000).record;
+  record = prepareJourneyEvents(record, 'generation_started', {}, 3_000).record;
+  record = prepareJourneyEvents(record, 'generation_failed', {}, 4_000).record;
+  const started = prepareJourneyEvents(record, 'generation_started', {}, 5_000);
+  const completed = prepareJourneyEvents(started.record, 'generation_completed', {
+    ...started.events.at(-1)?.payload, job_id: 'job_7df6d42a-4b70-4eca-82fe-3a320c4a6eb9',
+  }, 6_000);
+  assert.deepEqual(completed.events.map((entry) => entry.event), ['generation_completed', 'first_media_completed_in_journey']);
+  assert.equal(completed.events[0]?.payload.is_first_generation, false);
+  assert.equal(completed.events[1]?.payload.completion_source, 'generation');
+  const again = prepareJourneyEvents(completed.record, 'generation_completed', completed.events[0]?.payload, 7_000);
+  assert.deepEqual(again.events.map((entry) => entry.event), ['generation_completed']);
+});
+
+test('historical uncorrelated completions cannot invent a first completed media milestone', () => {
+  const touch = resolveAnalyticsTouch({ href: 'https://maxvideoai.com/', referrer: '', siteOrigin: 'https://maxvideoai.com', ...route });
+  const record = createAnalyticsJourneyRecord({ journeyId: uuid, now: 1_000, touch });
+  const completed = prepareJourneyEvents(record, 'generation_completed', { job_id: 'job_7df6d42a-4b70-4eca-82fe-3a320c4a6eb9' }, 2_000);
+  assert.equal(completed.events.some((entry) => entry.event === 'first_media_completed_in_journey'), false);
+});
+
+test('Studio and MCP primary action attributes survive the bounded click projection', () => {
+  for (const [ctaName, ctaLocation, targetFamily] of [
+    ['studio_open', 'studio_hero', 'studio'], ['studio_open', 'studio_closing', 'studio'],
+    ['mcp_setup_guide', 'integration_hero', 'mcp'], ['mcp_choose_integration', 'mcp_hero', 'mcp'],
+  ]) {
+    assert.deepEqual(projectAllowedAnalyticsPayload('cta_click', { cta_name: ctaName, cta_location: ctaLocation, target_family: targetFamily }), {
+      cta_name: ctaName, cta_location: ctaLocation, target_family: targetFamily,
+    });
+  }
 });

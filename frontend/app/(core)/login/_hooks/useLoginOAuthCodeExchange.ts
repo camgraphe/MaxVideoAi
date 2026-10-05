@@ -1,5 +1,5 @@
 import { useEffect, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
-import { persistPendingAnalyticsEvent } from '@/lib/analytics-client';
+import { persistGoogleAuthCompleted } from '../_lib/login-auth-analytics';
 import {
   clearStaleBrowserAuthState,
   isInvalidRefreshTokenError,
@@ -10,9 +10,7 @@ import { startOAuthCookieRedirectFallback } from '../_lib/oauth-cookie-fallback'
 import { AUTH_COPY, type AuthCopy, type AuthMode } from '../_lib/login-copy';
 import {
   clearPendingGoogleLogin,
-  consumePendingGoogleLogin,
   detectLocale,
-  resolveGoogleAuthCompletionEvent,
   sanitizeNextPath,
 } from '../_lib/login-helpers';
 
@@ -29,20 +27,6 @@ type UseLoginOAuthCodeExchangeOptions = {
   setStatus: Dispatch<SetStateAction<string | null>>;
   setStatusTone: Dispatch<SetStateAction<'info' | 'success'>>;
 };
-
-function persistGoogleAuthCompleted() {
-  const pendingMode = consumePendingGoogleLogin();
-  if (!pendingMode) return;
-  const eventName = resolveGoogleAuthCompletionEvent(pendingMode);
-  persistPendingAnalyticsEvent(eventName, {
-    route_family: 'auth',
-    auth_surface: 'login',
-    method: 'google',
-    ...(eventName === 'sign_up_completed'
-      ? { email_confirmation_required: false }
-      : {}),
-  });
-}
 
 export function useLoginOAuthCodeExchange({
   authCopy,
@@ -119,7 +103,7 @@ export function useLoginOAuthCodeExchange({
           setError(localizedCopy.oauthCallbackError);
           return;
         }
-        persistGoogleAuthCompleted();
+        persistGoogleAuthCompleted(data.session.user?.created_at, data.session.user?.app_metadata, data.session.user?.id, data.session.access_token);
         completeAuthenticatedRedirect(target, data.session.user?.id ?? null);
       })
       .catch(async (err) => {

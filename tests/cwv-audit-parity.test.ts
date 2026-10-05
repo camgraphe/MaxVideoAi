@@ -116,11 +116,11 @@ test('real GA and GTM loaders obey consent equally for Chrome and performance au
         });
       }
     }
-    const cancellationCases = (['consent withdrawn', 'excluded route', 'unmount'] as const)
+    const cancellationCases = (['consent withdrawn', 'excluded route', 'known admin', 'unmount'] as const)
       .flatMap(scenario => (['idle callback', 'timer fallback'] as const).map(scheduling => ({ scenario, scheduling })));
     for (const { scenario, scheduling } of cancellationCases) {
       await t.test('pending GA load cancels on ' + scenario + ' / ' + scheduling, async () => {
-        const { GA } = require(output);
+        const { GA, GTM } = require(output);
         const dom = new JSDOM('<div id="root"></div>', { url: 'https://maxvideoai.com/pricing' });
         dom.window.localStorage.setItem('mv-consent-analytics', 'granted');
         const issuedCallbacks: Array<() => void> = [];
@@ -145,7 +145,8 @@ test('real GA and GTM loaders obey consent equally for Chrome and performance au
         const root = createRoot(dom.window.document.getElementById('root')!);
         let unmounted = false;
         try {
-          await act(async () => { root.render(React.createElement(GA)); });
+          await act(async () => { root.render(React.createElement(React.Fragment, null,
+            React.createElement(GA), scenario === 'known admin' ? React.createElement(GTM) : null)); });
           await act(async () => { dom.window.dispatchEvent(new dom.window.Event('load')); });
           assert.ok(issuedCallbacks.length > 0, 'a consented visit schedules deferred work');
           await act(async () => {
@@ -155,16 +156,20 @@ test('real GA and GTM loaders obey consent equally for Chrome and performance au
             } else if (scenario === 'excluded route') {
               dom.reconfigure({ url: 'https://maxvideoai.com/auth/reset-password' });
               root.render(React.createElement(GA));
+            } else if (scenario === 'known admin') {
+              // Knowledge can arrive just before a scheduled callback, before React resyncs.
+              dom.window.sessionStorage.setItem('mvai.analytics-excluded-admin.v1', '1');
             } else {
               root.unmount();
               unmounted = true;
             }
           });
-          assert.equal(pending.size, 0, 'pending callbacks are cancelled');
+          if (scenario !== 'known admin') assert.equal(pending.size, 0, 'pending callbacks are cancelled');
           await act(async () => {
             for (const callback of issuedCallbacks) callback();
           });
           assert.equal(Boolean(dom.window.document.querySelector('script[src*="/gtag/js?id=G-CWVTEST"]')), false, 'even a stale callback cannot load GA');
+          assert.equal(Boolean(dom.window.document.querySelector('script[src*="/gtm.js?id=GTM-CWVTEST"]')), false, 'a stale container timer also rereads known exclusion');
         } finally {
           if (!unmounted) await act(async () => { root.unmount(); });
           dom.window.close();

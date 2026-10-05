@@ -3,9 +3,9 @@ import { MCP_N8N_PUBLIC_TEMPLATE_URL } from '@/lib/mcp-n8n-template';
 
 const en = {
   meta: { title: 'AI Video MCP: Claude, ChatGPT, Codex & n8n | MaxVideoAI', description: 'Connect MaxVideoAI to Claude, ChatGPT, Codex, OpenClaw or self-hosted n8n. Compare AI video models, review an exact quote and generate with your approval.' },
-  eyebrow: 'YOUR ASSISTANT. YOUR VIDEO STUDIO.', title: 'AI video. In your assistant.',
-  intro: 'Turn the idea you are working on into an AI video. Your assistant helps you choose the model and settings. MaxVideoAI shows the price. You give the go-ahead.',
-  choose: 'Choose your integration', proofLink: 'See it in Claude', note: 'One MaxVideoAI account. Pay as you go. No additional MaxVideoAI subscription.',
+  eyebrow: 'YOUR ASSISTANT. YOUR VIDEO STUDIO.', title: 'From your brief to an AI video.',
+  intro: 'Keep the project in your conversation. Your assistant helps prepare one clip; MaxVideoAI provides the exact quote. Approve it, then retrieve the completed video in your library. Choose your host to see its setup and limits.',
+  choose: 'Choose your integration', proofLink: 'See it in Claude', note: 'Pay for generation from your MaxVideoAI wallet after approval. No additional MaxVideoAI subscription. Assistant plans and account requirements vary by host.',
   visualLabel: 'ILLUSTRATED WORKFLOW', prompt: 'Help me turn this idea into a cinematic video.',
   stages: ['Describe', 'Review', 'Create'], stageTitles: ['Start with your idea.', 'Know what you will spend.', 'Keep your creation.'],
   stageBodies: ['A prompt, a reference, a project already in your conversation.', 'Choose the model, duration and resolution. Approve the exact quote before generation.', 'Find the finished video in your MaxVideoAI library. Display in chat depends on your client.'],
@@ -29,9 +29,9 @@ type EditorialCopy = Omit<typeof en, 'faq'> & {
 };
 const fr: EditorialCopy = {
   meta: { title: 'Vidéo IA par MCP : Claude, ChatGPT, Codex et n8n | MaxVideoAI', description: 'Connectez MaxVideoAI à Claude, ChatGPT, Codex, OpenClaw ou n8n auto-hébergé. Comparez les modèles vidéo IA, validez le prix et lancez la génération.' },
-  eyebrow: 'VOTRE ASSISTANT. VOTRE STUDIO VIDÉO.', title: 'La vidéo IA. Dans votre assistant.',
-  intro: 'Transformez l’idée sur laquelle vous travaillez en vidéo IA. Votre assistant vous aide à choisir le modèle et les réglages. MaxVideoAI affiche le prix. Vous donnez le feu vert.',
-  choose: 'Choisir mon intégration', proofLink: 'Voir le résultat dans Claude', note: 'Un seul compte MaxVideoAI. Paiement à l’usage. Aucun abonnement MaxVideoAI supplémentaire.',
+  eyebrow: 'VOTRE ASSISTANT. VOTRE STUDIO VIDÉO.', title: 'Du brief à la vidéo IA.',
+  intro: 'Gardez le projet dans votre conversation. Votre assistant prépare un clip ; MaxVideoAI fournit le devis exact. Validez-le, puis retrouvez la vidéo terminée dans votre bibliothèque. Choisissez votre hôte pour consulter sa configuration et ses limites.',
+  choose: 'Choisir mon intégration', proofLink: 'Voir le résultat dans Claude', note: 'La génération utilise votre portefeuille MaxVideoAI après validation. Aucun abonnement MaxVideoAI supplémentaire. Les forfaits et comptes d’assistant requis varient selon l’hôte.',
   visualLabel:'PARCOURS ILLUSTRÉ', prompt:'Aide-moi à transformer cette idée en vidéo cinématique.',
   stages:['Décrire','Choisir','Créer'], stageTitles:['Partez de votre idée.','Sachez ce que vous allez payer.','Retrouvez votre création.'],
   stageBodies:['Un prompt, une référence, un projet déjà présent dans votre conversation.','Choisissez le modèle, la durée et la résolution. Validez le devis exact avant de générer.','La vidéo terminée rejoint votre bibliothèque MaxVideoAI. Son affichage dans la conversation dépend du client.'],
@@ -52,8 +52,8 @@ const fr: EditorialCopy = {
 };
 const es: EditorialCopy = {
   meta:{title:'Video con IA por MCP: Claude, ChatGPT, Codex y n8n | MaxVideoAI',description:'Conecta MaxVideoAI con Claude, ChatGPT, Codex, OpenClaw o n8n autoalojado. Compara modelos de video con IA, aprueba el precio y empieza a generar.'},
-  eyebrow:'TU ASISTENTE. TU ESTUDIO DE VIDEO.',title:'Video con IA. En tu asistente.',intro:'Convierte la idea en la que trabajas en un video con IA. Tu asistente te ayuda a elegir el modelo y los ajustes. MaxVideoAI muestra el precio. Tú das luz verde.',
-  choose:'Elegir mi integración',proofLink:'Ver el resultado en Claude',note:'Una sola cuenta MaxVideoAI. Pago por uso. Sin suscripción adicional de MaxVideoAI.',
+  eyebrow:'TU ASISTENTE. TU ESTUDIO DE VIDEO.',title:'Del brief al video con IA.',intro:'Mantén el proyecto en tu conversación. Tu asistente prepara un clip y MaxVideoAI muestra el precio exacto. Apruébalo y recupera el video terminado en tu biblioteca. Elige tu cliente para ver su configuración y sus límites.',
+  choose:'Elegir mi integración',proofLink:'Ver el resultado en Claude',note:'La generación usa tu monedero MaxVideoAI tras aprobar el precio. Sin suscripción adicional a MaxVideoAI. Los planes y cuentas del asistente varían según el cliente.',
   visualLabel:'EJEMPLO DEL PROCESO',prompt:'Ayúdame a convertir esta idea en un video cinematográfico.',
   stages:['Describir','Elegir','Crear'],stageTitles:['Empieza con tu idea.','Conoce el precio antes.','Conserva tu creación.'],stageBodies:['Un prompt, una referencia o un proyecto que ya está en tu conversación.','Elige modelo, duración y resolución. Aprueba el precio exacto antes de generar.','El video terminado se guarda en tu biblioteca MaxVideoAI. Su visualización en el chat depende del cliente.'],
   clientsEyebrow:'CONECTA A TU MANERA',clientsTitle:'¿Dónde quieres crear?',clientsIntro:'Elige tu asistente o herramienta de automatización. Cada integración tiene su propia guía y condiciones de disponibilidad.',guide:'Guía de conexión',preparing:'En preparación',preparingNote:'Estamos evaluando más clientes. Su guía de conexión aún no está publicada.',

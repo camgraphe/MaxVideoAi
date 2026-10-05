@@ -18,6 +18,8 @@ import {
   isInvalidRefreshTokenError,
 } from '@/lib/supabase-auth-cleanup';
 import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
+import { clearBrowserAnalyticsAuthContext, resolveBrowserCommercialAnalyticsAuthContext } from '@/lib/analytics/commercial-client';
+import { persistGoogleAuthCompleted } from '@/app/(core)/login/_lib/login-auth-analytics';
 
 type RequireAuthResult = {
   userId: string | null;
@@ -119,6 +121,7 @@ export function useRequireAuth(options?: UseRequireAuthOptions): RequireAuthResu
 
   const applySession = useCallback((nextSession: Session) => {
     const nextUser = nextSession.user ?? null;
+    if (nextUser) void resolveBrowserCommercialAnalyticsAuthContext(nextUser.id, nextSession.access_token, nextUser.app_metadata);
     setSession(nextSession);
     setUser(nextUser);
     lastKnownSessionRef.current = nextSession;
@@ -139,6 +142,7 @@ export function useRequireAuth(options?: UseRequireAuthOptions): RequireAuthResu
   }, []);
 
   const markLoggedOut = useCallback(() => {
+    clearBrowserAnalyticsAuthContext();
     setSession(null);
     setUser(null);
     lastKnownSessionRef.current = null;
@@ -212,6 +216,8 @@ export function useRequireAuth(options?: UseRequireAuthOptions): RequireAuthResu
           }
           const verifiedUser = userResult.data.user ?? null;
           if (verifiedUser) {
+            void resolveBrowserCommercialAnalyticsAuthContext(verifiedUser.id, nextSession.access_token, verifiedUser.app_metadata);
+            persistGoogleAuthCompleted(verifiedUser.created_at, verifiedUser.app_metadata, verifiedUser.id, nextSession.access_token);
             setUser(verifiedUser);
             lastKnownUserRef.current = verifiedUser;
             lastKnownUserIdRef.current = verifiedUser.id;
@@ -310,6 +316,16 @@ export function useRequireAuth(options?: UseRequireAuthOptions): RequireAuthResu
       document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, [ensureSession]);
+
+  useEffect(() => {
+    const handleConsentUpdated = () => {
+      const currentUser = lastKnownUserRef.current;
+      const currentSession = lastKnownSessionRef.current;
+      if (currentUser?.id) void resolveBrowserCommercialAnalyticsAuthContext(currentUser.id, currentSession?.access_token, currentUser.app_metadata);
+    };
+    window.addEventListener('consent:updated', handleConsentUpdated);
+    return () => window.removeEventListener('consent:updated', handleConsentUpdated);
+  }, []);
 
   useEffect(() => {
     const userId = user?.id ?? null;

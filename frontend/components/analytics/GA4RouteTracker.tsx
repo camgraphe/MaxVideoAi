@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { shouldDispatchRecentAnalyticsEvent } from '@/lib/analytics-client';
 import { hasAnalyticsConsentInBrowser } from '@/lib/analytics/consent-client';
+import { COMMERCIAL_ANALYTICS_RESOLVED_EVENT, isBrowserCommercialAnalyticsPending } from '@/lib/analytics/commercial-client';
 import { prepareBrowserAnalyticsEvents } from '@/lib/analytics/journey-browser';
 import { sendPreparedAnalyticsEvents } from '@/lib/analytics/ordered-events';
 import {
@@ -29,8 +30,10 @@ function TrackerCore() {
     };
 
     window.addEventListener('consent:updated', handleConsentUpdated);
+    window.addEventListener(COMMERCIAL_ANALYTICS_RESOLVED_EVENT, handleConsentUpdated);
     return () => {
       window.removeEventListener('consent:updated', handleConsentUpdated);
+      window.removeEventListener(COMMERCIAL_ANALYTICS_RESOLVED_EVENT, handleConsentUpdated);
     };
   }, []);
 
@@ -47,6 +50,7 @@ function TrackerCore() {
 
     const sendPageView = () => {
       if (!hasAnalyticsConsentInBrowser()) return true;
+      if (['workspace', 'app_tools', 'billing'].includes(routeContext.family) && isBrowserCommercialAnalyticsPending()) return false;
       const gtag = window.gtag;
       if (typeof gtag !== 'function') return false;
       if (!preparedRouteEvents) {

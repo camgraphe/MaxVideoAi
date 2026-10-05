@@ -6,6 +6,10 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { McpStoryVisual } from '../frontend/components/marketing/mcp/McpStoryVisual.client';
 import { McpIntegrationCards } from '../frontend/components/marketing/mcp/McpIntegrationCards';
 import { getMcpPublicIntegrationIds } from '../frontend/lib/mcp-integration-registry';
+import { IntegrationPageView } from '../frontend/app/(localized)/[locale]/(marketing)/integrations/_components/IntegrationPageView';
+import { getIntegrationCopy } from '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy';
+import { getMcpCompatibilityEvidence } from '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-compatibility';
+import { getMcpHostProof } from '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-host-proof';
 (globalThis as typeof globalThis & {React:typeof React}).React=React;
 const read=(p:string)=>readFileSync(p,'utf8');
 test('hero illustration has fixed image geometry, a clear label and no automatic video download',()=>{
@@ -39,4 +43,20 @@ test('FAQ uses native readable server content and mutually exclusive groups',()=
   const source=read('frontend/app/(localized)/[locale]/(marketing)/'+name);
   assert.match(source,/<details/);assert.match(source,/name="(?:mcp|integration)-faq"/);assert.doesNotMatch(source,/use client|dangerouslySetInnerHTML/);
  }
+});
+
+test('Claude entry shows its historical host evidence before installation and only once', () => {
+ const publication={renderPublicPage:true,connectionAvailable:true,indexable:true,showTrialClaim:false,showPaidGenerationClaim:true,showReferenceClaim:true};
+ const compatibility=getMcpCompatibilityEvidence();
+ for(const locale of ['en','fr','es'] as const){
+  const html=renderToStaticMarkup(React.createElement(IntegrationPageView,{copy:getIntegrationCopy(locale,'claude'),compatibility:compatibility.clients.claude,locale,publication,hostProof:getMcpHostProof('claude',locale)}));
+  assert.equal((html.match(/data-mcp-host-proof=/g)??[]).length,1);
+  assert.ok(html.indexOf('data-mcp-host-proof=')<html.indexOf('</header>'));
+  assert.ok(html.indexOf('data-integration-entry=')<html.indexOf('id="setup"'));
+  assert.doesNotMatch(html.slice(0,html.indexOf('</header>')),/mcp-story-scene/);
+ }
+ const codex=renderToStaticMarkup(React.createElement(IntegrationPageView,{copy:getIntegrationCopy('en','codex'),compatibility:compatibility.clients.codex,locale:'en',publication,hostProof:getMcpHostProof('claude','en')}));
+ assert.doesNotMatch(codex,/data-mcp-host-proof=/);
+ const gated=renderToStaticMarkup(React.createElement(IntegrationPageView,{copy:getIntegrationCopy('en','claude'),compatibility:compatibility.clients.claude,locale:'en',publication:{...publication,connectionAvailable:false,showPaidGenerationClaim:false},hostProof:getMcpHostProof('claude','en')}));
+ assert.doesNotMatch(gated,/data-integration-entry=|data-mcp-host-proof=/);
 });

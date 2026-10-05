@@ -11,7 +11,7 @@ test('ordinary Studio navigation and marketing entry open the chat, retaining ex
     assert.equal(response.headers.get('location'),'/app/studio');
   }
   const anonymous=await handleStudioMarketingEntry(new NextRequest('http://localhost/api/studio/marketing-entry'),async()=>({ok:false,status:401,error:'UNAUTHORIZED'}));
-  assert.equal(anonymous.headers.get('location'),'/login?mode=signin&next=%2Fapp%2Fstudio');
+  assert.equal(anonymous.headers.get('location'),'/login?mode=signup&next=%2Fapp%2Fstudio');
 });
 
 test('project picker reads only bounded owned summaries and never sends workspace content', async () => {

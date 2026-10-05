@@ -1,6 +1,7 @@
 import { clearPendingAnalyticsEvent, clearPendingTopupCancelledEvent } from '../analytics-client';
 import { getAnalyticsRouteContext, type AnalyticsRouteContext } from '../analytics-route';
 import { hasAnalyticsConsentInBrowser } from './consent-client';
+import { isBrowserCommercialAnalyticsExcluded, shouldDeferCommercialAnalyticsEvent } from './commercial-client';
 import {
   ANALYTICS_JOURNEY_STORAGE_KEY,
   ANALYTICS_JOURNEY_TTL_MS,
@@ -66,6 +67,11 @@ function parseAnalyticsJourney(value: unknown, now: number): AnalyticsJourneyRec
     || typeof record.funnelEntrySent !== 'boolean'
     || !isNonNegativeInteger(record.generationStartedCount)
     || !isNonNegativeInteger(record.topupStartedCount)
+    || (record.firstMediaCompletedAt !== undefined && (
+      !isNonNegativeInteger(record.firstMediaCompletedAt)
+      || record.firstMediaCompletedAt < record.createdAt
+      || record.firstMediaCompletedAt >= record.expiresAt
+    ))
   ) {
     return null;
   }
@@ -81,6 +87,7 @@ function parseAnalyticsJourney(value: unknown, now: number): AnalyticsJourneyRec
     funnelEntrySent: record.funnelEntrySent,
     generationStartedCount: record.generationStartedCount,
     topupStartedCount: record.topupStartedCount,
+    ...(typeof record.firstMediaCompletedAt === 'number' ? { firstMediaCompletedAt: record.firstMediaCompletedAt } : {}),
   };
   const recordKeys = Object.keys(record);
   const parsedKeys = Object.keys(parsed);
@@ -144,7 +151,7 @@ function resolveCurrentTouch(): AnalyticsTouch | null {
 }
 
 export function readAnalyticsJourney(now = Date.now()): AnalyticsJourneyRecordV1 | null {
-  if (!hasAnalyticsConsentInBrowser()) {
+  if (!hasAnalyticsConsentInBrowser() || isBrowserCommercialAnalyticsExcluded()) {
     clearAnalyticsJourney();
     return null;
   }
@@ -164,10 +171,11 @@ export function prepareBrowserAnalyticsEvents(
   event: string,
   payload: Record<string, unknown> = {},
 ): PreparedAnalyticsEvent[] {
-  if (!hasAnalyticsConsentInBrowser()) {
+  if (!hasAnalyticsConsentInBrowser() || isBrowserCommercialAnalyticsExcluded()) {
     clearAnalyticsJourney();
     return [];
   }
+  if (shouldDeferCommercialAnalyticsEvent(event, payload)) return [];
 
   const now = Date.now();
   const touch = resolveCurrentTouch();

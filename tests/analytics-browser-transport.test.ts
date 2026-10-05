@@ -2,8 +2,85 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { dispatchGaEvent } from '../frontend/lib/analytics/ga-events';
+import { COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT, COMMERCIAL_ANALYTICS_RESOLVED_EVENT } from '../frontend/lib/analytics/commercial-client';
 
 type TimerCallback = () => void;
+
+test('browser transport bounds oversaturated completion while preserving acquisition and success evidence', async () => {
+  const { sendPreparedAnalyticsEvents } = await import('../frontend/lib/analytics/ordered-events');
+  const attribution = {
+    journey_id: '7df6d42a-4b70-4eca-82fe-3a320c4a6eb9', acquisition_cohort: '2026-W41',
+    first_touch_source: 'youtube', first_touch_medium: 'paid_video', first_touch_campaign: 'claude_desktop_clip_20261005', first_touch_content: 'result_horizontal48',
+    last_touch_source: 'youtube', last_touch_medium: 'paid_video', last_touch_campaign: 'claude_desktop_clip_20261005', last_touch_content: 'result_horizontal48',
+    route_family: 'workspace', job_id: 'job123', generation_sequence: 2, completion_source: 'generation',
+  };
+  const diagnostics = Object.fromEntries(Array.from({ length: 30 }, (_, i) => [`diagnostic_${i}`, i]));
+  let sent: Record<string, unknown> = {};
+  sendPreparedAnalyticsEvents((_command, _event, payload) => { sent = payload as Record<string, unknown>; }, [
+    { event: 'first_media_completed_in_journey', payload: { ...diagnostics, ...attribution } },
+  ]);
+  assert.ok(Object.keys(sent).length <= 25);
+  for (const [key, value] of Object.entries(attribution)) assert.equal(sent[key], value, key);
+});
+
+test('legacy Google Ads return conversion never sends before eligibility and sends once after delayed resolution', async () => {
+  const { dispatchGoogleAdsConversion } = await import('../frontend/lib/analytics/ga-events');
+  await withBrowser({ adsConsent: true }, async (browser) => {
+    const calls: unknown[][] = [];
+    browser.window.gtag = (...args) => { calls.push(args); };
+    browser.window.__mvaiCommercialAnalyticsPending = true;
+    const payload = { send_to: 'AW-local-fixture', value: 25, currency: 'USD' };
+    const result = dispatchGoogleAdsConversion(payload, { maxAttempts: 2, retryDelayMs: 100 });
+    payload.value = 999;
+    browser.dispatch(new CustomEvent(COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT, { detail: { resetJourney: false } }));
+    assert.deepEqual(calls, []);
+    browser.runNextTimer();
+    assert.deepEqual(calls, [], 'a retry cannot emit for an unresolved role');
+    browser.window.__mvaiCommercialAnalyticsPending = false;
+    browser.dispatch(new Event(COMMERCIAL_ANALYTICS_RESOLVED_EVENT));
+    assert.equal(await result, true);
+    browser.dispatch(new Event(COMMERCIAL_ANALYTICS_RESOLVED_EVENT));
+    browser.runNextTimer();
+    assert.deepEqual(calls, [['event', 'conversion', { send_to: 'AW-local-fixture', value: 25, currency: 'USD' }]]);
+    assert.equal(browser.timerCount(), 0);
+    assert.equal(browser.listenerCount(COMMERCIAL_ANALYTICS_RESOLVED_EVENT), 0);
+    assert.equal(browser.listenerCount(COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT), 0);
+  });
+});
+
+test('pending Ads returns are discarded on admin resolution, consent denial, account reset or timeout', async () => {
+  const { dispatchGoogleAdsConversion } = await import('../frontend/lib/analytics/ga-events');
+  for (const outcome of ['admin', 'denied', 'account', 'timeout'] as const) {
+    await withBrowser({ adsConsent: true }, async (browser) => {
+      const calls: unknown[][] = [];
+      browser.window.gtag = (...args) => { calls.push(args); };
+      browser.window.__mvaiCommercialAnalyticsPending = true;
+      const result = dispatchGoogleAdsConversion({ send_to: 'AW-local-fixture' }, { maxAttempts: 2, retryDelayMs: 100 });
+      assert.equal(browser.timerCount(), 1, 'the consented pending return is retained within a bounded retry window');
+      if (outcome === 'admin') {
+        browser.window.__mvaiCommercialAnalyticsPending = false;
+        browser.window.__mvaiCommercialAnalyticsExcluded = true;
+        browser.dispatch(new Event(COMMERCIAL_ANALYTICS_RESOLVED_EVENT));
+      } else if (outcome === 'denied') {
+        browser.dispatch(new CustomEvent('consent:updated', { detail: { categories: { ads: false } } }));
+      } else if (outcome === 'account') {
+        browser.dispatch(new CustomEvent(COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT, { detail: { resetJourney: true } }));
+      } else {
+        browser.runNextTimer();
+        browser.runNextTimer();
+      }
+      assert.equal(await result, false, outcome);
+      browser.window.__mvaiCommercialAnalyticsExcluded = false;
+      browser.window.__mvaiCommercialAnalyticsPending = false;
+      browser.dispatch(new Event(COMMERCIAL_ANALYTICS_RESOLVED_EVENT));
+      browser.runNextTimer();
+      assert.deepEqual(calls, [], `${outcome} cannot revive the discarded return`);
+      assert.equal(browser.timerCount(), 0);
+      assert.equal(browser.listenerCount(COMMERCIAL_ANALYTICS_RESOLVED_EVENT), 0);
+      assert.equal(browser.listenerCount(COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT), 0);
+    });
+  }
+});
 
 function createStorage(): Storage {
   const values = new Map<string, string>();
@@ -46,6 +123,7 @@ async function withBrowser(
     source: 'preferences',
   }));
   const browserWindow = {
+    __mvaiCommercialAnalyticsPending: false,
     localStorage,
     sessionStorage,
     location: {

@@ -56,6 +56,18 @@ test('direct login and unsafe targets do not invent continuation claims', () => 
   );
 });
 
+test('Studio login keeps the destination visible without claiming a completed generation', () => {
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    for (const nextPath of ['/app/studio', '/app/studio?starter=product-ad', '/app/studio/conversation/project-1']) {
+      const result = buildLoginContinuation({ copy: AUTH_COPY[locale].continuation, locale, nextPath });
+      assert.equal(result?.kind, 'studio');
+      assert.ok(result?.title.includes('Studio'));
+      assert.doesNotMatch(result?.body ?? '', /free|gratuit|gratis|completed|terminé|terminado/i);
+    }
+    assert.equal(buildLoginContinuation({ copy: AUTH_COPY[locale].continuation, locale, nextPath: '/app/studiobook' }), null);
+  }
+});
+
 test('MCP consent explains account connection in every locale without claiming installation or payment', () => {
   for (const locale of ['en', 'fr', 'es'] as const) {
     const result = buildLoginContinuation({

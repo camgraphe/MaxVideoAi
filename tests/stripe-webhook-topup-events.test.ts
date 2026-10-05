@@ -164,3 +164,15 @@ test('PaymentIntent maps canonical amount, currency, FX, destination, and docume
     stripeInvoiceId: 'in_intent',
   });
 });
+
+test('top-up translators take payment mode from the verified Stripe object, never metadata', () => {
+  const metadata = { kind: 'topup', user_id: 'customer', stripe_livemode: 'true' };
+  const checkout = buildCheckoutSessionTopupInput({
+    id: 'cs_test_fixture', amount_total: 1000, payment_status: 'paid', livemode: false, metadata,
+  } as Stripe.Checkout.Session, { receiptsPriceOnly: true, resolvedReceiptUrl: null });
+  const intent = buildPaymentIntentTopupInput({
+    id: 'pi_live_fixture', amount_received: 1000, livemode: true, metadata: { ...metadata, stripe_livemode: 'false' },
+  } as unknown as Stripe.PaymentIntent, { receiptsPriceOnly: true, resolvedReceiptUrl: null });
+  assert.equal((checkout as unknown as Record<string, unknown>)?.stripeLiveMode, false);
+  assert.equal((intent as unknown as Record<string, unknown>)?.stripeLiveMode, true);
+});

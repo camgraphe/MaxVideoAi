@@ -1,6 +1,4 @@
 import { McpIntegrationCards } from '@/components/marketing/mcp/McpIntegrationCards';
-import { McpHostProofCard } from '../../mcp/_components/McpHostProofCard';
-import { getMcpEditorialCopy } from '@/components/marketing/mcp/mcp-editorial-copy';
 import type { AppLocale } from '@/i18n/locales';
 import { AssistantFirstRequest } from '@/components/marketing/AssistantFirstRequest';
 import type { McpPublicationState } from '@/lib/mcp-publication';
@@ -11,6 +9,7 @@ import { IntegrationHeroSection } from './IntegrationHeroSection';
 import { IntegrationSetupSection } from './IntegrationSetupSection';
 import { IntegrationTroubleshootingSection } from './IntegrationTroubleshootingSection';
 import { IntegrationWorkflowSection } from './IntegrationWorkflowSection';
+import { IntegrationEntrySection } from './IntegrationEntrySection';
 
 export function IntegrationPageView({
   compatibility,
@@ -27,8 +26,8 @@ export function IntegrationPageView({
 }) {
   return (
     <div className="mcp-redesign">
-      <IntegrationHeroSection copy={copy} publication={publication} locale={locale} />
-      {hostProof && publication.showPaidGenerationClaim ? <section id="real-result" className="mcp-integration-proof mcp-section"><div className="container-page mcp-proof-grid"><div><p className="mcp-eyebrow">{getMcpEditorialCopy(locale).proofEyebrow}</p><h2>{getMcpEditorialCopy(locale).proofTitle}</h2><p className="mcp-lead">{getMcpEditorialCopy(locale).proofBody}</p></div><McpHostProofCard proof={hostProof}/></div></section> : null}
+      <IntegrationHeroSection copy={copy} publication={publication} locale={locale} hostProof={hostProof} />
+      {publication.connectionAvailable && publication.showPaidGenerationClaim ? <IntegrationEntrySection locale={locale} client={copy.client} /> : null}
       <IntegrationSetupSection compatibility={compatibility} copy={copy} locale={locale} />
       {publication.connectionAvailable && publication.showPaidGenerationClaim ? (
         <AssistantFirstRequest locale={locale} />

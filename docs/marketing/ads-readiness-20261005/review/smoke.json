@@ -1,0 +1,218 @@
+{
+  "date": "2026-10-05",
+  "base": "http://localhost:3017",
+  "scope": "320px/reduced-motion public pages; anonymous GET-only Studio/login continuation; three owned locale sitemaps. No account submission, paid generation, payment or external host auth.",
+  "narrow": [
+    {
+      "route": "/studio",
+      "status": 200,
+      "overflow": false,
+      "mainCount": 1,
+      "mainCtaVisible": true,
+      "brokenHashLinks": [],
+      "errors": []
+    },
+    {
+      "route": "/mcp",
+      "status": 200,
+      "overflow": false,
+      "mainCount": 1,
+      "mainCtaVisible": true,
+      "brokenHashLinks": [],
+      "errors": []
+    },
+    {
+      "route": "/integrations/claude",
+      "status": 200,
+      "overflow": false,
+      "mainCount": 1,
+      "mainCtaVisible": true,
+      "brokenHashLinks": [],
+      "errors": []
+    },
+    {
+      "route": "/integrations/codex",
+      "status": 200,
+      "overflow": false,
+      "mainCount": 1,
+      "mainCtaVisible": true,
+      "brokenHashLinks": [],
+      "errors": []
+    },
+    {
+      "route": "/fr/studio",
+      "status": 200,
+      "overflow": false,
+      "mainCount": 1,
+      "mainCtaVisible": true,
+      "brokenHashLinks": [],
+      "errors": []
+    },
+    {
+      "route": "/fr/mcp",
+      "status": 200,
+      "overflow": false,
+      "mainCount": 1,
+      "mainCtaVisible": true,
+      "brokenHashLinks": [],
+      "errors": []
+    },
+    {
+      "route": "/fr/integrations/claude",
+      "status": 200,
+      "overflow": false,
+      "mainCount": 1,
+      "mainCtaVisible": true,
+      "brokenHashLinks": [],
+      "errors": []
+    },
+    {
+      "route": "/fr/integrations/codex",
+      "status": 200,
+      "overflow": false,
+      "mainCount": 1,
+      "mainCtaVisible": true,
+      "brokenHashLinks": [],
+      "errors": []
+    },
+    {
+      "route": "/es/studio",
+      "status": 200,
+      "overflow": false,
+      "mainCount": 1,
+      "mainCtaVisible": true,
+      "brokenHashLinks": [],
+      "errors": []
+    },
+    {
+      "route": "/es/mcp",
+      "status": 200,
+      "overflow": false,
+      "mainCount": 1,
+      "mainCtaVisible": true,
+      "brokenHashLinks": [],
+      "errors": []
+    },
+    {
+      "route": "/es/integraciones/claude",
+      "status": 200,
+      "overflow": false,
+      "mainCount": 1,
+      "mainCtaVisible": true,
+      "brokenHashLinks": [],
+      "errors": []
+    },
+    {
+      "route": "/es/integraciones/codex",
+      "status": 200,
+      "overflow": false,
+      "mainCount": 1,
+      "mainCtaVisible": true,
+      "brokenHashLinks": [],
+      "errors": []
+    }
+  ],
+  "entries": [
+    {
+      "lang": "en",
+      "status": 307,
+      "location": "/login?mode=signup&next=%2Fapp%2Fstudio%3Fstarter%3Dproduct-ad&lang=en",
+      "correctTarget": true,
+      "loginStatus": 200,
+      "signupSubmitPresent": true,
+      "passwordFields": 2,
+      "copy": "←\nBack\nCreate your workspace account\n\nCreate your account, confirm your email, and return to the workspace to start your render.\n\nContinue to Studio\n\nCreate an account or sign in to return to Studio and develop your image or clip. Opening the workspace does not start a paid generation.\n\nSign in\nCreate account\nContinue with Google\nEMAIL ACCESS\nEmail\nPassword\nConfirm password\nI have read and agree to the Terms of Service and the Privacy Policy.\nI confirm I am at least 15 years old.\nYes, send me occasional product emails. I can unsubscribe anytime.\nCreate account"
+    },
+    {
+      "lang": "fr",
+      "status": 307,
+      "location": "/login?mode=signup&next=%2Fapp%2Fstudio%3Fstarter%3Dproduct-ad&lang=fr",
+      "correctTarget": true,
+      "loginStatus": 200,
+      "signupSubmitPresent": true,
+      "passwordFields": 2,
+      "copy": "←\nRetour\nCréez votre compte studio\n\nCréez votre compte, confirmez votre e-mail, puis revenez dans le studio pour lancer votre rendu.\n\nContinuer vers Studio\n\nCréez un compte ou connectez-vous pour revenir dans Studio et préparer votre image ou clip. Ouvrir cet espace ne lance aucune génération payante.\n\nConnexion\nCréer un compte\nContinuer avec Google\nACCÈS PAR E-MAIL\nE-mail\nMot de passe\nConfirmez le mot de passe\nJ’ai lu et j’accepte les Conditions d’utilisation et la Politique de confidentialité.\nJe confirme avoir au moins 15 ans.\nOui, envoyez-moi ponctuellement des e-mails produit. Je peux me désabonner à tout moment.\nCréer un compte"
+    },
+    {
+      "lang": "es",
+      "status": 307,
+      "location": "/login?mode=signup&next=%2Fapp%2Fstudio%3Fstarter%3Dproduct-ad&lang=es",
+      "correctTarget": true,
+      "loginStatus": 200,
+      "signupSubmitPresent": true,
+      "passwordFields": 2,
+      "copy": "←\nAtrás\nCrea tu cuenta de workspace\n\nCrea tu cuenta, confirma el correo y vuelve al workspace para iniciar el render.\n\nContinuar a Studio\n\nCrea una cuenta o inicia sesión para volver a Studio y preparar tu imagen o clip. Abrir el espacio no inicia una generación de pago.\n\nIniciar sesión\nCrear cuenta\nContinuar con Google\nACCESO POR CORREO\nCorreo electrónico\nContraseña\nConfirmar contraseña\nHe leído y acepto los Términos de servicio y la Política de privacidad.\nConfirmo que tengo al menos 15 años.\nSí, quiero recibir correos ocasionales sobre el producto. Puedo cancelar cuando quiera.\nCrear cuenta"
+    }
+  ],
+  "sitemap": {
+    "files": [
+      {
+        "path": "/sitemap-en.xml",
+        "status": 200
+      },
+      {
+        "path": "/sitemap-fr.xml",
+        "status": 200
+      },
+      {
+        "path": "/sitemap-es.xml",
+        "status": 200
+      }
+    ],
+    "rows": [
+      {
+        "route": "/studio",
+        "present": true
+      },
+      {
+        "route": "/mcp",
+        "present": true
+      },
+      {
+        "route": "/integrations/claude",
+        "present": true
+      },
+      {
+        "route": "/integrations/codex",
+        "present": true
+      },
+      {
+        "route": "/fr/studio",
+        "present": true
+      },
+      {
+        "route": "/fr/mcp",
+        "present": true
+      },
+      {
+        "route": "/fr/integrations/claude",
+        "present": true
+      },
+      {
+        "route": "/fr/integrations/codex",
+        "present": true
+      },
+      {
+        "route": "/es/studio",
+        "present": true
+      },
+      {
+        "route": "/es/mcp",
+        "present": true
+      },
+      {
+        "route": "/es/integraciones/claude",
+        "present": true
+      },
+      {
+        "route": "/es/integraciones/codex",
+        "present": true
+      }
+    ],
+    "index": {
+      "path": "/sitemap.xml",
+      "status": 503,
+      "scope": "Dynamic index also reads database-owned video dates. Database is deliberately unavailable in this isolated fixture; no live index acceptance is claimed."
+    }
+  }
+}

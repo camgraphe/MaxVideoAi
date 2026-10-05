@@ -37,7 +37,8 @@ for (const locale of ['en', 'fr', 'es'] as const) {
 test('Studio is discoverable as a public page while app access keeps its existing entry handler', () => {
   assert.equal(MARKETING_SITE_NAV_LINKS.find(item => item.key === 'studio')?.href, '/studio');
   const view = readFileSync('frontend/app/(localized)/[locale]/(marketing)/studio/_components/StudioMarketingPage.tsx', 'utf8');
-  assert.match(view, /href="\/api\/studio\/marketing-entry" prefetch=\{false\}/);
+  assert.match(view, /\/api\/studio\/marketing-entry\?starter=product-ad&lang=\$\{locale\}/);
+  assert.match(view, /href=\{entryHref\} prefetch=\{false\}/);
   assert.doesNotMatch(view, /<main|\/api\/(?:generate|studio\/chat)|fetch\(/);
   const page = readFileSync('frontend/app/(localized)/[locale]/(marketing)/studio/page.tsx', 'utf8');
   assert.ok(page.split('\n').length < 60);
@@ -49,30 +50,45 @@ test('Studio is discoverable as a public page while app access keeps its existin
   }
 });
 
-test('Studio copy describes public account access, demonstration media and unavailable MP4 export in every locale', () => {
+test('Studio copy describes available creation, editing and individual downloads without a launch-status or film-export promise', () => {
   const expectations = {
-    en: { access: /public beta.*account/, cta: 'Open Studio', capture: /captured locally.*demonstration/, export: /MP4 export is not yet available/, allowance: /remaining percentage/, choice: /explicitly choose Luna/ },
-    fr: { access: /bêta publique.*compte/, cta: 'Ouvrir Studio', capture: /capturée localement.*démonstration/, export: /export MP4 n’est pas encore disponible/, allowance: /pourcentage restant/, choice: /choisir explicitement Luna/ },
-    es: { access: /beta pública.*cuenta/, cta: 'Abrir Studio', capture: /capturada localmente.*demostración/, export: /exportación MP4 aún no está disponible/, allowance: /porcentaje restante/, choice: /elegir Luna expresamente/ },
+    en: { access: /Sign in or create.*account/, cta: 'Open Studio', capture: 'Studio with example media.', downloads: /Download each image, video or audio creation/, timeline: /timeline.*adjust the cut/ },
+    fr: { access: /Connectez-vous ou créez.*compte/, cta: 'Ouvrir Studio', capture: 'Studio avec des médias d’exemple.', downloads: /Téléchargez chaque image, vidéo ou création audio/, timeline: /timeline.*ajustez le montage/ },
+    es: { access: /Inicia sesión o crea.*cuenta/, cta: 'Abrir Studio', capture: 'Studio con medios de ejemplo.', downloads: /Descarga cada imagen, vídeo o creación de audio/, timeline: /línea de tiempo.*ajusta el montaje/ },
   };
   for (const locale of ['en', 'fr', 'es'] as const) {
     const copy = getStudioMarketingCopy(locale);
     const expected = expectations[locale];
     assert.match(copy.accessNote, expected.access);
     assert.equal(copy.primaryCta, expected.cta);
-    assert.match(copy.imageCaption, expected.capture);
-    assert.match(copy.capabilities.items[2].body, expected.export);
-    assert.match(copy.faq.items.find(item => item.question.includes('MP4'))?.answer ?? '', expected.export);
-    const assistance = copy.faq.items.find(item => item.answer.includes('Sol'))?.answer ?? '';
-    assert.match(assistance, expected.allowance);
-    assert.match(assistance, expected.choice);
-    assert.match(assistance, /budget|presupuesto/);
-    assert.match(assistance, /token/);
+    assert.equal(copy.imageCaption, expected.capture);
+    assert.match(copy.capabilities.items[2].body, expected.timeline);
+    assert.match(copy.faq.items.find(item => expected.downloads.test(item.answer))?.answer ?? '', expected.downloads);
     const source = JSON.stringify(copy);
+    assert.doesNotMatch(source, /beta|bêta|public preview|MP4|export|failed attempt|refund never|échec|remboursement|un fallo|reembolso/i);
     assert.doesNotMatch(source, /private preview|aperçu privé|vista previa privada|eligible|éligible|elegible|invitation|invitación|restricted|restreint|restringido/i);
     assert.doesNotMatch(source, /unlimited|illimité|ilimitad|\$\d|€\d|best model|meilleur modèle|mejor modelo/i);
     assert.doesNotMatch(source, /export quote|devis d’export|presupuesto de exportación/);
+    assert.doesNotMatch(source, /advanced canvas|canvas avancé|lienzo avanzado/i);
     assert.ok(copy.faq.items.at(-1)?.answer.includes('MaxVideoAI'));
+  }
+  const view = readFileSync('frontend/app/(localized)/[locale]/(marketing)/studio/_components/StudioMarketingPage.tsx', 'utf8');
+  assert.doesNotMatch(view, /betaNote|capabilitiesNote/);
+});
+
+test('public Studio assistance copy follows activated credits with bounded Luna availability and separate confirmed media pricing', () => {
+  const expectations = {
+    en: { credits: /monthly included credits first.*purchased credits/, purchase: /confirm each pack purchase.*MaxVideoAI balance.*cumulative/, account: /account.*new projects do not reset/, refill: /no automatic refill/i, luna: /choose Luna.*no extra assistance fee.*without a monthly quota.*request limits.*service availability/, quote: /Media generation is charged separately.*current exact quote.*explicitly confirm/ },
+    fr: { credits: /crédits mensuels inclus.*avant.*crédits achetés/, purchase: /confirmez chaque achat de pack.*solde MaxVideoAI.*cumulables/, account: /compte.*nouveaux projets ne les réinitialisent/, refill: /aucune recharge automatique/i, luna: /choisir Luna.*sans frais d’assistance supplémentaires.*sans quota mensuel.*limites de requête.*disponibilité du service/, quote: /génération de médias est facturée séparément.*devis exact actuel.*confirmez explicitement/ },
+    es: { credits: /créditos mensuales incluidos.*antes.*créditos comprados/, purchase: /confirmas cada compra de pack.*saldo MaxVideoAI.*acumulables/i, account: /cuenta.*proyectos nuevos no los restablecen/, refill: /ninguna recarga automática/i, luna: /elegir Luna.*sin coste adicional de asistencia.*sin cuota mensual.*límites de solicitud.*disponibilidad del servicio/, quote: /generación de medios se cobra por separado.*presupuesto exacto actual.*confirma expresamente/ },
+  };
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const copy = getStudioMarketingCopy(locale);
+    const assistance = copy.faq.items.find(item => item.answer.includes('Sol'))?.answer ?? '';
+    for (const contract of Object.values(expectations[locale])) assert.match(assistance, contract, locale);
+    assert.match(copy.costNote, /Sol.*cr[eé]dit/);
+    assert.doesNotMatch(`${copy.costNote} ${assistance}`, /allowance|pourcentage restant|porcentaje restante|quota inclus|cuota incluida|budget you authorize|budget que vous autorisez|presupuesto que autorizas/i);
+    assert.doesNotMatch(assistance, /unlimited|illimité|ilimitad|\$\d|€\d/i);
   }
 });
 

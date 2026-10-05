@@ -72,6 +72,6 @@ test('hash-session failures clear pending Google intent without changing success
   assert.doesNotMatch(successContinuation, /clearPendingGoogleLogin\(\)/);
   assert.match(
     successContinuation,
-    /consumePendingGoogleLogin\(\)[\s\S]*persistPendingAnalyticsEvent\(eventName/
+    /persistGoogleAuthCompleted\(data\.session\.user\?\.created_at,/
   );
 });

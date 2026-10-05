@@ -6777,6 +6777,10 @@
       }
     },
     "continuation": {
+      "studio": {
+        "title": "Continuar a Studio",
+        "body": "Crea una cuenta o inicia sesión para volver a Studio y preparar tu imagen o clip. Abrir el espacio no inicia una generación de pago."
+      },
       "mcp": {
         "title": "Conecta tu cuenta MaxVideoAI",
         "body": "Inicia sesión con la misma cuenta MaxVideoAI que usas en la web. Podrás revisar los permisos solicitados y volver a tu asistente."

@@ -1,0 +1,285 @@
+{
+  "date": "2026-10-05",
+  "scope": "Final dossier UI, refreshed source links and unchanged creative first Play. Application captures are separately attributed in after.json.",
+  "videoCount": 8,
+  "rows": [
+    {
+      "path": "/ads-readiness-20261005/pack/exports/claude-clip-a-horizontal-short24-review.mp4",
+      "readyBefore": 0,
+      "readyState": 4,
+      "advanced": true,
+      "duration": 24,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "path": "/ads-readiness-20261005/pack/exports/claude-clip-a-vertical-short24-review.mp4",
+      "readyBefore": 0,
+      "readyState": 4,
+      "advanced": true,
+      "duration": 24,
+      "width": 1080,
+      "height": 1920
+    },
+    {
+      "path": "/ads-readiness-20261005/pack/exports/claude-clip-b-horizontal-short24-review.mp4",
+      "readyBefore": 0,
+      "readyState": 4,
+      "advanced": true,
+      "duration": 24,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "path": "/ads-readiness-20261005/pack/exports/claude-clip-b-vertical-short24-review.mp4",
+      "readyBefore": 0,
+      "readyState": 4,
+      "advanced": true,
+      "duration": 24,
+      "width": 1080,
+      "height": 1920
+    },
+    {
+      "path": "/ads-readiness-20261005/pack/exports/claude-clip-a-horizontal-review.mp4",
+      "readyBefore": 0,
+      "readyState": 4,
+      "advanced": true,
+      "duration": 48,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "path": "/ads-readiness-20261005/pack/exports/claude-clip-a-vertical-review.mp4",
+      "readyBefore": 0,
+      "readyState": 4,
+      "advanced": true,
+      "duration": 48,
+      "width": 1080,
+      "height": 1920
+    },
+    {
+      "path": "/ads-readiness-20261005/pack/exports/claude-clip-b-horizontal-review.mp4",
+      "readyBefore": 0,
+      "readyState": 4,
+      "advanced": true,
+      "duration": 48,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "path": "/ads-readiness-20261005/pack/exports/claude-clip-b-vertical-review.mp4",
+      "readyBefore": 0,
+      "readyState": 4,
+      "advanced": true,
+      "duration": 48,
+      "width": 1080,
+      "height": 1920
+    }
+  ],
+  "reports": [
+    {
+      "file": "verification.md",
+      "available": true
+    },
+    {
+      "file": "measurement.md",
+      "available": true
+    },
+    {
+      "file": "pages.md",
+      "available": true
+    },
+    {
+      "file": "baseline-audit.md",
+      "available": true
+    },
+    {
+      "file": "creative.md",
+      "available": true
+    },
+    {
+      "file": "launch-sheet.md",
+      "available": true
+    },
+    {
+      "file": "mcp-readonly-check.md",
+      "available": true
+    }
+  ],
+  "variants": [
+    {
+      "page": "studio",
+      "loaded": true,
+      "beforeHidden": false,
+      "href": "http://localhost:3017/studio"
+    },
+    {
+      "page": "integrations-claude",
+      "loaded": true,
+      "beforeHidden": false,
+      "href": "http://localhost:3017/integrations/claude"
+    },
+    {
+      "page": "integrations-codex",
+      "loaded": true,
+      "beforeHidden": false,
+      "href": "http://localhost:3017/integrations/codex"
+    },
+    {
+      "page": "mcp",
+      "loaded": true,
+      "beforeHidden": false,
+      "href": "http://localhost:3017/mcp"
+    },
+    {
+      "page": "fr-studio",
+      "loaded": true,
+      "beforeHidden": true,
+      "href": "http://localhost:3017/fr/studio"
+    },
+    {
+      "page": "fr-integrations-claude",
+      "loaded": true,
+      "beforeHidden": true,
+      "href": "http://localhost:3017/fr/integrations/claude"
+    },
+    {
+      "page": "fr-integrations-codex",
+      "loaded": true,
+      "beforeHidden": true,
+      "href": "http://localhost:3017/fr/integrations/codex"
+    },
+    {
+      "page": "fr-mcp",
+      "loaded": true,
+      "beforeHidden": true,
+      "href": "http://localhost:3017/fr/mcp"
+    },
+    {
+      "page": "es-studio",
+      "loaded": true,
+      "beforeHidden": true,
+      "href": "http://localhost:3017/es/studio"
+    },
+    {
+      "page": "es-integraciones-claude",
+      "loaded": true,
+      "beforeHidden": true,
+      "href": "http://localhost:3017/es/integraciones/claude"
+    },
+    {
+      "page": "es-integraciones-codex",
+      "loaded": true,
+      "beforeHidden": true,
+      "href": "http://localhost:3017/es/integraciones/codex"
+    },
+    {
+      "page": "es-mcp",
+      "loaded": true,
+      "beforeHidden": true,
+      "href": "http://localhost:3017/es/mcp"
+    }
+  ],
+  "links": [
+    {
+      "path": "/ads-readiness-20261005/launch-sheet.md",
+      "status": 200
+    },
+    {
+      "path": "/ads-readiness-20261005/pages.md",
+      "status": 200
+    },
+    {
+      "path": "/ads-readiness-20261005/pack/exports/claude-clip-a-horizontal-short24-review.mp4",
+      "status": 200
+    },
+    {
+      "path": "/ads-readiness-20261005/pack/exports/claude-clip-a-vertical-short24-review.mp4",
+      "status": 200
+    },
+    {
+      "path": "/ads-readiness-20261005/pack/exports/claude-clip-b-horizontal-short24-review.mp4",
+      "status": 200
+    },
+    {
+      "path": "/ads-readiness-20261005/pack/exports/claude-clip-b-vertical-short24-review.mp4",
+      "status": 200
+    },
+    {
+      "path": "/ads-readiness-20261005/pack/exports/claude-clip-a-horizontal-review.mp4",
+      "status": 200
+    },
+    {
+      "path": "/ads-readiness-20261005/pack/exports/claude-clip-a-vertical-review.mp4",
+      "status": 200
+    },
+    {
+      "path": "/ads-readiness-20261005/pack/exports/claude-clip-b-horizontal-review.mp4",
+      "status": 200
+    },
+    {
+      "path": "/ads-readiness-20261005/pack/exports/claude-clip-b-vertical-review.mp4",
+      "status": 200
+    },
+    {
+      "path": "/ads-readiness-20261005/creative.md",
+      "status": 200
+    },
+    {
+      "path": "/ads-readiness-20261005/pack/README.md",
+      "status": 200
+    },
+    {
+      "path": "/ads-readiness-20261005/pack/source/copy.json",
+      "status": 200
+    },
+    {
+      "path": "/ads-readiness-20261005/pack/manifest.json",
+      "status": 200
+    },
+    {
+      "path": "/ads-readiness-20261005/pack/exports/thumbnail-a.svg",
+      "status": 200
+    },
+    {
+      "path": "/ads-readiness-20261005/pack/exports/thumbnail-b.svg",
+      "status": 200
+    },
+    {
+      "path": "/ads-readiness-plan.md",
+      "status": 200
+    },
+    {
+      "path": "/ads-readiness-20261005/baseline-audit.md",
+      "status": 200
+    },
+    {
+      "path": "/ads-readiness-20261005/measurement.md",
+      "status": 200
+    },
+    {
+      "path": "/ads-readiness-20261005/mcp-readonly-check.md",
+      "status": 200
+    },
+    {
+      "path": "/ads-readiness-20261005/verification.md",
+      "status": 200
+    },
+    {
+      "path": "/ads-readiness-20261005/review/after.json",
+      "status": 200
+    },
+    {
+      "path": "/ads-readiness-20261005/review/performance-before.json",
+      "status": 200
+    },
+    {
+      "path": "/ads-readiness-20261005/review/performance-after.json",
+      "status": 200
+    }
+  ],
+  "errors": [],
+  "failures": [],
+  "copyAvailable": true,
+  "mobileOverflow": false
+}

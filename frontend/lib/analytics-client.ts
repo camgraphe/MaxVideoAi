@@ -1,4 +1,5 @@
 import { hasAnalyticsConsentInBrowser } from './analytics/consent-client';
+import { isBrowserCommercialAnalyticsExcluded } from './analytics/commercial-client';
 import { projectAllowedAnalyticsPayload } from './analytics/journey';
 
 export type AnalyticsPayload = Record<string, unknown>;
@@ -16,6 +17,7 @@ type StoredAnalyticsEvent = {
 
 export const PENDING_AUTH_EVENT_STORAGE_KEY = 'mvai.pending-auth-event.v1';
 export const PENDING_AUTH_EVENT_TTL_MS = 15 * 60 * 1000;
+export const PENDING_AUTH_EVENT_UPDATED = 'mvai:pending-auth-analytics';
 export const PENDING_TOPUP_CANCELLED_STORAGE_KEY = 'mv-pending-topup-cancelled-event';
 const RECENT_ANALYTICS_EVENT_TTL_MS = 1500;
 
@@ -28,7 +30,7 @@ declare global {
 }
 
 export function dispatchAnalyticsEvent(event: string, payload?: AnalyticsPayload): void {
-  if (!hasAnalyticsConsentInBrowser()) {
+  if (!hasAnalyticsConsentInBrowser() || isBrowserCommercialAnalyticsExcluded()) {
     clearPendingAnalyticsEvent();
     return;
   }
@@ -44,7 +46,7 @@ export function dispatchAnalyticsEvent(event: string, payload?: AnalyticsPayload
 }
 
 export function persistPendingAnalyticsEvent(event: string, payload?: AnalyticsPayload): void {
-  if (!hasAnalyticsConsentInBrowser()) {
+  if (!hasAnalyticsConsentInBrowser() || isBrowserCommercialAnalyticsExcluded()) {
     clearPendingAnalyticsEvent();
     return;
   }
@@ -60,13 +62,14 @@ export function persistPendingAnalyticsEvent(event: string, payload?: AnalyticsP
       createdAt: Date.now(),
     };
     window.sessionStorage.setItem(PENDING_AUTH_EVENT_STORAGE_KEY, JSON.stringify(stored));
+    if (typeof window.Event === 'function') window.dispatchEvent(new window.Event(PENDING_AUTH_EVENT_UPDATED));
   } catch {
     // Ignore storage failures.
   }
 }
 
 export function readPendingAnalyticsEvent(): StoredAnalyticsEvent | null {
-  if (!hasAnalyticsConsentInBrowser()) {
+  if (!hasAnalyticsConsentInBrowser() || isBrowserCommercialAnalyticsExcluded()) {
     clearPendingAnalyticsEvent();
     return null;
   }
@@ -104,7 +107,7 @@ export function clearPendingAnalyticsEvent(): void {
 }
 
 export function persistPendingTopupCancelledEvent(payload: AnalyticsPayload): void {
-  if (!hasAnalyticsConsentInBrowser()) {
+  if (!hasAnalyticsConsentInBrowser() || isBrowserCommercialAnalyticsExcluded()) {
     clearPendingTopupCancelledEvent();
     return;
   }
@@ -121,7 +124,7 @@ export function persistPendingTopupCancelledEvent(payload: AnalyticsPayload): vo
 }
 
 export function readPendingTopupCancelledEvent(): AnalyticsPayload | null {
-  if (!hasAnalyticsConsentInBrowser()) {
+  if (!hasAnalyticsConsentInBrowser() || isBrowserCommercialAnalyticsExcluded()) {
     clearPendingTopupCancelledEvent();
     return null;
   }

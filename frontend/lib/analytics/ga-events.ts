@@ -7,6 +7,12 @@ import {
 } from './consent-client';
 import { prepareBrowserAnalyticsEvents } from './journey-browser';
 import {
+  COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT,
+  COMMERCIAL_ANALYTICS_RESOLVED_EVENT,
+  isBrowserCommercialAnalyticsExcluded,
+  isBrowserCommercialAnalyticsPending,
+} from './commercial-client';
+import {
   sendPreparedAnalyticsEvents,
   type PreparedAnalyticsTransportEvent,
 } from './ordered-events';
@@ -23,6 +29,7 @@ function dispatchPreparedEvents(
   hasConsent: () => boolean,
   consentCategory: 'analytics' | 'ads',
   options?: DispatchGaEventOptions,
+  requiresCommercialEligibility = false,
 ): Promise<boolean> {
   if (typeof window === 'undefined' || preparedEvents.length === 0 || !hasConsent()) {
     return Promise.resolve(false);
@@ -34,11 +41,14 @@ function dispatchPreparedEvents(
     let settled = false;
     let timer: number | null = null;
     let unsentIndex = 0;
+    let nextAttempt = 0;
 
     const cleanup = () => {
       if (timer !== null) window.clearTimeout(timer);
       window.removeEventListener('consent:updated', handleConsentUpdated as EventListener);
       window.removeEventListener('storage', handleStorage);
+      window.removeEventListener(COMMERCIAL_ANALYTICS_RESOLVED_EVENT, handleRoleResolved);
+      window.removeEventListener(COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT, handleContextChanged);
     };
     const settle = (value: boolean) => {
       if (settled) return;
@@ -61,15 +71,25 @@ function dispatchPreparedEvents(
       if (event.key !== null && event.key !== ANALYTICS_CONSENT_STORAGE_KEY) return;
       if (!hasConsent()) settle(false);
     };
-    const send = (attempt: number) => {
+    const handleRoleResolved = () => {
+      if (isBrowserCommercialAnalyticsExcluded()) { settle(false); return; }
+      if (isBrowserCommercialAnalyticsPending()) return;
+      if (timer !== null) window.clearTimeout(timer);
+      send();
+    };
+    const handleContextChanged = (event: Event) => {
+      if ((event as CustomEvent<{ resetJourney?: boolean }>).detail?.resetJourney) settle(false);
+    };
+    const send = () => {
       if (settled) return;
+      const attempt = nextAttempt++;
       timer = null;
-      if (!hasConsent()) {
+      if (!hasConsent() || (requiresCommercialEligibility && isBrowserCommercialAnalyticsExcluded())) {
         settle(false);
         return;
       }
       const gtag = (window as typeof window & { gtag?: (...args: unknown[]) => void }).gtag;
-      if (typeof gtag === 'function') {
+      if (typeof gtag === 'function' && !(requiresCommercialEligibility && isBrowserCommercialAnalyticsPending())) {
         unsentIndex = sendPreparedAnalyticsEvents(gtag, preparedEvents, unsentIndex);
         if (unsentIndex >= preparedEvents.length) {
           settle(true);
@@ -80,12 +100,16 @@ function dispatchPreparedEvents(
         settle(false);
         return;
       }
-      timer = window.setTimeout(() => send(attempt + 1), retryDelayMs);
+      timer = window.setTimeout(send, retryDelayMs);
     };
 
     window.addEventListener('consent:updated', handleConsentUpdated as EventListener);
     window.addEventListener('storage', handleStorage);
-    send(0);
+    if (requiresCommercialEligibility) {
+      window.addEventListener(COMMERCIAL_ANALYTICS_RESOLVED_EVENT, handleRoleResolved);
+      window.addEventListener(COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT, handleContextChanged);
+    }
+    send();
   });
 }
 
@@ -103,10 +127,12 @@ export function dispatchGoogleAdsConversion(
   payload: Record<string, unknown>,
   options?: DispatchGaEventOptions,
 ): Promise<boolean> {
+  if (isBrowserCommercialAnalyticsExcluded()) return Promise.resolve(false);
   return dispatchPreparedEvents(
-    [{ event: 'conversion', payload }],
+    [{ event: 'conversion', payload: { ...payload } }],
     hasAdsConsentInBrowser,
     'ads',
     options,
+    true,
   );
 }

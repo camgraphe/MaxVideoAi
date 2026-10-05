@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { dispatchAnalyticsEvent, persistPendingAnalyticsEvent } from '@/lib/analytics-client';
+import { resolveBrowserCommercialAnalyticsAuthContext } from '@/lib/analytics/commercial-client';
 import { LOGIN_NEXT_STORAGE_KEY } from '@/lib/auth-storage';
 import { writeLastKnownUserId } from '@/lib/last-known';
 import { loadSupabaseClient } from '@/lib/supabaseClientLoader';
@@ -209,6 +210,7 @@ export function useLoginPageController({
     }
     setStatusTone('info');
     setStatus(authCopy.feedback.signinRedirecting);
+    if (data.user) void resolveBrowserCommercialAnalyticsAuthContext(data.user.id, data.session?.access_token, data.user.app_metadata);
     persistPendingAnalyticsEvent('login_completed', {
       route_family: 'auth',
       auth_surface: 'login',
@@ -312,6 +314,7 @@ export function useLoginPageController({
       return;
     }
 
+    if (data.user) void resolveBrowserCommercialAnalyticsAuthContext(data.user.id, data.session?.access_token, data.user.app_metadata);
     if (data.session) {
       setStatusTone('success');
       setStatus(authCopy.feedback.accountRedirecting);

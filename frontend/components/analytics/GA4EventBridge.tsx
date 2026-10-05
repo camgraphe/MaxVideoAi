@@ -5,10 +5,12 @@ import { usePathname } from 'next/navigation';
 import {
   clearPendingAnalyticsEvent,
   readPendingAnalyticsEvent,
+  PENDING_AUTH_EVENT_UPDATED,
   type AnalyticsClientEventDetail,
   type AnalyticsPayload,
 } from '@/lib/analytics-client';
 import { hasAnalyticsConsentInBrowser } from '@/lib/analytics/consent-client';
+import { COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT, COMMERCIAL_ANALYTICS_RESOLVED_EVENT, isBrowserCommercialAnalyticsPending, shouldDeferCommercialAnalyticsEvent } from '@/lib/analytics/commercial-client';
 import { mergeRequestGenerationFailureContext } from '@/lib/analytics/generation-correlation';
 import {
   clearBrowserAnalyticsState,
@@ -72,14 +74,18 @@ export function GA4EventBridge() {
   const pathname = usePathname();
   const routeContext = getAnalyticsRouteContext(pathname);
   const queuedEventsRef = useRef<QueuedEvent[]>([]);
+  const pendingRoleEventsRef = useRef<QueuedEvent[]>([]);
   const generationContextByLocalKeyRef = useRef(new Map<string, AnalyticsPayload>());
   const generationContextByJobIdRef = useRef(new Map<string, AnalyticsPayload>());
+  const jobIdByLocalKeyRef = useRef(new Map<string, string>());
   const seenTerminalEventsRef = useRef(new Set<string>());
 
   const clearQueuedAnalytics = useCallback(() => {
     queuedEventsRef.current = [];
+    pendingRoleEventsRef.current = [];
     generationContextByLocalKeyRef.current.clear();
     generationContextByJobIdRef.current.clear();
+    jobIdByLocalKeyRef.current.clear();
     seenTerminalEventsRef.current.clear();
   }, []);
 
@@ -108,14 +114,34 @@ export function GA4EventBridge() {
 
   const enqueueEvent = useCallback(
     (event: string, payload?: AnalyticsPayload) => {
-      const defaultPayload: AnalyticsPayload = payload?.route_family
+      let defaultPayload: AnalyticsPayload = payload?.route_family
         ? payload
         : {
             route_family: routeContext.family,
             ...payload,
           };
+      if (shouldDeferCommercialAnalyticsEvent(event, defaultPayload)) {
+        if (hasAnalyticsConsentInBrowser() && pendingRoleEventsRef.current.length < 64) pendingRoleEventsRef.current.push({ event, payload: defaultPayload });
+        return undefined;
+      }
+      if (event === 'generation_completed' || event === 'generation_failed') {
+        const jobId = typeof defaultPayload.job_id === 'string' ? defaultPayload.job_id : null;
+        const localKey = typeof defaultPayload.local_key === 'string' ? defaultPayload.local_key : null;
+        const context = (jobId ? generationContextByJobIdRef.current.get(jobId) : undefined)
+          ?? (localKey ? generationContextByLocalKeyRef.current.get(localKey) : undefined);
+        if (context) defaultPayload = { ...context, ...defaultPayload };
+      }
       const preparedEvents = prepareBrowserAnalyticsEvents(event, defaultPayload);
       if (preparedEvents.length === 0) return undefined;
+      if (event === 'generation_started') {
+        const context = preparedEvents.at(-1)?.payload ?? {};
+        const localKey = typeof context.local_key === 'string' ? context.local_key : null;
+        if (localKey) {
+          generationContextByLocalKeyRef.current.set(localKey, context);
+          const jobId = jobIdByLocalKeyRef.current.get(localKey);
+          if (jobId) generationContextByJobIdRef.current.set(jobId, context);
+        }
+      }
       queuedEventsRef.current.push(...preparedEvents);
       flushQueue();
       return preparedEvents.at(-1)?.payload;
@@ -153,6 +179,7 @@ export function GA4EventBridge() {
       const localKey = typeof detail?.localKey === 'string' ? detail.localKey : null;
 
       if (jobId && localKey) {
+        jobIdByLocalKeyRef.current.set(localKey, jobId);
         const pendingContext = generationContextByLocalKeyRef.current.get(localKey);
         if (pendingContext) {
           generationContextByJobIdRef.current.set(jobId, pendingContext);
@@ -178,6 +205,7 @@ export function GA4EventBridge() {
         enqueueEvent('generation_completed', {
           ...generationContext,
           job_id: jobId,
+          local_key: localKey ?? undefined,
           final_price_cents:
             typeof detail.finalPriceCents === 'number' && Number.isFinite(detail.finalPriceCents)
               ? detail.finalPriceCents
@@ -202,6 +230,7 @@ export function GA4EventBridge() {
       enqueueEvent('generation_failed', {
         ...generationContext,
         job_id: jobId,
+        local_key: localKey ?? undefined,
         failure_category: 'job_failed',
         payment_status: typeof detail.paymentStatus === 'string' ? detail.paymentStatus : undefined,
         batch_id: typeof detail.batchId === 'string' ? detail.batchId : undefined,
@@ -250,6 +279,15 @@ export function GA4EventBridge() {
   }, [enqueueEvent, routeContext.excludedFromGa4, routeContext.family]);
 
   useEffect(() => {
+    const handleContextChanged = (event: Event) => {
+      clearQueuedAnalytics();
+      if ((event as CustomEvent<{ resetJourney?: boolean }>).detail?.resetJourney) clearBrowserAnalyticsState();
+    };
+    window.addEventListener(COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT, handleContextChanged);
+    return () => window.removeEventListener(COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT, handleContextChanged);
+  }, [clearQueuedAnalytics]);
+
+  useEffect(() => {
     const handleConsentUpdated = (event: Event) => {
       const detail = (event as CustomEvent<{ categories?: { analytics?: boolean } }>).detail;
       const analyticsGranted = typeof detail?.categories?.analytics === 'boolean'
@@ -267,7 +305,26 @@ export function GA4EventBridge() {
   }, [clearQueuedAnalytics]);
 
   useEffect(() => {
+    const handleRoleResolved = () => {
+      if (isBrowserCommercialAnalyticsPending()) return;
+      const pendingRoleEvents = pendingRoleEventsRef.current.splice(0);
+      for (const pending of pendingRoleEvents) enqueueEvent(pending.event, pending.payload);
+      if (!isPendingAuthFlushFamily(routeContext.family)) return;
+      const pendingAuth = readPendingAnalyticsEvent();
+      if (pendingAuth) { enqueueEvent(pendingAuth.event, pendingAuth.payload); clearPendingAnalyticsEvent(); }
+      flushQueue();
+    };
+    window.addEventListener(COMMERCIAL_ANALYTICS_RESOLVED_EVENT, handleRoleResolved);
+    window.addEventListener(PENDING_AUTH_EVENT_UPDATED, handleRoleResolved);
+    return () => {
+      window.removeEventListener(COMMERCIAL_ANALYTICS_RESOLVED_EVENT, handleRoleResolved);
+      window.removeEventListener(PENDING_AUTH_EVENT_UPDATED, handleRoleResolved);
+    };
+  }, [enqueueEvent, flushQueue, routeContext.family]);
+
+  useEffect(() => {
     if (!isPendingAuthFlushFamily(routeContext.family)) return;
+    if (isBrowserCommercialAnalyticsPending()) return;
     const pending = readPendingAnalyticsEvent();
     if (!pending) return;
     enqueueEvent(pending.event, pending.payload);

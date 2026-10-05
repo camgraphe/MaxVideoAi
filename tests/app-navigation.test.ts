@@ -35,8 +35,9 @@ test('every existing destination keeps a named complete-menu path and tools obey
   assert.deepEqual(getAppNavigation(true).map((item) => item.id), ['create', 'media', 'tools', 'studio', 'activity', 'account']);
   assert.deepEqual(getAppNavigation(true, true).map((item) => item.id), ['create', 'media', 'tools', 'studio', 'activity', 'account']);
   assert.deepEqual(getAppNavigation(false, true).map((item) => item.id), ['create', 'media', 'studio', 'activity', 'account']);
-  assert.equal(getAppNavigation(true, true).find((item) => item.id === 'studio')?.badge, 'Beta');
-  assert.equal(canShowStudioNavigation(), true, 'the beta entry should be discoverable before editor access is granted');
+  assert.equal(getAppNavigation(true, true).find((item) => item.id === 'studio')?.badge, undefined);
+  assert.equal(NAV_ITEMS.find((item) => item.id === 'studio')?.badge, null);
+  assert.equal(canShowStudioNavigation(), true, 'the Studio entry should be discoverable before editor access is granted');
   assert.deepEqual(getAppNavigationSelection('/app/studio/projects'), { primary: 'studio', activity: null });
   assert.deepEqual(getAppNavigationSelection('/app/studio/projects', true, true), { primary: 'studio', activity: null });
   assert.deepEqual(getAppNavigationSelection('/app/studio/workspace/project_123', true, true), { primary: 'studio', activity: null });

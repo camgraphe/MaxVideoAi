@@ -1,7 +1,7 @@
 import { isMcpConsentTarget } from '@/lib/mcp-oauth-continuation';
 import type { AuthCopy, Locale } from './login-copy';
 
-export type LoginContinuationKind = 'billing' | 'video' | 'image' | 'audio' | 'library' | 'tool' | 'mcp';
+export type LoginContinuationKind = 'billing' | 'video' | 'image' | 'audio' | 'library' | 'tool' | 'studio' | 'mcp';
 
 export type LoginContinuation = {
   kind: LoginContinuationKind;
@@ -54,6 +54,7 @@ export function buildLoginContinuation({ copy, locale, nextPath }: LoginContinua
     return { kind: 'billing', ...copy.billingGeneric };
   }
 
+  if (isRoute(pathname, '/app/studio')) return { kind: 'studio', ...copy.studio };
   if (isRoute(pathname, '/app/image')) return { kind: 'image', ...copy.image };
   if (isRoute(pathname, '/app/audio')) return { kind: 'audio', ...copy.audio };
   if (isRoute(pathname, '/app/library')) return { kind: 'library', ...copy.library };

@@ -58,6 +58,7 @@ export function buildCheckoutSessionTopupInput(
 
   return {
     userId,
+    ...(typeof session.livemode === 'boolean' ? { stripeLiveMode: session.livemode } : {}),
     walletAmountCents: session.metadata.wallet_amount_cents
       ? Number(session.metadata.wallet_amount_cents)
       : amountCents,
@@ -116,6 +117,7 @@ export function buildPaymentIntentTopupInput(
 
   return {
     userId,
+    ...(typeof intent.livemode === 'boolean' ? { stripeLiveMode: intent.livemode } : {}),
     walletAmountCents: intent.metadata.wallet_amount_cents
       ? Number(intent.metadata.wallet_amount_cents)
       : amountCents,

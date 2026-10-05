@@ -1,6 +1,17 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {createStudioConversationDirector} from '../frontend/src/server/studio/conversation-director';
+import {buildStudioDirectorInstructions} from '../frontend/src/server/studio/conversation-director-instructions';
+
+test('legacy assistance explains its introductory allowance while export help follows the session capability', () => {
+  const instructions = buildStudioDirectorInstructions({mediaEnabled:true,editingEnabled:true,exportsEnabled:false,assistanceCreditsEnabled:false});
+  assert.match(instructions, /limited one-time introductory allowance/);
+  assert.doesNotMatch(instructions, /preview allowance/);
+  assert.match(instructions, /authorize an assistance spending limit/);
+  assert.match(instructions, /Luna.*limited allowance/);
+  assert.match(instructions, /Export tools are unavailable in this session/);
+  assert.doesNotMatch(instructions, /export_prepare may prepare/);
+});
 
 // These are the request-envelope contracts, not a claim to test artistic judgment.
 test('director sends creative purpose, current help and live quote rules with its gated tools', async () => {

@@ -9,11 +9,11 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import styles from './studio-preview-access.module.css';
 
 const ENGLISH_COPY = {
-  eyebrow: 'Studio public beta',
+  eyebrow: 'MaxVideoAI Studio',
   title: 'Your story starts with a conversation.',
-  body: 'Develop an idea with your references, review generation quotes and assemble your media on the timeline.',
-  note: 'Sign in or create a MaxVideoAI account to open Studio. Timeline editing is available; MP4 export is not yet available during the public beta.',
-  previewNote: 'Open Studio to continue with your account. Timeline editing is available; MP4 export is not yet available during the public beta.',
+  body: 'Create images, videos and audio with your references, review generation quotes and edit your media on the timeline.',
+  note: 'Sign in or create a MaxVideoAI account to open Studio and download individual creations.',
+  previewNote: 'Open Studio to continue with your account and download individual creations.',
   unavailableTitle: 'Studio is unavailable right now.',
   unavailableNote: 'We could not open Studio for your account. Try again in a moment.',
   signIn: 'Sign in to Studio',
@@ -32,11 +32,11 @@ const ENGLISH_COPY = {
 };
 
 const FRENCH_COPY = {
-  eyebrow: 'Studio bêta publique',
+  eyebrow: 'MaxVideoAI Studio',
   title: 'Votre histoire commence par une conversation.',
-  body: 'Développez une idée avec vos références, vérifiez les devis de génération et assemblez vos médias sur la timeline.',
-  note: 'Connectez-vous ou créez un compte MaxVideoAI pour ouvrir Studio. Le montage est disponible ; l’export MP4 ne l’est pas encore pendant la bêta publique.',
-  previewNote: 'Ouvrez Studio pour continuer avec votre compte. Le montage est disponible ; l’export MP4 ne l’est pas encore pendant la bêta publique.',
+  body: 'Créez des images, vidéos et audio avec vos références, vérifiez les devis de génération et montez vos médias sur la timeline.',
+  note: 'Connectez-vous ou créez un compte MaxVideoAI pour ouvrir Studio. Téléchargez vos créations individuelles.',
+  previewNote: 'Ouvrez Studio pour continuer avec votre compte et téléchargez vos créations individuelles.',
   unavailableTitle: 'Studio est indisponible pour le moment.',
   unavailableNote: 'Nous n’avons pas pu ouvrir Studio pour votre compte. Réessayez dans un instant.',
   signIn: 'Se connecter à Studio',
@@ -55,11 +55,11 @@ const FRENCH_COPY = {
 };
 
 const SPANISH_COPY = {
-  eyebrow: 'Studio beta pública',
+  eyebrow: 'MaxVideoAI Studio',
   title: 'Tu historia empieza con una conversación.',
-  body: 'Desarrolla una idea con tus referencias, revisa los presupuestos de generación y monta tus medios en la línea de tiempo.',
-  note: 'Inicia sesión o crea una cuenta de MaxVideoAI para abrir Studio. La edición está disponible; la exportación MP4 aún no lo está durante la beta pública.',
-  previewNote: 'Abre Studio para continuar con tu cuenta. La edición está disponible; la exportación MP4 aún no lo está durante la beta pública.',
+  body: 'Crea imágenes, vídeos y audio con tus referencias, revisa los presupuestos de generación y edita tus medios en la línea de tiempo.',
+  note: 'Inicia sesión o crea una cuenta de MaxVideoAI para abrir Studio. Descarga tus creaciones individuales.',
+  previewNote: 'Abre Studio para continuar con tu cuenta y descarga tus creaciones individuales.',
   unavailableTitle: 'Studio no está disponible ahora mismo.',
   unavailableNote: 'No hemos podido abrir Studio para tu cuenta. Vuelve a intentarlo en un momento.',
   signIn: 'Iniciar sesión en Studio',

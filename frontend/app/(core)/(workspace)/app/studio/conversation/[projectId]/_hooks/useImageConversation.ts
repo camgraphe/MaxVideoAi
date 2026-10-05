@@ -1,5 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { dispatchAnalyticsEvent } from "@/lib/analytics-client";
+import { readAnalyticsJourney } from "@/lib/analytics/journey-browser";
 import {
   imageTurnInputSchema,
   type ImageConversation,
@@ -28,6 +30,7 @@ type ConversationRequests = {
   readInFlight: boolean;
   readVersion: number;
   pending: ImageTurnInput | null;
+  analyticsConfirmed: Map<string, string>;
   queuedReaders: {
     resolve: (value: ImageConversation | undefined) => void;
     reject: (error: unknown) => void;
@@ -46,7 +49,7 @@ export function useImageConversation(
   if (!active.current || active.current.scope !== scope) {
     active.current = {
       scope, initialized: false, mutationInFlight: false, readInFlight: false,
-      readVersion: 0, pending: null, queuedReaders: [],
+      readVersion: 0, pending: null, analyticsConfirmed: new Map(), queuedReaders: [],
     };
   }
   const requests = active.current;
@@ -99,6 +102,26 @@ export function useImageConversation(
           projectId,
         )
       ) {
+        for (const turn of (payload.result as ImageConversation).turns) {
+          const journeyId = requests.analyticsConfirmed.get(turn.requestId);
+          if (!journeyId) continue;
+          if (readAnalyticsJourney()?.journeyId !== journeyId) {
+            requests.analyticsConfirmed.delete(turn.requestId);
+            continue;
+          }
+          const generation = turn.generation;
+          const result = generation?.result;
+          if (generation?.status !== "completed" || !result) continue;
+          const outputCount = result.surface === "image" ? result.imageUrls.length
+            : result.surface === "video" ? Number(Boolean(result.videoUrl))
+            : Number(Boolean(result.audioUrl || result.videoUrl));
+          if (outputCount < 1) continue;
+          requests.analyticsConfirmed.delete(turn.requestId);
+          dispatchAnalyticsEvent("tool_complete", {
+            route_family: "workspace", tool_name: "studio", tool_surface: "workspace",
+            action: "generate", output_count: outputCount,
+          });
+        }
         setConversation(payload.result);
         setReadError(null);
         const completedPending = payload.result.turns.find(
@@ -282,6 +305,13 @@ export function useImageConversation(
               : turn,
           ),
         }));
+        if (!requests.analyticsConfirmed.has(requestId)) {
+          dispatchAnalyticsEvent("tool_start", {
+            route_family: "workspace", tool_name: "studio", tool_surface: "workspace", action: "generate",
+          });
+          const journeyId = readAnalyticsJourney()?.journeyId;
+          if (journeyId) requests.analyticsConfirmed.set(requestId, journeyId);
+        }
       }
     } catch (failure) {
       if (isCurrent()) {

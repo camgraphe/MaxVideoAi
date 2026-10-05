@@ -1,5 +1,6 @@
 import { safeInternalReturnTarget } from '@/lib/auth-return-target';
-import { LOCALE_OPTIONS, type AuthMode, type Locale } from './login-copy';
+import { locales as LOCALE_OPTIONS } from '@/i18n/locales';
+import type { AuthMode, Locale } from './login-copy';
 
 export const DEFAULT_NEXT_PATH = '/generate';
 export const NEXT_PATH_PREFIXES = [
@@ -98,6 +99,10 @@ export function clearPendingGoogleLogin() {
 export function consumePendingGoogleLogin(
   now = Date.now()
 ): PendingGoogleAuthMode | null {
+  return consumePendingGoogleAuthIntent(now)?.mode ?? null;
+}
+
+function consumePendingGoogleAuthIntent(now: number): { mode: PendingGoogleAuthMode; createdAt: number } | null {
   if (typeof window === 'undefined') return null;
   try {
     const raw = window.sessionStorage.getItem(PENDING_GOOGLE_LOGIN_STORAGE_KEY);
@@ -107,19 +112,32 @@ export function consumePendingGoogleLogin(
       createdAt?: number;
       mode?: PendingGoogleAuthMode;
     } | null;
-    if (!parsed || typeof parsed.createdAt !== 'number') return null;
-    if (now - parsed.createdAt > PENDING_GOOGLE_LOGIN_TTL_MS) return null;
-    if (parsed.mode == null) return 'signin';
-    return parsed.mode === 'signup' || parsed.mode === 'signin' ? parsed.mode : null;
+    if (!parsed || typeof parsed.createdAt !== 'number' || !Number.isFinite(parsed.createdAt)) return null;
+    if (parsed.createdAt > now || now - parsed.createdAt > PENDING_GOOGLE_LOGIN_TTL_MS) return null;
+    const mode = parsed.mode ?? 'signin';
+    return mode === 'signup' || mode === 'signin' ? { mode, createdAt: parsed.createdAt } : null;
   } catch {
     return null;
   }
 }
 
 export function resolveGoogleAuthCompletionEvent(
-  mode: PendingGoogleAuthMode
+  _mode: PendingGoogleAuthMode,
+  context?: { intentStartedAt: number; userCreatedAt?: string; now: number },
 ): GoogleAuthCompletionEvent {
-  return mode === 'signup' ? 'sign_up_completed' : 'login_completed';
+  const createdAt = context?.userCreatedAt ? Date.parse(context.userCreatedAt) : NaN;
+  return context && Number.isFinite(createdAt)
+    && createdAt >= context.intentStartedAt && createdAt <= context.now
+    && context.now - context.intentStartedAt <= PENDING_GOOGLE_LOGIN_TTL_MS
+    ? 'sign_up_completed' : 'login_completed';
+}
+
+export function consumePendingGoogleAuthCompletionEvent(
+  userCreatedAt?: string,
+  now = Date.now(),
+): GoogleAuthCompletionEvent | null {
+  const intent = consumePendingGoogleAuthIntent(now);
+  return intent ? resolveGoogleAuthCompletionEvent(intent.mode, { intentStartedAt: intent.createdAt, userCreatedAt, now }) : null;
 }
 export function shouldTrackGoogleSignupStart(mode: AuthMode): boolean {
   return mode === 'signup';

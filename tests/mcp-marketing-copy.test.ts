@@ -109,3 +109,19 @@ test('installation requests name the production server and the correct setup mec
     assert.match(getIntegrationInstallInstruction(locale, 'n8nMcpClient'), /OAuth2/);
   }
 });
+
+test('Claude setup guidance covers plan requirements and authentication review without claiming a fresh host test', () => {
+  for (const locale of locales) {
+    const copy = getIntegrationCopy(locale, 'claude');
+    const guide = copy.setup.hostGuides.find(item => item.hostId === 'claudeDesktop')!;
+    const steps = guide.steps.map(item => item.body).join(' ');
+    assert.match(steps, /Pro.*Max/);
+    assert.match(steps, /Team.*Enterprise/);
+    assert.match(steps, /Continue.*OAuth.*Continue/);
+    assert.match(steps, /Custom.*Web/);
+    assert.match(guide.installInstruction, /Pro.*Max/);
+    assert.match(guide.installInstruction, /Continue.*OAuth/);
+    assert.doesNotMatch(steps + guide.installInstruction, /Use Claude’s published identity|Use Claude's published identity/);
+    assert.match(copy.compatibility.statuses.claudeDesktop ?? '', /1\.37937\.1/);
+  }
+});

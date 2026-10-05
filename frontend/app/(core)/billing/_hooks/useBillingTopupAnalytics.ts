@@ -18,14 +18,15 @@ const GOOGLE_ADS_CONVERSION_VALUE_ENV = Number(process.env.NEXT_PUBLIC_GOOGLE_AD
 const GOOGLE_ADS_CONVERSION_VALUE_FALLBACK = Number.isFinite(GOOGLE_ADS_CONVERSION_VALUE_ENV) ? GOOGLE_ADS_CONVERSION_VALUE_ENV : 1;
 
 export function useBillingTopupAnalytics(topupQuotes: Record<number, TopupQuote>) {
-  const conversionSentRef = useRef(false);
+  const conversionAttemptedRef = useRef(false);
 
   const triggerGoogleAdsConversion = useCallback((value?: number, currency?: string) => {
     if (typeof window === 'undefined') return;
     if (!GOOGLE_ADS_CONVERSION_TARGET) return;
     if (!hasAdsConsentInBrowser()) return;
-    if (conversionSentRef.current) return;
-    conversionSentRef.current = true;
+    if (conversionAttemptedRef.current) return;
+    // Own one return attempt; the transport can defer it until role resolution.
+    conversionAttemptedRef.current = true;
 
     const normalizedValue = typeof value === 'number' && Number.isFinite(value) ? value : GOOGLE_ADS_CONVERSION_VALUE_FALLBACK;
     const payload = {

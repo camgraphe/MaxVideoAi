@@ -1,0 +1,39 @@
+1
+00:00:00,000 --> 00:00:06,000
+Your project needs a clip.
+Existing September sample. Not a new Claude session.
+
+2
+00:00:06,000 --> 00:00:12,000
+Describe the clip for your project.
+Workflow illustration; fresh capture pending.
+
+3
+00:00:12,000 --> 00:00:18,000
+Connect and authorize your MaxVideoAI account.
+Then return to Claude Desktop.
+
+4
+00:00:18,000 --> 00:00:24,000
+Choose the model and review the exact quote.
+Check the clip settings and price.
+
+5
+00:00:24,000 --> 00:00:30,000
+Review prompt, settings and price.
+Approve the exact quote before generation.
+
+6
+00:00:30,000 --> 00:00:36,000
+Generation takes time. Follow the accepted job.
+This montage omits the wait.
+
+7
+00:00:36,000 --> 00:00:42,000
+Historical Claude Desktop test, August 2026.
+Separate result. The $0.95 shown is historical.
+
+8
+00:00:42,000 --> 00:00:48,000
+See the Claude Desktop setup.
+Account, connector and generation credits required.

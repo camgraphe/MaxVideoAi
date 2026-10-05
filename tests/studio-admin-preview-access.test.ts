@@ -13,7 +13,7 @@ function routeFiles(directory: string): string[] {
   });
 }
 
-test('Studio beta is discoverable while conversations and APIs retain shared account access', () => {
+test('Studio is discoverable while conversations and APIs retain shared account access', () => {
   const navigation = read('frontend/components/app/app-navigation.ts');
   const sidebar = read('frontend/components/AppSidebar.tsx');
   const header = read('frontend/components/HeaderBar.tsx');
@@ -23,7 +23,7 @@ test('Studio beta is discoverable while conversations and APIs retain shared acc
 
   assert.match(navigation, /canShowStudioNavigation\(\)/);
   assert.match(navigation, /return FEATURES\.studio\.maxVideoAiEditor/);
-  assert.doesNotMatch(sidebar, /useAdminNavigationAccess/, 'public beta discovery should not require an admin lookup');
+  assert.doesNotMatch(sidebar, /useAdminNavigationAccess/, 'Studio discovery should not require an admin lookup');
   assert.match(sidebar, /studioVisible=\{canShowStudioNavigation\(\)\}/);
   assert.match(header, /WorkspaceMobileNav studioVisible=\{canShowStudioNavigation\(\)\}/);
   assert.match(siteMenu, /getAppMenuItems\(undefined, studioVisible \?\? canShowStudioNavigation\(\)\)/);
@@ -113,4 +113,22 @@ test('Studio beta is discoverable while conversations and APIs retain shared acc
   assert.match(read('frontend/app/api/studio/_lib/studio-chat-handler.ts'), /resolveStudioApiAccess/);
   assert.match(read('frontend/app/api/studio/marketing-entry/route.ts'), /handleStudioMarketingEntry/);
   assert.match(read('frontend/app/api/studio/marketing-entry/_lib/handle-studio-marketing-entry.ts'), /resolveStudioApiAccess/);
+});
+
+test('Studio access copy presents creation and individual downloads while keeping contextual account-unavailable help', () => {
+  const source = read('frontend/app/(core)/(workspace)/app/studio/_components/StudioPreviewAccess.client.tsx');
+  assert.doesNotMatch(source, /public beta|bêta publique|beta pública|MP4|exportation|exportación|export is/i);
+  for (const description of [
+    /images, videos and audio.*references/,
+    /images, vidéos et audio.*références/,
+    /imágenes, vídeos y audio.*referencias/,
+    /download individual creations/,
+    /téléchargez vos créations individuelles/,
+    /descarga tus creaciones individuales/,
+  ]) assert.match(source, description);
+  for (const contextualHelp of [
+    'We could not open Studio for your account.',
+    'Nous n’avons pas pu ouvrir Studio pour votre compte.',
+    'No hemos podido abrir Studio para tu cuenta.',
+  ]) assert.ok(source.includes(contextualHelp));
 });
