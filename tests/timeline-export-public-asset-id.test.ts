@@ -3,7 +3,7 @@ import test from 'node:test';
 import {startDisposablePostgres} from './helpers/disposable-postgres';
 import {ownedTimelineExportJobResponse} from '../frontend/src/server/timeline-exports/media-access';
 import {resolveStudioMedia} from '../frontend/src/server/studio/media-resolver';
-import {workspaceProjectAssetFromCompletedTimelineExport} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-export';
+import {workspaceProjectAssetFromCompletedTimelineExport} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-export';
 
 test('legacy internal export identity projects an owned public ref that the canonical Studio resolver accepts',async t => {
   const pg=await startDisposablePostgres('export-public-ref');t.after(()=>pg.cleanup());

@@ -1,5 +1,5 @@
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
-import type { WorkspaceTimelineExportQualityPreset } from '../../../app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-export';
+import type { WorkspaceTimelineExportQualityPreset } from '../../../app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-export';
 import type { TimelineExportBillingKind } from './contracts';
 
 const ESTIMATE_TOKEN_VERSION = 1;

@@ -41,7 +41,9 @@ test('project popup fetches on demand, filters saved projects and closes back to
       {id:'project_old',name:'Classic canvas',updatedAt:'2026-10-01T10:00:00Z',persistenceMode:'legacy'},
     ]})));
     assert.equal(view.dom.window.document.querySelector('[aria-current="page"]')?.textContent?.includes('Current'),true);
-    assert.equal(view.dom.window.document.querySelector<HTMLAnchorElement>('a[href="/app/studio/workspace/project_old"]')?.textContent?.includes('Canvas'),true);
+    assert.equal(view.dom.window.document.querySelector('a[href="/app/studio/workspace/project_old"]'),null);
+    assert.equal(view.dom.window.document.querySelectorAll('[data-project-row]').length,2);
+    assert.doesNotMatch(view.dom.window.document.body.textContent??'',/Canvas & templates|Classic canvas/);
     const input=view.dom.window.document.querySelector<HTMLInputElement>('input[type="search"]')!;
     await act(async()=>{Object.getOwnPropertyDescriptor(view.dom.window.HTMLInputElement.prototype,'value')!.set!.call(input,'Summer');input.dispatchEvent(new view.dom.window.Event('input',{bubbles:true}));});
     assert.equal(view.dom.window.document.querySelectorAll('[data-project-row]').length,1);

@@ -12,7 +12,7 @@ import {renderMedia,selectComposition} from '@remotion/renderer';
 import {chromium} from '@playwright/test';
 import {buildStudioMontageProjectState} from '../frontend/src/server/studio/montage-command';
 import {applyConversationTimelineEdit} from '../frontend/lib/studio/conversation-timeline-editing';
-import {buildWorkspaceTimelineRenderManifest} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
+import {buildWorkspaceTimelineRenderManifest} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-render';
 import {parseTimelineExportManifest} from '../frontend/src/server/timeline-exports/render-request';
 import {studioMediaByteResponse} from './helpers/studio-media-byte-fixture';
 const run = promisify(execFile);

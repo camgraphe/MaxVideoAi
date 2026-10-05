@@ -1,9 +1,9 @@
 import {z} from 'zod';
 import {toolAssetRefSchema} from '@/lib/toolbox/contract';
-import type {WorkspaceTimelineItem, WorkspaceTimelineTrack} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
-import {deleteWorkspaceTimelineItem, positionWorkspaceTimelineItem, resizeWorkspaceTimelineItem, timelineEditTouchesLockedTracks} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-editing';
-import {MIN_CLIP_DURATION_SEC, timelineFrameToSeconds, workspaceTimelineSourceTime} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-frames';
-import {maxResizeDurationForTimelineItem} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-trim';
+import type {WorkspaceTimelineItem, WorkspaceTimelineTrack} from '@/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
+import {deleteWorkspaceTimelineItem, positionWorkspaceTimelineItem, resizeWorkspaceTimelineItem, timelineEditTouchesLockedTracks} from '@/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-editing';
+import {MIN_CLIP_DURATION_SEC, timelineFrameToSeconds, workspaceTimelineSourceTime} from '@/app/(core)/(workspace)/app/studio/_shared/_lib/timeline/timeline-frames';
+import {maxResizeDurationForTimelineItem} from '@/app/(core)/(workspace)/app/studio/_shared/_lib/timeline/timeline-trim';
 import {readMediaFacts} from '@/lib/media-identity';
 
 const clipId = z.string().trim().min(1).max(200);

@@ -5,15 +5,15 @@ import {useRouter} from 'next/navigation';
 import {useI18n} from '@/lib/i18n/I18nProvider';
 import {useThemePreference} from '@/hooks/useThemePreference';
 import {useStudioProjectCreation} from '../_hooks/useStudioProjectCreation';
-import {studioConversationEntryCopy} from '../projects/studio-conversation-entry';
+import {studioConversationEntryCopy} from '../_lib/studio-conversation-entry';
 import {ConversationWelcome} from '../conversation/[projectId]/_components/ConversationWelcome.client';
 import {ImageConversationComposer} from '../conversation/[projectId]/_components/ImageConversationComposer.client';
 import styles from '../conversation/[projectId]/image-conversation.module.css';
 
-export function StudioStart({accountKey,unavailable=false}:{accountKey:string;unavailable?:boolean}) {
+export function StudioStart({accountKey,unavailable=false,starter}:{accountKey:string;unavailable?:boolean;starter?:string}) {
   const router=useRouter(),{locale}=useI18n(),{resolvedTheme}=useThemePreference();
   const copy=studioConversationEntryCopy(locale);
-  const creation=useStudioProjectCreation(accountKey,projectId=>router.replace('/app/studio/conversation/'+encodeURIComponent(projectId)));
+  const creation=useStudioProjectCreation(accountKey,projectId=>router.replace('/app/studio/conversation/'+encodeURIComponent(projectId)+(starter?'?starter='+encodeURIComponent(starter):'')));
   const {create}=creation;
   const libraryTrigger=useRef<HTMLButtonElement>(null);
   useEffect(()=>{if(!unavailable)void create(copy.projectName);},[create,copy.projectName,unavailable]);

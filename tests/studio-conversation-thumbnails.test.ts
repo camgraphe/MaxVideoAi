@@ -4,14 +4,13 @@ import {createRequire} from 'node:module';
 import {resolve} from 'node:path';
 import {runInNewContext} from 'node:vm';
 import {build} from 'esbuild';
-import React from 'react';
-import {act} from 'react';
-import {createRoot} from 'react-dom/client';
-import {renderToStaticMarkup} from 'react-dom/server';
+import React from '../frontend/node_modules/react';
+import {act} from '../frontend/node_modules/react';
+import {createRoot} from '../frontend/node_modules/react-dom/client';
+import {renderToStaticMarkup} from '../frontend/node_modules/react-dom/server';
 import {JSDOM} from 'jsdom';
-import type {WorkspaceTimelineItem} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
-import {buildWorkspaceTimelineRenderManifest} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
-import {stripStudioMediaAccess} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-media-access';
+import type {WorkspaceTimelineItem} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
+import {buildWorkspaceTimelineRenderManifest} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-render';
 import {useConversationTimeline} from '../frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/_hooks/useConversationTimeline';
 
 const base='https://conversation-thumbnails-fixture.s3.us-east-1.amazonaws.com';
@@ -26,9 +25,9 @@ async function timelineMarkup(items: WorkspaceTimelineItem[]) {
     '@/lib/i18n/I18nProvider':'export const useI18n=()=>({dictionary:{},locale:"en"});',
     '../../../_lib/studio-copy':'export const resolveStudioCopy=()=>({notices:{},viewer:{monitor:{}}});',
     '../_hooks/useConversationTimeline':'export const useConversationTimeline=()=>({view:{data:{revision:1},items:fixture.items,settings:{fps:30,aspectRatio:"16:9",resolution:"720p"}},busy:false,edit(){}});',
-    '../../../workspace/_hooks/useWorkspaceTimelinePlayback':'export const useWorkspaceTimelinePlayback=()=>({playheadSec:0,isTimelinePlaying:false,stopTimelinePlayback(){}});',
-    '../../../workspace/_components/viewer/useProgramPlaybackSync':'export const useProgramPlaybackSync=()=>({});',
-    '../../../workspace/_components/viewer/ProgramPlaybackLayers':'export const ProgramPlaybackLayers=()=>null;',
+    '../../../_shared/_hooks/useWorkspaceTimelinePlayback':'export const useWorkspaceTimelinePlayback=()=>({playheadSec:0,isTimelinePlaying:false,stopTimelinePlayback(){}});',
+    '../../../_shared/_components/viewer/useProgramPlaybackSync':'export const useProgramPlaybackSync=()=>({});',
+    '../../../_shared/_components/viewer/ProgramPlaybackLayers':'export const ProgramPlaybackLayers=()=>null;',
     './ConversationExport.client':'export const ConversationExport=()=>null;',
   };
   const bundled=await build({absWorkingDir:frontend,stdin:{contents:"export {ConversationTimeline} from './app/(core)/(workspace)/app/studio/conversation/[projectId]/_components/ConversationTimeline.client';",resolveDir:frontend,loader:'ts'},tsconfig:resolve(frontend,'tsconfig.json'),bundle:true,platform:'node',format:'cjs',write:false,packages:'external',loader:{'.css':'empty'},jsx:'automatic',plugins:[{name:'timeline-fixture',setup(builder){builder.onResolve({filter:/.*/},args=>args.path in stubs?{path:args.path,namespace:'fixture'}:undefined);builder.onLoad({filter:/.*/,namespace:'fixture'},args=>({contents:stubs[args.path],loader:'js'}));}}]});
@@ -53,7 +52,6 @@ test('real conversation timeline renders separately signed image and video thumb
   assert.deepEqual(preview.map(item=>item.thumbnailUrl),input.map(item=>item.thumbnailUrl));
   const manifest=buildWorkspaceTimelineRenderManifest({items:preview,nodes:[],projectName:'Film',sequenceId:'main',sequenceName:'Main'});
   assert.doesNotMatch(JSON.stringify(manifest),/signed\.test|grant=read|thumbnailAccessUrl/,'The real conversation export builder cannot carry the preview grant.');
-  assert.doesNotMatch(JSON.stringify(stripStudioMediaAccess({timelineItems:preview})),/signed\.test|grant=read|thumbnailAccessUrl/,'Workspace persistence strips all transient thumbnail access.');
 });
 
 test('thumbnail access never signs a foreign owner and missing thumbnails never turn video into an image',async()=>{

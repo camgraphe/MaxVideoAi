@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import * as local from "../shared/frames";
 test("local conversions stay identical to the existing Studio frame contract", async () => {
   const path = new URL(
-    "../../../../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-frames.ts",
+    "../../../../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/timeline/timeline-frames.ts",
     import.meta.url,
   );
   const module = await import(path.href),

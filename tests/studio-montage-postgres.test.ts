@@ -112,7 +112,7 @@ test('one transaction persists the ordered montage and exact idempotency receipt
     assert.deepEqual(result, {
       schemaVersion: 1, status: 'studio_project', persisted: true, title: input.title,
       projectId: 'project-ordered', sequenceId: 'sequence-ordered', revision: 0,
-      studioUrl: '/app/studio/workspace/project-ordered', clipCount: 2, totalFrames: 72,
+      studioUrl: '/app/studio/conversation/project-ordered', clipCount: 2, totalFrames: 72,
       totalSeconds: 3, orderingBasis: 'caller_supplied',
     });
     assert.doesNotMatch(JSON.stringify(result), /cdn\.maxvideoai|\.mp4|signed/iu);

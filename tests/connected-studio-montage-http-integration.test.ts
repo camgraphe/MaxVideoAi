@@ -9,6 +9,7 @@ import { STUDIO_PRIVATE_MEDIA_KEYS, validateStudioPrivateMediaRequest } from './
 
 test('real MCP persists caller-ordered videos, enforces owner and idempotency, and coexists with revisioned UI saves', { timeout: 180_000 }, async () => {
   const runtime = await startStudioIntegrationRuntime({
+    revision: process.env.STUDIO_INTEGRATION_REVISION,
     mcp: { studioMontageCreation: true }, privateStorage: true,
     initializeDatabase: initializeStudioConnectedFixture,
   });
@@ -40,7 +41,7 @@ test('real MCP persists caller-ordered videos, enforces owner and idempotency, a
     assert.equal(montage.clipCount, 2);
     assert.equal(montage.totalFrames, 120);
     assert.equal(montage.totalSeconds, 4);
-    assert.equal(montage.studioUrl, `/app/studio/workspace/${montage.projectId}`);
+    assert.equal(montage.studioUrl, `/app/studio/conversation/${montage.projectId}`);
     assert.doesNotMatch(JSON.stringify(created.result), /X-Amz-|s3\.|media-assets\//u, 'MCP must not disclose original or signed media URLs.');
 
     const stored = await runtime.database.pool.query(`SELECT p.user_id, p.persistence_mode, p.revision,
@@ -135,12 +136,23 @@ test('real MCP persists caller-ordered videos, enforces owner and idempotency, a
     } finally {
       await runtime.database.pool.query('ALTER TABLE studio_projects DROP CONSTRAINT studio_fixture_internal_detail');
     }
-    for (const method of ['PUT', 'PATCH', 'DELETE']) {
-      assert.equal((await route(path, { method, ...(method === 'DELETE' ? {} : { body: JSON.stringify({ name: 'Legacy writer must not win' }) }) })).status, 409);
-      assert.equal((await route(`${path}/sequences/${montage.sequenceId}`, { method, ...(method === 'DELETE' ? {} : { body: JSON.stringify({ name: 'Legacy sequence must not win' }) }) })).status, 409);
+    const beforeRetiredWrites = await runtime.database.pool.query('SELECT name, revision, workspace_state FROM studio_projects WHERE id=$1', [montage.projectId]);
+    for (const method of ['PUT', 'PATCH']) {
+      for (const retiredPath of [path, `${path}/sequences/${montage.sequenceId}`]) {
+        const retired = await route(retiredPath, { method, body: JSON.stringify({ name: 'Legacy writer must not win' }) });
+        assert.equal(retired.status, 410);
+        assert.deepEqual(await retired.json(), { ok: false, error: 'STUDIO_CANVAS_RETIRED', studioUrl: '/app/studio' });
+        assert.equal((await fetch(`${runtime.origin}${retiredPath}`, { method, headers: { 'Content-Type': 'application/json' }, body: '{}' })).status, 401);
+      }
     }
-    assert.equal((await route(`${path}/sequences`, { method: 'POST', body: JSON.stringify({ id: 'legacy-sequence-cannot-enter', name: 'Legacy insertion' }) })).status, 409);
-    assert.equal((await route('/api/studio/projects', { method: 'POST', body: JSON.stringify({ id: montage.projectId, name: 'Legacy upsert must not win' }) })).status, 409);
+    for (const retiredPath of [path, `${path}/sequences/${montage.sequenceId}`]) {
+      const protectedDelete = await route(retiredPath, { method: 'DELETE' });
+      assert.equal(protectedDelete.status, 409);
+      assert.equal((await protectedDelete.json()).error, 'STUDIO_CONNECTED_PROJECT_REVISION_REQUIRED');
+    }
+    assert.equal((await route(`${path}/sequences`, { method: 'POST', body: JSON.stringify({ id: 'legacy-sequence-cannot-enter', name: 'Legacy insertion' }) })).status, 410);
+    assert.equal((await route('/api/studio/projects', { method: 'POST', body: JSON.stringify({ id: montage.projectId, name: 'Legacy upsert must not win' }) })).status, 410);
+    assert.deepEqual((await runtime.database.pool.query('SELECT name, revision, workspace_state FROM studio_projects WHERE id=$1', [montage.projectId])).rows, beforeRetiredWrites.rows);
 
     const replay = await call(STUDIO_CONNECTED_MONTAGE_INPUT);
     assert.notEqual(replay.result.isError, true);
@@ -224,6 +236,7 @@ test('real MCP persists caller-ordered videos, enforces owner and idempotency, a
 
 test('missing connected migration fails closed through real UI and MCP without applying runtime DDL', { timeout: 180_000 }, async () => {
   const runtime = await startStudioIntegrationRuntime({
+    revision: process.env.STUDIO_INTEGRATION_REVISION,
     mcp: { studioMontageCreation: true },
     initializeDatabase: async (database) => {
       for (const name of ['26_studio_projects.sql', '29_mcp_audit_events.sql', '41_mcp_client_family.sql']) {

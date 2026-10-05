@@ -1,4 +1,4 @@
-import {isStudioConversationAudioModeCertified} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-model-certification';
+import {isStudioConversationAudioModeCertified} from '@/app/(core)/(workspace)/app/studio/_shared/_lib/models/workspace-model-certification';
 import {query,withDbTransaction, type QueryExecutor,type TransactionQueryExecutor} from '@/lib/db';
 import {AgentApiError} from '@/server/agent-api/errors';
 import {requireAudioGenerationActor, type StudioGenerationActor} from '@/server/agent-api/generation-actor';

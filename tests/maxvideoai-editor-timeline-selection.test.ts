@@ -7,9 +7,9 @@ import {
   nextAvailableTimelineItemId,
   timelineSelectionTouchesLockedTrack,
   workspaceTimelineCutPoints,
-} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-selection';
-import { resolveWorkspaceTimelineGapSelection } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-gap-editing';
-import type { WorkspaceTimelineItem } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
+} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-selection';
+import { resolveWorkspaceTimelineGapSelection } from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/timeline/timeline-gap-editing';
+import type { WorkspaceTimelineItem } from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
 
 const videoItem: WorkspaceTimelineItem = {
   id: 'clip-video',

@@ -104,8 +104,6 @@
     "@remotion/bundler": "^4.0.474",
     "@remotion/media": "^4.0.474",
     "@remotion/renderer": "^4.0.474",
-    "@xyflow/react": "^12.11.0",
-    "html-to-image": "^1.11.13",
     "remotion": "^4.0.474"
   },
   "lint-staged": {

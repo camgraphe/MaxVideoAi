@@ -11,19 +11,19 @@ import type { StudioResolvedMedia } from './media-resolver';
 import { resolveStudioMedia } from './media-resolver';
 import { assertStudioConnectedSchemaReady } from './connected-schema';
 import { withDbTransaction, type QueryExecutor } from '@/lib/db';
-import { buildWorkspaceTimelineItemsForAsset } from '@/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-builders';
-import { buildWorkspaceClipComposition } from '@/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-clip-composition';
-import { workspaceProjectDimensions } from '@/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-settings';
-import { projectAssetTimelineNodeId } from '@/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-drops';
+import { buildWorkspaceTimelineItemsForAsset } from '@/app/(core)/(workspace)/app/studio/_shared/_lib/timeline/timeline-builders';
+import { buildWorkspaceClipComposition } from '@/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-clip-composition';
+import { workspaceProjectDimensions } from '@/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-project-settings';
+import { projectAssetTimelineNodeId } from '@/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-drops';
 import type {
   WorkspaceAssetRecord,
   WorkspaceTimelineItem,
-} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
+} from '@/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
 import {
   createWorkspaceSequenceRecord,
   type PersistedWorkspaceState,
   type WorkspaceSequenceRecord,
-} from '@/app/(core)/(workspace)/app/studio/workspace/_state/workspace-state';
+} from '@/app/(core)/(workspace)/app/studio/_shared/_state/workspace-state';
 
 export type StudioMontageProjectState = {
   workspaceState: PersistedWorkspaceState;
@@ -274,7 +274,7 @@ function safeCreateResult(params: {
     projectId: params.projectId,
     sequenceId: params.sequenceId,
     revision: params.revision,
-    studioUrl: `/app/studio/workspace/${encodeURIComponent(params.projectId)}`,
+    studioUrl: `/app/studio/conversation/${encodeURIComponent(params.projectId)}`,
     clipCount: params.input.clips.length,
     totalFrames,
     totalSeconds: totalFrames / params.input.settings.fps,

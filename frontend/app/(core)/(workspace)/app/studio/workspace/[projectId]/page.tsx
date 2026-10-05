@@ -1,26 +1,14 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { FEATURES } from '@/content/feature-flags';
-import { resolveStudioPageAccess } from '@/server/studio/access';
-import WorkspacePage from '../WorkspacePage.client';
+import {redirect} from 'next/navigation';
+import {resolveStudioPageAccess} from '@/server/studio/access';
+import {readStudioConversationProjectId} from '@/server/studio/conversation-project-list';
 
 export const dynamic = 'force-dynamic';
-
-export const metadata: Metadata = {
-  title: 'MaxVideoAI Editor',
-  robots: {
-    index: false,
-    follow: false,
-  },
-};
-
-export default async function StudioProjectWorkspacePage(props: { params: Promise<{ projectId: string }> }) {
-  if (!FEATURES.studio.maxVideoAiEditor) {
-    notFound();
-  }
+export default async function RetiredStudioProjectPage({params}: {params: Promise<{projectId: string}>}) {
   const access = await resolveStudioPageAccess();
-  if (!access.ok) notFound();
-
-  const { projectId } = await props.params;
-  return <WorkspacePage projectId={projectId} />;
+  if (!access.ok) redirect('/app/studio');
+  const {projectId} = await params;
+  const connectedProjectId = await readStudioConversationProjectId(access.userId,projectId);
+  redirect(connectedProjectId
+    ? `/app/studio/conversation/${encodeURIComponent(connectedProjectId)}`
+    : '/app/studio');
 }

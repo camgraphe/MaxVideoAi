@@ -1,4 +1,4 @@
-import { isWorkspaceModelCertifiedForBlock, isStudioConversationVideoModeCertified } from "@/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-model-certification";
+import { isWorkspaceModelCertifiedForBlock, isStudioConversationVideoModeCertified } from "@/app/(core)/(workspace)/app/studio/_shared/_lib/models/workspace-model-certification";
 import {recordedStudioOutputDuration} from './conversation-quote-facts';
 import {customerDisplayPrice} from '@/lib/customer-price-presentation';
 import {

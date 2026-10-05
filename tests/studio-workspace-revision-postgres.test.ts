@@ -14,8 +14,6 @@ import {
 import {
   deleteStudioProject,
   deleteStudioSequence,
-  upsertStudioProject,
-  upsertStudioSequence,
 } from '../frontend/src/server/studio/repository';
 
 const owner = '00000000-0000-4000-8000-00000000000a';
@@ -218,11 +216,9 @@ test('the connected workspace reader locks the aggregate so project revision and
   }
 });
 
-test('legacy writers lock the parent inside their transaction and recheck a concurrent transition to connected mode', async () => {
+test('retained legacy deletion commands lock the parent and recheck a concurrent transition to connected mode', async () => {
   const database = await verifiedDatabase();
   const operations = [
-    () => upsertStudioProject({ userId: owner, id: 'legacy-project', name: 'Racing project write' }),
-    () => upsertStudioSequence({ userId: owner, projectId: 'legacy-project', id: 'legacy-race-sequence', name: 'Racing sequence write' }),
     () => deleteStudioSequence({ userId: owner, projectId: 'legacy-project', sequenceId: 'legacy-sequence-a' }),
     () => deleteStudioProject({ userId: owner, projectId: 'legacy-project' }),
   ];
@@ -254,20 +250,19 @@ test('legacy writers lock the parent inside their transaction and recheck a conc
   }
 });
 
-test('all historical project and sequence writers explicitly refuse connected projects, including POST-style IDs and delete', async () => {
+test('retained legacy deletion commands refuse connected projects and preserve their sequence state', async () => {
   const database = await verifiedDatabase();
   try {
     for (const operation of [
-      () => upsertStudioProject({ userId: owner, id: 'connected-project', name: 'Legacy overwrite' }),
-      () => upsertStudioSequence({ userId: owner, projectId: 'connected-project', id: 'sequence-main', name: 'Legacy overwrite' }),
-      () => upsertStudioSequence({ userId: owner, projectId: 'connected-project', id: 'sequence-post-id', name: 'POST with ID' }),
       () => deleteStudioSequence({ userId: owner, projectId: 'connected-project', sequenceId: 'sequence-main' }),
       () => deleteStudioProject({ userId: owner, projectId: 'connected-project' }),
     ]) {
       await assert.rejects(operation(), /STUDIO_CONNECTED_PROJECT_REVISION_REQUIRED/u);
     }
-    const legacy = await upsertStudioProject({ userId: owner, id: 'legacy-project', name: 'Legacy still works' });
-    assert.equal(legacy.name, 'Legacy still works');
+    assert.equal((await database.pool.query("SELECT deleted_at FROM studio_projects WHERE id='connected-project'")).rows[0].deleted_at, null);
+    assert.equal((await database.pool.query("SELECT deleted_at FROM studio_sequences WHERE id='sequence-main'")).rows[0].deleted_at, null);
+    assert.equal(await deleteStudioProject({ userId: owner, projectId: 'legacy-project' }), true);
+    assert.notEqual((await database.pool.query("SELECT deleted_at FROM studio_projects WHERE id='legacy-project'")).rows[0].deleted_at, null);
   } finally {
     await getDb().end();
     delete process.env.DATABASE_URL;

@@ -3,7 +3,7 @@ import {useCallback,useEffect,useRef,useState} from 'react';
 import type {StudioConversationTimeline} from '@/lib/studio/conversation-editing-contract';
 import type {ConversationTimelineCommand} from '@/lib/studio/conversation-timeline-editing';
 import {retainConversationMediaAccess} from '@/lib/studio/conversation-preview-access';
-import type {WorkspaceProjectSettings,WorkspaceTimelineItem} from '../../../workspace/_lib/workspace-types';
+import type {WorkspaceProjectSettings,WorkspaceTimelineItem} from '../../../_shared/_lib/workspace-types';
 
 export type ConversationTimelineView = {data: StudioConversationTimeline;settings: WorkspaceProjectSettings;items: WorkspaceTimelineItem[]};
 export function useConversationTimeline(projectId: string,refreshKey: unknown) {

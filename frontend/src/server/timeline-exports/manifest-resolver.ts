@@ -5,25 +5,25 @@ import { readStudioProject, readStudioSequence } from '@/server/studio/repositor
 import {
   buildWorkspaceTimelineRenderManifest,
   type WorkspaceTimelineRenderManifest,
-} from '../../../app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
+} from '../../../app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-render';
 import type {
   WorkspaceAssetRecord,
   WorkspaceGraphNode,
   WorkspaceProjectSettings,
   WorkspaceTimelineItem,
-} from '../../../app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
-import type { WorkspaceTimelineVideoExportRequest } from '../../../app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-export';
-import { normalizeWorkspaceTimelineSourceMetadata } from '../../../app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-source-metadata';
+} from '../../../app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
+import type { WorkspaceTimelineVideoExportRequest } from '../../../app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-export';
+import { normalizeWorkspaceTimelineSourceMetadata } from '../../../app/(core)/(workspace)/app/studio/_shared/_lib/timeline/timeline-source-metadata';
 import {
   filterHiddenVideoTrackItems,
   muteAudioTrackItems,
-} from '../../../app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-selection';
+} from '../../../app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-selection';
 import {
   coerceAudioTrackCount,
   coerceHiddenVideoTracks,
   coerceMutedAudioTracks,
   coerceVideoTrackCount,
-} from '../../../app/(core)/(workspace)/app/studio/workspace/_state/workspace-state';
+} from '../../../app/(core)/(workspace)/app/studio/_shared/_state/workspace-state';
 import { parseTimelineExportManifest } from './render-request';
 import { validateTimelineExportManifestMediaUrls } from './media-security';
 import { timelineExportManifestHash } from './estimate-token';

@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { resolveStudioMarketingStarter } from '@/app/(core)/(workspace)/app/studio/projects/studio-project-marketing-entry';
+import { resolveStudioMarketingStarter } from '@/app/(core)/(workspace)/app/studio/_lib/studio-project-marketing-entry';
 import { buildLoginHref } from '@/lib/auth-entry-href';
 import {
   resolveStudioApiAccess,
   type StudioAccessDecision,
 } from '@/server/studio/access';
 
-const STUDIO_PROJECTS_PATH = '/app/studio/projects';
+const STUDIO_PROJECTS_PATH = '/app/studio';
 
 function resolveProjectsPath(starter: string | null): string {
   if (!starter || !resolveStudioMarketingStarter(starter)) return '/app/studio';

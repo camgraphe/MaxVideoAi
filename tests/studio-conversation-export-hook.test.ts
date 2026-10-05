@@ -4,9 +4,9 @@ import {JSDOM} from 'jsdom';
 import * as React from 'react';
 import {act} from 'react';
 import {createRoot} from 'react-dom/client';
-import {useExportController,normalizeTimelineExportClientJob} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_controllers/useExportController';
+import {useExportController,normalizeTimelineExportClientJob} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_controllers/useExportController';
 import {resolveStudioCopy} from '../frontend/app/(core)/(workspace)/app/studio/_lib/studio-copy';
-import type {WorkspaceTimelineRenderManifest} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
+import type {WorkspaceTimelineRenderManifest} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-render';
 
 const original: WorkspaceTimelineRenderManifest = {version: 1,source: 'maxvideoai-editor',projectName: 'Film',sequenceId: 'main',sequenceName: 'Main',projectSettings: {aspectRatio: '16:9',resolution: '720p',fps: 30},createdAt: '2026-10-02T10:00:00Z',status: 'ready',durationSec: 12,exportRange: {mode: 'sequence',startSec: 0,endSec: 12,durationSec: 12},tracks: [],issues: []};
 const copy = resolveStudioCopy({} as any);

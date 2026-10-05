@@ -1,7 +1,7 @@
 import {readStudioWorkspace} from './workspace-command';
 import type {StudioConversationTimeline} from '@/lib/studio/conversation-editing-contract';
-import type {WorkspaceProjectSettings,WorkspaceTimelineItem} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
-import {secondsToTimelineFrame} from '@/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-frames';
+import type {WorkspaceProjectSettings,WorkspaceTimelineItem} from '@/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
+import {secondsToTimelineFrame} from '@/app/(core)/(workspace)/app/studio/_shared/_lib/timeline/timeline-frames';
 import {buildConversationPreviewMedia} from './conversation-preview-media';
 import {toolAssetRefSchema} from '@/lib/toolbox/contract';
 

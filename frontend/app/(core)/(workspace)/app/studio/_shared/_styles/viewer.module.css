@@ -1,0 +1,44 @@
+.viewerVideoLayer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--studio-bg);
+  object-fit: contain;
+  pointer-events: none;
+  transform-origin: center;
+}
+
+.viewerVideoLayerVisible {
+  pointer-events: auto;
+}
+
+.viewerAudioLayer {
+  display: none;
+}
+
+.viewerEmpty {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  padding: 24px;
+  color: var(--studio-text-muted);
+  text-align: center;
+}
+
+.viewerEmpty p {
+  margin: 0;
+  color: var(--studio-text-strong);
+  font-size: 13px;
+  font-weight: 760;
+}
+
+.viewerEmpty span {
+  color: var(--studio-text-muted);
+  font-size: 11px;
+}

@@ -2,13 +2,13 @@ import { withDbTransaction, type QueryExecutor } from '@/lib/db';
 import { assertStudioConnectedSchemaReady } from './connected-schema';
 import { StudioConnectedPersistenceError } from './montage-command';
 import type { StudioProjectRecord, StudioSequenceRecord } from './contracts';
-import type { WorkspaceTimelineItem } from '@/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
-import { normalizeWorkspaceTimelineItemsSourceMetadata } from '@/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-source-metadata';
+import type { WorkspaceTimelineItem } from '@/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
+import { normalizeWorkspaceTimelineItemsSourceMetadata } from '@/app/(core)/(workspace)/app/studio/_shared/_lib/timeline/timeline-source-metadata';
 import {
   normalizeWorkspaceEdgeTypes,
   normalizeWorkspaceGraphNodes,
-} from '@/app/(core)/(workspace)/app/studio/workspace/_state/workspace-normalizers';
-import { normalizeWorkspaceSequenceRecord } from '@/app/(core)/(workspace)/app/studio/workspace/_state/workspace-state';
+} from '@/app/(core)/(workspace)/app/studio/_shared/_state/workspace-normalizers';
+import { normalizeWorkspaceSequenceRecord } from '@/app/(core)/(workspace)/app/studio/_shared/_state/workspace-state';
 export { StudioConnectedPersistenceError } from './montage-command';
 
 type TransactionRunner = <T>(callback: (executor: QueryExecutor) => Promise<T>) => Promise<T>;

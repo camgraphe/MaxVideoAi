@@ -8,7 +8,7 @@ import {
 import { imageRequestFromDraft } from "../frontend/src/server/studio/image-conversation-service";
 import { validateCanonicalGenerationCapabilities } from "../frontend/src/server/agent-api/generation-capability-validation";
 import { normalizeGenerationRequest } from "../frontend/src/server/agent-api/generation-normalization";
-import { isWorkspaceModelCertifiedForBlock } from "../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-model-certification";
+import { isWorkspaceModelCertifiedForBlock } from "../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/models/workspace-model-certification";
 import type { AgentPublicGenerationEngine } from "../frontend/src/server/agent-api/model-catalog";
 test("Flare pilot selects a single certified image and maps each format to actual catalog settings", () => {
   const entry = getFalEngineById("gpt-image-2-5-flare");

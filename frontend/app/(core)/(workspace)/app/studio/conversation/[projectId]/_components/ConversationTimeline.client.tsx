@@ -5,12 +5,12 @@ import {Plus,Play,Pause,X,ChevronUp,ChevronDown,Trash2,PanelBottomClose,PanelBot
 import {useI18n} from '@/lib/i18n/I18nProvider';
 import {resolveStudioCopy} from '../../../_lib/studio-copy';
 import {useConversationTimeline} from '../_hooks/useConversationTimeline';
-import {useWorkspaceTimelinePlayback} from '../../../workspace/_hooks/useWorkspaceTimelinePlayback';
-import {useProgramPlaybackSync} from '../../../workspace/_components/viewer/useProgramPlaybackSync';
-import {ProgramPlaybackLayers} from '../../../workspace/_components/viewer/ProgramPlaybackLayers';
+import {useWorkspaceTimelinePlayback} from '../../../_shared/_hooks/useWorkspaceTimelinePlayback';
+import {useProgramPlaybackSync} from '../../../_shared/_components/viewer/useProgramPlaybackSync';
+import {ProgramPlaybackLayers} from '../../../_shared/_components/viewer/ProgramPlaybackLayers';
 import {applyConversationTimelineEdit,conversationMonitorTime,conversationLibraryInsertTiming,type ConversationTimelineEdit} from '@/lib/studio/conversation-timeline-editing';
 import type {ImageLibraryAsset} from '@/lib/studio/image-library';
-import type {WorkspaceTimelineItem} from '../../../workspace/_lib/workspace-types';
+import type {WorkspaceTimelineItem} from '../../../_shared/_lib/workspace-types';
 import styles from '../conversation-timeline.module.css';
 import {ConversationExport} from './ConversationExport.client';
 import {consumeConversationMediaRenewal} from '@/lib/studio/conversation-preview-access';

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import type {WorkspaceTimelineItem} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
+import type {WorkspaceTimelineItem} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
 
 const items: WorkspaceTimelineItem[] = [
   {id: 'one', outputNodeId: 'source-one', title: 'Opening', track: 'video', mediaKind: 'video', startSec: 0, durationSec: 5, sourceStartSec: 2, sourceDurationSec: 8, status: 'completed', mediaUrl: 'https://cdn.maxvideoai.com/one.mp4'},

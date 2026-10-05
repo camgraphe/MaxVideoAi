@@ -6,7 +6,7 @@ import { getRuntimeModelById, resolveRuntimeEngineInput } from '../frontend/conf
 import { isArchivedGenerationModel } from '../frontend/lib/model-generation-policy';
 import { resolveMediaAwarePreflight } from '../frontend/app/api/preflight/_lib/media-aware-preflight';
 import { resolveTrustedPaidGenerateRouteContext } from '../frontend/app/api/generate/_lib/route-context';
-import { WORKSPACE_MODEL_CERTIFICATIONS } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-model-certification';
+import { WORKSPACE_MODEL_CERTIFICATIONS } from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/models/workspace-model-certification';
 import { buildModelArchiveMetadata } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-archive-metadata';
 
 const id = 'seedance-1-5-pro';

@@ -1,7 +1,7 @@
 import {createHash,randomUUID} from 'node:crypto';
 import {z} from 'zod';
 import {withDbTransaction,type QueryExecutor} from '@/lib/db';
-import {createWorkspaceSequenceRecord} from '@/app/(core)/(workspace)/app/studio/workspace/_state/workspace-state';
+import {createWorkspaceSequenceRecord} from '@/app/(core)/(workspace)/app/studio/_shared/_state/workspace-state';
 import {assertStudioConnectedSchemaReady} from './connected-schema';
 import {StudioConnectedPersistenceError} from './montage-command';
 

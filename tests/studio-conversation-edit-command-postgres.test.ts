@@ -7,8 +7,8 @@ import {STUDIO_FIXTURE_OWNERS} from './helpers/studio-auth-fixture';
 import {createStudioMontageProject} from '../frontend/src/server/studio/montage-command';
 import {readStudioWorkspace} from '../frontend/src/server/studio/workspace-command';
 import type {QueryExecutor} from '../frontend/src/lib/db';
-import type {WorkspaceTimelineItem} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
-import {buildWorkspaceTimelineRenderManifest} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
+import type {WorkspaceTimelineItem} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
+import {buildWorkspaceTimelineRenderManifest} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-render';
 
 test('conversation edits use canonical revisions and receipts, preserving manual changes and unrelated editor state', async t => {
   const module = await import('../frontend/src/server/studio/conversation-edit-command').catch(() => null);

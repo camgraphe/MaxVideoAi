@@ -1,4 +1,4 @@
-import type { WorkspaceTimelineRenderManifest } from '../../../app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
+import type { WorkspaceTimelineRenderManifest } from '../../../app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-render';
 
 export type TimelineExportRenderProps = {
   manifest: WorkspaceTimelineRenderManifest;
