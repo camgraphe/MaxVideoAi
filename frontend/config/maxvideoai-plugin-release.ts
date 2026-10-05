@@ -1,5 +1,5 @@
 // Pin the published public repository tag, independently of the next source candidate.
-export const MAXVIDEOAI_PUBLIC_PLUGIN_VERSION = '0.3.6' as const;
+export const MAXVIDEOAI_PUBLIC_PLUGIN_VERSION = '0.3.7' as const;
 export const MAXVIDEOAI_PUBLIC_PLUGIN_SOURCE_TAG =
   `v${MAXVIDEOAI_PUBLIC_PLUGIN_VERSION}` as const;
 

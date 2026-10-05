@@ -51,8 +51,11 @@ test('host eligibility is visible and automation never becomes a generic one-cli
   assert.match(html,/data-copy-endpoint/);
   assert.match(html,/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/);
   assert.doesNotMatch(html,/Pending \/ Under review|no public n8n library listing/i);
+  assert.match(n8n.troubleshooting.items[0].answer,/awaiting n8n review|en cours de revue|en revisión/);
+  assert.doesNotMatch(html,/Workflow 19591 is publicly listed|Le workflow 19591 est publié|El flujo 19591 está publicado/);
   const faq=getMcpEditorialCopy(locale).faq.map(item=>item.answer).join(' ');
   assert.match(faq,/Business.*Enterprise.*Edu/);assert.match(faq,/Pro/);assert.match(faq,/2\.38\.7/);assert.match(faq,/Cloud/);assert.match(faq,/19591/);assert.match(faq,/manual|manuelle/i);
+  assert.match(faq,/awaiting n8n review|en cours de revue|en revisión/);
  }
 });
 test('gated views do not show paid workflow, historical proof or price examples',()=>{
