@@ -28,27 +28,27 @@
 
 ## Task 1: Dependency, data and entry audit
 
-- [ ] Run current architecture audit; inspect nested guides and import/route contracts.
-- [ ] Produce resolved shared-retention and old-deletion manifest; inspect every external consumer.
-- [ ] Inventory database schema and bounded candidate IDs read-only; distinguish old/new projects.
-- [ ] Confirm entry/handoff/marketing and MCP montage behavior to retain.
+- [x] Run current architecture audit; inspect nested guides and import/route contracts.
+- [x] Produce resolved shared-retention and old-deletion manifest; inspect every external consumer.
+- [x] Inventory database schema and bounded candidate IDs read-only; distinguish old/new projects.
+- [x] Confirm entry/handoff/marketing and MCP montage behavior to retain.
 
 ## Task 2: Retire the UI and simplify ownership
 
 Files: Studio routes, project picker, marketing entry, montage result URL, retained shared modules, package dependency/lockfile and architecture/behavior tests.
 
-- [ ] Add failing retirement contracts: one picker/UI, old URL redirects, no Canvas import/React Flow runtime and correct montage URLs.
-- [ ] Move shared modules, rewrite resolved consumers, delete editor-only files and obsolete UI-only tests.
-- [ ] Keep current marketing and handoff behavior through the conversational surface where used.
-- [ ] Run retained editor/Studio/MCP tests, TypeScript, lint, exposure and route build; inspect failures rather than weakening supported coverage.
-- [ ] Update Studio ownership docs and AGENTS with the new boundaries.
+- [x] Add failing retirement contracts: one picker/UI, old URL redirects, no Canvas import/React Flow runtime and correct montage URLs.
+- [x] Move shared modules, rewrite resolved consumers, delete editor-only files and obsolete UI-only tests.
+- [x] Keep current marketing and handoff behavior through the conversational surface where used.
+- [x] Run retained editor/Studio/MCP tests, TypeScript, lint, exposure and route build; inspect failures rather than weakening supported coverage.
+- [x] Update Studio ownership docs and AGENTS with the new boundaries.
 
 ## Task 3: Bounded old-project cleanup
 
 Files: operational cleanup helper/CLI, focused PostgreSQL tests, operation report.
 
-- [ ] Implement preview/explicit-ID transactional apply with activity/snapshot guards, preserve shared media and financial records, reject current projects and active work.
-- [ ] Rehearse deletion and idempotence on isolated data; test mixed ownership/current projects/financial associations and rollback on changed state.
+- [x] Implement preview/explicit-ID transactional apply with activity/snapshot guards, preserve shared media and financial records, reject current projects and active work.
+- [x] Rehearse deletion and idempotence on isolated data; test mixed ownership/current projects/financial associations and rollback on changed state.
 - [ ] Apply only the inventoried authorized private project set; record before/after evidence without secrets.
 
 ## Task 4: Review and release
