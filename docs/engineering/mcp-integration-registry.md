@@ -69,9 +69,11 @@ have not been verified.
 n8n is `live`, indexable, and acquisition-enabled only for the tested
 self-hosted deterministic MCP Client workflow. The MCP Client host remains
 `tested_with_limits`; MCP Client Tool remains `not-run`, n8n Cloud is not
-claimed. The template-library store state is `listed` for
-[public workflow 19591](https://n8n.io/workflows/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/),
-observed on 2026-09-25. This changes distribution state only; users still
+claimed. The template-library store state is `submitted` for the October 5 update to
+[workflow 19591](https://n8n.io/workflows/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/).
+The Creator Portal shows `Pending` / `Under review`; the public API still
+returns the historical 20-node version and its direct page remains readable.
+The earlier public listing was observed on 2026-09-25. This changes distribution state only; users still
 configure OAuth manually, and the self-hosted 2.38.7 MCP Client checkpoint
 remains `tested_with_limits`. The other two reviewed JSON workflows have no
 verified public listing. The earlier private review and submission history is

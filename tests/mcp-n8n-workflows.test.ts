@@ -394,7 +394,7 @@ test('completion notification only observes an accepted job and actionable outco
   assert.doesNotMatch(routing, /requiresUserAction/);
 });
 
-test('n8n candidate documentation records the live deterministic scope and public listing accurately', () => {
+test('n8n candidate documentation separates the live deterministic scope from its pending template update', () => {
   const path = `${root}/README.md`;
   assert.equal(existsSync(path), true, `${path} should exist`);
   const guide = readFileSync(path, 'utf8');
@@ -415,6 +415,7 @@ test('n8n candidate documentation records the live deterministic scope and publi
   assert.doesNotMatch(guide, /fresh policy review and explicit owner authorization/i);
   assert.match(guide, /n8n\.io\/workflows\/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review\//);
   assert.doesNotMatch(guide, /none is a public n8n library template|No public workflow\s+library URL exists/i);
-  assert.equal(getMcpIntegration('n8n').store.status, 'listed');
+  assert.match(guide, /2026-10-05[\s\S]{0,150}Under review/);
+  assert.equal(getMcpIntegration('n8n').store.status, 'submitted');
   assert.equal(getMcpIntegration('n8n').installation.package, 'unavailable');
 });

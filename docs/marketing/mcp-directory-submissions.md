@@ -1,10 +1,11 @@
 # MaxVideoAI MCP distribution packages
 
-Latest supplemental read-only checkpoint: [4 October 2026 distribution rollout](../operations/studio-mcp-distribution-rollout-2026-10-04.md).
-GitHub and the official Registry now expose 0.3.6, and n8n workflow 19591 has a
-public listing. Those observations supersede the dated version/public-visibility
-claims below; historical submission evidence is preserved. The later n8n
-payload comparison and qualified source revision are recorded separately below.
+Latest submission checkpoint: [5 October 2026 n8n update](#n8n-update-submission--2026-10-05).
+Earlier read-only checkpoint: [4 October 2026 distribution rollout](../operations/studio-mcp-distribution-rollout-2026-10-04.md).
+GitHub and the official Registry still expose 0.3.6. The October 5 update to
+n8n workflow 19591 has been submitted and is under review; the public endpoint
+still returns the earlier payload. These observations supersede the dated
+version/public-visibility claims below; historical evidence is preserved.
 
 Checked: 2026-09-17; n8n public listing rechecked 2026-09-25
 Overall state: **OWNED-SITE DIRECT RELEASE + OFFICIAL MCP REGISTRY 0.3.5 ACTIVE/LATEST — MCPBEAT OWNERSHIP CONFIRMED; GLAMA OWNERSHIP AND AUTHENTICATED HEALTH CONFIRMED; N8N WORKFLOW 19591 PUBLICLY LISTED**
@@ -13,7 +14,40 @@ This file records evidence and owner decisions. It does not authorize another su
 deployment, feature-flag change, or use of a third party's marks. Directory rules are current and unstable; recheck all
 linked primary sources on the day an owner authorizes a new submission.
 
+## n8n update submission — 2026-10-05
+
+The existing owner session was recovered in Codex's in-app browser, the surface
+used by the earlier submission. Chrome's separate session required sign-in.
+No new account, password reset, credential disclosure or duplicate workflow was
+needed. The owner-authorized update used `Upload new version` on existing
+Creator Portal workflow `19591`.
+
+The exact submitted file was `distribution/n8n/brief-to-approved-generation.json`,
+SHA-256 `56bd2f781c5935a47b5a936c04f5759256e7d62e5fcc6b38d673c0ba036cb0dc`:
+21 nodes, disabled, zero credential references and no pinned data. Its ten
+focused contract checks passed without spending credits or generating media.
+The portal accepted the upload and returned to the dashboard showing
+`Pending` / `Under review`, dated `2026-10-05`. `Share new template` is disabled,
+so the campaign and completion workflows remain queued and unsubmitted.
+
+The portal warns that uploading a new version unpublishes the template from
+the library until review. A subsequent anonymous check still returned HTTP 200
+for both its direct public page and API; the API still served the historical
+20-node object, canonical digest
+`c319a482382a11f8b38a78ed7aeca631b3a09fc0d63bd36cb20579b5d7f8141a`.
+This is submission evidence, not approval or public parity for the new version.
+The private `Copy JSON` control reported success, but the supported clipboard
+reader returned empty text; no private-payload parity is claimed.
+
+The authored store projection moves from `listed` to `submitted` for the pending
+update. Direct MCP availability, route publication, indexing, acquisition and
+dated host evidence retain their owners and states. After approval, compare the
+public authored fields against this exact candidate before restoring `listed`.
+
 ## n8n qualified source revision — 2026-10-04
+
+This section preserves the qualification checkpoint before the October 5
+submission above; its source-not-submitted and sign-in observations are historical.
 
 The public [workflow 19591 payload](https://api.n8n.io/api/templates/workflows/19591)
 was compared with the historical submitted file whose SHA-256 is
