@@ -62,7 +62,6 @@ async function main() {
       'frontend/src/server/studio/audio-generation-service.ts',
       'frontend/src/server/studio/conversation-audio-generation.ts',
       'frontend/src/server/agent-api/audio-capabilities.ts',
-      'frontend/src/server/agent-api/audio-generation-capabilities.ts',
       'frontend/src/server/agent-api/audio-normalization.ts',
       'frontend/src/server/agent-api/prepare-audio-generation.ts',
       'frontend/src/server/agent-api/confirm-audio-generation.ts',
