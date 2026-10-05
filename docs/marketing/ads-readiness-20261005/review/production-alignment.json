@@ -1,0 +1,19 @@
+{
+  "status": "aligned",
+  "mainSha": "0d16f0248552a18a3bca52270ce4469d6170b5df",
+  "candidateSha": "38bb0f5bafbb96d5dbd69012bce7e47db3f57b32",
+  "domains": [
+    {
+      "domain": "maxvideoai.com",
+      "deploymentId": "dpl_FxjtsbxdGUDi2GfzmemZthbGA5T1",
+      "sha": "0d16f0248552a18a3bca52270ce4469d6170b5df",
+      "source": "cli"
+    },
+    {
+      "domain": "api.maxvideoai.com",
+      "deploymentId": "dpl_FxjtsbxdGUDi2GfzmemZthbGA5T1",
+      "sha": "0d16f0248552a18a3bca52270ce4469d6170b5df",
+      "source": "cli"
+    }
+  ]
+}
