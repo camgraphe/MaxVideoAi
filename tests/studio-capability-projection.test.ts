@@ -45,6 +45,11 @@ const wanFacts = {
   audio: 'optional',
   outputCount: { min: 1, max: 1, default: 1 },
   settings: [
+    { key: 'durationSec', type: 'number', required: false, values: null, min: 2, max: 30, step: 1, default: null },
+    { key: 'resolution', type: 'enum', required: false, values: ['480p', '720p', '1080p'], min: null, max: null, default: null },
+    { key: 'aspectRatio', type: 'enum', required: false, values: ['auto', '16:9', '4:3', '1:1', '3:4', '9:16'], min: null, max: null, default: null },
+    { key: 'fps', type: 'number', required: false, values: [30], min: null, max: null, default: null },
+    { key: 'audio', type: 'boolean', required: false, values: null, min: null, max: null, default: null },
     { key: 'seed', type: 'number', required: false, values: null, min: 0, max: 2147483647, step: 1, default: null },
     { key: 'enablePromptExpansion', type: 'boolean', required: false, values: null, min: null, max: null, default: true },
   ],
@@ -89,7 +94,11 @@ const cases: { modelId: 'wan-3' | 'gpt-image-2-5-flare'; expected: AgentModelMod
   },
   {
     modelId: 'gpt-image-2-5-flare',
-    expected: { ...flareFacts, mode: 't2i', resolutions: flareResolutions, references: [] },
+    expected: { ...flareFacts, mode: 't2i', resolutions: flareResolutions, references: [], settings: [
+      { key: 'resolution', type: 'enum', required: false, values: flareResolutions, min: null, max: null, default: null },
+      { key: 'aspectRatio', type: 'enum', required: false, values: ['auto', '16:9', '4:3', '1:1', '3:4', '9:16'], min: null, max: null, default: null },
+      ...flareFacts.settings,
+    ] },
   },
   {
     modelId: 'gpt-image-2-5-flare',
@@ -97,6 +106,11 @@ const cases: { modelId: 'wan-3' | 'gpt-image-2-5-flare'; expected: AgentModelMod
       ...flareFacts,
       mode: 'i2i',
       resolutions: ['auto', ...flareResolutions],
+      settings: [
+        { key: 'resolution', type: 'enum', required: false, values: ['auto', ...flareResolutions], min: null, max: null, default: null },
+        { key: 'aspectRatio', type: 'enum', required: false, values: ['auto', '16:9', '4:3', '1:1', '3:4', '9:16'], min: null, max: null, default: null },
+        ...flareFacts.settings,
+      ],
       references: [
         {
           type: 'image', roles: ['reference'], assetRequired: false,

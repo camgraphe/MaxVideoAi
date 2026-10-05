@@ -119,6 +119,18 @@ délibéré. Une suggestion de modèle vient des faits actuels et du besoin expr
 
 ## Parcours attendu
 
+Le 5 octobre 2026, les détails de modes partagés par MCP et Studio ajoutent les
+noms canoniques des contrôles de base dans `settings` : `durationSec`, `resolution`,
+`aspectRatio`, `fps` et `audio` lorsque ce mode propose un interrupteur. `audio`
+est un booléen ; les alias fournisseur comme `generate_audio` ou `generateAudio`
+restent refusés. Les durées issues d'une source et le son toujours généré ne
+deviennent pas des contrôles facultatifs. Les valeurs et limites viennent des
+capacités actuelles ; les valeurs par défaut de cette projection restent nulles
+pour conserver leur propriétaire dans les adaptateurs. Ce changement de résultat
+ne modifie pas les instructions MCP ni leurs budgets d'octets. Les tests de
+découverte et de préparation sont hors ligne ; aucune nouvelle sélection dans un
+hôte réel ni génération payante n'est revendiquée.
+
 1. **Comprendre.** Garder le brief, le modèle choisi, les contraintes et les médias
    déjà fournis. Poser uniquement les questions qui changent le résultat ou le coût.
 2. **Découvrir.** Une demande de choix utilise les recommandations ; un modèle

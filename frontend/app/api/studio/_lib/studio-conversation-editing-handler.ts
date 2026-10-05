@@ -1,3 +1,6 @@
+import {z} from 'zod';
+import {studioProjectNameSchema} from '@/lib/studio/conversation-project-title';
+import {renameStudioConversationProject} from '@/server/studio/conversation-project-naming';
 import type {NextRequest} from 'next/server';
 import {resolveStudioApiAccess} from '@/server/studio/access';
 import {createStudioConversationProject} from '@/server/studio/conversation-project-command';
@@ -10,8 +13,8 @@ import {studioJson} from './studio-route-utils';
 export function studioConversationEditingEnabled() {
   return process.env.STUDIO_IMAGE_CONVERSATION_ENABLED === 'true' && process.env.STUDIO_CONVERSATION_ACTIONS_ENABLED === 'true' && process.env.STUDIO_CONVERSATION_EDITING_ENABLED === 'true';
 }
-export async function handleStudioConversationEditing(req: NextRequest,operation: 'create'|'read'|'edit',projectId?: string,dependencies: {
-  enabled?: boolean;resolveAccess?: typeof resolveStudioApiAccess;create?: typeof createStudioConversationProject;read?: typeof readStudioConversationTimeline;edit?: typeof editStudioConversationTimeline;
+export async function handleStudioConversationEditing(req: NextRequest,operation: 'create'|'read'|'edit'|'rename',projectId?: string,dependencies: {
+  enabled?: boolean;resolveAccess?: typeof resolveStudioApiAccess;create?: typeof createStudioConversationProject;read?: typeof readStudioConversationTimeline;edit?: typeof editStudioConversationTimeline;rename?:typeof renameStudioConversationProject;
 } = {}) {
   const access = await (dependencies.resolveAccess ?? resolveStudioApiAccess)(req);
   if (!access.ok) return studioJson({ok: false,error: access.error},{status: access.status});
@@ -26,6 +29,11 @@ export async function handleStudioConversationEditing(req: NextRequest,operation
     try {while (true) {const next = await reader.read(); if (next.done) break; size += next.value.byteLength; if (size > 12000) {await reader.cancel(); return studioJson({ok: false,error: 'BODY_TOO_LARGE'},{status: 413});} chunks.push(next.value);}}
     finally {reader.releaseLock();}
     const raw = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+    if(operation==='rename'){
+      const input=z.object({projectId:z.string().min(1).max(256),name:studioProjectNameSchema,idempotencyKey:z.string().min(1).max(128)}).strict().safeParse(raw);
+      if(!input.success)return studioJson({ok:false,error:'INVALID_REQUEST'},{status:400});
+      return studioJson({ok:true,result:await(dependencies.rename??renameStudioConversationProject)({userId:access.userId,projectId:input.data.projectId},input.data)});
+    }
     if (operation === 'create') return studioJson({ok: true,result: await (dependencies.create ?? createStudioConversationProject)({userId: access.userId},raw,{featureEnabled: true})});
     const parsed = conversationTimelineCommandSchema.omit({projectId: true}).safeParse(raw);
     if (!parsed.success) return studioJson({ok: false,error: 'INVALID_REQUEST'},{status: 400});

@@ -58,7 +58,7 @@ test('the final response knows its remaining budget without losing executable to
   const director=createStudioConversationDirector({createResponse:async params=>{
     calls++;
     assert.equal(String(params.instructions).includes('This is the last Response'),calls===4);
-    assert.equal(params.tools?.some(tool=>tool.type==='function' && tool.name==='project_remember'),calls<4);
+    assert.equal(params.tools?.some(tool=>tool.type==='function' && tool.name==='project_remember'),calls<3);
     assert.ok(params.tools?.some(tool=>tool.type==='function' && tool.name==='image_prepare'));
     return {id:'r'+calls,model:'gpt-6.1-sol',status:'completed',service_tier:'default',usage:null,
       output_text:calls===4?JSON.stringify({reply:'Here is the price and a useful next step.'}):'',

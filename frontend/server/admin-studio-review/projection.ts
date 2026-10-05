@@ -27,7 +27,9 @@ export function reviewNumber(value: unknown): number | null {
 const money = (value: unknown) => typeof value === 'string' && /^\d{1,24}$/.test(value) ? value : typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? String(value) : null;
 const date = (value: unknown) => value instanceof Date ? value.toISOString() : new Date(String(value)).toISOString();
 export function projectTurn(row: Record<string, unknown>): ReviewTurn {
-  return { userId: String(row.user_id), projectId: String(row.project_id), requestId: String(row.request_id), state: reviewToken(row.state) ?? 'unknown', attempts: reviewNumber(row.model_attempts) ?? 0, createdAt: date(row.created_at), quoteId: reviewToken(row.quote_id) };
+  const incomplete = row.incomplete === true;
+  const continuationReason = incomplete && (row.continuation_reason === 'action_limit' || row.continuation_reason === 'output_limit') ? row.continuation_reason : null;
+  return { userId: String(row.user_id), projectId: String(row.project_id), requestId: String(row.request_id), state: reviewToken(row.state) ?? 'unknown', attempts: reviewNumber(row.model_attempts) ?? 0, createdAt: date(row.created_at), quoteId: reviewToken(row.quote_id), incomplete, continuationReason };
 }
 const actions = new Set(['project.read', 'catalog.read', 'pricing.read', 'model.details', 'project.remember', 'image.prepare', 'generation.read', 'quote.discard', 'media.read', 'video.prepare', 'voice.prepare', 'music.prepare', 'timeline.read', 'timeline.edit', 'export.prepare', 'export.read']);
 export function projectAction(row: Record<string, unknown>): ReviewAction {

@@ -35,7 +35,8 @@ function failureReceipt(params:Parameters<StudioResponseCreator>[0]) {
 test('safe selection correction preserves durable receipts, ownership and monetary checkpoints',async t=>{
   const entry=getFalEngineById('gpt-image-2-5-flare')!;
   const video=getFalEngineById('wan-3')!;
-  const catalog:AgentPublicGenerationEngine[]=[entry,video].map(item=>({engine:item.engine,surface:item.category==='image'?'image':'video',publicModes:item.modes.map(m=>m.mode) as AgentPublicGenerationEngine['publicModes'],modeCaps:Object.fromEntries(item.modes.map(m=>[m.mode,m.ui]))}));
+  const seedance=getFalEngineById('seedance-2-5')!;
+  const catalog:AgentPublicGenerationEngine[]=[entry,video,seedance].map(item=>({engine:item.engine,surface:item.category==='image'?'image':'video',publicModes:item.modes.map(m=>m.mode) as AgentPublicGenerationEngine['publicModes'],modeCaps:Object.fromEntries(item.modes.map(m=>[m.mode,m.ui]))}));
   const runtime=await createStudioCallRuntime(catalog);
   t.after(()=>runtime.close());
   const stored=async(id:string)=>(await getDb().query<StoredDraftRow>('SELECT draft_json,quote_id,state FROM studio_image_turns WHERE project_id=$1 ORDER BY created_at DESC',[id])).rows[0];
@@ -73,6 +74,25 @@ test('safe selection correction preserves durable receipts, ownership and moneta
         settings:calls===1?[{name:'inventedSetting',value:true}]:[{name:'resolution',value:'720p'},{name:'durationSec',value:5}]},calls);
     });
     assert.equal(ready.error,undefined);assert.equal(calls,2);assert.equal(ready.quotes.length,1);assert.deepEqual(ready.counts,{jobs:0,charges:0});
+  });
+
+  await t.test('Seedance 2.5 vertical audio correction uses the fourth checkpoint and creates one canonical quote',async()=>{
+    let calls=0;
+    const ready=await runtime.submit('correct-seedance-audio','Create a 20-second vertical film with sound.',[],async params=>{
+      calls++;
+      if(calls===1)return response('catalog_read',{},calls);
+      if(calls===2)return response('model_details',{modelId:'seedance-2-5'},calls);
+      if(calls===3)assert.equal(params.tools?.some(tool=>tool.type==='function'&&tool.name==='project_remember'),false);
+      if(calls===4){assert.equal(failureReceipt(params).error.nextAction.type,'studio_preparation_input');assert.equal((await stored('correct-seedance-audio')).draft_json,null);}
+      return response('video_prepare',{reply:'Review the vertical film quote.',prompt:'A cinematic vertical film.',aspectRatio:'9:16',source:null,modelId:'seedance-2-5',mode:'t2v',references:[],outputCount:1,
+        settings:[{name:'durationSec',value:20},{name:'resolution',value:'1080p'},{name:calls===3?'generateAudio':'audio',value:true},{name:'aspectRatio',value:'9:16'}]},calls);
+    });
+    assert.equal(ready.error,undefined);assert.equal(calls,4);assert.equal(ready.quotes.length,1);
+    assert.deepEqual(ready.quotes[0].request_json.settings,{durationSec:20,resolution:'1080p',audio:true,aspectRatio:'9:16'});
+    assert.deepEqual(ready.steps.map(step=>step.request.action),['catalog.read','model.details','video.prepare','video.prepare']);
+    assert.equal(ready.steps[2].result.ok,false);assert.equal(ready.steps[3].result.ok,true);
+    assert.deepEqual(ready.counts,{jobs:0,charges:0});
+    assert.equal((await stored('correct-seedance-audio')).state,'ready');
   });
 
   await t.test('the fourth unbound asset selection ends with an honest continuation and no draft creation or quote',async()=>{
@@ -124,6 +144,46 @@ test('safe selection correction preserves durable receipts, ownership and moneta
     assert.deepEqual(await readStudioAssistanceStatus(owner,policy),settled);
     assert.equal((await getDb().query<{n:number}>('SELECT count(*)::int n FROM mcp_generation_quotes WHERE studio_project_id=$1',[actor.projectId])).rows[0].n,1);
     assert.equal((await getDb().query<{n:number}>('SELECT count(*)::int n FROM app_jobs')).rows[0].n,0);
+  });
+
+  await t.test('an interrupted older read after rejection reuses settled responses before one fresh preparation',async()=>{
+    let dispatches=0,tokenCounts=0;
+    const input={requestId:randomUUID(),message:'Prepare one landscape image.',references:[]};
+    const service=createImageConversationService(actor,{enabled:true,actionsEnabled:true,generationFactory:factory,assistancePolicy:policy,countInputTokens:async()=>{tokenCounts++;return 1000;},
+      createActionResponse:async()=>{dispatches++;return dispatches===2?response('model_details',{modelId:'gpt-image-2-5-flare'},dispatches):response('image_prepare',imageArgs(dispatches===3),dispatches);},
+    });
+    // Persist the response/usage first, then interrupt before the old read action.
+    // This is the durable shape produced by a pre-restriction interrupted path.
+    await assert.rejects(service.submit(input),{code:'PARAMETER_INVALID'});
+    assert.equal(dispatches,2);assert.equal(tokenCounts,2);
+    const ready=await service.submit(input);assert.equal(ready.state,'ready');assert.ok(ready.quote);
+    assert.equal(dispatches,3);assert.equal(tokenCounts,3,'Saved paid responses must bypass token counting and reservation.');
+    const calls=(await getDb().query<{response_index:number;state:string}>('SELECT response_index,state FROM studio_assistance_calls WHERE request_id=$1 ORDER BY response_index',[input.requestId])).rows;
+    assert.deepEqual(calls,[{response_index:0,state:'settled'},{response_index:1,state:'settled'},{response_index:2,state:'settled'}]);
+    assert.equal((await service.submit(input)).quote?.quoteId,ready.quote.quoteId);assert.equal(dispatches,3);
+  });
+
+  await t.test('exhausted saved corrections stop before another token count, reservation or provider dispatch',async()=>{
+    let dispatches=0,tokenCounts=0;
+    const input={requestId:randomUUID(),message:'Prepare one landscape image.',references:[]};
+    const service=createImageConversationService(actor,{enabled:true,actionsEnabled:true,generationFactory:factory,assistancePolicy:policy,countInputTokens:async()=>{tokenCounts++;return 1000;},
+      createActionResponse:async()=>response('image_prepare',imageArgs(false),++dispatches),
+    });
+    // A request-scoped disposable fault reproduces an older interruption before
+    // continuation persistence without rewriting immutable production evidence.
+    await getDb().query(`CREATE FUNCTION interrupt_preparation_continuation() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
+      IF NEW.request_id='${input.requestId}' AND NEW.draft_json IS NOT NULL THEN RAISE EXCEPTION 'Injected continuation write interruption'; END IF;
+      RETURN NEW; END $$;
+      CREATE TRIGGER interrupt_preparation_continuation BEFORE UPDATE ON studio_image_turns FOR EACH ROW EXECUTE FUNCTION interrupt_preparation_continuation();`);
+    try {await assert.rejects(service.submit(input),/Injected continuation write interruption/);}
+    finally {await getDb().query('DROP TRIGGER interrupt_preparation_continuation ON studio_image_turns; DROP FUNCTION interrupt_preparation_continuation();');}
+    assert.equal(dispatches,2);assert.equal(tokenCounts,2);
+    const callsBefore=(await getDb().query('SELECT * FROM studio_assistance_calls WHERE request_id=$1 ORDER BY response_index',[input.requestId])).rows;
+    const recovered=await service.submit(input);assert.equal(recovered.state,'ready');assert.equal(recovered.quote,null);
+    assert.match(recovered.reply??'',/single preparation correction.*rejected/i);
+    assert.equal(dispatches,2);assert.equal(tokenCounts,2);
+    assert.deepEqual((await getDb().query('SELECT * FROM studio_assistance_calls WHERE request_id=$1 ORDER BY response_index',[input.requestId])).rows,callsBefore);
+    assert.equal((await getDb().query<{n:number}>('SELECT count(*)::int n FROM studio_conversation_responses WHERE request_id=$1',[input.requestId])).rows[0].n,2);
   });
 
   for(const [label,error,atCatalog] of [

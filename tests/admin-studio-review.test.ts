@@ -39,3 +39,33 @@ test('usage projection excludes raw output and preserves unknown unsettled charg
   const settled = projectAssistance({...common,state:'settled',charged_cents:0,provider_min_nano_usd:'12345',provider_max_nano_usd:'67890'});
   assert.equal(settled.chargedCents,0); assert.equal(settled.providerMinNanoUsd,'12345'); assert.equal(settled.providerMaxNanoUsd,'67890');
 });
+
+test('saved turn metadata identifies continuation without exposing its private payload or claiming preparation success', async () => {
+  const { projectTurn } = await import('../frontend/server/admin-studio-review/projection');
+  const row = { user_id: 'owner', project_id: 'film', request_id: 'a1bd8c76-7171-4f53-92f7-b0d7e418f534', state: 'ready', model_attempts: 1, created_at: new Date('2026-10-05T12:00:00Z'), quote_id: null };
+  for (const reason of ['action_limit', 'output_limit']) {
+    const turn = projectTurn({ ...row, incomplete: true, continuation_reason: reason, draft_json: { reply: 'NEVER_REPLY', continuation: { reason, lastError: { message: 'NEVER_ERROR', code: 'PARAMETER_INVALID' } } } });
+    assert.equal(turn.state, 'ready');
+    assert.equal(turn.incomplete, true);
+    assert.equal(turn.continuationReason, reason);
+    assert.equal(turn.quoteId, null);
+    assert.doesNotMatch(JSON.stringify(turn), /NEVER|lastError|PARAMETER_INVALID|draft_json/);
+  }
+  const unknown = projectTurn({ ...row, incomplete: true, continuation_reason: 'NEVER_PRIVATE_REASON' });
+  assert.equal(unknown.incomplete, true);
+  assert.equal(unknown.continuationReason, null);
+  assert.doesNotMatch(JSON.stringify(unknown), /NEVER_PRIVATE_REASON/);
+  const ordinary = projectTurn(row);
+  assert.equal(ordinary.incomplete, false);
+  assert.equal(ordinary.continuationReason, null);
+  assert.equal(ordinary.quoteId, null);
+});
+
+test('continuation filtering remains distinct from existing stored state filters and rejects ambiguous values', async () => {
+  const { reviewListSchema } = await import('../frontend/server/admin-studio-review/contracts');
+  const result = reviewListSchema.safeParse({ state: 'ready', completion: 'incomplete' });
+  assert.equal(result.success, true);
+  if (result.success) assert.deepEqual(result.data, { state: 'ready', completion: 'incomplete', page: 0, limit: 50 });
+  for (const completion of ['complete', 'ready', ['incomplete'], 'x'.repeat(1000)]) assert.equal(reviewListSchema.safeParse({ completion }).success, false);
+  assert.equal(reviewListSchema.safeParse({ state: 'ready' }).success, true);
+});

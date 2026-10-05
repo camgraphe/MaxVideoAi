@@ -4,7 +4,12 @@ import { reviewListSchema, reviewScopeSchema, StudioReviewError, type ReviewDeta
 import { projectAction, projectAssistance, projectTurn, projectUsage, redactReviewText } from './projection';
 
 type Row = Record<string, unknown>;
-const metadata = 't.user_id,t.project_id,t.request_id,t.state,t.model_attempts,t.created_at,t.quote_id';
+// A saved reply (state=ready) can retain unfinished work. Only bounded operational
+// facts cross this pre-reveal boundary; continuation error messages stay private.
+const incomplete = "COALESCE(t.draft_json->'continuation' <> 'null'::jsonb,false)";
+const metadata = `t.user_id,t.project_id,t.request_id,t.state,t.model_attempts,t.created_at,t.quote_id,
+  ${incomplete} AS incomplete,CASE WHEN t.draft_json->'continuation'->>'reason' IN ('action_limit','output_limit')
+  THEN t.draft_json->'continuation'->>'reason' ELSE NULL END AS continuation_reason`;
 const ownedProject = 'JOIN studio_projects p ON p.id=t.project_id AND p.user_id=t.user_id AND p.deleted_at IS NULL';
 const exactScope = 't.user_id=$1 AND t.project_id=$2 AND t.request_id=$3';
 const scopeParams = (scope: ReviewScope) => [scope.userId, scope.projectId, scope.requestId];
@@ -16,8 +21,9 @@ export async function loadStudioReviewList(input: unknown): Promise<ReviewList> 
   try {
     const rows = await query<Row>(`SELECT ${metadata} FROM studio_image_turns t ${ownedProject}
       WHERE ($1::text IS NULL OR t.user_id=$1) AND ($2::text IS NULL OR t.project_id=$2) AND ($3::text IS NULL OR t.state=$3)
+      AND ($6::text IS NULL OR ${incomplete})
       ORDER BY t.created_at DESC,t.request_id DESC,t.user_id,t.project_id LIMIT $4 OFFSET $5`,
-    [filter.userId ?? null, filter.projectId ?? null, filter.state ?? null, filter.limit + 1, filter.page * filter.limit]);
+    [filter.userId ?? null, filter.projectId ?? null, filter.state ?? null, filter.limit + 1, filter.page * filter.limit, filter.completion ?? null]);
     return { status: 'available', turns: rows.slice(0, filter.limit).map(projectTurn), hasMore: rows.length > filter.limit };
   } catch { return { status: 'unavailable' }; }
 }

@@ -26,15 +26,17 @@ export type StudioDirectorContext = {
   historyFacts?:StudioConversationHistoryFacts;
   project: StudioConversationProject;
   execute(callId: string, request: StudioActionRequest): Promise<StudioActionResult>;
-  checkpoint(index: number, create: () => Promise<StudioDirectorResponse>, params?: ResponseCreateParamsNonStreaming): Promise<StudioDirectorResponse>;
+  checkpoint(index: number, create: () => Promise<StudioDirectorResponse>, params?: ResponseCreateParamsNonStreaming, options?: {replayOnly?: boolean}): Promise<StudioDirectorResponse>;
 };
 const replySchema = z.object({reply: z.string().min(1).max(2400).transform(projectStudioReply)}).strict();
-function pendingDirectorReply(reason: 'action_limit'|'output_limit',completedEdits: number,lastResult?: StudioActionResult): ImageDraft {
+function pendingDirectorReply(reason: 'action_limit'|'output_limit',completedEdits: number,lastResult?: StudioActionResult,correctionRejected = false): ImageDraft {
   const lastError = lastResult && !lastResult.ok ? {code: lastResult.error.code,message: lastResult.error.message.slice(0,800)} : undefined;
   const saved = completedEdits ? `Saved ${completedEdits} timeline edit${completedEdits === 1 ? '' : 's'}. ` : '';
   const failure = lastError ? `The last action failed (${lastError.code}): ${lastError.message} ` : '';
+  const limit = correctionRejected ? 'The single preparation correction was also rejected.'
+    : `This message reached its ${reason === 'action_limit' ? 'action' : 'output'} limit.`;
   return {image: null,continuation: {reason,completedEdits,...(lastError ? {lastError} : {})},
-    reply: projectStudioReply(`${saved}${failure}This message reached its ${reason === 'action_limit' ? 'action' : 'output'} limit. I haven't verified that every part of your request is finished; send a follow-up to continue.`)};
+    reply: projectStudioReply(`${saved}${failure}${limit} I haven't verified that every part of your request is finished; send a follow-up to continue.`)};
 }
 
 export function isReplayableStudioResponse(response: StudioDirectorResponse): boolean {
@@ -69,11 +71,17 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
     ];
     let completedEdits = 0;
     let lastResult: StudioActionResult | undefined;
+    let correctionAction: StudioActionRequest['action'] | undefined;
+    let correctionRejected = false;
+    let correctionResult: StudioActionResult | undefined;
     for (let index = 0; index < 4; index++) {
       const availableTools = [...STUDIO_DIRECTOR_TOOLS, ...(options.mediaEnabled ? STUDIO_MEDIA_DIRECTOR_TOOLS : []),...(options.editingEnabled ? STUDIO_EDITING_DIRECTOR_TOOLS : []),...(options.exportsEnabled ? STUDIO_EXPORT_DIRECTOR_TOOLS : [])];
       // A final read cannot feed another response. Offer only finishing actions,
       // while still accepting older checkpointed reads during paid-response replay.
-      const tools = index === 3 ? availableTools.filter(tool => tool.action.endsWith('.prepare') || tool.action === 'timeline.edit' || tool.action === 'quote.discard') : availableTools;
+      const tools = correctionAction
+        ? availableTools.filter(tool => tool.action === correctionAction)
+        : index === 3 ? availableTools.filter(tool => tool.action.endsWith('.prepare') || tool.action === 'timeline.edit' || tool.action === 'quote.discard')
+        : index === 2 ? availableTools.filter(tool => tool.action !== 'project.remember') : availableTools;
       const params: ResponseCreateParamsNonStreaming = {
         model: options.model ?? 'gpt-6.1-sol', service_tier: 'default', store: false, reasoning: {effort: 'medium'}, max_output_tokens: 2200,
         include: ['reasoning.encrypted_content'],
@@ -83,13 +91,23 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
           + `\n\nResponse ${index + 1} of 4: ${4 - index} Responses remain, including this one. Leave room to answer. For an image/video generation budget, inspect one suitable model, read its exact price, then explain; compare a second only if its price and a useful reply fit.`
           + (index === 3
           ? '\n\nThis is the last Response available for this message. Give the client a useful answer from the facts already read, or complete their requested preparation/edit/cancellation. Reads and memory writes are unavailable because no response would remain to use their results. Explain any missing model or price verification accurately; do not invent facts or prepare a creation when the client only asked for advice.'
-          : ''),
+          : index === 2 ? '\n\nOptional memory writes are now unavailable. When the needed model and source facts are known, prepare the requested creation now so one response remains to correct a prequote input rejection. Read only facts still required for the requested workflow.' : '')
+          + (correctionAction ? '\n\nThe preceding preparation was rejected before quote creation. This is the single input-correction attempt for that preparation. Correct the rejected selection using the facts already read, or explain what is missing. Do not repeat successful actions, change to another operation or claim a quote exists.' : ''),
         input,
         tools: tools.map(tool => ({type: 'function' as const, name: tool.name, description: tool.description, strict: true,
           parameters: {type: 'object', additionalProperties: false, properties: studioToolReferenceProperties(tool.name,tool.properties,context.references), required: Object.keys(tool.properties)}})),
         text: {format: {type: 'json_schema', name: 'studio_reply', strict: true, schema: {type: 'object', additionalProperties: false, required: ['reply'], properties: {reply: {type: 'string'}}}}},
       };
-      const response = await context.checkpoint(index, () => create(params), params);
+      let freshResponse = false;
+      let response: StudioDirectorResponse;
+      try {
+        response = await context.checkpoint(index, () => {freshResponse = true; return create(params);}, params, {replayOnly: correctionRejected});
+      } catch (error) {
+        if (correctionRejected && error instanceof AgentApiError && (error.code === 'RATE_LIMITED'
+          || (error.code === 'SPENDING_LIMIT_EXCEEDED' && error.nextAction?.type === 'studio_assistance' && error.nextAction.reason === 'call_limit')))
+          return pendingDirectorReply('action_limit',completedEdits,correctionResult,true);
+        throw error;
+      }
       if (response.status !== 'completed') {
         if (response.status === 'incomplete' && response.incomplete_details?.reason === 'max_output_tokens')
           return pendingDirectorReply('output_limit',completedEdits,lastResult);
@@ -105,6 +123,8 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       let action: StudioActionRequest;
       try { action = actionFromTool(call.name, JSON.parse(call.arguments)); }
       catch { throw new AgentApiError('PARAMETER_INVALID', 'Studio requested an unavailable or invalid action.'); }
+      if (freshResponse && correctionAction && action.action !== correctionAction)
+        throw new AgentApiError('PARAMETER_INVALID', 'Studio can only correct the rejected preparation in this response.');
       if (!options.mediaEnabled && STUDIO_MEDIA_DIRECTOR_TOOLS.some(tool => tool.action === action.action))
         throw new AgentApiError('ENGINE_UNAVAILABLE', 'Studio media tools are unavailable.');
       if (!options.editingEnabled && STUDIO_EDITING_DIRECTOR_TOOLS.some(tool => tool.action === action.action))
@@ -119,6 +139,14 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       }
       lastResult = result;
       if (isStudioPreparationCorrection(result)) {
+        correctionResult = result;
+        if (correctionAction) {
+          if (freshResponse) return pendingDirectorReply('action_limit',completedEdits,lastResult,true);
+          // Older paid responses may contain additional actions. Recover those
+          // receipts, but the checkpoint must not reserve another model call.
+          correctionRejected = true;
+        }
+        correctionAction = action.action;
         input.push(...response.output as ResponseInputItem[], {type: 'function_call_output', call_id: call.call_id, output: JSON.stringify(result)});
         continue;
       }
@@ -134,6 +162,6 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       }
       input.push(...response.output as ResponseInputItem[], {type: 'function_call_output', call_id: call.call_id, output: JSON.stringify(result)});
     }
-    return pendingDirectorReply('action_limit',completedEdits,lastResult);
+    return pendingDirectorReply('action_limit',completedEdits,correctionRejected ? correctionResult : lastResult,correctionRejected);
   };
 }

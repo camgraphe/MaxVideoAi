@@ -74,14 +74,14 @@ test('draft validation projects top-level and media replies without changing cre
   assert.equal(media.media.reply,contaminated,'Projection must not mutate its source.');
 });
 
-test('an action-limit explanation projects protocol markers without changing the failure receipt',async()=>{
+test('a bounded correction explanation projects protocol markers without changing the failure receipt',async()=>{
   const preparation=preparations[0];
   let calls=0;
   const draft=await createStudioConversationDirector({createResponse:async()=>({...response(''),output_text:'',output:[{
     type:'function_call',call_id:'rejected-'+(++calls),name:preparation.name,arguments:JSON.stringify(preparation.args)}]})})({...context(),execute:async()=>({
     ok:false,action:'image.prepare',error:{code:'PARAMETER_INVALID',message:contaminated,retryable:false,nextAction:{type:'studio_preparation_input',version:1}},
   })});
-  assert.equal(calls,4);
+  assert.equal(calls,2);
   assert.equal(draft.reply,fallback);
   assert.equal(draft.continuation?.reason,'action_limit');
   assert.equal(draft.continuation?.lastError?.message,contaminated);

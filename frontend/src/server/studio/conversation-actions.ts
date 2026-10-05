@@ -70,7 +70,7 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
         case 'timeline.edit':
           if (!dependencies.editingEnabled || !dependencies.editTimeline) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio editing tools are unavailable.');
           return {ok: true,action: request.action,data: await dependencies.editTimeline(request)};
-        case 'project.remember': return {ok: true, action: request.action, data: await saveStudioConversationMemory(actor, {revision: request.revision, brief: request.brief, decisions: request.decisions})};
+        case 'project.remember': return {ok: true, action: request.action, data: await saveStudioConversationMemory(actor, {revision: request.revision, brief: request.brief, decisions: request.decisions, projectTitle: request.projectTitle})};
         case 'catalog.read': {
           const image = (await generation.catalog()).map(studioVisualCapabilitySummary);
           if (!dependencies.mediaEnabled || !dependencies.factories) return {ok: true, action: request.action, data: image};

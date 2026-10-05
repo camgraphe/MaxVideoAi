@@ -174,11 +174,11 @@ test('real conversation qualification prepares durable quotes, rejects malformed
   assert.equal(failed.error,undefined);assert.equal(failed.result?.state,'ready');
   assert.match(failed.result?.reply??'',/haven't verified.*every part/);
   assert.equal(failed.quotes.length,0);assert.deepEqual(failed.counts,{jobs:0,charges:0});
-  assert.equal(calls,5,'One successful response plus at most four rejected-selection responses.');
-  assert.equal(failed.steps.length,4,'Each distinct call ID has its own immutable failure receipt.');
+  assert.equal(calls,3,'One successful response plus the rejected selection and its single correction.');
+  assert.equal(failed.steps.length,2,'Each distinct call ID has its own immutable failure receipt.');
   assert.ok(failed.steps.every(step=>!step.result.ok&&step.result.error.code==='PARAMETER_INVALID'&&step.result.error.nextAction?.type==='studio_preparation_input'));
   const replayedFailure=await runtime.submit('invalid-case','Animate this image.',['portrait'],async()=>{throw new Error('A saved continuation must not buy another Response.');},failedRequestId);
-  assert.equal(calls,5);assert.equal(replayedFailure.result?.requestId,failedRequestId);
+  assert.equal(calls,3);assert.equal(replayedFailure.result?.requestId,failedRequestId);
   assert.deepEqual(replayedFailure.steps,failed.steps);assert.deepEqual(replayedFailure.counts,{jobs:0,charges:0});
 });
 

@@ -10,6 +10,7 @@ async function mount() {
   const require=createRequire(import.meta.url),css=require.extensions['.css'];
   require.extensions['.css']=module=>{module.exports={};};
   const dom=new JSDOM('<div id="root"></div>',{url:'http://localhost/app/studio/conversation/project_current',pretendToBeVisual:true});
+  Object.assign(dom.window.HTMLElement.prototype,{attachEvent(){},detachEvent(){}});
   Object.assign(dom.window.HTMLDialogElement.prototype,{showModal(){this.open=true;},close(){this.open=false;}});
   const globals={window:dom.window,self:dom.window,document:dom.window.document,navigator:dom.window.navigator,HTMLElement:dom.window.HTMLElement,React,IS_REACT_ACT_ENVIRONMENT:true};
   const previous=new Map(Object.keys(globals).map(key=>[key,Object.getOwnPropertyDescriptor(globalThis,key)]));
@@ -72,5 +73,46 @@ test('new project retries one identity and a closed/account-changed dialog canno
     assert.notEqual(view.requests[4].init.body,body);
     await act(async()=>view.requests[4].pending.resolve(Response.json({ok:true,result:{projectId:'project_new_owner'}})));
     assert.deepEqual(view.destinations,['/app/studio/conversation/project_new_owner']);
+  }finally{await view.close();}
+});
+
+
+test('rename is separate from opening a project, retries one write, and ignores a cancelled acknowledgement',async()=>{
+  const view=await mount();
+  try{
+    await act(async()=>view.button('Projects').click());
+    await act(async()=>view.requests[0].pending.resolve(Response.json({ok:true,projects:[{id:'project_current',name:'Current',updatedAt:'2026-10-03T10:00:00Z',persistenceMode:'connected'}]})));
+    await act(async()=>view.button('Rename Current').click());
+    const input=view.dom.window.document.querySelector<HTMLInputElement>('input[aria-label="Project name"]')!;
+    assert.equal(view.dom.window.document.activeElement,input);
+    await act(async()=>{Object.getOwnPropertyDescriptor(view.dom.window.HTMLInputElement.prototype,'value')!.set!.call(input,'Perfume launch');input.dispatchEvent(new view.dom.window.Event('input',{bubbles:true}));});
+    await act(async()=>view.button('Save project name').click());
+    assert.equal(view.requests[1].init.method,'PATCH');const body=view.requests[1].init.body;
+    assert.equal(JSON.parse(body as string).name,'Perfume launch');
+    await act(async()=>view.requests[1].pending.reject(new Error('lost acknowledgement')));
+    assert.ok(view.dom.window.document.querySelector('[role="alert"]'));
+    await act(async()=>view.button('Save project name').click());
+    assert.equal(view.requests[2].init.body,body);
+    await act(async()=>view.requests[2].pending.resolve(Response.json({ok:true,result:{projectId:'project_current',name:'Perfume launch',updatedAt:'2026-10-05T12:00:00Z'}})));
+    assert.ok(view.button('Rename Perfume launch'));assert.deepEqual(view.destinations,[]);
+    await act(async()=>view.button('Rename Perfume launch').click());
+    await act(async()=>view.button('Save project name').click());
+    await act(async()=>view.button('Cancel renaming').click());
+    assert.equal(view.requests[3].init.signal?.aborted,true);
+    await act(async()=>view.requests[3].pending.resolve(Response.json({ok:true,result:{projectId:'project_current',name:'Late name',updatedAt:'2026-10-05T12:00:00Z'}})));
+    assert.ok(view.button('Rename Perfume launch'));
+  }finally{await view.close();}
+});
+
+
+test('an account change discards a pending rename acknowledgement',async()=>{
+  const view=await mount();
+  try{
+    await act(async()=>view.button('Projects').click());
+    await act(async()=>view.requests[0].pending.resolve(Response.json({ok:true,projects:[{id:'project_current',name:'Current',updatedAt:'2026-10-03T10:00:00Z',persistenceMode:'connected'}]})));
+    await act(async()=>view.button('Rename Current').click());await act(async()=>view.button('Save project name').click());
+    await view.render('another-account');assert.equal(view.requests[1].init.signal?.aborted,true);
+    await act(async()=>view.requests[1].pending.resolve(Response.json({ok:true,result:{projectId:'project_current',name:'Previous account',updatedAt:'2026-10-05T12:00:00Z'}})));
+    assert.equal(view.dom.window.document.querySelector('dialog'),null);assert.deepEqual(view.destinations,[]);
   }finally{await view.close();}
 });
