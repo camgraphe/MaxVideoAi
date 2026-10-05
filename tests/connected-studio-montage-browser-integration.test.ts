@@ -274,10 +274,17 @@ test('MCP montage opens the current conversation with private playback, durable 
     const binSave = await fetch(`${runtime.origin}${endpoint}/workspace`, { method: 'PUT', headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ expectedRevision: 4, snapshot }) });
     assert.equal(binSave.status, 200, await binSave.clone().text());
     assert.equal((await binSave.json()).revision, 5);
+    const privateBeforeBinReload = browserFixture!.readPrivateRequests().length;
     await page.reload({ waitUntil: 'domcontentloaded' });
     await expect(page.getByLabel('Film timeline', { exact: true })).toHaveAttribute('data-revision', '5');
     await page.getByRole('button', { name: 'Select clip Pattern B', exact: true }).click();
     await expect.poll(() => firstVideo.evaluate((element) => (element as HTMLVideoElement).readyState)).toBeGreaterThanOrEqual(2);
+    const retainedSource = await firstVideo.evaluate((element) => {
+      const url = new URL((element as HTMLVideoElement).currentSrc);
+      return `${url.origin}${url.pathname}`;
+    });
+    assert.ok(retainedSource.endsWith('/' + STUDIO_PRIVATE_MEDIA_KEYS.b), 'Playback must keep B after its bin entry is removed.');
+    assert.ok(browserFixture!.readPrivateRequests().slice(privateBeforeBinReload).some((entry) => entry.url === retainedSource && entry.status === 206));
 
     const renderCard = page.getByRole('article', { name: 'Film render', exact: true });
     await expect(renderCard).toHaveCount(1);

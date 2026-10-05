@@ -51,6 +51,8 @@ Files: operational cleanup helper/CLI, focused PostgreSQL tests, operation repor
 - [x] Rehearse deletion and idempotence on isolated data; test mixed ownership/current projects/financial associations and rollback on changed state.
 - [ ] Apply only the inventoried authorized private project set; record before/after evidence without secrets.
 
+Live release/data evidence is recorded in [PR #387](https://github.com/camgraphe/MaxVideoAi/pull/387). The remaining checklist specifies release ordering; consult that release record for completion.
+
 ## Task 4: Review and release
 
 - [x] Review diff and retained API/worker dependency closure; smoke-test new UI and retired routes locally.
