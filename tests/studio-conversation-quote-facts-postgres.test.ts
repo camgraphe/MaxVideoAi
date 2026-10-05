@@ -40,7 +40,7 @@ test('persisted Studio quote facts stay exact, bounded, isolated and available t
     return quote;
   }
   const fresh=await insertQuote();await linkQuote(fresh.quoteId);
-  const expectedFresh={price:{amountCents:48,currency:'USD'},expiresAt:fresh.expiresAt.toISOString(),expiredUnconfirmedQuote:false,
+  const expectedFresh={price:{amountCents:48,currency:'USD',formattedAmount:'$0.48'},expiresAt:fresh.expiresAt.toISOString(),expiredUnconfirmedQuote:false,
     modelId:request.engineId,mode:request.mode,settings:{audio:true,durationSec:8,resolution:'720p',aspectRatio:'16:9'},outputCount:1,referenceCount:2,referenceRoles:['first_frame','last_frame']};
 
   await t.test('the current quote supplies recorded customer cents and a private-field-free canonical configuration',async()=>{
@@ -109,7 +109,7 @@ test('persisted Studio quote facts stay exact, bounded, isolated and available t
     await linkQuote(quote.quoteId);
     const summary=(await readStudioConversationProject(actor)).generations?.find(value=>value.quoteId===quote.quoteId);
     assert.deepEqual(summary,{quoteId:quote.quoteId,surface:'audio',quoteState:'prepared',jobId:null,status:null,quote:{
-      price:{amountCents:17,currency:'USD'},expiresAt:quote.expiresAt.toISOString(),expiredUnconfirmedQuote:false,modelId:audio.engineId,mode:audio.mode,
+      price:{amountCents:17,currency:'USD',formattedAmount:'$0.17'},expiresAt:quote.expiresAt.toISOString(),expiredUnconfirmedQuote:false,modelId:audio.engineId,mode:audio.mode,
       settings:{voiceModel:'seed',seedAudioOutputFormat:'mp3',seedAudioSampleRate:24000},outputCount:1,referenceCount:1,referenceRoles:['voice_sample']}});
     assert.doesNotMatch(JSON.stringify(summary),/PRIVATE_|script|lyrics|prompt|pricingSnapshot/);
   });
@@ -120,7 +120,7 @@ test('persisted Studio quote facts stay exact, bounded, isolated and available t
     await linkQuote(quote.quoteId);
     const summary=(await readStudioConversationProject(actor)).generations?.find(value=>value.quoteId===quote.quoteId);
     assert.deepEqual(summary,{quoteId:quote.quoteId,surface:'image',quoteState:'prepared',jobId:null,status:null,quote:{
-      price:{amountCents:144,currency:'USD'},expiresAt:quote.expiresAt.toISOString(),expiredUnconfirmedQuote:false,modelId:image.engineId,mode:image.mode,
+      price:{amountCents:144,currency:'USD',formattedAmount:'$1.44'},expiresAt:quote.expiresAt.toISOString(),expiredUnconfirmedQuote:false,modelId:image.engineId,mode:image.mode,
       settings:{resolution:'custom',aspectRatio:'3:4',imageWidth:1024,imageHeight:1360,quality:'high'},outputCount:3,referenceCount:0,referenceRoles:[]}});
     assert.doesNotMatch(JSON.stringify(summary),/PRIVATE_|style|prompt/);
   });

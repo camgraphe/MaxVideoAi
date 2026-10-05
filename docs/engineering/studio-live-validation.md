@@ -226,6 +226,21 @@ a quote, including when the flag is false. It never reprices or mutates one.
 expiry semantics, ownership isolation, the bounded whitelist and replay without
 a second Response, job or charge.
 
+Readback qualification also covers historical estimates and the direction visible
+in a prepared quote. The director receives a separate, explicitly historical data
+projection: at most two owned completed pricing receipts and two recent prepared
+directions, linked to their quote identities with explicit truncation. Direction
+comes from the saved draft already exposed by the quote card; it does not expand
+the prompt-free `project_read` receipt or expose provider data. Historical estimates
+retain their model, settings, currency and timestamp and cannot replace a current
+quote. This lets the assistant explain a changed model or read back what the
+customer is reviewing without treating old prices as current authority.
+
+Customer amounts have a shared display formatter as well as exact cents and
+currency. Live tests must check the assistant's prose against both the tool receipt
+and the visible card: canonical quote parity alone does not detect a tenfold
+spoken amount or an incorrect interpretation of a missing optional setting.
+
 ## Assistance-policy integration
 
 The credit-policy branch is integrated without activating it in production.

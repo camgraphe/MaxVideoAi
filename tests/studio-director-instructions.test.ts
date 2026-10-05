@@ -37,6 +37,11 @@ test('director sends creative purpose, current help and live quote rules with it
         assert.match(instructions,/voice cloning.*owned sample/i);
         assert.match(instructions,/songs.*effects.*ambience.*soundtracks/i);
         assert.match(instructions,/attached saved media.*exact kinds.*roles/i);
+        assert.match(instructions,/sound-only.*source video.*soundtrack.*preserv/i);
+        assert.match(instructions,/missing.*audio.*framing.*model_details/i);
+        assert.match(instructions,/always_generated.*sound/i);
+        assert.match(instructions,/formattedAmount/);
+        assert.match(instructions,/explain.*model.*chang/i);
       }
       else assert.match(instructions,/Timeline editing is unavailable/i);
       assert.ok(!names.some(name=>/confirm|purchase|shell/.test(name)));

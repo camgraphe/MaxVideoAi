@@ -7,6 +7,7 @@ import {
 } from "@/lib/studio/image-quote-ui";
 import styles from "../image-conversation.module.css";
 import {conversationFailurePresentation, conversationQuotePresentation, type ConversationLocale} from '@/lib/studio/conversation-quote-presentation';
+import {formatCustomerAmount} from '@/lib/customer-price-presentation';
 export function ImageQuoteCard({
   turn,
   busy,
@@ -40,9 +41,7 @@ export function ImageQuoteCard({
     quote.state === "expired" ||
     (quote.state === "prepared" && Date.parse(quote.expiresAt) <= now);
   const formatMoney = (amountCents: number, currency: string) =>
-    new Intl.NumberFormat(locale === 'fr' ? 'fr-FR' : 'en-US', { style: "currency", currency }).format(
-      amountCents / 100,
-    );
+    formatCustomerAmount(amountCents,currency,locale) ?? t('unavailable','indisponible');
   const price = formatMoney(quote.price.amountCents, quote.price.currency);
   return (
     <div className={styles.quote} aria-label={t('Creation quote', 'Devis de création')}>

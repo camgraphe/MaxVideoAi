@@ -1,5 +1,7 @@
+import {customerDisplayPrice} from '@/lib/customer-price-presentation';
 import type {StudioExportDependencies} from './conversation-export-command';
 import {recordedStudioOutputDuration} from './conversation-quote-facts';
+import {projectStudioQuoteDirections,readStudioHistoricalEstimates} from './conversation-history-facts';
 import { getBaseEngineIncludingHidden } from "@/lib/engines";
 import { z } from "zod";
 import {
@@ -229,7 +231,7 @@ export function createImageConversationService(
             summary: quote.request,
             ...(quote.request.surface==='video'&&recordedStudioOutputDuration(quote.pricingSnapshot)!==undefined
               ? {outputDurationSec:recordedStudioOutputDuration(quote.pricingSnapshot)} : {}),
-            price: { amountCents: quote.priceCents, currency: quote.currency },
+            price: customerDisplayPrice(quote.priceCents,quote.currency),
             fundingMode: "wallet",
             confirmationRequired: true,
             wallet: balance?.currency === quote.currency ? balance : null,
@@ -309,11 +311,14 @@ export function createImageConversationService(
           )
           .reverse();
         const useActions = !turn.draft_json && dependencies.actionsEnabled === true;
+        const recentHistory=history.slice(-8);
+        const historyFacts=useActions?{quoteDirections:projectStudioQuoteDirections(recentHistory),estimates:await readStudioHistoricalEstimates(actor,recentHistory.map(saved=>saved.request_id))}:undefined;
         if (!turn.draft_json && !useActions && !dependencies.director) throw new AgentApiError('ENGINE_UNAVAILABLE','Enable the metered Studio conversation before requesting assistance.');
         const draft =
           turn.draft_json ??
           (useActions ? await runStudioImageActions({
             actor, turn, input, references: refs, referenceFingerprint, responseReplayOnly,
+            historyFacts,
             history: history.map(saved => ({message: saved.input_json.message, reply: saved.draft_json ? projectStudioReply(saved.draft_json.reply) : null,
               ...(saved.input_json.referenceMentions ? {referenceMentions: saved.input_json.referenceMentions} : {})})),
             enabled: dependencies.enabled, factory, createResponse: dependencies.createActionResponse,assistancePolicy: dependencies.assistancePolicy,countInputTokens: dependencies.countInputTokens,

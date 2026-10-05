@@ -1,3 +1,4 @@
+import {customerDisplayPrice} from '@/lib/customer-price-presentation';
 import OpenAI from 'openai';
 import type {ResponseCreateParamsNonStreaming} from 'openai/resources/responses/responses';
 import {studioTokenCountInput} from './assistance-token-count';
@@ -9,7 +10,7 @@ import {AgentApiError, toAgentApiFailure} from '@/server/agent-api/errors';
 import {getActiveAccountRestrictionStrict} from '@/server/fraud-cleanup/restrictions';
 import type {StudioGenerationActor} from '@/server/agent-api/generation-actor';
 import type {ResolvedReference} from '@/server/agent-api/reference-types';
-import type {ImageTurnInput,ImageConversationHistoryTurn} from '@/lib/studio/image-conversation-contract';
+import type {ImageTurnInput,ImageConversationHistoryTurn,StudioConversationHistoryFacts} from '@/lib/studio/image-conversation-contract';
 import type {StudioActionRequest, StudioActionResult} from '@/lib/studio/conversation-action-contract';
 import {createStudioConversationDirector, type StudioResponseCreator} from './conversation-director';
 import {createStudioActionExecutor} from './conversation-actions';
@@ -44,7 +45,7 @@ async function prepareMediaAction(options: {
     await attachImageQuote(actor, turn, quote.quoteId, executor);
     await completeStudioAction(actor, turn, callId, {ok: true, action: action.action, data: {
       quoteId: quote.quoteId, expiresAt: quote.expiresAt.toISOString(), requestHash: quote.requestHash, summary: quote.request,
-      price: {amountCents: quote.priceCents, currency: quote.currency}, fundingMode: quote.fundingMode, confirmationRequired: true,
+      price: customerDisplayPrice(quote.priceCents,quote.currency), fundingMode: quote.fundingMode, confirmationRequired: true,
     }} as StudioActionResult, executor);
   };
   if (request.surface === 'video') return factories.video(actor, {enabled: options.enabled, onQuotePrepared,expectedReferenceFingerprint:selection.referenceFingerprint?.()}).prepare(request);
@@ -82,7 +83,7 @@ export async function resumeStudioImageAction(options: {
         await attachImageQuote(actor, turn, quote.quoteId, executor);
         await completeStudioAction(actor, turn, callId, {ok: true, action: 'image.prepare', data: {
           quoteId: quote.quoteId, expiresAt: quote.expiresAt.toISOString(), requestHash: quote.requestHash, summary: quote.request,
-          price: {amountCents: quote.priceCents, currency: quote.currency}, fundingMode: quote.fundingMode, confirmationRequired: true,
+          price: customerDisplayPrice(quote.priceCents,quote.currency), fundingMode: quote.fundingMode, confirmationRequired: true,
         }}, executor);
       },
     }).prepare(request);
@@ -98,6 +99,7 @@ export async function runStudioImageActions(options: {
   actor: StudioGenerationActor; turn: StoredImageTurn; input: ImageTurnInput;
   references: ResolvedReference[]; referenceFingerprint: string;
   history: ImageConversationHistoryTurn[]; enabled: boolean;
+  historyFacts?:StudioConversationHistoryFacts;
   factory: ImageGenerationFactory; createResponse?: StudioResponseCreator;
   responseReplayOnly?: boolean;
   assistancePolicy?: StudioAssistancePolicy;countInputTokens?: (params: ResponseCreateParamsNonStreaming) => Promise<number>;
@@ -172,13 +174,13 @@ export async function runStudioImageActions(options: {
           await attachImageQuote(actor, turn, quote.quoteId, executor);
           await completeStudioAction(actor, turn, currentCallId, {ok: true, action: 'image.prepare', data: {
             quoteId: quote.quoteId, expiresAt: quote.expiresAt.toISOString(), requestHash: quote.requestHash,
-            summary: quote.request, price: {amountCents: quote.priceCents, currency: quote.currency}, fundingMode: quote.fundingMode, confirmationRequired: true,
+            summary: quote.request, price: customerDisplayPrice(quote.priceCents,quote.currency), fundingMode: quote.fundingMode, confirmationRequired: true,
           }}, executor);
         },
       }).prepare(request);
     },
   });
-  const draft = await director({message: input.message, history: options.history, references: options.references, referenceMentions: input.referenceMentions,
+  const draft = await director({message: input.message, history: options.history, references: options.references, referenceMentions: input.referenceMentions, historyFacts: options.historyFacts,
     project: await readStudioConversationProject(actor,{exportsEnabled:options.editingEnabled&&options.exportsEnabled}),
     checkpoint: (index, create, params) => checkpointStudioResponse(actor, turn, index, create, assistance ? {prepare: async () => {
       if (await getActiveAccountRestrictionStrict(actor.userId)) {

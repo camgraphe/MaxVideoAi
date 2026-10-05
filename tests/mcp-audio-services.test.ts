@@ -91,7 +91,7 @@ test('prepare_audio_generation returns an exact owned quote without charging or 
   } as never);
 
   assert.equal(result.quoteId, '00000000-0000-4000-8000-000000000071');
-  assert.deepEqual(result.price, { amountCents: 45, currency: 'USD' });
+  assert.deepEqual(result.price, { amountCents: 45, currency: 'USD', formattedAmount: '$0.45' });
   assert.deepEqual(result.balance, { beforeCents: 70, afterCents: 25 });
   assert.equal(result.topupRequired, false);
   assert.equal(result.confirmationRequired, true);

@@ -27,6 +27,8 @@ import {
 } from './spending-limits';
 import type { InsertPreparedQuoteInput, McpGenerationQuote } from './quote-repository';
 
+import {customerDisplayPrice,type CustomerDisplayPrice} from '@/lib/customer-price-presentation';
+
 export type PrepareAudioGenerationInput = Omit<CanonicalAudioRequest, 'schemaVersion' | 'settings' | 'references' | 'outputCount'> & {
   schemaVersion?: 1;
   settings?: CanonicalAudioRequest['settings'];
@@ -39,7 +41,7 @@ export type PreparedAudioGeneration = {
   expiresAt: string;
   requestHash: string;
   summary: CanonicalAudioRequest;
-  price: { amountCents: number; currency: string };
+  price: CustomerDisplayPrice;
   balance: { beforeCents: number; afterCents: number };
   fundingMode: 'wallet';
   confirmationRequired: true;
@@ -227,7 +229,7 @@ export async function prepareAudioGenerationForActor(
     expiresAt: quote.expiresAt.toISOString(),
     requestHash,
     summary: request,
-    price: { amountCents: priceCents, currency },
+    price: customerDisplayPrice(priceCents,currency),
     balance: {
       beforeCents: wallet.balanceCents,
       afterCents: Math.max(0, wallet.balanceCents - priceCents),

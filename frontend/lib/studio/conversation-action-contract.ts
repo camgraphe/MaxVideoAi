@@ -17,6 +17,8 @@ import type {listAudioCapabilities} from '@/server/agent-api/audio-capabilities'
 import type {AudioSettingDetails,projectAudioVariantFixedOutput} from '@/server/agent-api/audio-capabilities';
 import type {AgentModelGuidance,AgentModelEditorialGuidance,AgentModelEditorialSummary} from '@/server/agent-api/model-guidance';
 import type {AgentModelPromptingSource} from '@/server/agent-api/model-prompting-sources';
+import type {CustomerDisplayPrice} from '@/lib/customer-price-presentation';
+import type {StudioAudioWorkflowFacts} from '@/server/studio/conversation-audio-discovery';
 
 export const studioMemorySchema = z.object({
   revision: z.number().int().nonnegative(),
@@ -33,7 +35,7 @@ export type StudioConversationQuoteSettings = {
   startTimeSec?: number; retakeMode?: string; extendPosition?: string;
 };
 export type StudioConversationQuoteFacts = {
-  price: {amountCents: number; currency: string};
+  price: CustomerDisplayPrice;
   expiresAt: string;
   /** Prepared TTL elapsed or stored expired state; never authorizes another purchase. */
   expiredUnconfirmedQuote: boolean;
@@ -66,10 +68,11 @@ export const studioActionRequestSchema = z.discriminatedUnion('action', [
   studioExportPrepareActionSchema,studioExportReadActionSchema,
 ]);
 export type StudioActionRequest = z.infer<typeof studioActionRequestSchema>;
-export type StudioImageCapability = {modelId: string; label: string; lifecycle: AgentModelLifecycle | null; modes: string[]; formats: string[]; customImageSize?: boolean; bestFor?: readonly string[]; editorialGuidance?: AgentModelEditorialSummary};
+export type StudioImageCapability = {modelId: string; label: string; lifecycle: AgentModelLifecycle | null; modes: string[]; formats: string[]; customImageSize?: boolean; bestFor?: readonly string[]; editorialGuidance?: AgentModelEditorialSummary; audioWorkflow?: StudioAudioWorkflowFacts};
 type AudioCapabilities=ReturnType<typeof listAudioCapabilities>;
 type StudioAudioMode=Omit<AudioCapabilities['modes'][number],'variants'> & {
-  variants: (AudioCapabilities['modes'][number]['variants'][number] & {parameters: AudioSettingDetails[];fixedOutput: ReturnType<typeof projectAudioVariantFixedOutput>})[];
+  audioWorkflow:StudioAudioWorkflowFacts;
+  variants: (AudioCapabilities['modes'][number]['variants'][number] & {parameters: AudioSettingDetails[];fixedOutput: ReturnType<typeof projectAudioVariantFixedOutput>;voiceSample:'optional'|'unsupported'})[];
 };
 type StudioAudioOptions={readonly [K in keyof AudioCapabilities['options']]: readonly AudioCapabilities['options'][K][number][]};
 export type StudioCapabilityDetails =

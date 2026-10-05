@@ -1,4 +1,5 @@
 import type {StudioConversationProject,StudioConversationQuoteFacts,StudioConversationQuoteSettings} from '@/lib/studio/conversation-action-contract';
+import {customerDisplayPrice} from '@/lib/customer-price-presentation';
 
 const settingTypes: Record<keyof StudioConversationQuoteSettings,'boolean'|'number'|'string'> = {
   audio:'boolean',durationSec:'number',resolution:'string',aspectRatio:'string',quality:'string',
@@ -39,6 +40,17 @@ function boundedToken(value: unknown,maxLength: number): value is string {
   return typeof value === 'string' && value.length <= maxLength && /^[A-Za-z0-9][A-Za-z0-9_.:-]*$/.test(value);
 }
 
+export function projectStudioQuoteSettings(value:unknown):StudioConversationQuoteSettings {
+  const storedSettings = value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string,unknown> : {};
+  return Object.fromEntries(Object.entries(settingTypes).flatMap(([key,type]) => {
+    const value = storedSettings[key];
+    const safe = type === 'string' ? boundedToken(value,64)
+      : type === 'number' ? typeof value === 'number' && Number.isFinite(value) && (key==='startTimeSec'?value>=0:value>0)
+      : typeof value === 'boolean';
+    return safe ? [[key,value]] : [];
+  })) as StudioConversationQuoteSettings;
+}
+
 function safeQuoteFacts(row: StudioConversationQuoteRow): StudioConversationQuoteFacts | null {
   const expiresAt = new Date(row.expiresAt), now = new Date(row.databaseNow);
   if (!Number.isFinite(expiresAt.getTime()) || !Number.isFinite(now.getTime())
@@ -47,19 +59,11 @@ function safeQuoteFacts(row: StudioConversationQuoteRow): StudioConversationQuot
     || !boundedToken(row.modelId,128) || !boundedToken(row.mode,64)
     || typeof row.outputCount !== 'number' || !Number.isSafeInteger(row.outputCount) || row.outputCount < 1 || row.outputCount > 15
     || typeof row.referenceCount !== 'number' || !Number.isSafeInteger(row.referenceCount) || row.referenceCount < 0 || row.referenceCount > 50) return null;
-  const storedSettings = row.settings && typeof row.settings === 'object' && !Array.isArray(row.settings)
-    ? row.settings as Record<string,unknown> : {};
-  const settings = Object.fromEntries(Object.entries(settingTypes).flatMap(([key,type]) => {
-    const value = storedSettings[key];
-    const safe = type === 'string' ? boundedToken(value,64)
-      : type === 'number' ? typeof value === 'number' && Number.isFinite(value) && (key==='startTimeSec'?value>=0:value>0)
-      : typeof value === 'boolean';
-    return safe ? [[key,value]] : [];
-  })) as StudioConversationQuoteSettings;
+  const settings = projectStudioQuoteSettings(row.settings);
   const roles = Array.isArray(row.referenceRoles) ? row.referenceRoles.filter((role): role is StudioConversationQuoteFacts['referenceRoles'][number] =>
     typeof role === 'string' && referenceRoles.has(role as StudioConversationQuoteFacts['referenceRoles'][number])) : [];
   const outputDurationSec=row.surface==='video'?positiveDuration(row.outputDurationSec):undefined;
-  return {price:{amountCents:row.amountCents,currency:row.currency},expiresAt:expiresAt.toISOString(),
+  return {price:customerDisplayPrice(row.amountCents,row.currency),expiresAt:expiresAt.toISOString(),
     expiredUnconfirmedQuote:row.quoteState === 'expired' || (row.quoteState === 'prepared' && expiresAt.getTime() <= now.getTime()),
     modelId:row.modelId,mode:row.mode,settings,outputCount:row.outputCount,
     ...(outputDurationSec===undefined?{}:{outputDurationSec}),

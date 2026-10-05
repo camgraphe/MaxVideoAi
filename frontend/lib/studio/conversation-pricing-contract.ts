@@ -2,6 +2,7 @@ import {z} from 'zod';
 import {conversationSettingsSchema,STUDIO_CONVERSATION_MAX_REFERENCES} from './conversation-creation-contract';
 import {conversationMediaReferenceSchema,conversationMediaReferencesProperties} from './conversation-media-contract';
 import {CANONICAL_GENERATION_MODES} from '@/server/agent-api/generation-types';
+import type {CustomerDisplayPrice} from '@/lib/customer-price-presentation';
 
 export const studioPricingReadSchema=z.object({
   action:z.literal('pricing.read'),surface:z.enum(['image','video']),modelId:z.string().trim().min(1).max(128),
@@ -11,7 +12,7 @@ export const studioPricingReadSchema=z.object({
 }).strict();
 export type StudioPricingEstimate=Readonly<{
   modelId:string;surface:'image'|'video';mode:string;settings:Readonly<Record<string,string|number|boolean|null>>;
-  outputCount:1;outputDurationSec?:number;referenceCount:number;price:Readonly<{amountCents:number;currency:string}>;estimatedAt:string;quoteRequired:true;
+  outputCount:1;outputDurationSec?:number;referenceCount:number;price:Readonly<CustomerDisplayPrice>;estimatedAt:string;quoteRequired:true;
 }>;
 export const STUDIO_PRICING_DIRECTOR_TOOL={action:'pricing.read',name:'pricing_read',description:'Read the current MaxVideoAI customer estimate for ONE exact supported image/video scenario. Use settings from model_details and explicitly attached saved media references only, with exact kind and supported roles. No quote is created/replaced, no spending or media promotion. Compare current like-for-like estimates before a budget recommendation; a fresh prepare quote and client confirmation are still required. Audio generation and unsaved project outputs are not supported here.',properties:{
   surface:{type:'string',enum:['image','video']},modelId:{type:'string'},mode:{type:'string',enum:[...CANONICAL_GENERATION_MODES]},

@@ -30,8 +30,8 @@ test('Studio reads a fresh canonical price without quote, wallet or transaction 
   const first=await generation.estimate(input);
   price=167;
   const second=await generation.estimate(input);
-  assert.deepEqual(first.price,{amountCents:123,currency:'USD'});
-  assert.deepEqual(second.price,{amountCents:167,currency:'USD'});
+  assert.deepEqual(first.price,{amountCents:123,currency:'USD',formattedAmount:'$1.23'});
+  assert.deepEqual(second.price,{amountCents:167,currency:'USD',formattedAmount:'$1.67'});
   assert.deepEqual(second.settings,input.settings);
   assert.equal(second.quoteRequired,true);
   assert.equal(second.estimatedAt,'2026-10-03T12:00:00.000Z');
@@ -56,7 +56,7 @@ test('Studio price reads accept certified choices and reject unavailable models,
   const seedreamPrice=await generation.estimate(seedreamInput);
   assert.equal(seedreamPrice.modelId,'seedream','A compatible model exposed by canonical certification keeps its exact identity.');
   assert.deepEqual(seedreamPrice.settings,seedreamInput.settings);
-  assert.deepEqual(seedreamPrice.price,{amountCents:100,currency:'USD'});
+  assert.deepEqual(seedreamPrice.price,{amountCents:100,currency:'USD',formattedAmount:'$1.00'});
   assert.equal(priceCalls,1);
   await assert.rejects(generation.estimate({...input,engineId:'seedream'}),{code:'PARAMETER_INVALID'});
   assert.equal(priceCalls,1,'Certification does not bypass model-specific settings validation.');
@@ -104,7 +104,7 @@ test('a video estimate rejects the duration alias with actionable canonical guid
   });
   assert.equal(priceCalls,0,'Invalid names must fail before pricing, not be silently rewritten.');
   const estimate=await generation.estimate({...scenario,settings:{durationSec:8,resolution:'1080p',aspectRatio:'9:16',audio:false}});
-  assert.deepEqual(estimate.price,{amountCents:250,currency:'USD'});
+  assert.deepEqual(estimate.price,{amountCents:250,currency:'USD',formattedAmount:'$2.50'});
   assert.equal(estimate.quoteRequired,true);
   assert.equal(priceCalls,1);
   await assert.rejects(generation.estimate({...scenario,settings:{privateCustomerToken:'secret-value'}}),error=>{

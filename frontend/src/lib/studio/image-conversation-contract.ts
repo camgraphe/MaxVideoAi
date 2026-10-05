@@ -7,6 +7,7 @@ import {toolAssetRefSchema} from '@/lib/toolbox/contract';
 import type {PreparedAudioGeneration} from '@/server/agent-api/prepare-audio-generation';
 import {imageSelectionSchema,STUDIO_CONVERSATION_MAX_REFERENCES} from '@/lib/studio/conversation-creation-contract';
 import {projectStudioReply} from './conversation-reply';
+import type {StudioPricingEstimate} from '@/lib/studio/conversation-pricing-contract';
 
 export const studioReferenceMentionSchema = z.object({
   assetId: z.string().min(1).max(256),
@@ -82,6 +83,10 @@ export type ImageConversation = {
   turns: ImageConversationTurn[];
 };
 export type ImageConversationHistoryTurn = Pick<ImageConversationTurn, 'message' | 'reply' | 'referenceMentions'>;
+export type StudioConversationHistoryFacts = {
+  quoteDirections:{requestId:string;quoteId:string;text:string;truncated:boolean}[];
+  estimates:(StudioPricingEstimate & {requestId:string;historical:true})[];
+};
 export function hasDraftCreation(draft: ImageDraft | null) {return !!(draft?.image || draft?.media);}
 export function draftSurface(draft: ImageDraft | null) {return draft?.media?.action === 'video.prepare' ? 'video' : draft?.media ? 'audio' : 'image';}
 /** Reproduce the saved immutable request, including renewal identity, in a fresh tab. */

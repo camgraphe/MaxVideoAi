@@ -6,6 +6,7 @@ import {getAgentModelPromptingSources} from '@/server/agent-api/model-prompting-
 import type {AgentPublicGenerationEngine} from '@/server/agent-api/model-catalog';
 import {projectAudioVariantSettings,projectAudioVariantFixedOutput,type listAudioCapabilities} from '@/server/agent-api/audio-capabilities';
 import {STUDIO_CONVERSATION_MAX_REFERENCES} from '@/lib/studio/conversation-creation-contract';
+import {studioAudioWorkflowFacts,studioAudioVariantVoiceSample} from './conversation-audio-discovery';
 
 /** Called only with the authorized adapter's executable and certified catalog, never a global lookup. */
 export function studioVisualCapabilityDetails(candidate: AgentPublicGenerationEngine): StudioCapabilityDetails {
@@ -52,9 +53,13 @@ export function studioAudioCapabilityDetails(capabilities: ReturnType<typeof lis
   };
   const references:('source_video'|'voice_sample')[]=[];
   if(modes.some(mode=>mode.references.sourceVideo!=='unsupported'))references.push('source_video');
-  if(modes.some(mode=>mode.references.voiceSample!=='unsupported'))references.push('voice_sample');
+  if(modes.some(mode=>mode.variants.some(variant=>studioAudioVariantVoiceSample(mode,variant)==='optional')))references.push('voice_sample');
   return {modelId,label: modes[0].label,surface: 'audio',options,references,outputCount: 1,
-    modes: modes.map(mode=>({...mode,variants: mode.variants.filter(variant=>variant.available).map(variant=>({...variant,
-      parameters: projectAudioVariantSettings(mode.mode,variant),fixedOutput: projectAudioVariantFixedOutput(mode.mode,variant)}))})),
+    modes: modes.map(mode=>{
+      const audioWorkflow=studioAudioWorkflowFacts(mode);
+      return {...mode,audioWorkflow,references:{...mode.references,voiceSample:audioWorkflow.references.voiceSample},
+        variants:mode.variants.filter(variant=>variant.available).map(variant=>({...variant,voiceSample:studioAudioVariantVoiceSample(mode,variant),
+          parameters:projectAudioVariantSettings(mode.mode,variant),fixedOutput:projectAudioVariantFixedOutput(mode.mode,variant)}))};
+    }),
   };
 }

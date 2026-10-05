@@ -15,6 +15,14 @@ The conversation exposes the same seven Audio packs as the canonical Audio core:
 
 Music accepts optional source-video context. Cinematic packs require source video and use its measured duration, with the core's ten-second limit. Voice packs support a Seed sample for cloning; MiniMax plus a sample is rejected before preparation. Song, SFX and ambience do not accept those source connectors. There is no claim that supplying instrumental audio continues or edits that recording.
 
+Discovery explains the distinction between sound-only work on an existing video
+and generative visual edits. Cinematic packs preserve the encoded video stream
+through the existing mux owner, replace its original audio with the generated mix,
+and may trim narration to the measured clip length. They do not promise lip-sync
+or preservation of the original soundtrack. Reference requirements, available
+voice variants and source-duration limits remain canonical Audio facts; Studio
+does not infer these promises from a generic video-edit model.
+
 Source videos are resolved by the trusted owner reader, then probed by `prepareAudioRun`; caller settings and stored metadata do not replace the probe. The optional `inspectSourceVideo` dependency is a test seam. Production defaults to the existing bounded source probe. The QA runtime permits only an exact seeded fixture URL and returns facts measured from that local file before allocating PostgreSQL; no URL is fetched.
 
 ## Certification evidence
