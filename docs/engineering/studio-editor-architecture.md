@@ -69,6 +69,49 @@ Meaningful shared editing/render/export/media tests remain under `tests/maxvideo
 Run `npm run test:editor`, `npm run qa:editor`, exposure/diff checks and a full route build. For interaction changes run `npm run test:editor:e2e`. Use the normal clean branch → GitHub PR → current-main Quality CI → Git-backed Vercel release path and verify both live domains against the merged SHA. Report source/bundle measurements separately from actual browser/Core Web Vitals measurements.
 
 
+## Guest demonstration
+
+File drops are prevented and use the same contextual import sign-in gate as the composer. The authenticated entry validates the staged same-tab draft before creating its owned conversation. Missing, expired or consumed tokens return to the usual recent conversation (or normal starter/first-project entry); they never force a new project for an existing account.
+
+Exact reference-image prompts and selected asset paths are recorded in [Studio guest media provenance](studio-guest-media-prompts.md).
+
+The exact `/app/studio` entry admits visitors when workspace visitor access is
+enabled. Private conversation/workspace URLs and every Studio data or mutation API
+retain the central authentication and ownership policy. Marketing entry sends
+visitors to the demonstration, preserving allowlisted starters and languages; when
+visitor access is disabled it retains account entry.
+
+`StudioGuestDemo.client.tsx` composes the existing conversational styles and message
+composer with a public, authored example. Its product/character images and the
+existing instrumental are references, not account-owned assets or claimed app-model
+outputs. Visitors may enlarge images, listen manually and browse the example.
+Sending a message, importing personal media or editing the proposed montage opens
+contextual account entry. Availability follows the real conversation flags. The two
+seven-second slots describe a proposed 14-second edit, not generated source durations
+or completed video. The demonstration includes no numeric quote or export promise.
+
+The route-local `studio-guest-demo.ts` owns EN/FR/ES copy and public media selection.
+The two reference images were created with built-in ImageGen on 2026-10-05: a generic
+opaque matte sage-green insulated bottle on a neutral catalog background, and a
+fictional adult woman in a white shirt/beige overshirt in a park. Their versioned
+900px WebP copies total 68,944 bytes before responsive Next Image delivery. Original
+PNGs remain in the generation archive. Music reuses the 24-second Electro-funk
+excerpt described in `app-starter-media.md`. Audio uses `preload="none"`, manual
+controls and hidden-tab pause; media presentation never requests a private preview.
+
+Explicit same-tab account entry stages only the editable message, using the shared
+guest continuation's one-use token and 30-minute lifetime. URLs contain a token,
+not the brief or reference URLs. A valid continuation skips the recent-project
+redirect and opens a new owned conversation. The conversation consumes the text
+once and leaves sending/generation manual. Demo media never enter the account
+library, saved conversation or paid generation inputs. Invalid/expired/missing
+continuations keep the normal editable starter behavior.
+
+`studio-guest-demo` tests cover the public-route boundary, text-only continuation,
+reference inspection and contextual account gates without account API requests.
+Browser smoke covers manual audio first-play, mobile overflow and account-entry
+URL preservation; this is functional evidence, not a Core Web Vitals improvement.
+
 ## Conversation project names
 
 `conversation-project-title.ts` supplies a bounded local title from the first

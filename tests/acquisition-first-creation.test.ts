@@ -30,9 +30,10 @@ test('guest creation handoff is explicit, same-surface, one-use and expires', ()
   assert.equal(stageGuestCreation(store, '/app', 'a'.repeat(100_001), 'oversized'), false);
 });
 
-test('Studio gates its entry and conversation while retired Canvas routes lead to the account surface', () => {
+test('Studio opens its public demonstration while conversation and account routes remain protected', () => {
   assert.equal(canVisitorBrowseWorkspacePath('/app/studio/projects'), true);
-  for (const path of ['/app/studio', '/app/studio/projects/private', '/app/studio/conversation/private', '/app/studio/workspace', '/app/studio/workspace/private', '/api/studio/projects']) assert.equal(canVisitorBrowseWorkspacePath(path), false);
+  assert.equal(canVisitorBrowseWorkspacePath('/app/studio'),true);
+  for (const path of ['/app/studio/projects/private', '/app/studio/conversation/private', '/app/studio/workspace', '/app/studio/workspace/private', '/api/studio/projects']) assert.equal(canVisitorBrowseWorkspacePath(path), false);
   const entry = read('frontend/app/(core)/(workspace)/app/studio/page.tsx');
   const conversation = read('frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/page.tsx');
   for (const source of [entry, conversation]) {
@@ -40,7 +41,7 @@ test('Studio gates its entry and conversation while retired Canvas routes lead t
     assert.match(source, /if\s*\(!access.ok\s*&&\s*access.status\s*===\s*404\)\s*notFound\(\)/);
     assert.doesNotMatch(source, /if \(FEATURES.studio.adminOnly\)/);
   }
-  assert.match(entry, /if\s*\(!access.ok\s*&&\s*access.status\s*===\s*401\)\s*redirect\(buildLoginHref/);
+  assert.match(entry, /access.status===401\?<StudioGuestDemo/);
   assert.match(conversation, /const project = access.ok\s*\? await readImageConversationProject\(access.userId, projectId\)/);
   assert.match(conversation, /access.ok && project \? \(/);
   assert.match(conversation, /visitor=\{!access.ok && access.status === 401\}/);

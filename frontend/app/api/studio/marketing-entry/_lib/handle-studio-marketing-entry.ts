@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { resolveStudioMarketingStarter } from '@/app/(core)/(workspace)/app/studio/_lib/studio-project-marketing-entry';
 import { buildLoginHref } from '@/lib/auth-entry-href';
 import { locales } from '@/i18n/locales';
+import {canVisitorBrowseWorkspacePath} from '@/lib/visitor-access';
 import {
   resolveStudioApiAccess,
   type StudioAccessDecision,
@@ -22,10 +23,13 @@ export async function handleStudioMarketingEntry(
   const language = request.nextUrl.searchParams.get('lang');
   const locale = locales.find(candidate => candidate === language);
   const access = await resolveAccess(request);
+  const guestPath=projectsPath+(locale?(projectsPath.includes('?')?'&':'?')+'lang='+locale:'');
   const destination = access.ok
     ? projectsPath
     : access.status === 401
-      ? buildLoginHref({ mode: 'signup', nextPath: projectsPath, locale })
+      ? canVisitorBrowseWorkspacePath(STUDIO_PROJECTS_PATH)
+        ? guestPath
+        : buildLoginHref({ mode: 'signup', nextPath: projectsPath, locale })
       : '/app';
   const response = new NextResponse(null, {
     status: 307,
