@@ -6,7 +6,7 @@ Decision owner: Adrien. Draft date: 5 October 2026. No campaign, publication or 
 
 **Audience:** English-speaking people who already use Claude Desktop to develop a project or product brief and need an individual short clip. **Job:** bring that brief to a compatible MaxVideoAI connection, review available models and an exact quote, explicitly approve generation, then recover the clip. **Destination:** `/integrations/claude`; `/mcp` and pricing remain support resources. **CTA:** set up MaxVideoAI in Claude. **Proof:** existing public sample video plus dated controlled Claude result, clearly distinguished from illustrated connection/quote stages. A fresh complete host recording is still required before calling the pack a current end-to-end demonstration.
 
-This is a testable acquisition hypothesis. Neither MCP novelty nor historic organic revenue proves it will convert. Codex and Studio are prepared alternatives; do not split this first budget among them. Studio remains a beta for individual creations, with separate assistance/generation costs and no promise of an exportable assembled MP4 sequence.
+This is a testable acquisition hypothesis. Neither MCP novelty nor historic organic revenue proves it will convert. Codex and Studio are prepared alternatives; do not split this first budget among them. Studio's beta presentation is retired; it supports individual creations and timeline editing, with separate Sol assistance credits and media-generation quotes. The production sequence-export flag remains disabled and no assembled MP4 is promised.
 
 ## Candidate market, media and spending
 

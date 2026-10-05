@@ -19,6 +19,8 @@ test('assistance choice requires a click, preserves tariff revision, and restore
    const button=(name:string)=>Array.from(dom.window.document.querySelectorAll('button')).find(el=>(el.getAttribute('aria-label')??el.textContent??'').trim()===name)!;
    await render();assert.deepEqual(choices,[]);
    await act(async()=>button('Studio assistance and budget').click());assert.deepEqual(choices,[]);
+   assert.match(dom.window.document.querySelector('dialog')?.textContent ?? '', /One-time introductory allowance\. Does not renew automatically\./);
+   assert.doesNotMatch(dom.window.document.querySelector('dialog')?.textContent ?? '', /preview allowance/i);
    assert.equal(button('$20.00'),undefined);
    await act(async()=>button('Authorize $5.00 more').click());
    assert.deepEqual(choices,[{action:'authorize_paid',budgetCents:800,tariffVersion:status.tariff.version,expectedRevision:3}]);

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { dispatchGaEvent } from '../frontend/lib/analytics/ga-events';
+import { COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT, COMMERCIAL_ANALYTICS_RESOLVED_EVENT } from '../frontend/lib/analytics/commercial-client';
 
 type TimerCallback = () => void;
 
@@ -22,18 +23,63 @@ test('browser transport bounds oversaturated completion while preserving acquisi
   for (const [key, value] of Object.entries(attribution)) assert.equal(sent[key], value, key);
 });
 
-test('legacy Google Ads return conversion is suppressed for unresolved or excluded account roles', async () => {
+test('legacy Google Ads return conversion never sends before eligibility and sends once after delayed resolution', async () => {
   const { dispatchGoogleAdsConversion } = await import('../frontend/lib/analytics/ga-events');
-  await withBrowser({ adsConsent: true }, async ({ window }) => {
-    let calls = 0;
-    window.gtag = () => { calls += 1; };
-    window.__mvaiCommercialAnalyticsPending = true;
-    assert.equal(await dispatchGoogleAdsConversion({ send_to: 'AW-local-fixture' }), false);
-    window.__mvaiCommercialAnalyticsPending = false;
-    window.__mvaiCommercialAnalyticsExcluded = true;
-    assert.equal(await dispatchGoogleAdsConversion({ send_to: 'AW-local-fixture' }), false);
-    assert.equal(calls, 0);
+  await withBrowser({ adsConsent: true }, async (browser) => {
+    const calls: unknown[][] = [];
+    browser.window.gtag = (...args) => { calls.push(args); };
+    browser.window.__mvaiCommercialAnalyticsPending = true;
+    const payload = { send_to: 'AW-local-fixture', value: 25, currency: 'USD' };
+    const result = dispatchGoogleAdsConversion(payload, { maxAttempts: 2, retryDelayMs: 100 });
+    payload.value = 999;
+    browser.dispatch(new CustomEvent(COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT, { detail: { resetJourney: false } }));
+    assert.deepEqual(calls, []);
+    browser.runNextTimer();
+    assert.deepEqual(calls, [], 'a retry cannot emit for an unresolved role');
+    browser.window.__mvaiCommercialAnalyticsPending = false;
+    browser.dispatch(new Event(COMMERCIAL_ANALYTICS_RESOLVED_EVENT));
+    assert.equal(await result, true);
+    browser.dispatch(new Event(COMMERCIAL_ANALYTICS_RESOLVED_EVENT));
+    browser.runNextTimer();
+    assert.deepEqual(calls, [['event', 'conversion', { send_to: 'AW-local-fixture', value: 25, currency: 'USD' }]]);
+    assert.equal(browser.timerCount(), 0);
+    assert.equal(browser.listenerCount(COMMERCIAL_ANALYTICS_RESOLVED_EVENT), 0);
+    assert.equal(browser.listenerCount(COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT), 0);
   });
+});
+
+test('pending Ads returns are discarded on admin resolution, consent denial, account reset or timeout', async () => {
+  const { dispatchGoogleAdsConversion } = await import('../frontend/lib/analytics/ga-events');
+  for (const outcome of ['admin', 'denied', 'account', 'timeout'] as const) {
+    await withBrowser({ adsConsent: true }, async (browser) => {
+      const calls: unknown[][] = [];
+      browser.window.gtag = (...args) => { calls.push(args); };
+      browser.window.__mvaiCommercialAnalyticsPending = true;
+      const result = dispatchGoogleAdsConversion({ send_to: 'AW-local-fixture' }, { maxAttempts: 2, retryDelayMs: 100 });
+      assert.equal(browser.timerCount(), 1, 'the consented pending return is retained within a bounded retry window');
+      if (outcome === 'admin') {
+        browser.window.__mvaiCommercialAnalyticsPending = false;
+        browser.window.__mvaiCommercialAnalyticsExcluded = true;
+        browser.dispatch(new Event(COMMERCIAL_ANALYTICS_RESOLVED_EVENT));
+      } else if (outcome === 'denied') {
+        browser.dispatch(new CustomEvent('consent:updated', { detail: { categories: { ads: false } } }));
+      } else if (outcome === 'account') {
+        browser.dispatch(new CustomEvent(COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT, { detail: { resetJourney: true } }));
+      } else {
+        browser.runNextTimer();
+        browser.runNextTimer();
+      }
+      assert.equal(await result, false, outcome);
+      browser.window.__mvaiCommercialAnalyticsExcluded = false;
+      browser.window.__mvaiCommercialAnalyticsPending = false;
+      browser.dispatch(new Event(COMMERCIAL_ANALYTICS_RESOLVED_EVENT));
+      browser.runNextTimer();
+      assert.deepEqual(calls, [], `${outcome} cannot revive the discarded return`);
+      assert.equal(browser.timerCount(), 0);
+      assert.equal(browser.listenerCount(COMMERCIAL_ANALYTICS_RESOLVED_EVENT), 0);
+      assert.equal(browser.listenerCount(COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT), 0);
+    });
+  }
 });
 
 function createStorage(): Storage {

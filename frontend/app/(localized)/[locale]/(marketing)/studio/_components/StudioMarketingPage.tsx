@@ -35,7 +35,6 @@ export function StudioMarketingPage({ copy, locale }: { copy: StudioMarketingCop
         <p className={styles.costNote}>{copy.costNote}</p>
       </div>
     </section>
-    <p className={styles.betaNote}>{copy.betaNote}</p>
     <section className={styles.workflow} id="workflow" aria-labelledby="studio-workflow">
       <p className={styles.eyebrow}>{copy.workflow.eyebrow}</p>
       <h2 id="studio-workflow">{copy.workflow.title}</h2>
