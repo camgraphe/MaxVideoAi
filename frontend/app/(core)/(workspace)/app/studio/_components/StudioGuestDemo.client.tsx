@@ -38,7 +38,9 @@ export function StudioGuestDemo({starter,available=false}:{starter?:string;avail
       <div><h1>Studio<span className={styles.headerDot}>.</span></h1><span>{copy.project}</span></div>
       <button className={demo.primary} disabled={!available} onClick={()=>gate('create')}>{copy.create}<ArrowUpRight size={14}/></button>
     </header>
-    <div className={`${styles.canvas} ${demo.canvas}`}>
+    <div className={`${styles.canvas} ${demo.canvas}`}
+      onDragOver={event=>{if(event.dataTransfer.types.includes('Files')){event.preventDefault();event.dataTransfer.dropEffect=available?'copy':'none';}}}
+      onDrop={event=>{if(event.dataTransfer.types.includes('Files')){event.preventDefault();gate('import');}}}>
       <aside className={shelf.shelf} data-expanded="true" aria-label={copy.references}>
         <div className={shelf.heading}><span>{copy.references}</span></div>
         <div className={shelf.content}>

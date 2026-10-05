@@ -12,6 +12,20 @@ export function stageGuestCreation(storage: Store, surface: CreationSurface, pay
   return true;
 }
 
+function validGuestPayload(value: {createdAt?: unknown; payload?: unknown}, now: number): string | null {
+  return typeof value.createdAt === 'number' && now >= value.createdAt && now - value.createdAt <= TTL && typeof value.payload === 'string' && value.payload.length <= MAX_BYTES ? value.payload : null;
+}
+
+/** Validate before choosing an entry route, without claiming the one-use draft. */
+export function peekGuestCreation(storage: Store, surface: CreationSurface, token: string | null, now = Date.now()): string | null {
+  if (!token) return null;
+  try {
+    const value = JSON.parse(storage.getItem(KEY) ?? 'null');
+    if (value?.token !== token || value?.surface !== surface) return null;
+    return validGuestPayload(value, now);
+  } catch { return null; }
+}
+
 export function consumeGuestCreation(storage: Store, surface: CreationSurface, token: string | null, now = Date.now()): string | null {
   if (!token) return null;
   const raw = storage.getItem(KEY);
@@ -20,8 +34,7 @@ export function consumeGuestCreation(storage: Store, surface: CreationSurface, t
     const value = JSON.parse(raw);
     if (value.token !== token || value.surface !== surface) return null;
     storage.removeItem(KEY); // Once claimed, no second account can inherit it.
-    if (typeof value.createdAt !== 'number' || now < value.createdAt || now - value.createdAt > TTL || typeof value.payload !== 'string' || value.payload.length > MAX_BYTES) return null;
-    return value.payload;
+    return validGuestPayload(value, now);
   } catch { storage.removeItem(KEY); return null; }
 }
 

@@ -71,6 +71,10 @@ Run `npm run test:editor`, `npm run qa:editor`, exposure/diff checks and a full 
 
 ## Guest demonstration
 
+File drops are prevented and use the same contextual import sign-in gate as the composer. The authenticated entry validates the staged same-tab draft before creating its owned conversation. Missing, expired or consumed tokens return to the usual recent conversation (or normal starter/first-project entry); they never force a new project for an existing account.
+
+Exact reference-image prompts and selected asset paths are recorded in [Studio guest media provenance](studio-guest-media-prompts.md).
+
 The exact `/app/studio` entry admits visitors when workspace visitor access is
 enabled. Private conversation/workspace URLs and every Studio data or mutation API
 retain the central authentication and ownership policy. Marketing entry sends

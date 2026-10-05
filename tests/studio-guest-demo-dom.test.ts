@@ -43,6 +43,16 @@ test('the guest example lets visitors inspect references, then gates creation wi
     await act(async()=>dom.window.document.querySelector('form')!.dispatchEvent(new dom.window.Event('submit',{bubbles:true,cancelable:true})));
     assert.match(dom.window.document.querySelector('[role="dialog"]')?.textContent??'',/message/);
     assert.equal(textarea.value,'Une publicité pour ma tasse');
+    await act(async()=>button('Fermer').click());
+    const canvas=dom.window.document.querySelector('aside')!.parentElement!;
+    for(const type of ['dragover','drop']) {
+      const event=new dom.window.Event(type,{bubbles:true,cancelable:true});
+      Object.defineProperty(event,'dataTransfer',{value:{types:['Files'],files:[new dom.window.File(['photo'],'product.png',{type:'image/png'})]}});
+      await act(async()=>{canvas.dispatchEvent(event);});
+      assert.equal(event.defaultPrevented,true,`${type} must prevent browser file navigation`);
+    }
+    assert.match(dom.window.document.querySelector('[role="dialog"]')?.textContent??'',/médias/);
+    assert.equal(textarea.value,'Une publicité pour ma tasse');
     assert.equal(requests,0);
     assert.equal(dom.window.document.querySelector('audio')?.getAttribute('preload'),'none');
   } finally {
