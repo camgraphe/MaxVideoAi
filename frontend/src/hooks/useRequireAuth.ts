@@ -318,6 +318,16 @@ export function useRequireAuth(options?: UseRequireAuthOptions): RequireAuthResu
   }, [ensureSession]);
 
   useEffect(() => {
+    const handleConsentUpdated = () => {
+      const currentUser = lastKnownUserRef.current;
+      const currentSession = lastKnownSessionRef.current;
+      if (currentUser?.id) void resolveBrowserCommercialAnalyticsAuthContext(currentUser.id, currentSession?.access_token, currentUser.app_metadata);
+    };
+    window.addEventListener('consent:updated', handleConsentUpdated);
+    return () => window.removeEventListener('consent:updated', handleConsentUpdated);
+  }, []);
+
+  useEffect(() => {
     const userId = user?.id ?? null;
     if (!userId) {
       identifiedRef.current = null;

@@ -61,6 +61,37 @@ test('anonymous auth and legal prompt do not import session work or call protect
   });
 });
 
+test('commercial role lookup waits for measurement consent and a later grant never gates usable auth', async () => {
+  await withClients('account-a', async (fixture, { useRequireAuth }) => {
+    let state!: ReturnType<typeof useRequireAuth>;
+    function Probe() { state = useRequireAuth({ redirectIfLoggedOut: false }); return null; }
+    await fixture.render(React.createElement(Probe));
+    await fixture.session(0, sessionFor());
+    assert.equal(state.loading, false);
+    assert.equal(state.authStatus, 'authed');
+    assert.equal(fixture.requests.length, 0, 'denied analytics/Ads consent needs no measurement-only role read');
+    window.localStorage.setItem('mv-consent-analytics', 'granted');
+    await act(async () => window.dispatchEvent(new window.CustomEvent('consent:updated', { detail: { categories: { analytics: true } } })));
+    assert.deepEqual(fixture.requests.map(({ url }) => url), ['/api/admin/access']);
+    assert.equal(new Headers(fixture.requests[0].init?.headers).get('Authorization'), 'Bearer synthetic-token-a');
+    assert.equal(state.loading, false, 'the pending role request cannot delay product auth');
+    await fixture.respond(0, { ok: false, commercialAnalyticsEligible: true });
+    assert.equal(window.__mvaiCommercialAnalyticsPending, false);
+    assert.equal(window.__mvaiCommercialAnalyticsExcluded, false);
+    await fixture.user(0, sessionFor());
+    assert.equal(fixture.requests.length, 1, 'verified-user refresh reuses the bounded role result');
+    window.localStorage.removeItem('mv-consent-analytics');
+    await act(async () => window.dispatchEvent(new window.CustomEvent('consent:updated', { detail: { categories: { analytics: false } } })));
+    assert.equal(fixture.requests.length, 1);
+    window.localStorage.setItem('mv-consent-analytics', 'granted');
+    await act(async () => window.dispatchEvent(new window.CustomEvent('consent:updated', { detail: { categories: { analytics: true } } })));
+    assert.equal(fixture.requests.length, 2, 'regrant resolves current eligibility instead of leaving a denied or stale cached state');
+    await fixture.respond(1, { ok: true, commercialAnalyticsEligible: false });
+    assert.equal(window.__mvaiCommercialAnalyticsPending, false);
+    assert.equal(window.__mvaiCommercialAnalyticsExcluded, true);
+  });
+});
+
 test('a stale hint retains refresh handling and releases initial loading when refresh expires', async () => {
   await withClients('account-a', async (fixture, { useRequireAuth }) => {
     let state!: ReturnType<typeof useRequireAuth>;

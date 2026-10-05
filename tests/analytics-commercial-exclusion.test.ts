@@ -1,9 +1,28 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { JSDOM } from 'jsdom';
+import { build } from 'esbuild';
+import path from 'node:path';
 import { persistPendingAnalyticsEvent, readPendingAnalyticsEvent } from '../frontend/lib/analytics-client';
 import { prepareBrowserAnalyticsEvents, readWalletAnalyticsJourney } from '../frontend/lib/analytics/journey-browser';
 import { sendPreparedAnalyticsEvents } from '../frontend/lib/analytics/ordered-events';
+
+test('compiled public GA target still sets the admin disable flag without a browser process shim', async () => {
+  const frontend = path.join(process.cwd(), 'frontend');
+  const bundle = await build({
+    absWorkingDir: frontend, bundle: true, platform: 'browser', format: 'iife', write: false,
+    tsconfig: path.join(frontend, 'tsconfig.json'),
+    define: { 'process.env.NEXT_PUBLIC_GA_ID': '"G-LOCAL-FIXTURE"' },
+    stdin: { resolveDir: frontend, loader: 'ts', contents: `import { setBrowserAnalyticsAuthContext } from './lib/analytics/commercial-client'; window.setFixtureContext = setBrowserAnalyticsAuthContext;` },
+  });
+  const dom = new JSDOM('', { url: 'https://maxvideoai.test', runScripts: 'outside-only' });
+  try {
+    assert.equal('process' in dom.window, false);
+    dom.window.eval(bundle.outputFiles[0].text);
+    dom.window.eval('window.setFixtureContext({ role: "admin" })');
+    assert.equal((dom.window as unknown as Record<string, unknown>)['ga-disable-G-LOCAL-FIXTURE'], true);
+  } finally { dom.window.close(); }
+});
 
 test('trusted app admin roles suppress browser milestones, pending auth, wallet attribution and queued transport', async (t) => {
   const dom = new JSDOM('', { url: 'https://maxvideoai.com/app/studio' });

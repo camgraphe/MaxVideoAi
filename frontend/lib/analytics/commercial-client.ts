@@ -1,5 +1,13 @@
+import { hasAdsConsentInBrowser, hasAnalyticsConsentInBrowser } from './consent-client';
+
 const ADMIN_EXCLUSION_KEY = 'mvai.analytics-excluded-admin.v1';
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID ?? process.env.NEXT_PUBLIC_GA4_ID ?? '';
+const GA_ID = (() => {
+  try {
+    // Keep literal public env lookups for Next's compile-time substitution;
+    // standalone browser bundles need no Node process shim.
+    return process.env.NEXT_PUBLIC_GA_ID ?? process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID ?? process.env.NEXT_PUBLIC_GA4_ID ?? '';
+  } catch { return ''; }
+})();
 export const COMMERCIAL_ANALYTICS_RESOLVED_EVENT = 'mvai:commercial-analytics-resolved';
 export const COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT = 'mvai:commercial-analytics-context-changed';
 let activeUserId: string | null = null;
@@ -68,6 +76,13 @@ export function resolveBrowserCommercialAnalyticsAuthContext(
     resolvedAt = Date.now();
     window.dispatchEvent(new window.CustomEvent(COMMERCIAL_ANALYTICS_RESOLVED_EVENT));
     return activeResolution;
+  }
+  if (!hasAnalyticsConsentInBrowser() && !hasAdsConsentInBrowser()) {
+    activeResolution = null;
+    resolvedAt = 0;
+    setBrowserAnalyticsAuthContext(appMetadata);
+    window.__mvaiCommercialAnalyticsPending = true;
+    return Promise.resolve(false);
   }
   if (activeBrowser === window && activeUserId === userId && activeResolution && (resolvedAt === 0 || Date.now() - resolvedAt < 30_000)) return activeResolution;
   activeUserId = userId;

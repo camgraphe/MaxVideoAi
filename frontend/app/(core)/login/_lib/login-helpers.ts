@@ -1,5 +1,6 @@
 import { safeInternalReturnTarget } from '@/lib/auth-return-target';
-import { LOCALE_OPTIONS, type AuthMode, type Locale } from './login-copy';
+import { locales as LOCALE_OPTIONS } from '@/i18n/locales';
+import type { AuthMode, Locale } from './login-copy';
 
 export const DEFAULT_NEXT_PATH = '/generate';
 export const NEXT_PATH_PREFIXES = [

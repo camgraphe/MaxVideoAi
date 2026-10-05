@@ -13,6 +13,7 @@ test('a newer video finishing before an older render keeps its card and DOM posi
   };
   win.IS_REACT_ACT_ENVIRONMENT = true;
   dom.window.HTMLMediaElement.prototype.pause = () => {};
+  assert.equal('process' in dom.window, false, 'real browser fixture must work without a Node process shim');
   dom.window.eval(script);
   const fixture = win.galleryFixture;
   const cards = () => Array.from(dom.window.document.querySelectorAll('figure[aria-label="Preview"]'));
