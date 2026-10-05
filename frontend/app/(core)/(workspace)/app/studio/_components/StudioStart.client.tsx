@@ -10,10 +10,13 @@ import {ConversationWelcome} from '../conversation/[projectId]/_components/Conve
 import {ImageConversationComposer} from '../conversation/[projectId]/_components/ImageConversationComposer.client';
 import styles from '../conversation/[projectId]/image-conversation.module.css';
 
-export function StudioStart({accountKey,unavailable=false,starter}:{accountKey:string;unavailable?:boolean;starter?:string}) {
+export function StudioStart({accountKey,unavailable=false,starter,continuationToken}:{accountKey:string;unavailable?:boolean;starter?:string;continuationToken?:string}) {
   const router=useRouter(),{locale}=useI18n(),{resolvedTheme}=useThemePreference();
   const copy=studioConversationEntryCopy(locale);
-  const creation=useStudioProjectCreation(accountKey,projectId=>router.replace('/app/studio/conversation/'+encodeURIComponent(projectId)+(starter?'?starter='+encodeURIComponent(starter):'')));
+  const query=new URLSearchParams();
+  if(starter)query.set('starter',starter);
+  if(continuationToken)query.set('continueDraft',continuationToken);
+  const creation=useStudioProjectCreation(accountKey,projectId=>router.replace('/app/studio/conversation/'+encodeURIComponent(projectId)+(query.size?'?'+query.toString():'')));
   const {create}=creation;
   const libraryTrigger=useRef<HTMLButtonElement>(null);
   useEffect(()=>{if(!unavailable)void create(copy.projectName);},[create,copy.projectName,unavailable]);

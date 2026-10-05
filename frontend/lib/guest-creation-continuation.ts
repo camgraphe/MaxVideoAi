@@ -4,7 +4,7 @@ type Store = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 const KEY = 'maxvideoai:guest-creation:v1';
 const TTL = 30 * 60_000;
 const MAX_BYTES = 100_000;
-export type CreationSurface = '/app' | '/app/image' | '/app/audio';
+export type CreationSurface = '/app' | '/app/image' | '/app/audio' | '/app/studio';
 
 export function stageGuestCreation(storage: Store, surface: CreationSurface, payload: string, token: string, now = Date.now()) {
   if (!token || payload.length > MAX_BYTES) return false;
