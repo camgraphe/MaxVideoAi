@@ -47,3 +47,15 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/admin-studio-review
 The disposable PostgreSQL test covers metadata pagination, account/project/request isolation, deleted projects, source availability, access audit requirements, excluded raw payloads, numeric usage, assistance cost ranges versus unsettled charges, and the real admin gate using its existing local-only test bypass. No production database is needed. Contract tests preserve page/POST ownership; request tests exercise unauthorized and cross-origin rejection and body/identifier bounds.
 
 Production activation still requires applying migration 55, using the existing admin role controls, and verifying the applicable customer-content-use and access-audit retention policy. Full historical context manifests, instruction/tool-schema version capture, user feedback, MCP conversation grouping and external-host transcript ingestion are separate work.
+
+
+## Saved replies and incomplete requests
+
+The persisted turn state `ready` means a reply was saved; it does not certify that
+preparation succeeded or that every requested action finished. The list and detail
+show **Reply saved (ready)** and a separate request-progress signal. An explicit
+stored continuation shows **Needs continuation**; the `completion=incomplete`
+filter applies before pagination. Absence is **No continuation recorded**, never a
+claim of successful preparation. Metadata reads only a boolean and the allowlisted
+`action_limit` / `output_limit` reason from `draft_json.continuation`; free-form error
+messages, prompts and replies still require the separately audited reveal.

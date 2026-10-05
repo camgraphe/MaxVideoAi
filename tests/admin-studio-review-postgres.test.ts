@@ -29,6 +29,31 @@ test('admin Studio review bounds metadata, scopes every read and fails closed wi
   assert.doesNotMatch(JSON.stringify(list), /brief|reply|signed\.test|input_json|draft_json/);
   assert.ok(list.turns.every(row => row.userId === 'owner' && row.projectId === 'film'));
   const scope = { userId: 'owner', projectId: 'film', requestId: id };
+  await t.test('metadata filters continuations before pagination and never reads their private error or reply text', async () => {
+    const incompleteIds = [randomUUID(), randomUUID(), randomUUID()];
+    for (const [index, reason] of ['action_limit', 'output_limit', 'NEVER_PRIVATE_REASON'].entries()) {
+      await pg.pool.query(`INSERT INTO studio_image_turns VALUES ('owner','film',$1,'ready',4,now()-interval '1 day',NULL,$2,$3)`, [incompleteIds[index], { message: 'NEVER_MESSAGE' }, { reply: 'NEVER_REPLY', continuation: { reason, lastError: { code: 'PARAMETER_INVALID', message: 'NEVER_ERROR password=NEVER_CREDENTIAL' }, completedEdits: 0 } }]);
+    }
+    await pg.pool.query(`UPDATE studio_image_turns SET draft_json=jsonb_set(draft_json,'{continuation}',$1) WHERE project_id='private'`, [{ reason: 'action_limit', lastError: { message: 'NEVER_FOREIGN_ERROR' } }]);
+    const first = await api.loadStudioReviewList({ userId: 'owner', projectId: 'film', state: 'ready', completion: 'incomplete', limit: 2 });
+    assert.equal(first.status, 'available');
+    if (first.status !== 'available') throw new Error('expected available');
+    assert.equal(first.turns.length, 2);
+    assert.equal(first.hasMore, true);
+    assert.ok(first.turns.every(turn => turn.incomplete && incompleteIds.includes(turn.requestId)));
+    const second = await api.loadStudioReviewList({ userId: 'owner', projectId: 'film', completion: 'incomplete', limit: 2, page: 1 });
+    assert.equal(second.status, 'available');
+    if (second.status !== 'available') throw new Error('expected available');
+    assert.equal(second.turns.length, 1);
+    assert.equal(second.hasMore, false);
+    const turns = [...first.turns, ...second.turns];
+    assert.deepEqual(new Set(turns.map(turn => turn.requestId)), new Set(incompleteIds));
+    assert.deepEqual(new Set(turns.map(turn => turn.continuationReason)), new Set(['action_limit', 'output_limit', null]));
+    assert.doesNotMatch(JSON.stringify(turns), /NEVER|lastError|password|PARAMETER_INVALID|input_json|draft_json/);
+    assert.equal((await api.loadStudioReviewTurn({ ...scope, requestId: incompleteIds[0] })).incomplete, true);
+    assert.equal((await api.loadStudioReviewTurn(scope)).incomplete, false);
+    assert.equal((await pg.pool.query('SELECT state FROM studio_image_turns WHERE request_id=ANY($1::uuid[])', [incompleteIds])).rows.every(turn => turn.state === 'ready'), true);
+  });
   await assert.rejects(api.revealStudioReview('admin', scope), { code: 'unavailable' });
   await pg.pool.query(readFileSync('neon/migrations/55_admin_studio_review_access.sql','utf8'));
   const review = await api.revealStudioReview('admin', scope);

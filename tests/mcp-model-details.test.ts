@@ -208,7 +208,12 @@ test('model details project one executable public model into the exact safe shap
         fps: [24],
         audio: 'always_generated',
         outputCount: { min: 1, max: 1, default: 1 },
-        settings: [],
+        settings: [
+          { key: 'durationSec', type: 'number', required: false, values: [5, 10], min: null, max: null, step: 1, default: null },
+          { key: 'resolution', type: 'enum', required: false, values: ['768P', '2K'], min: null, max: null, default: null },
+          { key: 'aspectRatio', type: 'enum', required: false, values: ['16:9', '9:16'], min: null, max: null, default: null },
+          { key: 'fps', type: 'number', required: false, values: [24], min: null, max: null, default: null },
+        ],
         references: [],
       },
       {
@@ -220,7 +225,12 @@ test('model details project one executable public model into the exact safe shap
         fps: [24],
         audio: 'optional',
         outputCount: { min: 1, max: 1, default: 1 },
-        settings: [],
+        settings: [
+          { key: 'durationSec', type: 'number', required: false, values: null, min: 5, max: 15, step: 1, default: null },
+          { key: 'resolution', type: 'enum', required: false, values: ['768P'], min: null, max: null, default: null },
+          { key: 'fps', type: 'number', required: false, values: [24], min: null, max: null, default: null },
+          { key: 'audio', type: 'boolean', required: false, values: null, min: null, max: null, default: null },
+        ],
         references: [{
           type: 'image', roles: ['source', 'first_frame'], assetRequired: false,
           maxSizeMB: 30,
@@ -236,7 +246,12 @@ test('model details project one executable public model into the exact safe shap
         fps: [24],
         audio: 'always_generated',
         outputCount: { min: 1, max: 1, default: 1 },
-        settings: [],
+        settings: [
+          { key: 'durationSec', type: 'number', required: false, values: [5, 10], min: null, max: null, step: 1, default: null },
+          { key: 'resolution', type: 'enum', required: false, values: ['2K'], min: null, max: null, default: null },
+          { key: 'aspectRatio', type: 'enum', required: false, values: ['16:9'], min: null, max: null, default: null },
+          { key: 'fps', type: 'number', required: false, values: [24], min: null, max: null, default: null },
+        ],
         references: [
           { type: 'image', roles: ['reference'], assetRequired: false, maxSizeMB: 30, required: false, min: 0, max: 9 },
           { type: 'audio', roles: ['reference'], assetRequired: false, required: false, min: 0, max: 3 },
@@ -342,6 +357,8 @@ test('real image model details publish canonical controls Claude and ChatGPT can
   assert.deepEqual(mode.outputCount, { min: 1, max: 4, default: 1 });
   assert.deepEqual(mode.resolutions, ['0.5k', '1k', '2k', '4k']);
   assert.deepEqual(mode.settings, [
+    { key: 'resolution', type: 'enum', required: false, values: ['0.5k', '1k', '2k', '4k'], min: null, max: null, default: null },
+    { key: 'aspectRatio', type: 'enum', required: false, values: ['auto', '21:9', '16:9', '3:2', '4:3', '5:4', '1:1', '4:5', '3:4', '2:3', '9:16', '4:1', '1:4', '8:1', '1:8'], min: null, max: null, default: null },
     { key: 'seed', type: 'number', required: false, values: null, min: null, max: null, default: null },
     { key: 'outputFormat', type: 'enum', required: false, values: ['jpeg', 'png', 'webp'], min: null, max: null, default: 'jpeg' },
     { key: 'enableWebSearch', type: 'boolean', required: false, values: null, min: null, max: null, default: false },

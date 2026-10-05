@@ -336,6 +336,23 @@ function projectImageSize(engine: EngineCaps): AgentModelModeDetails['imageSize'
   return Object.keys(projected).length ? Object.freeze(projected) : undefined;
 }
 
+function projectBaseSettings(details: Pick<AgentModelModeDetails, 'durationPolicy' | 'duration' | 'resolutions' | 'aspectRatios' | 'fps' | 'audio'>): readonly AgentModelSettingDetails[] {
+  const controls: AgentModelSettingDetails[] = [];
+  const setting = (key: string, type: AgentModelSettingDetails['type'], values: AgentModelSettingDetails['values'] = null): AgentModelSettingDetails =>
+    ({key, type, required: false, values, min: null, max: null, default: null});
+  if (details.durationPolicy === 'requested' && details.duration) controls.push({
+    ...setting('durationSec', 'number', details.duration.options),
+    min: details.duration.range?.min ?? null, max: details.duration.range?.max ?? null, step: 1,
+  });
+  if (details.resolutions.length) controls.push(setting('resolution', 'enum', details.resolutions));
+  if (details.aspectRatios.length) controls.push(setting('aspectRatio', 'enum', details.aspectRatios));
+  if (details.fps.length) controls.push(setting('fps', 'number', details.fps));
+  if (details.audio === 'optional') controls.push(setting('audio', 'boolean'));
+  // Null defaults preserve callers' existing default ownership. These entries
+  // identify canonical request keys; they never expose provider field aliases.
+  return Object.freeze(controls.map(control => Object.freeze(control)));
+}
+
 // Callers own authorization and model/mode eligibility; this projects canonical facts only.
 export function projectAgentModelModeDetails(
   candidate: Pick<AgentPublicCatalogEngine, 'engine' | 'surface' | 'modeCaps'>,
@@ -364,8 +381,7 @@ export function projectAgentModelModeDetails(
       ? candidate.engine.resolutions.filter((value) => value !== 'auto').slice(0, 1)
       : [];
   const referenceRequirement = projectReferenceRequirement(candidate.engine, mode);
-  return Object.freeze({
-    mode,
+  const baseControls = {
     durationPolicy: mode === 'a2v'
       ? 'source_audio'
       : mode === 'reframe' || (isLumaRay2EngineId(candidate.engine.id) && mode === 'v2v')
@@ -380,12 +396,16 @@ export function projectAgentModelModeDetails(
       : [...(caps.aspectRatio ?? [])]),
     fps: Object.freeze([...fps]),
     audio: projectAudio(caps, candidate.engine),
+  } as const;
+  return Object.freeze({
+    mode,
+    ...baseControls,
     outputCount: Object.freeze({
       min: outputCount.min,
       max: outputCount.max,
       default: outputCount.defaultValue,
     }),
-    settings: projectSettings(candidate.engine, mode),
+    settings: Object.freeze([...projectBaseSettings(baseControls), ...projectSettings(candidate.engine, mode)]),
     ...(imageSize ? { imageSize } : {}),
     references: projectReferences(candidate.engine, mode),
     ...(referenceRequirement ? { referenceRequirement } : {}),

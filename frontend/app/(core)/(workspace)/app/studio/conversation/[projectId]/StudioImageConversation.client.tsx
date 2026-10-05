@@ -133,12 +133,12 @@ function StudioImageConversationWorkspace({
       <header className={styles.header}>
         <div>
           <h1>Studio<span className={styles.headerDot}>.</span></h1>
-          <span>{projectName}</span>
+          <span>{studio.conversation.projectName}</span>
         </div>
         <div className={styles.headerActions}>
           <StudioAssistance {...assistance} locale={locale} conversationBusy={studio.busy} onChoice={afterAssistanceChoice} openSignal={budgetPrompt}/>
           <button ref={helpTrigger} aria-label={t('Studio help','Aide Studio')} onClick={() => setHelp(true)}><HelpCircle size={18}/></button>
-          <ConversationProjects accountKey={accountKey} currentProjectId={projectId} locale={locale}/>
+          <ConversationProjects accountKey={accountKey} currentProjectId={projectId} locale={locale} onRename={id=>{if(id===projectId)void studio.refresh();}}/>
         </div>
       </header>
       <div className={styles.canvas} data-has-media={shelf.items.length>0} data-dropping={dropping}
@@ -309,7 +309,7 @@ function StudioImageConversationWorkspace({
         </div>
         <ConversationMediaShelf projectId={projectId} items={shelf.items} selectedId={shelf.selectedId} expanded={shelf.expanded} attachedIds={references.map(ref=>ref.assetId)} locale={locale} onSelect={shelf.setSelectedId} onToggle={()=>shelf.setExpanded(current=>!current)} onMention={mention} onAttach={shelf.attach} onDetach={detach} onInsert={editingEnabled?asset=>setTimelineInsertion({key:crypto.randomUUID(),asset}):undefined}/>
       </div>
-      {editingEnabled && <ConversationTimeline projectId={projectId} projectName={projectName} refreshKey={studio.conversation} insertion={timelineInsertion} onOpenLibrary={trigger => {libraryOpener.current=trigger;setLibraryPurpose('timeline');setLibrary(true);}} exportAvailable={exportAvailable} exportPending={exports.working} exportJobs={exports.jobs} onExportChange={exports.refresh}/>}
+      {editingEnabled && <ConversationTimeline projectId={projectId} projectName={studio.conversation.projectName} refreshKey={studio.conversation} insertion={timelineInsertion} onOpenLibrary={trigger => {libraryOpener.current=trigger;setLibraryPurpose('timeline');setLibrary(true);}} exportAvailable={exportAvailable} exportPending={exports.working} exportJobs={exports.jobs} onExportChange={exports.refresh}/>}
       {help && <ConversationHelp locale={locale} editingEnabled={editingEnabled} onClose={() => setHelp(false)} trigger={helpTrigger}/>}
       {library && (
         <ImageReferenceLibrary

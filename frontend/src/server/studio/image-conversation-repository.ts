@@ -15,6 +15,9 @@ import {
   hasDraftCreation,
 } from "@/lib/studio/image-conversation-contract";
 
+import {automaticallyNameStudioProject,readStudioProjectTitleFallbacks} from './conversation-project-naming';
+import {isUntitledStudioProject} from '@/lib/studio/conversation-project-title';
+
 export type StoredImageTurn = {
   request_id: string;
   request_hash: string;
@@ -43,6 +46,10 @@ export async function readImageConversationProject(
       "PARAMETER_INVALID",
       "This Studio project is not available.",
     );
+  if(isUntitledStudioProject(rows[0].name)) {
+    const fallback=(await readStudioProjectTitleFallbacks(userId,[projectId])).get(projectId);
+    if(fallback)return {name:fallback};
+  }
   return rows[0];
 }
 export async function listImageTurns(
@@ -170,6 +177,7 @@ export async function claimImageTurn(
             renewal?.draft_reference_fingerprint ?? null,
           ],
         );
+    if(!existing)await automaticallyNameStudioProject(actor,'message',parsed.message,executor);
     return { turn: rows[0], claimed: true, responseReplayOnly };
   });
 }

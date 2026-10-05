@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import {studioProjectNameSchema} from './conversation-project-title';
 import {studioPricingReadSchema,STUDIO_PRICING_DIRECTOR_TOOL,type StudioPricingEstimate} from './conversation-pricing-contract';
 import {studioExportPrepareActionSchema,studioExportReadActionSchema,STUDIO_EXPORT_DIRECTOR_TOOLS,type StudioPreparedExport} from './conversation-export-contract';
 import type {TimelineExportJobResponse} from '@/server/timeline-exports/contracts';
@@ -58,7 +59,7 @@ export const studioActionRequestSchema = z.discriminatedUnion('action', [
   z.object({action: z.literal('catalog.read')}).strict(),
   studioPricingReadSchema,
   z.object({action: z.literal('model.details'), modelId: z.string().trim().min(1).max(128)}).strict(),
-  z.object({action: z.literal('project.remember'), ...studioMemorySchema.shape}).strict(),
+  z.object({action: z.literal('project.remember'), ...studioMemorySchema.shape, projectTitle:studioProjectNameSchema.refine(value=>value.length<=80).nullable().optional().catch(null)}).strict(),
   z.object({action: z.literal('image.prepare'), reply: z.string().min(1).max(2400), ...imageSelectionSchema.shape}).strict(),
   z.object({action: z.literal('generation.read'), quoteId: z.string().uuid()}).strict(),
   z.object({action: z.literal('quote.discard'), quoteId: z.string().uuid()}).strict(),
@@ -103,6 +104,7 @@ export const STUDIO_DIRECTOR_TOOLS = [
   {action: 'catalog.read', name: 'catalog_read', description: 'Read the bounded, executable and certified creation catalog. Inspect model_details before selecting settings or reference roles. No prices are guessed.', properties: {}},
   {action: 'model.details', name: 'model_details', description: 'Inspect exact supported modes, settings, formats, durations and reference roles of one model from catalog_read. Numeric min/max are range boundaries, not discrete choices; values lists are allowed choices when present, and suggested durations are examples. A missing setting applies to this model, not the whole catalog: inspect a suitable alternative before declaring the requested size or workflow unavailable. Use customImageSize in discovery for exact image dimensions, then check these constraints. Never prepare a different size or duration without the client accepting that change. Read-only; no quote, generation or charge.', properties: {modelId: {type: 'string'}}},
   {action: 'project.remember', name: 'project_remember', description: 'Replace the durable brief and decisions, preserving prior constraints. Use the memory revision just read.', properties: {
+    projectTitle: {type: ['string','null'],minLength:1,maxLength:80, description: 'Optional concise 3–7 word topic title in the user’s language. Supply alongside useful memory; never call memory only to name a project. Use null otherwise.'},
     revision: {type: 'integer', minimum: 0}, brief: {type: 'string'}, decisions: {type: 'array', items: {type: 'string'}},
   }},
   {action: 'image.prepare', name: 'image_prepare', description: 'Write your own image prompt and prepare one exact quote with a model and supported settings from model_details. Settings are name/value pairs; references are explicitly selected attached library images with supported roles. Null selection fields use defaults; an empty reference list means text-only. Does not generate or charge. Success ends the turn; explain that the client reviews the quote.', properties: {

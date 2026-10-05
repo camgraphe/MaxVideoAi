@@ -182,7 +182,7 @@ export async function runStudioImageActions(options: {
   });
   const draft = await director({message: input.message, history: options.history, references: options.references, referenceMentions: input.referenceMentions, historyFacts: options.historyFacts,
     project: await readStudioConversationProject(actor,{exportsEnabled:options.editingEnabled&&options.exportsEnabled}),
-    checkpoint: (index, create, params) => checkpointStudioResponse(actor, turn, index, create, assistance ? {prepare: async () => {
+    checkpoint: (index, create, params, checkpointOptions) => checkpointStudioResponse(actor, turn, index, create, assistance ? {prepare: async () => {
       if (await getActiveAccountRestrictionStrict(actor.userId)) {
         throw new AgentApiError('ACCOUNT_RESTRICTED','This account is temporarily restricted. Open MaxVideoAI for help.');
       }
@@ -191,7 +191,7 @@ export async function runStudioImageActions(options: {
       const inputTokens = options.countInputTokens ? await options.countInputTokens(params) : (await new OpenAI({apiKey: process.env.OPENAI_API_KEY,maxRetries: 0,timeout: 15000}).responses.inputTokens.count(studioTokenCountInput(params))).input_tokens;
       if (!Number.isSafeInteger(inputTokens) || inputTokens < 0 || inputTokens > 272000) throw new AgentApiError('PARAMETER_INVALID','This Studio context exceeds the supported assistance limit.');
       return {policy,inputTokens,outputTokens: params.max_output_tokens ?? 2200};
-    }} : undefined, {replayOnly: options.responseReplayOnly}),
+    }} : undefined, {replayOnly: options.responseReplayOnly || checkpointOptions?.replayOnly}),
     execute: async (callId: string, action: StudioActionRequest): Promise<StudioActionResult> => {
       const prior = await beginStudioAction(actor, turn, callId, action);
       if (prior) return prior;
@@ -200,7 +200,7 @@ export async function runStudioImageActions(options: {
         // A lost ACK must not replay a memory update with a now-stale revision.
         try {
           return await withDbTransaction(async executor => {
-            const memory = await saveStudioConversationMemory(actor, {revision: action.revision, brief: action.brief, decisions: action.decisions}, executor);
+            const memory = await saveStudioConversationMemory(actor, {revision: action.revision, brief: action.brief, decisions: action.decisions, projectTitle: action.projectTitle}, executor);
             const result: StudioActionResult = {ok: true, action: action.action, data: memory};
             await completeStudioAction(actor, turn, callId, result, executor);
             return result;

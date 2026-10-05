@@ -28,6 +28,10 @@ Studio entry opens the recent supported project or idempotently creates a fresh 
 
 The chat builds intent through the common agent/generation services. Owned media and measured reference facts are resolved before pricing or submission. Every generation requires a current exact quote and explicit confirmation. Request/response journal and assistance usage recovery are durable so lost replies can resume without repeating paid dispatch.
 
+Preparation recovery is bounded inside the existing four Responses and assistance-call allowance (reviewed 2026-10-05). Discovery publishes canonical base setting names, including `durationSec`, `resolution`, `aspectRatio`, `fps` and an `audio` boolean only when that mode has a toggle. Always-generated or unavailable sound does not grant an audio toggle. Null discovery defaults preserve the generation adapters' existing default ownership.
+
+When required model/source facts are known, prepare by Response 3; optional `project_remember` writes are no longer offered from that response. A required third discovery read remains available, so a workflow can still use three reads and prepare on Response 4. An explicit `studio_preparation_input` rejection before draft/quote creation can use one remaining Response to correct only the same preparation tool. A second rejection stops with the saved error and a follow-up continuation. Wallet, lease, ownership, catalog, provider and post-mutation errors do not acquire this correction marker. Older recorded correction paths may include additional reads or saved mutations: recover their immutable responses and receipts. Once the new correction allowance is exhausted, subsequent checkpoints are replay-only and run before token counting or financial reservation; unresolved supplier usage remains terminal. Recovery never purchases a fifth response, repeats completed mutations or confirms a generation. A rejection on Response 4 still requires a user follow-up, including historical requests that already exhausted all four checkpoints.
+
 The visible timeline edits canonical sequence state with revision and ownership checks. It reuses pure frame-aware operations for clipping, source bounds and linked audio. Library selection does not automatically insert every new generation into the timeline. Preview media uses transient stored grants; signed URLs and private originals must not leak into journal/tool projections or saved command payloads.
 
 Exports use the canonical worker contract and backend pricing/idempotency. The browser estimates, confirms, polls and recovers; it does not manufacture completed MP4s. Completed exports and reusable library media remain account artifacts even if a project is later deleted.
@@ -55,3 +59,27 @@ Extend pure facts/contracts before adding controls. Keep Next.js pages as access
 Meaningful shared editing/render/export/media tests remain under `tests/maxvideoai-editor-*` for continuity, with explicit test fixtures rather than retired production templates. `tests/studio-canvas-retirement.test.ts` guards the single interface, old redirects, disabled stale writes and absence of React Flow. Canonical conversation/MCP and export integration/browser suites verify supported behavior; removed Canvas-only specs are not valid public release gates.
 
 Run `npm run test:editor`, `npm run qa:editor`, exposure/diff checks and a full route build. For interaction changes run `npm run test:editor:e2e`. Use the normal clean branch → GitHub PR → current-main Quality CI → Git-backed Vercel release path and verify both live domains against the merged SHA. Report source/bundle measurements separately from actual browser/Core Web Vitals measurements.
+
+
+## Conversation project names
+
+`conversation-project-title.ts` supplies a bounded local title from the first
+meaningful user brief, in its original language. Greetings and generic follow-ups
+do not consume the naming opportunity. `claimImageTurn` saves that fallback in the
+same transaction as a new turn. The existing `project_remember` action optionally
+supplies `projectTitle` alongside useful brief/decisions; naming must not add a model
+call or a memory-only action. The server may refine the automatic fallback once.
+
+`conversation-project-naming.ts` owns metadata writes under the owned connected
+project lock. Command receipts mark automatic naming phases and manual overrides.
+A manual name always wins, including an explicitly chosen **Untitled project**.
+Names never increment project/sequence revisions or change generation quotes,
+media, assistance, or timeline state. `PATCH /api/studio/conversation-projects`
+requires authenticated same-origin access, bounded input and an idempotency key.
+The project picker exposes an inline pencil, save/cancel and keyboard focus; lost
+acknowledgements retry one identity and closed views ignore late responses.
+
+Older untitled conversations use a read-only projection of the first ten retained
+messages (240 characters each), for at most 100 owned projects. Reads never backfill
+storage, fetch workspace JSON or expose those source messages to the browser. The
+next substantive turn can persist a title; manually named projects are excluded.

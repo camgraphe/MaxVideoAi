@@ -2,14 +2,14 @@
 
 import {useEffect,useId,useRef,useState,type RefObject} from 'react';
 import {useRouter} from 'next/navigation';
-import Link from 'next/link';
-import {ArrowUpRight,Check,FolderOpen,MessageSquare,Plus,Search,X} from 'lucide-react';
+import {ArrowUpRight,FolderOpen,Plus,Search,X} from 'lucide-react';
 import {studioProjectSummariesSchema,type StudioProjectSummary} from '@/lib/studio/conversation-projects';
-import {studioProjectEntryUrl,studioConversationEntryCopy} from '../_lib/studio-conversation-entry';
+import {studioConversationEntryCopy} from '../_lib/studio-conversation-entry';
 import {useStudioProjectCreation} from '../_hooks/useStudioProjectCreation';
+import {ConversationProjectRow} from './ConversationProjectRow.client';
 import styles from './conversation-projects.module.css';
 
-type Props={accountKey:string;currentProjectId?:string;locale:string;disabled?:boolean};
+type Props={accountKey:string;currentProjectId?:string;locale:string;disabled?:boolean;onRename?:(projectId:string)=>void};
 export function ConversationProjects(props:Props) {
   const [open,setOpen]=useState(false);
   const trigger=useRef<HTMLButtonElement>(null);
@@ -20,7 +20,7 @@ export function ConversationProjects(props:Props) {
   </>;
 }
 
-function ProjectDialog({accountKey,currentProjectId,locale,trigger,onClose}:Props&{trigger:RefObject<HTMLButtonElement>;onClose:()=>void}) {
+function ProjectDialog({accountKey,currentProjectId,locale,trigger,onClose,onRename}:Props&{trigger:RefObject<HTMLButtonElement>;onClose:()=>void}) {
   const t=(en:string,fr:string)=>locale==='fr'?fr:en;
   const router=useRouter(),id=useId(),dialog=useRef<HTMLDialogElement>(null);
   const [projects,setProjects]=useState<StudioProjectSummary[]>([]),[query,setQuery]=useState(''),[loading,setLoading]=useState(true),[failed,setFailed]=useState(false),[retry,setRetry]=useState(0);
@@ -43,8 +43,7 @@ function ProjectDialog({accountKey,currentProjectId,locale,trigger,onClose}:Prop
     {creation.error&&<p role="alert" className={styles.error}>{copy[creation.error]}</p>}
     <label className={styles.search}><Search size={15}/><input type="search" aria-label={t('Search projects','Rechercher un projet')} placeholder={t('Find a project…','Retrouver un projet…')} value={query} onChange={event=>setQuery(event.target.value)} onInput={event=>setQuery(event.currentTarget.value)}/></label>
     <nav className={styles.list} aria-label={t('Saved projects','Projets enregistrés')} aria-busy={loading}>
-      {loading?<p role="status">{t('Opening your projects…','Ouverture de vos projets…')}</p>:failed?<div role="alert"><p>{t('Your projects could not be loaded.','Vos projets n’ont pas pu être chargés.')}</p><button onClick={()=>setRetry(value=>value+1)}>{copy.retry}</button></div>:visible.length?visible.map(project=><Link key={project.id} data-project-row href={studioProjectEntryUrl(project)} prefetch={false} aria-current={project.id===currentProjectId?'page':undefined} onClick={onClose}>
-        <MessageSquare size={16} strokeWidth={1.4}/><span><strong>{project.name}</strong><small>{t('Conversation','Conversation')} · {new Intl.DateTimeFormat(locale,{month:'short',day:'numeric'}).format(new Date(project.updatedAt))}</small></span>{project.id===currentProjectId?<Check size={14}/>:<ArrowUpRight size={14}/>}</Link>):<p>{query?t('No matching project.','Aucun projet correspondant.'):t('Your conversations will live here.','Vos conversations se retrouveront ici.')}</p>}
+      {loading?<p role="status">{t('Opening your projects…','Ouverture de vos projets…')}</p>:failed?<div role="alert"><p>{t('Your projects could not be loaded.','Vos projets n’ont pas pu être chargés.')}</p><button onClick={()=>setRetry(value=>value+1)}>{copy.retry}</button></div>:visible.length?visible.map(project=><ConversationProjectRow key={project.id} project={project} current={project.id===currentProjectId} locale={locale} onOpen={onClose} onSaved={result=>{setProjects(rows=>rows.map(row=>row.id===result.projectId?{...row,name:result.name,updatedAt:result.updatedAt}:row));onRename?.(result.projectId);router.refresh();}}/>):<p>{query?t('No matching project.','Aucun projet correspondant.'):t('Your conversations will live here.','Vos conversations se retrouveront ici.')}</p>}
     </nav>
     <footer><small>{t('Your work stays saved as you create.','Votre travail est enregistré au fil de la création.')}</small></footer>
   </dialog>;

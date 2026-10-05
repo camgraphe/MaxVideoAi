@@ -1,3 +1,4 @@
+import {automaticallyNameStudioProject} from './conversation-project-naming';
 import {assistanceError, reserveStudioAssistanceCall, settleStudioAssistanceCall, markStudioAssistanceUnknown, stopStudioAssistanceReplay, type AssistanceCall} from './assistance-ledger';
 import type {StudioAssistancePolicy} from './assistance-policy';
 import {studioPreparedExportSchema} from '@/lib/studio/conversation-export-contract';
@@ -35,9 +36,10 @@ export async function readStudioConversationProject(actor: StudioGenerationActor
   return {...(exports ? {exports: exports.flatMap(value => {const parsed=studioPreparedExportSchema.safeParse(value.safe_result);return parsed.success ? [parsed.data] : [];})} : {}),name: row.name, revision: Number(row.revision), memory: studioMemorySchema.parse({revision: Number(row.memory_revision ?? 0), brief: row.brief ?? '', decisions: row.decisions ?? []}), generations};
 }
 
-export async function saveStudioConversationMemory(actor: StudioGenerationActor, value: StudioConversationMemory, executor?: TransactionQueryExecutor) {
+export async function saveStudioConversationMemory(actor: StudioGenerationActor, value: StudioConversationMemory & {projectTitle?:string|null}, executor?: TransactionQueryExecutor) {
   requireGenerationActor(actor);
-  const memory = studioMemorySchema.parse(value);
+  const {projectTitle,...memoryInput}=value;
+  const memory = studioMemorySchema.parse(memoryInput);
   const save = async (tx: TransactionQueryExecutor) => {
     const rows = await tx.query<{revision: string; brief: string; decisions: string[]}>(`
       INSERT INTO studio_conversation_memory (user_id,project_id,revision,brief,decisions)
@@ -48,6 +50,7 @@ export async function saveStudioConversationMemory(actor: StudioGenerationActor,
       WHERE studio_conversation_memory.revision=$5
       RETURNING revision,brief,decisions`, [actor.userId, actor.projectId, memory.brief, JSON.stringify(memory.decisions), memory.revision]);
     if (!rows[0]) throw new AgentApiError('PARAMETER_INVALID', 'The project brief changed. Read the current project before updating it.');
+    await automaticallyNameStudioProject(actor,'assistant',projectTitle,tx);
     return studioMemorySchema.parse({...rows[0], revision: Number(rows[0].revision)});
   };
   return executor ? save(executor) : withDbTransaction(save);

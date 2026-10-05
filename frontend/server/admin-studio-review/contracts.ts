@@ -4,11 +4,12 @@ const identity = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/);
 export const reviewScopeSchema = z.object({ userId: identity, projectId: identity, requestId: z.string().uuid() }).strict();
 export const reviewListSchema = z.object({
   userId: identity.optional(), projectId: identity.optional(), state: z.enum(['thinking', 'ready', 'failed']).optional(),
+  completion: z.enum(['incomplete']).optional(),
   page: z.coerce.number().int().min(0).max(100).default(0), limit: z.coerce.number().int().min(1).max(50).default(50),
 }).strict();
 export type ReviewScope = z.infer<typeof reviewScopeSchema>;
 export type ReviewListFilter = z.infer<typeof reviewListSchema>;
-export type ReviewTurn = ReviewScope & { state: string; attempts: number; createdAt: string; quoteId: string | null };
+export type ReviewTurn = ReviewScope & { state: string; attempts: number; createdAt: string; quoteId: string | null; incomplete: boolean; continuationReason: 'action_limit' | 'output_limit' | null };
 export type ReviewList = { status: 'available'; turns: ReviewTurn[]; hasMore: boolean } | { status: 'unavailable' };
 export type ReviewSource<T> = { status: 'available'; items: T[]; truncated: boolean } | { status: 'unavailable'; items: []; truncated: false };
 export type ReviewAction = { action: string | null; state: string | null; ok: boolean | null; observedRevision: number | null; modelId: string | null; errorCode: string | null; createdAt: string };
