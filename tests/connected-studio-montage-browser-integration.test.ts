@@ -8,7 +8,7 @@ import { startStudioConnectedBrowserFixture } from './helpers/studio-connected-b
 import { STUDIO_FIXTURE_OWNERS } from './helpers/studio-auth-fixture';
 import { initializeStudioConnectedFixture, STUDIO_CONNECTED_ASSET_IDS, STUDIO_CONNECTED_MONTAGE_INPUT } from './helpers/studio-connected-fixture-data';
 import { postStudioMcpRequest, readStudioMcpResponse } from './helpers/studio-mcp-http-fixture';
-import { STUDIO_PRIVATE_MEDIA_HOST, STUDIO_PRIVATE_MEDIA_KEYS } from './helpers/studio-private-storage-fixture';
+import { STUDIO_PRIVATE_MEDIA_HOST, STUDIO_PRIVATE_MEDIA_KEYS, serveStudioPrivateMediaRequest, validateStudioPrivateMediaRequest } from './helpers/studio-private-storage-fixture';
 
 test('MCP montage opens the current conversation with private playback, durable edits, export recovery and account isolation', { timeout: 300_000 }, async () => {
   const runtime = await startStudioIntegrationRuntime({
@@ -68,6 +68,11 @@ test('MCP montage opens the current conversation with private playback, durable 
     const exportRecovery = await fetch(`${runtime.origin}${endpoint}/conversation-exports`, { headers: { Authorization: `Bearer ${session.access_token}` } });
     assert.equal(exportRecovery.status, 200, await exportRecovery.clone().text());
     assert.equal((await exportRecovery.json()).exports[0].artifact.outputUrl, exportMediaPath);
+    const exportGrant = await fetch(`${runtime.origin}${exportMediaPath}`, { headers: { Authorization: `Bearer ${session.access_token}` }, redirect: 'manual' });
+    assert.equal(exportGrant.status, 307);
+    const exportLocation = exportGrant.headers.get('location')!;
+    const exportValidation = await validateStudioPrivateMediaRequest({ url: exportLocation, method: 'GET' });
+    assert.equal(exportValidation.ok, true, JSON.stringify({ validation: exportValidation, queryNames: [...new URL(exportLocation).searchParams.keys()] }));
     let expireNextPrivateRequest = false;
     browserFixture = await startStudioConnectedBrowserFixture({ runtime, signatureClock: () => {
       if (expireNextPrivateRequest) { expireNextPrivateRequest = false; return new Date(Date.now() + 3_600_000); }
@@ -113,7 +118,7 @@ test('MCP montage opens the current conversation with private playback, durable 
     const first = await openFresh(true), page = first.page;
     diagnose = async () => {
       await proof('failure', page);
-      return { alerts: await page.getByRole('alert').allTextContents(), timelineWrites, retiredWrites,
+      return { alerts: await page.getByRole('alert').allTextContents(), timelineWrites, retiredWrites, privateRequests: browserFixture!.readPrivateRequests(),
         videos: await page.locator('video').evaluateAll((elements) => elements.map((element) => {
           const video = element as HTMLVideoElement;
           return { id: video.dataset.playbackItemId, ready: video.readyState, time: video.currentTime, error: video.error?.code };
@@ -278,11 +283,31 @@ test('MCP montage opens the current conversation with private playback, durable 
     await expect(renderCard).toHaveCount(1);
     await expect(renderCard).toContainText('Your film is ready.');
     await expect(renderCard.getByRole('link', { name: 'Open original', exact: true })).toHaveAttribute('href', exportMediaPath);
+    const exportDeliveries: Array<{ status: number; range: string | null }> = [];
+    // Playwright routes only the first URL in a redirect chain. Follow this real
+    // owned 307 locally, validating its grant before serving the offline bucket
+    // bytes. This preserves the canonical route and avoids contacting fake S3.
+    await page.route(`${runtime.browserOrigin}${exportMediaPath}`, async (route) => {
+      const response = await route.fetch({ maxRedirects: 0 });
+      assert.equal(response.status(), 307);
+      assert.equal(response.headers()['cache-control'], 'private, no-store');
+      const location = response.headers().location;
+      const validation = await validateStudioPrivateMediaRequest({ url: location, method: route.request().method() });
+      assert.equal(validation.ok, true);
+      if (validation.ok) assert.equal(validation.key, STUDIO_PRIVATE_MEDIA_KEYS.b);
+      assert.equal(new URL(location).searchParams.get('X-Amz-Expires'), '300');
+      const range = route.request().headers().range ?? null;
+      const media = await serveStudioPrivateMediaRequest({ url: location, method: route.request().method(), range });
+      assert.ok(media.status === 200 || media.status === 206);
+      exportDeliveries.push({ status: media.status, range });
+      await route.fulfill({ status: media.status, headers: media.headers, body: media.body });
+    });
     const renderedVideo = renderCard.getByLabel('Generated video', { exact: true });
     await renderedVideo.evaluate((element) => (element as HTMLVideoElement).play());
     await expect.poll(() => renderedVideo.evaluate((element) => (element as HTMLVideoElement).videoWidth)).toBe(320);
     await expect.poll(() => renderedVideo.evaluate((element) => (element as HTMLVideoElement).currentTime)).toBeGreaterThan(0.05);
     await renderedVideo.evaluate((element) => (element as HTMLVideoElement).pause());
+    assert.ok(exportDeliveries.some((delivery) => delivery.status === 206 && delivery.range !== null));
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int AS count FROM app_timeline_exports')).rows[0].count, 1, 'Recovery and playback never requeue a render or change its billing.');
     assert.equal((await runtime.database.pool.query('SELECT billing_status FROM app_timeline_exports WHERE id=$1', [exportId])).rows[0].billing_status, 'free_completed');
 

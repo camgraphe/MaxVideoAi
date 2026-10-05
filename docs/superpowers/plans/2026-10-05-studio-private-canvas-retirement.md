@@ -53,7 +53,7 @@ Files: operational cleanup helper/CLI, focused PostgreSQL tests, operation repor
 
 ## Task 4: Review and release
 
-- [ ] Review diff and retained API/worker dependency closure; smoke-test new UI and retired routes locally.
+- [x] Review diff and retained API/worker dependency closure; smoke-test new UI and retired routes locally.
 - [ ] Commit, push and attach GitHub PR; pass required Quality CI on current-main candidate.
 - [ ] Run deployment check, merge via GitHub, verify both domains use the merged SHA and smoke-test production.
 - [ ] Record code/file/dependency reduction and data scope; report exact completed work and any practical limits.
