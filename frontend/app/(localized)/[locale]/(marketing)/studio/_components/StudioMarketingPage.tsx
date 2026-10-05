@@ -11,21 +11,31 @@ const STUDIO_PREVIEW_IMAGE = '/assets/studio/studio-conversation-preview.webp';
 const icons = [MessageCircle, Sparkles, PanelsTopLeft];
 
 export function StudioMarketingPage({ copy, locale }: { copy: StudioMarketingCopy; locale: AppLocale }) {
+  const entryHref = `/api/studio/marketing-entry?starter=product-ad&lang=${locale}`;
   return <div className={styles.page}>
     <section className={styles.hero} aria-labelledby="studio-title">
+      <div className={styles.heroCopy}>
       <p className={styles.eyebrow}><span />{copy.eyebrow}</p>
       <h1 id="studio-title">{copy.title}</h1>
       <p className={styles.introduction}>{copy.introduction}</p>
       <div className={styles.actions}>
-        <NextLink className={styles.primary} href="/api/studio/marketing-entry" prefetch={false}>{copy.primaryCta}<ArrowRight size={17} aria-hidden="true" /></NextLink>
-        <a className={styles.secondary} href="#workflow">{copy.secondaryCta}<span aria-hidden="true">↓</span></a>
+        <NextLink className={styles.primary} href={entryHref} prefetch={false} data-analytics-event="cta_click" data-analytics-cta-name="studio_open" data-analytics-cta-location="studio_hero" data-analytics-target-family="studio">{copy.primaryCta}<ArrowRight size={17} aria-hidden="true" /></NextLink>
       </div>
-      <p className={styles.accessNote}>{copy.accessNote}</p>
+      </div>
+      <div className={styles.heroMedia}>
       {STUDIO_PREVIEW_IMAGE ? <figure className={styles.preview}>
-        <Image src={STUDIO_PREVIEW_IMAGE} alt={copy.imageAlt} width={1354} height={832} sizes="(max-width: 1120px) 100vw, 1120px" priority />
+        <Image src={STUDIO_PREVIEW_IMAGE} alt={copy.imageAlt} width={1354} height={832} sizes="(min-width: 1348px) 700px, (min-width: 1000px) 56vw, (min-width: 761px) 50vw, 100vw" priority />
         <figcaption>{copy.imageCaption}</figcaption>
       </figure> : null}
+      <div className={styles.brief}><span>{copy.brief.label}</span><p>{copy.brief.body}</p></div>
+      </div>
+      <div className={styles.entryNotes}>
+        <a className={styles.secondary} href="#workflow">{copy.secondaryCta}<span aria-hidden="true">↓</span></a>
+        <p className={styles.accessNote}>{copy.accessNote}</p>
+        <p className={styles.costNote}>{copy.costNote}</p>
+      </div>
     </section>
+    <p className={styles.betaNote}>{copy.betaNote}</p>
     <section className={styles.workflow} id="workflow" aria-labelledby="studio-workflow">
       <p className={styles.eyebrow}>{copy.workflow.eyebrow}</p>
       <h2 id="studio-workflow">{copy.workflow.title}</h2>
@@ -49,7 +59,7 @@ export function StudioMarketingPage({ copy, locale }: { copy: StudioMarketingCop
       {copy.faq.items.map(item => <details key={item.question}><summary>{item.question}<span aria-hidden="true">+</span></summary><p>{item.answer}</p></details>)}
     </div></section>
     <section className={styles.closing}><h2>{copy.closing.title}</h2><p>{copy.closing.body}</p>
-      <NextLink className={styles.primary} href="/api/studio/marketing-entry" prefetch={false}>{copy.primaryCta}<ArrowRight size={17} aria-hidden="true" /></NextLink>
+      <NextLink className={styles.primary} href={entryHref} prefetch={false} data-analytics-event="cta_click" data-analytics-cta-name="studio_open" data-analytics-cta-location="studio_closing" data-analytics-target-family="studio">{copy.primaryCta}<ArrowRight size={17} aria-hidden="true" /></NextLink>
     </section>
   </div>;
 }

@@ -64,7 +64,7 @@ function StudioImageConversationWorkspace({
   const [following, setFollowing] = useState(true);
   const helpTrigger = useRef<HTMLButtonElement>(null);
   const composerRegion = useRef<HTMLDivElement>(null);
-  const [text, setText] = useState(() => studioMarketingStarterMessage(starter,locale));
+  const [text, setText] = useState(() => studioMarketingStarterMessage(starter,appLocale));
   const shelf = useConversationMediaShelf(studio.conversation.turns,locale,mediaEnabled);
   const references = shelf.references;
   const unavailableReferences = !mediaEnabled&&references.some(ref=>ref.kind&&ref.kind!=='image');

@@ -6,6 +6,7 @@ import {
   hasAnalyticsConsentInBrowser,
 } from './consent-client';
 import { prepareBrowserAnalyticsEvents } from './journey-browser';
+import { isBrowserCommercialAnalyticsExcluded, isBrowserCommercialAnalyticsPending } from './commercial-client';
 import {
   sendPreparedAnalyticsEvents,
   type PreparedAnalyticsTransportEvent,
@@ -103,9 +104,10 @@ export function dispatchGoogleAdsConversion(
   payload: Record<string, unknown>,
   options?: DispatchGaEventOptions,
 ): Promise<boolean> {
+  if (isBrowserCommercialAnalyticsPending() || isBrowserCommercialAnalyticsExcluded()) return Promise.resolve(false);
   return dispatchPreparedEvents(
     [{ event: 'conversion', payload }],
-    hasAdsConsentInBrowser,
+    () => hasAdsConsentInBrowser() && !isBrowserCommercialAnalyticsPending() && !isBrowserCommercialAnalyticsExcluded(),
     'ads',
     options,
   );

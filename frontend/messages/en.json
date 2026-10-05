@@ -6757,6 +6757,10 @@
       }
     },
     "continuation": {
+      "studio": {
+        "title": "Continue to Studio",
+        "body": "Create an account or sign in to return to Studio and develop your image or clip. Opening the workspace does not start a paid generation."
+      },
       "mcp": {
         "title": "Connect your MaxVideoAI account",
         "body": "Sign in with the same MaxVideoAI account you use on the website. You will review the requested access, then return to your assistant."

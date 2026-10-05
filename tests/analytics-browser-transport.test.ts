@@ -5,6 +5,37 @@ import { dispatchGaEvent } from '../frontend/lib/analytics/ga-events';
 
 type TimerCallback = () => void;
 
+test('browser transport bounds oversaturated completion while preserving acquisition and success evidence', async () => {
+  const { sendPreparedAnalyticsEvents } = await import('../frontend/lib/analytics/ordered-events');
+  const attribution = {
+    journey_id: '7df6d42a-4b70-4eca-82fe-3a320c4a6eb9', acquisition_cohort: '2026-W41',
+    first_touch_source: 'youtube', first_touch_medium: 'paid_video', first_touch_campaign: 'claude_desktop_clip_20261005', first_touch_content: 'result_horizontal48',
+    last_touch_source: 'youtube', last_touch_medium: 'paid_video', last_touch_campaign: 'claude_desktop_clip_20261005', last_touch_content: 'result_horizontal48',
+    route_family: 'workspace', job_id: 'job123', generation_sequence: 2, completion_source: 'generation',
+  };
+  const diagnostics = Object.fromEntries(Array.from({ length: 30 }, (_, i) => [`diagnostic_${i}`, i]));
+  let sent: Record<string, unknown> = {};
+  sendPreparedAnalyticsEvents((_command, _event, payload) => { sent = payload as Record<string, unknown>; }, [
+    { event: 'first_media_completed_in_journey', payload: { ...diagnostics, ...attribution } },
+  ]);
+  assert.ok(Object.keys(sent).length <= 25);
+  for (const [key, value] of Object.entries(attribution)) assert.equal(sent[key], value, key);
+});
+
+test('legacy Google Ads return conversion is suppressed for unresolved or excluded account roles', async () => {
+  const { dispatchGoogleAdsConversion } = await import('../frontend/lib/analytics/ga-events');
+  await withBrowser({ adsConsent: true }, async ({ window }) => {
+    let calls = 0;
+    window.gtag = () => { calls += 1; };
+    window.__mvaiCommercialAnalyticsPending = true;
+    assert.equal(await dispatchGoogleAdsConversion({ send_to: 'AW-local-fixture' }), false);
+    window.__mvaiCommercialAnalyticsPending = false;
+    window.__mvaiCommercialAnalyticsExcluded = true;
+    assert.equal(await dispatchGoogleAdsConversion({ send_to: 'AW-local-fixture' }), false);
+    assert.equal(calls, 0);
+  });
+});
+
 function createStorage(): Storage {
   const values = new Map<string, string>();
   return {
@@ -46,6 +77,7 @@ async function withBrowser(
     source: 'preferences',
   }));
   const browserWindow = {
+    __mvaiCommercialAnalyticsPending: false,
     localStorage,
     sessionStorage,
     location: {

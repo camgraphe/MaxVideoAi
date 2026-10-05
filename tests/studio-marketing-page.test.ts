@@ -37,7 +37,8 @@ for (const locale of ['en', 'fr', 'es'] as const) {
 test('Studio is discoverable as a public page while app access keeps its existing entry handler', () => {
   assert.equal(MARKETING_SITE_NAV_LINKS.find(item => item.key === 'studio')?.href, '/studio');
   const view = readFileSync('frontend/app/(localized)/[locale]/(marketing)/studio/_components/StudioMarketingPage.tsx', 'utf8');
-  assert.match(view, /href="\/api\/studio\/marketing-entry" prefetch=\{false\}/);
+  assert.match(view, /\/api\/studio\/marketing-entry\?starter=product-ad&lang=\$\{locale\}/);
+  assert.match(view, /href=\{entryHref\} prefetch=\{false\}/);
   assert.doesNotMatch(view, /<main|\/api\/(?:generate|studio\/chat)|fetch\(/);
   const page = readFileSync('frontend/app/(localized)/[locale]/(marketing)/studio/page.tsx', 'utf8');
   assert.ok(page.split('\n').length < 60);
@@ -72,6 +73,7 @@ test('Studio copy describes public account access, demonstration media and unava
     assert.doesNotMatch(source, /private preview|aperçu privé|vista previa privada|eligible|éligible|elegible|invitation|invitación|restricted|restreint|restringido/i);
     assert.doesNotMatch(source, /unlimited|illimité|ilimitad|\$\d|€\d|best model|meilleur modèle|mejor modelo/i);
     assert.doesNotMatch(source, /export quote|devis d’export|presupuesto de exportación/);
+    assert.doesNotMatch(source, /advanced canvas|canvas avancé|lienzo avanzado/i);
     assert.ok(copy.faq.items.at(-1)?.answer.includes('MaxVideoAI'));
   }
 });

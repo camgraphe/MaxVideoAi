@@ -5,6 +5,7 @@ import * as React from "react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { useImageConversation } from "../frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/_hooks/useImageConversation";
+import { prepareBrowserAnalyticsEvents, clearBrowserAnalyticsState } from '../frontend/lib/analytics/journey-browser';
 
 async function mount(
   turns: unknown[] = [],
@@ -34,6 +35,7 @@ async function mount(
     document: dom.window.document,
     navigator: dom.window.navigator,
     sessionStorage: dom.window.sessionStorage,
+    CustomEvent: dom.window.CustomEvent,
     IS_REACT_ACT_ENVIRONMENT: true,
     fetch: async (url: string, options?: RequestInit) => {
       requests.push({
@@ -187,6 +189,37 @@ test("manual refresh failures stay recoverable and a later successful refresh cl
       await view.close();
     }
   }
+});
+
+test('only a successfully confirmed Studio generation completed in this consented visit emits media success once', async () => {
+  const view = await mount();
+  try {
+    window.localStorage.setItem('mv-consent-analytics', 'granted');
+    window.__mvaiCommercialAnalyticsPending = false;
+    const events: string[] = [];
+    window.addEventListener('mvai:analytics', (event) => {
+      const detail = (event as CustomEvent<{ event: string; payload: Record<string, unknown> }>).detail;
+      events.push(...prepareBrowserAnalyticsEvents(detail.event, detail.payload).map((prepared) => prepared.event));
+    });
+    const completed = { ...readyTurn(view.input), generation: {
+      jobId: 'job-owned', status: 'completed', surface: 'image', result: { surface: 'image', imageUrls: ['https://private.invalid/owned.png'], thumbnailUrls: [] },
+    } };
+    view.queueRead(conversationResponse('project-a', [completed]));
+    await act(async () => view.state.refresh());
+    assert.deepEqual(events, [], 'historical media on an initial read is not a new completion');
+    view.queuePost({ ok: false, payload: { ok: false, error: 'INSUFFICIENT_FUNDS' } });
+    await act(async () => view.state.confirm(view.input.requestId, 'quote-owned'));
+    assert.deepEqual(events, [], 'a failed confirmation is not a media start');
+    view.queuePost({ ok: true, payload: { ok: true, result: { ...completed.generation, status: 'accepted', result: null } } });
+    view.queueRead(conversationResponse('project-a', [completed]));
+    await act(async () => view.state.confirm(view.input.requestId, 'quote-owned'));
+    assert.equal(events.filter((event) => event === 'first_media_completed_in_journey').length, 1);
+    assert.equal(events.filter((event) => event === 'tool_complete').length, 1);
+    view.queueRead(conversationResponse('project-a', [completed]));
+    await act(async () => view.state.refresh());
+    assert.equal(events.filter((event) => event === 'tool_complete').length, 1);
+    clearBrowserAnalyticsState();
+  } finally { await view.close(); }
 });
 
 test("an initial conversation read failure is cleared by successful manual recovery", async () => {

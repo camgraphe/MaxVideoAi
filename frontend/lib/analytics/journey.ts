@@ -38,9 +38,16 @@ type ApprovedUtmTouch = {
   contents?: readonly string[];
 };
 
+const ADS_READINESS_DRAFT_CONTENTS = [
+  'result_horizontal48', 'result_vertical48', 'quote_horizontal48', 'quote_vertical48',
+  'result_horizontal24', 'result_vertical24', 'quote_horizontal24', 'quote_vertical24',
+] as const;
+
 const APPROVED_UTM_TOUCHES: readonly ApprovedUtmTouch[] = [
   { source: 'google', medium: 'cpc' },
   { source: 'google', medium: 'cpc', campaign: 'Launch', contents: ['Hero'] },
+  { source: 'google', medium: 'cpc', campaign: 'claude_desktop_clip_20261005', contents: ADS_READINESS_DRAFT_CONTENTS },
+  { source: 'youtube', medium: 'paid_video', campaign: 'claude_desktop_clip_20261005', contents: ADS_READINESS_DRAFT_CONTENTS },
   { source: 'newsletter', medium: 'email' },
   {
     source: 'github', medium: 'repository', campaign: 'maxvideoai_product',
@@ -75,10 +82,12 @@ const ANALYTICS_ROUTE_FAMILIES = new Set([
 const ANALYTICS_LOCALES = new Set(['en', 'fr', 'es']);
 const ANALYTICS_TOOL_NAMES = new Set([
   'tools_hub', 'angle', 'background_removal', 'character_builder', 'storyboard', 'upscale', 'audio',
+  'studio',
 ]);
 const ANALYTICS_WORKSPACE_SECTIONS = new Set([
   'home', 'image', 'audio', 'library', 'tools', 'billing', 'generate', 'dashboard', 'jobs',
   'settings', 'connect', 'video',
+  'studio',
 ]);
 const SAFE_MARKETING_LANDING_SURFACES = new Set([
   '/', '/about', '/ai-video-engines', '/benchmarks', '/best-for', '/blog', '/changelog',
@@ -467,6 +476,8 @@ const ANALYTICS_EVENT_PAYLOAD_KEYS = {
   ],
   tool_view: ['route_family', 'tool_name', 'tool_surface', 'logged_in'],
   app_open: ['route_family', 'app_section'],
+  studio_entered: ['route_family'],
+  first_media_completed_in_journey: [...GENERATION_CONTEXT_PAYLOAD_KEYS, 'tool_name', 'tool_surface', 'completion_source', 'result_count', 'output_count'],
   tool_cta_click: CLICK_PAYLOAD_KEYS,
   cta_click: CLICK_PAYLOAD_KEYS,
   hero_start_render_click: CLICK_PAYLOAD_KEYS,
@@ -595,6 +606,7 @@ const ENGINE_IDS = new Set([
   'bria-video-background-removal-v3',
 ]);
 const CTA_NAMES = new Set([
+  'studio_open', 'mcp_setup_guide', 'mcp_choose_integration',
   'reuse_example', 'view_example_details',
   'pricing_scenario',
   'marketing_nav_login', 'marketing_nav_start_app', 'homepage_ai_video_plugin', 'all_comparisons',
@@ -605,6 +617,7 @@ const CTA_NAMES = new Set([
   ...ENGINE_IDS,
 ]);
 const CTA_LOCATIONS = new Set([
+  'studio_hero', 'studio_closing', 'integration_hero', 'mcp_hero',
   'examples_hero', 'examples_gallery', 'watch_hero', 'watch_sidebar',
   'pricing_hero',
   'marketing_nav_mobile', 'marketing_nav_desktop', 'home_assistant_workflow', 'comparison_intro',
@@ -625,13 +638,14 @@ const EXACT_STRING_VALUES: Readonly<Record<string, ReadonlySet<string>>> = {
   app_section: new Set(['workspace', ...ANALYTICS_WORKSPACE_SECTIONS]),
   cta_name: CTA_NAMES,
   cta_location: CTA_LOCATIONS,
-  target_family: new Set(['auth', 'workspace', 'examples', 'compare', 'models', 'tools', 'pricing', 'mcp', 'best-for', 'public_tools', 'app_tools']),
+  target_family: new Set(['auth', 'workspace', 'examples', 'compare', 'models', 'tools', 'pricing', 'mcp', 'studio', 'best-for', 'public_tools', 'app_tools']),
   action: new Set(['connect', 'copy_endpoint', 'generate', 'full_body_fix', 'lighting_variant', 'continue', 'refine', 'branch', 'copy', 'open']),
   client: new Set(['claude', 'chatgpt', 'codex']),
   destination: new Set(['verified_deep_link', 'setup_guide', 'manual_setup']),
   locale: ANALYTICS_LOCALES,
   auth_surface: new Set(['login']),
   method: new Set(['password', 'google']),
+  completion_source: new Set(['generation', 'tool']),
   source_mode: new Set(['scratch', 'reference-image']),
   output_mode: new Set(['portrait_reference', 'character_sheet']),
   quality_mode: new Set(['draft', 'final']),
@@ -705,6 +719,7 @@ const LOCAL_KEY_PATTERN = /^local_batch_[a-z0-9]{4,20}_[a-z0-9]{4,16}_[1-9][0-9]
 const SAFE_STATIC_PATHS = new Set([
   '/', '/mcp', '/models', '/examples', '/compare', '/pricing', '/best-for', '/tools', '/app',
   '/app/image', '/app/audio', '/app/library', '/app/tools', '/billing', '/login', '/signup',
+  '/app/studio', '/studio',
   '/dashboard', '/generate', '/jobs', '/settings', '/connect', '/video/:video',
 ]);
 
@@ -898,6 +913,27 @@ export function prepareJourneyEvents(
       ...(funnelStage ? { funnel_stage: funnelStage } : {}),
     }),
   });
+
+  const projected = projectAnalyticsPayload(event, payload);
+  if (event === 'page_view' && projected.route_family === 'workspace' && projected.workspace_section === 'studio') {
+    events.push({ event: 'studio_entered', payload: mergeJourneyPayload('studio_entered', { route_family: 'workspace' }, common) });
+  }
+  const correlatedGenerationCompletion = event === 'generation_completed'
+    && typeof projected.job_id === 'string'
+    && typeof projected.generation_sequence === 'number'
+    && projected.generation_sequence > 0
+    && projected.generation_sequence <= record.generationStartedCount;
+  const toolCompletion = event === 'tool_complete' && typeof projected.tool_name === 'string'
+    && (Number(projected.result_count ?? 0) > 0 || Number(projected.output_count ?? 0) > 0);
+  if (nextRecord.firstMediaCompletedAt === undefined && (correlatedGenerationCompletion || toolCompletion)) {
+    nextRecord = { ...nextRecord, firstMediaCompletedAt: now };
+    events.push({
+      event: 'first_media_completed_in_journey',
+      payload: mergeJourneyPayload('first_media_completed_in_journey', {
+        ...projected, completion_source: correlatedGenerationCompletion ? 'generation' : 'tool',
+      }, common),
+    });
+  }
 
   return { record: nextRecord, events };
 }

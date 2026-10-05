@@ -1,5 +1,7 @@
 import Stripe from 'stripe';
+import { query } from '@/lib/db';
 import { extractGaClientId, sendGa4Event } from '@/server/ga4';
+import { isCommercialPaymentAnalyticsEligible } from '@/server/wallet-first-topup';
 
 type TopupTrackingMetadata = {
   kind: string | null;
@@ -63,6 +65,7 @@ async function resolveTopupTrackingMetadataFromCharge(
 
 export async function handleChargeRefunded(event: Stripe.Event, stripe: Stripe): Promise<void> {
   const charge = event.data.object as Stripe.Charge;
+  if (charge.livemode !== true) return;
   const metadata = await resolveTopupTrackingMetadataFromCharge(charge, stripe);
   if (metadata.kind !== 'topup') {
     return;
@@ -70,6 +73,7 @@ export async function handleChargeRefunded(event: Stripe.Event, stripe: Stripe):
   if (!metadata.analyticsConsentGranted || !metadata.userId) {
     return;
   }
+  if (!await isCommercialPaymentAnalyticsEligible({ query }, metadata.userId, charge.livemode)) return;
 
   const previous = (event.data.previous_attributes ?? {}) as { amount_refunded?: number };
   const previousAmountRefunded =

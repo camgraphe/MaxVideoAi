@@ -1,6 +1,7 @@
 import { createHash } from 'crypto';
 import { ENV } from '@/lib/env';
 import { normalizeGa4SessionId } from '@/lib/analytics/ga-session-id';
+import { boundGa4EventParams } from '@/lib/analytics/ga4-params';
 
 type Ga4ParamValue = string | number | boolean;
 
@@ -99,6 +100,7 @@ export async function sendGa4Event({ name, params, clientId, sessionId, userId }
     eventParams.session_id = resolvedSessionId;
   }
   eventParams.engagement_time_msec = 1;
+  const boundedParams = boundGa4EventParams(eventParams);
 
   const payload: Record<string, unknown> = {
     client_id: resolvedClientId,
@@ -106,7 +108,7 @@ export async function sendGa4Event({ name, params, clientId, sessionId, userId }
     events: [
       {
         name: eventName,
-        params: eventParams,
+        params: boundedParams,
       },
     ],
   };

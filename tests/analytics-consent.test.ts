@@ -172,6 +172,7 @@ function withBrowser(
     configurable: true,
     value: {
       localStorage,
+      __mvaiCommercialAnalyticsPending: false,
       sessionStorage,
       location: {
         href: location.href,
@@ -219,6 +220,36 @@ test('granted consent creates one entry and one durable journey', () => {
       prepareBrowserAnalyticsEvents('sign_up_completed', {}).map((entry) => entry.event),
       ['sign_up_completed'],
     );
+  });
+});
+
+test('the prepared paid-video candidate preserves bounded tags through consent, auth return, and checkout projection', () => {
+  const href = 'https://maxvideoai.com/integrations/claude?utm_source=youtube&utm_medium=paid_video&utm_campaign=claude_desktop_clip_20261005&utm_content=result_horizontal48';
+  withBrowser({ consent: null, href }, ({ localStorage }) => {
+    assert.deepEqual(prepareBrowserAnalyticsEvents('page_view', {}), []);
+    assert.equal(localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY), null);
+    localStorage.setItem('mv-consent-analytics', 'granted');
+    prepareBrowserAnalyticsEvents('page_view', { route_family: 'marketing' });
+    window.location.href = 'https://maxvideoai.com/login?code=private-oauth-proof';
+    window.location.pathname = '/login';
+    const completed = prepareBrowserAnalyticsEvents('sign_up_completed', { method: 'google' }).at(-1)?.payload;
+    assert.equal(completed?.first_touch_source, 'youtube');
+    assert.equal(completed?.first_touch_medium, 'paid_video');
+    assert.equal(completed?.first_touch_campaign, 'claude_desktop_clip_20261005');
+    assert.equal(completed?.first_touch_content, 'result_horizontal48');
+    assert.equal(readWalletAnalyticsJourney()?.firstCampaign, 'claude_desktop_clip_20261005');
+    assert.equal(readWalletAnalyticsJourney()?.lastContent, 'result_horizontal48');
+    assert.equal(JSON.stringify(readAnalyticsJourney()).includes('private-oauth-proof'), false);
+  });
+});
+
+test('first media completion remains deduplicated after stored journey reload', () => {
+  withBrowser({ consent: 'granted' }, () => {
+    const started = prepareBrowserAnalyticsEvents('generation_started', {}).at(-1)?.payload;
+    const payload = { ...started, job_id: 'job_7df6d42a-4b70-4eca-82fe-3a320c4a6eb9' };
+    assert.deepEqual(prepareBrowserAnalyticsEvents('generation_completed', payload).map((entry) => entry.event), ['generation_completed', 'first_media_completed_in_journey']);
+    assert.equal(typeof readAnalyticsJourney()?.firstMediaCompletedAt, 'number');
+    assert.deepEqual(prepareBrowserAnalyticsEvents('generation_completed', payload).map((entry) => entry.event), ['generation_completed']);
   });
 });
 

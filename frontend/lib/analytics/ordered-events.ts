@@ -10,11 +10,12 @@ export function sendPreparedAnalyticsEvents(
   events: PreparedAnalyticsTransportEvent[],
   startIndex = 0,
 ): number {
+  if (isBrowserCommercialAnalyticsExcluded()) return events.length;
   let index = Math.max(0, Math.min(events.length, startIndex));
   while (index < events.length) {
     const prepared = events[index];
     try {
-      gtag('event', prepared.event, prepared.payload);
+      gtag('event', prepared.event, boundGa4EventParams(prepared.payload));
     } catch {
       return index;
     }
@@ -22,3 +23,5 @@ export function sendPreparedAnalyticsEvents(
   }
   return index;
 }
+import { isBrowserCommercialAnalyticsExcluded } from './commercial-client';
+import { boundGa4EventParams } from './ga4-params';

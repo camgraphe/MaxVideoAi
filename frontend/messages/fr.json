@@ -6785,6 +6785,10 @@
       }
     },
     "continuation": {
+      "studio": {
+        "title": "Continuer vers Studio",
+        "body": "Créez un compte ou connectez-vous pour revenir dans Studio et préparer votre image ou clip. Ouvrir cet espace ne lance aucune génération payante."
+      },
       "mcp": {
         "title": "Connectez votre compte MaxVideoAI",
         "body": "Connectez-vous avec le même compte MaxVideoAI que sur le site. Vous pourrez vérifier les accès demandés, puis revenir dans votre assistant."

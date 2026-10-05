@@ -14,6 +14,7 @@ export type AnalyticsJourneyRecordV1 = {
   version: 1; journeyId: string; createdAt: number; expiresAt: number; cohortWeek: string;
   firstTouch: AnalyticsTouch; lastTouch: AnalyticsTouch; lastTouchAt: number;
   funnelEntrySent: boolean; generationStartedCount: number; topupStartedCount: number;
+  firstMediaCompletedAt?: number;
 };
 
 export type WalletAnalyticsJourney = {

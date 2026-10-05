@@ -1,5 +1,5 @@
 import { useCallback, useEffect, type MutableRefObject } from 'react';
-import { persistPendingAnalyticsEvent } from '@/lib/analytics-client';
+import { persistGoogleAuthCompleted } from '../_lib/login-auth-analytics';
 import {
   clearStaleBrowserAuthState,
   isInvalidRefreshTokenError,
@@ -8,8 +8,6 @@ import {
 import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
 import { loadSupabaseClient } from '@/lib/supabaseClientLoader';
 import {
-  consumePendingGoogleLogin,
-  resolveGoogleAuthCompletionEvent,
   sanitizeNextPath,
 } from '../_lib/login-helpers';
 
@@ -19,20 +17,6 @@ type UseLoginAuthenticatedRedirectOptions = {
   nextPathReady: boolean;
   oauthCodeExchangeStartedRef: MutableRefObject<boolean>;
 };
-
-function persistGoogleAuthCompleted() {
-  const pendingMode = consumePendingGoogleLogin();
-  if (!pendingMode) return;
-  const eventName = resolveGoogleAuthCompletionEvent(pendingMode);
-  persistPendingAnalyticsEvent(eventName, {
-    route_family: 'auth',
-    auth_surface: 'login',
-    method: 'google',
-    ...(eventName === 'sign_up_completed'
-      ? { email_confirmation_required: false }
-      : {}),
-  });
-}
 
 export function useLoginAuthenticatedRedirect({
   completeAuthenticatedRedirect,
@@ -45,7 +29,7 @@ export function useLoginAuthenticatedRedirect({
       const session = await readBrowserSession();
       const userId = session?.user?.id ?? null;
       if (!session?.access_token || !userId) return false;
-      persistGoogleAuthCompleted();
+      persistGoogleAuthCompleted(session.user?.created_at, session.user?.app_metadata, session.user?.id, session.access_token);
       completeAuthenticatedRedirect(target, userId);
       return true;
     },
@@ -74,7 +58,7 @@ export function useLoginAuthenticatedRedirect({
           }
           const user = data.user ?? null;
           if (user && nextPath) {
-            persistGoogleAuthCompleted();
+            persistGoogleAuthCompleted(user.created_at, user.app_metadata, user.id);
             completeAuthenticatedRedirect(sanitizeNextPath(nextPath), user.id);
           }
         }).catch((err) => {
@@ -97,7 +81,7 @@ export function useLoginAuthenticatedRedirect({
       }
       const user = data.user ?? null;
       if (user && nextPath) {
-        persistGoogleAuthCompleted();
+        persistGoogleAuthCompleted(user.created_at, user.app_metadata, user.id);
         completeAuthenticatedRedirect(sanitizeNextPath(nextPath), user.id);
       }
     }
@@ -123,7 +107,7 @@ export function useLoginAuthenticatedRedirect({
     readBrowserSession().then((session) => {
       if (cancelled) return;
       if (session?.access_token) {
-        persistGoogleAuthCompleted();
+        persistGoogleAuthCompleted(session.user?.created_at, session.user?.app_metadata, session.user?.id, session.access_token);
         completeAuthenticatedRedirect(sanitizeNextPath(nextPath), session.user?.id ?? null);
       }
     }).catch((err) => {

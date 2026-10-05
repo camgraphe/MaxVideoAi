@@ -25,9 +25,9 @@ function buildSpanishGuides(client: McpClientId): IntegrationHostGuide[] {
         intro: 'Añade MaxVideoAI como conector remoto personalizado y autoriza tu cuenta en el navegador.',
         installInstruction: getIntegrationInstallInstruction('es', 'claudeDesktop'),
         steps: [
-          { title: 'Abrir los ajustes', body: "Abre Customize → Connectors → + → Add custom connector. En Team o Enterprise, un propietario añade primero el conector en Organization settings → Connectors." },
-          { title: 'Añadir MaxVideoAI', body: "Usa el servidor de producción siguiente y el nombre MaxVideoAI. Elige Add y después Connect. No pegues una clave API ni tu contraseña." },
-          { title: 'Aprobar la conexión', body: "Conecta tu cuenta MaxVideoAI existente, revisa los permisos y vuelve a Claude. Activa el conector en el menú + → Connectors del chat." },
+          { title: 'Abrir los ajustes', body: 'Con Claude Pro o Max, abre Customize → Connectors → + Add → Add custom connector. En Team o Enterprise, un propietario usa primero Organization settings → Connectors → Add → Custom → Web.' },
+          { title: 'Añadir MaxVideoAI', body: 'Introduce MaxVideoAI y la URL de producción de abajo. Elige Continue, revisa los ajustes OAuth detectados y pulsa Continue. Conserva OAuth, revisa las opciones de conexión y termina con Add.' },
+          { title: 'Aprobar la conexión', body: 'Inicia sesión o crea tu cuenta MaxVideoAI y revisa el acceso. Los miembros de Team o Enterprise eligen Connect en el conector añadido por su propietario. Vuelve a Claude y activa MaxVideoAI en + → Connectors dentro del chat.' },
         ],
         commands: [],
         setupValues: [{ label: 'Servidor MaxVideoAI', value: MCP_PRODUCTION_RESOURCE_URL }],

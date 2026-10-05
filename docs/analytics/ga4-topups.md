@@ -1,162 +1,54 @@
-# GA4 Funnel and Top-Up Configuration (Production)
+# GA4 acquisition milestones and wallet payments
 
-MaxVideoAI measures the consented acquisition journey from entry through signup, first generation, and first wallet top-up. Client events use the browser GA4 transport; completed top-ups and purchases are emitted server-side by the Stripe webhook. When analytics consent is granted, checkout creation also captures the current GA4 `session_id` through `gtag('get', ...)`. The webhook returns that bounded identifier with its Measurement Protocol events so purchases join the originating browser session instead of reporting a landing page or channel as `(not set)`.
+Reviewed locally on 2026-10-05. Measure milestones independently: payment may happen before media generation; a Studio visit or an MCP setup-guide click does not prove a completed generation or an effective connection. Do not use a prescribed signup → generation → wallet top-up order as the visitor-to-revenue denominator.
 
-Server-side events require:
+## Evidence and scope
 
-- `GA4_MEASUREMENT_ID`
-- `GA4_API_SECRET`
+| Question | Evidence | Limit |
+| --- | --- | --- |
+| Consented visit | `funnel_entry`, `page_view` | Browser journey, not an admin-clean commercial denominator or unique person. |
+| Primary action | `cta_click` with bounded `cta_name`, `cta_location`, `target_family` | Observed action, not installation, activation or payment. |
+| Account creation | `sign_up_completed` | Google uses account `created_at` within the pending auth intent; existing Google accounts count as `login_completed` even from the signup UI. Password completion follows successful consent persistence; confirmation-required responses are not proof of an authenticated active user. |
+| Studio entered | `studio_entered` | Consented authenticated `/app/studio` family after commercial role resolution; public `/studio` is a landing visit. |
+| Effective MCP connection | Server `oauth_connection_completed` | Existing authenticated idempotent binding, independent of landing/setup clicks; not a GA4 browser event. |
+| First completed media in a journey | `first_media_completed_in_journey` | Once in the 90-day consented browser journey, not account lifetime. Covers correlated video completion, emitting tools and Studio generations confirmed in the current visit. Separate image/audio workspaces and MCP do not universally emit this browser milestone. |
+| Confirmed wallet funding | Server `topup_completed`, `purchase` | Inserted canonical Stripe live-mode wallet receipt; test/unknown mode and admins excluded. Direct card-funded generation payments are not covered. |
+| First recorded external payment | `is_first_recorded_external_payment` on wallet purchase | Known positive external receipt history under the wallet transaction lock; manual/test credit excluded, legacy unknown external mode conservatively existing. Not proof of lifetime first payer while direct-card coverage is incomplete. |
+| First wallet credit | `is_first_wallet_topup` | Existing ledger definition includes earlier positive wallet top-ups, including manual/test credits. Keep separate from external-payer classification. |
 
-## 1. Events and key events
+`is_first_generation` is first generation **attempt** in the journey. A failed first attempt does not make a later successful media result cease to be the first observed success. No event establishes contribution margin or profitability.
 
-The primary funnel uses:
+## Transport and consent
 
-- `funnel_entry`
-- `sign_up_started`
-- `sign_up_completed`
-- `generation_started`
-- `generation_completed`
-- `topup_started`
-- `topup_completed`
+Server transport needs `GA4_MEASUREMENT_ID` and `GA4_API_SECRET`. Browser checkout captures GA4 client/session IDs from its configured tag only with analytics consent; the wallet API independently checks the consent cookie before copying IDs and bounded first/last touch attribution into Stripe metadata. Denied or withdrawn consent clears journey and pending browser events. No pre-consent replay is allowed.
 
-Related diagnostic and commerce events include:
+Both browser and Measurement Protocol senders cap emitted parameters at 25. Session, transaction/value/currency, acquisition source/campaign/content and milestone evidence take priority over optional diagnostics. Do not expect every diagnostic field on a fully attributed purchase. Optional history lookup uses a savepoint: an SQL measurement error returns unknown, suppresses commercial emission, and permits the wallet receipt transaction to continue.
 
-- `generation_failed`
-- `topup_checkout_opened`
-- `topup_cancelled`
-- `topup_failed`
-- `purchase`
-- `topup_refunded`
+Stripe object `livemode`, not client metadata, controls commercial payment eligibility. A strict server read of current and legacy admin tables excludes administrators; missing/error role data suppresses analytics without blocking fulfillment. Browser authenticated milestones defer until the existing `/api/admin/access` endpoint returns its strict eligibility projection. Requests dedupe for 30 seconds, use the bearer session when available, and fail closed for measurement. Anonymous public traffic can still include unidentified administrators; raw GA4 sessions/pageviews are not a clean commercial denominator.
 
-In **Admin > Events**, mark `topup_completed` and `purchase` as key events. `sign_up_completed` and `generation_completed` are useful additional key events when acquisition reporting should optimize for milestones before payment. `topup_checkout_opened` can remain an optional operational key event.
+Canonical receipt identity and the per-user transaction lock prevent duplicate wallet fulfillment and duplicate GA4 emission attempts across Checkout/PaymentIntent deliveries. GA4 delivery remains **best effort, at most one attempt per inserted wallet receipt**. Collector/role failures are not retried by the duplicate receipt or processed webhook path; there is no GA4 outbox. HTTP 2xx confirms transport receipt, not event acceptance. Reconcile stored payment receipts with Stripe separately from GA4.
 
-## 2. Custom definitions
+The legacy Google Ads browser success-return conversion now requires resolved eligible role state, but the return URL does not establish a live captured payment or a unique canonical receipt. It remains unsuitable for first-payer reporting or purchase optimization. No advertising channel or external conversion configuration is activated by this preparation.
 
-In **Admin > Custom definitions**, register the following as event-scoped custom dimensions. Use the event parameter name exactly as shown.
+Session linkage is conditional: Google documents a 24-hour limit for joining Measurement Protocol events to the originating online session. Preserving IDs does not guarantee session/channel attribution for delayed payments. [GA4 reference](https://developers.google.com/analytics/devguides/collection/protocol/ga4/reference), [session attribution use cases](https://developers.google.com/analytics/devguides/collection/protocol/ga4/use-cases).
 
-### Journey and acquisition dimensions
+## Report setup
 
-- `acquisition_cohort`
-- `first_touch_source`
-- `first_touch_medium`
-- `first_touch_campaign`
-- `first_touch_content`
-- `last_touch_source`
-- `last_touch_medium`
-- `last_touch_campaign`
-- `last_touch_content`
-- `funnel_stage`
-- `route_family`
-- `landing_route_family`
-- `landing_surface`
-- `journey_locale`
-- `is_first_generation`
-- `is_first_wallet_topup`
+Create independent milestone cohorts or free-form reports, preserving the observation window and consent coverage. Break down source/medium, campaign/content, landing surface, locale and device separately. Use intersections and elapsed time only when both events were observed; never infer an omitted step or forced order. Count repeat top-ups separately from first recorded payments, and retain unknown history as unknown.
 
-### Top-up and payment dimensions
+Useful event-scoped custom dimensions are `acquisition_cohort`, first/last-touch source/medium/campaign/content, `route_family`, `workspace_section`, `completion_source`, `is_first_generation`, `is_first_wallet_topup`, `is_first_recorded_external_payment`, `payment_provider`, `payment_flow`, `topup_tier_id` and `settlement_currency`. Metrics may include `generation_sequence`, `topup_sequence`, `output_count`, `topup_amount_cents`, `settlement_amount_minor`, `refund_amount_cents` and `refunded_total_cents`. Some optional values are omitted by the 25-param budget.
 
-- `topup_tier_id`
-- `topup_tier_label`
-- `payment_provider`
-- `payment_flow`
-- `charge_currency`
-- `settlement_currency`
-- `source_event`
-- `fx_source`
+Do not register high-cardinality journey, job, local generation or Stripe IDs as custom dimensions. Custom definitions are not retroactive. Configure key events and ad-platform conversions only after authenticated acceptance checks and explicit channel selection; this local change does not alter GA4 or advertising configuration.
 
-Register the following numeric event parameters as event-scoped custom metrics:
+## Local verification and release acceptance
 
-- `journey_age_days`
-- `generation_sequence`
-- `topup_sequence`
-- `topup_amount_cents`
-- `settlement_amount_minor`
-- `refund_amount_cents`
-- `refunded_total_cents`
+1. Deny analytics, then navigate/authenticate/use controls: no journey storage, pending milestones or replay of those actions.
+2. Grant consent on the campaign landing: new `funnel_entry`, safe query-free location and exact approved first/last touch fields. Withdraw and regrant: new journey, no old completion replay.
+3. Confirm ordinary account role resolution permits private entry, while DB-only admins, metadata admins and failed role lookups emit no commercial app milestones. Product rendering/authentication continue.
+4. Test old vs new Google accounts from either UI mode, delayed cookie fallback followed by verified destination user, and one completion after repeated session callbacks. Verify password legal-consent persistence and email confirmation separately.
+5. Confirm current-visit Studio generation with a mocked accepted/completed response: exactly one journey success with actual positive outputs. Historical media, failed confirmations, changed account/project and withdrawn consent must not invent success. No paid generation is necessary for this local check.
+6. Stripe **test-mode** payments/refunds must send **no commercial GA4 events**, even with granted consent and a configured test property. Validate transport payloads with local fixtures/fake collector; validate fulfillment in a separately authorized Stripe sandbox. Do not fake live mode in production or perform a real payment as part of this preparation.
+7. Before paid launch, validate an authorized live canonical wallet payment and refund against collector/event acceptance, actual source/session linkage, receipt uniqueness and role exclusion. Check delayed methods and concurrent/replayed webhook delivery. No such authenticated live validation was performed in this local work.
+8. Complete direct-card payment tracking and cross-flow first-payer authority, or explicitly constrain the release readout to wallet funding and keep lifetime first-payer acquisition unavailable. See the dated measurement dossier for exact follow-up.
 
-Do **not** register high-cardinality correlation or resource identifiers as custom dimensions. This includes `journey_id`, Stripe Checkout Session IDs, Stripe PaymentIntent IDs, Stripe Charge IDs, job IDs, and local generation keys. Keep those values for event-level validation or BigQuery diagnostics only.
-
-## 3. Seven-step Funnel Exploration
-
-Create a GA4 **Funnel exploration** with the following steps in this exact order:
-
-1. Event name exactly matches `funnel_entry`.
-2. Event name exactly matches `sign_up_started`.
-3. Event name exactly matches `sign_up_completed`.
-4. Event name exactly matches `generation_started`, with `is_first_generation` exactly matching `true`.
-5. Event name exactly matches `generation_completed`, with `is_first_generation` exactly matching `true`.
-6. Event name exactly matches `topup_started`.
-7. Event name exactly matches `topup_completed`, with `is_first_wallet_topup` exactly matching `true`.
-
-Use an open funnel only when the question intentionally includes users who entered before measurement was deployed or whose earlier consented step falls outside the report window. Use a closed funnel for the canonical visitor-to-first-revenue conversion rate.
-
-Create separate explorations or report tabs with these breakdowns:
-
-- first-touch source and medium: `first_touch_source`, then `first_touch_medium`;
-- first campaign: `first_touch_campaign`;
-- acquisition cohort: `acquisition_cohort`;
-- landing surface: `landing_surface`;
-- journey locale: `journey_locale`;
-- GA4 device category;
-- auth method from the signup events;
-- engine from the generation events.
-
-Compare one breakdown at a time before combining filters. Campaign, auth-method, and engine parameters are absent on events where they do not apply; interpret them on the relevant funnel step rather than as universal journey properties.
-
-## 4. Failure explorations
-
-Keep failures outside the primary success funnel so they do not alter its ordered-step conversion rate.
-
-### Generation failure
-
-Create a free-form or path exploration filtered to `generation_failed`. Break down by `first_touch_source`, `first_touch_medium`, `first_touch_campaign`, `acquisition_cohort`, `landing_surface`, `journey_locale`, device category, and engine. Compare `generation_sequence` and the bounded failure category to distinguish first-attempt friction from later operational failures.
-
-### Top-up cancellation
-
-Create a view filtered to `topup_cancelled`. Break down by acquisition fields, `topup_tier_id`, `payment_provider`, `payment_flow`, and `charge_currency`. Compare it with `topup_started` and `topup_checkout_opened` to locate abandonment before or after checkout opens.
-
-### Top-up failure
-
-Create a view filtered to `topup_failed`. Use the same payment breakdowns and the emitted failure field. To separate first-attempt friction from repeat attempts, use a path or segment that starts from `topup_started` and filters that start event by `topup_sequence`; terminal top-up events do not repeat the browser attempt sequence.
-
-Signup confirmation is not a separate failure event. Inspect `sign_up_completed` using its confirmation-required field when diagnosing password-signup confirmation friction.
-
-## 5. Consent validation
-
-Analytics attribution is valid only after analytics consent has been granted. Validate each consent transition in a non-production or test property:
-
-1. Start with analytics consent denied. Navigate, start signup, and interact with generation or top-up controls. Confirm that no journey parameters, queued milestone events, or replayed pre-consent events appear in DebugView.
-2. Grant analytics consent. Confirm that a new `funnel_entry` is emitted for the current page and that subsequent events carry the same `journey_id` and bounded attribution fields.
-3. Withdraw analytics consent. Confirm that later funnel events and Stripe checkout metadata contain no journey projection and that previously queued or retrying events are not sent.
-4. Grant consent again. Confirm that a new journey begins rather than restoring the withdrawn journey or replaying earlier events.
-5. Complete a Stripe test-mode top-up with consent granted, then repeat with consent denied. The granted checkout should produce attributed `topup_completed` and `purchase` events; the denied checkout should not expose journey attribution.
-
-Consent validation should use event-level inspection. Do not register `journey_id` as a custom dimension merely to perform this check.
-
-## 6. Payment and authentication referral exclusion
-
-In **Admin > Data streams > Web stream > Configure tag settings > List unwanted referrals**, add:
-
-- `stripe.com`
-- `checkout.stripe.com`
-- `js.stripe.com`
-- `accounts.google.com`
-
-The Google Accounts entry prevents the OAuth return from replacing the acquisition source with an authentication-provider referral.
-
-## 7. DebugView release checklist
-
-Use a test campaign URL and verify:
-
-- `funnel_entry` is emitted once after consent and contains the sanitized first- and last-touch fields;
-- signup start and completion preserve the journey context and auth method;
-- generation start and terminal events share `generation_sequence` and `is_first_generation`;
-- `page_location` contains no query string, hash, OAuth value, Stripe identifier, or private dynamic identifier;
-- `topup_started` increments `topup_sequence`, followed by `topup_checkout_opened` when checkout opens;
-- cancellation sends `topup_cancelled`, and a client-side failure sends `topup_failed`;
-- a successful Stripe test-mode top-up sends attributed `topup_completed` and `purchase` events from the webhook with authoritative `is_first_wallet_topup`;
-- the server-side completion events carry the same GA4 `session_id` as the browser session that opened checkout;
-- a refund sends `topup_refunded` with the refund metrics;
-- attribution and GA4 delivery failures never block receipt creation or wallet crediting.
-
-Custom definitions affect reporting after they are registered and are not retroactive. Register them before using production funnel conversion rates for decisions.
+If configuring unwanted referrals later, inspect Stripe Checkout and Google Accounts return domains (`stripe.com`, `checkout.stripe.com`, `js.stripe.com`, `accounts.google.com`). Do not change referral settings from this local preparation.

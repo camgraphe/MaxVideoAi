@@ -11,5 +11,5 @@ import { McpFaqResourcesSection } from './McpFaqResourcesSection';
 import { McpEditorialSections } from './McpEditorialSections';
 export function McpPageView({compatibility,copy,locale,hostProof=null,publication}: {compatibility:McpCompatibilityEvidence;copy:McpPageCopy;locale:AppLocale;hostProof?:McpHostProof|null;publication:McpPublicationState}) {
  const live=publication.connectionAvailable&&publication.showPaidGenerationClaim;
- return <div className="mcp-redesign"><McpHeroSection locale={locale} publication={publication} copy={copy} hasProof={live&&!!hostProof}/><McpIntegrationCards locale={locale}/>{live?<><McpEditorialSections locale={locale} hostProof={hostProof}/><McpTrustStrip locale={locale}/><AssistantFirstRequest locale={locale}/></>:null}<McpFaqResourcesSection copy={copy} lastChecked={compatibility.lastChecked} locale={locale} publication={publication}/></div>;
+ return <div className="mcp-redesign"><McpHeroSection locale={locale} publication={publication} copy={copy} hostProof={hostProof}/><McpIntegrationCards locale={locale}/>{live?<><McpEditorialSections locale={locale} hostProof={null}/><McpTrustStrip locale={locale}/><AssistantFirstRequest locale={locale}/></>:null}<McpFaqResourcesSection copy={copy} lastChecked={compatibility.lastChecked} locale={locale} publication={publication}/></div>;
 }
