@@ -102,6 +102,7 @@ test('private entry waits for a deduped authenticated role read and excludes DB-
   assert.equal(await resolve('ordinary', 'local-fixture', {}), true, 'return from a metadata admin invalidates the earlier ordinary cache');
   globalThis.fetch = async () => { throw new Error('offline'); };
   assert.equal(await resolve('unknown', 'local-fixture', {}), false);
+  assert.equal(dom.window.sessionStorage.getItem('mvai.analytics-excluded-admin.v1'), null, 'failed role reads do not create a durable denied marker');
   assert.deepEqual(prepareBrowserAnalyticsEvents('generation_completed', { route_family: 'workspace', job_id: 'owned' }), []);
   clearBrowserAnalyticsAuthContext();
 });
@@ -121,10 +122,10 @@ test('DB admin exclusion survives a public reload and remains active through sam
   dom.window.localStorage.setItem('mv-consent-analytics', 'granted');
   const { resolveBrowserCommercialAnalyticsAuthContext: resolve, clearBrowserAnalyticsAuthContext, isBrowserCommercialAnalyticsExcluded } = await import('../frontend/lib/analytics/commercial-client');
   clearBrowserAnalyticsAuthContext();
-  globalThis.fetch = async () => new Response(JSON.stringify({ ok: true, commercialAnalyticsEligible: false }));
+  globalThis.fetch = async () => new Response(JSON.stringify({ ok: false, commercialAnalyticsEligible: false }));
   assert.equal(await resolve('db-admin', 'local-fixture', {}), false);
   const exclusionKey = 'mvai.analytics-excluded-admin.v1';
-  assert.equal(dom.window.sessionStorage.getItem(exclusionKey), '1', 'authoritative DB admin evidence is retained without identity data');
+  assert.equal(dom.window.sessionStorage.getItem(exclusionKey), '1', 'trusted denied commercial eligibility includes legacy admin evidence without changing admin access');
   let release!: (response: Response) => void;
   const afterCacheExpiry = savedNow() + 31_000;
   Date.now = () => afterCacheExpiry;

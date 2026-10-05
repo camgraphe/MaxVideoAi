@@ -9,6 +9,11 @@ import {
   hasAnalyticsConsentInBrowser,
 } from '@/lib/analytics/consent-client';
 import { getAnalyticsRouteContext } from '@/lib/analytics-route';
+import {
+  COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT,
+  COMMERCIAL_ANALYTICS_RESOLVED_EVENT,
+  isBrowserCommercialAnalyticsExcluded,
+} from '@/lib/analytics/commercial-client';
 
 const GA_ID =
   process.env.NEXT_PUBLIC_GA_ID ??
@@ -38,12 +43,18 @@ export default function ConsentModeBootstrap() {
   }, [routeContext.excludedFromGa4]);
 
   useEffect(() => {
-    const syncFromStorage = () => setAnalyticsConsentGranted(hasAnalyticsConsentInBrowser());
+    const syncConsent = (granted: boolean) => {
+      const excluded = isBrowserCommercialAnalyticsExcluded();
+      if (GA_ID) (window as unknown as Record<string, unknown>)[`ga-disable-${GA_ID}`] =
+        excluded || getAnalyticsRouteContext(window.location.pathname).excludedFromGa4;
+      setAnalyticsConsentGranted(granted && !excluded);
+    };
+    const syncFromStorage = () => syncConsent(hasAnalyticsConsentInBrowser());
 
     const handleConsentUpdated = (event: Event) => {
       const detail = (event as CustomEvent<ConsentEventDetail>).detail;
       if (detail?.categories && typeof detail.categories.analytics === 'boolean') {
-        setAnalyticsConsentGranted(Boolean(detail.categories.analytics));
+        syncConsent(Boolean(detail.categories.analytics));
         return;
       }
       syncFromStorage();
@@ -57,9 +68,13 @@ export default function ConsentModeBootstrap() {
     syncFromStorage();
     window.addEventListener('consent:updated', handleConsentUpdated as EventListener);
     window.addEventListener('storage', handleStorage);
+    window.addEventListener(COMMERCIAL_ANALYTICS_RESOLVED_EVENT, syncFromStorage);
+    window.addEventListener(COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT, syncFromStorage);
     return () => {
       window.removeEventListener('consent:updated', handleConsentUpdated as EventListener);
       window.removeEventListener('storage', handleStorage);
+      window.removeEventListener(COMMERCIAL_ANALYTICS_RESOLVED_EVENT, syncFromStorage);
+      window.removeEventListener(COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT, syncFromStorage);
     };
   }, []);
 
@@ -73,7 +88,7 @@ export default function ConsentModeBootstrap() {
     let idleId: number | undefined;
     let timerId: number | undefined;
     const mountScript = () => {
-      if (cancelled || !hasAnalyticsConsentInBrowser()) return;
+      if (cancelled || !hasAnalyticsConsentInBrowser() || isBrowserCommercialAnalyticsExcluded()) return;
       if (getAnalyticsRouteContext(window.location.pathname).excludedFromGa4) return;
       setExternalScriptReady(true);
     };

@@ -102,7 +102,7 @@ export function resolveBrowserCommercialAnalyticsAuthContext(
   const timer = setTimeout(() => controller.abort(), 4000);
   const resolution = Promise.resolve().then(async () => {
     let eligible = false;
-    let confirmedAdmin = false;
+    let confirmedDenied = false;
     try {
       const response = await fetch('/api/admin/access', {
         credentials: 'same-origin', cache: 'no-store', signal: controller.signal,
@@ -110,13 +110,13 @@ export function resolveBrowserCommercialAnalyticsAuthContext(
       });
       const body = response.ok ? await response.json() : null;
       eligible = body?.ok === false && body?.commercialAnalyticsEligible === true;
-      confirmedAdmin = body?.ok === true && body?.commercialAnalyticsEligible === false;
+      confirmedDenied = body?.commercialAnalyticsEligible === false;
     } catch { /* Uncertain roles suppress commercial events, never product use. */ }
     finally { clearTimeout(timer); }
     if (activeResolution !== resolution || typeof window === 'undefined' || browser !== window) return false;
     // A newer metadata-admin resolution invalidates this promise above.
     // Confirmed ordinary eligibility can retire prior stored DB exclusion.
-    applyBrowserAnalyticsExclusion(!eligible, eligible || confirmedAdmin);
+    applyBrowserAnalyticsExclusion(!eligible, eligible || confirmedDenied);
     browser.__mvaiCommercialAnalyticsPending = false;
     resolvedAt = Date.now();
     browser.dispatchEvent(new browser.CustomEvent(COMMERCIAL_ANALYTICS_RESOLVED_EVENT));

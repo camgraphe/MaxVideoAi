@@ -3,6 +3,11 @@
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { getAnalyticsRouteContext } from '@/lib/analytics-route';
+import {
+  COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT,
+  COMMERCIAL_ANALYTICS_RESOLVED_EVENT,
+  isBrowserCommercialAnalyticsExcluded,
+} from '@/lib/analytics/commercial-client';
 
 const GTM_ID =
   process.env.NEXT_PUBLIC_GTM_ID ??
@@ -51,7 +56,7 @@ export function GtmLazyLoader({
   useEffect(() => {
     const syncFromStorage = () => {
       setAnalyticsConsentGranted(
-        hasConsent({
+        !isBrowserCommercialAnalyticsExcluded() && hasConsent({
           storageKey: consentStorageKey,
           grantedValue: consentGrantedValue,
         })
@@ -61,7 +66,7 @@ export function GtmLazyLoader({
     const handleConsentUpdated = (event: Event) => {
       const detail = (event as CustomEvent<ConsentEventDetail>).detail;
       if (detail?.categories && typeof detail.categories.analytics === 'boolean') {
-        setAnalyticsConsentGranted(Boolean(detail.categories.analytics));
+        setAnalyticsConsentGranted(Boolean(detail.categories.analytics) && !isBrowserCommercialAnalyticsExcluded());
         return;
       }
       syncFromStorage();
@@ -75,9 +80,13 @@ export function GtmLazyLoader({
     syncFromStorage();
     window.addEventListener('consent:updated', handleConsentUpdated as EventListener);
     window.addEventListener('storage', handleStorage);
+    window.addEventListener(COMMERCIAL_ANALYTICS_RESOLVED_EVENT, syncFromStorage);
+    window.addEventListener(COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT, syncFromStorage);
     return () => {
       window.removeEventListener('consent:updated', handleConsentUpdated as EventListener);
       window.removeEventListener('storage', handleStorage);
+      window.removeEventListener(COMMERCIAL_ANALYTICS_RESOLVED_EVENT, syncFromStorage);
+      window.removeEventListener(COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT, syncFromStorage);
     };
   }, [consentGrantedValue, consentStorageKey]);
 
@@ -94,6 +103,8 @@ export function GtmLazyLoader({
     }
 
     const timer = window.setTimeout(() => {
+      if (isBrowserCommercialAnalyticsExcluded() || !hasConsent({ storageKey: consentStorageKey, grantedValue: consentGrantedValue })) return;
+      if (getAnalyticsRouteContext(window.location.pathname).excludedFromGa4) return;
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
 
