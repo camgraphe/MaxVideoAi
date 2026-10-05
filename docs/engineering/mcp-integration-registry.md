@@ -49,6 +49,8 @@ Publication and acquisition are separate decisions. Making an entry visible or i
 
 Adding a registry entry alone never authors a Next.js route or localized content. Keep explicit route owners and do not create a generic catch-all integration page.
 
+The application header projects the live, indexable integrations in registry order through `frontend/components/app/AppAssistantConnections.tsx`, using the shared `McpIntegrationMark` logos and localized page paths. Both global `renderPublicPage` and `indexable` gates must be open. `AppMcpShortcuts.client.tsx` owns the direct desktop links and the narrow-screen MCP-only dialog; `AppSiteMenu.client.tsx` retains the separate general application/account menu. These links describe installation pages, not the user's connection status. `tests/app-mcp-navigation.test.ts` covers publication withdrawal, localized destinations and dialog focus restoration.
+
 ## Evidence update procedure
 
 `docs/operations/mcp-host-compatibility-matrix.md` owns detailed tested-host evidence: exact host version, environment, actions exercised, limits, failures, and evidence references. After completing a newer checkpoint:
