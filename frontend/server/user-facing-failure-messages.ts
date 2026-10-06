@@ -1,4 +1,4 @@
-import { seedanceFailureCodeFromMessage } from '@/lib/seedance-failure-messages';
+import { getSeedanceFailureMessage, seedanceFailureCodeFromMessage } from '@/lib/seedance-failure-messages';
 import { getGeneratedImageFailureMessage, getKnownGenerationFailureMessage } from '@/lib/generation-failure-messages';
 import { SEEDANCE_OUTPUT_AUDIO_BLOCKED, SEEDANCE_REFERENCE_MEDIA_BLOCKED, SEEDANCE_REFERENCE_VIDEO_BLOCKED, SEEDANCE_REFERENCE_VIDEO_DURATION_EXCEEDED } from '@/lib/video-failure-codes';
 
@@ -264,7 +264,7 @@ function normalizeDurationSec(value: number | string | null | undefined): number
 
 export function toUserFacingFailureMessage(message: string | null | undefined): string {
   const normalized = normalizeMessage(message);
-  const knownMessage = getKnownGenerationFailureMessage({ message: normalized });
+  const knownMessage = getSeedanceFailureMessage({ message: normalized }) ?? getGeneratedImageFailureMessage(normalized);
   if (knownMessage) return knownMessage;
   const seedanceFailure = classifySeedanceSpecificFailure(normalized);
   if (seedanceFailure === 'copyright') return SEEDANCE_COPYRIGHT_FAILURE_MESSAGE;
@@ -272,6 +272,9 @@ export function toUserFacingFailureMessage(message: string | null | undefined): 
   if (seedanceFailure === 'start') return SEEDANCE_START_FAILURE_MESSAGE;
   if (seedanceFailure === 'task_output') return SEEDANCE_TASK_FAILURE_MESSAGE;
   const category = classifyFailure(normalized);
+  if (category === 'copyright') return messageForCategory(category);
+  const sharedMessage = getKnownGenerationFailureMessage({ message: normalized });
+  if (sharedMessage) return sharedMessage;
   if (category) return messageForCategory(category);
   if (normalized && canReuseMessage(normalized)) return normalized;
   return DEFAULT_FAILURE_MESSAGE;

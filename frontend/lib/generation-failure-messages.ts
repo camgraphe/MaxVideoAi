@@ -48,7 +48,8 @@ export function localizeGenerationRefundDescription(description: string | null, 
   if (!description) return description;
   const match = description.match(/^Refund (.+?)(?: - (\d+)s)? - (.+)$/);
   if (!match) return description;
-  const reason = getKnownGenerationFailureMessage({ failureCode, message: `${match[1]} ${match[3]}`, locale })
+  // Short Seedance reasons need the model context; exact output-image reasons must stay unprefixed.
+  const reason = getSeedanceFailureMessage({ failureCode, message: `${match[1]} ${match[3]}`, locale })
     ?? getKnownGenerationFailureMessage({ failureCode, message: match[3], locale });
   if (!reason) return description;
   const language = localeKey(locale);

@@ -73,6 +73,22 @@ for (const [locale, audio, image, copyright, wallet] of [
     assert.match(guidance.localizeGenerationRefundDescription('Refund Wan 3 Prime - 5s - Green net check rejected image (output)', locale) ?? '', image);
     assert.match(guidance.localizeGenerationRefundDescription('Refund Seedance 2.0 Fast - 5s - Reference media was blocked by Seedance safety checks.', locale, outputAudioCode) ?? '', audio);
   });
+
+  test(`receipt API projection retains specific output guidance when displayed in ${locale}`, () => {
+    for (const [model, reason, failureCode, expected] of [
+      ['Wan 3 Prime', 'Green net check rejected image (output)', undefined, image],
+      ['Wan 3 Prime', 'Generated image was blocked by safety checks.', undefined, image],
+      ['Seedance 2.0 Fast', 'Generated audio was blocked by safety checks.', undefined, audio],
+      ['Seedance 2.0 Fast', 'Reference media was blocked by Seedance safety checks.', outputAudioCode, audio],
+      ['Seedance 2.5', 'Output was blocked for possible copyright-restricted content.', undefined, copyright],
+    ] as const) {
+      const apiDescription = guidance.localizeGenerationRefundDescription(`Refund ${model} - 5s - ${reason}`, 'en', failureCode);
+      assert.match(apiDescription ?? '', locale === 'en' ? expected : /generated image|generated audio|copyright/i);
+      const displayedDescription = guidance.localizeGenerationRefundDescription(apiDescription, locale);
+      assert.match(displayedDescription ?? '', expected);
+      assert.doesNotMatch(displayedDescription ?? '', /Green net|reference images, video, or audio/i);
+    }
+  });
 }
 
 test('bare Kling 422 remains an unknown failure rather than an invented content refusal', () => {

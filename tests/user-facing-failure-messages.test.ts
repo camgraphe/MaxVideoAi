@@ -168,3 +168,17 @@ test('Seedance copyright output failures keep their precise refund reason', () =
   );
   assert.doesNotMatch(description, forbidden);
 });
+
+test('short output copyright reasons retain priority over generic safety wording', () => {
+  const message = toUserFacingFailureMessage('Output was blocked for possible copyright-restricted content.');
+  assert.match(message, /output checks detected possible copyright-restricted content/);
+  assert.doesNotMatch(message, /This request was blocked|output for download/);
+  assert.equal(toUserFacingRefundReason(message), 'Output was blocked for possible copyright-restricted content.');
+});
+
+test('Seedance input-image safety diagnostics retain their specific reference guidance', () => {
+  const message = toUserFacingFailureMessage('Seedance rejected the input image during its safety checks.');
+  assert.match(message, /Seedance blocked a reference image/);
+  assert.match(message, /non-identifiable, stylized, or generated reference image/);
+  assert.doesNotMatch(message, /This request was blocked/);
+});
