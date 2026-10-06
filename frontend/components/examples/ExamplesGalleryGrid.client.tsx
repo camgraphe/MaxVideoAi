@@ -18,7 +18,7 @@ const ExampleReader = dynamic(() => import('./ExampleReader.client'), { ssr: fal
 
 export default function ExamplesGalleryGridClient({initialExamples,detailsCtaLabel='View settings & price',
   noPreviewLabel='No preview',prioritizeFirstPoster=false,audioAvailableLabel='Audio available on playback',
-  openingEnabled,sort,locale,engineFilter,initialOffset,familyLabel}:ExamplesGalleryProps) {
+  openingEnabled,openingDetails,sort,locale,engineFilter,initialOffset,familyLabel}:ExamplesGalleryProps) {
   const videos=useMemo(()=>dedupeExamples(initialExamples),[initialExamples]);
   const {opening,rest}=useMemo(()=>buildGalleryOpening(videos,openingEnabled??(prioritizeFirstPoster&&sort==='playlist')),[videos,openingEnabled,prioritizeFirstPoster,sort]);
   const visibleVideos=useMemo(()=>[...opening,...rest],[opening,rest]);
@@ -59,6 +59,7 @@ export default function ExamplesGalleryGridClient({initialExamples,detailsCtaLab
           data-analytics-target-family="workspace">{createLabel}<ArrowUpRight size={14} aria-hidden="true"/></Link>
       </div>
     </div>:null}
+    {openingDetails}
     {opening.length>0&&rest.length>0?<div className={styles.continuationHeading}><h2>{continuationLabel}</h2><span>{rest.length} {pageCountLabel}</span></div>:null}
     <div className={styles.gallery}>{rest.map(video=><div key={video.id} className={styles.item} style={{'--video-ratio':galleryVideoRatio(video)} as CSSProperties}>{card(video)}</div>)}</div>
   </div>;

@@ -1,18 +1,21 @@
 {
   "slug": "ltx-2-3-pro-vs-ltx-2-5-pro",
   "en": {
+    "decisionSummary": "Compare the Pro tiers: keep LTX 2.3 Pro for existing 2.3 workflows and video retakes, or explore LTX 2.5 Pro for native multi-shot and audio-led generation.",
     "meta": { "title": "LTX 2.3 Pro vs LTX 2.5 Pro: Scores & Specs", "description": "Compare LTX 2.3 Pro and LTX 2.5 Pro scores, capabilities, pricing and best uses.", "titleBranding": "none" },
     "quickVerdict": { "title": "Quick verdict", "body": "LTX 2.5 Pro is the current upgrade for stronger fidelity, consistency and control. Keep LTX 2.3 Pro for an established legacy workflow or existing 2.3 assets; move new production to 2.5 Pro." },
     "primaryLinksTitle": "Explore the models",
     "primaryLinks": [{ "href": "/models/ltx-2-3-pro", "label": "LTX 2.3 Pro" }, { "href": "/models/ltx-2-5-pro", "label": "LTX 2.5 Pro" }]
   },
   "fr": {
+    "decisionSummary": "Comparez les versions Pro : gardez LTX 2.3 Pro pour vos projets 2.3 et les retakes vidéo, ou explorez LTX 2.5 Pro pour le multi-plan natif et l’audio en entrée.",
     "meta": { "title": "LTX 2.3 Pro vs LTX 2.5 Pro : notes et specs", "description": "Comparez LTX 2.3 Pro et LTX 2.5 Pro sur les notes, capacités, prix et usages.", "titleBranding": "none" },
     "quickVerdict": { "title": "Verdict rapide", "body": "LTX 2.5 Pro est la mise à niveau actuelle pour une meilleure fidélité, cohérence et maîtrise. Gardez LTX 2.3 Pro pour un workflow legacy établi ou des assets 2.3 existants ; lancez les nouvelles productions sur 2.5 Pro." },
     "primaryLinksTitle": "Explorer les modèles",
     "primaryLinks": [{ "href": "/models/ltx-2-3-pro", "label": "LTX 2.3 Pro" }, { "href": "/models/ltx-2-5-pro", "label": "LTX 2.5 Pro" }]
   },
   "es": {
+    "decisionSummary": "Compara las versiones Pro: conserva LTX 2.3 Pro para proyectos 2.3 y retakes de vídeo, o explora LTX 2.5 Pro para multiplano nativo y audio de entrada.",
     "meta": { "title": "LTX 2.3 Pro vs LTX 2.5 Pro: notas y specs", "description": "Compara LTX 2.3 Pro y LTX 2.5 Pro en notas, capacidades, precio y usos.", "titleBranding": "none" },
     "quickVerdict": { "title": "Veredicto rápido", "body": "LTX 2.5 Pro es la actualización actual para mayor fidelidad, coherencia y control. Mantén LTX 2.3 Pro para un flujo legacy establecido o assets 2.3 existentes; usa 2.5 Pro para nuevas producciones." },
     "primaryLinksTitle": "Explorar los modelos",

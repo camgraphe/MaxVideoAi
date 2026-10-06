@@ -1,0 +1,54 @@
+[
+  {
+    "run": "lighthouse-ltx-desktop-before",
+    "observedAt": "2026-10-06T09:15:15.945Z",
+    "url": "http://127.0.0.1:3106/examples/ltx",
+    "lighthouseVersion": "13.5.0",
+    "environment": "Next development server, public examples snapshot, no application DB, fresh headless Chromium navigation; no production CWV inference",
+    "metrics": {
+      "first-contentful-paint": 367.63200000000006,
+      "largest-contentful-paint": 671.4480000000001,
+      "cumulative-layout-shift": 0,
+      "total-byte-weight": 3910362
+    }
+  },
+  {
+    "run": "lighthouse-ltx-desktop-after",
+    "observedAt": "2026-10-06T09:26:20.269Z",
+    "url": "http://127.0.0.1:3106/examples/ltx",
+    "lighthouseVersion": "13.5.0",
+    "environment": "Next development server, public examples snapshot, no application DB, fresh headless Chromium navigation; no production CWV inference",
+    "metrics": {
+      "first-contentful-paint": 408.318,
+      "largest-contentful-paint": 714.5564999999999,
+      "cumulative-layout-shift": 0,
+      "total-byte-weight": 3913856
+    }
+  },
+  {
+    "run": "lighthouse-ltx-mobile-before",
+    "observedAt": "2026-10-06T09:13:10.990Z",
+    "url": "http://127.0.0.1:3106/examples/ltx",
+    "lighthouseVersion": "13.5.0",
+    "environment": "Next development server, public examples snapshot, no application DB, fresh headless Chromium navigation; no production CWV inference",
+    "metrics": {
+      "first-contentful-paint": 1676.5500000000002,
+      "largest-contentful-paint": 21064.1875,
+      "cumulative-layout-shift": 0.0002246536642423,
+      "total-byte-weight": 3832130
+    }
+  },
+  {
+    "run": "lighthouse-ltx-mobile-after",
+    "observedAt": "2026-10-06T09:19:42.164Z",
+    "url": "http://127.0.0.1:3106/examples/ltx",
+    "lighthouseVersion": "13.5.0",
+    "environment": "Next development server, public examples snapshot, no application DB, fresh headless Chromium navigation; no production CWV inference",
+    "metrics": {
+      "first-contentful-paint": 1659.208,
+      "largest-contentful-paint": 3466.1139999999996,
+      "cumulative-layout-shift": 0.0002246536642423,
+      "total-byte-weight": 3793479
+    }
+  }
+]

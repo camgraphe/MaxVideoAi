@@ -90,3 +90,13 @@
  .resourceGrid{grid-template-columns:1fr}.resourceLink{min-height:49px}.resourceLink:last-child:nth-child(odd){grid-column:auto}
 }
 @media(max-width:420px){.familyIntro p{font-size:12px}.sectionHeading{align-items:start;flex-wrap:wrap}.modelLink{min-height:126px}.modelName{font-size:14px}.comparisonEmblems{gap:6px}.comparisonCard{min-height:137px}}
+
+.promptStarters{margin:24px 0 0;padding:16px 0;border-bottom:1px solid var(--hairline)}
+.promptStarters>h2{margin:0 0 14px;color:var(--text-muted);font-size:12px;font-weight:600}
+.promptStarterGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 32px}
+.promptStarterGrid article{min-width:0}
+.promptStarterGrid h3{margin:0;color:var(--text-primary);font-size:15px;font-weight:650}
+.promptStarterSettings{margin:5px 0 10px;color:var(--text-muted);font-size:11px}
+.promptStarterGrid blockquote{max-width:70ch;margin:0 0 10px;color:var(--text-secondary);font-size:13px;line-height:1.65;overflow-wrap:anywhere}
+.promptStarterGrid a{min-height:44px}
+@media(max-width:700px){.promptStarterGrid{grid-template-columns:1fr;gap:16px}.promptStarterGrid article+article{padding-top:16px;border-top:1px solid var(--hairline)}}

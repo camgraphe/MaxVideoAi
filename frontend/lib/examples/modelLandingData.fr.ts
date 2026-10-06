@@ -178,7 +178,7 @@ export const FR_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     metaTitle: "Exemples vidéo LTX, prompts et réglages | MaxVideoAI",
     metaDescription: "Découvrez les exemples vidéo LTX 2.5 Pro et Fast, leurs prompts et réglages. Comparez aussi les résultats LTX 2.3 et LTX 2, identifiés par modèle.",
     heroTitle: "Exemples vidéo LTX, prompts et réglages",
-    subtitle: "Des exemples LTX 2.5 Pro et Fast, avec les versions précédentes clairement identifiées.",
+    subtitle: "Exemples LTX 2.5 Pro et Fast, avec LTX 2.3 et LTX 2 clairement identifiés.",
     intro: "Regardez les exemples LTX 2.5 Pro et Fast, puis ouvrez une vidéo pour retrouver son prompt, ses réglages et son tarif actuel estimé. Les résultats LTX 2.3 et LTX 2 conservent le nom de leur modèle d’origine.",
     summary:
       "LTX 2.5 Pro et Fast occupent le premier plan. Les exemples LTX 2.3 et LTX 2 conservent leur modèle d’origine pour comparer les générations sans confondre leurs capacités.",

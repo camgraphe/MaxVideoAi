@@ -15,14 +15,14 @@ const videos: ExampleGalleryVideo[] = Array.from({length:24},(_,i)=>i%4===1?'9:1
   ...(i === 0 ? { recreateHref: '/app?from=v0' } : {}),
 }));
 
-async function renderGallery(prioritizeFirstPoster: boolean, openingEnabled = true) {
+async function renderGallery(prioritizeFirstPoster: boolean, openingEnabled = true, openingDetails?: React.ReactNode) {
   const require = createRequire(import.meta.url);
   const previous = require.extensions['.css'];
   require.extensions['.css'] = () => {};
   try {
     const { default: Grid } = await import('../frontend/components/examples/ExamplesGalleryGrid.client');
     return new JSDOM(renderToStaticMarkup(React.createElement(Grid, {
-      initialExamples: videos, prioritizeFirstPoster, openingEnabled, sort: 'playlist', initialOffset: 8,
+      initialExamples: videos, prioritizeFirstPoster, openingEnabled, openingDetails, sort: 'playlist', initialOffset: 8,
       pageOffsetEnd: 16, locale: 'en',
     })));
   } finally {
@@ -30,6 +30,23 @@ async function renderGallery(prioritizeFirstPoster: boolean, openingEnabled = tr
     else delete require.extensions['.css'];
   }
 }
+
+test('server prompt shortcuts follow the opening and retain the complete poster-only SSR gallery', async () => {
+  const details = React.createElement('section', { id: 'prompt-shortcuts' },
+    React.createElement('a', { href: '/video/v0' }, 'Open the exact version prompt'));
+  const dom = await renderGallery(true, true, details);
+  try {
+    const doc = dom.window.document;
+    const opening = doc.querySelector('[data-gallery-opening]')!;
+    const shortcuts = doc.querySelector('#prompt-shortcuts')!;
+    const continuation = doc.querySelector('a[href="/video/v4"]')!;
+    assert.ok(opening.compareDocumentPosition(shortcuts) & dom.window.Node.DOCUMENT_POSITION_FOLLOWING);
+    assert.ok(shortcuts.compareDocumentPosition(continuation) & dom.window.Node.DOCUMENT_POSITION_FOLLOWING);
+    assert.equal(doc.querySelectorAll('img').length, 24);
+    assert.equal(doc.querySelectorAll('img[fetchpriority="high"]').length, 1);
+    assert.equal(doc.querySelector('video'), null);
+  } finally { dom.window.close(); }
+});
 
 test('all24 watch links render once before hydration, with one critical poster and no eager video', async () => {
   const dom=await renderGallery(true);
