@@ -4,7 +4,7 @@ import {randomUUID} from 'node:crypto';
 import {readFile,mkdir} from 'node:fs/promises';
 import {join} from 'node:path';
 import {expect} from '@playwright/test';
-import {startStudioIntegrationRuntime} from './helpers/studio-integration-runtime';
+import {startStudioIntegrationRuntime,summarizeStudioReadinessFailure} from './helpers/studio-integration-runtime';
 import {startStudioConnectedBrowserFixture} from './helpers/studio-connected-browser-fixture';
 import {initializeStudioConnectedFixture} from './helpers/studio-connected-fixture-data';
 import {STUDIO_FIXTURE_OWNERS} from './helpers/studio-auth-fixture';
@@ -32,9 +32,11 @@ test('task ceilings, explicit continuation and saved progress work on desktop/mo
     await page.route('**/api/legal/reconsent',route=>route.fulfill({json:{ok:true,needsReconsent:false,documents:[]}}));
     const loaded=page.waitForResponse(response=>response.url().endsWith('/image-conversation')&&response.request().method()==='GET',{timeout:30_000});
     const assistanceLoaded=page.waitForResponse(response=>response.url().endsWith('/api/studio/assistance')&&response.request().method()==='GET',{timeout:30_000});
-    await page.goto(runtime.browserOrigin+`/app/studio/conversation/${project.projectId}`);
-    const initial=await loaded,initialBody=await initial.json();assert.equal(initial.status(),200,JSON.stringify(initialBody));assert.ok(initialBody.result.taskPolicyVersion);
-    const assistance=await assistanceLoaded;assert.equal(assistance.status(),200,JSON.stringify(await assistance.json()));
+    const [,initial,assistance]=await Promise.all([
+      page.goto(runtime.browserOrigin+`/app/studio/conversation/${project.projectId}`),loaded,assistanceLoaded,
+    ]);
+    const initialBody=await initial.json();assert.equal(initial.status(),200,JSON.stringify(initialBody));assert.ok(initialBody.result.taskPolicyVersion);
+    assert.equal(assistance.status(),200,JSON.stringify(await assistance.json()));
     const picker=page.getByRole('group',{name:'Work allowance'}),message=page.getByRole('textbox',{name:'Message Studio'});
     await expect(picker).toBeVisible();await expect(picker.getByRole('radio',{name:/Complex/})).toBeEnabled();
     await picker.getByRole('radio',{name:/Complex/}).check();await message.fill('Help shape this film');
@@ -62,5 +64,8 @@ test('task ceilings, explicit continuation and saved progress work on desktop/mo
     await expect(page.getByText('The requested guidance is complete.')).toBeVisible({timeout:15_000});assert.equal(calls,3);
     await page.reload();await expect(page.getByText('The requested guidance is complete.')).toBeVisible();assert.equal(calls,3);
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM studio_tasks')).rows[0].n,1);
+  }catch(error){
+    console.error(summarizeStudioReadinessFailure(runtime.readLogs(),8000));
+    throw error;
   }finally{await browser?.close();await getDb().end();if(previous===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=previous;await runtime.close();}
 });

@@ -4,7 +4,7 @@ import {randomUUID} from 'node:crypto';
 import {readFile,mkdir} from 'node:fs/promises';
 import {join} from 'node:path';
 import {expect} from '@playwright/test';
-import {startStudioIntegrationRuntime} from './helpers/studio-integration-runtime';
+import {startStudioIntegrationRuntime,summarizeStudioReadinessFailure} from './helpers/studio-integration-runtime';
 import {startStudioConnectedBrowserFixture} from './helpers/studio-connected-browser-fixture';
 import {initializeStudioConnectedFixture,STUDIO_CONNECTED_ASSET_IDS} from './helpers/studio-connected-fixture-data';
 import {STUDIO_FIXTURE_OWNERS} from './helpers/studio-auth-fixture';
@@ -42,10 +42,11 @@ test('analysis review works on desktop/mobile and only explicit confirmation que
     await page.route('**/api/legal/reconsent',route=>route.fulfill({json:{ok:true,needsReconsent:false,documents:[]}}));
     const loaded=page.waitForResponse(response=>response.url().endsWith(`/api/studio/projects/${project.projectId}/image-conversation`)&&response.request().method()==='GET',{timeout:30_000});
     const analysisLoaded=page.waitForResponse(response=>response.url().endsWith(`/api/studio/projects/${project.projectId}/analyses/${quote.analysisId}`)&&response.request().method()==='GET',{timeout:30_000});
-    await page.goto(runtime.browserOrigin+`/app/studio/conversation/${project.projectId}`);
-    const response=await loaded;
+    const [,response,analysisResponse]=await Promise.all([
+      page.goto(runtime.browserOrigin+`/app/studio/conversation/${project.projectId}`),loaded,analysisLoaded,
+    ]);
     assert.equal(response.status(),200,JSON.stringify(await response.json()));
-    const analysisResponse=await analysisLoaded;assert.equal(analysisResponse.status(),200,JSON.stringify(await analysisResponse.json()));
+    assert.equal(analysisResponse.status(),200,JSON.stringify(await analysisResponse.json()));
     const card=page.getByRole('region',{name:'Media analysis'});
     await expect(card).toBeVisible();await expect(card.getByRole('button',{name:/Analyse with Sol 6.1/})).toBeEnabled();
     assert.equal((await analysis.read(quote.analysisId)).state,'prepared','Rendering and GETs cannot queue or charge analysis');
@@ -62,6 +63,9 @@ test('analysis review works on desktop/mobile and only explicit confirmation que
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM studio_assistance_calls')).rows[0].n,0,'Browser delivery never creates an analytical model call');
     await page.reload();await expect(page.getByRole('region',{name:'Media analysis'}).getByText('Analysis in progress. Your media is preserved.')).toBeVisible();
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM studio_analysis_credit_funding')).rows[0].n,1);
+  }catch(error){
+    console.error(summarizeStudioReadinessFailure(runtime.readLogs(),8000));
+    throw error;
   }finally{
     await browser?.close();await getDb().end();if(previous===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=previous;await runtime.close();
   }
