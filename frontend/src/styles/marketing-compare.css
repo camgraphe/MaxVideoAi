@@ -193,3 +193,21 @@
  .marketing-site .compare-faq-item :is(p,ul){padding-left:38px;padding-right:12px;font-size:13px}
 }
 .marketing-site .compare-editorial #create{scroll-margin-top:88px}
+
+.marketing-site .compare-price-scenario{font-size:12px;line-height:1.7;color:var(--compare-muted);margin:10px 0 16px}
+.marketing-site .compare-price-ticket dd small{display:block;font-size:12px;font-weight:400;letter-spacing:0;line-height:1.7;color:var(--compare-muted);margin-top:3px}
+.marketing-site .compare-decision-links {
+  display: flex;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 0 24px;
+  margin: 12px auto;
+}
+.marketing-site .compare-decision-links a {
+  padding: 12px 0;
+  color: #8b5426;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

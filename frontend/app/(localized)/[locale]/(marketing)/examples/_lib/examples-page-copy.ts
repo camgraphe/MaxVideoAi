@@ -1,5 +1,7 @@
+import { normalizeEngineId } from '@/lib/engine-alias';
+import type { ExampleGalleryVideo } from '@/components/examples/examples-gallery-types';
 import type { AppLocale } from '@/i18n/locales';
-import { buildCompareHref, buildModelHref } from './examples-route-utils';
+import { buildCompareHref, buildModelHref, formatPromptExcerpt } from './examples-route-utils';
 
 type PaginationDictionary = {
   prev?: string;
@@ -279,4 +281,22 @@ export function getExamplesMainVideoCopy(locale: AppLocale, familySlug?: string)
     audioOn: 'Audio on',
     fullPrompt: 'Full prompt',
   };
+}
+
+/** Reuse only public summaries already selected for this gallery page. */
+export function buildExamplesPromptStarters(
+  family: string | null,
+  examples: ExampleGalleryVideo[],
+  sources: ReadonlyArray<{ id: string; promptExcerpt?: string | null; prompt?: string | null }>,
+) {
+  const prompts = new Map(sources.map(source => [source.id, formatPromptExcerpt(source.promptExcerpt || source.prompt || '')]));
+  const versionGroups = family === 'ltx'
+    ? [['ltx-2-5-pro', 'ltx-2-5-fast'], ['ltx-2-3-pro', 'ltx-2-3-fast']]
+    : family === 'seedance' ? [['seedance-2-5'], ['seedance-2-0', 'seedance-2-0-fast']] : [];
+  return versionGroups.flatMap(group => {
+    const ids = group.map(id => normalizeEngineId(id));
+    const video = examples.find(item => ids.includes(normalizeEngineId(item.engineIconId)) && prompts.get(item.id)?.trim() && item.href);
+    return video ? [{ href: video.href, engineLabel: video.engineLabel, prompt: prompts.get(video.id)!,
+      durationSec: video.durationSec, aspectRatio: video.aspectRatio, hasAudio: video.hasAudio }] : [];
+  });
 }

@@ -25,7 +25,7 @@ import {
 } from './_lib/examples-route-utils';
 import { ExamplesPageView } from './_components/examples-page-view';
 import {
-  buildExamplesNextStepLinks,
+  buildExamplesNextStepLinks, buildExamplesPromptStarters,
   getExamplesEditorialSections,
   getExamplesBrowseByModelLabel,
   getExamplesGalleryUiCopy,
@@ -299,8 +299,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
     sort,
     videos,
   });
-  const hasPreviousPage = currentPage > 1;
-  const hasNextPage = currentPage < totalPages;
+  const hasPreviousPage = currentPage > 1, hasNextPage = currentPage < totalPages;
   const buildEngineFilterHref = (engineId: string | null): string =>
     buildExamplesEngineFilterHref({ engineId, galleryBasePath });
   const previousPageHref = buildExamplesPaginationHref({
@@ -361,6 +360,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
       heroTitle={heroTitle}
       initialDesktopBatch={initialDesktopBatch}
       initialExamples={initialExamples}
+      promptStarters={buildExamplesPromptStarters(selectedEngine?.toLowerCase() ?? null, initialExamples, galleryVideos)}
       initialMobileBatch={INITIAL_MOBILE_GALLERY_BATCH}
       isModelLanding={isModelLanding}
       itemListJson={itemListJson}

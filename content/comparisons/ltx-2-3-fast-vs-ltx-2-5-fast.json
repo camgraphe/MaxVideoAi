@@ -1,18 +1,21 @@
 {
   "slug": "ltx-2-3-fast-vs-ltx-2-5-fast",
   "en": {
+    "decisionSummary": "Compare the Fast tiers: keep LTX 2.3 Fast for established 2.3 prompts, or explore LTX 2.5 Fast for native multi-shot and audio-led generation.",
     "meta": { "title": "LTX 2.3 Fast vs LTX 2.5 Fast: Scores & Specs", "description": "Compare LTX 2.3 Fast and LTX 2.5 Fast scores, speed, pricing and output limits.", "titleBranding": "none" },
     "quickVerdict": { "title": "Quick verdict", "body": "Choose LTX 2.5 Fast for stronger drafts, native multishot, 4K and clips up to 20 seconds. Use 2.3 Fast only for legacy jobs." },
     "primaryLinksTitle": "Explore the models",
     "primaryLinks": [{ "href": "/models/ltx-2-3-fast", "label": "LTX 2.3 Fast" }, { "href": "/models/ltx-2-5-fast", "label": "LTX 2.5 Fast" }]
   },
   "fr": {
+    "decisionSummary": "Comparez les versions Fast : gardez LTX 2.3 Fast pour vos prompts 2.3 existants, ou explorez LTX 2.5 Fast pour le multi-plan natif et la génération à partir d’un audio.",
     "meta": { "title": "LTX 2.3 Fast vs LTX 2.5 Fast : notes et specs", "description": "Comparez LTX 2.3 Fast et LTX 2.5 Fast sur les notes, vitesse, prix et limites.", "titleBranding": "none" },
     "quickVerdict": { "title": "Verdict rapide", "body": "Choisissez LTX 2.5 Fast pour de meilleurs drafts, le multishot natif, la 4K et jusqu’à 20 secondes. Réservez 2.3 Fast aux anciens projets." },
     "primaryLinksTitle": "Explorer les modèles",
     "primaryLinks": [{ "href": "/models/ltx-2-3-fast", "label": "LTX 2.3 Fast" }, { "href": "/models/ltx-2-5-fast", "label": "LTX 2.5 Fast" }]
   },
   "es": {
+    "decisionSummary": "Compara las versiones Fast: conserva LTX 2.3 Fast para tus prompts 2.3, o explora LTX 2.5 Fast para multiplano nativo y generación a partir de audio.",
     "meta": { "title": "LTX 2.3 Fast vs LTX 2.5 Fast: notas y specs", "description": "Compara LTX 2.3 Fast y LTX 2.5 Fast en notas, velocidad, precio y límites.", "titleBranding": "none" },
     "quickVerdict": { "title": "Veredicto rápido", "body": "Elige LTX 2.5 Fast para mejores borradores, multishot nativo, 4K y clips de hasta 20 segundos. Reserva 2.3 Fast para trabajos legacy." },
     "primaryLinksTitle": "Explorar los modelos",

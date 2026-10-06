@@ -53,6 +53,8 @@ const faqSchema = z.object({
 const comparePageOverrideSchema: z.ZodType<ComparePageOverride> = z.object({
   meta: metaSchema.optional(),
   heroIntro: nonEmptyString.optional(),
+  decisionSummary: nonEmptyString.max(240).optional(),
+  decisionLinks: z.array(primaryLinkSchema).max(2).optional(),
   pricingCreditLink: primaryLinkSchema.extend({
     href: z.literal('/pay-as-you-go-ai-video-generator'),
   }).strict().optional(),
@@ -104,14 +106,16 @@ function assertStructuralParity(document: ComparePageContentDocument, source: st
   }
 }
 
-function assertSupportedPrimaryLinkHrefs(document: ComparePageContentDocument, source: string): void {
+function assertSupportedLinkHrefs(document: ComparePageContentDocument, source: string): void {
   for (const locale of ['en', 'fr', 'es'] as const) {
-    for (const [index, link] of (document[locale].primaryLinks ?? []).entries()) {
-      if (!internalHrefPatternsByLocale[locale].some((pattern) => pattern.test(link.href))) {
-        throw new Error(
-          `[comparison-content] Invalid href in ${source} at ${locale}.primaryLinks.${index}.href: ` +
-            `expected a supported ${locale} public route, received ${JSON.stringify(link.href)}`,
-        );
+    for (const field of ['primaryLinks', 'decisionLinks'] as const) {
+      for (const [index, link] of (document[locale][field] ?? []).entries()) {
+        if (!internalHrefPatternsByLocale[locale].some((pattern) => pattern.test(link.href))) {
+          throw new Error(
+            `[comparison-content] Invalid href in ${source} at ${locale}.${field}.${index}.href: ` +
+              `expected a supported ${locale} public route, received ${JSON.stringify(link.href)}`,
+          );
+        }
       }
     }
   }
@@ -145,7 +149,7 @@ export function parseComparePageContentDocument(
     );
   }
 
-  assertSupportedPrimaryLinkHrefs(result.data, source);
+  assertSupportedLinkHrefs(result.data, source);
   assertStructuralParity(result.data, source);
   return result.data;
 }

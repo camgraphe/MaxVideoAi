@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { GalleryFeedState } from '@/components/GalleryRail';
 import type { GroupedJobAction } from '@/components/GroupedJobCard';
@@ -8,13 +8,17 @@ import { adaptGroupSummary } from '@/lib/video-group-adapter';
 import type { SelectedVideoPreview } from '@/lib/video-preview-group';
 import type { GroupSummary } from '@/types/groups';
 import type { ResultProvider, VideoGroup } from '@/types/video-groups';
+import type { Job } from '@/types/jobs';
+import { groupJobsIntoSummaries } from '@/lib/job-groups';
+import { normalizeGroupSummaries } from '@/lib/normalize-group-summary';
+import { orderGalleryGroups } from '@/components/gallery-rail-utils';
 import type { LocalRenderGroup } from '../_lib/render-persistence';
 import {
   buildQuadTileFromGroupMember,
   buildQuadTileFromRender,
   haveSameGroupOrder,
 } from '../_lib/workspace-render-groups';
-import { emitClientMetric } from '../_lib/workspace-client-helpers';
+import { DEFAULT_PROMPT, emitClientMetric } from '../_lib/workspace-client-helpers';
 import { STORAGE_KEYS } from '../_lib/workspace-storage';
 
 type ViewMode = 'single' | 'quad';
@@ -29,6 +33,9 @@ type GuidedNavigation = {
 } | null;
 
 type UseWorkspaceGalleryActionsOptions = {
+  guestStarterReady?: boolean;
+  prompt?: string;
+  recentJobs?: Job[];
   provider: ResultProvider;
   renderGroups: Map<string, LocalRenderGroup>;
   batchHeroes: Record<string, string>;
@@ -69,6 +76,9 @@ type UseWorkspaceGalleryActionsResult = {
 };
 
 export function useWorkspaceGalleryActions({
+  guestStarterReady = false,
+  prompt = '',
+  recentJobs,
   provider,
   renderGroups,
   batchHeroes,
@@ -97,9 +107,14 @@ export function useWorkspaceGalleryActions({
     sampleOnly: false,
   });
   const [previewAutoPlayRequestId, setPreviewAutoPlayRequestId] = useState(0);
+  const guestStarterApplied = useRef(false);
 
-  const isGuidedSamplesActive = guidedSampleFeed.sampleOnly;
-  const guidedSampleGroups = guidedSampleFeed.visibleGroups;
+  const bootSampleGroups = useMemo(() => {
+    if (!guestStarterReady || !recentJobs?.length || recentJobs.some(job => !job.curated)) return [];
+    return orderGalleryGroups(normalizeGroupSummaries(groupJobsIntoSummaries(recentJobs, { includeSinglesAsGroups: true }).groups), 'video');
+  }, [guestStarterReady, recentJobs]);
+  const guidedSampleGroups = guidedSampleFeed.visibleGroups.length ? guidedSampleFeed.visibleGroups : bootSampleGroups;
+  const isGuidedSamplesActive = guidedSampleFeed.sampleOnly || (!guidedSampleFeed.visibleGroups.length && bootSampleGroups.length > 0);
 
   const handleQuadTileAction = useCallback(
     (action: QuadTileAction, tile: QuadPreviewTile) => {
@@ -342,6 +357,17 @@ export function useWorkspaceGalleryActions({
       return state;
     });
   }, []);
+
+  useLayoutEffect(() => {
+    if (!guestStarterReady || guestStarterApplied.current || !isGuidedSamplesActive) return;
+    const firstSample = guidedSampleGroups.find(group => group.hero.videoUrl && group.hero.prompt?.trim());
+    if (!firstSample) return;
+    guestStarterApplied.current = true;
+    const previewIsSample = selectedPreview && guidedSampleGroups.some(group =>
+      group.members.some(member => member.id === selectedPreview.id || member.jobId === selectedPreview.id));
+    if ((selectedPreview && !previewIsSample) || compositeOverrideSummary || (prompt.trim() && prompt !== DEFAULT_PROMPT)) return;
+    handleGalleryGroupAction(firstSample, 'open');
+  }, [guestStarterReady, isGuidedSamplesActive, guidedSampleGroups, prompt, selectedPreview, compositeOverrideSummary, handleGalleryGroupAction]);
 
   useEffect(() => {
     if (isGuidedSamplesActive) return;

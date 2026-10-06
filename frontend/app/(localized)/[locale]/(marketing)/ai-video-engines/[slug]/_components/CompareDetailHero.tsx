@@ -44,7 +44,12 @@ export function CompareDetailHero({
         <h1 className="mt-3 text-[34px] font-semibold leading-[1.08] tracking-normal text-text-primary sm:text-[46px]">
           <span>{formatEngineName(left)}</span><span className="compare-title-vs"> vs </span><span>{formatEngineName(right)}</span>
         </h1>
-        <p className="compare-opening-intro">{copy.intro}</p>
+        <p className="compare-opening-intro">{pageOverride?.decisionSummary ?? copy.intro}</p>
+        {pageOverride?.decisionLinks?.length ? (
+          <nav aria-label={activeLocale === 'fr' ? 'Comparaisons de versions LTX' : activeLocale === 'es' ? 'Comparaciones de versiones LTX' : 'LTX version comparisons'} className="compare-decision-links">
+            {pageOverride.decisionLinks.map(link => <Link key={link.href} href={link.href}>{link.label}</Link>)}
+          </nav>
+        ) : null}
         <details className="compare-context">
           <summary>{copy.context}<span aria-hidden="true"> +</span></summary>
           <p>{formatTemplate(heroIntroTemplate, { left: formatEngineName(left), right: formatEngineName(right) })}</p>

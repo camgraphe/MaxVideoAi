@@ -61,7 +61,18 @@
           "answer": "No. Its generations above ten seconds require 1080p at 25 fps, so 1440p and 4K work must stay at ten seconds or less."
         }
       ]
-    }
+    },
+    "decisionSummary": "LTX 2.3 Fast adds 1440p and 4K output; Wan 2.5 offers square and lower-resolution clips. Comparing LTX 2.3 with 2.5 instead? Open the Fast or Pro version comparison below.",
+    "decisionLinks": [
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-5-fast",
+        "label": "LTX 2.3 vs 2.5 · Fast tiers"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-pro-vs-ltx-2-5-pro",
+        "label": "LTX 2.3 vs 2.5 · Pro tiers"
+      }
+    ]
   },
   "fr": {
     "meta": {
@@ -124,7 +135,18 @@
           "answer": "Non. Toute génération de plus de 10 secondes exige le 1080p à 25 fps ; les projets 1440p et 4K doivent donc rester à 10 secondes ou moins."
         }
       ]
-    }
+    },
+    "decisionSummary": "LTX 2.3 Fast propose le 1440p et la 4K ; Wan 2.5 propose le carré et les résolutions plus basses. Pour comparer LTX 2.3 à 2.5, ouvrez le comparatif Fast ou Pro ci-dessous.",
+    "decisionLinks": [
+      {
+        "href": "/fr/comparatif/ltx-2-3-fast-vs-ltx-2-5-fast",
+        "label": "LTX 2.3 vs 2.5 · versions Fast"
+      },
+      {
+        "href": "/fr/comparatif/ltx-2-3-pro-vs-ltx-2-5-pro",
+        "label": "LTX 2.3 vs 2.5 · versions Pro"
+      }
+    ]
   },
   "es": {
     "meta": {
@@ -187,6 +209,17 @@
           "answer": "No. Las generaciones de más de diez segundos requieren 1080p a 25 fps, así que los trabajos en 1440p y 4K deben durar diez segundos o menos."
         }
       ]
-    }
+    },
+    "decisionSummary": "LTX 2.3 Fast ofrece 1440p y 4K; Wan 2.5 ofrece formato cuadrado y resoluciones menores. Para comparar LTX 2.3 con 2.5, abre la comparación Fast o Pro de abajo.",
+    "decisionLinks": [
+      {
+        "href": "/es/comparativa/ltx-2-3-fast-vs-ltx-2-5-fast",
+        "label": "LTX 2.3 vs 2.5 · versiones Fast"
+      },
+      {
+        "href": "/es/comparativa/ltx-2-3-pro-vs-ltx-2-5-pro",
+        "label": "LTX 2.3 vs 2.5 · versiones Pro"
+      }
+    ]
   }
 }

@@ -1,5 +1,5 @@
 import type { AppLocale } from '@/i18n/locales';
-import { computeMarketingPricePoints, type MarketingPricePoint } from '@/lib/pricing-marketing';
+import { computeComparePricingPoints, type ComparePricePoint } from './compare-pricing-scenarios';
 import { applyDisplayedPriceMarginCents } from '@/lib/pricing-display';
 import { formatPricePerUnit } from '@/lib/pricing-unit-display';
 import type { EngineCaps } from '@/types/engines';
@@ -67,7 +67,7 @@ function toPriceValue(cents: number) {
   return cents / 100;
 }
 
-function sortPricePoints(points: MarketingPricePoint[]) {
+function sortPricePoints(points: ComparePricePoint[]) {
   return [...points].sort((a, b) => {
     if (a.cents !== b.cents) return a.cents - b.cents;
     const aOrder = parseResolutionLabel(a.resolution) ?? Number.MAX_SAFE_INTEGER;
@@ -76,7 +76,7 @@ function sortPricePoints(points: MarketingPricePoint[]) {
   });
 }
 
-function pickComparablePricePoint(points: MarketingPricePoint[]) {
+function pickComparablePricePoint(points: ComparePricePoint[]) {
   const byResolution = new Map(points.map((point) => [point.resolution.toLowerCase(), point]));
   for (const resolution of COMPARABLE_PRICING_RESOLUTIONS) {
     const match = byResolution.get(resolution);
@@ -85,7 +85,7 @@ function pickComparablePricePoint(points: MarketingPricePoint[]) {
   return sortPricePoints(points)[0] ?? null;
 }
 
-function buildPricingDisplayFromPoints(points: MarketingPricePoint[], locale: AppLocale): ComparePricingDisplay | null {
+function buildPricingDisplayFromPoints(points: ComparePricePoint[], locale: AppLocale): ComparePricingDisplay | null {
   if (!points.length) return null;
   const sorted = sortPricePoints(points);
   const lines = sorted.map((point) => formatPriceLine(point.resolution, point.cents, locale, point.currency));
@@ -93,6 +93,12 @@ function buildPricingDisplayFromPoints(points: MarketingPricePoint[], locale: Ap
 
   return {
     headline: lines[0],
+    scenario: sorted[0].scenario,
+    priceRows: sorted.flatMap(point => point.scenario ? [{
+      resolution: formatPriceLabel(point.resolution),
+      unitPrice: formatPriceLine(null, point.cents, locale, point.currency),
+      totalPrice: formatPricePerUnit(locale, point.currency, point.scenario.amountCents / 100),
+    }] : []),
     subline: lines[1] ?? null,
     secondaryLines: lines.slice(1),
     prices: sorted.map((point) => toPriceValue(point.cents)),
@@ -137,12 +143,16 @@ export function isEngineGeneratable(entry: EngineCatalogEntry) {
   return availability === 'available' || availability === 'limited';
 }
 
+export function getCurrentPriceUnavailableLabel(locale: AppLocale) {
+  return locale === 'fr' ? 'Prix actuel indisponible' : locale === 'es' ? 'Precio actual no disponible' : 'Current price unavailable';
+}
+
 export async function resolvePricingDisplay(
   entry: EngineCatalogEntry,
   locale: AppLocale,
   pricingEngine?: EngineCaps | null,
-  quotePoints: (engine: EngineCaps) => Promise<MarketingPricePoint[]> = (engine) =>
-    computeMarketingPricePoints(engine, { durationSec: 5, memberTier: 'member', requireCurrentPolicy: true }),
+  quotePoints: (engine: EngineCaps, preferredDurationSec?: number) => Promise<ComparePricePoint[]> = computeComparePricingPoints,
+  preferredDurationSec?: number,
 ): Promise<ComparePricingDisplay> {
   if (entry.surfaces?.app?.enabled === false) {
     return { headline: locale === 'fr' ? 'Génération indisponible' : locale === 'es' ? 'Generación no disponible' : 'Generation unavailable', subline: null, prices: [], scorePrices: [] };
@@ -159,15 +169,16 @@ export async function resolvePricingDisplay(
 
   if (pricingEngine) {
     const display = buildPricingDisplayFromPoints(
-      await quotePoints(pricingEngine), locale
+      await quotePoints(pricingEngine, preferredDurationSec), locale
     );
     if (display) {
       return display;
     }
-    return { headline: 'Data pending', subline: null, prices: [], scorePrices: [] };
+    return { headline: getCurrentPriceUnavailableLabel(locale), subline: null, prices: [], scorePrices: [], quoteUnavailable: true };
   }
   return {
-    headline: 'Data pending',
+    headline: getCurrentPriceUnavailableLabel(locale),
+    quoteUnavailable: true,
     subline: null,
     prices: [],
     scorePrices: [],

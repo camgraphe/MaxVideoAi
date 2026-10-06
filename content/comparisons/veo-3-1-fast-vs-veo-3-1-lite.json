@@ -10,25 +10,26 @@
       "description": "Compare Veo 3.1 Lite and Fast by pricing, output quality, audio control, workflow flexibility and when each tier is worth using.",
       "titleBranding": "none"
     },
-    "heroIntro": "Choose Veo 3.1 Lite for lower-cost tests. Choose Veo 3.1 Fast when quality, audio control and workflow flexibility matter more. Compare pricing, output quality, audio behavior, and tier tradeoffs before choosing the right current Veo workflow.",
+    "heroIntro": "Choose Lite for lower-cost 720p or 1080p drafts. Choose Fast for 4K or multiple reference images. Both support optional audio.",
     "faq": {
       "title": "FAQ",
       "subtitle": "Short answers to help you choose between the current Fast and Lite Veo tiers.",
       "items": [
         {
           "question": "Which Veo 3 model is better for image-to-video tests?",
-          "answer": "Both can work, but Veo 3.1 Lite is better for the cheapest audio-ready image-to-video tests, while Veo 3.1 Fast is better when you want broader flexibility and a smoother upgrade path into full Veo 3.1."
+          "answer": "Both support image-to-video and optional audio. Start with Lite for lower-cost 720p or 1080p tests; choose Fast for 4K delivery or multiple reference images."
         },
         {
           "question": "Is Veo 3.1 Lite or Veo 3.1 Fast better for text-to-video drafts?",
-          "answer": "Veo 3.1 Lite is better when you want the lowest-cost audio-ready tests. Veo 3.1 Fast is better when you want more output flexibility, optional audio, and a cleaner bridge into the main Veo 3.1 workflow."
+          "answer": "Start with Lite for lower-cost drafts in 720p or 1080p. Choose Fast when you need 4K output or a workflow using several reference images. Audio can be enabled or disabled on both."
         },
         {
           "question": "When should I choose Veo 3.1 Fast instead of Veo 3.1 Lite?",
-          "answer": "Choose Fast when you want broader workflow flexibility, optional audio control, and an easier upgrade path into Veo 3.1. Choose Lite when your priority is the cheapest current Veo testing with audio always on."
+          "answer": "Choose Fast for 4K output or multiple reference images. Choose Lite for lower-cost tests up to 1080p. Confirm your duration, resolution and audio setting in the current quote before generating."
         }
       ]
-    }
+    },
+    "decisionSummary": "Choose Lite for lower-cost 720p or 1080p drafts. Choose Fast for 4K or multiple reference images. Both support optional audio."
   },
   "fr": {
     "pricingCreditLink": {
@@ -40,25 +41,26 @@
       "description": "Comparez Veo 3.1 Lite et Fast selon le prix, la qualité de sortie, le contrôle audio, la souplesse du flux de travail et les cas où chaque version vaut le choix.",
       "titleBranding": "none"
     },
-    "heroIntro": "Comparez Veo 3.1 Fast et Veo 3.1 Lite pour choisir le bon workflow video IA Veo 3 actuel selon votre besoin de tests texte-to-video moins chers, de tests image-to-video, de comportement audio et d iteration plus rapide.",
+    "heroIntro": "Choisissez Lite pour des essais moins chers en 720p ou 1080p, et Fast pour la 4K ou plusieurs images de référence. Les deux proposent un audio optionnel.",
     "faq": {
       "title": "FAQ",
       "subtitle": "Reponses courtes pour choisir entre les tiers Veo Fast et Lite actuels.",
       "items": [
         {
           "question": "Quel modele Veo 3 convient le mieux pour des tests image-to-video ?",
-          "answer": "Les deux peuvent convenir, mais Veo 3.1 Lite est plus adapte aux tests image-to-video audio-ready les moins chers, tandis que Veo 3.1 Fast est plus adapte quand vous voulez plus de flexibilite et une montee plus fluide vers Veo 3.1."
+          "answer": "Les deux proposent l’image-vers-vidéo et un audio optionnel. Commencez avec Lite pour des essais moins chers en 720p ou 1080p ; choisissez Fast pour la 4K ou plusieurs images de référence."
         },
         {
           "question": "Veo 3.1 Lite ou Veo 3.1 Fast convient mieux a des tests texte-to-video ?",
-          "answer": "Veo 3.1 Lite convient mieux quand vous voulez les tests audio-ready les moins chers. Veo 3.1 Fast convient mieux quand vous voulez plus de flexibilite, un audio optionnel et un pont plus propre vers le workflow principal Veo 3.1."
+          "answer": "Commencez avec Lite pour des brouillons moins chers en 720p ou 1080p. Choisissez Fast pour la 4K ou plusieurs images de référence. L’audio peut être activé ou désactivé sur les deux."
         },
         {
           "question": "Quand faut-il choisir Veo 3.1 Fast plutot que Veo 3.1 Lite ?",
-          "answer": "Choisissez Fast quand vous voulez plus de flexibilite de workflow, un controle audio optionnel et un chemin de montee plus simple vers Veo 3.1. Choisissez Lite quand votre priorite est le testing Veo actuel le moins cher avec audio toujours actif."
+          "answer": "Choisissez Fast pour la 4K ou plusieurs images de référence, et Lite pour des essais moins chers jusqu’au 1080p. Confirmez la durée, la résolution et l’audio dans le devis actuel avant de générer."
         }
       ]
-    }
+    },
+    "decisionSummary": "Choisissez Lite pour des essais moins chers en 720p ou 1080p, et Fast pour la 4K ou plusieurs images de référence. Les deux proposent un audio optionnel."
   },
   "es": {
     "pricingCreditLink": {
@@ -70,24 +72,25 @@
       "description": "Compara Veo 3.1 Lite y Fast por precio, calidad de salida, control de audio, flexibilidad del flujo y cuándo conviene elegir cada versión.",
       "titleBranding": "none"
     },
-    "heroIntro": "Compara Veo 3.1 Fast y Veo 3.1 Lite para elegir el workflow de video IA Veo 3 actual mas adecuado segun tu necesidad de borradores text-to-video mas baratos, pruebas image-to-video, comportamiento del audio e iteracion mas rapida.",
+    "heroIntro": "Elige Lite para pruebas más económicas en 720p o 1080p, y Fast para 4K o varias imágenes de referencia. Ambos ofrecen audio opcional.",
     "faq": {
       "title": "FAQ",
       "subtitle": "Respuestas cortas para elegir entre los tiers Veo Fast y Lite actuales.",
       "items": [
         {
           "question": "Que modelo Veo 3 es mejor para pruebas de image-to-video?",
-          "answer": "Los dos pueden servir, pero Veo 3.1 Lite encaja mejor en las pruebas image-to-video con audio mas baratas, mientras que Veo 3.1 Fast encaja mejor cuando quieres mas flexibilidad y una subida mas fluida hacia Veo 3.1."
+          "answer": "Ambos admiten imagen a vídeo y audio opcional. Empieza con Lite para pruebas más económicas en 720p o 1080p; elige Fast para 4K o varias imágenes de referencia."
         },
         {
           "question": "Veo 3.1 Lite o Veo 3.1 Fast es mejor para borradores text-to-video?",
-          "answer": "Veo 3.1 Lite encaja mejor cuando quieres los borradores con audio mas baratos. Veo 3.1 Fast encaja mejor cuando quieres mas flexibilidad, audio opcional y un puente mas limpio hacia el workflow principal de Veo 3.1."
+          "answer": "Empieza con Lite para borradores más económicos en 720p o 1080p. Elige Fast para 4K o varias imágenes de referencia. Puedes activar o desactivar el audio en ambos."
         },
         {
           "question": "Cuando deberia elegir Veo 3.1 Fast en lugar de Veo 3.1 Lite?",
-          "answer": "Elige Fast cuando quieras mas flexibilidad de workflow, control opcional del audio y una ruta de subida mas simple hacia Veo 3.1. Elige Lite cuando tu prioridad sea el testing Veo actual mas barato con audio siempre activado."
+          "answer": "Elige Fast para 4K o varias imágenes de referencia, y Lite para pruebas más económicas hasta 1080p. Confirma la duración, la resolución y el audio en el precio actual antes de generar."
         }
       ]
-    }
+    },
+    "decisionSummary": "Elige Lite para pruebas más económicas en 720p o 1080p, y Fast para 4K o varias imágenes de referencia. Ambos ofrecen audio opcional."
   }
 }

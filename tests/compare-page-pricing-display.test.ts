@@ -44,7 +44,8 @@ test('Seedance 2.0 comparison pricing exposes exact unit rates and scores the co
 
 test('a failed current comparison quote never falls back to catalogue amounts', async () => {
   const result = await resolvePricingDisplay(CATALOG_BY_SLUG.get('seedance-2-0')!, 'en', PRICING_ENGINES.get('seedance-2-0'), async () => []);
-  assert.equal(result.headline, 'Data pending');
+  assert.equal(result.headline, 'Current price unavailable');
+  assert.equal(result.quoteUnavailable, true);
   assert.deepEqual(result.prices, []);
 });
 
@@ -53,7 +54,8 @@ test('comparison without a current pricing engine cannot display catalogue margi
     const entry = CATALOG_BY_SLUG.get(slug)!;
     assert.ok(entry, slug);
     const result = await resolvePricingDisplay(entry, 'en', undefined);
-    assert.equal(result.headline, 'Data pending', slug);
+    assert.equal(result.headline, 'Current price unavailable', slug);
+    assert.equal(result.quoteUnavailable, true);
     assert.deepEqual(result.prices, []);
     assert.deepEqual(result.scorePrices, []);
   }

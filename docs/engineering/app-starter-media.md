@@ -19,12 +19,34 @@ playlist candidate search now admits audio-only jobs. Editorial playlists overri
 bundled samples; these built-ins are not database generation records.
 
 `StarterMediaShelf.client.tsx` displays the collection outside owned history. Image
-uses it in the empty rail, with a button that sets only the prompt; it does not switch
+uses it in the empty rail, with a button that selects the sample preview and prompt; it does not switch
 models, charge, generate, save to Media, or pretend the displayed artwork came from
 the currently selected model. Audio contains one English spoken voice, the existing YouTube electro-funk
 instrumental, and a newly generated English song. The sample categories are explicit;
 these are demonstration excerpts, not account-owned generations.
 Playback is manual with `preload="none"`; a new sample pauses the previous one.
+
+Fresh guest visits to Video select the first playable starter after auth and draft
+hydration, through the existing gallery action owner, without requesting autoplay.
+Stored drafts, edited prompts, explicit model/mode/job/example links and an existing
+preview take precedence. Guided arrows keep the preview, prompt and settings together.
+
+Image waits for composer storage hydration before selecting a starter for a guest
+with an empty prompt and no explicit engine/job/tool or reference selection. The
+display-state hook owns this one-time selection and explicit rail/arrow changes.
+`useStarterMedia` shares the existing public collection and bundled fallback with
+the shelf. `ImageStarterPreview` displays the selected sample with responsive fixed
+square geometry; it remains separate from generated history and owned media actions.
+Late playlist refreshes do not replace the selection or an edited prompt. Generation,
+pricing and the guest sign-in continuation keep their existing owners.
+Image retains passive storage hydration after its settings normalization effects,
+then reveals the workspace shell with its guest selection complete before paint.
+The shared loading surface avoids expanding an already visible empty preview and
+preserves saved settings for a different model. Video boot reuses the already loaded
+curated jobs with the rail's grouping and ordering, then follows live rail updates.
+Local before/after browser evidence is in
+`evidence/guest-starter-preview-2026-10-06.json`; these development measurements do
+not establish production Core Web Vitals.
 
 ## Artwork and delivery
 

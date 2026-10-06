@@ -61,7 +61,8 @@
           "answer": "Any LTX 2.3 Fast duration above ten seconds requires 1080p at 25 fps. Other resolution and frame-rate choices are limited to ten seconds or less."
         }
       ]
-    }
+    },
+    "decisionSummary": "This compares LTX 2.3 Fast with Seedance 2.0. Start with LTX for direct text/image shots; choose Seedance for multiple references, video editing or extension."
   },
   "fr": {
     "meta": {
@@ -124,7 +125,8 @@
           "answer": "Toute durée supérieure à 10 secondes impose le 1080p à 25 fps. Les autres résolutions et cadences nécessitent une génération de 10 secondes ou moins."
         }
       ]
-    }
+    },
+    "decisionSummary": "Cette page compare LTX 2.3 Fast à Seedance 2.0. Partez de LTX pour des plans texte/image, ou de Seedance pour plusieurs références, l’édition vidéo ou l’extension."
   },
   "es": {
     "meta": {
@@ -187,6 +189,7 @@
           "answer": "Toda duración superior a diez segundos requiere 1080p a 25 fps. Las demás resoluciones y velocidades de cuadro se limitan a diez segundos o menos."
         }
       ]
-    }
+    },
+    "decisionSummary": "Esta página compara LTX 2.3 Fast con Seedance 2.0. Parte de LTX para planos de texto/imagen, o de Seedance para varias referencias, edición de vídeo o extensión."
   }
 }

@@ -35,6 +35,16 @@ export function ComparePricingQuickSection({
   const leftLines = getPricingLines(leftPricingDisplay);
   const rightLines = getPricingLines(rightPricingDisplay);
   const hasComparableLine = leftPricingDisplay.scoreLine && rightPricingDisplay.scoreLine;
+  const scenarioLabel = (display: ComparePricingDisplay) => {
+    const scenario = display.scenario;
+    if (!scenario) return null;
+    const mode = activeLocale === 'fr' ? 'Texte vers vidéo' : activeLocale === 'es' ? 'Texto a vídeo' : 'Text to video';
+    const audio = scenario.audio
+      ? activeLocale === 'fr' ? 'audio activé' : activeLocale === 'es' ? 'audio activado' : 'audio on'
+      : activeLocale === 'fr' ? 'sans audio' : activeLocale === 'es' ? 'sin audio' : 'audio off';
+    return [mode, `${scenario.durationSec} s`, scenario.aspectRatio, audio].filter(Boolean).join(' · ');
+  };
+  const perVideo = activeLocale === 'fr' ? 'par vidéo' : activeLocale === 'es' ? 'por vídeo' : 'per video';
 
   return (
     <section id="pricing" className="compare-price-panel">
@@ -44,15 +54,19 @@ export function ComparePricingQuickSection({
       </div>
       <div className="compare-price-tickets">
         {[
-          { entry: left, lines: leftLines },
-          { entry: right, lines: rightLines },
-        ].map(({ entry, lines }) => (
+          { entry: left, lines: leftLines, display: leftPricingDisplay },
+          { entry: right, lines: rightLines, display: rightPricingDisplay },
+        ].map(({ entry, lines, display }) => (
           <article key={entry.modelSlug} className="compare-price-ticket">
             <h3><EngineIcon engine={{ id: entry.engineId, label: formatEngineName(entry), brandId: entry.brandId }} size={28} framed={false} />{formatEngineName(entry)}</h3>
-            <dl>{lines.map(line => {
+            {scenarioLabel(display) ? <p className="compare-price-scenario">{scenarioLabel(display)}</p> : null}
+            {display.priceRows?.length ? <dl>{display.priceRows.map(row => (
+              <div key={row.resolution}><dt>{row.resolution}</dt><dd>{row.unitPrice}<small>{row.totalPrice} {perVideo}</small></dd></div>
+            ))}</dl> : <dl>{lines.map(line => {
               const separator = line.indexOf(':');
               return <div key={line}>{separator > -1 ? <><dt>{line.slice(0, separator)}</dt><dd>{line.slice(separator + 1).trim()}</dd></> : <dd>{line}</dd>}</div>;
-            })}</dl>
+            })}</dl>}
+            {display.quoteUnavailable ? <p className="compare-price-scenario">{activeLocale === 'fr' ? 'Le devis actuel ne peut pas être confirmé. Vérifiez les réglages dans l’app avant de générer.' : activeLocale === 'es' ? 'No se puede confirmar el precio actual. Revisa los ajustes en la app antes de generar.' : 'The current quote could not be confirmed. Check your settings in the app before generating.'}</p> : null}
           </article>
         ))}
       </div>
