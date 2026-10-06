@@ -160,6 +160,15 @@ deux scénarios de publication/retry, les validateurs Codex non installés et un
 rendu local ; le passage complet n'a pas poursuivi les intégrations Studio
 isolées après son échec. Les lanes obligatoires de Quality CI restent nécessaires.
 
+Deux passages CI reproduisent aussi une expiration de 30 secondes dans les
+scénarios Studio analyse et tâches : les waiters navigateur démarrent avant
+environ 24 secondes de compilation du document, puis la compilation des API.
+Ces tests fonctionnels préparent maintenant leurs routes du serveur de test
+isolé par des GET authentifiés réels, bornés à 90 secondes. Les GET du navigateur
+restent attendus sous 30 secondes, leurs statuts et toutes les assertions
+d'action, de financement et d'absence de dispatch implicite sont conservés.
+Cette préparation de compilation n'est pas une mesure de performance client.
+
 Les preuves brutes avant/après sont conservées localement sous
 `.reports/cwv-2026-10-06-families/` dans le checkout Desktop : captures JSON/PNG,
 traces réseau, logs serveur, tests et builds. Le bilan terrain initial est dans

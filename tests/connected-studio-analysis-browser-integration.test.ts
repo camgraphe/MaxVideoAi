@@ -40,10 +40,18 @@ test('analysis review works on desktop/mobile and only explicit confirmation que
     const page=owned.page;
     // Same isolated auxiliary legal reader as the canonical Studio browser fixture.
     await page.route('**/api/legal/reconsent',route=>route.fulfill({json:{ok:true,needsReconsent:false,documents:[]}}));
+    const conversationPath=`/app/studio/conversation/${project.projectId}`;
+    // Prepare cold Next dev compilation separately from the browser's functional
+    // response deadlines. These real authenticated GETs must not dispatch work.
+    for(const path of [conversationPath,`/api/studio/projects/${project.projectId}/image-conversation`,`/api/studio/projects/${project.projectId}/analyses/${quote.analysisId}`]){
+      const prepared=await owned.context.request.get(runtime.browserOrigin+path,{timeout:90_000,maxRedirects:0});
+      assert.equal(prepared.status(),200,`Studio fixture preparation failed: ${path}`);
+      await prepared.dispose();
+    }
     const loaded=page.waitForResponse(response=>response.url().endsWith(`/api/studio/projects/${project.projectId}/image-conversation`)&&response.request().method()==='GET',{timeout:30_000});
     const analysisLoaded=page.waitForResponse(response=>response.url().endsWith(`/api/studio/projects/${project.projectId}/analyses/${quote.analysisId}`)&&response.request().method()==='GET',{timeout:30_000});
     const [,response,analysisResponse]=await Promise.all([
-      page.goto(runtime.browserOrigin+`/app/studio/conversation/${project.projectId}`),loaded,analysisLoaded,
+      page.goto(runtime.browserOrigin+conversationPath),loaded,analysisLoaded,
     ]);
     assert.equal(response.status(),200,JSON.stringify(await response.json()));
     assert.equal(analysisResponse.status(),200,JSON.stringify(await analysisResponse.json()));

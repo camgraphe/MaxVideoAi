@@ -30,10 +30,18 @@ test('task ceilings, explicit continuation and saved progress work on desktop/mo
     browser=await startStudioConnectedBrowserFixture({runtime,browserName:'chromium'});
     const owned=await browser.newContext(session,{viewport:{width:1440,height:900},locale:'en-US',reducedMotion:'reduce'}),page=owned.page;
     await page.route('**/api/legal/reconsent',route=>route.fulfill({json:{ok:true,needsReconsent:false,documents:[]}}));
+    const conversationPath=`/app/studio/conversation/${project.projectId}`;
+    // This suite checks behavior, not compilation speed. Prepare the owned
+    // dev routes with real authenticated GETs before the 30-second UI waiters.
+    for(const path of [conversationPath,`/api/studio/projects/${project.projectId}/image-conversation`,'/api/studio/assistance']){
+      const prepared=await owned.context.request.get(runtime.browserOrigin+path,{timeout:90_000,maxRedirects:0});
+      assert.equal(prepared.status(),200,`Studio fixture preparation failed: ${path}`);
+      await prepared.dispose();
+    }
     const loaded=page.waitForResponse(response=>response.url().endsWith('/image-conversation')&&response.request().method()==='GET',{timeout:30_000});
     const assistanceLoaded=page.waitForResponse(response=>response.url().endsWith('/api/studio/assistance')&&response.request().method()==='GET',{timeout:30_000});
     const [,initial,assistance]=await Promise.all([
-      page.goto(runtime.browserOrigin+`/app/studio/conversation/${project.projectId}`),loaded,assistanceLoaded,
+      page.goto(runtime.browserOrigin+conversationPath),loaded,assistanceLoaded,
     ]);
     const initialBody=await initial.json();assert.equal(initial.status(),200,JSON.stringify(initialBody));assert.ok(initialBody.result.taskPolicyVersion);
     assert.equal(assistance.status(),200,JSON.stringify(await assistance.json()));
