@@ -55,10 +55,10 @@
 
 **Interfaces:** prepare/read/confirm service for a Studio actor; queued worker freezes policy/source/consent, persists dispatch before the provider, saves output before settlement, retains unknown holds.
 
-- [ ] Write/run failing disposable-PostgreSQL tests for ownership, expiry, double confirmation, changed source, shared funding, paused credits, concurrency and lost-response replay.
-- [ ] Implement explicit migration and separate analysis consumer of the same credit lots/campaign, with no fake Responses call rows or read-time schema/grants.
-- [ ] Implement worker reservation and settlement recovery; no generation completion callback.
-- [ ] Run financial integration tests and commit.
+- [x] Write/run failing disposable-PostgreSQL tests for ownership, expiry, double confirmation, changed source, shared funding, paused credits, concurrency and lost-response replay.
+- [x] Implement explicit migration and separate analysis consumer of the same credit lots/campaign, with no fake Responses call rows or read-time schema/grants.
+- [x] Implement worker reservation and settlement recovery; no generation completion callback.
+- [x] Run financial integration tests and commit.
 
 ### Task 4: Conversation tools and review cards
 

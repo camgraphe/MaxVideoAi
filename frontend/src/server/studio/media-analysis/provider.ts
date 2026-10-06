@@ -18,7 +18,20 @@ export function parseStudioAnalysisObservations(text:string,request:StudioAnalys
   if(value.observations.some(observation=>observation.startSec<request.startSec||observation.endSec>request.endSec))throw new Error('ANALYSIS_OBSERVATION_OUTSIDE_SCOPE');
   return studioAnalysisResultSchema.parse({...value,coverage:{startSec:request.startSec,endSec:request.endSec,sampledAtSec,complete:false}});
 }
-export type AnalysisProviderSnapshot={id:string;model:string;serviceTier:string|null;usage:unknown;outputText:string;inputTokens:number;outputTokenBound:number;providerNanoUsd:number|null};
+export type AnalysisProviderSnapshot={id:string;model:string;serviceTier:string|null;usage:unknown;outputText:string;inputTokens:number;outputTokenBound:number;providerNanoUsd:number|null;sampledAtSec?:number[]};
+export function readStudioAnalysisProviderCost(snapshot:AnalysisProviderSnapshot,kind:'video'|'audio',policy:StudioAnalysisPolicy):number|null {
+  const profile=policy[kind];
+  if(!profile||!['default','standard'].includes(snapshot.serviceTier??'')||!Number.isSafeInteger(snapshot.inputTokens)||snapshot.inputTokens<0||snapshot.inputTokens>profile.maxInputTokens||snapshot.outputTokenBound>profile.maxOutputTokens)return null;
+  if(kind==='video'){
+    const facts=readStudioUsage(snapshot.usage,snapshot.model,snapshot.serviceTier);
+    return snapshot.model==='gpt-6.1-sol'&&facts&&facts.inputTokens<=snapshot.inputTokens&&facts.outputTokens<=snapshot.outputTokenBound?facts.providerMaxNanoUsd:null;
+  }
+  const facts=z.object({prompt_tokens:z.number().int().nonnegative(),completion_tokens:z.number().int().nonnegative(),prompt_tokens_details:z.object({audio_tokens:z.number().int().nonnegative()})}).safeParse(snapshot.usage);
+  if(!facts.success||snapshot.model!=='gpt-audio-1.5')return null;
+  const {prompt_tokens:input,completion_tokens:output,prompt_tokens_details:{audio_tokens:audio}}=facts.data;
+  if(audio>input||input>snapshot.inputTokens||output>snapshot.outputTokenBound)return null;
+  return (input-audio)*policy.audio!.textInputNanoUsd+audio*policy.audio!.audioInputNanoUsd+output*policy.audio!.textOutputNanoUsd;
+}
 /** Native adapter with zero retries; the caller persists dispatch before create(). */
 export async function prepareStudioAnalysisProvider(policy:StudioAnalysisPolicy,request:StudioAnalysisRequest,source:AnalysisSource) {
   const client=new OpenAI({apiKey:process.env.OPENAI_API_KEY,maxRetries:0,timeout:65_000});

@@ -1,3 +1,4 @@
+import {readStudioAnalysisExposure} from './media-analysis/exposure';
 import {randomUUID} from 'node:crypto';
 import {query,withDbTransaction,type QueryExecutor,type TransactionQueryExecutor} from '@/lib/db';
 import {reserveWalletChargeInExecutor} from '@/lib/wallet';
@@ -7,11 +8,11 @@ import type {StudioGenerationActor} from '@/server/agent-api/generation-actor';
 import {STUDIO_ASSISTANCE_TARIFF,STUDIO_ASSISTANCE_CREDIT_TARIFF,studioAssistanceTariff,studioAssistanceChoiceSchema,type StudioAssistanceStatus,type StudioAssistanceMode,type StudioAssistantModel,type StudioAssistanceChoice} from '@/lib/studio/assistance-contract';
 import {quoteStudioAssistance} from '../../../server/pricing/quote-studio-assistance';
 import {readStudioUsage,studioProviderReservation,STUDIO_PROVIDER_RATE_VERSION} from './assistance-provider-facts';
-import {studioAssistancePolicy,studioAssistancePolicyVersion,type StudioAssistancePolicy} from './assistance-policy';
+import {studioAssistancePolicy,studioAssistancePolicyVersion,STUDIO_ASSISTANCE_CAMPAIGN_ID,type StudioAssistancePolicy} from './assistance-policy';
 
 import {ensureStudioMonthlyCredits,readStudioCreditBalance,existingStudioCreditPurchase,purchaseStudioCreditPack,planStudioCreditReservation,reserveStudioCredits,settleStudioCredits,type CreditReservation} from './assistance-credit-ledger';
 
-const CAMPAIGN = 'studio-discovery-2026-10';
+const CAMPAIGN = STUDIO_ASSISTANCE_CAMPAIGN_ID;
 type Account = {user_id:string;selected_model:StudioAssistantModel;paid_enabled:boolean;paid_authorized_cents:number;tariff_version:string|null;sol_limit_nano_usd:string|number;luna_limit_nano_usd:string|number;revision:string|number};
 export type AssistanceTurn = {model:StudioAssistantModel;mode:StudioAssistanceMode;tariff_version:string;policy_version:string};
 export type AssistanceCall = {id:string;user_id:string;project_id:string;request_id:string;lease_id:string;response_index:number;model:StudioAssistantModel;mode:StudioAssistanceMode;state:'reserved'|'unknown'|'settled';reserved_nano_usd:string|number;reserved_cents:number;input_token_bound:number;output_token_bound:number;response_id:string|null;tariff_version:string;rate_version:string;policy_version:string};
@@ -42,15 +43,16 @@ async function totals(db:QueryExecutor,userId:string,policy:StudioAssistancePoli
     FROM studio_assistance_calls c LEFT JOIN studio_assistance_resolutions w ON w.call_id=c.id AND w.action='waive_unknown' WHERE user_id=$1 GROUP BY mode`,[userId,studioAssistancePolicyVersion(policy),policy.credits?STUDIO_ASSISTANCE_CREDIT_TARIFF.version:STUDIO_ASSISTANCE_TARIFF.version]);
   const result={sol:0,luna:0,paidSpent:0,paidReserved:0,unresolved:0};
   for(const row of rows){if(row.mode==='included_sol')result.sol=Number(row.exposure);else if(row.mode==='sponsored_luna')result.luna=Number(row.exposure);else{result.paidSpent=Number(row.spent);result.paidReserved=Number(row.reserved);}result.unresolved+=Number(row.unresolved);}
+  result.unresolved+=(await readStudioAnalysisExposure(db,userId)).unresolved;
   return result;
 }
-async function campaignRemaining(db:QueryExecutor,policy:StudioAssistancePolicy){
+export async function campaignRemaining(db:QueryExecutor,policy:StudioAssistancePolicy){
   if(policy.credits){
     const row=(await db.query<{remaining:string}>(`SELECT c.limit_nano_usd-COALESCE((SELECT sum(CASE WHEN f.call_id IS NOT NULL THEN COALESCE(f.charged_sponsored_nano_usd,f.reserved_sponsored_nano_usd) ELSE CASE WHEN r.state='settled' THEN r.provider_max_nano_usd ELSE r.reserved_nano_usd END END) FROM studio_assistance_calls r LEFT JOIN studio_assistance_credit_funding f ON f.call_id=r.id WHERE r.campaign_id=c.id),0) remaining FROM studio_assistance_campaigns c WHERE id=$1`,[CAMPAIGN]))[0];
-    return row?Number(row.remaining):policy.campaignNanoUsd;
+    return (row?Number(row.remaining):policy.campaignNanoUsd)-(await readStudioAnalysisExposure(db)).sponsoredNanoUsd;
   }
   const rows=await db.query<{remaining:string}>(`SELECT c.limit_nano_usd - COALESCE((SELECT sum(CASE WHEN r.state='settled' THEN r.provider_max_nano_usd ELSE r.reserved_nano_usd END) FROM studio_assistance_calls r WHERE r.campaign_id=c.id),0) AS remaining FROM studio_assistance_campaigns c WHERE id=$1`,[CAMPAIGN]);
-  return rows[0]?Number(rows[0].remaining):policy.campaignNanoUsd;
+  return (rows[0]?Number(rows[0].remaining):policy.campaignNanoUsd)-(await readStudioAnalysisExposure(db)).sponsoredNanoUsd;
 }
 function paidEnabled(account:Account,policy:StudioAssistancePolicy){return account.paid_enabled&&account.tariff_version===(policy.credits?STUDIO_ASSISTANCE_CREDIT_TARIFF.version:STUDIO_ASSISTANCE_TARIFF.version);}
 function accountMode(account:Account,policy:StudioAssistancePolicy):StudioAssistanceMode{return account.selected_model==='gpt-6-luna'?'sponsored_luna':paidEnabled(account,policy)?'paid_sol':'included_sol';}
@@ -148,6 +150,7 @@ export async function reserveStudioAssistanceCall(input:{userId:string;projectId
       if(active.length)fail('luna_busy','Wait for your current Luna message to finish or recover its saved response.');
     }
     const reserved=studioProviderReservation(turn.model,input.inputTokens,input.outputTokens),usage=await totals(tx,input.userId,policy);
+    if((await readStudioAnalysisExposure(tx,input.userId)).unresolved>0)assistanceError('usage_unresolved','This account has unresolved analysis usage. Recover that analysis before another model call.');
     let cents=0,receiptId:string|null=null,creditPlan:CreditReservation|null=null;const id=randomUUID();
     if(policy.credits&&turn.model==='gpt-6.1-sol'){
       if(turn.mode==='paid_sol'&&(!account.paid_enabled||account.tariff_version!==turn.tariff_version))fail('paid_budget_exhausted','Resume paid Sol before using your purchased credits.');

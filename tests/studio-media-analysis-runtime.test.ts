@@ -2,9 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {studioAnalysisPolicy,quoteStudioAnalysis,priceStudioAnalysis} from '../frontend/src/server/studio/media-analysis/policy';
 import {analysisSampleTimes,readBoundedAnalysisBody,analysisSourceFingerprint,extractStudioAnalysisSource} from '../frontend/src/server/studio/media-analysis/source';
-import {parseStudioAnalysisObservations,buildStudioAnalysisVisualInput} from '../frontend/src/server/studio/media-analysis/provider';
+import {parseStudioAnalysisObservations,buildStudioAnalysisVisualInput,readStudioAnalysisProviderCost} from '../frontend/src/server/studio/media-analysis/provider';
 
 export const policyFixture={version:'test-policy-v1',processingNanoUsdPerSecond:100_000,marginPercent:1,video:{maxInputTokens:20_000,maxOutputTokens:2200},audio:null};
+test('settlement requires the exact provider model, metered token bounds and supported tier',()=>{
+  const snapshot={id:'response',model:'gpt-6.1-sol',serviceTier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:20},outputText:'',inputTokens:100,outputTokenBound:2200,providerNanoUsd:450_000};
+  assert.equal(readStudioAnalysisProviderCost(snapshot,'video',policyFixture),450_000);
+  assert.equal(readStudioAnalysisProviderCost({...snapshot,model:'gpt-6-luna'},'video',policyFixture),null);
+  assert.equal(readStudioAnalysisProviderCost({...snapshot,inputTokens:99},'video',policyFixture),null);
+  assert.equal(readStudioAnalysisProviderCost({...snapshot,serviceTier:'flex'},'video',policyFixture),null);
+});
 test('analysis fails closed without an explicitly qualified versioned policy',()=>{
   assert.equal(studioAnalysisPolicy({}),null);
   assert.equal(studioAnalysisPolicy({STUDIO_MEDIA_ANALYSIS_ENABLED:'true',STUDIO_MEDIA_ANALYSIS_POLICY_JSON:JSON.stringify(policyFixture)}),null);

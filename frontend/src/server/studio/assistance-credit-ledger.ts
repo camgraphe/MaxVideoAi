@@ -3,6 +3,10 @@ import type {QueryExecutor,TransactionQueryExecutor} from '@/lib/db';
 import {reserveWalletChargeInExecutor} from '@/lib/wallet';
 import {AgentApiError} from '@/server/agent-api/errors';
 import {STUDIO_SOL_MONTHLY_CREDITS,STUDIO_SOL_CREDITS_PER_DOLLAR,STUDIO_ASSISTANCE_CREDIT_TARIFF,type StudioCreditBalance} from '@/lib/studio/assistance-contract';
+import {STUDIO_ASSISTANCE_CAMPAIGN_ID} from './assistance-policy';
+
+export type StudioCreditConsumer='chat'|'analysis';
+const creditTables=(consumer:StudioCreditConsumer)=>consumer==='analysis'?{funding:'studio_analysis_credit_funding',allocations:'studio_analysis_credit_allocations'}:{funding:'studio_assistance_credit_funding',allocations:'studio_assistance_credit_allocations'};
 
 type Lot={id:string;kind:'included'|'purchased';period:string|null;total_credits:string;consumed_credits:string;reserved_credits:string;amount_cents:number;created_at:Date;purchase_order:string};
 const creditsPerCent=STUDIO_SOL_CREDITS_PER_DOLLAR/100;
@@ -45,16 +49,19 @@ export async function planStudioCreditReservation(tx:TransactionQueryExecutor,us
   for(const lot of lots){const used=Math.min(remaining,quantity(lot).remaining);if(used){allocations.push({lotId:lot.id,credits:used});if(lot.kind==='included')free+=used;remaining-=used;}if(!remaining)break;}
   return remaining?null:{allocations,quotedCents,sponsoredNanoUsd:free>0||priorSponsored?supplierNanoUsd:0};
 }
-export async function reserveStudioCredits(tx:TransactionQueryExecutor,callId:string,plan:CreditReservation){
-  await tx.query('INSERT INTO studio_assistance_credit_funding(call_id,quoted_cents,reserved_sponsored_nano_usd) VALUES($1,$2,$3)',[callId,plan.quotedCents,plan.sponsoredNanoUsd]);
+export async function reserveStudioCredits(tx:TransactionQueryExecutor,callId:string,plan:CreditReservation,consumer:StudioCreditConsumer='chat'){
+  const {funding,allocations}=creditTables(consumer);
+  if(consumer==='analysis')await tx.query(`INSERT INTO ${funding}(call_id,quoted_cents,reserved_sponsored_nano_usd,campaign_id) VALUES($1,$2,$3,$4)`,[callId,plan.quotedCents,plan.sponsoredNanoUsd,STUDIO_ASSISTANCE_CAMPAIGN_ID]);
+  else await tx.query(`INSERT INTO ${funding}(call_id,quoted_cents,reserved_sponsored_nano_usd) VALUES($1,$2,$3)`,[callId,plan.quotedCents,plan.sponsoredNanoUsd]);
   for(const allocation of plan.allocations){
     await tx.query('UPDATE studio_assistance_credit_lots SET reserved_credits=reserved_credits+$2 WHERE id=$1',[allocation.lotId,allocation.credits]);
-    await tx.query('INSERT INTO studio_assistance_credit_allocations(call_id,lot_id,reserved_credits) VALUES($1,$2,$3)',[callId,allocation.lotId,allocation.credits]);
+    await tx.query(`INSERT INTO ${allocations}(call_id,lot_id,reserved_credits) VALUES($1,$2,$3)`,[callId,allocation.lotId,allocation.credits]);
   }
 }
 /** Free allocation first; unused holds return to the same lots, including expired free months. */
-export async function settleStudioCredits(tx:TransactionQueryExecutor,callId:string,quotedCents:number,supplierNanoUsd:number){
-  const rows=await tx.query<{lot_id:string;kind:string;reserved_credits:string;charged_credits:string|null;released_at:Date|null}>(`SELECT a.*,l.kind FROM studio_assistance_credit_allocations a JOIN studio_assistance_credit_lots l ON l.id=a.lot_id WHERE a.call_id=$1 ORDER BY CASE WHEN l.kind='included' THEN 0 ELSE 1 END,l.purchase_order`,[callId]);
+export async function settleStudioCredits(tx:TransactionQueryExecutor,callId:string,quotedCents:number,supplierNanoUsd:number,consumer:StudioCreditConsumer='chat'){
+  const {funding,allocations}=creditTables(consumer);
+  const rows=await tx.query<{lot_id:string;kind:string;reserved_credits:string;charged_credits:string|null;released_at:Date|null}>(`SELECT a.*,l.kind FROM ${allocations} a JOIN studio_assistance_credit_lots l ON l.id=a.lot_id WHERE a.call_id=$1 ORDER BY CASE WHEN l.kind='included' THEN 0 ELSE 1 END,l.purchase_order`,[callId]);
   let remaining=quotedCents*creditsPerCent,paid=0;
   for(const row of rows){
     if(row.released_at)continue;
@@ -62,14 +69,15 @@ export async function settleStudioCredits(tx:TransactionQueryExecutor,callId:str
     const charged=Math.min(remaining,Number(row.reserved_credits));remaining-=charged;
     if(row.kind==='purchased')paid+=charged;
     await tx.query('UPDATE studio_assistance_credit_lots SET reserved_credits=reserved_credits-$2,consumed_credits=consumed_credits+$3 WHERE id=$1',[row.lot_id,Number(row.reserved_credits),charged]);
-    await tx.query('UPDATE studio_assistance_credit_allocations SET charged_credits=$3 WHERE call_id=$1 AND lot_id=$2',[callId,row.lot_id,charged]);
+    await tx.query(`UPDATE ${allocations} SET charged_credits=$3 WHERE call_id=$1 AND lot_id=$2`,[callId,row.lot_id,charged]);
   }
   if(remaining)throw new AgentApiError('INTERNAL_ERROR','Credit settlement exceeds its reservation.');
-  await tx.query('UPDATE studio_assistance_credit_funding SET charged_sponsored_nano_usd=CASE WHEN reserved_sponsored_nano_usd>0 THEN $2 ELSE 0 END,charged_cents=$3 WHERE call_id=$1',[callId,supplierNanoUsd,quotedCents]);
+  await tx.query(`UPDATE ${funding} SET charged_sponsored_nano_usd=CASE WHEN reserved_sponsored_nano_usd>0 THEN $2 ELSE 0 END,charged_cents=$3 WHERE call_id=$1`,[callId,supplierNanoUsd,quotedCents]);
   return {paidCents:paid/creditsPerCent};
 }
 /** A customer waiver releases credits, while unknown supplier exposure stays reserved. */
-export async function releaseStudioCredits(tx:TransactionQueryExecutor,callId:string){
-  const rows=await tx.query<{lot_id:string;reserved_credits:string}>('SELECT lot_id,reserved_credits FROM studio_assistance_credit_allocations WHERE call_id=$1 AND charged_credits IS NULL AND released_at IS NULL',[callId]);
-  for(const row of rows){await tx.query('UPDATE studio_assistance_credit_lots SET reserved_credits=reserved_credits-$2 WHERE id=$1',[row.lot_id,Number(row.reserved_credits)]);await tx.query('UPDATE studio_assistance_credit_allocations SET released_at=clock_timestamp() WHERE call_id=$1 AND lot_id=$2',[callId,row.lot_id]);}
+export async function releaseStudioCredits(tx:TransactionQueryExecutor,callId:string,consumer:StudioCreditConsumer='chat'){
+  const {allocations}=creditTables(consumer);
+  const rows=await tx.query<{lot_id:string;reserved_credits:string}>(`SELECT lot_id,reserved_credits FROM ${allocations} WHERE call_id=$1 AND charged_credits IS NULL AND released_at IS NULL`,[callId]);
+  for(const row of rows){await tx.query('UPDATE studio_assistance_credit_lots SET reserved_credits=reserved_credits-$2 WHERE id=$1',[row.lot_id,Number(row.reserved_credits)]);await tx.query(`UPDATE ${allocations} SET released_at=clock_timestamp() WHERE call_id=$1 AND lot_id=$2`,[callId,row.lot_id]);}
 }
