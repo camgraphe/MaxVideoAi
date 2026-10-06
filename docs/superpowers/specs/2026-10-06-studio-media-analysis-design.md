@@ -22,13 +22,19 @@ des images ; l'analyse vidéo/audio et le montage avancé sont réservés à Sol
 Le propriétaire a également précisé que le montage intervient pour répondre à
 un besoin réel, notamment une durée supérieure à environ 30 secondes nécessitant
 plusieurs clips, et que l'analyse doit aussi servir à comprendre les changements
-demandés sur un média déjà généré. Le découpage technique et le parcours proposés
-ci-dessous restent à examiner.
+demandés sur un média déjà généré. Il a ajouté les variantes d'accroche, le logo ou
+carton de fin, l'insertion d'une image et la création d'un clip à partir d'une
+musique fournie. Ces usages peuvent justifier un montage court et simple ; la
+durée n'est pas le seul motif d'assemblage. Le découpage technique et le parcours
+proposés ci-dessous restent à examiner.
 
 Le montage avancé désigne ici des décisions fondées sur le contenu observé :
 repérer une action, sélectionner un passage, rapprocher deux plans, éviter une
 coupe au milieu d'une phrase. Une opération précise demandée par le client,
 comme déplacer un clip à une position donnée, reste une opération simple.
+Insérer une image ou une musique avec des bornes connues reste aussi simple ;
+sélectionner une accroche dans le contenu d'un clip ou adapter les plans à la
+structure musicale nécessite les analyses correspondantes.
 
 ## Choisir le workflow depuis la demande du client
 
@@ -47,6 +53,10 @@ ni montage sur la première demande.
 | « Cette vidéo générée n'a pas le bon mouvement » | Examiner la portion utile si nécessaire, interpréter le changement, puis choisir retouche vidéo, nouvelle génération ou edit de timeline selon les capacités disponibles |
 | « Change la lumière de cette image générée » | Réattacher l'image et préparer sa retouche ; la vision image reste disponible à Luna et Sol |
 | « Assemble ces clips » | Répondre à la demande explicite de montage, en proposant l'analyse Sol seulement si les choix nécessitent de voir/entendre le contenu |
+| « Fais trois versions avec des hooks différents » | Conserver un corps commun et proposer trois ouvertures distinctes ; réutiliser les médias fournis, ou préparer les devis des ouvertures à créer |
+| « Ajoute mon logo / ce carton / cette image à la fin » | Proposer une insertion avec durée et présentation définies ; aucune analyse vidéo si les indications suffisent |
+| « Mets cette musique sous la vidéo » | Insérer l'enregistrement fourni sur une piste audio, avec portion et niveau définis ; aucune génération de musique ni analyse sonore implicite |
+| « Fais un clip musical sur ce morceau » | Prendre la musique comme base temporelle, proposer une direction visuelle et des plans ; utiliser Sol pour l'analyse musicale nécessaire, puis faire valider montage et éventuelles générations |
 
 Le repère des 30 secondes signale un possible besoin de plusieurs générations.
 Ce n'est ni une limite universelle des modèles ni un déclencheur automatique de
@@ -54,6 +64,8 @@ montage. Les durées, modes d'extension et capacités à plusieurs plans se vér
 le catalogue canonique avec le modèle, la version et les paramètres réellement
 sélectionnés. Une génération unique adaptée reste possible quand elle satisfait
 le brief ; un montage court reste possible s'il est explicitement demandé.
+Un hook de quelques secondes, un carton final ou une bande musicale sont des
+motifs suffisants : Studio n'attend pas une durée supérieure à 30 secondes.
 
 La simple présence d'un média généré ne déclenche pas une analyse payante.
 L'analyse est liée à une question ou un changement pour lequel le contenu observé
@@ -73,6 +85,9 @@ avoir inspecté le clip. Une analyse réussie ne déclenche pas automatiquement
   cette projection et ne donne pas automatiquement des images au modèle.
 - `conversation-editing-contract.ts` permet insertion, déplacement, rognage,
   suppression et gain ; le serveur protège révision, propriété et pistes verrouillées.
+  Les insertions audio se superposent sur une piste libre sans décaler les visuels
+  ni remplacer la voix existante. L'insertion d'image reste une insertion visuelle,
+  pas une commande générique de surimpression de logo ou de composition de texte.
 - `studio-assistance-director.test.ts` conserve les outils actuels pour Luna.
   Il ne faut donc pas retirer arbitrairement ses outils de création ou d'édition.
 - Le directeur dispose au maximum de quatre Responses par message et du
@@ -106,9 +121,13 @@ il ne prétend pas que Sol sait recevoir nativement une vidéo ou du son.
 | Préparer une génération image/vidéo/audio et son devis | Capacités actuelles conservées | Capacités actuelles conservées |
 | Lire les métadonnées et la structure de timeline | Oui | Oui |
 | Exécuter une coupe, un déplacement ou un gain précisément demandé | Oui | Oui |
+| Ajouter une image/carton fourni ou une musique avec des bornes connues | Oui, selon les capacités d'édition effectives | Oui, selon les mêmes capacités |
+| Proposer des hooks depuis un brief ou assembler des ouvertures déjà choisies | Oui | Oui |
+| Choisir une accroche en observant les passages d'une vidéo | Proposer Sol si l'analyse est nécessaire | Oui, avec l'analyse visuelle qualifiée |
 | Examiner le contenu d'un clip vidéo | Proposer Sol | Oui, quand le profil d'analyse est qualifié et activé |
 | Interpréter un changement demandé sur une vidéo à partir de son contenu | Proposer Sol si l'analyse est nécessaire | Oui ; peut aboutir à retouche, régénération ou montage |
 | Analyser les dialogues ou le contenu sonore | Proposer Sol | Oui, avec un adaptateur audio séparé qualifié |
+| Concevoir un clip selon le contenu et la structure d'une musique fournie | Proposer Sol pour l'analyse requise | Oui, selon le profil audio et les capacités de montage qualifiés |
 | Produire un nouveau plan de montage fondé sur ces analyses | Proposer Sol | Oui, preuves et limites visibles, puis validation du client |
 | Appliquer un plan déjà validé | Possible en reprise sans nouvelle analyse | Oui |
 
@@ -119,7 +138,8 @@ pas sur l'accès à ses résultats, le téléchargement ou la reprise d'un plan 
 ## Passage de Luna à Sol dans la conversation
 
 Exemples : « Dans cette vidéo, Alex tourne trop tôt : corrige ce mouvement »
-ou « Coupe quand Alex se retourne, puis enchaîne avec Ben ».
+ou « Coupe quand Alex se retourne, puis enchaîne avec Ben », « Choisis le passage
+le plus accrocheur » ou « Construis les plans autour de la montée de cette musique ».
 
 1. Sous Luna, le modèle peut appeler un outil non dépensier de recommandation de
    capacité. Il renvoie une demande structurée avec références sélectionnées et
@@ -216,6 +236,38 @@ Le résultat précédent reste accessible. On peut comparer avant/après sur les
 critères du client lorsqu'il le demande ; aucune analyse automatique de tous les
 résultats ni boucle de régénération payante implicite.
 
+## Montage simple : accroches, images et fin de film
+
+Le montage répond aussi à des demandes de déclinaison et d'habillage, même pour
+un film de quelques secondes. Une opération suffisamment définie utilise les
+commandes simples disponibles sur Luna et Sol. Elle ne devient pas avancée du
+seul fait que plusieurs clips sont concernés ou que le client demande trois versions.
+
+Pour des hooks différents, Studio précise ce qui varie : plan d'ouverture,
+durée, texte visible ou formulation de l'accroche. Il conserve le corps et la fin
+que le client veut réutiliser. Une accroche textuelle ou une nouvelle direction
+peut être proposée depuis le brief ; rechercher le moment visuellement le plus
+efficace dans une vidéo appelle l'analyse Sol. Chaque proposition de variante
+indique les médias réutilisés et ceux à créer. Les nouvelles générations gardent
+leurs devis et confirmations ; le nombre de versions ne multiplie pas implicitement
+les appels payants.
+
+Les variantes validées doivent pouvoir être comparées et conservées séparément,
+avec une identité propre et un lien au film de base. Un éventuel contrat de
+duplication de séquence appartient au propriétaire canonique des montages connectés ;
+les anciens endpoints privés retirés ne sont pas réactivés. La création d'une
+variante ne doit pas écraser le montage original.
+
+Pour une image ou un carton final fourni, le plan précise sa référence exacte,
+son emplacement, sa durée, le cadrage et le comportement de la musique à la fin.
+Un logo fourni est réutilisé depuis son fichier, sans régénération qui en changerait
+les formes ou les lettres. Un carton à composer peut nécessiter un fond, ce logo
+et un texte exact. Une telle composition doit avoir un contrat déterministe qualifié
+pour l'aperçu et le rendu ; elle ne doit pas être présentée comme déjà réalisable
+par la seule commande d'insertion. Une surimpression sur la vidéo nécessite de
+même une capacité explicite de composition. Une image plein cadre déjà prête
+peut utiliser le chemin d'insertion actuel.
+
 ## Analyse audio : outil spécialisé, restitution par Sol
 
 Sol orchestre l'analyse et exploite ses résultats. Il ne reçoit pas des octets
@@ -238,11 +290,56 @@ Le profil audio ne s'active qu'après qualification de la couverture, du coût,
 des compteurs fournisseur et de la précision temporelle. L'interface reflète le
 profil réellement disponible, sans proposer « audio » si seul le visuel fonctionne.
 
+## Musique fournie : piste audio et clip musical
+
+Un fichier audio sélectionné ou importé devient une référence détenue par le
+compte, avec sa durée et ses propriétés mesurées. « Mets cette musique dans la
+timeline » réutilise cet enregistrement. Cette demande ne prépare ni une nouvelle
+musique ni une continuation générative du morceau. Studio distingue la pose
+d'une bande sonore, réalisable avec des bornes connues, de l'écoute nécessaire
+pour proposer un montage musical.
+
+Le placement simple définit début dans la séquence, portion source, durée et gain.
+Il préserve les visuels et les autres pistes. Remplacer le son d'origine, le baisser
+ou couper un morceau trop long constitue une décision explicite du brief ou du plan.
+Une boucle, un fondu ou un mixage dynamique ne sont proposés comme exécutables
+qu'après qualification de leur contrat partagé entre édition, aperçu et rendu.
+
+Pour « crée un clip sur cette musique », le morceau guide la durée et la direction
+artistique. Studio conserve son identité et ses bornes comme base temporelle et
+fait apparaître le film à construire autour. Il propose une durée cohérente avec
+la demande : morceau entier ou extrait convenu. Les durées d'insertion par défaut
+qui bornent une musique à un film déjà présent ne doivent pas tronquer silencieusement
+une musique censée définir la durée du nouveau clip.
+
+Sol peut analyser les passages nécessaires pour décrire ambiance, énergie,
+paroles et changements de structure, puis proposer les intentions de plans et leurs
+durées. Le découpage indique quelles positions viennent de mesures du signal,
+quelles transitions sont suggérées par le modèle et lesquelles restent approximatives.
+Le résultat peut d'abord suivre de grandes sections musicales. Des coupes précisément
+sur les beats nécessitent un profil supplémentaire de détection temporelle qualifié,
+une conversion correcte vers les frames de séquence et un contrôle du rendu.
+Une description générale du morceau ne constitue pas une preuve de synchronisation.
+
+Le client peut fournir ses clips/images ou demander de créer les visuels manquants.
+Studio privilégie la réutilisation des sources choisies et prépare les générations
+nécessaires selon le catalogue réel, éventuellement à plusieurs plans. Le storyboard,
+le budget des générations et le plan de montage restent examinables avant lancement.
+Le montage préserve les portions de musique approuvées ; il ne remplace pas le
+morceau par une musique générée au motif de simplifier la création.
+
+Un morceau long est analysé par portions avec couverture et plafond annoncés.
+Le pilote audio borné ne doit pas prétendre avoir écouté l'ensemble d'un titre
+sur la base d'un seul extrait. Les analyses déjà acquises sont réutilisables ;
+les étapes supplémentaires restent explicites. Le téléchargement d'un MP4 musical
+assemblé dépend du chemin d'export réellement activé et de son devis confirmé.
+
 ## Plan de montage fondé sur des preuves
 
-Quand le client demande un assemblage ou que le workflow validé le nécessite,
-Sol peut comparer les analyses des clips sélectionnés et proposer une liste de
-modifications. Une analyse destinée à une retouche ne lance pas ce plan par défaut.
+Quand les choix d'un assemblage, d'une variante ou d'un clip musical dépendent
+du contenu observé, Sol peut comparer les analyses des sources sélectionnées et
+proposer une liste de modifications. Les opérations simples suffisamment définies
+gardent leur chemin direct. Une analyse destinée à une retouche ne lance pas ce plan par défaut.
 Le client voit, pour chaque coupe, sa position, son motif,
 les observations utilisées et la portion du clip qu'il peut prévisualiser.
 
@@ -276,6 +373,7 @@ La disponibilité de ce contrôle dépend aussi du chemin de rendu effectivement
 | Propriétaire des crédits Studio | Allocation et règlement de tous les consommateurs de crédits, y compris analyses ; verrou de compte partagé |
 | Route-local hooks/components | Carte de passage à Sol, plafond, état du run et inspection du plan ; `page.tsx` reste orchestrateur |
 | Propriétaire canonique de timeline | Application atomique et révisionnée du plan confirmé |
+| Contrats canoniques de composition et variantes | Images/cartons, éventuels overlays, copies de montage et audio ; cohérence édition/aperçu/rendu, capacités qualifiées avant exposition |
 
 La surface modèle propose `analysis.prepare`, `analysis.read` et `montage.plan`
 uniquement quand les capacités effectives de Sol et du déploiement les autorisent.
@@ -343,14 +441,18 @@ de consommation gratuite prioritaire s'applique.
 
 ## Ordre de réalisation proposé
 
-1. **Vidéo visuelle** : capacités communes, carte Luna → Sol, plafond confirmé,
+1. **Usages simples et variantes** : guider les insertions image/audio et accroches
+   avec les commandes existantes ; qualifier séparément les copies de montage,
+   cartons composés ou overlays manquants. Pas d'analyse imposée ni de génération implicite.
+2. **Vidéo visuelle** : capacités communes, carte Luna → Sol, plafond confirmé,
    worker borné, images horodatées et résultat lisible, d'abord pour interpréter
    une demande d'itération sur un résultat. Aucun montage automatique.
-2. **Son et dialogue** : adaptateur séparé, profils et tarifs qualifiés, provenance
-   temporelle. Lancement indépendant du profil visuel.
-3. **Montage avancé** : comparaison de quelques clips analysés, plan prévisualisable,
-   validation puis application atomique par le propriétaire d'édition existant.
-4. **Vérification du rendu** : uniquement après qualification du rendu de preview,
+3. **Son, dialogue et musique** : adaptateur séparé, profils et tarifs qualifiés,
+   provenance temporelle ; clip guidé par les sections musicales puis qualification
+   distincte d'une synchronisation précise. Lancement indépendant du profil visuel.
+4. **Montage avancé** : comparaison de quelques clips analysés ou plan musical,
+   prévisualisation, validation puis application atomique par le propriétaire d'édition existant.
+5. **Vérification du rendu** : uniquement après qualification du rendu de preview,
    du coût et de la disponibilité effective du chemin d'export ; boucle bornée.
 
 Chaque étape peut être livrée séparément derrière son activation explicite.
@@ -365,6 +467,14 @@ edits simples actuels. Les lectures de résultats enregistrés restent possibles
   demande supérieure à 30 secondes compatible/incompatible avec une génération
   unique, retouche d'un résultat et montage explicitement demandé. Vérifier que
   Sol ne force ni timeline, ni analyse, ni montage sur une demande de création simple.
+- Cas de montage court : hook alternatif, trois variantes avec corps commun,
+  image ou logo final et carton fourni. Vérifier réutilisation exacte, durée,
+  cadrage, conservation de l'original et absence de génération/analyses implicites.
+  Carton composé ou overlay non qualifié : capacité indisponible annoncée honnêtement.
+- Musique fournie : insertion sur piste libre sans ripple ni suppression des voix,
+  portion source et gain exacts, limite de pistes et conflit de révision. Clip musical
+  sur séquence vide ou courte : durée issue du brief/morceau, aucune troncature par
+  défaut et aucune génération de musique de substitution.
 - Tests de suivi de résultat : référence réelle conservée, prompt historique
   distinct du contenu observé, analyse bornée au changement demandé, retouche ou
   régénération compatible proposée sans déclencher un plan de montage implicite.
@@ -373,6 +483,10 @@ edits simples actuels. Les lectures de résultats enregistrés restent possibles
 - Fixtures audio avec phrase, silence, musique et bruit : distinguer transcription,
   mesure du signal, interprétation et incertitude. Ne pas certifier musique avec
   un test de transcription uniquement.
+- Clip musical : fixtures avec sections/accents annotés, couverture de tout l'extrait
+  retenu, positions source/frames et comparaison du rendu avec la musique d'origine.
+  Distinguer transitions artistiques et beats mesurés ; pas de promesse de synchronisation
+  précise avant qualification ni de lancement des visuels manquants sans devis confirmé.
 - PostgreSQL jetable : double confirmation, concurrence chat/analyse, limite des
   lots, changement de mois, restriction, réponse perdue, usage inconnu, règlement
   et remboursement exactement une fois. Ne pas utiliser la base de production.
@@ -392,6 +506,7 @@ edits simples actuels. Les lectures de résultats enregistrés restent possibles
 
 - `docs/engineering/studio-editor-architecture.md`
 - `docs/engineering/studio-assistance-economics.md`
+- `docs/engineering/studio-conversation-audio.md`
 - `docs/engineering/media-delivery.md`
 - `docs/engineering/read-route-schema-bootstrap.md`
 - `frontend/src/server/studio/conversation-reference-mentions.ts`
@@ -402,6 +517,8 @@ edits simples actuels. Les lectures de résultats enregistrés restent possibles
 - `frontend/src/lib/studio/assistance-contract.ts`
 - `tests/studio-media-conversation.test.ts`
 - `tests/studio-assistance-director.test.ts`
+- `tests/studio-conversation-editing-run-postgres.test.ts`
+- `tests/maxvideoai-editor-timeline-audio-layering.test.ts`
 
 Le présent travail est une conception enregistrée dans une branche séparée.
 La prochaine décision est la revue de cette proposition ; le plan d'implémentation
