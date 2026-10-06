@@ -1,7 +1,9 @@
 # Studio media analysis
 
 Code candidate, isolated branch `codex/studio-media-analysis-design`, 2026-10-06.
-This guide does not establish production activation or provider qualification.
+Provider qualification and the production activation procedure are recorded in
+`docs/operations/studio-media-tasks-activation-2026-10-06.md`. Qualification alone
+does not establish production deployment readiness.
 
 Studio creates first. Both models retain image vision and simple edits. Known
 clips, end images and supplied music can be assembled from explicit timing without
@@ -45,9 +47,12 @@ supported OpenAI endpoint/key and an operating dedicated worker, plus:
 - `STUDIO_MEDIA_ANALYSIS_APPROVED_POLICY` matching the reviewed policy version.
 - `STUDIO_MEDIA_ANALYSIS_POLICY_JSON` matching `studioAnalysisPolicySchema`.
 
-No numerical production analysis tariff is supplied. Measure the pilot's processing
-cost per source second, input/output bounds, supplier exposure and retail margin
-before approving a policy. Video/audio profiles may independently be null.
+The reviewed candidate tariff is authored in
+`frontend/config/studio-media-analysis-policy.json`; deployment still requires the
+matching approved version and environment JSON. Its fixed processing allowance is
+a conservative envelope, not a measured infrastructure invoice. Review processing
+cost, input/output bounds, supplier exposure and retail margin before approving a
+replacement policy. Video/audio profiles may independently be null.
 Audio requires a factual rate version and native text-input/audio-input/text-output
 rates; do not substitute Sol rates. Qualification must verify usage counters,
 coverage, timing, total cost and observed media quality before exposure.
@@ -134,5 +139,6 @@ skip, TypeScript and exposure checks pass, and the canonical browser lane passes
 11/11, including real desktop/mobile confirmation without duplicate reservations.
 MCP client checks pass 151 tests with one skip plus tool-selection QA. Current
 `main` (75c64b957) is included; its guest/navigation/hydration tests pass 8/8.
-Existing image lint warnings remain. No paid provider request, production schema
-write, profile activation or credential mutation was performed.
+Existing image lint warnings remain. Those counts describe the earlier branch
+review. The later authorized live qualification and current validation are recorded
+in the activation report; they do not change the frozen historical evidence above.

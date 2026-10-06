@@ -1,7 +1,8 @@
 # Studio task budgets and background execution
 
 Implemented on the isolated Studio branch on 2026-10-06. This describes the
-candidate; production activation and a paid-provider pilot have not been performed.
+candidate. The authorized paid-provider qualification and production activation
+procedure are recorded in `docs/operations/studio-media-tasks-activation-2026-10-06.md`.
 
 `src/lib/studio/task-budget-contract.ts` owns the separately versioned resource
 policy `studio-task-budget-2026-10-06-v1`. Existing assistance v1/v2 tariffs,
