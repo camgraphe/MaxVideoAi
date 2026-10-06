@@ -30,7 +30,11 @@ test('task ceilings, explicit continuation and saved progress work on desktop/mo
     browser=await startStudioConnectedBrowserFixture({runtime,browserName:'chromium'});
     const owned=await browser.newContext(session,{viewport:{width:1440,height:900},locale:'en-US',reducedMotion:'reduce'}),page=owned.page;
     await page.route('**/api/legal/reconsent',route=>route.fulfill({json:{ok:true,needsReconsent:false,documents:[]}}));
+    const loaded=page.waitForResponse(response=>response.url().endsWith('/image-conversation')&&response.request().method()==='GET',{timeout:30_000});
+    const assistanceLoaded=page.waitForResponse(response=>response.url().endsWith('/api/studio/assistance')&&response.request().method()==='GET',{timeout:30_000});
     await page.goto(runtime.browserOrigin+`/app/studio/conversation/${project.projectId}`);
+    const initial=await loaded,initialBody=await initial.json();assert.equal(initial.status(),200,JSON.stringify(initialBody));assert.ok(initialBody.result.taskPolicyVersion);
+    const assistance=await assistanceLoaded;assert.equal(assistance.status(),200,JSON.stringify(await assistance.json()));
     const picker=page.getByRole('group',{name:'Work allowance'}),message=page.getByRole('textbox',{name:'Message Studio'});
     await expect(picker).toBeVisible();await expect(picker.getByRole('radio',{name:/Complex/})).toBeEnabled();
     await picker.getByRole('radio',{name:/Complex/}).check();await message.fill('Help shape this film');
