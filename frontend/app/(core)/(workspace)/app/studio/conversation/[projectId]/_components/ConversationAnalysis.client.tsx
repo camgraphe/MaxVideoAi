@@ -11,6 +11,7 @@ export function ConversationAnalysis({quote,projectId,accountKey,locale,busy,onC
   const blocked=busy||analysis.busy;
   return <section className={styles.card} aria-label={t('Media analysis','Analyse du média')}>
     <h3>{t('Analyse with Sol 6.1','Analyser avec Sol 6.1')}</h3>
+    {quote.sourceName&&<p>{t('Source','Source')} : {quote.sourceName}</p>}
     <p>{quote.goal}</p>
     <p>{quote.startSec.toFixed(2)}–{quote.endSec.toFixed(2)} s · {quote.profile==='audio-window-v1'?t('Sound','Son'):t('Video frames','Images de la vidéo')}</p>
     <p>{t('Maximum','Maximum')} <strong>{quote.maxCredits} {t('credits','crédits')}</strong>. {t('Included credits are used first. Purchased credits stay paused until you resume them.','Les crédits inclus sont utilisés en premier. Les crédits achetés restent en pause jusqu’à leur réactivation.')}</p>

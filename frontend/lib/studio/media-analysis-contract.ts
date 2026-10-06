@@ -31,6 +31,7 @@ export const studioAnalysisResultSchema=z.object({
 export type StudioAnalysisResult=z.infer<typeof studioAnalysisResultSchema>;
 export const studioPreparedAnalysisSchema=z.object({
   analysisId:z.string().uuid(),ref:toolAssetRefSchema,goal:z.string().min(1).max(1000),reason:z.enum(['requested','required_for_request']),
+  sourceName:z.string().min(1).max(160).optional(),
   modality:z.enum(['visual','audio']).optional(),
   startSec:z.number().nonnegative(),endSec:z.number().positive(),maxCredits:z.number().int().positive(),policyVersion:z.string(),expiresAt:z.string().datetime(),
   profile:z.enum(['video-frames-v1','audio-window-v1']),model:z.literal('gpt-6.1-sol'),confirmationRequired:z.literal(true),
