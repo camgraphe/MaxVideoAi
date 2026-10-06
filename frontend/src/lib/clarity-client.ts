@@ -1,5 +1,8 @@
 'use client';
 
+import { isBrowserCommercialAnalyticsExcluded, COMMERCIAL_ANALYTICS_RESOLVED_EVENT, COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT } from '@/lib/analytics/commercial-client';
+import { CLARITY_ANALYTICS_EVENTS } from '@/lib/analytics/clarity-context';
+
 type ClarityFn = ((...args: unknown[]) => void) & { q?: unknown[][] };
 
 type ClarityListener = () => void;
@@ -20,6 +23,8 @@ let clarityReady = false;
 const readyListeners = new Set<ClarityListener>();
 let cachedVisitorId: string | null = null;
 let clarityInjected = false;
+let clarityStopped = false;
+let guardedBrowser: Window | null = null;
 
 function getClarityWindow(): (Window & { clarity?: ClarityFn }) | null {
   if (typeof window === 'undefined') return null;
@@ -43,13 +48,14 @@ function ensureClarityStub(): ClarityFn | null {
 }
 
 export function queueClarityCommand(...args: unknown[]): void {
+  if (args[0] !== 'consentv2' && (!isClarityEnabledForRuntime() || !hasAnalyticsConsentCookie() || clarityStopped)) return;
   const clarityWindow = getClarityWindow();
   const clarity = clarityWindow?.clarity;
   if (clarity) {
     clarity(...args);
     return;
   }
-  pendingCommands.push(args);
+  if (pendingCommands.length < 100) pendingCommands.push(args);
 }
 
 export function flushPendingClarityCommands(): void {
@@ -63,6 +69,10 @@ export function flushPendingClarityCommands(): void {
 }
 
 export function markClarityReady(): void {
+  if (clarityStopped || isBrowserCommercialAnalyticsExcluded() || !hasAnalyticsConsentCookie()) {
+    stopClarityRecording();
+    return;
+  }
   clarityReady = true;
   flushPendingClarityCommands();
   readyListeners.forEach((listener) => {
@@ -98,6 +108,7 @@ export function isClarityDebugEnabled(): boolean {
 export function isClarityEnabledForRuntime(): boolean {
   if (!ENABLE_FLAG) return false;
   if (isClarityOptedOut()) return false;
+  if (isBrowserCommercialAnalyticsExcluded()) return false;
   if (process.env.NODE_ENV !== 'production') return false;
   if (typeof window === 'undefined') return false;
   if (ALLOWED_HOSTS.length === 0) {
@@ -252,20 +263,32 @@ function persistOptOutFlag(enabled: boolean): void {
   }
 }
 
-function clearClarityArtifacts(): void {
-  if (typeof document !== 'undefined') {
-    const scripts = document.querySelectorAll<HTMLScriptElement>('script[src*="clarity.ms/tag/"]');
-    scripts.forEach((script) => {
-      script.parentNode?.removeChild(script);
-    });
-  }
+export function stopClarityRecording(): void {
   const clarityWindow = getClarityWindow();
-  if (clarityWindow) {
-    clarityWindow.clarity = undefined;
+  const clarity = clarityWindow?.clarity;
+  if (clarity?.q) clarity.q.length = 0;
+  if (clarity && clarityInjected) {
+    clarity('consentv2', { ad_Storage: 'denied', analytics_Storage: 'denied' });
+    clarity('stop');
   }
   pendingCommands = [];
-  clarityInjected = false;
+  clarityStopped = true;
   clarityReady = false;
+}
+
+function installClarityGuards(): void {
+  if (typeof window === 'undefined' || guardedBrowser === window) return;
+  guardedBrowser = window;
+  const stopIfExcluded = () => {
+    if (isBrowserCommercialAnalyticsExcluded()) stopClarityRecording();
+  };
+  window.addEventListener(COMMERCIAL_ANALYTICS_RESOLVED_EVENT, stopIfExcluded);
+  window.addEventListener(COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT, stopIfExcluded);
+  window.addEventListener('consent:updated', (event) => {
+    const detail = (event as CustomEvent<{ categories?: { analytics?: boolean; ads?: boolean } }>).detail;
+    if (detail?.categories?.analytics === false) stopClarityRecording();
+    else if (detail?.categories) setClarityConsent(Boolean(detail.categories.analytics), Boolean(detail.categories.ads));
+  });
 }
 
 export function isClarityOptedOut(): boolean {
@@ -277,7 +300,7 @@ export function disableClarityForVisitor(): void {
   persistOptOutFlag(true);
   setAnalyticsConsentCookie(false);
   setClarityConsent(false);
-  clearClarityArtifacts();
+  stopClarityRecording();
 }
 
 export function enableClarityForVisitor(): void {
@@ -285,17 +308,23 @@ export function enableClarityForVisitor(): void {
   persistOptOutFlag(false);
 }
 
-export function setClarityConsent(granted: boolean): void {
-  queueClarityCommand('consent', granted);
+export function setClarityConsent(granted: boolean, adsGranted = false): void {
   queueClarityCommand('consentv2', {
-    ad_Storage: granted ? 'granted' : 'denied',
+    ad_Storage: adsGranted ? 'granted' : 'denied',
     analytics_Storage: granted ? 'granted' : 'denied',
   });
   logDebug(`consent -> ${granted ? 'granted' : 'denied'}`);
 }
 
 export function injectClarityScript(id: string): void {
+  if (!isClarityEnabledForRuntime() || !hasAnalyticsConsentCookie()) return;
+  installClarityGuards();
   if (clarityInjected) {
+    if (clarityStopped) {
+      clarityStopped = false;
+      getClarityWindow()?.clarity?.('start');
+      markClarityReady();
+    }
     logDebug('inject skip: already injected');
     return;
   }
@@ -308,6 +337,7 @@ export function injectClarityScript(id: string): void {
   if (typeof document === 'undefined') return;
 
   clarityInjected = true;
+  clarityStopped = false;
   flushPendingClarityCommands();
 
   const script = document.createElement('script');
@@ -334,6 +364,14 @@ export function injectClarityScript(id: string): void {
     document.documentElement.appendChild(script);
   }
   logDebug('script injected', script.src);
+}
+
+/** Names only, after canonical consent, role resolution and journey deduplication. */
+export function recordClarityAnalyticsEvent(event: string): void {
+  if (!CLARITY_ANALYTICS_EVENTS.has(event) || !isClarityEnabledForRuntime() || !hasAnalyticsConsentCookie() || clarityStopped) return;
+  // No second buffer and no SDK initialization on private entry pages.
+  if (!getClarityWindow()?.clarity) return;
+  queueClarityCommand('event', `mvai_${event}`);
 }
 
 export function dumpClarity(): void {
