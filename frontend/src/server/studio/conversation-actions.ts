@@ -33,6 +33,9 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
   discardQuote?(quoteId: string): Promise<StudioQuoteDiscardResult>;
   attachedImageIds?: readonly string[];
   attachedMedia?:readonly {assetId:string;mediaKind:'image'|'video'|'audio'}[];
+  analysisEnabled?:boolean;
+  prepareAnalysis?(request:Extract<StudioActionRequest,{action:'analysis.prepare'}>):Promise<import('@/lib/studio/media-analysis-contract').StudioPreparedAnalysis>;
+  readAnalysis?(id:string):Promise<import('@/lib/studio/media-analysis-contract').StudioAnalysisStatus>;
 }) {
   requireGenerationActor(actor);
   if (actor.authMethod !== 'studio-session') throw new AgentApiError('AUTH_REQUIRED', 'Studio session required.');
@@ -43,6 +46,12 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
       if (!dependencies.enabled) throw new AgentApiError('ENGINE_UNAVAILABLE', 'Studio actions are unavailable.');
       const project = await readStudioConversationProject(actor,{exportsEnabled:dependencies.editingEnabled&&dependencies.exportsEnabled});
       switch (request.action) {
+        case 'analysis.prepare':
+          if(!dependencies.analysisEnabled||!dependencies.prepareAnalysis)throw new AgentApiError('ENGINE_UNAVAILABLE','Studio analysis is unavailable.');
+          return {ok:true,action:request.action,data:await dependencies.prepareAnalysis(request)};
+        case 'analysis.read':
+          if(!dependencies.readAnalysis)throw new AgentApiError('ENGINE_UNAVAILABLE','Studio analysis results are unavailable.');
+          return {ok:true,action:request.action,data:await dependencies.readAnalysis(request.analysisId)};
         case 'pricing.read': {
           if (request.references.some(({ref})=>ref.type!=='asset'||!(ref.kind==='image'?dependencies.attachedImageIds?.includes(ref.assetId):dependencies.attachedMedia?.some(attached=>attached.assetId===ref.assetId&&attached.mediaKind===ref.kind)))) {
             throw new AgentApiError('REFERENCE_INVALID','Attach this saved library media before estimating its use.');

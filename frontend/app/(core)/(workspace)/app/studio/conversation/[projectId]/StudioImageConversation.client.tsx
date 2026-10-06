@@ -6,6 +6,7 @@ import {useStudioAssistance} from './_hooks/useStudioAssistance';
 import {StudioAssistance} from './_components/StudioAssistance.client';
 import { useImageConversation } from "./_hooks/useImageConversation";
 import {ConversationExportQuote} from "./_components/ConversationExportQuote.client";
+import {ConversationAnalysis} from './_components/ConversationAnalysis.client';
 import { ImageQuoteCard } from "./_components/ImageQuoteCard.client";
 import { ImageConversationComposer } from "./_components/ImageConversationComposer.client";
 import {
@@ -218,6 +219,7 @@ function StudioImageConversationWorkspace({
                   }
                 />
                 {exportsEnabled && turn.exportQuote && <ConversationExportQuote quote={turn.exportQuote} jobs={exports.jobs} busy={studio.busy} locale={locale} onChange={exports.refresh} onRenew={()=>void studio.submit({requestId:crypto.randomUUID(),message:locale==='fr'?`Prépare un nouveau devis d’export ${turn.exportQuote!.qualityPreset} pour le montage actuel, ${turn.exportQuote!.includeAudio?'avec':'sans'} audio.`:`Prepare a fresh ${turn.exportQuote!.qualityPreset} export quote for the current cut, ${turn.exportQuote!.includeAudio?'with':'without'} audio.`,references:[]})}/>}
+                {turn.analysisQuote&&<ConversationAnalysis quote={turn.analysisQuote} projectId={projectId} accountKey={accountKey} locale={locale} busy={studio.busy} onConfirmed={()=>void assistance.refresh()} onRenew={()=>{shelf.restore(imageTurnRetryInput(turn));setText(turn.message);composerRegion.current?.querySelector('textarea')?.focus();}}/>}
                 {turn.generation?.result && <ConversationMedia result={turn.generation.result} locale={locale} />}
                 {turn.generation &&
                   ["accepted", "running"].includes(turn.generation.status) && (

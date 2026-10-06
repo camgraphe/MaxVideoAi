@@ -14,6 +14,8 @@ import type {ImageTurnInput,ImageConversationHistoryTurn,StudioConversationHisto
 import type {StudioActionRequest, StudioActionResult} from '@/lib/studio/conversation-action-contract';
 import {createStudioConversationDirector, type StudioResponseCreator} from './conversation-director';
 import {createStudioActionExecutor} from './conversation-actions';
+import {createStudioAnalysisService} from './media-analysis/service';
+import {studioAnalysisPolicy} from './media-analysis/policy';
 import {beginStudioAction, completeStudioAction, checkpointStudioResponse, readStudioConversationProject, saveStudioConversationMemory} from './conversation-run-repository';
 import {attachImageQuote, persistImageDraft, type StoredImageTurn} from './image-conversation-repository';
 import {imageRequestFromDraft,imageReferenceFingerprintFromReview, type ImageGenerationFactory} from './image-conversation-service';
@@ -111,9 +113,21 @@ export async function runStudioImageActions(options: {
   const policy = options.assistancePolicy ?? studioAssistancePolicy();
   // Injected response creators are offline qualification seams. Native dispatch always requires the monetary gate.
   const assistance = policy.enabled || !options.createResponse ? await openStudioAssistanceTurn(actor,turn.request_id,policy) : null;
-  const director = createStudioConversationDirector({model: assistance?.model,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,assistanceCreditsEnabled:policy.credits===true});
+  const analysisEnabled=!!studioAnalysisPolicy()&&policy.credits===true;
+  const analysis=createStudioAnalysisService(actor,{assistancePolicy:policy});
+  const director = createStudioConversationDirector({model: assistance?.model,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,analysisEnabled,assistanceCreditsEnabled:policy.credits===true});
   let currentCallId: string;
   const execute = createStudioActionExecutor(actor, {enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
+    analysisEnabled,
+    readAnalysis:id=>analysis.read(id),
+    prepareAnalysis:async action=>{
+      const request={ref:action.ref,goal:action.goal,reason:action.reason,startSec:action.startSec,endSec:action.endSec};
+      const ref=request.ref;
+      if(ref.type==='asset'&&!options.references.some(item=>item.assetId===ref.assetId&&item.mediaKind===ref.kind))throw new AgentApiError('REFERENCE_INVALID','Attach the selected media before preparing its analysis.');
+      return analysis.prepare(request,turn.request_id+':'+currentCallId.slice(0,80),async(quote,executor)=>{
+        await completeStudioAction(actor,turn,currentCallId,{ok:true,action:'analysis.prepare',data:quote},executor);
+      });
+    },
     attachedImageIds: input.references,attachedMedia:options.references,
     editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,
     prepareExport: async action => {

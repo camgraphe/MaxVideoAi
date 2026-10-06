@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import {STUDIO_ANALYSIS_DIRECTOR_TOOLS} from '@/lib/studio/media-analysis-contract';
 import type {StudioAssistantModel} from '@/lib/studio/assistance-contract';
 import {buildStudioDirectorInstructions} from './conversation-director-instructions';
 import {STUDIO_EXPORT_DIRECTOR_TOOLS} from '@/lib/studio/conversation-export-contract';
@@ -54,7 +55,7 @@ export function isReplayableStudioResponse(response: StudioDirectorResponse): bo
 }
 
 /** The model chooses the next action; identity, billing and executable capabilities stay server-owned. */
-export function createStudioConversationDirector(options: {model?: StudioAssistantModel;createResponse?: StudioResponseCreator; mediaEnabled?: boolean;editingEnabled?: boolean;exportsEnabled?: boolean;assistanceCreditsEnabled?: boolean} = {}) {
+export function createStudioConversationDirector(options: {model?: StudioAssistantModel;createResponse?: StudioResponseCreator; mediaEnabled?: boolean;editingEnabled?: boolean;exportsEnabled?: boolean;analysisEnabled?:boolean;assistanceCreditsEnabled?: boolean} = {}) {
   return async (context: StudioDirectorContext): Promise<ImageDraft> => {
     if (!options.createResponse && !process.env.OPENAI_API_KEY)
       throw new AgentApiError('ENGINE_UNAVAILABLE', 'Studio conversation is not configured.');
@@ -75,7 +76,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
     let correctionRejected = false;
     let correctionResult: StudioActionResult | undefined;
     for (let index = 0; index < 4; index++) {
-      const availableTools = [...STUDIO_DIRECTOR_TOOLS, ...(options.mediaEnabled ? STUDIO_MEDIA_DIRECTOR_TOOLS : []),...(options.editingEnabled ? STUDIO_EDITING_DIRECTOR_TOOLS : []),...(options.exportsEnabled ? STUDIO_EXPORT_DIRECTOR_TOOLS : [])];
+      const availableTools = [...STUDIO_DIRECTOR_TOOLS, ...(options.mediaEnabled ? STUDIO_MEDIA_DIRECTOR_TOOLS : []),...(options.editingEnabled ? STUDIO_EDITING_DIRECTOR_TOOLS : []),...(options.exportsEnabled ? STUDIO_EXPORT_DIRECTOR_TOOLS : []),...(options.analysisEnabled?STUDIO_ANALYSIS_DIRECTOR_TOOLS:[])];
       // A final read cannot feed another response. Offer only finishing actions,
       // while still accepting older checkpointed reads during paid-response replay.
       const tools = correctionAction
@@ -131,7 +132,13 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         throw new AgentApiError('ENGINE_UNAVAILABLE', 'Studio editing tools are unavailable.');
       if (!options.exportsEnabled && STUDIO_EXPORT_DIRECTOR_TOOLS.some(tool => tool.action === action.action))
         throw new AgentApiError('ENGINE_UNAVAILABLE','Studio export tools are unavailable.');
+      if(freshResponse&&!options.analysisEnabled&&STUDIO_ANALYSIS_DIRECTOR_TOOLS.some(tool=>tool.action===action.action))throw new AgentApiError('ENGINE_UNAVAILABLE','Studio analysis tools are unavailable.');
       const result = await context.execute(call.call_id, action);
+      if(action.action==='analysis.prepare'){
+        if(!result.ok)throw new AgentApiError(result.error.code,result.error.message,result.error.retryable,result.error.nextAction);
+        if(result.action!=='analysis.prepare')throw new AgentApiError('INTERNAL_ERROR','Studio could not recover the analysis quote.');
+        return {reply:projectStudioReply(action.reply),image:null,analysisQuote:result.data};
+      }
       if (action.action === 'export.prepare') {
         if (!result.ok) throw new AgentApiError(result.error.code,result.error.message,result.error.retryable,result.error.nextAction);
         if (result.action !== 'export.prepare') throw new AgentApiError('INTERNAL_ERROR','Studio could not recover the export quote.');

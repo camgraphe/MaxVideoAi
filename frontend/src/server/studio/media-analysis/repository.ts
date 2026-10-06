@@ -17,6 +17,15 @@ export async function readAnalysis(actor:StudioGenerationActor,id:string,db:Quer
 export function projectAnalysis(run:AnalysisRun):StudioAnalysisStatus {
   return studioAnalysisStatusSchema.parse({quote:run.quote_json,state:run.state,result:run.result_json,chargedCredits:run.charged_credits,error:run.error});
 }
+export async function readStudioAnalysisFacts(actor:StudioGenerationActor,db:QueryExecutor={query}) {
+  const ready=(await db.query<{ready:boolean}>("SELECT to_regclass('public.studio_media_analysis_runs') IS NOT NULL ready"))[0]?.ready;
+  if(!ready)return [];
+  return db.query<{analysisId:string;ref:StudioPreparedAnalysis['ref'];goal:string;state:AnalysisRun['state'];startSec:number;endSec:number}>(
+    `SELECT r.id AS "analysisId",r.quote_json->'ref' ref,left(r.quote_json->>'goal',160) goal,r.state,
+      (r.quote_json->>'startSec')::double precision AS "startSec",(r.quote_json->>'endSec')::double precision AS "endSec"
+      FROM studio_media_analysis_runs r JOIN studio_projects p ON p.id=r.project_id AND p.user_id=r.user_id AND p.deleted_at IS NULL
+      WHERE r.user_id=$1 AND r.project_id=$2 ORDER BY r.created_at DESC LIMIT 4`,[actor.userId,actor.projectId]);
+}
 export async function resolveAnalysisSource(actor:StudioGenerationActor,request:StudioAnalysisRequest,db:QueryExecutor={query}) {
   if(request.ref.type==='job-output'){
     const ref=request.ref;

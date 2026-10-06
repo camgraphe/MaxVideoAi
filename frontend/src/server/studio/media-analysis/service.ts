@@ -23,6 +23,7 @@ export function createStudioAnalysisService(actor:StudioGenerationActor,dependen
     read:async(id:string)=>projectAnalysis(await readAnalysis(actor,id)),
     async prepare(raw:unknown,key:string,onPrepared?:(quote:StudioPreparedAnalysis,tx:TransactionQueryExecutor)=>Promise<void>) {
       const current=enabled(),request=studioAnalysisPrepareSchema.parse(raw);
+      if(!current[request.ref.kind==='audio'?'audio':'video'])throw new AgentApiError('ENGINE_UNAVAILABLE','The requested analysis profile has not been qualified.');
       if(!key||key.length>180||key!==key.trim())throw new AgentApiError('PARAMETER_INVALID','Invalid analysis request identity.');
       const source=await resolveAnalysisSource(actor,request);
       if(!source.durationSec||request.endSec>source.durationSec||(source.sizeBytes??0)>STUDIO_ANALYSIS_LIMITS.sourceBytes)throw new AgentApiError('PARAMETER_INVALID','Select a shorter measured source interval for analysis.');

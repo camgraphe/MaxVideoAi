@@ -81,6 +81,8 @@ test('Studio is discoverable while conversations and APIs retain shared account 
     'frontend/app/api/studio/conversation-projects/route.ts',
     'frontend/app/api/studio/projects/[projectId]/conversation-timeline/route.ts',
     'frontend/app/api/studio/projects/[projectId]/reference-previews/route.ts',
+    'frontend/app/api/studio/projects/[projectId]/analyses/route.ts',
+    'frontend/app/api/studio/projects/[projectId]/analyses/[analysisId]/route.ts',
   ]);
   const routes = routeFiles('frontend/app/api/studio');
   assert.ok(routes.length >= 13, 'every current and future Studio route should be included by discovery');
@@ -88,6 +90,10 @@ test('Studio is discoverable while conversations and APIs retain shared account 
     assert.match(read(path), /resolveStudioRouteContext\(req\)/);
   }
   const assistanceHandler = read('frontend/app/api/studio/_lib/studio-assistance-handler.ts');
+  const analysisHandler=read('frontend/app/api/studio/_lib/studio-analysis-handler.ts');
+  assert.match(analysisHandler,/resolveStudioApiAccess/);
+  assert.match(analysisHandler,/if\(!access.ok\)/);
+  for(const path of ['frontend/app/api/studio/projects/[projectId]/analyses/route.ts','frontend/app/api/studio/projects/[projectId]/analyses/[analysisId]/route.ts'])assert.match(read(path),/handleStudioAnalysis/);
   assert.match(assistanceHandler,/resolveStudioApiAccess/);
   assert.match(assistanceHandler,/if\(!access.ok\)/);
   assert.match(read('frontend/app/api/studio/assistance/route.ts'),/handleStudioAssistance/);

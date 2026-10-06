@@ -66,9 +66,9 @@
 
 **Interfaces:** nonspending capability handoff; `analysis.prepare` yields a quote ending the turn, `analysis.read` reads owned saved observations; client alone confirms model plus credit ceiling.
 
-- [ ] Write/run failing tests for forced Luna calls, frozen model, same-origin/body guards, one quote per turn and saved recovery.
-- [ ] Wire tools, immutable draft projection, explicit Sol selection and preparation/confirmation/status card with existing account/session lifecycle guards.
-- [ ] Verify accessible failure/pending/recovery states and commit.
+- [x] Write/run failing tests for forced Luna calls, frozen model, same-origin/body guards, one quote per turn and saved recovery.
+- [x] Wire tools, immutable draft projection, explicit Sol selection and preparation/confirmation/status card with existing account/session lifecycle guards.
+- [x] Verify accessible failure/pending/recovery states and commit.
 
 ### Task 5: Practical assembly and music source timing
 

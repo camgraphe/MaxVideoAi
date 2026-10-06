@@ -220,6 +220,7 @@ export function createImageConversationService(
       ...(turn.input_json.renewedFromRequestId ? {renewedFromRequestId: turn.input_json.renewedFromRequestId} : {}),
       reply: turn.draft_json ? projectStudioReply(turn.draft_json.reply) : null,
       ...(turn.draft_json?.exportQuote ? {exportQuote: turn.draft_json.exportQuote} : {}),
+      ...(turn.draft_json?.analysisQuote ? {analysisQuote:turn.draft_json.analysisQuote} : {}),
       ...(turn.draft_json?.continuation ? {continuation: turn.draft_json.continuation} : {}),
       state: expiredLease ? "failed" : turn.state,
       retryable: expiredLease || turn.state === "failed",

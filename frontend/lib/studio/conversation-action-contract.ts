@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import {studioAnalysisPrepareActionSchema,studioAnalysisReadActionSchema,STUDIO_ANALYSIS_DIRECTOR_TOOLS,type StudioPreparedAnalysis,type StudioAnalysisStatus} from './media-analysis-contract';
 import {studioProjectNameSchema} from './conversation-project-title';
 import {studioPricingReadSchema,STUDIO_PRICING_DIRECTOR_TOOL,type StudioPricingEstimate} from './conversation-pricing-contract';
 import {studioExportPrepareActionSchema,studioExportReadActionSchema,STUDIO_EXPORT_DIRECTOR_TOOLS,type StudioPreparedExport} from './conversation-export-contract';
@@ -51,6 +52,7 @@ export type StudioConversationProject = {
   name: string;
   revision: number;
   exports?: StudioPreparedExport[];
+  analyses?:{analysisId:string;ref:ToolAssetRef;goal:string;state:StudioAnalysisStatus['state'];startSec:number;endSec:number}[];
   memory: StudioConversationMemory;
   generations?: {quoteId: string; surface: string; quoteState: string; jobId: string | null; status: string | null; quote?: StudioConversationQuoteFacts}[];
 };
@@ -67,6 +69,7 @@ export const studioActionRequestSchema = z.discriminatedUnion('action', [
   studioVideoActionSchema, studioVoiceActionSchema, studioMusicActionSchema,studioAudioActionSchema,
   studioTimelineReadSchema,studioTimelineEditSchema,
   studioExportPrepareActionSchema,studioExportReadActionSchema,
+  studioAnalysisPrepareActionSchema,studioAnalysisReadActionSchema,
 ]);
 export type StudioActionRequest = z.infer<typeof studioActionRequestSchema>;
 export type StudioImageCapability = {modelId: string; label: string; lifecycle: AgentModelLifecycle | null; modes: string[]; formats: string[]; customImageSize?: boolean; bestFor?: readonly string[]; editorialGuidance?: AgentModelEditorialSummary; audioWorkflow?: StudioAudioWorkflowFacts};
@@ -81,6 +84,8 @@ export type StudioCapabilityDetails =
   | {modelId: string; label: string; surface: 'audio'; modes: StudioAudioMode[]; options: StudioAudioOptions; references: ('source_video'|'voice_sample')[]; outputCount: 1};
 export type StudioProjectMedia = {ref: ToolAssetRef; name: string; durationSec: number | null}[];
 export type StudioActionResult =
+  | {ok:true;action:'analysis.prepare';data:StudioPreparedAnalysis}
+  | {ok:true;action:'analysis.read';data:StudioAnalysisStatus}
   | {ok: true; action: 'export.prepare'; data: StudioPreparedExport}
   | {ok: true; action: 'export.read'; data: TimelineExportJobResponse | null}
   | {ok: true; action: 'project.read'; data: StudioConversationProject}
@@ -115,7 +120,7 @@ export const STUDIO_DIRECTOR_TOOLS = [
 ] as const;
 
 export function actionFromTool(name: string, value: unknown): StudioActionRequest {
-  const tool = [...STUDIO_DIRECTOR_TOOLS, ...STUDIO_MEDIA_DIRECTOR_TOOLS,...STUDIO_EDITING_DIRECTOR_TOOLS,...STUDIO_EXPORT_DIRECTOR_TOOLS].find(tool => tool.name === name);
+  const tool = [...STUDIO_DIRECTOR_TOOLS, ...STUDIO_MEDIA_DIRECTOR_TOOLS,...STUDIO_EDITING_DIRECTOR_TOOLS,...STUDIO_EXPORT_DIRECTOR_TOOLS,...STUDIO_ANALYSIS_DIRECTOR_TOOLS].find(tool => tool.name === name);
   if (!tool || !value || typeof value !== 'object' || Array.isArray(value) || Object.hasOwn(value, 'action')) throw new Error('UNKNOWN_STUDIO_ACTION');
   // The discriminator is supplied by the server; model identity/scope arguments are rejected.
   return studioActionRequestSchema.parse({...value, action: tool.action});

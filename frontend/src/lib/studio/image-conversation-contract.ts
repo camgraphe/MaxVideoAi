@@ -1,4 +1,5 @@
 import { z } from "zod";
+import {studioPreparedAnalysisSchema,type StudioPreparedAnalysis} from '@/lib/studio/media-analysis-contract';
 import {studioPreparedExportSchema,type StudioPreparedExport} from "@/lib/studio/conversation-export-contract";
 import type { PreparedGeneration } from "@/server/agent-api/prepare-generation";
 import type { AgentGenerationStatus } from "@/server/generations/generation-status";
@@ -50,8 +51,9 @@ export const imageDraftSchema = z
     media: studioMediaIntentSchema.transform(media=>({...media,reply:projectStudioReply(media.reply)})).optional(),
     continuation: studioContinuationSchema.optional(),
     exportQuote: studioPreparedExportSchema.optional(),
+    analysisQuote:studioPreparedAnalysisSchema.optional(),
   })
-  .strict().refine(draft => [draft.image,draft.media,draft.exportQuote].filter(Boolean).length <= 1, 'One quote per turn.');
+  .strict().refine(draft => [draft.image,draft.media,draft.exportQuote,draft.analysisQuote].filter(Boolean).length <= 1, 'One quote per turn.');
 export type ImageDraft = z.infer<typeof imageDraftSchema>;
 export type ImageConversationTurn = {
   requestId: string;
@@ -62,6 +64,7 @@ export type ImageConversationTurn = {
   renewedFromRequestId?: string;
   reply: string | null;
   exportQuote?: StudioPreparedExport;
+  analysisQuote?:StudioPreparedAnalysis;
   continuation?: z.infer<typeof studioContinuationSchema>;
   state: "thinking" | "ready" | "failed";
   retryable: boolean;
