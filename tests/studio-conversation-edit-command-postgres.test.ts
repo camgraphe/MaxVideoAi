@@ -10,6 +10,42 @@ import type {QueryExecutor} from '../frontend/src/lib/db';
 import type {WorkspaceTimelineItem} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
 import {buildWorkspaceTimelineRenderManifest} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-render';
 
+test('one bounded assembly preserves source ranges, applies atomically and keeps a supplied long music track',async t=>{
+  const {editStudioConversationTimeline}=await import('../frontend/src/server/studio/conversation-edit-command');
+  const pg=await startDisposablePostgres('stchat-assembly');t.after(()=>pg.cleanup());await initializeStudioConnectedFixture(pg);
+  await pg.pool.query("UPDATE media_assets SET url='https://cdn.maxvideoai.com/' || public_id || '.mp4'");
+  const withTransaction=async<T>(callback:(executor:QueryExecutor)=>Promise<T>)=>{
+    const client=await pg.pool.connect();try{await client.query('BEGIN');const result=await callback({query:async(sql,values)=>(await client.query(sql,values)).rows});await client.query('COMMIT');return result;}catch(error){await client.query('ROLLBACK');throw error;}finally{client.release();}
+  };
+  const deps={withTransaction,featureEnabled:true},actor={userId:STUDIO_FIXTURE_OWNERS[0]};
+  const project=await createStudioMontageProject(actor,STUDIO_CONNECTED_MONTAGE_INPUT,deps);
+  const before=await readStudioWorkspace(actor,project.projectId,deps);
+  const frames=150;
+  const clips=Array.from({length:6},(_,i)=>({ref:{type:'asset' as const,assetId:i%2?STUDIO_CONNECTED_ASSET_IDS.b:STUDIO_CONNECTED_ASSET_IDS.a,kind:'video' as const},startFrame:150+i*frames,durationFrames:frames,sourceInFrame:30}));
+  const input={projectId:project.projectId,sequenceId:project.sequenceId,expectedRevision:0,idempotencyKey:randomUUID(),edit:{kind:'assemble',clips}};
+  const assembled=await editStudioConversationTimeline(actor,input,deps);
+  assert.equal(assembled.revision,1);assert.equal(assembled.clipCount,8);assert.ok(assembled.totalFrames/30>30);
+  const sequence=await readStudioWorkspace(actor,project.projectId,deps);
+  const items=(sequence.sequences[0].timelineState as {timelineItems:WorkspaceTimelineItem[]}).timelineItems;
+  assert.ok(items.slice(2).every(item=>item.sourceStartSec===1));assert.equal(new Set(items.map(item=>item.id)).size,8);
+  assert.deepEqual(await editStudioConversationTimeline(actor,input,deps),assembled);
+  const rejected={...input,expectedRevision:1,idempotencyKey:randomUUID(),edit:{kind:'assemble',clips:[clips[0],{...clips[1],ref:{...clips[1].ref,assetId:STUDIO_CONNECTED_ASSET_IDS.foreign}}]}};
+  await assert.rejects(editStudioConversationTimeline(actor,rejected,deps),/MEDIA_NOT_AVAILABLE/);
+  assert.deepEqual(await readStudioWorkspace(actor,project.projectId,deps),sequence,'An invalid second source leaves the whole montage untouched');
+  const musicId='ma_'+'b'.repeat(32);
+  await pg.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,status,metadata) VALUES($1,$2,$3,'audio','https://cdn.maxvideoai.com/music.mp3','audio/mpeg','ready',$4::jsonb)`,[randomUUID(),musicId,actor.userId,JSON.stringify({mediaFacts:{source:'probe',durationSec:120,hasAudio:true}})]);
+  const musicInput={...input,expectedRevision:1,idempotencyKey:randomUUID(),edit:{kind:'insert',ref:{type:'asset',assetId:musicId,kind:'audio'},startFrame:0,durationFrames:1800,sourceInFrame:300}};
+  const music=await editStudioConversationTimeline(actor,musicInput,deps);
+  assert.equal(music.totalFrames,1800,'Requested music defines the new film duration without truncation to its shorter visuals');
+  const withMusic=await readStudioWorkspace(actor,project.projectId,deps);
+  const mixed=(withMusic.sequences[0].timelineState as {timelineItems:WorkspaceTimelineItem[]}).timelineItems;
+  assert.deepEqual(mixed.filter(item=>item.mediaKind==='video'),items);
+  assert.equal(mixed.find(item=>item.mediaKind==='audio')?.sourceStartSec,10);
+  await assert.rejects(editStudioConversationTimeline(actor,{...musicInput,expectedRevision:2,idempotencyKey:randomUUID(),edit:{...musicInput.edit,sourceInFrame:2100}},deps),/source|duration/i);
+  assert.equal((await readStudioWorkspace(actor,project.projectId,deps)).project.revision,2);
+  assert.equal(before.project.revision,0);
+});
+
 test('conversation edits use canonical revisions and receipts, preserving manual changes and unrelated editor state', async t => {
   const module = await import('../frontend/src/server/studio/conversation-edit-command').catch(() => null);
   assert.ok(module?.editStudioConversationTimeline);

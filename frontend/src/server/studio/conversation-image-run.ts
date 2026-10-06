@@ -145,13 +145,17 @@ export async function runStudioImageActions(options: {
       return data;
     }),
     editTimeline: async action => {
-      if (action.edit.kind === 'insert' && action.edit.ref.type === 'asset') {
-        const ref = action.edit.ref;
+      const insertedRefs=action.edit.kind==='insert'?[action.edit.ref]:action.edit.kind==='assemble'?action.edit.clips.map(clip=>clip.ref):[];
+      let projectRefs:Set<string>|undefined;
+      for(const ref of insertedRefs.filter(ref=>ref.type==='asset')){
         const attached = ref.kind === 'image' ? input.references.includes(ref.assetId) : input.attachments?.some(item => item.type === 'asset' && item.assetId === ref.assetId && item.kind === ref.kind);
         if (!attached) {
-          const existing = await readStudioWorkspace(actor,actor.projectId);
-          const assets = (existing.project.workspaceState as {projectAssets?: {ref?: unknown}[]}).projectAssets ?? [];
-          if (!assets.some(asset => JSON.stringify(asset.ref) === JSON.stringify(ref))) throw new AgentApiError('REFERENCE_INVALID','Attach this library media before inserting it.');
+          if(!projectRefs){
+            const existing = await readStudioWorkspace(actor,actor.projectId);
+            const assets = (existing.project.workspaceState as {projectAssets?: {ref?: unknown}[]}).projectAssets ?? [];
+            projectRefs=new Set(assets.map(asset=>JSON.stringify(asset.ref)));
+          }
+          if (!projectRefs.has(JSON.stringify(ref))) throw new AgentApiError('REFERENCE_INVALID','Attach this library media before inserting it.');
         }
       }
       try {

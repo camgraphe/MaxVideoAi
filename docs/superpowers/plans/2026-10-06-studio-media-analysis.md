@@ -76,9 +76,9 @@
 
 **Interfaces:** existing image/audio inserts and revisioned edits; exact optional source-in frame for supplied music/selected portions, no implicit soundtrack generation or analysis.
 
-- [ ] Write/run failing tests for source offsets, source duration limits, audio layering and a supplied long soundtrack on an empty sequence.
-- [ ] Extend canonical edit input only where required; retain schema parity and existing manual edit protection.
-- [ ] Verify simple known-plan long assembly, hook/end-image insertion and music placement without analysis dispatch; commit.
+- [x] Write/run failing tests for source offsets, source duration limits, audio layering and a supplied long soundtrack on an empty sequence.
+- [x] Extend canonical edit input only where required; retain schema parity and existing manual edit protection.
+- [x] Verify simple known-plan long assembly, hook/end-image insertion and music placement without analysis dispatch; commit.
 
 ### Task 6: Integration, documentation and branch review
 

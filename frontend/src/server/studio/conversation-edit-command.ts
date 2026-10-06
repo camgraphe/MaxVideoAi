@@ -61,13 +61,18 @@ export async function editStudioConversationTimeline(actor: ConversationEditActo
     const existingAssets = Array.isArray(workspace.projectAssets) ? workspace.projectAssets as WorkspaceAssetRecord[] : [];
     let projectAssets = existingAssets;
     let items: WorkspaceTimelineItem[];
-    if (input.edit.kind === 'insert') {
-      const inserted = await insertion(actor,input,settings,executor);
-      items = inserted.asset.kind === 'audio'
-        ? layerWorkspaceTimelineAudioItem({items: state.timelineItems,item: inserted.items[0],startFrame: input.edit.startFrame,fps: settings.fps,maxAudioTracks: MAX_TIMELINE_AUDIO_TRACKS,unavailableTracks: [...state.lockedTimelineTracks ?? [],...state.mutedAudioTracks ?? []]})
-        : insertWorkspaceTimelineItems({items: state.timelineItems, newItems: inserted.items, mode: 'insert', playheadSec: timelineFrameToSeconds(input.edit.startFrame,settings.fps), idSeed: requestHash.slice(0,20)});
-      if (timelineEditTouchesLockedTracks(state.timelineItems,items,state.lockedTimelineTracks ?? [])) throw new Error('Timeline track is locked.');
-      if (!existingAssets.some(asset => JSON.stringify(asset.ref) === JSON.stringify(inserted.asset.ref))) projectAssets = [...existingAssets,inserted.asset];
+    if (input.edit.kind === 'insert' || input.edit.kind === 'assemble') {
+      const inserts=input.edit.kind==='insert'?[input.edit]:input.edit.clips.map(clip=>({kind:'insert' as const,...clip}));
+      items=state.timelineItems;
+      for(const [index,edit] of inserts.entries()){
+        const inserted = await insertion(actor,{...input,edit,idempotencyKey:requestHash.slice(0,32)+':'+index},settings,executor);
+        const previousItems=items;
+        items = inserted.asset.kind === 'audio'
+          ? layerWorkspaceTimelineAudioItem({items: previousItems,item: inserted.items[0],startFrame: edit.startFrame,fps: settings.fps,maxAudioTracks: MAX_TIMELINE_AUDIO_TRACKS,unavailableTracks: [...state.lockedTimelineTracks ?? [],...state.mutedAudioTracks ?? []]})
+          : insertWorkspaceTimelineItems({items: previousItems, newItems: inserted.items, mode: 'insert', playheadSec: timelineFrameToSeconds(edit.startFrame,settings.fps), idSeed: requestHash.slice(0,20)+':'+index});
+        if (timelineEditTouchesLockedTracks(state.timelineItems,items,state.lockedTimelineTracks ?? [])) throw new Error('Timeline track is locked.');
+        if (!projectAssets.some(asset => JSON.stringify(asset.ref) === JSON.stringify(inserted.asset.ref))) projectAssets = [...projectAssets,inserted.asset];
+      }
     } else items = applyConversationTimelineEdit(state.timelineItems,input.edit,settings.fps,state.lockedTimelineTracks ?? []);
     const canonicalSequences = sequences.map(value => createWorkspaceSequenceRecord({
       ...value.timelineState as Parameters<typeof createWorkspaceSequenceRecord>[0],
@@ -79,7 +84,7 @@ export async function editStudioConversationTimeline(actor: ConversationEditActo
       name: project.name, canvasTemplateId: project.canvasTemplateId, settings: project.settings,
       workspaceState: {...workspace, projectAssets, sequences: canonicalSequences},
     }},{withTransaction: sameTransaction});
-    const changedClip = input.edit.kind === 'insert' ? items.find(item => !state.timelineItems.some(previous => previous.id === item.id)) : items.find(item => input.edit.kind !== 'insert' && item.id === input.edit.clipId);
+    const changedClip = input.edit.kind === 'insert' || input.edit.kind==='assemble' ? items.find(item => !state.timelineItems.some(previous => previous.id === item.id)) : items.find(item => input.edit.kind !== 'insert' && input.edit.kind !== 'assemble' && item.id === input.edit.clipId);
     const result = {projectId: project.id, sequenceId: sequence.id, revision: saved.revision, clipCount: items.length,changed: JSON.stringify(items) !== JSON.stringify(state.timelineItems),
       clip: changedClip ? {id: changedClip.id,startFrame: secondsToTimelineFrame(changedClip.startSec,settings.fps),durationFrames: secondsToTimelineFrame(changedClip.durationSec,settings.fps),sourceInFrame: secondsToTimelineFrame(changedClip.sourceStartSec ?? 0,settings.fps)} : null,
       totalFrames: secondsToTimelineFrame(items.reduce((end,item) => Math.max(end,item.startSec + item.durationSec),0),settings.fps)};
@@ -108,12 +113,14 @@ async function insertion(actor: ConversationEditActor, input: ConversationTimeli
   }
   const media = await resolveStudioMedia(actor.userId,edit.ref,(sql,values) => executor.query(sql,values),{lockAsset: true});
   const durationSec = timelineFrameToSeconds(edit.durationFrames,settings.fps);
+  const sourceStartSec=timelineFrameToSeconds(edit.sourceInFrame??0,settings.fps);
+  if(media.kind==='image'&&sourceStartSec!==0)throw new Error('Invalid Studio image source offset.');
   if (durationSec < 1 || durationSec > 1800) throw new Error('Invalid Studio timeline clip duration.');
   if (media.kind !== 'image' && (!media.mediaFacts?.durationSec || media.mediaFacts.source !== 'probe')) {
     if (media.kind === 'video') throw new VideoFactsPreparationRequired(media);
     throw new Error('MEDIA_METADATA_REQUIRED');
   }
-  if (media.kind !== 'image' && durationSec > media.mediaFacts!.durationSec! + .000001) throw new Error('Invalid Studio timeline clip duration.');
+  if (media.kind !== 'image' && durationSec+sourceStartSec > media.mediaFacts!.durationSec! + .000001) throw new Error('Invalid Studio timeline clip duration.');
   const id = createHash('sha256').update(input.idempotencyKey).digest('hex').slice(0,24);
   const asset: WorkspaceAssetRecord = {id: `studio-media-${media.id}`,ref: media.ref,kind: media.kind,filename: media.originalName ?? `${media.kind} clip`,subtitle: media.kind,url: media.url,mimeType: media.mime,thumbUrl: media.thumbUrl ?? undefined,mediaFacts: media.mediaFacts,mediaAccessRequired: true,durationSec: media.mediaFacts?.durationSec,width: media.mediaFacts?.width,height: media.mediaFacts?.height,hasAudio: media.mediaFacts?.hasAudio,audioProvenance: media.mediaFacts?.hasAudio ? 'embedded' : 'none'};
   const drafts = buildWorkspaceTimelineItemsForAsset({assetNodeId: asset.id,title: asset.filename,asset,startSec: 0,idSeed: id});
@@ -122,6 +129,6 @@ async function insertion(actor: ConversationEditActor, input: ConversationTimeli
   const dimensions = workspaceProjectDimensions(settings);
   const sourceWidth = media.mediaFacts?.width;const sourceHeight = media.mediaFacts?.height;
   const transform = media.kind !== 'audio' && sourceWidth && sourceHeight ? {opacity: 1,rotation: 0,positionX: 0,positionY: 0,scale: buildWorkspaceClipComposition({sequenceWidth: dimensions.width,sequenceHeight: dimensions.height,sourceWidth,sourceHeight,transform: {opacity: 1,rotation: 0,scale: 1,x: 0,y: 0}}).fitScale} : draft.transform;
-  const item: WorkspaceTimelineItem = {...draft,transform,id: `clip-${id}`,ref: media.ref,mediaFacts: media.mediaFacts,linkedGroupId: null,linkedGroupKind: null,mediaAccessRequired: true,sourceStartSec: 0,sourceDurationSec: media.kind === 'image' ? durationSec : media.mediaFacts!.durationSec,durationSec, audioMix: {volume: 100,muted: false}};
+  const item: WorkspaceTimelineItem = {...draft,transform,id: `clip-${id}`,ref: media.ref,mediaFacts: media.mediaFacts,linkedGroupId: null,linkedGroupKind: null,mediaAccessRequired: true,sourceStartSec,sourceDurationSec: media.kind === 'image' ? durationSec : media.mediaFacts!.durationSec,durationSec, audioMix: {volume: 100,muted: false}};
   return {asset,items: [item]};
 }
