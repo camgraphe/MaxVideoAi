@@ -131,7 +131,7 @@
 
 @media (max-width: 767px) {
   .app-experience .app-connect-trigger { gap: 4px; padding-inline: 4px; font-size: 12px; }
-  .app-experience .app-connect-panel { right: -108px; }
+  .app-experience .app-connect-panel { right: -108px; max-height: calc(100dvh - var(--header-height) - var(--app-bottom-nav-height, 70px) - 16px); }
 }
 
 @media (min-width: 768px) and (max-height: 550px) {

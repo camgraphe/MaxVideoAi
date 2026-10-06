@@ -10,10 +10,13 @@ Date: 2026-10-06. Scope: the application header's assistant disclosure.
 - Full comparison: `.reports/connect-menu/full-comparison.png`; selected image normalized proportionally to the 1280 × 720 viewport, source left and implementation right.
 - Focused comparison: `.reports/connect-menu/panel-comparison.png`; source and implementation panels enlarged uniformly by 2 for typography, branding and spacing inspection. Original images are unchanged.
 - Additional browser captures: `.reports/connect-menu/desktop-light.jpg`, `mobile-dark.jpg` (390 × 844), `mobile-320.jpg` (320 × 568). Evidence images are local, ignored QA artifacts.
+- Landscape regression comparison: `.reports/connect-menu/landscape-comparison.png` (667 × 375 CSS viewport for both captures), before left and corrected result right.
 
 ## Findings and comparison history
 
 The first browser pass revealed that mouse entry opened the panel and the subsequent click immediately closed it. The disclosure now distinguishes hover opening from deliberate click/keyboard opening. A regression assertion failed before the fix and passed afterward; a browser click then visibly kept the panel open. Outside interaction, focus leaving and Escape dismiss it.
+
+Independent code review then identified a P2 at short mobile heights: the panel reserved the header but not the fixed bottom navigation. A full-app 667 × 375 browser reproduction confirmed the footer was covered and its center hit `/jobs` instead of `/mcp`. The mobile maximum height now also reserves `--app-bottom-nav-height`, including the safe-area inset. After HMR and maximum panel scrolling, the panel ends at y278.5 above the navigation's y305; the entire footer is y225.5…269.5 and its center hit-tests to the actual `/mcp` link. The reviewer rechecked the fix and reported no remaining finding. The landscape comparison records the blocked and corrected states.
 
 The final combined full-view and focused comparisons show no actionable P0/P1/P2 issue within the approved scope. The actual Studio imagery, conversation, sidebar and composer retain their existing owners and geometry.
 
