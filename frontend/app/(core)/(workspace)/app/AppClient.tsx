@@ -263,13 +263,16 @@ export default function AppClientPage({
     klingElements: routeForm.klingElements,
   });
   const gallery = useWorkspaceGalleryActions({
-    provider: app.provider,
+    guestStarterReady: app.authStatus === 'loggedOut' && activeDraft.ready &&
+      !draft.hasStoredFormRef.current && !draft.fromVideoId && !draft.requestedJobId && !draft.effectiveRequestedEngineId &&
+      !draft.effectiveRequestedEngineToken && !draft.effectiveRequestedMode && renderState.renders.length === 0 &&
+      (!initialPreviewGroup || initialPreviewGroup.items.every(item => item.meta?.curated)),
+    prompt: routeForm.prompt, provider: app.provider, recentJobs: app.recentJobs,
     renderGroups: renderState.renderGroups,
     batchHeroes: renderState.batchHeroes,
     preflightCurrency: pricing.preflight?.currency,
     fallbackEngineId: composer.selectedEngine?.id ?? 'unknown-engine',
-    sharedPrompt: routeForm.sharedPrompt,
-    selectedPreview: renderState.selectedPreview,
+    sharedPrompt: routeForm.sharedPrompt, selectedPreview: renderState.selectedPreview,
     compositeOverrideSummary: routeForm.compositeOverrideSummary,
     applyVideoSettingsFromTile: videoSettings.applyVideoSettingsFromTile,
     hydrateVideoSettingsFromJob: videoSettings.hydrateVideoSettingsFromJob,

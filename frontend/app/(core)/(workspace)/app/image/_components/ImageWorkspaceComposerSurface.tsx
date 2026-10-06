@@ -16,6 +16,8 @@ import { ImageCompositePreviewDock, type ImageCompositePreviewEntry } from '@/co
 import { GPT_IMAGE_2_SIZE_CONSTRAINTS } from '@/lib/image/gptImage2';
 import type { ImageWorkspaceCopy } from '../_lib/image-workspace-copy';
 import type { HistoryEntry } from '../_lib/image-workspace-types';
+import type { StarterMedia } from '@/lib/starter-media';
+import { ImageStarterPreview, type ImageStarterNavigation } from './ImageStarterPreview.client';
 
 type ControlOption = {
   value: string | number | boolean;
@@ -24,6 +26,8 @@ type ControlOption = {
 };
 
 interface ImageWorkspaceComposerSurfaceProps {
+  starterPreview?: StarterMedia | null;
+  starterNavigation?: ImageStarterNavigation;
   advancedSettingsTitle: string;
   aspectRatio: string | null;
   aspectRatioSelectOptions: ControlOption[];
@@ -118,6 +122,8 @@ interface ImageWorkspaceComposerSurfaceProps {
 }
 
 export function ImageWorkspaceComposerSurface({
+  starterPreview,
+  starterNavigation,
   advancedSettingsTitle,
   aspectRatio,
   aspectRatioSelectOptions,
@@ -240,7 +246,9 @@ export function ImageWorkspaceComposerSurface({
       {!compositePreviewEntry ? (
         <>
           <section className="app-model-strip app-image-model-strip">{engineSettings}</section>
-          <WorkspaceEmptyPreview media="image" />
+          {starterPreview && starterNavigation
+            ? <ImageStarterPreview item={starterPreview} navigation={starterNavigation} />
+            : <WorkspaceEmptyPreview media="image" />}
         </>
       ) : (
         <ImageCompositePreviewDock

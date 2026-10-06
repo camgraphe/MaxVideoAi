@@ -1,0 +1,96 @@
+{
+  "date": "2026-10-06",
+  "baseRevision": "1eb575217",
+  "environment": "Node 22, warmed local Next.js development server, Chromium, fresh anonymous contexts, identical public API fixtures and pricing responses; no database credentials or generation requests",
+  "sampleCountPerRoute": 1,
+  "limitations": [
+    "Development timings include hydration and are not production or field Core Web Vitals.",
+    "Public starter/job/engine responses are captured from production; private jobs return 404 and pricing is stubbed.",
+    "Server initial-preview database fallback is tested here; post-release live smoke must also cover its configured public preview."
+  ],
+  "before": [
+    {
+      "width": 1440,
+      "path": "/app",
+      "cls": 0.09538755927191842,
+      "lcp": 8788,
+      "overflow": false,
+      "errors": [],
+      "videoRequests": 0
+    },
+    {
+      "width": 1440,
+      "path": "/app/image",
+      "cls": 0.07030442059552228,
+      "lcp": 2368,
+      "overflow": false,
+      "errors": [],
+      "videoRequests": 0
+    },
+    {
+      "width": 390,
+      "path": "/app",
+      "cls": 0.22531869190705128,
+      "lcp": 1144,
+      "overflow": false,
+      "errors": [],
+      "videoRequests": 0
+    },
+    {
+      "width": 390,
+      "path": "/app/image",
+      "cls": 0.1503719435897436,
+      "lcp": 572,
+      "overflow": false,
+      "errors": [],
+      "videoRequests": 0
+    }
+  ],
+  "after": [
+    {
+      "width": 1440,
+      "path": "/app",
+      "cls": 0.034578259503399884,
+      "lcp": 2064,
+      "overflow": false,
+      "errors": [],
+      "videoRequests": 0
+    },
+    {
+      "width": 1440,
+      "path": "/app/image",
+      "cls": 0.001367985410337095,
+      "lcp": 676,
+      "overflow": false,
+      "errors": [],
+      "videoRequests": 0
+    },
+    {
+      "width": 390,
+      "path": "/app",
+      "cls": 0.10842969190705129,
+      "lcp": 980,
+      "overflow": false,
+      "errors": [],
+      "videoRequests": 0
+    },
+    {
+      "width": 390,
+      "path": "/app/image",
+      "cls": 0.0930153435897436,
+      "lcp": 620,
+      "overflow": false,
+      "errors": [],
+      "videoRequests": 0
+    }
+  ],
+  "functional": {
+    "videoPromptLoaded": true,
+    "imageLoadedAndDecoded": true,
+    "imageNextChangesPromptAndPreview": true,
+    "imageGenerationOpensAuthDialog": true,
+    "editedPromptRetainedInAuthDialog": true,
+    "idleVideoRequests": 0,
+    "horizontalOverflow": false
+  }
+}
