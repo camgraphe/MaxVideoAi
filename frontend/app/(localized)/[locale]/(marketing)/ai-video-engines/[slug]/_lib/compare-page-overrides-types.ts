@@ -5,6 +5,8 @@ export type ComparePageOverride = {
     titleBranding?: 'auto' | 'none';
   };
   heroIntro?: string;
+  decisionSummary?: string;
+  decisionLinks?: Array<{ href: string; label: string }>;
   pricingCreditLink?: {
     href: '/pay-as-you-go-ai-video-generator';
     label: string;

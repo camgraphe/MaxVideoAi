@@ -1,3 +1,5 @@
+import { ExamplesPromptStarters } from './examples-prompt-starters';
+import type { buildExamplesPromptStarters } from '../_lib/examples-page-copy';
 import clsx from 'clsx';
 import styles from './examples-editorial.module.css';
 import type { ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
@@ -54,6 +56,7 @@ type ExamplesPageViewProps = {
   heroTitle: string;
   initialDesktopBatch: number;
   initialExamples: ExampleGalleryVideo[];
+  promptStarters: ReturnType<typeof buildExamplesPromptStarters>;
   initialMobileBatch: number;
   isModelLanding: boolean;
   itemListJson: unknown;
@@ -130,6 +133,7 @@ export function ExamplesPageView({
   heroTitle,
   initialDesktopBatch,
   initialExamples,
+  promptStarters,
   initialMobileBatch,
   isModelLanding,
   itemListJson,
@@ -206,6 +210,7 @@ export function ExamplesPageView({
             noPreviewLabel={galleryUiCopy.noPreview}
             pageOffsetEnd={pageOffsetEnd}
             prioritizeFirstPoster={true}
+            openingDetails={isModelLanding && currentPage === 1 && sort === 'playlist' ? <ExamplesPromptStarters locale={locale} starters={promptStarters} /> : null}
             openingEnabled={currentPage === 1 && sort === 'playlist'}
             show={showGallerySection}
             sort={sort}
