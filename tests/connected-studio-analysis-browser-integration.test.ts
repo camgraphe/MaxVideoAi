@@ -33,7 +33,7 @@ test('analysis review works on desktop/mobile and only explicit confirmation que
     const quote=await analysis.prepare({ref,goal:'Find the opening action',reason:'requested',startSec:0,endSec:4},randomUUID());
     const turn=await claimImageTurn(actor,{requestId:randomUUID(),message:'Analyse cette vidéo',references:[],attachments:[ref]});
     await persistImageDraft(actor,turn.turn,{reply:'Review the interval and credit ceiling.',image:null,analysisQuote:quote},'a'.repeat(64));
-    const session=await runtime.auth.createOwnerSession(STUDIO_FIXTURE_OWNERS[0]);
+    const session=runtime.auth.createSession(STUDIO_FIXTURE_OWNERS[0],{clientId:'explicit-analysis-fixture'});
     browser=await startStudioConnectedBrowserFixture({runtime,browserName:'chromium'});
     const owned=await browser.newContext(session,{viewport:{width:1440,height:900},locale:'en-US',reducedMotion:'reduce'});
     const page=owned.page;await page.goto(runtime.browserOrigin+`/app/studio/conversation/${project.projectId}`);
