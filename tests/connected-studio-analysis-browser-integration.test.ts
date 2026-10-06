@@ -37,6 +37,8 @@ test('analysis review works on desktop/mobile and only explicit confirmation que
     browser=await startStudioConnectedBrowserFixture({runtime,browserName:'chromium'});
     const owned=await browser.newContext(session,{viewport:{width:1440,height:900},locale:'en-US',reducedMotion:'reduce'});
     const page=owned.page;
+    // Same isolated auxiliary legal reader as the canonical Studio browser fixture.
+    await page.route('**/api/legal/reconsent',route=>route.fulfill({json:{ok:true,needsReconsent:false,documents:[]}}));
     const loaded=page.waitForResponse(response=>response.url().endsWith(`/api/studio/projects/${project.projectId}/image-conversation`)&&response.request().method()==='GET',{timeout:30_000});
     const analysisLoaded=page.waitForResponse(response=>response.url().endsWith(`/api/studio/projects/${project.projectId}/analyses/${quote.analysisId}`)&&response.request().method()==='GET',{timeout:30_000});
     await page.goto(runtime.browserOrigin+`/app/studio/conversation/${project.projectId}`);
