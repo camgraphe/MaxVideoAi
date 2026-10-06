@@ -157,6 +157,35 @@ test('Billing GETs read only the authenticated ledger and expose database failur
     assert.equal(response.status, 400);
     assert.deepEqual(fixture.statements, []);
   });
+  await t.test('historical output refusals are projected without rewriting the ledger or reading another owner', async () => {
+    const snapshot = { providerFailure: { provider: 'byteplus_modelark', providerErrorCode: 'OutputAudioSensitiveContentDetected', failureCode: 'seedance_reference_media_blocked' } };
+    await pg.pool.query(`INSERT INTO app_jobs (job_id,user_id,engine_id,engine_label,duration_sec,prompt,thumb_url,settings_snapshot)
+      VALUES ('audio-refusal',$1,'seedance-2-0-fast','Seedance 2.0 Fast',5,'private prompt','', $3::jsonb),
+             ('other-audio-refusal',$2,'seedance-2-0-fast','Seedance 2.0 Fast',5,'other private prompt','', $3::jsonb)`,
+    [fixtureUser, otherUser, JSON.stringify(snapshot)]);
+    await pg.pool.query(`INSERT INTO app_receipts (user_id,type,amount_cents,currency,description,job_id) VALUES
+      ($1,'refund',40,'USD','Refund Seedance 2.0 Fast - 5s - Reference media was blocked by Seedance safety checks.','audio-refusal'),
+      ($1,'refund',50,'USD','Refund Wan 3 Prime - 5s - Green net check rejected image (output)','wan-refusal'),
+      ($1,'refund',60,'USD','Refund Seedance 2.0 Fast - 5s - Render could not be completed.','other-audio-refusal')`, [fixtureUser]);
+    const before = (await pg.pool.query('SELECT * FROM app_receipts ORDER BY id')).rows;
+    fixture.statements.length = 0;
+    const response = await routes.getReceipts(new Request('http://localhost/api/receipts?limit=100'));
+    assert.equal(response.status, 200);
+    const data = await response.json();
+    const ownAudio = data.receipts.find((row: { job_id: string }) => row.job_id === 'audio-refusal');
+    assert.match(ownAudio.description, /generated audio.*blocked/i);
+    assert.doesNotMatch(ownAudio.description, /reference media/i);
+    assert.equal(ownAudio.amount_cents, 40);
+    const wan = data.receipts.find((row: { job_id: string }) => row.job_id === 'wan-refusal');
+    assert.match(wan.description, /generated image.*blocked/i);
+    assert.doesNotMatch(wan.description, /Green net/i);
+    assert.equal(data.receipts.find((row: { job_id: string }) => row.job_id === 'other-audio-refusal').description,
+      'Refund Seedance 2.0 Fast - 5s - Render could not be completed.');
+    assert.doesNotMatch(JSON.stringify(data), /providerErrorCode|providerFailure|settings_snapshot|private prompt/);
+    assert.deepEqual((await pg.pool.query('SELECT * FROM app_receipts ORDER BY id')).rows, before);
+    assert.equal(fixture.statements.length, 1);
+    assert.ok(fixture.statements.every(sql => /^\s*SELECT\b/i.test(sql)));
+  });
   await t.test('a configured database failure is never a successful empty ledger or currency fallback', async () => {
     for (const table of ['profiles', 'app_receipts']) {
       await pg.pool.query(`ALTER TABLE ${table} RENAME TO temporarily_unavailable`);

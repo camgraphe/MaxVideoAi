@@ -357,6 +357,52 @@ test('agent failure messages map recognized categories to fixed public copy', ()
   }
 });
 
+test('agent copyright failures preserve the refusal instead of matching copy as storage', () => {
+  for (const settings_snapshot of [
+    { providerFailure: { failureCode: 'seedance_output_copyright_restricted' } },
+    {},
+  ]) {
+    const result = mapGenerationStatusRecordToAgent(generationRecord({
+      status: 'failed', payment_status: 'refunded_wallet', settings_snapshot,
+      message: 'Seedance stopped this render after it started because its output checks detected possible copyright-restricted content. Change recognizable characters, brands, logos, franchise references, or source media before trying again.',
+    }));
+    assert.match(result?.message ?? '', /copyright-restricted content/);
+    assert.match(result?.message ?? '', /returned to your wallet/);
+    assert.match(result?.message ?? '', /fresh exact quote.*explicit user approval/);
+    assert.doesNotMatch(result?.message ?? '', /prepare the output for download/);
+    assert.equal(result?.retryAfterSeconds, null);
+  }
+});
+
+test('agent historical audio refusals override incorrect reference classification', () => {
+  const result = mapGenerationStatusRecordToAgent(generationRecord({
+    status: 'failed', payment_status: 'refunded_wallet',
+    message: 'Seedance blocked reference media during its safety checks.',
+    settings_snapshot: { providerFailure: {
+      provider: 'byteplus_modelark', providerErrorCode: 'OutputAudioSensitiveContentDetected',
+      failureCode: 'seedance_reference_media_blocked',
+    } },
+  }));
+  assert.equal(result?.failureCode, 'seedance_output_audio_blocked');
+  assert.match(result?.message ?? '', /generated audio.*blocked/i);
+  assert.doesNotMatch(result?.message ?? '', /reference media/);
+  assert.match(result?.message ?? '', /fresh exact quote.*explicit user approval/);
+});
+
+test('web status projects historical output refusals while preserving explicit message overrides', () => {
+  const record = generationRecord({
+    status: 'failed', message: 'Seedance blocked reference media during its safety checks.',
+    settings_snapshot: { providerFailure: {
+      provider: 'byteplus_modelark', providerErrorCode: 'OutputAudioSensitiveContentDetected',
+      failureCode: 'seedance_reference_media_blocked',
+    } },
+  });
+  assert.match(mapGenerationStatusRecordToWeb(record).message ?? '', /generated audio.*blocked/i);
+  assert.equal(mapGenerationStatusRecordToWeb(record, { message: null }).message, undefined);
+  assert.match(mapGenerationStatusRecordToWeb(generationRecord({ status: 'failed', message: 'Green net check rejected image (output)' })).message ?? '', /generated image.*blocked/i);
+  assert.equal(mapGenerationStatusRecordToWeb(generationRecord({ status: 'running', message: 'Current progress' })).message, 'Current progress');
+});
+
 test('agent reference-read failures preserve refund evidence and require a newly approved quote', () => {
   for (const rawMessage of [
     'Failed to download the file. Please check if the URL is accessible and try again.',

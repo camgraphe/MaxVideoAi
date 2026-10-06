@@ -59,6 +59,24 @@ function recentRecord(overrides: Partial<RecentGenerationRecord> = {}): RecentGe
   };
 }
 
+test('web history identifies historical output refusals without changing payment state', () => {
+  const audio = mapRecentGenerationRecordToWeb(recentRecord({
+    status: 'failed', payment_status: 'refunded_wallet',
+    message: 'Seedance blocked reference media during its safety checks.',
+    settings_snapshot: { providerFailure: {
+      provider: 'byteplus_modelark', providerErrorCode: 'OutputAudioSensitiveContentDetected',
+      failureCode: 'seedance_reference_media_blocked',
+    } },
+  }));
+  assert.match(audio.message ?? '', /generated audio.*blocked/i);
+  assert.doesNotMatch(audio.message ?? '', /reference media/);
+  assert.equal(audio.paymentStatus, 'refunded_wallet');
+  const wan = mapRecentGenerationRecordToWeb(recentRecord({ status: 'failed', message: 'Green net check rejected image (output)' }));
+  assert.match(wan.message ?? '', /generated image.*blocked/i);
+  assert.doesNotMatch(wan.message ?? '', /Green net/i);
+  assert.equal(mapRecentGenerationRecordToWeb(recentRecord()).message, 'Provider queued');
+});
+
 test('recent agent reads are user-scoped, filtered, and capped to fifty items', async () => {
   const calls: Array<{ sql: string; params?: ReadonlyArray<unknown> }> = [];
   const result = await listRecentGenerations({
