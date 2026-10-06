@@ -1,4 +1,4 @@
-# Studio : analyse des médias et montage avec Sol 6.1
+# Studio : création, analyse des médias et itération avec Sol 6.1
 
 Date : 6 octobre 2026. Branche : `codex/studio-media-analysis-design`.
 Base inspectée : `ba6bc504e0b22a862a08f2b3e3ff667e86a5f574` (`origin/main`).
@@ -7,20 +7,60 @@ de crédit, de modèle ou de production n'est implémenté par ce document.
 
 ## Intention et décision acquise
 
-Studio doit pouvoir conseiller un montage à partir du contenu réel des clips,
-puis proposer des coupes et un ordre de plans que le client peut examiner.
+Studio reste un assistant de création : comprendre l'intention, conseiller une
+direction, préparer des images ou des vidéos, puis aider le client à améliorer
+les résultats. L'analyse du contenu réel complète ce rôle lors d'une demande
+d'itération ou d'un besoin d'assemblage ; elle ne transforme pas Sol en monteur
+par défaut. Quand un montage est pertinent, il peut proposer des coupes et un
+ordre de plans que le client peut examiner.
 Le niveau Sol doit apporter un service supplémentaire mesurable et compréhensible.
 Le passage à Sol au moment d'un besoin pertinent contribue à son utilisation,
 sans dégrader les usages de Luna qui fonctionnent déjà.
 
 Le propriétaire a choisi dans cette conversation : **Luna conserve la vision
 des images ; l'analyse vidéo/audio et le montage avancé sont réservés à Sol 6.1.**
-Le découpage technique et le parcours proposés ci-dessous restent à examiner.
+Le propriétaire a également précisé que le montage intervient pour répondre à
+un besoin réel, notamment une durée supérieure à environ 30 secondes nécessitant
+plusieurs clips, et que l'analyse doit aussi servir à comprendre les changements
+demandés sur un média déjà généré. Le découpage technique et le parcours proposés
+ci-dessous restent à examiner.
 
 Le montage avancé désigne ici des décisions fondées sur le contenu observé :
 repérer une action, sélectionner un passage, rapprocher deux plans, éviter une
 coupe au milieu d'une phrase. Une opération précise demandée par le client,
 comme déplacer un clip à une position donnée, reste une opération simple.
+
+## Choisir le workflow depuis la demande du client
+
+L'ordre de raisonnement proposé est : intention créative → résultat attendu →
+capacités réelles du modèle de génération → opération adaptée. Aucun scénario
+ne commence automatiquement par l'ouverture de la timeline ou un plan de montage.
+Le choix de Sol donne accès à des outils supplémentaires ; il n'impose ni analyse
+ni montage sur la première demande.
+
+| Situation | Réponse attendue |
+| --- | --- |
+| « Crée une affiche » | Préparer une génération d'image et son devis ; aucune timeline |
+| « Crée une vidéo de 10 secondes » | Choisir un modèle/mode compatible et préparer une vidéo ; aucune analyse ou assemblage implicite |
+| « Je veux trois plans dans cette vidéo » | Vérifier si une génération à plusieurs plans répond au brief ; plusieurs plans ne signifient pas automatiquement plusieurs clips ou montage |
+| « Je veux un film de 45 secondes » | Vérifier la durée réellement réalisable en une génération ou par extension ; si plusieurs clips sont nécessaires, expliquer et proposer leur assemblage |
+| « Cette vidéo générée n'a pas le bon mouvement » | Examiner la portion utile si nécessaire, interpréter le changement, puis choisir retouche vidéo, nouvelle génération ou edit de timeline selon les capacités disponibles |
+| « Change la lumière de cette image générée » | Réattacher l'image et préparer sa retouche ; la vision image reste disponible à Luna et Sol |
+| « Assemble ces clips » | Répondre à la demande explicite de montage, en proposant l'analyse Sol seulement si les choix nécessitent de voir/entendre le contenu |
+
+Le repère des 30 secondes signale un possible besoin de plusieurs générations.
+Ce n'est ni une limite universelle des modèles ni un déclencheur automatique de
+montage. Les durées, modes d'extension et capacités à plusieurs plans se vérifient dans
+le catalogue canonique avec le modèle, la version et les paramètres réellement
+sélectionnés. Une génération unique adaptée reste possible quand elle satisfait
+le brief ; un montage court reste possible s'il est explicitement demandé.
+
+La simple présence d'un média généré ne déclenche pas une analyse payante.
+L'analyse est liée à une question ou un changement pour lequel le contenu observé
+apporte une information nécessaire. Une consigne précise déjà suffisante peut
+aboutir directement à un prompt ou à une préparation compatible, sans prétendre
+avoir inspecté le clip. Une analyse réussie ne déclenche pas automatiquement
+`montage.plan` : elle peut aboutir à un conseil, une retouche ou une nouvelle génération.
 
 ## Ce que l'intégration fait aujourd'hui
 
@@ -52,8 +92,8 @@ il ne prétend pas que Sol sait recevoir nativement une vidéo ou du son.
 
 | Approche | Bénéfice | Limite | Décision proposée |
 | --- | --- | --- | --- |
-| Envoyer quelques posters au prochain tour Sol | Petit périmètre et coût limité | Trois posters début/milieu/fin ne permettent pas de repérer précisément une action ni d'analyser le son | Insuffisant comme promesse de montage avancé |
-| Ajouter une analyse explicite et bornée, puis un plan de montage | Preuves horodatées, coût annoncé, reprise indépendante du chat | Nécessite un worker, un contrat de crédits et une validation du plan | **Approche recommandée** |
+| Envoyer quelques posters au prochain tour Sol | Petit périmètre et coût limité | Trois posters début/milieu/fin ne permettent pas de repérer précisément une action ni d'analyser le son | Insuffisant pour interpréter les demandes qui dépendent du mouvement ou du son |
+| Ajouter une analyse explicite et bornée, puis choisir l'opération adaptée | Preuves horodatées pour itération ou montage, coût annoncé, reprise indépendante du chat | Nécessite un worker et un contrat de crédits ; un plan de montage exige sa propre validation | **Approche recommandée** |
 | Agent autonome qui regarde, monte, rend et recommence | Peut aller vers une boucle créative complète | Coût, latence et récupération plus difficiles ; dépend aussi de l'export réellement activé | Étape ultérieure, après qualification de l'analyse |
 
 ## Répartition des capacités
@@ -62,10 +102,12 @@ il ne prétend pas que Sol sait recevoir nativement une vidéo ou du son.
 | --- | --- | --- |
 | Comprendre un brief, écrire un prompt, conseiller à partir du texte | Oui | Oui |
 | Voir et commenter les images jointes | Oui | Oui |
+| Réexaminer une image générée pour préparer sa retouche | Oui, avec l'image explicitement jointe | Oui, avec l'image explicitement jointe |
 | Préparer une génération image/vidéo/audio et son devis | Capacités actuelles conservées | Capacités actuelles conservées |
 | Lire les métadonnées et la structure de timeline | Oui | Oui |
 | Exécuter une coupe, un déplacement ou un gain précisément demandé | Oui | Oui |
 | Examiner le contenu d'un clip vidéo | Proposer Sol | Oui, quand le profil d'analyse est qualifié et activé |
+| Interpréter un changement demandé sur une vidéo à partir de son contenu | Proposer Sol si l'analyse est nécessaire | Oui ; peut aboutir à retouche, régénération ou montage |
 | Analyser les dialogues ou le contenu sonore | Proposer Sol | Oui, avec un adaptateur audio séparé qualifié |
 | Produire un nouveau plan de montage fondé sur ces analyses | Proposer Sol | Oui, preuves et limites visibles, puis validation du client |
 | Appliquer un plan déjà validé | Possible en reprise sans nouvelle analyse | Oui |
@@ -76,13 +118,14 @@ pas sur l'accès à ses résultats, le téléchargement ou la reprise d'un plan 
 
 ## Passage de Luna à Sol dans la conversation
 
-Exemple : « Coupe quand Alex se retourne, puis enchaîne avec Ben ».
+Exemples : « Dans cette vidéo, Alex tourne trop tôt : corrige ce mouvement »
+ou « Coupe quand Alex se retourne, puis enchaîne avec Ben ».
 
 1. Sous Luna, le modèle peut appeler un outil non dépensier de recommandation de
    capacité. Il renvoie une demande structurée avec références sélectionnées et
    objectif. Le serveur valide les identités et renvoie une carte dédiée.
-2. La carte explique le bénéfice concret : « Pour repérer le retournement dans
-   cette vidéo, Studio doit analyser le clip avec Sol 6.1 ». Elle conserve le
+2. La carte explique le bénéfice concret : « Pour comprendre le mouvement à
+   corriger dans cette vidéo, Studio doit analyser le clip avec Sol 6.1 ». Elle conserve le
    brouillon, les références et l'objectif, et propose de préparer l'analyse.
 3. La préparation serveur, sans appel génératif, propose le périmètre et le
    plafond **X crédits maximum** calculé à partir d'une politique versionnée.
@@ -91,7 +134,9 @@ Exemple : « Coupe quand Alex se retourne, puis enchaîne avec Ben ».
    de Sol pour cette opération et ce plafond. Cela n'achète pas de pack et ne
    réactive pas des crédits achetés suspendus ; ces choix gardent leur contrôle explicite.
 5. L'analyse produit des observations consultables. Une nouvelle continuation
-   Sol utilise ce résultat. Le client peut rester sur Sol ou revenir à Luna.
+   Sol utilise ce résultat pour répondre à la demande restante : conseil, prompt,
+   préparation de retouche/génération ou plan de montage si nécessaire.
+   Le client peut rester sur Sol ou revenir à Luna.
 
 Pas de bascule silencieuse, de relance automatique du message original ni de
 demande d'achat pour une tâche que Luna peut déjà effectuer. Le signal pertinent
@@ -139,6 +184,38 @@ Les keyframes actuelles début/milieu/fin peuvent aider à la sélection initial
 `ensureJobKeyframes` produit cependant des copies avec un contrat de publication
 différent ; il ne doit pas servir de stockage public aux nouvelles analyses privées.
 
+## Itérer sur un résultat généré
+
+Le client peut sélectionner un média de ce projet ou de sa bibliothèque et demander
+une modification. Le journal conserve le résultat exact sélectionné, sa source,
+son identité de génération et le changement souhaité. Un résultat de génération
+n'est pas considéré comme visuellement inspecté uniquement parce que son prompt
+est présent dans l'historique. La référence doit être résolue et, si nécessaire,
+analysée sous la même propriété de compte que les médias importés.
+
+Pour une image, les capacités actuelles de vision/retouche sont conservées sur
+les deux assistants. Pour une vidéo, Sol examine la portion qui permet de comprendre
+la demande, avec son plafond confirmé. L'objectif est de relier les observations
+au changement demandé et de préserver ce que le client veut conserver.
+
+La proposition distingue les actions possibles : modifier le prompt pour refaire
+une génération, utiliser un mode de retouche vidéo compatible, prolonger le clip,
+ou modifier son placement/sa durée dans la timeline. Leur disponibilité est vérifiée
+dans le catalogue et les contrats canoniques, sans inventer une conservation exacte
+des visages, mouvements ou éléments qu'un modèle génératif ne garantit pas.
+
+Exemple : « Le personnage ne regarde pas la caméra ; garde la scène et corrige
+son regard ». Cette demande appelle une interprétation du résultat puis une
+préparation compatible, pas un assemblage de clips. « Supprime les deux premières
+secondes » peut appeler directement une coupe précisément demandée. « Garde le
+moment où il regarde la caméra » nécessite de repérer ce moment si aucun timecode
+fiable n'a été donné. Le besoin d'analyse et le besoin de montage sont deux décisions.
+
+Les nouvelles générations/retouches gardent leur devis et confirmation actuels.
+Le résultat précédent reste accessible. On peut comparer avant/après sur les
+critères du client lorsqu'il le demande ; aucune analyse automatique de tous les
+résultats ni boucle de régénération payante implicite.
+
 ## Analyse audio : outil spécialisé, restitution par Sol
 
 Sol orchestre l'analyse et exploite ses résultats. Il ne reçoit pas des octets
@@ -163,8 +240,10 @@ profil réellement disponible, sans proposer « audio » si seul le visuel fonct
 
 ## Plan de montage fondé sur des preuves
 
-Sol peut ensuite comparer les analyses des clips sélectionnés et proposer une
-liste de modifications. Le client voit, pour chaque coupe, sa position, son motif,
+Quand le client demande un assemblage ou que le workflow validé le nécessite,
+Sol peut comparer les analyses des clips sélectionnés et proposer une liste de
+modifications. Une analyse destinée à une retouche ne lance pas ce plan par défaut.
+Le client voit, pour chaque coupe, sa position, son motif,
 les observations utilisées et la portion du clip qu'il peut prévisualiser.
 
 Le plan porte la révision de séquence, les identités des clips, les empreintes
@@ -265,7 +344,8 @@ de consommation gratuite prioritaire s'applique.
 ## Ordre de réalisation proposé
 
 1. **Vidéo visuelle** : capacités communes, carte Luna → Sol, plafond confirmé,
-   worker borné, images horodatées et résultat lisible. Aucun montage automatique.
+   worker borné, images horodatées et résultat lisible, d'abord pour interpréter
+   une demande d'itération sur un résultat. Aucun montage automatique.
 2. **Son et dialogue** : adaptateur séparé, profils et tarifs qualifiés, provenance
    temporelle. Lancement indépendant du profil visuel.
 3. **Montage avancé** : comparaison de quelques clips analysés, plan prévisualisable,
@@ -281,6 +361,13 @@ edits simples actuels. Les lectures de résultats enregistrés restent possibles
 
 - Tests de matrice modèle/service et refus serveur d'une analyse forcée depuis Luna.
   La sélection de Sol, les crédits et le consentement figés doivent être vérifiés.
+- Tests de choix de workflow : image, vidéo courte, génération à plusieurs plans,
+  demande supérieure à 30 secondes compatible/incompatible avec une génération
+  unique, retouche d'un résultat et montage explicitement demandé. Vérifier que
+  Sol ne force ni timeline, ni analyse, ni montage sur une demande de création simple.
+- Tests de suivi de résultat : référence réelle conservée, prompt historique
+  distinct du contenu observé, analyse bornée au changement demandé, retouche ou
+  régénération compatible proposée sans déclencher un plan de montage implicite.
 - Fixtures vidéo avec événement annoté, coupure de scène, mouvement bref entre
   échantillons et source à fps variable : mesure de couverture et erreur temporelle.
 - Fixtures audio avec phrase, silence, musique et bruit : distinguer transcription,
