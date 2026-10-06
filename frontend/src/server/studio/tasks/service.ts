@@ -44,7 +44,8 @@ export function createStudioTaskService(actor:StudioGenerationActor,dependencies
         const assistance=await openStudioAssistanceTurn(actor,input.requestId,policy,tx);
         let profile;try{profile=studioTaskProfileForModel(input.taskBudget!,assistance.model);}catch{throw new AgentApiError('CONFIRMATION_REQUIRED','Select Sol and confirm the complex ceiling before sending.');}
         const count=(await tx.query<{n:number}>(`SELECT count(*)::int n FROM (
-          SELECT request_id FROM studio_image_turns WHERE user_id=$1 AND created_at>clock_timestamp()-interval '1 hour'
+          SELECT t.request_id FROM studio_image_turns t WHERE t.user_id=$1 AND t.created_at>clock_timestamp()-interval '1 hour'
+            AND NOT EXISTS(SELECT 1 FROM studio_task_segments s WHERE s.user_id=t.user_id AND s.project_id=t.project_id AND s.request_id=t.request_id)
           UNION SELECT request_id FROM studio_tasks WHERE user_id=$1 AND created_at>clock_timestamp()-interval '1 hour') turns`,[actor.userId]))[0].n;
         if(count>=(assistance.mode==='paid_sol'?60:20))throw new AgentApiError('RATE_LIMITED','The current hourly task allowance is reached. Try later.');
         const sourceFingerprint=await studioTaskSourceFingerprint(actor,input,tx,true);
@@ -75,7 +76,7 @@ export function createStudioTaskService(actor:StudioGenerationActor,dependencies
         await openStudioAssistanceTurn(actor,input.approvalId,policy,tx,row.model);
         await tx.query('INSERT INTO studio_task_segments(user_id,project_id,task_request_id,request_id,max_calls) VALUES($1,$2,$3,$4,$5)',[actor.userId,actor.projectId,input.requestId,input.approvalId,allowed-row.allowed_calls]);
         await tx.query('INSERT INTO studio_task_approvals(user_id,project_id,request_id,approval_id,revision,payload,max_credits,allowed_calls,segment_request_id) VALUES($1,$2,$3,$4,$5,$6::jsonb,$7,$8,$4)',[actor.userId,actor.projectId,input.requestId,input.approvalId,revision,JSON.stringify(input),input.maxCredits,allowed]);
-        const updated=(await tx.query<StudioTaskRow>(`UPDATE studio_tasks SET state='queued',phase='queued',max_credits=$4,allowed_calls=$5,revision=$6,segment_request_id=$7,worker_id=NULL,lease_expires_at=NULL,deadline_at=NULL,error=NULL,updated_at=clock_timestamp()
+        const updated=(await tx.query<StudioTaskRow>(`UPDATE studio_tasks SET state='queued',phase='queued',max_credits=$4,allowed_calls=$5,revision=$6,segment_request_id=$7,worker_id=NULL,lease_expires_at=NULL,deadline_at=NULL,recovery_attempts=0,replay_only=false,error=NULL,updated_at=clock_timestamp()
           WHERE user_id=$1 AND project_id=$2 AND request_id=$3 RETURNING *`,[actor.userId,actor.projectId,input.requestId,input.maxCredits,allowed,revision,input.approvalId]))[0];
         return projectStudioTask(updated,tx);
       });

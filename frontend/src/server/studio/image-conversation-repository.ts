@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
+import {studioTaskSchemaReady,type StudioTaskRow} from './tasks/repository';
 import {
   query,
   withDbTransaction,
@@ -71,7 +72,7 @@ async function expirePreparedCreationQuotes(actor: StudioGenerationActor, execut
 export async function claimImageTurn(
   actor: StudioGenerationActor,
   input: ImageTurnInput,
-  options: {allowRecordedResponseRecovery?: boolean} = {},
+  options: {allowRecordedResponseRecovery?: boolean;taskWorkerId?:string} = {},
 ): Promise<{ turn: StoredImageTurn; claimed: boolean; responseReplayOnly?: boolean }> {
   const parsed = imageTurnInputSchema.parse(input);
   const hash = createHash("sha256").update(stableJson(parsed)).digest("hex");
@@ -91,17 +92,28 @@ export async function claimImageTurn(
         "PARAMETER_INVALID",
         "This request ID already belongs to a different message.",
       );
+    let task:StudioTaskRow|undefined;
+    if(await studioTaskSchemaReady(executor)){
+      task=(await executor.query<StudioTaskRow>(`SELECT t.* FROM studio_tasks t JOIN studio_task_segments s ON s.user_id=t.user_id AND s.project_id=t.project_id AND s.task_request_id=t.request_id
+        WHERE s.user_id=$1 AND s.project_id=$2 AND s.request_id=$3`,[actor.userId,actor.projectId,parsed.requestId]))[0];
+      if(task){
+        if(!options.taskWorkerId&&existing?.state==='ready')return {turn:existing,claimed:false};
+        if(task.state!=='running'||task.worker_id!==options.taskWorkerId||task.segment_request_id!==parsed.requestId||stableJson({...task.input_json,requestId:parsed.requestId})!==stableJson(parsed))throw new AgentApiError('RATE_LIMITED','This task is queued or has another active worker.');
+      }else if(parsed.taskBudget)throw new AgentApiError('ENGINE_UNAVAILABLE','Review and enqueue this task before dispatch.');
+      const another=await executor.query("SELECT request_id FROM studio_tasks WHERE user_id=$1 AND state IN ('queued','running','unknown') AND request_id IS DISTINCT FROM $2::uuid LIMIT 1",[actor.userId,task?.request_id??null]);
+      if(another.length)throw new AgentApiError('RATE_LIMITED','Finish or recover the previous Studio task.');
+    }else if(parsed.taskBudget)throw new AgentApiError('ENGINE_UNAVAILABLE','Studio task schema is unavailable.');
     const clock = (
       await executor.query<{ now: Date }>("SELECT clock_timestamp() AS now")
     )[0].now;
     if (
       existing &&
       (existing.state === "ready" ||
-        (existing.state === "thinking" && existing.lease_expires_at > clock))
+        (existing.state === "thinking" && existing.lease_expires_at > clock&&!task))
     )
       return { turn: existing, claimed: false };
     let responseReplayOnly = false;
-    if (existing && !existing.draft_json && existing.model_attempts >= 2) {
+    if (existing && !task && !existing.draft_json && existing.model_attempts >= 2) {
       // A storage outage must not permanently strand already-recorded usage.
       // This lease can only replay durable responses; the checkpoint forbids any new dispatch.
       responseReplayOnly = options.allowRecordedResponseRecovery === true && (await executor.query(
@@ -114,8 +126,8 @@ export async function claimImageTurn(
       );
     }
     const active = await executor.query<{ request_id: string }>(
-      "SELECT request_id FROM studio_image_turns WHERE user_id = $1 AND state = 'thinking' AND lease_expires_at > clock_timestamp() LIMIT 1",
-      [actor.userId],
+      "SELECT request_id FROM studio_image_turns WHERE user_id = $1 AND request_id<>$2 AND state = 'thinking' AND lease_expires_at > clock_timestamp() LIMIT 1",
+      [actor.userId,parsed.requestId],
     );
     if (active.length)
       throw new AgentApiError(
@@ -129,7 +141,7 @@ export async function claimImageTurn(
         [actor.userId],
       )
     )[0].n;
-    if (!existing && count >= 20)
+    if (!existing && !task && count >= 20)
       throw new AgentApiError(
         "RATE_LIMITED",
         "The image pilot conversation limit has been reached. Try later.",
@@ -158,11 +170,11 @@ export async function claimImageTurn(
     // intent yet and may only ask for clarification about the current quote.
     if (hasDraftCreation(existing?.draft_json ?? renewal?.draft_json ?? null))
       await expirePreparedCreationQuotes(actor, executor);
-    const lease = randomUUID();
+    const lease = options.taskWorkerId??randomUUID();
     const rows = existing
       ? await executor.query<StoredImageTurn>(
-          `UPDATE studio_image_turns SET state = 'thinking', model_attempts = CASE WHEN draft_json IS NULL AND NOT $5::boolean THEN model_attempts + 1 ELSE model_attempts END, lease_id = $4, lease_expires_at = clock_timestamp() + INTERVAL '3 minutes', updated_at = clock_timestamp() WHERE user_id = $1 AND project_id = $2 AND request_id = $3 RETURNING ${IMAGE_TURN_COLUMNS}`,
-          [actor.userId, actor.projectId, parsed.requestId, lease, responseReplayOnly],
+          `UPDATE studio_image_turns SET state = 'thinking', model_attempts = CASE WHEN draft_json IS NULL AND NOT $5::boolean AND NOT $6::boolean THEN model_attempts + 1 ELSE model_attempts END, lease_id = $4, lease_expires_at = clock_timestamp() + INTERVAL '3 minutes', updated_at = clock_timestamp() WHERE user_id = $1 AND project_id = $2 AND request_id = $3 RETURNING ${IMAGE_TURN_COLUMNS}`,
+          [actor.userId, actor.projectId, parsed.requestId, lease, responseReplayOnly,!!task],
         )
       : await executor.query<StoredImageTurn>(
           `INSERT INTO studio_image_turns (user_id, project_id, request_id, request_hash, input_json, lease_id, lease_expires_at, draft_json, draft_reference_fingerprint) VALUES ($1,$2,$3,$4,$5::jsonb,$6,clock_timestamp() + INTERVAL '3 minutes',$7::jsonb,$8) RETURNING ${IMAGE_TURN_COLUMNS}`,

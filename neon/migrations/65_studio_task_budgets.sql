@@ -10,8 +10,9 @@ CREATE TABLE IF NOT EXISTS studio_tasks (
   max_credits integer NOT NULL CHECK(max_credits BETWEEN 100 AND 2000 AND max_credits%10=0),
   allowed_calls integer NOT NULL CHECK(allowed_calls BETWEEN 1 AND 24), revision integer NOT NULL DEFAULT 0 CHECK(revision>=0),
   worker_id uuid, lease_expires_at timestamptz, deadline_at timestamptz,
+  recovery_attempts integer NOT NULL DEFAULT 0 CHECK(recovery_attempts BETWEEN 0 AND 2), replay_only boolean NOT NULL DEFAULT false,
   partial_reply text CHECK(length(partial_reply)<=2400),
-  error text CHECK(error IN ('budget','steps','output','deadline','context','funding','provider','permission','unavailable')),
+  error text CHECK(error IN ('budget','steps','output','deadline','context','funding','provider','usage','permission','unavailable')),
   created_at timestamptz NOT NULL DEFAULT clock_timestamp(), updated_at timestamptz NOT NULL DEFAULT clock_timestamp(),
   PRIMARY KEY(user_id,project_id,request_id),
   FOREIGN KEY(user_id,project_id,request_id) REFERENCES studio_assistance_turns(user_id,project_id,request_id),
@@ -61,8 +62,8 @@ BEGIN
       RAISE EXCEPTION 'Task needs its exact reviewed resource policy and frozen assistance';
     END IF;
   ELSE
-    IF (to_jsonb(NEW)-ARRAY['state','phase','max_credits','allowed_calls','revision','segment_request_id','worker_id','lease_expires_at','deadline_at','partial_reply','error','updated_at'])
-      IS DISTINCT FROM (to_jsonb(OLD)-ARRAY['state','phase','max_credits','allowed_calls','revision','segment_request_id','worker_id','lease_expires_at','deadline_at','partial_reply','error','updated_at']) THEN
+    IF (to_jsonb(NEW)-ARRAY['state','phase','max_credits','allowed_calls','revision','segment_request_id','worker_id','lease_expires_at','deadline_at','recovery_attempts','replay_only','partial_reply','error','updated_at'])
+      IS DISTINCT FROM (to_jsonb(OLD)-ARRAY['state','phase','max_credits','allowed_calls','revision','segment_request_id','worker_id','lease_expires_at','deadline_at','recovery_attempts','replay_only','partial_reply','error','updated_at']) THEN
       RAISE EXCEPTION 'Task identity and initial policy are immutable';
     END IF;
     IF (NEW.max_credits,NEW.allowed_calls,NEW.revision,NEW.segment_request_id) IS DISTINCT FROM (OLD.max_credits,OLD.allowed_calls,OLD.revision,OLD.segment_request_id)

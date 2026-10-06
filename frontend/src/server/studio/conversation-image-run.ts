@@ -1,3 +1,8 @@
+import {assertStudioTaskExecution,setStudioTaskPhase,type StudioTaskExecution} from "./tasks/execution";
+import {StudioTaskStop} from "./tasks/policy";
+import {recallStudioTaskMemory} from "./tasks/memory";
+import {studioTaskStopDraft} from "./tasks/stop-draft";
+import {replayStudioTaskAction} from './tasks/action-replay';
 import {customerDisplayPrice} from '@/lib/customer-price-presentation';
 import OpenAI from 'openai';
 import type {ResponseCreateParamsNonStreaming} from 'openai/resources/responses/responses';
@@ -104,6 +109,7 @@ export async function runStudioImageActions(options: {
   historyFacts?:StudioConversationHistoryFacts;
   factory: ImageGenerationFactory; createResponse?: StudioResponseCreator;
   responseReplayOnly?: boolean;
+  taskExecution?:StudioTaskExecution;
   assistancePolicy?: StudioAssistancePolicy;countInputTokens?: (params: ResponseCreateParamsNonStreaming) => Promise<number>;
   factories?: StudioMediaFactories; mediaEnabled?: boolean;editingEnabled?: boolean;exportsEnabled?: boolean;
   requestOrigin?: string;exportDependencies?: Partial<StudioExportDependencies>;
@@ -116,9 +122,10 @@ export async function runStudioImageActions(options: {
   const analysisPolicy=studioAnalysisPolicy();
   const analysisEnabled=!!analysisPolicy&&policy.credits===true;
   const analysis=createStudioAnalysisService(actor,{assistancePolicy:policy});
-  const director = createStudioConversationDirector({model: assistance?.model,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,analysisEnabled,analysisProfiles:{video:!!analysisPolicy?.video,audio:!!analysisPolicy?.audio},assistanceCreditsEnabled:policy.credits===true});
+  const director = createStudioConversationDirector({model: assistance?.model,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,analysisEnabled,analysisProfiles:{video:!!analysisPolicy?.video,audio:!!analysisPolicy?.audio},assistanceCreditsEnabled:policy.credits===true,taskExecution:options.taskExecution});
   let currentCallId: string;
   const execute = createStudioActionExecutor(actor, {enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
+    recallProject:options.taskExecution?text=>recallStudioTaskMemory(actor,text):undefined,
     analysisEnabled,
     readAnalysis:id=>analysis.read(id),
     prepareAnalysis:async action=>{
@@ -200,20 +207,27 @@ export async function runStudioImageActions(options: {
     },
   });
   const draft = await director({message: input.message, history: options.history, references: options.references, referenceMentions: input.referenceMentions, historyFacts: options.historyFacts,
-    project: await readStudioConversationProject(actor,{exportsEnabled:options.editingEnabled&&options.exportsEnabled}),
+    project: await readStudioConversationProject(actor,{exportsEnabled:options.editingEnabled&&options.exportsEnabled,...(options.taskExecution?{taskContext:{message:input.message,requestId:turn.request_id}}:{})}),
     checkpoint: (index, create, params, checkpointOptions) => checkpointStudioResponse(actor, turn, index, create, assistance ? {prepare: async () => {
       if (await getActiveAccountRestrictionStrict(actor.userId)) {
         throw new AgentApiError('ACCOUNT_RESTRICTED','This account is temporarily restricted. Open MaxVideoAI for help.');
       }
+      if(options.taskExecution){await assertStudioTaskExecution(actor,options.taskExecution);await setStudioTaskPhase(actor,options.taskExecution,"thinking");}
       if (!params) throw new AgentApiError('INTERNAL_ERROR','Studio is missing its model request bounds.');
       if (!options.countInputTokens && options.createResponse) throw new AgentApiError('ENGINE_UNAVAILABLE','Offline Studio metering requires an injected token counter.');
       const inputTokens = options.countInputTokens ? await options.countInputTokens(params) : (await new OpenAI({apiKey: process.env.OPENAI_API_KEY,maxRetries: 0,timeout: 15000}).responses.inputTokens.count(studioTokenCountInput(params))).input_tokens;
       if (!Number.isSafeInteger(inputTokens) || inputTokens < 0 || inputTokens > 272000) throw new AgentApiError('PARAMETER_INVALID','This Studio context exceeds the supported assistance limit.');
+      if(options.taskExecution&&inputTokens>options.taskExecution.profile.maxInputTokens)throw new StudioTaskStop("context","The current context exceeds this task allowance.");
       return {policy,inputTokens,outputTokens: params.max_output_tokens ?? 2200};
     }} : undefined, {replayOnly: options.responseReplayOnly || checkpointOptions?.replayOnly}),
     execute: async (callId: string, action: StudioActionRequest): Promise<StudioActionResult> => {
+      if(options.taskExecution)await setStudioTaskPhase(actor,options.taskExecution,action.action.endsWith(".prepare")?"preparing":action.action==="timeline.edit"?"editing":"reading");
       const prior = await beginStudioAction(actor, turn, callId, action);
       if (prior) return prior;
+      if(options.taskExecution){
+        const saved=await replayStudioTaskAction(actor,options.taskExecution,callId,action);
+        if(saved){await completeStudioAction(actor,turn,callId,saved);return saved;}
+      }
       currentCallId = callId;
       if (action.action === 'project.remember') {
         // A lost ACK must not replay a memory update with a now-stale revision.
@@ -237,6 +251,10 @@ export async function runStudioImageActions(options: {
       return result;
     },
   }).catch(async (error: unknown) => {
+    if(options.taskExecution&&(error instanceof StudioTaskStop||error instanceof AgentApiError&&["SPENDING_LIMIT_EXCEEDED","ACCOUNT_RESTRICTED"].includes(error.code))){
+      const paused=await studioTaskStopDraft(actor,options.taskExecution,error);
+      return paused;
+    }
     if (error instanceof AgentApiError && error.nextAction?.type === 'studio_assistance' && error.nextAction.canStartFollowup === true) {
       // All prior model calls settled. Close this partial request without replaying its completed actions.
       // Keeping the original user message and this reply in ready history gives a new explicit follow-up context.
@@ -244,6 +262,10 @@ export async function runStudioImageActions(options: {
     }
     throw error;
   });
+  if(options.taskExecution&&draft.continuation&&!draft.continuation.lastError?.code){
+    const localized=await studioTaskStopDraft(actor,options.taskExecution,new StudioTaskStop(draft.continuation.reason==='output_limit'?'output':'steps','Task allowance reached'));
+    draft.reply=localized.reply;draft.continuation={...localized.continuation!,completedEdits:draft.continuation.completedEdits};
+  }
   if (!draft.image && !draft.media) await persistImageDraft(actor, turn, draft, options.referenceFingerprint);
   return draft;
 }

@@ -34,6 +34,7 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
   attachedImageIds?: readonly string[];
   attachedMedia?:readonly {assetId:string;mediaKind:'image'|'video'|'audio'}[];
   analysisEnabled?:boolean;
+  recallProject?(query:string):Promise<NonNullable<import('@/lib/studio/conversation-action-contract').StudioConversationProject['authoredNotes']>>;
   prepareAnalysis?(request:Extract<StudioActionRequest,{action:'analysis.prepare'}>):Promise<import('@/lib/studio/media-analysis-contract').StudioPreparedAnalysis>;
   readAnalysis?(id:string):Promise<import('@/lib/studio/media-analysis-contract').StudioAnalysisStatus>;
 }) {
@@ -73,6 +74,9 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
           if (!dependencies.editingEnabled || !dependencies.exportsEnabled || !dependencies.readExport) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio export tools are unavailable.');
           return {ok: true,action: request.action,data: await dependencies.readExport(request.quoteId)};
         case 'project.read': return {ok: true, action: request.action, data: project};
+        case 'project.recall':
+          if(!dependencies.recallProject)throw new AgentApiError('ENGINE_UNAVAILABLE','Owned task memory is unavailable.');
+          return {ok:true,action:request.action,data:await dependencies.recallProject(request.query)};
         case 'timeline.read':
           if (!dependencies.editingEnabled) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio editing tools are unavailable.');
           return {ok: true,action: request.action,data: (await readStudioConversationTimeline(actor)).data};

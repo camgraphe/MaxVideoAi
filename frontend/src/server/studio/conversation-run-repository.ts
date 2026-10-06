@@ -1,3 +1,4 @@
+import {readStudioTaskMemory} from "./tasks/memory";
 import {automaticallyNameStudioProject} from './conversation-project-naming';
 import {assistanceError, reserveStudioAssistanceCall, settleStudioAssistanceCall, markStudioAssistanceUnknown, stopStudioAssistanceReplay, type AssistanceCall} from './assistance-ledger';
 import type {StudioAssistancePolicy} from './assistance-policy';
@@ -14,7 +15,7 @@ import {readStudioAnalysisFacts} from './media-analysis/repository';
 import type {ImageModelUsage} from './image-model-usage';
 import {projectStudioConversationQuotes,STUDIO_QUOTE_SETTING_KEYS,type StudioConversationQuoteRow} from './conversation-quote-facts';
 
-export async function readStudioConversationProject(actor: StudioGenerationActor,options:{exportsEnabled?:boolean}={}): Promise<StudioConversationProject> {
+export async function readStudioConversationProject(actor: StudioGenerationActor,options:{exportsEnabled?:boolean;taskContext?:{message:string;requestId:string}}={}): Promise<StudioConversationProject> {
   requireGenerationActor(actor);
   const row = (await query<{name: string; revision: number | string; memory_revision: number | string | null; brief: string | null; decisions: string[] | null}>(`
     SELECT p.name, p.revision, m.revision AS memory_revision, m.brief, m.decisions FROM studio_projects p
@@ -33,9 +34,10 @@ export async function readStudioConversationProject(actor: StudioGenerationActor
     LEFT JOIN app_jobs j ON j.job_id=q.job_id AND j.user_id=q.user_id
     WHERE t.user_id=$1 AND t.project_id=$2 AND q.auth_origin='studio-session' ORDER BY t.created_at DESC LIMIT 30`, [actor.userId, actor.projectId,STUDIO_QUOTE_SETTING_KEYS]);
   const generations = projectStudioConversationQuotes(quoteRows);
+  const authoredNotes=options.taskContext?await readStudioTaskMemory(actor,options.taskContext.message,options.taskContext.requestId):[];
   const analyses=await readStudioAnalysisFacts(actor);
   const exports = options.exportsEnabled ? await query<{safe_result: unknown}>(`SELECT safe_result FROM studio_project_commands WHERE user_id=$1 AND project_id=$2 AND command_kind='timeline_export_prepare' AND command_version=1 AND request_payload->'scope'->>'authOrigin'='studio-session' AND request_payload->'scope'->>'clientId' IS NULL ORDER BY created_at DESC LIMIT 8`,[actor.userId,actor.projectId]) : null;
-  return {...(analyses.length?{analyses}:{}),...(exports ? {exports: exports.flatMap(value => {const parsed=studioPreparedExportSchema.safeParse(value.safe_result);return parsed.success ? [parsed.data] : [];})} : {}),name: row.name, revision: Number(row.revision), memory: studioMemorySchema.parse({revision: Number(row.memory_revision ?? 0), brief: row.brief ?? '', decisions: row.decisions ?? []}), generations};
+  return {...(authoredNotes.length?{authoredNotes}:{}),...(analyses.length?{analyses}:{}),...(exports ? {exports: exports.flatMap(value => {const parsed=studioPreparedExportSchema.safeParse(value.safe_result);return parsed.success ? [parsed.data] : [];})} : {}),name: row.name, revision: Number(row.revision), memory: studioMemorySchema.parse({revision: Number(row.memory_revision ?? 0), brief: row.brief ?? '', decisions: row.decisions ?? []}), generations};
 }
 
 export async function saveStudioConversationMemory(actor: StudioGenerationActor, value: StudioConversationMemory & {projectTitle?:string|null}, executor?: TransactionQueryExecutor) {

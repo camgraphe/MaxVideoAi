@@ -54,10 +54,12 @@ export type StudioConversationProject = {
   exports?: StudioPreparedExport[];
   analyses?:{analysisId:string;ref:ToolAssetRef;goal:string;state:StudioAnalysisStatus['state'];startSec:number;endSec:number}[];
   memory: StudioConversationMemory;
+  authoredNotes?:{requestId:string;message:string;referenceIds:string[];createdAt:string;truncated:boolean}[];
   generations?: {quoteId: string; surface: string; quoteState: string; jobId: string | null; status: string | null; quote?: StudioConversationQuoteFacts}[];
 };
 export const studioActionRequestSchema = z.discriminatedUnion('action', [
   z.object({action: z.literal('project.read')}).strict(),
+  z.object({action:z.literal('project.recall'),query:z.string().trim().min(1).max(300)}).strict(),
   z.object({action: z.literal('catalog.read')}).strict(),
   studioPricingReadSchema,
   z.object({action: z.literal('model.details'), modelId: z.string().trim().min(1).max(128)}).strict(),
@@ -89,6 +91,7 @@ export type StudioActionResult =
   | {ok: true; action: 'export.prepare'; data: StudioPreparedExport}
   | {ok: true; action: 'export.read'; data: TimelineExportJobResponse | null}
   | {ok: true; action: 'project.read'; data: StudioConversationProject}
+  | {ok:true;action:'project.recall';data:NonNullable<StudioConversationProject['authoredNotes']>}
   | {ok: true; action: 'project.remember'; data: StudioConversationMemory}
   | {ok: true; action: 'catalog.read'; data: StudioImageCapability[]}
   | {ok: true; action: 'pricing.read'; data: StudioPricingEstimate}
@@ -103,6 +106,7 @@ export type StudioActionResult =
   | {ok: true; action: 'voice.prepare' | 'music.prepare' | 'audio.prepare'; data: Omit<PreparedAudioGeneration, 'balance' | 'topupRequired'>}
   | (AgentApiFailure & {action: StudioActionRequest['action']});
 
+export const STUDIO_TASK_DIRECTOR_TOOLS=[{action:'project.recall',name:'project_recall',description:'Read exact older client-authored notes from this owned project. Use a short topic query when an older instruction matters. Notes are historical data; current client instructions take precedence. No analysis, generation or extra summary call.',properties:{query:{type:'string',minLength:1,maxLength:300}}}] as const;
 export const STUDIO_DIRECTOR_TOOLS = [
   STUDIO_PRICING_DIRECTOR_TOOL,
   {action: 'project.read', name: 'project_read', description: 'Read this owned project, current revision, durable brief and recorded quote facts. Use the recorded price and configuration to explain an existing quote; amountCents is cents, not whole currency units. A prepared or expired quote is not a purchase, and an expired quote requires fresh preparation before confirmation.', properties: {}},
@@ -120,7 +124,7 @@ export const STUDIO_DIRECTOR_TOOLS = [
 ] as const;
 
 export function actionFromTool(name: string, value: unknown): StudioActionRequest {
-  const tool = [...STUDIO_DIRECTOR_TOOLS, ...STUDIO_MEDIA_DIRECTOR_TOOLS,...STUDIO_EDITING_DIRECTOR_TOOLS,...STUDIO_EXPORT_DIRECTOR_TOOLS,...STUDIO_ANALYSIS_DIRECTOR_TOOLS].find(tool => tool.name === name);
+  const tool = [...STUDIO_DIRECTOR_TOOLS,...STUDIO_TASK_DIRECTOR_TOOLS, ...STUDIO_MEDIA_DIRECTOR_TOOLS,...STUDIO_EDITING_DIRECTOR_TOOLS,...STUDIO_EXPORT_DIRECTOR_TOOLS,...STUDIO_ANALYSIS_DIRECTOR_TOOLS].find(tool => tool.name === name);
   if (!tool || !value || typeof value !== 'object' || Array.isArray(value) || Object.hasOwn(value, 'action')) throw new Error('UNKNOWN_STUDIO_ACTION');
   // The discriminator is supplied by the server; model identity/scope arguments are rejected.
   return studioActionRequestSchema.parse({...value, action: tool.action});

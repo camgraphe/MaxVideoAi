@@ -25,6 +25,7 @@ export const imageTurnInputSchema = z
     referenceMentions: z.array(studioReferenceMentionSchema).max(STUDIO_CONVERSATION_MAX_REFERENCES).optional(),
     renewedFromRequestId: z.string().uuid().optional(),
     taskBudget:studioTaskSelectionSchema.optional(),
+    locale:z.enum(['en','fr','es']).optional(),
   })
   .strict().superRefine((input, context) => {
     const ids = [...input.references, ...(input.attachments ?? []).map(ref => ref.type === 'asset' ? ref.assetId : ref.outputId)];
@@ -65,6 +66,7 @@ export type ImageConversationTurn = {
   referenceMentions?: ImageTurnInput['referenceMentions'];
   renewedFromRequestId?: string;
   taskBudget?:StudioTaskSelection;
+  locale?:ImageTurnInput['locale'];
   task?:StudioTaskStatus;
   reply: string | null;
   exportQuote?: StudioPreparedExport;
@@ -103,5 +105,6 @@ export function imageTurnRetryInput(turn: ImageConversationTurn): ImageTurnInput
     ...(turn.attachments ? {attachments: turn.attachments} : {}),
     ...(turn.referenceMentions ? {referenceMentions: turn.referenceMentions} : {}),
     ...(turn.taskBudget ? {taskBudget:turn.taskBudget} : {}),
+    ...(turn.locale ? {locale:turn.locale} : {}),
     ...(turn.renewedFromRequestId ? {renewedFromRequestId: turn.renewedFromRequestId} : {})};
 }

@@ -71,6 +71,8 @@
     "test:validate": "node scripts/run-validation-tests.mjs",
     "timeline-exports:worker": "pnpm --prefix frontend run timeline-exports:worker",
     "studio-analysis:worker": "pnpm --prefix frontend run studio-analysis:worker",
+    "studio-tasks:worker": "pnpm --prefix frontend run studio-tasks:worker",
+    "studio-tasks:worker:once": "pnpm --prefix frontend run studio-tasks:worker:once",
     "studio-analysis:worker:once": "pnpm --prefix frontend run studio-analysis:worker:once",
     "timeline-exports:worker:once": "pnpm --prefix frontend run timeline-exports:worker:once",
     "test:editor": "tsx --tsconfig frontend/tsconfig.json --test tests/maxvideoai-editor-*.test.ts tests/studio-*.test.ts tests/timeline-export-*.test.ts",
