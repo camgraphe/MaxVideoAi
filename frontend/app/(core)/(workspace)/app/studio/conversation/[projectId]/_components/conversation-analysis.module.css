@@ -1,0 +1,2 @@
+.card{display:grid;gap:.65rem;padding:1rem;border:1px solid var(--border,#6b728044);border-radius:1rem;background:var(--surface,#ffffff06);overflow-wrap:anywhere}
+.card h3,.card p{margin:0}.card ul{margin:0;padding-inline-start:1.25rem}.card button{justify-self:start;border:1px solid currentColor;border-radius:.6rem;padding:.6rem .8rem;font:inherit}.card button:disabled{opacity:.5}.note{font-size:.85rem;opacity:.8}

@@ -1,3 +1,6 @@
+import {createStudioTaskConversationAdapter} from '@/server/studio/tasks/conversation-adapter';
+import {studioTasksEnabled} from '@/server/studio/tasks/policy';
+import {scheduleStudioWorker} from '@/server/studio/worker-host';
 import type { NextRequest } from "next/server";
 import { ZodError } from "zod";
 import {
@@ -12,7 +15,7 @@ import {
 } from "@/lib/membership-policy";
 import { studioJson } from "./studio-route-utils";
 
-async function readBoundedJson(req: NextRequest) {
+export async function readStudioConversationBody(req: NextRequest) {
   if (!req.body) throw new Error("INVALID_BODY");
   const reader = req.body.getReader();
   const chunks: Uint8Array[] = [];
@@ -39,6 +42,9 @@ export async function handleStudioImageConversation(
   action: "read" | "submit" | "confirm",
   overrides: {
     enabled?: boolean;
+    tasksEnabled?:boolean;
+    taskAdapterFactory?:typeof createStudioTaskConversationAdapter;
+    scheduleWorker?:typeof scheduleStudioWorker;
     resolveAccess?: (req: NextRequest) => Promise<StudioAccessDecision>;
     serviceFactory?: typeof createImageConversationService;
   } = {},
@@ -93,12 +99,15 @@ export async function handleStudioImageConversation(
       overrides.serviceFactory ?? createImageConversationService
     )(actor, { enabled, ...(process.env.STUDIO_CONVERSATION_ACTIONS_ENABLED === "true" ? {actionsEnabled: true,
       mediaEnabled: process.env.STUDIO_CONVERSATION_MEDIA_ENABLED === 'true',editingEnabled: process.env.STUDIO_CONVERSATION_EDITING_ENABLED === 'true',exportsEnabled: process.env.STUDIO_CONVERSATION_EXPORTS_ENABLED === 'true',requestOrigin: req.nextUrl.origin} : {}) });
+    const adapter=(overrides.taskAdapterFactory??createStudioTaskConversationAdapter)(actor,service,overrides.tasksEnabled??studioTasksEnabled());
     const result =
       action === "read"
-        ? await service.read()
+        ? await adapter.read()
         : action === "submit"
-          ? await service.submit(await readBoundedJson(req))
-          : await service.confirm(await readBoundedJson(req));
+          ? await ((overrides.tasksEnabled??studioTasksEnabled())?adapter:service).submit(await readStudioConversationBody(req))
+          : await service.confirm(await readStudioConversationBody(req));
+    if(action==='submit'&&'task' in result&&result.task?.state==='queued')
+      (overrides.scheduleWorker??scheduleStudioWorker)('task',{userId:actor.userId,projectId,requestId:result.task.requestId});
     return studioJson({ ok: true, result });
   } catch (error) {
     if (

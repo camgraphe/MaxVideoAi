@@ -35,7 +35,7 @@ export function studioToolReferenceProperties<T extends Record<string, unknown>>
   properties: T,
   references: readonly ResolvedReference[],
 ): Readonly<T> {
-  if (!['image_prepare','pricing_read','video_prepare','voice_prepare','music_prepare','audio_prepare'].includes(name)) return properties;
+  if (!['image_prepare','pricing_read','video_prepare','voice_prepare','music_prepare','audio_prepare','analysis_prepare'].includes(name)) return properties;
   const eligible=name==='image_prepare'?references.filter(ref=>ref.mediaKind==='image'):references;
   if (!eligible.length) return properties;
 

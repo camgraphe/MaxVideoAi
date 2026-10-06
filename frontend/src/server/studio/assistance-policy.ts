@@ -1,4 +1,5 @@
 import {STUDIO_ASSISTANCE_POLICY_VERSION,STUDIO_ASSISTANCE_LEGACY_POLICY_VERSION} from '@/lib/studio/assistance-contract';
+export const STUDIO_ASSISTANCE_CAMPAIGN_ID='studio-discovery-2026-10';
 export type StudioAssistancePolicy = {enabled: boolean;solAllowanceNanoUsd: number;lunaAllowanceNanoUsd: number;campaignNanoUsd: number;maxAdditionalBudgetCents: number;credits?:boolean;lunaMaxInputTokens?:number;version?:typeof STUDIO_ASSISTANCE_POLICY_VERSION|typeof STUDIO_ASSISTANCE_LEGACY_POLICY_VERSION};
 /** Injected legacy policies omit credits; identity always follows the selected funding regime. */
 export function studioAssistancePolicyVersion(policy:Pick<StudioAssistancePolicy,'credits'>) {

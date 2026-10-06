@@ -1,3 +1,8 @@
+import {assertStudioTaskExecution,setStudioTaskPhase,type StudioTaskExecution} from "./tasks/execution";
+import {StudioTaskStop} from "./tasks/policy";
+import {recallStudioTaskMemory} from "./tasks/memory";
+import {studioTaskStopDraft} from "./tasks/stop-draft";
+import {replayStudioTaskAction} from './tasks/action-replay';
 import {customerDisplayPrice} from '@/lib/customer-price-presentation';
 import OpenAI from 'openai';
 import type {ResponseCreateParamsNonStreaming} from 'openai/resources/responses/responses';
@@ -14,6 +19,8 @@ import type {ImageTurnInput,ImageConversationHistoryTurn,StudioConversationHisto
 import type {StudioActionRequest, StudioActionResult} from '@/lib/studio/conversation-action-contract';
 import {createStudioConversationDirector, type StudioResponseCreator} from './conversation-director';
 import {createStudioActionExecutor} from './conversation-actions';
+import {createStudioAnalysisService} from './media-analysis/service';
+import {studioAnalysisPolicy} from './media-analysis/policy';
 import {beginStudioAction, completeStudioAction, checkpointStudioResponse, readStudioConversationProject, saveStudioConversationMemory} from './conversation-run-repository';
 import {attachImageQuote, persistImageDraft, type StoredImageTurn} from './image-conversation-repository';
 import {imageRequestFromDraft,imageReferenceFingerprintFromReview, type ImageGenerationFactory} from './image-conversation-service';
@@ -102,6 +109,7 @@ export async function runStudioImageActions(options: {
   historyFacts?:StudioConversationHistoryFacts;
   factory: ImageGenerationFactory; createResponse?: StudioResponseCreator;
   responseReplayOnly?: boolean;
+  taskExecution?:StudioTaskExecution;
   assistancePolicy?: StudioAssistancePolicy;countInputTokens?: (params: ResponseCreateParamsNonStreaming) => Promise<number>;
   factories?: StudioMediaFactories; mediaEnabled?: boolean;editingEnabled?: boolean;exportsEnabled?: boolean;
   requestOrigin?: string;exportDependencies?: Partial<StudioExportDependencies>;
@@ -111,9 +119,23 @@ export async function runStudioImageActions(options: {
   const policy = options.assistancePolicy ?? studioAssistancePolicy();
   // Injected response creators are offline qualification seams. Native dispatch always requires the monetary gate.
   const assistance = policy.enabled || !options.createResponse ? await openStudioAssistanceTurn(actor,turn.request_id,policy) : null;
-  const director = createStudioConversationDirector({model: assistance?.model,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,assistanceCreditsEnabled:policy.credits===true});
+  const analysisPolicy=studioAnalysisPolicy();
+  const analysisEnabled=!!analysisPolicy&&policy.credits===true;
+  const analysis=createStudioAnalysisService(actor,{assistancePolicy:policy});
+  const director = createStudioConversationDirector({model: assistance?.model,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,analysisEnabled,analysisProfiles:{video:!!analysisPolicy?.video,audio:!!analysisPolicy?.audio},assistanceCreditsEnabled:policy.credits===true,taskExecution:options.taskExecution});
   let currentCallId: string;
   const execute = createStudioActionExecutor(actor, {enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
+    recallProject:options.taskExecution?text=>recallStudioTaskMemory(actor,text):undefined,
+    analysisEnabled,
+    readAnalysis:id=>analysis.read(id),
+    prepareAnalysis:async action=>{
+      const request={ref:action.ref,...(action.modality?{modality:action.modality}:{}),goal:action.goal,reason:action.reason,startSec:action.startSec,endSec:action.endSec};
+      const ref=request.ref;
+      if(ref.type==='asset'&&!options.references.some(item=>item.assetId===ref.assetId&&item.mediaKind===ref.kind))throw new AgentApiError('REFERENCE_INVALID','Attach the selected media before preparing its analysis.');
+      return analysis.prepare(request,turn.request_id+':'+currentCallId.slice(0,80),async(quote,executor)=>{
+        await completeStudioAction(actor,turn,currentCallId,{ok:true,action:'analysis.prepare',data:quote},executor);
+      });
+    },
     attachedImageIds: input.references,attachedMedia:options.references,
     editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,
     prepareExport: async action => {
@@ -131,13 +153,17 @@ export async function runStudioImageActions(options: {
       return data;
     }),
     editTimeline: async action => {
-      if (action.edit.kind === 'insert' && action.edit.ref.type === 'asset') {
-        const ref = action.edit.ref;
+      const insertedRefs=action.edit.kind==='insert'?[action.edit.ref]:action.edit.kind==='assemble'?action.edit.clips.map(clip=>clip.ref):[];
+      let projectRefs:Set<string>|undefined;
+      for(const ref of insertedRefs.filter(ref=>ref.type==='asset')){
         const attached = ref.kind === 'image' ? input.references.includes(ref.assetId) : input.attachments?.some(item => item.type === 'asset' && item.assetId === ref.assetId && item.kind === ref.kind);
         if (!attached) {
-          const existing = await readStudioWorkspace(actor,actor.projectId);
-          const assets = (existing.project.workspaceState as {projectAssets?: {ref?: unknown}[]}).projectAssets ?? [];
-          if (!assets.some(asset => JSON.stringify(asset.ref) === JSON.stringify(ref))) throw new AgentApiError('REFERENCE_INVALID','Attach this library media before inserting it.');
+          if(!projectRefs){
+            const existing = await readStudioWorkspace(actor,actor.projectId);
+            const assets = (existing.project.workspaceState as {projectAssets?: {ref?: unknown}[]}).projectAssets ?? [];
+            projectRefs=new Set(assets.map(asset=>JSON.stringify(asset.ref)));
+          }
+          if (!projectRefs.has(JSON.stringify(ref))) throw new AgentApiError('REFERENCE_INVALID','Attach this library media before inserting it.');
         }
       }
       try {
@@ -181,20 +207,27 @@ export async function runStudioImageActions(options: {
     },
   });
   const draft = await director({message: input.message, history: options.history, references: options.references, referenceMentions: input.referenceMentions, historyFacts: options.historyFacts,
-    project: await readStudioConversationProject(actor,{exportsEnabled:options.editingEnabled&&options.exportsEnabled}),
+    project: await readStudioConversationProject(actor,{exportsEnabled:options.editingEnabled&&options.exportsEnabled,...(options.taskExecution?{taskContext:{message:input.message,requestId:options.taskExecution.taskRequestId}}:{})}),
     checkpoint: (index, create, params, checkpointOptions) => checkpointStudioResponse(actor, turn, index, create, assistance ? {prepare: async () => {
       if (await getActiveAccountRestrictionStrict(actor.userId)) {
         throw new AgentApiError('ACCOUNT_RESTRICTED','This account is temporarily restricted. Open MaxVideoAI for help.');
       }
+      if(options.taskExecution){await assertStudioTaskExecution(actor,options.taskExecution);await setStudioTaskPhase(actor,options.taskExecution,"thinking");}
       if (!params) throw new AgentApiError('INTERNAL_ERROR','Studio is missing its model request bounds.');
       if (!options.countInputTokens && options.createResponse) throw new AgentApiError('ENGINE_UNAVAILABLE','Offline Studio metering requires an injected token counter.');
       const inputTokens = options.countInputTokens ? await options.countInputTokens(params) : (await new OpenAI({apiKey: process.env.OPENAI_API_KEY,maxRetries: 0,timeout: 15000}).responses.inputTokens.count(studioTokenCountInput(params))).input_tokens;
       if (!Number.isSafeInteger(inputTokens) || inputTokens < 0 || inputTokens > 272000) throw new AgentApiError('PARAMETER_INVALID','This Studio context exceeds the supported assistance limit.');
+      if(options.taskExecution&&inputTokens>options.taskExecution.profile.maxInputTokens)throw new StudioTaskStop("context","The current context exceeds this task allowance.");
       return {policy,inputTokens,outputTokens: params.max_output_tokens ?? 2200};
     }} : undefined, {replayOnly: options.responseReplayOnly || checkpointOptions?.replayOnly}),
     execute: async (callId: string, action: StudioActionRequest): Promise<StudioActionResult> => {
+      if(options.taskExecution)await setStudioTaskPhase(actor,options.taskExecution,action.action.endsWith(".prepare")?"preparing":action.action==="timeline.edit"?"editing":"reading");
       const prior = await beginStudioAction(actor, turn, callId, action);
       if (prior) return prior;
+      if(options.taskExecution){
+        const saved=await replayStudioTaskAction(actor,options.taskExecution,callId,action);
+        if(saved){await completeStudioAction(actor,turn,callId,saved);return saved;}
+      }
       currentCallId = callId;
       if (action.action === 'project.remember') {
         // A lost ACK must not replay a memory update with a now-stale revision.
@@ -218,6 +251,10 @@ export async function runStudioImageActions(options: {
       return result;
     },
   }).catch(async (error: unknown) => {
+    if(options.taskExecution&&(error instanceof StudioTaskStop||error instanceof AgentApiError&&["SPENDING_LIMIT_EXCEEDED","ACCOUNT_RESTRICTED"].includes(error.code))){
+      const paused=await studioTaskStopDraft(actor,options.taskExecution,error);
+      return paused;
+    }
     if (error instanceof AgentApiError && error.nextAction?.type === 'studio_assistance' && error.nextAction.canStartFollowup === true) {
       // All prior model calls settled. Close this partial request without replaying its completed actions.
       // Keeping the original user message and this reply in ready history gives a new explicit follow-up context.
@@ -225,6 +262,10 @@ export async function runStudioImageActions(options: {
     }
     throw error;
   });
+  if(options.taskExecution&&draft.continuation&&!draft.continuation.lastError?.code){
+    const localized=await studioTaskStopDraft(actor,options.taskExecution,new StudioTaskStop(draft.continuation.reason==='output_limit'?'output':'steps','Task allowance reached'));
+    draft.reply=localized.reply;draft.continuation={...localized.continuation!,completedEdits:draft.continuation.completedEdits};
+  }
   if (!draft.image && !draft.media) await persistImageDraft(actor, turn, draft, options.referenceFingerprint);
   return draft;
 }

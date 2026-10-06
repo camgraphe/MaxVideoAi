@@ -1,3 +1,4 @@
+import {reconcileStudioTaskResolution} from './tasks/resolution';
 import {createHash,randomUUID} from 'node:crypto';
 import {z} from 'zod';
 import {query,withDbTransaction,type QueryExecutor} from '@/lib/db';
@@ -88,6 +89,7 @@ export async function applyStudioAssistanceResolution(raw:z.input<typeof applySc
     if(prior){
       // Replaying the original approval is safe even though the resulting snapshot changed.
       if(prior.expected_fingerprint!==input.expectedFingerprint&&preview(state,input.action).fingerprint!==input.expectedFingerprint)throw new Error('Support preview changed; inspect the call again.');
+      await reconcileStudioTaskResolution(tx,state.call,input.action);
       return {...preview(state,input.action),applied:false};
     }
     const proposed=preview(state,input.action);
@@ -112,6 +114,7 @@ export async function applyStudioAssistanceResolution(raw:z.input<typeof applySc
     }
     const creditCall=state.call.tariff_version===STUDIO_ASSISTANCE_CREDIT_TARIFF.version&&state.call.model==='gpt-6.1-sol';
     await tx.query(`INSERT INTO studio_assistance_resolutions(call_id,action,operator_id,reason,expected_fingerprint,refund_cents,refund_receipt_id,revoked_lease_id${creditCall?',refund_credits':''}) VALUES($1,$2,$3,$4,$5,$6,$7,$8${creditCall?',$9':''})`,[input.callId,input.action,input.operator,input.reason,input.expectedFingerprint,proposed.refundCents,refundReceiptId,input.action==='waive_unknown'?state.turn?.lease_id??null:null,...(creditCall?[proposed.refundCredits]:[])]);
+    await reconcileStudioTaskResolution(tx,state.call,input.action);
     return {...proposed,applied:true};
   });
 }

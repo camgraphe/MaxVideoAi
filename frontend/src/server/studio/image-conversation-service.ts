@@ -1,3 +1,4 @@
+import type {StudioTaskExecution} from "./tasks/execution";
 import {customerDisplayPrice} from '@/lib/customer-price-presentation';
 import type {StudioExportDependencies} from './conversation-export-command';
 import {recordedStudioOutputDuration} from './conversation-quote-facts';
@@ -153,6 +154,7 @@ export function createImageConversationService(
     director?: ImageDirector;
     generationFactory?: ImageGenerationFactory;
     actionsEnabled?: boolean;
+    taskExecution?:StudioTaskExecution;
     assistancePolicy?: import('./assistance-policy').StudioAssistancePolicy;
     countInputTokens?: (params: import('openai/resources/responses/responses').ResponseCreateParamsNonStreaming) => Promise<number>;
     createActionResponse?: StudioResponseCreator;
@@ -218,8 +220,11 @@ export function createImageConversationService(
       ...(turn.input_json.attachments ? {attachments: turn.input_json.attachments} : {}),
       ...(turn.input_json.referenceMentions ? {referenceMentions: turn.input_json.referenceMentions} : {}),
       ...(turn.input_json.renewedFromRequestId ? {renewedFromRequestId: turn.input_json.renewedFromRequestId} : {}),
+      ...(turn.input_json.taskBudget?{taskBudget:turn.input_json.taskBudget}:{}),
+      ...(turn.input_json.locale?{locale:turn.input_json.locale}:{}),
       reply: turn.draft_json ? projectStudioReply(turn.draft_json.reply) : null,
       ...(turn.draft_json?.exportQuote ? {exportQuote: turn.draft_json.exportQuote} : {}),
+      ...(turn.draft_json?.analysisQuote ? {analysisQuote:turn.draft_json.analysisQuote} : {}),
       ...(turn.draft_json?.continuation ? {continuation: turn.draft_json.continuation} : {}),
       state: expiredLease ? "failed" : turn.state,
       retryable: expiredLease || turn.state === "failed",
@@ -269,7 +274,7 @@ export function createImageConversationService(
       const input = imageTurnInputSchema.parse(value);
       if (input.attachments?.length && (!dependencies.actionsEnabled || !dependencies.mediaEnabled))
         throw new AgentApiError('ENGINE_UNAVAILABLE', 'Video and audio attachments are unavailable in this image pilot.');
-      const { turn, claimed, responseReplayOnly } = await claimImageTurn(actor, input, {allowRecordedResponseRecovery: dependencies.actionsEnabled === true});
+      const { turn, claimed, responseReplayOnly } = await claimImageTurn(actor, input, {allowRecordedResponseRecovery: dependencies.actionsEnabled === true,taskWorkerId:dependencies.taskExecution?.workerId});
       if (!claimed) return projectTurn(turn);
       try {
         const refs = await generation.resolveReferences({
@@ -311,7 +316,7 @@ export function createImageConversationService(
           )
           .reverse();
         const useActions = !turn.draft_json && dependencies.actionsEnabled === true;
-        const recentHistory=history.slice(-8);
+        const recentHistory=history.slice(-(dependencies.taskExecution?.profile.historyTurns??8));
         const historyFacts=useActions?{quoteDirections:projectStudioQuoteDirections(recentHistory),estimates:await readStudioHistoricalEstimates(actor,recentHistory.map(saved=>saved.request_id))}:undefined;
         if (!turn.draft_json && !useActions && !dependencies.director) throw new AgentApiError('ENGINE_UNAVAILABLE','Enable the metered Studio conversation before requesting assistance.');
         const draft =
@@ -321,7 +326,7 @@ export function createImageConversationService(
             historyFacts,
             history: history.map(saved => ({message: saved.input_json.message, reply: saved.draft_json ? projectStudioReply(saved.draft_json.reply) : null,
               ...(saved.input_json.referenceMentions ? {referenceMentions: saved.input_json.referenceMentions} : {})})),
-            enabled: dependencies.enabled, factory, createResponse: dependencies.createActionResponse,assistancePolicy: dependencies.assistancePolicy,countInputTokens: dependencies.countInputTokens,
+            taskExecution:dependencies.taskExecution, enabled: dependencies.enabled, factory, createResponse: dependencies.createActionResponse,assistancePolicy: dependencies.assistancePolicy,countInputTokens: dependencies.countInputTokens,
             factories, mediaEnabled: dependencies.mediaEnabled,editingEnabled: dependencies.editingEnabled,exportsEnabled: dependencies.exportsEnabled,requestOrigin: dependencies.requestOrigin,exportDependencies: dependencies.exportDependencies,
           }) : await runMeteredImageDirector(
             actor,

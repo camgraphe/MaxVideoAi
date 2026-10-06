@@ -1,4 +1,5 @@
 import { z } from "zod";
+import {studioPreparedAnalysisSchema,type StudioPreparedAnalysis} from '@/lib/studio/media-analysis-contract';
 import {studioPreparedExportSchema,type StudioPreparedExport} from "@/lib/studio/conversation-export-contract";
 import type { PreparedGeneration } from "@/server/agent-api/prepare-generation";
 import type { AgentGenerationStatus } from "@/server/generations/generation-status";
@@ -8,6 +9,7 @@ import type {PreparedAudioGeneration} from '@/server/agent-api/prepare-audio-gen
 import {imageSelectionSchema,STUDIO_CONVERSATION_MAX_REFERENCES} from '@/lib/studio/conversation-creation-contract';
 import {projectStudioReply} from './conversation-reply';
 import type {StudioPricingEstimate} from '@/lib/studio/conversation-pricing-contract';
+import {studioTaskSelectionSchema,type StudioTaskSelection,type StudioTaskStatus} from './task-budget-contract';
 
 export const studioReferenceMentionSchema = z.object({
   assetId: z.string().min(1).max(256),
@@ -22,6 +24,8 @@ export const imageTurnInputSchema = z
     attachments: z.array(toolAssetRefSchema.refine(ref => ref.type === 'asset' && ref.kind !== 'image')).max(STUDIO_CONVERSATION_MAX_REFERENCES).optional(),
     referenceMentions: z.array(studioReferenceMentionSchema).max(STUDIO_CONVERSATION_MAX_REFERENCES).optional(),
     renewedFromRequestId: z.string().uuid().optional(),
+    taskBudget:studioTaskSelectionSchema.optional(),
+    locale:z.enum(['en','fr','es']).optional(),
   })
   .strict().superRefine((input, context) => {
     const ids = [...input.references, ...(input.attachments ?? []).map(ref => ref.type === 'asset' ? ref.assetId : ref.outputId)];
@@ -40,7 +44,7 @@ export const imageTurnInputSchema = z
 export type ImageTurnInput = z.infer<typeof imageTurnInputSchema>;
 export const studioContinuationSchema = z.object({
   reason: z.enum(['action_limit','output_limit']),
-  completedEdits: z.number().int().min(0).max(4),
+  completedEdits: z.number().int().min(0).max(24),
   lastError: z.object({code: z.string().min(1).max(80),message: z.string().min(1).max(800)}).strict().optional(),
 }).strict();
 export const imageDraftSchema = z
@@ -50,8 +54,9 @@ export const imageDraftSchema = z
     media: studioMediaIntentSchema.transform(media=>({...media,reply:projectStudioReply(media.reply)})).optional(),
     continuation: studioContinuationSchema.optional(),
     exportQuote: studioPreparedExportSchema.optional(),
+    analysisQuote:studioPreparedAnalysisSchema.optional(),
   })
-  .strict().refine(draft => [draft.image,draft.media,draft.exportQuote].filter(Boolean).length <= 1, 'One quote per turn.');
+  .strict().refine(draft => [draft.image,draft.media,draft.exportQuote,draft.analysisQuote].filter(Boolean).length <= 1, 'One quote per turn.');
 export type ImageDraft = z.infer<typeof imageDraftSchema>;
 export type ImageConversationTurn = {
   requestId: string;
@@ -60,8 +65,12 @@ export type ImageConversationTurn = {
   attachments?: ImageTurnInput['attachments'];
   referenceMentions?: ImageTurnInput['referenceMentions'];
   renewedFromRequestId?: string;
+  taskBudget?:StudioTaskSelection;
+  locale?:ImageTurnInput['locale'];
+  task?:StudioTaskStatus;
   reply: string | null;
   exportQuote?: StudioPreparedExport;
+  analysisQuote?:StudioPreparedAnalysis;
   continuation?: z.infer<typeof studioContinuationSchema>;
   state: "thinking" | "ready" | "failed";
   retryable: boolean;
@@ -81,6 +90,7 @@ export type ImageConversation = {
   projectId: string;
   projectName: string;
   turns: ImageConversationTurn[];
+  taskPolicyVersion?:string;
 };
 export type ImageConversationHistoryTurn = Pick<ImageConversationTurn, 'message' | 'reply' | 'referenceMentions'>;
 export type StudioConversationHistoryFacts = {
@@ -94,5 +104,7 @@ export function imageTurnRetryInput(turn: ImageConversationTurn): ImageTurnInput
   return {requestId: turn.requestId,message: turn.message,references: turn.references,
     ...(turn.attachments ? {attachments: turn.attachments} : {}),
     ...(turn.referenceMentions ? {referenceMentions: turn.referenceMentions} : {}),
+    ...(turn.taskBudget ? {taskBudget:turn.taskBudget} : {}),
+    ...(turn.locale ? {locale:turn.locale} : {}),
     ...(turn.renewedFromRequestId ? {renewedFromRequestId: turn.renewedFromRequestId} : {})};
 }

@@ -125,8 +125,8 @@ export function useImageConversation(
         setConversation(payload.result);
         setReadError(null);
         const completedPending = payload.result.turns.find(
-          (turn: { requestId: string; state: string }) =>
-            turn.requestId === requests.pending?.requestId && turn.state === "ready",
+          (turn: { requestId: string; state: string; task?:{state:string} }) =>
+            turn.requestId === requests.pending?.requestId && (turn.state === "ready" || turn.task && ['paused','completed','failed','unknown'].includes(turn.task.state)),
         );
         if (completedPending) {
           requests.pending = null;
@@ -342,12 +342,13 @@ export function useImageConversation(
   const pendingTurn = conversation.turns.find(
     (turn) => turn.requestId === pending?.requestId,
   );
+  const taskBusy=conversation.turns.some(turn=>turn.task&&['queued','running'].includes(turn.task.state));
   const canResumePending = currentState && !loading &&
-    !!pending && !busy && (!pendingTurn || pendingTurn.state === "failed");
+    !!pending && !busy && !taskBusy && !pendingTurn?.task && (!pendingTurn || pendingTurn.state === "failed");
   const visibleError = currentState ? readError ?? error : null;
   return {
     conversation: currentState ? conversation : { projectId, projectName: initialName, turns: [] },
-    busy: currentState && busy,
+    busy: currentState && (busy||taskBusy),
     loading: !currentState || loading,
     error: visibleError ? conversationErrorMessage(visibleError, locale) : null,
     errorCode: visibleError?.code ?? null,

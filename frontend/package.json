@@ -52,6 +52,10 @@
     "lighthouse:blog": "rm -rf .lighthouseci && rm -rf ./lighthouse-reports/blog && lhci collect --url=https://maxvideoai.com/blog --collect.preset=lighthouse:default && mkdir -p ./lighthouse-reports/blog && cp -R .lighthouseci/* ./lighthouse-reports/blog/ && rm -rf .lighthouseci",
     "lighthouse:contact": "rm -rf .lighthouseci && rm -rf ./lighthouse-reports/contact && lhci collect --url=https://maxvideoai.com/contact --collect.preset=lighthouse:default && mkdir -p ./lighthouse-reports/contact && cp -R .lighthouseci/* ./lighthouse-reports/contact/ && rm -rf .lighthouseci",
     "timeline-exports:worker": "tsx scripts/run-timeline-export-worker.ts",
+    "studio-analysis:worker": "tsx scripts/run-studio-analysis-worker.ts",
+    "studio-tasks:worker": "tsx scripts/run-studio-task-worker.ts",
+    "studio-tasks:worker:once": "tsx scripts/run-studio-task-worker.ts --once",
+    "studio-analysis:worker:once": "tsx scripts/run-studio-analysis-worker.ts --once",
     "timeline-exports:worker:once": "tsx scripts/run-timeline-export-worker.ts --once"
   },
   "dependencies": {

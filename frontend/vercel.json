@@ -4,6 +4,8 @@
     { "source": "/gallery", "destination": "/examples", "permanent": true }
   ],
   "crons": [
+    { "path": "/api/cron/studio-tasks", "schedule": "* * * * *" },
+    { "path": "/api/cron/studio-analyses", "schedule": "* * * * *" },
     { "path": "/api/cron/fal-poll", "schedule": "* * * * *" },
     { "path": "/api/cron/byteplus-poll", "schedule": "* * * * *" },
     { "path": "/api/cron/kling-direct-poll", "schedule": "* * * * *" },
