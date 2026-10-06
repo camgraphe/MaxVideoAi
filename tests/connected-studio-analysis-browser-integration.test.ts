@@ -22,6 +22,7 @@ test('analysis review works on desktop/mobile and only explicit confirmation que
     await db.pool.query("UPDATE media_assets SET url='https://cdn.maxvideoai.com/studio-local-fixture/' || public_id || '.mp4'");
     for(const name of ['00_create_profiles.sql','01_legal_documents.sql','02_user_consents.sql','04_profiles_timestamps.sql','12_app_settings.sql','30_mcp_paid_generation.sql','39_mcp_quote_lifetime.sql','49_studio_generation_scope.sql','50_studio_image_conversation.sql','51_studio_image_model_usage.sql','52_studio_conversation_runs.sql','53_studio_media_generation_scope.sql','54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','64_studio_media_analysis.sql'])await db.pool.query(await readFile('neon/migrations/'+name,'utf8'));
     await db.pool.query('ALTER TABLE app_jobs ADD COLUMN status text');
+    await db.pool.query(`CREATE TABLE user_account_restrictions(user_id text PRIMARY KEY,reason text NOT NULL,message text,active boolean NOT NULL DEFAULT true,restricted_at timestamptz NOT NULL DEFAULT clock_timestamp())`);
   }});
   process.env.DATABASE_URL=runtime.database.databaseUrl;
   let browser:Awaited<ReturnType<typeof startStudioConnectedBrowserFixture>>|undefined;
@@ -54,7 +55,6 @@ test('analysis review works on desktop/mobile and only explicit confirmation que
     const confirmed=page.waitForResponse(response=>response.url().endsWith(`/api/studio/projects/${project.projectId}/analyses/${quote.analysisId}`)&&response.request().method()==='POST',{timeout:30_000});
     await card.getByRole('button',{name:/Analyse with Sol 6.1/}).click();
     const confirmationResponse=await confirmed;
-    if(confirmationResponse.status()!==200)await analysis.confirm({analysisId:quote.analysisId,maxCredits:quote.maxCredits,policyVersion:quote.policyVersion,confirmed:true});
     assert.equal(confirmationResponse.status(),200,JSON.stringify(await confirmationResponse.json()));
     await expect(card.getByText('Analysis in progress. Your media is preserved.')).toBeVisible();
     assert.equal((await analysis.read(quote.analysisId)).state,'queued');
