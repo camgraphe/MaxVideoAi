@@ -3,7 +3,7 @@
 import { isBrowserCommercialAnalyticsExcluded, COMMERCIAL_ANALYTICS_RESOLVED_EVENT, COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT } from '@/lib/analytics/commercial-client';
 import { CLARITY_ANALYTICS_EVENTS } from '@/lib/analytics/clarity-context';
 
-type ClarityFn = ((...args: unknown[]) => void) & { q?: unknown[][] };
+type ClarityFn = ((...args: unknown[]) => void) & { q?: unknown[][]; v?: string };
 
 type ClarityListener = () => void;
 
@@ -23,9 +23,33 @@ let clarityReady = false;
 const readyListeners = new Set<ClarityListener>();
 let cachedVisitorId: string | null = null;
 let clarityInjected = false;
-let clarityScriptLoaded = false;
 let clarityStopped = false;
 let guardedBrowser: Window | null = null;
+let injectedProjectId: string | null = null;
+let bootstrapConfig: Record<string, unknown> | null = null;
+let readinessTimer: number | null = null;
+
+function captureClarityBootstrap(): void {
+  // The project tag loads the versioned SDK separately. Preserve its exact
+  // start config before discarding queued visitor data during a withdrawal.
+  for (const command of getClarityWindow()?.clarity?.q ?? []) {
+    const config = command[1];
+    if (command[0] === 'start' && config && typeof config === 'object'
+      && (config as Record<string, unknown>).projectId === injectedProjectId) {
+      bootstrapConfig = config as Record<string, unknown>;
+    }
+  }
+}
+
+function waitForClarityDispatcher(attempt = 0): void {
+  if (typeof window === 'undefined' || clarityStopped) return;
+  captureClarityBootstrap();
+  if (getClarityWindow()?.clarity?.v) { markClarityReady(); return; }
+  if (attempt < 50 && readinessTimer === null) readinessTimer = window.setTimeout(() => {
+    readinessTimer = null;
+    waitForClarityDispatcher(attempt + 1);
+  }, 200);
+}
 
 function getClarityWindow(): (Window & { clarity?: ClarityFn }) | null {
   if (typeof window === 'undefined') return null;
@@ -70,6 +94,7 @@ export function flushPendingClarityCommands(): void {
 }
 
 export function markClarityReady(): void {
+  if (!getClarityWindow()?.clarity?.v) return;
   if (clarityStopped || isBrowserCommercialAnalyticsExcluded() || !hasAnalyticsConsentCookie()) {
     stopClarityRecording();
     return;
@@ -261,8 +286,12 @@ function persistOptOutFlag(enabled: boolean): void {
 }
 
 export function stopClarityRecording(): void {
+  captureClarityBootstrap();
+  if (readinessTimer !== null && typeof window !== 'undefined') window.clearTimeout(readinessTimer);
+  readinessTimer = null;
   const clarityWindow = getClarityWindow();
   const clarity = clarityWindow?.clarity;
+  const loaded = Boolean(clarity?.v);
   if (clarity?.q) clarity.q.length = 0;
   // consentv2 denial schedules a vendor restart. Stop directly, then clear its
   // replacement queue so late commands cannot restart an excluded recording.
@@ -270,7 +299,7 @@ export function stopClarityRecording(): void {
   const stoppedClarity = getClarityWindow()?.clarity;
   // Before asynchronous SDK initialization, retain the queued stop. Once loaded,
   // stop has already replaced the dispatcher; its stale queue must be discarded.
-  if (clarityScriptLoaded && stoppedClarity?.q) stoppedClarity.q.length = 0;
+  if (loaded && stoppedClarity?.q) stoppedClarity.q.length = 0;
   ['_clck', '_clsk', VISITOR_COOKIE].forEach(deleteCookie);
   cachedVisitorId = null;
   pendingCommands = [];
@@ -325,10 +354,12 @@ export function injectClarityScript(id: string): void {
   if (clarityInjected) {
     if (clarityStopped) {
       clarityStopped = false;
+      captureClarityBootstrap();
       const clarity = getClarityWindow()?.clarity;
       if (clarity?.q) clarity.q.length = 0;
-      getClarityWindow()?.clarity?.('start');
-      if (clarityScriptLoaded) markClarityReady();
+      if (bootstrapConfig) clarity?.('start', bootstrapConfig);
+      else clarity?.('start');
+      waitForClarityDispatcher();
     }
     logDebug('inject skip: already injected');
     return;
@@ -342,6 +373,7 @@ export function injectClarityScript(id: string): void {
   if (typeof document === 'undefined') return;
 
   clarityInjected = true;
+  injectedProjectId = id;
   clarityStopped = false;
   flushPendingClarityCommands();
 
@@ -350,9 +382,10 @@ export function injectClarityScript(id: string): void {
   script.src = `https://www.clarity.ms/tag/${id}`;
   script.dataset.analytics = 'clarity';
   script.addEventListener('load', () => {
-    clarityScriptLoaded = true;
-    markClarityReady();
-    logDebug('script loaded');
+    captureClarityBootstrap();
+    if (clarityStopped || isBrowserCommercialAnalyticsExcluded() || !hasAnalyticsConsentCookie()) stopClarityRecording();
+    else waitForClarityDispatcher();
+    logDebug('project tag loaded');
   });
   script.addEventListener('error', (error) => {
     clarityInjected = false;

@@ -28,7 +28,7 @@ test('Clarity separates storage consent, excludes admins and forwards only safe 
     }
     const client = require(output);
     const commands: unknown[][] = [];
-    (dom.window as unknown as { clarity: (...args: unknown[]) => void }).clarity = (...args) => commands.push(args);
+    (dom.window as unknown as { clarity: (...args: unknown[]) => void }).clarity = Object.assign((...args: unknown[]) => commands.push(args), { v: 'fixture-sdk' });
     client.setClarityConsent(true, false);
     assert.deepEqual(commands, [['consentv2', { analytics_Storage: 'granted', ad_Storage: 'denied' }]], 'analytics acceptance cannot grant ads through the legacy API');
     commands.length = 0;
@@ -111,6 +111,7 @@ test('Clarity separates storage consent, excludes admins and forwards only safe 
         deferredRestarts.push(() => { active = true; sdkWindow.clarity = vendor; });
       }
     };
+    Object.assign(vendor, { v: 'fixture-sdk' });
     sdkWindow.clarity = vendor;
     client.injectClarityScript('fixture-project');
     document.cookie = '_clck=host-cookie; Path=/';
@@ -157,7 +158,7 @@ test('public loader restores a stored admin only after eligibility, stops during
     const writeConsent = (analytics: boolean, ads: boolean) => {
       document.cookie = `mv-consent=${encodeURIComponent(JSON.stringify({ version: 'fixture', timestamp: Date.now(), categories: { analytics, ads }, source: 'banner' }))}; Path=/`;
     };
-    const sdkWindow = dom.window as unknown as { clarity: ((...args: unknown[]) => void) & { q?: unknown[][] }; __mvaiCommercialAnalyticsExcluded: boolean };
+    const sdkWindow = dom.window as unknown as { clarity: ((...args: unknown[]) => void) & { q?: unknown[][]; v?: string }; __mvaiCommercialAnalyticsExcluded: boolean };
     writeConsent(true, false);
     dom.window.sessionStorage.setItem('mvai.analytics-excluded-admin.v1', '1');
     const client = require(output);
@@ -171,14 +172,19 @@ test('public loader restores a stored admin only after eligibility, stops during
     assert.ok(sdkWindow.clarity.q!.some((command) => command[0] === 'consentv2' && (command[1] as { ad_Storage: string }).ad_Storage === 'denied'));
     assert.ok(sdkWindow.clarity.q!.some((command) => command[0] === 'set' && command[1] === 'page_category' && command[2] === 'mcp'));
     assert.ok(!JSON.stringify(sdkWindow.clarity.q).includes('?code='));
+    const vendorConfig = { projectId: 'fixture-project', upload: 'https://m.clarity.ms/collect', track: true };
+    sdkWindow.clarity.q!.unshift(['start', vendorConfig]); // The real project tag loads a second SDK script.
+    script.dispatchEvent(new dom.window.Event('load'));
+    assert.equal(client.isClarityReady(), false, 'project-tag load is not versioned-SDK readiness');
     writeConsent(false, false);
     await act(async () => dom.window.dispatchEvent(new dom.window.CustomEvent('consent:updated', { detail: { categories: { analytics: false, ads: false } } })));
     client.setClarityConsent(false, false);
     assert.deepEqual(sdkWindow.clarity.q, [['stop']], 'pre-load withdrawal retains the sole SDK stop command');
     const commands: unknown[][] = [];
-    sdkWindow.clarity = (...args) => commands.push(args);
-    script.dispatchEvent(new dom.window.Event('load'));
-    assert.deepEqual(commands, [['stop']], 'onload reasserts a direct stop, never a consent-triggered restart');
+    const queued = sdkWindow.clarity.q!.slice();
+    sdkWindow.clarity = Object.assign((...args: unknown[]) => commands.push(args), { v: 'fixture-sdk' });
+    queued.forEach((command) => sdkWindow.clarity(...command)); // Versioned SDK dispatches the pending stop.
+    assert.deepEqual(commands, [['stop']], 'final SDK bootstrap consumes stop, never a consent-triggered restart');
     assert.equal(client.isClarityReady(), false);
     writeConsent(true, false);
     await act(async () => dom.window.dispatchEvent(new dom.window.CustomEvent('consent:updated', { detail: { categories: { analytics: true, ads: false } } })));
@@ -187,6 +193,7 @@ test('public loader restores a stored admin only after eligibility, stops during
     const startIndex = commands.findIndex((command) => command[0] === 'start');
     const consentIndex = commands.findIndex((command) => command[0] === 'consentv2');
     assert.ok(startIndex >= 0 && consentIndex > startIndex, 'restart precedes current consent, so stale denial cannot replay');
+    assert.deepEqual(commands[startIndex], ['start', vendorConfig], 'a pre-core stop cannot lose projectId/upload configuration');
     assert.deepEqual(commands[consentIndex], ['consentv2', { analytics_Storage: 'granted', ad_Storage: 'denied' }]);
   } finally {
     if (root) await act(async () => root!.unmount());
