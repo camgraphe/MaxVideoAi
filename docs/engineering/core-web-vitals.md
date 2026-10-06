@@ -136,6 +136,7 @@ categories keeps the existing tag, conversion settings and destination deduplica
 The script gates validate a stored record against the current public cookie-policy
 version before mounting. GA4 and GTM startup also validate the persisted analytics
 flag against that version and the consent cookie before scheduling remote code.
+Unconfigured or explicitly disabled destinations do not initiate a policy request.
 GA4 replays the current Google consent when its inline command queue becomes ready,
 so waiting for validation does not lose a new acceptance. The banner and loaders
 share only their in-flight version request; later reads can observe a changed policy.

@@ -119,7 +119,14 @@ GA4, Clarity et Ads avec les deux catégories. L'ancien cookie accompagné du
 drapeau analytics persistant est également testé. La configuration publique
 Clarity est activée et `localhost` est ajouté explicitement à ses hôtes permis
 pour ce diagnostic local, sans modification du code publié ni des fichiers
-d'environnement. La première passe locale, sans le flag d'activation Clarity,
+d'environnement. Les cinq états sont aussi vérifiés sur mobile simulé. Une
+réponse de politique retardée de 10 secondes reproduit environ 389 Ko de tags
+avec l'ancien cookie et le code publié avant ; la correction n'en charge aucun,
+y compris pendant l'attente. Une nouvelle acceptation analytics seule par le
+formulaire mobile active GA4/Clarity avec Ads denied ; seul le POST de persistance
+est simulé dans ce parcours local pour éviter une écriture en base.
+Les destinations absentes ou explicitement désactivées ne font pas de lecture
+de politique propre au chargeur. La première passe locale, sans le flag d'activation Clarity,
 est conservée mais ne sert pas à valider ses téléchargements.
 
 ## Ce qui n'est pas justifié par les mesures
@@ -137,7 +144,7 @@ son apparence actuelle. Le défaut confirmé se trouve dans le démarrage des ta
 
 ## Validation et limites
 
-Build de production, contrôle d'exposition et diff sans erreur ; 72 tests ciblés
+Build de production, contrôle d'exposition et diff sans erreur ; 73 tests ciblés
 réussis, couvrant chargement, lecteur, consentement et intégrité de mesure. Revue
 indépendante GPT-6 Sol, sans défaut important restant démontré. Les routes
 modèle et galerie représentatives chargent sans erreur navigateur ; leurs LCP

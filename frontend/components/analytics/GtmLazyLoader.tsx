@@ -87,12 +87,14 @@ export function GtmLazyLoader({
       syncFromStorage();
     };
 
-    void loadCookiePolicyVersion().then(version => {
-      if (!active) return;
-      currentVersion = version;
-      setPolicyVersion(version);
-      syncFromStorage();
-    });
+    if (GTM_ID && !DISABLE_GTM) {
+      void loadCookiePolicyVersion().then(version => {
+        if (!active) return;
+        currentVersion = version;
+        setPolicyVersion(version);
+        syncFromStorage();
+      });
+    }
     window.addEventListener('consent:updated', handleConsentUpdated as EventListener);
     window.addEventListener('storage', handleStorage);
     window.addEventListener(COMMERCIAL_ANALYTICS_RESOLVED_EVENT, syncFromStorage);

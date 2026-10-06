@@ -77,12 +77,14 @@ export default function ConsentModeBootstrap() {
       syncFromStorage();
     };
 
-    void loadCookiePolicyVersion().then(version => {
-      if (!active) return;
-      currentVersion = version;
-      setPolicyVersion(version);
-      syncFromStorage();
-    });
+    if (GA_ID && !DISABLE_GA) {
+      void loadCookiePolicyVersion().then(version => {
+        if (!active) return;
+        currentVersion = version;
+        setPolicyVersion(version);
+        syncFromStorage();
+      });
+    }
     window.addEventListener('consent:updated', handleConsentUpdated as EventListener);
     window.addEventListener('storage', handleStorage);
     window.addEventListener(COMMERCIAL_ANALYTICS_RESOLVED_EVENT, syncFromStorage);

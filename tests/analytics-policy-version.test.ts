@@ -9,6 +9,49 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { JSDOM } from 'jsdom';
 
+test('unconfigured or explicitly disabled tag loaders do not fetch their policy', async () => {
+  const frontendRequire = createRequire(resolve('frontend/package.json'));
+  for (const disabled of [false, true]) {
+    const directory = await mkdtemp(join(tmpdir(), 'analytics-disabled-'));
+    const dom = new JSDOM('<div id="root"></div>', { url: 'https://maxvideoai.com/app/studio' });
+    let requests = 0;
+    const globals = { window: dom.window, document: dom.window.document, React, IS_REACT_ACT_ENVIRONMENT: true, fetch: async () => { requests++; return new Response(JSON.stringify({ ok: true, version: 'current' })); } };
+    const saved = new Map(Object.keys(globals).map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
+    let root: ReturnType<typeof createRoot> | undefined;
+    try {
+      const output = join(directory, 'loaders.cjs');
+      await build({
+        stdin: { contents: "export {default as GA} from './frontend/components/analytics/ConsentModeBootstrap';export {GtmLazyLoader as GTM} from './frontend/components/analytics/GtmLazyLoader';", resolveDir: process.cwd() },
+        outfile: output, bundle: true, platform: 'node', format: 'cjs', jsx: 'automatic', packages: 'external', tsconfig: 'frontend/tsconfig.json',
+        define: { 'process.env.NEXT_PUBLIC_GA_ID': JSON.stringify(disabled ? 'G-DISABLED-FIXTURE' : ''), 'process.env.NEXT_PUBLIC_GTM_ID': JSON.stringify(disabled ? 'GTM-DISABLED-FIXTURE' : ''), 'process.env.NEXT_PUBLIC_DISABLE_GA': JSON.stringify(disabled ? '1' : '0'), 'process.env.NEXT_PUBLIC_DISABLE_GTM': JSON.stringify(disabled ? '1' : '0'), 'process.env.NODE_ENV': '"development"' },
+        plugins: [{ name: 'route-boundary', setup(builder) {
+          builder.onResolve({ filter: /.*/ }, args => {
+            if (args.path === 'next/navigation') return { path: args.path, namespace: 'route' };
+            if (!args.path.startsWith('.') && !args.path.startsWith('/') && !args.path.startsWith('@/')) return { path: frontendRequire.resolve(args.path), external: true };
+          });
+          builder.onLoad({ filter: /.*/, namespace: 'route' }, () => ({ contents: 'export const usePathname=()=>window.location.pathname;', loader: 'js' }));
+        } }],
+      });
+      for (const [key, value] of Object.entries(globals)) Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
+      const { GA, GTM } = frontendRequire(output);
+      root = createRoot(dom.window.document.getElementById('root')!);
+      await act(async () => {
+        root!.render(React.createElement(React.Fragment, null, React.createElement(GA), React.createElement(GTM)));
+        await new Promise(resolve => setTimeout(resolve, 20));
+      });
+      assert.equal(requests, 0, disabled ? 'explicitly disabled loaders need no policy' : 'absent destinations need no policy');
+    } finally {
+      if (root) await act(async () => root!.unmount());
+      dom.window.close();
+      for (const [key, descriptor] of saved) {
+        if (descriptor) Object.defineProperty(globalThis, key, descriptor);
+        else Reflect.deleteProperty(globalThis, key);
+      }
+      await rm(directory, { recursive: true, force: true });
+    }
+  }
+});
+
 test('GA and GTM wait for the policy even with a persisted granted flag, then reject an expired choice', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'analytics-policy-'));
   const frontendRequire = createRequire(resolve('frontend/package.json'));
