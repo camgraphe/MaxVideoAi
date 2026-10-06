@@ -391,7 +391,7 @@ test('Veo 3.1 Lite vs Fast comparison owns tier CTR metadata without a site-name
   assert.equal(meta?.titleBranding, 'none');
   assert.match(
     override?.heroIntro ?? '',
-    /^Choose Veo 3\.1 Lite for lower-cost tests\. Choose Veo 3\.1 Fast when quality, audio control and workflow flexibility matter more\./
+    /^Choose Lite for lower-cost 720p or 1080p drafts\. Choose Fast for 4K or multiple reference images\./
   );
 
   const metadata = buildSeoMetadata({

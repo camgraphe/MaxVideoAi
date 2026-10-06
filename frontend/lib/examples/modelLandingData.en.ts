@@ -182,7 +182,7 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     metaDescription:
       "Explore LTX 2.5 Pro and Fast video examples, prompts and settings, with clearly labelled LTX 2.3 and LTX 2 examples for older workflows.",
     heroTitle: "LTX video examples, prompts and settings",
-    subtitle: "LTX 2.5 Pro and Fast examples, with earlier LTX versions clearly identified.",
+    subtitle: "LTX 2.5 Pro and Fast examples, with LTX 2.3 and LTX 2 clearly identified.",
     intro: "Watch LTX 2.5 Pro and Fast examples, then open a video for its prompt, settings and current price estimate. Earlier LTX 2.3 and LTX 2 results keep their original labels so you can compare versions.",
     summary:
       "LTX 2.5 Pro and Fast lead this page. Older LTX 2.3 and LTX 2 examples keep their original model labels so you can compare generations without confusing their capabilities.",

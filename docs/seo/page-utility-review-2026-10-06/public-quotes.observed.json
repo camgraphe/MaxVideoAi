@@ -1,0 +1,211 @@
+[
+  {
+    "observedAt": "2026-10-06T09:26:49.557Z",
+    "input": {
+      "modelId": "veo-3-1-fast",
+      "mode": "t2v",
+      "durationSec": 4,
+      "resolution": "720p",
+      "audio": true,
+      "aspectRatio": "16:9"
+    },
+    "status": 200,
+    "body": {
+      "status": "exact",
+      "amountCents": 52,
+      "currency": "USD",
+      "revision": "64e869ae339f5374ecf1",
+      "scenarioLabel": "t2v · 4s · 720p"
+    }
+  },
+  {
+    "observedAt": "2026-10-06T09:26:49.800Z",
+    "input": {
+      "modelId": "veo-3-1-fast",
+      "mode": "t2v",
+      "durationSec": 4,
+      "resolution": "1080p",
+      "audio": true,
+      "aspectRatio": "16:9"
+    },
+    "status": 200,
+    "body": {
+      "status": "exact",
+      "amountCents": 63,
+      "currency": "USD",
+      "revision": "c03316f2e24832afeb7d",
+      "scenarioLabel": "t2v · 4s · 1080p"
+    }
+  },
+  {
+    "observedAt": "2026-10-06T09:26:50.069Z",
+    "input": {
+      "modelId": "veo-3-1-fast",
+      "mode": "t2v",
+      "durationSec": 4,
+      "resolution": "4k",
+      "audio": true,
+      "aspectRatio": "16:9"
+    },
+    "status": 200,
+    "body": {
+      "status": "exact",
+      "amountCents": 156,
+      "currency": "USD",
+      "revision": "57b95b00ba003290c908",
+      "scenarioLabel": "t2v · 4s · 4k"
+    }
+  },
+  {
+    "observedAt": "2026-10-06T09:26:50.323Z",
+    "input": {
+      "modelId": "veo-3-1-lite",
+      "mode": "t2v",
+      "durationSec": 4,
+      "resolution": "720p",
+      "audio": true,
+      "aspectRatio": "16:9"
+    },
+    "status": 200,
+    "body": {
+      "status": "exact",
+      "amountCents": 26,
+      "currency": "USD",
+      "revision": "e29f074c2bb95f2e52c1",
+      "scenarioLabel": "t2v · 4s · 720p"
+    }
+  },
+  {
+    "observedAt": "2026-10-06T09:26:50.567Z",
+    "input": {
+      "modelId": "veo-3-1-lite",
+      "mode": "t2v",
+      "durationSec": 4,
+      "resolution": "1080p",
+      "audio": true,
+      "aspectRatio": "16:9"
+    },
+    "status": 200,
+    "body": {
+      "status": "exact",
+      "amountCents": 42,
+      "currency": "USD",
+      "revision": "6aed31871143b28c9886",
+      "scenarioLabel": "t2v · 4s · 1080p"
+    }
+  },
+  {
+    "observedAt": "2026-10-06T09:26:50.848Z",
+    "input": {
+      "modelId": "veo-3-1",
+      "mode": "t2v",
+      "durationSec": 4,
+      "resolution": "720p",
+      "audio": true,
+      "aspectRatio": "16:9"
+    },
+    "status": 200,
+    "body": {
+      "status": "exact",
+      "amountCents": 208,
+      "currency": "USD",
+      "revision": "cc424773e8d27184e417",
+      "scenarioLabel": "t2v · 4s · 720p"
+    }
+  },
+  {
+    "observedAt": "2026-10-06T09:26:51.078Z",
+    "input": {
+      "modelId": "veo-3-1",
+      "mode": "t2v",
+      "durationSec": 4,
+      "resolution": "1080p",
+      "audio": true,
+      "aspectRatio": "16:9"
+    },
+    "status": 200,
+    "body": {
+      "status": "exact",
+      "amountCents": 208,
+      "currency": "USD",
+      "revision": "6251dd1ce7eb2eeb93f7",
+      "scenarioLabel": "t2v · 4s · 1080p"
+    }
+  },
+  {
+    "observedAt": "2026-10-06T09:26:51.371Z",
+    "input": {
+      "modelId": "veo-3-1",
+      "mode": "t2v",
+      "durationSec": 4,
+      "resolution": "4k",
+      "audio": true,
+      "aspectRatio": "16:9"
+    },
+    "status": 200,
+    "body": {
+      "status": "exact",
+      "amountCents": 312,
+      "currency": "USD",
+      "revision": "af672d166b17af890c37",
+      "scenarioLabel": "t2v · 4s · 4k"
+    }
+  },
+  {
+    "observedAt": "2026-10-06T09:26:51.612Z",
+    "input": {
+      "modelId": "gemini-omni-flash",
+      "mode": "t2v",
+      "durationSec": 4,
+      "resolution": "720p",
+      "audio": true,
+      "aspectRatio": "16:9"
+    },
+    "status": 200,
+    "body": {
+      "status": "exact",
+      "amountCents": 54,
+      "currency": "USD",
+      "revision": "1c4e8a5a3a6bd27cd80d",
+      "scenarioLabel": "t2v · 4s · 720p"
+    }
+  },
+  {
+    "observedAt": "2026-10-06T09:26:51.894Z",
+    "input": {
+      "modelId": "gemini-omni-flash",
+      "mode": "t2v",
+      "durationSec": 4,
+      "resolution": "1080p",
+      "audio": true,
+      "aspectRatio": "16:9"
+    },
+    "status": 200,
+    "body": {
+      "status": "exact",
+      "amountCents": 80,
+      "currency": "USD",
+      "revision": "fd15a5b7a2cfc31e9085",
+      "scenarioLabel": "t2v · 4s · 1080p"
+    }
+  },
+  {
+    "observedAt": "2026-10-06T09:26:52.117Z",
+    "input": {
+      "modelId": "gemini-omni-flash",
+      "mode": "t2v",
+      "durationSec": 4,
+      "resolution": "4k",
+      "audio": true,
+      "aspectRatio": "16:9"
+    },
+    "status": 200,
+    "body": {
+      "status": "exact",
+      "amountCents": 159,
+      "currency": "USD",
+      "revision": "4ff6713bcb084ccf1972",
+      "scenarioLabel": "t2v · 4s · 4k"
+    }
+  }
+]

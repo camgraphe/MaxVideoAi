@@ -159,6 +159,26 @@ the renderer localizes it and places it beside the existing pricing link.
 Keep this navigation in the pricing footer instead of adding another explanation
 paragraph or a separate callout.
 
+The optional `decisionSummary` is a visible opening answer capped at 240 characters.
+`decisionLinks` adds at most two contextual public links beside that answer; it follows
+the same locale and route validation as `primaryLinks`. Keep longer context in the
+existing disclosure. Author all three locales together and prefer their canonical
+localized destinations for contextual links.
+
+Comparison price scenarios belong in route-local `compare-pricing-scenarios.ts`.
+Choose an admitted text-to-video duration from mode capabilities, prefer a duration
+shared by the pair, and quote through `computeCurrentPublicSnapshot` with explicit
+mode, resolution, aspect and audio. Project the exact video total and per-second
+rate without a catalogue fallback. Avoid initializing the complete tariff audit
+coverage on the request path; the public quote API remains a parity check in tests.
+
+LTX and Seedance gallery prompt shortcuts use only examples already present on the
+current first SSR page, after its four opening cards. Select distinct exact versions
+and project bounded source prompt excerpts on the server; localized card captions
+are not prompts. Keep full prompts in the existing on-demand reader and historical
+example settings separate from current generation quotes. The gallery opening
+contract retains 24 posters and a single prioritized image.
+
 Comparisons without a content document intentionally use the generic renderer and may keep
 slug-specific SEO fallback metadata in `compareCopy.meta.slugOverrides` in the locale message
 files. A canonical slug must never exist in both a comparison document and `slugOverrides`.
