@@ -42,6 +42,12 @@ When required model/source facts are known, prepare by Response 3; optional `pro
 
 The visible timeline edits canonical sequence state with revision and ownership checks. It reuses pure frame-aware operations for clipping, source bounds and linked audio. Library selection does not automatically insert every new generation into the timeline. Preview media uses transient stored grants; signed URLs and private originals must not leak into journal/tool projections or saved command payloads.
 
+The 2026-10-06 branch candidate adds bounded atomic assembly (up to 12 insertions)
+and source-in frames to the same edit owner. Explicit Sol media analysis is a
+separate quoted, confirmed and worker-owned credit consumer. It never runs from
+generation completion or polling. See [Studio media analysis](studio-media-analysis.md)
+for qualified profiles, shared-credit recovery and activation prerequisites.
+
 Exports use the canonical worker contract and backend pricing/idempotency. The browser estimates, confirms, polls and recovers; it does not manufacture completed MP4s. Completed exports and reusable library media remain account artifacts even if a project is later deleted.
 
 ## Retired entry points

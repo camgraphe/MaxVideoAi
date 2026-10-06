@@ -56,6 +56,8 @@ export async function startStudioIntegrationRuntime(options: {
   conversation?: boolean;
   /** Chat quote UI only. This fixture has no worker or provider credentials. */
   conversationExports?: boolean;
+  /** Explicit offline fixture profile; never inherits provider keys or a host tariff. */
+  analysisPolicy?:import('../../frontend/src/server/studio/media-analysis/policy').StudioAnalysisPolicy;
 }) {
   assert.equal(process.versions.node.split('.')[0], '22', 'Use the project Node 22 runtime.');
   const root = resolve('.');
@@ -144,6 +146,7 @@ export async function startStudioIntegrationRuntime(options: {
       DATABASE_URL: database.databaseUrl,
       ...(options.conversation ? {STUDIO_IMAGE_CONVERSATION_ENABLED: 'true',STUDIO_CONVERSATION_ACTIONS_ENABLED: 'true',STUDIO_CONVERSATION_MEDIA_ENABLED: 'true',STUDIO_CONVERSATION_EDITING_ENABLED: 'true'} : {}),
       ...(options.conversationExports ? {STUDIO_CONVERSATION_EXPORTS_ENABLED: 'true'} : {}),
+      ...(options.analysisPolicy?{STUDIO_ASSISTANCE_ENABLED:'true',STUDIO_MEDIA_ANALYSIS_ENABLED:'true',STUDIO_MEDIA_ANALYSIS_APPROVED_POLICY:options.analysisPolicy.version,STUDIO_MEDIA_ANALYSIS_POLICY_JSON:JSON.stringify(options.analysisPolicy)}:{}),
       ...(options.privateStorage === true ? { ...STUDIO_PRIVATE_STORAGE_ENV, AWS_EC2_METADATA_DISABLED: 'true' } : {}),
       ...(options.mcp ? {
         MCP_LOCAL_ENABLED: 'true', MCP_API_HOST: mcpHost, MCP_RESOURCE_URL: `http://${mcpHost}/mcp`,

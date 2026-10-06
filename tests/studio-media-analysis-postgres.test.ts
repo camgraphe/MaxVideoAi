@@ -23,7 +23,7 @@ test('analysis has owned quotes, shared funding and durable exactly-once provide
   const assistancePolicy=studioAssistancePolicy({STUDIO_ASSISTANCE_ENABLED:'true'});
   await pg.pool.query("INSERT INTO studio_projects VALUES('film','analysis-owner',null),('foreign','someone-else',null)");
   const ref={type:'asset' as const,assetId:'ma_'+'a'.repeat(32),kind:'video' as const};
-  await pg.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,status,size_bytes,metadata) VALUES('media',$1,$2,'video','https://cdn.maxvideoai.com/owned.mp4','video/mp4','ready',1000,$3::jsonb)`,[ref.assetId,actor.userId,JSON.stringify({durationSec:30,mediaFacts:{source:'probe',durationSec:30,hasAudio:true}})]);
+  await pg.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,status,size_bytes,metadata) VALUES('media',$1,$2,'video','https://cdn.maxvideoai.com/owned.mp4','video/mp4','ready',1000,$3::jsonb)`,[ref.assetId,actor.userId,JSON.stringify({mediaFacts:{source:'probe',durationSec:30,hasAudio:true}})]);
   const service=createStudioAnalysisService(actor,{policy:analysisPolicy,assistancePolicy});
   const {resolveStudioMedia}=await import('../frontend/src/server/studio/media-resolver');
   assert.equal((await resolveStudioMedia(actor.userId,ref)).durationSec,30);

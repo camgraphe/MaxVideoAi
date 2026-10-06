@@ -1,5 +1,11 @@
 # Studio assistance credits
 
+The 2026-10-06 branch candidate adds a separately confirmed media-analysis consumer
+of these same credit lots and campaign/account locks. It activates no production
+analysis tariff and preserves historical chat prices. See
+[Studio media analysis](studio-media-analysis.md) for qualification, native audio
+costs, confirmed ceilings and durable unknown-usage recovery.
+
 Implemented 2026-10-03; public credit-policy activation was approved by the product
 owner on 2026-10-05. The approved legacy assistance policy remains supported for
 historical recovery and a controlled rollback. Text-only provider and

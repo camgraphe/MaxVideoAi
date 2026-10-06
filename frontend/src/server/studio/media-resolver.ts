@@ -81,7 +81,7 @@ export async function resolveStudioMedia(
     ? authoredName.trim().slice(0, 1024)
     : undefined;
   const mediaFacts=readMediaFacts(row.metadata?.mediaFacts);
-  const duration=ref.type==='asset'&&ref.kind==='video'?videoDuration(row.metadata??{},url,typeof row.metadata?.durationSec==='number'?row.metadata.durationSec:null):mediaFacts?.durationSec??(ref.type==='asset'&&ref.kind==='audio'&&typeof row.metadata?.durationSec==='number'?row.metadata.durationSec:null);
+  const duration=ref.type==='asset'&&ref.kind==='video'?videoDuration(row.metadata??{},url,mediaFacts?.durationSec??(typeof row.metadata?.durationSec==='number'?row.metadata.durationSec:null)):mediaFacts?.durationSec??(ref.type==='asset'&&ref.kind==='audio'&&typeof row.metadata?.durationSec==='number'?row.metadata.durationSec:null);
   const bytes=Number(row.size_bytes);
   const result:StudioResolvedMedia = { id: row.id, ref, kind: ref.kind, url, thumbUrl: row.thumb_url ?? null,
     previewUrl: row.preview_url ?? null, mime: media.canonicalMime, mediaFacts,

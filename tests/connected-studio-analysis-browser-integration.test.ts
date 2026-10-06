@@ -1,0 +1,55 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {readFile,mkdir} from 'node:fs/promises';
+import {join} from 'node:path';
+import {expect} from '@playwright/test';
+import {startStudioIntegrationRuntime} from './helpers/studio-integration-runtime';
+import {startStudioConnectedBrowserFixture} from './helpers/studio-connected-browser-fixture';
+import {initializeStudioConnectedFixture,STUDIO_CONNECTED_ASSET_IDS} from './helpers/studio-connected-fixture-data';
+import {STUDIO_FIXTURE_OWNERS} from './helpers/studio-auth-fixture';
+import {getDb} from '../frontend/src/lib/db';
+import {createStudioConversationProject} from '../frontend/src/server/studio/conversation-project-command';
+import {createStudioAnalysisService} from '../frontend/src/server/studio/media-analysis/service';
+import {studioAssistancePolicy} from '../frontend/src/server/studio/assistance-policy';
+import {claimImageTurn,persistImageDraft} from '../frontend/src/server/studio/image-conversation-repository';
+
+const policy={version:'offline-browser-v1',processingNanoUsdPerSecond:100_000,marginPercent:1,video:{maxInputTokens:20_000,maxOutputTokens:2200},audio:null};
+test('analysis review works on desktop/mobile and only explicit confirmation queues an owned run',async()=>{
+  const previous=process.env.DATABASE_URL;
+  const runtime=await startStudioIntegrationRuntime({conversation:true,privateStorage:true,analysisPolicy:policy,initializeDatabase:async db=>{
+    await initializeStudioConnectedFixture(db);
+    await db.pool.query("UPDATE media_assets SET url='https://cdn.maxvideoai.com/studio-local-fixture/' || public_id || '.mp4'");
+    for(const name of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','64_studio_media_analysis.sql'])await db.pool.query(await readFile('neon/migrations/'+name,'utf8'));
+  }});
+  process.env.DATABASE_URL=runtime.database.databaseUrl;
+  let browser:Awaited<ReturnType<typeof startStudioConnectedBrowserFixture>>|undefined;
+  try {
+    const project=await createStudioConversationProject({userId:STUDIO_FIXTURE_OWNERS[0]},{name:'Explicit analysis',idempotencyKey:randomUUID()},{featureEnabled:true});
+    const actor={userId:STUDIO_FIXTURE_OWNERS[0],projectId:project.projectId,authMethod:'studio-session' as const,clientId:null};
+    const ref={type:'asset' as const,assetId:STUDIO_CONNECTED_ASSET_IDS.a,kind:'video' as const};
+    const analysis=createStudioAnalysisService(actor,{policy,assistancePolicy:studioAssistancePolicy({STUDIO_ASSISTANCE_ENABLED:'true'})});
+    const quote=await analysis.prepare({ref,goal:'Find the opening action',reason:'requested',startSec:0,endSec:4},randomUUID());
+    const turn=await claimImageTurn(actor,{requestId:randomUUID(),message:'Analyse cette vidéo',references:[],attachments:[ref]});
+    await persistImageDraft(actor,turn.turn,{reply:'Review the interval and credit ceiling.',image:null,analysisQuote:quote},'a'.repeat(64));
+    const session=await runtime.auth.createOwnerSession(STUDIO_FIXTURE_OWNERS[0]);
+    browser=await startStudioConnectedBrowserFixture({runtime,browserName:'chromium'});
+    const owned=await browser.newContext(session,{viewport:{width:1440,height:900},locale:'en-US',reducedMotion:'reduce'});
+    const page=owned.page;await page.goto(runtime.browserOrigin+`/app/studio/conversation/${project.projectId}`);
+    const card=page.getByRole('region',{name:'Media analysis'});
+    await expect(card).toBeVisible();await expect(card.getByRole('button',{name:/Analyse with Sol 6.1/})).toBeEnabled();
+    assert.equal((await analysis.read(quote.analysisId)).state,'prepared','Rendering and GETs cannot queue or charge analysis');
+    await page.setViewportSize({width:390,height:844});
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true);
+    const evidence=join(process.cwd(),'.superpowers/sdd/2026-10-06-studio-media-analysis/browser');await mkdir(evidence,{recursive:true});await page.screenshot({path:join(evidence,'analysis-mobile.png'),fullPage:true});
+    await card.getByRole('button',{name:/Analyse with Sol 6.1/}).click();
+    await expect(card.getByText('Analysis in progress. Your media is preserved.')).toBeVisible();
+    assert.equal((await analysis.read(quote.analysisId)).state,'queued');
+    assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM studio_analysis_credit_funding')).rows[0].n,1);
+    assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM studio_assistance_calls')).rows[0].n,0,'Browser delivery never creates an analytical model call');
+    await page.reload();await expect(page.getByRole('region',{name:'Media analysis'}).getByText('Analysis in progress. Your media is preserved.')).toBeVisible();
+    assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM studio_analysis_credit_funding')).rows[0].n,1);
+  }finally{
+    await browser?.close();await getDb().end();if(previous===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=previous;await runtime.close();
+  }
+});

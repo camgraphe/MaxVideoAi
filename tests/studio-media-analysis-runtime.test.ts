@@ -39,6 +39,10 @@ test('the real decoder produces timestamped JPEGs and a bounded mono music windo
     const audio=await extractStudioAnalysisSource({...media,ref:audioRef,kind:'audio',mime:'audio/mp4'},{...request,ref:audioRef},AbortSignal.timeout(20_000),dependencies);
     assert.equal(Buffer.from(audio.audioBase64!,'base64').subarray(0,4).toString(),'RIFF');
     assert.equal(audio.sourceHash,extracted.sourceHash);assert.equal(audio.frames.length,0);
+    const privateVideo=path.join(directory,'private.ts');
+    await promisify(execFile)(installer.path,['-nostdin','-loglevel','error','-i',video,'-c','copy','-f','mpegts',privateVideo]);
+    const playlist=Buffer.from(`#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:2\n#EXT-X-MEDIA-SEQUENCE:0\n#EXTINF:2,\n${privateVideo}\n#EXT-X-ENDLIST\n`);
+    await assert.rejects(extractStudioAnalysisSource(media,request,AbortSignal.timeout(20_000),{fetchSource:async()=>new Response(playlist)}),/format|Invalid|ANALYSIS|failed|Command/i,'A media-labelled playlist cannot read other local files');
   } finally {await rm(directory,{recursive:true,force:true});}
 });
 test('credit ceiling covers processing and bounded model usage, exact settlement never exceeds it',()=>{
