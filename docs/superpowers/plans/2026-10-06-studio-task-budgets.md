@@ -62,10 +62,10 @@
 **Files:** task route handler/resume route, existing conversation handler; route-local task hook/profile/progress components and composer integration; `tests/studio-task-route.test.ts`, `tests/studio-task-hook.test.ts`, connected task browser integration.
 **Interfaces:** existing submit returns owned conversation with task state; profile selection passed as exact `taskBudget`; resume posts exact revision/approval identity.
 
-- [ ] Write/run RED route/hook tests for enqueue-only POST, same-origin/scope/body guards, explicit complex, duplicate clicks, stale session responses, mount/read no dispatch.
-- [ ] Add task-gated queue adapter and safe saved-state reads. Existing generation confirmation handler stays canonical.
-- [ ] Add visible profile ceiling, complex confirmation, deterministic progress and paused options (within ceiling/extension/simplify), with consumed/reserved credits and no implicit pack/model switch.
-- [ ] Run real desktop/mobile browser with real PostgreSQL/API and fake bounded model (Expected: one task/approval, no hidden call or generation); commit.
+- [x] Write/run RED route/hook tests for enqueue-only POST, same-origin/scope/body guards, explicit complex, duplicate clicks, stale session responses, mount/read no dispatch.
+- [x] Add task-gated queue adapter and safe saved-state reads. Existing generation confirmation handler stays canonical.
+- [x] Add visible profile ceiling, complex confirmation, deterministic progress and paused options (within ceiling/extension/simplify), with consumed/reserved credits and no implicit pack/model switch.
+- [x] Run real desktop/mobile browser with real PostgreSQL/API and fake bounded model (Expected: one task/approval, no hidden call or generation); commit.
 
 ### Task 5: Integration, operating guide and fresh review
 

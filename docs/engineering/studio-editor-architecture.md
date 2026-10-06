@@ -1,5 +1,7 @@
 # Studio architecture
 
+The isolated 2026-10-06 task-budget candidate is documented in [Studio task budgets](studio-task-budgets.md); this link does not establish production activation.
+
 Reviewed 2026-10-05. Studio has one public conversational interface. The private React Flow Canvas, its templates and local-only project management were retired at the owner's request. Its personal saved projects are deleted without migration; current chats and MCP montages remain supported.
 
 ## Public presentation and current availability
