@@ -4,6 +4,7 @@ import { deriveJobSurface } from '@/lib/job-surface';
 import { extractRenderIds, extractRenderThumbUrls, parseStoredImageRenders } from '@/lib/image-renders';
 import { isStablePublicMediaUrl, normalizeMediaUrl } from '@/lib/media';
 import {
+  SEEDANCE_OUTPUT_AUDIO_BLOCKED,
   getVideoFailureCodeFromSettingsSnapshot,
   SEEDANCE_I2V_RATIO_REJECTED,
   SEEDANCE_INPUT_VIDEO_TOO_SMALL,
@@ -77,6 +78,7 @@ const FAILED_ATTEMPT_BOUNDARY =
   'No new generation was started after this failure. A refund or recredit does not restore the previous authorization. To try again, prepare a fresh exact quote and wait for explicit user approval.';
 
 const SAFE_AGENT_FAILURE_CODES = new Set([
+  SEEDANCE_OUTPUT_AUDIO_BLOCKED,
   SEEDANCE_I2V_RATIO_REJECTED,
   SEEDANCE_INPUT_VIDEO_TOO_SMALL,
   SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED,

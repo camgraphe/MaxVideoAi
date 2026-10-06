@@ -7,6 +7,8 @@ import type { PricingSnapshot } from '@/types/engines';
 import { readTrialJobStatus } from '@/server/agent-api/trial-outcomes';
 
 import { mapGenerationStatusRecordToAgent } from './agent-generation-policy';
+import { getKnownGenerationFailureMessage } from '@/lib/generation-failure-messages';
+import { getVideoFailureCodeFromSettingsSnapshot } from '@/lib/video-failure-codes';
 
 export { mapGenerationStatusRecordToAgent };
 
@@ -217,6 +219,12 @@ export function mapGenerationStatusRecordToWeb(
     fallback: GenerationStatusWebOverrides[K]
   ): GenerationStatusWebOverrides[K] =>
     Object.prototype.hasOwnProperty.call(overrides, key) ? overrides[key] : fallback;
+  const message = override('status', record.status ?? undefined)?.toLowerCase() === 'failed'
+    ? getKnownGenerationFailureMessage({
+        failureCode: getVideoFailureCodeFromSettingsSnapshot(record.settings_snapshot),
+        message: record.message,
+      }) ?? record.message
+    : record.message;
   return {
     ok: true,
     jobId: record.job_id,
@@ -252,7 +260,7 @@ export function mapGenerationStatusRecordToWeb(
     renderThumbUrls: override('renderThumbUrls', extractRenderThumbUrls(parsedRenders) ?? undefined),
     heroRenderId: record.hero_render_id ?? undefined,
     localKey: record.local_key ?? undefined,
-    message: override('message', record.message ?? undefined) ?? undefined,
+    message: override('message', message ?? undefined) ?? undefined,
     etaSeconds: record.eta_seconds ?? undefined,
     etaLabel: record.eta_label ?? undefined,
   };
