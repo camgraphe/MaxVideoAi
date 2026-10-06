@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { handleStudioImageConversation } from "../../../_lib/studio-image-conversation-handler";
 export const runtime = "nodejs";
-export const maxDuration = 120;
+export const maxDuration = 800;
 type Context = { params: Promise<{ projectId: string }> };
 export async function GET(req: NextRequest, context: Context) {
   return handleStudioImageConversation(

@@ -12,15 +12,18 @@ import {analysisSourceFingerprint,extractStudioAnalysisSource} from './source';
 import {prepareStudioAnalysisProvider,parseStudioAnalysisObservations,readStudioAnalysisProviderCost} from './provider';
 import {resolveAnalysisSource,type AnalysisRun} from './repository';
 import {studioAnalysisLeaseExpiredSql} from './lease';
+import type {StudioWorkerScope} from '../worker-host';
 
-type WorkerDependencies={policy?:StudioAnalysisPolicy|null;assistancePolicy?:StudioAssistancePolicy;extract?:typeof extractStudioAnalysisSource;provider?:typeof prepareStudioAnalysisProvider};
+type WorkerDependencies={policy?:StudioAnalysisPolicy|null;assistancePolicy?:StudioAssistancePolicy;extract?:typeof extractStudioAnalysisSource;provider?:typeof prepareStudioAnalysisProvider;scope?:StudioWorkerScope};
 /** Worker-only entry. No generation callback, API GET or chat poll calls this function. */
 export async function runStudioAnalysisWorkerOnce(dependencies:WorkerDependencies={}):Promise<boolean> {
   const assistance=dependencies.assistancePolicy??studioAssistancePolicy();
   // Read candidates first; every mutation locks campaign -> account -> run.
-  const candidate=(await query<AnalysisRun>(`SELECT * FROM studio_media_analysis_runs WHERE state='queued'
+  const scopeFilter=dependencies.scope;
+  const candidate=(await query<AnalysisRun>(`SELECT * FROM studio_media_analysis_runs WHERE (state='queued'
     OR (provider_snapshot IS NOT NULL AND (state='running' OR (state='unknown' AND error='ANALYSIS_SETTLEMENT_PENDING')))
-    OR (state='running' AND ${studioAnalysisLeaseExpiredSql()}) ORDER BY created_at LIMIT 1`))[0];
+    OR (state='running' AND ${studioAnalysisLeaseExpiredSql()}))
+    ${scopeFilter?'AND user_id=$1 AND project_id=$2 AND id=$3':''} ORDER BY created_at LIMIT 1`,scopeFilter?[scopeFilter.userId,scopeFilter.projectId,scopeFilter.requestId]:[]))[0];
   if(!candidate)return false;
   const workerId=randomUUID();
   const run=await withDbTransaction(async tx=>{

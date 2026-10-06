@@ -28,3 +28,13 @@ test('confirmation rejects oversized and mismatched identities before mutation',
   const mismatch=await handleStudioAnalysis(new NextRequest(endpoint,{method:'POST',headers,body:JSON.stringify({analysisId:'f2929a29-91b4-4c81-a731-820d6d3d7103',maxCredits:80,policyVersion:'v1',confirmed:true})}),'film','confirm',id,dependencies);
   assert.equal(mismatch.status,400);assert.equal(confirms,0);
 });
+test('only exact client confirmation schedules owned analysis; status reads never do',async()=>{
+  const scheduled:unknown[]=[];
+  const dependencies={resolveAccess:access,scheduleWorker:(...args:unknown[])=>{scheduled.push(args);},serviceFactory:()=>({read:async()=>({state:'queued'}),prepare:async()=>null,confirm:async()=>({analysisId:id,state:'queued'})})};
+  const endpoint=`https://maxvideoai.com/api/studio/projects/film/analyses/${id}`;
+  await handleStudioAnalysis(new NextRequest(endpoint),'film','read',id,dependencies);
+  assert.equal(scheduled.length,0);
+  const response=await handleStudioAnalysis(new NextRequest(endpoint,{method:'POST',headers:{origin:'https://maxvideoai.com'},body:JSON.stringify({analysisId:id,maxCredits:80,policyVersion:'v1',confirmed:true})}),'film','confirm',id,dependencies);
+  assert.equal(response.status,200);
+  assert.deepEqual(scheduled,[['analysis',{userId:'owner',projectId:'film',requestId:id}]]);
+});

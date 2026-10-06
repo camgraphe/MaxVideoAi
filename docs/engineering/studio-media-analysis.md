@@ -93,6 +93,17 @@ exposure even after disabling analysis or reverting the assistance policy.
 
 ## Assembly and music
 
+Production hosting can use `STUDIO_VERCEL_WORKERS_ENABLED=true` on Vercel
+Pro/Fluid. Exact confirmation schedules only its owned queued run using
+`after()`; the secret-authenticated minute cron reclaims saved work. Each
+analysis invocation has 400 seconds, covering extraction, counting, one dispatch
+and settlement. Neither generation delivery nor status GET starts analysis.
+The optional versioned `processingBaseNanoUsd` covers original download and
+decoder overhead even when the requested interval is short. Missing on an older
+frozen policy, it remains zero. Candidate numerical settings are authored in
+`frontend/config/studio-media-analysis-policy.json`; the file alone cannot
+activate either profile.
+
 The canonical revisioned command supports `assemble` with 1–12 insertions applied
 atomically in list order, plus optional `sourceInFrame` on inserts. Positions,
 durations and source offsets are integer sequence frames. Ownership, measured

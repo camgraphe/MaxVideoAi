@@ -7,15 +7,18 @@ import {studioAssistancePolicy,type StudioAssistancePolicy} from '../assistance-
 import {studioTaskSchemaReady,readStudioTaskUsage,type StudioTaskRow} from './repository';
 import {studioTasksEnabled,StudioTaskStop} from './policy';
 import type {StudioTaskExecution} from './execution';
+import type {StudioWorkerScope} from '../worker-host';
 
 type ServiceOptions=Omit<Parameters<typeof createImageConversationService>[1],'enabled'|'actionsEnabled'|'assistancePolicy'|'taskExecution'>;
-type WorkerDependencies={enabled?:boolean;assistancePolicy?:StudioAssistancePolicy;serviceOptions?:ServiceOptions};
+type WorkerDependencies={enabled?:boolean;assistancePolicy?:StudioAssistancePolicy;serviceOptions?:ServiceOptions;scope?:StudioWorkerScope};
 /** Only a worker runs this entry. UI status reads never call it. */
 export async function runStudioTaskWorkerOnce(dependencies:WorkerDependencies={}):Promise<boolean> {
   if(!await studioTaskSchemaReady())return false;
-  const candidate=(await query<StudioTaskRow>(`SELECT t.* FROM studio_tasks t WHERE state='queued' OR (state='running' AND lease_expires_at<=clock_timestamp())
+  const scopeFilter=dependencies.scope;
+  const candidate=(await query<StudioTaskRow>(`SELECT t.* FROM studio_tasks t WHERE (state='queued' OR (state='running' AND lease_expires_at<=clock_timestamp())
     OR (state='unknown' AND error='provider' AND EXISTS(SELECT 1 FROM studio_conversation_responses r WHERE r.user_id=t.user_id AND r.project_id=t.project_id AND r.request_id=t.segment_request_id AND r.state='reported'))
-    ORDER BY created_at LIMIT 1`))[0];
+    ) ${scopeFilter?'AND user_id=$1 AND project_id=$2 AND request_id=$3':''}
+    ORDER BY created_at LIMIT 1`,scopeFilter?[scopeFilter.userId,scopeFilter.projectId,scopeFilter.requestId]:[]))[0];
   if(!candidate)return false;
   const workerId=randomUUID();
   const row=await withDbTransaction(async tx=>{

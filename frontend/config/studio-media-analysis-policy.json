@@ -1,0 +1,15 @@
+{
+  "version": "studio-media-analysis-2026-10-06-v1",
+  "processingBaseNanoUsd": 20000000,
+  "processingNanoUsdPerSecond": 100000,
+  "marginPercent": 1,
+  "video": { "maxInputTokens": 12000, "maxOutputTokens": 2200 },
+  "audio": {
+    "maxInputTokens": 4096,
+    "maxOutputTokens": 1200,
+    "rateVersion": "openai-gpt-audio-1.5-standard-global-2026-10-06",
+    "textInputNanoUsd": 2500,
+    "audioInputNanoUsd": 32000,
+    "textOutputNanoUsd": 10000
+  }
+}

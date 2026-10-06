@@ -5,6 +5,12 @@ import {analysisSampleTimes,readBoundedAnalysisBody,analysisSourceFingerprint,ex
 import {parseStudioAnalysisObservations,buildStudioAnalysisVisualInput,readStudioAnalysisProviderCost} from '../frontend/src/server/studio/media-analysis/provider';
 
 export const policyFixture={version:'test-policy-v1',processingNanoUsdPerSecond:100_000,marginPercent:1,video:{maxInputTokens:20_000,maxOutputTokens:2200},audio:null};
+test('a short requested interval still covers the fixed original-download and decoder overhead',()=>{
+  const policy={...policyFixture,processingBaseNanoUsd:20_000_000};
+  assert.ok(studioAnalysisPolicy({STUDIO_MEDIA_ANALYSIS_ENABLED:'true',STUDIO_MEDIA_ANALYSIS_APPROVED_POLICY:policy.version,STUDIO_MEDIA_ANALYSIS_POLICY_JSON:JSON.stringify(policy)}));
+  assert.equal(priceStudioAnalysis(policy,.25,0).processingNanoUsd,20_025_000);
+  assert.equal(priceStudioAnalysis(policy,.25,0).supplierNanoUsd,20_025_000);
+});
 test('settlement requires the exact provider model, metered token bounds and supported tier',()=>{
   const snapshot={id:'response',model:'gpt-6.1-sol',serviceTier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:20},outputText:'',inputTokens:100,outputTokenBound:2200,providerNanoUsd:450_000};
   assert.equal(readStudioAnalysisProviderCost(snapshot,'video',policyFixture),450_000);

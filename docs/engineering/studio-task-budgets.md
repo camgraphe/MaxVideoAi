@@ -74,7 +74,13 @@ conversation/assistance migrations. Readiness checks all four task tables;
 imports and requests never bootstrap them. Run `pnpm studio-tasks:worker` or
 `pnpm studio-tasks:worker:once` with the existing database and `OPENAI_API_KEY`.
 The worker host must support the ten-minute segment and run matching source/flags;
-HTTP polling is not a worker. Enable `STUDIO_CONVERSATION_TASKS_ENABLED=true`
+HTTP polling is not a worker. The Vercel Pro/Fluid host uses
+`STUDIO_VERCEL_WORKERS_ENABLED=true`: accepted queued POSTs schedule a scoped
+`after()` wake-up; authenticated minute crons reclaim saved work if it is lost.
+The task route/cron allows 800 seconds for one segment, including bounded
+provider/settlement overhead. GET status and media delivery never schedule work.
+The cron requires the actual `CRON_SECRET`, without header-only fallback.
+Enable `STUDIO_CONVERSATION_TASKS_ENABLED=true`
 alongside actions and the existing approved credits assistance policy. Other
 generation/edit/export/media-analysis flags remain independent. Disabling tasks
 preserves status and qualified replay-only recovery while stopping new calls.

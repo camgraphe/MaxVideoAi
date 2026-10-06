@@ -5,7 +5,7 @@ import {quoteCanonicalPricing} from '@maxvideoai/pricing';
 const rate=z.number().int().positive().max(1_000_000_000);
 const bounds={maxInputTokens:z.number().int().min(1024).max(128_000),maxOutputTokens:z.number().int().min(256).max(2200)};
 export const studioAnalysisPolicySchema=z.object({
-  version:z.string().min(1).max(128),processingNanoUsdPerSecond:z.number().int().nonnegative().max(1_000_000_000),marginPercent:z.number().min(0).max(10),
+  version:z.string().min(1).max(128),processingNanoUsdPerSecond:z.number().int().nonnegative().max(1_000_000_000),processingBaseNanoUsd:z.number().int().nonnegative().max(1_000_000_000).optional(),marginPercent:z.number().min(0).max(10),
   video:z.object(bounds).strict().nullable(),
   audio:z.object({...bounds,rateVersion:z.string().min(1).max(128),textInputNanoUsd:rate,audioInputNanoUsd:rate,textOutputNanoUsd:rate}).strict().nullable(),
 }).strict().refine(policy=>policy.video||policy.audio,'Qualify at least one profile.');
@@ -17,7 +17,7 @@ export function studioAnalysisPolicy(env:NodeJS.ProcessEnv=process.env):StudioAn
 }
 export function priceStudioAnalysis(policy:StudioAnalysisPolicy,durationSec:number,providerNanoUsd:number) {
   if(!Number.isFinite(durationSec)||durationSec<=0||durationSec>60||!Number.isSafeInteger(providerNanoUsd)||providerNanoUsd<0)throw new Error('INVALID_ANALYSIS_COST');
-  const processingNanoUsd=Math.ceil(durationSec*policy.processingNanoUsdPerSecond),supplierNanoUsd=providerNanoUsd+processingNanoUsd;
+  const processingNanoUsd=(policy.processingBaseNanoUsd??0)+Math.ceil(durationSec*policy.processingNanoUsdPerSecond),supplierNanoUsd=providerNanoUsd+processingNanoUsd;
   if(!Number.isSafeInteger(supplierNanoUsd))throw new Error('INVALID_ANALYSIS_COST');
   const id=policy.version;
   const price=quoteCanonicalPricing({facts:{engineId:'studio-media-analysis',currency:'USD',vendorSubtotalExactCents:supplierNanoUsd/10_000_000,unit:'analysis',quantity:1},

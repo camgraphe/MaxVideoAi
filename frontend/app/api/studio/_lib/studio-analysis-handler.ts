@@ -5,6 +5,7 @@ import {AgentApiError} from '@/server/agent-api/errors';
 import {studioAnalysisPrepareSchema,studioAnalysisConfirmSchema} from '@/lib/studio/media-analysis-contract';
 import {createStudioAnalysisService} from '@/server/studio/media-analysis/service';
 import {studioJson} from './studio-route-utils';
+import {scheduleStudioWorker} from '@/server/studio/worker-host';
 
 type AnalysisService={read(id:string):Promise<unknown>;prepare(request:unknown,key:string):Promise<unknown>;confirm(request:unknown):Promise<unknown>};
 async function readBody(req:NextRequest){
@@ -13,7 +14,7 @@ async function readBody(req:NextRequest){
   try{while(true){const next=await reader.read();if(next.done)break;size+=next.value.byteLength;if(size>24_000){await reader.cancel();throw new Error('BODY_TOO_LARGE');}chunks.push(next.value);}}finally{reader.releaseLock();}
   return JSON.parse(Buffer.concat(chunks).toString('utf8')) as unknown;
 }
-export async function handleStudioAnalysis(req:NextRequest,projectId:string,operation:'prepare'|'read'|'confirm',analysisId?:string,dependencies:{resolveAccess?:typeof resolveStudioApiAccess;serviceFactory?:(actor:Parameters<typeof createStudioAnalysisService>[0])=>AnalysisService}={}){
+export async function handleStudioAnalysis(req:NextRequest,projectId:string,operation:'prepare'|'read'|'confirm',analysisId?:string,dependencies:{resolveAccess?:typeof resolveStudioApiAccess;scheduleWorker?:typeof scheduleStudioWorker;serviceFactory?:(actor:Parameters<typeof createStudioAnalysisService>[0])=>AnalysisService}={}){
   const access=await (dependencies.resolveAccess??resolveStudioApiAccess)(req);
   if(!access.ok)return studioJson({ok:false,error:access.error},{status:access.status});
   if(!projectId||projectId!==projectId.trim()||projectId.length>128)return studioJson({ok:false,error:'INVALID_PROJECT'},{status:400});
@@ -30,7 +31,10 @@ export async function handleStudioAnalysis(req:NextRequest,projectId:string,oper
     }
     const input=studioAnalysisConfirmSchema.parse(raw);
     if(input.analysisId!==analysisId)return studioJson({ok:false,error:'INVALID_ANALYSIS'},{status:400});
-    return studioJson({ok:true,result:await service.confirm(input)});
+    const result=await service.confirm(input);
+    if(result&&typeof result==='object'&&'state' in result&&result.state==='queued')
+      (dependencies.scheduleWorker??scheduleStudioWorker)('analysis',{userId:access.userId,projectId,requestId:analysisId!});
+    return studioJson({ok:true,result});
   }catch(error){
     if(error instanceof SyntaxError||error instanceof ZodError)return studioJson({ok:false,error:'INVALID_REQUEST'},{status:400});
     if(error instanceof Error&&error.message==='BODY_TOO_LARGE')return studioJson({ok:false,error:'BODY_TOO_LARGE'},{status:413});

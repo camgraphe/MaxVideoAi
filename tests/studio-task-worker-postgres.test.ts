@@ -10,6 +10,16 @@ import {STUDIO_TASK_POLICY_VERSION} from '../frontend/src/lib/studio/task-budget
 const generationFactory=(()=>({resolveReferences:async()=>[],walletSummary:async()=>({balanceCents:0,currency:'USD'}),catalog:async()=>[],getQuote:async()=>null})) as unknown as ImageGenerationFactory;
 const response=(id:string,reply='Requested answer')=>({id,model:'gpt-6.1-sol',status:'completed' as const,service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50},output_text:JSON.stringify({reply}),output:[]});
 function deferred(){let resolve!:()=>void;const promise=new Promise<void>(done=>{resolve=done;});return {promise,resolve};}
+test('an immediate wake-up cannot process another queued account or request',async t=>{
+  const f=await studioTaskFixture(t),a=await f.actor(),b=await f.actor();
+  const first=createStudioTaskService(a,{enabled:true,assistancePolicy:f.policy}),second=createStudioTaskService(b,{enabled:true,assistancePolicy:f.policy});
+  const i=f.input(),j=f.input();await first.enqueue(i);await second.enqueue(j);
+  const worker={enabled:true,assistancePolicy:f.policy,serviceOptions:{generationFactory,countInputTokens:async()=>100,createActionResponse:async()=>response('scoped')}};
+  assert.equal(await runStudioTaskWorkerOnce({...worker,scope:{...a,requestId:j.requestId}}),false);
+  assert.equal((await first.read(i.requestId)).state,'queued');
+  assert.equal(await runStudioTaskWorkerOnce({...worker,scope:{...b,requestId:j.requestId}}),true);
+  assert.equal((await first.read(i.requestId)).state,'queued');assert.equal((await second.read(j.requestId)).state,'completed');
+});
 
 test('task worker alone dispatches, saves progress and resumes under the same cumulative budget',async t=>{
   const f=await studioTaskFixture(t),actor=await f.actor(),service=createStudioTaskService(actor,{enabled:true,assistancePolicy:f.policy});

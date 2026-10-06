@@ -1,5 +1,6 @@
 import {createStudioTaskConversationAdapter} from '@/server/studio/tasks/conversation-adapter';
 import {studioTasksEnabled} from '@/server/studio/tasks/policy';
+import {scheduleStudioWorker} from '@/server/studio/worker-host';
 import type { NextRequest } from "next/server";
 import { ZodError } from "zod";
 import {
@@ -43,6 +44,7 @@ export async function handleStudioImageConversation(
     enabled?: boolean;
     tasksEnabled?:boolean;
     taskAdapterFactory?:typeof createStudioTaskConversationAdapter;
+    scheduleWorker?:typeof scheduleStudioWorker;
     resolveAccess?: (req: NextRequest) => Promise<StudioAccessDecision>;
     serviceFactory?: typeof createImageConversationService;
   } = {},
@@ -104,6 +106,8 @@ export async function handleStudioImageConversation(
         : action === "submit"
           ? await ((overrides.tasksEnabled??studioTasksEnabled())?adapter:service).submit(await readStudioConversationBody(req))
           : await service.confirm(await readStudioConversationBody(req));
+    if(action==='submit'&&'task' in result&&result.task?.state==='queued')
+      (overrides.scheduleWorker??scheduleStudioWorker)('task',{userId:actor.userId,projectId,requestId:result.task.requestId});
     return studioJson({ ok: true, result });
   } catch (error) {
     if (

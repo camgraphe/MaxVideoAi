@@ -6,8 +6,9 @@ import {studioTaskResumeSchema,studioTaskMaintenanceSchema} from '@/lib/studio/t
 import {createStudioTaskService} from '@/server/studio/tasks/service';
 import {readStudioConversationBody} from './studio-image-conversation-handler';
 import {studioJson} from './studio-route-utils';
+import {scheduleStudioWorker} from '@/server/studio/worker-host';
 type TaskService={read(id:string):Promise<unknown>;resume(raw:unknown):Promise<unknown>;recover(raw:unknown):Promise<unknown>;cancel(raw:unknown):Promise<unknown>};
-export async function handleStudioTask(req:NextRequest,projectId:string,requestId:string,operation:'read'|'mutate',dependencies:{resolveAccess?:typeof resolveStudioApiAccess;serviceFactory?:(actor:Parameters<typeof createStudioTaskService>[0])=>TaskService}={}) {
+export async function handleStudioTask(req:NextRequest,projectId:string,requestId:string,operation:'read'|'mutate',dependencies:{resolveAccess?:typeof resolveStudioApiAccess;scheduleWorker?:typeof scheduleStudioWorker;serviceFactory?:(actor:Parameters<typeof createStudioTaskService>[0])=>TaskService}={}) {
   const access=await (dependencies.resolveAccess??resolveStudioApiAccess)(req);
   if(!access.ok)return studioJson({ok:false,error:access.error},{status:access.status});
   if(!projectId||projectId!==projectId.trim()||projectId.length>128||!z.string().uuid().safeParse(requestId).success)return studioJson({ok:false,error:'INVALID_REQUEST'},{status:400});
@@ -18,6 +19,8 @@ export async function handleStudioTask(req:NextRequest,projectId:string,requestI
     const input=z.union([studioTaskResumeSchema,studioTaskMaintenanceSchema]).parse(await readStudioConversationBody(req));
     if(input.requestId!==requestId)return studioJson({ok:false,error:'INVALID_REQUEST'},{status:400});
     const result=input.action==='recover'?await service.recover(input):input.action==='cancel'?await service.cancel(input):await service.resume(input);
+    if(input.action!=='cancel'&&result&&typeof result==='object'&&'state' in result&&result.state==='queued')
+      (dependencies.scheduleWorker??scheduleStudioWorker)('task',{userId:access.userId,projectId,requestId});
     return studioJson({ok:true,result});
   }catch(error){
     if(error instanceof SyntaxError||error instanceof ZodError||error instanceof Error&&error.message==='INVALID_BODY')return studioJson({ok:false,error:'INVALID_REQUEST'},{status:400});

@@ -28,3 +28,23 @@ test('task-enabled conversation POST enqueues and returns a turn, never synchron
   const response=await handleStudioImageConversation(req,'film','submit',{enabled:true,tasksEnabled:true,resolveAccess:access,serviceFactory:()=>base as never,taskAdapterFactory:()=>adapter as never});
   assert.equal(response.status,200);assert.equal(enqueues,1);assert.equal(synchronous,0);assert.equal((await response.json()).result.requestId,requestId);
 });
+test('only a queued submission or explicit resume schedules owned background work',async()=>{
+  const scheduled:unknown[]=[];
+  const scheduleWorker=(...args:unknown[])=>{scheduled.push(args);};
+  const task={requestId,state:'queued'};
+  const turn={requestId,state:'thinking',task};
+  const base={read:async()=>({projectId:'film',turns:[turn]}),submit:async()=>turn,confirm:async()=>({state:'completed'})};
+  const overrides={enabled:true,tasksEnabled:true,resolveAccess:access,serviceFactory:()=>base as never,taskAdapterFactory:()=>base as never,scheduleWorker};
+  const url='https://maxvideoai.com/api/studio/projects/film/image-conversation';
+  await handleStudioImageConversation(new NextRequest(url),'film','read',overrides);
+  assert.equal(scheduled.length,0);
+  await handleStudioImageConversation(new NextRequest(url,{method:'POST',headers:{origin:'https://maxvideoai.com'},body:'{}'}),'film','submit',overrides);
+  assert.deepEqual(scheduled,[['task',{userId:'owner',projectId:'film',requestId}]]);
+  const deps={resolveAccess:access,scheduleWorker,serviceFactory:()=>({read:async()=>task,resume:async()=>task,recover:async()=>task,cancel:async()=>({...task,state:'failed'})})};
+  const endpoint=url.replace('image-conversation','conversation-tasks/'+requestId);
+  const body={action:'continue',requestId,approvalId:requestId,expectedRevision:0,maxCredits:250,policyVersion:STUDIO_TASK_POLICY_VERSION,confirmed:true};
+  await handleStudioTask(new NextRequest(endpoint,{method:'POST',headers:{origin:'https://maxvideoai.com'},body:JSON.stringify(body)}),'film',requestId,'mutate',deps);
+  assert.equal(scheduled.length,2);
+  await handleStudioTask(new NextRequest(endpoint),'film',requestId,'read',deps);
+  assert.equal(scheduled.length,2);
+});
