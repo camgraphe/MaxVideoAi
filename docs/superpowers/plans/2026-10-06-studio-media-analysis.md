@@ -1,6 +1,6 @@
 # Studio media analysis implementation plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Add explicitly requested, bounded Sol media analysis while keeping Studio a creation assistant and preserving simple Luna edits.
 
@@ -35,9 +35,9 @@
 
 **Interfaces:** `studioAnalysisCapabilities(model, availability)`; strict preparation/confirmation/result schemas used by subsequent tasks.
 
-- [ ] Write and run failing tests for both models, explicit analysis scope, no completion trigger, simple assemblies and profile bounds.
-- [ ] Implement strict pure contracts and creation-first director guidance covering hooks, end cards, music placement, long assemblies and completion stop.
-- [ ] Run focused contract/director tests and commit.
+- [x] Write and run failing tests for both models, explicit analysis scope, no completion trigger, simple assemblies and profile bounds.
+- [x] Implement strict pure contracts and creation-first director guidance covering hooks, end cards, music placement, long assemblies and completion stop.
+- [x] Run focused contract/director tests and commit.
 
 ### Task 2: Owned bounded extraction and provider adapters
 
