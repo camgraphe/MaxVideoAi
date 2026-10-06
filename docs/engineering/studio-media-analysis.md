@@ -114,3 +114,14 @@ Use disposable PostgreSQL 17 for financial/revision tests. Focused suites cover
 canonical edits and MCP parity. Run editor tests/QA, MCP client check, exposure and
 diff checks, and the canonical browser lane for changed interactions. Deterministic
 tests do not certify live provider quality or production worker readiness.
+
+The 2026-10-06 branch review identified two important worker defects, fixed with
+failing-then-passing PostgreSQL regressions: phase expiry discarding a valid late
+response, and unlocked source/project reads before the dispatch checkpoint. The
+focused recovery/resolver suite passes 13/13. Editor QA passes 1,139 tests with one
+skip, TypeScript and exposure checks pass, and the canonical browser lane passes
+11/11, including real desktop/mobile confirmation without duplicate reservations.
+MCP client checks pass 151 tests with one skip plus tool-selection QA. Current
+`main` (75c64b957) is included; its guest/navigation/hydration tests pass 8/8.
+Existing image lint warnings remain. No paid provider request, production schema
+write, profile activation or credential mutation was performed.

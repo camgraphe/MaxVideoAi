@@ -84,7 +84,17 @@
 
 **Files:** engineering analysis guide, Studio architecture/economics guides, worker scripts and CI test registration.
 
-- [ ] Run `npm run test:editor`, appropriate PostgreSQL integration, TypeScript, frontend lint, exposure and diff checks; browser smoke the modified paths.
-- [ ] Document policy qualification/activation, worker operations, unknown-use recovery and available versus deferred profiles.
-- [ ] Review complete branch and fix actionable findings with regression tests.
-- [ ] Commit the reviewed candidate and report verified behavior and exact remaining activation requirements; do not merge or deploy.
+- [x] Run `npm run test:editor`, appropriate PostgreSQL integration, TypeScript, frontend lint, exposure and diff checks; browser smoke the modified paths.
+- [x] Document policy qualification/activation, worker operations, unknown-use recovery and available versus deferred profiles.
+- [x] Review complete branch and fix actionable findings with regression tests.
+- [x] Commit the reviewed candidate and report verified behavior and exact remaining activation requirements; do not merge or deploy.
+
+Final branch review found two important worker issues. Both were reproduced and
+fixed with real PostgreSQL concurrency tests: phase leases/late response recovery,
+and source/project locks through the dispatch checkpoint. Editor QA passes
+1,139 tests with one skip, the canonical browser lane passes 11/11, MCP checks pass
+151 tests with one skip and tool-selection QA, and TypeScript/exposure checks pass.
+Current `main` 75c64b957 is incorporated into the isolated branch. The production
+feature stays disabled pending migration, measured policy qualification and an
+operating worker; advanced overlay/variant/beat/render-review extensions remain
+outside this initial candidate. The separate worktree is preserved.
