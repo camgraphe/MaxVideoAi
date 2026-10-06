@@ -1,5 +1,5 @@
 import { listenForGuestCreationLogin, consumeGuestCreationFromLocation } from '@/lib/guest-creation-continuation';
-import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import {
   clampRequestedImageCount,
@@ -131,7 +131,7 @@ export function useImageComposerPersistence({
   const persistedSignatureRef = useRef<string | null>(null);
   const [storageHydrated, setStorageHydrated] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (typeof window === 'undefined') return;
     if (!engines.length) return;
     if (hasHydratedStorageRef.current) return;
@@ -358,4 +358,5 @@ export function useImageComposerPersistence({
     thinkingLevel,
     watermark,
   ]);
+  return { storageHydrated };
 }

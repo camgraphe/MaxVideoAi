@@ -182,7 +182,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     setMode,
   });
 
-  useImageComposerPersistence({
+  const { storageHydrated } = useImageComposerPersistence({
     accountId,
     engines,
     engineId,
@@ -351,7 +351,10 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     estimatedCostCurrency,
     pendingGenerations,
     previewEntry,
+    starterPreview, starterNavigation, selectStarter,
   } = useImageWorkspaceDisplayState({
+    guestStarter: { ready: !accountId && storageHydrated && !hasAnyReferenceSelection &&
+      !searchParams?.get('job') && !searchParams?.get('engine') && !searchParams?.get('tool'), prompt, setPrompt },
     error,
     historyEntries,
     numImages,
@@ -428,10 +431,11 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
           isImageJob,
           onOpenGroup: handleSelectGalleryGroup,
           selectedEngineCaps,
-          onUseStarterPrompt: setPrompt,
+          onSelectStarter: selectStarter,
         }}
       >
         <ImageWorkspaceComposerSurface
+              starterPreview={starterPreview} starterNavigation={starterNavigation}
               advancedSettingsTitle={advancedSettingsTitle}
               composerError={composerError}
               composerReferenceAssets={composerReferenceAssets}
