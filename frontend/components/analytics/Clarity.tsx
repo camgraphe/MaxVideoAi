@@ -37,8 +37,8 @@ export function Clarity() {
       const tags = getClarityPageTags(pathname || '/');
       if (!clarityId || !tags || !isClarityEnabledForRuntime() || !hasAnalyticsConsentCookieInBrowser()) return;
       setAnalyticsConsentCookie(true);
-      setClarityConsent(true, hasAdsConsentInBrowser());
       injectClarityScript(clarityId);
+      setClarityConsent(true, hasAdsConsentInBrowser());
       const visitorId = ensureClarityVisitorId();
       if (visitorId && identifiedVisitorId !== visitorId) {
         identifiedVisitorId = visitorId;

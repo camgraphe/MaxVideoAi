@@ -3,7 +3,7 @@ import { getAnalyticsRouteContext, getSafeAnalyticsPath, shouldLoadMarketingAnal
 /** Public dimensions only; query strings and private route identifiers never become tags. */
 export function getClarityPageTags(pathname: string): Record<string, string> | null {
   const context = getAnalyticsRouteContext(pathname);
-  if (!shouldLoadMarketingAnalytics(context.family) || /^\/(oauth|v)(\/|$)/.test(context.normalizedPath)) return null;
+  if (!shouldLoadMarketingAnalytics(context.family) || /^\/(oauth|v|s|mcp\/reference-upload)(\/|$)/.test(context.normalizedPath)) return null;
   const section = context.normalizedPath.split('/')[1] ?? '';
   const categories: Record<string, string> = {
     '': 'home', models: 'models', modeles: 'models', modelos: 'models',

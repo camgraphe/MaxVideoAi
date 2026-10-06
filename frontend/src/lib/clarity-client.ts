@@ -23,6 +23,7 @@ let clarityReady = false;
 const readyListeners = new Set<ClarityListener>();
 let cachedVisitorId: string | null = null;
 let clarityInjected = false;
+let clarityScriptLoaded = false;
 let clarityStopped = false;
 let guardedBrowser: Window | null = null;
 
@@ -186,15 +187,11 @@ function deleteCookie(name: string): void {
   if (window.location.protocol === 'https:') {
     parts.push('Secure');
   }
-  const hostname = window.location.hostname.toLowerCase();
-  if (hostname.includes('.')) {
-    const domainParts = hostname.split('.');
-    if (domainParts.length >= 2) {
-      const baseDomain = domainParts.slice(-2).join('.');
-      parts.push(`Domain=.${baseDomain}`);
-    }
+  document.cookie = parts.join('; '); // Host-only cookies.
+  const domainParts = window.location.hostname.toLowerCase().split('.');
+  for (let index = 0; index < domainParts.length - 1; index += 1) {
+    document.cookie = [...parts, `Domain=.${domainParts.slice(index).join('.')}`].join('; ');
   }
-  document.cookie = parts.join('; ');
 }
 
 export function ensureClarityVisitorId(): string | null {
@@ -267,10 +264,15 @@ export function stopClarityRecording(): void {
   const clarityWindow = getClarityWindow();
   const clarity = clarityWindow?.clarity;
   if (clarity?.q) clarity.q.length = 0;
-  if (clarity && clarityInjected) {
-    clarity('consentv2', { ad_Storage: 'denied', analytics_Storage: 'denied' });
-    clarity('stop');
-  }
+  // consentv2 denial schedules a vendor restart. Stop directly, then clear its
+  // replacement queue so late commands cannot restart an excluded recording.
+  if (clarity && clarityInjected) clarity('stop');
+  const stoppedClarity = getClarityWindow()?.clarity;
+  // Before asynchronous SDK initialization, retain the queued stop. Once loaded,
+  // stop has already replaced the dispatcher; its stale queue must be discarded.
+  if (clarityScriptLoaded && stoppedClarity?.q) stoppedClarity.q.length = 0;
+  ['_clck', '_clsk', VISITOR_COOKIE].forEach(deleteCookie);
+  cachedVisitorId = null;
   pendingCommands = [];
   clarityStopped = true;
   clarityReady = false;
@@ -309,6 +311,7 @@ export function enableClarityForVisitor(): void {
 }
 
 export function setClarityConsent(granted: boolean, adsGranted = false): void {
+  if (clarityStopped || isBrowserCommercialAnalyticsExcluded() || isClarityOptedOut()) return;
   queueClarityCommand('consentv2', {
     ad_Storage: adsGranted ? 'granted' : 'denied',
     analytics_Storage: granted ? 'granted' : 'denied',
@@ -322,8 +325,10 @@ export function injectClarityScript(id: string): void {
   if (clarityInjected) {
     if (clarityStopped) {
       clarityStopped = false;
+      const clarity = getClarityWindow()?.clarity;
+      if (clarity?.q) clarity.q.length = 0;
       getClarityWindow()?.clarity?.('start');
-      markClarityReady();
+      if (clarityScriptLoaded) markClarityReady();
     }
     logDebug('inject skip: already injected');
     return;
@@ -345,6 +350,7 @@ export function injectClarityScript(id: string): void {
   script.src = `https://www.clarity.ms/tag/${id}`;
   script.dataset.analytics = 'clarity';
   script.addEventListener('load', () => {
+    clarityScriptLoaded = true;
     markClarityReady();
     logDebug('script loaded');
   });
