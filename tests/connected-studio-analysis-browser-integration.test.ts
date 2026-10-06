@@ -38,9 +38,11 @@ test('analysis review works on desktop/mobile and only explicit confirmation que
     const owned=await browser.newContext(session,{viewport:{width:1440,height:900},locale:'en-US',reducedMotion:'reduce'});
     const page=owned.page;
     const loaded=page.waitForResponse(response=>response.url().endsWith(`/api/studio/projects/${project.projectId}/image-conversation`)&&response.request().method()==='GET',{timeout:30_000});
+    const analysisLoaded=page.waitForResponse(response=>response.url().endsWith(`/api/studio/projects/${project.projectId}/analyses/${quote.analysisId}`)&&response.request().method()==='GET',{timeout:30_000});
     await page.goto(runtime.browserOrigin+`/app/studio/conversation/${project.projectId}`);
     const response=await loaded;
     assert.equal(response.status(),200,JSON.stringify(await response.json()));
+    const analysisResponse=await analysisLoaded;assert.equal(analysisResponse.status(),200,JSON.stringify(await analysisResponse.json()));
     const card=page.getByRole('region',{name:'Media analysis'});
     await expect(card).toBeVisible();await expect(card.getByRole('button',{name:/Analyse with Sol 6.1/})).toBeEnabled();
     assert.equal((await analysis.read(quote.analysisId)).state,'prepared','Rendering and GETs cannot queue or charge analysis');
