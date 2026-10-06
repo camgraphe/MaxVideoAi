@@ -45,9 +45,9 @@
 
 **Interfaces:** validated versioned policy; `extractStudioAnalysisSource` returns timestamped private frames/audio; provider receives the same payload used for token counting and returns observations plus exact usage.
 
-- [ ] Write/run failing tests for source limits, interval coverage, decode timeouts, model/usage mismatches, unsafe outputs and audio profile gating.
-- [ ] Implement bounded owned-source extraction, exact time mapping and native provider adapters; private temporary files always cleaned.
-- [ ] Verify with local measured media fixtures, no live paid call, and commit.
+- [x] Write/run failing tests for source limits, interval coverage, decode timeouts, model/usage mismatches, unsafe outputs and audio profile gating.
+- [x] Implement bounded owned-source extraction, exact time mapping and native provider adapters; private temporary files always cleaned.
+- [x] Verify with local measured media fixtures, no live paid call, and commit.
 
 ### Task 3: Durable analysis and shared credit funding
 
