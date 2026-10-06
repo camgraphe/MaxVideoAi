@@ -207,7 +207,7 @@ export async function runStudioImageActions(options: {
     },
   });
   const draft = await director({message: input.message, history: options.history, references: options.references, referenceMentions: input.referenceMentions, historyFacts: options.historyFacts,
-    project: await readStudioConversationProject(actor,{exportsEnabled:options.editingEnabled&&options.exportsEnabled,...(options.taskExecution?{taskContext:{message:input.message,requestId:turn.request_id}}:{})}),
+    project: await readStudioConversationProject(actor,{exportsEnabled:options.editingEnabled&&options.exportsEnabled,...(options.taskExecution?{taskContext:{message:input.message,requestId:options.taskExecution.taskRequestId}}:{})}),
     checkpoint: (index, create, params, checkpointOptions) => checkpointStudioResponse(actor, turn, index, create, assistance ? {prepare: async () => {
       if (await getActiveAccountRestrictionStrict(actor.userId)) {
         throw new AgentApiError('ACCOUNT_RESTRICTED','This account is temporarily restricted. Open MaxVideoAI for help.');

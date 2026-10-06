@@ -2,7 +2,7 @@ import {randomUUID} from 'node:crypto';
 import {query,withDbTransaction} from '@/lib/db';
 import type {StudioGenerationActor} from '@/server/agent-api/generation-actor';
 import {createImageConversationService} from '../image-conversation-service';
-import {readStudioUsage} from '../assistance-provider-facts';
+import {studioTaskSavedUsageKnown} from './saved-usage';
 import {studioAssistancePolicy,type StudioAssistancePolicy} from '../assistance-policy';
 import {studioTaskSchemaReady,readStudioTaskUsage,type StudioTaskRow} from './repository';
 import {studioTasksEnabled,StudioTaskStop} from './policy';
@@ -26,13 +26,7 @@ export async function runStudioTaskWorkerOnce(dependencies:WorkerDependencies={}
     if(current.recovery_attempts>=2){await tx.query("UPDATE studio_tasks SET state=CASE WHEN state='unknown' THEN 'unknown' ELSE 'paused' END,phase=CASE WHEN state='unknown' THEN 'unknown' ELSE 'paused' END,error=CASE WHEN state='unknown' THEN 'usage' ELSE 'provider' END WHERE user_id=$1 AND project_id=$2 AND request_id=$3",[current.user_id,current.project_id,current.request_id]);return null;}
     const usage=await readStudioTaskUsage(current,tx);
     if(usage.unknownCalls){
-      const unsettled=await tx.query<{response_json:{model?:string;service_tier?:string;usage?:unknown}|null;model:string;input_token_bound:number;output_token_bound:number;reserved_nano_usd:string}>(`SELECT c.model,c.input_token_bound,c.output_token_bound,c.reserved_nano_usd,r.response_json
-        FROM studio_assistance_calls c LEFT JOIN studio_conversation_responses r ON r.user_id=c.user_id AND r.project_id=c.project_id AND r.request_id=c.request_id AND r.lease_id=c.lease_id AND r.response_index=c.response_index AND r.state='reported'
-        WHERE c.user_id=$1 AND c.project_id=$2 AND c.request_id=$3 AND c.state<>'settled' AND NOT EXISTS(SELECT 1 FROM studio_assistance_resolutions w WHERE w.call_id=c.id AND w.action='waive_unknown')`,[current.user_id,current.project_id,current.segment_request_id]);
-      const known=unsettled.length>0&&unsettled.every(call=>{
-        const r=call.response_json,facts=r?readStudioUsage(r.usage,r.model,r.service_tier):null;
-        return r?.model===call.model&&facts&&facts.inputTokens<=call.input_token_bound&&facts.outputTokens<=call.output_token_bound&&facts.providerMaxNanoUsd<=Number(call.reserved_nano_usd);
-      });
+      const known=await studioTaskSavedUsageKnown(current,tx);
       if(!known){await tx.query("UPDATE studio_tasks SET state='unknown',phase='unknown',error=$4,updated_at=clock_timestamp() WHERE user_id=$1 AND project_id=$2 AND request_id=$3",[current.user_id,current.project_id,current.request_id,current.state==='running'?'provider':'usage']);return null;}
     }
     const now=(await tx.query<{now:Date}>('SELECT clock_timestamp() now'))[0].now;

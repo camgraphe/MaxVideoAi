@@ -6,7 +6,8 @@ import {studioTaskStatusSchema,STUDIO_TASK_POLICY_VERSION,STUDIO_TASK_PROFILES,t
 import type {StudioAssistantModel} from '@/lib/studio/assistance-contract';
 export type StudioTaskRow={user_id:string;project_id:string;request_id:string;segment_request_id:string;segment_max_calls?:number;input_hash:string;source_fingerprint:string;input_json:ImageTurnInput;profile:StudioTaskProfile;profile_json:typeof STUDIO_TASK_PROFILES[StudioTaskProfile];policy_version:typeof STUDIO_TASK_POLICY_VERSION;model:StudioAssistantModel;state:StudioTaskStatus['state'];phase:StudioTaskStatus['phase'];max_credits:number;allowed_calls:number;revision:number;worker_id:string|null;recovery_attempts:number;replay_only:boolean;lease_expires_at:Date|null;deadline_at:Date|null;partial_reply:string|null;error:StudioTaskStatus['error'];created_at:Date;updated_at:Date;project_deleted?:Date|null;lease_valid?:boolean};
 export async function studioTaskSchemaReady(db:QueryExecutor={query}) {
-  return (await db.query<{ready:boolean}>("SELECT to_regclass('public.studio_tasks') IS NOT NULL ready"))[0]?.ready===true;
+  if(db.query===query&&!process.env.DATABASE_URL?.trim())return false;
+  return (await db.query<{ready:boolean}>("SELECT to_regclass('public.studio_tasks') IS NOT NULL AND to_regclass('public.studio_task_segments') IS NOT NULL AND to_regclass('public.studio_task_approvals') IS NOT NULL AND to_regclass('public.studio_task_memory_notes') IS NOT NULL ready"))[0]?.ready===true;
 }
 export async function readStudioTaskRow(actor:StudioGenerationActor,requestId:string,db:QueryExecutor={query},lock=false) {
   const row=(await db.query<StudioTaskRow>(`SELECT t.* FROM studio_tasks t JOIN studio_projects p ON p.id=t.project_id AND p.user_id=t.user_id AND p.deleted_at IS NULL

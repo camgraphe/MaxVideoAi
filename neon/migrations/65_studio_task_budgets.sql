@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS studio_tasks (
   worker_id uuid, lease_expires_at timestamptz, deadline_at timestamptz,
   recovery_attempts integer NOT NULL DEFAULT 0 CHECK(recovery_attempts BETWEEN 0 AND 2), replay_only boolean NOT NULL DEFAULT false,
   partial_reply text CHECK(length(partial_reply)<=2400),
-  error text CHECK(error IN ('budget','steps','output','deadline','context','funding','provider','usage','permission','unavailable')),
+  error text CHECK(error IN ('budget','steps','output','deadline','context','funding','provider','usage','permission','unavailable','cancelled')),
   created_at timestamptz NOT NULL DEFAULT clock_timestamp(), updated_at timestamptz NOT NULL DEFAULT clock_timestamp(),
   PRIMARY KEY(user_id,project_id,request_id),
   FOREIGN KEY(user_id,project_id,request_id) REFERENCES studio_assistance_turns(user_id,project_id,request_id),
@@ -53,10 +53,10 @@ BEGIN
     expected_credits:=CASE NEW.profile WHEN 'quick' THEN 100 WHEN 'standard' THEN 250 ELSE 500 END;
     expected_calls:=CASE NEW.profile WHEN 'quick' THEN 2 WHEN 'standard' THEN 4 ELSE 8 END;
     IF NEW.max_credits<>expected_credits OR NEW.allowed_calls<>expected_calls OR NEW.revision<>0 OR NEW.segment_request_id<>NEW.request_id
-      OR NEW.profile_json->>'maxCredits'<>expected_credits::text OR NEW.profile_json->>'maxCalls'<>expected_calls::text
-      OR NEW.input_json->'taskBudget'->>'profile'<>NEW.profile
-      OR NEW.input_json->'taskBudget'->>'policyVersion'<>NEW.policy_version
-      OR NEW.input_json->'taskBudget'->>'maxCredits'<>expected_credits::text
+      OR NEW.profile_json->>'maxCredits' IS DISTINCT FROM expected_credits::text OR NEW.profile_json->>'maxCalls' IS DISTINCT FROM expected_calls::text
+      OR NEW.input_json->'taskBudget'->>'profile' IS DISTINCT FROM NEW.profile
+      OR NEW.input_json->'taskBudget'->>'policyVersion' IS DISTINCT FROM NEW.policy_version
+      OR NEW.input_json->'taskBudget'->>'maxCredits' IS DISTINCT FROM expected_credits::text
       OR (NEW.profile='complex' AND NEW.input_json->'taskBudget'->>'confirmedComplex' IS DISTINCT FROM 'true')
       OR NOT EXISTS(SELECT 1 FROM studio_assistance_turns a WHERE a.user_id=NEW.user_id AND a.project_id=NEW.project_id AND a.request_id=NEW.request_id AND a.model=NEW.model) THEN
       RAISE EXCEPTION 'Task needs its exact reviewed resource policy and frozen assistance';

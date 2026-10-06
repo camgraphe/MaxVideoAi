@@ -6,7 +6,7 @@ import type {StudioAssistanceChoice,StudioAssistanceStatus} from '@/lib/studio/a
 import {additionalAssistanceBudget} from '../_lib/conversation-assistance';
 import styles from './studio-assistance.module.css';
 import {StudioAssistanceCreditsDialog} from './StudioAssistanceCredits.client';
-export type StudioAssistanceProps={openSignal?:number;status:StudioAssistanceStatus|null;busy:boolean;error:string|null;locale:'en'|'fr';conversationBusy:boolean;choose:(choice:StudioAssistanceChoice)=>Promise<boolean>;refresh:()=>Promise<void>;onChoice:()=>void};
+export type StudioAssistanceProps={tasksEnabled?:boolean;openSignal?:number;status:StudioAssistanceStatus|null;busy:boolean;error:string|null;locale:'en'|'fr';conversationBusy:boolean;choose:(choice:StudioAssistanceChoice)=>Promise<boolean>;refresh:()=>Promise<void>;onChoice:()=>void};
 type Props=StudioAssistanceProps;
 const money=(cents:number)=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(cents/100);
 export function StudioAssistance(props:Props) {

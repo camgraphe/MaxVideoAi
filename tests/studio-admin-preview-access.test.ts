@@ -73,6 +73,7 @@ test('Studio is discoverable while conversations and APIs retain shared account 
   assert.match(routeAccess, /error: access\.error/);
 
   const specialRoutes = new Set([
+    'frontend/app/api/studio/projects/[projectId]/conversation-tasks/[requestId]/route.ts',
     'frontend/app/api/studio/chat/route.ts',
     'frontend/app/api/studio/assistance/route.ts',
     'frontend/app/api/studio/marketing-entry/route.ts',
@@ -90,6 +91,8 @@ test('Studio is discoverable while conversations and APIs retain shared account 
     assert.match(read(path), /resolveStudioRouteContext\(req\)/);
   }
   const assistanceHandler = read('frontend/app/api/studio/_lib/studio-assistance-handler.ts');
+  const taskHandler=read('frontend/app/api/studio/_lib/studio-task-handler.ts');
+  assert.match(taskHandler,/resolveStudioApiAccess/);assert.match(taskHandler,/if\(!access.ok\)/);assert.match(read('frontend/app/api/studio/projects/[projectId]/conversation-tasks/[requestId]/route.ts'),/handleStudioTask/);
   const analysisHandler=read('frontend/app/api/studio/_lib/studio-analysis-handler.ts');
   assert.match(analysisHandler,/resolveStudioApiAccess/);
   assert.match(analysisHandler,/if\(!access.ok\)/);

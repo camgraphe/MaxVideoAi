@@ -5,5 +5,5 @@ export function studioTasksEnabled(env:Readonly<Record<string,string|undefined>>
   return env.STUDIO_CONVERSATION_TASKS_ENABLED==='true'&&env.STUDIO_CONVERSATION_ACTIONS_ENABLED==='true'&&assistance.enabled&&assistance.credits===true;
 }
 export class StudioTaskStop extends Error {
-  constructor(public readonly reason:NonNullable<StudioTaskStatus['error']>,message:string){super(message);this.name='StudioTaskStop';}
+  constructor(public readonly reason:Exclude<NonNullable<StudioTaskStatus['error']>,'cancelled'>,message:string){super(message);this.name='StudioTaskStop';}
 }

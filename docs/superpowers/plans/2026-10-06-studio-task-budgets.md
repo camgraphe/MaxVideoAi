@@ -31,31 +31,31 @@
 **Files:** `frontend/src/lib/studio/task-budget-contract.ts`, image-conversation contract; `tests/studio-task-budget-contract.test.ts`.
 **Interfaces:** `studioTaskSelectionSchema`, `studioTaskResumeSchema`, `studioTaskStatusSchema`, `STUDIO_TASK_PROFILES`, `STUDIO_TASK_POLICY_VERSION`.
 
-- [ ] Write RED tests for exact profile ceilings/confirmation, Lua complex rejection, strict resumes and safe status projection.
-- [ ] Run focused test (Expected: missing module/exports).
-- [ ] Implement pure versioned profiles, strict DTOs and optional task fields on existing wire contracts; legacy payloads remain valid.
-- [ ] Run focused tests and existing image contracts (Expected: pass); commit.
+- [x] Write RED tests for exact profile ceilings/confirmation, Lua complex rejection, strict resumes and safe status projection.
+- [x] Run focused test (Expected: missing module/exports).
+- [x] Implement pure versioned profiles, strict DTOs and optional task fields on existing wire contracts; legacy payloads remain valid.
+- [x] Run focused tests and existing image contracts (Expected: pass); commit.
 
 ### Task 2: Owned queue, frozen budgets and shared-credit enforcement
 
 **Files:** migration 65; `frontend/src/server/studio/tasks/{policy,repository,service,budget}.ts`; assistance ledger/provider bounds; `tests/studio-task-budget-postgres.test.ts`.
 **Interfaces:** `createStudioTaskService(actor,dependencies)` → enqueue/read/resume; owned `readStudioTaskBudget`; `enforceStudioTaskReservation`.
 
-- [ ] Write/run RED PostgreSQL tests for zero-dispatch enqueue, frozen model, credit cap, missing/foreign expanded-slot authority, paused paid packs, 20/60 limits, duplicate approvals and project/account races.
-- [ ] Implement explicit schema/identity triggers and readiness reads; reuse assistance turn/call/credit owners for quotes and budget checks. Preserve legacy 4/2200 defaults.
-- [ ] Implement revisioned approvals and active-account serialization; confirm complex and cumulative maximum before enqueue/resume.
-- [ ] Run task and legacy credit/recovery tests (Expected: pass); commit.
+- [x] Write/run RED PostgreSQL tests for zero-dispatch enqueue, frozen model, credit cap, missing/foreign expanded-slot authority, paused paid packs, 20/60 limits, duplicate approvals and project/account races.
+- [x] Implement explicit schema/identity triggers and readiness reads; reuse assistance turn/call/credit owners for quotes and budget checks. Preserve legacy 4/2200 defaults.
+- [x] Implement revisioned approvals and active-account serialization; confirm complex and cumulative maximum before enqueue/resume.
+- [x] Run task and legacy credit/recovery tests (Expected: pass); commit.
 
 ### Task 3: Durable worker, adaptive director and exact memory
 
 **Files:** `frontend/src/server/studio/tasks/{worker,memory}.ts`, worker CLI; conversation director/run/repository/service hooks; `tests/studio-task-worker-postgres.test.ts`, `tests/studio-task-memory-postgres.test.ts`.
 **Interfaces:** `runStudioTaskWorkerOnce(dependencies)`, task execution proof/profile into existing service/director; `readStudioTaskMemory` and `project_recall`.
 
-- [ ] Write/run RED tests: worker-only dispatch, phase deadlines/fencing, saved-response replay, unknown no retry, continuation without duplicate edits/quotes, completed quote cannot resume.
-- [ ] Write/run RED memory tests: original authored brief outside 30 rows, relevant older notes, newer instructions, foreign isolation, bounded input and zero paid summary.
-- [ ] Execute existing service with guarded task proof, heartbeat/lease/deadline, dynamic calls/output/effort and existing checkpoint replay. Progress derives from known actions; pauses preserve partial reply.
-- [ ] Add memory note/retrieval and stable instruction prefix; optional recall tool is task-only and actor scoped. Add worker/once scripts.
-- [ ] Run task/director and legacy action/recovery suites (Expected: pass); commit.
+- [x] Write/run RED tests: worker-only dispatch, phase deadlines/fencing, saved-response replay, unknown no retry, continuation without duplicate edits/quotes, completed quote cannot resume.
+- [x] Write/run RED memory tests: original authored brief outside 30 rows, relevant older notes, newer instructions, foreign isolation, bounded input and zero paid summary.
+- [x] Execute existing service with guarded task proof, heartbeat/lease/deadline, dynamic calls/output/effort and existing checkpoint replay. Progress derives from known actions; pauses preserve partial reply.
+- [x] Add memory note/retrieval and stable instruction prefix; optional recall tool is task-only and actor scoped. Add worker/once scripts.
+- [x] Run task/director and legacy action/recovery suites (Expected: pass); commit.
 
 ### Task 4: Authenticated route and client task controls
 
