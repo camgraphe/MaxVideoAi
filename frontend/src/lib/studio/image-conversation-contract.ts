@@ -9,6 +9,7 @@ import type {PreparedAudioGeneration} from '@/server/agent-api/prepare-audio-gen
 import {imageSelectionSchema,STUDIO_CONVERSATION_MAX_REFERENCES} from '@/lib/studio/conversation-creation-contract';
 import {projectStudioReply} from './conversation-reply';
 import type {StudioPricingEstimate} from '@/lib/studio/conversation-pricing-contract';
+import {studioTaskSelectionSchema,type StudioTaskSelection,type StudioTaskStatus} from './task-budget-contract';
 
 export const studioReferenceMentionSchema = z.object({
   assetId: z.string().min(1).max(256),
@@ -23,6 +24,7 @@ export const imageTurnInputSchema = z
     attachments: z.array(toolAssetRefSchema.refine(ref => ref.type === 'asset' && ref.kind !== 'image')).max(STUDIO_CONVERSATION_MAX_REFERENCES).optional(),
     referenceMentions: z.array(studioReferenceMentionSchema).max(STUDIO_CONVERSATION_MAX_REFERENCES).optional(),
     renewedFromRequestId: z.string().uuid().optional(),
+    taskBudget:studioTaskSelectionSchema.optional(),
   })
   .strict().superRefine((input, context) => {
     const ids = [...input.references, ...(input.attachments ?? []).map(ref => ref.type === 'asset' ? ref.assetId : ref.outputId)];
@@ -41,7 +43,7 @@ export const imageTurnInputSchema = z
 export type ImageTurnInput = z.infer<typeof imageTurnInputSchema>;
 export const studioContinuationSchema = z.object({
   reason: z.enum(['action_limit','output_limit']),
-  completedEdits: z.number().int().min(0).max(4),
+  completedEdits: z.number().int().min(0).max(24),
   lastError: z.object({code: z.string().min(1).max(80),message: z.string().min(1).max(800)}).strict().optional(),
 }).strict();
 export const imageDraftSchema = z
@@ -62,6 +64,8 @@ export type ImageConversationTurn = {
   attachments?: ImageTurnInput['attachments'];
   referenceMentions?: ImageTurnInput['referenceMentions'];
   renewedFromRequestId?: string;
+  taskBudget?:StudioTaskSelection;
+  task?:StudioTaskStatus;
   reply: string | null;
   exportQuote?: StudioPreparedExport;
   analysisQuote?:StudioPreparedAnalysis;
@@ -84,6 +88,7 @@ export type ImageConversation = {
   projectId: string;
   projectName: string;
   turns: ImageConversationTurn[];
+  taskPolicyVersion?:string;
 };
 export type ImageConversationHistoryTurn = Pick<ImageConversationTurn, 'message' | 'reply' | 'referenceMentions'>;
 export type StudioConversationHistoryFacts = {
@@ -97,5 +102,6 @@ export function imageTurnRetryInput(turn: ImageConversationTurn): ImageTurnInput
   return {requestId: turn.requestId,message: turn.message,references: turn.references,
     ...(turn.attachments ? {attachments: turn.attachments} : {}),
     ...(turn.referenceMentions ? {referenceMentions: turn.referenceMentions} : {}),
+    ...(turn.taskBudget ? {taskBudget:turn.taskBudget} : {}),
     ...(turn.renewedFromRequestId ? {renewedFromRequestId: turn.renewedFromRequestId} : {})};
 }
