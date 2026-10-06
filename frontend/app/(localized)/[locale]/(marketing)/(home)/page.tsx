@@ -1,7 +1,6 @@
 import '@/styles/marketing-home.css';
 import { buildHomeComparisonData, buildHomeComparisonLinks } from './_lib/home-comparison-data';
 import { HomePricingSection } from '@/components/marketing/home/HomePricingSection';
-import { buildCurrentHomePriceDemo } from './_lib/current-home-price-demo-data';
 import { HomeCreativeWorlds } from '@/components/marketing/home/HomeCreativeWorlds';
 import { HomeCreationSection } from '@/components/marketing/home/HomeCreationSection';
 import { HomeModelChoice } from '@/components/marketing/home/HomeModelChoice';
@@ -30,8 +29,6 @@ import {
   type RedesignContent,
 } from './_lib/home-route-data';
 import { buildFaqSchema, buildItemListSchema, buildSoftwareSchema, serializeJsonLd } from './_lib/home-jsonld';
-import { quoteCurrentExamplePrices } from '@/server/current-example-price';
-import type { GalleryVideo } from '@/server/videos';
 
 export const revalidate = 60;
 
@@ -58,12 +55,7 @@ export default async function HomePage(props: { params: Promise<{ locale: string
   const workflowSeoCopy = dictionary.home.seoContent as WorkflowSeoSummaryCopy | undefined;
   const startupFameLabel = dictionary.home.partners?.startupFameLabel ?? 'Featured on Startup Fame';
   const hero = buildHeroContent(locale, content);
-  const { examples, programmedHeroSlots, engineScores } = await loadHomePageData(locale, content);
-  const currentHeroPrices = await quoteCurrentExamplePrices(content.hero.mockup.engineRecommendations.map((recommendation) => ({
-    id: recommendation.engineId,
-    engineId: recommendation.engineId,
-    durationSec: 0,
-  } as GalleryVideo)));
+  const { examples, programmedHeroSlots, engineScores, currentHeroPrices, currentPriceModels } = await loadHomePageData(locale, content);
   const programmedHeroItems = buildProgrammedHeroItems(locale, content, programmedHeroSlots);
   const primaryBestForCards = buildBestForGuideCards(content, BEST_FOR_MAIN_SLUGS);
   const comparisonScores = buildHomeComparisonData(engineScores);
@@ -91,7 +83,7 @@ export default async function HomePage(props: { params: Promise<{ locale: string
         <HomeToolsGallery locale={locale} />
       </DeferredMarketingContent>
       <DeferredMarketingContent>
-        <HomePricingSection locale={locale} models={await buildCurrentHomePriceDemo(locale)} copy={content.pricingTrust} />
+        <HomePricingSection locale={locale} models={currentPriceModels} copy={content.pricingTrust} />
       </DeferredMarketingContent>
       <DeferredMarketingContent>
         {workflowSeoCopy ? <WorkflowSeoSummary copy={workflowSeoCopy} locale={locale} /> : null}

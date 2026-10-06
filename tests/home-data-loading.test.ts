@@ -26,14 +26,15 @@ test('homepage starts retained reads together, drops unused proof reads and reco
             export const calls=[], records=[];
             export const example={id:'fixture-example',engineId:'kling-3-pro',engine:'Kling 3 Pro',title:'Example',mode:'Image to video',duration:'12s',price:'$2.63',useCase:'Cinematic',imageSrc:'/fixture.webp',videoSrc:null,imageAlt:'Fixture cover',href:'/examples/kling',ctaLabel:'Examples',cloneLabel:'Use prompt'};
             export const examples=[example]; export const slots=[]; export const scores=new Map();
-            let gates, failure, failingPhase;
-            export function reset(error,phase='scores'){calls.length=0;records.length=0;failure=error;failingPhase=phase;gates=new Map();}
-            export function release(){for(const done of gates.values())done();}
-            export async function read(name,value){calls.push(name);await new Promise(done=>gates.set(name,done));if(name===failingPhase&&failure)throw failure;return value;}
+            let gates, failure, failingPhase, released;
+            export function reset(error,phase='scores'){calls.length=0;records.length=0;failure=error;failingPhase=phase;gates=new Map();released=false;}
+            export function release(){released=true;for(const done of gates.values())done();}
+            export async function read(name,value){calls.push(name);if(!released)await new Promise(done=>gates.set(name,done));if(name===failingPhase&&failure)throw failure;return value;}
           `,
           '@/lib/i18n/server': `import en from ${JSON.stringify(resolve('frontend/messages/en.json'))};import fr from ${JSON.stringify(resolve('frontend/messages/fr.json'))};import es from ${JSON.stringify(resolve('frontend/messages/es.json'))};export async function resolveDictionary({locale}){return {dictionary:{en,fr,es}[locale]};}`,
           'next-intl/server': `export async function getTranslations(){return key=>key;}`,
           '@/server/homepage': `import {read,slots} from 'probe';export const getHomepageSlotsCached=()=>read('hero-slots',{hero:slots,gallery:[]});export const getSuccessfulGenerationCountCached=()=>read('count',20000);`,
+          '@/server/current-example-price': `import {read} from 'probe';export const quoteCurrentExamplePrices=()=>read('hero-pricing',new Map());`,
           '@/server/public-page-timing': `import {withPublicPageTiming as actual} from ${JSON.stringify(timingPath)};import {records} from 'probe';export * from ${JSON.stringify(timingPath)};export const withPublicPageTiming=(context,load)=>actual(context,load,{enabled:true,now:()=>0,deployment:'test',emit:record=>records.push(record)});`,
         };
         builder.onResolve({ filter: /.*/ }, args => {
@@ -42,12 +43,14 @@ test('homepage starts retained reads together, drops unused proof reads and reco
           if (args.path in mocks) return { path: args.path, namespace: 'controlled' };
           if (/home-route-data\/examples$/.test(args.path)) return { path: 'examples', namespace: 'controlled' };
           if (/compare-page-data-loaders$/.test(args.path)) return { path: 'scores', namespace: 'controlled' };
+          if (/current-home-price-demo-data$/.test(args.path)) return { path: 'demo-pricing', namespace: 'controlled' };
           if (/^@\/components\/marketing\/(?:home\/)?[A-Z]/.test(args.path)) return { path: args.path, namespace: 'components' };
           if (!args.path.startsWith('.') && !args.path.startsWith('/') && !args.path.startsWith('@/') && !args.path.startsWith('node:')) return { path: requireFrontend.resolve(args.path), external: true };
         });
         builder.onLoad({ filter: /.*/, namespace: 'components' }, () => ({ loader: 'js', contents: `export const HomeHero=()=>null,HomeFaq=()=>null,WorkflowSeoSummary=()=>null,DeferredMarketingContent=()=>null,HomeCreativeWorlds=()=>null,HomeCreationSection=()=>null,HomeModelChoice=()=>null,HomeToolsGallery=()=>null,HomePricingSection=()=>null;` }));
         builder.onLoad({ filter: /.*/, namespace: 'controlled' }, args => ({ loader: 'js', resolveDir: process.cwd(), contents: mocks[args.path] ?? (args.path === 'examples'
           ? `import {read,examples} from 'probe';export const loadHomepageExamples=()=>read('examples',examples);export const selectHomepageHeroPreviews=cards=>cards.slice(0,5);export const buildHomepageP0PromotionTargets=()=>[];`
+          : args.path === 'demo-pricing' ? `import {read} from 'probe';export const buildCurrentHomePriceDemo=()=>read('demo-pricing',[]);`
           : `import {read,scores} from 'probe';export const loadEngineScores=()=>read('scores',scores);`) }));
       } }],
     });
@@ -64,7 +67,7 @@ test('homepage starts retained reads together, drops unused proof reads and reco
         // Also release a sequential baseline score read so a failed assertion cannot hang.
         fixture.release();
         const page = await pending;
-        assert.deepEqual(started.sort(), ['examples', 'hero-slots', 'scores']);
+        assert.deepEqual(started.sort(), ['demo-pricing', 'examples', 'hero-pricing', 'hero-slots', 'scores'], 'current prices must start before unrelated gallery reads resolve');
         const children = page.props.children;
         const hero = children[0];
         assert.equal('proofStats' in hero.props, false);
@@ -84,6 +87,7 @@ test('homepage starts retained reads together, drops unused proof reads and reco
         assert.equal(record.status, 'ok');
         assert.deepEqual(record.phases.map(({ phase, status }: { phase: string; status: string }) => ({ phase, status })), [
           { phase: 'examples', status: 'ok' }, { phase: 'hero-slots', status: 'ok' }, { phase: 'scores', status: 'ok' },
+          { phase: 'hero-pricing', status: 'ok' }, { phase: 'demo-pricing', status: 'ok' },
         ]);
         assert.deepEqual(Object.keys(record).sort(), ['schema', 'route', 'locale', 'deployment', 'status', 'dataDurationMs', 'phases'].sort());
       });

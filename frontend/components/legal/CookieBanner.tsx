@@ -7,9 +7,9 @@ import { createDefaultConsent, mergeConsent, parseConsent, type ConsentCategory,
 import { Button } from '@/components/ui/Button';
 import { CookiePreferencesPanel } from '@/components/legal/CookiePreferencesPanel';
 import { COOKIE_BANNER_COPY, resolveCookieBannerLocale } from '@/components/legal/cookie-banner-copy';
+import { FALLBACK_COOKIE_POLICY_VERSION, loadCookiePolicyVersion } from './cookie-policy-version.client';
 import {
   applyStoredConsentEffects,
-  clearLocalAnalyticsFlag,
   DEFAULT_CHOICES,
   OPEN_PREFERENCES_EVENT,
   persistCookieConsent,
@@ -65,30 +65,26 @@ export function CookieBanner() {
 
   const bootstrap = useCallback(async () => {
     try {
-      const res = await fetch('/api/legal/cookies/version', { cache: 'no-store' });
-      const json = await res.json().catch(() => null);
-      if (!res.ok || !json?.ok || typeof json.version !== 'string') {
-        throw new Error(json?.error ?? copy.errors.loadVersion);
-      }
+      const version = await loadCookiePolicyVersion();
       const stored = parseConsent(readConsentCookie());
-      if (stored && stored.version === json.version) {
-        applyPersistedConsent(stored, json.version);
+      if (stored && stored.version === version) {
+        applyPersistedConsent(stored, version);
       } else {
-        setState({ ready: true, version: json.version, consent: null });
-        clearLocalAnalyticsFlag();
+        setState({ ready: true, version, consent: null });
+        applyStoredConsentEffects(createDefaultConsent(version, 'banner'));
       }
     } catch (err) {
       console.warn('[cookie-consent] bootstrap failed', err);
-      const fallbackVersion = '2025-10-26';
+      const fallbackVersion = FALLBACK_COOKIE_POLICY_VERSION;
       const stored = parseConsent(readConsentCookie());
       if (stored && stored.version === fallbackVersion) {
         applyPersistedConsent(stored, fallbackVersion);
       } else {
         setState({ ready: true, version: fallbackVersion, consent: null });
-        clearLocalAnalyticsFlag();
+        applyStoredConsentEffects(createDefaultConsent(fallbackVersion, 'banner'));
       }
     }
-  }, [applyPersistedConsent, copy.errors.loadVersion]);
+  }, [applyPersistedConsent]);
 
   useEffect(() => {
     void bootstrap();

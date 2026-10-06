@@ -1,6 +1,6 @@
 import type { AppLocale } from '@/i18n/locales';
 
-export type PublicPagePhase = 'examples' | 'hero-slots' | 'benchmark' | 'scores' | 'key-specs' | 'left-pricing' | 'right-pricing' | 'left-gallery' | 'right-gallery' | 'engine-settings' | 'model-gallery' | 'theme-tokens';
+export type PublicPagePhase = 'examples' | 'hero-slots' | 'hero-pricing' | 'demo-pricing' | 'benchmark' | 'scores' | 'key-specs' | 'left-pricing' | 'right-pricing' | 'left-gallery' | 'right-gallery' | 'engine-settings' | 'model-gallery' | 'theme-tokens';
 export type MeasurePublicPagePhase = <T>(phase: PublicPagePhase, operation: () => Promise<T>) => Promise<T>;
 export const withoutPublicPageTiming: MeasurePublicPagePhase = (_phase, operation) => operation();
 

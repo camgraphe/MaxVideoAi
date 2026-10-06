@@ -103,7 +103,7 @@ function setLocalAnalyticsFlag(granted: boolean) {
   }
 }
 
-function updateGoogleConsent(categories: ConsentRecord['categories']) {
+export function updateGoogleConsent(categories: ConsentRecord['categories']) {
   if (typeof window === 'undefined') return;
   if (PUBLIC_GOOGLE_CONSENT_MODE === 'false' || PUBLIC_GOOGLE_CONSENT_MODE === 'off') {
     return;

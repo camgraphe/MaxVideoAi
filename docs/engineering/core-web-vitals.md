@@ -129,6 +129,21 @@ application's control. The installed Next loader's own deferred callback has no
 equivalent cleanup.
 
 Page views and product events keep their existing queue and transport contracts.
+`AnalyticsScripts` keeps Clarity behind analytics consent and additionally gates
+Google Ads configuration on advertising consent. An analytics-only choice retains
+GA4 and Clarity without configuring the advertising destination. Granting both
+categories keeps the existing tag, conversion settings and destination deduplication.
+The script gates validate a stored record against the current public cookie-policy
+version before mounting. GA4 and GTM startup also validate the persisted analytics
+flag against that version and the consent cookie before scheduling remote code.
+GA4 replays the current Google consent when its inline command queue becomes ready,
+so waiting for validation does not lose a new acceptance. The banner and loaders
+share only their in-flight version request; later reads can observe a changed policy.
+Expired choices broadcast denial
+and display the banner. A failed version read retains the banner's existing
+`2025-10-26` fallback; it does not authorize arbitrary stored versions.
+Already downloaded third-party code cannot be removed by withdrawing consent;
+consent updates and conversion dispatch checks remain responsible for that state.
 Audit browsers use the same scheduling as ordinary Chrome. Moving startup later
 does not remove Google's script-evaluation work or guarantee that its eventual
 execution cannot overlap input. A visit that ends before the remote script loads
@@ -149,12 +164,24 @@ Production comparison loads emit one bounded `[cwv:server]` JSON record through 
 
 The diagnostic contains no query text, model/job/account IDs, URL or exception content. It preserves rejections and cannot fail a page if logging fails. It is disabled outside production and during a declared production build; `CWV_SERVER_TIMING=0` disables it operationally. No cache, database schema, pricing algorithm, media selection or consent rule is changed by the concurrent loading correction.
 
-The homepage's `loadHomePageData` uses the same logger with route `home` and three
-concurrent phases: `examples`, `hero-slots` and `scores`. It no longer waits for an
-unused generation count. Slot reads require the explicitly initialized schema;
+The homepage's `loadHomePageData` uses the same logger with route `home` and five
+concurrent phases: `examples`, `hero-slots`, `scores`, `hero-pricing` and
+`demo-pricing`. Current hero reference prices and the below-fold exact demo quotes
+start with the gallery reads rather than after them. Their complete results still
+resolve before rendering; price unavailability and localization stay unchanged.
+It no longer waits for an unused generation count. Slot reads require the explicitly initialized schema;
 they do not bootstrap billing during page loading. See
 `read-route-schema-bootstrap.md` for read and mutation ownership. Root-layout
 theme reads and rendering are outside these loader timings.
+
+The shared gallery reader reserves the desktop dialog's viewport-bounded height
+from its loading state through details, navigation and retry. Previously its
+centered loading box grew after the detail request, moving the whole dialog after
+the 500 ms input exclusion window. Content scrolls inside the stable frame; the
+standalone watch route retains automatic height and document scrolling. Mobile's
+existing full-height reader is preserved. Real-browser geometry coverage belongs
+in `tests/example-reader-layout-browser.test.ts`; performance evidence must include
+the asynchronous opening journey, not only the initial gallery load.
 
 Active model details use the route-local `loadModelPageInputs` to start four
 independent inputs together: `scores`, `engine-settings`, `key-specs` and

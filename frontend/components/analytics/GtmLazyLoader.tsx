@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { getAnalyticsRouteContext } from '@/lib/analytics-route';
+import { loadCookiePolicyVersion } from '@/components/legal/cookie-policy-version.client';
+import { hasAnalyticsConsentForPolicyVersion } from '@/lib/analytics/consent-client';
 import {
   COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT,
   COMMERCIAL_ANALYTICS_RESOLVED_EVENT,
@@ -39,6 +41,7 @@ function hasConsent({ storageKey, grantedValue }: { storageKey: string; grantedV
 }
 
 type ConsentEventDetail = {
+  version?: string;
   categories?: {
     analytics?: boolean;
   };
@@ -51,12 +54,15 @@ export function GtmLazyLoader({
 }: GtmLazyLoaderProps = {}) {
   const pathname = usePathname();
   const [analyticsConsentGranted, setAnalyticsConsentGranted] = useState(false);
+  const [policyVersion, setPolicyVersion] = useState<string | null>(null);
   const routeContext = getAnalyticsRouteContext(pathname);
 
   useEffect(() => {
+    let active = true;
+    let currentVersion: string | null = null;
     const syncFromStorage = () => {
       setAnalyticsConsentGranted(
-        !isBrowserCommercialAnalyticsExcluded() && hasConsent({
+        !isBrowserCommercialAnalyticsExcluded() && hasAnalyticsConsentForPolicyVersion(currentVersion) && hasConsent({
           storageKey: consentStorageKey,
           grantedValue: consentGrantedValue,
         })
@@ -65,8 +71,12 @@ export function GtmLazyLoader({
 
     const handleConsentUpdated = (event: Event) => {
       const detail = (event as CustomEvent<ConsentEventDetail>).detail;
+      if (typeof detail?.version === 'string') {
+        currentVersion = detail.version;
+        setPolicyVersion(currentVersion);
+      }
       if (detail?.categories && typeof detail.categories.analytics === 'boolean') {
-        setAnalyticsConsentGranted(Boolean(detail.categories.analytics) && !isBrowserCommercialAnalyticsExcluded());
+        setAnalyticsConsentGranted(Boolean(detail.categories.analytics) && hasAnalyticsConsentForPolicyVersion(currentVersion) && !isBrowserCommercialAnalyticsExcluded());
         return;
       }
       syncFromStorage();
@@ -77,12 +87,18 @@ export function GtmLazyLoader({
       syncFromStorage();
     };
 
-    syncFromStorage();
+    void loadCookiePolicyVersion().then(version => {
+      if (!active) return;
+      currentVersion = version;
+      setPolicyVersion(version);
+      syncFromStorage();
+    });
     window.addEventListener('consent:updated', handleConsentUpdated as EventListener);
     window.addEventListener('storage', handleStorage);
     window.addEventListener(COMMERCIAL_ANALYTICS_RESOLVED_EVENT, syncFromStorage);
     window.addEventListener(COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT, syncFromStorage);
     return () => {
+      active = false;
       window.removeEventListener('consent:updated', handleConsentUpdated as EventListener);
       window.removeEventListener('storage', handleStorage);
       window.removeEventListener(COMMERCIAL_ANALYTICS_RESOLVED_EVENT, syncFromStorage);
@@ -103,7 +119,7 @@ export function GtmLazyLoader({
     }
 
     const timer = window.setTimeout(() => {
-      if (isBrowserCommercialAnalyticsExcluded() || !hasConsent({ storageKey: consentStorageKey, grantedValue: consentGrantedValue })) return;
+      if (isBrowserCommercialAnalyticsExcluded() || !hasAnalyticsConsentForPolicyVersion(policyVersion) || !hasConsent({ storageKey: consentStorageKey, grantedValue: consentGrantedValue })) return;
       if (getAnalyticsRouteContext(window.location.pathname).excludedFromGa4) return;
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
@@ -122,7 +138,7 @@ export function GtmLazyLoader({
     return () => {
       window.clearTimeout(timer);
     };
-  }, [analyticsConsentGranted, consentGrantedValue, consentStorageKey, delayMs, routeContext.excludedFromGa4]);
+  }, [analyticsConsentGranted, consentGrantedValue, consentStorageKey, delayMs, policyVersion, routeContext.excludedFromGa4]);
 
   return null;
 }

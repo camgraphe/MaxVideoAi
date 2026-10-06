@@ -41,7 +41,9 @@ test('fresh consented marketing loaders suppress a stored admin before GA init o
       Object.defineProperty(globalThis, key, { configurable: true, value });
     }
     saved.set('fetch', Object.getOwnPropertyDescriptor(globalThis, 'fetch'));
+    globalThis.fetch = async () => new Response(JSON.stringify({ ok: true, version: 'current-fixture' }));
     dom.window.localStorage.setItem('mv-consent-analytics', 'granted');
+    dom.window.document.cookie = `mv-consent=${encodeURIComponent(JSON.stringify({ version: 'current-fixture', timestamp: 1, categories: { analytics: true, ads: true }, source: 'banner' }))}; Path=/`;
     dom.window.sessionStorage.setItem('mvai.analytics-excluded-admin.v1', '1');
     Object.defineProperty(dom.window, 'requestIdleCallback', { configurable: true, value: (callback: IdleRequestCallback) => { const id = nextIdle++; idleCallbacks.set(id, callback); return id; } });
     Object.defineProperty(dom.window, 'cancelIdleCallback', { configurable: true, value: (id: number) => idleCallbacks.delete(id) });

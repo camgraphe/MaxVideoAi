@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { CONSENT_COOKIE_NAME, hasConsentFor, parseConsent, type ConsentCategory, type ConsentRecord } from '@/lib/consent';
+import { loadCookiePolicyVersion } from './cookie-policy-version.client';
 
 type Props = {
   categories: ConsentCategory | ConsentCategory[];
@@ -31,7 +32,14 @@ export function ConsentScriptGate({ categories, children }: Props) {
   const [allowed, setAllowed] = useState(false);
 
   useEffect(() => {
-    setAllowed(hasConsentFor(parseConsent(readCookie()), required));
+    let active = true;
+    setAllowed(false);
+    void loadCookiePolicyVersion().then(version => {
+      if (!active) return;
+      const record = parseConsent(readCookie());
+      setAllowed(record?.version === version && hasConsentFor(record, required));
+    });
+    return () => { active = false; };
   }, [required]);
 
   useEffect(() => {

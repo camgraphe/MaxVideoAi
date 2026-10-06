@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { ConsentScriptGate } from '@/components/legal/ConsentScriptGate';
+import type { ConsentCategory } from '@/lib/consent';
 import { getAnalyticsRouteContext, shouldLoadMarketingAnalytics, shouldLoadSpeedInsights } from '@/lib/analytics-route';
 
 const Clarity = dynamic(() => import('@/components/analytics/Clarity').then((mod) => mod.Clarity), { ssr: false });
@@ -12,6 +13,7 @@ const GoogleAds = dynamic(() => import('@/components/analytics/GoogleAds').then(
 const SpeedInsights = dynamic(() => import('@vercel/speed-insights/next').then((mod) => mod.SpeedInsights), {
   ssr: false,
 });
+const GOOGLE_ADS_CONSENT: ConsentCategory[] = ['analytics', 'ads'];
 
 export function AnalyticsScripts() {
   const pathname = usePathname();
@@ -28,10 +30,14 @@ export function AnalyticsScripts() {
     <>
       {loadSpeedInsights ? <SpeedInsights /> : null}
       {loadMarketingAnalytics ? (
-        <ConsentScriptGate categories="analytics">
-          <Clarity />
-          <GoogleAds />
-        </ConsentScriptGate>
+        <>
+          <ConsentScriptGate categories="analytics">
+            <Clarity />
+          </ConsentScriptGate>
+          <ConsentScriptGate categories={GOOGLE_ADS_CONSENT}>
+            <GoogleAds />
+          </ConsentScriptGate>
+        </>
       ) : null}
     </>
   );
