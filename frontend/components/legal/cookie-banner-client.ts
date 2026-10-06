@@ -68,7 +68,7 @@ export function applyStoredConsentEffects(record: ConsentRecord) {
   setAnalyticsConsentCookie(analyticsGranted);
   setLocalAnalyticsFlag(analyticsGranted);
   if (!analyticsGranted) clearBrowserAnalyticsState();
-  setClarityConsent(analyticsGranted);
+  setClarityConsent(analyticsGranted, Boolean(record.categories.ads));
   updateGoogleConsent(record.categories);
 }
 

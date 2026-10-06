@@ -19,9 +19,11 @@ export function sendPreparedAnalyticsEvents(
     } catch {
       return index;
     }
+    try { recordClarityAnalyticsEvent(prepared.event); } catch { /* Clarity never blocks the canonical transport. */ }
     index += 1;
   }
   return index;
 }
 import { isBrowserCommercialAnalyticsExcluded } from './commercial-client';
+import { recordClarityAnalyticsEvent } from '@/lib/clarity-client';
 import { boundGa4EventParams } from './ga4-params';
