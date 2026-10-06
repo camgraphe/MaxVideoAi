@@ -1,46 +1,40 @@
-# MCP watch project example — design QA
+# Connect menu — visual and interaction verification
 
-Date: 2026-09-06.
+Date: 2026-10-06. Scope: the application header's assistant disclosure.
 
-## Evidence and final state
+## Evidence
 
-- Source: `/Users/adrienmillot/.codex/generated_images/01a06e9d-7306-7390-9fad-4181b5569c79/exec-7ddd3d8e-4bb9-4eef-82f7-cdd8e6685560.png` (1672 × 941).
-- Implementation: `http://localhost:3006/fr/mcp#project-demo`.
-- Latest desktop screenshot: `/tmp/maxvideoai-project-demo-qa/fr-play-option-desktop.png`, 1672 × 941 viewport. Source and scroll implementation viewed together; existing navigation explains the vertical offset.
-- Mobile checked at 390 × 844; ordered stages stack without horizontal overflow. Capture: `/tmp/maxvideoai-project-demo-qa/es-scroll-mobile.png`.
-- User accepted the Wan 3 Prime clip with “ok pour moi”, then requested video progress controlled by scroll. That interaction is implemented in EN/FR/ES.
+- Selected visual: `/Users/adrienmillot/.codex/generated_images/01a0feee-9792-70b2-8081-ae5f8e59c12c/exec-27074d74-92dc-4b4f-9857-6dcb9e5195a6.png` (1672 × 941 pixels).
+- Browser-rendered implementation: `http://connect-menu.localhost:3217/app/studio`, anonymous English guest demonstration, expanded Connect, Claude hovered, dark theme.
+- Implementation screenshot: `.reports/connect-menu/desktop-dark.jpg` (1280 × 720 pixels, 1280 × 720 CSS viewport, density 1).
+- Full comparison: `.reports/connect-menu/full-comparison.png`; selected image normalized proportionally to the 1280 × 720 viewport, source left and implementation right.
+- Focused comparison: `.reports/connect-menu/panel-comparison.png`; source and implementation panels enlarged uniformly by 2 for typography, branding and spacing inspection. Original images are unchanged.
+- Additional browser captures: `.reports/connect-menu/desktop-light.jpg`, `mobile-dark.jpg` (390 × 844), `mobile-320.jpg` (320 × 568). Evidence images are local, ignored QA artifacts.
 
-## Iterations and resolved findings
+## Findings and comparison history
 
-- [P2, fixed] Increased conversation typography and widened the title area to preserve one-line desktop heading.
-- [P2, fixed] Product framing moved to 35% object position so the left-side HTML remains readable.
-- [P1, fixed] User rejected the first FLUX 3 clip's rotation. Wan 3 Prime uses restrained movement, fixed orientation and the same first/last reference image. The user accepted this replacement.
-- [P2, fixed] Native playback replaced by scroll-controlled seeking at the user's request. The layout, photo, translations and product direction remain intact.
+The first browser pass revealed that mouse entry opened the panel and the subsequent click immediately closed it. The disclosure now distinguishes hover opening from deliberate click/keyboard opening. A regression assertion failed before the fix and passed afterward; a browser click then visibly kept the panel open. Outside interaction, focus leaving and Escape dismiss it.
 
-## Final interaction verification
+The final combined full-view and focused comparisons show no actionable P0/P1/P2 issue within the approved scope. The actual Studio imagery, conversation, sidebar and composer retain their existing owners and geometry.
 
-- Desktop scroll advanced the paused video from 2.123810 to 4.668998 seconds. A later read without scrolling stayed at 4.668998.
-- Mobile reached 5.966666 seconds on downward scroll, then returned to 5.003811 on upward scroll. Video remained paused with native controls hidden.
-- No scroll interception: ordinary document scrolling controls the product's progress through the viewport.
-- Loading begins within 200px of the viewport; seek requests coalesce through animation frames and wait for the current seek to finish.
-- EN/FR/ES hints verified: “Scroll to bring it to life”, “Faites défiler pour animer”, “Desplázate para animarlo”.
-- Native playback, pause and loop were verified before adding scroll control. Native controls remain the server-rendered and reduced-motion fallback. Changing the OS reduced-motion preference was not exercised in this browser session.
-- CTA navigates to the localized `#first-video` section. First-request copy behavior was checked in the earlier integration pass.
-- Follow-up: discreet 40px play button in the bottom-right corner. It restarts standard playback and enables native controls. A top-right button returns to scroll control. Both actions verified in EN/FR/ES; keyboard activation verified in French and mobile appearance checked in Spanish (`/tmp/maxvideoai-project-demo-qa/es-play-option-mobile.png`).
-- Manual playback advanced normally (3.223384 seconds on desktop, 5.610039 on mobile). Returning to scroll paused the video at 2.304613 seconds, matching the current scroll target. TypeScript, lint, exposure and diff checks pass after this addition.
-- Follow-up copy: the central chat request now explicitly asks for scroll-controlled video, explaining forward/down and backward/up in EN/FR/ES. The MCP hub's copyable prompt starts with this same text and adds the discreet play button, model comparison and exact-price approval. Browser clipboard matched the rendered Spanish prompt exactly. Localized content and overflow checked; TypeScript, lint, exposure and diff checks pass. Desktop comparison: `/tmp/maxvideoai-project-demo-qa/fr-chat-prompt-desktop.png` against the preceding play-button version; the longer bubble remains legible without clipping.
-- Final scope clarification: chat title and speaker now name Codex or Claude; the subtitle uses “your assistant” and the icon is a neutral conversation symbol. EN/FR/ES verified in the production preview, including mobile overflow. Captures: `/tmp/maxvideoai-project-demo-qa/fr-codex-claude-desktop.png` and `/tmp/maxvideoai-project-demo-qa/es-codex-claude-mobile.png`. Compared with the preceding chat version; the desktop title fits on one line.
+## Required fidelity surfaces
 
-## Media and fidelity
+- **Typography:** existing application font and weights retained. Connect is 13 px; panel heading 15 px; supporting copy 12 px; integration labels 13 px. Names and localized destinations are readable, without truncation.
+- **Spacing and layout:** one text trigger, five vertical integration rows and a separate footer. The implementation uses a 292 px panel and minimum 46 px link rows for the existing application's touch targets. It aligns to the trigger edge instead of the generated image's slight offset into the wallet area. These are intentional production constraints; the overall hierarchy and restrained composition are preserved.
+- **Colors and tokens:** existing app canvas, panel, line, accent and floating-shadow tokens support light and dark. Hover uses the established warm accent surface; the generated mock's subtly different charcoal tone is not introduced as a new palette.
+- **Image and icon fidelity:** shared authentic partner marks are retained, reduced to 20 px inside the panel. No provider marks remain in the header trigger. Existing Lucide chevron and arrows supply the fine controls; no raster mock is used as functional UI.
+- **Copy and content:** English matches the selected heading, supporting text and footer. French and Spanish adapt these strings while retaining the short Connect trigger. Publication gating and all five registry-owned integration routes remain intact; this menu does not represent a user's live connection status.
 
-- Final asset: `watch-wan-3-prime-scroll.mp4`, 1920 × 1080, 30 fps, 6 seconds, silent H.264, 4,221,289 bytes.
-- Thirty keyframes, spaced 0.2 seconds apart, verified with ffprobe for responsive forward/backward seeking. Faststart metadata, yuv420p; source padded from 1918 to 1920 pixels wide.
-- Poster comes from the same Wan clip at 2.5 seconds. Photo and all copy remain separate from video.
-- Graphite product frames, cobalt/lime accents, serif title, existing light/dark surface tokens. The latest screenshot preserves the approved layout with the user's subsequent motion and interaction changes.
-- Rejected FLUX and conventional Wan encodes are archived in ignored `.reports/mcp-watch-demo/`; no longer shipped as public video assets.
+## Interaction and responsive checks
 
-## Checks and limits
+Focused real-component tests cover publication withdrawal, EN/FR/ES routes, new-tab safety, click toggling after hover, touch-versus-mouse behavior, pointer transition into the panel, leaving hover, ArrowDown focus, Escape focus restoration and outside dismissal. The browser additionally confirmed the expanded dark/light panels, real hover feedback, click opening, appearance controls and small-screen layout. At 320 px, document width remains 320 px; panel bounds are x=17…309 and y=57.5…443.5.
 
-Production build passes after integrating media PR #268 (`c085f5fde`): 860 pages generated, including lint/type validation, model-registry projections and the critical homepage rendition gate. All 141 focused home/MCP, shared playback, comparison and SEO tests pass. SEO/media origin checks, exposure and translation parity pass. The integrated production preview verifies localized canonical URLs, hreflang, the homepage link to MCP, playback and the Codex/Claude text; JSON-LD was also checked in the preceding production preview. No deployment performed. Browser verification used the in-app browser at desktop/mobile viewport sizes, not physical iOS/Android hardware. This is functional validation, not a measured Core Web Vitals improvement or a physical-device performance comparison. Build log: `/tmp/maxvideoai-mcp-merged-build.log`; tests: `/tmp/maxvideoai-mcp-merged-tests.log`.
+Browser console inspection found earlier local bootstrap errors caused by absent public authentication settings before preview configuration. The preview subsequently reused only existing public auth settings and disabled the local admin bypass; no production database, generation or billing operation was used. Initial signed-in loopback state was avoided by using a dedicated localhost hostname, preserving the existing session. Authenticated billing/backend behavior is outside this presentation change and remains covered by required CI.
+
+The local server also reported cookie-version/persistence 500 responses and wallet 503 responses because this isolated preview has no `DATABASE_URL`. These backend limitations are explicitly excluded from a claim of clean full-app runtime logs. They did not prevent the disclosure, theme, links or responsive checks; production runtime verification remains a separate release gate.
+
+## Follow-up polish
+
+P3 only: the live app intentionally preserves its own typeface, theme tokens, touch target sizes and trigger alignment rather than reproducing every generated pixel. No new artwork or font asset is required.
 
 final result: passed
