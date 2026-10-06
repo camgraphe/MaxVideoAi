@@ -358,4 +358,5 @@ export function useImageComposerPersistence({
     thinkingLevel,
     watermark,
   ]);
+  return { storageHydrated };
 }

@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import { ImageMediaHandoff } from './_components/ImageMediaHandoff.client';
 import { ImageWorkspaceComposerSurface } from './_components/ImageWorkspaceComposerSurface';
-import { ImageWorkspaceEmptyState } from './_components/ImageWorkspaceEmptyState';
+import { ImageWorkspaceEmptyState, ImageWorkspaceLoadingState } from './_components/ImageWorkspaceEmptyState';
 import { ImageWorkspaceRuntimeModals } from './_components/ImageWorkspaceRuntimeModals';
 import { ImageWorkspaceShell } from './_components/ImageWorkspaceShell';
 import { useImageWorkspaceDisplayState } from './_hooks/useImageWorkspaceDisplayState';
@@ -182,7 +182,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     setMode,
   });
 
-  useImageComposerPersistence({
+  const { storageHydrated } = useImageComposerPersistence({
     accountId,
     engines,
     engineId,
@@ -350,8 +350,10 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     estimatedCostAmount,
     estimatedCostCurrency,
     pendingGenerations,
-    previewEntry,
+    previewEntry, starterPreview, starterNavigation, selectStarter,
   } = useImageWorkspaceDisplayState({
+    guestStarter: { ready: !accountId && storageHydrated && !hasAnyReferenceSelection &&
+      !searchParams?.get('job') && !searchParams?.get('engine') && !searchParams?.get('tool'), prompt, setPrompt },
     error,
     historyEntries,
     numImages,
@@ -413,6 +415,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     seed, style, styleSelectOptions, thinkingLevel, thinkingLevelSelectOptions, watermark,
   };
 
+  if (!storageHydrated) return <ImageWorkspaceLoadingState />;
   if (!selectedEngine || !selectedEngineCaps) {
     return <ImageWorkspaceEmptyState message={resolvedCopy.general.emptyEngines} />;
   }
@@ -428,10 +431,11 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
           isImageJob,
           onOpenGroup: handleSelectGalleryGroup,
           selectedEngineCaps,
-          onUseStarterPrompt: setPrompt,
+          onSelectStarter: selectStarter,
         }}
       >
         <ImageWorkspaceComposerSurface
+              starterPreview={starterPreview} starterNavigation={starterNavigation}
               advancedSettingsTitle={advancedSettingsTitle}
               composerError={composerError}
               composerReferenceAssets={composerReferenceAssets}

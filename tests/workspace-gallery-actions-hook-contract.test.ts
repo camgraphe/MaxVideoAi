@@ -33,7 +33,7 @@ test('workspace gallery actions are owned by a route-local hook', () => {
   assert.match(hookSource, /haveSameGroupOrder/);
 });
 
-test('guided samples change composer settings only after an explicit gallery action', () => {
+test('guest starter boot and explicit guided selection use the gallery action owner', () => {
   const appSource = fs.readFileSync(
     path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/AppClient.tsx'),
     'utf8'
@@ -47,4 +47,7 @@ test('guided samples change composer settings only after an explicit gallery act
   assert.doesNotMatch(hookSource, /suppressGuidedSampleAutoApply/);
   assert.doesNotMatch(appSource, /suppressGuidedSampleAutoApply/);
   assert.match(hookSource, /handleGalleryGroupAction\(target, 'open', \{ autoPlayPreview: true \}\)/);
+  assert.match(hookSource, /handleGalleryGroupAction\(firstSample, 'open'\)/);
+  assert.match(appSource, /guestStarterReady: app.authStatus === 'loggedOut' && activeDraft.ready/);
+  assert.match(appSource, /!draft.hasStoredFormRef.current && !draft.fromVideoId && !draft.requestedJobId/);
 });
