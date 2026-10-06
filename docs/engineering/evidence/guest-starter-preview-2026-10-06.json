@@ -1,6 +1,6 @@
 {
   "date": "2026-10-06",
-  "baseRevision": "ba6bc504e",
+  "baseRevision": "1eb575217",
   "environment": "Node 22, warmed local Next.js development server, Chromium, fresh anonymous contexts, identical public API fixtures and pricing responses; no database credentials or generation requests",
   "sampleCountPerRoute": 1,
   "limitations": [
@@ -12,8 +12,8 @@
     {
       "width": 1440,
       "path": "/app",
-      "cls": 0.0950696596950955,
-      "lcp": 2052,
+      "cls": 0.09538755927191842,
+      "lcp": 8788,
       "overflow": false,
       "errors": [],
       "videoRequests": 0
@@ -21,8 +21,8 @@
     {
       "width": 1440,
       "path": "/app/image",
-      "cls": 0.07038756268536601,
-      "lcp": 988,
+      "cls": 0.07030442059552228,
+      "lcp": 2368,
       "overflow": false,
       "errors": [],
       "videoRequests": 0
@@ -31,7 +31,7 @@
       "width": 390,
       "path": "/app",
       "cls": 0.22531869190705128,
-      "lcp": 1204,
+      "lcp": 1144,
       "overflow": false,
       "errors": [],
       "videoRequests": 0
@@ -40,7 +40,7 @@
       "width": 390,
       "path": "/app/image",
       "cls": 0.1503719435897436,
-      "lcp": 592,
+      "lcp": 572,
       "overflow": false,
       "errors": [],
       "videoRequests": 0
@@ -50,8 +50,8 @@
     {
       "width": 1440,
       "path": "/app",
-      "cls": 0.08877896033769773,
-      "lcp": 1968,
+      "cls": 0.034578259503399884,
+      "lcp": 2064,
       "overflow": false,
       "errors": [],
       "videoRequests": 0
@@ -59,8 +59,8 @@
     {
       "width": 1440,
       "path": "/app/image",
-      "cls": 0.001451127500180845,
-      "lcp": 680,
+      "cls": 0.001367985410337095,
+      "lcp": 676,
       "overflow": false,
       "errors": [],
       "videoRequests": 0
@@ -68,8 +68,8 @@
     {
       "width": 390,
       "path": "/app",
-      "cls": 0.22731896113782055,
-      "lcp": 1012,
+      "cls": 0.10842969190705129,
+      "lcp": 980,
       "overflow": false,
       "errors": [],
       "videoRequests": 0
@@ -78,7 +78,7 @@
       "width": 390,
       "path": "/app/image",
       "cls": 0.0930153435897436,
-      "lcp": 616,
+      "lcp": 620,
       "overflow": false,
       "errors": [],
       "videoRequests": 0

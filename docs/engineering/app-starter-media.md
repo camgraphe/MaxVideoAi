@@ -39,8 +39,10 @@ the shelf. `ImageStarterPreview` displays the selected sample with responsive fi
 square geometry; it remains separate from generated history and owned media actions.
 Late playlist refreshes do not replace the selection or an edited prompt. Generation,
 pricing and the guest sign-in continuation keep their existing owners.
-Initial image storage hydration and guest selection finish before paint to avoid
-expanding an already visible empty preview. Video boot reuses the already loaded
+Image retains passive storage hydration after its settings normalization effects,
+then reveals the workspace shell with its guest selection complete before paint.
+The shared loading surface avoids expanding an already visible empty preview and
+preserves saved settings for a different model. Video boot reuses the already loaded
 curated jobs with the rail's grouping and ordering, then follows live rail updates.
 Local before/after browser evidence is in
 `evidence/guest-starter-preview-2026-10-06.json`; these development measurements do
