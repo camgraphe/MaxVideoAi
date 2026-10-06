@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import type { EngineCaps } from '@/types/engines';
 import type { GroupSummary } from '@/types/groups';
 import type { Job } from '@/types/jobs';
+import type { StarterMedia } from '@/lib/starter-media';
 import { ImageWorkspaceGalleryRail } from './ImageWorkspaceGalleryRail';
 
 type ImageWorkspaceGalleryRailBaseProps = {
@@ -11,7 +12,7 @@ type ImageWorkspaceGalleryRailBaseProps = {
   isImageJob: (job: Job) => boolean;
   onOpenGroup: (group: GroupSummary) => void;
   selectedEngineCaps: EngineCaps;
-  onUseStarterPrompt: (prompt: string) => void;
+  onSelectStarter: (item: StarterMedia) => void;
 };
 
 type ImageWorkspaceShellProps = {
