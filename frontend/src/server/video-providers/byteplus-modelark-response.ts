@@ -1,5 +1,6 @@
 import type { NormalizedVideoProviderTask, NormalizedVideoProviderUsage } from '@/server/video-providers/types';
 import {
+  SEEDANCE_OUTPUT_AUDIO_BLOCKED,
   SEEDANCE_I2V_RATIO_REJECTED,
   SEEDANCE_INPUT_VIDEO_TOO_SMALL,
   SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED,
@@ -145,6 +146,10 @@ function isBytePlusCopyrightFailure(providerMessage: string, providerErrorCode?:
   );
 }
 
+function isBytePlusOutputAudioFailure(providerErrorCode?: string | null): boolean {
+  return /^outputaudiosensitivecontentdetected(?:\.|$)/i.test(providerErrorCode?.trim() ?? '');
+}
+
 function isBytePlusVideoPixelFloorFailure(providerMessage: string): boolean {
   const normalized = providerMessage.toLowerCase();
   return normalized.includes('video pixel count') && normalized.includes('must be >=');
@@ -169,6 +174,9 @@ function getBytePlusUserSafeFailureMessage(
   providerErrorCode?: string | null
 ): string {
   const normalized = providerMessage.toLowerCase();
+  if (isBytePlusOutputAudioFailure(providerErrorCode)) {
+    return getSeedanceFailureMessage({ failureCode: SEEDANCE_OUTPUT_AUDIO_BLOCKED })!;
+  }
   if (isBytePlusTaskTypeConstraint(providerErrorCode)) {
     return SEEDANCE_TASK_TYPE_FAILURE_MESSAGE;
   }
@@ -231,6 +239,7 @@ export function getBytePlusTaskFailureCode(
   providerErrorCode?: string | null
 ): string | null {
   const message = providerMessage ?? '';
+  if (isBytePlusOutputAudioFailure(providerErrorCode)) return SEEDANCE_OUTPUT_AUDIO_BLOCKED;
   if (isBytePlusTaskTypeConstraint(providerErrorCode)) {
     return SEEDANCE_TASK_TYPE_CONSTRAINT;
   }

@@ -1,5 +1,6 @@
-import { getSeedanceFailureMessage, seedanceFailureCodeFromMessage } from '@/lib/seedance-failure-messages';
-import { SEEDANCE_REFERENCE_MEDIA_BLOCKED, SEEDANCE_REFERENCE_VIDEO_BLOCKED, SEEDANCE_REFERENCE_VIDEO_DURATION_EXCEEDED } from '@/lib/video-failure-codes';
+import { seedanceFailureCodeFromMessage } from '@/lib/seedance-failure-messages';
+import { getGeneratedImageFailureMessage, getKnownGenerationFailureMessage } from '@/lib/generation-failure-messages';
+import { SEEDANCE_OUTPUT_AUDIO_BLOCKED, SEEDANCE_REFERENCE_MEDIA_BLOCKED, SEEDANCE_REFERENCE_VIDEO_BLOCKED, SEEDANCE_REFERENCE_VIDEO_DURATION_EXCEEDED } from '@/lib/video-failure-codes';
 
 const DEFAULT_FAILURE_MESSAGE =
   'MaxVideoAI could not complete this render. Please retry in a few moments. If this keeps happening, contact support with your request ID.';
@@ -263,8 +264,8 @@ function normalizeDurationSec(value: number | string | null | undefined): number
 
 export function toUserFacingFailureMessage(message: string | null | undefined): string {
   const normalized = normalizeMessage(message);
-  const seedanceMessage = getSeedanceFailureMessage({ message: normalized });
-  if (seedanceMessage) return seedanceMessage;
+  const knownMessage = getKnownGenerationFailureMessage({ message: normalized });
+  if (knownMessage) return knownMessage;
   const seedanceFailure = classifySeedanceSpecificFailure(normalized);
   if (seedanceFailure === 'copyright') return SEEDANCE_COPYRIGHT_FAILURE_MESSAGE;
   if (seedanceFailure === 'reference_safety') return SEEDANCE_REFERENCE_FAILURE_MESSAGE;
@@ -278,7 +279,9 @@ export function toUserFacingFailureMessage(message: string | null | undefined): 
 
 export function toUserFacingRefundReason(message: string | null | undefined): string {
   const normalized = normalizeMessage(message);
+  if (getGeneratedImageFailureMessage(normalized)) return 'Generated image was blocked by safety checks.';
   const specificCode = seedanceFailureCodeFromMessage(normalized);
+  if (specificCode === SEEDANCE_OUTPUT_AUDIO_BLOCKED) return 'Generated audio was blocked by safety checks.';
   if (specificCode === SEEDANCE_REFERENCE_MEDIA_BLOCKED) return 'Reference media was blocked by Seedance safety checks.';
   if (specificCode === SEEDANCE_REFERENCE_VIDEO_BLOCKED) return 'Reference video was blocked by Seedance safety checks.';
   if (specificCode === SEEDANCE_REFERENCE_VIDEO_DURATION_EXCEEDED) return 'The combined reference video duration exceeded the Seedance limit of 30 seconds.';
