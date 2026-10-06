@@ -24,7 +24,7 @@ export function readStudioUsage(usage: unknown, model: unknown, serviceTier: unk
   return {inputTokens: input,cachedTokens: cached,cacheWriteTokens: writes as number|null,outputTokens: output,reasoningTokens: reasoning as number|null,
     providerMinNanoUsd,providerMaxNanoUsd,tariffBasisNanoUsd: common + noncached * rate.write};
 }
-export function studioProviderReservation(model: StudioAssistantModel, inputTokens: number, outputTokens: number) {
-  if (!count(inputTokens) || inputTokens > 272000 || !count(outputTokens) || outputTokens > 2200) throw new Error('Invalid Studio token bounds');
+export function studioProviderReservation(model: StudioAssistantModel, inputTokens: number, outputTokens: number,approvedOutputBound=2200) {
+  if (!count(inputTokens) || inputTokens > 272000 || !count(outputTokens) || !count(approvedOutputBound)||approvedOutputBound>6000||outputTokens>approvedOutputBound) throw new Error('Invalid Studio token bounds');
   return inputTokens * rates[model].write + outputTokens * rates[model].output;
 }

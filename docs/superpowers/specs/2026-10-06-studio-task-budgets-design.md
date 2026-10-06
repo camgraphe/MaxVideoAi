@@ -80,7 +80,12 @@ approved credits per task; exceeding them requires a new explicit request.
 An approval can only resume a paused task with fully known usage, never a
 completed reply, delivered quote or running/unknown dispatch. It records the
 prior partial reply, retains every paid response/action receipt and adds another
-bounded deadline. Resumption replays the original checkpoints before continuing.
+bounded deadline. Because delivered image-turn drafts are immutable, continuation
+creates a new execution segment of the same task, with the same frozen model and
+currently explicit purchased-credit permission. All segments share one cumulative
+financial ceiling and rounding. Closed segments cannot dispatch again. Recovery
+inside a segment replays its saved checkpoints; a new segment receives completed
+actions and current project facts as context rather than executing them again.
 Expired generation/analysis/export quotes keep their existing renewal controls.
 
 ## Memory and context
