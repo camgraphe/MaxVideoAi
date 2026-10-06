@@ -71,7 +71,16 @@
 
 **Files:** Studio engineering guides/spec/plan progress.
 
-- [ ] Run `npm run qa:editor`, relevant legacy financial/recovery tests, MCP parity, exposure and diff checks (Expected: pass).
-- [ ] Run canonical browser lane and full build (Expected: pass); document explicit migration/worker/activation and pilot metrics.
-- [ ] Fresh whole-change review against starting commit `0d89d8399`; Important fixes each RED→GREEN plus green suite. Record rulings/deferred minors.
-- [ ] Commit complete candidate, preserve the worktree, report exact verified scope and production gates. No production merge/deploy.
+- [x] Run `npm run qa:editor`, relevant legacy financial/recovery tests, MCP parity, exposure and diff checks (Expected: pass).
+- [x] Run canonical browser lane and full build (Expected: pass); document explicit migration/worker/activation and pilot metrics.
+- [x] Fresh whole-change review against starting commit `0d89d8399`; Important fixes each RED→GREEN plus green suite. Record rulings/deferred minors.
+- [x] Commit complete candidate, preserve the worktree, report exact verified scope and production gates. No production merge/deploy.
+
+## Completion evidence (2026-10-06)
+
+- Candidate includes main d07c789f9 and keeps the isolated branch/worktree.
+- Whole editor QA: 1159 pass, 1 skip; TypeScript clean; five inherited lint warnings.
+- Canonical browser lane: 12/12 on the Studio correction candidate 3025a2641. Subsequent main integration only changes known refusal messages; all 76 generation/billing regressions and editor/MCP/build checks pass on the integrated candidate.
+- MCP: 151 pass, 1 skip plus selection QA; exposure/diff checks and full frontend build pass.
+- One fresh gpt-6-astra review of 0d89d8399..d37b56423 found one Important support-closeout gap, no Critical or Minor. One RED→GREEN fix pass covers waiver, settlement, actual late-response fencing and zero redispatch (19/19 focused checks; full green suite).
+- Production migration/activation, durable worker hosting and a paid-provider pilot remain outside this branch task. No live spend or new credential.
