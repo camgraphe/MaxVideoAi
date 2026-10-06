@@ -11,7 +11,7 @@ export function useConversationAnalysis(projectId:string,accountKey:string,quote
   const endpoint=`/api/studio/projects/${encodeURIComponent(projectId)}/analyses/${encodeURIComponent(quote.analysisId)}`;
   const request=useCallback(async(confirm:boolean)=>{
     if(!isCurrent()||session.mutation||session.reading&&!confirm)return false;
-    if(confirm){session.mutation=true;session.controller?.abort();update({busy:true,error:null});}else session.reading=true;
+    if(confirm){session.mutation=true;session.reading=false;session.controller?.abort();update({busy:true,error:null});}else session.reading=true;
     const version=++session.version;const controller=new AbortController();session.controller=controller;
     const timeout=window.setTimeout(()=>controller.abort(),20_000);
     try{
@@ -21,9 +21,9 @@ export function useConversationAnalysis(projectId:string,accountKey:string,quote
       if(!isCurrent()||version!==session.version)return false;
       update({status:parsed.data,error:null});return true;
     }catch(error){if(isCurrent()&&version===session.version)update({error:error instanceof Error?error.message:'Analysis unavailable.'});return false;}
-    finally{window.clearTimeout(timeout);if(confirm){session.mutation=false;update({busy:false});}else session.reading=false;}
+    finally{window.clearTimeout(timeout);if(version===session.version){if(confirm){session.mutation=false;update({busy:false});}else session.reading=false;}}
   },[endpoint,isCurrent,quote.analysisId,quote.maxCredits,quote.policyVersion,session,update]);
-  useEffect(()=>{session.active=true;update({status:null,busy:false,error:null});void request(false);return()=>{session.active=false;session.version++;session.controller?.abort();};},[request,session,update]);
+  useEffect(()=>{session.active=true;update({status:null,busy:false,error:null});void request(false);return()=>{session.active=false;session.version++;session.reading=false;session.controller?.abort();};},[request,session,update]);
   const status=state.owner===session?state.status:null;
   const analysisState=status?.state;
   useEffect(()=>{if(!analysisState||!['queued','running'].includes(analysisState))return;const timer=window.setInterval(()=>{void request(false);},3000);return()=>window.clearInterval(timer);},[request,analysisState]);

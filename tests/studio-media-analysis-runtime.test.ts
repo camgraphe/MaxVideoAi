@@ -37,6 +37,8 @@ test('the real decoder produces timestamped JPEGs and a bounded mono music windo
     assert.ok(extracted.frames.every(frame=>frame.imageUrl.startsWith('data:image/jpeg;base64,')));
     const audioRef={...ref,kind:'audio' as const};
     const audio=await extractStudioAnalysisSource({...media,ref:audioRef,kind:'audio',mime:'audio/mp4'},{...request,ref:audioRef},AbortSignal.timeout(20_000),dependencies);
+    const soundtrack=await extractStudioAnalysisSource(media,{...request,modality:'audio'},AbortSignal.timeout(20_000),dependencies);
+    assert.equal(soundtrack.audioBase64,audio.audioBase64,'Video sound uses the bounded audio adapter without pretending frames contain sound');
     assert.equal(Buffer.from(audio.audioBase64!,'base64').subarray(0,4).toString(),'RIFF');
     assert.equal(audio.sourceHash,extracted.sourceHash);assert.equal(audio.frames.length,0);
     const privateVideo=path.join(directory,'private.ts');

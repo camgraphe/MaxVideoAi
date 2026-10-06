@@ -113,15 +113,16 @@ export async function runStudioImageActions(options: {
   const policy = options.assistancePolicy ?? studioAssistancePolicy();
   // Injected response creators are offline qualification seams. Native dispatch always requires the monetary gate.
   const assistance = policy.enabled || !options.createResponse ? await openStudioAssistanceTurn(actor,turn.request_id,policy) : null;
-  const analysisEnabled=!!studioAnalysisPolicy()&&policy.credits===true;
+  const analysisPolicy=studioAnalysisPolicy();
+  const analysisEnabled=!!analysisPolicy&&policy.credits===true;
   const analysis=createStudioAnalysisService(actor,{assistancePolicy:policy});
-  const director = createStudioConversationDirector({model: assistance?.model,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,analysisEnabled,assistanceCreditsEnabled:policy.credits===true});
+  const director = createStudioConversationDirector({model: assistance?.model,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,analysisEnabled,analysisProfiles:{video:!!analysisPolicy?.video,audio:!!analysisPolicy?.audio},assistanceCreditsEnabled:policy.credits===true});
   let currentCallId: string;
   const execute = createStudioActionExecutor(actor, {enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
     analysisEnabled,
     readAnalysis:id=>analysis.read(id),
     prepareAnalysis:async action=>{
-      const request={ref:action.ref,goal:action.goal,reason:action.reason,startSec:action.startSec,endSec:action.endSec};
+      const request={ref:action.ref,...(action.modality?{modality:action.modality}:{}),goal:action.goal,reason:action.reason,startSec:action.startSec,endSec:action.endSec};
       const ref=request.ref;
       if(ref.type==='asset'&&!options.references.some(item=>item.assetId===ref.assetId&&item.mediaKind===ref.kind))throw new AgentApiError('REFERENCE_INVALID','Attach the selected media before preparing its analysis.');
       return analysis.prepare(request,turn.request_id+':'+currentCallId.slice(0,80),async(quote,executor)=>{

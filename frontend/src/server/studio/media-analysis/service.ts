@@ -3,7 +3,7 @@ import {withDbTransaction,type TransactionQueryExecutor} from '@/lib/db';
 import {AgentApiError} from '@/server/agent-api/errors';
 import {requireGenerationActor,type StudioGenerationActor} from '@/server/agent-api/generation-actor';
 import {stableJson} from '@/server/agent-api/generation-normalization';
-import {studioAnalysisPrepareSchema,studioAnalysisConfirmSchema,STUDIO_ANALYSIS_LIMITS,type StudioPreparedAnalysis} from '@/lib/studio/media-analysis-contract';
+import {studioAnalysisPrepareSchema,studioAnalysisConfirmSchema,studioAnalysisKind,STUDIO_ANALYSIS_LIMITS,type StudioPreparedAnalysis} from '@/lib/studio/media-analysis-contract';
 import {STUDIO_ASSISTANCE_CREDIT_TARIFF} from '@/lib/studio/assistance-contract';
 import {getActiveAccountRestrictionInExecutor} from '@/server/fraud-cleanup/restrictions';
 import {studioAssistancePolicy,type StudioAssistancePolicy} from '../assistance-policy';
@@ -23,18 +23,18 @@ export function createStudioAnalysisService(actor:StudioGenerationActor,dependen
     read:async(id:string)=>projectAnalysis(await readAnalysis(actor,id)),
     async prepare(raw:unknown,key:string,onPrepared?:(quote:StudioPreparedAnalysis,tx:TransactionQueryExecutor)=>Promise<void>) {
       const current=enabled(),request=studioAnalysisPrepareSchema.parse(raw);
-      if(!current[request.ref.kind==='audio'?'audio':'video'])throw new AgentApiError('ENGINE_UNAVAILABLE','The requested analysis profile has not been qualified.');
+      if(!current[studioAnalysisKind(request)])throw new AgentApiError('ENGINE_UNAVAILABLE','The requested analysis profile has not been qualified.');
       if(!key||key.length>180||key!==key.trim())throw new AgentApiError('PARAMETER_INVALID','Invalid analysis request identity.');
       const source=await resolveAnalysisSource(actor,request);
       if(!source.durationSec||request.endSec>source.durationSec||(source.sizeBytes??0)>STUDIO_ANALYSIS_LIMITS.sourceBytes)throw new AgentApiError('PARAMETER_INVALID','Select a shorter measured source interval for analysis.');
       const fingerprint=analysisSourceFingerprint(source),requestHash=createHash('sha256').update(stableJson({request,fingerprint,policy:current})).digest('hex');
-      const price=quoteStudioAnalysis(current,request.ref.kind==='audio'?'audio':'video',request.endSec-request.startSec);
+      const price=quoteStudioAnalysis(current,studioAnalysisKind(request),request.endSec-request.startSec);
       return withDbTransaction(async tx=>{
         const project=await tx.query('SELECT id FROM studio_projects WHERE id=$1 AND user_id=$2 AND deleted_at IS NULL FOR UPDATE',[actor.projectId,actor.userId]);
         if(!project.length)throw new AgentApiError('REFERENCE_INVALID','This project is not available.');
         const prior=(await tx.query<AnalysisRun>('SELECT * FROM studio_media_analysis_runs WHERE user_id=$1 AND project_id=$2 AND request_key=$3',[actor.userId,actor.projectId,key]))[0];
         if(prior){if(prior.request_hash!==requestHash)throw new AgentApiError('PARAMETER_INVALID','This analysis identity belongs to another request.');await onPrepared?.(prior.quote_json,tx);return prior.quote_json;}
-        const quote:StudioPreparedAnalysis={analysisId:randomUUID(),...request,maxCredits:price.maxCredits,policyVersion:current.version,expiresAt:new Date(Date.now()+15*60_000).toISOString(),profile:request.ref.kind==='audio'?'audio-window-v1':'video-frames-v1',model:'gpt-6.1-sol',confirmationRequired:true};
+        const quote:StudioPreparedAnalysis={analysisId:randomUUID(),...request,maxCredits:price.maxCredits,policyVersion:current.version,expiresAt:new Date(Date.now()+15*60_000).toISOString(),profile:studioAnalysisKind(request)==='audio'?'audio-window-v1':'video-frames-v1',model:'gpt-6.1-sol',confirmationRequired:true};
         await tx.query(`INSERT INTO studio_media_analysis_runs(id,user_id,project_id,request_key,request_hash,request_json,source_fingerprint,policy_json,quote_json,reserved_supplier_nano_usd,expires_at)
           VALUES($1,$2,$3,$4,$5,$6::jsonb,$7,$8::jsonb,$9::jsonb,$10,$11)`,[quote.analysisId,actor.userId,actor.projectId,key,requestHash,JSON.stringify(request),fingerprint,JSON.stringify(current),JSON.stringify(quote),price.reservedSupplierNanoUsd,quote.expiresAt]);
         await onPrepared?.(quote,tx);return quote;

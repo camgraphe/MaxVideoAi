@@ -23,3 +23,13 @@ test('an unqualified profile rejects forced model calls before executing any act
   await assert.rejects(director({message:'Create a video',references:[],history:[],project:{name:'Film',revision:0,memory:{revision:0,brief:'',decisions:[]}},checkpoint:async(_index,create)=>create(),execute:async()=>{executed++;throw new Error('Must not execute');}}),/unavailable/i);
   assert.equal(executed,0);
 });
+test('saved paid observations remain readable when new analysis profiles are disabled',async()=>{
+  let calls=0;
+  const director=createStudioConversationDirector({createResponse:async params=>{
+    calls++;assert.ok(params.tools?.some(tool=>tool.type==='function'&&tool.name==='analysis_read'));assert.ok(!params.tools?.some(tool=>tool.type==='function'&&tool.name==='analysis_prepare'));
+    return {id:'saved-'+calls,model:'gpt-6.1-sol',status:'completed',service_tier:'default',usage:null,output_text:calls===2?'{"reply":"Saved observation."}':'',output:calls===1?[{type:'function_call',name:'analysis_read',call_id:'read',arguments:JSON.stringify({analysisId:quote.analysisId})}]:[]};
+  }});
+  const result=await director({message:'Read my saved analysis',references:[],history:[],project:{name:'Film',revision:0,memory:{revision:0,brief:'',decisions:[]},analyses:[{analysisId:quote.analysisId,ref:quote.ref,goal:quote.goal,state:'completed',startSec:0,endSec:30}]},checkpoint:async(_index,create)=>create(),execute:async()=>({ok:true,action:'analysis.read',data:{quote,state:'completed',result:null,chargedCredits:20,error:null}})});
+  assert.equal(result.reply,'Saved observation.');
+  assert.equal(calls,2);
+});

@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 import {z} from 'zod';
 import type {ResponseCreateParamsNonStreaming,ResponseInputContent} from 'openai/resources/responses/responses';
-import {studioAnalysisResultSchema,type StudioAnalysisRequest} from '@/lib/studio/media-analysis-contract';
+import {studioAnalysisResultSchema,studioAnalysisKind,type StudioAnalysisRequest} from '@/lib/studio/media-analysis-contract';
 import type {AnalysisFrame,AnalysisSource} from './source';
 import type {StudioAnalysisPolicy} from './policy';
 import {studioTokenCountInput} from '../assistance-token-count';
@@ -35,8 +35,8 @@ export function readStudioAnalysisProviderCost(snapshot:AnalysisProviderSnapshot
 /** Native adapter with zero retries; the caller persists dispatch before create(). */
 export async function prepareStudioAnalysisProvider(policy:StudioAnalysisPolicy,request:StudioAnalysisRequest,source:AnalysisSource) {
   const client=new OpenAI({apiKey:process.env.OPENAI_API_KEY,maxRetries:0,timeout:65_000});
-  const profile=policy[request.ref.kind==='audio'?'audio':'video'];if(!profile)throw new Error('ANALYSIS_PROFILE_UNAVAILABLE');
-  if(request.ref.kind==='video') {
+  const profile=policy[studioAnalysisKind(request)];if(!profile)throw new Error('ANALYSIS_PROFILE_UNAVAILABLE');
+  if(studioAnalysisKind(request)==='video') {
     const params=buildStudioAnalysisVisualInput(request,source.frames);params.max_output_tokens=profile.maxOutputTokens;
     const inputTokens=(await client.responses.inputTokens.count(studioTokenCountInput(params))).input_tokens;
     if(!Number.isSafeInteger(inputTokens)||inputTokens>profile.maxInputTokens)throw new Error('ANALYSIS_INPUT_BOUND');

@@ -1,3 +1,4 @@
+import {studioAnalysisKind} from '@/lib/studio/media-analysis-contract';
 import {randomUUID} from 'node:crypto';
 import {query,withDbTransaction} from '@/lib/db';
 import {getActiveAccountRestrictionInExecutor} from '@/server/fraud-cleanup/restrictions';
@@ -59,7 +60,7 @@ export async function runStudioAnalysisWorkerOnce(dependencies:WorkerDependencie
       const saved=await query(`UPDATE studio_media_analysis_runs SET provider_snapshot=$3::jsonb WHERE id=$1 AND worker_id=$2 AND state='running' AND provider_snapshot IS NULL RETURNING id`,[run.id,workerId,JSON.stringify(snapshot)]);
       if(!saved.length)throw new Error('ANALYSIS_SNAPSHOT_UNAVAILABLE');
     }
-    const providerNanoUsd=readStudioAnalysisProviderCost(snapshot,run.request_json.ref.kind==='audio'?'audio':'video',run.policy_json);
+    const providerNanoUsd=readStudioAnalysisProviderCost(snapshot,studioAnalysisKind(run.request_json),run.policy_json);
     if(providerNanoUsd===null)throw new Error('ANALYSIS_USAGE_UNKNOWN');
     const price=priceStudioAnalysis(run.policy_json,run.request_json.endSec-run.request_json.startSec,providerNanoUsd);
     if(price.credits>run.quote_json.maxCredits||price.supplierNanoUsd>Number(run.reserved_supplier_nano_usd))throw new Error('ANALYSIS_USAGE_UNKNOWN');

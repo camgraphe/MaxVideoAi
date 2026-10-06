@@ -4,7 +4,7 @@ import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
-import {STUDIO_ANALYSIS_LIMITS,type StudioAnalysisRequest} from '@/lib/studio/media-analysis-contract';
+import {STUDIO_ANALYSIS_LIMITS,studioAnalysisKind,type StudioAnalysisRequest} from '@/lib/studio/media-analysis-contract';
 import {createSignedDownloadUrl} from '@/server/storage';
 import {ensureExecutableFfmpegPath} from '../../../../server/ffmpeg-runtime';
 import type {StudioResolvedMedia} from '../media-resolver';
@@ -43,7 +43,7 @@ export async function extractStudioAnalysisSource(media:StudioResolvedMedia,requ
       const remaining=STUDIO_ANALYSIS_LIMITS.decodeMs-(Date.now()-started);if(remaining<=0)throw new Error('ANALYSIS_DECODE_TIMEOUT');
       await promisify(execFile)(executable,['-nostdin','-loglevel','error','-protocol_whitelist','file,pipe',...args],{timeout:remaining,signal,maxBuffer:64*1024});
     };
-    if(media.kind==='audio') {
+    if(studioAnalysisKind(request)==='audio') {
       const output=path.join(directory,'window.wav');
       await run(['-ss',String(request.startSec),'-i',source,'-t',String(request.endSec-request.startSec),'-vn','-ac','1','-ar','16000','-c:a','pcm_s16le',output]);
       const audio=await readFile(output);if(audio.length>2_000_000)throw new Error('ANALYSIS_AUDIO_TOO_LARGE');

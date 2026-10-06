@@ -26,7 +26,8 @@ for that frozen run without buying a pack or resuming suspended purchased usage.
 Safe results distinguish observations/inferences and expose source intervals and
 sparse coverage. They never initiate a montage, regeneration, export or creative
 review. `analysis_read` can read paid saved observations on either model. Audio
-uses a separately qualified `gpt-audio-1.5` Chat Completions adapter; Sol's Responses
+uses a separately qualified `gpt-audio-1.5` Chat Completions adapter, including
+sound extracted from a selected video; Sol's Responses
 API receives timestamped image inputs for video. Subsequent Sol discussion is an
 ordinary explicitly sent metered chat message; no extra synthesis call is hidden
 after analysis completion. The candidate has no autonomous review loop.

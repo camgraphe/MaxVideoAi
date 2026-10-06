@@ -12,7 +12,7 @@ export function ConversationAnalysis({quote,projectId,accountKey,locale,busy,onC
   return <section className={styles.card} aria-label={t('Media analysis','Analyse du média')}>
     <h3>{t('Analyse with Sol 6.1','Analyser avec Sol 6.1')}</h3>
     <p>{quote.goal}</p>
-    <p>{quote.startSec.toFixed(2)}–{quote.endSec.toFixed(2)} s · {quote.ref.kind==='audio'?t('Sound','Son'):t('Video frames','Images de la vidéo')}</p>
+    <p>{quote.startSec.toFixed(2)}–{quote.endSec.toFixed(2)} s · {quote.profile==='audio-window-v1'?t('Sound','Son'):t('Video frames','Images de la vidéo')}</p>
     <p>{t('Maximum','Maximum')} <strong>{quote.maxCredits} {t('credits','crédits')}</strong>. {t('Included credits are used first. Purchased credits stay paused until you resume them.','Les crédits inclus sont utilisés en premier. Les crédits achetés restent en pause jusqu’à leur réactivation.')}</p>
     {(state==='queued'||state==='running')&&<p role="status">{t('Analysis in progress. Your media is preserved.','Analyse en cours. Votre média est conservé.')}</p>}
     {state==='unknown'&&<p role="status">{t('Usage is being recovered. Credits remain reserved; this analysis will not be repeated.','La consommation est en cours de récupération. Les crédits restent réservés ; cette analyse ne sera pas répétée.')}</p>}
