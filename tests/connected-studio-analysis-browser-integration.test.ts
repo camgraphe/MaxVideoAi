@@ -51,7 +51,9 @@ test('analysis review works on desktop/mobile and only explicit confirmation que
     await page.setViewportSize({width:390,height:844});
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true);
     const evidence=join(process.cwd(),'.superpowers/sdd/2026-10-06-studio-media-analysis/browser');await mkdir(evidence,{recursive:true});await page.screenshot({path:join(evidence,'analysis-mobile.png'),fullPage:true});
+    const confirmed=page.waitForResponse(response=>response.url().endsWith(`/api/studio/projects/${project.projectId}/analyses/${quote.analysisId}`)&&response.request().method()==='POST',{timeout:30_000});
     await card.getByRole('button',{name:/Analyse with Sol 6.1/}).click();
+    const confirmationResponse=await confirmed;assert.equal(confirmationResponse.status(),200,JSON.stringify(await confirmationResponse.json()));
     await expect(card.getByText('Analysis in progress. Your media is preserved.')).toBeVisible();
     assert.equal((await analysis.read(quote.analysisId)).state,'queued');
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM studio_analysis_credit_funding')).rows[0].n,1);
