@@ -30,6 +30,6 @@ export const studioTaskStatusSchema=z.object({
   state:z.enum(['queued','running','paused','completed','failed','unknown']),phase:z.enum(['queued','thinking','reading','preparing','editing','recovering','done','paused','unknown']),
   maxCredits:credits,consumedCredits:credits,reservedCredits:credits,
   completedCalls:z.number().int().min(0).max(STUDIO_TASK_MAX_CALLS),allowedCalls:z.number().int().min(1).max(STUDIO_TASK_MAX_CALLS),revision:z.number().int().nonnegative(),canContinue:z.boolean(),
-  error:z.enum(['budget','steps','output','deadline','context','funding','provider','usage','permission','unavailable','cancelled']).nullable().optional(),
+  error:z.enum(['budget','steps','output','deadline','context','funding','provider','usage','permission','unavailable','cancelled','closed']).nullable().optional(),
 }).strict();
 export type StudioTaskStatus=z.infer<typeof studioTaskStatusSchema>;

@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS studio_tasks (
   worker_id uuid, lease_expires_at timestamptz, deadline_at timestamptz,
   recovery_attempts integer NOT NULL DEFAULT 0 CHECK(recovery_attempts BETWEEN 0 AND 2), replay_only boolean NOT NULL DEFAULT false,
   partial_reply text CHECK(length(partial_reply)<=2400),
-  error text CHECK(error IN ('budget','steps','output','deadline','context','funding','provider','usage','permission','unavailable','cancelled')),
+  error text CHECK(error IN ('budget','steps','output','deadline','context','funding','provider','usage','permission','unavailable','cancelled','closed')),
   created_at timestamptz NOT NULL DEFAULT clock_timestamp(), updated_at timestamptz NOT NULL DEFAULT clock_timestamp(),
   PRIMARY KEY(user_id,project_id,request_id),
   FOREIGN KEY(user_id,project_id,request_id) REFERENCES studio_assistance_turns(user_id,project_id,request_id),

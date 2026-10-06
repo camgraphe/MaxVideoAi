@@ -54,7 +54,10 @@ Qualified saved responses settle/replay without repurchasing them, even when new
 dispatch is disabled. Automatic known recovery is bounded to two attempts.
 Explicit recovery verifies stored model, tier, usage and original reservation,
 then uses replay-only execution without increasing caps. Missing/unqualified usage
-stays reserved and blocks new work for reconciliation/support. Late original
+stays reserved and blocks new work for reconciliation/support. The existing operator
+resolution also reconciles the owned task: a customer waiver closes and fences it
+once no unresolved calls remain; qualified settlement queues only saved-result
+replay, without increasing caps or making another provider call. Late original
 responses can save usage after fencing. Cancellation applies only to queued work
 and preserves recorded consumption; it cannot treat a live unknown call as free.
 
