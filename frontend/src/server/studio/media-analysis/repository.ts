@@ -26,14 +26,14 @@ export async function readStudioAnalysisFacts(actor:StudioGenerationActor,db:Que
       FROM studio_media_analysis_runs r JOIN studio_projects p ON p.id=r.project_id AND p.user_id=r.user_id AND p.deleted_at IS NULL
       WHERE r.user_id=$1 AND r.project_id=$2 ORDER BY r.created_at DESC LIMIT 4`,[actor.userId,actor.projectId]);
 }
-export async function resolveAnalysisSource(actor:StudioGenerationActor,request:StudioAnalysisRequest,db:QueryExecutor={query}) {
+export async function resolveAnalysisSource(actor:StudioGenerationActor,request:StudioAnalysisRequest,db:QueryExecutor={query},lock=false) {
   if(request.ref.type==='job-output'){
     const ref=request.ref;
     const owned=await db.query(`SELECT o.id FROM job_outputs o JOIN app_jobs j ON j.job_id=o.job_id AND j.user_id=o.user_id
       JOIN mcp_generation_quotes q ON q.job_id=j.job_id AND q.user_id=j.user_id WHERE o.id=$1 AND o.job_id=$2 AND o.user_id=$3
-      AND q.studio_project_id=$4 AND q.auth_origin='studio-session' AND q.state='accepted' AND j.status='completed' AND j.hidden IS NOT TRUE AND o.status='ready'`,[ref.outputId,ref.jobId,actor.userId,actor.projectId]);
+      AND q.studio_project_id=$4 AND q.auth_origin='studio-session' AND q.state='accepted' AND j.status='completed' AND j.hidden IS NOT TRUE AND o.status='ready'${lock?' FOR SHARE OF o,j,q':''}`,[ref.outputId,ref.jobId,actor.userId,actor.projectId]);
     if(!owned.length)throw new AgentApiError('REFERENCE_INVALID','Select a ready output from this project or attach its saved library asset.');
   }
-  try{return await resolveStudioMedia(actor.userId,request.ref,(sql,values)=>db.query(sql,values));}
+  try{return await resolveStudioMedia(actor.userId,request.ref,(sql,values)=>db.query(sql,values),{lockAsset:lock});}
   catch{throw new AgentApiError('REFERENCE_INVALID','This source is not available to analyse.');}
 }

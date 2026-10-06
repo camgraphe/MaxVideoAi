@@ -11,6 +11,7 @@ import {studioAnalysisPolicy,priceStudioAnalysis,type StudioAnalysisPolicy} from
 import {analysisSourceFingerprint,extractStudioAnalysisSource} from './source';
 import {prepareStudioAnalysisProvider,parseStudioAnalysisObservations,readStudioAnalysisProviderCost} from './provider';
 import {resolveAnalysisSource,type AnalysisRun} from './repository';
+import {studioAnalysisLeaseExpiredSql} from './lease';
 
 type WorkerDependencies={policy?:StudioAnalysisPolicy|null;assistancePolicy?:StudioAssistancePolicy;extract?:typeof extractStudioAnalysisSource;provider?:typeof prepareStudioAnalysisProvider};
 /** Worker-only entry. No generation callback, API GET or chat poll calls this function. */
@@ -19,13 +20,13 @@ export async function runStudioAnalysisWorkerOnce(dependencies:WorkerDependencie
   // Read candidates first; every mutation locks campaign -> account -> run.
   const candidate=(await query<AnalysisRun>(`SELECT * FROM studio_media_analysis_runs WHERE state='queued'
     OR (provider_snapshot IS NOT NULL AND (state='running' OR (state='unknown' AND error='ANALYSIS_SETTLEMENT_PENDING')))
-    OR (state='running' AND started_at<clock_timestamp()-interval '3 minutes') ORDER BY created_at LIMIT 1`))[0];
+    OR (state='running' AND ${studioAnalysisLeaseExpiredSql()}) ORDER BY created_at LIMIT 1`))[0];
   if(!candidate)return false;
   const workerId=randomUUID();
   const run=await withDbTransaction(async tx=>{
     await lockAccount(tx,candidate.user_id,assistance);
     const current=(await tx.query<AnalysisRun>(`SELECT * FROM studio_media_analysis_runs WHERE id=$1 AND
-      (state='queued' OR (provider_snapshot IS NOT NULL AND (state='running' OR (state='unknown' AND error='ANALYSIS_SETTLEMENT_PENDING'))) OR (state='running' AND started_at<clock_timestamp()-interval '3 minutes')) FOR UPDATE SKIP LOCKED`,[candidate.id]))[0];
+      (state='queued' OR (provider_snapshot IS NOT NULL AND (state='running' OR (state='unknown' AND error='ANALYSIS_SETTLEMENT_PENDING'))) OR (state='running' AND ${studioAnalysisLeaseExpiredSql()})) FOR UPDATE SKIP LOCKED`,[candidate.id]))[0];
     if(!current)return null;
     if(current.dispatched_at&&!current.provider_snapshot){await tx.query("UPDATE studio_media_analysis_runs SET state='unknown',error='Provider usage remains unresolved.' WHERE id=$1",[current.id]);return null;}
     await tx.query("UPDATE studio_media_analysis_runs SET state='running',worker_id=$2,started_at=clock_timestamp() WHERE id=$1",[current.id,workerId]);
@@ -49,7 +50,9 @@ export async function runStudioAnalysisWorkerOnce(dependencies:WorkerDependencie
       await withDbTransaction(async tx=>{
         await lockAccount(tx,run.user_id,assistance);
         if(await getActiveAccountRestrictionInExecutor(run.user_id,tx))throw new Error('ANALYSIS_ACCOUNT_RESTRICTED');
-        const retained=(await resolveAnalysisSource(actor,run.request_json,tx));
+        const project=await tx.query('SELECT id FROM studio_projects WHERE id=$1 AND user_id=$2 AND deleted_at IS NULL FOR SHARE',[run.project_id,run.user_id]);
+        if(!project.length)throw new Error('ANALYSIS_PROJECT_UNAVAILABLE');
+        const retained=(await resolveAnalysisSource(actor,run.request_json,tx,true));
         if(analysisSourceFingerprint(retained)!==run.source_fingerprint)throw new Error('ANALYSIS_SOURCE_CHANGED');
         const saved=await tx.query(`UPDATE studio_media_analysis_runs SET dispatched_at=clock_timestamp(),source_hash=$3 WHERE id=$1 AND worker_id=$2 AND state='running' AND dispatched_at IS NULL RETURNING id`,[run.id,workerId,source.sourceHash]);
         if(!saved.length)throw new Error('ANALYSIS_WORKER_SUPERSEDED');
@@ -57,7 +60,9 @@ export async function runStudioAnalysisWorkerOnce(dependencies:WorkerDependencie
       dispatched=true;
       snapshot={...await prepared.dispatch(),sampledAtSec:source.frames.map(frame=>frame.atSec)};
       // Persist known output/usage first. A later failure replays this snapshot only.
-      const saved=await query(`UPDATE studio_media_analysis_runs SET provider_snapshot=$3::jsonb WHERE id=$1 AND worker_id=$2 AND state='running' AND provider_snapshot IS NULL RETURNING id`,[run.id,workerId,JSON.stringify(snapshot)]);
+      const saved=await query(`UPDATE studio_media_analysis_runs SET provider_snapshot=$3::jsonb,
+        error=CASE WHEN state='unknown' THEN 'ANALYSIS_SETTLEMENT_PENDING' ELSE error END
+        WHERE id=$1 AND worker_id=$2 AND state IN ('running','unknown') AND dispatched_at IS NOT NULL AND settled_at IS NULL AND provider_snapshot IS NULL RETURNING id`,[run.id,workerId,JSON.stringify(snapshot)]);
       if(!saved.length)throw new Error('ANALYSIS_SNAPSHOT_UNAVAILABLE');
     }
     const providerNanoUsd=readStudioAnalysisProviderCost(snapshot,studioAnalysisKind(run.request_json),run.policy_json);

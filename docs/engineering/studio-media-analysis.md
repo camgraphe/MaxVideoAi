@@ -72,6 +72,13 @@ before settlement. Duplicate confirmation and saved-response recovery do not
 redispatch or debit twice. A pre-dispatch failure settles zero and releases its
 hold; malformed known paid output settles its usage and is reported as failed.
 
+The preparation phase expires after four minutes (120-second extraction plus
+65-second native input count and headroom). Dispatch starts a fresh two-minute
+phase. Lease expiry never permits another provider call; a known late reply from
+the original fenced worker is persisted and settled. Before recording dispatch,
+the transaction rechecks and locks the active owned project, exact source and
+its output/job/accepted-quote dependencies through the durable checkpoint.
+
 Unknown supplier usage retains credits/exposure. Switching models or disabling
 the feature cannot bypass it. A saved result with interrupted settlement is
 recovered without another supplier call, including with the profile disabled.

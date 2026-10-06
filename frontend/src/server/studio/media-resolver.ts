@@ -49,7 +49,7 @@ export async function resolveStudioMedia(
     : await execute(`SELECT o.*, j.hidden, j.user_id AS job_user_id FROM job_outputs o
         JOIN app_jobs j ON j.job_id = o.job_id
         WHERE o.user_id = $1 AND j.user_id = $1 AND o.job_id = $2 AND o.id = $3 AND o.kind = $4
-          AND o.status = 'ready' AND j.hidden IS NOT TRUE LIMIT 1`, [userId, ref.jobId, ref.outputId, ref.kind]);
+          AND o.status = 'ready' AND j.hidden IS NOT TRUE LIMIT 1${options.lockAsset ? ' FOR SHARE OF o, j' : ''}`, [userId, ref.jobId, ref.outputId, ref.kind]);
   const rows=await readRows();
   const row = rows[0];
   if (!row || row.user_id !== userId || row.kind !== ref.kind || row.status !== 'ready' || row.deleted_at || row.hidden
