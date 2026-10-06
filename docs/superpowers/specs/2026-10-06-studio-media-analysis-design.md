@@ -25,8 +25,11 @@ plusieurs clips, et que l'analyse doit aussi servir à comprendre les changement
 demandés sur un média déjà généré. Il a ajouté les variantes d'accroche, le logo ou
 carton de fin, l'insertion d'une image et la création d'un clip à partir d'une
 musique fournie. Ces usages peuvent justifier un montage court et simple ; la
-durée n'est pas le seul motif d'assemblage. Le découpage technique et le parcours
-proposés ci-dessous restent à examiner.
+durée n'est pas le seul motif d'assemblage. Il a confirmé l'assemblage de plusieurs
+plans pour un film plus long et interdit l'analyse ou le commentaire automatique
+d'un résultat livré : l'analyse doit servir une demande du client ou un besoin
+concret du travail restant. Le découpage technique et le parcours proposés
+ci-dessous restent à examiner.
 
 Le montage avancé désigne ici des décisions fondées sur le contenu observé :
 repérer une action, sélectionner un passage, rapprocher deux plans, éviter une
@@ -53,6 +56,9 @@ ni montage sur la première demande.
 | « Cette vidéo générée n'a pas le bon mouvement » | Examiner la portion utile si nécessaire, interpréter le changement, puis choisir retouche vidéo, nouvelle génération ou edit de timeline selon les capacités disponibles |
 | « Change la lumière de cette image générée » | Réattacher l'image et préparer sa retouche ; la vision image reste disponible à Luna et Sol |
 | « Assemble ces clips » | Répondre à la demande explicite de montage, en proposant l'analyse Sol seulement si les choix nécessitent de voir/entendre le contenu |
+| « Assemble ces cinq plans dans cet ordre pour faire un film plus long » | Utiliser les sources, durées et bornes connues pour construire la séquence ; aucune analyse des plans ou du film assemblé par défaut |
+| Une vidéo demandée vient de terminer sa génération | Livrer le résultat et son statut ; la demande est terminée, sans analyse, critique ou suggestions spontanées issues d'une nouvelle inspection |
+| « Analyse cette vidéo que tu viens de générer » | Préparer l'analyse du résultat exact, son objectif et son plafond, puis l'exécuter après confirmation |
 | « Fais trois versions avec des hooks différents » | Conserver un corps commun et proposer trois ouvertures distinctes ; réutiliser les médias fournis, ou préparer les devis des ouvertures à créer |
 | « Ajoute mon logo / ce carton / cette image à la fin » | Proposer une insertion avec durée et présentation définies ; aucune analyse vidéo si les indications suffisent |
 | « Mets cette musique sous la vidéo » | Insérer l'enregistrement fourni sur une piste audio, avec portion et niveau définis ; aucune génération de musique ni analyse sonore implicite |
@@ -73,6 +79,30 @@ apporte une information nécessaire. Une consigne précise déjà suffisante peu
 aboutir directement à un prompt ou à une préparation compatible, sans prétendre
 avoir inspecté le clip. Une analyse réussie ne déclenche pas automatiquement
 `montage.plan` : elle peut aboutir à un conseil, une retouche ou une nouvelle génération.
+
+## Déclenchement de l'analyse et fin d'une demande
+
+**Un résultat généré et livré ne déclenche aucune analyse automatique.** Une
+demande de génération satisfaite est terminée. Studio ne dépense pas de tokens
+supplémentaires pour regarder le résultat, en faire une critique, proposer des
+améliorations ou lancer une comparaison avant/après de sa propre initiative.
+Cette règle vaut pour images, vidéos, sons et films assemblés, y compris sous Sol.
+
+Une analyse a deux motifs admissibles : le client demande de l'analyser, ou le
+contenu doit être observé pour résoudre une question concrète dans une création,
+une modification ou un montage demandé encore en cours. Exemple : repérer le
+moment où un personnage se retourne ou les changements musicaux qui doivent
+guider les plans. Si le brief, les bornes ou les métadonnées suffisent, Studio
+utilise ces informations. Dans tous les cas, le périmètre utile, le plafond de
+crédits et la confirmation explicite précèdent le traitement payant.
+
+Une fin de job, son polling ou son événement de livraison ne créent pas un run
+d'analyse, une extraction pour inspection, un appel multimodal supplémentaire
+ou une continuation destinée à commenter la qualité. Les mesures techniques
+nécessaires au statut, aux durées, aux thumbnails et au rendu restent distinctes
+de cette analyse de contenu. La reprise d'un travail déjà demandé peut poursuivre
+les étapes restantes connues, par exemple assembler des plans, sans ajouter une
+étape d'inspection absente du périmètre approuvé.
 
 ## Ce que l'intégration fait aujourd'hui
 
@@ -109,7 +139,7 @@ il ne prétend pas que Sol sait recevoir nativement une vidéo ou du son.
 | --- | --- | --- | --- |
 | Envoyer quelques posters au prochain tour Sol | Petit périmètre et coût limité | Trois posters début/milieu/fin ne permettent pas de repérer précisément une action ni d'analyser le son | Insuffisant pour interpréter les demandes qui dépendent du mouvement ou du son |
 | Ajouter une analyse explicite et bornée, puis choisir l'opération adaptée | Preuves horodatées pour itération ou montage, coût annoncé, reprise indépendante du chat | Nécessite un worker et un contrat de crédits ; un plan de montage exige sa propre validation | **Approche recommandée** |
-| Agent autonome qui regarde, monte, rend et recommence | Peut aller vers une boucle créative complète | Coût, latence et récupération plus difficiles ; dépend aussi de l'export réellement activé | Étape ultérieure, après qualification de l'analyse |
+| Agent autonome qui regarde, monte, rend et recommence | Peut aller vers une boucle créative complète | Coût, latence et récupération plus difficiles ; dépend aussi de l'export réellement activé | Hors périmètre courant ; une éventuelle boucle future exigerait un objectif explicite et un budget borné, jamais une inspection automatique à la livraison |
 
 ## Répartition des capacités
 
@@ -243,6 +273,15 @@ un film de quelques secondes. Une opération suffisamment définie utilise les
 commandes simples disponibles sur Luna et Sol. Elle ne devient pas avancée du
 seul fait que plusieurs clips sont concernés ou que le client demande trois versions.
 
+Assembler plusieurs plans pour faire un film plus long est un cas principal.
+Studio utilise l'ordre demandé, les sources exactes, les durées mesurées et les
+bornes approuvées. Des plans préparés pour un storyboard peuvent ainsi être
+assemblés sans être tous analysés après génération. Le nombre de plans ou la
+durée finale ne déclenchent pas une analyse. Si une décision dépend réellement
+du contenu, par exemple choisir des raccords sur une action, seule la portion
+nécessaire fait l'objet d'une proposition d'analyse distincte. La livraison du
+film ne déclenche pas ensuite une critique automatique du montage.
+
 Pour des hooks différents, Studio précise ce qui varie : plan d'ouverture,
 durée, texte visible ou formulation de l'accroche. Il conserve le corps et la fin
 que le client veut réutiliser. Une accroche textuelle ou une nouvelle direction
@@ -360,7 +399,10 @@ L'analyse ne déclenche ni génération de nouveaux médias ni export.
 Les devis et confirmations de ces opérations conservent leur propriétaire actuel.
 Un futur contrôle du film monté devra analyser un rendu de prévisualisation réellement
 calculé ; analyser séparément ses sources ne prouve pas le résultat de leurs transitions.
-La disponibilité de ce contrôle dépend aussi du chemin de rendu effectivement activé.
+Ce contrôle est uniquement demandé par le client ou nécessaire à un objectif
+explicite encore en cours, avec son plafond confirmé. Il ne devient pas une étape
+automatique après chaque montage. Sa disponibilité dépend aussi du chemin de rendu
+effectivement activé.
 
 ## Contrats et propriétaires proposés
 
@@ -377,6 +419,9 @@ La disponibilité de ce contrôle dépend aussi du chemin de rendu effectivement
 
 La surface modèle propose `analysis.prepare`, `analysis.read` et `montage.plan`
 uniquement quand les capacités effectives de Sol et du déploiement les autorisent.
+Toute préparation d'analyse est liée à une demande et à l'objectif restant,
+avec son motif, les références utiles et son périmètre ; un simple événement
+« génération terminée » ne constitue pas une autorisation d'analyse.
 L'outil de confirmation financière reste réservé au client.
 Les routes de préparation/confirmation/status sont authentifiées, bornées,
 protégées contre CSRF et liées au compte/projet. Un GET ne crée ni grant, ni crédit,
@@ -452,8 +497,9 @@ de consommation gratuite prioritaire s'applique.
    distincte d'une synchronisation précise. Lancement indépendant du profil visuel.
 4. **Montage avancé** : comparaison de quelques clips analysés ou plan musical,
    prévisualisation, validation puis application atomique par le propriétaire d'édition existant.
-5. **Vérification du rendu** : uniquement après qualification du rendu de preview,
-   du coût et de la disponibilité effective du chemin d'export ; boucle bornée.
+5. **Vérification du rendu à la demande** : après qualification du rendu de preview,
+   du coût et de la disponibilité effective du chemin d'export ; objectif explicite,
+   plafond confirmé et aucune inspection systématique après livraison.
 
 Chaque étape peut être livrée séparément derrière son activation explicite.
 Une indisponibilité d'analyse ne retire pas le chat, la vision des images ou les
@@ -467,6 +513,15 @@ edits simples actuels. Les lectures de résultats enregistrés restent possibles
   demande supérieure à 30 secondes compatible/incompatible avec une génération
   unique, retouche d'un résultat et montage explicitement demandé. Vérifier que
   Sol ne force ni timeline, ni analyse, ni montage sur une demande de création simple.
+- Génération livrée sans demande d'analyse : aucun run d'analyse, extraction
+  d'inspection, appel de vision/audio ou appel supplémentaire pour une critique.
+  Vérifier aussi le polling répété, l'événement de completion dupliqué et la reprise.
+  Une demande explicite ultérieure prépare l'analyse du résultat exact et confirme
+  son plafond ; aucune analyse rétroactive de tous les résultats du projet.
+- Assemblage long de plusieurs plans dans un ordre et des bornes connus : montage
+  direct, sans analyse de chaque plan ni du résultat final. L'analyse reste une
+  étape distincte seulement lorsqu'une question de contenu la nécessite et que
+  son coût a été confirmé. Les crédits ne financent aucune auto-évaluation finale.
 - Cas de montage court : hook alternatif, trois variantes avec corps commun,
   image ou logo final et carton fourni. Vérifier réutilisation exacte, durée,
   cadrage, conservation de l'original et absence de génération/analyses implicites.
