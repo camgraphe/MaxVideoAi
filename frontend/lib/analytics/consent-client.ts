@@ -23,13 +23,14 @@ export function analyticsConsentFromUpdateEvent(
   return fallback();
 }
 
-function hasConsentCookieCategory(category: 'analytics' | 'ads'): boolean {
+function hasConsentCookieCategory(category: 'analytics' | 'ads', version?: string): boolean {
   if (typeof document === 'undefined') return false;
   try {
     for (const entry of document.cookie ? document.cookie.split(';') : []) {
       const [key, ...rest] = entry.trim().split('=');
       if (key === CONSENT_COOKIE_NAME) {
-        return hasConsentFor(parseConsent(decodeURIComponent(rest.join('='))), category);
+        const record = parseConsent(decodeURIComponent(rest.join('=')));
+        return (version === undefined || record?.version === version) && hasConsentFor(record, category);
       }
     }
   } catch {
@@ -40,6 +41,10 @@ function hasConsentCookieCategory(category: 'analytics' | 'ads'): boolean {
 
 export function hasAnalyticsConsentCookieInBrowser(): boolean {
   return hasConsentCookieCategory('analytics');
+}
+
+export function hasAnalyticsConsentForPolicyVersion(version: string | null): boolean {
+  return version !== null && hasConsentCookieCategory('analytics', version);
 }
 
 export function hasAdsConsentInBrowser(): boolean {

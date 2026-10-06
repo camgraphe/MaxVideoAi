@@ -88,7 +88,8 @@ test('real GA and GTM loaders obey consent equally for Chrome and performance au
             idleCallbacks.delete(id);
           } });
           if (granted) dom.window.localStorage.setItem('mv-consent-analytics', 'granted');
-          const globals = { window: dom.window, document: dom.window.document, navigator: dom.window.navigator, self: dom.window, React, IS_REACT_ACT_ENVIRONMENT: true };
+          dom.window.document.cookie = `mv-consent=${encodeURIComponent(JSON.stringify({ version: 'current-fixture', timestamp: 1, categories: { analytics: granted, ads: granted }, source: 'banner' }))}; Path=/`;
+          const globals = { window: dom.window, document: dom.window.document, navigator: dom.window.navigator, self: dom.window, React, IS_REACT_ACT_ENVIRONMENT: true, fetch: async () => new Response(JSON.stringify({ ok: true, version: 'current-fixture' })) };
           const saved = new Map(Object.keys(globals).map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
           for (const [key, value] of Object.entries(globals)) Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
           const root = createRoot(dom.window.document.getElementById('root')!);
@@ -123,6 +124,7 @@ test('real GA and GTM loaders obey consent equally for Chrome and performance au
         const { GA, GTM } = require(output);
         const dom = new JSDOM('<div id="root"></div>', { url: 'https://maxvideoai.com/pricing' });
         dom.window.localStorage.setItem('mv-consent-analytics', 'granted');
+        dom.window.document.cookie = `mv-consent=${encodeURIComponent(JSON.stringify({ version: 'current-fixture', timestamp: 1, categories: { analytics: true, ads: true }, source: 'banner' }))}; Path=/`;
         const issuedCallbacks: Array<() => void> = [];
         const pending = new Set<number>();
         const schedule = (callback: () => void) => {
@@ -139,7 +141,7 @@ test('real GA and GTM loaders obey consent equally for Chrome and performance au
           Object.defineProperty(dom.window, 'setTimeout', { configurable: true, value: schedule });
           Object.defineProperty(dom.window, 'clearTimeout', { configurable: true, value: cancel });
         }
-        const globals = { window: dom.window, document: dom.window.document, navigator: dom.window.navigator, self: dom.window, React, IS_REACT_ACT_ENVIRONMENT: true };
+        const globals = { window: dom.window, document: dom.window.document, navigator: dom.window.navigator, self: dom.window, React, IS_REACT_ACT_ENVIRONMENT: true, fetch: async () => new Response(JSON.stringify({ ok: true, version: 'current-fixture' })) };
         const saved = new Map(Object.keys(globals).map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
         for (const [key, value] of Object.entries(globals)) Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
         const root = createRoot(dom.window.document.getElementById('root')!);

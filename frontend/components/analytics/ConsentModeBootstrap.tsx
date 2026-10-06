@@ -7,7 +7,11 @@ import { suppressLoadedAnalyticsForExcludedRoute } from '@/lib/analytics-client'
 import {
   ANALYTICS_CONSENT_STORAGE_KEY,
   hasAnalyticsConsentInBrowser,
+  hasAnalyticsConsentForPolicyVersion,
 } from '@/lib/analytics/consent-client';
+import { loadCookiePolicyVersion } from '@/components/legal/cookie-policy-version.client';
+import { readConsentCookie, updateGoogleConsent } from '@/components/legal/cookie-banner-client';
+import { parseConsent } from '@/lib/consent';
 import { getAnalyticsRouteContext } from '@/lib/analytics-route';
 import {
   COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT,
@@ -26,6 +30,7 @@ const DISABLE_GA =
   process.env.NODE_ENV === 'test';
 
 type ConsentEventDetail = {
+  version?: string;
   categories?: {
     analytics?: boolean;
   };
@@ -35,6 +40,7 @@ export default function ConsentModeBootstrap() {
   const pathname = usePathname();
   const [analyticsConsentGranted, setAnalyticsConsentGranted] = useState(false);
   const [externalScriptReady, setExternalScriptReady] = useState(false);
+  const [policyVersion, setPolicyVersion] = useState<string | null>(null);
   const routeContext = getAnalyticsRouteContext(pathname);
 
   useEffect(() => {
@@ -43,16 +49,22 @@ export default function ConsentModeBootstrap() {
   }, [routeContext.excludedFromGa4]);
 
   useEffect(() => {
+    let active = true;
+    let currentVersion: string | null = null;
     const syncConsent = (granted: boolean) => {
       const excluded = isBrowserCommercialAnalyticsExcluded();
       if (GA_ID) (window as unknown as Record<string, unknown>)[`ga-disable-${GA_ID}`] =
         excluded || getAnalyticsRouteContext(window.location.pathname).excludedFromGa4;
-      setAnalyticsConsentGranted(granted && !excluded);
+      setAnalyticsConsentGranted(granted && hasAnalyticsConsentForPolicyVersion(currentVersion) && !excluded);
     };
     const syncFromStorage = () => syncConsent(hasAnalyticsConsentInBrowser());
 
     const handleConsentUpdated = (event: Event) => {
       const detail = (event as CustomEvent<ConsentEventDetail>).detail;
+      if (typeof detail?.version === 'string') {
+        currentVersion = detail.version;
+        setPolicyVersion(currentVersion);
+      }
       if (detail?.categories && typeof detail.categories.analytics === 'boolean') {
         syncConsent(Boolean(detail.categories.analytics));
         return;
@@ -65,12 +77,20 @@ export default function ConsentModeBootstrap() {
       syncFromStorage();
     };
 
-    syncFromStorage();
+    if (GA_ID && !DISABLE_GA) {
+      void loadCookiePolicyVersion().then(version => {
+        if (!active) return;
+        currentVersion = version;
+        setPolicyVersion(version);
+        syncFromStorage();
+      });
+    }
     window.addEventListener('consent:updated', handleConsentUpdated as EventListener);
     window.addEventListener('storage', handleStorage);
     window.addEventListener(COMMERCIAL_ANALYTICS_RESOLVED_EVENT, syncFromStorage);
     window.addEventListener(COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT, syncFromStorage);
     return () => {
+      active = false;
       window.removeEventListener('consent:updated', handleConsentUpdated as EventListener);
       window.removeEventListener('storage', handleStorage);
       window.removeEventListener(COMMERCIAL_ANALYTICS_RESOLVED_EVENT, syncFromStorage);
@@ -88,7 +108,7 @@ export default function ConsentModeBootstrap() {
     let idleId: number | undefined;
     let timerId: number | undefined;
     const mountScript = () => {
-      if (cancelled || !hasAnalyticsConsentInBrowser() || isBrowserCommercialAnalyticsExcluded()) return;
+      if (cancelled || !hasAnalyticsConsentInBrowser() || !hasAnalyticsConsentForPolicyVersion(policyVersion) || isBrowserCommercialAnalyticsExcluded()) return;
       if (getAnalyticsRouteContext(window.location.pathname).excludedFromGa4) return;
       setExternalScriptReady(true);
     };
@@ -110,7 +130,7 @@ export default function ConsentModeBootstrap() {
       if (idleId !== undefined) window.cancelIdleCallback?.(idleId);
       if (timerId !== undefined) window.clearTimeout(timerId);
     };
-  }, [analyticsConsentGranted, externalScriptReady, routeContext.excludedFromGa4]);
+  }, [analyticsConsentGranted, externalScriptReady, policyVersion, routeContext.excludedFromGa4]);
 
   if (!GA_ID) return null;
   if (DISABLE_GA) return null;
@@ -139,7 +159,10 @@ export default function ConsentModeBootstrap() {
       {externalScriptReady ? (
         <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
       ) : null}
-      <Script id="ga-init" strategy="afterInteractive">
+      <Script id="ga-init" strategy="afterInteractive" onReady={() => {
+        const consent = parseConsent(readConsentCookie());
+        if (consent?.version === policyVersion) updateGoogleConsent(consent.categories);
+      }}>
         {`
           window.dataLayer = window.dataLayer || [];
           window.gtag = window.gtag || function(){dataLayer.push(arguments);};
