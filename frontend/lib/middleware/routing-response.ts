@@ -61,6 +61,12 @@ export function finalizeResponse(res: NextResponse, clearLogoutIntent: boolean, 
   if (clearLogoutIntent) {
     res.cookies.set(LOGOUT_INTENT_COOKIE, '', { path: '/', maxAge: 0 });
   }
+  if (clearLogoutIntent || trackingNoindex || res.headers.has('set-cookie') || (res.status >= 300 && res.status < 400)) {
+    res.headers.set('Cache-Control', 'private, no-store, max-age=0');
+    res.headers.set('Vercel-CDN-Cache-Control', 'no-store');
+    // Vary:* also prevents storage when a dynamic renderer replaces Cache-Control.
+    res.headers.set('Vary', '*');
+  }
   return res;
 }
 

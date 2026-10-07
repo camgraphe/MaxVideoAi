@@ -79,7 +79,8 @@ test('personalized, non-idempotent, and non-approved marketing responses stay ou
       new NextRequest(url, { method: 'POST' })
     );
 
-    assert.equal(personalizedResponse.headers.get('vercel-cdn-cache-control'), null);
+    assert.equal(personalizedResponse.headers.get('vercel-cdn-cache-control'), 'no-store');
+    assert.equal(personalizedResponse.headers.get('vary'), '*');
     assert.equal(postResponse.headers.get('vercel-cdn-cache-control'), null);
   }
 
@@ -88,4 +89,22 @@ test('personalized, non-idempotent, and non-approved marketing responses stay ou
   );
 
   assert.equal(examplesResponse.headers.get('vercel-cdn-cache-control'), null);
+});
+
+test('tracking and cookie-setting redirects explicitly prevent CDN storage despite route configuration', async () => {
+  for (const path of [
+    '/?utm_custom=campaign',
+    '/pricing?UTM_Source=campaign',
+    '/fr/tarifs?gclid=test-only',
+    '/es/precios?utm_custom=campaign',
+    '/fr/modeles/veo-3-1?UTM_Source=campaign',
+    '/es/modelos/veo-3-1?fbclid=test-only',
+    '/models/veo-3-1?fbclid=test-only',
+    '/pricing?lang=fr',
+    '/pricing?code=test-only',
+  ]) {
+    const response = await middleware(new NextRequest(`https://maxvideoai.com${path}`));
+    assert.equal(response.headers.get('vercel-cdn-cache-control'), 'no-store', path);
+    assert.equal(response.headers.get('vary'), '*', path);
+  }
 });
