@@ -61,6 +61,13 @@ export function finalizeResponse(res: NextResponse, clearLogoutIntent: boolean, 
   if (clearLogoutIntent) {
     res.cookies.set(LOGOUT_INTENT_COOKIE, '', { path: '/', maxAge: 0 });
   }
+  if (clearLogoutIntent || res.headers.has('set-cookie') || (res.status >= 300 && res.status < 400)) {
+    res.headers.set('Cache-Control', 'private, no-store, max-age=0');
+    res.headers.set('Vercel-CDN-Cache-Control', 'no-store');
+    // Middleware redirects are not stored. A rendered page may reuse cached public HTML;
+    // its per-request logout cookie clearing still runs before the cached response.
+    res.headers.set('Vary', '*');
+  }
   return res;
 }
 

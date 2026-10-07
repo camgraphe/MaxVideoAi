@@ -84,6 +84,18 @@ build, or deploy hook.
 
 ## Homepage data loading
 
+Public video eligibility keeps its original deleted-media check in
+`videos-query.ts`. The additive concurrent migration
+`neon/migrations/concurrent/66_public_deleted_media_index.sql` indexes exactly its
+`media_assets` owner/URL lookup for rows with `deleted_at IS NOT NULL OR
+status='deleted'`. Existing media indexes omit those rows. This changes the access
+path, not visibility, ordering, source identity or the read-only route boundary;
+no schema initialization runs from a public reader. Apply the exact migration
+outside a transaction on a direct connection, with bounded lock/statement
+timeouts, and verify index validity and matching public result hashes before and
+after. A disposable PostgreSQL contract also covers soft/status deletion,
+ownership separation and undeleted matches.
+
 `home/_lib/home-page-data.ts` starts examples, programmed hero slots and benchmark
 scores together. The unused successful-generation proof count is no longer read
 by the homepage; shared count/proof helpers remain available. Example selection,
@@ -116,7 +128,14 @@ whole response. Other callers keep their independent reads. Missing curation
 schema retains the existing legacy fallback without initialization on the read.
 
 The existing `withPublicPageTiming` logger emits one bounded record with route
-`home` and fixed `examples`, `hero-slots` and `scores` phases. These are loader
+`home` and fixed `examples`, `hero-slots`, `scores`, `hero-pricing` and
+`demo-pricing` phases. The home orchestrator passes the same measurement callback
+into `loadHomepageExamples` to separate `example-latest`, `example-playlist`,
+`example-families`, `example-promotions` and the subsequent `example-pricing`.
+These five extra phases stay in that one page record; they introduce no SQL,
+query result cache or per-family log. Standalone callers default to no measurement.
+The disposable PostgreSQL contract verifies unchanged cards and SQL count.
+These are loader
 promise durations, not final-HTML wait, TTFB, browser LCP, or all root layout work
 (the theme-token read is outside this owner). Phases overlap and must not be
 summed. A resolved fallback is `ok`; a rejected sibling can leave pending phases

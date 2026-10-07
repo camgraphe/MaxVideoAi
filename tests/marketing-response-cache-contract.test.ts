@@ -4,10 +4,11 @@ import test from 'node:test';
 
 const require = createRequire(import.meta.url);
 const nextConfig = require('../frontend/next.config.js') as {
-  headers: () => Promise<Array<{ source: string; headers: Array<{ key: string; value: string }> }>>;
+  headers: () => Promise<Array<{ source: string; missing?: Array<{ type: string; key: string; value?: string }>; headers: Array<{ key: string; value: string }> }>>;
 };
+const { matchHas } = require('../frontend/node_modules/next/dist/shared/lib/router/utils/prepare-destination.js');
 
-test('unconditional route headers stay limited to established locale-safe cache paths', async () => {
+test('public marketing configuration includes English routes and omits cache headers for logout and authorization requests', async () => {
   const rules = await nextConfig.headers();
   const expectedHeaders = [
     { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
@@ -22,6 +23,8 @@ test('unconditional route headers stay limited to established locale-safe cache 
     '/es/precios',
     '/fr/modeles/:path*',
     '/es/modelos/:path*',
+    '/pricing',
+    '/models/:path*',
   ]) {
     const rule = rules.find((candidate) => candidate.source === source);
     assert.ok(rule, `missing cache rule for ${source}`);
@@ -29,13 +32,14 @@ test('unconditional route headers stay limited to established locale-safe cache 
       rule.headers.filter((header) => expectedHeaders.some(({ key }) => key === header.key)),
       expectedHeaders
     );
-  }
-
-  for (const gatedSource of ['/pricing', '/models/:path*']) {
-    assert.equal(
-      rules.some((rule) => rule.source === gatedSource),
-      false,
-      `${gatedSource} must rely on request-aware middleware caching`
-    );
+    assert.ok(rule.missing, `${source} must use request-aware configuration`);
+    for (const [headers, cookies, expected] of [
+      [{}, {}, true],
+      [{ cookie: 'consent=accepted' }, { consent: 'accepted' }, true],
+      [{ cookie: 'mv_logout_intent=1' }, { mv_logout_intent: '1' }, false],
+      [{ authorization: 'Bearer test-only' }, {}, false],
+    ] as const) {
+      assert.equal(Boolean(matchHas({ headers, cookies }, {}, [], rule.missing)), expected, source);
+    }
   }
 });

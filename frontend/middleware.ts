@@ -214,7 +214,7 @@ export async function middleware(req: NextRequest) {
       isMarketingPath &&
       (req.method === 'GET' || req.method === 'HEAD') &&
       !hasLogoutIntentCookie &&
-      !trackingNoindex &&
+      !req.headers.has('authorization') &&
       !appNoindex
     ) {
       applyMarketingEdgeCacheHeaders(response, pathname);
