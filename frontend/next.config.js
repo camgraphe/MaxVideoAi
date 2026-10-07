@@ -387,7 +387,8 @@ const nextConfig = {
 
     MARKETING_CDN_CACHE_PATHS.forEach((source) => {
       // The platform needs this policy in route configuration for dynamic pages.
-      // Middleware additionally vetoes tracking, redirects and cookie responses.
+      // These matches control configured cache headers, not reuse of warmed public HTML.
+      // Middleware retains per-request robots tags, redirects and logout cookie clearing.
       rules.push({
         source,
         missing: [

@@ -8,7 +8,7 @@ const nextConfig = require('../frontend/next.config.js') as {
 };
 const { matchHas } = require('../frontend/node_modules/next/dist/shared/lib/router/utils/prepare-destination.js');
 
-test('public marketing CDN rules include English routes and exclude logout and authorization requests', async () => {
+test('public marketing configuration includes English routes and omits cache headers for logout and authorization requests', async () => {
   const rules = await nextConfig.headers();
   const expectedHeaders = [
     { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },

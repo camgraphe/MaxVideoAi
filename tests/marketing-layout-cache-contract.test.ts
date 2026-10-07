@@ -64,7 +64,7 @@ test('cache-safe English pricing and model pages receive the middleware CDN poli
   }
 });
 
-test('personalized, non-idempotent, and non-approved marketing responses stay outside the CDN policy', async () => {
+test('logout, authorization, non-idempotent and non-approved requests do not receive middleware cache eligibility', async () => {
   for (const url of [
     'https://maxvideoai.com/pricing',
     'https://maxvideoai.com/models',
@@ -78,10 +78,14 @@ test('personalized, non-idempotent, and non-approved marketing responses stay ou
     const postResponse = await middleware(
       new NextRequest(url, { method: 'POST' })
     );
+    const authorizedResponse = await middleware(
+      new NextRequest(url, { headers: { authorization: 'Bearer test-only' } })
+    );
 
     assert.equal(personalizedResponse.headers.get('vercel-cdn-cache-control'), 'no-store');
     assert.equal(personalizedResponse.headers.get('vary'), '*');
     assert.equal(postResponse.headers.get('vercel-cdn-cache-control'), null);
+    assert.equal(authorizedResponse.headers.get('vercel-cdn-cache-control'), null);
   }
 
   const examplesResponse = await middleware(
@@ -91,7 +95,7 @@ test('personalized, non-idempotent, and non-approved marketing responses stay ou
   assert.equal(examplesResponse.headers.get('vercel-cdn-cache-control'), null);
 });
 
-test('tracking and cookie-setting redirects explicitly prevent CDN storage despite route configuration', async () => {
+test('tracking URLs retain noindex while sharing the public per-URL cache policy', async () => {
   for (const path of [
     '/?utm_custom=campaign',
     '/pricing?UTM_Source=campaign',
@@ -100,10 +104,18 @@ test('tracking and cookie-setting redirects explicitly prevent CDN storage despi
     '/fr/modeles/veo-3-1?UTM_Source=campaign',
     '/es/modelos/veo-3-1?fbclid=test-only',
     '/models/veo-3-1?fbclid=test-only',
-    '/pricing?lang=fr',
-    '/pricing?code=test-only',
   ]) {
     const response = await middleware(new NextRequest(`https://maxvideoai.com${path}`));
+    assert.equal(response.headers.get('x-robots-tag'), 'noindex, follow', path);
+    assert.equal(response.headers.get('vercel-cdn-cache-control'), 'max-age=300, stale-while-revalidate=60', path);
+    assert.equal(response.headers.get('set-cookie'), null, path);
+  }
+});
+
+test('middleware-produced redirects and logout cookie clearing emit no-store headers', async () => {
+  for (const path of ['/pricing?lang=fr', '/pricing?code=test-only']) {
+    const response = await middleware(new NextRequest(`https://maxvideoai.com${path}`));
+    assert.ok(response.status >= 300 && response.status < 400, path);
     assert.equal(response.headers.get('vercel-cdn-cache-control'), 'no-store', path);
     assert.equal(response.headers.get('vary'), '*', path);
   }
