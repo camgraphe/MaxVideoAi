@@ -19,6 +19,7 @@ import { formatCurrentExamplePrice } from '@/lib/current-example-price-display';
 import { HOMEPAGE_EXAMPLE_FAMILIES, type HomepageExampleFamily, type RedesignContent } from './types';
 import { buildHomepageP0PromotionCards, buildHomepageP0PromotionTargets } from './launch-promotions';
 import { quoteCurrentExamplePrices, type CurrentExamplePrice } from '@/server/current-example-price';
+import { withoutPublicPageTiming, type MeasurePublicPagePhase } from '@/server/public-page-timing';
 
 export { buildHomepageP0PromotionTargets } from './launch-promotions';
 
@@ -156,6 +157,7 @@ type HomepageExamplesLoaderDependencies = {
   listExamples: typeof listExamples;
   listExampleFamilyPage: typeof listExampleFamilyPage;
   listPlaylistVideos: typeof listPlaylistVideos;
+  measure: MeasurePublicPagePhase;
 };
 
 export async function loadHomepageExamples(
@@ -171,6 +173,7 @@ export async function loadHomepageExamples(
   const loadExamples = dependencies.listExamples ?? listExamples;
   const loadExampleFamilyPage = dependencies.listExampleFamilyPage ?? listExampleFamilyPage;
   const loadPlaylistVideos = dependencies.listPlaylistVideos ?? listPlaylistVideos;
+  const measure = dependencies.measure ?? withoutPublicPageTiming;
   const promotionTargets = buildHomepageP0PromotionTargets({ models, readiness });
   const promotionFamilies = new Set<string>(promotionTargets.map(({ family }) => family));
   const familyIds = HOMEPAGE_EXAMPLE_FAMILIES.filter(
@@ -178,9 +181,9 @@ export async function loadHomepageExamples(
   );
   const curationScope = createCurationReadScope();
   const [latestVideos, playlistVideos, familyPools, modelPools] = await Promise.all([
-    loadExamples('date-desc', 120, curationScope).catch(() => [] as GalleryVideo[]),
-    loadExamples('playlist', 120, curationScope).catch(() => [] as GalleryVideo[]),
-    Promise.all(
+    measure('example-latest', () => loadExamples('date-desc', 120, curationScope).catch(() => [] as GalleryVideo[])),
+    measure('example-playlist', () => loadExamples('playlist', 120, curationScope).catch(() => [] as GalleryVideo[])),
+    measure('example-families', () => Promise.all(
       familyIds.map(async (family) => {
         const result = await loadExampleFamilyPage(family, { sort: 'date-desc', limit: 24, offset: 0 }, curationScope).catch(() => ({
           items: [] as GalleryVideo[],
@@ -191,11 +194,11 @@ export async function loadHomepageExamples(
         }));
         return [family, result.items] as const;
       })
-    ),
-    Promise.all(promotionTargets.map(async (target) => [
+    )),
+    measure('example-promotions', () => Promise.all(promotionTargets.map(async (target) => [
       target.modelId,
       await loadPlaylistVideos(target.readiness.modelPlaylistSlug, 24, curationScope).catch(() => [] as GalleryVideo[]),
-    ] as const)),
+    ] as const))),
   ]);
 
   const globalCandidates = [...latestVideos, ...sortExamplesByPriority(playlistVideos)];
@@ -214,7 +217,7 @@ export async function loadHomepageExamples(
   const selectedIds = new Set(selectedCards.map((card) => card.sourceVideoId).filter((id): id is string => Boolean(id)));
   const videosById = new Map([...globalCandidates, ...familyPools.flatMap(([, videos]) => videos), ...modelPools.flatMap(([, videos]) => videos)]
     .filter((video) => selectedIds.has(video.id)).map((video) => [video.id, video]));
-  const currentPrices = await quoteCurrentExamplePrices(Array.from(videosById.values()));
+  const currentPrices = await measure('example-pricing', () => quoteCurrentExamplePrices(Array.from(videosById.values())));
   return selectedCards.map((card) => ({
     ...card,
     price: formatHomepageExamplePrice(locale, card.sourceVideoId ? currentPrices.get(card.sourceVideoId) : undefined),

@@ -64,7 +64,8 @@ test('homepage curation reads share only the invocation and preserve PostgreSQL 
   await build({
     stdin: { contents: `export {loadHomepageExamples} from './frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data/examples';
       export * from './frontend/server/videos';export * from './frontend/server/videos-playlists';
-      export {getDb,statements,setBeforeQuery} from '@/lib/db';`, resolveDir: process.cwd() },
+      export {getDb,statements,setBeforeQuery} from '@/lib/db';
+      export {withPublicPageTiming} from '@/server/public-page-timing';`, resolveDir: process.cwd() },
     define: { 'import.meta.url': JSON.stringify(pathToFileURL(resolve('frontend/server/video-keyframes.ts')).href) },
     outfile: output, bundle: true, platform: 'node', format: 'cjs', packages: 'external', tsconfig: 'frontend/tsconfig.json',
     plugins: [{ name: 'count-real-postgres-reads', setup(builder) {
@@ -196,6 +197,27 @@ test('homepage curation reads share only the invocation and preserve PostgreSQL 
   await postgres.pool.query('INSERT INTO playlists(slug,is_public) SELECT unnest($1::text[]),true ON CONFLICT DO NOTHING', [requestedSlugs]);
   await managed();
   await t.test('managed families prune their inherited source configuration requests', () => checkScenario('all-managed'));
+  await t.test('example timing separates catalog reads from pricing without adding reads or changing cards', async () => {
+    statements.length = 0;
+    const cards = await load();
+    const sqlCount = statements.length;
+    statements.length = 0;
+    const records: Array<{ phases: Array<{ phase: string; status: string }> }> = [];
+    const timedCards = await reader.withPublicPageTiming({ route: 'home', locale: 'en' }, (measure: unknown) =>
+      reader.loadHomepageExamples('en', content, { acceptedAssets: [], measure }),
+    { enabled: true, emit: (record: typeof records[number]) => records.push(record) });
+    assert.deepEqual(timedCards, cards);
+    assert.equal(statements.length, sqlCount, 'measurement must not issue extra SQL');
+    assert.equal(records.length, 1, 'retain one bounded page record');
+    assert.deepEqual(records[0].phases.map(({ phase, status }) => ({ phase, status })), [
+      { phase: 'example-latest', status: 'ok' },
+      { phase: 'example-playlist', status: 'ok' },
+      { phase: 'example-families', status: 'ok' },
+      { phase: 'example-promotions', status: 'ok' },
+      { phase: 'example-pricing', status: 'ok' },
+    ]);
+    assert.ok(!JSON.stringify(records).includes('https://media.maxvideoai.com'), 'never log media URLs');
+  });
   await postgres.pool.query(`UPDATE playlist_curations SET
     ordered_ids=ARRAY(SELECT 'unused-ordered-'||n FROM generate_series(1,2000) n),
     excluded_ids=ARRAY(SELECT 'unused-excluded-'||n FROM generate_series(1,5000) n)`);

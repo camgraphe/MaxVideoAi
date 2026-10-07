@@ -11,7 +11,7 @@ import { buildCurrentHomePriceDemo } from './current-home-price-demo-data';
 export async function loadHomePageData(locale: AppLocale, content: RedesignContent) {
   return withPublicPageTiming({ route: 'home', locale }, async (measure) => {
     const [examples, programmedHeroSlots, engineScores, currentHeroPrices, currentPriceModels] = await Promise.all([
-      measure('examples', () => loadHomepageExamples(locale, content)),
+      measure('examples', () => loadHomepageExamples(locale, content, { measure })),
       measure('hero-slots', () => loadProgrammedHomepageHeroSlots()),
       measure('scores', () => loadEngineScores()),
       measure('hero-pricing', () => quoteCurrentExamplePrices(content.hero.mockup.engineRecommendations.map((recommendation) => ({

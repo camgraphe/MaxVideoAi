@@ -116,7 +116,14 @@ whole response. Other callers keep their independent reads. Missing curation
 schema retains the existing legacy fallback without initialization on the read.
 
 The existing `withPublicPageTiming` logger emits one bounded record with route
-`home` and fixed `examples`, `hero-slots` and `scores` phases. These are loader
+`home` and fixed `examples`, `hero-slots`, `scores`, `hero-pricing` and
+`demo-pricing` phases. The home orchestrator passes the same measurement callback
+into `loadHomepageExamples` to separate `example-latest`, `example-playlist`,
+`example-families`, `example-promotions` and the subsequent `example-pricing`.
+These five extra phases stay in that one page record; they introduce no SQL,
+query result cache or per-family log. Standalone callers default to no measurement.
+The disposable PostgreSQL contract verifies unchanged cards and SQL count.
+These are loader
 promise durations, not final-HTML wait, TTFB, browser LCP, or all root layout work
 (the theme-token read is outside this owner). Phases overlap and must not be
 summed. A resolved fallback is `ok`; a rejected sibling can leave pending phases
