@@ -1,5 +1,6 @@
 'use client';
 
+import '@/styles/cookie-consent.css';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { usePathname } from 'next/navigation';
@@ -182,7 +183,7 @@ export function CookieBanner() {
 
   if (hasMadeChoice) {
     return showPreferences ? (
-      <div className="pointer-events-auto fixed bottom-4 left-3 right-3 z-[1095] sm:bottom-16 sm:left-4 sm:right-auto sm:w-[22rem]">
+      <div className="cookie-consent-overlay pointer-events-auto fixed bottom-4 left-3 right-3 z-[1095] sm:bottom-4 sm:left-auto sm:right-4 sm:w-[22rem]">
         {preferencesPanel}
       </div>
     ) : null;
@@ -193,28 +194,28 @@ export function CookieBanner() {
       {isLoginRoute ? <div aria-hidden="true" className="h-[4.5rem] min-[1200px]:hidden" /> : null}
       <div
         className={clsx(
-          'pointer-events-auto fixed z-[1100] flex justify-center',
+          'cookie-consent-overlay pointer-events-auto fixed z-[1100] flex justify-center',
           isLoginRoute
             ? 'bottom-1 left-0 right-0 px-3 min-[1200px]:bottom-4 min-[1200px]:left-auto min-[1200px]:right-4 min-[1200px]:w-[22rem] min-[1200px]:px-0'
-            : 'bottom-1 left-0 right-0 px-3 sm:bottom-4 sm:px-6'
+            : 'bottom-1 left-0 right-0 px-3 sm:bottom-4 sm:left-auto sm:right-4 sm:w-[30rem] sm:px-0'
         )}
       >
         <div
           className={clsx(
-            'max-h-[24svh] w-full overflow-y-auto rounded-card border border-border bg-surface p-2 shadow-xl sm:max-h-[42svh] sm:p-5',
+            'cookie-consent-surface max-h-[calc(100dvh-2rem)] w-full overflow-y-auto rounded-card border border-border bg-surface p-2 shadow-[var(--shadow-float)] sm:p-4',
             isLoginRoute ? 'max-w-3xl min-[1200px]:max-w-none min-[1200px]:p-4' : 'max-w-3xl'
           )}
         >
           <div
             className={clsx(
               'flex flex-col gap-3',
-              isLoginRoute ? 'min-[1200px]:flex-col' : 'md:flex-row md:items-start md:justify-between'
+              isLoginRoute ? 'min-[1200px]:flex-col' : 'items-stretch'
             )}
           >
-            <div className="flex-1 space-y-0 sm:space-y-2">
+            <div className="flex-1 space-y-0 sm:space-y-1.5">
               <h2
                 className={clsx(
-                  'hidden text-sm font-semibold text-text-primary sm:text-base',
+                  'hidden text-sm font-semibold text-text-primary',
                   isLoginRoute ? 'min-[1200px]:block' : 'sm:block'
                 )}
               >
@@ -222,19 +223,19 @@ export function CookieBanner() {
               </h2>
               <p
                 className={clsx(
-                  'hidden text-xs text-text-secondary sm:text-sm',
+                  'hidden text-xs leading-relaxed text-text-secondary',
                   isLoginRoute ? 'min-[1200px]:block' : 'sm:block'
                 )}
               >
                 {copy.body}
               </p>
-              <div className="flex flex-wrap items-center gap-1.5 sm:gap-4">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                 <Button
                   type="button"
                   size="sm"
                   onClick={() => void applyConsent({ analytics: true, ads: true }, 'banner')}
                   disabled={fetchState === 'saving'}
-                  className="px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm"
+                  className="cookie-consent-accept px-3 py-1.5 text-xs sm:px-4"
                 >
                   {fetchState === 'saving' ? copy.actions.saving : copy.actions.acceptAll}
                 </Button>
@@ -244,7 +245,7 @@ export function CookieBanner() {
                   variant="outline"
                   onClick={() => void applyConsent({ analytics: false, ads: false }, 'banner')}
                   disabled={fetchState === 'saving'}
-                  className="border-border px-3 py-1.5 text-xs text-text-primary hover:bg-surface-hover sm:px-4 sm:py-2 sm:text-sm"
+                  className="cookie-consent-reject border-border px-3 py-1.5 text-xs text-text-primary sm:px-4"
                 >
                   {copy.actions.rejectAll}
                 </Button>
@@ -256,7 +257,7 @@ export function CookieBanner() {
                   onClick={handleManageChoicesToggle}
                   aria-expanded={showPreferences}
                   aria-controls={preferencesPanelId}
-                  className="min-h-0 h-auto p-0 text-xs font-semibold text-brand underline underline-offset-4 hover:text-brandHover sm:text-sm"
+                  className="cookie-consent-manage px-2 py-1.5 text-xs font-medium text-text-secondary underline underline-offset-4"
                 >
                   {showPreferences ? copy.actions.hideChoices : copy.actions.manageChoices}
                 </Button>

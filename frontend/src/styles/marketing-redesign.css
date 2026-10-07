@@ -1,6 +1,7 @@
 /* Marketing only. App tokens and route/SEO ownership are deliberately separate. */
 .marketing-site,
-.marketing-site .home-monochrome {
+.marketing-site .home-monochrome,
+body:has(.marketing-site) .cookie-consent-surface {
   --bg: #f4f2ee;
   --surface: #fffefa;
   --surface-2: #eae7e1;
@@ -20,12 +21,16 @@
   --shadow-card: 0 2px 8px #23232305;
   --shadow-float: 0 15px 40px #2323230d;
   --shadow-brand-button: 0 3px 8px #80512618;
+}
+.marketing-site,
+.marketing-site .home-monochrome {
   color: var(--text-primary);
   background: var(--bg);
   isolation: isolate;
 }
 [data-theme="dark"] .marketing-site,
-[data-theme="dark"] .marketing-site .home-monochrome {
+[data-theme="dark"] .marketing-site .home-monochrome,
+[data-theme="dark"] body:has(.marketing-site) .cookie-consent-surface {
   --bg: #111111;
   --surface: #191919;
   --surface-2: #242424;

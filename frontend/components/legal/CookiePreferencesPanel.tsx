@@ -33,7 +33,7 @@ export function CookiePreferencesPanel({
       id={panelId}
       role="region"
       aria-labelledby={titleId}
-      className="w-full max-w-xs rounded-input border border-border bg-surface-2 p-3 sm:p-4"
+      className="cookie-consent-surface cookie-consent-preferences max-h-[calc(100dvh-2rem)] w-full overflow-y-auto rounded-input border border-border bg-surface-2 p-3 sm:p-4"
     >
       <p id={titleId} className="mb-3 text-xs font-semibold uppercase tracking-wide text-text-secondary">
         {copy.preferences.title}
@@ -77,19 +77,20 @@ type PreferenceSwitchProps = {
 
 function PreferenceSwitch({ checked, labelId, onClick }: PreferenceSwitchProps) {
   return (
-    <Button
+    <button
       type="button"
-      size="sm"
-      variant="ghost"
       onClick={onClick}
-      className={`min-h-0 h-6 w-10 rounded-full border p-0 transition ${checked ? 'border-brand bg-brand' : 'border-border bg-surface'}`}
+      className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       role="switch"
       aria-checked={checked}
       aria-labelledby={labelId}
     >
       <span
-        className={`block h-5 w-5 translate-y-0.5 rounded-full bg-on-brand transition ${checked ? 'translate-x-4' : 'translate-x-0.5'}`}
-      />
-    </Button>
+        aria-hidden="true"
+        className={`relative block h-6 w-10 rounded-full border ${checked ? 'border-brand bg-brand' : 'border-border bg-surface'}`}
+      >
+        <span className={`absolute left-0.5 top-0.5 h-[18px] w-[18px] rounded-full transition-transform ${checked ? 'translate-x-4 bg-on-brand' : 'bg-text-muted'}`} />
+      </span>
+    </button>
   );
 }
