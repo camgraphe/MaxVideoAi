@@ -32,8 +32,8 @@ the public HTML. In particular, logout may receive a HIT while middleware clears
 its cookie afresh; that Set-Cookie must never appear on the next ordinary response.
 Strict bypass of every logout response is not an invariant of this design.
 
-This policy was checked against the Git-backed deployment: ordinary and logout
-responses had identical HTML hashes, the logout cookie was empty with Path=/ and
+This policy was checked against the Git-backed deployment: sampled English pricing and model
+ordinary/logout responses had identical HTML hashes, the logout cookie was empty with Path=/ and
 Max-Age=0, subsequent anonymous responses had no Set-Cookie, and tracked versus
 ordinary URLs retained separate bodies and robots tags. HTML and RSC responses
 also retained their separate content types/cache variants. A proposed middleware
