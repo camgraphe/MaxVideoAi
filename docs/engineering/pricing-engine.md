@@ -813,6 +813,16 @@ and catalogue-plus-margin amounts cannot fill an unavailable commercial value.
 Comparison pricing also requires a current pricing engine and a successful
 current-policy quote; its spec row and price score reuse that result.
 
+Public scenario admission builds finite catalogue combinations only for the
+requested model and mode. `quote-public-model-scenario.ts` retains those immutable
+combinations per model/mode in process memory; it does not cache customer quotes
+or effective database policy. Preparing the complete catalogue on the first
+public quote blocked unrelated parallel page reads during cold execution.
+`collectSellableManualTariffCoverage()` without a scope still captures the full
+maintenance/financial matrix. `public-quote-scenario-coverage.test.ts` checks every
+published model/mode against that full audit, including contexts, quantities,
+selectors and explicit gaps. Keep filtering before scenario construction.
+
 Video marketing rates divide the actual quoted scenario total by billed seconds
 without first rounding to whole cents. Admin, Pricing, catalogue cards, model
 specs and comparisons share `formatPricePerUnit` (two to six decimal places).
