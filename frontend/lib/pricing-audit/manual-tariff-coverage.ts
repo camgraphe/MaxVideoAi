@@ -79,10 +79,12 @@ function mediaDimensions(modelId: string, mode: string, durationSec: number): Pr
 }
 
 /** Reviewed finite catalog combinations are captured; unresolved controls remain explicit gaps. */
-export function collectSellableManualTariffCoverage(): ManualTariffCoverage {
+export function collectSellableManualTariffCoverage(scope: { modelId?: string; mode?: string } = {}): ManualTariffCoverage {
   const scenarios: ManualTariffCoverageScenario[] = [];
   const gaps: ManualTariffCoverage['gaps'] = [];
   for (const model of listRuntimeModels().filter((entry) => entry.publication.app.published)) {
+    // Public quotes need only one model/mode. Full maintenance audits omit the scope.
+    if (scope.modelId !== undefined && model.id !== scope.modelId) continue;
     const entry = getFalEngineById(model.id);
     if (!entry) {
       gaps.push({ modelId: model.id, reason: 'No executable engine catalog entry' });
@@ -90,6 +92,7 @@ export function collectSellableManualTariffCoverage(): ManualTariffCoverage {
     }
     for (const modeConfig of entry.modes) {
       const mode = modeConfig.mode;
+      if (scope.mode !== undefined && mode !== scope.mode) continue;
       const isImage = entry.category === 'image';
       const gptImage = isImage && isGptImageFamilyEngineId(model.id);
       const outputs = isImage ? manualTariffImageOutputCounts(entry, mode) : null;

@@ -36,18 +36,20 @@ export async function quoteWithVerifiedPolicy(
   });
 }
 
-let coverageByModel: Map<string, ManualTariffCoverageScenario[]> | null = null;
+const coverageByModel = new Map<string, Map<string, readonly ManualTariffCoverageScenario[]>>();
 
-function supportedScenarios(modelId: string): readonly ManualTariffCoverageScenario[] {
-  if (!coverageByModel) {
-    coverageByModel = new Map();
-    for (const scenario of collectSellableManualTariffCoverage().scenarios) {
-      const bucket = coverageByModel.get(scenario.modelId) ?? [];
-      bucket.push(scenario);
-      coverageByModel.set(scenario.modelId, bucket);
-    }
+function supportedScenarios(modelId: string, mode: string): readonly ManualTariffCoverageScenario[] {
+  let modes = coverageByModel.get(modelId);
+  if (!modes) {
+    modes = new Map();
+    coverageByModel.set(modelId, modes);
   }
-  return coverageByModel.get(modelId) ?? [];
+  let scenarios = modes.get(mode);
+  if (!scenarios) {
+    scenarios = collectSellableManualTariffCoverage({ modelId, mode }).scenarios;
+    modes.set(mode, scenarios);
+  }
+  return scenarios;
 }
 
 function catalogDefault(modelId: string, mode: string, fieldId: string): string | undefined {
@@ -140,7 +142,7 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
     || (input.mode !== 'ref2v' && input.inputVideoDurationSec === 0))) {
     if (!(input.mode === 'ref2v' && input.inputVideoDurationSec === undefined)) return null;
   }
-  const candidates = supportedScenarios(model.id).filter((scenario) =>
+  const candidates = supportedScenarios(model.id, input.mode).filter((scenario) =>
     scenario.selector.mode === input.mode &&
     scenario.selector.resolution.toLowerCase() === resolution.toLowerCase() &&
     (openKey === 'durationSec' || ltxAudioDuration || omniInherits || scenario.selector.durationSec === String(billedDuration)) &&
