@@ -34,6 +34,14 @@ runner parses and normalizes the URL hostname, accepts only direct `*.neon.tech`
 migration file runs with `ON_ERROR_STOP` inside a single transaction. Do not use the Supabase
 project connection string for these files.
 
+Concurrent index migrations live under `concurrent/` and are deliberately outside
+the runner's `*.sql` glob: PostgreSQL cannot build them inside a transaction.
+Apply only the reviewed exact file on a direct connection in autocommit mode;
+do not replay all migrations to install an index. Verify its definition and
+`pg_index.indisvalid`/`indisready`, since `IF NOT EXISTS` alone does not validate an
+existing or interrupted index. See `docs/engineering/read-route-schema-bootstrap.md`
+for the public deleted-media lookup index and its before/after evidence.
+
 ## Reserved MCP migration order
 
 The cross-plan MCP migrations are reserved in this order:
