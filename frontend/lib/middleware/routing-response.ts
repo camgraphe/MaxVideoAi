@@ -64,7 +64,7 @@ export function finalizeResponse(res: NextResponse, clearLogoutIntent: boolean, 
   if (clearLogoutIntent || trackingNoindex || res.headers.has('set-cookie') || (res.status >= 300 && res.status < 400)) {
     res.headers.set('Cache-Control', 'private, no-store, max-age=0');
     res.headers.set('Vercel-CDN-Cache-Control', 'no-store');
-    // Vary:* also prevents storage when a dynamic renderer replaces Cache-Control.
+    // Also veto caching for middleware-produced redirects; Next may replace Vary when rendering.
     res.headers.set('Vary', '*');
   }
   return res;

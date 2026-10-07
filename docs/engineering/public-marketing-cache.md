@@ -16,8 +16,9 @@ Every configured marketing rule excludes requests carrying Authorization or the
 active `mv_logout_intent=1` cookie. Ordinary consent and analytics cookies do not
 personalize the public shell. `finalizeResponse` in `routing-response.ts` also
 vetoes storage for tracking/noindex responses, redirects and cookie-setting
-responses with explicit private/no-store headers and `Vary: *`. This independent
-Vary veto survives a renderer replacing browser Cache-Control. Localized pricing
+responses with explicit private/no-store headers and `Vary: *` on its response.
+Next may replace Vary while rendering, so the final CDN behavior must be measured
+for rendered tracking responses as well as middleware redirects. Localized pricing
 and model paths participate in the same tracking detection and query cleanup.
 GET and HEAD are the only methods eligible for Vercel response caching.
 
