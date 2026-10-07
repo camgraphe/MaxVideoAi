@@ -1,0 +1,22 @@
+/* Keep the fixed consent controls out of the mobile modal's focus surface. */
+body:has(.marketing-menu-overlay) .cookie-consent-overlay {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.cookie-consent-surface {
+  overscroll-behavior: contain;
+}
+
+body:has(.marketing-site) .cookie-consent-surface {
+  background: var(--surface);
+}
+
+body:has(.marketing-site) .cookie-consent-preferences {
+  background: var(--surface-2);
+}
+
+.cookie-consent-reject:hover,
+.cookie-consent-manage:hover {
+  background: var(--surface-2);
+}
