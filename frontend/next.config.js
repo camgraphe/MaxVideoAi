@@ -21,6 +21,8 @@ const MARKETING_CDN_CACHE_PATHS = [
   '/es/precios',
   '/fr/modeles/:path*',
   '/es/modelos/:path*',
+  '/pricing',
+  '/models/:path*',
 ];
 const CONTENT_GLOBS = [
   '../content/en/blog/**/*',
@@ -384,7 +386,17 @@ const nextConfig = {
     });
 
     MARKETING_CDN_CACHE_PATHS.forEach((source) => {
-      rules.push({ source, headers: MARKETING_CDN_CACHE_HEADERS });
+      // The platform needs this policy in route configuration for dynamic pages.
+      // These matches control configured cache headers, not reuse of warmed public HTML.
+      // Middleware retains per-request robots tags, redirects and logout cookie clearing.
+      rules.push({
+        source,
+        missing: [
+          { type: 'cookie', key: 'mv_logout_intent', value: '1' },
+          { type: 'header', key: 'authorization' },
+        ],
+        headers: MARKETING_CDN_CACHE_HEADERS,
+      });
     });
     // Always ensure robots.txt is not cached so changes propagate immediately
     rules.push({
