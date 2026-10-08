@@ -96,3 +96,12 @@ test('navigation orchestrators stay below page-sized component thresholds', () =
   assert.ok(lineCount(marketingDesktopNavSource) <= 220, `MarketingDesktopNav should stay focused, got ${lineCount(marketingDesktopNavSource)}`);
   assert.ok(lineCount(marketingMobileMenuSource) <= 260, `MarketingMobileMenu should stay focused, got ${lineCount(marketingMobileMenuSource)}`);
 });
+
+test('marketing mobile enhancement owns disclosure and focus state independently of desktop navigation', () => {
+  const nav=readSource(marketingNavPath);
+  const mobile=readSource(marketingMobileMenuPath);
+  assert.doesNotMatch(nav,/setMobileDropdownOpen|setMobileMenuOpen|body\.style\.overflow/,'the native mobile owner must contain its enhancement state and scroll policy');
+  assert.match(mobile,/useMarketingMenuFocus\(menuOpen, menuId\)/,'focus containment should follow the observed native menu state');
+  assert.match(mobile,/addEventListener\('toggle'/,'the native open state should be observed by the mobile owner');
+  assert.match(mobile,/details key=\{item\.key\}/,'section disclosure must retain native behavior before JS');
+});

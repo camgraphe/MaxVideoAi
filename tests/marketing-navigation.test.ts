@@ -136,7 +136,7 @@ test('public dropdowns limit launch badges to five current models with none on c
   }
 });
 
-test('model dropdown entries show the shared engine logo before every model name', () => {
+test('visible model dropdown entries show the shared engine logo before every model name', () => {
   assert.match(navEntryContentSource, /EngineIcon/);
   assert.match(navEntryContentSource, /showModelLogo/);
   assert.match(navEntryContentSource, /brandId:\s*entry\.brandId/);
