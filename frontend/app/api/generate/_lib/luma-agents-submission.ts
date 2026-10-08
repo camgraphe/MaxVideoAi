@@ -24,7 +24,7 @@ import {
 import { buildUserFacingRefundDescription } from '@/server/user-facing-failure-messages';
 import { createProviderJobTracker } from './provider-job-tracker';
 import { rollbackPendingPayment } from './payment-rollback';
-import { submitFalGenerateTask, type FalGenerateSubmissionResult } from './fal-submission';
+import { isDeferredFalSubmission, submitFalGenerateTask, type FalGenerateSubmissionResult } from './fal-submission';
 import type { FalInputSummary } from './fal-request';
 import type { PaymentMode, PendingReceipt } from './initial-video-job';
 
@@ -310,6 +310,7 @@ async function submitFalFromLumaAgents(params: {
     });
   }
   if (!falSubmission.ok) {
+    if (isDeferredFalSubmission(falSubmission)) return falSubmission;
     if (falAttempt) {
       await markProviderAttemptFailed({
         attemptId: falAttempt.id,

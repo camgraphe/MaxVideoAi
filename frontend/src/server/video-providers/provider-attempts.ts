@@ -157,7 +157,8 @@ export async function markProviderAttemptAccepted(params: {
         SET status = CASE WHEN status IN ('completed', 'failed') THEN status ELSE 'accepted' END,
             provider_job_id = $2,
             accepted_at = COALESCE(accepted_at, NOW()),
-            response_snapshot = COALESCE($3::jsonb, response_snapshot),
+            response_snapshot = CASE WHEN status IN ('completed', 'failed') THEN response_snapshot
+              ELSE COALESCE($3::jsonb, response_snapshot) END,
             updated_at = NOW()
       WHERE id = $1`,
     [params.attemptId, params.providerJobId, snapshotParam(params.responseSnapshot)]
@@ -183,7 +184,7 @@ export async function markProviderAttemptFailed(params: {
             fallback_eligible = $5,
             response_snapshot = COALESCE($6::jsonb, response_snapshot),
             updated_at = NOW()
-      WHERE id = $1`,
+      WHERE id = $1 AND status <> 'completed'`,
     [
       params.attemptId,
       params.status ?? 'failed',
@@ -208,11 +209,14 @@ export async function markProviderAttemptFinished(params: {
     `UPDATE provider_attempts
         SET status = $2,
             finished_at = CASE WHEN $2 IN ('completed','failed','polling_stalled') THEN NOW() ELSE finished_at END,
+            error_code = CASE WHEN $2 = 'completed' THEN NULL ELSE error_code END,
+            error_class = CASE WHEN $2 = 'completed' THEN NULL ELSE error_class END,
+            fallback_eligible = CASE WHEN $2 = 'completed' THEN FALSE ELSE fallback_eligible END,
             response_snapshot = COALESCE($3::jsonb, response_snapshot),
             provider_cost_units = $4,
             provider_cost_usd = $5,
             updated_at = NOW()
-      WHERE id = $1`,
+      WHERE id = $1 AND (status <> 'completed' OR $2 = 'completed')`,
     [
       params.attemptId,
       params.status,
@@ -274,6 +278,9 @@ export async function syncProviderAttemptTerminalStatus(params: {
     `UPDATE provider_attempts pa
         SET status = aj.status,
             finished_at = COALESCE(pa.finished_at, NOW()),
+            error_code = CASE WHEN aj.status = 'completed' THEN NULL ELSE pa.error_code END,
+            error_class = CASE WHEN aj.status = 'completed' THEN NULL ELSE pa.error_class END,
+            fallback_eligible = CASE WHEN aj.status = 'completed' THEN FALSE ELSE pa.fallback_eligible END,
             updated_at = NOW()
        FROM app_jobs aj
       WHERE aj.id = pa.job_id
@@ -281,8 +288,8 @@ export async function syncProviderAttemptTerminalStatus(params: {
         AND aj.provider = $2 AND pa.provider = $2
         AND aj.provider_job_id = $3 AND pa.provider_job_id = $3
         AND aj.status IN ('completed', 'failed')
-        AND pa.status <> aj.status
-        AND pa.status <> 'completed'`,
+        AND ((pa.status <> aj.status AND pa.status <> 'completed')
+          OR (aj.status = 'completed' AND (pa.error_code IS NOT NULL OR pa.error_class IS NOT NULL OR pa.fallback_eligible)))`,
     [params.publicJobId, params.provider, params.providerJobId]
   );
 }
