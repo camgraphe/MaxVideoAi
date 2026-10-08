@@ -1,6 +1,7 @@
 import type { FalEngineEntry } from '@/config/falEngines';
 import type { EngineCaps, Mode, Resolution } from '@/types/engines';
 import { getModelFamilyDefinition } from '@/config/model-families';
+import { getRuntimeModelById } from '@/config/model-runtime';
 import { getEngineSelectFamilyRank } from '@/lib/engine-family-priority';
 import { getLocalizedModeLabel, normalizeUiLocale } from '@/lib/ltx-localization';
 import type { EngineRegistryMeta } from './engine-select-types';
@@ -10,6 +11,13 @@ let engineRegistryMetaPromise: Promise<EngineRegistryMeta> | null = null;
 
 export function getCachedEngineRegistryMeta(): EngineRegistryMeta | null {
   return engineRegistryMetaCache;
+}
+
+// model-runtime is already loaded by family presentation. Use its app projection
+// to render the real variant control before the larger fal registry arrives.
+export function getEngineSelectAppMetadata(engineId: string, registryMeta: EngineRegistryMeta | null) {
+  if (registryMeta) return registryMeta.meta.get(engineId)?.surfaces.app;
+  return getRuntimeModelById(engineId)?.publication.app;
 }
 
 export async function ensureEngineRegistryMeta(): Promise<EngineRegistryMeta> {
