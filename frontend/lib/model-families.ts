@@ -1,4 +1,5 @@
 import {
+  buildExampleNavFamilyIds,
   getModelFamilyDefinition,
   getModelFamilyExamplesPageConfig,
   INDEXED_MARKETING_EXAMPLE_CANONICAL_SLUGS,
@@ -11,6 +12,8 @@ import { listFalEngines } from '@/config/falEngines';
 import type { FalEngineEntry } from '@/config/falEngines';
 import { normalizeFamilyExamplesPageConfig } from '@/config/model-publication';
 import { normalizeEngineId } from '@/lib/engine-alias';
+
+export { getExampleNavFamilyIds } from '@/config/model-families';
 
 type ExampleFamilyDescriptor = {
   id: ModelFamilyId;
@@ -61,7 +64,7 @@ export function createExampleFamilyResolver({
   const routeSlugs = new Set<string>();
   const publicFamilyIds: ModelFamilyId[] = [];
   const indexedFamilyIds: ModelFamilyId[] = [];
-  const navFamilyIds: ModelFamilyId[] = [];
+  const navFamilyIds = buildExampleNavFamilyIds(families);
   const publishedModelSlugsByFamily = new Map<ModelFamilyId, string[]>();
   const currentModelSlugsByFamily = new Map<ModelFamilyId, string[]>();
   const variantLabelsByFamily = new Map<ModelFamilyId, string[]>();
@@ -87,10 +90,6 @@ export function createExampleFamilyResolver({
     if (examplesPage.stage === 'indexed') {
       indexedFamilyIds.push(familyId);
     }
-    if (examplesPage.showInNav) {
-      navFamilyIds.push(familyId);
-    }
-
     register(family.id, familyId);
     routeSlugs.add(family.id);
     family.routeAliases?.forEach((alias) => {
@@ -218,10 +217,6 @@ export function getExampleFamilyIds(): ModelFamilyId[] {
 
 export function getIndexedExampleFamilyIds(): ModelFamilyId[] {
   return [...FAMILY_STATE.indexedFamilyIds];
-}
-
-export function getExampleNavFamilyIds(): ModelFamilyId[] {
-  return [...FAMILY_STATE.navFamilyIds];
 }
 
 export function getExampleFamilyPageConfig(familyId: string): FamilyPageConfig | null {

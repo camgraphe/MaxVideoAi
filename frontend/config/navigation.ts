@@ -1,11 +1,10 @@
 import { getMcpPublicIntegrationIds, getMcpIntegration } from '@/lib/mcp-integration-registry';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
 import mcpPublication from '@/config/mcp-publication.json';
-import { getModelFamilyDefinition } from '@/config/model-families';
+import { getExampleNavFamilyIds, getModelFamilyDefinition } from '@/config/model-families';
 import { listRuntimeModels, type RuntimeModelEntry } from '@/config/model-runtime';
 import { orderExamplesHubFamilyIds } from '@/lib/examples/familyOrder';
 import { buildPublishedComparisonSlugsFromModels } from '@/lib/compare-hub/pairs';
-import { getExampleNavFamilyIds } from '@/lib/model-families';
 import { getMcpPublicationState } from '@/lib/mcp-publication';
 
 export type MarketingNavItem = {

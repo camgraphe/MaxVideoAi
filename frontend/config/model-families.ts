@@ -321,6 +321,19 @@ export const MODEL_FAMILIES: readonly ModelFamilyDefinition[] = buildModelFamily
   MODEL_LAUNCH_READY_MODELS,
 );
 
+export function buildExampleNavFamilyIds(families: readonly ModelFamilyDefinition[]): ModelFamilyId[] {
+  return families.filter((family) => {
+    const examplesPage = normalizeFamilyExamplesPageConfig(family.examplesPage);
+    return examplesPage.stage !== 'hidden' && examplesPage.showInNav;
+  }).map((family) => family.id as ModelFamilyId);
+}
+
+const EXAMPLE_NAV_FAMILY_IDS = buildExampleNavFamilyIds(MODEL_FAMILIES);
+
+export function getExampleNavFamilyIds(): ModelFamilyId[] {
+  return [...EXAMPLE_NAV_FAMILY_IDS];
+}
+
 export const PUBLIC_MARKETING_EXAMPLE_CANONICAL_SLUGS = MODEL_FAMILIES.filter((family) => {
   const examplesPage = normalizeFamilyExamplesPageConfig(family.examplesPage);
   return examplesPage.stage !== 'hidden';
