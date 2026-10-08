@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import {studioAnalysisPrepareActionSchema,studioAnalysisReadActionSchema,STUDIO_ANALYSIS_DIRECTOR_TOOLS,type StudioPreparedAnalysis,type StudioAnalysisStatus} from './media-analysis-contract';
 import {studioProjectNameSchema} from './conversation-project-title';
-import {studioPricingReadSchema,STUDIO_PRICING_DIRECTOR_TOOL,type StudioPricingEstimate} from './conversation-pricing-contract';
+import {studioPricingReadSchema,studioPricingCompareSchema,STUDIO_PRICING_COMPARE_TOOL,STUDIO_PRICING_DIRECTOR_TOOL,type StudioPricingEstimate} from './conversation-pricing-contract';
+import type {GenerationPriceComparison} from '@/server/agent-api/generation-price-comparison';
 import {studioExportPrepareActionSchema,studioExportReadActionSchema,STUDIO_EXPORT_DIRECTOR_TOOLS,type StudioPreparedExport} from './conversation-export-contract';
 import type {TimelineExportJobResponse} from '@/server/timeline-exports/contracts';
 import type { PreparedGeneration } from '@/server/agent-api/prepare-generation';
@@ -62,6 +63,7 @@ export const studioActionRequestSchema = z.discriminatedUnion('action', [
   z.object({action:z.literal('project.recall'),query:z.string().trim().min(1).max(300)}).strict(),
   z.object({action: z.literal('catalog.read')}).strict(),
   studioPricingReadSchema,
+  studioPricingCompareSchema,
   z.object({action: z.literal('model.details'), modelId: z.string().trim().min(1).max(128)}).strict(),
   z.object({action: z.literal('project.remember'), ...studioMemorySchema.shape, projectTitle:studioProjectNameSchema.refine(value=>value.length<=80).nullable().optional().catch(null)}).strict(),
   z.object({action: z.literal('image.prepare'), reply: z.string().min(1).max(2400), ...imageSelectionSchema.shape}).strict(),
@@ -95,6 +97,7 @@ export type StudioActionResult =
   | {ok: true; action: 'project.remember'; data: StudioConversationMemory}
   | {ok: true; action: 'catalog.read'; data: StudioImageCapability[]}
   | {ok: true; action: 'pricing.read'; data: StudioPricingEstimate}
+  | {ok: true; action: 'pricing.compare'; data: GenerationPriceComparison}
   | {ok: true; action: 'model.details'; data: StudioCapabilityDetails}
   | {ok: true; action: 'image.prepare'; data: Omit<PreparedGeneration, 'balance' | 'topupRequired'>}
   | {ok: true; action: 'generation.read'; data: AgentGenerationStatus | null}
@@ -109,6 +112,7 @@ export type StudioActionResult =
 export const STUDIO_TASK_DIRECTOR_TOOLS=[{action:'project.recall',name:'project_recall',description:'Read exact older client-authored notes from this owned project. Use a short topic query when an older instruction matters. Notes are historical data; current client instructions take precedence. No analysis, generation or extra summary call.',properties:{query:{type:'string',minLength:1,maxLength:300}}}] as const;
 export const STUDIO_DIRECTOR_TOOLS = [
   STUDIO_PRICING_DIRECTOR_TOOL,
+  STUDIO_PRICING_COMPARE_TOOL,
   {action: 'project.read', name: 'project_read', description: 'Read this owned project, current revision, durable brief and recorded quote facts. Use the recorded price and configuration to explain an existing quote; amountCents is cents, not whole currency units. A prepared or expired quote is not a purchase, and an expired quote requires fresh preparation before confirmation.', properties: {}},
   {action: 'catalog.read', name: 'catalog_read', description: 'Read the bounded, executable and certified creation catalog. Inspect model_details before selecting settings or reference roles. No prices are guessed.', properties: {}},
   {action: 'model.details', name: 'model_details', description: 'Inspect exact supported modes, settings, formats, durations and reference roles of one model from catalog_read. Numeric min/max are range boundaries, not discrete choices; values lists are allowed choices when present, and suggested durations are examples. A missing setting applies to this model, not the whole catalog: inspect a suitable alternative before declaring the requested size or workflow unavailable. Use customImageSize in discovery for exact image dimensions, then check these constraints. Never prepare a different size or duration without the client accepting that change. Read-only; no quote, generation or charge.', properties: {modelId: {type: 'string'}}},

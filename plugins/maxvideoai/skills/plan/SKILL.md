@@ -45,23 +45,39 @@ prices. Never present remembered facts as live results.
    and totals that help the user decide.
 4. Respect a model the user already chose. Validate it, but never silently
    substitute it or reopen the choice unless the request is incompatible.
-5. Do not optimize for lower cost unless the user asks. Lead with the best
-   executable fit for the stated priorities first.
+5. For an open simple request, normally offer three suitable choices with
+   different verified prices. Preserve the user's priorities and exact
+   constraints; fewer compatible choices is honest. Keep labels brief and
+   do not infer quality from price or add routine lip-sync caveats. Lead with the
+   best executable fit first for creative priorities; include distinct model families
+   when they fit.
 
 ## Classify the decision
 
 - **Named model:** call `get_model_details` for its live contract. Explain an
   incompatibility and ask permission before offering alternatives. Do not call
   `recommend_models` merely to second-guess an explicit choice.
-- **Open model choice:** use `list_models` for a focused current shortlist, then
-  `recommend_models` for the user's creative priorities. Put the best
-  executable fit first and include alternatives from distinct model families
-  only when they genuinely fit.
+- **Open model choice:** for a simple image/video request use
+  `compare_generation_prices` with the exact mode, explicit constraints and
+  actual imported owned references. It returns up to three compatible prices
+  in one read. Preserve reference kinds, roles and combinations, duration,
+  resolution and required sound; never relax them to fill three. Disclose
+  returned presets for unspecified settings. Use `recommend_models` for
+  additional creative guidance when useful. An estimate is not a quote.
 - **Multi-shot project:** define named proposals, then validate each with
   `calculate_project_budget` using the same intended output and attempt
   assumptions.
 - **Exact single-request price or quote:** use `generate`. A project estimate is
   not an exact quote and must not be presented as one.
+
+For requested alternatives, include the original model as `baselineModelId`
+to reprice it with the current scenario. Quote the returned savings and
+currency; disclose different settings when `configurationDiffers` is true.
+When changing resolution or duration, pass the original settings as
+`baselineSettings` to reprice the original configuration as well.
+Never assume a Mini variant is cheaper from its name or use an old quote price
+as current comparison evidence. After choice, inspect its exact details and
+hand off to `generate` for a fresh quote and explicit approval.
 
 When a local image, video, or audio file is needed as a typed input for the
 intended generation, use `generate` for the private MaxVideoAI upload workflow,

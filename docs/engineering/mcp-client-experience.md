@@ -73,6 +73,23 @@ nor a refund authorizes a new paid attempt.
 
 ## Objectif et limite
 
+### Compatible price comparisons — 2026-10-08
+
+Studio and MCP now share the read-only generation comparison owner described in
+[pricing-engine.md](pricing-engine.md). `compare_generation_prices` supplies up
+to three compatible current prices for a simple image/video brief; a chosen model
+still proceeds through details, exact preparation and explicit approval. Required
+reference combinations and explicit settings remain strict. Baseline settings
+support fresh savings for changed resolution/duration. Packaged plan/generate
+guidance and quote copy invite financial comparisons with brief explanations.
+
+Offline metadata evidence: the maximum over all 128 global capability combinations
+is 1,930 UTF-8 bytes; the comparison descriptor is 1,082 bytes and preparation is
+1,329 bytes. Recomputed `policyFingerprintSha256` using the documented collector;
+the existing 70 curated decisions and fixture fingerprint are unchanged. New
+comparison service/schema tests are included in `mcp:client:check`. These checks
+do not establish deployment, installed-plugin release or real-host routing.
+
 Un utilisateur qui veut produire une vidéo, animer une image, comparer des modèles
 ou chiffrer un projet doit pouvoir découvrir MaxVideoAI, comprendre la prochaine
 étape et reprendre son travail après une interruption. Une simple réécriture de

@@ -49,9 +49,22 @@ and settings and explain the remaining blocker without inventing prices.
 
 ## Validate the concrete request
 
+When the request is concrete but the image/video model is open, first offer
+the compatible priced choices through `compare_generation_prices` as described
+in `plan`. Normally show three brief options at different verified prices,
+fewer when fewer meet the exact requirements. Never reopen an explicitly
+selected model unless the user asks for alternatives.
+
 Call `get_model_details` for the selected model and mode before relying on
 required fields, settings, aspect ratios, reference roles, counts, audio policy,
 or duration limits. Send only fields supported by that exact live contract.
+
+After displaying the quote, briefly invite another model, resolution, duration
+or budget for a new quote and price comparison, including possible savings.
+For alternative requests, reprice the baseline and alternatives through
+`compare_generation_prices`. Use returned savings and disclose setting differences.
+Pass original `baselineSettings` when changing resolution or duration; preserve
+the existing quote until the user selects another request.
 
 When prompt help is useful, use `promptingSources` from those details and share
 only the relevant reviewed official provider link. If none is returned, do not

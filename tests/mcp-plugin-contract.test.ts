@@ -24,6 +24,7 @@ const allowedTools = new Set([
   'get_model_details',
   'recommend_models',
   'calculate_project_budget',
+  'compare_generation_prices',
   'list_media',
   'create_reference_upload_link',
   'import_reference_files',
@@ -332,7 +333,7 @@ test('the plugin packages self-contained outcome skills with explicit routing bo
     const referenceFiles = readdirSync(referencesRoot).sort();
     assert.deepEqual([...new Set(linkedReferences)].sort(), referenceFiles, `${skillName} references must resolve without orphans`);
 
-    const toolNames = skill.match(/\b(?:get_account_status|list_models|get_model_details|recommend_models|calculate_project_budget|list_media|create_reference_upload_link|import_reference_files|prepare_generation|confirm_generation|get_generation_status|list_recent_generations|present_generation|create_topup_link)\b/g) ?? [];
+    const toolNames = skill.match(/\b(?:get_account_status|list_models|get_model_details|recommend_models|calculate_project_budget|compare_generation_prices|list_media|create_reference_upload_link|import_reference_files|prepare_generation|confirm_generation|get_generation_status|list_recent_generations|present_generation|create_topup_link)\b/g) ?? [];
     assert.ok(toolNames.length > 0);
     for (const tool of toolNames) assert.ok(allowedTools.has(tool), `unknown tool ${tool}`);
   }

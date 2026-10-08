@@ -136,7 +136,7 @@ test('curated policy artifact has manual provenance and a guidance fingerprint w
   );
 });
 
-test('evaluator validates curated arguments with all fourteen authoritative runtime schemas', async () => {
+test('evaluator validates curated arguments with all authoritative runtime schemas', async () => {
   const validate = (evaluatorApi as any).validateCuratedToolArguments;
   const schemaNames = (evaluatorApi as any).authoritativeToolSchemaNames;
   assert.equal(typeof validate, 'function');
@@ -147,6 +147,7 @@ test('evaluator validates curated arguments with all fourteen authoritative runt
     'get_model_details',
     'recommend_models',
     'calculate_project_budget',
+    'compare_generation_prices',
     'list_media',
     'create_reference_upload_link',
     'import_reference_files',
@@ -176,6 +177,7 @@ test('evaluator validates curated arguments with all fourteen authoritative runt
         }],
       }],
     },
+    compare_generation_prices:{surface:'video',mode:'t2v',prompt:'A cinematic opening',settings:{durationSec:8}},
     list_media: { kind: 'image' },
     create_reference_upload_link: { kind: 'video' },
     import_reference_files: {
@@ -1094,7 +1096,7 @@ test('fixture-contract fingerprint and mandatory policy coverage reject disappea
   });
 });
 
-test('read-only MCP baseline observes five discovery tools while production publication remains active', async () => {
+test('read-only MCP baseline observes discovery and price comparison tools while production publication remains active', async () => {
   const evidence = await inspectLiveMcpMetadata();
   assert.deepEqual(evidence.liveTools, [
     'get_account_status',
@@ -1102,6 +1104,7 @@ test('read-only MCP baseline observes five discovery tools while production publ
     'get_model_details',
     'recommend_models',
     'calculate_project_budget',
+    'compare_generation_prices',
   ]);
   assert.equal(evidence.resourcesAdvertised, false);
   assert.equal(evidence.generationAvailable, false);
