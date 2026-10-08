@@ -9,6 +9,7 @@ const composerTypesPath = join(root, 'frontend/components/composer/composer-type
 const composerCopyPath = join(root, 'frontend/components/composer/composer-copy.ts');
 const multiPromptEditorPath = join(root, 'frontend/components/composer/ComposerMultiPromptEditor.tsx');
 const promotedActionIconPath = join(root, 'frontend/components/composer/ComposerPromotedActionIcon.tsx');
+const generationQuotePath = join(root, 'frontend/components/composer/ComposerGenerationQuote.client.tsx');
 
 const composerSource = readFileSync(composerPath, 'utf8');
 const composerTypesSource = readFileSync(composerTypesPath, 'utf8');
@@ -16,13 +17,14 @@ const composerCopySource = readFileSync(composerCopyPath, 'utf8');
 const multiPromptEditorSource = readFileSync(multiPromptEditorPath, 'utf8');
 const promotedActionIconSource = readFileSync(promotedActionIconPath, 'utf8');
 
-test('composer delegates copy, contracts, multi-prompt, and promoted action icon ownership', () => {
-  for (const path of [composerPath, composerTypesPath, composerCopyPath, multiPromptEditorPath, promotedActionIconPath]) {
+test('composer delegates copy, contracts, multi-prompt, promoted action icon, and quote presentation ownership', () => {
+  for (const path of [composerPath, composerTypesPath, composerCopyPath, multiPromptEditorPath, promotedActionIconPath, generationQuotePath]) {
     assert.ok(existsSync(path), `${path} should exist`);
   }
 
   assert.match(composerSource, /<ComposerMultiPromptEditor/, 'Composer should compose the focused multi-prompt editor');
   assert.match(composerSource, /<ComposerPromotedActionIcon/, 'Composer should compose the focused promoted action icon');
+  assert.match(composerSource, /<ComposerGenerationQuote workspace=\{workspaceDensity\}/, 'workspace quote presentation belongs in the focused owner');
   assert.doesNotMatch(composerSource, /export const DEFAULT_COMPOSER_COPY|function renderPromotedActionIcon/, 'copy and icon drawing belong in focused modules');
   assert.doesNotMatch(composerSource, /type MultiPromptScene|interface ComposerProps/, 'composer contracts belong in composer-types.ts');
   assert.match(composerTypesSource, /export interface ComposerProps/, 'composer types should own the public props contract');

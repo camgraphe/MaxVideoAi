@@ -12,6 +12,7 @@ import { ComposerReferenceFields } from '@/components/composer/ComposerReference
 import { ComposerMultiPromptEditor } from '@/components/composer/ComposerMultiPromptEditor';
 import { ComposerPromotedActionIcon } from '@/components/composer/ComposerPromotedActionIcon';
 import { ComposerGenerationActivity, GenerationSpinner } from '@/components/composer/ComposerGenerationActivity.client';
+import { ComposerGenerationQuote } from '@/components/composer/ComposerGenerationQuote.client';
 import { hasMissingRequiredComposerAsset } from '@/components/composer/composer-generation';
 import { getWorkspaceAssetFieldRank, getWorkspaceAssetGridClass } from '@/components/composer/composer-layout';
 import { DEFAULT_COMPOSER_COPY, type ComposerCopy } from '@/components/composer/composer-copy';
@@ -244,7 +245,6 @@ export function Composer({
                       'flex shrink-0 flex-col gap-2',
                       workspaceDensity ? 'app-composer-submit' : 'lg:items-end'
                     )}>
-                      {workspaceDensity && !formattedPrice ? <span className="app-quote-status" role="status">{isPricing ? workbenchCopy.calculating : workbenchCopy.priceUnavailable}</span> : null}
                       <div className={clsx('flex w-full items-center gap-2 lg:w-auto', workspaceDensity && 'app-generation-controls')}>
                         {!workspaceDensity ? generateControl : null}
                         <ComposerGenerationActivity entries={pendingGenerations} submitting={isLoading}>
@@ -268,7 +268,7 @@ export function Composer({
                             onClick={handleGenerateClick}
                           >
                             <span className="app-generation-label relative z-10 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-micro">{isLoading && workspaceDensity ? <GenerationSpinner /> : null}{resolvedGenerateLabel}</span>
-                            {formattedPrice ? (
+                            <ComposerGenerationQuote workspace={workspaceDensity} hasPrice={Boolean(formattedPrice)} isPricing={isPricing}>{formattedPrice ? (
                               <span
                                 className={clsx(
                                   'app-generation-price relative z-10 inline-flex items-center rounded-full py-1 text-sm font-semibold normal-case backdrop-blur',
@@ -280,7 +280,7 @@ export function Composer({
                               >
                                 {formattedPrice}
                               </span>
-                            ) : null}
+                            ) : null}</ComposerGenerationQuote>
                             <span
                               aria-hidden
                               className={clsx(
