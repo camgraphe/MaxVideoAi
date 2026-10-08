@@ -36,13 +36,20 @@ export function useSeedanceDraftWorkflow(options: Options) {
   const scope = JSON.stringify([account?.userId, account?.token, engineId, mode, prompt, form]);
   const scopeRef = useRef(scope); scopeRef.current = scope;
   const resolutionChangeRef = useRef(options.onResolutionChange); resolutionChangeRef.current = options.onResolutionChange;
+  const formResolutionRef = useRef(form?.resolution); formResolutionRef.current = form?.resolution;
   const accountUserId = account?.userId ?? null;
   const storageKey = accountUserId ? `seedance-active-draft:${accountUserId}` : null;
+  const selectionKey = accountUserId ? `seedance-draft-selected:${accountUserId}` : null;
   useEffect(() => {
     setDraftId(null); setAttempt(null); setSelected(false); setError(null);
     if (!enabled || !storageKey) return;
-    try { const id = window.localStorage.getItem(storageKey); if (id && accountUserId) { setDraftId(id); setAttempt(restoreAttempt(accountUserId, id)); setSelected(true); resolutionChangeRef.current('480p'); } } catch { /* server history remains available */ }
-  }, [enabled, storageKey, accountUserId]);
+    try { const id = window.localStorage.getItem(storageKey); if (id && accountUserId) {
+      setDraftId(id); setAttempt(restoreAttempt(accountUserId, id));
+      const restoreSelected = !selectionKey || window.localStorage.getItem(selectionKey) !== '0';
+      setSelected(restoreSelected);
+      if (restoreSelected) { priorResolution.current = formResolutionRef.current ?? '1080p'; resolutionChangeRef.current('480p'); }
+    } } catch { /* server history remains available */ }
+  }, [enabled, storageKey, selectionKey, accountUserId]);
   const read = useSeedanceWorkflowView(draftId, account, enabled);
   useEffect(() => {
     if (read.data && draftId && accountUserId) {
@@ -55,9 +62,11 @@ export function useSeedanceDraftWorkflow(options: Options) {
     audio: form.audio, seedanceWorkflow: { step: 'draft' },
   } : null, iterations: 1, accessToken: account?.token ?? null, authChecked: Boolean(account), locale: 'fr' });
   function toggle() {
-    if (!available || !form || guard.current || draftId) return;
+    if (!available || !form || guard.current) return;
     if (!selected) { priorResolution.current = form.resolution; options.onResolutionChange('480p'); }
-    else if (priorResolution.current) options.onResolutionChange(priorResolution.current);
+    else options.onResolutionChange(priorResolution.current ?? '1080p');
+    // Choosing standard generation must not discard an accepted or uncertain Draft.
+    if (selectionKey) { try { window.localStorage.setItem(selectionKey, selected ? '0' : '1'); } catch { /* keep the choice in memory */ } }
     setSelected(value => !value); setError(null);
   }
   async function generate() {
@@ -94,7 +103,7 @@ export function useSeedanceDraftWorkflow(options: Options) {
       }
     } finally { guard.current = false; setSubmitting(false); }
   }
-  const canResume = Boolean(enabled && account && attempt?.userId === account.userId && draftId && attempt?.payload.jobId === draftId && read.data === null && !read.error && !read.isValidating && !submitting);
+  const canResume = Boolean(enabled && selected && account && attempt?.userId === account.userId && draftId && attempt?.payload.jobId === draftId && read.data === null && !read.error && !read.isValidating && !submitting);
   async function resume() {
     // An explicit retry after an owned 404 can only resend the original attempt, never create another.
     if (canResume && attempt) await dispatch(attempt, false);

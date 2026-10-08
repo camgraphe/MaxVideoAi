@@ -3,6 +3,7 @@ export const SEEDANCE_WORKFLOW_ASPECT_RATIOS: readonly AspectRatio[] = ['21:9', 
 export type SeedanceWorkflowJob = {
   jobId: string; status: string; amountCents: number | null; currency: string;
   paymentStatus: string | null; videoUrl: string | null; thumbUrl: string | null;
+  message?: string | null;
 };
 export type SeedanceWorkflowView = {
   draft: SeedanceWorkflowJob; final: SeedanceWorkflowJob | null; expiresAt: string | null;
