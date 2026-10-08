@@ -59,6 +59,12 @@ export function ImageQuoteCard({
         <summary>{t('View direction and settings', 'Voir la direction et les réglages')}</summary>
         <p style={{whiteSpace:'pre-wrap'}}>{presentation.direction}</p>
       </details>
+      {(quote.state === 'prepared' || expired) && (
+        <p className={styles.muted}>
+          {t('Want a different model, resolution, duration or budget? Ask for a new quote to compare prices and possible savings.',
+            'Envie d’un autre modèle, d’une autre résolution ou durée, ou d’un autre budget ? Demandez un nouveau devis pour comparer les tarifs et les économies possibles.')}
+        </p>
+      )}
       {quote.state === "prepared" && !expired && (
         <p className={styles.muted}>
           {localQa ? t('Test balance', 'Solde de test') : t('Available balance', 'Solde disponible')} :{" "}

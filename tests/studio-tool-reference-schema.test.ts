@@ -20,7 +20,7 @@ function resolved(assetId: string, mediaKind: ResolvedReference['mediaKind'] = '
 const references = [resolved(imageB), resolved(video, 'video'), resolved(imageA), resolved(audio, 'audio'),
   {...resolved(imageB), role: 'first_frame' as const}];
 const tools = [...STUDIO_DIRECTOR_TOOLS, ...STUDIO_MEDIA_DIRECTOR_TOOLS];
-const scopedTools = tools.filter(tool => ['image_prepare', 'pricing_read'].includes(tool.name));
+const scopedTools = tools.filter(tool => ['image_prepare', 'pricing_read','pricing_compare'].includes(tool.name));
 const videoTool = STUDIO_MEDIA_DIRECTOR_TOOLS.find(tool => tool.name === 'video_prepare')!;
 const allScopedTools = [...scopedTools, videoTool];
 type ReferenceProperties = {references: {items: {properties: {ref: {properties?: {assetId: {enum?: readonly string[]}};anyOf?: {properties:{type:{enum:string[]};kind:{enum:string[]};assetId?:{enum?:readonly string[]}}}[]}}}}};
@@ -40,6 +40,7 @@ function enumIds(properties: Readonly<Record<string, unknown>>) {
 }
 function parameters(name: string, ids: string[]) {
   const selected = ids.map(assetId => ({ref: {type: 'asset', assetId, kind: 'image'}, role: 'reference', slot: null}));
+  if(name==='pricing_compare') return {surface:'image',mode:'i2i',prompt:'A quiet product image',settings:[],references:selected,baselineModelId:null,baselineSettings:null,candidateModelIds:null,outputCount:1};
   return name === 'image_prepare'
     ? {reply: 'Review the quote.', prompt: 'A quiet product image.', aspectRatio: '16:9', modelId: null,
       mode: null, settings: null, outputCount: 1, references: selected}
@@ -134,7 +135,7 @@ test('zero images retains the existing valid schema and never emits an empty enu
 });
 
 test('other tools retain the exact original properties', () => {
-  for (const tool of tools.filter(tool => !['image_prepare', 'pricing_read', 'video_prepare','voice_prepare','music_prepare','audio_prepare'].includes(tool.name)))
+  for (const tool of tools.filter(tool => !['image_prepare', 'pricing_read','pricing_compare', 'video_prepare','voice_prepare','music_prepare','audio_prepare'].includes(tool.name)))
     assert.equal(studioToolReferenceProperties(tool.name, tool.properties, references), tool.properties);
 });
 

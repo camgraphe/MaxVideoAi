@@ -53,17 +53,26 @@ export async function readStudioHistoricalEstimates(actor:StudioGenerationActor,
   if(actor.authMethod!=='studio-session')throw new AgentApiError('AUTH_REQUIRED','Studio session required.');
   const ids=[...new Set(requestIds.filter(id=>uuid.test(id)))].slice(-8);
   if(!ids.length)return [];
-  const rows=await query<EstimateRow>(`SELECT s.request_id AS "requestId",s.result_json->'data'->>'modelId' AS "modelId",
-    s.result_json->'data'->>'surface' AS surface,s.result_json->'data'->>'mode' AS mode,
-    (SELECT jsonb_object_agg(key,value) FROM jsonb_each(CASE WHEN jsonb_typeof(s.result_json->'data'->'settings')='object' THEN s.result_json->'data'->'settings' ELSE '{}'::jsonb END) WHERE key=ANY($4::text[])) AS settings,
-    s.result_json->'data'->'outputCount' AS "outputCount",s.result_json->'data'->'referenceCount' AS "referenceCount",
-    s.result_json->'data'->'price'->'amountCents' AS "amountCents",s.result_json->'data'->'price'->>'currency' AS currency,
-    s.result_json->'data'->>'estimatedAt' AS "estimatedAt",s.result_json->'data'->'quoteRequired' AS "quoteRequired",
-    s.result_json->'data'->'outputDurationSec' AS "outputDurationSec"
+  const rows=await query<EstimateRow>(`WITH receipts AS (
+    SELECT s.request_id,s.result_json,s.created_at,s.call_id
     FROM studio_conversation_steps s JOIN studio_image_turns t ON t.user_id=s.user_id AND t.project_id=s.project_id AND t.request_id=s.request_id
     JOIN studio_projects p ON p.user_id=t.user_id AND p.id=t.project_id AND p.deleted_at IS NULL
     WHERE s.user_id=$1 AND s.project_id=$2 AND s.request_id=ANY($3::uuid[]) AND t.state='ready' AND s.state='completed'
-      AND s.action_json->>'action'='pricing.read' AND s.result_json->>'action'='pricing.read' AND s.result_json->'ok'='true'::jsonb
-    ORDER BY s.created_at DESC,s.call_id DESC LIMIT 2`,[actor.userId,actor.projectId,ids,STUDIO_QUOTE_SETTING_KEYS]);
+      AND s.action_json->>'action' IN ('pricing.read','pricing.compare')
+      AND s.result_json->>'action'=s.action_json->>'action' AND s.result_json->'ok'='true'::jsonb
+    ORDER BY s.created_at DESC,s.call_id DESC LIMIT 2
+  ) SELECT s.request_id AS "requestId",option.data->>'modelId' AS "modelId",
+    option.data->>'surface' AS surface,option.data->>'mode' AS mode,
+    (SELECT jsonb_object_agg(key,value) FROM jsonb_each(CASE WHEN jsonb_typeof(option.data->'settings')='object' THEN option.data->'settings' ELSE '{}'::jsonb END) WHERE key=ANY($4::text[])) AS settings,
+    option.data->'outputCount' AS "outputCount",option.data->'referenceCount' AS "referenceCount",
+    option.data->'price'->'amountCents' AS "amountCents",option.data->'price'->>'currency' AS currency,
+    option.data->>'estimatedAt' AS "estimatedAt",option.data->'quoteRequired' AS "quoteRequired",
+    option.data->'outputDurationSec' AS "outputDurationSec"
+    FROM receipts s CROSS JOIN LATERAL (
+      SELECT data,ordinal FROM jsonb_array_elements(CASE
+        WHEN s.result_json->>'action'='pricing.read' THEN jsonb_build_array(s.result_json->'data')
+        WHEN jsonb_typeof(s.result_json->'data'->'options')='array' THEN s.result_json->'data'->'options'
+        ELSE '[]'::jsonb END) WITH ORDINALITY AS options(data,ordinal) LIMIT 3
+    ) option ORDER BY s.created_at DESC,s.call_id DESC,option.ordinal LIMIT 6`,[actor.userId,actor.projectId,ids,STUDIO_QUOTE_SETTING_KEYS]);
   return rows.flatMap(row=>{const projected=projectHistoricalEstimate(row);return projected?[projected]:[];});
 }

@@ -261,7 +261,7 @@ async function connectedClient(serviceOverrides: Partial<MaxVideoAiMcpServices> 
   };
 }
 
-test('server advertises only the five read-only discovery tools with narrow guidance', async (t) => {
+test('server advertises the read-only discovery and price comparison tools with narrow guidance', async (t) => {
   const connected = await connectedClient();
   t.after(() => connected.close());
 
@@ -273,6 +273,7 @@ test('server advertises only the five read-only discovery tools with narrow guid
     'get_model_details',
     'recommend_models',
     'calculate_project_budget',
+    'compare_generation_prices',
   ]);
 
   for (const tool of result.tools) {
@@ -462,7 +463,7 @@ test('paid prepare schema exposes canonical settings and accepts full video refe
   });
 });
 
-test('all fifteen operational tools expose strict schemas and reject unknown keys before handlers', async (t) => {
+test('all operational tools expose strict schemas and reject unknown keys before handlers', async (t) => {
   const calls = new Map<string, number>();
   const called = (name: string) => calls.set(name, (calls.get(name) ?? 0) + 1);
   const operationalServices = services({
@@ -550,6 +551,7 @@ test('all fifteen operational tools expose strict schemas and reject unknown key
         }],
       }],
     },
+    compare_generation_prices:{surface:'video',mode:'t2v',prompt:'A cinematic opening shot',settings:{durationSec:4}},
     list_media: {},
     create_reference_upload_link: { kind: 'image' },
     import_reference_files: {

@@ -464,7 +464,7 @@ test('recent facade delegates strict cursor pagination and exact surface/status 
   );
 });
 
-test('operational gate registers the exact fifteen-tool order and default registry remains five tools', async (t) => {
+test('operational gate registers the exact operational tool order and default registry remains read-only tools', async (t) => {
   const gated = await connected({}, { paidGeneration: true, referenceUploads: true });
   const defaults = await connected({}, { paidGeneration: false, referenceUploads: false });
   t.after(async () => {
@@ -476,7 +476,7 @@ test('operational gate registers the exact fifteen-tool order and default regist
     'list_models',
     'get_model_details',
     'recommend_models',
-    'calculate_project_budget',
+    'calculate_project_budget', 'compare_generation_prices',
     'list_media',
     'create_reference_upload_link',
     'import_reference_files',
@@ -493,7 +493,7 @@ test('operational gate registers the exact fifteen-tool order and default regist
     'list_models',
     'get_model_details',
     'recommend_models',
-    'calculate_project_budget',
+    'calculate_project_budget', 'compare_generation_prices',
   ]);
 });
 

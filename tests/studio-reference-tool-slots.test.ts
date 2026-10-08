@@ -5,7 +5,7 @@ import {createStudioConversationDirector} from '../frontend/src/server/studio/co
 test('actual Studio tool schemas prevent positional image labels from becoming unsupported canonical slots',async()=>{
   let checked=0;
   const director=createStudioConversationDirector({mediaEnabled:true,createResponse:async params=>{
-    for(const name of ['image_prepare','video_prepare','pricing_read']){
+    for(const name of ['image_prepare','video_prepare','pricing_read','pricing_compare']){
       const tool=params.tools?.find(tool=>tool.type==='function'&&tool.name===name);
       assert.ok(tool&&tool.type==='function');
       const schema=tool.parameters as {properties:{references:{items:{properties:{slot:{type:string|string[];minimum?:number;maximum?:number}}}}}};
@@ -17,7 +17,7 @@ test('actual Studio tool schemas prevent positional image labels from becoming u
     return {id:'schema-response',model:'gpt-6.1-sol',status:'completed',service_tier:'default',usage:undefined,output_text:JSON.stringify({reply:'Describe your idea.'}),output:[]};
   }});
   await director({message:'Help with an image.',references:[],history:[],project:{name:'Fixture',revision:0,memory:{revision:0,brief:'',decisions:[]}},checkpoint:async(_index,create)=>create(),execute:async()=>{throw new Error('Schema inspection must not execute an action');}});
-  assert.equal(checked,3);
+  assert.equal(checked,4);
 });
 
 test('the director sends exact attached image identities to image and estimate schemas',async()=>{
@@ -25,7 +25,7 @@ test('the director sends exact attached image identities to image and estimate s
   const references=assetIds.map(assetId=>({assetId,role:'reference' as const,mediaKind:'image' as const,storageUrl:'https://cdn.maxvideoai.com/'+assetId+'.png',mimeType:'image/png',width:1024,height:1024,durationSec:null}));
   let checked=0;
   const director=createStudioConversationDirector({mediaEnabled:true,createResponse:async params=>{
-    for(const name of ['image_prepare','pricing_read','video_prepare']){
+    for(const name of ['image_prepare','pricing_read','pricing_compare','video_prepare']){
       const tool=params.tools?.find(tool=>tool.type==='function'&&tool.name===name);
       assert.ok(tool&&tool.type==='function');
       type AssetSchema={properties:{assetId:{enum?:string[]}}};
@@ -38,5 +38,5 @@ test('the director sends exact attached image identities to image and estimate s
     return {id:'identity-schema-response',model:'gpt-6-luna',status:'completed',service_tier:'default',usage:undefined,output_text:JSON.stringify({reply:'I can use the two attached images.'}),output:[]};
   }});
   await director({message:'Combine these two images.',references,history:[],project:{name:'Fixture',revision:0,memory:{revision:0,brief:'',decisions:[]}},checkpoint:async(_index,create)=>create(),execute:async()=>{throw new Error('Schema inspection must not execute an action');}});
-  assert.equal(checked,3);
+  assert.equal(checked,4);
 });

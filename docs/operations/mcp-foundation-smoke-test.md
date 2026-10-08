@@ -46,8 +46,8 @@ For Codex and Claude separately:
 3. Verify the browser returns to the same authorization request after login.
 4. Deny once and confirm the host reports denial safely.
 5. Approve once and confirm only `openid`, `email`, and `profile` are requested.
-6. List the five default discovery tools in canonical order: `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`. Inspect their read-only annotations.
-7. Call account status, model listing, model details, model recommendations, and project-budget calculation.
+6. List the six default discovery tools in canonical order: `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`, `compare_generation_prices`. Inspect their read-only annotations. The price-comparison addition is a 2026-10-08 candidate; verify the deployed revision before expecting it on a hosted server.
+7. Call account status, model listing, model details, model recommendations, project-budget calculation, and generation-price comparison. Check that the comparison preserves explicit settings and references, offers fewer than three options when fewer fit, compares one currency, and creates no quote or charge.
 8. Ask the host to help formulate a text-to-video prompt and propose a reference image. Confirm the host performs that reasoning while MaxVideoAI only reports model capabilities.
 9. Refresh/restart the host and confirm its authorization refreshes.
 10. Disconnect the host at `/account/connections`; confirm the connection disappears and reconnect requires approval.

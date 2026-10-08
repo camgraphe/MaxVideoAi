@@ -1,4 +1,5 @@
 import { calculateProjectBudgetInputSchema } from '@/server/mcp/tools/calculate-project-budget';
+import {compareGenerationPricesInputSchema} from '@/server/mcp/tools/compare-generation-prices';
 import { confirmGenerationInputSchema } from '@/server/mcp/tools/confirm-generation';
 import { createReferenceUploadLinkInputSchema } from '@/server/mcp/tools/create-reference-upload-link';
 import { createTopupLinkInputSchema } from '@/server/mcp/tools/create-topup-link';
@@ -25,6 +26,7 @@ export const MCP_TOOL_INPUT_SCHEMAS = {
   get_model_details: getModelDetailsInputSchema,
   recommend_models: recommendModelsInputSchema,
   calculate_project_budget: calculateProjectBudgetInputSchema,
+  compare_generation_prices:compareGenerationPricesInputSchema,
   list_media: listMediaInputSchema,
   create_reference_upload_link: createReferenceUploadLinkInputSchema,
   import_reference_files: importReferenceFilesInputSchema,

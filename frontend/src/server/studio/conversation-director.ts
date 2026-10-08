@@ -94,7 +94,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         parallel_tool_calls: false,
         tool_choice: 'auto',
         instructions: buildStudioDirectorInstructions({...options,taskEnabled:!!options.taskExecution})
-          + `\n\nResponse ${index + 1} of ${maxResponses}: ${maxResponses - index} Responses remain, including this one. Leave room to answer. For an image/video generation budget, inspect one suitable model, read its exact price, then explain; compare a second only if its price and a useful reply fit.`
+          + `\n\nResponse ${index + 1} of ${maxResponses}: ${maxResponses - index} Responses remain, including this one. Leave room to answer. For an open image/video model or alternative-price request, use pricing_compare once and explain its compatible options; after selection inspect that model and prepare. A named model stays selected. Leave room for the reply.`
           + (index === maxResponses-1
           ? '\n\nThis is the last Response available for this message. Give the client a useful answer from the facts already read, or complete their requested preparation/edit/cancellation. Reads and memory writes are unavailable because no response would remain to use their results. Explain any missing model or price verification accurately; do not invent facts or prepare a creation when the client only asked for advice.'
           : index === Math.max(0,maxResponses-2) ? '\n\nOptional memory writes are now unavailable. When the needed model and source facts are known, prepare the requested creation now so one response remains to correct a prequote input rejection. Read only facts still required for the requested workflow.' : '')

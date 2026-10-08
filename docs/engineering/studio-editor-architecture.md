@@ -38,6 +38,16 @@ Studio entry opens the recent supported project or idempotently creates a fresh 
 
 The chat builds intent through the common agent/generation services. Owned media and measured reference facts are resolved before pricing or submission. Every generation requires a current exact quote and explicit confirmation. Request/response journal and assistance usage recovery are durable so lost replies can resume without repeating paid dispatch.
 
+For an open simple image/video model choice, `pricing_compare` reads compatible
+current prices in one action before selection. It shares the MCP comparison
+owner and preserves certification, attached owned references and explicit
+settings; normally three different price options, fewer when fewer qualify.
+This read creates no quote and does not increase the Response allowance. A
+selected/named model follows exact details and preparation. Alternative requests
+may reprice original `baselineSettings` for verified savings; the quote card
+invites model, resolution, duration and budget comparisons. Historical options
+remain bounded receipt facts, never current prices or purchase authorization.
+
 Preparation recovery is bounded inside the existing four Responses and assistance-call allowance (reviewed 2026-10-05). Discovery publishes canonical base setting names, including `durationSec`, `resolution`, `aspectRatio`, `fps` and an `audio` boolean only when that mode has a toggle. Always-generated or unavailable sound does not grant an audio toggle. Null discovery defaults preserve the generation adapters' existing default ownership.
 
 When required model/source facts are known, prepare by Response 3; optional `project_remember` writes are no longer offered from that response. A required third discovery read remains available, so a workflow can still use three reads and prepare on Response 4. An explicit `studio_preparation_input` rejection before draft/quote creation can use one remaining Response to correct only the same preparation tool. A second rejection stops with the saved error and a follow-up continuation. Wallet, lease, ownership, catalog, provider and post-mutation errors do not acquire this correction marker. Older recorded correction paths may include additional reads or saved mutations: recover their immutable responses and receipts. Once the new correction allowance is exhausted, subsequent checkpoints are replay-only and run before token counting or financial reservation; unresolved supplier usage remains terminal. Recovery never purchases a fifth response, repeats completed mutations or confirms a generation. A rejection on Response 4 still requires a user follow-up, including historical requests that already exhausted all four checkpoints.

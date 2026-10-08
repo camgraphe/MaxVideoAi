@@ -60,10 +60,31 @@ test('price comparison reads owned attached images and preserves prepared quotes
   const draft=await director({message:'Compare my options before creating.',history:[],references:[],project:{name:'Creative work',revision:0,memory:{revision:0,brief:'',decisions:[]}},checkpoint:async(_,create)=>create(),execute:async(_,action)=>execute(action)});
   assert.equal(calls,3,'Read estimates do not terminate the turn or consume more than the existing budget.');
   assert.equal(draft.image,null);
+  const {modelId,...compareScenario}=scenario;
+  const comparison={...compareScenario,action:'pricing.compare' as const,prompt:'Warmer light',baselineModelId:modelId,candidateModelIds:[modelId]};
+  const compared=await execute(comparison);
+  assert.equal(compared.ok,true);
+  if(!compared.ok||compared.action!=='pricing.compare')throw new Error('Expected a comparison');
+  assert.equal(compared.data.options.length,1);
+  assert.equal(compared.data.options[0].price.amountCents,167);
+  let compareCalls=0;
+  const compareDirector=createStudioConversationDirector({createResponse:async()=>{
+    compareCalls++;
+    const {action,...args}=comparison;
+    return {id:`compare-${compareCalls}`,model:'gpt-6.1-sol',status:'completed',service_tier:'default',usage:null,
+      output_text:compareCalls===2?JSON.stringify({reply:'Here is the compatible price; choose before a fresh quote.'}):'',
+      output:compareCalls===1?[{type:'function_call',name:'pricing_compare',call_id:'compare',arguments:JSON.stringify(args)}]:[]};
+  }});
+  const comparedDraft=await compareDirector({message:'Compare before creating',history:[],references:[],project:{name:'Creative work',revision:0,memory:{revision:0,brief:'',decisions:[]}},checkpoint:async(_,create)=>create(),execute:async(_,action)=>execute(action)});
+  assert.equal(compareCalls,2,'A single comparison leaves a reply inside the existing response allowance.');
+  assert.equal(comparedDraft.image,null);
   const readsBeforeDenials=pricingReads;
   const unattached=await createStudioActionExecutor(actor,{...dependencies,attachedImageIds:[]})(scenario);
   assert.equal(unattached.ok,false);
   if(!unattached.ok)assert.equal(unattached.error.code,'REFERENCE_INVALID');
+  const unattachedComparison=await createStudioActionExecutor(actor,{...dependencies,attachedImageIds:[]})(comparison);
+  assert.equal(unattachedComparison.ok,false);
+  if(!unattachedComparison.ok)assert.equal(unattachedComparison.error.code,'REFERENCE_INVALID');
   const foreign=await createStudioActionExecutor({...actor,userId:'foreign'},dependencies)(scenario);
   assert.equal(foreign.ok,false);
   await pg.pool.query("UPDATE media_assets SET user_id='foreign' WHERE id='ref'");
