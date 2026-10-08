@@ -76,6 +76,14 @@ Move code to shared locations only when reuse is real:
 
 Avoid promoting a one-off helper into `frontend/lib` just because it is long.
 
+`frontend/lib/compare-hub/pairs.ts` owns pure comparison pair/route canonicalization
+and publication filtering from supplied models and scoreboard completeness. Shared
+navigation and client comparison links import it directly. `compare-hub/data.ts`
+owns catalogue-backed hub data and retains public helper re-exports for existing
+callers; importing that owner into navigation or client link helpers loads the
+complete engine catalogue. `tests/navigation-comparison-bundle-boundary.test.ts`
+guards these browser dependency graphs with esbuild metadata.
+
 Local Markdown loading for docs, blog and guides belongs in `frontend/lib/content/markdown.ts`.
 Its production Data Cache key includes a SHA-256 of the selected file paths and exact
 source contents, including uncommitted edits. The reader loads each source once and

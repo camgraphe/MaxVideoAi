@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import clsx from 'clsx';
 import { Link } from '@/i18n/navigation';
 import type { SelectOption } from '@/components/ui/SelectMenu';
-import { buildCanonicalCompareSlug } from '@/lib/compare-hub/data';
+import { buildCanonicalCompareSlug } from '@/lib/compare-hub/pairs';
 import { CompareEngineFamilySelect } from './_components/CompareEngineFamilySelect.client';
 
 type CompareNowWidgetProps = {
