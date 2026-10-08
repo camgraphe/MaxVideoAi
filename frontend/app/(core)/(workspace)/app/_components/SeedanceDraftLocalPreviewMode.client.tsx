@@ -18,6 +18,7 @@ export function SeedanceDraftLocalPreviewMode({ preview, locale = 'fr' }: Props)
       <input
         type="checkbox"
         checked={preview.selected}
+        disabled={preview.pending}
         onChange={preview.toggle}
         className="h-4 w-4 shrink-0 cursor-pointer accent-[var(--app-accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
       />
