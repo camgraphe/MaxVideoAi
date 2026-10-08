@@ -28,3 +28,19 @@ test('English tools compose the same server style owner as localized tools', () 
   assert.match(defaultLayout, /<ToolsLayout>\{children\}<\/ToolsLayout>/);
   assert.doesNotMatch(defaultLayout, /^\s*['"]use client['"]/);
 });
+
+test('MCP CSS belongs to the synchronous views shared by English and localized routes', () => {
+  const layout = readFileSync(marketing + 'layout.tsx', 'utf8');
+  assert.doesNotMatch(layout, /marketing-mcp\.css/, 'unrelated marketing routes must not request MCP CSS');
+  for (const owner of ['mcp/_components/McpPageView.tsx', 'integrations/_components/IntegrationPageView.tsx']) {
+    const view = readFileSync(marketing + owner, 'utf8');
+    assert.match(view, /import ['"]@\/styles\/marketing-mcp\.css['"]/);
+    assert.doesNotMatch(view, /^\s*['"]use client['"]|\buseEffect\b|\bimport\(/);
+  }
+  assert.match(readFileSync('frontend/app/mcp/page.tsx', 'utf8'), /\(localized\).*\/mcp\/page/);
+  for (const client of ['claude', 'chatgpt', 'codex', 'openclaw', 'n8n']) {
+    assert.match(readFileSync(`frontend/app/integrations/${client}/page.tsx`, 'utf8'), /\(localized\).*\/integrations\//);
+  }
+  assert.match(readFileSync('frontend/src/styles/marketing-navigation.css', 'utf8'), /\.marketing-mcp-tag\s*\{/,
+    'the shared navigation badge must remain styled without the route-only MCP sheet');
+});

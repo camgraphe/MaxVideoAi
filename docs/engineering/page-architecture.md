@@ -17,6 +17,18 @@ Everything else should usually live outside `page.tsx`.
 
 The home, model-detail and comparison-detail pages import their own `marketing-home.css`, `marketing-models.css` and `marketing-compare.css`. The localized `tools/layout.tsx` statically imports `marketing-tools.css` for the tool hub and all tool detail pages. The English entry at `frontend/app/tools/layout.tsx` must compose that same `ToolsLayout` inside its marketing layout: default-language routes do not automatically traverse the localized route tree. Keep these imports out of the shared marketing layout so unrelated routes do not download these stylesheets. Route CSS stays available during server rendering; do not move it into an effect or client-only loader. Shared marketing styling stays in the layout. Moving an import must preserve the cascade and be checked on direct loads and client navigation, including mobile; `tests/marketing-route-styles-contract.test.ts` locks both route entries and the ownership boundary.
 
+`McpPageView` and `IntegrationPageView` synchronously import `marketing-mcp.css`;
+English and localized entries reuse these same server views. The shared layout
+retains `marketing-navigation.css`, including the MCP badge used on every page.
+MCP selectors overlap the shared typography and container rules, so changes to
+this ownership also require computed-style and visual parity on direct loads and
+SPA navigation, including returning to an unrelated page with retained CSS.
+The shared redesign sheet owns container width, heading letter spacing and the
+generic h1/h2 line heights. MCP must not redeclare these previously overridden
+values: its route sheet can arrive last during SPA navigation. More specific
+proof and caption typography remains owned by MCP;
+`tests/marketing-mcp-cascade-browser.test.ts` checks both stylesheet orders.
+
 ## Server Page Pattern
 
 Use this for marketing, SEO, model, comparison, docs, examples, legal, and admin server pages.

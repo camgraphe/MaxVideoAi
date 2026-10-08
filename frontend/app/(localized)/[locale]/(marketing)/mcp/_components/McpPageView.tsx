@@ -1,3 +1,4 @@
+import '@/styles/marketing-mcp.css';
 import type { AppLocale } from '@/i18n/locales';
 import type { McpPublicationState } from '@/lib/mcp-publication';
 import { McpIntegrationCards } from '@/components/marketing/mcp/McpIntegrationCards';

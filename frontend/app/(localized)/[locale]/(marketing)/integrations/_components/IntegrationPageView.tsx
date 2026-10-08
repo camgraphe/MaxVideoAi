@@ -1,3 +1,4 @@
+import '@/styles/marketing-mcp.css';
 import { McpIntegrationCards } from '@/components/marketing/mcp/McpIntegrationCards';
 import type { AppLocale } from '@/i18n/locales';
 import { AssistantFirstRequest } from '@/components/marketing/AssistantFirstRequest';
