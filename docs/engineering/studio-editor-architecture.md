@@ -54,6 +54,8 @@ When required model/source facts are known, prepare by Response 3; optional `pro
 
 The visible timeline edits canonical sequence state with revision and ownership checks. It reuses pure frame-aware operations for clipping, source bounds and linked audio. Library selection does not automatically insert every new generation into the timeline. Preview media uses transient stored grants; signed URLs and private originals must not leak into journal/tool projections or saved command payloads.
 
+`useConversationTimeline` owns periodic preview refresh. Its polling waits for all current-project reads to settle, including a forced replacement for a refused grant that still appears valid to the browser clock. Explicit refreshes, revisioned edits and lifecycle invalidations retain their epoch ordering. Read counts belong to each project path and are released in `finally`, so failed or obsolete reads cannot release another project's polling gate. `tests/studio-conversation-timeline-refresh-dom.test.ts` exercises the real hook with deferred responses; the connected montage browser test retains separate preview/new-grant diagnostic flags without exposing signed URLs.
+
 The 2026-10-06 branch candidate adds bounded atomic assembly (up to 12 insertions)
 and source-in frames to the same edit owner. Explicit Sol media analysis is a
 separate quoted, confirmed and worker-owned credit consumer. It never runs from

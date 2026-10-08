@@ -1,5 +1,5 @@
 'use client';
-import {useCallback,useEffect,useRef,useState} from 'react';
+import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import type {StudioConversationTimeline} from '@/lib/studio/conversation-editing-contract';
 import type {ConversationTimelineCommand} from '@/lib/studio/conversation-timeline-editing';
 import {retainConversationMediaAccess} from '@/lib/studio/conversation-preview-access';
@@ -17,19 +17,22 @@ export function useConversationTimeline(projectId: string,refreshKey: unknown) {
   const epoch = useRef(0);
   const invalidate = useCallback(() => {epoch.current++;},[]);
   const path = `/api/studio/projects/${encodeURIComponent(projectId)}/conversation-timeline`;
+  const reads = useMemo(() => ({path,inFlight: 0}),[path]);
   const refresh = useCallback(async (options?: {renewMediaId?: string}) => {
+    reads.inFlight++;
     const request = ++epoch.current;
     try {
-      const response = await fetch(path+'?preview=1',{cache: 'no-store'});
+      const response = await fetch(reads.path+'?preview=1',{cache: 'no-store'});
       const result = await response.json();
       if (!active.current || request !== epoch.current) return;
       if (result.error === 'STUDIO_CONNECTED_PROJECT_REQUIRED') {setLegacy(true);return;}
       if (!response.ok || !result.ok) throw new Error(result.error ?? 'TIMELINE_UNAVAILABLE');
       setLegacy(false);setError(null);setView(previous => ({...result.result,items: retainConversationMediaAccess(previous?.items ?? [],result.result.items,Date.now(),options?.renewMediaId)}));
     } catch (failure) {if (active.current && request === epoch.current) setError(failure instanceof Error ? failure.message : 'TIMELINE_UNAVAILABLE');}
-  },[path]);
+    finally {reads.inFlight--;}
+  },[reads]);
   useEffect(() => {active.current = true;void refresh();return () => {active.current = false;invalidate();};},[refresh,refreshKey,invalidate]);
-  useEffect(() => {const timer = window.setInterval(() => {if (!pending.current && !document.hidden) void refresh();},20000);return () => window.clearInterval(timer);},[refresh]);
+  useEffect(() => {const timer = window.setInterval(() => {if (!pending.current && reads.inFlight === 0 && !document.hidden) void refresh();},20000);return () => window.clearInterval(timer);},[refresh,reads]);
   const edit = useCallback(async (command: ConversationTimelineCommand['edit']) => {
     if (!view || pending.current) return;
     pending.current = true;setBusy(true);setEditError(null);epoch.current++;
