@@ -36,5 +36,21 @@ test('workflow reads expose owned eligibility and expiry without provider identi
     assert.equal(final?.eligibility, 'finalized');
     assert.equal(final?.draft.amountCents, 129);
     assert.equal(final?.final?.amountCents, 651);
+    await db.pool.query(`UPDATE app_jobs SET status = 'failed', payment_status = 'refunded_wallet',
+      message = 'Private provider error: req_private https://private.example/token',
+      settings_snapshot = settings_snapshot || '{"providerFailure":{"failureCode":"seedance_output_copyright_restricted","providerErrorCode":"private-provider-code"}}'::jsonb
+      WHERE job_id = 'draft'`);
+    const failed = await views.readOwnedSeedanceWorkflowView('owner', 'draft', query);
+    assert.equal(failed?.eligibility, 'failed');
+    assert.match(failed?.draft.message ?? '', /copyright/i);
+    assert.equal(failed?.draft.paymentStatus, 'refunded_wallet');
+    assert.doesNotMatch(JSON.stringify(failed), /req_private|private\.example|private-provider-code|private-provider-task/);
+    assert.equal(await views.readOwnedSeedanceWorkflowView('other', 'draft', query), null);
+    await db.pool.query(`UPDATE app_jobs SET settings_snapshot = settings_snapshot - 'providerFailure',
+      message = 'Seedance stopped this render because its output checks detected possible copyright-restricted content.'
+      WHERE job_id = 'draft'`);
+    assert.match((await views.readOwnedSeedanceWorkflowView('owner', 'draft', query))?.draft.message ?? '', /copyright/i);
+    await db.pool.query(`UPDATE app_jobs SET message = 'Unrecognized private failure: req_private' WHERE job_id = 'draft'`);
+    assert.equal((await views.readOwnedSeedanceWorkflowView('owner', 'draft', query))?.draft.message, null);
   } finally { await db.cleanup(); }
 });

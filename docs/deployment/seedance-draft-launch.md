@@ -32,6 +32,14 @@ Draft option keeps the normal localized generation label.
 The comparison panel retains the same Draft resolution and single-output
 constraints, locks submitted settings, and displays the active workflow quote.
 
+The Draft checkbox can return the composer to standard generation after an
+accepted, completed, failed or uncertain Draft. Leaving the mode preserves the
+account-scoped active job and same-attempt recovery facts; it neither cancels
+the task nor submits a replacement. The separate account-scoped selection flag
+preserves an unchecked choice across reloads. Re-entering Draft resumes its
+existing job, while only the explicit new-Draft action clears terminal setup.
+The checkbox is temporarily disabled while the submission request is pending.
+
 ## Acceptance before activation
 
 1. Verify current active Draft/final cells through the canonical quote owner.
