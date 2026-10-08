@@ -51,3 +51,62 @@ test('shared library/Studio action shows a fresh separate charge, retains the Dr
     assert.ok(dom.window.document.querySelector('a[href="/app?job=draft"]'));
   } finally { await act(async () => root.unmount()); dom.window.close(); for (const [name, descriptor] of previous) { if (descriptor) Object.defineProperty(globalThis, name, descriptor); else Reflect.deleteProperty(globalThis, name); } }
 });
+
+test('failed Drafts explain the refusal and a new attempt, confirming only recorded refunds in each locale', async () => {
+  const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/app' });
+  const previous = new Map<string, PropertyDescriptor | undefined>();
+  let view: SeedanceWorkflowView = { draft: { jobId: 'failed-draft', status: 'failed', amountCents: 258, currency: 'USD',
+    paymentStatus: 'refunded_wallet', videoUrl: null, thumbUrl: null,
+    message: 'Seedance stopped this render because its output checks detected possible copyright-restricted content.' },
+    final: null, eligibility: 'failed', expiresAt: null,
+    settings: { durationSec: 10, aspectRatio: '16:9', audio: true, resolution: '480p' } };
+  let submissions = 0;
+  for (const [key, value] of Object.entries({ React, window: dom.window, document: dom.window.document, navigator: dom.window.navigator,
+    IS_REACT_ACT_ENVIRONMENT: true, fetch: async (url: string) => {
+      if (url === '/api/generate') submissions++;
+      return new Response(JSON.stringify(view));
+    },
+  })) { previous.set(key, Object.getOwnPropertyDescriptor(globalThis, key)); Object.defineProperty(globalThis, key, { configurable: true, writable: true, value }); }
+  let root: ReturnType<typeof createRoot> | null = null;
+  const mount = async (locale: string) => {
+    root = createRoot(dom.window.document.getElementById('root')!);
+    await act(async () => root!.render(React.createElement(SWRConfig, { value: { provider: () => new Map(),
+      fallback: { [unstable_serialize(['seedance-workflow', 'owner', 'failed-draft'])]: view }, revalidateOnMount: false } },
+    React.createElement(SeedanceDraftFinalAction, { jobId: 'failed-draft', locale, account: { userId: 'owner', token: 'confirmed' } }))));
+    return dom.window.document.querySelector('section')!.textContent!;
+  };
+  const unmount = async () => { await act(async () => root!.unmount()); root = null; };
+  try {
+    for (const [locale, reason, retry, refund, amount] of [
+      ['en', /copyright/i, /prompt.*new Draft/i, /returned to your wallet/i, /2\.58/],
+      ['fr', /droits d’auteur/i, /prompt.*nouveau Draft/i, /recrédit/i, /2,58/],
+      ['es', /derechos de autor/i, /prompt.*nuevo Draft/i, /devuelto.*monedero/i, /2,58/],
+    ] as const) {
+      for (const paymentStatus of ['refunded_wallet', 'paid_wallet', 'refunded', 'included_mcp_trial']) {
+        view = { ...view, draft: { ...view.draft, paymentStatus } };
+        const text = await mount(locale);
+        assert.match(text, reason);
+        assert.match(text, retry);
+        if (paymentStatus === 'refunded_wallet') { assert.match(text, refund); assert.match(text, amount); }
+        else assert.doesNotMatch(text, refund);
+        assert.equal(dom.window.document.querySelectorAll('button').length, 0, 'a refused Draft cannot be finalized');
+        await unmount();
+      }
+    }
+    view = { ...view, draft: { ...view.draft, paymentStatus: 'paid_wallet',
+      message: 'The generated audio was blocked by Seedance safety checks. Change the prompt or turn off generated audio before trying again.' } };
+    assert.match(await mount('fr'), /audio.*désactivez/i);
+    await unmount();
+    view = { ...view, draft: { ...view.draft, message: 'Private unknown provider error: req_private https://private.example/token' } };
+    const unknown = await mount('fr');
+    assert.match(unknown, /raison.*précise/i);
+    assert.match(unknown, /prompt.*nouveau Draft/i);
+    assert.doesNotMatch(unknown, /copyright|droits d’auteur|req_private|private\.example/i);
+    assert.equal(submissions, 0, 'reading a refusal never submits a new paid render');
+    await unmount();
+  } finally {
+    if (root) await unmount();
+    dom.window.close();
+    for (const [name, descriptor] of previous) { if (descriptor) Object.defineProperty(globalThis, name, descriptor); else Reflect.deleteProperty(globalThis, name); }
+  }
+});
