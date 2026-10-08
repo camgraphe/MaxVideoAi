@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
+import { reportTestPostgres, resolveTestPostgres } from './_lib/test-postgres-toolchain.mjs';
 
 const studioIntegration = [
   'tests/connected-studio-mcp-route-integration.test.ts',
@@ -31,9 +32,11 @@ const browser = [
   ...standard.filter(file => /\b(?:chromium|firefox|webkit)\s*\.\s*(?:launch|launchPersistentContext|executablePath)\s*\(|\bfrom\s*['"][^'"]*studio-connected-browser-fixture/.test(readFileSync(file, 'utf8'))),
 ];
 const browserSet = new Set(browser);
+// This regression uses executable version doubles and needs no installed database.
+const toolsFree = new Set(['tests/test-postgres-toolchain.test.ts']);
 // Include tests with older names that start PostgreSQL or encode real media.
 // New *-postgres tests are automatically excluded from the tools-free lane.
-const integration = standard.filter(file => !tariffSet.has(file) && !browserSet.has(file) && (
+const integration = standard.filter(file => !toolsFree.has(file) && !tariffSet.has(file) && !browserSet.has(file) && (
   file.endsWith('-postgres.test.ts')
   || /\bfrom\s*['"][^'"]*(?:disposable-postgres|studio-integration-runtime)|\binitdb\b|ffmpeg/.test(readFileSync(file, 'utf8'))
 ));
@@ -54,6 +57,18 @@ if (process.argv.includes('--plan')) {
   process.exit(0);
 }
 
+let testEnvironment = process.env;
+if (suite !== 'fast') {
+  try {
+    const toolchain = resolveTestPostgres();
+    testEnvironment = toolchain.env;
+    reportTestPostgres(toolchain);
+  } catch (error) {
+    process.stderr.write(`${error.message}\n`);
+    process.exit(1);
+  }
+}
+
 function runTests(label, files, extraArgs = []) {
   process.stdout.write(`\n[validate] ${label} (${files.length} files)\n`);
   const command = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
@@ -65,7 +80,7 @@ function runTests(label, files, extraArgs = []) {
     '--test',
     ...extraArgs,
     ...files,
-  ], { stdio: 'inherit', env: process.env });
+  ], { stdio: 'inherit', env: testEnvironment });
   if (result.error) throw result.error;
   if (result.status !== 0) process.exit(result.status ?? 1);
 }

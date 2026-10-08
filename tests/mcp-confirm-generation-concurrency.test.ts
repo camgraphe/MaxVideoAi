@@ -5,6 +5,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 
+import { testPostgresCommand } from './helpers/disposable-postgres';
+
 import { Client, Pool } from 'pg';
 
 import {
@@ -41,7 +43,7 @@ const migrationPath = join(root, 'neon/migrations/30_mcp_paid_generation.sql');
 const quoteLifetimeMigrationPath = join(root, 'neon/migrations/39_mcp_quote_lifetime.sql');
 
 function commandExists(command: string): boolean {
-  return spawnSync('sh', ['-c', `command -v ${command}`], { encoding: 'utf8' }).status === 0;
+  return spawnSync(testPostgresCommand(command), ['--version'], { encoding: 'utf8' }).status === 0;
 }
 
 function commandFailure(result: ReturnType<typeof spawnSync>): string {
@@ -342,22 +344,22 @@ test('same-quote video/image races, distinct-quote cap race, and expiry wait exe
   const dataDirectory = join(temporaryRoot, 'data');
   const socketDirectory = join(temporaryRoot, 'socket');
   mkdirSync(socketDirectory);
-  const init = spawnSync('initdb', [
+  const init = spawnSync(testPostgresCommand('initdb'), [
     '-A', 'trust', '-U', 'postgres', '-D', dataDirectory, '--no-locale', '--encoding=UTF8',
   ], { encoding: 'utf8' });
   assert.equal(init.status, 0, commandFailure(init));
-  const start = spawnSync('pg_ctl', [
+  const start = spawnSync(testPostgresCommand('pg_ctl'), [
     '-D', dataDirectory, '-o', `-F -k ${socketDirectory} -c listen_addresses=''`, '-w', 'start',
   ], { encoding: 'utf8', stdio: 'ignore' });
   assert.equal(start.status, 0, commandFailure(start));
   t.after(() => {
-    spawnSync('pg_ctl', ['-D', dataDirectory, '-m', 'immediate', '-w', 'stop'], {
+    spawnSync(testPostgresCommand('pg_ctl'), ['-D', dataDirectory, '-m', 'immediate', '-w', 'stop'], {
       encoding: 'utf8', stdio: 'ignore',
     });
     rmSync(temporaryRoot, { recursive: true, force: true });
   });
 
-  const psql = (...args: string[]) => spawnSync('psql', [
+  const psql = (...args: string[]) => spawnSync(testPostgresCommand('psql'), [
     '-X', '-h', socketDirectory, '-U', 'postgres', '-d', 'postgres', ...args,
   ], { encoding: 'utf8' });
   const migration = psql('--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', migrationPath);

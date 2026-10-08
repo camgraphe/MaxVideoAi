@@ -4,6 +4,8 @@ import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
+
+import { testPostgresCommand } from './helpers/disposable-postgres';
 import { Client } from 'pg';
 import { getDb } from '../frontend/src/lib/db.ts';
 import { ensureMcpSchema } from '../frontend/src/lib/schema/mcp-schema.ts';
@@ -26,7 +28,7 @@ import { loadAdminMcpOutcomes } from '../frontend/server/admin-mcp-outcomes.ts';
 type CommandResult = ReturnType<typeof spawnSync>;
 
 function commandExists(command: string): boolean {
-  return spawnSync('sh', ['-c', `command -v ${command}`], { encoding: 'utf8' }).status === 0;
+  return spawnSync(testPostgresCommand(command), ['--version'], { encoding: 'utf8' }).status === 0;
 }
 
 function commandFailure(result: CommandResult): string {
@@ -46,12 +48,12 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
   const socketDirectory = join(temporaryRoot, 'socket');
   mkdirSync(socketDirectory);
 
-  const init = spawnSync('initdb', [
+  const init = spawnSync(testPostgresCommand('initdb'), [
     '-A', 'trust', '-U', 'postgres', '-D', dataDirectory, '--no-locale', '--encoding=UTF8',
   ], { encoding: 'utf8' });
   assert.equal(init.status, 0, commandFailure(init));
 
-  const start = spawnSync('pg_ctl', [
+  const start = spawnSync(testPostgresCommand('pg_ctl'), [
     '-D', dataDirectory,
     '-o', `-F -k ${socketDirectory} -c listen_addresses=''`,
     '-w', 'start',
@@ -59,7 +61,7 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
   assert.equal(start.status, 0, commandFailure(start));
 
   t.after(() => {
-    spawnSync('pg_ctl', ['-D', dataDirectory, '-m', 'immediate', '-w', 'stop'], {
+    spawnSync(testPostgresCommand('pg_ctl'), ['-D', dataDirectory, '-m', 'immediate', '-w', 'stop'], {
       encoding: 'utf8', stdio: 'ignore',
     });
     rmSync(temporaryRoot, { recursive: true, force: true });
