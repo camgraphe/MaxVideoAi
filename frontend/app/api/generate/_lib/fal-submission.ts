@@ -56,6 +56,12 @@ export type FalGenerateSubmissionResult =
       body: Record<string, unknown>;
     };
 
+/** The HTTP response returns before rendering ends; this is accepted work, not a terminal failure. */
+export function isDeferredFalSubmission(result: FalGenerateSubmissionResult): boolean {
+  return !result.ok && result.status === 202 && result.body.ok === true
+    && result.body.deferred === true && result.body.status === 'running';
+}
+
 export async function markJobAwaitingFal(params: {
   jobId: string;
   engineId: string;

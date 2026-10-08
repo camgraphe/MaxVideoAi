@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { createPaidGenerationTestSchema, missingDisposablePostgresCommand, startDisposablePostgres } from './helpers/disposable-postgres';
 import { reserveWalletChargeInExecutor } from '../frontend/src/lib/wallet';
@@ -60,16 +61,13 @@ test('provider attempt completion follows the exact persisted job and survives l
   t.after(() => db.cleanup());
   const { markProviderAttemptAccepted, syncProviderAttemptTerminalStatus } = await import('../frontend/src/server/video-providers/provider-attempts');
   const queryFn = async <T = unknown>(sql: string, params?: unknown[]): Promise<T[]> => (await db.pool.query(sql, params)).rows;
+  await db.pool.query('CREATE TABLE app_jobs (id bigint PRIMARY KEY, job_id text, provider text, provider_job_id text, status text)');
+  await db.pool.query(readFileSync('neon/migrations/21_provider_attempts.sql', 'utf8'));
   await db.pool.query(`
-    CREATE TABLE app_jobs (id bigint PRIMARY KEY, job_id text, provider text, provider_job_id text, status text);
-    CREATE TABLE provider_attempts (
-      id bigint PRIMARY KEY, job_id bigint, provider text, provider_job_id text, status text,
-      accepted_at timestamptz, finished_at timestamptz, updated_at timestamptz, response_snapshot jsonb
-    );
     INSERT INTO app_jobs VALUES (1,'job','fal','request','completed');
-    INSERT INTO provider_attempts (id,job_id,provider,provider_job_id,status) VALUES
-      (1,1,'kling_direct',NULL,'failed'), (2,1,'fal','request','accepted'),
-      (3,1,'fal','other-request','accepted'), (4,1,'fal',NULL,'fallback_started');
+    INSERT INTO provider_attempts (id,job_id,attempt_index,provider,provider_job_id,status) VALUES
+      (1,1,1,'kling_direct',NULL,'failed'), (2,1,2,'fal','request','accepted'),
+      (3,1,3,'fal','other-request','accepted'), (4,1,4,'fal',NULL,'fallback_started');
   `);
   await db.pool.query("UPDATE provider_attempts SET accepted_at='2026-09-21T10:00:00Z' WHERE id=2");
   await syncProviderAttemptTerminalStatus({ publicJobId: 'job', provider: 'fal', providerJobId: 'request', queryFn });
