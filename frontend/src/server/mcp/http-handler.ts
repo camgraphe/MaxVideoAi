@@ -122,6 +122,7 @@ const AUDITABLE_TOOL_NAMES = new Set([
   'get_model_details',
   'recommend_models',
   'calculate_project_budget',
+  'compare_generation_prices',
   'prepare_generation',
   'confirm_generation',
   'get_generation_download',

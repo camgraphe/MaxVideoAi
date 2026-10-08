@@ -88,4 +88,15 @@ test('a fresh Response receives exact owned historical estimates and quoted draf
     assert.equal((await pg.pool.query<{n:number}>('SELECT count(*)::int n FROM app_jobs')).rows[0].n,0);
     assert.equal((await pg.pool.query<{n:number}>("SELECT count(*)::int n FROM app_receipts WHERE type='charge'")).rows[0].n,0);
   });
+  await t.test('all three options from a completed owned comparison survive as bounded historical estimates',async()=>{
+    const id=await turn('owner','other');
+    const options=['mini','balanced','preferred'].map((modelId,index)=>({modelId,surface:'video',mode:'i2v',settings:{durationSec:12,resolution:'720p',providerKey:'PRIVATE'},outputCount:1,referenceCount:1,price:{amountCents:100+index*100,currency:'USD'},estimatedAt:'2026-10-08T20:00:00Z',quoteRequired:true,providerUrl:'PRIVATE'}));
+    await pg.pool.query(`INSERT INTO studio_conversation_steps(user_id,project_id,request_id,call_id,lease_id,action_hash,action_json,observed_revision,state,result_json,created_at)
+      VALUES('owner','other',$1,$2,$3,$4,$5::jsonb,0,'completed',$6::jsonb,clock_timestamp())`,[id,randomUUID(),randomUUID(),'0'.repeat(64),JSON.stringify({action:'pricing.compare'}),JSON.stringify({ok:true,action:'pricing.compare',data:{options}})]);
+    const facts=await historyModule.readStudioHistoricalEstimates({...actor,projectId:'other'},[id]);
+    assert.deepEqual(facts.map(option=>option.modelId),['mini','balanced','preferred']);
+    assert.ok(facts.every(option=>option.historical&&option.quoteRequired));
+    assert.doesNotMatch(JSON.stringify(facts),/PRIVATE|provider/);
+    assert.deepEqual(await historyModule.readStudioHistoricalEstimates(actor,[id]),[]);
+  });
 });

@@ -18,7 +18,7 @@ const reference = z.discriminatedUnion('kind', [
     mediaKind: referenceMediaKind,
   }).strict(),
 ]);
-const canonicalSettingsSchema = z.object({
+export const canonicalSettingsSchema = z.object({
   multiPrompt: z.array(z.object({
     prompt: z.string().trim().min(1).max(512),
     durationSec: z.number().int().min(1).max(15),
@@ -148,6 +148,7 @@ export function registerPrepareGenerationTool(
         'If credits are insufficient, use create_topup_link for this quote.',
         'Funding, discussion and ambiguous assent do not approve generation.',
         'Never substitute a named model or use a quote as a generation result.',
+        'After the quote, briefly invite another model, resolution, duration or budget for a new quote and price comparison; use compare_generation_prices for actual savings, never guess.',
       ].join(' '),
       inputSchema: prepareGenerationInputSchema,
       annotations: {

@@ -183,7 +183,7 @@ missing value, count drift, or cent mismatch blocks release.
 
 1. Turn off the server-side paid kill switch first.
 2. Keep the checked-in/public paid flag off; if a controlled deployment flag was
-   enabled, disable it and verify the registry returns to the five default
+   enabled, disable it and verify the registry returns to the six default
    discovery tools instead of the 13-tool controlled operational profile.
 3. Stop new provider submissions without deleting jobs, receipts, quotes, logs,
    or idempotency records.

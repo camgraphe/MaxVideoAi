@@ -281,6 +281,7 @@ test('exact hosted staging exposes the complete operational tool inventory', asy
     assert.equal(response.status, 200);
     assert.deepEqual(payload.result.tools.map((tool: { name: string }) => tool.name).sort(), [
       'calculate_project_budget',
+      'compare_generation_prices',
       'confirm_generation',
       'create_reference_upload_link',
       'create_topup_link',
@@ -517,11 +518,19 @@ test('tool audit records only the allowlisted name and success/failure projectio
     }),
     deps({ recordEvent }),
   );
+  const priceComparison = await handleMcpHttpRequest(
+    protocolRequest({
+      jsonrpc: '2.0', id: 9, method: 'tools/call',
+      params: { name: 'compare_generation_prices', arguments: {} },
+    }),
+    deps({ recordEvent }),
+  );
 
   assert.equal(success.status, 200);
   assert.equal(failed.status, 200);
   assert.equal(details.status, 200);
   assert.equal(projectBudget.status, 200);
+  assert.equal(priceComparison.status, 200);
   assert.deepEqual(events, [
     {
       eventType: 'tool_call', userId: 'user-1', oauthClientId: 'client-1',
@@ -538,6 +547,10 @@ test('tool audit records only the allowlisted name and success/failure projectio
     {
       eventType: 'tool_call', userId: 'user-1', oauthClientId: 'client-1',
       tool: 'calculate_project_budget', outcome: 'failure', surface: null, engineId: null, errorCode: null,
+    },
+    {
+      eventType: 'tool_call', userId: 'user-1', oauthClientId: 'client-1',
+      tool: 'compare_generation_prices', outcome: 'failure', surface: null, engineId: null, errorCode: null,
     },
   ]);
   assert.doesNotMatch(JSON.stringify(events), /private|prompt|token|provider/i);

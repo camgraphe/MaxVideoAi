@@ -24,6 +24,7 @@ export const LIVE_TOOL_NAMES = [
   'get_model_details',
   'recommend_models',
   'calculate_project_budget',
+  'compare_generation_prices',
 ] as const;
 
 export const FUTURE_GATED_TOOL_NAMES = [

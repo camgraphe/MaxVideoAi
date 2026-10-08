@@ -6,6 +6,29 @@
 
 `pricing_read` exposes one exact image/video scenario through Studio's existing director loop. `image-generation-service.ts` additionally applies current Studio authority and certification. Saved media references must be explicitly attached, carry their exact supported kinds and roles, and resolve to the current owner. Estimates return amount/currency, settings, reference count, `estimatedAt` and `quoteRequired`; the client still confirms a fresh canonical quote before spending. Audio and unsaved project-output estimates are unsupported. Advice and comparisons must leave existing prepared/accepted quotes intact. Behavioral coverage lives in `studio-conversation-pricing*.test.ts` and the existing MCP preparation/budget tests.
 
+`generation-price-comparison.ts` owns the shared single-output comparison for
+Studio `pricing_compare` and MCP `compare_generation_prices`. It reads the live
+eligible catalog once, resolves owned reference metadata once, then validates
+each exact mode/scenario through `generation-pricing-read`. Studio additionally
+retains certification, project ownership and explicit attachment checks. Explicit
+settings never change to fill a shortlist; unspecified presets are disclosed.
+Fixed audio is checked as a requirement without inventing an audio toggle.
+Normally three options retain different verified prices, the lowest price and
+an exact requested baseline/editorial preference; price does not prove quality.
+Fewer matches return fewer options. No quote, wallet, provider job or reservation
+is created. Selection still requires live model details and a fresh exact quote.
+
+`baselineModelId` reprices the comparison baseline, and `baselineSettings`
+preserves its original configuration when changing resolution or duration.
+Savings use current integer customer cents in the same currency and disclose
+configuration differences. Shortlists use the baseline currency (otherwise the
+largest currency group) and disclose other currencies without ranking their amounts.
+Output timing comes from canonical pricing receipts, including fractional source timing. Historical estimates never supply current savings.
+The conversation journal projects at most three options from each of the two
+latest completed owned pricing actions, with private settings removed, marked
+historical and requiring a quote. Behavioral tests cover fresh prices, strict
+constraints, combined references, savings, ownership and unchanged quote rows.
+
 `src/server/agent-api/generation-omni-pricing-facts.ts` supplies Gemini Omni source
 image counts and measured input-video duration to the shared preparation/estimate
 price path. Video edits also inherit the measured source timing. Measurements

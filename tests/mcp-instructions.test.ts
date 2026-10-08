@@ -143,7 +143,7 @@ test('discovery routes only to tools actually advertised for every gate combinat
     };
     const { instructions, tools } = await getMetadata(options);
     const names = new Set(tools.map(tool => tool.name));
-    for (const name of instructions.match(/\b(?:get|list|recommend|calculate|prepare|confirm|create|import|present|edit)_[a-z_]+\b/g) ?? []) {
+    for (const name of instructions.match(/\b(?:get|list|recommend|calculate|compare|prepare|confirm|create|import|present|edit)_[a-z_]+\b/g) ?? []) {
       assert.ok(names.has(name), `capabilities ${mask} routes to unavailable ${name}`);
     }
     assert.equal(names.has('confirm_generation'), options.paidGeneration);

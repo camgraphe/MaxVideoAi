@@ -16,6 +16,22 @@ function candidate(id: string,surface: 'image' | 'video') {
 }
 const input={surface: 'image' as const,engineId: 'gpt-image-2',mode: 't2i' as const,prompt: 'Price comparison',settings: {resolution: '1024x1024',aspectRatio: '1:1',quality: 'high'},references: [],outputCount: 1};
 
+test('Studio comparison tool is bounded, accepts only saved attachments and has no price or confirmation authority',async()=>{
+  const args={surface:'image',mode:'t2i',prompt:'A portrait',settings:[],references:[],baselineModelId:null,candidateModelIds:null,outputCount:1};
+  assert.equal(actionFromTool('pricing_compare',args).action,'pricing.compare');
+  for(const extra of [{userId:'other'},{projectId:'other'},{confirmed:true},{priceCents:1},{quoteId:'forged'}]) assert.throws(()=>actionFromTool('pricing_compare',{...args,...extra}));
+  assert.throws(()=>actionFromTool('pricing_compare',{...args,candidateModelIds:Array(33).fill('model')}));
+  assert.throws(()=>actionFromTool('pricing_compare',{...args,references:[{ref:{type:'job-output',jobId:'j',outputId:'o',kind:'image'},role:'reference',slot:null}]}));
+  const service=createStudioImageGenerationService(actor,{enabled:true,prepareDependencies:{listPublicEngines:async()=>[candidate('gpt-image-2','image'),candidate('seedream','image')],resolveMembershipPricing:async()=>membership,
+    resolveRequestExecutability:()=>({executable:true,reason:'available'}),
+    priceGeneration:async(request,tier)=>{const amount=request.engineId==='gpt-image-2'?100:20;return {priceCents:amount,currency:'USD',membershipTier:tier,pricingSnapshot:{totalCents:amount,currency:'USD',membershipTier:tier}};},
+    withTransaction:async()=>{throw new Error('Comparison must never start a transaction.');},getWalletSummary:async()=>{throw new Error('Comparison must never read the wallet.');},
+  }});
+  const result=await service.compare({surface:'image',mode:'t2i',prompt:'A portrait',settings:{},references:[],candidateModelIds:['gpt-image-2','seedream']});
+  assert.equal(result.options.length,2);
+  assert.deepEqual(result.options.map(option=>option.price.amountCents),[20,100]);
+});
+
 test('Studio reads a fresh canonical price without quote, wallet or transaction effects',async()=> {
   let price=123;
   const priced: unknown[]=[];
