@@ -4,6 +4,8 @@ import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
+
+import { testPostgresCommand } from './helpers/disposable-postgres';
 import { Client } from 'pg';
 import type Stripe from 'stripe';
 
@@ -12,7 +14,7 @@ import type { QueryExecutor } from '../frontend/src/lib/db';
 type CommandResult = ReturnType<typeof spawnSync>;
 
 function commandExists(command: string): boolean {
-  return spawnSync('sh', ['-c', `command -v ${command}`], { encoding: 'utf8' }).status === 0;
+  return spawnSync(testPostgresCommand(command), ['--version'], { encoding: 'utf8' }).status === 0;
 }
 
 function commandFailure(result: CommandResult): string {
@@ -33,25 +35,25 @@ test('funnel migrations and helpers enforce constraints, canonical receipt repla
   const socketDirectory = join(temporaryRoot, 'socket');
   mkdirSync(socketDirectory);
 
-  const init = spawnSync('initdb', [
+  const init = spawnSync(testPostgresCommand('initdb'), [
     '-A', 'trust', '-U', 'postgres', '-D', dataDirectory, '--no-locale', '--encoding=UTF8',
   ], { encoding: 'utf8' });
   assert.equal(init.status, 0, commandFailure(init));
 
   const serverOptions = `-F -k ${socketDirectory} -c listen_addresses=''`;
-  const start = spawnSync('pg_ctl', [
+  const start = spawnSync(testPostgresCommand('pg_ctl'), [
     '-D', dataDirectory, '-o', serverOptions, '-w', 'start',
   ], { encoding: 'utf8', stdio: 'ignore' });
   assert.equal(start.status, 0, commandFailure(start));
 
   t.after(() => {
-    spawnSync('pg_ctl', ['-D', dataDirectory, '-m', 'immediate', '-w', 'stop'], {
+    spawnSync(testPostgresCommand('pg_ctl'), ['-D', dataDirectory, '-m', 'immediate', '-w', 'stop'], {
       encoding: 'utf8', stdio: 'ignore',
     });
     rmSync(temporaryRoot, { recursive: true, force: true });
   });
 
-  const psql = (...args: string[]) => spawnSync('psql', [
+  const psql = (...args: string[]) => spawnSync(testPostgresCommand('psql'), [
     '-X', '-h', socketDirectory, '-U', 'postgres', '-d', 'postgres', ...args,
   ], { encoding: 'utf8' });
 

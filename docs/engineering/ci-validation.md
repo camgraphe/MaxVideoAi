@@ -69,6 +69,35 @@ pnpm test:admin-smoke
 node scripts/run-validation-tests.mjs --plan
 ```
 
+### Local PostgreSQL version selection
+
+Database validation and `pnpm test:editor` (also used by `pnpm qa:editor`) select
+PostgreSQL 17 automatically through `scripts/_lib/test-postgres-toolchain.mjs`.
+The resolver looks for a complete PG17 installation in PATH, then the standard
+Apple Silicon/Intel Homebrew directories on macOS or `/usr/lib/postgresql/17/bin`
+on Linux. An older PostgreSQL installation earlier in PATH does not take precedence.
+The selected directory is printed before the suite starts. Every selected tool
+(`postgres`, `initdb`, `pg_ctl`, `psql`, `pg_isready`) must report major version 17.
+
+If PG17 is unavailable, validation stops before allocating a disposable database
+with installation guidance. On macOS use `brew install postgresql@17`; no service
+needs to be started. For a nonstandard installation, set `TEST_POSTGRES_BIN` to
+its bin directory. This override is strict: an invalid or mixed-version directory
+fails rather than silently falling back to a different installation.
+
+Focused tests use the same resolver through `tests/helpers/disposable-postgres.ts`;
+legacy fixtures that own their lifecycle use its `testPostgresCommand` helper.
+Database initialization, startup and cleanup use the selected absolute executable
+paths. Manual PATH prefixes are no longer needed, including for direct `tsx --test`
+runs. The fast suite and `--plan` do not require PostgreSQL. The toolchain regression
+uses executable doubles and stays in the fast suite.
+
+This selection only affects test child processes. It does not change shell startup
+files, Homebrew links or running services, and never connects to an inherited
+`DATABASE_URL`. Existing disposable-database isolation and PG17 qualification
+assertions remain in place. CI continues to install PostgreSQL 17 with its existing
+setup action.
+
 The runner automatically places `*-postgres.test.ts` files and tests importing
 the disposable PostgreSQL/Studio runtime helpers or using initdb/FFmpeg in the
 integration lane. Tests directly launching Chromium, Firefox or WebKit, or using

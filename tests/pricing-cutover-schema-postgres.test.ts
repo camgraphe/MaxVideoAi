@@ -6,7 +6,7 @@ import { Pool } from 'pg';
 import { collectPricingCutoverSchema, loadPricingCutoverMigrations,
   PRICING_CUTOVER_READ_ONLY_OPTIONS, pricingCutoverTarget } from '../frontend/scripts/_lib/pricing-cutover-schema';
 import { withPricingCutoverReadOnlyClient } from '../frontend/scripts/_lib/pricing-cutover-client';
-import { createPaidGenerationTestSchema, startDisposablePostgres } from './helpers/disposable-postgres';
+import { createPaidGenerationTestSchema, startDisposablePostgres, testPostgresCommand } from './helpers/disposable-postgres';
 
 test('read-only cutover inventory and exact migration replay preserve historical jobs, receipts and trial snapshots', async () => {
   const db = await startDisposablePostgres('pricing-cutover-rehearsal');
@@ -92,7 +92,7 @@ test('read-only cutover inventory and exact migration replay preserve historical
     for (let replay = 0; replay < 2; replay++) {
       for (const migration of migrations) {
         // Match the deployment owner: psql, error stop and one transaction per file.
-        const result = spawnSync('psql', [db.databaseUrl, '--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', migration.path], { encoding: 'utf8' });
+        const result = spawnSync(testPostgresCommand('psql'), [db.databaseUrl, '--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', migration.path], { encoding: 'utf8' });
         assert.equal(result.status, 0, `${migration.path}: ${result.stderr}`);
       }
       assert.deepEqual(await saved(), original, 'replay never reprices historical rows');

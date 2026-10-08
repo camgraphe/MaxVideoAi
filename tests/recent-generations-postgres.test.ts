@@ -5,6 +5,8 @@ import { tmpdir, userInfo } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 
+import { testPostgresCommand } from './helpers/disposable-postgres';
+
 import pg from 'pg';
 
 import {
@@ -24,9 +26,9 @@ async function stopPostgres(server: ChildProcessWithoutNullStreams): Promise<voi
 }
 
 test('agent surface SQL matches JavaScript trim semantics on real PostgreSQL JSONB', { timeout: 30_000 }, async (t) => {
-  const initProbe = spawnSync('initdb', ['--version'], { encoding: 'utf8' });
-  const postgresProbe = spawnSync('postgres', ['--version'], { encoding: 'utf8' });
-  const readyProbe = spawnSync('pg_isready', ['--version'], { encoding: 'utf8' });
+  const initProbe = spawnSync(testPostgresCommand('initdb'), ['--version'], { encoding: 'utf8' });
+  const postgresProbe = spawnSync(testPostgresCommand('postgres'), ['--version'], { encoding: 'utf8' });
+  const readyProbe = spawnSync(testPostgresCommand('pg_isready'), ['--version'], { encoding: 'utf8' });
   if (initProbe.error || postgresProbe.error || readyProbe.error) {
     t.skip('local PostgreSQL binaries are unavailable');
     return;
@@ -38,14 +40,14 @@ test('agent surface SQL matches JavaScript trim semantics on real PostgreSQL JSO
   const port = 55432;
   mkdirSync(socketDirectory);
   const initialized = spawnSync(
-    'initdb',
+    testPostgresCommand('initdb'),
     ['-D', dataDirectory, '--auth=trust', '--no-locale', '--encoding=UTF8'],
     { encoding: 'utf8' }
   );
   assert.equal(initialized.status, 0, initialized.stderr || initialized.stdout);
 
   const server = spawn(
-    'postgres',
+    testPostgresCommand('postgres'),
     ['-D', dataDirectory, '-k', socketDirectory, '-p', String(port), '-c', 'listen_addresses='],
     { stdio: ['ignore', 'pipe', 'pipe'] }
   );
@@ -62,7 +64,7 @@ test('agent surface SQL matches JavaScript trim semantics on real PostgreSQL JSO
   try {
     let ready = false;
     for (let attempt = 0; attempt < 100; attempt += 1) {
-      const probe = spawnSync('pg_isready', ['-h', socketDirectory, '-p', String(port)], {
+      const probe = spawnSync(testPostgresCommand('pg_isready'), ['-h', socketDirectory, '-p', String(port)], {
         stdio: 'ignore',
       });
       if (probe.status === 0) {

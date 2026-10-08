@@ -5,6 +5,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 
+import { testPostgresCommand } from './helpers/disposable-postgres';
+
 import { Client, Pool } from 'pg';
 
 import type { QueryExecutor, TransactionQueryExecutor } from '../frontend/src/lib/db';
@@ -242,7 +244,7 @@ test('trusted same-origin mutation helper rejects missing, opaque, credentialed,
 });
 
 function commandExists(command: string): boolean {
-  return spawnSync('sh', ['-c', `command -v ${command}`], { encoding: 'utf8' }).status === 0;
+  return spawnSync(testPostgresCommand(command), ['--version'], { encoding: 'utf8' }).status === 0;
 }
 
 function asExecutor(client: Pick<Client, 'query'>): QueryExecutor {
@@ -264,21 +266,21 @@ test('settings repository round-trip and PATCH-versus-confirm lock serialize on 
   const dataDirectory = join(temporaryRoot, 'data');
   const socketDirectory = join(temporaryRoot, 'socket');
   mkdirSync(socketDirectory);
-  const init = spawnSync('initdb', [
+  const init = spawnSync(testPostgresCommand('initdb'), [
     '-A', 'trust', '-U', 'postgres', '-D', dataDirectory, '--no-locale', '--encoding=UTF8',
   ], { encoding: 'utf8' });
   assert.equal(init.status, 0, `${init.stdout}\n${init.stderr}`);
-  const start = spawnSync('pg_ctl', [
+  const start = spawnSync(testPostgresCommand('pg_ctl'), [
     '-D', dataDirectory, '-o', `-F -k ${socketDirectory} -c listen_addresses=''`, '-w', 'start',
   ], { encoding: 'utf8', stdio: 'ignore' });
   assert.equal(start.status, 0);
   t.after(() => {
-    spawnSync('pg_ctl', ['-D', dataDirectory, '-m', 'immediate', '-w', 'stop'], {
+    spawnSync(testPostgresCommand('pg_ctl'), ['-D', dataDirectory, '-m', 'immediate', '-w', 'stop'], {
       encoding: 'utf8', stdio: 'ignore',
     });
     rmSync(temporaryRoot, { recursive: true, force: true });
   });
-  const migration = spawnSync('psql', [
+  const migration = spawnSync(testPostgresCommand('psql'), [
     '-X', '-h', socketDirectory, '-U', 'postgres', '-d', 'postgres',
     '--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f',
     join(process.cwd(), 'neon/migrations/30_mcp_paid_generation.sql'),

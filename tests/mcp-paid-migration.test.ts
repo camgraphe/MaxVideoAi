@@ -4,6 +4,8 @@ import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, readdirSync }
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
+
+import { testPostgresCommand } from './helpers/disposable-postgres';
 import { Client } from 'pg';
 
 import type { QueryExecutor, TransactionQueryExecutor } from '../frontend/src/lib/db';
@@ -16,7 +18,7 @@ const referenceUploadMigrationPath = 'neon/migrations/32_mcp_reference_uploads.s
 const runtimeSchemaPath = 'frontend/src/lib/schema/mcp-schema.ts';
 
 function commandExists(command: string): boolean {
-  return spawnSync('sh', ['-c', `command -v ${command}`], { encoding: 'utf8' }).status === 0;
+  return spawnSync(testPostgresCommand(command), ['--version'], { encoding: 'utf8' }).status === 0;
 }
 
 function commandFailure(result: ReturnType<typeof spawnSync>): string {
@@ -108,24 +110,24 @@ test('migration 30 constraints, state machine, immutability, indexes, row locks,
   const socketDirectory = join(temporaryRoot, 'socket');
   mkdirSync(socketDirectory);
 
-  const init = spawnSync('initdb', [
+  const init = spawnSync(testPostgresCommand('initdb'), [
     '-A', 'trust', '-U', 'postgres', '-D', dataDirectory, '--no-locale', '--encoding=UTF8',
   ], { encoding: 'utf8' });
   assert.equal(init.status, 0, commandFailure(init));
 
-  const start = spawnSync('pg_ctl', [
+  const start = spawnSync(testPostgresCommand('pg_ctl'), [
     '-D', dataDirectory, '-o', `-F -k ${socketDirectory} -c listen_addresses=''`, '-w', 'start',
   ], { encoding: 'utf8', stdio: 'ignore' });
   assert.equal(start.status, 0, commandFailure(start));
 
   t.after(() => {
-    spawnSync('pg_ctl', ['-D', dataDirectory, '-m', 'immediate', '-w', 'stop'], {
+    spawnSync(testPostgresCommand('pg_ctl'), ['-D', dataDirectory, '-m', 'immediate', '-w', 'stop'], {
       encoding: 'utf8', stdio: 'ignore',
     });
     rmSync(temporaryRoot, { recursive: true, force: true });
   });
 
-  const psql = (...args: string[]) => spawnSync('psql', [
+  const psql = (...args: string[]) => spawnSync(testPostgresCommand('psql'), [
     '-X', '-q', '-h', socketDirectory, '-U', 'postgres', '-d', 'postgres', ...args,
   ], { encoding: 'utf8' });
   for (let attempt = 0; attempt < 2; attempt += 1) {
