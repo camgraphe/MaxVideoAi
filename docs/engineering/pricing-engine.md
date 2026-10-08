@@ -813,6 +813,14 @@ and catalogue-plus-margin amounts cannot fill an unavailable commercial value.
 Comparison pricing also requires a current pricing engine and a successful
 current-policy quote; its spec row and price score reuse that result.
 
+`pricing-marketing.ts` selects an explicit supported `t2i` mode for engines whose
+modes are all image modes. This lets image catalogue ranges and model labels/rows
+match the same active exact cells as public image scenarios. Video and mixed-mode
+contexts retain their existing mode behavior. Marketing owns no source images;
+edit-only engines or text-image modes requiring a source stay unavailable rather
+than inventing a reference-free quote. The caller keeps current-policy admission,
+separate label/row recovery attempts and canonical billing defaults unchanged.
+
 Public scenario admission builds finite catalogue combinations only for the
 requested model and mode. `quote-public-model-scenario.ts` retains those immutable
 combinations per model/mode in process memory; it does not cache customer quotes

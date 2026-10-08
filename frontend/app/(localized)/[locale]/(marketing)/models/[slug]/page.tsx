@@ -277,8 +277,8 @@ async function renderMarketingModelPage({
     engine.id !== 'lumaRay2' && engine.surfaces.pricing.includeInEstimator;
   const keySpecsEntry =
     keySpecsMap.get(engine.modelSlug) ?? keySpecsMap.get(engine.id) ?? null;
-  const pricePerSecondLabel = await buildPricePerSecondLabel(pricingEngine, locale);
-  const pricePerImageLabel = await buildPricePerImageLabel(pricingEngine, locale);
+  const pricePerSecondLabel = isImageEngine ? null : await buildPricePerSecondLabel(pricingEngine, locale);
+  const pricePerImageLabel = isImageEngine ? await buildPricePerImageLabel(pricingEngine, locale) : null;
   const keySpecValues = buildSpecValues(engine, keySpecsEntry?.keySpecs, {
     pricePerSecond: pricePerSecondLabel,
     pricePerImage: pricePerImageLabel,

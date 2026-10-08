@@ -5,6 +5,9 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import test from 'node:test';
 import { build } from 'esbuild';
+import { getFalEngineById } from '../frontend/src/config/falEngines';
+import { mergeEngineLocalizedContent } from '../frontend/lib/models/i18n-normalization';
+import { makeModelPagePricingHarness, findModelLayoutElements } from './helpers/model-page-pricing-harness';
 
 const routePath = resolve('frontend/app/(localized)/[locale]/(marketing)/models/[slug]/page.tsx');
 
@@ -160,5 +163,156 @@ test('model route preserves rejected readers, optional playlist fallback and exc
       await h.page({params:Promise.resolve({slug:'veo-3-1',locale:'fr'})});
       assert.deepEqual(h.calls,[],'prelaunch/archive must not start active-model reads');
     }
+  } finally {await dispose();}
+});
+
+const modelLocales = ['en', 'fr', 'es'] as const;
+async function pricingFixture(modelId: string, locale: typeof modelLocales[number]) {
+  const engine = getFalEngineById(modelId)!;
+  assert.ok(engine, modelId);
+  const base = JSON.parse(await readFile(`content/models/en/${engine.modelSlug}.json`, 'utf8'));
+  const overlay = JSON.parse(await readFile(`content/models/${locale}/${engine.modelSlug}.json`, 'utf8'));
+  const localizedContent = mergeEngineLocalizedContent(base,overlay);
+  return {engine, localizedContent, locale, detailCopy:{backLabel:'Back',pricingLinkLabel:'Pricing',breadcrumb:{home:'Home',models:'Models'}}};
+}
+
+async function visiblePricing(h: any, result: any) {
+  const elements = findModelLayoutElements(await h.layout(result.props));
+  return JSON.parse(JSON.stringify(elements.flatMap(({name,props}) => {
+    if (name === 'script') return [{name,content:props.dangerouslySetInnerHTML.__html}];
+    if (name === 'ModelHeroSection') return [{name,heroMetaLines:props.heroMetaLines,heroSpecChips:props.heroSpecChips}];
+    if (name === 'ModelDecisionPricingCard') return [{name,pricing:props.pricing,offer:props.offer}];
+    if (name === 'ModelPublicOfferLine') return [{name,offer:props.offer}];
+    if (name === 'ModelPageContentSections') return [{name,specs:props.specsProps}];
+    return [];
+  })));
+}
+
+// Break caught: requesting the unused unit repeats real quote loops, even though
+// the hero/spec/schema consumers have no visible use for that projection.
+test('model route quotes only its visible unit with real pricing loops and preserves localized consumers', async () => {
+  const before = await makeModelPagePricingHarness({legacyLabels:true});
+  const after = await makeModelPagePricingHarness();
+  const evidence = [];
+  try {
+    for (const [modelId, previousCount, currentCount, unit] of [
+      ['minimax-h3-max',7,4,'second'], ['veo-3-1',10,7,'second'], ['gpt-image-2',37,36,'image'],
+    ] as const) {
+      for (const locale of modelLocales) {
+        const input = await pricingFixture(modelId,locale);
+        before.harness.configure(input);after.harness.configure(input);
+        const prior = await before.harness.render(input);
+        const result = await after.harness.render(input);
+        const previousCalls = before.harness.calls.length;
+        const currentCalls = after.harness.calls.length;
+        assert.equal(previousCalls,previousCount,`${modelId}/${locale} original segment`);
+        assert.equal(currentCalls,currentCount,`${modelId}/${locale} retained segment`);
+        assert.equal(result.props[unit==='image'?'pricePerSecondLabel':'pricePerImageLabel'],null);
+        assert.equal(result.props[unit==='image'?'pricePerImageLabel':'pricePerSecondLabel'],
+          {'en':'$0.10','fr':'0,10\u00a0$US','es':'USD\u00a00.10'}[locale]+(unit==='image'?'/image':'/s'));
+        assert.deepEqual(result.props.keySpecRows,prior.props.keySpecRows);
+        assert.deepEqual(await visiblePricing(after.harness,result),await visiblePricing(before.harness,prior));
+        const metadata = await after.harness.generateMetadata({params:Promise.resolve({slug:input.engine.modelSlug,locale})});
+        assert.deepEqual(metadata,await before.harness.generateMetadata({params:Promise.resolve({slug:input.engine.modelSlug,locale})}));
+        const prefix = locale==='en'?'':`/${locale}`;
+        const base = {en:'models',fr:'modeles',es:'modelos'}[locale];
+        assert.equal(result.props.canonicalUrl,`https://maxvideoai.com${prefix}/${base}/${input.engine.modelSlug}`);
+        assert.equal(metadata.alternates.canonical,result.props.canonicalUrl);
+        assert.ok(Object.keys(metadata.alternates.languages).length>=3);
+        after.harness.configure(input);
+        await after.harness.page({params:Promise.resolve({slug:input.engine.modelSlug,locale})});
+        assert.equal(after.harness.calls.length,currentCount,'fresh active page response owns the same pricing segment');
+        evidence.push({modelId,locale,previousCalls,currentCalls,scope:'unit labels + spec price rows; deterministic quote fixture; raw catalog'});
+      }
+    }
+    if (process.env.CWV_MODEL_PRICING_EVIDENCE_PATH) await writeFile(process.env.CWV_MODEL_PRICING_EVIDENCE_PATH,JSON.stringify(evidence,null,2)+'\n');
+  } finally {await before.dispose();await after.dispose();}
+});
+
+test('model pricing preserves overrides, partial unavailable quotes and mode-based else branches', async () => {
+  const before = await makeModelPagePricingHarness({legacyLabels:true});
+  const after = await makeModelPagePricingHarness();
+  try {
+    const input = await pricingFixture('veo-3-1','en');
+    const noAudio = {currency:'USD',perSecondCents:{default:10},addons:{}};
+    const scenarios = [
+      {...input,override:noAudio,wantCalls:4},
+      {...input,reject:(_context:unknown,count:number)=>count===1,wantCalls:7},
+      {...input,reject:(_context:unknown,count:number)=>count>1,wantCalls:7},
+      {...input,reject:(context:any)=>context.resolution==='1080p',wantCalls:7},
+      {...input,reject:()=>true,unavailableOffer:true,wantCalls:7},
+      {...input,engine:{...input.engine,category:'image',engine:{...input.engine.engine,modes:['t2v','t2i']}},wantCalls:7},
+      {...input,engine:{...input.engine,category:'image',engine:{...input.engine.engine,modes:[]}},wantCalls:7},
+      {...input,engine:{...input.engine,surfaces:{...input.engine.surfaces,pricing:{...input.engine.surfaces.pricing,includeInEstimator:false}}},wantCalls:1},
+    ];
+    for (const scenario of scenarios) {
+      before.harness.configure(scenario);after.harness.configure(scenario);
+      const prior = await before.harness.render(scenario);
+      const result = await after.harness.render(scenario);
+      assert.equal(after.harness.calls.length,scenario.wantCalls);
+      assert.equal(result.props.isImageEngine,false,'mixed/no modes preserve the video else branch regardless of category');
+      assert.equal(result.props.pricePerImageLabel,null);
+      assert.deepEqual(result.props.keySpecRows,prior.props.keySpecRows);
+      assert.deepEqual(await visiblePricing(after.harness,result),await visiblePricing(before.harness,prior));
+      if (scenario.override) {
+        assert.deepEqual(result.props.pricingEngine.pricingDetails.addons,{});
+        assert.ok(after.harness.calls.every((context:any)=>context.engine.pricingDetails.addons.audio_off===undefined));
+      }
+      if (scenario.unavailableOffer) {
+        assert.equal(result.props.pricePerSecondLabel,null);
+        assert.equal(result.props.keySpecValues.pricePerSecond,'Data pending');
+        assert.ok(result.props.keySpecRows.every((row:any)=>!row.value.includes('$')));
+      }
+      if (scenario.wantCalls===1) assert.ok(result.props.keySpecRows.every((row:any)=>!row.key.startsWith('pricePer')));
+    }
+    const image = await pricingFixture('gpt-image-2','fr');
+    const partialImage = {...image,engine:{...image.engine,category:'video'},reject:(context:any)=>context.quality==='high'};
+    before.harness.configure(partialImage);after.harness.configure(partialImage);
+    const priorImage=await before.harness.render(partialImage);
+    const resultImage=await after.harness.render(partialImage);
+    assert.equal(resultImage.props.isImageEngine,true);
+    assert.equal(resultImage.props.pricePerSecondLabel,null);
+    assert.equal(after.harness.calls.length,36);
+    assert.deepEqual(resultImage.props.keySpecRows,priorImage.props.keySpecRows);
+    for (const {reject,wantLines} of [
+      {reject:()=>true,wantLines:undefined},
+      {reject:(_context:unknown,count:number)=>count<=18,wantLines:18},
+    ]) {
+      after.harness.configure({...image,reject});
+      const unavailable=await after.harness.render(image);
+      assert.equal(unavailable.props.pricePerImageLabel,null);
+      assert.equal(unavailable.props.keySpecValues.pricePerImage,'Data pending');
+      assert.equal(after.harness.calls.length,36);
+      const price=unavailable.props.keySpecRows.find((row:any)=>row.key==='pricePerImage');
+      assert.equal(price.valueLines?.length,wantLines);
+      if(wantLines===undefined) assert.equal(price.value,'Data pending');
+    }
+    for (const branch of ['archive','prelaunch']) {
+      after.harness.configure({...input,[branch]:true,localizedContent:{...input.localizedContent,archive:branch==='archive'?{}:undefined}});
+      await after.harness.page({params:Promise.resolve({slug:input.engine.modelSlug,locale:'en'})});
+      assert.equal(after.harness.calls.length,0,`${branch} must not start active quotes`);
+    }
+  } finally {await before.dispose();await after.dispose();}
+});
+
+// Characterization for S2b only: one image range and one rows pass independently
+// retry the same scenarios today. A future shared result must explicitly decide
+// whether to retain these recovery attempts.
+test('model image label and rows retain independent transient recovery attempts', async () => {
+  const {harness:h,dispose}=await makeModelPagePricingHarness();
+  try {
+    const input=await pricingFixture('gpt-image-2','en');
+    h.configure({...input,reject:(_context:unknown,count:number)=>count<=18});
+    const recovered=await h.render(input);
+    assert.equal(recovered.props.pricePerImageLabel,null);
+    assert.equal(recovered.props.keySpecRows.find((row:any)=>row.key==='pricePerImage').valueLines.length,18);
+    assert.equal(h.calls.length,36);
+    const identity=(context:any)=>JSON.stringify([context.durationSec,context.resolution,context.quality,context.addons??null]);
+    assert.deepEqual(h.calls.slice(0,18).map(identity),h.calls.slice(18).map(identity));
+    h.configure({...input,reject:(_context:unknown,count:number)=>count>18});
+    const fallback=await h.render(input);
+    assert.equal(fallback.props.pricePerImageLabel,'$0.10/image');
+    assert.equal(fallback.props.keySpecRows.find((row:any)=>row.key==='pricePerImage').value,'$0.10/image');
+    assert.equal(fallback.props.keySpecRows.find((row:any)=>row.key==='pricePerImage').valueLines,undefined);
   } finally {await dispose();}
 });
