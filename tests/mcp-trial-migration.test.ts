@@ -4,6 +4,8 @@ import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
+
+import { testPostgresCommand } from './helpers/disposable-postgres';
 import { Client } from 'pg';
 
 const paidMigrationPath = 'neon/migrations/30_mcp_paid_generation.sql';
@@ -11,7 +13,7 @@ const trialMigrationPath = 'neon/migrations/31_mcp_trial_entitlements.sql';
 const runtimeSchemaPath = 'frontend/src/lib/schema/mcp-schema.ts';
 
 function commandExists(command: string): boolean {
-  return spawnSync('sh', ['-c', `command -v ${command}`], { encoding: 'utf8' }).status === 0;
+  return spawnSync(testPostgresCommand(command), ['--version'], { encoding: 'utf8' }).status === 0;
 }
 
 function output(result: ReturnType<typeof spawnSync>): string {
@@ -79,23 +81,23 @@ test('migration 31 constraints, transitions, immutability, indexes and races exe
   const socketDirectory = join(temporaryRoot, 'socket');
   mkdirSync(socketDirectory);
 
-  const init = spawnSync('initdb', [
+  const init = spawnSync(testPostgresCommand('initdb'), [
     '-A', 'trust', '-U', 'postgres', '-D', dataDirectory, '--no-locale', '--encoding=UTF8',
   ], { encoding: 'utf8' });
   assert.equal(init.status, 0, output(init));
-  const start = spawnSync('pg_ctl', [
+  const start = spawnSync(testPostgresCommand('pg_ctl'), [
     '-D', dataDirectory, '-o', `-F -k ${socketDirectory} -c listen_addresses=''`, '-w', 'start',
   ], { encoding: 'utf8', stdio: 'ignore' });
   assert.equal(start.status, 0, output(start));
 
   t.after(() => {
-    spawnSync('pg_ctl', ['-D', dataDirectory, '-m', 'immediate', '-w', 'stop'], {
+    spawnSync(testPostgresCommand('pg_ctl'), ['-D', dataDirectory, '-m', 'immediate', '-w', 'stop'], {
       encoding: 'utf8', stdio: 'ignore',
     });
     rmSync(temporaryRoot, { recursive: true, force: true });
   });
 
-  const psql = (...args: string[]) => spawnSync('psql', [
+  const psql = (...args: string[]) => spawnSync(testPostgresCommand('psql'), [
     '-X', '-q', '-h', socketDirectory, '-U', 'postgres', '-d', 'postgres', ...args,
   ], { encoding: 'utf8' });
   const applyTrialAlone = psql(

@@ -248,6 +248,12 @@ Its selected integration, browser and exhaustive financial lanes remain mandator
 Do not use `[skip ci]` or bypass branch protection to accelerate delivery.
 See `docs/engineering/ci-validation.md` for selection rules and local suite commands.
 
+Local database tests select PostgreSQL 17 automatically. Use `pnpm test:validate`,
+`pnpm test:editor` or focused tests through the disposable PostgreSQL helper; do not
+retry version failures by manually prefixing PATH. For a nonstandard installation,
+set `TEST_POSTGRES_BIN` to its complete PG17 bin directory. Missing or mixed-version
+tools must fail before database initialization; never weaken version assertions.
+
 For architecture refactors, also run the related architecture or contract tests directly before broader validation.
 
 For route refactors, also run the relevant app locally and smoke-test the touched pages.

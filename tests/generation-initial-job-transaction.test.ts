@@ -4,6 +4,8 @@ import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
+
+import { testPostgresCommand } from './helpers/disposable-postgres';
 import { Client } from 'pg';
 
 import type { TransactionQueryExecutor } from '../frontend/src/lib/db';
@@ -21,7 +23,7 @@ function functionBody(source: string, name: string): string {
 }
 
 function commandExists(command: string): boolean {
-  return spawnSync('sh', ['-c', `command -v ${command}`], { encoding: 'utf8' }).status === 0;
+  return spawnSync(testPostgresCommand(command), ['--version'], { encoding: 'utf8' }).status === 0;
 }
 
 function commandFailure(result: ReturnType<typeof spawnSync>): string {
@@ -325,17 +327,17 @@ test('concurrent video reservations serialize on one job id in disposable Postgr
   const dataDirectory = join(temporaryRoot, 'data');
   const socketDirectory = join(temporaryRoot, 'socket');
   mkdirSync(socketDirectory);
-  const init = spawnSync('initdb', ['-A', 'trust', '-U', 'postgres', '-D', dataDirectory, '--no-locale', '--encoding=UTF8'], {
+  const init = spawnSync(testPostgresCommand('initdb'), ['-A', 'trust', '-U', 'postgres', '-D', dataDirectory, '--no-locale', '--encoding=UTF8'], {
     encoding: 'utf8',
   });
   assert.equal(init.status, 0, commandFailure(init));
-  const start = spawnSync('pg_ctl', ['-D', dataDirectory, '-o', `-F -k ${socketDirectory} -c listen_addresses=''`, '-w', 'start'], {
+  const start = spawnSync(testPostgresCommand('pg_ctl'), ['-D', dataDirectory, '-o', `-F -k ${socketDirectory} -c listen_addresses=''`, '-w', 'start'], {
     encoding: 'utf8',
     stdio: 'ignore',
   });
   assert.equal(start.status, 0, commandFailure(start));
   t.after(() => {
-    spawnSync('pg_ctl', ['-D', dataDirectory, '-m', 'immediate', '-w', 'stop'], {
+    spawnSync(testPostgresCommand('pg_ctl'), ['-D', dataDirectory, '-m', 'immediate', '-w', 'stop'], {
       encoding: 'utf8',
       stdio: 'ignore',
     });

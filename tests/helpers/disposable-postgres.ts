@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { Pool } from 'pg';
+import { resolveTestPostgres } from '../../scripts/_lib/test-postgres-toolchain.mjs';
 
 export type DisposablePostgres = {
   pool: Pool;
@@ -11,8 +12,13 @@ export type DisposablePostgres = {
   cleanup(): Promise<void>;
 };
 
-function commandExists(command: string): boolean {
-  return spawnSync('sh', ['-c', `command -v ${command}`], { encoding: 'utf8' }).status === 0;
+let toolchain: ReturnType<typeof resolveTestPostgres> | undefined;
+
+export function testPostgresCommand(command: string): string {
+  toolchain ??= resolveTestPostgres();
+  const executable = toolchain.commands[command];
+  if (!executable) throw new Error(`Unknown PostgreSQL test command: ${command}`);
+  return executable;
 }
 
 function output(result: ReturnType<typeof spawnSync>): string {
@@ -20,22 +26,26 @@ function output(result: ReturnType<typeof spawnSync>): string {
 }
 
 export function missingDisposablePostgresCommand(): string | null {
-  return ['initdb', 'pg_ctl', 'psql'].find((command) => !commandExists(command)) ?? null;
+  // Keep the existing caller API; an unavailable PG17 installation now fails clearly.
+  testPostgresCommand('initdb');
+  return null;
 }
 
 export async function startDisposablePostgres(prefix: string): Promise<DisposablePostgres> {
+  const initdb = testPostgresCommand('initdb');
+  const pgCtl = testPostgresCommand('pg_ctl');
   const temporaryRoot = mkdtempSync(join(tmpdir(), `${prefix}-`));
   const dataDirectory = join(temporaryRoot, 'data');
   const socketDirectory = join(temporaryRoot, 'socket');
   mkdirSync(socketDirectory);
-  const init = spawnSync('initdb', [
+  const init = spawnSync(initdb, [
     '-A', 'trust', '-U', 'postgres', '-D', dataDirectory, '--no-locale', '--encoding=UTF8',
   ], { encoding: 'utf8' });
   if (init.status !== 0) {
     rmSync(temporaryRoot, { recursive: true, force: true });
     throw new Error(`initdb failed: ${output(init)}`);
   }
-  const start = spawnSync('pg_ctl', [
+  const start = spawnSync(pgCtl, [
     '-D', dataDirectory,
     '-o', `-F -k ${socketDirectory} -c listen_addresses=''`,
     '-w',
@@ -52,7 +62,7 @@ export async function startDisposablePostgres(prefix: string): Promise<Disposabl
     databaseUrl,
     async cleanup() {
       await pool.end().catch(() => undefined);
-      spawnSync('pg_ctl', ['-D', dataDirectory, '-m', 'immediate', '-w', 'stop'], {
+      spawnSync(pgCtl, ['-D', dataDirectory, '-m', 'immediate', '-w', 'stop'], {
         encoding: 'utf8',
         stdio: 'ignore',
       });

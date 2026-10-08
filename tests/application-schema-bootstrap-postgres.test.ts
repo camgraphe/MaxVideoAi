@@ -7,6 +7,7 @@ import test from 'node:test';
 import {
   missingDisposablePostgresCommand,
   startDisposablePostgres,
+  testPostgresCommand,
 } from './helpers/disposable-postgres.ts';
 
 function commandOutput(result: ReturnType<typeof spawnSync>): string {
@@ -50,7 +51,7 @@ test('explicit schema bootstrap establishes the baseline before migrations and r
     .sort();
   for (const migrationFile of migrationFiles) {
     const migrated = spawnSync(
-      'psql',
+      testPostgresCommand('psql'),
       [postgres.databaseUrl, '--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', join('neon/migrations', migrationFile)],
       { cwd: process.cwd(), encoding: 'utf8' },
     );

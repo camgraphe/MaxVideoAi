@@ -75,7 +75,7 @@
     "studio-tasks:worker:once": "pnpm --prefix frontend run studio-tasks:worker:once",
     "studio-analysis:worker:once": "pnpm --prefix frontend run studio-analysis:worker:once",
     "timeline-exports:worker:once": "pnpm --prefix frontend run timeline-exports:worker:once",
-    "test:editor": "tsx --tsconfig frontend/tsconfig.json --test tests/maxvideoai-editor-*.test.ts tests/studio-*.test.ts tests/timeline-export-*.test.ts",
+    "test:editor": "node scripts/run-postgres-tests.mjs pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/maxvideoai-editor-*.test.ts tests/studio-*.test.ts tests/timeline-export-*.test.ts",
     "test:editor:contracts": "tsx --tsconfig frontend/tsconfig.json --test tests/studio-canvas-retirement.test.ts tests/maxvideoai-editor-workspace-architecture.test.ts tests/maxvideoai-editor-timeline-selection.test.ts tests/maxvideoai-editor-timeline-export.test.ts tests/studio-localization-contract.test.ts",
     "test:editor:e2e": "node scripts/run-validation-tests.mjs --suite browser",
     "qa:editor": "npm run test:editor && frontend/node_modules/.bin/tsc --noEmit -p frontend/tsconfig.json && npm --prefix frontend run lint && git diff --check",
