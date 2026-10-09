@@ -471,14 +471,27 @@ within each hub construction before its eight-worker queue starts. One current
 canonical result updates every matching matrix cell, retaining each cell's note,
 localized formatting and existing sorting/highlight ownership. Every construction
 creates fresh groups; unavailable results and unexpected quote rejections cannot
-be cached into a later request. Audio and fixed-product readers follow the model
-queue through a shared twelve-worker queue in `buildCurrentOtherPricing`, so a
-pending audio quote cannot hold every fixed-product read behind it. This preserves
-their former maximum of twelve concurrent reads, exact inputs, Character Builder
-quantities, validation and truthful live-quote fallbacks.
+be cached into a later request. The hub starts independent audio and fixed-product
+reads with four workers in `buildCurrentOtherPricing` alongside the eight model
+workers, keeping the combined budget at twelve. Only after every model worker
+settles does it release eight extra workers to the same audio/product queue, so
+slow remaining other reads can use all twelve places. A model rejection still
+rejects the hub promptly with the original error; it never releases the budget
+while surviving model workers remain active. All started promises are observed,
+including later rejections. Failed model requests can now have already-started
+audio/product reads; siblings continue without cancellation within the same
+budget, so error-branch work counts can differ from the preceding serial path.
+Successful hubs await both queues, so their shared
+image rows are finalized before returning the complete server-rendered data.
+Standalone `buildCurrentOtherPricing` callers retain twelve workers immediately.
+This preserves exact inputs, family input order, Character Builder quantities,
+validation and truthful localized live-quote fallbacks, without retaining any
+quote results across requests. Controlled owner scheduling checks establish the
+overlap and work budgets; they do not measure production TTFB or browser LCP.
 `tests/current-other-pricing-queue.test.ts` covers this boundary.
 `tests/current-pricing-hub-queue.test.ts` covers complete input
-coverage, bounded distinct work, duplicate projection and fresh-request recovery.
+coverage, bounded overlap, worker settlement on failure, finalized image rows,
+duplicate projection and fresh-request recovery.
 Scenario clicks reuse the consent-controlled `cta_click` bridge with the explicitly
 allowed `pricing_scenario` / `pricing_hero` values. These are aggregate card clicks;
 they do not prove a paid conversion or distinguish the three scenarios.

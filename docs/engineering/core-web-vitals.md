@@ -165,14 +165,20 @@ Production comparison loads emit one bounded `[cwv:server]` JSON record through 
 
 The diagnostic contains no query text, model/job/account IDs, URL or exception content. It preserves rejections and cannot fail a page if logging fails. It is disabled outside production and during a declared production build; `CWV_SERVER_TIMING=0` disables it operationally. No cache, database schema, pricing algorithm, media selection or consent rule is changed by the concurrent loading correction.
 
-The homepage's `loadHomePageData` uses the same logger with route `home` and five
+The homepage's `prepareHomePageData` uses the same logger with route `home` and five
 concurrent phases: `examples`, `hero-slots`, `scores`, `hero-pricing` and
 `demo-pricing`. Current hero reference prices and the below-fold exact demo quotes
-start with the gallery reads rather than after them. Their complete results still
-resolve before rendering; price unavailability and localization stay unchanged.
-It no longer waits for an unused generation count. Slot reads require the explicitly initialized schema;
-they do not bootstrap billing during page loading. See
-`read-route-schema-bootstrap.md` for read and mutation ownership. Root-layout
+start with the gallery reads. The route awaits slots, scores and both price reads
+before rendering the hero and demonstrations; only discovery awaits the examples
+promise beneath its own Suspense boundary. The four authored films remain outside
+that boundary. All five reads start once, and the timing record waits for their
+eventual settlement even when an earlier read fails. Immediate observers preserve
+consumer rejections without supplying successful fallbacks. The complete
+`loadHomePageData` API still awaits every result. Price unavailability and
+localization stay unchanged; no unused generation count is read. Slot reads
+require the explicitly initialized schema and do not bootstrap billing during
+page loading. See `read-route-schema-bootstrap.md` for read and mutation ownership
+and `media-delivery.md` for controlled delivery evidence and costs. Root-layout
 theme reads and rendering are outside these loader timings.
 
 The shared gallery reader reserves the desktop dialog's viewport-bounded height
@@ -188,13 +194,18 @@ Active model details use the route-local `loadModelPageInputs` to start four
 independent inputs together: `scores`, `engine-settings`, `key-specs` and
 `model-gallery`. The route retains gallery selection, exact-model filtering,
 public revalidation, managed-empty behavior and legacy alias ordering in its
-callback. Price formatting still waits for the selected overrides and uses the
-existing pricing owners. Archive and prelaunch branches never invoke this loader.
-Its `model` timing covers only these inputs; subsequent price quotes, layout and
-rendering are excluded. Starting independent readers together can increase work
-on a failed request because already-started siblings are not cancelled. An error
-record may contain pending siblings; it is not a measurement of their eventual
-completion or database connection wait. No new cross-request cache is introduced.
+callback. The optional pricing callback starts `model-pricing` as soon as the same
+request's `engine-settings` resolves, using the existing canonical price owners
+while the other inputs continue. The route awaits every input and price projection
+before composing its hero, gallery and specs. Archive and prelaunch branches
+never invoke this loader. Its `model` data timing now includes `model-pricing`;
+older aggregate records without that phase are not directly comparable. Layout
+and rendering remain excluded. The public result retains the first original
+rejection promptly, while model-only diagnostic completion waits for every
+started sibling to settle, including later errors. Starting independent readers
+together can increase work on a failed request because siblings are not cancelled.
+These timings do not isolate database connection wait or establish browser LCP
+gains. No new cross-request cache is introduced.
 
 The root layout separately emits `root-layout` / `theme-tokens` for the existing
 `getThemeTokensSettingCached()` await, **after** `resolveLocale()`. This bounded

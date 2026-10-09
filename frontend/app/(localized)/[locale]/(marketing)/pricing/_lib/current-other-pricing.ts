@@ -12,6 +12,8 @@ export type CurrentOtherPricingDependencies = {
   audio: (input: AudioPricingInput) => Promise<Amount>;
   product: (input: { productKey: string; quantity: number }) => Promise<Amount>;
 };
+/** The hub reserves eight workers for models; standalone callers retain twelve. */
+type CurrentOtherPricingSchedule = { modelWorkersSettled: Promise<void> };
 const defaults: CurrentOtherPricingDependencies = {
   audio: computeCurrentAudioSnapshot,
   product: computeBillingProductSnapshot,
@@ -35,6 +37,7 @@ const toolPresets: Record<string, [string, string, number, number]> = {
 export async function buildCurrentOtherPricing(
   base: PricingHubData['otherSurfaces'], locale: AppLocale,
   dependencies: CurrentOtherPricingDependencies = defaults,
+  schedule?: CurrentOtherPricingSchedule,
 ): Promise<PricingHubData['otherSurfaces']> {
   const copy = getPricingHubCopy(locale);
   const tasks: Array<() => Promise<void>> = [];
@@ -71,8 +74,15 @@ export async function buildCurrentOtherPricing(
     return { ...row, standardOutput: display(row.standardOutput, values[0]), proOutput: display(row.proOutput, values[1]) };
   }));
   let nextTask = 0;
-  await Promise.all(Array.from({ length: Math.min(12, tasks.length) }, async () => {
+  const work = async () => {
     while (nextTask < tasks.length) await tasks[nextTask++]();
-  }));
+  };
+  const workers = Array.from({ length: Math.min(schedule ? 4 : 12, tasks.length) }, work);
+  if (schedule) {
+    // A fail-fast model rejection is not settlement: surviving workers still own their budget.
+    workers.push(schedule.modelWorkersSettled.then(() =>
+      Promise.all(Array.from({ length: Math.min(8, tasks.length) }, work)).then(() => undefined)));
+  }
+  await Promise.all(workers);
   return { ...base, audioRows: await audioRows, toolRows: await toolRows };
 }
