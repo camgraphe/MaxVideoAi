@@ -1,7 +1,7 @@
 import { listFalEngines } from '@/config/falEngines';
 import type { AppLocale } from '@/i18n/locales';
 import type { PublicModelQuote, PublicModelQuoteInput } from '@/lib/pricing-public-model-contract';
-import { quotePublicModelScenario } from '@/server/pricing/quote-public-model-scenario';
+import { createScopedPublicModelQuoter } from '@/server/pricing/quote-public-model-scenario';
 import { formatPricePerUnit } from '@/lib/pricing-unit-display';
 
 import { formatCurrencyForLocale } from './pricingPageContent';
@@ -15,9 +15,10 @@ import { buildPopularChecks, buildPricingHubData, buildVideoHighlights,
 /** Keep server-rendered Pricing amounts on the same database-aware quote as a new charge. */
 export async function buildCurrentPricingHubData(
   locale: AppLocale,
-  quote: (input: PublicModelQuoteInput) => Promise<PublicModelQuote> = quotePublicModelScenario,
+  quote?: (input: PublicModelQuoteInput) => Promise<PublicModelQuote>,
   otherDependencies?: CurrentOtherPricingDependencies,
 ): Promise<PricingHubData> {
+  const quoteModel = quote ?? createScopedPublicModelQuoter();
   const base = buildPricingHubData(locale);
   const entries = new Map(listFalEngines().map((entry) => [entry.id, entry]));
   const copy = getPricingHubCopy(locale);
@@ -36,7 +37,7 @@ export async function buildCurrentPricingHubData(
     const group = { input, apply: [apply] };
     quoteGroups.set(key, group);
     tasks.push(async () => {
-      const result = await quote(group.input);
+      const result = await quoteModel(group.input);
       group.apply.forEach((project) => project(result));
     });
   };
