@@ -4,6 +4,8 @@ import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-
 import type { PublicModelQuote, PublicModelQuoteInput } from '@/lib/pricing-public-model-contract';
 import type { MarketingPricePoint } from '@/lib/pricing-marketing';
 import { computeCurrentPublicSnapshot } from '@/server/pricing/quote-public';
+import type { PricingContext } from '@/lib/pricing-context';
+import type { PricingSnapshot } from '@maxvideoai/pricing';
 import type { EngineCaps } from '@/types/engines';
 
 export type ComparePricePoint = MarketingPricePoint & {
@@ -11,11 +13,12 @@ export type ComparePricePoint = MarketingPricePoint & {
 };
 
 type CompareQuote = Pick<Extract<PublicModelQuote, { status: 'exact' }>, 'status' | 'amountCents' | 'currency'> | { status: 'unavailable' };
+type CompareSnapshotReader = (context: PricingContext) => Promise<PricingSnapshot>;
 
-async function quoteCurrentScenario(engine: EngineCaps, input: PublicModelQuoteInput): Promise<CompareQuote> {
+async function quoteCurrentScenario(engine: EngineCaps, input: PublicModelQuoteInput, currentSnapshot: CompareSnapshotReader): Promise<CompareQuote> {
   const pricingEngine = applyEngineVariantPricing(engine, 't2v');
   try {
-    const snapshot = await computeCurrentPublicSnapshot({
+    const snapshot = await currentSnapshot({
       engine: pricingEngine, mode: 't2v', durationSec: input.durationSec, resolution: input.resolution,
       aspectRatio: input.aspectRatio, membershipTier: 'member', hasVideoInput: false, inputVideoDurationSec: 0,
       addons: { ...buildEngineAddonInput(pricingEngine, { audioEnabled: input.audio }), audio: input.audio },
@@ -50,6 +53,7 @@ export async function computeComparePricingPoints(
   engine: EngineCaps,
   preferredDurationSec = 5,
   quote?: (input: PublicModelQuoteInput) => Promise<CompareQuote>,
+  currentSnapshot: CompareSnapshotReader = computeCurrentPublicSnapshot,
 ): Promise<ComparePricePoint[]> {
   const entry = getFalEngineById(engine.id);
   const mode = entry?.modes.find(candidate => candidate.mode === 't2v');
@@ -67,7 +71,7 @@ export async function computeComparePricingPoints(
   const points = await Promise.all(resolutions.map(async resolution => {
     const input: PublicModelQuoteInput = { modelId: engine.id, mode: 't2v', durationSec, resolution,
       audio: Boolean(engine.audio), ...(aspectRatio ? { aspectRatio } : {}) };
-    const current = await (quote ? quote(input) : quoteCurrentScenario(engine, input));
+    const current = await (quote ? quote(input) : quoteCurrentScenario(engine, input, currentSnapshot));
     if (current.status !== 'exact') return null;
     return { resolution, cents: current.amountCents / durationSec, currency: current.currency,
       scenario: { ...input, amountCents: current.amountCents } } satisfies ComparePricePoint;

@@ -60,6 +60,37 @@ transactions still expose their uncommitted candidate; new requests read fresh
 state. Validation, fail-closed errors and canonical quote ownership are unchanged.
 This reduces SQL round trips; it does not establish a production latency gain.
 
+Public snapshot scopes share the first successfully loaded complete effective
+policy, including routing provenance, through the lazy loader in
+`server/pricing/scoped-public-policy.ts`. The contextual-only
+`createScopedCurrentPublicSnapshot` factory belongs to `quote-public.ts`;
+`createScopedPublicPricingReaders` in the model-scenario owner reuses that loader
+for its contextual and exact readers. Constructing either scope starts no I/O.
+Failed attempts are shared by their concurrent callers and released for later
+work in the same scope; successful empty policies are retained. No tariff state,
+cell, transaction or complete quote is cached by a policy scope.
+
+`buildCompareRouteData` owns one contextual scope per invocation and supplies the
+same `quotePoints` callback to both pricing sides. The optional fourth reader
+argument of `computeComparePricingPoints` preserves its existing third quote
+callback and all comparison context fields, including variant pricing, t2v,
+member tier, video flags and audio addons. The route imports no model admission
+or complete tariff coverage owner. For six admitted scenarios, the real PG17
+contract measures six policy SELECTs reduced to one, with six individual
+BEGIN/state/selected-cell/COMMIT sequences retained (30 to 25 pricing commands).
+The Veo/Lite fixture has five scenarios (25 to 21 commands); cardinality depends
+on each pair's supported modes/resolutions. Missing active cells and unavailable
+policy remain unavailable without catalogue-price fallback.
+
+Comparison failure consistency changes within that invocation: one transient
+shared policy attempt can make all six concurrent quotes unavailable, where six
+independent baseline reads could produce mixed success. No automatic retry is
+added to refill those points. Later work in the same scope retries after failure;
+a new invocation reads its own policy. A successful first policy stays fixed
+within a scope, while a subsequent quote still observes a committed tariff
+revision. `compare-policy-postgres.test.ts`, contextual-only and mixed scoped
+reader tests own these boundaries. See the CWV guide for measurement limits.
+
 Development still requires `PRICING_SANDBOX=1` and the exact local Unix-socket
 database gate. The production switch does not enable arbitrary development or
 test databases. This code change does not itself apply migrations or activate

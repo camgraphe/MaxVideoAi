@@ -1,6 +1,6 @@
 import type { PricingSnapshot } from '@maxvideoai/pricing';
 import type { PricingContext } from '@/lib/pricing-context';
-import { loadPricingPolicyOverrides } from '@/lib/pricing-rule-store';
+import { loadPricingPolicyOverrides, type PricingPolicyOverrideLoadResult } from '@/lib/pricing-rule-store';
 import type { AudioPricingInput } from '@/lib/audio-generation';
 
 import {
@@ -9,6 +9,15 @@ import {
   computeCanonicalStoryboardBillingSnapshot,
   type CanonicalStoryboardSnapshotInput,
 } from './quote-billing';
+import { createScopedPublicPolicyLoader } from './scoped-public-policy';
+
+/** Contextual readers share policy without loading public model admission. */
+export function createScopedCurrentPublicSnapshot(
+  loadOverrides: () => Promise<PricingPolicyOverrideLoadResult> = loadPricingPolicyOverrides,
+): (context: PricingContext) => Promise<PricingSnapshot> {
+  const loadScopedPolicy = createScopedPublicPolicyLoader(loadOverrides);
+  return (context) => computeCurrentPublicSnapshot(context, { pricingPolicy: { loadOverrides: loadScopedPolicy } });
+}
 
 /** A label claiming today's price requires a successful effective-policy read. */
 export async function computeCurrentPublicSnapshot(

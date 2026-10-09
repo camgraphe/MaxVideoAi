@@ -25,6 +25,7 @@ import { seedanceInputTariffMaximum, supportsSeedanceInputTariff } from '@/lib/s
 import { withSeedanceTariffInputDuration } from '@/lib/pricing-audit/seedance-input-tariff-scenario';
 
 import { computeCanonicalPublicSnapshot, computeCurrentPublicSnapshot } from './quote-public';
+import { createScopedPublicPolicyLoader } from './scoped-public-policy';
 
 export async function quoteWithVerifiedPolicy(
   scenario: ManualTariffCoverageScenario,
@@ -44,21 +45,7 @@ export function createScopedPublicPricingReaders(
   currentSnapshot: (context: PricingContext) => Promise<PricingSnapshot>;
   quoteModel: (input: PublicModelQuoteInput) => Promise<PublicModelQuote>;
 } {
-  let loaded: Extract<PricingPolicyOverrideLoadResult, { status: 'loaded' }> | undefined;
-  let pending: Promise<PricingPolicyOverrideLoadResult> | undefined;
-  const loadScopedPolicy = () => {
-    if (loaded) return Promise.resolve(loaded);
-    if (!pending) {
-      const attempt = Promise.resolve().then(loadOverrides).then((policy) => {
-        if (policy.status === 'loaded') loaded = policy;
-        return policy;
-      }).finally(() => {
-        if (pending === attempt) pending = undefined;
-      });
-      pending = attempt;
-    }
-    return pending;
-  };
+  const loadScopedPolicy = createScopedPublicPolicyLoader(loadOverrides);
   return {
     currentSnapshot: (context) => computeCurrentPublicSnapshot(context, { pricingPolicy: { loadOverrides: loadScopedPolicy } }),
     quoteModel: (input) => quotePublicModelScenario(input, (scenario) => quoteWithVerifiedPolicy(scenario, loadScopedPolicy)),
