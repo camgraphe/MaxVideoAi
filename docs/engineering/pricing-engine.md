@@ -50,6 +50,16 @@ unavailable database, or a missing active cell refuses a quote rather than
 silently falling back. Standalone production quote audits must explicitly select
 `NODE_ENV=production`; older baseline collectors do not select it automatically.
 
+Selected active quote reads retain the state read, then fetch historical and
+current cells together with `UNION ALL`: two data commands, or four commands
+including the existing repeatable-read/read-only transaction. Exact selectors
+and reviewed continuous alternatives retain every row, with history ordered by
+tariff ID/revision before current cells by ID. Inactive reads, full admin inventory
+and the locked maintenance batch retain their separate read paths. Caller-owned
+transactions still expose their uncommitted candidate; new requests read fresh
+state. Validation, fail-closed errors and canonical quote ownership are unchanged.
+This reduces SQL round trips; it does not establish a production latency gain.
+
 Development still requires `PRICING_SANDBOX=1` and the exact local Unix-socket
 database gate. The production switch does not enable arbitrary development or
 test databases. This code change does not itself apply migrations or activate

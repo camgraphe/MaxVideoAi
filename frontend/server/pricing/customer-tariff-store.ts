@@ -159,12 +159,25 @@ async function readState(executor: QueryExecutor, selector?: ManualTariffSelecto
     const args = keys ? [keys.length > 1 ? keys : keys[0]] : [];
     [state] = await executor.query<RawState>('SELECT revision, active FROM app_customer_tariff_state WHERE singleton = TRUE');
     if (!state) return { status: 'unavailable' };
-    rows = await executor.query<RawCell>(
-      `SELECT id, selector_json, price_json, currency, effective_from, effective_until, revision
-       FROM app_customer_tariff_cells ${where} ORDER BY id`, args);
-    versions = state.active ? await executor.query<RawCell>(
-      `SELECT tariff_id AS id, selector_json, price_json, currency, effective_from, effective_until, revision
-       FROM app_customer_tariff_cell_versions ${where} ORDER BY tariff_id, revision`, args) : [];
+    if (state.active && keys) {
+      // One selected read preserves every interval and the historical/current order.
+      const selected = await executor.query<RawCell & { row_source: number }>(
+        `SELECT 0 AS row_source, tariff_id AS id, selector_json, price_json, currency, effective_from, effective_until, revision
+         FROM app_customer_tariff_cell_versions ${where}
+         UNION ALL
+         SELECT 1 AS row_source, id, selector_json, price_json, currency, effective_from, effective_until, revision
+         FROM app_customer_tariff_cells ${where}
+         ORDER BY row_source, id, revision`, args);
+      versions = selected.filter(row => row.row_source === 0);
+      rows = selected.filter(row => row.row_source === 1);
+    } else {
+      rows = await executor.query<RawCell>(
+        `SELECT id, selector_json, price_json, currency, effective_from, effective_until, revision
+         FROM app_customer_tariff_cells ${where} ORDER BY id`, args);
+      versions = state.active ? await executor.query<RawCell>(
+        `SELECT tariff_id AS id, selector_json, price_json, currency, effective_from, effective_until, revision
+         FROM app_customer_tariff_cell_versions ${where} ORDER BY tariff_id, revision`, args) : [];
+    }
   }
   if (versionedDocument.schemaVersion !== 1 || !Array.isArray(versionedDocument.cells)) return { status: 'unavailable' };
   return {
