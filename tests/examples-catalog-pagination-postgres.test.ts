@@ -7,9 +7,10 @@ import test from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
 import { missingDisposablePostgresCommand, startDisposablePostgres } from './helpers/disposable-postgres';
+import { pickFirstPlayableVideo } from '../frontend/lib/examples/heroVideo';
 
 const requireFrontend = createRequire(resolve('frontend/package.json'));
-type Statement = { text: string; params: unknown[]; poolMs?: number; queryMs?: number; rows?: number; bytes?: number };
+type Statement = { text: string; params: unknown[]; poolMs?: number; queryMs?: number; rows?: number; hydratedRows?: number; bytes?: number };
 
 test('public gallery traverses every eligible video beyond the old window and hydrates only the requested page', { timeout: 60_000 }, async (t) => {
   const missing = missingDisposablePostgresCommand();
@@ -62,6 +63,7 @@ test('public gallery traverses every eligible video beyond the old window and hy
   await build({
     stdin: { contents: `export {loadHomepageExamples} from './frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data/examples';
       export * from './frontend/server/videos-catalog-page'; export * from './frontend/server/videos';export * from './frontend/server/videos-playlists';
+      export {selectFamilyMetadataVideo} from './frontend/app/(localized)/[locale]/(marketing)/examples/[model]/_lib/family-metadata-video';
       export {GET as getInitialCuration} from './frontend/app/api/admin/playlists/[playlistId]/curation/route';
       export {getExampleWatchDetail,buildExampleWatchDetail} from './frontend/server/example-watch-detail-loader';
       export {getVideoWatchPageDataById} from './frontend/server/video-seo';
@@ -84,7 +86,8 @@ test('public gallery traverses every eligible video beyond the old window and hy
           const started=performance.now(); const client=await getDb().connect();
           statement.poolMs=performance.now()-started; const acquired=performance.now();
           try {const rows=await createQueryExecutor(client).query(text,params); statement.queryMs=performance.now()-acquired;
-            statement.rows=rows.length; statement.bytes=Buffer.byteLength(JSON.stringify(rows)); return rows;
+            statement.rows=rows.length; statement.hydratedRows=rows.filter(row=>row.job_id).length;
+            statement.bytes=Buffer.byteLength(JSON.stringify(rows)); return rows;
           } finally {client.release();}
         }
       `, loader: 'js', resolveDir: process.cwd() }));
@@ -102,6 +105,88 @@ test('public gallery traverses every eligible video beyond the old window and hy
   const statements: Statement[] = reader.statements;
 
   const read = (offset = 0, extra = {}) => reader.listExamplesPage({sort:'playlist',limit:24,offset,engineGroup:'kling',...extra});
+  const metadataEvidence: unknown[] = [];
+  const oldMetadata = async () => pickFirstPlayableVideo((await reader.listExampleFamilyPage('kling', {sort:'playlist',limit:60,offset:0})).items);
+  const newMetadata = () => reader.selectFamilyMetadataVideo('kling');
+  const captureMetadata = async (path: 'old' | 'new') => {
+    statements.length = 0;
+    const started = performance.now();
+    const selected = await (path === 'old' ? oldMetadata() : newMetadata());
+    const elapsedMs = performance.now() - started;
+    assert.ok(statements.every(statement => /^\s*WITH\b/i.test(statement.text)), 'metadata uses only the existing read-only catalog owner');
+    return { selected, elapsedMs, statements: statements.length,
+      rows: statements.reduce((sum, statement) => sum + (statement.rows ?? 0), 0),
+      hydratedRows: statements.reduce((sum, statement) => sum + (statement.hydratedRows ?? 0), 0),
+      serializedRowBytes: statements.reduce((sum, statement) => sum + (statement.bytes ?? 0), 0),
+      poolMs: statements.reduce((sum, statement) => sum + (statement.poolMs ?? 0), 0),
+      queryMs: statements.reduce((sum, statement) => sum + (statement.queryMs ?? 0), 0) };
+  };
+  const compareMetadata = async (scenario: string, selectedId: string | null, newHydratedRows: number, newStatements = 1, time = false) => {
+    const oldResult = await captureMetadata('old');
+    const newResult = await captureMetadata('new');
+    assert.deepEqual(newResult.selected, oldResult.selected, `${scenario}: complete selected video must match the previous path`);
+    assert.equal(newResult.selected?.id ?? null, selectedId);
+    assert.equal(newResult.hydratedRows, newHydratedRows);
+    assert.equal(newResult.statements, newStatements);
+    metadataEvidence.push({ scenario, old: oldResult, new: newResult });
+    if (time && process.env.FAMILY_METADATA_TIMINGS === '1') {
+      // Same database, client pool and fixture for both paths; warm before interleaving.
+      for (let warmup = 0; warmup < 3; warmup++) { await oldMetadata(); await newMetadata(); }
+      const samples: unknown[] = [];
+      for (const [block, path] of (['old','new','new','old','old','new'] as const).entries()) {
+        for (let iteration = 0; iteration < 15; iteration++) {
+          const sample = await captureMetadata(path);
+          assert.deepEqual(sample.selected, oldResult.selected);
+          samples.push({ block, iteration, path, ...sample });
+        }
+      }
+      metadataEvidence.push({ scenario, sequence: 'ABBAAB', iterationsPerBlock: 15, samples });
+    }
+  };
+  t.after(() => {
+    if (process.env.FAMILY_METADATA_MEASUREMENTS_PATH) {
+      writeFileSync(process.env.FAMILY_METADATA_MEASUREMENTS_PATH, JSON.stringify({
+        fixture: 'existing examples-catalog-pagination PostgreSQL17 fixture, 513 eligible Kling records',
+        bytesUnit: 'UTF-8 JSON serialization of returned PostgreSQL rows; excludes wire framing',
+        evidence: metadataEvidence,
+      }, null, 2));
+    }
+  });
+  await t.test('family metadata preserves catalog selection while bounding normal media hydration', async () => {
+    await compareMetadata('legacy-family-inheritance', 'kling-1', 1, 1, true);
+    await postgres.pool.query('ALTER TABLE playlist_curations RENAME TO unavailable_curations');
+    try { await compareMetadata('optional-curation-schema-absent', 'kling-1', 1, 2); }
+    finally { await postgres.pool.query('ALTER TABLE unavailable_curations RENAME TO playlist_curations'); }
+
+    const manualIds = Array.from({ length: 63 }, (_, index) => `kling-${80-index}`);
+    await postgres.pool.query(`INSERT INTO playlist_curations(playlist_id,mode,ordered_ids,excluded_ids)
+      SELECT id,'manual',$1::text[],'{}' FROM playlists WHERE slug='family-kling'`, [manualIds]);
+    await compareMetadata('manual-family-order-63-eligible', 'kling-80', 1);
+    await postgres.pool.query(`UPDATE playlist_curations SET mode='hybrid',
+      ordered_ids=ARRAY['private','hidden','running','image','deleted-output','deleted-asset','kling-300','kling-1'],excluded_ids=ARRAY['kling-2']
+      WHERE playlist_id=(SELECT id FROM playlists WHERE slug='family-kling')`);
+    await compareMetadata('hybrid-family-order-exclusions-private-deleted', 'kling-300', 1);
+    await postgres.pool.query("UPDATE app_jobs SET thumb_url='' WHERE job_id='kling-300'");
+    await compareMetadata('first-playable-without-thumb', 'kling-300', 1);
+    assert.equal((await newMetadata()).thumbUrl, undefined, 'later thumbnails must not replace the selected playable item');
+    await postgres.pool.query("UPDATE app_jobs SET thumb_url='https://media.maxvideoai.com/fixture/kling-300.webp' WHERE job_id='kling-300'");
+    for (const whitespace of ['\t', '\u00a0', ' \t\u00a0 ']) {
+      await postgres.pool.query("UPDATE app_jobs SET video_url=$1 WHERE job_id='kling-300'", [whitespace]);
+      await compareMetadata(`normalized-whitespace-${JSON.stringify(whitespace)}`, 'kling-1', 61, 2, whitespace === '\t');
+    }
+    await postgres.pool.query("UPDATE app_jobs SET video_url='https://media.maxvideoai.com/fixture/kling-300.mp4' WHERE job_id='kling-300'");
+    const boundaryIds = Array.from({ length: 61 }, (_, index) => `kling-${index+1}`);
+    await postgres.pool.query(`UPDATE playlist_curations SET mode='manual',ordered_ids=$1::text[],excluded_ids='{}'
+      WHERE playlist_id=(SELECT id FROM playlists WHERE slug='family-kling')`, [boundaryIds]);
+    await postgres.pool.query('UPDATE app_jobs SET video_url=$1 WHERE job_id=ANY($2::text[])', ['\t\u00a0', boundaryIds.slice(0,59)]);
+    await compareMetadata('sixtieth-playable-original', 'kling-60', 61, 2);
+    await postgres.pool.query("UPDATE app_jobs SET video_url=E'\\t' WHERE job_id='kling-60'");
+    await compareMetadata('no-playable-original-within-sixty', null, 61, 2);
+    await postgres.pool.query("UPDATE app_jobs SET video_url='https://media.maxvideoai.com/fixture/'||job_id||'.mp4' WHERE job_id=ANY($1::text[])", [boundaryIds]);
+    await postgres.pool.query(`UPDATE playlist_curations SET ordered_ids='{}' WHERE playlist_id=(SELECT id FROM playlists WHERE slug='family-kling')`);
+    await compareMetadata('authoritative-manual-empty', null, 0);
+    await postgres.pool.query("DELETE FROM playlist_curations WHERE playlist_id=(SELECT id FROM playlists WHERE slug='family-kling')");
+  });
   await t.test('legacy total counts the whole catalog before limiting and every page is reachable', async () => {
     const first = await read();
     assert.equal(first.total, 513);
