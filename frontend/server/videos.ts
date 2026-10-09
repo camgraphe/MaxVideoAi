@@ -93,6 +93,21 @@ export async function getPublicVideosByIds(videoIds: string[]): Promise<Map<stri
   return new Map(rows.map((row) => [row.job_id, mapGalleryVideoRow(row)]));
 }
 
+/** Fresh public membership only; callers retain their already loaded media records. */
+export async function getPublicVideoIds(videoIds: string[]): Promise<Set<string>> {
+  if (isLocalPublicExamplesEnabled()) {
+    return new Set(videoIds.filter(id => getLocalPublicExample(id)));
+  }
+  if (shouldSkipBuildTimeMarketingVideoQueries()) return new Set();
+  if (!videoIds.length) return new Set();
+  const uniqueIds = Array.from(new Set(videoIds));
+  const rows = await query<{ job_id: string }>(
+    `SELECT job_id FROM app_jobs WHERE job_id = ANY($1::text[]) AND ${PUBLIC_VIDEO_PREDICATE}`,
+    [uniqueIds]
+  );
+  return new Set(rows.map(row => row.job_id));
+}
+
 export async function listPublicVideoPagesForSeoAudit(limit = 1000): Promise<GalleryVideo[]> {
   const safeLimit = Math.max(1, Math.min(5000, Math.floor(limit)));
   const rows = await query<VideoRow>(

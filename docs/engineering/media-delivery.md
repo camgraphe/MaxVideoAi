@@ -34,6 +34,15 @@ the current visible/JSON-LD offer retain their canonical pricing owners.
 `tests/model-unused-example-pricing.test.ts` executes the real gallery callback
 and checks localized video/image consumers with and without card price labels.
 
+The public model route rechecks playlist media membership with `getPublicVideoIds`
+in the server videos owner, projecting only IDs with the same public visibility and
+nullable-indexable predicate as `getPublicVideosByIds`. It still builds cards from
+the original playlist records and hydrates missing featured/preferred records with
+the full reader. The shared projection's optional ID reader leaves transaction-bound
+admin previews on their existing full-reader fallback; no fresh validation is cached
+or replaced by playlist membership. Source/deletion eligibility remains owned by its
+existing readers. `tests/public-video-presence-postgres.test.ts` guards this parity.
+
 The active model input owner starts the canonical unit/spec price projection as
 soon as the same request's engine override resolves. That read is its only
 asynchronous dependency; gallery, score and spec reads continue independently.
