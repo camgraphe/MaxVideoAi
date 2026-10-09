@@ -42,7 +42,8 @@ export type MarketingPricePoint = {
 
 export async function computeMarketingPricePoints(
   engine: EngineCaps,
-  options?: { durationSec?: number; memberTier?: MemberTier; limit?: number | null; requireCurrentPolicy?: boolean }
+  options?: { durationSec?: number; memberTier?: MemberTier; limit?: number | null; requireCurrentPolicy?: boolean;
+    currentSnapshot?: typeof computeCurrentPublicSnapshot }
 ): Promise<MarketingPricePoint[]> {
   const hasOnlyImageModes = engine.modes.length > 0 && engine.modes.every((mode) => mode === 't2i' || mode === 'i2i');
   const mode = hasOnlyImageModes && engine.modes.includes('t2i') ? 't2i' : undefined;
@@ -70,7 +71,7 @@ export async function computeMarketingPricePoints(
   for (const resolution of resolutions) {
     for (const quality of qualities) {
       try {
-        const snapshot = await (options?.requireCurrentPolicy ? computeCurrentPublicSnapshot : computeCanonicalPublicSnapshot)({
+        const snapshot = await (options?.requireCurrentPolicy ? options.currentSnapshot ?? computeCurrentPublicSnapshot : computeCanonicalPublicSnapshot)({
           engine,
           durationSec,
           resolution,
@@ -107,7 +108,8 @@ export type MarketingPriceRange = {
 
 export async function computeMarketingPriceRange(
   engine: EngineCaps,
-  options?: { durationSec?: number; memberTier?: MemberTier; limit?: number | null; requireCurrentPolicy?: boolean }
+  options?: { durationSec?: number; memberTier?: MemberTier; limit?: number | null; requireCurrentPolicy?: boolean;
+    currentSnapshot?: typeof computeCurrentPublicSnapshot }
 ): Promise<MarketingPriceRange | null> {
   const points = await computeMarketingPricePoints(engine, options);
   if (!points.length) return null;

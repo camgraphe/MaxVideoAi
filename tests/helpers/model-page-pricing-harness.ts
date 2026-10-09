@@ -30,6 +30,7 @@ export async function makeModelPagePricingHarness({
     let state;
     let quote;
     let publicQuote;
+    let pricingReadersFactory;
     export function configure(value) {
       state = value; calls.length = 0; readers.length = 0;
       exampleQuoteCalls.length = 0; publicReads.length = 0; publicIdReads.length = 0; playlistReads.length = 0;
@@ -37,6 +38,12 @@ export async function makeModelPagePricingHarness({
     }
     export function setQuote(value) { quote = value; }
     export function setPublicQuote(value) { publicQuote = value; }
+    // Test-only injection keeps the real factory/DB outside the bundled fixtures.
+    export function setPricingReadersFactory(value) { pricingReadersFactory = value; }
+    export function createScopedPublicPricingReaders() {
+      return pricingReadersFactory ? pricingReadersFactory()
+        : {currentSnapshot:computeCurrentPublicSnapshot,quoteModel:quotePublicModelScenario};
+    }
     async function snapshot(context) {
       calls.push(context);
       if (quote) return quote(context);

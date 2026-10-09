@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 
 import type { PricingSnapshot } from '@maxvideoai/pricing';
+import type { PricingContext } from '@/lib/pricing-context';
 
 import { getFalEngineById } from '@/config/falEngines';
 import { getRuntimeModelById } from '@/config/model-runtime';
@@ -23,7 +24,7 @@ import { openTariffQuantityKey, withOpenTariffQuantity } from '@/lib/pricing-aud
 import { seedanceInputTariffMaximum, supportsSeedanceInputTariff } from '@/lib/seedance-input-tariff';
 import { withSeedanceTariffInputDuration } from '@/lib/pricing-audit/seedance-input-tariff-scenario';
 
-import { computeCanonicalPublicSnapshot } from './quote-public';
+import { computeCanonicalPublicSnapshot, computeCurrentPublicSnapshot } from './quote-public';
 
 export async function quoteWithVerifiedPolicy(
   scenario: ManualTariffCoverageScenario,
@@ -37,9 +38,12 @@ export async function quoteWithVerifiedPolicy(
 }
 
 /** One render owns its first successful policy; failed attempts remain retryable. */
-export function createScopedPublicModelQuoter(
+export function createScopedPublicPricingReaders(
   loadOverrides: () => Promise<PricingPolicyOverrideLoadResult> = loadPricingPolicyOverrides,
-): (input: PublicModelQuoteInput) => Promise<PublicModelQuote> {
+): {
+  currentSnapshot: (context: PricingContext) => Promise<PricingSnapshot>;
+  quoteModel: (input: PublicModelQuoteInput) => Promise<PublicModelQuote>;
+} {
   let loaded: Extract<PricingPolicyOverrideLoadResult, { status: 'loaded' }> | undefined;
   let pending: Promise<PricingPolicyOverrideLoadResult> | undefined;
   const loadScopedPolicy = () => {
@@ -55,7 +59,16 @@ export function createScopedPublicModelQuoter(
     }
     return pending;
   };
-  return (input) => quotePublicModelScenario(input, (scenario) => quoteWithVerifiedPolicy(scenario, loadScopedPolicy));
+  return {
+    currentSnapshot: (context) => computeCurrentPublicSnapshot(context, { pricingPolicy: { loadOverrides: loadScopedPolicy } }),
+    quoteModel: (input) => quotePublicModelScenario(input, (scenario) => quoteWithVerifiedPolicy(scenario, loadScopedPolicy)),
+  };
+}
+
+export function createScopedPublicModelQuoter(
+  loadOverrides: () => Promise<PricingPolicyOverrideLoadResult> = loadPricingPolicyOverrides,
+): (input: PublicModelQuoteInput) => Promise<PublicModelQuote> {
+  return createScopedPublicPricingReaders(loadOverrides).quoteModel;
 }
 
 const coverageByModel = new Map<string, Map<string, readonly ManualTariffCoverageScenario[]>>();

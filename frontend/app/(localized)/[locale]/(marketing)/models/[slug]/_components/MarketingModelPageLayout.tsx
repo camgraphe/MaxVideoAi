@@ -24,6 +24,7 @@ import { type FeaturedMedia } from '../_lib/model-page-media';
 import { resolveProviderInfo } from '../_lib/model-page-schema';
 import { resolveCurrentModelPublicOffer } from '../_lib/current-model-public-offer';
 import { buildCurrentModelDecisionData } from '../_lib/current-model-decision-pricing';
+import { quotePublicModelScenario } from '@/server/pricing/quote-public-model-scenario';
 import { resolveFocusVsConfig } from '../_lib/model-page-static';
 import {
   buildCanonicalComparePath,
@@ -76,6 +77,7 @@ import { buildModelExamplesViewModel } from '../_lib/model-page-examples-view-mo
 export async function MarketingModelPageLayout({
   engine,
   pricingEngine,
+  quoteModel = quotePublicModelScenario,
   backLabel,
   pricingLinkLabel,
   localizedContent,
@@ -100,6 +102,7 @@ export async function MarketingModelPageLayout({
 }: {
   engine: FalEngineEntry;
   pricingEngine: EngineCaps;
+  quoteModel?: typeof quotePublicModelScenario;
   backLabel: string;
   pricingLinkLabel: string;
   localizedContent: EngineLocalizedContent;
@@ -291,8 +294,8 @@ export async function MarketingModelPageLayout({
   const prepLinksSection = buildModelPrepLinksSection(engine.modelSlug, locale);
   const pricingCallout = buildModelPricingCallout(engine.modelSlug, locale);
   const [{ data: templateData, config: templateConfig }, publicOffer] = await Promise.all([
-    buildCurrentModelDecisionData(engine, locale, localizedContent.decision),
-    resolveCurrentModelPublicOffer(engine, pricingEngine),
+    buildCurrentModelDecisionData(engine, locale, localizedContent.decision, quoteModel),
+    resolveCurrentModelPublicOffer(engine, pricingEngine, quoteModel),
   ]);
   const sectionLabels = resolveSectionLabels(locale);
   const compareCopy = resolveCompareCopy(locale, heroTitle, supportsNativeAudio);

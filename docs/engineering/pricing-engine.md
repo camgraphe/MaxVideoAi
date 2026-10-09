@@ -899,10 +899,24 @@ decision pricing and public offer; their formatting, fallbacks and quote errors
 retain their existing owners. `tests/model-page-price-projection.test.ts` locks
 the quote counts, admission, fresh-render recovery and deferred-start behavior.
 
+An active model render creates `createScopedPublicPricingReaders` once and passes
+its contextual snapshot reader to that projection and its exact scenario reader
+to the server layout's existing decision/public-offer owners. Construction is
+lazy. Overlapping callers share the current policy attempt; the first successful
+complete result (both rules and routing rules, including empty rules) remains
+the policy observation for that render. Rejected or unavailable attempts remain
+retryable; another render reads its own policy. Functions stay between Server
+Components. The compatibility quoter used by Pricing delegates to this factory.
+This scope stores no amounts or tariff state: every quote retains independent
+canonical normalization and its own current tariff state/cell transaction.
+Contextual engine overrides and exact catalog inputs keep their existing owners.
+`tests/model-page-policy-postgres.test.ts` measures actual SQL through the active
+route and real server layout, including full localized output and failure parity.
+
 Public scenario admission builds finite catalogue combinations only for the
 requested model and mode. `quote-public-model-scenario.ts` retains those immutable
 combinations per model/mode in process memory; it does not cache customer quotes
-or effective database policy. Preparing the complete catalogue on the first
+or effective database policy across renders. Preparing the complete catalogue on the first
 public quote blocked unrelated parallel page reads during cold execution.
 `collectSellableManualTariffCoverage()` without a scope still captures the full
 maintenance/financial matrix. `public-quote-scenario-coverage.test.ts` checks every

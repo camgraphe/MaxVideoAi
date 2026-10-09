@@ -141,11 +141,12 @@ async function computePerSecondValue(
   engineCaps: EngineCaps,
   locale: AppLocale,
   resolution: string,
-  addons?: Record<string, boolean>
+  addons?: Record<string, boolean>,
+  currentSnapshot: typeof computeCurrentPublicSnapshot = computeCurrentPublicSnapshot,
 ): Promise<{ label: string; perSecond: number } | null> {
   const durationSec = selectQuickDurations(engineCaps)[0] ?? 5;
   try {
-    const snapshot = await computeCurrentPublicSnapshot({
+    const snapshot = await currentSnapshot({
       engine: engineCaps,
       durationSec,
       resolution,
@@ -162,13 +163,15 @@ async function computePerSecondValue(
   }
 }
 
-export async function buildPricePerSecondLabel(engine: EngineCaps, locale: AppLocale): Promise<string | null> {
+export async function buildPricePerSecondLabel(
+  engine: EngineCaps, locale: AppLocale, currentSnapshot: typeof computeCurrentPublicSnapshot = computeCurrentPublicSnapshot,
+): Promise<string | null> {
   const resolution = resolveDefaultResolution(engine);
   if (!resolution) return null;
   const durationOptions = selectQuickDurations(engine);
   const durationSec = durationOptions[0] ?? 5;
   try {
-    const snapshot = await computeCurrentPublicSnapshot({
+    const snapshot = await currentSnapshot({
       engine,
       durationSec,
       resolution,
@@ -197,7 +200,8 @@ export async function buildPricePerSecondRows(
   engineCaps: EngineCaps,
   locale: AppLocale,
   rowLabel: string,
-  audioLabels: AudioPriceLabels
+  audioLabels: AudioPriceLabels,
+  currentSnapshot: typeof computeCurrentPublicSnapshot = computeCurrentPublicSnapshot,
 ): Promise<PriceSpecRow[]> {
   const resolutions = resolvePricingResolutions(engineCaps);
   if (!resolutions.length) return [];
@@ -208,12 +212,12 @@ export async function buildPricePerSecondRows(
   const displayOff = new Map<string, string>();
 
   for (const resolution of resolutions) {
-    const onValue = await computePerSecondValue(engineCaps, locale, resolution);
+    const onValue = await computePerSecondValue(engineCaps, locale, resolution, undefined, currentSnapshot);
     if (onValue) {
       displayOn.set(resolution, onValue.label);
     }
     if (hasAudioOff) {
-      const offValue = await computePerSecondValue(engineCaps, locale, resolution, { audio_off: true });
+      const offValue = await computePerSecondValue(engineCaps, locale, resolution, { audio_off: true }, currentSnapshot);
       if (offValue) {
         displayOff.set(resolution, offValue.label);
       }
@@ -353,23 +357,24 @@ function buildPricePerImageRowsFromPoints(
 export async function buildModelPagePriceProjection(
   engine: EngineCaps,
   locale: AppLocale,
-  { isImageEngine, showPriceInSpecs, rowLabel, audioLabels }: {
+  { isImageEngine, showPriceInSpecs, rowLabel, audioLabels, currentSnapshot = computeCurrentPublicSnapshot }: {
     isImageEngine: boolean;
     showPriceInSpecs: boolean;
     rowLabel: string;
     audioLabels: AudioPriceLabels;
+    currentSnapshot?: typeof computeCurrentPublicSnapshot;
   }
 ) {
   if (!isImageEngine) {
     const [pricePerSecondLabel, priceRows] = await Promise.all([
-      buildPricePerSecondLabel(engine, locale),
-      showPriceInSpecs ? buildPricePerSecondRows(engine, locale, rowLabel, audioLabels) : [],
+      buildPricePerSecondLabel(engine, locale, currentSnapshot),
+      showPriceInSpecs ? buildPricePerSecondRows(engine, locale, rowLabel, audioLabels, currentSnapshot) : [],
     ]);
     return { pricePerSecondLabel, pricePerImageLabel: null, priceRows };
   }
 
   const points = await computeMarketingPricePoints(engine, {
-    memberTier: 'member', limit: null, requireCurrentPolicy: true,
+    memberTier: 'member', limit: null, requireCurrentPolicy: true, currentSnapshot,
   }).catch(error => {
     if (showPriceInSpecs) throw error;
     return [];

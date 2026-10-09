@@ -143,7 +143,8 @@ test('model page layout delegates template page ownership', () => {
   assert.match(decisionDataSource, /parseModelDecisionContent/);
   assert.match(decisionDataSource, /decisionContent:\s*unknown/);
   assert.match(modelPageSource, /decisionContent:\s*localized\.decision/);
-  assert.match(layoutSource, /buildCurrentModelDecisionData\(engine, locale, localizedContent\.decision\)/);
+  assert.match(layoutSource, /buildCurrentModelDecisionData\(engine, locale, localizedContent\.decision, quoteModel\)/);
+  assert.match(layoutSource, /resolveCurrentModelPublicOffer\(engine, pricingEngine, quoteModel\)/);
   assert.doesNotMatch(
     decisionDataSource,
     /SEEDANCE_20_COPY|SEEDANCE_20_FAST_COPY|LTX_23_FAST_COPY|COPY_BY_MODEL_SLUG|buildSlugMap\('pricing'\)|Seedance 2\.0 or Fast\?/,

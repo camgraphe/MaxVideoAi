@@ -57,12 +57,13 @@ export async function refreshModelDecisionPricingScenarios(
 
 export async function buildCurrentModelDecisionData(
   entry: FalEngineEntry, locale: AppLocale, decisionContent: unknown,
+  quote: (input: PublicModelQuoteInput) => Promise<PublicModelQuote> = quotePublicModelScenario,
 ) {
   const data = buildModelDecisionData({ engine: entry, locale, decisionContent });
   const config = data ? getModelPageTemplateConfig(entry.modelSlug) : null;
   return { config, data: data && config
     ? { ...data, pricing: { ...data.pricing,
       scenarios: await refreshModelDecisionPricingScenarios(entry, locale,
-        data.pricing.scenarios, config.pricing.presets) } }
+        data.pricing.scenarios, config.pricing.presets, quote) } }
     : data };
 }

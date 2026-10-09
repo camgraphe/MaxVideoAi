@@ -20,6 +20,7 @@ async function makeRouteHarness() {
   const names = new Set(imports.flatMap(match => match[1].split(',').map(name => name.trim())
     .filter(name => name && !name.startsWith('type ')).map(name => name.split(/\s+as\s+/)[0])));
   const definitions: Record<string, string> = {
+    createScopedPublicPricingReaders: `()=>({currentSnapshot:()=>undefined,quoteModel:()=>undefined})`,
     loadBenchmarkScoreSlugs: `()=>read('scores',new Set(['veo-3-1']))`,
     listEnginePricingOverrides: `()=>read('engine-settings',{'veo-3-1':{fixture:'override'}})`,
     loadEngineKeySpecs: `()=>read('key-specs',new Map([['veo-3-1',{keySpecs:{fixture:'specs'}}]]))`,
