@@ -406,3 +406,13 @@ test('public_routes_keep_seo_and_media_owners', () => {
   const card = readFileSync(join(root, 'frontend/components/examples/ExampleGalleryCard.tsx'), 'utf8');
   assert.match(card, /useExampleCardPlayback/);
 });
+
+test('family metadata delegates preview selection while keeping route SEO ownership', () => {
+  assert.match(modelPageSource, /await selectFamilyMetadataVideo\(canonical\)/);
+  assert.doesNotMatch(modelPageSource, /listExampleFamilyPage|EXAMPLES_HERO_SELECTION_LIMIT|pickFirstPlayableVideo/);
+  assert.match(modelPageSource, /toAbsoluteUrl\(heroVideo\?\.thumbUrl\)/);
+  assert.match(modelPageSource, /buildSeoMetadata\(/);
+  const metadataSelector = readFileSync(join(dirname(modelPagePath), '_lib/family-metadata-video.ts'), 'utf8');
+  assert.match(metadataSelector, /from '@\/server\/videos'/);
+  assert.doesNotMatch(metadataSelector, /\bgetDb\(|\bsql`|\.catch\(|\bcache\(/);
+});

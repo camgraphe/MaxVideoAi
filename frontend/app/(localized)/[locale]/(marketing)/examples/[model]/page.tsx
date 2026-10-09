@@ -4,11 +4,10 @@ import { localePathnames, locales, type AppLocale } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { SITE_BASE_URL } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
-import { listExampleFamilyPage } from '@/server/videos';
 import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
 import { getExampleModelLanding } from '@/lib/examples/modelLanding';
-import { EXAMPLES_HERO_SELECTION_LIMIT, pickFirstPlayableVideo } from '@/lib/examples/heroVideo';
 import { getExampleFamilyPageConfig, getMarketingExampleRouteSlugs } from '@/lib/model-families';
+import { selectFamilyMetadataVideo } from './_lib/family-metadata-video';
 import ExamplesPage from '../page';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || SITE_BASE_URL;
@@ -102,12 +101,7 @@ export async function generateMetadata(
   const description =
     modelLanding?.metaDescription ??
     `Explore ${modelLabel} examples with prompts and settings, then open a video detail page to see its current model price on MaxVideoAI.`;
-  const heroResult = await listExampleFamilyPage(canonical, {
-    sort: DEFAULT_SORT,
-    limit: EXAMPLES_HERO_SELECTION_LIMIT,
-    offset: 0,
-  });
-  const heroVideo = pickFirstPlayableVideo(heroResult.items);
+  const heroVideo = await selectFamilyMetadataVideo(canonical);
   const ogImage = toAbsoluteUrl(heroVideo?.thumbUrl) ?? `${SITE}/og/brand-2026-09-25.png`;
   const familyPageConfig = getExampleFamilyPageConfig(canonical);
   const noindex = shouldNoindex(searchParams ?? {}) || familyPageConfig?.stage === 'public_noindex';

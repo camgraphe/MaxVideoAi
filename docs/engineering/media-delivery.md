@@ -70,6 +70,15 @@ delivery verification before making a user-visible performance claim.
 
 Examples routes read24 items per logical page from the SQL catalog; all24 watch links and posters are rendered on the server. Four optional opening videos belong to the same page and are never reinserted on page2. `examples-discovery-layout.ts` chooses compatible opening formats from the current page only; CSS owns geometry and native continuation ratios. Measured media dimensions take priority over declared ratios. Only the two side previews are cropped. Empty managed destinations stay empty and out-of-range URLs redirect to the last valid page.
 
+Family metadata uses route-local `selectFamilyMetadataVideo` to read the first
+playlist item through `listExampleFamilyPage`, independently of URL sort/page.
+An empty result stops there. A nonempty result without a playable original retries
+the existing 60-item selection window, preserving SQL normalization and local
+snapshot compatibility. A playable item without a thumbnail keeps the brand OG
+image; later posters do not replace it. Both reads propagate their original errors.
+The rare retry adds a catalog read and can observe a later concurrent update.
+The 24-card gallery, other 60-item selectors and cache policy retain their owners.
+
 The opening card owns the one prioritized responsive poster. No separate route hero or competing image preload is rendered. `useGalleryPreviewBudget` allows three visible short previews on desktop or one on mobile, prioritizes hover/focus intent, and supports global pause. Cards delegate playback preferences, visibility, rejection and telemetry to `useExampleCardPlayback`; absent short previews remain posters until manual playback. No original-video fallback is used for incidental gallery animation. The reader suspends this budget while open. A continuation heading and spacing distinguish the opening four from later cards without changing their media geometry. Family introductions, complete authored guidance, model links and FAQ remain visible and server-rendered below pagination; do not truncate their source text in route data. Canonical, hreflang and existing JSON-LD ownership stay with the route. Test initial loading and first Play separately; this structure alone does not establish a Core Web Vitals gain.
 
 A compact, full-width guide follows all four opening cards in reading order. It tells visitors to open any video for its prompt, settings and current price, and offers a generic app entry point without implying that it will reuse the lead video's prompt. The full prompt, original settings and qualified current estimates remain available in the reader and canonical watch page. Gallery cards receive exact/reference/unavailable current prices from the request-local canonical quote owner through `current-examples-gallery-data.ts`; the pure gallery builder formats the supplied map. Unavailable prices are omitted. Never display a historic charge as a current public price; stored billing history remains unchanged. Per-video reuse links still follow the source engine's app availability rule in the reader.
