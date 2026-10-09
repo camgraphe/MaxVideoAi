@@ -3,6 +3,9 @@ import test from 'node:test';
 
 import type { PricingPolicyOverrideLoadResult } from '../frontend/src/lib/pricing-rule-store';
 import { createScopedPublicModelQuoter, quotePublicModelScenario, quoteWithVerifiedPolicy } from '../frontend/server/pricing/quote-public-model-scenario';
+import * as publicPricing from '../frontend/server/pricing/quote-public-model-scenario';
+import { computeCurrentPublicSnapshot } from '../frontend/server/pricing/quote-public';
+import { resolvePublicModelScenario } from '../frontend/server/pricing/quote-public-model-scenario';
 
 const input = { modelId: 'pika-text-to-video', mode: 't2v', durationSec: 5, resolution: '720p' };
 const policy = (marginPercent = 1): PricingPolicyOverrideLoadResult => ({ status: 'loaded', rules: [{
@@ -10,6 +13,11 @@ const policy = (marginPercent = 1): PricingPolicyOverrideLoadResult => ({ status
 }] });
 const unavailable: PricingPolicyOverrideLoadResult = { status: 'unavailable', rules: [], errorCode: 'pricing_rules_query_failed' };
 const flush = () => new Promise<void>(resolve => setImmediate(resolve));
+const context = () => resolvePublicModelScenario(input)!.context;
+function readers(load: () => Promise<PricingPolicyOverrideLoadResult>) {
+  assert.equal(typeof publicPricing.createScopedPublicPricingReaders, 'function', 'the mixed reader factory must exist');
+  return publicPricing.createScopedPublicPricingReaders(load);
+}
 function deferred<T>() {
   let resolve!: (value: T) => void;
   let reject!: (error: Error) => void;
@@ -113,5 +121,72 @@ test('a successfully loaded empty policy preserves versioned precedence and is r
   assert.equal(first.status, 'exact');
   if (first.status === 'exact') assert.equal(first.amountCents, 26);
   assert.deepEqual(await quote(input), first);
+  assert.equal(reads, 1);
+});
+
+test('mixed contextual and exact readers lazily share the complete first successful policy', async () => {
+  const pending = deferred<PricingPolicyOverrideLoadResult>();
+  let reads = 0;
+  const scope = readers(() => { reads++; return pending.promise; });
+  assert.equal(reads, 0);
+  const snapshot = scope.currentSnapshot(context());
+  const exact = scope.quoteModel(input);
+  await flush();
+  assert.equal(reads, 1);
+  const loaded = { ...policy(), routingRules: [{ id: 'routing-pika', engineId: input.modelId,
+    marginPercent: 1, marginFlatCents: 7, currency: 'USD', vendorAccountId: 'acct_pika_scope' }] };
+  pending.resolve(loaded);
+  const expected = await computeCurrentPublicSnapshot(context(), { pricingPolicy: { loadOverrides: async () => loaded } });
+  assert.equal(expected.totalCents, 47);
+  assert.equal(expected.vendorAccountId, 'acct_pika_scope');
+  assert.deepEqual(await snapshot, expected, 'complete snapshot retains policy provenance and routing');
+  assert.deepEqual(await exact, await quotePublicModelScenario(input, scenario => quoteWithVerifiedPolicy(scenario, async () => loaded)));
+  assert.deepEqual(await scope.currentSnapshot(context()), expected);
+  assert.equal(reads, 1);
+});
+
+for (const failure of ['unavailable', 'rejected', 'synchronous throw'] as const) {
+  test(`mixed ${failure} attempts recover without retaining failure`, async () => {
+    const first = deferred<PricingPolicyOverrideLoadResult>();
+    let reads = 0;
+    const scope = readers(() => {
+      if (++reads > 1) return Promise.resolve({ status: 'loaded', rules: [], routingRules: [] });
+      if (failure === 'synchronous throw') throw new Error('synchronous policy failure');
+      return first.promise;
+    });
+    const snapshot = assert.rejects(scope.currentSnapshot(context()));
+    const exact = scope.quoteModel(input);
+    await flush();
+    assert.equal(reads, 1);
+    if (failure === 'unavailable') first.resolve(unavailable);
+    else if (failure === 'rejected') first.reject(new Error('rejected policy'));
+    await snapshot;
+    assert.deepEqual(await exact, { status: 'unavailable' });
+    assert.equal((await scope.currentSnapshot(context())).totalCents, 26);
+    assert.equal((await scope.quoteModel(input)).status, 'exact');
+    assert.equal(reads, 2, 'successful empty policy is retained by both readers');
+  });
+}
+
+test('mixed independent render scopes observe separate current policies', async () => {
+  let reads = 0;
+  const load = async () => { reads++; return policy(reads); };
+  const a = readers(load);
+  const b = readers(load);
+  const [first, second] = await Promise.all([a.currentSnapshot(context()), b.currentSnapshot(context())]);
+  assert.equal(first.totalCents, 47);
+  assert.equal(second.totalCents, 67);
+  assert.equal((await a.quoteModel(input)).status, 'exact');
+  assert.deepEqual(await a.currentSnapshot(context()), first);
+  assert.equal(reads, 2);
+  assert.equal((await readers(load).currentSnapshot(context())).totalCents, 87);
+});
+
+test('unsupported exact inputs cause no scoped read while contextual admission remains unchanged', async () => {
+  let reads = 0;
+  const scope = readers(async () => { reads++; return policy(); });
+  assert.deepEqual(await scope.quoteModel({ ...input, quantity: 2 }), { status: 'unavailable' });
+  assert.equal(reads, 0);
+  assert.equal((await scope.currentSnapshot(context())).totalCents, 47);
   assert.equal(reads, 1);
 });

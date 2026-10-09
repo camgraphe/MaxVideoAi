@@ -21,6 +21,7 @@ import { getEngineLocalized, type EngineLocalizedContent } from '@/lib/models/i1
 import { resolvePublicMarketingVideoUrl } from '@/lib/media';
 import { listPlaylistVideos, getPublicVideosByIds, getPublicVideoIds, type GalleryVideo } from '@/server/videos';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
+import { createScopedPublicPricingReaders } from '@/server/pricing/quote-public-model-scenario';
 import { loadModelPageInputs } from './_lib/model-page-inputs';
 import {
   buildDetailSlugMap,
@@ -167,6 +168,7 @@ async function renderMarketingModelPage({
   localizedContent: EngineLocalizedContent;
   locale: AppLocale;
 }) {
+  const { currentSnapshot, quoteModel } = createScopedPublicPricingReaders();
   const detailSlugMap = buildDetailSlugMap(engine.modelSlug);
   const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${engine.modelSlug}`));
   const metadataUrls = buildMetadataUrls(locale, detailSlugMap, {
@@ -231,6 +233,7 @@ async function renderMarketingModelPage({
         showPriceInSpecs,
         rowLabel: resolveSpecRowLabel(locale, isImageEngine ? 'pricePerImage' : 'pricePerSecond', isImageEngine),
         audioLabels: resolveAudioPricingLabels(locale),
+        currentSnapshot,
       });
       return { pricingEngine, ...projection };
     },
@@ -333,6 +336,7 @@ async function renderMarketingModelPage({
       copy={copy}
       engine={engine}
       pricingEngine={pricingEngine}
+      quoteModel={quoteModel}
       isVideoEngine={isVideoEngine}
       isImageEngine={isImageEngine}
       showBenchmarkLink={showBenchmarkLink}
