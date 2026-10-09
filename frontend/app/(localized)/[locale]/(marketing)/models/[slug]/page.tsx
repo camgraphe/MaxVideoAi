@@ -19,7 +19,7 @@ import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveLocalesForEnglishPath } from '@/lib/seo/alternateLocales';
 import { getEngineLocalized, type EngineLocalizedContent } from '@/lib/models/i18n';
 import { resolvePublicMarketingVideoUrl } from '@/lib/media';
-import { listPlaylistVideos, getPublicVideosByIds, type GalleryVideo } from '@/server/videos';
+import { listPlaylistVideos, getPublicVideosByIds, getPublicVideoIds, type GalleryVideo } from '@/server/videos';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
 import { loadModelPageInputs } from './_lib/model-page-inputs';
 import {
@@ -217,6 +217,7 @@ async function renderMarketingModelPage({
         preferred: PREFERRED_MEDIA[engine.modelSlug] ?? {hero:null,demo:null},
         featuredIds: FEATURED_EXAMPLE_MEDIA[engine.modelSlug] ?? [],
         getPublicVideosByIds,
+        getPublicVideoIds,
         toCard: video => resolveGalleryCardHref(toGalleryCard(
           video, engine.brandId, localizedContent.marketingName ?? engine.marketingName,
           engine.modelSlug, engine.id, backPath, appPath, undefined, locale,

@@ -28,7 +28,10 @@ test('adopted model galleries cannot reinject excluded static media or override 
   );
   const route = readFileSync('frontend/app/(localized)/[locale]/(marketing)/models/[slug]/page.tsx', 'utf8');
   assert.match(route, /projectModelPageGallery\(/);
-  assert.match(readFileSync('frontend/server/playlists/curation-model-preview.ts','utf8'), /projectModelPageGallery\(/);
+  assert.match(route, /getPublicVideoIds,/);
+  const adminPreview = readFileSync('frontend/server/playlists/curation-model-preview.ts','utf8');
+  assert.match(adminPreview, /projectModelPageGallery\(/);
+  assert.doesNotMatch(adminPreview, /getPublicVideoIds/, 'admin previews retain their transaction-bound full-reader fallback');
   assert.match(readFileSync('frontend/server/videos-playlists.ts','utf8'), /readLegacyPlaylistVideos/);
   assert.doesNotMatch(readFileSync('frontend/server/model-gallery-projection.ts','utf8'), /curation-service|videos-playlists/);
   assert.match(route, /managed: managedCuration/);

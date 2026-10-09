@@ -10,6 +10,7 @@ export async function projectModelPageGallery<T extends {id: string; aspectRatio
   engine: {modelSlug: string; id: string}; examples: GalleryVideo[]; managed: boolean;
   preferred: {hero: string | null; demo: string | null}; featuredIds: string[];
   getPublicVideosByIds: (ids: string[]) => Promise<Map<string, GalleryVideo>>;
+  getPublicVideoIds?: (ids: string[]) => Promise<Set<string>>;
   toCard: (video: GalleryVideo) => T;
 }) {
   const {engine, examples, managed, getPublicVideosByIds, toCard} = options;
@@ -24,11 +25,14 @@ export async function projectModelPageGallery<T extends {id: string; aspectRatio
     return engine.modelSlug !== 'sora-2' || !/\b(john\s+lennon|lennon|beatles)\b/i.test(
       [video.prompt,video.promptExcerpt,video.id].filter(Boolean).join(' '));
   });
-  const validatedMap = await getPublicVideosByIds(safeExamples.map(video => video.id));
+  const validationIds = safeExamples.map(video => video.id);
+  const validatedIds = options.getPublicVideoIds
+    ? await options.getPublicVideoIds(validationIds)
+    : await getPublicVideosByIds(validationIds);
   const preferredIds = managed ? {hero:null,demo:null} : options.preferred;
   const galleryVideos = await finalizeModelGallery({
     managed,
-    cards: safeExamples.filter(video => validatedMap.has(video.id)).map(toCard),
+    cards: safeExamples.filter(video => validatedIds.has(video.id)).map(toCard),
     featuredIds: options.featuredIds,
     preferredIds: [preferredIds.hero,preferredIds.demo].filter((id): id is string => Boolean(id)),
     preferLandscape: engine.modelSlug === 'kling-2-5-turbo',

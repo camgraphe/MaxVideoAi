@@ -12,6 +12,7 @@ import { I18nProvider } from '../frontend/lib/i18n/I18nProvider';
 import { ModelDefaultExamplesSection } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDefaultExamplesSection';
 import { ModelDecisionExamplesGallery } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionExamplesGallery.client';
 import { makeModelPagePricingHarness, findModelLayoutElements } from './helpers/model-page-pricing-harness';
+import { FEATURED_EXAMPLE_MEDIA, PREFERRED_MEDIA } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-static-media';
 
 const locales = ['en', 'fr', 'es'] as const;
 const digest = (value: string) => createHash('sha256').update(value).digest('hex');
@@ -62,8 +63,9 @@ test('the real model gallery callback validates and orders cards without request
       h.setPublicQuote(async () => ({status:'exact',amountCents:123,currency:'USD'}));
       const result = await h.render(input);
       assert.deepEqual(h.playlistReads, [[`examples-${input.engine.modelSlug}`,200]]);
-      assert.deepEqual(h.publicReads, [['fixture-portrait','not-public','fixture-landscape']],
+      assert.deepEqual(h.publicIdReads, [['fixture-portrait','not-public','fixture-landscape']],
         'wrong models are filtered before public validation; managed media has no static reinjection');
+      assert.deepEqual(h.publicReads, [], 'existing playlist cards need only a fresh public ID check');
       const base = {en:'models',fr:'modeles',es:'modelos'}[locale];
       const backPath = `${locale === 'en' ? '' : '/'+locale}/${base}/${input.engine.modelSlug}`;
       assert.equal(result.props.canonicalUrl, `https://maxvideoai.com${backPath}`);
@@ -113,6 +115,26 @@ test('the real model gallery callback validates and orders cards without request
   } finally {
     await dispose();
   }
+});
+
+test('the real public route uses ID validation but still hydrates missing featured and preferred cards', async () => {
+  const {harness:h,dispose} = await makeModelPagePricingHarness({executeGallery:true});
+  try {
+    const input = await fixture('seedance-2-0-mini', 'en');
+    const featured = FEATURED_EXAMPLE_MEDIA[input.engine.modelSlug];
+    const preferred = Object.values(PREFERRED_MEDIA[input.engine.modelSlug]).filter((id): id is string => Boolean(id));
+    const additions = [...featured,...preferred].map(id => ({...input.expectedVideos[1],id,prompt:`Hydrated ${id}`}));
+    h.configure({...input,managed:false,publicVideos:[...input.publicVideos,...additions]});
+    const result = await h.render(input);
+    assert.deepEqual(h.publicIdReads, [['fixture-portrait','not-public','fixture-landscape']]);
+    assert.deepEqual(h.publicReads, [featured,preferred], 'complete lookups only supply the missing static cards');
+    assert.deepEqual(result.props.galleryVideos.map((card:any)=>card.id), [...featured,'fixture-portrait','fixture-landscape',...preferred]);
+    assert.equal(result.props.galleryVideos[0].promptFull, `Hydrated ${featured[0]}`);
+    const original = new Error('fresh membership failure');
+    h.configure({...input,galleryFailure:original});
+    await assert.rejects(h.render(input), (error:unknown) => error === original);
+    assert.deepEqual(h.publicReads, [], 'a membership failure cannot become a full-reader fallback');
+  } finally { await dispose(); }
 });
 
 test('real localized video and image examples readers render identically with and without card price labels', async t => {

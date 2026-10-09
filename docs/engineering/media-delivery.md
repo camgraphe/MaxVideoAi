@@ -34,6 +34,15 @@ the current visible/JSON-LD offer retain their canonical pricing owners.
 `tests/model-unused-example-pricing.test.ts` executes the real gallery callback
 and checks localized video/image consumers with and without card price labels.
 
+The public model route rechecks playlist media membership with `getPublicVideoIds`
+in the server videos owner, projecting only IDs with the same public visibility and
+nullable-indexable predicate as `getPublicVideosByIds`. It still builds cards from
+the original playlist records and hydrates missing featured/preferred records with
+the full reader. The shared projection's optional ID reader leaves transaction-bound
+admin previews on their existing full-reader fallback; no fresh validation is cached
+or replaced by playlist membership. Source/deletion eligibility remains owned by its
+existing readers. `tests/public-video-presence-postgres.test.ts` guards this parity.
+
 The active model input owner starts the canonical unit/spec price projection as
 soon as the same request's engine override resolves. That read is its only
 asynchronous dependency; gallery, score and spec reads continue independently.
@@ -60,6 +69,15 @@ delivery verification before making a user-visible performance claim.
 ## Paginated discovery gallery
 
 Examples routes read24 items per logical page from the SQL catalog; all24 watch links and posters are rendered on the server. Four optional opening videos belong to the same page and are never reinserted on page2. `examples-discovery-layout.ts` chooses compatible opening formats from the current page only; CSS owns geometry and native continuation ratios. Measured media dimensions take priority over declared ratios. Only the two side previews are cropped. Empty managed destinations stay empty and out-of-range URLs redirect to the last valid page.
+
+Family metadata uses route-local `selectFamilyMetadataVideo` to read the first
+playlist item through `listExampleFamilyPage`, independently of URL sort/page.
+An empty result stops there. A nonempty result without a playable original retries
+the existing 60-item selection window, preserving SQL normalization and local
+snapshot compatibility. A playable item without a thumbnail keeps the brand OG
+image; later posters do not replace it. Both reads propagate their original errors.
+The rare retry adds a catalog read and can observe a later concurrent update.
+The 24-card gallery, other 60-item selectors and cache policy retain their owners.
 
 The opening card owns the one prioritized responsive poster. No separate route hero or competing image preload is rendered. `useGalleryPreviewBudget` allows three visible short previews on desktop or one on mobile, prioritizes hover/focus intent, and supports global pause. Cards delegate playback preferences, visibility, rejection and telemetry to `useExampleCardPlayback`; absent short previews remain posters until manual playback. No original-video fallback is used for incidental gallery animation. The reader suspends this budget while open. A continuation heading and spacing distinguish the opening four from later cards without changing their media geometry. Family introductions, complete authored guidance, model links and FAQ remain visible and server-rendered below pagination; do not truncate their source text in route data. Canonical, hreflang and existing JSON-LD ownership stay with the route. Test initial loading and first Play separately; this structure alone does not establish a Core Web Vitals gain.
 

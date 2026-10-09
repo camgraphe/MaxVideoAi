@@ -25,14 +25,14 @@ export async function makeModelPagePricingHarness({
   const fixture = `
     export const calls = [];
     export const readers = [];
-    export const exampleQuoteCalls = [], publicReads = [], playlistReads = [];
+    export const exampleQuoteCalls = [], publicReads = [], publicIdReads = [], playlistReads = [];
     export const inputReads = [], timingRecords = [];
     let state;
     let quote;
     let publicQuote;
     export function configure(value) {
       state = value; calls.length = 0; readers.length = 0;
-      exampleQuoteCalls.length = 0; publicReads.length = 0; playlistReads.length = 0;
+      exampleQuoteCalls.length = 0; publicReads.length = 0; publicIdReads.length = 0; playlistReads.length = 0;
       inputReads.length = 0; timingRecords.length = 0;
     }
     export function setQuote(value) { quote = value; }
@@ -92,6 +92,11 @@ export async function makeModelPagePricingHarness({
       publicReads.push([...ids]);
       if (state.galleryFailure) throw state.galleryFailure;
       return new Map((state.publicVideos ?? []).filter(video => ids.includes(video.id)).map(video => [video.id,video]));
+    };
+    export const getPublicVideoIds = async ids => {
+      publicIdReads.push([...ids]);
+      if (state.galleryFailure) throw state.galleryFailure;
+      return new Set((state.publicVideos ?? []).filter(video => ids.includes(video.id)).map(video => video.id));
     };
     export const quoteCurrentExamplePrices = async videos => {
       exampleQuoteCalls.push(videos);

@@ -11,6 +11,7 @@ const time = (seconds: number) => `${Math.floor(seconds / 60)}:${Math.floor(seco
 export function DiscoveryVideoPlayer({ detail, copy }: { detail: ExampleWatchDetail; copy: ReaderCopy }) {
   const controls = usePublicVideoControls(detail.videoUrl, 'watch');
   const frame = useRef<HTMLDivElement>(null);
+  const playbackButton = useRef<HTMLButtonElement>(null);
   const [width, height] = detail.aspectRatio.split(':').map(Number);
   const ratio = width > 0 && height > 0 ? width / height : 16 / 9;
   const fullscreen = async () => {
@@ -26,14 +27,18 @@ export function DiscoveryVideoPlayer({ detail, copy }: { detail: ExampleWatchDet
     <div className={styles.frame} style={{ '--ratio': ratio } as CSSProperties}>
       <video ref={controls.videoRef} src={detail.videoUrl} poster={detail.posterUrl ?? undefined}
         playsInline preload="none" aria-label={detail.title} {...controls.events} />
-      {!controls.isPlaying && <button className={styles.centerPlay} onClick={controls.togglePlayback} aria-label={copy.play}><Play size={28} fill="currentColor" /></button>}
+      {!controls.isPlaying && <button className={styles.centerPlay} onClick={event => {
+        // Central Play disappears on startup; keep its focus on the persistent control.
+        if (document.activeElement === event.currentTarget) playbackButton.current?.focus({ preventScroll: true });
+        controls.togglePlayback();
+      }} aria-label={copy.play}><Play size={28} fill="currentColor" /></button>}
       {(controls.terminalError || controls.isLoading) && <p className={styles.playerStatus} role="status">{controls.terminalError ? copy.playbackError : copy.loading}</p>}
     </div>
       <div className={styles.controls}>
         <input aria-label={copy.timeline} type="range" min={0} max={controls.duration || detail.durationSec || 1} step={0.1}
           value={controls.currentTime} disabled={!controls.duration} onChange={event => controls.seek(event.target.value)} />
         <div className={styles.controlRow}>
-          <button onClick={controls.togglePlayback} aria-label={controls.isPlaying ? copy.pause : copy.play}>{controls.isPlaying ? <Pause size={17}/> : <Play size={17}/>}</button>
+          <button ref={playbackButton} onClick={controls.togglePlayback} aria-label={controls.isPlaying ? copy.pause : copy.play}>{controls.isPlaying ? <Pause size={17}/> : <Play size={17}/>}</button>
           {detail.hasAudio && <button onClick={controls.toggleMuted} aria-label={controls.isMuted ? copy.unmute : copy.mute}>{controls.isMuted ? <VolumeX size={17}/> : <Volume2 size={17}/>}</button>}
           <span>{time(controls.currentTime)} / {time(controls.duration || detail.durationSec)}</span>
           <div className={styles.spacer}/>
