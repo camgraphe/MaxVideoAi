@@ -22,6 +22,18 @@ Comparison detail pages load optional public `examples-<modelSlug>` playlists th
 
 `CompareGalleryCard.client.tsx` owns intent and visibility only, delegating incidental muted previews to `useExampleCardPlayback`. Preserve responsive lazy covers, the configured image quality and fixed geometry. Ordinary activation opens `CompareVideoDialog.client.tsx`, loaded on demand; modified clicks and the underlying HTML link retain the watch-page URL. The modal delegates focus, Escape and restoration to `useAccessibleModal` and full playback to `PublicVideoPlayer`, with original fidelity and `preload="none"`. No automatic playback of all gallery items. Show independent-example labeling; do not imply identical prompts or controlled test conditions.
 
+## Model detail examples
+
+Model routes retain playlist curation, public validation and the shared
+`projectModelPageGallery` ordering policy. Their own examples view model and
+`ModelDefaultExamplesSection` / `ModelDecisionExamplesGallery` do not consume card
+prices, so the route does not quote those media batches. The pure `toGalleryCard`
+still accepts supplied current prices, and the shared `ExampleGalleryCard` keeps
+its price display for other readers. Visible model specs, decision scenarios and
+the current visible/JSON-LD offer retain their canonical pricing owners.
+`tests/model-unused-example-pricing.test.ts` executes the real gallery callback
+and checks localized video/image consumers with and without card price labels.
+
 ## Paginated discovery gallery
 
 Examples routes read24 items per logical page from the SQL catalog; all24 watch links and posters are rendered on the server. Four optional opening videos belong to the same page and are never reinserted on page2. `examples-discovery-layout.ts` chooses compatible opening formats from the current page only; CSS owns geometry and native continuation ratios. Measured media dimensions take priority over declared ratios. Only the two side previews are cropped. Empty managed destinations stay empty and out-of-range URLs redirect to the last valid page.

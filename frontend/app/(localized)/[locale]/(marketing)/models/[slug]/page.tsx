@@ -20,7 +20,6 @@ import { resolveLocalesForEnglishPath } from '@/lib/seo/alternateLocales';
 import { getEngineLocalized, type EngineLocalizedContent } from '@/lib/models/i18n';
 import { resolvePublicMarketingVideoUrl } from '@/lib/media';
 import { listPlaylistVideos, getPublicVideosByIds, type GalleryVideo } from '@/server/videos';
-import { quoteCurrentExamplePrices, type CurrentExamplePrice } from '@/server/current-example-price';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
 import { loadModelPageInputs } from './_lib/model-page-inputs';
 import {
@@ -216,21 +215,14 @@ async function renderMarketingModelPage({
       } catch (error) {
         console.warn('[models/sora-2] failed to load examples', error);
       }
-      const examplePrices = new Map<string, CurrentExamplePrice>();
-      const readPricedVideos = async (ids: string[]) => {
-        const videos = await getPublicVideosByIds(ids);
-        const prices = await quoteCurrentExamplePrices(Array.from(videos.values()));
-        for (const [id, price] of prices) examplePrices.set(id, price);
-        return videos;
-      };
       return projectModelPageGallery({
         engine, examples, managed: managedCuration,
         preferred: PREFERRED_MEDIA[engine.modelSlug] ?? {hero:null,demo:null},
         featuredIds: FEATURED_EXAMPLE_MEDIA[engine.modelSlug] ?? [],
-        getPublicVideosByIds: readPricedVideos,
+        getPublicVideosByIds,
         toCard: video => resolveGalleryCardHref(toGalleryCard(
           video, engine.brandId, localizedContent.marketingName ?? engine.marketingName,
-          engine.modelSlug, engine.id, backPath, appPath, examplePrices.get(video.id), locale,
+          engine.modelSlug, engine.id, backPath, appPath, undefined, locale,
         )),
       });
     }

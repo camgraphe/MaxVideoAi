@@ -9,7 +9,7 @@ const layoutPath = resolve('frontend/app/(localized)/[locale]/(marketing)/models
 const marketingPricingPath = resolve('frontend/src/lib/pricing-marketing.ts');
 
 /** Real route, layout, pricing loops, specs, metadata and schemas; controlled I/O only. */
-export async function makeModelPagePricingHarness({ legacyLabels = false } = {}) {
+export async function makeModelPagePricingHarness({ legacyLabels = false, executeGallery = false } = {}) {
   const directory = await mkdtemp(join(tmpdir(), 'model-page-pricing-'));
   let source = await readFile(routePath, 'utf8');
   if (legacyLabels) {
@@ -21,17 +21,21 @@ export async function makeModelPagePricingHarness({ legacyLabels = false } = {})
   const fixture = `
     export const calls = [];
     export const readers = [];
+    export const exampleQuoteCalls = [], publicReads = [], playlistReads = [];
     let state;
     let quote;
     let publicQuote;
-    export function configure(value) { state = value; calls.length = 0; readers.length = 0; }
+    export function configure(value) {
+      state = value; calls.length = 0; readers.length = 0;
+      exampleQuoteCalls.length = 0; publicReads.length = 0; playlistReads.length = 0;
+    }
     export function setQuote(value) { quote = value; }
     export function setPublicQuote(value) { publicQuote = value; }
     async function snapshot(context) {
       calls.push(context);
       if (quote) return quote(context);
       if (state.reject?.(context, calls.length)) throw new Error('current quote unavailable');
-      const rate = state.rates?.[context.resolution] ?? 10;
+      const rate = state.rates?.[context.resolution] ?? state.rate ?? 10;
       const quality = {low:1,medium:2,high:3}[context.quality] ?? 1;
       const audio = context.addons?.audio_off ? 0.5 : 1;
       return { totalCents: rate * quality * audio * context.durationSec, currency: 'USD',
@@ -44,11 +48,11 @@ export async function makeModelPagePricingHarness({ legacyLabels = false } = {})
       return state.unavailableOffer ? {status:'unavailable'}
         : {status:'exact',amountCents:123,currency:'USD'};
     }
-    export async function loadModelPageInputs() {
+    export async function loadModelPageInputs(_locale, loadGallery) {
       return { benchmarkScoreSlugs:new Set(),
         enginePricingOverrides:state.override ? {[state.engine.engine.id]:state.override} : {},
         keySpecsMap:new Map([[state.engine.modelSlug,{keySpecs:state.specs}]]),
-        gallery:{galleryVideos:[],preferredIds:{hero:null,demo:null},managed:false} };
+        gallery:${executeGallery ? 'await loadGallery()' : '{galleryVideos:[],preferredIds:{hero:null,demo:null},managed:false}'} };
     }
     export const getEngineLocalized = async () => state.localizedContent;
     export const resolveDictionary = async () => ({dictionary:{models:{detail:{}}}});
@@ -67,10 +71,18 @@ export async function makeModelPagePricingHarness({ legacyLabels = false } = {})
     export const buildModelArchiveMetadata = () => ({});
     export const modelExamplePlaylistKeys = () => [];
     export const projectModelPageGallery = () => undefined;
-    export const hasPlaylistCuration = () => false;
-    export const listPlaylistVideos = () => [];
-    export const getPublicVideosByIds = () => new Map();
-    export const quoteCurrentExamplePrices = () => new Map();
+    export const hasPlaylistCuration = () => Boolean(state.managed);
+    export const listPlaylistVideos = async (slug, limit) => {
+      playlistReads.push([slug,limit]); return state.examples ?? [];
+    };
+    export const getPublicVideosByIds = async ids => {
+      publicReads.push([...ids]);
+      return new Map((state.publicVideos ?? []).filter(video => ids.includes(video.id)).map(video => [video.id,video]));
+    };
+    export const quoteCurrentExamplePrices = async videos => {
+      exampleQuoteCalls.push(videos);
+      return new Map(videos.map(video => [video.id,{kind:'reference',amountCents:777,currency:'USD',modelId:video.engineId,scenarioLabel:'Text to video · 5s · 1080p'}]));
+    };
   `;
   const controlledRouteImports = new Set([
     '@/server/model-gallery-projection', '@/server/playlists/curation-service', '@/server/videos',
@@ -79,6 +91,7 @@ export async function makeModelPagePricingHarness({ legacyLabels = false } = {})
     './_lib/model-page-template-registry', './_lib/model-page-prelaunch-route',
     './_components/ModelArchivePage', './_lib/model-page-archive-metadata',
   ]);
+  if (executeGallery) controlledRouteImports.delete('@/server/model-gallery-projection');
   try {
     await build({
       stdin: { contents: `export {default as page,generateMetadata,renderMarketingModelPage as render} from ${JSON.stringify(routePath)};
