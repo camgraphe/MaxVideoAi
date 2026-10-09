@@ -429,3 +429,40 @@ test('Seedance video preflight derives input seconds from owned records instead 
   assert.equal(response.ok, true, JSON.stringify(response.error));
   assert.deepEqual(observed, { hasVideoInput: true, duration: 4.25 });
 });
+
+for (const { mode, slotId } of [
+  { mode: 'extend', slotId: 'extension_source_videos' },
+  { mode: 'v2v', slotId: 'video_url' },
+  { mode: 'ref2v', slotId: 'video_urls' },
+] as const) {
+  test(`Seedance ${mode} prices an owned upload whose duration is measured during validation`, async () => {
+    const engine = engineFor('seedance-2-5');
+    const url = 'https://media.maxvideoai.com/user-assets/pricing-user/multipart.mp4';
+    let pricedInputDuration: number | undefined;
+    const response = await resolveMediaAwarePreflight({
+      userId: 'pricing-user',
+      request: {
+        ...requestFor(engine, mode), durationSec: 4, resolution: '480p',
+        inputs: [{ assetId: 'multipart-video', slotId, kind: 'video', url }],
+      },
+    }, {
+      getConfiguredEngineFn: async () => engine,
+      computeConfiguredPreflightFn: async (request, options) => {
+        pricedInputDuration = options?.trustedMediaPricingFacts?.inputVideoDurationSec;
+        return computeConfiguredPreflight(request, options);
+      },
+      mediaConstraintDeps: {
+        queryFn: async () => [{
+          asset_id: 'multipart-video', url, origin_url: null,
+          original_name: 'video.mp4', mime_type: 'video/mp4', size_bytes: 33_353_296,
+          duration_sec: null, width: null, height: null,
+        }] as never[],
+        detectVideoDimensionsFn: async () => ({ width: 1918, height: 1080 }),
+        detectMediaDurationFn: async () => 15.041667,
+      },
+    });
+    assert.equal(response.ok, true, JSON.stringify(response.error));
+    assert.equal(pricedInputDuration, 15.041667);
+    assert.ok(typeof response.total === 'number' && response.total > 0);
+  });
+}
