@@ -95,18 +95,6 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.055) !important;
 }
 
-[data-theme="dark"] .home-hero-dark-grid {
-  background:
-    linear-gradient(rgba(143, 183, 255, 0.055) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(143, 183, 255, 0.045) 1px, transparent 1px),
-    radial-gradient(620px 220px at 54% 100%, rgba(37, 99, 235, 0.14), transparent 70%);
-  background-size: 78px 78px, 78px 78px, 100% 100%;
-  mask-image: linear-gradient(180deg, transparent 0%, black 34%, black 100%);
-  opacity: 0.55;
-  transform: perspective(720px) rotateX(58deg) translateY(18%);
-  transform-origin: bottom center;
-}
-
 a[href="https://dang.ai/"] {
   width: 1px;
   height: 1px;
@@ -161,40 +149,12 @@ main {
   box-shadow: theme('boxShadow.float');
 }
 
-.content-visibility-auto {
-  content-visibility: auto;
-  contain-intrinsic-size: 1000px;
-}
-
-.focus-ring {
-  @apply ring-2 ring-offset-2 ring-offset-bg ring-ring;
-}
-
-.chip-price {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid var(--brand);
-  color: var(--brand);
-  background-color: var(--surface);
-}
-
-.chip-price::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 9999px;
-  background: var(--brand);
-}
-
 :root[data-theme='dark'] .halo-hero,
-:root[data-theme='dark'] .halo-workspace-left,
 :root[data-theme='dark'] .halo-workspace-bottom {
   position: relative;
 }
 
 :root[data-theme='dark'] .halo-hero::before,
-:root[data-theme='dark'] .halo-workspace-left::before,
 :root[data-theme='dark'] .halo-workspace-bottom::before {
   content: '';
   position: absolute;
@@ -204,7 +164,6 @@ main {
 }
 
 :root[data-theme='dark'] .halo-hero > *,
-:root[data-theme='dark'] .halo-workspace-left > *,
 :root[data-theme='dark'] .halo-workspace-bottom > * {
   position: relative;
   z-index: 1;
@@ -214,38 +173,10 @@ main {
   background: radial-gradient(620px 360px at 50% 10%, rgba(91, 124, 250, 0.24), transparent 72%);
 }
 
-:root[data-theme='dark'] .halo-workspace-left::before {
-  background: radial-gradient(460px 320px at 22% 50%, rgba(91, 124, 250, 0.18), transparent 70%);
-}
-
 :root[data-theme='dark'] .halo-workspace-bottom::before {
   background:
     radial-gradient(640px 360px at 50% 118%, rgba(91, 124, 250, 0.28), transparent 72%),
     radial-gradient(520px 260px at 78% 120%, rgba(91, 124, 250, 0.22), transparent 70%);
-}
-
-.halo-hero-offset {
-  margin-top: calc(var(--section-padding-y) * -1);
-  padding-top: var(--section-padding-y);
-}
-
-[data-theme="dark"] .chip-price {
-  border-color: var(--on-brand);
-  color: var(--on-brand);
-}
-
-[data-theme="dark"] .chip-price::before {
-  background: var(--on-brand);
-}
-
-[data-theme="dark"] .member-status-pill[aria-pressed="true"] {
-  background: var(--brand) !important;
-  color: var(--on-brand) !important;
-  box-shadow: 0 10px 25px -12px rgba(91, 124, 250, 0.6) !important;
-}
-
-[data-theme="dark"] .member-status-pill[aria-pressed="true"]:hover {
-  background: var(--brand-hover) !important;
 }
 
 [data-theme="dark"] .price-estimator-border {
@@ -254,21 +185,6 @@ main {
 
 [data-theme="dark"] .price-estimator-surface {
   box-shadow: none;
-}
-
-[data-theme='dark'] .reference-start-card {
-  border-color: rgba(255, 255, 255, 0.08);
-  background: linear-gradient(180deg, rgba(18, 25, 35, 0.98), rgba(14, 20, 28, 0.96));
-  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.24);
-}
-
-[data-theme='dark'] .reference-start-card__media {
-  border-color: rgba(255, 255, 255, 0.08);
-  background: linear-gradient(180deg, #1b2430, #141c26);
-}
-
-[data-theme='dark'] .reference-start-card__body {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0));
 }
 
 [data-theme='dark'] .tool-hero-surface {
@@ -293,7 +209,6 @@ main {
 
 [data-theme='dark'] .character-builder-panel,
 [data-theme='dark'] .character-builder-panel-soft,
-[data-theme='dark'] .angle-solution-card,
 [data-theme='dark'] .tool-surface-card {
   border-color: rgba(255, 255, 255, 0.08);
   background: linear-gradient(180deg, rgba(19, 27, 38, 0.98), rgba(15, 22, 31, 0.96));
@@ -353,30 +268,10 @@ main {
   color: var(--text-secondary);
 }
 
-[data-theme='dark'] .angle-thumb-card,
-[data-theme='dark'] .angle-product-mock__frame {
-  border-color: rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
-}
-
-[data-theme='dark'] .angle-thumb-copy {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-[data-theme='dark'] .angle-product-mock {
-  border-color: rgba(255, 255, 255, 0.08);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
-}
-
 [data-theme='dark'] .angle-how-step {
   border-color: rgba(255, 255, 255, 0.08);
   background: linear-gradient(180deg, rgba(19, 27, 38, 0.98), rgba(15, 22, 31, 0.96));
   box-shadow: 0 16px 44px rgba(0, 0, 0, 0.18);
-}
-
-[data-theme='dark'] .angle-showcase-header {
-  border-color: rgba(255, 255, 255, 0.08);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
 }
 
 @layer components {
@@ -442,18 +337,6 @@ main {
 
   .grid-gap-xl {
     gap: var(--grid-gap-xl);
-  }
-}
-
-@keyframes mosaicDrift {
-  0% {
-    transform: translate3d(0%, 0%, 0) scale(1.05);
-  }
-  50% {
-    transform: translate3d(-4%, -3%, 0) scale(1.05);
-  }
-  100% {
-    transform: translate3d(0%, 0%, 0) scale(1.05);
   }
 }
 
