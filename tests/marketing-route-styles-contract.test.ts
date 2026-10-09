@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const marketing = 'frontend/app/(localized)/[locale]/(marketing)/';
@@ -43,4 +43,16 @@ test('MCP CSS belongs to the synchronous views shared by English and localized r
   }
   assert.match(readFileSync('frontend/src/styles/marketing-navigation.css', 'utf8'), /\.marketing-mcp-tag\s*\{/,
     'the shared navigation badge must remain styled without the route-only MCP sheet');
+});
+
+test('blog prose CSS belongs to article layouts in both route trees', () => {
+  const indexLayout = marketing + 'blog/layout.tsx';
+  // The parent/index route must not introduce an article-only blocking sheet.
+  if (existsSync(indexLayout)) assert.doesNotMatch(readFileSync(indexLayout, 'utf8'), /blog-prose\.css/);
+  const articleLayout = readFileSync(marketing + 'blog/[slug]/layout.tsx', 'utf8');
+  assert.match(articleLayout, /import ['"]\.\.\/blog-prose\.css['"]/);
+  assert.doesNotMatch(articleLayout, /^\s*['"]use client['"]|\buseEffect\b|\bimport\(/);
+  const englishLayout = readFileSync('frontend/app/blog/[slug]/layout.tsx', 'utf8');
+  assert.match(englishLayout, /\(localized\).*\/blog\/\[slug\]\/layout/);
+  assert.match(englishLayout, /<BlogArticleLayout>\{children\}<\/BlogArticleLayout>/);
 });

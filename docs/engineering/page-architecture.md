@@ -29,6 +29,26 @@ values: its route sheet can arrive last during SPA navigation. More specific
 proof and caption typography remains owned by MCP;
 `tests/marketing-mcp-cascade-browser.test.ts` checks both stylesheet orders.
 
+Blog Markdown prose belongs to `blog/blog-prose.css`, imported synchronously by
+the localized `blog/[slug]/layout.tsx`. The English article layout composes that
+same owner; the blog index does not import it. Keep this sheet as ordinary
+`.blog-prose` rules with `@apply`: `globals.css` owns the Tailwind reset and utility
+bundle. An isolated `@layer components` needs a corresponding Tailwind directive,
+and adding the three global directives here duplicates the site bundle. Preserve
+the existing selectors and declarations when changing this boundary, including
+the separate `not-prose` exclusions in typography rules and the explicit native
+media rules. The newer editorial reader keeps its own `editorial-article.css`.
+The 2026-10-09 real PostCSS comparison reduced the unminified blog sheet from
+302,911 to 20,603 bytes, retaining all 118 article rules and identical global CSS.
+`tests/blog-prose-styles.test.ts` rejects unscoped output and keeps this compiled
+sheet below 24 KiB; `tests/blog-prose-cascade-browser.test.ts` checks both shared
+stylesheet orders and retained article CSS at mobile and desktop widths. These
+byte and cascade checks do not establish field Core Web Vitals gains.
+Current rendered Markdown articles have no descendants with utility classes.
+If that markup contract changes, recheck equal-specificity font/size utilities:
+the article sheet can arrive after the global utilities during navigation, so
+the old duplicate bundle's utility ordering is not a contract for future markup.
+
 ## Server Page Pattern
 
 Use this for marketing, SEO, model, comparison, docs, examples, legal, and admin server pages.
