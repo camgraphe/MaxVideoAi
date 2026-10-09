@@ -115,6 +115,15 @@ manual runs use separate concurrency groups and do not cancel the PR's check.
 Before merge, wait for Quality CI on the latest candidate and follow the normal
 production alignment checks in `docs/deployment/github-vercel.md`.
 
+`frontend/next.config.js` explicitly enables `experimental.webpackBuildWorker`
+because next-intl adds a custom Webpack hook, which disables Next 15's automatic
+worker selection. This is a build-memory mitigation; it does not establish the
+cause of a previous OOM. Keep `webpackMemoryOptimizations` and lint/type gates
+enabled. Changes to this setting or the plugin require a complete source build
+and CSS/route output parity checks because custom plugins can be incompatible
+with the worker. See [Next's memory guide](https://nextjs.org/docs/app/guides/memory-usage#webpack-build-worker)
+and the [Next 15.5.25 build source](https://github.com/vercel/next.js/blob/v15.5.25/packages/next/src/build/index.ts).
+
 ## Lighthouse
 
 Lighthouse measures the live production URLs daily at 05:41 UTC and on manual

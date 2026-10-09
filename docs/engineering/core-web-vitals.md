@@ -255,6 +255,64 @@ First prove the implicated phase/interaction improved on the unchanged user jour
 
 ## Marketing navigation rendering
 
+### Editorial typography ownership
+
+The default `tailwind.config.ts` owns the shared theme, reset and utilities without
+the typography plugin. `tailwind.typography.config.ts` extends that same config
+and enables the plugin only for the native editorial sheets. The docs detail
+route and BestFor editorial component synchronously import
+`components/marketing/public-prose.css`; their `public-prose prose` wrapper
+preserves the effective `prose prose-slate max-w-none` cascade. Keep the `prose`
+marker because Tailwind `@apply` leaves seven literal internal `.prose >`
+references in first/last-child and list selectors. The marker emits no global
+typography with the default plugin absent. Blog keeps its
+existing article-only `blog-prose.css` output with the dedicated config. Keep
+these imports out of shared layouts and avoid adding Tailwind reset/utility
+directives to a reader sheet.
+
+The 2026-10-09 isolated production builds retain every non-typography global rule
+and reduce the global CSS from 242,672 to 229,247 decoded bytes. Controlled gzip
+at level 6 falls from 37,574 to 35,862 bytes; those numbers are separate from CDN
+encoding and live transfer sizes. Public prose adds a 13,822-byte sheet (1,866
+bytes controlled gzip), so docs/BestFor pay 397 more decoded bytes, 154 more
+controlled gzip bytes and one extra stylesheet request. The blog sheet remains
+byte-identical at 16,996 decoded bytes (2,341 bytes controlled gzip). These builds
+use installed Next 15.5.18, while the manifest and CI specify 15.5.25; CI and
+deployment verification remain required. A CSS byte saving alone establishes no
+FCP, LCP or field Core Web Vitals gain.
+
+Count the exact route when comparing totals: local `/blog` index has five CSS
+requests, 308,131 to 294,706 decoded bytes; `/blog/compare-ai-video-engines`
+article has seven, 329,645 to 316,220 bytes, including its two article sheets.
+These local decoded-body totals do not establish production CDN transfer sizes.
+The qualified browser matrix covers 80 direct visits across EN/FR/ES and
+390/1440 widths, plus 144 client transitions, with identical visible content,
+geometry, computed typography, canonical/hreflang and JSON-LD. Failed initial
+paths and the pre-marker margin regression are retained in the raw evidence.
+
+Local EN mobile timing uses three cold visits per build/route in alternating
+order, CPU 4x, latency 150 ms and download 200,000 B/s, with no database configured
+and no consent interaction. Observers start before navigation; the snapshot is
+five seconds after `load`. FCP and the last LCP candidate observed in that window
+are both 700 ms median (700–704) to 708 ms (704–712) on docs and 880 ms (872–896)
+to 884 ms (880–892) on BestFor; observed CLS is zero. Keep this possible small
+reader cost visible alongside the extra request; the overlapping or touching
+ranges and small sample remain inconclusive. These samples do not measure final LCP,
+the full session, production data behavior or field Core Web Vitals.
+
+The current 45 docs/BestFor source documents produce no utility-bearing
+descendants; generated `language-*` code labels are allowed. A native sheet
+arriving after global utilities can win an equal-specificity declaration, so
+`.public-prose` is scoped to this current Markdown contract. New descendant
+utility classes require an intentional cascade review. The generated-content
+guard in `tests/public-prose-styles.test.ts` fails when that boundary changes;
+its compilation checks preserve ordered effective Slate variables, all 86
+descendant selectors in their original order and exact blog output.
+`tests/public-prose-cascade-browser.test.ts` checks all 45 generated HTML bodies,
+both themes, 390/1440 widths, stylesheet orders, retained CSS, `.not-prose`,
+first/last-child and nested-list overlaps, typography and native media. Real
+route/load evidence remains separate from those fixtures.
+
 `MarketingDesktopNav` keeps its complete server-rendered link tree, but skips unchanged renders when its parent updates mobile or account state. Keep its open/close callbacks stable; desktop selection, pathname and translation changes must still invalidate it. `tests/marketing-navigation-rendering.test.ts` exercises these boundaries through the real navigation components and translation provider. It does not replace real-browser interaction timing, localized navigation or field INP validation.
 
 `MarketingMotion` reads initial section geometry from IntersectionObserver entries, not a synchronous layout loop over deferred content. Initial viewport content and sections above an anchor arrival stay still; eligible sections animate only after crossing the 8% threshold. Keep reduced-motion and route cleanup effective. Browser layout and total CWV still need measurement; avoiding explicit geometry reads alone does not quantify an LCP gain.

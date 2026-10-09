@@ -99,6 +99,9 @@ const nextConfig = {
   trailingSlash: false,
   transpilePackages: ['@maxvideoai/pricing'],
   experimental: {
+    // next-intl's Webpack hook disables Next's automatic build worker.
+    // Keep compilation in a worker as a build-memory mitigation.
+    webpackBuildWorker: true,
     webpackMemoryOptimizations: true,
   },
   images: {

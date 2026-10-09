@@ -1,0 +1,7 @@
+@config "../../tailwind.typography.config.ts";
+
+/* Native Markdown reader rules; globals.css owns reset and utilities.
+   Keep the wrapper's prose marker: @apply retains internal .prose selectors. */
+.public-prose {
+  @apply prose prose-slate max-w-none;
+}
