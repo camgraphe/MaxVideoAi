@@ -1,3 +1,5 @@
+@config "../../../../../tailwind.typography.config.ts";
+
 /* Standalone article rules: globals.css owns Tailwind's reset and utilities.
    Keep @apply outside a Tailwind layer so this route sheet compiles on its own. */
   .blog-prose {

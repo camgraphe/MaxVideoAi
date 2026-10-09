@@ -1,4 +1,5 @@
 import type { ContentEntry } from '@/lib/content/markdown';
+import '@/components/marketing/public-prose.css';
 import { Check, ChevronRight } from 'lucide-react';
 import type { AppLocale } from '@/i18n/locales';
 import type {
@@ -81,7 +82,7 @@ export function BestForContent({ content, contentComing }: { content: ContentEnt
 
   return (
     <article id="full-analysis" className="rounded-[16px] border border-hairline bg-surface p-6 shadow-card sm:p-8">
-      <div className="prose prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: content.content }} />
+      <div className="public-prose prose" dangerouslySetInnerHTML={{ __html: content.content }} />
     </article>
   );
 }

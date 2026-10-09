@@ -1,13 +1,28 @@
 import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
 import test from 'node:test';
 
 import { generateMetadata as generateBestForHubMetadata } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/best-for/page.tsx';
-import { generateMetadata as generateBestForDetailMetadata } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/best-for/[usecase]/page.tsx';
 import {
   buildBestForMetaDescription,
   buildReasonSentence,
 } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/best-for/[usecase]/_lib/best-for-detail-presentation.ts';
 import type { BestForEntry, RankedPick } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/best-for/[usecase]/_lib/best-for-detail-config.ts';
+
+// This metadata test loads the server route in Node; the real route sheet is
+// independently compiled and checked by the public-prose style/browser tests.
+const requireRoute = createRequire(import.meta.url);
+const generateBestForDetailMetadata = (() => {
+  const previous = requireRoute.extensions['.css'];
+  requireRoute.extensions['.css'] = () => {};
+  try {
+    return (requireRoute('../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/best-for/[usecase]/page.tsx') as
+      typeof import('../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/best-for/[usecase]/page')).generateMetadata;
+  } finally {
+    if (previous) requireRoute.extensions['.css'] = previous;
+    else delete requireRoute.extensions['.css'];
+  }
+})();
 
 const BEST_FOR_EXPECTED_SNIPPETS = [
   {

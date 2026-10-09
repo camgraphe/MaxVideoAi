@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import '@/components/marketing/public-prose.css';
 import { notFound } from 'next/navigation';
 import { FEATURES } from '@/content/feature-flags';
 import { Link } from '@/i18n/navigation';
@@ -261,7 +262,7 @@ export default async function DocPage(props: { params: Promise<Params> }) {
           <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{doc.title}</h1>
           <p className="text-base leading-relaxed text-text-secondary">{doc.description}</p>
         </header>
-        <div className="prose prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: doc.content }} />
+        <div className="public-prose prose" dangerouslySetInnerHTML={{ __html: doc.content }} />
         {relatedDocs.length ? (
           <p className="text-sm text-text-muted">
             <Link href="/docs" className="underline underline-offset-2 hover:text-text-primary">
