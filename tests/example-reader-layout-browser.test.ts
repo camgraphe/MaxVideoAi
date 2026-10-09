@@ -92,11 +92,12 @@ async function createPlaybackFixture() {
 }
 
 test('real reader Play keeps focus, Escape restoration and media geometry for pointer and keyboard', { timeout: 60_000 }, async t => {
-  const fixture = await createPlaybackFixture();
-  const browser = await chromium.launch({ headless: true });
   const evidenceDirectory = process.env.READER_PLAY_FOCUS_EVIDENCE_DIR;
   const evidence: unknown[] = [];
+  let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
+  const fixture = await createPlaybackFixture();
   try {
+    browser = await chromium.launch({ headless: true });
     for (const viewport of [{ width: 1365, height: 900 }, { width: 390, height: 844 }]) {
       for (const activation of ['pointer', 'Enter', 'Space', 'denied'] as const) {
         const page = await browser.newPage({ viewport });
@@ -176,7 +177,11 @@ test('real reader Play keeps focus, Escape restoration and media geometry for po
     await page.close();
     t.diagnostic(JSON.stringify({ browser: browser.version(), scenarios: evidence.length, standaloneWatch: true, fixture: fixture.url }));
   } finally {
-    if (evidenceDirectory) { await mkdir(evidenceDirectory, { recursive: true }); await writeFile(join(evidenceDirectory, 'reader-play-focus.json'), JSON.stringify(evidence, null, 2)); }
-    await browser.close(); await fixture.close();
+    try {
+      if (evidenceDirectory) { await mkdir(evidenceDirectory, { recursive: true }); await writeFile(join(evidenceDirectory, 'reader-play-focus.json'), JSON.stringify(evidence, null, 2)); }
+    } finally {
+      try { await browser?.close(); }
+      finally { await fixture.close(); }
+    }
   }
 });
