@@ -167,7 +167,8 @@ policy across both engines and keeps every quote's tariff transaction separate.
 The PG17 contract measures Veo 3.1/Fast's six 4-second audio scenarios at
 720p/1080p/4K: 30 to 25 pricing commands, with policy SELECTs 6 to 1 and all six
 tariff transactions retained. EN/FR/ES complete contexts, snapshots and route
-pricing outputs match for healthy, partial, empty-policy and unavailable cases.
+pricing outputs match for healthy, partial and unavailable cases. The empty-policy
+case is covered in EN.
 Veo/Lite has five quoted points, not six. These counts describe pricing commands
 only. A shared transient policy failure affects the concurrent group together;
 later work may retry, while a new render has a fresh scope. See the pricing guide
