@@ -13,6 +13,7 @@ export function ConversationTask({task,projectId,accountKey,locale,onChanged,onS
   return <section className={styles.card} aria-label={t('Studio task','Demande Studio')} data-state={task.state}>
     <strong role="status">{phases[task.phase]}</strong>
     <p>{task.model==='gpt-6-luna'?t('Luna · Included assistance','Luna · Assistance incluse'):`${task.consumedCredits} ${t('credits used','crédits consommés')} / ${task.maxCredits} ${t('maximum','maximum')}`}{task.reservedCredits>0&&` · ${task.reservedCredits} ${t('reserved','réservés')}`}</p>
+    {task.model==='gpt-6-luna'&&task.consumedCredits>0&&<p>{task.consumedCredits} {t('Sol credits already used','crédits Sol déjà consommés')}</p>}
     {task.error&&<p>{reasons[task.error]}</p>}
     {task.state==='queued'&&<p>{t('You can leave this page. Your request stays saved. If the wait continues, cancel it and try later.','Vous pouvez quitter cette page. Votre demande reste enregistrée. Si l’attente se prolonge, annulez-la et réessayez plus tard.')}</p>}
     <div className={styles.actions}>

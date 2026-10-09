@@ -1,6 +1,7 @@
 import {readStudioAnalysisExposure} from './media-analysis/exposure';
 import {readStudioTaskBudget,enforceStudioTaskBounds,enforceStudioTaskQuote} from './tasks/budget';
-import {studioTaskFundingRequestIds} from './tasks/repository';
+import {studioTaskFundingRequestIds,readStudioTaskUsage} from './tasks/repository';
+import {studioTasksEnabled} from './tasks/policy';
 import {randomUUID} from 'node:crypto';
 import {query,withDbTransaction,type QueryExecutor,type TransactionQueryExecutor} from '@/lib/db';
 import {reserveWalletChargeInExecutor} from '@/lib/wallet';
@@ -17,6 +18,8 @@ import {ensureStudioMonthlyCredits,readStudioCreditBalance,existingStudioCreditP
 const CAMPAIGN = STUDIO_ASSISTANCE_CAMPAIGN_ID;
 type Account = {user_id:string;selected_model:StudioAssistantModel;paid_enabled:boolean;paid_authorized_cents:number;tariff_version:string|null;sol_limit_nano_usd:string|number;luna_limit_nano_usd:string|number;revision:string|number};
 export type AssistanceTurn = {model:StudioAssistantModel;mode:StudioAssistanceMode;tariff_version:string;policy_version:string};
+/** Server-only proof from a declined Sol preflight; subsequent Luna calls use their saved task evidence. */
+export type StudioLunaFallback = {solBounds?:{inputTokens:number;outputTokens:number}};
 export type AssistanceCall = {id:string;user_id:string;project_id:string;request_id:string;lease_id:string;response_index:number;model:StudioAssistantModel;mode:StudioAssistanceMode;state:'reserved'|'unknown'|'settled';reserved_nano_usd:string|number;reserved_cents:number;input_token_bound:number;output_token_bound:number;response_id:string|null;tariff_version:string;rate_version:string;policy_version:string};
 export function assistanceError(reason:string,message:string,safeToStartNewRequest=false,completedModelCalls=0,canStartFollowup=!safeToStartNewRequest&&completedModelCalls>0):never {throw new AgentApiError('SPENDING_LIMIT_EXCEEDED',message,false,{type:'studio_assistance',reason,safeToStartNewRequest,canStartFollowup,completedModelCalls});}
 export async function stopStudioAssistanceReplay(actor:StudioGenerationActor,requestId:string):Promise<never>{
@@ -65,7 +68,10 @@ export async function readStudioAssistanceStatus(userId:string,policy=studioAssi
   if(policy.enabled&&policy.credits){
     const credits=await readStudioCreditBalance(db,userId),mode=accountMode(account,policy),paid=paidEnabled(account,policy);
     const available=credits.included.remaining+(paid?credits.purchased.remaining:0),sponsoredAvailable=remaining>0;
-    const blockedReason=!sponsoredAvailable&&(mode==='sponsored_luna'||credits.included.remaining>0)?'campaign_exhausted':mode==='sponsored_luna'?null:available<=0?(paid?'paid_budget_exhausted':'included_exhausted'):null;
+    const solBlockedReason=!sponsoredAvailable&&(mode==='sponsored_luna'||credits.included.remaining>0)?'campaign_exhausted':mode==='sponsored_luna'?null:available<=0?(paid?'paid_budget_exhausted':'included_exhausted'):null;
+    const canFallback=policy.enabled&&studioTasksEnabled()&&sponsoredAvailable&&usage.unresolved===0
+      &&(solBlockedReason==='included_exhausted'||solBlockedReason==='paid_budget_exhausted');
+    const blockedReason=canFallback?null:solBlockedReason;
     return {enabled:true,policyVersion:studioAssistancePolicyVersion(policy),revision:Number(account.revision),selectedModel:account.selected_model,mode,tariff:STUDIO_ASSISTANCE_CREDIT_TARIFF,credits,sponsoredAvailable,
       includedSol:{remainingPercent:credits.included.remaining/credits.included.total*100,renewal:'monthly'},sponsoredLuna:{remainingPercent:100,renewal:'unlimited'},
       paid:{enabled:paid,authorizedCents:credits.purchased.total/10,spentCents:(credits.purchased.total-credits.purchased.remaining-credits.purchased.reserved)/10,reservedCents:credits.purchased.reserved/10,remainingCents:credits.purchased.remaining/10,maxAdditionalBudgetCents:1000},
@@ -131,14 +137,14 @@ async function creditTurnBasis(tx:QueryExecutor,call:{user_id:string;project_id:
   const row=(await tx.query<{basis:string;charged:string;sponsored:boolean}>(`SELECT COALESCE(sum(c.tariff_basis_nano_usd),0)::text basis,COALESCE(sum(f.charged_cents),0)::text charged,COALESCE(bool_or(f.reserved_sponsored_nano_usd>0),false) sponsored FROM studio_assistance_calls c JOIN studio_assistance_credit_funding f ON f.call_id=c.id WHERE c.user_id=$1 AND c.project_id=$2 AND c.request_id=ANY($3::uuid[]) AND c.state='settled' AND NOT EXISTS(SELECT 1 FROM studio_assistance_resolutions w WHERE w.call_id=c.id AND w.action='waive_unknown')`,[call.user_id,call.project_id,ids]))[0];
   return {basis:Number(row.basis),charged:Number(row.charged),sponsored:row.sponsored};
 }
-export async function reserveStudioAssistanceCall(input:{userId:string;projectId:string;requestId:string;leaseId:string;index:number;inputTokens:number;outputTokens:number},policy=studioAssistancePolicy(),executor?:TransactionQueryExecutor):Promise<AssistanceCall>{
+export async function reserveStudioAssistanceCall(input:{userId:string;projectId:string;requestId:string;leaseId:string;index:number;inputTokens:number;outputTokens:number;lunaFallback?:StudioLunaFallback},policy=studioAssistancePolicy(),executor?:TransactionQueryExecutor):Promise<AssistanceCall>{
   requireEnabled(policy);
   const reserve=async(tx:TransactionQueryExecutor)=>{
     if(await getActiveAccountRestrictionInExecutor(input.userId,tx)) {
       throw new AgentApiError('ACCOUNT_RESTRICTED','This account is temporarily restricted. Open MaxVideoAI for help.');
     }
     const account=await lockAccount(tx,input.userId,policy);
-    const turn=(await tx.query<AssistanceTurn>('SELECT * FROM studio_assistance_turns WHERE user_id=$1 AND project_id=$2 AND request_id=$3',[input.userId,input.projectId,input.requestId]))[0];
+    let turn=(await tx.query<AssistanceTurn>('SELECT * FROM studio_assistance_turns WHERE user_id=$1 AND project_id=$2 AND request_id=$3',[input.userId,input.projectId,input.requestId]))[0];
     if(!turn)throw new AgentApiError('PARAMETER_INVALID','This assistance request is unavailable.');
     const tariff=policy.credits?STUDIO_ASSISTANCE_CREDIT_TARIFF:STUDIO_ASSISTANCE_TARIFF;
     const counts=(await tx.query<{dispatched:string;completed:string;unresolved:string}>(`SELECT count(*)::text dispatched,count(*) FILTER(WHERE state='settled')::text completed,count(*) FILTER(WHERE state<>'settled' AND NOT EXISTS(SELECT 1 FROM studio_assistance_resolutions w WHERE w.call_id=c.id AND w.action='waive_unknown'))::text unresolved FROM studio_assistance_calls c WHERE user_id=$1 AND project_id=$2 AND request_id=$3`,[input.userId,input.projectId,input.requestId]))[0];
@@ -151,12 +157,32 @@ export async function reserveStudioAssistanceCall(input:{userId:string;projectId
     if(!task&&(input.index>=STUDIO_ASSISTANCE_TARIFF.maxCallsPerMessage||dispatched>=STUDIO_ASSISTANCE_TARIFF.maxCallsPerMessage))assistanceError('call_limit','This message reached its model-call limit.',false,dispatched);
     const safeToStartNewRequest=dispatched===0;
     const fail=(reason:string,message:string):never=>assistanceError(reason,message,safeToStartNewRequest,dispatched);
+    const usage=await totals(tx,input.userId,policy);
+    if(input.lunaFallback){
+      if(!policy.credits||!task||turn.model!=='gpt-6.1-sol')throw new AgentApiError('PARAMETER_INVALID','Luna fallback requires an owned Sol task under the credit policy.');
+      const taskUsage=await readStudioTaskUsage(task,tx);
+      if(usage.unresolved||taskUsage.unknownCalls)assistanceError('usage_unresolved','Recover unresolved usage before continuing with Luna.');
+      if(input.outputTokens>2200)throw new AgentApiError('PARAMETER_INVALID','Luna fallback needs a bounded response.');
+      if(!taskUsage.usedLuna){
+        const bounds=input.lunaFallback.solBounds;
+        if(!bounds||!Number.isSafeInteger(bounds.inputTokens)||bounds.inputTokens<0||!Number.isSafeInteger(bounds.outputTokens)||bounds.outputTokens<1)throw new AgentApiError('PARAMETER_INVALID','The declined Sol request bounds are required.');
+        enforceStudioTaskBounds(task,{...input,...bounds},dispatched);
+        const total=await creditTurnBasis(tx,{user_id:input.userId,project_id:input.projectId,request_id:input.requestId});
+        const solReservation=studioProviderReservation('gpt-6.1-sol',bounds.inputTokens,bounds.outputTokens,task.profile_json.maxOutputTokens);
+        const quote=quoteStudioAssistance(total.basis+solReservation,turn.tariff_version);
+        enforceStudioTaskQuote(task,quote.customerTotalCents);
+        const paidSuspended=turn.mode==='paid_sol'&&(!account.paid_enabled||account.tariff_version!==turn.tariff_version);
+        if(!paidSuspended&&await planStudioCreditReservation(tx,input.userId,quote.customerTotalCents-total.charged,solReservation,turn.mode==='paid_sol'&&account.paid_enabled,total.sponsored))throw new AgentApiError('PARAMETER_INVALID','The Sol request can still be funded.');
+      }
+      // Keep the task/turn authorization immutable. This new call records its actual sponsored model.
+      turn={...turn,model:'gpt-6-luna',mode:'sponsored_luna'};
+    }
     if(policy.credits&&turn.model==='gpt-6-luna'){
       if(input.inputTokens>(policy.lunaMaxInputTokens??128000))fail('luna_request_too_large','This very large context needs GPT-6.1 Sol or a shorter request.');
       const active=await tx.query(`SELECT c.id FROM studio_assistance_calls c WHERE user_id=$1 AND model='gpt-6-luna' AND state<>'settled' AND request_id<>$2 AND NOT EXISTS(SELECT 1 FROM studio_assistance_resolutions w WHERE w.call_id=c.id AND w.action='waive_unknown')`,[input.userId,input.requestId]);
       if(active.length)fail('luna_busy','Wait for your current Luna message to finish or recover its saved response.');
     }
-    const reserved=studioProviderReservation(turn.model,input.inputTokens,input.outputTokens,task?.profile_json.maxOutputTokens??2200),usage=await totals(tx,input.userId,policy);
+    const reserved=studioProviderReservation(turn.model,input.inputTokens,input.outputTokens,task?.profile_json.maxOutputTokens??2200);
     if((await readStudioAnalysisExposure(tx,input.userId)).unresolved>0)assistanceError('usage_unresolved','This account has unresolved analysis usage. Recover that analysis before another model call.');
     let cents=0,receiptId:string|null=null,creditPlan:CreditReservation|null=null;const id=randomUUID();
     if(policy.credits&&turn.model==='gpt-6.1-sol'){

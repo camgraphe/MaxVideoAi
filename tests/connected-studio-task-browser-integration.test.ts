@@ -72,6 +72,29 @@ test('task ceilings, explicit continuation and saved progress work on desktop/mo
     await expect(page.getByText('The requested guidance is complete.')).toBeVisible({timeout:15_000});assert.equal(calls,3);
     await page.reload();await expect(page.getByText('The requested guidance is complete.')).toBeVisible();assert.equal(calls,3);
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM studio_tasks')).rows[0].n,1);
+    await runtime.database.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=380 WHERE user_id=$1',[STUDIO_FIXTURE_OWNERS[0]]);
+    await picker.getByRole('radio',{name:/Complex/}).check();await picker.getByRole('checkbox').check();
+    await message.fill('Continue with the approved vertical framing.');
+    const fallbackPosted=page.waitForResponse(response=>response.url().endsWith('/image-conversation')&&response.request().method()==='POST');
+    await send.click();assert.equal((await fallbackPosted).status(),200);
+    await runStudioTaskWorkerOnce({...worker,serviceOptions:{...worker.serviceOptions,createActionResponse:async params=>{
+      calls++;assert.equal(params.model,'gpt-6-luna');assert.match(JSON.stringify(params.input),/approved vertical framing/);
+      return {id:'fallback-finished',model:params.model!,status:'completed' as const,service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50},output_text:JSON.stringify({reply:'Continued with the approved framing.'}),output:[]};
+    }}});
+    await expect(page.getByText('Continued with the approved framing.')).toBeVisible({timeout:15_000});
+    await expect(page.getByRole('region',{name:'Studio task'}).last().getByText('Luna · Included assistance')).toBeVisible();
+    await page.reload();await expect(page.getByText('Continued with the approved framing.')).toBeVisible();assert.equal(calls,4);
+    assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM mcp_generation_quotes')).rows[0].n,0,'Assistance fallback cannot implicitly prepare or confirm generation');
+    await runtime.database.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=500 WHERE user_id=$1',[STUDIO_FIXTURE_OWNERS[0]]);
+    await page.reload();await expect(picker).toBeVisible();
+    await picker.getByRole('radio',{name:/Complex/}).check();await picker.getByRole('checkbox').check();
+    await message.fill('Continue when no Sol credits remain.');await expect(send).toBeEnabled();
+    const zeroPosted=page.waitForResponse(response=>response.url().endsWith('/image-conversation')&&response.request().method()==='POST');
+    await send.click();assert.equal((await zeroPosted).status(),200);
+    await runStudioTaskWorkerOnce({...worker,serviceOptions:{...worker.serviceOptions,createActionResponse:async params=>{
+      calls++;assert.equal(params.model,'gpt-6-luna');return {id:'zero-finished',model:params.model!,status:'completed' as const,service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50},output_text:JSON.stringify({reply:'Continued with zero Sol credits.'}),output:[]};
+    }}});
+    await expect(page.getByText('Continued with zero Sol credits.')).toBeVisible({timeout:15_000});assert.equal(calls,5);
   }catch(error){
     console.error(summarizeStudioReadinessFailure(runtime.readLogs(),8000));
     throw error;
