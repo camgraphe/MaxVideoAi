@@ -456,6 +456,19 @@ are removed from the supporting strip to avoid duplicate choices; unavailable ex
 quotes stay in the matrix's existing fallback presentation. Labels and the indicative
 USD/live-quote explanation are authored in the three locale message files.
 `tests/pricing-quick-start.test.ts` locks matrix parity and the server boundary.
+`buildCurrentPricingHubData` groups identical authored video/image quote inputs
+within each hub construction before its eight-worker queue starts. One current
+canonical result updates every matching matrix cell, retaining each cell's note,
+localized formatting and existing sorting/highlight ownership. Every construction
+creates fresh groups; unavailable results and unexpected quote rejections cannot
+be cached into a later request. Audio and fixed-product readers follow the model
+queue through a shared twelve-worker queue in `buildCurrentOtherPricing`, so a
+pending audio quote cannot hold every fixed-product read behind it. This preserves
+their former maximum of twelve concurrent reads, exact inputs, Character Builder
+quantities, validation and truthful live-quote fallbacks.
+`tests/current-other-pricing-queue.test.ts` covers this boundary.
+`tests/current-pricing-hub-queue.test.ts` covers complete input
+coverage, bounded distinct work, duplicate projection and fresh-request recovery.
 Scenario clicks reuse the consent-controlled `cta_click` bridge with the explicitly
 allowed `pricing_scenario` / `pricing_hero` values. These are aggregate card clicks;
 they do not prove a paid conversion or distinguish the three scenarios.

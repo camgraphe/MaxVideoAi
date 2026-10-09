@@ -37,14 +37,15 @@ export async function buildCurrentOtherPricing(
   dependencies: CurrentOtherPricingDependencies = defaults,
 ): Promise<PricingHubData['otherSurfaces']> {
   const copy = getPricingHubCopy(locale);
-  const format = async (quote: () => Promise<Amount>) => {
+  const tasks: Array<() => Promise<void>> = [];
+  const format = (quote: () => Promise<Amount>) => new Promise<string>((resolve) => tasks.push(async () => {
     try {
       const amount = await quote();
       if (!Number.isSafeInteger(amount.totalCents) || amount.totalCents < 0 || !amount.currency) throw new Error('Invalid price');
-      return formatCurrencyForLocale(locale, amount.currency, amount.totalCents / 100);
-    } catch { return copy.liveQuote; }
-  };
-  const audioRows = await Promise.all(base.audioRows.map(async (row) => {
+      resolve(formatCurrencyForLocale(locale, amount.currency, amount.totalCents / 100));
+    } catch { resolve(copy.liveQuote); }
+  }));
+  const audioRows = Promise.all(base.audioRows.map(async (row) => {
     const preset = audioPresets[row.id];
     if (!preset) return { ...row, thirtySeconds: copy.liveQuote, sixtySeconds: copy.liveQuote, oneTwentySeconds: copy.liveQuote };
     if (getAudioPackConfig(preset.pack).requiresVideo) {
@@ -56,7 +57,7 @@ export async function buildCurrentOtherPricing(
     }))));
     return { ...row, thirtySeconds: prices[0], sixtySeconds: prices[1], oneTwentySeconds: prices[2] };
   }));
-  const toolRows = await Promise.all(base.toolRows.map(async (row) => {
+  const toolRows = Promise.all(base.toolRows.map(async (row) => {
     const preset = toolPresets[row.id];
     if (!preset) return { ...row, standardOutput: copy.liveQuote, proOutput: copy.liveQuote };
     const values = await Promise.all([0, 1].map((index) => format(() => dependencies.product({
@@ -69,5 +70,9 @@ export async function buildCurrentOtherPricing(
     };
     return { ...row, standardOutput: display(row.standardOutput, values[0]), proOutput: display(row.proOutput, values[1]) };
   }));
-  return { ...base, audioRows, toolRows };
+  let nextTask = 0;
+  await Promise.all(Array.from({ length: Math.min(12, tasks.length) }, async () => {
+    while (nextTask < tasks.length) await tasks[nextTask++]();
+  }));
+  return { ...base, audioRows: await audioRows, toolRows: await toolRows };
 }
