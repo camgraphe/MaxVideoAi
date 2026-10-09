@@ -74,12 +74,17 @@ export async function buildCurrentPricingHubData(
     }
   }
   let nextTask = 0;
-  await Promise.all(Array.from({ length: Math.min(8, tasks.length) }, async () => {
+  const modelWorkers = Array.from({ length: Math.min(8, tasks.length) }, async () => {
     while (nextTask < tasks.length) {
       const task = tasks[nextTask++];
       if (task) await task();
     }
-  }));
+  });
+  // Observe every worker, even after an earlier rejection, before releasing its budget.
+  const modelWorkersSettled = Promise.allSettled(modelWorkers).then(() => undefined);
+  const otherPricing = buildCurrentOtherPricing({ ...base.otherSurfaces, imageRows }, locale,
+    otherDependencies, { modelWorkersSettled });
+  const [, otherSurfaces] = await Promise.all([Promise.all(modelWorkers), otherPricing]);
   rows.forEach((row, index) => {
     const quotes = row.quotes;
     const defaultQuote = quotes[DEFAULT_VIDEO_PRICE_PRESET_ID];
@@ -89,7 +94,6 @@ export async function buildCurrentPricingHubData(
       exactRank * 1_000_000 + amount * 100 + index;
   });
   const currentRows = markCheapestQuotes(orderPricingRows(rows));
-  const otherSurfaces = await buildCurrentOtherPricing({ ...base.otherSurfaces, imageRows }, locale, otherDependencies);
   return { ...base,
     video: { ...base.video, rows: currentRows, highlights: buildVideoHighlights(currentRows, locale) },
     popularChecks: buildPopularChecks(locale, currentRows, imageRows,

@@ -108,7 +108,8 @@ jobs:
     needs: plan
     if: ${{ needs.plan.outputs.browser == 'true' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Connected browser tests take ~11 minutes before the admin smoke suite starts.
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v5
