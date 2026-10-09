@@ -25,6 +25,47 @@ export function buildCanonicalCompareSlug(leftSlug: string, rightSlug: string): 
   return `${left}-vs-${right}`;
 }
 
+export function createPublishedComparisonSlugLookup(
+  models: readonly ComparisonPublicationModel[],
+): (canonicalSlug: string) => boolean {
+  const byId = new Map<string, ComparisonPublicationModel>();
+  const bySlug = new Map<string, ComparisonPublicationModel[]>();
+  for (const model of models) {
+    byId.set(model.id, model);
+    const sameSlug = bySlug.get(model.slug);
+    if (sameSlug) sameSlug.push(model);
+    else bySlug.set(model.slug, [model]);
+  }
+
+  const declaresPublishedPair = (source: ComparisonPublicationModel, opponent: ComparisonPublicationModel) =>
+    byId.get(opponent.id) === opponent &&
+    source.id !== opponent.id &&
+    source.publication.compare.published &&
+    source.publication.compare.indexed &&
+    opponent.publication.compare.published &&
+    opponent.publication.compare.indexed &&
+    source.publication.compare.publishedPairIds.includes(opponent.id);
+
+  return (canonicalSlug) => {
+    let separator = canonicalSlug.indexOf('-vs-');
+    while (separator !== -1) {
+      const leftSlug = canonicalSlug.slice(0, separator);
+      const rightSlug = canonicalSlug.slice(separator + 4);
+      separator = canonicalSlug.indexOf('-vs-', separator + 1);
+      if (!leftSlug || !rightSlug) continue;
+      const leftModels = bySlug.get(leftSlug);
+      const rightModels = bySlug.get(rightSlug);
+      if (!leftModels || !rightModels || buildCanonicalCompareSlug(leftSlug, rightSlug) !== canonicalSlug) continue;
+
+      // Either endpoint can publish a pair; opponent IDs resolve as in the full graph builder.
+      if (leftModels.some(left => rightModels.some(right =>
+        declaresPublishedPair(left, right) || declaresPublishedPair(right, left),
+      ))) return true;
+    }
+    return false;
+  };
+}
+
 export function buildPublishedComparisonSlugsFromModels(
   models: readonly ComparisonPublicationModel[],
   isLocalizedScoreboardComplete: (canonicalSlug: string) => boolean,
