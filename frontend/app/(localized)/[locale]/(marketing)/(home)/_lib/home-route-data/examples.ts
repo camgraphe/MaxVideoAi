@@ -18,7 +18,7 @@ import {
 import { formatCurrentExamplePrice } from '@/lib/current-example-price-display';
 import { HOMEPAGE_EXAMPLE_FAMILIES, type HomepageExampleFamily, type RedesignContent } from './types';
 import { buildHomepageP0PromotionCards, buildHomepageP0PromotionTargets } from './launch-promotions';
-import { quoteCurrentExamplePrices, type CurrentExamplePrice } from '@/server/current-example-price';
+import type { CurrentExamplePrice } from '@/server/current-example-price';
 import { withoutPublicPageTiming, type MeasurePublicPagePhase } from '@/server/public-page-timing';
 
 export { buildHomepageP0PromotionTargets } from './launch-promotions';
@@ -204,7 +204,7 @@ export async function loadHomepageExamples(
   const globalCandidates = [...latestVideos, ...sortExamplesByPriority(playlistVideos)];
   const familyVideos = new Map(familyPools);
   const modelVideos = new Map(modelPools);
-  const selectedCards = assembleHomepageExampleCards({
+  return assembleHomepageExampleCards({
     locale,
     content,
     globalCandidates,
@@ -214,12 +214,4 @@ export async function loadHomepageExamples(
     readiness,
     acceptedAssets,
   });
-  const selectedIds = new Set(selectedCards.map((card) => card.sourceVideoId).filter((id): id is string => Boolean(id)));
-  const videosById = new Map([...globalCandidates, ...familyPools.flatMap(([, videos]) => videos), ...modelPools.flatMap(([, videos]) => videos)]
-    .filter((video) => selectedIds.has(video.id)).map((video) => [video.id, video]));
-  const currentPrices = await measure('example-pricing', () => quoteCurrentExamplePrices(Array.from(videosById.values())));
-  return selectedCards.map((card) => ({
-    ...card,
-    price: formatHomepageExamplePrice(locale, card.sourceVideoId ? currentPrices.get(card.sourceVideoId) : undefined),
-  }));
 }

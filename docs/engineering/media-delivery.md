@@ -40,6 +40,15 @@ The comparison UI shows three distinct executable model proposals, each with its
 
 ## Existing ownership
 
+The homepage example loader owns selection, curation and promotion media, with no
+card quote projection: `HomeHero` previews and `HomeCreativeWorlds` /
+`HomeModelDiscovery` do not display those card prices. Current hero prices and the
+guided price demonstration retain their separate canonical reads in
+`home-page-data.ts`. The pure `assembleHomepageExampleCards` still accepts supplied
+current prices for its explicit callers. `tests/home-unused-example-pricing.test.ts`
+checks the real loader and localized rendered consumers; the PostgreSQL curation
+fixture preserves the separate selection and SQL-read contract.
+
 Homepage mobile composition puts the main video before the comparison and assistant
 links. When its thumbnail strip becomes visible, the first thumbnail reuses
 `HOME_LCP_MOBILE_DELIVERY_SRC`, already loaded by the critical poster; do not request

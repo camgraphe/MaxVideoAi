@@ -197,7 +197,7 @@ test('homepage curation reads share only the invocation and preserve PostgreSQL 
   await postgres.pool.query('INSERT INTO playlists(slug,is_public) SELECT unnest($1::text[]),true ON CONFLICT DO NOTHING', [requestedSlugs]);
   await managed();
   await t.test('managed families prune their inherited source configuration requests', () => checkScenario('all-managed'));
-  await t.test('example timing separates catalog reads from pricing without adding reads or changing cards', async () => {
+  await t.test('example timing records retained catalog reads without adding reads or changing cards', async () => {
     statements.length = 0;
     const cards = await load();
     const sqlCount = statements.length;
@@ -214,7 +214,6 @@ test('homepage curation reads share only the invocation and preserve PostgreSQL 
       { phase: 'example-playlist', status: 'ok' },
       { phase: 'example-families', status: 'ok' },
       { phase: 'example-promotions', status: 'ok' },
-      { phase: 'example-pricing', status: 'ok' },
     ]);
     assert.ok(!JSON.stringify(records).includes('https://media.maxvideoai.com'), 'never log media URLs');
   });
