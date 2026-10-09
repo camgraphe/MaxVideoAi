@@ -1,6 +1,6 @@
 import {readStudioTaskMemory} from "./tasks/memory";
 import {automaticallyNameStudioProject} from './conversation-project-naming';
-import {assistanceError, reserveStudioAssistanceCall, settleStudioAssistanceCall, markStudioAssistanceUnknown, stopStudioAssistanceReplay, type AssistanceCall} from './assistance-ledger';
+import {assistanceError, reserveStudioAssistanceCall, settleStudioAssistanceCall, markStudioAssistanceUnknown, stopStudioAssistanceReplay, type AssistanceCall,type StudioLunaFallback} from './assistance-ledger';
 import type {StudioAssistancePolicy} from './assistance-policy';
 import {studioPreparedExportSchema} from '@/lib/studio/conversation-export-contract';
 import {createHash} from 'node:crypto';
@@ -103,7 +103,7 @@ export async function completeStudioAction(actor: StudioGenerationActor, turn: S
 }
 
 /** Checkpoint each paid text request before dispatch and its complete output before any action. */
-export async function checkpointStudioResponse(actor: StudioGenerationActor, turn: StoredImageTurn, index: number, create: () => Promise<StudioDirectorResponse>, meter?: {prepare(): Promise<{inputTokens: number;outputTokens: number;policy: StudioAssistancePolicy}>}, options: {replayOnly?: boolean} = {}): Promise<StudioDirectorResponse> {
+export async function checkpointStudioResponse(actor: StudioGenerationActor, turn: StoredImageTurn, index: number, create: () => Promise<StudioDirectorResponse>, meter?: {prepare(): Promise<{inputTokens: number;outputTokens: number;policy: StudioAssistancePolicy;lunaFallback?:StudioLunaFallback}>}, options: {replayOnly?: boolean} = {}): Promise<StudioDirectorResponse> {
   const scope = [actor.userId, actor.projectId, turn.request_id, turn.lease_id, index];
   const prior = (await query<{response_json: StudioDirectorResponse}>(`SELECT response_json FROM studio_conversation_responses
     WHERE user_id=$1 AND project_id=$2 AND request_id=$3 AND response_index=$4 AND state='reported' ORDER BY created_at DESC LIMIT 1`, [actor.userId, actor.projectId, turn.request_id, index]))[0];
@@ -128,7 +128,7 @@ export async function checkpointStudioResponse(actor: StudioGenerationActor, tur
       AND EXISTS (SELECT 1 FROM studio_projects p WHERE p.id=t.project_id AND p.user_id=t.user_id AND p.deleted_at IS NULL)
     ON CONFLICT DO NOTHING RETURNING lease_id`, scope);
     if (!start.length) throw new AgentApiError('PARAMETER_INVALID', 'This model step is already in progress or superseded.');
-    if (bounds) assistanceCall = await reserveStudioAssistanceCall({userId: actor.userId,projectId: actor.projectId,requestId: turn.request_id,leaseId: turn.lease_id,index,inputTokens: bounds.inputTokens,outputTokens: bounds.outputTokens},bounds.policy,tx);
+    if (bounds) assistanceCall = await reserveStudioAssistanceCall({userId: actor.userId,projectId: actor.projectId,requestId: turn.request_id,leaseId: turn.lease_id,index,inputTokens: bounds.inputTokens,outputTokens: bounds.outputTokens,lunaFallback:bounds.lunaFallback},bounds.policy,tx);
   });
   const began = performance.now();
   try {

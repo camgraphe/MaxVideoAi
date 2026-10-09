@@ -15,15 +15,16 @@ export async function readStudioTaskRow(actor:StudioGenerationActor,requestId:st
   if(!row)throw new AgentApiError('REFERENCE_INVALID','This task is not available in this project.');return row;
 }
 export async function readStudioTaskUsage(row:Pick<StudioTaskRow,'user_id'|'project_id'|'request_id'>,db:QueryExecutor={query}) {
-  const value=(await db.query<{consumed:string;reserved:string;completed:string;unknown:string}>(`SELECT
+  const value=(await db.query<{consumed:string;reserved:string;completed:string;unknown:string;luna:boolean|null}>(`SELECT
     COALESCE(sum(f.charged_cents),0)::text consumed,
     COALESCE(sum(f.quoted_cents) FILTER(WHERE f.charged_cents IS NULL),0)::text reserved,
     count(*) FILTER(WHERE c.state='settled')::text completed,
-    count(*) FILTER(WHERE c.state<>'settled')::text unknown
+    count(*) FILTER(WHERE c.state<>'settled')::text unknown,
+    bool_or(c.model='gpt-6-luna') luna
     FROM studio_assistance_calls c LEFT JOIN studio_assistance_credit_funding f ON f.call_id=c.id
     WHERE c.user_id=$1 AND c.project_id=$2 AND c.request_id IN (SELECT request_id FROM studio_task_segments WHERE user_id=$1 AND project_id=$2 AND task_request_id=$3)
     AND NOT EXISTS(SELECT 1 FROM studio_assistance_resolutions w WHERE w.call_id=c.id AND w.action='waive_unknown')`,[row.user_id,row.project_id,row.request_id]))[0];
-  return {consumedCredits:Number(value?.consumed??0)*10,reservedCredits:Number(value?.reserved??0)*10,completedCalls:Number(value?.completed??0),unknownCalls:Number(value?.unknown??0)};
+  return {consumedCredits:Number(value?.consumed??0)*10,reservedCredits:Number(value?.reserved??0)*10,completedCalls:Number(value?.completed??0),unknownCalls:Number(value?.unknown??0),usedLuna:value?.luna===true};
 }
 export async function studioTaskFundingRequestIds(db:QueryExecutor,scope:{user_id:string;project_id:string;request_id:string}) {
   if(!await studioTaskSchemaReady(db))return [scope.request_id];
@@ -34,7 +35,7 @@ export async function studioTaskFundingRequestIds(db:QueryExecutor,scope:{user_i
 }
 export async function projectStudioTask(row:StudioTaskRow,db:QueryExecutor={query}):Promise<StudioTaskStatus> {
   const usage=await readStudioTaskUsage(row,db);
-  return studioTaskStatusSchema.parse({requestId:row.request_id,profile:row.profile,policyVersion:row.policy_version,model:row.model,state:row.state,phase:row.phase,maxCredits:row.max_credits,
+  return studioTaskStatusSchema.parse({requestId:row.request_id,profile:row.profile,policyVersion:row.policy_version,model:usage.usedLuna?'gpt-6-luna':row.model,state:row.state,phase:row.phase,maxCredits:row.max_credits,
     consumedCredits:usage.consumedCredits,reservedCredits:usage.reservedCredits,completedCalls:usage.completedCalls,allowedCalls:row.allowed_calls,revision:row.revision,error:row.error,
     canContinue:row.state==='paused'&&usage.unknownCalls===0&&row.allowed_calls<24});
 }

@@ -47,9 +47,32 @@ work is supplied to the director to avoid repeating successful edits/preparation
 
 Continue retains the ceiling. Sol extensions permit +100/+250/+500 credits, up to
 2,000 credits and 24 calls total; UI offers a labelled +100 choice. Nothing buys
-a pack, resumes purchased usage or switches models. Complex needs a fresh checkbox
+a pack or resumes purchased usage. Complex needs a fresh checkbox
 for each new request. Context/output pauses offer simplification or a new Complex
 request; more credits alone do not expand a frozen profile. Funding opens assistance.
+
+Under the monthly-credit policy, an owned task whose next Sol reservation fails
+with `included_exhausted` or `paid_budget_exhausted` automatically retries that
+same undispatched step once with sponsored Luna. The dispatch owner recounts the
+actual Luna request, caps its output at 2,200 tokens, and retains the conversation,
+references and completed tool receipts; Sol's opaque reasoning/native item IDs are
+omitted while tool correlation and Luna's own reasoning items remain intact. The
+ledger rechecks the declined Sol bounds under the account lock before admitting
+the first Luna call. Further calls and continuation segments stay with Luna using
+the recorded call evidence. Initial task/turn model, profile, source fingerprint,
+step limits, deadlines and old financial records remain immutable. Task status
+projects the effective recorded model, and the UI retains already consumed Sol
+credits alongside included Luna assistance. The account's preferred model and
+purchased-credit authorization do not change.
+When task dispatch is enabled and sponsored Luna is available, zero remaining
+Sol credits do not block the composer before the task reaches that preflight.
+
+Fallback never dispatches after unknown provider usage, expired/superseded leases,
+permission or policy failures, replay-only recovery, context limits or task-credit
+ceilings. Luna retains sponsorship availability and request limits. No pack,
+generation, analysis or export is implicitly confirmed. Legacy assistance policies
+continue to require explicit model selection. Regression coverage lives in
+`studio-task-luna-fallback-postgres.test.ts` and the connected task browser test.
 
 Qualified saved responses settle/replay without repurchasing them, even when new
 dispatch is disabled. Automatic known recovery is bounded to two attempts.

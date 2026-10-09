@@ -27,7 +27,7 @@ export type StudioDirectorContext = {
   historyFacts?:StudioConversationHistoryFacts;
   project: StudioConversationProject;
   execute(callId: string, request: StudioActionRequest): Promise<StudioActionResult>;
-  checkpoint(index: number, create: () => Promise<StudioDirectorResponse>, params?: ResponseCreateParamsNonStreaming, options?: {replayOnly?: boolean}): Promise<StudioDirectorResponse>;
+  checkpoint(index: number, create: () => Promise<StudioDirectorResponse>, params?: ResponseCreateParamsNonStreaming, options?: {replayOnly?: boolean;prepareLunaInput?:()=>void}): Promise<StudioDirectorResponse>;
 };
 const replySchema = z.object({reply: z.string().min(1).max(2400).transform(projectStudioReply)}).strict();
 function pendingDirectorReply(reason: 'action_limit'|'output_limit',completedEdits: number,lastResult?: StudioActionResult,correctionRejected = false): ImageDraft {
@@ -57,7 +57,7 @@ export function isReplayableStudioResponse(response: StudioDirectorResponse): bo
 /** The model chooses the next action; identity, billing and executable capabilities stay server-owned. */
 import type {StudioTaskExecution} from "./tasks/execution";
 
-export function createStudioConversationDirector(options: {model?: StudioAssistantModel;createResponse?: StudioResponseCreator; mediaEnabled?: boolean;editingEnabled?: boolean;exportsEnabled?: boolean;analysisEnabled?:boolean;analysisProfiles?:{video:boolean;audio:boolean};assistanceCreditsEnabled?: boolean;taskExecution?:StudioTaskExecution} = {}) {
+export function createStudioConversationDirector(options: {model?: StudioAssistantModel;modelForNextCall?:()=>StudioAssistantModel;createResponse?: StudioResponseCreator; mediaEnabled?: boolean;editingEnabled?: boolean;exportsEnabled?: boolean;analysisEnabled?:boolean;analysisProfiles?:{video:boolean;audio:boolean};assistanceCreditsEnabled?: boolean;taskExecution?:StudioTaskExecution} = {}) {
   return async (context: StudioDirectorContext): Promise<ImageDraft> => {
     if (!options.createResponse && !process.env.OPENAI_API_KEY)
       throw new AgentApiError('ENGINE_UNAVAILABLE', 'Studio conversation is not configured.');
@@ -73,6 +73,15 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       ]),
       {role: 'user', content: [{type: 'input_text', text: context.message}, ...studioReferenceInputContent(context.references, context.referenceMentions)]},
     ];
+    const solOutput=new WeakSet<object>();
+    const lunaInput=():ResponseInputItem[]=>input.flatMap((item):ResponseInputItem[]=>{
+      if(!solOutput.has(item))return [item];
+      if(item.type==='reasoning')return [];
+      // Cross-model history retains the tool correlation, without Sol's native item identity.
+      if(item.type==='function_call')return [{type:'function_call',call_id:item.call_id,name:item.name,arguments:item.arguments}];
+      if(item.type==='message'&&item.role==='assistant')return [{role:'assistant',content:typeof item.content==='string'?item.content:item.content.map(part=>'text' in part?part.text:'refusal' in part?part.refusal:'').join('\n')}];
+      return [item];
+    });
     let completedEdits = 0;
     let lastResult: StudioActionResult | undefined;
     let correctionAction: StudioActionRequest['action'] | undefined;
@@ -88,8 +97,10 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         ? availableTools.filter(tool => tool.action === correctionAction)
         : index === maxResponses-1 ? availableTools.filter(tool => tool.action.endsWith('.prepare') || tool.action === 'timeline.edit' || tool.action === 'quote.discard')
         : index === Math.max(0,maxResponses-2) ? availableTools.filter(tool => tool.action !== 'project.remember') : availableTools;
+      const model=options.modelForNextCall?.()??options.model??'gpt-6.1-sol';
+      const effort=options.taskExecution?(options.taskExecution.profile.reasoning==='high'&&lastResult?.action==='catalog.read'?'medium':options.taskExecution.profile.reasoning):'medium';
       const params: ResponseCreateParamsNonStreaming = {
-        model: options.model ?? 'gpt-6.1-sol', service_tier: 'default', store: false, reasoning: {effort: options.taskExecution? (options.taskExecution.profile.reasoning==='high'&&lastResult?.action==='catalog.read'?'medium':options.taskExecution.profile.reasoning):'medium'}, max_output_tokens: options.taskExecution?.profile.maxOutputTokens??2200,
+        model, service_tier: 'default', store: false, reasoning: {effort: model==='gpt-6-luna'&&effort==='high'?'medium':effort}, max_output_tokens: Math.min(options.taskExecution?.profile.maxOutputTokens??2200,model==='gpt-6-luna'?2200:6000),
         include: ['reasoning.encrypted_content'],
         parallel_tool_calls: false,
         tool_choice: 'auto',
@@ -99,7 +110,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
           ? '\n\nThis is the last Response available for this message. Give the client a useful answer from the facts already read, or complete their requested preparation/edit/cancellation. Reads and memory writes are unavailable because no response would remain to use their results. Explain any missing model or price verification accurately; do not invent facts or prepare a creation when the client only asked for advice.'
           : index === Math.max(0,maxResponses-2) ? '\n\nOptional memory writes are now unavailable. When the needed model and source facts are known, prepare the requested creation now so one response remains to correct a prequote input rejection. Read only facts still required for the requested workflow.' : '')
           + (correctionAction ? '\n\nThe preceding preparation was rejected before quote creation. This is the single input-correction attempt for that preparation. Correct the rejected selection using the facts already read, or explain what is missing. Do not repeat successful actions, change to another operation or claim a quote exists.' : ''),
-        input,
+        input:model==='gpt-6-luna'?lunaInput():input,
         tools: tools.map(tool => ({type: 'function' as const, name: tool.name, description: tool.description, strict: true,
           parameters: {type: 'object', additionalProperties: false, properties: studioToolReferenceProperties(tool.name,tool.properties,context.references), required: Object.keys(tool.properties)}})),
         text: {format: {type: 'json_schema', name: 'studio_reply', strict: true, schema: {type: 'object', additionalProperties: false, required: ['reply'], properties: {reply: {type: 'string'}}}}},
@@ -107,7 +118,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       let freshResponse = false;
       let response: StudioDirectorResponse;
       try {
-        response = await context.checkpoint(index, () => {freshResponse = true; return create(params);}, params, {replayOnly: correctionRejected});
+        response = await context.checkpoint(index, () => {freshResponse = true; return create(params);}, params, {replayOnly: correctionRejected,prepareLunaInput:()=>{params.input=lunaInput();}});
       } catch (error) {
         if (correctionRejected && error instanceof AgentApiError && (error.code === 'RATE_LIMITED'
           || (error.code === 'SPENDING_LIMIT_EXCEEDED' && error.nextAction?.type === 'studio_assistance' && error.nextAction.reason === 'call_limit')))
@@ -120,6 +131,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         throw new AgentApiError('INTERNAL_ERROR', 'Studio could not finish this message. Resume the saved request.', true);
       }
       const calls = response.output.filter(item => item.type === 'function_call');
+      if(response.model==='gpt-6.1-sol')for(const item of response.output)solOutput.add(item);
       if (!calls.length) {
         try { return {...replySchema.parse(JSON.parse(response.output_text)), image: null}; }
         catch { throw new AgentApiError('INTERNAL_ERROR', 'Studio returned an incomplete reply. Resume the saved request.', true); }
