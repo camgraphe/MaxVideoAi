@@ -34,8 +34,7 @@ test('active model route and real server layout share policy while preserving in
   const database = await startDisposablePostgres('model-page-policy');
   const previous = { DATABASE_URL: process.env.DATABASE_URL, NODE_ENV: process.env.NODE_ENV,
     PRICING_SANDBOX: process.env.PRICING_SANDBOX };
-  Object.assign(process.env, { DATABASE_URL: database.databaseUrl, NODE_ENV: 'development', PRICING_SANDBOX: '1' });
-  const { harness: h, dispose } = await makeModelPagePricingHarness({ executeInputs: true, executeGallery: true, timingEnabled: false });
+  let dispose: (() => Promise<void>) | undefined;
   const evidence: unknown[] = [];
   let counts = emptyCounts();
   let instrumentation = true;
@@ -43,6 +42,10 @@ test('active model route and real server layout share policy while preserving in
   let after: ((category: keyof Counts, ordinal: number) => void | Promise<void>) | undefined;
   const reset = () => { counts = emptyCounts(); };
   try {
+    Object.assign(process.env, { DATABASE_URL: database.databaseUrl, NODE_ENV: 'development', PRICING_SANDBOX: '1' });
+    const fixture = await makeModelPagePricingHarness({ executeInputs: true, executeGallery: true, timingEnabled: false });
+    const h = fixture.harness;
+    dispose = fixture.dispose;
     await database.pool.query(`CREATE TABLE app_pricing_rules (
       id TEXT PRIMARY KEY, engine_id TEXT, resolution TEXT, mode TEXT, margin_percent NUMERIC,
       margin_flat_cents INTEGER, surcharge_audio_percent NUMERIC, surcharge_upscale_percent NUMERIC,
@@ -318,9 +321,14 @@ test('active model route and real server layout share policy while preserving in
     if (process.env.CWV_MODEL_POLICY_EVIDENCE_PATH) writeFileSync(process.env.CWV_MODEL_POLICY_EVIDENCE_PATH, JSON.stringify(evidence, null, 2) + '\n');
   } finally {
     before = undefined; after = undefined;
-    await dispose(); await getDb().end().catch(() => undefined); await database.cleanup();
-    for (const [key, value] of Object.entries(previous)) {
-      if (value === undefined) delete process.env[key]; else process.env[key] = value;
+    try { await dispose?.(); } finally {
+      try { await getDb().end().catch(() => undefined); } finally {
+        try { await database.cleanup(); } finally {
+          for (const [key, value] of Object.entries(previous)) {
+            if (value === undefined) delete process.env[key]; else process.env[key] = value;
+          }
+        }
+      }
     }
   }
 });
