@@ -346,7 +346,16 @@ export async function validateGenerationMediaConstraints(params: {
 
     const trustedWidth = normalizeDimension(stored.width);
     const trustedHeight = normalizeDimension(stored.height);
-    trustedMediaReferences.push({ kind: candidate.kind, url: candidate.url, width: trustedWidth, height: trustedHeight, durationSec: (candidate.kind === 'video' ? videoDuration(stored.media_metadata ?? {}, stored.url, normalizeDurationSec(stored.duration_sec)) : normalizeDurationSec(stored.duration_sec)) });
+    const trustedReference: MinimaxH3MaxPricingReference = {
+      kind: candidate.kind,
+      url: candidate.url,
+      width: trustedWidth,
+      height: trustedHeight,
+      durationSec: candidate.kind === 'video'
+        ? videoDuration(stored.media_metadata ?? {}, stored.url, normalizeDurationSec(stored.duration_sec))
+        : normalizeDurationSec(stored.duration_sec),
+    };
+    trustedMediaReferences.push(trustedReference);
     const imageRatio = validateImageAspectRatio(field, trustedWidth, trustedHeight);
     if (imageRatio !== 'valid') {
       return failure({
@@ -464,6 +473,8 @@ export async function validateGenerationMediaConstraints(params: {
           message: `This ${field.type} reference has no trusted duration metadata. Upload it again before generating.`,
         });
       }
+      // Pricing consumes these references, including facts measured above.
+      trustedReference.durationSec = durationSec;
       const belowMinimum =
         typeof field.minDurationSec === 'number' && durationSec < field.minDurationSec;
       const aboveMaximum =
