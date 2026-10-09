@@ -232,6 +232,24 @@ document block.
 
 Use the owners and validation rules in `docs/engineering/media-delivery.md`. Routes select data and compose media surfaces; they do not own an encoding pipeline or construct independent image optimizer settings. Preserve discovery of the critical poster in server HTML and stable media dimensions through hydration and playback. A route cleanup must not trade a faster preview for a slower LCP or interactive form.
 
+The homepage data owner exposes `prepareHomePageData` with independently awaitable
+critical and example reads plus eventual timing completion. Start the request's
+reads once, await only critical data in the route, and pass the example promise to
+route-local `HomeDiscovery`. Its Suspense boundary belongs in the discovery slot
+of `HomeCreativeWorlds`; the hero and four authored films remain stable siblings.
+Authored fallback discovery cards reserve the existing card geometry and preserve
+crawlable links. The complete `loadHomePageData` API still awaits the same reads for
+callers that require all data. Keep completion diagnostics and error observation in
+the data owner. Home retains `revalidate = 60`; that directive alone does not
+establish static/dynamic delivery or how production cache generation flushes the
+HTTP response. The 2026-10-09 production build marks home dynamic (`ƒ`), and the
+local held-gallery check confirms early hero HTML delivery with unchanged reveal
+geometry and playback. See the dated evidence and delivery limits in the media
+guide; this does not establish CDN HIT or field Core Web Vitals gains.
+The fallback plus final discovery also increases encoded HTML; the comparable
+local browser runs showed overlapping LCP ranges rather than an established LCP
+gain. Keep that measured delivery cost visible in the media guide.
+
 ## Refactor Checklist
 
 Before moving code:

@@ -1,4 +1,5 @@
 import { Link } from '@/i18n/navigation';
+import type { ReactNode } from 'react';
 import type { AppLocale } from '@/i18n/locales';
 import { CreativeFilm } from '@/components/marketing/CreativeFilm.client';
 import { HomeModelDiscovery } from './HomeModelDiscovery';
@@ -11,9 +12,10 @@ const COPY = {
   es: { eyebrow: 'Ejemplos de videos con IA', title: 'Crea algo que den ganas de ver.', body: 'Crea una escena, anima una imagen, explora una idea o presenta un producto. Empieza por lo que quieres crear.', all: 'Ver todos los ejemplos', guides: 'Todos los usos', play: 'Ver el video', loading: 'Cargando…', error: 'Reintentar', cta: 'Encontrar modelos para este uso', labels: ['Realismo cinematográfico', 'De imagen a video', 'Primeras pruebas', 'Anuncios de productos'], titles: ['Dale un estilo de cine a tu escena.', 'Dale vida a una imagen.', 'Prueba una idea. Descubre qué sale.', 'Pon tu producto en escena.'], descriptions: ['Explora la luz, los movimientos de cámara y la atmósfera.', 'Una imagen inicial se convierte en una escena en movimiento.', 'Explora una dirección visual antes de pulir los detalles.', 'Cuenta la historia de tu producto, del detalle a la toma final.'] },
 };
 
-export function HomeCreativeWorlds({ locale, cards, examples, providers, examplesCopy }: {
-  locale: AppLocale; cards: ShotTypeCard[]; examples: HomeExampleCard[]; providers: ProviderItem[];
+export function HomeCreativeWorlds({ locale, cards, examples = [], providers = [], examplesCopy, modelDiscovery }: {
+  locale: AppLocale; cards: ShotTypeCard[]; examples?: HomeExampleCard[]; providers?: ProviderItem[];
   examplesCopy: SectionCopy & { featuredModelCta: string };
+  modelDiscovery?: ReactNode;
 }) {
   const c = COPY[locale];
   return <section id="creations" className="creative-worlds home-use-case-gallery section"><div className="container-page">
@@ -28,6 +30,6 @@ export function HomeCreativeWorlds({ locale, cards, examples, providers, example
       </figure>;
     })}</div>
     <div className="use-case-all"><Link href="/ai-video-engines/best-for">{c.guides} <span aria-hidden>↗</span></Link></div>
-    <HomeModelDiscovery locale={locale} examples={examples} providers={providers} copy={examplesCopy}/>
+    {modelDiscovery ?? <HomeModelDiscovery locale={locale} examples={examples} providers={providers} copy={examplesCopy}/>}
   </div></section>;
 }

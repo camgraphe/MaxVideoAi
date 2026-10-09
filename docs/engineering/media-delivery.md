@@ -53,13 +53,68 @@ The comparison UI shows three distinct executable model proposals, each with its
 ## Existing ownership
 
 The homepage example loader owns selection, curation and promotion media, with no
-card quote projection: `HomeHero` previews and `HomeCreativeWorlds` /
-`HomeModelDiscovery` do not display those card prices. Current hero prices and the
+card quote projection: `HomeCreativeWorlds` / `HomeModelDiscovery` do not display
+those card prices. Current hero prices and the
 guided price demonstration retain their separate canonical reads in
 `home-page-data.ts`. The pure `assembleHomepageExampleCards` still accepts supplied
 current prices for its explicit callers. `tests/home-unused-example-pricing.test.ts`
 checks the real loader and localized rendered consumers; the PostgreSQL curation
 fixture preserves the separate selection and SQL-read contract.
+
+The five approved hero items use curated media and exact-locale `imageAlt` fields
+in `home.redesign.hero.mockup.engineRecommendations`. Gallery candidates do not
+describe those different sources. MiniMax's scene description stays unchanged;
+the other four descriptions state the approved model, duration and image-to-video
+mode where applicable without inferring a scene from an unrelated gallery image.
+Programmed slots still determine the item IDs consumed by playback, and current
+hero prices retain their canonical quote read.
+
+`prepareHomePageData` starts all five retained reads once. The hero still awaits
+slots, scores, hero pricing and demonstration pricing; discovery alone awaits the
+gallery beneath its own Suspense boundary. The four authored CreativeFilms remain
+outside that boundary. Its fallback uses the same six authored fallback cards and
+reader geometry, with real model/example links; final cards retain the existing
+curation, promotion and SQL-read policy. Do not stream a replacement hero or entire
+CreativeWorlds section, which could remount an already playing video.
+
+The one bounded timing record waits for every started read to settle, including
+when a critical read fails early. Immediate observers prevent unhandled rejections
+without converting any returned promise into a successful fallback. The complete
+`loadHomePageData` API remains available and propagates the original loader error.
+The route's ordinary listing failures retain the existing gallery fallbacks.
+Unexpected gallery failures after shell emission reject the discovery boundary;
+React/Next handles that error and may retain its server fallback until error/retry
+handling, rather than silently treating fallback cards as final data. Once a shell
+has been sent, its HTTP status cannot be replaced by a later gallery error.
+
+`tests/home-streaming.test.ts` uses the React renderer bundled with Next and real
+homepage owners to hold gallery reads, check early critical poster/films/JSON-LD,
+and compare the final EN/FR/ES discovery markup. This proves the server composition
+boundary. Home entries retain `revalidate = 60`, which alone does not establish
+static versus dynamic delivery or cache buffering.
+
+Local production-build verification on 2026-10-09 marks home as dynamic (`ƒ`).
+With the same disposable PostgreSQL gallery table held, the reference sent no
+bytes or critical poster during a 2,200 ms observation; the candidate delivered
+hero HTML at about 87 ms while gallery data remained blocked. Early Play at
+EN/390 px retained the same playing video through discovery reveal, advancing
+from 0.87 s to 5.13 s. FR/390 px and ES/1440 px reveal checks retained the hero
+and all four film nodes; measured section/card box deltas and reveal-only CLS
+were zero. Evidence lives under `.reports/cwv-large-phase-2026-10-09/`, including
+`candidate-held-active.json`, `baseline-held-active.json` and
+`held-gallery-summary.json`. These controlled local checks prove the HTTP
+boundary and reveal continuity. They do not establish CDN HIT behavior, a field
+LCP reduction or a CrUX gain; retain comparable browser and deployed cache
+verification for future performance claims.
+
+The comparable six-run ABBAAB browser check used the same builds and PostgreSQL
+fixture with 4× CPU throttling, 40 ms latency and 1.6 Mbit/s bandwidth. Encoded
+HTML increased from 57,538 to 63,663 bytes (+6,125 bytes, +10.6%) because both
+fallback and final discovery markup are sent; JavaScript increased from 215,470
+to 215,567 bytes (+97 bytes). Median LCP was 848 ms versus 840 ms, with overlapping
+run ranges, and all six runs had zero CLS. This does not establish a significant
+LCP gain. The additional HTML is an explicit accepted cost of removing the proven
+gallery wait from critical hero delivery, and remains part of future comparisons.
 
 Homepage mobile composition puts the main video before the comparison and assistant
 links. When its thumbnail strip becomes visible, the first thumbnail reuses

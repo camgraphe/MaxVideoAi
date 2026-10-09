@@ -1,11 +1,15 @@
 import '@/styles/marketing-home.css';
+import { Suspense } from 'react';
 import { buildHomeComparisonData, buildHomeComparisonLinks } from './_lib/home-comparison-data';
 import { HomePricingSection } from '@/components/marketing/home/HomePricingSection';
 import { HomeCreativeWorlds } from '@/components/marketing/home/HomeCreativeWorlds';
 import { HomeCreationSection } from '@/components/marketing/home/HomeCreationSection';
 import { HomeModelChoice } from '@/components/marketing/home/HomeModelChoice';
 import { HomeToolsGallery } from '@/components/marketing/home/HomeToolsGallery';
-import { loadHomePageData } from './_lib/home-page-data';
+import { prepareHomePageData } from './_lib/home-page-data';
+import { HomeDiscovery } from './_components/HomeDiscovery';
+import { HomeModelDiscovery } from '@/components/marketing/home/HomeModelDiscovery';
+import { assembleHomepageExampleCards } from './_lib/home-route-data/examples';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
@@ -25,7 +29,6 @@ import {
   buildHeroContent,
   buildProgrammedHeroItems,
   filterProviderItems,
-  selectHomepageHeroPreviews,
   type RedesignContent,
 } from './_lib/home-route-data';
 import { buildFaqSchema, buildItemListSchema, buildSoftwareSchema, serializeJsonLd } from './_lib/home-jsonld';
@@ -55,11 +58,13 @@ export default async function HomePage(props: { params: Promise<{ locale: string
   const workflowSeoCopy = dictionary.home.seoContent as WorkflowSeoSummaryCopy | undefined;
   const startupFameLabel = dictionary.home.partners?.startupFameLabel ?? 'Featured on Startup Fame';
   const hero = buildHeroContent(locale, content);
-  const { examples, programmedHeroSlots, engineScores, currentHeroPrices, currentPriceModels } = await loadHomePageData(locale, content);
+  const pendingData = prepareHomePageData(locale, content);
+  const { programmedHeroSlots, engineScores, currentHeroPrices, currentPriceModels } = await pendingData.critical;
   const programmedHeroItems = buildProgrammedHeroItems(locale, content, programmedHeroSlots);
   const primaryBestForCards = buildBestForGuideCards(content, BEST_FOR_MAIN_SLUGS);
   const comparisonScores = buildHomeComparisonData(engineScores);
   const providers = filterProviderItems(content);
+  const fallbackExamples = assembleHomepageExampleCards({ locale, content, globalCandidates: [], familyVideos: new Map() });
   const mcpLink = getMcpInternalLink(locale, 'home');
   const softwareSchema = buildSoftwareSchema(content, locale);
   const faqSchema = buildFaqSchema(content.faq.items);
@@ -69,13 +74,18 @@ export default async function HomePage(props: { params: Promise<{ locale: string
     <div className="home-monochrome home-cinema">
       <HomeHero
         copy={hero}
-        previews={selectHomepageHeroPreviews(examples)}
         programmedHeroItems={programmedHeroItems}
         currentHeroPrices={currentHeroPrices}
         locale={locale}
       />
       <DeferredMarketingContent><HomeCreationSection locale={locale} assistantHref={mcpLink?.href} /></DeferredMarketingContent>
-      <DeferredMarketingContent><HomeCreativeWorlds locale={locale} cards={primaryBestForCards} examples={examples} providers={providers} examplesCopy={content.examples} /></DeferredMarketingContent>
+      <DeferredMarketingContent>
+        <HomeCreativeWorlds locale={locale} cards={primaryBestForCards} examplesCopy={content.examples} modelDiscovery={
+          <Suspense fallback={<HomeModelDiscovery locale={locale} examples={fallbackExamples} providers={providers} copy={content.examples} />}>
+            <HomeDiscovery locale={locale} examples={pendingData.examples} providers={providers} copy={content.examples} />
+          </Suspense>
+        } />
+      </DeferredMarketingContent>
       <DeferredMarketingContent>
         <HomeModelChoice locale={locale} scores={comparisonScores} startupFameLabel={startupFameLabel} comparisons={buildHomeComparisonLinks()}/>
       </DeferredMarketingContent>

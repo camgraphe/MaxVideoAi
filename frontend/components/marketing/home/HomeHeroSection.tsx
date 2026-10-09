@@ -15,26 +15,7 @@ import type { CurrentExamplePrice } from '@/server/current-example-price';
 import type { AppLocale } from '@/i18n/locales';
 import { formatCurrentExampleAmount, formatCurrentExampleScenario } from '@/lib/current-example-price-display';
 
-function normalizeHeroText(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, '');
-}
-
-function findPreviewForEngine(engineId: string, engineName: string, previews: HomeExampleCard[]) {
-  const normalizedId = normalizeHeroText(engineId);
-  const normalizedName = normalizeHeroText(engineName);
-  return previews.find((preview) => {
-    const previewId = normalizeHeroText(preview.engineId ?? '');
-    const previewEngine = normalizeHeroText(preview.engine);
-    return (
-      previewId === normalizedId ||
-      previewEngine.includes(normalizedName) ||
-      normalizedName.includes(previewEngine) ||
-      previewEngine.includes(normalizedId)
-    );
-  });
-}
-
-function buildHeroVideoItems(copy: HomeHeroContent['mockup'], previews: HomeExampleCard[]): HeroVideoShowcaseItem[] {
+function buildHeroVideoItems(copy: HomeHeroContent['mockup']): HeroVideoShowcaseItem[] {
   const orderedEngines = [...copy.engineRecommendations].sort((left, right) => {
     if (left.selected) return -1;
     if (right.selected) return 1;
@@ -42,7 +23,6 @@ function buildHeroVideoItems(copy: HomeHeroContent['mockup'], previews: HomeExam
   });
 
   return orderedEngines.map((engine) => {
-    const preview = findPreviewForEngine(engine.engineId, engine.name, previews);
     const fallbackMedia = HERO_ENGINE_MEDIA[engine.engineId] ?? HERO_ENGINE_MEDIA['kling-3-pro'];
     const engineName = engine.engineId === 'kling-3-pro' ? 'Kling 3 Pro' : engine.name;
     const durationLabel = fallbackMedia.duration.startsWith('0:')
@@ -65,11 +45,11 @@ function buildHeroVideoItems(copy: HomeHeroContent['mockup'], previews: HomeExam
       modelHref: engine.modelHref,
       examplesLabel: engine.examplesLabel,
       modelLabel: engine.modelLabel,
-      posterSrc: fallbackMedia.posterSrc ?? preview?.imageSrc ?? '/assets/placeholders/preview-16x9.png',
-      videoSrc: fallbackMedia.videoSrc ?? preview?.videoSrc ?? null,
+      posterSrc: fallbackMedia.posterSrc,
+      videoSrc: fallbackMedia.videoSrc ?? null,
       duration: fallbackMedia.duration,
       resolution: fallbackMedia.resolution,
-      imageAlt: engine.imageAlt ?? preview?.imageAlt ?? `${engineName} AI video preview in MaxVideoAI.`,
+      imageAlt: engine.imageAlt ?? `${engineName} AI video preview in MaxVideoAI.`,
     };
   });
 }
@@ -106,18 +86,17 @@ function applyHomeLcpPoster(item: HeroVideoShowcaseItem): HeroVideoShowcaseItem 
 
 export function HomeHero({
   copy,
-  previews,
   programmedHeroItems = [],
   currentHeroPrices,
   locale = 'en',
 }: {
   copy: HomeHeroContent;
-  previews: HomeExampleCard[];
+  previews?: HomeExampleCard[];
   programmedHeroItems?: HeroVideoShowcaseItem[];
   currentHeroPrices?: ReadonlyMap<string, CurrentExamplePrice>;
   locale?: AppLocale;
 }) {
-  const fallbackItems = buildHeroVideoItems(copy.mockup, previews);
+  const fallbackItems = buildHeroVideoItems(copy.mockup);
   const programmedByEngine = new Map<string, HeroVideoShowcaseItem>();
   programmedHeroItems.forEach((item) => {
     const engineId = item.engineId ?? item.id;
