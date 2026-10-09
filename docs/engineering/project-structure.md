@@ -76,6 +76,23 @@ Move code to shared locations only when reuse is real:
 
 Avoid promoting a one-off helper into `frontend/lib` just because it is long.
 
+`frontend/config/model-families.ts` owns the examples menu projection from supplied
+materialized families and a cached default getter that returns defensive arrays.
+Navigation consumes this lightweight owner. The full `lib/model-families.ts`
+resolver retains its public getter re-export and delegates custom-family menu
+selection to the same helper. Publication, launch readiness and current-model
+admission remain in family materialization; menu selection only applies the
+normalized stage and `showInNav`. `tests/navigation-family-bundle-boundary.test.ts`
+checks the real navigation graph without the resolver, aliases or Fal registry.
+
+`frontend/lib/compare-hub/pairs.ts` owns pure comparison pair/route canonicalization
+and publication filtering from supplied models and scoreboard completeness. Shared
+navigation and client comparison links import it directly. `compare-hub/data.ts`
+owns catalogue-backed hub data and retains public helper re-exports for existing
+callers; importing that owner into navigation or client link helpers loads the
+complete engine catalogue. `tests/navigation-comparison-bundle-boundary.test.ts`
+guards these browser dependency graphs with esbuild metadata.
+
 Local Markdown loading for docs, blog and guides belongs in `frontend/lib/content/markdown.ts`.
 Its production Data Cache key includes a SHA-256 of the selected file paths and exact
 source contents, including uncommitted edits. The reader loads each source once and

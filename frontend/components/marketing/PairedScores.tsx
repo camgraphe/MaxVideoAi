@@ -10,9 +10,18 @@ function validScore(value: number | null) {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 10 ? value : null;
 }
 
+/** A numeric multiplier, or an inherited CSS variable with a final-value fallback. */
+type ScoreMotionFactor = number | `var(--${string})`;
+
+function scorePosition(value: number, progress: ScoreMotionFactor) {
+  return typeof progress === 'number'
+    ? `${value * 10 * progress}%`
+    : `calc(${value * 10}% * ${progress})`;
+}
+
 /** One shared 0–10 scale. Values remain readable without motion or JavaScript. */
 export function PairedScores({ metrics, naLabel = '—', className = '', motionProgress = { left: 1, right: 1 } }: {
-  metrics: PairedMetric[]; naLabel?: string; className?: string; motionProgress?: { left: number; right: number };
+  metrics: PairedMetric[]; naLabel?: string; className?: string; motionProgress?: { left: ScoreMotionFactor; right: ScoreMotionFactor };
 }) {
   return <div className={`paired-scores ${className}`}>
     {metrics.map((metric) => {
@@ -23,8 +32,8 @@ export function PairedScores({ metrics, naLabel = '—', className = '', motionP
         {metric.tooltip ? <p>{metric.tooltip}</p> : null}
         </details>
         <div className="paired-track" aria-hidden>
-          {left !== null ? <span className="paired-dot" style={{ left: `${left * 10 * motionProgress.left}%` }} /> : null}
-          {right !== null ? <span className="paired-dot right" style={{ left: `${right * 10 * motionProgress.right}%` }} /> : null}
+          {left !== null ? <span className="paired-dot" style={{ left: scorePosition(left, motionProgress.left) }} /> : null}
+          {right !== null ? <span className="paired-dot right" style={{ left: scorePosition(right, motionProgress.right) }} /> : null}
         </div>
         <div className="paired-scale" aria-hidden><span>0</span><span>10</span></div>
       </div>;

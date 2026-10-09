@@ -16,7 +16,7 @@ const pending = [
   { id: 'two', engineLabel: 'Kling', prompt: 'Autre cadrage', durationSec: 5 },
 ];
 
-async function mount(image = false) {
+async function mount(image = false, density: 'workspace' | 'default' = 'workspace') {
   const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/app', pretendToBeVisual: true });
   const previous = new Map<string, PropertyDescriptor | undefined>();
   for (const [key, value] of Object.entries({ React, window: dom.window, document: dom.window.document, navigator: dom.window.navigator, HTMLElement: dom.window.HTMLElement, Element: dom.window.Element, Node: dom.window.Node, IS_REACT_ACT_ENVIRONMENT: true })) {
@@ -33,7 +33,7 @@ async function mount(image = false) {
   function Fixture() {
     const display = useImageWorkspaceDisplayState({ error: null, historyEntries: [], numImages: 4, pendingGroups: state.groups, pricingErrorMessage: null, pricingSnapshot: null, selectedEngine: undefined, selectedPreviewEntryId: null });
     return React.createElement(I18nProvider, { locale: 'fr', dictionary: {}, fallback: {}, children: React.createElement(Composer, {
-      density: 'workspace', engine, prompt: 'A night scene', onPromptChange() {}, price: 14.04, currency: 'USD', promptRequired: true, assetFields: [], assets: {},
+      density, engine, prompt: 'A night scene', onPromptChange() {}, price: 14.04, currency: 'USD', promptRequired: true, assetFields: [], assets: {},
       isLoading: state.isLoading, isPricing: state.isPricing, pendingGenerations: image ? display.pendingGenerations : state.pendingGenerations,
       generateLabel: 'Générer', onGenerate() { submissions += 1; },
     }) });
@@ -134,5 +134,18 @@ test('image completion clears the counter even while the same group remains in t
     assert.equal(fixture.dom.window.document.querySelector('.app-generation-count'), null);
     assert.equal(fixture.dom.window.document.querySelector('[role="dialog"]'), null);
     assert.equal(fixture.button('Générer')?.disabled, false);
+  } finally { await fixture.dispose(); }
+});
+
+test('default composer retains its existing price and refresh presentation', async () => {
+  const fixture = await mount(false, 'default');
+  try {
+    assert.match(fixture.button('Générer')?.textContent ?? '', /\$14.04/);
+    assert.equal(fixture.dom.window.document.querySelector('.app-generation-quote'), null);
+    await fixture.render({ isPricing: true });
+    assert.equal(fixture.button('Générer')?.disabled, true);
+    assert.doesNotMatch(fixture.button('Générer')?.textContent ?? '', /14.04/);
+    assert.equal(fixture.dom.window.document.querySelector('.app-quote-status'), null);
+    assert.equal(fixture.button('Envoi'), undefined);
   } finally { await fixture.dispose(); }
 });

@@ -5,6 +5,7 @@ import {
   ENGINE_LEGACY_STORAGE_KEY,
   ensureEngineRegistryMeta,
   getCachedEngineRegistryMeta,
+  getEngineSelectAppMetadata,
   type EngineScoreMap,
 } from './engine-select-helpers';
 import type { EngineRegistryMeta } from './engine-select-types';
@@ -83,14 +84,14 @@ export function useEngineSelectRegistry({
 
   const variantEngines = useMemo(() => {
     if (!selectedEngine) return [];
-    const selectedVariantGroup = selectedMeta?.surfaces.app.variantGroup;
+    const selectedVariantGroup = getEngineSelectAppMetadata(selectedEngine.id, registryMeta)?.variantGroup;
     if (selectedVariantGroup) {
       return availableEngines.filter(
-        (entry) => registryMeta?.meta.get(entry.id)?.surfaces.app.variantGroup === selectedVariantGroup
+        (entry) => getEngineSelectAppMetadata(entry.id, registryMeta)?.variantGroup === selectedVariantGroup
       );
     }
     return [];
-  }, [availableEngines, registryMeta, selectedEngine, selectedMeta]);
+  }, [availableEngines, registryMeta, selectedEngine]);
 
   useEffect(() => {
     if (registryMeta) return;

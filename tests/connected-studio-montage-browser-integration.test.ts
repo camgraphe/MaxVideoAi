@@ -80,6 +80,7 @@ test('MCP montage opens the current conversation with private playback, durable 
     } });
     const allErrors: string[] = [], retiredWrites: string[] = [];
     const timelineWrites: Array<{ expectedRevision: number; edit: { kind: string } }> = [];
+    const renewalResponses = { timelinePreview: false, newPrivateAccess: false };
     const prepareFresh = async (browserSession = session, viewport = { width: 1440, height: 900 }) => {
       const owned = await browserFixture!.newContext(browserSession, { viewport, locale: 'en-US', colorScheme: 'light', reducedMotion: 'reduce' });
       assert.deepEqual((await owned.context.storageState()).origins, [], 'A fresh context has no Canvas drafts or previous media grants.');
@@ -118,7 +119,7 @@ test('MCP montage opens the current conversation with private playback, durable 
     const first = await openFresh(true), page = first.page;
     diagnose = async () => {
       await proof('failure', page);
-      return { alerts: await page.getByRole('alert').allTextContents(), timelineWrites, retiredWrites, privateRequests: browserFixture!.readPrivateRequests(),
+      return { alerts: await page.getByRole('alert').allTextContents(), timelineWrites, retiredWrites, renewalResponses, privateRequests: browserFixture!.readPrivateRequests(),
         videos: await page.locator('video').evaluateAll((elements) => elements.map((element) => {
           const video = element as HTMLVideoElement;
           return { id: video.dataset.playbackItemId, ready: video.readyState, time: video.currentTime, error: video.error?.code };
@@ -173,11 +174,12 @@ test('MCP montage opens the current conversation with private playback, durable 
     const originalResource = new URL(oldSignedUrl), signedTime = originalResource.searchParams.get('X-Amz-Date')!;
     const signedAt = Date.UTC(Number(signedTime.slice(0, 4)), Number(signedTime.slice(4, 6)) - 1, Number(signedTime.slice(6, 8)), Number(signedTime.slice(9, 11)), Number(signedTime.slice(11, 13)), Number(signedTime.slice(13, 15)));
     await expect.poll(() => Date.now() - signedAt).toBeGreaterThan(1100);
-    const renewed = page.waitForResponse((response) => response.url() === `${timelineEndpoint}?preview=1` && response.status() === 200);
+    const renewed = page.waitForResponse((response) => response.url() === `${timelineEndpoint}?preview=1` && response.status() === 200)
+      .then((response) => { renewalResponses.timelinePreview = true; return response; });
     const newPrivateAccess = page.waitForResponse((response) => {
       const url = new URL(response.url());
       return url.origin === originalResource.origin && url.pathname === originalResource.pathname && response.url() !== oldSignedUrl && [200, 206].includes(response.status());
-    });
+    }).then((response) => { renewalResponses.newPrivateAccess = true; return response; });
     const renewalProof = Promise.all([renewed, newPrivateAccess]);
     void renewalProof.catch(() => undefined);
     expireNextPrivateRequest = true;

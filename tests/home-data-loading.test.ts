@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -15,7 +15,7 @@ test('homepage starts retained reads together, drops unused proof reads and reco
     const output = join(directory, 'page.cjs');
     const timingPath = resolve('frontend/server/public-page-timing.ts');
     await build({
-      stdin: { contents: `export {default as HomePage} from './frontend/app/(localized)/[locale]/(marketing)/(home)/page'; export * from 'probe';`, resolveDir: process.cwd() },
+      stdin: { contents: `export {default as HomePage} from './frontend/app/(localized)/[locale]/(marketing)/(home)/page'; export * from './frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-page-data'; export * from 'probe';`, resolveDir: process.cwd() },
       define: { 'import.meta.url': JSON.stringify(pathToFileURL(resolve('frontend/server/video-keyframes.ts')).href) },
       outfile: output, bundle: true, platform: 'node', format: 'cjs', packages: 'external', tsconfig: 'frontend/tsconfig.json', jsx: 'automatic',
       plugins: [{ name: 'controlled-home-reads', setup(builder) {
@@ -27,9 +27,9 @@ test('homepage starts retained reads together, drops unused proof reads and reco
             export const example={id:'fixture-example',engineId:'kling-3-pro',engine:'Kling 3 Pro',title:'Example',mode:'Image to video',duration:'12s',price:'$2.63',useCase:'Cinematic',imageSrc:'/fixture.webp',videoSrc:null,imageAlt:'Fixture cover',href:'/examples/kling',ctaLabel:'Examples',cloneLabel:'Use prompt'};
             export const examples=[example]; export const slots=[]; export const scores=new Map();
             let gates, failure, failingPhase, released;
-            export function reset(error,phase='scores'){calls.length=0;records.length=0;failure=error;failingPhase=phase;gates=new Map();released=false;}
-            export function release(){released=true;for(const done of gates.values())done();}
-            export async function read(name,value){calls.push(name);if(!released)await new Promise(done=>gates.set(name,done));if(name===failingPhase&&failure)throw failure;return value;}
+            export function reset(error,phase='scores'){calls.length=0;records.length=0;failure=error;failingPhase=phase;gates=new Map();released=new Set();}
+            export function release(name){if(name){released.add(name);gates.get(name)?.();}else{for(const [key,done] of gates){released.add(key);done();}}}
+            export async function read(name,value){calls.push(name);if(!released.has(name))await new Promise(done=>gates.set(name,done));if(name===failingPhase&&failure)throw failure;return value;}
           `,
           '@/lib/i18n/server': `import en from ${JSON.stringify(resolve('frontend/messages/en.json'))};import fr from ${JSON.stringify(resolve('frontend/messages/fr.json'))};import es from ${JSON.stringify(resolve('frontend/messages/es.json'))};export async function resolveDictionary({locale}){return {dictionary:{en,fr,es}[locale]};}`,
           'next-intl/server': `export async function getTranslations(){return key=>key;}`,
@@ -47,15 +47,35 @@ test('homepage starts retained reads together, drops unused proof reads and reco
           if (/^@\/components\/marketing\/(?:home\/)?[A-Z]/.test(args.path)) return { path: args.path, namespace: 'components' };
           if (!args.path.startsWith('.') && !args.path.startsWith('/') && !args.path.startsWith('@/') && !args.path.startsWith('node:')) return { path: requireFrontend.resolve(args.path), external: true };
         });
-        builder.onLoad({ filter: /.*/, namespace: 'components' }, () => ({ loader: 'js', contents: `export const HomeHero=()=>null,HomeFaq=()=>null,WorkflowSeoSummary=()=>null,DeferredMarketingContent=()=>null,HomeCreativeWorlds=()=>null,HomeCreationSection=()=>null,HomeModelChoice=()=>null,HomeToolsGallery=()=>null,HomePricingSection=()=>null;` }));
+        builder.onLoad({ filter: /.*/, namespace: 'components' }, () => ({ loader: 'js', contents: `export const HomeHero=()=>null,HomeFaq=()=>null,WorkflowSeoSummary=()=>null,DeferredMarketingContent=()=>null,HomeCreativeWorlds=()=>null,HomeModelDiscovery=()=>null,HomeCreationSection=()=>null,HomeModelChoice=()=>null,HomeToolsGallery=()=>null,HomePricingSection=()=>null;` }));
         builder.onLoad({ filter: /.*/, namespace: 'controlled' }, args => ({ loader: 'js', resolveDir: process.cwd(), contents: mocks[args.path] ?? (args.path === 'examples'
-          ? `import {read,examples} from 'probe';export const loadHomepageExamples=()=>read('examples',examples);export const selectHomepageHeroPreviews=cards=>cards.slice(0,5);export const buildHomepageP0PromotionTargets=()=>[];`
+          ? `import {read,examples} from 'probe';export const loadHomepageExamples=()=>read('examples',examples);export const assembleHomepageExampleCards=()=>examples;export const selectHomepageHeroPreviews=cards=>cards.slice(0,5);export const buildHomepageP0PromotionTargets=()=>[];`
           : args.path === 'demo-pricing' ? `import {read} from 'probe';export const buildCurrentHomePriceDemo=()=>read('demo-pricing',[]);`
           : `import {read,scores} from 'probe';export const loadEngineScores=()=>read('scores',scores);`) }));
       } }],
     });
     const fixture = requireFrontend(output);
     const tick = () => new Promise<void>(done => setImmediate(done));
+    await t.test('critical data resolves while gallery and its full timing record remain pending', async () => {
+      assert.equal(typeof fixture.prepareHomePageData, 'function', 'The route needs independently awaitable critical and discovery data');
+      fixture.reset();
+      const content = JSON.parse(await readFile('frontend/messages/en.json', 'utf8')).home.redesign;
+      const prepared = fixture.prepareHomePageData('en', content);
+      let criticalReady = false;
+      const critical = prepared.critical.then((value: unknown) => { criticalReady = true; return value; });
+      await tick();
+      assert.deepEqual([...fixture.calls].sort(), ['demo-pricing', 'examples', 'hero-pricing', 'hero-slots', 'scores']);
+      for (const phase of ['hero-slots', 'scores', 'hero-pricing', 'demo-pricing']) fixture.release(phase);
+      await tick();
+      assert.equal(criticalReady, true, 'An unrelated slow gallery cannot delay the critical hero');
+      assert.equal(fixture.records.length, 0, 'A pending gallery timing must not be emitted as a complete load');
+      fixture.release('examples');
+      await prepared.completed;
+      assert.equal((await critical).programmedHeroSlots.length, 0);
+      assert.deepEqual(await prepared.examples, fixture.examples);
+      assert.equal(fixture.records.length, 1);
+      assert.ok(fixture.records[0].phases.every((phase: { status: string; durationMs: unknown }) => phase.status === 'ok' && typeof phase.durationMs === 'number'));
+    });
     for (const locale of ['en', 'fr', 'es']) {
       await t.test(`retained reads overlap and content data is preserved for ${locale}`, async () => {
         fixture.reset();
@@ -71,9 +91,10 @@ test('homepage starts retained reads together, drops unused proof reads and reco
         const children = page.props.children;
         const hero = children[0];
         assert.equal('proofStats' in hero.props, false);
-        assert.deepEqual(hero.props.previews, fixture.examples);
+        assert.equal('previews' in hero.props, false);
         assert.deepEqual(hero.props.programmedHeroItems, []);
-        assert.equal(children[2].props.children.props.examples, fixture.examples);
+        const discovery = children[2].props.children.props.modelDiscovery;
+        assert.equal((await discovery.props.children.type(discovery.props.children.props)).props.examples, fixture.examples);
         assert.deepEqual(children[3].props.children.props.scores.opponents, []);
         const schemas = children.filter((child: { type: string }) => child.type === 'script');
         assert.deepEqual(schemas.map((child: { props: { id: string } }) => child.props.id), ['home-webapp-jsonld', 'home-faq-jsonld', 'home-provider-itemlist-jsonld']);
@@ -100,6 +121,7 @@ test('homepage starts retained reads together, drops unused proof reads and reco
         const pending = fixture.HomePage({ params: Promise.resolve({ locale: 'en' }) });
         await tick(); fixture.release();
         const page = await pending;
+        await tick();
         assert.deepEqual(page.props.children[0].props.programmedHeroItems, []);
         assert.equal(fixture.records.length, 1);
         assert.equal(fixture.records[0].status, 'ok');
@@ -117,6 +139,51 @@ test('homepage starts retained reads together, drops unused proof reads and reco
       assert.equal(fixture.records[0].status, 'error');
       assert.equal(fixture.records[0].phases.find(({ phase }: { phase: string }) => phase === 'scores').status, 'error');
       assert.ok(!JSON.stringify(fixture.records).includes(failure.message));
+    });
+    await t.test('discovery failure after critical data stays observable and finishes one error record', async () => {
+      const failure = new Error('private gallery details');
+      const content = JSON.parse(await readFile('frontend/messages/en.json', 'utf8')).home.redesign;
+      fixture.reset(failure, 'examples');
+      const prepared = fixture.prepareHomePageData('en', content);
+      await tick();
+      for (const phase of ['hero-slots', 'scores', 'hero-pricing', 'demo-pricing']) fixture.release(phase);
+      await prepared.critical;
+      assert.equal(fixture.records.length, 0);
+      const examplesRejected = assert.rejects(prepared.examples, error => error === failure);
+      const completionRejected = assert.rejects(prepared.completed, error => error === failure);
+      fixture.release('examples');
+      await Promise.all([examplesRejected, completionRejected]);
+      assert.equal(fixture.records.length, 1);
+      assert.equal(fixture.records[0].status, 'error');
+      assert.ok(fixture.records[0].phases.every((phase: { status: string; durationMs: unknown }) => phase.status !== 'pending' && typeof phase.durationMs === 'number'));
+      assert.ok(!JSON.stringify(fixture.records).includes(failure.message));
+    });
+    await t.test('abandoned preparation observes each rejection immediately', async () => {
+      const content = JSON.parse(await readFile('frontend/messages/en.json', 'utf8')).home.redesign;
+      for (const phase of ['examples', 'scores']) {
+        fixture.reset(new Error('abandoned request'), phase);
+        fixture.prepareHomePageData('en', content);
+        await tick(); fixture.release(); await tick(); await tick();
+        assert.equal(fixture.records.length, 1);
+        assert.equal(fixture.records[0].status, 'error');
+      }
+      // node:test also fails this test if any abandoned task emits unhandledRejection.
+    });
+    await t.test('early critical errors retain their identity while timings wait for slower reads', async () => {
+      const content = JSON.parse(await readFile('frontend/messages/en.json', 'utf8')).home.redesign;
+      const failure = new Error('original score failure');
+      fixture.reset(failure, 'scores');
+      const prepared = fixture.prepareHomePageData('en', content);
+      const criticalRejected = assert.rejects(prepared.critical, error => error === failure);
+      const completionRejected = assert.rejects(prepared.completed, error => error === failure);
+      await tick(); fixture.release('scores');
+      await criticalRejected;
+      assert.equal(fixture.records.length, 0, 'Failed requests also need eventual durations for every started phase');
+      fixture.release();
+      await completionRejected;
+      assert.equal(fixture.records.length, 1);
+      assert.equal(fixture.records[0].status, 'error');
+      assert.ok(fixture.records[0].phases.every((phase: { status: string; durationMs: unknown }) => phase.status !== 'pending' && typeof phase.durationMs === 'number'));
     });
   } finally { await rm(directory, { recursive: true, force: true }); }
 });

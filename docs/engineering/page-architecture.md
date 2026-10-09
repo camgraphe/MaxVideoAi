@@ -17,6 +17,18 @@ Everything else should usually live outside `page.tsx`.
 
 The home, model-detail and comparison-detail pages import their own `marketing-home.css`, `marketing-models.css` and `marketing-compare.css`. The localized `tools/layout.tsx` statically imports `marketing-tools.css` for the tool hub and all tool detail pages. The English entry at `frontend/app/tools/layout.tsx` must compose that same `ToolsLayout` inside its marketing layout: default-language routes do not automatically traverse the localized route tree. Keep these imports out of the shared marketing layout so unrelated routes do not download these stylesheets. Route CSS stays available during server rendering; do not move it into an effect or client-only loader. Shared marketing styling stays in the layout. Moving an import must preserve the cascade and be checked on direct loads and client navigation, including mobile; `tests/marketing-route-styles-contract.test.ts` locks both route entries and the ownership boundary.
 
+`McpPageView` and `IntegrationPageView` synchronously import `marketing-mcp.css`;
+English and localized entries reuse these same server views. The shared layout
+retains `marketing-navigation.css`, including the MCP badge used on every page.
+MCP selectors overlap the shared typography and container rules, so changes to
+this ownership also require computed-style and visual parity on direct loads and
+SPA navigation, including returning to an unrelated page with retained CSS.
+The shared redesign sheet owns container width, heading letter spacing and the
+generic h1/h2 line heights. MCP must not redeclare these previously overridden
+values: its route sheet can arrive last during SPA navigation. More specific
+proof and caption typography remains owned by MCP;
+`tests/marketing-mcp-cascade-browser.test.ts` checks both stylesheet orders.
+
 ## Server Page Pattern
 
 Use this for marketing, SEO, model, comparison, docs, examples, legal, and admin server pages.
@@ -219,6 +231,38 @@ document block.
 ## Media In Public Pages
 
 Use the owners and validation rules in `docs/engineering/media-delivery.md`. Routes select data and compose media surfaces; they do not own an encoding pipeline or construct independent image optimizer settings. Preserve discovery of the critical poster in server HTML and stable media dimensions through hydration and playback. A route cleanup must not trade a faster preview for a slower LCP or interactive form.
+
+`loadModelPageInputs` owns active-model read scheduling. Its optional pricing
+callback waits only for the current request's override read; engine, locale and
+pricing presentation options are already available. Gallery, score and spec
+reads start once and continue independently. Keep canonical pricing and gallery
+policy in their existing owners, and await the complete input result before
+composing hero, curation and spec props. The original two-argument API retains
+its output shape. The public result preserves the first original rejection
+promptly; model-only diagnostic completion waits for all started siblings,
+including late errors, without changing the global timing helper. The new
+`model-pricing` phase covers the price projection, which is now included in model
+`dataDurationMs`; older model aggregates are not directly comparable. See the
+controlled evidence and delivery limits in the media guide and
+`tests/model-page-input-overlap.test.ts` for the scheduling/error contract.
+
+The homepage data owner exposes `prepareHomePageData` with independently awaitable
+critical and example reads plus eventual timing completion. Start the request's
+reads once, await only critical data in the route, and pass the example promise to
+route-local `HomeDiscovery`. Its Suspense boundary belongs in the discovery slot
+of `HomeCreativeWorlds`; the hero and four authored films remain stable siblings.
+Authored fallback discovery cards reserve the existing card geometry and preserve
+crawlable links. The complete `loadHomePageData` API still awaits the same reads for
+callers that require all data. Keep completion diagnostics and error observation in
+the data owner. Home retains `revalidate = 60`; that directive alone does not
+establish static/dynamic delivery or how production cache generation flushes the
+HTTP response. The 2026-10-09 production build marks home dynamic (`ƒ`), and the
+local held-gallery check confirms early hero HTML delivery with unchanged reveal
+geometry and playback. See the dated evidence and delivery limits in the media
+guide; this does not establish CDN HIT or field Core Web Vitals gains.
+The fallback plus final discovery also increases encoded HTML; the comparable
+local browser runs showed overlapping LCP ranges rather than an established LCP
+gain. Keep that measured delivery cost visible in the media guide.
 
 ## Refactor Checklist
 

@@ -1,5 +1,5 @@
 /* Keep the fixed consent controls out of the mobile modal's focus surface. */
-body:has(.marketing-menu-overlay) .cookie-consent-overlay {
+body:has(.marketing-menu-overlay:popover-open) .cookie-consent-overlay {
   visibility: hidden;
   pointer-events: none;
 }

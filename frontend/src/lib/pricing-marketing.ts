@@ -44,6 +44,14 @@ export async function computeMarketingPricePoints(
   engine: EngineCaps,
   options?: { durationSec?: number; memberTier?: MemberTier; limit?: number | null; requireCurrentPolicy?: boolean }
 ): Promise<MarketingPricePoint[]> {
+  const hasOnlyImageModes = engine.modes.length > 0 && engine.modes.every((mode) => mode === 't2i' || mode === 'i2i');
+  const mode = hasOnlyImageModes && engine.modes.includes('t2i') ? 't2i' : undefined;
+  // Marketing has no owned source images, so edit-only/reference-required
+  // engines cannot supply a reference-free image scenario here.
+  if (hasOnlyImageModes && !mode) return [];
+  if (mode && engine.inputSchema?.required?.some((field) =>
+    field.type === 'image' && (!field.modes?.length || field.modes.includes(mode))
+  )) return [];
   const durationSec = isPerImageEngine(engine) ? 1 : options?.durationSec ?? DEFAULT_DURATION_SEC;
   const memberTier = options?.memberTier ?? 'member';
   const resolutionLimit = options?.limit === null ? 0 : options?.limit ?? 3;
@@ -68,6 +76,7 @@ export async function computeMarketingPricePoints(
           resolution,
           membershipTier: memberTier,
           quality,
+          ...(mode ? { mode } : {}),
         });
         const units = isPerImageEngine(engine)
           ? durationSec

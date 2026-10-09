@@ -1,16 +1,15 @@
 /* MCP marketing: warm editorial surface, visual proof, explicit authorization. */
 .marketing-site .mcp-redesign{--mcp-ink:#242321;--mcp-muted:#66625c;--mcp-line:#d9d2c8;--mcp-paper:#f5f2ed;--mcp-accent:#945d2f;background:var(--mcp-paper);color:var(--mcp-ink)}
-.mcp-redesign .container-page{max-width:1340px}
 .mcp-redesign h1,.mcp-redesign h2,.mcp-redesign h3{color:inherit;text-wrap:balance}
-.mcp-redesign h2{font-size:clamp(30px,3.7vw,49px);font-weight:500;letter-spacing:-.045em;line-height:1.08}
-.mcp-redesign h3{font-weight:500;letter-spacing:-.025em}
+.mcp-redesign h2{font-size:clamp(30px,3.7vw,49px);font-weight:500}
+.mcp-redesign h3{font-weight:500}
 .mcp-redesign p{color:var(--mcp-muted);line-height:1.65}
 .mcp-redesign a,.mcp-redesign button,.mcp-redesign summary{outline-offset:5px}
 .mcp-redesign :is(a,button,summary):focus-visible{outline:2px solid #b77a3f}
 .mcp-redesign .mcp-eyebrow{color:var(--mcp-accent);font-size:10px;letter-spacing:.19em;font-weight:600;line-height:1.6;text-transform:uppercase;margin-bottom:20px}
 .mcp-hero{padding:60px 0 50px;border-bottom:1px solid var(--mcp-line);background:radial-gradient(ellipse at 85% 30%,#e8dccb80,transparent 65%)}
 .mcp-hero-grid{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.12fr);gap:56px;align-items:center}
-.mcp-hero h1{font-size:clamp(42px,4.5vw,65px);line-height:1.02;font-weight:500;letter-spacing:-.055em;margin:0;max-width:680px}
+.mcp-hero h1{font-size:clamp(42px,4.5vw,65px);font-weight:500;margin:0;max-width:680px}
 .mcp-redesign .mcp-lead{font-size:17px;line-height:1.7;margin-top:22px;max-width:570px}
 .mcp-actions{display:flex;align-items:center;flex-wrap:wrap;gap:17px 25px;margin-top:28px}
 .mcp-redesign .mcp-button{background:#27241f;color:#fffaf3;padding:15px 21px;min-height:49px;display:inline-flex;align-items:center;justify-content:center;gap:13px;border-radius:7px;font-size:14px;font-weight:500;transition:background .2s,transform .2s}

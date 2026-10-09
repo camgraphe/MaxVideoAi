@@ -595,6 +595,7 @@
             },
             {
               "engineId": "seedance-2-5",
+              "imageAlt": "Aperçu d’une vidéo IA de 10 secondes générée avec Seedance 2.5.",
               "name": "Seedance 2.5",
               "provider": "ByteDance",
               "bestFor": "Physique cinématique complexe",
@@ -621,6 +622,7 @@
             },
             {
               "engineId": "wan-3-prime",
+              "imageAlt": "Aperçu d’une vidéo IA de 5 secondes générée avec Wan 3 Prime.",
               "name": "Wan 3 Prime",
               "provider": "Alibaba",
               "bestFor": "Gestes artisanaux contrôlés",
@@ -647,6 +649,7 @@
             },
             {
               "engineId": "kling-3-pro",
+              "imageAlt": "Aperçu d’une image animée en vidéo de 12 secondes avec Kling 3 Pro.",
               "name": "Kling 3 Pro",
               "provider": "Kuaishou",
               "bestFor": "Mouvement caméra",
@@ -673,6 +676,7 @@
             },
             {
               "engineId": "ltx-2-5-pro",
+              "imageAlt": "Aperçu d’une image animée en vidéo de 6 secondes avec LTX 2.5 Pro.",
               "name": "LTX 2.5 Pro",
               "provider": "Lightricks",
               "bestFor": "Animation d’image rapide",

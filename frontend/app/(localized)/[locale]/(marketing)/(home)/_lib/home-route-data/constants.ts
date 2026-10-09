@@ -22,8 +22,8 @@ export const EXAMPLE_ENGINE_PRIORITY = [
   'kling-3-standard',
 ] as const;
 
-// Preserve the two established homepage consumers: the examples rail receives
-// six ranked cards, while the hero projects the first five of that same list.
+// Discovery keeps six ranked cards. The legacy preview selector keeps its five-card
+// API for explicit callers; the approved homepage hero now owns its curated media.
 export const HOMEPAGE_EXAMPLE_CARD_LIMIT = 6;
 export const HOMEPAGE_HERO_PREVIEW_LIMIT = 5;
 

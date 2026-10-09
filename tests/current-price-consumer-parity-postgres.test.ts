@@ -8,13 +8,17 @@ import { getDb } from '../frontend/src/lib/db';
 import { computeMarketingPricePoints, computeMarketingPriceRange } from '../frontend/src/lib/pricing-marketing';
 import { computeCanonicalBillingSnapshot } from '../frontend/server/pricing/quote-billing';
 import { customerTariffsEnabledByCode } from '../frontend/server/pricing/customer-tariff-store';
+import { customerTariffCellId } from '../frontend/server/pricing/customer-tariff-seed';
 import { computeConfiguredPreflight } from '../frontend/src/server/engines';
 import { priceCanonicalGeneration } from '../frontend/src/server/agent-api/generation-pricing';
 import { quotePublicModelScenario, resolvePublicModelScenario } from '../frontend/server/pricing/quote-public-model-scenario';
 import { confirmCustomerTariffChange, loadCustomerTariffScenarioDetail, previewCustomerTariffChange } from '../frontend/server/pricing-admin/customer-tariff-service';
 import { quoteCurrentExamplePrice } from '../frontend/server/current-example-price';
 import { resolveCurrentModelPublicOffer } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/current-model-public-offer';
-import { buildPricePerSecondLabel } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-pricing';
+import { buildPricePerImageLabel, buildPricePerImageRows, buildPricePerSecondLabel } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-pricing';
+import { computeCurrentPublicSnapshot } from '../frontend/server/pricing/quote-public';
+import { mergeEngineLocalizedContent } from '../frontend/lib/models/i18n-normalization';
+import { makeModelPagePricingHarness, findModelLayoutElements } from './helpers/model-page-pricing-harness';
 import { buildSpecValues } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-spec-values';
 import { refreshModelDecisionPricingScenarios } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/current-model-decision-pricing';
 import { buildCurrentPricingHubData } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/currentPricingHubData';
@@ -157,5 +161,150 @@ test('confirmed admin tariffs propagate to billing, public quotes, Pricing, mode
     for (const [key, value] of Object.entries(previous)) {
       if (value === undefined) delete process.env[key]; else process.env[key] = value;
     }
+  }
+});
+
+test('GPT labels, rows and route use explicit image scenarios across effective policy and active tariffs', async () => {
+  const database = await startDisposablePostgres('gpt-model-price-parity');
+  const previous = {DATABASE_URL:process.env.DATABASE_URL,NODE_ENV:process.env.NODE_ENV,PRICING_SANDBOX:process.env.PRICING_SANDBOX};
+  Object.assign(process.env,{DATABASE_URL:database.databaseUrl,NODE_ENV:'development',PRICING_SANDBOX:'1'});
+  let current: Awaited<ReturnType<typeof makeModelPagePricingHarness>> | undefined;
+  let extraUnit: Awaited<ReturnType<typeof makeModelPagePricingHarness>> | undefined;
+  const actor = '11111111-1111-4111-8111-111111111111';
+  try {
+    current=await makeModelPagePricingHarness();
+    extraUnit=await makeModelPagePricingHarness({includeUnusedUnitQuote:true});
+    const currentHarness=current.harness;
+    const extraUnitHarness=extraUnit.harness;
+    await database.pool.query(`CREATE TABLE app_pricing_rules (
+      id TEXT PRIMARY KEY, engine_id TEXT, resolution TEXT, mode TEXT,
+      margin_percent NUMERIC, margin_flat_cents INTEGER, surcharge_audio_percent NUMERIC,
+      surcharge_upscale_percent NUMERIC, currency TEXT, compatibility_profile TEXT,
+      vendor_account_id TEXT, effective_from TIMESTAMPTZ, updated_at TIMESTAMPTZ, updated_by UUID);
+      INSERT INTO app_pricing_rules (id,margin_percent,margin_flat_cents,surcharge_audio_percent,surcharge_upscale_percent,currency)
+      VALUES ('default',0.3,0,0.2,0.5,'USD');`);
+    for (const migration of ['27_pricing_admin_cockpit.sql','54_customer_tariff_cells.sql','55_customer_tariff_versions.sql']) {
+      await database.pool.query(readFileSync(`neon/migrations/${migration}`,'utf8'));
+    }
+    const engine=getFalEngineById('gpt-image-2')!;
+    const sizes=['1024x768','1024x1024','1024x1536','1920x1080','2560x1440','3840x2160'];
+    const scenarios=new Map<string,ReturnType<typeof resolvePublicModelScenario>>();
+    // Explicit retail fixture amounts exceed the supplier facts and distinguish
+    // every size/quality. No commercial policy or catalogue amount is rewritten.
+    for (const [index,resolution] of sizes.entries()) {
+      for (const [quality,baseCents] of [['low',11],['medium',41],['high',91]] as const) {
+        const scenario=resolvePublicModelScenario({modelId:engine.id,mode:'t2i',durationSec:1,resolution,quality,quantity:1})!;
+        assert.ok(scenario,`${resolution}/${quality}`);
+        scenarios.set(`${resolution}/${quality}`,scenario);
+        await database.pool.query(`INSERT INTO app_customer_tariff_cells
+          (id,selector_key,selector_json,price_json,currency,effective_from,revision,updated_by)
+          VALUES ($1,$2,$3::jsonb,$4::jsonb,'USD',NOW()-INTERVAL '1 day',1,$5)`,[
+          customerTariffCellId(scenario.id),JSON.stringify(Object.entries(scenario.selector).sort(([a],[b])=>a.localeCompare(b))),
+          JSON.stringify(scenario.selector),JSON.stringify({kind:'fixed',customerCents:baseCents+index}),actor,
+        ]);
+      }
+    }
+    await database.pool.query('UPDATE app_customer_tariff_state SET revision=1');
+    assert.equal(customerTariffsEnabledByCode(),true);
+    for (const h of [currentHarness,extraUnitHarness]) {h.setQuote(computeCurrentPublicSnapshot);h.setPublicQuote(quotePublicModelScenario);}
+    async function assertCurrentConsumers(minCents:2|3|11|12,firstPointCents:2|3|11|17,offerCents:20|45|91|101) {
+      for (const locale of ['en','fr','es'] as const) {
+        const base=JSON.parse(readFileSync(`content/models/en/${engine.modelSlug}.json`,'utf8'));
+        const overlay=JSON.parse(readFileSync(`content/models/${locale}/${engine.modelSlug}.json`,'utf8'));
+        const input={engine,locale,localizedContent:mergeEngineLocalizedContent(base,overlay),
+          detailCopy:{backLabel:'Back',pricingLinkLabel:'Pricing',breadcrumb:{home:'Home',models:'Models'}}};
+        const label=await buildPricePerImageLabel(engine.engine,locale);
+        const cents=String(minCents).padStart(2,'0');
+        assert.equal(label,{en:`$0.${cents}/image`,fr:`0,${cents}\u00a0$US/image`,es:`USD\u00a00.${cents}/image`}[locale]);
+        const rows=await buildPricePerImageRows(engine.engine,locale,'Current image price');
+        assert.equal(rows.length,1);
+        assert.equal(rows[0].valueLines?.length,18);
+        assert.ok(rows[0].valueLines?.[0].includes(`0${locale==='fr'?',':'.'}${String(firstPointCents).padStart(2,'0')}`));
+        assert.equal((await resolveCurrentModelPublicOffer(engine,engine.engine))?.amountCents,offerCents);
+        currentHarness.configure(input);extraUnitHarness.configure(input);
+        const result=await currentHarness.page({params:Promise.resolve({slug:engine.modelSlug,locale})});
+        const withExtraUnit=await extraUnitHarness.page({params:Promise.resolve({slug:engine.modelSlug,locale})});
+        assert.equal(currentHarness.calls.length,18);
+        assert.equal(extraUnitHarness.calls.length,19);
+        assert.equal(result.props.pricePerImageLabel,label);
+        assert.equal(result.props.pricePerSecondLabel,null);
+        assert.deepEqual(result.props.keySpecRows,withExtraUnit.props.keySpecRows);
+        const priceRow=result.props.keySpecRows.find((row:any)=>row.key==='pricePerImage');
+        assert.deepEqual(priceRow.valueLines,rows[0].valueLines);
+        const elements=findModelLayoutElements(await currentHarness.layout(result.props));
+        const product=elements.filter(row=>row.name==='script').map(row=>JSON.parse(row.props.dangerouslySetInnerHTML.__html))
+          .find(row=>row['@type']==='Product');
+        assert.equal(product.offers.price,(offerCents/100).toFixed(2));
+        assert.equal(elements.find(row=>row.name==='ModelDecisionPricingCard')?.props.offer.amountCents,offerCents);
+      }
+    }
+    // Before activation the real current-policy quote supplies all 18 image points.
+    await assertCurrentConsumers(2,2,20);
+    await database.pool.query('UPDATE app_pricing_rules SET margin_percent=2,updated_at=NOW() WHERE id=\'default\'');
+    await assertCurrentConsumers(3,3,45);
+    await database.pool.query('UPDATE app_customer_tariff_state SET active=TRUE');
+    // These are actual supported t2i cells. Marketing must supply that mode at
+    // its caller boundary; no quote adapter adds it on behalf of this test.
+    await assertCurrentConsumers(11,11,91);
+    for (const [key,customerCents] of [['1024x768/low',17],['1024x768/high',101]] as const) {
+      const update={operation:'update' as const,scenarioId:scenarios.get(key)!.id,customerCents};
+      await confirmCustomerTariffChange(update,(await previewCustomerTariffChange(update)).fingerprint,actor,()=>{});
+    }
+    await assertCurrentConsumers(12,17,101);
+    const points=await computeMarketingPricePoints(engine.engine,{requireCurrentPolicy:true,limit:null});
+    assert.equal(points.length,18);
+    for (const point of points) {
+      const index=sizes.indexOf(point.resolution);
+      const expected=point.resolution==='1024x768' && point.quality==='low'?17
+        :point.resolution==='1024x768' && point.quality==='high'?101
+        :({low:11,medium:41,high:91}[point.quality as 'low'|'medium'|'high']+index);
+      assert.equal(point.cents,expected);
+      const scenario=scenarios.get(`${point.resolution}/${point.quality}`)!;
+      assert.equal((await computeCanonicalBillingSnapshot(scenario.context)).totalCents,expected);
+      const publicQuote=await quotePublicModelScenario({modelId:engine.id,mode:'t2i',durationSec:1,
+        resolution:point.resolution,quality:point.quality,quantity:1});
+      assert.equal(publicQuote.status,'exact');
+      if(publicQuote.status==='exact') assert.equal(publicQuote.amountCents,expected);
+    }
+    // A missing active exact offer cell cannot fall back to an authored amount.
+    const missing=scenarios.get('1024x768/high')!;
+    await database.pool.query('DELETE FROM app_customer_tariff_cells WHERE selector_json=$1::jsonb',[JSON.stringify(missing.selector)]);
+    const partial=await buildPricePerImageRows(engine.engine,'en','Current image price');
+    assert.equal(partial[0].valueLines?.length,17);
+    assert.equal(await resolveCurrentModelPublicOffer(engine,engine.engine),null);
+    // Generic family coverage uses actual supported scenarios and current cells,
+    // including Uni's reference-count projection; no model-specific mode branch.
+    for (const [modelId,resolution] of [['nano-banana','square_hd'],['luma-uni-1','2K'],['seedream-5-0-pro','2K']] as const) {
+      const entry=getFalEngineById(modelId)!;
+      const scenario=resolvePublicModelScenario({modelId,mode:'t2i',durationSec:1,resolution,quantity:1})!;
+      assert.ok(scenario,modelId);
+      await database.pool.query(`INSERT INTO app_customer_tariff_cells
+        (id,selector_key,selector_json,price_json,currency,effective_from,revision,updated_by)
+        VALUES ($1,$2,$3::jsonb,$4::jsonb,'USD',NOW()-INTERVAL '1 day',1,$5)`,[
+        customerTariffCellId(scenario.id),JSON.stringify(Object.entries(scenario.selector).sort(([a],[b])=>a.localeCompare(b))),
+        JSON.stringify(scenario.selector),JSON.stringify({kind:'fixed',customerCents:500}),actor,
+      ]);
+      const points=await computeMarketingPricePoints(entry.engine,{requireCurrentPolicy:true,limit:null});
+      assert.equal(points.length,1,modelId);
+      assert.equal(points[0].resolution,resolution);
+      assert.equal(points[0].cents,500,modelId);
+      assert.equal((await computeCanonicalBillingSnapshot(scenario.context)).totalCents,500,modelId);
+      assert.equal((await quotePublicModelScenario({modelId,mode:'t2i',durationSec:1,resolution,quantity:1}) as
+        {amountCents?:number}).amountCents,500,modelId);
+    }
+    // Required policy read failure cannot display authored historical fallback prices.
+    await database.pool.query('DROP TABLE app_pricing_rules');
+    assert.equal(await buildPricePerImageLabel(engine.engine,'en'),null);
+    assert.deepEqual(await buildPricePerImageRows(engine.engine,'en','Current image price'),[]);
+    const input={engine,locale:'en',localizedContent:mergeEngineLocalizedContent({},{}),detailCopy:{breadcrumb:{}}};
+    currentHarness.configure(input);
+    const unavailable=await currentHarness.render(input);
+    assert.equal(unavailable.props.pricePerImageLabel,null);
+    assert.equal(unavailable.props.keySpecValues.pricePerImage,'Data pending');
+    assert.ok(unavailable.props.keySpecRows.every((row:any)=>!row.value.includes('$')));
+  } finally {
+    await current?.dispose();await extraUnit?.dispose();
+    await getDb().end().catch(()=>undefined);await database.cleanup();
+    for (const [key,value] of Object.entries(previous)) {if(value===undefined)delete process.env[key];else process.env[key]=value;}
   }
 });

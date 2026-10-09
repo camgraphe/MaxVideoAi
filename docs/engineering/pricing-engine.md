@@ -50,6 +50,16 @@ unavailable database, or a missing active cell refuses a quote rather than
 silently falling back. Standalone production quote audits must explicitly select
 `NODE_ENV=production`; older baseline collectors do not select it automatically.
 
+Selected active quote reads retain the state read, then fetch historical and
+current cells together with `UNION ALL`: two data commands, or four commands
+including the existing repeatable-read/read-only transaction. Exact selectors
+and reviewed continuous alternatives retain every row, with history ordered by
+tariff ID/revision before current cells by ID. Inactive reads, full admin inventory
+and the locked maintenance batch retain their separate read paths. Caller-owned
+transactions still expose their uncommitted candidate; new requests read fresh
+state. Validation, fail-closed errors and canonical quote ownership are unchanged.
+This reduces SQL round trips; it does not establish a production latency gain.
+
 Development still requires `PRICING_SANDBOX=1` and the exact local Unix-socket
 database gate. The production switch does not enable arbitrary development or
 test databases. This code change does not itself apply migrations or activate
@@ -456,6 +466,19 @@ are removed from the supporting strip to avoid duplicate choices; unavailable ex
 quotes stay in the matrix's existing fallback presentation. Labels and the indicative
 USD/live-quote explanation are authored in the three locale message files.
 `tests/pricing-quick-start.test.ts` locks matrix parity and the server boundary.
+`buildCurrentPricingHubData` groups identical authored video/image quote inputs
+within each hub construction before its eight-worker queue starts. One current
+canonical result updates every matching matrix cell, retaining each cell's note,
+localized formatting and existing sorting/highlight ownership. Every construction
+creates fresh groups; unavailable results and unexpected quote rejections cannot
+be cached into a later request. Audio and fixed-product readers follow the model
+queue through a shared twelve-worker queue in `buildCurrentOtherPricing`, so a
+pending audio quote cannot hold every fixed-product read behind it. This preserves
+their former maximum of twelve concurrent reads, exact inputs, Character Builder
+quantities, validation and truthful live-quote fallbacks.
+`tests/current-other-pricing-queue.test.ts` covers this boundary.
+`tests/current-pricing-hub-queue.test.ts` covers complete input
+coverage, bounded distinct work, duplicate projection and fresh-request recovery.
 Scenario clicks reuse the consent-controlled `cta_click` bridge with the explicitly
 allowed `pricing_scenario` / `pricing_hero` values. These are aggregate card clicks;
 they do not prove a paid conversion or distinguish the three scenarios.
@@ -835,6 +858,23 @@ Model specs accept only current server price labels. Authored historical prices
 and catalogue-plus-margin amounts cannot fill an unavailable commercial value.
 Comparison pricing also requires a current pricing engine and a successful
 current-policy quote; its spec row and price score reuse that result.
+
+`pricing-marketing.ts` selects an explicit supported `t2i` mode for engines whose
+modes are all image modes. This lets image catalogue ranges and model labels/rows
+match the same active exact cells as public image scenarios. Video and mixed-mode
+contexts retain their existing mode behavior. Marketing owns no source images;
+edit-only engines or text-image modes requiring a source stay unavailable rather
+than inventing a reference-free quote. Current-policy admission and canonical
+billing defaults remain unchanged. The model route's `buildModelPagePriceProjection`
+resolves one image grid per response for both the minimum label and spec rows.
+Its points stay sequential; unavailable points are omitted consistently from both
+projections. A fresh render reads a fresh grid and can recover, without caching
+failures or successful amounts across requests. The standalone label and row
+helpers retain independent reads for other callers. Hiding spec prices does not
+add quotes. Video labels and rows start together, as do the layout's independent
+decision pricing and public offer; their formatting, fallbacks and quote errors
+retain their existing owners. `tests/model-page-price-projection.test.ts` locks
+the quote counts, admission, fresh-render recovery and deferred-start behavior.
 
 Public scenario admission builds finite catalogue combinations only for the
 requested model and mode. `quote-public-model-scenario.ts` retains those immutable

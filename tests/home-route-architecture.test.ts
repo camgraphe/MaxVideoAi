@@ -65,7 +65,21 @@ test('home page delegates independent timed reads to its route-local data owner'
   assert.doesNotMatch(pageSource, /loadHomepageExamples\(|loadProgrammedHomepageHeroSlots\(|loadEngineScores\(|loadSuccessfulGenerationCount\(/);
   const source = readFileSync(pageDataPath, 'utf8');
   assert.match(source, /withPublicPageTiming/);
+  assert.match(source, /export function prepareHomePageData/);
+  assert.match(pageSource, /await pendingData\.critical/);
+  assert.doesNotMatch(pageSource, /await pendingData\.examples|previews=\{selectHomepageHeroPreviews/);
   assert.ok(source.split('\n').length <= 60, 'the homepage load owner should only coordinate independent reads');
+});
+
+test('home streams discovery alone and keeps critical hero and authored films stable', () => {
+  const creativeSource = readFileSync(join(root, 'frontend/components/marketing/home/HomeCreativeWorlds.tsx'), 'utf8');
+  const discoverySource = readFileSync(join(root, 'frontend/app/(localized)/[locale]/(marketing)/(home)/_components/HomeDiscovery.tsx'), 'utf8');
+  const boundary = pageSource.slice(pageSource.indexOf('<Suspense'), pageSource.indexOf('</Suspense>'));
+  assert.match(boundary, /<HomeDiscovery/);
+  assert.doesNotMatch(boundary, /<HomeHero|<HomeCreativeWorlds|<CreativeFilm/);
+  assert.match(creativeSource, /modelDiscovery \?\? <HomeModelDiscovery/);
+  assert.match(discoverySource, /examples=\{await examples\}/);
+  assert.doesNotMatch(discoverySource, /catch\s*\(/, 'unexpected gallery errors must stay observable to the route boundary');
 });
 
 test('home route data module exposes the orchestration contract explicitly', () => {

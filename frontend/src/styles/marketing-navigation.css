@@ -60,3 +60,29 @@
 .marketing-mega-aside>div+div {margin-top:20px;padding-top:16px;border-top:1px solid var(--hairline)}
 /* At 320 px, sign-in stays available in the mobile drawer. */
 @media(max-width:360px){.marketing-site>header a[href^="/login"]{display:none}}
+
+/* Native disclosure works before hydration; the closed popover has no layout. */
+.marketing-menu-overlay[popover]{margin:0;padding:0;border:0;width:100%;height:100%;max-width:none;max-height:none;background:transparent;color:inherit}
+.marketing-menu-group>summary{list-style:none;cursor:pointer}
+.marketing-menu-group>summary::-webkit-details-marker{display:none}
+.marketing-menu-group[open]>summary{background:var(--surface-2)}
+.marketing-menu-group[open] .marketing-menu-chevron{transform:rotate(180deg)}
+/* Keep native labels and controls useful while decorative SVGs wait for intent. */
+.marketing-menu-icon{display:inline-flex;flex-shrink:0;width:18px;height:18px;color:var(--text-muted)}
+.marketing-menu-create .marketing-menu-icon{width:21px;height:21px;color:inherit}
+.marketing-menu-logo{display:inline-block;flex-shrink:0;width:28px;height:28px}
+.marketing-menu-chevron{display:inline-grid;place-items:center;flex-shrink:0;width:14px;height:14px;color:var(--text-muted);transition:transform .15s}
+.marketing-menu-chevron::before{content:'';width:6px;height:6px;border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;transform:translateY(-2px) rotate(45deg)}
+.marketing-menu-close-icon{display:inline-block;position:relative;width:18px;height:18px}
+.marketing-menu-close-icon::before,.marketing-menu-close-icon::after{content:'';position:absolute;top:8px;left:2px;width:14px;height:2px;background:currentColor;border-radius:1px;transform:rotate(45deg)}
+.marketing-menu-close-icon::after{transform:rotate(-45deg)}
+.marketing-menu-settings{min-height:49px}
+@media(max-width:1023px){body:has(.marketing-menu-overlay:popover-open){overflow:hidden}}
+/* Older engines still expose the SSR destinations as a regular mobile nav. */
+@supports not selector(:popover-open){
+  .marketing-menu-invoker{display:none}
+  .marketing-menu-overlay[popover]{display:block;position:relative;inset:auto;height:auto;overflow:visible}
+  .marketing-menu-overlay[popover] .marketing-menu-panel{width:100%;min-height:0;box-shadow:none;animation:none}
+  .marketing-menu-backdrop{display:none}
+  @media(min-width:1024px){.marketing-menu-overlay[popover]{display:none}}
+}

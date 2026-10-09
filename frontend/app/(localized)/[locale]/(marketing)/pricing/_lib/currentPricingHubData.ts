@@ -25,6 +25,21 @@ export async function buildCurrentPricingHubData(
     quotes: Object.fromEntries(VIDEO_PRICE_PRESETS.map((preset) => [preset.id,
       { ...row.quotes[preset.id], isCheapest: false }])) as Record<VideoPricePresetId, PresetQuote> }));
   const tasks: Array<() => Promise<void>> = [];
+  const quoteGroups = new Map<string, { input: PublicModelQuoteInput; apply: Array<(result: PublicModelQuote) => void> }>();
+  const addQuote = (input: PublicModelQuoteInput, apply: (result: PublicModelQuote) => void) => {
+    const key = JSON.stringify(input);
+    const existing = quoteGroups.get(key);
+    if (existing) {
+      existing.apply.push(apply);
+      return;
+    }
+    const group = { input, apply: [apply] };
+    quoteGroups.set(key, group);
+    tasks.push(async () => {
+      const result = await quote(group.input);
+      group.apply.forEach((project) => project(result));
+    });
+  };
   for (const row of rows) {
     const entry = entries.get(row.id);
     if (!entry) continue;
@@ -32,8 +47,7 @@ export async function buildCurrentPricingHubData(
       const old = row.quotes[preset.id];
       if (old.status !== 'exact') continue;
       const input = getExactVideoPresetInput(entry, preset, locale);
-      tasks.push(async () => {
-        const result = input ? await quote(input) : { status: 'unavailable' as const };
+      const apply = (result: PublicModelQuote) => {
         row.quotes[preset.id] = result.status === 'exact'
           ? { ...old, amountCents: result.amountCents,
               display: formatCurrencyForLocale(locale, result.currency, result.amountCents / 100),
@@ -42,7 +56,9 @@ export async function buildCurrentPricingHubData(
               sortValue: result.amountCents, isCheapest: false }
           : { status: 'live_quote', display: copy.liveQuote, note: old.note,
               sortValue: Number.POSITIVE_INFINITY };
-      });
+      };
+      if (input) addQuote(input, apply);
+      else apply({ status: 'unavailable' });
     }
   }
   const imageRows = base.otherSurfaces.imageRows.map((row) => ({ ...row }));
@@ -50,8 +66,7 @@ export async function buildCurrentPricingHubData(
     const entry = entries.get(row.id);
     if (!entry) continue;
     for (const [highQuality, field] of [[false, 'standardImage'], [true, 'highQualityImage']] as const) {
-      tasks.push(async () => {
-        const result = await quote(getImagePricePresetInput(entry, highQuality));
+      addQuote(getImagePricePresetInput(entry, highQuality), (result) => {
         row[field] = result.status === 'exact'
           ? formatCurrencyForLocale(locale, result.currency, result.amountCents / 100)
           : copy.liveQuote;

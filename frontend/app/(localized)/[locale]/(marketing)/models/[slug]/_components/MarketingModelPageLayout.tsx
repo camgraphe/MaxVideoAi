@@ -290,8 +290,10 @@ export async function MarketingModelPageLayout({
   const faqJsonLdEntries = faqList.slice(0, 6);
   const prepLinksSection = buildModelPrepLinksSection(engine.modelSlug, locale);
   const pricingCallout = buildModelPricingCallout(engine.modelSlug, locale);
-  const { data: templateData, config: templateConfig } =
-    await buildCurrentModelDecisionData(engine, locale, localizedContent.decision);
+  const [{ data: templateData, config: templateConfig }, publicOffer] = await Promise.all([
+    buildCurrentModelDecisionData(engine, locale, localizedContent.decision),
+    resolveCurrentModelPublicOffer(engine, pricingEngine),
+  ]);
   const sectionLabels = resolveSectionLabels(locale);
   const compareCopy = resolveCompareCopy(locale, heroTitle, supportsNativeAudio);
   const statusLabels = resolveSpecStatusLabels(locale);
@@ -395,7 +397,6 @@ export async function MarketingModelPageLayout({
   ].filter((item) => item.visible);
   const decisionTocItems = buildDecisionTocItems({ locale, sectionLabels, textAnchorId, imageAnchorId, compareAnchorId, hasExamples, hasSpecs, hasTextSection, hasTipsSection, hasCompareSection, hasSafetySection, hasFaqSection });
   const decisionTocOverviewLabel = resolveDecisionTocOverviewLabel(locale);
-  const publicOffer = await resolveCurrentModelPublicOffer(engine, pricingEngine);
   const schemaPayloads = buildModelSchemaPayloads({
     canonical,
     description: templateData?.meta.description ?? pageDescription,

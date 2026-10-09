@@ -22,6 +22,41 @@ Comparison detail pages load optional public `examples-<modelSlug>` playlists th
 
 `CompareGalleryCard.client.tsx` owns intent and visibility only, delegating incidental muted previews to `useExampleCardPlayback`. Preserve responsive lazy covers, the configured image quality and fixed geometry. Ordinary activation opens `CompareVideoDialog.client.tsx`, loaded on demand; modified clicks and the underlying HTML link retain the watch-page URL. The modal delegates focus, Escape and restoration to `useAccessibleModal` and full playback to `PublicVideoPlayer`, with original fidelity and `preload="none"`. No automatic playback of all gallery items. Show independent-example labeling; do not imply identical prompts or controlled test conditions.
 
+## Model detail examples
+
+Model routes retain playlist curation, public validation and the shared
+`projectModelPageGallery` ordering policy. Their own examples view model and
+`ModelDefaultExamplesSection` / `ModelDecisionExamplesGallery` do not consume card
+prices, so the route does not quote those media batches. The pure `toGalleryCard`
+still accepts supplied current prices, and the shared `ExampleGalleryCard` keeps
+its price display for other readers. Visible model specs, decision scenarios and
+the current visible/JSON-LD offer retain their canonical pricing owners.
+`tests/model-unused-example-pricing.test.ts` executes the real gallery callback
+and checks localized video/image consumers with and without card price labels.
+
+The active model input owner starts the canonical unit/spec price projection as
+soon as the same request's engine override resolves. That read is its only
+asynchronous dependency; gallery, score and spec reads continue independently.
+Each input and projection starts once, with the existing one image/two video
+quote workers. Hero and gallery selection still consume the complete input
+result. Model-only diagnostic completion observes all started siblings before
+emitting one timing record; an original loader error rejects the public result
+promptly even while another read remains pending. Observers retain late errors
+without supplying successful fallbacks. The new `model-pricing` phase measures
+the projection, so model `dataDurationMs` now includes work absent from older
+records; those historical aggregate durations are not directly comparable.
+`tests/model-page-input-overlap.test.ts` covers this dependency and error boundary.
+
+The 2026-10-09 controlled owner check used a 240 ms gallery, 40 ms override and
+8 ms per-quote fixture. Across an ABBA sequence, median route-owner duration
+changed 296.05→241.80 ms for Veo 3.1 and 402.67→241.42 ms for GPT Image 2, with
+identical output and quote counts. An override-limited control showed no
+meaningful gain. Exact route/layout/metadata/quote parity covers EN/FR/ES,
+including partial and unavailable prices. These are local scheduling
+measurements, not HTTP/browser LCP or field CWV gains. Evidence is under
+`.reports/cwv-next-phase-2026-10-09/model/`; retain separate browser and deployed
+delivery verification before making a user-visible performance claim.
+
 ## Paginated discovery gallery
 
 Examples routes read24 items per logical page from the SQL catalog; all24 watch links and posters are rendered on the server. Four optional opening videos belong to the same page and are never reinserted on page2. `examples-discovery-layout.ts` chooses compatible opening formats from the current page only; CSS owns geometry and native continuation ratios. Measured media dimensions take priority over declared ratios. Only the two side previews are cropped. Empty managed destinations stay empty and out-of-range URLs redirect to the last valid page.
@@ -39,6 +74,70 @@ A compact, full-width guide follows all four opening cards in reading order. It 
 The comparison UI shows three distinct executable model proposals, each with its own duration, resolution, aspect and audio. `server/example-comparison-quotes.ts` ranks configurations by duration distance first, then aspect, resolution and audio; exact configurations win. Explicitly highlight every adapted setting. Unknown source settings stay unknown; label those quotes as proposed configurations. Validate each proposal with the workspace handoff owner before quoting it once through the canonical public price owner. Retain historical billing separately without displaying it as the public price, and confirm the final quote in the app before generation. A genuine quote-service failure may leave fewer proposals; never fabricate prices to fill a slot. Preserve the full request through the existing login redirect owner. Tests: `example-recreation`, `workspace-example-recreation-dom`, `workspace-video-settings`, `workspace-shared-video-load-dom`.
 
 ## Existing ownership
+
+The homepage example loader owns selection, curation and promotion media, with no
+card quote projection: `HomeCreativeWorlds` / `HomeModelDiscovery` do not display
+those card prices. Current hero prices and the
+guided price demonstration retain their separate canonical reads in
+`home-page-data.ts`. The pure `assembleHomepageExampleCards` still accepts supplied
+current prices for its explicit callers. `tests/home-unused-example-pricing.test.ts`
+checks the real loader and localized rendered consumers; the PostgreSQL curation
+fixture preserves the separate selection and SQL-read contract.
+
+The five approved hero items use curated media and exact-locale `imageAlt` fields
+in `home.redesign.hero.mockup.engineRecommendations`. Gallery candidates do not
+describe those different sources. MiniMax's scene description stays unchanged;
+the other four descriptions state the approved model, duration and image-to-video
+mode where applicable without inferring a scene from an unrelated gallery image.
+Programmed slots still determine the item IDs consumed by playback, and current
+hero prices retain their canonical quote read.
+
+`prepareHomePageData` starts all five retained reads once. The hero still awaits
+slots, scores, hero pricing and demonstration pricing; discovery alone awaits the
+gallery beneath its own Suspense boundary. The four authored CreativeFilms remain
+outside that boundary. Its fallback uses the same six authored fallback cards and
+reader geometry, with real model/example links; final cards retain the existing
+curation, promotion and SQL-read policy. Do not stream a replacement hero or entire
+CreativeWorlds section, which could remount an already playing video.
+
+The one bounded timing record waits for every started read to settle, including
+when a critical read fails early. Immediate observers prevent unhandled rejections
+without converting any returned promise into a successful fallback. The complete
+`loadHomePageData` API remains available and propagates the original loader error.
+The route's ordinary listing failures retain the existing gallery fallbacks.
+Unexpected gallery failures after shell emission reject the discovery boundary;
+React/Next handles that error and may retain its server fallback until error/retry
+handling, rather than silently treating fallback cards as final data. Once a shell
+has been sent, its HTTP status cannot be replaced by a later gallery error.
+
+`tests/home-streaming.test.ts` uses the React renderer bundled with Next and real
+homepage owners to hold gallery reads, check early critical poster/films/JSON-LD,
+and compare the final EN/FR/ES discovery markup. This proves the server composition
+boundary. Home entries retain `revalidate = 60`, which alone does not establish
+static versus dynamic delivery or cache buffering.
+
+Local production-build verification on 2026-10-09 marks home as dynamic (`ƒ`).
+With the same disposable PostgreSQL gallery table held, the reference sent no
+bytes or critical poster during a 2,200 ms observation; the candidate delivered
+hero HTML at about 87 ms while gallery data remained blocked. Early Play at
+EN/390 px retained the same playing video through discovery reveal, advancing
+from 0.87 s to 5.13 s. FR/390 px and ES/1440 px reveal checks retained the hero
+and all four film nodes; measured section/card box deltas and reveal-only CLS
+were zero. Evidence lives under `.reports/cwv-large-phase-2026-10-09/`, including
+`candidate-held-active.json`, `baseline-held-active.json` and
+`held-gallery-summary.json`. These controlled local checks prove the HTTP
+boundary and reveal continuity. They do not establish CDN HIT behavior, a field
+LCP reduction or a CrUX gain; retain comparable browser and deployed cache
+verification for future performance claims.
+
+The comparable six-run ABBAAB browser check used the same builds and PostgreSQL
+fixture with 4× CPU throttling, 40 ms latency and 1.6 Mbit/s bandwidth. Encoded
+HTML increased from 57,538 to 63,663 bytes (+6,125 bytes, +10.6%) because both
+fallback and final discovery markup are sent; JavaScript increased from 215,470
+to 215,567 bytes (+97 bytes). Median LCP was 848 ms versus 840 ms, with overlapping
+run ranges, and all six runs had zero CLS. This does not establish a significant
+LCP gain. The additional HTML is an explicit accepted cost of removing the proven
+gallery wait from critical hero delivery, and remains part of future comparisons.
 
 Homepage mobile composition puts the main video before the comparison and assistant
 links. When its thumbnail strip becomes visible, the first thumbnail reuses
