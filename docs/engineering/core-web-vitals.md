@@ -161,6 +161,32 @@ from provider event receipt and production field measurements. See
 
 `loadComparePageData` owns the comparison's independent data and gallery reads. It starts them together; the qualified benchmark, exact prices and complete gallery results still resolve before rendering. Keep prelaunch gallery exclusions in this owner. Its concurrency test holds all read boundaries open to prove that none waits for unrelated data.
 
+Comparison policy sharing (2026-10-09) belongs to one `buildCompareRouteData`
+invocation. Its lazy contextual reader retains the first successful complete
+policy across both engines and keeps every quote's tariff transaction separate.
+The PG17 contract measures Veo 3.1/Fast's six 4-second audio scenarios at
+720p/1080p/4K: 30 to 25 pricing commands, with policy SELECTs 6 to 1 and all six
+tariff transactions retained. EN/FR/ES complete contexts, snapshots and route
+pricing outputs match for healthy, partial, empty-policy and unavailable cases.
+Veo/Lite has five quoted points, not six. These counts describe pricing commands
+only. A shared transient policy failure affects the concurrent group together;
+later work may retry, while a new render has a fresh scope. See the pricing guide
+for failure-group and freshness ownership.
+
+The controlled owner capture used Node 22.23.2, PostgreSQL 17.6 and an Apple M3
+Max on Darwin 25.6.0, with the same warm pool/fixtures and instrumentation disabled
+for both variants. Three ABBA blocks retained six samples per variant, without
+imposed latency: baseline median 1.331 ms (1.274–1.388), candidate 1.188 ms
+(1.105–1.354). The ranges overlap; these local data-owner timings are not HTTP,
+TTFB, rendering, LCP or field performance. Capture through
+`CWV_COMPARE_POLICY_BENCHMARK=1` and `CWV_COMPARE_POLICY_EVIDENCE_PATH` when running
+the focused PostgreSQL contract. A real-owner esbuild ESM graph adds only the
+light policy-loader helper (226 to 227 parsed inputs; 1,457,464 to 1,458,587
+emitted bytes), with no new model admission/coverage modules. That diagnostic
+is separate from Next production output and cold-process latency. Production
+build, browser route evidence and all selected Quality CI lanes remain release
+gates; the local SQL reduction does not establish a Core Web Vitals improvement.
+
 Production comparison loads emit one bounded `[cwv:server]` JSON record through existing runtime logs. It contains locale, deployed Git SHA, total **data-loading** duration and the start/duration/status of seven fixed phases: benchmark, scores, key specs, two price reads and two galleries. This is not TTFB, HTML render time or browser LCP. Phases overlap and must not be summed. A resolved fallback still has phase status `ok`; status describes promise completion, not data availability. Pending phases can remain in an error record when a sibling rejects first.
 
 The diagnostic contains no query text, model/job/account IDs, URL or exception content. It preserves rejections and cannot fail a page if logging fails. It is disabled outside production and during a declared production build; `CWV_SERVER_TIMING=0` disables it operationally. No cache, database schema, pricing algorithm, media selection or consent rule is changed by the concurrent loading correction.

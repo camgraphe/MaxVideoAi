@@ -159,6 +159,13 @@ test('comparison latency shares the qualified public benchmark source', () => {
   assert.doesNotMatch(pageSource, /computePairScores/);
 });
 
+test('comparison contextual policy scopes avoid the model-admission dependency graph', () => {
+  assert.match(routeDataSource, /import \{ createScopedCurrentPublicSnapshot \} from '@\/server\/pricing\/quote-public'/);
+  assert.doesNotMatch(routeDataSource, /quote-public-model-scenario/);
+  const snapshotOwner = readFileSync('frontend/server/pricing/quote-public.ts', 'utf8');
+  assert.doesNotMatch(snapshotOwner, /quote-public-model-scenario|manual-tariff-coverage/);
+});
+
 const schemaSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-schema.ts',
   'utf8'
