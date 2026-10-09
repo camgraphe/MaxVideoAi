@@ -311,6 +311,16 @@ export async function buildPricePerImageRows(
 ): Promise<PriceSpecRow[]> {
   const points = await computeMarketingPricePoints(engineCaps, { memberTier: 'member', limit: null, requireCurrentPolicy: true });
 
+  return buildPricePerImageRowsFromPoints(points, engineCaps.id, locale, rowLabel);
+}
+
+function buildPricePerImageRowsFromPoints(
+  points: MarketingPricePoint[],
+  engineId: string,
+  locale: AppLocale,
+  rowLabel: string
+): PriceSpecRow[] {
+
   if (!points.length) return [];
   const values = points.map((point) => `${formatCurrency(locale, point.currency, point.cents / 100)}/image`);
   const same = new Set(values).size === 1;
@@ -325,7 +335,7 @@ export async function buildPricePerImageRows(
     ];
   }
 
-  const lines = points.map((point) => formatMarketingImagePricePoint(point, engineCaps.id, locale));
+  const lines = points.map((point) => formatMarketingImagePricePoint(point, engineId, locale));
 
   if (!lines.length) return [];
   return [
@@ -337,4 +347,43 @@ export async function buildPricePerImageRows(
       valueLines: lines,
     },
   ];
+}
+
+/** One response owns its image grid; unrelated video readers can start together. */
+export async function buildModelPagePriceProjection(
+  engine: EngineCaps,
+  locale: AppLocale,
+  { isImageEngine, showPriceInSpecs, rowLabel, audioLabels }: {
+    isImageEngine: boolean;
+    showPriceInSpecs: boolean;
+    rowLabel: string;
+    audioLabels: AudioPriceLabels;
+  }
+) {
+  if (!isImageEngine) {
+    const [pricePerSecondLabel, priceRows] = await Promise.all([
+      buildPricePerSecondLabel(engine, locale),
+      showPriceInSpecs ? buildPricePerSecondRows(engine, locale, rowLabel, audioLabels) : [],
+    ]);
+    return { pricePerSecondLabel, pricePerImageLabel: null, priceRows };
+  }
+
+  const points = await computeMarketingPricePoints(engine, {
+    memberTier: 'member', limit: null, requireCurrentPolicy: true,
+  }).catch(error => {
+    if (showPriceInSpecs) throw error;
+    return [];
+  });
+  const min = [...points].sort((a, b) => a.cents - b.cents)[0];
+  let pricePerImageLabel: string | null = null;
+  try {
+    if (min) pricePerImageLabel = `${formatCurrency(locale, min.currency, min.cents / 100)}/image`;
+  } catch {
+    // Keep the standalone label's unavailable-format behavior.
+  }
+  return {
+    pricePerSecondLabel: null,
+    pricePerImageLabel,
+    priceRows: showPriceInSpecs ? buildPricePerImageRowsFromPoints(points, engine.id, locale, rowLabel) : [],
+  };
 }

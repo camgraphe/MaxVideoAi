@@ -841,8 +841,17 @@ modes are all image modes. This lets image catalogue ranges and model labels/row
 match the same active exact cells as public image scenarios. Video and mixed-mode
 contexts retain their existing mode behavior. Marketing owns no source images;
 edit-only engines or text-image modes requiring a source stay unavailable rather
-than inventing a reference-free quote. The caller keeps current-policy admission,
-separate label/row recovery attempts and canonical billing defaults unchanged.
+than inventing a reference-free quote. Current-policy admission and canonical
+billing defaults remain unchanged. The model route's `buildModelPagePriceProjection`
+resolves one image grid per response for both the minimum label and spec rows.
+Its points stay sequential; unavailable points are omitted consistently from both
+projections. A fresh render reads a fresh grid and can recover, without caching
+failures or successful amounts across requests. The standalone label and row
+helpers retain independent reads for other callers. Hiding spec prices does not
+add quotes. Video labels and rows start together, as do the layout's independent
+decision pricing and public offer; their formatting, fallbacks and quote errors
+retain their existing owners. `tests/model-page-price-projection.test.ts` locks
+the quote counts, admission, fresh-render recovery and deferred-start behavior.
 
 Public scenario admission builds finite catalogue combinations only for the
 requested model and mode. `quote-public-model-scenario.ts` retains those immutable

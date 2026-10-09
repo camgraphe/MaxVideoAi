@@ -7,16 +7,17 @@ import { build } from 'esbuild';
 const routePath = resolve('frontend/app/(localized)/[locale]/(marketing)/models/[slug]/page.tsx');
 const layoutPath = resolve('frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/MarketingModelPageLayout.tsx');
 const marketingPricingPath = resolve('frontend/src/lib/pricing-marketing.ts');
+const modelPricingPath = resolve('frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-pricing.ts');
 
 /** Real route, layout, pricing loops, specs, metadata and schemas; controlled I/O only. */
-export async function makeModelPagePricingHarness({ legacyLabels = false, executeGallery = false } = {}) {
+export async function makeModelPagePricingHarness({ includeUnusedUnitQuote = false, executeGallery = false } = {}) {
   const directory = await mkdtemp(join(tmpdir(), 'model-page-pricing-'));
   let source = await readFile(routePath, 'utf8');
-  if (legacyLabels) {
-    source = source.replace(/const pricePerSecondLabel = [\s\S]*?const keySpecValues =/,
-      `const pricePerSecondLabel = await buildPricePerSecondLabel(pricingEngine, locale);
-       const pricePerImageLabel = await buildPricePerImageLabel(pricingEngine, locale);
-       const keySpecValues =`);
+  if (includeUnusedUnitQuote) {
+    source = `import {buildPricePerSecondLabel as unusedSecondLabel,buildPricePerImageLabel as unusedImageLabel} from './_lib/model-page-pricing';\n` +
+      source.replace('const keySpecValues =',
+        `await (isImageEngine ? unusedSecondLabel(pricingEngine,locale) : unusedImageLabel(pricingEngine,locale));
+         const keySpecValues =`);
   }
   const fixture = `
     export const calls = [];
@@ -97,6 +98,7 @@ export async function makeModelPagePricingHarness({ legacyLabels = false, execut
       stdin: { contents: `export {default as page,generateMetadata,renderMarketingModelPage as render} from ${JSON.stringify(routePath)};
         export {MarketingModelPageLayout as layout} from ${JSON.stringify(layoutPath)};
         export {computeMarketingPricePoints as points,computeMarketingPriceRange as range} from ${JSON.stringify(marketingPricingPath)};
+        export {buildPricePerImageLabel as imageLabel,buildPricePerImageRows as imageRows} from ${JSON.stringify(modelPricingPath)};
         export * from 'pricing-fixture';`, resolveDir: process.cwd() },
       outfile: join(directory, 'route.cjs'), bundle: true, platform: 'node', format: 'cjs',
       tsconfig: 'frontend/tsconfig.json', jsx: 'automatic',

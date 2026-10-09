@@ -169,13 +169,13 @@ test('GPT labels, rows and route use explicit image scenarios across effective p
   const previous = {DATABASE_URL:process.env.DATABASE_URL,NODE_ENV:process.env.NODE_ENV,PRICING_SANDBOX:process.env.PRICING_SANDBOX};
   Object.assign(process.env,{DATABASE_URL:database.databaseUrl,NODE_ENV:'development',PRICING_SANDBOX:'1'});
   let current: Awaited<ReturnType<typeof makeModelPagePricingHarness>> | undefined;
-  let prior: Awaited<ReturnType<typeof makeModelPagePricingHarness>> | undefined;
+  let extraUnit: Awaited<ReturnType<typeof makeModelPagePricingHarness>> | undefined;
   const actor = '11111111-1111-4111-8111-111111111111';
   try {
     current=await makeModelPagePricingHarness();
-    prior=await makeModelPagePricingHarness({legacyLabels:true});
+    extraUnit=await makeModelPagePricingHarness({includeUnusedUnitQuote:true});
     const currentHarness=current.harness;
-    const priorHarness=prior.harness;
+    const extraUnitHarness=extraUnit.harness;
     await database.pool.query(`CREATE TABLE app_pricing_rules (
       id TEXT PRIMARY KEY, engine_id TEXT, resolution TEXT, mode TEXT,
       margin_percent NUMERIC, margin_flat_cents INTEGER, surcharge_audio_percent NUMERIC,
@@ -206,7 +206,7 @@ test('GPT labels, rows and route use explicit image scenarios across effective p
     }
     await database.pool.query('UPDATE app_customer_tariff_state SET revision=1');
     assert.equal(customerTariffsEnabledByCode(),true);
-    for (const h of [currentHarness,priorHarness]) {h.setQuote(computeCurrentPublicSnapshot);h.setPublicQuote(quotePublicModelScenario);}
+    for (const h of [currentHarness,extraUnitHarness]) {h.setQuote(computeCurrentPublicSnapshot);h.setPublicQuote(quotePublicModelScenario);}
     async function assertCurrentConsumers(minCents:2|3|11|12,firstPointCents:2|3|11|17,offerCents:20|45|91|101) {
       for (const locale of ['en','fr','es'] as const) {
         const base=JSON.parse(readFileSync(`content/models/en/${engine.modelSlug}.json`,'utf8'));
@@ -221,14 +221,14 @@ test('GPT labels, rows and route use explicit image scenarios across effective p
         assert.equal(rows[0].valueLines?.length,18);
         assert.ok(rows[0].valueLines?.[0].includes(`0${locale==='fr'?',':'.'}${String(firstPointCents).padStart(2,'0')}`));
         assert.equal((await resolveCurrentModelPublicOffer(engine,engine.engine))?.amountCents,offerCents);
-        currentHarness.configure(input);priorHarness.configure(input);
+        currentHarness.configure(input);extraUnitHarness.configure(input);
         const result=await currentHarness.page({params:Promise.resolve({slug:engine.modelSlug,locale})});
-        const original=await priorHarness.page({params:Promise.resolve({slug:engine.modelSlug,locale})});
-        assert.equal(currentHarness.calls.length,36);
-        assert.equal(priorHarness.calls.length,37);
+        const withExtraUnit=await extraUnitHarness.page({params:Promise.resolve({slug:engine.modelSlug,locale})});
+        assert.equal(currentHarness.calls.length,18);
+        assert.equal(extraUnitHarness.calls.length,19);
         assert.equal(result.props.pricePerImageLabel,label);
         assert.equal(result.props.pricePerSecondLabel,null);
-        assert.deepEqual(result.props.keySpecRows,original.props.keySpecRows);
+        assert.deepEqual(result.props.keySpecRows,withExtraUnit.props.keySpecRows);
         const priceRow=result.props.keySpecRows.find((row:any)=>row.key==='pricePerImage');
         assert.deepEqual(priceRow.valueLines,rows[0].valueLines);
         const elements=findModelLayoutElements(await currentHarness.layout(result.props));
@@ -303,7 +303,7 @@ test('GPT labels, rows and route use explicit image scenarios across effective p
     assert.equal(unavailable.props.keySpecValues.pricePerImage,'Data pending');
     assert.ok(unavailable.props.keySpecRows.every((row:any)=>!row.value.includes('$')));
   } finally {
-    await current?.dispose();await prior?.dispose();
+    await current?.dispose();await extraUnit?.dispose();
     await getDb().end().catch(()=>undefined);await database.cleanup();
     for (const [key,value] of Object.entries(previous)) {if(value===undefined)delete process.env[key];else process.env[key]=value;}
   }

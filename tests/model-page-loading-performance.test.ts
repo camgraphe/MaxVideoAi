@@ -41,10 +41,7 @@ async function makeRouteHarness() {
     resolvePublicMarketingVideoUrl: `(url)=>url??null`,
     listFalEngines: `()=>[]`,
     pickCompareEngines: `()=>[]`,
-    buildPricePerSecondLabel: `async(engine,locale)=>{details.push(['second-label',locale,engine.pricingDetails]);return locale+' 0.10/s';}`,
-    buildPricePerImageLabel: `async(_engine,locale)=>locale+' 0.20/image'`,
-    buildPricePerSecondRows: `async(_engine,locale)=>[{id:'pricePerSecond',key:'pricePerSecond',label:locale+' price',value:'0.10/s'}]`,
-    buildPricePerImageRows: `async()=>[]`,
+    buildModelPagePriceProjection: `async(engine,locale)=>{details.push(['second-label',locale,engine.pricingDetails]);return {pricePerSecondLabel:locale+' 0.10/s',pricePerImageLabel:null,priceRows:[{id:'pricePerSecond',key:'pricePerSecond',label:locale+' price',value:'0.10/s'}]};}`,
     buildSpecValues: `(_engine,specs,prices)=>({...specs,...prices})`,
     resolveSpecRowDefs: `()=>[]`,
     resolveSpecRowLabel: `(locale,key)=>locale+' '+key`,
@@ -190,48 +187,48 @@ async function visiblePricing(h: any, result: any) {
 
 // Break caught: requesting the unused unit repeats real quote loops, even though
 // the hero/spec/schema consumers have no visible use for that projection.
-test('model route quotes only its visible unit with real pricing loops and preserves localized consumers', async () => {
-  const before = await makeModelPagePricingHarness({legacyLabels:true});
-  const after = await makeModelPagePricingHarness();
+test('adding an unused unit quote repeats work without changing localized consumers', async () => {
+  const withUnused = await makeModelPagePricingHarness({includeUnusedUnitQuote:true});
+  const retained = await makeModelPagePricingHarness();
   const evidence = [];
   try {
-    for (const [modelId, previousCount, currentCount, unit] of [
-      ['minimax-h3-max',7,4,'second'], ['veo-3-1',10,7,'second'], ['gpt-image-2',37,36,'image'],
+    for (const [modelId, controlCount, currentCount, unit] of [
+      ['minimax-h3-max',7,4,'second'], ['veo-3-1',10,7,'second'], ['gpt-image-2',19,18,'image'],
     ] as const) {
       for (const locale of modelLocales) {
         const input = await pricingFixture(modelId,locale);
-        before.harness.configure(input);after.harness.configure(input);
-        const prior = await before.harness.render(input);
-        const result = await after.harness.render(input);
-        const previousCalls = before.harness.calls.length;
-        const currentCalls = after.harness.calls.length;
-        assert.equal(previousCalls,previousCount,`${modelId}/${locale} original segment`);
+        withUnused.harness.configure(input);retained.harness.configure(input);
+        const control = await withUnused.harness.render(input);
+        const result = await retained.harness.render(input);
+        const controlCalls = withUnused.harness.calls.length;
+        const currentCalls = retained.harness.calls.length;
+        assert.equal(controlCalls,controlCount,`${modelId}/${locale} synthetic extra-unit control`);
         assert.equal(currentCalls,currentCount,`${modelId}/${locale} retained segment`);
         assert.equal(result.props[unit==='image'?'pricePerSecondLabel':'pricePerImageLabel'],null);
         assert.equal(result.props[unit==='image'?'pricePerImageLabel':'pricePerSecondLabel'],
           {'en':'$0.10','fr':'0,10\u00a0$US','es':'USD\u00a00.10'}[locale]+(unit==='image'?'/image':'/s'));
-        assert.deepEqual(result.props.keySpecRows,prior.props.keySpecRows);
-        assert.deepEqual(await visiblePricing(after.harness,result),await visiblePricing(before.harness,prior));
-        const metadata = await after.harness.generateMetadata({params:Promise.resolve({slug:input.engine.modelSlug,locale})});
-        assert.deepEqual(metadata,await before.harness.generateMetadata({params:Promise.resolve({slug:input.engine.modelSlug,locale})}));
+        assert.deepEqual(result.props.keySpecRows,control.props.keySpecRows);
+        assert.deepEqual(await visiblePricing(retained.harness,result),await visiblePricing(withUnused.harness,control));
+        const metadata = await retained.harness.generateMetadata({params:Promise.resolve({slug:input.engine.modelSlug,locale})});
+        assert.deepEqual(metadata,await withUnused.harness.generateMetadata({params:Promise.resolve({slug:input.engine.modelSlug,locale})}));
         const prefix = locale==='en'?'':`/${locale}`;
         const base = {en:'models',fr:'modeles',es:'modelos'}[locale];
         assert.equal(result.props.canonicalUrl,`https://maxvideoai.com${prefix}/${base}/${input.engine.modelSlug}`);
         assert.equal(metadata.alternates.canonical,result.props.canonicalUrl);
         assert.ok(Object.keys(metadata.alternates.languages).length>=3);
-        after.harness.configure(input);
-        await after.harness.page({params:Promise.resolve({slug:input.engine.modelSlug,locale})});
-        assert.equal(after.harness.calls.length,currentCount,'fresh active page response owns the same pricing segment');
-        evidence.push({modelId,locale,previousCalls,currentCalls,scope:'unit labels + spec price rows; deterministic quote fixture; raw catalog'});
+        retained.harness.configure(input);
+        await retained.harness.page({params:Promise.resolve({slug:input.engine.modelSlug,locale})});
+        assert.equal(retained.harness.calls.length,currentCount,'fresh active page response owns the same pricing segment');
+        evidence.push({modelId,locale,controlCalls,currentCalls,scope:'unit labels + spec price rows; deterministic quote fixture; raw catalog'});
       }
     }
     if (process.env.CWV_MODEL_PRICING_EVIDENCE_PATH) await writeFile(process.env.CWV_MODEL_PRICING_EVIDENCE_PATH,JSON.stringify(evidence,null,2)+'\n');
-  } finally {await before.dispose();await after.dispose();}
+  } finally {await withUnused.dispose();await retained.dispose();}
 });
 
 test('model pricing preserves overrides, partial unavailable quotes and mode-based else branches', async () => {
-  const before = await makeModelPagePricingHarness({legacyLabels:true});
-  const after = await makeModelPagePricingHarness();
+  const withUnused = await makeModelPagePricingHarness({includeUnusedUnitQuote:true});
+  const retained = await makeModelPagePricingHarness();
   try {
     const input = await pricingFixture('veo-3-1','en');
     const noAudio = {currency:'USD',perSecondCents:{default:10},addons:{}};
@@ -246,17 +243,17 @@ test('model pricing preserves overrides, partial unavailable quotes and mode-bas
       {...input,engine:{...input.engine,surfaces:{...input.engine.surfaces,pricing:{...input.engine.surfaces.pricing,includeInEstimator:false}}},wantCalls:1},
     ];
     for (const scenario of scenarios) {
-      before.harness.configure(scenario);after.harness.configure(scenario);
-      const prior = await before.harness.render(scenario);
-      const result = await after.harness.render(scenario);
-      assert.equal(after.harness.calls.length,scenario.wantCalls);
+      withUnused.harness.configure(scenario);retained.harness.configure(scenario);
+      const control = await withUnused.harness.render(scenario);
+      const result = await retained.harness.render(scenario);
+      assert.equal(retained.harness.calls.length,scenario.wantCalls);
       assert.equal(result.props.isImageEngine,false,'mixed/no modes preserve the video else branch regardless of category');
       assert.equal(result.props.pricePerImageLabel,null);
-      assert.deepEqual(result.props.keySpecRows,prior.props.keySpecRows);
-      assert.deepEqual(await visiblePricing(after.harness,result),await visiblePricing(before.harness,prior));
+      assert.deepEqual(result.props.keySpecRows,control.props.keySpecRows);
+      assert.deepEqual(await visiblePricing(retained.harness,result),await visiblePricing(withUnused.harness,control));
       if (scenario.override) {
         assert.deepEqual(result.props.pricingEngine.pricingDetails.addons,{});
-        assert.ok(after.harness.calls.every((context:any)=>context.engine.pricingDetails.addons.audio_off===undefined));
+        assert.ok(retained.harness.calls.every((context:any)=>context.engine.pricingDetails.addons.audio_off===undefined));
       }
       if (scenario.unavailableOffer) {
         assert.equal(result.props.pricePerSecondLabel,null);
@@ -267,52 +264,48 @@ test('model pricing preserves overrides, partial unavailable quotes and mode-bas
     }
     const image = await pricingFixture('gpt-image-2','fr');
     const partialImage = {...image,engine:{...image.engine,category:'video'},reject:(context:any)=>context.quality==='high'};
-    before.harness.configure(partialImage);after.harness.configure(partialImage);
-    const priorImage=await before.harness.render(partialImage);
-    const resultImage=await after.harness.render(partialImage);
+    withUnused.harness.configure(partialImage);retained.harness.configure(partialImage);
+    const controlImage=await withUnused.harness.render(partialImage);
+    const resultImage=await retained.harness.render(partialImage);
     assert.equal(resultImage.props.isImageEngine,true);
     assert.equal(resultImage.props.pricePerSecondLabel,null);
-    assert.equal(after.harness.calls.length,36);
-    assert.deepEqual(resultImage.props.keySpecRows,priorImage.props.keySpecRows);
+    assert.equal(retained.harness.calls.length,18);
+    assert.deepEqual(resultImage.props.keySpecRows,controlImage.props.keySpecRows);
     for (const {reject,wantLines} of [
       {reject:()=>true,wantLines:undefined},
-      {reject:(_context:unknown,count:number)=>count<=18,wantLines:18},
     ]) {
-      after.harness.configure({...image,reject});
-      const unavailable=await after.harness.render(image);
+      retained.harness.configure({...image,reject});
+      const unavailable=await retained.harness.render(image);
       assert.equal(unavailable.props.pricePerImageLabel,null);
       assert.equal(unavailable.props.keySpecValues.pricePerImage,'Data pending');
-      assert.equal(after.harness.calls.length,36);
+      assert.equal(retained.harness.calls.length,18);
       const price=unavailable.props.keySpecRows.find((row:any)=>row.key==='pricePerImage');
       assert.equal(price.valueLines?.length,wantLines);
       if(wantLines===undefined) assert.equal(price.value,'Data pending');
     }
     for (const branch of ['archive','prelaunch']) {
-      after.harness.configure({...input,[branch]:true,localizedContent:{...input.localizedContent,archive:branch==='archive'?{}:undefined}});
-      await after.harness.page({params:Promise.resolve({slug:input.engine.modelSlug,locale:'en'})});
-      assert.equal(after.harness.calls.length,0,`${branch} must not start active quotes`);
+      retained.harness.configure({...input,[branch]:true,localizedContent:{...input.localizedContent,archive:branch==='archive'?{}:undefined}});
+      await retained.harness.page({params:Promise.resolve({slug:input.engine.modelSlug,locale:'en'})});
+      assert.equal(retained.harness.calls.length,0,`${branch} must not start active quotes`);
     }
-  } finally {await before.dispose();await after.dispose();}
+  } finally {await withUnused.dispose();await retained.dispose();}
 });
 
-// Characterization for S2b only: one image range and one rows pass independently
-// retry the same scenarios today. A future shared result must explicitly decide
-// whether to retain these recovery attempts.
-test('model image label and rows retain independent transient recovery attempts', async () => {
+// A shared response omits unavailable points consistently; the next response
+// owns a fresh grid rather than caching either failures or successful amounts.
+test('model image label and rows share failures and retry on the next render', async () => {
   const {harness:h,dispose}=await makeModelPagePricingHarness();
   try {
     const input=await pricingFixture('gpt-image-2','en');
     h.configure({...input,reject:(_context:unknown,count:number)=>count<=18});
+    const unavailable=await h.render(input);
+    assert.equal(unavailable.props.pricePerImageLabel,null);
+    assert.equal(unavailable.props.keySpecRows.find((row:any)=>row.key==='pricePerImage').value,'Data pending');
+    assert.equal(h.calls.length,18);
+    h.configure(input);
     const recovered=await h.render(input);
-    assert.equal(recovered.props.pricePerImageLabel,null);
+    assert.equal(recovered.props.pricePerImageLabel,'$0.10/image');
     assert.equal(recovered.props.keySpecRows.find((row:any)=>row.key==='pricePerImage').valueLines.length,18);
-    assert.equal(h.calls.length,36);
-    const identity=(context:any)=>JSON.stringify([context.durationSec,context.resolution,context.quality,context.addons??null]);
-    assert.deepEqual(h.calls.slice(0,18).map(identity),h.calls.slice(18).map(identity));
-    h.configure({...input,reject:(_context:unknown,count:number)=>count>18});
-    const fallback=await h.render(input);
-    assert.equal(fallback.props.pricePerImageLabel,'$0.10/image');
-    assert.equal(fallback.props.keySpecRows.find((row:any)=>row.key==='pricePerImage').value,'$0.10/image');
-    assert.equal(fallback.props.keySpecRows.find((row:any)=>row.key==='pricePerImage').valueLines,undefined);
+    assert.equal(h.calls.length,18);
   } finally {await dispose();}
 });

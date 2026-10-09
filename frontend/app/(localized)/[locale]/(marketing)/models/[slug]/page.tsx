@@ -28,12 +28,7 @@ import {
 } from './_lib/model-page-links';
 import { buildModelDecisionData } from './_lib/model-page-decision-data';
 import { isPublishedModelPage } from './_lib/model-page-publication';
-import {
-  buildPricePerImageLabel,
-  buildPricePerImageRows,
-  buildPricePerSecondLabel,
-  buildPricePerSecondRows,
-} from './_lib/model-page-pricing';
+import { buildModelPagePriceProjection } from './_lib/model-page-pricing';
 import {
   pickDemoMedia,
   pickHeroMedia,
@@ -269,22 +264,18 @@ async function renderMarketingModelPage({
     engine.id !== 'lumaRay2' && engine.surfaces.pricing.includeInEstimator;
   const keySpecsEntry =
     keySpecsMap.get(engine.modelSlug) ?? keySpecsMap.get(engine.id) ?? null;
-  const pricePerSecondLabel = isImageEngine ? null : await buildPricePerSecondLabel(pricingEngine, locale);
-  const pricePerImageLabel = isImageEngine ? await buildPricePerImageLabel(pricingEngine, locale) : null;
+  const { pricePerSecondLabel, pricePerImageLabel, priceRows } = await buildModelPagePriceProjection(
+    pricingEngine, locale, {
+      isImageEngine,
+      showPriceInSpecs,
+      rowLabel: resolveSpecRowLabel(locale, isImageEngine ? 'pricePerImage' : 'pricePerSecond', isImageEngine),
+      audioLabels: resolveAudioPricingLabels(locale),
+    }
+  );
   const keySpecValues = buildSpecValues(engine, keySpecsEntry?.keySpecs, {
     pricePerSecond: pricePerSecondLabel,
     pricePerImage: pricePerImageLabel,
   });
-  const priceRows = showPriceInSpecs
-    ? isImageEngine
-      ? await buildPricePerImageRows(pricingEngine, locale, resolveSpecRowLabel(locale, 'pricePerImage', true))
-      : await buildPricePerSecondRows(
-          pricingEngine,
-          locale,
-          resolveSpecRowLabel(locale, 'pricePerSecond', false),
-          resolveAudioPricingLabels(locale)
-        )
-    : [];
   const rowDefs = resolveSpecRowDefs(locale, isImageEngine);
   const pricePerSecondRowLabel = resolveSpecRowLabel(locale, 'pricePerSecond', false);
   const pricePerImageRowLabel = resolveSpecRowLabel(locale, 'pricePerImage', true);
