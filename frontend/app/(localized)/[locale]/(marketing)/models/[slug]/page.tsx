@@ -195,7 +195,9 @@ async function renderMarketingModelPage({
       return `/models/${engine.modelSlug}`;
     }
   })();
-  const { benchmarkScoreSlugs, enginePricingOverrides, keySpecsMap, gallery } = await loadModelPageInputs(
+  const showPriceInSpecs =
+    engine.id !== 'lumaRay2' && engine.surfaces.pricing.includeInEstimator;
+  const { benchmarkScoreSlugs, keySpecsMap, gallery, pricing } = await loadModelPageInputs(
     locale,
     async () => {
       let examples: GalleryVideo[] = [];
@@ -220,11 +222,21 @@ async function renderMarketingModelPage({
           engine.modelSlug, engine.id, backPath, appPath, undefined, locale,
         )),
       });
-    }
+    },
+    async (overrides) => {
+      const pricingEngine = applyEnginePricingOverride(engine.engine, overrides[engine.engine.id]);
+      const projection = await buildModelPagePriceProjection(pricingEngine, locale, {
+        isImageEngine,
+        showPriceInSpecs,
+        rowLabel: resolveSpecRowLabel(locale, isImageEngine ? 'pricePerImage' : 'pricePerSecond', isImageEngine),
+        audioLabels: resolveAudioPricingLabels(locale),
+      });
+      return { pricingEngine, ...projection };
+    },
   );
   const { galleryVideos, preferredIds, managed: managedCuration } = gallery;
   const showBenchmarkLink = isVideoEngine && benchmarkScoreSlugs.has(engine.modelSlug);
-  const pricingEngine = applyEnginePricingOverride(engine.engine, enginePricingOverrides[engine.engine.id]);
+  const { pricingEngine, pricePerSecondLabel, pricePerImageLabel, priceRows } = pricing;
   const modelName = localizedContent.marketingName ?? engine.marketingName;
   const fallbackMedia: FeaturedMedia = {
     id: `${engine.modelSlug}-hero-fallback`,
@@ -260,18 +272,8 @@ async function renderMarketingModelPage({
   }
   const compareEngines = pickCompareEngines(listFalEngines(), engine.modelSlug);
   const faqEntries = localizedContent.faqs.length ? localizedContent.faqs : copy.faqs;
-  const showPriceInSpecs =
-    engine.id !== 'lumaRay2' && engine.surfaces.pricing.includeInEstimator;
   const keySpecsEntry =
     keySpecsMap.get(engine.modelSlug) ?? keySpecsMap.get(engine.id) ?? null;
-  const { pricePerSecondLabel, pricePerImageLabel, priceRows } = await buildModelPagePriceProjection(
-    pricingEngine, locale, {
-      isImageEngine,
-      showPriceInSpecs,
-      rowLabel: resolveSpecRowLabel(locale, isImageEngine ? 'pricePerImage' : 'pricePerSecond', isImageEngine),
-      audioLabels: resolveAudioPricingLabels(locale),
-    }
-  );
   const keySpecValues = buildSpecValues(engine, keySpecsEntry?.keySpecs, {
     pricePerSecond: pricePerSecondLabel,
     pricePerImage: pricePerImageLabel,

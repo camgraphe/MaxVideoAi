@@ -34,6 +34,29 @@ the current visible/JSON-LD offer retain their canonical pricing owners.
 `tests/model-unused-example-pricing.test.ts` executes the real gallery callback
 and checks localized video/image consumers with and without card price labels.
 
+The active model input owner starts the canonical unit/spec price projection as
+soon as the same request's engine override resolves. That read is its only
+asynchronous dependency; gallery, score and spec reads continue independently.
+Each input and projection starts once, with the existing one image/two video
+quote workers. Hero and gallery selection still consume the complete input
+result. Model-only diagnostic completion observes all started siblings before
+emitting one timing record; an original loader error rejects the public result
+promptly even while another read remains pending. Observers retain late errors
+without supplying successful fallbacks. The new `model-pricing` phase measures
+the projection, so model `dataDurationMs` now includes work absent from older
+records; those historical aggregate durations are not directly comparable.
+`tests/model-page-input-overlap.test.ts` covers this dependency and error boundary.
+
+The 2026-10-09 controlled owner check used a 240 ms gallery, 40 ms override and
+8 ms per-quote fixture. Across an ABBA sequence, median route-owner duration
+changed 296.05→241.80 ms for Veo 3.1 and 402.67→241.42 ms for GPT Image 2, with
+identical output and quote counts. An override-limited control showed no
+meaningful gain. Exact route/layout/metadata/quote parity covers EN/FR/ES,
+including partial and unavailable prices. These are local scheduling
+measurements, not HTTP/browser LCP or field CWV gains. Evidence is under
+`.reports/cwv-next-phase-2026-10-09/model/`; retain separate browser and deployed
+delivery verification before making a user-visible performance claim.
+
 ## Paginated discovery gallery
 
 Examples routes read24 items per logical page from the SQL catalog; all24 watch links and posters are rendered on the server. Four optional opening videos belong to the same page and are never reinserted on page2. `examples-discovery-layout.ts` chooses compatible opening formats from the current page only; CSS owns geometry and native continuation ratios. Measured media dimensions take priority over declared ratios. Only the two side previews are cropped. Empty managed destinations stay empty and out-of-range URLs redirect to the last valid page.

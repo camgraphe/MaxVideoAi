@@ -232,6 +232,20 @@ document block.
 
 Use the owners and validation rules in `docs/engineering/media-delivery.md`. Routes select data and compose media surfaces; they do not own an encoding pipeline or construct independent image optimizer settings. Preserve discovery of the critical poster in server HTML and stable media dimensions through hydration and playback. A route cleanup must not trade a faster preview for a slower LCP or interactive form.
 
+`loadModelPageInputs` owns active-model read scheduling. Its optional pricing
+callback waits only for the current request's override read; engine, locale and
+pricing presentation options are already available. Gallery, score and spec
+reads start once and continue independently. Keep canonical pricing and gallery
+policy in their existing owners, and await the complete input result before
+composing hero, curation and spec props. The original two-argument API retains
+its output shape. The public result preserves the first original rejection
+promptly; model-only diagnostic completion waits for all started siblings,
+including late errors, without changing the global timing helper. The new
+`model-pricing` phase covers the price projection, which is now included in model
+`dataDurationMs`; older model aggregates are not directly comparable. See the
+controlled evidence and delivery limits in the media guide and
+`tests/model-page-input-overlap.test.ts` for the scheduling/error contract.
+
 The homepage data owner exposes `prepareHomePageData` with independently awaitable
 critical and example reads plus eventual timing completion. Start the request's
 reads once, await only critical data in the route, and pass the example promise to
