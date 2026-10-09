@@ -483,6 +483,16 @@ audio/product reads; siblings continue without cancellation within the same
 budget, so error-branch work counts can differ from the preceding serial path.
 Successful hubs await both queues, so their shared
 image rows are finalized before returning the complete server-rendered data.
+The default hub constructs a new `createScopedPublicModelQuoter` in
+`frontend/server/pricing/quote-public-model-scenario.ts` for every render. It lazily
+shares concurrent effective-policy loads and retains the complete first successful
+result, including routing provenance, until that render ends. Unsupported scenarios
+do no policy I/O; unavailable or rejected attempts are cleared and later work may
+retry. An injected public quoter performs no default policy I/O. An admin policy
+change after the first successful read appears in the next render. This is a policy
+observation boundary, not an atomic snapshot of all prices: every scenario retains
+its independent tariff-state/cell transaction and can observe a later tariff update.
+Single-quote APIs and audio/product readers retain their current fresh-read behavior.
 Standalone `buildCurrentOtherPricing` callers retain twelve workers immediately.
 This preserves exact inputs, family input order, Character Builder quantities,
 validation and truthful localized live-quote fallbacks, without retaining any
