@@ -38,6 +38,14 @@ Client model/revision must match the locked account. There is one active queued,
 running or unknown task per account; paid Sol allows 60 initial tasks/hour,
 included-only Sol and Luna retain 20.
 
+For v2 video attachments, `tasks/source.ts` fingerprints the exact reference,
+original URL, MIME and stored byte size after the same ownership/readiness checks.
+Measured duration and dimensions can be established by canonical qualification
+during an edit without changing that source identity or pausing the final reply.
+Images, audio and historical v1 fingerprints retain their existing recipe; saved
+fingerprints are never rewritten. Original replacement, unavailable media and
+ownership/provenance changes still stop dispatch.
+
 `tasks/conversation-adapter.ts` returns queued turns immediately. GET and polling
 never execute the worker, count tokens or dispatch. Generation, analysis and
 export keep their separate exact-price confirmation owners. Quote preparation or
