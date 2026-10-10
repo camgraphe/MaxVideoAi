@@ -5,7 +5,7 @@ candidate. The authorized paid-provider qualification and production activation
 procedure are recorded in `docs/operations/studio-media-tasks-activation-2026-10-06.md`.
 
 `src/lib/studio/task-budget-contract.ts` owns the separately versioned resource
-policy `studio-task-budget-2026-10-06-v1`. Existing assistance v1/v2 tariffs,
+policies `studio-task-budget-2026-10-06-v1` and `studio-task-budget-2026-10-11-v2`. Existing assistance v1/v2 tariffs,
 500 monthly credits and pack prices stay unchanged. Ceilings are not flat fees.
 Sol consumes free credits before explicitly enabled purchased credits; Luna stays
 sponsored. Conservative next-call quotes must fit the remaining ceiling before
@@ -20,6 +20,15 @@ reservation, so the financial cap can stop work before the call/token maxima.
 Reasoning is low, medium, and adaptive medium/high respectively. Visible replies
 remain bounded to 2,400 characters; long generation directions belong in tools.
 Caching follows recorded provider facts; no hit or saving is assumed.
+
+The table describes Sol and the historical v1 profiles. New v2 Luna Quick and
+Standard tasks use high reasoning and allow 6,000 output tokens per call,
+including reasoning; their calls, input, time, history and client credit ceilings
+are unchanged. Luna remains sponsored. Sol profiles and previously frozen v1
+tasks retain their recorded resources, including when resumed. Current and
+historical commands must identify the task's exact policy version; resumption
+cannot upgrade a saved profile. Apply `67_studio_luna_reasoning.sql` before the
+v2 runtime. Enqueue checks its readiness without bootstrapping schema.
 
 ## Ownership and recovery
 

@@ -38,6 +38,9 @@ export async function editStudioConversationTimeline(actor: ConversationEditActo
   const kind = 'conversation_timeline_edit';
   const requestHash = createHash('sha256').update(JSON.stringify(input)).digest('hex');
   const run = dependencies.withTransaction ?? ((callback) => withDbTransaction(callback));
+  const selectedInserts = input.edit.kind === 'insert' ? [input.edit] : input.edit.kind === 'assemble' ? input.edit.clips : [];
+  const selectedVideoRefs = new Set(selectedInserts.filter(edit => edit.ref.kind === 'video').map(edit => JSON.stringify(edit.ref)));
+  const preparedVideoSources = new Map<string,string>();
   const mutate = () => run(async executor => {
     await assertStudioConnectedSchemaReady(executor);
     await executor.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))', [`${actor.userId}:${kind}:${input.idempotencyKey}`]);
@@ -65,7 +68,7 @@ export async function editStudioConversationTimeline(actor: ConversationEditActo
       const inserts=input.edit.kind==='insert'?[input.edit]:input.edit.clips.map(clip=>({kind:'insert' as const,...clip}));
       items=state.timelineItems;
       for(const [index,edit] of inserts.entries()){
-        const inserted = await insertion(actor,{...input,edit,idempotencyKey:requestHash.slice(0,32)+':'+index},settings,executor);
+        const inserted = await insertion(actor,{...input,edit,idempotencyKey:requestHash.slice(0,32)+':'+index},settings,executor,preparedVideoSources.get(JSON.stringify(edit.ref)));
         const previousItems=items;
         items = inserted.asset.kind === 'audio'
           ? layerWorkspaceTimelineAudioItem({items: previousItems,item: inserted.items[0],startFrame: edit.startFrame,fps: settings.fps,maxAudioTracks: MAX_TIMELINE_AUDIO_TRACKS,unavailableTracks: [...state.lockedTimelineTracks ?? [],...state.mutedAudioTracks ?? []]})
@@ -92,17 +95,23 @@ export async function editStudioConversationTimeline(actor: ConversationEditActo
     await dependencies.afterMutation?.(executor,result);
     return result;
   });
-  try { return await mutate(); }
-  catch (error) {
-    if (!(error instanceof VideoFactsPreparationRequired)) throw error;
-    // Receipt/revision/ownership validation ran first. Network inspection starts only
-    // after that transaction releases its locks; the retry repeats every guard.
-    await (dependencies.hydrateVideoFacts ?? hydrateOwnedVideoMediaFacts)({userId: actor.userId,ref: error.media.ref,expectedUrl: error.media.url});
-    return mutate();
+  // One qualification per selected video identity (at most 12), then a final mutation.
+  for (let attempt = 0; attempt <= selectedVideoRefs.size; attempt++) {
+    try { return await mutate(); }
+    catch (error) {
+      if (!(error instanceof VideoFactsPreparationRequired)) throw error;
+      const refKey = JSON.stringify(error.media.ref);
+      if (!selectedVideoRefs.has(refKey) || preparedVideoSources.has(refKey)) throw error;
+      preparedVideoSources.set(refKey,error.media.url);
+      // Receipt/revision/ownership validation ran first. Network inspection starts only
+      // after that transaction releases its locks; every retry repeats every guard.
+      await (dependencies.hydrateVideoFacts ?? hydrateOwnedVideoMediaFacts)({userId: actor.userId,ref: error.media.ref,expectedUrl: error.media.url});
+    }
   }
+  throw new Error('MEDIA_METADATA_REQUIRED');
 }
 
-async function insertion(actor: ConversationEditActor, input: ConversationTimelineCommand, settings: WorkspaceProjectSettings, executor: QueryExecutor) {
+async function insertion(actor: ConversationEditActor, input: ConversationTimelineCommand, settings: WorkspaceProjectSettings, executor: QueryExecutor, expectedUrl?: string) {
   if (input.edit.kind !== 'insert') throw new Error('Invalid Studio timeline command.');
   const edit = input.edit;
   if (edit.ref.type === 'job-output') {
@@ -112,6 +121,7 @@ async function insertion(actor: ConversationEditActor, input: ConversationTimeli
     if (!rows[0]) throw new Error('MEDIA_NOT_AVAILABLE');
   }
   const media = await resolveStudioMedia(actor.userId,edit.ref,(sql,values) => executor.query(sql,values),{lockAsset: true});
+  if (expectedUrl !== undefined && media.url !== expectedUrl) throw new Error('MEDIA_NOT_AVAILABLE');
   const durationSec = timelineFrameToSeconds(edit.durationFrames,settings.fps);
   const sourceStartSec=timelineFrameToSeconds(edit.sourceInFrame??0,settings.fps);
   if(media.kind==='image'&&sourceStartSec!==0)throw new Error('Invalid Studio image source offset.');

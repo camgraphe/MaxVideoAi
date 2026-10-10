@@ -1,7 +1,7 @@
 import {createHash} from 'node:crypto';
 import {withDbTransaction,type TransactionQueryExecutor} from '@/lib/db';
 import {imageTurnInputSchema} from '@/lib/studio/image-conversation-contract';
-import {STUDIO_TASK_POLICY_VERSION,STUDIO_TASK_MAX_CALLS,STUDIO_TASK_MAX_CREDITS,studioTaskProfileForModel,studioTaskResumeSchema,studioTaskMaintenanceSchema} from '@/lib/studio/task-budget-contract';
+import {STUDIO_TASK_MAX_CALLS,STUDIO_TASK_MAX_CREDITS,studioTaskProfileForModel,studioTaskResumeSchema,studioTaskMaintenanceSchema} from '@/lib/studio/task-budget-contract';
 import {AgentApiError} from '@/server/agent-api/errors';
 import {requireGenerationActor,type StudioGenerationActor} from '@/server/agent-api/generation-actor';
 import {stableJson} from '@/server/agent-api/generation-normalization';
@@ -38,7 +38,7 @@ export function createStudioTaskService(actor:StudioGenerationActor,dependencies
       if(!input.taskBudget)throw new AgentApiError('CONFIRMATION_REQUIRED','Review the assistance ceiling before sending.');
       const hash=createHash('sha256').update(stableJson(input)).digest('hex');
       return withDbTransaction(async tx=>{
-        if(!await studioTaskSchemaReady(tx))throw new AgentApiError('ENGINE_UNAVAILABLE','Apply the explicit Studio task migration before activation.');
+        if(!await studioTaskSchemaReady(tx,input.taskBudget!.policyVersion))throw new AgentApiError('ENGINE_UNAVAILABLE','Apply the explicit Studio task migration before activation.');
         const account=await authorize(tx);
         const prior=(await tx.query<StudioTaskRow>('SELECT * FROM studio_tasks WHERE user_id=$1 AND project_id=$2 AND request_id=$3',[actor.userId,actor.projectId,input.requestId]))[0];
         if(prior){if(prior.input_hash!==hash)throw new AgentApiError('PARAMETER_INVALID','This request identity belongs to another intent.');return projectStudioTask(prior,tx);}
@@ -53,7 +53,7 @@ export function createStudioTaskService(actor:StudioGenerationActor,dependencies
         if(count>=(assistance.mode==='paid_sol'?60:20))throw new AgentApiError('RATE_LIMITED','The current hourly task allowance is reached. Try later.');
         const sourceFingerprint=await studioTaskSourceFingerprint(actor,input,tx,true);
         const row=(await tx.query<StudioTaskRow>(`INSERT INTO studio_tasks(user_id,project_id,request_id,segment_request_id,input_hash,input_json,source_fingerprint,policy_version,profile,profile_json,model,max_credits,allowed_calls)
-          VALUES($1,$2,$3,$3,$4,$5::jsonb,$6,$7,$8,$9::jsonb,$10,$11,$12) RETURNING *`,[actor.userId,actor.projectId,input.requestId,hash,JSON.stringify(input),sourceFingerprint,STUDIO_TASK_POLICY_VERSION,input.taskBudget!.profile,JSON.stringify(profile),assistance.model,profile.maxCredits,profile.maxCalls]))[0];
+          VALUES($1,$2,$3,$3,$4,$5::jsonb,$6,$7,$8,$9::jsonb,$10,$11,$12) RETURNING *`,[actor.userId,actor.projectId,input.requestId,hash,JSON.stringify(input),sourceFingerprint,input.taskBudget!.policyVersion,input.taskBudget!.profile,JSON.stringify(profile),assistance.model,profile.maxCredits,profile.maxCalls]))[0];
         await tx.query('INSERT INTO studio_task_segments(user_id,project_id,task_request_id,request_id,max_calls) VALUES($1,$2,$3,$3,$4)',[actor.userId,actor.projectId,input.requestId,profile.maxCalls]);
         await tx.query('INSERT INTO studio_task_memory_notes(user_id,project_id,request_id,message,reference_ids) VALUES($1,$2,$3,$4,$5::jsonb) ON CONFLICT DO NOTHING',[actor.userId,actor.projectId,input.requestId,input.message,JSON.stringify([...input.references,...(input.attachments??[]).map(r=>r.type==='asset'?r.assetId:r.outputId)])]);
         return projectStudioTask(row,tx);
@@ -64,6 +64,7 @@ export function createStudioTaskService(actor:StudioGenerationActor,dependencies
       if(input.action!=='cancel')throw new AgentApiError('PARAMETER_INVALID','Invalid cancellation.');
       return withDbTransaction(async tx=>{
         await authorize(tx);const row=await readStudioTaskRow(actor,input.requestId,tx,true);
+        if(row.policy_version!==input.policyVersion)throw new AgentApiError('PARAMETER_INVALID','Refresh the recorded task policy version.');
         if(row.revision!==input.expectedRevision)throw new AgentApiError('PARAMETER_INVALID','Refresh the current task revision.');
         if(row.error==='cancelled')return projectStudioTask(row,tx);
         if(row.state!=='queued'||(await readStudioTaskUsage(row,tx)).unknownCalls)throw new AgentApiError('PARAMETER_INVALID','Only a queued waiting task can be cancelled. Check a running result first.');
@@ -76,6 +77,7 @@ export function createStudioTaskService(actor:StudioGenerationActor,dependencies
       if(input.action!=='recover')throw new AgentApiError('PARAMETER_INVALID','Invalid recovery.');
       return withDbTransaction(async tx=>{
         await authorize(tx);const row=await readStudioTaskRow(actor,input.requestId,tx,true);
+        if(row.policy_version!==input.policyVersion)throw new AgentApiError('PARAMETER_INVALID','Refresh the recorded task policy version.');
         if(row.revision!==input.expectedRevision)throw new AgentApiError('PARAMETER_INVALID','Refresh the current task revision.');
         if(['queued','running'].includes(row.state)&&row.replay_only)return projectStudioTask(row,tx);
         if(!['paused','unknown','failed'].includes(row.state)||!await studioTaskSavedUsageKnown(row,tx,true))throw new AgentApiError('SPENDING_LIMIT_EXCEEDED','No qualified saved response is available. Check unresolved usage with support before retrying.');
@@ -90,6 +92,7 @@ export function createStudioTaskService(actor:StudioGenerationActor,dependencies
       return withDbTransaction(async tx=>{
         await authorize(tx);
         const row=await readStudioTaskRow(actor,input.requestId,tx,true);
+        if(row.policy_version!==input.policyVersion)throw new AgentApiError('PARAMETER_INVALID','Refresh the recorded task policy version.');
         const prior=(await tx.query<{payload:unknown}>('SELECT payload FROM studio_task_approvals WHERE user_id=$1 AND approval_id=$2',[actor.userId,input.approvalId]))[0];
         if(prior){if(stableJson(prior.payload)!==stableJson(input))throw new AgentApiError('PARAMETER_INVALID','This approval identity has another ceiling.');return projectStudioTask(row,tx);}
         if(row.state!=='paused')throw new AgentApiError('PARAMETER_INVALID','Only a paused task can resume; a completed result cannot restart.');
