@@ -6,7 +6,9 @@ import {
   requireGenerationActor,
   type GenerationActor,
 } from "./generation-actor";
-import { normalizeGenerationRequest } from "./generation-normalization";
+import {createHash} from 'node:crypto';
+import { normalizeGenerationRequest,stableJson } from "./generation-normalization";
+import type {AgentPublicGenerationEngine} from './model-catalog';
 import type { CanonicalGenerationRequest } from "./generation-types";
 import {
   readGenerationPricing,
@@ -54,6 +56,28 @@ export type GenerationPriceComparison = {
   estimatedAt: string;
   quoteRequired: true;
 };
+
+type ComparisonCatalogScope=Pick<CanonicalGenerationRequest,'surface'|'mode'> & {candidateModelIds?:readonly string[]|null;baselineModelId?:string|null};
+function comparisonCandidates(input:ComparisonCatalogScope,catalog:readonly AgentPublicGenerationEngine[]) {
+  const explicitIds=new Set([...(input.candidateModelIds??[]),...(input.baselineModelId?[input.baselineModelId]:[])]);
+  return catalog.filter(candidate=>candidate.surface===input.surface&&candidate.publicModes.includes(input.mode)
+    &&(!input.candidateModelIds||explicitIds.has(candidate.engine.id))
+    &&(explicitIds.has(candidate.engine.id)||isAgentModelRecommendationEligible(candidate.engine.id,getRuntimeModelById(candidate.engine.id)?.lifecycle)));
+}
+
+/** Negative duration evidence is reusable only against the same live candidate identities/capabilities. */
+export function generationComparisonCatalogFingerprint(input:ComparisonCatalogScope,catalog:readonly AgentPublicGenerationEngine[]):string {
+  const models=comparisonCandidates(input,catalog).map(candidate=>{
+    try {
+      const {duration,durationPolicy}=projectAgentModelModeDetails(candidate,input.mode);
+      return {modelId:candidate.engine.id,duration,durationPolicy};
+    } catch(error) {
+      if(!(error instanceof AgentApiError))throw error;
+      return {modelId:candidate.engine.id,unavailable:error.code};
+    }
+  }).sort((a,b)=>a.modelId.localeCompare(b.modelId));
+  return createHash('sha256').update(stableJson({surface:input.surface,mode:input.mode,models})).digest('hex');
+}
 
 function defaultAspectRatio(
   values: readonly string[],
@@ -129,17 +153,7 @@ export async function compareGenerationPrices(
   for (const id of explicitIds)
     if (!catalog.some((candidate) => candidate.engine.id === id))
       unavailable.push({ modelId: id, code: "ENGINE_UNAVAILABLE" });
-  const candidates = catalog.filter(
-    (candidate) =>
-      candidate.surface === base.surface &&
-      candidate.publicModes.includes(base.mode) &&
-      (!input.candidateModelIds || explicitIds.has(candidate.engine.id)) &&
-      (explicitIds.has(candidate.engine.id) ||
-        isAgentModelRecommendationEligible(
-          candidate.engine.id,
-          getRuntimeModelById(candidate.engine.id)?.lifecycle,
-        )),
-  );
+  const candidates = comparisonCandidates({...input,surface:base.surface,mode:base.mode},catalog);
   const scenarios = candidates.map((candidate) => ({
     candidate,
     settings: base.settings,
@@ -266,11 +280,43 @@ export async function compareGenerationPrices(
       }),
     );
   }
-  if (!options.length)
+  if (!options.length) {
+    // An exact scenario with no match is different from malformed input. Keep
+    // the single-output contract and provide live facts for a workflow decision.
+    const models = candidates.flatMap(candidate => {
+      try {
+        const details = projectAgentModelModeDetails(candidate, base.mode);
+        const {mode,duration,durationPolicy,audio,resolutions,aspectRatios}=details;
+        return [{modelId: candidate.engine.id,mode,duration,durationPolicy,audio,resolutions,aspectRatios}];
+      } catch (error) {
+        if (!(error instanceof AgentApiError)) throw error;
+        return [];
+      }
+    });
+    const requestedDurationSec = base.surface === 'video' && typeof base.settings.durationSec === 'number'
+      ? base.settings.durationSec : null;
+    const durationMismatch = requestedDurationSec !== null && models.length > 0 && models.length === candidates.length
+      && models.every(({durationPolicy, duration}) => durationPolicy === 'requested' && duration !== null
+        && (duration.options !== null ? !duration.options.includes(requestedDurationSec)
+          : duration.range !== null && (requestedDurationSec < duration.range.min || requestedDurationSec > duration.range.max)));
+    // The bounded diagnostic must retain longer component choices for a film,
+    // rather than hiding them behind the first eight shorter catalog entries.
+    if(durationMismatch)models.sort((a,b)=>{
+      const longest=(model:typeof a)=>model.duration?.range?.max??Math.max(0,...(model.duration?.options??[]));
+      return longest(b)-longest(a)||a.modelId.localeCompare(b.modelId);
+    });
     throw new AgentApiError(
       "PARAMETER_INVALID",
-      "No current model could be verified and priced for all these constraints and references. Keep the requirements; inspect live model details before suggesting a change.",
+      durationMismatch
+        ? `No current model in this comparison supports ${requestedDurationSec} seconds as a single clip. Keep the requested total duration; propose a supported multi-clip workflow and separate scripted voiceover when needed. No quote or generation was created.`
+        : "No current model could be verified and priced for all these constraints and references. Keep the requirements; use the returned mode facts to explain the mismatch or unavailable pricing. No quote or generation was created.",
+      false,
+      {type: 'generation_comparison', reason: 'no_matching_scenario', surface: base.surface, mode: base.mode,
+        requestedDurationSec, durationMismatch, catalogFingerprint:generationComparisonCatalogFingerprint({...input,surface:base.surface,mode:base.mode},catalog),
+        ...(durationMismatch?{modelsOrder:'longest_supported_clip'}:{}),
+        models: models.slice(0, 8), modelsTruncated: models.length > 8},
     );
+  }
   options.sort(
     (a, b) =>
       a.price.currency.localeCompare(b.price.currency) ||

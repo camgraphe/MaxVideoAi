@@ -36,6 +36,17 @@ const ids = [
   "wan-3-prime",
   "seedance-2-5",
 ];
+
+test('a bounded whole-film mismatch keeps the longest component durations visible instead of the first short models only',async()=>{
+  const choices=['ltx-2-5-pro','veo-3-1','veo-3-1-fast','veo-3-1-lite','kling-3-pro','kling-3-standard','kling-o3-pro','kling-o3-standard','seedance-2-5','wan-3','ltx-2-5-fast'];
+  await assert.rejects(compareGenerationPrices({surface:'video',mode:'t2v',prompt:'A full one-minute film',settings:{durationSec:60},references:[],candidateModelIds:choices},actor,dependencies({listPublicEngines:async()=>choices.map(candidate)})),(error:any)=>{
+    const diagnostic=error.nextAction;
+    assert.equal(diagnostic.durationMismatch,true);assert.equal(diagnostic.modelsTruncated,true);assert.equal(diagnostic.models.length,8);
+    assert.ok(diagnostic.models.some((model:any)=>model.modelId==='seedance-2-5'&&model.duration.options.includes(30)));
+    assert.ok(diagnostic.models.some((model:any)=>model.modelId==='ltx-2-5-fast'&&model.duration.options.includes(20)));
+    return true;
+  });
+});
 const prices: Record<string, number> = {
   "minimax-h3": 94,
   "minimax-h3-max": 125,
@@ -73,6 +84,44 @@ const input = {
   settings: { durationSec: 12 },
   references: [],
 };
+
+test("a one-minute single-output comparison reports live clip durations without pricing a shorter substitute", async () => {
+  let priced = 0;
+  await assert.rejects(compareGenerationPrices(
+    { ...input, settings: { durationSec: 60, audio: true } }, actor,
+    dependencies({listPublicEngines: async () => [candidate('ltx-2-5-pro')],
+      priceGeneration: async () => { priced++; throw new Error('Unsupported duration must not be priced.'); }}),
+  ), error => {
+    const failure = error as {code: string; message: string; nextAction: Record<string, any>};
+    assert.equal(failure.code, 'PARAMETER_INVALID');
+    assert.equal(failure.nextAction?.type, 'generation_comparison');
+    assert.equal(failure.nextAction?.reason, 'no_matching_scenario');
+    assert.equal(failure.nextAction?.requestedDurationSec, 60);
+    assert.equal(failure.nextAction?.durationMismatch, true);
+    assert.equal(failure.nextAction?.models[0].modelId, 'ltx-2-5-pro');
+    assert.equal(failure.nextAction?.models[0].mode, 't2v');
+    assert.equal(failure.nextAction?.models[0].durationPolicy, 'requested');
+    assert.deepEqual(failure.nextAction?.models[0].duration, {options: [6, 8, 10], range: null});
+    assert.equal(failure.nextAction?.models[0].audio, 'optional');
+    assert.deepEqual(failure.nextAction?.models[0].resolutions, ['720p', '1080p']);
+    assert.match(failure.message, /single|one.*clip/i);
+    assert.match(failure.message, /60/);
+    assert.doesNotMatch(JSON.stringify(failure.nextAction), /"(?:prompt|quoteId|price|wallet|storageUrl)"/);
+    return true;
+  });
+  assert.equal(priced, 0);
+});
+
+test("a sound mismatch is not diagnosed as an unsupported duration", async () => {
+  await assert.rejects(compareGenerationPrices(
+    {...input, settings: {durationSec: 12, audio: false}, candidateModelIds: ['minimax-h3']}, actor, dependencies(),
+  ), error => {
+    const failure = error as {nextAction: Record<string, any>};
+    assert.equal(failure.nextAction?.durationMismatch, false);
+    assert.equal(failure.nextAction?.models[0].audio, 'always_generated');
+    return true;
+  });
+});
 
 test("comparison offers three distinct current prices, preserves a repriced baseline and creates no quote", async () => {
   const result = await compareGenerationPrices(

@@ -27,6 +27,8 @@ export type StudioDirectorContext = {
   historyFacts?:StudioConversationHistoryFacts;
   project: StudioConversationProject;
   execute(callId: string, request: StudioActionRequest): Promise<StudioActionResult>;
+  readCompletedAction?(callId: string, request: StudioActionRequest): Promise<StudioActionResult|null>;
+  comparisonCatalogFingerprint?(request:Extract<StudioActionRequest,{action:'pricing.compare'}>):Promise<string|null>;
   checkpoint(index: number, create: () => Promise<StudioDirectorResponse>, params?: ResponseCreateParamsNonStreaming, options?: {replayOnly?: boolean;prepareLunaInput?:()=>void}): Promise<StudioDirectorResponse>;
 };
 const replySchema = z.object({reply: z.string().min(1).max(2400).transform(projectStudioReply)}).strict();
@@ -56,6 +58,7 @@ export function isReplayableStudioResponse(response: StudioDirectorResponse): bo
 
 /** The model chooses the next action; identity, billing and executable capabilities stay server-owned. */
 import type {StudioTaskExecution} from "./tasks/execution";
+import {isStudioComparisonMismatch,studioComparisonFingerprint,studioRepeatedComparisonReply,studioRecoveredComparisonReply} from './conversation-comparison-recovery';
 
 export function createStudioConversationDirector(options: {model?: StudioAssistantModel;modelForNextCall?:()=>StudioAssistantModel;createResponse?: StudioResponseCreator; mediaEnabled?: boolean;editingEnabled?: boolean;exportsEnabled?: boolean;analysisEnabled?:boolean;analysisProfiles?:{video:boolean;audio:boolean};assistanceCreditsEnabled?: boolean;taskExecution?:StudioTaskExecution} = {}) {
   return async (context: StudioDirectorContext): Promise<ImageDraft> => {
@@ -87,6 +90,13 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
     let correctionAction: StudioActionRequest['action'] | undefined;
     let correctionRejected = false;
     let correctionResult: StudioActionResult | undefined;
+    let comparisonReplayOnly: Parameters<typeof studioRepeatedComparisonReply>[0] | undefined;
+    let recoveredComparison: StudioActionResult | undefined;
+    const failedComparisons=new Map<string,Extract<StudioActionResult,{ok:false}>>();
+    for(const work of options.taskExecution?.previousWork??[]){
+      const fingerprint=work.comparisonFingerprint??studioComparisonFingerprint(work.comparison);
+      if(fingerprint&&isStudioComparisonMismatch(work.result))failedComparisons.set(fingerprint,work.result);
+    }
     const maxResponses=options.taskExecution?.maxCalls??4;
     for (let index = 0; index < maxResponses; index++) {
       const analysisTools=options.analysisEnabled?studioAnalysisDirectorTools(options.analysisProfiles??{video:true,audio:true}):context.project.analyses?.length?[STUDIO_ANALYSIS_DIRECTOR_TOOLS[1]]:[];
@@ -109,7 +119,8 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
           + (index === maxResponses-1
           ? '\n\nThis is the last Response available for this message. Give the client a useful answer from the facts already read, or complete their requested preparation/edit/cancellation. Reads and memory writes are unavailable because no response would remain to use their results. Explain any missing model or price verification accurately; do not invent facts or prepare a creation when the client only asked for advice.'
           : index === Math.max(0,maxResponses-2) ? '\n\nOptional memory writes are now unavailable. When the needed model and source facts are known, prepare the requested creation now so one response remains to correct a prequote input rejection. Read only facts still required for the requested workflow.' : '')
-          + (correctionAction ? '\n\nThe preceding preparation was rejected before quote creation. This is the single input-correction attempt for that preparation. Correct the rejected selection using the facts already read, or explain what is missing. Do not repeat successful actions, change to another operation or claim a quote exists.' : ''),
+          + (correctionAction ? '\n\nThe preceding preparation was rejected before quote creation. This is the single input-correction attempt for that preparation. Correct the rejected selection using the facts already read, or explain what is missing. Do not repeat successful actions, change to another operation or claim a quote exists.' : '')
+          + (isStudioComparisonMismatch(lastResult)?'\n\nThe whole-film duration failed as a single clip. Compare one changed supported component scenario using the returned mode facts, including longer clip choices when suitable for continuity. This changed scenario is allowed after the failed comparison. Preserve total film duration, then prepare the chosen component or assemble ready owned media; report the remainder.':''),
         input:model==='gpt-6-luna'?lunaInput():input,
         tools: tools.map(tool => ({type: 'function' as const, name: tool.name, description: tool.description, strict: true,
           parameters: {type: 'object', additionalProperties: false, properties: studioToolReferenceProperties(tool.name,tool.properties,context.references), required: Object.keys(tool.properties)}})),
@@ -118,11 +129,14 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       let freshResponse = false;
       let response: StudioDirectorResponse;
       try {
-        response = await context.checkpoint(index, () => {freshResponse = true; return create(params);}, params, {replayOnly: correctionRejected,prepareLunaInput:()=>{params.input=lunaInput();}});
+        response = await context.checkpoint(index, () => {freshResponse = true; return create(params);}, params, {replayOnly: correctionRejected||!!comparisonReplayOnly,prepareLunaInput:()=>{params.input=lunaInput();}});
       } catch (error) {
-        if (correctionRejected && error instanceof AgentApiError && (error.code === 'RATE_LIMITED'
-          || (error.code === 'SPENDING_LIMIT_EXCEEDED' && error.nextAction?.type === 'studio_assistance' && error.nextAction.reason === 'call_limit')))
+        if ((correctionRejected||comparisonReplayOnly) && error instanceof AgentApiError && (error.code === 'RATE_LIMITED'
+          || (error.code === 'SPENDING_LIMIT_EXCEEDED' && error.nextAction?.type === 'studio_assistance' && error.nextAction.reason === 'call_limit'))) {
+          if(recoveredComparison)return studioRecoveredComparisonReply(recoveredComparison,completedEdits,options.taskExecution?.locale);
+          if(comparisonReplayOnly)return studioRepeatedComparisonReply(comparisonReplayOnly,completedEdits,options.taskExecution?.locale);
           return pendingDirectorReply('action_limit',completedEdits,correctionResult,true);
+        }
         throw error;
       }
       if (response.status !== 'completed') {
@@ -151,7 +165,29 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         throw new AgentApiError('ENGINE_UNAVAILABLE','Studio export tools are unavailable.');
       if(freshResponse&&!options.analysisEnabled&&action.action==='analysis.prepare')throw new AgentApiError('ENGINE_UNAVAILABLE','Studio analysis tools are unavailable.');
       if(action.action==="project.recall"&&!options.taskExecution)throw new AgentApiError("ENGINE_UNAVAILABLE","Task memory is unavailable.");
+      const comparisonFingerprint=studioComparisonFingerprint(action);
+      const repeated=comparisonFingerprint?failedComparisons.get(comparisonFingerprint):undefined;
+      let revalidatedCachedComparison=false;
+      if(comparisonFingerprint&&repeated&&isStudioComparisonMismatch(repeated)) {
+        const receipt=!freshResponse?await context.readCompletedAction?.(call.call_id,action):null;
+        const current=!receipt&&action.action==='pricing.compare'?await context.comparisonCatalogFingerprint?.(action):undefined;
+        if(!receipt&&(!current||current!==repeated.error.nextAction?.catalogFingerprint)) {
+          // Catalog changes (including newly available models) invalidate an old
+          // duration failure. Missing legacy evidence is revalidated too.
+          failedComparisons.delete(comparisonFingerprint);
+          if(!freshResponse){comparisonReplayOnly=repeated;revalidatedCachedComparison=true;}
+        } else {
+          // A cached call without a receipt may be an interrupted catalog check.
+          // Revalidate it; a matching catalog reproduces the original stop.
+          // Older completed actions may recover only already purchased outputs.
+          if(!receipt)
+            return studioRepeatedComparisonReply(repeated,completedEdits,options.taskExecution?.locale);
+          comparisonReplayOnly=repeated;
+        }
+      }
       const result = await context.execute(call.call_id, action);
+      if(revalidatedCachedComparison||(comparisonReplayOnly&&action.action==='pricing.compare'))recoveredComparison=result;
+      if(comparisonFingerprint&&isStudioComparisonMismatch(result))failedComparisons.set(comparisonFingerprint,result);
       if(action.action==='analysis.prepare'){
         if(!result.ok)throw new AgentApiError(result.error.code,result.error.message,result.error.retryable,result.error.nextAction);
         if(result.action!=='analysis.prepare')throw new AgentApiError('INTERNAL_ERROR','Studio could not recover the analysis quote.');
@@ -187,6 +223,8 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       }
       input.push(...response.output as ResponseInputItem[], {type: 'function_call_output', call_id: call.call_id, output: JSON.stringify(result)});
     }
+    if(recoveredComparison)return studioRecoveredComparisonReply(recoveredComparison,completedEdits,options.taskExecution?.locale);
+    if(comparisonReplayOnly)return studioRepeatedComparisonReply(comparisonReplayOnly,completedEdits,options.taskExecution?.locale);
     return pendingDirectorReply('action_limit',completedEdits,correctionRejected ? correctionResult : lastResult,correctionRejected);
   };
 }

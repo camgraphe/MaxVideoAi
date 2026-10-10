@@ -45,6 +45,39 @@ one ceiling and cent rounding; old segments cannot dispatch. Exact historical
 action replay returns the immutable receipt and a replay marker. Previous saved
 work is supplied to the director to avoid repeating successful edits/preparations.
 
+`tasks/previous-work.ts` also carries failed action receipts and selected historical
+model mode facts across owned segments. Its query joins the same task/account/project
+and excludes deleted projects and the current segment. Authored prompts, raw provider
+payloads, private media URLs and historical prices are not projected. At most twelve
+receipts are returned, with bounded fact payloads and explicit omission markers.
+An action receipt marked completed may have `result.ok=false`; it is not successful
+work. Historical facts never bypass current canonical quote validation.
+
+The director fingerprints proven unsupported single-clip duration scenarios
+independently of prompt wording and setting order. A repeated identical scenario
+stops before another comparison executes and ends without a continuation loop, only
+after checking the diagnostic's catalog fingerprint against the current matching
+catalog. Newly available candidates or changed duration capabilities invalidate
+the negative evidence without another paid discovery call.
+Generic/legacy no-match failures, prompt corrections and temporary pricing outages
+can still be revalidated; they do not prove an impossible duration. Changed component
+scenarios, creation quotes and timeline edits remain available. The history projection
+retains safe duration/audio/format facts from comparison failures as well as model
+details. It caps each payload at 4,000 characters and the complete array at 12,000,
+reserving minimal failure identities before optional facts. Fingerprints use the
+stored scenario internally; unknown settings, prompts and URLs are omitted from
+model-visible comparison summaries.
+
+Recovering a paid comparison Response with no action receipt checks the current
+catalog: the same fingerprint reproduces the stop; changed/missing evidence allows
+one current comparison, followed only by replay of previously purchased Responses.
+This also covers interruption before the original catalog check completed. If no
+paid follow-up remains, a bounded reply preserves recovered prices/errors and
+reports the unfinished film without another continuation. `readCompletedStudioAction`
+verifies account/project/turn/lease and exact action hash without claiming or
+executing it. Older completed receipts still recover subsequent purchased outputs;
+the guard cannot reserve another model call.
+
 Continue retains the ceiling. Sol extensions permit +100/+250/+500 credits, up to
 2,000 credits and 24 calls total; UI offers a labelled +100 choice. Nothing buys
 a pack or resumes purchased usage. Complex needs a fresh checkbox
