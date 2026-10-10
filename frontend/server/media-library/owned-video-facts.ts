@@ -5,6 +5,14 @@ import { validReferenceMediaUrl } from '@/server/agent-api/reference-assets';
 import { resolveSupportedReferenceMedia } from '@/server/agent-api/reference-media-policy';
 import { inspectSourceVideo } from '@/server/audio/source-video-probe';
 import { createOwnedMediaReadUrl } from '@/server/owned-media-read-access';
+import { createBoundedMediaDownloader } from '@/server/agent-api/reference-file-download';
+
+// Ready generated originals can exceed the private upload envelope. Qualification
+// has its own fixed bound while retaining the shared transport and probe guards.
+const downloadOwnedVideoFactsSource = createBoundedMediaDownloader({
+  accepted: ['video/mp4', 'video/quicktime', 'video/webm', 'video/x-m4v'],
+  maxBytes: 100 * 1024 * 1024,
+});
 
 type VideoRow = {
   id: string; public_id?: string; job_id?: string; user_id: string; kind: string; status: string;
@@ -60,7 +68,8 @@ export async function hydrateOwnedVideoMediaFacts(input: OwnedVideoFactsInput, d
   if (existing) return existing;
   let facts: MediaFacts | undefined;
   try {
-    facts = completeFacts({ source: 'probe', ...await (dependencies.inspectVideo ?? inspectSourceVideo)(readUrl) });
+    const inspectVideo = dependencies.inspectVideo ?? (url => inspectSourceVideo(url, { download: downloadOwnedVideoFactsSource }));
+    facts = completeFacts({ source: 'probe', ...await inspectVideo(readUrl) });
   } catch {
     // Downloader/ffprobe failures may include the signed input; expose no cause or command.
     throw new Error('MEDIA_METADATA_REQUIRED');
