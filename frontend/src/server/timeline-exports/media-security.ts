@@ -65,11 +65,11 @@ export function canonicalTimelineExportMediaUrl(params: {
 
 /** Grants exist only at network boundaries. Callers keep the canonical URL. */
 export async function createTimelineExportReadUrl(params: {
-  url: string; userId?: string; requestOrigin: string; method: 'GET' | 'HEAD'; expiresInSeconds?: number;
+  url: string; userId?: string; requestOrigin: string; method: 'GET' | 'HEAD'; expiresInSeconds?: number; downloadFilename?: string;
 }): Promise<string> {
   const url = canonicalTimelineExportMediaUrl(params);
   try {
-    return await createOwnedMediaReadUrl({url,userId: params.userId,method: params.method,expiresInSeconds: params.expiresInSeconds ?? 300});
+    return await createOwnedMediaReadUrl({url,userId: params.userId,method: params.method,expiresInSeconds: params.expiresInSeconds ?? 300,...(params.downloadFilename ? {downloadFilename: params.downloadFilename} : {})});
   } catch { throw new Error('EXPORT_MEDIA_UNAVAILABLE'); }
 }
 

@@ -85,6 +85,25 @@ test('native export quote stays accessible on mobile and recovers one identity a
     await page.getByRole('dialog',{name:'MaxVideoAI',exact:true}).getByRole('button',{name:'Close ×',exact:true}).click();
     await expect(page.locator('[data-tone]')).toHaveAttribute('data-tone','charcoal');
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth),390);
+    const outputBytes=await readFile('tests/fixtures/studio-media/pattern-a.mp4');
+    const mediaPath='/api/studio/timeline-exports/'+job.id+'/media';
+    Object.assign(job,{status:'completed',progress:100,artifact:{outputUrl:mediaPath,outputAssetId:null,sizeBytes:outputBytes.length,mimeType:'video/mp4'}});
+    await page.route(runtime.browserOrigin+mediaPath+'?download=1',route=>route.fulfill({
+      body:outputBytes,contentType:'video/mp4',headers:{'Content-Disposition':'attachment; filename="Film.mp4"','Cache-Control':'private, no-store'},
+    }));
+    await page.reload({waitUntil:'domcontentloaded'});
+    const downloadLink=page.getByRole('link',{name:'Download MP4',exact:true});
+    await expect(downloadLink).toBeVisible({timeout:45000});
+    await expect(downloadLink).toHaveAttribute('href',mediaPath+'?download=1');
+    const receiving=page.waitForEvent('download');
+    await downloadLink.click();
+    const downloaded=await receiving;
+    assert.equal(downloaded.suggestedFilename(),'Film.mp4');
+    const downloadedPath=await downloaded.path();
+    assert.ok(downloadedPath);
+    assert.deepEqual(await readFile(downloadedPath),outputBytes,'The explicit final link downloads the completed original MP4 bytes.');
+    await downloaded.delete();
+    assert.equal(confirmations.length,2,'Downloading a completed film never submits or confirms another export.');
     assert.deepEqual(errors,[]);
     if(process.env.STUDIO_PROOF_DIRECTORY){
       await mkdir(process.env.STUDIO_PROOF_DIRECTORY,{recursive:true});
