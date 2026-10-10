@@ -185,6 +185,23 @@ test('a qualified source changed while another is inspected cannot become a diff
   await assertNoEdit();
 });
 
+test('an already measured source stays pinned while a later source is qualified',async t => {
+  const {editStudioConversationTimeline} = await import('../frontend/src/server/studio/conversation-edit-command');
+  const {pg,actor,deps,inspections,inspectionHook,hydrateVideoFacts,unmeasure,assembly,assertNoEdit} = await videoQualificationFixture(t);
+  await pg.pool.query('UPDATE media_assets SET metadata=$2::jsonb WHERE public_id=$1',[
+    STUDIO_CONNECTED_ASSET_IDS.a,JSON.stringify({mediaFacts: {source: 'probe',durationSec: 25,width: 320,height: 180,hasAudio: true}}),
+  ]);
+  await unmeasure([STUDIO_CONNECTED_ASSET_IDS.b]);
+  inspectionHook.after = async () => {
+    await pg.pool.query('UPDATE media_assets SET url=$2 WHERE public_id=$1',[
+      STUDIO_CONNECTED_ASSET_IDS.a,'https://cdn.maxvideoai.com/replaced-measured-original.mp4',
+    ]);
+  };
+  await assert.rejects(editStudioConversationTimeline(actor,assembly([STUDIO_CONNECTED_ASSET_IDS.a,STUDIO_CONNECTED_ASSET_IDS.b]),{...deps,hydrateVideoFacts}),/MEDIA_NOT_AVAILABLE/);
+  assert.deepEqual(inspections,[`https://cdn.maxvideoai.com/${STUDIO_CONNECTED_ASSET_IDS.b}.mp4`]);
+  await assertNoEdit();
+});
+
 test('a concurrent manual revision stops assembly after qualification without overwriting the manual change',async t => {
   const {editStudioConversationTimeline} = await import('../frontend/src/server/studio/conversation-edit-command');
   const {pg,actor,deps,project,inspections,inspectionHook,hydrateVideoFacts,unmeasure,assembly} = await videoQualificationFixture(t);
