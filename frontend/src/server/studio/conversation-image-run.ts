@@ -13,6 +13,7 @@ import {studioAssistancePolicy,type StudioAssistancePolicy} from './assistance-p
 import {prepareStudioTimelineExport,readStudioTimelineExport,asStudioExportAgentError,type StudioExportDependencies} from './conversation-export-command';
 import {withDbTransaction,isTransactionQueryExecutor} from '@/lib/db';
 import {AgentApiError, toAgentApiFailure} from '@/server/agent-api/errors';
+import {generationComparisonCatalogFingerprint} from '@/server/agent-api/generation-price-comparison';
 import {getActiveAccountRestrictionStrict} from '@/server/fraud-cleanup/restrictions';
 import type {StudioGenerationActor} from '@/server/agent-api/generation-actor';
 import type {ResolvedReference} from '@/server/agent-api/reference-types';
@@ -22,7 +23,7 @@ import {createStudioConversationDirector, type StudioResponseCreator} from './co
 import {createStudioActionExecutor} from './conversation-actions';
 import {createStudioAnalysisService} from './media-analysis/service';
 import {studioAnalysisPolicy} from './media-analysis/policy';
-import {beginStudioAction, completeStudioAction, checkpointStudioResponse, readStudioConversationProject, saveStudioConversationMemory} from './conversation-run-repository';
+import {beginStudioAction, completeStudioAction, checkpointStudioResponse, readCompletedStudioAction, readStudioConversationProject, saveStudioConversationMemory} from './conversation-run-repository';
 import {attachImageQuote, persistImageDraft, type StoredImageTurn} from './image-conversation-repository';
 import {imageRequestFromDraft,imageReferenceFingerprintFromReview, type ImageGenerationFactory} from './image-conversation-service';
 import {validateStudioMediaRequest, type StudioMediaFactories} from './conversation-media-generation';
@@ -245,6 +246,11 @@ export async function runStudioImageActions(options: {
         params.model=currentModel;params.max_output_tokens=Math.min(params.max_output_tokens??2200,2200);params.reasoning={effort:params.reasoning?.effort==='low'?'low':'medium'};
         return checkpoint();
       }
+    },
+    readCompletedAction: (callId,action)=>readCompletedStudioAction(actor,turn,callId,action),
+    comparisonCatalogFingerprint: async action=>{
+      const service=action.surface==='image'?generation:options.mediaEnabled&&options.factories?options.factories.video(actor,{enabled:options.enabled}):null;
+      return service?generationComparisonCatalogFingerprint(action,await service.catalog()):null;
     },
     execute: async (callId: string, action: StudioActionRequest): Promise<StudioActionResult> => {
       if(options.taskExecution)await setStudioTaskPhase(actor,options.taskExecution,action.action.endsWith(".prepare")?"preparing":action.action==="timeline.edit"?"editing":"reading");

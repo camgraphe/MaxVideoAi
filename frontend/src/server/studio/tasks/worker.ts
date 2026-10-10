@@ -8,6 +8,7 @@ import {studioTaskSchemaReady,readStudioTaskUsage,type StudioTaskRow} from './re
 import {studioTasksEnabled,StudioTaskStop} from './policy';
 import type {StudioTaskExecution} from './execution';
 import type {StudioWorkerScope} from '../worker-host';
+import {readStudioTaskPreviousWork} from './previous-work';
 
 type ServiceOptions=Omit<Parameters<typeof createImageConversationService>[1],'enabled'|'actionsEnabled'|'assistancePolicy'|'taskExecution'>;
 type WorkerDependencies={enabled?:boolean;assistancePolicy?:StudioAssistancePolicy;serviceOptions?:ServiceOptions;scope?:StudioWorkerScope};
@@ -52,10 +53,7 @@ export async function runStudioTaskWorkerOnce(dependencies:WorkerDependencies={}
   },30_000);
   try{
     const segment=(await query<{max_calls:number}>('SELECT max_calls FROM studio_task_segments WHERE user_id=$1 AND project_id=$2 AND request_id=$3',[row.user_id,row.project_id,row.segment_request_id]))[0];
-    const previousWork=await query<NonNullable<StudioTaskExecution['previousWork']>[number]>(`SELECT action_json->>'action' action,call_id AS "callId",true completed,
-      CASE WHEN action_json->>'action'='timeline.edit' THEN action_json ELSE NULL END details FROM studio_conversation_steps
-      WHERE user_id=$1 AND project_id=$2 AND request_id IN (SELECT request_id FROM studio_task_segments WHERE user_id=$1 AND project_id=$2 AND task_request_id=$3 AND request_id<>$4)
-      AND state='completed' AND result_json->>'ok'='true' ORDER BY created_at DESC LIMIT 12`,[row.user_id,row.project_id,row.request_id,row.segment_request_id]);
+    const previousWork=await readStudioTaskPreviousWork(actor,row.request_id,row.segment_request_id);
     const execution:StudioTaskExecution={taskRequestId:row.request_id,segmentRequestId:row.segment_request_id,workerId,profile:row.profile_json,maxCalls:segment.max_calls,deadlineAt:row.deadline_at!,enabled:dependencies.enabled??studioTasksEnabled(),locale:row.input_json.locale,recoveryOnly:row.replay_only||row.deadline_at!.getTime()<=Date.now(),previousWork};
     const service=createImageConversationService(actor,{enabled:true,actionsEnabled:true,assistancePolicy:dependencies.assistancePolicy??studioAssistancePolicy(),
       mediaEnabled:process.env.STUDIO_CONVERSATION_MEDIA_ENABLED==='true',editingEnabled:process.env.STUDIO_CONVERSATION_EDITING_ENABLED==='true',exportsEnabled:process.env.STUDIO_CONVERSATION_EXPORTS_ENABLED==='true',

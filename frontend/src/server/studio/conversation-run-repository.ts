@@ -60,6 +60,18 @@ export async function saveStudioConversationMemory(actor: StudioGenerationActor,
   return executor ? save(executor) : withDbTransaction(save);
 }
 
+/** Read a completed immutable receipt without claiming/executing a skipped action. */
+export async function readCompletedStudioAction(actor:StudioGenerationActor,turn:StoredImageTurn,callId:string,action:StudioActionRequest):Promise<StudioActionResult|null> {
+  const saved=(await query<{action_hash:string;result_json:StudioActionResult}>(`SELECT c.action_hash,c.result_json FROM studio_conversation_steps c
+    JOIN studio_image_turns t ON t.user_id=c.user_id AND t.project_id=c.project_id AND t.request_id=c.request_id
+    JOIN studio_projects p ON p.id=t.project_id AND p.user_id=t.user_id AND p.deleted_at IS NULL
+    WHERE c.user_id=$1 AND c.project_id=$2 AND c.request_id=$3 AND c.call_id=$4 AND c.state='completed'
+      AND t.lease_id=$5 AND t.state='thinking'`,[actor.userId,actor.projectId,turn.request_id,callId,turn.lease_id]))[0];
+  if(!saved)return null;
+  if(saved.action_hash!==createHash('sha256').update(stableJson(action)).digest('hex'))throw new AgentApiError('PARAMETER_INVALID','This action identity belongs to another request.');
+  return saved.result_json;
+}
+
 export async function beginStudioAction(actor: StudioGenerationActor, turn: StoredImageTurn, callId: string, action: StudioActionRequest): Promise<StudioActionResult | null> {
   if (!callId || callId.length > 200) throw new AgentApiError('PARAMETER_INVALID', 'Invalid action identity.');
   const hash = createHash('sha256').update(stableJson(action)).digest('hex');
