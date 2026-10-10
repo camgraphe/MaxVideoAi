@@ -16,6 +16,7 @@ import {imageSelectionSchema} from '@/lib/studio/conversation-creation-contract'
 import {studioToolReferenceProperties} from './conversation-tool-reference-schema';
 import {isStudioPreparationCorrection} from './conversation-preparation-validation';
 import {projectStudioReply} from '@/lib/studio/conversation-reply';
+import {studioCurrentComparisonReply} from './conversation-current-comparison-reply';
 
 export type StudioDirectorResponse = Pick<Response, 'id' | 'model' | 'status' | 'service_tier' | 'usage' | 'output_text'> & {output: Response['output'];incomplete_details?: Response['incomplete_details']};
 export type StudioResponseCreator = (params: ResponseCreateParamsNonStreaming) => Promise<StudioDirectorResponse>;
@@ -101,26 +102,26 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
     for (let index = 0; index < maxResponses; index++) {
       const analysisTools=options.analysisEnabled?studioAnalysisDirectorTools(options.analysisProfiles??{video:true,audio:true}):context.project.analyses?.length?[STUDIO_ANALYSIS_DIRECTOR_TOOLS[1]]:[];
       const availableTools = [...STUDIO_DIRECTOR_TOOLS,...(options.taskExecution?STUDIO_TASK_DIRECTOR_TOOLS:[]), ...(options.mediaEnabled ? STUDIO_MEDIA_DIRECTOR_TOOLS : []),...(options.editingEnabled ? STUDIO_EDITING_DIRECTOR_TOOLS : []),...(options.exportsEnabled ? STUDIO_EXPORT_DIRECTOR_TOOLS : []),...analysisTools];
-      // A final read cannot feed another response. Offer only finishing actions,
-      // while still accepting older checkpointed reads during paid-response replay.
+      // A final comparison renders its own reply; other reads need another Response.
+      // Older checkpointed reads remain recoverable during paid-response replay.
       const tools = correctionAction
         ? availableTools.filter(tool => tool.action === correctionAction)
-        : index === maxResponses-1 ? availableTools.filter(tool => tool.action.endsWith('.prepare') || tool.action === 'timeline.edit' || tool.action === 'quote.discard')
+        : index === maxResponses-1 ? availableTools.filter(tool => tool.action.endsWith('.prepare') || tool.action === 'timeline.edit' || tool.action === 'quote.discard' || tool.action === 'pricing.compare')
         : index === Math.max(0,maxResponses-2) ? availableTools.filter(tool => tool.action !== 'project.remember') : availableTools;
       const model=options.modelForNextCall?.()??options.model??'gpt-6.1-sol';
-      const effort=options.taskExecution?(options.taskExecution.profile.reasoning==='high'&&lastResult?.action==='catalog.read'?'medium':options.taskExecution.profile.reasoning):'medium';
+      const effort=options.taskExecution?(model==='gpt-6.1-sol'&&options.taskExecution.profile.reasoning==='high'&&lastResult?.action==='catalog.read'?'medium':options.taskExecution.profile.reasoning):model==='gpt-6-luna'?'high':'medium';
       const params: ResponseCreateParamsNonStreaming = {
-        model, service_tier: 'default', store: false, reasoning: {effort: model==='gpt-6-luna'&&effort==='high'?'medium':effort}, max_output_tokens: Math.min(options.taskExecution?.profile.maxOutputTokens??2200,model==='gpt-6-luna'?2200:6000),
+        model, service_tier: 'default', store: false, reasoning: {effort}, max_output_tokens: options.taskExecution?.profile.maxOutputTokens??2200,
         include: ['reasoning.encrypted_content'],
         parallel_tool_calls: false,
         tool_choice: 'auto',
         instructions: buildStudioDirectorInstructions({...options,taskEnabled:!!options.taskExecution})
-          + `\n\nResponse ${index + 1} of ${maxResponses}: ${maxResponses - index} Responses remain, including this one. Leave room to answer. For an open image/video model or alternative-price request, use pricing_compare once and explain its compatible options; after selection inspect that model and prepare. A named model stays selected. Leave room for the reply.`
+          + `\n\nResponse ${index + 1} of ${maxResponses}: ${maxResponses - index} Responses remain, including this one. Open-model/alternative-price work starts with pricing_compare. Preserve selected models and reply-only planning; leave room to answer.`
           + (index === maxResponses-1
-          ? '\n\nThis is the last Response available for this message. Give the client a useful answer from the facts already read, or complete their requested preparation/edit/cancellation. Reads and memory writes are unavailable because no response would remain to use their results. Explain any missing model or price verification accurately; do not invent facts or prepare a creation when the client only asked for advice.'
-          : index === Math.max(0,maxResponses-2) ? '\n\nOptional memory writes are now unavailable. When the needed model and source facts are known, prepare the requested creation now so one response remains to correct a prequote input rejection. Read only facts still required for the requested workflow.' : '')
-          + (correctionAction ? '\n\nThe preceding preparation was rejected before quote creation. This is the single input-correction attempt for that preparation. Correct the rejected selection using the facts already read, or explain what is missing. Do not repeat successful actions, change to another operation or claim a quote exists.' : '')
-          + (isStudioComparisonMismatch(lastResult)?'\n\nThe whole-film duration failed as a single clip. Compare one changed supported component scenario using the returned mode facts, including longer clip choices when suitable for continuity. This changed scenario is allowed after the failed comparison. Preserve total film duration, then prepare the chosen component or assemble ready owned media; report the remainder.':''),
+          ? '\n\nThis is the last Response available for this message. '+(!correctionAction?'pricing_compare can still return a terminal server estimate without another Response. ':'')+'Otherwise answer from known facts or finish requested preparation/edit/cancellation. No other reads/memory; explain missing verification, never prepare advice-only work.'
+          : index === Math.max(0,maxResponses-2) ? '\n\nNo optional memory now. Read only needed facts. Finish planning/cost advice; prepare only requested creation/quotes when facts suffice, leaving one input correction.' : '')
+          + (correctionAction ? '\n\nPreparation failed before quote creation. This is its single correction attempt: correct that selection from known facts or explain missing input. No repeated success, operation change or invented quote.' : '')
+          + (isStudioComparisonMismatch(lastResult)?'\n\nWhole-film duration failed as one clip. One changed supported component comparison is allowed using returned mode facts; consider longer clips for continuity. Preserve total duration/framing/sound. Explain planning estimates without preparing; only requested creation may prepare/assemble.':''),
         input:model==='gpt-6-luna'?lunaInput():input,
         tools: tools.map(tool => ({type: 'function' as const, name: tool.name, description: tool.description, strict: true,
           parameters: {type: 'object', additionalProperties: false, properties: studioToolReferenceProperties(tool.name,tool.properties,context.references), required: Object.keys(tool.properties)}})),
@@ -199,6 +200,11 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         return {reply: projectStudioReply(action.reply),image: null,exportQuote: result.data};
       }
       lastResult = result;
+      if(index===maxResponses-1&&action.action==='pricing.compare'){
+        if(recoveredComparison)return studioRecoveredComparisonReply(recoveredComparison,completedEdits,options.taskExecution?.locale);
+        if(comparisonReplayOnly)return studioRepeatedComparisonReply(comparisonReplayOnly,completedEdits,options.taskExecution?.locale);
+        return studioCurrentComparisonReply(action,result,completedEdits,options.taskExecution?.locale);
+      }
       if (isStudioPreparationCorrection(result)) {
         correctionResult = result;
         if (correctionAction) {

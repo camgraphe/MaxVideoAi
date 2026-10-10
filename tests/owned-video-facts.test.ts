@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { inspect } from 'node:util';
-import test from 'node:test';
+import test, {type TestContext} from 'node:test';
+import dns from 'node:dns/promises';
+import https from 'node:https';
+import {EventEmitter} from 'node:events';
+import {Readable} from 'node:stream';
+import type {ClientRequest,IncomingMessage} from 'node:http';
 
 process.env.S3_BUCKET = 'facts-fixture';
 process.env.S3_REGION = 'us-east-1';
@@ -9,10 +14,34 @@ process.env.S3_ACCESS_KEY_ID = 'facts-fixture-key';
 process.env.S3_SECRET_ACCESS_KEY = 'facts-fixture-secret';
 process.env.S3_PUBLIC_BASE_URL = 'https://facts-fixture.s3.us-east-1.amazonaws.com';
 process.env.VIDEO_RENDER_STORAGE_PREFIX = '';
+process.env.ASSET_MAX_VIDEO_MB = '50';
 const original = `${process.env.S3_PUBLIC_BASE_URL}/renders/owner/original.mp4`;
 const assetId = `ma_${'1'.repeat(32)}`;
 const ref = { type: 'job-output' as const, jobId: 'job', outputId: 'job:video:0', kind: 'video' as const };
 const want = { source: 'probe', durationSec: 6, width: 320, height: 180, hasAudio: true };
+
+function mockVideoTransport(t: TestContext, headers: Record<string,string>, chunks: () => AsyncIterable<Buffer>) {
+  const state = {requests: 0,response: undefined as IncomingMessage | undefined,timeoutMs: 0};
+  t.mock.method(dns,'lookup',async () => [{address: '8.8.8.8',family: 4}]);
+  t.mock.method(https,'request',(...args: unknown[]) => {
+    const [url,options,callback] = args as [URL,https.RequestOptions,(response: IncomingMessage) => void];
+    assert.equal(url.hostname,'facts-fixture.s3.us-east-1.amazonaws.com');
+    assert.equal(options.method,'GET');
+    assert.equal(typeof options.lookup,'function','The actual downloader must retain its pinned lookup.');
+    state.requests++;
+    const response = Readable.from(chunks(),{highWaterMark: 1}) as IncomingMessage;
+    response.statusCode = 200; response.headers = headers;
+    state.response = response;
+    const request = new EventEmitter() as ClientRequest;
+    Object.assign(request,{
+      setTimeout(timeout: number) {state.timeoutMs = timeout; return request;},
+      end() {queueMicrotask(() => callback(response)); return request;},
+      destroy(error?: Error) {if (error) request.emit('error',error); return request;},
+    });
+    return request;
+  });
+  return state;
+}
 
 async function fixture() {
   const { inspectSourceVideo } = await import('../frontend/src/server/audio/source-video-probe');
@@ -121,4 +150,53 @@ test('complete browser and requested declarations still require actual source me
     assert.deepEqual(await hydrateOwnedVideoMediaFacts({ userId: 'owner', ref }, dependencies), want);
     assert.equal(state.downloads, 1);
   }
+});
+
+test('canonical qualification probes a ready owned original above 50 MiB while the audio source upload envelope stays unchanged',async t => {
+  const {hydrateOwnedVideoMediaFacts} = await import('../frontend/server/media-library/owned-video-facts');
+  const {inspectSourceVideo} = await import('../frontend/src/server/audio/source-video-probe');
+  const {state,query} = await fixture();
+  const bytes = await readFile('tests/fixtures/studio-media/pattern-a.mp4');
+  // A valid MP4 free box keeps the fixture's real streams and timing unchanged.
+  const sourceBytes = 72_048_956;
+  const freeBoxBytes = sourceBytes-bytes.length;
+  const freeHeader = Buffer.alloc(8);
+  freeHeader.writeUInt32BE(freeBoxBytes); freeHeader.write('free',4,'ascii');
+  const padding = Buffer.alloc(freeBoxBytes-8);
+  const transport = mockVideoTransport(t,{'content-type': 'video/mp4','content-length': String(sourceBytes)},async function* () {
+    yield bytes; yield freeHeader; yield padding;
+  });
+  const facts = await hydrateOwnedVideoMediaFacts({userId: 'owner',ref,expectedUrl: original},{query});
+  assert.deepEqual(facts,want); assert.deepEqual(state.output.metadata.mediaFacts,want);
+  assert.deepEqual(state.asset.metadata.mediaFacts,want);
+  assert.equal(state.output.url,original); assert.equal(state.output.metadata.durationSec,5);
+  assert.equal(transport.requests,1); assert.equal(transport.timeoutMs,30_000);
+  assert.equal(transport.response?.destroyed,true);
+  await assert.rejects(inspectSourceVideo(original),/private upload limit/,'The global Audio source probe still uses the existing 50 MiB upload envelope.');
+});
+
+test('qualification rejects a declared original above 100 MiB before reading its body or saving facts',async t => {
+  const {hydrateOwnedVideoMediaFacts} = await import('../frontend/server/media-library/owned-video-facts');
+  const {state,query} = await fixture();
+  let bodyReads = 0;
+  const transport = mockVideoTransport(t,{'content-type': 'video/mp4','content-length': String(100*1024*1024+1)},async function* () {
+    bodyReads++; yield Buffer.from('must not be read');
+  });
+  await assert.rejects(hydrateOwnedVideoMediaFacts({userId: 'owner',ref,expectedUrl: original},{query}),/MEDIA_METADATA_REQUIRED/);
+  assert.equal(bodyReads,0); assert.equal(transport.requests,1); assert.equal(transport.response?.destroyed,true);
+  assert.equal(state.writes.length,0); assert.equal(state.output.metadata.mediaFacts,undefined);
+});
+
+test('qualification cancels an undeclared stream once it exceeds 100 MiB without saving facts',async t => {
+  const {hydrateOwnedVideoMediaFacts} = await import('../frontend/server/media-library/owned-video-facts');
+  const {state,query} = await fixture();
+  const chunk = Buffer.alloc(1024*1024);
+  let yieldedChunks = 0;
+  const transport = mockVideoTransport(t,{'content-type': 'video/mp4'},async function* () {
+    for (let index=0;index<110;index++) {yieldedChunks++; yield chunk;}
+  });
+  await assert.rejects(hydrateOwnedVideoMediaFacts({userId: 'owner',ref,expectedUrl: original},{query}),/MEDIA_METADATA_REQUIRED/);
+  assert.ok(yieldedChunks>=101,'The qualification envelope permits the first 100 MiB before rejecting the excess.');
+  assert.ok(yieldedChunks<110,'An over-limit source must stop before the remaining chunks are consumed.');
+  assert.equal(transport.response?.destroyed,true); assert.equal(state.writes.length,0);
 });

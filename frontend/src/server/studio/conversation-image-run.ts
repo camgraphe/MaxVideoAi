@@ -223,6 +223,8 @@ export async function runStudioImageActions(options: {
       if(options.taskExecution){await assertStudioTaskExecution(actor,options.taskExecution);await setStudioTaskPhase(actor,options.taskExecution,"thinking");}
       if (!params) throw new AgentApiError('INTERNAL_ERROR','Studio is missing its model request bounds.');
       if(lunaFallback){
+        params.max_output_tokens=Math.min(params.max_output_tokens??2200,2200);
+        params.reasoning={effort:params.reasoning?.effort==='low'?'low':'medium'};
         checkpointOptions?.prepareLunaInput?.();
         params.instructions=(params.instructions??'')+'\nStudio has continued this task with sponsored GPT-6 Luna because the next Sol call could not be funded. Continue the remaining client request from the saved work. This assistance change does not authorize a different generation model, a credit purchase or a media confirmation.';
       }
