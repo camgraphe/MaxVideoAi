@@ -38,6 +38,11 @@ configuration as part of a customer request.
 - `GET /api/user/exports/summary` counts the account's visible jobs and retains
   the idempotent per-user `user_preferences` initialization. It does not run the
   unrelated global billing bootstrap.
+- Studio timeline export status, idempotency recovery and free-quota reads use
+  the migrated `app_timeline_exports` table without DDL. Missing schema remains
+  an error; reservation creation and worker claiming retain initialization.
+  Completed MP4 playback/download reads preserve ownership and never initialize
+  schema, mutate billing or launch a replacement worker.
 - `listBillingProducts` reads migrated `app_billing_products` without billing
   schema initialization or default-product seeds. `/api/billing-products`,
   commercial admin inventory and current Pricing projections share this reader.

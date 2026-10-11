@@ -64,6 +64,16 @@ for qualified profiles, shared-credit recovery and activation prerequisites.
 
 Exports use the canonical worker contract and backend pricing/idempotency. The browser estimates, confirms, polls and recovers; it does not manufacture completed MP4s. Completed exports and reusable library media remain account artifacts even if a project is later deleted.
 
+MP4 activation and worker provenance are documented in
+[Studio MP4 exports](../deployment/studio-timeline-exports.md). Completed chat
+cards offer an explicit download through the same owned stable media route as
+playback. `download=1` requests an attachment named by the saved export; the
+storage signer sanitizes that filename. Ordinary GET/HEAD preview grants and
+Range delivery retain their existing behavior. Polling, quota and idempotency
+reads use migrated tables without schema bootstrap; reservation and worker
+initialization retain their existing ownership. The dated availability checks
+above remain historical evidence, not an assertion about a later activation.
+
 ## Retired entry points
 
 Old `/app/studio/projects` URLs redirect to Studio; an allowlisted marketing starter remains a draft brief. Old `/app/studio/workspace` redirects to Studio. An old workspace URL for a supported connected project redirects to that project's conversation; a retired/missing private project returns to Studio.

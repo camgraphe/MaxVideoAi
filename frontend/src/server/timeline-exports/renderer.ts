@@ -233,10 +233,13 @@ export async function renderTimelineExportJob(job: TimelineExportJobRecord): Pro
     const serveUrl = await bundle({
       entryPoint: timelineExportEntryPoint(),
     });
+    const browserExecutable = process.env.CHROME_BIN?.trim()
+      || process.env.PUPPETEER_EXECUTABLE_PATH?.trim() || undefined;
     const composition = await selectComposition({
       serveUrl,
       id: 'MaxVideoAITimelineExport',
       inputProps,
+      browserExecutable,
       onBrowserLog: () => {},
     });
     await updateTimelineExportProgress({ exportId: job.id, progress: 35, message: 'Rendering frames.' });
@@ -253,6 +256,7 @@ export async function renderTimelineExportJob(job: TimelineExportJobRecord): Pro
         ...TIMELINE_EXPORT_COLOR_SETTINGS,
         outputLocation: outputPath,
         inputProps,
+        browserExecutable,
         onBrowserLog: () => {},
         chromiumOptions: { gl: 'angle' },
         concurrency: MAX_RENDER_CONCURRENCY,
