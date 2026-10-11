@@ -27,3 +27,25 @@ test('task status exposes bounded resource progress without private worker or me
   assert.equal(studioTaskStatusSchema.parse(value).consumedCredits,60);
   for(const delta of [{sourceUrl:'https://private.invalid/video'},{workerId:randomUUID()},{allowedCalls:25},{maxCredits:2010},{consumedCredits:61},{phase:'100% complete'}])assert.equal(studioTaskStatusSchema.safeParse({...value,...delta}).success,false);
 });
+
+test('new Luna requests allow high reasoning without changing Sol or client ceilings',()=>{
+  for(const profile of ['quick','standard'] as const){
+    const selection=studioTaskSelectionSchema.parse({profile,maxCredits:profile==='quick'?100:250,policyVersion:STUDIO_TASK_POLICY_VERSION});
+    const luna=studioTaskProfileForModel(selection,'gpt-6-luna');
+    assert.equal(luna.reasoning,'high');
+    assert.equal(luna.maxOutputTokens,6000);
+    assert.equal(luna.maxCalls,profile==='quick'?2:4);
+    assert.equal(luna.maxCredits,profile==='quick'?100:250);
+    assert.deepEqual(studioTaskProfileForModel(selection,'gpt-6.1-sol'),STUDIO_TASK_PROFILES[profile]);
+  }
+});
+
+test('historical task commands preserve the frozen Luna reasoning allowance',()=>{
+  const policyVersion='studio-task-budget-2026-10-06-v1';
+  const selection=studioTaskSelectionSchema.parse({profile:'standard',maxCredits:250,policyVersion});
+  assert.equal(studioTaskProfileForModel(selection,'gpt-6-luna').reasoning,'medium');
+  assert.equal(studioTaskProfileForModel(selection,'gpt-6-luna').maxOutputTokens,2200);
+  const requestId=randomUUID();
+  assert.equal(studioTaskResumeSchema.parse({requestId,approvalId:randomUUID(),expectedRevision:0,action:'continue',maxCredits:250,policyVersion,confirmed:true}).policyVersion,policyVersion);
+  assert.equal(studioTaskSelectionSchema.safeParse({...selection,policyVersion:'unreviewed-policy'}).success,false);
+});

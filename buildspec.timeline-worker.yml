@@ -1,0 +1,26 @@
+version: 0.2
+
+env:
+  variables:
+    TIMELINE_EXPORT_IMAGE_REPOSITORY: 469541406686.dkr.ecr.us-east-1.amazonaws.com/maxvideoai-timeline-export-worker
+
+phases:
+  pre_build:
+    commands:
+      - 'test "${TIMELINE_EXPORT_SOURCE_SHA}" != ""'
+      - 'node -e "if (!/^[a-f0-9]{40}$/.test(process.env.TIMELINE_EXPORT_SOURCE_SHA || \"\")) process.exit(1)"'
+      - 'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 469541406686.dkr.ecr.us-east-1.amazonaws.com'
+  build:
+    commands:
+      - 'docker build --platform linux/amd64 --build-arg TIMELINE_EXPORT_SOURCE_SHA="$TIMELINE_EXPORT_SOURCE_SHA" -f Dockerfile.timeline-worker -t "$TIMELINE_EXPORT_IMAGE_REPOSITORY:$TIMELINE_EXPORT_SOURCE_SHA" .'
+      - 'docker run --rm --network none --entrypoint node "$TIMELINE_EXPORT_IMAGE_REPOSITORY:$TIMELINE_EXPORT_SOURCE_SHA" --version'
+      - 'docker run --rm --network none --entrypoint ffmpeg "$TIMELINE_EXPORT_IMAGE_REPOSITORY:$TIMELINE_EXPORT_SOURCE_SHA" -version'
+      - 'docker run --rm --network none --entrypoint chromium "$TIMELINE_EXPORT_IMAGE_REPOSITORY:$TIMELINE_EXPORT_SOURCE_SHA" --version'
+      - 'docker run --rm --network none --entrypoint /bin/sh "$TIMELINE_EXPORT_IMAGE_REPOSITORY:$TIMELINE_EXPORT_SOURCE_SHA" -c "test ! -e /app/frontend/.env.local && test ! -d /app/frontend/.next && test -f /app/packages/pricing/package.json"'
+      - 'if docker run --rm --network none "$TIMELINE_EXPORT_IMAGE_REPOSITORY:$TIMELINE_EXPORT_SOURCE_SHA" > worker-preflight.log 2>&1; then cat worker-preflight.log; exit 1; fi'
+      - 'node -e "if (!require(\"fs\").readFileSync(\"worker-preflight.log\", \"utf8\").includes(\"TIMELINE_EXPORT_WORKER_DATABASE_NOT_CONFIGURED\")) process.exit(1)"'
+      - 'test "$(docker inspect --format "{{ index .Config.Labels \"org.opencontainers.image.revision\" }}" "$TIMELINE_EXPORT_IMAGE_REPOSITORY:$TIMELINE_EXPORT_SOURCE_SHA")" = "$TIMELINE_EXPORT_SOURCE_SHA"'
+  post_build:
+    commands:
+      - 'test "$CODEBUILD_BUILD_SUCCEEDING" = "1"'
+      - 'docker push "$TIMELINE_EXPORT_IMAGE_REPOSITORY:$TIMELINE_EXPORT_SOURCE_SHA"'

@@ -18,6 +18,21 @@ an exact requested baseline/editorial preference; price does not prove quality.
 Fewer matches return fewer options. No quote, wallet, provider job or reservation
 is created. Selection still requires live model details and a fresh exact quote.
 
+A valid scenario with no matching model retains the existing fail-closed error,
+with `nextAction.type=generation_comparison` and `reason=no_matching_scenario`.
+It supplies bounded live mode facts from the authorized catalog. Discrete durations
+and ranges remain distinct; `durationMismatch` is true only when every candidate's
+requested-duration policy demonstrably rejects the requested single-clip duration.
+Other setting, audio, source-derived timing and pricing failures do not become a
+duration diagnosis. This is still a single-output comparison: a film's total length
+must not be silently substituted into a component clip quote, or shortened to obtain
+a price. Studio can use these facts to plan and price supported components while
+preserving the full film, then assemble ready owned media through its timeline tools.
+When the film exceeds every single-clip duration, the eight-model diagnostic keeps
+the longest supported component choices first (`modelsOrder=longest_supported_clip`),
+so twenty/thirty-second variants remain visible. This is a duration ordering, not
+an artistic or price ranking; current component prices still require comparison.
+
 `baselineModelId` reprices the comparison baseline, and `baselineSettings`
 preserves its original configuration when changing resolution or duration.
 Savings use current integer customer cents in the same currency and disclose

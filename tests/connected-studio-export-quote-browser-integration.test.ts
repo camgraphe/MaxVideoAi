@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile,mkdir} from 'node:fs/promises';
 import {join} from 'node:path';
+import {createServer,request} from 'node:http';
 import {expect} from '@playwright/test';
 import {startStudioIntegrationRuntime} from './helpers/studio-integration-runtime';
 import {startStudioConnectedBrowserFixture} from './helpers/studio-connected-browser-fixture';
@@ -20,18 +21,42 @@ test('native export quote stays accessible on mobile and recovers one identity a
     await database.pool.query('ALTER TABLE app_jobs ADD COLUMN status text');
   }});
   let browser:Awaited<ReturnType<typeof startStudioConnectedBrowserFixture>>|undefined;
+  let downloadTransport:ReturnType<typeof createServer>|undefined;
   try{
     const session=runtime.auth.createSession(STUDIO_FIXTURE_OWNERS[0],{clientId:'chat-export-fixture'});
     const created=await postStudioMcpRequest(runtime,{jsonrpc:'2.0',id:1,method:'tools/call',params:{name:'create_studio_montage',arguments:STUDIO_CONNECTED_MONTAGE_INPUT}},{token:session.access_token}).then(readStudioMcpResponse);
     assert.notEqual(created.result.isError,true);
     const projectId=created.result.structuredContent.projectId;
+    const exportId='tlx_'+'a'.repeat(64);
+    const mediaPath='/api/studio/timeline-exports/'+exportId+'/media';
+    const outputBytes=await readFile('tests/fixtures/studio-media/pattern-a.mp4');
+    const downloadRequests:string[]=[];
+    const allowedOrigins=new Set([runtime.browserOrigin,runtime.origin,runtime.auth.origin]);
+    // Chromium's native <a download> requests bypass page/context routing.
+    // This test-only loopback transport serves the exact mocked completed job.
+    downloadTransport=createServer((incoming,outgoing)=>{
+      let url:URL;
+      try{url=new URL(incoming.url!);}catch{outgoing.writeHead(400);outgoing.end();return;}
+      if(!allowedOrigins.has(url.origin)){outgoing.writeHead(403);outgoing.end();return;}
+      if(url.origin===runtime.browserOrigin&&url.pathname===mediaPath&&url.search==='?download=1'&&incoming.method==='GET'){
+        downloadRequests.push(url.pathname+url.search);
+        outgoing.writeHead(200,{'Content-Type':'video/mp4','Content-Length':outputBytes.length,'Content-Disposition':'attachment; filename="Film.mp4"','Cache-Control':'private, no-store'});
+        outgoing.end(outputBytes);return;
+      }
+      const forwarded=request(url,{method:incoming.method,headers:incoming.headers},response=>{
+        outgoing.writeHead(response.statusCode??502,response.headers);response.pipe(outgoing);
+      });
+      forwarded.on('error',()=>{outgoing.writeHead(502);outgoing.end();});incoming.pipe(forwarded);
+    });
+    await new Promise<void>(resolve=>downloadTransport!.listen(0,'127.0.0.1',resolve));
+    const offlineTransport={proxy:{server:'http://127.0.0.1:'+(downloadTransport.address() as {port:number}).port,bypass:'<-loopback>'}};
     browser=await startStudioConnectedBrowserFixture({runtime,browserName:engine});
-    const {page}=await browser.newContext(session,{viewport:{width:1440,height:900},locale:'en-US',reducedMotion:'reduce'});
+    const {page}=await browser.newContext(session,{viewport:{width:1440,height:900},locale:'en-US',reducedMotion:'reduce',...offlineTransport});
     const errors:string[]=[];
     page.on('pageerror',error=>errors.push(error.message));
     const auxiliary=new Map([['/api/member-status',{tier:'Member'}],['/api/wallet',{balance:0,balanceCents:0,currency:'USD'}],['/api/admin/access',{ok:false}],['/api/legal/reconsent',{ok:true,needsReconsent:false,documents:[]}],['/api/legal/cookies/version',{ok:true,version:'chat-export-fixture',publishedAt:null}],['/api/legal/cookies',{ok:true,version:'chat-export-fixture'}]]);
     for(const [path,json]of auxiliary)await page.route(runtime.browserOrigin+path,route=>route.fulfill({json}));
-    const quote={quoteId:'11111111-1111-4111-8111-111111111111',exportId:'tlx_'+'a'.repeat(64),projectId,sequenceId:created.result.structuredContent.sequenceId,revision:0,durationSec:5,resolution:'720p',aspectRatio:'16:9',fps:30,qualityPreset:'draft',includeAudio:true,price:{amountCents:0,currency:'USD',billingKind:'free'},expiresAt:'2099-01-01T00:00:00.000Z',confirmationRequired:true};
+    const quote={quoteId:'11111111-1111-4111-8111-111111111111',exportId,projectId,sequenceId:created.result.structuredContent.sequenceId,revision:0,durationSec:5,resolution:'720p',aspectRatio:'16:9',fps:30,qualityPreset:'draft',includeAudio:true,price:{amountCents:0,currency:'USD',billingKind:'free'},expiresAt:'2099-01-01T00:00:00.000Z',confirmationRequired:true};
     const endpoint=runtime.browserOrigin+'/api/studio/projects/'+projectId;
     // Only UI acknowledgements are simulated. Canonical confirmation/billing is
     // covered separately with PostgreSQL; no render can escape this fixture.
@@ -85,10 +110,29 @@ test('native export quote stays accessible on mobile and recovers one identity a
     await page.getByRole('dialog',{name:'MaxVideoAI',exact:true}).getByRole('button',{name:'Close ×',exact:true}).click();
     await expect(page.locator('[data-tone]')).toHaveAttribute('data-tone','charcoal');
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth),390);
+    Object.assign(job,{status:'completed',progress:100,artifact:{outputUrl:mediaPath,outputAssetId:null,sizeBytes:outputBytes.length,mimeType:'video/mp4'}});
+    await page.reload({waitUntil:'domcontentloaded'});
+    const downloadLink=page.getByRole('link',{name:'Download MP4',exact:true});
+    await expect(downloadLink).toBeVisible({timeout:45000});
+    await expect(downloadLink).toHaveAttribute('href',mediaPath+'?download=1');
+    const receiving=page.waitForEvent('download');
+    await downloadLink.click();
+    const downloaded=await receiving;
+    assert.equal(downloaded.suggestedFilename(),'Film.mp4');
+    const downloadedPath=await downloaded.path();
+    assert.ok(downloadedPath);
+    assert.deepEqual(await readFile(downloadedPath),outputBytes,'The explicit final link downloads the completed original MP4 bytes.');
+    assert.deepEqual(downloadRequests,[mediaPath+'?download=1']);
+    await downloaded.delete();
+    assert.equal(confirmations.length,2,'Downloading a completed film never submits or confirms another export.');
     assert.deepEqual(errors,[]);
     if(process.env.STUDIO_PROOF_DIRECTORY){
       await mkdir(process.env.STUDIO_PROOF_DIRECTORY,{recursive:true});
       await page.screenshot({path:join(process.env.STUDIO_PROOF_DIRECTORY,engine+'-export-quote-recovered-mobile.png')});
     }
-  }finally{await browser?.close();await runtime.close();}
+  }finally{
+    await browser?.close();
+    if(downloadTransport){await new Promise<void>((resolve,reject)=>{downloadTransport!.close(error=>error?reject(error):resolve());downloadTransport!.closeAllConnections();});}
+    await runtime.close();
+  }
 });

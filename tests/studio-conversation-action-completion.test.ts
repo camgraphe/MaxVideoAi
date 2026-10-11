@@ -68,8 +68,8 @@ test('three research actions leave the final response for an answer even when th
     outputAllowance += params.max_output_tokens!;
     if (index < 3) return toolResponse(index,...steps[index]);
     const names = params.tools?.filter(tool => tool.type === 'function').map(tool => tool.name) ?? [];
-    assert.deepEqual(names.sort(),['audio_prepare','export_prepare','image_prepare','music_prepare','quote_discard','timeline_edit','video_prepare','voice_prepare'],
-      'The last request cannot spend the remaining response on a read or memory write that leaves no room for an answer.');
+    assert.deepEqual(names.sort(),['audio_prepare','export_prepare','image_prepare','music_prepare','pricing_compare','quote_discard','timeline_edit','video_prepare','voice_prepare'],
+      'Only a comparison with a server-rendered terminal reply can remain alongside finishing actions.');
     assert.equal(params.tool_choice,'auto');
     assert.match(JSON.stringify(params.input),/The pricing scenario is invalid/,'The final answer sees the failed estimate rather than inventing a price.');
     return {...toolResponse(index,'model_details',{modelId: 'seedance-2-5'}),output: [],output_text: JSON.stringify({reply: 'Use soft morning light and a slow camera move. Upload the product photo to guide bottle consistency. The price read failed, so I cannot yet verify the budget.'})};
