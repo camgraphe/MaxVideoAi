@@ -9,11 +9,11 @@ const context={message:'HEY!',references:[],history:[],project:{name:'Film',revi
   checkpoint:async()=>{throw new Error('A greeting must not reserve/count/charge a model call.');}};
 
 test('existing-film exports, writing and edits are not rerouted to paid creation planning',()=>{
-  for(const message of ['I want to export my 100-second film','I need a synopsis for my 100-second movie','I want to trim my existing film to 100 seconds','Je veux raccourcir mon film à 100 secondes','I want to slow my existing 100-second film','Quiero recortar mi video a 100 segundos','I want to download my 100-second film','I want to watch my 100-second video'])assert.equal(studioExplicitFilmDuration(message),null,message);
+  for(const message of ['I want to export my 100-second film','I need a synopsis for my 100-second movie','I want to trim my existing film to 100 seconds','Je veux raccourcir mon film à 100 secondes','I want to slow my existing 100-second film','Quiero recortar mi video a 100 segundos','I want to download my 100-second film','I want to watch my 100-second video','I need a link to my 100-second video','I want a download of my 100-second film','Show me the 100-second film I created yesterday','I want a link to my 100-second product video','Create subtitles for my 100-second video','Create a poster for my 100-second film','Make my 100-second film black and white','Plan a marketing campaign for my 100-second video','What price for a poster of my 100-second film?','Create a video thumbnail for my 100-second film','Create a film poster for a 100-second movie'])assert.equal(studioExplicitFilmDuration(message),null,message);
 });
 
 test('natural new-film and full budget intent still qualify in English, French and Spanish',()=>{
-  for(const message of ['Create a 100-second - Mario Kart World - Knockout Tour Bambi Rally','I want a 100-second film','Je voudrais une vidéo de 100 secondes','Quiero un video de 100 segundos','Quel prix pour un film de 100 secondes ?'])assert.equal(studioExplicitFilmDuration(message),100,message);
+  for(const message of ['Create a 100-second - Mario Kart World - Knockout Tour Bambi Rally','I want a 100-second film','Je voudrais une vidéo de 100 secondes','Quiero un video de 100 segundos','Quiero una película de 100 segundos','Quel prix pour un film de 100 secondes ?'])assert.equal(studioExplicitFilmDuration(message),100,message);
 });
 
 test('a natural film preserves an explicit component duration, including spelled-out lengths, before checkpointing',async()=>{
