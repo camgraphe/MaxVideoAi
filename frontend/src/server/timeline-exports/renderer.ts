@@ -29,6 +29,8 @@ const DEFAULT_RENDER_TIMEOUT_MS = 30 * 60 * 1000;
 const MAX_RENDER_TIMEOUT_MS = 45 * 60 * 1000;
 const MIN_RENDER_TIMEOUT_MS = 60 * 1000;
 const MAX_RENDER_CONCURRENCY = 2;
+// Host-reported free RAM can exceed the Fargate task's 4 GiB budget.
+const VIDEO_FRAME_CACHE_BYTES = 256 * 1024 * 1024;
 export const MAX_TIMELINE_EXPORT_OUTPUT_BYTES = 512 * 1024 * 1024;
 // Lossless intermediate frames avoid the browser-video/JPEG color drift in high-saturation cuts.
 export const TIMELINE_EXPORT_COLOR_SETTINGS = {imageFormat: 'png',colorSpace: 'bt709'} as const;
@@ -268,6 +270,7 @@ export async function renderTimelineExportJob(job: TimelineExportJobRecord): Pro
         onBrowserLog,
         chromiumOptions: { gl: 'angle' },
         concurrency: MAX_RENDER_CONCURRENCY,
+        offthreadVideoCacheSizeInBytes: VIDEO_FRAME_CACHE_BYTES,
         timeoutInMilliseconds: 60_000,
         cancelSignal,
         onProgress: ({ progress }) => {

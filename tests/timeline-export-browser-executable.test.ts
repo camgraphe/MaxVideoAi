@@ -77,6 +77,7 @@ for (const {name,env,want} of [
     assert.equal(fixture.selection?.browserExecutable,want,'Composition selection must use the worker browser.');
     assert.equal(fixture.render?.browserExecutable,want,'Frame rendering must use the same worker browser.');
     assert.equal(fixture.render?.inputProps.manifest.durationSec,60);
+    assert.equal(fixture.render?.offthreadVideoCacheSizeInBytes,256*1024*1024,'Video frame caching must not grow with host-reported memory.');
     assert.equal(fixture.failure?.message,'OFFLINE_RENDER_BOUNDARY');
   });
 }
