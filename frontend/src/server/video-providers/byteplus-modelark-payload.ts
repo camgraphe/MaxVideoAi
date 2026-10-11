@@ -36,7 +36,8 @@ export type BytePlusSeedanceFastPayload = {
   model: string;
   content: BytePlusContentItem[];
   resolution: '480p' | '720p' | '1080p' | '4k';
-  ratio?: '21:9' | '16:9' | '4:3' | '1:1' | '3:4' | '9:16';
+  ratio?: 'adaptive' | '21:9' | '16:9' | '4:3' | '1:1' | '3:4' | '9:16';
+  omni_reference_task_type?: 'extend';
   duration: number;
   generate_audio: boolean;
   camera_fixed?: boolean;
@@ -253,6 +254,9 @@ export function buildBytePlusSeedancePayload(params: {
     ? params.resolution.trim()
     : '720p') as Resolution;
   const requestedRatio = (typeof params.ratio === 'string' && params.ratio.trim() ? params.ratio.trim() : '16:9') as AspectRatio;
+  // ModelArk rejects fixed ratios for Seedance 2.5 extensions after task creation.
+  const isSeedance25Extension =
+    mode === 'extend' && params.modelId.trim().toLowerCase().includes('seedance-2-5');
   const inheritsSourceAspectRatio =
     mode === 'i2v' &&
     (params.inheritSourceAspectRatio === true ||
@@ -307,7 +311,7 @@ export function buildBytePlusSeedancePayload(params: {
       code: 'BYTEPLUS_RESOLUTION_UNSUPPORTED',
     });
   }
-  if (!inheritsSourceAspectRatio && !allowedAspectRatios.includes(requestedRatio)) {
+  if (!inheritsSourceAspectRatio && !isSeedance25Extension && !allowedAspectRatios.includes(requestedRatio)) {
     throw new BytePlusModelArkError('BytePlus Seedance aspect ratio is not supported.', {
       code: 'BYTEPLUS_RATIO_UNSUPPORTED',
     });
@@ -358,9 +362,11 @@ export function buildBytePlusSeedancePayload(params: {
     model: params.modelId.trim(),
     content,
     resolution: requestedResolution as BytePlusSeedancePayload['resolution'],
-    ...(inheritsSourceAspectRatio
-      ? {}
-      : { ratio: requestedRatio as BytePlusSeedancePayload['ratio'] }),
+    ...(isSeedance25Extension
+      ? { ratio: 'adaptive' as const, omni_reference_task_type: 'extend' as const }
+      : inheritsSourceAspectRatio
+        ? {}
+        : { ratio: requestedRatio as BytePlusSeedancePayload['ratio'] }),
     duration,
     generate_audio: params.generateAudio === true,
     ...(typeof params.cameraFixed === 'boolean' ? { camera_fixed: params.cameraFixed } : {}),

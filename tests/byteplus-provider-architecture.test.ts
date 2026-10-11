@@ -284,6 +284,33 @@ test('BytePlus Seedance makes video edit and extension intent explicit without r
   );
 });
 
+test('Seedance 2.5 extension submits an adaptive ratio and explicit extension task type', () => {
+  const base = {
+    prompt: 'Continue the camera move into the next shot.',
+    durationSec: 4,
+    mode: 'extend' as const,
+    referenceVideoUrls: ['https://cdn.maxvideoai.com/source.mp4'],
+    resolution: '480p',
+    ratio: '16:9',
+    allowedResolutions: ['480p'] as const,
+    allowedDurationOptions: [4] as const,
+  };
+
+  const seedance25 = buildBytePlusSeedancePayload({
+    ...base,
+    modelId: 'dreamina-seedance-2-5-260628',
+  });
+  assert.equal(seedance25.ratio, 'adaptive');
+  assert.equal(seedance25.omni_reference_task_type, 'extend');
+
+  const seedance20 = buildBytePlusSeedancePayload({
+    ...base,
+    modelId: 'dreamina-seedance-2-0-260128',
+  });
+  assert.equal(seedance20.ratio, '16:9');
+  assert.equal(seedance20.omni_reference_task_type, undefined);
+});
+
 test('BytePlus Seedance maps provider task-type constraints to safe actionable guidance', () => {
   const providerCode = 'InvalidParameter.TaskTypeConstraint';
   assert.equal(
