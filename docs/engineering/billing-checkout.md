@@ -142,7 +142,7 @@ Server preparation is serialized by account and hashed IP with transaction advis
 concurrent tabs release their database connection between lock retries, then repeat the
 reuse lookup after the first preparation finishes. Unrelated account and IP scopes continue
 in parallel.
-For a first top-up it also excludes an active failed-card cooldown before returning a
+For every customer it also excludes an active failed-card cooldown before returning a
 session. Reuse retains the original attempt and its failed-card history, and creates no
 new guard row. New payable Stripe sessions consume the quota even if later expired;
 CAPTCHA requests, visual remounts, wallet cancellation and preparation telemetry do not.
@@ -152,13 +152,13 @@ read-only admin summary. First top-ups require CAPTCHA after three sessions or f
 custom amount. With CAPTCHA configured the maximum is 12 new sessions per 15 minutes,
 allowing the four presets in two currencies plus hosted fallback after verification.
 Without CAPTCHA the maximum remains six. Returning-user and IP limits remain unchanged;
-five failed first-top-up card attempts still expire the session and impose a 30-minute
+five failed card attempts on any wallet top-up expire the unpaid session and impose a 30-minute
 cooldown. No Amex brand restriction is active.
 
 The admin report separates preparation counts from confirmed paid receipts. Unpaid sessions
 after 30 minutes include passive wallet preparation, so this is not a customer conversion
 or proven-abandonment measure. Guard interventions do not prove fraud. The Amex restriction
-metric is explicitly historical, card-failure telemetry is scoped to first top-ups, and
+metric is explicitly historical, card-failure telemetry covers first and returning top-ups, and
 wallet credits (USD) are displayed separately from payment currency.
 
 Receipt document reads deduplicate in-flight lookups by Stripe client and object identity.
