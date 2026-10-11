@@ -48,14 +48,19 @@ export async function buildCurrentPricingHubData(
       const old = row.quotes[preset.id];
       if (old.status !== 'exact') continue;
       const input = getExactVideoPresetInput(entry, preset, locale);
+      // A toggle may be supported even when audio has no separate price tier.
+      const note = input?.audio === false
+        ? [old.note?.split(' · ').filter((part) => part !== copy.quote.audioIncluded).join(' · '),
+            copy.quote.audioOff].filter(Boolean).join(' · ')
+        : old.note;
       const apply = (result: PublicModelQuote) => {
         row.quotes[preset.id] = result.status === 'exact'
-          ? { ...old, amountCents: result.amountCents,
+          ? { ...old, note, amountCents: result.amountCents,
               display: formatCurrencyForLocale(locale, result.currency, result.amountCents / 100),
               rateDisplay: copy.quote.perSecond(formatPricePerUnit(locale, result.currency,
                 result.amountCents / input!.durationSec / 100)),
               sortValue: result.amountCents, isCheapest: false }
-          : { status: 'live_quote', display: copy.liveQuote, note: old.note,
+          : { status: 'live_quote', display: copy.liveQuote, note,
               sortValue: Number.POSITIVE_INFINITY };
       };
       if (input) addQuote(input, apply);

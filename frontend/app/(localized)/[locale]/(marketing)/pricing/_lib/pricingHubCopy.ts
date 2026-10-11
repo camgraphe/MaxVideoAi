@@ -5,6 +5,7 @@ type PricingHubCopy = {
   noExactRoute: string;
   priceCellCheapest: string;
   quote: {
+    audioOff: string;
     audioIncluded: string;
     audioOptional: string;
     audioUnavailable: string;
@@ -177,6 +178,7 @@ const en: PricingHubCopy = {
   noExactRoute: 'No exact route',
   priceCellCheapest: 'Cheapest',
   quote: {
+    audioOff: 'Audio off',
     audioIncluded: 'audio incl.',
     audioOptional: 'audio opt.',
     audioUnavailable: 'no audio',
@@ -362,6 +364,7 @@ const fr: PricingHubCopy = {
   priceCellCheapest: 'Moins cher',
   quote: {
     ...en.quote,
+    audioOff: 'Audio désactivé',
     audioIncluded: 'audio incl.',
     audioOptional: 'audio opt.',
     audioUnavailable: 'sans audio',
@@ -549,6 +552,7 @@ const es: PricingHubCopy = {
   priceCellCheapest: 'Más barato',
   quote: {
     ...en.quote,
+    audioOff: 'Audio desactivado',
     audioIncluded: 'audio incl.',
     audioOptional: 'audio opc.',
     audioUnavailable: 'sin audio',
