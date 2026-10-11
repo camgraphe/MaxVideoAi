@@ -211,6 +211,14 @@ export async function renderTimelineExportJob(job: TimelineExportJobRecord): Pro
   const outputDir = join(tmpdir(), 'maxvideoai-timeline-exports', job.id);
   const outputPath = join(outputDir, `${job.id}.mp4`);
   mkdirSync(outputDir, { recursive: true });
+  const onBrowserLog = (log: {type: string;text: string}) => {
+    if (log.type !== 'error' && log.type !== 'warning') return;
+    console.warn('[timeline-export] browser diagnostic', {
+      exportId: job.id,
+      type: log.type,
+      message: String(sanitizeProviderMediaDiagnostics(log.text)).slice(0, 4000),
+    });
+  };
 
   try {
     await updateTimelineExportProgress({ exportId: job.id, progress: 15, message: 'Preparing server render.' });
@@ -240,7 +248,7 @@ export async function renderTimelineExportJob(job: TimelineExportJobRecord): Pro
       id: 'MaxVideoAITimelineExport',
       inputProps,
       browserExecutable,
-      onBrowserLog: () => {},
+      onBrowserLog,
     });
     await updateTimelineExportProgress({ exportId: job.id, progress: 35, message: 'Rendering frames.' });
     const { cancel, cancelSignal } = makeCancelSignal();
@@ -257,7 +265,7 @@ export async function renderTimelineExportJob(job: TimelineExportJobRecord): Pro
         outputLocation: outputPath,
         inputProps,
         browserExecutable,
-        onBrowserLog: () => {},
+        onBrowserLog,
         chromiumOptions: { gl: 'angle' },
         concurrency: MAX_RENDER_CONCURRENCY,
         timeoutInMilliseconds: 60_000,
@@ -296,6 +304,12 @@ export async function renderTimelineExportJob(job: TimelineExportJobRecord): Pro
       billingStatus: job.billing_status === 'free_reserved' ? 'free_completed' : 'paid_completed',
     });
   } catch (error) {
+    // Log the cause before cleanup; SDK teardown errors can otherwise hide it.
+    console.error('[timeline-export] render failed', {
+      exportId: job.id,
+      message: String(sanitizeProviderMediaDiagnostics(error instanceof Error ? error.message : 'RENDER_FAILED')).slice(0, 4000),
+      stack: error instanceof Error ? String(sanitizeProviderMediaDiagnostics(error.stack ?? '')).slice(0, 8000) : undefined,
+    });
     const nextBillingStatus = await releaseFailedTimelineExportBilling({
       userId: job.user_id,
       exportId: job.id,

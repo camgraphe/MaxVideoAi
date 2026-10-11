@@ -10,13 +10,13 @@ const frontend = resolve('frontend');
 
 // Execute the real worker renderer until the external Remotion render boundary.
 // Persistence, media grants and rendering are isolated: no account, cloud or browser calls.
-async function renderWithEnvironment(env: NodeJS.ProcessEnv) {
-  const fixture = {selection: null as any,render: null as any,failure: null as any};
+async function renderWithEnvironment(env: NodeJS.ProcessEnv, errorMessage = 'OFFLINE_RENDER_BOUNDARY') {
+  const fixture = {selection: null as any,render: null as any,failure: null as any,errorMessage,logs: [] as unknown[][]};
   const stubs: Record<string,string> = {
     '@remotion/bundler': 'export const bundle = async () => "offline-bundle";',
     '@remotion/renderer': `
       export const selectComposition = async options => {fixture.selection = options;return {id: "MaxVideoAITimelineExport"};};
-      export const renderMedia = async options => {fixture.render = options;throw Error("OFFLINE_RENDER_BOUNDARY");};
+      export const renderMedia = async options => {fixture.render = options;options.onBrowserLog({type: 'error',text: fixture.errorMessage});options.onBrowserLog({type: 'warning',text: fixture.errorMessage});throw Error(fixture.errorMessage);};
       export const makeCancelSignal = () => ({cancel: () => {},cancelSignal: () => {}});
     `,
     '@/server/media-library': 'export const ensureReusableAsset = async () => {throw Error("Unexpected publication");};',
@@ -37,7 +37,7 @@ async function renderWithEnvironment(env: NodeJS.ProcessEnv) {
   const module = {exports: {} as any};
   runInNewContext(result.outputFiles[0].text,{module,exports: module.exports,fixture,
     require: createRequire(resolve(frontend,'package.json')),process: {env,cwd: () => frontend},
-    Buffer,URL,console,setTimeout,clearTimeout,setInterval,clearInterval});
+    Buffer,URL,console: {...console,error: (...args: unknown[]) => fixture.logs.push(args),warn: (...args: unknown[]) => fixture.logs.push(args)},setTimeout,clearTimeout,setInterval,clearInterval});
   await module.exports.renderTimelineExportJob({
     id: 'browser-fixture-'+randomUUID(),user_id: 'offline-owner',project_name: 'Three videos',resolution: '1080p',fps: 30,
     billing_status: 'free_reserved',amount_cents: 0,export_settings: {includeAudio: true},
@@ -52,9 +52,19 @@ async function renderWithEnvironment(env: NodeJS.ProcessEnv) {
       }))}],
     },
   });
-  assert.equal(fixture.failure?.message,'OFFLINE_RENDER_BOUNDARY','The canonical renderer must reach rendering without a database, storage or browser side effect.');
+  assert.ok(fixture.failure?.message,'The canonical renderer must reach rendering without a database, storage or browser side effect.');
   return fixture;
 }
+
+test('failed rendering retains the causal diagnostic without persisting signed transport credentials',async () => {
+  const fixture = await renderWithEnvironment({},'Frame capture stalled: https://media.maxvideoai.com/renders/owner/film.mp4?X-Amz-Credential=secret-access-key&X-Amz-Signature=secret-signature');
+  assert.equal(fixture.logs.length,3,'The SDK browser error/warning and caught root error must be retained.');
+  const logged = JSON.stringify(fixture.logs);
+  assert.match(logged,/Frame capture stalled/);
+  assert.match(logged,/stack/,'The caught error includes its causal stack.');
+  assert.doesNotMatch(logged,/secret-access-key|secret-signature|X-Amz-/i);
+  assert.doesNotMatch(fixture.failure.message,/secret-access-key|secret-signature|X-Amz-/i);
+});
 
 for (const {name,env,want} of [
   {name: 'CHROME_BIN takes precedence',env: {CHROME_BIN: ' /usr/bin/chromium ',PUPPETEER_EXECUTABLE_PATH: '/other/chromium'},want: '/usr/bin/chromium'},
@@ -67,5 +77,6 @@ for (const {name,env,want} of [
     assert.equal(fixture.selection?.browserExecutable,want,'Composition selection must use the worker browser.');
     assert.equal(fixture.render?.browserExecutable,want,'Frame rendering must use the same worker browser.');
     assert.equal(fixture.render?.inputProps.manifest.durationSec,60);
+    assert.equal(fixture.failure?.message,'OFFLINE_RENDER_BOUNDARY');
   });
 }
