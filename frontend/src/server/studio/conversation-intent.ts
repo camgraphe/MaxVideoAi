@@ -18,7 +18,9 @@ export function studioGreetingReply(message:string,hasReferences:boolean):ImageD
 /** A narrow routing hint, never a replacement for the director's reading of a creative brief. */
 export function studioExplicitFilmDuration(message:string):number|null {
   if(/\b(?:export\w*|trim\w*|shorten\w*|edit\w*|synopsis|summar\w*|résum\w*|narrat\w*|script|retake|reprice|monter|assemble\w*|raccour\w*|ralent\w*|acc[eé]l[eé]r\w*|couper|recadr\w*|slow\w*|speed\w*|crop\w*|resize\w*)\b/i.test(message))return null;
-  if(!/\b(?:creat\w*|make|plan\w*|propos\w*|realise\w*|réalise\w*|faire|fais|quiero|haz|crear|créer|crée|want|like|need|veux|voudrais|souhaite|aimerais|prix|price|cost|budget)\b/i.test(message))return null;
+  const creationOrBudget=/\b(?:creat\w*|make|produc\w*|plan\w*|propos\w*|realise\w*|réalise\w*|faire|fais|haz|crear|créer|crée|prix|price|cost|budget|co[uû]t\w*)\b/i.test(message);
+  const wantsNewFilm=/\b(?:want|need|like)\s+(?:a|an|new)\b|\b(?:veux|voudrais|souhaite|aimerais)\s+(?:un|une|des)\b|\b(?:quiero|necesito)\s+(?:un|una)\b/i.test(message);
+  if(!creationOrBudget&&!wantsNewFilm)return null;
   if(!/\b(?:video|vidéo|film|movie|montage)\b/i.test(message)&&!/\bcreate\s+a\s+\d+[ -]second/i.test(message))return null;
   const values=[...message.matchAll(/\b(\d+(?:[.,]\d+)?)\s*[- ]?\s*(seconds?|secondes?|segundos?|secs?|s|minutes?|mins?)\b/gi)];
   if(values.length!==1)return null;
