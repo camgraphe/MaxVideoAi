@@ -174,11 +174,16 @@ test('refresh-key invalidation keeps the latest revision and pending renewal, wi
     const renewal = await fixture.startRefresh('clip');await fixture.invalidate();
     assert.equal(fixture.requests.length, 3, 'Explicit invalidation is not gated by the pending read.');
     if (renewalFirst) await fixture.respond(1, 'renewed', 1);
+    if (renewalFirst) {
+      assert.equal(fixture.state.view?.items[0].mediaAccessUrl, oldGrant);
+      assert.equal(fixture.state.mediaReloadKeys.clip, undefined, 'An obsolete renewal must not remount the refused decoder before replacement arrives.');
+    }
     await fixture.respond(2, 'invalidated', 2);
     if (!renewalFirst) await fixture.respond(1, 'renewed', 1);
     await renewal.done;
     assert.equal(fixture.state.view?.data.revision, 2);
     assert.equal(fixture.state.view?.items[0].mediaAccessUrl, 'https://fixture.invalid/invalidated', 'The latest canonical response must replace the rejected grant even after it supersedes the renewal read.');
+    assert.equal(fixture.state.mediaReloadKeys.clip, 1, 'Replacement source and decoder retry must be committed together.');
     await fixture.tick();assert.equal(fixture.requests.length, 4);
     await fixture.respond(3, 'poll');
     assert.equal(fixture.state.view?.items[0].mediaAccessUrl, 'https://fixture.invalid/invalidated', 'Later polling retains the successfully replaced grant.');
@@ -191,9 +196,11 @@ test('failed replacement stays pending for the next successful canonical read', 
   try {
     await fixture.respond(0, 'old');const renewal = await fixture.startRefresh('clip');
     await fixture.refuse(1);await renewal.done;await fixture.tick();
+    assert.equal(fixture.state.mediaReloadKeys.clip, undefined, 'Failure cannot retry a refused source.');
     await fixture.respond(2, 'recovered', 2);
     assert.equal(fixture.state.error, null);
     assert.equal(fixture.state.view?.items[0].mediaAccessUrl, 'https://fixture.invalid/recovered');
+    assert.equal(fixture.state.mediaReloadKeys.clip, 1);
     await fixture.tick();await fixture.respond(3, 'poll');
     assert.equal(fixture.state.view?.items[0].mediaAccessUrl, 'https://fixture.invalid/recovered');
   } finally {await fixture.close();}
@@ -215,6 +222,18 @@ test('the winning canonical read replaces all concurrently rejected clips', asyn
   } finally {await fixture.close();}
 });
 
+test('an accepted same-second signed URL still retries the decoder once', async () => {
+  const fixture = await mount();
+  try {
+    await fixture.respond(0, 'old');const renewal = await fixture.startRefresh('clip');
+    await fixture.respond(1, 'old');await renewal.done;
+    assert.equal(fixture.state.view?.items[0].mediaAccessUrl, oldGrant);
+    assert.equal(fixture.state.mediaReloadKeys.clip, 1, 'An accepted replacement can have the same URL, but a failed decoder must remount.');
+    await fixture.tick();await fixture.respond(2, 'poll');
+    assert.equal(fixture.state.mediaReloadKeys.clip, 1, 'Ordinary polling never adds another decoder retry.');
+  } finally {await fixture.close();}
+});
+
 test('a pending replacement cannot force a new project to reload its valid grant', async () => {
   const fixture = await mount();
   try {
@@ -225,6 +244,7 @@ test('a pending replacement cannot force a new project to reload its valid grant
     assert.equal(fixture.state.view?.data.projectId, 'project-b');
     assert.equal(fixture.state.view?.data.revision, 1);
     assert.equal(fixture.state.view?.items[0].mediaAccessUrl, 'https://fixture.invalid/b-initial');
+    assert.deepEqual(fixture.state.mediaReloadKeys, {}, 'Neither renewal intent nor retry keys cross project boundaries.');
   } finally {await fixture.close();}
 });
 

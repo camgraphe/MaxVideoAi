@@ -36,7 +36,6 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
   const starterKey = useRef<string | null>(null);
   const handledInsertion = useRef<string | null>(null);
   const renewalAttempts = useRef(new Set<string>());
-  const [mediaReloadKeys,setMediaReloadKeys] = useState<Record<string,number>>({});
   const items = useMemo(() => preview ?? view?.items ?? [],[preview,view]);
   const timelineExpanded = expanded ?? items.length > 0;
   const settings = timeline.view?.settings ?? {fps: 30 as const,aspectRatio: '16:9' as const,resolution: '720p' as const};
@@ -72,9 +71,7 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
   function mediaFailure(item: WorkspaceTimelineItem) {
     playback.stopTimelinePlayback();
     if (consumeConversationMediaRenewal(item,renewalAttempts.current)) {
-      void timeline.refresh({renewMediaId: item.id}).then(() => {
-        setMediaReloadKeys(current => ({...current,[item.id]: (current[item.id] ?? 0)+1}));
-      });
+      void timeline.refresh({renewMediaId: item.id});
       return;
     }
     setMonitor(false);
@@ -106,7 +103,7 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
   return <footer className={styles.footer} data-empty={!items.length} data-expanded={timelineExpanded} data-revision={timeline.view?.data.revision} aria-label={t('Film timeline','Timeline du film')}>
     {monitor && items.length > 0 && <div className={styles.monitorRow}>
       <div className={styles.monitor} style={{aspectRatio: settings.aspectRatio.replace(':','/')}} aria-label={t('Film monitor','Moniteur du film')}>
-        <ProgramPlaybackLayers copy={copy.viewer.monitor} {...layers} mediaReloadKeys={mediaReloadKeys} onMediaAccessError={mediaFailure} />
+        <ProgramPlaybackLayers copy={copy.viewer.monitor} {...layers} mediaReloadKeys={timeline.mediaReloadKeys} onMediaAccessError={mediaFailure} />
       </div>
       <button className={styles.close} aria-label={t('Collapse monitor','Replier le moniteur')} onClick={closeMonitor}><X size={16}/></button>
     </div>}
