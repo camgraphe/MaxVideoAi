@@ -1,6 +1,6 @@
 import { CHECKOUT_GUARD_LIMITS } from '@/server/checkout-guard-policy';
 import Stripe from 'stripe';
-import { query } from '@/lib/db';
+import { query, withDbTransaction, type TransactionQueryExecutor } from '@/lib/db';
 import { normalizeStripeId } from './stripe-webhook-documents';
 
 type FailedTopupPaymentMetadata = {
@@ -168,60 +168,74 @@ async function recordCheckoutFailedCardAttempt({
   sourceEvent: 'charge.failed' | 'payment_intent.payment_failed';
   userId: string;
 }): Promise<number> {
-  if (chargeId) {
-    const duplicateRows = await query<{ duplicate_count: number | string }>(
-      `SELECT COUNT(*)::int AS duplicate_count
-         FROM checkout_interaction_events
-        WHERE checkout_attempt_id = $1
-          AND event_name = 'stripe_charge_failed'
-          AND metadata->>'stripe_charge_id' = $2`,
-      [checkoutAttemptId, chargeId]
+  return withDbTransaction(async (executor) => {
+    // Charge and PaymentIntent events for one failure have different event IDs.
+    // Serialize their dedupe/count on the owning attempt, then release the lock
+    // before any Stripe network request.
+    const attempts = await executor.query<{ id: number | string }>(
+      'SELECT id FROM checkout_attempts WHERE id = $1 AND user_id = $2 FOR UPDATE',
+      [checkoutAttemptId, userId]
     );
-    if (Number(duplicateRows[0]?.duplicate_count ?? 0) > 0) {
-      return countCheckoutFailedCardAttempts(checkoutAttemptId);
+    if (!attempts.length) return 0;
+
+    if (chargeId) {
+      const duplicateRows = await executor.query<{ duplicate_count: number | string }>(
+        `SELECT COUNT(*)::int AS duplicate_count
+           FROM checkout_interaction_events
+          WHERE checkout_attempt_id = $1
+            AND event_name = 'stripe_charge_failed'
+            AND metadata->>'stripe_charge_id' = $2`,
+        [checkoutAttemptId, chargeId]
+      );
+      if (Number(duplicateRows[0]?.duplicate_count ?? 0) > 0) {
+        return countCheckoutFailedCardAttempts(checkoutAttemptId, executor);
+      }
     }
-  }
 
-  const cardDetails = charge?.payment_method_details?.card;
-  await query(
-    `INSERT INTO checkout_interaction_events (
-       checkout_attempt_id,
-       user_id,
-       stripe_checkout_session_id,
-       event_name,
-       mode,
-       amount_cents,
-       metadata
-     )
-     VALUES ($1, $2, NULL, 'stripe_charge_failed', $3, $4, $5::jsonb)`,
-    [
-      checkoutAttemptId,
-      userId,
-      checkoutUiMode === 'elements' ? 'express_checkout' : 'hosted',
-      amountCents,
-      JSON.stringify({
-        stripe_charge_id: chargeId,
-        stripe_payment_intent_id: paymentIntentId,
-        stripe_customer_id: normalizeStripeId(charge?.customer ?? intent?.customer),
-        stripe_event_source: sourceEvent,
-        failure_code: charge?.failure_code ?? intent?.last_payment_error?.code ?? null,
-        failure_message: charge?.failure_message ?? intent?.last_payment_error?.message ?? null,
-        decline_code: intent?.last_payment_error?.decline_code ?? null,
-        outcome_reason: charge?.outcome?.reason ?? null,
-        risk_level: charge?.outcome?.risk_level ?? null,
-        card_brand: cardDetails?.brand ?? null,
-        card_country: cardDetails?.country ?? null,
-        failed_card_attempt_limit: FAILED_CARD_ATTEMPT_LIMIT,
-      }),
-    ]
-  );
+    const cardDetails = charge?.payment_method_details?.card;
+    await executor.query(
+      `INSERT INTO checkout_interaction_events (
+         checkout_attempt_id,
+         user_id,
+         stripe_checkout_session_id,
+         event_name,
+         mode,
+         amount_cents,
+         metadata
+       )
+       VALUES ($1, $2, NULL, 'stripe_charge_failed', $3, $4, $5::jsonb)`,
+      [
+        checkoutAttemptId,
+        userId,
+        checkoutUiMode === 'elements' ? 'express_checkout' : 'hosted',
+        amountCents,
+        JSON.stringify({
+          stripe_charge_id: chargeId,
+          stripe_payment_intent_id: paymentIntentId,
+          stripe_customer_id: normalizeStripeId(charge?.customer ?? intent?.customer),
+          stripe_event_source: sourceEvent,
+          failure_code: charge?.failure_code ?? intent?.last_payment_error?.code ?? null,
+          failure_message: charge?.failure_message ?? intent?.last_payment_error?.message ?? null,
+          decline_code: intent?.last_payment_error?.decline_code ?? null,
+          outcome_reason: charge?.outcome?.reason ?? null,
+          risk_level: charge?.outcome?.risk_level ?? null,
+          card_brand: cardDetails?.brand ?? null,
+          card_country: cardDetails?.country ?? null,
+          failed_card_attempt_limit: FAILED_CARD_ATTEMPT_LIMIT,
+        }),
+      ]
+    );
 
-  return countCheckoutFailedCardAttempts(checkoutAttemptId);
+    return countCheckoutFailedCardAttempts(checkoutAttemptId, executor);
+  });
 }
 
-async function countCheckoutFailedCardAttempts(checkoutAttemptId: number): Promise<number> {
-  const rows = await query<{ failed_count: number | string }>(
-    `SELECT COUNT(*)::int AS failed_count
+async function countCheckoutFailedCardAttempts(
+  checkoutAttemptId: number,
+  executor: TransactionQueryExecutor
+): Promise<number> {
+  const rows = await executor.query<{ failed_count: number | string }>(
+    `SELECT COUNT(DISTINCT COALESCE(NULLIF(metadata->>'stripe_charge_id', ''), 'event:' || id::text))::int AS failed_count
        FROM checkout_interaction_events
       WHERE checkout_attempt_id = $1
         AND event_name = 'stripe_charge_failed'`,

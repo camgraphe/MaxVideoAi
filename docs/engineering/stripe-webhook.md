@@ -66,6 +66,13 @@ unpaid Checkout Session and records the rate-limited outcome. A receipt for the 
 PaymentIntent prevents expiry; a successful older payment does not exempt a later checkout.
 The 30-minute cooldown applies to both new session creation and express-session reuse for all users.
 These controls react to subsequent failed cards; a normal, authorized first payment remains eligible.
+Failed-charge deduplication, insertion and counting run in one transaction under the owning
+`checkout_attempts` row lock, so concurrent Charge and PaymentIntent notifications cannot
+insert the same charge twice. Stripe network calls run after that transaction releases its lock.
+The limit counts distinct charge IDs, preserving historical duplicate rows without allowing
+them to trigger an early expiry. Notifications without a charge ID retain their event-row count.
+`tests/stripe-failed-cards-postgres.test.ts` forces concurrent delivery with a database write
+barrier and verifies the limit alongside current-payment protection on disposable PostgreSQL.
 
 ## Manual dispute containment
 
