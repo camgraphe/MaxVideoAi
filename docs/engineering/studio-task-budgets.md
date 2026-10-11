@@ -14,12 +14,16 @@ reservation, so the financial cap can stop work before the call/token maxima.
 Standalone greetings in English, French and Spanish are answered locally by
 `conversation-intent.ts` before a model checkpoint: no token count, assistance
 reservation or provider dispatch. Attached media or a greeting followed by real
-work still reaches the director. Qualified paid recovery retains its checkpoint
-path. The normal owned journal/task records and rate limits remain in force.
+work still reaches the director. Any existing response checkpoint disables the
+local shortcut, so historical paid usage is settled and the saved answer replayed
+even on the first recovery before the deadline. The normal owned journal/task
+records and rate limits remain in force.
 
 New multi-clip film requests use `pricing_compare.filmDurationSec`, separate from
 the component `durationSec`. `conversation-film-pricing.ts` verifies complete
-10/20/30-second cut variants against the canonical comparison owner; it sums
+cut variants against the canonical comparison owner, preferring 10/20/30 seconds
+and falling back to live model duration capabilities. An explicit component
+length is preserved; selected models remain constraints. The composer sums
 integer customer cents per generated output, including a separately priced tail.
 Only a proven unsupported tail duration permits a priced full clip to be trimmed,
 with both generated and final timing disclosed. Explicit settings/model choices
@@ -28,6 +32,9 @@ text-only requests). Missing prices never become estimates. The director returns
 the full result directly after that action, without reserving a presentation call
 or extending the selected ceiling. A narrow natural-duration routing hint makes
 the first call compare the entire new film before any component preparation.
+It excludes edits, exports and scripts. The hint normalizes the total and removes
+an invented component length before saving the fresh response checkpoint; saved
+responses are never rewritten, so replay keeps the action's original identity.
 Planning up to 1200 seconds creates no quote, job or wallet transaction; clients
 choose the cut, then review/confirm exact quotes. Added soundtracks/narration,
 retakes and exports remain separate pricing owners. Historical actions omit the

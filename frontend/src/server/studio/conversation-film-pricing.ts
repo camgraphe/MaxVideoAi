@@ -2,8 +2,28 @@ import type {GenerationPriceComparisonInput,GenerationPriceComparison,Generation
 import type {StudioPriceComparison,StudioFilmPricePlan} from '@/lib/studio/conversation-pricing-contract';
 import {customerDisplayPrice} from '@/lib/customer-price-presentation';
 import {AgentApiError} from '@/server/agent-api/errors';
+import {projectAgentModelModeDetails} from '@/server/agent-api/model-details';
+import type {AgentPublicGenerationEngine} from '@/server/agent-api/model-catalog';
 
-type PricingReader={compare(input:GenerationPriceComparisonInput):Promise<GenerationPriceComparison>};
+type PricingReader={compare(input:GenerationPriceComparisonInput):Promise<GenerationPriceComparison>;catalog?():Promise<AgentPublicGenerationEngine[]>};
+
+async function filmDurations(input:GenerationPriceComparisonInput,total:number,service:PricingReader):Promise<number[]> {
+  const fixed=input.settings?.durationSec;
+  if(typeof fixed==='number'&&fixed!==total)return [fixed];
+  const preferred=[...new Set([Math.min(10,total),Math.min(20,total),Math.min(30,total)])];
+  if(!service.catalog)return preferred;
+  const catalog=(await service.catalog()).filter(candidate=>candidate.publicModes.includes(input.mode)
+    &&(!input.candidateModelIds||input.candidateModelIds.includes(candidate.engine.id)));
+  const caps=catalog.flatMap(candidate=>{
+    try {const duration=projectAgentModelModeDetails(candidate,input.mode).duration;return duration?[duration]:[];}
+    catch(error){if(!(error instanceof AgentApiError))throw error;return [];}
+  });
+  const supports=(seconds:number)=>caps.some(cap=>cap.options?cap.options.includes(seconds):cap.range&&seconds>=cap.range.min&&seconds<=cap.range.max);
+  const choices=preferred.filter(supports);
+  const alternatives=[...new Set(caps.flatMap(cap=>cap.options?[...cap.options]:cap.range?[Math.min(total,cap.range.max),cap.range.min]:[]))]
+    .filter(seconds=>seconds>0&&seconds<=total&&!choices.includes(seconds)&&supports(seconds)).sort((a,b)=>b-a);
+  return [...choices,...alternatives].slice(0,3);
+}
 
 /** Bounded read-only plans. Every generated component keeps canonical customer-cent pricing. */
 export async function priceStudioFilm(input:GenerationPriceComparisonInput,totalDurationSec:number,service:PricingReader):Promise<StudioPriceComparison> {
@@ -14,7 +34,7 @@ export async function priceStudioFilm(input:GenerationPriceComparisonInput,total
   // A useful film baseline; explicit settings always take precedence.
   if(settings.resolution==null)settings.resolution='720p';
   if(settings.aspectRatio==null&&!input.references.length)settings.aspectRatio='16:9';
-  const durations=[...new Set([Math.min(10,totalDurationSec),Math.min(20,totalDurationSec),Math.min(30,totalDurationSec)])];
+  const durations=await filmDurations(input,totalDurationSec,service);
   const results=await Promise.allSettled(durations.map(durationSec=>service.compare({...input,settings:{...settings,durationSec}})));
   const plans:StudioFilmPricePlan[]=[];
   let estimatedAt='';

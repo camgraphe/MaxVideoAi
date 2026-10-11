@@ -59,6 +59,19 @@ export function isReplayableStudioResponse(response: StudioDirectorResponse): bo
   } catch { return false; }
 }
 
+/** Freeze the brief's total before checkpointing, so fresh execution and paid replay hash the same action. */
+function freezeStudioFilmResponse(response:StudioDirectorResponse,filmDuration:number|null):StudioDirectorResponse {
+  if(!filmDuration)return response;
+  return {...response,output:response.output.map(item=>{
+    if(item.type!=='function_call'||item.name!=='pricing_compare')return item;
+    try {
+      const args=JSON.parse(item.arguments),request=actionFromTool(item.name,args);
+      return request.action==='pricing.compare'&&request.surface==='video'
+        ? {...item,arguments:JSON.stringify({...args,settings:request.settings.filter(setting=>setting.name!=='durationSec'),filmDurationSec:filmDuration})}:item;
+    } catch {return item;}
+  })};
+}
+
 /** The model chooses the next action; identity, billing and executable capabilities stay server-owned. */
 import type {StudioTaskExecution} from "./tasks/execution";
 import {isStudioComparisonMismatch,studioComparisonFingerprint,studioRepeatedComparisonReply,studioRecoveredComparisonReply} from './conversation-comparison-recovery';
@@ -136,7 +149,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       let freshResponse = false;
       let response: StudioDirectorResponse;
       try {
-        response = await context.checkpoint(index, () => {freshResponse = true; return create(params);}, params, {replayOnly: correctionRejected||!!comparisonReplayOnly,prepareLunaInput:()=>{params.input=lunaInput();}});
+        response = await context.checkpoint(index, async () => {freshResponse = true; return freezeStudioFilmResponse(await create(params),filmDuration);}, params, {replayOnly: correctionRejected||!!comparisonReplayOnly,prepareLunaInput:()=>{params.input=lunaInput();}});
       } catch (error) {
         if ((correctionRejected||comparisonReplayOnly) && error instanceof AgentApiError && (error.code === 'RATE_LIMITED'
           || (error.code === 'SPENDING_LIMIT_EXCEEDED' && error.nextAction?.type === 'studio_assistance' && error.nextAction.reason === 'call_limit'))) {
@@ -164,7 +177,6 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       catch { throw new AgentApiError('PARAMETER_INVALID', 'Studio requested an unavailable or invalid action.'); }
       if(freshResponse&&index===0&&filmDuration&&(action.action!=='pricing.compare'||action.surface!=='video'))
         throw new AgentApiError('PARAMETER_INVALID','Compare the complete film cuts before preparing a component quote.');
-      if(freshResponse&&filmDuration&&action.action==='pricing.compare'&&action.surface==='video')action={...action,filmDurationSec:filmDuration};
       if (freshResponse && correctionAction && action.action !== correctionAction)
         throw new AgentApiError('PARAMETER_INVALID', 'Studio can only correct the rejected preparation in this response.');
       if (!options.mediaEnabled && STUDIO_MEDIA_DIRECTOR_TOOLS.some(tool => tool.action === action.action))

@@ -61,3 +61,17 @@ test('tail price outages and incompatible constraints never become a invented fu
   await assert.rejects(priceStudioFilm({...input,settings:{...input.settings,resolution:'unsupported'}},100,native));
   await assert.rejects(priceStudioFilm({...input,mode:'v2v'},100,native));
 });
+
+test('explicit per-shot duration is preserved instead of replaced by generic cut preferences',async()=>{
+  const data=await priceStudioFilm({...input,settings:{...input.settings,durationSec:5},candidateModelIds:['seedance-2-5']},100,service());
+  assert.equal(data.filmPlans!.length,1);assert.equal(data.filmPlans![0].clip.outputDurationSec,5);assert.equal(data.filmPlans![0].fullClipCount,20);
+});
+
+test('a selected model with shorter capabilities receives compatible fully priced variants',async()=>{
+  const native=createStudioVideoGenerationService(actor,{enabled:true,prepareDependencies:{listPublicEngines:async()=>[candidate('veo-3-1')],
+    resolveMembershipPricing:async()=>({tier:'member',source:'app_receipts_rolling_30d',spent30Cents:0,thresholdCents:0,discountPercent:0}),resolveRequestExecutability:()=>({executable:true,reason:'available'}),
+    priceGeneration:async(request,tier)=>{const duration=Number(request.settings.durationSec);return {priceCents:duration*10,currency:'USD',membershipTier:tier,pricingSnapshot:{totalCents:duration*10,currency:'USD',membershipTier:tier,meta:{output_duration_sec:duration}}};},
+  }});
+  const data=await priceStudioFilm({...input,candidateModelIds:['veo-3-1']},100,native);
+  assert.ok(data.filmPlans!.length>=2);for(const plan of data.filmPlans!){assert.equal(plan.clip.modelId,'veo-3-1');assert.ok([4,6,8].includes(plan.clip.outputDurationSec!));assert.equal(plan.totalDurationSec,100);}
+});

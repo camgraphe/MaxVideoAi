@@ -17,6 +17,7 @@ export function studioGreetingReply(message:string,hasReferences:boolean):ImageD
 
 /** A narrow routing hint, never a replacement for the director's reading of a creative brief. */
 export function studioExplicitFilmDuration(message:string):number|null {
+  if(/\b(?:export\w*|trim\w*|shorten\w*|edit\w*|synopsis|summar\w*|résum\w*|narrat\w*|script|retake|reprice|monter|assemble\w*)\b/i.test(message))return null;
   if(!/\b(?:creat\w*|make|plan\w*|propos\w*|realise\w*|réalise\w*|faire|fais|quiero|haz|crear|créer|crée|want|like|need|veux|voudrais|souhaite|aimerais|prix|price|cost|budget)\b/i.test(message))return null;
   if(!/\b(?:video|vidéo|film|movie|montage)\b/i.test(message)&&!/\bcreate\s+a\s+\d+[ -]second/i.test(message))return null;
   const values=[...message.matchAll(/\b(\d+(?:[.,]\d+)?)\s*[- ]?\s*(seconds?|secondes?|segundos?|secs?|s|minutes?|mins?)\b/gi)];

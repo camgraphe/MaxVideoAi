@@ -2,10 +2,15 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {createStudioConversationDirector} from '../frontend/src/server/studio/conversation-director';
 import {actionFromTool} from '../frontend/lib/studio/conversation-action-contract';
+import {studioExplicitFilmDuration} from '../frontend/src/server/studio/conversation-intent';
 
 const context={message:'HEY!',references:[],history:[],project:{name:'Film',revision:0,memory:{revision:0,brief:'',decisions:[]}},
   execute:async()=>{throw new Error('A greeting must not execute actions.');},
   checkpoint:async()=>{throw new Error('A greeting must not reserve/count/charge a model call.');}};
+
+test('existing-film exports, writing and edits are not rerouted to paid creation planning',()=>{
+  for(const message of ['I want to export my 100-second film','I need a synopsis for my 100-second movie','I want to trim my existing film to 100 seconds'])assert.equal(studioExplicitFilmDuration(message),null,message);
+});
 
 test('standalone greetings answer locally without a model checkpoint, including punctuation and accents',async()=>{
   for(const message of ['HEY!','Bonjour 👋','salut','hola!','Hello Studio','Bonsoir !']){

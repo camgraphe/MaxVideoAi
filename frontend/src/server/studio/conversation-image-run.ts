@@ -11,7 +11,7 @@ import {openStudioAssistanceTurn,type StudioLunaFallback} from './assistance-led
 import {readStudioTaskUsage} from './tasks/repository';
 import {studioAssistancePolicy,type StudioAssistancePolicy} from './assistance-policy';
 import {prepareStudioTimelineExport,readStudioTimelineExport,asStudioExportAgentError,type StudioExportDependencies} from './conversation-export-command';
-import {withDbTransaction,isTransactionQueryExecutor} from '@/lib/db';
+import {withDbTransaction,isTransactionQueryExecutor,query} from '@/lib/db';
 import {AgentApiError, toAgentApiFailure} from '@/server/agent-api/errors';
 import {generationComparisonCatalogFingerprint} from '@/server/agent-api/generation-price-comparison';
 import {getActiveAccountRestrictionStrict} from '@/server/fraud-cleanup/restrictions';
@@ -40,6 +40,7 @@ import {readStudioWorkspace} from './workspace-command';
 import {StudioConnectedPersistenceError} from './montage-command';
 import {discardStudioPreparedQuote} from './conversation-quote-command';
 import {imageSelectionSchema} from '@/lib/studio/conversation-creation-contract';
+import {studioGreetingReply} from './conversation-intent';
 
 async function prepareMediaAction(options: {
   actor: StudioGenerationActor; turn: StoredImageTurn; input: ImageTurnInput;
@@ -127,7 +128,9 @@ export async function runStudioImageActions(options: {
   const analysisPolicy=studioAnalysisPolicy();
   const analysisEnabled=!!analysisPolicy&&policy.credits===true;
   const analysis=createStudioAnalysisService(actor,{assistancePolicy:policy});
-  const director = createStudioConversationDirector({model: assistance?.model,modelForNextCall:()=>currentModel,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,analysisEnabled,analysisProfiles:{video:!!analysisPolicy?.video,audio:!!analysisPolicy?.audio},assistanceCreditsEnabled:policy.credits===true,taskExecution:options.taskExecution,localGreetingEnabled:!options.responseReplayOnly});
+  const hasGreetingCheckpoint=studioGreetingReply(input.message,options.references.length>0)
+    ? (await query<{exists:boolean}>('SELECT EXISTS(SELECT 1 FROM studio_conversation_responses WHERE user_id=$1 AND project_id=$2 AND request_id=$3) exists',[actor.userId,actor.projectId,turn.request_id]))[0].exists:false;
+  const director = createStudioConversationDirector({model: assistance?.model,modelForNextCall:()=>currentModel,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,analysisEnabled,analysisProfiles:{video:!!analysisPolicy?.video,audio:!!analysisPolicy?.audio},assistanceCreditsEnabled:policy.credits===true,taskExecution:options.taskExecution,localGreetingEnabled:!options.responseReplayOnly&&!hasGreetingCheckpoint});
   let currentCallId: string;
   const execute = createStudioActionExecutor(actor, {enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
     recallProject:options.taskExecution?text=>recallStudioTaskMemory(actor,text):undefined,
