@@ -51,7 +51,6 @@ export async function findReusableExpressCheckoutSession(
     amountCents,
     attribution,
     currency,
-    hasCompletedTopUp = false,
     userId,
   }: {
     amountCents: number;
@@ -72,15 +71,15 @@ export async function findReusableExpressCheckoutSession(
         AND metadata->>'currency' = $3
         AND metadata->>'checkoutUiMode' = 'elements'
         AND created_at >= NOW() - ($4::int * INTERVAL '1 second')
-        AND ($5::boolean OR NOT EXISTS (
+        AND NOT EXISTS (
           SELECT 1 FROM checkout_interaction_events event
            WHERE event.user_id = $1
              AND event.event_name = 'stripe_checkout_session_expired_for_failed_cards'
              AND event.created_at >= NOW() - INTERVAL '30 minutes'
-        ))
+        )
       ORDER BY created_at DESC
       LIMIT 3`,
-    [userId, amountCents, currency.toUpperCase(), EXPRESS_CHECKOUT_REUSE_WINDOW_SECONDS, hasCompletedTopUp]
+    [userId, amountCents, currency.toUpperCase(), EXPRESS_CHECKOUT_REUSE_WINDOW_SECONDS]
   );
 
   const now = Math.floor(Date.now() / 1000);

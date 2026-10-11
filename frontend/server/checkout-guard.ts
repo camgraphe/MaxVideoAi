@@ -81,7 +81,7 @@ export function classifyCheckoutGuardDecision({
     return { action: 'rate_limited', reason: 'ip_window_hard_limit', retryAfterSeconds: limits.windowSeconds };
   }
 
-  if (!hasCompletedTopUp && userFailedCardLimits30m > 0) {
+  if (userFailedCardLimits30m > 0) {
     return {
       action: 'rate_limited',
       reason: 'failed_card_attempt_cooldown',
