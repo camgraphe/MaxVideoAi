@@ -79,8 +79,8 @@ export type StoredMediaUpload = {
   mediaFacts?: MediaFacts;
   assetId: string;
   legacyAssetId: string;
-  width: null;
-  height: null;
+  width: number | null;
+  height: number | null;
   durationSec: number;
   mimeType: string;
   sizeBytes: number;
@@ -145,7 +145,10 @@ function createStoreMediaUploadService(
     if (!duration.valid || duration.durationSec === null) {
       throw new MediaUploadError('METADATA_UNVERIFIED', 'The uploaded media metadata could not be verified.');
     }
+    const width = mediaKind === 'video' ? probe.width ?? null : null;
+    const height = mediaKind === 'video' ? probe.height ?? null : null;
     const mediaFacts: MediaFacts = { source: 'probe', durationSec: duration.durationSec,
+      ...(width !== null && height !== null ? { width, height } : {}),
       ...(typeof probe.hasAudio === 'boolean' ? { hasAudio: probe.hasAudio } : {}) };
 
     let upload: Awaited<ReturnType<typeof uploadFileBuffer>>;
@@ -255,8 +258,8 @@ function createStoreMediaUploadService(
         userId: input.userId,
         url: upload.url,
         mime: probe.canonicalMime,
-        width: null,
-        height: null,
+        width,
+        height,
         size: input.bytes.length,
         source: 'upload',
         metadata,
@@ -270,6 +273,8 @@ function createStoreMediaUploadService(
         kind: mediaKind,
         source: 'upload',
         mimeType: probe.canonicalMime,
+        width,
+        height,
         sizeBytes: input.bytes.length,
         durationSec: duration.durationSec,
         thumbUrl: previewUrl,
@@ -297,8 +302,8 @@ function createStoreMediaUploadService(
         assetId: canonicalAsset.publicId,
         mediaFacts,
         legacyAssetId,
-        width: null,
-        height: null,
+        width,
+        height,
         durationSec: duration.durationSec,
         mimeType: probe.canonicalMime,
         sizeBytes: input.bytes.length,
