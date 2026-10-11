@@ -10,6 +10,7 @@ export const frPayAsYouGoContent = {
   common: {
     aiVideoModelAlt: 'modèle de vidéo IA',
     liveQuote: 'Devis en temps réel',
+    audioOff: 'Audio désactivé',
     audioIncluded: 'Audio inclus',
     examplePrefix: 'Exemple',
   },
@@ -48,16 +49,16 @@ export const frPayAsYouGoContent = {
     items: [
       { question: 'Où tester des modèles de vidéo IA sans abonnement ?', answer: 'Utilisez MaxVideoAI pour comparer LTX 2.5, Wan 3, Grok Imagine, FLUX.3, Seedance, Kling, Google Veo et d’autres modèles avec des crédits prépayés plutôt qu’un forfait récurrent.' },
       { question: 'Quelle plateforme de vidéo IA affiche les prix avant la génération ?', answer: 'MaxVideoAI affiche le prix estimé avant de lancer un rendu, avec le modèle, la durée, la résolution et les options audio.' },
-      { question: 'Quel modèle de vidéo IA sans abonnement tester en premier ?', answer: 'Partez du workflow : LTX 2.5 pour une production rapide ou Pro, Wan 3 pour les routes Alibaba actuelles, Grok Imagine pour les prompts et références, ou FLUX.3 pour le contrôle par images. Comparez ensuite le devis exact avec Seedance, Kling et Google Veo.' },
+      { question: 'Quel modèle de vidéo IA sans abonnement tester en premier ?', answer: "Partez de votre tâche : texte-vers-vidéo, image-vers-vidéo ou un mode compatible avec une vidéo source. Comparez les modèles adaptés à partir d’exemples et de réglages identiques, puis examinez le devis exact avant de générer." },
       { question: 'Où comparer les familles actuelles de modèles vidéo IA ?', answer: 'MaxVideoAI réunit LTX 2.5, Wan 3, Grok Imagine, FLUX.3, Seedance, Kling, Google Veo et d’autres moteurs vidéo dans un même espace afin de comparer workflows, limites et prix avant de choisir.' },
       { question: 'Qu’est-ce qui fait un bon générateur de vidéo IA sans abonnement ?', answer: 'Une bonne solution avec paiement à l’usage permet de tester les modèles récents, de voir le prix avant de générer, de changer de moteur selon le projet et d’éviter les frais liés aux échecs du fournisseur.' },
     ],
   },
   modelTesting: {
     header: {
-      eyebrow: 'Ordre des essais',
-      title: 'Ordre recommandé pour tester la vidéo IA sans abonnement',
-      intro: 'Choisissez selon le workflow : comparez LTX 2.5 Pro et Fast, Wan 3 Prime et standard, Grok Imagine Video 1.5, puis FLUX.3 standard et Draft avec Seedance, Kling et Google Veo.',
+      eyebrow: "Choix des modèles",
+      title: "Choisissez un modèle pour votre prochain essai",
+      intro: "Partez des éléments dont vous disposez et du résultat recherché. Vérifiez les entrées acceptées, la durée, la résolution et l’audio, puis comparez les devis. Les modèles ci-dessous répondent à différents usages ; leur ordre ne classe ni leur qualité ni leur prix.",
     },
     footer: 'Happy Horse 1.1 et Seedance 2 Mini sont assez récents pour mériter des essais directs plutôt qu’un jugement fondé uniquement sur d’anciens classements.',
     models: {
@@ -65,7 +66,7 @@ export const frPayAsYouGoContent = {
       'kling-3-turbo-pro': { family: 'Kling 3.0 Turbo', title: 'Kling 3.0 Turbo Pro pour une sortie 1080p détaillée', body: 'Choisissez Turbo Pro pour un mouvement 1080p soigné, les détails produit, le guidage par image et les séquences multi-plans.' },
       'kling-3-turbo-standard': { family: 'Kling 3.0 Turbo', title: 'Kling 3.0 Turbo Standard pour des brouillons 720p efficaces', body: 'Choisissez Turbo Standard pour itérer plus vite en 720p avec mouvement cohérent, guidage par image et essais multi-plans.' },
       'minimax-h3-max': { family: 'MiniMax H3', title: 'MiniMax H3 Max pour une finition visuelle premium', body: 'Choisissez H3 Max pour la finition visuelle, le respect du prompt, l’audio natif et une production texte ou image vers vidéo ciblée.' },
-      'seedance-2-5': { family: 'Seedance 2.5', title: 'Seedance 2.5 pour la vidéo cinématique de 30 secondes', body: 'Consultez d’abord Seedance 2.5 pour les workflows cinématiques, image-to-video, guidés par références, multi-plans, produit et UGC, puis gardez Seedance 2.0 dans la sélection quand une sortie 4K est nécessaire.' },
+      'seedance-2-5': { family: 'Seedance 2.5', title: 'Seedance 2.5 pour la vidéo cinématique de 30 secondes', body: 'Envisagez Seedance 2.5 pour les workflows cinématiques, image-to-video, guidés par références, multi-plans, produit et UGC, puis gardez Seedance 2.0 dans la sélection quand une sortie 4K est nécessaire.' },
       'seedance-2-0': { family: 'Seedance 2', title: 'Seedance 2.0 pour la livraison Seedance 4K', body: 'Gardez Seedance 2.0 comme alternative pour les workflows plus courts avec audio natif et références quand la sortie Seedance finale doit être en 4K.' },
       'kling-3-pro': { family: 'Kling', title: 'Kling pour un contrôle fiable du mouvement', body: 'Utilisez Kling pour des mouvements de caméra fiables, des plans produit, des éléments et de la vidéo guidée par image sans abonnement.' },
       'veo-3-1': { family: 'Google Veo', title: 'Google Veo pour une qualité cinématographique', body: 'Comparez les variantes Veo lorsque l’interprétation du prompt, le rendu cinématographique, l’audio ou les options Google comptent plus que le coût minimal du brouillon.' },
@@ -133,7 +134,7 @@ export const frPayAsYouGoContent = {
       { title: 'Choisissez un moteur vidéo', body: 'Sélectionnez le modèle adapté au projet sans rester limité à un seul catalogue par abonnement.', icon: 'engine' },
       { title: 'Examinez le devis en direct', body: 'Consultez le prix, la durée, la résolution, l’audio et le flux de travail avant la génération.', icon: 'preview' },
       { title: 'Lancez la génération', body: 'Lancez un flux texte vers vidéo, image vers vidéo ou vidéo après avoir vu le coût.', icon: 'video' },
-      { title: 'Payez uniquement les résultats', body: 'Les rendus terminés consomment des crédits. Les échecs du fournisseur sont remboursés ou non facturés sans résultat utilisable.', icon: 'refund' },
+      { title: 'Payez uniquement les résultats', body: 'Les rendus terminés consomment des crédits, même si le résultat ne répond pas à votre intention créative. Les échecs techniques sans résultat ne sont pas facturés ou sont remboursés en crédits.', icon: 'refund' },
     ],
   },
   mcpPlanning: {
@@ -209,12 +210,18 @@ export const frPayAsYouGoContent = {
       intro: 'Ces exemples proviennent de la page des tarifs actuelle et servent de repères. Le devis de l’application reste le prix final avant la génération.',
     },
     settingsLabel: 'Réglages d’exemple',
+    quoteReminder: "Vérifiez le devis exact avec vos réglages avant de générer.",
+    budgetTemplate: "Vous prévoyez trois essais ? Avec un devis inchangé de {unitPrice}, trois générations terminées consommeraient {totalPrice} de crédits média.",
+    budgetContext: "LTX 2.5 Pro · 10s 720p · audio désactivé.",
+    budgetCaveat: "C’est une illustration de budget, sans garantie que trois essais donnent le résultat souhaité. Les crédits média consommés sont distincts de la recharge minimale, à partir de 10 $. Des réglages ou tarifs différents nécessitent un nouveau devis.",
+    studioAssistance: "Vous utilisez Studio ? Sol consomme des crédits d’assistance inclus ou achetés. La génération média dispose de son propre devis. Tenez compte des deux dans votre budget.",
+    studioLinkLabel: "Ouvrir Studio",
     labels: {
       'gemini-omni-flash': 'Essai multimodal avec Gemini Omni Flash 1.1',
       'kling-3-turbo-pro': 'Essai 1080p avec Kling 3.0 Turbo Pro',
       'kling-3-turbo-standard': 'Brouillon avec Kling 3.0 Turbo Standard',
       'minimax-h3-max': 'Essai premium avec MiniMax H3 Max',
-      'ltx-2-5-pro': 'Essai de production avec LTX 2.5 Pro',
+      'ltx-2-5-pro': "LTX 2.5 Pro — essai de vidéo courte",
       'wan-3-prime': 'Essai premium avec Wan 3 Prime',
       'grok-imagine-video-1-5': 'Essai de prompt avec Grok Imagine',
       'flux-3': 'Essai de mouvement contrôlé avec FLUX.3',
@@ -229,12 +236,12 @@ export const frPayAsYouGoContent = {
   refundPolicy: {
     header: {
       title: 'Que se passe-t-il si une génération échoue ?',
-      intro: 'MaxVideoAI est conçu pour facturer uniquement les rendus terminés. Les rendus terminés consomment des crédits. Les tâches échouées chez le fournisseur sont remboursées ou non facturées lorsqu’aucun résultat utilisable n’est renvoyé.',
+      intro: "Chaque génération terminée consomme des crédits. Un résultat terminé qui ne répond pas à vos attentes créatives se distingue d’un échec technique. Les générations échouées sont automatiquement recréditées.",
     },
     bullets: [
       { icon: 'preview', body: 'Vous examinez le prix avant de lancer une génération.' },
       { icon: 'credits', body: 'Les crédits ne sont consommés que pour les rendus terminés.' },
-      { icon: 'refund', body: 'Les échecs du fournisseur sont remboursés ou non facturés sans résultat utilisable.' },
+      { icon: 'refund', body: "Les crédits des générations en échec technique sont automatiquement restitués à votre solde." },
     ],
   },
   faq: {
@@ -242,16 +249,16 @@ export const frPayAsYouGoContent = {
     items: [
       { question: 'Ai-je besoin d’un abonnement pour générer des vidéos IA ?', answer: 'Non. MaxVideoAI utilise des crédits prépayés afin que vous puissiez générer des vidéos lorsque vous en avez besoin.' },
       { question: 'Puis-je voir le prix d’une vidéo IA avant la génération ?', answer: 'Oui. L’application affiche un devis en temps réel selon le modèle, la durée, la résolution, l’audio et le flux de travail.' },
-      { question: 'Quel modèle de vidéo IA devrais-je tester en premier ?', answer: 'Partez du workflow : LTX 2.5, Wan 3, Grok Imagine et FLUX.3 répondent à des besoins différents de vitesse, références, audio et contrôle des images. Comparez leurs devis avec Seedance, Kling et Google Veo avant de générer.' },
-      { question: 'Que se passe-t-il si un rendu échoue ?', answer: 'Les rendus terminés consomment des crédits. Les tâches échouées chez le fournisseur sont remboursées ou non facturées lorsqu’aucun résultat utilisable n’est renvoyé.' },
+      { question: 'Quel modèle de vidéo IA devrais-je tester en premier ?', answer: "Partez de votre tâche : texte-vers-vidéo, image-vers-vidéo ou un mode compatible avec une vidéo source. Comparez les modèles adaptés à partir d’exemples et de réglages identiques, puis examinez le devis exact avant de générer." },
+      { question: 'Que se passe-t-il si un rendu échoue ?', answer: "Chaque génération terminée consomme des crédits. Un résultat terminé qui ne répond pas à vos attentes créatives se distingue d’un échec technique. Les générations échouées sont automatiquement recréditées." },
       { question: 'Est-ce la même chose que la page des tarifs ?', answer: 'Non. Cette page répond directement à l’intention de paiement à l’usage et sans abonnement. La page des tarifs conserve la matrice détaillée par modèle et scénario.' },
     ],
   },
   showcase: {
     section: {
       eyebrow: 'Rendus réels sans abonnement',
-      title: 'Vidéos d’exemple avec modèle et prix',
-      intro: 'Une courte sélection de rendus publics MaxVideoAI montrant le modèle, la durée et son tarif actuel lorsqu’il est disponible.',
+      title: "Vidéos d’exemple avec modèle et durée",
+      intro: "Des exemples publics avec leur modèle et leur durée. Ouvrez un exemple pour consulter les détails de génération disponibles, puis demandez un devis actuel avec vos propres réglages.",
       preview: 'Aperçu',
       result: 'Voir le prompt et le résultat',
       cta: 'Testez votre prompt avec un devis en temps réel',
@@ -259,7 +266,6 @@ export const frPayAsYouGoContent = {
       engineImageAltSuffix: 'AI video model',
     },
     runtime: {
-      priceUnavailable: 'Prix affiché avant la génération',
       defaultEngineLabel: 'AI video model',
       defaultTitleEngineLabel: 'AI video',
       defaultTitleTemplate: 'Rendu d’exemple avec {engine}',

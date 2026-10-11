@@ -1,3 +1,4 @@
+import { formatCurrencyForLocale } from '../../pricing/_lib/pricingPageContent';
 import type { AppLocale } from '@/i18n/locales';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
 import { isPublishedComparisonSlug } from '@/lib/compare-hub/data';
@@ -80,6 +81,7 @@ export type PayAsYouGoModelRow = {
 export type PayAsYouGoPriceLookup = {
   id: PaygPriceLookupId;
   query: string;
+  context: string;
   title: string;
   body: string;
   engineIcon: PayAsYouGoEngineIcon;
@@ -129,7 +131,7 @@ export type PayAsYouGoPageData = {
     fullMatrixHref: LocalizedLinkHref;
   };
   priceLookups: Omit<PayAsYouGoContent['priceLookups'], 'items'> & { items: PayAsYouGoPriceLookup[] };
-  exampleCosts: Pick<PayAsYouGoContent['exampleCosts'], 'header'> & { items: PayAsYouGoExampleCost[] };
+  exampleCosts: Omit<PayAsYouGoContent['exampleCosts'], 'labels' | 'settingsLabel' | 'budgetTemplate'> & { items: PayAsYouGoExampleCost[]; budget?: string };
   refundPolicy: PayAsYouGoContent['refundPolicy'];
   faq: PayAsYouGoContent['faq'];
 };
@@ -236,19 +238,23 @@ function buildModelRows(
 
 function buildPriceLookups(
   configs: PaygDiscoveryConfigs['priceLookups'],
-  rows: VideoPricingRow[],
+  pricingHub: PricingHubData,
   lookupCopyById: PayAsYouGoContent['priceLookups']['items'],
   liveQuote: string,
+  audioOff: string,
 ): PayAsYouGoPriceLookup[] {
   return configs.flatMap((config) => {
-    const row = rows.find((candidate) => candidate.id === config.id);
+    const row = pricingHub.video.rows.find((candidate) => candidate.id === config.id);
     if (!row) return [];
     const copy = lookupCopyById[config.id];
     return [{
       id: config.id,
       ...copy,
       engineIcon: row?.engineIcon ?? { id: config.id, label: copy.title },
-      price: row?.quotes[config.presetId]?.display ?? liveQuote,
+      price: row.quotes[config.presetId]?.status === 'exact'
+        ? row.quotes[config.presetId].display ?? liveQuote : liveQuote,
+      context: [pricingHub.video.presets.find((preset) => preset.id === config.presetId)?.label,
+        row.quotes[config.presetId]?.note ?? audioOff].filter(Boolean).join(' · '),
       href: { pathname: '/pricing', hash: row.anchorId } satisfies LocalizedLinkHref,
       modelHref: row?.modelHref,
     }];
@@ -261,6 +267,7 @@ function buildExampleCosts(
   exampleLabels: PayAsYouGoContent['exampleCosts']['labels'],
   settingsLabel: string,
   liveQuote: string,
+  audioOff: string,
 ): PayAsYouGoExampleCost[] {
   const rowsById = new Map(pricingHub.video.rows.map((row) => [row.id, row]));
   const examples = configs.flatMap((example) => {
@@ -270,9 +277,11 @@ function buildExampleCosts(
       id: example.id,
       label: exampleLabels[example.id],
       engine: row.engineName,
-      price: row.quotes[example.presetId]?.display ?? liveQuote,
-      context: pricingHub.video.presets.find((preset) => preset.id === example.presetId)?.label ?? settingsLabel,
-      href: { pathname: '/pricing', hash: row.anchorId } satisfies LocalizedLinkHref,
+      price: row.quotes[example.presetId]?.status === 'exact'
+        ? row.quotes[example.presetId].display ?? liveQuote : liveQuote,
+      context: [pricingHub.video.presets.find((preset) => preset.id === example.presetId)?.label ?? settingsLabel,
+        row.quotes[example.presetId]?.note ?? audioOff].filter(Boolean).join(' · '),
+      href: `/app?engine=${encodeURIComponent(row.id)}`,
     }];
   });
   return examples.slice(0, 6);
@@ -314,7 +323,7 @@ export function buildPayAsYouGoPageData({
   const pricingHub = inputPricingHub ?? buildPricingHubData(locale);
   const { models: modelCopyById, ...modelTestingCopy } = content.modelTesting;
   const { bestFor: bestForCopy, ...pricingCopy } = content.pricing;
-  const { labels: exampleLabels, settingsLabel, header: exampleCostsHeader } = content.exampleCosts;
+  const { labels: exampleLabels, settingsLabel, budgetTemplate, ...exampleCostsCopy } = content.exampleCosts;
   const rows = buildModelRows(pricingHub, bestForCopy, content.common);
   const exampleCosts = buildExampleCosts(
     discoveryConfigs.examples,
@@ -322,7 +331,14 @@ export function buildPayAsYouGoPageData({
     exampleLabels,
     settingsLabel,
     content.common.liveQuote,
+    content.common.audioOff,
   );
+  const budgetQuote = pricingHub.video.rows.find((row) => row.id === 'ltx-2-5-pro')?.quotes['10s-720p'];
+  const budget = budgetQuote?.status === 'exact' && Number.isSafeInteger(budgetQuote.amountCents)
+    && budgetQuote.amountCents! >= 0 && Number.isSafeInteger(budgetQuote.amountCents! * 3)
+    ? budgetTemplate.replace('{unitPrice}', formatCurrencyForLocale(locale, 'USD', budgetQuote.amountCents! / 100))
+      .replace('{totalPrice}', formatCurrencyForLocale(locale, 'USD', budgetQuote.amountCents! * 3 / 100))
+    : undefined;
   const sampleCost = exampleCosts[0];
   const sampleModel = findModelForExampleCost(rows, sampleCost);
   const mcpLink = getMcpInternalLink(locale, 'payg');
@@ -359,12 +375,13 @@ export function buildPayAsYouGoPageData({
       ...content.priceLookups,
       items: buildPriceLookups(
         discoveryConfigs.priceLookups,
-        pricingHub.video.rows,
+        pricingHub,
         content.priceLookups.items,
         content.common.liveQuote,
+        content.common.audioOff,
       ),
     },
-    exampleCosts: { header: exampleCostsHeader, items: exampleCosts },
+    exampleCosts: { ...exampleCostsCopy, items: exampleCosts, budget },
     refundPolicy: content.refundPolicy,
     faq: content.faq,
   };

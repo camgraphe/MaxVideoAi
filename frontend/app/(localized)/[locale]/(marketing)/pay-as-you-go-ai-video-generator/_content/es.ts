@@ -10,6 +10,7 @@ export const esPayAsYouGoContent = {
   common: {
     aiVideoModelAlt: 'modelo de video con IA',
     liveQuote: 'Cotización en tiempo real',
+    audioOff: 'Audio desactivado',
     audioIncluded: 'Audio incluido',
     examplePrefix: 'Ejemplo',
   },
@@ -48,16 +49,16 @@ export const esPayAsYouGoContent = {
     items: [
       { question: '¿Dónde puedo probar modelos de video con IA sin suscripción?', answer: 'Usa MaxVideoAI para comparar LTX 2.5, Wan 3, Grok Imagine, FLUX.3, Seedance, Kling, Google Veo y otros modelos con créditos de pago por uso, en lugar de un plan recurrente.' },
       { question: '¿Qué plataforma de video con IA muestra el precio antes de generar?', answer: 'MaxVideoAI muestra el precio estimado antes de iniciar un render, incluidos el modelo, la duración, la resolución y las opciones de audio.' },
-      { question: '¿Qué modelo de video con IA de pago por uso debería probar primero?', answer: 'Parte del flujo: LTX 2.5 para producción rápida o Pro, Wan 3 para las rutas actuales de Alibaba, Grok Imagine para prompts y referencias, o FLUX.3 para trabajos controlados por fotogramas. Después compara la cotización exacta con Seedance, Kling y Google Veo.' },
+      { question: '¿Qué modelo de video con IA de pago por uso debería probar primero?', answer: "Parte de tu tarea: texto a video, imagen a video o un flujo compatible con video de entrada. Compara modelos adecuados usando ejemplos y los mismos ajustes, y revisa la cotización exacta antes de generar." },
       { question: '¿Dónde puedo comparar las familias actuales de modelos de video con IA?', answer: 'MaxVideoAI reúne LTX 2.5, Wan 3, Grok Imagine, FLUX.3, Seedance, Kling, Google Veo y otros motores de video en un solo espacio para comparar flujos, límites y precio antes de elegir.' },
       { question: '¿Qué hace bueno a un generador de video con IA de pago por uso?', answer: 'Un buen sistema de pago por uso permite probar modelos actuales, ver los precios antes de generar, cambiar de motor según el proyecto y evitar cargos por renders fallidos del proveedor.' },
     ],
   },
   modelTesting: {
     header: {
-      eyebrow: 'Orden de prueba',
-      title: 'Orden recomendado para probar video con IA de pago por uso',
-      intro: 'Elige según el flujo: compara LTX 2.5 Pro y Fast, Wan 3 Prime y estándar, Grok Imagine Video 1.5, y FLUX.3 estándar y Draft con Seedance, Kling y Google Veo.',
+      eyebrow: "Opciones de modelos",
+      title: "Elige un modelo para tu próxima prueba",
+      intro: "Parte del material que tienes y del resultado que buscas. Comprueba las entradas admitidas, la duración, la resolución y el audio, y compara las cotizaciones. Los modelos siguientes ofrecen distintos flujos; su orden no clasifica su calidad ni su precio.",
     },
     footer: 'Happy Horse 1.1 y Seedance 2 Mini son lo bastante recientes como para probarlos directamente, en lugar de evaluarlos solo con rankings de modelos anteriores.',
     models: {
@@ -133,7 +134,7 @@ export const esPayAsYouGoContent = {
       { title: 'Elige un motor de video', body: 'Selecciona el modelo que mejor se adapte al proyecto, sin quedarte limitado a un solo catálogo de suscripción.', icon: 'engine' },
       { title: 'Revisa la cotización en tiempo real', body: 'Consulta el precio, la duración, la resolución, el audio y el flujo de trabajo antes de generar.', icon: 'preview' },
       { title: 'Inicia la generación', body: 'Inicia un flujo de texto a video, imagen a video o video solo después de ver el costo.', icon: 'video' },
-      { title: 'Paga solo los resultados', body: 'Los renders completados consumen créditos. Los fallos del proveedor se reembolsan o no se cobran si no hay resultado utilizable.', icon: 'refund' },
+      { title: 'Paga solo los resultados', body: 'Los renders completados consumen créditos, aunque no cumplan tu intención creativa. Los fallos técnicos sin resultado no se cobran o se reembolsan en créditos.', icon: 'refund' },
     ],
   },
   mcpPlanning: {
@@ -209,12 +210,18 @@ export const esPayAsYouGoContent = {
       intro: 'Estos ejemplos provienen de la página de precios actual y sirven como referencia. La cotización de la app es el precio final antes de generar.',
     },
     settingsLabel: 'Configuración de ejemplo',
+    quoteReminder: "Comprueba la cotización exacta con tus ajustes antes de generar.",
+    budgetTemplate: "¿Planeas tres intentos? Con una cotización sin cambios de {unitPrice}, tres generaciones completadas consumirían {totalPrice} en créditos de medios.",
+    budgetContext: "LTX 2.5 Pro · 10s 720p · audio desactivado.",
+    budgetCaveat: "Es una ilustración de presupuesto, no una garantía de obtener el resultado deseado en tres intentos. Los créditos consumidos son distintos de la recarga mínima, que empieza en $10. Otros ajustes o precios requieren una nueva cotización.",
+    studioAssistance: "¿Usas Studio? Sol utiliza créditos de asistencia incluidos o comprados. La generación de medios tiene su propia cotización. Ten en cuenta ambos al planificar tu presupuesto.",
+    studioLinkLabel: "Abrir Studio",
     labels: {
       'gemini-omni-flash': 'Prueba multimodal con Gemini Omni Flash 1.1',
       'kling-3-turbo-pro': 'Prueba 1080p con Kling 3.0 Turbo Pro',
       'kling-3-turbo-standard': 'Borrador con Kling 3.0 Turbo Standard',
       'minimax-h3-max': 'Prueba prémium con MiniMax H3 Max',
-      'ltx-2-5-pro': 'Prueba de producción con LTX 2.5 Pro',
+      'ltx-2-5-pro': "LTX 2.5 Pro — prueba de video corto",
       'wan-3-prime': 'Prueba prémium con Wan 3 Prime',
       'grok-imagine-video-1-5': 'Prueba de prompt con Grok Imagine',
       'flux-3': 'Prueba de movimiento controlado con FLUX.3',
@@ -229,12 +236,12 @@ export const esPayAsYouGoContent = {
   refundPolicy: {
     header: {
       title: '¿Qué ocurre si falla una generación?',
-      intro: 'MaxVideoAI está diseñado para cobrar solo los renders completados. Los renders completados consumen créditos. Los trabajos fallidos del proveedor se reembolsan o no se cobran si no devuelven un resultado utilizable.',
+      intro: "Cada generación completada consume créditos. Un resultado completado que no cumple tus expectativas creativas es distinto de un fallo técnico. Las generaciones fallidas se abonan automáticamente a tu saldo.",
     },
     bullets: [
       { icon: 'preview', body: 'Revisas el precio antes de iniciar una generación.' },
       { icon: 'credits', body: 'Los créditos se consumen solo en renders completados.' },
-      { icon: 'refund', body: 'Los fallos del proveedor se reembolsan o no se cobran si no hay resultado utilizable.' },
+      { icon: 'refund', body: "Los créditos de las generaciones con fallos técnicos se devuelven automáticamente a tu saldo." },
     ],
   },
   faq: {
@@ -242,16 +249,16 @@ export const esPayAsYouGoContent = {
     items: [
       { question: '¿Necesito una suscripción para generar videos con IA?', answer: 'No. MaxVideoAI utiliza créditos de pago por uso para que generes videos cuando los necesites.' },
       { question: '¿Puedo ver el precio del video con IA antes de generar?', answer: 'Sí. La app muestra una cotización en tiempo real según el modelo, la duración, la resolución, el audio y el flujo de trabajo.' },
-      { question: '¿Qué modelo de video con IA debería probar primero?', answer: 'Parte del flujo: LTX 2.5, Wan 3, Grok Imagine y FLUX.3 cubren necesidades distintas de velocidad, referencias, audio y control de fotogramas. Compara sus cotizaciones con Seedance, Kling y Google Veo antes de generar.' },
-      { question: '¿Qué ocurre si falla un render?', answer: 'Los renders completados consumen créditos. Los trabajos fallidos del proveedor se reembolsan o no se cobran si no devuelven un resultado utilizable.' },
+      { question: '¿Qué modelo de video con IA debería probar primero?', answer: "Parte de tu tarea: texto a video, imagen a video o un flujo compatible con video de entrada. Compara modelos adecuados usando ejemplos y los mismos ajustes, y revisa la cotización exacta antes de generar." },
+      { question: '¿Qué ocurre si falla un render?', answer: "Cada generación completada consume créditos. Un resultado completado que no cumple tus expectativas creativas es distinto de un fallo técnico. Las generaciones fallidas se abonan automáticamente a tu saldo." },
       { question: '¿Es lo mismo que la página de precios?', answer: 'No. Esta página responde directamente a la intención de pago por uso y sin suscripción. La página de precios ofrece la matriz detallada por modelo y escenario.' },
     ],
   },
   showcase: {
     section: {
       eyebrow: 'Resultados reales de pago por uso',
-      title: 'Videos de ejemplo con modelo y precio',
-      intro: 'Una selección breve de renders públicos de MaxVideoAI que muestra el modelo, la duración y su precio actual cuando está disponible.',
+      title: "Videos de ejemplo con modelo y duración",
+      intro: "Ejemplos públicos con su modelo y duración. Abre un ejemplo para consultar los detalles disponibles y comprueba una cotización actual con tus propios ajustes.",
       preview: 'Vista previa',
       result: 'Ver prompt y resultado',
       cta: 'Prueba tu prompt con una cotización en tiempo real',
@@ -259,7 +266,6 @@ export const esPayAsYouGoContent = {
       engineImageAltSuffix: 'AI video model',
     },
     runtime: {
-      priceUnavailable: 'Precio visible antes de generar',
       defaultEngineLabel: 'AI video model',
       defaultTitleEngineLabel: 'AI video',
       defaultTitleTemplate: 'Render de ejemplo con {engine}',

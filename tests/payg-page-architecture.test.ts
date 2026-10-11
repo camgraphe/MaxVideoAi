@@ -153,8 +153,7 @@ test('all Pay-as-you-go authored locale selection lives only in _content', () =>
     .join('\n');
   assert.doesNotMatch(nonFormatterSource, /locale === ['"](?:en|fr|es)['"]\s*\?\s*['"`]/);
   const formatterSource = read(showcaseDataPath);
-  assert.match(formatterSource, /formatCurrentExamplePrice/);
-  assert.match(read('frontend/lib/current-example-price-display.ts'), /new Intl\.NumberFormat/);
+  assert.doesNotMatch(formatterSource, /formatCurrentExamplePrice/);
   assert.doesNotMatch(
     formatterSource,
     /Price shown first|Precio visible antes de generar|Prix affiché avant la génération|translatedTitles/,
