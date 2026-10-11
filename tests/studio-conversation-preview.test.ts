@@ -9,7 +9,10 @@ test('private video/audio sources survive ordinary refresh, while expiry, invali
   const kept = module.retainConversationMediaAccess(before,fresh,10000);
   assert.deepEqual(kept.map(value => value.mediaAccessUrl),before.map(value => value.mediaAccessUrl));assert.equal(kept[0].durationSec,2);
   assert.equal(module.retainConversationMediaAccess(before,fresh,280000)[0].mediaAccessUrl,fresh[0].mediaAccessUrl);
-  assert.equal(module.retainConversationMediaAccess(before,fresh,10000,'video')[0].mediaAccessUrl,fresh[0].mediaAccessUrl);
+  const replaced = module.retainConversationMediaAccess(before,fresh,10000,new Set(['video']));
+  assert.equal(replaced[0].mediaAccessUrl,fresh[0].mediaAccessUrl);
+  assert.equal(replaced[1].mediaAccessUrl,before[1].mediaAccessUrl, 'Unrejected private sources retain their mounted grant.');
+  assert.deepEqual(module.retainConversationMediaAccess(before,fresh,10000,new Set(['video','audio'])).map(value => value.mediaAccessUrl),fresh.map(value => value.mediaAccessUrl));
   assert.equal(module.retainConversationMediaAccess(before,[{...fresh[0],ref: {...fresh[0].ref!,assetId: 'ma_'+'2'.repeat(32)} as any}],10000)[0].mediaAccessUrl,fresh[0].mediaAccessUrl);
   assert.equal(module.retainConversationMediaAccess(before,[{...fresh[0],mediaAccessError: 'MEDIA_NOT_AVAILABLE',mediaAccessUrl: undefined}],10000)[0].mediaAccessUrl,undefined);
 });

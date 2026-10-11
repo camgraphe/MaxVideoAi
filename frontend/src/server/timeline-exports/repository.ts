@@ -198,7 +198,7 @@ export async function updateTimelineExportProgress(params: {
         SET progress = $2,
             message = $3,
             updated_at = NOW()
-      WHERE id = $1`,
+      WHERE id = $1 AND status = 'rendering'`,
     [params.exportId, Math.max(0, Math.min(99, Math.round(params.progress))), params.message]
   );
 }

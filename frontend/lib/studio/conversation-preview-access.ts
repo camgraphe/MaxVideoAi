@@ -1,11 +1,11 @@
 import type {WorkspaceTimelineItem} from '@/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
 
 /** Polling canonical edits must not reload a still-valid mounted private decoder. */
-export function retainConversationMediaAccess(previous: WorkspaceTimelineItem[],fresh: WorkspaceTimelineItem[],nowMs: number,forceRenewItemId?: string): WorkspaceTimelineItem[] {
+export function retainConversationMediaAccess(previous: WorkspaceTimelineItem[],fresh: WorkspaceTimelineItem[],nowMs: number,forceRenewItemIds?: ReadonlySet<string>): WorkspaceTimelineItem[] {
   const byId = new Map(previous.map(item => [item.id,item]));
   return fresh.map(item => {
     const old = byId.get(item.id);
-    if (!old || item.id === forceRenewItemId || item.mediaAccessError || !item.mediaAccessRequired
+    if (!old || forceRenewItemIds?.has(item.id) || item.mediaAccessError || !item.mediaAccessRequired
       || old.mediaAccessRequired !== item.mediaAccessRequired || old.mediaUrl !== item.mediaUrl
       || JSON.stringify(old.ref) !== JSON.stringify(item.ref) || !old.mediaAccessUrl
       || !old.mediaAccessExpiresAt || Date.parse(old.mediaAccessExpiresAt) <= nowMs+30000
