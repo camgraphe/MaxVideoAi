@@ -39,7 +39,12 @@ responses are never rewritten, so replay keeps the action's original identity.
 Planning up to 1200 seconds creates no quote, job or wallet transaction; clients
 choose the cut, then review/confirm exact quotes. Added soundtracks/narration,
 retakes and exports remain separate pricing owners. Historical actions omit the
-new optional field unchanged, preserving their original replay hashes.
+new optional field unchanged, preserving their original replay hashes. The
+comparison's ordinary `options` retain each plan's canonical component estimate,
+so the existing owned historical-facts projection provides verified model IDs
+and settings to the next turn. These remain per-output historical estimates;
+only `filmPlans[].price` represents the complete film, and neither authorizes a
+purchase.
 
 | Profile | Maximum credits | Calls/segment | Output/call | Input/call | Time | Recent turns |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |

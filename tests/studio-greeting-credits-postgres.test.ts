@@ -10,6 +10,7 @@ import {getFalEngineById} from '../frontend/src/config/falEngines';
 import {randomUUID} from 'node:crypto';
 import {claimImageTurn} from '../frontend/src/server/studio/image-conversation-repository';
 import {reserveStudioAssistanceCall} from '../frontend/src/server/studio/assistance-ledger';
+import {readStudioHistoricalEstimates} from '../frontend/src/server/studio/conversation-history-facts';
 
 test('a real queued Quick greeting completes durably with zero assistance calls, credits, reservations or wallet charges',async t=>{
   const f=await studioTaskFixture(t),actor=await f.actor(),service=createStudioTaskService(actor,{enabled:true,assistancePolicy:f.policy});
@@ -77,6 +78,10 @@ test('a Quick 100-second natural film saves complete alternatives after one paid
   assert.equal(task.state,'completed');assert.equal(task.completedCalls,1);assert.equal(task.maxCredits,100);assert.equal(task.revision,0);assert.equal(task.reservedCredits,0);
   const draft=(await f.pool.query('SELECT draft_json FROM studio_image_turns WHERE request_id=$1',[input.requestId])).rows[0].draft_json;
   assert.match(draft.reply,/10 × 10 s/);assert.match(draft.reply,/5 × 20 s/);assert.match(draft.reply,/100-second/);assert.match(draft.reply,/total/);assert.equal(draft.continuation,undefined);
+  const estimates=await readStudioHistoricalEstimates(actor,[input.requestId]);
+  assert.equal(estimates.length,3,'The next natural choice receives verified component models/settings without another discovery call.');
+  assert.ok(estimates.some(estimate=>estimate.outputDurationSec===20&&estimate.modelId));
+  assert.ok(estimates.every(estimate=>estimate.historical&&estimate.quoteRequired),'Component estimates never become a quote or payment authorization.');
   assert.equal((await f.pool.query('SELECT count(*)::int n FROM mcp_generation_quotes')).rows[0].n,0);
   assert.equal((await f.pool.query("SELECT count(*)::int n FROM app_receipts WHERE type='charge'")).rows[0].n,0);
   assert.equal((await f.pool.query('SELECT count(*)::int n FROM app_jobs')).rows[0].n,0);

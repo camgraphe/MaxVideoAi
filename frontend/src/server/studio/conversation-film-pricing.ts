@@ -71,5 +71,5 @@ export async function priceStudioFilm(input:GenerationPriceComparisonInput,total
     }
   }
   if(!plans.length)throw lastError instanceof AgentApiError?lastError:new AgentApiError('ENGINE_UNAVAILABLE','No complete film plan could be priced for all requested constraints. No quote or generation was created.');
-  return {options:[],baseline:null,unavailable:unavailable.slice(0,12),estimatedAt,quoteRequired:true,filmDurationSec:totalDurationSec,filmPlans:plans};
+  return {options:plans.map(plan=>plan.clip),baseline:null,unavailable:unavailable.slice(0,12),estimatedAt,quoteRequired:true,filmDurationSec:totalDurationSec,filmPlans:plans};
 }
