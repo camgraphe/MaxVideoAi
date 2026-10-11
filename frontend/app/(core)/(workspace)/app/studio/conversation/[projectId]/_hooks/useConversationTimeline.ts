@@ -7,7 +7,7 @@ import type {WorkspaceProjectSettings,WorkspaceTimelineItem} from '../../../_sha
 
 export type ConversationTimelineView = {data: StudioConversationTimeline;settings: WorkspaceProjectSettings;items: WorkspaceTimelineItem[]};
 export function useConversationTimeline(projectId: string,refreshKey: unknown) {
-  const [view,setView] = useState<ConversationTimelineView | null>(null);
+  const [{view,mediaReloadKeys},setPreviewState] = useState<{view: ConversationTimelineView | null;mediaReloadKeys: Record<string,number>}>({view: null,mediaReloadKeys: {}});
   const [legacy,setLegacy] = useState(false);
   const [busy,setBusy] = useState(false);
   const [error,setError] = useState<string | null>(null);
@@ -32,7 +32,12 @@ export function useConversationTimeline(projectId: string,refreshKey: unknown) {
       // replace every rejected grant. Snapshot before React's deferred updater.
       const renewMediaIds = new Set(reads.renewMediaIds);
       reads.renewMediaIds.clear();
-      setLegacy(false);setError(null);setView(previous => ({...result.result,items: retainConversationMediaAccess(previous && previous.data.projectId === result.result.data.projectId ? previous.items : [],result.result.items,Date.now(),renewMediaIds)}));
+      setLegacy(false);setError(null);setPreviewState(previous => {
+        const previousView = previous.view?.data.projectId === result.result.data.projectId ? previous.view : null;
+        const mediaReloadKeys = previousView ? {...previous.mediaReloadKeys} : {};
+        for (const id of renewMediaIds) mediaReloadKeys[id] = (mediaReloadKeys[id] ?? 0)+1;
+        return {view: {...result.result,items: retainConversationMediaAccess(previousView?.items ?? [],result.result.items,Date.now(),renewMediaIds)},mediaReloadKeys};
+      });
     } catch (failure) {if (active.current && request === epoch.current) setError(failure instanceof Error ? failure.message : 'TIMELINE_UNAVAILABLE');}
     finally {reads.inFlight--;}
   },[reads]);
@@ -48,5 +53,5 @@ export function useConversationTimeline(projectId: string,refreshKey: unknown) {
     } catch (failure) {if (active.current) setEditError(failure instanceof Error ? failure.message : 'TIMELINE_UNAVAILABLE');}
     finally {pending.current = false;if (active.current) {setBusy(false);await refresh();}}
   },[path,refresh,view]);
-  return {view,legacy,busy,error:editError??error,edit,refresh};
+  return {view,mediaReloadKeys,legacy,busy,error:editError??error,edit,refresh};
 }

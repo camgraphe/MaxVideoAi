@@ -10,7 +10,8 @@ import { initializeStudioConnectedFixture, STUDIO_CONNECTED_ASSET_IDS, STUDIO_CO
 import { postStudioMcpRequest, readStudioMcpResponse } from './helpers/studio-mcp-http-fixture';
 import { STUDIO_PRIVATE_MEDIA_HOST, STUDIO_PRIVATE_MEDIA_KEYS, serveStudioPrivateMediaRequest, validateStudioPrivateMediaRequest } from './helpers/studio-private-storage-fixture';
 
-test('MCP montage opens the current conversation with private playback, durable edits, export recovery and account isolation', { timeout: 300_000 }, async () => {
+for (const renewalFirst of [false,true]) {
+test('MCP montage opens the current conversation with private playback, durable edits, export recovery and account isolation, '+(renewalFirst ? 'renewal response first' : 'canonical response first'), { timeout: 300_000 }, async () => {
   const runtime = await startStudioIntegrationRuntime({
     revision: process.env.STUDIO_BROWSER_TEST_REVISION ?? process.env.STUDIO_INTEGRATION_REVISION,
     mcp: { studioMontageCreation: true }, privateStorage: true, conversation: true, conversationExports: true,
@@ -38,10 +39,11 @@ test('MCP montage opens the current conversation with private playback, durable 
   });
   let browserFixture: Awaited<ReturnType<typeof startStudioConnectedBrowserFixture>> | undefined;
   let diagnose = async () => ({});
-  let releaseJournal = () => {}, releaseRenewal = () => {};
+  let releaseJournal = () => {}, releaseRenewal = () => {}, releaseCanonical = () => {};
   const journalGate = new Promise<void>(resolve => {releaseJournal = resolve;});
   const renewalGate = new Promise<void>(resolve => {releaseRenewal = resolve;});
-  let firstContext = true, holdRenewal = false, renewalBlocked = false;
+  const canonicalGate = new Promise<void>(resolve => {releaseCanonical = resolve;});
+  let firstContext = true, holdRenewal = false, renewalBlocked = false, holdCanonical = false, canonicalBlocked = false;
 
   try {
     const session = runtime.auth.createSession(STUDIO_FIXTURE_OWNERS[0], { clientId: 'studio-connected-browser-fixture' });
@@ -78,9 +80,9 @@ test('MCP montage opens the current conversation with private playback, durable 
     const exportLocation = exportGrant.headers.get('location')!;
     const exportValidation = await validateStudioPrivateMediaRequest({ url: exportLocation, method: 'GET' });
     assert.equal(exportValidation.ok, true, JSON.stringify({ validation: exportValidation, queryNames: [...new URL(exportLocation).searchParams.keys()] }));
-    let expireNextPrivateRequest = false;
-    browserFixture = await startStudioConnectedBrowserFixture({ runtime, signatureClock: () => {
-      if (expireNextPrivateRequest) { expireNextPrivateRequest = false; return new Date(Date.now() + 3_600_000); }
+    let expiredPrivateUrl: string | null = null;
+    browserFixture = await startStudioConnectedBrowserFixture({ runtime, signatureClock: (url) => {
+      if (url === expiredPrivateUrl) return new Date(Date.now() + 3_600_000);
       return new Date();
     } });
     const allErrors: string[] = [], retiredWrites: string[] = [];
@@ -97,12 +99,19 @@ test('MCP montage opens the current conversation with private playback, durable 
           await journalGate; await route.continue();
         });
         await owned.page.route(`${timelineEndpoint}?preview=1`, async route => {
-          if (!holdRenewal) {await route.continue();return;}
-          holdRenewal = false;
-          const response = await route.fetch();
-          renewalBlocked = true;
-          await renewalGate;
-          await route.fulfill({response});
+          if (holdRenewal) {
+            holdRenewal = false;
+            const response = await route.fetch();
+            renewalBlocked = true;
+            await renewalGate;
+            await route.fulfill({response});
+          } else if (holdCanonical) {
+            holdCanonical = false;
+            const response = await route.fetch();
+            canonicalBlocked = true;
+            await canonicalGate;
+            await route.fulfill({response});
+          } else await route.continue();
         });
       }
 
@@ -205,14 +214,26 @@ test('MCP montage opens the current conversation with private playback, durable 
     const renewalProof = Promise.all([renewed, newPrivateAccess]);
     void renewalProof.catch(() => undefined);
     holdRenewal = true;
-    expireNextPrivateRequest = true;
+    expiredPrivateUrl = oldSignedUrl;
     await firstVideo.evaluate((element) => (element as HTMLVideoElement).load());
     await expect.poll(() => browserFixture!.readPrivateRequests().slice(privateRequestCount).some((entry) => entry.status === 403)).toBe(true);
     await expect.poll(() => renewalBlocked).toBe(true);
+    holdCanonical = true;
     releaseJournal();
     // The later canonical read wins; the held renewal response is obsolete.
-    await renewed;
-    releaseRenewal();
+    await expect.poll(() => canonicalBlocked).toBe(true);
+    if (renewalFirst) {
+      releaseRenewal();
+      const obsolete = await renewed;await obsolete.finished();
+      // Allow React and the decoder two paint frames to process the obsolete
+      // response. It must not retry the still-refused URL or close the monitor.
+      await page.evaluate('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))');
+      await expect(page.getByLabel('Film monitor', {exact: true})).toBeVisible();
+      assert.equal(browserFixture.readPrivateRequests().slice(privateRequestCount).filter(entry => entry.status === 403).length,1);
+      releaseCanonical();
+    } else {
+      releaseCanonical();await renewed;releaseRenewal();
+    }
     await renewalProof;
     await expect.poll(() => firstVideo.evaluate((element) => (element as HTMLVideoElement).readyState)).toBeGreaterThanOrEqual(2);
     await expect.poll(() => firstVideo.evaluate((element) => (element as HTMLVideoElement).currentTime)).toBeCloseTo(sourceTimeBeforeExpiry, 1);
@@ -408,5 +429,6 @@ test('MCP montage opens the current conversation with private playback, durable 
     await first.close();
   } catch (error) {
     throw new Error(`${String(error)}\n${JSON.stringify(await diagnose())}\n${runtime.readLogs().slice(-4000)}`, { cause: error });
-  } finally { releaseJournal(); releaseRenewal(); await browserFixture?.close(); await runtime.close(); }
+  } finally { releaseJournal(); releaseRenewal(); releaseCanonical(); await browserFixture?.close(); await runtime.close(); }
 });
+}
