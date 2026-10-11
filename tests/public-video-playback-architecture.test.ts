@@ -32,7 +32,7 @@ test('watch, comparisons and card previews keep shared lifecycle and original UR
     read('frontend/components/examples/ExampleGalleryCard.tsx'),
     read('frontend/components/examples/useExampleCardPlayback.ts'),
     read('frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_components/CompareShowdownMedia.tsx'),
-    read('frontend/app/(core)/video/[id]/_components/VideoWatchContent.tsx'),
+    read('frontend/app/(public-watch)/video/[id]/_components/VideoWatchContent.tsx'),
   ]);
   for (const reader of [watch, comparison]) assert.match(reader, /usePublicVideoControls/);
   for (const owner of [controls, cardPlayback]) {

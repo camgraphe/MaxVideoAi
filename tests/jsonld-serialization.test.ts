@@ -33,7 +33,7 @@ test('blog and docs generated and inline JSON-LD use the shared script-safe seri
 });
 
 test('root metadata does not reintroduce an obsolete model list or blanket watermark claim', () => {
-  for (const path of ['frontend/app/(core)/layout.tsx', 'frontend/app/(localized)/[locale]/layout.tsx']) {
+  for (const path of ['frontend/app/_lib/app-runtime-metadata.ts', 'frontend/app/(localized)/[locale]/layout.tsx']) {
     const source = readFileSync(path, 'utf8');
     assert.doesNotMatch(source, /Sora 2|Pika &|no watermarks/);
     assert.match(source, /web workspace or through MCP integrations/);
@@ -41,7 +41,7 @@ test('root metadata does not reintroduce an obsolete model list or blanket water
 });
 
 test('site schemas never advertise the nonexistent site search action', () => {
-  for (const path of ['frontend/app/(core)/layout.tsx', 'frontend/app/_components/LocaleRuntime.tsx']) {
+  for (const path of ['frontend/app/_components/AppRuntime.tsx', 'frontend/app/_components/LocaleRuntime.tsx']) {
     assert.doesNotMatch(readFileSync(path, 'utf8'), /SearchAction|search\?q=|ENABLE_SEARCH_SCHEMA/);
   }
 });
