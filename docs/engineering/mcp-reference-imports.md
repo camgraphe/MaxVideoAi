@@ -52,6 +52,27 @@ must never collapse a staging key onto the production `user-assets/` or
 `user-asset-thumbs/` keyspace. Thumbnail failures log only stable event codes,
 not filenames, object keys, user identifiers, or raw storage errors.
 
+### Measured video geometry
+
+The shared `probeMediaBuffer` upload probe reads width and height from the first
+non-cover-art video stream. `store-media-upload.ts` carries these measured values
+to `user_assets`, canonical `media_assets`, the upload result, and `mediaFacts`.
+Audio and unverified geometry retain no dimensions. Never fill dimensions from
+the requested output aspect ratio, browser claims, or thumbnail size.
+
+MiniMax H3's owned-media validation requires positive stored video dimensions
+before quoting, even though some other models only require duration. An upload
+accepted by Wan does not establish H3 metadata eligibility. Quote validation
+keeps the same checks and reports fixed, private-data-free guidance for missing
+metadata, unsupported geometry, duration, size, and format.
+
+Uploads made before the 2026-10-11 correction may still have null video dimensions.
+Re-importing the original after the corrected server is delivered measures them
+again; the existing exact-owner canonical upsert fills missing dimensions. Reads
+do not probe remote media or mutate existing rows. Any separate operational
+backfill must be bounded, explicitly authorized, and preserve ownership and
+originals. See [the incident diagnosis](../operations/minimax-h3-reference-metadata-20261011.md).
+
 ## Library deletion and storage cleanup
 
 Deleting a canonical library asset remains an authenticated library operation; it
@@ -153,6 +174,8 @@ Focused contracts live in:
 - `tests/mcp-reference-file-import.test.ts`
 - `tests/mcp-reference-upload-app.test.ts`
 - `tests/mcp-reference-local-helper.test.ts`
+- `tests/mcp-video-reference-metadata.test.ts` (real local FFmpeg/ffprobe fixtures,
+  offline storage/database/pricing boundaries)
 - `tests/mcp-reference-direct-upload.test.ts`
 - `tests/mcp-instructions.test.ts`
 - `tests/mcp-plugin-contract.test.ts`
