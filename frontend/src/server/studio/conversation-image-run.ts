@@ -127,7 +127,7 @@ export async function runStudioImageActions(options: {
   const analysisPolicy=studioAnalysisPolicy();
   const analysisEnabled=!!analysisPolicy&&policy.credits===true;
   const analysis=createStudioAnalysisService(actor,{assistancePolicy:policy});
-  const director = createStudioConversationDirector({model: assistance?.model,modelForNextCall:()=>currentModel,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,analysisEnabled,analysisProfiles:{video:!!analysisPolicy?.video,audio:!!analysisPolicy?.audio},assistanceCreditsEnabled:policy.credits===true,taskExecution:options.taskExecution});
+  const director = createStudioConversationDirector({model: assistance?.model,modelForNextCall:()=>currentModel,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,analysisEnabled,analysisProfiles:{video:!!analysisPolicy?.video,audio:!!analysisPolicy?.audio},assistanceCreditsEnabled:policy.credits===true,taskExecution:options.taskExecution,localGreetingEnabled:!options.responseReplayOnly});
   let currentCallId: string;
   const execute = createStudioActionExecutor(actor, {enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
     recallProject:options.taskExecution?text=>recallStudioTaskMemory(actor,text):undefined,

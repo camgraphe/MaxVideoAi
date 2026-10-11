@@ -2,7 +2,7 @@ import { z } from 'zod';
 import {studioAnalysisPrepareActionSchema,studioAnalysisReadActionSchema,STUDIO_ANALYSIS_DIRECTOR_TOOLS,type StudioPreparedAnalysis,type StudioAnalysisStatus} from './media-analysis-contract';
 import {studioProjectNameSchema} from './conversation-project-title';
 import {studioPricingReadSchema,studioPricingCompareSchema,STUDIO_PRICING_COMPARE_TOOL,STUDIO_PRICING_DIRECTOR_TOOL,type StudioPricingEstimate} from './conversation-pricing-contract';
-import type {GenerationPriceComparison} from '@/server/agent-api/generation-price-comparison';
+import type {StudioPriceComparison} from './conversation-pricing-contract';
 import {studioExportPrepareActionSchema,studioExportReadActionSchema,STUDIO_EXPORT_DIRECTOR_TOOLS,type StudioPreparedExport} from './conversation-export-contract';
 import type {TimelineExportJobResponse} from '@/server/timeline-exports/contracts';
 import type { PreparedGeneration } from '@/server/agent-api/prepare-generation';
@@ -97,7 +97,7 @@ export type StudioActionResult =
   | {ok: true; action: 'project.remember'; data: StudioConversationMemory}
   | {ok: true; action: 'catalog.read'; data: StudioImageCapability[]}
   | {ok: true; action: 'pricing.read'; data: StudioPricingEstimate}
-  | {ok: true; action: 'pricing.compare'; data: GenerationPriceComparison}
+  | {ok: true; action: 'pricing.compare'; data: StudioPriceComparison}
   | {ok: true; action: 'model.details'; data: StudioCapabilityDetails}
   | {ok: true; action: 'image.prepare'; data: Omit<PreparedGeneration, 'balance' | 'topupRequired'>}
   | {ok: true; action: 'generation.read'; data: AgentGenerationStatus | null}

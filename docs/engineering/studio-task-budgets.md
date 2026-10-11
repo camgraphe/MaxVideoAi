@@ -11,6 +11,28 @@ Sol consumes free credits before explicitly enabled purchased credits; Luna stay
 sponsored. Conservative next-call quotes must fit the remaining ceiling before
 reservation, so the financial cap can stop work before the call/token maxima.
 
+Standalone greetings in English, French and Spanish are answered locally by
+`conversation-intent.ts` before a model checkpoint: no token count, assistance
+reservation or provider dispatch. Attached media or a greeting followed by real
+work still reaches the director. Qualified paid recovery retains its checkpoint
+path. The normal owned journal/task records and rate limits remain in force.
+
+New multi-clip film requests use `pricing_compare.filmDurationSec`, separate from
+the component `durationSec`. `conversation-film-pricing.ts` verifies complete
+10/20/30-second cut variants against the canonical comparison owner; it sums
+integer customer cents per generated output, including a separately priced tail.
+Only a proven unsupported tail duration permits a priced full clip to be trimmed,
+with both generated and final timing disclosed. Explicit settings/model choices
+remain constraints; unspecified films use a disclosed 720p baseline (16:9 for
+text-only requests). Missing prices never become estimates. The director returns
+the full result directly after that action, without reserving a presentation call
+or extending the selected ceiling. A narrow natural-duration routing hint makes
+the first call compare the entire new film before any component preparation.
+Planning up to 1200 seconds creates no quote, job or wallet transaction; clients
+choose the cut, then review/confirm exact quotes. Added soundtracks/narration,
+retakes and exports remain separate pricing owners. Historical actions omit the
+new optional field unchanged, preserving their original replay hashes.
+
 | Profile | Maximum credits | Calls/segment | Output/call | Input/call | Time | Recent turns |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | Quick | 100 ($0.10) | 2 | 2,200 | 12,000 | 180s | 4 |
