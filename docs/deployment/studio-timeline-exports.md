@@ -33,6 +33,14 @@ authoritative for that identity. Verify the actual owned sources with the worker
 identity before activation. The image uses the configured Chromium executable
 for both composition selection and rendering.
 
+The video-frame cache has an explicit 256 MiB budget. Remotion's automatic cache
+size can follow host-reported available memory beyond the 4 GiB task budget.
+Keep the current two frame workers, encoding policy, PNG intermediates and
+BT.709 settings. Forcing sequential encoding would retain all PNG frames before
+stitching and needs separate temporary-disk qualification. Changing the cache
+requires a new immutable image and a complete multi-clip render, including cuts
+and sound; a short frame-range probe cannot establish sustained memory safety.
+
 The storage identity needs GetObject on the application-owned input prefixes
 recognized by `frontend/server/storage.ts`, including private `user-assets` and
 `media-assets`. Keep writes/deletes limited to `timeline-exports` and
