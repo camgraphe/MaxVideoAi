@@ -33,6 +33,16 @@ authoritative for that identity. Verify the actual owned sources with the worker
 identity before activation. The image uses the configured Chromium executable
 for both composition selection and rendering.
 
+The storage identity needs GetObject on the application-owned input prefixes
+recognized by `frontend/server/storage.ts`, including private `user-assets` and
+`media-assets`. Keep writes/deletes limited to `timeline-exports` and
+`user-asset-thumbs`; thumbnail publication uses the latter. The dedicated
+`MaxVideoAIExportOwnedInputsAndThumbnails` policy complements the existing export
+writer without changing its key or other consumers. IAM simulation must retain
+write/delete denial on source prefixes. Qualify real source reads and a bounded
+thumbnail write/delete with that identity; public legacy sources alone do not
+prove access to private inputs. Manifest ownership checks still precede grants.
+
 An initial task targeting a unique nonexistent export ID verifies image pull,
 entry point and production database access without claiming any queued export.
 Its expected result is “target export … is not queued” and exit 0. This health
