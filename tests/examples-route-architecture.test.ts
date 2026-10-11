@@ -401,7 +401,7 @@ test('public_routes_keep_seo_and_media_owners', () => {
   for (const source of [pageSource, modelPageSource, pageViewSource, jsonLdSource]) {
     assert.doesNotMatch(source, /playlists\/destinations|curation-service|saveCuration|loadPlaylistDestinations/);
   }
-  const watch = readFileSync(join(root, 'frontend/app/(core)/video/[id]/page.tsx'), 'utf8');
+  const watch = readFileSync(join(root, 'frontend/app/(public-watch)/video/[id]/page.tsx'), 'utf8');
   assert.match(watch, /getVideoWatchPageDataById/);
   const card = readFileSync(join(root, 'frontend/components/examples/ExampleGalleryCard.tsx'), 'utf8');
   assert.match(card, /useExampleCardPlayback/);

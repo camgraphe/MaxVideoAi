@@ -137,8 +137,26 @@ Avoid passing the entire dictionary or entire engine object unless the section t
 ## JSON-LD Pattern
 
 MaxVideoAI's organization identity and profiles belong in `frontend/lib/seo/site-organization-schema.ts`.
-Both `LocaleRuntime` and the core layout render its shared builder; retain `/#organization`
+Both `LocaleRuntime` and the shared `AppRuntime` render its shared builder; retain `/#organization`
 when adding a profile, and keep profile-only schema changes independent of visible social links.
+
+Core and direct public watch pages use the same server `app/_components/AppRuntime.tsx`
+under the existing HTML root. Core calls it without a namespace selection and keeps full
+messages; `(public-watch)/layout.tsx` selects the existing `nav`/`footer` namespaces.
+The runtime selects valid cookies in `mvid_locale`, then `NEXT_LOCALE`, then default
+order and filters both the dictionary and its English fallback before the client
+provider. If the resolver shares its EN dictionary/fallback object, keep that identity
+after selection. `LocaleRuntime` has separate public locale/fallback semantics and
+must not substitute for this runtime.
+
+The shared runtime retains the existing provider/effect order, app styles, Geist font,
+analytics, consent and organization/WebSite schemas. Both sibling layouts re-export
+metadata/viewport from `app/_lib/app-runtime-metadata.ts`; neither imports the other's
+layout. Only `video/**` lives in `(public-watch)`, preserving `/video/[id]` URLs and
+the unchanged marketing auth snapshot, reader copy, data, redirects and SEO owners.
+Group transitions remount these lower layouts. The runtime behavior and remount tests
+cover dictionary props, fallback, effect cleanup, cache and theme; production browser
+navigation and comparable loading measurements remain required for performance work.
 
 Build schema payloads in pure helpers, then render them at the route/shell level:
 
