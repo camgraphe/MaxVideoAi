@@ -34,6 +34,15 @@ const P0_REPRESENTATIVE_IDS = [
   'flux-3',
 ] as const;
 const P0_VISIBLE_EXAMPLE_IDS = ['ltx-2-5-pro', 'wan-3-prime'] as const;
+const P0_PAYG_PRESETS = {
+  'ltx-2-5-pro': '10s-720p',
+  'ltx-2-5-fast': '10s-720p',
+  'wan-3-prime': '5s-720p',
+  'wan-3': '5s-720p',
+  'grok-imagine-video-1-5': '5s-720p',
+  'flux-3': '5s-720p',
+  'flux-3-draft': '5s-720p',
+} as const;
 const entries = listFalEngines();
 
 function publishedP0Entries(): FalEngineEntry[] {
@@ -250,7 +259,7 @@ test('a future PAYG config fails closed until its canonical pricing row is visib
   assert.deepEqual(visible.exampleCosts.items.map((item) => item.id), [futureId]);
   assert.equal(visible.modelTesting.items[0]?.href, `/models/${futureId}`);
   assert.deepEqual(visible.priceLookups.items[0]?.href, { pathname: '/pricing', hash: `${futureId}-pricing` });
-  assert.deepEqual(visible.exampleCosts.items[0]?.href, { pathname: '/pricing', hash: `${futureId}-pricing` });
+  assert.equal(visible.exampleCosts.items[0]?.href, `/app?engine=${futureId}`);
 });
 
 test('explicit published model fallbacks remain available without a pricing row', () => {
@@ -336,8 +345,9 @@ test('published fixtures expose all P0 model cards and one current row per famil
     );
     assert.deepEqual(p0IdsIn(data.hero.quote.previewRows), P0_REPRESENTATIVE_IDS);
     for (const id of P0_IDS) {
-      const sourceQuote = pricingHub.video.rows.find((row) => row.id === id)?.quotes['5s-720p'];
-      assert.ok(sourceQuote?.display, `${locale}:${id}:5s-source-quote`);
+      const presetId = P0_PAYG_PRESETS[id];
+      const sourceQuote = pricingHub.video.rows.find((row) => row.id === id)?.quotes[presetId];
+      assert.ok(sourceQuote?.display, `${locale}:${id}:${presetId}:source-quote`);
       assert.equal(
         data.priceLookups.items.find((item) => item.id === id)?.price,
         sourceQuote.display,
@@ -345,7 +355,7 @@ test('published fixtures expose all P0 model cards and one current row per famil
       );
     }
     for (const id of P0_VISIBLE_EXAMPLE_IDS) {
-      const sourceQuote = pricingHub.video.rows.find((row) => row.id === id)?.quotes['5s-720p'];
+      const sourceQuote = pricingHub.video.rows.find((row) => row.id === id)?.quotes[P0_PAYG_PRESETS[id]];
       assert.equal(
         data.exampleCosts.items.find((item) => item.id === id)?.price,
         sourceQuote?.display,
@@ -360,18 +370,24 @@ test('PAYG copies a P0 canonical quote instead of an authored amount', () => {
   const pricingHub = pricingHubWithEntries('en', publishedP0Entries());
   const sourceRow = pricingHub.video.rows.find((row) => row.id === 'ltx-2-5-pro');
   assert.ok(sourceRow);
-  sourceRow.quotes['5s-720p'] = {
-    ...sourceRow.quotes['5s-720p'],
+  sourceRow.quotes['10s-720p'] = {
+    ...sourceRow.quotes['10s-720p'],
     status: 'exact',
     amountCents: 43_210,
     display: '$432.10',
+  };
+  sourceRow.quotes['8s-1080p'] = {
+    ...sourceRow.quotes['8s-1080p'],
+    status: 'exact',
+    amountCents: 65_432,
+    display: '$654.32',
   };
 
   const data = buildPayAsYouGoPageData({ locale: 'en', content, pricingHub });
   assert.equal(
     data.pricing.rows.find((row) => row.id === 'ltx-2-5-pro')
-      ?.priceCells.find((cell) => cell.presetId === '5s-720p')?.value,
-    '$432.10',
+      ?.priceCells.find((cell) => cell.presetId === '8s-1080p')?.value,
+    '$654.32',
   );
   assert.equal(
     data.priceLookups.items.find((item) => item.id === 'ltx-2-5-pro')?.price,
@@ -383,9 +399,9 @@ test('PAYG copies a P0 canonical quote instead of an authored amount', () => {
   );
   assert.equal(
     data.hero.quote.previewRows.find((row) => row.id === 'ltx-2-5-pro')?.quoteLabel,
-    '$432.10',
+    '$654.32',
   );
-  assert.doesNotMatch(JSON.stringify(content), /432\.10/);
+  assert.doesNotMatch(JSON.stringify(content), /432\.10|654\.32/);
 });
 
 test('P0 discovery config and localized content own no finished price or rate', () => {
