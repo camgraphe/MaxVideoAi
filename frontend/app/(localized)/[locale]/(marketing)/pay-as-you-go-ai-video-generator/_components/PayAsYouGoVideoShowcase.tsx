@@ -40,7 +40,7 @@ export function PayAsYouGoVideoShowcase({ copy, videos }: PayAsYouGoVideoShowcas
                 <PayAsYouGoPreview
                   src={video.videoUrl}
                   poster={video.posterUrl}
-                  label={`${video.title}, ${copy.mediaPhrase} ${video.engineLabel}, ${video.priceLabel}, ${video.durationLabel}`}
+                  label={`${video.title}, ${copy.mediaPhrase} ${video.engineLabel}, ${video.durationLabel}`}
                   placeholder={copy.preview}
                 />
               </div>
@@ -55,9 +55,6 @@ export function PayAsYouGoVideoShowcase({ copy, videos }: PayAsYouGoVideoShowcas
                   />
                   {video.engineLabel}
                 </span>
-                <span className="rounded-full bg-black/70 px-2.5 py-1 font-mono text-xs font-semibold tabular-nums text-white backdrop-blur">
-                  {video.priceLabel}
-                </span>
               </div>
               <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,transparent,rgba(0,0,0,0.82))] p-3 pt-16 text-white">
                 <div className="flex items-center gap-2 text-xs font-semibold">
@@ -65,7 +62,7 @@ export function PayAsYouGoVideoShowcase({ copy, videos }: PayAsYouGoVideoShowcas
                     <Play className="h-3.5 w-3.5 fill-current" strokeWidth={1.8} />
                   </span>
                   <span>
-                    {video.engineLabel} | {video.durationLabel} | {video.priceLabel}
+                    {video.engineLabel} | {video.durationLabel}
                   </span>
                 </div>
                 <h3 className="mt-2 line-clamp-1 text-sm font-semibold leading-5">{video.title}</h3>

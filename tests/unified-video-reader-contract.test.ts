@@ -6,10 +6,10 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { ExampleReaderStyles } from '../frontend/components/examples/example-reader-styles';
 const read=(path:string)=>readFileSync(path,'utf8');
 test('direct watch pages and gallery use the same reader without replacing canonical or schema ownership',()=>{
- const watch=read('frontend/app/(core)/video/[id]/_components/VideoWatchContent.tsx');
+ const watch=read('frontend/app/(public-watch)/video/[id]/_components/VideoWatchContent.tsx');
  const modal=read('frontend/components/examples/ExampleReader.client.tsx');
  const shared=read('frontend/components/examples/ExampleReaderContent.tsx');
- const route=read('frontend/app/(core)/video/[id]/page.tsx');
+ const route=read('frontend/app/(public-watch)/video/[id]/page.tsx');
  assert.match(watch,/ExampleReaderContent/);assert.match(modal,/ExampleReaderContent/);
  assert.match(watch,/headingLevel="h1"/);assert.match(shared,/headingLevel/);
  assert.match(watch,/contentUrl: videoUrl/);assert.match(watch,/type="application\/ld\+json"/);
@@ -22,8 +22,8 @@ test('direct watch pages and gallery use the same reader without replacing canon
 
 test('reader styles stay local to both reader shells without adding a blocking stylesheet', () => {
  const folder = 'frontend/components/examples/';
- const watch = read('frontend/app/(core)/video/[id]/_components/VideoWatchContent.tsx');
- const watchLayout = read('frontend/app/(core)/video/layout.tsx');
+ const watch = read('frontend/app/(public-watch)/video/[id]/_components/VideoWatchContent.tsx');
+ const watchLayout = read('frontend/app/(public-watch)/video/layout.tsx');
  const modal = read(`${folder}ExampleReader.client.tsx`);
  assert.match(watchLayout, /<ExampleReaderStyles\s*\/>/);
  assert.ok(watchLayout.indexOf('<ExampleReaderStyles') < watchLayout.indexOf('<MarketingVideoLayout'),

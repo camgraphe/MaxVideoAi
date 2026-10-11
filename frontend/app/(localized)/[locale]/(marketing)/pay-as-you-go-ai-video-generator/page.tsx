@@ -10,6 +10,7 @@ import {
   buildPayAsYouGoServiceJsonLd,
   buildPayAsYouGoWebApplicationJsonLd,
 } from './_lib/payg-jsonld';
+import { buildCurrentPricingHubData } from '../pricing/_lib/currentPricingHubData';
 import { loadPayAsYouGoVideoShowcase } from './_lib/payg-video-showcase';
 
 export const revalidate = 600;
@@ -34,8 +35,11 @@ export async function generateMetadata(props: { params: Promise<{ locale: AppLoc
 export default async function PayAsYouGoAiVideoGeneratorPage(props: { params: Promise<{ locale: AppLocale }> }) {
   const { locale } = await props.params;
   const content = getPayAsYouGoContent(locale);
-  const data = buildPayAsYouGoPageData({ locale, content });
-  const showcaseVideos = await loadPayAsYouGoVideoShowcase({ locale, copy: content.showcase.runtime });
+  const [pricingHub, showcaseVideos] = await Promise.all([
+    buildCurrentPricingHubData(locale),
+    loadPayAsYouGoVideoShowcase({ locale, copy: content.showcase.runtime }),
+  ]);
+  const data = buildPayAsYouGoPageData({ locale, content, pricingHub });
   const canonical = buildMetadataUrls(locale, undefined, { englishPath: PAYG_PAGE_PATH }).canonical;
   const breadcrumbJsonLd = buildPayAsYouGoBreadcrumbJsonLd({ canonical, locale, copy: content.jsonLd });
   const serviceJsonLd = buildPayAsYouGoServiceJsonLd({ canonical, copy: content.jsonLd });

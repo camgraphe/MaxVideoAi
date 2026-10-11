@@ -20,7 +20,7 @@ test('public reader sharing copies the current canonical URL and exposes recover
   for (const [key, value] of Object.entries(globals)) Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
   const root = createRoot(dom.window.document.getElementById('root')!);
   try {
-    const { VideoWatchShare } = await import('../frontend/app/(core)/video/[id]/_components/VideoWatchShare.client');
+    const { VideoWatchShare } = await import('../frontend/components/examples/VideoWatchShare.client');
     const first = 'https://maxvideoai.com/video/first-approved-slug';
     const second = 'https://maxvideoai.com/video/second-approved-slug';
     await act(async () => root.render(React.createElement(VideoWatchShare, { watchUrl: first, locale: 'en' })));

@@ -152,16 +152,13 @@ export function PayAsYouGoModelTestingOrderSection({ data }: PayAsYouGoPageDataP
     <section className="border-b border-hairline bg-bg">
       <div className={`${PAYG_CONTAINER_CLASS_NAME} py-12`}>
         <PayAsYouGoSectionHeader {...data.modelTesting.header} />
-        <ol className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {data.modelTesting.items.map((model, index) => (
-            <li key={model.family}>
+        <ul className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {data.modelTesting.items.map((model) => (
+            <li key={model.id}>
               <Link
                 href={model.href}
                 className="group flex h-full gap-4 rounded-[8px] border border-hairline bg-surface p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-text-muted"
               >
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-hairline bg-bg font-mono text-sm font-semibold tabular-nums text-text-primary">
-                  {index + 1}
-                </span>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <EngineIcon engine={model.engineIcon} imageAlt={`${model.family} ${data.common.aiVideoModelAlt}`} size={28} rounded="full" />
@@ -172,7 +169,7 @@ export function PayAsYouGoModelTestingOrderSection({ data }: PayAsYouGoPageDataP
               </Link>
             </li>
           ))}
-        </ol>
+        </ul>
         <p className="mt-4 max-w-3xl text-sm leading-6 text-text-secondary">
           {data.modelTesting.footer}
         </p>

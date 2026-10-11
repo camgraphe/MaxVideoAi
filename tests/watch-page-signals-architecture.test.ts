@@ -78,8 +78,8 @@ test('watch page signal modules expose the expected contracts', () => {
   assert.match(readModule('visual.ts'), /export function buildWatchPageVisualContext/);
   assert.doesNotMatch(readModule('content.ts'), /finalPriceCents|Recorded render cost/);
   const watchData = readFileSync(join(root, 'frontend/server/video-seo.ts'), 'utf8');
-  const watchContent = readFileSync(join(root, 'frontend/app/(core)/video/[id]/_components/VideoWatchContent.tsx'), 'utf8');
-  assert.match(watchData, /quoteCurrentExamplePrice\(video\)/);
+  const watchContent = readFileSync(join(root, 'frontend/app/(public-watch)/video/[id]/_components/VideoWatchContent.tsx'), 'utf8');
+  assert.doesNotMatch(watchData, /quoteCurrentExamplePrice|CurrentExamplePrice|currentPrice/, 'watch data owns selection and SEO signals; current quotes belong to the reader context');
   assert.match(watchContent, /buildExampleWatchDetail\(video, signals, quoteContext\)/);
   assert.match(watchContent, /<ExampleReaderContent/);
   const reader = readFileSync(join(root, 'frontend/components/examples/ExampleReaderContent.tsx'), 'utf8');
