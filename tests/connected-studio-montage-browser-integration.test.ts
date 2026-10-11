@@ -38,6 +38,11 @@ test('MCP montage opens the current conversation with private playback, durable 
   });
   let browserFixture: Awaited<ReturnType<typeof startStudioConnectedBrowserFixture>> | undefined;
   let diagnose = async () => ({});
+  let releaseJournal = () => {}, releaseRenewal = () => {};
+  const journalGate = new Promise<void>(resolve => {releaseJournal = resolve;});
+  const renewalGate = new Promise<void>(resolve => {releaseRenewal = resolve;});
+  let firstContext = true, holdRenewal = false, renewalBlocked = false;
+
   try {
     const session = runtime.auth.createSession(STUDIO_FIXTURE_OWNERS[0], { clientId: 'studio-connected-browser-fixture' });
     const otherSession = runtime.auth.createSession(STUDIO_FIXTURE_OWNERS[1], { clientId: 'studio-connected-browser-fixture' });
@@ -84,6 +89,23 @@ test('MCP montage opens the current conversation with private playback, durable 
     const prepareFresh = async (browserSession = session, viewport = { width: 1440, height: 900 }) => {
       const owned = await browserFixture!.newContext(browserSession, { viewport, locale: 'en-US', colorScheme: 'light', reducedMotion: 'reduce' });
       assert.deepEqual((await owned.context.storageState()).origins, [], 'A fresh context has no Canvas drafts or previous media grants.');
+      // Delay real responses only: a cold journal read can invalidate the
+      // timeline while its rejected private grant is being renewed.
+      if (firstContext) {
+        firstContext = false;
+        await owned.page.route(`${runtime.browserOrigin}${endpoint}/image-conversation`, async route => {
+          await journalGate; await route.continue();
+        });
+        await owned.page.route(`${timelineEndpoint}?preview=1`, async route => {
+          if (!holdRenewal) {await route.continue();return;}
+          holdRenewal = false;
+          const response = await route.fetch();
+          renewalBlocked = true;
+          await renewalGate;
+          await route.fulfill({response});
+        });
+      }
+
       // Only unrelated account/consent readers are simulated. Studio persistence,
       // commands, ownership, export recovery, media grants and Auth remain real.
       const auxiliary = new Map<string, unknown>([
@@ -182,9 +204,15 @@ test('MCP montage opens the current conversation with private playback, durable 
     }).then((response) => { renewalResponses.newPrivateAccess = true; return response; });
     const renewalProof = Promise.all([renewed, newPrivateAccess]);
     void renewalProof.catch(() => undefined);
+    holdRenewal = true;
     expireNextPrivateRequest = true;
     await firstVideo.evaluate((element) => (element as HTMLVideoElement).load());
     await expect.poll(() => browserFixture!.readPrivateRequests().slice(privateRequestCount).some((entry) => entry.status === 403)).toBe(true);
+    await expect.poll(() => renewalBlocked).toBe(true);
+    releaseJournal();
+    // The later canonical read wins; the held renewal response is obsolete.
+    await renewed;
+    releaseRenewal();
     await renewalProof;
     await expect.poll(() => firstVideo.evaluate((element) => (element as HTMLVideoElement).readyState)).toBeGreaterThanOrEqual(2);
     await expect.poll(() => firstVideo.evaluate((element) => (element as HTMLVideoElement).currentTime)).toBeCloseTo(sourceTimeBeforeExpiry, 1);
@@ -380,5 +408,5 @@ test('MCP montage opens the current conversation with private playback, durable 
     await first.close();
   } catch (error) {
     throw new Error(`${String(error)}\n${JSON.stringify(await diagnose())}\n${runtime.readLogs().slice(-4000)}`, { cause: error });
-  } finally { await browserFixture?.close(); await runtime.close(); }
+  } finally { releaseJournal(); releaseRenewal(); await browserFixture?.close(); await runtime.close(); }
 });

@@ -17,8 +17,9 @@ export function useConversationTimeline(projectId: string,refreshKey: unknown) {
   const epoch = useRef(0);
   const invalidate = useCallback(() => {epoch.current++;},[]);
   const path = `/api/studio/projects/${encodeURIComponent(projectId)}/conversation-timeline`;
-  const reads = useMemo(() => ({path,inFlight: 0}),[path]);
+  const reads = useMemo(() => ({path,inFlight: 0,renewMediaIds: new Set<string>()}),[path]);
   const refresh = useCallback(async (options?: {renewMediaId?: string}) => {
+    if (options?.renewMediaId) reads.renewMediaIds.add(options.renewMediaId);
     reads.inFlight++;
     const request = ++epoch.current;
     try {
@@ -27,7 +28,11 @@ export function useConversationTimeline(projectId: string,refreshKey: unknown) {
       if (!active.current || request !== epoch.current) return;
       if (result.error === 'STUDIO_CONNECTED_PROJECT_REQUIRED') {setLegacy(true);return;}
       if (!response.ok || !result.ok) throw new Error(result.error ?? 'TIMELINE_UNAVAILABLE');
-      setLegacy(false);setError(null);setView(previous => ({...result.result,items: retainConversationMediaAccess(previous?.items ?? [],result.result.items,Date.now(),options?.renewMediaId)}));
+      // A newer canonical read may supersede this request, but it must still
+      // replace every rejected grant. Snapshot before React's deferred updater.
+      const renewMediaIds = new Set(reads.renewMediaIds);
+      reads.renewMediaIds.clear();
+      setLegacy(false);setError(null);setView(previous => ({...result.result,items: retainConversationMediaAccess(previous && previous.data.projectId === result.result.data.projectId ? previous.items : [],result.result.items,Date.now(),renewMediaIds)}));
     } catch (failure) {if (active.current && request === epoch.current) setError(failure instanceof Error ? failure.message : 'TIMELINE_UNAVAILABLE');}
     finally {reads.inFlight--;}
   },[reads]);
