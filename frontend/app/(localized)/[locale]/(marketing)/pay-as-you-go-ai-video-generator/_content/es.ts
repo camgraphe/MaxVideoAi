@@ -210,7 +210,7 @@ export const esPayAsYouGoContent = {
       intro: 'Estos ejemplos provienen de la página de precios actual y sirven como referencia. La cotización de la app es el precio final antes de generar.',
     },
     settingsLabel: 'Configuración de ejemplo',
-    quoteReminder: "Comprueba la cotización exacta con tus ajustes antes de generar.",
+    quoteReminder: "Abre este modelo con tus ajustes de la app, que pueden diferir de este ejemplo. Ajusta la duración, la resolución y el audio, y comprueba la cotización exacta antes de generar.",
     budgetTemplate: "¿Planeas tres intentos? Con una cotización sin cambios de {unitPrice}, tres generaciones completadas consumirían {totalPrice} en créditos de medios.",
     budgetContext: "LTX 2.5 Pro · 10s 720p · audio desactivado.",
     budgetCaveat: "Es una ilustración de presupuesto, no una garantía de obtener el resultado deseado en tres intentos. Los créditos consumidos son distintos de la recarga mínima, que empieza en $10. Otros ajustes o precios requieren una nueva cotización.",

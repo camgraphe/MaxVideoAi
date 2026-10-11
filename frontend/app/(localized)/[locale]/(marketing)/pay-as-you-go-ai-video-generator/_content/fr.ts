@@ -210,7 +210,7 @@ export const frPayAsYouGoContent = {
       intro: 'Ces exemples proviennent de la page des tarifs actuelle et servent de repères. Le devis de l’application reste le prix final avant la génération.',
     },
     settingsLabel: 'Réglages d’exemple',
-    quoteReminder: "Vérifiez le devis exact avec vos réglages avant de générer.",
+    quoteReminder: "Ouvre ce modèle avec vos réglages dans l’application, qui peuvent différer de cet exemple. Ajustez la durée, la résolution et l’audio, puis vérifiez le devis exact avant de générer.",
     budgetTemplate: "Vous prévoyez trois essais ? Avec un devis inchangé de {unitPrice}, trois générations terminées consommeraient {totalPrice} de crédits média.",
     budgetContext: "LTX 2.5 Pro · 10s 720p · audio désactivé.",
     budgetCaveat: "C’est une illustration de budget, sans garantie que trois essais donnent le résultat souhaité. Les crédits média consommés sont distincts de la recharge minimale, à partir de 10 $. Des réglages ou tarifs différents nécessitent un nouveau devis.",

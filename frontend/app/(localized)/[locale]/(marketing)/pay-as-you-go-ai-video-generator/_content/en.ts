@@ -210,7 +210,7 @@ export const enPayAsYouGoContent = {
       intro: 'These examples are shortcuts from the current pricing hub. They are useful for orientation, while the app quote is the final price before generation.',
     },
     settingsLabel: 'Example settings',
-    quoteReminder: "Check the exact quote with your settings before generating.",
+    quoteReminder: "Opens this model with your app settings, which may differ from this example. Match duration, resolution and audio, then check the exact quote before generating.",
     budgetTemplate: "Planning three attempts? At an unchanged quote of {unitPrice}, three completed generations would use {totalPrice} in media credits.",
     budgetContext: "LTX 2.5 Pro · 10s 720p · audio off.",
     budgetCaveat: "This is a budget illustration, not a promise that three attempts will produce the result you want. Media credits used are separate from the minimum top-up, which starts at $10. Changed settings or prices require a new quote.",
