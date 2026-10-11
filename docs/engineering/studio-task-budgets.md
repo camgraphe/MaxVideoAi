@@ -33,7 +33,8 @@ the full result directly after that action, without reserving a presentation cal
 or extending the selected ceiling. A narrow natural-duration routing hint makes
 the first call compare the entire new film before any component preparation.
 It excludes edits, exports and scripts. The hint normalizes the total and removes
-an invented component length before saving the fresh response checkpoint; saved
+only a component length that incorrectly repeats that total before saving the
+fresh response checkpoint. Explicit component lengths remain intact; saved
 responses are never rewritten, so replay keeps the action's original identity.
 Planning up to 1200 seconds creates no quote, job or wallet transaction; clients
 choose the cut, then review/confirm exact quotes. Added soundtracks/narration,

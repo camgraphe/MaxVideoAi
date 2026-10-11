@@ -67,7 +67,7 @@ function freezeStudioFilmResponse(response:StudioDirectorResponse,filmDuration:n
     try {
       const args=JSON.parse(item.arguments),request=actionFromTool(item.name,args);
       return request.action==='pricing.compare'&&request.surface==='video'
-        ? {...item,arguments:JSON.stringify({...args,settings:request.settings.filter(setting=>setting.name!=='durationSec'),filmDurationSec:filmDuration})}:item;
+        ? {...item,arguments:JSON.stringify({...args,settings:request.settings.filter(setting=>setting.name!=='durationSec'||setting.value!==filmDuration),filmDurationSec:filmDuration})}:item;
     } catch {return item;}
   })};
 }
@@ -135,7 +135,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         tool_choice: index===0&&filmDuration?{type:'function',name:'pricing_compare'}:'auto',
         instructions: buildStudioDirectorInstructions({...options,taskEnabled:!!options.taskExecution})
           + `\n\nResponse ${index + 1} of ${maxResponses}: ${maxResponses - index} Responses remain, including this one. Open-model/alternative-price work starts with pricing_compare. Preserve selected models and reply-only planning; leave room to answer.`
-          + (filmDuration?`\n\nThe requested complete film is ${filmDuration} seconds. First compare with filmDurationSec=${filmDuration}, surface video and t2v/i2v as appropriate. Preserve explicitly selected models via candidateModelIds and all requested settings/references. This call returns several fully priced cut plans; do not prepare the opening clip before the client chooses.`:'' )
+          + (filmDuration?`\n\nThe requested complete film is ${filmDuration} seconds. First compare with filmDurationSec=${filmDuration}, surface video and t2v/i2v as appropriate. Preserve explicitly selected models via candidateModelIds and all requested settings/references. Omit durationSec from settings unless the client explicitly set a component length; do not guess one. This call returns several fully priced cut plans; do not prepare the opening clip before the client chooses.`:'' )
           + (index === maxResponses-1
           ? '\n\nThis is the last Response available for this message. '+(!correctionAction?'pricing_compare can still return a terminal server estimate without another Response. ':'')+'Otherwise answer from known facts or finish requested preparation/edit/cancellation. No other reads/memory; explain missing verification, never prepare advice-only work.'
           : index === Math.max(0,maxResponses-2) ? '\n\nNo optional memory now. Read only needed facts. Finish planning/cost advice; prepare only requested creation/quotes when facts suffice, leaving one input correction.' : '')

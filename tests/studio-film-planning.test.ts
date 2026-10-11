@@ -9,7 +9,18 @@ const context={message:'HEY!',references:[],history:[],project:{name:'Film',revi
   checkpoint:async()=>{throw new Error('A greeting must not reserve/count/charge a model call.');}};
 
 test('existing-film exports, writing and edits are not rerouted to paid creation planning',()=>{
-  for(const message of ['I want to export my 100-second film','I need a synopsis for my 100-second movie','I want to trim my existing film to 100 seconds'])assert.equal(studioExplicitFilmDuration(message),null,message);
+  for(const message of ['I want to export my 100-second film','I need a synopsis for my 100-second movie','I want to trim my existing film to 100 seconds','Je veux raccourcir mon film à 100 secondes','I want to slow my existing 100-second film'])assert.equal(studioExplicitFilmDuration(message),null,message);
+});
+
+test('a natural film preserves an explicit component duration, including spelled-out lengths, before checkpointing',async()=>{
+  for(const [message,duration] of [['Create a 100-second film using five-second clips',5],['Je veux un film de 100 secondes avec des plans de cinq secondes',5]] as const){
+    const args={surface:'video',mode:'t2v',prompt:'Bambi Rally',settings:[{name:'durationSec',value:duration}],filmDurationSec:100,references:[],baselineModelId:null,candidateModelIds:null,outputCount:1};
+    const stop=new Error('Validated request');
+    await assert.rejects(createStudioConversationDirector({mediaEnabled:true,createResponse:async()=>({id:'r',model:'gpt-6.1-sol',status:'completed',service_tier:'default',usage:null,output_text:'',output:[{type:'function_call',name:'pricing_compare',call_id:'plan',arguments:JSON.stringify(args)}]})})
+      ({...context,message,checkpoint:async(_,create)=>{const response=await create();const call=response.output.find(item=>item.type==='function_call');assert.ok(call?.type==='function_call');assert.deepEqual(JSON.parse(call.arguments).settings,args.settings);return response;},execute:async(_,action)=>{
+        assert.equal(action.action,'pricing.compare');assert.deepEqual((action as {settings:unknown}).settings,args.settings);throw stop;
+      }}),error=>error===stop);
+  }
 });
 
 test('standalone greetings answer locally without a model checkpoint, including punctuation and accents',async()=>{
