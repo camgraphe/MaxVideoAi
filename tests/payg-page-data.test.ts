@@ -49,6 +49,7 @@ test('displayed pricing remains a live projection of the pricing hub', () => {
   const sourceRow = pricingHub.video.rows.find((row) => row.id === sourceId);
   assert.ok(sourceRow);
   sourceRow.quotes['5s-720p'] = { status: 'exact', display: '$987.65' };
+  sourceRow.quotes['10s-720p'] = { status: 'exact', display: '$543.21' };
   const sampleSourceRow = pricingHub.video.rows.find((row) => row.id === 'gemini-omni-flash');
   assert.ok(sampleSourceRow);
   sampleSourceRow.quotes['5s-720p'] = { status: 'exact', display: '$876.54' };
@@ -67,11 +68,11 @@ test('displayed pricing remains a live projection of the pricing hub', () => {
   );
   assert.equal(
     data.priceLookups.items.find((item) => item.id === sourceId)?.price,
-    '$987.65',
+    '$543.21',
   );
   assert.equal(
     data.exampleCosts.items.find((item) => item.id === sourceId)?.price,
-    '$987.65',
+    '$543.21',
   );
   assert.equal(data.hero.quote.sampleCost?.price, '$876.54');
   assert.doesNotMatch(JSON.stringify(content), /987\.65|876\.54/);
@@ -122,5 +123,37 @@ test('missing quotes preserve the current exact-locale live-quote fallback', () 
     assert.equal(cell?.value, content.common.liveQuote);
     assert.equal(cell?.displayValue, content.common.liveQuote);
     assert.equal(cell?.renderReady, false);
+  }
+});
+
+
+test('LTX discovery uses a supported 10-second scenario and exact cents for three completed attempts', () => {
+  const content = getPayAsYouGoContent('en');
+  const pricingHub = structuredClone(buildPricingHubData('en'));
+  const row = pricingHub.video.rows.find((candidate) => candidate.id === 'ltx-2-5-pro')!;
+  row.quotes['10s-720p'] = { status: 'exact', amountCents: 157, display: '$1.57', note: 'Audio included.' };
+  const data = buildPayAsYouGoPageData({ locale: 'en', content, pricingHub });
+  assert.equal(data.priceLookups.items.find((item) => item.id === row.id)?.price, '$1.57');
+  const example = data.exampleCosts.items.find((item) => item.id === row.id)!;
+  assert.equal(example.price, '$1.57');
+  assert.match(example.context, /10s 720p/);
+  assert.match(example.context, /Audio included/);
+  assert.equal(example.href, '/app?engine=ltx-2-5-pro');
+  assert.match(data.exampleCosts.budget ?? '', /\$1\.57/);
+  assert.match(data.exampleCosts.budget ?? '', /\$4\.71/);
+});
+
+test('unavailable or non-exact quotes cannot advertise a numeric shortcut or a repeated budget', () => {
+  for (const status of ['unsupported', 'live_quote', 'closest'] as const) {
+    for (const locale of ['en', 'fr', 'es'] as const) {
+      const content = getPayAsYouGoContent(locale);
+      const pricingHub = structuredClone(buildPricingHubData(locale));
+      const row = pricingHub.video.rows.find((candidate) => candidate.id === 'ltx-2-5-pro')!;
+      row.quotes['10s-720p'] = { status, amountCents: 157, display: '$1.57' };
+      const data = buildPayAsYouGoPageData({ locale, content, pricingHub });
+      assert.equal(data.priceLookups.items.find((item) => item.id === row.id)?.price, content.common.liveQuote);
+      assert.equal(data.exampleCosts.items.find((item) => item.id === row.id)?.price, content.common.liveQuote);
+      assert.equal(data.exampleCosts.budget, undefined);
+    }
   }
 });
