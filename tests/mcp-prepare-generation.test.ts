@@ -23,6 +23,7 @@ import {
   type PrepareGenerationInput,
 } from '../frontend/src/server/agent-api/prepare-generation';
 import type { AgentPrincipal } from '../frontend/src/server/agent-api/principal';
+import type { ResolvedReference } from '../frontend/src/server/agent-api/reference-types';
 import type { AgentModel } from '../frontend/src/server/agent-api/types';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps } from '../frontend/types/engines';
 import {
@@ -1178,6 +1179,50 @@ test('MiniMax reference geometry is rejected before pricing or quote creation', 
     assert.equal(error.code, 'REFERENCE_INVALID');
     return true;
   });
+});
+
+test('invalid H3 references explain the failed constraint without leaking private metadata or pricing', async () => {
+  const valid: ResolvedReference = {
+    assetId: 'private-reference', role: 'reference', mediaKind: 'video',
+    storageUrl: 'https://cdn.maxvideoai.com/private/secret.mp4?token=private-token',
+    mimeType: 'video/mp4', originalName: 'private-filename.mp4', sizeBytes: 3_490_000,
+    width: 720, height: 1280, durationSec: 14,
+  };
+  const cases: Array<{ patch: Partial<ResolvedReference>; message: RegExp; extra?: ResolvedReference }> = [
+    { patch: { width: null, height: null }, message: /dimensions.*re-import/i },
+    { patch: { sizeBytes: undefined }, message: /file metadata.*re-import/i },
+    { patch: { durationSec: null }, message: /duration.*unverified.*re-import/i },
+    { patch: { durationSec: 1.99 }, message: /duration.*outside.*limits/i },
+    { patch: { durationSec: 15.01 }, message: /duration.*outside.*limits/i },
+    { patch: { sizeBytes: 50 * 1024 * 1024 + 1 }, message: /file size.*limit/i },
+    { patch: { originalName: 'private-filename.webm', mimeType: 'video/webm' }, message: /file format.*unsupported/i },
+    { patch: { durationSec: 8 }, extra: { ...valid, assetId: 'private-other',
+      storageUrl: 'https://cdn.maxvideoai.com/private/other.mp4', durationSec: 8 }, message: /combined.*duration.*limit/i },
+    { patch: { mediaKind: 'image', mimeType: 'image/png', originalName: 'private-filename.png',
+      durationSec: null, width: 3000, height: 1000 }, message: /image aspect ratio.*outside.*limits/i },
+  ];
+  for (const { patch, message, extra } of cases) {
+    const references = [{ ...valid, ...patch }, ...(extra ? [extra] : [])];
+    const { deps, captures } = baseDependencies({
+      listPublicEngines: async () => [registryCapability('minimax-h3')],
+      resolveGenerationReferences: async () => references,
+    });
+    await assert.rejects(prepareGeneration({
+      surface: 'video', engineId: 'minimax-h3', mode: 'ref2v', prompt: 'Follow the reference.',
+      settings: { durationSec: 14, resolution: '2K', aspectRatio: '9:16', fps: 24, promptExpansionMode: 'disabled' },
+      references: references.map(({ assetId, role }) => ({ kind: 'asset', assetId, role })), outputCount: 1,
+    }, principal, deps), (error: unknown) => {
+      assert.ok(error instanceof AgentApiError);
+      assert.equal(error.code, 'REFERENCE_INVALID');
+      assert.equal(error.retryable, false);
+      assert.match(error.message, message);
+      assert.doesNotMatch(JSON.stringify({ message: error.message, nextAction: error.nextAction }),
+        /private-reference|private-other|secret|private-token|private-filename|reference_video_urls/);
+      return true;
+    });
+    assert.equal(captures.priced.length, 0);
+    assert.equal(captures.inserted.length, 0);
+  }
 });
 
 test('generation pricing forwards resolved LTX source-audio duration to prepare and confirmation pricing', async () => {

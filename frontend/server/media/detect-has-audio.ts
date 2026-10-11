@@ -25,12 +25,16 @@ export type ProbedMediaBuffer = {
   detectedMime: string | null;
   durationSec: number;
   hasAudio?: boolean;
+  width?: number;
+  height?: number;
 };
 
 type ProbeMetadata = {
   streams?: Array<{
     codec_type?: string;
     duration?: string;
+    width?: number;
+    height?: number;
     disposition?: { attached_pic?: number };
   }>;
   format?: { format_name?: string; duration?: string };
@@ -65,7 +69,8 @@ export function resolveProbedMediaMetadata(
   options: { declaredMime?: string | null } = {},
 ): ProbedMediaBuffer | null {
   const streams = metadata.streams ?? [];
-  const hasVideo = streams.some((stream) => stream.codec_type === 'video' && stream.disposition?.attached_pic !== 1);
+  const videoStream = streams.find((stream) => stream.codec_type === 'video' && stream.disposition?.attached_pic !== 1);
+  const hasVideo = Boolean(videoStream);
   const hasAudio = streams.some((stream) => stream.codec_type === 'audio');
   const kind = hasVideo ? 'video' : hasAudio ? 'audio' : null;
   if (!kind) return null;
@@ -79,7 +84,12 @@ export function resolveProbedMediaMetadata(
     && (kind !== 'video' || stream.disposition?.attached_pic !== 1))?.duration;
   const durationSec = Number.parseFloat(metadata.format?.duration ?? streamDuration ?? '');
   if (!Number.isFinite(durationSec) || durationSec <= 0) return null;
-  return { kind, canonicalMime, detectedMime, durationSec: Math.round(durationSec * 1000) / 1000, hasAudio };
+  const dimensions = videoStream
+    && Number.isSafeInteger(videoStream.width) && Number(videoStream.width) > 0
+    && Number.isSafeInteger(videoStream.height) && Number(videoStream.height) > 0
+    ? { width: videoStream.width!, height: videoStream.height! }
+    : {};
+  return { kind, canonicalMime, detectedMime, durationSec: Math.round(durationSec * 1000) / 1000, hasAudio, ...dimensions };
 }
 
 export async function probeMediaBuffer(
@@ -94,7 +104,7 @@ export async function probeMediaBuffer(
     await writeFile(temporaryFile, mediaBuffer);
     const { stdout } = await execFileAsync(ffprobe.path, [
       '-v', 'error',
-      '-show_entries', 'stream=codec_type,duration:stream_disposition=attached_pic:format=format_name,duration',
+      '-show_entries', 'stream=codec_type,duration,width,height:stream_disposition=attached_pic:format=format_name,duration',
       '-of', 'json',
       temporaryFile,
     ], { timeout: timeoutMs, maxBuffer: 1024 * 1024, signal: options.signal });

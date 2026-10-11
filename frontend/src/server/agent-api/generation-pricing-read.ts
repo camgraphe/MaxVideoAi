@@ -3,7 +3,7 @@ import {isGptImageFamilyEngineId} from '@/lib/image/gptImage2';
 import type {MembershipPricingContext} from '@/server/membership/user-membership-status';
 import {computeGenerationCatalogRevision} from './catalog-revision';
 import {AgentApiError,withMediaNeutralReferenceMessage} from './errors';
-import {GenerationCapabilityError,validateCanonicalGenerationCapabilities} from './generation-capability-validation';
+import {GenerationCapabilityError,validateCanonicalGenerationCapabilities,type ReferenceConstraintFailure} from './generation-capability-validation';
 import {requireGenerationActor,type GenerationActor} from './generation-actor';
 import type {CanonicalGenerationRequest} from './generation-types';
 import type {AgentPublicGenerationEngine} from './model-catalog';
@@ -34,6 +34,18 @@ function invalidParameter(field?: string): never {
   throw new AgentApiError('PARAMETER_INVALID',message);
 }
 
+// Fixed public guidance only. Never forward stored names, URLs, IDs or provider fields.
+const REFERENCE_CONSTRAINT_MESSAGES: Record<ReferenceConstraintFailure, string> = {
+  metadata_unverified: 'Reference file metadata is unverified. Re-import the original file before preparing another quote.',
+  dimensions_unverified: 'Reference dimensions are unverified. Re-import the original file before preparing another quote.',
+  duration_unverified: 'Reference duration is unverified. Re-import the original file before preparing another quote.',
+  duration_unsupported: 'Reference duration is outside the selected model mode limits. Check get_model_details and choose a supported clip.',
+  combined_duration_exceeded: 'Combined reference duration exceeds the selected model mode limit. Remove or shorten clips using the limits in get_model_details.',
+  size_exceeded: 'Reference file size exceeds the selected model mode limit. Check get_model_details and import a smaller file.',
+  format_unsupported: 'Reference file format is unsupported for the selected model mode. Check get_model_details and import a supported format.',
+  image_aspect_ratio_unsupported: 'Reference image aspect ratio is outside the selected model mode limits. Check get_model_details and import a supported image.',
+};
+
 function validateCapabilities(
   request: CanonicalGenerationRequest,
   candidate: AgentPublicGenerationEngine,
@@ -51,7 +63,9 @@ function validateCapabilities(
         throw new AgentApiError('REFERENCE_REQUIRED', 'This generation mode requires reference media.');
       }
       if (error.kind === 'reference_invalid') {
-        throw new AgentApiError('REFERENCE_INVALID', 'The reference media is invalid for this model mode.');
+        throw new AgentApiError('REFERENCE_INVALID', error.referenceFailure
+          ? REFERENCE_CONSTRAINT_MESSAGES[error.referenceFailure]
+          : 'The reference media is invalid for this model mode.');
       }
       invalidParameter(error.field);
     }
