@@ -57,8 +57,12 @@ Production needs `TIMELINE_EXPORT_ECS_CLUSTER`,
 outbound-only security group must share a VPC. Use a dedicated launcher identity
 with RunTask restricted to that task definition/cluster, TagResource for created
 tasks and PassRole for only the existing execution/task roles. Its credentials
-are encrypted production-only server environment variables; do not overwrite
-existing shared AWS credentials.
+are encrypted production-only `TIMELINE_EXPORT_ECS_ACCESS_KEY_ID` and
+`TIMELINE_EXPORT_ECS_SECRET_ACCESS_KEY` server environment variables. Configure
+both together. The launcher passes that pair directly to ECS; when neither is
+set, legacy callers retain the SDK default chain. Do not install global AWS
+credentials for this service: existing infrastructure readers can use those as
+a fallback and must retain their original identity.
 
 Keep `STUDIO_CONVERSATION_EXPORTS_ENABLED=false` until the image, sources, health
 probe and source tests are qualified. Activate using the normal GitHub PR,
