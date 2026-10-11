@@ -2,6 +2,12 @@
 
 ## Studio conversational estimates
 
+Studio whole-film estimates compose this same canonical read seam through
+`conversation-film-pricing.ts`; see [Studio task budgets](studio-task-budgets.md).
+The shared/MCP single-output comparison contract remains a per-clip price.
+Studio's optional `filmDurationSec` returns fully summed cut variants, never a
+linear extrapolation of one clip or a generation approval.
+
 `src/server/agent-api/generation-pricing-read.ts` is the shared read-only normalization-adjacent validation and canonical pricing seam used by preparation and Studio estimates. It checks current executable model/mode facts, references, settings, membership projection and pricing snapshots. It never persists a quote, checks/reserves a wallet or submits a provider request. Preparation retains those responsibilities in its existing owner.
 
 `pricing_read` exposes one exact image/video scenario through Studio's existing director loop. `image-generation-service.ts` additionally applies current Studio authority and certification. Saved media references must be explicitly attached, carry their exact supported kinds and roles, and resolve to the current owner. Estimates return amount/currency, settings, reference count, `estimatedAt` and `quoteRequired`; the client still confirms a fresh canonical quote before spending. Audio and unsaved project-output estimates are unsupported. Advice and comparisons must leave existing prepared/accepted quotes intact. Behavioral coverage lives in `studio-conversation-pricing*.test.ts` and the existing MCP preparation/budget tests.

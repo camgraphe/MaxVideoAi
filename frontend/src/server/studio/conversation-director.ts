@@ -17,6 +17,8 @@ import {studioToolReferenceProperties} from './conversation-tool-reference-schem
 import {isStudioPreparationCorrection} from './conversation-preparation-validation';
 import {projectStudioReply} from '@/lib/studio/conversation-reply';
 import {studioCurrentComparisonReply} from './conversation-current-comparison-reply';
+import {studioGreetingReply,studioExplicitFilmDuration} from './conversation-intent';
+import {studioFilmComparisonReply} from './conversation-film-reply';
 
 export type StudioDirectorResponse = Pick<Response, 'id' | 'model' | 'status' | 'service_tier' | 'usage' | 'output_text'> & {output: Response['output'];incomplete_details?: Response['incomplete_details']};
 export type StudioResponseCreator = (params: ResponseCreateParamsNonStreaming) => Promise<StudioDirectorResponse>;
@@ -57,12 +59,28 @@ export function isReplayableStudioResponse(response: StudioDirectorResponse): bo
   } catch { return false; }
 }
 
+/** Freeze the brief's total before checkpointing, so fresh execution and paid replay hash the same action. */
+function freezeStudioFilmResponse(response:StudioDirectorResponse,filmDuration:number|null):StudioDirectorResponse {
+  if(!filmDuration)return response;
+  return {...response,output:response.output.map(item=>{
+    if(item.type!=='function_call'||item.name!=='pricing_compare')return item;
+    try {
+      const args=JSON.parse(item.arguments),request=actionFromTool(item.name,args);
+      return request.action==='pricing.compare'&&request.surface==='video'
+        ? {...item,arguments:JSON.stringify({...args,settings:request.settings.filter(setting=>setting.name!=='durationSec'||setting.value!==filmDuration),filmDurationSec:filmDuration})}:item;
+    } catch {return item;}
+  })};
+}
+
 /** The model chooses the next action; identity, billing and executable capabilities stay server-owned. */
 import type {StudioTaskExecution} from "./tasks/execution";
 import {isStudioComparisonMismatch,studioComparisonFingerprint,studioRepeatedComparisonReply,studioRecoveredComparisonReply} from './conversation-comparison-recovery';
 
-export function createStudioConversationDirector(options: {model?: StudioAssistantModel;modelForNextCall?:()=>StudioAssistantModel;createResponse?: StudioResponseCreator; mediaEnabled?: boolean;editingEnabled?: boolean;exportsEnabled?: boolean;analysisEnabled?:boolean;analysisProfiles?:{video:boolean;audio:boolean};assistanceCreditsEnabled?: boolean;taskExecution?:StudioTaskExecution} = {}) {
+export function createStudioConversationDirector(options: {model?: StudioAssistantModel;modelForNextCall?:()=>StudioAssistantModel;createResponse?: StudioResponseCreator; mediaEnabled?: boolean;editingEnabled?: boolean;exportsEnabled?: boolean;analysisEnabled?:boolean;analysisProfiles?:{video:boolean;audio:boolean};assistanceCreditsEnabled?: boolean;taskExecution?:StudioTaskExecution;localGreetingEnabled?:boolean} = {}) {
   return async (context: StudioDirectorContext): Promise<ImageDraft> => {
+    const greeting=studioGreetingReply(context.message,context.references.length>0);
+    if(greeting&&options.localGreetingEnabled!==false&&!options.taskExecution?.recoveryOnly)return greeting;
+    const filmDuration=options.mediaEnabled&&!context.references.some(ref=>ref.mediaKind!=='image')?studioExplicitFilmDuration(context.message):null;
     if (!options.createResponse && !process.env.OPENAI_API_KEY)
       throw new AgentApiError('ENGINE_UNAVAILABLE', 'Studio conversation is not configured.');
     const create = options.createResponse ?? ((params) => new OpenAI({apiKey: process.env.OPENAI_API_KEY, maxRetries: 0, timeout: options.taskExecution?Math.max(1000,Math.min(120000,options.taskExecution.deadlineAt.getTime()-Date.now()-5000)):65000}).responses.create(params));
@@ -104,7 +122,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       const availableTools = [...STUDIO_DIRECTOR_TOOLS,...(options.taskExecution?STUDIO_TASK_DIRECTOR_TOOLS:[]), ...(options.mediaEnabled ? STUDIO_MEDIA_DIRECTOR_TOOLS : []),...(options.editingEnabled ? STUDIO_EDITING_DIRECTOR_TOOLS : []),...(options.exportsEnabled ? STUDIO_EXPORT_DIRECTOR_TOOLS : []),...analysisTools];
       // A final comparison renders its own reply; other reads need another Response.
       // Older checkpointed reads remain recoverable during paid-response replay.
-      const tools = correctionAction
+      const tools = index===0&&filmDuration ? availableTools.filter(tool=>tool.action==='pricing.compare') : correctionAction
         ? availableTools.filter(tool => tool.action === correctionAction)
         : index === maxResponses-1 ? availableTools.filter(tool => tool.action.endsWith('.prepare') || tool.action === 'timeline.edit' || tool.action === 'quote.discard' || tool.action === 'pricing.compare')
         : index === Math.max(0,maxResponses-2) ? availableTools.filter(tool => tool.action !== 'project.remember') : availableTools;
@@ -114,9 +132,10 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         model, service_tier: 'default', store: false, reasoning: {effort}, max_output_tokens: options.taskExecution?.profile.maxOutputTokens??2200,
         include: ['reasoning.encrypted_content'],
         parallel_tool_calls: false,
-        tool_choice: 'auto',
+        tool_choice: index===0&&filmDuration?{type:'function',name:'pricing_compare'}:'auto',
         instructions: buildStudioDirectorInstructions({...options,taskEnabled:!!options.taskExecution})
           + `\n\nResponse ${index + 1} of ${maxResponses}: ${maxResponses - index} Responses remain, including this one. Open-model/alternative-price work starts with pricing_compare. Preserve selected models and reply-only planning; leave room to answer.`
+          + (filmDuration?`\n\nThe requested complete film is ${filmDuration} seconds. First compare with filmDurationSec=${filmDuration}, surface video and t2v/i2v as appropriate. Preserve explicitly selected models via candidateModelIds and all requested settings/references. Omit durationSec from settings unless the client explicitly set a component length; do not guess one. This call returns several fully priced cut plans; do not prepare the opening clip before the client chooses.`:'' )
           + (index === maxResponses-1
           ? '\n\nThis is the last Response available for this message. '+(!correctionAction?'pricing_compare can still return a terminal server estimate without another Response. ':'')+'Otherwise answer from known facts or finish requested preparation/edit/cancellation. No other reads/memory; explain missing verification, never prepare advice-only work.'
           : index === Math.max(0,maxResponses-2) ? '\n\nNo optional memory now. Read only needed facts. Finish planning/cost advice; prepare only requested creation/quotes when facts suffice, leaving one input correction.' : '')
@@ -130,7 +149,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       let freshResponse = false;
       let response: StudioDirectorResponse;
       try {
-        response = await context.checkpoint(index, () => {freshResponse = true; return create(params);}, params, {replayOnly: correctionRejected||!!comparisonReplayOnly,prepareLunaInput:()=>{params.input=lunaInput();}});
+        response = await context.checkpoint(index, async () => {freshResponse = true; return freezeStudioFilmResponse(await create(params),filmDuration);}, params, {replayOnly: correctionRejected||!!comparisonReplayOnly,prepareLunaInput:()=>{params.input=lunaInput();}});
       } catch (error) {
         if ((correctionRejected||comparisonReplayOnly) && error instanceof AgentApiError && (error.code === 'RATE_LIMITED'
           || (error.code === 'SPENDING_LIMIT_EXCEEDED' && error.nextAction?.type === 'studio_assistance' && error.nextAction.reason === 'call_limit'))) {
@@ -156,6 +175,8 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       let action: StudioActionRequest;
       try { action = actionFromTool(call.name, JSON.parse(call.arguments)); }
       catch { throw new AgentApiError('PARAMETER_INVALID', 'Studio requested an unavailable or invalid action.'); }
+      if(freshResponse&&index===0&&filmDuration&&(action.action!=='pricing.compare'||action.surface!=='video'))
+        throw new AgentApiError('PARAMETER_INVALID','Compare the complete film cuts before preparing a component quote.');
       if (freshResponse && correctionAction && action.action !== correctionAction)
         throw new AgentApiError('PARAMETER_INVALID', 'Studio can only correct the rejected preparation in this response.');
       if (!options.mediaEnabled && STUDIO_MEDIA_DIRECTOR_TOOLS.some(tool => tool.action === action.action))
@@ -200,6 +221,14 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         return {reply: projectStudioReply(action.reply),image: null,exportQuote: result.data};
       }
       lastResult = result;
+      if(action.action==='pricing.compare'&&result.ok&&result.action==='pricing.compare'&&result.data.filmPlans)
+        return studioFilmComparisonReply(result.data,options.taskExecution?.locale);
+      if(action.action==='pricing.compare'&&action.filmDurationSec&&!result.ok){
+        const locale=options.taskExecution?.locale;
+        const reply=locale==='fr'?`Je ne peux pas vérifier un budget complet pour ${action.filmDurationSec} secondes avec ces exigences.`:
+          locale==='es'?`No puedo verificar un presupuesto completo para ${action.filmDurationSec} segundos con estos requisitos.`:`I cannot verify a complete ${action.filmDurationSec}-second film budget with these requirements.`;
+        return {image:null,reply:projectStudioReply(`${reply} ${result.error.message.slice(0,600)}`)};
+      }
       if(index===maxResponses-1&&action.action==='pricing.compare'){
         if(recoveredComparison)return studioRecoveredComparisonReply(recoveredComparison,completedEdits,options.taskExecution?.locale);
         if(comparisonReplayOnly)return studioRepeatedComparisonReply(comparisonReplayOnly,completedEdits,options.taskExecution?.locale);

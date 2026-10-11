@@ -11,6 +11,41 @@ Sol consumes free credits before explicitly enabled purchased credits; Luna stay
 sponsored. Conservative next-call quotes must fit the remaining ceiling before
 reservation, so the financial cap can stop work before the call/token maxima.
 
+Standalone greetings in English, French and Spanish are answered locally by
+`conversation-intent.ts` before a model checkpoint: no token count, assistance
+reservation or provider dispatch. Attached media or a greeting followed by real
+work still reaches the director. Any existing response checkpoint disables the
+local shortcut, so historical paid usage is settled and the saved answer replayed
+even on the first recovery before the deadline. The normal owned journal/task
+records and rate limits remain in force.
+
+New multi-clip film requests use `pricing_compare.filmDurationSec`, separate from
+the component `durationSec`. `conversation-film-pricing.ts` verifies complete
+cut variants against the canonical comparison owner, preferring 10/20/30 seconds
+and falling back to live model duration capabilities. An explicit component
+length is preserved; selected models remain constraints. The composer sums
+integer customer cents per generated output, including a separately priced tail.
+Only a proven unsupported tail duration permits a priced full clip to be trimmed,
+with both generated and final timing disclosed. Explicit settings/model choices
+remain constraints; unspecified films use a disclosed 720p baseline (16:9 for
+text-only requests). Missing prices never become estimates. The director returns
+the full result directly after that action, without reserving a presentation call
+or extending the selected ceiling. A narrow natural-duration routing hint makes
+the first call compare the entire new film before any component preparation.
+It excludes edits, exports and scripts. The hint normalizes the total and removes
+only a component length that incorrectly repeats that total before saving the
+fresh response checkpoint. Explicit component lengths remain intact; saved
+responses are never rewritten, so replay keeps the action's original identity.
+Planning up to 1200 seconds creates no quote, job or wallet transaction; clients
+choose the cut, then review/confirm exact quotes. Added soundtracks/narration,
+retakes and exports remain separate pricing owners. Historical actions omit the
+new optional field unchanged, preserving their original replay hashes. The
+comparison's ordinary `options` retain each plan's canonical component estimate,
+so the existing owned historical-facts projection provides verified model IDs
+and settings to the next turn. These remain per-output historical estimates;
+only `filmPlans[].price` represents the complete film, and neither authorizes a
+purchase.
+
 | Profile | Maximum credits | Calls/segment | Output/call | Input/call | Time | Recent turns |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | Quick | 100 ($0.10) | 2 | 2,200 | 12,000 | 180s | 4 |

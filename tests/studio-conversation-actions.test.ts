@@ -41,7 +41,7 @@ test('unknown or malformed model actions cannot execute, and bounded read loops 
   const module = await import('../frontend/src/server/studio/conversation-director').catch(() => null);
   assert.ok(module?.createStudioConversationDirector);
   let executed = 0;
-  const context = {message: 'Hi', references: [], history: [], project: {name: 'Film', revision: 0, memory: {revision: 0, brief: 'No neon, cheap landscape film', decisions: []}},
+  const context = {message: 'Read this project and its creation options.', references: [], history: [], project: {name: 'Film', revision: 0, memory: {revision: 0, brief: 'No neon, cheap landscape film', decisions: []}},
     execute: async () => {executed++; return {ok: true} as never;}, checkpoint: async (_: number, create: () => Promise<any>) => create()};
   const director = module.createStudioConversationDirector({createResponse: async () => ({id: 'resp', model: 'gpt-6.1-sol', status: 'completed', service_tier: 'default', usage: null, output_text: '', output: [{type: 'function_call', name: 'generation_confirm', call_id: 'call', arguments: '{}'}]})});
   await assert.rejects(director(context), {code: 'PARAMETER_INVALID'});
