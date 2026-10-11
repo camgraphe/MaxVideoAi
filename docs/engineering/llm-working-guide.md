@@ -88,7 +88,11 @@ npm --prefix frontend run build
 ```
 
 Before production delivery, follow `docs/deployment/github-vercel.md` and the root
-AGENTS production policy, including `pnpm deployment:check`.
+AGENTS production policy, including `pnpm deployment:check`. Keep an open PR
+targeting `main` with a READY Vercel Preview for its latest commit before merging.
+Record the Preview URL, deployment ID, commit SHA and affected-route smoke checks
+in the PR. Revalidate the new Preview after every candidate commit; an older,
+missing or unsuccessful Preview blocks merging even when Quality CI passes.
 
 Intermediate pushes can proceed while CI runs. Use the focused suites in
 `docs/engineering/ci-validation.md`; wait for the required `Quality CI` on the

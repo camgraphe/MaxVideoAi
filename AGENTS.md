@@ -217,11 +217,17 @@ If a test asserts that a file should import a helper or stay under a line thresh
 
 ## Verification
 
-### Production delivery (reviewed 2026-09-22)
+### Production delivery (reviewed 2026-10-11)
 
 Read `docs/deployment/github-vercel.md` before a production merge, deployment,
 promotion, rollback, or domain reassignment. The normal path is an isolated clean
-branch → GitHub PR → passing Quality CI → merge to `main` → Vercel Git deployment.
+branch → GitHub PR targeting `main` → READY Vercel Preview on the latest PR commit
+and passing Quality CI → merge to `main` → Vercel Git deployment.
+Every production candidate must have an open PR and a reviewable Preview before
+merging. Record its Preview URL, deployment ID, commit SHA and smoke-check results
+in the PR. Any new commit requires a new READY Preview and renewed validation;
+an older Preview does not validate the latest candidate. Do not merge while the
+latest Preview is missing, pending, failed or canceled.
 Run `git fetch origin main` and `pnpm deployment:check` from the committed candidate
 before merging. Stop the release if deployed source is missing from GitHub or the
 candidate omits current `main`; reconcile it first and coordinate concurrent tasks.

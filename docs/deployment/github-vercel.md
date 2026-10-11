@@ -1,6 +1,6 @@
 # GitHub and Vercel production delivery
 
-Created/reviewed: 2026-09-22. Owner: application engineering.
+Created: 2026-09-22. Reviewed: 2026-10-11. Owner: application engineering.
 
 ## Source of truth
 
@@ -15,10 +15,16 @@ workflow for normal production releases.
 
 1. Use a clean isolated worktree. Preserve the shared Desktop checkout and other
    tasks' uncommitted work. Fetch `origin/main` and incorporate it into the candidate.
-2. Run focused validation and open a GitHub PR. Intermediate pushes may continue
-   while CI runs; wait for the required Quality CI on the latest candidate before
-   merging. This check aggregates fast checks and every selected integration,
-   browser and exhaustive financial lane. See `docs/engineering/ci-validation.md`.
+2. Run focused validation and open a GitHub PR targeting `main`. Every production
+   candidate must have an open PR and a reviewable Vercel Preview. Wait for the
+   Git-backed Preview in the `maxvideoai` project to be READY on the latest PR
+   commit, smoke-test the affected routes, and record its URL, deployment ID,
+   commit SHA and validation results in the PR. Intermediate pushes may continue
+   while CI runs; each new commit requires a new READY Preview and renewed
+   validation. A missing, pending, failed, canceled or older Preview blocks merging.
+   Also wait for the required Quality CI on the latest candidate. This check
+   aggregates fast checks and every selected integration, browser and exhaustive
+   financial lane. See `docs/engineering/ci-validation.md`.
 3. Immediately before merging, run `git fetch origin main` and
    `pnpm deployment:check` from the committed candidate. This read-only remote
    check uses the authenticated Vercel CLI and GitHub remote; it never deploys,
@@ -29,17 +35,23 @@ workflow for normal production releases.
 4. If production contains unpublished source, stop concurrent release actions,
    recover its exact source in an isolated branch, record evidence and reconcile
    through a validated PR. Do not overwrite it with an older main deployment.
-5. Merge only after checks pass. Let the Vercel Git integration build main.
+5. Merge only after the latest commit's Preview validation and checks pass. Let
+   the Vercel Git integration build main.
    Recheck production immediately before merge if another task has released.
 6. After READY, run `pnpm deployment:check` from the freshly fetched main commit.
    Verify that both returned SHAs equal that merged commit (the premerge check
    allows production to be an ancestor while a newer build is pending). Smoke-test
-   the affected routes and inspect runtime errors. Record the PR, merge SHA and
-   deployment ID in the task result.
+   the affected routes and inspect runtime errors. Record the PR, validated Preview
+   URL and SHA, merge SHA and production deployment ID in the task result.
 
 The command does not lock other releases; tasks must coordinate the final merge
 and domain checks. Never merge another branch while production reconciliation is
 pending. Rebase/merge onto the confirmed new main before resuming that branch.
+
+`pnpm deployment:check` verifies production alignment and Git ancestry; it does
+not verify the PR's Preview. Check Preview readiness and commit identity separately
+before merging. This is a required delivery rule; it does not add a new automated
+GitHub branch-protection check.
 
 ## Build guard and limits
 
