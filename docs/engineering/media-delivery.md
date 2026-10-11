@@ -522,7 +522,8 @@ entry uses an H2 in the dialog and the existing watch URL in browser history; cl
 restores the gallery rather than fetching a second record page. Share resolves the
 canonical URL, while direct legacy ID requests keep the existing slug redirect.
 
-`VideoWatchShare` presents a persistent compact row in the public reader, with a
+`components/examples/VideoWatchShare.client.tsx` owns `VideoWatchShare` for both
+the gallery reader and direct watch route. It presents a persistent compact row, with a
 canonical-link copy action and an announced confirmation. Clipboard failures expose
 the same URL in a selectable read-only field, and the clipboard fallback returns
 focus to the reader action. Feedback belongs to its watch URL, so navigation cannot

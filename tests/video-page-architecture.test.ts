@@ -4,15 +4,15 @@ import { join } from 'node:path';
 import test from 'node:test';
 
 const root = process.cwd();
-const pagePath = join(root, 'frontend/app/(core)/video/[id]/page.tsx');
-const contentPath = join(root, 'frontend/app/(core)/video/[id]/_components/VideoWatchContent.tsx');
-const cardPath = join(root, 'frontend/app/(core)/video/[id]/_components/VideoWatchCard.tsx');
-const relatedPath = join(root, 'frontend/app/(core)/video/[id]/_components/VideoWatchRelatedExamples.tsx');
-const sidebarPath = join(root, 'frontend/app/(core)/video/[id]/_components/VideoWatchSidebar.tsx');
-const sourceImagesPath = join(root, 'frontend/app/(core)/video/[id]/_components/VideoWatchSourceImages.tsx');
-const sourceImagesClientPath = join(root, 'frontend/app/(core)/video/[id]/_components/VideoWatchSourceImages.client.tsx');
-const unavailablePath = join(root, 'frontend/app/(core)/video/[id]/_components/VideoUnavailableState.tsx');
-const utilsPath = join(root, 'frontend/app/(core)/video/[id]/_lib/video-watch-page-utils.ts');
+const pagePath = join(root, 'frontend/app/(public-watch)/video/[id]/page.tsx');
+const contentPath = join(root, 'frontend/app/(public-watch)/video/[id]/_components/VideoWatchContent.tsx');
+const cardPath = join(root, 'frontend/app/(public-watch)/video/[id]/_components/VideoWatchCard.tsx');
+const relatedPath = join(root, 'frontend/app/(public-watch)/video/[id]/_components/VideoWatchRelatedExamples.tsx');
+const sidebarPath = join(root, 'frontend/app/(public-watch)/video/[id]/_components/VideoWatchSidebar.tsx');
+const sourceImagesPath = join(root, 'frontend/app/(public-watch)/video/[id]/_components/VideoWatchSourceImages.tsx');
+const sourceImagesClientPath = join(root, 'frontend/app/(public-watch)/video/[id]/_components/VideoWatchSourceImages.client.tsx');
+const unavailablePath = join(root, 'frontend/app/(public-watch)/video/[id]/_components/VideoUnavailableState.tsx');
+const utilsPath = join(root, 'frontend/app/(public-watch)/video/[id]/_lib/video-watch-page-utils.ts');
 
 const pageSource = readFileSync(pagePath, 'utf8');
 const contentSource = readFileSync(contentPath, 'utf8');

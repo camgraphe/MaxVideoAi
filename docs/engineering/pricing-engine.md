@@ -428,6 +428,7 @@ Provider facts include vendor rates, units, duration, resolution, provider tiers
 | `frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-spec-values.ts` | Capability specs plus supplied current quote labels | Presentation only | Authored capabilities cannot override customer prices |
 | `frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-pricing.ts` | Comparison price display, comparable pricing score and specs input | Current canonical public consumer | Unavailable if no current pricing engine/quote |
 | `frontend/server/current-example-price.ts` | Current recreation/reference quote for public examples and home | Current canonical public consumer | Original paid snapshot remains immutable |
+| `frontend/server/example-watch-detail-loader.ts` | Prepared current policy/catalog context and detail quotes for public watch readers | Current canonical public consumer | Quote functions remain on the server |
 | `frontend/src/server/agent-api/generation-pricing.ts` | MCP preparation and executor-bound confirmation pricing | Shared live preflight/canonical billing consumer | Same effective customer quote |
 | `frontend/server/pricing-admin/revalidation.ts` | Confirmed price-change invalidation across actual English/localized routes | Refresh only | No commercial arithmetic |
 | `frontend/lib/pricing-unit-display.ts` | Currency formatting of a quoted total divided by quantity | Presentation only | Shared admin/public unit precision |
@@ -448,6 +449,15 @@ Provider facts include vendor rates, units, duration, resolution, provider tiers
 | `frontend/app/(core)/admin/membership` | Read-only historical membership thresholds, discounts, and immutable events | Retired for mutation | Stable historical owner |
 | `frontend/app/(core)/admin/billing-products` | Referenced fixed-product preview, confirmation, history, and rollback | Operationally accepted on isolated DB | Stable billing-product-domain owner |
 | `frontend/app/api/admin/pricing`, `membership`, `billing-products` | Authorized inventory/history reads; pricing and billing-product preview/confirm mutations; explicit membership-retired errors | Operationally accepted on isolated DB | Stable thin route adapters |
+
+Direct watch data in `server/video-seo.ts` owns public selection, eligibility,
+canonical signals, source images and related links. It does not prepare a price.
+The watch route prepares its current catalog/policy context separately through
+`example-watch-detail-loader.ts`; the detail builder supplies the reader's
+displayed quotes. Keep the shared `current-example-price.ts` helper for gallery,
+model and homepage callers. `video-seo-no-unused-price.test.ts` checks this owner
+boundary; the quote-context and detail tests retain actual reader price coverage.
+Removing an unused quote dependency alone does not establish a latency or CWV gain.
 
 ## Homepage guided pricing demonstration
 

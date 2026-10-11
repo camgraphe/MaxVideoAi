@@ -37,7 +37,7 @@ async function loadRealRoute() {
     './_lib/video-watch-page-utils': `export const FALLBACK_THUMB="";export const TITLE_SUFFIX="";export const buildMetaTitle=x=>x;export const isRenderable=()=>${fixture}.renderable;export const parseAspectRatio=()=>null;export const toAbsoluteUrl=x=>x;`,
   };
   const output = await build({
-    entryPoints: ['frontend/app/(core)/video/[id]/page.tsx'],
+    entryPoints: ['frontend/app/(public-watch)/video/[id]/page.tsx'],
     bundle: true, write: false, platform: 'node', format: 'cjs', packages: 'external',
     jsx: 'automatic', tsconfig: 'frontend/tsconfig.json',
     plugins: [{ name: 'controlled-watch-route-readers', setup(builder) {
