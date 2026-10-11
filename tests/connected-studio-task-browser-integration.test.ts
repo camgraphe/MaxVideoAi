@@ -104,7 +104,7 @@ test('task ceilings, explicit continuation and saved progress work on desktop/mo
       createActionResponse:async()=>{throw new Error('A greeting must not buy a model call.');}}});
     await expect(page.getByText('Hey! What would you like to create today?')).toBeVisible({timeout:15_000});
     const greetingTask=page.getByRole('region',{name:'Studio task'}).last();
-    await expect(greetingTask.getByText('Request finished')).toBeVisible();
+    await expect(greetingTask.getByText('Request complete')).toBeVisible();
     assert.equal(calls,5);
     const greetingUsage=(await runtime.database.pool.query('SELECT sum(consumed_credits)::int consumed,sum(reserved_credits)::int reserved FROM studio_assistance_credit_lots WHERE user_id=$1',[STUDIO_FIXTURE_OWNERS[0]])).rows[0];
     assert.deepEqual(greetingUsage,{consumed:500,reserved:0});
