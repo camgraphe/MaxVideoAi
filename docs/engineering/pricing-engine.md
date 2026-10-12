@@ -1053,3 +1053,20 @@ require the current authoritative estimate. Accepted quote recovery preserves it
 stored funding; old prepared quotes must be prepared again. Migration 60 expands
 the database CHECK for historical/current tuples and migration 31 preserves that
 upgrade on replay. Do not substitute padded retail cents for this supplier budget.
+
+## Public page loading scopes (2026-10-12)
+
+`buildCurrentPricingHubData` keeps the complete Pricing-page projection. Its
+request-local canonical worker queue and shared policy scope remain unchanged.
+`buildCurrentVideoPricingData` reuses that same owner but exposes only `video`:
+PAYG does not consume image, audio or tool prices and must not start those reads.
+The narrow return type prevents unrefreshed base amounts from escaping as current
+prices. PAYG's pure projection accepts `Pick<PricingHubData, 'video'>`.
+
+With the current catalog, the full hub runs 132 distinct image/video quotes plus
+21 audio/tool quotes; the video-only owner runs the same 114 video quotes through
+at most eight workers. This is a count of canonical quote calls, not SQL commands.
+`tests/payg-current-video-pricing.test.ts` compares the entire EN/FR/ES PAYG output
+against the full hub for exact and unavailable results. Existing hub queue tests
+retain full-surface limits, failure observation and next-request freshness. No
+cross-request quote cache or tariff arithmetic is introduced.

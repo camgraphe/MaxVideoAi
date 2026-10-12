@@ -115,7 +115,12 @@ slots and scores. Canonical hero prices stream into quote-only Suspense slots in
 the existing player; demonstration pricing has its own section boundary. Pending
 quotes show a loading label and an em dash, never a numeric estimate. The pending
 demonstration reserves its normal surface and disables its controls until exact
-server prices arrive. Discovery awaits the gallery beneath its own Suspense boundary. The four authored CreativeFilms remain
+server prices arrive. Only four display fields (label, amount, scenario and optional
+rate) cross each hero quote boundary; never serialize the whole video item again.
+The pending demo derives its three fixed scenario labels locally and does not
+receive the engine/workspace props until the canonical prices resolve. If current
+quotes are unavailable, retain the reserved walkthrough and show a localized
+unavailable status with disabled controls. Discovery awaits the gallery beneath its own Suspense boundary. The four authored CreativeFilms remain
 outside that boundary. Its fallback uses the same six authored fallback cards and
 reader geometry, with real model/example links; final cards retain the existing
 curation, promotion and SQL-read policy. Do not stream a replacement hero or entire

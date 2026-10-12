@@ -67,7 +67,7 @@ test('homepage pricing keeps its placeholder until the deferred real composer is
       Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
     }
     root = createRoot(dom.window.document.getElementById('root')!);
-    await act(async () => root!.render(React.createElement(HomePriceDemo, { locale: 'en', models, pending: true })));
+    await act(async () => root!.render(React.createElement(HomePriceDemo, { locale: 'en', pending: true })));
     const placeholder = () => dom.window.document.querySelector('.price-app-placeholder');
     assert.ok(placeholder(), 'before entering view the deferred composer needs its reserved surface');
     assert.ok(enter);
@@ -75,6 +75,12 @@ test('homepage pricing keeps its placeholder until the deferred real composer is
     assert.ok(placeholder(), 'entering view must not remove the reserved surface while its chunk is pending');
     assert.equal(dom.window.document.querySelector('.price-app-surface'), null);
     assert.ok([...dom.window.document.querySelectorAll('button')].every(button => button.disabled), 'Pending prices cannot activate the guided demo');
+    assert.equal(dom.window.document.querySelector('.price-walkthrough-caption .sr-only')?.textContent, '—');
+    await act(async () => root!.render(React.createElement(HomePriceDemo, { locale: 'en', models: [] })));
+    assert.ok(placeholder(), 'An unavailable quote keeps the reserved demo surface');
+    assert.ok(dom.window.document.querySelector('.price-walkthrough'));
+    assert.equal(dom.window.document.querySelector('[role=status]')?.textContent, 'Prices temporarily unavailable');
+    assert.ok([...dom.window.document.querySelectorAll('button')].every(button => button.disabled));
     assert.equal(dom.window.document.querySelector('.price-walkthrough-caption .sr-only')?.textContent, '—');
     await act(async () => root!.render(React.createElement(HomePriceDemo, { locale: 'en', models })));
     assert.ok([...dom.window.document.querySelectorAll('button')].every(button => !button.disabled));
@@ -85,6 +91,7 @@ test('homepage pricing keeps its placeholder until the deferred real composer is
     assert.equal(surface.getAttribute('inert'), '', 'the guided demo controls must remain inert in the rendered DOM');
     assert.equal(surface.getAttribute('aria-hidden'), 'true');
     assert.equal(dom.window.document.querySelectorAll('.price-app-annotation').length, 1);
+
   } finally {
     if (root) await act(async () => { resolveChunk(); root!.unmount(); });
     dom.window.close();

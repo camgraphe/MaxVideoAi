@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-13",
+  "traces": [
+    {
+      "file": "candidate-compact-slow-1.json.gz",
+      "sha256": "f6cf2e37270429dfca4b2b3f99ca2034d9940bbd074e5d9cab4bffa2b8459109",
+      "lcpMs": 2054.411,
+      "ttfbMs": 625.581,
+      "documentBytes": 72757,
+      "documentDecodedBytes": 320246,
+      "captureAfterNavigationMs": 43188.48,
+      "posterRect": {
+        "root_x": 227,
+        "root_y": 359,
+        "root_width": 1256,
+        "root_height": 577
+      },
+      "layoutShiftEvents30s": 0
+    },
+    {
+      "file": "candidate-compact-slow-2.json.gz",
+      "sha256": "553d2e9ef73aa1ef66fe5a375291d6a4e48ebb50910d8380d77fe055c27a69fe",
+      "lcpMs": 2052.189,
+      "ttfbMs": 618.162,
+      "documentBytes": 72757,
+      "documentDecodedBytes": 320246,
+      "captureAfterNavigationMs": 54046.962,
+      "posterRect": {
+        "root_x": 227,
+        "root_y": 359,
+        "root_width": 1256,
+        "root_height": 577
+      },
+      "layoutShiftEvents30s": 0
+    }
+  ],
+  "baselineDocumentBytes": 69678,
+  "prototypeDocumentBytes": 82768,
+  "limitation": "Two final-candidate verification traces, not a new randomized paired comparison. Visible poster height 577 CSS px vs 584 in the initial experiment; width1256 and x227/y359 unchanged. All CSS hashes identical. No field/CrUX attribution."
+}

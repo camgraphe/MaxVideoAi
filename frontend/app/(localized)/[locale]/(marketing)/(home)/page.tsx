@@ -3,7 +3,6 @@ import { Suspense } from 'react';
 import { buildHomeComparisonData, buildHomeComparisonLinks } from './_lib/home-comparison-data';
 import { HomePricingSection } from '@/components/marketing/home/HomePricingSection';
 import { HomeDeferredPricing } from './_components/HomeDeferredPricing';
-import { buildHomePriceDemo } from './_lib/home-price-demo-data';
 import { HomeCreativeWorlds } from '@/components/marketing/home/HomeCreativeWorlds';
 import { HomeCreationSection } from '@/components/marketing/home/HomeCreationSection';
 import { HomeModelChoice } from '@/components/marketing/home/HomeModelChoice';
@@ -95,7 +94,7 @@ export default async function HomePage(props: { params: Promise<{ locale: string
         <HomeToolsGallery locale={locale} />
       </DeferredMarketingContent>
       <DeferredMarketingContent>
-        <Suspense fallback={<HomePricingSection locale={locale} models={buildHomePriceDemo(locale).map(model => ({ ...model, steps: model.steps.map(step => ({ ...step, amountCents: 0, display: '—' })) }))} copy={content.pricingTrust} pending />}>
+        <Suspense fallback={<HomePricingSection locale={locale} copy={content.pricingTrust} pending />}>
           <HomeDeferredPricing locale={locale} models={pendingData.priceModels} copy={content.pricingTrust} />
         </Suspense>
       </DeferredMarketingContent>

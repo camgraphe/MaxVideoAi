@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { buildHeroVideoPriceDisplay } from './hero-video-price-display';
 import { Suspense } from 'react';
 import { Link } from '@/i18n/navigation';
 import { ButtonLink } from '@/components/ui/Button';
@@ -107,7 +108,7 @@ function applyCurrentHeroPrice(item: HeroVideoShowcaseItem, prices: ReadonlyMap<
 async function ResolvedHeroPrice({ item, prices, locale, details }: {
   item: HeroVideoShowcaseItem; prices: Promise<ReadonlyMap<string, CurrentExamplePrice>>; locale: AppLocale; details?: boolean;
 }) {
-  return <HeroVideoPriceQuote selected={applyCurrentHeroPrice(item, await prices, locale)} details={details} />;
+  return <HeroVideoPriceQuote quote={buildHeroVideoPriceDisplay(applyCurrentHeroPrice(item, await prices, locale))} details={details} />;
 }
 
 export function HomeHero({
@@ -157,8 +158,8 @@ export function HomeHero({
         const pendingItem = { ...item, price: '', estimateValue: '—', priceKind: 'unavailable' as const,
           estimateLabel: locale === 'fr' ? 'Chargement du prix…' : locale === 'es' ? 'Cargando precio…' : 'Loading price…' };
         return [item.id, {
-          badge: <Suspense fallback={<HeroVideoPriceQuote selected={pendingItem} />}><ResolvedHeroPrice item={item} prices={currentHeroPricesPending} locale={locale} /></Suspense>,
-          details: <Suspense fallback={<HeroVideoPriceQuote selected={pendingItem} details />}><ResolvedHeroPrice item={item} prices={currentHeroPricesPending} locale={locale} details /></Suspense>,
+          badge: <Suspense fallback={<HeroVideoPriceQuote quote={buildHeroVideoPriceDisplay(pendingItem)} />}><ResolvedHeroPrice item={item} prices={currentHeroPricesPending} locale={locale} /></Suspense>,
+          details: <Suspense fallback={<HeroVideoPriceQuote quote={buildHeroVideoPriceDisplay(pendingItem)} details />}><ResolvedHeroPrice item={item} prices={currentHeroPricesPending} locale={locale} details /></Suspense>,
         }];
       }))
     : undefined;
