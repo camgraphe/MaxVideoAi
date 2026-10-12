@@ -17,7 +17,7 @@ const COPY = {
  es:{demo:'Dentro de MaxVideoAI',tag:'Demostración guiada',steps:['Probar una idea','Darle más tiempo','Afinar los detalles'],details:['5 segundos. Suficiente para explorar una idea.','Mismo modelo, misma calidad. Una escena más larga.','Mantén los 15 segundos. Pasa a Full HD.'],duration:'Duración',resolution:'Resolución',audio:'Audio activado · 16:9 · 1 video',quote:'El precio está aquí, antes de generar.',pause:'Pausa',replay:'Volver a ver',note:'Ejemplos de precios en USD. La app confirma el precio final antes de generar.',cta:'Abrir el estudio',pricing:'Ver todos los precios',guarantees:['Sin suscripción','Tú eliges los ajustes','Conoce el precio antes']},
 };
 
-export function HomePriceDemo({locale,models}:{locale:AppLocale;models:HomePriceModel[]}) {
+export function HomePriceDemo({locale,models,pending=false}:{locale:AppLocale;models:HomePriceModel[];pending?:boolean}) {
  const c = COPY[locale];
  const root = useRef<HTMLDivElement>(null);
  const [stepIndex,setStepIndex] = useState(0);
@@ -34,30 +34,30 @@ export function HomePriceDemo({locale,models}:{locale:AppLocale;models:HomePrice
   return ()=>{observer.disconnect();media.removeEventListener('change',update);};
  },[]);
  useEffect(()=>{
-  if(!visible || !playing || reduced)return;
+  if(pending || !visible || !playing || reduced)return;
   const timer = setInterval(()=>{
    if(document.hidden)return;
    setStepIndex(value=>{if(value===2){setPlaying(false);return value;}return value+1;});
   },4200);
   return ()=>clearInterval(timer);
- },[visible,playing,reduced]);
+ },[pending,visible,playing,reduced]);
  const model=models[0];
  if(!model)return <Link href="/pricing">{c.pricing} ↗</Link>;
  const step=model.steps[stepIndex];
  return <div className="price-walkthrough">
   <div className="price-walkthrough-story">
    <div className="price-walkthrough-label"><span>{c.demo}</span><small>Wan 3</small></div>
-   <div className="price-walkthrough-steps">{model.steps.map((item,index)=><button type="button" key={index} aria-pressed={stepIndex===index} onClick={()=>{setStepIndex(index);setPlaying(false);}}><span className="price-step-number">0{index+1}</span><span><strong>{c.steps[index]}</strong><small>{item.seconds} s · {item.resolution}</small></span><span aria-hidden>↗</span></button>)}</div>
+   <div className="price-walkthrough-steps">{model.steps.map((item,index)=><button type="button" disabled={pending} key={index} aria-pressed={stepIndex===index} onClick={()=>{setStepIndex(index);setPlaying(false);}}><span className="price-step-number">0{index+1}</span><span><strong>{c.steps[index]}</strong><small>{item.seconds} s · {item.resolution}</small></span><span aria-hidden>↗</span></button>)}</div>
    <p className="price-walkthrough-description" key={stepIndex}>{c.details[stepIndex]}</p>
    <div className="price-walkthrough-links"><Link href="/app">{c.cta} ↗</Link><Link href="/pricing">{c.pricing} →</Link></div>
   </div>
   <div className="price-walkthrough-stage" ref={root}>
-   <div className="price-walkthrough-play"><span>{c.tag}</span><button type="button" onClick={()=>{if(playing){setPlaying(false);}else{setStepIndex(0);setPlaying(true);}}}>{playing&&!reduced ? c.pause : c.replay} <span aria-hidden>{playing&&!reduced?'Ⅱ':'↻'}</span></button></div>
+   <div className="price-walkthrough-play"><span>{c.tag}</span><button type="button" disabled={pending} onClick={()=>{if(playing){setPlaying(false);}else{setStepIndex(0);setPlaying(true);}}}>{playing&&!reduced ? c.pause : c.replay} <span aria-hidden>{playing&&!reduced?'Ⅱ':'↻'}</span></button></div>
    <div className="price-app-frame" data-price-step={stepIndex}>
-    {ready ? <AppSurface model={model} step={step} locale={locale}/> : <HomePriceAppPlaceholder/>}
+    {ready && !pending ? <AppSurface model={model} step={step} locale={locale}/> : <HomePriceAppPlaceholder/>}
     <div className="price-app-annotation"><span aria-hidden>↑</span>{c.quote}</div>
    </div>
-   <div className="price-walkthrough-caption" aria-live={playing?'off':'polite'} aria-atomic="true"><span>{c.duration} <strong>{step.seconds} s</strong> · {c.resolution} <strong>{step.resolution}</strong><small>{c.audio}</small></span><strong className="sr-only" key={stepIndex}>{step.display}</strong></div>
+   <div className="price-walkthrough-caption" aria-live={playing?'off':'polite'} aria-atomic="true"><span>{c.duration} <strong>{step.seconds} s</strong> · {c.resolution} <strong>{step.resolution}</strong><small>{c.audio}</small></span><strong className="sr-only" key={stepIndex}>{pending ? '—' : step.display}</strong></div>
    <p className="price-walkthrough-note">{c.note}</p>
   </div>
   <ul className="price-walkthrough-guarantees">{c.guarantees.map(text=><li key={text}><span aria-hidden>✓</span>{text}</li>)}</ul>

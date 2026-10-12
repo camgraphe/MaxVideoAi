@@ -2,6 +2,8 @@ import '@/styles/marketing-home.css';
 import { Suspense } from 'react';
 import { buildHomeComparisonData, buildHomeComparisonLinks } from './_lib/home-comparison-data';
 import { HomePricingSection } from '@/components/marketing/home/HomePricingSection';
+import { HomeDeferredPricing } from './_components/HomeDeferredPricing';
+import { buildHomePriceDemo } from './_lib/home-price-demo-data';
 import { HomeCreativeWorlds } from '@/components/marketing/home/HomeCreativeWorlds';
 import { HomeCreationSection } from '@/components/marketing/home/HomeCreationSection';
 import { HomeModelChoice } from '@/components/marketing/home/HomeModelChoice';
@@ -59,7 +61,7 @@ export default async function HomePage(props: { params: Promise<{ locale: string
   const startupFameLabel = dictionary.home.partners?.startupFameLabel ?? 'Featured on Startup Fame';
   const hero = buildHeroContent(locale, content);
   const pendingData = prepareHomePageData(locale, content);
-  const { programmedHeroSlots, engineScores, currentHeroPrices, currentPriceModels } = await pendingData.critical;
+  const { programmedHeroSlots, engineScores } = await pendingData.critical;
   const programmedHeroItems = buildProgrammedHeroItems(locale, content, programmedHeroSlots);
   const primaryBestForCards = buildBestForGuideCards(content, BEST_FOR_MAIN_SLUGS);
   const comparisonScores = buildHomeComparisonData(engineScores);
@@ -75,7 +77,7 @@ export default async function HomePage(props: { params: Promise<{ locale: string
       <HomeHero
         copy={hero}
         programmedHeroItems={programmedHeroItems}
-        currentHeroPrices={currentHeroPrices}
+        currentHeroPricesPending={pendingData.heroPrices}
         locale={locale}
       />
       <DeferredMarketingContent><HomeCreationSection locale={locale} assistantHref={mcpLink?.href} /></DeferredMarketingContent>
@@ -93,7 +95,9 @@ export default async function HomePage(props: { params: Promise<{ locale: string
         <HomeToolsGallery locale={locale} />
       </DeferredMarketingContent>
       <DeferredMarketingContent>
-        <HomePricingSection locale={locale} models={currentPriceModels} copy={content.pricingTrust} />
+        <Suspense fallback={<HomePricingSection locale={locale} models={buildHomePriceDemo(locale).map(model => ({ ...model, steps: model.steps.map(step => ({ ...step, amountCents: 0, display: '—' })) }))} copy={content.pricingTrust} pending />}>
+          <HomeDeferredPricing locale={locale} models={pendingData.priceModels} copy={content.pricingTrust} />
+        </Suspense>
       </DeferredMarketingContent>
       <DeferredMarketingContent>
         {workflowSeoCopy ? <WorkflowSeoSummary copy={workflowSeoCopy} locale={locale} /> : null}

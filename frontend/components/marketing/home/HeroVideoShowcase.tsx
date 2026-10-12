@@ -2,6 +2,7 @@
 
 
 import Image from 'next/image';
+import type { ReactNode } from 'react';
 import { Maximize2, Pause, Play, Volume2, VolumeX } from 'lucide-react';
 import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
 import { UIIcon } from '@/components/ui/UIIcon';
@@ -85,8 +86,36 @@ function getDurationShortLabel(value: string) {
   return seconds ? `${seconds}s` : value;
 }
 
+export function HeroVideoPriceQuote({ selected, details = false }: { selected: HeroVideoShowcaseItem; details?: boolean }) {
+  const primaryPrice = selected.estimateValue || selected.price;
+  const ratePrice = selected.price && selected.price !== primaryPrice ? selected.price : null;
+  const [modeLabel, , formatLabelFromMedia] = (selected.mediaInfo ?? '').split(' · ');
+  const quoteRenderMeta = selected.quoteScenario ?? [getDurationShortLabel(selected.duration), modeLabel?.toLowerCase(), formatLabelFromMedia ?? selected.resolution]
+    .filter(Boolean)
+    .join(' · ');
+  const ratePerSecond = selected.priceKind === 'reference' || selected.priceKind === 'unavailable'
+    ? null
+    : buildRatePerSecondLabel(selected, primaryPrice, ratePrice);
+
+  return details ? (
+    <details className="cinema-quote-details"><summary>{selected.estimateLabel} <strong>{primaryPrice}</strong></summary><p>{quoteRenderMeta}{ratePerSecond ? ` · ${ratePerSecond}` : ''}</p></details>
+  ) : (
+          <div className="cinema-film-quote hidden sm:block absolute right-2.5 top-2.5 max-w-[124px] rounded-[11px] bg-black/44 px-2 py-1.5 text-left text-white shadow-[0_10px_26px_-22px_rgba(0,0,0,0.9)] backdrop-blur-sm dark:border dark:border-white/[0.14] dark:bg-surface-glass-60 sm:right-4 sm:top-4 sm:max-w-[132px] sm:px-2.5 sm:py-2">
+            <p className="text-[6.5px] font-bold uppercase tracking-[0.12em] text-white/58 sm:text-[7px]">{selected.estimateLabel}</p>
+            <p className="mt-0.5 text-lg font-semibold leading-none tracking-tight sm:text-xl">
+              {primaryPrice}
+            </p>
+            <p className="mt-0.5 text-[8px] font-medium leading-tight text-white/70 sm:text-[9px]">{quoteRenderMeta}</p>
+            {ratePerSecond ? <p className="mt-0.5 text-[8px] font-semibold leading-tight text-white/78 sm:text-[9px]">{ratePerSecond}</p> : null}
+          </div>
+  );
+}
+
+export type HeroVideoPriceSlots = Readonly<Record<string, { badge: ReactNode; details: ReactNode }>>;
+
 export function HeroVideoShowcase({
   items,
+  priceQuotes,
   playLabel,
   pauseLabel,
   loadingLabel,
@@ -98,6 +127,7 @@ export function HeroVideoShowcase({
   progressLabel = 'Preview progress',
 }: {
   items: HeroVideoShowcaseItem[];
+  priceQuotes?: HeroVideoPriceSlots;
   playLabel: string;
   pauseLabel: string;
   loadingLabel: string;
@@ -115,16 +145,6 @@ export function HeroVideoShowcase({
   } = useHeroVideoPlayback(items);
 
   if (!selected) return null;
-
-  const primaryPrice = selected.estimateValue || selected.price;
-  const ratePrice = selected.price && selected.price !== primaryPrice ? selected.price : null;
-  const [modeLabel, , formatLabelFromMedia] = (selected.mediaInfo ?? '').split(' · ');
-  const quoteRenderMeta = selected.quoteScenario ?? [getDurationShortLabel(selected.duration), modeLabel?.toLowerCase(), formatLabelFromMedia ?? selected.resolution]
-    .filter(Boolean)
-    .join(' · ');
-  const ratePerSecond = selected.priceKind === 'reference' || selected.priceKind === 'unavailable'
-    ? null
-    : buildRatePerSecondLabel(selected, primaryPrice, ratePrice);
 
   const timeLabel = formatPlaybackTime(currentTime);
 
@@ -195,14 +215,7 @@ export function HeroVideoShowcase({
               </div>
             </div>
 
-          <div className="cinema-film-quote hidden sm:block absolute right-2.5 top-2.5 max-w-[124px] rounded-[11px] bg-black/44 px-2 py-1.5 text-left text-white shadow-[0_10px_26px_-22px_rgba(0,0,0,0.9)] backdrop-blur-sm dark:border dark:border-white/[0.14] dark:bg-surface-glass-60 sm:right-4 sm:top-4 sm:max-w-[132px] sm:px-2.5 sm:py-2">
-            <p className="text-[6.5px] font-bold uppercase tracking-[0.12em] text-white/58 sm:text-[7px]">{selected.estimateLabel}</p>
-            <p className="mt-0.5 text-lg font-semibold leading-none tracking-tight sm:text-xl">
-              {primaryPrice}
-            </p>
-            <p className="mt-0.5 text-[8px] font-medium leading-tight text-white/70 sm:text-[9px]">{quoteRenderMeta}</p>
-            {ratePerSecond ? <p className="mt-0.5 text-[8px] font-semibold leading-tight text-white/78 sm:text-[9px]">{ratePerSecond}</p> : null}
-          </div>
+          {priceQuotes?.[selected.id]?.badge ?? <HeroVideoPriceQuote selected={selected} />}
 
           {status === 'loading' || status === 'error' ? (
             <p
@@ -280,7 +293,7 @@ export function HeroVideoShowcase({
 
       <div className="cinema-film-selector">
         <div className="cinema-film-tabs">{items.map((item,index)=><button key={item.id} type="button" aria-label={`${playLabel}: ${item.name}`} aria-pressed={index===selectedIndex} onClick={()=>selectAndPlay(index)}><span>{item.name}</span></button>)}</div>
-        <details className="cinema-quote-details"><summary>{selected.estimateLabel} <strong>{primaryPrice}</strong></summary><p>{quoteRenderMeta}{ratePerSecond ? ` · ${ratePerSecond}` : ''}</p></details>
+        {priceQuotes?.[selected.id]?.details ?? <HeroVideoPriceQuote selected={selected} details />}
         {(selected.examplesHref || selected.modelHref) ? (
           <div className="cinema-film-links mt-3 flex flex-wrap items-center justify-center gap-3 text-sm font-semibold">
             {selected.examplesHref ? (
