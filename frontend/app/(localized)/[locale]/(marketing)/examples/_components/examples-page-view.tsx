@@ -1,4 +1,5 @@
 import { ExamplesPromptStarters } from './examples-prompt-starters';
+import type { ReactNode } from 'react';
 import type { buildExamplesPromptStarters } from '../_lib/examples-page-copy';
 import clsx from 'clsx';
 import styles from './examples-editorial.module.css';
@@ -56,6 +57,7 @@ type ExamplesPageViewProps = {
   heroTitle: string;
   initialDesktopBatch: number;
   initialExamples: ExampleGalleryVideo[];
+  priceSlots?: Record<string, ReactNode>;
   promptStarters: ReturnType<typeof buildExamplesPromptStarters>;
   initialMobileBatch: number;
   isModelLanding: boolean;
@@ -133,6 +135,7 @@ export function ExamplesPageView({
   heroTitle,
   initialDesktopBatch,
   initialExamples,
+  priceSlots,
   promptStarters,
   initialMobileBatch,
   isModelLanding,
@@ -202,6 +205,7 @@ export function ExamplesPageView({
             engineFilter={selectedEngine?.toLowerCase() ?? null}
             initialDesktopBatch={initialDesktopBatch}
             initialExamples={initialExamples}
+            priceSlots={priceSlots}
             initialMobileBatch={initialMobileBatch}
             initialOffset={nextOffsetStart}
             loadMoreLabel={loadMoreLabel}

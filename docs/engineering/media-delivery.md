@@ -520,6 +520,16 @@ same; opening the reader or continuing in the app still loads the full approved
 prompt from the existing detail endpoint. Do not duplicate every complete prompt
 in the initial gallery's RSC client props.
 
+The initial examples route prepares those summaries without awaiting current
+prices. `prepareCurrentExamplesGalleryData` starts one observed canonical-price
+promise; `examples-gallery-prices.tsx` projects only localized price-label server
+slots through the existing grid/card boundary. Keep the poster and gallery in
+the initial server response, including family and paginated routes. Pending or
+unavailable prices must never use historical generation costs. Reserve caption
+space for wrapped reference labels before revealing them, and keep the reader's
+independent fresh detail quote. `tests/examples-price-streaming.test.ts` exercises
+the held-price stream, per-card identity, localized labels and failure paths.
+
 Source playback uses `usePublicVideoControls` with Auto/Original policy and `preload="none"`.
 The existing standalone watch page remains the authority for canonical, metadata,
 VideoObject, redirects and sitemap eligibility; the dialog is not a new SEO route.

@@ -100,6 +100,7 @@ type ExamplesGallerySectionProps = {
   engineFilter: string | null;
   initialDesktopBatch: number;
   initialExamples: ExampleGalleryVideo[];
+  priceSlots?: Record<string, ReactNode>;
   initialMobileBatch: number;
   initialOffset: number;
   loadMoreLabel: string;
@@ -286,6 +287,7 @@ export function ExamplesGallerySection({
   engineFilter,
   initialDesktopBatch,
   initialExamples,
+  priceSlots,
   initialMobileBatch,
   initialOffset,
   loadMoreLabel,
@@ -307,6 +309,7 @@ export function ExamplesGallerySection({
         openingDetails={openingDetails}
         detailsCtaLabel={detailsCtaLabel}
         initialExamples={initialExamples}
+        priceSlots={priceSlots}
         loadMoreLabel={loadMoreLabel}
         loadingLabel={loadingLabel}
         noPreviewLabel={noPreviewLabel}

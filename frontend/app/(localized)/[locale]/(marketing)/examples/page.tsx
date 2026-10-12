@@ -24,6 +24,7 @@ import {
   toAbsoluteUrl,
 } from './_lib/examples-route-utils';
 import { ExamplesPageView } from './_components/examples-page-view';
+import { buildExamplesPriceSlots } from './_components/examples-gallery-prices';
 import {
   buildExamplesNextStepLinks, buildExamplesPromptStarters,
   getExamplesEditorialSections,
@@ -40,7 +41,7 @@ import {
   buildExamplesMainVideoFeatureData,
   buildExamplesModelLinks,
 } from './_lib/examples-page-data';
-import { buildCurrentExamplesGalleryData } from './_lib/current-examples-gallery-data';
+import { prepareCurrentExamplesGalleryData } from './_lib/current-examples-gallery-data';
 import {
   buildExamplesEngineFilterHref,
   buildExamplesNormalizedRedirectTarget,
@@ -255,12 +256,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
     usesCurrentAndSupportedBlocks,
   });
   const pricingPath = buildPricingHref(locale as AppLocale);
-  const {
-    currentModelPagesLabel,
-    modelPagesLabel,
-    pricingLinkLabel,
-    supportedOlderVersionLabel,
-  } = getExamplesModelPageLabels({
+  const { currentModelPagesLabel, modelPagesLabel, pricingLinkLabel, supportedOlderVersionLabel } = getExamplesModelPageLabels({
     isKlingLanding,
     isLtxLanding,
     isSeedanceLanding,
@@ -276,8 +272,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
     locale: appLocale,
     pricingPath,
   });
-
-  const { videos, clientVideos } = await buildCurrentExamplesGalleryData({
+  const { videos, clientVideos, currentPrices } = prepareCurrentExamplesGalleryData({
     allVideos,
     locale: appLocale,
     selectedEngine,
@@ -360,6 +355,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
       heroTitle={heroTitle}
       initialDesktopBatch={initialDesktopBatch}
       initialExamples={initialExamples}
+      priceSlots={buildExamplesPriceSlots(initialExamples, { currentPrices, locale: appLocale })}
       promptStarters={buildExamplesPromptStarters(selectedEngine?.toLowerCase() ?? null, initialExamples, galleryVideos)}
       initialMobileBatch={INITIAL_MOBILE_GALLERY_BATCH}
       isModelLanding={isModelLanding}

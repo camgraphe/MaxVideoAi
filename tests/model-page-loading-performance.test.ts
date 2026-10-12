@@ -44,6 +44,7 @@ async function makeRouteHarness() {
     listFalEngines: `()=>[]`,
     pickCompareEngines: `()=>[]`,
     buildModelPagePriceProjection: `async(engine,locale)=>{details.push(['second-label',locale,engine.pricingDetails]);return {pricePerSecondLabel:locale+' 0.10/s',pricePerImageLabel:null,priceRows:[{id:'pricePerSecond',key:'pricePerSecond',label:locale+' price',value:'0.10/s'}]};}`,
+    buildModelPageSpecProjection: `({keySpecs,projection})=>({keySpecValues:{...keySpecs,pricePerSecond:projection?.pricePerSecondLabel??null,pricePerImage:projection?.pricePerImageLabel??null},keySpecRows:projection?.priceRows??[],pricePerSecondLabel:projection?.pricePerSecondLabel??null,pricePerImageLabel:projection?.pricePerImageLabel??null})`,
     buildSpecValues: `(_engine,specs,prices)=>({...specs,...prices})`,
     resolveSpecRowDefs: `()=>[]`,
     resolveSpecRowLabel: `(locale,key)=>locale+' '+key`,
@@ -98,7 +99,10 @@ async function makeRouteHarness() {
         builder.onLoad({ filter: /models\/\[slug\]\/page\.tsx$/ }, async () => ({ contents: source+'\nexport {renderMarketingModelPage};', loader: 'tsx', resolveDir: routePath.slice(0, routePath.lastIndexOf('/')) }));
       } }],
     });
-    return { harness: createRequire(import.meta.url)(join(directory, 'route.cjs')), dispose: () => rm(directory, { recursive: true, force: true }) };
+    const harness = {...createRequire(import.meta.url)(join(directory, 'route.cjs'))};
+    const rawRender = harness.render;
+    harness.render = async (...args:any[])=>{const result=await rawRender(...args);return {...result,props:{...result.props,...await result.props.pricing}};};
+    return { harness, dispose: () => rm(directory, { recursive: true, force: true }) };
   } catch (error) { await rm(directory, { recursive: true, force: true }); throw error; }
 }
 
