@@ -110,9 +110,17 @@ mode where applicable without inferring a scene from an unrelated gallery image.
 Programmed slots still determine the item IDs consumed by playback, and current
 hero prices retain their canonical quote read.
 
-`prepareHomePageData` starts all five retained reads once. The hero still awaits
-slots, scores, hero pricing and demonstration pricing; discovery alone awaits the
-gallery beneath its own Suspense boundary. The four authored CreativeFilms remain
+`prepareHomePageData` starts all five retained reads once. The initial hero awaits
+slots and scores. Canonical hero prices stream into quote-only Suspense slots inside
+the existing player; demonstration pricing has its own section boundary. Pending
+quotes show a loading label and an em dash, never a numeric estimate. The pending
+demonstration reserves its normal surface and disables its controls until exact
+server prices arrive. Only four display fields (label, amount, scenario and optional
+rate) cross each hero quote boundary; never serialize the whole video item again.
+The pending demo derives its three fixed scenario labels locally and does not
+receive the engine/workspace props until the canonical prices resolve. If current
+quotes are unavailable, retain the reserved walkthrough and show a localized
+unavailable status with disabled controls. Discovery awaits the gallery beneath its own Suspense boundary. The four authored CreativeFilms remain
 outside that boundary. Its fallback uses the same six authored fallback cards and
 reader geometry, with real model/example links; final cards retain the existing
 curation, promotion and SQL-read policy. Do not stream a replacement hero or entire
@@ -123,14 +131,14 @@ when a critical read fails early. Immediate observers prevent unhandled rejectio
 without converting any returned promise into a successful fallback. The complete
 `loadHomePageData` API remains available and propagates the original loader error.
 The route's ordinary listing failures retain the existing gallery fallbacks.
-Unexpected gallery failures after shell emission reject the discovery boundary;
+Unexpected gallery or pricing failures after shell emission reject their boundary;
 React/Next handles that error and may retain its server fallback until error/retry
 handling, rather than silently treating fallback cards as final data. Once a shell
 has been sent, its HTTP status cannot be replaced by a later gallery error.
 
 `tests/home-streaming.test.ts` uses the React renderer bundled with Next and real
-homepage owners to hold gallery reads, check early critical poster/films/JSON-LD,
-and compare the final EN/FR/ES discovery markup. This proves the server composition
+homepage owners to hold gallery and canonical price reads, check early critical
+poster/films/JSON-LD, and compare final EN/FR/ES discovery and exact pricing markup. This proves the server composition
 boundary. Home entries retain `revalidate = 60`, which alone does not establish
 static versus dynamic delivery or cache buffering.
 

@@ -10,7 +10,7 @@ import {
   buildPayAsYouGoServiceJsonLd,
   buildPayAsYouGoWebApplicationJsonLd,
 } from './_lib/payg-jsonld';
-import { buildCurrentPricingHubData } from '../pricing/_lib/currentPricingHubData';
+import { buildCurrentVideoPricingData } from '../pricing/_lib/currentPricingHubData';
 import { loadPayAsYouGoVideoShowcase } from './_lib/payg-video-showcase';
 
 export const revalidate = 600;
@@ -36,7 +36,7 @@ export default async function PayAsYouGoAiVideoGeneratorPage(props: { params: Pr
   const { locale } = await props.params;
   const content = getPayAsYouGoContent(locale);
   const [pricingHub, showcaseVideos] = await Promise.all([
-    buildCurrentPricingHubData(locale),
+    buildCurrentVideoPricingData(locale),
     loadPayAsYouGoVideoShowcase({ locale, copy: content.showcase.runtime }),
   ]);
   const data = buildPayAsYouGoPageData({ locale, content, pricingHub });

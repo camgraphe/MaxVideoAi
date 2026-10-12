@@ -120,7 +120,7 @@ test('pay-as-you-go page uses an admin-controlled public video playlist strip', 
   assert.match(showcaseDataSource, /SHOWCASE_DISALLOWED_MODEL_PATTERN/);
   assert.match(showcaseDataSource, /SHOWCASE_MODEL_PRIORITY/);
   assert.match(showcaseDataSource, /formatVideoTitle/);
-  assert.match(pageSource, /buildCurrentPricingHubData\(locale\)/);
+  assert.match(pageSource, /buildCurrentVideoPricingData\(locale\)/);
   assert.match(viewSource, /<PayAsYouGoVideoShowcase videos=\{showcaseVideos\}/);
   assert.match(showcaseSource, /<PayAsYouGoPreview/);
   assert.doesNotMatch(showcaseSource, /<video|autoPlay/);

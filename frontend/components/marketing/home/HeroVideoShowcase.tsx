@@ -2,6 +2,8 @@
 
 
 import Image from 'next/image';
+import type { ReactNode } from 'react';
+import { buildHeroVideoPriceDisplay, type HeroVideoPriceDisplay } from './hero-video-price-display';
 import { Maximize2, Pause, Play, Volume2, VolumeX } from 'lucide-react';
 import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
 import { UIIcon } from '@/components/ui/UIIcon';
@@ -36,27 +38,6 @@ export type HeroVideoShowcaseItem = {
   imageAlt: string;
 };
 
-function parsePriceAmount(value?: string | null) {
-  if (!value) return null;
-  const match = value.match(/([$€£])?\s*([0-9]+(?:[.,][0-9]+)?)/);
-  if (!match) return null;
-  const amount = Number(match[2].replace(',', '.'));
-  if (!Number.isFinite(amount)) return null;
-  return { amount, symbol: match[1] ?? '$' };
-}
-
-function parseDurationSeconds(value?: string | null) {
-  if (!value) return null;
-  const clock = value.match(/(\d+):(\d{2})/);
-  if (clock) return Number(clock[1]) * 60 + Number(clock[2]);
-  const seconds = value.match(/(\d+(?:[.,]\d+)?)\s*s\b/i);
-  if (seconds) {
-    const parsed = Number(seconds[1].replace(',', '.'));
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-  return null;
-}
-
 function formatPlaybackTime(seconds: number) {
   const safeSeconds = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
   const minutes = Math.floor(safeSeconds / 60);
@@ -64,29 +45,26 @@ function formatPlaybackTime(seconds: number) {
   return `${minutes}:${remaining}`;
 }
 
-function buildRatePerSecondLabel(selected: HeroVideoShowcaseItem, primaryPrice: string, fallbackPrice: string | null) {
-  const durationSeconds = parseDurationSeconds(selected.duration) ?? parseDurationSeconds(selected.estimateMeta);
-  const total = parsePriceAmount(primaryPrice);
-  if (durationSeconds && durationSeconds > 0 && total) {
-    return `${total.symbol}${(total.amount / durationSeconds).toFixed(2)}/sec`;
-  }
-
-  const rateSource = selected.priceNote ?? fallbackPrice ?? selected.price;
-  const rateAmount = parsePriceAmount(rateSource);
-  const rateDurationSeconds = parseDurationSeconds(rateSource);
-  if (rateAmount && rateDurationSeconds && rateDurationSeconds > 0) {
-    return `${rateAmount.symbol}${(rateAmount.amount / rateDurationSeconds).toFixed(2)}/sec`;
-  }
-  return null;
+export function HeroVideoPriceQuote({ quote, details = false }: { quote: HeroVideoPriceDisplay; details?: boolean }) {
+  return details ? (
+    <details className="cinema-quote-details"><summary>{quote.label} <strong>{quote.amount}</strong></summary><p>{quote.scenario}{quote.rate ? ` · ${quote.rate}` : ''}</p></details>
+  ) : (
+          <div className="cinema-film-quote hidden sm:block absolute right-2.5 top-2.5 max-w-[124px] rounded-[11px] bg-black/44 px-2 py-1.5 text-left text-white shadow-[0_10px_26px_-22px_rgba(0,0,0,0.9)] backdrop-blur-sm dark:border dark:border-white/[0.14] dark:bg-surface-glass-60 sm:right-4 sm:top-4 sm:max-w-[132px] sm:px-2.5 sm:py-2">
+            <p className="text-[6.5px] font-bold uppercase tracking-[0.12em] text-white/58 sm:text-[7px]">{quote.label}</p>
+            <p className="mt-0.5 text-lg font-semibold leading-none tracking-tight sm:text-xl">
+              {quote.amount}
+            </p>
+            <p className="mt-0.5 text-[8px] font-medium leading-tight text-white/70 sm:text-[9px]">{quote.scenario}</p>
+            {quote.rate ? <p className="mt-0.5 text-[8px] font-semibold leading-tight text-white/78 sm:text-[9px]">{quote.rate}</p> : null}
+          </div>
+  );
 }
 
-function getDurationShortLabel(value: string) {
-  const seconds = parseDurationSeconds(value);
-  return seconds ? `${seconds}s` : value;
-}
+export type HeroVideoPriceSlots = Readonly<Record<string, { badge: ReactNode; details: ReactNode }>>;
 
 export function HeroVideoShowcase({
   items,
+  priceQuotes,
   playLabel,
   pauseLabel,
   loadingLabel,
@@ -98,6 +76,7 @@ export function HeroVideoShowcase({
   progressLabel = 'Preview progress',
 }: {
   items: HeroVideoShowcaseItem[];
+  priceQuotes?: HeroVideoPriceSlots;
   playLabel: string;
   pauseLabel: string;
   loadingLabel: string;
@@ -115,16 +94,6 @@ export function HeroVideoShowcase({
   } = useHeroVideoPlayback(items);
 
   if (!selected) return null;
-
-  const primaryPrice = selected.estimateValue || selected.price;
-  const ratePrice = selected.price && selected.price !== primaryPrice ? selected.price : null;
-  const [modeLabel, , formatLabelFromMedia] = (selected.mediaInfo ?? '').split(' · ');
-  const quoteRenderMeta = selected.quoteScenario ?? [getDurationShortLabel(selected.duration), modeLabel?.toLowerCase(), formatLabelFromMedia ?? selected.resolution]
-    .filter(Boolean)
-    .join(' · ');
-  const ratePerSecond = selected.priceKind === 'reference' || selected.priceKind === 'unavailable'
-    ? null
-    : buildRatePerSecondLabel(selected, primaryPrice, ratePrice);
 
   const timeLabel = formatPlaybackTime(currentTime);
 
@@ -195,14 +164,7 @@ export function HeroVideoShowcase({
               </div>
             </div>
 
-          <div className="cinema-film-quote hidden sm:block absolute right-2.5 top-2.5 max-w-[124px] rounded-[11px] bg-black/44 px-2 py-1.5 text-left text-white shadow-[0_10px_26px_-22px_rgba(0,0,0,0.9)] backdrop-blur-sm dark:border dark:border-white/[0.14] dark:bg-surface-glass-60 sm:right-4 sm:top-4 sm:max-w-[132px] sm:px-2.5 sm:py-2">
-            <p className="text-[6.5px] font-bold uppercase tracking-[0.12em] text-white/58 sm:text-[7px]">{selected.estimateLabel}</p>
-            <p className="mt-0.5 text-lg font-semibold leading-none tracking-tight sm:text-xl">
-              {primaryPrice}
-            </p>
-            <p className="mt-0.5 text-[8px] font-medium leading-tight text-white/70 sm:text-[9px]">{quoteRenderMeta}</p>
-            {ratePerSecond ? <p className="mt-0.5 text-[8px] font-semibold leading-tight text-white/78 sm:text-[9px]">{ratePerSecond}</p> : null}
-          </div>
+          {priceQuotes?.[selected.id]?.badge ?? <HeroVideoPriceQuote quote={buildHeroVideoPriceDisplay(selected)} />}
 
           {status === 'loading' || status === 'error' ? (
             <p
@@ -280,7 +242,7 @@ export function HeroVideoShowcase({
 
       <div className="cinema-film-selector">
         <div className="cinema-film-tabs">{items.map((item,index)=><button key={item.id} type="button" aria-label={`${playLabel}: ${item.name}`} aria-pressed={index===selectedIndex} onClick={()=>selectAndPlay(index)}><span>{item.name}</span></button>)}</div>
-        <details className="cinema-quote-details"><summary>{selected.estimateLabel} <strong>{primaryPrice}</strong></summary><p>{quoteRenderMeta}{ratePerSecond ? ` · ${ratePerSecond}` : ''}</p></details>
+        {priceQuotes?.[selected.id]?.details ?? <HeroVideoPriceQuote quote={buildHeroVideoPriceDisplay(selected)} details />}
         {(selected.examplesHref || selected.modelHref) ? (
           <div className="cinema-film-links mt-3 flex flex-wrap items-center justify-center gap-3 text-sm font-semibold">
             {selected.examplesHref ? (

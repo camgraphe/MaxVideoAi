@@ -48,7 +48,7 @@ const PAYG_COMPARE_CANONICAL_HREFS: Record<string, string> = {
 export type BuildPayAsYouGoPageDataInput = {
   locale: AppLocale;
   content: PayAsYouGoContent;
-  pricingHub?: PricingHubData;
+  pricingHub?: Pick<PricingHubData, 'video'>;
   discoveryConfigs?: PaygDiscoveryConfigs;
 };
 
@@ -207,7 +207,7 @@ function formatExamplePrice(value: string, renderReady: boolean, common: PayAsYo
 }
 
 function buildModelRows(
-  pricingHub: PricingHubData,
+  pricingHub: Pick<PricingHubData, 'video'>,
   bestForCopy: PayAsYouGoContent['pricing']['bestFor'],
   common: PayAsYouGoContent['common'],
 ): PayAsYouGoModelRow[] {
@@ -238,7 +238,7 @@ function buildModelRows(
 
 function buildPriceLookups(
   configs: PaygDiscoveryConfigs['priceLookups'],
-  pricingHub: PricingHubData,
+  pricingHub: Pick<PricingHubData, 'video'>,
   lookupCopyById: PayAsYouGoContent['priceLookups']['items'],
   liveQuote: string,
   audioOff: string,
@@ -263,7 +263,7 @@ function buildPriceLookups(
 
 function buildExampleCosts(
   configs: PaygDiscoveryConfigs['examples'],
-  pricingHub: PricingHubData,
+  pricingHub: Pick<PricingHubData, 'video'>,
   exampleLabels: PayAsYouGoContent['exampleCosts']['labels'],
   settingsLabel: string,
   liveQuote: string,
