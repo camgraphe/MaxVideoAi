@@ -64,7 +64,7 @@ network, CPU and cache settings.
 | Route | Baseline LCP median (range) | Candidate LCP median (range) | Median reduction | TTFB median before → after |
 | --- | --- | --- | --- | --- |
 | `/models/veo-3-1` | 8.795 s (7.247–9.720) | 4.281 s (3.220–4.459) | 51.3% | 5.428 → 1.419 s |
-| `/examples` | 4.190 s (4.181–4.190) | 2.948 s (2.786–3.063) | 29.7% | 2.752 → 1.516 s |
+| `/examples` | 4.190 s (4.181–4.190) | 2.948 s (2.786–3.063) | 29.6% | 2.752 → 1.516 s |
 
 The LCP element is the same image URL, decoded byte count and rectangle in every
 before/after pair. Its geometry is 1256 × 518 px at (227, 418) on the model and
@@ -75,7 +75,7 @@ a combined CLS of 0.001189, and its other two runs are zero.
 The wait before the first response is the dominant change. Gallery poster transfer
 time stays essentially identical (median 1.408 → 1.408 s); model poster transfer
 varies (3.325 → 2.901 s) but its 4.008 s median TTFB reduction accounts for most of
-the 4.515 s LCP gain. Post-download rendering is only about 19–27 ms. These
+the 4.515 s LCP gain. Median post-download rendering is only about 19–27 ms. These
 observations and the held-dependency tests identify a code-level pricing gate;
 they do not attribute the historical CrUX change to a specific release or traffic.
 
