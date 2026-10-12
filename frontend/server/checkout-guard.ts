@@ -1,4 +1,4 @@
-import { createHmac } from 'crypto';
+import { createHash, createHmac } from 'crypto';
 import { query } from '@/lib/db';
 import { CHECKOUT_GUARD_LIMITS as limits } from '@/server/checkout-guard-policy';
 
@@ -223,6 +223,18 @@ async function verifyTurnstileToken(token: string, clientIp: string | null): Pro
   }
 }
 
+async function isTurnstileTokenConsumed(tokenHash: string): Promise<boolean> {
+  const rows = await query<CheckoutAttemptRow>(
+    `SELECT id FROM checkout_attempts
+      WHERE captcha_passed IS TRUE
+        AND metadata ? 'turnstileTokenHash'
+        AND metadata ->> 'turnstileTokenHash' = $1
+      LIMIT 1`,
+    [tokenHash]
+  );
+  return rows.length > 0;
+}
+
 async function recordCheckoutAttempt({
   userId,
   ipHash,
@@ -243,7 +255,14 @@ async function recordCheckoutAttempt({
   captchaPassed: boolean;
   reason: string;
   metadata: Record<string, unknown>;
-}): Promise<number> {
+}): Promise<number | null> {
+  // The partial unique index arbitrates simultaneous claims across processes.
+  // Tokenless/failed attempts retain their existing schema compatibility.
+  const tokenClaim = captchaPassed && typeof metadata.turnstileTokenHash === 'string'
+    ? `ON CONFLICT ((metadata ->> 'turnstileTokenHash'))
+         WHERE captcha_passed IS TRUE AND metadata ? 'turnstileTokenHash'
+       DO NOTHING`
+    : '';
   const rows = await query<CheckoutAttemptRow>(
     `INSERT INTO checkout_attempts (
        user_id,
@@ -257,6 +276,7 @@ async function recordCheckoutAttempt({
        metadata
      )
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb)
+     ${tokenClaim}
      RETURNING id`,
     [
       userId,
@@ -270,7 +290,7 @@ async function recordCheckoutAttempt({
       JSON.stringify(metadata),
     ]
   );
-  return Number(rows[0]?.id ?? 0);
+  return rows[0] ? Number(rows[0].id) : null;
 }
 
 export async function evaluateWalletCheckoutGuard(
@@ -280,18 +300,27 @@ export async function evaluateWalletCheckoutGuard(
   const counts = await fetchCheckoutGuardCounts(params.userId, ipHash);
   const captchaConfigured = isCheckoutCaptchaConfigured();
   const captchaToken = params.captchaToken?.trim() ?? '';
-  const verification = captchaToken && captchaConfigured
-    ? await verifyTurnstileToken(captchaToken, params.clientIp)
-    : { success: false, errorCodes: [] };
+  const tokenHash = captchaToken && captchaConfigured
+    ? createHash('sha256').update(captchaToken).digest('hex')
+    : null;
+  const tokenConsumed = tokenHash ? await isTurnstileTokenConsumed(tokenHash) : false;
+  let verification = tokenConsumed
+    ? { success: false, errorCodes: ['local-token-replay'] }
+    : captchaToken && captchaConfigured
+      ? await verifyTurnstileToken(captchaToken, params.clientIp)
+      : { success: false, errorCodes: [] };
 
-  const decision = classifyCheckoutGuardDecision({
+  let decision = classifyCheckoutGuardDecision({
     hasCompletedTopUp: params.hasCompletedTopUp,
     isPresetTopupTier: params.isPresetTopupTier,
     captchaConfigured,
     captchaPassed: verification.success,
     ...counts,
   });
-  const outcome =
+  if (tokenConsumed && decision.action !== 'rate_limited') {
+    decision = { action: 'captcha_required', reason: 'captcha_token_replayed', retryAfterSeconds: null };
+  }
+  let outcome =
     decision.action === 'allow'
       ? 'pending'
       : decision.action === 'rate_limited'
@@ -300,7 +329,7 @@ export async function evaluateWalletCheckoutGuard(
           ? 'captcha_failed'
           : 'captcha_required';
 
-  const attemptId = await recordCheckoutAttempt({
+  const persistAttempt = () => recordCheckoutAttempt({
     userId: params.userId,
     ipHash,
     amountCents: params.amountCents,
@@ -311,11 +340,24 @@ export async function evaluateWalletCheckoutGuard(
     reason: decision.reason,
     metadata: {
       ...params.metadata,
+      // Caller metadata must never replace the server-calculated token identity.
+      turnstileTokenHash: tokenHash ?? undefined,
       captchaConfigured,
       turnstileErrors: verification.errorCodes,
       counts,
     },
   });
+  let attemptId = await persistAttempt();
+  if (attemptId === null && verification.success && tokenHash) {
+    // A competing request recorded the same validated token while Siteverify ran.
+    verification = { success: false, errorCodes: ['local-token-replay'] };
+    if (decision.action !== 'rate_limited') {
+      decision = { action: 'captcha_required', reason: 'captcha_token_replayed', retryAfterSeconds: null };
+    }
+    outcome = decision.action === 'rate_limited' ? 'rate_limited' : 'captcha_failed';
+    attemptId = await persistAttempt();
+  }
+  if (attemptId === null) throw new Error('checkout_attempt_not_recorded');
 
   return {
     ...decision,
