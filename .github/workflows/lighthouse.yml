@@ -37,23 +37,13 @@ jobs:
       - name: Check measurement integrity
         run: pnpm cwv:check
 
-      - name: Run Lighthouse (home)
-        run: pnpm --dir frontend run lighthouse:home
-
-      - name: Run Lighthouse (examples)
-        run: pnpm --dir frontend run lighthouse:examples
-
-      - name: Run Lighthouse (models-veo)
-        run: pnpm --dir frontend run lighthouse:models-veo
-
-      - name: Run Lighthouse (pricing)
-        run: pnpm --dir frontend run lighthouse:pricing
-
-      - name: Run Lighthouse (blog)
-        run: pnpm --dir frontend run lighthouse:blog
-
-      - name: Run Lighthouse (contact)
-        run: pnpm --dir frontend run lighthouse:contact
+      - name: Collect Exemples diagnostic traces
+        working-directory: frontend
+        run: |
+          mkdir -p lighthouse-reports/examples-diagnostics
+          for run in 1 2 3 4 5; do
+            pnpm exec lighthouse https://maxvideoai.com/examples --chrome-flags="--headless=new" --output=json --output-path="lighthouse-reports/examples-diagnostics/run-${run}.json" --save-assets
+          done
 
       - name: Upload Lighthouse reports
         if: always()
