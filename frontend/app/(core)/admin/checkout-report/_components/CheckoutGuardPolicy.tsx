@@ -21,7 +21,8 @@ export function CheckoutGuardPolicy() {
           IP: CAPTCHA after {limits.ipCaptcha}, maximum {limits.ipHard} / {limits.windowSeconds / 60} min.
         </dd></div>
         <div><dt className="font-semibold">Card testing protection</dt><dd className="mt-1 text-text-secondary">
-          {limits.failedCardAttempts} failed card attempts expire an unpaid top-up session and start a {limits.failedCardCooldownSeconds / 60} min cooldown, including for returning customers.
+          {limits.distinctFailedCards} different failed cards / {limits.failedCardWindowSeconds / 60} min across a customer&apos;s sessions expire unpaid sessions and start a {limits.failedCardCooldownSeconds / 60} min cooldown.
+          The existing {limits.failedCardAttempts}-failure limit on one unpaid session remains as an additional safeguard.
           Amex has no blanket brand restriction.
         </dd></div>
         <div><dt className="font-semibold">Configuration</dt><dd className="mt-1 text-text-secondary">

@@ -430,7 +430,6 @@ export async function POST(req: NextRequest) {
   };
 
   try {
-    if (!isExpressCheckoutTopUp) return await prepareCheckoutSession();
     return await withCheckoutSessionPreparationLock(
       { userId, ipHash: hashCheckoutIp(checkoutClientIp) },
       prepareCheckoutSession,

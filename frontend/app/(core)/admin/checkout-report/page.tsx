@@ -332,7 +332,7 @@ function buildReportCards(report: Awaited<ReturnType<typeof fetchCheckoutReport>
     { label: 'Unpaid after 30 min', value: formatNumber(report.summary.abandoned), helper: 'May be passive preparation; no receipt after 30 min', tone: 'amber', icon: Clock3 },
     { label: 'Blocked', value: formatNumber(report.summary.blocked), helper: 'Rate limited or CAPTCHA failed', tone: 'rose', icon: LockKeyhole },
     { label: 'Legacy Amex restriction', value: formatNumber(report.summary.amexBlocked), helper: 'Historical sessions only. New sessions accept Amex; this is not a decline count', tone: 'slate', icon: ShieldCheck },
-    { label: 'Card failures', value: formatNumber(report.summary.failedCardAttempts), helper: `First top-ups only; ${formatNumber(report.summary.failedCardLimitedSessions)} sessions expired after repeated declines`, tone: 'rose', icon: CreditCard },
+    { label: 'Card failures', value: formatNumber(report.summary.failedCardAttempts), helper: `First and returning top-ups; ${formatNumber(report.summary.failedCardLimitedSessions)} sessions expired after repeated declines`, tone: 'rose', icon: CreditCard },
     { label: 'Challenged', value: formatNumber(report.summary.challenged), helper: `${formatNumber(report.summary.captchaPassed)} CAPTCHA passes`, tone: 'violet', icon: ShieldAlert },
     { label: 'Open', value: formatNumber(report.summary.open), helper: 'Recent Checkout sessions still pending', tone: 'blue', icon: WalletCards },
   ];
