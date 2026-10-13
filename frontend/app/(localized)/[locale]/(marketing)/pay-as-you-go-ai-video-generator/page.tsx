@@ -2,9 +2,10 @@ import type { Metadata } from 'next';
 import type { AppLocale } from '@/i18n/locales';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
-import { PayAsYouGoPageView } from './_components/PayAsYouGoPageView';
+import { PayAsYouGoStreamingView } from './_components/PayAsYouGoStreamingView';
 import { getPayAsYouGoContent } from './_content';
-import { PAYG_PAGE_PATH, buildPayAsYouGoPageData } from './_lib/payg-page-data';
+import { PAYG_PAGE_PATH, buildPayAsYouGoHeroData, buildPayAsYouGoPageData } from './_lib/payg-page-data';
+import { observePayAsYouGoRead } from './_lib/payg-read-result';
 import {
   buildPayAsYouGoBreadcrumbJsonLd,
   buildPayAsYouGoServiceJsonLd,
@@ -35,11 +36,11 @@ export async function generateMetadata(props: { params: Promise<{ locale: AppLoc
 export default async function PayAsYouGoAiVideoGeneratorPage(props: { params: Promise<{ locale: AppLocale }> }) {
   const { locale } = await props.params;
   const content = getPayAsYouGoContent(locale);
-  const [pricingHub, showcaseVideos] = await Promise.all([
-    buildCurrentVideoPricingData(locale),
+  const data = observePayAsYouGoRead(buildCurrentVideoPricingData(locale)
+    .then(pricingHub => buildPayAsYouGoPageData({ locale, content, pricingHub })));
+  const showcaseVideos = observePayAsYouGoRead(
     loadPayAsYouGoVideoShowcase({ locale, copy: content.showcase.runtime }),
-  ]);
-  const data = buildPayAsYouGoPageData({ locale, content, pricingHub });
+  );
   const canonical = buildMetadataUrls(locale, undefined, { englishPath: PAYG_PAGE_PATH }).canonical;
   const breadcrumbJsonLd = buildPayAsYouGoBreadcrumbJsonLd({ canonical, locale, copy: content.jsonLd });
   const serviceJsonLd = buildPayAsYouGoServiceJsonLd({ canonical, copy: content.jsonLd });
@@ -47,8 +48,9 @@ export default async function PayAsYouGoAiVideoGeneratorPage(props: { params: Pr
 
   return (
     <>
-      <PayAsYouGoPageView
+      <PayAsYouGoStreamingView
         data={data}
+        hero={buildPayAsYouGoHeroData(content)}
         showcaseCopy={content.showcase.section}
         showcaseVideos={showcaseVideos}
       />

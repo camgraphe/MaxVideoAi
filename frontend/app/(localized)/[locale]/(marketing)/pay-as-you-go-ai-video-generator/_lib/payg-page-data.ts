@@ -136,6 +136,16 @@ export type PayAsYouGoPageData = {
   faq: PayAsYouGoContent['faq'];
 };
 
+export type PayAsYouGoHeroData = {
+  hero: PayAsYouGoContent['hero'];
+  pricing: Pick<PayAsYouGoPageData['pricing'], 'fullMatrixHref'>;
+};
+
+/** Editorial opening only: never build provisional prices to render the hero. */
+export function buildPayAsYouGoHeroData(content: PayAsYouGoContent): PayAsYouGoHeroData {
+  return { hero: content.hero, pricing: { fullMatrixHref: { pathname: '/pricing', hash: 'video-pricing' } } };
+}
+
 function rowIncludesFamily(row: VideoPricingRow, family: string) {
   const haystack = `${row.family} ${row.engineName} ${row.id}`.toLowerCase();
   return haystack.includes(family);
@@ -370,7 +380,7 @@ export function buildPayAsYouGoPageData({
     workflow: content.workflow,
     mcpPlanning: mcpLink ? { ...content.mcpPlanning, ...mcpLink } : null,
     quoteFactors: content.quoteFactors,
-    pricing: { ...pricingCopy, rows, fullMatrixHref: { pathname: '/pricing', hash: 'video-pricing' } },
+    pricing: { ...pricingCopy, rows, ...buildPayAsYouGoHeroData(content).pricing },
     priceLookups: {
       ...content.priceLookups,
       items: buildPriceLookups(
