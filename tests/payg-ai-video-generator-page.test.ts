@@ -44,7 +44,7 @@ test('pay-as-you-go page exists with focused route-local boundaries', () => {
   assert.match(pageSource, /export async function generateMetadata/);
   assert.match(pageSource, /buildPayAsYouGoPageData/);
   assert.match(pageSource, /loadPayAsYouGoVideoShowcase/);
-  assert.match(pageSource, /PayAsYouGoPageView/);
+  assert.match(pageSource, /PayAsYouGoStreamingView/);
   assert.match(pageSource, /buildPayAsYouGoBreadcrumbJsonLd/);
   assert.match(pageSource, /buildPayAsYouGoServiceJsonLd/);
   assert.match(pageSource, /buildPayAsYouGoWebApplicationJsonLd/);
@@ -161,8 +161,8 @@ test('pay-as-you-go page localizes every route-local content surface', () => {
   const showcaseSource = read(showcasePath);
   const showcaseDataSource = read(showcaseDataPath);
 
-  assert.doesNotMatch(pageSource, /<PayAsYouGoPageView\s+locale=\{locale\}/);
-  assert.match(pageSource, /<PayAsYouGoPageView\s+data=\{data\}/);
+  assert.doesNotMatch(pageSource, /<PayAsYouGoStreamingView\s+locale=\{locale\}/);
+  assert.match(pageSource, /<PayAsYouGoStreamingView\s+data=\{data\}/);
   assert.match(pageSource, /loadPayAsYouGoVideoShowcase\(\{ locale, copy: content\.showcase\.runtime \}\)/);
   assert.match(pageSource, /const content = getPayAsYouGoContent\(locale\)/);
   assert.match(pageSource, /buildPayAsYouGoPageData\(\{ locale, content, pricingHub \}\)/);

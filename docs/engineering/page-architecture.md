@@ -302,6 +302,29 @@ The fallback plus final discovery also increases encoded HTML; the comparable
 local browser runs showed overlapping LCP ranges rather than an established LCP
 gain. Keep that measured delivery cost visible in the media guide.
 
+## Models catalogue initial rendering
+
+`prepareModelsCatalogCards` retains one set of current marketing range reads and
+exposes only model identity, localized label, score and href before those reads
+settle. The full `buildModelsCatalogCards` API still waits for the exact same
+price-bearing cards. `buildModelsCatalogHeroData` uses only that narrow metadata,
+so the complete hero, top picks and use-case strip keep their existing geometry.
+The catalogue route streams the remaining recommended cards, gallery filters,
+comparison/FAQ sections and native JSON-LD together after exact cards resolve.
+No provisional card prices or cross-request quote cache are introduced.
+
+A viewport-height fallback keeps the footer out of the initial viewport while
+those sections wait. `ModelsCatalogAnchorRestore.client.tsx` handles the two
+route-local delayed anchors (`models-grid`, `recommended`) and cancels restoration
+when the visitor changes navigation or scroll intent. The model-detail restorer
+remains separately owned. Held-price SSR tests cover all/video/image in EN/FR/ES,
+complete final output, unavailable quotes and original rejected errors; DOM tests
+cover anchor restoration and cancellation. These tests establish composition,
+not measured HTTP/cache or browser Core Web Vitals gains. Comparable browser
+geometry, anchor and performance checks are required before accepting a release.
+Once the shell is sent, a later quote rejection cannot change its HTTP status;
+React/Next may retain the pending boundary until its error/retry handling.
+
 ## Refactor Checklist
 
 Before moving code:

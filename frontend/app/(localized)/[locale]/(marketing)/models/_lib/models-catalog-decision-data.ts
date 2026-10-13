@@ -90,7 +90,9 @@ export type ModelsCatalogDecisionData = {
   faqItems: Array<{ question: string; answer: string }>;
 };
 
-function cardMap(cards: ModelGalleryCard[]) {
+export type ModelsCatalogHeroCard = Pick<ModelGalleryCard, 'id' | 'label' | 'overallScore' | 'href'>;
+
+function cardMap<Card extends ModelsCatalogHeroCard>(cards: Card[]) {
   return new Map(cards.map((card) => [card.id, card]));
 }
 
@@ -364,8 +366,6 @@ export function buildModelsCatalogDecisionData({
   cards: ModelGalleryCard[];
 }): ModelsCatalogDecisionData {
   const byId = cardMap(cards);
-  const topPickCopy = buildTopPickCopy(activeLocale);
-  const topPickIcons = [Sparkles, Trophy, Camera, Film, Sparkles, Mic2, SlidersHorizontal, Bolt, Gauge] as const;
   const comparisonCandidates = [
     ['Seedance 2.0 vs Kling 3 Pro', 'seedance-2-0', 'kling-3-pro'],
     ['Seedance 2.0 vs Seedance 2.0 Fast', 'seedance-2-0', 'seedance-2-0-fast', SEEDANCE_FAST_COMPARISON_SLUG],
@@ -375,6 +375,27 @@ export function buildModelsCatalogDecisionData({
     ['Veo 3.1 Fast vs Veo 3.1 Lite', 'veo-3-1-fast', 'veo-3-1-lite'],
   ] as const;
 
+  return {
+    ...buildModelsCatalogHeroData({ activeLocale, cards }),
+    recommendedCards: pickCards(cards, RECOMMENDED_IDS),
+    popularComparisons: comparisonCandidates.flatMap(([label, left, right, authoredSlug]) => (
+      byId.has(left) && byId.has(right) && isPublishedComparisonSlug(authoredSlug ?? buildCanonicalCompareSlug(left, right))
+        ? [{ label, href: buildModelCompareHref(left, right) }]
+        : []
+    )),
+    pricingLimits: buildPricingLimits(activeLocale),
+    faqItems: buildDecisionFaqItems(activeLocale),
+  };
+}
+
+/** Complete hero recommendations depend on identity and scores, never price ranges. */
+export function buildModelsCatalogHeroData({ activeLocale, cards }: {
+  activeLocale: AppLocale;
+  cards: ModelsCatalogHeroCard[];
+}): Pick<ModelsCatalogDecisionData, 'badges' | 'topPicks' | 'useCases'> {
+  const byId = cardMap(cards);
+  const topPickCopy = buildTopPickCopy(activeLocale);
+  const topPickIcons = [Sparkles, Trophy, Camera, Film, Sparkles, Mic2, SlidersHorizontal, Bolt, Gauge] as const;
   return {
     badges: buildBadges(activeLocale),
     topPicks: TOP_PICK_IDS.flatMap((id, index): ModelsCatalogTopPick[] => {
@@ -391,13 +412,5 @@ export function buildModelsCatalogDecisionData({
       }];
     }),
     useCases: buildUseCases(activeLocale),
-    recommendedCards: pickCards(cards, RECOMMENDED_IDS),
-    popularComparisons: comparisonCandidates.flatMap(([label, left, right, authoredSlug]) => (
-      byId.has(left) && byId.has(right) && isPublishedComparisonSlug(authoredSlug ?? buildCanonicalCompareSlug(left, right))
-        ? [{ label, href: buildModelCompareHref(left, right) }]
-        : []
-    )),
-    pricingLimits: buildPricingLimits(activeLocale),
-    faqItems: buildDecisionFaqItems(activeLocale),
   };
 }

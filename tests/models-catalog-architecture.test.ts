@@ -252,3 +252,16 @@ test('models catalog helper module exposes the route contract', () => {
   assert.match(jsonLdScriptsSource, /export function ModelsCatalogJsonLdScripts/, 'JSON-LD script component should be exported');
   assert.match(jsonLdScriptsSource, /models-breadcrumb-jsonld/, 'JSON-LD script component should own breadcrumb schema script');
 });
+
+
+test('catalogue initial hero metadata is narrow and exact-price sections share one server boundary', () => {
+  assert.match(cardsSource, /export async function prepareModelsCatalogCards/);
+  assert.match(cardsSource, /heroCards: ModelsCatalogHeroCard\[\]/);
+  assert.match(decisionDataSource, /Pick<ModelGalleryCard, 'id' \| 'label' \| 'overallScore' \| 'href'>/);
+  assert.match(pageSource, /await prepareModelsCatalogCards/);
+  assert.match(pageSource, /buildModelsCatalogHeroData/);
+  assert.match(pageSource, /<Suspense fallback=\{<div className="min-h-screen" aria-hidden="true" \/>\}>/);
+  assert.match(pageSource, /<ModelsCatalogSections \/>/);
+  assert.match(pageSource, /<ModelsCatalogAnchorRestore \/>/);
+  assert.doesNotMatch(pageSource, /await buildModelsCatalogCards/);
+});

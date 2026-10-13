@@ -11,6 +11,8 @@ const componentsRoot = join(routeRoot, '_components');
 const pagePath = join(routeRoot, 'page.tsx');
 const viewPath = join(componentsRoot, 'PayAsYouGoPageView.tsx');
 const heroPath = join(componentsRoot, 'PayAsYouGoHeroSections.tsx');
+const heroQuotePath = join(componentsRoot, 'PayAsYouGoHeroQuoteCard.tsx');
+const streamingPath = join(componentsRoot, 'PayAsYouGoStreamingView.tsx');
 const guidePath = join(componentsRoot, 'PayAsYouGoGuideSections.tsx');
 const pricingPath = join(componentsRoot, 'PayAsYouGoPricingSections.tsx');
 const trustPath = join(componentsRoot, 'PayAsYouGoTrustSections.tsx');
@@ -42,7 +44,7 @@ test('Pay-as-you-go view is a short pure section orchestrator', () => {
   assert.ok(source.split('\n').length <= 100);
   assert.doesNotMatch(
     source,
-    /AppLocale|getPayAsYouGoViewCopy|copy\.text|function .*Section|isVisiblePrice|findModelForExampleCost|lucide-react/,
+    /AppLocale|getPayAsYouGoViewCopy|copy\.text|function (?!PayAsYouGoPageSections\b).*Section|isVisiblePrice|findModelForExampleCost|lucide-react|<(?:header|section|h[1-6])\b/,
   );
   const ordered = [
     'PayAsYouGoHeroSection',
@@ -71,6 +73,7 @@ test('Pay-as-you-go view is a short pure section orchestrator', () => {
 test('section files render only and obey physical caps', () => {
   for (const [path, cap] of [
     [heroPath, 250],
+    [heroQuotePath, 180],
     [guidePath, 250],
     [pricingPath, 250],
     [trustPath, 250],
@@ -128,13 +131,17 @@ test('section ownership and renderer interfaces remain explicit', () => {
 test('the permanent page call site does not pass locale into the final view', () => {
   const pageSource = read(pagePath);
   const viewSource = read(viewPath);
-  const pageViewCall = pageSource.match(/<PayAsYouGoPageView[\s\S]*?\/>/)?.[0];
-  assert.ok(pageViewCall, 'page.tsx must render PayAsYouGoPageView');
+  const pageViewCall = pageSource.match(/<PayAsYouGoStreamingView[\s\S]*?\/>/)?.[0];
+  assert.ok(pageViewCall, 'page.tsx must render the streaming view');
   assert.match(pageViewCall, /\bdata=\{data\}/);
   assert.doesNotMatch(pageViewCall, /\blocale=/);
   assert.doesNotMatch(viewSource, /locale:\s*AppLocale/);
   assert.match(viewSource, /showcaseCopy: PayAsYouGoContent\['showcase'\]\['section'\]/);
   assert.match(viewSource, /showcaseVideos: PayAsYouGoShowcaseVideo\[\]/);
+  const streamingSource = read(streamingPath);
+  assert.match(streamingSource, /<PayAsYouGoHeroSection data=\{hero\}/);
+  assert.match(streamingSource, /<PayAsYouGoPageSections data=\{currentData\}/);
+  assert.doesNotMatch(streamingSource, /buildCurrentVideoPricingData|buildPayAsYouGoPageData|buildPricingHubData/);
 });
 
 test('all Pay-as-you-go authored locale selection lives only in _content', () => {
@@ -164,6 +171,8 @@ test('Pay-as-you-go files satisfy final physical boundaries', () => {
   assertLineCap(pagePath, 120);
   assertLineCap(viewPath, 100);
   assertLineCap(heroPath, 250);
+  assertLineCap(heroQuotePath, 180);
+  assertLineCap(streamingPath, 100);
   assertLineCap(guidePath, 250);
   assertLineCap(pricingPath, 250);
   assertLineCap(trustPath, 250);
