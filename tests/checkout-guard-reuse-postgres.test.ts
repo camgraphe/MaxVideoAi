@@ -100,6 +100,15 @@ test('checkout reuse preserves fraud cooldown for every customer and guard/repor
   assert.equal((await mod.evaluateWalletCheckoutGuard({ ...guardInput, hasCompletedTopUp: true })).reason, 'failed_card_attempt_cooldown');
   await pg.pool.query("UPDATE checkout_interaction_events SET created_at = now() - interval '31 minutes'");
   assert.equal((await mod.findReusableExpressCheckoutSession(stripe, input)).id, 'cs_reuse');
+  await pg.pool.query("INSERT INTO checkout_interaction_events (user_id, event_name) VALUES ('first-user', 'stripe_failed_card_cooldown_started')");
+  assert.equal(await mod.findReusableExpressCheckoutSession(stripe, input), null, 'a cooldown persists even if Stripe session expiration failed');
+  assert.equal((await mod.evaluateWalletCheckoutGuard({ userId: 'first-user', clientIp: null, amountCents: 1000, mode: 'express_checkout', hasCompletedTopUp: true, isPresetTopupTier: true })).reason, 'failed_card_attempt_cooldown');
+  await pg.pool.query("UPDATE checkout_interaction_events SET created_at = now() - interval '31 minutes'");
+  await pg.pool.query(`INSERT INTO checkout_interaction_events (user_id,event_name,metadata,created_at)
+    VALUES ('first-user','stripe_checkout_session_expired_for_failed_cards','{"cooldown_started_separately":true}',now()-interval '10 minutes')`);
+  assert.equal((await mod.findReusableExpressCheckoutSession(stripe,input))?.id,'cs_reuse','a late session expiry must not extend the original thirty-minute cooldown');
+  assert.equal((await mod.evaluateWalletCheckoutGuard({ ...guardInput,hasCompletedTopUp:true })).reason,'under_limits');
+  await pg.pool.query("UPDATE checkout_interaction_events SET created_at = now() - interval '31 minutes'");
   await pg.pool.query(`INSERT INTO checkout_attempts (user_id, amount_cents, mode, outcome, stripe_checkout_session_id)
     SELECT 'first-user',1000,'express_checkout','session_failed','cs_expired_' || n FROM generate_series(1,5) n;
     INSERT INTO checkout_attempts (user_id, amount_cents, mode, outcome, reason)
