@@ -9,7 +9,15 @@ const ACTIVE = ['pending', 'queued', 'running', 'processing', 'in_progress', 'pr
 export function bytePlusCompletedOutputRow(job: BytePlusPendingJob, videoUrl: string, thumbUrl: string): LegacyJobMediaRow {
   return { job_id: job.job_id, user_id: job.user_id, surface: 'video', video_url: videoUrl,
     audio_url: null, thumb_url: thumbUrl, preview_frame: thumbUrl, preview_video_url: job.preview_video_url,
-    render_ids: null, duration_sec: job.duration_sec, status: 'completed' };
+    render_ids: null, duration_sec: bytePlusOutputDurationSec(job), status: 'completed' };
+}
+
+export function bytePlusOutputDurationSec(job: BytePlusPendingJob) {
+  const settings = isRecord(job.settings_snapshot) ? job.settings_snapshot : {};
+  const source = isRecord(settings.seedanceEditSource) ? settings.seedanceEditSource : {};
+  return job.engine_id === 'seedance-2-5' && settings.byteplusTransport === 'modelark' && settings.inputMode === 'v2v'
+    && typeof source.durationSec === 'number' && Number.isFinite(source.durationSec) && source.durationSec >= 4 && source.durationSec <= 30
+    ? source.durationSec : job.duration_sec;
 }
 
 export function getBytePlusLasDurableOutput(job: BytePlusPendingJob) {

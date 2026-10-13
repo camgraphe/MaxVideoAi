@@ -4,6 +4,7 @@ import {
   type AgentGenerationExecutabilityEnvironment,
 } from '@/server/agent-runtime/model-executability';
 import { getBytePlusSeedanceModeResolutions } from '@/lib/byteplus-mode-capabilities';
+import { resolveBytePlusTransport } from '@/server/video-providers/byteplus-modelark-transport';
 
 /** Runtime readiness supplements the authored capabilities; it never changes identity. */
 export function resolveSeedance25ModeAvailability(
@@ -14,7 +15,10 @@ export function resolveSeedance25ModeAvailability(
   if (engine.id !== 'seedance-2-5') return null;
   if (!engine.modes.includes(mode)) return { available: false, reason: 'profile_invalid' };
   const decision = resolveAgentGenerationModeExecutability(engine, mode, environment);
-  return { available: decision.executable, reason: decision.reason };
+  let inheritsSourceVideo = false;
+  try { inheritsSourceVideo = mode === 'v2v' && resolveBytePlusTransport(engine.id, mode) === 'modelark'; } catch { /* invalid selection remains closed */ }
+  return { available: decision.executable, reason: decision.reason,
+    ...(inheritsSourceVideo ? { inheritsSourceVideo: true } : {}) };
 }
 
 export function projectSeedance25ModeAvailability(engine: EngineCaps, environment?: AgentGenerationExecutabilityEnvironment): EngineCaps {

@@ -28,6 +28,7 @@ import { resolveRuntimeResolutionPolicy } from '@/server/video-generation/runtim
 import type { PreparedSeedanceWorkflow } from '@/server/seedance-workflow-request';
 import { resolveSeedance25ModeAvailability } from '@/server/engine-mode-availability';
 import { normalizeBytePlusOptions } from '@/app/api/generate/_lib/request-options-byteplus';
+import { resolveSeedance25ModelArkEditSource } from '@/server/seedance-edit-source';
 
 type MediaConstraintDependencies = Parameters<
   typeof validateNormalizedGenerationAttachments
@@ -250,6 +251,12 @@ export async function resolveMediaAwarePreflight(
 
   let referenceTokenBudget: number | undefined;
   let inputVideoDurationSec: number | undefined;
+  let seedanceEditSource;
+  try {
+    seedanceEditSource = resolveSeedance25ModelArkEditSource(engine.id, request.mode, processed.trustedMediaReferences ?? []);
+  } catch (error) {
+    return mediaPricingFailure('SEEDANCE_EDIT_SOURCE_UNSUPPORTED', error instanceof Error ? error.message : 'Verified Edit source facts are required.');
+  }
   if (needsWanVideoDuration || needsSeedanceReferenceDuration) {
     try {
       inputVideoDurationSec = needsSeedanceReferenceDuration
@@ -269,6 +276,7 @@ export async function resolveMediaAwarePreflight(
     }
   }
   const trustedMediaPricingFacts: TrustedPreflightMediaPricingFacts = {
+    ...(seedanceEditSource ? { seedanceEditSource } : {}),
     ...(inputVideoDurationSec !== undefined ? { inputVideoDurationSec } : {}),
     ...(referenceTokenBudget !== undefined ? { referenceTokenBudget } : {}),
     ...(needsReferenceImageCount
@@ -289,7 +297,10 @@ export async function resolveMediaAwarePreflight(
     );
   }
 
-  return computeConfiguredPreflightFn(needsSeedanceReferenceDuration ? { ...request, hasVideoInput: true } : request, {
+  return computeConfiguredPreflightFn({ ...request,
+    ...(needsSeedanceReferenceDuration ? { hasVideoInput: true } : {}),
+    ...(seedanceEditSource ? { durationSec: seedanceEditSource.billedDurationSec, aspectRatio: seedanceEditSource.pricingAspectRatio } : {}),
+  }, {
     seedanceWorkflowStep: input.trustedSeedanceWorkflow?.workflow.step,
     resolvedEngine: engine,
     trustedMediaPricingFacts,

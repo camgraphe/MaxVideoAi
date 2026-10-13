@@ -228,6 +228,7 @@ export interface EngineModeUiCaps {
 
 export type EngineModeAvailability = Readonly<{
   available: boolean;
+  inheritsSourceVideo?: boolean;
   reason: 'available' | 'provider_disabled' | 'provider_credentials_missing' | 'provider_admin_only' | 'profile_invalid';
 }>;
 

@@ -57,10 +57,10 @@
 
 **Interfaces:** ModelArk Edit takes the source's server-measured duration (4–30s) and framing. The execution duration `-1` is a provider instruction and cannot enter the customer calculator as a negative duration. Customer prices must still come from exact reviewed literal cells; preserve actual source facts separately from any explicitly disclosed billed-duration class. A mismatched/stale source or unsupported current quote fails before spending.
 
-- [ ] Pin trusted owned-source timing, fractional boundaries, source replacement/removal and stale-quote refusal in tests.
-- [ ] Make source timing/framing truthful in UI and quote projections, with no independent output-duration choice that the provider ignores.
-- [ ] Make workspace, MCP and Studio preserve the same trusted execution and quote facts. Keep the current source/image/audio ownership boundary and default paid backend.
-- [ ] Smoke-test the authenticated flow on an isolated candidate without changing the owner's existing production draft.
+- [x] Pin trusted owned-source timing, fractional boundaries, source replacement/removal and stale-quote refusal in tests.
+- [x] Make source timing/framing truthful in UI and quote projections, with no independent output-duration choice that the provider ignores.
+- [x] Make workspace, MCP and Studio preserve the same trusted execution and quote facts. Keep the current source/image/audio ownership boundary and default paid backend.
+- [x] Smoke-test authenticated source controls on an isolated candidate without changing the owner's production draft; verify its complete fresh-price/generation flow in the real production-build Task 4 canary.
 
 ### Task 4: Review, bounded canary and delivery
 

@@ -1,4 +1,5 @@
 import { bytePlusInputVideoDurationSec, isBytePlusInputVideoPricingModel } from '@/server/byteplus-accounting';
+import { resolveSeedance25ModelArkEditSource } from '@/server/seedance-edit-source';
 import { calculateMinimaxH3MaxReferenceTokenBudget } from '@/lib/minimax-h3-max-pricing';
 import { getWan3InputVideoDurationSec } from '@/lib/wan3-pricing';
 import type { NextRequest } from 'next/server';
@@ -219,7 +220,14 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     logMetric('rejected', sourceVideoContext.metric);
     return { body: sourceVideoContext.body, status: sourceVideoContext.status };
   }
-  const { durationSec: effectiveDurationSec, durationLabel: effectiveDurationLabel, hasVideoInput } = sourceVideoContext;
+  let seedanceEditSource;
+  try { seedanceEditSource = resolveSeedance25ModelArkEditSource(engine.id, mode, attachmentProcessing.trustedMediaReferences ?? []); }
+  catch (error) { return { status: 422, body: { ok: false, error: 'SEEDANCE_EDIT_SOURCE_UNSUPPORTED',
+    message: error instanceof Error ? error.message : 'Verified Edit source facts are required.' } }; }
+  const effectiveDurationSec = seedanceEditSource?.billedDurationSec ?? sourceVideoContext.durationSec;
+  const effectiveDurationLabel = seedanceEditSource ? `${seedanceEditSource.durationSec}s source · ${effectiveDurationSec}s tariff class` : sourceVideoContext.durationLabel;
+  const { hasVideoInput } = sourceVideoContext;
+  if (seedanceEditSource) aspectRatio = seedanceEditSource.pricingAspectRatio;
   const trustedSourceVideoDurationSec = trustedDurationSecByField.video_url?.[0];
   const inheritedDurationSec = await resolveGoogleOmniInheritedDurationSec({
     engineId: engine.id,
@@ -315,6 +323,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     durationSec: effectiveDurationSec,
     durationLabel: effectiveDurationLabel,
     pricingResolution,
+    seedanceEditSource,
     effectiveResolution,
     aspectRatio,
     membershipTier: typeof body.membershipTier === 'string' ? body.membershipTier : undefined,
@@ -451,6 +460,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     falInputs,
   });
   if (isBytePlus && inputVideoDurationSec !== undefined) settingsSnapshot.byteplusInputVideoDurationSec = inputVideoDurationSec;
+  if (seedanceEditSource) settingsSnapshot.seedanceEditSource = seedanceEditSource;
   if (params.seedanceWorkflow) settingsSnapshot.seedanceWorkflow = params.seedanceWorkflow.workflow;
 
   return executePreparedVideoGeneration({

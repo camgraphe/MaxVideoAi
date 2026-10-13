@@ -124,6 +124,12 @@ export async function qualifyPaidSeedanceEdit(transport: 'las' | 'modelark') {
       quoteId = prepared.quoteId;
       assert.equal(prepared.price.amountCents, expectedPrice);
       const quoted = (await db.pool.query('SELECT request_json,pricing_snapshot FROM mcp_generation_quotes WHERE quote_id=$1', [quoteId])).rows[0];
+      if (transport === 'modelark') {
+        const sourceFacts = { durationSec: 4, width: 1280, height: 720, billedDurationSec: 4,
+          pricingAspectRatio: '16:9', outputDuration: 'source', outputAspectRatio: 'source' };
+        assert.deepEqual(quoted.pricing_snapshot.canonicalPricing.meta.seedanceEditSource, sourceFacts);
+        assert.deepEqual((prepared as typeof prepared & { sourceVideoOutput?: unknown }).sourceVideoOutput, sourceFacts);
+      }
       await db.pool.query(`CREATE FUNCTION reject_quote_acceptance() RETURNS trigger LANGUAGE plpgsql AS $$
         BEGIN IF NEW.state='accepted' THEN RAISE EXCEPTION 'injected quote acceptance outage'; END IF; RETURN NEW; END $$;
         CREATE TRIGGER quote_outage BEFORE UPDATE ON mcp_generation_quotes FOR EACH ROW EXECUTE FUNCTION reject_quote_acceptance();`);
@@ -139,6 +145,7 @@ export async function qualifyPaidSeedanceEdit(transport: 'las' | 'modelark') {
       assert.equal(durableSnapshot?.inputMode, 'v2v');
       assert.equal((durableSnapshot?.core as { resolution?: string })?.resolution, '480p');
       assert.equal(durableSnapshot?.byteplusTransport, transport);
+      if (transport === 'modelark') assert.deepEqual(durableSnapshot?.seedanceEditSource, quoted.pricing_snapshot.canonicalPricing.meta.seedanceEditSource);
       assert.deepEqual(durableSnapshot?.settings, quoted.request_json.settings);
       assert.deepEqual(durableSnapshot?.references, quoted.request_json.references);
       assert.deepEqual((await row(quoteId)).pricing_snapshot, quoted.pricing_snapshot.canonicalPricing);
@@ -248,6 +255,29 @@ export async function qualifyPaidSeedanceEdit(transport: 'las' | 'modelark') {
       await confirmStudio({ quoteId, confirmed: true }, studioActor);
       assert.equal(posts, 3);
       assert.equal((await getWalletBalanceCents(identity.userId)).balanceCents, 10000 - 2 * expectedPrice);
+      if (transport === 'modelark') {
+        ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = 'true';
+        const fractionalSelector = { ...selector, durationSec: '5' };
+        const fractionalPrice = { kind: 'unit_components', rounding: 'up', components: [{ id: 'retail', rounding: 'none',
+          flatCents: 81.00046838407494, terms: [{ unit: 'input_video_seconds', centsPerUnit: 9, includedUnits: 4.0000520426749935 }] }] };
+        await db.pool.query(`INSERT INTO app_customer_tariff_cells(id,selector_key,selector_json,price_json,currency,effective_from,revision,updated_by)
+          VALUES ('modelark-480p-5s',$1,$2,$3,'USD','2026-10-02',1,'11111111-1111-4111-8111-111111111111')`,
+          [JSON.stringify(Object.entries(fractionalSelector).sort(([a], [b]) => a.localeCompare(b))), fractionalSelector, fractionalPrice]);
+        await db.pool.query(`UPDATE media_assets SET metadata=metadata || '{"durationSec":4.25}'::jsonb WHERE public_id=$1`, [assetId]);
+        const fractional = await prepare(request, identity);
+        assert.equal(fractional.price.amountCents, 84, 'price the literal 5s class, with precise 4.25s input usage');
+        assert.equal(fractional.sourceVideoOutput?.durationSec, 4.25);
+        assert.equal(fractional.sourceVideoOutput?.billedDurationSec, 5);
+        assert.equal(fractional.sourceVideoOutput?.pricingAspectRatio, '16:9');
+        await db.pool.query(`UPDATE media_assets SET metadata=metadata || '{"durationSec":4.251}'::jsonb WHERE public_id=$1`, [assetId]);
+        await assert.rejects(confirm({ quoteId: fractional.quoteId, confirmed: true }, identity), /quote.*no longer current/i);
+        assert.equal(posts, 3);
+        assert.deepEqual(await receipts(fractional.quoteId), []);
+        await db.pool.query(`UPDATE media_assets SET metadata=metadata || '{"durationSec":3.99}'::jsonb WHERE public_id=$1`, [assetId]);
+        await assert.rejects(prepare(request, identity), /cannot be priced|settings cannot be priced|reference duration/i);
+        assert.equal(posts, 3);
+        assert.equal((await getWalletBalanceCents(identity.userId)).balanceCents, 10000 - 2 * expectedPrice);
+      }
     } finally {
       globalThis.fetch = previousFetch;
       await getDb().end().catch(() => undefined);

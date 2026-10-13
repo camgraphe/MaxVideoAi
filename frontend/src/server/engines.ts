@@ -135,6 +135,7 @@ export async function getConfiguredEngineIncludingHiddenInExecutor(
 }
 
 export type TrustedPreflightMediaPricingFacts = Readonly<{
+  seedanceEditSource?: import('@/lib/seedance-edit-source').SeedanceEditSourceFacts;
   referenceImageCount?: number;
   inputAudioDurationSec?: number;
   inputVideoDurationSec?: number;
@@ -298,6 +299,7 @@ export async function computeConfiguredPreflight(
     verifiedReferenceTokenCount,
     inputImageCount,
     inheritedDurationSec,
+    seedanceEditSource,
   } = options.trustedMediaPricingFacts ?? {};
   const pricingAddons = {
     ...(addons ?? {}),
@@ -308,9 +310,9 @@ export async function computeConfiguredPreflight(
     snapshot = await computeCanonicalPublicSnapshot({
       workflowStep: options.seedanceWorkflowStep,
       engine: pricingEngine,
-      durationSec,
+      durationSec: seedanceEditSource?.billedDurationSec ?? durationSec,
       resolution: effectiveResolution,
-      aspectRatio: request.aspectRatio,
+      aspectRatio: seedanceEditSource?.pricingAspectRatio ?? request.aspectRatio,
       mode: request.mode,
       membershipTier: memberTier,
       loop,
@@ -324,6 +326,7 @@ export async function computeConfiguredPreflight(
       verifiedReferenceTokenCount,
       inputImageCount,
       inheritedDurationSec,
+      seedanceEditSource,
     });
   } catch (error) {
     return {

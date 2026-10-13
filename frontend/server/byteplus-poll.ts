@@ -29,7 +29,7 @@ import type { BytePlusPendingJob } from './byteplus-poll-types';
 import { isRecord } from './byteplus-record-utils';
 import { reconcileSeedanceWorkflowOutcome } from './seedance-workflow-outcome';
 import { getBytePlusSubmissionState } from './byteplus-submission-state';
-import { bytePlusCompletedOutputRow, getBytePlusLasDurableOutput, persistBytePlusLasOutputBeforeCompletion, requiresBytePlusDurableEditOutput } from './byteplus-output-persistence';
+import { bytePlusCompletedOutputRow, bytePlusOutputDurationSec, getBytePlusLasDurableOutput, persistBytePlusLasOutputBeforeCompletion, requiresBytePlusDurableEditOutput } from './byteplus-output-persistence';
 import {
   buildNextBytePlusStorageCopyState,
   getBytePlusStorageCopyState,
@@ -376,7 +376,7 @@ export async function runBytePlusPoll(options: { jobId?: string; deps?: BytePlus
           jobId: job.job_id,
           userId: job.user_id,
           videoUrl: copiedVideoUrl,
-          durationSec: job.duration_sec,
+          durationSec: bytePlusOutputDurationSec(job),
           existingKeyframeUrls: job.keyframe_urls,
         }),
       ]);

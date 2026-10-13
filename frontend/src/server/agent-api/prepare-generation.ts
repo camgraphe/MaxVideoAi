@@ -74,6 +74,7 @@ export type PrepareGenerationInput = Omit<
 };
 
 export type PreparedGeneration = {
+  sourceVideoOutput?: import('@/lib/seedance-edit-source').SeedanceEditSourceFacts;
   quoteId: string;
   expiresAt: string;
   requestHash: string;
@@ -418,6 +419,9 @@ export async function prepareGenerationForActor(
     expiresAt: quote.expiresAt.toISOString(),
     requestHash,
     summary: request,
+    ...(pricing.pricingSnapshot.meta && typeof pricing.pricingSnapshot.meta === 'object'
+      && (pricing.pricingSnapshot.meta as Record<string, unknown>).seedanceEditSource
+      ? { sourceVideoOutput: (pricing.pricingSnapshot.meta as Record<string, unknown>).seedanceEditSource as import('@/lib/seedance-edit-source').SeedanceEditSourceFacts } : {}),
     price: customerDisplayPrice(customerChargeCents,pricing.currency),
     balance: {
       beforeCents: balanceBefore,

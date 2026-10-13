@@ -97,6 +97,7 @@ export async function computeCanonicalBillingSnapshot(
         vendorAccountId,
         meta: {
           ...billingFacts.meta,
+          ...(context.seedanceEditSource ? { seedanceEditSource: context.seedanceEditSource } : {}),
           ...(context.workflowStep ? { workflowStep: context.workflowStep } : {}),
           ...(manual.supplierCost ? { providerCostKind: manual.supplierCost.kind,
             providerCostSource: manual.supplierCost.source, providerCostSourceUrl: manual.supplierCost.sourceUrl,
