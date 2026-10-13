@@ -7,6 +7,7 @@ const root = process.cwd();
 const deferredContentPath = join(root, 'frontend/components/marketing/DeferredMarketingContent.tsx');
 const homePagePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/(home)/page.tsx');
 const pricingPagePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/page.tsx');
+const pricingContentPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/_components/PricingCurrentContent.tsx');
 const modelLayoutPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/MarketingModelPageLayout.tsx');
 const modelContentPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelPageContentSections.tsx');
 
@@ -24,12 +25,15 @@ test('below-fold marketing content uses browser rendering containment without a 
 test('marketing heroes remain outside deferred rendering while long content is contained section by section', () => {
   const homeSource = readSource(homePagePath);
   const pricingSource = readSource(pricingPagePath);
+  const pricingContentSource = readSource(pricingContentPath);
   const modelSource = readSource(modelLayoutPath);
   const modelContentSource = readSource(modelContentPath);
 
   assert.match(homeSource, /<HomeHero[\s\S]*?<\/HomeHero>|<HomeHero[\s\S]*?\/>[\s\S]*?<DeferredMarketingContent/);
   assert.equal((homeSource.match(/<DeferredMarketingContent>/g) ?? []).length, 6, 'home should contain each long section, with assistant access integrated into the workspace chapter, independently');
-  assert.equal((pricingSource.match(/<DeferredMarketingContent>/g) ?? []).length, 5, 'pricing should contain each long section independently');
+  assert.match(pricingSource, /<PricingHeroSection[\s\S]*?<\/PricingHeroSection>[\s\S]*?<PricingCurrentSections/, 'the static pricing hero stays outside the contained current sections');
+  assert.doesNotMatch(pricingContentSource, /<PricingHeroSection/, 'current pricing content must not own the opening hero');
+  assert.equal((pricingContentSource.match(/<DeferredMarketingContent>/g) ?? []).length, 5, 'pricing should contain each long section independently');
   assert.doesNotMatch(modelSource, /<DeferredMarketingContent>[\s\S]*?<ModelPageContentSections/, 'model layout should not reserve one inaccurate page-height placeholder');
   assert.ok((modelContentSource.match(/<DeferredMarketingContent>/g) ?? []).length >= 5, 'model content should contain long sections independently');
 });
