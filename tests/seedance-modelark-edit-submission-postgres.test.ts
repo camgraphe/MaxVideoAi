@@ -11,6 +11,7 @@ import { claimBytePlusLasSubmission, readOwnedBytePlusLasSubmission,
   preserveBytePlusLasSubmission } from '../frontend/server/byteplus-submission-state';
 import { getBytePlusLasDurableOutput, persistBytePlusLasOutputBeforeCompletion } from '../frontend/server/byteplus-output-persistence';
 import { resolveBytePlusPollTransport } from '../frontend/src/server/video-providers/byteplus-modelark';
+import type { LegacyJobMediaRow } from '../frontend/server/media-library-records';
 
 test('Edit submission markers preserve the selected transport under concurrent claims and definitive rejection',
   { timeout: 90_000, concurrency: false }, async () => {
@@ -114,6 +115,11 @@ test('the paid submission consumer sends source-preserving ModelArk Edit once an
     let gets = 0;
     let copies = 0;
     let projectionUnavailable = true;
+    let projected: LegacyJobMediaRow | undefined;
+    let keyframeDuration: number | null | undefined;
+    const mediaFacts = { version: 1 as const, source: 'probe' as const, probe: 'ffprobe' as const,
+      original: { url: 'https://media.example.test/durable-edit.mp4', sha256: 'a'.repeat(64), sizeBytes: 428632 },
+      durationSec: 3.708333, videoDurationSec: 3.708333, containerDurationSec: 3.708333, audioDurationSec: null };
     let payload: Record<string, unknown> | undefined;
     globalThis.fetch = (async (input, init) => {
       assert.match(String(input), /^https:\/\/ark\.ap-southeast\.bytepluses\.com\/api\/v3\/contents\/generations\/tasks/);
@@ -156,11 +162,12 @@ test('the paid submission consumer sends source-preserving ModelArk Edit once an
         await db.pool.query("UPDATE app_jobs SET updated_at=now()-interval '1 minute' WHERE job_id='consumer'");
         await db.pool.query("DELETE FROM generation_poll_state WHERE job_id='consumer'");
         await runBytePlusPoll({ jobId: 'consumer', deps: { queryFn: query,
-          ensureFastStartVideoFn: async () => { copies++; return 'https://media.example.test/durable-edit.mp4'; },
+          ensureFastStartVideoFn: async options => { copies++; options.onVideoMediaFacts?.(mediaFacts); return mediaFacts.original.url; },
           ensureJobThumbnailFn: async () => 'https://media.example.test/edit.jpg',
-          upsertLegacyJobOutputsFn: async () => { if (projectionUnavailable) throw new Error('output projection unavailable'); },
+          upsertLegacyJobOutputsFn: async output => { if (projectionUnavailable) throw new Error('output projection unavailable'); projected = output; },
           recordBytePlusPollEventFn: async () => undefined, applyBytePlusTrialOutcomeSafelyFn: async () => undefined,
-          generateAndPersistJobPreviewVideoFn: async () => null, generateAndPersistJobKeyframesFn: async () => [],
+          generateAndPersistJobPreviewVideoFn: async () => null,
+          generateAndPersistJobKeyframesFn: async options => { keyframeDuration = options.durationSec; return []; },
         } });
       };
       await poll();
@@ -173,6 +180,9 @@ test('the paid submission consumer sends source-preserving ModelArk Edit once an
       assert.equal(copies, 1);
       assert.equal(gets, 1, 'recovery must use durable output after the provider result expires');
       assert.equal(posts, 1);
+      assert.equal(projected?.duration_sec, 3.708333, 'Projection recovery retains measured timing without another provider lookup or copy');
+      assert.deepEqual(projected?.video_media_facts, mediaFacts);
+      assert.equal(keyframeDuration, 3.708333, 'Keyframes use actual delivered media timing');
     } finally { globalThis.fetch = fetchBefore; Object.assign(env, previous); await db.cleanup(); }
   });
 

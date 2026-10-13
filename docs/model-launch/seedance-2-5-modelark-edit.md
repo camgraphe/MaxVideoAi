@@ -1,8 +1,9 @@
 # Seedance 2.5 Edit through ModelArk
 
-Reviewed: 2026-10-13. Qualification is blocked by a measured source/output
-duration mismatch. Production Edit remains unavailable; no activation or
-production configuration change was made.
+Reviewed: 2026-10-14. The two authorized genuine tests qualify ModelArk access,
+editing, durable output and the definite-rejection refund. The measured duration
+difference is within the provider's documented tolerance. Production activation
+still requires the latest candidate's mandatory checks and normal Git delivery.
 
 ## Current provider evidence
 
@@ -12,9 +13,11 @@ updated on October 13, document video editing with the existing ModelArk bearer
 credential at `https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks`.
 The selected original is `reference_video`; the explicit task type is `edit`,
 ratio is `adaptive`, and provider duration is `-1`. The documentation describes
-source-based output duration and framing. The genuine test below did not preserve
-the exact duration, so that description is not a qualified product guarantee.
-The supported source duration is 4–30 seconds.
+source-based framing and approximately inherited output duration. The
+[prompt guide](https://docs.byteplus.com/en/docs/modelark/seedance-2-5-prompt-guide)
+allows about 0.3s of difference from frame processing; the tutorial specifies
+that output can be up to 0.4s shorter. Exact frame-count preservation is not a
+product guarantee. The supported source duration is 4–30 seconds.
 
 This path does not require LAS onboarding or its separate credential. The
 existing account's recent ModelArk contract and Advanced Creation Rights do not
@@ -45,8 +48,13 @@ stored amount once. MCP quote state follows the same terminal outcome.
 
 Durable video, accounting, output rows and required Library promotion precede
 completion. A projection outage resumes from the copied original after the
-supplier URL expires. Exact inherited duration remains separate from the
-integer customer tariff class in output projections and keyframe preparation.
+supplier URL expires. The existing fast-start copy callback probes the uploaded
+original and binds timing to its URL, byte count and SHA-256. Edit stores those
+facts with its durable-output marker before projections, so resumed output rows,
+Library promotion and keyframes use measured delivery timing. Quoted source
+duration and integer tariff class remain separate. The shared optional-probe
+contract preserves successful copies if probing is unavailable; nominal legacy
+fallbacks are not measurements.
 
 ## Customer and supplier facts
 
@@ -60,8 +68,9 @@ provenance; historical paid snapshots remain unchanged.
 The exact measured source duration remains continuous input usage. The output
 tariff class rounds upward to the next existing integer selector. For example,
 a 4.25s source records 4.25s as the documented expected output timing while the
-quote explicitly states its 5s output price bracket. This expectation is not
-measured output timing; exact preservation remains an unmet activation gate.
+quote explicitly states its 5s output price bracket. Customer projections
+disclose approximate output inheritance. This source-based expectation is not
+measured output timing; completion uses the original-file probe when available.
 `seedanceEditSource` records both values, original dimensions and the reviewed
 framing class. A changed source measurement makes a prepared paid quote stale,
 even when its integer class and rounded customer cents remain equal.
@@ -96,7 +105,9 @@ downloaded through the original-file action and was explicitly saved in Media.
 The requested red square became green; source framing stayed 854 × 480 at 24 fps
 and the output contained no audio. The source original was 4.000000s / 96 frames;
 both the downloaded original's FFprobe and the browser's original reader measured
-3.708333s / 89 frames. Exact source-duration preservation therefore failed.
+3.708333s / 89 frames. The 0.291667s reduction is within both published bounds.
+The earlier exact-preservation blocker was an overly strict interpretation,
+corrected after directly reading the English prompt guide on 2026-10-14.
 Do not substitute the 3.75s small preview's duration or the nominal 4s receipt.
 Do not pad/re-encode the result to manufacture a passing preservation check.
 
@@ -108,9 +119,11 @@ rejection, one USD 0.71 charge and one exact USD 0.71 refund. The existing vendo
 credential was unchanged. Net wallet cost is USD 0.71; maximum temporary exposure
 was USD 1.42, within the authorized USD 4.94. No vendor mail/form was sent.
 
-Activation remains closed until the provider's duration behavior and the truthful
-output measurement contract are resolved and independently requalified. Exhausting
-the two-POST authorization does not permit a third generation to investigate it.
+No further genuine generation is required to resolve this duration behavior.
+Local paid-backend qualification exercises 4s → 3.708333s and fractional source
+outputs, including projection outages, expired provider URLs and Library timing,
+without additional supplier submissions. Exhausting the two-POST authorization
+does not permit a third generation.
 Private original hashes, task IDs, receipts, budget ledger and screenshots are kept
 in the task's ignored `.local/seedance-las` evidence directory.
 
@@ -141,8 +154,8 @@ poll gate and credential available while accepted jobs reconcile.
 Customer projections carry the immutable request separately from `sourceVideoOutput`.
 Studio quotes, comparisons, read estimates, historical receipts and MCP comparisons expose
 exact inherited duration and source framing; fractional sources disclose the literal billed
-class. Library output timing preserves the canonical inherited duration in
-`job_outputs.metadata.inheritedOutputDurationSec`, while its legacy integer column stays
-compatible. A subsequent legacy synchronization cannot replace this field for the same
+class. Library output timing prioritizes measured original-file facts in
+`job_outputs.metadata.mediaFacts`; the canonical source expectation remains in
+`inheritedOutputDurationSec`, while its legacy integer column stays compatible. A subsequent legacy synchronization cannot replace this field for the same
 original URL; a changed URL clears it. Verified original probe facts remain authoritative
 and are never synthesized from the source-preservation promise.

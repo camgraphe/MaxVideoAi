@@ -165,7 +165,16 @@ export async function qualifyPaidSeedanceEdit(transport: 'las' | 'modelark') {
         await db.pool.query("UPDATE app_jobs SET updated_at=now()-interval '1 minute' WHERE job_id=$1", [quoteId]);
         await db.pool.query('DELETE FROM generation_poll_state WHERE job_id=$1', [quoteId]);
         return runBytePlusPoll({ jobId: quoteId, deps: {
-          ensureFastStartVideoFn: async () => { copies++; return 'https://cdn.maxvideoai.com/owned/output.mp4'; },
+          ensureFastStartVideoFn: async options => {
+            copies++;
+            if (transport === 'modelark') {
+              const durationSec = (await row(quoteId)).settings_snapshot.seedanceEditSource.durationSec === 4.25 ? 3.958333 : 3.708333;
+              options.onVideoMediaFacts?.({ version: 1, source: 'probe', probe: 'ffprobe',
+                original: { url: 'https://cdn.maxvideoai.com/owned/output.mp4', sha256: 'a'.repeat(64), sizeBytes: 1000 },
+                durationSec, videoDurationSec: durationSec, containerDurationSec: durationSec, audioDurationSec: null });
+            }
+            return 'https://cdn.maxvideoai.com/owned/output.mp4';
+          },
           ensureJobThumbnailFn: async () => 'https://cdn.maxvideoai.com/owned/output.jpg',
           upsertLegacyJobOutputsFn: (output, options) => upsertLegacyJobOutputs(output, { ...options,
             promoteMcpOutputsFn: outputs => promoteCompletedMcpJobOutputs(outputs, {
@@ -203,6 +212,14 @@ export async function qualifyPaidSeedanceEdit(transport: 'las' | 'modelark') {
       assert.equal((await row(quoteId)).cost_breakdown_usd.provider_cost_usd_list, transport === 'las' ? 0.984144 : 6.399994);
       assert.equal((await db.pool.query('SELECT count(*) FROM job_outputs WHERE job_id=$1 AND user_id=$2', [quoteId, identity.userId])).rows[0].count, '1');
       assert.equal((await db.pool.query('SELECT count(*) FROM media_assets WHERE source_job_id=$1 AND user_id=$2', [quoteId, identity.userId])).rows[0].count, '1');
+      if (transport === 'modelark') {
+        const output = (await db.pool.query('SELECT * FROM job_outputs WHERE job_id=$1', [quoteId])).rows[0];
+        const asset = (await db.pool.query('SELECT * FROM media_assets WHERE source_job_id=$1', [quoteId])).rows[0];
+        assert.equal(mapOutputRow(output).durationSec, 3.708333, 'Recent media uses measured original timing after projection recovery');
+        assert.equal(mapAssetRow(asset).durationSec, 3.708333, 'Saved media uses measured original timing');
+        assert.equal(output.metadata.inheritedOutputDurationSec, 4, 'The immutable source quote is separate from measured delivery');
+        assert.equal((await row(quoteId)).settings_snapshot.seedanceEditSource.durationSec, 4);
+      }
       const recovered = await getAgentGenerationStatus({ jobId: quoteId }, identity);
       assert.equal(recovered.status, 'completed');
       assert.equal(recovered.result?.surface, 'video');
@@ -285,11 +302,11 @@ export async function qualifyPaidSeedanceEdit(transport: 'las' | 'modelark') {
         const asset = (await db.pool.query('SELECT * FROM media_assets WHERE source_job_id=$1', [quoteId])).rows[0];
         assert.equal(output.metadata.inheritedOutputDurationSec, 4.25, 'The paid completion persists fractional inherited timing');
         assert.equal(Number(output.duration_sec), 4, 'The legacy integer projection remains compatible');
-        assert.equal(mapOutputRow(output).durationSec, 4.25);
+        assert.equal(mapOutputRow(output).durationSec, 3.958333);
         await upsertLegacyJobOutputs({ ...(await row(quoteId)), duration_sec: 5 }, { promoteMcpOutputsFn: async () => ({ promoted: 0, failed: 0 }) });
         const reread = (await db.pool.query('SELECT * FROM job_outputs WHERE job_id=$1', [quoteId])).rows[0];
-        assert.equal(mapOutputRow(reread).durationSec, 4.25, 'A subsequent legacy synchronization cannot overwrite inherited timing');
-        assert.equal(mapAssetRow(asset).durationSec, 4.25, 'The saved Library asset preserves inherited timing');
+        assert.equal(mapOutputRow(reread).durationSec, 3.958333, 'A subsequent legacy synchronization cannot overwrite measured timing');
+        assert.equal(mapAssetRow(asset).durationSec, 3.958333, 'The saved Library asset preserves measured timing');
         await db.pool.query(`UPDATE media_assets SET metadata=metadata || '{"durationSec":3.99}'::jsonb WHERE public_id=$1`, [assetId]);
         await assert.rejects(prepare(request, identity), /cannot be priced|settings cannot be priced|reference duration/i);
         assert.equal(posts, 4);

@@ -4,6 +4,7 @@ import { query } from '@/lib/db';
 import { upsertLegacyJobOutputs } from '@/server/media-library';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 import { ensureFastStartVideo } from '@/server/video-faststart';
+import { readGeneratedVideoFacts, type GeneratedVideoFacts } from '@/lib/generated-video-media-facts';
 import { generateAndPersistJobKeyframes } from '@/server/video-keyframes';
 import { generateAndPersistJobPreviewVideo } from '@/server/video-preview';
 import {
@@ -268,10 +269,12 @@ export async function runBytePlusPoll(options: { jobId?: string; deps?: BytePlus
         continue;
       }
 
+      let videoMediaFacts: GeneratedVideoFacts | null = durableOutput?.videoMediaFacts ?? null;
       const copiedVideoUrl = durableOutput?.videoUrl ?? await ensureFastStartVideoFn({
         jobId: job.job_id,
         userId: job.user_id,
         videoUrl: task.videoUrl,
+        onVideoMediaFacts: (facts) => { videoMediaFacts = facts; },
       });
       if (!copiedVideoUrl) {
         const nextCopyState = buildNextBytePlusStorageCopyState(job.settings_snapshot, {
@@ -299,6 +302,7 @@ export async function runBytePlusPoll(options: { jobId?: string; deps?: BytePlus
         continue;
       }
 
+      videoMediaFacts = readGeneratedVideoFacts(videoMediaFacts, copiedVideoUrl);
       let thumb = durableOutput?.thumbUrl ?? job.thumb_url ?? '/assets/frames/thumb-16x9.svg';
       if (isPlaceholderThumbnail(thumb)) {
         const generatedThumb = await ensureJobThumbnailFn({
@@ -328,7 +332,7 @@ export async function runBytePlusPoll(options: { jobId?: string; deps?: BytePlus
 
       const requiresDurableOutput = requiresBytePlusDurableEditOutput(job);
       if (requiresDurableOutput && !await persistBytePlusLasOutputBeforeCompletion({ job,
-        videoUrl: copiedVideoUrl, thumbUrl: thumb, costBreakdown, queryFn, upsertOutputsFn: upsertLegacyJobOutputsFn })) continue;
+        videoUrl: copiedVideoUrl, thumbUrl: thumb, costBreakdown, videoMediaFacts, queryFn, upsertOutputsFn: upsertLegacyJobOutputsFn })) continue;
 
       const completedRows = await queryFn<{ job_id: string }>(
         `UPDATE app_jobs
@@ -359,7 +363,7 @@ export async function runBytePlusPoll(options: { jobId?: string; deps?: BytePlus
         console.warn('[byteplus-poll] completed workflow reconciliation deferred', { jobId: job.job_id });
       });
       await applyBytePlusTrialOutcomeSafelyFn(job, { kind: 'completed' });
-      if (!requiresDurableOutput) await upsertLegacyJobOutputsFn(bytePlusCompletedOutputRow(job, copiedVideoUrl, thumb)).catch((error) => {
+      if (!requiresDurableOutput) await upsertLegacyJobOutputsFn(bytePlusCompletedOutputRow(job, copiedVideoUrl, thumb, videoMediaFacts)).catch((error) => {
         console.warn('[byteplus-poll] failed to persist media output', {
           jobId: job.job_id,
           error: error instanceof Error ? error.message : error,
@@ -376,7 +380,7 @@ export async function runBytePlusPoll(options: { jobId?: string; deps?: BytePlus
           jobId: job.job_id,
           userId: job.user_id,
           videoUrl: copiedVideoUrl,
-          durationSec: bytePlusOutputDurationSec(job),
+          durationSec: bytePlusOutputDurationSec(job, copiedVideoUrl, videoMediaFacts),
           existingKeyframeUrls: job.keyframe_urls,
         }),
       ]);

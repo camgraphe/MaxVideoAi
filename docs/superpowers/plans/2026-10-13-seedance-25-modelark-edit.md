@@ -4,7 +4,7 @@
 
 **Goal:** Qualify and activate Seedance 2.5 Edit through the existing ModelArk account, without requiring LAS onboarding.
 
-**Architecture:** The selected Edit transport is explicit; existing LAS behavior remains available for its separately qualified environment and recorded LAS jobs retain their transport. ModelArk Edit uses the existing `/api/v3` credential, source-preserving parameters and ModelArk supplier accounting. New ModelArk Edit work stays behind its own disabled-by-default gate until a bounded genuine canary succeeds.
+**Architecture:** The selected Edit transport is explicit; existing LAS behavior remains available for its separately qualified environment and recorded LAS jobs retain their transport. ModelArk Edit uses the existing `/api/v3` credential, source-inheriting parameters and ModelArk supplier accounting. New ModelArk Edit work stays behind its own disabled-by-default gate until a bounded genuine canary succeeds.
 
 **Tech Stack:** Next.js, TypeScript, PostgreSQL 17, existing BytePlus client, wallet, canonical customer tariffs and owned media services.
 
@@ -66,17 +66,26 @@
 
 - [x] Update launch/pricing guides to distinguish the qualified ModelArk path from the optional LAS path. Include current official evidence and the commercial proof limitation; an old ticket cannot establish the current contract state.
 - [ ] Run lint, exposure, type checks, focused contracts, appropriate integration/browser/financial checks and `git diff --check`; obtain independent source review.
-- [ ] Validate one genuine successful authenticated Edit, including task acceptance, polling, byte-preserved source, durable media/download/library, one debit and ModelArk terminal reconciliation.
+- [x] Validate one genuine successful authenticated Edit, including task acceptance, polling, byte-preserved source, durable media/download/library, one debit and ModelArk terminal reconciliation.
 - [x] Validate one genuine definite rejection/failure and exactly one stored-amount refund. This counts toward the same two-POST limit. Stop on any uncertain submission.
 - [ ] Only after proof, configure the explicit ModelArk Edit selection/gate while preserving all four other modes; deliver through PR and Git Vercel, then verify both production domains and the complete user flow.
 
 Execution remains within the owner's existing implementation and canary authorization. No separate vendor access request is part of this plan.
 
 
-Task 4 qualification result: two genuine authorized POSTs completed. The first
-proves account access, acceptance, one charge, durable output, original download,
-Library read/save and usage reconciliation, but exact duration preservation fails:
-4.000000s / 96 source frames became 3.708333s / 89 output frames. The second proves
-definite rejection and one exact stored-amount refund. Activation and delivery stay
-closed, and no third provider POST is authorized. This is an external qualification
-blocker, not permission to silently weaken the inherited timing promise.
+Task 4 qualification result: both genuine authorized POSTs are consumed. The first
+proves account access, acceptance, one charge, edited visuals, source framing,
+durable output, original download, Library read/save and reported usage. The
+4.000000s / 96-frame source became 3.708333s / 89 frames. The initial exact-duration
+blocker was corrected on 2026-10-14 after reading the English prompt guide: it
+permits about 0.3s difference, and the tutorial allows up to 0.4s shorter output.
+The observed 0.291667s delta complies. No source or result padding is performed.
+The second proves definite rejection and one exact stored-amount refund.
+
+The remaining application correction captures the existing original-file probe
+callback during BytePlus copying, persists its URL/hash/byte-bound measurements
+before output projections, and retains them during recovery. Paid PostgreSQL
+qualification verifies measured Recent/Saved media timing and keyframes while
+source quotes, supplier accounting and wallet amounts remain immutable. UI copy
+states approximate output inheritance. No third provider POST is authorized.
+Release still requires latest mandatory Quality CI and both-domain Git provenance.

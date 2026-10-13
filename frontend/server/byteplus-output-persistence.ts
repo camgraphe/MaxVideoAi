@@ -2,14 +2,16 @@ import type { LegacyJobMediaRow } from './media-library-records';
 import type { BytePlusPendingJob } from './byteplus-poll-types';
 import { isRecord } from './byteplus-record-utils';
 import type { upsertLegacyJobOutputs } from './media-library';
+import { readGeneratedVideoFacts } from '@/lib/generated-video-media-facts';
 
 type QueryFn = <T = unknown>(sql: string, params?: unknown[]) => Promise<T[]>;
 const ACTIVE = ['pending', 'queued', 'running', 'processing', 'in_progress', 'provider_polling_stalled'];
 
-export function bytePlusCompletedOutputRow(job: BytePlusPendingJob, videoUrl: string, thumbUrl: string): LegacyJobMediaRow {
+export function bytePlusCompletedOutputRow(job: BytePlusPendingJob, videoUrl: string, thumbUrl: string, videoMediaFacts?: unknown): LegacyJobMediaRow {
   return { job_id: job.job_id, user_id: job.user_id, surface: 'video', video_url: videoUrl,
+    video_media_facts: readGeneratedVideoFacts(videoMediaFacts ?? getBytePlusLasDurableOutput(job)?.videoMediaFacts, videoUrl),
     audio_url: null, thumb_url: thumbUrl, preview_frame: thumbUrl, preview_video_url: job.preview_video_url,
-    render_ids: null, duration_sec: bytePlusOutputDurationSec(job),
+    render_ids: null, duration_sec: bytePlusOutputDurationSec(job, videoUrl, videoMediaFacts),
     inherited_output_duration_sec: bytePlusInheritedOutputDurationSec(job), status: 'completed' };
 }
 
@@ -21,8 +23,9 @@ function bytePlusInheritedOutputDurationSec(job: BytePlusPendingJob) {
     ? source.durationSec : undefined;
 }
 
-export function bytePlusOutputDurationSec(job: BytePlusPendingJob) {
-  return bytePlusInheritedOutputDurationSec(job) ?? job.duration_sec;
+export function bytePlusOutputDurationSec(job: BytePlusPendingJob, videoUrl = job.video_url ?? '', videoMediaFacts?: unknown) {
+  return readGeneratedVideoFacts(videoMediaFacts ?? getBytePlusLasDurableOutput(job)?.videoMediaFacts, videoUrl)?.durationSec
+    ?? bytePlusInheritedOutputDurationSec(job) ?? job.duration_sec;
 }
 
 export function getBytePlusLasDurableOutput(job: BytePlusPendingJob) {
@@ -32,7 +35,9 @@ export function getBytePlusLasDurableOutput(job: BytePlusPendingJob) {
     || output.providerJobId !== job.provider_job_id || output.videoUrl !== job.video_url
     || typeof output.videoUrl !== 'string' || !output.videoUrl
     || typeof output.thumbUrl !== 'string' || !isRecord(output.costBreakdown)) return null;
-  return { videoUrl: output.videoUrl, thumbUrl: output.thumbUrl, costBreakdown: output.costBreakdown };
+  const videoMediaFacts = readGeneratedVideoFacts(output.videoMediaFacts, output.videoUrl);
+  return { videoUrl: output.videoUrl, thumbUrl: output.thumbUrl, costBreakdown: output.costBreakdown,
+    ...(videoMediaFacts ? { videoMediaFacts } : {}) };
 }
 
 /** Recorded execution facts, rather than current flags, own recovery of accepted Edit jobs. */
@@ -45,8 +50,10 @@ export function requiresBytePlusDurableEditOutput(job: BytePlusPendingJob) {
 /** Durable bytes and projections must exist before an Edit job becomes terminal. */
 export async function persistBytePlusLasOutputBeforeCompletion(input: {
   job: BytePlusPendingJob; videoUrl: string; thumbUrl: string; costBreakdown: Record<string, unknown>;
+  videoMediaFacts?: unknown;
   queryFn: QueryFn; upsertOutputsFn: typeof upsertLegacyJobOutputs;
 }) {
+  const videoMediaFacts = readGeneratedVideoFacts(input.videoMediaFacts ?? getBytePlusLasDurableOutput(input.job)?.videoMediaFacts, input.videoUrl);
   const rows = await input.queryFn<{ job_id: string }>(`UPDATE app_jobs SET status = 'processing',
       progress = GREATEST(progress,90), video_url = $3, thumb_url = $4, preview_frame = $4,
       cost_breakdown_usd = $5::jsonb,
@@ -56,7 +63,8 @@ export async function persistBytePlusLasOutputBeforeCompletion(input: {
       AND provider_job_id = $7 AND status = ANY($8::text[]) RETURNING job_id`,
   [input.job.job_id, input.job.user_id, input.videoUrl, input.thumbUrl, JSON.stringify(input.costBreakdown),
     JSON.stringify({ providerJobId: input.job.provider_job_id, videoUrl: input.videoUrl,
-      thumbUrl: input.thumbUrl, costBreakdown: input.costBreakdown }), input.job.provider_job_id, ACTIVE]);
+      thumbUrl: input.thumbUrl, costBreakdown: input.costBreakdown,
+      ...(videoMediaFacts ? { videoMediaFacts } : {}) }), input.job.provider_job_id, ACTIVE]);
   if (rows.length !== 1) return false;
   // The original confirmation may lose its quote-state acknowledgement after provider acceptance.
   // Bind repair to the same owned paid job and immutable quote, without another debit or POST.
@@ -68,6 +76,6 @@ export async function persistBytePlusLasOutputBeforeCompletion(input: {
       AND q.price_cents = j.final_price_cents AND UPPER(q.currency) = UPPER(j.currency)
       AND q.request_json->>'engineId' = 'seedance-2-5' AND q.request_json->>'mode' = 'v2v'`,
   [input.job.job_id, input.job.user_id, input.job.provider_job_id]);
-  await input.upsertOutputsFn(bytePlusCompletedOutputRow(input.job, input.videoUrl, input.thumbUrl), { requireMcpPromotion: true });
+  await input.upsertOutputsFn(bytePlusCompletedOutputRow(input.job, input.videoUrl, input.thumbUrl, videoMediaFacts), { requireMcpPromotion: true });
   return true;
 }
