@@ -1,7 +1,8 @@
 # Seedance 2.5 Edit through ModelArk
 
-Reviewed: 2026-10-13. Candidate qualification is in progress. Production Edit
-remains unavailable until the genuine canary and normal Git release succeed.
+Reviewed: 2026-10-13. Qualification is blocked by a measured source/output
+duration mismatch. Production Edit remains unavailable; no activation or
+production configuration change was made.
 
 ## Current provider evidence
 
@@ -10,8 +11,10 @@ and [video task API](https://docs.byteplus.com/en/docs/modelark/create-video-gen
 updated on October 13, document video editing with the existing ModelArk bearer
 credential at `https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks`.
 The selected original is `reference_video`; the explicit task type is `edit`,
-ratio is `adaptive`, and provider duration is `-1`. Output duration and framing
-follow that source. The supported source duration is 4–30 seconds.
+ratio is `adaptive`, and provider duration is `-1`. The documentation describes
+source-based output duration and framing. The genuine test below did not preserve
+the exact duration, so that description is not a qualified product guarantee.
+The supported source duration is 4–30 seconds.
 
 This path does not require LAS onboarding or its separate credential. The
 existing account's recent ModelArk contract and Advanced Creation Rights do not
@@ -55,9 +58,10 @@ Transport selection is included in factual release bindings and quote supplier
 provenance; historical paid snapshots remain unchanged.
 
 The exact measured source duration remains continuous input usage. The output
-tariff class rounds upward to the next existing integer selector; the provider
-still preserves the original duration. For example, a 4.25s source retains a
-4.25s output while the quote explicitly states its 5s output price bracket.
+tariff class rounds upward to the next existing integer selector. For example,
+a 4.25s source records 4.25s as the documented expected output timing while the
+quote explicitly states its 5s output price bracket. This expectation is not
+measured output timing; exact preservation remains an unmet activation gate.
 `seedanceEditSource` records both values, original dimensions and the reviewed
 framing class. A changed source measurement makes a prepared paid quote stale,
 even when its integer class and rounded customer cents remain equal.
@@ -82,6 +86,33 @@ Seedance 2.5 SKU has a 0% discount; Fast/Mini discounts cannot be inherited.
 Reported terminal usage remains authoritative for token-based estimates and
 the supplier invoice remains authoritative for actual cost. No LAS rate or
 discount is applied to a recorded ModelArk task.
+
+## Recorded canary outcome (2026-10-13)
+
+Both authorized generation POSTs were used; no additional submission is authorized.
+The first real authenticated Workspace Edit was accepted by the existing ModelArk
+account, completed, copied to owned durable storage, appeared in Recent media,
+downloaded through the original-file action and was explicitly saved in Media.
+The requested red square became green; source framing stayed 854 × 480 at 24 fps
+and the output contained no audio. The source original was 4.000000s / 96 frames;
+both the downloaded original's FFprobe and the browser's original reader measured
+3.708333s / 89 frames. Exact source-duration preservation therefore failed.
+Do not substitute the 3.75s small preview's duration or the nominal 4s receipt.
+Do not pad/re-encode the result to manufacture a passing preservation check.
+
+The first task had exactly one USD 0.71 charge. Its reported 74,057 tokens at the
+published USD 0.0064/1k video-input rate give a USD 0.473965 list estimate; this is
+not an observed supplier invoice. The second test used a deliberately invalid
+credential in the private loopback candidate only. It produced a definite provider
+rejection, one USD 0.71 charge and one exact USD 0.71 refund. The existing vendor
+credential was unchanged. Net wallet cost is USD 0.71; maximum temporary exposure
+was USD 1.42, within the authorized USD 4.94. No vendor mail/form was sent.
+
+Activation remains closed until the provider's duration behavior and the truthful
+output measurement contract are resolved and independently requalified. Exhausting
+the two-POST authorization does not permit a third generation to investigate it.
+Private original hashes, task IDs, receipts, budget ledger and screenshots are kept
+in the task's ignored `.local/seedance-las` evidence directory.
 
 ## Genuine canary and delivery
 

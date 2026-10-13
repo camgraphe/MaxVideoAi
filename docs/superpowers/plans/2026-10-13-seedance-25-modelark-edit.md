@@ -64,10 +64,19 @@
 
 ### Task 4: Review, bounded canary and delivery
 
-- [ ] Update launch/pricing guides to distinguish the qualified ModelArk path from the optional LAS path. Include current official evidence and the commercial proof limitation; an old ticket cannot establish the current contract state.
+- [x] Update launch/pricing guides to distinguish the qualified ModelArk path from the optional LAS path. Include current official evidence and the commercial proof limitation; an old ticket cannot establish the current contract state.
 - [ ] Run lint, exposure, type checks, focused contracts, appropriate integration/browser/financial checks and `git diff --check`; obtain independent source review.
 - [ ] Validate one genuine successful authenticated Edit, including task acceptance, polling, byte-preserved source, durable media/download/library, one debit and ModelArk terminal reconciliation.
-- [ ] Validate one genuine definite rejection/failure and exactly one stored-amount refund. This counts toward the same two-POST limit. Stop on any uncertain submission.
+- [x] Validate one genuine definite rejection/failure and exactly one stored-amount refund. This counts toward the same two-POST limit. Stop on any uncertain submission.
 - [ ] Only after proof, configure the explicit ModelArk Edit selection/gate while preserving all four other modes; deliver through PR and Git Vercel, then verify both production domains and the complete user flow.
 
 Execution remains within the owner's existing implementation and canary authorization. No separate vendor access request is part of this plan.
+
+
+Task 4 qualification result: two genuine authorized POSTs completed. The first
+proves account access, acceptance, one charge, durable output, original download,
+Library read/save and usage reconciliation, but exact duration preservation fails:
+4.000000s / 96 source frames became 3.708333s / 89 output frames. The second proves
+definite rejection and one exact stored-amount refund. Activation and delivery stay
+closed, and no third provider POST is authorized. This is an external qualification
+blocker, not permission to silently weaken the inherited timing promise.
