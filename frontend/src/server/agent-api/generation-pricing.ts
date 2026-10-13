@@ -269,9 +269,10 @@ function canonicalVideoTrustedMediaPricingFacts(
   const inputAudioDurationSec = canonicalInputAudioDurationSec(request, context);
   const inputVideoDurationSec = canonicalInputVideoDurationSec(request, context);
   const referenceTokenBudget = canonicalReferenceTokenBudget(request, context);
+  const seedanceEditSource = canonicalSeedanceEditSource(request, context);
   return {
     referenceImageCount: canonicalReferenceImageCount(request, context),
-    seedanceEditSource: canonicalSeedanceEditSource(request, context),
+    ...(seedanceEditSource ? { seedanceEditSource } : {}),
     ...(inputAudioDurationSec !== undefined ? { inputAudioDurationSec } : {}),
     ...(inputVideoDurationSec !== undefined ? { inputVideoDurationSec } : {}),
     ...(referenceTokenBudget !== undefined ? { referenceTokenBudget } : {}),
@@ -431,7 +432,7 @@ export async function priceCanonicalGenerationInExecutor(
       referenceImageCount: canonicalReferenceImageCount(request, dependencies),
       inputAudioDurationSec: canonicalInputAudioDurationSec(request, dependencies),
       inputVideoDurationSec: canonicalInputVideoDurationSec(request, dependencies),
-      seedanceEditSource,
+      ...(seedanceEditSource ? { seedanceEditSource } : {}),
       referenceTokenBudget: canonicalReferenceTokenBudget(request, dependencies),
       ...canonicalOmniPricingFacts(request,dependencies.resolvedReferences),
       membershipTier,
