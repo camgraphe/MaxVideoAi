@@ -172,7 +172,9 @@ async function fetchCheckoutGuardCounts(userId: string, ipHash: string): Promise
          SELECT COUNT(*)::int
            FROM checkout_interaction_events event
           WHERE event.user_id = $1
-            AND event.event_name = 'stripe_checkout_session_expired_for_failed_cards'
+            AND (event.event_name = 'stripe_failed_card_cooldown_started'
+               OR (event.event_name = 'stripe_checkout_session_expired_for_failed_cards'
+                 AND event.metadata->>'cooldown_started_separately' IS DISTINCT FROM 'true'))
             AND event.created_at >= NOW() - INTERVAL '30 minutes'
        ) AS user_failed_card_limits_30m
        FROM checkout_attempts`,

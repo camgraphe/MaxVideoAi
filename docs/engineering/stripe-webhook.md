@@ -60,19 +60,36 @@ releases its idempotency marker so Stripe can retry document synchronization. Un
 invoices remain acknowledged. This adds no credit and does not repair old cached links.
 The live webhook endpoint must subscribe to every handled event in the table above.
 
-Failed top-up cards are owned by `stripe-webhook-failed-payments.ts`. It records deduplicated failed
-card attempts for both first and returning wallet top-ups. At five failed attempts, it expires an open,
-unpaid Checkout Session and records the rate-limited outcome. A receipt for the current Session or
-PaymentIntent prevents expiry; a successful older payment does not exempt a later checkout.
-The 30-minute cooldown applies to both new session creation and express-session reuse for all users.
-These controls react to subsequent failed cards; a normal, authorized first payment remains eligible.
-Failed-charge deduplication, insertion and counting run in one transaction under the owning
-`checkout_attempts` row lock, so concurrent Charge and PaymentIntent notifications cannot
-insert the same charge twice. Stripe network calls run after that transaction releases its lock.
-The limit counts distinct charge IDs, preserving historical duplicate rows without allowing
-them to trigger an early expiry. Notifications without a charge ID retain their event-row count.
-`tests/stripe-failed-cards-postgres.test.ts` forces concurrent delivery with a database write
-barrier and verifies the limit alongside current-payment protection on disposable PostgreSQL.
+Failed top-up cards are translated by `stripe-webhook-failed-payments.ts`; their failure history,
+card identity, cooldown anchor and account-wide counter belong to `stripe-webhook-failed-card-history.ts`.
+Three distinct card fingerprints refused within ten minutes across a user's sessions start a
+30-minute cooldown and expire that user's recent open, unpaid Checkout Sessions. Both first and
+returning customers are covered. Retrying a known card with a new PaymentMethod ID does not count
+as another card. The existing five deduplicated failures on one checkout remain an additional
+safeguard, including repeated probing of one known card. That legacy limit starts a cooldown only
+after its own session is confirmed open/unpaid and successfully expired; an expired or previously
+handled session cannot rearm an old cooldown.
+
+The history uses the signed Stripe event's timestamp, so delayed old failures cannot form a new
+burst. PaymentIntent authentication errors use `last_payment_error.payment_method`: `latest_charge`
+can still refer to an older card. Charge and PaymentIntent notifications for an actual charge are
+deduplicated under the user's `wallet-checkout-user` advisory transaction lock and the owning
+`checkout_attempts` row lock. This user lock is shared with checkout preparation so different
+sessions cannot race the counter or create a session before the cooldown commits.
+
+The distinct-card cooldown starts in a separate `stripe_failed_card_cooldown_started` event before
+Stripe network calls. Both new session creation and express reuse honor it even if session expiration fails.
+Replayed notifications and later session expiry do not restart an active cooldown. Session expiration uses a stable Stripe
+idempotency key and atomically records its outcome and marker only once. The receipt for the current
+Session/PaymentIntent and Stripe's current paid/complete state prevent expiry. PaymentIntent failures
+retain their signed snapshot but fetch current paid state separately, so delayed failures cannot
+penalize a payment already completed before receipt synchronization. Successful older top-ups do
+not exempt a later checkout, and this policy never refunds payments, reverses credit or bans users.
+The existing CAPTCHA policy and Stripe CVV/Radar configuration are unchanged.
+`tests/stripe-failed-cards-postgres.test.ts` covers cross-session and concurrent failures, duplicate
+notifications, delayed events, stale charge identities, account isolation and paid-session/ledger
+protection on disposable PostgreSQL. `tests/checkout-guard-reuse-postgres.test.ts` covers the persistent
+cooldown without CAPTCHA availability.
 
 ## Manual dispute containment
 

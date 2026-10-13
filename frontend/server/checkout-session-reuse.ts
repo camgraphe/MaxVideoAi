@@ -74,7 +74,9 @@ export async function findReusableExpressCheckoutSession(
         AND NOT EXISTS (
           SELECT 1 FROM checkout_interaction_events event
            WHERE event.user_id = $1
-             AND event.event_name = 'stripe_checkout_session_expired_for_failed_cards'
+             AND (event.event_name = 'stripe_failed_card_cooldown_started'
+               OR (event.event_name = 'stripe_checkout_session_expired_for_failed_cards'
+                 AND event.metadata->>'cooldown_started_separately' IS DISTINCT FROM 'true'))
              AND event.created_at >= NOW() - INTERVAL '30 minutes'
         )
       ORDER BY created_at DESC

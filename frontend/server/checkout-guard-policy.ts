@@ -10,5 +10,7 @@ export const CHECKOUT_GUARD_LIMITS = {
   windowSeconds: 15 * 60,
   returningWindowSeconds: 60 * 60,
   failedCardAttempts: 5,
+  distinctFailedCards: 3,
+  failedCardWindowSeconds: 10 * 60,
   failedCardCooldownSeconds: 30 * 60,
 } as const;
