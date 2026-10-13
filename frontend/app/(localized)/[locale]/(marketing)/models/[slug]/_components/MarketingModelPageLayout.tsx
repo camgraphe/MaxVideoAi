@@ -1,18 +1,16 @@
+import { Suspense } from 'react';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
 import { localePathnames, localeRegions } from '@/i18n/locales';
 import type { FalEngineEntry } from '@/config/falEngines';
-import type { EngineCaps } from '@/types/engines';
 import type { EngineLocalizedContent } from '@/lib/models/i18n';
 import { getLocalizedModelMetaLabels } from '@/lib/ltx-localization';
 import { getExamplesHref } from '@/lib/examples-links';
 import type { ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
-import { serializeJsonLd } from '../../model-jsonld';
 import { ModelHeroSection } from './ModelHeroSection';
 import { ModelDecisionHeroSection } from './ModelDecisionHeroSection';
-import { ModelDecisionPricingCard } from './ModelDecisionPricingCard';
-import { ModelPublicOfferLine } from './ModelPublicOfferLine';
-import { ModelPageContentSections } from './ModelPageContentSections';
+import { ModelCurrentDetails } from './ModelCurrentDetails';
+import { ModelDetailsAnchorRestore } from './ModelDetailsAnchorRestore.client';
 import {
   DEFAULT_DETAIL_COPY,
   buildVideoBoundaries,
@@ -22,8 +20,9 @@ import {
 } from '../_lib/model-page-copy';
 import { type FeaturedMedia } from '../_lib/model-page-media';
 import { resolveProviderInfo } from '../_lib/model-page-schema';
-import { resolveCurrentModelPublicOffer } from '../_lib/current-model-public-offer';
-import { buildCurrentModelDecisionData } from '../_lib/current-model-decision-pricing';
+import { prepareModelCommercialData, type ModelPagePricing } from '../_lib/model-page-commercial-data';
+import { buildModelDecisionData } from '../_lib/model-page-decision-data';
+import { getModelPageTemplateConfig } from '../_lib/model-page-template-registry';
 import { quotePublicModelScenario } from '@/server/pricing/quote-public-model-scenario';
 import { resolveFocusVsConfig } from '../_lib/model-page-static';
 import {
@@ -63,7 +62,6 @@ import {
 } from '../_lib/model-page-specs';
 import { buildModelPrepLinksSection } from '../_lib/model-page-prep-links';
 import { buildModelPricingCallout } from '../_lib/model-page-pricing-callouts';
-import { buildModelSchemaPayloads } from '../_lib/model-page-schema-payloads';
 import { buildDecisionTocItems, resolveDecisionTocOverviewLabel } from '../_lib/model-page-decision-toc';
 import { parseModelPromptingContent } from '../_lib/model-page-prompting-content';
 import { resolveDefaultModelPromptingDemoPromptSource, resolveModelPromptingDemoPromptSource } from '../_lib/model-page-prompting-prompt-source';
@@ -76,7 +74,7 @@ import { buildModelExamplesViewModel } from '../_lib/model-page-examples-view-mo
 
 export async function MarketingModelPageLayout({
   engine,
-  pricingEngine,
+  pricing,
   quoteModel = quotePublicModelScenario,
   backLabel,
   pricingLinkLabel,
@@ -92,8 +90,6 @@ export async function MarketingModelPageLayout({
   faqEntries,
   keySpecRows,
   keySpecValues,
-  pricePerImageLabel,
-  pricePerSecondLabel,
   engineSlug,
   locale,
   canonicalUrl,
@@ -101,7 +97,7 @@ export async function MarketingModelPageLayout({
   breadcrumb,
 }: {
   engine: FalEngineEntry;
-  pricingEngine: EngineCaps;
+  pricing: Promise<ModelPagePricing>;
   quoteModel?: typeof quotePublicModelScenario;
   backLabel: string;
   pricingLinkLabel: string;
@@ -117,14 +113,23 @@ export async function MarketingModelPageLayout({
   faqEntries: LocalizedFaqEntry[];
   keySpecRows: KeySpecRow[];
   keySpecValues: KeySpecValues | null;
-  pricePerImageLabel: string | null;
-  pricePerSecondLabel: string | null;
   engineSlug: string;
   locale: AppLocale;
   canonicalUrl: string;
   localizedCanonicalUrl: string;
   breadcrumb: DetailCopy['breadcrumb'];
 }) {
+  const templateData = buildModelDecisionData({ engine, locale, decisionContent: localizedContent.decision });
+  const templateConfig = templateData ? getModelPageTemplateConfig(engine.modelSlug) : null;
+  const commercial = prepareModelCommercialData({ engine, locale, pricing, templateData, templateConfig, quoteModel });
+  // Image price grids and legacy hero prices keep their complete, already-priced render.
+  // Decision video heroes are independent of prices; all following details reveal together.
+  const streamDetails = isVideoEngine && Boolean(templateData);
+  const current = streamDetails ? null : (await Promise.all([pricing, commercial]))[0];
+  if (current) {
+    keySpecValues = current.keySpecValues;
+    keySpecRows = current.keySpecRows;
+  }
   const inLanguage = localeRegions[locale] ?? 'en-US';
   const resolvedBreadcrumb = breadcrumb ?? DEFAULT_DETAIL_COPY.breadcrumb;
   const canonical = canonicalUrl.replace(/\/+$/, '') || canonicalUrl;
@@ -157,8 +162,8 @@ export async function MarketingModelPageLayout({
   const specNote = normalizeSpecNote(copy.specNote, locale);
   const showHeroDescriptions = heroSpecChips.length === 0;
   const heroPrice = isImageEngine
-    ? keySpecValues?.pricePerImage ?? pricePerImageLabel ?? 'Data pending'
-    : keySpecValues?.pricePerSecond ?? pricePerSecondLabel ?? 'Data pending';
+    ? keySpecValues?.pricePerImage ?? current?.pricePerImageLabel ?? 'Data pending'
+    : keySpecValues?.pricePerSecond ?? current?.pricePerSecondLabel ?? 'Data pending';
   const heroDuration =
     typeof heroMedia.durationSec === 'number'
       ? `${heroMedia.durationSec}s`
@@ -293,10 +298,6 @@ export async function MarketingModelPageLayout({
   const faqJsonLdEntries = faqList.slice(0, 6);
   const prepLinksSection = buildModelPrepLinksSection(engine.modelSlug, locale);
   const pricingCallout = buildModelPricingCallout(engine.modelSlug, locale);
-  const [{ data: templateData, config: templateConfig }, publicOffer] = await Promise.all([
-    buildCurrentModelDecisionData(engine, locale, localizedContent.decision, quoteModel),
-    resolveCurrentModelPublicOffer(engine, pricingEngine, quoteModel),
-  ]);
   const sectionLabels = resolveSectionLabels(locale);
   const compareCopy = resolveCompareCopy(locale, heroTitle, supportsNativeAudio);
   const statusLabels = resolveSpecStatusLabels(locale);
@@ -400,7 +401,7 @@ export async function MarketingModelPageLayout({
   ].filter((item) => item.visible);
   const decisionTocItems = buildDecisionTocItems({ locale, sectionLabels, textAnchorId, imageAnchorId, compareAnchorId, hasExamples, hasSpecs, hasTextSection, hasTipsSection, hasCompareSection, hasSafetySection, hasFaqSection });
   const decisionTocOverviewLabel = resolveDecisionTocOverviewLabel(locale);
-  const schemaPayloads = buildModelSchemaPayloads({
+  const schema = {
     canonical,
     description: templateData?.meta.description ?? pageDescription,
     engine,
@@ -411,30 +412,37 @@ export async function MarketingModelPageLayout({
     localizedHomeUrl,
     localizedModelsUrl,
     pageTitle: templateData?.meta.title,
-    pricingEngine, publicOffer,
     resolvedBreadcrumb,
-  });
+  };
   const legacyPricingCallout = !templateData && pricingCallout ? pricingCallout : null;
   const legacyMicroCta = !templateData && isImageEngine ? copy.microCta : null;
 
+  const details = (
+    <ModelCurrentDetails pricing={pricing} commercial={commercial} schema={schema} pricingData={templateData?.pricing ?? null} locale={locale}
+      contentProps={{
+        isDecision: Boolean(templateData),
+        tocProps: { items: templateData ? decisionTocItems : tocItems, variant: templateData ? 'pill' : 'default', overviewLabel: decisionTocOverviewLabel },
+        specsProps: { hasSpecs, specTitle, specNote, keySpecRows, specSectionsToShow, isImageEngine, locale, statusLabels, showBenchmarkLink },
+        pricingCallout: legacyPricingCallout,
+        microCta: legacyMicroCta,
+        microCtaHref: normalizedPrimaryCtaHref,
+        examplesProps: { viewModel: examplesViewModel },
+        decisionCards: templateData?.decisionCards ?? null,
+        promptingProps: { viewModel: promptingViewModel },
+        prepLinksProps: { prepLinksSection, locale },
+        tipsProps: { hasTipsSection, copy, locale, modelName: heroTitle, strengths, troubleshootingItems, boundaries, tipsCardLabels, troubleshootingTitle },
+        compareProps: { hasCompareSection, compareAnchorId, focusVsConfig, localizeModelsPath, hasCompareGrid, compareCopy, relatedItems, compareEngines, engineSlug, localizeComparePath, locale, heroTitle },
+        safetyFaqProps: { copy, modelName: heroTitle, safetyRules, safetyInterpretation, faqList, faqTitle, locale, isSoraPrompting, faqJsonLdEntries },
+      }}
+    />
+  );
+
   return (
     <>
-      {schemaPayloads.map((schema, index) => (
-        <script
-          key={`schema-${index}`}
-          id={`model-jsonld-${index}`}
-          type="application/ld+json"
-          suppressHydrationWarning
-          dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
-        />
-      ))}
       <div className={['container-page model-page model-editorial overflow-x-clip pb-0 pt-5 sm:pt-7', templateData ? 'max-w-[1400px]' : 'max-w-6xl'].join(' ')}>
         <div className={templateData ? 'space-y-5' : 'stack-gap-lg gap-0'}>
           {templateData ? (
-            <>
-              <ModelDecisionHeroSection decision={templateData} localizeModelsPath={localizeModelsPath} resolvedBreadcrumb={resolvedBreadcrumb} breadcrumbModelLabel={breadcrumbModelLabel} heroMedia={heroMedia} locale={locale} audioBadgeLabel={audioBadgeLabel} mediaAltContext={mediaAltContexts.hero} />
-              <ModelDecisionPricingCard pricing={templateData.pricing} offer={publicOffer} locale={locale} />
-            </>
+            <ModelDecisionHeroSection decision={templateData} localizeModelsPath={localizeModelsPath} resolvedBreadcrumb={resolvedBreadcrumb} breadcrumbModelLabel={breadcrumbModelLabel} heroMedia={heroMedia} locale={locale} audioBadgeLabel={audioBadgeLabel} mediaAltContext={mediaAltContexts.hero} />
           ) : (
             <ModelHeroSection
               modelsPathname={modelsPathname}
@@ -475,22 +483,10 @@ export async function MarketingModelPageLayout({
               heroHighlights={heroHighlights}
             />
           )}
-          {!templateData ? <ModelPublicOfferLine offer={publicOffer} locale={locale} /> : null}
-          <ModelPageContentSections
-            isDecision={Boolean(templateData)}
-            tocProps={{ items: templateData ? decisionTocItems : tocItems, variant: templateData ? 'pill' : 'default', overviewLabel: decisionTocOverviewLabel }}
-            specsProps={{ hasSpecs, specTitle, specNote, keySpecRows, specSectionsToShow, isImageEngine, locale, statusLabels, showBenchmarkLink }}
-            pricingCallout={legacyPricingCallout}
-            microCta={legacyMicroCta}
-            microCtaHref={normalizedPrimaryCtaHref}
-            examplesProps={{ viewModel: examplesViewModel }}
-            decisionCards={templateData?.decisionCards ?? null}
-            promptingProps={{ viewModel: promptingViewModel }}
-            prepLinksProps={{ prepLinksSection, locale }}
-            tipsProps={{ hasTipsSection, copy, locale, modelName: heroTitle, strengths, troubleshootingItems, boundaries, tipsCardLabels, troubleshootingTitle }}
-            compareProps={{ hasCompareSection, compareAnchorId, focusVsConfig, localizeModelsPath, hasCompareGrid, compareCopy, relatedItems, compareEngines, engineSlug, localizeComparePath, locale, heroTitle }}
-            safetyFaqProps={{ copy, modelName: heroTitle, safetyRules, safetyInterpretation, faqList, faqTitle, locale, isSoraPrompting, faqJsonLdEntries }}
-          />
+          {streamDetails ? <ModelDetailsAnchorRestore anchorIds={decisionTocItems.map(item => item.id)} /> : null}
+          {streamDetails ? (
+            <Suspense fallback={<div aria-hidden="true" className="min-h-screen" />}>{details}</Suspense>
+          ) : details}
         </div>
       </div>
     </>

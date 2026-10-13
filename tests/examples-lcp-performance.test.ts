@@ -73,6 +73,22 @@ test('examples gallery keeps one responsive DOM tree through mobile hydration', 
   assert.match(stylesSource, /break-inside:\s*avoid/);
 });
 
+test('streamed gallery prices reserve wrapping space using each card width', () => {
+  const cardSource = readSource(galleryCardPath);
+  const stylesSource = readSource(galleryStylesPath);
+
+  assert.match(cardSource, /priceSlot !== undefined \? <span className=\{styles\.priceSlot\}>\{priceSlot\}<\/span>/,
+    'pending, available and unavailable slots must retain the same reserved row');
+  assert.match(stylesSource, /\.card\{[^}]*container-type:\s*inline-size[^}]*container-name:\s*example-card/,
+    'price wrapping must follow actual card width, including narrow opening portraits');
+  assert.match(stylesSource, /\.priceSlot\{min-height:\s*2\.8em\}/,
+    'wide cards reserve two lines without needlessly covering four lines of poster');
+  assert.match(stylesSource, /@container example-card \(max-width:\s*200px\)\{\s*\.priceSlot\{min-height:\s*4\.2em\}\s*\}/);
+  assert.match(stylesSource, /@container example-card \(max-width:\s*150px\)\{\s*\.priceSlot\{min-height:\s*5\.6em\}\s*\}/);
+  assert.doesNotMatch(stylesSource, /\.priceSlot\{[^}]*(?:line-clamp|overflow:\s*hidden|(?:^|;)height:)/,
+    'future longer labels may expand; current price and scenario text must never be clipped');
+});
+
 test('examples head leaves image selection to the route hero', () => {
   const headSource = readSource(examplesHeadPath);
 

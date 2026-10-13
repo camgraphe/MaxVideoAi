@@ -16,7 +16,7 @@ export type { ExampleGalleryVideo } from './examples-gallery-types';
 
 const ExampleReader = dynamic(() => import('./ExampleReader.client'), { ssr: false });
 
-export default function ExamplesGalleryGridClient({initialExamples,detailsCtaLabel='View settings & price',
+export default function ExamplesGalleryGridClient({initialExamples,priceSlots,detailsCtaLabel='View settings & price',
   noPreviewLabel='No preview',prioritizeFirstPoster=false,audioAvailableLabel='Audio available on playback',
   openingEnabled,openingDetails,sort,locale,engineFilter,initialOffset,familyLabel}:ExamplesGalleryProps) {
   const videos=useMemo(()=>dedupeExamples(initialExamples),[initialExamples]);
@@ -27,6 +27,7 @@ export default function ExamplesGalleryGridClient({initialExamples,detailsCtaLab
   const preview=useGalleryPreviewBudget(ids,Boolean(reader.selected));
   const firstVisibleId=visibleVideos[0]?.id;
   const card=(video:ExampleGalleryVideo,frame?:'lead'|'portrait'|'side')=><ExampleGalleryCard key={video.id} video={video} locale={locale}
+    priceSlot={priceSlots?.[video.id]}
     altText={getImageAlt({kind:'renderThumb',engine:video.engineLabel,label:video.prompt,locale})}
     detailsCtaLabel={detailsCtaLabel} audioAvailableLabel={audioAvailableLabel} noPreviewLabel={noPreviewLabel}
     prioritizePoster={prioritizeFirstPoster && video.id === firstVisibleId} requested={preview.active.has(video.id)} frame={frame}

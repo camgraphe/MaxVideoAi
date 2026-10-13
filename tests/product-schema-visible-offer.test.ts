@@ -85,10 +85,14 @@ test('disabled app models have neither a purchasable Product nor a visible offer
 test('route passes one offer to both structured data and visible pricing, including legacy layouts', () => {
   const root = 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]';
   const layout = readFileSync(`${root}/_components/MarketingModelPageLayout.tsx`, 'utf8');
-  assert.equal((layout.match(/resolveCurrentModelPublicOffer\(engine, pricingEngine, quoteModel\)/g) ?? []).length, 1);
-  assert.match(layout, /pricingEngine, publicOffer,/);
-  assert.match(layout, /ModelDecisionPricingCard[^>]*offer=\{publicOffer\}[^>]*locale=\{locale\}/);
-  assert.match(layout, /!templateData \? <ModelPublicOfferLine offer=\{publicOffer\} locale=\{locale\}/);
+  const commercial = readFileSync(`${root}/_lib/model-page-commercial-data.ts`, 'utf8');
+  const slots = readFileSync(`${root}/_components/ModelCurrentDetails.tsx`, 'utf8');
+  assert.equal((commercial.match(/resolveCurrentModelPublicOffer\(engine, pricingEngine, quoteModel\)/g) ?? []).length, 1);
+  assert.match(slots, /pricingEngine, scenarios, publicOffer.*await Promise\.all\(\[pricing, commercial\]\)/);
+  assert.match(slots, /buildModelSchemaPayloads\(\{ \.\.\.schema, pricingEngine, publicOffer \}\)/);
+  assert.match(layout, /<ModelCurrentDetails pricing=\{pricing\} commercial=\{commercial\}/);
+  assert.match(slots, /<ModelDecisionPricingCard.*offer=\{publicOffer\}/);
+  assert.match(slots, /<ModelPublicOfferLine offer=\{publicOffer\} locale=\{locale\}/);
   const card = readFileSync(`${root}/_components/ModelDecisionPricingCard.tsx`, 'utf8');
   assert.match(card, /<ModelPublicOfferLine offer=\{offer\} locale=\{locale\}/);
 });

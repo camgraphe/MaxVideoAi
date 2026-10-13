@@ -132,3 +132,30 @@ test('disabled timing preserves synchronous gallery and pricing callback failure
     }
   } finally {await dispose();}
 });
+
+
+test('active model route returns the selected hero while the current price projection is held', async () => {
+  const {harness:h,dispose} = await makeModelPagePricingHarness({executeInputs:true,executeGallery:true});
+  const held = gate();
+  let pending: Promise<any> | undefined;
+  try {
+    const input = await fixture('veo-3-1');
+    h.configure(input);
+    h.setQuote(async (context:any) => {
+      await held.promise;
+      return {totalCents:10*context.durationSec,currency:'USD',base:{seconds:context.durationSec}};
+    });
+    let ready = false;
+    pending = h.rawRender(input).then((value:any) => {ready=true;return value;});
+    await tick(); await tick();
+    assert.equal(ready,true,'The real selected hero must not wait for current price quotes');
+    const page = await pending;
+    assert.equal(page.props.heroMedia.id,'fixture-one');
+    assert.equal(h.calls.length,2,'both existing video quote workers have started');
+    assert.equal(h.timingRecords.length,0,'completion still waits for held pricing');
+    held.release();
+    await page.props.pricing;
+    await tick();
+    assert.equal(h.timingRecords.length,1);
+  } finally {held.release();await pending?.catch(()=>undefined);await dispose();}
+});

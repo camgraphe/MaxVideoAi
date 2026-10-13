@@ -22,33 +22,46 @@ export function loadModelPageInputs<TGallery>(
   loadGallery: () => Promise<TGallery>,
 ): Promise<ModelPageInputs<TGallery>>;
 
-/** Active-model scheduling only; media selection and pricing retain their owners. */
+/** Complete-input compatibility API; active pages consume the critical and pricing reads separately. */
 export function loadModelPageInputs<TGallery, TPricing>(
   locale: AppLocale,
   loadGallery: () => Promise<TGallery>,
   loadPricing?: (overrides: EnginePricingOverrides) => Promise<TPricing>,
 ) {
+  return prepareModelPageInputs(locale, loadGallery, loadPricing).result;
+}
+
+/** Start each read once. Only pricing depends on the current request's override. */
+export function prepareModelPageInputs<TGallery, TPricing>(
+  locale: AppLocale,
+  loadGallery: () => Promise<TGallery>,
+  loadPricing?: (overrides: EnginePricingOverrides) => Promise<TPricing>,
+) {
   let result!: Promise<ModelPageInputs<TGallery> & { pricing?: TPricing }>;
+  let critical!: Promise<Omit<ModelPageInputs<TGallery>, 'enginePricingOverrides'>>;
+  let pricing!: Promise<TPricing | undefined>;
   const completed = withPublicPageTiming({ route: 'model', locale }, async (measure) => {
     const scores = measure('scores', () => loadBenchmarkScoreSlugs());
     const overrides = measure('engine-settings', () => listEnginePricingOverrides());
     const specs = measure('key-specs', () => loadEngineKeySpecs());
     const gallery = measure('model-gallery', async () => loadGallery());
-    // Only pricing needs the override. Never wait for unrelated gallery/spec/score reads.
-    const pricing = loadPricing
+    pricing = loadPricing
       ? overrides.then(value => measure('model-pricing', () => loadPricing(value)))
       : Promise.resolve(undefined);
+    critical = Promise.all([scores, specs, gallery]).then(([benchmarkScoreSlugs, keySpecsMap, gallery]) => (
+      { benchmarkScoreSlugs, keySpecsMap, gallery }
+    ));
     const reads = [scores, overrides, specs, gallery, pricing] as const;
     result = Promise.all(reads).then(([benchmarkScoreSlugs, enginePricingOverrides, keySpecsMap, gallery, pricing]) => (
       { benchmarkScoreSlugs, enginePricingOverrides, keySpecsMap, gallery, ...(loadPricing ? { pricing } : {}) }
     ));
-    // The public result keeps its first original rejection promptly. Its separate
-    // diagnostic completion observes every sibling before recording durations/errors.
+    // Observe every public branch eagerly without turning its original rejection into a fallback.
+    void critical.catch(() => undefined);
+    void pricing.catch(() => undefined);
     void result.catch(() => undefined);
     await Promise.allSettled(reads);
     await result;
   });
-  // Observe diagnostic rejection immediately; neither observer supplies a fallback.
   void completed.catch(() => undefined);
-  return result;
+  return { critical, pricing, result, completed };
 }

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { ExampleGalleryVideo, ExampleSort } from './examples-gallery-types';
 export type ExamplesGalleryProps = {
   initialExamples: ExampleGalleryVideo[];
+  priceSlots?: Record<string, ReactNode>;
   detailsCtaLabel?: string;
   loadMoreLabel?: string;
   loadingLabel?: string;

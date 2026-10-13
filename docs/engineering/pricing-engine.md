@@ -975,6 +975,21 @@ Contextual engine overrides and exact catalog inputs keep their existing owners.
 `tests/model-page-policy-postgres.test.ts` measures actual SQL through the active
 route and real server layout, including full localized output and failure parity.
 
+Model loading separates critical media/spec inputs from the same current pricing
+projection through `prepareModelPageInputs`. Video pages with a decision template
+render their existing hero first. `ModelCurrentDetails` waits for the exact price
+projection and shared commercial result before emitting the complete details,
+including the pricing card, variable-height specs and native JSON-LD. Its neutral
+viewport-height placeholder keeps the footer out of the initial viewport; do not
+replace it with independently expanding price cells. The template's authored
+numeric prices are never a loading fallback. Image and legacy pages retain their
+awaited render, including legacy hero prices. Keep the existing
+`loadModelPageInputs` awaited API and complete timing/error observation for its
+other callers; this scheduling split must not add a price cache or quote requests.
+`ModelDetailsAnchorRestore.client.tsx` restores a direct section hash missed while
+those details were suspended. Keep it scoped to the page's existing section IDs,
+cancel it on interaction/navigation, and preserve browser history restoration.
+
 Public scenario admission builds finite catalogue combinations only for the
 requested model and mode. `quote-public-model-scenario.ts` retains those immutable
 combinations per model/mode in process memory; it does not cache customer quotes

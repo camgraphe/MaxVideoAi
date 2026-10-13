@@ -14,6 +14,8 @@ const readSource = (filePath: string) => readFileSync(filePath, 'utf8');
 const lineCount = (source: string) => source.trimEnd().split('\n').length;
 
 const layoutSource = readSource(componentPath('MarketingModelPageLayout.tsx'));
+const currentDetailsSource = readSource(componentPath('ModelCurrentDetails.tsx'));
+const contentSectionsSource = readSource(componentPath('ModelPageContentSections.tsx'));
 const promptingWrapperSource = readSource(componentPath('ModelPromptingSection.tsx'));
 const decisionSource = readSource(componentPath('ModelDecisionPromptingSection.tsx'));
 const tabsSource = readSource(componentPath('ModelDecisionPromptTabs.client.tsx'));
@@ -85,7 +87,12 @@ test('model prompting parses and builds once before rendering', () => {
     /const\s+useDemoMediaPrompt\s*=\s*Boolean\(demoMedia\?\.prompt\?\.trim\(\)\)/,
     'a non-empty route media prompt must not automatically replace editorial Prompt Lab copy',
   );
-  assert.match(layoutSource, /promptingProps=\{\{\s*viewModel:\s*promptingViewModel\s*\}\}/);
+  assert.match(
+    layoutSource,
+    /<ModelCurrentDetails\b[\s\S]*?contentProps=\{\{[\s\S]*?promptingProps:\s*\{\s*viewModel:\s*promptingViewModel\s*\}/,
+  );
+  assert.match(currentDetailsSource, /<ModelPageContentSections\s+\{\.\.\.contentProps\}/);
+  assert.match(contentSectionsSource, /<ModelPromptingSection\s+\{\.\.\.promptingProps\}/);
 });
 
 test('server Prompt Lab renderers accept only the render-ready view model', () => {
