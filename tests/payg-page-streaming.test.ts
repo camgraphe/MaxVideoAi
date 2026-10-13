@@ -145,7 +145,7 @@ test('PAYG emits its hero before held current prices, then preserves the settled
         // DOM reservation contract. Actual text wrapping and H1 movement remain
         // browser checks, including FR/ES at narrow mobile widths.
         for (const [selector, reservation] of [
-          ['[data-payg-quote-rows]', /min-h-\[258px\]/],
+          ['[data-payg-quote-rows]', /min-h-\[338px\] sm:min-h-\[258px\]/],
           ['[data-payg-quote-context]', /min-h-12 sm:min-h-8/],
         ] as const) {
           const first = pending.window.document.querySelector(selector);
@@ -162,6 +162,9 @@ test('PAYG emits its hero before held current prices, then preserves the settled
         assert.equal(settled.window.document.querySelector('[data-payg-quote-context]')?.textContent, data.hero.quote.sampleCost?.context ?? '');
         assert.equal(settled.window.document.querySelector('[data-payg-quote-amount] > :last-child')?.textContent, data.hero.quote.sampleCost?.price ?? content.common.liveQuote);
         assert.equal(settled.window.document.querySelector('[data-payg-quote-rows]')?.children.length, state === 'empty' ? 0 : state === 'fewer-rows' ? 1 : 4);
+        const names = [...settled.window.document.querySelectorAll('[data-payg-quote-rows] p:first-child')];
+        assert.deepEqual(names.map(name => name.textContent), data.hero.quote.previewRows.map((row: { engineName: string }) => row.engineName));
+        for (const name of names) assert.doesNotMatch(name.className, /truncate|line-clamp|overflow-hidden|whitespace-nowrap/, 'Long model names must use the mobile wrapping budget without clipping');
       } finally { pending.window.close(); settled.window.close(); }
     });
     for (const beforeRender of [false, true]) for (const showcaseFailure of [false, true]) await t.test(`rejection/${beforeRender ? 'before' : 'during'}-render/${showcaseFailure ? 'showcase' : 'pricing'}`, async () => {

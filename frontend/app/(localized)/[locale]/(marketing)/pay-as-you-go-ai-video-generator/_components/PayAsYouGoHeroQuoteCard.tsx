@@ -25,7 +25,7 @@ function QuoteCardFrame({ quote, liveQuote, rows, model, price, context }: {
           </span>
         </div>
 
-        <div data-payg-quote-rows className="mt-5 grid min-h-[258px] content-start gap-2">
+        <div data-payg-quote-rows className="mt-5 grid min-h-[338px] sm:min-h-[258px] content-start gap-2">
           {rows}
         </div>
 
@@ -70,7 +70,7 @@ export function PayAsYouGoHeroQuoteCard({ data }: { data: PayAsYouGoPageData }) 
           <div className="flex min-w-0 items-center gap-2.5">
             <EngineIcon engine={row.engineIcon} imageAlt={`${row.engineName} ${data.common.aiVideoModelAlt}`} size={30} rounded="full" />
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-text-primary">{row.engineName}</p>
+              <p className="break-words text-sm font-semibold text-text-primary">{row.engineName}</p>
               <p className="text-[11px] uppercase tracking-micro text-text-muted">{row.family}</p>
             </div>
           </div>
