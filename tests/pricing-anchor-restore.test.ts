@@ -38,6 +38,8 @@ async function fixture(hash: string, options: { scrollY?: number; navigationType
   const flush = async () => { await act(async () => { await new Promise(done => dom.window.setTimeout(done, 40)); }); };
   return {
     dom, scrolls, insert, flush,
+    async leave() { await act(async () => root.render(null)); },
+    async remount() { await act(async () => root.render(React.createElement(PricingAnchorRestore, {}))); },
     expire() { assert.ok(expire, 'Missing anchors need a bounded wait'); expire(); },
     ready(parent = dom.window.document.getElementById('client')!) {
       const marker = dom.window.document.createElement('span');
@@ -107,19 +109,36 @@ test('Pricing ignores pending duplicate IDs and hidden React transport segments 
   });
 });
 
-test('Pricing handles late SPA arrival and an early quick-start link from a nonzero scroll position', async t => {
-  for (const intent of ['spa', 'click']) await t.test(intent, async () => {
-    const f = await fixture(intent === 'spa' ? '#kling-3-pro-pricing' : '', { scrollY: 640, documentUrl: 'https://maxvideoai.com/models/kling-3-pro' });
-    try {
-      if (intent === 'click') f.click('#kling-3-pro-pricing');
-      Object.defineProperty(f.dom.window, 'scrollY', { configurable: true, value: 120 });
-      f.insert('kling-3-pro-pricing'); f.ready();
-      await Promise.resolve();
-      f.dom.window.dispatchEvent(new f.dom.window.Event('scroll'));
-      await f.flush();
-      assert.deepEqual(f.scrolls, [{ id: 'kling-3-pro-pricing', options: { block: 'start', behavior: 'instant' } }]);
-    } finally { await f.dispose(); }
-  });
+test('an early quick-start link restores from a nonzero scroll position', async () => {
+  const f = await fixture('', { scrollY: 640, documentUrl: 'https://maxvideoai.com/models/kling-3-pro' });
+  try {
+    f.click('#kling-3-pro-pricing');
+    Object.defineProperty(f.dom.window, 'scrollY', { configurable: true, value: 120 });
+    f.insert('kling-3-pro-pricing'); f.ready();
+    await Promise.resolve();
+    f.dom.window.dispatchEvent(new f.dom.window.Event('scroll'));
+    await f.flush();
+    assert.deepEqual(f.scrolls, [{ id: 'kling-3-pro-pricing', options: { block: 'start', behavior: 'instant' } }]);
+  } finally { await f.dispose(); }
+});
+
+test('remounting after SPA Back preserves restored scroll despite original-document navigation timing', async () => {
+  const f = await fixture('#kling-3-pro-pricing', { documentUrl: 'https://maxvideoai.com/models/kling-3-pro', navigationType: 'navigate' });
+  try {
+    await f.leave();
+    f.dom.window.history.pushState({ next: true }, '', '/fr/modeles/wan-3');
+    const returned = new Promise<void>(resolve => f.dom.window.addEventListener('popstate', () => resolve(), { once: true }));
+    f.dom.window.history.back();
+    await returned;
+    // Browsers restore this position before the returning route mounts; JSDOM has no layout.
+    Object.defineProperty(f.dom.window, 'scrollY', { configurable: true, value: 1900 });
+    const before = [f.dom.window.location.href, f.dom.window.history.length, f.dom.window.history.state];
+    await f.remount();
+    f.insert('kling-3-pro-pricing'); f.ready(); await f.flush();
+    assert.deepEqual(f.scrolls, []);
+    assert.equal(f.dom.window.scrollY, 1900);
+    assert.deepEqual([f.dom.window.location.href, f.dom.window.history.length, f.dom.window.history.state], before);
+  } finally { await f.dispose(); }
 });
 
 test('Pricing yields pending restoration to gestures, history, changed URLs and restored document positions', async t => {

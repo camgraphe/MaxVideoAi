@@ -489,8 +489,10 @@ results; renderer tests cannot establish layout stability.
 fragments after both price boundaries' readiness markers are revealed, including
 when the matrix arrives before the quick-start grid. It excludes
 pending duplicates and hidden React transport payloads, accepts an early local
-link or a client-route arrival still carrying the previous page's scroll, and
-never rewrites history. User input, changed navigation, completion without a
+link or an arrival at zero scroll, and never rewrites history. A nonzero arrival
+keeps its position because document Navigation Timing cannot distinguish a fresh
+SPA entry from a history return; explicit local clicks still restore from any
+position. User input, changed navigation, completion without a
 matching target, unmount or a 30-second deadline cancels the wait. Initial document
 and back/forward restored scroll positions retain their existing authority.
 `tests/pricing-anchor-restore.test.ts` covers this route-local contract.

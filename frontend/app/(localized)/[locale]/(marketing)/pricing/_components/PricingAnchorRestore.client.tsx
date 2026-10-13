@@ -99,17 +99,10 @@ export function PricingAnchorRestore() {
     window.addEventListener('hashchange', hashChange);
     const url = new URL(window.location.href), id = anchorId(url);
     const navigation = window.performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
-    // Navigation Timing names the original document. A different route identifies a
-    // client navigation whose old page scroll may still be present at this commit.
-    let clientArrival = false;
-    if (navigation?.name) {
-      try {
-        const original = new URL(navigation.name);
-        clientArrival = original.origin === url.origin && (original.pathname !== url.pathname || original.search !== url.search);
-      } catch { /* Missing/invalid timing keeps the conservative initial-document rule. */ }
-    }
-    if (id && navigation?.type !== 'back_forward' && ((window.scrollX === 0 && window.scrollY === 0) || clientArrival)) {
-      begin(url, id, clientArrival);
+    // Navigation Timing is document-scoped and cannot identify an SPA history return.
+    // Preserve any existing scroll position; explicit local clicks are tracked separately.
+    if (id && navigation?.type !== 'back_forward' && window.scrollX === 0 && window.scrollY === 0) {
+      begin(url, id, false);
     }
     return () => {
       cancel();
