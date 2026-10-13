@@ -1,6 +1,6 @@
 # Seedance 2.5 ModelArk Edit Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Qualify and activate Seedance 2.5 Edit through the existing ModelArk account, without requiring LAS onboarding.
 
@@ -35,10 +35,10 @@
 
 **Interfaces:** Keep `resolveBytePlusTransport(engineId, mode)` and persisted poll selection stable. Add `SEEDANCE_2_5_EDIT_TRANSPORT` (default `las`, preserving guarded production until explicit cutover), and `SEEDANCE_2_5_MODELARK_EDIT_ENABLED` (default false). Only the explicit `modelark` selection enables the alternative; it still requires the ModelArk key and its matching gate. Supply the actual selected transport to the owned attempt/rejection persistence owner instead of hardcoding `las`.
 
-- [ ] Add failing tests for the closed ModelArk gate, valid ModelArk routing with no LAS key/flag, correct explicit Edit payload (`omni_reference_task_type=edit`, `ratio=adaptive`, `duration=-1`), and unchanged four-mode payloads.
-- [ ] Implement the guarded transport selection and payload. Keep the source clip as the exact owned `reference_video`.
-- [ ] Extend existing Edit reliability owners to preserve selected transport through claims, rejection, polling and durable completion; preserve compatibility for existing LAS callers and stored jobs.
-- [ ] Verify real PostgreSQL single-submit, uncertain/accepted recovery, stored-amount refund and durable output/library cases for both transports.
+- [x] Add failing tests for the closed ModelArk gate, valid ModelArk routing with no LAS key/flag, correct explicit Edit payload (`omni_reference_task_type=edit`, `ratio=adaptive`, `duration=-1`), and unchanged four-mode payloads.
+- [x] Implement the guarded transport selection and payload. Keep the source clip as the exact owned `reference_video`.
+- [x] Extend existing Edit reliability owners to preserve selected transport through claims, rejection, polling and durable completion; preserve compatibility for existing LAS callers and stored jobs.
+- [x] Verify real PostgreSQL single-submit, uncertain/accepted recovery, stored-amount refund and durable output/library cases for both transports.
 
 ### Task 2: Current quote and supplier ownership
 

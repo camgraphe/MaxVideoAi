@@ -99,7 +99,12 @@ export function resolveBytePlusTransport(
   mode: Mode | string | null | undefined,
 ): BytePlusTransport {
   if (engineId?.trim() !== SEEDANCE_2_5_ENGINE_ID) return 'modelark';
-  return mode?.trim().toLowerCase() === 'v2v' ? 'las' : 'modelark';
+  if (mode?.trim().toLowerCase() !== 'v2v') return 'modelark';
+  const selected = (ENV.SEEDANCE_2_5_EDIT_TRANSPORT ?? 'las').trim().toLowerCase();
+  if (selected === 'modelark' || selected === 'las') return selected;
+  throw new BytePlusModelArkError('The Edit transport is not supported.', {
+    code: 'BYTEPLUS_EDIT_TRANSPORT_UNSUPPORTED',
+  });
 }
 
 export function resolveBytePlusPollTransport(input: {
@@ -129,6 +134,12 @@ export function isBytePlusLasExecutionEnabled(): boolean {
   );
 }
 
+export function isBytePlusModelArkEditExecutionEnabled(): boolean {
+  return ['1', 'true', 'yes', 'on'].includes(
+    (ENV.SEEDANCE_2_5_MODELARK_EDIT_ENABLED ?? 'false').trim().toLowerCase()
+  );
+}
+
 export function getBytePlusArkConfig() {
   return {
     apiKey: ENV.BYTEPLUS_ARK_API_KEY,
@@ -149,6 +160,12 @@ export function assertBytePlusTransportConfigured(
   mode: Mode | string | null | undefined,
 ): BytePlusTransport {
   const transport = resolveBytePlusTransport(engineId, mode);
+  if (engineId?.trim() === SEEDANCE_2_5_ENGINE_ID && mode?.trim().toLowerCase() === 'v2v'
+    && transport === 'modelark' && !isBytePlusModelArkEditExecutionEnabled()) {
+    throw new BytePlusModelArkError('ModelArk video editing is not enabled.', {
+      code: 'BYTEPLUS_MODELARK_EDIT_EXECUTION_DISABLED',
+    });
+  }
   if (transport === 'las' && !isBytePlusLasExecutionEnabled()) {
     throw new BytePlusModelArkError('BytePlus LAS execution is not enabled.', {
       code: 'BYTEPLUS_LAS_EXECUTION_DISABLED',

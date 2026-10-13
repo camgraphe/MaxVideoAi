@@ -15,14 +15,21 @@ export function bytePlusCompletedOutputRow(job: BytePlusPendingJob, videoUrl: st
 export function getBytePlusLasDurableOutput(job: BytePlusPendingJob) {
   const settings = isRecord(job.settings_snapshot) ? job.settings_snapshot : {};
   const output = isRecord(settings.byteplusDurableOutput) ? settings.byteplusDurableOutput : {};
-  if (job.engine_id !== 'seedance-2-5' || settings.byteplusTransport !== 'las'
+  if (!requiresBytePlusDurableEditOutput(job)
     || output.providerJobId !== job.provider_job_id || output.videoUrl !== job.video_url
     || typeof output.videoUrl !== 'string' || !output.videoUrl
     || typeof output.thumbUrl !== 'string' || !isRecord(output.costBreakdown)) return null;
   return { videoUrl: output.videoUrl, thumbUrl: output.thumbUrl, costBreakdown: output.costBreakdown };
 }
 
-/** Durable bytes and projections must exist before a LAS job becomes terminal. */
+/** Recorded execution facts, rather than current flags, own recovery of accepted Edit jobs. */
+export function requiresBytePlusDurableEditOutput(job: BytePlusPendingJob) {
+  const settings = isRecord(job.settings_snapshot) ? job.settings_snapshot : {};
+  return job.engine_id === 'seedance-2-5' && (settings.byteplusTransport === 'las'
+    || (settings.byteplusTransport === 'modelark' && settings.inputMode === 'v2v'));
+}
+
+/** Durable bytes and projections must exist before an Edit job becomes terminal. */
 export async function persistBytePlusLasOutputBeforeCompletion(input: {
   job: BytePlusPendingJob; videoUrl: string; thumbUrl: string; costBreakdown: Record<string, unknown>;
   queryFn: QueryFn; upsertOutputsFn: typeof upsertLegacyJobOutputs;

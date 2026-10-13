@@ -35,15 +35,15 @@ export async function readOwnedBytePlusLasSubmission(jobId: string, userId: stri
   return rows[0] as BytePlusPendingJob;
 }
 
-export async function claimBytePlusLasSubmission(jobId: string, userId: string, queryFn: QueryFn) {
+export async function claimBytePlusLasSubmission(jobId: string, userId: string, queryFn: QueryFn, transport: 'modelark' | 'las' = 'las') {
   const rows = await queryFn(`UPDATE app_jobs SET settings_snapshot =
-      jsonb_set(jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb), '{byteplusTransport}', '"las"'::jsonb, true),
+      jsonb_set(jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb), '{byteplusTransport}', to_jsonb($3::text), true),
         '{byteplusSubmission}', jsonb_build_object('phase', 'submit_started', 'startedAt', now()), true),
       provisional = FALSE, updated_at = now()
     WHERE job_id = $1 AND user_id = $2 AND engine_id = 'seedance-2-5' AND provider = 'byteplus_modelark'
       AND status = 'pending' AND provider_job_id IS NULL
       AND settings_snapshot->'byteplusSubmission' IS NULL
-    RETURNING *`, [jobId, userId]);
+    RETURNING *`, [jobId, userId, transport]);
   return Array.isArray(rows) && rows.length === 1;
 }
 
@@ -77,10 +77,10 @@ export async function recordBytePlusLasSubmissionAccepted(input: {
 
 /** Persist rejection before refunding; a refund outage can replay this evidence without provider work. */
 export async function recordBytePlusLasSubmissionRejection(input: {
-  jobId: string; userId: string; message: string; errorCode: string; attempted: boolean; queryFn: QueryFn;
+  jobId: string; userId: string; message: string; errorCode: string; attempted: boolean; queryFn: QueryFn; transport?: 'modelark' | 'las';
 }) {
   const rows = await input.queryFn(`UPDATE app_jobs SET settings_snapshot =
-      jsonb_set(jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb), '{byteplusTransport}', '"las"'::jsonb, true),
+      jsonb_set(jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb), '{byteplusTransport}', to_jsonb($6::text), true),
         '{byteplusSubmission}', COALESCE(settings_snapshot->'byteplusSubmission', '{}'::jsonb) ||
           jsonb_build_object('phase','rejected','message',$3::text,'errorCode',$4::text,'updatedAt',now()), true),
       updated_at = now()
@@ -88,6 +88,6 @@ export async function recordBytePlusLasSubmissionRejection(input: {
       AND provider_job_id IS NULL AND status = 'pending'
       AND CASE WHEN $5::boolean THEN settings_snapshot->'byteplusSubmission'->>'phase' = 'submit_started'
         ELSE settings_snapshot->'byteplusSubmission' IS NULL END
-    RETURNING *`, [input.jobId, input.userId, input.message, input.errorCode, input.attempted]);
+    RETURNING *`, [input.jobId, input.userId, input.message, input.errorCode, input.attempted, input.transport ?? 'las']);
   return Array.isArray(rows) && rows.length === 1;
 }

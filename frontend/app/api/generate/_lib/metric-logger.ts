@@ -32,6 +32,7 @@ type RecordGenerateMetric = (input: GenerateMetricInput) => void | Promise<void>
 
 const PREFLIGHT_ERROR_CODES = new Set([
   'BYTEPLUS_LAS_EXECUTION_DISABLED', 'BYTEPLUS_LAS_API_KEY_MISSING',
+  'BYTEPLUS_MODELARK_EDIT_EXECUTION_DISABLED', 'BYTEPLUS_EDIT_TRANSPORT_UNSUPPORTED',
   'BYTEPLUS_API_KEY_MISSING', 'BYTEPLUS_MODEL_ID_MISSING',
   'BYTEPLUS_ENGINE_DISABLED', 'BYTEPLUS_ENGINE_PROFILE_MISSING',
   'BYTEPLUS_PROFILE_PREFLIGHT_FAILED',
@@ -93,7 +94,10 @@ export function createGenerateMetricLogger(params: {
     const mode = engine.modes.find((candidate) => candidate === rawMode)
       ?? (body.mode === undefined ? engine.modes[0] : undefined);
     if (!mode) return;
-    const transport = resolveBytePlusTransport(engine.id, mode);
+    let transport: 'modelark' | 'las' | null = null;
+    try { transport = resolveBytePlusTransport(engine.id, mode); } catch {
+      // Invalid configuration is itself a refusal; never copy its arbitrary value.
+    }
     // This event precedes authentication/billing. Never copy caller IDs, settings,
     // messages, media or prompts into either sink.
     console.warn('[api/generate] preflight rejected', {

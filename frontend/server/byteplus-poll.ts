@@ -29,7 +29,7 @@ import type { BytePlusPendingJob } from './byteplus-poll-types';
 import { isRecord } from './byteplus-record-utils';
 import { reconcileSeedanceWorkflowOutcome } from './seedance-workflow-outcome';
 import { getBytePlusSubmissionState } from './byteplus-submission-state';
-import { bytePlusCompletedOutputRow, getBytePlusLasDurableOutput, persistBytePlusLasOutputBeforeCompletion } from './byteplus-output-persistence';
+import { bytePlusCompletedOutputRow, getBytePlusLasDurableOutput, persistBytePlusLasOutputBeforeCompletion, requiresBytePlusDurableEditOutput } from './byteplus-output-persistence';
 import {
   buildNextBytePlusStorageCopyState,
   getBytePlusStorageCopyState,
@@ -152,7 +152,7 @@ export async function runBytePlusPoll(options: { jobId?: string; deps?: BytePlus
        FROM app_jobs
       WHERE provider = $1
         AND (provider_job_id IS NOT NULL OR (
-          engine_id = 'seedance-2-5' AND settings_snapshot->>'byteplusTransport' = 'las'
+          engine_id = 'seedance-2-5' AND settings_snapshot->>'byteplusTransport' IN ('las', 'modelark')
           AND settings_snapshot->'byteplusSubmission'->>'phase' = 'rejected'
         ))
         AND status = ANY($2::text[])
@@ -326,7 +326,8 @@ export async function runBytePlusPoll(options: { jobId?: string; deps?: BytePlus
         providerTask: task.raw,
       });
 
-      if (transport === 'las' && !await persistBytePlusLasOutputBeforeCompletion({ job,
+      const requiresDurableOutput = requiresBytePlusDurableEditOutput(job);
+      if (requiresDurableOutput && !await persistBytePlusLasOutputBeforeCompletion({ job,
         videoUrl: copiedVideoUrl, thumbUrl: thumb, costBreakdown, queryFn, upsertOutputsFn: upsertLegacyJobOutputsFn })) continue;
 
       const completedRows = await queryFn<{ job_id: string }>(
@@ -358,7 +359,7 @@ export async function runBytePlusPoll(options: { jobId?: string; deps?: BytePlus
         console.warn('[byteplus-poll] completed workflow reconciliation deferred', { jobId: job.job_id });
       });
       await applyBytePlusTrialOutcomeSafelyFn(job, { kind: 'completed' });
-      if (transport !== 'las') await upsertLegacyJobOutputsFn(bytePlusCompletedOutputRow(job, copiedVideoUrl, thumb)).catch((error) => {
+      if (!requiresDurableOutput) await upsertLegacyJobOutputsFn(bytePlusCompletedOutputRow(job, copiedVideoUrl, thumb)).catch((error) => {
         console.warn('[byteplus-poll] failed to persist media output', {
           jobId: job.job_id,
           error: error instanceof Error ? error.message : error,
