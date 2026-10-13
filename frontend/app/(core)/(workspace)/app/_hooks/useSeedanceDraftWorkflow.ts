@@ -7,11 +7,13 @@ import { useSeedanceWorkflowView } from '@/hooks/useSeedanceWorkflowView';
 import type { SeedanceWorkflowAccount } from '@/hooks/useSeedanceWorkflowAccount';
 import type { SeedanceDraftControls } from '@/lib/seedance-workflow-contract';
 import { SEEDANCE_WORKFLOW_ASPECT_RATIOS } from '@/lib/seedance-workflow-contract';
-import type { AspectRatio } from '@/types/engines';
+import type { AspectRatio, Mode, PreflightMediaInput } from '@/types/engines';
 import { useWorkspacePreflightQuote } from './useWorkspacePreflightQuote';
 import type { FormState } from '../_lib/workspace-form-state';
+import type { WorkspaceGeneratePayload } from '../_lib/workspace-generation-payload';
 
 type Options = { enabled: boolean; form: FormState | null; engineId?: string; mode: string; prompt: string;
+  preparedPayload?: WorkspaceGeneratePayload; preflightInputs?: PreflightMediaInput[]; inputPreparationError?: string;
   account: SeedanceWorkflowAccount | null; onResolutionChange: (value: string) => void; showNotice: (value: string) => void };
 type Attempt = { userId: string; payload: Parameters<typeof runGenerate>[0]; pricing: PricingSnapshot };
 const requestKey = (userId: string, jobId: string) => `seedance-draft-request:${userId}:${jobId}`;
@@ -25,15 +27,16 @@ function restoreAttempt(userId: string, jobId: string): Attempt | null {
 }
 export function useSeedanceDraftWorkflow(options: Options) {
   const { enabled, form, engineId, mode, prompt, account } = options;
-  const aspectRatio = form && SEEDANCE_WORKFLOW_ASPECT_RATIOS.includes(form.aspectRatio as AspectRatio) ? form.aspectRatio as AspectRatio : null;
-  const available = Boolean(enabled && form && aspectRatio && engineId === 'seedance-2-5' && mode === 't2v' && form.iterations === 1);
+  const aspectRatio = form && (form.aspectRatio === 'auto' || SEEDANCE_WORKFLOW_ASPECT_RATIOS.includes(form.aspectRatio as AspectRatio)) ? form.aspectRatio as AspectRatio : null;
+  const supportedMode = ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'].includes(mode);
+  const available = Boolean(enabled && form && (aspectRatio || mode === 'i2v' || mode === 'v2v') && engineId === 'seedance-2-5' && supportedMode && form.iterations === 1);
   const [selected, setSelected] = useState(false);
   const [draftId, setDraftId] = useState<string | null>(null);
   const [attempt, setAttempt] = useState<Attempt | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const guard = useRef(false), priorResolution = useRef<string | null>(null);
-  const scope = JSON.stringify([account?.userId, account?.token, engineId, mode, prompt, form]);
+  const scope = JSON.stringify([account?.userId, account?.token, engineId, mode, prompt, form, options.preparedPayload, options.preflightInputs]);
   const scopeRef = useRef(scope); scopeRef.current = scope;
   const resolutionChangeRef = useRef(options.onResolutionChange); resolutionChangeRef.current = options.onResolutionChange;
   const formResolutionRef = useRef(form?.resolution); formResolutionRef.current = form?.resolution;
@@ -57,8 +60,12 @@ export function useSeedanceDraftWorkflow(options: Options) {
       setAttempt(null);
     }
   }, [read.data, draftId, accountUserId]);
-  const quote = useWorkspacePreflightQuote({ request: available && selected && !draftId && form && account && aspectRatio ? {
-    engine: 'seedance-2-5', mode: 't2v', durationSec: form.durationSec, resolution: '480p', fps: 24, aspectRatio,
+  const canPrepare = mode === 't2v' || Boolean(options.preparedPayload);
+  const quote = useWorkspacePreflightQuote({ request: available && canPrepare && !options.inputPreparationError && selected && !draftId && form && account ? {
+    engine: 'seedance-2-5', mode: mode as Mode, durationSec: form.durationSec, resolution: '480p', fps: 24,
+    ...(form.durationOption != null ? { durationOption: form.durationOption } : {}),
+    ...(aspectRatio ? { aspectRatio } : {}), inputs: options.preflightInputs,
+    extraInputValues: form.extraInputValues,
     audio: form.audio, seedanceWorkflow: { step: 'draft' },
   } : null, iterations: 1, accessToken: account?.token ?? null, authChecked: Boolean(account), locale: 'fr' });
   function toggle() {
@@ -70,12 +77,14 @@ export function useSeedanceDraftWorkflow(options: Options) {
     setSelected(value => !value); setError(null);
   }
   async function generate() {
-    if (!available || !selected || !form || draftId || guard.current) return;
+    if (!available || !selected || !form || draftId || guard.current || !canPrepare) return;
+    if (options.inputPreparationError) { options.showNotice(options.inputPreparationError); return; }
     if (!account) { options.showNotice('Connectez-vous pour générer un Draft.'); return; }
     const pricing = quote.preflight?.pricing;
     if (!pricing || customerTariffRevision(pricing) === null || pricing.meta?.workflowStep !== 'draft' || form.resolution !== '480p' || !prompt.trim()) return;
     const id = `job_${crypto.randomUUID()}`;
-    const saved: Attempt = { userId: account.userId, payload: { jobId: id, engineId: 'seedance-2-5', mode: 't2v', prompt, durationSec: form.durationSec,
+    const saved: Attempt = { userId: account.userId, payload: { ...options.preparedPayload, jobId: id, engineId: 'seedance-2-5', mode, prompt, durationSec: form.durationSec,
+      durationOption: form.durationOption, extraInputValues: options.preparedPayload?.extraInputValues ?? form.extraInputValues,
       resolution: '480p', aspectRatio: form.aspectRatio, audio: form.audio, iterationCount: 1,
       seedanceWorkflow: { step: 'draft' }, payment: { mode: 'wallet' } }, pricing };
     await dispatch(saved, true);

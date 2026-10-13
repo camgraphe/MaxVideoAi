@@ -5,6 +5,7 @@ import { getDb, withDbTransaction } from '../frontend/src/lib/db';
 import { createInitialVideoJobInExecutor, type CreateVideoInitialJobParams } from '../frontend/app/api/generate/_lib/initial-video-job';
 import { startDisposablePostgres, createPaidGenerationTestSchema } from './helpers/disposable-postgres';
 import { captureSeedanceDraftValidityStart, registerSeedanceDraftLink, markSeedanceDraftReady } from '../frontend/server/seedance-draft-links';
+import { seedanceDraftBillingFingerprint } from '../frontend/server/seedance-workflow-facts';
 
 function params(jobId: string, draftJobId = 'draft'): CreateVideoInitialJobParams & { seedanceFinal: { draftJobId: string; providerTaskId: string; providerModelId: string } } {
   const quote = { totalCents: 711, meta: { pricingMode: 'manual_tariff', customerTariffRevision: 4 } };
@@ -39,8 +40,16 @@ test('final eligibility and single-winner reservation share the wallet transacti
     await markSeedanceDraftReady('user-1', 'draft', query);
     await assert.rejects(withDbTransaction(executor => createInitialVideoJobInExecutor(executor, params('foreign', 'not-owned'))), /Draft/i);
     assert.equal((await db.pool.query("SELECT count(*) FROM app_receipts WHERE type = 'charge'")).rows[0].count, '0');
-    const attempts = await Promise.allSettled(['final-a', 'final-b'].map(jobId =>
-      withDbTransaction(executor => createInitialVideoJobInExecutor(executor, params(jobId)))));
+    const staleFacts = params('stale-final');
+    Object.assign(staleFacts.seedanceFinal, { parentSnapshotFingerprint: 'stale-server-facts' });
+    await assert.rejects(withDbTransaction(executor => createInitialVideoJobInExecutor(executor, staleFacts)), /Draft.*facts/i);
+    assert.equal((await db.pool.query("SELECT count(*) FROM app_receipts WHERE type = 'charge'")).rows[0].count, '0', 'a changed owned media snapshot cannot reserve or charge');
+    const parents = await query<{ prompt: string; audio: boolean; settings: unknown }>("SELECT prompt,has_audio AS audio,settings_snapshot AS settings FROM app_jobs WHERE job_id='draft'");
+    const fingerprint = seedanceDraftBillingFingerprint(parents[0]);
+    const attempts = await Promise.allSettled(['final-a', 'final-b'].map(jobId => {
+      const current = params(jobId); Object.assign(current.seedanceFinal, { parentSnapshotFingerprint: fingerprint });
+      return withDbTransaction(executor => createInitialVideoJobInExecutor(executor, current));
+    }));
     assert.equal(attempts.filter(result => result.status === 'fulfilled').length, 1);
     const finalJob = (await db.pool.query("SELECT job_id FROM app_jobs WHERE job_id <> 'draft'")).rows[0].job_id;
     const repeated = await withDbTransaction(executor => createInitialVideoJobInExecutor(executor, params(finalJob)));

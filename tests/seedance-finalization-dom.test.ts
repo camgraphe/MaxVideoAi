@@ -7,14 +7,14 @@ import { createRoot } from 'react-dom/client';
 import { useSeedanceFinalization } from '../frontend/hooks/useSeedanceFinalization';
 import type { SeedanceWorkflowView } from '../frontend/lib/seedance-workflow-contract';
 
-async function mount() {
+async function mount(mode?: 'i2v' | 'ref2v' | 'v2v' | 'extend') {
   const dom = new JSDOM('<div id="root"></div>');
   const previous = new Map<string, PropertyDescriptor | undefined>();
   for (const [key, value] of Object.entries({ window: dom.window, document: dom.window.document, navigator: dom.window.navigator, IS_REACT_ACT_ENVIRONMENT: true })) {
     previous.set(key, Object.getOwnPropertyDescriptor(globalThis, key)); Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
   }
   let view: SeedanceWorkflowView = { draft: { jobId: 'owned-draft', status: 'completed', amountCents: 129, currency: 'USD', paymentStatus: 'paid_wallet', videoUrl: '/draft.mp4', thumbUrl: null },
-    final: null, eligibility: 'ready', expiresAt: '2026-10-08T00:00:00Z', settings: { durationSec: 5, aspectRatio: '16:9', audio: false, resolution: '480p' } };
+    final: null, eligibility: 'ready', expiresAt: '2026-10-08T00:00:00Z', settings: { durationSec: 5, aspectRatio: '16:9', audio: false, resolution: '480p', ...(mode ? { mode } : {}) } };
   let account: { userId: string; token: string } | null = { userId: 'owner', token: 'session-fixture' };
   let result: ReturnType<typeof useSeedanceFinalization>;
   const quotes: { body: unknown; resolve: (value: any) => void }[] = [], submissions: { body: any; options: any; resolve: (value: any) => void; reject: (value: Error) => void }[] = [];
@@ -52,6 +52,21 @@ test('final confirmation quotes the owned Draft, charges only the final once, an
     assert.deepEqual(f.accepted, ['new-final']);
     assert.equal(f.action.confirming, false);
   } finally { await f.dispose(); }
+});
+
+test('Final quote and submission use the owned Draft mode without asking the browser to resend its assets', async () => {
+  for (const mode of ['i2v', 'ref2v', 'v2v', 'extend'] as const) {
+    const f = await mount(mode);
+    try {
+      await act(async () => { void f.action.requestFinal(); });
+      assert.equal((f.quotes[0].body as { mode: string }).mode, mode);
+      await f.quote();
+      await act(async () => { void f.action.confirm(); });
+      assert.equal(f.submissions[0].body.mode, mode);
+      assert.equal(f.submissions[0].body.inputs, undefined);
+      await act(async () => f.submissions[0].resolve({ ok: true, jobId: 'final' }));
+    } finally { await f.dispose(); }
+  }
 });
 
 test('expiry and account changes invalidate final quotes; an uncertain submission never retries automatically', async () => {

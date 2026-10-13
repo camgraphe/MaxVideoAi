@@ -51,7 +51,7 @@ test('LAS Edit requires wallet settlement before billing and provider submission
 test('generate route delegates engine, provider, db, and admin context', () => {
   assert.ok(existsSync(helperPath), 'route context should live in the generate route _lib folder');
   assert.match(routeSource, /from '\.\/_lib\/route-context'/);
-  assert.match(routeSource, /resolveGenerateRouteContext\(\{ body, req \}\)/);
+  assert.match(routeSource, /resolveGenerateRouteContext\(\{ body, req, seedanceWorkflow:/);
   assert.doesNotMatch(routeSource, /getConfiguredEngine/);
   assert.doesNotMatch(routeSource, /ensureBillingSchema/);
   assert.doesNotMatch(routeSource, /requireAdmin/);
@@ -133,7 +133,7 @@ test('generate route delegates attachment normalization and trusted media valida
   const normalizedAttachmentValidationSource = readFileSync(normalizedAttachmentValidationPath, 'utf8');
 
   assert.match(serviceSource, /generate\/_lib\/generation-attachment-processing/);
-  assert.match(serviceSource, /processAndValidateGenerationAttachments\(\{/);
+  assert.match(serviceSource, /processAndValidateGenerationAttachments\(/);
   assert.doesNotMatch(routeSource, /processGenerationAttachments\(\{/);
   assert.doesNotMatch(routeSource, /deriveGenerationAttachmentReferences\(\{/);
   assert.doesNotMatch(routeSource, /validateGenerationMediaConstraints\(\{/);

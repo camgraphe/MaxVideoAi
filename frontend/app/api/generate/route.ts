@@ -20,25 +20,39 @@ export async function POST(req: NextRequest) {
   });
   if (!body) return NextResponse.json({ ok: false, error: 'Invalid JSON' }, { status: 400 });
 
-  const routeContext = await resolveGenerateRouteContext({ body, req });
+  let seedanceWorkflow;
+  let workflowUserGate;
+  if (body.seedanceWorkflow !== undefined) {
+    workflowUserGate = await resolveGenerateUserGate({ req, body });
+    if (workflowUserGate.kind === 'response') return NextResponse.json(workflowUserGate.body, { status: workflowUserGate.status });
+    try {
+      seedanceWorkflow = await resolveSeedanceWorkflowRequest({ body, userId: workflowUserGate.userId,
+        engineId: String(body.engineId), enabled: seedanceWorkflowEnabled(req.url) });
+      if (seedanceWorkflow) body = seedanceWorkflow.body;
+    } catch (error) {
+      if (!(error instanceof SeedanceWorkflowRequestError)) throw error;
+      return NextResponse.json({ ok: false, error: error.code, message: error.message }, { status: error.status });
+    }
+  }
+  const routeContext = await resolveGenerateRouteContext({ body, req, seedanceWorkflow: seedanceWorkflow ?? undefined });
   if (!routeContext.ok) {
     await logPreflightRejection(body, routeContext);
     return NextResponse.json(routeContext.body, { status: routeContext.status });
   }
-  const { engine, isBytePlusV1a, jobId, mode, providerRoutingPlan } = routeContext.context;
+  const { engine, isBytePlusV1a, jobId, providerRoutingPlan } = routeContext.context;
+  const { mode } = routeContext.context;
   metricState.engineId = engine.id;
   metricState.engineLabel = engine.label;
   metricState.jobId = jobId;
   metricState.mode = mode;
 
-  const userGate = await resolveGenerateUserGate({ req, body });
+  const userGate = workflowUserGate ?? await resolveGenerateUserGate({ req, body });
   if (userGate.kind === 'response') {
     if (userGate.metric) logMetric('rejected', userGate.metric);
     return NextResponse.json(userGate.body, { status: userGate.status });
   }
-  let seedanceWorkflow;
   try {
-    seedanceWorkflow = await resolveSeedanceWorkflowRequest({ body, userId: userGate.userId,
+    seedanceWorkflow ??= await resolveSeedanceWorkflowRequest({ body, userId: userGate.userId,
       engineId: engine.id, enabled: seedanceWorkflowEnabled(req.url) });
     if (seedanceWorkflow) body = seedanceWorkflow.body;
   } catch (error) {
