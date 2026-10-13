@@ -33,7 +33,7 @@ export function ImageQuoteCard({
   const quote = turn.quote;
   if (!quote) return null;
   const t = (en: string, fr: string) => locale === 'fr' ? fr : en;
-  const presentation = conversationQuotePresentation(quote.summary, locale, quote.outputDurationSec);
+  const presentation = conversationQuotePresentation(quote.summary, locale, quote.outputDurationSec, quote.summary.surface === 'video' ? quote.sourceVideoOutput : undefined);
   const referenceCount = quote.summary.references.length;
   const ready = canConfirmImageQuote(quote, now, busy);
   const walletState = imageQuoteWalletState(quote);

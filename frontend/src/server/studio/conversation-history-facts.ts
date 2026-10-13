@@ -1,3 +1,4 @@
+import {recordedGenerationSourceVideoOutput} from '@/lib/generation-output-duration';
 import {query} from '@/lib/db';
 import {STUDIO_CONVERSATION_MAX_REFERENCES} from '@/lib/studio/conversation-creation-contract';
 import type {StudioConversationHistoryFacts} from '@/lib/studio/image-conversation-contract';
@@ -35,15 +36,17 @@ export function projectStudioQuoteDirections(turns:readonly StoredImageTurn[]):S
   return directions;
 }
 
-type EstimateRow={requestId:string;modelId:unknown;surface:unknown;mode:unknown;settings:unknown;outputCount:unknown;referenceCount:unknown;amountCents:unknown;currency:unknown;estimatedAt:unknown;quoteRequired:unknown;outputDurationSec:unknown};
+type EstimateRow={requestId:string;modelId:unknown;surface:unknown;mode:unknown;settings:unknown;outputCount:unknown;referenceCount:unknown;amountCents:unknown;currency:unknown;estimatedAt:unknown;quoteRequired:unknown;outputDurationSec:unknown;sourceVideoOutput:unknown};
 function projectHistoricalEstimate(row:EstimateRow):StudioConversationHistoryFacts['estimates'][number]|null {
   if(!uuid.test(row.requestId)||!token(row.modelId,128)||!token(row.mode,64)||!['image','video'].includes(row.surface as string)
     ||row.outputCount!==1||typeof row.referenceCount!=='number'||!Number.isSafeInteger(row.referenceCount)||row.referenceCount<0||row.referenceCount>STUDIO_CONVERSATION_MAX_REFERENCES
     ||typeof row.amountCents!=='number'||!Number.isSafeInteger(row.amountCents)||row.amountCents<0||typeof row.currency!=='string'||!/^[A-Z]{3}$/.test(row.currency)
     ||typeof row.estimatedAt!=='string'||!Number.isFinite(Date.parse(row.estimatedAt))||row.quoteRequired!==true)return null;
+  const sourceVideoOutput=recordedGenerationSourceVideoOutput({canonicalPricing:{meta:{seedanceEditSource:row.sourceVideoOutput}}});
   return {requestId:row.requestId,historical:true,modelId:row.modelId,surface:row.surface as 'image'|'video',mode:row.mode,
     settings:projectStudioQuoteSettings(row.settings),outputCount:1,referenceCount:row.referenceCount,
     price:customerDisplayPrice(row.amountCents,row.currency),estimatedAt:new Date(row.estimatedAt).toISOString(),quoteRequired:true,
+    ...(sourceVideoOutput?{sourceVideoOutput}:{}),
     ...(typeof row.outputDurationSec==='number'&&Number.isFinite(row.outputDurationSec)&&row.outputDurationSec>0?{outputDurationSec:row.outputDurationSec}:{})};
 }
 
@@ -67,7 +70,7 @@ export async function readStudioHistoricalEstimates(actor:StudioGenerationActor,
     option.data->'outputCount' AS "outputCount",option.data->'referenceCount' AS "referenceCount",
     option.data->'price'->'amountCents' AS "amountCents",option.data->'price'->>'currency' AS currency,
     option.data->>'estimatedAt' AS "estimatedAt",option.data->'quoteRequired' AS "quoteRequired",
-    option.data->'outputDurationSec' AS "outputDurationSec"
+    option.data->'outputDurationSec' AS "outputDurationSec", option.data->'sourceVideoOutput' AS "sourceVideoOutput"
     FROM receipts s CROSS JOIN LATERAL (
       SELECT data,ordinal FROM jsonb_array_elements(CASE
         WHEN s.result_json->>'action'='pricing.read' THEN jsonb_build_array(s.result_json->'data')

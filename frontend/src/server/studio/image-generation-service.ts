@@ -1,5 +1,5 @@
 import { isWorkspaceModelCertifiedForBlock, isStudioConversationVideoModeCertified } from "@/app/(core)/(workspace)/app/studio/_shared/_lib/models/workspace-model-certification";
-import {recordedStudioOutputDuration} from './conversation-quote-facts';
+import {recordedStudioOutputDuration,recordedStudioSourceVideoOutput} from './conversation-quote-facts';
 import {customerDisplayPrice} from '@/lib/customer-price-presentation';
 import {
   requireGenerationActor,
@@ -255,7 +255,9 @@ function createStudioVisualGenerationService(
       });
       const outputDurationSec=request.surface==='video'
         ? recordedStudioOutputDuration({canonicalPricing:pricing.pricingSnapshot}) : undefined;
+      const sourceVideoOutput=request.surface==='video'?recordedStudioSourceVideoOutput({canonicalPricing:pricing.pricingSnapshot}):undefined;
       return {modelId:request.engineId,surface:request.surface,mode:request.mode,settings,outputCount:1,referenceCount:request.references.length,
+        ...(sourceVideoOutput ? {sourceVideoOutput} : {}),
         ...(outputDurationSec!==undefined ? {outputDurationSec} : {}),
         price:customerDisplayPrice(pricing.priceCents,pricing.currency),estimatedAt:(prepareDeps.now?.() ?? new Date()).toISOString(),quoteRequired:true};
     },

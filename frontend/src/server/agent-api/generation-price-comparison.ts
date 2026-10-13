@@ -1,5 +1,5 @@
 import { customerDisplayPrice } from "@/lib/customer-price-presentation";
-import { recordedGenerationOutputDuration } from "@/lib/generation-output-duration";
+import { recordedGenerationOutputDuration, recordedGenerationSourceVideoOutput } from "@/lib/generation-output-duration";
 import { getRuntimeModelById } from "@/config/model-runtime";
 import { AgentApiError, type AgentApiErrorCode } from "./errors";
 import {
@@ -249,6 +249,7 @@ export async function compareGenerationPrices(
             request.surface === "video"
               ? recordedGenerationOutputDuration(pricingSnapshot)
               : undefined;
+          const sourceVideoOutput = request.surface === "video" ? recordedGenerationSourceVideoOutput(pricingSnapshot) : undefined;
           const option: GenerationPriceOption = {
             modelId,
             modelLabel: candidate.engine.label,
@@ -259,6 +260,7 @@ export async function compareGenerationPrices(
             referenceCount: request.references.length,
             outputCount: 1,
             ...(outputDurationSec !== undefined ? { outputDurationSec } : {}),
+            ...(sourceVideoOutput ? { sourceVideoOutput } : {}),
             audio: details.audio,
             defaultedSettings,
             editorialGuidance: getAgentModelEditorialSummary(modelId),

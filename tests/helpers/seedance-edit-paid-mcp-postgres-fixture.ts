@@ -14,6 +14,7 @@ import { createQuoteRepository, generationQuoteCodec } from '../../frontend/src/
 import { runBytePlusPoll } from '../../frontend/server/byteplus-poll';
 import { upsertLegacyJobOutputs } from '../../frontend/server/media-library/job-outputs';
 import { promoteCompletedMcpJobOutputs } from '../../frontend/server/media-library/mcp-output-assets';
+import { mapOutputRow, mapAssetRow } from '../../frontend/server/media-library-records';
 import { ensureReusableAsset } from '../../frontend/server/media-library/assets';
 import { continuousInputTariffSelector } from '../../frontend/src/lib/pricing-manual-scenario';
 import { collectSellableManualTariffCoverage } from '../../frontend/lib/pricing-audit/manual-tariff-coverage';
@@ -273,10 +274,26 @@ export async function qualifyPaidSeedanceEdit(transport: 'las' | 'modelark') {
         await assert.rejects(confirm({ quoteId: fractional.quoteId, confirmed: true }, identity), /quote.*no longer current/i);
         assert.equal(posts, 3);
         assert.deepEqual(await receipts(fractional.quoteId), []);
+        await db.pool.query(`UPDATE media_assets SET metadata=metadata || '{"durationSec":4.25}'::jsonb WHERE public_id=$1`, [assetId]);
+        const completedFractional = await prepare(request, identity);
+        quoteId = completedFractional.quoteId;
+        providerLookupBlocked = false;
+        await confirm({ quoteId, confirmed: true }, identity);
+        await poll();
+        assert.equal((await row(quoteId)).status, 'completed');
+        const output = (await db.pool.query('SELECT * FROM job_outputs WHERE job_id=$1', [quoteId])).rows[0];
+        const asset = (await db.pool.query('SELECT * FROM media_assets WHERE source_job_id=$1', [quoteId])).rows[0];
+        assert.equal(output.metadata.inheritedOutputDurationSec, 4.25, 'The paid completion persists fractional inherited timing');
+        assert.equal(Number(output.duration_sec), 4, 'The legacy integer projection remains compatible');
+        assert.equal(mapOutputRow(output).durationSec, 4.25);
+        await upsertLegacyJobOutputs({ ...(await row(quoteId)), duration_sec: 5 }, { promoteMcpOutputsFn: async () => ({ promoted: 0, failed: 0 }) });
+        const reread = (await db.pool.query('SELECT * FROM job_outputs WHERE job_id=$1', [quoteId])).rows[0];
+        assert.equal(mapOutputRow(reread).durationSec, 4.25, 'A subsequent legacy synchronization cannot overwrite inherited timing');
+        assert.equal(mapAssetRow(asset).durationSec, 4.25, 'The saved Library asset preserves inherited timing');
         await db.pool.query(`UPDATE media_assets SET metadata=metadata || '{"durationSec":3.99}'::jsonb WHERE public_id=$1`, [assetId]);
         await assert.rejects(prepare(request, identity), /cannot be priced|settings cannot be priced|reference duration/i);
-        assert.equal(posts, 3);
-        assert.equal((await getWalletBalanceCents(identity.userId)).balanceCents, 10000 - 2 * expectedPrice);
+        assert.equal(posts, 4);
+        assert.equal((await getWalletBalanceCents(identity.userId)).balanceCents, 10000 - 2 * expectedPrice - 84);
       }
     } finally {
       globalThis.fetch = previousFetch;

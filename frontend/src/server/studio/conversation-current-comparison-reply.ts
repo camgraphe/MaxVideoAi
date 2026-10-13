@@ -1,3 +1,4 @@
+import {seedanceEditSourceLabel} from '@/lib/seedance-edit-source-copy';
 import type {StudioActionRequest,StudioActionResult} from '@/lib/studio/conversation-action-contract';
 import type {GenerationPriceOption} from '@/server/agent-api/generation-price-comparison';
 import {projectStudioReply} from '@/lib/studio/conversation-reply';
@@ -16,7 +17,8 @@ function settingSummary(settings:Readonly<Record<string,string|number|boolean|nu
   const words=copy[locale];
   const duration=option?.outputDurationSec??settings.durationSec;
   const sound=option?.audio==='always_generated'?true:option?.audio==='unavailable'?false:settings.audio;
-  const parts=[typeof duration==='number'?`${duration}s`:null,settings.resolution,settings.aspectRatio,
+  const source=option?.sourceVideoOutput;
+  const parts=[source?seedanceEditSourceLabel(source,locale):typeof duration==='number'?`${duration}s`:null,settings.resolution,source?null:settings.aspectRatio,
     typeof sound==='boolean'?(sound?words.sound:words.silent):null,
     ...Object.entries(settings).filter(([name,value])=>!['durationSec','resolution','aspectRatio','audio'].includes(name)&&value!==null)
       .map(([name,value])=>`${name}: ${String(value).slice(0,80)}`),

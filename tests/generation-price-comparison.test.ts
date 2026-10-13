@@ -1,3 +1,4 @@
+import { studioCurrentComparisonReply } from '../frontend/src/server/studio/conversation-current-comparison-reply';
 import assert from "node:assert/strict";
 import test from "node:test";
 import { getFalEngineById } from "../frontend/src/config/falEngines";
@@ -491,4 +492,29 @@ test("different currencies cannot displace the cheapest comparable alternative o
         option.modelId === "minimax-h3-max" && option.currency === "EUR",
     ),
   );
+});
+
+
+test('Edit comparison and Studio reply expose inherited source facts instead of ignored requested framing', async () => {
+  const sourceVideoOutput = { durationSec: 4.25, width: 1280, height: 720, billedDurationSec: 5,
+    pricingAspectRatio: '16:9', outputDuration: 'source', outputAspectRatio: 'source' };
+  const request = { ...input, mode: 'v2v' as const, candidateModelIds: ['seedance-2-5'],
+    settings: { durationSec: 9, aspectRatio: '9:16', resolution: '480p', audio: false },
+    references: [{ kind: 'asset' as const, assetId: 'ma_' + 'a'.repeat(32), role: 'source' as const }] };
+  const result = await compareGenerationPrices(request, actor, dependencies({
+    listPublicEngines: async () => [candidate('seedance-2-5')],
+    resolveGenerationReferences: async () => [{ role: 'source', mediaKind: 'video', assetId: request.references[0].assetId,
+      storageUrl: 'https://owned.example/source.mp4', mimeType: 'video/mp4', sizeBytes: 1000, width: 1280, height: 720, durationSec: 4.25 }],
+    priceGeneration: async (_request, tier) => ({ priceCents: 84, currency: 'USD', membershipTier: tier,
+      pricingSnapshot: { totalCents: 84, currency: 'USD', membershipTier: tier, meta: { output_duration_sec: 4.25, seedanceEditSource: sourceVideoOutput } } }),
+  }));
+  assert.equal(result.options[0].outputDurationSec, 4.25);
+  assert.deepEqual((result.options[0] as any).sourceVideoOutput, sourceVideoOutput);
+  assert.equal(result.options[0].settings.durationSec, 9);
+  assert.equal(result.options[0].settings.aspectRatio, '9:16');
+  const reply = studioCurrentComparisonReply({ action: 'pricing.compare', ...request,
+    settings: Object.entries(request.settings).map(([name, value]) => ({ name, value })), outputCount: 1,
+    baselineModelId: null, baselineSettings: null } as never, { ok: true, action: 'pricing.compare', data: result }, 0, 'fr');
+  assert.match(reply.reply!, /4,25s.*Format source.*Tarif 5s/);
+  assert.doesNotMatch(reply.reply!, /9:16|\b9s\b/);
 });

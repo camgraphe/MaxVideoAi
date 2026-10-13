@@ -105,3 +105,13 @@ isolated committed candidate, current main, PR, latest required Quality CI,
 deployment check, merge, Git Vercel build and exact merged SHA on both domains.
 Close only `SEEDANCE_2_5_MODELARK_EDIT_ENABLED` for rollback; keep the shared Ark
 poll gate and credential available while accepted jobs reconcile.
+
+
+Customer projections carry the immutable request separately from `sourceVideoOutput`.
+Studio quotes, comparisons, read estimates, historical receipts and MCP comparisons expose
+exact inherited duration and source framing; fractional sources disclose the literal billed
+class. Library output timing preserves the canonical inherited duration in
+`job_outputs.metadata.inheritedOutputDurationSec`, while its legacy integer column stays
+compatible. A subsequent legacy synchronization cannot replace this field for the same
+original URL; a changed URL clears it. Verified original probe facts remain authoritative
+and are never synthesized from the source-preservation promise.

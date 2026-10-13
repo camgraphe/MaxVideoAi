@@ -1,3 +1,4 @@
+import type {SeedanceEditSourceFacts} from '@/lib/seedance-edit-source';
 import { z } from 'zod';
 import {studioAnalysisPrepareActionSchema,studioAnalysisReadActionSchema,STUDIO_ANALYSIS_DIRECTOR_TOOLS,type StudioPreparedAnalysis,type StudioAnalysisStatus} from './media-analysis-contract';
 import {studioProjectNameSchema} from './conversation-project-title';
@@ -46,6 +47,7 @@ export type StudioConversationQuoteFacts = {
   settings: StudioConversationQuoteSettings;
   outputCount: number;
   outputDurationSec?: number;
+  sourceVideoOutput?: SeedanceEditSourceFacts;
   referenceCount: number;
   referenceRoles: ('source' | 'reference' | 'first_frame' | 'last_frame' | 'mask' | 'source_video' | 'voice_sample')[];
 };

@@ -5,6 +5,7 @@ import { getFalEngineById } from '../frontend/src/config/falEngines';
 import { resolveMediaAwarePreflight } from '../frontend/app/api/preflight/_lib/media-aware-preflight';
 import { projectSeedance25ModeAvailability } from '../frontend/server/engine-mode-availability';
 import { resolveWorkspaceWorkflow, resolveWorkspaceComposerFacts } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-workflow-projection';
+import { mapLegacyJobRowToOutputs } from '../frontend/server/media-library-records';
 import { bytePlusCompletedOutputRow } from '../frontend/server/byteplus-output-persistence';
 import { quotePublicModelScenario } from '../frontend/server/pricing/quote-public-model-scenario';
 import type { PreflightRequest } from '../frontend/types/engines';
@@ -67,7 +68,9 @@ test('public ModelArk Edit examples quote inherited source timing instead of an 
 test('Edit library output timing keeps the exact inherited duration separately from its integer tariff class', () => {
   const job = { engine_id: 'seedance-2-5', duration_sec: 5, settings_snapshot: { inputMode: 'v2v', byteplusTransport: 'modelark',
     seedanceEditSource: { durationSec: 4.25 } } } as never;
-  assert.equal(bytePlusCompletedOutputRow(job, 'https://media.example.test/output.mp4', 'https://media.example.test/poster.jpg').duration_sec, 4.25);
+  const row = bytePlusCompletedOutputRow(job, 'https://media.example.test/output.mp4', 'https://media.example.test/poster.jpg');
+  assert.equal(row.duration_sec, 4.25);
+  assert.equal(mapLegacyJobRowToOutputs(row)[0].durationSec, 4.25, 'The actual Library projection must preserve fractional timing');
 });
 
 test('unverified or unsupported inherited source facts fail before a quote can be computed',

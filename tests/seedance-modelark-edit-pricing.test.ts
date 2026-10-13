@@ -98,3 +98,19 @@ test('the four proven ModelArk modes keep their cost when Edit transport changes
     assert.deepEqual(modern, prior, mode);
   }
 }));
+
+
+test('canonical Edit receipts publish exact inherited timing for shared customer projections',
+  { concurrency: false }, async () => withModelArk(async () => {
+    const ctx = { ...context(), durationSec: 5, inputVideoDurationSec: 4.25,
+      seedanceEditSource: { durationSec: 4.25, width: 1280, height: 720, billedDurationSec: 5,
+        pricingAspectRatio: '16:9', outputDuration: 'source', outputAspectRatio: 'source' } } as PricingContext;
+    const { state } = reviewedModelArk(ctx);
+    state.versionedCells[0].price.components[0].flatCents = 81.00046838407494;
+    state.versionedCells[0].price.components[0].terms[0].centsPerUnit = 9;
+    state.versionedCells[0].price.components[0].terms[0].includedUnits = 4.0000520426749935;
+    const snapshot = await computeCanonicalBillingSnapshot(ctx, {
+      pricingPolicy: { loadOverrides: async () => ({ status: 'loaded', rules: [] }) }, loadCustomerTariffState: async () => state });
+    assert.equal(snapshot.totalCents, 84);
+    assert.equal(snapshot.meta?.output_duration_sec, 4.25);
+  }));

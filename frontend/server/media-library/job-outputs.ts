@@ -46,7 +46,7 @@ export async function upsertJobOutputs(outputs: JobOutputRecord[]): Promise<void
          status = EXCLUDED.status,
          metadata = (CASE WHEN COALESCE(job_outputs.storage_url, job_outputs.url) IS NOT DISTINCT FROM COALESCE(EXCLUDED.storage_url, EXCLUDED.url)
                           THEN COALESCE(job_outputs.metadata, '{}'::jsonb)
-                          ELSE COALESCE(job_outputs.metadata, '{}'::jsonb) - 'mediaFacts' END) || EXCLUDED.metadata,
+                          ELSE COALESCE(job_outputs.metadata, '{}'::jsonb) - 'mediaFacts' - 'inheritedOutputDurationSec' END) || EXCLUDED.metadata,
          updated_at = NOW()
        WHERE job_outputs.user_id IS NOT DISTINCT FROM EXCLUDED.user_id
        RETURNING id`,
@@ -62,7 +62,7 @@ export async function upsertJobOutputs(outputs: JobOutputRecord[]): Promise<void
         output.mimeType,
         output.width,
         output.height,
-        output.durationSec,
+        output.kind === 'video' && output.durationSec !== null ? Math.round(output.durationSec) : output.durationSec,
         output.position,
         output.status,
         JSON.stringify(output.metadata ?? {}),
