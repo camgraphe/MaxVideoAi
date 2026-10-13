@@ -33,9 +33,10 @@ test('seed freezes existing positive margins, repairs negative minima, and binds
     });
     const state = { status: 'loaded' as const, active: true, revision: 328, databaseCells: cells, versionedCells: [] };
     const prepared = await prepareSeedanceInputTariffSeed({ scenarios: selected, state, at: '2026-10-01T12:00:00Z' });
-    assert.equal(prepared.cells.length,3);
-    assert.equal(prepared.correctedMinimumCount,2);
-    assert.equal(prepared.rows.find(row=>row.scenarioId.includes('mode=v2v'))?.anchorMode,'t2v');
+    assert.equal(prepared.cells.length,2);
+    assert.equal(prepared.correctedMinimumCount,1);
+    assert.equal(prepared.rows.find(row=>row.scenarioId.includes('mode=v2v')),undefined);
+    await assert.rejects(prepareSeedanceInputTariffSeed({ scenarios: [edit], state, at: '2026-10-01T12:00:00Z' }), /dedicated.*LAS|LAS.*dedicated/i);
     const standard = prepared.cells.find(c => c.selector.engineId === 'seedance-2-0')!;
     assert.equal(evaluateManualTariffPrice(standard.price,{ input_video_seconds: 15 }).customerTotalCents,185);
     const mini = prepared.cells.find(c => c.selector.engineId === 'seedance-2-5')!;

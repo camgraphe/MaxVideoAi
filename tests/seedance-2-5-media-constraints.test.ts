@@ -179,13 +179,13 @@ test('generation validation uses stored user-owned metadata instead of client si
       name: 'untrusted.m4a',
       type: 'audio/mp4',
       size: 99 * MB,
-      url: 'https://media.maxvideoai.com/library/original.wav',
+      url: 'https://media.maxvideoai.com/user-assets/reference.wav',
     }),
-    reference: referenceItem('https://media.maxvideoai.com/library/original.wav'),
+    reference: referenceItem('https://media.maxvideoai.com/user-assets/reference.wav'),
   });
   assert.deepEqual(exactWav.result, {
     ok: true,
-    trustedMediaReferences: [{ kind: 'audio', url: 'https://media.maxvideoai.com/library/original.wav',
+    trustedMediaReferences: [{ kind: 'audio', url: 'https://media.maxvideoai.com/user-assets/reference.wav',
       width: null, height: null, durationSec: null }],
   });
 

@@ -13,6 +13,7 @@ import {
   quotePublicPricing,
 } from '../frontend/src/lib/pricing-public-quote.ts';
 import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '../frontend/src/lib/seedance-2-pricing.ts';
+import { reviewedLasPricingState } from './helpers/seedance-las-pricing-fixture';
 
 function getEngine(engineId: string) {
   const engine = listFalEngines().find((entry) => entry.id === engineId)?.engine;
@@ -101,8 +102,8 @@ test('Seedance 2.5 public quotes cover no-video and video-input generation', asy
       expectedInputType: 'no_video_input',
     },
     {
-      id: 'v2v-15s-720p-audio-on',
-      mode: 'v2v' as const,
+      id: 'extend-15s-720p-audio-on',
+      mode: 'extend' as const,
       durationSec: 15,
       resolution: '720p',
       audio: true,
@@ -186,10 +187,25 @@ test('Seedance 2.5 public quotes cover no-video and video-input generation', asy
     'a 10-second 1080p render should cost more than a 15-second 720p render at the same input rate'
   );
   assert.ok(
-    Number(quotes.get('v2v-15s-720p-audio-on')?.totalCents) <
+    Number(quotes.get('extend-15s-720p-audio-on')?.totalCents) <
       Number(quotes.get('t2v-15s-720p-audio-on')?.totalCents),
-    'V2V should use the lower factual video-input token rate'
+    'ModelArk extension should use the lower factual video-input token rate'
   );
+});
+
+test('Seedance 2.5 Edit public snapshots use reviewed LAS input-plus-output tariffs', async () => {
+  const engine = getEngine('seedance-2-5');
+  const context = { engine, mode: 'v2v' as const, durationSec: 4, resolution: '480p', aspectRatio: '16:9',
+    hasVideoInput: true, inputVideoDurationSec: 4 };
+  const state = reviewedLasPricingState(context);
+  const snapshot = await computePricingSnapshot(context, {
+    pricingPolicy: { loadOverrides: async () => ({ status: 'loaded', rules: [] }) },
+    loadCustomerTariffState: async () => state,
+  });
+  assert.equal(snapshot.totalCents,247);
+  assert.equal(snapshot.meta?.pricingMode,'manual_tariff');
+  assert.equal(snapshot.meta?.providerCostListUsd,.984144);
+  assert.equal(snapshot.meta?.providerCostSource,'BytePlus LAS Enhanced published LIST');
 });
 
 test('Seedance 2.5 presents pricing in customer-facing language', () => {

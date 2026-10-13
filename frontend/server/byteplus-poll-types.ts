@@ -4,6 +4,7 @@ export type BytePlusPendingJob = {
   engine_id: string;
   engine_label: string;
   provider_job_id: string;
+  video_url?: string | null;
   status: string;
   duration_sec: number;
   thumb_url: string | null;

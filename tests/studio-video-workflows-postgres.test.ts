@@ -17,29 +17,68 @@ import {chooseStudioAssistance} from '../frontend/src/server/studio/assistance-l
 import {STUDIO_ASSISTANCE_TARIFF} from '../frontend/src/lib/studio/assistance-contract';
 import {studioReferenceFingerprint} from '../frontend/src/server/agent-api/generation-actor';
 import {toEngineGenerationMode} from '../frontend/src/server/agent-api/generation-mode-aliases';
+import {priceCanonicalGeneration,priceCanonicalGenerationInExecutor,type ExecutorGenerationPricingDependencies} from '../frontend/src/server/agent-api/generation-pricing';
+import type {PrepareGenerationDependencies} from '../frontend/src/server/agent-api/prepare-generation';
+import type {ConfirmGenerationDependencies} from '../frontend/src/server/agent-api/confirm-generation';
+import {loadEffectiveCustomerTariffState} from '../frontend/server/pricing/customer-tariff-store';
+import {continuousInputTariffSelector} from '../frontend/src/lib/pricing-manual-scenario';
+import {collectSellableManualTariffCoverage} from '../frontend/lib/pricing-audit/manual-tariff-coverage';
+import {customerTariffCellId} from '../frontend/server/pricing/customer-tariff-seed';
 
 test('all certified video tuples share MCP exact price, owned payload and one-attempt confirmed dispatch',async t=>{
   assert.equal(process.env.DATABASE_URL,undefined,'Disposable DB only');
   const pg=await startDisposablePostgres('studio-video-workflows');process.env.DATABASE_URL=pg.databaseUrl;
   t.after(async()=>{await getDb().end();delete process.env.DATABASE_URL;await pg.cleanup();});
   await createPaidGenerationTestSchema(pg.pool);
+  await pg.pool.query(`CREATE TABLE app_pricing_change_events(domain text);`);
+  await pg.pool.query(readFileSync('neon/migrations/54_customer_tariff_cells.sql','utf8'));
+  await pg.pool.query(readFileSync('neon/migrations/55_customer_tariff_versions.sql','utf8'));
+  const lasScenario=collectSellableManualTariffCoverage({modelId:'seedance-2-5',mode:'v2v'}).scenarios.find(s=>
+    s.selector.resolution==='480p'&&s.selector.durationSec==='4'&&s.selector.aspectRatio==='16:9')!;
+  const lasSelector=continuousInputTariffSelector(lasScenario.selector)!;
+  await pg.pool.query(`INSERT INTO app_customer_tariff_cells(id,selector_key,selector_json,price_json,currency,effective_from,revision,updated_by)
+    VALUES($1,$2,$3,$4,'USD','2026-10-02',1,'11111111-1111-4111-8111-111111111111')`,[
+    customerTariffCellId(Object.entries(lasSelector).map(([k,v])=>`${k}=${encodeURIComponent(v)}`).join('|')),
+    JSON.stringify(Object.entries(lasSelector).sort(([a],[b])=>a.localeCompare(b))),lasSelector,
+    {kind:'unit_components',rounding:'up',components:[{id:'retail',rounding:'none',flatCents:123.018,
+      terms:[{unit:'input_video_seconds',centsPerUnit:30.7545,includedUnits:0}]}]},
+  ]);
+  await pg.pool.query('UPDATE app_customer_tariff_state SET active=TRUE,revision=1');
   await pg.pool.query(readFileSync('neon/migrations/53_studio_media_generation_scope.sql','utf8'));
   await addTopup(pg.pool,workflowActor.userId,10000000);
   await pg.pool.query(`CREATE TABLE job_outputs(id text PRIMARY KEY,job_id text,user_id text,kind text,status text);
     CREATE TABLE media_assets(id text PRIMARY KEY,public_id text,user_id text,kind text,url text,mime_type text,size_bytes bigint,width int,height int,status text,deleted_at timestamptz,metadata jsonb,source_job_id text,source_output_id text,thumb_url text,preview_url text);`);
   for(const kind of ['image','video','audio'] as const){const ref=workflowReference(kind,'source');await pg.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,size_bytes,width,height,status,metadata) VALUES($1,$2,$3,$1,$4,$5,$6,$7,$8,'ready',$9::jsonb)`,[kind,workflowAssetIds[kind],workflowActor.userId,ref.storageUrl,ref.mimeType,ref.sizeBytes,ref.width,ref.height,JSON.stringify({durationSec:ref.durationSec,originalName:ref.originalName,mediaFacts:{source:'probe',durationSec:ref.durationSec,width:ref.width,height:ref.height}})]);}
   const catalog=await workflowCatalog();const provider=new ProviderHarness(pg.pool);
+  const lasPricing=async(request:CanonicalGenerationRequest,tier:Parameters<typeof priceCanonicalGeneration>[1],deps:ExecutorGenerationPricingDependencies)=>
+    priceCanonicalGenerationInExecutor(request,tier,{...deps,computeBillingSnapshot:async(context,options)=>{
+      // This broad legacy matrix keeps its existing ModelArk policy fixture.
+      // LAS alone uses the real stored reviewed cell, through the canonical
+      // calculator's existing explicit fixture reader. Dedicated LAS paid-flow
+      // tests exercise the default production reader and actual provider client.
+      const state=await loadEffectiveCustomerTariffState(deps.executor);
+      if(state.status!=='loaded')throw new Error('The reviewed LAS fixture grid is unavailable');
+      const [raw]=await deps.executor.query<{active:boolean}>('SELECT active FROM app_customer_tariff_state WHERE singleton=TRUE');
+      return computeCanonicalBillingSnapshot(context,{...options,loadCustomerTariffState:async()=>({...state,active:raw.active})});
+    }});
+  const preparePrice:PrepareGenerationDependencies['priceGeneration']=async(request,tier,refs)=>request.engineId==='seedance-2-5'&&request.mode==='v2v'
+    ?withDbTransaction(executor=>lasPricing(request,tier,{executor,candidate:catalog.find(c=>c.engine.id===request.engineId)!,resolvedReferences:refs.resolvedReferences}))
+    :priceCanonicalGeneration(request,tier,undefined,refs);
+  const confirmPrice:ConfirmGenerationDependencies['priceGeneration']=async(request,tier,deps)=>request.engineId==='seedance-2-5'&&request.mode==='v2v'
+    ?lasPricing(request,tier,deps):priceCanonicalGenerationInExecutor(request,tier,deps);
   const executable=()=>({executable:true as const,reason:'available' as const});
-  const options={enabled:true,prepareDependencies:{listPublicEngines:async()=>catalog,resolveRequestExecutability:executable},confirmDependencies:{listPublicEngines:async()=>catalog,resolveRequestExecutability:executable,submitPaidGeneration:provider.submit}};
+  const options={enabled:true,prepareDependencies:{listPublicEngines:async()=>catalog,resolveRequestExecutability:executable,priceGeneration:preparePrice},confirmDependencies:{listPublicEngines:async()=>catalog,resolveRequestExecutability:executable,submitPaidGeneration:provider.submit,priceGeneration:confirmPrice}};
   const service=createStudioVideoGenerationService(workflowActor,options);
   const factories={video:()=>service} as unknown as StudioMediaFactories;
-  const mcp=createServices({publicEngines:catalog,resolveRequestExecutability:executable,submitPaidGeneration:provider.submit});
+  const mcp=createServices({publicEngines:catalog,resolveRequestExecutability:executable,submitPaidGeneration:provider.submit,
+    preparePriceGeneration:preparePrice,confirmPriceGeneration:confirmPrice});
   let totalCharge=0;
   for(const candidate of catalog)for(const mode of candidate.publicModes)await t.test(candidate.engine.id+' '+mode,async()=>{
     const action=workflowAction(candidate,mode);const request=await studioMediaRequest(workflowActor,action,workflowInput,factories,true) as CanonicalGenerationRequest;
     const before=provider.captures.length;const quote=await service.prepare(request);const oauthQuote=await mcp.prepareGeneration!(request,principal(workflowActor.userId));
     assert.deepEqual(quote.summary,oauthQuote.summary,'Same canonical request');assert.equal(quote.requestHash,oauthQuote.requestHash);assert.deepEqual(quote.price,oauthQuote.price,'Same real persisted tariff and owned facts');
     assert.ok(Number.isSafeInteger(quote.price.amountCents)&&quote.price.amountCents>0);assert.equal(provider.captures.length,before,'Preparation never dispatches');
+    if(candidate.engine.id==='seedance-2-5'&&mode==='v2v')assert.equal(quote.price.amountCents,308,'LAS quotes the measured 6-second source plus 4-second output from its reviewed literal tariff');
     await assert.rejects(mcp.confirmGeneration!({quoteId:quote.quoteId,confirmed:true},principal(workflowActor.userId)),{code:'QUOTE_EXPIRED'});
     await assert.rejects(createStudioVideoGenerationService({...workflowActor,projectId:'other'},options).confirm({quoteId:quote.quoteId,confirmed:true}),{code:'QUOTE_EXPIRED'});
     await assert.rejects(createStudioVideoGenerationService({...workflowActor,userId:'foreign'},options).confirm({quoteId:quote.quoteId,confirmed:true}),{code:'QUOTE_EXPIRED'});

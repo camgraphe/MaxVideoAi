@@ -1,4 +1,5 @@
 import { ENV } from '@/lib/env';
+import { getBytePlusSeedanceModeResolutions } from '@/lib/byteplus-mode-capabilities';
 import type { AspectRatio, EngineCaps, EngineInputField, Mode, Resolution } from '@/types/engines';
 import {
   BYTEPLUS_MODELARK_PROVIDER,
@@ -459,7 +460,7 @@ export function applyBytePlusSeedanceRuntimeOptions(
               ? {
                   ...caps,
                   modes: [mode],
-                  resolution: resolutions,
+                  resolution: [...getBytePlusSeedanceModeResolutions(engine.id, mode, resolutions)],
                   resolutionLocked: false,
                   aspectRatio:
                     engine.id === 'seedance-2-5' && mode === 'i2v'

@@ -224,7 +224,7 @@ test('real Seedance 2.5 v2v and extend modes require bounded source references',
   rejectsCapability(seedance, { ...extendRequest, references: [...extendRequest.references, source('clip-4')] });
 });
 
-test('Seedance source and reference fields enforce canonical HTTPS media kinds', () => {
+test('Seedance Edit requires owned assets while ModelArk reference fields retain HTTPS media kinds', () => {
   const seedance = registryCapability('seedance-2-5');
   const httpsReference = (
     id: string,
@@ -242,7 +242,10 @@ test('Seedance source and reference fields enforce canonical HTTPS media kinds',
     settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9' },
     references: [httpsReference('source-video', 'source', 'video')],
   });
-  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(v2v, seedance));
+  rejectsCapability(seedance, v2v);
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities({ ...v2v,
+    references: [{ kind: 'asset', assetId: 'owned-source-video', role: 'source' }],
+  }, seedance));
   rejectsCapability(seedance, {
     ...v2v,
     references: [httpsReference('source-image', 'source', 'image')],

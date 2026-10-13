@@ -12,6 +12,12 @@ const appClientPath = 'frontend/app/(core)/(workspace)/app/AppClient.tsx';
 const readyViewPath = 'frontend/app/(core)/(workspace)/app/_components/WorkspaceAppReadyView.tsx';
 const composerSurfacePath = 'frontend/app/(core)/(workspace)/app/_components/WorkspaceComposerSurface.tsx';
 
+test('workspace composer surface owns runtime mode notices and Generate disabling', () => {
+  const surface = readFileSync(composerSurfacePath, 'utf8');
+  assert.match(surface, /getEngineModeUnavailableMessage\(selectedEngine, submissionMode, uiLocale\)/);
+  assert.match(surface, /disableGenerate=\{[^}]*Boolean\(modeUnavailableMessage\)/);
+});
+
 test('workspace composer and settings surface is owned by a route-local component', () => {
   assert.equal(existsSync(readyViewPath), true);
   assert.equal(existsSync(composerSurfacePath), true);

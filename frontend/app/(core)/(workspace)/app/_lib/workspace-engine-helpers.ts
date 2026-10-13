@@ -5,6 +5,7 @@ import { isHappyHorseEngineId } from '@/lib/happy-horse-workflow';
 import { getLocalizedModeLabel } from '@/lib/ltx-localization';
 import { UNIFIED_SEEDANCE_ENGINE_IDS } from '@/lib/seedance-workflow';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps, Mode } from '@/types/engines';
+import { isEngineModeRuntimeAvailable } from '@/lib/engine-mode-availability';
 import { isKlingO3EngineId } from './kling-o3-unified-workflow';
 import type { FormState } from './workspace-form-state';
 
@@ -148,6 +149,7 @@ function getEngineFieldsForMode(engine: EngineCaps, mode: Mode): EngineInputFiel
 }
 
 export function isWorkspaceModeAvailable(engine: EngineCaps, mode: Mode): boolean {
+  if (!isEngineModeRuntimeAvailable(engine, mode)) return false;
   if (!engine.modes.includes(mode)) return false;
   if (engine.modeCaps && !engine.modeCaps[mode]) return false;
   if (mode === 'extend') {

@@ -230,7 +230,7 @@ test('budgets real H3 and Seedance 2.5 i2v lines with source-derived framing', a
   ]);
 });
 
-test('budgets source-video modes without inventing a ref2v media kind', async () => {
+test('budgets ModelArk source-video modes without inventing a ref2v media kind', async () => {
   const candidate = registryCapability('seedance-2-5');
   const pricedModes: string[] = [];
   const billingInputTypes: unknown[] = [];
@@ -238,8 +238,8 @@ test('budgets source-video modes without inventing a ref2v media kind', async ()
     name: 'Source video workflows',
     lines: [
       line({
-        purpose: 'Edit source',
-        mode: 'v2v',
+        purpose: 'Extend one source',
+        mode: 'extend',
         settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
         referenceRoles: ['source'],
       }),
@@ -270,13 +270,23 @@ test('budgets source-video modes without inventing a ref2v media kind', async ()
     },
   });
 
-  assert.deepEqual(pricedModes, ['v2v', 'extend', 'ref2v']);
+  assert.deepEqual(pricedModes, ['extend', 'extend', 'ref2v']);
   assert.deepEqual(billingInputTypes, ['video_input', 'video_input', 'no_video_input']);
   assert.deepEqual(
     result.proposals[0]?.lines.map((budgetLine) => budgetLine.mode),
-    ['v2v', 'extend', 'ref2v'],
+    ['extend', 'extend', 'ref2v'],
   );
   assert.deepEqual(result.proposals[0]?.lines.map((budgetLine) => budgetLine.referenceCount), [1, 3, 1]);
+});
+
+test('a source-role-only LAS budget cannot invent measured source timing or a reviewed price', async () => {
+  await assert.rejects(calculateAgentProjectBudget(input([{
+    name: 'LAS edit', lines: [line({ mode: 'v2v', referenceRoles: ['source'],
+      settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true } })],
+  }]), principal, { listPublicEngines: async () => [registryCapability('seedance-2-5')],
+    getMembershipStatus: async () => ({ pricing: { tier: 'member' } }),
+    computeCatalogRevision: () => 'mcp-catalog-v2:las-required-facts',
+    priceGeneration: priceCanonicalGeneration }), { code: 'INTERNAL_ERROR' });
 });
 
 test('budgets first/last-frame and ordered reference-video workflows exposed by the MCP', async () => {

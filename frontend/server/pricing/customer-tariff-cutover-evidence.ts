@@ -1,10 +1,12 @@
 import { createHash } from 'node:crypto';
 import type { ManualTariffCell } from '@maxvideoai/pricing';
-import { collectSellableManualTariffCoverage } from '@/lib/pricing-audit/manual-tariff-coverage';
+import { buildManualTariffCoverageScenario, collectSellableManualTariffCoverage } from '@/lib/pricing-audit/manual-tariff-coverage';
 import { seedanceWorkflowScenarios } from '@/lib/pricing-audit/seedance-workflow-scenarios';
 import { withSeedanceTariffInputDuration } from '@/lib/pricing-audit/seedance-input-tariff-scenario';
 import { supportsSeedanceInputTariff } from '@/lib/seedance-input-tariff';
 import { continuousInputTariffSelector } from '@/lib/pricing-manual-scenario';
+import { isSeedance25LasInputPricing } from '@/server/byteplus-las-tariff';
+import { SEEDANCE_LAS_INITIALIZATION_POLICY } from './seedance-las-authoring';
 
 function canonical(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
@@ -16,14 +18,20 @@ export function cutoverDigest(value: unknown): string {
   return createHash('sha256').update(canonical(value)).digest('hex');
 }
 export function collectCustomerTariffCutoverCheckpoints() {
-  const ordinary = collectSellableManualTariffCoverage().scenarios;
-  const rows = ordinary.map(scenario => ({ key: `ordinary:${scenario.id}`, kind: 'ordinary' as const, scenario }));
+  const current = collectSellableManualTariffCoverage().scenarios;
+  // Preserve every original financial identity as a negative current quote check.
+  const archived = current.filter(s => isSeedance25LasInputPricing(s.modelId, s.selector.mode) && s.context.resolution === '720p')
+    .map(s => buildManualTariffCoverageScenario({ ...s.context, resolution: '1080p' }, 'seedance-2-5:v2v:1080p'));
+  const ordinary = [...current, ...archived];
+  const currentStatus = (scenario: typeof ordinary[number]) => isSeedance25LasInputPricing(scenario.modelId, scenario.selector.mode)
+    && scenario.context.resolution === '1080p' ? 'unavailable' as const : 'quoted' as const;
+  const rows = ordinary.map(scenario => ({ key: `ordinary:${scenario.id}`, kind: 'ordinary' as const, scenario, currentStatus: currentStatus(scenario) }));
   const workflows = seedanceWorkflowScenarios(ordinary)
-    .map(scenario => ({ key: `local_workflow:${scenario.id}`, kind: 'local_workflow' as const, scenario }));
+    .map(scenario => ({ key: `local_workflow:${scenario.id}`, kind: 'local_workflow' as const, scenario, currentStatus: 'quoted' as const }));
   const stress = ordinary.filter(s => supportsSeedanceInputTariff(s.modelId, s.selector.mode, s.selector.billingInputType))
     .flatMap(s => [2, s.modelId === 'seedance-2-5' ? 30 : 15].map(seconds => ({
       key: `input_stress:${s.id}:${seconds}`, kind: 'input_stress' as const,
-      scenario: withSeedanceTariffInputDuration(s, seconds),
+      scenario: withSeedanceTariffInputDuration(s, seconds), currentStatus: currentStatus(s),
     })));
   return [...rows, ...workflows, ...stress];
 }
@@ -31,15 +39,16 @@ export type CutoverBindings = {
   databaseIdentity: string; commercialHash: string; codeRevision: string;
   registryHash: string; factualEnvironmentHash: string;
 };
-export type CutoverCheckpointQuote = { key: string; beforeCents: number | null; customerCents: number; currency: string };
+export type CutoverCheckpointQuote = { key: string; beforeCents: number | null; customerCents: number | null; currency: string; status?: 'unavailable' };
 export type CutoverApprovedChange = { key: string; beforeCents: number; customerCents: number;
-  reason: 'gpt_reference_floor' | 'seedance_proportional' };
+  reason: 'gpt_reference_floor' | 'seedance_proportional' | 'seedance_las_tariff' };
 export type CustomerTariffCutoverRelease = {
   schemaVersion: 1; evidenceKind: 'isolated_operation_rehearsal' | 'deployed_production'; activationReady: false;
   capturedAt: string; bindings: CutoverBindings;
   deployedSource: { codeRevision: string; deploymentId: string };
   cells: Array<Pick<ManualTariffCell, 'id' | 'selector' | 'price' | 'currency'>>;
   checkpoints: CutoverCheckpointQuote[]; approvedChanges: CutoverApprovedChange[]; fingerprint: string;
+  approvedSeedanceLasPolicy?: typeof SEEDANCE_LAS_INITIALIZATION_POLICY;
 };
 
 /** A first production installation imports effective selectors, not obsolete
@@ -47,14 +56,20 @@ export type CustomerTariffCutoverRelease = {
  * Unknown unused rows are refused rather than silently discarded. */
 export function projectInitialCustomerTariffCutoverCells(cells: CustomerTariffCutoverRelease['cells']) {
   const key = (selector: object) => JSON.stringify(Object.entries(selector).sort(([a],[b]) => a.localeCompare(b)));
-  const selectors = new Set(collectCustomerTariffCutoverCheckpoints().flatMap(({ scenario }) => {
+  const checkpoints = collectCustomerTariffCutoverCheckpoints();
+  const selectors = new Set(checkpoints.filter(row => row.currentStatus === 'quoted').flatMap(({ scenario }) => {
     const continuous = continuousInputTariffSelector(scenario.selector);
     return [key(scenario.selector),...(continuous ? [key(continuous)] : [])];
+  }));
+  const unsupportedSelectors = new Set(checkpoints.filter(row => row.currentStatus === 'unavailable').flatMap(({ scenario }) => {
+    const continuous = continuousInputTariffSelector(scenario.selector);
+    return [key(scenario.selector), ...(continuous ? [key(continuous)] : [])];
   }));
   const effective: typeof cells = [];
   const archived: typeof cells = [];
   for (const cell of cells) {
     if (selectors.has(key(cell.selector))) { effective.push(cell); continue; }
+    if (unsupportedSelectors.has(key(cell.selector))) { archived.push(cell); continue; }
     if (supportsSeedanceInputTariff(cell.selector.engineId,cell.selector.mode,cell.selector.billingInputType)
       && cell.selector.inputVideoDurationSec === undefined && cell.price.kind === 'fixed') archived.push(cell);
     else throw new Error('Unknown unused tariff cell; review the source grid.');
@@ -84,7 +99,13 @@ export function assertCustomerTariffCutoverRelease(release: CustomerTariffCutove
   let changed = 0;
   for (const row of release.checkpoints) {
     const scenario = expected.get(row.key)!;
-    if (!Number.isSafeInteger(row.customerCents) || row.customerCents < 0 || row.currency !== 'USD') throw new Error('Invalid candidate amount.');
+    if (scenario.currentStatus === 'unavailable') {
+      if (row.status !== 'unavailable' || row.customerCents !== null || !Number.isSafeInteger(row.beforeCents)
+        || row.beforeCents! < 0 || row.currency !== 'USD' || changes.has(row.key)) throw new Error('Historical unsupported quote evidence is incomplete.');
+      continue;
+    }
+    if (row.status) throw new Error('A supported current quote cannot be archived as unavailable.');
+    if (typeof row.customerCents !== 'number' || !Number.isSafeInteger(row.customerCents) || row.customerCents < 0 || row.currency !== 'USD') throw new Error('Invalid candidate amount.');
     if (scenario.kind === 'local_workflow') {
       if (row.beforeCents !== null || changes.has(row.key)) throw new Error('Local workflow is a separate new offer.');
       continue;
@@ -99,9 +120,12 @@ export function assertCustomerTariffCutoverRelease(release: CustomerTariffCutove
       && scenario.scenario.selector.mode === 'i2i' && (scenario.scenario.context.referenceImageCount ?? 0) > 0
       && row.customerCents === row.beforeCents! + 1;
     const validSeedance = approval.reason === 'seedance_proportional'
+      && !isSeedance25LasInputPricing(scenario.scenario.modelId, scenario.scenario.selector.mode)
       && supportsSeedanceInputTariff(scenario.scenario.modelId, scenario.scenario.selector.mode, scenario.scenario.selector.billingInputType)
       && row.customerCents > row.beforeCents!;
-    if (!validFloor && !validSeedance) throw new Error('Price change is outside the reviewed policy.');
+    const validLas = approval.reason === 'seedance_las_tariff' && release.approvedSeedanceLasPolicy === SEEDANCE_LAS_INITIALIZATION_POLICY
+      && isSeedance25LasInputPricing(scenario.scenario.modelId, scenario.scenario.selector.mode);
+    if (!validFloor && !validSeedance && !validLas) throw new Error('Price change is outside the reviewed policy.');
   }
   if (changed !== changes.size || !release.cells.length) throw new Error('Candidate grid or price-change evidence is incomplete.');
 }

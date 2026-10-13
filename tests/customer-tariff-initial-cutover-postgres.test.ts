@@ -16,6 +16,8 @@ import { collectCustomerTariffCutoverCheckpoints, cutoverDigest, type CustomerTa
 import { captureCustomerTariffCutoverBindings, activateInitialCustomerTariffGrid,
   rollbackInitialCustomerTariffGrid, withPricingCutoverTransaction } from '../frontend/server/pricing/customer-tariff-cutover';
 import { pricingCutoverTarget } from '../frontend/server/pricing/cutover-target';
+import { computeCustomerTariffInitializationBaseline } from '../frontend/server/pricing/customer-tariff-initialization-baseline';
+import { customerTariffCellId } from '../frontend/server/pricing/customer-tariff-seed';
 
 const actor = '11111111-1111-4111-8111-111111111111';
 const key = (value: object) => JSON.stringify(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)));
@@ -56,13 +58,13 @@ test('initial cutover is atomic, validates the actual reader, and rollback prese
     if (policy.status !== 'loaded') throw new Error('Fixture policy unavailable');
     const coverage = collectSellableManualTariffCoverage();
     const inactive = { status: 'loaded' as const, active: false, revision: 0, databaseCells: [], versionedCells: [] };
-    const quoteLegacy = (scenario: typeof coverage.scenarios[number]) => computeCanonicalBillingSnapshot(scenario.context,
-      { pricingPolicy: { loadOverrides: async () => policy }, loadCustomerTariffState: async () => inactive });
+    const quoteLegacy = (scenario: typeof coverage.scenarios[number]) => computeCustomerTariffInitializationBaseline(scenario.context, policy);
     const baseline = await collectEffectiveCustomerTariffBaseline({ at: new Date().toISOString(), registryHash: bindings.registryHash,
       databaseIdentity: bindings.databaseIdentity, scenarios: coverage.scenarios, quote: quoteLegacy });
     const captured = { ...baseline, databaseRulesHash: digest(JSON.stringify([...policy.rules].sort((a,b) => a.id.localeCompare(b.id)))) };
     const input = { baseline: captured, scenarios: coverage.scenarios, registryHash: bindings.registryHash, coverageGaps: coverage.gaps,
-      policy, approvedSeedanceMarginPolicy: 'preserve_positive_variant_margin' as const };
+      policy, approvedSeedanceMarginPolicy: 'preserve_positive_variant_margin' as const,
+      approvedSeedanceLasPolicy: 'reviewed_2_5x_las_list' as const };
     const first = await auditReviewedCustomerTariffSeed(input);
     const audited = await auditReviewedCustomerTariffSeed({ ...input, approvedGptImage25ReferenceFloor: {
       capturedAt: baseline.at, registryHash: bindings.registryHash, databaseRulesHash: captured.databaseRulesHash, databaseIdentity: bindings.databaseIdentity,
@@ -73,6 +75,12 @@ test('initial cutover is atomic, validates the actual reader, and rollback prese
     const active = { ...inactive, active: true, revision: 1, databaseCells: audited.cells };
     const workflow = await prepareSeedanceWorkflowTariffSeed({ normalScenarios: coverage.scenarios, state: active, policy });
     const cells = [...audited.cells, ...workflow.cells];
+    for (const point of collectCustomerTariffCutoverCheckpoints().filter(row => row.kind === 'ordinary' && row.currentStatus === 'unavailable')) {
+      const selector = continuousInputTariffSelector(point.scenario.selector)!;
+      cells.push({ id: customerTariffCellId(Object.entries(selector).map(([k,v]) => `${k}=${encodeURIComponent(v)}`).join('|')),
+        selector, source: 'database', version: 1, currency: 'USD', effectiveFrom: baseline.at,
+        price: { kind: 'fixed', customerCents: (await quoteLegacy(point.scenario)).totalCents } });
+    }
     const indexed = new Map(cells.map(cell => [key(cell.selector),cell]));
     const checkpoints: CustomerTariffCutoverRelease['checkpoints'] = [];
     const approvedChanges: CutoverApprovedChange[] = [];
@@ -80,16 +88,25 @@ test('initial cutover is atomic, validates the actual reader, and rollback prese
       const continuous = continuousInputTariffSelector(point.scenario.selector);
       const cell = indexed.get(key(point.scenario.selector)) ?? (continuous ? indexed.get(key(continuous)) : undefined);
       assert.ok(cell, point.key);
+      if (point.currentStatus === 'unavailable') {
+        await assert.rejects(computeCanonicalBillingSnapshot(point.scenario.context, { pricingPolicy: { loadOverrides: async () => policy },
+          loadCustomerTariffState: async () => ({ ...active, databaseCells: [cell] }) }), /LAS.*cost|LAS.*tariff/i);
+        checkpoints.push({ key: point.key, beforeCents: (await quoteLegacy(point.scenario)).totalCents,
+          customerCents: null, currency: 'USD', status: 'unavailable' });
+        continue;
+      }
       const snapshot = await computeCanonicalBillingSnapshot(point.scenario.context, { pricingPolicy: { loadOverrides: async () => policy },
         loadCustomerTariffState: async () => ({ ...active, databaseCells: [cell] }) });
       const beforeCents = point.kind === 'local_workflow' ? null : (await quoteLegacy(point.scenario)).totalCents;
       checkpoints.push({ key: point.key,beforeCents,customerCents: snapshot.totalCents,currency: snapshot.currency });
       if (beforeCents !== null && beforeCents !== snapshot.totalCents) approvedChanges.push({ key: point.key,beforeCents,customerCents: snapshot.totalCents,
-        reason: ['gpt-image-2-5-flare','gpt-image-2-5-sunburst'].includes(point.scenario.modelId) ? 'gpt_reference_floor' : 'seedance_proportional' });
+        reason: ['gpt-image-2-5-flare','gpt-image-2-5-sunburst'].includes(point.scenario.modelId) ? 'gpt_reference_floor'
+          : point.scenario.modelId === 'seedance-2-5' && point.scenario.selector.mode === 'v2v' ? 'seedance_las_tariff' : 'seedance_proportional' });
     }
     const body = { schemaVersion: 1 as const, evidenceKind: 'isolated_operation_rehearsal' as const, activationReady: false as const,
       capturedAt: new Date().toISOString(), bindings, deployedSource: { codeRevision: bindings.codeRevision,deploymentId: 'fixture' },
-      cells: cells.map(({ id,selector,price,currency }) => ({ id,selector,price,currency })),checkpoints,approvedChanges };
+      cells: cells.map(({ id,selector,price,currency }) => ({ id,selector,price,currency })),checkpoints,approvedChanges,
+      approvedSeedanceLasPolicy: 'reviewed_2_5x_las_list' as const };
     const release = { ...body,fingerprint: cutoverDigest(body) };
     t.diagnostic('All 26,818 fixture checkpoint amounts prepared.');
     const cutover = <T>(work: Parameters<typeof withDbTransaction<T>>[0]) => withPricingCutoverTransaction({ DATABASE_URL: db.databaseUrl },'rehearsal',e => work(e,undefined as never));
@@ -136,7 +153,10 @@ test('initial cutover is atomic, validates the actual reader, and rollback prese
     t.diagnostic(`26,818-checkpoint acceptance: ${tariffReads} tariff SQL reads; ${Math.round(performance.now() - started)} ms.`);
     assert.equal(applied.revision,1);
     assert.equal(applied.checkedQuotes,26818);
-    assert.equal(applied.candidateCells,14991);
+    assert.equal(applied.candidateCells,14829);
+    assert.equal(applied.archivedLegacyCells,162);
+    assert.equal(applied.candidateCells + applied.archivedLegacyCells,14991);
+    assert.equal(applied.unavailableQuotes,486);
     t.diagnostic('Actual reader activation accepted before commit.');
     await assert.rejects(run(), /initial.*empty|revision/i);
     await assert.rejects(db.pool.query('DELETE FROM app_customer_tariff_cutover_events'), /immutable/i);
@@ -147,7 +167,10 @@ test('initial cutover is atomic, validates the actual reader, and rollback prese
     await db.pool.query('UPDATE app_customer_tariff_state SET revision=1');
     assert.equal((await rollback()).revision,2);
     assert.deepEqual((await db.pool.query('SELECT revision,active FROM app_customer_tariff_state')).rows,[{ revision: '2',active: false }]);
-    assert.equal((await db.pool.query('SELECT count(*)::int AS n FROM app_customer_tariff_cells')).rows[0].n,14991);
+    assert.equal((await db.pool.query('SELECT count(*)::int AS n FROM app_customer_tariff_cells')).rows[0].n,14829);
+    const preserved = (await db.pool.query("SELECT certificate FROM app_customer_tariff_cutover_events WHERE operation='activate'")).rows[0].certificate;
+    assert.deepEqual(preserved.cells, release.cells);
+    assert.equal(preserved.checkpoints.length,26818);
     assert.equal((await db.pool.query('SELECT count(*)::int AS n FROM app_customer_tariff_cutover_events')).rows[0].n,2);
     assert.deepEqual((await db.pool.query('SELECT snapshot FROM historical_paid_snapshots')).rows,[{ snapshot: { totalCents: 13,rule: 'old' } }]);
     assert.equal((await db.pool.query('SELECT unit_price_cents FROM app_billing_products')).rows[0].unit_price_cents,8);

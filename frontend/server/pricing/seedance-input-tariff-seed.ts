@@ -5,6 +5,7 @@ import type { ManualTariffCoverageScenario } from '@/lib/pricing-audit/manual-ta
 import { supportsSeedanceInputTariff } from '@/lib/seedance-input-tariff';
 import { continuousInputTariffSelector } from '@/lib/pricing-manual-scenario';
 import { normalBytePlusSupplierCost } from '@/server/byteplus-normal-cost';
+import { isSeedance25LasInputPricing } from '@/server/byteplus-las-tariff';
 import type { EffectiveCustomerTariffState } from './customer-tariff-store';
 import { customerTariffCellId } from './customer-tariff-seed';
 import { prepareSeedanceInputTariffPrice, validateSeedanceInputTariffDomain } from './seedance-input-tariff';
@@ -32,8 +33,14 @@ export async function prepareSeedanceInputTariffSeed(input: {
     return evaluateManualTariffPrice(cell.price,quantities).customerTotalCents;
   };
   const scenarios = input.scenarios.filter(s => !s.context.workflowStep
+    && !isSeedance25LasInputPricing(s.modelId, s.selector.mode)
     && supportsSeedanceInputTariff(s.modelId,s.selector.mode,s.selector.billingInputType));
-  if (!scenarios.length) throw new Error('Supported Seedance video-input scenarios are required.');
+  if (!scenarios.length) {
+    if (input.scenarios.some(s => isSeedance25LasInputPricing(s.modelId, s.selector.mode))) {
+      throw new Error('LAS Edit requires its dedicated reviewed tariff release.');
+    }
+    throw new Error('Supported Seedance video-input scenarios are required.');
+  }
   const cells: ManualTariffCell[] = [], rows = [];
   const seen = new Set<string>(), validated = new Set<string>();
   for (const scenario of scenarios) {

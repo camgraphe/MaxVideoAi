@@ -1,0 +1,53 @@
+import type { LegacyJobMediaRow } from './media-library-records';
+import type { BytePlusPendingJob } from './byteplus-poll-types';
+import { isRecord } from './byteplus-record-utils';
+import type { upsertLegacyJobOutputs } from './media-library';
+
+type QueryFn = <T = unknown>(sql: string, params?: unknown[]) => Promise<T[]>;
+const ACTIVE = ['pending', 'queued', 'running', 'processing', 'in_progress', 'provider_polling_stalled'];
+
+export function bytePlusCompletedOutputRow(job: BytePlusPendingJob, videoUrl: string, thumbUrl: string): LegacyJobMediaRow {
+  return { job_id: job.job_id, user_id: job.user_id, surface: 'video', video_url: videoUrl,
+    audio_url: null, thumb_url: thumbUrl, preview_frame: thumbUrl, preview_video_url: job.preview_video_url,
+    render_ids: null, duration_sec: job.duration_sec, status: 'completed' };
+}
+
+export function getBytePlusLasDurableOutput(job: BytePlusPendingJob) {
+  const settings = isRecord(job.settings_snapshot) ? job.settings_snapshot : {};
+  const output = isRecord(settings.byteplusDurableOutput) ? settings.byteplusDurableOutput : {};
+  if (job.engine_id !== 'seedance-2-5' || settings.byteplusTransport !== 'las'
+    || output.providerJobId !== job.provider_job_id || output.videoUrl !== job.video_url
+    || typeof output.videoUrl !== 'string' || !output.videoUrl
+    || typeof output.thumbUrl !== 'string' || !isRecord(output.costBreakdown)) return null;
+  return { videoUrl: output.videoUrl, thumbUrl: output.thumbUrl, costBreakdown: output.costBreakdown };
+}
+
+/** Durable bytes and projections must exist before a LAS job becomes terminal. */
+export async function persistBytePlusLasOutputBeforeCompletion(input: {
+  job: BytePlusPendingJob; videoUrl: string; thumbUrl: string; costBreakdown: Record<string, unknown>;
+  queryFn: QueryFn; upsertOutputsFn: typeof upsertLegacyJobOutputs;
+}) {
+  const rows = await input.queryFn<{ job_id: string }>(`UPDATE app_jobs SET status = 'processing',
+      progress = GREATEST(progress,90), video_url = $3, thumb_url = $4, preview_frame = $4,
+      cost_breakdown_usd = $5::jsonb,
+      settings_snapshot = jsonb_set(COALESCE(settings_snapshot,'{}'::jsonb), '{byteplusDurableOutput}', $6::jsonb, true),
+      message = 'Generated video is ready. Saving it to your library.', updated_at = now()
+    WHERE job_id = $1 AND user_id IS NOT DISTINCT FROM $2 AND provider = 'byteplus_modelark'
+      AND provider_job_id = $7 AND status = ANY($8::text[]) RETURNING job_id`,
+  [input.job.job_id, input.job.user_id, input.videoUrl, input.thumbUrl, JSON.stringify(input.costBreakdown),
+    JSON.stringify({ providerJobId: input.job.provider_job_id, videoUrl: input.videoUrl,
+      thumbUrl: input.thumbUrl, costBreakdown: input.costBreakdown }), input.job.provider_job_id, ACTIVE]);
+  if (rows.length !== 1) return false;
+  // The original confirmation may lose its quote-state acknowledgement after provider acceptance.
+  // Bind repair to the same owned paid job and immutable quote, without another debit or POST.
+  await input.queryFn(`UPDATE mcp_generation_quotes q SET state = 'accepted', updated_at = now()
+    FROM app_jobs j WHERE j.job_id = $1 AND j.user_id IS NOT DISTINCT FROM $2
+      AND j.provider = 'byteplus_modelark' AND j.provider_job_id = $3 AND j.status = 'processing'
+      AND q.quote_id::text = j.job_id AND q.job_id = j.job_id AND q.user_id = j.user_id
+      AND q.state = 'claimed' AND q.funding_mode = 'wallet'
+      AND q.price_cents = j.final_price_cents AND UPPER(q.currency) = UPPER(j.currency)
+      AND q.request_json->>'engineId' = 'seedance-2-5' AND q.request_json->>'mode' = 'v2v'`,
+  [input.job.job_id, input.job.user_id, input.job.provider_job_id]);
+  await input.upsertOutputsFn(bytePlusCompletedOutputRow(input.job, input.videoUrl, input.thumbUrl), { requireMcpPromotion: true });
+  return true;
+}

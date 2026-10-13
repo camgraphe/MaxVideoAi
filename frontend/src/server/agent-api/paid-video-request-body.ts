@@ -387,7 +387,7 @@ export function buildPaidVideoRequestBody(
     body.inputs = [
       input(source[0]!, 'video_url'),
       ...(guideFrames[0] && guideFieldId ? [input(guideFrames[0], guideFieldId)] : []),
-      ...(imageFieldId && imageFieldId !== 'image_urls'
+      ...(imageFieldId && (imageFieldId !== 'image_urls' || execution.engine.id === 'seedance-2-5')
         ? imageReferences.map((reference) => input(reference, imageFieldId)) : []),
       ...(audioFieldId ? audioReferences.map((reference) => input(reference, audioFieldId)) : []),
     ];

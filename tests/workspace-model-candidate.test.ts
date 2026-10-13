@@ -20,6 +20,15 @@ function asset(fieldId: string, kind: ReferenceAsset['kind'], id = fieldId, dura
     url: `https://example.com/original/${id}`, previewUrl: `blob:preview-${id}`, durationSec };
 }
 
+test('a saved Edit source remains intact while runtime unavailability blocks a comparison quote', () => {
+  const value = { ...engine('seedance-2-5'), modeAvailability: { v2v: { available: false, reason: 'provider_disabled' as const } } };
+  const current = setup(value.id, { inputAssets: { video_url: [asset('video_url', 'video', 'source', 4.25)] } });
+  const candidate = prepareWorkspaceModelCandidate({ engine: value, current, locale: 'en' });
+  assert.equal(candidate.workflow.submissionMode, 'v2v');
+  assert.equal(candidate.keptReferences[0].asset.url, 'https://example.com/original/source');
+  assert.ok(candidate.blockingReasons.some(({ code, scope }) => code === 'unsupported-workflow' && scope === 'generation'));
+});
+
 test('candidate adapts a real duration without changing or revoking the original setup', () => {
   const current = setup('seedance-2-0');
   current.form.durationSec = 15; current.form.durationOption = 15;

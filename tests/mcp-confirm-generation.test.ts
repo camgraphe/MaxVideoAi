@@ -82,7 +82,7 @@ const imageRequest: CanonicalGenerationRequest = {
   outputCount: 1,
 };
 
-test('confirmation pricing preserves the prepared Seedance video-input tier', async () => {
+test('confirmation pricing preserves the prepared ModelArk extension video-input tier', async () => {
   const entry = listFalEngines().find((candidate) => candidate.id === 'seedance-2-5');
   assert.ok(entry);
   const candidate: AgentPublicGenerationEngine = {
@@ -95,8 +95,8 @@ test('confirmation pricing preserves the prepared Seedance video-input tier', as
     schemaVersion: 1,
     surface: 'video',
     engineId: 'seedance-2-5',
-    mode: 'v2v',
-    prompt: 'Edit the source video.',
+    mode: 'extend',
+    prompt: 'Extend the source video.',
     settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
     references: [{
       kind: 'https',

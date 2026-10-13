@@ -23,6 +23,7 @@ import type { EngineInputSchema } from '@/types/engines';
 import { executeVideoGenerationLifecycle } from './video-generation-lifecycle';
 import type { PreReservedVideoInitialState, VideoGenerationAdapters, VideoGenerationResponse } from './video-generation-contracts';
 import type { PreparedSeedanceWorkflow } from '@/server/seedance-workflow-request';
+import { persistReservedBytePlusLasExecutionSettings } from '@/server/byteplus-submission-state';
 
 export type ExecutePreparedVideoGenerationParams = {
   seedanceWorkflow?: PreparedSeedanceWorkflow;
@@ -149,6 +150,11 @@ export async function executePreparedVideoGeneration(params: ExecutePreparedVide
           || walletInitialState.jobId !== jobId
           || walletInitialState.walletChargeReserved !== true))) {
     throw new Error('Invalid pre-reserved video initial state.');
+  }
+
+  if (walletInitialState && engine.id === 'seedance-2-5' && mode === 'v2v') {
+    await persistReservedBytePlusLasExecutionSettings({ jobId, userId, settings: settingsSnapshot,
+      priceCents: pricing.totalCents });
   }
 
   return executeVideoGenerationLifecycle({

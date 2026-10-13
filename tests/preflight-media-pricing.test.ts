@@ -9,6 +9,7 @@ import { resolveMediaAwarePreflight } from '../frontend/app/api/preflight/_lib/m
 import { ENV } from '../frontend/src/lib/env.ts';
 import { parsePreflightRequestPayload } from '../frontend/app/api/preflight/_lib/preflight-request.ts';
 import type { EngineCaps, PreflightRequest } from '../frontend/types/engines.ts';
+import { withReviewedLasPreflightFixture } from './helpers/seedance-las-pricing-fixture';
 
 function engineFor(id: string): EngineCaps {
   const engine = listFalEngines().find((entry) => entry.id === id)?.engine;
@@ -437,6 +438,7 @@ for (const { mode, slotId } of [
 ] as const) {
   test(`Seedance ${mode} prices an owned upload whose duration is measured during validation`, async () => {
     const engine = engineFor('seedance-2-5');
+    const verify = async () => {
     const url = 'https://media.maxvideoai.com/user-assets/pricing-user/multipart.mp4';
     let pricedInputDuration: number | undefined;
     const response = await resolveMediaAwarePreflight({
@@ -464,5 +466,10 @@ for (const { mode, slotId } of [
     assert.equal(response.ok, true, JSON.stringify(response.error));
     assert.equal(pricedInputDuration, 15.041667);
     assert.ok(typeof response.total === 'number' && response.total > 0);
+    if (mode === 'v2v') assert.equal(response.total,586);
+    };
+    if (mode === 'v2v') await withReviewedLasPreflightFixture({ engine, mode, durationSec: 4, resolution: '480p',
+      aspectRatio: '16:9', hasVideoInput: true, inputVideoDurationSec: 15.041667 }, verify);
+    else await verify();
   });
 }

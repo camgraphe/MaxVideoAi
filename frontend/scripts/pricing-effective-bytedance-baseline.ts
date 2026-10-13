@@ -3,13 +3,16 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import type { PricingPolicyRule } from '@maxvideoai/pricing';
+import { projectCanonicalQuoteToSnapshot, quoteCanonicalPricing, type PricingPolicyRule } from '@maxvideoai/pricing';
 import { Pool } from 'pg';
 import { parse } from 'dotenv';
 
 import { getFalEngineById } from '@/config/falEngines';
 import { loadPricingPolicyOverridesWithExecutor } from '@/lib/pricing-rule-store';
-import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
+import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
+import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
+import { resolveServerBillingPolicy } from '@/server/pricing/resolve-pricing-policy';
+import { LIVE_MEMBERSHIP_POLICY, LIVE_MEMBERSHIP_DISCOUNTS } from '@/lib/membership-policy';
 import type { PricingPolicyOverrideLoadResult } from '@/lib/pricing-rule-store';
 import type { Mode } from '@/types/engines';
 
@@ -45,7 +48,7 @@ type SnapshotPricingPolicy = {
   compatibilityProfile?: unknown;
 };
 
-/** The fixture covers representative and edge scenarios, not all sellable ByteDance options. */
+/** Historical reconstruction only. Frozen token-era rows do not authorize a current LAS quote. */
 export async function quoteByteDanceBaselineRows(
   rows: readonly ByteDanceBaselineScenario[],
   databaseRules: readonly PricingPolicyRule[],
@@ -57,14 +60,26 @@ export async function quoteByteDanceBaselineRows(
   for (const row of rows) {
     const entry = getFalEngineById(row.engineId);
     if (!entry || !row.scenarioId.trim()) throw new Error(`Unknown ByteDance baseline scenario ${row.scenarioId}`);
-    const snapshot = await computeCanonicalBillingSnapshot({
+    const context = {
       engine: entry.engine,
       mode: row.mode as Mode,
       resolution: row.resolution,
       durationSec: row.durationSec,
       hasVideoInput: row.hasVideoInput,
       addons: { audio: row.audio },
-    }, { pricingPolicy: { loadOverrides: async () => overrides } });
+    };
+    const billing = buildBillingPricingFacts(context, entry.engine.pricingDetails, 'USD');
+    const { policy, vendorAccountId } = await resolveServerBillingPolicy({ engineId: row.engineId,
+      mode: row.mode, resolution: row.resolution }, entry.engine.vendorAccountId, { loadOverrides: async () => overrides });
+    const compatibilityProfile = getVersionedPricingPolicy().compatibilityProfiles.find(profile =>
+      profile.id === (policy.rule.compatibilityProfile ?? billing.compatibilityProfileId));
+    if (!compatibilityProfile) throw new Error('Historical ByteDance rounding profile is unavailable.');
+    const quote = quoteCanonicalPricing({ facts: billing.facts, policy, compatibilityProfile,
+      scenario: { id: `historical:${row.scenarioId}`, engineId: row.engineId, mode: row.mode,
+        resolution: row.resolution, membershipTier: LIVE_MEMBERSHIP_POLICY.tier,
+        discountPercent: LIVE_MEMBERSHIP_DISCOUNTS[LIVE_MEMBERSHIP_POLICY.tier] ?? 0 } });
+    const snapshot = projectCanonicalQuoteToSnapshot({ quote, base: billing.base, addons: billing.addons,
+      vendorAccountId, meta: { ...billing.meta, historicalReconstruction: true } });
     const provenance = snapshot.meta?.pricingPolicy as SnapshotPricingPolicy | undefined;
     if ((provenance?.source !== 'database' && provenance?.source !== 'versioned') ||
         typeof provenance.sourceRuleId !== 'string' || typeof provenance.compatibilityProfile !== 'string' ||

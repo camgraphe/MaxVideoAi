@@ -212,7 +212,8 @@ function buildKlingElementsPayload(
 
 export function prepareGenerationInputs(options: PrepareGenerationInputsOptions): GenerationInputPreparationResult {
   const schemaFields = [...(options.inputSchema?.required ?? []), ...(options.inputSchema?.optional ?? [])];
-  if (!isUnifiedSeedanceEngineId(options.selectedEngineId) && hasMultimodalReferenceFields(schemaFields)
+  if (((!isUnifiedSeedanceEngineId(options.selectedEngineId) && hasMultimodalReferenceFields(schemaFields))
+      || (options.selectedEngineId === 'seedance-2-5' && options.submissionMode === 'v2v'))
     && !workspaceAssetsSupportMode(schemaFields, options.inputAssets, options.submissionMode)) {
     return { ok: false, message: 'Remove incompatible media before running this mode.' };
   }

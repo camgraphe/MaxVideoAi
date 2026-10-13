@@ -22,6 +22,7 @@ import {
   buildBytePlusSeedancePayload,
   getBytePlusSeedanceAllowedResolutions,
 } from '../frontend/src/server/video-providers/byteplus-modelark';
+import { getBytePlusSeedanceModeResolutions } from '../frontend/lib/byteplus-mode-capabilities';
 
 const engine = listFalEngines().find((candidate) => candidate.id === 'seedance-2-5')?.engine;
 assert.ok(engine);
@@ -53,7 +54,7 @@ function canonicalRequest(
     prompt: `Exercise ${mode} projection`,
     settings: {
       durationSec: 4,
-      resolution: '1080p',
+      resolution: mode === 'v2v' ? '720p' : '1080p',
       ...(mode === 'i2v' ? {} : { aspectRatio: '16:9' }),
       audio: true,
     },
@@ -101,6 +102,7 @@ test('Seedance 2.5 paid projection routes all five modes into exact app request 
     references: CanonicalGenerationReference[];
     expected: Record<string, unknown>;
     expectedInputs: Array<Record<string, unknown>>;
+    resolvedReferences?: ResolvedReference[];
   }> = [
     { mode: 't2v', references: [], expected: {}, expectedInputs: [] },
     {
@@ -135,9 +137,15 @@ test('Seedance 2.5 paid projection routes all five modes into exact app request 
     {
       mode: 'v2v',
       references: [
-        httpsReference(sourceVideo, 'source', 'video'),
-        httpsReference(imageRef, 'reference', 'image'),
-        httpsReference(audioRef, 'reference', 'audio'),
+        { kind: 'asset', assetId: 'owned-source', role: 'source' },
+        { kind: 'asset', assetId: 'owned-image', role: 'reference', slot: 0 },
+        { kind: 'asset', assetId: 'owned-audio', role: 'reference', slot: 1 },
+      ],
+      // Resolver order deliberately differs from the confirmed request order.
+      resolvedReferences: [
+        { assetId: 'owned-audio', role: 'reference', slot: 1, mediaKind: 'audio', storageUrl: audioRef, width: null, height: null, durationSec: 2, mimeType: 'audio/wav', sizeBytes: 256, originalName: 'reference.wav' },
+        { assetId: 'owned-source', role: 'source', mediaKind: 'video', storageUrl: sourceVideo, width: 1920, height: 1080, durationSec: 4.25, mimeType: 'video/mp4', sizeBytes: 1000, originalName: 'source.mp4' },
+        { assetId: 'owned-image', role: 'reference', slot: 0, mediaKind: 'image', storageUrl: imageRef, width: 1024, height: 576, durationSec: null, mimeType: 'image/png', sizeBytes: 128, originalName: 'reference.png' },
       ],
       expected: {
         videoUrl: sourceVideo,
@@ -145,8 +153,9 @@ test('Seedance 2.5 paid projection routes all five modes into exact app request 
         referenceAudio: [audioRef],
       },
       expectedInputs: [
-        { kind: 'video', slotId: 'video_url', url: sourceVideo },
-        { kind: 'audio', slotId: 'audio_urls', url: audioRef },
+        { assetId: 'owned-source', name: 'source.mp4', type: 'video/mp4', size: 1000, kind: 'video', slotId: 'video_url', url: sourceVideo, width: 1920, height: 1080, durationSec: 4.25 },
+        { assetId: 'owned-image', name: 'reference.png', type: 'image/png', size: 128, kind: 'image', slotId: 'image_urls', url: imageRef, width: 1024, height: 576 },
+        { assetId: 'owned-audio', name: 'reference.wav', type: 'audio/wav', size: 256, kind: 'audio', slotId: 'audio_urls', url: audioRef, durationSec: 2 },
       ],
     },
     {
@@ -164,7 +173,7 @@ test('Seedance 2.5 paid projection routes all five modes into exact app request 
   ];
 
   for (const scenario of cases) {
-    const body = await projectedBody(canonicalRequest(scenario.mode, scenario.references));
+    const body = await projectedBody(canonicalRequest(scenario.mode, scenario.references), scenario.resolvedReferences);
     for (const [field, value] of Object.entries(scenario.expected)) {
       assert.deepEqual(body[field], value, `${scenario.mode}.${field}`);
     }
@@ -317,12 +326,12 @@ test('normalized private references reach actual BytePlus payloads for every See
       referenceImageUrls: attachments.normalizedReferenceImages,
       referenceVideoUrls: attachments.videoUrls,
       referenceAudioUrls: attachments.audioUrls,
-      resolution: '1080p',
+      resolution: scenario.mode === 'v2v' ? '720p' : '1080p',
       ratio: body.aspectRatio as string | undefined,
       generateAudio: true,
       allowedModes: ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'],
       allowedAspectRatios: ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
-      allowedResolutions: getBytePlusSeedanceAllowedResolutions('seedance-2-5'),
+      allowedResolutions: getBytePlusSeedanceModeResolutions('seedance-2-5', scenario.mode, getBytePlusSeedanceAllowedResolutions('seedance-2-5')),
       allowedDurationOptions: [4],
     });
     const media = payload.content.slice(1).map((item) => ({

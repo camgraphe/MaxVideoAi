@@ -1,5 +1,6 @@
 import { requireBytePlusSeedanceProfile } from '@/server/video-providers/byteplus-modelark';
 import type { Mode } from '@/types/engines';
+import { getBytePlusSeedanceModeResolutions } from '@/lib/byteplus-mode-capabilities';
 
 type RequestOptionsFailure = {
   ok: false;
@@ -50,7 +51,7 @@ export function normalizeBytePlusOptions(params: {
       },
     };
   }
-  const allowedResolutions = profile.resolutions;
+  const allowedResolutions = getBytePlusSeedanceModeResolutions(params.engineId, params.mode, profile.resolutions);
   const bytePlusResolution =
     params.requestedResolution === 'auto'
       ? profile.defaultResolution

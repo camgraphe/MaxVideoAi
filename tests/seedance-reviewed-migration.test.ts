@@ -9,9 +9,9 @@ import { validateCurrentContinuousTariffDomain } from '../frontend/server/pricin
 test('fresh migration uses the approved margin policy for BytePlus and retains other-route amounts', () => {
   const engine=getFalEngineById('seedance-2-5')!.engine;
   const scenario=buildManualTariffCoverageScenario({ engine:{ ...engine,providerMeta:{ ...engine.providerMeta,provider:'byteplus_modelark' } },
-    mode:'v2v',durationSec:4,resolution:'480p',aspectRatio:'1:1',hasVideoInput:true,inputVideoDurationSec:2 },'reviewed');
+    mode:'ref2v',durationSec:4,resolution:'480p',aspectRatio:'1:1',hasVideoInput:true,inputVideoDurationSec:2 },'reviewed');
   const prepared=prepareReviewedSeedanceMigrationPrice(scenario,35,selector=>{
-    if(selector.mode==='t2v' && selector.billingInputType==='no_video_input')return 58;
+    if(selector.mode==='ref2v' && selector.billingInputType==='no_video_input')return 58;
     return undefined;
   },'2026-10-02T00:00:00Z');
   assert.equal(evaluateManualTariffPrice(prepared.price,{ input_video_seconds:2 }).customerTotalCents,61);
@@ -20,4 +20,6 @@ test('fresh migration uses the approved margin policy for BytePlus and retains o
   const other=prepareReviewedSeedanceMigrationPrice(fal,999,()=>undefined,'2026-10-02T00:00:00Z');
   assert.equal(evaluateManualTariffPrice(other.price,{ input_video_seconds:30 }).customerTotalCents,999);
   assert.equal(validateCurrentContinuousTariffDomain({ context:fal.context,price:other.price }).maxInputSeconds,30);
+  const edit = buildManualTariffCoverageScenario({ ...scenario.context, mode: 'v2v' }, 'las-edit');
+  assert.throws(() => prepareReviewedSeedanceMigrationPrice(edit, 35, () => 58, '2026-10-02T00:00:00Z'), /dedicated.*LAS|LAS.*dedicated/i);
 });

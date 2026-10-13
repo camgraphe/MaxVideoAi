@@ -13,6 +13,7 @@ import { SettingsControls } from '@/components/SettingsControls';
 import type { KlingElementState, KlingElementsBuilderProps } from '@/components/KlingElementsBuilder';
 import { Button } from '@/components/ui/Button';
 import { getLocalizedModeLabel } from '@/lib/ltx-localization';
+import { getEngineModeUnavailableMessage, isEngineModeQuoteReady } from '@/lib/engine-mode-availability';
 import { getWorkspaceReferenceFields } from '../_lib/workspace-reference-fields';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps, Mode } from '@/types/engines';
 import {
@@ -429,7 +430,9 @@ export function WorkspaceComposerSurface({
     showKlingElementsBuilder ||
     (showOptionsControl && optionsOpen)
   );
-  const resolvedWorkflowNotice = klingO3UnsupportedVideoReason ?? composerWorkflowNotice;
+  const modeUnavailableMessage = getEngineModeUnavailableMessage(selectedEngine, submissionMode, uiLocale);
+  const quoteUnavailable = !isEngineModeQuoteReady(selectedEngine, submissionMode, preflight);
+  const resolvedWorkflowNotice = modeUnavailableMessage ?? klingO3UnsupportedVideoReason ?? composerWorkflowNotice;
 
   const handleAudioChange = useCallback(
     (audio: boolean) => {
@@ -514,7 +517,7 @@ export function WorkspaceComposerSurface({
               }
             : null
         }
-        disableGenerate={draftSettingsLocked || multiPromptInvalid || audioWorkflowUnsupported || Boolean(klingO3UnsupportedVideoReason)}
+        disableGenerate={Boolean(modeUnavailableMessage) || quoteUnavailable || draftSettingsLocked || multiPromptInvalid || audioWorkflowUnsupported || Boolean(klingO3UnsupportedVideoReason)}
         extraFields={showExtraFields ? (
           <>
             {showLumaRay32KeyframeEditor ? (

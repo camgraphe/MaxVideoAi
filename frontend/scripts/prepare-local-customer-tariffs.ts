@@ -30,7 +30,7 @@ async function main() {
   const { Pool } = await import('pg');
   const { loadPricingPolicyOverridesWithExecutor } = await import('@/lib/pricing-rule-store');
   const { collectSellableManualTariffCoverage, collectEffectiveCustomerTariffBaseline } = await import('@/lib/pricing-audit/manual-tariff-coverage');
-  const { computeCanonicalBillingSnapshot } = await import('@/server/pricing/quote-billing');
+  const { computeCustomerTariffInitializationBaseline } = await import('@/server/pricing/customer-tariff-initialization-baseline');
   const { prepareLocalCustomerTariffRelease, localTariffSourceStateHash, localCustomerTariffBaseline } = await import('@/server/pricing/customer-tariff-release-evidence');
   const registryHash = hash(await readFile(resolve('frontend/config/model-registry.json'), 'utf8'));
   const coverage = collectSellableManualTariffCoverage();
@@ -53,9 +53,7 @@ async function main() {
     const policy = await loadPricingPolicyOverridesWithExecutor(executor);
     if (policy.status !== 'loaded') throw new Error('Effective local pricing policy unavailable');
     const baseline = await collectEffectiveCustomerTariffBaseline({ at: status.at.toISOString(), registryHash, databaseIdentity,
-      scenarios: coverage.scenarios, quote: scenario => computeCanonicalBillingSnapshot(scenario.context,
-        { pricingPolicy: { loadOverrides: async () => policy }, loadCustomerTariffState: async () => ({ status: 'loaded',
-          active: false, revision: Number(state.revision), databaseCells: [], versionedCells: [] }) }) });
+      scenarios: coverage.scenarios, quote: scenario => computeCustomerTariffInitializationBaseline(scenario.context, policy) });
     const captured = localCustomerTariffBaseline(baseline,
       hash(JSON.stringify([...policy.rules].sort((a, b) => a.id.localeCompare(b.id)))), coverage.gaps);
     const approvedPath = process.env.PRICING_RELEASE_APPROVED_FLOORS?.trim();
@@ -67,6 +65,8 @@ async function main() {
       codeRevision, factualEnvironmentHash: hash(JSON.stringify(Object.entries(localTariffFactualEnvironment(env)).sort())),
       ...(process.env.PRICING_RELEASE_SEEDANCE_MARGIN_POLICY === 'preserve_positive_variant_margin'
         ? { approvedSeedanceMarginPolicy: 'preserve_positive_variant_margin' as const } : {}),
+      ...(process.env.PRICING_RELEASE_SEEDANCE_LAS_POLICY === 'reviewed_2_5x_las_list'
+        ? { approvedSeedanceLasPolicy: 'reviewed_2_5x_las_list' as const } : {}),
       ...(approval ? { approvedGptImage25ReferenceFloor: approval } : {}) });
     if (git(['status', '--porcelain']) || git(['rev-parse', 'HEAD']) !== codeRevision
       || await readFile(resolve('frontend/.env.local'), 'utf8') !== environmentSource) {
@@ -81,7 +81,7 @@ async function main() {
     }
     console.log(JSON.stringify({ output: directory, checkedScenarios: release.report.checkedScenarios,
       quotedScenarios: release.report.quotedScenarios, unchangedScenarios: release.report.unchangedScenarios,
-      approvedPriceChanges: release.report.approvedPriceChanges.length + release.report.seedancePriceChanges.length, candidateCells: release.report.candidateCellCount,
+      approvedPriceChanges: release.report.approvedPriceChanges.length + release.report.seedancePriceChanges.length + release.report.seedanceLasPriceChanges.length, candidateCells: release.report.candidateCellCount,
       remainingCoverageGaps: release.report.remainingCoverageGaps, activationReady: false }));
   } finally {
     if (client) {

@@ -162,7 +162,8 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
     new Set([...normalizeStringList(referenceImagesInput), ...attachmentReferenceImageUrls])
   );
   const rawVideoUrls = params.attachments
-    .filter((attachment) => attachment.kind === 'video' && typeof attachment.url === 'string')
+    .filter((attachment) => attachment.kind === 'video' && typeof attachment.url === 'string'
+      && (params.engineId !== 'seedance-2-5' || params.mode !== 'v2v' || attachment.slotId?.trim() === 'video_url'))
     .map((attachment) => attachment.url!.trim())
     .filter((url) => url.length > 0);
   const videoUrls = params.mode === 'extend' ? rawVideoUrls : uniqueNonEmpty(rawVideoUrls);

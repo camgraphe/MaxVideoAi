@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { ManualTariffError, type ManualTariffCell } from '@maxvideoai/pricing';
+import { evaluateManualTariffPrice } from '@maxvideoai/pricing/src/manual-tariff-price';
 import type { EffectiveCustomerTariffBaseline, ManualTariffCoverageScenario } from '@/lib/pricing-audit/manual-tariff-coverage';
 import type { PricingPolicyOverrideLoadResult } from '@/lib/pricing-rule-store';
 import { continuousInputTariffSelector } from '@/lib/pricing-manual-scenario';
@@ -9,6 +10,8 @@ import { compileCurrentContinuousTariffPrice, validateCurrentContinuousTariffDom
 import { resolveCustomerTariffQuote } from './resolve-customer-tariff';
 import { supportsSeedanceInputTariff } from '@/lib/seedance-input-tariff';
 import { prepareReviewedSeedanceMigrationPrice } from './seedance-reviewed-migration';
+import { isSeedance25LasInputPricing } from '@/server/byteplus-las-tariff';
+import { prepareReviewedSeedanceLasPrice, SEEDANCE_LAS_INITIALIZATION_POLICY, SEEDANCE_LAS_REVIEWED_POLICY } from './seedance-las-authoring';
 
 export type ApprovedGptImage25ReferenceFloor = {
   capturedAt: string;
@@ -42,6 +45,7 @@ export async function auditReviewedCustomerTariffSeed(input: {
   policy: PricingPolicyOverrideLoadResult;
   approvedGptImage25ReferenceFloor?: ApprovedGptImage25ReferenceFloor;
   approvedSeedanceMarginPolicy?: 'preserve_positive_variant_margin';
+  approvedSeedanceLasPolicy?: typeof SEEDANCE_LAS_INITIALIZATION_POLICY;
 }) {
   if (input.policy.status !== 'loaded') throw new Error('Effective policy unavailable');
   const rulesHash = createHash('sha256').update(JSON.stringify([...input.policy.rules]
@@ -53,6 +57,7 @@ export async function auditReviewedCustomerTariffSeed(input: {
   const pointsBySelector = new Map(original.cells.map(cell => [selectorKey(cell.selector), cell]));
   const capturedRows = new Map(input.baseline.rows.map(row => [row.scenarioId, row]));
   const seedancePriceChanges: Array<{ scenarioId: string; currentCustomerCents: number; proposedCustomerCents: number }> = [];
+  const seedanceLasPriceChanges: typeof seedancePriceChanges = [];
   const cells = new Map<string, ManualTariffCell>();
   const reviewedContinuousClasses: Array<{ id: string; modelId: string; mode: string;
     domain: ReturnType<typeof validateCurrentContinuousTariffDomain> }> = [];
@@ -69,14 +74,24 @@ export async function auditReviewedCustomerTariffSeed(input: {
     const id = customerTariffCellId(key);
     if (cells.has(id)) continue;
     const seedance = supportsSeedanceInputTariff(scenario.modelId, scenario.selector.mode, scenario.selector.billingInputType);
+    const las = isSeedance25LasInputPricing(scenario.modelId, scenario.selector.mode);
+    if (las && input.approvedSeedanceLasPolicy !== SEEDANCE_LAS_INITIALIZATION_POLICY) {
+      throw new Error('Explicit approval of the reviewed LAS initialization policy is required.');
+    }
     if (seedance && input.approvedSeedanceMarginPolicy !== 'preserve_positive_variant_margin') {
       throw new Error('Explicit approval of the proportional Seedance margin policy is required.');
     }
     const capturedCents = capturedRows.get(scenario.id)!.customerCents;
-    const prepared = seedance ? prepareReviewedSeedanceMigrationPrice(scenario, capturedCents, selector => {
+    const prepared = seedance && !las ? prepareReviewedSeedanceMigrationPrice(scenario, capturedCents, selector => {
       const cell = pointsBySelector.get(selectorKey(selector)); return cell?.price.kind === 'fixed' ? cell.price.customerCents : undefined;
     }, input.baseline.at) : undefined;
-    const price = prepared?.price ?? await compileCurrentContinuousTariffPrice(scenario, input.policy);
+    const price = las ? prepareReviewedSeedanceLasPrice(scenario.context)
+      : prepared?.price ?? await compileCurrentContinuousTariffPrice(scenario, input.policy);
+    if (las) {
+      const proposedCustomerCents = evaluateManualTariffPrice(price, scenario.quantities).customerTotalCents;
+      if (proposedCustomerCents !== capturedCents) seedanceLasPriceChanges.push({ scenarioId: scenario.id,
+        currentCustomerCents: capturedCents, proposedCustomerCents });
+    }
     if (prepared && prepared.minimumCustomerCents !== capturedCents) seedancePriceChanges.push({ scenarioId: scenario.id,
       currentCustomerCents: capturedCents, proposedCustomerCents: prepared.minimumCustomerCents });
     const domainKey = seedance ? JSON.stringify({ modelId: scenario.modelId, provider: scenario.context.engine.providerMeta?.provider,
@@ -125,6 +140,7 @@ export async function auditReviewedCustomerTariffSeed(input: {
   }
   const approvedAmounts = new Map(approvedPriceChanges.map(change => [change.scenarioId, change.proposedCustomerCents]));
   for (const change of seedancePriceChanges) approvedAmounts.set(change.scenarioId, change.proposedCustomerCents);
+  for (const change of seedanceLasPriceChanges) approvedAmounts.set(change.scenarioId, change.proposedCustomerCents);
   const settlementGuardFailures: Array<{ scenarioId: string; customerCents: number; referenceCeilCents: number }> = [];
   for (const scenario of input.scenarios) {
     const facts = buildBillingPricingFacts(scenario.context, scenario.context.engine.pricingDetails, 'USD').facts;
@@ -152,7 +168,10 @@ export async function auditReviewedCustomerTariffSeed(input: {
   const remainingCoverageGaps = input.coverageGaps.filter(gap => !certifiedGaps.has(`${gap.modelId}|${gap.reason}`));
   return { cells: [...cellsBySelector.values()], reviewedContinuousClasses, checkedScenarios: input.scenarios.length,
     quotedScenarios: input.scenarios.length - settlementGuardFailures.length, settlementGuardFailures,
-    approvedPriceChanges, seedancePriceChanges, approvedSeedanceMarginPolicy: input.approvedSeedanceMarginPolicy,
+    approvedPriceChanges, seedancePriceChanges, seedanceLasPriceChanges, approvedSeedanceLasPolicy: input.approvedSeedanceLasPolicy,
+    seedanceLasPolicy: input.approvedSeedanceLasPolicy ? SEEDANCE_LAS_REVIEWED_POLICY : undefined,
+    seedanceLasBaselineSource: input.approvedSeedanceLasPolicy ? 'archived_modelark_legacy_retail_basis' as const : undefined,
+    approvedSeedanceMarginPolicy: input.approvedSeedanceMarginPolicy,
     remainingCoverageGaps, registryHash: input.registryHash, databaseRulesHash: rulesHash,
     capturedAt: input.baseline.at, databaseIdentity: input.baseline.databaseIdentity, activationReady: false as const };
 }

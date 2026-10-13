@@ -1282,8 +1282,8 @@ test('generation pricing forwards resolved LTX source-audio duration to prepare 
   assert.equal(capturedBillingContext?.inputAudioDurationSec, 9.25);
 });
 
-test('prepare pricing uses the real Seedance video-input tier for source-video modes', async () => {
-  for (const mode of ['v2v', 'extend'] as const) {
+test('prepare pricing uses the real ModelArk video-input tier for extension', async () => {
+  for (const mode of ['extend'] as const) {
     const request: CanonicalGenerationRequest = {
       schemaVersion: 1,
       surface: 'video',
@@ -1303,6 +1303,16 @@ test('prepare pricing uses the real Seedance video-input tier for source-video m
     const meta = pricing.pricingSnapshot.meta as Record<string, unknown>;
     assert.equal(meta.byteplus_billing_input_type, 'video_input');
   }
+});
+
+test('LAS pricing refuses an unmeasured source and absent reviewed tariff instead of a token quote', async () => {
+  await assert.rejects(priceCanonicalGeneration({
+    schemaVersion: 1, surface: 'video', engineId: 'seedance-2-5', mode: 'v2v',
+    prompt: 'Edit the exact source.',
+    settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
+    references: [{ kind: 'https', url: 'https://cdn.example.com/source.mp4', role: 'source', mediaKind: 'video' }],
+    outputCount: 1,
+  }, 'member'), /Canonical video pricing is unavailable/);
 });
 
 test('prepare pricing classifies canonical ref2v video references without trusting asset input', async () => {

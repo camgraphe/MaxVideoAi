@@ -17,6 +17,7 @@ import { catalogSupplierReference, type CatalogSupplierReference, type SupplierR
 import { publishedSupplierEstimate, type PublishedSupplierEstimate } from './published-supplier-tariffs';
 import { signedBytePlusContractCost, type BytePlusContractTerms } from '@/server/byteplus-account-contract';
 import { bytePlusNormalListCost } from '@/server/byteplus-normal-cost';
+import { isSeedance25LasInputPricing, quoteSeedance25LasListCost } from '@/server/byteplus-las-tariff';
 
 type CostEvidence = { amountUsd: number; source: string; confirmedAt: string; contract?: BytePlusContractTerms };
 type CustomerQuoteSummary = {
@@ -45,6 +46,7 @@ export type ProviderCostComparisonInput = {
   familyId?: string;
   engineId: string;
   executionProvider: string;
+  transport?: 'modelark' | 'las';
   accountContractRegion?: string;
   routeConfigured?: boolean | null;
   generationDisabledReason?: 'local_sandbox' | 'route_unavailable' | null;
@@ -84,6 +86,8 @@ export function providerComparisonInputFromScenario(input: {
 }): ProviderCostComparisonInput {
   const { scenario, engine } = input;
   const mode = scenario.mode ?? 'unknown';
+  const las = input.executionProvider === 'byteplus_modelark' && !input.context?.workflowStep
+    && isSeedance25LasInputPricing(scenario.engineId, mode);
   const billingInputType = typeof input.context?.hasVideoInput === 'boolean'
     ? input.context.hasVideoInput ? 'video_input' as const : 'no_video_input' as const
     : mode === 'v2v' || mode === 'extend'
@@ -101,7 +105,7 @@ export function providerComparisonInputFromScenario(input: {
     : undefined;
   let tokenEstimate: Pick<ReturnType<typeof computeSeedance2TokenQuote>, 'aspectRatio' | 'tokenCount'>
     | ReturnType<typeof estimateBytePlusOutputTokens> = null;
-  if (billingInputType && isSeedance2TokenPricing(engine.pricingDetails) && scenario.durationSec && scenario.resolution) {
+  if (!las && billingInputType && isSeedance2TokenPricing(engine.pricingDetails) && scenario.durationSec && scenario.resolution) {
     try {
       tokenEstimate = input.executionProvider === 'byteplus_modelark'
         ? estimateBytePlusBillableTokens({ engineId: scenario.engineId,
@@ -150,6 +154,7 @@ export function providerComparisonInputFromScenario(input: {
     familyId: input.familyId,
     engineId: scenario.engineId,
     executionProvider: input.executionProvider,
+    ...(las ? { transport: 'las' as const } : {}),
     mediaType: input.mediaType ?? 'video',
     mode,
     resolution: scenario.resolution ?? 'unknown',
@@ -249,6 +254,16 @@ function listCost(input: ProviderCostComparisonInput, at: string): Pick<Provider
       sourceUrl: null, checkedAt: null, reason },
     publicPromotion: null,
   });
+  if (isLasComparison(input)) {
+    const list = quoteSeedance25LasListCost({ resolution: input.resolution,
+      outputDurationSec: input.durationSec ?? NaN, inputVideoDurationSec: input.inputVideoDurationSec });
+    if (!list) return unavailable(!input.inputVideoDurationSec ? 'input_video_duration_unavailable' : 'unsupported_model_options');
+    return { supplierList: { status: 'published_list_estimate', amountUsd: list.amountUsd,
+      unitPriceUsdPer1kTokens: null, sourceUrl: list.sourceUrl, checkedAt: list.checkedAt, reason: null,
+      sourceLabel: 'BytePlus LAS Enhanced published LIST', referenceProvider: 'byteplus_las', routeMatches: true,
+      rateBreakdown: [{ label: 'Input plus output video duration', unit: 'second', quantity: list.billableDurationSec,
+        unitPriceUsd: list.unitPriceUsdPerSecond, amountUsd: list.amountUsd }] }, publicPromotion: null };
+  }
   if (input.executionProvider !== 'byteplus_modelark') {
     const published = input.publishedList;
     if (published && published.referenceProvider === input.executionProvider &&
@@ -352,6 +367,11 @@ function listCost(input: ProviderCostComparisonInput, at: string): Pick<Provider
   }
 }
 
+function isLasComparison(input: ProviderCostComparisonInput): boolean {
+  return input.executionProvider === 'byteplus_modelark' && input.step === 'normal'
+    && (input.transport === 'las' || (input.transport !== 'modelark' && isSeedance25LasInputPricing(input.engineId, input.mode)));
+}
+
 function differenceCents(customerCents: number, costUsd: number): number {
   return Number((customerCents - costUsd * 100).toFixed(6));
 }
@@ -364,7 +384,7 @@ export function buildProviderCostComparisonRows(
     const priced = listCost(input, at);
     const { publicPromotion } = priced;
     const supplierList = priced.supplierList;
-    if (input.executionProvider === 'byteplus_modelark' && supplierList.status.startsWith('published_list')) {
+    if (!isLasComparison(input) && input.executionProvider === 'byteplus_modelark' && supplierList.status.startsWith('published_list')) {
       supplierList.sourceLabel = 'BytePlus ModelArk published LIST';
       supplierList.referenceProvider = 'byteplus_modelark';
       supplierList.routeMatches = true;
@@ -380,7 +400,7 @@ export function buildProviderCostComparisonRows(
       }
     }
     const effective = validEvidence(input.confirmedEffectiveCost, at) ? input.confirmedEffectiveCost
-      : signedBytePlusContractCost(input, supplierList, at);
+      : signedBytePlusContractCost({ ...input, ...(isLasComparison(input) ? { transport: 'las' as const } : {}) }, supplierList, at);
     const observed = validEvidence(input.observedInvoiceCost, at) ? input.observedInvoiceCost : null;
     const sameCurrency = input.customerQuote?.currency.toUpperCase() === 'USD';
     return {

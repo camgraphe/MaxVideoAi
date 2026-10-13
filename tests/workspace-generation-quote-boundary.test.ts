@@ -185,6 +185,19 @@ test('draft change during deferred session rejects captured quote before wallet 
   } finally { await f.dispose(); }
 });
 
+test('unavailable Edit rejects a cached quote before session, wallet or provider submission', async () => {
+  const f = await mount();
+  try {
+    await f.update({ selectedEngine: { id: 'seedance-2-5', label: 'Seedance 2.5', modeAvailability: { v2v: { available: false, reason: 'provider_disabled' } } } as never,
+      activeMode: 'v2v' as never, submissionMode: 'v2v' as never });
+    await f.start();
+    assert.equal(f.pendingSessions, 0);
+    assert.equal(f.walletRequests.length, 0);
+    assert.equal(f.generated.length, 0);
+    assert.match(f.errors[0] ?? '', /unavailable/);
+  } finally { await f.dispose(); }
+});
+
 for (const boundary of ['session', 'wallet'] as const) {
   for (const change of ['draft', 'account', 'iterations', 'auth', 'quote', 'prompt', 'unmount'] as const) {
     test(`${change} change during ${boundary} wait cancels submission`, async () => {

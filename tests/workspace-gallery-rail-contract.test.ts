@@ -106,10 +106,22 @@ test('Seedance completion persists canonical video outputs before preview enrich
     path.join(process.cwd(), 'frontend/server/byteplus-poll.ts'),
     'utf8'
   );
+  const outputSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/server/byteplus-output-persistence.ts'), 'utf8'
+  );
 
   assert.match(pollSource, /upsertLegacyJobOutputs/);
-  assert.match(pollSource, /video_url:\s*copiedVideoUrl/);
-  assert.match(pollSource, /thumb_url:\s*thumb/);
+  assert.match(pollSource, /bytePlusCompletedOutputRow\(job, copiedVideoUrl, thumb\)/);
+  assert.match(outputSource, /video_url:\s*videoUrl/);
+  assert.match(outputSource, /thumb_url:\s*thumbUrl/);
+  assert.match(outputSource, /await input\.upsertOutputsFn[\s\S]*requireMcpPromotion:\s*true/);
+  const lasProjection = pollSource.indexOf('await persistBytePlusLasOutputBeforeCompletion');
+  const completion = pollSource.indexOf("SET status = 'completed'");
+  const ordinaryProjection = pollSource.indexOf('await upsertLegacyJobOutputsFn');
+  const previewEnrichment = pollSource.indexOf('await Promise.allSettled');
+  assert.ok(lasProjection > 0 && lasProjection < completion, 'LAS owned output projection must finish before terminal completion');
+  assert.ok(ordinaryProjection > completion && ordinaryProjection < previewEnrichment,
+    'ModelArk canonical output projection must precede preview enrichment');
   assert.match(pollSource, /generateAndPersistJobPreviewVideo/);
 });
 

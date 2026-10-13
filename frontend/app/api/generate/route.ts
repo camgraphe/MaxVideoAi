@@ -13,7 +13,7 @@ import { seedanceWorkflowEnabled, resolveSeedanceWorkflowRequest, SeedanceWorkfl
 
 export async function POST(req: NextRequest) {
   const requestStartedAt = Date.now();
-  const { state: metricState, log: logMetric } = createGenerateMetricLogger({ requestStartedAt });
+  const { state: metricState, log: logMetric, logPreflightRejection } = createGenerateMetricLogger({ requestStartedAt });
   let body = await req.json().catch((error) => {
     console.error('[api/generate] invalid JSON', error);
     return null;
@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
 
   const routeContext = await resolveGenerateRouteContext({ body, req });
   if (!routeContext.ok) {
+    await logPreflightRejection(body, routeContext);
     return NextResponse.json(routeContext.body, { status: routeContext.status });
   }
   const { engine, isBytePlusV1a, jobId, mode, providerRoutingPlan } = routeContext.context;

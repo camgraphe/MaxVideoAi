@@ -23,6 +23,8 @@ import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
 import { openTariffQuantityKey, withOpenTariffQuantity } from '@/lib/pricing-audit/open-quantity-tariff-scenario';
 import { seedanceInputTariffMaximum, supportsSeedanceInputTariff } from '@/lib/seedance-input-tariff';
 import { withSeedanceTariffInputDuration } from '@/lib/pricing-audit/seedance-input-tariff-scenario';
+import { getBytePlusSeedanceModeResolutions } from '@/lib/byteplus-mode-capabilities';
+import { resolveSeedance25ModeAvailability } from '@/server/engine-mode-availability';
 
 import { computeCanonicalPublicSnapshot, computeCurrentPublicSnapshot } from './quote-public';
 import { createScopedPublicPolicyLoader } from './scoped-public-policy';
@@ -98,6 +100,9 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   const entry = getFalEngineById(model.id);
   const mode = entry?.modes.find(candidate => candidate.mode === input.mode);
   if (!mode || (!gptImage && input.customImageSize !== undefined)) return null;
+  if (entry!.id === 'seedance-2-5' && mode.mode === 'v2v'
+    && !getBytePlusSeedanceModeResolutions(entry!.id, mode.mode, mode.ui.resolution ?? entry!.engine.resolutions)
+      .some((resolution) => resolution.toLowerCase() === input.resolution.toLowerCase())) return null;
   const automaticDuration = mode.ui.duration && 'options' in mode.ui.duration && mode.ui.duration.options.includes('auto');
   if ([input.hdr, input.exrExport].some(value => value !== undefined && typeof value !== 'boolean')
     || (input.exrExport && !input.hdr)
@@ -241,6 +246,10 @@ export async function quotePublicModelScenario(
   input: PublicModelQuoteInput,
   quote: (scenario: ManualTariffCoverageScenario) => Promise<PricingSnapshot> = quoteWithVerifiedPolicy,
 ): Promise<PublicModelQuote> {
+  const entry = getFalEngineById(input.modelId);
+  const mode = entry?.modes.find((candidate) => candidate.mode === input.mode)?.mode;
+  if (entry?.id === 'seedance-2-5' && mode === 'v2v'
+    && resolveSeedance25ModeAvailability(entry.engine, mode)?.available === false) return { status: 'unavailable' };
   const scenario = resolvePublicModelScenario(input);
   if (!scenario) return { status: 'unavailable' };
   try {

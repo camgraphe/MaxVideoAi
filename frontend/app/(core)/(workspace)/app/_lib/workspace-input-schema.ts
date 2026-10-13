@@ -16,6 +16,7 @@ import {
   STANDARD_ENGINE_FIELD_IDS,
 } from './workspace-engine-helpers';
 import type { FormState } from './workspace-form-state';
+import { getEngineModeUnavailableMessage, isEngineModeRuntimeAvailable } from '@/lib/engine-mode-availability';
 
 export type WorkspaceInputFieldEntry = {
   field: EngineInputField;
@@ -267,7 +268,12 @@ export function summarizeWorkspaceInputSchema({
           return;
         }
         const role = resolveAssetFieldRole(localizedField, required);
-        assetFields.push({ field: localizedField, required, role });
+        const runtimeModes = localizedField.modes;
+        const unavailable = Boolean(selectedEngine && runtimeModes?.length && runtimeModes.every((mode) => !isEngineModeRuntimeAvailable(selectedEngine, mode)));
+        assetFields.push({ field: localizedField, required, role, ...(unavailable && selectedEngine && runtimeModes ? {
+          disabled: true,
+          disabledReason: getEngineModeUnavailableMessage(selectedEngine, runtimeModes[0], uiLocale) ?? undefined,
+        } : {}) });
         return;
       }
       if (!STANDARD_ENGINE_FIELD_IDS.has(normalizedId)) {
