@@ -12,7 +12,7 @@ import { buildManualTariffScenario, continuousInputTariffSelector } from '@/lib/
 import type { EffectiveCustomerTariffState } from './customer-tariff-store';
 import { normalBytePlusSupplierCost } from '@/server/byteplus-normal-cost';
 import { supportsSeedanceInputTariff, validateSeedanceInputTariffDuration } from '@/lib/seedance-input-tariff';
-import { isSeedance25LasInputPricing } from '@/server/byteplus-las-tariff';
+import { isSeedance25LasInputPricing, isSeedance25EditInputPricing } from '@/server/byteplus-las-tariff';
 import { seedanceInputTariffRate } from './seedance-input-tariff';
 
 export class CustomerTariffUnavailableError extends Error {
@@ -66,10 +66,10 @@ export function resolveCustomerTariffQuote(input: {
   }
   const supplierCost = lasSupplierCost ?? (input.facts.currency.toUpperCase() === 'USD'
     ? normalBytePlusSupplierCost(input.context, input.at) : null);
-  if (!input.context.workflowStep && isSeedance25LasInputPricing(input.context.engine.id, input.context.mode)) {
-    if (!supplierCost) throw new CustomerTariffUnavailableError('Verified LAS Edit supplier cost is required.');
+  if (!input.context.workflowStep && isSeedance25EditInputPricing(input.context.engine.id, input.context.mode)) {
+    if (!supplierCost) throw new CustomerTariffUnavailableError(`Verified ${las ? 'LAS' : 'ModelArk'} Edit supplier cost is required.`);
     try { seedanceInputTariffRate(input.context, cell.price); }
-    catch { throw new CustomerTariffUnavailableError('A reviewed LAS Edit input-plus-output tariff is required.'); }
+    catch { throw new CustomerTariffUnavailableError(`A reviewed ${las ? 'LAS' : 'ModelArk'} Edit input-plus-output tariff is required.`); }
   }
   const quote = quoteCanonicalManualTariff({
     facts: supplierCost ? { ...input.facts, vendorSubtotalExactCents: Number((supplierCost.amountUsd * 100).toFixed(6)) } : input.facts,

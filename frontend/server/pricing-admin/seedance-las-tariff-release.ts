@@ -4,7 +4,7 @@ import type { ManualTariffCell, ManualTariffSelector } from '@maxvideoai/pricing
 import { withDbTransaction } from '@/lib/db';
 import { collectSellableManualTariffCoverage } from '@/lib/pricing-audit/manual-tariff-coverage';
 import { continuousInputTariffSelector } from '@/lib/pricing-manual-scenario';
-import { quoteSeedance25LasListCost, BYTEPLUS_LAS_LIST_PRICE_SOURCE } from '@/server/byteplus-las-tariff';
+import { quoteSeedance25LasListCost, BYTEPLUS_LAS_LIST_PRICE_SOURCE, isSeedance25LasInputPricing } from '@/server/byteplus-las-tariff';
 import { isBytePlusLasExecutionEnabled } from '@/server/video-providers/byteplus-modelark';
 import { loadEffectiveCustomerTariffState, upsertCustomerTariffCell, type EffectiveCustomerTariffState } from '@/server/pricing/customer-tariff-store';
 import { seedanceInputTariffPriceFromRate, validateSeedanceInputTariffDomain } from '@/server/pricing/seedance-input-tariff';
@@ -20,6 +20,9 @@ const selectorKey = (selector: ManualTariffSelector) => JSON.stringify(Object.en
 
 /** Explicit authoring only. Runtime quotes never compute retail from supplier rates. */
 export function prepareSeedance25LasTariffRelease(input: { state: EffectiveCustomerTariffState; at: string }) {
+  if (!isSeedance25LasInputPricing(MODEL_ID, 'v2v')) {
+    throw new PricingAdminError('unsupported_scenario', 'LAS Edit must be selected before a LAS tariff release.');
+  }
   if (input.state.status !== 'loaded' || !input.state.active || !Number.isFinite(Date.parse(input.at))) {
     throw new PricingAdminError('unsupported_scenario', 'An active reviewed customer tariff grid is required.');
   }

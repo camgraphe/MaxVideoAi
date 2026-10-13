@@ -46,10 +46,10 @@
 
 **Interfaces:** The current LAS-price classifier must follow the selected transport for new quotes. Persisted terminal accounting already uses stored transport and must keep that authority. Explicit LAS authoring stays a separate operation; prevent it from overwriting an active ModelArk Edit launch accidentally.
 
-- [ ] Add failing current-quote tests proving ModelArk Edit reads reviewed ModelArk-shaped active cells, uses ModelArk video-input supplier facts/discount, and never consumes LAS literal rates. Preserve LAS rejection of token-minimum shapes when LAS is selected.
-- [ ] Implement transport-aware current pricing and include selection in factual/cutover evidence. Do not rewrite the active production grid or historical paid amounts.
-- [ ] Prove quote/customer/supplier parity for measured 4s input + source-preserved 4s output at 480p/720p; verify all four other modes remain unchanged.
-- [ ] Run focused pricing tests and selected exhaustive financial/maintenance validation.
+- [x] Add failing current-quote tests proving ModelArk Edit reads reviewed ModelArk-shaped active cells, uses ModelArk video-input supplier facts/discount, and never consumes LAS literal rates. Preserve LAS rejection of token-minimum shapes when LAS is selected.
+- [x] Implement transport-aware current pricing and include selection in factual/cutover evidence. Do not rewrite the active production grid or historical paid amounts.
+- [x] Prove quote/customer/supplier parity for measured 4s input + source-preserved 4s output at 480p/720p; verify all four other modes remain unchanged.
+- [x] Run focused pricing and maintenance tests and start exhaustive financial qualification; its final result remains a mandatory Task 4 release gate.
 
 ### Task 3: Trusted inherited timing and source-facing controls
 

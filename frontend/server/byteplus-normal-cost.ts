@@ -6,7 +6,7 @@ import { resolveBytePlusSeedanceRouteProfile } from '@/server/video-providers/by
 import { getBytePlusVideoListRate, quoteSeedreamListCost } from './byteplus-list-tariff';
 import { signedBytePlusContractCost } from './byteplus-account-contract';
 import { estimateBytePlusBillableTokens } from './byteplus-accounting';
-import { isSeedance25LasInputPricing, quoteSeedance25LasListCost } from './byteplus-las-tariff';
+import { isSeedance25LasInputPricing, isSeedance25EditInputPricing, quoteSeedance25LasListCost } from './byteplus-las-tariff';
 
 type NormalUsage = {
   engineId: string;
@@ -60,7 +60,8 @@ export function normalBytePlusSupplierCost(context: PricingContext, at: string) 
       source: 'BytePlus LAS Enhanced published LIST', sourceUrl: list.sourceUrl, checkedAt: list.checkedAt,
       contract: undefined, usage };
   }
-  const usage: NormalUsage = { engineId: engine.id, resolution };
+  const usage: NormalUsage = { engineId: engine.id, resolution,
+    ...(!context.workflowStep && isSeedance25EditInputPricing(engine.id, mode) ? { transport: 'modelark' as const } : {}) };
   if (image) {
     const quantity = context.durationSec;
     const dimensions = /^(\d+)x(\d+)$/.exec(resolveSeedreamProviderSize(resolution, context.aspectRatio));
