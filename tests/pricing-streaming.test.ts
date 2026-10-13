@@ -90,6 +90,7 @@ test('Pricing streams its static hero before current prices, then reveals one ex
       assert.match(shell, /id="video-pricing"/);
       assert.match(shell, /pricing-breadcrumb-jsonld/);
       assert.match(shell, /pricing-service-jsonld/);
+      assert.doesNotMatch(shell, /data-pricing-(?:content|quick-start)-ready/);
       assert.doesNotMatch(shell, /[$€]\d+[.,]\d|\d+[.,]\d+\s*(?:[$€]|USD)/, 'Pending content must not display current or historical numeric estimates');
       assert.doesNotMatch(shell, /data-analytics-cta-name="pricing_scenario"/, 'Pending cards cannot guess a winning row destination');
       assert.equal(fixture.calls, 1);
@@ -97,6 +98,8 @@ test('Pricing streams its static hero before current prices, then reveals one ex
       let tail = '';
       for (;;) { const next = await reader.read(); if (next.done) break; tail += decoder.decode(next.value, { stream: true }); }
       assert.equal(fixture.calls, 1, 'Quick start and all matrices must share one complete current hub');
+      assert.match(tail, /data-pricing-content-ready/);
+      assert.match(tail, /data-pricing-quick-start-ready/);
       if (unavailable) {
         assert.equal(fixture.result.video.highlights.filter((highlight: { featured?: unknown }) => highlight.featured).length, 0);
         assert.doesNotMatch(tail, /\$6[.,]54|6[.,]54\s*\$|data-analytics-cta-name="pricing_scenario"/);

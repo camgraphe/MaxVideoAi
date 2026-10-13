@@ -485,6 +485,16 @@ matrices are not duplicated as loading tables. Validate reveal geometry and earl
 anchor navigation in a browser, particularly French mobile and unavailable quote
 results; renderer tests cannot establish layout stability.
 
+`PricingAnchorRestore` restores missed local section, model/product row and FAQ
+fragments after both price boundaries' readiness markers are revealed, including
+when the matrix arrives before the quick-start grid. It excludes
+pending duplicates and hidden React transport payloads, accepts an early local
+link or a client-route arrival still carrying the previous page's scroll, and
+never rewrites history. User input, changed navigation, completion without a
+matching target, unmount or a 30-second deadline cancels the wait. Initial document
+and back/forward restored scroll positions retain their existing authority.
+`tests/pricing-anchor-restore.test.ts` covers this route-local contract.
+
 `tests/pricing-streaming.test.ts` holds canonical quote I/O through the real hub
 and Next's bundled server renderer. It checks early hero/SEO, one hub read, final
 localized markup, unavailable amounts and original-error propagation. This is

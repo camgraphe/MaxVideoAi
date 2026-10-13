@@ -14,7 +14,12 @@ type CurrentPricingProps = { pricingHub: Promise<PricingHubData> };
 /** Both boundaries consume the same complete current hub; neither starts another quote. */
 export async function PricingCurrentQuickStart({ pricingHub, title, note }: CurrentPricingProps & { title: string; note: string }) {
   const data = await pricingHub;
-  return <PricingQuickStart highlights={data.video.highlights} title={title} note={note} />;
+  return (
+    <>
+      <PricingQuickStart highlights={data.video.highlights} title={title} note={note} />
+      <span hidden data-pricing-quick-start-ready="" />
+    </>
+  );
 }
 
 export async function PricingCurrentSections({
@@ -38,6 +43,7 @@ export async function PricingCurrentSections({
       <DeferredMarketingContent>
         <PricingRefundsFaqSection faq={faq} faqEntries={faqEntries} />
       </DeferredMarketingContent>
+      <span hidden data-pricing-content-ready="" />
     </>
   );
 }

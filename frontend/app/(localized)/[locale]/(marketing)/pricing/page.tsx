@@ -8,6 +8,7 @@ import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { PricingCurrentQuickStart, PricingCurrentSections } from './_components/PricingCurrentContent';
 import { PricingPendingQuickStart, PricingPendingSections } from './_components/PricingPendingContent';
+import { PricingAnchorRestore } from './_components/PricingAnchorRestore.client';
 import { PricingHeroSection } from './_components/PricingHeroSection';
 import { PricingJsonLdScripts } from './_components/PricingJsonLdScripts';
 import { buildCurrentPricingHubData } from './_lib/currentPricingHubData';
@@ -46,6 +47,7 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
 
   return (
     <div className="bg-bg">
+      <PricingAnchorRestore />
       <PricingHeroSection
         badges={content.hero.badges}
         calculatorHref="/app"

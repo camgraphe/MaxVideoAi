@@ -93,6 +93,8 @@ test('pricing page delegates compact matrix sections and JSON-LD rendering', () 
 
   assert.match(pageSource, /from '\.\/_components\/PricingHeroSection'/);
   assert.match(pageSource, /from '\.\/_components\/PricingCurrentContent'/);
+  assert.match(pageSource, /<PricingAnchorRestore \/>/);
+  assert.match(currentContentSource, /data-pricing-content-ready/);
   assert.match(pageSource, /const pricingHub = buildCurrentPricingHubData\(locale\)/);
   assert.doesNotMatch(pageSource, /await buildCurrentPricingHubData/);
   assert.doesNotMatch(currentContentSource, /buildCurrentPricingHubData|createScoped|quotePublic/);
