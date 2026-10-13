@@ -6,10 +6,11 @@ const lighthouseRequire = createRequire(frontendRequire.resolve('lighthouse/pack
   paths: [frontendRequire.resolve('@lhci/cli/package.json')],
 }));
 const { Launcher } = lighthouseRequire('chrome-launcher');
+const chromeDefaults = require('./lighthouse-chrome-defaults.cjs');
 
 // Preserve the installed launcher's defaults, restoring only Chrome's document renderer.
 // Copying the list also prevents ChromeLauncher from appending RenderDocument-disabled again.
-const flags = Launcher.defaultFlags().flatMap(flag => {
+const flags = chromeDefaults(Launcher).flatMap(flag => {
   if (!flag.startsWith('--disable-features=')) return [flag];
   const disabled = flag.slice('--disable-features='.length).split(',').filter(name => name !== 'RenderDocument');
   return disabled.length ? ['--disable-features=' + disabled.join(',')] : [];

@@ -42,11 +42,6 @@ jobs:
       - name: Check measurement integrity
         run: pnpm cwv:check
 
-      - name: Diagnose examples Chrome presentation
-        if: github.event_name == 'workflow_dispatch' && inputs.examples_diagnostics
-        working-directory: frontend
-        run: node ../scripts/performance/probe-render-document.mjs
-
       - name: Run Lighthouse (home)
         run: pnpm --dir frontend run lighthouse:home
 
@@ -64,6 +59,11 @@ jobs:
 
       - name: Run Lighthouse (contact)
         run: pnpm --dir frontend run lighthouse:contact
+
+      - name: Diagnose examples Chrome presentation
+        if: github.event_name == 'workflow_dispatch' && inputs.examples_diagnostics
+        working-directory: frontend
+        run: node ../scripts/performance/probe-render-document.mjs
 
       - name: Upload Lighthouse reports
         if: always()

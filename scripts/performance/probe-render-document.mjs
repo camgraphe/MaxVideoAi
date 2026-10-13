@@ -12,8 +12,9 @@ const lighthouseRequire = createRequire(require.resolve('lighthouse/package.json
 const { Launcher } = lighthouseRequire('chrome-launcher');
 const { parseChromeFlags } = await import(pathToFileURL(lighthouseRequire.resolve('lighthouse/cli/run.js')).href);
 const chromeSettings = require('../scripts/performance/lighthouse-chrome-settings.cjs');
+const chromeDefaults = require('../scripts/performance/lighthouse-chrome-defaults.cjs');
 const cli = lighthouseRequire.resolve('lighthouse/cli/index.js');
-const baseline = [...Launcher.defaultFlags(), '--headless=new'];
+const baseline = [...chromeDefaults(Launcher), '--headless=new'];
 const candidate = [...parseChromeFlags(chromeSettings.chromeFlags), '--headless=new'];
 const root = path.resolve('lighthouse-reports/render-document-probe');
 fs.mkdirSync(root, { recursive: true });

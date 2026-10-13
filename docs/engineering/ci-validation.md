@@ -135,7 +135,9 @@ reports are uploaded even after a measurement failure.
 Both `frontend/lighthouserc.js` and `lighthouserc.site.js` use
 `scripts/performance/lighthouse-chrome-settings.cjs`. It resolves the Chrome
 launcher used by the installed Lighthouse, preserves its complete default flag
-list, and restores only `RenderDocument`. `chromeIgnoreDefaultFlags` prevents the
+list including Linux's sandbox setting, and restores only `RenderDocument`.
+Defaults are read through the actual launcher's flag getter, with flags shared
+by both default modes left to the launcher. `chromeIgnoreDefaultFlags` prevents the
 original disabled-feature list from being appended again. Do not replace the
 whole feature list or disable GPU, analytics, styles, media or real requests to
 improve a score. The ordinary Lighthouse mobile/desktop profiles, storage reset,
@@ -153,9 +155,11 @@ For a bounded reproduction, manually dispatch Lighthouse with
 `examples_diagnostics: true`. The opt-in runner collects five alternating pairs
 against the unchanged public Exemples URL, preserving both flag lists, all reports,
 DevTools request logs and complete traces in the existing report artifact. The
-normal six-page audit still runs afterwards. `tests/lighthouse-render-document.test.ts`
+normal six-page audit runs first, so a diagnostic failure cannot suppress it.
+`tests/lighthouse-render-document.test.ts`
 executes both configs through the real LHCI argument builder and Lighthouse parser,
-checking feature-list preservation, headless launch and the original measurement
+checking the real macOS/Linux launcher arguments, feature-list preservation,
+headless launch and the original measurement
 settings. It is included in the pre-audit `pnpm cwv:check` gate.
 
 ## Verification contracts
