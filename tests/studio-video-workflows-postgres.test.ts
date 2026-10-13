@@ -24,9 +24,17 @@ import {loadEffectiveCustomerTariffState} from '../frontend/server/pricing/custo
 import {continuousInputTariffSelector} from '../frontend/src/lib/pricing-manual-scenario';
 import {collectSellableManualTariffCoverage} from '../frontend/lib/pricing-audit/manual-tariff-coverage';
 import {customerTariffCellId} from '../frontend/server/pricing/customer-tariff-seed';
+import {ENV} from '../frontend/src/lib/env';
 
 test('all certified video tuples share MCP exact price, owned payload and one-attempt confirmed dispatch',async t=>{
   assert.equal(process.env.DATABASE_URL,undefined,'Disposable DB only');
+  const readiness={BYTEPLUS_ARK_ENABLED:'true',BYTEPLUS_ARK_API_KEY:'fixture-ark',
+    SEEDANCE_2_5_BYTEPLUS_ENABLED:'true',SEEDANCE_2_5_PROVIDER:'byteplus_modelark',
+    SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY:'false',SEEDANCE_2_5_BYTEPLUS_MODES:'t2v,i2v,ref2v,v2v,extend',
+    SEEDANCE_2_5_LAS_ENABLED:'true',BYTEPLUS_LAS_API_KEY:'fixture-las'};
+  const previousReadiness=Object.fromEntries(Object.keys(readiness).map(key=>[key,ENV[key as keyof typeof ENV]]));
+  Object.assign(ENV,readiness);
+  t.after(()=>{Object.assign(ENV,previousReadiness);});
   const pg=await startDisposablePostgres('studio-video-workflows');process.env.DATABASE_URL=pg.databaseUrl;
   t.after(async()=>{await getDb().end();delete process.env.DATABASE_URL;await pg.cleanup();});
   await createPaidGenerationTestSchema(pg.pool);
@@ -83,6 +91,8 @@ test('all certified video tuples share MCP exact price, owned payload and one-at
     await assert.rejects(createStudioVideoGenerationService({...workflowActor,projectId:'other'},options).confirm({quoteId:quote.quoteId,confirmed:true}),{code:'QUOTE_EXPIRED'});
     await assert.rejects(createStudioVideoGenerationService({...workflowActor,userId:'foreign'},options).confirm({quoteId:quote.quoteId,confirmed:true}),{code:'QUOTE_EXPIRED'});
     await service.confirm({quoteId:quote.quoteId,confirmed:true});await service.confirm({quoteId:quote.quoteId,confirmed:true});
+    if(candidate.engine.id==='seedance-2-5'&&mode==='v2v')assert.equal((await pg.pool.query<{provider:string}>(
+      'SELECT provider FROM app_jobs WHERE job_id=$1',[quote.quoteId])).rows[0].provider,'byteplus_modelark','The LAS reservation uses the executable provider identity');
     const calls=provider.captures.filter(call=>call.quoteId===quote.quoteId);assert.equal(calls.length,1);const body=calls[0].body;
     assert.equal(body.engineId,candidate.engine.id);assert.equal(body.mode,toEngineGenerationMode(candidate.engine.id,mode));
     for(const selected of action.references??[])assert.ok(JSON.stringify(body).includes(workflowReference(selected.ref.kind,selected.role).storageUrl),'Selected owned media reaches actual dispatch projection');
