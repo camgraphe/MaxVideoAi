@@ -41,8 +41,9 @@ jobs:
         working-directory: frontend
         run: |
           mkdir -p lighthouse-reports/examples-diagnostics
+          examples_lighthouse_cli=$(node -p 'require.resolve("lighthouse/cli/index.js", { paths: [require.resolve("@lhci/cli/package.json")] })')
           for run in 1 2 3 4 5; do
-            pnpm exec lighthouse https://maxvideoai.com/examples --chrome-flags="--headless=new" --output=json --output-path="lighthouse-reports/examples-diagnostics/run-${run}.json" --save-assets
+            node "$examples_lighthouse_cli" https://maxvideoai.com/examples --chrome-flags="--headless=new" --output=json --output-path="lighthouse-reports/examples-diagnostics/run-${run}.json" --save-assets
           done
 
       - name: Upload Lighthouse reports
