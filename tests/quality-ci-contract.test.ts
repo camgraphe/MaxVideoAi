@@ -8,6 +8,8 @@ import adminPlaywrightConfig from '../playwright.admin.config';
 
 type WorkflowStep = {
   name?: string;
+  if?: string;
+  run?: string;
   uses?: string;
   with?: Record<string, unknown>;
 };
@@ -62,6 +64,21 @@ test('production Lighthouse measurements run daily or manually instead of racing
   assert.equal(Object.hasOwn(workflow.on, 'push'), false);
   assert.ok(workflow.on.schedule);
   assert.ok(Object.hasOwn(workflow.on, 'workflow_dispatch'));
+});
+
+test('optional presentation diagnostics cannot prevent the six ordinary Lighthouse audits', () => {
+  const workflow = YAML.parse(readFileSync('.github/workflows/lighthouse.yml', 'utf8')) as QualityWorkflow;
+  const steps = workflow.jobs.lighthouse.steps;
+  const probeIndex = steps.findIndex(step => step.name === 'Diagnose examples Chrome presentation');
+  assert.ok(probeIndex >= 0);
+  assert.match(steps[probeIndex].if ?? '', /inputs.examples_diagnostics/);
+  for (const route of ['home', 'examples', 'models-veo', 'pricing', 'blog', 'contact']) {
+    const auditIndex = steps.findIndex(step => step.run === `pnpm --dir frontend run lighthouse:${route}`);
+    assert.ok(auditIndex >= 0 && auditIndex < probeIndex, `${route} must finish before optional traces can fail`);
+  }
+  const uploadIndex = steps.findIndex(step => step.name === 'Upload Lighthouse reports');
+  assert.ok(uploadIndex > probeIndex);
+  assert.equal(steps[uploadIndex].if, 'always()');
 });
 
 test('admin smoke configuration selects only admin end-to-end specs', () => {

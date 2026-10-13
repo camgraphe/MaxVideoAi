@@ -1,4 +1,5 @@
 const matrix = require('../scripts/performance/site-matrix.json');
+const chromeSettings = require('../scripts/performance/lighthouse-chrome-settings.cjs');
 
 const device = process.env.CWV_DEVICE || 'mobile';
 const locale = process.env.CWV_LOCALE;
@@ -18,6 +19,7 @@ module.exports = {
       url: routes.map(route => new URL(route.path, base).href),
       numberOfRuns: 3,
       settings: {
+        ...chromeSettings,
         onlyCategories: ['performance'],
         output: ['json', 'html'],
         ...(device === 'desktop' ? { preset: 'desktop' } : {}),
