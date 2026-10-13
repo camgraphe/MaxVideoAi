@@ -19,7 +19,7 @@ export function PricingPendingQuickStart({ locale, title, note }: { locale: AppL
               <span className="block text-xs leading-5 text-text-secondary">{label}</span>
               <span className="mt-1 block h-5 w-32 max-w-full rounded bg-bg" />
             </span>
-            <span className="flex shrink-0 items-center gap-3 sm:w-full sm:justify-between">
+            <span className="flex min-w-[8.5rem] shrink-0 items-center justify-between gap-3 sm:w-full sm:min-w-0">
               <span className="block h-8 w-20 rounded bg-bg" />
               <span className="h-4 w-4" />
             </span>

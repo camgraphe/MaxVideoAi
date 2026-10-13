@@ -477,7 +477,11 @@ An early rejection is observed without changing the original promise: failures
 still reach the server boundaries rather than producing stale amounts.
 
 `PricingPendingContent` reserves the quick-start grid with the same localized
-scenario labels and no guessed model, price or row destination. The lower pending
+scenario labels and no guessed model, price or row destination. On mobile, both
+pending and resolved cards reserve at least 8.5rem for the price/arrow column, so
+localized USD prices do not narrow the scenario label only after reveal. The
+reservation resets at the existing desktop breakpoint; larger amounts and longer
+names remain free to grow without truncation. The lower pending
 surface retains the hero's `#video-pricing` target and at least a viewport of space
 so the footer does not enter the initial viewport while prices are pending. The
 resolved components retain their existing markup and order. The large lower
