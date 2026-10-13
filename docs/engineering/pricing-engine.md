@@ -465,6 +465,33 @@ model and homepage callers. `video-seo-no-unused-price.test.ts` checks this owne
 boundary; the quote-context and detail tests retain actual reader price coverage.
 Removing an unused quote dependency alone does not establish a latency or CWV gain.
 
+## Pricing route initial rendering
+
+The Pricing route starts `buildCurrentPricingHubData(locale)` once per render.
+Its static hero and existing SEO scripts render before the complete quote matrix
+settles. `PricingCurrentContent` consumes the same promise in two server Suspense
+boundaries: the hero's quick-start cards and the lower price sections. Keep current
+video, image, audio, tool and popular-check projections on that one complete hub;
+neither boundary owns another quote, persisted cache or commercial fallback.
+An early rejection is observed without changing the original promise: failures
+still reach the server boundaries rather than producing stale amounts.
+
+`PricingPendingContent` reserves the quick-start grid with the same localized
+scenario labels and no guessed model, price or row destination. The lower pending
+surface retains the hero's `#video-pricing` target and at least a viewport of space
+so the footer does not enter the initial viewport while prices are pending. The
+resolved components retain their existing markup and order. The large lower
+matrices are not duplicated as loading tables. Validate reveal geometry and early
+anchor navigation in a browser, particularly French mobile and unavailable quote
+results; renderer tests cannot establish layout stability.
+
+`tests/pricing-streaming.test.ts` holds canonical quote I/O through the real hub
+and Next's bundled server renderer. It checks early hero/SEO, one hub read, final
+localized markup, unavailable amounts and original-error propagation. This is
+composition evidence only: `revalidate = 600`, CDN headers and price invalidation
+remain unchanged, and a production build/CDN can buffer output. Comparable HTTP
+and browser evidence is required before claiming TTFB or Core Web Vitals gains.
+
 ## Homepage guided pricing demonstration
 
 `(home)/_lib/home-price-demo-data.ts` selects three exact Wan 3 text-to-video scenarios through Pricing's `getPresetQuote`: 5 s / 720p, 15 s / 720p, 15 s / 1080p, audio enabled. If any scenario is not exact, it omits the demonstration. `HomePriceDemo.client.tsx` selects these server-projected quotes without computing commercial prices; `HomePriceAppSurface.client.tsx` presents them with the shared workspace Composer and CoreSettingsBar in an inert, lazy-loaded surface. The generation handler is a no-op and the real studio is a separate link. Preserve this boundary: the homepage is neither a live quote endpoint nor a generation client. `tests/home-price-demo.test.ts` verifies the public quote projection in EN, FR and ES.

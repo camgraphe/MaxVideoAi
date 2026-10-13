@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { FAQSchema } from '@/components/seo/FAQSchema';
@@ -5,15 +6,10 @@ import type { AppLocale } from '@/i18n/locales';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
-import { DeferredMarketingContent } from '@/components/marketing/DeferredMarketingContent';
-import { PricingCreditsRefundsSection } from './_components/PricingCreditsRefundsSection';
+import { PricingCurrentQuickStart, PricingCurrentSections } from './_components/PricingCurrentContent';
+import { PricingPendingQuickStart, PricingPendingSections } from './_components/PricingPendingContent';
 import { PricingHeroSection } from './_components/PricingHeroSection';
-import { PricingQuickStart } from './_components/PricingQuickStart';
 import { PricingJsonLdScripts } from './_components/PricingJsonLdScripts';
-import { PricingOtherSurfacesSection } from './_components/PricingOtherSurfacesSection';
-import { PricingPopularChecksSection } from './_components/PricingPopularChecksSection';
-import { PricingRefundsFaqSection } from './_components/PricingRefundsFaqSection';
-import { PricingVideoMatrixSection } from './_components/PricingVideoMatrixSection';
 import { buildCurrentPricingHubData } from './_lib/currentPricingHubData';
 import { PRICING_SLUG_MAP, buildPricingBreadcrumbJsonLd, buildPricingServiceJsonLd } from './_lib/pricing-jsonld';
 
@@ -39,7 +35,9 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
   const locale = params.locale;
   const { dictionary } = await resolveDictionary({ locale });
   const content = dictionary.pricing;
-  const pricingHub = await buildCurrentPricingHubData(locale);
+  const pricingHub = buildCurrentPricingHubData(locale);
+  // Observe an early rejection without converting it into a successful pricing fallback.
+  void pricingHub.catch(() => undefined);
   const faq = content.faq;
   const faqEntries = (faq.entries ?? []).slice(0, 12);
   const canonical = buildMetadataUrls(locale, PRICING_SLUG_MAP, { englishPath: '/pricing' }).canonical;
@@ -59,30 +57,16 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
         supportingLine={content.hero.supportingLine}
         title={content.hero.title}
       >
-        <PricingQuickStart
-          highlights={pricingHub.video.highlights}
-          title={content.hero.quickStartTitle}
-          note={content.hero.quickStartNote}
-        />
+        <Suspense fallback={<PricingPendingQuickStart locale={locale} title={content.hero.quickStartTitle} note={content.hero.quickStartNote} />}>
+          <PricingCurrentQuickStart pricingHub={pricingHub} title={content.hero.quickStartTitle} note={content.hero.quickStartNote} />
+        </Suspense>
       </PricingHeroSection>
 
       <div className="container-page max-w-[1440px] py-8 sm:py-10">
         <div className="stack-gap-lg">
-          <DeferredMarketingContent>
-            <PricingVideoMatrixSection video={pricingHub.video} locale={locale} />
-          </DeferredMarketingContent>
-          <DeferredMarketingContent>
-            <PricingPopularChecksSection checks={pricingHub.popularChecks} locale={locale} />
-          </DeferredMarketingContent>
-          <DeferredMarketingContent>
-            <PricingOtherSurfacesSection data={pricingHub.otherSurfaces} locale={locale} />
-          </DeferredMarketingContent>
-          <DeferredMarketingContent>
-            <PricingCreditsRefundsSection locale={locale} />
-          </DeferredMarketingContent>
-          <DeferredMarketingContent>
-            <PricingRefundsFaqSection faq={faq} faqEntries={faqEntries} />
-          </DeferredMarketingContent>
+          <Suspense fallback={<PricingPendingSections locale={locale} />}>
+            <PricingCurrentSections pricingHub={pricingHub} locale={locale} faq={faq} faqEntries={faqEntries} />
+          </Suspense>
         </div>
       </div>
 
