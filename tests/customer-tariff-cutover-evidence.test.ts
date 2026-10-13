@@ -9,6 +9,9 @@ test('cutover derives all ordinary, workflow and real input duration checkpoints
   assert.equal(cases.filter(row => row.kind === 'local_workflow').length, 324);
   assert.equal(cases.filter(row => row.kind === 'input_stress').length, 6372);
   assert.equal(new Set(cases.map(row => row.key)).size, cases.length);
+  assert.equal(cases.filter(row => row.currentStatus === 'unavailable').length, 486);
+  assert.ok(cases.filter(row => row.currentStatus === 'unavailable').every(row => row.scenario.selector.engineId === 'seedance-2-5'
+    && row.scenario.selector.mode === 'v2v' && row.scenario.selector.resolution === '1080p'));
   assert.ok(cases.some(row => row.kind === 'input_stress' && row.scenario.context.inputVideoDurationSec === 30));
 });
 

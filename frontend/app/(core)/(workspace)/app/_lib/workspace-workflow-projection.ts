@@ -97,7 +97,7 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, form, inputAs
     return null;
   })();
 
-  const workspaceExecutableModes = selectedEngine ? [...selectedEngine.modes] : [];
+  const workspaceExecutableModes = selectedEngine ? selectedEngine.modes.filter((mode) => isWorkspaceModeAvailable(selectedEngine, mode)) : [];
 
   const engineModeOptions = getEngineModeOptions(selectedEngine
     ? { ...selectedEngine, modes: workspaceExecutableModes }

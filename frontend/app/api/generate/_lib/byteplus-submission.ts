@@ -30,6 +30,11 @@ import type { PaymentMode, PendingReceipt } from './initial-video-job';
 import { prepareSeedanceWorkflowSubmission, type SeedanceSubmissionWorkflow } from '@/server/seedance-workflow-submission';
 import { reconcileSeedanceWorkflowOutcome } from '@/server/seedance-workflow-outcome';
 import type { BytePlusPendingJob } from '@/server/byteplus-poll-types';
+import { getBytePlusSeedanceModeResolutions } from '@/lib/byteplus-mode-capabilities';
+import { claimBytePlusLasSubmission, getBytePlusSubmissionState, preserveBytePlusLasSubmission,
+  readOwnedBytePlusLasSubmission, recordBytePlusLasSubmissionAccepted,
+  recordBytePlusLasSubmissionRejection } from '@/server/byteplus-submission-state';
+import { markBytePlusJobFailed } from '@/server/byteplus-poll-failure';
 
 type QueryFn = (sql: string, params?: unknown[]) => Promise<unknown>;
 type LogMetricFn = (
@@ -120,8 +125,30 @@ export async function submitBytePlusGenerateTask(params: {
   const logMetricFn = deps.logMetricFn;
   let providerAttempted = false;
   let acceptedProviderJobId: string | null = null;
+  const reliableLasSubmission = params.engineId === 'seedance-2-5' && params.mode === 'v2v';
+  const uncertainResponse = (): BytePlusSubmissionResult => ({ ok: false, status: 503, body: {
+    ok: false, error: 'BYTEPLUS_SUBMISSION_UNCERTAIN', jobId: params.jobId,
+    paymentStatus: params.paymentStatus, message: 'Submission is being checked. Do not submit again.',
+  } });
+  const existingResponse = (job: BytePlusPendingJob): BytePlusSubmissionResult => job.provider_job_id
+    ? { ok: true, body: { ok: true, jobId: job.job_id, status: job.status,
+      providerJobId: job.provider_job_id, videoUrl: job.video_url ?? null,
+      paymentStatus: job.payment_status, pricing: job.pricing_snapshot } }
+    : job.status === 'failed'
+      ? { ok: false, status: 409, body: { ok: false, error: 'BYTEPLUS_SUBMISSION_ALREADY_RESOLVED',
+        jobId: job.job_id, status: job.status, paymentStatus: job.payment_status } }
+      : uncertainResponse();
 
   try {
+    if (reliableLasSubmission) {
+      const existing = await readOwnedBytePlusLasSubmission(params.jobId, params.userId, queryFn);
+      if (existing.provider_job_id || getBytePlusSubmissionState(existing.settings_snapshot) || existing.status !== 'pending') {
+        return existingResponse(existing);
+      }
+      if (params.paymentMode !== 'wallet') {
+        throw new BytePlusModelArkError('This workflow requires wallet funding.', { status: 400, code: 'BYTEPLUS_LAS_WALLET_REQUIRED' });
+      }
+    }
     assertBytePlusSeedanceSubmissionEnabled(params.engineId);
     const profile = requireBytePlusSeedanceProfile(params.engineId);
     const config = getBytePlusArkConfigFn();
@@ -163,7 +190,8 @@ export async function submitBytePlusGenerateTask(params: {
         ? { seed: params.seed } : {}),
       allowedModes: profile.supportedModes,
       allowedAspectRatios: profile.aspectRatios,
-      allowedResolutions: getBytePlusSeedanceAllowedResolutionsFn(params.engineId),
+      allowedResolutions: getBytePlusSeedanceModeResolutions(params.engineId, params.mode,
+        getBytePlusSeedanceAllowedResolutionsFn(params.engineId)),
       allowedDurationOptions: getBytePlusSeedanceDurationOptionsFn(params.engineId),
       ...(referenceBudget
         ? { referenceBudget, referenceMediaItems: referenceMediaItems ?? [] }
@@ -175,10 +203,16 @@ export async function submitBytePlusGenerateTask(params: {
     }, queryFn) : null;
     const payload = workflow?.payload ?? buildBytePlusSeedancePayloadFn(payloadInput);
     const transport = workflow ? 'modelark' : resolveBytePlusTransport(params.engineId, params.mode);
+    const client = getBytePlusModelArkClientFn(transport);
+    if (reliableLasSubmission && !await claimBytePlusLasSubmission(params.jobId, params.userId, queryFn)) {
+      return existingResponse(await readOwnedBytePlusLasSubmission(params.jobId, params.userId, queryFn));
+    }
     providerAttempted = true;
-    const providerTask = await getBytePlusModelArkClientFn(transport).createSeedanceFastTask(payload);
+    const providerTask = await client.createSeedanceFastTask(payload);
     const providerJobId = providerTask.providerJobId;
     acceptedProviderJobId = providerJobId;
+    if (reliableLasSubmission) await recordBytePlusLasSubmissionAccepted({ jobId: params.jobId,
+      userId: params.userId, providerJobId, queryFn });
     await persistProviderJobIdFn?.(providerJobId);
     const status = providerTask.status === 'running' ? 'running' : 'queued';
     const progress = providerTask.status === 'running' ? 30 : 10;
@@ -257,6 +291,11 @@ export async function submitBytePlusGenerateTask(params: {
   } catch (error) {
     const providerMessage = scrubBytePlusErrorFn(error);
     const providerStatus = error instanceof BytePlusModelArkError ? error.status : null;
+    if (reliableLasSubmission && providerAttempted && (acceptedProviderJobId || !providerStatus || providerStatus < 400 || providerStatus >= 500 || providerStatus === 408)) {
+      await preserveBytePlusLasSubmission({ jobId: params.jobId, userId: params.userId,
+        providerJobId: acceptedProviderJobId, queryFn }).catch(() => undefined);
+      return uncertainResponse();
+    }
     if (params.seedanceWorkflow && providerAttempted && (acceptedProviderJobId || !providerStatus || providerStatus < 400 || providerStatus >= 500)) {
       await queryFn(`UPDATE app_jobs SET status = CASE WHEN $3::text IS NULL THEN 'provider_polling_stalled' ELSE 'queued' END,
         provider_job_id = COALESCE(provider_job_id, $3), message = $4, provisional = FALSE, updated_at = now()
@@ -294,6 +333,34 @@ export async function submitBytePlusGenerateTask(params: {
     const trialDisposition = providerStatus && providerStatus >= 400 && providerStatus < 500
       ? 'definitive_failure'
       : 'unknown';
+    if (reliableLasSubmission) {
+      try {
+        const stored = await readOwnedBytePlusLasSubmission(params.jobId, params.userId, queryFn);
+        // A lost database acknowledgement may hide a committed claim. Never refund that attempt as a local failure.
+        if (!providerAttempted && getBytePlusSubmissionState(stored.settings_snapshot)) return existingResponse(stored);
+        if (stored.payment_status === 'paid_direct') {
+          await preserveBytePlusLasSubmission({ jobId: params.jobId, userId: params.userId, providerJobId: null, queryFn });
+          return uncertainResponse();
+        }
+        if (!await recordBytePlusLasSubmissionRejection({ jobId: params.jobId, userId: params.userId,
+          message: failureMessage, errorCode, attempted: providerAttempted, queryFn })) {
+          return existingResponse(await readOwnedBytePlusLasSubmission(params.jobId, params.userId, queryFn));
+        }
+        await markBytePlusJobFailed(stored, failureMessage, null, { providerErrorCode, failureCode });
+        const terminal = await readOwnedBytePlusLasSubmission(params.jobId, params.userId, queryFn);
+        return { ok: false, status: responseStatus, body: { ok: false, error: errorCode,
+          message: failureMessage, jobId: params.jobId, failureCode, paymentStatus: terminal.payment_status,
+          ...(terminal.payment_status === 'refunded_wallet' ? {
+            refundedAmountCents: terminal.final_price_cents, currency: terminal.currency,
+          } : {}),
+        } };
+      } catch {
+        console.warn('[byteplus] LAS rejection reconciliation deferred');
+        return { ok: false, status: 503, body: { ok: false, error: 'BYTEPLUS_RECONCILIATION_PENDING',
+          jobId: params.jobId, paymentStatus: params.paymentStatus,
+          message: 'This render is being checked before its payment is returned.' } };
+      }
+    }
     console.warn('[byteplus] task submission failed', {
       jobId: params.jobId,
       engineId: params.engineId,

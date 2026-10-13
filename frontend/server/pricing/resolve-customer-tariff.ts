@@ -12,6 +12,8 @@ import { buildManualTariffScenario, continuousInputTariffSelector } from '@/lib/
 import type { EffectiveCustomerTariffState } from './customer-tariff-store';
 import { normalBytePlusSupplierCost } from '@/server/byteplus-normal-cost';
 import { supportsSeedanceInputTariff, validateSeedanceInputTariffDuration } from '@/lib/seedance-input-tariff';
+import { isSeedance25LasInputPricing } from '@/server/byteplus-las-tariff';
+import { seedanceInputTariffRate } from './seedance-input-tariff';
 
 export class CustomerTariffUnavailableError extends Error {
   constructor(message: string) { super(message); this.name = 'CustomerTariffUnavailableError'; }
@@ -30,6 +32,10 @@ export function resolveCustomerTariffQuote(input: {
   if (supportsSeedanceInputTariff(scenario.selector.engineId, scenario.selector.mode, scenario.selector.billingInputType)) {
     validateSeedanceInputTariffDuration(input.context.engine.id, input.context.inputVideoDurationSec ?? NaN);
   }
+  const las = !input.context.workflowStep && isSeedance25LasInputPricing(input.context.engine.id, input.context.mode);
+  const lasSupplierCost = las && input.facts.currency.toUpperCase() === 'USD'
+    ? normalBytePlusSupplierCost(input.context, input.at) : null;
+  if (las && !lasSupplierCost) throw new CustomerTariffUnavailableError('Verified LAS Edit supplier cost is required.');
   const resolve = (selector: typeof scenario.selector) => resolveManualTariffCell({ selector, at: input.at,
     versionedCells: state.versionedCells, databaseCells: state.databaseCells });
   let selector = scenario.selector;
@@ -58,8 +64,13 @@ export function resolveCustomerTariffQuote(input: {
     if (quantity === undefined) throw new ManualTariffError('invalid_quantity', `Unresolved manual tariff unit: ${unit}`);
     quantities[unit] = quantity;
   }
-  const supplierCost = input.facts.currency.toUpperCase() === 'USD'
-    ? normalBytePlusSupplierCost(input.context, input.at) : null;
+  const supplierCost = lasSupplierCost ?? (input.facts.currency.toUpperCase() === 'USD'
+    ? normalBytePlusSupplierCost(input.context, input.at) : null);
+  if (!input.context.workflowStep && isSeedance25LasInputPricing(input.context.engine.id, input.context.mode)) {
+    if (!supplierCost) throw new CustomerTariffUnavailableError('Verified LAS Edit supplier cost is required.');
+    try { seedanceInputTariffRate(input.context, cell.price); }
+    catch { throw new CustomerTariffUnavailableError('A reviewed LAS Edit input-plus-output tariff is required.'); }
+  }
   const quote = quoteCanonicalManualTariff({
     facts: supplierCost ? { ...input.facts, vendorSubtotalExactCents: Number((supplierCost.amountUsd * 100).toFixed(6)) } : input.facts,
     scenarioId: `billing:${input.context.engine.id}:${input.context.mode ?? 't2v'}:${input.context.resolution}`,

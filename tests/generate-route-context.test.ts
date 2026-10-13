@@ -26,6 +26,28 @@ const routeSource = readFileSync(routePath, 'utf8');
 const serviceSource = readFileSync(join(root, 'frontend/src/server/video-generation/execute-video-generation.ts'), 'utf8');
 const helperSource = readFileSync(helperPath, 'utf8');
 
+test('LAS Edit requires wallet settlement before billing and provider submission', async () => {
+  const entry = getFalEngineById('seedance-2-5')!;
+  const original = { ...ENV };
+  Object.assign(ENV, { BYTEPLUS_ARK_ENABLED: 'true', BYTEPLUS_ARK_API_KEY: 'test-ark',
+    BYTEPLUS_LAS_API_KEY: 'test-las', SEEDANCE_2_5_LAS_ENABLED: 'true',
+    SEEDANCE_2_5_BYTEPLUS_ENABLED: 'true', SEEDANCE_2_5_PROVIDER: 'byteplus_modelark',
+    SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY: 'false', SEEDANCE_2_5_BYTEPLUS_MODES: 't2v,i2v,ref2v,v2v,extend' });
+  try {
+    for (const funding of ['direct', 'platform', 'mcp_trial']) {
+      const result = await resolveGenerateRouteContext({
+        body: { engineId: 'seedance-2-5', mode: 'v2v', payment: { mode: funding } },
+        req: new NextRequest('http://localhost/api/generate', { method: 'POST' }),
+        boundaryOverrides: { getConfiguredEngine: async () => entry.engine,
+          isDatabaseConfigured: () => { throw new Error('Billing must not be reached'); },
+          ensureBillingSchema: async () => { throw new Error('Billing must not be reached'); } },
+      });
+      assert.deepEqual(result, { ok: false, status: 400,
+        body: { ok: false, error: 'BYTEPLUS_LAS_WALLET_REQUIRED', message: 'Edit requires wallet payment.' } });
+    }
+  } finally { Object.assign(ENV, original); }
+});
+
 test('generate route delegates engine, provider, db, and admin context', () => {
   assert.ok(existsSync(helperPath), 'route context should live in the generate route _lib folder');
   assert.match(routeSource, /from '\.\/_lib\/route-context'/);

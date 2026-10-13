@@ -19,8 +19,6 @@ import {
 } from '@/server/video-providers/byteplus-modelark';
 import {
   buildBytePlusListCostBreakdown,
-  getBytePlusAccounting,
-  getBytePlusUnitPriceUsdPer1kTokens,
 } from './byteplus-accounting';
 import {
   markBytePlusJobFailed,
@@ -30,6 +28,8 @@ import { applyBytePlusTrialOutcomeSafely } from './byteplus-trial-outcomes';
 import type { BytePlusPendingJob } from './byteplus-poll-types';
 import { isRecord } from './byteplus-record-utils';
 import { reconcileSeedanceWorkflowOutcome } from './seedance-workflow-outcome';
+import { getBytePlusSubmissionState } from './byteplus-submission-state';
+import { bytePlusCompletedOutputRow, getBytePlusLasDurableOutput, persistBytePlusLasOutputBeforeCompletion } from './byteplus-output-persistence';
 import {
   buildNextBytePlusStorageCopyState,
   getBytePlusStorageCopyState,
@@ -70,7 +70,7 @@ export {
 } from './byteplus-storage-copy';
 const POLL_INITIAL_DELAY_MS = 5_000;
 const POLL_MAX_DURATION_MS = 35 * 60_000;
-const ACTIVE_JOB_STATUSES = ['pending', 'queued', 'running', 'processing', 'in_progress'];
+const ACTIVE_JOB_STATUSES = ['pending', 'queued', 'running', 'processing', 'in_progress', 'provider_polling_stalled'];
 const STALLED_MESSAGE = 'This render needs manual review before retrying or refunding.';
 async function deferStorageCopyRetry(
   job: BytePlusPendingJob,
@@ -145,13 +145,16 @@ export async function runBytePlusPoll(options: { jobId?: string; deps?: BytePlus
   }
 
   const rows = await queryFn<BytePlusPendingJob>(
-    `SELECT job_id, user_id, engine_id, engine_label, provider_job_id, status, duration_sec, thumb_url,
+    `SELECT job_id, user_id, engine_id, engine_label, provider_job_id, status, duration_sec, thumb_url, video_url,
             to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url,
             to_jsonb(app_jobs)->'keyframe_urls' AS keyframe_urls,
             aspect_ratio, has_audio, final_price_cents, pricing_snapshot, settings_snapshot, currency, payment_status, updated_at, created_at
        FROM app_jobs
       WHERE provider = $1
-        AND provider_job_id IS NOT NULL
+        AND (provider_job_id IS NOT NULL OR (
+          engine_id = 'seedance-2-5' AND settings_snapshot->>'byteplusTransport' = 'las'
+          AND settings_snapshot->'byteplusSubmission'->>'phase' = 'rejected'
+        ))
         AND status = ANY($2::text[])
       AND ($3::text IS NULL OR job_id = $3)
       ORDER BY updated_at ASC
@@ -175,12 +178,23 @@ export async function runBytePlusPoll(options: { jobId?: string; deps?: BytePlus
     const pollClaim = await (deps.claimPollFn ?? claimGenerationPoll)(job.job_id, queryFn);
     if (!pollClaim) continue;
     try {
+      if (!job.provider_job_id) {
+        const submission = getBytePlusSubmissionState(job.settings_snapshot);
+        if (submission?.phase === 'rejected') {
+          await markBytePlusJobFailedFn(job,
+            typeof submission.message === 'string' ? submission.message : 'The render submission was rejected.');
+          updates += 1;
+        }
+        continue;
+      }
       const transport = resolveBytePlusPollTransport({
         providerJobId: job.provider_job_id,
         settingsSnapshot: job.settings_snapshot,
       });
-      const client = getBytePlusModelArkClientFn(transport);
-      const task = await client.retrieveTask(job.provider_job_id);
+      const durableOutput = getBytePlusLasDurableOutput(job);
+      const task = durableOutput ? { providerJobId: job.provider_job_id, status: 'completed' as const,
+        rawStatus: 'succeeded', videoUrl: durableOutput.videoUrl, errorCode: null, message: null, usage: null, raw: {} }
+        : await getBytePlusModelArkClientFn(transport).retrieveTask(job.provider_job_id);
       await recordBytePlusPollEventFn(job, 'poll:status', {
         providerStatus: task.rawStatus,
         transport,
@@ -254,7 +268,7 @@ export async function runBytePlusPoll(options: { jobId?: string; deps?: BytePlus
         continue;
       }
 
-      const copiedVideoUrl = await ensureFastStartVideoFn({
+      const copiedVideoUrl = durableOutput?.videoUrl ?? await ensureFastStartVideoFn({
         jobId: job.job_id,
         userId: job.user_id,
         videoUrl: task.videoUrl,
@@ -285,7 +299,7 @@ export async function runBytePlusPoll(options: { jobId?: string; deps?: BytePlus
         continue;
       }
 
-      let thumb = job.thumb_url ?? '/assets/frames/thumb-16x9.svg';
+      let thumb = durableOutput?.thumbUrl ?? job.thumb_url ?? '/assets/frames/thumb-16x9.svg';
       if (isPlaceholderThumbnail(thumb)) {
         const generatedThumb = await ensureJobThumbnailFn({
           jobId: job.job_id,
@@ -303,13 +317,17 @@ export async function runBytePlusPoll(options: { jobId?: string; deps?: BytePlus
       const core = isRecord(settings.core) ? settings.core : {};
       const costResolution = typeof core.resolution === 'string' ? core.resolution : '720p';
       const costAspectRatio = typeof core.aspectRatio === 'string' ? core.aspectRatio : job.aspect_ratio ?? '16:9';
-      const costBreakdown = buildBytePlusListCostBreakdown({
+      const costBreakdown = durableOutput?.costBreakdown ?? buildBytePlusListCostBreakdown({
         job,
         model: resolveBytePlusSeedanceModelId(job.engine_id, config),
         resolution: costResolution,
         aspectRatio: costAspectRatio,
         usage: task.usage,
+        providerTask: task.raw,
       });
+
+      if (transport === 'las' && !await persistBytePlusLasOutputBeforeCompletion({ job,
+        videoUrl: copiedVideoUrl, thumbUrl: thumb, costBreakdown, queryFn, upsertOutputsFn: upsertLegacyJobOutputsFn })) continue;
 
       const completedRows = await queryFn<{ job_id: string }>(
         `UPDATE app_jobs
@@ -340,19 +358,7 @@ export async function runBytePlusPoll(options: { jobId?: string; deps?: BytePlus
         console.warn('[byteplus-poll] completed workflow reconciliation deferred', { jobId: job.job_id });
       });
       await applyBytePlusTrialOutcomeSafelyFn(job, { kind: 'completed' });
-      await upsertLegacyJobOutputsFn({
-        job_id: job.job_id,
-        user_id: job.user_id,
-        surface: 'video',
-        video_url: copiedVideoUrl,
-        audio_url: null,
-        thumb_url: thumb,
-        preview_frame: thumb,
-        preview_video_url: job.preview_video_url,
-        render_ids: null,
-        duration_sec: job.duration_sec,
-        status: 'completed',
-      }).catch((error) => {
+      if (transport !== 'las') await upsertLegacyJobOutputsFn(bytePlusCompletedOutputRow(job, copiedVideoUrl, thumb)).catch((error) => {
         console.warn('[byteplus-poll] failed to persist media output', {
           jobId: job.job_id,
           error: error instanceof Error ? error.message : error,

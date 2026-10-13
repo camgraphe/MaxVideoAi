@@ -1,4 +1,5 @@
 import type { EngineCaps } from '../../../types/engines';
+import { getBytePlusSeedanceModeResolutions } from '../../../lib/byteplus-mode-capabilities';
 import {
   BYTEPLUS_SEEDANCE_2_5_MAX_AUDIO,
   BYTEPLUS_SEEDANCE_2_5_MAX_IMAGES,
@@ -187,6 +188,7 @@ const SEEDANCE_2_5_ENGINE: EngineCaps = {
       modes: ['i2v', 'ref2v', 'v2v', 'extend'],
     },
     constraints: {
+      ownedAssetModes: ['v2v'],
       supportedFormats: [...IMAGE_FORMATS, ...VIDEO_FORMATS, ...AUDIO_FORMATS],
       maxImageSizeMB: 30,
       minImageSidePx: 300,
@@ -230,7 +232,7 @@ function seedance25Mode(mode: Seedance25Mode): RawFalEngineEntry['modes'][number
     t2v: 'Create 4-30 second videos up to 1080p in landscape, square, or vertical formats with generated audio available.',
     i2v: 'Animate one start image with an optional end image; 4-30 seconds, up to 1080p, landscape, square, or vertical, with generated audio.',
     ref2v: `Use up to ${BYTEPLUS_SEEDANCE_2_5_MAX_IMAGES} images, ${BYTEPLUS_SEEDANCE_2_5_MAX_VIDEOS} video clips, and ${BYTEPLUS_SEEDANCE_2_5_MAX_AUDIO} audio clips, with ${BYTEPLUS_SEEDANCE_2_5_MAX_REFERENCES} unique references total.`,
-    v2v: 'Edit one source video with optional image and audio references; 4-30 seconds, up to 1080p, landscape, square, or vertical, with generated audio.',
+    v2v: 'Edit one source video with optional image and audio references; 4-30 seconds, up to 720p, landscape, square, or vertical, with generated audio.',
     extend: 'Continue one to three source clips; 4-30 seconds, up to 1080p, landscape, square, or vertical, with generated audio.',
   };
 
@@ -240,7 +242,7 @@ function seedance25Mode(mode: Seedance25Mode): RawFalEngineEntry['modes'][number
     ui: {
       modes: [mode],
       duration: { options: [...DURATION_OPTIONS], default: 4 },
-      resolution: [...RESOLUTIONS],
+      resolution: getBytePlusSeedanceModeResolutions('seedance-2-5', mode, RESOLUTIONS),
       aspectRatio: mode === 'i2v' ? undefined : [...ASPECT_RATIOS],
       acceptsImageFormats: acceptsImages ? [...IMAGE_FORMATS] : undefined,
       maxUploadMB: mode === 't2v' ? undefined : uploadsVideo ? 50 : 30,

@@ -1,5 +1,16 @@
 # Pricing Engine
 
+## Seedance 2.5 LAS Edit
+
+LAS V2V uses the separate factual `server/byteplus-las-tariff.ts` input-plus-output
+duration rate. Runtime customer quotes require an active reviewed literal tariff
+with no ModelArk token minimum; ModelArk discount and token costs cannot fill a
+LAS quote. The four ModelArk modes retain their current owners. The focused
+`pricing-admin/seedance-las-tariff-release.ts` preview/confirmation replaces only
+the 324 supported Edit classes through the normal append-only store and an atomic
+release event. Exact exceptions, stale review and partial writes fail closed.
+It does not activate execution. See the [LAS release procedure](../model-launch/seedance-2-5-las-edit.md).
+
 ## Studio conversational estimates
 
 Studio whole-film estimates compose this same canonical read seam through

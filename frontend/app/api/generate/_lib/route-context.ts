@@ -345,6 +345,13 @@ export async function resolveGenerateRouteContext(params: {
     }
   }
 
+  if (engine.id === 'seedance-2-5' && mode === 'v2v'
+    && body.payment && typeof body.payment === 'object'
+    && 'mode' in body.payment && body.payment.mode !== undefined && body.payment.mode !== 'wallet') {
+    return { ok: false, status: 400, body: { ok: false, error: 'BYTEPLUS_LAS_WALLET_REQUIRED',
+      message: 'Edit requires wallet payment.' } };
+  }
+
   if (!boundaries.isDatabaseConfigured()) {
     return { ok: false, status: 503, body: { ok: false, error: 'Database unavailable' } };
   }

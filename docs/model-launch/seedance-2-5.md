@@ -6,6 +6,11 @@ price, provider route, or rollback state. It documents a target configuration;
 it does not authorize or perform an environment, provider, generation, payment,
 push, or deployment mutation.
 
+The focused [October 13 LAS Edit release procedure](seedance-2-5-las-edit.md)
+records the current repair, separate input-plus-output supplier/customer pricing,
+atomic tariff correction and remaining access/canary gates. The dated evidence
+below remains historical; it does not authorize LAS activation.
+
 ## Current state — public flagship, staged direct execution
 
 - Updated: 2026-08-26

@@ -2,11 +2,13 @@ import {
   BYTEPLUS_MODELARK_PROVIDER,
   BytePlusModelArkError,
   requireBytePlusSeedanceProfile,
+  resolveBytePlusPollTransport,
 } from '@/server/video-providers/byteplus-modelark';
 import { isRecord } from './byteplus-record-utils';
 import type { BytePlusPendingJob } from './byteplus-poll-types';
 import { BYTEPLUS_MODELARK_LIST_PRICE_SOURCE, getBytePlusVideoListRate } from './byteplus-list-tariff';
 import { seedance25OutputDimensions } from './seedance25-output-dimensions';
+import { quoteSeedance25LasListCost, BYTEPLUS_LAS_LIST_PRICE_SOURCE } from './byteplus-las-tariff';
 
 const SEEDANCE_2_0_4K_DIMENSIONS: Record<string, Record<string, { width: number; height: number }>> = {
   '4k': {
@@ -244,10 +246,43 @@ export function buildBytePlusListCostBreakdown(input: {
   resolution: string;
   aspectRatio: string;
   usage: { totalTokens: number | null; completionTokens: number | null } | null;
+  providerTask?: unknown;
 }) {
   const { job, usage } = input;
   const accounting = getBytePlusAccounting(job);
   const settings = isRecord(job.settings_snapshot) ? job.settings_snapshot : {};
+  if (resolveBytePlusPollTransport({ providerJobId: job.provider_job_id, settingsSnapshot: settings }) === 'las') {
+    const task = isRecord(input.providerTask) ? input.providerTask : {};
+    const reported = isRecord(task.data) ? task.data : isRecord(task.task) ? task.task : task;
+    const hasReportedDuration = Object.hasOwn(reported, 'duration');
+    const outputDurationSec = hasReportedDuration
+      ? typeof reported.duration === 'number' ? reported.duration : NaN : job.duration_sec;
+    const resolution = Object.hasOwn(reported, 'resolution')
+      ? typeof reported.resolution === 'string' ? reported.resolution : '' : input.resolution;
+    const list = job.engine_id === 'seedance-2-5' ? quoteSeedance25LasListCost({ resolution, outputDurationSec,
+      inputVideoDurationSec: typeof settings.byteplusInputVideoDurationSec === 'number'
+        ? settings.byteplusInputVideoDurationSec : undefined }) : null;
+    return {
+      provider: BYTEPLUS_MODELARK_PROVIDER, byteplus_transport: 'las',
+      provider_cost_source: 'byteplus_las_published_list_rate',
+      provider_cost_status: !list ? 'list_estimate_unavailable' : hasReportedDuration
+        ? 'list_estimate_from_provider_duration' : 'list_estimate_from_requested_duration',
+      provider_cost_unavailable_reason: list ? null : 'las_billing_duration_or_resolution_unavailable',
+      provider_list_rate_source: BYTEPLUS_LAS_LIST_PRICE_SOURCE.url,
+      model: input.model, mode: accounting.mode, input_type: accounting.inputType,
+      byteplus_billing_input_type: 'video_input', generate_audio: accounting.generateAudio,
+      has_start_image: accounting.hasStartImage, has_end_image: accounting.hasEndImage,
+      has_reference_images: accounting.hasReferenceImages, has_reference_videos: accounting.hasReferenceVideos,
+      has_reference_audio: accounting.hasReferenceAudio, resolution, aspect_ratio: input.aspectRatio,
+      duration_sec: outputDurationSec, input_video_duration_sec: list?.inputVideoDurationSec ?? null,
+      billable_duration_sec: list?.billableDurationSec ?? null,
+      provider_tokens: usage?.totalTokens ?? usage?.completionTokens ?? null,
+      total_tokens: usage?.totalTokens ?? usage?.completionTokens ?? null, completion_tokens: usage?.completionTokens ?? null,
+      unit_price_usd_per_1k_tokens: null, unit_price_usd_per_second: list?.unitPriceUsdPerSecond ?? null,
+      enhanced_unit_price_usd_per_second: list?.enhancedUnitPriceUsdPerSecond ?? null, billing_coefficient: list?.coefficient ?? null,
+      provider_cost_usd_list: list?.amountUsd ?? null, provider_cost_usd_effective: null, provider_cost_usd_observed: null,
+    };
+  }
   const estimate = estimateBytePlusBillableTokens({ engineId: job.engine_id, durationSec: job.duration_sec,
     resolution: input.resolution, aspectRatio: input.aspectRatio,
     billingInputType: accounting.byteplusBillingInputType as 'video_input' | 'no_video_input',

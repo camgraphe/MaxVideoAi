@@ -90,7 +90,7 @@ export async function ensureReusableAsset(params: {
   previewUrl?: string | null;
   metadata?: Record<string, unknown> | null;
   allowRemoteThumbnailFallback?: boolean;
-}): Promise<MediaAssetRecord> {
+}, dependencies: { copyRemoteMediaFn?: typeof copyRemoteMedia } = {}): Promise<MediaAssetRecord> {
   await ensureMediaLibrarySchema();
   const source = normalizeMediaAssetSource(params.source);
   const normalizedUrl = normalizeString(params.url);
@@ -204,7 +204,7 @@ export async function ensureReusableAsset(params: {
   const host = new URL(normalizedUrl).host.toLowerCase();
   const shouldCopy = source === 'saved_job_output' || host === 'fal.media' || host.endsWith('.fal.media');
   const copied = shouldCopy
-    ? await copyRemoteMedia({
+    ? await (dependencies.copyRemoteMediaFn ?? copyRemoteMedia)({
         userId: params.userId,
         url: normalizedUrl,
         kind: params.kind,

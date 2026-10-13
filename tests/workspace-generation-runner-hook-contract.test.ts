@@ -31,6 +31,7 @@ test('workspace generation runner is owned by a route-local hook', () => {
   assert.match(hookSource, /export function useWorkspaceGenerationRunner/);
   assert.match(hookSource, /const startRender = useCallback/);
   assert.match(hookSource, /prepareGenerationInputs/);
+  assert.match(hookSource, /getWorkspaceGenerationModeMessage/);
   assert.match(hookSource, /useWorkspaceSubmissionScope/);
   assert.match(appSource, /accessToken: app\.session\?\.access_token \?\? null/);
   assert.match(hookSource, /attempt\.isQuoteCurrent\(token\)/);
