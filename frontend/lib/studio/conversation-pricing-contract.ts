@@ -1,3 +1,4 @@
+import type {SeedanceEditSourceFacts} from '@/lib/seedance-edit-source';
 import {z} from 'zod';
 import {conversationSettingsSchema,STUDIO_CONVERSATION_MAX_REFERENCES} from './conversation-creation-contract';
 import {conversationMediaReferenceSchema,conversationMediaReferencesProperties} from './conversation-media-contract';
@@ -19,7 +20,7 @@ export const studioPricingReadSchema=z.object({
 }).strict();
 export type StudioPricingEstimate=Readonly<{
   modelId:string;surface:'image'|'video';mode:string;settings:Readonly<Record<string,string|number|boolean|null>>;
-  outputCount:1;outputDurationSec?:number;referenceCount:number;price:Readonly<CustomerDisplayPrice>;estimatedAt:string;quoteRequired:true;
+  outputCount:1;outputDurationSec?:number;sourceVideoOutput?:SeedanceEditSourceFacts;referenceCount:number;price:Readonly<CustomerDisplayPrice>;estimatedAt:string;quoteRequired:true;
 }>;
 export const studioPricingCompareSchema=studioPricingReadSchema.omit({action:true,modelId:true}).extend({
   action:z.literal('pricing.compare'),prompt:z.string().trim().min(1).max(3000),

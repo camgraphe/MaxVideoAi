@@ -47,6 +47,9 @@ export async function auditReviewedCustomerTariffSeed(input: {
   approvedSeedanceMarginPolicy?: 'preserve_positive_variant_margin';
   approvedSeedanceLasPolicy?: typeof SEEDANCE_LAS_INITIALIZATION_POLICY;
 }) {
+  if (input.approvedSeedanceLasPolicy && !isSeedance25LasInputPricing('seedance-2-5', 'v2v')) {
+    throw new Error('LAS Edit must be selected before the reviewed LAS initialization policy.');
+  }
   if (input.policy.status !== 'loaded') throw new Error('Effective policy unavailable');
   const rulesHash = createHash('sha256').update(JSON.stringify([...input.policy.rules]
     .sort((left, right) => left.id.localeCompare(right.id)))).digest('hex');

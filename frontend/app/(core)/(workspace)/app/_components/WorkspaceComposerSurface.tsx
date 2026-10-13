@@ -14,6 +14,8 @@ import type { KlingElementState, KlingElementsBuilderProps } from '@/components/
 import { Button } from '@/components/ui/Button';
 import { getLocalizedModeLabel } from '@/lib/ltx-localization';
 import { getEngineModeUnavailableMessage, isEngineModeQuoteReady } from '@/lib/engine-mode-availability';
+import { resolveSeedanceEditSourceFacts } from '@/lib/seedance-edit-source';
+import { seedanceEditSourceLabel } from '@/lib/seedance-edit-source-copy';
 import { getWorkspaceReferenceFields } from '../_lib/workspace-reference-fields';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps, Mode } from '@/types/engines';
 import {
@@ -404,8 +406,15 @@ export function WorkspaceComposerSurface({
     }
   }, [cfgScale, selectedEngine, form.mode, setCfgScale]);
 
-  const durationSec = multiPromptActive ? multiPromptTotalSec : form.durationSec;
-  const durationManagedLabel = `Duration managed by multi-prompt · ${multiPromptTotalSec}s`;
+  const inheritsSourceVideo = selectedEngine.modeAvailability?.[submissionMode]?.inheritsSourceVideo === true;
+  const inheritedSource = useMemo(() => {
+    if (!inheritsSourceVideo) return undefined;
+    const source = inputAssets.video_url?.find(asset => asset?.kind === 'video' && asset.status === 'ready');
+    try { return source ? resolveSeedanceEditSourceFacts(source) : undefined; } catch { return undefined; }
+  }, [inheritsSourceVideo, inputAssets.video_url]);
+  const durationSec = inheritedSource?.billedDurationSec ?? (multiPromptActive ? multiPromptTotalSec : form.durationSec);
+  const durationManagedLabel = inheritsSourceVideo ? seedanceEditSourceLabel(inheritedSource, uiLocale)
+    : `Duration managed by multi-prompt · ${multiPromptTotalSec}s`;
   const audioControlNote = voiceControlEnabled ? 'Audio locked by voice control' : undefined;
   const showLoopControl = supportsModeLoopControl(selectedEngine, submissionMode);
   const showOptionsControl = Boolean(
@@ -604,7 +613,7 @@ export function WorkspaceComposerSurface({
                 onSeedLockedChange={handleSeedLockedChange}
                 cfgScale={cfgScale}
                 onCfgScaleChange={setCfgScale}
-                durationManaged={multiPromptActive}
+                durationManaged={multiPromptActive || inheritsSourceVideo}
                 durationManagedLabel={durationManagedLabel}
                 showKlingV3Controls={supportsKlingV3Controls}
                 showKlingV3VoiceControls={supportsKlingV3VoiceControl}
@@ -671,7 +680,7 @@ export function WorkspaceComposerSurface({
                 showHdrControl={Boolean(hdrFieldEntry)}
                 hdrEnabled={hdrEnabled}
                 onHdrChange={handleHdrChange}
-                durationManaged={multiPromptActive}
+                durationManaged={multiPromptActive || inheritsSourceVideo}
                 durationManagedLabel={durationManagedLabel}
               />
             </fieldset>

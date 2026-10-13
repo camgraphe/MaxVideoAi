@@ -28,6 +28,8 @@ export type LegacyJobMediaRow = {
   preview_video_url?: string | null;
   render_ids?: unknown;
   duration_sec?: number | null;
+  /** Canonical inherited timing, distinct from measured original media facts. */
+  inherited_output_duration_sec?: number | null;
   measured_duration_sec?: number | null;
   audio_mime_type?: string | null;
   status?: string | null;
@@ -231,10 +233,11 @@ export function mapLegacyJobRowToOutputs(row: LegacyJobMediaRow): JobOutputRecor
       mimeType: inferMimeFromUrl(videoUrl, 'video'),
       width: normalizeInteger(row.video_width),
       height: normalizeInteger(row.video_height),
-      durationSec: normalizeInteger(row.duration_sec),
+      durationSec: normalizePositiveNumber(row.duration_sec),
       position: 0,
       status,
       metadata: { legacy: true, surface: row.surface ?? null,
+        ...(normalizePositiveNumber(row.inherited_output_duration_sec) ? { inheritedOutputDurationSec: row.inherited_output_duration_sec } : {}),
         ...(readGeneratedVideoFacts(row.video_media_facts, videoUrl) ? { mediaFacts: row.video_media_facts } : {}) },
     });
   }
@@ -254,7 +257,7 @@ export function mapLegacyJobRowToOutputs(row: LegacyJobMediaRow): JobOutputRecor
       mimeType: inferMimeFromUrl(audioUrl, 'audio', row.audio_mime_type),
       width: null,
       height: null,
-      durationSec: normalizeInteger(row.duration_sec),
+      durationSec: normalizePositiveNumber(row.duration_sec),
       position: 0,
       status,
       metadata: {
@@ -387,7 +390,8 @@ export function mapOutputRow(row: DbJobOutputRow): JobOutputRecord {
     width: row.width,
     height: row.height,
     durationSec: row.kind === 'video'
-      ? videoDuration(normalizeMetadata(row.metadata), row.storage_url ?? row.url, row.duration_sec) : row.duration_sec,
+      ? videoDuration(normalizeMetadata(row.metadata), row.storage_url ?? row.url,
+        normalizePositiveNumber(normalizeMetadata(row.metadata).inheritedOutputDurationSec) ?? row.duration_sec) : row.duration_sec,
     position: row.position,
     status: row.status,
     metadata: normalizeMetadata(row.metadata),

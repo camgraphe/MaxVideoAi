@@ -99,6 +99,11 @@ test('BytePlus ModelArk provider delegates payload and response normalization', 
   assert.match(providerSource, /from '\.\/byteplus-modelark-constants'/);
   assert.match(providerSource, /from '\.\/byteplus-modelark-payload'/);
   assert.match(providerSource, /from '\.\/byteplus-modelark-response'/);
+  assert.match(providerSource, /from '\.\/byteplus-modelark-transport'/);
+  const transportSource = readFileSync('frontend/src/server/video-providers/byteplus-modelark-transport.ts', 'utf8');
+  assert.match(transportSource, /export function resolveBytePlusTransport/);
+  assert.doesNotMatch(transportSource, /fetch\(|getBytePlusModelArkClient|createSeedanceFastTask/);
+  assert.match(readFileSync('frontend/server/byteplus-las-tariff.ts', 'utf8'), /from '@\/server\/video-providers\/byteplus-modelark-transport'/);
   assert.doesNotMatch(providerSource, /function extractVideoUrl/);
   assert.doesNotMatch(providerSource, /function uniqueNonEmptyUrls/);
   assert.doesNotMatch(providerSource, /export function buildBytePlusSeedancePayload/);

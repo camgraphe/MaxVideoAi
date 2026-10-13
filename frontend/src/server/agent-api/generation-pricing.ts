@@ -1,4 +1,5 @@
 import { bytePlusInputVideoDurationSec, isBytePlusInputVideoPricingModel } from '@/server/byteplus-accounting';
+import { resolveSeedance25ModelArkEditSource } from '@/server/seedance-edit-source';
 import {
   computeConfiguredPreflight,
   type ComputeConfiguredPreflightOptions,
@@ -203,6 +204,13 @@ function canonicalInputVideoDurationSec(
   return inputVideoDurationSec;
 }
 
+function canonicalSeedanceEditSource(request: CanonicalGenerationRequest, context: GenerationPricingReferenceContext) {
+  return resolveSeedance25ModelArkEditSource(request.engineId, request.mode,
+    (context.resolvedReferences ?? []).filter(reference => request.references.some(input => input.kind === 'asset'
+      && input.assetId === reference.assetId && input.role === reference.role && input.slot === reference.slot))
+      .map(reference => ({ kind: reference.mediaKind, durationSec: reference.durationSec, width: reference.width, height: reference.height })));
+}
+
 function canonicalImageReferences(request: CanonicalGenerationRequest) {
   return request.references.filter((reference) => reference.role !== 'mask');
 }
@@ -261,8 +269,10 @@ function canonicalVideoTrustedMediaPricingFacts(
   const inputAudioDurationSec = canonicalInputAudioDurationSec(request, context);
   const inputVideoDurationSec = canonicalInputVideoDurationSec(request, context);
   const referenceTokenBudget = canonicalReferenceTokenBudget(request, context);
+  const seedanceEditSource = canonicalSeedanceEditSource(request, context);
   return {
     referenceImageCount: canonicalReferenceImageCount(request, context),
+    ...(seedanceEditSource ? { seedanceEditSource } : {}),
     ...(inputAudioDurationSec !== undefined ? { inputAudioDurationSec } : {}),
     ...(inputVideoDurationSec !== undefined ? { inputVideoDurationSec } : {}),
     ...(referenceTokenBudget !== undefined ? { referenceTokenBudget } : {}),
@@ -401,6 +411,7 @@ export async function priceCanonicalGenerationInExecutor(
     const engineMode = toEngineGenerationMode(engine.id, request.mode);
     const pricingEngine = applyEngineVariantPricing(engine, engineMode);
     const durationSec = requiredPositiveInteger(request.settings, 'durationSec');
+    const seedanceEditSource = canonicalSeedanceEditSource(request, dependencies);
     const resolution = requiredString(request.settings, 'resolution');
     const audioEnabled = typeof request.settings.audio === 'boolean'
       ? request.settings.audio
@@ -413,14 +424,15 @@ export async function priceCanonicalGenerationInExecutor(
     };
     snapshot = await computeBillingSnapshot({
       engine: pricingEngine,
-      durationSec,
+      durationSec: seedanceEditSource?.billedDurationSec ?? durationSec,
       resolution,
-      aspectRatio: optionalString(request.settings, 'aspectRatio'),
+      aspectRatio: seedanceEditSource?.pricingAspectRatio ?? optionalString(request.settings, 'aspectRatio'),
       mode: engineMode,
       hasVideoInput: hasCanonicalVideoInput(request, dependencies),
       referenceImageCount: canonicalReferenceImageCount(request, dependencies),
       inputAudioDurationSec: canonicalInputAudioDurationSec(request, dependencies),
       inputVideoDurationSec: canonicalInputVideoDurationSec(request, dependencies),
+      ...(seedanceEditSource ? { seedanceEditSource } : {}),
       referenceTokenBudget: canonicalReferenceTokenBudget(request, dependencies),
       ...canonicalOmniPricingFacts(request,dependencies.resolvedReferences),
       membershipTier,

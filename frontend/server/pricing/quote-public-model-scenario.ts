@@ -111,6 +111,13 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   if (automaticDuration && input.durationOption !== 'auto' && mode.ui.duration && 'options' in mode.ui.duration
     && !mode.ui.duration.options.some(value => numericTariffDuration(value) === input.durationSec)) return null;
   let billedDuration = input.durationSec;
+  const inheritsEditSource = entry!.id === 'seedance-2-5' && mode.mode === 'v2v'
+    && resolveSeedance25ModeAvailability(entry!.engine, mode.mode)?.inheritsSourceVideo === true;
+  if (inheritsEditSource) {
+    if (typeof input.inputVideoDurationSec !== 'number' || !Number.isFinite(input.inputVideoDurationSec)
+      || input.inputVideoDurationSec < 4 || input.inputVideoDurationSec > 30) return null;
+    billedDuration = Math.ceil(input.inputVideoDurationSec);
+  }
   if (input.durationOption === 'auto') {
     try { billedDuration = buildBillingPricingFacts({ engine: entry!.engine, mode: mode.mode, durationSec: input.durationSec,
       resolution: input.resolution, aspectRatio: input.aspectRatio, hasVideoInput: input.hasVideoInput,
@@ -262,9 +269,13 @@ export async function quotePublicModelScenario(
       tariffRevision: snapshot.meta?.customerTariffRevision ?? null,
       policy: snapshot.meta?.pricingPolicy ?? null })).digest('hex').slice(0, 20);
     const seconds = Number(scenario.selector.durationSec);
+    const inheritsEditSource = entry?.id === 'seedance-2-5' && mode === 'v2v'
+      && resolveSeedance25ModeAvailability(entry.engine, mode)?.inheritsSourceVideo === true;
     const quantityLabel = getFalEngineById(input.modelId)?.category === 'image'
-      ? `${seconds} image${seconds === 1 ? '' : 's'}` : `${seconds}s${ltx25AudioTariffBounds(input.modelId, input.mode) ? ' source audio' : ''}`;
-    const sourceLabel = (supportsWan3TariffInputDuration(scenario.modelId, scenario.selector.mode)
+      ? `${seconds} image${seconds === 1 ? '' : 's'}` : inheritsEditSource
+        ? `${scenario.context.inputVideoDurationSec}s source · ${seconds}s price bracket · source format`
+        : `${seconds}s${ltx25AudioTariffBounds(input.modelId, input.mode) ? ' source audio' : ''}`;
+    const sourceLabel = !inheritsEditSource && (supportsWan3TariffInputDuration(scenario.modelId, scenario.selector.mode)
       || supportsSeedanceInputTariff(scenario.modelId, scenario.selector.mode, scenario.selector.billingInputType))
       ? ` output + ${scenario.context.inputVideoDurationSec}s input` : '';
     return { status: 'exact', amountCents: snapshot.totalCents, currency: snapshot.currency,

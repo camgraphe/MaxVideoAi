@@ -11,6 +11,8 @@ import {
   SEEDANCE_2_5_ENGINE_ID,
 } from './byteplus-modelark-constants';
 import { BytePlusModelArkError } from './byteplus-modelark-error';
+import { resolveBytePlusTransport, type BytePlusTransport } from './byteplus-modelark-transport';
+export { resolveBytePlusTransport, type BytePlusTransport } from './byteplus-modelark-transport';
 import type { BytePlusSeedanceFastPayload } from './byteplus-modelark-payload';
 import type { Seedance25FinalRequest } from './byteplus-modelark-draft';
 import {
@@ -92,16 +94,6 @@ function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, '');
 }
 
-export type BytePlusTransport = 'modelark' | 'las';
-
-export function resolveBytePlusTransport(
-  engineId: string | null | undefined,
-  mode: Mode | string | null | undefined,
-): BytePlusTransport {
-  if (engineId?.trim() !== SEEDANCE_2_5_ENGINE_ID) return 'modelark';
-  return mode?.trim().toLowerCase() === 'v2v' ? 'las' : 'modelark';
-}
-
 export function resolveBytePlusPollTransport(input: {
   providerJobId: string | null | undefined;
   settingsSnapshot: unknown;
@@ -129,6 +121,12 @@ export function isBytePlusLasExecutionEnabled(): boolean {
   );
 }
 
+export function isBytePlusModelArkEditExecutionEnabled(): boolean {
+  return ['1', 'true', 'yes', 'on'].includes(
+    (ENV.SEEDANCE_2_5_MODELARK_EDIT_ENABLED ?? 'false').trim().toLowerCase()
+  );
+}
+
 export function getBytePlusArkConfig() {
   return {
     apiKey: ENV.BYTEPLUS_ARK_API_KEY,
@@ -149,6 +147,12 @@ export function assertBytePlusTransportConfigured(
   mode: Mode | string | null | undefined,
 ): BytePlusTransport {
   const transport = resolveBytePlusTransport(engineId, mode);
+  if (engineId?.trim() === SEEDANCE_2_5_ENGINE_ID && mode?.trim().toLowerCase() === 'v2v'
+    && transport === 'modelark' && !isBytePlusModelArkEditExecutionEnabled()) {
+    throw new BytePlusModelArkError('ModelArk video editing is not enabled.', {
+      code: 'BYTEPLUS_MODELARK_EDIT_EXECUTION_DISABLED',
+    });
+  }
   if (transport === 'las' && !isBytePlusLasExecutionEnabled()) {
     throw new BytePlusModelArkError('BytePlus LAS execution is not enabled.', {
       code: 'BYTEPLUS_LAS_EXECUTION_DISABLED',

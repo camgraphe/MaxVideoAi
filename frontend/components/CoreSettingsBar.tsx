@@ -7,6 +7,7 @@ import { DEFAULT_CONTROLS_COPY, mergeControlsCopy } from '@/components/SettingsC
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { SelectMenu } from '@/components/ui/SelectMenu';
 import { formatCompactResolutionLabel, formatResolutionLabel } from '@/lib/resolution-labels';
+import { seedanceEditSourceLabel } from '@/lib/seedance-edit-source-copy';
 
 interface CoreSettingsBarProps {
   density?: 'default' | 'workspace' | 'comparison';
@@ -313,7 +314,8 @@ export function CoreSettingsBar({
   durationManaged = false,
   durationManagedLabel,
 }: CoreSettingsBarProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const inheritsSourceVideo = engine.modeAvailability?.[mode]?.inheritsSourceVideo === true;
   const workspaceDensity = density !== 'default';
   const comparisonDensity = density === 'comparison';
   const localizedControls = t('workspace.generate.controls', DEFAULT_CONTROLS_COPY) as
@@ -356,7 +358,7 @@ export function CoreSettingsBar({
     if (isLtxFastLong) return base.filter((value) => value === 25);
     return base;
   }, [caps?.fps, engine.fps, isLtxFastLong]);
-  const resolvedDurationManagedLabel = durationManagedLabel ?? controlsCopy.duration.managed;
+  const resolvedDurationManagedLabel = durationManagedLabel ?? (inheritsSourceVideo ? seedanceEditSourceLabel(undefined, locale) : controlsCopy.duration.managed);
 
   const durationOptions =
     frameOptions && frameOptions.length
@@ -447,7 +449,7 @@ export function CoreSettingsBar({
           workspaceDensity ? 'w-full flex-wrap gap-1.5' : 'flex-wrap gap-2'
         )}
       >
-        {durationManaged ? (
+        {durationManaged || inheritsSourceVideo ? (
           <div
             className={clsx(
               'inline-flex items-center rounded-full border border-dashed border-border bg-surface-glass-60 font-semibold uppercase tracking-micro text-text-muted',
@@ -507,7 +509,7 @@ export function CoreSettingsBar({
           />
         ) : null}
 
-        {showAspectControl ? (
+        {showAspectControl && !inheritsSourceVideo ? (
           <InlineSelectControl
             kind="aspect"
             options={aspectOptionsList}

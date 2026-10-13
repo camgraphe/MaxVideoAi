@@ -5,6 +5,13 @@ ModelArk launch evidence remains in `seedance-2-5.md`.
 
 ## Release state
 
+This procedure describes the separately guarded LAS candidate. The ModelArk
+API documented Edit on October 13; the current alternative qualification is
+recorded in [seedance-2-5-modelark-edit.md](seedance-2-5-modelark-edit.md).
+`SEEDANCE_2_5_EDIT_TRANSPORT` selects the current path, and LAS tariff authoring
+requires an explicit LAS selection. Do not apply this correction to a ModelArk
+launch or reinterpret recorded jobs using the current selection.
+
 Edit uses LAS `/api/v1/contents/generations/tasks`; T2V, I2V, Ref2V and Extend
 retain ModelArk `/api/v3`. This change prepares execution and accounting, but
 does not enable a production provider flag or create a provider task.

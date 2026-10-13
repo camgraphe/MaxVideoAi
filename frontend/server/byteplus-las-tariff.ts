@@ -1,3 +1,5 @@
+import { resolveBytePlusTransport } from '@/server/video-providers/byteplus-modelark-transport';
+
 /** LAS Enhanced supplier facts; ModelArk token tariffs and contracts are independent. */
 export const BYTEPLUS_LAS_LIST_PRICE_SOURCE = {
   url: 'https://docs.byteplus.com/en/docs/byteplus_las/video_gen_enhanced',
@@ -8,8 +10,12 @@ export const BYTEPLUS_LAS_LIST_PRICE_SOURCE = {
 const ENHANCED_UNIT_PRICE_USD_PER_SECOND = 0.303;
 const SEEDANCE25_VIDEO_INPUT_COEFFICIENTS = { '480p': 0.406, '720p': 0.9125 } as const;
 
-export function isSeedance25LasInputPricing(engineId: string, mode: string | null | undefined): boolean {
+export function isSeedance25EditInputPricing(engineId: string, mode: string | null | undefined): boolean {
   return engineId === 'seedance-2-5' && mode === 'v2v';
+}
+
+export function isSeedance25LasInputPricing(engineId: string, mode: string | null | undefined): boolean {
+  return isSeedance25EditInputPricing(engineId, mode) && resolveBytePlusTransport(engineId, mode) === 'las';
 }
 
 /** Every source-video second is billed, with no ModelArk token minimum. */

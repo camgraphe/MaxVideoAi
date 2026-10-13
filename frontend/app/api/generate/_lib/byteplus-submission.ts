@@ -8,6 +8,7 @@ import {
 import {
   BYTEPLUS_MODELARK_PROVIDER,
   assertBytePlusSeedanceSubmissionEnabled,
+  assertBytePlusTransportConfigured,
   buildBytePlusSeedancePayload,
   BytePlusModelArkError,
   getBytePlusArkConfig,
@@ -125,6 +126,7 @@ export async function submitBytePlusGenerateTask(params: {
   const logMetricFn = deps.logMetricFn;
   let providerAttempted = false;
   let acceptedProviderJobId: string | null = null;
+  let submissionTransport: 'modelark' | 'las' = 'las';
   const reliableLasSubmission = params.engineId === 'seedance-2-5' && params.mode === 'v2v';
   const uncertainResponse = (): BytePlusSubmissionResult => ({ ok: false, status: 503, body: {
     ok: false, error: 'BYTEPLUS_SUBMISSION_UNCERTAIN', jobId: params.jobId,
@@ -150,6 +152,10 @@ export async function submitBytePlusGenerateTask(params: {
       }
     }
     assertBytePlusSeedanceSubmissionEnabled(params.engineId);
+    submissionTransport = params.seedanceWorkflow ? 'modelark' : resolveBytePlusTransport(params.engineId, params.mode);
+    if (reliableLasSubmission && submissionTransport === 'modelark') {
+      assertBytePlusTransportConfigured(params.engineId, params.mode);
+    }
     const profile = requireBytePlusSeedanceProfile(params.engineId);
     const config = getBytePlusArkConfigFn();
     const generateAudio =
@@ -171,6 +177,7 @@ export async function submitBytePlusGenerateTask(params: {
       prompt: params.prompt,
       durationSec: params.durationSec,
       mode: toBytePlusMode(params.mode),
+      ...(reliableLasSubmission ? { transport: submissionTransport } : {}),
       imageUrl: params.mode === 'i2v' ? params.initialImageUrl : null,
       endImageUrl: params.mode === 'i2v' ? params.endImageUrl : null,
       referenceImageUrls: params.mode === 'ref2v' || params.mode === 'v2v' ? params.normalizedReferenceImages : undefined,
@@ -202,9 +209,9 @@ export async function submitBytePlusGenerateTask(params: {
       engineId: params.engineId, iterationCount: params.iterationCount, paymentMode: params.paymentMode, payloadInput,
     }, queryFn) : null;
     const payload = workflow?.payload ?? buildBytePlusSeedancePayloadFn(payloadInput);
-    const transport = workflow ? 'modelark' : resolveBytePlusTransport(params.engineId, params.mode);
+    const transport = submissionTransport;
     const client = getBytePlusModelArkClientFn(transport);
-    if (reliableLasSubmission && !await claimBytePlusLasSubmission(params.jobId, params.userId, queryFn)) {
+    if (reliableLasSubmission && !await claimBytePlusLasSubmission(params.jobId, params.userId, queryFn, transport)) {
       return existingResponse(await readOwnedBytePlusLasSubmission(params.jobId, params.userId, queryFn));
     }
     providerAttempted = true;
@@ -343,7 +350,7 @@ export async function submitBytePlusGenerateTask(params: {
           return uncertainResponse();
         }
         if (!await recordBytePlusLasSubmissionRejection({ jobId: params.jobId, userId: params.userId,
-          message: failureMessage, errorCode, attempted: providerAttempted, queryFn })) {
+          message: failureMessage, errorCode, attempted: providerAttempted, queryFn, transport: submissionTransport })) {
           return existingResponse(await readOwnedBytePlusLasSubmission(params.jobId, params.userId, queryFn));
         }
         await markBytePlusJobFailed(stored, failureMessage, null, { providerErrorCode, failureCode });

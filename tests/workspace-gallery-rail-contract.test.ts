@@ -111,7 +111,7 @@ test('Seedance completion persists canonical video outputs before preview enrich
   );
 
   assert.match(pollSource, /upsertLegacyJobOutputs/);
-  assert.match(pollSource, /bytePlusCompletedOutputRow\(job, copiedVideoUrl, thumb\)/);
+  assert.match(pollSource, /bytePlusCompletedOutputRow\(job, copiedVideoUrl, thumb, videoMediaFacts\)/);
   assert.match(outputSource, /video_url:\s*videoUrl/);
   assert.match(outputSource, /thumb_url:\s*thumbUrl/);
   assert.match(outputSource, /await input\.upsertOutputsFn[\s\S]*requireMcpPromotion:\s*true/);

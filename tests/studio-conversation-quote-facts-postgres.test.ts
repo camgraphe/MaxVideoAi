@@ -1,3 +1,4 @@
+import { conversationQuotePresentation } from '../frontend/src/lib/studio/conversation-quote-presentation';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {readFileSync} from 'node:fs';
@@ -85,6 +86,32 @@ test('persisted Studio quote facts stay exact, bounded, isolated and available t
     assert.deepEqual(shown?.summary,edit);
     assert.equal(shown?.price.amountCents,48);
     assert.equal(shown?.requestHash,hashCanonicalGenerationRequest(edit));
+  });
+
+  await t.test('Edit quote cards and project facts retain inherited framing and the disclosed fractional tariff class', async () => {
+    await pg.pool.query("INSERT INTO studio_projects(id,user_id,name) VALUES('edit-timing','owner','Edit timing')");
+    const editActor={...actor,projectId:'edit-timing'};
+    const editRepository=createQuoteRepository(generationQuoteCodec,{origin:'studio-session',projectId:editActor.projectId});
+    const sourceVideoOutput = { durationSec: 4.25, width: 1280, height: 720, billedDurationSec: 5,
+      pricingAspectRatio: '16:9', outputDuration: 'source', outputAspectRatio: 'source' };
+    const edit = normalizeGenerationRequest({surface:'video',engineId:'seedance-2-5',mode:'v2v',prompt:'PRIVATE_EDIT',
+      settings:{durationSec:9,resolution:'480p',aspectRatio:'9:16'},references:[{kind:'asset',assetId:'ma_'+'a'.repeat(32),role:'source'}],outputCount:1});
+    const quote = await editRepository.insertPreparedQuote({userId:actor.userId,oauthClientId:null,request:edit,
+      requestHash:hashCanonicalGenerationRequest(edit),catalogRevision:'fixture',
+      pricingSnapshot:{canonicalPricing:{meta:{output_duration_sec:4.25,seedanceEditSource:sourceVideoOutput}}},
+      priceCents:84,currency:'USD',fundingMode:'wallet'},{executor});
+    await linkQuote(quote.quoteId,actor.userId,editActor.projectId,{reply:'Review the edit.',image:null,
+      media:{action:'video.prepare',reply:'Review the edit.',mode:'v2v',modelId:edit.engineId,prompt:edit.prompt,aspectRatio:'9:16',source:null,
+        settings:Object.entries(edit.settings).map(([name,value])=>({name,value})),references:[{ref:{type:'asset',assetId:'ma_'+'a'.repeat(32),kind:'video'},role:'source'}]}});
+    const fact=(await readStudioConversationProject(editActor)).generations?.find(row=>row.quoteId===quote.quoteId)?.quote;
+    assert.equal(fact?.outputDurationSec,4.25);
+    assert.deepEqual((fact as any)?.sourceVideoOutput,sourceVideoOutput);
+    const service=createImageConversationService(editActor,{enabled:true,mediaEnabled:true});
+    const shown=(await service.read()).turns.find(turn=>turn.quote?.quoteId===quote.quoteId)?.quote;
+    assert.deepEqual(shown?.sourceVideoOutput,sourceVideoOutput);
+    const presentation=conversationQuotePresentation(shown!.summary,'fr',shown!.outputDurationSec,(shown as any).sourceVideoOutput);
+    assert.match(presentation.settings,/4,25s.*Format source.*Tarif 5s/);
+    assert.doesNotMatch(presentation.settings,/9:16|\b9 s\b/);
   });
 
   await t.test('same-account other-project, foreign-account and OAuth quote links cannot leak into this context',async()=>{

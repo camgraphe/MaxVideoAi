@@ -2,6 +2,15 @@
 
 ## Seedance 2.5 LAS Edit
 
+Current new-work classification follows `SEEDANCE_2_5_EDIT_TRANSPORT`. The
+ModelArk alternative documented on 2026-10-13 reads existing reviewed token
+curves and preserves the source's exact timing/framing. Its provider duration
+`-1` never enters pricing: the positive integer output tariff class rounds up,
+while exact source seconds remain continuous and both values are disclosed in
+`seedanceEditSource`. Quotes and terminal jobs bind their selected transport;
+current flags cannot reinterpret paid history. LAS authoring refuses a ModelArk
+selection. See the [ModelArk Edit qualification](../model-launch/seedance-2-5-modelark-edit.md).
+
 LAS V2V uses the separate factual `server/byteplus-las-tariff.ts` input-plus-output
 duration rate. Runtime customer quotes require an active reviewed literal tariff
 with no ModelArk token minimum; ModelArk discount and token costs cannot fill a

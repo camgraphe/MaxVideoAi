@@ -8,7 +8,7 @@ import { applyBytePlusTrialOutcomeSafely } from './byteplus-trial-outcomes';
 import type { BytePlusTerminalTrialOutcome } from './byteplus-trial-job-persistence';
 import type { BytePlusPendingJob } from './byteplus-poll-types';
 import { reconcileSeedanceWorkflowOutcome } from './seedance-workflow-outcome';
-import { isRecord } from './byteplus-record-utils';
+import { requiresBytePlusDurableEditOutput } from './byteplus-output-persistence';
 
 const ACTIVE_JOB_STATUSES = ['pending', 'queued', 'running', 'processing', 'in_progress', 'provider_polling_stalled'];
 
@@ -139,8 +139,7 @@ export async function markBytePlusJobFailed(
         [failedJob.job_id],
       );
     }
-    if (failedJob.engine_id === 'seedance-2-5' && isRecord(failedJob.settings_snapshot)
-      && failedJob.settings_snapshot.byteplusTransport === 'las') {
+    if (requiresBytePlusDurableEditOutput(failedJob)) {
       await executor.query(`UPDATE mcp_generation_quotes q SET state = 'failed', updated_at = now()
         FROM app_jobs j WHERE j.job_id = $1 AND j.user_id IS NOT DISTINCT FROM $2
           AND j.status = 'failed' AND j.payment_status = 'refunded_wallet'
