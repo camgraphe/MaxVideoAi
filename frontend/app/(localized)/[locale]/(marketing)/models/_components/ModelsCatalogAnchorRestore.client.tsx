@@ -1,18 +1,22 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { consumeAnchorHistoryArrival } from '@/lib/anchor-history-arrival';
 
-const CANCEL_EVENTS = ['wheel', 'touchstart', 'pointerdown', 'keydown', 'popstate', 'pagehide'] as const;
+const CANCEL_EVENTS = ['wheel', 'touchstart', 'pointerdown', 'keydown', 'pagehide'] as const;
 const CATALOG_ANCHOR_IDS = ['models-grid', 'recommended'];
 type AnchorIntent = { href: string; fromHref: string; id: string; x: number; y: number; explicit: boolean };
 
 /** Restore local anchors missed while catalogue prices were suspended, without overriding later navigation intent. */
 export function ModelsCatalogAnchorRestore() {
   const marker = useRef<HTMLSpanElement>(null);
+  const historyArrival = useRef<boolean | null>(null);
 
   useEffect(() => {
     const scope = marker.current?.parentElement;
     if (!scope) return;
+    historyArrival.current ??= consumeAnchorHistoryArrival(window);
+    const route = new URL(window.location.href);
     let pending: AnchorIntent | null = null;
     let frame: number | null = null;
     const observer = new window.MutationObserver(restore);
@@ -74,6 +78,13 @@ export function ModelsCatalogAnchorRestore() {
         restore();
       } else cancel();
     }
+    function historyChange() {
+      cancel();
+      const current = new URL(window.location.href);
+      if (current.origin === route.origin && current.pathname === route.pathname && current.search === route.search) {
+        consumeAnchorHistoryArrival(window);
+      }
+    }
     function hashChange() {
       if (pending?.explicit && window.location.href === pending.href) restore();
       else cancel();
@@ -82,15 +93,17 @@ export function ModelsCatalogAnchorRestore() {
     window.addEventListener('scroll', scroll, { capture: true, passive: true });
     window.addEventListener('click', click, true);
     window.addEventListener('hashchange', hashChange);
+    window.addEventListener('popstate', historyChange, { capture: true, passive: true });
     const url = new URL(window.location.href), id = anchorId(url);
     const navigation = window.performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
-    if (id && window.scrollX === 0 && window.scrollY === 0 && navigation?.type !== 'back_forward') begin(url, id, false);
+    if (!historyArrival.current && id && window.scrollX === 0 && window.scrollY === 0 && navigation?.type !== 'back_forward') begin(url, id, false);
     return () => {
       cancel();
       for (const event of CANCEL_EVENTS) window.removeEventListener(event, cancel, true);
       window.removeEventListener('scroll', scroll, true);
       window.removeEventListener('click', click, true);
       window.removeEventListener('hashchange', hashChange);
+      window.removeEventListener('popstate', historyChange, true);
     };
   }, []);
 

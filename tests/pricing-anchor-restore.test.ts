@@ -34,12 +34,12 @@ async function fixture(hash: string, options: { scrollY?: number; navigationType
     dom.window.document.getElementById(external ? 'external' : 'client')!.append(section);
     return section;
   };
-  await act(async () => root.render(React.createElement(PricingAnchorRestore, {})));
+  await act(async () => root.render(React.createElement(React.StrictMode, null, React.createElement(PricingAnchorRestore, {}))));
   const flush = async () => { await act(async () => { await new Promise(done => dom.window.setTimeout(done, 40)); }); };
   return {
     dom, scrolls, insert, flush,
     async leave() { await act(async () => root.render(null)); },
-    async remount() { await act(async () => root.render(React.createElement(PricingAnchorRestore, {}))); },
+    async remount() { await act(async () => root.render(React.createElement(React.StrictMode, null, React.createElement(PricingAnchorRestore, {})))); },
     expire() { assert.ok(expire, 'Missing anchors need a bounded wait'); expire(); },
     ready(parent = dom.window.document.getElementById('client')!) {
       const marker = dom.window.document.createElement('span');
@@ -226,5 +226,40 @@ test('Pricing waits for quick-start geometry even if the lower matrix reveals fi
     const quickReady = f.ready(); quickReady.removeAttribute('data-pricing-content-ready');
     await f.flush();
     assert.deepEqual(f.scrolls, [{ id: 'video-pricing', options: { block: 'start', behavior: 'instant' } }]);
+  } finally { await f.dispose(); }
+});
+
+
+test('PricingAnchorRestore preserves SPA Back restored at zero or nonzero before remount', async t => {
+  for (const scrollY of [0, 1900]) await t.test(String(scrollY), async () => {
+    const f = await fixture('#kling-3-pro-pricing');
+    try {
+      await f.leave();
+      f.dom.window.history.pushState({ next: true }, '', '/other-page');
+      const returned = new Promise<void>(resolve => f.dom.window.addEventListener('popstate', () => resolve(), { once: true }));
+      f.dom.window.history.back(); await returned;
+      Object.defineProperty(f.dom.window, 'scrollY', { configurable: true, value: scrollY });
+      await f.remount();
+      f.insert('kling-3-pro-pricing'); f.ready(); await f.flush();
+      assert.deepEqual(f.scrolls, []);
+      assert.equal(f.dom.window.scrollY, scrollY);
+    } finally { await f.dispose(); }
+  });
+});
+
+test('PricingAnchorRestore consumes mounted local history so a later fresh arrival still restores', async () => {
+  const f = await fixture('#kling-3-pro-pricing');
+  try {
+    const arrival = f.dom.window.location.href;
+    f.dom.window.history.pushState({ next: true }, '', '#another-section');
+    const returned = new Promise<void>(resolve => f.dom.window.addEventListener('popstate', () => resolve(), { once: true }));
+    f.dom.window.history.back(); await returned; await f.flush();
+    assert.deepEqual(f.scrolls, []);
+    await f.leave();
+    f.dom.window.history.pushState({ next: true }, '', '/other-page');
+    f.dom.window.history.pushState({ next: true }, '', arrival);
+    await f.remount();
+    f.insert('kling-3-pro-pricing'); f.ready(); await f.flush();
+    assert.deepEqual(f.scrolls, [{ id: 'kling-3-pro-pricing', options: { block: 'start', behavior: 'instant' } }]);
   } finally { await f.dispose(); }
 });

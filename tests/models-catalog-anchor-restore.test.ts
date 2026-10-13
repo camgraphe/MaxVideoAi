@@ -29,6 +29,8 @@ async function fixture(hash: string, options: { scrollY?: number; navigationType
   const flush = async () => { await act(async () => { await new Promise(done => dom.window.setTimeout(done, 40)); }); };
   return {
     dom, scrolls, insert, flush,
+    async leave() { await act(async () => root.render(null)); },
+    async remount() { await act(async () => root.render(React.createElement(ModelsCatalogAnchorRestore, {}))); },
     click(href = '#recommended', options: { event?: MouseEventInit; target?: string; download?: string } = {}) {
       const link = dom.window.document.createElement('a');
       link.href = href;
@@ -140,4 +142,39 @@ test('new input or history navigation cancels a pending hero Link intent', async
       f.insert('recommended'); await f.flush(); assert.deepEqual(f.scrolls, []);
     } finally { await f.dispose(); }
   });
+});
+
+
+test('ModelsCatalogAnchorRestore preserves SPA Back restored at zero or nonzero before remount', async t => {
+  for (const scrollY of [0, 1900]) await t.test(String(scrollY), async () => {
+    const f = await fixture('#models-grid');
+    try {
+      await f.leave();
+      f.dom.window.history.pushState({ next: true }, '', '/other-page');
+      const returned = new Promise<void>(resolve => f.dom.window.addEventListener('popstate', () => resolve(), { once: true }));
+      f.dom.window.history.back(); await returned;
+      Object.defineProperty(f.dom.window, 'scrollY', { configurable: true, value: scrollY });
+      await f.remount();
+      f.insert('models-grid'); await f.flush();
+      assert.deepEqual(f.scrolls, []);
+      assert.equal(f.dom.window.scrollY, scrollY);
+    } finally { await f.dispose(); }
+  });
+});
+
+test('ModelsCatalogAnchorRestore consumes mounted local history so a later fresh arrival still restores', async () => {
+  const f = await fixture('#models-grid');
+  try {
+    const arrival = f.dom.window.location.href;
+    f.dom.window.history.pushState({ next: true }, '', '#another-section');
+    const returned = new Promise<void>(resolve => f.dom.window.addEventListener('popstate', () => resolve(), { once: true }));
+    f.dom.window.history.back(); await returned; await f.flush();
+    assert.deepEqual(f.scrolls, []);
+    await f.leave();
+    f.dom.window.history.pushState({ next: true }, '', '/other-page');
+    f.dom.window.history.pushState({ next: true }, '', arrival);
+    await f.remount();
+    f.insert('models-grid'); await f.flush();
+    assert.deepEqual(f.scrolls, [{ id: 'models-grid', options: { block: 'start', behavior: 'instant' } }]);
+  } finally { await f.dispose(); }
 });

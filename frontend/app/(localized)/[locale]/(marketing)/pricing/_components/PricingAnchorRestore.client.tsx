@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { consumeAnchorHistoryArrival } from '@/lib/anchor-history-arrival';
 
-const CANCEL_EVENTS = ['wheel', 'touchstart', 'pointerdown', 'keydown', 'popstate', 'pagehide'] as const;
+const CANCEL_EVENTS = ['wheel', 'touchstart', 'pointerdown', 'keydown', 'pagehide'] as const;
 const MAX_WAIT_MS = 30_000;
 const FIXED_ANCHORS = new Set(['video-pricing', 'image-pricing', 'audio-pricing', 'tool-pricing', 'full-video-pricing-table', 'pricing-faq']);
 type AnchorIntent = { href: string; fromHref: string; id: string; x: number; y: number; explicit: boolean };
@@ -10,10 +11,13 @@ type AnchorIntent = { href: string; fromHref: string; id: string; x: number; y: 
 /** Restore Pricing destinations missed during streaming, without overriding later navigation intent. */
 export function PricingAnchorRestore() {
   const marker = useRef<HTMLSpanElement>(null);
+  const historyArrival = useRef<boolean | null>(null);
 
   useEffect(() => {
     const scope = marker.current?.parentElement;
     if (!scope) return;
+    historyArrival.current ??= consumeAnchorHistoryArrival(window);
+    const route = new URL(window.location.href);
     let pending: AnchorIntent | null = null;
     let frame: number | null = null;
     let deadline: number | null = null;
@@ -89,6 +93,13 @@ export function PricingAnchorRestore() {
         restore();
       } else cancel();
     }
+    function historyChange() {
+      cancel();
+      const current = new URL(window.location.href);
+      if (current.origin === route.origin && current.pathname === route.pathname && current.search === route.search) {
+        consumeAnchorHistoryArrival(window);
+      }
+    }
     function hashChange() {
       if (pending?.explicit && window.location.href === pending.href) restore();
       else cancel();
@@ -97,11 +108,12 @@ export function PricingAnchorRestore() {
     window.addEventListener('scroll', scroll, { capture: true, passive: true });
     window.addEventListener('click', click, true);
     window.addEventListener('hashchange', hashChange);
+    window.addEventListener('popstate', historyChange, { capture: true, passive: true });
     const url = new URL(window.location.href), id = anchorId(url);
     const navigation = window.performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
     // Navigation Timing is document-scoped and cannot identify an SPA history return.
     // Preserve any existing scroll position; explicit local clicks are tracked separately.
-    if (id && navigation?.type !== 'back_forward' && window.scrollX === 0 && window.scrollY === 0) {
+    if (!historyArrival.current && id && navigation?.type !== 'back_forward' && window.scrollX === 0 && window.scrollY === 0) {
       begin(url, id, false);
     }
     return () => {
@@ -110,6 +122,7 @@ export function PricingAnchorRestore() {
       window.removeEventListener('scroll', scroll, true);
       window.removeEventListener('click', click, true);
       window.removeEventListener('hashchange', hashChange);
+      window.removeEventListener('popstate', historyChange, true);
     };
   }, []);
 

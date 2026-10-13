@@ -492,7 +492,11 @@ pending duplicates and hidden React transport payloads, accepts an early local
 link or an arrival at zero scroll, and never rewrites history. A nonzero arrival
 keeps its position because document Navigation Timing cannot distinguish a fresh
 SPA entry from a history return; explicit local clicks still restore from any
-position. User input, changed navigation, completion without a
+position. The three new streamed public readers share the browser-safe
+`anchor-history-arrival.ts` observer. Its single passive document listener records
+Back/Forward before a route remount, including a restored zero position; mounted
+same-route handlers consume the signal so local hash history cannot suppress a
+later fresh arrival. It never patches or writes browser history. User input, changed navigation, completion without a
 matching target, unmount or a 30-second deadline cancels the wait. Initial document
 and back/forward restored scroll positions retain their existing authority.
 `tests/pricing-anchor-restore.test.ts` covers this route-local contract.
