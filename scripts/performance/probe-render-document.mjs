@@ -16,7 +16,7 @@ fs.writeFileSync(path.join(root,'flags.json'),JSON.stringify({baseline,candidate
 for(let run=1;run<=5;run++) {
  for(const arm of run%2 ? ['baseline','candidate'] : ['candidate','baseline']) {
   const prefix=path.join(root,arm+'-'+run);
-  const flags={chromeIgnoreDefaultFlags:true,chromeFlags:(arm==='baseline'?baseline:candidate).map(flag=>JSON.stringify(flag)).join(' '),additionalTraceCategories:'viz,cc,renderer.scheduler,disabled-by-default-cc.debug',onlyCategories:['performance']};
+  const flags={chromeIgnoreDefaultFlags:true,chromeFlags:arm==='baseline'?baseline:candidate,additionalTraceCategories:'viz,cc,renderer.scheduler,disabled-by-default-cc.debug',onlyCategories:['performance']};
   fs.writeFileSync(prefix+'-flags.json',JSON.stringify(flags,null,2));
   const result=spawnSync(process.execPath,[cli,'https://maxvideoai.com/examples','--cli-flags-path='+prefix+'-flags.json','--save-assets','--output=json','--output-path='+prefix+'.json'],{stdio:'inherit'});
   if(result.status!==0)process.exit(result.status??1);
