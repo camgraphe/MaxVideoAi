@@ -38,7 +38,7 @@ const toolsFree = new Set(['tests/test-postgres-toolchain.test.ts']);
 // New *-postgres tests are automatically excluded from the tools-free lane.
 const integration = standard.filter(file => !toolsFree.has(file) && !tariffSet.has(file) && !browserSet.has(file) && (
   file.endsWith('-postgres.test.ts')
-  || /\bfrom\s*['"][^'"]*(?:disposable-postgres|studio-integration-runtime)|\binitdb\b|ffmpeg/.test(readFileSync(file, 'utf8'))
+  || /\bfrom\s*['"][^'"]*(?:disposable-postgres|studio-integration-runtime|[\w-]+-postgres-fixture)|\binitdb\b|ffmpeg/.test(readFileSync(file, 'utf8'))
 ));
 const integrationSet = new Set(integration);
 const fast = standard.filter(file => !tariffSet.has(file) && !integrationSet.has(file) && !browserSet.has(file));

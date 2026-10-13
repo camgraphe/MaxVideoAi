@@ -99,7 +99,8 @@ assertions remain in place. CI continues to install PostgreSQL 17 with its exist
 setup action.
 
 The runner automatically places `*-postgres.test.ts` files and tests importing
-the disposable PostgreSQL/Studio runtime helpers or using initdb/FFmpeg in the
+the disposable PostgreSQL/Studio runtime helpers, a `*-postgres-fixture` helper,
+or using initdb/FFmpeg in the
 integration lane. Tests directly launching Chromium, Firefox or WebKit, or using
 their installed executable paths for a renderer, belong in the browser lane, as
 do tests importing the connected browser fixture helper. The real composition

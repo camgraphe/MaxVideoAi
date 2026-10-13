@@ -9,7 +9,7 @@ import { resolveMediaAwarePreflight } from '../frontend/app/api/preflight/_lib/m
 import { ENV } from '../frontend/src/lib/env.ts';
 import { parsePreflightRequestPayload } from '../frontend/app/api/preflight/_lib/preflight-request.ts';
 import type { EngineCaps, PreflightRequest } from '../frontend/types/engines.ts';
-import { withReviewedLasPreflightFixture } from './helpers/seedance-las-pricing-fixture';
+import { withReviewedLasPreflightFixture } from './helpers/seedance-las-preflight-postgres-fixture';
 
 function engineFor(id: string): EngineCaps {
   const engine = listFalEngines().find((entry) => entry.id === id)?.engine;
