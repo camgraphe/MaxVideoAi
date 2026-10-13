@@ -137,13 +137,14 @@ export type PayAsYouGoPageData = {
 };
 
 export type PayAsYouGoHeroData = {
+  common: Pick<PayAsYouGoContent['common'], 'liveQuote'>;
   hero: PayAsYouGoContent['hero'];
   pricing: Pick<PayAsYouGoPageData['pricing'], 'fullMatrixHref'>;
 };
 
 /** Editorial opening only: never build provisional prices to render the hero. */
 export function buildPayAsYouGoHeroData(content: PayAsYouGoContent): PayAsYouGoHeroData {
-  return { hero: content.hero, pricing: { fullMatrixHref: { pathname: '/pricing', hash: 'video-pricing' } } };
+  return { common: { liveQuote: content.common.liveQuote }, hero: content.hero, pricing: { fullMatrixHref: { pathname: '/pricing', hash: 'video-pricing' } } };
 }
 
 function rowIncludesFamily(row: VideoPricingRow, family: string) {

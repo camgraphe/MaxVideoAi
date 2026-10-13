@@ -32,7 +32,7 @@ async function bundle() {
   };
   try {
     await build({
-      stdin: { contents: `export {default as Page} from ${JSON.stringify(join(route, 'page.tsx'))};export {PayAsYouGoPageView} from ${JSON.stringify(join(route, '_components/PayAsYouGoPageView.tsx'))};export {buildPayAsYouGoPageData} from ${JSON.stringify(join(route, '_lib/payg-page-data.ts'))};export {getPayAsYouGoContent} from ${JSON.stringify(join(route, '_content/index.ts'))};export {buildCurrentVideoPricingData} from './frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/currentPricingHubData';export {I18nProvider} from './frontend/lib/i18n/I18nProvider';export * from 'probe';`, resolveDir: process.cwd() },
+      stdin: { contents: `export {default as Page} from ${JSON.stringify(join(route, 'page.tsx'))};export {PayAsYouGoPageView} from ${JSON.stringify(join(route, '_components/PayAsYouGoPageView.tsx'))};export {PayAsYouGoHeroQuoteCard,PayAsYouGoHeroQuotePending} from ${JSON.stringify(join(route, '_components/PayAsYouGoHeroQuoteCard.tsx'))};export {buildPayAsYouGoPageData,buildPayAsYouGoHeroData} from ${JSON.stringify(join(route, '_lib/payg-page-data.ts'))};export {getPayAsYouGoContent} from ${JSON.stringify(join(route, '_content/index.ts'))};export {buildCurrentVideoPricingData} from './frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/currentPricingHubData';export {I18nProvider} from './frontend/lib/i18n/I18nProvider';export * from 'probe';`, resolveDir: process.cwd() },
       outfile: output, bundle: true, platform: 'node', format: 'cjs', packages: 'external', tsconfig: 'frontend/tsconfig.json', jsx: 'automatic',
       plugins: [{ name: 'payg-controlled-io', setup(builder) {
         builder.onResolve({ filter: /.*/ }, args => {
@@ -89,7 +89,7 @@ test('PAYG emits its hero before held current prices, then preserves the settled
         assert.equal(h.calls.length, 8, 'The existing video queue starts only its eight workers');
         assert.equal(h.reads.length, 1);
         const errors: unknown[] = [];
-        const stream = await renderToReadableStream(wrap(await pending), { onError: (error: unknown) => errors.push(error) });
+        const stream = await renderToReadableStream(wrap(await pending), { onError: (error: unknown) => { errors.push(error); } });
         const reader = stream.getReader(), decoder = new TextDecoder();
         let shell = '';
         while (!shell.includes('data-shell-complete')) {
@@ -130,6 +130,40 @@ test('PAYG emits its hero before held current prices, then preserves the settled
         final.window.close(); expected.window.close();
       } finally { h.release('prices'); h.release('showcase'); await pending.catch(() => undefined); }
     });
+    for (const locale of ['en', 'fr', 'es']) for (const state of ['exact', 'unavailable', 'fewer-rows', 'empty']) await t.test(`quote-reservation/${locale}/${state}`, async () => {
+      h.configure({ unavailable: state === 'unavailable' }); h.release('prices'); h.release('showcase');
+      const content = h.getPayAsYouGoContent(locale);
+      const pricingHub = await h.buildCurrentVideoPricingData(locale);
+      if (state === 'empty') pricingHub.video.rows = [];
+      if (state === 'fewer-rows') pricingHub.video.rows = pricingHub.video.rows.filter((row: { id: string }) => row.id === 'ltx-2-5-pro');
+      const data = h.buildPayAsYouGoPageData({ locale, content, pricingHub });
+      const render = (component: unknown, data: unknown) => new JSDOM(renderToStaticMarkup(
+        React.createElement(ImageConfigContext.Provider, { value: config }, React.createElement(component, { data }))));
+      const pending = render(h.PayAsYouGoHeroQuotePending, h.buildPayAsYouGoHeroData(content));
+      const settled = render(h.PayAsYouGoHeroQuoteCard, data);
+      try {
+        // DOM reservation contract. Actual text wrapping and H1 movement remain
+        // browser checks, including FR/ES at narrow mobile widths.
+        for (const [selector, reservation] of [
+          ['[data-payg-quote-rows]', /min-h-\[258px\]/],
+          ['[data-payg-quote-context]', /min-h-12 sm:min-h-8/],
+        ] as const) {
+          const first = pending.window.document.querySelector(selector);
+          const final = settled.window.document.querySelector(selector);
+          assert.ok(first && final, `${selector} must persist even when current rows or context are absent`);
+          assert.equal(final.className, first.className);
+          assert.match(final.className, reservation);
+        }
+        for (const doc of [pending, settled]) {
+          const label = doc.window.document.querySelector('[data-payg-quote-amount] [aria-hidden="true"]');
+          assert.equal(label?.textContent, content.common.liveQuote, 'The locale-specific unavailable label reserves its real wrapping width');
+          assert.ok(label?.classList.contains('invisible'));
+        }
+        assert.equal(settled.window.document.querySelector('[data-payg-quote-context]')?.textContent, data.hero.quote.sampleCost?.context ?? '');
+        assert.equal(settled.window.document.querySelector('[data-payg-quote-amount] > :last-child')?.textContent, data.hero.quote.sampleCost?.price ?? content.common.liveQuote);
+        assert.equal(settled.window.document.querySelector('[data-payg-quote-rows]')?.children.length, state === 'empty' ? 0 : state === 'fewer-rows' ? 1 : 4);
+      } finally { pending.window.close(); settled.window.close(); }
+    });
     for (const beforeRender of [false, true]) for (const showcaseFailure of [false, true]) await t.test(`rejection/${beforeRender ? 'before' : 'during'}-render/${showcaseFailure ? 'showcase' : 'pricing'}`, async () => {
       h.configure({ failure: !showcaseFailure, showcaseFailure });
       const locale = 'fr', content = h.getPayAsYouGoContent(locale);
@@ -142,7 +176,7 @@ test('PAYG emits its hero before held current prices, then preserves the settled
       }
       const stream = await renderToReadableStream(React.createElement(ImageConfigContext.Provider, { value: config },
         React.createElement(h.I18nProvider, { locale, dictionary: {}, fallback: {} }, page)),
-      { onError: (error: unknown) => errors.push(error) });
+      { onError: (error: unknown) => { errors.push(error); } });
       const reader = stream.getReader(), decoder = new TextDecoder();
       const first = await reader.read();
       let html = decoder.decode(first.value, { stream: true });

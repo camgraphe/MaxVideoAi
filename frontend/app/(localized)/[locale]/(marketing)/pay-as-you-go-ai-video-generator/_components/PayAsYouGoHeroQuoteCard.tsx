@@ -3,11 +3,13 @@ import { Sparkles } from 'lucide-react';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import type { PayAsYouGoHeroData, PayAsYouGoPageData } from '../_lib/payg-page-data';
 
-function QuoteCardFrame({ quote, rows, model, cost }: {
+function QuoteCardFrame({ quote, liveQuote, rows, model, price, context }: {
   quote: PayAsYouGoHeroData['hero']['quote'];
+  liveQuote: string;
   rows: ReactNode;
   model: ReactNode;
-  cost: ReactNode;
+  price: ReactNode;
+  context?: ReactNode;
 }) {
   return (
     <div className="relative overflow-hidden rounded-[8px] border border-hairline bg-surface shadow-card">
@@ -23,7 +25,7 @@ function QuoteCardFrame({ quote, rows, model, cost }: {
           </span>
         </div>
 
-        <div className="mt-5 grid gap-2">
+        <div data-payg-quote-rows className="mt-5 grid min-h-[258px] content-start gap-2">
           {rows}
         </div>
 
@@ -39,7 +41,11 @@ function QuoteCardFrame({ quote, rows, model, cost }: {
           </div>
           <div className="rounded-[8px] border border-hairline bg-bg p-3">
             <span className="block text-xs font-semibold uppercase tracking-micro text-text-muted">{quote.exampleCostLabel}</span>
-            {cost}
+            <span data-payg-quote-amount className="mt-1 grid font-mono font-semibold tabular-nums text-text-primary">
+              <span aria-hidden="true" className="invisible col-start-1 row-start-1">{liveQuote}</span>
+              <span className="col-start-1 row-start-1">{price}</span>
+            </span>
+            <span data-payg-quote-context className="mt-1 block min-h-12 sm:min-h-8 text-xs font-semibold text-text-muted">{context}</span>
           </div>
         </div>
 
@@ -57,6 +63,7 @@ export function PayAsYouGoHeroQuoteCard({ data }: { data: PayAsYouGoPageData }) 
   return (
     <QuoteCardFrame
       quote={quote}
+      liveQuote={data.common.liveQuote}
       model={quote.sampleModelName}
       rows={quote.previewRows.map((row) => (
         <div key={row.id} className="flex items-center justify-between gap-3 rounded-[8px] border border-hairline bg-bg px-3 py-2.5">
@@ -72,14 +79,8 @@ export function PayAsYouGoHeroQuoteCard({ data }: { data: PayAsYouGoPageData }) 
           </span>
         </div>
       ))}
-      cost={<>
-        <span className="mt-1 block font-mono font-semibold tabular-nums text-text-primary">
-          {quote.sampleCost?.price ?? data.common.liveQuote}
-        </span>
-        {quote.sampleCost?.context ? (
-          <span className="mt-1 block text-xs font-semibold text-text-muted">{quote.sampleCost.context}</span>
-        ) : null}
-      </>}
+      price={quote.sampleCost?.price ?? data.common.liveQuote}
+      context={quote.sampleCost?.context}
     />
   );
 }
@@ -88,7 +89,7 @@ export function PayAsYouGoHeroQuoteCard({ data }: { data: PayAsYouGoPageData }) 
 export function PayAsYouGoHeroQuotePending({ data }: { data: PayAsYouGoHeroData }) {
   return (
     <div data-payg-price-pending aria-hidden="true">
-      <QuoteCardFrame quote={data.hero.quote}
+      <QuoteCardFrame quote={data.hero.quote} liveQuote={data.common.liveQuote}
         rows={Array.from({ length: 4 }, (_, index) => (
           <div key={index} className="flex items-center justify-between gap-3 rounded-[8px] border border-hairline bg-bg px-3 py-2.5">
             <div className="flex min-w-0 items-center gap-2.5">
@@ -99,10 +100,8 @@ export function PayAsYouGoHeroQuotePending({ data }: { data: PayAsYouGoHeroData 
           </div>
         ))}
         model={<span className="block h-5 w-24 rounded bg-hairline" />}
-        cost={<>
-          <span className="mt-1 block h-5 w-16 rounded bg-hairline" />
-          <span className="mt-1 block h-8 w-full rounded bg-hairline" />
-        </>}
+        price={<span className="block h-5 w-16 rounded bg-hairline" />}
+        context={<span className="block h-8 w-full rounded bg-hairline" />}
       />
     </div>
   );
