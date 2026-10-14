@@ -1,6 +1,7 @@
 import { createHash, createHmac } from 'crypto';
 import { query } from '@/lib/db';
 import { CHECKOUT_GUARD_LIMITS as limits } from '@/server/checkout-guard-policy';
+import { getTurnstileConfiguration, selectTurnstileWidget } from '@/server/turnstile-widgets';
 
 const TURNSTILE_SITEVERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 const CHECKOUT_GUARD_HASH_FALLBACK = 'maxvideoai-checkout-guard-local-fallback';
@@ -29,6 +30,7 @@ type EvaluateWalletCheckoutGuardParams = {
   hasCompletedTopUp: boolean;
   isPresetTopupTier: boolean;
   captchaToken?: string | null;
+  captchaSiteKey?: unknown;
   metadata?: Record<string, unknown>;
 };
 
@@ -124,9 +126,7 @@ export function classifyCheckoutGuardDecision({
 }
 
 export function isCheckoutCaptchaConfigured(env: NodeJS.ProcessEnv = process.env): boolean {
-  const mode = (env.CHECKOUT_CAPTCHA_MODE ?? 'progressive').trim().toLowerCase();
-  if (mode === 'off' || mode === 'disabled' || mode === 'false') return false;
-  return Boolean(env.TURNSTILE_SECRET_KEY?.trim() && env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim());
+  return getTurnstileConfiguration(env).kind === 'ready';
 }
 
 export function resolveCheckoutClientIp(headers: Headers): string | null {
@@ -190,12 +190,7 @@ async function fetchCheckoutGuardCounts(userId: string, ipHash: string): Promise
   };
 }
 
-async function verifyTurnstileToken(token: string, clientIp: string | null): Promise<{ success: boolean; errorCodes: string[] }> {
-  const secret = process.env.TURNSTILE_SECRET_KEY?.trim();
-  if (!secret) {
-    return { success: false, errorCodes: ['missing-secret'] };
-  }
-
+async function verifyTurnstileToken(token: string, clientIp: string | null, secret: string): Promise<{ success: boolean; errorCodes: string[] }> {
   const formData = new FormData();
   formData.append('secret', secret);
   formData.append('response', token);
@@ -298,7 +293,11 @@ export async function evaluateWalletCheckoutGuard(
 ): Promise<WalletCheckoutGuardResult> {
   const ipHash = hashCheckoutIp(params.clientIp);
   const counts = await fetchCheckoutGuardCounts(params.userId, ipHash);
-  const captchaConfigured = isCheckoutCaptchaConfigured();
+  const configuration = getTurnstileConfiguration();
+  const captchaConfigured = configuration.kind === 'ready';
+  const widget = selectTurnstileWidget(configuration, params.captchaSiteKey);
+  const configurationError = configuration.kind === 'invalid';
+  const widgetMismatch = captchaConfigured && !widget;
   const captchaToken = params.captchaToken?.trim() ?? '';
   const tokenHash = captchaToken && captchaConfigured
     ? createHash('sha256').update(captchaToken).digest('hex')
@@ -306,19 +305,21 @@ export async function evaluateWalletCheckoutGuard(
   const tokenConsumed = tokenHash ? await isTurnstileTokenConsumed(tokenHash) : false;
   let verification = tokenConsumed
     ? { success: false, errorCodes: ['local-token-replay'] }
-    : captchaToken && captchaConfigured
-      ? await verifyTurnstileToken(captchaToken, params.clientIp)
+    : captchaToken && widget
+      ? await verifyTurnstileToken(captchaToken, params.clientIp, widget.secret)
       : { success: false, errorCodes: [] };
 
   let decision = classifyCheckoutGuardDecision({
     hasCompletedTopUp: params.hasCompletedTopUp,
     isPresetTopupTier: params.isPresetTopupTier,
-    captchaConfigured,
+    captchaConfigured: captchaConfigured || configurationError,
     captchaPassed: verification.success,
     ...counts,
   });
   if (tokenConsumed && decision.action !== 'rate_limited') {
     decision = { action: 'captcha_required', reason: 'captcha_token_replayed', retryAfterSeconds: null };
+  } else if ((configurationError || widgetMismatch) && decision.action !== 'rate_limited') {
+    decision = { action: 'captcha_required', reason: configurationError ? 'captcha_configuration_error' : 'captcha_widget_mismatch', retryAfterSeconds: null };
   }
   let outcome =
     decision.action === 'allow'
@@ -342,6 +343,8 @@ export async function evaluateWalletCheckoutGuard(
       ...params.metadata,
       // Caller metadata must never replace the server-calculated token identity.
       turnstileTokenHash: tokenHash ?? undefined,
+      turnstileWidgetGeneration: widget?.generation,
+      turnstileSiteKey: widget?.siteKey,
       captchaConfigured,
       turnstileErrors: verification.errorCodes,
       counts,

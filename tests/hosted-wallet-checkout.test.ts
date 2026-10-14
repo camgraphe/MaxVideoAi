@@ -27,6 +27,16 @@ const validInput: HostedWalletCheckoutInput = {
   },
 };
 
+test('a new browser sends the identity of its rendered widget with the token', async () => {
+  let body: Record<string, unknown> = {};
+  await requestHostedWalletCheckout({ ...validInput, captchaSiteKey: 'public-B' }, async (_url, init) => {
+    body = JSON.parse(String(init?.body));
+    return Response.json({ id: 'synthetic-session' });
+  });
+  assert.equal(body.captchaSiteKey, 'public-B');
+  assert.equal(body.captchaToken, 'captcha-token');
+});
+
 test('hosted wallet request preserves amount, settlement currency, locale, auth, and captcha', async () => {
   let capturedInput: RequestInfo | URL | null = null;
   let capturedInit: RequestInit | undefined;
