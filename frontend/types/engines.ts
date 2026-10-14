@@ -181,6 +181,7 @@ export interface EngineReferenceBudget {
   modes?: Mode[];
   maxTotal: number;
   countUniqueUrls: boolean;
+  maxByType?: Partial<Record<'image' | 'video' | 'audio', number>>;
 }
 
 export interface EngineInputSchema {
@@ -291,6 +292,7 @@ export interface PreflightRequest {
   engine: string;
   mode: Mode;
   durationSec: number;
+  durationOption?: number | string;
   resolution?: Resolution;
   aspectRatio?: AspectRatio;
   fps: number;

@@ -77,7 +77,7 @@ export async function auditReviewedCustomerTariffSeed(input: {
     const id = customerTariffCellId(key);
     if (cells.has(id)) continue;
     const seedance = supportsSeedanceInputTariff(scenario.modelId, scenario.selector.mode, scenario.selector.billingInputType);
-    const las = isSeedance25LasInputPricing(scenario.modelId, scenario.selector.mode);
+    const las = !scenario.context.workflowStep && isSeedance25LasInputPricing(scenario.modelId, scenario.selector.mode);
     if (las && input.approvedSeedanceLasPolicy !== SEEDANCE_LAS_INITIALIZATION_POLICY) {
       throw new Error('Explicit approval of the reviewed LAS initialization policy is required.');
     }

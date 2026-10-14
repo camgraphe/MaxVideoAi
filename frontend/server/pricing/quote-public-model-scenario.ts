@@ -25,6 +25,7 @@ import { seedanceInputTariffMaximum, supportsSeedanceInputTariff } from '@/lib/s
 import { withSeedanceTariffInputDuration } from '@/lib/pricing-audit/seedance-input-tariff-scenario';
 import { getBytePlusSeedanceModeResolutions } from '@/lib/byteplus-mode-capabilities';
 import { resolveSeedance25ModeAvailability } from '@/server/engine-mode-availability';
+import { resolveBytePlusTransport } from '@/server/video-providers/byteplus-modelark-transport';
 
 import { computeCanonicalPublicSnapshot, computeCurrentPublicSnapshot } from './quote-public';
 import { createScopedPublicPolicyLoader } from './scoped-public-policy';
@@ -101,7 +102,8 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   const mode = entry?.modes.find(candidate => candidate.mode === input.mode);
   if (!mode || (!gptImage && input.customImageSize !== undefined)) return null;
   if (entry!.id === 'seedance-2-5' && mode.mode === 'v2v'
-    && !getBytePlusSeedanceModeResolutions(entry!.id, mode.mode, mode.ui.resolution ?? entry!.engine.resolutions)
+    && !getBytePlusSeedanceModeResolutions(entry!.id, mode.mode, mode.ui.resolution ?? entry!.engine.resolutions,
+      resolveBytePlusTransport(entry!.id, mode.mode))
       .some((resolution) => resolution.toLowerCase() === input.resolution.toLowerCase())) return null;
   const automaticDuration = mode.ui.duration && 'options' in mode.ui.duration && mode.ui.duration.options.includes('auto');
   if ([input.hdr, input.exrExport].some(value => value !== undefined && typeof value !== 'boolean')
@@ -271,7 +273,10 @@ export async function quotePublicModelScenario(
     const seconds = Number(scenario.selector.durationSec);
     const inheritsEditSource = entry?.id === 'seedance-2-5' && mode === 'v2v'
       && resolveSeedance25ModeAvailability(entry.engine, mode)?.inheritsSourceVideo === true;
-    const quantityLabel = getFalEngineById(input.modelId)?.category === 'image'
+    const automatic = snapshot.meta?.seedanceAutomaticPricing as { durationRange?: { min: number; max: number }; billedDurationSec?: number } | undefined;
+    const quantityLabel = automatic?.durationRange
+      ? `Auto (${automatic.durationRange.min}–${automatic.durationRange.max}s) · ${automatic.billedDurationSec}s price bracket`
+      : getFalEngineById(input.modelId)?.category === 'image'
       ? `${seconds} image${seconds === 1 ? '' : 's'}` : inheritsEditSource
         ? `${scenario.context.inputVideoDurationSec}s source · ${seconds}s price bracket · source format`
         : `${seconds}s${ltx25AudioTariffBounds(input.modelId, input.mode) ? ' source audio' : ''}`;

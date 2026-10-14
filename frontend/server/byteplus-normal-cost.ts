@@ -7,6 +7,7 @@ import { getBytePlusVideoListRate, quoteSeedreamListCost } from './byteplus-list
 import { signedBytePlusContractCost } from './byteplus-account-contract';
 import { estimateBytePlusBillableTokens } from './byteplus-accounting';
 import { isSeedance25LasInputPricing, isSeedance25EditInputPricing, quoteSeedance25LasListCost } from './byteplus-las-tariff';
+import { normalizeSeedancePricingContext } from '@/lib/seedance-option-pricing';
 
 type NormalUsage = {
   engineId: string;
@@ -47,6 +48,7 @@ export function bytePlusNormalListCost(usage: NormalUsage) {
 
 /** Factual cost only: never derive a customer tariff from the supplier discount. */
 export function normalBytePlusSupplierCost(context: PricingContext, at: string) {
+  context = normalizeSeedancePricingContext(context);
   const { engine, resolution, mode } = context;
   const declared = engine.providerMeta?.provider;
   const image = engine.id === 'seedream' || engine.id === 'seedream-5-0-pro';

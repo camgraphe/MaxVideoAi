@@ -514,6 +514,17 @@ export async function calculateAgentProjectBudget(
         );
       }
       const settings = normalizeSettings(rawLine.settings, proposalIndex, lineIndex);
+      if ((engineId === 'seedance-2-5' && ['i2v', 'v2v', 'extend'].includes(mode))
+        || (['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini'].includes(engineId)
+          && ['i2v', 'v2v', 'extend'].includes(mode) && ['auto', 'adaptive'].includes(settings.aspectRatio ?? ''))) {
+        editProjectLine(
+          'REFERENCE_REQUIRED',
+          'Seedance pricing requires verified source framing and video timing. Use prepare_generation with owned asset references for a fixed customer quote.',
+          proposalIndex,
+          lineIndex,
+          'references',
+        );
+      }
       const clipCount = requireLineInteger(
         rawLine.clipCount, 1, MAX_PROJECT_CLIPS_PER_LINE, proposalIndex, lineIndex, 'clipCount',
       );

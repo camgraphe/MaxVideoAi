@@ -148,7 +148,7 @@ test('request option helper rejects unsupported BytePlus durations before provid
   const result = buildGenerateRequestOptions({
     body: {
       prompt: 'seedance render',
-      durationSec: 4,
+      durationSec: 3,
       resolution: '720p',
       aspectRatio: '16:9',
     },

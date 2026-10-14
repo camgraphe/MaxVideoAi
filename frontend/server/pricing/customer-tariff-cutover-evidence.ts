@@ -22,11 +22,13 @@ export function collectCustomerTariffCutoverCheckpoints() {
   // Preserve every original financial identity as a negative current quote check.
   const archived = current.filter(s => isSeedance25LasInputPricing(s.modelId, s.selector.mode) && s.context.resolution === '720p')
     .map(s => buildManualTariffCoverageScenario({ ...s.context, resolution: '1080p' }, 'seedance-2-5:v2v:1080p'));
-  const ordinary = [...current, ...archived];
+  const ordinary = [...new Map([...current, ...archived].map(scenario => [scenario.id, scenario])).values()];
   const currentStatus = (scenario: typeof ordinary[number]) => isSeedance25LasInputPricing(scenario.modelId, scenario.selector.mode)
     && scenario.context.resolution === '1080p' ? 'unavailable' as const : 'quoted' as const;
   const rows = ordinary.map(scenario => ({ key: `ordinary:${scenario.id}`, kind: 'ordinary' as const, scenario, currentStatus: currentStatus(scenario) }));
-  const workflows = seedanceWorkflowScenarios(ordinary)
+  // Historical initial cutover owns only the original T2V stages. Multimodal
+  // stages have their own fingerprinted clone-current-price initialization.
+  const workflows = seedanceWorkflowScenarios(ordinary.filter(s => s.context.mode === 't2v'))
     .map(scenario => ({ key: `local_workflow:${scenario.id}`, kind: 'local_workflow' as const, scenario, currentStatus: 'quoted' as const }));
   const stress = ordinary.filter(s => supportsSeedanceInputTariff(s.modelId, s.selector.mode, s.selector.billingInputType))
     .flatMap(s => [2, s.modelId === 'seedance-2-5' ? 30 : 15].map(seconds => ({

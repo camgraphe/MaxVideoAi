@@ -1292,14 +1292,18 @@ test('prepare pricing uses the real ModelArk video-input tier for extension', as
       prompt: 'Continue the source video.',
       settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
       references: [{
-        kind: 'https',
-        url: `https://cdn.example.com/${mode}-source.mp4`,
+        kind: 'asset',
+        assetId: 'measured-extension-source',
         role: 'source',
         mediaKind: 'video',
       }],
       outputCount: 1,
     };
-    const pricing = await priceCanonicalGeneration(request, 'member');
+    const pricing = await priceCanonicalGeneration(request, 'member', undefined, { resolvedReferences: [{
+      assetId: 'measured-extension-source', role: 'source', mediaKind: 'video',
+      storageUrl: `https://cdn.example.com/${mode}-source.mp4`,
+      durationSec: 4, width: 1280, height: 720,
+    }] });
     const meta = pricing.pricingSnapshot.meta as Record<string, unknown>;
     assert.equal(meta.byteplus_billing_input_type, 'video_input');
   }

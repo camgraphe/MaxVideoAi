@@ -7,8 +7,10 @@ import { isSeedance25LasInputPricing, quoteSeedance25LasListCost } from '@/serve
 import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
 import { buildManualTariffScenario, continuousInputTariffSelector } from '@/lib/pricing-manual-scenario';
 import { validateMonotoneContinuousTariffDomain } from './continuous-tariff-domain';
+import { normalizeSeedancePricingContext } from '@/lib/seedance-option-pricing';
 
 export function seedanceInputTariffBasis(context: PricingContext) {
+  context = normalizeSeedancePricingContext(context);
   if (context.workflowStep || !supportsSeedanceInputTariff(context.engine.id, context.mode ?? '', 'video_input')
     || context.hasVideoInput === false) throw new Error('Unsupported normal Seedance video-input tariff.');
   const maximum = validateSeedanceInputTariffDuration(context.engine.id, context.inputVideoDurationSec ?? NaN);

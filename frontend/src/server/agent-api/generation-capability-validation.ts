@@ -12,6 +12,7 @@ import type { ImageGenerationMode } from '@/types/image-generation';
 import { isLumaRay2EngineId } from '@/lib/luma-ray2';
 import { isGptImageFamilyEngineId, validateGptImage2CustomImageSize } from '@/lib/image/gptImage2';
 import { SEEDREAM_MAX_IMAGE_SET_IMAGES } from '@/lib/image/seedream';
+import { seedanceAutomaticDurationBounds } from '@/lib/seedance-option-pricing';
 import {
   isVideoDurationSupported,
   validateProviderControls,
@@ -37,6 +38,9 @@ import {
 } from '@/lib/media-field-constraints';
 
 const VIDEO_FIELD_BY_SETTING: Record<string, string> = {
+  outputFormat: 'output_format',
+  returnLastFrame: 'return_last_frame',
+  watermark: 'watermark',
   cameraFixed: 'camera_fixed',
   cfgScale: 'cfg_scale',
   contextSec: 'context',
@@ -173,6 +177,9 @@ function validateVideoModeCaps(
   candidate: AgentPublicGenerationEngine,
 ): void {
   const duration = request.settings.durationSec;
+  if (request.settings.durationOption !== undefined && (request.settings.durationOption !== 'auto'
+    || !seedanceAutomaticDurationBounds(candidate.engine.id) || !caps.duration || !('options' in caps.duration)
+    || !caps.duration.options.includes('auto'))) fail('durationOption');
   if (!Number.isSafeInteger(duration) || (duration as number) < 1) fail('durationSec');
   if (caps.frames) fail('durationSec');
   if (caps.duration && !isVideoDurationSupported(duration, caps.duration, candidate.engine.maxDurationSec)) {
