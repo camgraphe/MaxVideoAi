@@ -140,7 +140,7 @@ test('composite preview modal button opens direct preview groups', () => {
   assert.match(previewDockSource, /setViewerTarget\(\{\s*kind:\s*'group',\s*group:\s*nextGroup\s*\}\)/);
 });
 
-test('composite preview preserves preview urls but plays canonical video urls', () => {
+test('composite preview preserves short previews and separate full playback/original roles', () => {
   const renderGroupSource = fs.readFileSync(
     path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/_lib/workspace-render-groups.ts'),
     'utf8'
@@ -167,7 +167,8 @@ test('composite preview preserves preview urls but plays canonical video urls', 
   assert.match(videoJobMediaSource, /previewVideoUrl:\s*patch\.previewVideoUrl\s*\?\?\s*current\.previewVideoUrl/);
   assert.match(videoJobMediaSource, /previewUrl:\s*patch\.previewVideoUrl\s*\?\?\s*item\.previewUrl/);
   assert.match(renderGroupSource, /previewVideoUrl:\s*item\.previewVideoUrl\s*\?\?\s*null/);
-  assert.match(dockUtilsSource, /function getInlinePreviewUrl\(item: VideoItem\): string \{\s*return item\.url;\s*\}/);
+  assert.match(dockUtilsSource, /function getInlinePreviewUrl\(item: VideoItem\): string \{\s*return item\.playbackVideoUrl \?\? item\.url;\s*\}/);
+  assert.match(dockUtilsSource, /if \(videoItem\?\.url\) return videoItem\.url/);
   assert.doesNotMatch(dockUtilsSource, /return item\.previewUrl \?\? item\.url/);
 });
 

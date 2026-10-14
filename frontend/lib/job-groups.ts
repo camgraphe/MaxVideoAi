@@ -78,6 +78,8 @@ function buildMember(job: Job): GroupMemberSummary {
     thumbUrl,
     videoUrl,
     previewVideoUrl,
+    playbackVideoUrl: job.playbackVideoUrl,
+    lastFrameUrl: job.lastFrameUrl,
     audioUrl,
     aspectRatio,
     prompt: job.prompt,

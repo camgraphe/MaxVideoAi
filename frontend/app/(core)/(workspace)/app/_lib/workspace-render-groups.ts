@@ -172,6 +172,8 @@ export function buildPendingGroupSummaries(
         thumbUrl: thumb,
         videoUrl: memberVideoUrl,
         previewVideoUrl: item.previewVideoUrl ?? null,
+        playbackVideoUrl: item.playbackVideoUrl ?? null,
+        lastFrameUrl: item.lastFrameUrl ?? null,
         aspectRatio: item.aspectRatio ?? null,
         prompt: item.prompt,
         status: memberStatus,
@@ -203,6 +205,8 @@ export function buildPendingGroupSummaries(
         thumbUrl: member.thumbUrl,
         videoUrl: member.videoUrl,
         previewVideoUrl: member.previewVideoUrl,
+        playbackVideoUrl: member.playbackVideoUrl,
+        lastFrameUrl: member.lastFrameUrl,
         aspectRatio: member.aspectRatio,
       }));
     const batchKey = group.groupId ?? group.items[0]?.batchId ?? id;
@@ -253,6 +257,8 @@ export function buildQuadTileFromRender(
 ): QuadPreviewTile {
   const videoUrl = render.videoUrl ?? render.readyVideoUrl;
   const previewVideoUrl = render.previewVideoUrl;
+  const playbackVideoUrl = render.playbackVideoUrl;
+  const lastFrameUrl = render.lastFrameUrl;
   const progress = videoUrl ? 100 : render.progress;
   const status: QuadPreviewTile['status'] = render.status === 'failed'
     ? 'failed' : videoUrl ? 'completed' : render.status ?? 'pending';
@@ -266,6 +272,8 @@ export function buildQuadTileFromRender(
     iterationCount: group.iterationCount,
     videoUrl,
     previewVideoUrl,
+    playbackVideoUrl,
+    lastFrameUrl,
     thumbUrl: render.thumbUrl,
     aspectRatio: render.aspectRatio,
     progress,
@@ -299,6 +307,8 @@ export function buildQuadTileFromGroupMember(
     iterationCount: member.iterationCount ?? group.count,
     videoUrl: member.videoUrl ?? undefined,
     previewVideoUrl: member.previewVideoUrl ?? undefined,
+    playbackVideoUrl: member.playbackVideoUrl ?? undefined,
+    lastFrameUrl: member.lastFrameUrl ?? undefined,
     thumbUrl: member.thumbUrl ?? undefined,
     aspectRatio: member.aspectRatio ?? '16:9',
     progress: typeof member.progress === 'number' ? member.progress : member.status === 'completed' ? 100 : 0,

@@ -20,6 +20,8 @@ export interface GroupMemberSummary {
   originalUrl?: string | null;
   videoUrl?: string | null;
   previewVideoUrl?: string | null;
+  playbackVideoUrl?: string | null;
+  lastFrameUrl?: string | null;
   audioUrl?: string | null;
   aspectRatio?: string | null;
   prompt?: string | null;
@@ -50,6 +52,8 @@ export interface GroupSummary {
     thumbUrl?: string | null;
     videoUrl?: string | null;
     previewVideoUrl?: string | null;
+    playbackVideoUrl?: string | null;
+    lastFrameUrl?: string | null;
     aspectRatio?: string | null;
     source?: string | null;
   }>;

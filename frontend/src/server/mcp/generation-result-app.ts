@@ -1,11 +1,12 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
-export const GENERATION_RESULT_APP_URI = 'ui://maxvideoai/generation-result-v5.html';
+export const GENERATION_RESULT_APP_URI = 'ui://maxvideoai/generation-result-v6.html';
 export const LEGACY_GENERATION_RESULT_APP_URIS = [
   'ui://maxvideoai/generation-result-v1.html',
   'ui://maxvideoai/generation-result-v2.html',
   'ui://maxvideoai/generation-result-v3.html',
   'ui://maxvideoai/generation-result-v4.html',
+  'ui://maxvideoai/generation-result-v5.html',
 ] as const;
 
 const FIXED_MEDIA_ORIGINS = [
@@ -525,7 +526,7 @@ function buildGenerationResultAppV4Html(): string {
 }
 
 /** v5 adds Audio without changing the document served for established v1-v4 conversations. */
-export function buildGenerationResultAppHtml(): string {
+function buildGenerationResultAppV5Html(): string {
   return buildGenerationResultAppV4Html()
     .replace('video, .image {', 'video, audio, .image {')
     .replace(
@@ -683,6 +684,42 @@ export function buildGenerationResultAppHtml(): string {
     );
 }
 
+/** v6 preserves the MOV download original and adds independent returned-frame actions. */
+export function buildGenerationResultAppHtml(): string {
+  return buildGenerationResultAppV5Html()
+    .replace("safeUrl(media.videoUrl) : null", "(safeUrl(media.playbackVideoUrl) || safeUrl(media.videoUrl)) : null")
+    .replace('<button class="secondary" type="button" id="download" disabled>Download</button>',
+      '<button class="secondary" type="button" id="download" disabled>Download original</button>\n          <button class="secondary" type="button" id="last-frame-download" disabled>Download last frame</button>\n          <button class="secondary" type="button" id="last-frame-reuse" disabled>Use last frame</button>')
+    .replace("const downloadButton = document.getElementById('download');",
+      "const frameDownloadButton = document.getElementById('last-frame-download');\n      const frameReuseButton = document.getElementById('last-frame-reuse');\n      let frameReuseUrl = null;\n      let currentFrameUrl = null;\n      const downloadButton = document.getElementById('download');")
+    .replace('downloadButton.disabled = !isComplete || !currentJobId;',
+      `downloadButton.disabled = !isComplete || !currentJobId;
+        const frameUrl = media?.surface === 'video' ? safeUrl(media.lastFrameUrl) : null;
+        currentFrameUrl = frameUrl;
+        frameDownloadButton.disabled = !isComplete || !currentJobId || !frameUrl;
+        frameReuseUrl = frameUrl ? buildResultLibraryUrl(libraryUrl, result?.jobId, 'image') : null;
+        frameReuseButton.disabled = !isComplete || !frameReuseUrl;`)
+    .replace("downloadButton.addEventListener('click', async () => {",
+      `frameDownloadButton.addEventListener('click', async () => {
+        if (!currentJobId || frameDownloadButton.disabled) return;
+        const requestedJobId = currentJobId;
+        const requestedFrameUrl = currentFrameUrl;
+        frameDownloadButton.disabled = true;
+        try {
+          const response = await request('tools/call', { name: 'get_generation_download', arguments: { jobId: requestedJobId, outputRole: 'last_frame' } });
+          const descriptor = record(record(record(response)?.structuredContent)?.download);
+          const url = safeUrl(descriptor?.url);
+          if (url && currentJobId === requestedJobId && currentFrameUrl === requestedFrameUrl) await startDownload(url);
+        } finally {
+          if (currentJobId === requestedJobId && currentFrameUrl === requestedFrameUrl) frameDownloadButton.disabled = !currentFrameUrl;
+        }
+      });
+      frameReuseButton.addEventListener('click', async () => {
+        if (frameReuseUrl) await startDownload(frameReuseUrl);
+      });
+      downloadButton.addEventListener('click', async () => {`);
+}
+
 export function registerGenerationResultApp(server: McpServer): void {
   const resourceDomains = generationResultAppResourceDomains();
   const redirectDomains = generationResultAppRedirectDomains();
@@ -708,6 +745,7 @@ export function registerGenerationResultApp(server: McpServer): void {
           mimeType: 'text/html;profile=mcp-app',
           text: resourceUri === GENERATION_RESULT_APP_URI
             ? buildGenerationResultAppHtml()
+            : resourceUri === 'ui://maxvideoai/generation-result-v5.html' ? buildGenerationResultAppV5Html()
             : buildGenerationResultAppV4Html(),
           _meta: {
             ui: {

@@ -8,6 +8,18 @@ Les deux essais réels Codex du paquet 0.3.6 et leurs limites restent consignés
 [point de contrôle du 22 septembre](../operations/mcp-main-repository-release-v0.3.6.md). La validation de
 chaque hôte reste distincte ; consulter le [parcours de mise à jour](../operations/mcp-client-updates.md).
 
+## Returned video artifacts — 14 October 2026
+
+Owned completed-video results add optional `playbackVideoUrl` for full-duration
+browser playback and `lastFrameUrl` for the separately stored supplier JPEG. They
+retain the original `videoUrl` and existing short preview/thumbnail roles. Result
+app v6 uses the full playback URL while its primary download remains the original;
+its independent frame download uses the app-only `get_generation_download`
+`outputRole='last_frame'` option. Frame reuse opens that owned job's image results
+in Media. Established v1-v5 resources remain readable with their existing documents.
+Local executable-app and signed-descriptor tests cover these contracts; deployment,
+plugin release and real-host qualification remain independent evidence.
+
 ## Customer price presentation — 5 October 2026
 
 Image/video and Audio preparation results add an optional `price.formattedAmount`

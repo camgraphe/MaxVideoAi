@@ -246,6 +246,8 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
                     : job.progress,
                 videoUrl: detail.videoUrl ?? job.videoUrl,
                 previewVideoUrl: detail.previewVideoUrl ?? job.previewVideoUrl,
+                playbackVideoUrl: detail.playbackVideoUrl ?? job.playbackVideoUrl,
+                lastFrameUrl: detail.lastFrameUrl ?? job.lastFrameUrl,
                 audioUrl: detail.audioUrl ?? job.audioUrl,
                 thumbUrl: detail.thumbUrl ?? job.thumbUrl,
                 finalPriceCents: detail.finalPriceCents ?? job.finalPriceCents,

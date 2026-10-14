@@ -1,6 +1,7 @@
 import type { SelectedVideoPreview } from '@/lib/video-preview-group';
 import type { SharedVideoPreview } from '@/lib/video-preview-group';
 import type { VideoGroup } from '@/types/video-groups';
+import { mergeVideoArtifactUrls } from '@/lib/generated-video-output-artifacts';
 
 type VideoSettingsRecord = {
   schemaVersion?: unknown;
@@ -17,6 +18,8 @@ export type VideoJobPayload = {
   settingsSnapshot?: unknown;
   videoUrl?: string;
   previewVideoUrl?: string;
+  playbackVideoUrl?: string;
+  lastFrameUrl?: string;
   thumbUrl?: string;
   aspectRatio?: string;
   progress?: number;
@@ -30,6 +33,8 @@ export type VideoJobPayload = {
 export type VideoJobMediaPatch = {
   videoUrl: string | null;
   previewVideoUrl: string | null;
+  playbackVideoUrl?: string;
+  lastFrameUrl?: string;
   thumbUrl: string | null;
   aspectRatio?: string;
   progress?: number;
@@ -57,6 +62,7 @@ export function buildVideoJobMediaPatch(payload: VideoJobPayload): VideoJobMedia
   if (!videoUrl && !thumbUrl) return null;
   return {
     videoUrl,
+    ...mergeVideoArtifactUrls({}, payload),
     previewVideoUrl,
     thumbUrl,
     aspectRatio: payload.aspectRatio,
@@ -75,6 +81,7 @@ export function applyVideoJobMediaPatchToSelectedPreview(
     ...current,
     videoUrl: patch.videoUrl ?? current.videoUrl,
     previewVideoUrl: patch.previewVideoUrl ?? current.previewVideoUrl,
+    ...mergeVideoArtifactUrls(current, patch),
     thumbUrl: patch.thumbUrl ?? current.thumbUrl,
     aspectRatio: patch.aspectRatio ?? current.aspectRatio,
     progress: typeof patch.progress === 'number' ? patch.progress : current.progress,
@@ -96,6 +103,7 @@ export function applyVideoJobMediaPatchToCompositeOverride(
       ...item,
       url: patch.videoUrl ?? item.url,
       previewUrl: patch.previewVideoUrl ?? item.previewUrl,
+      ...mergeVideoArtifactUrls({ ...item, videoUrl: item.url }, patch),
       thumb: patch.thumbUrl ?? item.thumb,
       aspect: patch.aspectRatio === '9:16' || patch.aspectRatio === '1:1' ? patch.aspectRatio : item.aspect,
     };
@@ -124,6 +132,7 @@ export function buildRequestedJobPreview(requestedJobId: string, payload: VideoJ
       thumbUrl: patch.thumbUrl ?? undefined,
       videoUrl: patch.videoUrl ?? undefined,
       previewVideoUrl: patch.previewVideoUrl ?? undefined,
+      ...mergeVideoArtifactUrls({}, patch),
       aspectRatio: payload.aspectRatio ?? undefined,
       createdAt:
         typeof payload.createdAt === 'string' && payload.createdAt.length ? payload.createdAt : new Date().toISOString(),
@@ -132,6 +141,7 @@ export function buildRequestedJobPreview(requestedJobId: string, payload: VideoJ
       id: requestedJobId,
       videoUrl: patch.videoUrl ?? undefined,
       previewVideoUrl: patch.previewVideoUrl ?? undefined,
+      ...mergeVideoArtifactUrls({}, patch),
       thumbUrl: patch.thumbUrl ?? undefined,
       aspectRatio: payload.aspectRatio ?? undefined,
       progress: typeof payload.progress === 'number' ? payload.progress : undefined,

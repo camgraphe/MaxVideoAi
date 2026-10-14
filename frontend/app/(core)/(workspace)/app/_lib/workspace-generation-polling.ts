@@ -1,3 +1,4 @@
+import { mergeVideoArtifactUrls } from '@/lib/generated-video-output-artifacts';
 import { isStaleGenerationUpdate, mergeGenerationObservation, type GenerationObservation } from '@/lib/generation-observation';
 import { isRefundedPaymentStatus } from '@/lib/gallery-retention';
 import type { SelectedVideoPreview } from '@/lib/video-preview-group';
@@ -10,6 +11,8 @@ export type GenerationPollStatus = {
   progress?: number | null;
   videoUrl?: string | null;
   previewVideoUrl?: string | null;
+  playbackVideoUrl?: string | null;
+  lastFrameUrl?: string | null;
   thumbUrl?: string | null;
   finalPriceCents?: number | null;
   currency?: string | null;
@@ -84,6 +87,7 @@ export function applyGenerationPollToRender(
     readyVideoUrl: projection.status.videoUrl ?? render.readyVideoUrl,
     videoUrl: projection.status.videoUrl ?? render.videoUrl ?? render.readyVideoUrl,
     previewVideoUrl: projection.status.previewVideoUrl ?? render.previewVideoUrl,
+    ...mergeVideoArtifactUrls(render, projection.status),
     thumbUrl: resolvePolledThumbUrl(render.thumbUrl, projection.status.thumbUrl),
     priceCents: projection.status.finalPriceCents ?? projection.status.pricing?.totalCents ?? render.priceCents,
     currency: projection.status.currency ?? projection.status.pricing?.currency ?? render.currency,
@@ -112,6 +116,7 @@ export function applyGenerationPollToSelectedPreview(
     progress: projection.status.progress ?? current.progress,
     videoUrl: projection.status.videoUrl ?? projection.targetReadyVideoUrl ?? current.videoUrl,
     previewVideoUrl: projection.status.previewVideoUrl ?? current.previewVideoUrl,
+    ...mergeVideoArtifactUrls(current, projection.status),
     thumbUrl: resolvePolledThumbUrl(current.thumbUrl, projection.status.thumbUrl),
     priceCents: projection.status.finalPriceCents ?? projection.status.pricing?.totalCents ?? current.priceCents,
     currency: projection.status.currency ?? projection.status.pricing?.currency ?? current.currency,

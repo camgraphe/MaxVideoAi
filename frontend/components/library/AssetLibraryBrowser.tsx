@@ -26,6 +26,7 @@ export type AssetBrowserAsset = {
   url: string;
   thumbUrl?: string | null;
   previewUrl?: string | null;
+  playbackVideoUrl?: string | null;
   kind: 'image' | 'video' | 'audio';
   durationSec?: number | null;
   width?: number | null;

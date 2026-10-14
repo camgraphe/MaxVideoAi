@@ -24,7 +24,7 @@ function isVideo(item: VideoItem): boolean {
 export function GroupViewerModal({ group, onClose, onRefreshJob, onSaveToLibrary }: GroupViewerModalProps) {
   const entries: MediaLightboxEntry[] = useMemo(() => {
     if (!group) return [];
-    return group.items.map((item, index) => {
+    return group.items.flatMap((item, index) => {
       const label = `Variant ${index + 1}`;
       const video = isVideo(item) ? item.url : undefined;
       const audio = typeof item.audioUrl === 'string' ? item.audioUrl : undefined;
@@ -63,11 +63,12 @@ export function GroupViewerModal({ group, onClose, onRefreshJob, onSaveToLibrary
         : undefined;
       const engineLabel = typeof group.paramsSnapshot?.engineLabel === 'string' ? String(group.paramsSnapshot.engineLabel) : undefined;
 
-      return {
+      const videoEntry: MediaLightboxEntry = {
         id: item.id,
         label,
         jobId,
         videoUrl: video,
+        playbackVideoUrl: item.playbackVideoUrl,
         previewUrl: item.previewUrl,
         audioUrl: audio,
         imageUrl: !video && !audio ? resolveStableMediaUrl(item.url, thumb) ?? item.url : undefined,
@@ -101,6 +102,10 @@ export function GroupViewerModal({ group, onClose, onRefreshJob, onSaveToLibrary
                 ? 'audio'
               : 'image',
       };
+      return item.lastFrameUrl ? [videoEntry, { id: `${item.id}-last-frame`, label: 'Last frame', jobId,
+        outputRole: 'last_frame' as const,
+        imageUrl: item.lastFrameUrl, mediaType: 'image' as const, status: 'completed' as const,
+        engineId: videoEntry.engineId, engineLabel, createdAt: group.createdAt }] : [videoEntry];
     });
   }, [group]);
 

@@ -91,6 +91,8 @@ export async function GET(req: NextRequest) {
       url: output.url,
       thumbUrl: output.thumbUrl,
       previewUrl: output.previewUrl,
+      playbackVideoUrl: typeof output.metadata.playbackVideoUrl === 'string' ? output.metadata.playbackVideoUrl : undefined,
+      role: output.metadata.role === 'last_frame' ? 'last_frame' : undefined,
       mime: output.mimeType,
       width: output.width,
       height: output.height,

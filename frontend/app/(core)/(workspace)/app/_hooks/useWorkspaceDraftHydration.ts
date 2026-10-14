@@ -455,6 +455,8 @@ export function useWorkspaceDraftHydration({
       id: latestJobWithMedia.jobId,
       videoUrl: latestJobWithMedia.videoUrl ?? undefined,
       previewVideoUrl: latestJobWithMedia.previewVideoUrl ?? undefined,
+      playbackVideoUrl: latestJobWithMedia.playbackVideoUrl ?? undefined,
+      lastFrameUrl: latestJobWithMedia.lastFrameUrl ?? undefined,
       aspectRatio: latestJobWithMedia.aspectRatio ?? undefined,
       thumbUrl: latestJobWithMedia.thumbUrl ?? undefined,
       priceCents:

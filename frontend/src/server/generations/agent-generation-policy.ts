@@ -3,6 +3,7 @@ import { appendConfirmedWalletRefund } from '@/lib/seedance-failure-messages';
 import { deriveJobSurface } from '@/lib/job-surface';
 import { extractRenderIds, extractRenderThumbUrls, parseStoredImageRenders } from '@/lib/image-renders';
 import { isStablePublicMediaUrl, normalizeMediaUrl } from '@/lib/media';
+import { generatedVideoArtifactProjection } from '@/lib/generated-video-output-artifacts';
 import {
   SEEDANCE_OUTPUT_AUDIO_BLOCKED,
   getVideoFailureCodeFromSettingsSnapshot,
@@ -262,9 +263,12 @@ function buildAgentResult(
   if (surface === 'video') {
     const videoUrl = stableMediaUrl(record.video_url);
     if (!videoUrl) return null;
+    const artifacts = generatedVideoArtifactProjection(record.settings_snapshot, videoUrl, record.provider_job_id);
     return {
       surface,
       videoUrl,
+      ...(stableMediaUrl(artifacts.playbackVideoUrl) ? { playbackVideoUrl: stableMediaUrl(artifacts.playbackVideoUrl) } : {}),
+      ...(stableMediaUrl(artifacts.lastFrameUrl) ? { lastFrameUrl: stableMediaUrl(artifacts.lastFrameUrl) } : {}),
       previewUrl: stableMediaUrl(record.preview_video_url),
       thumbnailUrl: stableMediaUrl(record.thumb_url),
       audioUrl: stableMediaUrl(record.audio_url),

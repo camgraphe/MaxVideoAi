@@ -132,6 +132,8 @@ function toVideoItem(member: GroupMemberSummary): VideoItem {
     id: member.id,
     url: videoUrl ?? imageUrl ?? thumb ?? '',
     previewUrl,
+    playbackVideoUrl: member.playbackVideoUrl ?? undefined,
+    lastFrameUrl: member.lastFrameUrl ?? undefined,
     audioUrl,
     aspect,
     thumb,

@@ -10,6 +10,8 @@ export type NormalizedVideoProviderTask = {
   status: NormalizedVideoProviderStatus;
   rawStatus: string | null;
   videoUrl: string | null;
+  lastFrameUrl?: string | null;
+  outputFormat?: 'mp4' | 'mov' | null;
   message: string | null;
   errorCode?: string | null;
   usage: NormalizedVideoProviderUsage | null;

@@ -16,6 +16,8 @@ export type JobStatusResult = {
   progress: number;
   videoUrl: string | null;
   previewVideoUrl?: string | null;
+  playbackVideoUrl?: string | null;
+  lastFrameUrl?: string | null;
   audioUrl?: string | null;
   thumbUrl: string | null;
   aspectRatio?: string | null;
@@ -179,6 +181,8 @@ async function fetchJobStatus(jobId: string): Promise<JobStatusResult> {
     progress,
     videoUrl: payload.videoUrl ?? null,
     previewVideoUrl: payload.previewVideoUrl ?? null,
+    playbackVideoUrl: payload.playbackVideoUrl ?? null,
+    lastFrameUrl: payload.lastFrameUrl ?? null,
     audioUrl: payload.audioUrl ?? null,
     thumbUrl: payload.thumbUrl ?? null,
     aspectRatio: payload.aspectRatio ?? null,

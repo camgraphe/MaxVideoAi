@@ -1,3 +1,4 @@
+import { mergeVideoArtifactUrls } from '@/lib/generated-video-output-artifacts';
 import { generationStage, isStaleGenerationUpdate, mergeGenerationObservation, type GenerationObservation } from '@/lib/generation-observation';
 import { isRefundedPaymentStatus } from '@/lib/gallery-retention';
 import { isPlaceholderMediaUrl } from '@/lib/media';
@@ -18,6 +19,8 @@ export type PolledJobStatus = {
   progress?: number | null;
   videoUrl?: string | null;
   previewVideoUrl?: string | null;
+  playbackVideoUrl?: string | null;
+  lastFrameUrl?: string | null;
   thumbUrl?: string | null;
   aspectRatio?: string | null;
   finalPriceCents?: number | null;
@@ -112,6 +115,8 @@ export function convertJobToLocalRender(job: Job, options: LocalRenderFromJobOpt
     status: normalizedStatus,
     videoUrl: job.videoUrl ?? undefined,
     previewVideoUrl: job.previewVideoUrl ?? undefined,
+    playbackVideoUrl: job.playbackVideoUrl ?? undefined,
+    lastFrameUrl: job.lastFrameUrl ?? undefined,
     readyVideoUrl: job.videoUrl ?? undefined,
     thumbUrl,
     hasAudio: typeof job.hasAudio === 'boolean' ? job.hasAudio : undefined,
@@ -153,6 +158,7 @@ export function applyPolledJobStatusToRender(render: LocalRender, status: Polled
     readyVideoUrl: status.videoUrl ?? render.readyVideoUrl,
     videoUrl: status.videoUrl ?? render.videoUrl ?? render.readyVideoUrl,
     previewVideoUrl: status.previewVideoUrl ?? render.previewVideoUrl,
+    ...mergeVideoArtifactUrls(render, status),
     thumbUrl: resolvePolledThumbUrl(render.thumbUrl, status.thumbUrl),
     aspectRatio: status.aspectRatio ?? render.aspectRatio,
     priceCents: status.finalPriceCents ?? status.pricing?.totalCents ?? render.priceCents,
@@ -182,6 +188,7 @@ export function applyPolledJobStatusToSelectedPreview(
     progress: status.progress ?? current.progress,
     videoUrl: status.videoUrl ?? current.videoUrl,
     previewVideoUrl: status.previewVideoUrl ?? current.previewVideoUrl,
+    ...mergeVideoArtifactUrls(current, status),
     thumbUrl: resolvePolledThumbUrl(current.thumbUrl, status.thumbUrl),
     aspectRatio: status.aspectRatio ?? current.aspectRatio,
     priceCents: status.finalPriceCents ?? status.pricing?.totalCents ?? current.priceCents,

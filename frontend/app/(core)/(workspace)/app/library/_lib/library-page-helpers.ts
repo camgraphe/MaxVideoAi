@@ -41,6 +41,8 @@ export type RecentOutput = {
   url: string;
   thumbUrl?: string | null;
   previewUrl?: string | null;
+  playbackVideoUrl?: string | null;
+  role?: 'last_frame';
   kind: 'image' | 'video' | 'audio';
   mime?: string | null;
   width?: number | null;

@@ -55,6 +55,7 @@ export async function GET(req: NextRequest) {
       url: asset.url,
       thumbUrl: asset.thumbUrl,
       previewUrl: asset.previewUrl,
+      playbackVideoUrl: typeof asset.metadata.playbackVideoUrl === 'string' ? asset.metadata.playbackVideoUrl : undefined,
       mime: asset.mimeType,
       width: asset.width,
       height: asset.height,

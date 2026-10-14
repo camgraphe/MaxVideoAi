@@ -278,6 +278,30 @@ Angle's public orbit prepares the other three views after its existing idle boun
 
 The first orbit view uses the still-image style in server HTML and through hydration. Enable the existing entrance transition only after a button, keyboard or drag action changes the view; returning to the initial view remains an interaction. Keep reduced-motion handling and image-error fallback intact. An opacity-zero entrance can defer the LCP observation well beyond the image download, so do not infer render speed from image bytes alone.
 
+### Seedance output artifacts — 14 October 2026
+
+BytePlus completion preserves requested MOV and Seedance 2.5 1080p MP4 originals
+byte-for-byte in durable storage. MOV and documented HEVC outputs receive a separate
+full-duration H264/yuv420p/AAC `playbackVideoUrl`; the existing four-second silent
+`previewVideoUrl` remains an incidental gallery preview. Downloads, reuse, editing
+and original links always retain the original URL. Encoding uses the packaged
+FFmpeg runtime, a 300 MiB input/100 MiB output disk budget and the 30-second model
+duration bound. FFmpeg's output limit and a duration/audio probe reject a clipped
+rendition; a preparation failure retains the checkpointed original for retry.
+
+Requested supplier last-frame JPEGs are validated and copied without reencoding.
+Their SHA, dimensions and size are recorded on a distinct owned image output with
+`metadata.role='last_frame'` and source-video provenance. `lastFrameUrl` is separate
+from the poster, thumbnail and incidental keyframes. The video, full playback and
+JPEG checkpoints precede output projection and terminal completion. Projection
+replay preserves artifacts without another provider submission or debit. Artifact
+retries use the existing attempt/window limit; exhaustion retains copied
+outputs, enters manual review and stops automatic provider lookups and artifact work.
+BytePlus uses a bounded ten-minute poll lease for this preparation and releases it normally;
+other providers retain the shared two-minute default. Local FFprobe fixtures verify
+MOV/PCM and ten-bit HEVC conversion; physical Safari/iOS remains separate browser
+qualification and is not established by these checks.
+
 ## Playback and Core Web Vitals
 
 The homepage poster must remain discoverable in server-rendered HTML with its existing responsive source, dimensions and critical priority. Do not make it depend on hydration, a video download or an idle callback. Initial media scheduling and an explicit Play action have different priorities.
