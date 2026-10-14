@@ -176,6 +176,9 @@ test('the paid submission consumer sends source-preserving ModelArk Edit once an
       assert.ok(getBytePlusLasDurableOutput(processing));
       projectionUnavailable = false;
       await poll();
+      assert.equal((await readOwnedBytePlusLasSubmission('consumer', 'owner', query)).status, 'processing', 'Projection recovery honors its backoff.');
+      await db.pool.query("UPDATE app_jobs SET settings_snapshot=jsonb_set(settings_snapshot,'{byteplusStorageCopy,nextRetryAt}',to_jsonb((now()-interval '1 second')::text),false) WHERE job_id='consumer'");
+      await poll();
       assert.equal((await readOwnedBytePlusLasSubmission('consumer', 'owner', query)).status, 'completed');
       assert.equal(copies, 1);
       assert.equal(gets, 1, 'recovery must use durable output after the provider result expires');
