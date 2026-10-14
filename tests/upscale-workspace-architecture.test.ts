@@ -174,6 +174,10 @@ test('upscale helper modules expose the expected workspace contract', () => {
   assert.match(recentActionsHookSource, /handleRecentGroupAction/, 'recent actions hook should own grouped card actions');
   assert.match(sourceMediaHookSource, /export function useUpscaleSourceMedia/, 'source media hook should be exported');
   assert.match(sourceMediaHookSource, /uploadSourceFile/, 'source media hook should own source uploads');
+  assert.match(helpersSource, /from '@\/lib\/client-video-upload'/, 'upscale videos should use the shared bounded upload transport');
+  assert.match(helpersSource, /uploadVideoFile\(file\)/, 'upscale videos should retain chunking for large files');
+  assert.doesNotMatch(helpersSource, /['"]\/api\/uploads\/video['"]/, 'upscale helpers should not send whole large videos through the API');
+  assert.match(sourceMediaHookSource, /getUpscaleUploadErrorMessage\(uploadError, nextMediaType, locale\)/, 'source upload errors should explain the failure in the interface locale');
   assert.match(sourceMediaHookSource, /mediaTypeFromMime/, 'source media hook should own MIME detection');
   assert.match(sourceMediaHookSource, /new window\.Image/, 'source media hook should hydrate image dimensions');
   assert.match(controlsSource, /export function Label/, 'workspace label component should be exported');
