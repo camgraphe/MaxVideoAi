@@ -360,7 +360,13 @@ export async function saveJobOutputToLibrary(params: {
     durationSec: output.durationSec,
     thumbUrl: output.thumbUrl,
     previewUrl: output.previewUrl,
-    ...(mediaFacts ? { metadata: { mediaFacts } } : {}),
+    metadata: {
+      ...(mediaFacts ? { mediaFacts } : {}),
+      ...(typeof output.metadata.playbackVideoUrl === 'string' ? { playbackVideoUrl: output.metadata.playbackVideoUrl } : {}),
+      ...(output.metadata.lastFrame ? { lastFrame: output.metadata.lastFrame } : {}),
+      ...(output.metadata.role === 'last_frame' ? { role: 'last_frame', sourceVideoUrl: output.metadata.sourceVideoUrl,
+        sourceVideoOutputId: output.metadata.sourceVideoOutputId, sha256: output.metadata.sha256, sizeBytes: output.metadata.sizeBytes } : {}),
+    },
   });
 }
 export async function readOwnedLibraryAssetsByIds(params: {

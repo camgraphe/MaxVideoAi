@@ -80,7 +80,7 @@ export type BytePlusSeedanceProfile = Readonly<{
 
 const shared = {
   supportedModes: BYTEPLUS_SEEDANCE_MODES,
-  aspectRatios: BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
+  aspectRatios: ['auto', ...BYTEPLUS_SEEDANCE_ASPECT_RATIOS],
   defaultDurationSec: 5,
   defaultResolution: '720p',
   defaultAspectRatio: '16:9',

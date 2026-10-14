@@ -1,4 +1,5 @@
 'use client';
+import { getSeedanceAutomaticPricingNote } from '@/lib/seedance-modelark-options';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ComponentProps, Dispatch, SetStateAction } from 'react';
@@ -441,7 +442,10 @@ export function WorkspaceComposerSurface({
   );
   const modeUnavailableMessage = getEngineModeUnavailableMessage(selectedEngine, submissionMode, uiLocale);
   const quoteUnavailable = !isEngineModeQuoteReady(selectedEngine, submissionMode, preflight);
-  const resolvedWorkflowNotice = modeUnavailableMessage ?? klingO3UnsupportedVideoReason ?? composerWorkflowNotice;
+  const automaticPricingNote = getSeedanceAutomaticPricingNote({ engineId: selectedEngine.id, mode: submissionMode,
+    durationOption: form.durationOption, aspectRatio: form.aspectRatio, locale: uiLocale, inheritsSourceVideo });
+  const resolvedWorkflowNotice = modeUnavailableMessage ?? klingO3UnsupportedVideoReason
+    ?? ([composerWorkflowNotice, automaticPricingNote].filter(Boolean).join(' ') || undefined);
 
   const handleAudioChange = useCallback(
     (audio: boolean) => {

@@ -101,6 +101,7 @@ export function calculateMinimaxH3MaxProviderCostCents(input: MinimaxH3MaxPricin
 
 export type MinimaxH3MaxPricingReference = {
   kind: 'image' | 'video' | 'audio';
+  fieldId?: string;
   url: string;
   width?: number | null;
   height?: number | null;

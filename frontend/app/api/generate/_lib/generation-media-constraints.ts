@@ -349,6 +349,7 @@ export async function validateGenerationMediaConstraints(params: {
     const trustedHeight = normalizeDimension(stored.height);
     const trustedReference: MinimaxH3MaxPricingReference = {
       kind: candidate.kind,
+      fieldId: candidate.fieldId,
       url: candidate.url,
       width: trustedWidth,
       height: trustedHeight,
@@ -441,6 +442,8 @@ export async function validateGenerationMediaConstraints(params: {
           minimumPixelCount,
         });
       }
+      trustedReference.width = width;
+      trustedReference.height = height;
     }
 
     const combinedDurationLimit =

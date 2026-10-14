@@ -161,7 +161,8 @@ export async function qualifyPaidSeedanceEdit(transport: 'las' | 'modelark') {
         CREATE FUNCTION defer_quote_acceptance() RETURNS trigger LANGUAGE plpgsql AS $$
         BEGIN IF NEW.state='accepted' THEN RETURN OLD; END IF; RETURN NEW; END $$;
         CREATE TRIGGER quote_defer BEFORE UPDATE ON mcp_generation_quotes FOR EACH ROW EXECUTE FUNCTION defer_quote_acceptance();`);
-      const poll = async () => {
+      const poll = async (retryDue = false) => {
+        if (retryDue) await db.pool.query("UPDATE app_jobs SET settings_snapshot=jsonb_set(settings_snapshot,'{byteplusStorageCopy,nextRetryAt}',to_jsonb((now()-interval '1 second')::text),false) WHERE job_id=$1",[quoteId]);
         await db.pool.query("UPDATE app_jobs SET updated_at=now()-interval '1 minute' WHERE job_id=$1", [quoteId]);
         await db.pool.query('DELETE FROM generation_poll_state WHERE job_id=$1', [quoteId]);
         return runBytePlusPoll({ jobId: quoteId, deps: {
@@ -196,15 +197,15 @@ export async function qualifyPaidSeedanceEdit(transport: 'las' | 'modelark') {
       assert.deepEqual(await receipts(quoteId), [{ type: 'charge', amount_cents: expectedPrice, currency: 'USD' }]);
       await db.pool.query('DROP TRIGGER output_outage ON job_outputs');
       providerLookupBlocked = true;
-      await poll();
+      await poll(true);
       assert.notEqual((await row(quoteId)).status, 'completed', 'a skipped owned MCP promotion is still pending');
       assert.equal((await db.pool.query('SELECT state FROM mcp_generation_quotes WHERE quote_id=$1', [quoteId])).rows[0].state, 'claimed');
       await db.pool.query('DROP TRIGGER quote_defer ON mcp_generation_quotes');
       await db.pool.query(`CREATE TRIGGER promotion_outage BEFORE INSERT ON media_assets FOR EACH ROW EXECUTE FUNCTION reject_output();`);
-      await poll();
+      await poll(true);
       assert.notEqual((await row(quoteId)).status, 'completed', 'a failed library promotion must remain retryable');
       await db.pool.query('DROP TRIGGER promotion_outage ON media_assets');
-      await poll();
+      await poll(true);
       assert.equal((await row(quoteId)).status, 'completed');
       assert.equal((await db.pool.query('SELECT state FROM mcp_generation_quotes WHERE quote_id=$1', [quoteId])).rows[0].state, 'accepted');
       assert.equal((await row(quoteId)).video_url, 'https://cdn.maxvideoai.com/owned/output.mp4');

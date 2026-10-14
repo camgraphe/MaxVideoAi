@@ -1,3 +1,4 @@
+import { withSeedanceModelArkOptions, SEEDANCE_MODELARK_IMAGE_FORMATS } from '../../../lib/seedance-modelark-options';
 import type { EngineCaps } from '../../../types/engines';
 import type { RawFalEngineEntry } from './types';
 import {
@@ -11,7 +12,7 @@ const MINI_RESOLUTIONS = ['480p', '720p'] as const;
 const SEEDANCE_2_MINI_ASPECT_RATIOS = ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'] as const;
 const SEEDANCE_2_MINI_PUBLIC_SLUG = 'dreamina-seedance-2-0-mini';
 
-const SEEDANCE_2_0_MINI_ENGINE: EngineCaps = {
+const SEEDANCE_2_0_MINI_ENGINE: EngineCaps = withSeedanceModelArkOptions({
   id: 'seedance-2-0-mini',
   label: 'Dreamina Seedance 2.0 Mini',
   provider: 'ByteDance',
@@ -172,7 +173,7 @@ const SEEDANCE_2_0_MINI_ENGINE: EngineCaps = {
   },
   availability: 'available',
   brandId: 'bytedance',
-};
+});
 
 function miniMode(mode: 't2v' | 'i2v' | 'ref2v' | 'v2v' | 'extend'): RawFalEngineEntry['modes'][number] {
   return {
@@ -180,11 +181,11 @@ function miniMode(mode: 't2v' | 'i2v' | 'ref2v' | 'v2v' | 'extend'): RawFalEngin
     falModelId: BYTEPLUS_SEEDANCE_2_MINI_ENDPOINTS[mode],
     ui: {
       modes: [mode],
-      duration: { options: [...MINI_DURATION_OPTIONS], default: 5 },
+      duration: { options: ['auto', ...MINI_DURATION_OPTIONS], default: 5 },
       resolution: [...MINI_RESOLUTIONS],
       aspectRatio: [...SEEDANCE_2_MINI_ASPECT_RATIOS],
-      acceptsImageFormats: mode === 't2v' || mode === 'extend' ? undefined : ['jpg', 'jpeg', 'png', 'webp'],
-      maxUploadMB: mode === 't2v' ? undefined : mode === 'i2v' ? 30 : 50,
+      acceptsImageFormats: mode === 't2v' || mode === 'extend' ? undefined : [...SEEDANCE_MODELARK_IMAGE_FORMATS],
+      maxUploadMB: mode === 't2v' ? undefined : mode === 'i2v' ? 30 : 200,
       audioToggle: true,
       notes:
         mode === 'extend'

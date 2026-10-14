@@ -18,6 +18,11 @@ test('request preserves supported fields and one-output semantics', () => {
     engine: 'seedance-2-0', mode: 't2v', durationSec: 7, resolution: '720p', aspectRatio: '16:9', fps: 24, seedLocked: true, loop: false, inputs: [], user: { memberTier: 'Member' },
   });
 });
+test('workspace sends Auto duration to preflight instead of quoting a stale numeric hint', () => {
+  const input = options();
+  input.form.durationOption = 'auto';
+  assert.equal((buildWorkspacePreflightRequest(input) as {durationOption?: string}).durationOption, 'auto');
+});
 test('request omits unsupported schema fields and keeps optional audio/voice/extra values exact', () => {
   const input = options(); input.submissionMode = 'i2v'; input.supportsAudioToggle = true; input.voiceControlEnabled = true;
   input.form.extraInputValues = { count: 0, enabled: false, ids: ['x', 'y'] }; input.memberTier = 'Plus';

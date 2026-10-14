@@ -79,6 +79,8 @@ test('BytePlus poll delegates accounting, failure handling, storage-copy retry, 
   assert.match(accountingSource, /export function expectedBytePlusTokens/);
   assert.match(accountingSource, /export function getBytePlusAccounting/);
   assert.match(accountingSource, /export function getBytePlusUnitPriceUsdPer1kTokens/);
+  assert.match(accountingSource, /from '@\/lib\/seedance-output-dimensions'/);
+  assert.doesNotMatch(accountingSource, /const SEEDANCE_1_5_AND_2_0_DIMENSIONS/);
   assert.match(storageCopySource, /export function getBytePlusStorageCopyState/);
   assert.match(storageCopySource, /export function shouldRetryBytePlusStorageCopy/);
   assert.match(pollTypesSource, /export type BytePlusPendingJob/);
@@ -861,7 +863,7 @@ test('BytePlus runtime exposes Seedance 2.0 Standard and Fast video source workf
     assert.deepEqual(extensionSourceField?.requiredInModes, ['extend']);
     assert.equal(extensionSourceField?.minCount, 1);
     assert.equal(extensionSourceField?.maxCount, 3);
-    assert.deepEqual(referenceVideoField?.modes, ['ref2v']);
+    assert.deepEqual(referenceVideoField?.modes, ['ref2v', 'v2v']);
   }
 });
 

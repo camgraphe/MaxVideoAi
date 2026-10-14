@@ -217,7 +217,8 @@ export function getGenerationIterationGuardMessage(options: GenerationIterationG
 
   if (isReferenceImageMode) {
     if (options.isUnifiedSeedance) {
-      if (options.referenceImageUrls.length === 0 && options.referenceVideoUrls.length === 0) {
+      if (options.referenceImageUrls.length === 0 && options.referenceVideoUrls.length === 0
+        && !(options.selectedEngineId === 'seedance-2-5' && options.referenceAudioUrls.length > 0)) {
         return options.referenceAudioUrls.length > 0
           ? options.addReferenceMediaBeforeAudioMessage ?? 'Add reference media before adding audio.'
           : 'Add at least one reference image or reference video before running Seedance Reference → Video.';

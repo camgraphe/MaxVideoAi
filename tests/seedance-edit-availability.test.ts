@@ -63,8 +63,8 @@ test('saved Edit source retains its intent while unavailable modes and source ad
   assert.equal(summary.assetFields.find(({ field }) => field.id === 'video_urls')?.disabled, undefined);
 });
 
-test('Edit rejects 1080p while the four ModelArk workflows retain it', () => {
-  assert.deepEqual(getFalEngineById('seedance-2-5')?.modes.find(({ mode }) => mode === 'v2v')?.ui.resolution, ['480p', '720p']);
+test('ModelArk Edit advertises 1080p while the retained LAS runtime rejects it', () => {
+  assert.deepEqual(getFalEngineById('seedance-2-5')?.modes.find(({ mode }) => mode === 'v2v')?.ui.resolution, ['480p', '720p', '1080p']);
   for (const mode of modes) {
     const result = normalizeBytePlusOptions({ engineId: 'seedance-2-5', mode, durationSec: 4, requestedResolution: '1080p', aspectRatio: '16:9' });
     assert.equal(result.ok, mode !== 'v2v', mode);
@@ -98,7 +98,7 @@ test('public Edit quote refuses unavailable execution before reading tariffs', a
   } finally { ENV.SEEDANCE_2_5_LAS_ENABLED = old; }
 });
 
-test('trusted Edit duration counts exactly the transmitted original while stale mode slots are rejected', async () => {
+test('trusted Edit cost counts the original and supplementary motion references', async () => {
   const source = 'https://example.test/source-original.mp4';
   const stale = 'https://example.test/stale-motion.mp4';
   const processed = await validateNormalizedGenerationAttachments({ engineId: 'seedance-2-5', mode: 'v2v', userId: 'owner', inputSchema: engine().inputSchema, attachments: [
@@ -110,12 +110,11 @@ test('trusted Edit duration counts exactly the transmitted original while stale 
   ] as T[] } });
   assert.equal(processed.ok, true, JSON.stringify(processed));
   if (!processed.ok) return;
-  assert.deepEqual(processed.references.videoUrls, [source]);
-  assert.equal(bytePlusInputVideoDurationSec('seedance-2-5', processed.trustedMediaReferences ?? []), 4.25);
-  assert.deepEqual(processed.trustedMediaReferences?.filter(({ kind }) => kind === 'video').map(({ url }) => url), [source]);
-  const validated = validateModeMediaInputs({ engineId: 'seedance-2-5', normalizedMode: 'v2v', payload: { sourceInputVideoUrl: source } as never,
+  assert.deepEqual(processed.references.videoUrls, [source, stale]);
+  assert.equal(bytePlusInputVideoDurationSec('seedance-2-5', processed.trustedMediaReferences ?? []), 24.25);
+  assert.deepEqual(new Set(processed.trustedMediaReferences?.filter(({ kind }) => kind === 'video').map(({ url }) => url)), new Set([source, stale]));
+  const validated = validateModeMediaInputs({ engineId: 'seedance-2-5', normalizedMode: 'v2v', payload: { video_url: source, video_urls: [stale] } as never,
     inputSchema: engine().inputSchema, referenceValuesByField: processed.references.referenceValuesByField,
     referenceMediaItems: processed.references.referenceMediaItems, referenceProvenanceIssues: processed.references.referenceProvenanceIssues });
-  assert.equal(validated.ok, false);
-  if (!validated.ok) assert.equal(validated.error.field, 'video_urls');
+  assert.equal(validated.ok, true, JSON.stringify(validated));
 });

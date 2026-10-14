@@ -1,3 +1,4 @@
+import { withSeedanceModelArkOptions, SEEDANCE_MODELARK_IMAGE_FORMATS } from '../../../lib/seedance-modelark-options';
 import type { EngineCaps } from '../../../types/engines';
 import type { RawFalEngineEntry } from './types';
 import {
@@ -7,7 +8,7 @@ import {
   buildSeedance2PricingDetails,
 } from './launch-config';
 
-const SEEDANCE_2_0_ENGINE: EngineCaps = {
+const SEEDANCE_2_0_ENGINE: EngineCaps = withSeedanceModelArkOptions({
   id: 'seedance-2-0',
   label: 'Seedance 2.0',
   provider: 'ByteDance',
@@ -175,7 +176,7 @@ const SEEDANCE_2_0_ENGINE: EngineCaps = {
   },
   availability: SEEDANCE_2_LAUNCH_CONFIG.availability,
   brandId: 'bytedance',
-};
+});
 
 
 export const SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
@@ -211,7 +212,7 @@ export const SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           duration: { options: ['auto', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], default: 'auto' },
           resolution: ['480p', '720p', '1080p', '4k'],
           aspectRatio: ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
-          acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
+          acceptsImageFormats: [...SEEDANCE_MODELARK_IMAGE_FORMATS],
           maxUploadMB: 30,
           audioToggle: true,
           notes: 'Start image plus optional end image, 4-15s or auto, 480p/720p/1080p/4K, with audio on or off.',
@@ -225,7 +226,7 @@ export const SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           duration: { options: ['auto', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], default: 'auto' },
           resolution: ['480p', '720p', '1080p', '4k'],
           aspectRatio: ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
-          acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
+          acceptsImageFormats: [...SEEDANCE_MODELARK_IMAGE_FORMATS],
           maxUploadMB: 30,
           audioToggle: true,
           notes: 'Prompt-only is allowed, or add up to 9 images, 3 videos, and 3 audio files with 12 total references max.',
@@ -239,8 +240,8 @@ export const SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           duration: { options: ['auto', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], default: 'auto' },
           resolution: ['480p', '720p', '1080p', '4k'],
           aspectRatio: ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
-          acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
-          maxUploadMB: 50,
+          acceptsImageFormats: [...SEEDANCE_MODELARK_IMAGE_FORMATS],
+          maxUploadMB: 200,
           audioToggle: true,
           notes: 'Video edit uses a source clip plus optional image and audio references for 4-15s Standard Seedance 2.0 edits.',
         },
@@ -253,7 +254,7 @@ export const SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           duration: { options: ['auto', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], default: 'auto' },
           resolution: ['480p', '720p', '1080p', '4k'],
           aspectRatio: ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
-          maxUploadMB: 50,
+          maxUploadMB: 200,
           audioToggle: true,
           notes: 'Extend continues a source clip forward or backward, or stitches up to 3 clips into one coherent Standard Seedance 2.0 video.',
         },

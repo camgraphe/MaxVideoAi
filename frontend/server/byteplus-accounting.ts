@@ -7,53 +7,8 @@ import {
 import { isRecord } from './byteplus-record-utils';
 import type { BytePlusPendingJob } from './byteplus-poll-types';
 import { BYTEPLUS_MODELARK_LIST_PRICE_SOURCE, getBytePlusVideoListRate } from './byteplus-list-tariff';
-import { seedance25OutputDimensions } from './seedance25-output-dimensions';
+import { seedanceOutputDimensions } from '@/lib/seedance-output-dimensions';
 import { quoteSeedance25LasListCost, BYTEPLUS_LAS_LIST_PRICE_SOURCE } from './byteplus-las-tariff';
-
-const SEEDANCE_2_0_4K_DIMENSIONS: Record<string, Record<string, { width: number; height: number }>> = {
-  '4k': {
-    '21:9': { width: 4398, height: 1886 },
-    '16:9': { width: 3840, height: 2160 },
-    '4:3': { width: 3326, height: 2494 },
-    '1:1': { width: 2880, height: 2880 },
-    '3:4': { width: 2494, height: 3326 },
-    '9:16': { width: 2160, height: 3840 },
-  },
-};
-
-// Published 1.5/2.0 series rasters; 2.5 differs at 480p. Provider usage overrides estimates.
-// https://docs.byteplus.com/pt/docs/modelark/create-video-generation-task-api (2026-10-01).
-const SEEDANCE_1_5_AND_2_0_DIMENSIONS: typeof SEEDANCE_2_0_4K_DIMENSIONS = {
-  '480p': {
-    '21:9': { width: 992, height: 432 },
-    '16:9': { width: 864, height: 496 },
-    '4:3': { width: 752, height: 560 },
-    '1:1': { width: 640, height: 640 },
-    '3:4': { width: 560, height: 752 },
-    '9:16': { width: 496, height: 864 },
-  },
-  '720p': {
-    '21:9': { width: 1470, height: 630 },
-    '16:9': { width: 1280, height: 720 },
-    '4:3': { width: 1112, height: 834 },
-    '1:1': { width: 960, height: 960 },
-    '3:4': { width: 834, height: 1112 },
-    '9:16': { width: 720, height: 1280 },
-  },
-  '1080p': {
-    '21:9': { width: 2206, height: 946 },
-    '16:9': { width: 1920, height: 1080 },
-    '4:3': { width: 1664, height: 1248 },
-    '1:1': { width: 1440, height: 1440 },
-    '3:4': { width: 1248, height: 1664 },
-    '9:16': { width: 1080, height: 1920 },
-  },
-};
-
-function tokenDimensions(engineId: string, resolution: string, aspectRatio: string) {
-  if (engineId === 'seedance-2-5') return seedance25OutputDimensions(resolution, aspectRatio);
-  return (resolution === '4k' ? SEEDANCE_2_0_4K_DIMENSIONS : SEEDANCE_1_5_AND_2_0_DIMENSIONS)[resolution]?.[aspectRatio];
-}
 
 /** Exact supported supplier dimensions; never the padded historical retail basis. */
 export function estimateBytePlusOutputTokens(input: {
@@ -64,7 +19,7 @@ export function estimateBytePlusOutputTokens(input: {
   if (!Number.isFinite(input.durationSec) || input.durationSec <= 0
     || !profile.resolutions.includes(input.resolution as never)
     || !profile.aspectRatios.includes(aspectRatio as never)) return null;
-  const dimensions = tokenDimensions(input.engineId, input.resolution, aspectRatio);
+  const dimensions = seedanceOutputDimensions(input.engineId, input.resolution, aspectRatio);
   if (!dimensions) return null;
   return { ...dimensions, aspectRatio, tokenCount: dimensions.width * dimensions.height
     * Math.max(1, Math.round(input.durationSec)) * profile.framesPerSecond / 1024 };
@@ -133,7 +88,7 @@ export function expectedBytePlusTokens(
       : profile.aspectRatios[0];
   const dimensions =
     resolution && aspectRatio
-      ? tokenDimensions(job.engine_id, resolution, aspectRatio)
+      ? seedanceOutputDimensions(job.engine_id, resolution, aspectRatio)
       : undefined;
   if (!dimensions) {
     throw new BytePlusModelArkError(

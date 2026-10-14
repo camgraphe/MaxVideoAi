@@ -186,6 +186,7 @@ export async function GET(req: NextRequest) {
           surface: 'video' as const,
           billingProductKey: undefined,
           settingsSnapshot: undefined,
+          outputPreparationState: undefined,
           engineLabel: video.engineLabel,
           durationSec: video.durationSec,
           prompt: video.prompt,

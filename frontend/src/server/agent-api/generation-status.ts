@@ -200,6 +200,8 @@ function boundedResult(result: AgentGenerationResult | null): AgentGenerationRes
   return {
     surface: 'video',
     videoUrl,
+    ...(result.playbackVideoUrl ? { playbackVideoUrl: boundedUris([result.playbackVideoUrl], 1, seen)[0] ?? null } : {}),
+    ...(result.lastFrameUrl ? { lastFrameUrl: boundedUris([result.lastFrameUrl], 1, seen)[0] ?? null } : {}),
     previewUrl: boundedUris([result.previewUrl], 1, seen)[0] ?? null,
     thumbnailUrl: boundedUris([result.thumbnailUrl], 1, seen)[0] ?? null,
     audioUrl: boundedUris([result.audioUrl], 1, seen)[0] ?? null,
@@ -320,6 +322,10 @@ export function buildGenerationResourceLinks(
   }
   return [
     resource(recovery, recovery.result.videoUrl, 'output'),
+    ...(recovery.result.playbackVideoUrl ? [{ uri: recovery.result.playbackVideoUrl, name: 'MaxVideoAI browser playback',
+      description: `full-duration compatible playback for generation ${recovery.jobId}`, mimeType: 'video/mp4' }] : []),
+    ...(recovery.result.lastFrameUrl ? [{ uri: recovery.result.lastFrameUrl, name: 'MaxVideoAI last frame',
+      description: `returned last frame for generation ${recovery.jobId}`, mimeType: 'image/jpeg' }] : []),
     ...(recovery.result.previewUrl ? [resource(recovery, recovery.result.previewUrl, 'preview')] : []),
     ...(recovery.result.thumbnailUrl ? [resource(recovery, recovery.result.thumbnailUrl, 'thumbnail')] : []),
     ...(recovery.result.audioUrl ? [resource(recovery, recovery.result.audioUrl, 'audio')] : []),

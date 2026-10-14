@@ -8,6 +8,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { SelectMenu } from '@/components/ui/SelectMenu';
 import { formatCompactResolutionLabel, formatResolutionLabel } from '@/lib/resolution-labels';
 import { seedanceEditSourceLabel } from '@/lib/seedance-edit-source-copy';
+import { parseDurationOptionValue, matchesDurationOptionValue } from '@/components/settings-controls/settings-control-duration';
 
 interface CoreSettingsBarProps {
   density?: 'default' | 'workspace' | 'comparison';
@@ -42,44 +43,6 @@ interface CoreSettingsBarProps {
 }
 
 type CoreControlKind = 'duration' | 'resolution' | 'aspect' | 'audio' | 'iterations' | 'fps' | 'hdr';
-
-type DurationOptionMeta = {
-  raw: number | string;
-  value: number;
-  label: string;
-};
-
-function parseDurationOptionValue(option: number | string): DurationOptionMeta {
-  if (typeof option === 'number') {
-    return {
-      raw: option,
-      value: option,
-      label: `${option}s`,
-    };
-  }
-  const numeric = Number(option.replace(/[^\d.]/g, ''));
-  return {
-    raw: option,
-    value: Number.isFinite(numeric) ? numeric : 0,
-    label: option,
-  };
-}
-
-function matchesDurationOptionValue(option: DurationOptionMeta, raw: number | string | null | undefined, seconds: number): boolean {
-  if (raw != null) {
-    if (typeof raw === 'number') {
-      return Math.abs(option.value - raw) < 0.001;
-    }
-    if (typeof raw === 'string') {
-      if (raw === option.raw || raw === option.label) return true;
-      const numeric = Number(raw.replace(/[^\d.]/g, ''));
-      if (Number.isFinite(numeric)) {
-        return Math.abs(option.value - numeric) < 0.001;
-      }
-    }
-  }
-  return Math.abs(option.value - seconds) < 0.001;
-}
 
 function ControlIcon({ kind }: { kind: CoreControlKind }) {
   if (kind === 'duration') {
@@ -326,7 +289,7 @@ export function CoreSettingsBar({
   const enumeratedDurationOptions = useMemo(() => {
     if (!caps?.duration) return null;
     if ('options' in caps.duration) {
-      return caps.duration.options.map(parseDurationOptionValue).filter((entry) => entry.value > 0);
+      return caps.duration.options.map(parseDurationOptionValue).filter((entry) => entry.value > 0 || entry.raw === 'auto');
     }
     return null;
   }, [caps]);

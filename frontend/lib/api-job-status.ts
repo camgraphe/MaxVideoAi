@@ -16,6 +16,9 @@ export type JobStatusResult = {
   progress: number;
   videoUrl: string | null;
   previewVideoUrl?: string | null;
+  playbackVideoUrl?: string | null;
+  outputPreparationState?: 'active' | 'manual_review';
+  lastFrameUrl?: string | null;
   audioUrl?: string | null;
   thumbUrl: string | null;
   aspectRatio?: string | null;
@@ -158,7 +161,7 @@ async function fetchJobStatus(jobId: string): Promise<JobStatusResult> {
         ? null
         : undefined;
   const hasMedia = Boolean(payload.videoUrl || payload.audioUrl) || Boolean(renderIds?.length);
-  const statusFromPayload = normalizeJobStatus(payload.status ?? null, hasMedia);
+  const statusFromPayload = normalizeJobStatus(payload.status ?? null, hasMedia, payload.outputPreparationState);
   const normalizedStatus = (statusFromPayload ?? (hasMedia ? 'completed' : 'pending')) as JobStatusResult['status'];
   const progressValue = normalizeJobProgress(payload.progress, normalizedStatus, hasMedia);
   const progress = progressValue ?? (normalizedStatus === 'completed' ? 100 : 0);
@@ -179,6 +182,9 @@ async function fetchJobStatus(jobId: string): Promise<JobStatusResult> {
     progress,
     videoUrl: payload.videoUrl ?? null,
     previewVideoUrl: payload.previewVideoUrl ?? null,
+    playbackVideoUrl: payload.playbackVideoUrl ?? null,
+    outputPreparationState: payload.outputPreparationState,
+    lastFrameUrl: payload.lastFrameUrl ?? null,
     audioUrl: payload.audioUrl ?? null,
     thumbUrl: payload.thumbUrl ?? null,
     aspectRatio: payload.aspectRatio ?? null,

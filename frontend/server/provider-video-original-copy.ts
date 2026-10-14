@@ -9,13 +9,14 @@ import { uploadFilePath } from './storage';
 const MAX_COPY_BYTES = 450 * 1024 * 1024; // One file within the serverless temporary disk budget.
 
 /** Bounded disk streaming; the provider original is uploaded byte-for-byte. */
-export async function copyProviderVideoOriginal(response: Response, options: { jobId: string; userId?: string | null; onVideoMediaFacts?: (facts: GeneratedVideoFacts) => void },
+export async function copyProviderVideoOriginal(response: Response, options: { jobId: string; userId?: string | null; outputFormat?: 'mp4' | 'mov'; onVideoMediaFacts?: (facts: GeneratedVideoFacts) => void },
   dependencies: { upload: typeof uploadFilePath; maxBytes: number; probe?: (path: string) => Promise<VideoProbeResult | null> } = { upload: uploadFilePath, maxBytes: MAX_COPY_BYTES }): Promise<string> {
   const declared = Number(response.headers.get('content-length'));
   if (declared > dependencies.maxBytes) throw new Error('Provider video exceeds the direct-copy disk budget.');
   if (!response.body) throw new Error('Provider video body is missing.');
   const directory = await mkdtemp(join(tmpdir(), 'provider-original-'));
-  const filePath = join(directory, 'original.mp4');
+  const format = options.outputFormat ?? 'mp4';
+  const filePath = join(directory, `original.${format}`);
   const file = await open(filePath, 'w');
   const reader = response.body.getReader();
   let bytes = 0;
@@ -31,8 +32,8 @@ export async function copyProviderVideoOriginal(response: Response, options: { j
     }
     await file.close();
     if (!bytes || (declared > 0 && declared !== bytes)) throw new Error('Provider video download is incomplete.');
-    const uploaded = (await dependencies.upload({ path: filePath, sizeBytes: bytes, mime: 'video/mp4',
-      userId: options.userId, prefix: 'renders', fileName: `${options.jobId}-original.mp4` })).url;
+    const uploaded = (await dependencies.upload({ path: filePath, sizeBytes: bytes, mime: format === 'mov' ? 'video/quicktime' : 'video/mp4',
+      userId: options.userId, prefix: 'renders', fileName: `${options.jobId}-original.${format}` })).url;
     if (hash && options.onVideoMediaFacts) {
       const probe = await (dependencies.probe ?? probeGeneratedVideoFile)(filePath).catch(() => null);
       publishVideoFacts(probe, { url: uploaded, sha256: hash.digest('hex'), sizeBytes: bytes }, options.onVideoMediaFacts);

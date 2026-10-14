@@ -54,7 +54,7 @@ export function isVideo(item: VideoItem): boolean {
 }
 
 export function getInlinePreviewUrl(item: VideoItem): string {
-  return item.url;
+  return item.playbackVideoUrl ?? item.url;
 }
 
 export function resolveAspectHint(item: VideoItem): string | null {

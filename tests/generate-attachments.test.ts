@@ -18,7 +18,7 @@ test('generate route delegates attachment normalization and inline uploads', () 
   assert.ok(existsSync(helperPath), 'attachment processing should live in the generate route _lib folder');
   assert.ok(existsSync(processingPath), 'attachment orchestration should live in the generate route _lib folder');
   assert.match(serviceSource, /generate\/_lib\/generation-attachment-processing/);
-  assert.match(serviceSource, /processAndValidateGenerationAttachments\(\{/);
+  assert.match(serviceSource, /processAndValidateGenerationAttachments\(attachmentParams\)/);
   assert.match(readFileSync(processingPath, 'utf8'), /from '\.\/attachments'/);
   assert.doesNotMatch(routeSource, /type NormalizedAttachment =/, 'attachment type belongs in attachments.ts');
   assert.doesNotMatch(routeSource, /function decodeDataUrl\(/, 'data URL decoding belongs in attachments.ts');

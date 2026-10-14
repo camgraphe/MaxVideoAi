@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 import type { PreflightRequest, PreflightResponse } from '@/types/engines';
 
-export const MAX_PREFLIGHT_BODY_BYTES = 32 * 1024;
-export const MAX_PREFLIGHT_INPUTS = 20;
+export const MAX_PREFLIGHT_BODY_BYTES = 128 * 1024;
+export const MAX_PREFLIGHT_INPUTS = 50;
 
 const modes = [
   't2v',
@@ -71,6 +71,7 @@ const preflightRequestSchema = z.object({
   engine: z.string().trim().min(1).max(128),
   mode: z.enum(modes),
   durationSec: z.number().finite().positive().max(3_600),
+  durationOption: z.union([z.number().finite().positive().max(3_600), z.literal('auto')]).optional(),
   resolution: z.enum(resolutions).optional(),
   aspectRatio: z.enum(aspectRatios).optional(),
   fps: z.number().finite().positive().max(240),

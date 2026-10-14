@@ -8,6 +8,9 @@ import { buildManualTariffScenario } from '@/lib/pricing-manual-scenario';
 import { GPT_IMAGE_2_CANONICAL_SIZE_VALUES, isGptImageFamilyEngineId, parseGptImage2SizeKey, resolveGptImage2PricingTier } from '@/lib/image/gptImage2';
 import { manualTariffImageOutputCounts, manualTariffLoopValues, manualTariffReferenceCounts } from './manual-tariff-dimensions';
 import { manualTariffDurations } from './manual-tariff-durations';
+import { getBytePlusSeedanceModeResolutions } from '@/lib/byteplus-mode-capabilities';
+import { resolveBytePlusTransport } from '@/server/video-providers/byteplus-modelark-transport';
+import { seedanceAutomaticDurationBounds, isSeedanceAdaptiveAspect } from '@/lib/seedance-option-pricing';
 
 export type ManualTariffCoverageScenario = {
   id: string;
@@ -79,7 +82,7 @@ function mediaDimensions(modelId: string, mode: string, durationSec: number): Pr
 }
 
 /** Reviewed finite catalog combinations are captured; unresolved controls remain explicit gaps. */
-export function collectSellableManualTariffCoverage(scope: { modelId?: string; mode?: string } = {}): ManualTariffCoverage {
+export function collectSellableManualTariffCoverage(scope: { modelId?: string; mode?: string; bytePlusTransport?: 'modelark' | 'las' } = {}): ManualTariffCoverage {
   const scenarios: ManualTariffCoverageScenario[] = [];
   const gaps: ManualTariffCoverage['gaps'] = [];
   for (const model of listRuntimeModels().filter((entry) => entry.publication.app.published)) {
@@ -100,12 +103,15 @@ export function collectSellableManualTariffCoverage(scope: { modelId?: string; m
         ? { values: (outputs ?? [1]).map(durationSec => ({ durationSec, durationOption: undefined })), incomplete: !outputs }
         : manualTariffDurations(entry, mode, modeConfig.ui.duration);
       if (durations.incomplete) gaps.push({ modelId: model.id, reason: `${mode}: nonnumeric auto or open duration requires a reviewed mapping` });
-      const rawResolutions = modeConfig.ui.resolution?.length ? modeConfig.ui.resolution : entry.engine.resolutions;
+      const rawResolutions = getBytePlusSeedanceModeResolutions(model.id, mode,
+        modeConfig.ui.resolution?.length ? modeConfig.ui.resolution : entry.engine.resolutions,
+        scope.bytePlusTransport ?? resolveBytePlusTransport(model.id, mode));
       const resolutions = gptImage ? [...GPT_IMAGE_2_CANONICAL_SIZE_VALUES]
         : rawResolutions.filter((resolution) => resolution !== 'auto' && resolution !== 'custom');
       if (!gptImage && resolutions.length !== rawResolutions.length) gaps.push({ modelId: model.id, reason: `${mode}: auto/custom resolution requires a reviewed mapping` });
       const aspectRatios = modeConfig.ui.aspectRatio?.length ? modeConfig.ui.aspectRatio : entry.engine.aspectRatios;
-      const aspects = gptImage ? ['default'] : aspectRatios.length ? [...aspectRatios] : ['default'];
+      const aspects = gptImage ? ['default'] : aspectRatios.length
+        ? aspectRatios.filter(aspect => !seedanceAutomaticDurationBounds(model.id) || !isSeedanceAdaptiveAspect(aspect)) : ['default'];
       if ((model.id === 'wan-3' || model.id === 'wan-3-prime') && ['ref2v', 'v2v', 'extend'].includes(mode)) {
         gaps.push({ modelId: model.id, reason: `${mode}: fractional input video duration needs a continuous unit tariff` });
       }

@@ -2,9 +2,12 @@ import { buildManualTariffCoverageScenario, type ManualTariffCoverageScenario } 
 
 /** Separate admin/preparation inventory; unavailable workflow modes are not public catalogue offers. */
 export function seedanceWorkflowScenarios(normal: readonly ManualTariffCoverageScenario[]): ManualTariffCoverageScenario[] {
-  return normal.filter(s => s.modelId === 'seedance-2-5' && s.context.mode === 't2v'
-    && ['480p', '1080p'].includes(s.context.resolution)).map(s => {
-    const workflowStep = s.context.resolution === '480p' ? 'draft' : 'final';
-    return buildManualTariffCoverageScenario({ ...s.context, workflowStep }, `seedance-2-5:${workflowStep}`);
-  });
+  const contexts = normal.filter(s => s.modelId === 'seedance-2-5' && ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'].includes(s.context.mode ?? '')
+    && (['480p', '1080p'].includes(s.context.resolution) || (s.context.mode === 'v2v' && s.context.resolution === '720p')))
+    .map(s => ({ ...s.context, resolution: s.context.resolution === '720p' ? '1080p' : s.context.resolution }));
+  return [...new Map(contexts.map(context => {
+    const workflowStep = context.resolution === '480p' ? 'draft' : 'final';
+    const scenario = buildManualTariffCoverageScenario({ ...context, workflowStep }, `seedance-2-5:${workflowStep}`);
+    return [scenario.id, scenario] as const;
+  })).values()];
 }

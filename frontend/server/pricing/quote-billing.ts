@@ -33,6 +33,8 @@ import { buildManualTariffScenario } from '@/lib/pricing-manual-scenario';
 import { assertSeedanceWorkflowPricing } from '@/lib/seedance-workflow-pricing';
 import { CustomerTariffUnavailableError } from './resolve-customer-tariff';
 import { isSeedance25LasInputPricing, isSeedance25EditInputPricing } from '@/server/byteplus-las-tariff';
+import { normalizeSeedancePricingContext, seedanceAutomaticDurationBounds, isSeedanceAdaptiveAspect,
+  SEEDANCE_REVIEWED_PRICING_ASPECTS, seedanceAutomaticPricingMetadata } from '@/lib/seedance-option-pricing';
 
 /** Finishing tools supply vendor facts; the canonical kernel owns all customer rounding and margins. */
 export async function computeCanonicalFinishingBillingSnapshot(input: { toolId: string; quality: string; vendorBudgetUsd: number; durationSec: number; profileId: string; pricingSource: string },
@@ -64,6 +66,22 @@ export async function computeCanonicalBillingSnapshot(
     customerTariffExecutor?: QueryExecutor;
   } = {}
 ): Promise<PricingSnapshot> {
+  const requestedContext = context;
+  context = normalizeSeedancePricingContext(context);
+  if (seedanceAutomaticDurationBounds(context.engine.id) && isSeedanceAdaptiveAspect(context.aspectRatio)) {
+    const snapshots = await Promise.all(SEEDANCE_REVIEWED_PRICING_ASPECTS.map(aspectRatio =>
+      computeCanonicalBillingSnapshot({ ...context, aspectRatio }, dependencies)));
+    const first = snapshots[0]!;
+    if (snapshots.some(snapshot => snapshot.currency !== first.currency
+      || snapshot.meta?.customerTariffRevision !== first.meta?.customerTariffRevision)) {
+      throw new CustomerTariffUnavailableError('Adaptive pricing changed during quotation; refresh the quote.');
+    }
+    const highest = snapshots.reduce((selected, snapshot) => snapshot.totalCents > selected.totalCents ? snapshot : selected);
+    const providerCostBoundUsd = Math.max(...snapshots.map(snapshot => Number(snapshot.meta?.providerCostListUsd) || 0));
+    return { ...highest, meta: { ...highest.meta, ...(providerCostBoundUsd > 0 ? { providerCostAdaptiveUpperBoundUsd: providerCostBoundUsd } : {}),
+      seedanceAutomaticPricing: seedanceAutomaticPricingMetadata(requestedContext,
+      { ...context, aspectRatio: highest.meta?.billed_aspect_ratio as string }, 'highest_current_tariff') } };
+  }
   assertSeedanceWorkflowPricing(context);
   const pricingDetails = context.engine.pricingDetails ?? (await getPricingDetails(context.engine.id));
   const { policy, vendorAccountId } = await resolveServerBillingPolicy(
@@ -97,6 +115,8 @@ export async function computeCanonicalBillingSnapshot(
         vendorAccountId,
         meta: {
           ...billingFacts.meta,
+          ...(seedanceAutomaticPricingMetadata(requestedContext, context) ? {
+            seedanceAutomaticPricing: seedanceAutomaticPricingMetadata(requestedContext, context) } : {}),
           ...(context.seedanceEditSource ? { seedanceEditSource: context.seedanceEditSource,
             output_duration_sec: context.seedanceEditSource.durationSec } : {}),
           ...(context.workflowStep ? { workflowStep: context.workflowStep } : {}),
@@ -166,6 +186,8 @@ export async function computeCanonicalBillingSnapshot(
     vendorAccountId,
     meta: {
       ...billingFacts.meta,
+      ...(seedanceAutomaticPricingMetadata(requestedContext, context) ? {
+        seedanceAutomaticPricing: seedanceAutomaticPricingMetadata(requestedContext, context) } : {}),
       ruleId: policy.sourceRuleId,
       engineLabel: context.engine.label,
       engineVersion: context.engine.version,

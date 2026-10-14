@@ -88,7 +88,6 @@ export type GenerateRequestOptionsResult =
       body: Record<string, unknown>;
       metric?: GenerateRequestOptionsMetric;
     };
-
 export function isVideoMode(value: unknown): value is VideoMode {
   return (
     value === 't2v' ||
@@ -104,7 +103,6 @@ export function isVideoMode(value: unknown): value is VideoMode {
     value === 'reframe'
   );
 }
-
 export function buildGenerateRequestOptions(params: {
   body: Record<string, unknown>;
   engine: EngineCaps;
@@ -163,7 +161,6 @@ export function buildGenerateRequestOptions(params: {
   if (lumaDurationInfo) {
     durationSec = lumaDurationInfo.seconds;
   }
-
   const shotTypeRaw = typeof body.shotType === 'string' ? body.shotType.trim().toLowerCase() : '';
   const shotType = shotTypeRaw === 'intelligent' ? 'intelligent' : shotTypeRaw === 'customize' ? 'customize' : null;
   const seed = normalizeSeed(body.seed);
@@ -196,7 +193,7 @@ export function buildGenerateRequestOptions(params: {
     : null;
   let aspectRatio =
     rawAspectRatio && fallbackAspectRatio
-      ? rawAspectRatio === 'auto'
+      ? rawAspectRatio === 'auto' && !isBytePlusV1a
         ? fallbackAspectRatio
         : rawAspectRatio
       : rawAspectRatio ?? fallbackAspectRatio ?? null;
@@ -216,7 +213,6 @@ export function buildGenerateRequestOptions(params: {
       aspectRatio = fallbackAspectRatio ?? '16:9';
     }
   }
-
   const batchId = trimString(body.batchId);
   const groupId = trimString(body.groupId);
   const iterationIndex =
@@ -283,6 +279,10 @@ export function buildGenerateRequestOptions(params: {
     const bytePlusResult = normalizeBytePlusOptions({
       engineId: engine.id,
       durationSec,
+      durationOption: rawDurationOption,
+      ...(body.seedanceWorkflow && typeof body.seedanceWorkflow === 'object'
+        && ['draft', 'final'].includes(String((body.seedanceWorkflow as { step?: string }).step))
+        ? { workflowStep: (body.seedanceWorkflow as { step: 'draft' | 'final' }).step } : {}),
       requestedResolution,
       aspectRatio,
       mode,

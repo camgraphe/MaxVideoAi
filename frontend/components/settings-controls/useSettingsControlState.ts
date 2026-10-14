@@ -81,7 +81,7 @@ export function useSettingsControlState({
   const enumeratedDurationOptions = useMemo(() => {
     if (!caps?.duration) return null;
     if ('options' in caps.duration) {
-      return caps.duration.options.map(parseDurationOptionValue).filter((entry) => entry.value > 0);
+      return caps.duration.options.map(parseDurationOptionValue).filter((entry) => entry.value > 0 || entry.raw === 'auto');
     }
     return null;
   }, [caps]);

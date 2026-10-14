@@ -8,7 +8,8 @@ export type SeedanceWorkflowJob = {
 export type SeedanceWorkflowView = {
   draft: SeedanceWorkflowJob; final: SeedanceWorkflowJob | null; expiresAt: string | null;
   eligibility: 'pending' | 'ready' | 'expired' | 'finalizing' | 'finalized' | 'failed' | 'unavailable';
-  settings: { durationSec: number; aspectRatio: AspectRatio; audio: boolean; resolution: '480p' };
+  settings: { durationSec: number; durationOption?: number | string | null; mode?: 't2v' | 'i2v' | 'ref2v' | 'v2v' | 'extend';
+    aspectRatio: AspectRatio | null; audio: boolean; resolution: '480p' };
 };
 export type SeedanceDraftControls = {
   available: boolean; selected: boolean; phase: 'setup' | 'draft' | 'confirm' | 'final';

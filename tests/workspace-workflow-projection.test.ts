@@ -13,13 +13,13 @@ function asset(fieldId: string, kind: ReferenceAsset['kind'], durationSec?: numb
   return { id: fieldId, fieldId, kind, name: fieldId, type: `${kind}/test`, size: 1,
     url: `https://example.com/${fieldId}`, previewUrl: `https://example.com/${fieldId}`, status: 'ready', durationSec };
 }
-function live(id: string, inputAssets: Record<string, (ReferenceAsset | null)[]> = {}, patch: Partial<FormState> = {}, klingElements: KlingElementState[] = []) {
+function live(id: string, inputAssets: Record<string, (ReferenceAsset | null)[]> = {}, patch: Partial<FormState> = {}, klingElements: KlingElementState[] = [], onFormChange?: (form: FormState | null) => void) {
   const engine = listFalEngines().find((entry) => entry.id === id)?.engine;
   assert.ok(engine, id);
   const form: FormState = { engineId: id, mode: 't2v', durationSec: 5, resolution: '720p', aspectRatio: '16:9', fps: 24, iterations: 1, audio: true, extraInputValues: {}, ...patch };
   let result: ReturnType<typeof useWorkspaceComposerState> | undefined;
   function Harness() {
-    result = useWorkspaceComposerState({ engines: [engine!], form, inputAssets, klingElements, setForm: () => {},
+    result = useWorkspaceComposerState({ engines: [engine!], form, inputAssets, klingElements, setForm: update => onFormChange?.(typeof update === 'function' ? update(form) : update),
       prompt: 'A cinematic scene', multiPromptEnabled: false, setMultiPromptEnabled: () => {}, multiPromptScenes: [], setMultiPromptScenes: () => {},
       voiceIdsInput: '', shotType: 'customize', setShotType: () => {}, effectiveRequestedEngineToken: null,
       authChecked: true, hydratedForScope: 'test', storageScope: 'test', preserveStoredDraftRef: { current: false },
@@ -38,6 +38,15 @@ function live(id: string, inputAssets: Record<string, (ReferenceAsset | null)[]>
   assert.equal(facts.effectiveDurationSec, result.effectiveDurationSec);
   return result;
 }
+
+test('selecting Seedance Auto keeps a positive maximum pricing duration in workspace state', () => {
+  for (const [id, maximum] of [['seedance-2-0', 15], ['seedance-2-0-fast', 15], ['seedance-2-0-mini', 15], ['seedance-2-5', 30]] as const) {
+    let updated: FormState | null = null;
+    live(id, {}, {}, [], form => { updated = form; }).handleDurationChange('auto');
+    assert.equal((updated as FormState | null)?.durationSec, maximum);
+    assert.equal((updated as FormState | null)?.durationOption, 'auto');
+  }
+});
 
 test('live Seedance distinguishes first/last images from mixed references and explicit extension', () => {
   const frames = live('seedance-2-0', { image_url: [asset('image_url', 'image')], end_image_url: [asset('end_image_url', 'image')] });

@@ -99,17 +99,19 @@ test('confirmation pricing preserves the prepared ModelArk extension video-input
     prompt: 'Extend the source video.',
     settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
     references: [{
-      kind: 'https',
-      url: 'https://cdn.example.com/source.mp4',
+      kind: 'asset',
+      assetId: 'owned-extend-source',
       role: 'source',
-      mediaKind: 'video',
     }],
     outputCount: 1,
   };
-  const prepared = await priceCanonicalGeneration(request, 'member');
+  const resolvedReferences = [{ assetId: 'owned-extend-source', role: 'source' as const, mediaKind: 'video' as const,
+    storageUrl: 'https://media.example.test/source.mp4', durationSec: 4, width: 1280, height: 720, mimeType: 'video/mp4' }];
+  const prepared = await priceCanonicalGeneration(request, 'member', undefined, { resolvedReferences, resolvedEngine: entry.engine });
   const confirmed = await priceCanonicalGenerationInExecutor(request, 'member', {
     candidate,
     executor: { async query() { return []; } } as TransactionQueryExecutor,
+    resolvedReferences,
   });
   assert.equal(
     (prepared.pricingSnapshot.meta as Record<string, unknown>).byteplus_billing_input_type,
@@ -801,8 +803,8 @@ test('Seedance accepts one frame URL in distinct first and last roles through re
     prompt: 'Animate one intentionally repeated frame.',
     settings: { durationSec: 4, resolution: '480p', audio: true },
     references: [
-      { kind: 'https', url: duplicateUrl, role: 'first_frame', mediaKind: 'image' },
-      { kind: 'https', url: duplicateUrl, role: 'last_frame', mediaKind: 'image' },
+      { kind: 'asset', assetId: 'duplicate-frame', role: 'first_frame' },
+      { kind: 'asset', assetId: 'duplicate-frame', role: 'last_frame' },
     ],
     outputCount: 1,
   };
@@ -815,6 +817,9 @@ test('Seedance accepts one frame URL in distinct first and last roles through re
   const { dependencies, captures } = baseDependencies(request, {
     lockOwnedQuote: async () => ({ quote: stored, databaseNow: NOW }),
     listPublicEngines: async () => [candidate],
+    resolveGenerationReferences: async () => ['first_frame', 'last_frame'].map(role => ({ assetId: 'duplicate-frame',
+      role: role as 'first_frame' | 'last_frame', storageUrl: duplicateUrl, mediaKind: 'image' as const,
+      width: 1024, height: 1024, durationSec: null, mimeType: 'image/png' })),
   });
 
   const result = await confirmGeneration(

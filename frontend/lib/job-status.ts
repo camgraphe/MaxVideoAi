@@ -25,7 +25,8 @@ const PENDING_STATUSES = new Set([
 
 export function normalizeJobStatus(
   rawStatus: string | null | undefined,
-  hasMedia: boolean
+  hasMedia: boolean,
+  outputPreparationState?: 'active' | 'manual_review'
 ): 'pending' | 'completed' | 'failed' | undefined {
   if (!rawStatus) {
     return hasMedia ? 'completed' : undefined;
@@ -34,11 +35,10 @@ export function normalizeJobStatus(
   if (COMPLETED_STATUSES.has(status)) {
     return hasMedia ? 'completed' : 'pending';
   }
+  if (FAILED_STATUSES.has(status)) return 'failed';
+  if (outputPreparationState) return 'pending';
   if (hasMedia && !FAILED_STATUSES.has(status)) {
     return 'completed';
-  }
-  if (FAILED_STATUSES.has(status)) {
-    return 'failed';
   }
   if (PENDING_STATUSES.has(status) || !hasMedia) {
     return 'pending';

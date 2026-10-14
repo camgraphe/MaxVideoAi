@@ -135,6 +135,7 @@ export async function getConfiguredEngineIncludingHiddenInExecutor(
 }
 
 export type TrustedPreflightMediaPricingFacts = Readonly<{
+  seedanceSourceAspectRatio?: import('@/types/engines').AspectRatio;
   seedanceEditSource?: import('@/lib/seedance-edit-source').SeedanceEditSourceFacts;
   referenceImageCount?: number;
   inputAudioDurationSec?: number;
@@ -281,6 +282,7 @@ export async function computeConfiguredPreflight(
     || Object.prototype.hasOwnProperty.call(rawExtraInputValues, 'inputVideoDurationSec')
     || Object.prototype.hasOwnProperty.call(rawExtraInputValues, 'verifiedReferenceTokenCount')
     || Object.prototype.hasOwnProperty.call(rawExtraInputValues, 'referenceTokenBudget')
+    || Object.prototype.hasOwnProperty.call(rawExtraInputValues, 'seedanceSourceAspectRatio')
   ) {
     return {
       ok: false,
@@ -300,6 +302,7 @@ export async function computeConfiguredPreflight(
     inputImageCount,
     inheritedDurationSec,
     seedanceEditSource,
+    seedanceSourceAspectRatio,
   } = options.trustedMediaPricingFacts ?? {};
   const pricingAddons = {
     ...(addons ?? {}),
@@ -317,7 +320,7 @@ export async function computeConfiguredPreflight(
       membershipTier: memberTier,
       loop,
       hasVideoInput: request.hasVideoInput,
-      durationOption: durationInfo?.label,
+      durationOption: durationInfo?.label ?? request.durationOption,
       addons: Object.keys(pricingAddons).length ? pricingAddons : undefined,
       referenceImageCount,
       inputAudioDurationSec,
@@ -327,6 +330,7 @@ export async function computeConfiguredPreflight(
       inputImageCount,
       inheritedDurationSec,
       seedanceEditSource,
+      seedanceSourceAspectRatio,
     });
   } catch (error) {
     return {

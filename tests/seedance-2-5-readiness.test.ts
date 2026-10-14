@@ -36,7 +36,7 @@ import {
 import { resolveSeedance2Dimensions } from '../frontend/src/lib/seedance-2-pricing';
 
 const slug = 'seedance-2-5';
-const supportedAspectRatios = ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'];
+const supportedAspectRatios = ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'];
 
 test('Seedance 2.5 is the public flagship across every product surface', () => {
   const model = getRuntimeModelById(slug);
@@ -147,7 +147,7 @@ test('Seedance 2.5 exposes one unified five-mode engine schema', () => {
   ];
   assert.equal(fields.find((field) => field.id === 'image_urls')?.maxCount, 30);
   assert.equal(fields.find((field) => field.id === 'video_urls')?.maxCount, 10);
-  assert.equal(fields.find((field) => field.id === 'extension_source_videos')?.maxCount, 3);
+  assert.equal(fields.find((field) => field.id === 'extension_source_videos')?.maxCount, 10);
   assert.equal(fields.find((field) => field.id === 'audio_urls')?.maxCount, 10);
   assert.deepEqual(fields.find((field) => field.id === 'aspect_ratio')?.values, supportedAspectRatios);
   assert.deepEqual(fields.find((field) => field.id === 'aspect_ratio')?.modes, [
@@ -241,7 +241,7 @@ test('Seedance 2.5 pricing uses its factual ModelArk rates and approved 2.5x pol
   const pricingDetails = buildSeedance25PricingDetails();
   assert.ok(pricingDetails.tokenPricing);
   for (const resolution of ['480p', '720p'] as const) {
-    for (const aspectRatio of supportedAspectRatios) {
+    for (const aspectRatio of supportedAspectRatios.filter(ratio => ratio !== 'auto')) {
       const dimensions = resolveSeedance2Dimensions(
         { ...pricingDetails, tokenPricing: pricingDetails.tokenPricing },
         resolution,

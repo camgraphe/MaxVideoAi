@@ -14,6 +14,7 @@ import { normalBytePlusSupplierCost } from '@/server/byteplus-normal-cost';
 import { supportsSeedanceInputTariff, validateSeedanceInputTariffDuration } from '@/lib/seedance-input-tariff';
 import { isSeedance25LasInputPricing, isSeedance25EditInputPricing } from '@/server/byteplus-las-tariff';
 import { seedanceInputTariffRate } from './seedance-input-tariff';
+import { normalizeSeedancePricingContext } from '@/lib/seedance-option-pricing';
 
 export class CustomerTariffUnavailableError extends Error {
   constructor(message: string) { super(message); this.name = 'CustomerTariffUnavailableError'; }
@@ -25,6 +26,7 @@ export function resolveCustomerTariffQuote(input: {
   at: string;
   state: EffectiveCustomerTariffState;
 }): { quote: ManualTariffQuote; revision: number; supplierCost: ReturnType<typeof normalBytePlusSupplierCost> } | null {
+  input = { ...input, context: normalizeSeedancePricingContext(input.context) };
   if (input.state.status === 'unavailable') throw new CustomerTariffUnavailableError('Customer tariff database unavailable');
   if (!input.state.active) return null;
   const state = input.state;

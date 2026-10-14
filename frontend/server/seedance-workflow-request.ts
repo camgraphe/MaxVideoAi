@@ -3,9 +3,11 @@ import { isRecord } from './byteplus-record-utils';
 import { getOwnedReadySeedanceDraftLink } from './seedance-draft-links';
 import type { SeedanceFinalReservation } from '@/app/api/generate/_lib/initial-seedance-final';
 import type { SeedanceSubmissionWorkflow } from './seedance-workflow-submission';
+import { readSeedanceWorkflowMediaFacts, seedanceDraftBillingFingerprint, SEEDANCE_WORKFLOW_MODES, type SeedanceWorkflowMediaFacts, type SeedanceWorkflowMode } from './seedance-workflow-facts';
 
-type Parent = { prompt: string; durationSec: number; aspectRatio: string; audio: boolean; settings: Record<string, unknown> };
-export type PreparedSeedanceWorkflow = { body: Record<string, unknown>; workflow: SeedanceSubmissionWorkflow; seedanceFinal?: SeedanceFinalReservation };
+type Parent = { prompt: string; durationSec: number; aspectRatio: string | null; audio: boolean; settings: Record<string, unknown> };
+export type PreparedSeedanceWorkflow = { body: Record<string, unknown>; workflow: SeedanceSubmissionWorkflow; seedanceFinal?: SeedanceFinalReservation;
+  finalFacts?: SeedanceWorkflowMediaFacts };
 
 export class SeedanceWorkflowRequestError extends Error {
   readonly code = 'SEEDANCE_DRAFT_UNAVAILABLE';
@@ -42,12 +44,11 @@ export async function resolveSeedanceWorkflowRequest(input: {
     return null;
   }
   if (!input.enabled || !input.userId) throw invalid('Draft workflow is unavailable.');
-  if (input.engineId !== 'seedance-2-5' || body.mode !== 't2v' || !isRecord(raw)
+  if (input.engineId !== 'seedance-2-5' || !SEEDANCE_WORKFLOW_MODES.includes(body.mode as SeedanceWorkflowMode) || !isRecord(raw)
     || !['draft', 'final'].includes(String(raw.step))
     || Object.keys(raw).some(key => !(raw.step === 'final' ? ['step', 'draftJobId'] : ['step']).includes(key))
     || (body.iterationCount !== undefined && body.iterationCount !== 1)
-    || (isRecord(body.payment) && body.payment.mode && body.payment.mode !== 'wallet')
-    || (Array.isArray(body.inputs) && body.inputs.length > 0)) throw invalid();
+    || (isRecord(body.payment) && body.payment.mode && body.payment.mode !== 'wallet')) throw invalid();
   if (raw.step === 'draft') {
     if (body.resolution !== undefined && body.resolution !== '480p') throw invalid();
     return { body: { ...body, resolution: '480p', iterationCount: 1, audio: body.audio !== false }, workflow: { step: 'draft' } };
@@ -60,13 +61,31 @@ export async function resolveSeedanceWorkflowRequest(input: {
   const settings = isRecord(parent?.settings) ? parent.settings : {};
   const core = isRecord(settings.core) ? settings.core : {};
   const workflow = isRecord(settings.seedanceWorkflow) ? settings.seedanceWorkflow : {};
-  if (!parent || settings.inputMode !== 't2v' || workflow.step !== 'draft' || core.resolution !== '480p'
-    || core.iterationCount !== 1 || !Number.isInteger(parent.durationSec) || parent.durationSec < 4 || parent.durationSec > 30
+  const mediaFacts = readSeedanceWorkflowMediaFacts(workflow.mediaFacts);
+  const durationSec = mediaFacts?.durationSec ?? core.durationSec ?? parent?.durationSec;
+  if (!parent || !SEEDANCE_WORKFLOW_MODES.includes(settings.inputMode as SeedanceWorkflowMode) || workflow.step !== 'draft' || core.resolution !== '480p'
+    || core.iterationCount !== 1 || !Number.isInteger(durationSec) || Number(durationSec) < 4 || Number(durationSec) > 30
+    || (settings.inputMode !== 't2v' && !mediaFacts) || (mediaFacts && mediaFacts.mode !== settings.inputMode)
+    || ('mediaFacts' in workflow && !mediaFacts)
     || typeof parent.prompt !== 'string' || typeof parent.audio !== 'boolean') throw invalid();
+  const refs = isRecord(settings.refs) ? settings.refs : {};
+  const advanced = isRecord(settings.advanced) ? settings.advanced : {};
+  const finalFacts = mediaFacts ?? { schemaVersion: 1 as const, mode: 't2v' as const, durationSec: Number(durationSec),
+    aspectRatio: parent.aspectRatio, hasVideoInput: false, attachments: [], trustedMediaReferences: [] };
   return { workflow: { step: 'final', draftJobId },
-    seedanceFinal: { draftJobId, providerTaskId: link.providerTaskId, providerModelId: link.providerModelId },
-    body: { ...body, prompt: parent.prompt, durationSec: parent.durationSec, duration: parent.durationSec,
-      resolution: '1080p', aspectRatio: parent.aspectRatio, audio: parent.audio, iterationCount: 1,
-      inputs: [], referenceImages: [], reference_images: [], imageUrl: undefined, image_url: undefined,
-      audioUrl: undefined, videoUrls: [], audioUrls: [], endImageUrl: undefined, extraInputValues: {} } };
+    seedanceFinal: { draftJobId, providerTaskId: link.providerTaskId, providerModelId: link.providerModelId,
+      ...(mediaFacts ? { parentSnapshotFingerprint: seedanceDraftBillingFingerprint(parent) } : {}) },
+    finalFacts,
+    body: { ...body, mode: settings.inputMode, prompt: parent.prompt, durationSec, duration: durationSec,
+      durationOption: mediaFacts?.durationOption ?? core.durationOption,
+      resolution: '1080p', aspectRatio: finalFacts.aspectRatio, audio: parent.audio, iterationCount: 1,
+      inputs: finalFacts.attachments, referenceImages: refs.referenceImages ?? [], reference_images: [],
+      imageUrl: refs.imageUrl ?? refs.firstFrameUrl, image_url: undefined,
+      audioUrl: refs.audioUrl, audio_url: undefined, videoUrls: refs.videoUrls ?? [], audioUrls: [], endImageUrl: refs.endImageUrl,
+      fps: core.fps ?? 24, numFrames: core.numFrames, negativePrompt: settings.negativePrompt,
+      cfgScale: advanced.cfgScale, loop: advanced.loop, multiPrompt: advanced.multiPrompt,
+      shotType: advanced.shotType, voiceIds: advanced.voiceIds ?? [], voiceControl: advanced.voiceControl === true,
+      elements: refs.elements,
+      seed: advanced.seed, cameraFixed: advanced.cameraFixed, safetyChecker: advanced.safetyChecker,
+      extraInputValues: isRecord(advanced.extraInputValues) ? advanced.extraInputValues : {} } };
 }

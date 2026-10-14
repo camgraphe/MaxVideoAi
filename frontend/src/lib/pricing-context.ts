@@ -2,6 +2,8 @@ import type { GptImage2ImageSize } from '@/lib/image/gptImage2';
 import type { EngineCaps, Mode } from '@/types/engines';
 
 export type PricingContext = {
+  /** Internal class derived from server-resolved owned source dimensions. */
+  seedanceSourceAspectRatio?: import('@/types/engines').AspectRatio;
   seedanceEditSource?: import('@/lib/seedance-edit-source').SeedanceEditSourceFacts;
   workflowStep?: 'draft' | 'final';
   engine: EngineCaps;

@@ -21,7 +21,7 @@ export function continuousWan3TariffSelector(selector: ManualTariffSelector): Ma
 
 /** Reviewed continuous classes only; every other model keeps exact matching. */
 export function continuousInputTariffSelector(selector: ManualTariffSelector): ManualTariffSelector | null {
-  if (!selector.workflowStep && supportsSeedanceInputTariff(selector.engineId, selector.mode, selector.billingInputType)) {
+  if (supportsSeedanceInputTariff(selector.engineId, selector.mode, selector.billingInputType)) {
     if (selector.inputVideoDurationSec === undefined) return null;
     validateSeedanceInputTariffDuration(selector.engineId, Number(selector.inputVideoDurationSec));
     return { ...selector, inputVideoDurationSec: 'continuous' };

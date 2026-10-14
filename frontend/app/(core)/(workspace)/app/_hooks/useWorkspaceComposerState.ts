@@ -237,7 +237,9 @@ export function useWorkspaceComposerState({
       setForm((current) => {
         if (!current) return current;
         const numeric = typeof raw === 'number' ? raw : Number(String(raw).replace(/[^\d.]/g, ''));
-        const durationSec = Number.isFinite(numeric) ? Math.max(1, Math.round(numeric)) : current.durationSec;
+        const durationSec = raw === 'auto' && isUnifiedSeedance && selectedEngine
+          ? selectedEngine.maxDurationSec
+          : Number.isFinite(numeric) ? Math.max(1, Math.round(numeric)) : current.durationSec;
         return {
           ...current,
           durationSec,
@@ -246,7 +248,7 @@ export function useWorkspaceComposerState({
         };
       });
     },
-    [multiPromptActive, setForm]
+    [multiPromptActive, setForm, isUnifiedSeedance, selectedEngine]
   );
 
   const handleFramesChange = useCallback(

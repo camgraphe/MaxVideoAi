@@ -276,6 +276,8 @@ export async function executePreparedVideoGeneration(params: ExecutePreparedVide
           engineLabel: engine.label,
           prompt,
           durationSec: effectiveDurationSec,
+          durationOption: falPayload.durationOption,
+          extraInputValues: falPayload.extraInputValues,
           mode,
           initialImageUrl,
           endImageUrl,

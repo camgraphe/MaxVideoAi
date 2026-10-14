@@ -130,13 +130,16 @@ export function applyOutputsToJobPayload<T extends {
   videoUrl?: string | null;
   audioUrl?: string | null;
   previewVideoUrl?: string | null;
+  playbackVideoUrl?: string | null;
+  lastFrameUrl?: string | null;
   renderIds?: string[] | null;
   renderThumbUrls?: string[] | null;
 }>(job: T, outputs: JobOutputRecord[] | undefined): T {
   if (!outputs?.length) return job;
   const videos = outputs.filter((output) => output.kind === 'video').sort((a, b) => a.position - b.position);
   const audios = outputs.filter((output) => output.kind === 'audio').sort((a, b) => a.position - b.position);
-  const images = outputs.filter((output) => output.kind === 'image').sort((a, b) => a.position - b.position);
+  const images = outputs.filter((output) => output.kind === 'image' && output.metadata.role !== 'last_frame').sort((a, b) => a.position - b.position);
+  const lastFrame = outputs.find(output => output.kind === 'image' && output.metadata.role === 'last_frame');
   const firstVideo = videos[0];
   const firstAudio = audios[0];
   const imageEntries = images.map((output) => ({
@@ -151,6 +154,8 @@ export function applyOutputsToJobPayload<T extends {
     ...job,
     videoUrl: firstVideo?.url ?? job.videoUrl,
     previewVideoUrl: firstVideo?.previewUrl ?? job.previewVideoUrl,
+    ...(typeof firstVideo?.metadata.playbackVideoUrl === 'string' ? { playbackVideoUrl: firstVideo.metadata.playbackVideoUrl } : {}),
+    ...(lastFrame ? { lastFrameUrl: lastFrame.url } : {}),
     audioUrl: firstAudio?.url ?? job.audioUrl,
     thumbUrl: firstVideo?.thumbUrl ?? images[0]?.thumbUrl ?? job.thumbUrl,
     renderIds: images.length ? images.map((output) => output.url) : job.renderIds,

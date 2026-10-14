@@ -35,10 +35,12 @@ test('authenticated status calls coalesce only within the same principal and thr
     const anotherPrincipal = getJobStatus('job_fixture');
     assert.notEqual(first, anotherPrincipal);
     await waitForRequests(2);
-    requests[0].resolve(new Response(JSON.stringify({ ok: true, jobId: 'job_fixture', status: 'running', observation: { stage: 'processing', providerPercent: { value: 0, provider: 'fal', source: 'provider' } } })));
+    requests[0].resolve(new Response(JSON.stringify({ ok: true, jobId: 'job_fixture', status: 'processing',videoUrl:'https://media.maxvideoai.com/original.mov',outputPreparationState:'active', observation: { stage: 'processing', providerPercent: { value: 0, provider: 'fal', source: 'provider' } } })));
     requests[1].resolve(new Response(JSON.stringify({ ok: true, jobId: 'job_fixture', status: 'running', observation: { stage: 'processing', degraded: true } })));
     const [firstResult, degraded] = await Promise.all([first, anotherPrincipal]);
     assert.equal(firstResult.observation?.providerPercent?.value, 0);
+    assert.equal(firstResult.status,'pending');
+    assert.equal(firstResult.outputPreparationState,'active');
     assert.ok(firstResult.observation?.checkedAt);
     assert.equal(degraded.observation?.checkedAt, undefined);
     assert.equal(await getJobStatus('job_fixture'), degraded);

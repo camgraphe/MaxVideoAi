@@ -53,7 +53,7 @@ export function QuadMosaicFigure({
                     <video
                       data-quad-video={shouldPlayPreview ? 'active' : 'idle'}
                       data-quad-fallback
-                      src={preview.videoUrl}
+                      src={preview.playbackVideoUrl ?? preview.videoUrl}
                       className="absolute inset-0 h-full w-full object-cover pointer-events-none"
                       autoPlay={shouldPlayPreview}
                       muted

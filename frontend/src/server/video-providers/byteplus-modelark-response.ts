@@ -86,11 +86,18 @@ export function normalizeBytePlusTask(task: unknown): NormalizedVideoProviderTas
           ? 'running'
           : 'queued';
 
+  const content = firstRecord(root, ['content', 'result', 'output']);
+  const lastFrameUrl = firstString(content, ['last_frame_url', 'lastFrameUrl'])
+    ?? firstString(root, ['last_frame_url', 'lastFrameUrl']);
+  const format = firstString(root, ['output_format', 'outputFormat']) ?? firstString(content, ['output_format', 'outputFormat']);
+
   return {
     providerJobId,
     status,
     rawStatus,
     videoUrl: extractVideoUrl(root) ?? extractVideoUrl(task),
+    ...(lastFrameUrl ? { lastFrameUrl } : {}),
+    ...(format === 'mov' || format === 'mp4' ? { outputFormat: format } : {}),
     message: extractErrorMessage(root) ?? extractErrorMessage(task),
     errorCode: extractErrorCode(root) ?? extractErrorCode(task),
     usage: extractUsage(root) ?? extractUsage(task),

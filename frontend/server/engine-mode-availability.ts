@@ -28,7 +28,8 @@ export function projectSeedance25ModeAvailability(engine: EngineCaps, environmen
     modeAvailability: Object.fromEntries(engine.modes.map((mode) => [mode, resolveSeedance25ModeAvailability(engine, mode, environment)])),
     modeCaps: engine.modeCaps ? Object.fromEntries(Object.entries(engine.modeCaps).map(([mode, caps]) => [mode, caps ? {
       ...caps,
-      ...(caps.resolution ? { resolution: [...getBytePlusSeedanceModeResolutions(engine.id, mode, caps.resolution)] } : {}),
+      ...(caps.resolution ? { resolution: [...getBytePlusSeedanceModeResolutions(engine.id, mode, caps.resolution,
+        resolveBytePlusTransport(engine.id, mode))] } : {}),
     } : caps])) : undefined,
   };
 }
