@@ -21,6 +21,7 @@ export function parseDurationOptionValue(option: number | string): DurationOptio
 }
 
 export function matchesDurationOptionValue(option: DurationOptionMeta, raw: number | string | null | undefined, seconds: number): boolean {
+  if (option.raw === 'auto' || raw === 'auto') return option.raw === raw;
   if (raw != null) {
     if (typeof raw === 'number') {
       return Math.abs(option.value - raw) < 0.001;

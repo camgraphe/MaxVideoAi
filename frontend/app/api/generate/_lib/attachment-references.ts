@@ -161,9 +161,11 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
   const normalizedReferenceImages = Array.from(
     new Set([...normalizeStringList(referenceImagesInput), ...attachmentReferenceImageUrls])
   );
+  const sourceOrderedEdit = params.mode === 'v2v' && ['seedance-2-5','seedance-2-0','seedance-2-0-fast','seedance-2-0-mini'].includes(params.engineId);
   const rawVideoUrls = params.attachments
-    .filter((attachment) => attachment.kind === 'video' && typeof attachment.url === 'string'
-      && (params.engineId !== 'seedance-2-5' || params.mode !== 'v2v' || attachment.slotId?.trim() === 'video_url'))
+    .filter((attachment) => attachment.kind === 'video' && typeof attachment.url === 'string')
+    .sort((left, right) => sourceOrderedEdit
+      ? Number(right.slotId?.trim() === 'video_url') - Number(left.slotId?.trim() === 'video_url') : 0)
     .map((attachment) => attachment.url!.trim())
     .filter((url) => url.length > 0);
   const videoUrls = params.mode === 'extend' ? rawVideoUrls : uniqueNonEmpty(rawVideoUrls);
@@ -358,7 +360,9 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
       : params.attachments.find(
           (attachment) => attachment.slotId === 'start_image_url'
         )?.url?.trim();
-  const sourceInputVideoUrl = videoUrls[0];
+  const sourceInputVideoUrl = sourceOrderedEdit
+    ? params.attachments.find(attachment => attachment.kind === 'video' && attachment.slotId?.trim() === 'video_url')?.url?.trim()
+    : videoUrls[0];
   if (initialImageUrl && directPrimaryImageUrl) {
     const providerOverwriteSlots =
       isSoraEngineId(params.engineId) && params.mode === 'i2v'

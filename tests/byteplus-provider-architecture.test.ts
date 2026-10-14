@@ -861,7 +861,7 @@ test('BytePlus runtime exposes Seedance 2.0 Standard and Fast video source workf
     assert.deepEqual(extensionSourceField?.requiredInModes, ['extend']);
     assert.equal(extensionSourceField?.minCount, 1);
     assert.equal(extensionSourceField?.maxCount, 3);
-    assert.deepEqual(referenceVideoField?.modes, ['ref2v']);
+    assert.deepEqual(referenceVideoField?.modes, ['ref2v', 'v2v']);
   }
 });
 

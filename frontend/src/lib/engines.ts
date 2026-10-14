@@ -112,6 +112,7 @@ export function cloneEngine(engine: EngineCaps): EngineCaps {
             ? {
                 ...engine.inputSchema.referenceBudget,
                 fieldIds: [...engine.inputSchema.referenceBudget.fieldIds],
+                ...(engine.inputSchema.referenceBudget.maxByType ? { maxByType: { ...engine.inputSchema.referenceBudget.maxByType } } : {}),
                 modes: engine.inputSchema.referenceBudget.modes
                   ? [...engine.inputSchema.referenceBudget.modes]
                   : undefined,

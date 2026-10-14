@@ -157,6 +157,9 @@ function invalidModeReferences(): never {
 }
 
 const EXTRA_INPUT_FIELD_BY_SETTING: Readonly<Record<string, string>> = Object.freeze({
+  outputFormat: 'output_format',
+  returnLastFrame: 'return_last_frame',
+  watermark: 'watermark',
   contextSec: 'context',
   cropEndX: 'x_end',
   cropEndY: 'y_end',

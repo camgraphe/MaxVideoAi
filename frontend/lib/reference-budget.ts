@@ -4,7 +4,9 @@ import type {
   Mode,
 } from '@/types/engines';
 
-export type ResolvedEngineReferenceBudget = Omit<EngineReferenceBudget, 'modes'>;
+export type ResolvedEngineReferenceBudget = Omit<EngineReferenceBudget, 'modes'> & {
+  fieldTypes?: Record<string, 'image' | 'video' | 'audio'>;
+};
 export type ReferenceBudgetValuesByField<T> = Record<
   string,
   readonly T[] | undefined
@@ -38,6 +40,10 @@ export function resolveEngineReferenceBudget(
         fieldIds,
         maxTotal: budget.maxTotal,
         countUniqueUrls: budget.countUniqueUrls,
+        ...(budget.maxByType ? {
+          maxByType: budget.maxByType,
+          fieldTypes: Object.fromEntries(fieldIds.map(id => [id, fieldsById.get(id)!.type])) as Record<string, 'image' | 'video' | 'audio'>,
+        } : {}),
       }
     : null;
 }
@@ -102,6 +108,14 @@ export function evaluateReferenceBudget<T>(params: {
   const count = params.budget.countUniqueUrls
     ? new Set(identities).size
     : identities.length;
+  for (const [kind, maximum] of Object.entries(params.budget.maxByType ?? {})) {
+    if (typeof maximum !== 'number') continue;
+    const typedIdentities = params.budget.fieldIds
+      .filter(id => params.budget.fieldTypes?.[id] === kind)
+      .flatMap(id => (params.valuesByField[id] ?? []).map(params.getIdentity).filter((value): value is string => Boolean(value?.trim())));
+    const typedCount = params.budget.countUniqueUrls ? new Set(typedIdentities.map(value => value.trim())).size : typedIdentities.length;
+    if (typedCount > maximum) return { ok: false, count: typedCount, maxTotal: maximum };
+  }
   return {
     ok: count <= params.budget.maxTotal,
     count,

@@ -37,6 +37,7 @@ export function buildWorkspacePreflightRequest({
     engine: form.engineId,
     mode: submissionMode,
     durationSec: effectiveDurationSec,
+    ...(form.durationOption !== undefined && form.durationOption !== null ? { durationOption: form.durationOption } : {}),
     ...(shouldSendResolution
       ? { resolution: form.resolution as PreflightRequest['resolution'] }
       : {}),

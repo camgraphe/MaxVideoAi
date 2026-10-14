@@ -64,11 +64,10 @@ them executable:
   without reusing the image-only `i2i` name;
 - `t2i` and `i2i`: text and reference-image generation.
 
-Seedance 2.5 uses ModelArk for `t2v`, `i2v`, `ref2v`, and `extend`. Its `v2v`
-mode is represented by the same canonical contract but remains hidden from
-executable discovery in environments without the separate LAS access and key.
-This does not restrict its image-to-video, multimodal-reference, or extension
-workflows.
+Seedance 2.5 uses the existing ModelArk account and key for all five modes when
+`SEEDANCE_2_5_EDIT_TRANSPORT=modelark` and the reviewed Edit flag is enabled.
+ModelArk Edit includes 1080p. Environments explicitly retaining LAS preserve
+its separate access, key and narrower resolution requirements.
 
 Gemini Omni Flash is exposed under the stable `gemini-omni-flash` identity and
 the visible 1.1 label. Its executable MCP projection is Google-direct only and
@@ -151,10 +150,19 @@ model and family playlists. None has an editorial watch page or video-sitemap
 entry; any later Video SEO enrollment must still use the normal admin SEO
 workflow.
 
-Mode details normalize provider duration labels to executable numeric seconds;
-provider-only values such as `auto` are never advertised as MCP inputs. P0 and
-P1 modes continue to derive settings, references, prices, and paid request
-bodies from the shared engine, pricing, and site execution owners.
+Mode details keep `durationSec` positive and numeric. Current Seedance modes
+that support Auto additionally advertise `durationOption: "auto"`; canonical
+pricing fixes the billed duration at 15s (2.0) or 30s (2.5), while the provider
+receives -1. Source-preserving 2.5 Edit keeps its verified source timing. Auto
+aspect pricing uses the highest current exact tariff among the six documented
+formats, or the verified source class when framing is inherited. Unsupported
+arbitrary inherited framing fails closed until its pricing domain is reviewed.
+
+Seedance output settings map `outputFormat`, `returnLastFrame` and `watermark`
+to the shared creative input schema. MOV selection belongs to 2.5. Original
+downloads, full compatible playback and the reusable last-frame JPEG remain
+distinct owned artifacts. P0 and P1 modes continue to derive settings,
+references, prices and paid request bodies from the site execution owners.
 
 Numeric mode settings also project their authored `step`. Custom image modes
 project the five public `imageSize` limits (pixel multiples, total pixel bounds,

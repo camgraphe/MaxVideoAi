@@ -479,7 +479,9 @@ export function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormSt
           ?? parsedOptions.find((meta) => matchesDurationOption(meta, defaultRaw as number | string, defaultMeta.value))
           ?? parsedOptions[0]
           ?? defaultMeta;
-        const resolvedDurationValue = selected.isAuto ? fallbackDurationSec : selected.value;
+        const resolvedDurationValue = selected.isAuto
+          ? UNIFIED_SEEDANCE_ENGINE_IDS.has(engine.id) ? engine.maxDurationSec : fallbackDurationSec
+          : selected.value;
         const clampedSeconds = Math.max(1, Math.min(engine.maxDurationSec, Math.round(resolvedDurationValue)));
         return {
           durationSec: clampedSeconds,

@@ -78,6 +78,8 @@ export async function submitBytePlusGenerateTask(params: {
   engineLabel: string;
   prompt: string;
   durationSec: number;
+  durationOption?: number | string | null;
+  extraInputValues?: Record<string, unknown>;
   mode: Mode;
   initialImageUrl: string | null | undefined;
   endImageUrl: string | null;
@@ -154,7 +156,7 @@ export async function submitBytePlusGenerateTask(params: {
     assertBytePlusSeedanceSubmissionEnabled(params.engineId);
     submissionTransport = params.seedanceWorkflow ? 'modelark' : resolveBytePlusTransport(params.engineId, params.mode);
     if (reliableLasSubmission && submissionTransport === 'modelark') {
-      assertBytePlusTransportConfigured(params.engineId, params.mode);
+      assertBytePlusTransportConfigured(params.engineId, params.seedanceWorkflow ? 't2v' : params.mode);
     }
     const profile = requireBytePlusSeedanceProfile(params.engineId);
     const config = getBytePlusArkConfigFn();
@@ -176,15 +178,19 @@ export async function submitBytePlusGenerateTask(params: {
       modelId: resolveBytePlusSeedanceModelIdFn(params.engineId, config),
       prompt: params.prompt,
       durationSec: params.durationSec,
+      durationOption: params.durationOption,
       mode: toBytePlusMode(params.mode),
-      ...(reliableLasSubmission ? { transport: submissionTransport } : {}),
+      transport: submissionTransport,
+      ...(params.extraInputValues?.output_format !== undefined ? { outputFormat: params.extraInputValues.output_format as 'mp4' | 'mov' } : {}),
+      ...(params.extraInputValues?.return_last_frame !== undefined ? { returnLastFrame: params.extraInputValues.return_last_frame as boolean } : {}),
+      ...(params.extraInputValues?.watermark !== undefined ? { watermark: params.extraInputValues.watermark as boolean } : {}),
       imageUrl: params.mode === 'i2v' ? params.initialImageUrl : null,
       endImageUrl: params.mode === 'i2v' ? params.endImageUrl : null,
-      referenceImageUrls: params.mode === 'ref2v' || params.mode === 'v2v' ? params.normalizedReferenceImages : undefined,
+      referenceImageUrls: params.mode === 'ref2v' || params.mode === 'v2v' || params.mode === 'extend' ? params.normalizedReferenceImages : undefined,
       referenceVideoUrls:
         params.mode === 'ref2v' || params.mode === 'v2v' || params.mode === 'extend' ? params.videoUrls : undefined,
       referenceAudioUrls:
-        params.mode === 'ref2v' || params.mode === 'v2v'
+        params.mode === 'ref2v' || params.mode === 'v2v' || params.mode === 'extend'
           ? Array.from(new Set([...(params.resolvedAudioUrl ? [params.resolvedAudioUrl] : []), ...params.audioUrls]))
           : undefined,
       resolution: params.effectiveResolution,
@@ -198,7 +204,7 @@ export async function submitBytePlusGenerateTask(params: {
       allowedModes: profile.supportedModes,
       allowedAspectRatios: profile.aspectRatios,
       allowedResolutions: getBytePlusSeedanceModeResolutions(params.engineId, params.mode,
-        getBytePlusSeedanceAllowedResolutionsFn(params.engineId)),
+        getBytePlusSeedanceAllowedResolutionsFn(params.engineId), submissionTransport),
       allowedDurationOptions: getBytePlusSeedanceDurationOptionsFn(params.engineId),
       ...(referenceBudget
         ? { referenceBudget, referenceMediaItems: referenceMediaItems ?? [] }

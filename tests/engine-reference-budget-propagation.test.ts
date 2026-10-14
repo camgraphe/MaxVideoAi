@@ -27,8 +27,10 @@ test('Seedance 2.5 keeps its unified 50-reference budget when cloned', () => {
     modes: ['i2v', 'ref2v', 'v2v', 'extend'],
     maxTotal: 50,
     countUniqueUrls: true,
+    maxByType: { image: 30, video: 10, audio: 10 },
   });
   assert.notStrictEqual(clonedBudget?.fieldIds, entry.engine.inputSchema?.referenceBudget?.fieldIds);
+  assert.notStrictEqual(clonedBudget?.maxByType, entry.engine.inputSchema?.referenceBudget?.maxByType);
 });
 
 test('engine clone and configured projection preserve independent aggregate reference budgets', async () => {

@@ -166,11 +166,11 @@ test('workspace exposes Seedance 2.0 source-video fields for Standard and Fast c
       uiLocale: 'en',
     });
 
-    assert.deepEqual(extendSchema.assetFields.map(({ field }) => field.id), ['extension_source_videos']);
+    assert.deepEqual(extendSchema.assetFields.map(({ field }) => field.id), ['image_urls', 'extension_source_videos', 'audio_urls']);
   }
 });
 
-test('workspace exposes only source clips in the Seedance 2.0 Mini extension schema', () => {
+test('workspace exposes source clips and supplementary references in the Seedance 2.0 Mini extension schema', () => {
   const mini = listFalEngines().find((entry) => entry.id === 'seedance-2-0-mini');
   assert.ok(mini);
 
@@ -184,10 +184,11 @@ test('workspace exposes only source clips in the Seedance 2.0 Mini extension sch
     uiLocale: 'en',
   });
 
-  assert.deepEqual(schema.assetFields.map(({ field }) => field.id), ['extension_source_videos']);
-  assert.equal(schema.assetFields[0]?.field.label, 'Source clips to extend (up to 3)');
-  assert.equal(schema.assetFields[0]?.required, true);
-  assert.equal(schema.assetFields[0]?.role, 'generic');
+  assert.deepEqual(schema.assetFields.map(({ field }) => field.id), ['image_urls', 'extension_source_videos', 'audio_urls']);
+  const source = schema.assetFields.find(({field}) => field.id === 'extension_source_videos');
+  assert.equal(source?.field.label, 'Source clips to extend (up to 3)');
+  assert.equal(source?.required, true);
+  assert.equal(source?.role, 'generic');
 });
 
 test('workspace disables generation while an active mode is missing required assets', () => {

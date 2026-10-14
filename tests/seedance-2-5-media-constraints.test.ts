@@ -54,6 +54,7 @@ function storedRow(overrides: Partial<StoredMediaMetadataRow> = {}): StoredMedia
     original_name: 'reference.mp3',
     mime_type: 'audio/mpeg',
     size_bytes: 15 * MB,
+    duration_sec: 6,
     ...overrides,
   };
 }
@@ -161,7 +162,8 @@ test('generation validation uses stored user-owned metadata instead of client si
   const exactMp3 = await validateStoredAudio({ row: storedRow() });
   assert.deepEqual(exactMp3.result, {
     ok: true,
-    trustedMediaReferences: [{ kind: 'audio', url: AUDIO_URL, width: null, height: null, durationSec: null }],
+    trustedDurationSecByField: { audio_urls: [6] },
+    trustedMediaReferences: [{ kind: 'audio', fieldId: 'audio_urls', url: AUDIO_URL, width: null, height: null, durationSec: 6 }],
   });
   assert.equal(exactMp3.calls.length, 1);
   assert.match(exactMp3.calls[0].sql, /user_assets/);
@@ -185,8 +187,9 @@ test('generation validation uses stored user-owned metadata instead of client si
   });
   assert.deepEqual(exactWav.result, {
     ok: true,
-    trustedMediaReferences: [{ kind: 'audio', url: 'https://media.maxvideoai.com/user-assets/reference.wav',
-      width: null, height: null, durationSec: null }],
+    trustedDurationSecByField: { audio_urls: [6] },
+    trustedMediaReferences: [{ kind: 'audio', fieldId: 'audio_urls', url: 'https://media.maxvideoai.com/user-assets/reference.wav',
+      width: null, height: null, durationSec: 6 }],
   });
 
   const tooLarge = await validateStoredAudio({
@@ -233,7 +236,7 @@ test('Seedance 2.5 rejects source videos below the provider pixel floor before s
   assert.deepEqual(aboveFloor, {
     ok: true,
     trustedDurationSecByField: { video_url: [10] },
-    trustedMediaReferences: [{ kind: 'video', url: VIDEO_URL, width: 638, height: 640, durationSec: 10 }],
+    trustedMediaReferences: [{ kind: 'video', fieldId: 'video_url', url: VIDEO_URL, width: 638, height: 640, durationSec: 10 }],
   });
 });
 
@@ -274,7 +277,7 @@ test('Seedance 2.5 probes a trusted stored video when dimension metadata is miss
   assert.deepEqual(result, {
     ok: true,
     trustedDurationSecByField: { video_url: [10] },
-    trustedMediaReferences: [{ kind: 'video', url: VIDEO_URL, width: null, height: null, durationSec: 10 }],
+    trustedMediaReferences: [{ kind: 'video', fieldId: 'video_url', url: VIDEO_URL, width: 638, height: 640, durationSec: 10 }],
   });
 });
 
@@ -352,7 +355,7 @@ test('workspace upload context and trusted generation validation are wired befor
   assert.match(workspaceUploadSource, /formData\.append\('engineId', engineId\)/);
   assert.match(workspaceUploadSource, /formData\.append\('mode', preferredMode\)/);
   assert.match(workspaceUploadSource, /formData\.append\('fieldId', field\.id\)/);
-  const constraintValidation = videoGenerationSource.indexOf('const attachmentProcessing = await processAndValidateGenerationAttachments');
+  const constraintValidation = videoGenerationSource.indexOf('await processAndValidateGenerationAttachments(attachmentParams)');
   const billingPreflight = videoGenerationSource.indexOf('const billingPreflight = trustedIncludedTrialBilling');
   assert.ok(constraintValidation >= 0);
   assert.ok(constraintValidation < billingPreflight, 'trusted media validation must run before billing preflight');

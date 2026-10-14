@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - Two genuine generation POSTs already consumed; zero additional supplier calls or temporary wallet operations.
-- Preserve existing tariffs; use existing reviewed 4s and 1080p cells.
+- Preserve existing tariffs; use existing reviewed 4s and 1080p cells. Add independent multimodal Draft/Final cells frozen from each matching current normal fixed amount or proportional input component; preserve existing T2V stage prices.
 - No new keys, vendor forms, direct production uploads or shared Desktop edits.
 - Current main base a9c1b843fffdc0cba1ad08b18f4c156a95d9b4d6; refetch before release.
 - MP4/no returned frame/no watermark remain defaults. Current 2.x seed/camera-fixed capabilities remain unsupported.
@@ -43,7 +43,7 @@
 **Interfaces:** Resolve automatic pricing to fixed model maximum 15s/30s, with source-timed Edit taking precedence. Resolve adaptive pricing through a proven bounded reviewed basis, preserve requested provider mode independently, and annotate the quote with its pricing basis.
 
 - [ ] Write and run failing quote/request tests for Auto max pricing, forged duration, adaptive geometry and 1080p ModelArk versus LAS.
-- [ ] Implement canonical normalization shared by quote and generation; retain existing exact tariffs and input-video pricing.
+- [ ] Implement canonical normalization shared by quote and generation; retain existing exact tariffs and input-video pricing; prepare and transactionally initialize the scoped missing multimodal workflow cells with a reproduced fingerprint, source revision and immutable pricing event.
 - [ ] Verify focused disposable PostgreSQL/public quote tests, unchanged fixed-option prices and selected financial coverage; commit.
 
 ### Task 3: Durable MOV and returned last frame
