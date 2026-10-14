@@ -1,5 +1,6 @@
 import type { AspectRatio } from '@/types/engines';
 import type { PricingContext } from '@/lib/pricing-context';
+import { seedanceOutputDimensions } from '@/lib/seedance-output-dimensions';
 
 export const SEEDANCE_REVIEWED_PRICING_ASPECTS: readonly AspectRatio[] = ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'];
 
@@ -19,6 +20,17 @@ export function resolveSeedanceSourcePricingAspectRatio(source: { width?: number
     throw new Error('Verified source dimensions are required for adaptive pricing.');
   }
   const ratio = width! / height!;
+  // Published raster rounding can exceed nominal 1%; admit those exact pairs
+  // from the same pure owner used by supplier accounting, never arbitrary nearby sizes.
+  for (const engineId of ['seedance-2-5', 'seedance-2-0']) {
+    for (const resolution of ['480p', '720p', '1080p', '4k']) {
+      const exact = SEEDANCE_REVIEWED_PRICING_ASPECTS.find(aspect => {
+        const raster = seedanceOutputDimensions(engineId, resolution, aspect);
+        return raster?.width === width && raster?.height === height;
+      });
+      if (exact) return exact;
+    }
+  }
   const selected = SEEDANCE_REVIEWED_PRICING_ASPECTS.find(aspect => {
     const [x, y] = aspect.split(':').map(Number);
     return Math.abs(ratio / (x! / y!) - 1) <= 0.01;

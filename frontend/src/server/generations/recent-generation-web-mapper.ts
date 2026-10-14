@@ -3,7 +3,7 @@ import { extractRenderIds, extractRenderThumbUrls, parseStoredImageRenders } fro
 import { normalizeMediaUrl } from '@/lib/media';
 import { getKnownGenerationFailureMessage } from '@/lib/generation-failure-messages';
 import { getVideoFailureCodeFromSettingsSnapshot } from '@/lib/video-failure-codes';
-import { generatedVideoArtifactProjection } from '@/lib/generated-video-output-artifacts';
+import { generatedVideoArtifactProjection, generatedVideoOutputPreparationState } from '@/lib/generated-video-output-artifacts';
 
 import type { RecentGenerationRecord } from './recent-generations';
 
@@ -38,6 +38,7 @@ export function mapRecentGenerationRecordToWeb(record: RecentGenerationRecord) {
       ?? normalizeMediaUrl(record.preview_frame)
       ?? undefined,
     videoUrl: normalizeMediaUrl(record.video_url) ?? undefined,
+    outputPreparationState: generatedVideoOutputPreparationState(record.settings_snapshot, record.video_url, record.provider_job_id, record.status),
     ...generatedVideoArtifactProjection(record.settings_snapshot, record.video_url, record.provider_job_id),
     previewVideoUrl: normalizeMediaUrl(record.preview_video_url) ?? undefined,
     audioUrl: normalizeMediaUrl(record.audio_url) ?? undefined,

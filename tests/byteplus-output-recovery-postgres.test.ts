@@ -131,3 +131,48 @@ test('exhausted returned-frame recovery retains its original and stops automatic
       await db.cleanup();
     }
   });
+
+test('projection recovery has bounded attempts and expiry while all copied artifacts and money remain intact',
+  { timeout: 90_000, concurrency: false }, async () => {
+    const db = await startDisposablePostgres('bp-projection-bound');
+    const query = async <T,>(sql: string, params?: unknown[]): Promise<T[]> => (await db.pool.query(sql, params)).rows;
+    const previousLimit = process.env.PROVIDER_VIDEO_COPY_MAX_ATTEMPTS;
+    process.env.PROVIDER_VIDEO_COPY_MAX_ATTEMPTS = '2';
+    const original = 'https://media.maxvideoai.com/original.mov';
+    const playback = 'https://media.maxvideoai.com/playback.mp4';
+    const frame = {url:'https://media.maxvideoai.com/last.jpg',mimeType:'image/jpeg',sha256:'a'.repeat(64),width:64,height:48,sizeBytes:123};
+    try {
+      await createPaidGenerationTestSchema(db.pool);
+      await db.pool.query('ALTER TABLE app_jobs ADD COLUMN mcp_trial_outcome_disposition text');
+      await db.pool.query(readFileSync('neon/migrations/47_generation_poll_state.sql','utf8'));
+      for (const expired of [false,true]) {
+        const id = expired ? 'expired-projection' : 'bounded-projection';
+        let projections = 0;
+        await db.pool.query(`INSERT INTO app_jobs(job_id,user_id,engine_id,provider,provider_job_id,status,duration_sec,video_url,settings_snapshot,created_at,updated_at)
+          VALUES($1,'owner','seedance-2-5','byteplus_modelark',$2,'processing',4,$3,$4,now()-$5::interval,now()-interval '1 minute')`,
+          [id,`cgt-${id}`,original,{byteplusTransport:'modelark',inputMode:'t2v',core:{resolution:'720p',aspectRatio:'16:9'},advanced:{extraInputValues:{output_format:'mov',return_last_frame:true}},
+            byteplusDurableOutput:{providerJobId:`cgt-${id}`,videoUrl:original,thumbUrl:'https://media.maxvideoai.com/poster.jpg',costBreakdown:{},playbackVideoUrl:playback,lastFrame:frame},
+            ...(expired ? {byteplusStorageCopy:{attempts:1,firstFailedAt:new Date(Date.now()-4*60*60_000).toISOString(),lastReason:'provider_output_artifacts_failed'}} : {})},expired?'4 hours':'1 minute']);
+        const poll = async () => {
+          await db.pool.query("UPDATE app_jobs SET updated_at=now()-interval '1 minute',settings_snapshot=CASE WHEN settings_snapshot ? 'byteplusStorageCopy' THEN jsonb_set(settings_snapshot,'{byteplusStorageCopy,nextRetryAt}','null'::jsonb,false) ELSE settings_snapshot END WHERE job_id=$1",[id]);
+          await db.pool.query("UPDATE generation_poll_state SET started_at=now()-interval '1 minute',lease_until=now()-interval '1 second' WHERE job_id=$1",[id]);
+          await runBytePlusPoll({jobId:id,deps:{queryFn:query,
+            getBytePlusModelArkClientFn:()=>({retrieveTask:async()=>{throw new Error('Durable recovery must never look up the provider.');}}) as never,
+            ensureFastStartVideoFn:async()=>{throw new Error('Do not copy the original again.');},ensureBytePlusCompatiblePlaybackFn:async()=>{throw new Error('Do not transcode again.');},
+            copyBytePlusLastFrameFn:async()=>{throw new Error('Do not copy the JPEG again.');},ensureJobThumbnailFn:async()=>null,
+            upsertLegacyJobOutputsFn:async()=>{projections++;throw new Error('Projection unavailable.');},recordBytePlusPollEventFn:async()=>{},
+            applyBytePlusTrialOutcomeSafelyFn:async()=>{},generateAndPersistJobPreviewVideoFn:async()=>null,generateAndPersistJobKeyframesFn:async()=>[]}});
+        };
+        await poll(); await poll(); await poll(); await poll();
+        const [row] = await query<{status:string;video_url:string;settings_snapshot:any}>('SELECT status,video_url,settings_snapshot FROM app_jobs WHERE job_id=$1',[id]);
+        assert.equal(projections,expired?0:2,`Projection failures must obey the same count/window as artifact copies: ${JSON.stringify(row)}`);
+        assert.equal(row.status,'provider_polling_stalled');assert.equal(row.video_url,original);
+        assert.equal(row.settings_snapshot.byteplusDurableOutput.playbackVideoUrl,playback);assert.deepEqual(row.settings_snapshot.byteplusDurableOutput.lastFrame,frame);
+        assert.equal(row.settings_snapshot.byteplusStorageCopy.attempts,expired?1:2);
+      }
+      assert.equal((await db.pool.query('SELECT count(*)::int AS count FROM app_receipts')).rows[0].count,0);
+    } finally {
+      if (previousLimit===undefined) delete process.env.PROVIDER_VIDEO_COPY_MAX_ATTEMPTS; else process.env.PROVIDER_VIDEO_COPY_MAX_ATTEMPTS=previousLimit;
+      await db.cleanup();
+    }
+  });

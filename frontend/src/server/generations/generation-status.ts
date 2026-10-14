@@ -9,7 +9,7 @@ import { readTrialJobStatus } from '@/server/agent-api/trial-outcomes';
 import { mapGenerationStatusRecordToAgent } from './agent-generation-policy';
 import { getKnownGenerationFailureMessage } from '@/lib/generation-failure-messages';
 import { getVideoFailureCodeFromSettingsSnapshot } from '@/lib/video-failure-codes';
-import { generatedVideoArtifactProjection } from '@/lib/generated-video-output-artifacts';
+import { generatedVideoArtifactProjection, generatedVideoOutputPreparationState } from '@/lib/generated-video-output-artifacts';
 
 export { mapGenerationStatusRecordToAgent };
 
@@ -238,6 +238,7 @@ export function mapGenerationStatusRecordToWeb(
     progress: override('progress', record.progress ?? undefined),
     observation: overrides.observation ?? { stage: generationStage(override('status', record.status ?? undefined), Boolean((record.settings_snapshot as { providerVideoCopy?: unknown } | null)?.providerVideoCopy)) },
     videoUrl: normalizeMediaUrl(override('videoUrl', record.video_url)) ?? undefined,
+    outputPreparationState: generatedVideoOutputPreparationState(record.settings_snapshot, override('videoUrl', record.video_url), record.provider_job_id, override('status', record.status ?? undefined)),
     ...generatedVideoArtifactProjection(record.settings_snapshot, override('videoUrl', record.video_url), record.provider_job_id),
     previewVideoUrl: normalizeMediaUrl(override('previewVideoUrl', record.preview_video_url)) ?? undefined,
     audioUrl: normalizeMediaUrl(override('audioUrl', record.audio_url)) ?? undefined,

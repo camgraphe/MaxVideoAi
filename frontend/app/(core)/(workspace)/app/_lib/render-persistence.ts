@@ -23,6 +23,7 @@ export type LocalRender = {
   videoUrl?: string;
   previewVideoUrl?: string;
   playbackVideoUrl?: string;
+  outputPreparationState?: 'active' | 'manual_review';
   lastFrameUrl?: string;
   readyVideoUrl?: string;
   thumbUrl?: string;
@@ -73,6 +74,7 @@ type PersistedRender = {
   videoUrl?: string | null;
   previewVideoUrl?: string | null;
   playbackVideoUrl?: string | null;
+  outputPreparationState?: 'active' | 'manual_review';
   lastFrameUrl?: string | null;
   readyVideoUrl?: string | null;
   thumbUrl?: string | null;
@@ -174,6 +176,7 @@ function coercePersistedRender(entry: PersistedRender): LocalRender | null {
     status,
     videoUrl: typeof entry.videoUrl === 'string' && entry.videoUrl.length ? entry.videoUrl : undefined,
     playbackVideoUrl: typeof entry.playbackVideoUrl === 'string' && entry.playbackVideoUrl.length ? entry.playbackVideoUrl : undefined,
+    outputPreparationState: entry.outputPreparationState === 'active' || entry.outputPreparationState === 'manual_review' ? entry.outputPreparationState : undefined,
     lastFrameUrl: typeof entry.lastFrameUrl === 'string' && entry.lastFrameUrl.length ? entry.lastFrameUrl : undefined,
     previewVideoUrl:
       typeof entry.previewVideoUrl === 'string' && entry.previewVideoUrl.length ? entry.previewVideoUrl : undefined,
@@ -260,6 +263,7 @@ export function serializePendingRenders(renders: LocalRender[]): string | null {
       videoUrl: render.videoUrl,
       previewVideoUrl: render.previewVideoUrl,
       playbackVideoUrl: render.playbackVideoUrl,
+      outputPreparationState: render.outputPreparationState,
       lastFrameUrl: render.lastFrameUrl,
       readyVideoUrl: render.readyVideoUrl,
       thumbUrl: render.thumbUrl,

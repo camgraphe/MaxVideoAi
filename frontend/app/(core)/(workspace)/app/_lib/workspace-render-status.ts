@@ -20,6 +20,7 @@ export type PolledJobStatus = {
   videoUrl?: string | null;
   previewVideoUrl?: string | null;
   playbackVideoUrl?: string | null;
+  outputPreparationState?: 'active' | 'manual_review';
   lastFrameUrl?: string | null;
   thumbUrl?: string | null;
   aspectRatio?: string | null;
@@ -48,6 +49,7 @@ export function convertJobToLocalRender(job: Job, options: LocalRenderFromJobOpt
     const raw = (job.status ?? '').toLowerCase();
     if (raw === 'failed') return 'failed' as const;
     if (raw === 'completed') return 'completed' as const;
+    if (job.outputPreparationState) return 'pending' as const;
     if (job.videoUrl) return 'completed' as const;
     return 'pending' as const;
   })();
@@ -55,7 +57,7 @@ export function convertJobToLocalRender(job: Job, options: LocalRenderFromJobOpt
     if (typeof job.progress === 'number' && Number.isFinite(job.progress)) {
       return Math.max(0, Math.min(100, Math.round(job.progress)));
     }
-    if (normalizedStatus === 'completed' || job.videoUrl) return 100;
+    if (normalizedStatus === 'completed') return 100;
     if (normalizedStatus === 'failed') return 100;
     return 0;
   })();
@@ -114,6 +116,7 @@ export function convertJobToLocalRender(job: Job, options: LocalRenderFromJobOpt
     message,
     status: normalizedStatus,
     videoUrl: job.videoUrl ?? undefined,
+    outputPreparationState: job.outputPreparationState,
     previewVideoUrl: job.previewVideoUrl ?? undefined,
     playbackVideoUrl: job.playbackVideoUrl ?? undefined,
     lastFrameUrl: job.lastFrameUrl ?? undefined,
@@ -142,6 +145,7 @@ export function getRendersNeedingStatusRefresh(renders: LocalRender[]): LocalRen
   return renders.filter((render) => {
     if (typeof render.jobId !== 'string' || render.jobId.length === 0) return false;
     if (render.status === 'failed') return false;
+    if (render.outputPreparationState === 'manual_review') return false;
     const hasVideo = Boolean(render.videoUrl);
     if ((render.status ?? 'pending') !== 'completed') return true;
     return !hasVideo;
@@ -154,6 +158,7 @@ export function applyPolledJobStatusToRender(render: LocalRender, status: Polled
     ...render,
     observation: mergeGenerationObservation(render.observation, status.observation),
     status: status.status ?? render.status,
+    outputPreparationState: status.outputPreparationState,
     progress: status.progress ?? render.progress,
     readyVideoUrl: status.videoUrl ?? render.readyVideoUrl,
     videoUrl: status.videoUrl ?? render.videoUrl ?? render.readyVideoUrl,

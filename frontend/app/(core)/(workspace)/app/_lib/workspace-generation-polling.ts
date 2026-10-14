@@ -12,6 +12,7 @@ export type GenerationPollStatus = {
   videoUrl?: string | null;
   previewVideoUrl?: string | null;
   playbackVideoUrl?: string | null;
+  outputPreparationState?: 'active' | 'manual_review';
   lastFrameUrl?: string | null;
   thumbUrl?: string | null;
   finalPriceCents?: number | null;
@@ -50,7 +51,7 @@ export function projectGenerationPollStatus({
   now: number;
 }): GenerationPollProjection {
   const hasVideo = Boolean(status.videoUrl);
-  const shouldKeepPolling = status.status !== 'failed' && (status.status !== 'completed' || !hasVideo);
+  const shouldKeepPolling = status.outputPreparationState !== 'manual_review' && status.status !== 'failed' && (status.status !== 'completed' || !hasVideo);
 
   return {
     status,
@@ -61,7 +62,7 @@ export function projectGenerationPollStatus({
     deferUntilReady: false,
     shouldApplyState: true,
     shouldKeepPolling,
-    shouldStopProgressTracking: status.status === 'failed' || (status.status === 'completed' && hasVideo),
+    shouldStopProgressTracking: status.outputPreparationState === 'manual_review' || status.status === 'failed' || (status.status === 'completed' && hasVideo),
     nextPollDelayMs: shouldKeepPolling ? 15_000 : null,
     progressMessage: status.message ?? undefined,
   };
@@ -82,6 +83,7 @@ export function applyGenerationPollToRender(
   return {
     ...render,
     status: nextStatus,
+    outputPreparationState: projection.status.outputPreparationState,
     observation: mergeGenerationObservation(render.observation, projection.status.observation),
     progress: projection.status.progress ?? render.progress,
     readyVideoUrl: projection.status.videoUrl ?? render.readyVideoUrl,

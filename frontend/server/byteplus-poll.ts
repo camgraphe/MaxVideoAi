@@ -326,6 +326,8 @@ export async function runBytePlusPoll(options: { jobId?: string; deps?: BytePlus
           videoUrl: copiedVideoUrl, thumbUrl: thumb, costBreakdown, videoMediaFacts, queryFn,
           upsertOutputsFn: upsertLegacyJobOutputsFn, providerLastFrameUrl: task.lastFrameUrl }, {
           ensurePlayback: deps.ensureBytePlusCompatiblePlaybackFn, copyLastFrame: deps.copyBytePlusLastFrameFn })) continue;
+        if (requiresDurableOutput && !await persistBytePlusLasOutputBeforeCompletion({ job,
+          videoUrl: copiedVideoUrl, thumbUrl: thumb, costBreakdown, videoMediaFacts, queryFn, upsertOutputsFn: upsertLegacyJobOutputsFn })) continue;
       } catch {
         const nextCopyState = buildNextBytePlusStorageCopyState(job.settings_snapshot, {
           providerStatus: task.rawStatus, reason: 'provider_output_artifacts_failed' });
@@ -336,8 +338,6 @@ export async function runBytePlusPoll(options: { jobId?: string; deps?: BytePlus
         updates += 1;
         continue;
       }
-      if (requiresDurableOutput && !await persistBytePlusLasOutputBeforeCompletion({ job,
-        videoUrl: copiedVideoUrl, thumbUrl: thumb, costBreakdown, videoMediaFacts, queryFn, upsertOutputsFn: upsertLegacyJobOutputsFn })) continue;
       const playbackVideoUrl = getBytePlusLasDurableOutput(job)?.playbackVideoUrl;
 
       const completedRows = await queryFn<{ job_id: string }>(

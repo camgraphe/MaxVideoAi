@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client';
 import { JSDOM } from 'jsdom';
 import { I18nProvider } from '../frontend/lib/i18n/I18nProvider';
 import { SettingsControls } from '../frontend/components/SettingsControls';
+import { CoreSettingsBar } from '../frontend/components/CoreSettingsBar';
 import { getBaseEngines } from '../frontend/src/lib/engines';
 import { summarizeWorkspaceInputSchema } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-input-schema';
 import { coerceFormState } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
@@ -20,6 +21,7 @@ test('restoring Seedance Auto retains its choice and maximum pricing duration', 
 
 test('Seedance settings visibly offer Auto and submit output switches without unsupported seed controls', async () => {
   const dom = new JSDOM('<div id="root"></div>', { url: 'https://maxvideoai.test/app', pretendToBeVisual: true });
+  dom.window.HTMLElement.prototype.scrollIntoView = () => {};
   const globals = { React, window: dom.window, document: dom.window.document, navigator: dom.window.navigator,
     HTMLElement: dom.window.HTMLElement, IS_REACT_ACT_ENVIRONMENT: true };
   const saved = new Map(Object.keys(globals).map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
@@ -46,6 +48,14 @@ test('Seedance settings visibly offer Auto and submit output switches without un
       assert.match(auto.className, /bg-brand/, 'Auto remains selected without a numeric fallback');
       await act(async () => auto.click());
       assert.equal(durations.at(-1), 'auto');
+      await act(async () => root.render(React.createElement(I18nProvider, {locale:'fr',dictionary:{},fallback:{},children:React.createElement(CoreSettingsBar,
+        {...common,density:'workspace',caps:{duration:{options:['auto',4,5,engine.maxDurationSec]},aspectRatio:['16:9'],resolution:['720p']}})})));
+      const autoControl = [...dom.window.document.querySelectorAll('button')].find(button => /(?:Duration|Durée):\s*auto/i.test(button.textContent ?? ''));
+      assert.ok(autoControl, `${engineId} actual compact composer must retain Auto`);
+      await act(async () => autoControl.click());
+      const autoChoice = [...dom.window.document.querySelectorAll('button')].filter(button => /(?:Duration|Durée):\s*auto/i.test(button.textContent ?? '')).at(-1)!;
+      await act(async () => autoChoice.click());
+      assert.equal(durations.at(-1),'auto');
       await render(true);
       assert.doesNotMatch(dom.window.document.body.textContent ?? '', /Seed|Lock seed/i);
       for (const label of [...dom.window.document.querySelectorAll('label')]) {

@@ -79,6 +79,8 @@ test('BytePlus poll delegates accounting, failure handling, storage-copy retry, 
   assert.match(accountingSource, /export function expectedBytePlusTokens/);
   assert.match(accountingSource, /export function getBytePlusAccounting/);
   assert.match(accountingSource, /export function getBytePlusUnitPriceUsdPer1kTokens/);
+  assert.match(accountingSource, /from '@\/lib\/seedance-output-dimensions'/);
+  assert.doesNotMatch(accountingSource, /const SEEDANCE_1_5_AND_2_0_DIMENSIONS/);
   assert.match(storageCopySource, /export function getBytePlusStorageCopyState/);
   assert.match(storageCopySource, /export function shouldRetryBytePlusStorageCopy/);
   assert.match(pollTypesSource, /export type BytePlusPendingJob/);

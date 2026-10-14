@@ -3,6 +3,16 @@ export type ReturnedVideoLastFrame = { url: string; mimeType: 'image/jpeg'; sha2
 function record(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
 }
+
+export type VideoOutputPreparationState = 'active' | 'manual_review';
+/** An original checkpoint is recoverable media, not a completed output projection. */
+export function generatedVideoOutputPreparationState(snapshot: unknown, originalUrl: string | null | undefined,
+  providerJobId: string | null | undefined, status?: string | null): VideoOutputPreparationState | undefined {
+  const output = record(record(snapshot).byteplusDurableOutput);
+  if (!originalUrl || output.videoUrl !== originalUrl || !providerJobId || output.providerJobId !== providerJobId) return undefined;
+  if (status === 'provider_polling_stalled') return 'manual_review';
+  return ['pending','queued','running','processing','in_progress'].includes(status ?? '') ? 'active' : undefined;
+}
 export function readReturnedVideoLastFrame(value: unknown): ReturnedVideoLastFrame | null {
   const frame = record(value);
   if (typeof frame.url !== 'string' || !/^https:\/\//i.test(frame.url) || frame.mimeType !== 'image/jpeg'

@@ -91,7 +91,11 @@ test('full MOV playback derivative preserves duration and uses browser compatibl
         const probe = JSON.parse(stdout);
         assert.equal(probe.streams.find((stream: { codec_type: string }) => stream.codec_type === 'video').pix_fmt, 'yuv420p');
         assert.equal(probe.streams.find((stream: { codec_type: string }) => stream.codec_type === 'audio').codec_name, 'aac');
-        assert.equal(Number(probe.format.duration), 1);
+        const video = probe.streams.find((stream: {codec_type: string}) => stream.codec_type === 'video');
+        assert.equal(Number(video.duration), 1);
+        assert.equal(Number(video.nb_frames), 24);
+        // AAC containers can include one encoder-delay packet (Linux: 1.022s).
+        assert.ok(Number(probe.format.duration) >= 1 && Number(probe.format.duration) <= 1.05);
         return { url: 'https://media.maxvideoai.com/playback.mp4', key: 'playback.mp4' };
       },
     });

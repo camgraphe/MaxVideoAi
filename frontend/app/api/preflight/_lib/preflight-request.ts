@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 import type { PreflightRequest, PreflightResponse } from '@/types/engines';
 
-export const MAX_PREFLIGHT_BODY_BYTES = 32 * 1024;
-export const MAX_PREFLIGHT_INPUTS = 20;
+export const MAX_PREFLIGHT_BODY_BYTES = 128 * 1024;
+export const MAX_PREFLIGHT_INPUTS = 50;
 
 const modes = [
   't2v',

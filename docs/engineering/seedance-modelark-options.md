@@ -19,6 +19,11 @@ inside tariff locks, so editable tariffs and missing cells cannot underprice
 an accepted task. Inherited framing requires trusted stored or probed source
 dimensions within the existing reviewed format classes. Arbitrary inherited
 ratios remain closed until continuous scaling and supplier pricing are proven.
+Exact published provider rasters also map to their reviewed classes, even
+where raster rounding exceeds nominal 1%. Their pure owner is
+`seedance-output-dimensions.ts`, shared with supplier accounting; historical
+retail dimensions remain independent. Web preflight admits at most 50 inputs
+and 128 KiB, then applies each model's stricter media budgets and ownership.
 
 ModelArk Edit 2.5 supports 1080p with the existing account/key. The retained LAS
 transport keeps its independent access and narrower contract. Input references
@@ -31,6 +36,11 @@ video bytes stay separate from full compatible playback and short incidental
 previews. The JPEG is a separate owned output with source-video provenance;
 see the [media guide](media-delivery.md). Draft/Final inherit these choices
 and immutable source facts; see the [lifecycle guide](2026-10-01-seedance-draft-lifecycle.md).
+Checkpointed originals carry `outputPreparationState=active` through web
+history/status and persisted workspace renders. Polling continues until the
+required artifacts and projections complete. Exhaustion exposes manual review
+and stops automatic work/polling while preserving the original download.
+Projection failures share the artifact attempt and first-failure time bounds.
 
 ## Initializing independent multimodal workflow tariffs
 
