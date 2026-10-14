@@ -6,7 +6,7 @@ Prepared 2026-10-15. This change prepares compatibility; it does not change depl
 
 The browser's `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is fixed at build time. An open tab continues generating tokens for that widget after a new deployment. The hosted request helper and Express component now send `captchaSiteKey`, identifying the widget that produced the token. Both Billing and the workspace use the hosted hook; Billing also passes its rendered key into Express.
 
-The server selects exactly one configured secret. An old request **without** `captchaSiteKey` selects the legacy widget. An explicit empty, malformed or unknown identifier is rejected, never treated as an old request. There is no trial of a second secret after a failed validation.
+For each new guard evaluation, the server selects exactly one configured secret. An old request **without** `captchaSiteKey` selects the legacy widget. An explicit empty, malformed or unknown identifier is rejected, never treated as an old request. There is no trial of a second secret after a failed validation. The existing Express reuse path can return an already authorized session before a new guard evaluation; it preserves that same session, its history and its protections without creating a new session or resetting limits.
 
 `frontend/server/turnstile-widgets.ts` owns the registry. `checkout-guard.ts` retains policy and the global token claim. The existing unique index from migration 68 remains required; no schema migration or reset accompanies this change. Token identity is global across widgets, users, processes and checkout modes. Provider acceptance alone cannot authorize a duplicate token.
 
