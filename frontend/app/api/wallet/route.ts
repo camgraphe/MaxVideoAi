@@ -36,6 +36,8 @@ const STRIPE_TAX_CODE_ELECTRONIC_SERVICES = ENV.STRIPE_TAX_CODE_ELECTRONIC_SERVI
 const STRIPE_API_VERSION = '2023-10-16';
 const STRIPE_HOSTED_CHECKOUT_API_VERSION = '2025-02-24.acacia' as Stripe.LatestApiVersion;
 const STRIPE_CHECKOUT_ELEMENTS_API_VERSION = '2026-03-25.dahlia' as Stripe.LatestApiVersion;
+// Temporary incident measure; review after 48 hours before changing this flag.
+const HOSTED_CHECKOUT_BLOCK_AMEX = true;
 const CHECKOUT_COPY_BY_LOCALE: Record<
   AppLocale,
   {
@@ -292,6 +294,7 @@ export async function POST(req: NextRequest) {
         currency: resolvedCurrencyUpper,
         locale: checkoutLocale,
         checkoutUiMode: isExpressCheckoutTopUp ? 'elements' : 'hosted',
+        amexBlocked: HOSTED_CHECKOUT_BLOCK_AMEX && !isExpressCheckoutTopUp,
         ...buildCheckoutAttemptAttributionMetadata(walletAttribution),
       },
     });
@@ -373,6 +376,9 @@ export async function POST(req: NextRequest) {
       ...sessionMetadata,
     };
     const sessionParams = buildWalletTopUpCheckoutSessionParams({
+      // Temporary merchant-approved containment; review after 48 hours.
+      // The builder applies the filter only to hosted Checkout.
+      blockAmexCards: HOSTED_CHECKOUT_BLOCK_AMEX,
       fxQuote,
       currency: resolvedCurrencyLower,
       settlementAmountCents,

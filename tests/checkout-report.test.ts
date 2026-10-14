@@ -103,7 +103,7 @@ assert.match(expireHelperSource, /logAdminAction/);
 
 assert.doesNotMatch(checkoutReportPageSource, /label="Conversion"|label="Protected"|label="Fast pay"/);
 assert.match(checkoutReportPageSource, /CheckoutGuardPolicy/);
-assert.match(checkoutReportPageSource, /Legacy Amex restriction/);
+assert.match(checkoutReportPageSource, /report\.summary\.amexBlocked/);
 assert.match(checkoutReportPageSource, /paymentCurrency/);
 const policySource = readFileSync('frontend/app/(core)/admin/checkout-report/_components/CheckoutGuardPolicy.tsx', 'utf8');
 assert.match(policySource, /CHECKOUT_GUARD_LIMITS/);

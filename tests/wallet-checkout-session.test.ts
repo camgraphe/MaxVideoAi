@@ -112,22 +112,29 @@ test('wallet top-up Checkout can create Elements sessions for Express Checkout',
   assert.equal(params.invoice_creation?.invoice_data?.metadata?.kind, 'topup');
 });
 
-test('first and returning top-ups share unrestricted card acceptance and dynamic methods in both UIs', () => {
+test('temporary Amex restriction covers first and returning hosted top-ups while preserving native wallets', () => {
   for (const checkoutUiMode of ['hosted', 'elements'] as const) {
     for (const firstTopUp of [true, false]) {
       const params = buildParams({
+        blockAmexCards: true,
         checkoutUiMode,
         returnUrl: 'https://maxvideoai.com/billing?status=success',
         sessionMetadata: { kind: 'topup', first_wallet_topup: String(firstTopUp) },
       });
-      assert.equal(params.payment_method_options, undefined);
+      if (checkoutUiMode === 'hosted') {
+        assert.deepEqual(params.payment_method_options, {
+          card: { restrictions: { brands_blocked: ['american_express'] } },
+        });
+      } else {
+        assert.equal(params.payment_method_options, undefined);
+      }
       assert.equal(params.payment_method_types, undefined);
       assert.equal(params.metadata?.first_wallet_topup, String(firstTopUp));
     }
   }
 });
 
-test('wallet top-up accepts all card brands while retaining first-purchase fraud controls', () => {
+test('wallet top-up applies the hosted Amex filter while retaining shared fraud controls', () => {
   const routeSource = fs.readFileSync(path.join(process.cwd(), 'frontend/app/api/wallet/route.ts'), 'utf8');
   const checkoutSource = fs.readFileSync(path.join(process.cwd(), 'frontend/src/lib/stripe-checkout.ts'), 'utf8');
 
@@ -138,7 +145,9 @@ test('wallet top-up accepts all card brands while retaining first-purchase fraud
   assert.match(routeSource, /checkoutGuard.action === 'captcha_required'/);
   assert.match(routeSource, /checkoutGuard.action === 'rate_limited'/);
   assert.match(routeSource, /checkout_captcha_passed: String\(checkoutGuard.captchaPassed\)/);
-  assert.doesNotMatch(routeSource + checkoutSource, /american_express|brands_blocked|blockAmexCards|amex_block/);
+  assert.match(routeSource, /blockAmexCards: HOSTED_CHECKOUT_BLOCK_AMEX/);
+  assert.match(routeSource, /amexBlocked: HOSTED_CHECKOUT_BLOCK_AMEX && !isExpressCheckoutTopUp/);
+  assert.match(checkoutSource, /blockAmexCards && checkoutUiMode !== 'elements'/);
   assert.doesNotMatch(routeSource, /express_checkout_unavailable_for_first_topup/);
 });
 

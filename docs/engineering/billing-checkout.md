@@ -71,9 +71,17 @@ per-session card-failure limits.
 
 ## Fraud and payment-method constraints
 
-Hosted and native Checkout accept the account's supported card brands, including
-Amex, from the first purchase. Do not reinstate a blanket brand ban as a proxy
-for card testing. First-purchase metadata still drives the existing shared rate
+As a temporary merchant-approved incident response on 2026-10-14, hosted Checkout
+blocks American Express on first and returning top-ups with Stripe's existing
+`payment_method_options.card.restrictions.brands_blocked` filter. This also blocks
+Amex saved in Link, Apple Pay and Google Pay on the hosted page. Native Elements
+buttons remain available with their supported brands, including Amex. The filter
+is intentionally not a global Stripe/Radar rule and does not cover native wallets
+or legacy direct PaymentIntents. Review after 48 hours, including possible migration
+to Visa/Mastercard and client friction; do not automatically re-enable Amex. To
+remove the temporary filter and its preparation flag, set
+`HOSTED_CHECKOUT_BLOCK_AMEX` to false in the wallet route.
+First-purchase metadata still drives the existing shared rate
 limits, progressive CAPTCHA, and failed-payment cooldown. Stripe owns card
 testing mitigations and required 3DS; no global manual 3DS override is sent.
 
@@ -113,9 +121,10 @@ updating the endpoint, and never credit a pending payment on browser return.
 
 `checkout-report.ts` treats a canonical receipt as paid regardless of missing
 browser events. No eligible wallet is a passive view, not a technical error.
-The historical Amex metric counts sessions with the old restriction applied,
-not card declines. Preserve its reader for older records; new sessions no longer
-write the deprecated restriction metadata.
+The Amex metric counts guard attempts flagged for hosted filtering, including
+denied preparations that never create a Stripe Session; it is not a count of
+restricted Sessions or card declines. Preserve its reader for older records; hosted preparations
+again write `amexBlocked: true`, while native preparations record false.
 Automatic wallet preparation creates passive sessions: measure confirmation and
 paid receipts separately from session creation when comparing conversion.
 
@@ -153,12 +162,12 @@ custom amount. With CAPTCHA configured the maximum is 12 new sessions per 15 min
 allowing the four presets in two currencies plus hosted fallback after verification.
 Without CAPTCHA the maximum remains six. Returning-user and IP limits remain unchanged;
 five failed card attempts on any wallet top-up expire the unpaid session and impose a 30-minute
-cooldown. No Amex brand restriction is active.
+cooldown. The temporary hosted-only Amex restriction is described above.
 
 The admin report separates preparation counts from confirmed paid receipts. Unpaid sessions
 after 30 minutes include passive wallet preparation, so this is not a customer conversion
 or proven-abandonment measure. Guard interventions do not prove fraud. The Amex restriction
-metric is explicitly historical, card-failure telemetry covers first and returning top-ups, and
+metric counts hosted preparations, card-failure telemetry covers first and returning top-ups, and
 wallet credits (USD) are displayed separately from payment currency.
 
 Receipt document reads deduplicate in-flight lookups by Stripe client and object identity.
