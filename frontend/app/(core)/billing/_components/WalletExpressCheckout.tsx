@@ -43,6 +43,7 @@ type WalletExpressCheckoutProps = {
   chargeCurrency: string;
   locale: string;
   captchaToken?: string | null;
+  captchaSiteKey?: string;
   session: BillingSession;
   stripePromise: Promise<Stripe | null> | null;
   labels: Pick<
@@ -66,6 +67,7 @@ export function WalletExpressCheckout({
   chargeCurrency,
   locale,
   captchaToken = null,
+  captchaSiteKey,
   session,
   stripePromise,
   labels,
@@ -450,6 +452,7 @@ export function WalletExpressCheckout({
           mode: 'express_checkout',
           locale,
           captchaToken: captchaTokenRef.current ?? undefined,
+          ...(captchaSiteKey ? { captchaSiteKey } : {}),
           ...(ga4Context.clientId ? { gaClientId: ga4Context.clientId } : {}),
           ...(ga4Context.sessionId ? { gaSessionId: ga4Context.sessionId } : {}),
           ...(analyticsJourney ? { analyticsJourney } : {}),
@@ -506,6 +509,7 @@ export function WalletExpressCheckout({
     analyticsConsentGranted,
     locale,
     captchaRetry,
+    captchaSiteKey,
     normalizedChargeCurrency,
     sessionUserId,
     stripePromise,

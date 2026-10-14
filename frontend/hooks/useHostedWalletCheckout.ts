@@ -21,6 +21,7 @@ import {
 } from '@/lib/wallet/hosted-checkout';
 
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '';
 
 type LegacyCheckoutStripe = Stripe & {
   redirectToCheckout?: (params: { sessionId: string }) => Promise<{ error?: { message?: string } }>;
@@ -145,6 +146,7 @@ export function useHostedWalletCheckout({
         locale,
         accessToken,
         captchaToken: submittedCaptchaToken ?? undefined,
+        captchaSiteKey: TURNSTILE_SITE_KEY,
         gaClientId: ga4Context.clientId,
         gaSessionId: ga4Context.sessionId,
         analyticsJourney,

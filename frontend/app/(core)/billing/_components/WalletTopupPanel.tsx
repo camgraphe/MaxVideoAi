@@ -182,6 +182,7 @@ export function WalletTopupPanel(props: WalletTopupPanelProps) {
                 chargeCurrency={normalizedChargeCurrency}
                 locale={locale}
                 captchaToken={checkoutCaptchaToken}
+                captchaSiteKey={turnstileSiteKey}
                 session={session}
                 stripePromise={stripePromise}
                 labels={{

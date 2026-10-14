@@ -290,6 +290,8 @@ export async function POST(req: NextRequest) {
       hasCompletedTopUp,
       isPresetTopupTier: Boolean(tier),
       captchaToken,
+      // Only an absent field identifies an old tab; preserve malformed hints for rejection.
+      captchaSiteKey: body.captchaSiteKey,
       metadata: {
         currency: resolvedCurrencyUpper,
         locale: checkoutLocale,
