@@ -42,6 +42,7 @@ export function TurnstileChallenge({
   locale?: string;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const refreshConfigurationRef = useRef<(() => void) | null>(null);
   const reloadControllerRef = useRef<AbortController | null>(null);
   const [reloading, setReloading] = useState(false);
   const [reloadFailed, setReloadFailed] = useState(false);
@@ -79,7 +80,7 @@ export function TurnstileChallenge({
   }
 
   useEffect(() => {
-    const refresh = () => { if (document.visibilityState === 'visible') setConfigurationGeneration(value => value + 1); };
+    const refresh = () => { if (document.visibilityState === 'visible') refreshConfigurationRef.current?.(); };
     window.addEventListener('focus', refresh);
     document.addEventListener('visibilitychange', refresh);
     return () => {
@@ -91,50 +92,81 @@ export function TurnstileChallenge({
   useEffect(() => {
     if (!siteKey || !containerRef.current) return undefined;
     let cancelled = false;
+    let configurationAccepted = false;
+    let configurationCheck = 0;
     let validInstance = false;
+    let widgetGeneration = 0;
     let widgetId: string | null = null;
     let script: HTMLScriptElement | null = null;
     let scriptTimeout: ReturnType<typeof setTimeout> | undefined;
-    const controller = new AbortController();
-    const configTimeout = setTimeout(() => controller.abort(), 5000);
+    let controller: AbortController | null = null;
+    let configTimeout: ReturnType<typeof setTimeout> | undefined;
     const container = containerRef.current;
     setStatus('checking');
     onToken(null);
     const fail = () => {
-      if (cancelled) return;
+      if (cancelled || !configurationAccepted) return;
       validInstance = false;
+      widgetGeneration++;
       if (widgetId && window.turnstile?.remove) window.turnstile.remove(widgetId);
       widgetId = null;
       setStatus('unavailable');
       onError();
     };
     const renderWidget = () => {
-      if (cancelled || widgetId || !window.turnstile || !container.isConnected) return;
+      if (cancelled || !configurationAccepted || widgetId || !window.turnstile || !container.isConnected) return;
       clearTimeout(scriptTimeout);
       validInstance = true;
+      const generation = ++widgetGeneration;
+      const currentInstance = () => !cancelled && configurationAccepted && validInstance && generation === widgetGeneration;
       try {
         widgetId = window.turnstile.render(container, {
           sitekey: siteKey,
           theme: 'auto',
-          callback: (token) => { if (!cancelled && validInstance) onToken(token); },
-          'expired-callback': () => { if (!cancelled && validInstance) onToken(null); },
-          'error-callback': fail,
+          callback: (token) => { if (currentInstance()) onToken(token); },
+          'expired-callback': () => { if (currentInstance()) onToken(null); },
+          'error-callback': () => { if (currentInstance()) fail(); },
         });
         if (validInstance) setStatus('ready');
         else if (widgetId) { window.turnstile.remove?.(widgetId); widgetId = null; }
-      } catch { fail(); }
+      } catch { if (currentInstance()) fail(); }
     };
     const scriptError = () => { script?.remove(); fail(); };
 
-    void readTurnstileClientStatus(siteKey, controller.signal).then(result => {
+    async function checkConfiguration() {
+      const check = ++configurationCheck;
+      controller?.abort();
       clearTimeout(configTimeout);
-      if (cancelled) return;
+      const requestController = new AbortController();
+      controller = requestController;
+      configTimeout = setTimeout(() => requestController.abort(), 5000);
+      const result = await readTurnstileClientStatus(siteKey, requestController.signal);
+      if (cancelled || check !== configurationCheck) return;
+      clearTimeout(configTimeout);
+      controller = null;
       if (result !== 'accepted') {
+        configurationAccepted = false;
+        validInstance = false;
+        widgetGeneration++;
+        clearTimeout(scriptTimeout);
+        if (widgetId && window.turnstile?.remove) window.turnstile.remove(widgetId);
+        widgetId = null;
+        onToken(null);
         setStatus(result);
         if (result === 'unavailable') onError();
         return;
       }
+      configurationAccepted = true;
+      // Leaving Cloudflare's iframe also focuses the parent window. Recheck
+      // eligibility without replacing an accepted widget or its fresh token.
+      if (widgetId) return;
+      setStatus('checking');
       if (window.turnstile) { renderWidget(); return; }
+      if (script) {
+        clearTimeout(scriptTimeout);
+        scriptTimeout = setTimeout(scriptError, 10000);
+        return;
+      }
       script = document.getElementById('cf-turnstile-api') as HTMLScriptElement | null;
       const newScript = !script;
       script ??= document.createElement('script');
@@ -146,12 +178,17 @@ export function TurnstileChallenge({
       script.addEventListener('error', scriptError);
       scriptTimeout = setTimeout(scriptError, 10000);
       if (newScript) document.head.appendChild(script);
-    });
+    }
+    const refreshConfiguration = () => { void checkConfiguration(); };
+    refreshConfigurationRef.current = refreshConfiguration;
+    refreshConfiguration();
 
     return () => {
       cancelled = true;
+      configurationAccepted = false;
       validInstance = false;
-      controller.abort();
+      controller?.abort();
+      if (refreshConfigurationRef.current === refreshConfiguration) refreshConfigurationRef.current = null;
       clearTimeout(configTimeout);
       clearTimeout(scriptTimeout);
       script?.removeEventListener('load', renderWidget);
