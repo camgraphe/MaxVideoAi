@@ -161,6 +161,7 @@ export function WalletTopupPanel(props: WalletTopupPanelProps) {
                 {turnstileSiteKey ? (
                   <div className="mt-3">
                     <TurnstileChallenge
+                      locale={locale}
                       siteKey={turnstileSiteKey}
                       onToken={handleCheckoutCaptchaToken}
                       onError={handleCheckoutCaptchaError}
