@@ -95,6 +95,7 @@ export function TurnstileChallenge({
     let configurationAccepted = false;
     let configurationCheck = 0;
     let validInstance = false;
+    let widgetGeneration = 0;
     let widgetId: string | null = null;
     let script: HTMLScriptElement | null = null;
     let scriptTimeout: ReturnType<typeof setTimeout> | undefined;
@@ -106,6 +107,7 @@ export function TurnstileChallenge({
     const fail = () => {
       if (cancelled || !configurationAccepted) return;
       validInstance = false;
+      widgetGeneration++;
       if (widgetId && window.turnstile?.remove) window.turnstile.remove(widgetId);
       widgetId = null;
       setStatus('unavailable');
@@ -115,17 +117,19 @@ export function TurnstileChallenge({
       if (cancelled || !configurationAccepted || widgetId || !window.turnstile || !container.isConnected) return;
       clearTimeout(scriptTimeout);
       validInstance = true;
+      const generation = ++widgetGeneration;
+      const currentInstance = () => !cancelled && configurationAccepted && validInstance && generation === widgetGeneration;
       try {
         widgetId = window.turnstile.render(container, {
           sitekey: siteKey,
           theme: 'auto',
-          callback: (token) => { if (!cancelled && configurationAccepted && validInstance) onToken(token); },
-          'expired-callback': () => { if (!cancelled && validInstance) onToken(null); },
-          'error-callback': fail,
+          callback: (token) => { if (currentInstance()) onToken(token); },
+          'expired-callback': () => { if (currentInstance()) onToken(null); },
+          'error-callback': () => { if (currentInstance()) fail(); },
         });
         if (validInstance) setStatus('ready');
         else if (widgetId) { window.turnstile.remove?.(widgetId); widgetId = null; }
-      } catch { fail(); }
+      } catch { if (currentInstance()) fail(); }
     };
     const scriptError = () => { script?.remove(); fail(); };
 
@@ -143,6 +147,7 @@ export function TurnstileChallenge({
       if (result !== 'accepted') {
         configurationAccepted = false;
         validInstance = false;
+        widgetGeneration++;
         clearTimeout(scriptTimeout);
         if (widgetId && window.turnstile?.remove) window.turnstile.remove(widgetId);
         widgetId = null;

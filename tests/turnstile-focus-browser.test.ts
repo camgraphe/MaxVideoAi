@@ -41,9 +41,10 @@ test('returning from a CAPTCHA iframe preserves an accepted token but still dete
     const url = route.request().url();
     if (url.startsWith(origin + '/')) return route.continue();
     if (url.startsWith('https://challenges.cloudflare.com/turnstile/v0/api.js')) return route.fulfill({ contentType: 'text/javascript', body: `
-      const frames = new Map(); window.turnstile = {
+      const frames = new Map(); window.oldWidgetCallbacks = []; window.turnstile = {
         render(el, options) {
           window.lateTurnstileError = options['error-callback'];
+          window.oldWidgetCallbacks.push(options);
           const id = crypto.randomUUID(), frame = document.createElement('iframe'); frame.title = 'Human verification';
           frame.src = 'https://challenges.cloudflare.com/test-frame?id=' + id;
           const receive = event => { if (event.source === frame.contentWindow && event.origin === 'https://challenges.cloudflare.com') options.callback('test-token-' + id); };
@@ -80,12 +81,26 @@ test('returning from a CAPTCHA iframe preserves an accepted token but still dete
   assert.equal(submissions.length, 1, 'retirement must invalidate without an automatic submission');
 
   accepted = true;
+  // Recover through a foreground check in the same component lifetime. A
+  // parent reset would cancel the whole old effect and miss stale callbacks.
+  await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+  await verify();
+  await expect(page.getByRole('button', { name: 'Validate', exact: true })).toBeEnabled();
+  await page.evaluate(() => {
+    const old = (window as unknown as { oldWidgetCallbacks: Array<{ callback: (token: string) => void; 'expired-callback': () => void; 'error-callback': () => void }> }).oldWidgetCallbacks.at(-2)!;
+    old.callback('late-old-token'); old['expired-callback'](); old['error-callback']();
+  });
+  await expect(page.getByRole('button', { name: 'Validate', exact: true })).toBeEnabled();
+  await page.getByRole('button', { name: 'Validate', exact: true }).click();
+  await page.getByTestId('diagnostic-result').filter({ hasText: 'captcha_passed' }).waitFor();
+  assert.equal(submissions.length, 2);
+  assert.notEqual((submissions.at(-1) as { captchaToken: string }).captchaToken, 'late-old-token');
   await page.getByRole('button', { name: 'New challenge', exact: true }).click();
   await verify();
   unavailable = true;
   await page.getByRole('heading', { name: 'Turnstile validation diagnostic' }).click();
   await page.getByRole('button', { name: 'Retry verification', exact: true }).waitFor();
   await expect(page.getByRole('button', { name: 'Validate', exact: true })).toBeDisabled();
-  assert.equal(submissions.length, 1, 'an unavailable configuration cannot authorize a token');
+  assert.equal(submissions.length, 2, 'an unavailable configuration cannot authorize a token');
   assert.deepEqual(unexpected, []);
 });
