@@ -11,13 +11,13 @@ export async function createTurnstileMigrationFixture() {
   const shared = globalThis as typeof globalThis & { __turnstileMigrationPool?: typeof pg.pool };
   shared.__turnstileMigrationPool = pg.pool;
   const keys = ['CHECKOUT_CAPTCHA_MODE', 'TURNSTILE_SECRET_KEY', 'NEXT_PUBLIC_TURNSTILE_SITE_KEY',
-    'TURNSTILE_LEGACY_SITE_KEY', 'TURNSTILE_SECONDARY_SITE_KEY', 'TURNSTILE_SECONDARY_SECRET_KEY', 'TURNSTILE_DIAGNOSTICS_ENABLED'] as const;
+    'TURNSTILE_LEGACY_SITE_KEY', 'TURNSTILE_SECONDARY_SITE_KEY', 'TURNSTILE_SECONDARY_SECRET_KEY', 'TURNSTILE_DIAGNOSTICS_ENABLED', 'TURNSTILE_WIDGET_MODE'] as const;
   const saved = Object.fromEntries(keys.map(key => [key, process.env[key]]));
   const savedFetch = globalThis.fetch;
   const providerCalls: Array<{ secret: string; token: string }> = [];
   Object.assign(process.env, { CHECKOUT_CAPTCHA_MODE: 'progressive', TURNSTILE_SECRET_KEY: 'secret-A',
     NEXT_PUBLIC_TURNSTILE_SITE_KEY: 'public-A', TURNSTILE_LEGACY_SITE_KEY: 'public-A',
-    TURNSTILE_SECONDARY_SITE_KEY: 'public-B', TURNSTILE_SECONDARY_SECRET_KEY: 'secret-B', TURNSTILE_DIAGNOSTICS_ENABLED: '1' });
+    TURNSTILE_SECONDARY_SITE_KEY: 'public-B', TURNSTILE_SECONDARY_SECRET_KEY: 'secret-B', TURNSTILE_DIAGNOSTICS_ENABLED: '1', TURNSTILE_WIDGET_MODE: 'compatibility' });
   globalThis.fetch = async (url, init) => {
     if (url !== 'https://challenges.cloudflare.com/turnstile/v0/siteverify') throw new Error('External request forbidden');
     const form = init?.body as FormData;
@@ -33,8 +33,9 @@ export async function createTurnstileMigrationFixture() {
   await pg.pool.query("CREATE TABLE checkout_interaction_events (user_id text, event_name text, metadata jsonb DEFAULT '{}', created_at timestamptz DEFAULT now())");
   await pg.pool.query(readFileSync('neon/migrations/68_checkout_captcha_token_once.sql', 'utf8'));
   const requireFrontend = createRequire(resolve('frontend/package.json'));
+  let bundleNumber = 0;
   async function load(entry: string) {
-    const outfile = join(folder, `${entry.includes('/api/') ? 'route' : 'guard'}.cjs`);
+    const outfile = join(folder, `module-${bundleNumber++}.cjs`);
     await build({ entryPoints: [entry], outfile, bundle: true, platform: 'node', format: 'cjs', packages: 'external',
       tsconfig: 'frontend/tsconfig.json', plugins: [{ name: 'isolated-boundaries', setup(b) {
         b.onResolve({ filter: /^next\/server$/ }, () => ({ path: requireFrontend.resolve('next/server'), external: true }));

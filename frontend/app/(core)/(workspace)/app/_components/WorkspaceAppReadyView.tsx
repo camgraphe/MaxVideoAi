@@ -442,6 +442,7 @@ export function WorkspaceAppReadyView({
           }}
         />} /> : null}
       <WorkspaceRuntimeModals
+        locale={uiLocale}
         viewerGroup={viewerGroup}
         onCloseViewer={() => setViewerTarget(null)}
         onRefreshJob={handleRefreshJob}

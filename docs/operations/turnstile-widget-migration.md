@@ -1,18 +1,20 @@
 # Turnstile widget migration and payment-free validation
 
-Prepared 2026-10-15. This change prepares compatibility; it does not change deployed keys, Cloudflare settings, nameservers or payment configuration.
+Updated 2026-10-15. Compatibility was delivered in PR 440. This follow-up prepares explicit B-only retirement and user-controlled reload recovery; it does not activate retirement or change deployed keys, Cloudflare settings, nameservers or payment configuration.
 
 ## Compatibility contract
 
 The browser's `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is fixed at build time. An open tab continues generating tokens for that widget after a new deployment. The hosted request helper and Express component now send `captchaSiteKey`, identifying the widget that produced the token. Both Billing and the workspace use the hosted hook; Billing also passes its rendered key into Express.
 
-For each new guard evaluation, the server selects exactly one configured secret. An old request **without** `captchaSiteKey` selects the legacy widget. An explicit empty, malformed or unknown identifier is rejected, never treated as an old request. There is no trial of a second secret after a failed validation. The existing Express reuse path can return an already authorized session before a new guard evaluation; it preserves that same session, its history and its protections without creating a new session or resetting limits.
+For each new guard evaluation, the server selects exactly one configured secret. In the default `compatibility` mode, an old request **without** `captchaSiteKey` selects the legacy widget. In explicit `secondary_only` mode, widget identity is mandatory and only B is accepted. An explicit empty, malformed or unknown identifier is rejected, never treated as an old request. There is no trial of a second secret after a failed validation. The existing Express reuse path can return an already authorized session before a new guard evaluation; it preserves that same session, its history and its protections without creating a new session or resetting limits.
 
 `frontend/server/turnstile-widgets.ts` owns the registry. `checkout-guard.ts` retains policy and the global token claim. The existing unique index from migration 68 remains required; no schema migration or reset accompanies this change. Token identity is global across widgets, users, processes and checkout modes. Provider acceptance alone cannot authorize a duplicate token.
 
 Partial/ambiguous registry configuration produces `captcha_configuration_error` instead of disabling the CAPTCHA. The pre-existing intentionally disabled mode and entirely empty local configuration still behave as before when no migration is configured. A migration combined with a disabled mode is invalid. Hard rate limits and failed-card cooldown retain priority over configuration/widget errors.
 
 ## Configuration phases
+
+The table below describes the original compatibility rollout. The retirement procedure follows it.
 
 Do not apply this table until the configuration change and release are explicitly authorized.
 
@@ -29,6 +31,26 @@ Do not apply this table until the configuration change and release are explicitl
 All three migration variables must be configured together. The public keys must be distinct and each mapped to its own secret. Keep the old secret in its existing variable throughout compatibility; retrieving a Vercel Secret later is not a backup plan. Verify recovery from the old widget's owning account or an approved secret store before eventually replacing it.
 
 Production references observed before this PR: public A `0x4AAAAAADKVLDSVtZcPUJ49`; target public B `0x4AAAAAAFUlBaCAy2afBPkH`, widget “MaxVideoAI Production Checkout” in `admin@maxvideoai.com`. No secrets belong in this document, commits, logs or browser output.
+
+## Explicit retirement and reload recovery
+
+`TURNSTILE_WIDGET_MODE` defaults to `compatibility`, preserving the current registry contract. Unknown values fail closed. `secondary_only` requires the B pair (`TURNSTILE_SECONDARY_SITE_KEY`, `TURNSTILE_SECONDARY_SECRET_KEY`) and the compiled public key to equal B. A disabled CAPTCHA policy remains invalid in this mode. A and `TURNSTILE_LEGACY_SITE_KEY` can remain during preparation but are never selected, or can be absent after retirement. Do not copy B into `TURNSTILE_SECRET_KEY` or remove its secondary pair for this mode.
+
+The shared challenge checks `GET /api/turnstile/config` before loading Cloudflare, when a tab returns to the foreground, and when the caller resets the challenge. This dynamic, no-store endpoint returns **only public active/accepted widget identities**; it has no auth, database, Siteverify or payment operation. The browser omits credentials so an old `__vdpl` cookie cannot pin this public read to its previous deployment. Validation requests retain their existing authorization and guard.
+
+When the rendered key is retired, the challenge clears its token and shows a localized **Reload page** button, with a reminder to save unfinished work. It does not reload or retry a submission automatically. On that click only, `POST /api/turnstile/reload` expires the host-only, root-path `__vdpl` cookie before document navigation; authentication cookies remain untouched. The endpoint requires the exact same Origin and rejects cross-site requests. The navigation preserves the page, other query parameters and fragment while removing a possible `dpl` pin. If the POST fails or times out, the page stays in place and offers a retry. A failed/unavailable configuration read cannot start a challenge; it offers a manual retry. The component does not initiate any payment or restore an interrupted submission.
+
+**This recovery is available only in bundles containing this follow-up, on a live alias.** A tab loaded before it cannot receive the new code retroactively and may still require a manual full reload. A pre-follow-up deployment with an HttpOnly pin may also lack the reload endpoint; it needs a fresh browser session or removal of that deployment pin before navigating to the live alias. An immutable deployment hostname continues to read its own environment, even without cookies: navigate to the live alias instead. Neither a five-minute token lifetime nor the skew interval proves those tabs disappeared. Observe actual legacy usage and preserve A until the remaining reload consequence is accepted. A dormant-tab count cannot be established from recent validation traffic alone. The application currently does not set `__vdpl`; if a future routing layer adds a different cookie domain/path, update and requalify the explicit clearing scope.
+
+Future release sequence, requiring separate production authorization:
+
+1. Merge and deploy this code with the current B public key, both secrets, `compatibility` (or absent mode), and diagnostics off. Verify both live aliases and retain this exact compatible Git deployment as rollback. This PR alone changes no production environment values.
+2. Qualify reload, retained tabs and replay in isolation. For a real follow-up CAPTCHA session, use only the separately authorized administrator probe; close it afterward. Never use a payment flow as a probe.
+3. After accepting the pre-follow-up tab limitation, set `TURNSTILE_WIDGET_MODE=secondary_only` in a separately authorized release while retaining both pairs. The old secret remains available for configuration rollback but is no longer used by that release. Verify B, rejection of A/untagged clients, explicit reload, cooldown and replay. Prevent concurrent builds against intermediate settings.
+4. After validation, remove only `TURNSTILE_SECRET_KEY` and `TURNSTILE_LEGACY_SITE_KEY` from future production configuration. Keep the B secondary pair, B public key, `secondary_only`, enabled CAPTCHA policy and diagnostics off. Rebuild through the approved Git workflow and recheck web/API alignment. No secret value must be recovered or copied for this removal.
+5. Keep then explicitly retire the compatible fallback. Inventory historical deployments containing A before any authorized deletion: changing project env vars does not purge their immutable environments. Global revocation of A depends on access to its owning Cloudflare account and is separate.
+
+Rollback before A removal: restore `compatibility` with both pairs and deliver the exact recorded compatible Git revision. After A removal, an immutable compatible deployment can still provide immediate recovery if explicitly authorized, but its rollback does not restore project env values for later builds. Confirm secure availability of A before claiming future dual-configuration reconstruction is possible. Never roll back the token-claim index/history or the antifraud controls.
 
 ## Diagnostic page and endpoint
 
@@ -48,6 +70,8 @@ Never use `/billing`, a top-up modal or a successful production `/api/wallet` re
 ```sh
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
   tests/turnstile-widget-migration-postgres.test.ts \
+  tests/turnstile-retirement-postgres.test.ts \
+  tests/turnstile-client.test.ts \
   tests/turnstile-diagnostic-route-postgres.test.ts \
   tests/turnstile-old-tabs-browser.test.ts \
   tests/checkout-captcha-replay-postgres.test.ts \
@@ -57,7 +81,7 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
 
 The migration/diagnostic tests use disposable PostgreSQL 17 and synthetic A/B pairs. Siteverify is simulated at the network boundary and deliberately accepts replay; the actual application/database must refuse the duplicate. The endpoint tests stub the external administrator-authentication boundary and exercise the actual route, origin/body gates, guard and SQL claims. Bundling rejects payment dependencies.
 
-The browser test runs the real diagnostic component and route in a local HTTP harness. It keeps A and B tabs open through A→B→A configuration changes, omits the identifier for the old payload, checks replay/expiry, blocks unrelated network requests and asserts zero Stripe session IDs. The Cloudflare browser script and provider response are simulated. This is **not** a real Cloudflare or production end-to-end validation. Use `localhost` for this harness; NextRequest normalizes a loopback IP URL to localhost.
+The browser test runs the real shared challenge, diagnostic component, public configuration/reload routes and validation route in a local HTTP harness. It keeps A and B tabs open through A→B→A changes and explicit B-only retirement, omits the identifier for the old payload, checks foreground detection, one user-triggered reload into B, Hosted/Express validation, replay/expiry and manual recovery after configuration failure. A stale HttpOnly deployment cookie actually controls the document served; the public config read must omit it, and recovery must clear it while preserving the session cookie. A failed clearing request cannot navigate. It blocks unrelated network requests, asserts zero automatic submissions and zero Stripe session IDs. The Cloudflare browser script and provider response are simulated. This is **not** a real Cloudflare or production end-to-end validation. Use `localhost` for this harness; NextRequest normalizes a loopback IP URL to localhost.
 
 Before merge, required Quality CI must pass on the latest head, including selected integration/browser/financial lanes, following `docs/deployment/github-vercel.md` and `docs/engineering/ci-validation.md`.
 
@@ -72,7 +96,7 @@ Before merge, required Quality CI must pass on the latest head, including select
 
 The old A-only D0 (`dpl_8NWY5H6XWVLfaniggTBodxPMcEBV`, SHA `a9f5a66c03017e9812dc69fd804de6d635d7f22e`) is a dated reference, not a compatible rollback target for B tabs. Reassess it against any newer production changes before emergency use.
 
-Retirement of A is a separate change, after observing legacy traffic and confirming recovery. A five-minute token lifetime or a 12-hour deployment-skew setting does not expire browser tabs. This PR keeps A accepted; it does not implement automatic migration of pre-existing browser bundles. Indefinitely old tabs may ultimately require a full reload when A is retired.
+The earlier D1/D2 instructions describe the compatibility rollout only. Use the explicit retirement sequence above for this follow-up. Its default still accepts A; no automatic migration or retirement of pre-existing browser bundles is claimed.
 
 The previous local live session observed a repeated direct Siteverify probe returning success despite the documented single-use contract; the application replay claim rejected it. Cloudflare analytics also disagreed with observed Siteverify calls. That provider/telemetry discrepancy remains unexplained. Do not remove the local anti-replay guarantee or claim the new production pair has already been tested by this PR.
 
