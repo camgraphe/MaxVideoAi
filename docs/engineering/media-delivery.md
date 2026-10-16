@@ -94,6 +94,7 @@ not push the model or price outside the frame during keyboard navigation. The
 named native link and opening guide keep the action explicit.
 On the two mobile opening side cards at widths up to 200px, omit the visual
 excerpt so the original model/settings and reserved price remain readable; the
+compact 10px bold model label must fit long names even with fallback fonts. The
 named watch link still opens that video's full prompt. Keep the opening and the
 remaining video grid consecutive: do not insert duplicated prompt excerpts or
 editorial cards between them. Compact version links belong below the complete
