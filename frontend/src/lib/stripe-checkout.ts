@@ -14,6 +14,33 @@ type WalletTopUpCheckoutSessionParams = Omit<
 const WALLET_TOPUP_CHECKOUT_SESSION_TTL_SECONDS = 31 * 60;
 const WALLET_TOPUP_MIN_AMOUNT_CENTS = 1000;
 
+// Stripe Tax needs a shipping address to offer Google Pay in Checkout. Native
+// wallets collect it in their sheet; hosted also exposes any saved tax address.
+const WALLET_TAX_ADDRESS_COUNTRIES: Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry[] = [
+  'AC', 'AD', 'AE', 'AF', 'AG', 'AI', 'AL', 'AM', 'AO', 'AQ', 'AR', 'AT',
+  'AU', 'AW', 'AX', 'AZ', 'BA', 'BB', 'BD', 'BE', 'BF', 'BG', 'BH', 'BI',
+  'BJ', 'BL', 'BM', 'BN', 'BO', 'BQ', 'BR', 'BS', 'BT', 'BV', 'BW', 'BY',
+  'BZ', 'CA', 'CD', 'CF', 'CG', 'CH', 'CI', 'CK', 'CL', 'CM', 'CN', 'CO',
+  'CR', 'CV', 'CW', 'CY', 'CZ', 'DE', 'DJ', 'DK', 'DM', 'DO', 'DZ', 'EC',
+  'EE', 'EG', 'EH', 'ER', 'ES', 'ET', 'FI', 'FJ', 'FK', 'FO', 'FR', 'GA',
+  'GB', 'GD', 'GE', 'GF', 'GG', 'GH', 'GI', 'GL', 'GM', 'GN', 'GP', 'GQ',
+  'GR', 'GS', 'GT', 'GU', 'GW', 'GY', 'HK', 'HN', 'HR', 'HT', 'HU', 'ID',
+  'IE', 'IL', 'IM', 'IN', 'IO', 'IQ', 'IS', 'IT', 'JE', 'JM', 'JO', 'JP',
+  'KE', 'KG', 'KH', 'KI', 'KM', 'KN', 'KR', 'KW', 'KY', 'KZ', 'LA', 'LB',
+  'LC', 'LI', 'LK', 'LR', 'LS', 'LT', 'LU', 'LV', 'LY', 'MA', 'MC', 'MD',
+  'ME', 'MF', 'MG', 'MK', 'ML', 'MM', 'MN', 'MO', 'MQ', 'MR', 'MS', 'MT',
+  'MU', 'MV', 'MW', 'MX', 'MY', 'MZ', 'NA', 'NC', 'NE', 'NG', 'NI', 'NL',
+  'NO', 'NP', 'NR', 'NU', 'NZ', 'OM', 'PA', 'PE', 'PF', 'PG', 'PH', 'PK',
+  'PL', 'PM', 'PN', 'PR', 'PS', 'PT', 'PY', 'QA', 'RE', 'RO', 'RS', 'RU',
+  'RW', 'SA', 'SB', 'SC', 'SE', 'SG', 'SH', 'SI', 'SJ', 'SK', 'SL', 'SM',
+  'SN', 'SO', 'SR', 'SS', 'ST', 'SV', 'SX', 'SZ', 'TA', 'TC', 'TD', 'TF',
+  'TG', 'TH', 'TJ', 'TK', 'TL', 'TM', 'TN', 'TO', 'TR', 'TT', 'TV', 'TW',
+  'TZ', 'UA', 'UG', 'US', 'UY', 'UZ', 'VA', 'VC', 'VE', 'VG', 'VN', 'VU',
+  'WF', 'WS', 'XK', 'YE', 'YT', 'ZA', 'ZM', 'ZW', 'ZZ',
+];
+
+export const WALLET_EXPRESS_TAX_ADDRESS_POLICY = '1';
+
 type BuildWalletTopUpCheckoutSessionParamsArgs = {
   blockAmexCards?: boolean;
   fxQuote?: { rate: number; source: string; marginBps?: number; rateTimestamp?: string };
@@ -29,6 +56,7 @@ type BuildWalletTopUpCheckoutSessionParamsArgs = {
   paymentIntentMetadata: Record<string, string>;
   productTaxCode: string;
   customer?: string | null;
+  customerHasShippingAddress?: boolean;
   customerUpdate?: Stripe.Checkout.SessionCreateParams.CustomerUpdate | null;
 };
 
@@ -59,6 +87,7 @@ export function buildWalletTopUpCheckoutSessionParams({
   paymentIntentMetadata,
   productTaxCode,
   customer,
+  customerHasShippingAddress = false,
   customerUpdate,
 }: BuildWalletTopUpCheckoutSessionParamsArgs): WalletTopUpCheckoutSessionParams {
   const fxMetadata: Record<string, string> = fxQuote ? {
@@ -112,10 +141,20 @@ export function buildWalletTopUpCheckoutSessionParams({
     }
   }
 
+  // Saved shipping takes precedence over billing for Stripe Tax. Let returning
+  // wallet customers correct that address when switching to hosted card checkout.
+  if (checkoutUiMode === 'elements' || (customerId && customerHasShippingAddress)) {
+    params.shipping_address_collection = { allowed_countries: [...WALLET_TAX_ADDRESS_COUNTRIES] };
+    if (customerId) {
+      params.customer_update = { ...params.customer_update, shipping: 'auto' };
+    }
+  }
+
   if (checkoutUiMode === 'elements') {
     if (!returnUrl) {
       throw new Error('returnUrl is required for Checkout Elements sessions');
     }
+    params.metadata = { ...params.metadata, wallet_express_tax_address: WALLET_EXPRESS_TAX_ADDRESS_POLICY };
     params.ui_mode = 'elements';
     params.return_url = returnUrl;
     return params;

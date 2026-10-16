@@ -27,15 +27,16 @@ test('wallet and hosted checkout consume separate CAPTCHA tokens without discard
           const listeners = {}; let node;
           return {
             loadActions: async () => ({type:'success',actions:{confirm:async()=>{window.confirmations++;return {type:'success'};}}}),
-            createExpressCheckoutElement() { return {
+            createExpressCheckoutElement(options) {
+              window.walletOptions = options; return {
               on(name, fn) { listeners[name]=fn; },
               mount(target) {
                 node=document.createElement('div');
-                for (const method of ['Apple Pay','Link']) {
+                for (const method of ['Apple Pay','Google Pay','Link']) {
                   const button=document.createElement('button'); button.textContent=method;
                   button.onclick=()=>listeners.cancel(); node.appendChild(button);
                 }
-                target.appendChild(node); listeners.ready({availablePaymentMethods:{applePay:true,link:true}});
+                target.appendChild(node); listeners.ready({availablePaymentMethods:{applePay:true,googlePay:true,link:true}});
               },
               destroy(){node?.remove();}
             }; }
@@ -135,11 +136,12 @@ test('wallet and hosted checkout consume separate CAPTCHA tokens without discard
     await expect(button, JSON.stringify({errors,requests})).toBeEnabled({timeout:3000}); await button.click();
   };
 
-  for (const method of ['Apple Pay','Link']) {
+  for (const method of ['Apple Pay','Google Pay','Link']) {
     const from = requests.length, nativeBefore = successfulNative;
     await page.goto(origin);
     await verify();
     await page.getByRole('button',{name:method,exact:true}).click();
+    assert.equal(await page.evaluate(()=>(window as unknown as {walletOptions:{paymentMethods:{googlePay:string}}}).walletOptions.paymentMethods.googlePay), 'always', 'Google Pay should be offered on supported browsers even without a saved card');
     // Session preparation has consumed the first proof. A fresh challenge must
     // now be available to authorize the other payment path, without a replay.
     await verify();

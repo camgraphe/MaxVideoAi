@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { getOrCreateStripeCustomerForUserWithExecutor } from '../frontend/src/server/stripe-customers.ts';
+import { getOrCreateStripeCheckoutCustomerForUserWithExecutor } from '../frontend/src/server/stripe-customers.ts';
 import type { QueryExecutor } from '../frontend/src/lib/db.ts';
 
 type QueryCall = {
@@ -24,7 +24,7 @@ function buildExecutor(existingCustomerId: string | null, calls: QueryCall[] = [
   };
 }
 
-test('getOrCreateStripeCustomerForUserWithExecutor reuses an active stored Customer', async () => {
+test('getOrCreateStripeCheckoutCustomerForUserWithExecutor reuses an active stored Customer', async () => {
   let createCalls = 0;
   const stripe = {
     customers: {
@@ -36,7 +36,7 @@ test('getOrCreateStripeCustomerForUserWithExecutor reuses an active stored Custo
     },
   };
 
-  const customerId = await getOrCreateStripeCustomerForUserWithExecutor({
+  const customerId = await getOrCreateStripeCheckoutCustomerForUserWithExecutor({
     stripe,
     executor: buildExecutor('cus_existing'),
     userId: '8cc5f4f4-1111-4444-9999-cdb2b7a2d6f1',
@@ -44,11 +44,11 @@ test('getOrCreateStripeCustomerForUserWithExecutor reuses an active stored Custo
     preferredLocale: 'fr',
   });
 
-  assert.equal(customerId, 'cus_existing');
+  assert.deepEqual(customerId, { id: 'cus_existing', hasShippingAddress: false });
   assert.equal(createCalls, 0);
 });
 
-test('getOrCreateStripeCustomerForUserWithExecutor fails safely when stored Customer lookup has a temporary error', async () => {
+test('getOrCreateStripeCheckoutCustomerForUserWithExecutor fails safely when stored Customer lookup has a temporary error', async () => {
   let createCalls = 0;
   const stripe = {
     customers: {
@@ -66,7 +66,7 @@ test('getOrCreateStripeCustomerForUserWithExecutor fails safely when stored Cust
 
   await assert.rejects(
     () =>
-      getOrCreateStripeCustomerForUserWithExecutor({
+      getOrCreateStripeCheckoutCustomerForUserWithExecutor({
         stripe,
         executor: buildExecutor('cus_existing'),
         userId: '8cc5f4f4-1111-4444-9999-cdb2b7a2d6f1',
@@ -78,7 +78,7 @@ test('getOrCreateStripeCustomerForUserWithExecutor fails safely when stored Cust
   assert.equal(createCalls, 0);
 });
 
-test('getOrCreateStripeCustomerForUserWithExecutor creates a replacement for a confirmed deleted Customer with idempotency', async () => {
+test('getOrCreateStripeCheckoutCustomerForUserWithExecutor creates a replacement for a confirmed deleted Customer with idempotency', async () => {
   const calls: QueryCall[] = [];
   const createCalls: Array<{ params: unknown; options: unknown }> = [];
   const stripe = {
@@ -92,7 +92,7 @@ test('getOrCreateStripeCustomerForUserWithExecutor creates a replacement for a c
   };
   const userId = '8cc5f4f4-1111-4444-9999-cdb2b7a2d6f1';
 
-  const customerId = await getOrCreateStripeCustomerForUserWithExecutor({
+  const customerId = await getOrCreateStripeCheckoutCustomerForUserWithExecutor({
     stripe,
     executor: buildExecutor('cus_deleted', calls),
     userId,
@@ -100,7 +100,7 @@ test('getOrCreateStripeCustomerForUserWithExecutor creates a replacement for a c
     preferredLocale: 'fr',
   });
 
-  assert.equal(customerId, 'cus_new');
+  assert.deepEqual(customerId, { id: 'cus_new', hasShippingAddress: false });
   assert.deepEqual(createCalls, [
     {
       params: {
@@ -119,4 +119,19 @@ test('getOrCreateStripeCustomerForUserWithExecutor creates a replacement for a c
   ]);
   assert.ok(calls.some((call) => call.text.includes('SELECT pg_advisory_xact_lock')));
   assert.ok(calls.some((call) => call.text.includes('UPDATE profiles')));
+});
+
+
+test('stored wallet tax address is returned with the customer without a second Stripe read', async () => {
+  let reads = 0;
+  const customer = await getOrCreateStripeCheckoutCustomerForUserWithExecutor({
+    stripe: { customers: {
+      retrieve: async (id: string) => { reads++; return { id, shipping: { name: 'Ada', address: { country: 'FR', city: 'Paris', line1: '1 rue Test', line2: null, postal_code: '75001', state: null } } }; },
+      create: async () => { throw new Error('must reuse existing customer'); },
+    } },
+    executor: buildExecutor('cus_existing'),
+    userId: '8cc5f4f4-1111-4444-9999-cdb2b7a2d6f1',
+  });
+  assert.deepEqual(customer, { id: 'cus_existing', hasShippingAddress: true });
+  assert.equal(reads, 1);
 });

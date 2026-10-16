@@ -55,10 +55,13 @@ export function BillingClient({
       arrayMerge: (_destination, source) => source,
     });
   }, [rawCopy]);
+  const [stripeConnectionAttempt, setStripeConnectionAttempt] = useState(0);
+  const retryStripeConnection = useCallback(() => setStripeConnectionAttempt((value) => value + 1), []);
   const stripePromise = useMemo(() => {
     if (!PUBLISHABLE_KEY) return null;
-    return loadStripe(PUBLISHABLE_KEY, { locale });
-  }, [locale]);
+    // Handle initial script failures even while Checkout preparation is still pending.
+    return loadStripe(PUBLISHABLE_KEY, { locale }).catch(() => null);
+  }, [locale, stripeConnectionAttempt]);
   const searchParams = useSearchParams() ?? EMPTY_SEARCH_PARAMS;
   const billingIntent = useMemo(
     () => initialBillingIntent ?? parseBillingIntent(searchParams),
@@ -363,6 +366,7 @@ export function BillingClient({
                 selectedTopupPaymentLabel={selectedTopupPaymentLabel}
                 session={session}
                 stripePromise={stripePromise}
+                retryStripeConnection={retryStripeConnection}
                 turnstileSiteKey={TURNSTILE_SITE_KEY}
                 wallet={wallet}
               />

@@ -20,14 +20,14 @@ assert.match(
 
 assert.match(
   source,
-  /setStatus\('unavailable'\)/,
+  /setStatus\('slow'\)/,
   'Express Checkout should leave loading state when the timeout expires'
 );
 
 assert.match(
   source,
-  /setMessage\((?:labels|labelsRef\.current)\.expressUnavailable\)/,
-  'Express Checkout timeout should show the unavailable copy instead of a spinner'
+  /setMessage\((?:labels|labelsRef\.current)\.expressSlow\)/,
+  'Express Checkout timeout should explain the delay while allowing a late response'
 );
 
 assert.match(

@@ -1,5 +1,6 @@
 import type Stripe from 'stripe';
 import { query } from '@/lib/db';
+import { WALLET_EXPRESS_TAX_ADDRESS_POLICY } from '@/lib/stripe-checkout';
 import {
   matchesWalletAttribution,
   type NormalizedWalletAttribution,
@@ -37,6 +38,7 @@ export function isReusableStripeCheckoutSession({
   const expiresAtSeconds = typeof expiresAt === 'number' && Number.isFinite(expiresAt) ? expiresAt : null;
   return Boolean(
     clientSecret &&
+      metadata?.wallet_express_tax_address === WALLET_EXPRESS_TAX_ADDRESS_POLICY &&
       status === 'open' &&
       paymentStatus === 'unpaid' &&
       expiresAtSeconds !== null &&

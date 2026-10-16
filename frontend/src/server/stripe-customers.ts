@@ -3,13 +3,16 @@ import { ensureBillingSchema } from '@/lib/schema';
 import { type QueryExecutor, withDbTransaction } from '@/lib/db';
 import { getUserIdentity } from '@/server/supabase-admin';
 
+type StripeCustomerSnapshot = { id: string; deleted?: boolean | null | void; shipping?: Stripe.Customer.Shipping | null };
+export type StripeCheckoutCustomer = { id: string; hasShippingAddress: boolean };
+
 type StripeCustomerClient = {
   customers: {
-    retrieve: (id: string) => Promise<Stripe.Customer | Stripe.DeletedCustomer | { id: string; deleted?: boolean | null }>;
+    retrieve: (id: string) => Promise<StripeCustomerSnapshot>;
     create: (
       params: Stripe.CustomerCreateParams,
       options?: Stripe.RequestOptions
-    ) => Promise<Stripe.Customer | { id: string; deleted?: boolean | null }>;
+    ) => Promise<StripeCustomerSnapshot>;
   };
 };
 
@@ -44,8 +47,8 @@ function normalizePreferredLocale(value: string | null | undefined): string | nu
   return locale;
 }
 
-function isDeletedCustomer(customer: Stripe.Customer | Stripe.DeletedCustomer | { deleted?: boolean | null }): boolean {
-  return Boolean((customer as { deleted?: boolean | null }).deleted);
+function isDeletedCustomer(customer: StripeCustomerSnapshot): boolean {
+  return Boolean(customer.deleted);
 }
 
 function isMissingStripeCustomerError(error: unknown): boolean {
@@ -86,13 +89,13 @@ export function stripeCustomerIdempotencyKey(userId: string): string {
   return `maxvideoai:user:${userId}:stripe-customer`;
 }
 
-export async function getOrCreateStripeCustomerForUserWithExecutor({
+export async function getOrCreateStripeCheckoutCustomerForUserWithExecutor({
   stripe,
   executor,
   userId,
   identity = null,
   preferredLocale = null,
-}: GetOrCreateWithExecutorArgs): Promise<string> {
+}: GetOrCreateWithExecutorArgs): Promise<StripeCheckoutCustomer> {
   await executor.query(`SELECT pg_advisory_xact_lock(hashtext($1)::bigint)`, [`stripe-customer:${userId}`]);
   await executor.query(
     `INSERT INTO profiles (id, synced_from_supabase)
@@ -114,7 +117,7 @@ export async function getOrCreateStripeCustomerForUserWithExecutor({
     try {
       const storedCustomer = await stripe.customers.retrieve(storedCustomerId);
       if (!isDeletedCustomer(storedCustomer)) {
-        return storedCustomer.id;
+        return { id: storedCustomer.id, hasShippingAddress: Boolean(storedCustomer.shipping?.address) };
       }
     } catch (error) {
       if (!isMissingStripeCustomerError(error)) {
@@ -143,18 +146,18 @@ export async function getOrCreateStripeCustomerForUserWithExecutor({
   if (!savedCustomerId) {
     throw new Error('Unable to save Stripe Customer on profile');
   }
-  return savedCustomerId;
+  return { id: savedCustomerId, hasShippingAddress: Boolean(customer.shipping?.address) };
 }
 
-export async function getOrCreateStripeCustomerForUser(
+export async function getOrCreateStripeCheckoutCustomerForUser(
   stripe: StripeCustomerClient,
   userId: string,
   options: { preferredLocale?: string | null } = {}
-): Promise<string> {
+): Promise<StripeCheckoutCustomer> {
   await ensureBillingSchema();
   const identity = await getUserIdentity(userId);
   return withDbTransaction((executor) =>
-    getOrCreateStripeCustomerForUserWithExecutor({
+    getOrCreateStripeCheckoutCustomerForUserWithExecutor({
       stripe,
       executor,
       userId,
@@ -162,4 +165,18 @@ export async function getOrCreateStripeCustomerForUser(
       preferredLocale: options.preferredLocale ?? null,
     })
   );
+}
+
+
+// Retain the ID-only contract for callers that do not create tax-aware Checkout.
+export async function getOrCreateStripeCustomerForUserWithExecutor(args: GetOrCreateWithExecutorArgs): Promise<string> {
+  return (await getOrCreateStripeCheckoutCustomerForUserWithExecutor(args)).id;
+}
+
+export async function getOrCreateStripeCustomerForUser(
+  stripe: StripeCustomerClient,
+  userId: string,
+  options: { preferredLocale?: string | null } = {}
+): Promise<string> {
+  return (await getOrCreateStripeCheckoutCustomerForUser(stripe, userId, options)).id;
 }
