@@ -135,6 +135,7 @@
       },
       "examples": {
         "items": {
+          "all-examples": "Tous les exemples",
           "sora": "Sora",
           "sora-2": "Sora 2",
           "sora-2-pro": "Sora 2 Pro",
@@ -161,7 +162,10 @@
           "ltx-2-fast": "LTX 2 Fast"
         },
         "heading": "Regardez avant de choisir.",
-        "intro": "Des vidéos, leurs prompts et les modèles utilisés."
+        "intro": "Des vidéos, leurs prompts et les modèles utilisés.",
+        "descriptions": {
+          "all-examples": "Vidéos et prompts de tous les modèles."
+        }
       },
       "compare": {
         "items": {

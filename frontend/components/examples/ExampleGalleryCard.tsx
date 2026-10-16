@@ -55,6 +55,7 @@ export function ExampleGalleryCard({video,locale,altText,detailsCtaLabel,priorit
       <span className={styles.playIcon} aria-hidden="true"><Play size={18} fill="currentColor" /></span>
       <span className={styles.caption}>
         <strong>{video.engineLabel}</strong><span>{video.aspectRatio??'Auto'} · {video.durationSec} s</span>
+        {video.sourcePromptExcerpt ? <span className={styles.promptExcerpt} data-example-prompt>{video.sourcePromptExcerpt}</span> : null}
         {priceSlot !== undefined ? <span className={styles.priceSlot}>{priceSlot}</span>
           : video.priceLabel && <span>{video.priceLabel}</span>}
         <p aria-hidden="true" className={styles.detailLabel}>{detailsCtaLabel} ↗</p>

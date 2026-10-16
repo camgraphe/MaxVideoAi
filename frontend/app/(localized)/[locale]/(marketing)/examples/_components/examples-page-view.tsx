@@ -1,6 +1,6 @@
 import { ExamplesPromptStarters } from './examples-prompt-starters';
 import type { ReactNode } from 'react';
-import type { buildExamplesPromptStarters } from '../_lib/examples-page-copy';
+import type { ExamplesVersionLink } from '../_lib/examples-version-links';
 import clsx from 'clsx';
 import styles from './examples-editorial.module.css';
 import type { ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
@@ -58,7 +58,7 @@ type ExamplesPageViewProps = {
   initialDesktopBatch: number;
   initialExamples: ExampleGalleryVideo[];
   priceSlots?: Record<string, ReactNode>;
-  promptStarters: ReturnType<typeof buildExamplesPromptStarters>;
+  promptStarters: ExamplesVersionLink[];
   initialMobileBatch: number;
   isModelLanding: boolean;
   itemListJson: unknown;
@@ -199,7 +199,6 @@ export function ExamplesPageView({
           />
 
           <ExamplesGallerySection
-            familyLabel={isModelLanding ? modelLandingLabel : undefined}
             audioAvailableLabel={galleryUiCopy.audioAvailable}
             detailsCtaLabel={galleryUiCopy.detailsCta}
             engineFilter={selectedEngine?.toLowerCase() ?? null}
@@ -214,7 +213,6 @@ export function ExamplesPageView({
             noPreviewLabel={galleryUiCopy.noPreview}
             pageOffsetEnd={pageOffsetEnd}
             prioritizeFirstPoster={true}
-            openingDetails={isModelLanding && currentPage === 1 && sort === 'playlist' ? <ExamplesPromptStarters locale={locale} starters={promptStarters} /> : null}
             openingEnabled={currentPage === 1 && sort === 'playlist'}
             show={showGallerySection}
             sort={sort}
@@ -238,6 +236,10 @@ export function ExamplesPageView({
               <ExamplesFamilyIntro body={heroBody} label={modelLandingLabel} locale={locale} title={modelLandingGuideTitle} />
             ) : null}
 
+            {isModelLanding && currentPage === 1 && sort === 'playlist' ? (
+              <ExamplesPromptStarters locale={locale} starters={promptStarters} />
+            ) : null}
+
             <ExamplesModelLinksSection
               currentModelPagesLabel={currentModelPagesLabel}
               galleryExamples={initialExamples}
@@ -254,7 +256,9 @@ export function ExamplesPageView({
               usesCurrentAndSupportedBlocks={usesCurrentAndSupportedBlocks}
             />
 
-            <ExamplesSummarySection longDescription={longDescription} modelLandingSummary={modelLandingSummary} />
+            {!isModelLanding || modelLandingSummary ? (
+              <ExamplesSummarySection longDescription={longDescription} modelLandingSummary={modelLandingSummary} />
+            ) : null}
 
             <ExamplesModelLandingCardsSection sections={modelLandingSections} />
 

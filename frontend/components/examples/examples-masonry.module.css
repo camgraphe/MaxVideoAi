@@ -1,4 +1,5 @@
 .gallery{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
+.opening + .gallery{margin-top:16px}
 .item{flex:var(--video-ratio) 1 calc(var(--video-ratio)*220px);max-width:calc(var(--video-ratio)*340px);min-width:0;break-inside:avoid}
 .opening{display:grid;grid-template-columns:1.77778fr .5625fr 1fr;grid-template-rows:repeat(2,minmax(0,1fr)) auto;gap:12px;margin-bottom:0}
 .openingAction{grid-column:1/-1;grid-row:3;display:flex;align-items:center;gap:14px;min-width:0;border-block:1px solid var(--hairline);padding:8px 0;color:var(--text-secondary);font-size:12px}
@@ -9,15 +10,11 @@
 .openingActionApp{display:inline-flex;align-items:center;justify-content:center;gap:3px;min-height:31px;margin-left:auto;padding:0 11px;border:1px solid var(--hairline);border-radius:999px;background:var(--surface);color:var(--text-primary);font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap;transition:border-color .15s,color .15s,background .15s}
 .openingActionApp:hover{border-color:var(--brand);background:var(--brand);color:var(--surface)}
 .openingActionApp:focus-visible{outline:2px solid var(--ring);outline-offset:3px}
-.continuationHeading{display:flex;align-items:center;gap:14px;margin:clamp(28px,3.4vw,48px) 0 16px;color:var(--text-muted)}
-.continuationHeading::before{content:'';width:32px;height:1px;background:var(--brand)}
-.continuationHeading::after{content:'';height:1px;flex:1;background:var(--hairline)}
-.continuationHeading h2{margin:0;color:var(--text-primary);font-size:13px;font-weight:650;letter-spacing:.01em;white-space:nowrap}
-.continuationHeading span{font-size:11px;white-space:nowrap}
 .opening>.card:nth-child(1){grid-column:1;grid-row:1/3;aspect-ratio:16/9}
 .opening>.card:nth-child(2){grid-column:2;grid-row:1/3}
 .opening>.card:nth-child(3){grid-column:3;grid-row:1}
 .opening>.card:nth-child(4){grid-column:3;grid-row:2}
+.opening>.card[data-frame="side"]{min-height:min-content}
 .card{position:relative;min-width:0;overflow:hidden;border-radius:14px;background:#181a1a;isolation:isolate;box-shadow:0 2px 12px #00000008;container-type:inline-size;container-name:example-card}
 .watchLink{display:block;width:100%;height:100%;color:#fff;outline:none}
 .card:focus-within{outline:2px solid var(--ring,#b39562);outline-offset:4px}
@@ -26,12 +23,17 @@
 .waiting{opacity:0}.playing{opacity:1}
 .caption{position:absolute;inset:auto 0 0;padding:36px 14px 12px;background:linear-gradient(transparent,#000b);display:flex;flex-direction:column;gap:2px;pointer-events:none;font-size:11px;line-height:1.4}
 .caption strong{font-size:13px;font-weight:600}.caption>span{opacity:.82}
+.promptExcerpt{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.caption:has(.promptExcerpt){padding-top:20px}
+@container example-card (max-width:240px){.promptExcerpt{-webkit-line-clamp:1}}
 /* Keep model/settings steady while prices stream: 2 lines on wide cards, 3/4 on narrow cards.
    This is a minimum, so a future longer localized price remains readable without clipping. */
 .priceSlot{min-height:2.8em}
 @container example-card (max-width:200px){.priceSlot{min-height:4.2em}}
 @container example-card (max-width:150px){.priceSlot{min-height:5.6em}}
 .detailLabel{display:none}.card:hover .detailLabel,.card:focus-within .detailLabel{display:block;margin:3px 0 0}
+/* Keep decorative action copy from pushing model and price outside narrow cards. */
+@container example-card (max-width:280px){.card:hover .detailLabel,.card:focus-within .detailLabel{display:none}}
 .playIcon{position:absolute;right:12px;top:12px;display:grid;place-items:center;width:32px;height:32px;border:1px solid #ffffff40;border-radius:50%;background:#181a1a66;opacity:0;transition:opacity .15s}
 .card:hover .playIcon,.card:focus-within .playIcon{opacity:1}
 .empty{position:absolute;inset:0;display:grid;place-items:center;color:#ccc;font-size:12px}
@@ -43,10 +45,18 @@
  .openingActionPills{grid-column:1;gap:4px}
  .openingActionPill{min-height:25px;padding:0 7px;font-size:10px}
  .openingActionApp{grid-column:2;min-height:27px;padding:0 8px;font-size:10px}
- .continuationHeading{gap:9px;margin:26px 0 13px}.continuationHeading::before{width:18px}.continuationHeading span{font-size:10px}
  .opening>.card:nth-child(1){grid-column:1/3;grid-row:1;aspect-ratio:16/9}
- .opening>.card:nth-child(2){grid-column:1;grid-row:2/4;aspect-ratio:9/16}
+ .opening>.card:nth-child(2){grid-column:1;grid-row:2/4;aspect-ratio:9/16;width:100%;align-self:stretch}
  .opening>.card:nth-child(3){grid-column:2;grid-row:2}
  .opening>.card:nth-child(4){grid-column:2;grid-row:3}
  .caption{padding:26px 10px 8px;font-size:10px}.caption strong{font-size:12px}
+ .caption:has(.promptExcerpt){padding-top:12px}
+ @container example-card (max-width:200px){.card[data-frame="side"] .promptExcerpt{display:none}.card[data-frame="side"] .caption strong{font-size:10px}.card[data-frame="side"] .caption:has(.promptExcerpt){padding-bottom:6px}}
+}
+/* Let narrow side cards fit their caption, including classic scrollbars and longer prices.
+   The lead poster keeps its existing geometry; the watch link still fills each card. */
+@container example-card (max-width:280px){
+ .card[data-frame="side"] .watchLink{display:grid;align-items:end}
+ .card[data-frame="side"] .caption{position:relative;inset:auto;align-self:end;padding-top:6px}
+ .card[data-frame="side"] .caption:has(.promptExcerpt){padding-top:6px}
 }

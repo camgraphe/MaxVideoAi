@@ -17,6 +17,4 @@ export type ExamplesGalleryProps = {
   pageOffsetEnd: number;
   locale: string;
   openingEnabled?: boolean;
-  openingDetails?: ReactNode;
-  familyLabel?: string;
 };

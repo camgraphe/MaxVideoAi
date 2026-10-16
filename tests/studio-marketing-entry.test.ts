@@ -34,6 +34,7 @@ test('the product-clip entry is an editable localized brief matching the public 
 
 test('Studio draft initialization retains the selected application language before UI fallback', () => {
   const source = readFileSync('frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/StudioImageConversation.client.tsx', 'utf8');
-  assert.match(source, /useState\(\(\) => studioMarketingStarterMessage\(starter,\s*appLocale\)\)/);
-  assert.doesNotMatch(source, /useState\(\(\) => studioMarketingStarterMessage\(starter,\s*locale\)\)/);
+  assert.match(source, /studioMarketingStarterMessage\(starter,\s*appLocale\)/);
+  assert.match(source, /buildExampleRequest\(example,appLocale,'studio'\)/);
+  assert.doesNotMatch(source, /studioMarketingStarterMessage\(starter,\s*locale\)/);
 });

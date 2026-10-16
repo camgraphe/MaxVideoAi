@@ -66,6 +66,7 @@ test('public gallery traverses every eligible video beyond the old window and hy
       export {selectFamilyMetadataVideo} from './frontend/app/(localized)/[locale]/(marketing)/examples/[model]/_lib/family-metadata-video';
       export {GET as getInitialCuration} from './frontend/app/api/admin/playlists/[playlistId]/curation/route';
       export {getExampleWatchDetail,buildExampleWatchDetail} from './frontend/server/example-watch-detail-loader';
+      export {loadStudioExampleEntry} from './frontend/server/studio-example-entry';
       export {getVideoWatchPageDataById} from './frontend/server/video-seo';
       export {getDb,statements,setBeforeQuery} from '@/lib/db';`, resolveDir: process.cwd() },
     define: { 'import.meta.url': JSON.stringify(pathToFileURL(resolve('frontend/server/video-keyframes.ts')).href) },
@@ -219,6 +220,57 @@ test('public gallery traverses every eligible video beyond the old window and hy
     const ids=await reader.listCatalogMembershipIds({familyId:'kling',limit:500,offset:504});
     assert.equal(ids.total,513);assert.deepEqual(ids.ids,['kling-505','kling-506','kling-507','kling-508','kling-509','kling-510','kling-511','kling-512','kling-513']);
   });
+  await t.test('version discovery reaches older public prompts beyond the page without hydrating their media',async()=>{
+    const db=postgres.pool;
+    await db.query(`INSERT INTO app_jobs(job_id,engine_id,prompt,thumb_url,video_url,created_at) VALUES
+      ('historical-version','kling-2-6-pro','Original historical public prompt','https://media.maxvideoai.com/old.webp','https://media.maxvideoai.com/old.mp4','2026-03-01'),
+      ('without-prompt','kling-2-5-turbo','   ','https://media.maxvideoai.com/empty.webp','https://media.maxvideoai.com/empty.mp4','2026-03-01');
+      INSERT INTO playlist_items(playlist_id,video_id,order_index) SELECT id,video,0 FROM playlists CROSS JOIN
+        unnest(ARRAY['historical-version','without-prompt']) video WHERE slug='examples'`);
+    try {
+      statements.length=0;
+      const baseline=await reader.listExampleFamilyPage('kling',{sort:'playlist',limit:24,offset:0});
+      assert.equal(baseline.versionSamples,undefined,'other readers retain their bounded payload');
+      const baselineBytes=statements[0].bytes!;
+      statements.length=0;
+      const page=await reader.listExampleFamilyPage('kling',{sort:'playlist',limit:24,offset:0,includeVersionSamples:true});
+      assert.deepEqual(page.items.map(item=>item.id),baseline.items.map(item=>item.id),'version discovery cannot change curation or poster order');
+      assert.ok(!page.items.some(item=>item.id==='historical-version'));
+      assert.deepEqual(page.versionSamples,[
+        {engineId:'kling-3-pro',videoId:'kling-1'},
+        {engineId:'kling-2-6-pro',videoId:'historical-version'},
+      ]);
+      assert.equal(statements.length,1,'use the existing catalogue snapshot, not N reads per model');
+      assert.equal(statements[0].hydratedRows,24,'old-version discovery must not hydrate extra media/settings');
+      assert.ok(statements[0].bytes! <= baselineBytes+2048,'compact IDs must not duplicate media or prompt payloads');
+      if(process.env.EXAMPLES_VERSION_EVIDENCE_PATH) {
+        const measurements=[];
+        for(const enabled of [false,true,true,false,false,true,true,false]) {
+          statements.length=0;const started=performance.now();
+          await reader.listExampleFamilyPage('kling',{sort:'playlist',limit:24,offset:0,includeVersionSamples:enabled});
+          measurements.push({versionProjection:enabled,elapsedMs:performance.now()-started,...Object.fromEntries(
+            ['poolMs','queryMs','rows','hydratedRows','bytes'].map(key=>[key,statements[0][key as keyof Statement]]))});
+        }
+        writeFileSync(process.env.EXAMPLES_VERSION_EVIDENCE_PATH,JSON.stringify({fixture:'same PostgreSQL17 family with 515 public members; only requested 24 media rows hydrated',sequence:'ABBAABBA',measurements},null,2)+'\n');
+      }
+      assert.ok(page.versionSamples.every(sample=>Object.keys(sample).sort().join(',')==='engineId,videoId'));
+      for(const whitespace of ['\t\n','\u00a0','\ufeff','\u1680\u2000\u200a\u2028\u2029\u202f\u205f\u3000']) {
+        await db.query("UPDATE app_jobs SET prompt=$1 WHERE job_id='without-prompt'",[whitespace]);
+        assert.deepEqual((await reader.listExampleFamilyPage('kling',{sort:'playlist',limit:24,offset:0,includeVersionSamples:true})).versionSamples,page.versionSamples,'whitespace-only prompts do not create discovery links');
+      }
+      await db.query("UPDATE app_jobs SET visibility='private' WHERE job_id='historical-version'");
+      assert.ok(!(await reader.listExampleFamilyPage('kling',{sort:'playlist',limit:24,offset:0,includeVersionSamples:true})).versionSamples.some(sample=>sample.videoId==='historical-version'));
+      await db.query("UPDATE app_jobs SET visibility='public' WHERE job_id='historical-version'");
+      await db.query("INSERT INTO job_outputs(job_id,kind,status,url) VALUES ('historical-version','video','deleted','https://media.maxvideoai.com/old.mp4')");
+      assert.ok(!(await reader.listExampleFamilyPage('kling',{sort:'playlist',limit:24,offset:0,includeVersionSamples:true})).versionSamples.some(sample=>sample.videoId==='historical-version'));
+      await db.query("DELETE FROM job_outputs WHERE job_id='historical-version'");
+      await db.query(`INSERT INTO playlist_curations(playlist_id,mode,ordered_ids,excluded_ids)
+        SELECT id,'manual',ARRAY['kling-20'],'{}' FROM playlists WHERE slug='family-kling'`);
+      assert.deepEqual((await reader.listExampleFamilyPage('kling',{sort:'playlist',limit:24,offset:0,includeVersionSamples:true})).versionSamples,[{engineId:'kling-3-pro',videoId:'kling-20'}],'explicit family selection remains authoritative');
+    } finally {
+      await db.query("DELETE FROM playlist_curations WHERE playlist_id=(SELECT id FROM playlists WHERE slug='family-kling');DELETE FROM job_outputs WHERE job_id='historical-version';DELETE FROM playlist_items WHERE video_id IN ('historical-version','without-prompt');DELETE FROM app_jobs WHERE job_id IN ('historical-version','without-prompt')");
+    }
+  });
   await t.test('the general catalog includes independently published family/model media and honors explicit selection',async()=>{
     await postgres.pool.query(`
       INSERT INTO playlists(slug,is_public) VALUES ('family-seedance',true),('examples-seedance-2-0',true);
@@ -282,7 +334,10 @@ test('public gallery traverses every eligible video beyond the old window and hy
   });
   await t.test('missing curation schema uses the same complete legacy pagination read-only',async()=>{
     await postgres.pool.query('ALTER TABLE playlist_curations RENAME TO unavailable_curations');
-    try {const legacy=await read(504);assert.equal(legacy.total,513);assert.equal(legacy.items.length,9);}
+    try {
+      const legacy=await read(504);assert.equal(legacy.total,513);assert.equal(legacy.items.length,9);
+      assert.deepEqual((await reader.listExampleFamilyPage('kling',{sort:'playlist',limit:24,offset:0,includeVersionSamples:true})).versionSamples,[{engineId:'kling-3-pro',videoId:'kling-1'}]);
+    }
     finally {await postgres.pool.query('ALTER TABLE unavailable_curations RENAME TO playlist_curations');}
   });
   await t.test('reader rechecks public/deleted eligibility and performs only bounded read-only hydration',async()=>{
@@ -302,9 +357,31 @@ test('public gallery traverses every eligible video beyond the old window and hy
     for(const id of ['private','hidden','running','image','deleted-output','deleted-asset','missing']) {
       assert.equal(await reader.getExampleWatchDetail(id),null);
       assert.equal(await reader.getVideoWatchPageDataById(id),null,`direct watch rejects ${id}`);
+      assert.equal(await reader.loadStudioExampleEntry(id),null,`Studio rejects ${id}`);
     }
     await postgres.pool.query("UPDATE app_jobs SET visibility='private' WHERE job_id='kling-20'");
     assert.equal(await reader.getExampleWatchDetail('kling-20'),null,'a previously opened public video is checked again');
+  });
+
+  await t.test('legacy public watch examples with NULL indexable retain API and Studio continuation without joining the catalog',async()=>{
+    const before=await read();
+    await postgres.pool.query("UPDATE app_jobs SET indexable=NULL WHERE job_id='kling-19'");
+    try {
+      const video=await reader.getSeoVideoById('kling-19');
+      assert.equal(video?.indexable,true,'the existing public watch gate accepts legacy NULL');
+      const detail=await reader.getExampleWatchDetail('kling-19');
+      assert.equal(detail?.id,'kling-19','the detail API must share public watch eligibility');
+      const studio=await reader.loadStudioExampleEntry('kling-19');
+      assert.equal(studio?.id,'kling-19');
+      assert.equal(studio?.prompt,video.prompt);
+      const catalog=await reader.listExamplesPage({sort:'playlist',limit:24,offset:0,engineGroup:'kling'});
+      assert.equal(catalog.total,before.total-1,'curation keeps requiring explicit indexable=true');
+      await postgres.pool.query("UPDATE app_jobs SET indexable=false WHERE job_id='kling-19'");
+      assert.equal(await reader.getExampleWatchDetail('kling-19'),null);
+      assert.equal(await reader.loadStudioExampleEntry('kling-19'),null,'continuation rechecks explicit exclusion');
+    } finally {
+      await postgres.pool.query("UPDATE app_jobs SET indexable=true WHERE job_id='kling-19'");
+    }
   });
 
   await t.test('persisted admin editorial content reaches the popup and direct watch page identically',async()=>{

@@ -162,13 +162,13 @@ export function HeaderMobileMenu({
                 </button>
                 {isOpen ? (
                   <div id={panelId} className="mt-2 flex flex-col gap-1 text-sm font-medium text-text-secondary">
-                    <Link
+                    {!dropdown.allLinkInItems ? <Link
                       href={resolveLocalizedHref(dropdown.allHref)}
                       onClick={onClose}
                       className="rounded-input px-2 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {allLabel}
-                    </Link>
+                    </Link> : null}
                     {dropdown.items.map((entry) => {
                       const href = resolveLocalizedHref(entry.href);
                       const entryLabel = t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label) ?? entry.label;

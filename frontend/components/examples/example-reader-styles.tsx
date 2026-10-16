@@ -3,6 +3,15 @@ import React from 'react';
 // One scoped style owner for the SSR watch page and the on-demand dialog.
 // Keeping it in the reader removes a separate render-blocking CSS request.
 const styles = {
+  creationActions: 'video-reader-creationActions',
+  continuation: 'video-reader-continuation',
+  studioCta: 'video-reader-studioCta',
+  assistants: 'video-reader-assistants',
+  continuationLabel: 'video-reader-continuationLabel',
+  assistantOptions: 'video-reader-assistantOptions',
+  assistantCta: 'video-reader-assistantCta',
+  continuationHint: 'video-reader-continuationHint',
+  requestCopy: 'video-reader-requestCopy',
   media: 'video-reader-media',
   stage: 'video-reader-stage',
   renderDetails: 'video-reader-renderDetails',
@@ -89,6 +98,9 @@ const readerCss = String.raw`
 .video-reader-modelLink{display:inline-flex;align-items:center;gap:6px;min-height:36px;margin-top:4px;padding:5px 9px;border:1px solid var(--line);border-radius:7px;font-size:11px;color:var(--muted)}.video-reader-modelLink:hover{color:var(--ink);border-color:var(--gold)}
 .video-reader-primary{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;background:var(--gold);color:#231c12;border:1px solid var(--gold);min-height:46px;padding:10px 12px;border-radius:8px;font-size:13px;font-weight:650;line-height:1.4;text-align:center}.video-reader-primary svg{flex-shrink:0}.video-reader-primary:hover{background:#f3d394}
 .video-reader-note{font-size:12px;line-height:1.6;color:var(--muted);margin-top:5px}
+.video-reader-creationActions{min-width:0}.video-reader-continuation{margin-top:8px}.video-reader-studioCta{display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:10px 12px;border:1px solid #e6bf7670;border-radius:8px;color:var(--gold);font-size:13px;font-weight:550;line-height:1.4;text-align:center}.video-reader-studioCta:hover{background:#e6bf7610;border-color:var(--gold)}.video-reader-studioCta svg{flex-shrink:0}
+.video-reader-assistants{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}.video-reader-continuationLabel{font-size:11px;font-weight:550;color:var(--muted);margin:0 0 9px}.video-reader-assistantOptions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.video-reader-assistantCta{display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;color:var(--ink);background:var(--canvas);font-size:12px;font-weight:550}.video-reader-assistantCta>svg{margin-left:auto;flex-shrink:0;color:var(--muted)}.video-reader-assistantCta:hover{background:#2b2c27;border-color:#777b70}.video-reader-assistantCta [data-mcp-integration-mark]{display:inline-flex;flex-shrink:0}.video-reader-assistantCta img{width:20px;height:20px;object-fit:contain}.video-reader-assistantCta img:first-child{display:none}.video-reader-assistantCta img:last-child{display:block}
+.video-reader-continuationHint{margin-top:9px;color:var(--muted);font-size:11px;line-height:1.6}.video-reader-dialog .video-reader-requestCopy{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;margin-top:3px;padding:6px 0;font-size:11px;color:var(--muted);background:transparent;border:0}.video-reader-requestCopy:hover{color:var(--gold)}
 .video-reader-prompt{padding:16px;border:1px solid var(--line);border-radius:12px;background:#1d201f}.video-reader-promptHeading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:11px}.video-reader-promptHeading :is(h2,h3),.video-reader-references :is(h2,h3){font-size:14px;font-weight:600}
 .video-reader-copyButton{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;flex-shrink:0;border:1px solid var(--line);border-radius:7px;padding:7px 10px;font-size:11px!important;background:var(--panel);color:var(--ink)}.video-reader-copyButton:hover{border-color:var(--gold)}
 .video-reader-promptText,.video-reader-promptExpanded{font-size:13px;line-height:1.7;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere}.video-reader-promptText{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden}.video-reader-promptExpanded{max-height:360px;overflow:auto}
@@ -114,12 +126,14 @@ const readerCss = String.raw`
  .video-reader-layout,.video-reader-portrait{grid-template-columns:minmax(0,1fr);grid-template-rows:none;gap:20px}
  .video-reader-portrait .video-reader-media,.video-reader-portrait .video-reader-editorial{grid-column:auto;grid-row:auto}.video-reader-portrait .video-reader-comparison{grid-column:1/-1;grid-row:auto}.video-reader-portrait .video-reader-stage{max-width:360px;margin:auto}
  .video-reader-editorial{gap:12px}.video-reader-action{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:0;border:0;background:none}.video-reader-primary{margin:0;min-width:230px}.video-reader-modelLink{min-height:40px}
+ .video-reader-creationActions{width:min(100%,380px);flex-shrink:0}.video-reader-action{align-items:flex-start}.video-reader-creationActions .video-reader-primary{min-width:0}.video-reader-assistants{margin-top:12px;padding-top:12px}
  .video-reader-prompt{padding:14px 16px}.video-reader-promptText{-webkit-line-clamp:3}.video-reader-share{display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px;padding:8px 14px}.video-reader-shareRow{gap:16px}.video-reader-shareActions{flex:1 0 270px;max-width:360px;margin-top:0}.video-reader-shareFeedback{flex-basis:100%}
  .video-reader-comparisonHeading{flex-wrap:wrap;gap:8px}.video-reader-comparisonNote{max-width:none;text-align:left}
  .video-reader-quote{grid-template-columns:minmax(0,1fr);gap:12px;padding:14px}.video-reader-quotePrice{grid-column:1;flex-direction:row;align-items:baseline;gap:7px}.video-reader-quoteCta{grid-column:1;width:100%}
 }
 @container(max-width:600px){
  .video-reader-action{display:block}.video-reader-modelIdentity{margin-bottom:12px}.video-reader-primary{min-width:0;width:100%;min-height:48px}
+ .video-reader-creationActions{width:100%}.video-reader-studioCta{min-height:48px}
  .video-reader-heading :is(h1,h2){font-size:22px}.video-reader-renderDetails{gap:10px}.video-reader-recorded{width:100%}
  .video-reader-portrait .video-reader-frame{width:min(100%,calc(52dvh * var(--ratio)),280px)}
  .video-reader-quotes{grid-template-columns:1fr;gap:8px}.video-reader-quote{grid-template-columns:minmax(0,1fr) 104px;gap:5px 12px;padding:12px}

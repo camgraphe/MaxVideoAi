@@ -1,7 +1,7 @@
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { isDiscoverableExampleEngine } from '@/lib/examples/discovery';
 import type { GalleryVideo } from './videos-normalization';
-import { paginateGalleryVideos, sortVideosByPreference, type ExampleSort } from './videos-examples';
+import { buildExampleVersionSamples, paginateGalleryVideos, sortVideosByPreference, type ExampleSort } from './videos-examples';
 
 export type PublicExampleCard = {
   id: string; engineIconId: string; engineLabel: string; promptFull?: string; prompt: string;
@@ -33,7 +33,7 @@ export function publicCardToVideo(card: PublicExampleCard): GalleryVideo {
   };
 }
 
-export function selectLocalPublicExamples(snapshot: PublicExamplesSnapshot, family: string, sort: ExampleSort, limit: number, offset: number) {
+export function selectLocalPublicExamples(snapshot: PublicExamplesSnapshot, family: string, sort: ExampleSort, limit: number, offset: number, includeVersionSamples = false) {
   const feed = snapshot.feeds[family];
   if (!feed) return paginateGalleryVideos([], limit, offset);
   const ids = sort === 'playlist' ? feed.playlist : sort === 'date-asc' ? [...feed['date-desc']].reverse() : feed['date-desc'];
@@ -41,7 +41,7 @@ export function selectLocalPublicExamples(snapshot: PublicExamplesSnapshot, fami
     .filter(video => family || isDiscoverableExampleEngine(video.engineId));
   // Preserve captured date ordering instead of inventing missing timestamps.
   const sorted = sort.startsWith('date-') || sort === 'playlist' ? videos : sortVideosByPreference(videos, sort);
-  return paginateGalleryVideos(sorted, limit, offset);
+  return { ...paginateGalleryVideos(sorted, limit, offset), ...(includeVersionSamples ? { versionSamples: buildExampleVersionSamples(sorted) } : {}) };
 }
 
 export function selectLocalModelExamples(snapshot: PublicExamplesSnapshot, modelSlug: string, limit = 200) {

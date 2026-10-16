@@ -16,10 +16,10 @@ for (const locale of ['en', 'fr', 'es'] as const) {
     const veo = getComparePageOverride(locale, 'veo-3-1-fast-vs-veo-3-1-lite')!;
     assert.doesNotMatch(JSON.stringify(veo), /audio always on|audio toujours actif|audio siempre activo/i);
   });
-  test(`${locale} LTX introduction names both searchable generations`, () => {
+  test(`${locale} LTX authored overview preserves both searchable generations`, () => {
     const landing = getExampleModelLanding(locale, 'ltx')!;
-    assert.ok(landing.heroSubtitle.includes('2.3'));
-    assert.ok(landing.heroSubtitle.includes('2.5'));
+    assert.match(landing.summary ?? '', /LTX 2\.3/);
+    assert.match(landing.summary ?? '', /LTX 2\.5/);
   });
 }
 

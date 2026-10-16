@@ -42,7 +42,7 @@ test('examples gallery delegates card rendering, helpers, responsive columns, an
   assert.match(cardSource, /<p[^>]*aria-hidden="true"/, 'the visual detail affordance should not duplicate the link name');
   assert.doesNotMatch(cardSource, /aria-label=\{altText\}/, 'image alt text should not replace the link action name');
   assert.doesNotMatch(cardSource, /recreateHref|showRecreateLink/, 'gallery cards should route through the watch page before recreation');
-  assert.match(helpersSource, /View settings and price for/, 'watch-link names should describe the detail destination');
+  assert.match(helpersSource, /View prompt, settings and price for/, 'watch-link names should describe the detail destination');
 });
 
 test('examples gallery modules stay focused', () => {

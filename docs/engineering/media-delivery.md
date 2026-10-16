@@ -79,9 +79,45 @@ image; later posters do not replace it. Both reads propagate their original erro
 The rare retry adds a catalog read and can observe a later concurrent update.
 The 24-card gallery, other 60-item selectors and cache policy retain their owners.
 
-The opening card owns the one prioritized responsive poster. No separate route hero or competing image preload is rendered. `useGalleryPreviewBudget` allows three visible short previews on desktop or one on mobile, prioritizes hover/focus intent, and supports global pause. Cards delegate playback preferences, visibility, rejection and telemetry to `useExampleCardPlayback`; absent short previews remain posters until manual playback. No original-video fallback is used for incidental gallery animation. The reader suspends this budget while open. A continuation heading and spacing distinguish the opening four from later cards without changing their media geometry. Family introductions, complete authored guidance, model links and FAQ remain visible and server-rendered below pagination; do not truncate their source text in route data. Canonical, hreflang and existing JSON-LD ownership stay with the route. Test initial loading and first Play separately; this structure alone does not establish a Core Web Vitals gain.
+The opening card owns the one prioritized responsive poster. No separate route hero or competing image preload is rendered. `useGalleryPreviewBudget` allows three visible short previews on desktop or one on mobile, prioritizes hover/focus intent, and supports global pause. Cards delegate playback preferences, visibility, rejection and telemetry to `useExampleCardPlayback`; absent short previews remain posters until manual playback. No original-video fallback is used for incidental gallery animation. The reader suspends this budget while open. The remaining grid follows the guide directly with a 16px gap, without a continuation heading. Family introductions, complete authored guidance, model links and FAQ remain visible and server-rendered below pagination; do not truncate their source text in route data. Canonical, hreflang and existing JSON-LD ownership stay with the route. Test initial loading and first Play separately; this structure alone does not establish a Core Web Vitals gain.
 
 A compact, full-width guide follows all four opening cards in reading order. It tells visitors to open any video for its prompt, settings and current price, and offers a generic app entry point without implying that it will reuse the lead video's prompt. The full prompt, original settings and qualified current estimates remain available in the reader and canonical watch page. Gallery cards receive exact/reference/unavailable current prices from the request-local canonical quote owner through `current-examples-gallery-data.ts`; the pure gallery builder formats the supplied map. Unavailable prices are omitted. Never display a historic charge as a current public price; stored billing history remains unchanged. Per-video reuse links still follow the source engine's app availability rule in the reader.
+
+Each gallery card also renders its bounded `sourcePromptExcerpt` as visible text
+inside its native watch link. The route and anonymous examples API derive it from
+the public original excerpt or prompt, in every locale; a translated model caption
+is not a prompt and a missing source stays absent. Keep full prompts out of the
+gallery payload and in the on-demand reader/watch page. The overlay retains the
+existing poster geometry and uses at most two lines, one on narrow cards.
+Omit the decorative hover/focus action label on cards up to 280px wide so it does
+not push the model or price outside the frame during keyboard navigation. The
+named native link and opening guide keep the action explicit.
+On the two mobile opening side cards at widths up to 200px, omit the visual
+excerpt so the original model/settings and reserved price remain readable; the
+compact 10px bold model label must fit long names even with fallback fonts. The
+named watch link still opens that video's full prompt. Keep the opening and the
+remaining video grid consecutive: do not insert duplicated prompt excerpts or
+editorial cards between them. Compact version links belong below the complete
+gallery and pagination, alongside the family guidance, and explicitly open a video
+with its full prompt, without repeating excerpts or settings. First-page family
+reads opt into `includeVersionSamples`: the existing catalogue SQL returns one
+prompt-bearing public video ID per engine across the complete effective family
+membership, including versions beyond the first 24 cards. The optional projection
+contains only engine/video IDs, appears on the first result row and hydrates no
+additional media. Preserve the exact same curation precedence, exclusions and
+public/live-output predicates; neither a registry entry nor an unrelated public
+video establishes family membership. Metadata and other readers do not opt in.
+`buildExamplesVersionLinks` intersects these samples with published family models
+and normalizes historical input aliases; `examples.current` separates current and
+earlier versions without borrowing lifecycle or generation availability. A newly
+published model with no public prompt-bearing example gets no invented watch link.
+
+Wan, Kling, LTX, MiniMax/Hailuo and Seedance use `family-overview.ts` for concise,
+enduring family headings and introductions through their localized descriptors.
+Detailed version-specific advice and historical FAQ stay authored. New releases
+add real version links without replacing the family URL or relabeling old videos.
+`examples-version-continuity`, `examples-catalog-pagination-postgres`,
+`examples-version-prompt-links` and `examples-gallery-opening` cover these boundaries.
 
 ## Public example comparison handoff
 
@@ -553,6 +589,12 @@ unavailable prices must never use historical generation costs. Reserve caption
 space for wrapped reference labels before revealing them, and keep the reader's
 independent fresh detail quote. `tests/examples-price-streaming.test.ts` exercises
 the held-price stream, per-card identity, localized labels and failure paths.
+
+Narrow opening side cards let their caption contribute its minimum content height;
+do not absolutely position that text into a row shorter than its model, settings and
+price. Keep the lead poster's fixed ratio and full-card native watch links. The browser
+layout contract covers classic scrollbar width as well as overlay scrollbars, real
+French price spacing, fallback fonts, and stable reserved space before prices resolve.
 
 Source playback uses `usePublicVideoControls` with Auto/Original policy and `preload="none"`.
 The existing standalone watch page remains the authority for canonical, metadata,

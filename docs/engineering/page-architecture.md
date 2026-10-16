@@ -413,3 +413,22 @@ the database is unavailable. These contracts are covered by
 `ExamplesMainVideoFeature` offers an explicit workspace continuation (`/app?from=<public video id>`) beside the watch/details link. The linked model name remains the model entry point. Keep the card media lifecycle unchanged and do not prefetch the workspace from public galleries. `example-reuse-copy.ts` describes available settings, user references and the next quote; it must not promise an exact clone. Full family copy remains in the server-rendered disclosure when the hero is condensed. CTA analytics uses the existing bridge and bounded labels, not prompts or video identifiers.
 
 `useWorkspaceVideoSettings` owns failed shared-example loading notices, including locale and stale/account guards. The public video GET enforces visibility before returning data: public shares remain available independently of search indexability; private videos require their owner. Keep its no-store response, original payload boundary and identical missing/unauthorized 404. `tests/examples-acquisition-journey.test.ts`, `tests/workspace-shared-video-load-dom.test.ts` and `tests/video-read-access-route.test.ts` cover these contracts.
+
+The shared watch/dialog reader keeps the existing app reuse link as its primary
+action. `ExampleContinuationActions.client.tsx` owns the secondary Studio link,
+ChatGPT/Claude draft links, existing partner marks and complete-request clipboard
+recovery. `frontend/lib/example-continuation.ts` builds localized requests from
+the public `ExampleWatchDetail` projection: original prompt, known settings,
+canonical example and original video links, approved public references and an
+exact-quote approval reminder. Comparison proposals and historical charges are
+not original template settings. Missing configuration stays explicit.
+
+External `q` URLs are best-effort draft handoffs, not verified MCP installation
+links; they do not change the integration registry's installation or host-proof
+state. An explicit assistant click also copies the full request. URLs over 8,000
+characters open the assistant without a query; the full request remains available
+through Copy request and a selectable fallback when clipboard access fails. The
+request describes connector setup when needed without claiming a connection or
+automatic video ingestion. `tests/example-continuation.test.ts` and the real
+reader browser fixture cover request identity, languages, logos, touch geometry,
+keyboard navigation and clipboard failure.

@@ -137,13 +137,13 @@ export function MarketingMobileMenu({
                   <span className="marketing-menu-chevron" aria-hidden="true" />
                 </summary>
                   <div id={panelId} className="marketing-menu-subnav flex flex-col gap-1 text-sm text-text-secondary">
-                    <Link prefetch={false}
+                    {!dropdown.allLinkInItems ? <Link prefetch={false}
                       href={dropdown.allHref}
                       onClick={onClose}
                       className="rounded-input px-2 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {allLabel}
-                    </Link>
+                    </Link> : null}
                     {isOpen ? dropdown.items.map((entry) => {
                       const entryLabel = t<string>(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label) ?? entry.label;
                       const badgeLabel = entry.badge ? t<string>(`nav.badges.${entry.badge}`, entry.badge) : undefined;
