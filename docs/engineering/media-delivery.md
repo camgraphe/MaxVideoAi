@@ -91,9 +91,13 @@ gallery payload and in the on-demand reader/watch page. The overlay retains the
 existing poster geometry and uses at most two lines, one on narrow cards.
 On the two mobile opening side cards at widths up to 200px, omit the visual
 excerpt so the original model/settings and reserved price remain readable; the
-named watch link and version shortcut still open that video's full prompt.
-Version shortcuts reuse only real examples already on that SSR page, with at most
-two links. Families use the existing registry-backed current/published model order;
+named watch link still opens that video's full prompt. Keep the opening and the
+remaining video grid consecutive: do not insert duplicated prompt excerpts or
+editorial cards between them. Compact version links belong below the complete
+gallery and pagination, alongside the family guidance, and explicitly open a video
+with its full prompt. They reuse only real examples already on that SSR page, with
+at most two links, without repeating their excerpts or settings. Families use the
+existing registry-backed current/published model order;
 LTX and Seedance retain their explicit current/older generation groups. Model
 launches must preserve factual older labels, prompts and native pagination rather
 than relabeling old examples as a new version. `examples-prompt-starters` and

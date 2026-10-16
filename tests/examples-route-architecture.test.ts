@@ -414,6 +414,16 @@ test('public_routes_keep_seo_and_media_owners', () => {
   assert.match(card, /useExampleCardPlayback/);
 });
 
+test('version prompt links follow the complete gallery and pagination', () => {
+  const pagination = pageViewSource.indexOf('<ExamplesPaginationNav');
+  const editorial = pageViewSource.indexOf('<div className={styles.editorial}>');
+  const prompts = pageViewSource.indexOf('<ExamplesPromptStarters');
+  assert.ok(pagination > pageViewSource.indexOf('<ExamplesGallerySection'));
+  assert.ok(editorial > pagination);
+  assert.ok(prompts > editorial, 'version links belong with the guidance below all videos');
+  assert.doesNotMatch(pageViewSource, /openingDetails=/, 'no duplicated prompt block may interrupt browsing');
+});
+
 test('family metadata delegates preview selection while keeping route SEO ownership', () => {
   assert.match(modelPageSource, /await selectFamilyMetadataVideo\(canonical\)/);
   assert.doesNotMatch(modelPageSource, /listExampleFamilyPage|EXAMPLES_HERO_SELECTION_LIMIT|pickFirstPlayableVideo/);

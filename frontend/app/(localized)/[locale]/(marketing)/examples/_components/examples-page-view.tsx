@@ -214,7 +214,6 @@ export function ExamplesPageView({
             noPreviewLabel={galleryUiCopy.noPreview}
             pageOffsetEnd={pageOffsetEnd}
             prioritizeFirstPoster={true}
-            openingDetails={isModelLanding && currentPage === 1 && sort === 'playlist' ? <ExamplesPromptStarters locale={locale} starters={promptStarters} /> : null}
             openingEnabled={currentPage === 1 && sort === 'playlist'}
             show={showGallerySection}
             sort={sort}
@@ -236,6 +235,10 @@ export function ExamplesPageView({
           <div className={styles.editorial}>
             {isModelLanding && heroBody && modelLandingLabel ? (
               <ExamplesFamilyIntro body={heroBody} label={modelLandingLabel} locale={locale} title={modelLandingGuideTitle} />
+            ) : null}
+
+            {isModelLanding && currentPage === 1 && sort === 'playlist' ? (
+              <ExamplesPromptStarters locale={locale} starters={promptStarters} />
             ) : null}
 
             <ExamplesModelLinksSection

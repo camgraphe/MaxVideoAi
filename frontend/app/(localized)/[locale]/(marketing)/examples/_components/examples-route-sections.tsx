@@ -94,7 +94,6 @@ type ExamplesModelLandingCardsSectionProps = {
 type ExamplesGallerySectionProps = {
   familyLabel?: string;
   openingEnabled?: boolean;
-  openingDetails?: ReactNode;
   audioAvailableLabel: string;
   detailsCtaLabel: string;
   engineFilter: string | null;
@@ -279,7 +278,6 @@ export function ExamplesModelLandingCardsSection({ sections }: ExamplesModelLand
 }
 
 export function ExamplesGallerySection({
-  openingDetails,
   familyLabel,
   openingEnabled,
   audioAvailableLabel,
@@ -306,7 +304,6 @@ export function ExamplesGallerySection({
       <ExamplesGalleryGrid
         familyLabel={familyLabel}
         openingEnabled={openingEnabled}
-        openingDetails={openingDetails}
         detailsCtaLabel={detailsCtaLabel}
         initialExamples={initialExamples}
         priceSlots={priceSlots}
