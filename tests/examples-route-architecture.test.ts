@@ -132,13 +132,13 @@ test('examples hub metadata sends visitors to detail pages for current prices', 
 test('Kling examples landing owns motion-focused CTR metadata without a site-name suffix', () => {
   const title = 'Kling AI Video Examples: Prompts, Motion & Product Shots';
   const description =
-    'Watch Kling 3 and Kling 3.0 Omni video examples. Explore prompts, image-to-video and reference workflows, then inspect settings and current price estimates.';
+    'Explore Kling video examples from current and earlier versions. Find the exact model, original prompt, settings and current price estimates.';
   const landing = getExampleModelLanding('en', 'kling');
 
   assert.ok(landing);
   assert.equal(landing.metaTitle, title);
   assert.equal(landing.metaDescription, description);
-  assert.equal(landing.heroTitle, 'Kling AI Video Examples, Prompts & Settings');
+  assert.equal(landing.heroTitle, 'Kling video examples and prompts');
   assert.match(modelPageSource, /UNBRANDED_EXAMPLE_MODEL_TITLE_SLUGS[\s\S]*'kling'/);
 
   const metadata = buildSeoMetadata({
@@ -153,17 +153,17 @@ test('Kling examples landing owns motion-focused CTR metadata without a site-nam
   assert.equal(metadata.description, description);
 });
 
-test('Seedance examples landing leads with Seedance 2.5 while retaining the family context', () => {
-  const title = 'Seedance 2.5 Video Examples, Prompts & Settings | MaxVideoAI';
+test('Seedance family opening stays stable while keeping 2.5 guidance and historical identities', () => {
+  const title = 'Seedance AI Video Examples and Prompts | MaxVideoAI';
   const landing = getExampleModelLanding('en', 'seedance');
   const family = getModelFamilyDefinition('seedance');
 
   assert.ok(landing);
   assert.ok(family);
   assert.equal(landing.metaTitle, title);
-  assert.match(landing.metaDescription, /^Watch Seedance 2\.5 video examples/);
-  assert.equal(landing.heroTitle, 'Seedance 2.5, 2.0, Fast & Mini examples and prompts');
-  assert.match(landing.intro, /^Explore Seedance 2\.5 examples alongside Seedance 2\.0, Fast and Mini/);
+  assert.match(landing.metaDescription, /^Explore Seedance video examples from current and earlier versions/);
+  assert.equal(landing.heroTitle, 'Seedance video examples and prompts');
+  assert.match(landing.intro, /Each Seedance video/);
   assert.match(landing.summary, /^Seedance 2\.5 supports 4–30 second videos up to 1080p/);
   assert.match(landing.summary, /Earlier 1\.5 Pro videos remain labeled, although new 1\.5 generations are closed/);
   assert.doesNotMatch(landing.intro, /every example|all examples.*2\.5/i);
@@ -182,27 +182,25 @@ test('Seedance examples landing leads with Seedance 2.5 while retaining the fami
   ]);
 
   const localizedLeadPatterns = {
-    en: /^Explore Seedance 2\.5/,
-    fr: /^Explorez les exemples Seedance 2\.5/,
-    es: /^Explora ejemplos de Seedance 2\.5/,
+    en: /Each Seedance video/,
+    fr: /historiques de Seedance/,
+    es: /anteriores de Seedance/,
   } as const;
   const localizedMetaTitles = {
-    en: 'Seedance 2.5 Video Examples, Prompts & Settings | MaxVideoAI',
-    fr: 'Exemples Seedance 2.5, prompts et réglages | MaxVideoAI',
-    es: 'Ejemplos de Seedance 2.5, prompts y ajustes | MaxVideoAI',
+    en: 'Seedance AI Video Examples and Prompts | MaxVideoAI',
+    fr: 'Exemples vidéo Seedance et prompts | MaxVideoAI',
+    es: 'Ejemplos de video de Seedance y prompts | MaxVideoAI',
   } as const;
 
   for (const locale of ['en', 'fr', 'es'] as const) {
     const localizedLanding = getExampleModelLanding(locale, 'seedance');
     assert.ok(localizedLanding);
     assert.equal(localizedLanding.metaTitle, localizedMetaTitles[locale]);
-    assert.match(localizedLanding.metaDescription, /Seedance 2\.5/);
-    assert.match(localizedLanding.heroTitle, /Seedance 2\.5/);
+    assert.match(localizedLanding.metaDescription, /Seedance/);
+    assert.match(localizedLanding.heroTitle, /Seedance/);
     assert.match(localizedLanding.intro, localizedLeadPatterns[locale]);
     assert.match(localizedLanding.summary, /^Seedance 2\.5/);
-    assert.match(localizedLanding.intro, /Seedance 2\.0/);
-    assert.match(localizedLanding.intro, /Fast/);
-    assert.match(localizedLanding.intro, /Mini/);
+    assert.match(localizedLanding.heroSubtitle, /earlier|histor|anteriores/i);
     assert.match(
       [localizedLanding.intro, localizedLanding.summary, localizedLanding.strengthsLimits].join(' '),
       /1080p/i,

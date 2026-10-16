@@ -203,7 +203,7 @@ export function ExamplesModelLinksSection({
           <span className={styles.eyebrow}>
             {locale === 'fr' ? 'Les modèles' : locale === 'es' ? 'Los modelos' : 'The models'}
           </span>
-          <h2 id="examples-model-pages-title">{usesCurrentAndSupportedBlocks ? currentModelPagesLabel : modelPagesLabel}</h2>
+          <h2 id="examples-model-pages-title">{usesCurrentAndSupportedBlocks && primaryModelLinks.length ? currentModelPagesLabel : modelPagesLabel}</h2>
         </div>
         <Link href={pricingPath} className={styles.pricingAction}>
           {pricingLinkLabel}<span aria-hidden="true"> ↗</span>

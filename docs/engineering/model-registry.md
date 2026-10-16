@@ -70,6 +70,17 @@ prompt excerpt associated with its original model and native watch link; localiz
 model captions are not prompt substitutes. Run the prompt-starter, gallery-opening
 and prompt-layout browser contracts, including narrow cards with current price
 labels, so a successor launch preserves both prompt access and model identity.
+Keep family headings stable across launches and use the existing compact version
+navigation below the gallery. It intersects registry publication with real
+prompt-bearing membership across the full catalogue; older versions must not
+disappear merely because they move beyond the first 24 cards. Current/earlier
+groups follow `publication.examples.current`, never generation availability or a
+fallback to the first two models. Verify both a new published model without an
+example and a historical example beyond page one with
+`tests/examples-version-continuity.test.ts` and
+`tests/examples-catalog-pagination-postgres.test.ts`. Update version-specific
+advice when new evidence warrants it; do not generate capability claims from a
+model name or transfer older claims automatically to a successor.
 After the Git-backed release
 is READY, run `pnpm seo:public:check`; the daily Public SEO workflow catches live
 drift between releases. See [CI ownership](ci-validation.md#public-seo).

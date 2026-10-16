@@ -14,8 +14,8 @@ function readSnapshot(): PublicExamplesSnapshot {
   }
   return cached;
 }
-export function listLocalPublicExamples(family: string, sort: ExampleSort, limit: number, offset: number) {
-  return selectLocalPublicExamples(readSnapshot(), family, sort, limit, offset);
+export function listLocalPublicExamples(family: string, sort: ExampleSort, limit: number, offset: number, includeVersionSamples = false) {
+  return selectLocalPublicExamples(readSnapshot(), family, sort, limit, offset, includeVersionSamples);
 }
 export function getLocalPublicExample(id: string) {
   const card = readSnapshot().cards[id];

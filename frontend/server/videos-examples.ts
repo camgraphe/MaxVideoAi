@@ -11,13 +11,27 @@ export type ListExamplesPageOptions = {
   engineGroup?: string | null;
 };
 
+export type ExampleVersionSample = { engineId: string; videoId: string };
+
 export type ListExamplesPageResult = {
   items: GalleryVideo[];
   total: number;
   limit: number;
   offset: number;
   hasMore: boolean;
+  versionSamples?: ExampleVersionSample[];
 };
+
+/** Already-selected public membership; never expand a curated selection. */
+export function buildExampleVersionSamples(videos: readonly Pick<GalleryVideo, 'id' | 'engineId' | 'prompt' | 'promptExcerpt'>[]): ExampleVersionSample[] {
+  const seen = new Set<string>();
+  return videos.flatMap(video => {
+    const engineId = normalizeEngineId(video.engineId) ?? video.engineId;
+    if (seen.has(engineId) || !(video.promptExcerpt?.trim() || video.prompt?.trim())) return [];
+    seen.add(engineId);
+    return [{ engineId, videoId: video.id }];
+  });
+}
 
 export const ENGINE_GROUP_FETCH_MULTIPLIER = 4;
 export const ENGINE_GROUP_FETCH_CAP = 400;

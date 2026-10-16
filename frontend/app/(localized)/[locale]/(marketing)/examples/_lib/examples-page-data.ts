@@ -120,17 +120,13 @@ export function buildExamplesModelLinks({
   const currentModelSlugs = selectedEngine ? CURRENT_ENGINE_MODEL_LINKS_BY_GROUP[selectedEngine.toLowerCase()] ?? [] : [];
   const currentModelSlugSet = new Set(currentModelSlugs);
   const primaryModelLinks =
-    usesCurrentAndSupportedBlocks && currentModelSlugSet.size
+    usesCurrentAndSupportedBlocks
       ? modelLinks.filter((model) => currentModelSlugSet.has(model.slug))
-      : usesCurrentAndSupportedBlocks
-        ? modelLinks.slice(0, 2)
-        : modelLinks;
+      : modelLinks;
   const supportedOlderModelLinks =
-    usesCurrentAndSupportedBlocks && currentModelSlugSet.size
+    usesCurrentAndSupportedBlocks
       ? modelLinks.filter((model) => !currentModelSlugSet.has(model.slug))
-      : usesCurrentAndSupportedBlocks
-        ? modelLinks.slice(2)
-        : [];
+      : [];
 
   return {
     modelLinks,

@@ -91,7 +91,9 @@
 }
 @media(max-width:420px){.familyIntro p{font-size:12px}.sectionHeading{align-items:start;flex-wrap:wrap}.modelLink{min-height:126px}.modelName{font-size:14px}.comparisonEmblems{gap:6px}.comparisonCard{min-height:137px}}
 
-.promptStarters{display:flex;align-items:center;flex-wrap:wrap;gap:4px 20px;padding:10px 0;border-bottom:1px solid var(--hairline)}
+.promptStarters{display:grid;gap:6px;padding:10px 0;border-bottom:1px solid var(--hairline)}
 .promptStarters>p{margin:0;color:var(--text-secondary);font-size:13px;line-height:1.5}
 .promptStarters ul{display:flex;flex-wrap:wrap;gap:4px 20px;margin:0;padding:0;list-style:none}
 .promptStarters a{min-height:44px}
+.promptVersionGroup{display:flex;flex-wrap:wrap;align-items:center;gap:0 20px}
+.promptVersionGroup>span{color:var(--text-muted);font-size:12px;line-height:1.5}
