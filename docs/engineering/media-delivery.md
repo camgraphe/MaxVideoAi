@@ -590,6 +590,12 @@ space for wrapped reference labels before revealing them, and keep the reader's
 independent fresh detail quote. `tests/examples-price-streaming.test.ts` exercises
 the held-price stream, per-card identity, localized labels and failure paths.
 
+Narrow opening side cards let their caption contribute its minimum content height;
+do not absolutely position that text into a row shorter than its model, settings and
+price. Keep the lead poster's fixed ratio and full-card native watch links. The browser
+layout contract covers classic scrollbar width as well as overlay scrollbars, real
+French price spacing, fallback fonts, and stable reserved space before prices resolve.
+
 Source playback uses `usePublicVideoControls` with Auto/Original policy and `preload="none"`.
 The existing standalone watch page remains the authority for canonical, metadata,
 VideoObject, redirects and sitemap eligibility; the dialog is not a new SEO route.
