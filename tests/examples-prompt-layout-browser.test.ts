@@ -45,7 +45,7 @@ test('public prompt excerpts keep the original model and reference price readabl
       for (const price of [null, 'Dès 0,58 $US · Texte vers vidéo · 5 s · 480p']) {
         const priced = cards.map(card => React.cloneElement(card, { priceSlot: price }));
         const html = renderToStaticMarkup(React.createElement('div', { className: 'opening' }, ...priced));
-        await page.setContent(`<style>*{box-sizing:border-box}body{margin:0;font-family:system-ui,sans-serif}.fixture{max-width:1180px;padding:0 16px;margin:auto}${[...styles.values()].join('\n')}</style><main class="fixture">${html}</main>`);
+        await page.setContent(`<style>*{box-sizing:border-box}body{margin:0;font-family:system-ui,sans-serif}.fixture{max-width:1180px;padding:0 20px;margin:auto}${[...styles.values()].join('\n')}</style><main class="fixture">${html}</main>`);
         for (const link of await page.locator('a[data-analytics-cta-name="view_example_details"]').all()) {
           const boxes = await link.evaluate(anchor => {
             const card = anchor.getBoundingClientRect(), model = anchor.querySelector('strong')!.getBoundingClientRect();
