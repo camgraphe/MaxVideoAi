@@ -13,6 +13,7 @@ import {createStudioConversationProject} from '../frontend/src/server/studio/con
 import {studioAssistancePolicy} from '../frontend/src/server/studio/assistance-policy';
 import {runStudioTaskWorkerOnce} from '../frontend/src/server/studio/tasks/worker';
 import type {ImageGenerationFactory} from '../frontend/src/server/studio/image-conversation-service';
+import {createStudioImageGenerationService} from '../frontend/src/server/studio/image-generation-service';
 
 const selectedImage='ma_'+'e'.repeat(32),selectedImageUrl='https://cdn.maxvideoai.com/studio-local-fixture/selected.webp';
 
@@ -64,12 +65,12 @@ test('task ceilings, explicit continuation and saved progress work on desktop/mo
     await expect(page.getByRole('button',{name:'Remove Image 1',exact:true})).toBeVisible();
     const taskCard=page.getByRole('region',{name:'Studio task'});await expect(taskCard.getByText('Waiting for Studio')).toBeVisible();
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM studio_assistance_calls')).rows[0].n,0);
-    const generationFactory=(()=>({resolveReferences:async()=>[],walletSummary:async()=>({balanceCents:0,currency:'USD'}),catalog:async()=>[],getQuote:async()=>null})) as unknown as ImageGenerationFactory;
+    const generationFactory=((actor,options)=>({resolveReferences:createStudioImageGenerationService(actor,options).resolveReferences,walletSummary:async()=>({balanceCents:0,currency:'USD'}),catalog:async()=>[],getQuote:async()=>null})) as ImageGenerationFactory;
     let calls=0;
     const worker={enabled:true,assistancePolicy:studioAssistancePolicy({STUDIO_ASSISTANCE_ENABLED:'true'}),serviceOptions:{generationFactory,countInputTokens:async()=>100,createActionResponse:async()=>{
       calls++;return {id:'offline-'+calls,model:'gpt-6.1-sol',status:'completed' as const,service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50},output_text:'',output:[{type:'function_call' as const,name:'project_read',call_id:'read-'+calls,arguments:'{}'}]};
     }}};
-    await runStudioTaskWorkerOnce(worker);assert.equal(calls,2);
+    await runStudioTaskWorkerOnce(worker);assert.equal(calls,2,JSON.stringify((await runtime.database.pool.query('SELECT state,error,partial_reply FROM studio_tasks')).rows));
     await expect(taskCard.getByText('Request paused')).toBeVisible({timeout:15_000});
     await page.setViewportSize({width:390,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true);
     const evidence=join(process.cwd(),'.superpowers/sdd/2026-10-06-studio-task-budgets/browser');await mkdir(evidence,{recursive:true});await page.screenshot({path:join(evidence,'task-mobile.png'),fullPage:true});
