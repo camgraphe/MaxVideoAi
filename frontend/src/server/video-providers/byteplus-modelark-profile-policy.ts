@@ -1,4 +1,7 @@
 import { ENV } from '@/lib/env';
+import { getBytePlusSeedanceModeResolutions } from '@/lib/byteplus-mode-capabilities';
+import { resolveBytePlusTransport } from './byteplus-modelark-transport';
+import { isUnifiedSeedanceEngineId } from '@/lib/seedance-workflow';
 import type { AspectRatio, EngineCaps, EngineInputField, Mode, Resolution } from '@/types/engines';
 import {
   BYTEPLUS_MODELARK_PROVIDER,
@@ -171,19 +174,19 @@ function expandBytePlusFieldModes(field: EngineInputField): EngineInputField {
   if (field.id === 'image_urls') {
     return {
       ...field,
-      modes: ['ref2v', 'v2v'],
+      modes: ['ref2v', 'v2v', 'extend'],
     };
   }
   if (field.id === 'video_urls') {
     return {
       ...field,
-      modes: ['ref2v'],
+      modes: ['ref2v', 'v2v'],
     };
   }
   if (field.id === 'audio_urls') {
     return {
       ...field,
-      modes: ['ref2v', 'v2v'],
+      modes: ['ref2v', 'v2v', 'extend'],
     };
   }
   return field;
@@ -224,7 +227,7 @@ function filterInputFieldsForModes(
       if (field.id === 'duration' && field.type === 'enum') {
         return {
           ...field,
-          values: durationOptions.map(String),
+          values: [...(isUnifiedSeedanceEngineId(profile.engineId) ? ['auto'] : []), ...durationOptions.map(String)],
           default: String(profile.defaultDurationSec),
           min: durationOptions[0] ?? 5,
           max: durationOptions[durationOptions.length - 1],
@@ -459,14 +462,14 @@ export function applyBytePlusSeedanceRuntimeOptions(
               ? {
                   ...caps,
                   modes: [mode],
-                  resolution: resolutions,
+                  resolution: [...getBytePlusSeedanceModeResolutions(engine.id, mode, resolutions, resolveBytePlusTransport(engine.id, mode))],
                   resolutionLocked: false,
                   aspectRatio:
                     engine.id === 'seedance-2-5' && mode === 'i2v'
                       ? undefined
                       : aspectRatios,
                   duration: {
-                    options: [...durationOptions],
+                    options: [...(isUnifiedSeedanceEngineId(engine.id) && !(engine.id === SEEDANCE_2_5_ENGINE_ID && mode === 'v2v') ? ['auto'] : []), ...durationOptions],
                     default: profile.defaultDurationSec,
                   },
                   audioToggle: profile.generatedAudio,

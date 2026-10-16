@@ -56,7 +56,7 @@ async function handleRequest(
   route: Route,
   allowedOrigins: ReadonlySet<string>,
   privateRequests: StudioPrivateBrowserRequest[],
-  signatureClock: () => Date,
+  signatureClock: (url: string) => Date,
 ): Promise<void> {
   const request = route.request();
   const url = new URL(request.url());
@@ -71,7 +71,7 @@ async function handleRequest(
       url: request.url(),
       method: request.method(),
       range,
-      now: signatureClock(),
+      now: signatureClock(request.url()),
     });
     privateRequests.push(Object.freeze({
       method: request.method(),
@@ -94,7 +94,7 @@ async function handleRequest(
 export async function startStudioConnectedBrowserFixture<Session>(options: {
   runtime: StudioBrowserRuntime<Session>;
   browserName?: 'chromium' | 'firefox' | 'webkit';
-  signatureClock?: () => Date;
+  signatureClock?: (url: string) => Date;
   headless?: boolean;
 }) {
   assert.equal(process.versions.node.split('.')[0], '22', 'Use the project Node 22 runtime.');

@@ -1,0 +1,508 @@
+{
+  "baselineCommit": "3cf8aae2f4ab0260c8c74a423fc2ccb0d3103b11",
+  "baselineBuildCommit": "d5dc2bfc9",
+  "baselineTree": "68a8d15e1647e3c8abf0d00fa6e255d0ecc29396",
+  "candidateSourceHashes": "source-files.json",
+  "protocol": {
+    "browser": "native Chrome 152 private window",
+    "network": "Slow 4G",
+    "networkConditions": {
+      "download": 180000,
+      "upload": 84375,
+      "latency": 562.5,
+      "targetLatency": 150,
+      "key": "SPEED_SLOW_4G"
+    },
+    "cpu": "No throttling",
+    "hostDpr": 2,
+    "browserCache": "disabled",
+    "applicationAndImageCache": "warmed",
+    "window": "same undocked DevTools and foreground page",
+    "observedMilliseconds": 30000,
+    "sampleCountPerVersionPerRoute": 3,
+    "server": "local production Next builds, same environment/read-only pricing data; no local Vercel CDN"
+  },
+  "limitations": [
+    "Small desktop laboratory sample, not CrUX, INP or mobile LCP.",
+    "Baseline model run 1 preceded the final candidate rebuild; subsequent runs alternated versions.",
+    "One gallery baseline export was lost when DevTools closed and was repeated after verifying unchanged settings.",
+    "An earlier candidate diagnostic trace is excluded because its source predates the final anchor fix.",
+    "Image and legacy model pages keep their awaited render; no gain claimed."
+  ],
+  "summary": [
+    {
+      "route": "/models/veo-3-1",
+      "baseline": {
+        "n": 3,
+        "lcpMedianMs": 8795.455,
+        "lcpRangeMs": [
+          7246.898,
+          9720.345
+        ],
+        "ttfbMedianMs": 5427.674,
+        "clsMedian": 0,
+        "clsMax": 0,
+        "lcpBreakdownMediansMs": {
+          "ttfb": 5427.674,
+          "resourceLoadDelay": 12.931,
+          "resourceLoadDuration": 3324.664,
+          "elementRenderDelay": 27.293
+        }
+      },
+      "candidate": {
+        "n": 3,
+        "lcpMedianMs": 4280.728,
+        "lcpRangeMs": [
+          3220.111,
+          4459.069
+        ],
+        "ttfbMedianMs": 1419.426,
+        "clsMedian": 0,
+        "clsMax": 0,
+        "lcpBreakdownMediansMs": {
+          "ttfb": 1419.426,
+          "resourceLoadDelay": 12.977,
+          "resourceLoadDuration": 2900.598,
+          "elementRenderDelay": 22.927
+        }
+      },
+      "lcpMedianReductionPercent": 51.33
+    },
+    {
+      "route": "/examples",
+      "baseline": {
+        "n": 3,
+        "lcpMedianMs": 4189.683,
+        "lcpRangeMs": [
+          4180.652,
+          4190.086
+        ],
+        "ttfbMedianMs": 2751.993,
+        "clsMedian": 0,
+        "clsMax": 0.0011885457340973338,
+        "lcpBreakdownMediansMs": {
+          "ttfb": 2751.993,
+          "resourceLoadDelay": 6.215,
+          "resourceLoadDuration": 1408.302,
+          "elementRenderDelay": 23.172
+        }
+      },
+      "candidate": {
+        "n": 3,
+        "lcpMedianMs": 2947.543,
+        "lcpRangeMs": [
+          2786.32,
+          3063.218
+        ],
+        "ttfbMedianMs": 1516.2,
+        "clsMedian": 0,
+        "clsMax": 0,
+        "lcpBreakdownMediansMs": {
+          "ttfb": 1516.2,
+          "resourceLoadDelay": 6.149,
+          "resourceLoadDuration": 1407.873,
+          "elementRenderDelay": 18.55
+        }
+      },
+      "lcpMedianReductionPercent": 29.65
+    }
+  ],
+  "runs": [
+    {
+      "file": "examples-baseline-1.json.gz",
+      "traceSha256": "5210d638c0f06643748ed62f13ba72dddb719dd6a6bde2e1ccffe304bc10b150",
+      "recordingStartUTC": "2026-10-12T23:29:12.209Z",
+      "route": "/examples",
+      "version": "baseline",
+      "recordingAfterNavigationMs": 54837.886,
+      "fcpMs": 4021.821,
+      "lcpMs": 4190.086,
+      "cls30s": 0,
+      "documentTtfbMs": 2769.926,
+      "documentEncodedBytes": 52283,
+      "poster": {
+        "urlPathAndQuery": "/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F0c5f5b6a-0feb-4d89-8ac1-4dcc55995a80.jpg&w=1920&q=52",
+        "rect": {
+          "root_x": 227,
+          "root_y": 349,
+          "root_width": 655,
+          "root_height": 368
+        },
+        "requestMs": 2776.754,
+        "headersMs": 3943.731,
+        "completeMs": 4166.914,
+        "encodedBytes": 16587,
+        "decodedBytes": 16134
+      },
+      "lcpBreakdownMs": {
+        "ttfb": 2769.926,
+        "resourceLoadDelay": 6.828,
+        "resourceLoadDuration": 1390.16,
+        "elementRenderDelay": 23.172
+      }
+    },
+    {
+      "file": "examples-baseline-2.json.gz",
+      "traceSha256": "03ea6e47673a4da5db571db6abf21b6095dd129abbd545f067c194f365c6023f",
+      "recordingStartUTC": "2026-10-12T23:35:16.930Z",
+      "route": "/examples",
+      "version": "baseline",
+      "recordingAfterNavigationMs": 57622.209,
+      "fcpMs": 3970.655,
+      "lcpMs": 4180.652,
+      "cls30s": 0.0011885457340973338,
+      "documentTtfbMs": 2724.935,
+      "documentEncodedBytes": 52283,
+      "poster": {
+        "urlPathAndQuery": "/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F0c5f5b6a-0feb-4d89-8ac1-4dcc55995a80.jpg&w=1920&q=52",
+        "rect": {
+          "root_x": 227,
+          "root_y": 349,
+          "root_width": 655,
+          "root_height": 368
+        },
+        "requestMs": 2729.428,
+        "headersMs": 3931.032,
+        "completeMs": 4162.506,
+        "encodedBytes": 16587,
+        "decodedBytes": 16134
+      },
+      "lcpBreakdownMs": {
+        "ttfb": 2724.935,
+        "resourceLoadDelay": 4.493,
+        "resourceLoadDuration": 1433.078,
+        "elementRenderDelay": 18.146
+      }
+    },
+    {
+      "file": "examples-baseline-3.json.gz",
+      "traceSha256": "c4436bec756407c11d9e530aefa3d9c8bb2b790d4e777cb9fa812350a2a191d5",
+      "recordingStartUTC": "2026-10-12T23:39:02.369Z",
+      "route": "/examples",
+      "version": "baseline",
+      "recordingAfterNavigationMs": 50607.383,
+      "fcpMs": 4002.798,
+      "lcpMs": 4189.683,
+      "cls30s": 0,
+      "documentTtfbMs": 2751.993,
+      "documentEncodedBytes": 52283,
+      "poster": {
+        "urlPathAndQuery": "/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F0c5f5b6a-0feb-4d89-8ac1-4dcc55995a80.jpg&w=1920&q=52",
+        "rect": {
+          "root_x": 227,
+          "root_y": 349,
+          "root_width": 655,
+          "root_height": 368
+        },
+        "requestMs": 2758.208,
+        "headersMs": 3925.304,
+        "completeMs": 4166.51,
+        "encodedBytes": 16587,
+        "decodedBytes": 16134
+      },
+      "lcpBreakdownMs": {
+        "ttfb": 2751.993,
+        "resourceLoadDelay": 6.215,
+        "resourceLoadDuration": 1408.302,
+        "elementRenderDelay": 23.173
+      }
+    },
+    {
+      "file": "examples-candidate-final-1.json.gz",
+      "traceSha256": "98d3c7cf65b35a0950ab110934f1d465f817175fc589caaa2e1935546f6be195",
+      "recordingStartUTC": "2026-10-12T23:30:56.368Z",
+      "route": "/examples",
+      "version": "candidate",
+      "recordingAfterNavigationMs": 63555.9,
+      "fcpMs": 2910.355,
+      "lcpMs": 3063.218,
+      "cls30s": 0,
+      "documentTtfbMs": 1643.665,
+      "documentEncodedBytes": 54473,
+      "poster": {
+        "urlPathAndQuery": "/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F0c5f5b6a-0feb-4d89-8ac1-4dcc55995a80.jpg&w=1920&q=52",
+        "rect": {
+          "root_x": 227,
+          "root_y": 349,
+          "root_width": 655,
+          "root_height": 368
+        },
+        "requestMs": 1649.814,
+        "headersMs": 2867.866,
+        "completeMs": 3042.132,
+        "encodedBytes": 16587,
+        "decodedBytes": 16134
+      },
+      "lcpBreakdownMs": {
+        "ttfb": 1643.665,
+        "resourceLoadDelay": 6.149,
+        "resourceLoadDuration": 1392.318,
+        "elementRenderDelay": 21.086
+      }
+    },
+    {
+      "file": "examples-candidate-final-2.json.gz",
+      "traceSha256": "070df331c723753c406ebe1d757f408750bec27aba2027790f1f8319b73c8498",
+      "recordingStartUTC": "2026-10-12T23:37:09.035Z",
+      "route": "/examples",
+      "version": "candidate",
+      "recordingAfterNavigationMs": 58049.728,
+      "fcpMs": 2629.921,
+      "lcpMs": 2786.32,
+      "cls30s": 0,
+      "documentTtfbMs": 1357.792,
+      "documentEncodedBytes": 54473,
+      "poster": {
+        "urlPathAndQuery": "/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F0c5f5b6a-0feb-4d89-8ac1-4dcc55995a80.jpg&w=1920&q=52",
+        "rect": {
+          "root_x": 227,
+          "root_y": 349,
+          "root_width": 655,
+          "root_height": 368
+        },
+        "requestMs": 1363.958,
+        "headersMs": 2582.439,
+        "completeMs": 2772.475,
+        "encodedBytes": 16587,
+        "decodedBytes": 16134
+      },
+      "lcpBreakdownMs": {
+        "ttfb": 1357.792,
+        "resourceLoadDelay": 6.166,
+        "resourceLoadDuration": 1408.517,
+        "elementRenderDelay": 13.845
+      }
+    },
+    {
+      "file": "examples-candidate-final-3.json.gz",
+      "traceSha256": "e9fb1ef84e0b61235f87f7e724ec66e594348a899d1f6787a0f4296e25dbaee4",
+      "recordingStartUTC": "2026-10-12T23:40:59.277Z",
+      "route": "/examples",
+      "version": "candidate",
+      "recordingAfterNavigationMs": 55425.405,
+      "fcpMs": 2780.904,
+      "lcpMs": 2947.543,
+      "cls30s": 0,
+      "documentTtfbMs": 1516.2,
+      "documentEncodedBytes": 54473,
+      "poster": {
+        "urlPathAndQuery": "/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F0c5f5b6a-0feb-4d89-8ac1-4dcc55995a80.jpg&w=1920&q=52",
+        "rect": {
+          "root_x": 227,
+          "root_y": 349,
+          "root_width": 655,
+          "root_height": 368
+        },
+        "requestMs": 1521.12,
+        "headersMs": 2737.664,
+        "completeMs": 2928.993,
+        "encodedBytes": 16587,
+        "decodedBytes": 16134
+      },
+      "lcpBreakdownMs": {
+        "ttfb": 1516.2,
+        "resourceLoadDelay": 4.92,
+        "resourceLoadDuration": 1407.873,
+        "elementRenderDelay": 18.55
+      }
+    },
+    {
+      "file": "model-baseline-1.json.gz",
+      "traceSha256": "0c48eadf6ec88a752159b372b70b7d8cf92a491c01f8a4d8403071db019d7b85",
+      "recordingStartUTC": "2026-10-12T22:55:42.696Z",
+      "route": "/models/veo-3-1",
+      "version": "baseline",
+      "recordingAfterNavigationMs": 48144.127,
+      "fcpMs": 6713.572,
+      "lcpMs": 7246.898,
+      "cls30s": 0,
+      "documentTtfbMs": 5427.674,
+      "documentEncodedBytes": 126039,
+      "poster": {
+        "urlPathAndQuery": "/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F50c9cdee-0357-41bd-9f13-28bc96153745.jpg&w=1920&q=80",
+        "rect": {
+          "root_x": 227,
+          "root_y": 418,
+          "root_width": 1256,
+          "root_height": 518
+        },
+        "requestMs": 5428.649,
+        "headersMs": 6678.923,
+        "completeMs": 7219.605,
+        "encodedBytes": 98695,
+        "decodedBytes": 98242
+      },
+      "lcpBreakdownMs": {
+        "ttfb": 5427.674,
+        "resourceLoadDelay": 0.975,
+        "resourceLoadDuration": 1790.956,
+        "elementRenderDelay": 27.293
+      }
+    },
+    {
+      "file": "model-baseline-2.json.gz",
+      "traceSha256": "5984efbb686113c2bc1c2ff026143f81f9052d1e84e2dfb646a40ebf916f418e",
+      "recordingStartUTC": "2026-10-12T23:22:04.739Z",
+      "route": "/models/veo-3-1",
+      "version": "baseline",
+      "recordingAfterNavigationMs": 52661.707,
+      "fcpMs": 6821.327,
+      "lcpMs": 8795.455,
+      "cls30s": 0,
+      "documentTtfbMs": 5425.669,
+      "documentEncodedBytes": 126039,
+      "poster": {
+        "urlPathAndQuery": "/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F50c9cdee-0357-41bd-9f13-28bc96153745.jpg&w=1920&q=80",
+        "rect": {
+          "root_x": 227,
+          "root_y": 418,
+          "root_width": 1256,
+          "root_height": 518
+        },
+        "requestMs": 5438.6,
+        "headersMs": 6723.518,
+        "completeMs": 8763.264,
+        "encodedBytes": 98695,
+        "decodedBytes": 98242
+      },
+      "lcpBreakdownMs": {
+        "ttfb": 5425.669,
+        "resourceLoadDelay": 12.931,
+        "resourceLoadDuration": 3324.664,
+        "elementRenderDelay": 32.191
+      }
+    },
+    {
+      "file": "model-baseline-3.json.gz",
+      "traceSha256": "3c7ab240792ed9fd27a0769f4431dc873a329a5b2ccdd1c63ff9951ca71d0e78",
+      "recordingStartUTC": "2026-10-12T23:25:13.888Z",
+      "route": "/models/veo-3-1",
+      "version": "baseline",
+      "recordingAfterNavigationMs": 54180.892,
+      "fcpMs": 7760.729,
+      "lcpMs": 9720.345,
+      "cls30s": 0,
+      "documentTtfbMs": 6350.856,
+      "documentEncodedBytes": 126039,
+      "poster": {
+        "urlPathAndQuery": "/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F50c9cdee-0357-41bd-9f13-28bc96153745.jpg&w=1920&q=80",
+        "rect": {
+          "root_x": 227,
+          "root_y": 418,
+          "root_width": 1256,
+          "root_height": 518
+        },
+        "requestMs": 6364.999,
+        "headersMs": 7649.06,
+        "completeMs": 9698.562,
+        "encodedBytes": 98695,
+        "decodedBytes": 98242
+      },
+      "lcpBreakdownMs": {
+        "ttfb": 6350.856,
+        "resourceLoadDelay": 14.143,
+        "resourceLoadDuration": 3333.563,
+        "elementRenderDelay": 21.783
+      }
+    },
+    {
+      "file": "model-candidate-final-1.json.gz",
+      "traceSha256": "c7820dd46d8fec33e273ff4d76d9f395435cbac37c7b6230fa4544299e44fd22",
+      "recordingStartUTC": "2026-10-12T23:20:53.178Z",
+      "route": "/models/veo-3-1",
+      "version": "candidate",
+      "recordingAfterNavigationMs": 36481.574,
+      "fcpMs": 2695.117,
+      "lcpMs": 3220.111,
+      "cls30s": 0,
+      "documentTtfbMs": 1419.426,
+      "documentEncodedBytes": 131775,
+      "poster": {
+        "urlPathAndQuery": "/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F50c9cdee-0357-41bd-9f13-28bc96153745.jpg&w=1920&q=80",
+        "rect": {
+          "root_x": 227,
+          "root_y": 418,
+          "root_width": 1256,
+          "root_height": 518
+        },
+        "requestMs": 1423.256,
+        "headersMs": 2646.317,
+        "completeMs": 3195.258,
+        "encodedBytes": 98695,
+        "decodedBytes": 98242
+      },
+      "lcpBreakdownMs": {
+        "ttfb": 1419.426,
+        "resourceLoadDelay": 3.83,
+        "resourceLoadDuration": 1772.002,
+        "elementRenderDelay": 24.853
+      }
+    },
+    {
+      "file": "model-candidate-final-2.json.gz",
+      "traceSha256": "49938975a1e857247284e88209aa9da1fc57aa1bed8c577690ace8e467cbd2f3",
+      "recordingStartUTC": "2026-10-12T23:23:28.753Z",
+      "route": "/models/veo-3-1",
+      "version": "candidate",
+      "recordingAfterNavigationMs": 47457.299,
+      "fcpMs": 2839.47,
+      "lcpMs": 4459.069,
+      "cls30s": 0,
+      "documentTtfbMs": 1523.852,
+      "documentEncodedBytes": 131775,
+      "poster": {
+        "urlPathAndQuery": "/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F50c9cdee-0357-41bd-9f13-28bc96153745.jpg&w=1920&q=80",
+        "rect": {
+          "root_x": 227,
+          "root_y": 418,
+          "root_width": 1256,
+          "root_height": 518
+        },
+        "requestMs": 1536.829,
+        "headersMs": 2771.716,
+        "completeMs": 4438.079,
+        "encodedBytes": 98695,
+        "decodedBytes": 98242
+      },
+      "lcpBreakdownMs": {
+        "ttfb": 1523.852,
+        "resourceLoadDelay": 12.977,
+        "resourceLoadDuration": 2901.25,
+        "elementRenderDelay": 20.99
+      }
+    },
+    {
+      "file": "model-candidate-final-3.json.gz",
+      "traceSha256": "9b572c4ef8935a8438176c60ad76b55142d7d6efbd83695c5dd818b3c4caf5ea",
+      "recordingStartUTC": "2026-10-12T23:27:00.793Z",
+      "route": "/models/veo-3-1",
+      "version": "candidate",
+      "recordingAfterNavigationMs": 46737.067,
+      "fcpMs": 2663.558,
+      "lcpMs": 4280.728,
+      "cls30s": 0,
+      "documentTtfbMs": 1342.236,
+      "documentEncodedBytes": 131775,
+      "poster": {
+        "urlPathAndQuery": "/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F50c9cdee-0357-41bd-9f13-28bc96153745.jpg&w=1920&q=80",
+        "rect": {
+          "root_x": 227,
+          "root_y": 418,
+          "root_width": 1256,
+          "root_height": 518
+        },
+        "requestMs": 1357.203,
+        "headersMs": 2591.259,
+        "completeMs": 4257.801,
+        "encodedBytes": 98695,
+        "decodedBytes": 98242
+      },
+      "lcpBreakdownMs": {
+        "ttfb": 1342.236,
+        "resourceLoadDelay": 14.967,
+        "resourceLoadDuration": 2900.598,
+        "elementRenderDelay": 22.927
+      }
+    }
+  ]
+}

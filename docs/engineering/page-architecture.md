@@ -137,8 +137,26 @@ Avoid passing the entire dictionary or entire engine object unless the section t
 ## JSON-LD Pattern
 
 MaxVideoAI's organization identity and profiles belong in `frontend/lib/seo/site-organization-schema.ts`.
-Both `LocaleRuntime` and the core layout render its shared builder; retain `/#organization`
+Both `LocaleRuntime` and the shared `AppRuntime` render its shared builder; retain `/#organization`
 when adding a profile, and keep profile-only schema changes independent of visible social links.
+
+Core and direct public watch pages use the same server `app/_components/AppRuntime.tsx`
+under the existing HTML root. Core calls it without a namespace selection and keeps full
+messages; `(public-watch)/layout.tsx` selects the existing `nav`/`footer` namespaces.
+The runtime selects valid cookies in `mvid_locale`, then `NEXT_LOCALE`, then default
+order and filters both the dictionary and its English fallback before the client
+provider. If the resolver shares its EN dictionary/fallback object, keep that identity
+after selection. `LocaleRuntime` has separate public locale/fallback semantics and
+must not substitute for this runtime.
+
+The shared runtime retains the existing provider/effect order, app styles, Geist font,
+analytics, consent and organization/WebSite schemas. Both sibling layouts re-export
+metadata/viewport from `app/_lib/app-runtime-metadata.ts`; neither imports the other's
+layout. Only `video/**` lives in `(public-watch)`, preserving `/video/[id]` URLs and
+the unchanged marketing auth snapshot, reader copy, data, redirects and SEO owners.
+Group transitions remount these lower layouts. The runtime behavior and remount tests
+cover dictionary props, fallback, effect cleanup, cache and theme; production browser
+navigation and comparable loading measurements remain required for performance work.
 
 Build schema payloads in pure helpers, then render them at the route/shell level:
 
@@ -203,6 +221,35 @@ shared by the pair, and quote through `computeCurrentPublicSnapshot` with explic
 mode, resolution, aspect and audio. Project the exact video total and per-second
 rate without a catalogue fallback. Avoid initializing the complete tariff audit
 coverage on the request path; the public quote API remains a parity check in tests.
+
+Examples pagination keeps its path and page number in the canonical, Open Graph URL
+and every hreflang alternate. The route-local `examples-pagination-seo.ts` owns
+strict decimal page parsing and the distinction between the default series and
+sort/filter variants. Localize the base path before appending the page query.
+Page 1 and invalid values redirect to a normalized destination; out-of-range
+requests retain the existing last-page redirect. Normalize legacy `engine` links
+to their family before discarding invalid query values. Preserve intentional
+`public_noindex` families. Pagination hrefs are already localized strings because
+the shared navigation renderer uses `next/link`, not the locale-aware wrapper.
+
+The model catalogue exposes scope navigation and a text-only server directory in
+`ModelsCatalogDirectory.tsx`, using the same price-free selection as the hero.
+Keep all admitted catalogue model links available without clicking tabs or scrolling,
+including image models and separately labelled legacy versions. Do not expand the
+interactive six-card initial batch, fetch extra media, or wait for current prices
+to render these links. Deep archives remain accessible through their existing
+family/history routes, not current-model promotion. Tests in
+`examples-pagination-seo`, `examples-price-streaming`, `examples-family-metadata`
+and `models-catalog-streaming` cover these boundaries.
+
+The comparison hub's directory includes every published, locale-indexable pair
+among its available, limited and waitlist engines. Executable selectors keep their
+own narrower availability policy; archives retain their separate historical routes.
+Render all directory anchors in the initial HTML, with the first 24 outside a native
+`details` disclosure and the remainder inside it. Search can filter the list after
+hydration, but discovery must never depend on a load-more handler. Keep prefetch off
+and the directory free of media. `comparisons-directory-discovery.test.ts` exercises
+the actual component, localized links and publication selection.
 
 LTX and Seedance gallery prompt shortcuts use only examples already present on the
 current first SSR page, after its four opening cards. Select distinct exact versions
@@ -283,6 +330,29 @@ guide; this does not establish CDN HIT or field Core Web Vitals gains.
 The fallback plus final discovery also increases encoded HTML; the comparable
 local browser runs showed overlapping LCP ranges rather than an established LCP
 gain. Keep that measured delivery cost visible in the media guide.
+
+## Models catalogue initial rendering
+
+`prepareModelsCatalogCards` retains one set of current marketing range reads and
+exposes only model identity, localized label, score and href before those reads
+settle. The full `buildModelsCatalogCards` API still waits for the exact same
+price-bearing cards. `buildModelsCatalogHeroData` uses only that narrow metadata,
+so the complete hero, top picks and use-case strip keep their existing geometry.
+The catalogue route streams the remaining recommended cards, gallery filters,
+comparison/FAQ sections and native JSON-LD together after exact cards resolve.
+No provisional card prices or cross-request quote cache are introduced.
+
+A viewport-height fallback keeps the footer out of the initial viewport while
+those sections wait. `ModelsCatalogAnchorRestore.client.tsx` handles the two
+route-local delayed anchors (`models-grid`, `recommended`) and cancels restoration
+when the visitor changes navigation or scroll intent. The model-detail restorer
+remains separately owned. Held-price SSR tests cover all/video/image in EN/FR/ES,
+complete final output, unavailable quotes and original rejected errors; DOM tests
+cover anchor restoration and cancellation. These tests establish composition,
+not measured HTTP/cache or browser Core Web Vitals gains. Comparable browser
+geometry, anchor and performance checks are required before accepting a release.
+Once the shell is sent, a later quote rejection cannot change its HTTP status;
+React/Next may retain the pending boundary until its error/retry handling.
 
 ## Refactor Checklist
 

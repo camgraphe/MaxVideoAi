@@ -3,14 +3,24 @@ import type { PricingContext } from '@/lib/pricing-context';
 import { supportsSeedanceInputTariff, validateSeedanceInputTariffDuration } from '@/lib/seedance-input-tariff';
 import { estimateBytePlusBillableTokens } from '@/server/byteplus-accounting';
 import { normalBytePlusSupplierCost } from '@/server/byteplus-normal-cost';
+import { isSeedance25LasInputPricing, quoteSeedance25LasListCost } from '@/server/byteplus-las-tariff';
 import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
 import { buildManualTariffScenario, continuousInputTariffSelector } from '@/lib/pricing-manual-scenario';
 import { validateMonotoneContinuousTariffDomain } from './continuous-tariff-domain';
+import { normalizeSeedancePricingContext } from '@/lib/seedance-option-pricing';
 
 export function seedanceInputTariffBasis(context: PricingContext) {
+  context = normalizeSeedancePricingContext(context);
   if (context.workflowStep || !supportsSeedanceInputTariff(context.engine.id, context.mode ?? '', 'video_input')
     || context.hasVideoInput === false) throw new Error('Unsupported normal Seedance video-input tariff.');
   const maximum = validateSeedanceInputTariffDuration(context.engine.id, context.inputVideoDurationSec ?? NaN);
+  if (isSeedance25LasInputPricing(context.engine.id, context.mode)) {
+    if (!quoteSeedance25LasListCost({ resolution: context.resolution,
+      outputDurationSec: context.durationSec, inputVideoDurationSec: context.inputVideoDurationSec })) {
+      throw new Error('Unsupported LAS Edit supplier options.');
+    }
+    return { maximum, minimumBillableSeconds: context.durationSec, includedInputSeconds: 0 };
+  }
   const estimate = estimateBytePlusBillableTokens({ engineId: context.engine.id,
     durationSec: context.durationSec, resolution: context.resolution, aspectRatio: context.aspectRatio,
     billingInputType: 'video_input', inputVideoDurationSec: Number.MIN_VALUE });

@@ -9,13 +9,12 @@ import { getExampleModelLanding } from '@/lib/examples/modelLanding';
 import { getExampleFamilyPageConfig, getMarketingExampleRouteSlugs } from '@/lib/model-families';
 import { selectFamilyMetadataVideo } from './_lib/family-metadata-video';
 import ExamplesPage from '../page';
+import { getExamplesPaginationSeo, withExamplesPaginationMetadata } from '../_lib/examples-pagination-seo';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || SITE_BASE_URL;
 const EXAMPLE_MODEL_SLUG_SET = new Set(getMarketingExampleRouteSlugs().map((slug) => slug.toLowerCase()));
 const UNBRANDED_EXAMPLE_MODEL_TITLE_SLUGS = new Set(['kling']);
-const DEFAULT_SORT = 'playlist';
 const GALLERY_SLUG_MAP = buildSlugMap('gallery');
-const ALLOWED_MODEL_QUERY_KEYS = new Set(['sort', 'page']);
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -63,25 +62,6 @@ function buildExamplesHref(
   return suffix ? `${basePath}?${suffix}` : basePath;
 }
 
-function shouldNoindex(searchParams: Record<string, string | string[] | undefined>): boolean {
-  const hasUnexpectedParams = Object.keys(searchParams).some((key) => {
-    const normalized = key.toLowerCase();
-    if (ALLOWED_MODEL_QUERY_KEYS.has(normalized)) return false;
-    return !(normalized.startsWith('utm_') || normalized === 'gclid' || normalized === 'fbclid');
-  });
-  const engineParam = Array.isArray(searchParams.engine) ? searchParams.engine[0] : searchParams.engine;
-  const hasEngineParam = typeof engineParam === 'string' && engineParam.trim().length > 0;
-  const sortParam = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
-  const hasNonDefaultSort =
-    typeof sortParam === 'string' && sortParam.trim().length > 0 && sortParam !== DEFAULT_SORT;
-  const pageParam = Array.isArray(searchParams.page) ? searchParams.page[0] : searchParams.page;
-  const hasExplicitPageParam = typeof pageParam === 'string' && pageParam.trim().length > 0;
-  const pageValue = typeof pageParam === 'string' ? Number.parseInt(pageParam, 10) : NaN;
-  const hasPage = Number.isFinite(pageValue) && pageValue > 1;
-  const hasInvalidPageParam = hasExplicitPageParam && (!Number.isFinite(pageValue) || pageValue < 1);
-  return hasUnexpectedParams || hasEngineParam || hasNonDefaultSort || hasPage || hasInvalidPageParam;
-}
-
 export async function generateMetadata(
   props: {
     params: Promise<{ locale: AppLocale; model: string }>;
@@ -104,9 +84,10 @@ export async function generateMetadata(
   const heroVideo = await selectFamilyMetadataVideo(canonical);
   const ogImage = toAbsoluteUrl(heroVideo?.thumbUrl) ?? `${SITE}/og/brand-2026-09-25.png`;
   const familyPageConfig = getExampleFamilyPageConfig(canonical);
-  const noindex = shouldNoindex(searchParams ?? {}) || familyPageConfig?.stage === 'public_noindex';
+  const paginationSeo = getExamplesPaginationSeo(searchParams ?? {});
+  const noindex = !paginationSeo.index || familyPageConfig?.stage === 'public_noindex';
 
-  return buildSeoMetadata({
+  const metadata = buildSeoMetadata({
     locale: params.locale,
     title,
     description,
@@ -119,6 +100,7 @@ export async function generateMetadata(
       follow: true,
     },
   });
+  return withExamplesPaginationMetadata(metadata, params.locale, `/examples/${canonical}`, paginationSeo.canonicalPage);
 }
 
 export default async function ExamplesModelPage(

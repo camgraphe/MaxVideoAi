@@ -35,6 +35,7 @@ export type MarketingNavDropdown = {
   allHref: LocalizedLinkHref;
   allLabelKey: string;
   allLabelFallback: string;
+  allLinkInItems?: boolean;
   intro?: string;
   heading?: string;
 };
@@ -318,7 +319,8 @@ export const MARKETING_NAV_DROPDOWNS: Partial<Record<string, MarketingNavDropdow
     allLabelFallback: 'All models',
   },
   examples: {
-    items: MARKETING_NAV_EXAMPLES,
+    items: [{ key: 'all-examples', label: 'All examples', href: { pathname: '/examples' }, icon: 'cinema', description: 'Videos and prompts from every model.' }, ...MARKETING_NAV_EXAMPLES],
+    allLinkInItems: true,
     heading: 'Watch before you choose.',
     intro: 'Real videos, prompts and model details.',
     sections: [{ key: 'moreExamples', titleKey: 'nav.dropdown.moreExamples', titleFallback: 'More to explore', items: OTHER_EXAMPLES.map(item => ({key:item.slug,label:item.label,href:exampleLink(item.slug),brandId:['sora', 'flux'].includes(item.slug) ? undefined : item.brandId,...(['sora', 'flux'].includes(item.slug) ? {icon:'cinema' as const} : {})})) }],

@@ -56,10 +56,17 @@ test('examples route delegates URL, filter, and gallery helper logic', () => {
   assert.match(pageSource, /from '\.\/_lib\/examples-route-utils'/, 'route should import examples helpers');
   assert.match(pageSource, /from '\.\/_lib\/examples-page-copy'/, 'route should import examples copy helpers');
   assert.match(pageSource, /from '\.\/_lib\/examples-page-data'/, 'route should import examples data builders');
-  assert.match(pageSource, /await buildCurrentExamplesGalleryData\(/, 'server gallery pricing should use its route-local data owner');
+  assert.match(pageSource, /prepareCurrentExamplesGalleryData\(/, 'server gallery preparation should use its route-local data owner');
+  assert.doesNotMatch(pageSource, /await prepareCurrentExamplesGalleryData\(/, 'exact price reads must not gate the poster gallery');
+  assert.match(pageSource, /priceSlots=\{buildExamplesPriceSlots\(initialExamples, \{ currentPrices, locale: appLocale \}\)\}/);
   const currentGallerySource = readFileSync(join(dirname(pagePath), '_lib/current-examples-gallery-data.ts'), 'utf8');
   assert.match(currentGallerySource, /from '@\/server\/current-example-price'/);
-  assert.match(currentGallerySource, /await quoteCurrentExamplePrices\(input\.allVideos\)/);
+  assert.match(currentGallerySource, /quoteCurrentExamplePrices\(input\.allVideos\)/);
+  assert.doesNotMatch(currentGallerySource, /await quoteCurrentExamplePrices/);
+  const priceSlotsSource = readFileSync(join(dirname(pagePath), '_components/examples-gallery-prices.tsx'), 'utf8');
+  assert.match(priceSlotsSource, /<Suspense key=\{id\} fallback=\{null\}>/);
+  assert.match(priceSlotsSource, /formatCurrentExamplePrice\(\(await currentPrices\)\.get\(id\), locale\)/);
+  assert.doesNotMatch(priceSlotsSource, /ExamplesGalleryGrid|buildExamplesGalleryData|use client/);
   assert.doesNotMatch(pageDataSource, /import \{[^}]*quoteCurrentExamplePrices|\bgetDb\(|\bsql`/);
   assert.match(pageSource, /from '\.\/_lib\/examples-page-hrefs'/, 'route should import href builders');
   assert.match(pageSource, /from '\.\/_lib\/examples-page-jsonld'/, 'route should import JSON-LD builders');
@@ -125,13 +132,13 @@ test('examples hub metadata sends visitors to detail pages for current prices', 
 test('Kling examples landing owns motion-focused CTR metadata without a site-name suffix', () => {
   const title = 'Kling AI Video Examples: Prompts, Motion & Product Shots';
   const description =
-    'Watch Kling 3 and Kling 3.0 Omni video examples. Explore prompts, image-to-video and reference workflows, then inspect settings and current price estimates.';
+    'Explore Kling video examples from current and earlier versions. Find the exact model, original prompt, settings and current price estimates.';
   const landing = getExampleModelLanding('en', 'kling');
 
   assert.ok(landing);
   assert.equal(landing.metaTitle, title);
   assert.equal(landing.metaDescription, description);
-  assert.equal(landing.heroTitle, 'Kling AI Video Examples, Prompts & Settings');
+  assert.equal(landing.heroTitle, 'Kling video examples and prompts');
   assert.match(modelPageSource, /UNBRANDED_EXAMPLE_MODEL_TITLE_SLUGS[\s\S]*'kling'/);
 
   const metadata = buildSeoMetadata({
@@ -146,17 +153,17 @@ test('Kling examples landing owns motion-focused CTR metadata without a site-nam
   assert.equal(metadata.description, description);
 });
 
-test('Seedance examples landing leads with Seedance 2.5 while retaining the family context', () => {
-  const title = 'Seedance 2.5 Video Examples, Prompts & Settings | MaxVideoAI';
+test('Seedance family opening stays stable while keeping 2.5 guidance and historical identities', () => {
+  const title = 'Seedance AI Video Examples and Prompts | MaxVideoAI';
   const landing = getExampleModelLanding('en', 'seedance');
   const family = getModelFamilyDefinition('seedance');
 
   assert.ok(landing);
   assert.ok(family);
   assert.equal(landing.metaTitle, title);
-  assert.match(landing.metaDescription, /^Watch Seedance 2\.5 video examples/);
-  assert.equal(landing.heroTitle, 'Seedance 2.5, 2.0, Fast & Mini video examples');
-  assert.match(landing.intro, /^Explore Seedance 2\.5 examples alongside Seedance 2\.0, Fast and Mini/);
+  assert.match(landing.metaDescription, /^Explore Seedance video examples from current and earlier versions/);
+  assert.equal(landing.heroTitle, 'Seedance video examples and prompts');
+  assert.match(landing.intro, /Each Seedance video/);
   assert.match(landing.summary, /^Seedance 2\.5 supports 4–30 second videos up to 1080p/);
   assert.match(landing.summary, /Earlier 1\.5 Pro videos remain labeled, although new 1\.5 generations are closed/);
   assert.doesNotMatch(landing.intro, /every example|all examples.*2\.5/i);
@@ -175,27 +182,25 @@ test('Seedance examples landing leads with Seedance 2.5 while retaining the fami
   ]);
 
   const localizedLeadPatterns = {
-    en: /^Explore Seedance 2\.5/,
-    fr: /^Explorez les exemples Seedance 2\.5/,
-    es: /^Explora ejemplos de Seedance 2\.5/,
+    en: /Each Seedance video/,
+    fr: /historiques de Seedance/,
+    es: /anteriores de Seedance/,
   } as const;
   const localizedMetaTitles = {
-    en: 'Seedance 2.5 Video Examples, Prompts & Settings | MaxVideoAI',
-    fr: 'Exemples Seedance 2.5, prompts et réglages | MaxVideoAI',
-    es: 'Ejemplos de Seedance 2.5, prompts y ajustes | MaxVideoAI',
+    en: 'Seedance AI Video Examples and Prompts | MaxVideoAI',
+    fr: 'Exemples vidéo Seedance et prompts | MaxVideoAI',
+    es: 'Ejemplos de video de Seedance y prompts | MaxVideoAI',
   } as const;
 
   for (const locale of ['en', 'fr', 'es'] as const) {
     const localizedLanding = getExampleModelLanding(locale, 'seedance');
     assert.ok(localizedLanding);
     assert.equal(localizedLanding.metaTitle, localizedMetaTitles[locale]);
-    assert.match(localizedLanding.metaDescription, /Seedance 2\.5/);
-    assert.match(localizedLanding.heroTitle, /Seedance 2\.5/);
+    assert.match(localizedLanding.metaDescription, /Seedance/);
+    assert.match(localizedLanding.heroTitle, /Seedance/);
     assert.match(localizedLanding.intro, localizedLeadPatterns[locale]);
     assert.match(localizedLanding.summary, /^Seedance 2\.5/);
-    assert.match(localizedLanding.intro, /Seedance 2\.0/);
-    assert.match(localizedLanding.intro, /Fast/);
-    assert.match(localizedLanding.intro, /Mini/);
+    assert.match(localizedLanding.heroSubtitle, /earlier|histor|anteriores/i);
     assert.match(
       [localizedLanding.intro, localizedLanding.summary, localizedLanding.strengthsLimits].join(' '),
       /1080p/i,
@@ -401,10 +406,20 @@ test('public_routes_keep_seo_and_media_owners', () => {
   for (const source of [pageSource, modelPageSource, pageViewSource, jsonLdSource]) {
     assert.doesNotMatch(source, /playlists\/destinations|curation-service|saveCuration|loadPlaylistDestinations/);
   }
-  const watch = readFileSync(join(root, 'frontend/app/(core)/video/[id]/page.tsx'), 'utf8');
+  const watch = readFileSync(join(root, 'frontend/app/(public-watch)/video/[id]/page.tsx'), 'utf8');
   assert.match(watch, /getVideoWatchPageDataById/);
   const card = readFileSync(join(root, 'frontend/components/examples/ExampleGalleryCard.tsx'), 'utf8');
   assert.match(card, /useExampleCardPlayback/);
+});
+
+test('version prompt links follow the complete gallery and pagination', () => {
+  const pagination = pageViewSource.indexOf('<ExamplesPaginationNav');
+  const editorial = pageViewSource.indexOf('<div className={styles.editorial}>');
+  const prompts = pageViewSource.indexOf('<ExamplesPromptStarters');
+  assert.ok(pagination > pageViewSource.indexOf('<ExamplesGallerySection'));
+  assert.ok(editorial > pagination);
+  assert.ok(prompts > editorial, 'version links belong with the guidance below all videos');
+  assert.doesNotMatch(pageViewSource, /openingDetails=/, 'no duplicated prompt block may interrupt browsing');
 });
 
 test('family metadata delegates preview selection while keeping route SEO ownership', () => {

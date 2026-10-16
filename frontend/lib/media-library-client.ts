@@ -7,6 +7,7 @@ export type MediaLibraryAsset = {
   url: string;
   thumbUrl?: string | null;
   previewUrl?: string | null;
+  playbackVideoUrl?: string | null;
   kind?: MediaLibraryAssetKind;
   mime?: string | null;
   width?: number | null;

@@ -14,8 +14,11 @@ async function deliver(req: NextRequest, props: RouteProps, method: 'GET' | 'HEA
   const job = await readOwnedCompletedTimelineExport({userId: context.userId,exportId});
   if (!job) return new Response(null,{status: 404,headers});
   try {
+    const downloadFilename = method === 'GET' && req.nextUrl.searchParams.get('download') === '1'
+      ? `${(job.project_name || 'MaxVideoAI Export').slice(0,150)}.mp4` : undefined;
     const location = await createTimelineExportReadUrl({
       url: job.output_url!,userId: context.userId,requestOrigin: req.nextUrl.origin,method,
+      ...(downloadFilename ? {downloadFilename} : {}),
     });
     // 307 preserves method and Range; a fresh request to this stable URL renews access.
     return new Response(null,{status: 307,headers: {...headers,Location: location}});

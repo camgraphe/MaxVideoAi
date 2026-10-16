@@ -263,6 +263,7 @@ const CANONICAL_SETTING_BY_FIELD_ID: Readonly<Record<string, string>> = Object.f
   multi_prompt: 'multiPrompt',
   negative_prompt: 'negativePrompt',
   output_format: 'outputFormat',
+  return_last_frame: 'returnLastFrame',
   prompt_expansion_mode: 'promptExpansionMode',
   quality: 'quality',
   retake_mode: 'retakeMode',
@@ -405,7 +406,11 @@ export function projectAgentModelModeDetails(
       max: outputCount.max,
       default: outputCount.defaultValue,
     }),
-    settings: Object.freeze([...projectBaseSettings(baseControls), ...projectSettings(candidate.engine, mode)]),
+    settings: Object.freeze([...projectBaseSettings(baseControls), ...projectSettings(candidate.engine, mode),
+      ...(candidate.engine.id.startsWith('seedance-2-') && caps.duration && 'options' in caps.duration && caps.duration.options.includes('auto')
+        ? [{key: 'durationOption', type: 'enum' as const, required: false, values: Object.freeze(['auto']), min: null, max: null, default: null}]
+        : []),
+    ]),
     ...(imageSize ? { imageSize } : {}),
     references: projectReferences(candidate.engine, mode),
     ...(referenceRequirement ? { referenceRequirement } : {}),

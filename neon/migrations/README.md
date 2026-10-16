@@ -137,3 +137,13 @@ The new production policy requires its own `studio-credits-2026-10-05-v2` approv
 Retain this additive financial evidence on rollback. Qualification is local
 disposable PostgreSQL only; no hosted migration was run for this implementation.
 See `docs/engineering/studio-assistance-economics.md`.
+
+## Studio Luna reasoning (migration 67)
+
+Apply `67_studio_luna_reasoning.sql` explicitly after migration 65 and before
+deploying the v2 task runtime. New Luna tasks use high reasoning with a 6,000
+output-token allowance. The migration admits both task resource policy versions
+and checks newly inserted v2 profiles; it does not update existing task snapshots,
+credit lots, tariffs, wallets or receipts. Old workers and v1 resumptions remain
+compatible. Enqueue readiness requires the new guard for v2 requests. Validate
+the ordered 65 → 67 sequence and replay on disposable PostgreSQL 17 before release.

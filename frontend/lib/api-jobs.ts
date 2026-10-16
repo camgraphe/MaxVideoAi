@@ -25,7 +25,7 @@ function normalizeJobFromApi(job: Job): Job {
   const hasImageMedia =
     Array.isArray(job.renderIds) && job.renderIds.some((value) => typeof value === 'string' && value.length);
   const hasMedia = Boolean(job.videoUrl || job.audioUrl) || hasImageMedia;
-  const normalizedStatus = normalizeJobStatus(job.status ?? null, hasMedia);
+  const normalizedStatus = normalizeJobStatus(job.status ?? null, hasMedia, job.outputPreparationState);
   const status: Job['status'] =
     normalizedStatus ?? (hasMedia ? 'completed' : 'pending');
   const progress = normalizeJobProgress(job.progress, status as 'pending' | 'completed' | 'failed', hasMedia);
@@ -211,7 +211,7 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
       if (!detail || !detail.jobId) return;
 
       const normalizedStatus = typeof detail.status === 'string' ? detail.status.toLowerCase() : '';
-      if (normalizedStatus === 'completed' || normalizedStatus === 'failed') {
+      if (normalizedStatus === 'completed' || normalizedStatus === 'failed' || detail.outputPreparationState === 'manual_review') {
         clearStatusRetry(detail.jobId);
       } else {
         const meta = getStatusRetryMeta(detail.jobId);
@@ -246,6 +246,9 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
                     : job.progress,
                 videoUrl: detail.videoUrl ?? job.videoUrl,
                 previewVideoUrl: detail.previewVideoUrl ?? job.previewVideoUrl,
+                playbackVideoUrl: detail.playbackVideoUrl ?? job.playbackVideoUrl,
+                outputPreparationState: detail.outputPreparationState,
+                lastFrameUrl: detail.lastFrameUrl ?? job.lastFrameUrl,
                 audioUrl: detail.audioUrl ?? job.audioUrl,
                 thumbUrl: detail.thumbUrl ?? job.thumbUrl,
                 finalPriceCents: detail.finalPriceCents ?? job.finalPriceCents,
@@ -416,9 +419,9 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
       if (!jobId) return;
       seen.add(jobId);
       const normalizedStatus =
-        normalizeJobStatus(job.status ?? null, jobHasRenderableMedia(job)) ??
+        normalizeJobStatus(job.status ?? null, jobHasRenderableMedia(job), job.outputPreparationState) ??
         (jobHasRenderableMedia(job) ? 'completed' : 'pending');
-      if (normalizedStatus === 'completed' || normalizedStatus === 'failed') {
+      if (normalizedStatus === 'completed' || normalizedStatus === 'failed' || job.outputPreparationState === 'manual_review') {
         clearStatusRetry(jobId);
       } else if (normalizedStatus === 'pending') {
         const meta = getStatusRetryMeta(jobId);

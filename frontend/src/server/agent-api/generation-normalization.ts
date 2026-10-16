@@ -66,6 +66,9 @@ const SAFE_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]*$/;
 const SAFE_SETTING_KEY_PATTERN = /^[A-Za-z][A-Za-z0-9._-]*$/;
 const UNSAFE_CONTROL_CHARACTER_PATTERN = /[\u0000-\u001f\u007f-\u009f]/u;
 const VIDEO_SETTING_KEYS = new Set([
+  'outputFormat',
+  'returnLastFrame',
+  'watermark',
   'aspectRatio',
   'audio',
   'cameraFixed',
@@ -76,6 +79,7 @@ const VIDEO_SETTING_KEYS = new Set([
   'cropStartX',
   'cropStartY',
   'durationSec',
+  'durationOption',
   'documentUrl',
   'enablePromptExpansion',
   'fps',

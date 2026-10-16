@@ -10,6 +10,7 @@ export const enPayAsYouGoContent = {
   common: {
     aiVideoModelAlt: 'AI video model',
     liveQuote: 'Live quote',
+    audioOff: 'Audio off',
     audioIncluded: 'Audio included',
     examplePrefix: 'Example',
   },
@@ -48,16 +49,16 @@ export const enPayAsYouGoContent = {
     items: [
       { question: 'Where can I test AI video models without subscription?', answer: 'Use MaxVideoAI to compare LTX 2.5, Wan 3, Grok Imagine, FLUX.3, Seedance, Kling, Google Veo and other models with pay-as-you-go credits instead of a recurring plan.' },
       { question: 'Which AI video platform shows prices before generation?', answer: 'MaxVideoAI shows the estimated generation price before you launch a render, including model, duration, resolution, and audio choices.' },
-      { question: 'Which pay-as-you-go AI video model should I test first?', answer: 'Start from the workflow: LTX 2.5 for fast or Pro production, Wan 3 for current Alibaba routes, Grok Imagine for prompt and reference workflows, or FLUX.3 for controllable frame-based work. Then compare the exact quote with Seedance, Kling and Google Veo.' },
+      { question: 'Which pay-as-you-go AI video model should I test first?', answer: "Start with your task: text-to-video, image-to-video or a supported video-input workflow. Compare suitable models using examples and the same settings, then review the exact quote before generating." },
       { question: 'Where can I compare current AI video model families in one place?', answer: 'MaxVideoAI groups LTX 2.5, Wan 3, Grok Imagine, FLUX.3, Seedance, Kling, Google Veo and other engines in one workspace so you can compare workflows, limits, and price before choosing.' },
       { question: 'What makes a good pay-as-you-go AI video generator?', answer: 'A good pay-as-you-go setup lets you test current models, see prices before generation, switch engines per project, and avoid charges for failed provider renders.' },
     ],
   },
   modelTesting: {
     header: {
-      eyebrow: 'Model order',
-      title: 'Recommended testing order for pay-as-you-go AI video',
-      intro: 'Choose by workflow: compare LTX 2.5 Pro and Fast, Wan 3 Prime and standard, Grok Imagine Video 1.5, and FLUX.3 standard and Draft before checking the established Seedance, Kling, and Google Veo alternatives.',
+      eyebrow: "Model choices",
+      title: "Choose a model for your next test",
+      intro: "Start with the material you have and the result you need. Check supported inputs, duration, resolution and audio, then compare the quote. The models below offer different workflows; their order is not a quality or price ranking.",
     },
     footer: 'Happy Horse 1.1 and Seedance 2 Mini are new enough that they should be tested directly instead of judged only by older model rankings.',
     models: {
@@ -65,7 +66,7 @@ export const enPayAsYouGoContent = {
       'kling-3-turbo-pro': { family: 'Kling 3.0 Turbo', title: 'Kling 3.0 Turbo Pro for detailed 1080p output', body: 'Choose Turbo Pro for polished 1080p motion, product detail, image guidance, and multi-shot sequences.' },
       'kling-3-turbo-standard': { family: 'Kling 3.0 Turbo', title: 'Kling 3.0 Turbo Standard for efficient 720p drafts', body: 'Choose Turbo Standard for faster 720p iteration, coherent motion, image guidance, and multi-shot testing.' },
       'minimax-h3-max': { family: 'MiniMax H3', title: 'MiniMax H3 Max for premium visual finish', body: 'Choose H3 Max for high visual finish, prompt adherence, native audio, and focused text- or image-to-video production.' },
-      'seedance-2-5': { family: 'Seedance 2.5', title: 'Seedance 2.5 for 30-second cinematic video', body: 'Review Seedance 2.5 first for cinematic, image-to-video, reference-guided, multi-shot, product, and UGC workflows, then keep Seedance 2.0 in the shortlist when 4K output is required.' },
+      'seedance-2-5': { family: 'Seedance 2.5', title: 'Seedance 2.5 for 30-second cinematic video', body: 'Consider Seedance 2.5 for cinematic, image-to-video, reference-guided, multi-shot, product, and UGC workflows, then keep Seedance 2.0 in the shortlist when 4K output is required.' },
       'seedance-2-0': { family: 'Seedance 2', title: 'Seedance 2.0 for 4K Seedance delivery', body: 'Keep Seedance 2.0 as the alternative for shorter native-audio and reference workflows when the final Seedance output must be 4K.' },
       'kling-3-pro': { family: 'Kling', title: 'Kling as the solid motion-control choice', body: 'Use Kling when you want dependable camera motion, product shots, elements, and image-guided video generation without buying a subscription first.' },
       'veo-3-1': { family: 'Google Veo', title: 'Google Veo as the cinematic-quality choice', body: 'Compare Veo variants when prompt interpretation, cinematic polish, audio options, or Google video routes matter more than the lowest draft price.' },
@@ -133,7 +134,7 @@ export const enPayAsYouGoContent = {
       { title: 'Choose a video engine', body: 'Select the model that fits the brief instead of being locked into one subscription catalog.', icon: 'engine' },
       { title: 'Review the live quote', body: 'See price, duration, resolution, audio, and workflow choices before generation.', icon: 'preview' },
       { title: 'Launch the generation', body: 'Run a text-to-video, image-to-video, or video workflow only after the cost is visible.', icon: 'video' },
-      { title: 'Spend on success', body: 'Completed renders consume credits. Provider failures are refunded or not charged when no usable result returns.', icon: 'refund' },
+      { title: 'Spend on success', body: 'Completed renders consume credits, including results that miss your creative intent. Technical failures without an output are not charged or are refunded in credits.', icon: 'refund' },
     ],
   },
   mcpPlanning: {
@@ -209,12 +210,18 @@ export const enPayAsYouGoContent = {
       intro: 'These examples are shortcuts from the current pricing hub. They are useful for orientation, while the app quote is the final price before generation.',
     },
     settingsLabel: 'Example settings',
+    quoteReminder: "Opens this model with your app settings, which may differ from this example. Match duration, resolution and audio, then check the exact quote before generating.",
+    budgetTemplate: "Planning three attempts? At an unchanged quote of {unitPrice}, three completed generations would use {totalPrice} in media credits.",
+    budgetContext: "LTX 2.5 Pro · 10s 720p · audio off.",
+    budgetCaveat: "This is a budget illustration, not a promise that three attempts will produce the result you want. Media credits used are separate from the minimum top-up, which starts at $10. Changed settings or prices require a new quote.",
+    studioAssistance: "Using Studio? Sol uses included or purchased assistance credits. Media generation has its own quote. Review both when planning your budget.",
+    studioLinkLabel: "Open Studio",
     labels: {
       'gemini-omni-flash': 'Gemini Omni Flash 1.1 multimodal test',
       'kling-3-turbo-pro': 'Kling 3.0 Turbo Pro 1080p test',
       'kling-3-turbo-standard': 'Kling 3.0 Turbo Standard draft',
       'minimax-h3-max': 'MiniMax H3 Max premium test',
-      'ltx-2-5-pro': 'LTX 2.5 Pro production test',
+      'ltx-2-5-pro': "LTX 2.5 Pro — short video test",
       'wan-3-prime': 'Wan 3 Prime premium test',
       'grok-imagine-video-1-5': 'Grok Imagine prompt test',
       'flux-3': 'FLUX.3 controlled-motion test',
@@ -229,12 +236,12 @@ export const enPayAsYouGoContent = {
   refundPolicy: {
     header: {
       title: 'What happens if a generation fails?',
-      intro: 'MaxVideoAI is designed around completed-render billing. Completed renders consume credits. Failed provider jobs are refunded or not charged when the provider does not return a usable result.',
+      intro: "Each completed generation uses credits. A completed result that does not meet your creative expectations is different from a technical failure. Failed generations are automatically recredited.",
     },
     bullets: [
       { icon: 'preview', body: 'You review the price before launching a generation.' },
       { icon: 'credits', body: 'Credits are consumed for completed renders.' },
-      { icon: 'refund', body: 'Provider failures are refunded or not charged when the provider does not return usable output.' },
+      { icon: 'refund', body: "Credits for technically failed generations are automatically returned to your balance." },
     ],
   },
   faq: {
@@ -242,16 +249,16 @@ export const enPayAsYouGoContent = {
     items: [
       { question: 'Do I need a subscription to generate AI videos?', answer: 'No. MaxVideoAI supports pay-as-you-go credits so you can generate when you need video output.' },
       { question: 'Can I see the AI video price before generation?', answer: 'Yes. The app shows a live quote before generation based on model, duration, resolution, audio, and workflow settings.' },
-      { question: 'Which AI video model should I test first?', answer: 'Match the workflow first: LTX 2.5, Wan 3, Grok Imagine, and FLUX.3 cover different speed, reference, audio, and frame-control needs. Compare their live quotes with Seedance, Kling, and Google Veo before generating.' },
-      { question: 'What happens if a render fails?', answer: 'Completed renders consume credits. Failed provider jobs are refunded or not charged when the provider does not return a usable result.' },
+      { question: 'Which AI video model should I test first?', answer: "Start with your task: text-to-video, image-to-video or a supported video-input workflow. Compare suitable models using examples and the same settings, then review the exact quote before generating." },
+      { question: 'What happens if a render fails?', answer: "Each completed generation uses credits. A completed result that does not meet your creative expectations is different from a technical failure. Failed generations are automatically recredited." },
       { question: 'Is this the same as the pricing page?', answer: 'No. This page answers pay-as-you-go and no-subscription intent directly. The pricing page remains the detailed model and scenario matrix.' },
     ],
   },
   showcase: {
     section: {
       eyebrow: 'Real pay-as-you-go outputs',
-      title: 'Example videos with model and price context',
-      intro: 'A short strip from public MaxVideoAI renders, showing the model, duration, and recorded render price when available.',
+      title: "Example videos with model and duration",
+      intro: "Public examples with their model and duration. Open an example for its available generation details, then check a current quote for your own settings.",
       preview: 'Preview',
       result: 'View prompt and result',
       cta: 'Test your prompt with a live quote',
@@ -259,7 +266,6 @@ export const enPayAsYouGoContent = {
       engineImageAltSuffix: 'AI video model',
     },
     runtime: {
-      priceUnavailable: 'Price shown first',
       defaultEngineLabel: 'AI video model',
       defaultTitleEngineLabel: 'AI video',
       defaultTitleTemplate: '{engine} example render',

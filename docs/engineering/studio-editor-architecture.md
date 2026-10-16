@@ -78,7 +78,7 @@ When required model/source facts are known, prepare by Response 3; optional `pro
 
 The visible timeline edits canonical sequence state with revision and ownership checks. It reuses pure frame-aware operations for clipping, source bounds and linked audio. Library selection does not automatically insert every new generation into the timeline. Preview media uses transient stored grants; signed URLs and private originals must not leak into journal/tool projections or saved command payloads.
 
-`useConversationTimeline` owns periodic preview refresh. Its polling waits for all current-project reads to settle, including a forced replacement for a refused grant that still appears valid to the browser clock. Explicit refreshes, revisioned edits and lifecycle invalidations retain their epoch ordering. Read counts belong to each project path and are released in `finally`, so failed or obsolete reads cannot release another project's polling gate. `tests/studio-conversation-timeline-refresh-dom.test.ts` exercises the real hook with deferred responses; the connected montage browser test retains separate preview/new-grant diagnostic flags without exposing signed URLs.
+`useConversationTimeline` owns periodic preview refresh. Its polling waits for all current-project reads to settle, including a forced replacement for a refused grant that still appears valid to the browser clock. Explicit refreshes, revisioned edits and lifecycle invalidations retain their epoch ordering. Pending grant replacements belong to the project path and survive superseded or failed reads until the winning successful canonical response replaces those grants. A late journal response must not lose that renewal intent; the obsolete response still cannot reset canonical revisions. Replacement sources and decoder retry keys commit atomically in the hook; completing an obsolete or failed request never retries the refused source. Grant retention and retry keys never cross project boundaries. Read counts belong to each project path and are released in `finally`, so failed or obsolete reads cannot release another project's polling gate. `tests/studio-conversation-timeline-refresh-dom.test.ts` exercises the real hook with deferred responses; the connected montage browser test deliberately delivers the initial journal while renewal is pending, tests both response orders with the old URL persistently refused, and retains separate preview/new-grant diagnostic flags without exposing signed URLs.
 
 The 2026-10-06 branch candidate adds bounded atomic assembly (up to 12 insertions)
 and source-in frames to the same edit owner. Explicit Sol media analysis is a
@@ -87,6 +87,16 @@ generation completion or polling. See [Studio media analysis](studio-media-analy
 for qualified profiles, shared-credit recovery and activation prerequisites.
 
 Exports use the canonical worker contract and backend pricing/idempotency. The browser estimates, confirms, polls and recovers; it does not manufacture completed MP4s. Completed exports and reusable library media remain account artifacts even if a project is later deleted.
+
+MP4 activation and worker provenance are documented in
+[Studio MP4 exports](../deployment/studio-timeline-exports.md). Completed chat
+cards offer an explicit download through the same owned stable media route as
+playback. `download=1` requests an attachment named by the saved export; the
+storage signer sanitizes that filename. Ordinary GET/HEAD preview grants and
+Range delivery retain their existing behavior. Polling, quota and idempotency
+reads use migrated tables without schema bootstrap; reservation and worker
+initialization retain their existing ownership. The dated availability checks
+above remain historical evidence, not an assertion about a later activation.
 
 ## Retired entry points
 

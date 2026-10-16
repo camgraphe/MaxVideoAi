@@ -1,7 +1,7 @@
 import type {StudioTaskExecution} from "./tasks/execution";
 import {customerDisplayPrice} from '@/lib/customer-price-presentation';
 import type {StudioExportDependencies} from './conversation-export-command';
-import {recordedStudioOutputDuration} from './conversation-quote-facts';
+import {recordedStudioOutputDuration,recordedStudioSourceVideoOutput} from './conversation-quote-facts';
 import {projectStudioQuoteDirections,readStudioHistoricalEstimates} from './conversation-history-facts';
 import { getBaseEngineIncludingHidden } from "@/lib/engines";
 import { z } from "zod";
@@ -236,6 +236,8 @@ export function createImageConversationService(
             summary: quote.request,
             ...(quote.request.surface==='video'&&recordedStudioOutputDuration(quote.pricingSnapshot)!==undefined
               ? {outputDurationSec:recordedStudioOutputDuration(quote.pricingSnapshot)} : {}),
+            ...(quote.request.surface==='video'&&recordedStudioSourceVideoOutput(quote.pricingSnapshot)
+              ? {sourceVideoOutput:recordedStudioSourceVideoOutput(quote.pricingSnapshot)} : {}),
             price: customerDisplayPrice(quote.priceCents,quote.currency),
             fundingMode: "wallet",
             confirmationRequired: true,

@@ -236,9 +236,16 @@ test('marketing footer keeps crawlable Best-For hub and priority child links', (
 test('examples navigation exposes discoverable families without promoting archives', () => {
   const examplesDropdown = MARKETING_NAV_DROPDOWNS.examples;
   assert.equal(examplesDropdown?.desktopColumns, 2);
-  assert.deepEqual(examplesDropdown?.items.map((item) => item.key), ['ltx', 'kling', 'seedance', 'wan', 'veo', 'hailuo', 'happy-horse']);
+  assert.deepEqual(examplesDropdown?.items.map((item) => item.key), ['all-examples', 'ltx', 'kling', 'seedance', 'wan', 'veo', 'hailuo', 'happy-horse']);
+  assert.equal(hrefPath(examplesDropdown?.items[0].href), '/examples');
+  assert.equal(examplesDropdown?.allLinkInItems, true, 'the root gallery is a primary entry instead of a duplicate heading action');
+  for (const locale of ['en', 'fr', 'es']) {
+    const copy = JSON.parse(readFileSync(`frontend/messages/${locale}.json`, 'utf8')).nav.dropdown;
+    assert.equal(copy.examples.items['all-examples'], copy.allExamples);
+    assert.match(copy.examples.descriptions['all-examples'], /prompt/i);
+  }
   const allEntries = [...examplesDropdown!.items, ...examplesDropdown!.sections!.flatMap(section => section.items)];
-  assert.deepEqual(allEntries.map(item => item.key).sort(), ['veo','seedance','ltx','kling','wan','happy-horse','luma','grok','flux','pika','hailuo'].sort());
+  assert.deepEqual(allEntries.map(item => item.key).sort(), ['all-examples','veo','seedance','ltx','kling','wan','happy-horse','luma','grok','flux','pika','hailuo'].sort());
   assert.equal(new Set(allEntries.map(item => item.key)).size, allEntries.length);
   assert.match(marketingDesktopNavSource, /dropdown\.desktopColumns === 2/);
   assert.match(marketingDesktopNavSource, /two-columns/);

@@ -13,13 +13,14 @@ import type {
   PreviewMode,
   UploadedAsset,
 } from '../_lib/upscale-workspace-types';
+import { getUpscaleUploadErrorMessage } from '../_lib/upscale-upload-errors';
 
 interface UseUpscaleSourceMediaParams {
   changeMediaType: (next: UpscaleMediaType) => void;
   copy: {
     library: string;
-    uploadFailed: string;
   };
+  locale: string;
   mediaType: UpscaleMediaType;
   mediaUrl: string;
   setError: Dispatch<SetStateAction<string | null>>;
@@ -36,6 +37,7 @@ interface UseUpscaleSourceMediaParams {
 export function useUpscaleSourceMedia({
   changeMediaType,
   copy,
+  locale,
   mediaType,
   mediaUrl,
   setError,
@@ -93,14 +95,14 @@ export function useUpscaleSourceMedia({
         setPreviewMode('source');
         setMessage(null);
       } catch (uploadError) {
-        setError(uploadError instanceof Error ? uploadError.message : copy.uploadFailed);
+        setError(getUpscaleUploadErrorMessage(uploadError, nextMediaType, locale));
       } finally {
         setUploading(false);
       }
     },
     [
       changeMediaType,
-      copy.uploadFailed,
+      locale,
       mediaType,
       setError,
       setMediaUrl,

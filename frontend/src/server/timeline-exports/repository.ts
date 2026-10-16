@@ -55,7 +55,6 @@ export function timelineExportIdFromIdempotencyKey(idempotencyKey: string, userI
 }
 
 export async function countUsedFreeTimelineExports(userId: string, executor: QueryExecutor = { query }): Promise<number> {
-  await ensureTimelineExportSchema();
   const rows = await executor.query<{ count: string | number }>(
     `SELECT COUNT(*)::int AS count
        FROM app_timeline_exports
@@ -71,7 +70,6 @@ export async function readTimelineExportJobByIdempotencyKey(params: {
   idempotencyKey: string;
 }): Promise<TimelineExportJobRecord | null> {
   assertTimelineExportIdempotencyKey(params.idempotencyKey);
-  await ensureTimelineExportSchema();
   const rows = await query<TimelineExportJobRecord>(
     `SELECT *
        FROM app_timeline_exports
@@ -136,7 +134,6 @@ export async function readTimelineExportJob(params: {
   userId: string;
   exportId: string;
 }): Promise<TimelineExportJobRecord | null> {
-  await ensureTimelineExportSchema();
   const rows = await query<TimelineExportJobRecord>(
     `SELECT * FROM app_timeline_exports WHERE id = $1 AND user_id = $2 LIMIT 1`,
     [params.exportId, params.userId]
@@ -201,7 +198,7 @@ export async function updateTimelineExportProgress(params: {
         SET progress = $2,
             message = $3,
             updated_at = NOW()
-      WHERE id = $1`,
+      WHERE id = $1 AND status = 'rendering'`,
     [params.exportId, Math.max(0, Math.min(99, Math.round(params.progress))), params.message]
   );
 }

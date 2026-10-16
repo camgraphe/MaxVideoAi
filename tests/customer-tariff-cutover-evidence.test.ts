@@ -2,14 +2,40 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { collectCustomerTariffCutoverCheckpoints, cutoverDigest, assertCustomerTariffCutoverRelease,
   projectInitialCustomerTariffCutoverCells,type CustomerTariffCutoverRelease } from '../frontend/server/pricing/customer-tariff-cutover-evidence';
+import { collectSellableManualTariffCoverage } from '../frontend/lib/pricing-audit/manual-tariff-coverage';
+import { ENV } from '../frontend/src/lib/env';
 
 test('cutover derives all ordinary, workflow and real input duration checkpoints with unique identities', () => {
   const cases = collectCustomerTariffCutoverCheckpoints();
   assert.equal(cases.filter(row => row.kind === 'ordinary').length, 20122);
   assert.equal(cases.filter(row => row.kind === 'local_workflow').length, 324);
   assert.equal(cases.filter(row => row.kind === 'input_stress').length, 6372);
+  assert.equal(cases.length, 26818);
   assert.equal(new Set(cases.map(row => row.key)).size, cases.length);
+  assert.equal(cases.filter(row => row.currentStatus === 'unavailable').length, 486);
+  assert.ok(cases.filter(row => row.currentStatus === 'unavailable').every(row => row.scenario.selector.engineId === 'seedance-2-5'
+    && row.scenario.selector.mode === 'v2v' && row.scenario.selector.resolution === '1080p'));
   assert.ok(cases.some(row => row.kind === 'input_stress' && row.scenario.context.inputVideoDurationSec === 30));
+});
+
+test('transport coverage keeps every historical checkpoint and admits 1080p only for ModelArk normal Edit', () => {
+  const previous = ENV.SEEDANCE_2_5_EDIT_TRANSPORT;
+  try {
+    ENV.SEEDANCE_2_5_EDIT_TRANSPORT = 'las';
+    const las = collectCustomerTariffCutoverCheckpoints();
+    assert.ok(collectSellableManualTariffCoverage({ modelId: 'seedance-2-5', mode: 'v2v' }).scenarios
+      .every(s => s.context.resolution !== '1080p'));
+    ENV.SEEDANCE_2_5_EDIT_TRANSPORT = 'modelark';
+    const modelark = collectCustomerTariffCutoverCheckpoints();
+    assert.deepEqual(modelark.map(row => row.key).sort(), las.map(row => row.key).sort());
+    assert.equal(modelark.filter(row => row.currentStatus === 'unavailable').length, 0);
+    assert.ok(collectSellableManualTariffCoverage({ modelId: 'seedance-2-5', mode: 'v2v' }).scenarios
+      .some(s => s.context.resolution === '1080p'));
+    assert.ok(modelark.filter(row => row.kind === 'local_workflow').every(row => row.scenario.context.mode === 't2v'),
+      'The historical initializer must not author independent multimodal stage prices.');
+  } finally {
+    ENV.SEEDANCE_2_5_EDIT_TRANSPORT = previous;
+  }
 });
 
 test('initial projection archives obsolete no-duration Seedance staging and refuses unrelated unused prices', () => {

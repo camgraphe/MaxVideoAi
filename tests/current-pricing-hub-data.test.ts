@@ -57,3 +57,20 @@ test('Pricing never retains literal audio or tool prices when their effective so
     assert.doesNotMatch(row.proOutput, /\d+[.,]\d{2}/);
   }
 });
+
+test('current video quote notes describe the submitted audio setting, including toggles without a price discount', async () => {
+  for (const [locale, audioOff] of [['en', 'Audio off'], ['fr', 'Audio désactivé'], ['es', 'Audio desactivado']] as const) {
+    const inputs: Array<{ modelId: string; audio?: boolean }> = [];
+    const data = await buildCurrentPricingHubData(locale, async (input) => {
+      inputs.push(input);
+      return { status: 'exact', amountCents: 156, currency: 'USD', revision: 'current', scenarioLabel: 'test' };
+    });
+    const ltx = data.video.rows.find(row => row.id === 'ltx-2-5-pro')!;
+    assert.ok(inputs.some(input => input.modelId === ltx.id && input.audio === false));
+    assert.equal(ltx.quotes['10s-720p'].note, audioOff);
+    assert.equal(ltx.quotes['5s-720p'].status, 'unsupported');
+    const fixedAudio = data.video.rows.find(row => row.id === 'kling-3-turbo-pro')!;
+    assert.ok(inputs.filter(input => input.modelId === fixedAudio.id).every(input => input.audio === undefined));
+    assert.match(fixedAudio.quotes['8s-1080p'].note ?? '', /audio incl/);
+  }
+});

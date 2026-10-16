@@ -1,4 +1,6 @@
+import { withSeedanceModelArkOptions, SEEDANCE_MODELARK_IMAGE_FORMATS } from '../../../lib/seedance-modelark-options';
 import type { EngineCaps } from '../../../types/engines';
+import { getBytePlusSeedanceModeResolutions } from '../../../lib/byteplus-mode-capabilities';
 import {
   BYTEPLUS_SEEDANCE_2_5_MAX_AUDIO,
   BYTEPLUS_SEEDANCE_2_5_MAX_IMAGES,
@@ -15,14 +17,14 @@ import {
 
 const DURATION_OPTIONS = Array.from({ length: 27 }, (_, index) => index + 4);
 const RESOLUTIONS: EngineCaps['resolutions'] = ['480p', '720p', '1080p'];
-const ASPECT_RATIOS: EngineCaps['aspectRatios'] = ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'];
-const IMAGE_FORMATS = ['jpg', 'jpeg', 'png', 'webp'];
+const ASPECT_RATIOS: EngineCaps['aspectRatios'] = ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'];
+const IMAGE_FORMATS = SEEDANCE_MODELARK_IMAGE_FORMATS;
 const VIDEO_FORMATS = ['mp4', 'mov'];
 const AUDIO_FORMATS = ['mp3', 'wav'];
 type Seedance25Mode = keyof typeof BYTEPLUS_SEEDANCE_2_5_ENDPOINTS;
 const SEEDANCE_2_5_MODES = BYTEPLUS_SEEDANCE_2_5_MODES as Seedance25Mode[];
 
-const SEEDANCE_2_5_ENGINE: EngineCaps = {
+const SEEDANCE_2_5_ENGINE: EngineCaps = withSeedanceModelArkOptions({
   id: 'seedance-2-5',
   label: 'Seedance 2.5',
   provider: 'ByteDance',
@@ -187,6 +189,7 @@ const SEEDANCE_2_5_ENGINE: EngineCaps = {
       modes: ['i2v', 'ref2v', 'v2v', 'extend'],
     },
     constraints: {
+      ownedAssetModes: ['v2v'],
       supportedFormats: [...IMAGE_FORMATS, ...VIDEO_FORMATS, ...AUDIO_FORMATS],
       maxImageSizeMB: 30,
       minImageSidePx: 300,
@@ -213,12 +216,12 @@ const SEEDANCE_2_5_ENGINE: EngineCaps = {
   },
   availability: 'available',
   brandId: 'bytedance',
-};
+});
 
 function seedance25Mode(mode: Seedance25Mode): RawFalEngineEntry['modes'][number] {
-  const acceptsImages = mode === 'i2v' || mode === 'ref2v' || mode === 'v2v';
+  const acceptsImages = mode !== 't2v';
   const uploadsVideo = mode === 'ref2v' || mode === 'v2v' || mode === 'extend';
-  const uploadsAudio = mode === 'ref2v' || mode === 'v2v';
+  const uploadsAudio = mode === 'ref2v' || mode === 'v2v' || mode === 'extend';
   const acceptedFormats = [
     acceptsImages ? `images: ${IMAGE_FORMATS.join(', ')}` : null,
     uploadsVideo ? `video: ${VIDEO_FORMATS.join(', ')}` : null,
@@ -230,8 +233,8 @@ function seedance25Mode(mode: Seedance25Mode): RawFalEngineEntry['modes'][number
     t2v: 'Create 4-30 second videos up to 1080p in landscape, square, or vertical formats with generated audio available.',
     i2v: 'Animate one start image with an optional end image; 4-30 seconds, up to 1080p, landscape, square, or vertical, with generated audio.',
     ref2v: `Use up to ${BYTEPLUS_SEEDANCE_2_5_MAX_IMAGES} images, ${BYTEPLUS_SEEDANCE_2_5_MAX_VIDEOS} video clips, and ${BYTEPLUS_SEEDANCE_2_5_MAX_AUDIO} audio clips, with ${BYTEPLUS_SEEDANCE_2_5_MAX_REFERENCES} unique references total.`,
-    v2v: 'Edit one source video with optional image and audio references; 4-30 seconds, up to 1080p, landscape, square, or vertical, with generated audio.',
-    extend: 'Continue one to three source clips; 4-30 seconds, up to 1080p, landscape, square, or vertical, with generated audio.',
+    v2v: 'Edit one source video with optional image, video and audio references; 4-30 seconds, up to 1080p, landscape, square, or vertical, with generated audio.',
+    extend: 'Continue one to ten source clips with optional image and audio references; 4-30 seconds, up to 1080p, landscape, square, or vertical, with generated audio.',
   };
 
   return {
@@ -239,11 +242,11 @@ function seedance25Mode(mode: Seedance25Mode): RawFalEngineEntry['modes'][number
     falModelId: BYTEPLUS_SEEDANCE_2_5_ENDPOINTS[mode],
     ui: {
       modes: [mode],
-      duration: { options: [...DURATION_OPTIONS], default: 4 },
-      resolution: [...RESOLUTIONS],
+      duration: { options: [...(mode === 'v2v' ? [] : ['auto']), ...DURATION_OPTIONS], default: 4 },
+      resolution: getBytePlusSeedanceModeResolutions('seedance-2-5', mode, RESOLUTIONS, 'modelark'),
       aspectRatio: mode === 'i2v' ? undefined : [...ASPECT_RATIOS],
       acceptsImageFormats: acceptsImages ? [...IMAGE_FORMATS] : undefined,
-      maxUploadMB: mode === 't2v' ? undefined : uploadsVideo ? 50 : 30,
+      maxUploadMB: mode === 't2v' ? undefined : uploadsVideo ? 200 : 30,
       audioToggle: true,
       notes: [workflowNotes[mode], acceptedFormats].filter(Boolean).join(' '),
     },

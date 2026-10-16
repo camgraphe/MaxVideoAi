@@ -13,6 +13,7 @@ import { calculateLumaRay2Price } from '@/lib/luma-ray2-pricing';
 import { buildPricingDefinition } from '@/lib/pricing-definition';
 import { isWan3EngineId, withWan3InputVideoPricing } from '@/lib/wan3-pricing';
 import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
+import { normalizeSeedancePricingContext } from '@/lib/seedance-option-pricing';
 import {
   isGptImage25EngineId,
   calculateGptImage25ProviderPrice,
@@ -43,6 +44,7 @@ export type PublicPricingFactsResult = {
 };
 
 export type PublicPricingFactsContext = {
+  seedanceSourceAspectRatio?: import('@/types/engines').AspectRatio;
   engine: EngineCaps;
   durationSec: number;
   resolution: string;
@@ -150,6 +152,7 @@ function buildStandardDefinitionFacts(
 }
 
 export function buildPublicPricingFacts(context: PublicPricingFactsContext): PublicPricingFactsResult {
+  context = normalizeSeedancePricingContext(context);
   const { engine, durationSec, resolution } = context;
   const mode = context.mode ?? (engine.modes.includes('t2i') ? 't2i' : 't2v');
   const currency = (engine.pricingDetails?.currency ?? engine.pricing?.currency ?? 'USD').toUpperCase();

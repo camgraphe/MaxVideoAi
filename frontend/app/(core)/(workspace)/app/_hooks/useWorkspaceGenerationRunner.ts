@@ -1,4 +1,3 @@
-import { isArchivedGenerationModel, archivedGenerationMessage } from '@/lib/model-generation-policy';
 import { useCallback, useRef, useState } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { MultiPromptScene } from '@/components/Composer';
@@ -13,7 +12,7 @@ import type { FormState } from '../_lib/workspace-form-state';
 import { prepareGenerationInputs } from '../_lib/workspace-generation-inputs';
 import {
   getLumaRay2GenerationContext,
-  getStartRenderValidationMessage,
+  getStartRenderValidationMessage, getWorkspaceGenerationModeMessage,
   supportsNegativePromptInput,
 } from '../_lib/workspace-generation-guards';
 import type {
@@ -190,7 +189,8 @@ export function useWorkspaceGenerationRunner({
   });
   const startRender = useCallback(async () => {
     if (!form || !selectedEngine) return;
-    if (isArchivedGenerationModel(selectedEngine.id)) return showComposerError(archivedGenerationMessage(uiLocale));
+    const modeUnavailableMessage = getWorkspaceGenerationModeMessage(selectedEngine, submissionMode, uiLocale);
+    if (modeUnavailableMessage) return showComposerError(modeUnavailableMessage);
     if (klingO3UnsupportedVideoReason) {
       showComposerError(klingO3UnsupportedVideoReason);
       return;

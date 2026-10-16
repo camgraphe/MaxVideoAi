@@ -13,6 +13,7 @@ import {
 } from '@/server/images/image-initial-job';
 import type { TrustedQuotedBilling } from '@/server/generations/initial-job-reservation';
 import { paidProviderSubmissionDependencies } from '@/server/generations/paid-provider-execution';
+import { resolveTrustedPaidGenerateRouteContext } from '@/app/api/generate/_lib/route-context';
 import type { VideoProviderRoutingEnv } from '@/server/video-providers/router';
 
 import {
@@ -180,6 +181,15 @@ function videoInitialParams(
   const fee = platformFee(pricing);
   const vendorAccountId = vendorAccount(pricing);
   const pricingJson = JSON.stringify(pricing);
+  let provider = candidate.engine.provider;
+  if (quote.request.engineId === 'seedance-2-5' && quote.request.mode === 'v2v') {
+    const context = resolveTrustedPaidGenerateRouteContext({
+      body: { ...quote.request.settings, payment: { mode: 'wallet' } },
+      engine: candidate.engine, jobId: quote.quoteId, mode: 'v2v',
+    });
+    if (!context.ok) throw new Error('The LAS generation reservation is unavailable.');
+    provider = context.context.providerKey;
+  }
   return {
     jobId: quote.quoteId,
     userId: quote.userId,
@@ -222,7 +232,7 @@ function videoInitialParams(
       message: null,
       etaSeconds: null,
       etaLabel: null,
-      provider: candidate.engine.provider,
+      provider,
       finalPriceCents: quote.priceCents,
       pricingSnapshotJson: pricingJson,
       costBreakdownJson: null,

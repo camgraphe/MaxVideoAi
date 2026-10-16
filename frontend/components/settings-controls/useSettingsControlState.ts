@@ -4,6 +4,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { DEFAULT_CONTROLS_COPY, mergeControlsCopy } from '@/components/settings-controls/settings-control-copy';
 import { matchesDurationOptionValue, parseDurationOptionValue } from '@/components/settings-controls/settings-control-duration';
 import type { SettingsControlsProps } from '@/components/settings-controls/settings-control-types';
+import { seedanceEditSourceLabel } from '@/lib/seedance-edit-source-copy';
 
 type UseSettingsControlStateOptions = Pick<
   SettingsControlsProps,
@@ -61,7 +62,7 @@ export function useSettingsControlState({
   showSafetyCheckerControl = false,
   showSeedanceControls = false,
 }: UseSettingsControlStateOptions) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const localizedControls = t('workspace.generate.controls', DEFAULT_CONTROLS_COPY) as
     | Partial<typeof DEFAULT_CONTROLS_COPY>
     | undefined;
@@ -80,7 +81,7 @@ export function useSettingsControlState({
   const enumeratedDurationOptions = useMemo(() => {
     if (!caps?.duration) return null;
     if ('options' in caps.duration) {
-      return caps.duration.options.map(parseDurationOptionValue).filter((entry) => entry.value > 0);
+      return caps.duration.options.map(parseDurationOptionValue).filter((entry) => entry.value > 0 || entry.raw === 'auto');
     }
     return null;
   }, [caps]);
@@ -158,7 +159,8 @@ export function useSettingsControlState({
   const canToggleAudio = Boolean(onAudioChange) && !audioControlDisabled;
   const modeCanExposeNativeAudio = caps?.audioToggle ?? true;
   const audioIncluded = Boolean(engine.audio) && mode !== 'r2v' && !showAudioToggle && modeCanExposeNativeAudio;
-  const resolvedDurationManagedLabel = durationManagedLabel ?? controlsCopy.duration.managed;
+  const resolvedDurationManagedLabel = durationManagedLabel ?? (engine.modeAvailability?.[mode]?.inheritsSourceVideo
+    ? seedanceEditSourceLabel(undefined, locale) : controlsCopy.duration.managed);
   const effectiveCfgScale =
     typeof cfgScale === 'number'
       ? cfgScale

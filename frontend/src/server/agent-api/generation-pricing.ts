@@ -1,4 +1,6 @@
 import { bytePlusInputVideoDurationSec, isBytePlusInputVideoPricingModel } from '@/server/byteplus-accounting';
+import { resolveSeedance25ModelArkEditSource } from '@/server/seedance-edit-source';
+import { seedanceSourcePricingAspectRatio } from '@/lib/seedance-option-pricing';
 import {
   computeConfiguredPreflight,
   type ComputeConfiguredPreflightOptions,
@@ -203,6 +205,27 @@ function canonicalInputVideoDurationSec(
   return inputVideoDurationSec;
 }
 
+function canonicalSeedanceEditSource(request: CanonicalGenerationRequest, context: GenerationPricingReferenceContext) {
+  return resolveSeedance25ModelArkEditSource(request.engineId, request.mode,
+    (context.resolvedReferences ?? []).filter(reference => request.references.some(input => input.kind === 'asset'
+      && input.assetId === reference.assetId && input.role === reference.role && input.slot === reference.slot))
+      .map(reference => ({ kind: reference.mediaKind, durationSec: reference.durationSec, width: reference.width, height: reference.height,
+        fieldId: reference.role === 'source' ? 'video_url' : 'video_urls' })));
+}
+
+function canonicalSeedanceSourceAspect(request: CanonicalGenerationRequest, context: GenerationPricingReferenceContext) {
+  const references = (context.resolvedReferences ?? []).filter(reference => request.references.some(input => input.kind === 'asset'
+    && input.assetId === reference.assetId && input.role === reference.role && input.slot === reference.slot))
+    .filter(reference => request.mode === 'i2v' || request.mode === 'i2v_standard'
+      ? reference.role === 'first_frame' || reference.role === 'source'
+      : reference.role === 'source');
+  return seedanceSourcePricingAspectRatio({ engine: { id: request.engineId },
+    mode: toEngineGenerationMode(request.engineId, request.mode), aspectRatio: optionalString(request.settings, 'aspectRatio') },
+    references.map(reference => ({ kind: reference.mediaKind, width: reference.width, height: reference.height,
+      fieldId: request.mode === 'i2v' || request.mode === 'i2v_standard' ? 'image_url'
+        : request.mode === 'extend' ? 'extension_source_videos' : 'video_url' })));
+}
+
 function canonicalImageReferences(request: CanonicalGenerationRequest) {
   return request.references.filter((reference) => reference.role !== 'mask');
 }
@@ -261,8 +284,12 @@ function canonicalVideoTrustedMediaPricingFacts(
   const inputAudioDurationSec = canonicalInputAudioDurationSec(request, context);
   const inputVideoDurationSec = canonicalInputVideoDurationSec(request, context);
   const referenceTokenBudget = canonicalReferenceTokenBudget(request, context);
+  const seedanceEditSource = canonicalSeedanceEditSource(request, context);
+  const seedanceSourceAspectRatio = seedanceEditSource ? undefined : canonicalSeedanceSourceAspect(request, context);
   return {
     referenceImageCount: canonicalReferenceImageCount(request, context),
+    ...(seedanceEditSource ? { seedanceEditSource } : {}),
+    ...(seedanceSourceAspectRatio ? { seedanceSourceAspectRatio } : {}),
     ...(inputAudioDurationSec !== undefined ? { inputAudioDurationSec } : {}),
     ...(inputVideoDurationSec !== undefined ? { inputVideoDurationSec } : {}),
     ...(referenceTokenBudget !== undefined ? { referenceTokenBudget } : {}),
@@ -339,6 +366,7 @@ export async function priceCanonicalGeneration(
       engine: request.engineId,
       mode: engineMode,
       durationSec: requiredPositiveInteger(settings, 'durationSec'),
+      ...(settings.durationOption === 'auto' ? { durationOption: 'auto' } : {}),
       resolution: requiredString(settings, 'resolution') as PreflightRequest['resolution'],
       ...(aspectRatio === undefined
         ? {}
@@ -401,6 +429,8 @@ export async function priceCanonicalGenerationInExecutor(
     const engineMode = toEngineGenerationMode(engine.id, request.mode);
     const pricingEngine = applyEngineVariantPricing(engine, engineMode);
     const durationSec = requiredPositiveInteger(request.settings, 'durationSec');
+    const seedanceEditSource = canonicalSeedanceEditSource(request, dependencies);
+    const seedanceSourceAspectRatio = seedanceEditSource ? undefined : canonicalSeedanceSourceAspect(request, dependencies);
     const resolution = requiredString(request.settings, 'resolution');
     const audioEnabled = typeof request.settings.audio === 'boolean'
       ? request.settings.audio
@@ -413,19 +443,21 @@ export async function priceCanonicalGenerationInExecutor(
     };
     snapshot = await computeBillingSnapshot({
       engine: pricingEngine,
-      durationSec,
+      durationSec: seedanceEditSource?.billedDurationSec ?? durationSec,
       resolution,
-      aspectRatio: optionalString(request.settings, 'aspectRatio'),
+      aspectRatio: seedanceEditSource?.pricingAspectRatio ?? optionalString(request.settings, 'aspectRatio'),
       mode: engineMode,
       hasVideoInput: hasCanonicalVideoInput(request, dependencies),
       referenceImageCount: canonicalReferenceImageCount(request, dependencies),
       inputAudioDurationSec: canonicalInputAudioDurationSec(request, dependencies),
       inputVideoDurationSec: canonicalInputVideoDurationSec(request, dependencies),
+      ...(seedanceEditSource ? { seedanceEditSource } : {}),
+      ...(seedanceSourceAspectRatio ? { seedanceSourceAspectRatio } : {}),
       referenceTokenBudget: canonicalReferenceTokenBudget(request, dependencies),
       ...canonicalOmniPricingFacts(request,dependencies.resolvedReferences),
       membershipTier,
       loop: isLumaRay2EngineId(engine.id) && request.settings.loop === true,
-      durationOption: isLumaRay2EngineId(engine.id)
+      durationOption: request.settings.durationOption === 'auto' ? 'auto' : isLumaRay2EngineId(engine.id)
         ? getLumaRay2DurationInfo(durationSec)?.label
         : undefined,
       addons: Object.keys(addons).length ? addons : undefined,

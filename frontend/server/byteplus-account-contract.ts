@@ -1,6 +1,7 @@
 export type BytePlusContractInput = {
   engineId: string;
   executionProvider: string;
+  transport?: 'modelark' | 'las';
   accountContractRegion?: string;
   resolution: string;
   step: 'normal' | 'draft' | 'final';
@@ -35,7 +36,7 @@ export type BytePlusContractTerms = {
 /** Exact signed SKUs only. No new generation capability or customer price. */
 export function signedBytePlusContractCost(input: BytePlusContractInput,
   list: { status: string; amountUsd: number | null; unitPriceUsdPer1kTokens: number | null }, at: string) {
-  if (input.executionProvider !== 'byteplus_modelark' || input.accountContractRegion !== CONTRACT.region
+  if (input.transport === 'las' || input.executionProvider !== 'byteplus_modelark' || input.accountContractRegion !== CONTRACT.region
     || input.step !== 'normal' || list.amountUsd == null || !list.status.startsWith('published_list')
     || !Number.isFinite(Date.parse(at))
     || Date.parse(at) < Date.parse(CONTRACT.startsAt) || Date.parse(at) >= Date.parse(CONTRACT.endsAt)) return null;

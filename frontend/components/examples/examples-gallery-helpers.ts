@@ -11,14 +11,15 @@ export const TALL_CARD_MEDIA_PERCENT = Number((DEFAULT_LANDSCAPE_HEIGHT_PERCENT 
 
 export function buildWatchAnchorText(locale: string, video: ExampleGalleryVideo): string {
   const ratio = video.aspectRatio ?? 'Auto';
+  const prompt = video.sourcePromptExcerpt || video.prompt;
   const duration = locale === 'es' ? `${video.durationSec} s` : `${video.durationSec}s`;
   if (locale === 'fr') {
-    return `Voir les réglages et le prix de l'exemple vidéo ${video.engineLabel} - ${video.prompt} - ${ratio} - ${duration}`;
+    return `Voir le prompt, les réglages et le prix de l'exemple vidéo ${video.engineLabel} - ${prompt} - ${ratio} - ${duration}`;
   }
   if (locale === 'es') {
-    return `Ver los ajustes y el precio del ejemplo de video ${video.engineLabel} - ${video.prompt} - ${ratio} - ${duration}`;
+    return `Ver el prompt, los ajustes y el precio del ejemplo de video ${video.engineLabel} - ${prompt} - ${ratio} - ${duration}`;
   }
-  return `View settings and price for ${video.engineLabel} video example - ${video.prompt} - ${ratio} - ${duration}`;
+  return `View prompt, settings and price for ${video.engineLabel} video example - ${prompt} - ${ratio} - ${duration}`;
 }
 
 export function dedupeExamples(videos: ExampleGalleryVideo[]) {

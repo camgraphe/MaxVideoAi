@@ -79,6 +79,8 @@ test('BytePlus poll delegates accounting, failure handling, storage-copy retry, 
   assert.match(accountingSource, /export function expectedBytePlusTokens/);
   assert.match(accountingSource, /export function getBytePlusAccounting/);
   assert.match(accountingSource, /export function getBytePlusUnitPriceUsdPer1kTokens/);
+  assert.match(accountingSource, /from '@\/lib\/seedance-output-dimensions'/);
+  assert.doesNotMatch(accountingSource, /const SEEDANCE_1_5_AND_2_0_DIMENSIONS/);
   assert.match(storageCopySource, /export function getBytePlusStorageCopyState/);
   assert.match(storageCopySource, /export function shouldRetryBytePlusStorageCopy/);
   assert.match(pollTypesSource, /export type BytePlusPendingJob/);
@@ -99,6 +101,11 @@ test('BytePlus ModelArk provider delegates payload and response normalization', 
   assert.match(providerSource, /from '\.\/byteplus-modelark-constants'/);
   assert.match(providerSource, /from '\.\/byteplus-modelark-payload'/);
   assert.match(providerSource, /from '\.\/byteplus-modelark-response'/);
+  assert.match(providerSource, /from '\.\/byteplus-modelark-transport'/);
+  const transportSource = readFileSync('frontend/src/server/video-providers/byteplus-modelark-transport.ts', 'utf8');
+  assert.match(transportSource, /export function resolveBytePlusTransport/);
+  assert.doesNotMatch(transportSource, /fetch\(|getBytePlusModelArkClient|createSeedanceFastTask/);
+  assert.match(readFileSync('frontend/server/byteplus-las-tariff.ts', 'utf8'), /from '@\/server\/video-providers\/byteplus-modelark-transport'/);
   assert.doesNotMatch(providerSource, /function extractVideoUrl/);
   assert.doesNotMatch(providerSource, /function uniqueNonEmptyUrls/);
   assert.doesNotMatch(providerSource, /export function buildBytePlusSeedancePayload/);
@@ -282,6 +289,33 @@ test('BytePlus Seedance makes video edit and extension intent explicit without r
     reference.content[0]?.type === 'text' ? reference.content[0].text : null,
     referencePrompt
   );
+});
+
+test('Seedance 2.5 extension submits an adaptive ratio and explicit extension task type', () => {
+  const base = {
+    prompt: 'Continue the camera move into the next shot.',
+    durationSec: 4,
+    mode: 'extend' as const,
+    referenceVideoUrls: ['https://cdn.maxvideoai.com/source.mp4'],
+    resolution: '480p',
+    ratio: '16:9',
+    allowedResolutions: ['480p'] as const,
+    allowedDurationOptions: [4] as const,
+  };
+
+  const seedance25 = buildBytePlusSeedancePayload({
+    ...base,
+    modelId: 'dreamina-seedance-2-5-260628',
+  });
+  assert.equal(seedance25.ratio, 'adaptive');
+  assert.equal(seedance25.omni_reference_task_type, 'extend');
+
+  const seedance20 = buildBytePlusSeedancePayload({
+    ...base,
+    modelId: 'dreamina-seedance-2-0-260128',
+  });
+  assert.equal(seedance20.ratio, '16:9');
+  assert.equal(seedance20.omni_reference_task_type, undefined);
 });
 
 test('BytePlus Seedance maps provider task-type constraints to safe actionable guidance', () => {
@@ -829,7 +863,7 @@ test('BytePlus runtime exposes Seedance 2.0 Standard and Fast video source workf
     assert.deepEqual(extensionSourceField?.requiredInModes, ['extend']);
     assert.equal(extensionSourceField?.minCount, 1);
     assert.equal(extensionSourceField?.maxCount, 3);
-    assert.deepEqual(referenceVideoField?.modes, ['ref2v']);
+    assert.deepEqual(referenceVideoField?.modes, ['ref2v', 'v2v']);
   }
 });
 

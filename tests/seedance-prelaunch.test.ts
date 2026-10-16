@@ -116,13 +116,13 @@ test('Seedance 2 registry centralizes provisional Fal IDs and keeps both launch 
   assert.deepEqual(fastRef2v.ui.resolution, ['480p', '720p']);
   const miniV2v = mini.modes.find((mode) => mode.mode === 'v2v');
   assert.ok(miniV2v);
-  assert.deepEqual(miniV2v.ui.duration, { options: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], default: 5 });
+  assert.deepEqual(miniV2v.ui.duration, { options: ['auto', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], default: 5 });
   assert.deepEqual(miniV2v.ui.resolution, ['480p', '720p']);
   assert.equal(mini.modes.find((mode) => mode.mode === 't2v')?.ui.maxUploadMB, undefined);
   assert.equal(mini.modes.find((mode) => mode.mode === 'i2v')?.ui.maxUploadMB, 30);
-  assert.equal(mini.modes.find((mode) => mode.mode === 'ref2v')?.ui.maxUploadMB, 50);
-  assert.equal(mini.modes.find((mode) => mode.mode === 'v2v')?.ui.maxUploadMB, 50);
-  assert.equal(mini.modes.find((mode) => mode.mode === 'extend')?.ui.maxUploadMB, 50);
+  assert.equal(mini.modes.find((mode) => mode.mode === 'ref2v')?.ui.maxUploadMB, 200);
+  assert.equal(mini.modes.find((mode) => mode.mode === 'v2v')?.ui.maxUploadMB, 200);
+  assert.equal(mini.modes.find((mode) => mode.mode === 'extend')?.ui.maxUploadMB, 200);
 
   const seedanceFields = [...(seedance.engine.inputSchema?.required ?? []), ...(seedance.engine.inputSchema?.optional ?? [])];
   const fastFields = [...(fast.engine.inputSchema?.required ?? []), ...(fast.engine.inputSchema?.optional ?? [])];
@@ -164,7 +164,7 @@ test('Seedance 2 registry centralizes provisional Fal IDs and keeps both launch 
   assert.deepEqual(miniSourceVideoField.requiredInModes, ['v2v']);
   assert.equal(miniSourceVideoField.maxCount, 1);
   assert.ok(miniReferenceVideoField);
-  assert.deepEqual(miniReferenceVideoField.modes, ['ref2v']);
+  assert.deepEqual(miniReferenceVideoField.modes, ['ref2v', 'v2v']);
   assert.equal(miniReferenceVideoField.maxCount, 3);
   assert.ok(miniExtensionVideoField);
   assert.equal(miniExtensionVideoField.type, 'video');
@@ -175,7 +175,7 @@ test('Seedance 2 registry centralizes provisional Fal IDs and keeps both launch 
   assert.equal(miniExtensionVideoField.maxCount, 3);
   assert.equal(miniExtensionVideoField.slotLabelPattern, 'Source clip {n}');
   assert.ok(miniReferenceAudioField);
-  assert.deepEqual(miniReferenceAudioField.modes, ['ref2v', 'v2v']);
+  assert.deepEqual(miniReferenceAudioField.modes, ['ref2v', 'v2v', 'extend']);
   assert.ok(miniFields.some((field) => field.id === 'image_urls' && field.modes?.includes('v2v')));
 
   assert.equal(seedance.availability, 'available');

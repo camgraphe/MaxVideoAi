@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '41 5 * * *'
   workflow_dispatch:
+    inputs:
+      examples_diagnostics:
+        description: Collect paired Chrome document-rendering traces on the live examples page
+        type: boolean
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -54,6 +59,11 @@ jobs:
 
       - name: Run Lighthouse (contact)
         run: pnpm --dir frontend run lighthouse:contact
+
+      - name: Diagnose examples Chrome presentation
+        if: github.event_name == 'workflow_dispatch' && inputs.examples_diagnostics
+        working-directory: frontend
+        run: node ../scripts/performance/probe-render-document.mjs
 
       - name: Upload Lighthouse reports
         if: always()

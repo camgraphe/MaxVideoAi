@@ -48,6 +48,7 @@ import {
 import { resolveAgentGenerationModeExecutability } from '@/server/agent-runtime/model-executability';
 import { validateRuntimeRequestSettings } from './runtime-schema-options';
 import { resolveRuntimeResolutionPolicy } from '@/server/video-generation/runtime-resolution';
+import type { PreparedSeedanceWorkflow } from '@/server/seedance-workflow-request';
 
 export type GenerateRouteContext = {
   engine: EngineCaps;
@@ -164,6 +165,7 @@ export function resolveTrustedPaidGenerateRouteContext(params: {
 }
 
 export async function resolveGenerateRouteContext(params: {
+  seedanceWorkflow?: PreparedSeedanceWorkflow;
   boundaryOverrides?: Partial<GenerateRouteContextBoundaries>;
   body: Record<string, unknown>;
   req: NextRequest;
@@ -328,7 +330,7 @@ export async function resolveGenerateRouteContext(params: {
 
   if (isBytePlusV1a) {
     try {
-      assertBytePlusTransportConfigured(engine.id, mode);
+      assertBytePlusTransportConfigured(engine.id, params.seedanceWorkflow && engine.id === 'seedance-2-5' ? 't2v' : mode);
     } catch (error) {
       if (error instanceof BytePlusModelArkError) {
         return {
@@ -343,6 +345,13 @@ export async function resolveGenerateRouteContext(params: {
       }
       throw error;
     }
+  }
+
+  if (engine.id === 'seedance-2-5' && mode === 'v2v'
+    && body.payment && typeof body.payment === 'object'
+    && 'mode' in body.payment && body.payment.mode !== undefined && body.payment.mode !== 'wallet') {
+    return { ok: false, status: 400, body: { ok: false, error: 'BYTEPLUS_LAS_WALLET_REQUIRED',
+      message: 'Edit requires wallet payment.' } };
   }
 
   if (!boundaries.isDatabaseConfigured()) {

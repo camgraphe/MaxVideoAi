@@ -1,3 +1,5 @@
+import type {SeedanceEditSourceFacts} from '../seedance-edit-source';
+import {seedanceEditSourceLabel} from '../seedance-edit-source-copy';
 import type {ImageConversationTurn} from './image-conversation-contract';
 export type ConversationLocale = 'en' | 'fr';
 export function conversationFailurePresentation(
@@ -11,7 +13,7 @@ export function conversationFailurePresentation(
   const next = locale === 'fr' ? ' Une nouvelle tentative nécessite un nouveau devis.' : ' A new attempt needs a new quote.';
   return failure + refund + next;
 }
-export function conversationQuotePresentation(request: NonNullable<ImageConversationTurn['quote']>['summary'], locale: ConversationLocale, outputDurationSec?:number) {
+export function conversationQuotePresentation(request: NonNullable<ImageConversationTurn['quote']>['summary'], locale: ConversationLocale, outputDurationSec?:number, sourceVideoOutput?:SeedanceEditSourceFacts) {
   const t = (en: string, fr: string) => locale === 'fr' ? fr : en;
   const referenceLabels = (request.references ?? []).map(reference => {
     switch(reference.role) {
@@ -61,7 +63,7 @@ export function conversationQuotePresentation(request: NonNullable<ImageConversa
   return {title: video ? videoTitle : t('Image', 'Une image'), create: video ? request.mode==='extend' ? t('Extend clip','Prolonger le clip') : t('Create video', 'Créer la vidéo') : t('Create image', 'Créer l’image'),
     direction: request.prompt,
     referenceSummary,
-    settings: [request.settings.aspectRatio, dimensions,dimensions&&request.settings.resolution==='custom'?'':request.settings.resolution,
-      segment || (video && duration ? `${duration} s` : ''),
+    settings: [video&&sourceVideoOutput?seedanceEditSourceLabel(sourceVideoOutput,locale):request.settings.aspectRatio, dimensions,dimensions&&request.settings.resolution==='custom'?'':request.settings.resolution,
+      segment || (video && duration && !sourceVideoOutput ? `${duration} s` : ''),
       video ? request.settings.audio === false ? t('silent', 'sans audio') : '' : request.settings.outputFormat ?? 'PNG'].filter(Boolean).join(' · ')};
 }

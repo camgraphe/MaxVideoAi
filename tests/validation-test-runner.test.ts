@@ -37,6 +37,9 @@ test('CI suites partition every validation file without losing expensive financi
   assert.ok(plan.integration.includes('tests/generation-initial-job-transaction.test.ts'));
   assert.ok(plan.integration.includes('tests/public-video-renditions-real-media.test.ts'));
   assert.ok(plan.integration.includes('tests/admin-customer-tariff-service-postgres.test.ts'));
+  assert.ok(plan.integration.includes('tests/preflight-media-pricing.test.ts'), 'LAS preflight uses a real PostgreSQL fixture');
+  assert.equal(plan.fast.includes('tests/preflight-media-pricing.test.ts'), false);
+  assert.ok(plan.fast.includes('tests/seedance-2-pricing.test.ts'), 'Pure literal tariff fixtures require no PostgreSQL');
   assert.equal(plan.fast.includes('tests/customer-tariff-initial-cutover-postgres.test.ts'), false);
   for (const file of [
     'tests/connected-studio-montage-browser-integration.test.ts',

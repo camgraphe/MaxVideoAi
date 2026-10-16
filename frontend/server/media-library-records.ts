@@ -19,6 +19,8 @@ export type LegacyJobMediaRow = {
   surface?: string | null;
   video_url?: string | null;
   video_media_facts?: unknown;
+  playback_video_url?: string | null;
+  last_frame?: { url: string; mimeType: 'image/jpeg'; sha256: string; sizeBytes: number; width: number; height: number } | null;
   video_width?: number | null;
   video_height?: number | null;
   audio_url?: string | null;
@@ -28,6 +30,8 @@ export type LegacyJobMediaRow = {
   preview_video_url?: string | null;
   render_ids?: unknown;
   duration_sec?: number | null;
+  /** Canonical inherited timing, distinct from measured original media facts. */
+  inherited_output_duration_sec?: number | null;
   measured_duration_sec?: number | null;
   audio_mime_type?: string | null;
   status?: string | null;
@@ -231,12 +235,24 @@ export function mapLegacyJobRowToOutputs(row: LegacyJobMediaRow): JobOutputRecor
       mimeType: inferMimeFromUrl(videoUrl, 'video'),
       width: normalizeInteger(row.video_width),
       height: normalizeInteger(row.video_height),
-      durationSec: normalizeInteger(row.duration_sec),
+      durationSec: normalizePositiveNumber(row.duration_sec),
       position: 0,
       status,
       metadata: { legacy: true, surface: row.surface ?? null,
+        ...(row.playback_video_url ? { playbackVideoUrl: row.playback_video_url } : {}),
+        ...(row.last_frame ? { lastFrame: row.last_frame } : {}),
+        ...(normalizePositiveNumber(row.inherited_output_duration_sec) ? { inheritedOutputDurationSec: row.inherited_output_duration_sec } : {}),
         ...(readGeneratedVideoFacts(row.video_media_facts, videoUrl) ? { mediaFacts: row.video_media_facts } : {}) },
     });
+  }
+
+  if (videoUrl && row.last_frame) {
+    const frame = row.last_frame;
+    outputs.push({ id: outputId(jobId, 'image', 0), jobId, userId, kind: 'image', url: frame.url,
+      storageUrl: frame.url, thumbUrl: null, previewUrl: null, mimeType: 'image/jpeg',
+      width: frame.width, height: frame.height, durationSec: null, position: 0, status,
+      metadata: { role: 'last_frame', sourceVideoUrl: videoUrl, sourceVideoOutputId: outputId(jobId, 'video', 0),
+        sha256: frame.sha256, sizeBytes: frame.sizeBytes } });
   }
 
   const audioUrl = normalizeString(row.audio_url);
@@ -254,7 +270,7 @@ export function mapLegacyJobRowToOutputs(row: LegacyJobMediaRow): JobOutputRecor
       mimeType: inferMimeFromUrl(audioUrl, 'audio', row.audio_mime_type),
       width: null,
       height: null,
-      durationSec: normalizeInteger(row.duration_sec),
+      durationSec: normalizePositiveNumber(row.duration_sec),
       position: 0,
       status,
       metadata: {
@@ -387,7 +403,8 @@ export function mapOutputRow(row: DbJobOutputRow): JobOutputRecord {
     width: row.width,
     height: row.height,
     durationSec: row.kind === 'video'
-      ? videoDuration(normalizeMetadata(row.metadata), row.storage_url ?? row.url, row.duration_sec) : row.duration_sec,
+      ? videoDuration(normalizeMetadata(row.metadata), row.storage_url ?? row.url,
+        normalizePositiveNumber(normalizeMetadata(row.metadata).inheritedOutputDurationSec) ?? row.duration_sec) : row.duration_sec,
     position: row.position,
     status: row.status,
     metadata: normalizeMetadata(row.metadata),

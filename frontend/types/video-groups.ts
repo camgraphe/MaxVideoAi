@@ -6,6 +6,8 @@ export interface VideoItem {
   id: string;
   url: string;
   previewUrl?: string;
+  playbackVideoUrl?: string;
+  lastFrameUrl?: string;
   audioUrl?: string;
   aspect: VideoAspect;
   thumb?: string;

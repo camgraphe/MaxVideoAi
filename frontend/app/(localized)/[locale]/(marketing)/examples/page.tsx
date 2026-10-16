@@ -24,8 +24,9 @@ import {
   toAbsoluteUrl,
 } from './_lib/examples-route-utils';
 import { ExamplesPageView } from './_components/examples-page-view';
+import { buildExamplesPriceSlots } from './_components/examples-gallery-prices';
 import {
-  buildExamplesNextStepLinks, buildExamplesPromptStarters,
+  buildExamplesNextStepLinks,
   getExamplesEditorialSections,
   getExamplesBrowseByModelLabel,
   getExamplesGalleryUiCopy,
@@ -40,13 +41,16 @@ import {
   buildExamplesMainVideoFeatureData,
   buildExamplesModelLinks,
 } from './_lib/examples-page-data';
-import { buildCurrentExamplesGalleryData } from './_lib/current-examples-gallery-data';
+import { prepareCurrentExamplesGalleryData } from './_lib/current-examples-gallery-data';
+import { buildExamplesVersionLinks } from './_lib/examples-version-links';
+import { getExampleFamilyCurrentModelSlugs } from '@/lib/model-families';
 import {
   buildExamplesEngineFilterHref,
   buildExamplesNormalizedRedirectTarget,
   buildExamplesPaginationHref,
 } from './_lib/examples-page-hrefs';
 import { buildExamplesJsonLd } from './_lib/examples-page-jsonld';
+import { examplesPageUrl, getExamplesPaginationSeo, parseExamplesPage, withExamplesPaginationMetadata } from './_lib/examples-pagination-seo';
 
 export async function generateMetadata(
   props: {
@@ -60,19 +64,12 @@ export async function generateMetadata(
   const t = await getTranslations({ locale, namespace: 'gallery.meta' });
   const collapsedEngineParam = resolveCanonicalEngineParam(searchParams.engine);
   const engineLabel = resolveEngineLabel(searchParams.engine);
-  const sortParam = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
-  const sort = getSort(sortParam);
-  const hasNonDefaultSort = sort !== DEFAULT_SORT;
-  const pageParam = Array.isArray(searchParams.page) ? searchParams.page[0] : searchParams.page;
-  const parsedPage = pageParam ? Number.parseInt(pageParam, 10) : NaN;
-  const normalizedPage = Number.isFinite(parsedPage) && parsedPage > 1 ? parsedPage : null;
+  const paginationSeo = getExamplesPaginationSeo(searchParams);
   const latest = await listExamples('date-desc', 20);
   const firstWithThumb = latest.find((video) => Boolean(video.thumbUrl));
   const ogImage = toAbsoluteUrl(firstWithThumb?.thumbUrl) ?? `${SITE}/og/brand-2026-09-25.png`;
   const canonicalExampleSlug = resolveExampleCanonicalSlug(collapsedEngineParam);
-  const hasPaginatedView = Boolean(normalizedPage && normalizedPage > 1);
-  const shouldNoindex =
-    hasNonDefaultSort || hasPaginatedView || Boolean(collapsedEngineParam && !canonicalExampleSlug);
+  const shouldNoindex = !paginationSeo.index;
   const effectiveEngineLabel = canonicalExampleSlug ? engineLabel : null;
   const title = effectiveEngineLabel ? t('title_engine', { engineName: effectiveEngineLabel }) : t('title');
   const description = effectiveEngineLabel
@@ -95,7 +92,7 @@ export async function generateMetadata(
   }
 
   const metadataUrls = buildMetadataUrls(locale, GALLERY_SLUG_MAP, { englishPath: '/examples' });
-  return buildSeoMetadata({
+  const metadata = buildSeoMetadata({
     locale,
     title,
     description,
@@ -110,6 +107,7 @@ export async function generateMetadata(
       follow: true,
     },
   });
+  return withExamplesPaginationMetadata(metadata, locale, '/examples', paginationSeo.canonicalPage);
 }
 
 type ExamplesPageProps = {
@@ -169,16 +167,8 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
   const sortParam = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
   const sort = getSort(sortParam);
   const collapsedEngineParam = resolveCanonicalEngineParam(searchParams.engine);
-  const pageParam = Array.isArray(searchParams.page) ? searchParams.page[0] : searchParams.page;
-  const parsedPage = (() => {
-    if (typeof pageParam !== 'string' || pageParam.trim().length === 0) {
-      return 1;
-    }
-    const value = Number.parseInt(pageParam, 10);
-    return Number.isFinite(value) ? value : Number.NaN;
-  })();
-  const hasInvalidPageParam = typeof pageParam !== 'undefined' && (!Number.isFinite(parsedPage) || parsedPage < 1);
-  const currentPage = hasInvalidPageParam ? 1 : Math.max(1, parsedPage || 1);
+  const parsedPage = parseExamplesPage(searchParams.page);
+  const currentPage = parsedPage.page;
   const localePrefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
   const gallerySegment = GALLERY_SLUG_MAP[locale] ?? GALLERY_SLUG_MAP.en ?? 'examples';
   const galleryBasePath = `${localePrefix}/${gallerySegment}`.replace(/\/{2,}/g, '/');
@@ -195,10 +185,6 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
       })
     );
   };
-
-  if (hasInvalidPageParam) {
-    redirectToNormalized(1);
-  }
 
   const canonicalExampleSlug = resolveExampleCanonicalSlug(collapsedEngineParam);
   if (collapsedEngineParam && !engineFromPath) {
@@ -217,6 +203,10 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
     redirectToNormalized(currentPage);
   }
 
+  if (parsedPage.redirect || (searchParams.sort !== undefined && searchParams.sort !== sort)) {
+    redirectToNormalized(currentPage);
+  }
+
   const unsupportedQueryKeys = Object.keys(searchParams).filter(
     (key) => !ALLOWED_QUERY_KEYS.has(key) && !isTrackingParam(key)
   );
@@ -231,6 +221,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
           sort,
           limit: EXAMPLES_PAGE_SIZE,
           offset,
+          includeVersionSamples: currentPage === 1 && sort === DEFAULT_SORT,
         })
       : await listExamplesPage({
           sort,
@@ -244,7 +235,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
   if (currentPage > totalPages) redirectToNormalized(totalPages);
   const displayTotalPages = totalPages;
 
-  const usesCurrentAndSupportedBlocks = isSeedanceLanding || isKlingLanding || isLtxLanding;
+  const usesCurrentAndSupportedBlocks = ['seedance', 'kling', 'ltx', 'wan', 'hailuo'].includes(modelLanding?.slug ?? '');
   const { engineFilterOptions, selectedEngine, selectedOption } = buildExamplesEngineFilterState({
     allVideos,
     collapsedEngineParam,
@@ -255,12 +246,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
     usesCurrentAndSupportedBlocks,
   });
   const pricingPath = buildPricingHref(locale as AppLocale);
-  const {
-    currentModelPagesLabel,
-    modelPagesLabel,
-    pricingLinkLabel,
-    supportedOlderVersionLabel,
-  } = getExamplesModelPageLabels({
+  const { currentModelPagesLabel, modelPagesLabel, pricingLinkLabel, supportedOlderVersionLabel } = getExamplesModelPageLabels({
     isKlingLanding,
     isLtxLanding,
     isSeedanceLanding,
@@ -276,8 +262,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
     locale: appLocale,
     pricingPath,
   });
-
-  const { videos, clientVideos } = await buildCurrentExamplesGalleryData({
+  const { videos, clientVideos, currentPrices } = prepareCurrentExamplesGalleryData({
     allVideos,
     locale: appLocale,
     selectedEngine,
@@ -318,9 +303,10 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
     sort,
     targetPage: currentPage + 1,
   });
-  const canonicalUrl = modelLanding
-    ? `${SITE}${galleryBasePath}/${modelLanding.slug}`
-    : `${SITE}${galleryBasePath}`;
+  const canonicalUrl = examplesPageUrl(
+    modelLanding ? `${SITE}${galleryBasePath}/${modelLanding.slug}` : `${SITE}${galleryBasePath}`,
+    sort === DEFAULT_SORT ? currentPage : 1,
+  );
   const mainVideoFeature = buildExamplesMainVideoFeatureData({
     locale: appLocale,
     mainVideo,
@@ -360,7 +346,8 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
       heroTitle={heroTitle}
       initialDesktopBatch={initialDesktopBatch}
       initialExamples={initialExamples}
-      promptStarters={buildExamplesPromptStarters(selectedEngine?.toLowerCase() ?? null, initialExamples, galleryVideos)}
+      priceSlots={buildExamplesPriceSlots(initialExamples, { currentPrices, locale: appLocale })}
+      promptStarters={buildExamplesVersionLinks(modelLinks, pageResult.versionSamples ?? [], selectedEngine ? getExampleFamilyCurrentModelSlugs(selectedEngine) : [])}
       initialMobileBatch={INITIAL_MOBILE_GALLERY_BATCH}
       isModelLanding={isModelLanding}
       itemListJson={itemListJson}

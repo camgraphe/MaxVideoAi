@@ -456,9 +456,9 @@ test('site Organization schema keeps one canonical complete entity', () => {
   const reference = buildSiteOrganizationReference();
   assert.equal(reference['@id'], organization['@id']);
   assert.ok(reference.sameAs.every((profile) => organization.sameAs.includes(profile)));
-  const coreLayout = readFileSync('frontend/app/(core)/layout.tsx', 'utf8');
-  assert.match(coreLayout, /const orgSchema = buildSiteOrganizationSchema\(\)/);
-  assert.doesNotMatch(coreLayout, /sameAs:/);
+  const appRuntime = readFileSync('frontend/app/_components/AppRuntime.tsx', 'utf8');
+  assert.match(appRuntime, /const orgSchema = buildSiteOrganizationSchema\(\)/);
+  assert.doesNotMatch(appRuntime, /sameAs:/);
 });
 
 test('homepage application features use the declared language and canonical provider entity', () => {

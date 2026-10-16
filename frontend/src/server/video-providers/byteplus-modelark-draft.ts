@@ -16,7 +16,9 @@ export type Seedance25FinalRequest = {
   model: string;
   content: [{ type: 'draft_task'; draft_task: { id: string } }];
   resolution: '1080p';
-  watermark: false;
+  watermark: boolean;
+  output_format?: 'mp4' | 'mov';
+  return_last_frame?: boolean;
 };
 
 export function buildSeedance25DraftRequest(input: DraftInput): Seedance25DraftRequest {
@@ -41,10 +43,16 @@ export function buildSeedance25DraftRequest(input: DraftInput): Seedance25DraftR
 export function buildSeedance25FinalRequest(input: {
   modelId: string;
   draftProviderTaskId: string;
+  outputFormat?: 'mp4' | 'mov';
+  returnLastFrame?: boolean;
+  watermark?: boolean;
 }): Seedance25FinalRequest {
   const model = input.modelId.trim();
   const draftProviderTaskId = input.draftProviderTaskId.trim();
-  if (!model || !draftProviderTaskId || draftProviderTaskId.length > 255 || /\s/u.test(draftProviderTaskId)) {
+  if (!model || !draftProviderTaskId || draftProviderTaskId.length > 255 || /\s/u.test(draftProviderTaskId)
+    || (input.outputFormat !== undefined && !['mp4', 'mov'].includes(input.outputFormat))
+    || (input.returnLastFrame !== undefined && typeof input.returnLastFrame !== 'boolean')
+    || (input.watermark !== undefined && typeof input.watermark !== 'boolean')) {
     throw new BytePlusModelArkError('Seedance 2.5 Draft reference is invalid.', {
       code: 'BYTEPLUS_DRAFT_REFERENCE_INVALID',
     });
@@ -53,6 +61,8 @@ export function buildSeedance25FinalRequest(input: {
     model,
     content: [{ type: 'draft_task', draft_task: { id: draftProviderTaskId } }],
     resolution: '1080p',
-    watermark: false,
+    watermark: input.watermark ?? false,
+    ...(input.outputFormat !== undefined ? { output_format: input.outputFormat } : {}),
+    ...(input.returnLastFrame !== undefined ? { return_last_frame: input.returnLastFrame } : {}),
   };
 }

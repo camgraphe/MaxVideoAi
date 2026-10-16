@@ -132,6 +132,23 @@ test('prepareGenerationInputs validates the submission mode when active mode lag
   });
 });
 
+test('Seedance Edit rejects inactive motion references instead of submitting them as source videos', () => {
+  const source = { ...field('video_url', 'video'), modes: ['v2v' as const] };
+  const references = { ...field('video_urls', 'video'), modes: ['ref2v' as const] };
+  const options = referenceBudgetPreparationOptions({ inputSchema: { optional: [source, references] }, fields: [source, references], inputAssets: {
+    video_urls: [asset({ id: 'motion', fieldId: 'video_urls', kind: 'video' })],
+    video_url: [asset({ id: 'source', fieldId: 'video_url', kind: 'video', url: 'https://example.test/original.mp4', previewUrl: 'https://example.test/preview.mp4' })],
+  } });
+  options.selectedEngineId = 'seedance-2-5'; options.activeMode = 'v2v'; options.submissionMode = 'v2v';
+  const rejected = prepareGenerationInputs(options);
+  assert.equal(rejected.ok, false);
+  delete options.inputAssets.video_urls;
+  const accepted = prepareGenerationInputs(options);
+  assertReady(accepted);
+  assert.deepEqual(accepted.referenceVideoUrls, ['https://example.test/original.mp4']);
+  assert.equal(accepted.inputsPayload?.[0].slotId, 'video_url');
+});
+
 test('prepareGenerationInputs orders attachments and derives generation URL groups', () => {
   const primary = field('image_url', 'image', 'Primary image');
   const references = field('image_urls', 'image', 'References');

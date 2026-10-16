@@ -48,13 +48,16 @@ const sample = {
 } as Parameters<typeof buildWatchAnchorText>[1];
 
 test('gallery affordance and accessible watch names describe settings and price', () => {
-  assert.equal(getExamplesGalleryUiCopy('en').detailsCta, 'View settings & price');
-  assert.equal(getExamplesGalleryUiCopy('fr').detailsCta, 'Voir réglages et prix');
-  assert.equal(getExamplesGalleryUiCopy('es').detailsCta, 'Ver ajustes y precio');
+  assert.equal(getExamplesGalleryUiCopy('en').detailsCta, 'View prompt, settings & price');
+  assert.equal(getExamplesGalleryUiCopy('fr').detailsCta, 'Voir prompt, réglages et prix');
+  assert.equal(getExamplesGalleryUiCopy('es').detailsCta, 'Ver prompt, ajustes y precio');
 
-  assert.match(buildWatchAnchorText('en', sample), /View settings and price for/);
-  assert.match(buildWatchAnchorText('fr', sample), /Voir les réglages et le prix de/);
-  assert.match(buildWatchAnchorText('es', sample), /Ver los ajustes y el precio de/);
+  assert.match(buildWatchAnchorText('en', sample), /View prompt, settings and price for/);
+  assert.match(buildWatchAnchorText('fr', sample), /Voir le prompt, les réglages et le prix de/);
+  assert.match(buildWatchAnchorText('es', sample), /Ver el prompt, los ajustes y el precio de/);
+  for (const locale of ['en', 'fr', 'es']) {
+    assert.match(buildWatchAnchorText(locale, { ...sample, sourcePromptExcerpt: 'The original public scene direction', prompt: 'Localized model caption' }), /The original public scene direction/);
+  }
 
   assert.match(cardSource, /aria-label=\{watchAnchorText\}/);
   assert.match(cardSource, /detailsCtaLabel/);

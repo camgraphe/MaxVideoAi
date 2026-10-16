@@ -52,5 +52,23 @@ test('workflow reads expose owned eligibility and expiry without provider identi
     assert.match((await views.readOwnedSeedanceWorkflowView('owner', 'draft', query))?.draft.message ?? '', /copyright/i);
     await db.pool.query(`UPDATE app_jobs SET message = 'Unrecognized private failure: req_private' WHERE job_id = 'draft'`);
     assert.equal((await views.readOwnedSeedanceWorkflowView('owner', 'draft', query))?.draft.message, null);
+    for (const mode of ['i2v', 'ref2v', 'v2v', 'extend']) {
+      const image = { name: 'owned', type: 'image/png', size: 100, kind: 'image', slotId: 'image_url', url: 'https://cdn.example/image.png', assetId: 'image' };
+      const video = { name: 'owned', type: 'video/mp4', size: 100, kind: 'video', slotId: 'video_urls', url: 'https://cdn.example/video.mp4', assetId: 'video' };
+      const facts = { schemaVersion: 1, mode, durationSec: 30, durationOption: 'auto', aspectRatio: 'auto',
+        hasVideoInput: mode !== 'i2v', ...(mode !== 'i2v' ? { inputVideoDurationSec: 5 } : {}),
+        attachments: [mode === 'i2v' ? image : video], trustedMediaReferences: [] };
+      await db.pool.query(`UPDATE app_jobs SET status='completed', duration_sec=5.2, aspect_ratio=NULL,
+        settings_snapshot=$1::jsonb WHERE job_id='draft'`, [JSON.stringify({ inputMode: mode,
+          core: { durationSec: 30, resolution: '480p', iterationCount: 1 }, seedanceWorkflow: { step: 'draft', mediaFacts: facts } })]);
+      await db.pool.query("UPDATE seedance_draft_links SET final_job_id=NULL, final_state='none'");
+      const inherited = await views.readOwnedSeedanceWorkflowView('owner', 'draft', query);
+      assert.equal(inherited?.eligibility, 'ready');
+      assert.equal(inherited?.settings.mode, mode);
+      assert.equal(inherited?.settings.durationSec, 30, 'a measured fractional output does not erase the original Auto price facts');
+      assert.equal(inherited?.settings.aspectRatio, 'auto');
+      assert.equal(inherited?.settings.durationOption, 'auto');
+      assert.doesNotMatch(JSON.stringify(inherited), /cdn\.example|private-provider-task/);
+    }
   } finally { await db.cleanup(); }
 });

@@ -97,7 +97,7 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, form, inputAs
     return null;
   })();
 
-  const workspaceExecutableModes = selectedEngine ? [...selectedEngine.modes] : [];
+  const workspaceExecutableModes = selectedEngine ? selectedEngine.modes.filter((mode) => isWorkspaceModeAvailable(selectedEngine, mode)) : [];
 
   const engineModeOptions = getEngineModeOptions(selectedEngine
     ? { ...selectedEngine, modes: workspaceExecutableModes }
@@ -291,7 +291,8 @@ export function resolveWorkspaceComposerFacts({
   const effectiveDurationSec = (() => {
     if (multiPromptActive) return multiPromptTotalSec;
     if (submissionMode === 'a2v' && typeof primaryAudioDurationSec === 'number') return primaryAudioDurationSec;
-    const hasSeparateOutputDuration = typeof selectedEngine?.inputSchema?.constraints?.maxSourcePlusOutputDurationSec === 'number';
+    const hasSeparateOutputDuration = typeof selectedEngine?.inputSchema?.constraints?.maxSourcePlusOutputDurationSec === 'number'
+      && !selectedEngine?.modeAvailability?.[submissionMode]?.inheritsSourceVideo;
     if ((submissionMode === 'v2v' || submissionMode === 'reframe') && typeof primaryVideoDurationSec === 'number'
       && !hasSeparateOutputDuration) {
       return primaryVideoDurationSec;

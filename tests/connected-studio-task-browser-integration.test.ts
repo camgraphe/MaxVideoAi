@@ -18,7 +18,7 @@ test('task ceilings, explicit continuation and saved progress work on desktop/mo
   const previous=process.env.DATABASE_URL;
   const runtime=await startStudioIntegrationRuntime({mcp:{studioMontageCreation:false},conversation:true,conversationTasks:true,initializeDatabase:async db=>{
     await initializeStudioConnectedFixture(db);
-    for(const name of ['00_create_profiles.sql','01_legal_documents.sql','02_user_consents.sql','04_profiles_timestamps.sql','12_app_settings.sql','30_mcp_paid_generation.sql','39_mcp_quote_lifetime.sql','49_studio_generation_scope.sql','50_studio_image_conversation.sql','51_studio_image_model_usage.sql','52_studio_conversation_runs.sql','53_studio_media_generation_scope.sql','54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','65_studio_task_budgets.sql'])await db.pool.query(await readFile('neon/migrations/'+name,'utf8'));
+    for(const name of ['00_create_profiles.sql','01_legal_documents.sql','02_user_consents.sql','04_profiles_timestamps.sql','12_app_settings.sql','30_mcp_paid_generation.sql','39_mcp_quote_lifetime.sql','49_studio_generation_scope.sql','50_studio_image_conversation.sql','51_studio_image_model_usage.sql','52_studio_conversation_runs.sql','53_studio_media_generation_scope.sql','54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','65_studio_task_budgets.sql','67_studio_luna_reasoning.sql'])await db.pool.query(await readFile('neon/migrations/'+name,'utf8'));
     await db.pool.query('ALTER TABLE app_jobs ADD COLUMN status text');
     await db.pool.query(`CREATE TABLE user_account_restrictions(user_id text PRIMARY KEY,reason text NOT NULL,message text,active boolean NOT NULL DEFAULT true,restricted_at timestamptz NOT NULL DEFAULT clock_timestamp())`);
   }});
@@ -95,6 +95,20 @@ test('task ceilings, explicit continuation and saved progress work on desktop/mo
       calls++;assert.equal(params.model,'gpt-6-luna');return {id:'zero-finished',model:params.model!,status:'completed' as const,service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50},output_text:JSON.stringify({reply:'Continued with zero Sol credits.'}),output:[]};
     }}});
     await expect(page.getByText('Continued with zero Sol credits.')).toBeVisible({timeout:15_000});assert.equal(calls,5);
+    await picker.getByRole('radio',{name:/Quick/}).check();
+    await message.fill('HEY!');
+    const greetingPosted=page.waitForResponse(response=>response.url().endsWith('/image-conversation')&&response.request().method()==='POST');
+    await send.click();assert.equal((await greetingPosted).status(),200);
+    await runStudioTaskWorkerOnce({...worker,serviceOptions:{...worker.serviceOptions,
+      countInputTokens:async()=>{throw new Error('A greeting must not count provider input.');},
+      createActionResponse:async()=>{throw new Error('A greeting must not buy a model call.');}}});
+    await expect(page.getByText('Hey! What would you like to create today?')).toBeVisible({timeout:15_000});
+    const greetingTask=page.getByRole('region',{name:'Studio task'}).last();
+    await expect(greetingTask.getByText('Request complete')).toBeVisible();
+    assert.equal(calls,5);
+    const greetingUsage=(await runtime.database.pool.query('SELECT sum(consumed_credits)::int consumed,sum(reserved_credits)::int reserved FROM studio_assistance_credit_lots WHERE user_id=$1',[STUDIO_FIXTURE_OWNERS[0]])).rows[0];
+    assert.deepEqual(greetingUsage,{consumed:500,reserved:0});
+    await page.reload();await expect(page.getByText('Hey! What would you like to create today?')).toBeVisible();assert.equal(calls,5);
   }catch(error){
     console.error(summarizeStudioReadinessFailure(runtime.readLogs(),8000));
     throw error;

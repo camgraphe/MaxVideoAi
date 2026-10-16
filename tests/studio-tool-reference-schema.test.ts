@@ -40,7 +40,7 @@ function enumIds(properties: Readonly<Record<string, unknown>>) {
 }
 function parameters(name: string, ids: string[]) {
   const selected = ids.map(assetId => ({ref: {type: 'asset', assetId, kind: 'image'}, role: 'reference', slot: null}));
-  if(name==='pricing_compare') return {surface:'image',mode:'i2i',prompt:'A quiet product image',settings:[],references:selected,baselineModelId:null,baselineSettings:null,candidateModelIds:null,outputCount:1};
+  if(name==='pricing_compare') return {surface:'image',mode:'i2i',prompt:'A quiet product image',settings:[],references:selected,baselineModelId:null,baselineSettings:null,candidateModelIds:null,filmDurationSec:null,outputCount:1};
   return name === 'image_prepare'
     ? {reply: 'Review the quote.', prompt: 'A quiet product image.', aspectRatio: '16:9', modelId: null,
       mode: null, settings: null, outputCount: 1, references: selected}

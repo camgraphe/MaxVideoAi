@@ -94,6 +94,7 @@ export function PayAsYouGoPriceLookupShortcutsSection({ data }: PayAsYouGoPageDa
                   {lookup.price}
                 </span>
               </div>
+              <p className="mt-3 text-xs text-text-muted">{lookup.context}</p>
               <p className="mt-4 text-xs font-semibold uppercase tracking-micro text-text-muted">{lookup.query}</p>
               <h3 className="mt-2 text-base font-semibold leading-snug text-text-primary">{lookup.title}</h3>
               <p className="mt-2 text-sm leading-6 text-text-secondary">{lookup.body}</p>
@@ -120,8 +121,19 @@ export function PayAsYouGoExampleCostsSection({ data }: PayAsYouGoPageDataProps)
               <p className="mt-3 text-sm font-semibold text-text-primary">{cost.engine}</p>
               <p className="mt-2 font-mono text-lg font-semibold tabular-nums text-text-primary">{cost.price}</p>
               <p className="mt-1 text-xs font-semibold text-text-muted">{cost.context}</p>
+              <p className="mt-3 text-xs text-text-secondary">{data.exampleCosts.quoteReminder}</p>
             </Link>
           ))}
+        </div>
+        <div className="mt-6 max-w-3xl space-y-3 text-sm leading-6 text-text-secondary">
+          {data.exampleCosts.budget ? (
+            <p><strong className="text-text-primary">{data.exampleCosts.budgetContext}</strong> {data.exampleCosts.budget}</p>
+          ) : null}
+          <p>{data.exampleCosts.budgetCaveat}</p>
+          <p>{data.exampleCosts.studioAssistance}</p>
+          <Link href="/app/studio" className="inline-flex min-h-11 items-center font-semibold text-[#1F5EFF] hover:underline">
+            {data.exampleCosts.studioLinkLabel}
+          </Link>
         </div>
       </div>
     </section>

@@ -7,13 +7,21 @@ import {
   LUMA_RAY2_ERROR_UNSUPPORTED,
 } from '@/lib/luma-ray2';
 import { isHappyHorseEngineId } from '@/lib/happy-horse-workflow';
-import type { EngineInputSchema, Mode } from '@/types/engines';
+import { isArchivedGenerationModel, archivedGenerationMessage } from '@/lib/model-generation-policy';
+import { getEngineModeUnavailableMessage } from '@/lib/engine-mode-availability';
+import type { EngineCaps, EngineInputSchema, Mode } from '@/types/engines';
 import type { GenerationAttachmentPayload } from './workspace-generation-inputs';
 import { normalizeExtraInputValue, type FormState } from './workspace-form-state';
 import type { WorkspaceInputFieldEntry, WorkspaceInputSchemaSummary } from './workspace-input-schema';
 import type { ReferenceAsset } from './workspace-assets';
 import { VIDEO_MEDIA_FIELD_CANDIDATES } from '@/lib/video-input-schema';
 import { fieldAcceptsMode, hasMultimodalReferenceFields } from './workspace-multimodal-workflow';
+
+export function getWorkspaceGenerationModeMessage(engine: EngineCaps, mode: Mode, locale: string): string | null {
+  return isArchivedGenerationModel(engine.id)
+    ? archivedGenerationMessage(locale)
+    : getEngineModeUnavailableMessage(engine, mode, locale);
+}
 
 export type LumaRay2GenerationContext = {
   isLumaRay2: boolean;
@@ -209,7 +217,8 @@ export function getGenerationIterationGuardMessage(options: GenerationIterationG
 
   if (isReferenceImageMode) {
     if (options.isUnifiedSeedance) {
-      if (options.referenceImageUrls.length === 0 && options.referenceVideoUrls.length === 0) {
+      if (options.referenceImageUrls.length === 0 && options.referenceVideoUrls.length === 0
+        && !(options.selectedEngineId === 'seedance-2-5' && options.referenceAudioUrls.length > 0)) {
         return options.referenceAudioUrls.length > 0
           ? options.addReferenceMediaBeforeAudioMessage ?? 'Add reference media before adding audio.'
           : 'Add at least one reference image or reference video before running Seedance Reference → Video.';

@@ -18,7 +18,7 @@ export function manualTariffDurations(entry: FalEngineEntry, mode: Mode, duratio
     const numeric = [...new Set(duration.options.map(numericTariffDuration).filter((v): v is number => v !== null))];
     const values: DurationValue[] = numeric.map(durationSec => ({ durationSec }));
     const auto = duration.options.includes('auto');
-    const reviewedAuto = ['flux-3', 'flux-3-draft', 'ltx-2-5-fast', 'ltx-2-5-pro', 'seedance-2-0', 'seedance-2-0-fast'].includes(entry.id);
+    const reviewedAuto = ['flux-3', 'flux-3-draft', 'ltx-2-5-fast', 'ltx-2-5-pro', 'seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'seedance-2-5'].includes(entry.id);
     if (auto && reviewedAuto && Number.isInteger(max) && max <= 60) {
       const min = entry.id.startsWith('seedance') ? Math.min(...numeric) : 1;
       for (let durationSec = min; durationSec <= max; durationSec++) {

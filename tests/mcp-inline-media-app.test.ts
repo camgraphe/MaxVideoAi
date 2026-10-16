@@ -18,12 +18,13 @@ import {
   type MaxVideoAiMcpServices,
 } from '../frontend/src/server/mcp/server';
 
-const TEMPLATE_URI = 'ui://maxvideoai/generation-result-v5.html';
+const TEMPLATE_URI = 'ui://maxvideoai/generation-result-v6.html';
 const LEGACY_TEMPLATE_URIS = [
   'ui://maxvideoai/generation-result-v1.html',
   'ui://maxvideoai/generation-result-v2.html',
   'ui://maxvideoai/generation-result-v3.html',
   'ui://maxvideoai/generation-result-v4.html',
+  'ui://maxvideoai/generation-result-v5.html',
 ] as const;
 
 const principal: AgentPrincipal = {
@@ -194,7 +195,7 @@ test('generation presenter resource is a portable light and dark MCP App with na
   assert.match(html, /new ResizeObserver\(/);
   assert.match(html, /ui\/notifications\/tool-result/);
   assert.match(html, /ui\/open-link/);
-  assert.match(html, /<button\b[^>]*id=["']download["'][^>]*>Download<\/button>/is);
+  assert.match(html, /<button\b[^>]*id=["']download["'][^>]*>Download original<\/button>/is);
   assert.match(html, /<button\b[^>]*id=["']reuse["'][^>]*>Reuse settings<\/button>/is);
   assert.match(html, /buildResultLibraryUrl\(libraryUrl,\s*result\?\.jobId,\s*result\?\.surface\)/);
   assert.match(html, /searchParams\.set\(['"]view['"],\s*['"]review['"]\)/);

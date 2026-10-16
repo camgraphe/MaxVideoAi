@@ -1,5 +1,6 @@
 import type { AssetLibrarySource } from '@/components/library/AssetLibraryBrowser';
 import { authFetch } from '@/lib/authFetch';
+import { uploadVideoFile } from '@/lib/client-video-upload';
 import {
   DEFAULT_UPSCALE_IMAGE_ENGINE_ID,
   DEFAULT_UPSCALE_VIDEO_ENGINE_ID,
@@ -171,19 +172,26 @@ export function mediaTypeFromMime(mime?: string | null): UpscaleMediaType | null
 }
 
 export async function uploadSourceFile(file: File, mediaType: UpscaleMediaType): Promise<UploadedAsset> {
+  if (mediaType === 'video') return uploadVideoFile(file);
+
   const form = new FormData();
   form.append('file', file);
-  const response = await authFetch(mediaType === 'video' ? '/api/uploads/video' : '/api/uploads/image', {
+  const response = await authFetch('/api/uploads/image', {
     method: 'POST',
     body: form,
   });
   const payload = (await response.json().catch(() => null)) as {
     ok?: boolean;
     error?: string;
+    maxMB?: number;
     asset?: UploadedAsset;
   } | null;
   if (!response.ok || !payload?.ok || !payload.asset?.url) {
-    throw new Error(payload?.error ?? `Upload failed (${response.status})`);
+    throw Object.assign(new Error(payload?.error ?? 'Upload failed'), {
+      code: payload?.error,
+      status: response.status,
+      maxMB: payload?.maxMB,
+    });
   }
   return payload.asset;
 }

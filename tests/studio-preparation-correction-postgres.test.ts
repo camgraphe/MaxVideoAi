@@ -88,7 +88,7 @@ test('safe selection correction preserves durable receipts, ownership and moneta
         settings:[{name:'durationSec',value:20},{name:'resolution',value:'1080p'},{name:calls===3?'generateAudio':'audio',value:true},{name:'aspectRatio',value:'9:16'}]},calls);
     });
     assert.equal(ready.error,undefined);assert.equal(calls,4);assert.equal(ready.quotes.length,1);
-    assert.deepEqual(ready.quotes[0].request_json.settings,{durationSec:20,resolution:'1080p',audio:true,aspectRatio:'9:16'});
+    assert.deepEqual(ready.quotes[0].request_json.settings,{durationSec:20,resolution:'1080p',audio:true,aspectRatio:'9:16',outputFormat:'mp4',returnLastFrame:false,watermark:false});
     assert.deepEqual(ready.steps.map(step=>step.request.action),['catalog.read','model.details','video.prepare','video.prepare']);
     assert.equal(ready.steps[2].result.ok,false);assert.equal(ready.steps[3].result.ok,true);
     assert.deepEqual(ready.counts,{jobs:0,charges:0});

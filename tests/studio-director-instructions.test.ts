@@ -24,6 +24,7 @@ test('director sends creative purpose, current help and live quote rules with it
       assert.match(instructions,/prompt.*single asset.*edit/i);
       assert.match(instructions,/editorialGuidance/);
       assert.match(instructions,/reviewStatus/);
+      assert.match(instructions,/Vary.*shot.*subject.*continuity/);
       assert.match(instructions,/MaxVideoAI.*quote/i);
       assert.match(instructions,/competitor|provider prices/i);
       assert.match(instructions,/Projects opens/);

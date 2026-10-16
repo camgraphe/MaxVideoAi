@@ -16,6 +16,8 @@ export interface QuadPreviewTile {
   iterationIndex: number;
   iterationCount: number;
   videoUrl?: string;
+  playbackVideoUrl?: string;
+  lastFrameUrl?: string;
   previewVideoUrl?: string;
   thumbUrl?: string;
   aspectRatio: string;

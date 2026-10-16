@@ -137,6 +137,7 @@ function toExampleCard(video: GalleryVideo, locale: AppLocale, currentPrice?: Cu
     engineBrandId: engineMeta?.brandId,
     priceLabel,
     prompt: promptDisplay,
+    sourcePromptExcerpt: formatPromptExcerpt(video.promptExcerpt?.trim() || video.prompt?.trim() || '') || null,
     promptFull: video.prompt ?? null,
     aspectRatio: video.aspectRatio ?? null,
     durationSec: video.durationSec,

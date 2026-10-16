@@ -8,8 +8,9 @@ import { applyBytePlusTrialOutcomeSafely } from './byteplus-trial-outcomes';
 import type { BytePlusTerminalTrialOutcome } from './byteplus-trial-job-persistence';
 import type { BytePlusPendingJob } from './byteplus-poll-types';
 import { reconcileSeedanceWorkflowOutcome } from './seedance-workflow-outcome';
+import { requiresBytePlusDurableEditOutput } from './byteplus-output-persistence';
 
-const ACTIVE_JOB_STATUSES = ['pending', 'queued', 'running', 'processing', 'in_progress'];
+const ACTIVE_JOB_STATUSES = ['pending', 'queued', 'running', 'processing', 'in_progress', 'provider_polling_stalled'];
 
 export type BytePlusProviderFailure = {
   providerErrorCode: string | null;
@@ -137,6 +138,16 @@ export async function markBytePlusJobFailed(
           WHERE job_id = $1 AND payment_status = 'paid_wallet'`,
         [failedJob.job_id],
       );
+    }
+    if (requiresBytePlusDurableEditOutput(failedJob)) {
+      await executor.query(`UPDATE mcp_generation_quotes q SET state = 'failed', updated_at = now()
+        FROM app_jobs j WHERE j.job_id = $1 AND j.user_id IS NOT DISTINCT FROM $2
+          AND j.status = 'failed' AND j.payment_status = 'refunded_wallet'
+          AND q.quote_id::text = j.job_id AND q.job_id = j.job_id AND q.user_id = j.user_id
+          AND q.state IN ('claimed','accepted') AND q.funding_mode = 'wallet'
+          AND q.price_cents = j.final_price_cents AND UPPER(q.currency) = UPPER(j.currency)
+          AND q.request_json->>'engineId' = 'seedance-2-5' AND q.request_json->>'mode' = 'v2v'`,
+      [failedJob.job_id, failedJob.user_id]);
     }
     return { job: failedJob, refunded };
   });

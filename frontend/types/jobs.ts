@@ -13,6 +13,9 @@ export interface Job {
   thumbUrl?: string | null;
   videoUrl?: string;
   previewVideoUrl?: string | null;
+  playbackVideoUrl?: string | null;
+  outputPreparationState?: 'active' | 'manual_review';
+  lastFrameUrl?: string | null;
   audioUrl?: string | null;
   readyVideoUrl?: string | null;
   createdAt: string;

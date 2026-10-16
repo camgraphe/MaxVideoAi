@@ -17,6 +17,7 @@ type WalletTopupPanelProps = {
   checkoutCaptchaRequired: boolean;
   checkoutCaptchaResetGeneration: number;
   checkoutCaptchaToken: string | null;
+  takeCheckoutCaptchaToken: () => string | null;
   copy: BillingCopy;
   currencyLoading: boolean;
   currencyOptions: string[];
@@ -61,6 +62,7 @@ export function WalletTopupPanel(props: WalletTopupPanelProps) {
     checkoutCaptchaRequired,
     checkoutCaptchaResetGeneration,
     checkoutCaptchaToken,
+    takeCheckoutCaptchaToken,
     copy,
     currencyLoading,
     currencyOptions,
@@ -161,6 +163,7 @@ export function WalletTopupPanel(props: WalletTopupPanelProps) {
                 {turnstileSiteKey ? (
                   <div className="mt-3">
                     <TurnstileChallenge
+                      locale={locale}
                       siteKey={turnstileSiteKey}
                       onToken={handleCheckoutCaptchaToken}
                       onError={handleCheckoutCaptchaError}
@@ -182,6 +185,8 @@ export function WalletTopupPanel(props: WalletTopupPanelProps) {
                 chargeCurrency={normalizedChargeCurrency}
                 locale={locale}
                 captchaToken={checkoutCaptchaToken}
+                takeCaptchaToken={takeCheckoutCaptchaToken}
+                captchaSiteKey={turnstileSiteKey}
                 session={session}
                 stripePromise={stripePromise}
                 labels={{

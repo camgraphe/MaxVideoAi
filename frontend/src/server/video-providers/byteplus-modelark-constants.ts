@@ -26,7 +26,7 @@ export const BYTEPLUS_SEEDANCE_RESOLUTIONS: Resolution[] = ['480p', '720p', '108
 export const BYTEPLUS_SEEDANCE_FAST_RESOLUTIONS: Resolution[] = ['480p', '720p'];
 export const BYTEPLUS_SEEDANCE_MINI_RESOLUTIONS: Resolution[] = ['480p', '720p'];
 export const BYTEPLUS_SEEDANCE_ASPECT_RATIOS: AspectRatio[] = ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'];
-export const BYTEPLUS_SEEDANCE_DURATION_OPTIONS = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] as const;
+export const BYTEPLUS_SEEDANCE_DURATION_OPTIONS = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] as const;
 export const BYTEPLUS_SEEDANCE_MINI_DURATION_OPTIONS = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] as const;
 export const BYTEPLUS_SEEDANCE_2_5_DURATION_OPTIONS = Array.from(
   { length: 27 },
@@ -34,6 +34,7 @@ export const BYTEPLUS_SEEDANCE_2_5_DURATION_OPTIONS = Array.from(
 );
 export const BYTEPLUS_SEEDANCE_2_5_RESOLUTIONS: Resolution[] = ['480p', '720p', '1080p'];
 export const BYTEPLUS_SEEDANCE_2_5_ASPECT_RATIOS: AspectRatio[] = [
+  'auto',
   '21:9',
   '16:9',
   '4:3',

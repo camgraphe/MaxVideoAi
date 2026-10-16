@@ -15,6 +15,7 @@ const WALLET_TOPUP_CHECKOUT_SESSION_TTL_SECONDS = 31 * 60;
 const WALLET_TOPUP_MIN_AMOUNT_CENTS = 1000;
 
 type BuildWalletTopUpCheckoutSessionParamsArgs = {
+  blockAmexCards?: boolean;
   fxQuote?: { rate: number; source: string; marginBps?: number; rateTimestamp?: string };
   currency: string;
   settlementAmountCents: number;
@@ -44,6 +45,7 @@ export function normalizeWalletTopUpAmountCents(value: unknown): number | null {
 }
 
 export function buildWalletTopUpCheckoutSessionParams({
+  blockAmexCards = false,
   fxQuote,
   currency,
   settlementAmountCents,
@@ -93,6 +95,14 @@ export function buildWalletTopUpCheckoutSessionParams({
     metadata: { ...sessionMetadata, ...fxMetadata },
     payment_intent_data: paymentIntentData,
   };
+
+  // Hosted Checkout enforces this for entered, saved, Link and wallet cards.
+  // Keep the separate native Elements flow available with its current methods.
+  if (blockAmexCards && checkoutUiMode !== 'elements') {
+    params.payment_method_options = {
+      card: { restrictions: { brands_blocked: ['american_express'] } },
+    } as NonNullable<WalletTopUpCheckoutSessionParams['payment_method_options']>;
+  }
 
   const customerId = normalizeOptionalStripeId(customer);
   if (customerId) {

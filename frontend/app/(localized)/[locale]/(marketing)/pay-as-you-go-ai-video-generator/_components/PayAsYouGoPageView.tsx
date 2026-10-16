@@ -21,6 +21,7 @@ import {
 } from './PayAsYouGoPricingSections';
 import { PayAsYouGoFaqSection, PayAsYouGoRefundPolicySection } from './PayAsYouGoTrustSections';
 import { PayAsYouGoVideoShowcase } from './PayAsYouGoVideoShowcase';
+import { PayAsYouGoHeroQuoteCard } from './PayAsYouGoHeroQuoteCard';
 
 export type PayAsYouGoPageViewProps = {
   data: PayAsYouGoPageData;
@@ -31,7 +32,15 @@ export type PayAsYouGoPageViewProps = {
 export function PayAsYouGoPageView({ data, showcaseCopy, showcaseVideos }: PayAsYouGoPageViewProps) {
   return (
     <div className="bg-bg">
-      <PayAsYouGoHeroSection data={data} />
+      <PayAsYouGoHeroSection data={data} quoteCard={<PayAsYouGoHeroQuoteCard data={data} />} />
+      <PayAsYouGoPageSections data={data} showcaseCopy={showcaseCopy} showcaseVideos={showcaseVideos} />
+    </div>
+  );
+}
+
+export function PayAsYouGoPageSections({ data, showcaseCopy, showcaseVideos }: PayAsYouGoPageViewProps) {
+  return (
+    <>
       <PayAsYouGoVideoShowcase videos={showcaseVideos} copy={showcaseCopy} />
       <PayAsYouGoNaturalQuestionsSection data={data} />
       <PayAsYouGoModelTestingOrderSection data={data} />
@@ -46,6 +55,6 @@ export function PayAsYouGoPageView({ data, showcaseCopy, showcaseVideos }: PayAs
       <PayAsYouGoExampleCostsSection data={data} />
       <PayAsYouGoRefundPolicySection data={data} />
       <PayAsYouGoFaqSection data={data} />
-    </div>
+    </>
   );
 }

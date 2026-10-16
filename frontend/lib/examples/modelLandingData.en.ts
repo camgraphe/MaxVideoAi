@@ -1,3 +1,4 @@
+import { getEvergreenExampleFamilyCopy } from './family-overview';
 import type { CanonicalExampleModelSlug, LocalizedModelDescriptor } from '@/lib/examples/modelLandingTypes';
 
 export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedModelDescriptor>> = {
@@ -72,12 +73,7 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   wan: {
-    metaTitle: 'Wan 3 & Wan 3 Prime Examples: Prompts & Settings | MaxVideoAI',
-    metaDescription: 'Watch Wan 3 and Wan 3 Prime video examples. Open each result for its prompt, settings and current price estimate; earlier Wan versions remain identified.',
-    heroTitle: 'Wan 3 & Wan 3 Prime examples',
-    subtitle: 'Compare Wan 3 and Wan 3 Prime videos. Open a clip for its prompt, settings and current price estimate.',
-    guideTitle: 'Wan 3, Wan 3 Prime and earlier results',
-    intro: 'This gallery brings together Wan 3 and Wan 3 Prime, alongside older Wan results. Each video names the model that made it. Watch the full clip for motion, framing and scene continuity, then open it for the actual prompt, settings and current price estimate. Check the current quote before creating a new version.',
+    ...getEvergreenExampleFamilyCopy('en', 'Wan'),
     sectionTitles: ['How to prompt a Wan video', 'What to check in Wan 3 and Prime results', 'Current price estimate and current Wan quote'],
     promptPatterns: "Describe one subject, one main action and a camera movement. If the shot has several stages, put them in order and keep the sequence short enough to follow. Change one instruction at a time when testing.",
     strengthsLimits: "Watch the whole clip for changes in the subject, unexpected cuts and motion that does not follow the prompt. Inputs, duration and output options vary across Wan models, so check the selected version and mode.",
@@ -111,11 +107,8 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   kling: {
+    ...getEvergreenExampleFamilyCopy('en', 'Kling'),
     metaTitle: 'Kling AI Video Examples: Prompts, Motion & Product Shots',
-    metaDescription: "Watch Kling 3 and Kling 3.0 Omni video examples. Explore prompts, image-to-video and reference workflows, then inspect settings and current price estimates.",
-    heroTitle: 'Kling AI Video Examples, Prompts & Settings',
-    subtitle: "Kling 3 and Kling 3.0 Omni examples: see how opening images and visual references shape a shot.",
-    intro: "Watch Kling video examples, then open a result for its prompt and settings. Compare Kling 3 opening-image animation with Kling 3.0 Omni reference and video-editing workflows. Each example identifies the model used.",
     summary:
       'Kling 3.0 Omni Pro and Standard are the current routes for reference images, storyboard inputs, and source-video V2V. Kling 3 Pro and Standard remain the start-frame image-to-video routes, while Kling 3.0 Omni 4K is the native 4K reference-guided delivery route.',
     promptPatterns: "Decide whether an uploaded image should guide the video as a reference or appear as its first frame. Use @Image1 and @Video1 to identify sources in supported Omni modes. For Kling 3 image-to-video, describe the motion that should develop from the opening image.",
@@ -148,11 +141,7 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   seedance: {
-    metaTitle: 'Seedance 2.5 Video Examples, Prompts & Settings | MaxVideoAI',
-    metaDescription: "Watch Seedance 2.5 video examples with prompts and settings. Compare results from other Seedance versions and use an example as a starting point.",
-    heroTitle: 'Seedance 2.5, 2.0, Fast & Mini video examples',
-    subtitle: "Seedance 2.5 and earlier versions: watch the results, inspect the prompts and find a starting point.",
-    intro: "Explore Seedance 2.5 examples alongside Seedance 2.0, Fast and Mini. Open a video to inspect its prompt, settings and current price estimate. Each result keeps its original model label so you can compare the versions accurately.",
+    ...getEvergreenExampleFamilyCopy('en', 'Seedance'),
     summary: "Seedance 2.5 supports 4–30 second videos up to 1080p, generated audio, references, editing and extension. Seedance 2.0 remains available for 4K; Fast offers ordinary iteration renders and Mini focuses on value-oriented batches. Earlier 1.5 Pro videos remain labeled, although new 1.5 generations are closed.",
     promptPatterns:
       'For Seedance 2.5, define one core action, camera direction and reference role before adding scene detail. Keep the same prompt structure when comparing 2.5 with Seedance 2.0, Fast or Mini.',
@@ -178,18 +167,21 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   ltx: {
-    metaTitle: "LTX Video Examples, Prompts & Settings | MaxVideoAI",
-    metaDescription:
-      "Explore LTX 2.5 Pro and Fast video examples, prompts and settings, with clearly labelled LTX 2.3 and LTX 2 examples for older workflows.",
-    heroTitle: "LTX video examples, prompts and settings",
-    subtitle: "LTX 2.5 Pro and Fast examples, with LTX 2.3 and LTX 2 clearly identified.",
-    intro: "Watch LTX 2.5 Pro and Fast examples, then open a video for its prompt, settings and current price estimate. Earlier LTX 2.3 and LTX 2 results keep their original labels so you can compare versions.",
+    ...getEvergreenExampleFamilyCopy('en', 'LTX'),
     summary:
       "LTX 2.5 Pro and Fast lead this page. Older LTX 2.3 and LTX 2 examples keep their original model labels so you can compare generations without confusing their capabilities.",
     promptPatterns: "Describe the subject, action, camera movement and visual style. For image-to-video, explain how the scene should move from the opening image. Keep the same starting point and change one instruction at a time.",
     strengthsLimits: "Compare the whole clip across Pro and Fast: does the motion follow the prompt, and does the subject remain consistent? Use the same source image for image-to-video tests. A successful example is a starting point, not a guarantee of identical results.",
     pricingNotes: "Keep the model, mode, duration, resolution and available audio settings explicit when comparing costs. The detail page records the cost of that example; check the current quote in the workspace before generating your version.",
     faq: [
+      {
+        question: "Where can I find LTX 2.3 prompt examples?",
+        answer: "Look for videos labelled LTX 2.3 Pro or LTX 2.3 Fast in this family gallery and use Next to browse older examples. Open a video for its original prompt and recorded settings, then consult the linked LTX 2.3 model page for that version’s supported modes. LTX 2.5 examples are labelled separately; a current price estimate is not the historical cost of the original render.",
+      },
+      {
+        question: 'How should I structure an LTX 2.3 prompt?',
+        answer: 'Start from a labelled LTX 2.3 example and inspect its original prompt. Identify the subject, main action, camera direction and visual style. For an image-to-video example, separate what the opening image already supplies from the movement described in the prompt. Keep the recorded duration, framing and model version alongside the text when comparing results; LTX 2.5 examples are a separate baseline.',
+      },
       {
         question: 'What are the best LTX 2.5 prompt examples to start from?',
         answer:
@@ -244,9 +236,7 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   hailuo: {
-    heroTitle: 'MiniMax H3 & H3 Max video examples',
-    subtitle: "MiniMax H3 Max, H3 and earlier Hailuo video examples, with prompts and settings to explore.",
-    intro: "Watch MiniMax H3 Max and H3 alongside earlier Hailuo examples. Open a video to inspect its prompt, settings and current price estimate, then use it as a starting point for your own scene.",
+    ...getEvergreenExampleFamilyCopy('en', 'MiniMax (Hailuo)'),
     summary: "Each MiniMax or Hailuo example keeps the name of the model that generated it. Compare motion, scene continuity and any audio across the full clip. Use the H3 and H3 Max model pages to check the inputs and settings available for your project.",
     promptPatterns: "Start with the subject, one clear action and camera direction. Add scene or sound instructions when relevant to the selected model. For reference-based work, give each permitted source a clear role and check that the model supports that input.",
     strengthsLimits: "Judge the full result: subject identity, motion, framing and any generated audio. H3 Max, H3 and older Hailuo models have different modes and output choices. An example shows one result; it does not establish perfect consistency or identical controls across the family.",

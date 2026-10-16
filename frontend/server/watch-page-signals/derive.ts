@@ -29,10 +29,11 @@ export function deriveWatchPageSignals(params: {
   const engineSlug = editorial?.modelSlug ?? engineEntry?.modelSlug ?? entry?.engineSlug ?? normalizeEngineId(video.engineId ?? '') ?? null;
   const engineLabel = engineEntry?.marketingName ?? entry?.engineLabel ?? video.engineLabel ?? 'AI video engine';
   const exampleFamily =
-    editorial?.examplesSlug ?? entry?.exampleFamily ?? resolveExampleCanonicalSlug(entry?.engineSlug ?? engineSlug ?? video.engineId ?? null);
+    resolveExampleCanonicalSlug(engineSlug ?? video.engineId) ??
+    resolveExampleCanonicalSlug(editorial?.examplesSlug ?? entry?.exampleFamily);
   const exampleFamilyLabel = formatClusterLabel(exampleFamily ?? entry?.engineFamily ?? null);
   const modelPath = editorial?.modelSlug ? `/models/${editorial.modelSlug}` : engineEntry?.seo.canonicalPath ?? (entry?.sourceType === 'models' ? entry.sourcePath : null);
-  const parentPath = editorial?.examplesSlug ? `/examples/${editorial.examplesSlug}` : exampleFamily ? `/examples/${exampleFamily}` : modelPath ?? entry?.sourcePath ?? '/examples';
+  const parentPath = exampleFamily ? `/examples/${exampleFamily}` : modelPath ?? entry?.sourcePath ?? '/examples';
   const parentLabel = exampleFamilyLabel ? `Browse ${exampleFamilyLabel} video examples` : 'Browse video examples';
   const modelLabel = `Open ${engineLabel} model page`;
   const promptText = snapshot.prompt || video.prompt || '';

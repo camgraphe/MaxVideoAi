@@ -100,6 +100,8 @@ export function mergeImageProgressGroup(
       thumbUrl: member.thumbUrl ?? fallbackPreview?.thumbUrl ?? null,
       videoUrl: member.videoUrl ?? fallbackPreview?.videoUrl ?? null,
       previewVideoUrl: member.previewVideoUrl ?? fallbackPreview?.previewVideoUrl ?? null,
+      playbackVideoUrl: member.playbackVideoUrl ?? fallbackPreview?.playbackVideoUrl ?? null,
+      lastFrameUrl: member.lastFrameUrl ?? fallbackPreview?.lastFrameUrl ?? null,
       aspectRatio: member.aspectRatio ?? fallbackPreview?.aspectRatio ?? null,
       source: fallbackPreview?.source ?? member.source ?? null,
     };

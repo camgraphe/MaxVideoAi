@@ -16,6 +16,7 @@ import type {StudioQuoteDiscardResult} from './conversation-quote-command';
 import {studioVisualCapabilityDetails,studioVisualCapabilitySummary,studioAudioCapabilityDetails} from './conversation-capabilities';
 import {conversationSelectionSettings} from '@/lib/studio/conversation-creation-contract';
 import {studioAudioCapabilitySummary} from './conversation-audio-discovery';
+import {priceStudioFilm} from './conversation-film-pricing';
 
 export function createStudioActionExecutor(actor: StudioGenerationActor, dependencies: {
   enabled: boolean;
@@ -65,8 +66,11 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
               if(selection.ref.type!=='asset') throw new AgentApiError('REFERENCE_INVALID','Attach a saved library image.');
               return {kind:'asset' as const,assetId:selection.ref.assetId,role:selection.role,...(selection.slot==null?{}:{slot:selection.slot})};
             })};
-          if(request.action==='pricing.compare') return {ok:true,action:request.action,data:await service.compare({...scenario,prompt:request.prompt,
-            ...(request.baselineModelId?{baselineModelId:request.baselineModelId}:{}),...(request.baselineSettings?{baselineSettings:conversationSelectionSettings(request.baselineSettings)}:{}),...(request.candidateModelIds?{candidateModelIds:request.candidateModelIds}:{})})};
+          if(request.action==='pricing.compare') {
+            const comparison={...scenario,prompt:request.prompt,
+              ...(request.baselineModelId?{baselineModelId:request.baselineModelId}:{}),...(request.baselineSettings?{baselineSettings:conversationSelectionSettings(request.baselineSettings)}:{}),...(request.candidateModelIds?{candidateModelIds:request.candidateModelIds}:{})};
+            return {ok:true,action:request.action,data:request.filmDurationSec?await priceStudioFilm(comparison,request.filmDurationSec,service):await service.compare(comparison)};
+          }
           return {ok:true,action:request.action,data:await service.estimate({...scenario,engineId:request.modelId,prompt:'Studio pricing scenario',outputCount:1})};
         }
         case 'export.prepare':

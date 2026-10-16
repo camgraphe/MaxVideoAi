@@ -1,78 +1,15 @@
-import { ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { Link } from '@/i18n/navigation';
-import type { PayAsYouGoPageData } from '../_lib/payg-page-data';
+import type { PayAsYouGoHeroData, PayAsYouGoPageData } from '../_lib/payg-page-data';
 import { PAYG_CONTAINER_CLASS_NAME, PayAsYouGoSectionHeader } from './PayAsYouGoSectionPrimitives';
 
 type PayAsYouGoPageDataProps = {
   data: PayAsYouGoPageData;
 };
 
-function HeroQuoteCard({ data }: PayAsYouGoPageDataProps) {
-  const { quote } = data.hero;
-
-  return (
-    <div className="relative overflow-hidden rounded-[8px] border border-hairline bg-surface shadow-card">
-      <div className="h-1 bg-[linear-gradient(90deg,#14A46C,#1F5EFF)]" />
-      <div className="p-4 sm:p-5">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{quote.consoleLabel}</p>
-            <p className="mt-1 text-sm font-semibold text-text-primary">{quote.title}</p>
-          </div>
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-hairline bg-bg text-[#14A46C]">
-            <Sparkles className="h-5 w-5" strokeWidth={1.9} />
-          </span>
-        </div>
-
-        <div className="mt-5 grid gap-2">
-          {quote.previewRows.map((row) => (
-            <div key={row.id} className="flex items-center justify-between gap-3 rounded-[8px] border border-hairline bg-bg px-3 py-2.5">
-              <div className="flex min-w-0 items-center gap-2.5">
-                <EngineIcon engine={row.engineIcon} imageAlt={`${row.engineName} ${data.common.aiVideoModelAlt}`} size={30} rounded="full" />
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-text-primary">{row.engineName}</p>
-                  <p className="text-[11px] uppercase tracking-micro text-text-muted">{row.family}</p>
-                </div>
-              </div>
-              <span className="shrink-0 rounded-full border border-hairline bg-surface px-2.5 py-1 font-mono text-xs font-semibold tabular-nums text-text-primary">
-                {row.quoteLabel}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-3 rounded-[8px] border border-hairline bg-bg p-3">
-          <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{quote.promptLabel}</p>
-          <p className="mt-2 text-sm leading-6 text-text-primary">{quote.prompt}</p>
-        </div>
-
-        <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-          <div className="rounded-[8px] border border-hairline bg-bg p-3">
-            <span className="block text-xs font-semibold uppercase tracking-micro text-text-muted">{quote.modelLabel}</span>
-            <span className="mt-1 block truncate font-semibold text-text-primary">{quote.sampleModelName}</span>
-          </div>
-          <div className="rounded-[8px] border border-hairline bg-bg p-3">
-            <span className="block text-xs font-semibold uppercase tracking-micro text-text-muted">{quote.exampleCostLabel}</span>
-            <span className="mt-1 block font-mono font-semibold tabular-nums text-text-primary">
-              {quote.sampleCost?.price ?? data.common.liveQuote}
-            </span>
-            {quote.sampleCost?.context ? (
-              <span className="mt-1 block text-xs font-semibold text-text-muted">{quote.sampleCost.context}</span>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="mt-3 flex items-center justify-between gap-3 rounded-[8px] border border-[#14A46C]/25 bg-[#14A46C]/[0.08] px-3 py-2.5">
-          <span className="text-sm font-semibold text-[#0F7A52]">{quote.chargeRuleLabel}</span>
-          <span className="text-right text-sm font-semibold text-[#0F7A52]">{quote.chargeRuleValue}</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function PayAsYouGoHeroSection({ data }: PayAsYouGoPageDataProps) {
+export function PayAsYouGoHeroSection({ data, quoteCard }: { data: PayAsYouGoHeroData; quoteCard: ReactNode }) {
   return (
     <header className="border-b border-hairline bg-bg">
       <div className={`${PAYG_CONTAINER_CLASS_NAME} grid gap-8 py-12 sm:py-16 lg:grid-cols-[minmax(0,1fr)_440px] lg:items-center`}>
@@ -110,7 +47,7 @@ export function PayAsYouGoHeroSection({ data }: PayAsYouGoPageDataProps) {
             ))}
           </div>
         </div>
-        <HeroQuoteCard data={data} />
+        {quoteCard}
       </div>
     </header>
   );
@@ -152,16 +89,13 @@ export function PayAsYouGoModelTestingOrderSection({ data }: PayAsYouGoPageDataP
     <section className="border-b border-hairline bg-bg">
       <div className={`${PAYG_CONTAINER_CLASS_NAME} py-12`}>
         <PayAsYouGoSectionHeader {...data.modelTesting.header} />
-        <ol className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {data.modelTesting.items.map((model, index) => (
-            <li key={model.family}>
+        <ul className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {data.modelTesting.items.map((model) => (
+            <li key={model.id}>
               <Link
                 href={model.href}
                 className="group flex h-full gap-4 rounded-[8px] border border-hairline bg-surface p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-text-muted"
               >
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-hairline bg-bg font-mono text-sm font-semibold tabular-nums text-text-primary">
-                  {index + 1}
-                </span>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <EngineIcon engine={model.engineIcon} imageAlt={`${model.family} ${data.common.aiVideoModelAlt}`} size={28} rounded="full" />
@@ -172,7 +106,7 @@ export function PayAsYouGoModelTestingOrderSection({ data }: PayAsYouGoPageDataP
               </Link>
             </li>
           ))}
-        </ol>
+        </ul>
         <p className="mt-4 max-w-3xl text-sm leading-6 text-text-secondary">
           {data.modelTesting.footer}
         </p>

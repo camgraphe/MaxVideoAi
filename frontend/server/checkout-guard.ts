@@ -1,6 +1,7 @@
-import { createHmac } from 'crypto';
+import { createHash, createHmac } from 'crypto';
 import { query } from '@/lib/db';
 import { CHECKOUT_GUARD_LIMITS as limits } from '@/server/checkout-guard-policy';
+import { getTurnstileConfiguration, selectTurnstileWidget } from '@/server/turnstile-widgets';
 
 const TURNSTILE_SITEVERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 const CHECKOUT_GUARD_HASH_FALLBACK = 'maxvideoai-checkout-guard-local-fallback';
@@ -29,6 +30,7 @@ type EvaluateWalletCheckoutGuardParams = {
   hasCompletedTopUp: boolean;
   isPresetTopupTier: boolean;
   captchaToken?: string | null;
+  captchaSiteKey?: unknown;
   metadata?: Record<string, unknown>;
 };
 
@@ -81,7 +83,7 @@ export function classifyCheckoutGuardDecision({
     return { action: 'rate_limited', reason: 'ip_window_hard_limit', retryAfterSeconds: limits.windowSeconds };
   }
 
-  if (!hasCompletedTopUp && userFailedCardLimits30m > 0) {
+  if (userFailedCardLimits30m > 0) {
     return {
       action: 'rate_limited',
       reason: 'failed_card_attempt_cooldown',
@@ -124,9 +126,7 @@ export function classifyCheckoutGuardDecision({
 }
 
 export function isCheckoutCaptchaConfigured(env: NodeJS.ProcessEnv = process.env): boolean {
-  const mode = (env.CHECKOUT_CAPTCHA_MODE ?? 'progressive').trim().toLowerCase();
-  if (mode === 'off' || mode === 'disabled' || mode === 'false') return false;
-  return Boolean(env.TURNSTILE_SECRET_KEY?.trim() && env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim());
+  return getTurnstileConfiguration(env).kind === 'ready';
 }
 
 export function resolveCheckoutClientIp(headers: Headers): string | null {
@@ -172,7 +172,9 @@ async function fetchCheckoutGuardCounts(userId: string, ipHash: string): Promise
          SELECT COUNT(*)::int
            FROM checkout_interaction_events event
           WHERE event.user_id = $1
-            AND event.event_name = 'stripe_checkout_session_expired_for_failed_cards'
+            AND (event.event_name = 'stripe_failed_card_cooldown_started'
+               OR (event.event_name = 'stripe_checkout_session_expired_for_failed_cards'
+                 AND event.metadata->>'cooldown_started_separately' IS DISTINCT FROM 'true'))
             AND event.created_at >= NOW() - INTERVAL '30 minutes'
        ) AS user_failed_card_limits_30m
        FROM checkout_attempts`,
@@ -188,12 +190,7 @@ async function fetchCheckoutGuardCounts(userId: string, ipHash: string): Promise
   };
 }
 
-async function verifyTurnstileToken(token: string, clientIp: string | null): Promise<{ success: boolean; errorCodes: string[] }> {
-  const secret = process.env.TURNSTILE_SECRET_KEY?.trim();
-  if (!secret) {
-    return { success: false, errorCodes: ['missing-secret'] };
-  }
-
+async function verifyTurnstileToken(token: string, clientIp: string | null, secret: string): Promise<{ success: boolean; errorCodes: string[] }> {
   const formData = new FormData();
   formData.append('secret', secret);
   formData.append('response', token);
@@ -221,6 +218,18 @@ async function verifyTurnstileToken(token: string, clientIp: string | null): Pro
   }
 }
 
+async function isTurnstileTokenConsumed(tokenHash: string): Promise<boolean> {
+  const rows = await query<CheckoutAttemptRow>(
+    `SELECT id FROM checkout_attempts
+      WHERE captcha_passed IS TRUE
+        AND metadata ? 'turnstileTokenHash'
+        AND metadata ->> 'turnstileTokenHash' = $1
+      LIMIT 1`,
+    [tokenHash]
+  );
+  return rows.length > 0;
+}
+
 async function recordCheckoutAttempt({
   userId,
   ipHash,
@@ -241,7 +250,14 @@ async function recordCheckoutAttempt({
   captchaPassed: boolean;
   reason: string;
   metadata: Record<string, unknown>;
-}): Promise<number> {
+}): Promise<number | null> {
+  // The partial unique index arbitrates simultaneous claims across processes.
+  // Tokenless/failed attempts retain their existing schema compatibility.
+  const tokenClaim = captchaPassed && typeof metadata.turnstileTokenHash === 'string'
+    ? `ON CONFLICT ((metadata ->> 'turnstileTokenHash'))
+         WHERE captcha_passed IS TRUE AND metadata ? 'turnstileTokenHash'
+       DO NOTHING`
+    : '';
   const rows = await query<CheckoutAttemptRow>(
     `INSERT INTO checkout_attempts (
        user_id,
@@ -255,6 +271,7 @@ async function recordCheckoutAttempt({
        metadata
      )
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb)
+     ${tokenClaim}
      RETURNING id`,
     [
       userId,
@@ -268,7 +285,7 @@ async function recordCheckoutAttempt({
       JSON.stringify(metadata),
     ]
   );
-  return Number(rows[0]?.id ?? 0);
+  return rows[0] ? Number(rows[0].id) : null;
 }
 
 export async function evaluateWalletCheckoutGuard(
@@ -276,20 +293,35 @@ export async function evaluateWalletCheckoutGuard(
 ): Promise<WalletCheckoutGuardResult> {
   const ipHash = hashCheckoutIp(params.clientIp);
   const counts = await fetchCheckoutGuardCounts(params.userId, ipHash);
-  const captchaConfigured = isCheckoutCaptchaConfigured();
+  const configuration = getTurnstileConfiguration();
+  const captchaConfigured = configuration.kind === 'ready';
+  const widget = selectTurnstileWidget(configuration, params.captchaSiteKey);
+  const configurationError = configuration.kind === 'invalid';
+  const widgetMismatch = captchaConfigured && !widget;
   const captchaToken = params.captchaToken?.trim() ?? '';
-  const verification = captchaToken && captchaConfigured
-    ? await verifyTurnstileToken(captchaToken, params.clientIp)
-    : { success: false, errorCodes: [] };
+  const tokenHash = captchaToken && captchaConfigured
+    ? createHash('sha256').update(captchaToken).digest('hex')
+    : null;
+  const tokenConsumed = tokenHash ? await isTurnstileTokenConsumed(tokenHash) : false;
+  let verification = tokenConsumed
+    ? { success: false, errorCodes: ['local-token-replay'] }
+    : captchaToken && widget
+      ? await verifyTurnstileToken(captchaToken, params.clientIp, widget.secret)
+      : { success: false, errorCodes: [] };
 
-  const decision = classifyCheckoutGuardDecision({
+  let decision = classifyCheckoutGuardDecision({
     hasCompletedTopUp: params.hasCompletedTopUp,
     isPresetTopupTier: params.isPresetTopupTier,
-    captchaConfigured,
+    captchaConfigured: captchaConfigured || configurationError,
     captchaPassed: verification.success,
     ...counts,
   });
-  const outcome =
+  if (tokenConsumed && decision.action !== 'rate_limited') {
+    decision = { action: 'captcha_required', reason: 'captcha_token_replayed', retryAfterSeconds: null };
+  } else if ((configurationError || widgetMismatch) && decision.action !== 'rate_limited') {
+    decision = { action: 'captcha_required', reason: configurationError ? 'captcha_configuration_error' : 'captcha_widget_mismatch', retryAfterSeconds: null };
+  }
+  let outcome =
     decision.action === 'allow'
       ? 'pending'
       : decision.action === 'rate_limited'
@@ -298,7 +330,7 @@ export async function evaluateWalletCheckoutGuard(
           ? 'captcha_failed'
           : 'captcha_required';
 
-  const attemptId = await recordCheckoutAttempt({
+  const persistAttempt = () => recordCheckoutAttempt({
     userId: params.userId,
     ipHash,
     amountCents: params.amountCents,
@@ -309,11 +341,26 @@ export async function evaluateWalletCheckoutGuard(
     reason: decision.reason,
     metadata: {
       ...params.metadata,
+      // Caller metadata must never replace the server-calculated token identity.
+      turnstileTokenHash: tokenHash ?? undefined,
+      turnstileWidgetGeneration: widget?.generation,
+      turnstileSiteKey: widget?.siteKey,
       captchaConfigured,
       turnstileErrors: verification.errorCodes,
       counts,
     },
   });
+  let attemptId = await persistAttempt();
+  if (attemptId === null && verification.success && tokenHash) {
+    // A competing request recorded the same validated token while Siteverify ran.
+    verification = { success: false, errorCodes: ['local-token-replay'] };
+    if (decision.action !== 'rate_limited') {
+      decision = { action: 'captcha_required', reason: 'captcha_token_replayed', retryAfterSeconds: null };
+    }
+    outcome = decision.action === 'rate_limited' ? 'rate_limited' : 'captcha_failed';
+    attemptId = await persistAttempt();
+  }
+  if (attemptId === null) throw new Error('checkout_attempt_not_recorded');
 
   return {
     ...decision,

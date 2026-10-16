@@ -79,9 +79,45 @@ image; later posters do not replace it. Both reads propagate their original erro
 The rare retry adds a catalog read and can observe a later concurrent update.
 The 24-card gallery, other 60-item selectors and cache policy retain their owners.
 
-The opening card owns the one prioritized responsive poster. No separate route hero or competing image preload is rendered. `useGalleryPreviewBudget` allows three visible short previews on desktop or one on mobile, prioritizes hover/focus intent, and supports global pause. Cards delegate playback preferences, visibility, rejection and telemetry to `useExampleCardPlayback`; absent short previews remain posters until manual playback. No original-video fallback is used for incidental gallery animation. The reader suspends this budget while open. A continuation heading and spacing distinguish the opening four from later cards without changing their media geometry. Family introductions, complete authored guidance, model links and FAQ remain visible and server-rendered below pagination; do not truncate their source text in route data. Canonical, hreflang and existing JSON-LD ownership stay with the route. Test initial loading and first Play separately; this structure alone does not establish a Core Web Vitals gain.
+The opening card owns the one prioritized responsive poster. No separate route hero or competing image preload is rendered. `useGalleryPreviewBudget` allows three visible short previews on desktop or one on mobile, prioritizes hover/focus intent, and supports global pause. Cards delegate playback preferences, visibility, rejection and telemetry to `useExampleCardPlayback`; absent short previews remain posters until manual playback. No original-video fallback is used for incidental gallery animation. The reader suspends this budget while open. The remaining grid follows the guide directly with a 16px gap, without a continuation heading. Family introductions, complete authored guidance, model links and FAQ remain visible and server-rendered below pagination; do not truncate their source text in route data. Canonical, hreflang and existing JSON-LD ownership stay with the route. Test initial loading and first Play separately; this structure alone does not establish a Core Web Vitals gain.
 
 A compact, full-width guide follows all four opening cards in reading order. It tells visitors to open any video for its prompt, settings and current price, and offers a generic app entry point without implying that it will reuse the lead video's prompt. The full prompt, original settings and qualified current estimates remain available in the reader and canonical watch page. Gallery cards receive exact/reference/unavailable current prices from the request-local canonical quote owner through `current-examples-gallery-data.ts`; the pure gallery builder formats the supplied map. Unavailable prices are omitted. Never display a historic charge as a current public price; stored billing history remains unchanged. Per-video reuse links still follow the source engine's app availability rule in the reader.
+
+Each gallery card also renders its bounded `sourcePromptExcerpt` as visible text
+inside its native watch link. The route and anonymous examples API derive it from
+the public original excerpt or prompt, in every locale; a translated model caption
+is not a prompt and a missing source stays absent. Keep full prompts out of the
+gallery payload and in the on-demand reader/watch page. The overlay retains the
+existing poster geometry and uses at most two lines, one on narrow cards.
+Omit the decorative hover/focus action label on cards up to 280px wide so it does
+not push the model or price outside the frame during keyboard navigation. The
+named native link and opening guide keep the action explicit.
+On the two mobile opening side cards at widths up to 200px, omit the visual
+excerpt so the original model/settings and reserved price remain readable; the
+compact 10px bold model label must fit long names even with fallback fonts. The
+named watch link still opens that video's full prompt. Keep the opening and the
+remaining video grid consecutive: do not insert duplicated prompt excerpts or
+editorial cards between them. Compact version links belong below the complete
+gallery and pagination, alongside the family guidance, and explicitly open a video
+with its full prompt, without repeating excerpts or settings. First-page family
+reads opt into `includeVersionSamples`: the existing catalogue SQL returns one
+prompt-bearing public video ID per engine across the complete effective family
+membership, including versions beyond the first 24 cards. The optional projection
+contains only engine/video IDs, appears on the first result row and hydrates no
+additional media. Preserve the exact same curation precedence, exclusions and
+public/live-output predicates; neither a registry entry nor an unrelated public
+video establishes family membership. Metadata and other readers do not opt in.
+`buildExamplesVersionLinks` intersects these samples with published family models
+and normalizes historical input aliases; `examples.current` separates current and
+earlier versions without borrowing lifecycle or generation availability. A newly
+published model with no public prompt-bearing example gets no invented watch link.
+
+Wan, Kling, LTX, MiniMax/Hailuo and Seedance use `family-overview.ts` for concise,
+enduring family headings and introductions through their localized descriptors.
+Detailed version-specific advice and historical FAQ stay authored. New releases
+add real version links without replacing the family URL or relabeling old videos.
+`examples-version-continuity`, `examples-catalog-pagination-postgres`,
+`examples-version-prompt-links` and `examples-gallery-opening` cover these boundaries.
 
 ## Public example comparison handoff
 
@@ -110,9 +146,17 @@ mode where applicable without inferring a scene from an unrelated gallery image.
 Programmed slots still determine the item IDs consumed by playback, and current
 hero prices retain their canonical quote read.
 
-`prepareHomePageData` starts all five retained reads once. The hero still awaits
-slots, scores, hero pricing and demonstration pricing; discovery alone awaits the
-gallery beneath its own Suspense boundary. The four authored CreativeFilms remain
+`prepareHomePageData` starts all five retained reads once. The initial hero awaits
+slots and scores. Canonical hero prices stream into quote-only Suspense slots inside
+the existing player; demonstration pricing has its own section boundary. Pending
+quotes show a loading label and an em dash, never a numeric estimate. The pending
+demonstration reserves its normal surface and disables its controls until exact
+server prices arrive. Only four display fields (label, amount, scenario and optional
+rate) cross each hero quote boundary; never serialize the whole video item again.
+The pending demo derives its three fixed scenario labels locally and does not
+receive the engine/workspace props until the canonical prices resolve. If current
+quotes are unavailable, retain the reserved walkthrough and show a localized
+unavailable status with disabled controls. Discovery awaits the gallery beneath its own Suspense boundary. The four authored CreativeFilms remain
 outside that boundary. Its fallback uses the same six authored fallback cards and
 reader geometry, with real model/example links; final cards retain the existing
 curation, promotion and SQL-read policy. Do not stream a replacement hero or entire
@@ -123,14 +167,14 @@ when a critical read fails early. Immediate observers prevent unhandled rejectio
 without converting any returned promise into a successful fallback. The complete
 `loadHomePageData` API remains available and propagates the original loader error.
 The route's ordinary listing failures retain the existing gallery fallbacks.
-Unexpected gallery failures after shell emission reject the discovery boundary;
+Unexpected gallery or pricing failures after shell emission reject their boundary;
 React/Next handles that error and may retain its server fallback until error/retry
 handling, rather than silently treating fallback cards as final data. Once a shell
 has been sent, its HTTP status cannot be replaced by a later gallery error.
 
 `tests/home-streaming.test.ts` uses the React renderer bundled with Next and real
-homepage owners to hold gallery reads, check early critical poster/films/JSON-LD,
-and compare the final EN/FR/ES discovery markup. This proves the server composition
+homepage owners to hold gallery and canonical price reads, check early critical
+poster/films/JSON-LD, and compare final EN/FR/ES discovery and exact pricing markup. This proves the server composition
 boundary. Home entries retain `revalidate = 60`, which alone does not establish
 static versus dynamic delivery or cache buffering.
 
@@ -262,13 +306,37 @@ production cold/warm measurements and Safari/iOS playback remain rollout checks.
 - Preserve private/signed URL behavior. Public image optimization does not forward a user's authorization headers; do not strip signatures or publish a private source to make optimization work.
 - `server/owned-media-read-access.ts` grants 300-second server GET access only to exact owner-prefixed objects in configured storage. The storage ownership helper also recognizes existing content-addressed uploads under approved `prefix/by-content/SHA256(userId)[0:32]/` namespaces, including configured staging prefixes. Library copies and image/video thumbnail creation use this reader and persist only durable originals/derivatives and original provenance. Foreign-owner or unowned internal objects fail closed; external provider sources retain their existing URLs. The operator thumbnail backfill may explicitly opt ownerless rows into an unsigned HTTPS GET for the exact `renders/images/anonymous/` legacy prefix, without query strings, credentials or fragments. This never signs anonymous media or opens private storage; account-facing callers do not receive the exception. `tests/owned-media-read-access.test.ts` covers ownership denial, signing failure, actual content-addressed uploads, library promotion and the legacy backfill/Sharp/upload path using network doubles.
 - `server/fal-provider-media-access.ts` extends that reader at the server-only Fal submission boundary with grants bounded to one hour for asynchronous input retrieval. Sign only typed media fields in a transport copy and pass the authenticated owner through all fallback adapters. The exact-owner check includes the existing authenticated `inline` upload namespace, including its content-addressed form; anonymous and foreign inline objects are not granted access. Persist canonical inputs and enqueue summaries, never access grants. The provider diagnostic sanitizer covers synchronous submission and asynchronous webhook/poll logs, including up to three URL encoding layers, because validation bodies may echo input URLs. Local ownership/signing denial must occur before a paid provider call; a failed input download must not be reported as a completed render whose output could not be stored. `tests/fal-provider-media-access.test.ts` exercises the real submission/request-body owner with local signing and provider doubles.
-- `server/media-library/owned-video-facts.ts` owns missing measured video facts for editing. It validates the ready owned original and provenance, obtains server read access, and runs the bounded downloader plus local-file FFprobe in `src/server/audio/source-video-probe.ts`. Exact owner, current original URL and ready/nonhidden state guard persistence to `job_outputs` and matching promoted assets. Store only measured duration, dimensions and audio presence in `metadata.mediaFacts` with `source: 'probe'`; requested duration remains history and no frame rate is inferred. Library promotion forwards validated facts. The shared conversation edit command releases its initial validation transaction before inspection, then rechecks the receipt, revision, project scope and media ownership in a fresh transaction. `studio/media-resolver.ts` remains read-only and never downloads or repairs a source. Probe errors expose no signed URL or FFprobe command.
+- `server/media-library/owned-video-facts.ts` owns missing measured video facts for editing. It validates the ready owned original and provenance, obtains server read access, and uses a dedicated fixed 100 MiB qualification downloader plus local-file FFprobe in `src/server/audio/source-video-probe.ts`. Ready generated originals can exceed private upload limits; this envelope preserves the shared HTTPS, public-address DNS pinning, redirect and 30-second request guards plus the 15-second probe timeout. Private uploads and the global Audio source probe retain their existing limits. `tests/owned-video-facts.test.ts` exercises the canonical inspector with real MP4 bytes above 50 MiB and FFprobe, and verifies declared/streamed sources above 100 MiB stop without persisting facts. Exact owner, current original URL and ready/nonhidden state guard persistence to `job_outputs` and matching promoted assets. Store only measured duration, dimensions and audio presence in `metadata.mediaFacts` with `source: 'probe'`; requested duration remains history and no frame rate is inferred. Library promotion forwards validated facts. The shared conversation edit command releases each failed validation transaction before inspection, then rechecks the receipt, revision, project scope and media ownership in a fresh transaction. Insert/assembly may qualify each distinct selected video reference once, up to the command's 12-clip bound, without another assistant call, generation or paid analysis. Repeated references reuse persisted facts; a source still missing facts after its attempt stops rather than retrying indefinitely. Every resolved video reference retains its exact original URL through subsequent retries, so replacing that original during another source's inspection rejects the edit. The entire timeline edit and receipt remain atomic; independently validated source facts can survive a rejected edit. `tests/studio-conversation-edit-command-postgres.test.ts` covers multiple older sources, the 12-source bound, replay, nonpersisting/failed qualification and concurrent original, ownership and revision changes. `studio/media-resolver.ts` remains read-only and never downloads or repairs a source. Probe errors expose no signed URL or FFprobe command.
 - Audio completion passes its measured byte duration to the legacy output mapper, which preserves canonical `metadata.mediaFacts` separately from the historical integer duration. Synchronous Audio confirmation promotes only completed outputs after the exact owned quote is accepted; a promotion outage never fails or refunds the completed paid result. An accepted confirmation replay may retry this bounded promotion without generating or reserving again. Studio's read-only project projection exposes only validated probe durations for video/audio. Library insertion uses those same facts and floors source-limited frames, so an integer duration or a fractional final frame cannot extend a clip past its source. Focused coverage lives in `audio-reserved-execution-postgres`, `mcp-audio-services`, `media-library-contract`, `studio-conversation-media-scope-postgres` and `studio-conversation-timeline` tests.
 - Preserve aspect ratio, alpha/transparency when required, orientation, and the distinction between original quality and display quality.
 
 Angle's public orbit prepares the other three views after its existing idle boundary. Derive their `src`, `srcSet` and `sizes` with Next Image's `getImageProps` and the same sizing policy as the displayed image; assign `sizes` and `srcset` before `src`. Loading the authored source URL would warm a different resource and waste a second transfer on selection. Keep the initial view as the only mounted image, preserve scheduled-work cleanup, and check `tests/angle-orbit-responsive-preload.test.ts` when changing this behavior. Future display quality or sizing changes must stay shared with preparation; validate actual browser selection at the relevant viewport and DPR.
 
 The first orbit view uses the still-image style in server HTML and through hydration. Enable the existing entrance transition only after a button, keyboard or drag action changes the view; returning to the initial view remains an interaction. Keep reduced-motion handling and image-error fallback intact. An opacity-zero entrance can defer the LCP observation well beyond the image download, so do not infer render speed from image bytes alone.
+
+### Seedance output artifacts — 14 October 2026
+
+BytePlus completion preserves requested MOV and Seedance 2.5 1080p MP4 originals
+byte-for-byte in durable storage. MOV and documented HEVC outputs receive a separate
+full-duration H264/yuv420p/AAC `playbackVideoUrl`; the existing four-second silent
+`previewVideoUrl` remains an incidental gallery preview. Downloads, reuse, editing
+and original links always retain the original URL. Encoding uses the packaged
+FFmpeg runtime, a 300 MiB input/100 MiB output disk budget and the 30-second model
+duration bound. FFmpeg's output limit and a duration/audio probe reject a clipped
+rendition; a preparation failure retains the checkpointed original for retry.
+
+Requested supplier last-frame JPEGs are validated and copied without reencoding.
+Their SHA, dimensions and size are recorded on a distinct owned image output with
+`metadata.role='last_frame'` and source-video provenance. `lastFrameUrl` is separate
+from the poster, thumbnail and incidental keyframes. The video, full playback and
+JPEG checkpoints precede output projection and terminal completion. Projection
+replay preserves artifacts without another provider submission or debit. Artifact
+retries use the existing attempt/window limit; exhaustion retains copied
+outputs, enters manual review and stops automatic provider lookups and artifact work.
+BytePlus uses a bounded ten-minute poll lease for this preparation and releases it normally;
+other providers retain the shared two-minute default. Local FFprobe fixtures verify
+MOV/PCM and ten-bit HEVC conversion; physical Safari/iOS remains separate browser
+qualification and is not established by these checks.
 
 ## Playback and Core Web Vitals
 
@@ -463,7 +531,7 @@ Remove obsolete code/configuration in the lot that replaces it. Keep compatibili
 
 ### Private timeline export transport
 
-Export manifests, estimate hashes, reservations and stored artifacts retain canonical unsigned URLs. After canonical Project/Sequence and storage-owner validation, `timeline-exports/media-security.ts` uses a method-specific 300-second HEAD grant for private source metadata. Its validation result stays canonical. The worker validates again using `job.user_id`, then builds a separate GET-only render copy with one-hour access, covering the bounded 45-minute render; it never saves that copy. Public allowlisted originals retain their existing validation, content-type/size limits, redirect refusal and timeouts. Renderer diagnostics redact signed URLs and browser-console output is not forwarded.
+Export manifests, estimate hashes, reservations and stored artifacts retain canonical unsigned URLs. After canonical Project/Sequence and storage-owner validation, `timeline-exports/media-security.ts` uses a method-specific 300-second HEAD grant for private source metadata. Its validation result stays canonical. The worker validates again using `job.user_id`, then builds a separate GET-only render copy with one-hour access, covering the bounded 45-minute render; it never saves that copy. Public allowlisted originals retain their existing validation, content-type/size limits, redirect refusal and timeouts. Worker diagnostics redact signed URLs before logging bounded browser warnings/errors and the original caught render error/stack; ordinary browser console output is discarded. Progress updates apply only while the job is rendering, preserving a terminal error or completed artifact against late callbacks.
 
 `timeline-exports/media-access.ts` projects completed artifacts with a stable authenticated `/api/studio/timeline-exports/{id}/media` delivery URL and a separate `canonicalOriginalUrl`. Individual reads, POST replay and owned Project history share this projection, so polling never resets playback with a new signature. Delivery performs a read-only exact-owner completed-job lookup and redirects with a fresh method-specific 300-second GET/HEAD grant; its 307 preserves Range and uses private/no-store caching. Reopening a saved download renews access without a new job. The owned projection resolves legacy internal `output_asset_id` values to `media_assets.public_id` through an exact owner/source lookup and the Studio media resolver; it leaves the stored job unchanged. Canvas assets persist the canonical original and public asset ref; their playback uses the existing ephemeral media-access mechanism, stripped from workspace snapshots. A signing failure never returns an inaccessible private original as a fallback. Offline tests cover real method-specific signatures, exact-owner denial, canonical manifest preservation and actual route/renderer orchestration with network/storage doubles. These checks do not qualify remote ECS dispatch or live storage delivery; the deployed worker must include this transport correction before the isolated pilot renders private sources.
 
@@ -512,6 +580,22 @@ same; opening the reader or continuing in the app still loads the full approved
 prompt from the existing detail endpoint. Do not duplicate every complete prompt
 in the initial gallery's RSC client props.
 
+The initial examples route prepares those summaries without awaiting current
+prices. `prepareCurrentExamplesGalleryData` starts one observed canonical-price
+promise; `examples-gallery-prices.tsx` projects only localized price-label server
+slots through the existing grid/card boundary. Keep the poster and gallery in
+the initial server response, including family and paginated routes. Pending or
+unavailable prices must never use historical generation costs. Reserve caption
+space for wrapped reference labels before revealing them, and keep the reader's
+independent fresh detail quote. `tests/examples-price-streaming.test.ts` exercises
+the held-price stream, per-card identity, localized labels and failure paths.
+
+Narrow opening side cards let their caption contribute its minimum content height;
+do not absolutely position that text into a row shorter than its model, settings and
+price. Keep the lead poster's fixed ratio and full-card native watch links. The browser
+layout contract covers classic scrollbar width as well as overlay scrollbars, real
+French price spacing, fallback fonts, and stable reserved space before prices resolve.
+
 Source playback uses `usePublicVideoControls` with Auto/Original policy and `preload="none"`.
 The existing standalone watch page remains the authority for canonical, metadata,
 VideoObject, redirects and sitemap eligibility; the dialog is not a new SEO route.
@@ -522,7 +606,8 @@ entry uses an H2 in the dialog and the existing watch URL in browser history; cl
 restores the gallery rather than fetching a second record page. Share resolves the
 canonical URL, while direct legacy ID requests keep the existing slug redirect.
 
-`VideoWatchShare` presents a persistent compact row in the public reader, with a
+`components/examples/VideoWatchShare.client.tsx` owns `VideoWatchShare` for both
+the gallery reader and direct watch route. It presents a persistent compact row, with a
 canonical-link copy action and an announced confirmation. Clipboard failures expose
 the same URL in a selectable read-only field, and the clipboard fallback returns
 focus to the reader action. Feedback belongs to its watch URL, so navigation cannot

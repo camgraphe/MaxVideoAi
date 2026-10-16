@@ -41,6 +41,7 @@ export function WorkspaceRuntimeModals({
   onRefreshJob,
   topUpModal,
   topUpCopy,
+  locale,
   currency,
   chargeCurrency,
   topUpAmount,
@@ -86,6 +87,7 @@ export function WorkspaceRuntimeModals({
   onRefreshJob: (jobId: string) => Promise<void>;
   topUpModal: TopUpModalState;
   topUpCopy: WorkspaceTopUpModalProps['copy'];
+  locale?: string;
   currency: string;
   chargeCurrency: string;
   topUpAmount: number;
@@ -137,6 +139,7 @@ export function WorkspaceRuntimeModals({
       ) : null}
       {topUpModal ? (
         <WorkspaceTopUpModal
+          locale={locale}
           modal={topUpModal}
           copy={topUpCopy}
           currency={currency}

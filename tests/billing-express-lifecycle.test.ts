@@ -58,6 +58,7 @@ test('editing a draft, refreshing auth and rotating CAPTCHA preserve the payable
       enabled: !currency.currencyLoading && !quotes.quoteLoading,
       amountCents: selection.selectedTopupCents, chargeCurrency: currency.normalizedChargeCurrency,
       session, captchaToken, locale: 'en', stripePromise, labels: copy.wallet,
+      takeCaptchaToken: () => captchaToken,
       onCaptchaRequired() {}, onPaymentStarted() {}, onPaymentFailed() {},
     });
   }

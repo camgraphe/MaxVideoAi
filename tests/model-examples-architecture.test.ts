@@ -19,6 +19,7 @@ const ROUTE_ROOT = path.join(
 const paths = {
   page: path.join(ROUTE_ROOT, 'page.tsx'),
   layout: path.join(ROUTE_ROOT, '_components/MarketingModelPageLayout.tsx'),
+  currentDetails: path.join(ROUTE_ROOT, '_components/ModelCurrentDetails.tsx'),
   contentSections: path.join(ROUTE_ROOT, '_components/ModelPageContentSections.tsx'),
   wrapper: path.join(ROUTE_ROOT, '_components/ModelExamplesSection.tsx'),
   decision: path.join(ROUTE_ROOT, '_components/ModelDecisionExamplesSection.tsx'),
@@ -48,7 +49,12 @@ test('model Examples parses and builds once before rendering', () => {
 
   assert.equal(count(layoutSource, 'parseModelExamplesContent('), 1);
   assert.equal(count(layoutSource, 'buildModelExamplesViewModel('), 1);
-  assert.match(layoutSource, /examplesProps=\{\{\s*viewModel:\s*examplesViewModel/);
+  assert.match(
+    layoutSource,
+    /<ModelCurrentDetails\b[\s\S]*?contentProps=\{\{[\s\S]*?examplesProps:\s*\{\s*viewModel:\s*examplesViewModel\s*\}/,
+  );
+  assert.match(readSource(paths.currentDetails), /<ModelPageContentSections\s+\{\.\.\.contentProps\}/);
+  assert.match(readSource(paths.contentSections), /<ModelExamplesSection\s+\{\.\.\.examplesProps\}/);
 });
 
 test('server Examples renderers accept only the render-ready view model', () => {

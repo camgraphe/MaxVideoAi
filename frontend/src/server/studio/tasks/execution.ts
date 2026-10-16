@@ -2,7 +2,7 @@ import {query} from '@/lib/db';
 import type {StudioGenerationActor} from '@/server/agent-api/generation-actor';
 import type {StudioTaskRow} from './repository';
 import {StudioTaskStop} from './policy';
-export type StudioTaskExecution={taskRequestId:string;segmentRequestId:string;workerId:string;profile:StudioTaskRow['profile_json'];maxCalls:number;deadlineAt:Date;enabled:boolean;recoveryOnly?:boolean;locale?:'en'|'fr'|'es';previousWork?:{action:string;callId:string;completed:true;details?:unknown}[]};
+export type StudioTaskExecution={taskRequestId:string;segmentRequestId:string;workerId:string;profile:StudioTaskRow['profile_json'];maxCalls:number;deadlineAt:Date;enabled:boolean;recoveryOnly?:boolean;locale?:'en'|'fr'|'es';previousWork?:{action:string;callId:string;completed:true;details?:unknown;result?:unknown;comparison?:unknown;comparisonFingerprint?:string;historical?:true;factsTruncated?:true}[]};
 /** Checked before token counting; reservation rechecks source/project/lease atomically. */
 export async function assertStudioTaskExecution(actor:StudioGenerationActor,execution:StudioTaskExecution) {
   const row=(await query<{alive:boolean}>(`SELECT t.state='running' AND t.worker_id=$4 AND t.segment_request_id=$3

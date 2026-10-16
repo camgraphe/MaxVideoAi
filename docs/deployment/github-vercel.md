@@ -67,8 +67,10 @@ uploads, `--prebuilt`, promotions, rollbacks and manual aliases require an expli
 exception identifying the action and immutable, published GitHub source, validation
 and rollback target. Never publish a dirty working tree or untracked files.
 Prefer redeploying the exact existing Git-backed deployment when Vercel infrastructure
-fails. Such a redeploy can report `source=cli` while retaining its original Git
-provenance; it differs from uploading local source. Record that distinction.
+fails. Such a redeploy can report `source=redeploy`, or legacy `source=cli` with
+`action=redeploy`, while retaining its original deployment ID and Git provenance;
+it differs from uploading local source. The alignment guard requires that original
+deployment ID and the same configured GitHub-main identity checks. Record that distinction.
 
 The 2026-09-22 reconciliation is documented in
 `docs/operations/production-git-audit-2026-09-22.md`. Its known premerge mismatch

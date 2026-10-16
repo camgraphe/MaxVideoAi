@@ -125,7 +125,7 @@ export const EN_HUB_COPY: HubCopy = {
     },
     listLabels: {
       searchPlaceholder: 'Search comparisons...',
-      loadMore: 'Load more',
+      loadMore: 'More comparisons',
       empty: 'No comparisons match this search.',
     },
     faq: [

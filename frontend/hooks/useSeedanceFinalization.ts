@@ -25,8 +25,8 @@ export function useSeedanceFinalization(options: { view: SeedanceWorkflowView | 
     guard.current = true;
     setConfirming(true); setPending(true); setQuote(null); setError(null);
     try {
-      const result = await deps.runPreflight({ engine: 'seedance-2-5', mode: 't2v', durationSec: view.settings.durationSec,
-        resolution: '1080p', fps: 24, aspectRatio: view.settings.aspectRatio, audio: view.settings.audio,
+      const result = await deps.runPreflight({ engine: 'seedance-2-5', mode: view.settings.mode ?? 't2v', durationSec: view.settings.durationSec,
+        resolution: '1080p', fps: 24, ...(view.settings.aspectRatio ? { aspectRatio: view.settings.aspectRatio } : {}), audio: view.settings.audio,
         seedanceWorkflow: { step: 'final', draftJobId: view.draft.jobId } }, { accessToken: account.token });
       if (scope.current !== started) return;
       if (!result.ok || !result.pricing || customerTariffRevision(result.pricing) === null || result.pricing.meta?.workflowStep !== 'final'
@@ -43,7 +43,7 @@ export function useSeedanceFinalization(options: { view: SeedanceWorkflowView | 
     const started = scope.current;
     guard.current = true; setPending(true); setError(null);
     try {
-      const result = await deps.runGenerate({ jobId: `job_${crypto.randomUUID()}`, engineId: 'seedance-2-5', mode: 't2v', prompt: '',
+      const result = await deps.runGenerate({ jobId: `job_${crypto.randomUUID()}`, engineId: 'seedance-2-5', mode: view.settings.mode ?? 't2v', prompt: '',
         seedanceWorkflow: { step: 'final', draftJobId: view.draft.jobId }, payment: { mode: 'wallet' }, iterationCount: 1 },
         { token: account.token, pricingSnapshot: quote.pricing });
       if (scope.current !== started) return;

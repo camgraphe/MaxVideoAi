@@ -21,8 +21,9 @@ export function CheckoutGuardPolicy() {
           IP: CAPTCHA after {limits.ipCaptcha}, maximum {limits.ipHard} / {limits.windowSeconds / 60} min.
         </dd></div>
         <div><dt className="font-semibold">Card testing protection</dt><dd className="mt-1 text-text-secondary">
-          {limits.failedCardAttempts} failed card attempts expire the first-top-up session and start a {limits.failedCardCooldownSeconds / 60} min cooldown.
-          Amex has no blanket brand restriction.
+          {limits.distinctFailedCards} different failed cards / {limits.failedCardWindowSeconds / 60} min across a customer&apos;s sessions expire unpaid sessions and start a {limits.failedCardCooldownSeconds / 60} min cooldown.
+          The existing {limits.failedCardAttempts}-failure limit on one unpaid session remains as an additional safeguard.
+          Amex is temporarily blocked in hosted Checkout; native wallet buttons remain available.
         </dd></div>
         <div><dt className="font-semibold">Configuration</dt><dd className="mt-1 text-text-secondary">
           CAPTCHA: {captcha ? 'configured' : 'unavailable or disabled; lower session cap applies'}.

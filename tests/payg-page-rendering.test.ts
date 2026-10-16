@@ -50,7 +50,6 @@ const showcaseVideo: PayAsYouGoShowcaseVideo = {
   id: 'parity-video',
   engineId: 'kling-3-pro',
   engineLabel: 'Kling 3 Pro',
-  priceLabel: '$1.23',
   durationLabel: '8s',
   title: 'Permanent deterministic showcase title',
   useCase: 'Permanent deterministic showcase use case.',
@@ -63,7 +62,7 @@ const representative = {
     headings: [
       'Pay-as-you-go AI Video Generator',
       'Quick answers before you spend credits',
-      'Recommended testing order for pay-as-you-go AI video',
+      'Choose a model for your next test',
       'What pay-as-you-go means',
       'Why no subscription matters',
       'Who uses pay-as-you-go AI video credits?',
@@ -88,8 +87,8 @@ const representative = {
     comparisonHref: '/ai-video-engines/seedance-2-0-vs-veo-3-1',
     lookupHref: '/pricing#seedance-2-0-pricing',
     showcase: {
-      title: 'Example videos with model and price context',
-      intro: 'A short strip from public MaxVideoAI renders, showing the model, duration, and recorded render price when available.',
+      title: "Example videos with model and duration",
+      intro: "Public examples with their model and duration. Open an example for its available generation details, then check a current quote for your own settings.",
       cta: 'Test your prompt with a live quote',
       mediaPhrase: 'example video generated with',
     },
@@ -98,7 +97,7 @@ const representative = {
     headings: [
       'Générateur de vidéos IA sans abonnement',
       'L’essentiel avant d’utiliser vos crédits',
-      'Ordre recommandé pour tester la vidéo IA sans abonnement',
+      'Choisissez un modèle pour votre prochain essai',
       'Comment fonctionne le paiement à l’usage',
       'Pourquoi l’absence d’abonnement compte',
       'Qui utilise des crédits vidéo IA prépayés ?',
@@ -123,8 +122,8 @@ const representative = {
     comparisonHref: '/fr/comparatif/seedance-2-0-vs-veo-3-1',
     lookupHref: '/fr/tarifs#seedance-2-0-pricing',
     showcase: {
-      title: 'Vidéos d’exemple avec modèle et prix',
-      intro: 'Une courte sélection de rendus publics MaxVideoAI montrant le modèle, la durée et son tarif actuel lorsqu’il est disponible.',
+      title: "Vidéos d’exemple avec modèle et durée",
+      intro: "Des exemples publics avec leur modèle et leur durée. Ouvrez un exemple pour consulter les détails de génération disponibles, puis demandez un devis actuel avec vos propres réglages.",
       cta: 'Testez votre prompt avec un devis en temps réel',
       mediaPhrase: 'vidéo d’exemple générée avec',
     },
@@ -133,7 +132,7 @@ const representative = {
     headings: [
       'Generador de video con IA de pago por uso',
       'Lo esencial antes de usar tus créditos',
-      'Orden recomendado para probar video con IA de pago por uso',
+      'Elige un modelo para tu próxima prueba',
       'Qué significa pagar por uso',
       'Por qué importa no tener suscripción',
       '¿Quién usa créditos de video con IA de pago por uso?',
@@ -158,8 +157,8 @@ const representative = {
     comparisonHref: '/es/comparativa/seedance-2-0-vs-veo-3-1',
     lookupHref: '/es/precios#seedance-2-0-pricing',
     showcase: {
-      title: 'Videos de ejemplo con modelo y precio',
-      intro: 'Una selección breve de renders públicos de MaxVideoAI que muestra el modelo, la duración y su precio actual cuando está disponible.',
+      title: "Videos de ejemplo con modelo y duración",
+      intro: "Ejemplos públicos con su modelo y duración. Abre un ejemplo para consultar los detalles disponibles y comprueba una cotización actual con tus propios ajustes.",
       cta: 'Prueba tu prompt con una cotización en tiempo real',
       mediaPhrase: 'video de ejemplo generado con',
     },
@@ -333,7 +332,7 @@ for (const locale of locales) {
       (link) => link.href === '/app' && link.text === expected.showcase.cta,
     ));
     assert.ok(semantic.mediaLabels.includes(
-      `${showcaseVideo.title}, ${expected.showcase.mediaPhrase} ${showcaseVideo.engineLabel}, ${showcaseVideo.priceLabel}, ${showcaseVideo.durationLabel}`,
+      `${showcaseVideo.title}, ${expected.showcase.mediaPhrase} ${showcaseVideo.engineLabel}, ${showcaseVideo.durationLabel}`,
     ));
   });
 

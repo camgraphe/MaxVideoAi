@@ -243,6 +243,8 @@ test('BytePlus submission helper creates task, updates job, logs, and returns qu
     prompt: 'A cinematic mountain shot',
     durationSec: 8,
     mode: 'ref2v',
+    transport: 'modelark',
+    durationOption: undefined,
     imageUrl: null,
     endImageUrl: null,
     referenceImageUrls: ['https://cdn.maxvideoai.com/ref.jpg'],
@@ -252,7 +254,7 @@ test('BytePlus submission helper creates task, updates job, logs, and returns qu
     ratio: '16:9',
     generateAudio: true,
     allowedModes: ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'],
-    allowedAspectRatios: ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
+    allowedAspectRatios: ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
     allowedResolutions: ['720p', '1080p'],
     allowedDurationOptions: [8],
   });
@@ -310,6 +312,7 @@ test('Seedance 2.5 submission keeps proven reference workflows on ModelArk and r
         engineId: 'seedance-2-5',
         engineLabel: 'Seedance 2.5',
         mode,
+        effectiveResolution: mode === 'v2v' ? '480p' : baseParams.effectiveResolution,
         initialImageUrl: mode === 'i2v' ? 'https://cdn.maxvideoai.com/start.png' : null,
         normalizedReferenceImages:
           mode === 'ref2v' || mode === 'v2v' ? ['https://cdn.maxvideoai.com/reference.png'] : [],
@@ -333,7 +336,10 @@ test('Seedance 2.5 submission keeps proven reference workflows on ModelArk and r
               }),
             };
           },
-          queryFn: async () => undefined,
+          queryFn: async (sql) => /SELECT \* FROM app_jobs|RETURNING \*/.test(sql)
+            ? [{ job_id: baseParams.jobId, user_id: baseParams.userId, engine_id: 'seedance-2-5',
+              provider: 'byteplus_modelark', status: 'pending', provider_job_id: null, settings_snapshot: {} }]
+            : undefined,
         },
       });
       assert.equal(result.ok, true, mode);
@@ -390,7 +396,7 @@ test('BytePlus submission helper chooses the Mini model id for Seedance 2.0 Mini
   assert.equal(builtPayloads[0]?.mode, 'v2v');
   assert.equal(builtPayloads[0]?.generateAudio, true);
   assert.deepEqual(builtPayloads[0]?.allowedModes, ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']);
-  assert.deepEqual(builtPayloads[0]?.allowedAspectRatios, ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
+  assert.deepEqual(builtPayloads[0]?.allowedAspectRatios, ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
   assert.deepEqual(builtPayloads[0]?.allowedResolutions, ['480p', '720p']);
 });
 
@@ -1449,8 +1455,8 @@ test('Seedance 2.5 submits the exact provider content for every public mode', { 
       videoUrls: [videoUrl],
       resolvedAudioUrl: audioUrl,
       audioUrls: [audioUrl],
-      referenceValuesByField: { extension_source_videos: [videoUrl] },
-      expectedTypes: ['text', 'video_url'],
+      referenceValuesByField: { extension_source_videos: [videoUrl], audio_urls: [audioUrl] },
+      expectedTypes: ['text', 'video_url', 'audio_url'],
     },
   ];
   ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = 'true';
@@ -1465,6 +1471,7 @@ test('Seedance 2.5 submits the exact provider content for every public mode', { 
         engineLabel: 'Seedance 2.5',
         durationSec: 8,
         mode: scenario.mode,
+        effectiveResolution: scenario.mode === 'v2v' ? '480p' : baseParams.effectiveResolution,
         initialImageUrl: scenario.initialImageUrl,
         endImageUrl: null,
         normalizedReferenceImages: scenario.normalizedReferenceImages,
@@ -1485,7 +1492,10 @@ test('Seedance 2.5 submits the exact provider content for every public mode', { 
               };
             },
           }),
-          queryFn: async () => undefined,
+          queryFn: async (sql) => /SELECT \* FROM app_jobs|RETURNING \*/.test(sql)
+            ? [{ job_id: baseParams.jobId, user_id: baseParams.userId, engine_id: 'seedance-2-5',
+              provider: 'byteplus_modelark', status: 'pending', provider_job_id: null, settings_snapshot: {} }]
+            : undefined,
         },
       });
 

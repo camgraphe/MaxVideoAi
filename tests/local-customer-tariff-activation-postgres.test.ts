@@ -13,6 +13,8 @@ import { loadEffectiveCustomerTariffState, customerTariffsEnabledByCode } from '
 import { continuousInputTariffSelector } from '../frontend/src/lib/pricing-manual-scenario';
 import { previewPricingPolicyChange } from '../frontend/server/pricing-admin/policy-service';
 import { ENV } from '../frontend/src/lib/env';
+import { computeCustomerTariffInitializationBaseline } from '../frontend/server/pricing/customer-tariff-initialization-baseline';
+import { collectCustomerTariffCutoverCheckpoints } from '../frontend/server/pricing/customer-tariff-cutover-evidence';
 
 const actor = '11111111-1111-4111-8111-111111111111';
 const hash = (value: string) => createHash('sha256').update(value).digest('hex');
@@ -47,7 +49,7 @@ test('atomic local cutover rejects stale certificates, preserves staged evidence
     const address = new URL(db.databaseUrl);
     const databaseIdentity = hash(`${address.hostname}|${address.pathname}|${address.username}`);
     const baseline = await collectEffectiveCustomerTariffBaseline({ at: new Date().toISOString(), registryHash, databaseIdentity,
-      scenarios: coverage.scenarios, quote: s => computeCanonicalBillingSnapshot(s.context, { pricingPolicy: { loadOverrides: async () => policy } }) });
+      scenarios: coverage.scenarios, quote: s => computeCustomerTariffInitializationBaseline(s.context, policy) });
     const databaseRulesHash = hash(JSON.stringify([...policy.rules].sort((a,b) => a.id.localeCompare(b.id))));
     const state = (await db.pool.query('SELECT revision, active FROM app_customer_tariff_state WHERE singleton = TRUE')).rows[0];
     const staged = (await db.pool.query('SELECT id, selector_json, price_json, currency, effective_from, effective_until, revision FROM app_customer_tariff_cells ORDER BY id')).rows;
@@ -56,12 +58,14 @@ test('atomic local cutover rejects stale certificates, preserves staged evidence
     const capture = { ...baseline, databaseRulesHash, source: 'isolated_local_repeatable_read_only', coverageGaps: coverage.gaps };
     const first = await prepareLocalCustomerTariffRelease({ baseline: capture, scenarios: coverage.scenarios, registryHash, coverageGaps: coverage.gaps,
       approvedSeedanceMarginPolicy: 'preserve_positive_variant_margin',
+      approvedSeedanceLasPolicy: 'reviewed_2_5x_las_list',
       policy, sourceTariffRevision: 0, sourceTariffStateHash, codeRevision: 'test-code', factualEnvironmentHash: 'test-env' });
     assert.equal(first.report.settlementGuardFailures.length, 24);
     const approvedGptImage25ReferenceFloor = { capturedAt: baseline.at, registryHash, databaseRulesHash, databaseIdentity,
       changes: first.report.settlementGuardFailures.map(row => ({ scenarioId: row.scenarioId, currentCustomerCents: row.customerCents, proposedCustomerCents: row.referenceCeilCents })) };
     const release = await prepareLocalCustomerTariffRelease({ baseline: capture, scenarios: coverage.scenarios, registryHash, coverageGaps: coverage.gaps,
       approvedSeedanceMarginPolicy: 'preserve_positive_variant_margin',
+      approvedSeedanceLasPolicy: 'reviewed_2_5x_las_list',
       policy, sourceTariffRevision: 0, sourceTariffStateHash, codeRevision: 'test-code', factualEnvironmentHash: 'test-env', approvedGptImage25ReferenceFloor });
     assert.equal(release.report.remainingCoverageGaps.length, 0);
     const run = (candidate = release, fingerprint = release.report.fingerprint, bindings = release.report.bindings) => withDbTransaction(e =>
@@ -95,6 +99,7 @@ test('atomic local cutover rejects stale certificates, preserves staged evidence
     const expected = new Map(baseline.rows.map(row => [row.scenarioId, row.customerCents]));
     for (const change of approvedGptImage25ReferenceFloor.changes) expected.set(change.scenarioId, change.proposedCustomerCents);
     for (const change of release.report.seedancePriceChanges) expected.set(change.scenarioId, change.proposedCustomerCents);
+    for (const change of release.report.seedanceLasPriceChanges) expected.set(change.scenarioId, change.proposedCustomerCents);
     for (const scenario of coverage.scenarios) {
       const continuous = continuousInputTariffSelector(scenario.selector);
       const cell = cells.get(key(scenario.selector)) ?? (continuous ? cells.get(key(continuous)) : undefined);
@@ -104,6 +109,10 @@ test('atomic local cutover rejects stale certificates, preserves staged evidence
       assert.equal(quote.totalCents, expected.get(scenario.id), scenario.id);
       assert.equal(quote.meta?.pricingMode, 'manual_tariff');
     }
+    const unsupported = collectCustomerTariffCutoverCheckpoints().filter(row => row.currentStatus === 'unavailable');
+    assert.equal(unsupported.length,486);
+    for (const point of unsupported) await assert.rejects(computeCanonicalBillingSnapshot(point.scenario.context, {
+      pricingPolicy: { loadOverrides: async () => policy }, loadCustomerTariffState: async () => active }), /missing.*cell|LAS/i);
     assert.equal((await db.pool.query('SELECT count(*)::int AS n FROM app_customer_tariff_local_activation_events')).rows[0].n, 1);
     await assert.rejects(db.pool.query('DELETE FROM app_customer_tariff_local_activation_events'), /immutable/i);
     await assert.rejects(run(), /active|state|revision/i);

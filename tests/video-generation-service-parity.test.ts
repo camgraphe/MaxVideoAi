@@ -23,7 +23,9 @@ test('video generation has a thin HTTP adapter and an injected server orchestrat
   assert.ok(route.split('\n').length < 250, `video route must stay below 250 lines, got ${route.split('\n').length}`);
 
   assert.match(service, /export type ExecuteVideoGenerationOptions/);
-  assert.match(service, /walletReservation: WalletReservation/);
+  const contract = readFileSync(join(root, 'frontend/src/server/video-generation/video-generation-contracts.ts'), 'utf8');
+  assert.match(service, /VideoGenerationReservationOptions/);
+  assert.match(contract, /walletReservation: WalletReservation/);
   assert.match(service, /export async function executeVideoGeneration/);
   const prepared = readFileSync(join(root, 'frontend/src/server/video-generation/execute-prepared-video-generation.ts'), 'utf8');
   assert.match(prepared, /adapters\.submitBytePlusGenerateTask/);

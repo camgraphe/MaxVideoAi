@@ -47,7 +47,7 @@ function buildMember(job: Job): GroupMemberSummary {
   const currency = job.currency ?? job.pricingSnapshot?.currency ?? null;
   const iterationCount = job.iterationCount ?? (Array.isArray(job.renderIds) ? job.renderIds.length : null) ?? null;
   const hasRenderableMedia = Boolean(videoUrl || audioUrl || firstRenderUrl);
-  const normalizedStatus = normalizeJobStatus(job.status ?? null, hasRenderableMedia);
+  const normalizedStatus = normalizeJobStatus(job.status ?? null, hasRenderableMedia, job.outputPreparationState);
   const status: GroupMemberSummary['status'] =
     normalizedStatus ?? (hasRenderableMedia ? 'completed' : 'pending');
   const messageFromJob = normalizeJobMessage(job.message);
@@ -78,6 +78,8 @@ function buildMember(job: Job): GroupMemberSummary {
     thumbUrl,
     videoUrl,
     previewVideoUrl,
+    playbackVideoUrl: job.playbackVideoUrl,
+    lastFrameUrl: job.lastFrameUrl,
     audioUrl,
     aspectRatio,
     prompt: job.prompt,

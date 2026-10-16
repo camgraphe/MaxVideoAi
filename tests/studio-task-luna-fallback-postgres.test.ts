@@ -131,6 +131,8 @@ test('Luna tool round trips retain their own reasoning and native function-call 
   await f.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=380 WHERE user_id=$1',[actor.userId]);let calls=0;
   await runStudioTaskWorkerOnce({enabled:true,assistancePolicy:f.policy,serviceOptions:{generationFactory,countInputTokens:async()=>100,createActionResponse:async params=>{
     assert.equal(params.model,'gpt-6-luna');
+    assert.equal(params.max_output_tokens,2200,'Each fallback round keeps its recorded output allowance');
+    assert.equal(params.reasoning?.effort,'medium','Each fallback round keeps its recorded reasoning allowance');
     if(++calls===1)return {...response(params.model!,'luna-with-tool'),output_text:'',output:[{type:'reasoning' as const,id:'luna-thinking',summary:[],encrypted_content:'luna-opaque'},{type:'function_call' as const,id:'fc-luna-read',status:'completed' as const,name:'project_read',call_id:'luna-project-read',arguments:'{}'}]};
     assert.match(JSON.stringify(params.input),/luna-opaque/);assert.match(JSON.stringify(params.input),/fc-luna-read/);assert.match(JSON.stringify(params.input),/function_call_output/);
     return response(params.model!,'luna-roundtrip-done');

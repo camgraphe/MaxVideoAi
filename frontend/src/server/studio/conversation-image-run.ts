@@ -11,8 +11,9 @@ import {openStudioAssistanceTurn,type StudioLunaFallback} from './assistance-led
 import {readStudioTaskUsage} from './tasks/repository';
 import {studioAssistancePolicy,type StudioAssistancePolicy} from './assistance-policy';
 import {prepareStudioTimelineExport,readStudioTimelineExport,asStudioExportAgentError,type StudioExportDependencies} from './conversation-export-command';
-import {withDbTransaction,isTransactionQueryExecutor} from '@/lib/db';
+import {withDbTransaction,isTransactionQueryExecutor,query} from '@/lib/db';
 import {AgentApiError, toAgentApiFailure} from '@/server/agent-api/errors';
+import {generationComparisonCatalogFingerprint} from '@/server/agent-api/generation-price-comparison';
 import {getActiveAccountRestrictionStrict} from '@/server/fraud-cleanup/restrictions';
 import type {StudioGenerationActor} from '@/server/agent-api/generation-actor';
 import type {ResolvedReference} from '@/server/agent-api/reference-types';
@@ -22,7 +23,7 @@ import {createStudioConversationDirector, type StudioResponseCreator} from './co
 import {createStudioActionExecutor} from './conversation-actions';
 import {createStudioAnalysisService} from './media-analysis/service';
 import {studioAnalysisPolicy} from './media-analysis/policy';
-import {beginStudioAction, completeStudioAction, checkpointStudioResponse, readStudioConversationProject, saveStudioConversationMemory} from './conversation-run-repository';
+import {beginStudioAction, completeStudioAction, checkpointStudioResponse, readCompletedStudioAction, readStudioConversationProject, saveStudioConversationMemory} from './conversation-run-repository';
 import {attachImageQuote, persistImageDraft, type StoredImageTurn} from './image-conversation-repository';
 import {imageRequestFromDraft,imageReferenceFingerprintFromReview, type ImageGenerationFactory} from './image-conversation-service';
 import {validateStudioMediaRequest, type StudioMediaFactories} from './conversation-media-generation';
@@ -39,6 +40,7 @@ import {readStudioWorkspace} from './workspace-command';
 import {StudioConnectedPersistenceError} from './montage-command';
 import {discardStudioPreparedQuote} from './conversation-quote-command';
 import {imageSelectionSchema} from '@/lib/studio/conversation-creation-contract';
+import {studioGreetingReply} from './conversation-intent';
 
 async function prepareMediaAction(options: {
   actor: StudioGenerationActor; turn: StoredImageTurn; input: ImageTurnInput;
@@ -126,7 +128,9 @@ export async function runStudioImageActions(options: {
   const analysisPolicy=studioAnalysisPolicy();
   const analysisEnabled=!!analysisPolicy&&policy.credits===true;
   const analysis=createStudioAnalysisService(actor,{assistancePolicy:policy});
-  const director = createStudioConversationDirector({model: assistance?.model,modelForNextCall:()=>currentModel,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,analysisEnabled,analysisProfiles:{video:!!analysisPolicy?.video,audio:!!analysisPolicy?.audio},assistanceCreditsEnabled:policy.credits===true,taskExecution:options.taskExecution});
+  const hasGreetingCheckpoint=studioGreetingReply(input.message,options.references.length>0)
+    ? (await query<{exists:boolean}>('SELECT EXISTS(SELECT 1 FROM studio_conversation_responses WHERE user_id=$1 AND project_id=$2 AND request_id=$3) exists',[actor.userId,actor.projectId,turn.request_id]))[0].exists:false;
+  const director = createStudioConversationDirector({model: assistance?.model,modelForNextCall:()=>currentModel,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,analysisEnabled,analysisProfiles:{video:!!analysisPolicy?.video,audio:!!analysisPolicy?.audio},assistanceCreditsEnabled:policy.credits===true,taskExecution:options.taskExecution,localGreetingEnabled:!options.responseReplayOnly&&!hasGreetingCheckpoint});
   let currentCallId: string;
   const execute = createStudioActionExecutor(actor, {enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
     recallProject:options.taskExecution?text=>recallStudioTaskMemory(actor,text):undefined,
@@ -222,6 +226,8 @@ export async function runStudioImageActions(options: {
       if(options.taskExecution){await assertStudioTaskExecution(actor,options.taskExecution);await setStudioTaskPhase(actor,options.taskExecution,"thinking");}
       if (!params) throw new AgentApiError('INTERNAL_ERROR','Studio is missing its model request bounds.');
       if(lunaFallback){
+        params.max_output_tokens=Math.min(params.max_output_tokens??2200,2200);
+        params.reasoning={effort:params.reasoning?.effort==='low'?'low':'medium'};
         checkpointOptions?.prepareLunaInput?.();
         params.instructions=(params.instructions??'')+'\nStudio has continued this task with sponsored GPT-6 Luna because the next Sol call could not be funded. Continue the remaining client request from the saved work. This assistance change does not authorize a different generation model, a credit purchase or a media confirmation.';
       }
@@ -245,6 +251,11 @@ export async function runStudioImageActions(options: {
         params.model=currentModel;params.max_output_tokens=Math.min(params.max_output_tokens??2200,2200);params.reasoning={effort:params.reasoning?.effort==='low'?'low':'medium'};
         return checkpoint();
       }
+    },
+    readCompletedAction: (callId,action)=>readCompletedStudioAction(actor,turn,callId,action),
+    comparisonCatalogFingerprint: async action=>{
+      const service=action.surface==='image'?generation:options.mediaEnabled&&options.factories?options.factories.video(actor,{enabled:options.enabled}):null;
+      return service?generationComparisonCatalogFingerprint(action,await service.catalog()):null;
     },
     execute: async (callId: string, action: StudioActionRequest): Promise<StudioActionResult> => {
       if(options.taskExecution)await setStudioTaskPhase(actor,options.taskExecution,action.action.endsWith(".prepare")?"preparing":action.action==="timeline.edit"?"editing":"reading");

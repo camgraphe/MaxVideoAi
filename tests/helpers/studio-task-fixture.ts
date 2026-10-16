@@ -11,7 +11,7 @@ export async function studioTaskFixture(t:{after:(fn:()=>Promise<void>)=>void}) 
   await createPaidGenerationTestSchema(pg.pool);
   await pg.pool.query(`CREATE TABLE studio_projects(id text PRIMARY KEY,user_id text NOT NULL,name text NOT NULL,deleted_at timestamptz);
     CREATE TABLE studio_sequences(id text PRIMARY KEY);`);
-  for(const file of ['50_studio_image_conversation.sql','51_studio_image_model_usage.sql','42_studio_connected_montages.sql','52_studio_conversation_runs.sql','54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','65_studio_task_budgets.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
+  for(const file of ['50_studio_image_conversation.sql','51_studio_image_model_usage.sql','42_studio_connected_montages.sql','52_studio_conversation_runs.sql','54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','65_studio_task_budgets.sql','67_studio_luna_reasoning.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
   const policy=studioAssistancePolicy({STUDIO_ASSISTANCE_ENABLED:'true'});
   async function actor() {
     const id=randomUUID();await pg.pool.query("INSERT INTO studio_projects(id,user_id,name,persistence_mode) VALUES($1,$1,'Creative task','connected')",[id]);

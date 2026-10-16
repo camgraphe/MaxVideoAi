@@ -18,11 +18,13 @@ test('native checkout settles selection, reuses sessions, handles retries and re
   };
   for (const [key, value] of Object.entries(values)) Object.defineProperty(globalThis, key, { configurable: true, value });
   const requests: number[] = [];
+  const captchaRequests: Array<Record<string, unknown>> = [];
   let resolveLate: ((response: Response) => void) | null = null;
   Object.defineProperty(globalThis, 'fetch', { configurable: true, value: async (_url: unknown, options: RequestInit) => {
     const body = JSON.parse(String(options.body));
     const amount = body.amountCents;
     requests.push(amount);
+    if (body.captchaToken) captchaRequests.push(body);
     if (amount === 7500 && !body.captchaToken) return Response.json({ captchaRequired: true }, { status: 403 });
     if (amount === 5000) return new Promise<Response>((resolve) => { resolveLate = resolve; });
     return Response.json({ id: `cs_${amount}`, clientSecret: `secret_${amount}`, checkoutAttemptId: amount, expiresAt: Date.now() / 1000 + 1800 });
@@ -56,10 +58,11 @@ test('native checkout settles selection, reuses sessions, handles retries and re
   } as unknown as Stripe;
   const root = createRoot(dom.window.document.getElementById('root')!);
   const props = {
-    enabled: true, amountCents: 1000, chargeCurrency: 'EUR', locale: 'en', captchaToken: null as string | null,
+    enabled: true, amountCents: 1000, chargeCurrency: 'EUR', locale: 'en', captchaToken: null as string | null, captchaSiteKey: 'public-B',
     session: { access_token: 'test-token', user: { id: 'user-a' } },
     stripePromise: Promise.resolve(stripe), labels: DEFAULT_BILLING_COPY.wallet,
     onCaptchaRequired() { events.push('captcha'); },
+    takeCaptchaToken() { const token = props.captchaToken; props.captchaToken = null; return token; },
     onPaymentStarted() { events.push('started'); },
     onPaymentFailed() { events.push('failed'); },
   };
@@ -107,6 +110,7 @@ test('native checkout settles selection, reuses sessions, handles retries and re
     await render(7500);
     await settle();
     assert.equal(requests.filter((amount) => amount === 7500).length, 2, 'solving the challenge retries a previously unprepared selection');
+    assert.equal(captchaRequests[0]?.captchaSiteKey, 'public-B', 'Express must identify the widget that produced its token');
     props.captchaToken = null;
     await render(7500);
     await settle();

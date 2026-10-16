@@ -186,97 +186,53 @@ test('keeps alternative proposal totals separate instead of summing them as one 
   assert.equal(Object.hasOwn(result, 'intendedOutputDurationSec'), false);
 });
 
-test('budgets real H3 and Seedance 2.5 i2v lines with source-derived framing', async () => {
-  const candidates = [registryCapability('minimax-h3'), registryCapability('seedance-2-5')];
-  const pricedSettings: Array<Record<string, unknown>> = [];
-  const result = await calculateAgentProjectBudget(input([
-    {
-      name: 'H3 source framing',
-      lines: [line({
-        engineId: 'minimax-h3',
-        mode: 'i2v',
-        settings: { durationSec: 5, resolution: '2K' },
-        referenceRoles: ['source'],
-      })],
-    },
-    {
-      name: 'Seedance source framing',
-      lines: [line({
-        engineId: 'seedance-2-5',
-        mode: 'i2v',
-        settings: { durationSec: 4, resolution: '480p' },
-        referenceRoles: ['source'],
-      })],
-    },
-  ]), principal, {
-    listPublicEngines: async () => candidates,
-    getMembershipStatus: async () => ({ pricing: { tier: 'member' } }),
-    computeCatalogRevision: () => 'mcp-catalog-v2:source-framing',
-    priceGeneration: async (request) => {
-      pricedSettings.push(request.settings);
-      return {
-        priceCents: 100,
-        currency: 'USD',
-        membershipTier: 'member',
-        pricingSnapshot: { totalCents: 100, currency: 'USD', membershipTier: 'member' },
-      };
-    },
-  });
-
-  assert.deepEqual(result.proposals.map((proposal) => proposal.total.amountCents), [100, 100]);
-  assert.deepEqual(pricedSettings, [
-    { durationSec: 5, resolution: '2K' },
-    { durationSec: 4, resolution: '480p' },
-  ]);
+test('budgets H3 i2v lines with source-derived framing', async () => {
+  const deps = makeDeps({ listPublicEngines: async () => [registryCapability('minimax-h3')] });
+  const result = await calculateAgentProjectBudget(input([{
+    name: 'H3 source framing', lines: [line({ engineId: 'minimax-h3', mode: 'i2v',
+      settings: { durationSec: 5, resolution: '2K' }, referenceRoles: ['source'] })],
+  }]), principal, deps);
+  assert.equal(result.proposals[0]?.total.amountCents, 340);
+  assert.deepEqual(deps.calls[0]?.settings, { durationSec: 5, resolution: '2K' });
 });
 
-test('budgets source-video modes without inventing a ref2v media kind', async () => {
+test('Seedance source-role budgets require owned framing and timing before pricing', async () => {
+  for (const mode of ['i2v', 'v2v', 'extend'] as const) {
+    for (const aspectRatio of [undefined, '16:9']) {
+      const deps = makeDeps({ listPublicEngines: async () => [registryCapability('seedance-2-5')] });
+      await assert.rejects(calculateAgentProjectBudget(input([{
+        name: 'Source workflow', lines: [line({ mode, referenceRoles: ['source'],
+          settings: { durationSec: 4, resolution: '480p', ...(aspectRatio ? { aspectRatio } : {}), audio: true } })],
+      }]), principal, deps), error => {
+        assert.ok(error instanceof AgentApiError);
+        assert.equal(error.code, 'REFERENCE_REQUIRED');
+        assert.match(error.message, /verified source.*prepare_generation/);
+        assert.deepEqual(error.nextAction, { type: 'edit_project_line', proposalIndex: 0, lineIndex: 0, field: 'references' });
+        return true;
+      });
+      assert.equal(deps.calls.length, 0);
+    }
+  }
+});
+
+test('generic ModelArk reference budgets do not invent a source video kind', async () => {
   const candidate = registryCapability('seedance-2-5');
-  const pricedModes: string[] = [];
-  const billingInputTypes: unknown[] = [];
+  let billingInputType: unknown;
   const result = await calculateAgentProjectBudget(input([{
-    name: 'Source video workflows',
-    lines: [
-      line({
-        purpose: 'Edit source',
-        mode: 'v2v',
-        settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
-        referenceRoles: ['source'],
-      }),
-      line({
-        purpose: 'Extend clips',
-        mode: 'extend',
-        settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
-        referenceRoles: ['source', 'source', 'source'],
-      }),
-      line({
-        purpose: 'Unspecified reference media',
-        mode: 'ref2v',
-        settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
-        referenceRoles: ['reference'],
-      }),
-    ],
-  }]), principal, {
-    listPublicEngines: async () => [candidate],
+    name: 'Unspecified reference media', lines: [line({ mode: 'ref2v', referenceRoles: ['reference'],
+      settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true } })],
+  }]), principal, { listPublicEngines: async () => [candidate],
     getMembershipStatus: async () => ({ pricing: { tier: 'member' } }),
-    computeCatalogRevision: () => 'mcp-catalog-v2:full-video-modes',
+    computeCatalogRevision: () => 'mcp-catalog-v2:reference-media',
     priceGeneration: async (request, membershipTier) => {
-      pricedModes.push(request.mode);
       const pricing = await priceCanonicalGeneration(request, membershipTier);
-      billingInputTypes.push(
-        (pricing.pricingSnapshot.meta as Record<string, unknown>).byteplus_billing_input_type,
-      );
+      billingInputType = (pricing.pricingSnapshot.meta as Record<string, unknown>).byteplus_billing_input_type;
       return pricing;
     },
   });
-
-  assert.deepEqual(pricedModes, ['v2v', 'extend', 'ref2v']);
-  assert.deepEqual(billingInputTypes, ['video_input', 'video_input', 'no_video_input']);
-  assert.deepEqual(
-    result.proposals[0]?.lines.map((budgetLine) => budgetLine.mode),
-    ['v2v', 'extend', 'ref2v'],
-  );
-  assert.deepEqual(result.proposals[0]?.lines.map((budgetLine) => budgetLine.referenceCount), [1, 3, 1]);
+  assert.equal(billingInputType, 'no_video_input');
+  assert.equal(result.proposals[0]?.lines[0]?.mode, 'ref2v');
+  assert.equal(result.proposals[0]?.lines[0]?.referenceCount, 1);
 });
 
 test('budgets first/last-frame and ordered reference-video workflows exposed by the MCP', async () => {

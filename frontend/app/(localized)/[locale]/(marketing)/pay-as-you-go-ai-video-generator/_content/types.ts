@@ -1,13 +1,5 @@
 export const PAYG_ICON_IDS = [
-  'model',
-  'engine',
-  'preview',
-  'video',
-  'refund',
-  'duration',
-  'resolution',
-  'audio',
-  'credits',
+  'model', 'engine', 'preview', 'video', 'refund', 'duration', 'resolution', 'audio', 'credits',
 ] as const;
 export type PaygIconId = (typeof PAYG_ICON_IDS)[number];
 
@@ -79,10 +71,9 @@ export type PaygShowcaseTitleId = (typeof PAYG_SHOWCASE_TITLE_IDS)[number];
 export type PaygHeaderCopy = { eyebrow?: string; title: string; intro?: string };
 export type PaygQuestion = { question: string; answer: string };
 export type PaygCard = { title: string; body: string };
-
 export type PayAsYouGoContent = {
   metadata: { title: string; description: string; imageAlt: string; keywords: string[] };
-  common: { aiVideoModelAlt: string; liveQuote: string; audioIncluded: string; examplePrefix: string };
+  common: { aiVideoModelAlt: string; liveQuote: string; audioOff: string; audioIncluded: string; examplePrefix: string };
   hero: {
     eyebrow: string;
     title: string;
@@ -143,6 +134,12 @@ export type PayAsYouGoContent = {
   exampleCosts: {
     header: PaygHeaderCopy;
     settingsLabel: string;
+    quoteReminder: string;
+    budgetTemplate: string;
+    budgetContext: string;
+    budgetCaveat: string;
+    studioAssistance: string;
+    studioLinkLabel: string;
     labels: Record<PaygExampleCostId, string>;
   };
   refundPolicy: { header: PaygHeaderCopy; bullets: Array<{ icon: PaygIconId; body: string }> };
@@ -159,7 +156,6 @@ export type PayAsYouGoContent = {
       engineImageAltSuffix: string;
     };
     runtime: {
-      priceUnavailable: string;
       defaultEngineLabel: string;
       defaultTitleEngineLabel: string;
       defaultTitleTemplate: string;

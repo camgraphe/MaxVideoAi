@@ -157,6 +157,9 @@ function invalidModeReferences(): never {
 }
 
 const EXTRA_INPUT_FIELD_BY_SETTING: Readonly<Record<string, string>> = Object.freeze({
+  outputFormat: 'output_format',
+  returnLastFrame: 'return_last_frame',
+  watermark: 'watermark',
   contextSec: 'context',
   cropEndX: 'x_end',
   cropEndY: 'y_end',
@@ -387,7 +390,7 @@ export function buildPaidVideoRequestBody(
     body.inputs = [
       input(source[0]!, 'video_url'),
       ...(guideFrames[0] && guideFieldId ? [input(guideFrames[0], guideFieldId)] : []),
-      ...(imageFieldId && imageFieldId !== 'image_urls'
+      ...(imageFieldId && (imageFieldId !== 'image_urls' || execution.engine.id === 'seedance-2-5')
         ? imageReferences.map((reference) => input(reference, imageFieldId)) : []),
       ...(audioFieldId ? audioReferences.map((reference) => input(reference, audioFieldId)) : []),
     ];

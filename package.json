@@ -82,7 +82,8 @@
     "qa:studio:english:live": "frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json scripts/qa/studio-sol-english-live.ts",
     "cwv:crux": "node scripts/performance/export-crux.mjs",
     "cwv:vercel": "node scripts/performance/export-vercel.mjs",
-    "cwv:check": "tsx --tsconfig frontend/tsconfig.json --test tests/cwv-audit-parity.test.ts tests/crux-export.test.ts tests/vercel-cwv-export.test.ts tests/public-page-timing.test.ts tests/compare-loading-performance.test.ts"
+    "cwv:check": "tsx --tsconfig frontend/tsconfig.json --test tests/cwv-audit-parity.test.ts tests/lighthouse-render-document.test.ts tests/crux-export.test.ts tests/vercel-cwv-export.test.ts tests/public-page-timing.test.ts tests/compare-loading-performance.test.ts",
+    "seo:public:check": "tsx --tsconfig frontend/tsconfig.json scripts/seo/check-public-pages.mjs"
   },
   "pnpm": {
     "overrides": {

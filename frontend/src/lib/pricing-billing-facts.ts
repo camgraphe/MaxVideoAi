@@ -30,6 +30,7 @@ import { getLumaRay2BasePriceUsd, getLumaRay2EditRateUsd } from '@/lib/luma-ray2
 import type { PricingContext } from '@/lib/pricing-context';
 import { projectManualTariffMedia, projectManualTariffAudio } from '@/lib/pricing-manual-media';
 import { applyEngineVariantPricing } from '@/lib/pricing-addons';
+import { normalizeSeedancePricingContext } from '@/lib/seedance-option-pricing';
 import { applyEnginePricingOverride, buildPricingDefinition } from '@/lib/pricing-definition';
 import { isWan3EngineId, withWan3InputVideoPricing } from '@/lib/wan3-pricing';
 import { getPricingKernel } from '@/lib/pricing-kernel';
@@ -520,14 +521,14 @@ function buildBillingPricingFactsInternal(
 /** The factual owner identifies whether requested orientation changes the billing amount. */
 export function buildBillingPricingFacts(context: PricingContext, pricingDetails: EnginePricingDetails | undefined, currency: string): BillingPricingFacts {
   const engine = applyEngineVariantPricing(context.engine, context.mode);
-  const effectiveContext = engine === context.engine ? context : { ...context, engine };
+  const effectiveContext = normalizeSeedancePricingContext(engine === context.engine ? context : { ...context, engine });
   const details = engine === context.engine ? pricingDetails : engine.pricingDetails;
   const result = buildBillingPricingFactsInternal(effectiveContext, details, currency);
   const identityFacts = { ...result.meta, ...result.facts.metadata };
   const tokenBreakdown = engine.id === 'gemini-omni-flash'
     ? result.meta.cost_breakdown_usd as { outputTokens: number; inputImageTokens: number; inputVideoTokens: number } : undefined;
   const billedAspect = isSeedance2TokenPricing(details)
-    ? resolveSeedance2TariffAspectRatio(details, context.resolution, context.aspectRatio) : null;
+    ? resolveSeedance2TariffAspectRatio(details, effectiveContext.resolution, effectiveContext.aspectRatio) : null;
   if (billedAspect !== null && typeof billedAspect !== 'string') throw new Error('Priced aspect dimensions are unavailable');
   result.facts.metadata = { ...result.facts.metadata, manualTariffAspectRatio: billedAspect,
     ...(tokenBreakdown ? { manualTariffOutputTokens: tokenBreakdown.outputTokens,

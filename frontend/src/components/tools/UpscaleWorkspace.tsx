@@ -178,6 +178,7 @@ export function UpscaleSession({ auth, initialKind }: { auth: ReturnType<typeof 
   const { handleUpload, selectLibraryAsset } = useUpscaleSourceMedia({
     changeMediaType,
     copy,
+    locale,
     mediaType,
     mediaUrl,
     setError,
