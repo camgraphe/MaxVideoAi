@@ -65,7 +65,12 @@ For the touched family, inspect initial HTML in EN/FR/ES: the new model and the
 still-published historical versions must remain reachable, valid pagination keeps
 its own canonical and localized hrefs, and eligible comparison-directory links
 exist without a click. Run the catalogue/comparison SSR, gallery pagination and
-family-journey contracts alongside registry checks. After the Git-backed release
+family-journey contracts alongside registry checks. Keep each public video's real
+prompt excerpt associated with its original model and native watch link; localized
+model captions are not prompt substitutes. Run the prompt-starter, gallery-opening
+and prompt-layout browser contracts, including narrow cards with current price
+labels, so a successor launch preserves both prompt access and model identity.
+After the Git-backed release
 is READY, run `pnpm seo:public:check`; the daily Public SEO workflow catches live
 drift between releases. See [CI ownership](ci-validation.md#public-seo).
 

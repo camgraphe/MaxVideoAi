@@ -89,6 +89,9 @@ the public original excerpt or prompt, in every locale; a translated model capti
 is not a prompt and a missing source stays absent. Keep full prompts out of the
 gallery payload and in the on-demand reader/watch page. The overlay retains the
 existing poster geometry and uses at most two lines, one on narrow cards.
+On the two mobile opening side cards at widths up to 200px, omit the visual
+excerpt so the original model/settings and reserved price remain readable; the
+named watch link and version shortcut still open that video's full prompt.
 Version shortcuts reuse only real examples already on that SSR page, with at most
 two links. Families use the existing registry-backed current/published model order;
 LTX and Seedance retain their explicit current/older generation groups. Model
