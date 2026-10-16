@@ -3,7 +3,7 @@ import { ensureBillingSchema } from '@/lib/schema';
 import { type QueryExecutor, withDbTransaction } from '@/lib/db';
 import { getUserIdentity } from '@/server/supabase-admin';
 
-type StripeCustomerSnapshot = { id: string; deleted?: boolean | null; shipping?: Stripe.Customer.Shipping | null };
+type StripeCustomerSnapshot = { id: string; deleted?: boolean | null | void; shipping?: Stripe.Customer.Shipping | null };
 export type StripeCheckoutCustomer = { id: string; hasShippingAddress: boolean };
 
 type StripeCustomerClient = {
@@ -47,8 +47,8 @@ function normalizePreferredLocale(value: string | null | undefined): string | nu
   return locale;
 }
 
-function isDeletedCustomer(customer: Stripe.Customer | Stripe.DeletedCustomer | { deleted?: boolean | null }): boolean {
-  return Boolean((customer as { deleted?: boolean | null }).deleted);
+function isDeletedCustomer(customer: StripeCustomerSnapshot): boolean {
+  return Boolean(customer.deleted);
 }
 
 function isMissingStripeCustomerError(error: unknown): boolean {
