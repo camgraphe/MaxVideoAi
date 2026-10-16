@@ -92,10 +92,27 @@ Vercel sensitive environment variables are unreadable in local exports. An empty
 export does not prove an absent CAPTCHA secret: check variable metadata and
 recent `checkout_attempts` configuration/challenge outcomes before changing it.
 
-Hosted Checkout with automatic tax has additional Google Pay conditions around
-shipping address availability. Do not add a shipping form to digital credits
-solely to force a wallet button. Validate the actual native flow on supported
-iPhone and Android devices; desktop emulation cannot certify their payment sheet.
+Google Pay with Stripe Tax requires shipping-address collection or an existing
+customer shipping address ([Stripe Tax](https://docs.stripe.com/tax/checkout/page)).
+Native Elements sessions collect the address inside the wallet sheet and save it
+with `customer_update.shipping=auto`. Use all Stripe-supported address countries;
+there is no shipping fee or physical delivery. Apple Pay and Link may also ask the
+customer to confirm an address. Hosted sessions retain billing-only collection,
+so Google Pay there still depends on an existing saved shipping address.
+
+Both native Apple Pay and Google Pay use `always`: Stripe still checks supported
+browser/device/currency, but a missing saved card does not suppress the button.
+Google sign-in already supplies name/email to the Stripe customer; it grants no
+access to Google Pay cards. Do not request additional OAuth scopes or infer wallet
+availability from the authentication provider. Stripe owns the payment sheet and
+customer confirmation. Validate the actual native flow on supported iPhone and
+Android devices; desktop fixtures cannot certify their payment sheet.
+
+Native sessions carry `wallet_express_tax_address=1`. Server reuse requires this
+policy so sessions prepared before the fix cannot hide Google Pay again. Existing
+failed-card cooldown and ownership checks still run before reuse. CAPTCHA tokens
+remain single-use across all wallets and the hosted fallback; session reuse never
+reuses a consumed CAPTCHA proof.
 
 New local methods require account eligibility, a supported charge currency,
 confirmation and return-flow testing, and webhook fulfillment verification.

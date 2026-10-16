@@ -68,18 +68,20 @@ test('checkout reuse preserves fraud cooldown for every customer and guard/repor
   });
   const mod = requireFrontend(output);
   let inspections = 0;
-  const session = { id: 'cs_reuse', client_secret: 'test-secret', status: 'open', payment_status: 'unpaid', expires_at: Date.now()/1000 + 1800, metadata: {} };
+  const session = { id: 'cs_reuse', client_secret: 'test-secret', status: 'open', payment_status: 'unpaid', expires_at: Date.now()/1000 + 1800, metadata: { wallet_express_tax_address: '1' } };
   const stripe = { checkout: { sessions: { retrieve: async () => { inspections++; return session; } } } };
   const input = { userId: 'first-user', amountCents: 1000, currency: 'EUR', hasCompletedTopUp: false };
   assert.equal((await mod.findReusableExpressCheckoutSession(stripe, input)).id, 'cs_reuse');
   assert.equal((await mod.findReusableExpressCheckoutSession(stripe, input)).checkoutAttemptId, 1);
-  session.metadata = { ga_session_id: '1789486466' };
+  session.metadata = { wallet_express_tax_address: '1', ga_session_id: '1789486466' };
   assert.equal(
     (await mod.findReusableExpressCheckoutSession(stripe, input)).id,
     'cs_reuse',
     'another tab for the same checkout must reuse the payable session even when its analytics session differs',
   );
   session.metadata = {};
+  assert.equal(await mod.findReusableExpressCheckoutSession(stripe, input), null, 'legacy sessions without wallet tax address collection are not reused');
+  session.metadata = { wallet_express_tax_address: '1' };
   assert.equal((await pg.pool.query('SELECT count(*)::int AS n FROM checkout_attempts')).rows[0].n, 1, 'reuse never creates or resets an attempt');
   for (const changed of [{ userId: 'other-user' }, { currency: 'USD' }, { amountCents: 2500 }]) {
     assert.equal(await mod.findReusableExpressCheckoutSession(stripe, { ...input, ...changed }), null);

@@ -253,7 +253,7 @@ export function WalletExpressCheckout({
           layout: { maxColumns: 2, maxRows: 2, overflow: 'auto' },
           paymentMethods: {
             applePay: 'always',
-            googlePay: 'auto',
+            googlePay: 'always',
             paypal: 'auto',
             link: 'auto',
             amazonPay: 'never',

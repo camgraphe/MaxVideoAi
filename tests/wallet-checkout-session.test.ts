@@ -112,6 +112,32 @@ test('wallet top-up Checkout can create Elements sessions for Express Checkout',
   assert.equal(params.invoice_creation?.invoice_data?.metadata?.kind, 'topup');
 });
 
+test('native wallets collect the address required by Google Pay with Stripe Tax', () => {
+  const params = buildParams({
+    checkoutUiMode: 'elements',
+    returnUrl: 'https://maxvideoai.com/billing?status=success',
+    customer: 'cus_123',
+    customerUpdate: { address: 'auto', name: 'auto' },
+  });
+  const countries = params.shipping_address_collection?.allowed_countries ?? [];
+  for (const country of ['US', 'ES', 'FR', 'GB', 'DE', 'BR', 'JP', 'AU', 'IN'] as const) {
+    assert.ok(countries.includes(country), `${country} must remain eligible for native wallet payments`);
+  }
+  assert.deepEqual(params.customer_update, { address: 'auto', name: 'auto', shipping: 'auto' });
+  assert.equal(params.metadata?.wallet_express_tax_address, '1');
+  assert.deepEqual(params.automatic_tax, { enabled: true });
+  assert.equal(params.shipping_options, undefined, 'digital credits must not add a shipping charge');
+});
+
+test('native address collection does not send customer_update without a customer', () => {
+  const params = buildParams({
+    checkoutUiMode: 'elements',
+    returnUrl: 'https://maxvideoai.com/billing?status=success',
+  });
+  assert.ok(params.shipping_address_collection);
+  assert.equal(params.customer_update, undefined);
+});
+
 test('temporary Amex restriction covers first and returning hosted top-ups while preserving native wallets', () => {
   for (const checkoutUiMode of ['hosted', 'elements'] as const) {
     for (const firstTopUp of [true, false]) {
