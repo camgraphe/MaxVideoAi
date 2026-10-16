@@ -135,6 +135,7 @@
       },
       "examples": {
         "items": {
+          "all-examples": "Todos los ejemplos",
           "sora": "Sora",
           "sora-2": "Sora 2",
           "sora-2-pro": "Sora 2 Pro",
@@ -161,7 +162,10 @@
           "seedance-1-5-pro": "Seedance 1.5 Pro"
         },
         "heading": "Mira los resultados antes de elegir.",
-        "intro": "Videos reales, sus prompts y los modelos utilizados."
+        "intro": "Videos reales, sus prompts y los modelos utilizados.",
+        "descriptions": {
+          "all-examples": "Videos y prompts de todos los modelos."
+        }
       },
       "compare": {
         "items": {

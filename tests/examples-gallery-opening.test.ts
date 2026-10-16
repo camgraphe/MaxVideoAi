@@ -36,10 +36,9 @@ test('the gallery continues directly from the opening into the remaining videos'
   try {
     const doc = dom.window.document;
     const opening = doc.querySelector('[data-gallery-opening]')!;
-    const continuationHeading = opening.nextElementSibling!;
-    assert.match(continuationHeading.textContent ?? '', /More.*videos/);
-    const continuation = continuationHeading.nextElementSibling!;
+    const continuation = opening.nextElementSibling!;
     assert.equal(continuation.querySelector('a')?.getAttribute('href'), '/video/v4');
+    assert.equal(opening.parentElement?.querySelector('h2'), null, 'no redundant continuation heading separates the videos');
     assert.equal(opening.parentElement?.querySelector('section, blockquote'), null, 'no duplicate editorial block splits the videos');
     assert.equal(doc.querySelectorAll('img').length, 24);
     assert.equal(doc.querySelectorAll('img[fetchpriority="high"]').length, 1);

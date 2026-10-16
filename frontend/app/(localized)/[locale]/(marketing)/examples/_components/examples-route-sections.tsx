@@ -92,7 +92,6 @@ type ExamplesModelLandingCardsSectionProps = {
 };
 
 type ExamplesGallerySectionProps = {
-  familyLabel?: string;
   openingEnabled?: boolean;
   audioAvailableLabel: string;
   detailsCtaLabel: string;
@@ -278,7 +277,6 @@ export function ExamplesModelLandingCardsSection({ sections }: ExamplesModelLand
 }
 
 export function ExamplesGallerySection({
-  familyLabel,
   openingEnabled,
   audioAvailableLabel,
   detailsCtaLabel,
@@ -302,7 +300,6 @@ export function ExamplesGallerySection({
   return (
     <section id="gallery" className="min-w-0">
       <ExamplesGalleryGrid
-        familyLabel={familyLabel}
         openingEnabled={openingEnabled}
         detailsCtaLabel={detailsCtaLabel}
         initialExamples={initialExamples}

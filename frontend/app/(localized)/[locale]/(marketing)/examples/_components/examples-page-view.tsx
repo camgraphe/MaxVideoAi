@@ -199,7 +199,6 @@ export function ExamplesPageView({
           />
 
           <ExamplesGallerySection
-            familyLabel={isModelLanding ? modelLandingLabel : undefined}
             audioAvailableLabel={galleryUiCopy.audioAvailable}
             detailsCtaLabel={galleryUiCopy.detailsCta}
             engineFilter={selectedEngine?.toLowerCase() ?? null}
