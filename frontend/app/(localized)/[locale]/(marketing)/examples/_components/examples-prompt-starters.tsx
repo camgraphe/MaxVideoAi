@@ -8,7 +8,7 @@ type Props = { locale: AppLocale; starters: ReturnType<typeof buildExamplesPromp
 
 export function ExamplesPromptStarters({ locale, starters }: Props) {
   if (!starters.length) return null;
-  const title = locale === 'fr' ? 'Un prompt, une version précise' : locale === 'es' ? 'Un prompt, una versión concreta' : 'A prompt, a specific version';
+  const title = locale === 'fr' ? 'Prompts de ces exemples, par version' : locale === 'es' ? 'Prompts de estos ejemplos, por versión' : 'Prompts from these examples, by version';
   const action = locale === 'fr' ? 'Ouvrir le prompt et les réglages' : locale === 'es' ? 'Abrir el prompt y los ajustes' : 'Open prompt & settings';
   return (
     <section className={styles.promptStarters} aria-labelledby="examples-prompt-starters-title">

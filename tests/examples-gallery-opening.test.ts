@@ -10,7 +10,7 @@ import type { ExampleGalleryVideo } from '../frontend/components/examples/exampl
 
 const videos: ExampleGalleryVideo[] = Array.from({length:24},(_,i)=>i%4===1?'9:16':'16:9').map((aspectRatio, i) => ({
   id: `v${i}`, href: `/video/v${i}`, engineLabel: 'Example', engineIconId: 'example',
-  priceLabel: i === 0 ? 'Current price $1.41' : null, prompt: 'A cinematic public example', aspectRatio, durationSec: 10,
+  priceLabel: i === 0 ? 'Current price $1.41' : null, prompt: 'A cinematic public example', sourcePromptExcerpt: `Original scene direction for video ${i}`, aspectRatio, durationSec: 10,
   hasAudio: false, rawPosterUrl: `/test-${i}.jpg`,
   ...(i === 0 ? { recreateHref: '/app?from=v0' } : {}),
 }));
@@ -45,6 +45,20 @@ test('server prompt shortcuts follow the opening and retain the complete poster-
     assert.equal(doc.querySelectorAll('img').length, 24);
     assert.equal(doc.querySelectorAll('img[fetchpriority="high"]').length, 1);
     assert.equal(doc.querySelector('video'), null);
+  } finally { dom.window.close(); }
+});
+
+test('every server-rendered watch card visibly associates its original prompt excerpt with its video', async () => {
+  const dom = await renderGallery(true);
+  try {
+    const links = [...dom.window.document.querySelectorAll('a[data-analytics-cta-name="view_example_details"]')];
+    assert.equal(links.length, 24);
+    links.forEach((link, index) => {
+      assert.equal(link.querySelector('[data-example-prompt]')?.textContent?.trim(), `Original scene direction for video ${index}`);
+      assert.notEqual(link.querySelector('[data-example-prompt]')?.getAttribute('aria-hidden'), 'true');
+      assert.equal(link.getAttribute('href'), `/video/v${index}`);
+    });
+    assert.equal(dom.window.document.querySelector('video'), null);
   } finally { dom.window.close(); }
 });
 

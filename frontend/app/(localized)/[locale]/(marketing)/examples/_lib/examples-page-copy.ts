@@ -1,4 +1,5 @@
 import { normalizeEngineId } from '@/lib/engine-alias';
+import { getExampleFamilyCurrentModelSlugs, getExampleFamilyModelSlugs } from '@/lib/model-families';
 import type { ExampleGalleryVideo } from '@/components/examples/examples-gallery-types';
 import type { AppLocale } from '@/i18n/locales';
 import { buildCompareHref, buildModelHref, formatPromptExcerpt } from './examples-route-utils';
@@ -42,7 +43,7 @@ export function getExamplesGalleryUiCopy(locale: AppLocale, pagination: Paginati
           loading: 'Chargement…',
           noPreview: 'Aucun aperçu',
           audioAvailable: 'Audio disponible à la lecture',
-          detailsCta: 'Voir réglages et prix',
+          detailsCta: 'Voir prompt, réglages et prix',
         }
       : locale === 'es'
         ? {
@@ -53,7 +54,7 @@ export function getExamplesGalleryUiCopy(locale: AppLocale, pagination: Paginati
             loading: 'Cargando…',
             noPreview: 'Sin vista previa',
             audioAvailable: 'Audio disponible al reproducir',
-            detailsCta: 'Ver ajustes y precio',
+            detailsCta: 'Ver prompt, ajustes y precio',
           }
         : {
             prev: 'Previous',
@@ -63,7 +64,7 @@ export function getExamplesGalleryUiCopy(locale: AppLocale, pagination: Paginati
             loading: 'Loading…',
             noPreview: 'No preview',
             audioAvailable: 'Audio available on playback',
-            detailsCta: 'View settings & price',
+            detailsCta: 'View prompt, settings & price',
           };
 
   return {
@@ -292,11 +293,12 @@ export function buildExamplesPromptStarters(
   const prompts = new Map(sources.map(source => [source.id, formatPromptExcerpt(source.promptExcerpt || source.prompt || '')]));
   const versionGroups = family === 'ltx'
     ? [['ltx-2-5-pro', 'ltx-2-5-fast'], ['ltx-2-3-pro', 'ltx-2-3-fast']]
-    : family === 'seedance' ? [['seedance-2-5'], ['seedance-2-0', 'seedance-2-0-fast']] : [];
+    : family === 'seedance' ? [['seedance-2-5'], ['seedance-2-0', 'seedance-2-0-fast']]
+      : family ? [...new Set([...getExampleFamilyCurrentModelSlugs(family), ...getExampleFamilyModelSlugs(family)])].map(id => [id]) : [];
   return versionGroups.flatMap(group => {
     const ids = group.map(id => normalizeEngineId(id));
     const video = examples.find(item => ids.includes(normalizeEngineId(item.engineIconId)) && prompts.get(item.id)?.trim() && item.href);
     return video ? [{ href: video.href, engineLabel: video.engineLabel, prompt: prompts.get(video.id)!,
       durationSec: video.durationSec, aspectRatio: video.aspectRatio, hasAudio: video.hasAudio }] : [];
-  });
+  }).slice(0, 2);
 }

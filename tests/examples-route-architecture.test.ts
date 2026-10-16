@@ -162,7 +162,7 @@ test('Seedance examples landing leads with Seedance 2.5 while retaining the fami
   assert.ok(family);
   assert.equal(landing.metaTitle, title);
   assert.match(landing.metaDescription, /^Watch Seedance 2\.5 video examples/);
-  assert.equal(landing.heroTitle, 'Seedance 2.5, 2.0, Fast & Mini video examples');
+  assert.equal(landing.heroTitle, 'Seedance 2.5, 2.0, Fast & Mini examples and prompts');
   assert.match(landing.intro, /^Explore Seedance 2\.5 examples alongside Seedance 2\.0, Fast and Mini/);
   assert.match(landing.summary, /^Seedance 2\.5 supports 4–30 second videos up to 1080p/);
   assert.match(landing.summary, /Earlier 1\.5 Pro videos remain labeled, although new 1\.5 generations are closed/);

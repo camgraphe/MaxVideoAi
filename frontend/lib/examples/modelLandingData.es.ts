@@ -73,7 +73,7 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   wan: {
     metaTitle: 'Ejemplos de Wan 3 y Wan 3 Prime: prompts y ajustes | MaxVideoAI',
     metaDescription: 'Mira ejemplos de video Wan 3 y Wan 3 Prime. Abre cada resultado para ver su prompt, ajustes y precio actual estimado; las versiones anteriores conservan su etiqueta.',
-    heroTitle: 'Ejemplos Wan 3 y Wan 3 Prime',
+    heroTitle: 'Ejemplos y prompts de Wan 3 y Wan 3 Prime',
     subtitle: 'Compara videos Wan 3 y Wan 3 Prime. Abre un clip para ver su prompt, ajustes y precio actual estimado.',
     guideTitle: 'Wan 3, Wan 3 Prime y resultados anteriores',
     intro: 'Esta galería reúne Wan 3 y Wan 3 Prime junto con resultados de versiones Wan anteriores. Cada video identifica el modelo utilizado. Mira el clip completo para comparar movimiento, encuadre y continuidad; ábrelo para consultar el prompt, los ajustes y el precio actual estimado. Revisa el presupuesto actual antes de generar otro video.',
@@ -148,7 +148,7 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   seedance: {
     metaTitle: 'Ejemplos de Seedance 2.5, prompts y ajustes | MaxVideoAI',
     metaDescription: "Mira ejemplos de video Seedance 2.5 con prompts y ajustes. Compara resultados de otras versiones y usa un ejemplo como punto de partida.",
-    heroTitle: 'Ejemplos de video Seedance 2.5, 2.0, Fast y Mini',
+    heroTitle: 'Ejemplos y prompts de Seedance 2.5, 2.0, Fast y Mini',
     subtitle: "Seedance 2.5 y versiones anteriores: mira los resultados y encuentra un prompt para tu idea.",
     intro: "Explora ejemplos de Seedance 2.5 junto a Seedance 2.0, Fast y Mini. Abre un video para ver su prompt, sus ajustes y su precio actual estimado. Cada resultado conserva el nombre del modelo que lo generó.",
     summary: "Seedance 2.5 permite crear videos de 4 a 30 segundos hasta 1080p, con audio generado, referencias, edición y extensión. Seedance 2.0 sigue disponible para 4K; Fast ofrece renders normales de iteración y Mini se centra en series orientadas al coste. Los vídeos 1.5 Pro conservan su nombre, pero las nuevas generaciones 1.5 están cerradas.",
@@ -245,7 +245,8 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   hailuo: {
-    heroTitle: 'Ejemplos de video MiniMax H3 y H3 Max',
+    metaTitle: 'Ejemplos de MiniMax H3 y H3 Max, prompts y ajustes | MaxVideoAI',
+    heroTitle: 'Ejemplos y prompts de MiniMax H3 y H3 Max',
     subtitle: "Ejemplos de video MiniMax H3 Max, H3 y versiones anteriores de Hailuo, con prompts y ajustes.",
     intro: "Mira MiniMax H3 Max y H3 junto a ejemplos anteriores de Hailuo. Abre un video para consultar su prompt, sus ajustes y su precio actual estimado, y úsalo como punto de partida para tu propia escena.",
     summary: "Cada ejemplo de MiniMax o Hailuo conserva el nombre del modelo que lo generó. Compara el movimiento, la continuidad y el audio, si lo tiene, en todo el video. Las fichas de H3 y H3 Max detallan las fuentes y los ajustes disponibles para tu proyecto.",

@@ -293,6 +293,7 @@ function buildClientVideo({
     engineBrandId: engineMeta?.brandId,
     priceLabel: formatCurrentExamplePrice(currentPrice, locale),
     prompt: promptDisplay,
+    sourcePromptExcerpt: formatPromptExcerpt(video.promptExcerpt?.trim() || video.prompt?.trim() || '') || null,
     promptFull: locale === 'en' ? video.prompt ?? null : null,
     aspectRatio: video.aspectRatio ?? null,
     outputWidth: video.outputWidth,

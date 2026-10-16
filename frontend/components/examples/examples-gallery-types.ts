@@ -6,6 +6,7 @@ export type ExampleGalleryVideo = {
   engineBrandId?: string;
   priceLabel: string | null;
   prompt: string;
+  sourcePromptExcerpt?: string | null;
   promptFull?: string | null;
   aspectRatio: string | null;
   outputWidth?: number | null;

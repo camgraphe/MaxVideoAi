@@ -26,6 +26,9 @@
 .waiting{opacity:0}.playing{opacity:1}
 .caption{position:absolute;inset:auto 0 0;padding:36px 14px 12px;background:linear-gradient(transparent,#000b);display:flex;flex-direction:column;gap:2px;pointer-events:none;font-size:11px;line-height:1.4}
 .caption strong{font-size:13px;font-weight:600}.caption>span{opacity:.82}
+.promptExcerpt{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.caption:has(.promptExcerpt){padding-top:20px}
+@container example-card (max-width:240px){.promptExcerpt{-webkit-line-clamp:1}}
 /* Keep model/settings steady while prices stream: 2 lines on wide cards, 3/4 on narrow cards.
    This is a minimum, so a future longer localized price remains readable without clipping. */
 .priceSlot{min-height:2.8em}
@@ -49,4 +52,5 @@
  .opening>.card:nth-child(3){grid-column:2;grid-row:2}
  .opening>.card:nth-child(4){grid-column:2;grid-row:3}
  .caption{padding:26px 10px 8px;font-size:10px}.caption strong{font-size:12px}
+ .caption:has(.promptExcerpt){padding-top:12px}
 }

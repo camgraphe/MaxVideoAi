@@ -1,10 +1,44 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { buildExamplesPromptStarters } from '../frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-page-copy';
+import { buildExamplesGalleryData } from '../frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-page-data';
+import type { GalleryVideo } from '../frontend/server/videos';
 
 const video = (id: string, engineIconId: string, engineLabel: string) => ({
   id, engineIconId, engineLabel, href: `/video/${id}`, prompt: 'Exact public excerpt…', promptFull: 'Full prompt stays in the reader',
   durationSec: 10, aspectRatio: '16:9', hasAudio: true, priceLabel: '$9.99',
+});
+
+test('Wan and MiniMax expose real version prompts from the registry without mixing families or inventing missing examples', () => {
+  for (const [family, ids] of [
+    ['wan', ['wan-3-prime', 'wan-3']],
+    ['hailuo', ['minimax-h3-max', 'minimax-h3']],
+    ['kling', ['kling-o3-pro', 'kling-3-pro']],
+  ] as const) {
+    const page = [video('unrelated', 'seedance-2-5', 'Seedance 2.5'), ...ids.map(id => video(id, id, id)), video('duplicate', ids[0], ids[0])];
+    const sources = page.map(item => ({ id: item.id, promptExcerpt: item.prompt }));
+    const selected = buildExamplesPromptStarters(family, page, sources);
+    assert.equal(selected.length, 2, family);
+    assert.deepEqual(new Set(selected.map(item => item.engineLabel)), new Set(ids));
+    assert.ok(selected.every(item => item.href !== '/video/unrelated' && item.href !== '/video/duplicate'));
+    assert.deepEqual(buildExamplesPromptStarters(family, page, []), []);
+  }
+});
+
+test('gallery summaries retain a bounded original public prompt in every locale without replacing full reader content', () => {
+  const source = { id: 'wan-source', engineId: 'wan-3', engineLabel: 'Wan 3', durationSec: 10,
+    prompt: 'The complete original public prompt stays in the reader. ' + 'More scene direction. '.repeat(50),
+    promptExcerpt: 'A runner crosses the stream while the camera tracks left.', hasAudio: true } as GalleryVideo;
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const card = buildExamplesGalleryData({ allVideos: [source], locale, selectedEngine: 'wan' }).clientVideos[0];
+    assert.equal(card.sourcePromptExcerpt, 'A runner crosses the stream while the camera tracks left.');
+    assert.equal(card.id, 'wan-source');
+    assert.equal(source.prompt.split(' ').length > 100, true);
+    const missing = buildExamplesGalleryData({ allVideos: [{ ...source, prompt: '', promptExcerpt: '' }], locale, selectedEngine: 'wan' }).clientVideos[0];
+    assert.equal(missing.sourcePromptExcerpt, null, 'missing prompts must not be fabricated from a model caption');
+    const long = buildExamplesGalleryData({ allVideos: [{ ...source, promptExcerpt: '', prompt: 'public '.repeat(1000) }], locale, selectedEngine: 'wan' }).clientVideos[0];
+    assert.equal(long.sourcePromptExcerpt?.split(' ').length, 18);
+  }
 });
 
 test('family prompt shortcuts reuse distinct versions from the current SSR page', () => {

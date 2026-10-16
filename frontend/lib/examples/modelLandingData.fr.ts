@@ -73,7 +73,7 @@ export const FR_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   wan: {
     metaTitle: 'Exemples Wan 3 et Wan 3 Prime : prompts et réglages | MaxVideoAI',
     metaDescription: 'Regardez des exemples vidéo Wan 3 et Wan 3 Prime. Ouvrez chaque résultat pour voir son prompt, ses réglages et son tarif actuel estimé ; les anciennes versions restent identifiées.',
-    heroTitle: 'Exemples Wan 3 et Wan 3 Prime',
+    heroTitle: 'Exemples et prompts Wan 3 et Wan 3 Prime',
     subtitle: 'Comparez les vidéos Wan 3 et Wan 3 Prime. Ouvrez un clip pour voir son prompt, ses réglages et son tarif actuel estimé.',
     guideTitle: 'Wan 3, Wan 3 Prime et les anciens résultats',
     intro: 'Cette galerie réunit Wan 3 et Wan 3 Prime ainsi que des résultats d’anciennes versions Wan. Chaque vidéo indique le modèle qui l’a créée. Regardez le clip entier pour comparer mouvement, cadrage et continuité, puis ouvrez-le pour consulter le prompt, les réglages et le tarif actuel estimé. Vérifiez le devis actuel avant une nouvelle génération.',
@@ -147,7 +147,7 @@ export const FR_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   seedance: {
     metaTitle: 'Exemples Seedance 2.5, prompts et réglages | MaxVideoAI',
     metaDescription: "Découvrez les exemples vidéo Seedance 2.5, leurs prompts et réglages. Comparez les versions Seedance et partez d’un exemple pour votre création.",
-    heroTitle: 'Exemples vidéo Seedance 2.5, 2.0, Fast et Mini',
+    heroTitle: 'Exemples et prompts Seedance 2.5, 2.0, Fast et Mini',
     subtitle: "Seedance 2.5 et les versions précédentes : regardez les résultats et trouvez un prompt à adapter.",
     intro: "Explorez les exemples Seedance 2.5 aux côtés de Seedance 2.0, Fast et Mini. Ouvrez une vidéo pour voir son prompt, ses réglages et son tarif actuel estimé. Chaque résultat conserve le nom de son modèle d’origine.",
     summary: "Seedance 2.5 permet de créer des vidéos de 4 à 30 secondes jusqu’en 1080p, avec audio généré, références, édition et prolongation. Seedance 2.0 reste disponible pour la 4K ; Fast sert aux rendus d’itération ordinaires et Mini aux séries axées sur le coût. Les vidéos 1.5 Pro gardent leur nom d’origine, mais les nouvelles générations 1.5 sont fermées.",
@@ -244,7 +244,8 @@ export const FR_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   hailuo: {
-    heroTitle: 'Exemples vidéo MiniMax H3 et H3 Max',
+    metaTitle: 'Exemples MiniMax H3 et H3 Max, prompts et réglages | MaxVideoAI',
+    heroTitle: 'Exemples et prompts MiniMax H3 et H3 Max',
     subtitle: "Exemples vidéo MiniMax H3 Max, H3 et anciens Hailuo, avec leurs prompts et réglages.",
     intro: "Regardez MiniMax H3 Max et H3 aux côtés des anciens exemples Hailuo. Ouvrez une vidéo pour voir son prompt, ses réglages et son tarif actuel estimé, puis partez de cet exemple pour créer votre scène.",
     summary: "Chaque exemple MiniMax ou Hailuo garde le nom du modèle qui l’a généré. Comparez le mouvement, la continuité et l’éventuel audio sur tout le clip. Les fiches H3 et H3 Max détaillent les sources et réglages disponibles pour votre projet.",

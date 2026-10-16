@@ -83,6 +83,19 @@ The opening card owns the one prioritized responsive poster. No separate route h
 
 A compact, full-width guide follows all four opening cards in reading order. It tells visitors to open any video for its prompt, settings and current price, and offers a generic app entry point without implying that it will reuse the lead video's prompt. The full prompt, original settings and qualified current estimates remain available in the reader and canonical watch page. Gallery cards receive exact/reference/unavailable current prices from the request-local canonical quote owner through `current-examples-gallery-data.ts`; the pure gallery builder formats the supplied map. Unavailable prices are omitted. Never display a historic charge as a current public price; stored billing history remains unchanged. Per-video reuse links still follow the source engine's app availability rule in the reader.
 
+Each gallery card also renders its bounded `sourcePromptExcerpt` as visible text
+inside its native watch link. The route and anonymous examples API derive it from
+the public original excerpt or prompt, in every locale; a translated model caption
+is not a prompt and a missing source stays absent. Keep full prompts out of the
+gallery payload and in the on-demand reader/watch page. The overlay retains the
+existing poster geometry and uses at most two lines, one on narrow cards.
+Version shortcuts reuse only real examples already on that SSR page, with at most
+two links. Families use the existing registry-backed current/published model order;
+LTX and Seedance retain their explicit current/older generation groups. Model
+launches must preserve factual older labels, prompts and native pagination rather
+than relabeling old examples as a new version. `examples-prompt-starters` and
+`examples-gallery-opening` verify this public prompt and video association.
+
 ## Public example comparison handoff
 
 `frontend/lib/example-recreation.ts` owns the explicit text-only comparison URL and its scalar settings contract. Prices never travel as trusted URL inputs. `remix=1` requires engine, mode, duration, resolution, aspect and audio; unsupported settings are rejected rather than silently replaced with another quote scenario. `workspace-example-recreation.ts` checks the actual workspace engine capabilities and form coercion before producing the snapshot. `workspace-example-resolution.ts` maps equivalent public resolution labels to native capability tokens; incompatible coupled LTX Fast duration/resolution/fps settings are refused before hydration. The ordinary public snapshot projection lives in `workspace-shared-video-snapshot.ts`.
