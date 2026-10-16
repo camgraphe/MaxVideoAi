@@ -139,6 +139,23 @@ comparison changes after the stale contract assertion was corrected.
 The final frontend production build also passes, with five pre-existing lint
 warnings and no errors. The read-only exposure and diff checks pass.
 
+## Extended internal-link audit
+
+After the sitemap audit, 710 distinct off-sitemap anchor targets were checked,
+normalizing only the repetitive `from` backlink parameter. One target returned
+404: `/examples/minimax`, linked by the wildfire-lookout and lighthouse-keeper
+MiniMax H3 watch pages. GET confirms that failure and the existing canonical
+family `/examples/hailuo` returns 200. No other failed target or redirect chain
+longer than one hop was found in that set.
+
+The watch-page parent link, editorial metadata and audit projection now resolve
+example families through the model registry before consulting editorial hints.
+This also repairs persisted editorial aliases at read time without a database
+rewrite. Authored H3 entries use `hailuo`; video canonicals, H3 model identity,
+media and publication decisions remain intact. A regression test reproduces the
+old stored-alias failure and validates every authored watch family against a real
+canonical family page. All 50 focused watch/editorial/architecture tests pass.
+
 ## Delivery and follow-up
 
 This report describes a candidate fix, not a production deployment. Delivery

@@ -2,7 +2,7 @@
 
 ## Diagnostic et livraison
 
-Les cinq défauts de [découverte documentés](structural-indexation-audit-2026-10-16.md)
+Les défauts de [découverte documentés](structural-indexation-audit-2026-10-16.md)
 sont des obstacles réels : pagination exclue, liens FR/ES incorrects, destinations
 modèles/comparatifs absentes du HTML initial. Leur effet sur le trafic historique
 n'est pas quantifié. Ils ne prouvent ni une pénalité ni une désindexation générale.
@@ -13,6 +13,9 @@ redirection, avec canonical propre, un H1 et sans `noindex` inattendu dans le HT
 ou `X-Robots-Tag`. [Inventaire HTTP](structural-indexation-2026-10-16/all-sitemap-pages.csv).
 Ce contrôle décrit la production avant livraison. Il ne mesure pas l'index Google,
 la valeur éditoriale, tous les liens internes possibles ou le classement.
+Un contrôle complémentaire de 710 destinations hors sitemap a trouvé une 404 :
+le lien `/examples/minimax` de deux vidéos H3. La correction utilise la famille
+canonique `/examples/hailuo`, y compris pour les anciennes données éditoriales.
 
 Le nouveau contrôle `seo:public:check`, quotidien et manuel dans GitHub Actions,
 rend cette vérification reproductible et suit aussi la pagination native. Les
