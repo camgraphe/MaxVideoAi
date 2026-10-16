@@ -23,6 +23,7 @@ test('task ceilings, explicit continuation and saved progress work on desktop/mo
     await initializeStudioConnectedFixture(db);
     for(const name of ['00_create_profiles.sql','01_legal_documents.sql','02_user_consents.sql','04_profiles_timestamps.sql','12_app_settings.sql','30_mcp_paid_generation.sql','39_mcp_quote_lifetime.sql','49_studio_generation_scope.sql','50_studio_image_conversation.sql','51_studio_image_model_usage.sql','52_studio_conversation_runs.sql','53_studio_media_generation_scope.sql','54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','65_studio_task_budgets.sql','67_studio_luna_reasoning.sql'])await db.pool.query(await readFile('neon/migrations/'+name,'utf8'));
     await db.pool.query('ALTER TABLE app_jobs ADD COLUMN status text');
+    await db.pool.query('ALTER TABLE media_assets ADD COLUMN width integer, ADD COLUMN height integer, ADD COLUMN size_bytes bigint');
     await db.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,status,original_name,metadata) VALUES($1,$2,$3,'image',$4,'image/webp','ready','Selected product',$5::jsonb)`,[randomUUID(),selectedImage,STUDIO_FIXTURE_OWNERS[0],selectedImageUrl,JSON.stringify({mediaFacts:{source:'probe',width:1024,height:1024}})]);
     await db.pool.query(`CREATE TABLE user_account_restrictions(user_id text PRIMARY KEY,reason text NOT NULL,message text,active boolean NOT NULL DEFAULT true,restricted_at timestamptz NOT NULL DEFAULT clock_timestamp())`);
   }});
@@ -34,6 +35,7 @@ test('task ceilings, explicit continuation and saved progress work on desktop/mo
     browser=await startStudioConnectedBrowserFixture({runtime,browserName:'chromium'});
     const owned=await browser.newContext(session,{viewport:{width:1440,height:900},locale:'en-US',reducedMotion:'reduce'}),page=owned.page;
     await page.route('**/api/legal/reconsent',route=>route.fulfill({json:{ok:true,needsReconsent:false,documents:[]}}));
+    await page.route('**/api/wallet',route=>route.fulfill({json:{balance:0,balanceCents:0,currency:'USD'}}));
     const conversationPath=`/app/studio/conversation/${project.projectId}`;
     // This suite checks behavior, not compilation speed. Prepare the owned
     // dev routes with real authenticated GETs before the 30-second UI waiters.
