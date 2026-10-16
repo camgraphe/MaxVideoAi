@@ -12,6 +12,27 @@ A coordinated read-only production check at 2026-10-05T13:08:15Z confirmed conve
 
 Removing a presentation label does not change feature flags, access gates, grant types or immutable assistance-policy versions containing `beta` or `preview`. Historical dated guides and captures retain the status they actually recorded. A hidden export flag is not evidence about whether renderer secrets are configured; masked environment reads cannot establish that fact.
 
+## Public example entry — 2026-10-16
+
+`/app/studio?example=<public-example-id>` starts an editable example brief.
+`frontend/server/studio-example-entry.ts` validates the bounded identifier and
+reuses the public example loader's eligibility and sanitized projection. The
+root entry skips the recent-project redirect, `StudioStart` carries the identifier
+to the new owned conversation, and that route revalidates the public example.
+Only the public request facts cross into the client; raw job snapshots, owners,
+historical charges and comparison prices do not. The conversation consumes the
+query after draft initialization so refreshing a sent conversation does not
+reinsert the example request.
+
+Guests see the selected example and its editable brief rather than unrelated
+demonstration media. Login destinations retain the example identifier; existing
+one-use draft continuation preserves valid edits. Requests above the existing
+4,000-character Studio limit remain visible in full, with submission disabled and
+an instruction to shorten them. Oversized guest drafts are never silently sliced
+into the continuation store. Entry does not send a message, import private media,
+generate, export or approve spending. `tests/studio-example-entry.test.ts`, guest
+DOM tests and composer tests cover these boundaries.
+
 ## Ownership map
 
 | Owner | Responsibility |

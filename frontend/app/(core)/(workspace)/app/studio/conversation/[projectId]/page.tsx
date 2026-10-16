@@ -7,6 +7,7 @@ import { readImageConversationProject } from "@/server/studio/image-conversation
 import StudioPreviewAccess from "../../_components/StudioPreviewAccess.client";
 import StudioImageConversation from "./StudioImageConversation.client";
 import {assertTimelineExportWorkerLauncherConfigured} from '@/server/timeline-exports/ecs-runner';
+import {loadStudioExampleEntry} from '@/server/studio-example-entry';
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -18,7 +19,7 @@ export default async function StudioConversationPage({
   searchParams,
 }: {
   params: Promise<{ projectId: string }>;
-  searchParams: Promise<{starter?: string | string[]}>;
+  searchParams: Promise<{starter?: string | string[];example?: string | string[]}>;
 }) {
   if (process.env.STUDIO_IMAGE_CONVERSATION_ENABLED !== "true") notFound();
   const access = await resolveStudioPageAccess();
@@ -30,6 +31,9 @@ export default async function StudioConversationPage({
       )
     : null;
   if (access.ok && !project) notFound();
+  const query = await searchParams;
+  const example = access.ok && query.example !== undefined ? await loadStudioExampleEntry(query.example) : null;
+  if (access.ok && query.example !== undefined && !example) notFound();
   const localQa =
     process.env.NODE_ENV !== "production" &&
     process.env.STUDIO_INTEGRATION_RUNTIME === "1";
@@ -45,7 +49,8 @@ export default async function StudioConversationPage({
           {access.ok && project ? (
             <StudioImageConversation
               key={`${access.userId}:${projectId}`}
-              starter={(await searchParams).starter}
+              starter={query.starter}
+              example={example??undefined}
               projectId={projectId}
               accountKey={access.userId}
               projectName={project.name}

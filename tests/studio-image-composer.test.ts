@@ -201,3 +201,18 @@ test("composer prevents keyboard and form submissions while busy or blank, and d
     assert.equal(empty.sends,0);
   } finally {await empty.close();}
 });
+
+test('a long example request stays intact and asks for shortening before Studio submission', async () => {
+  const view = await mountComposer();
+  try {
+    const request = 'Full original prompt '.repeat(250);
+    await view.changeText(request);
+    assert.equal(view.textarea.value, request);
+    assert.equal(view.dom.window.document.querySelector<HTMLButtonElement>('[type="submit"]')!.disabled, true);
+    assert.match(view.dom.window.document.querySelector('[role="status"]')?.textContent ?? '', /4.?000/);
+    await act(async () => view.dom.window.document.querySelector('form')!.dispatchEvent(new view.dom.window.Event('submit', { bubbles: true, cancelable: true })));
+    assert.equal(view.sends, 0);
+    await view.changeText('A shortened adaptation request');
+    assert.equal(view.dom.window.document.querySelector<HTMLButtonElement>('[type="submit"]')!.disabled, false);
+  } finally { await view.close(); }
+});

@@ -3,6 +3,8 @@ import test from 'node:test';
 import {createRequire} from 'node:module';
 import React,{act} from 'react';
 import {JSDOM} from 'jsdom';
+import {detail} from './fixtures/example-continuation';
+import {exampleRequestSource,buildExampleRequest} from '../frontend/lib/example-continuation';
 
 test('the guest example lets visitors inspect references, then gates creation without calling Studio APIs',async()=>{
   const require=createRequire(import.meta.url),css=require.extensions['.css'];
@@ -55,6 +57,15 @@ test('the guest example lets visitors inspect references, then gates creation wi
     assert.equal(textarea.value,'Une publicité pour ma tasse');
     assert.equal(requests,0);
     assert.equal(dom.window.document.querySelector('audio')?.getAttribute('preload'),'none');
+    await act(async()=>root.render(React.createElement(I18nProvider,{locale:'fr',dictionary:{},fallback:{},children:React.createElement(module.StudioGuestDemo,{key:'from-example',available:true,example:exampleRequestSource(detail)})})));
+    const exampleText=dom.window.document.querySelector('textarea')!;
+    assert.equal(exampleText.value,buildExampleRequest(exampleRequestSource(detail),'fr','studio'));
+    assert.equal(dom.window.document.querySelectorAll('[data-demo-reference]').length,0,'an example entry never attaches unrelated demonstration media');
+    assert.ok(dom.window.document.querySelector('[data-studio-example-entry]')?.textContent?.includes(detail.title));
+    assert.equal(requests,0,'prefilling a template never submits a Studio request');
+    await act(async()=>button('Ajouter des médias').click());
+    const exampleSignup=dom.window.document.querySelector<HTMLAnchorElement>('[role="dialog"] a')!;
+    assert.equal(new URL(exampleSignup.href).searchParams.get('next'),'/app/studio?example=public-example');
   } finally {
     await act(async()=>root.unmount());globalThis.fetch=originalFetch;dom.window.close();
     for(const [key,value] of previous){if(value)Object.defineProperty(globalThis,key,value);else Reflect.deleteProperty(globalThis,key);}
