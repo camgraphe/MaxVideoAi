@@ -236,3 +236,9 @@ Regression coverage: `transaction-audit-persistence-postgres.test.ts`,
 `admin-provider-credit-incidents.test.ts`, `billing-read-routes-postgres.test.ts`,
 `billing-wallet-presentation.test.ts`, `mcp-confirm-generation.test.ts`,
 `image-generation-provider-persistence.test.ts` and `kling-3-turbo-fallback.test.ts`.
+
+### Wallet readiness and compact billing layout
+
+The native wallet loading deadline is a soft ten-second notice, not a cancellation. A late Stripe `ready` event can still reveal usable buttons. Explicit retries remount the widget through the existing session cache or in-flight preparation promise; they do not reset Stripe session failure limits or reuse a CAPTCHA proof. Retired effects (amount, identity, or hosted handoff) still ignore late callbacks. `express_checkout_ready.metadata.recoveredAfterTimeout` distinguishes recovered loads from immediately ready wallets. A rate-limited preparation does not offer the connection retry control.
+
+Billing keeps one visible Add credits heading, a compact balance row and side-by-side payment/credit amounts. The card/hosted fallback stays below the native wallet area regardless of readiness. Keep amount and currency touch targets at least 44 px; preserve visible tax disclosure and error states. `tests/wallet-express-checkout-recovery.test.ts` exercises slow preparation, in-flight and cached retry, late readiness and hosted retirement; the CAPTCHA handoff browser fixture covers Apple Pay, Google Pay and Link switching.

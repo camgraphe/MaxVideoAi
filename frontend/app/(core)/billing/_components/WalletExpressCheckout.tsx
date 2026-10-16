@@ -52,6 +52,8 @@ type WalletExpressCheckoutProps = {
     | 'expressTitle'
     | 'expressLoading'
     | 'expressUnavailable'
+    | 'expressSlow'
+    | 'expressRetry'
     | 'expressError'
     | 'expressClosed'
     | 'expressAriaLabel'
@@ -82,6 +84,8 @@ export function WalletExpressCheckout({
   const sessionRef = useRef(session);
   const awaitingCaptchaRef = useRef(false);
   const [captchaRetry, setCaptchaRetry] = useState(0);
+  const [manualRetry, setManualRetry] = useState(0);
+  const [canRetry, setCanRetry] = useState(false);
   useEffect(() => {
     if (captchaToken && awaitingCaptchaRef.current) {
       awaitingCaptchaRef.current = false;
@@ -97,7 +101,7 @@ export function WalletExpressCheckout({
   });
   const checkoutSessionCacheRef = useRef(createWalletExpressSessionCache());
   const pendingCheckoutSessionRef = useRef(new Map<string, Promise<CheckoutSessionResult>>());
-  const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'unavailable' | 'error'>('idle');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'slow' | 'ready' | 'unavailable' | 'error'>('idle');
   const [message, setMessage] = useState<string | null>(null);
   const [analyticsConsentGranted, setAnalyticsConsentGranted] = useState(hasAnalyticsConsentCookieInBrowser);
   const normalizedChargeCurrency = (chargeCurrency || 'USD').toUpperCase();
@@ -159,6 +163,7 @@ export function WalletExpressCheckout({
       awaitingCaptchaRef.current = false;
       setStatus('loading');
       setMessage(null);
+      setCanRetry(false);
       confirmStartedRef.current = false;
       readyTimedOut = false;
       clearExpressCheckoutReadyTimeout();
@@ -167,10 +172,10 @@ export function WalletExpressCheckout({
       readyTimeoutId = window.setTimeout(() => {
         if (cancelled) return;
         readyTimedOut = true;
-        expressElement?.destroy();
-        expressElement = null;
-        setStatus('unavailable');
-        setMessage(labelsRef.current.expressUnavailable);
+        // A slow response is recoverable: keep the original guarded session alive.
+        setStatus('slow');
+        setCanRetry(true);
+        setMessage(labelsRef.current.expressSlow);
         recordCheckoutInteractionEvent({
           amountCents,
           checkoutAttemptId: activeCheckoutAttemptId,
@@ -187,7 +192,7 @@ export function WalletExpressCheckout({
       const ga4Context = analyticsConsentGranted
         ? await readGa4CheckoutContext()
         : { clientId: null, sessionId: null };
-      if (cancelled || readyTimedOut) return;
+      if (cancelled) return;
       const attributionKey = `${analyticsConsentGranted ? 'analytics-granted' : 'analytics-denied'}:${walletAnalyticsJourneyCacheKey(analyticsJourney)}:${ga4Context.clientId ?? 'no-client'}:${ga4Context.sessionId ?? 'no-session'}`;
       const requestKey = buildWalletExpressCheckoutRequestKey({
         userId: sessionUserId,
@@ -209,9 +214,10 @@ export function WalletExpressCheckout({
               }
             : await getCheckoutSessionResult(requestKey, analyticsJourney, ga4Context);
 
-        if (cancelled || readyTimedOut) return;
+        if (cancelled) return;
         if (checkoutSessionResult.type !== 'success') {
           clearExpressCheckoutReadyTimeout();
+          setCanRetry(false);
           if (checkoutSessionResult.type === 'captcha_required') {
             setStatus('unavailable');
             setMessage(null);
@@ -241,7 +247,7 @@ export function WalletExpressCheckout({
 
         const stripe = (await stripePromise) as StripeWithCheckoutElements | null;
         const initCheckout = stripe?.initCheckout ?? stripe?.initCheckoutElementsSdk;
-        if (!stripe || !initCheckout || !mountRef.current || cancelled || readyTimedOut) {
+        if (!stripe || !initCheckout || !mountRef.current || cancelled) {
           throw new Error('stripe_checkout_elements_unavailable');
         }
 
@@ -262,11 +268,12 @@ export function WalletExpressCheckout({
         } as Parameters<StripeCheckout['createExpressCheckoutElement']>[0]);
 
         expressElement.on('ready', (event: StripeExpressCheckoutElementReadyEvent) => {
-          if (cancelled || readyTimedOut) return;
+          if (cancelled) return;
           clearExpressCheckoutReadyTimeout();
           const methods = event.availablePaymentMethods;
           const hasAnyMethod = Boolean(methods && Object.values(methods).some(Boolean));
           setStatus(hasAnyMethod ? 'ready' : 'unavailable');
+          setCanRetry(false);
           setMessage(null);
           recordCheckoutInteractionEvent({
             amountCents,
@@ -278,13 +285,15 @@ export function WalletExpressCheckout({
               availablePaymentMethods: methods ? Object.keys(methods).filter((key) => Boolean(methods[key as keyof typeof methods])) : [],
               currency: normalizedChargeCurrency,
               reason: hasAnyMethod ? 'ready' : 'no_available_methods',
+              recoveredAfterTimeout: readyTimedOut,
             },
           });
         });
         expressElement.on('loaderror', (event) => {
-          if (cancelled || readyTimedOut) return;
+          if (cancelled) return;
           clearExpressCheckoutReadyTimeout();
           setStatus('error');
+          setCanRetry(true);
           setMessage(event.error?.message ?? labelsRef.current.expressError);
           recordCheckoutInteractionEvent({
             amountCents,
@@ -298,7 +307,7 @@ export function WalletExpressCheckout({
           });
         });
         expressElement.on('cancel', () => {
-          if (cancelled || readyTimedOut || confirmStartedRef.current) return;
+          if (cancelled || confirmStartedRef.current) return;
           setMessage(labelsRef.current.expressClosed);
           recordCheckoutInteractionEvent({
             amountCents,
@@ -309,7 +318,7 @@ export function WalletExpressCheckout({
           });
         });
         expressElement.on('confirm', async (event) => {
-          if (cancelled || readyTimedOut || confirmStartedRef.current) return;
+          if (cancelled || confirmStartedRef.current) return;
           confirmStartedRef.current = true;
           setMessage(null);
           handlersRef.current.onPaymentStarted(amountCents);
@@ -322,14 +331,14 @@ export function WalletExpressCheckout({
           });
           try {
             const loadActionsResult = await loadActionsPromise;
-            if (cancelled || readyTimedOut) return;
+            if (cancelled) return;
             if (loadActionsResult.type !== 'success') {
               throw new Error(loadActionsResult.error.message);
             }
             const result = await loadActionsResult.actions.confirm({
               expressCheckoutConfirmEvent: event,
             });
-            if (cancelled || readyTimedOut) return;
+            if (cancelled) return;
             if (result.type === 'error') {
               confirmStartedRef.current = false;
               event.paymentFailed({ reason: 'fail', message: result.error.message });
@@ -366,7 +375,7 @@ export function WalletExpressCheckout({
             });
             window.location.href = `/billing?${params.toString()}`;
           } catch (error) {
-            if (cancelled || readyTimedOut) return;
+            if (cancelled) return;
             confirmStartedRef.current = false;
             const reason = error instanceof Error ? error.message : 'express_checkout_failed';
             event.paymentFailed({ reason: 'fail', message: labelsRef.current.expressError });
@@ -389,16 +398,17 @@ export function WalletExpressCheckout({
 
         expressElement.mount(mountRef.current);
         const loadActionsResult = await loadActionsPromise;
-        if (cancelled || readyTimedOut) return;
+        if (cancelled) return;
         if (loadActionsResult.type !== 'success') {
           throw new Error(loadActionsResult.error.message);
         }
       } catch (error) {
         clearExpressCheckoutReadyTimeout();
-        if (cancelled || readyTimedOut) return;
+        if (cancelled) return;
         const reason = error instanceof Error ? error.message : 'express_checkout_failed';
         console.warn('[billing] express checkout unavailable', reason);
         setStatus('error');
+        setCanRetry(true);
         setMessage(labelsRef.current.expressError);
         recordCheckoutInteractionEvent({
           amountCents,
@@ -512,6 +522,7 @@ export function WalletExpressCheckout({
     analyticsConsentGranted,
     locale,
     captchaRetry,
+    manualRetry,
     captchaSiteKey,
     normalizedChargeCurrency,
     sessionUserId,
@@ -538,6 +549,19 @@ export function WalletExpressCheckout({
       />
       {status === 'loading' && <p role="status" className="mt-2 text-xs text-text-secondary">{labels.expressLoading}</p>}
       {message && <p role="status" className="mt-2 text-xs text-text-secondary">{message}</p>}
+      {canRetry && (status === 'slow' || status === 'error') ? (
+        <button
+          type="button"
+          className="mt-1 min-h-[44px] text-sm font-semibold text-text-primary underline underline-offset-4"
+          onClick={() => {
+            if (confirmStartedRef.current) return;
+            setCanRetry(false);
+            setManualRetry((value) => value + 1);
+          }}
+        >
+          {labels.expressRetry}
+        </button>
+      ) : null}
     </div>
   );
 }
