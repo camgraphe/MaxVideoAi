@@ -191,6 +191,10 @@ export const FR_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
         answer: "Repérez les vidéos nommées LTX 2.3 Pro ou LTX 2.3 Fast dans cette galerie et utilisez Suivant pour parcourir les exemples plus anciens. Ouvrez une vidéo pour retrouver son prompt original et ses réglages, puis consultez la fiche LTX 2.3 liée pour les modes de cette version. Les exemples LTX 2.5 restent identifiés séparément ; le tarif actuel estimé n’est pas le coût historique du rendu.",
       },
       {
+        question: 'Comment structurer un prompt LTX 2.3 ?',
+        answer: 'Partez d’un exemple identifié LTX 2.3 et consultez son prompt d’origine. Repérez le sujet, l’action principale, la direction de caméra et le style visuel. Pour un exemple image-vers-vidéo, distinguez ce que fournit déjà l’image de départ du mouvement décrit dans le prompt. Gardez la durée, le cadrage et la version du modèle à côté du texte pour comparer les résultats ; les exemples LTX 2.5 constituent un autre point de référence.',
+      },
+      {
         question: 'Quels sont les meilleurs exemples de prompts LTX 2.5 pour commencer ?',
         answer:
           'Le meilleur point de départ reste une structure simple : sujet, action, direction caméra et intention visuelle. Les exemples les plus utiles gardent cette structure stable et ne changent qu’une variable à la fois.',
