@@ -59,7 +59,7 @@ export const MarketingDesktopNav = memo(function MarketingDesktopNav({ desktopDr
         </button>
         <div id={panelId} className="marketing-mega-menu" hidden={!isOpen}>
           <header className="marketing-mega-heading"><div><p>{t(`nav.dropdown.${item.key}.heading`, dropdown.heading)}</p><span>{t(`nav.dropdown.${item.key}.intro`, dropdown.intro)}</span></div>
-            <Link href={dropdown.allHref} prefetch={false} onClick={() => onCloseDesktopDropdown(0)}>{t(dropdown.allLabelKey, dropdown.allLabelFallback)}{isOpen ? <ArrowUpRight size={16} aria-hidden="true" /> : null}</Link>
+            {!dropdown.allLinkInItems ? <Link href={dropdown.allHref} prefetch={false} onClick={() => onCloseDesktopDropdown(0)}>{t(dropdown.allLabelKey, dropdown.allLabelFallback)}{isOpen ? <ArrowUpRight size={16} aria-hidden="true" /> : null}</Link> : null}
           </header>
           <div className={clsx('marketing-mega-content', dropdown.sections?.length && 'has-aside')}>
             <div className={clsx('marketing-mega-links', twoColumns && 'two-columns')}>

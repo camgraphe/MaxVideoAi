@@ -19,7 +19,7 @@ export type ExampleModelLanding = {
   heroSubtitle: string;
   guideTitle?: string;
   intro: string;
-  summary: string;
+  summary?: string;
   sections: ExampleSectionItem[];
   faqTitle: string;
   faqItems: ExampleFaqItem[];

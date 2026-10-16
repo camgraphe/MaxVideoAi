@@ -168,13 +168,7 @@ export function getExampleModelLanding(locale: AppLocale, slug: string): Example
     heroSubtitle: localized.subtitle,
     guideTitle: localized.guideTitle,
     intro: localized.intro,
-    summary:
-      localized.summary ??
-      (locale === 'fr'
-        ? `${variantsSentence} Ouvrez un exemple pour consulter son prompt, ses réglages et le tarif actuel estimé avant de lancer un nouveau rendu.`
-        : locale === 'es'
-          ? `${variantsSentence} Abre un ejemplo para consultar su prompt, ajustes y precio actual estimado antes de lanzar un nuevo render.`
-          : `${variantsSentence} Open an example to review its prompt, settings, and current price estimate before running a new render.`),
+    summary: localized.summary,
     sections: [
       {
         title: localized.sectionTitles?.[0] ?? sectionPromptTitle,

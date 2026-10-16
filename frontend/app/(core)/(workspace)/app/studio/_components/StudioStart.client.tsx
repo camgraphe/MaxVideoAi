@@ -12,13 +12,14 @@ import {ConversationWelcome} from '../conversation/[projectId]/_components/Conve
 import {ImageConversationComposer} from '../conversation/[projectId]/_components/ImageConversationComposer.client';
 import styles from '../conversation/[projectId]/image-conversation.module.css';
 
-export function StudioStart({accountKey,unavailable=false,starter,continuationToken,recentProjectId}:{accountKey:string;unavailable?:boolean;starter?:string;continuationToken?:string;recentProjectId?:string}) {
+export function StudioStart({accountKey,unavailable=false,starter,exampleId,continuationToken,recentProjectId}:{accountKey:string;unavailable?:boolean;starter?:string;exampleId?:string;continuationToken?:string;recentProjectId?:string}) {
   const router=useRouter(),{locale}=useI18n(),{resolvedTheme}=useThemePreference();
   const copy=studioConversationEntryCopy(locale);
   const verifiedToken=useRef<string>();
   const creation=useStudioProjectCreation(accountKey,projectId=>{
     const query=new URLSearchParams();
     if(starter)query.set('starter',starter);
+    if(exampleId)query.set('example',exampleId);
     if(verifiedToken.current)query.set('continueDraft',verifiedToken.current);
     router.replace('/app/studio/conversation/'+encodeURIComponent(projectId)+(query.size?'?'+query.toString():''));
   });
@@ -31,10 +32,10 @@ export function StudioStart({accountKey,unavailable=false,starter,continuationTo
     verifiedToken.current=draft?continuationToken:undefined;
     if(continuationToken&&!draft){
       consumeGuestCreationFromLocation('/app/studio');
-      if(recentProjectId&&!starter){router.replace('/app/studio/conversation/'+encodeURIComponent(recentProjectId));return;}
+      if(recentProjectId&&!starter&&!exampleId){router.replace('/app/studio/conversation/'+encodeURIComponent(recentProjectId));return;}
     }
     void create(copy.projectName);
-  },[unavailable,continuationToken,recentProjectId,starter,router,create,copy.projectName]);
+  },[unavailable,continuationToken,recentProjectId,starter,exampleId,router,create,copy.projectName]);
   useEffect(()=>{open();},[open]);
   return <section className={styles.studio} data-tone={resolvedTheme==='light'?'olive':'charcoal'} aria-label={locale==='fr'?'Studio conversationnel':'Conversational Studio'}>
     <header className={styles.header}><div><h1>Studio<span className={styles.headerDot}>.</span></h1></div></header>

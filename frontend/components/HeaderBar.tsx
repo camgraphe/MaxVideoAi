@@ -300,7 +300,7 @@ export function HeaderBar({ localQa = false }: { localQa?: boolean } = {}) {
                     >
                       <div className={clsx('grid gap-3', dropdownGridClass)}>
                         <nav className={dropdownItemsClass} role="menu" aria-label={label}>
-                          <Link
+                          {!dropdown.allLinkInItems ? <Link
                             href={resolveLocalizedHref(dropdown.allHref)}
                             prefetch={false}
                             className={clsx('rounded-input px-3 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap', usesTwoColumnItems ? 'col-span-2' : undefined)}
@@ -308,7 +308,7 @@ export function HeaderBar({ localQa = false }: { localQa?: boolean } = {}) {
                             onClick={() => closeDesktopDropdown(200)}
                           >
                             {allLabel}
-                          </Link>
+                          </Link> : null}
                           {dropdown.items.map((entry) => {
                             const href = resolveLocalizedHref(entry.href);
                             const entryLabel = t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label) ?? entry.label;

@@ -15,6 +15,8 @@
 .musicSurface {height:138px;}
 .audioError {font-size:11px;color:var(--studio-muted);}
 .composerRegion {position:relative;flex-shrink:0;}
+.exampleLink {display:inline-flex;align-items:center;gap:8px;max-width:100%;margin-top:8px;color:var(--studio-text);font-weight:500;text-decoration:underline;text-underline-offset:3px;}
+.exampleLink>span {min-width:0;}.exampleLink>svg {flex-shrink:0;}
 .backdrop {position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:#0009;backdrop-filter:blur(5px);padding:20px;}
 .dialog {width:min(100%,600px);max-height:90dvh;overflow:auto;border-radius:20px;padding:24px;background:var(--studio-bg);color:var(--studio-text);border:1px solid var(--studio-line);box-shadow:0 24px 90px #0004;}
 .dialog header {display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px;}

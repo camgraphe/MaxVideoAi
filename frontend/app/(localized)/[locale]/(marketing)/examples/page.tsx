@@ -26,7 +26,7 @@ import {
 import { ExamplesPageView } from './_components/examples-page-view';
 import { buildExamplesPriceSlots } from './_components/examples-gallery-prices';
 import {
-  buildExamplesNextStepLinks, buildExamplesPromptStarters,
+  buildExamplesNextStepLinks,
   getExamplesEditorialSections,
   getExamplesBrowseByModelLabel,
   getExamplesGalleryUiCopy,
@@ -42,6 +42,8 @@ import {
   buildExamplesModelLinks,
 } from './_lib/examples-page-data';
 import { prepareCurrentExamplesGalleryData } from './_lib/current-examples-gallery-data';
+import { buildExamplesVersionLinks } from './_lib/examples-version-links';
+import { getExampleFamilyCurrentModelSlugs } from '@/lib/model-families';
 import {
   buildExamplesEngineFilterHref,
   buildExamplesNormalizedRedirectTarget,
@@ -219,6 +221,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
           sort,
           limit: EXAMPLES_PAGE_SIZE,
           offset,
+          includeVersionSamples: currentPage === 1 && sort === DEFAULT_SORT,
         })
       : await listExamplesPage({
           sort,
@@ -232,7 +235,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
   if (currentPage > totalPages) redirectToNormalized(totalPages);
   const displayTotalPages = totalPages;
 
-  const usesCurrentAndSupportedBlocks = isSeedanceLanding || isKlingLanding || isLtxLanding;
+  const usesCurrentAndSupportedBlocks = ['seedance', 'kling', 'ltx', 'wan', 'hailuo'].includes(modelLanding?.slug ?? '');
   const { engineFilterOptions, selectedEngine, selectedOption } = buildExamplesEngineFilterState({
     allVideos,
     collapsedEngineParam,
@@ -344,7 +347,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
       initialDesktopBatch={initialDesktopBatch}
       initialExamples={initialExamples}
       priceSlots={buildExamplesPriceSlots(initialExamples, { currentPrices, locale: appLocale })}
-      promptStarters={buildExamplesPromptStarters(selectedEngine?.toLowerCase() ?? null, initialExamples, galleryVideos)}
+      promptStarters={buildExamplesVersionLinks(modelLinks, pageResult.versionSamples ?? [], selectedEngine ? getExampleFamilyCurrentModelSlugs(selectedEngine) : [])}
       initialMobileBatch={INITIAL_MOBILE_GALLERY_BATCH}
       isModelLanding={isModelLanding}
       itemListJson={itemListJson}

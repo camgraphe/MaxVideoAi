@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, type Ref } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, type Ref } from "react";
 import { ArrowUp, Plus } from "lucide-react";
 import styles from "../image-conversation.module.css";
 import type {ConversationLocale} from '@/lib/studio/conversation-quote-presentation';
@@ -28,6 +28,9 @@ export function ImageConversationComposer({
 }) {
   const t = (en: string, fr: string, es=en) => locale === 'fr' ? fr : locale === 'es' ? es : en;
   const textarea = useRef<HTMLTextAreaElement>(null);
+  const lengthNoticeId = useId();
+  const tooLong = text.length > 4000;
+  const canSend = !blocked && Boolean(text.trim()) && !tooLong;
   const resizeTextarea = useCallback(() => {
     const element = textarea.current;
     if (!element) return;
@@ -43,11 +46,11 @@ export function ImageConversationComposer({
   }, [resizeTextarea]);
 
   return (
-    <form
+    <><form
       className={styles.composer}
       onSubmit={(event) => {
         event.preventDefault();
-        if (!blocked && text.trim()) onSend();
+        if (canSend) onSend();
       }}
     >
       <button
@@ -68,6 +71,8 @@ export function ImageConversationComposer({
         onChange={(event) => onTextChange(event.target.value)}
         placeholder={t('Describe your idea…', 'Décrivez votre idée…', 'Describe tu idea…')}
         maxLength={4000}
+        aria-invalid={tooLong || undefined}
+        aria-describedby={tooLong ? lengthNoticeId : undefined}
         enterKeyHint="send"
         onKeyDown={(event) => {
           if (
@@ -77,18 +82,23 @@ export function ImageConversationComposer({
             event.nativeEvent.keyCode !== 229
           ) {
             event.preventDefault();
-            if (!blocked && text.trim()) onSend();
+            if (canSend) onSend();
           }
         }}
       />
       <button
         className={styles.send}
         type="submit"
-        disabled={!text.trim() || blocked}
+        disabled={!canSend}
         aria-label={t('Send to Studio', 'Envoyer à Studio', 'Enviar a Studio')}
       >
         <ArrowUp size={20} />
       </button>
     </form>
+    {tooLong && <p id={lengthNoticeId} className={styles.footnote} role="status">{t(
+      'The full request is preserved. Shorten it to 4,000 characters before sending.',
+      'La demande complète est conservée. Raccourcissez-la à 4 000 caractères avant de l’envoyer.',
+      'Se conserva la solicitud completa. Redúcela a 4.000 caracteres antes de enviarla.',
+    )}</p>}</>
   );
 }
