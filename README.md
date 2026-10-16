@@ -24,7 +24,7 @@ MaxVideoAI brings model choice, prompts, references, settings, live pricing, pre
 
 Use MaxVideoAI to develop a single shot, animate an image, build a multi-shot sequence, create supporting images or audio, and continue from earlier work. The workspace keeps model selection, prompts, references, settings, price, previews, results, and the Library in one production path instead of scattering them across provider tabs.
 
-![MaxVideoAI examples gallery showing colorful Seedance cinematic and animated AI video stories](plugins/maxvideoai/assets/screenshots/maxvideoai-examples-gallery-live.webp)
+![MaxVideoAI examples gallery with brand filters and four opening video cards for Wan, Seedance and FLUX](plugins/maxvideoai/assets/screenshots/maxvideoai-examples-gallery-live.webp)
 
 Every public example opens into its prompt, settings, model, duration, and recorded render cost. Browse the [AI video examples gallery](https://maxvideoai.com/examples), then recreate a useful starting point in your own workspace.
 

@@ -180,8 +180,8 @@
       "alt": "Current public MaxVideoAI home page with pay-as-you-go messaging and a colorful MiniMax H3 Max video frame",
       "reviewTrigger": "Refresh after a material home-page, primary-action, or featured-video change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-09-16T00:07:39Z",
-      "lastReviewedRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
+      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
+      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
       "freshnessStatus": "current"
     },
     {
@@ -231,8 +231,8 @@
       "alt": "Public MaxVideoAI MCP result section with a finished video shown in Claude and saved to the MaxVideoAI Library",
       "reviewTrigger": "Refresh after a material MCP result-section, Claude evidence, or Library-continuity claim change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-09-16T00:07:39Z",
-      "lastReviewedRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
+      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
+      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
       "freshnessStatus": "current"
     },
     {
@@ -256,8 +256,8 @@
       "alt": "Current public MaxVideoAI home page with pay-as-you-go messaging and a colorful MiniMax H3 Max video frame",
       "reviewTrigger": "Refresh after a material home-page, primary-action, or featured-video change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-09-16T00:07:39Z",
-      "lastReviewedRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
+      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
+      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
       "freshnessStatus": "current"
     },
     {
@@ -265,24 +265,24 @@
       "path": "plugins/maxvideoai/assets/screenshots/maxvideoai-examples-gallery-live.webp",
       "kind": "product_proof",
       "state": "publishable_proof",
-      "capturedAt": "2026-09-16T00:07:39Z",
+      "capturedAt": "2026-10-16T00:53:15.167Z",
       "sourceEnvironment": "production",
       "host": "MaxVideoAI website",
       "hostVersion": null,
-      "maxvideoaiRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
+      "maxvideoaiRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
       "width": 1268,
       "height": 713,
-      "sha256": "2bb35e0af2a26befcb788f5155284434ec7e0742a6ffc215dab1153c36610fe9",
-      "claim": "Current public MaxVideoAI examples gallery hero and brand filters with cinematic Paris and animated runner previews and partial model labels.",
+      "sha256": "da706017d044165bf2b5a031282f073d101e685bc898997498b60f77cee8e464",
+      "claim": "Public MaxVideoAI examples gallery captured on 16 October 2026, showing brand filters and four opening cards for Wan 3 Prime, Seedance 2.0 Fast and FLUX 3.",
       "placements": [
         "plugin_readme",
         "root_readme"
       ],
-      "alt": "Public MaxVideoAI examples gallery hero and brand filters with cinematic Paris and animated runner previews and partial model labels",
+      "alt": "MaxVideoAI examples gallery with brand filters and four opening video cards for Wan, Seedance and FLUX",
       "reviewTrigger": "Refresh after a material gallery hero, brand filters, featured previews, or model labels change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-09-16T00:07:39Z",
-      "lastReviewedRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
+      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
+      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
       "freshnessStatus": "current"
     },
     {
@@ -306,8 +306,8 @@
       "alt": "MaxVideoAI side-by-side comparison of MiniMax H3 and Seedance 2.5 with scores, strengths, and colorful independent video examples",
       "reviewTrigger": "Refresh after a material comparison-hub, benchmark-presentation, engine, or score change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-09-16T00:07:39Z",
-      "lastReviewedRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
+      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
+      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
       "freshnessStatus": "current"
     },
     {
@@ -331,8 +331,8 @@
       "alt": "Public MaxVideoAI model-directory hero with Browse models and Compare engines actions, pricing and specification cues, and colorful model artwork",
       "reviewTrigger": "Refresh after a material model-directory hero, actions, pricing or specification cues, or artwork change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-09-16T00:07:39Z",
-      "lastReviewedRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
+      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
+      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
       "freshnessStatus": "current"
     },
     {
@@ -340,14 +340,14 @@
       "path": "plugins/maxvideoai/assets/screenshots/maxvideoai-pricing-comparison-live.webp",
       "kind": "product_proof",
       "state": "publishable_proof",
-      "capturedAt": "2026-09-16T00:07:39Z",
+      "capturedAt": "2026-10-16T00:53:15.167Z",
       "sourceEnvironment": "production",
       "host": "MaxVideoAI website",
       "hostVersion": null,
-      "maxvideoaiRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
+      "maxvideoaiRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
       "width": 1268,
       "height": 713,
-      "sha256": "f5057762e8d55a2f8921e1c03d51413ccbbc7a3bca732cbba0324aaf28454d7f",
+      "sha256": "8ee47ccfd17748c4cb76a708df9a28947377f8d1317e6b37bc8661be6f3c932f",
       "claim": "Current public MaxVideoAI pricing page showing three pay-as-you-go video starting-point prices plus navigation tabs for Image, Audio, and Tools & Upscale.",
       "placements": [
         "plugin_readme",
@@ -356,8 +356,8 @@
       "alt": "MaxVideoAI pricing comparison with current scenarios and video, image, audio, and tools navigation",
       "reviewTrigger": "Refresh after a material pricing, scenario-card, or pricing-navigation change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-09-16T00:07:39Z",
-      "lastReviewedRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
+      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
+      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
       "freshnessStatus": "current"
     },
     {
@@ -381,8 +381,8 @@
       "alt": "MaxVideoAI tools page with a character sheet and colorful image and production-preparation workflows",
       "reviewTrigger": "Refresh after a material tools-directory, featured-tool, or workflow-presentation change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-09-16T00:07:39Z",
-      "lastReviewedRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
+      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
+      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
       "freshnessStatus": "current"
     },
     {
@@ -406,8 +406,8 @@
       "alt": "MaxVideoAI MCP integration grid with five public paths and four clients marked in preparation",
       "reviewTrigger": "Refresh after a material assistant-entry, integration, conversation, or MCP marketing change, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-09-16T00:07:39Z",
-      "lastReviewedRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
+      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
+      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
       "freshnessStatus": "current"
     },
     {
@@ -459,8 +459,8 @@
       "alt": "Current MaxVideoAI home page paired with the public MCP section showing a completed video result in Claude",
       "reviewTrigger": "Refresh after a material home-page or MCP result-section change, when either source proof expires, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-09-16T00:07:39Z",
-      "lastReviewedRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
+      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
+      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
       "freshnessStatus": "current",
       "sourceProofIds": [
         "maxvideoai-workspace-production",
@@ -490,8 +490,8 @@
       "alt": "Current MaxVideoAI home page paired with the public MCP result section for Claude",
       "reviewTrigger": "Refresh when the home-page or MCP result-section source proof changes, when either proof expires, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-09-16T00:07:39Z",
-      "lastReviewedRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
+      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
+      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
       "freshnessStatus": "current",
       "sourceProofIds": [
         "maxvideoai-workspace-production",
@@ -521,8 +521,8 @@
       "alt": "Narrow composite of the current MaxVideoAI home page and public MCP Claude-result section",
       "reviewTrigger": "Refresh after a material home-page or MCP result-section change, when source proof expires, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-09-16T00:07:39Z",
-      "lastReviewedRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
+      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
+      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
       "freshnessStatus": "current",
       "sourceProofIds": [
         "maxvideoai-workspace-production",
@@ -552,8 +552,8 @@
       "alt": "Public MaxVideoAI MCP Claude-result section paired with the current MaxVideoAI home page",
       "reviewTrigger": "Refresh after a material home-page, MCP result-section, or Claude continuity claim change, when either proof expires, or within 30 days of publication review.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-09-16T00:07:39Z",
-      "lastReviewedRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
+      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
+      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
       "freshnessStatus": "current",
       "sourceProofIds": [
         "maxvideoai-workspace-production",
@@ -582,8 +582,8 @@
       "alt": "Light MaxVideoAI GitHub social card for assistants and automations with current public product proof",
       "reviewTrigger": "Refresh after a material public-page change, integration wording change, source-proof expiry, or repository social update.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-09-16T00:07:39Z",
-      "lastReviewedRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
+      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
+      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
       "freshnessStatus": "current",
       "sourceProofIds": [
         "maxvideoai-workspace-production",
@@ -699,8 +699,8 @@
       "alt": "Light MaxVideoAI release 0.3.4 card for assistants and automations with current public product proof",
       "reviewTrigger": "Retain unchanged as historical evidence of the cancelled 0.3.4 candidate; never promote or reuse as a current release card.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-09-16T00:07:39Z",
-      "lastReviewedRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
+      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
+      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
       "freshnessStatus": "current",
       "sourceProofIds": [
         "maxvideoai-workspace-production",
@@ -730,8 +730,8 @@
       "alt": "Light MaxVideoAI directory thumbnail for assistants and automations with current public product proof",
       "reviewTrigger": "Refresh before directory submission if dimensions, copy, compatibility status, or either source proof changes.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-09-16T00:07:39Z",
-      "lastReviewedRevision": "5423599b472ae6d6e31beb3e8a5c59e23d3a1a83",
+      "lastReviewedAt": "2026-10-16T00:53:15.167Z",
+      "lastReviewedRevision": "16e92f3d0831aa89743316cbf7f87f642c4bb7fb",
       "freshnessStatus": "current",
       "sourceProofIds": [
         "maxvideoai-workspace-production",
