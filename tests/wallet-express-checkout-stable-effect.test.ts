@@ -14,7 +14,7 @@ assert.match(
 
 assert.match(
   source,
-  /const handlersRef = useRef\(\{\s*onCaptchaRequired,\s*onPaymentFailed,\s*onPaymentStarted,\s*\}\)/,
+  /const handlersRef = useRef\(\{\s*takeCaptchaToken,\s*onCaptchaRequired,\s*onPaymentFailed,\s*onPaymentStarted,\s*\}\)/,
   'Express Checkout should keep callbacks in a ref so parent rerenders do not remount Stripe'
 );
 
@@ -23,7 +23,7 @@ const mountEffectDependencies = dependencyBlocks.find((block) => block.includes(
 
 assert.doesNotMatch(
   mountEffectDependencies,
-  /labels\.|onCaptchaRequired|onPaymentFailed|onPaymentStarted/,
+  /labels\.|onCaptchaRequired|onPaymentFailed|onPaymentStarted|takeCaptchaToken/,
   'Express Checkout mount effect should not depend on unstable labels or callbacks'
 );
 

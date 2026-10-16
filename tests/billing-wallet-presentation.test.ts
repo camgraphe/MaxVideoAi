@@ -149,7 +149,7 @@ test('currency selector displays the quoted currency while enabled options are s
   const noop = () => {};
   const markup = renderToStaticMarkup(React.createElement(WalletTopupPanel, {
     applyCustomAmount: noop, checkoutCaptchaError: null, checkoutCaptchaRequired: false,
-    checkoutCaptchaResetGeneration: 0, checkoutCaptchaToken: null, copy: DEFAULT_BILLING_COPY,
+    checkoutCaptchaResetGeneration: 0, checkoutCaptchaToken: null, takeCheckoutCaptchaToken: () => null, copy: DEFAULT_BILLING_COPY,
     currencyLoading: true, currencyOptions: ['USD'], currencyStatus: 'Detecting currencies…',
     currencyStatusClass: '', customAmountCents: null, customAmountError: null, customAmountInput: '',
     customAmountInputRef: null, customAmountValid: false, customCardActive: false,

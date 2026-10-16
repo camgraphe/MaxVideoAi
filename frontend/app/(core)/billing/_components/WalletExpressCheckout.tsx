@@ -44,6 +44,7 @@ type WalletExpressCheckoutProps = {
   locale: string;
   captchaToken?: string | null;
   captchaSiteKey?: string;
+  takeCaptchaToken: () => string | null;
   session: BillingSession;
   stripePromise: Promise<Stripe | null> | null;
   labels: Pick<
@@ -68,6 +69,7 @@ export function WalletExpressCheckout({
   locale,
   captchaToken = null,
   captchaSiteKey,
+  takeCaptchaToken,
   session,
   stripePromise,
   labels,
@@ -78,11 +80,9 @@ export function WalletExpressCheckout({
   const mountRef = useRef<HTMLDivElement | null>(null);
   const confirmStartedRef = useRef(false);
   const sessionRef = useRef(session);
-  const captchaTokenRef = useRef(captchaToken);
   const awaitingCaptchaRef = useRef(false);
   const [captchaRetry, setCaptchaRetry] = useState(0);
   useEffect(() => {
-    captchaTokenRef.current = captchaToken;
     if (captchaToken && awaitingCaptchaRef.current) {
       awaitingCaptchaRef.current = false;
       setCaptchaRetry((value) => value + 1);
@@ -90,6 +90,7 @@ export function WalletExpressCheckout({
   }, [captchaToken]);
   const labelsRef = useRef(labels);
   const handlersRef = useRef({
+    takeCaptchaToken,
     onCaptchaRequired,
     onPaymentFailed,
     onPaymentStarted,
@@ -109,11 +110,12 @@ export function WalletExpressCheckout({
   useEffect(() => {
     labelsRef.current = labels;
     handlersRef.current = {
+      takeCaptchaToken,
       onCaptchaRequired,
       onPaymentFailed,
       onPaymentStarted,
     };
-  }, [labels, onCaptchaRequired, onPaymentFailed, onPaymentStarted]);
+  }, [labels, onCaptchaRequired, onPaymentFailed, onPaymentStarted, takeCaptchaToken]);
 
   useEffect(() => {
     const updateAnalyticsConsent = (nextConsent: boolean) => {
@@ -443,6 +445,7 @@ export function WalletExpressCheckout({
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (token) headers.Authorization = `Bearer ${token}`;
 
+      const submittedCaptchaToken = handlersRef.current.takeCaptchaToken();
       const response = await fetch('/api/wallet', {
         method: 'POST',
         headers,
@@ -451,7 +454,7 @@ export function WalletExpressCheckout({
           currency: normalizedChargeCurrency.toLowerCase(),
           mode: 'express_checkout',
           locale,
-          captchaToken: captchaTokenRef.current ?? undefined,
+          captchaToken: submittedCaptchaToken ?? undefined,
           ...(captchaSiteKey ? { captchaSiteKey } : {}),
           ...(ga4Context.clientId ? { gaClientId: ga4Context.clientId } : {}),
           ...(ga4Context.sessionId ? { gaSessionId: ga4Context.sessionId } : {}),

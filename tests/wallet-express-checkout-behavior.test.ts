@@ -62,6 +62,7 @@ test('native checkout settles selection, reuses sessions, handles retries and re
     session: { access_token: 'test-token', user: { id: 'user-a' } },
     stripePromise: Promise.resolve(stripe), labels: DEFAULT_BILLING_COPY.wallet,
     onCaptchaRequired() { events.push('captcha'); },
+    takeCaptchaToken() { const token = props.captchaToken; props.captchaToken = null; return token; },
     onPaymentStarted() { events.push('started'); },
     onPaymentFailed() { events.push('failed'); },
   };
