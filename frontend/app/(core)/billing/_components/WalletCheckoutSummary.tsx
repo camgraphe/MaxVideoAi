@@ -38,7 +38,7 @@ export function WalletCheckoutSummary({
       <dl className={styles.quoteRows} aria-live="polite">
         <div>
           <dt>{copy.wallet.paymentAmount}</dt>
-          <dd data-state={quoteError ? 'error' : quoteLoading ? 'loading' : 'ready'}>{paymentValue}</dd>
+          <dd data-state={quoteError ? 'error' : quoteLoading ? 'loading' : paymentAmountLabel ? 'ready' : 'unavailable'}>{paymentValue}</dd>
         </div>
         <div>
           <dt>{copy.wallet.creditsReceived}</dt>

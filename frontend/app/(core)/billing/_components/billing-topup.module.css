@@ -219,7 +219,8 @@
   overflow-wrap: anywhere;
 }
 
-.quoteRows dd[data-state='loading'] {
+.quoteRows dd[data-state='loading'],
+.quoteRows dd[data-state='unavailable'] {
   color: var(--text-muted);
   font-size: 0.78rem;
   font-weight: 500;
