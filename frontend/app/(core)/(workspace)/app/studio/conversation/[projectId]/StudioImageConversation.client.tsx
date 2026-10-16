@@ -95,7 +95,7 @@ function StudioImageConversationWorkspace({
       window.history.replaceState(window.history.state,'',url.pathname+url.search+url.hash);
     }
   },[exampleEntryId]);
-  const shelf = useConversationMediaShelf(studio.conversation.turns,locale,mediaEnabled);
+  const shelf = useConversationMediaShelf(studio.conversation.turns,locale,mediaEnabled,{scopeKey:`${accountKey}:${projectId}`,ready:!studio.loading&&!studio.error});
   const references = shelf.references;
   const unavailableReferences = !mediaEnabled&&references.some(ref=>ref.kind&&ref.kind!=='image');
   const [dropping,setDropping] = useState(false);
@@ -145,13 +145,13 @@ function StudioImageConversationWorkspace({
     const input:ImageTurnInput = {
       requestId: crypto.randomUUID(),
       message: text,
-      ...(tasksEnabled?{locale,taskBudget:{profile:taskProfile,maxCredits:STUDIO_TASK_PROFILES[taskProfile].maxCredits,policyVersion:STUDIO_TASK_POLICY_VERSION,model:assistance.status!.selectedModel,assistanceRevision:assistance.status!.revision,...(taskProfile==='complex'?{confirmedComplex:true as const}:{})}}:{}),
+      locale:appLocale,
+      ...(tasksEnabled?{taskBudget:{profile:taskProfile,maxCredits:STUDIO_TASK_PROFILES[taskProfile].maxCredits,policyVersion:STUDIO_TASK_POLICY_VERSION,model:assistance.status!.selectedModel,assistanceRevision:assistance.status!.revision,...(taskProfile==='complex'?{confirmedComplex:true as const}:{})}}:{}),
       references: references.filter(ref => !ref.kind || ref.kind === 'image').map((ref) => ref.assetId),
       ...(references.length ? {referenceMentions:references.map(ref=>({assetId:ref.assetId,label:ref.label}))} : {}),
       ...(mediaEnabled ? {attachments: references.filter(ref => ref.kind === 'video' || ref.kind === 'audio').map(ref => ({type: 'asset' as const, assetId: ref.assetId, kind: ref.kind as 'video' | 'audio'}))} : {}),
     };
     setComplexConfirmed(false);setText("");setFollowupNotice(false);
-    shelf.clear();
     follow.current = true;
     await studio.submit(input);
   }

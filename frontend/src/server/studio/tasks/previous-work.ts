@@ -35,7 +35,7 @@ function resultFacts(value:unknown) {
     return {ok:false,action:token(result.action,64),error:{code:token(error.code,64),
       message:typeof error.message==='string'?error.message.replace(/https?:\/\/\S+/gi,'[redacted URL]').slice(0,800):'',retryable:error.retryable===true,
       nextAction:next.type==='generation_comparison'?{type:'generation_comparison',reason:token(next.reason,64),
-        requestedDurationSec:positive(next.requestedDurationSec),durationMismatch:next.durationMismatch===true,catalogFingerprint:token(next.catalogFingerprint,64),modelsOrder:token(next.modelsOrder,64),
+        requestedDurationSec:positive(next.requestedDurationSec),durationMismatch:next.durationMismatch===true,constraintMismatch:next.constraintMismatch===true,referenceFingerprint:token(next.referenceFingerprint,64),catalogFingerprint:token(next.catalogFingerprint,64),modelsOrder:token(next.modelsOrder,64),
         models:Array.isArray(next.models)?next.models.slice(0,8).map(modeFacts):[],modelsTruncated:next.modelsTruncated===true}:null}};
   }
   const data=record(result.data);
@@ -46,21 +46,25 @@ function compactWork(row:PreviousWork):PreviousWork {
   const result=record(row.result),error=record(result.error),next=record(error.nextAction);
   return {action:row.action,callId:row.callId,completed:true,historical:true,factsTruncated:true,
     ...(row.comparisonFingerprint?{comparisonFingerprint:row.comparisonFingerprint}:{}),
+    ...(row.comparisonAttemptFingerprint?{comparisonAttemptFingerprint:row.comparisonAttemptFingerprint}:{}),
     ...(result.ok===false?{result:{...result,error:{...error,message:typeof error.message==='string'?error.message.slice(0,160):'',
-      nextAction:next.type==='generation_comparison'?{type:next.type,reason:next.reason,requestedDurationSec:next.requestedDurationSec,durationMismatch:next.durationMismatch,catalogFingerprint:next.catalogFingerprint,modelsTruncated:true}:null}}}: {})};
+      nextAction:next.type==='generation_comparison'?{type:next.type,reason:next.reason,requestedDurationSec:next.requestedDurationSec,durationMismatch:next.durationMismatch,constraintMismatch:next.constraintMismatch,referenceFingerprint:next.referenceFingerprint,catalogFingerprint:next.catalogFingerprint,modelsTruncated:true}:null}}}: {})};
 }
 
-/** Bounded historical operational evidence, never provider output, authored prompts or current prices. */
+/** Owned task receipts plus recent failed reads from the same project, never prior-task mutations, prompts or current prices. */
 export async function readStudioTaskPreviousWork(actor:StudioGenerationActor,taskRequestId:string,segmentRequestId:string):Promise<PreviousWork[]> {
   const rows=await query<PreviousWork>(`SELECT c.action_json->>'action' action,c.call_id AS "callId",true completed,true historical,
     CASE WHEN c.action_json->>'action'='timeline.edit' AND c.result_json->>'ok'='true' THEN c.action_json ELSE NULL END details,
     CASE WHEN c.action_json->>'action'='pricing.compare' THEN c.action_json-'prompt' ELSE NULL END comparison,
+    CASE WHEN c.action_json->>'action'='pricing.compare' THEN c.action_hash ELSE NULL END AS "comparisonAttemptFingerprint",
     CASE WHEN c.result_json->>'ok'='false' THEN jsonb_build_object('ok',false,'action',c.action_json->>'action','error',
       jsonb_build_object('code',c.result_json->'error'->>'code','message',left(c.result_json->'error'->>'message',800),
         'retryable',c.result_json->'error'->'retryable','nextAction',CASE WHEN c.result_json->'error'->'nextAction'->>'type'='generation_comparison'
           THEN jsonb_build_object('type','generation_comparison','reason',c.result_json->'error'->'nextAction'->>'reason',
             'requestedDurationSec',c.result_json->'error'->'nextAction'->'requestedDurationSec',
             'durationMismatch',c.result_json->'error'->'nextAction'->'durationMismatch',
+            'constraintMismatch',c.result_json->'error'->'nextAction'->'constraintMismatch',
+            'referenceFingerprint',c.result_json->'error'->'nextAction'->>'referenceFingerprint',
             'catalogFingerprint',c.result_json->'error'->'nextAction'->>'catalogFingerprint',
             'modelsOrder',c.result_json->'error'->'nextAction'->>'modelsOrder',
             'modelsTruncated',c.result_json->'error'->'nextAction'->'modelsTruncated',
@@ -77,8 +81,11 @@ export async function readStudioTaskPreviousWork(actor:StudioGenerationActor,tas
     ELSE NULL END result
     FROM studio_conversation_steps c JOIN studio_task_segments s ON s.user_id=c.user_id AND s.project_id=c.project_id AND s.request_id=c.request_id
     JOIN studio_projects p ON p.id=c.project_id AND p.user_id=c.user_id AND p.deleted_at IS NULL
-    WHERE c.user_id=$1 AND c.project_id=$2 AND s.task_request_id=$3 AND c.request_id<>$4 AND c.state='completed'
-      AND c.result_json->>'ok' IN ('true','false') ORDER BY c.created_at DESC,c.call_id DESC LIMIT 12`,
+    JOIN studio_tasks current_task ON current_task.user_id=c.user_id AND current_task.project_id=c.project_id AND current_task.request_id=$3
+    WHERE c.user_id=$1 AND c.project_id=$2 AND c.request_id<>$4 AND c.state='completed'
+      AND (s.task_request_id=$3 OR (c.action_json->>'action'='pricing.compare' AND c.result_json->>'ok'='false'
+        AND c.created_at<current_task.created_at AND c.created_at>current_task.created_at-interval '7 days'))
+      AND c.result_json->>'ok' IN ('true','false') ORDER BY (s.task_request_id=$3) DESC,c.created_at DESC,c.call_id DESC LIMIT 12`,
   [actor.userId,actor.projectId,taskRequestId,segmentRequestId]);
   const facts=rows.map(row=>({...row,action:row.action.slice(0,64),callId:row.callId.slice(0,200),
     comparison:comparisonFacts(row.comparison),comparisonFingerprint:studioComparisonFingerprint(row.comparison)??undefined,result:resultFacts(row.result)}));

@@ -27,8 +27,8 @@ async function filmDurations(input:GenerationPriceComparisonInput,total:number,s
 
 /** Bounded read-only plans. Every generated component keeps canonical customer-cent pricing. */
 export async function priceStudioFilm(input:GenerationPriceComparisonInput,totalDurationSec:number,service:PricingReader):Promise<StudioPriceComparison> {
-  if(input.surface!=='video'||input.mode!=='t2v'&&input.mode!=='i2v'||!(totalDurationSec>0&&totalDurationSec<=1200))
-    throw new AgentApiError('PARAMETER_INVALID','Multi-clip planning supports new text/image-to-video films up to 1200 seconds. Keep source edits and extensions on their exact source workflow.');
+  if(input.surface!=='video'||!['t2v','i2v','ref2v'].includes(input.mode)||!(totalDurationSec>0&&totalDurationSec<=1200))
+    throw new AgentApiError('PARAMETER_INVALID','Multi-clip planning supports new text/image/reference-to-video films up to 1200 seconds. Keep source edits and extensions on their exact source workflow.');
   const settings={...input.settings};
   delete settings.durationSec;
   // A useful film baseline; explicit settings always take precedence.

@@ -86,6 +86,27 @@ const input = {
   references: [],
 };
 
+test('a rejected image-to-video selection returns exact role and parameter facts for a bounded correction',async()=>{
+  await assert.rejects(compareGenerationPrices({...input,mode:'i2v',candidateModelIds:['seedance-2-5'],references:[{kind:'asset',assetId:'frame',role:'reference'}]},actor,dependencies({
+    resolveGenerationReferences:async()=>[{assetId:'frame',role:'reference',mediaKind:'image',storageUrl:'https://private.test/secret',mimeType:'image/png',width:1280,height:720}],
+  })),(error:any)=>{
+    assert.equal(error.nextAction.durationMismatch,false);
+    const model=error.nextAction.models[0];
+    assert.ok(model.references.some((ref:any)=>ref.roles.includes('first_frame')));
+    assert.ok(Array.isArray(model.settings));
+    assert.equal(error.nextAction.constraintMismatch,true,'a canonical validation rejection is reusable negative evidence');
+    assert.doesNotMatch(JSON.stringify(error.nextAction),/private|secret|storageUrl/);
+    return true;
+  });
+});
+
+test('pricing outages are not cached as a proven incompatible input',async()=>{
+  const {AgentApiError}=await import('../frontend/src/server/agent-api/errors');
+  await assert.rejects(compareGenerationPrices({...input,candidateModelIds:['seedance-2-5']},actor,dependencies({priceGeneration:async()=>{throw new AgentApiError('ENGINE_UNAVAILABLE','Pricing unavailable',true);}})),(error:any)=>{
+    assert.equal(error.nextAction.constraintMismatch,false);return true;
+  });
+});
+
 test("a one-minute single-output comparison reports live clip durations without pricing a shorter substitute", async () => {
   let priced = 0;
   await assert.rejects(compareGenerationPrices(
@@ -517,4 +538,13 @@ test('Edit comparison and Studio reply expose inherited source facts instead of 
     baselineModelId: null, baselineSettings: null } as never, { ok: true, action: 'pricing.compare', data: result }, 0, 'fr');
   assert.match(reply.reply!, /4,25s.*Format source.*Tarif 5s/);
   assert.doesNotMatch(reply.reply!, /9:16|\b9s\b/);
+});
+
+test('negative comparison evidence changes when a live prompt limit changes',async()=>{
+  const {generationComparisonCatalogFingerprint}=await import('../frontend/src/server/agent-api/generation-price-comparison');
+  const base=candidate('seedance-2-5'),small={...base,engine:{...base.engine,inputLimits:{...base.engine.inputLimits,promptMaxChars:10}}},large={...base,engine:{...base.engine,inputLimits:{...base.engine.inputLimits,promptMaxChars:1000}}};
+  const scenario={...input,prompt:'A scene longer than ten chars',candidateModelIds:['seedance-2-5']};
+  await assert.rejects(compareGenerationPrices(scenario,actor,dependencies({listPublicEngines:async()=>[small]})),(error:any)=>error.nextAction?.constraintMismatch===true);
+  assert.equal((await compareGenerationPrices(scenario,actor,dependencies({listPublicEngines:async()=>[large]}))).options.length,1);
+  assert.notEqual(generationComparisonCatalogFingerprint(scenario,[small]),generationComparisonCatalogFingerprint(scenario,[large]));
 });

@@ -166,14 +166,17 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
     const legacy = !action.modelId && action.settings == null;
     // Validate model/parameters/roles before resolving images or promoting job outputs.
     let derivedSettings:Record<string,number>={};
-    const build = (assetIds: string[],correctable=false,resolvedReferences?:ResolvedReference[]) => canonicalPreparation(() => {
+    const build = (assetIds: string[],correctable=false,resolvedReferences?:ResolvedReference[]) => {try {return canonicalPreparation(() => {
       const request = normalizeGenerationRequest({schemaVersion: 1, surface: 'video', engineId: candidate.engine.id, mode, prompt: action.prompt,
         settings: {...videoDefaults(candidate, mode, action.aspectRatio, legacy),...derivedSettings, ...settings},
         references: selections.map((selection, index) => ({kind: 'asset', assetId: assetIds[index], role: selection.role,
           ...(selection.slot === null || selection.slot === undefined ? {} : {slot: selection.slot})})), outputCount: 1});
       validateCanonicalGenerationCapabilities(request, candidate,{resolvedReferences});
       return request as CanonicalGenerationRequest & {surface: 'video'};
-    },correctable);
+    },correctable);}catch(error){
+      if(error instanceof StudioPreparationInputError)throw new StudioPreparationInputError(error.code as 'PARAMETER_INVALID'|'ENGINE_UNAVAILABLE'|'REFERENCE_INVALID',error.message,projectAgentModelModeDetails(candidate,mode));
+      throw error;
+    }};
     const outputIdentities = new Map<string, string>();
     const preflightIds=selections.map(({ref}, index) => {
       if (ref.type === 'asset') return ref.assetId;

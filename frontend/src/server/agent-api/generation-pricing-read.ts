@@ -46,7 +46,7 @@ const REFERENCE_CONSTRAINT_MESSAGES: Record<ReferenceConstraintFailure, string> 
   image_aspect_ratio_unsupported: 'Reference image aspect ratio is outside the selected model mode limits. Check get_model_details and import a supported image.',
 };
 
-function validateCapabilities(
+export function validateGenerationPricingCapabilities(
   request: CanonicalGenerationRequest,
   candidate: AgentPublicGenerationEngine,
   resolvedReferences?: readonly ResolvedReference[],
@@ -161,7 +161,7 @@ export async function readGenerationPricing(request: CanonicalGenerationRequest,
   if (!candidate.publicModes.includes(request.mode)) {
     throw new AgentApiError('MODE_UNSUPPORTED', 'The selected model does not support this mode.');
   }
-  validateCapabilities(request, candidate);
+  validateGenerationPricingCapabilities(request, candidate);
   validateRepresentablePricingFacts(request);
   let resolvedReferences: ResolvedReference[] = [];
   if (request.references.some((reference) => reference.kind === 'asset')) {
@@ -170,7 +170,7 @@ export async function readGenerationPricing(request: CanonicalGenerationRequest,
         ?? ((currentRequest, currentPrincipal) =>
           resolveGenerationReferencesForActor(currentRequest, currentPrincipal));
       resolvedReferences = await resolveReferences(request, principal);
-      validateCapabilities(request, candidate, resolvedReferences);
+      validateGenerationPricingCapabilities(request, candidate, resolvedReferences);
     } catch (error) {
       if (error instanceof AgentApiError) {
         throw request.mode === 'v2v' || request.mode === 'extend'

@@ -12,6 +12,7 @@ import type {AgentPublicGenerationEngine} from './model-catalog';
 import type { CanonicalGenerationRequest } from "./generation-types";
 import {
   readGenerationPricing,
+  validateGenerationPricingCapabilities,
   type GenerationPricingReadDependencies,
 } from "./generation-pricing-read";
 import { projectAgentModelModeDetails } from "./model-details";
@@ -65,18 +66,11 @@ function comparisonCandidates(input:ComparisonCatalogScope,catalog:readonly Agen
     &&(explicitIds.has(candidate.engine.id)||isAgentModelRecommendationEligible(candidate.engine.id,getRuntimeModelById(candidate.engine.id)?.lifecycle)));
 }
 
-/** Negative duration evidence is reusable only against the same live candidate identities/capabilities. */
+/** Validation depends on more than public mode details (for example prompt limits). */
 export function generationComparisonCatalogFingerprint(input:ComparisonCatalogScope,catalog:readonly AgentPublicGenerationEngine[]):string {
-  const models=comparisonCandidates(input,catalog).map(candidate=>{
-    try {
-      const {duration,durationPolicy}=projectAgentModelModeDetails(candidate,input.mode);
-      return {modelId:candidate.engine.id,duration,durationPolicy};
-    } catch(error) {
-      if(!(error instanceof AgentApiError))throw error;
-      return {modelId:candidate.engine.id,unavailable:error.code};
-    }
-  }).sort((a,b)=>a.modelId.localeCompare(b.modelId));
-  return createHash('sha256').update(stableJson({surface:input.surface,mode:input.mode,models})).digest('hex');
+  const models=comparisonCandidates(input,catalog).map(candidate=>({modelId:candidate.engine.id,engine:candidate.engine,modeCaps:candidate.modeCaps,publicModes:candidate.publicModes}))
+    .sort((a,b)=>a.modelId.localeCompare(b.modelId));
+  return createHash('sha256').update(stableJson(JSON.parse(JSON.stringify({surface:input.surface,mode:input.mode,models})))).digest('hex');
 }
 
 function defaultAspectRatio(
@@ -173,12 +167,14 @@ export async function compareGenerationPrices(
         baseline: true,
       });
   }
+  let incompatibleInputs=0;
   // Small batches bound concurrent database price reads; no provider inference calls.
   for (let start = 0; start < scenarios.length; start += 4) {
     await Promise.all(
       scenarios.slice(start, start + 4).map(async (scenario) => {
         const { candidate } = scenario;
         const modelId = candidate.engine.id;
+        let validatedInput=false;
         try {
           const details = projectAgentModelModeDetails(candidate, base.mode);
           const settings = { ...scenario.settings };
@@ -220,6 +216,8 @@ export async function compareGenerationPrices(
             engineId: modelId,
             settings,
           });
+          validateGenerationPricingCapabilities(request,candidate,references);
+          validatedInput=true;
           const { pricing, pricingSnapshot } = await readGenerationPricing(
             request,
             actor,
@@ -273,6 +271,7 @@ export async function compareGenerationPrices(
           else options.push(option);
         } catch (error) {
           if (!(error instanceof AgentApiError)) throw error;
+          if(!validatedInput&&['PARAMETER_INVALID','REFERENCE_INVALID','REFERENCE_REQUIRED'].includes(error.code)&&!error.retryable)incompatibleInputs++;
           unavailable.push({
             modelId,
             code: error.code,
@@ -288,8 +287,8 @@ export async function compareGenerationPrices(
     const models = candidates.flatMap(candidate => {
       try {
         const details = projectAgentModelModeDetails(candidate, base.mode);
-        const {mode,duration,durationPolicy,audio,resolutions,aspectRatios}=details;
-        return [{modelId: candidate.engine.id,mode,duration,durationPolicy,audio,resolutions,aspectRatios}];
+        const {mode,duration,durationPolicy,audio,resolutions,aspectRatios,references,settings}=details;
+        return [{modelId: candidate.engine.id,mode,duration,durationPolicy,audio,resolutions,aspectRatios,references,settings}];
       } catch (error) {
         if (!(error instanceof AgentApiError)) throw error;
         return [];
@@ -314,7 +313,7 @@ export async function compareGenerationPrices(
         : "No current model could be verified and priced for all these constraints and references. Keep the requirements; use the returned mode facts to explain the mismatch or unavailable pricing. No quote or generation was created.",
       false,
       {type: 'generation_comparison', reason: 'no_matching_scenario', surface: base.surface, mode: base.mode,
-        requestedDurationSec, durationMismatch, catalogFingerprint:generationComparisonCatalogFingerprint({...input,surface:base.surface,mode:base.mode},catalog),
+        requestedDurationSec, durationMismatch, constraintMismatch:scenarios.length>0&&incompatibleInputs===scenarios.length, catalogFingerprint:generationComparisonCatalogFingerprint({...input,surface:base.surface,mode:base.mode},catalog),
         ...(durationMismatch?{modelsOrder:'longest_supported_clip'}:{}),
         models: models.slice(0, 8), modelsTruncated: models.length > 8},
     );

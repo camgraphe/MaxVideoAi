@@ -164,6 +164,9 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
       await library.getByRole('button',{name:'Add to conversation',exact:true}).click();
     }
     await page.unroute(libraryEndpoint);
+    await page.reload({waitUntil:'domcontentloaded'});
+    await expect(page.getByRole('button',{name:'Remove Image 1',exact:true})).toBeVisible();
+    await expect(page.getByRole('button',{name:'Remove Image 2',exact:true})).toBeVisible();
     const shelf=page.getByRole('complementary',{name:'Media panel',exact:true});
     await expect(shelf).toBeVisible();
     await expect(shelf.getByRole('img',{name:'Night shift',exact:true})).toBeVisible();

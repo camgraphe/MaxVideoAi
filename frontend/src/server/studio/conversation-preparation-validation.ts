@@ -6,8 +6,8 @@ const selectionCodes:readonly string[]=['PARAMETER_INVALID','ENGINE_UNAVAILABLE'
 
 /** Only explicit input-validation boundaries may produce this durable correction receipt. */
 export class StudioPreparationInputError extends AgentApiError {
-  constructor(code:SelectionErrorCode,message:string) {
-    super(code,message,false,{type:'studio_preparation_input',version:1});
+  constructor(code:SelectionErrorCode,message:string,capabilities?:unknown) {
+    super(code,message,false,{type:'studio_preparation_input',version:1,...(capabilities?{capabilities}:{})});
   }
 }
 
