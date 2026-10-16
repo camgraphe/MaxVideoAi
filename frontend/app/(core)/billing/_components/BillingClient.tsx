@@ -329,6 +329,7 @@ export function BillingClient({
                 checkoutCaptchaRequired={hostedCheckout.captchaRequired}
                 checkoutCaptchaResetGeneration={hostedCheckout.captchaResetGeneration}
                 checkoutCaptchaToken={hostedCheckout.captchaToken}
+                takeCheckoutCaptchaToken={hostedCheckout.takeCaptchaToken}
                 copy={copy}
                 currencyLoading={currencyLoading}
                 currencyOptions={currencyOptions}

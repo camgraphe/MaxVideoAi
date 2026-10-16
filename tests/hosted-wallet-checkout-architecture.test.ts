@@ -44,6 +44,8 @@ test('hosted wallet checkout behavior has stable shared owners', () => {
   assert.match(readFileSync(sharedTurnstilePath, 'utf8'), /resetGeneration/);
   assert.match(billingClientSource, /useHostedWalletCheckout/);
   assert.match(billingWalletPanelSource, /resetGeneration=\{checkoutCaptchaResetGeneration\}/);
+  assert.match(billingClientSource, /takeCheckoutCaptchaToken=\{hostedCheckout.takeCaptchaToken\}/);
+  assert.match(billingWalletPanelSource, /takeCaptchaToken=\{takeCheckoutCaptchaToken\}/);
   assert.doesNotMatch(billingClientSource, /fetch\('\/api\/wallet'/);
   assert.match(workspacePricingSource, /useHostedWalletCheckout/);
   assert.match(workspacePricingSource, /from '@\/lib\/wallet\/rate-limit-message';/);
