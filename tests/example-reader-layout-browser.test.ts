@@ -217,6 +217,8 @@ test('continuation CTAs preserve context, real logos and clipboard recovery acro
           for (const assistant of ['chatgpt', 'claude'] as const) {
             const mark = page.locator(`[data-mcp-integration-mark="${assistant}"] img:visible`);
             assert.equal(await mark.count(), 1);
+            await mark.scrollIntoViewIfNeeded();
+            await mark.evaluate((img: HTMLImageElement) => img.decode());
             assert.equal(await mark.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0), true, 'the supplied brand logo must load');
             const cta = page.locator(`.video-reader-assistantCta:has([data-mcp-integration-mark="${assistant}"])`);
             const href = new URL((await cta.getAttribute('href'))!);
