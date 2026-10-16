@@ -222,6 +222,35 @@ mode, resolution, aspect and audio. Project the exact video total and per-second
 rate without a catalogue fallback. Avoid initializing the complete tariff audit
 coverage on the request path; the public quote API remains a parity check in tests.
 
+Examples pagination keeps its path and page number in the canonical, Open Graph URL
+and every hreflang alternate. The route-local `examples-pagination-seo.ts` owns
+strict decimal page parsing and the distinction between the default series and
+sort/filter variants. Localize the base path before appending the page query.
+Page 1 and invalid values redirect to a normalized destination; out-of-range
+requests retain the existing last-page redirect. Normalize legacy `engine` links
+to their family before discarding invalid query values. Preserve intentional
+`public_noindex` families. Pagination hrefs are already localized strings because
+the shared navigation renderer uses `next/link`, not the locale-aware wrapper.
+
+The model catalogue exposes scope navigation and a text-only server directory in
+`ModelsCatalogDirectory.tsx`, using the same price-free selection as the hero.
+Keep all admitted catalogue model links available without clicking tabs or scrolling,
+including image models and separately labelled legacy versions. Do not expand the
+interactive six-card initial batch, fetch extra media, or wait for current prices
+to render these links. Deep archives remain accessible through their existing
+family/history routes, not current-model promotion. Tests in
+`examples-pagination-seo`, `examples-price-streaming`, `examples-family-metadata`
+and `models-catalog-streaming` cover these boundaries.
+
+The comparison hub's directory includes every published, locale-indexable pair
+among its available, limited and waitlist engines. Executable selectors keep their
+own narrower availability policy; archives retain their separate historical routes.
+Render all directory anchors in the initial HTML, with the first 24 outside a native
+`details` disclosure and the remainder inside it. Search can filter the list after
+hydration, but discovery must never depend on a load-more handler. Keep prefetch off
+and the directory free of media. `comparisons-directory-discovery.test.ts` exercises
+the actual component, localized links and publication selection.
+
 LTX and Seedance gallery prompt shortcuts use only examples already present on the
 current first SSR page, after its four opening cards. Select distinct exact versions
 and project bounded source prompt excerpts on the server; localized card captions

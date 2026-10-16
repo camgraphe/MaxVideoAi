@@ -191,6 +191,10 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     pricingNotes: "Keep the model, mode, duration, resolution and available audio settings explicit when comparing costs. The detail page records the cost of that example; check the current quote in the workspace before generating your version.",
     faq: [
       {
+        question: "Where can I find LTX 2.3 prompt examples?",
+        answer: "Look for videos labelled LTX 2.3 Pro or LTX 2.3 Fast in this family gallery and use Next to browse older examples. Open a video for its original prompt and recorded settings, then consult the linked LTX 2.3 model page for that version’s supported modes. LTX 2.5 examples are labelled separately; a current price estimate is not the historical cost of the original render.",
+      },
+      {
         question: 'What are the best LTX 2.5 prompt examples to start from?',
         answer:
           'The best starting point is a simple structure: subject, action, camera direction, and style goal. The strongest examples keep that structure stable while changing only one variable at a time.',

@@ -1,0 +1,665 @@
+{
+  "method": {
+    "origin": "http://localhost:3217",
+    "route": "/ai-video-engines",
+    "runtime": "Next.js production builds, same machine",
+    "trials": 3,
+    "freshBrowserContexts": true,
+    "cpuSlowdown": 4,
+    "downloadBytesPerSecond": 200000,
+    "uploadBytesPerSecond": 93750,
+    "latencyMs": 150,
+    "reducedMotion": true
+  },
+  "comparisonPerformance": {
+    "before": [
+      {
+        "trial": 1,
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "status": 200,
+        "metrics": {
+          "lcp": 824,
+          "cls": 0
+        },
+        "navigation": [
+          {
+            "transferSize": 48412,
+            "encodedBodySize": 48112,
+            "duration": 2310.0999999940395
+          }
+        ],
+        "resources": {
+          "requests": 44,
+          "bytes": 314679
+        },
+        "images": 25,
+        "links": 296,
+        "scrollWidth": 390
+      },
+      {
+        "trial": 2,
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "status": 200,
+        "metrics": {
+          "lcp": 800,
+          "cls": 0
+        },
+        "navigation": [
+          {
+            "transferSize": 48412,
+            "encodedBodySize": 48112,
+            "duration": 2304.9000000059605
+          }
+        ],
+        "resources": {
+          "requests": 44,
+          "bytes": 314679
+        },
+        "images": 25,
+        "links": 296,
+        "scrollWidth": 390
+      },
+      {
+        "trial": 3,
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "status": 200,
+        "metrics": {
+          "lcp": 828,
+          "cls": 0
+        },
+        "navigation": [
+          {
+            "transferSize": 48412,
+            "encodedBodySize": 48112,
+            "duration": 2299.800000011921
+          }
+        ],
+        "resources": {
+          "requests": 44,
+          "bytes": 314679
+        },
+        "images": 25,
+        "links": 296,
+        "scrollWidth": 390
+      },
+      {
+        "trial": 1,
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "status": 200,
+        "metrics": {
+          "lcp": 804,
+          "cls": 0
+        },
+        "navigation": [
+          {
+            "transferSize": 48412,
+            "encodedBodySize": 48112,
+            "duration": 2298
+          }
+        ],
+        "resources": {
+          "requests": 44,
+          "bytes": 314679
+        },
+        "images": 25,
+        "links": 296,
+        "scrollWidth": 1440
+      },
+      {
+        "trial": 2,
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "status": 200,
+        "metrics": {
+          "lcp": 816,
+          "cls": 0
+        },
+        "navigation": [
+          {
+            "transferSize": 48412,
+            "encodedBodySize": 48112,
+            "duration": 2299.5999999940395
+          }
+        ],
+        "resources": {
+          "requests": 44,
+          "bytes": 314679
+        },
+        "images": 25,
+        "links": 296,
+        "scrollWidth": 1440
+      },
+      {
+        "trial": 3,
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "status": 200,
+        "metrics": {
+          "lcp": 836,
+          "cls": 0
+        },
+        "navigation": [
+          {
+            "transferSize": 48412,
+            "encodedBodySize": 48112,
+            "duration": 2324.5999999940395
+          }
+        ],
+        "resources": {
+          "requests": 44,
+          "bytes": 314679
+        },
+        "images": 25,
+        "links": 296,
+        "scrollWidth": 1440
+      }
+    ],
+    "after": [
+      {
+        "trial": 1,
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "status": 200,
+        "metrics": {
+          "lcp": 804,
+          "cls": 0
+        },
+        "navigation": [
+          {
+            "transferSize": 50733,
+            "encodedBodySize": 50433,
+            "duration": 2303.800000011921
+          }
+        ],
+        "resources": {
+          "requests": 44,
+          "bytes": 314669
+        },
+        "images": 25,
+        "links": 464,
+        "scrollWidth": 390
+      },
+      {
+        "trial": 2,
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "status": 200,
+        "metrics": {
+          "lcp": 840,
+          "cls": 0
+        },
+        "navigation": [
+          {
+            "transferSize": 50733,
+            "encodedBodySize": 50433,
+            "duration": 2288.199999988079
+          }
+        ],
+        "resources": {
+          "requests": 44,
+          "bytes": 314669
+        },
+        "images": 25,
+        "links": 464,
+        "scrollWidth": 390
+      },
+      {
+        "trial": 3,
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "status": 200,
+        "metrics": {
+          "lcp": 812,
+          "cls": 0
+        },
+        "navigation": [
+          {
+            "transferSize": 50733,
+            "encodedBodySize": 50433,
+            "duration": 2300.5999999940395
+          }
+        ],
+        "resources": {
+          "requests": 44,
+          "bytes": 314669
+        },
+        "images": 25,
+        "links": 464,
+        "scrollWidth": 390
+      },
+      {
+        "trial": 1,
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "status": 200,
+        "metrics": {
+          "lcp": 844,
+          "cls": 0
+        },
+        "navigation": [
+          {
+            "transferSize": 50733,
+            "encodedBodySize": 50433,
+            "duration": 2355.5
+          }
+        ],
+        "resources": {
+          "requests": 44,
+          "bytes": 314669
+        },
+        "images": 25,
+        "links": 464,
+        "scrollWidth": 1440
+      },
+      {
+        "trial": 2,
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "status": 200,
+        "metrics": {
+          "lcp": 816,
+          "cls": 0
+        },
+        "navigation": [
+          {
+            "transferSize": 50733,
+            "encodedBodySize": 50433,
+            "duration": 2281.5
+          }
+        ],
+        "resources": {
+          "requests": 44,
+          "bytes": 314669
+        },
+        "images": 25,
+        "links": 464,
+        "scrollWidth": 1440
+      },
+      {
+        "trial": 3,
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "status": 200,
+        "metrics": {
+          "lcp": 840,
+          "cls": 0
+        },
+        "navigation": [
+          {
+            "transferSize": 50733,
+            "encodedBodySize": 50433,
+            "duration": 2343.5999999940395
+          }
+        ],
+        "resources": {
+          "requests": 44,
+          "bytes": 314669
+        },
+        "images": 25,
+        "links": 464,
+        "scrollWidth": 1440
+      }
+    ]
+  },
+  "comparisonJourneys": [
+    {
+      "locale": "en",
+      "javaScriptEnabled": false,
+      "count": 192,
+      "errors": [],
+      "media": 0,
+      "overflow": false,
+      "target": "/ai-video-engines/seedance-2-5-vs-veo-3-1",
+      "canonical": "https://maxvideoai.com/ai-video-engines/seedance-2-5-vs-veo-3-1"
+    },
+    {
+      "locale": "fr",
+      "javaScriptEnabled": false,
+      "count": 147,
+      "errors": [],
+      "media": 0,
+      "overflow": false,
+      "target": "/fr/comparatif/seedance-2-5-vs-veo-3-1",
+      "canonical": "https://maxvideoai.com/fr/comparatif/seedance-2-5-vs-veo-3-1"
+    },
+    {
+      "locale": "es",
+      "javaScriptEnabled": false,
+      "count": 158,
+      "errors": [],
+      "media": 0,
+      "overflow": false,
+      "target": "/es/comparativa/seedance-2-5-vs-veo-3-1",
+      "canonical": "https://maxvideoai.com/es/comparativa/seedance-2-5-vs-veo-3-1"
+    },
+    {
+      "locale": "en",
+      "javaScriptEnabled": true,
+      "count": 192,
+      "errors": [],
+      "media": 0,
+      "overflow": false,
+      "target": null,
+      "canonical": null
+    },
+    {
+      "locale": "fr",
+      "javaScriptEnabled": true,
+      "count": 147,
+      "errors": [],
+      "media": 0,
+      "overflow": false,
+      "target": null,
+      "canonical": null
+    },
+    {
+      "locale": "es",
+      "javaScriptEnabled": true,
+      "count": 158,
+      "errors": [],
+      "media": 0,
+      "overflow": false,
+      "target": null,
+      "canonical": null
+    }
+  ],
+  "catalogueJourneys": [
+    {
+      "locale": "en",
+      "links": [
+        "/models/seedance-2-5",
+        "/models/minimax-h3",
+        "/models/ltx-2-5-pro",
+        "/models/ltx-2-5-fast",
+        "/models/wan-3-prime",
+        "/models/wan-3",
+        "/models/grok-imagine-video-1-5",
+        "/models/flux-3",
+        "/models/flux-3-draft",
+        "/models/seedance-2-0",
+        "/models/kling-3-pro",
+        "/models/veo-3-1",
+        "/models/happy-horse-1-1",
+        "/models/seedance-2-0-fast",
+        "/models/kling-3-standard",
+        "/models/kling-3-4k",
+        "/models/veo-3-1-fast",
+        "/models/veo-3-1-lite",
+        "/models/luma-ray-3-2",
+        "/models/pika-text-to-video",
+        "/models/minimax-hailuo-02-text",
+        "/models/gpt-image-2-5-flare",
+        "/models/gpt-image-2-5-sunburst",
+        "/models/seedream",
+        "/models/seedream-5-0-pro",
+        "/models/nano-banana-lite",
+        "/models/nano-banana-2",
+        "/models/nano-banana-pro",
+        "/models/dreamina-seedance-2-0-mini",
+        "/models/kling-o3-pro",
+        "/models/gemini-omni-flash",
+        "/models/luma-uni-1",
+        "/models/luma-uni-1-max",
+        "/models/kling-3-turbo-pro",
+        "/models/kling-3-turbo-standard",
+        "/models/kling-o3-4k",
+        "/models/kling-o3-standard",
+        "/models/minimax-h3-max",
+        "/models/ltx-2-3-pro",
+        "/models/ltx-2-3-fast",
+        "/models/wan-2-6",
+        "/models/luma-ray-2",
+        "/models/luma-ray-2-flash",
+        "/models/kling-2-6-pro",
+        "/models/kling-2-5-turbo",
+        "/models/happy-horse-1-0",
+        "/models/gpt-image-2",
+        "/models/nano-banana"
+      ],
+      "canonical": "https://maxvideoai.com/models/nano-banana-2",
+      "h1": [
+        "Nano Banana 2"
+      ]
+    },
+    {
+      "locale": "fr",
+      "links": [
+        "/fr/modeles/seedance-2-5",
+        "/fr/modeles/minimax-h3",
+        "/fr/modeles/ltx-2-5-pro",
+        "/fr/modeles/ltx-2-5-fast",
+        "/fr/modeles/wan-3-prime",
+        "/fr/modeles/wan-3",
+        "/fr/modeles/grok-imagine-video-1-5",
+        "/fr/modeles/flux-3",
+        "/fr/modeles/flux-3-draft",
+        "/fr/modeles/seedance-2-0",
+        "/fr/modeles/kling-3-pro",
+        "/fr/modeles/veo-3-1",
+        "/fr/modeles/happy-horse-1-1",
+        "/fr/modeles/seedance-2-0-fast",
+        "/fr/modeles/kling-3-standard",
+        "/fr/modeles/kling-3-4k",
+        "/fr/modeles/veo-3-1-fast",
+        "/fr/modeles/veo-3-1-lite",
+        "/fr/modeles/luma-ray-3-2",
+        "/fr/modeles/pika-text-to-video",
+        "/fr/modeles/minimax-hailuo-02-text",
+        "/fr/modeles/gpt-image-2-5-flare",
+        "/fr/modeles/gpt-image-2-5-sunburst",
+        "/fr/modeles/seedream",
+        "/fr/modeles/seedream-5-0-pro",
+        "/fr/modeles/nano-banana-lite",
+        "/fr/modeles/nano-banana-2",
+        "/fr/modeles/nano-banana-pro",
+        "/fr/modeles/dreamina-seedance-2-0-mini",
+        "/fr/modeles/kling-o3-pro",
+        "/fr/modeles/gemini-omni-flash",
+        "/fr/modeles/luma-uni-1",
+        "/fr/modeles/luma-uni-1-max",
+        "/fr/modeles/kling-3-turbo-pro",
+        "/fr/modeles/kling-3-turbo-standard",
+        "/fr/modeles/kling-o3-4k",
+        "/fr/modeles/kling-o3-standard",
+        "/fr/modeles/minimax-h3-max",
+        "/fr/modeles/ltx-2-3-pro",
+        "/fr/modeles/ltx-2-3-fast",
+        "/fr/modeles/wan-2-6",
+        "/fr/modeles/luma-ray-2",
+        "/fr/modeles/luma-ray-2-flash",
+        "/fr/modeles/kling-2-6-pro",
+        "/fr/modeles/kling-2-5-turbo",
+        "/fr/modeles/happy-horse-1-0",
+        "/fr/modeles/gpt-image-2",
+        "/fr/modeles/nano-banana"
+      ],
+      "canonical": "https://maxvideoai.com/fr/modeles/nano-banana-2",
+      "h1": [
+        "Nano Banana 2"
+      ]
+    },
+    {
+      "locale": "es",
+      "links": [
+        "/es/modelos/seedance-2-5",
+        "/es/modelos/minimax-h3",
+        "/es/modelos/ltx-2-5-pro",
+        "/es/modelos/ltx-2-5-fast",
+        "/es/modelos/wan-3-prime",
+        "/es/modelos/wan-3",
+        "/es/modelos/grok-imagine-video-1-5",
+        "/es/modelos/flux-3",
+        "/es/modelos/flux-3-draft",
+        "/es/modelos/seedance-2-0",
+        "/es/modelos/kling-3-pro",
+        "/es/modelos/veo-3-1",
+        "/es/modelos/happy-horse-1-1",
+        "/es/modelos/seedance-2-0-fast",
+        "/es/modelos/kling-3-standard",
+        "/es/modelos/kling-3-4k",
+        "/es/modelos/veo-3-1-fast",
+        "/es/modelos/veo-3-1-lite",
+        "/es/modelos/luma-ray-3-2",
+        "/es/modelos/pika-text-to-video",
+        "/es/modelos/minimax-hailuo-02-text",
+        "/es/modelos/gpt-image-2-5-flare",
+        "/es/modelos/gpt-image-2-5-sunburst",
+        "/es/modelos/seedream",
+        "/es/modelos/seedream-5-0-pro",
+        "/es/modelos/nano-banana-lite",
+        "/es/modelos/nano-banana-2",
+        "/es/modelos/nano-banana-pro",
+        "/es/modelos/dreamina-seedance-2-0-mini",
+        "/es/modelos/kling-o3-pro",
+        "/es/modelos/gemini-omni-flash",
+        "/es/modelos/luma-uni-1",
+        "/es/modelos/luma-uni-1-max",
+        "/es/modelos/kling-3-turbo-pro",
+        "/es/modelos/kling-3-turbo-standard",
+        "/es/modelos/kling-o3-4k",
+        "/es/modelos/kling-o3-standard",
+        "/es/modelos/minimax-h3-max",
+        "/es/modelos/ltx-2-3-pro",
+        "/es/modelos/ltx-2-3-fast",
+        "/es/modelos/wan-2-6",
+        "/es/modelos/luma-ray-2",
+        "/es/modelos/luma-ray-2-flash",
+        "/es/modelos/kling-2-6-pro",
+        "/es/modelos/kling-2-5-turbo",
+        "/es/modelos/happy-horse-1-0",
+        "/es/modelos/gpt-image-2",
+        "/es/modelos/nano-banana"
+      ],
+      "canonical": "https://maxvideoai.com/es/modelos/nano-banana-2",
+      "h1": [
+        "Nano Banana 2"
+      ]
+    }
+  ],
+  "galleryJourneys": [
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "base": "/examples",
+      "nextHref": "/examples?page=2",
+      "prev": "/examples",
+      "canonical": "https://maxvideoai.com/examples?page=2",
+      "firstCount": 24,
+      "secondCount": 24,
+      "overlap": [],
+      "media": 0,
+      "errors": [],
+      "overflow": false
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "base": "/fr/galerie",
+      "nextHref": "/fr/galerie?page=2",
+      "prev": "/fr/galerie",
+      "canonical": "https://maxvideoai.com/fr/galerie?page=2",
+      "firstCount": 24,
+      "secondCount": 24,
+      "overlap": [],
+      "media": 0,
+      "errors": [],
+      "overflow": false
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "base": "/es/galeria",
+      "nextHref": "/es/galeria?page=2",
+      "prev": "/es/galeria",
+      "canonical": "https://maxvideoai.com/es/galeria?page=2",
+      "firstCount": 24,
+      "secondCount": 24,
+      "overlap": [],
+      "media": 0,
+      "errors": [],
+      "overflow": false
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "base": "/examples",
+      "nextHref": "/examples?page=2",
+      "prev": "/examples",
+      "canonical": "https://maxvideoai.com/examples?page=2",
+      "firstCount": 24,
+      "secondCount": 24,
+      "overlap": [],
+      "media": 0,
+      "errors": [],
+      "overflow": false
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "base": "/fr/galerie",
+      "nextHref": "/fr/galerie?page=2",
+      "prev": "/fr/galerie",
+      "canonical": "https://maxvideoai.com/fr/galerie?page=2",
+      "firstCount": 24,
+      "secondCount": 24,
+      "overlap": [],
+      "media": 0,
+      "errors": [],
+      "overflow": false
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "base": "/es/galeria",
+      "nextHref": "/es/galeria?page=2",
+      "prev": "/es/galeria",
+      "canonical": "https://maxvideoai.com/es/galeria?page=2",
+      "firstCount": 24,
+      "secondCount": 24,
+      "overlap": [],
+      "media": 0,
+      "errors": [],
+      "overflow": false
+    }
+  ]
+}

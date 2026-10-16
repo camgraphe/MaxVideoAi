@@ -3,7 +3,7 @@ import type { ExampleSort } from '@/server/videos';
 import { appendTrackingParams, DEFAULT_SORT } from './examples-route-utils';
 
 type ExamplesSearchParams = Record<string, string | string[] | undefined>;
-type ExamplesPaginationHref = string | { pathname: '/examples'; query?: Record<string, string> };
+type ExamplesPaginationHref = string;
 
 export function buildExamplesEngineFilterHref({
   engineId,
@@ -46,17 +46,11 @@ export function buildExamplesPaginationHref({
     pageValue: targetPage,
     sort,
   });
-  if (engineFromPath && modelLandingSlug) {
-    const modelPath = `${galleryBasePath}/${modelLandingSlug}`;
-    if (!query) return modelPath;
-    const params = new URLSearchParams(query);
-    const suffix = params.toString();
-    return suffix ? `${modelPath}?${suffix}` : modelPath;
-  }
-  return {
-    pathname: '/examples' as const,
-    query,
-  };
+  const basePath = engineFromPath && modelLandingSlug
+    ? `${galleryBasePath}/${modelLandingSlug}`
+    : galleryBasePath;
+  const suffix = new URLSearchParams(query).toString();
+  return suffix ? `${basePath}?${suffix}` : basePath;
 }
 
 export function buildExamplesQueryParams({

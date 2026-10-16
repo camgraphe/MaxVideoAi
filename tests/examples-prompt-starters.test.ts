@@ -32,3 +32,13 @@ test('localized gallery captions cannot replace the actual public prompt in a sh
   const [long] = buildExamplesPromptStarters('ltx', [card], [{ ...source, prompt: 'public '.repeat(1000) }]);
   assert.equal(long.prompt.split(' ').length, 18, 'full source text remains outside the shortcut');
 });
+
+test('LTX family guidance retains an explicit answer for LTX 2.3 alongside the current generation in every locale', async () => {
+  const { getExampleModelLanding } = await import('../frontend/lib/examples/modelLanding');
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const landing = getExampleModelLanding(locale, 'ltx');
+    assert.ok(landing);
+    assert.ok(landing.faqItems.some(item => /LTX 2\.3/.test(item.question) && /LTX 2\.3/.test(item.answer)), `${locale}: missing historical prompt answer`);
+    assert.ok(landing.faqItems.some(item => /LTX 2\.5/.test(item.question)), `${locale}: current guidance must remain`);
+  }
+});

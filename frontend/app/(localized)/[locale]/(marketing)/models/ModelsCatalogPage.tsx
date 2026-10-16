@@ -27,6 +27,7 @@ import {
 import { ModelsCatalogAnchorRestore } from './_components/ModelsCatalogAnchorRestore.client';
 import { ModelsCatalogDecisionFaq } from './_components/ModelsCatalogDecisionFaq';
 import { ModelsCatalogGallerySection } from './_components/ModelsCatalogGallerySection';
+import { ModelsCatalogDirectory, ModelsCatalogScopeNav } from './_components/ModelsCatalogDirectory';
 import { ModelsCatalogHero } from './_components/ModelsCatalogHero';
 import { ModelsCatalogJsonLdScripts } from './_components/ModelsCatalogJsonLdScripts';
 import { ModelsCatalogPopularComparisons } from './_components/ModelsCatalogPopularComparisons';
@@ -244,6 +245,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
         topPicksTitle={decisionCopy.topPicksTitle ?? 'Recommended starting points'}
         topPicksViewAllLabel={decisionCopy.topPicksViewAll ?? 'View all recommendations'}
       />
+      <ModelsCatalogScopeNav locale={activeLocale} scope={scope} />
       {scope === 'all' ? (
         <ModelsCatalogUseCaseStrip
           bestLabel={decisionCopy.bestLabel ?? 'Best'}
@@ -255,6 +257,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
       <Suspense fallback={<div className="min-h-screen" aria-hidden="true" />}>
         <ModelsCatalogSections />
       </Suspense>
+      <ModelsCatalogDirectory cards={heroCards} locale={activeLocale} />
     </div>
   );
 }
