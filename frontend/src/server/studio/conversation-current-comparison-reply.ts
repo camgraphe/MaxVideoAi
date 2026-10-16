@@ -4,6 +4,7 @@ import type {GenerationPriceOption} from '@/server/agent-api/generation-price-co
 import {projectStudioReply} from '@/lib/studio/conversation-reply';
 import type {ImageDraft} from '@/lib/studio/image-conversation-contract';
 import {isStudioComparisonMismatch} from './conversation-comparison-recovery';
+import {studioComparisonFailureGuidance} from './conversation-comparison-failure';
 
 type Locale='en'|'fr'|'es';
 const copy={
@@ -33,7 +34,7 @@ export function studioCurrentComparisonReply(request:Extract<StudioActionRequest
     :locale==='es'?`${completedEdits} cambio(s) guardado(s) en la línea de tiempo. `:`Saved ${completedEdits} timeline edit${completedEdits===1?'':'s'}. `:'';
   if(!result.ok){
     const constraints=settingSummary(Object.fromEntries(request.settings.map(({name,value})=>[name,value])),locale);
-    const reason=isStudioComparisonMismatch(result)?words.duration:result.error.message.slice(0,480);
+    const reason=isStudioComparisonMismatch(result)?words.duration:studioComparisonFailureGuidance(request,result,locale);
     return {image:null,continuation:{reason:'action_limit',completedEdits,lastError:{code:result.error.code,message:result.error.message.slice(0,800)}},
       reply:projectStudioReply(`${saved}${words.failed} ${words.constraints}${constraints?`: ${constraints}`:''}. ${reason} ${words.confirmation}`)};
   }

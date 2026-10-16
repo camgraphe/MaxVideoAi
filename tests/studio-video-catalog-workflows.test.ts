@@ -192,3 +192,28 @@ test('conversation source-media qualification cannot widen legacy Canvas certifi
   assert.ok(catalog.find(entry=>entry.engine.id==='flux-3')?.publicModes.includes('extend'));
   assert.ok(catalog.find(entry=>entry.engine.id==='ltx-2-3')?.publicModes.includes('a2v'));
 });
+
+test('video edit correction uses live framing facts and retains fractional source metadata for pricing',async()=>{
+  const catalog=await videoCatalog(),factories={video:()=>({catalog:async()=>catalog})} as unknown as StudioMediaFactories;
+  const action={action:'video.prepare' as const,reply:'Review the edit.',prompt:'Change the backdrop while preserving the original subject.',aspectRatio:'2:3' as const,source:ref('video'),modelId:'wan-3-prime',mode:'v2v' as const,outputCount:1 as const,settings:[{name:'resolution',value:'720p'},{name:'aspectRatio',value:'2:3'}],references:[]};
+  const deps=dependencies();
+  const fractional={...deps,resolveMedia:async(user:string,raw:unknown)=>{const media=await deps.resolveMedia(user,raw);return {...media,mediaFacts:{...media.mediaFacts,durationSec:4.394}};}};
+  await assert.rejects(validateStudioMediaRequest(actor,action,input,factories,true,fractional),(error:any)=>{
+    assert.equal(error.nextAction?.type,'studio_preparation_input');
+    assert.ok(error.nextAction?.capabilities.aspectRatios.includes('auto'));
+    assert.equal(error.nextAction.capabilities.durationPolicy,'requested','This model needs an approved output length, not a claim that it inherits exact source timing');
+    assert.equal(error.nextAction.capabilities.aspectRatios.includes('2:3'),false);
+    return true;
+  });
+  const corrected=await studioMediaRequest(actor,{...action,aspectRatio:'auto',settings:[{name:'resolution',value:'720p'},{name:'durationSec',value:5},{name:'aspectRatio',value:'auto'}]},input,factories,true,fractional) as CanonicalGenerationRequest;
+  const details=projectAgentModelModeDetails(catalog.find(entry=>entry.engine.id==='wan-3-prime')!,'v2v');
+  assert.equal(details.durationPolicy,'requested');
+  assert.equal(corrected.settings.durationSec,5);
+  assert.equal(corrected.settings.aspectRatio,'auto');
+  const source={...resolved('video'),durationSec:4.394};
+  const {priceCanonicalGeneration}=await import('../frontend/src/server/agent-api/generation-pricing');
+  await priceCanonicalGeneration(corrected,'member',{computeVideoPreflight:async(_request,options)=>{
+    assert.equal(options?.trustedMediaPricingFacts?.inputVideoDurationSec,4.394);
+    return {ok:true,total:123,currency:'USD',pricing:{totalCents:123,currency:'USD',membershipTier:'member'}} as never;
+  },estimateImage:async()=>{throw Error('No image quote expected');}},{resolvedReferences:[source]});
+});

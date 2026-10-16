@@ -72,6 +72,44 @@ may reprice original `baselineSettings` for verified savings; the quote card
 invites model, resolution, duration and budget comparisons. Historical options
 remain bounded receipt facts, never current prices or purchase authorization.
 
+Media selection continuity (reviewed 2026-10-16) belongs to
+`useConversationMediaShelf`. Sending a message keeps its visible selection.
+Session storage is scoped to account and project and stores only asset identities,
+kinds and labels. Restore once after owned history loads, falling back to the
+latest turn only when no local selection exists. An explicit empty selection stays
+empty; polling must not reattach removed media. Server ownership and measured-source
+validation still run on every request. The connected browser tests cover sending,
+reloading, following up and explicitly removing a reference.
+
+Film estimates support t2v, i2v and ref2v, including several images when the live
+mode supports their roles. A failed film comparison permits at most one changed
+comparison within the original response allowance. Freeze the approved film total
+before checkpointing. The full action fingerprint includes the prompt; a shortened
+prompt is a real correction. An identical failed action is skipped in fresh and
+replayed responses. Recover only recorded responses after a historical failure;
+never buy a new response just to reconstruct its missing terminal reply.
+
+`tasks/previous-work.ts` projects up to 12 receipts within 12,000 characters.
+Current-task receipts take priority; other messages contribute only failed reads
+from the same owned project within seven days. Prompts and media URLs are excluded.
+The immutable action hash supplies exact attempt identity without copying a prompt.
+Only a proven single-clip capability rejection can suppress a repeated read, with
+unchanged action, reviewed source fingerprint and complete catalog capability
+fingerprint (including input limits). Tariff outages and legacy incomplete evidence
+are revalidated. The separate duration cache never applies to film plans: failure
+of one film component is not proof that every cut is impossible. Paid follow-up
+responses remain recoverable in replay-only mode even after a comparison receipt.
+
+Server-authored comparison/preparation replies follow the client's conversation
+language, including short confirmations using recent authored history. Requested
+voice-over/dialogue language does not change Studio's reply language. Failure
+copy distinguishes a proven incompatibility from an unverified price and never
+asks a client to interpret raw comparison tool errors. Preparation validation
+receipts carry canonical mode capabilities to support their single correction.
+Instructions cannot promise pixel-identical subject preservation or deterministic
+interpolation from a generative model; source-derived timing and requested integer
+output timing remain separate mode contracts.
+
 Preparation recovery is bounded inside the existing four Responses and assistance-call allowance (reviewed 2026-10-05). Discovery publishes canonical base setting names, including `durationSec`, `resolution`, `aspectRatio`, `fps` and an `audio` boolean only when that mode has a toggle. Always-generated or unavailable sound does not grant an audio toggle. Null discovery defaults preserve the generation adapters' existing default ownership.
 
 When required model/source facts are known, prepare by Response 3; optional `project_remember` writes are no longer offered from that response. A required third discovery read remains available, so a workflow can still use three reads and prepare on Response 4. An explicit `studio_preparation_input` rejection before draft/quote creation can use one remaining Response to correct only the same preparation tool. A second rejection stops with the saved error and a follow-up continuation. Wallet, lease, ownership, catalog, provider and post-mutation errors do not acquire this correction marker. Older recorded correction paths may include additional reads or saved mutations: recover their immutable responses and receipts. Once the new correction allowance is exhausted, subsequent checkpoints are replay-only and run before token counting or financial reservation; unresolved supplier usage remains terminal. Recovery never purchases a fifth response, repeats completed mutations or confirms a generation. A rejection on Response 4 still requires a user follow-up, including historical requests that already exhausted all four checkpoints.

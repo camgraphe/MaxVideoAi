@@ -117,3 +117,10 @@ test('an unknown saved action after exhausted corrections cannot execute or trig
     },execute:async(_,action)=>{executed++;return correction(action);}}),{code:'PARAMETER_INVALID'});
   assert.equal(executed,2);
 });
+
+test('a rejected preparation correction uses the client language without raw tool diagnostics',async()=>{
+  let calls=0;
+  const draft=await createStudioConversationDirector({mediaEnabled:true,createResponse:async()=>response(calls++,'video_prepare',videoArgs(false))})({...input,message:'Quiero generar un vídeo para mi tienda.',references:[],history:[],project,checkpoint:async(_,create)=>create(),execute:async(_,action)=>correction(action)});
+  assert.equal(calls,2);assert.match(draft.reply,/preparación|presupuesto/);
+  assert.doesNotMatch(draft.reply,/settings contains|PARAMETER_INVALID|single preparation/);
+});

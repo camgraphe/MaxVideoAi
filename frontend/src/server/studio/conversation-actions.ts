@@ -20,6 +20,7 @@ import {priceStudioFilm} from './conversation-film-pricing';
 
 export function createStudioActionExecutor(actor: StudioGenerationActor, dependencies: {
   enabled: boolean;
+  referenceFingerprint?: string;
   generation?: ReturnType<typeof createStudioImageGenerationService>;
   prepareImage(request: Extract<StudioActionRequest, {action: 'image.prepare'}>): Promise<PreparedGeneration>;
   mediaEnabled?: boolean;
@@ -125,6 +126,11 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
         }
       }
     } catch (error) {
+      // Only an exact single-clip validation failure can be reused across messages.
+      // A failed film component does not prove every possible full-film cut impossible.
+      if(request.action==='pricing.compare'&&!request.filmDurationSec&&dependencies.referenceFingerprint&&error instanceof AgentApiError
+        &&error.nextAction?.type==='generation_comparison'&&error.nextAction.constraintMismatch===true)
+        error=new AgentApiError(error.code,error.message,error.retryable,{...error.nextAction,referenceFingerprint:dependencies.referenceFingerprint});
       return {...toAgentApiFailure(error instanceof AgentApiError ? error : new AgentApiError('INTERNAL_ERROR', 'Studio could not complete this action. Resume the saved request.', true)), action: request.action};
     }
   };

@@ -19,11 +19,15 @@ import {projectStudioReply} from '@/lib/studio/conversation-reply';
 import {studioCurrentComparisonReply} from './conversation-current-comparison-reply';
 import {studioGreetingReply,studioExplicitFilmDuration} from './conversation-intent';
 import {studioFilmComparisonReply} from './conversation-film-reply';
+import {studioConversationLanguage} from './conversation-language';
+import {studioFailedFilmComparisonReply} from './conversation-comparison-failure';
 
 export type StudioDirectorResponse = Pick<Response, 'id' | 'model' | 'status' | 'service_tier' | 'usage' | 'output_text'> & {output: Response['output'];incomplete_details?: Response['incomplete_details']};
 export type StudioResponseCreator = (params: ResponseCreateParamsNonStreaming) => Promise<StudioDirectorResponse>;
 export type StudioDirectorContext = {
   message: string;
+  locale?: ImageTurnInput['locale'];
+  referenceFingerprint?:string;
   references: ResolvedReference[];
   referenceMentions?: ImageTurnInput['referenceMentions'];
   history: ImageConversationHistoryTurn[];
@@ -35,8 +39,17 @@ export type StudioDirectorContext = {
   checkpoint(index: number, create: () => Promise<StudioDirectorResponse>, params?: ResponseCreateParamsNonStreaming, options?: {replayOnly?: boolean;prepareLunaInput?:()=>void}): Promise<StudioDirectorResponse>;
 };
 const replySchema = z.object({reply: z.string().min(1).max(2400).transform(projectStudioReply)}).strict();
-function pendingDirectorReply(reason: 'action_limit'|'output_limit',completedEdits: number,lastResult?: StudioActionResult,correctionRejected = false): ImageDraft {
+function pendingDirectorReply(reason: 'action_limit'|'output_limit',completedEdits: number,lastResult?: StudioActionResult,correctionRejected = false,locale:'en'|'fr'|'es'='en'): ImageDraft {
   const lastError = lastResult && !lastResult.ok ? {code: lastResult.error.code,message: lastResult.error.message.slice(0,800)} : undefined;
+  if(locale!=='en'){
+    const saved=completedEdits?(locale==='fr'?`${completedEdits} modification(s) de la timeline enregistrée(s). `:`${completedEdits} cambio(s) guardado(s) en la línea de tiempo. `):'';
+    const text=locale==='fr'
+      ? correctionRejected?'La préparation et sa correction ont été refusées. Aucun nouveau devis n’a été créé. Il faut choisir des réglages compatibles avec les options du modèle et les médias sélectionnés avant de poursuivre.'
+        :'Cette demande a atteint sa limite de travail ou de réponse. Le travail enregistré est conservé, mais la demande complète reste à terminer. Précisez la prochaine étape à réaliser.'
+      : correctionRejected?'La preparación y su corrección han sido rechazadas. No se ha creado un nuevo presupuesto. Hay que elegir ajustes compatibles con las opciones del modelo y los medios seleccionados antes de continuar.'
+        :'Esta solicitud alcanzó su límite de trabajo o de respuesta. El trabajo guardado se conserva, pero la solicitud completa sigue pendiente. Indica el siguiente paso que quieres realizar.';
+    return {image:null,continuation:{reason,completedEdits,...(lastError?{lastError}:{})},reply:projectStudioReply(saved+text)};
+  }
   const saved = completedEdits ? `Saved ${completedEdits} timeline edit${completedEdits === 1 ? '' : 's'}. ` : '';
   const failure = lastError ? `The last action failed (${lastError.code}): ${lastError.message} ` : '';
   const limit = correctionRejected ? 'The single preparation correction was also rejected.'
@@ -74,10 +87,11 @@ function freezeStudioFilmResponse(response:StudioDirectorResponse,filmDuration:n
 
 /** The model chooses the next action; identity, billing and executable capabilities stay server-owned. */
 import type {StudioTaskExecution} from "./tasks/execution";
-import {isStudioComparisonMismatch,studioComparisonFingerprint,studioRepeatedComparisonReply,studioRecoveredComparisonReply} from './conversation-comparison-recovery';
+import {isStudioConstraintMismatch,isStudioComparisonMismatch,studioComparisonFingerprint,studioComparisonAttemptFingerprint,studioRepeatedComparisonReply,studioRecoveredComparisonReply} from './conversation-comparison-recovery';
 
 export function createStudioConversationDirector(options: {model?: StudioAssistantModel;modelForNextCall?:()=>StudioAssistantModel;createResponse?: StudioResponseCreator; mediaEnabled?: boolean;editingEnabled?: boolean;exportsEnabled?: boolean;analysisEnabled?:boolean;analysisProfiles?:{video:boolean;audio:boolean};assistanceCreditsEnabled?: boolean;taskExecution?:StudioTaskExecution;localGreetingEnabled?:boolean} = {}) {
   return async (context: StudioDirectorContext): Promise<ImageDraft> => {
+    const locale=studioConversationLanguage(context.message,context.history,context.locale??options.taskExecution?.locale??'en');
     const greeting=studioGreetingReply(context.message,context.references.length>0);
     if(greeting&&options.localGreetingEnabled!==false&&!options.taskExecution?.recoveryOnly)return greeting;
     const filmDuration=options.mediaEnabled&&!context.references.some(ref=>ref.mediaKind!=='image')?studioExplicitFilmDuration(context.message):null;
@@ -109,10 +123,13 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
     let correctionAction: StudioActionRequest['action'] | undefined;
     let correctionRejected = false;
     let correctionResult: StudioActionResult | undefined;
+    let failedFilmComparison:{request:Extract<StudioActionRequest,{action:'pricing.compare'}>;result:Extract<StudioActionResult,{ok:false}>;fingerprint:string|null;replayOnly:boolean}|undefined;
     let comparisonReplayOnly: Parameters<typeof studioRepeatedComparisonReply>[0] | undefined;
     let recoveredComparison: StudioActionResult | undefined;
+    const failedInputs=new Map<string,Parameters<typeof studioRepeatedComparisonReply>[0]>();
     const failedComparisons=new Map<string,Extract<StudioActionResult,{ok:false}>>();
     for(const work of options.taskExecution?.previousWork??[]){
+      if(work.comparisonAttemptFingerprint&&isStudioConstraintMismatch(work.result,context.referenceFingerprint))failedInputs.set(work.comparisonAttemptFingerprint,work.result);
       const fingerprint=work.comparisonFingerprint??studioComparisonFingerprint(work.comparison);
       if(fingerprint&&isStudioComparisonMismatch(work.result))failedComparisons.set(fingerprint,work.result);
     }
@@ -122,7 +139,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       const availableTools = [...STUDIO_DIRECTOR_TOOLS,...(options.taskExecution?STUDIO_TASK_DIRECTOR_TOOLS:[]), ...(options.mediaEnabled ? STUDIO_MEDIA_DIRECTOR_TOOLS : []),...(options.editingEnabled ? STUDIO_EDITING_DIRECTOR_TOOLS : []),...(options.exportsEnabled ? STUDIO_EXPORT_DIRECTOR_TOOLS : []),...analysisTools];
       // A final comparison renders its own reply; other reads need another Response.
       // Older checkpointed reads remain recoverable during paid-response replay.
-      const tools = index===0&&filmDuration ? availableTools.filter(tool=>tool.action==='pricing.compare') : correctionAction
+      const tools = failedFilmComparison ? availableTools.filter(tool=>tool.action==='pricing.compare') : index===0&&filmDuration ? availableTools.filter(tool=>tool.action==='pricing.compare') : correctionAction
         ? availableTools.filter(tool => tool.action === correctionAction)
         : index === maxResponses-1 ? availableTools.filter(tool => tool.action.endsWith('.prepare') || tool.action === 'timeline.edit' || tool.action === 'quote.discard' || tool.action === 'pricing.compare')
         : index === Math.max(0,maxResponses-2) ? availableTools.filter(tool => tool.action !== 'project.remember') : availableTools;
@@ -135,10 +152,11 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         tool_choice: index===0&&filmDuration?{type:'function',name:'pricing_compare'}:'auto',
         instructions: buildStudioDirectorInstructions({...options,taskEnabled:!!options.taskExecution})
           + `\n\nResponse ${index + 1} of ${maxResponses}: ${maxResponses - index} Responses remain, including this one. Open-model/alternative-price work starts with pricing_compare. Preserve selected models and reply-only planning; leave room to answer.`
-          + (filmDuration?`\n\nThe requested complete film is ${filmDuration} seconds. First compare with filmDurationSec=${filmDuration}, surface video and t2v/i2v as appropriate. Preserve explicitly selected models via candidateModelIds and all requested settings/references. Omit durationSec from settings unless the client explicitly set a component length; do not guess one. This call returns several fully priced cut plans; do not prepare the opening clip before the client chooses.`:'' )
+          + (filmDuration?`\n\nThe requested complete film is ${filmDuration} seconds. First compare with filmDurationSec=${filmDuration}, surface video and t2v/i2v/ref2v as appropriate. Preserve explicitly selected models via candidateModelIds and all requested settings/references. Omit durationSec from settings unless the client explicitly set a component length; do not guess one. This call returns several fully priced cut plans; do not prepare the opening clip before the client chooses.`:'' )
           + (index === maxResponses-1
           ? '\n\nThis is the last Response available for this message. '+(!correctionAction?'pricing_compare can still return a terminal server estimate without another Response. ':'')+'Otherwise answer from known facts or finish requested preparation/edit/cancellation. No other reads/memory; explain missing verification, never prepare advice-only work.'
           : index === Math.max(0,maxResponses-2) ? '\n\nNo optional memory now. Read only needed facts. Finish planning/cost advice; prepare only requested creation/quotes when facts suffice, leaving one input correction.' : '')
+          + (failedFilmComparison?'\n\nThe film price comparison failed before creating any quote. Make at most one changed comparison using the returned capability facts, or explain the missing decision in the client language. Keep every user constraint; correct tool modes/roles only when their meaning is unchanged. Never repeat the same failed configuration or ask the client to interpret tool errors. No preparation during this correction.':'')
           + (correctionAction ? '\n\nPreparation failed before quote creation. This is its single correction attempt: correct that selection from known facts or explain missing input. No repeated success, operation change or invented quote.' : '')
           + (isStudioComparisonMismatch(lastResult)?'\n\nWhole-film duration failed as one clip. One changed supported component comparison is allowed using returned mode facts; consider longer clips for continuity. Preserve total duration/framing/sound. Explain planning estimates without preparing; only requested creation may prepare/assemble.':''),
         input:model==='gpt-6-luna'?lunaInput():input,
@@ -149,19 +167,20 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       let freshResponse = false;
       let response: StudioDirectorResponse;
       try {
-        response = await context.checkpoint(index, async () => {freshResponse = true; return freezeStudioFilmResponse(await create(params),filmDuration);}, params, {replayOnly: correctionRejected||!!comparisonReplayOnly,prepareLunaInput:()=>{params.input=lunaInput();}});
+        response = await context.checkpoint(index, async () => {freshResponse = true; return freezeStudioFilmResponse(await create(params),filmDuration??failedFilmComparison?.request.filmDurationSec??null);}, params, {replayOnly: correctionRejected||!!comparisonReplayOnly||failedFilmComparison?.replayOnly,prepareLunaInput:()=>{params.input=lunaInput();}});
       } catch (error) {
-        if ((correctionRejected||comparisonReplayOnly) && error instanceof AgentApiError && (error.code === 'RATE_LIMITED'
+        if ((correctionRejected||comparisonReplayOnly||failedFilmComparison?.replayOnly) && error instanceof AgentApiError && (error.code === 'RATE_LIMITED'
           || (error.code === 'SPENDING_LIMIT_EXCEEDED' && error.nextAction?.type === 'studio_assistance' && error.nextAction.reason === 'call_limit'))) {
-          if(recoveredComparison)return studioRecoveredComparisonReply(recoveredComparison,completedEdits,options.taskExecution?.locale);
-          if(comparisonReplayOnly)return studioRepeatedComparisonReply(comparisonReplayOnly,completedEdits,options.taskExecution?.locale);
-          return pendingDirectorReply('action_limit',completedEdits,correctionResult,true);
+          if(failedFilmComparison)return studioFailedFilmComparisonReply(failedFilmComparison.request,failedFilmComparison.result,locale);
+          if(recoveredComparison)return studioRecoveredComparisonReply(recoveredComparison,completedEdits,locale);
+          if(comparisonReplayOnly)return studioRepeatedComparisonReply(comparisonReplayOnly,completedEdits,locale);
+          return pendingDirectorReply('action_limit',completedEdits,correctionResult,true,locale);
         }
         throw error;
       }
       if (response.status !== 'completed') {
         if (response.status === 'incomplete' && response.incomplete_details?.reason === 'max_output_tokens')
-          return pendingDirectorReply('output_limit',completedEdits,lastResult);
+          return pendingDirectorReply('output_limit',completedEdits,lastResult,false,locale);
         throw new AgentApiError('INTERNAL_ERROR', 'Studio could not finish this message. Resume the saved request.', true);
       }
       const calls = response.output.filter(item => item.type === 'function_call');
@@ -188,6 +207,22 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       if(freshResponse&&!options.analysisEnabled&&action.action==='analysis.prepare')throw new AgentApiError('ENGINE_UNAVAILABLE','Studio analysis tools are unavailable.');
       if(action.action==="project.recall"&&!options.taskExecution)throw new AgentApiError("ENGINE_UNAVAILABLE","Task memory is unavailable.");
       const comparisonFingerprint=studioComparisonFingerprint(action);
+      if(failedFilmComparison&&(action.action!=='pricing.compare'||action.filmDurationSec!==failedFilmComparison.request.filmDurationSec||studioComparisonAttemptFingerprint(action)===failedFilmComparison.fingerprint))
+        return studioFailedFilmComparisonReply(failedFilmComparison.request,failedFilmComparison.result,locale);
+      const attemptFingerprint=studioComparisonAttemptFingerprint(action);
+      const rejectedInput=attemptFingerprint?failedInputs.get(attemptFingerprint):undefined;
+      let recoveredInputComparison=false;
+      if(rejectedInput&&action.action==='pricing.compare'){
+        const receipt=!freshResponse?await context.readCompletedAction?.(call.call_id,action):null;
+        const catalog=!receipt?await context.comparisonCatalogFingerprint?.(action):null;
+        if(catalog&&catalog===rejectedInput.error.nextAction?.catalogFingerprint)
+          return studioFailedFilmComparisonReply(action,rejectedInput,locale);
+        failedInputs.delete(attemptFingerprint!);
+        // A lost terminal reply can refresh its read after a catalog change, but
+        // cannot silently purchase a new assistant response during recovery.
+        recoveredInputComparison=!freshResponse;
+        if(recoveredInputComparison)comparisonReplayOnly=rejectedInput;
+      }
       const repeated=comparisonFingerprint?failedComparisons.get(comparisonFingerprint):undefined;
       let revalidatedCachedComparison=false;
       if(comparisonFingerprint&&repeated&&isStudioComparisonMismatch(repeated)) {
@@ -203,11 +238,13 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
           // Revalidate it; a matching catalog reproduces the original stop.
           // Older completed actions may recover only already purchased outputs.
           if(!receipt)
-            return studioRepeatedComparisonReply(repeated,completedEdits,options.taskExecution?.locale);
+            return studioRepeatedComparisonReply(repeated,completedEdits,locale);
           comparisonReplayOnly=repeated;
         }
       }
       const result = await context.execute(call.call_id, action);
+      if(recoveredInputComparison)recoveredComparison=result;
+      if(attemptFingerprint&&isStudioConstraintMismatch(result,context.referenceFingerprint))failedInputs.set(attemptFingerprint,result);
       if(revalidatedCachedComparison||(comparisonReplayOnly&&action.action==='pricing.compare'))recoveredComparison=result;
       if(comparisonFingerprint&&isStudioComparisonMismatch(result))failedComparisons.set(comparisonFingerprint,result);
       if(action.action==='analysis.prepare'){
@@ -222,22 +259,25 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       }
       lastResult = result;
       if(action.action==='pricing.compare'&&result.ok&&result.action==='pricing.compare'&&result.data.filmPlans)
-        return studioFilmComparisonReply(result.data,options.taskExecution?.locale);
+        return studioFilmComparisonReply(result.data,locale);
+      if(failedFilmComparison&&action.action==='pricing.compare')
+        return result.ok?studioCurrentComparisonReply(action,result,completedEdits,locale):studioFailedFilmComparisonReply(action,result,locale);
       if(action.action==='pricing.compare'&&action.filmDurationSec&&!result.ok){
-        const locale=options.taskExecution?.locale;
-        const reply=locale==='fr'?`Je ne peux pas vérifier un budget complet pour ${action.filmDurationSec} secondes avec ces exigences.`:
-          locale==='es'?`No puedo verificar un presupuesto completo para ${action.filmDurationSec} segundos con estos requisitos.`:`I cannot verify a complete ${action.filmDurationSec}-second film budget with these requirements.`;
-        return {image:null,reply:projectStudioReply(`${reply} ${result.error.message.slice(0,600)}`)};
+        if(failedFilmComparison||index===maxResponses-1||result.error.retryable)
+          return studioFailedFilmComparisonReply(action,result,locale);
+        failedFilmComparison={request:action,result,fingerprint:studioComparisonAttemptFingerprint(action),replayOnly:!freshResponse};
+        input.push(...response.output as ResponseInputItem[],{type:'function_call_output',call_id:call.call_id,output:JSON.stringify(result)});
+        continue;
       }
       if(index===maxResponses-1&&action.action==='pricing.compare'){
-        if(recoveredComparison)return studioRecoveredComparisonReply(recoveredComparison,completedEdits,options.taskExecution?.locale);
-        if(comparisonReplayOnly)return studioRepeatedComparisonReply(comparisonReplayOnly,completedEdits,options.taskExecution?.locale);
-        return studioCurrentComparisonReply(action,result,completedEdits,options.taskExecution?.locale);
+        if(recoveredComparison)return studioRecoveredComparisonReply(recoveredComparison,completedEdits,locale);
+        if(comparisonReplayOnly)return studioRepeatedComparisonReply(comparisonReplayOnly,completedEdits,locale);
+        return studioCurrentComparisonReply(action,result,completedEdits,locale);
       }
       if (isStudioPreparationCorrection(result)) {
         correctionResult = result;
         if (correctionAction) {
-          if (freshResponse) return pendingDirectorReply('action_limit',completedEdits,lastResult,true);
+          if (freshResponse) return pendingDirectorReply('action_limit',completedEdits,lastResult,true,locale);
           // Older paid responses may contain additional actions. Recover those
           // receipts, but the checkpoint must not reserve another model call.
           correctionRejected = true;
@@ -258,8 +298,8 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       }
       input.push(...response.output as ResponseInputItem[], {type: 'function_call_output', call_id: call.call_id, output: JSON.stringify(result)});
     }
-    if(recoveredComparison)return studioRecoveredComparisonReply(recoveredComparison,completedEdits,options.taskExecution?.locale);
-    if(comparisonReplayOnly)return studioRepeatedComparisonReply(comparisonReplayOnly,completedEdits,options.taskExecution?.locale);
-    return pendingDirectorReply('action_limit',completedEdits,correctionRejected ? correctionResult : lastResult,correctionRejected);
+    if(recoveredComparison)return studioRecoveredComparisonReply(recoveredComparison,completedEdits,locale);
+    if(comparisonReplayOnly)return studioRepeatedComparisonReply(comparisonReplayOnly,completedEdits,locale);
+    return pendingDirectorReply('action_limit',completedEdits,correctionRejected ? correctionResult : lastResult,correctionRejected,locale);
   };
 }

@@ -73,3 +73,24 @@ test('comparison-only continuation retains bounded safe mode evidence and failur
   await f.pool.query('UPDATE studio_projects SET deleted_at=now() WHERE id=$1',[actor.projectId]);
   assert.deepEqual(await readStudioTaskPreviousWork(actor,input.requestId,randomUUID()),[]);
 });
+
+test('a new message sees recent owned comparison failures, never another project or previous mutations',async t=>{
+  const f=await studioTaskFixture(t),actor=await f.actor(),service=createStudioTaskService(actor,{enabled:true,assistancePolicy:f.policy});
+  const previous=f.input();await service.enqueue(previous);
+  const lease=randomUUID(),comparison={action:'pricing.compare',surface:'video',mode:'i2v',prompt:'Private film brief',settings:[],references:[],baselineModelId:null,baselineSettings:null,candidateModelIds:null,outputCount:1,filmDurationSec:null};
+  const failure={ok:false,action:'pricing.compare',error:{code:'PARAMETER_INVALID',message:'Unsupported configuration',retryable:false,nextAction:{type:'generation_comparison',reason:'no_matching_scenario',durationMismatch:false,constraintMismatch:true,referenceFingerprint:'c'.repeat(64),catalogFingerprint:'b'.repeat(64),models:[]}}};
+  await f.pool.query(`INSERT INTO studio_image_turns(user_id,project_id,request_id,request_hash,input_json,state,lease_id,lease_expires_at)
+    VALUES($1,$2,$3,$4,$5::jsonb,'ready',$6,now())`,[actor.userId,actor.projectId,previous.requestId,'a'.repeat(64),JSON.stringify(previous),lease]);
+  for(const [callId,action,result] of [['failed-comparison',comparison,failure],['expired-comparison',comparison,failure],['old-edit',{action:'timeline.edit',edit:{kind:'remove'}},{ok:true,action:'timeline.edit',data:{changed:true}}]] as const)
+    await f.pool.query(`INSERT INTO studio_conversation_steps(user_id,project_id,request_id,call_id,lease_id,action_hash,action_json,observed_revision,state,result_json,created_at)
+      VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,0,'completed',$8::jsonb,CASE WHEN $4='expired-comparison' THEN now()-interval '8 days' ELSE clock_timestamp() END)`,[actor.userId,actor.projectId,previous.requestId,callId,lease,createHash('sha256').update(stableJson(action)).digest('hex'),JSON.stringify(action),JSON.stringify(result)]);
+  await f.pool.query("UPDATE studio_tasks SET state='completed',phase='done' WHERE request_id=$1",[previous.requestId]);
+  const current=f.input();await service.enqueue(current);
+  const prior=await readStudioTaskPreviousWork(actor,current.requestId,current.requestId);
+  assert.deepEqual(prior.map(work=>work.callId),['failed-comparison']);
+  assert.equal(prior[0].comparisonAttemptFingerprint,createHash('sha256').update(stableJson(comparison)).digest('hex'));
+  assert.equal((prior[0].result as any).error.nextAction.referenceFingerprint,'c'.repeat(64));
+  assert.doesNotMatch(JSON.stringify(prior),/Private film brief|old-edit/);
+  const other=await f.actor();assert.deepEqual(await readStudioTaskPreviousWork(other,current.requestId,current.requestId),[]);
+  assert.deepEqual(await readStudioTaskPreviousWork(actor,randomUUID(),randomUUID()),[]);
+});
