@@ -258,7 +258,7 @@ export function WalletExpressCheckout({
         expressElement = checkout.createExpressCheckoutElement({
           buttonHeight: 50,
           buttonType: { applePay: 'buy', googlePay: 'pay', paypal: 'buynow' },
-          layout: { maxColumns: 2, maxRows: 2, overflow: 'auto' },
+          layout: { maxColumns: 2, maxRows: 3, overflow: 'auto' },
           paymentMethods: {
             applePay: 'always',
             googlePay: 'always',
