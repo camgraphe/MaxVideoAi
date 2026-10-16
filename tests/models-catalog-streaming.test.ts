@@ -93,6 +93,16 @@ test('catalogue streams the complete stable hero before prices and reveals exact
         const reader=stream.getReader(),decoder=new TextDecoder();let shell='';
         while(!shell.includes('data-shell-complete')){const next=await reader.read();assert.equal(next.done,false);shell+=decoder.decode(next.value,{stream:true});}
         const initial=new JSDOM(shell);
+        const discovery=initial.window.document.querySelector('[data-model-directory]');
+        assert.ok(discovery, 'All catalogue routes expose a server-rendered directory before price reads resolve');
+        const catalogBase={en:'/models',fr:'/fr/modeles',es:'/es/modelos'}[locale as 'en'|'fr'|'es'];
+        const targets=new Set([...initial.window.document.querySelectorAll('a[href]')].map(a=>a.getAttribute('href')));
+        for (const suffix of ['/video','/image']) assert.ok(targets.has(catalogBase+suffix), `Missing hub ${catalogBase}${suffix}`);
+        if(scope!=='video')for(const slug of ['nano-banana-2','gpt-image-2-5-sunburst']) {
+          assert.ok(targets.has(`${catalogBase}/${slug}`), `Missing initial image model ${slug}`);
+        }
+        assert.equal(discovery.querySelectorAll('img,video').length,0,'Discovery must not load another media gallery');
+        assert.ok(!targets.has(`${catalogBase}/seedance-1-5-pro`), 'Closed generation is not promoted as a current catalogue choice');
         const hero=initial.window.document.querySelector('.catalog-editorial-hero');
         assert.ok(hero?.querySelector('h1'));
         assert.equal(hero.querySelectorAll('.catalog-creative-stack img').length,3);
@@ -113,6 +123,7 @@ test('catalogue streams the complete stable hero before prices and reveals exact
         const controlDoc=new JSDOM(await new Response(control).text());
         assert.deepEqual(projection(final.window.document),projection(controlDoc.window.document),'Streaming preserves localized final cards, filters, hero and native schemas');
         const cards=await h.buildModelsCatalogCards({activeLocale:locale,engineMetaCopy:dictionary.models.meta??{},engineTypeLabelOverrides:dictionary.models.engineTypeLabels,galleryCopy:dictionary.models.gallery,scope});
+        for(const card of cards)assert.ok(targets.has(`${catalogBase}/${card.id}`), `Missing SSR directory destination ${card.id}`);
         assert.ok(cards.every((card:any)=>card.filterMeta.priceFrom===7.31||card.filterMeta.priceFrom===null));
         assert.ok(h.calls.every((call:any)=>call.options.requireCurrentPolicy===true&&call.options.durationSec===5&&call.options.memberTier==='member'));
         const metadata=await h.generateModelsMetadata({params:{locale},scope});

@@ -96,7 +96,7 @@ function buildMetaFromEditorial(options: {
   if (!editorial && base) return base;
 
   const modelSlug = editorial?.modelSlug || base?.engineSlug || normalizeEngineId(video?.engineId ?? '') || video?.engineId || '';
-  const examplesSlug = editorial?.examplesSlug || base?.engineFamily || resolveExampleCanonicalSlug(modelSlug) || '';
+  const examplesSlug = resolveExampleCanonicalSlug(modelSlug) || resolveExampleCanonicalSlug(editorial?.examplesSlug || base?.engineFamily) || '';
   const engineLabel = base?.engineLabel || video?.engineLabel || modelSlug || 'AI video engine';
   const sourcePath = examplesSlug ? `/examples/${examplesSlug}` : modelSlug ? `/models/${modelSlug}` : '/examples';
   const sourceLabel = examplesSlug ? `Editorial examples - ${examplesSlug}` : `Editorial model - ${modelSlug || 'video'}`;

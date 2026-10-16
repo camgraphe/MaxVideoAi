@@ -45,11 +45,34 @@ adopting Manual or Featured + Automatic curation. Creating an empty collection
 does not replace the route's existing editorial media; saving a managed curation
 does, so preview its effective gallery before saving.
 
-When a model becomes visible in a family gallery, review the family introduction, examples guidance and FAQ in `frontend/lib/examples/modelLandingData.{en,fr,es}.ts` as part of the same launch. Registry-derived model links do not update authored prose. Keep the gallery's existing canonical owner and metadata unless a separate SEO change is intended; distinguish different models grouped in one gallery. Route-local onward links live in `examples/_lib/examples-page-copy.ts` and must use the existing localized model/comparison href builders. Link to the example detail page for its recorded cost and recreation action; the workspace owns required inputs and the current quote. Verify the new comparison destinations and FAQ/JSON-LD consistency in all three locales. `tests/examples-family-journeys.test.ts` covers the Veo/Omni and Hailuo/H3 entry paths.
+When a model becomes visible in a family gallery, review the family introduction, examples guidance and FAQ in `frontend/lib/examples/modelLandingData.{en,fr,es}.ts` as part of the same launch. Registry-derived model links do not update authored prose. Keep the gallery's existing canonical owner and metadata unless a separate SEO change is intended; distinguish different models grouped in one gallery. Route-local onward links live in `examples/_lib/examples-page-copy.ts` and must use the existing localized model/comparison href builders. Link to the example detail page for its settings, current price estimate and recreation action; distinguish any recorded historical cost from the current quote, which remains owned by the workspace. Verify the new comparison destinations and FAQ/JSON-LD consistency in all three locales. `tests/examples-family-journeys.test.ts` covers the Veo/Omni and Hailuo/H3 entry paths.
 
 `pnpm model:setup -- --from <source-slug> --slug <target-slug> --name "<Marketing Name>" --family <family-id>` can scaffold the localized content, provider/execution stub, registry entry skeleton, and optional presentation-only family stub.
 The scaffold retargets `decision.modelSlug`, but its generated English, French, and Spanish
 decision content still requires the manual review in the checklist above before publication.
+
+## Preserve accumulated discovery when launching a successor
+
+A new model is not an instruction to replace the existing family's search intent.
+Before changing lifecycle or family copy, compare the affected public URLs and
+version-specific queries with the latest dated GSC exports. Preserve useful
+historical prompts, examples, model labels, canonical URLs and native links unless
+the registry explicitly changes their publication/retirement policy. Keep current
+recommendations distinct from historical access; never relabel an old video as a
+new model or transfer its settings and claims to a successor.
+
+For the touched family, inspect initial HTML in EN/FR/ES: the new model and the
+still-published historical versions must remain reachable, valid pagination keeps
+its own canonical and localized hrefs, and eligible comparison-directory links
+exist without a click. Run the catalogue/comparison SSR, gallery pagination and
+family-journey contracts alongside registry checks. After the Git-backed release
+is READY, run `pnpm seo:public:check`; the daily Public SEO workflow catches live
+drift between releases. See [CI ownership](ci-validation.md#public-seo).
+
+Measure query/page cohorts on complete comparable GSC windows after recrawl.
+Separate impressions, average position and CTR; a launch or technical fix alone
+does not establish the cause of a traffic change. Add useful proof to existing
+pages before creating overlapping pages for keyword variants.
 
 ## Add a presentation-only model page
 

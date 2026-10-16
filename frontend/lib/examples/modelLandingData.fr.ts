@@ -187,6 +187,10 @@ export const FR_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     pricingNotes: "Précisez le modèle, le mode, la durée, la résolution et les options audio disponibles pour comparer les coûts. La fiche conserve le tarif actuel estimé de l’exemple ; consultez le devis actuel dans le studio avant de générer votre version.",
     faq: [
       {
+        question: "Où trouver des exemples de prompts LTX 2.3 ?",
+        answer: "Repérez les vidéos nommées LTX 2.3 Pro ou LTX 2.3 Fast dans cette galerie et utilisez Suivant pour parcourir les exemples plus anciens. Ouvrez une vidéo pour retrouver son prompt original et ses réglages, puis consultez la fiche LTX 2.3 liée pour les modes de cette version. Les exemples LTX 2.5 restent identifiés séparément ; le tarif actuel estimé n’est pas le coût historique du rendu.",
+      },
+      {
         question: 'Quels sont les meilleurs exemples de prompts LTX 2.5 pour commencer ?',
         answer:
           'Le meilleur point de départ reste une structure simple : sujet, action, direction caméra et intention visuelle. Les exemples les plus utiles gardent cette structure stable et ne changent qu’une variable à la fois.',

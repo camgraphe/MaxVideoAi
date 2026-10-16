@@ -1,0 +1,39 @@
+name: Public SEO
+
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: public-seo
+  cancel-in-progress: false
+
+jobs:
+  public-pages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - name: Enable pnpm
+        run: corepack enable && corepack prepare pnpm@10.18.2 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Verify audit contracts
+        run: pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/public-seo-audit.test.ts
+      - name: Inspect public sitemaps and rendered HTML
+        run: pnpm seo:public:check
+      - name: Retain findings
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: public-seo-report
+          path: .reports/public-seo/report.json
+          retention-days: 30

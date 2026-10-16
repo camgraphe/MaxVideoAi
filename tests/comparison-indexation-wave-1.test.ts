@@ -372,10 +372,11 @@ test('wave 1 filters every comparison hub discovery set for the active locale', 
     'utf8',
   );
   const engines = getHubEngines();
+  const enginesWithWaitlist = getHubEngines({ includeLimited: true, includeWaitlist: true });
   const unfilteredSets = {
     popular: getPopularComparisons(engines).map((pair) => pair.slug),
     useCases: getUseCaseBuckets(engines).flatMap((bucket) => bucket.pairs.map((pair) => pair.slug)),
-    directory: getRankedComparisonPairs(engines).map((pair) => pair.slug),
+    directory: getRankedComparisonPairs(enginesWithWaitlist).map((pair) => pair.slug),
   };
 
   assert.match(pageSource, /const isIndexablePair = \(slug: string\) => isComparisonIndexable\(locale, slug\)/);
@@ -383,7 +384,7 @@ test('wave 1 filters every comparison hub discovery set for the active locale', 
   assert.match(pageSource, /pairs: bucket\.pairs\.filter\(\(pair\) => isIndexablePair\(pair\.slug\)\)/);
   assert.match(
     pageSource,
-    /getRankedComparisonPairs\(engines\)\s*\.filter\(\(pair\) => isIndexablePair\(pair\.slug\)\)/,
+    /getRankedComparisonPairs\(enginesWithWaitlist\)\s*\.filter\(\(pair\) => isIndexablePair\(pair\.slug\)\)/,
   );
   assert.match(pageSource, /quickStartComparisons[\s\S]*?\.filter\(\(entry\) => isIndexablePair\(entry\.slug\)\)/);
 

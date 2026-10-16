@@ -144,3 +144,24 @@ test('EN/FR/ES alternate sorts and pages preserve playlist OG identity, canonica
     assert.deepEqual(calls, Array.from({ length: 2 }, () => ({ family: 'kling', sort: 'playlist', limit: 1, offset: 0 })));
   }
 });
+
+test('default pagination is indexable and retains its own localized canonical and alternates', async () => {
+  fixture(Array.from({ length: 50 }, (_, i) => video(String(i))));
+  for (const [locale, segment] of [['en', 'examples'], ['fr', 'fr/galerie'], ['es', 'es/galeria']]) {
+    const result = await metadata(locale, { page: '2', utm_source: 'test' });
+    assert.equal(result.robots.index, true, `${locale} page 2 must remain discoverable`);
+    assert.equal(result.alternates.canonical, `https://maxvideoai.com/${segment}/kling?page=2`);
+    assert.equal(result.openGraph.url, result.alternates.canonical);
+    assert.equal(result.alternates.languages.en, 'https://maxvideoai.com/examples/kling?page=2');
+    assert.equal(result.alternates.languages.fr, 'https://maxvideoai.com/fr/galerie/kling?page=2');
+    assert.equal(result.alternates.languages.es, 'https://maxvideoai.com/es/galeria/kling?page=2');
+    assert.equal(result.alternates.languages['x-default'], 'https://maxvideoai.com/examples/kling?page=2');
+  }
+});
+
+test('malformed and repeated page parameters cannot advertise an indexable default page', async () => {
+  fixture([video('first')]);
+  for (const page of ['0', '-1', '', '2junk', '2.5', '1e2', '02', '9007199254740991', ['2', '3']]) {
+    assert.equal((await metadata('en', { page })).robots.index, false, JSON.stringify(page));
+  }
+});
