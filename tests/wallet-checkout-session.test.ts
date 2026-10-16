@@ -224,3 +224,18 @@ test('wallet checkout preserves the FX margin and timestamp in payment metadata'
   assert.equal(params.payment_intent_data?.metadata?.fx_rate, '0.8726');
   assert.equal(params.invoice_creation?.invoice_data?.metadata?.kind, 'topup');
 });
+
+
+test('hosted checkout lets returning wallet customers correct the saved tax address', () => {
+  const params = buildParams({
+    customer: 'cus_returning_wallet',
+    customerHasShippingAddress: true,
+    customerUpdate: { address: 'auto', name: 'auto' },
+    blockAmexCards: true,
+  });
+  assert.ok(params.shipping_address_collection?.allowed_countries.includes('FR'));
+  assert.deepEqual(params.customer_update, { address: 'auto', name: 'auto', shipping: 'auto' });
+  assert.equal(params.ui_mode, undefined);
+  assert.deepEqual(params.payment_method_options, { card: { restrictions: { brands_blocked: ['american_express'] } } });
+  assert.deepEqual(params.automatic_tax, { enabled: true });
+});

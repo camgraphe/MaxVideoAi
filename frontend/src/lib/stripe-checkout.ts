@@ -15,7 +15,7 @@ const WALLET_TOPUP_CHECKOUT_SESSION_TTL_SECONDS = 31 * 60;
 const WALLET_TOPUP_MIN_AMOUNT_CENTS = 1000;
 
 // Stripe Tax needs a shipping address to offer Google Pay in Checkout. Native
-// wallets collect it in their sheet; hosted card checkout keeps billing-only UX.
+// wallets collect it in their sheet; hosted also exposes any saved tax address.
 const WALLET_TAX_ADDRESS_COUNTRIES: Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry[] = [
   'AC', 'AD', 'AE', 'AF', 'AG', 'AI', 'AL', 'AM', 'AO', 'AQ', 'AR', 'AT',
   'AU', 'AW', 'AX', 'AZ', 'BA', 'BB', 'BD', 'BE', 'BF', 'BG', 'BH', 'BI',
@@ -56,6 +56,7 @@ type BuildWalletTopUpCheckoutSessionParamsArgs = {
   paymentIntentMetadata: Record<string, string>;
   productTaxCode: string;
   customer?: string | null;
+  customerHasShippingAddress?: boolean;
   customerUpdate?: Stripe.Checkout.SessionCreateParams.CustomerUpdate | null;
 };
 
@@ -86,6 +87,7 @@ export function buildWalletTopUpCheckoutSessionParams({
   paymentIntentMetadata,
   productTaxCode,
   customer,
+  customerHasShippingAddress = false,
   customerUpdate,
 }: BuildWalletTopUpCheckoutSessionParamsArgs): WalletTopUpCheckoutSessionParams {
   const fxMetadata: Record<string, string> = fxQuote ? {
@@ -139,13 +141,18 @@ export function buildWalletTopUpCheckoutSessionParams({
     }
   }
 
-  if (checkoutUiMode === 'elements') {
-    if (!returnUrl) {
-      throw new Error('returnUrl is required for Checkout Elements sessions');
-    }
+  // Saved shipping takes precedence over billing for Stripe Tax. Let returning
+  // wallet customers correct that address when switching to hosted card checkout.
+  if (checkoutUiMode === 'elements' || (customerId && customerHasShippingAddress)) {
     params.shipping_address_collection = { allowed_countries: [...WALLET_TAX_ADDRESS_COUNTRIES] };
     if (customerId) {
       params.customer_update = { ...params.customer_update, shipping: 'auto' };
+    }
+  }
+
+  if (checkoutUiMode === 'elements') {
+    if (!returnUrl) {
+      throw new Error('returnUrl is required for Checkout Elements sessions');
     }
     params.metadata = { ...params.metadata, wallet_express_tax_address: WALLET_EXPRESS_TAX_ADDRESS_POLICY };
     params.ui_mode = 'elements';

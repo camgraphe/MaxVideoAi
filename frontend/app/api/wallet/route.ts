@@ -17,7 +17,7 @@ import {
   normalizeWalletTopUpAmountCents,
 } from '@/lib/stripe-checkout';
 import { defaultLocale, type AppLocale } from '@/i18n/locales';
-import { getOrCreateStripeCustomerForUser } from '@/server/stripe-customers';
+import { getOrCreateStripeCheckoutCustomerForUser } from '@/server/stripe-customers';
 import { buildRestrictedAccountPayload, getActiveAccountRestriction } from '@/server/fraud-cleanup';
 import {
   evaluateWalletCheckoutGuard,
@@ -327,7 +327,7 @@ export async function POST(req: NextRequest) {
     }
 
     const origin = req.headers.get('origin') ?? process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
-    const stripeCustomerId = await getOrCreateStripeCustomerForUser(stripe, userId, {
+    const stripeCustomer = await getOrCreateStripeCheckoutCustomerForUser(stripe, userId, {
       preferredLocale: checkoutLocale,
     });
 
@@ -393,7 +393,8 @@ export async function POST(req: NextRequest) {
       sessionMetadata,
       paymentIntentMetadata,
       productTaxCode: STRIPE_TAX_CODE_ELECTRONIC_SERVICES,
-      customer: stripeCustomerId,
+      customer: stripeCustomer.id,
+      customerHasShippingAddress: stripeCustomer.hasShippingAddress,
       customerUpdate: {
         address: 'auto',
         name: 'auto',

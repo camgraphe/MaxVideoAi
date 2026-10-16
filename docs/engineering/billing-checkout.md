@@ -97,8 +97,12 @@ customer shipping address ([Stripe Tax](https://docs.stripe.com/tax/checkout/pag
 Native Elements sessions collect the address inside the wallet sheet and save it
 with `customer_update.shipping=auto`. Use all Stripe-supported address countries;
 there is no shipping fee or physical delivery. Apple Pay and Link may also ask the
-customer to confirm an address. Hosted sessions retain billing-only collection,
-so Google Pay there still depends on an existing saved shipping address.
+customer to confirm an address. Hosted sessions retain billing-only collection
+for customers without a saved shipping address. For returning wallet customers,
+hosted Checkout exposes the saved address for editing: Stripe Tax prefers it to
+billing, so hiding it would prevent a customer from correcting the tax location.
+The customer owner returns this flag from its existing retrieval; no extra Stripe
+read or customer-address mutation is needed before session creation.
 
 Both native Apple Pay and Google Pay use `always`: Stripe still checks supported
 browser/device/currency, but a missing saved card does not suppress the button.
