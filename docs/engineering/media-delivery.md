@@ -89,6 +89,9 @@ the public original excerpt or prompt, in every locale; a translated model capti
 is not a prompt and a missing source stays absent. Keep full prompts out of the
 gallery payload and in the on-demand reader/watch page. The overlay retains the
 existing poster geometry and uses at most two lines, one on narrow cards.
+Omit the decorative hover/focus action label on cards up to 280px wide so it does
+not push the model or price outside the frame during keyboard navigation. The
+named native link and opening guide keep the action explicit.
 On the two mobile opening side cards at widths up to 200px, omit the visual
 excerpt so the original model/settings and reserved price remain readable; the
 named watch link still opens that video's full prompt. Keep the opening and the

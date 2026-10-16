@@ -31,6 +31,8 @@
 @container example-card (max-width:200px){.priceSlot{min-height:4.2em}}
 @container example-card (max-width:150px){.priceSlot{min-height:5.6em}}
 .detailLabel{display:none}.card:hover .detailLabel,.card:focus-within .detailLabel{display:block;margin:3px 0 0}
+/* Keep decorative action copy from pushing model and price outside narrow cards. */
+@container example-card (max-width:280px){.card:hover .detailLabel,.card:focus-within .detailLabel{display:none}}
 .playIcon{position:absolute;right:12px;top:12px;display:grid;place-items:center;width:32px;height:32px;border:1px solid #ffffff40;border-radius:50%;background:#181a1a66;opacity:0;transition:opacity .15s}
 .card:hover .playIcon,.card:focus-within .playIcon{opacity:1}
 .empty{position:absolute;inset:0;display:grid;place-items:center;color:#ccc;font-size:12px}
@@ -48,5 +50,5 @@
  .opening>.card:nth-child(4){grid-column:2;grid-row:3}
  .caption{padding:26px 10px 8px;font-size:10px}.caption strong{font-size:12px}
  .caption:has(.promptExcerpt){padding-top:12px}
- @container example-card (max-width:200px){.card[data-frame="side"] .promptExcerpt,.card[data-frame="side"] .detailLabel{display:none}.card[data-frame="side"] .caption:has(.promptExcerpt){padding-top:26px;padding-bottom:6px}}
+ @container example-card (max-width:200px){.card[data-frame="side"] .promptExcerpt{display:none}.card[data-frame="side"] .caption:has(.promptExcerpt){padding-top:26px;padding-bottom:6px}}
 }
