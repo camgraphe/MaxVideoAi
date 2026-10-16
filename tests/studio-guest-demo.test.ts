@@ -20,15 +20,30 @@ test('Studio resumes only the explicit guest text once and never a demo asset or
   const storage={getItem:(key:string)=>values.get(key)??null,setItem:(key:string,value:string)=>{values.set(key,value);},removeItem:(key:string)=>{values.delete(key);}};
   const token='10000000-0000-4000-8000-000000000001';
   const payload=module.serializeStudioGuestDraft('My own product, not the demo');
+  assert.ok(payload);
   assert.equal(stageGuestCreation(storage,'/app/studio',payload,token,100),true);
   assert.equal(consumeGuestCreation(storage,'/app',token,200),null);
   assert.equal(module.parseStudioGuestDraft(consumeGuestCreation(storage,'/app/studio',token,200)),'My own product, not the demo');
   assert.equal(consumeGuestCreation(storage,'/app/studio',token,200),null);
-  for(const raw of [null,'not json','{"message":42}','{"message":""}',JSON.stringify({message:'x'.repeat(4001)})])assert.equal(module.parseStudioGuestDraft(raw),null);
+  for(const raw of [null,'not json','{"message":42}','{"message":""}',JSON.stringify({message:'x'.repeat(100_000)})])assert.equal(module.parseStudioGuestDraft(raw),null);
   assert.equal(module.parseStudioGuestDraft('{"message":"My brief","assets":["demo-product"],"confirm":true}'),'My brief');
   assert.equal(module.studioGuestContinuationToken([token]),null);
   assert.equal(module.studioGuestContinuationToken('untrusted'),null);
   assert.equal(module.studioGuestContinuationToken(token),token);
+});
+
+test('Studio preserves long edited drafts within the shared continuation storage bound without truncation',async()=>{
+  const {serializeStudioGuestDraft,parseStudioGuestDraft}=await import('../frontend/app/(core)/(workspace)/app/studio/_lib/studio-guest-draft');
+  for(const message of ['My edits: '+ 'A public example prompt. '.repeat(300), 'x'.repeat(100_000-14), '"\\\n'.repeat(10_000)]) {
+    const payload=serializeStudioGuestDraft(message);
+    assert.ok(payload);
+    assert.ok(payload.length<=100_000);
+    assert.equal(parseStudioGuestDraft(payload),message,'login must retain every edited character');
+  }
+  for(const message of ['x'.repeat(100_000-13), '"'.repeat(50_000), 'x'.repeat(100_001)]) {
+    assert.equal(serializeStudioGuestDraft(message),null,'reject oversized serialized payloads instead of slicing the draft');
+  }
+  assert.equal(parseStudioGuestDraft(JSON.stringify({message:'ok',extra:'x'.repeat(100_000)})),null);
 });
 
 test('a guest continuation gets a new owned conversation instead of the most recent project',()=>{

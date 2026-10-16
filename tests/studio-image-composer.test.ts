@@ -211,8 +211,11 @@ test('a long example request stays intact and asks for shortening before Studio 
     assert.equal(view.dom.window.document.querySelector<HTMLButtonElement>('[type="submit"]')!.disabled, true);
     assert.match(view.dom.window.document.querySelector('[role="status"]')?.textContent ?? '', /4.?000/);
     await act(async () => view.dom.window.document.querySelector('form')!.dispatchEvent(new view.dom.window.Event('submit', { bubbles: true, cancelable: true })));
+    await act(async () => view.textarea.dispatchEvent(new view.dom.window.KeyboardEvent('keydown', {key:'Enter',bubbles:true,cancelable:true})));
     assert.equal(view.sends, 0);
-    await view.changeText('A shortened adaptation request');
+    await view.changeText('x'.repeat(4000));
     assert.equal(view.dom.window.document.querySelector<HTMLButtonElement>('[type="submit"]')!.disabled, false);
+    await act(async () => view.dom.window.document.querySelector('form')!.dispatchEvent(new view.dom.window.Event('submit', { bubbles: true, cancelable: true })));
+    assert.equal(view.sends,1,'only an explicit submission at the existing 4,000-character limit sends');
   } finally { await view.close(); }
 });

@@ -29,7 +29,7 @@ export function StudioGuestDemo({starter,example,available=false}:{starter?:stri
   const [audioError,setAudioError]=useState(false);
   const audio=useRef<HTMLAudioElement>(null);
   const libraryTrigger=useRef<HTMLButtonElement>(null);
-  useEffect(()=>listenForGuestCreationLogin('/app/studio',()=>text.length>4000?null:serializeStudioGuestDraft(text.trim()?text:copy.personalBrief)),[text,copy.personalBrief]);
+  useEffect(()=>listenForGuestCreationLogin('/app/studio',()=>serializeStudioGuestDraft(text.trim()?text:copy.personalBrief)),[text,copy.personalBrief]);
   useEffect(()=>{
     const pause=()=>{if(document.hidden)audio.current?.pause();};
     document.addEventListener('visibilitychange',pause);

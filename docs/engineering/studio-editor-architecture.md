@@ -16,7 +16,9 @@ Removing a presentation label does not change feature flags, access gates, grant
 
 `/app/studio?example=<public-example-id>` starts an editable example brief.
 `frontend/server/studio-example-entry.ts` validates the bounded identifier and
-reuses the public example loader's eligibility and sanitized projection. The
+reuses the public watch eligibility and sanitized detail projection, including
+legacy public rows with `indexable=NULL`; catalog curation still requires explicit
+`indexable=true`. The
 root entry skips the recent-project redirect, `StudioStart` carries the identifier
 to the new owned conversation, and that route revalidates the public example.
 Only the public request facts cross into the client; raw job snapshots, owners,
@@ -26,7 +28,8 @@ reinsert the example request.
 
 Guests see the selected example and its editable brief rather than unrelated
 demonstration media. Login destinations retain the example identifier; existing
-one-use draft continuation preserves valid edits. Requests above the existing
+one-use draft continuation preserves edits within its shared 100,000-character serialized
+payload bound, independently of the send limit. Requests above the existing
 4,000-character Studio limit remain visible in full, with submission disabled and
 an instruction to shorten them. Oversized guest drafts are never silently sliced
 into the continuation store. Entry does not send a message, import private media,

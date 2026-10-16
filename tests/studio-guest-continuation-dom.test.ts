@@ -27,33 +27,36 @@ test('Studio validates the same-tab draft before creating a project, falling bac
   for(const [key,value] of Object.entries(globals))Object.defineProperty(globalThis,key,{configurable:true,writable:true,value});
   const routes:string[]=[],creates:string[]=[];
   const fixture={onCreated:(_id:string)=>{},replace:(url:string)=>{routes.push(url);},create:async(name:string)=>{creates.push(name);fixture.onCreated('new-project');}};
-  const module={exports:{} as {StudioStart:React.ComponentType<{accountKey:string;recentProjectId?:string;starter?:string;continuationToken?:string}>}};
+  const module={exports:{} as {StudioStart:React.ComponentType<{accountKey:string;recentProjectId?:string;starter?:string;continuationToken?:string;exampleId?:string}>}};
   runInNewContext(bundled.outputFiles[0].text,{module,exports:module.exports,fixture,require,React,console,window:dom.window,sessionStorage:dom.window.sessionStorage,URL,URLSearchParams,Date});
   const {createRoot}=require('react-dom/client');
   const token='10000000-0000-4000-8000-000000000001';
   let root:ReturnType<typeof createRoot>|null=null;
   try {
-    for(const scenario of ['missing','expired','consumed','wrong-surface','malformed','valid','starter','first-visit']) {
+    for(const scenario of ['missing','expired','consumed','wrong-surface','malformed','valid','long-valid','starter','first-visit']) {
       dom.window.sessionStorage.clear();routes.length=0;creates.length=0;
       dom.window.history.replaceState({},'',`/app/studio?continueDraft=${token}`);
-      if(['expired','consumed','wrong-surface','malformed','valid'].includes(scenario)) {
-        stageGuestCreation(dom.window.sessionStorage,scenario==='wrong-surface'?'/app':'/app/studio',JSON.stringify({message:scenario==='malformed'?42:'Mon propre produit'}),token,scenario==='expired'?Date.now()-31*60_000:Date.now());
+      const valid=scenario==='valid'||scenario==='long-valid';
+      const message=scenario==='long-valid'?'Mon exemple modifié. '.repeat(300):'Mon propre produit';
+      if(['expired','consumed','wrong-surface','malformed','valid','long-valid'].includes(scenario)) {
+        stageGuestCreation(dom.window.sessionStorage,scenario==='wrong-surface'?'/app':'/app/studio',JSON.stringify({message:scenario==='malformed'?42:message}),token,scenario==='expired'?Date.now()-31*60_000:Date.now());
         if(scenario==='consumed')consumeGuestCreation(dom.window.sessionStorage,'/app/studio',token);
       }
       root=createRoot(dom.window.document.getElementById('root')!);
-      await act(async()=>{root!.render(React.createElement(module.exports.StudioStart,{accountKey:'owner',recentProjectId:scenario==='first-visit'?undefined:'recent',starter:scenario==='starter'?'product-ad':undefined,continuationToken:token}));});
-      if(['valid','starter','first-visit'].includes(scenario)) {
+      await act(async()=>{root!.render(React.createElement(module.exports.StudioStart,{accountKey:'owner',recentProjectId:scenario==='first-visit'?undefined:'recent',starter:scenario==='starter'?'product-ad':undefined,continuationToken:token,exampleId:scenario==='long-valid'?'public-example':undefined}));});
+      if(valid||['starter','first-visit'].includes(scenario)) {
         assert.equal(creates.length,1,scenario);
         const next=new URL(routes[0],'http://localhost');
         assert.equal(next.pathname,'/app/studio/conversation/new-project',scenario);
-        assert.equal(next.searchParams.get('continueDraft'),scenario==='valid'?token:null,scenario);
+        assert.equal(next.searchParams.get('continueDraft'),valid?token:null,scenario);
+        assert.equal(next.searchParams.get('example'),scenario==='long-valid'?'public-example':null,scenario);
         assert.equal(next.searchParams.get('starter'),scenario==='starter'?'product-ad':null,scenario);
-        if(scenario==='valid')assert.equal(consumeGuestCreation(dom.window.sessionStorage,'/app/studio',token),'{"message":"Mon propre produit"}','entry validates without consuming the brief');
+        if(valid)assert.equal(consumeGuestCreation(dom.window.sessionStorage,'/app/studio',token),JSON.stringify({message}),'entry validates without consuming the brief');
       }else {
         assert.equal(creates.length,0,scenario);
         assert.deepEqual(routes,['/app/studio/conversation/recent'],scenario);
       }
-      if(scenario!=='valid')assert.equal(new URL(dom.window.location.href).searchParams.get('continueDraft'),null,scenario);
+      if(!valid)assert.equal(new URL(dom.window.location.href).searchParams.get('continueDraft'),null,scenario);
       await act(async()=>root!.unmount());root=null;
     }
   } finally {

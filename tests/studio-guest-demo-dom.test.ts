@@ -2,17 +2,21 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {createRequire} from 'node:module';
 import React,{act} from 'react';
-import {JSDOM} from 'jsdom';
+import {JSDOM,VirtualConsole} from 'jsdom';
 import {detail} from './fixtures/example-continuation';
 import {exampleRequestSource,buildExampleRequest} from '../frontend/lib/example-continuation';
+import {consumeGuestCreation} from '../frontend/lib/guest-creation-continuation';
+import {parseStudioGuestDraft} from '../frontend/app/(core)/(workspace)/app/studio/_lib/studio-guest-draft';
 
 test('the guest example lets visitors inspect references, then gates creation without calling Studio APIs',async()=>{
   const require=createRequire(import.meta.url),css=require.extensions['.css'];
   require.extensions['.css']=module=>{module.exports={};};
-  const dom=new JSDOM('<div id="root"></div>',{url:'http://localhost/app/studio',pretendToBeVisual:true});
+  const virtualConsole=new VirtualConsole();
+  virtualConsole.on('jsdomError',error=>{if(!error.message.includes('Not implemented: navigation'))throw error;});
+  const dom=new JSDOM('<div id="root"></div>',{url:'http://localhost/app/studio',pretendToBeVisual:true,virtualConsole});
   dom.window.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}}) as never;
   Object.assign(dom.window.HTMLElement.prototype,{attachEvent(){},detachEvent(){},getClientRects(){return [{width:10,height:10}];}});
-  const globals={window:dom.window,self:dom.window,document:dom.window.document,navigator:dom.window.navigator,HTMLElement:dom.window.HTMLElement,Element:dom.window.Element,HTMLAnchorElement:dom.window.HTMLAnchorElement,React,IS_REACT_ACT_ENVIRONMENT:true};
+  const globals={window:dom.window,self:dom.window,document:dom.window.document,sessionStorage:dom.window.sessionStorage,navigator:dom.window.navigator,HTMLElement:dom.window.HTMLElement,Element:dom.window.Element,HTMLAnchorElement:dom.window.HTMLAnchorElement,React,IS_REACT_ACT_ENVIRONMENT:true};
   const previous=new Map(Object.keys(globals).map(key=>[key,Object.getOwnPropertyDescriptor(globalThis,key)]));
   for(const [key,value] of Object.entries(globals))Object.defineProperty(globalThis,key,{configurable:true,writable:true,value});
   const originalFetch=globalThis.fetch;let requests=0;
@@ -66,6 +70,32 @@ test('the guest example lets visitors inspect references, then gates creation wi
     await act(async()=>button('Ajouter des médias').click());
     const exampleSignup=dom.window.document.querySelector<HTMLAnchorElement>('[role="dialog"] a')!;
     assert.equal(new URL(exampleSignup.href).searchParams.get('next'),'/app/studio?example=public-example');
+
+    const longExample=exampleRequestSource({...detail,prompt:'An original public prompt. '.repeat(250)});
+    await act(async()=>root.render(React.createElement(I18nProvider,{locale:'fr',dictionary:{},fallback:{},children:React.createElement(module.StudioGuestDemo,{key:'long-example',available:true,example:longExample})})));
+    const longText=dom.window.document.querySelector('textarea')!;
+    const edited=longText.value.replace('An original public prompt.','My edited public prompt.');
+    assert.ok(edited.length>4000);
+    await act(async()=>{
+      Object.getOwnPropertyDescriptor(dom.window.HTMLTextAreaElement.prototype,'value')!.set!.call(longText,edited);
+      longText.dispatchEvent(new dom.window.Event('input',{bubbles:true}));
+    });
+    assert.equal(dom.window.document.querySelector<HTMLButtonElement>('[type="submit"]')!.disabled,true);
+    await act(async()=>{
+      longText.dispatchEvent(new dom.window.KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));
+      dom.window.document.querySelector('form')!.dispatchEvent(new dom.window.Event('submit',{bubbles:true,cancelable:true}));
+    });
+    assert.equal(dom.window.document.querySelector('[role="dialog"]'),null,'oversized text cannot trigger sending');
+    await act(async()=>button('Ajouter des médias').click());
+    const login=dom.window.document.querySelector<HTMLAnchorElement>('[role="dialog"] a')!;
+    const click=new dom.window.MouseEvent('click',{bubbles:true,cancelable:true,button:0});
+    await act(async()=>{login.dispatchEvent(click);});
+    assert.equal(click.defaultPrevented,true,'login stages a long draft before navigating');
+    const staged=JSON.parse(dom.window.sessionStorage.getItem('maxvideoai:guest-creation:v1')??'null');
+    assert.ok(staged?.token,'a continuation token exists even when the request exceeds the send limit');
+    assert.equal(parseStudioGuestDraft(consumeGuestCreation(dom.window.sessionStorage,'/app/studio',staged.token)),edited);
+    assert.equal(consumeGuestCreation(dom.window.sessionStorage,'/app/studio',staged.token),null,'the edited draft is single-use');
+    assert.equal(requests,0,'login staging does not send or generate');
   } finally {
     await act(async()=>root.unmount());globalThis.fetch=originalFetch;dom.window.close();
     for(const [key,value] of previous){if(value)Object.defineProperty(globalThis,key,value);else Reflect.deleteProperty(globalThis,key);}

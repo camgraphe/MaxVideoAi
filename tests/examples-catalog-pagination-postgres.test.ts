@@ -66,6 +66,7 @@ test('public gallery traverses every eligible video beyond the old window and hy
       export {selectFamilyMetadataVideo} from './frontend/app/(localized)/[locale]/(marketing)/examples/[model]/_lib/family-metadata-video';
       export {GET as getInitialCuration} from './frontend/app/api/admin/playlists/[playlistId]/curation/route';
       export {getExampleWatchDetail,buildExampleWatchDetail} from './frontend/server/example-watch-detail-loader';
+      export {loadStudioExampleEntry} from './frontend/server/studio-example-entry';
       export {getVideoWatchPageDataById} from './frontend/server/video-seo';
       export {getDb,statements,setBeforeQuery} from '@/lib/db';`, resolveDir: process.cwd() },
     define: { 'import.meta.url': JSON.stringify(pathToFileURL(resolve('frontend/server/video-keyframes.ts')).href) },
@@ -302,9 +303,31 @@ test('public gallery traverses every eligible video beyond the old window and hy
     for(const id of ['private','hidden','running','image','deleted-output','deleted-asset','missing']) {
       assert.equal(await reader.getExampleWatchDetail(id),null);
       assert.equal(await reader.getVideoWatchPageDataById(id),null,`direct watch rejects ${id}`);
+      assert.equal(await reader.loadStudioExampleEntry(id),null,`Studio rejects ${id}`);
     }
     await postgres.pool.query("UPDATE app_jobs SET visibility='private' WHERE job_id='kling-20'");
     assert.equal(await reader.getExampleWatchDetail('kling-20'),null,'a previously opened public video is checked again');
+  });
+
+  await t.test('legacy public watch examples with NULL indexable retain API and Studio continuation without joining the catalog',async()=>{
+    const before=await read();
+    await postgres.pool.query("UPDATE app_jobs SET indexable=NULL WHERE job_id='kling-19'");
+    try {
+      const video=await reader.getSeoVideoById('kling-19');
+      assert.equal(video?.indexable,true,'the existing public watch gate accepts legacy NULL');
+      const detail=await reader.getExampleWatchDetail('kling-19');
+      assert.equal(detail?.id,'kling-19','the detail API must share public watch eligibility');
+      const studio=await reader.loadStudioExampleEntry('kling-19');
+      assert.equal(studio?.id,'kling-19');
+      assert.equal(studio?.prompt,video.prompt);
+      const catalog=await reader.listExamplesPage({sort:'playlist',limit:24,offset:0,engineGroup:'kling'});
+      assert.equal(catalog.total,before.total-1,'curation keeps requiring explicit indexable=true');
+      await postgres.pool.query("UPDATE app_jobs SET indexable=false WHERE job_id='kling-19'");
+      assert.equal(await reader.getExampleWatchDetail('kling-19'),null);
+      assert.equal(await reader.loadStudioExampleEntry('kling-19'),null,'continuation rechecks explicit exclusion');
+    } finally {
+      await postgres.pool.query("UPDATE app_jobs SET indexable=true WHERE job_id='kling-19'");
+    }
   });
 
   await t.test('persisted admin editorial content reaches the popup and direct watch page identically',async()=>{
