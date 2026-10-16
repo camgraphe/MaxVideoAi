@@ -26,7 +26,7 @@ Use MaxVideoAI to develop a single shot, animate an image, build a multi-shot se
 
 ![MaxVideoAI examples gallery with brand filters and four opening video cards for Wan, Seedance and FLUX](plugins/maxvideoai/assets/screenshots/maxvideoai-examples-gallery-live.webp)
 
-Every public example opens into its prompt, settings, model, duration, and recorded render cost. Browse the [AI video examples gallery](https://maxvideoai.com/examples), then recreate a useful starting point in your own workspace.
+Every public example opens into its prompt, settings, model, duration, and current price estimate. Browse the [AI video examples gallery](https://maxvideoai.com/examples), then recreate a useful starting point in your own workspace.
 
 | Production goal | Start here |
 | --- | --- |

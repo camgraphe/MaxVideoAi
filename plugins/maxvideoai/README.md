@@ -56,7 +56,7 @@ Connect → OAuth on first use → plan without spending → prepare quote → a
 
 ## What can you create?
 
-Start from a brief, a supported private reference, or a public example. The plugin can help turn that material into a shot plan and a model-aware request, while the MaxVideoAI gallery gives you concrete prompts, settings, durations, and recorded render costs to inspect before building your own version.
+Start from a brief, a supported private reference, or a public example. The plugin can help turn that material into a shot plan and a model-aware request, while the MaxVideoAI gallery gives you concrete prompts, settings, durations, and current price estimates to inspect before building your own version.
 
 ![MaxVideoAI examples gallery with brand filters and four opening video cards for Wan, Seedance and FLUX](assets/screenshots/maxvideoai-examples-gallery-live.webp)
 

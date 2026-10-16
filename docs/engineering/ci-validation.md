@@ -125,7 +125,36 @@ and CSS/route output parity checks because custom plugins can be incompatible
 with the worker. See [Next's memory guide](https://nextjs.org/docs/app/guides/memory-usage#webpack-build-worker)
 and the [Next 15.5.25 build source](https://github.com/vercel/next.js/blob/v15.5.25/packages/next/src/build/index.ts).
 
-## Lighthouse
+## Public SEO
+
+`Public SEO` runs daily at 06:17 UTC and on manual dispatch. After a production
+release is READY, run `pnpm seo:public:check` or dispatch this workflow. It audits
+the live public origin; it is not a claim that a PR preview has been validated.
+The required Quality CI retains the offline SEO/route/SSR contracts before merge.
+
+The read-only audit discovers every URL in the live sitemap index (including
+video pages), follows native default-gallery pagination and declared hreflang
+destinations, and checks HTTP 200 without redirects, a single self-canonical,
+HTML and HTTP indexing exclusions, title/H1, JSON-LD syntax and reciprocal
+alternates. Live robots.txt must match the authored public policy after removing
+comments/blank lines. This catches wrong-host policy and deployment drift without
+introducing a second robots policy. A policy update needs its existing robots
+contract tests and a deployed version before the live check can pass.
+
+Limits: three concurrent public GETs, 2,500 pages, 20 sitemaps, an 18-minute audit
+deadline (partial report fails explicitly before the 25-minute job limit), 30-second request
+timeouts, 5 MB per document, bounded 429/5xx retries, no redirects followed,
+credentials, DB connection, indexing requests or off-origin destinations.
+Failures retain `.reports/public-seo/report.json` as a 30-day workflow artifact.
+Sort/filter noindex variants remain covered by offline tests. The audit does not
+claim Google indexation, ranking, full structured-data eligibility, exhaustive
+link coverage, or absence of content-quality issues.
+
+`tests/public-seo-audit.test.ts` checks the HTTP-only noindex failure, pagination
+canonical collapse, duplicate canonical, malformed JSON-LD, sitemap origin
+boundary, reciprocal language links and accidental protocol-host robots policy.
+
+## Lighthouse measurements
 
 Lighthouse measures the live production URLs daily at 05:41 UTC and on manual
 dispatch. It no longer starts on a main push before Vercel finishes deploying.
