@@ -50,6 +50,7 @@ type WalletTopupPanelProps = {
   selectedTopupPaymentLabel: string | null;
   session: BillingSession;
   stripePromise: Promise<Stripe | null> | null;
+  retryStripeConnection?: () => void;
   turnstileSiteKey: string;
   wallet: { balance: number; currency: string; hasCompletedTopUp?: boolean } | null;
 };
@@ -95,6 +96,7 @@ export function WalletTopupPanel(props: WalletTopupPanelProps) {
     selectedTopupPaymentLabel,
     session,
     stripePromise,
+    retryStripeConnection,
     turnstileSiteKey,
     wallet,
   } = props;
@@ -181,6 +183,7 @@ export function WalletTopupPanel(props: WalletTopupPanelProps) {
                 captchaSiteKey={turnstileSiteKey}
                 session={session}
                 stripePromise={stripePromise}
+                onRetryConnection={retryStripeConnection}
                 labels={{
                   expressTitle: copy.wallet.expressTitle,
                   expressLoading: copy.wallet.expressLoading,

@@ -59,6 +59,7 @@ type WalletExpressCheckoutProps = {
     | 'expressAriaLabel'
     | 'rateLimited'
   >;
+  onRetryConnection?: () => void;
   onCaptchaRequired: () => void;
   onPaymentStarted: (amountCents: number) => void;
   onPaymentFailed: (amountCents: number, reason?: string) => void;
@@ -75,6 +76,7 @@ export function WalletExpressCheckout({
   session,
   stripePromise,
   labels,
+  onRetryConnection,
   onCaptchaRequired,
   onPaymentStarted,
   onPaymentFailed,
@@ -556,6 +558,7 @@ export function WalletExpressCheckout({
           onClick={() => {
             if (confirmStartedRef.current) return;
             setCanRetry(false);
+            onRetryConnection?.();
             setManualRetry((value) => value + 1);
           }}
         >

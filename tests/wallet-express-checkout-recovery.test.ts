@@ -99,8 +99,27 @@ test('slow wallets recover and deliberate retries reuse the same guarded session
     await React.act(async () => { await elements[1].listeners.confirm({ paymentFailed() {} }); });
     assert.equal(confirmations, 1, 'a recovered wallet must still accept a deliberate payment confirmation');
     assert.equal(requests, 1);
+    let sdkReloads = 0;
+    await React.act(async () => { root.render(React.createElement(WalletExpressCheckout, {
+      ...props, stripePromise: Promise.resolve(null),
+      onRetryConnection() {
+        sdkReloads++;
+        root.render(React.createElement(WalletExpressCheckout, props));
+      },
+    })); });
+    await runTimer(300);
+    const sdkRetry = dom.window.document.querySelector('button')!;
+    assert.ok(sdkRetry, 'an initial SDK loading failure must be retryable');
+    await React.act(async () => { sdkRetry.click(); });
+    await runTimer(300);
+    assert.equal(sdkReloads, 1);
+    assert.equal(elements.length, 3, 'retry must initialize the newly loaded SDK');
+    assert.equal(requests, 1, 'SDK recovery must preserve the prepared session');
+    assert.equal(tokensTaken, 1);
+    await React.act(async () => { elements[2].listeners.ready({ availablePaymentMethods: { googlePay: true } }); });
+    assert.equal(dom.window.document.querySelector('[aria-label]')?.classList.contains('hidden'), false);
     await React.act(async () => { root.render(React.createElement(WalletExpressCheckout, { ...props, enabled: false })); });
-    await React.act(async () => { elements[1].listeners.ready({ availablePaymentMethods: { applePay: true } }); });
+    await React.act(async () => { elements[2].listeners.ready({ availablePaymentMethods: { applePay: true } }); });
     assert.equal(dom.window.document.getElementById('root')!.textContent, '', 'retired callbacks cannot restore wallets after hosted handoff');
   } finally {
     await React.act(async () => root.unmount());

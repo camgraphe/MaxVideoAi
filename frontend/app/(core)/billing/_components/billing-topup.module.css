@@ -311,7 +311,7 @@
   }
 
   .amountGrid {
-    grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(60px, 1.3fr);
+    grid-template-columns: repeat(5, minmax(44px, 1fr));
     border: 0;
     gap: 5px;
     overflow: visible;
@@ -367,4 +367,9 @@
   }
 
 
+}
+
+@media (max-width: 380px) {
+  .amountButton > span { font-size: 0.875rem; }
+  .amountButton:last-child > span { font-size: 0.75rem; }
 }
