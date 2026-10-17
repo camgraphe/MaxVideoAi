@@ -89,7 +89,8 @@ test('the plugin README covers the current assistant, agent, and automation ecos
   assert.match(readme, /n8n[\s\S]*self-hosted[\s\S]*deterministic MCP Client workflow/i);
   assert.match(readme, /Cursor[\s\S]*GitHub Copilot[\s\S]*Gemini CLI[\s\S]*Microsoft Copilot[\s\S]*in preparation/i);
   assert.match(readme, /current live MCP surface[\s\S]*video and image[\s\S]*planning, quoting, generation, recovery/i);
-  assert.match(readme, /Audio generation[\s\S]*Studio montage[\s\S]*behind server publication gates[\s\S]*not claimed as live/i);
+  assert.match(readme, /owner-approved 17 October 2026 server release adds bounded Eleven v4 narration[\s\S]*independent Audio gate/i);
+  assert.match(readme, /Studio montage remains gated[\s\S]*Installed package 0\.3\.7 routing and dated host evidence are separate[\s\S]*refresh[\s\S]*tool inventory/i);
   assert.doesNotMatch(readme, /Designed for ChatGPT|works with ChatGPT|available in ChatGPT|verified today in Claude and Codex/i);
 
   const setupGuideOrder = [
