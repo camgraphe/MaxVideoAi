@@ -41,7 +41,7 @@ interface UseCharacterBuilderPersistenceOptions {
   setStatusMessage: Dispatch<SetStateAction<string | null>>;
   state: CharacterBuilderState;
   styleReference: CharacterBuilderReferenceImage | null | undefined;
-  user: unknown;
+  user: { id: string } | null;
 }
 
 export function useCharacterBuilderPersistence({
@@ -65,20 +65,22 @@ export function useCharacterBuilderPersistence({
   user,
 }: UseCharacterBuilderPersistenceOptions) {
   const visitorSanitizedRef = useRef(false);
+  const accountId = user?.id ?? null;
 
   useEffect(() => {
-    const persisted = readPersistedState();
+    if (authLoading) return;
+    const persisted = readPersistedState(accountId);
     if (persisted) {
       setState(persisted);
       setAdvancedOpen(Boolean(persisted.advancedNotes));
       setShowStyleReferenceSlot(Boolean(getRefByRole(persisted.referenceImages, 'style')));
     }
-    const pending = readPersistedPendingRuns();
+    const pending = readPersistedPendingRuns(accountId);
     if (pending.length) {
       setPendingRuns(pending);
     }
     setHydrated(true);
-  }, [setAdvancedOpen, setHydrated, setPendingRuns, setShowStyleReferenceSlot, setState]);
+  }, [accountId, authLoading, setAdvancedOpen, setHydrated, setPendingRuns, setShowStyleReferenceSlot, setState]);
 
   useEffect(() => {
     if (styleReference) {
@@ -87,14 +89,14 @@ export function useCharacterBuilderPersistence({
   }, [setShowStyleReferenceSlot, styleReference]);
 
   useEffect(() => {
-    if (!hydrated) return;
-    writePersistedState(state);
-  }, [hydrated, state]);
+    if (authLoading || !hydrated || !accountId) return;
+    writePersistedState(state, accountId);
+  }, [accountId, authLoading, hydrated, state]);
 
   useEffect(() => {
-    if (!hydrated) return;
-    writePersistedPendingRuns(pendingRuns);
-  }, [hydrated, pendingRuns]);
+    if (authLoading || !hydrated || !accountId) return;
+    writePersistedPendingRuns(pendingRuns, accountId);
+  }, [accountId, authLoading, hydrated, pendingRuns]);
 
   useEffect(() => {
     if (authLoading || !hydrated) return;

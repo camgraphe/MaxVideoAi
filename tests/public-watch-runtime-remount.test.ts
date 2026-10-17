@@ -12,6 +12,7 @@ type RuntimeFixture = {
 };
 type RuntimeHost = {
   cookies: Record<string, string>; messages: Record<AppLocale, Dictionary>; revalidations: number;
+  otherRevalidations: number; libraryRevalidations: number; tupleRevalidations: number; functionRevalidations: number;
   router: { refresh: () => void };
 };
 
@@ -70,7 +71,7 @@ test('Core and watch remounts release real runtime effects and retain SWR, local
     JSON.parse(readFileSync(`frontend/messages/${locale}.json`, 'utf8')) as Dictionary,
   ])) as Record<AppLocale, Dictionary>;
   Reflect.deleteProperty(messages.fr.nav.account, 'signOut'); // Missing localized copy must use real EN fallback.
-  win.runtimeHost = { cookies: {}, messages, revalidations: 0, router: { refresh: () => { refreshes++; } } };
+  win.runtimeHost = { cookies: {}, messages, revalidations: 0, otherRevalidations: 0, libraryRevalidations: 0, tupleRevalidations: 0, functionRevalidations: 0, router: { refresh: () => { refreshes++; } } };
   win.localStorage.setItem('mv-app-theme', 'dark');
   win.eval(script);
   const fixture = win.runtimeFixture;
@@ -91,8 +92,8 @@ test('Core and watch remounts release real runtime effects and retain SWR, local
       assert.equal(win.document.documentElement.lang, locale);
       assert.equal(output().dataset.namespaces, group === 'watch' ? 'footer,nav' : Object.keys(messages[locale]).sort().join(','));
       assert.equal(win.document.querySelectorAll('script[type="application/ld+json"]').length, 2);
-      for (const event of ['focus', 'pageshow']) assert.equal(extra(`window:${event}`), 2, 'one copy of each real focus owner');
-      assert.equal(extra('document:visibilitychange'), 2);
+      for (const event of ['focus', 'pageshow']) assert.equal(extra(`window:${event}`), 1, 'one shared focus owner');
+      assert.equal(extra('document:visibilitychange'), 1);
       assert.equal(extra('window:mvai:analytics'), 1, 'one analytics bridge');
       assert.equal(extra('window:jobs:status'), 1);
       assert.equal(intervals.size, 1, 'one real analytics queue interval');
@@ -104,17 +105,27 @@ test('Core and watch remounts release real runtime effects and retain SWR, local
     const beforeWallet = walletInvalidations;
     const beforeRevalidate = win.runtimeHost.revalidations;
     now += 6000;
-    await fixture.act(async () => win.dispatchEvent(new win.Event('focus')));
+    await fixture.act(async () => { win.dispatchEvent(new win.Event('focus')); await new Promise(resolve => win.setTimeout(resolve, 10)); });
     assert.equal(walletInvalidations, beforeWallet + 1);
-    assert.ok(win.runtimeHost.revalidations > beforeRevalidate, 'focus revalidates the real shared SWR cache');
+    assert.equal(win.runtimeHost.revalidations, beforeRevalidate + 1, 'focus makes exactly one request per owned key');
+    assert.equal(win.runtimeHost.tupleRevalidations, 1, 'tuple keys have one owner');
+    assert.equal(win.runtimeHost.functionRevalidations, 1, 'function keys have one owner');
+    assert.equal(win.runtimeHost.otherRevalidations, 1, 'other keys retain native SWR focus');
+    assert.equal(win.runtimeHost.libraryRevalidations, 0, 'media lists retain their explicit focus opt-out');
     await fixture.act(async () => win.dispatchEvent(new win.Event('pageshow')));
     assert.equal(walletInvalidations, beforeWallet + 1, 'existing debounce survives a repeated focus signal');
+    assert.equal(win.runtimeHost.revalidations, beforeRevalidate + 1, 'pageshow burst is throttled');
     visible = 'hidden'; now += 6000;
-    await fixture.act(async () => win.dispatchEvent(new win.Event('focus')));
+    await fixture.act(async () => { win.dispatchEvent(new win.Event('focus')); await new Promise(resolve => win.setTimeout(resolve, 10)); });
     assert.equal(walletInvalidations, beforeWallet + 1, 'hidden pages do not refresh');
     visible = 'visible';
-    await fixture.act(async () => win.document.dispatchEvent(new win.Event('visibilitychange')));
+    await fixture.act(async () => { win.document.dispatchEvent(new win.Event('visibilitychange')); await new Promise(resolve => win.setTimeout(resolve, 10)); });
     assert.equal(walletInvalidations, beforeWallet + 2);
+    assert.equal(win.runtimeHost.revalidations, beforeRevalidate + 2, 'visibility restoration makes one request');
+    now += 6000;
+    await fixture.act(async () => win.dispatchEvent(new win.Event('pageshow')));
+    assert.equal(win.runtimeHost.revalidations, beforeRevalidate + 3, 'BFCache pageshow still refreshes');
+    assert.equal(walletInvalidations, beforeWallet + 3);
 
     await fixture.render(null, '/examples', 'en');
     for (const key of ['window:focus', 'window:pageshow', 'document:visibilitychange', 'window:mvai:analytics', 'window:jobs:status', 'window:consent:updated', 'window:mv-app-theme-change']) {
@@ -131,6 +142,16 @@ test('Core and watch remounts release real runtime effects and retain SWR, local
     assert.equal(refreshes, 1, 'same mounted LocaleSync does not refresh repeatedly');
     await fixture.render('core', '/app', 'fr', 'es');
     assert.equal(refreshes, 2, 'a fresh group instance retains its own LocaleSync lifecycle');
+    await fixture.render('core', '/login', 'en');
+    assert.equal(extra('window:focus'), 0, 'auth routes do not install the shared owner');
+    assert.equal(extra('window:pageshow'), 0);
+    assert.equal(extra('document:visibilitychange'), 0);
+    const authWallet = walletInvalidations;
+    const authReads = win.runtimeHost.revalidations;
+    now += 6000;
+    await fixture.act(async () => { win.dispatchEvent(new win.Event('focus')); await new Promise(resolve => win.setTimeout(resolve, 10)); });
+    assert.equal(walletInvalidations, authWallet, 'auth routes do not refresh the account');
+    assert.equal(win.runtimeHost.revalidations, authReads + 1, 'native SWR remains available outside shared-owner routes');
   } finally {
     await fixture.unmount();
     assert.equal(intervals.size, 0);

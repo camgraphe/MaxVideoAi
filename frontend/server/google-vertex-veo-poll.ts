@@ -525,6 +525,11 @@ export async function runGoogleVertexVeoPoll(options: { jobId?: string; deps?: G
         errorClass: normalized.errorClass,
         code: normalized.code,
       });
+      // Rotate failed attempts without claiming a successful provider observation.
+      await queryFn(
+        'UPDATE app_jobs SET updated_at = NOW() WHERE job_id = $1 AND status = ANY($2::text[])',
+        [job.job_id, ACTIVE_JOB_STATUSES]
+      );
     } finally {
       await pollClaim.release();
     }

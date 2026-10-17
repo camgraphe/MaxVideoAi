@@ -123,6 +123,18 @@ Video:
 - Thumbnails, previews, keyframes, and legacy media-library outputs are written after the stable copy exists.
 - Stalled jobs are marked for provider review rather than submitted to fal.
 
+The Luma, Kling, Alibaba and Veo batch pollers order active jobs by
+`app_jobs.updated_at`. A failed retrieval advances that scheduling timestamp
+only while the job is still active, matching the existing Fal retry rotation.
+Otherwise ten persistent errors can occupy the entire batch indefinitely.
+This is not a successful provider observation: `generation_poll_state.checked_at`
+advances only after retrieval succeeds. The shared claim still owns throttling
+and lease release, and maximum age still uses `created_at`. A concurrent terminal
+transition is never changed by failure scheduling. Individual `jobId` polls keep
+their targeted selection and the same claim protection.
+`tests/provider-poll-fairness-postgres.test.ts` exercises these boundaries with
+real SQL and claims for all four providers, without provider or storage calls.
+
 Image:
 
 - Image direct execution is synchronous from the API point of view.

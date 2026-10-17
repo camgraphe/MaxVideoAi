@@ -20,10 +20,11 @@ export async function saveAssetToLibrary(payload: {
   thumbUrl?: string | null;
   previewUrl?: string | null;
   durationSec?: number | null;
-}) {
+}, request?: { accessToken: string; signal: AbortSignal }) {
   const response = await authFetch('/api/media-library/ensure', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(request ? { Authorization: `Bearer ${request.accessToken}` } : {}) },
+    signal: request?.signal,
     body: JSON.stringify({
       url: payload.url,
       jobId: payload.jobId ?? null,
@@ -52,10 +53,10 @@ export async function saveImageToLibrary(payload: {
   jobId?: string | null;
   label?: string | null;
   source?: string | null;
-}) {
+}, request?: { accessToken: string; signal: AbortSignal }) {
   return saveAssetToLibrary({
     ...payload,
     kind: 'image',
     source: payload.source ?? (payload.jobId ? 'generated' : null),
-  });
+  }, request);
 }

@@ -1,3 +1,4 @@
+import type { CaptureCharacterBuilderAccountRequest } from '../_lib/character-builder-types';
 import type { Dispatch, SetStateAction } from 'react';
 import { useEffect } from 'react';
 import type { SWRInfiniteKeyedMutator } from 'swr/infinite';
@@ -10,6 +11,7 @@ import type { CharacterJobPayload, PendingCharacterRun } from '../_lib/character
 type MutateHistoricalJobs = SWRInfiniteKeyedMutator<JobsPage[]>;
 
 interface UseCharacterBuilderPendingRunsSyncOptions {
+  captureAccountRequest: CaptureCharacterBuilderAccountRequest;
   authLoading: boolean;
   hydrated: boolean;
   mutateHistoricalJobs: MutateHistoricalJobs;
@@ -20,6 +22,7 @@ interface UseCharacterBuilderPendingRunsSyncOptions {
 }
 
 export function useCharacterBuilderPendingRunsSync({
+  captureAccountRequest,
   authLoading,
   hydrated,
   mutateHistoricalJobs,
@@ -34,6 +37,8 @@ export function useCharacterBuilderPendingRunsSync({
     let cancelled = false;
 
     async function syncPendingRuns() {
+      const request = captureAccountRequest();
+      if (cancelled || !request) return;
       const completedRuns: CharacterBuilderRun[] = [];
       const completedIds = new Set<string>();
       const failedIds = new Set<string>();
@@ -41,9 +46,9 @@ export function useCharacterBuilderPendingRunsSync({
       await Promise.all(
         pendingRuns.map(async (pendingRun) => {
           try {
-            const response = await authFetch(`/api/jobs/${encodeURIComponent(pendingRun.jobId)}`);
+            const response = await authFetch(`/api/jobs/${encodeURIComponent(pendingRun.jobId)}`, { headers: { Authorization: `Bearer ${request.accessToken}` }, signal: request.signal });
             const payload = (await response.json().catch(() => null)) as CharacterJobPayload | null;
-            if (!response.ok || !payload?.ok || cancelled) return;
+            if (!response.ok || !payload?.ok || cancelled || !request.isCurrent()) return;
 
             const normalizedStatus = typeof payload.status === 'string' ? payload.status.toLowerCase() : '';
             const recoveredRun = buildRecoveredRunFromJob(pendingRun, payload);
@@ -62,7 +67,7 @@ export function useCharacterBuilderPendingRunsSync({
         })
       );
 
-      if (cancelled) return;
+      if (cancelled || !request.isCurrent()) return;
 
       if (completedIds.size || failedIds.size) {
         setPendingRuns((previous) =>
@@ -96,5 +101,5 @@ export function useCharacterBuilderPendingRunsSync({
       cancelled = true;
       window.clearInterval(intervalId);
     };
-  }, [authLoading, hydrated, mutateHistoricalJobs, pendingRuns, setPendingRuns, setState, user]);
+  }, [captureAccountRequest, authLoading, hydrated, mutateHistoricalJobs, pendingRuns, setPendingRuns, setState, user]);
 }

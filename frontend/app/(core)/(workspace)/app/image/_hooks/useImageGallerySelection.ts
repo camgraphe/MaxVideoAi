@@ -1,4 +1,4 @@
-import { useCallback, type Dispatch, type SetStateAction } from 'react';
+import { useCallback, useLayoutEffect, useRef, type Dispatch, type SetStateAction } from 'react';
 import { authFetch } from '@/lib/authFetch';
 import {
   getAspectRatioOptions,
@@ -10,6 +10,7 @@ import { findImageEngine } from '../_lib/image-workspace-utils';
 import type { HistoryEntry, ImageEngineOption } from '../_lib/image-workspace-types';
 
 export function useImageGallerySelection({
+  accountId,
   applyImageSettingsSnapshot,
   engines,
   historyEntries,
@@ -22,6 +23,7 @@ export function useImageGallerySelection({
   setSelectedPreviewEntryId,
   setSelectedPreviewImageIndex,
 }: {
+  accountId: string | null;
   applyImageSettingsSnapshot: (snapshot: unknown) => void;
   engines: ImageEngineOption[];
   historyEntries: HistoryEntry[];
@@ -34,8 +36,26 @@ export function useImageGallerySelection({
   setSelectedPreviewEntryId: (value: string | null) => void;
   setSelectedPreviewImageIndex: (value: number) => void;
 }) {
-  return useCallback(
+  const snapshotRequest = useRef<AbortController | null>(null);
+  const cancelSnapshotHydration = useCallback(() => {
+    snapshotRequest.current?.abort();
+    snapshotRequest.current = null;
+  }, []);
+  useLayoutEffect(() => cancelSnapshotHydration, [accountId, cancelSnapshotHydration]);
+
+  // Wrap user actions only. Selection defaults and schema resets must not cancel their own hydration.
+  const guardComposerActions = useCallback(
+    <T extends Record<string, ((...args: never[]) => unknown) | undefined>>(actions: T): T =>
+      Object.fromEntries(Object.entries(actions).map(([key, action]) => [key, action && ((...args: never[]) => {
+        cancelSnapshotHydration();
+        return action(...args);
+      })])) as T,
+    [cancelSnapshotHydration]
+  );
+
+  const handleSelectGalleryGroup = useCallback(
     (group: GroupSummary) => {
+      cancelSnapshotHydration();
       const applyEntryDefaults = (entry: HistoryEntry) => {
         const engineMatch = entry.engineId ? findImageEngine(engines, entry.engineId) : null;
         if (engineMatch) {
@@ -60,15 +80,21 @@ export function useImageGallerySelection({
 
       const fetchSnapshot = (jobId: string | null | undefined) => {
         if (!jobId) return;
-        void authFetch(`/api/jobs/${encodeURIComponent(jobId)}`)
+        const request = new AbortController();
+        snapshotRequest.current = request;
+        void authFetch(`/api/jobs/${encodeURIComponent(jobId)}`, { signal: request.signal })
           .then(async (response) => {
             const payload = (await response.json().catch(() => null)) as
               | { ok?: boolean; settingsSnapshot?: unknown }
               | null;
+            if (snapshotRequest.current !== request || request.signal.aborted) return;
             if (!response.ok || !payload?.ok || !payload.settingsSnapshot) return;
             applyImageSettingsSnapshot(payload.settingsSnapshot);
           })
-          .catch(() => undefined);
+          .catch(() => undefined)
+          .finally(() => {
+            if (snapshotRequest.current === request) snapshotRequest.current = null;
+          });
       };
 
       const heroJobId = group.hero.jobId ?? group.hero.job?.jobId ?? group.id;
@@ -146,6 +172,7 @@ export function useImageGallerySelection({
     },
     [
       applyImageSettingsSnapshot,
+      cancelSnapshotHydration,
       engines,
       historyEntries,
       onOpenHistoryEntry,
@@ -158,4 +185,5 @@ export function useImageGallerySelection({
       setSelectedPreviewImageIndex,
     ]
   );
+  return { handleSelectGalleryGroup, guardComposerActions };
 }

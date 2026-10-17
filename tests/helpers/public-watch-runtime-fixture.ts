@@ -35,7 +35,11 @@ export async function buildPublicWatchRuntimeFixture() {
       function Consumer() {
         const { locale, dictionary, t } = useI18n();
         const { data } = useSWR('/api/runtime-fixture', async () => ++window.runtimeHost.revalidations,
-          { revalidateOnMount: false, revalidateOnFocus: false });
+          { revalidateOnMount: false, dedupingInterval: 0 });
+        useSWR(['jobs', 'fixture-account'], async () => ++window.runtimeHost.tupleRevalidations, { revalidateOnMount: false, dedupingInterval: 0 });
+        useSWR(() => '/api/function-fixture', async () => ++window.runtimeHost.functionRevalidations, { revalidateOnMount: false, dedupingInterval: 0 });
+        useSWR(['seedance-workflow', 'fixture-account'], async () => ++window.runtimeHost.otherRevalidations, { revalidateOnMount: false, dedupingInterval: 0 });
+        useSWR('/api/media-library/assets', async () => ++window.runtimeHost.libraryRevalidations, { revalidateOnMount: false, revalidateOnFocus: false });
         return <output data-namespaces={Object.keys(dictionary).sort().join(',')}>
           {locale+'|'+t('nav.cta')+'|'+t('nav.account.signOut')+'|'+data}
         </output>;

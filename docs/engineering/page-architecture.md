@@ -109,6 +109,24 @@ Extract client pages in this order:
 4. self-contained panels/cards
 5. heavy optional UI with `next/dynamic`
 
+### Image gallery settings hydration
+
+`app/image/_hooks/useImageGallerySelection.ts` owns gallery selection defaults and
+the asynchronous job settings lookup. Each selection replaces and aborts the
+previous lookup. Check request identity after JSON parsing as well as abort state;
+an already received response can finish parsing after a newer selection. Account
+changes and unmount invalidate the active request in layout cleanup.
+
+`ImageWorkspace.tsx` wraps composer user actions with `guardComposerActions`,
+including settings, reference insertion/removal, character references, starter
+selection and generation submission. These actions cancel pending gallery
+hydration before changing the form. Keep internal setters used by selection
+defaults, snapshot application, persistence and schema normalization unwrapped:
+an effect watching all composer state would cancel valid hydration itself.
+`tests/image-gallery-selection-dom.test.ts` exercises real React lifecycle and
+delayed transport responses; `tests/image-workspace-split-contract.test.ts` keeps
+the user-action wiring at the route boundary.
+
 ## Data Builder Pattern
 
 When a route has many derived props, create a builder:
