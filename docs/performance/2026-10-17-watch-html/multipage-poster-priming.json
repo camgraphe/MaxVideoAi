@@ -1,0 +1,74 @@
+[
+  {
+    "page": "minimax",
+    "side": "baseline",
+    "attempt": 1,
+    "time": "2026-10-17T19:26:39.191Z",
+    "accept": "image/jxl,image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+    "poster": "/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F1a5ea6c8-1d4e-4675-bc10-6e91abd3fd99.jpg&w=1200&q=72",
+    "status": 200,
+    "contentType": "image/webp",
+    "cache": "HIT",
+    "age": "41326"
+  },
+  {
+    "page": "minimax",
+    "side": "candidate",
+    "attempt": 1,
+    "time": "2026-10-17T19:26:39.362Z",
+    "accept": "image/jxl,image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+    "poster": "/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F1a5ea6c8-1d4e-4675-bc10-6e91abd3fd99.jpg&w=1200&q=72",
+    "status": 200,
+    "contentType": "image/webp",
+    "cache": "HIT",
+    "age": "41326"
+  },
+  {
+    "page": "wan",
+    "side": "baseline",
+    "attempt": 1,
+    "time": "2026-10-17T19:26:39.425Z",
+    "accept": "image/jxl,image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+    "poster": "/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F0c5f5b6a-0feb-4d89-8ac1-4dcc55995a80.jpg&w=1200&q=72",
+    "status": 200,
+    "contentType": "image/webp",
+    "cache": "HIT",
+    "age": "378187"
+  },
+  {
+    "page": "wan",
+    "side": "candidate",
+    "attempt": 1,
+    "time": "2026-10-17T19:26:39.665Z",
+    "accept": "image/jxl,image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+    "poster": "/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F0c5f5b6a-0feb-4d89-8ac1-4dcc55995a80.jpg&w=1200&q=72",
+    "status": 200,
+    "contentType": "image/webp",
+    "cache": "HIT",
+    "age": "378187"
+  },
+  {
+    "page": "kling",
+    "side": "baseline",
+    "attempt": 1,
+    "time": "2026-10-17T19:26:39.795Z",
+    "accept": "image/jxl,image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+    "poster": "/_next/image?url=https%3A%2F%2Fvideohub-uploads-us.s3.amazonaws.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F44523fb0-8f16-45b7-9cf9-c7edcd6cd767.jpg&w=1200&q=72",
+    "status": 200,
+    "contentType": "image/webp",
+    "cache": "HIT",
+    "age": "469"
+  },
+  {
+    "page": "kling",
+    "side": "candidate",
+    "attempt": 1,
+    "time": "2026-10-17T19:26:39.874Z",
+    "accept": "image/jxl,image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+    "poster": "/_next/image?url=https%3A%2F%2Fvideohub-uploads-us.s3.amazonaws.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F44523fb0-8f16-45b7-9cf9-c7edcd6cd767.jpg&w=1200&q=72",
+    "status": 200,
+    "contentType": "image/webp",
+    "cache": "HIT",
+    "age": "469"
+  }
+]

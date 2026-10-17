@@ -1,0 +1,290 @@
+[
+  {
+    "device": "desktop",
+    "temperature": "cold",
+    "side": "baseline",
+    "n": 3,
+    "ttfb": {
+      "median": 4767.329000000001,
+      "min": 4373.644,
+      "max": 7701.422
+    },
+    "fcp": {
+      "median": 5531.066,
+      "min": 5136.044,
+      "max": 8459.181
+    },
+    "lcp": {
+      "median": 5531.066,
+      "min": 5136.044,
+      "max": 8459.181
+    },
+    "cls": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+    },
+    "tbt": {
+      "median": 34.659999938963665,
+      "min": 30.443999999999505,
+      "max": 36.61799999999948
+    },
+    "bytes": {
+      "median": 458870,
+      "min": 458870,
+      "max": 458871
+    }
+  },
+  {
+    "device": "desktop",
+    "temperature": "cold",
+    "side": "candidate",
+    "n": 3,
+    "ttfb": {
+      "median": 2593.786,
+      "min": 2380.2870000000003,
+      "max": 3763.362
+    },
+    "fcp": {
+      "median": 3350.519,
+      "min": 3136.805,
+      "max": 4510.376
+    },
+    "lcp": {
+      "median": 3350.519,
+      "min": 3136.805,
+      "max": 4510.376
+    },
+    "cls": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+    },
+    "tbt": {
+      "median": 31.337999999999738,
+      "min": 28.36999999999989,
+      "max": 38.82600000000002
+    },
+    "bytes": {
+      "median": 458866,
+      "min": 458866,
+      "max": 458866
+    }
+  },
+  {
+    "device": "desktop",
+    "temperature": "warm",
+    "side": "baseline",
+    "n": 3,
+    "ttfb": {
+      "median": 5028.478,
+      "min": 4865.943,
+      "max": 5266.213
+    },
+    "fcp": {
+      "median": 5184.479,
+      "min": 5033.05,
+      "max": 5386.81
+    },
+    "lcp": {
+      "median": 5184.479,
+      "min": 5033.05,
+      "max": 5495.246
+    },
+    "cls": {
+      "median": 0,
+      "min": 0,
+      "max": 0.001528690315995679
+    },
+    "tbt": {
+      "median": 0,
+      "min": 0,
+      "max": 3.7880000000004657
+    },
+    "bytes": {
+      "median": 48900,
+      "min": 48900,
+      "max": 48900
+    }
+  },
+  {
+    "device": "desktop",
+    "temperature": "warm",
+    "side": "candidate",
+    "n": 3,
+    "ttfb": {
+      "median": 2537.474,
+      "min": 2488.605,
+      "max": 2823.051
+    },
+    "fcp": {
+      "median": 2662.758,
+      "min": 2634.237,
+      "max": 2987.082
+    },
+    "lcp": {
+      "median": 2817.867,
+      "min": 2634.237,
+      "max": 2987.082
+    },
+    "cls": {
+      "median": 0.00001311431435319226,
+      "min": 0,
+      "max": 0.001528690315995679
+    },
+    "tbt": {
+      "median": 2.5920000000000982,
+      "min": 0,
+      "max": 15.245999938964815
+    },
+    "bytes": {
+      "median": 48895,
+      "min": 48895,
+      "max": 48895
+    }
+  },
+  {
+    "device": "mobile",
+    "temperature": "cold",
+    "side": "baseline",
+    "n": 3,
+    "ttfb": {
+      "median": 5151.064,
+      "min": 4714.521000000001,
+      "max": 5867.675
+    },
+    "fcp": {
+      "median": 5906.482,
+      "min": 5472.579,
+      "max": 6630.995
+    },
+    "lcp": {
+      "median": 5906.482,
+      "min": 5472.579,
+      "max": 6630.995
+    },
+    "cls": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+    },
+    "tbt": {
+      "median": 35.042999999999665,
+      "min": 31.9950000000008,
+      "max": 39.64400000000023
+    },
+    "bytes": {
+      "median": 407500,
+      "min": 407498,
+      "max": 407500
+    }
+  },
+  {
+    "device": "mobile",
+    "temperature": "cold",
+    "side": "candidate",
+    "n": 3,
+    "ttfb": {
+      "median": 5503.13,
+      "min": 2622.973,
+      "max": 6902.776
+    },
+    "fcp": {
+      "median": 6269.109,
+      "min": 3372.634,
+      "max": 7626.479
+    },
+    "lcp": {
+      "median": 6269.109,
+      "min": 3372.634,
+      "max": 7626.479
+    },
+    "cls": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+    },
+    "tbt": {
+      "median": 32.1689999389655,
+      "min": 32.09400000000005,
+      "max": 36.038000000000466
+    },
+    "bytes": {
+      "median": 407493,
+      "min": 407493,
+      "max": 407494
+    }
+  },
+  {
+    "device": "mobile",
+    "temperature": "warm",
+    "side": "baseline",
+    "n": 3,
+    "ttfb": {
+      "median": 4943.848999999999,
+      "min": 4635.737999999999,
+      "max": 5356.02
+    },
+    "fcp": {
+      "median": 5117.226,
+      "min": 4782.235,
+      "max": 5500.104
+    },
+    "lcp": {
+      "median": 5117.226,
+      "min": 4782.235,
+      "max": 5579.785
+    },
+    "cls": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+    },
+    "tbt": {
+      "median": 0,
+      "min": 0,
+      "max": 18.390000000000327
+    },
+    "bytes": {
+      "median": 47932,
+      "min": 47932,
+      "max": 47932
+    }
+  },
+  {
+    "device": "mobile",
+    "temperature": "warm",
+    "side": "candidate",
+    "n": 3,
+    "ttfb": {
+      "median": 2586.7259999999997,
+      "min": 2495.399,
+      "max": 2603.3970000000004
+    },
+    "fcp": {
+      "median": 2763.171,
+      "min": 2685.755,
+      "max": 2796.343
+    },
+    "lcp": {
+      "median": 2763.171,
+      "min": 2685.755,
+      "max": 2796.343
+    },
+    "cls": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+    },
+    "tbt": {
+      "median": 0,
+      "min": 0,
+      "max": 0
+    },
+    "bytes": {
+      "median": 47927,
+      "min": 47927,
+      "max": 47927
+    }
+  }
+]

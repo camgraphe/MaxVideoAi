@@ -1,0 +1,404 @@
+{
+  "cases": [
+    {
+      "case": "MiniMax first desktop cold pair",
+      "samples": [
+        {
+          "id": "desktop-1-baseline-cold",
+          "time": "2026-10-17T19:03:35.479Z",
+          "lcp": 1905.062,
+          "htmlEndMs": 1567.92099994421,
+          "phases": [
+            {
+              "phase": "timeToFirstByte",
+              "label": "Time to first byte",
+              "duration": 123.71199993896484
+            },
+            {
+              "phase": "resourceLoadDelay",
+              "label": "Resource load delay",
+              "duration": 1040.752000061035
+            },
+            {
+              "phase": "resourceLoadDuration",
+              "label": "Resource load duration",
+              "duration": 652.326
+            },
+            {
+              "phase": "elementRenderDelay",
+              "label": "Element render delay",
+              "duration": 88.27199999999993
+            }
+          ]
+        },
+        {
+          "id": "desktop-1-candidate-cold",
+          "time": "2026-10-17T19:04:14.212Z",
+          "lcp": 4776.153,
+          "htmlEndMs": 4460.999999940395,
+          "phases": [
+            {
+              "phase": "timeToFirstByte",
+              "label": "Time to first byte",
+              "duration": 157.9
+            },
+            {
+              "phase": "resourceLoadDelay",
+              "label": "Resource load delay",
+              "duration": 3864.4809999999998
+            },
+            {
+              "phase": "resourceLoadDuration",
+              "label": "Resource load duration",
+              "duration": 659.4280000000003
+            },
+            {
+              "phase": "elementRenderDelay",
+              "label": "Element render delay",
+              "duration": 94.34400000000005
+            }
+          ]
+        }
+      ],
+      "runtimeLog": {
+        "requestId": "67lpt-1792263854534-5e1a335c4db4",
+        "requestStart": "2026-10-17T19:04:14.534Z",
+        "logTime": "2026-10-17T19:04:17.554Z",
+        "phase": {
+          "schema": "cwv.server.v1",
+          "route": "root-layout",
+          "locale": "en",
+          "deployment": "a47250dd54376c60359502e63cd2fe16dcd75855",
+          "status": "ok",
+          "dataDurationMs": 78.2,
+          "phases": [
+            {
+              "phase": "theme-tokens",
+              "startMs": 0.07,
+              "durationMs": 78.11,
+              "status": "ok"
+            }
+          ]
+        },
+        "limitation": "Only root-layout theme-tokens is logged; this does not attribute the remaining watch wait to database, worker startup or any specific uninstrumented phase."
+      },
+      "interpretation": "The additional delay is before the poster request in the streamed HTML; poster fetch duration is similar. The separate six-pair follow-up has no recurrence and all six candidate visits improve. This does not identify the uninstrumented wait or guarantee cold-function tail behavior."
+    },
+    {
+      "case": "Kling first desktop cold pair",
+      "samples": [
+        {
+          "id": "desktop-1-baseline-cold",
+          "lcp": 3858.655,
+          "htmlEndMs": 1604.0219999551773,
+          "phases": [
+            {
+              "phase": "timeToFirstByte",
+              "label": "Time to first byte",
+              "duration": 172.632
+            },
+            {
+              "phase": "resourceLoadDelay",
+              "label": "Resource load delay",
+              "duration": 1167.588
+            },
+            {
+              "phase": "resourceLoadDuration",
+              "label": "Resource load duration",
+              "duration": 2511.74
+            },
+            {
+              "phase": "elementRenderDelay",
+              "label": "Element render delay",
+              "duration": 6.695000000000164
+            }
+          ],
+          "posterHeaders": {
+            "content-type": "image/webp",
+            "x-vercel-cache": "MISS",
+            "age": "0",
+            "cache-control": "public, max-age=604800, must-revalidate"
+          }
+        },
+        {
+          "id": "desktop-1-candidate-cold",
+          "lcp": 1669.317,
+          "htmlEndMs": 1225.6570000052452,
+          "phases": [
+            {
+              "phase": "timeToFirstByte",
+              "label": "Time to first byte",
+              "duration": 132.093
+            },
+            {
+              "phase": "resourceLoadDelay",
+              "label": "Resource load delay",
+              "duration": 772.5730000000001
+            },
+            {
+              "phase": "resourceLoadDuration",
+              "label": "Resource load duration",
+              "duration": 717.003
+            },
+            {
+              "phase": "elementRenderDelay",
+              "label": "Element render delay",
+              "duration": 47.64799999999991
+            }
+          ],
+          "posterHeaders": {
+            "content-type": "image/webp",
+            "x-vercel-cache": "HIT",
+            "age": "37",
+            "cache-control": "public, max-age=604800, must-revalidate"
+          }
+        }
+      ],
+      "interpretation": "Baseline poster response MISS vs candidate HIT. The large first-pair LCP difference must not be attributed entirely to SQL. Preserve it and use the separately declared three-pair image-cache follow-up to confirm the desktop cold gain."
+    }
+  ],
+  "followups": [
+    {
+      "page": "minimax",
+      "collection": "tail-followup",
+      "device": "desktop",
+      "temperature": "cold",
+      "nPerVersion": 6,
+      "baseline": {
+        "ttfb": {
+          "n": 6,
+          "median": 40.7555,
+          "min": 39.42499999999998,
+          "max": 44.894000000000005
+        },
+        "htmlEndMs": {
+          "n": 6,
+          "median": 1534.8504999876022,
+          "min": 1384.6930000185966,
+          "max": 1844.9520000219345
+        },
+        "posterRequestStartMs": {
+          "n": 6,
+          "median": 1315.0059999525547,
+          "min": 1198.7120000720024,
+          "max": 1441.6290000081062
+        },
+        "posterFetchMs": {
+          "n": 6,
+          "median": 652.9495000000001,
+          "min": 650.7060000000001,
+          "max": 667.8
+        },
+        "fcp": {
+          "n": 6,
+          "median": 2044.8175,
+          "min": 1945.006,
+          "max": 2169.904
+        },
+        "lcp": {
+          "n": 6,
+          "median": 2063.9855,
+          "min": 1971.246,
+          "max": 2192.775
+        },
+        "cls": {
+          "n": 6,
+          "median": 0,
+          "min": 0,
+          "max": 0
+        },
+        "tbt": {
+          "n": 6,
+          "median": 49.03249996948239,
+          "min": 45.47699999999986,
+          "max": 53.50700000000006
+        },
+        "bytes": {
+          "n": 6,
+          "median": 507549.5,
+          "min": 507466,
+          "max": 507642
+        }
+      },
+      "candidate": {
+        "ttfb": {
+          "n": 6,
+          "median": 44.092999999999996,
+          "min": 41.751999999999995,
+          "max": 264.719
+        },
+        "htmlEndMs": {
+          "n": 6,
+          "median": 1248.8240000009537,
+          "min": 1022.9759999513626,
+          "max": 1455.7760000228882
+        },
+        "posterRequestStartMs": {
+          "n": 6,
+          "median": 965.3434999883175,
+          "min": 877.8650000095367,
+          "max": 1102.8210000395775
+        },
+        "posterFetchMs": {
+          "n": 6,
+          "median": 660.9475,
+          "min": 659.1300000000001,
+          "max": 678.31
+        },
+        "fcp": {
+          "n": 6,
+          "median": 1731.4115,
+          "min": 1642.25,
+          "max": 1856.439
+        },
+        "lcp": {
+          "n": 6,
+          "median": 1751.347,
+          "min": 1657.972,
+          "max": 1878.815
+        },
+        "cls": {
+          "n": 6,
+          "median": 0,
+          "min": 0,
+          "max": 0
+        },
+        "tbt": {
+          "n": 6,
+          "median": 50.48600000000033,
+          "min": 45.572000000000116,
+          "max": 53.97400000000016
+        },
+        "bytes": {
+          "n": 6,
+          "median": 509100,
+          "min": 508974,
+          "max": 509120
+        }
+      },
+      "lcpChangePercent": -15.14732056014928,
+      "htmlEndChangeMs": -286.02649998664856
+    },
+    {
+      "page": "kling",
+      "collection": "image-cache-followup",
+      "device": "desktop",
+      "temperature": "cold",
+      "nPerVersion": 3,
+      "baseline": {
+        "ttfb": {
+          "n": 3,
+          "median": 57.582999999999984,
+          "min": 46.006000000000014,
+          "max": 62.57599999999999
+        },
+        "htmlEndMs": {
+          "n": 3,
+          "median": 1653.1659999489784,
+          "min": 1621.888000011444,
+          "max": 1745.819000005722
+        },
+        "posterRequestStartMs": {
+          "n": 3,
+          "median": 1337.2360000014305,
+          "min": 1299.561999976635,
+          "max": 1371.772000014782
+        },
+        "posterFetchMs": {
+          "n": 3,
+          "median": 710.6249999999998,
+          "min": 710.375,
+          "max": 711.8519999999999
+        },
+        "fcp": {
+          "n": 3,
+          "median": 2031.53,
+          "min": 2022.654,
+          "max": 2078.127
+        },
+        "lcp": {
+          "n": 3,
+          "median": 2099.929,
+          "min": 2042.458,
+          "max": 2114.241
+        },
+        "cls": {
+          "n": 3,
+          "median": 0,
+          "min": 0,
+          "max": 0
+        },
+        "tbt": {
+          "n": 3,
+          "median": 49.652000000000044,
+          "min": 48.99200000000019,
+          "max": 51.209999938964756
+        },
+        "bytes": {
+          "n": 3,
+          "median": 516316,
+          "min": 516282,
+          "max": 516320
+        }
+      },
+      "candidate": {
+        "ttfb": {
+          "n": 3,
+          "median": 43.706,
+          "min": 42.828,
+          "max": 48.20100000000001
+        },
+        "htmlEndMs": {
+          "n": 3,
+          "median": 1393.727999985218,
+          "min": 1277.3340000510216,
+          "max": 1401.7360000014305
+        },
+        "posterRequestStartMs": {
+          "n": 3,
+          "median": 963.2139999866486,
+          "min": 953.9570000171661,
+          "max": 1026.9819999933243
+        },
+        "posterFetchMs": {
+          "n": 3,
+          "median": 716.826,
+          "min": 716.4609999999999,
+          "max": 717.067
+        },
+        "fcp": {
+          "n": 3,
+          "median": 1698.99,
+          "min": 1653.152,
+          "max": 1752.825
+        },
+        "lcp": {
+          "n": 3,
+          "median": 1721.332,
+          "min": 1700.444,
+          "max": 1783.299
+        },
+        "cls": {
+          "n": 3,
+          "median": 0,
+          "min": 0,
+          "max": 0
+        },
+        "tbt": {
+          "n": 3,
+          "median": 54.10499993896474,
+          "min": 53.557000000000244,
+          "max": 54.146999999999935
+        },
+        "bytes": {
+          "n": 3,
+          "median": 517868,
+          "min": 517822,
+          "max": 517932
+        }
+      },
+      "lcpChangePercent": -18.02903812462231,
+      "htmlEndChangeMs": -259.4379999637604
+    }
+  ]
+}

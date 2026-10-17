@@ -6,6 +6,7 @@ import { getSeoVideoById, type GalleryVideo } from './videos';
 import { isLocalPublicExamplesEnabled, getLocalPublicExample } from './local-public-examples';
 import { getResolvedVideoSeoEditorialEntry } from './video-seo-editorial';
 import { computeCurrentPublicSnapshot } from './pricing/quote-public';
+import { createScopedCustomerTariffQuoteLoader, customerTariffsEnabledByCode } from './pricing/customer-tariff-store';
 import { projectExampleWatchDetail } from './example-watch-detail';
 import { deriveWatchPageSignals, type WatchPageDerivedSignals } from './watch-page-signals';
 import { resolveWatchSourceImageOriginalUrls } from './watch-source-image-originals';
@@ -22,7 +23,11 @@ export async function prepareExampleWatchDetailContext(dependencies: {
   loadOverrides: loadPricingPolicyOverrides,
 }): Promise<ExampleWatchDetailContext> {
   const [engines, overrides] = await Promise.all([dependencies.loadEngines(), dependencies.loadOverrides()]);
-  return { engines, quote: context => computeCurrentPublicSnapshot(context, { pricingPolicy: { loadOverrides: async () => overrides } }) };
+  const loadCustomerTariffQuoteState = customerTariffsEnabledByCode() ? createScopedCustomerTariffQuoteLoader() : undefined;
+  return { engines, quote: context => computeCurrentPublicSnapshot(context, {
+    pricingPolicy: { loadOverrides: async () => overrides },
+    ...(loadCustomerTariffQuoteState ? { loadCustomerTariffQuoteState } : {}),
+  }) };
 }
 
 /** Recheck public watch eligibility on every API/Studio open, including legacy indexable=NULL. */
