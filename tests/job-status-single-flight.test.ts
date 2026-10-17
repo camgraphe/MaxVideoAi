@@ -45,6 +45,15 @@ test('authenticated status calls coalesce only within the same principal and thr
     assert.equal(degraded.observation?.checkedAt, undefined);
     assert.equal(await getJobStatus('job_fixture'), degraded);
     assert.equal(requests.length, 2, 'repeat reads use the scoped 15-second cache');
+    const cachedEvents: unknown[] = [];
+    const collect = (event: Event) => cachedEvents.push((event as CustomEvent).detail);
+    dom.window.addEventListener('jobs:status', collect);
+    await getJobStatus('job_fixture', { principal: 'fixture-user-2', isCurrent: () => false });
+    assert.equal(cachedEvents.length, 0, 'a retired subscriber cannot publish a cached observation');
+    await getJobStatus('job_fixture', { principal: 'fixture-user-2', isCurrent: () => true });
+    assert.deepEqual(cachedEvents, [degraded], 'a live subscriber receives the cached result without another request');
+    assert.equal(requests.length, 2);
+    dom.window.removeEventListener('jobs:status', collect);
     now += 15_001;
     const next = getJobStatus('job_fixture');
     await waitForRequests(3);

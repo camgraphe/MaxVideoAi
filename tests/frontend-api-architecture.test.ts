@@ -94,10 +94,14 @@ test('frontend api facade delegates engines, jobs, and media-library helpers', (
   );
   assert.match(jobsApiSource, /options\?\.surface === 'storyboard'/);
   assert.match(jobsApiSource, /export async function hideJob/);
-  assert.doesNotMatch(jobsApiSource, /STATUS_RETRY_TIMERS/, 'status retry timers belong in api-job-status.ts');
-  assert.match(jobStatusApiSource, /export function getJobStatus\(jobId: string\): Promise<JobStatusResult>/);
+  assert.doesNotMatch(jobsApiSource, /STATUS_RETRY_TIMERS/, 'feed timer lifecycle belongs in job-status-polling.ts');
+  assert.match(jobStatusApiSource, /export function getJobStatus\(jobId: string, scope\?: JobStatusScope\): Promise<JobStatusResult>/);
   assert.match(jobStatusApiSource, /IN_FLIGHT_STATUS/, 'principal/job request coalescing belongs in api-job-status.ts');
   assert.match(jobStatusApiSource, /async function fetchJobStatus/, 'transport stays behind the coalescing facade');
   assert.doesNotMatch(jobsApiSource, /IN_FLIGHT_STATUS/, 'job feeds must reuse the status request owner');
-  assert.match(jobStatusApiSource, /STATUS_RETRY_TIMERS/);
+  const pollingSource = readFileSync(join(root, 'frontend/lib/job-status-polling.ts'), 'utf8');
+  assert.match(jobsApiSource, /createJobStatusPollingOwner/);
+  assert.match(pollingSource, /export function createJobStatusPollingOwner/);
+  assert.match(pollingSource, /dispose\(\)/, 'feed ownership must expose timer cleanup');
+  assert.doesNotMatch(jobStatusApiSource, /setTimeout|STATUS_RETRY_TIMERS/, 'status transport must not own orphan retry timers');
 });

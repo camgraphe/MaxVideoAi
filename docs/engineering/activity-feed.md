@@ -93,6 +93,32 @@ schema or contacts a provider.
 
 ## Browser focus ownership
 
+Status polling has a separate owner in `frontend/lib/job-status-polling.ts`.
+Each mounted feed registers its pending jobs under the confirmed account. A
+shared account/job entry retains one timer until its last subscriber leaves;
+changing a source or closing another feed cannot remove a live subscriber's
+timer. Final statuses and manual-review states stop polling. HTTP 401/403/404 stop
+automatic retries. Transient errors back off from the normal 15-second cadence
+to 30 and then at most 60 seconds, stopping after five consecutive errors.
+Explicit public Refresh renews a nonterminal retry budget; same-account sign-in
+or token renewal resumes a denied request. Automatic error revalidation never
+renews that budget. Account lifetime is checked in memory, so blocked session
+storage cannot disable polling or permit late account responses to affect another
+feed. A fresh
+successful status observation can recover an exhausted or renewed-session entry.
+In-flight results cannot recreate a disposed entry, and status events from a
+previous principal are suppressed. The existing account-scoped in-flight and
+15-second successful-response coalescing in `api-job-status.ts` remains intact.
+A reopened feed cannot join a retired owner's request; stale completion cannot
+replace or remove a newer in-flight request. A current cached observation still
+reaches the feed before the poller stops on a terminal result.
+
+`tests/jobs-polling-lifecycle.test.ts` uses the real SWR feed and status transport
+adapter with controlled HTTP responses and time. It covers closing feeds,
+independent sources, shared subscribers, permanent/transient errors, recovery and
+late account responses. `tests/jobs-feed-lifecycle.test.ts` no longer replaces the
+polling implementation with no-op stubs.
+
 `SWRFocusResync` owns the shared API/jobs/engines/pricing refresh on application
 routes, including visibility restoration and BFCache `pageshow`. A five-second
 throttle coalesces these signals and emits one `wallet:invalidate` notification.

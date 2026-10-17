@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isDatabaseConfigured, query } from '@/lib/db';
+import { isDatabaseConfigured, withDbTransaction } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import { requireAdmin, adminErrorToResponse } from '@/server/admin';
 
@@ -23,20 +23,23 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ videoI
     return NextResponse.json({ ok: false, error: 'Missing videoId' }, { status: 400 });
   }
 
-  await ensureBillingSchema();
-
-  await query('BEGIN');
   try {
-    await query(`DELETE FROM playlist_items WHERE video_id = $1`, [videoId]);
-    await query(`UPDATE homepage_sections SET video_id = NULL WHERE video_id = $1`, [videoId]);
+    await ensureBillingSchema();
+    const removed = await withDbTransaction(async (executor) => {
+      const owned = await executor.query<{ job_id: string }>(
+        'SELECT job_id FROM app_jobs WHERE job_id = $1 FOR UPDATE', [videoId],
+      );
+      if (!owned.length) return false;
+      await executor.query(`DELETE FROM playlist_items WHERE video_id = $1`, [videoId]);
+      await executor.query(`UPDATE homepage_sections SET video_id = NULL WHERE video_id = $1`, [videoId]);
 
-    const result = await query<{ job_id: string }>(
-      `UPDATE app_jobs
+      const result = await executor.query<{ job_id: string }>(
+        `UPDATE app_jobs
          SET visibility = 'private',
              indexable = FALSE,
              featured = FALSE,
              video_url = NULL,
-             thumb_url = NULL,
+             thumb_url = '',
              preview_frame = NULL,
              updated_at = NOW(),
              message = CASE
@@ -45,18 +48,18 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ videoI
              END
        WHERE job_id = $1
        RETURNING job_id`,
-      [videoId]
-    );
+        [videoId]
+      );
+      if (result.length !== 1) throw new Error('Locked video was not updated');
+      return true;
+    });
 
-    if (!result.length) {
-      await query('ROLLBACK');
+    if (!removed) {
       return NextResponse.json({ ok: false, error: 'Video not found' }, { status: 404 });
     }
 
-    await query('COMMIT');
     return NextResponse.json({ ok: true });
   } catch (error) {
-    await query('ROLLBACK').catch(() => undefined);
     console.error('[admin/videos] failed to delete video', error);
     return NextResponse.json({ ok: false, error: 'Failed to delete video' }, { status: 500 });
   }

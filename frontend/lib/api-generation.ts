@@ -201,11 +201,12 @@ export async function runGenerate(
   return body as GenerateResult;
 }
 
-export async function runImageGeneration(payload: ImageGenerationRequest, pricingSnapshot?: PricingSnapshot | null): Promise<ImageGenerationResponse> {
+export async function runImageGeneration(payload: ImageGenerationRequest, pricingSnapshot?: PricingSnapshot | null, request?: { accessToken: string; signal: AbortSignal }): Promise<ImageGenerationResponse> {
   const response = await authFetch('/api/images/generate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION,
-      ...customerTariffRequestHeaders(pricingSnapshot) },
+      ...customerTariffRequestHeaders(pricingSnapshot), ...(request ? { Authorization: `Bearer ${request.accessToken}` } : {}) },
+    signal: request?.signal,
     body: JSON.stringify(payload),
   });
   const data = (await response.json().catch(() => null)) as ImageGenerationResponse | null;

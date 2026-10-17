@@ -6,21 +6,22 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { AppSidebar } from '@/components/AppSidebar';
 import { HeaderBar } from '@/components/HeaderBar';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { FEATURES } from '@/content/feature-flags';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { hideJob, runImageGeneration, saveImageToLibrary } from '@/lib/api';
-import { buildLoginHref } from '@/lib/auth-entry-href';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { STORYBOARD_GENERATOR_HANDOFF_STORAGE_KEY, buildStoryboardGeneratorHandoff, buildStoryboardGeneratorHandoffUrl } from '@/lib/storyboard-generator-handoff';
 import { STORYBOARD_EDIT_SOURCE, STORYBOARD_SOURCE } from '@/lib/storyboard-pricing';
 import type { ImageGenerationResponse } from '@/types/image-generation';
+import { StoryboardAuthModal } from './storyboard/_components/StoryboardAuthModal';
 import { StoryboardReferenceLibraryModal } from './storyboard/_components/StoryboardReferenceLibraryModal';
 import { StoryboardResultPanel } from './storyboard/_components/StoryboardResultPanel';
 import { StoryboardBuilderPanel, type StoryboardOptionalField } from './storyboard/_components/StoryboardBuilderPanel';
 import { useStoryboardReferences } from './storyboard/_hooks/useStoryboardReferences';
+import { useStoryboardAccountScope } from './storyboard/_hooks/useStoryboardAccountScope';
 import { useStoryboardPricing } from './storyboard/_hooks/useStoryboardPricing';
 import { useStoryboardRecentOutputs, type StoryboardRecentOutput } from './storyboard/_hooks/useStoryboardRecentOutputs';
 import { resolveStoryboardWorkspaceCopy } from './storyboard/_lib/storyboard-workspace-copy';
@@ -32,7 +33,13 @@ import { STORYBOARD_REFERENCE_ENGINE } from './storyboard/_lib/storyboard-worksp
 import { DEFAULT_STORYBOARD_TIER, STORYBOARD_TEMPLATE_SIZES, getAbsoluteStoryboardTemplateUrl, getStoryboardOutputConfig, getStoryboardLengthPreset, getStoryboardTemplatePath, type StoryboardLengthPresetId, type StoryboardOrientation, type StoryboardTier } from './storyboard/_lib/storyboard-templates';
 
 export default function StoryboardWorkspace() {
-  const { loading: authLoading, user } = useRequireAuth({ redirectIfLoggedOut: false });
+  const auth = useRequireAuth({ redirectIfLoggedOut: false });
+  return <OwnedStoryboardWorkspace key={auth.user?.id ?? 'guest'} auth={auth} />;
+}
+
+function OwnedStoryboardWorkspace({ auth }: { auth: ReturnType<typeof useRequireAuth> }) {
+  const { loading: authLoading, user, session } = auth;
+  const captureAccountRequest = useStoryboardAccountScope(session?.access_token ?? null);
   const router = useRouter();
   const { locale, t } = useI18n();
   const copy = resolveStoryboardWorkspaceCopy(t('workspace.storyboard'));
@@ -61,7 +68,7 @@ export default function StoryboardWorkspace() {
     outputs: recentOutputs,
     loading: recentOutputsLoading,
     refresh: refreshRecentOutputs,
-  } = useStoryboardRecentOutputs(Boolean(user));
+  } = useStoryboardRecentOutputs(captureAccountRequest);
   const {
     readyReferenceImages,
     referenceUploading,
@@ -75,6 +82,7 @@ export default function StoryboardWorkspace() {
     handleReferenceLibrarySelect,
   } = useStoryboardReferences({
     authenticated: Boolean(user),
+    captureAccountRequest,
     copy,
     onAuthRequired: () => setAuthModalOpen(true),
     onError: setError,
@@ -114,8 +122,8 @@ export default function StoryboardWorkspace() {
     ) {
       return klingFirstFrame;
     }
-    return getStoredKlingFirstFrame(selectedImageJobId, selectedImage.url);
-  }, [klingFirstFrame, previewingTemplate, selectedImage?.url, selectedImageJobId, selectedRecentOutput]);
+    return user ? getStoredKlingFirstFrame(selectedImageJobId, selectedImage.url, undefined, user.id) : null;
+  }, [klingFirstFrame, previewingTemplate, selectedImage?.url, selectedImageJobId, selectedRecentOutput, user]);
 
   const shotPlan = useMemo(
     () =>
@@ -151,7 +159,7 @@ export default function StoryboardWorkspace() {
   function handleSelectRecentOutput(output: StoryboardRecentOutput) {
     setPreviewingTemplate(false);
     setSelectedRecentOutput(output);
-    setKlingFirstFrame(buildKlingFirstFrameFromRecentOutput(output) ?? getStoredKlingFirstFrame(output.jobId, output.url));
+    setKlingFirstFrame(buildKlingFirstFrameFromRecentOutput(output) ?? (user ? getStoredKlingFirstFrame(output.jobId, output.url, undefined, user.id) : null));
     setError(null);
     setMessage(null);
   }
@@ -176,7 +184,8 @@ export default function StoryboardWorkspace() {
   }
 
   async function runStoryboard(edit = false) {
-    if (!user) {
+    const request = captureAccountRequest();
+    if (!user || !request) {
       setAuthModalOpen(true);
       return;
     }
@@ -226,7 +235,8 @@ export default function StoryboardWorkspace() {
         outputFormat: 'png',
         source: edit ? STORYBOARD_EDIT_SOURCE : STORYBOARD_SOURCE,
         metadata: edit ? undefined : { storyboard: { role: 'board', targetModel } },
-      }, edit ? editPricingSnapshot : generationPricingSnapshot);
+      }, edit ? editPricingSnapshot : generationPricingSnapshot, request);
+      if (!request.isCurrent()) return;
       setResult(response);
       setPreviewingTemplate(false);
       setSelectedRecentOutput(null);
@@ -240,6 +250,8 @@ export default function StoryboardWorkspace() {
         const firstFrameConfig = getStoryboardOutputConfig('hd', storyboardOrientation);
         const firstFrameJobId = `${KLING_STORYBOARD_FIRST_FRAME_JOB_PREFIX}${crypto.randomUUID()}`;
         const firstFrameSourceImages = [storyboardImage, ...readyReferenceImages];
+        const firstFrameRequest = captureAccountRequest();
+        if (!request.isCurrent() || !firstFrameRequest) return;
         const firstFrameResponse = await runImageGeneration({
           jobId: firstFrameJobId,
           engineId: 'gpt-image-2',
@@ -274,7 +286,8 @@ export default function StoryboardWorkspace() {
               targetModel: 'kling',
             },
           },
-        }, response.pricing);
+        }, response.pricing, firstFrameRequest);
+        if (!request.isCurrent()) return;
         const firstFrameImage = firstFrameResponse.images[0] ?? null;
         if (!firstFrameImage?.url) {
           throw new Error(copy.generationFailed);
@@ -286,24 +299,27 @@ export default function StoryboardWorkspace() {
           jobId: firstFrameResponse.jobId ?? firstFrameJobId,
         };
         setKlingFirstFrame(nextFirstFrame);
-        writeStoredKlingFirstFrame(nextFirstFrame);
-        if (firstFrameResponse.jobId) {
-          await hideJob(firstFrameResponse.jobId).catch(() => undefined);
+        writeStoredKlingFirstFrame(nextFirstFrame, undefined, user.id);
+        const hideRequest = captureAccountRequest();
+        if (firstFrameResponse.jobId && request.isCurrent() && hideRequest) {
+          await hideJob(firstFrameResponse.jobId, hideRequest).catch(() => undefined);
         }
       }
+      if (!request.isCurrent()) return;
       setMessage(`${copy.outputTitle} · ${edit ? editPriceLabel : activePrice}`);
       if (edit) setEditInstruction('');
       void refreshRecentOutputs();
     } catch (runError) {
-      setError(runError instanceof Error ? runError.message : copy.generationFailed);
+      if (request.isCurrent()) setError(runError instanceof Error ? runError.message : copy.generationFailed);
     } finally {
-      setRunning(false);
+      if (request.isCurrent()) setRunning(false);
     }
   }
 
   async function saveSelectedImage() {
     if (!selectedImage?.url) return;
-    if (!user) {
+    const request = captureAccountRequest();
+    if (!user || !request) {
       setAuthModalOpen(true);
       return;
     }
@@ -315,17 +331,17 @@ export default function StoryboardWorkspace() {
         jobId: selectedImageJobId,
         label: copy.outputTitle,
         source: STORYBOARD_SOURCE,
-      });
-      setMessage(copy.savedToLibrary);
+      }, request);
+      if (request.isCurrent()) setMessage(copy.savedToLibrary);
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : copy.generationFailed);
+      if (request.isCurrent()) setError(saveError instanceof Error ? saveError.message : copy.generationFailed);
     } finally {
-      setSaving(false);
+      if (request.isCurrent()) setSaving(false);
     }
   }
 
   function applySelectedImageToGenerator() {
-    if (!selectedImage?.url) return;
+    if (!selectedImage?.url || !user || !captureAccountRequest()) return;
 
     const handoffDraft = selectedRecentOutput?.storyboard ?? null;
     const targetModelForHandoff = selectedKlingFirstFrame?.image?.url ? 'kling' : handoffDraft?.targetModel ?? targetModel;
@@ -353,7 +369,7 @@ export default function StoryboardWorkspace() {
       width: selectedImage.width ?? null,
       height: selectedImage.height ?? null,
     });
-    window.sessionStorage.setItem(STORYBOARD_GENERATOR_HANDOFF_STORAGE_KEY, JSON.stringify(handoff));
+    window.sessionStorage.setItem(`${STORYBOARD_GENERATOR_HANDOFF_STORAGE_KEY}:${user.id}`, JSON.stringify(handoff));
     router.push(buildStoryboardGeneratorHandoffUrl(handoff));
   }
 
@@ -446,37 +462,7 @@ export default function StoryboardWorkspace() {
           </div>
         </main>
       </div>
-      {authModalOpen ? (
-        <div className="fixed inset-0 z-[10050] flex items-center justify-center bg-surface-on-media-dark-60 px-3 py-6 sm:px-6" role="dialog" aria-modal="true">
-          <div className="absolute inset-0" role="presentation" onClick={() => setAuthModalOpen(false)} />
-          <div className="relative z-10 w-full max-w-md rounded-modal border border-border bg-surface p-6 shadow-float">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h2 className="text-base font-semibold text-text-primary">{copy.authTitle}</h2>
-                <p className="mt-2 text-sm text-text-secondary">{copy.authBody}</p>
-              </div>
-              <Button type="button" variant="outline" size="sm" onClick={() => setAuthModalOpen(false)} aria-label={copy.close}>
-                {copy.close}
-              </Button>
-            </div>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
-              <ButtonLink
-                href={buildLoginHref({ mode: 'signup', nextPath: '/app/tools/storyboard' })}
-                size="sm"
-              >
-                {copy.authPrimary}
-              </ButtonLink>
-              <ButtonLink
-                href={buildLoginHref({ mode: 'signin', nextPath: '/app/tools/storyboard' })}
-                variant="outline"
-                size="sm"
-              >
-                {copy.authSecondary}
-              </ButtonLink>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      {authModalOpen ? <StoryboardAuthModal copy={copy} onClose={() => setAuthModalOpen(false)} /> : null}
       <StoryboardReferenceLibraryModal
         libraryModal={libraryModal}
         onClose={closeReferenceLibrary}

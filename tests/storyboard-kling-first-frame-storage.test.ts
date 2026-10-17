@@ -108,3 +108,12 @@ test('maps a recent output Kling frame to the persisted state shape', () => {
 
   assert.deepEqual(buildKlingFirstFrameFromRecentOutput(recentOutput), expectedFrame);
 });
+
+
+test('account-scoped Kling frames never adopt legacy or another account media',()=>{
+  const storage=createMemoryStorage({[KLING_FIRST_FRAME_STORAGE_KEY]:JSON.stringify({'storyboard-job':frame})});
+  assert.equal(getStoredKlingFirstFrame('storyboard-job',frame.storyboardUrl,storage,'account-A'),null);
+  writeStoredKlingFirstFrame(frame,storage,'account-A');
+  assert.deepEqual(getStoredKlingFirstFrame('storyboard-job',frame.storyboardUrl,storage,'account-A'),frame);
+  assert.equal(getStoredKlingFirstFrame('storyboard-job',frame.storyboardUrl,storage,'account-B'),null);
+});
