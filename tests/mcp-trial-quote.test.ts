@@ -304,6 +304,7 @@ test('prepare_generation SDK validation rejects unknown top-level routing and fu
   const server = createMaxVideoAiMcpServer(principal, services, {
     paidGeneration: true,
     referenceUploads: false,
+    audioGeneration: false,
   });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   const client = new Client({ name: 'trial-strict-input-contract', version: '1.0.0' });
