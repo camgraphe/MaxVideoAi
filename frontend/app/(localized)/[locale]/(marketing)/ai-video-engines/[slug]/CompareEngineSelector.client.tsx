@@ -19,6 +19,7 @@ export function CompareEngineSelector({ options, value, otherValue, side, engine
   const searchPlaceholder =
     locale === 'fr' ? 'Rechercher un modèle...' : locale === 'es' ? 'Buscar modelo...' : 'Search engine...';
   const noResultsLabel = locale === 'fr' ? 'Aucun résultat' : locale === 'es' ? 'Sin resultados' : 'No results';
+  const changeLabel = locale === 'fr' ? 'Changer' : locale === 'es' ? 'Cambiar' : 'Change';
 
   return (
     <CompareEngineFamilySelect
@@ -28,7 +29,8 @@ export function CompareEngineSelector({ options, value, otherValue, side, engine
       searchPlaceholder={searchPlaceholder}
       noResultsLabel={noResultsLabel}
       engineScores={engineScores}
-      buttonClassName="h-9 w-full max-w-[220px] min-w-0 rounded-[10px] border border-hairline bg-bg/80 px-3 py-2 text-[12px] font-semibold text-text-primary shadow-sm transition hover:border-[var(--brand-border)] hover:bg-surface-2 sm:max-w-none sm:min-w-[180px] md:min-w-[210px] [&>svg]:h-3 [&>svg]:w-3 [&>svg]:opacity-70"
+      triggerActionLabel={changeLabel}
+      buttonClassName="compare-engine-trigger"
       onChange={(next) => {
         const nextValue = String(next);
         if (!nextValue || nextValue === value) return;

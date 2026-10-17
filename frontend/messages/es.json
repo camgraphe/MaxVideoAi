@@ -7020,7 +7020,7 @@
     "scorecard": {
       "title": "Compara los puntos fuertes.",
       "subtitle": "Las puntuaciones reflejan la calidad y el control en MaxVideoAI a lo largo de 11 criterios.",
-      "provisionalNote": "Las puntuaciones de prelanzamiento son provisionales y se actualizarán cuando haya renders runtime y precio final.",
+      "provisionalNote": "Las notas de prelanzamiento son provisionales y deberán revisarse cuando haya resultados disponibles.",
       "strengthsLabel": "Fortalezas",
       "winnerSummary": "Lo esencial",
       "winnerSummaryPrelaunch": "Líder actual (prelanzamiento)",

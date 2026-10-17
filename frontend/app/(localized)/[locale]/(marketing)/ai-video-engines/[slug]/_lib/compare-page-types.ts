@@ -123,8 +123,6 @@ export type ComparePricingDisplay = {
   subline: string | null;
   secondaryLines?: string[];
   prices: number[];
-  scoreLine?: string;
-  scorePrices?: number[];
   quoteUnavailable?: boolean;
   scenario?: import('@/lib/pricing-public-model-contract').PublicModelQuoteInput & { amountCents: number };
   priceRows?: Array<{ resolution: string; unitPrice: string; totalPrice: string }>;

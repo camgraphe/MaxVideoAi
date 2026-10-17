@@ -60,8 +60,8 @@ export function CompareSpecsSection({
 
       <div className="compare-spec-preview">
         {previewRows.map(({ row, Icon }) => <article key={row.label}>
-          <h3><Icon size={20} aria-hidden="true" />{row.label}</h3>
-          <dl>{[{ entry: left, value: row.left }, { entry: right, value: row.right }].map(({ entry, value }) => <div key={entry.modelSlug}>
+          <h3><span className="compare-spec-icon"><Icon size={18} aria-hidden="true" /></span>{row.label}</h3>
+          <dl>{[{ entry: left, value: row.left, side: 'left' }, { entry: right, value: row.right, side: 'right' }].map(({ entry, value, side }) => <div key={entry.modelSlug} className={`compare-spec-side compare-spec-side--${side}`}>
             <dt>{formatEngineName(entry)}</dt><dd>{localizeSpecDetailValue(value, activeLocale, { pending: labels.pending, supported: labels.supported, notSupported: labels.notSupported })}</dd>
           </div>)}</dl>
         </article>)}
