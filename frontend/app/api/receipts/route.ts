@@ -12,6 +12,7 @@ export const runtime = 'nodejs';
 const stripe = ENV.STRIPE_SECRET_KEY
   ? new Stripe(ENV.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' })
   : null;
+const stripeLivemode = /^(sk|rk)_live_/.test(ENV.STRIPE_SECRET_KEY ?? '');
 
 export async function GET(req: NextRequest) {
   const databaseConfigured = isDatabaseConfigured();
@@ -64,6 +65,7 @@ export async function GET(req: NextRequest) {
     tax_amount_cents: number | null;
     discount_amount_cents: number | null;
     stripe_payment_intent_id: string | null;
+    stripe_checkout_session_id: string | null;
     stripe_charge_id: string | null;
     stripe_invoice_id: string | null;
     stripe_hosted_invoice_url: string | null;
@@ -90,6 +92,7 @@ export async function GET(req: NextRequest) {
          NULL::bigint AS tax_amount_cents,
          NULL::bigint AS discount_amount_cents,
          stripe_payment_intent_id,
+         COALESCE(NULLIF(stripe_checkout_session_id, ''), metadata->>'sessionId', metadata->>'session_id') AS stripe_checkout_session_id,
          stripe_charge_id,
          stripe_invoice_id,
          stripe_hosted_invoice_url,
@@ -120,7 +123,9 @@ export async function GET(req: NextRequest) {
     items.map(async (row) => {
       const hasCachedInvoice = Boolean(row.stripe_hosted_invoice_url || row.stripe_invoice_pdf);
       const hasCachedReceiptWithoutInvoice = Boolean(row.stripe_receipt_url && !row.stripe_invoice_id);
-      const lookupClient = hasCachedInvoice || hasCachedReceiptWithoutInvoice ? null : stripe;
+      // Legacy test checkouts can remain in the ledger; their objects do not exist in live mode.
+      const testCheckoutInLiveMode = stripeLivemode && row.stripe_checkout_session_id?.startsWith('cs_test_');
+      const lookupClient = hasCachedInvoice || hasCachedReceiptWithoutInvoice || testCheckoutInLiveMode ? null : stripe;
       const document = await resolveStripeBillingDocument(lookupClient, {
         type: row.kind,
         stripeInvoiceId: row.stripe_invoice_id,

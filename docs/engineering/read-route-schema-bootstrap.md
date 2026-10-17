@@ -34,7 +34,11 @@ configuration as part of a customer request.
 - `GET /api/receipts` authenticates before reading the account's paginated ledger
   and resolves its stored Stripe document metadata. A configured database failure
   returns 503, never a successful empty mock ledger. The intentional unconfigured
-  local response remains explicitly marked `mock: true`.
+  local response remains explicitly marked `mock: true`. With a live Stripe key,
+  historical `cs_test_` checkouts are not queried for documents. The canonical
+  `stripe_checkout_session_id` takes precedence over legacy metadata `sessionId`
+  and `session_id`; unknown modes retain the normal lookup. Stored documents,
+  ledger rows, balances and original Stripe references remain unchanged.
 - `GET /api/user/exports/summary` counts the account's visible jobs and retains
   the idempotent per-user `user_preferences` initialization. It does not run the
   unrelated global billing bootstrap.
