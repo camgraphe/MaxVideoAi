@@ -165,3 +165,16 @@ test('upload dispatch after local preparation uses the renewed token of the same
     assert.equal(f.w.builder.references.assets[f.w.builder.references.field.id][0].status,'ready');
   }finally{await f.close();}
 });
+
+
+test('unresolved authentication does not double initial estimates or retire a same-account draft during refresh',async()=>{
+  const f=await mountStoryboard({userId:null,loading:true});try{
+    const estimates=()=>f.w.requests.filter((r:any)=>r.url==='/api/images/estimate');
+    assert.equal(estimates().length,0,'the loading shell must not mount guest pricing');
+    await f.auth('account-A');assert.equal(estimates().length,3);
+    await f.edit('Keep the current owned draft');
+    await f.auth('account-A',true,'renewed-A');await f.auth('account-A',false,'renewed-A');
+    assert.equal(f.w.builder.prompt.subject,'Keep the current owned draft');
+    assert.equal(estimates().length,3,'same-account refresh must not remount pricing');
+  }finally{await f.close();}
+});

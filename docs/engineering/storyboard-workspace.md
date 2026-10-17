@@ -4,7 +4,9 @@
 for `/app/tools/storyboard`. Its outer auth boundary keys the stateful workspace
 by confirmed account id or guest. Account changes discard the previous brief,
 references, selected history, results, notices and request lifetime before the
-next account renders. A token refresh for the same account preserves that state.
+next account renders. A token refresh for the same account preserves that state. While initial auth is
+unresolved, the outer boundary renders the existing loading shell before mounting
+pricing hooks; account resolution must not issue a second set of three estimates.
 
 ## Owned asynchronous actions
 

@@ -31,7 +31,7 @@ export async function mountStoryboard(options: { userId?: string | null; loading
       window.prepareUpload=async file=>file;
       window.fixtureFetch=async(url,init={})=>{
         const entry={url,init,owner:window.fixtureAuth.user?.id??null};
-        if(url==='/api/images/estimate')return {ok:true,status:200,json:async()=>({ok:true,pricing:{totalCents:42,currency:'USD'}})};
+        if(url==='/api/images/estimate'){window.requests.push(entry);return {ok:true,status:200,json:async()=>({ok:true,pricing:{totalCents:42,currency:'USD'}})};}
         if(url.includes('recent-outputs')&&!window.holdHistory){window.requests.push(entry);return {ok:true,status:200,json:async()=>({ok:true,outputs:entry.owner?[{id:entry.owner+'-output',jobId:entry.owner+'-job',url:'https://example.invalid/'+entry.owner+'.png',thumbUrl:null,previewUrl:null,width:100,height:100,mime:'image/png',createdAt:null,isSaved:false}]:[]})};}
         return new Promise(resolve=>window.requests.push({...entry,resolve}));
       };

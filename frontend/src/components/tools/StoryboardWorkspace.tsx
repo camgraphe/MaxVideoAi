@@ -34,7 +34,22 @@ import { DEFAULT_STORYBOARD_TIER, STORYBOARD_TEMPLATE_SIZES, getAbsoluteStoryboa
 
 export default function StoryboardWorkspace() {
   const auth = useRequireAuth({ redirectIfLoggedOut: false });
+  if (auth.loading && !auth.user) return <StoryboardLoadingShell />;
   return <OwnedStoryboardWorkspace key={auth.user?.id ?? 'guest'} auth={auth} />;
+}
+
+function StoryboardLoadingShell() {
+  return (
+    <div className="flex min-h-screen flex-col bg-bg">
+      <HeaderBar />
+      <div className="flex flex-1 min-w-0 flex-col md:flex-row">
+        <AppSidebar />
+        <main className="flex-1 p-5 lg:p-7">
+          <div className="h-96 animate-pulse rounded-card border border-border bg-surface" />
+        </main>
+      </div>
+    </div>
+  );
 }
 
 function OwnedStoryboardWorkspace({ auth }: { auth: ReturnType<typeof useRequireAuth> }) {
@@ -373,19 +388,7 @@ function OwnedStoryboardWorkspace({ auth }: { auth: ReturnType<typeof useRequire
     router.push(buildStoryboardGeneratorHandoffUrl(handoff));
   }
 
-  if (authLoading) {
-    return (
-      <div className="flex min-h-screen flex-col bg-bg">
-        <HeaderBar />
-        <div className="flex flex-1 min-w-0 flex-col md:flex-row">
-          <AppSidebar />
-          <main className="flex-1 p-5 lg:p-7">
-            <div className="h-96 animate-pulse rounded-card border border-border bg-surface" />
-          </main>
-        </div>
-      </div>
-    );
-  }
+  if (authLoading) return <StoryboardLoadingShell />;
 
   if (!FEATURES.workflows.toolsSection) {
     return (
