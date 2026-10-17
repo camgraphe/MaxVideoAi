@@ -5,7 +5,6 @@ export {
   formatEngineShortName,
   formatSpeedChip,
   getEngineAccent,
-  getEngineToneVars,
 } from './compare-page-engine-formatting';
 export type { EngineAccent, OverallTone } from './compare-page-engine-formatting';
 export {
@@ -15,7 +14,6 @@ export {
   localizeMappedValue,
 } from './compare-page-localization';
 export {
-  computePricingScore,
   formatPriceLabel,
   formatPriceLine,
   getPrelaunchCompareNotice,

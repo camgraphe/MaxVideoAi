@@ -28,19 +28,6 @@ export function resolveAudioOffPrice(entry: EngineCatalogEntry): string | null {
   return `Audio off: $${(total / 100).toFixed(2)}/s`;
 }
 
-const PRICING_SCORE_MIN = 0.03;
-const PRICING_SCORE_MAX = 1.0;
-const COMPARABLE_PRICING_RESOLUTIONS = ['720p', '1080p', '480p', '4k'];
-
-export function computePricingScore(prices: number[]): number | null {
-  if (!prices.length) return null;
-  const avg = prices.reduce((sum, value) => sum + value, 0) / prices.length;
-  const normalized =
-    10 * (PRICING_SCORE_MAX - avg) / (PRICING_SCORE_MAX - PRICING_SCORE_MIN);
-  const clamped = Math.max(0, Math.min(10, normalized));
-  return Math.round(clamped * 10) / 10;
-}
-
 export function parseResolutionLabel(label: string) {
   const normalized = label.toLowerCase();
   if (normalized.includes('4k')) return 2160;
@@ -76,20 +63,10 @@ function sortPricePoints(points: ComparePricePoint[]) {
   });
 }
 
-function pickComparablePricePoint(points: ComparePricePoint[]) {
-  const byResolution = new Map(points.map((point) => [point.resolution.toLowerCase(), point]));
-  for (const resolution of COMPARABLE_PRICING_RESOLUTIONS) {
-    const match = byResolution.get(resolution);
-    if (match) return match;
-  }
-  return sortPricePoints(points)[0] ?? null;
-}
-
 function buildPricingDisplayFromPoints(points: ComparePricePoint[], locale: AppLocale): ComparePricingDisplay | null {
   if (!points.length) return null;
   const sorted = sortPricePoints(points);
   const lines = sorted.map((point) => formatPriceLine(point.resolution, point.cents, locale, point.currency));
-  const comparablePoint = pickComparablePricePoint(points);
 
   return {
     headline: lines[0],
@@ -102,8 +79,6 @@ function buildPricingDisplayFromPoints(points: ComparePricePoint[], locale: AppL
     subline: lines[1] ?? null,
     secondaryLines: lines.slice(1),
     prices: sorted.map((point) => toPriceValue(point.cents)),
-    scoreLine: comparablePoint ? formatPriceLine(comparablePoint.resolution, comparablePoint.cents, locale, comparablePoint.currency) : undefined,
-    scorePrices: comparablePoint ? [toPriceValue(comparablePoint.cents)] : undefined,
   };
 }
 
@@ -155,7 +130,7 @@ export async function resolvePricingDisplay(
   preferredDurationSec?: number,
 ): Promise<ComparePricingDisplay> {
   if (entry.surfaces?.app?.enabled === false) {
-    return { headline: locale === 'fr' ? 'Génération indisponible' : locale === 'es' ? 'Generación no disponible' : 'Generation unavailable', subline: null, prices: [], scorePrices: [] };
+    return { headline: locale === 'fr' ? 'Génération indisponible' : locale === 'es' ? 'Generación no disponible' : 'Generation unavailable', subline: null, prices: [] };
   }
   const availability = String(entry.availability ?? '').toLowerCase();
   if (availability === 'waitlist') {
@@ -163,7 +138,6 @@ export async function resolvePricingDisplay(
       headline: getPrelaunchPricingLabel(locale),
       subline: null,
       prices: [],
-      scorePrices: [],
     };
   }
 
@@ -174,13 +148,12 @@ export async function resolvePricingDisplay(
     if (display) {
       return display;
     }
-    return { headline: getCurrentPriceUnavailableLabel(locale), subline: null, prices: [], scorePrices: [], quoteUnavailable: true };
+    return { headline: getCurrentPriceUnavailableLabel(locale), subline: null, prices: [], quoteUnavailable: true };
   }
   return {
     headline: getCurrentPriceUnavailableLabel(locale),
     quoteUnavailable: true,
     subline: null,
     prices: [],
-    scorePrices: [],
   };
 }

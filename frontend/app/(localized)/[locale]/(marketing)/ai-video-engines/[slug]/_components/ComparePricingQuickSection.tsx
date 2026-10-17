@@ -31,18 +31,17 @@ export function ComparePricingQuickSection({
 }: ComparePricingQuickSectionProps) {
   const pricingCopy = getCompareEditorialCopy(activeLocale);
   const actions = getCompareDetailActions(activeLocale);
-  const copy = { title: pricingCopy.pricing, subtitle: pricingCopy.priceNote, comparable: activeLocale === 'fr' ? 'Références tarifaires de la grille' : activeLocale === 'es' ? 'Precios de referencia de la evaluación' : 'Scorecard price references' };
+  const copy = { title: pricingCopy.pricing, subtitle: pricingCopy.priceNote };
   const leftLines = getPricingLines(leftPricingDisplay);
   const rightLines = getPricingLines(rightPricingDisplay);
-  const hasComparableLine = leftPricingDisplay.scoreLine && rightPricingDisplay.scoreLine;
-  const scenarioLabel = (display: ComparePricingDisplay) => {
+  const scenarioChips = (display: ComparePricingDisplay) => {
     const scenario = display.scenario;
-    if (!scenario) return null;
+    if (!scenario) return [];
     const mode = activeLocale === 'fr' ? 'Texte vers vidéo' : activeLocale === 'es' ? 'Texto a vídeo' : 'Text to video';
     const audio = scenario.audio
       ? activeLocale === 'fr' ? 'audio activé' : activeLocale === 'es' ? 'audio activado' : 'audio on'
       : activeLocale === 'fr' ? 'sans audio' : activeLocale === 'es' ? 'sin audio' : 'audio off';
-    return [mode, `${scenario.durationSec} s`, scenario.aspectRatio, audio].filter(Boolean).join(' · ');
+    return [mode, `${scenario.durationSec} s`, scenario.aspectRatio, audio].filter(Boolean);
   };
   const perVideo = activeLocale === 'fr' ? 'par vidéo' : activeLocale === 'es' ? 'por vídeo' : 'per video';
 
@@ -54,14 +53,14 @@ export function ComparePricingQuickSection({
       </div>
       <div className="compare-price-tickets">
         {[
-          { entry: left, lines: leftLines, display: leftPricingDisplay },
-          { entry: right, lines: rightLines, display: rightPricingDisplay },
-        ].map(({ entry, lines, display }) => (
-          <article key={entry.modelSlug} className="compare-price-ticket">
+          { entry: left, lines: leftLines, display: leftPricingDisplay, side: 'left' },
+          { entry: right, lines: rightLines, display: rightPricingDisplay, side: 'right' },
+        ].map(({ entry, lines, display, side }) => (
+          <article key={entry.modelSlug} className={`compare-price-ticket compare-price-ticket--${side}`}>
             <h3><EngineIcon engine={{ id: entry.engineId, label: formatEngineName(entry), brandId: entry.brandId }} size={28} framed={false} />{formatEngineName(entry)}</h3>
-            {scenarioLabel(display) ? <p className="compare-price-scenario">{scenarioLabel(display)}</p> : null}
+            {scenarioChips(display).length ? <div className="compare-price-scenario" aria-label={scenarioChips(display).join(', ')}>{scenarioChips(display).map(chip => <span key={chip}>{chip}</span>)}</div> : null}
             {display.priceRows?.length ? <dl>{display.priceRows.map(row => (
-              <div key={row.resolution}><dt>{row.resolution}</dt><dd>{row.unitPrice}<small>{row.totalPrice} {perVideo}</small></dd></div>
+              <div key={row.resolution} className="compare-price-row"><dt><span>{row.resolution}</span></dt><dd><strong>{row.totalPrice}</strong><small>{perVideo} · <span className="compare-price-unit">{row.unitPrice}</span></small></dd></div>
             ))}</dl> : <dl>{lines.map(line => {
               const separator = line.indexOf(':');
               return <div key={line}>{separator > -1 ? <><dt>{line.slice(0, separator)}</dt><dd>{line.slice(separator + 1).trim()}</dd></> : <dd>{line}</dd>}</div>;
@@ -77,11 +76,6 @@ export function ComparePricingQuickSection({
           <Link href="/pricing">{actions.priceLink}<ArrowRight size={16} aria-hidden="true" /></Link>
         </div>
       </div>
-      {hasComparableLine ? (
-        <p className="mt-3 text-center text-xs font-semibold text-text-muted">
-          {copy.comparable}: {leftPricingDisplay.scoreLine} vs {rightPricingDisplay.scoreLine}
-        </p>
-      ) : null}
     </section>
   );
 }

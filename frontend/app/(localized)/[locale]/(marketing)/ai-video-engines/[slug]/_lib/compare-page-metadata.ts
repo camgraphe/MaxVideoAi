@@ -50,7 +50,7 @@ export async function buildComparePageMetadata(props: {
   };
   const resolved = canonicalInfo ? resolveEngines(canonicalInfo.canonicalSlug) : null;
   const pairHasNativeAudio = Boolean(resolved?.left.engine?.audio) || Boolean(resolved?.right.engine?.audio);
-  const criteriaCount = pairHasNativeAudio ? 11 : 10;
+  const criteriaCount = pairHasNativeAudio ? 10 : 9;
   const titleTemplate =
     metaOverride.title ?? compareCopy.meta?.title ?? '{left} vs {right} — Side-by-Side Specs, Pricing & Quality | MaxVideoAI';
   const titleFallback =
