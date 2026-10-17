@@ -377,7 +377,8 @@ export function useWorkspaceVideoSettings({
     if (!engines.length) return;
     if (hydratedForScope !== storageScope) return;
 
-    const rawHandoff = window.sessionStorage.getItem(STORYBOARD_GENERATOR_HANDOFF_STORAGE_KEY);
+    const storyboardHandoffKey = `${STORYBOARD_GENERATOR_HANDOFF_STORAGE_KEY}:${storageScope}`;
+    const rawHandoff = window.sessionStorage.getItem(storyboardHandoffKey);
     const handoff = parseStoryboardGeneratorHandoff(rawHandoff);
     const params = new URLSearchParams(searchString);
     const stripStoryboardParam = () => {
@@ -387,7 +388,7 @@ export function useWorkspaceVideoSettings({
     };
 
     if (!handoff) {
-      window.sessionStorage.removeItem(STORYBOARD_GENERATOR_HANDOFF_STORAGE_KEY);
+      window.sessionStorage.removeItem(storyboardHandoffKey);
       stripStoryboardParam();
       setNotice('Storyboard handoff expired. Generate or select a storyboard again.');
       return;
@@ -426,13 +427,13 @@ export function useWorkspaceVideoSettings({
       setSharedPrompt(null);
       setSharedVideoSettings(null);
       setNotice(null);
-      window.sessionStorage.removeItem(STORYBOARD_GENERATOR_HANDOFF_STORAGE_KEY);
+      window.sessionStorage.removeItem(storyboardHandoffKey);
       stripStoryboardParam();
       queueMicrotask(() => {
         focusComposer();
       });
     } catch (error) {
-      window.sessionStorage.removeItem(STORYBOARD_GENERATOR_HANDOFF_STORAGE_KEY);
+      window.sessionStorage.removeItem(storyboardHandoffKey);
       stripStoryboardParam();
       setNotice(error instanceof Error ? error.message : 'Failed to apply storyboard settings.');
     }

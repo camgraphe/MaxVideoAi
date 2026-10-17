@@ -1,7 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { authFetch } from '@/lib/authFetch';
+import type { CaptureStoryboardAccountRequest } from './useStoryboardAccountScope';
 import type { StoryboardGeneratorHandoffDraft } from '@/lib/storyboard-generator-handoff';
 
 export type StoryboardRecentOutput = {
@@ -37,23 +38,30 @@ type StoryboardRecentOutputsResponse = {
 
 const STORYBOARD_RECENT_OUTPUTS_URL = '/api/media-library/recent-outputs?limit=18&kind=image&surface=storyboard';
 
-export function useStoryboardRecentOutputs(enabled: boolean) {
+export function useStoryboardRecentOutputs(captureAccountRequest: CaptureStoryboardAccountRequest) {
   const [outputs, setOutputs] = useState<StoryboardRecentOutput[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const sequence = useRef(0);
 
   const refresh = useCallback(async () => {
-    if (!enabled) {
+    const attempt = ++sequence.current;
+    const request = captureAccountRequest();
+    if (!request) {
       setOutputs([]);
       setError(null);
       return [];
     }
+    const isCurrent = () => request.isCurrent() && attempt === sequence.current;
 
     setLoading(true);
     setError(null);
     try {
-      const response = await authFetch(STORYBOARD_RECENT_OUTPUTS_URL);
+      const response = await authFetch(STORYBOARD_RECENT_OUTPUTS_URL, {
+        headers: { Authorization: `Bearer ${request.accessToken}` }, signal: request.signal,
+      });
       const payload = (await response.json().catch(() => null)) as StoryboardRecentOutputsResponse | null;
+      if (!isCurrent()) return [];
       if (!response.ok || !payload?.ok) {
         throw new Error(payload?.error ?? 'recent_outputs_failed');
       }
@@ -61,16 +69,18 @@ export function useStoryboardRecentOutputs(enabled: boolean) {
       setOutputs(nextOutputs);
       return nextOutputs;
     } catch (loadError) {
+      if (!isCurrent()) return [];
       setError(loadError instanceof Error ? loadError.message : 'recent_outputs_failed');
       setOutputs([]);
       return [];
     } finally {
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
-  }, [enabled]);
+  }, [captureAccountRequest]);
 
   useEffect(() => {
     void refresh();
+    return () => { sequence.current += 1; };
   }, [refresh]);
 
   return {

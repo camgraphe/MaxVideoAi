@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
       cursor: req.nextUrl.searchParams.get('cursor'),
       q: req.nextUrl.searchParams.get('q'),
       jobId: exactJob.value,
-    });
+    }, { ensureSchema: false });
   } catch (error) {
     console.error('[media-library] failed to list recent outputs', error);
     return NextResponse.json({ ok: false, outputs: [], error: 'LOAD_FAILED' }, { status: 500 });
@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
       klingFirstFramesByParentJobId = await listStoryboardKlingFirstFrameOutputs({
         userId,
         parentJobIds: page.items.map((output) => output.jobId),
-      });
+      }, { ensureSchema: false });
     } catch (error) {
       console.error('[media-library] failed to list storyboard first frames', error);
     }

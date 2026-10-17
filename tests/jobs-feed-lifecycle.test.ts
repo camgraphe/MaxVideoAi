@@ -27,7 +27,6 @@ test('real SWR feed isolates source/account transitions, resets pagination, refr
     '@/lib/last-known': `export const readLastKnownUserId = () => window.fixtureUser; export const writeLastKnownUserId = (id) => { window.fixtureUser = id; };`,
     '@/lib/supabase-session-hint': `export const hasSupabaseAuthCookie = () => true;`,
     '@/lib/supabaseClient': `export const supabase = { auth: { getSession: async () => ({ data: { session: { user: { id: window.fixtureUser } } } }), onAuthStateChange: (fn) => { window.fixtureAuth = fn; return { data: { subscription: { unsubscribe() {} } } }; } } };`,
-    '@/lib/api-job-status': `export const clearMissingStatusRetries = () => {}; export const clearStatusRetry = () => {}; export const getStatusRetryMeta = () => null; export const jobHasRenderableMedia = (job) => Boolean(job.videoUrl); export const scheduleStatusRetry = () => {};`,
   };
   const bundle = await build({ absWorkingDir: frontend, bundle: true, format: 'iife', platform: 'browser', jsx: 'automatic', write: false,
     define: { 'process.env.NODE_ENV': '"test"', 'process.env.S3_PUBLIC_BASE_URL': '""', 'process.env.S3_BUCKET': '""', 'process.env.S3_REGION': '""' }, tsconfig: path.join(frontend, 'tsconfig.json'),

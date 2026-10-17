@@ -18,7 +18,7 @@ const explicitAuthEntrySources = [
   'frontend/app/(core)/billing/_components/BillingAuthGateModal.tsx',
   'frontend/src/components/tools/angle/_components/angle-auth-gate-modal.tsx',
   'frontend/src/components/tools/character-builder/_components/character-builder-page-shell.tsx',
-  'frontend/src/components/tools/StoryboardWorkspace.tsx',
+  'frontend/src/components/tools/storyboard/_components/StoryboardAuthModal.tsx',
   'frontend/src/components/tools/ToolWorkbench.tsx',
   'frontend/src/hooks/useRequireAuth.ts',
   'frontend/app/(core)/admin/layout.tsx',

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured, query } from '@/lib/db';
-import { ensureBillingSchema } from '@/lib/schema';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { parseStoredImageRenders } from '@/lib/image-renders';
 import { VISITOR_WORKSPACE_ENABLED } from '@/lib/visitor-access';
@@ -63,13 +62,6 @@ export async function GET(req: NextRequest) {
   }
 
   if (!isDatabaseConfigured()) {
-    return json({ ok: false, characters: [], error: 'Database unavailable' }, { status: 503 });
-  }
-
-  try {
-    await ensureBillingSchema();
-  } catch (error) {
-    console.warn('[character-references] schema init failed', error);
     return json({ ok: false, characters: [], error: 'Database unavailable' }, { status: 503 });
   }
 

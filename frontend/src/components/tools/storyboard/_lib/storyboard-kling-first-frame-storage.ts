@@ -18,12 +18,14 @@ function resolveStorage(storage?: Storage | null): Storage | null {
 }
 
 export function readStoredKlingFirstFrames(
-  storage?: Storage | null
+  storage?: Storage | null,
+  userId?: string
 ): Record<string, KlingFirstFrameState> {
   try {
     const targetStorage = resolveStorage(storage);
     if (!targetStorage) return {};
-    const parsed = JSON.parse(targetStorage.getItem(KLING_FIRST_FRAME_STORAGE_KEY) ?? '{}') as unknown;
+    const key = userId ? `${KLING_FIRST_FRAME_STORAGE_KEY}:${userId}` : KLING_FIRST_FRAME_STORAGE_KEY;
+    const parsed = JSON.parse(targetStorage.getItem(key) ?? '{}') as unknown;
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
     return parsed as Record<string, KlingFirstFrameState>;
   } catch {
@@ -33,23 +35,26 @@ export function readStoredKlingFirstFrames(
 
 export function writeStoredKlingFirstFrame(
   frame: KlingFirstFrameState,
-  storage?: Storage | null
+  storage?: Storage | null,
+  userId?: string
 ): void {
   if (!frame.storyboardJobId) return;
   const targetStorage = resolveStorage(storage);
   if (!targetStorage) return;
-  const frames = readStoredKlingFirstFrames(targetStorage);
+  const frames = readStoredKlingFirstFrames(targetStorage, userId);
   frames[frame.storyboardJobId] = frame;
-  targetStorage.setItem(KLING_FIRST_FRAME_STORAGE_KEY, JSON.stringify(frames));
+  const key = userId ? `${KLING_FIRST_FRAME_STORAGE_KEY}:${userId}` : KLING_FIRST_FRAME_STORAGE_KEY;
+  targetStorage.setItem(key, JSON.stringify(frames));
 }
 
 export function getStoredKlingFirstFrame(
   storyboardJobId: string | null,
   storyboardUrl: string,
-  storage?: Storage | null
+  storage?: Storage | null,
+  userId?: string
 ): KlingFirstFrameState | null {
   if (!storyboardJobId) return null;
-  const frame = readStoredKlingFirstFrames(storage)[storyboardJobId];
+  const frame = readStoredKlingFirstFrames(storage, userId)[storyboardJobId];
   if (!frame?.image?.url || frame.storyboardUrl !== storyboardUrl) return null;
   return frame;
 }
