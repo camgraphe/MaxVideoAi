@@ -1,0 +1,704 @@
+[
+  {
+    "queryMs": 2760.5612920000003,
+    "rows": 96,
+    "serializedBytes": 476726,
+    "fieldBytes": {
+      "job_id": 3976,
+      "user_id": 3648,
+      "engine_id": 1416,
+      "engine_label": 1752,
+      "duration_sec": 156,
+      "prompt": 153682,
+      "thumb_url": 12945,
+      "video_url": 11136,
+      "preview_video_url": 11821,
+      "keyframe_urls": 38305,
+      "aspect_ratio": 582,
+      "output_width": 384,
+      "output_height": 377,
+      "has_audio": 402,
+      "can_upscale": 480,
+      "created_at": 2496,
+      "visibility": 768,
+      "indexable": 384,
+      "featured": 480,
+      "featured_order": 96,
+      "final_price_cents": 257,
+      "currency": 480,
+      "settings_snapshot": 197678
+    },
+    "planMs": 534.3806249999998,
+    "plan": {
+      "planningMs": 0.738,
+      "executionMs": 5.547,
+      "tree": {
+        "Node Type": "Nested Loop",
+        "Plan Width": 695,
+        "Actual Startup Time": 0.34,
+        "Actual Total Time": 5.473,
+        "Actual Rows": 96,
+        "Actual Loops": 1,
+        "Shared Hit Blocks": 1812,
+        "Shared Read Blocks": 0,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Width": 3492,
+            "Actual Startup Time": 0.229,
+            "Actual Total Time": 1.092,
+            "Actual Rows": 96,
+            "Actual Loops": 1,
+            "Shared Hit Blocks": 948,
+            "Shared Read Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Relation Name": "app_jobs",
+                "Plan Width": 3492,
+                "Actual Startup Time": 0.223,
+                "Actual Total Time": 0.865,
+                "Actual Rows": 96,
+                "Actual Loops": 1,
+                "Shared Hit Blocks": 660,
+                "Shared Read Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "BitmapAnd",
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.189,
+                    "Actual Total Time": 0.189,
+                    "Actual Rows": 0,
+                    "Actual Loops": 1,
+                    "Shared Hit Blocks": 105,
+                    "Shared Read Blocks": 0,
+                    "Plans": [
+                      {
+                        "Node Type": "Bitmap Index Scan",
+                        "Plan Width": 0,
+                        "Actual Startup Time": 0.062,
+                        "Actual Total Time": 0.062,
+                        "Actual Rows": 1633,
+                        "Actual Loops": 1,
+                        "Shared Hit Blocks": 5,
+                        "Shared Read Blocks": 0
+                      },
+                      {
+                        "Node Type": "Bitmap Index Scan",
+                        "Plan Width": 0,
+                        "Actual Startup Time": 0.108,
+                        "Actual Total Time": 0.108,
+                        "Actual Rows": 96,
+                        "Actual Loops": 1,
+                        "Shared Hit Blocks": 100,
+                        "Shared Read Blocks": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "job_outputs",
+                "Plan Width": 295,
+                "Actual Startup Time": 0.002,
+                "Actual Total Time": 0.002,
+                "Actual Rows": 0,
+                "Actual Loops": 96,
+                "Shared Hit Blocks": 288,
+                "Shared Read Blocks": 0
+              }
+            ]
+          },
+          {
+            "Node Type": "Index Only Scan",
+            "Relation Name": "media_assets",
+            "Plan Width": 170,
+            "Actual Startup Time": 0.001,
+            "Actual Total Time": 0.001,
+            "Actual Rows": 0,
+            "Actual Loops": 96,
+            "Shared Hit Blocks": 288,
+            "Shared Read Blocks": 0
+          },
+          {
+            "Node Type": "Limit",
+            "Subplan Name": "SubPlan 1",
+            "Plan Width": 40,
+            "Actual Startup Time": 0,
+            "Actual Total Time": 0,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Shared Hit Blocks": 0,
+            "Shared Read Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Sort",
+                "Plan Width": 40,
+                "Actual Startup Time": 0,
+                "Actual Total Time": 0,
+                "Actual Rows": 0,
+                "Actual Loops": 0,
+                "Shared Hit Blocks": 0,
+                "Shared Read Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Index Scan",
+                    "Relation Name": "job_outputs",
+                    "Plan Width": 40,
+                    "Actual Startup Time": 0,
+                    "Actual Total Time": 0,
+                    "Actual Rows": 0,
+                    "Actual Loops": 0,
+                    "Shared Hit Blocks": 0,
+                    "Shared Read Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Node Type": "Limit",
+            "Subplan Name": "SubPlan 2",
+            "Plan Width": 16,
+            "Actual Startup Time": 0.002,
+            "Actual Total Time": 0.002,
+            "Actual Rows": 0,
+            "Actual Loops": 96,
+            "Shared Hit Blocks": 288,
+            "Shared Read Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Incremental Sort",
+                "Plan Width": 16,
+                "Actual Startup Time": 0.002,
+                "Actual Total Time": 0.002,
+                "Actual Rows": 0,
+                "Actual Loops": 96,
+                "Shared Hit Blocks": 288,
+                "Shared Read Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Index Scan",
+                    "Relation Name": "job_outputs",
+                    "Plan Width": 16,
+                    "Actual Startup Time": 0.002,
+                    "Actual Total Time": 0.002,
+                    "Actual Rows": 0,
+                    "Actual Loops": 96,
+                    "Shared Hit Blocks": 288,
+                    "Shared Read Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Node Type": "Limit",
+            "Subplan Name": "SubPlan 3",
+            "Plan Width": 16,
+            "Actual Startup Time": 0.002,
+            "Actual Total Time": 0.002,
+            "Actual Rows": 0,
+            "Actual Loops": 96,
+            "Shared Hit Blocks": 288,
+            "Shared Read Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Incremental Sort",
+                "Plan Width": 16,
+                "Actual Startup Time": 0.001,
+                "Actual Total Time": 0.001,
+                "Actual Rows": 0,
+                "Actual Loops": 96,
+                "Shared Hit Blocks": 288,
+                "Shared Read Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Index Scan",
+                    "Relation Name": "job_outputs",
+                    "Plan Width": 16,
+                    "Actual Startup Time": 0.001,
+                    "Actual Total Time": 0.001,
+                    "Actual Rows": 0,
+                    "Actual Loops": 96,
+                    "Shared Hit Blocks": 288,
+                    "Shared Read Blocks": 0
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "queryMs": 2234.954541,
+    "rows": 96,
+    "serializedBytes": 476726,
+    "fieldBytes": {
+      "job_id": 3976,
+      "user_id": 3648,
+      "engine_id": 1416,
+      "engine_label": 1752,
+      "duration_sec": 156,
+      "prompt": 153682,
+      "thumb_url": 12945,
+      "video_url": 11136,
+      "preview_video_url": 11821,
+      "keyframe_urls": 38305,
+      "aspect_ratio": 582,
+      "output_width": 384,
+      "output_height": 377,
+      "has_audio": 402,
+      "can_upscale": 480,
+      "created_at": 2496,
+      "visibility": 768,
+      "indexable": 384,
+      "featured": 480,
+      "featured_order": 96,
+      "final_price_cents": 257,
+      "currency": 480,
+      "settings_snapshot": 197678
+    },
+    "planMs": 144.5049999999992,
+    "plan": {
+      "planningMs": 0.734,
+      "executionMs": 5.58,
+      "tree": {
+        "Node Type": "Nested Loop",
+        "Plan Width": 695,
+        "Actual Startup Time": 0.334,
+        "Actual Total Time": 5.512,
+        "Actual Rows": 96,
+        "Actual Loops": 1,
+        "Shared Hit Blocks": 1812,
+        "Shared Read Blocks": 0,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Width": 3492,
+            "Actual Startup Time": 0.224,
+            "Actual Total Time": 1.089,
+            "Actual Rows": 96,
+            "Actual Loops": 1,
+            "Shared Hit Blocks": 948,
+            "Shared Read Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Relation Name": "app_jobs",
+                "Plan Width": 3492,
+                "Actual Startup Time": 0.219,
+                "Actual Total Time": 0.87,
+                "Actual Rows": 96,
+                "Actual Loops": 1,
+                "Shared Hit Blocks": 660,
+                "Shared Read Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "BitmapAnd",
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.185,
+                    "Actual Total Time": 0.186,
+                    "Actual Rows": 0,
+                    "Actual Loops": 1,
+                    "Shared Hit Blocks": 105,
+                    "Shared Read Blocks": 0,
+                    "Plans": [
+                      {
+                        "Node Type": "Bitmap Index Scan",
+                        "Plan Width": 0,
+                        "Actual Startup Time": 0.061,
+                        "Actual Total Time": 0.061,
+                        "Actual Rows": 1633,
+                        "Actual Loops": 1,
+                        "Shared Hit Blocks": 5,
+                        "Shared Read Blocks": 0
+                      },
+                      {
+                        "Node Type": "Bitmap Index Scan",
+                        "Plan Width": 0,
+                        "Actual Startup Time": 0.106,
+                        "Actual Total Time": 0.106,
+                        "Actual Rows": 96,
+                        "Actual Loops": 1,
+                        "Shared Hit Blocks": 100,
+                        "Shared Read Blocks": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "job_outputs",
+                "Plan Width": 295,
+                "Actual Startup Time": 0.002,
+                "Actual Total Time": 0.002,
+                "Actual Rows": 0,
+                "Actual Loops": 96,
+                "Shared Hit Blocks": 288,
+                "Shared Read Blocks": 0
+              }
+            ]
+          },
+          {
+            "Node Type": "Index Only Scan",
+            "Relation Name": "media_assets",
+            "Plan Width": 170,
+            "Actual Startup Time": 0.001,
+            "Actual Total Time": 0.001,
+            "Actual Rows": 0,
+            "Actual Loops": 96,
+            "Shared Hit Blocks": 288,
+            "Shared Read Blocks": 0
+          },
+          {
+            "Node Type": "Limit",
+            "Subplan Name": "SubPlan 1",
+            "Plan Width": 40,
+            "Actual Startup Time": 0,
+            "Actual Total Time": 0,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Shared Hit Blocks": 0,
+            "Shared Read Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Sort",
+                "Plan Width": 40,
+                "Actual Startup Time": 0,
+                "Actual Total Time": 0,
+                "Actual Rows": 0,
+                "Actual Loops": 0,
+                "Shared Hit Blocks": 0,
+                "Shared Read Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Index Scan",
+                    "Relation Name": "job_outputs",
+                    "Plan Width": 40,
+                    "Actual Startup Time": 0,
+                    "Actual Total Time": 0,
+                    "Actual Rows": 0,
+                    "Actual Loops": 0,
+                    "Shared Hit Blocks": 0,
+                    "Shared Read Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Node Type": "Limit",
+            "Subplan Name": "SubPlan 2",
+            "Plan Width": 16,
+            "Actual Startup Time": 0.002,
+            "Actual Total Time": 0.002,
+            "Actual Rows": 0,
+            "Actual Loops": 96,
+            "Shared Hit Blocks": 288,
+            "Shared Read Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Incremental Sort",
+                "Plan Width": 16,
+                "Actual Startup Time": 0.002,
+                "Actual Total Time": 0.002,
+                "Actual Rows": 0,
+                "Actual Loops": 96,
+                "Shared Hit Blocks": 288,
+                "Shared Read Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Index Scan",
+                    "Relation Name": "job_outputs",
+                    "Plan Width": 16,
+                    "Actual Startup Time": 0.002,
+                    "Actual Total Time": 0.002,
+                    "Actual Rows": 0,
+                    "Actual Loops": 96,
+                    "Shared Hit Blocks": 288,
+                    "Shared Read Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Node Type": "Limit",
+            "Subplan Name": "SubPlan 3",
+            "Plan Width": 16,
+            "Actual Startup Time": 0.002,
+            "Actual Total Time": 0.002,
+            "Actual Rows": 0,
+            "Actual Loops": 96,
+            "Shared Hit Blocks": 288,
+            "Shared Read Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Incremental Sort",
+                "Plan Width": 16,
+                "Actual Startup Time": 0.001,
+                "Actual Total Time": 0.001,
+                "Actual Rows": 0,
+                "Actual Loops": 96,
+                "Shared Hit Blocks": 288,
+                "Shared Read Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Index Scan",
+                    "Relation Name": "job_outputs",
+                    "Plan Width": 16,
+                    "Actual Startup Time": 0.001,
+                    "Actual Total Time": 0.001,
+                    "Actual Rows": 0,
+                    "Actual Loops": 96,
+                    "Shared Hit Blocks": 288,
+                    "Shared Read Blocks": 0
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "queryMs": 3412.887958000001,
+    "rows": 96,
+    "serializedBytes": 476726,
+    "fieldBytes": {
+      "job_id": 3976,
+      "user_id": 3648,
+      "engine_id": 1416,
+      "engine_label": 1752,
+      "duration_sec": 156,
+      "prompt": 153682,
+      "thumb_url": 12945,
+      "video_url": 11136,
+      "preview_video_url": 11821,
+      "keyframe_urls": 38305,
+      "aspect_ratio": 582,
+      "output_width": 384,
+      "output_height": 377,
+      "has_audio": 402,
+      "can_upscale": 480,
+      "created_at": 2496,
+      "visibility": 768,
+      "indexable": 384,
+      "featured": 480,
+      "featured_order": 96,
+      "final_price_cents": 257,
+      "currency": 480,
+      "settings_snapshot": 197678
+    },
+    "planMs": 275.1427500000009,
+    "plan": {
+      "planningMs": 0.743,
+      "executionMs": 5.659,
+      "tree": {
+        "Node Type": "Nested Loop",
+        "Plan Width": 695,
+        "Actual Startup Time": 0.343,
+        "Actual Total Time": 5.586,
+        "Actual Rows": 96,
+        "Actual Loops": 1,
+        "Shared Hit Blocks": 1812,
+        "Shared Read Blocks": 0,
+        "Plans": [
+          {
+            "Node Type": "Nested Loop",
+            "Plan Width": 3492,
+            "Actual Startup Time": 0.226,
+            "Actual Total Time": 1.125,
+            "Actual Rows": 96,
+            "Actual Loops": 1,
+            "Shared Hit Blocks": 948,
+            "Shared Read Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Relation Name": "app_jobs",
+                "Plan Width": 3492,
+                "Actual Startup Time": 0.222,
+                "Actual Total Time": 0.888,
+                "Actual Rows": 96,
+                "Actual Loops": 1,
+                "Shared Hit Blocks": 660,
+                "Shared Read Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "BitmapAnd",
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.186,
+                    "Actual Total Time": 0.187,
+                    "Actual Rows": 0,
+                    "Actual Loops": 1,
+                    "Shared Hit Blocks": 105,
+                    "Shared Read Blocks": 0,
+                    "Plans": [
+                      {
+                        "Node Type": "Bitmap Index Scan",
+                        "Plan Width": 0,
+                        "Actual Startup Time": 0.06,
+                        "Actual Total Time": 0.06,
+                        "Actual Rows": 1633,
+                        "Actual Loops": 1,
+                        "Shared Hit Blocks": 5,
+                        "Shared Read Blocks": 0
+                      },
+                      {
+                        "Node Type": "Bitmap Index Scan",
+                        "Plan Width": 0,
+                        "Actual Startup Time": 0.108,
+                        "Actual Total Time": 0.108,
+                        "Actual Rows": 96,
+                        "Actual Loops": 1,
+                        "Shared Hit Blocks": 100,
+                        "Shared Read Blocks": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "Node Type": "Index Scan",
+                "Relation Name": "job_outputs",
+                "Plan Width": 295,
+                "Actual Startup Time": 0.002,
+                "Actual Total Time": 0.002,
+                "Actual Rows": 0,
+                "Actual Loops": 96,
+                "Shared Hit Blocks": 288,
+                "Shared Read Blocks": 0
+              }
+            ]
+          },
+          {
+            "Node Type": "Index Only Scan",
+            "Relation Name": "media_assets",
+            "Plan Width": 170,
+            "Actual Startup Time": 0.001,
+            "Actual Total Time": 0.001,
+            "Actual Rows": 0,
+            "Actual Loops": 96,
+            "Shared Hit Blocks": 288,
+            "Shared Read Blocks": 0
+          },
+          {
+            "Node Type": "Limit",
+            "Subplan Name": "SubPlan 1",
+            "Plan Width": 40,
+            "Actual Startup Time": 0,
+            "Actual Total Time": 0,
+            "Actual Rows": 0,
+            "Actual Loops": 0,
+            "Shared Hit Blocks": 0,
+            "Shared Read Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Sort",
+                "Plan Width": 40,
+                "Actual Startup Time": 0,
+                "Actual Total Time": 0,
+                "Actual Rows": 0,
+                "Actual Loops": 0,
+                "Shared Hit Blocks": 0,
+                "Shared Read Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Index Scan",
+                    "Relation Name": "job_outputs",
+                    "Plan Width": 40,
+                    "Actual Startup Time": 0,
+                    "Actual Total Time": 0,
+                    "Actual Rows": 0,
+                    "Actual Loops": 0,
+                    "Shared Hit Blocks": 0,
+                    "Shared Read Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Node Type": "Limit",
+            "Subplan Name": "SubPlan 2",
+            "Plan Width": 16,
+            "Actual Startup Time": 0.003,
+            "Actual Total Time": 0.003,
+            "Actual Rows": 0,
+            "Actual Loops": 96,
+            "Shared Hit Blocks": 288,
+            "Shared Read Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Incremental Sort",
+                "Plan Width": 16,
+                "Actual Startup Time": 0.002,
+                "Actual Total Time": 0.002,
+                "Actual Rows": 0,
+                "Actual Loops": 96,
+                "Shared Hit Blocks": 288,
+                "Shared Read Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Index Scan",
+                    "Relation Name": "job_outputs",
+                    "Plan Width": 16,
+                    "Actual Startup Time": 0.002,
+                    "Actual Total Time": 0.002,
+                    "Actual Rows": 0,
+                    "Actual Loops": 96,
+                    "Shared Hit Blocks": 288,
+                    "Shared Read Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Node Type": "Limit",
+            "Subplan Name": "SubPlan 3",
+            "Plan Width": 16,
+            "Actual Startup Time": 0.002,
+            "Actual Total Time": 0.002,
+            "Actual Rows": 0,
+            "Actual Loops": 96,
+            "Shared Hit Blocks": 288,
+            "Shared Read Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Incremental Sort",
+                "Plan Width": 16,
+                "Actual Startup Time": 0.001,
+                "Actual Total Time": 0.001,
+                "Actual Rows": 0,
+                "Actual Loops": 96,
+                "Shared Hit Blocks": 288,
+                "Shared Read Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Index Scan",
+                    "Relation Name": "job_outputs",
+                    "Plan Width": 16,
+                    "Actual Startup Time": 0.001,
+                    "Actual Total Time": 0.001,
+                    "Actual Rows": 0,
+                    "Actual Loops": 96,
+                    "Shared Hit Blocks": 288,
+                    "Shared Read Blocks": 0
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+]

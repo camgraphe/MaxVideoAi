@@ -669,6 +669,18 @@ detail DTO reaches the reader. There is no cross-request quote cache or streamed
 replacement that changes the reader geometry. Verify measured loading before
 claiming that this overlap improves Core Web Vitals.
 
+Concurrent comparison quotes also share selected tariff reads through
+`createScopedCustomerTariffQuoteLoader` in `server/pricing/customer-tariff-store.ts`.
+The canonical billing kernel still resolves every exact/continuous selector and
+price. Each microtask batch reads the state revision, selected current cells and
+ordered history in one `REPEATABLE READ READ ONLY` transaction, without maintenance
+locks. A malformed selected cell fails only its selector; a database failure stays
+unavailable. Later batches read fresh state, including when the same context is
+reused. This is neither an HTML cache nor a price cache across requests. Preserve
+the original single-reader/transaction executor paths for charging and operational
+validation. `customer-tariff-public-batch-postgres.test.ts` verifies reader and
+complete watch quote parity, subsequent edits, snapshot consistency and SQL count.
+
 Direct watch pages pass their already prepared signals to `buildExampleWatchDetail`.
 That path reuses the validated editorial/source-image projection from
 `getVideoWatchPageDataById`, without reading editorial entries or resolving source

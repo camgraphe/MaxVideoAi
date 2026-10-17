@@ -1,0 +1,302 @@
+{
+  "baseline": [
+    {
+      "slug": "seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "pageMs": 6066.121833,
+      "contextReadyMs": 6067.146917,
+      "detailMs": 2669.5851660000008,
+      "totalMs": 8736.732250000001,
+      "physicalCount": 154,
+      "tariffTransactions": 37,
+      "quotes": 3,
+      "ordinaryReadPhases": [
+        {
+          "label": "pricing",
+          "arraySize": null,
+          "start": 0.9287090000000262,
+          "rows": 53,
+          "durationMs": 395.5903329999999
+        },
+        {
+          "label": "engines",
+          "arraySize": null,
+          "start": 0.9715419999999995,
+          "rows": 9,
+          "durationMs": 878.036333
+        },
+        {
+          "label": "pricing",
+          "arraySize": null,
+          "start": 1.0170419999999467,
+          "rows": 5,
+          "durationMs": 933.61725
+        },
+        {
+          "label": "editorial",
+          "arraySize": null,
+          "start": 1.761209000000008,
+          "rows": 104,
+          "durationMs": 2694.524
+        },
+        {
+          "label": "watch-videos",
+          "arraySize": 96,
+          "start": 2697.013334,
+          "rows": 96,
+          "durationMs": 3192.613916
+        },
+        {
+          "label": "other",
+          "arraySize": null,
+          "start": 5945.000375,
+          "rows": 1,
+          "durationMs": 121.73141699999996
+        }
+      ]
+    },
+    {
+      "slug": "minimax-h3-wildfire-lookout-rescue",
+      "pageMs": 4487.346083,
+      "contextReadyMs": 4488.293667,
+      "detailMs": 2499.0763749999987,
+      "totalMs": 6987.370374999999,
+      "physicalCount": 153,
+      "tariffTransactions": 37,
+      "quotes": 3,
+      "ordinaryReadPhases": [
+        {
+          "label": "pricing",
+          "arraySize": null,
+          "start": 0.9146669999990991,
+          "rows": 53,
+          "durationMs": 430.5176250000004
+        },
+        {
+          "label": "engines",
+          "arraySize": null,
+          "start": 0.9337500000001455,
+          "rows": 9,
+          "durationMs": 125.26808299999902
+        },
+        {
+          "label": "pricing",
+          "arraySize": null,
+          "start": 0.9419999999990978,
+          "rows": 5,
+          "durationMs": 124.23316700000032
+        },
+        {
+          "label": "editorial",
+          "arraySize": null,
+          "start": 1.0349999999998545,
+          "rows": 104,
+          "durationMs": 1339.9572079999998
+        },
+        {
+          "label": "watch-videos",
+          "arraySize": 96,
+          "start": 1341.716375,
+          "rows": 96,
+          "durationMs": 3106.108
+        }
+      ]
+    },
+    {
+      "slug": "wan-3-prime-ai-match-cut-transitions",
+      "pageMs": 1018.2148330000018,
+      "contextReadyMs": 1022.096749999997,
+      "detailMs": 2335.792792,
+      "totalMs": 3357.889916999997,
+      "physicalCount": 153,
+      "tariffTransactions": 37,
+      "quotes": 3,
+      "ordinaryReadPhases": [
+        {
+          "label": "pricing",
+          "arraySize": null,
+          "start": 3.751124999998865,
+          "rows": 53,
+          "durationMs": 547.0014169999995
+        },
+        {
+          "label": "engines",
+          "arraySize": null,
+          "start": 3.832708999998431,
+          "rows": 9,
+          "durationMs": 139.958208
+        },
+        {
+          "label": "pricing",
+          "arraySize": null,
+          "start": 3.8653749999975844,
+          "rows": 5,
+          "durationMs": 133.25616699999955
+        },
+        {
+          "label": "editorial",
+          "arraySize": null,
+          "start": 4.409791999998561,
+          "rows": 104,
+          "durationMs": 542.1403329999994
+        },
+        {
+          "label": "watch-videos",
+          "arraySize": 96,
+          "start": 546.9205419999998,
+          "rows": 96,
+          "durationMs": 438.50575000000026
+        }
+      ]
+    }
+  ],
+  "candidate": [
+    {
+      "slug": "seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "pageMs": 2915.082209,
+      "contextReadyMs": 2916.22375,
+      "detailMs": 514.1380840000002,
+      "totalMs": 3430.361959,
+      "physicalCount": 14,
+      "tariffTransactions": 2,
+      "quotes": 3,
+      "ordinaryReadPhases": [
+        {
+          "label": "pricing",
+          "arraySize": null,
+          "start": 1.0477920000000722,
+          "rows": 53,
+          "durationMs": 750.2814169999999
+        },
+        {
+          "label": "engines",
+          "arraySize": null,
+          "start": 1.0883750000000418,
+          "rows": 9,
+          "durationMs": 902.8324170000001
+        },
+        {
+          "label": "pricing",
+          "arraySize": null,
+          "start": 1.1333340000001044,
+          "rows": 5,
+          "durationMs": 894.0784579999997
+        },
+        {
+          "label": "editorial",
+          "arraySize": null,
+          "start": 1.8510420000000067,
+          "rows": 104,
+          "durationMs": 1320.015958
+        },
+        {
+          "label": "watch-videos",
+          "arraySize": 96,
+          "start": 1322.692334,
+          "rows": 96,
+          "durationMs": 1423.6384159999998
+        },
+        {
+          "label": "other",
+          "arraySize": null,
+          "start": 2789.613375,
+          "rows": 1,
+          "durationMs": 126.20491700000002
+        }
+      ]
+    },
+    {
+      "slug": "minimax-h3-wildfire-lookout-rescue",
+      "pageMs": 4710.6611250000005,
+      "contextReadyMs": 4711.578041,
+      "detailMs": 871.0271670000002,
+      "totalMs": 5582.605500000001,
+      "physicalCount": 13,
+      "tariffTransactions": 2,
+      "quotes": 3,
+      "ordinaryReadPhases": [
+        {
+          "label": "pricing",
+          "arraySize": null,
+          "start": 0.8820830000004207,
+          "rows": 53,
+          "durationMs": 160.81924999999956
+        },
+        {
+          "label": "engines",
+          "arraySize": null,
+          "start": 0.9020410000002812,
+          "rows": 9,
+          "durationMs": 160.90462500000012
+        },
+        {
+          "label": "pricing",
+          "arraySize": null,
+          "start": 0.9115830000000642,
+          "rows": 5,
+          "durationMs": 158.2687079999996
+        },
+        {
+          "label": "editorial",
+          "arraySize": null,
+          "start": 1.0035829999997077,
+          "rows": 104,
+          "durationMs": 1038.9060420000005
+        },
+        {
+          "label": "watch-videos",
+          "arraySize": 96,
+          "start": 1040.3205829999997,
+          "rows": 96,
+          "durationMs": 3638.1619169999994
+        }
+      ]
+    },
+    {
+      "slug": "wan-3-prime-ai-match-cut-transitions",
+      "pageMs": 956.9727080000011,
+      "contextReadyMs": 957.8304160000007,
+      "detailMs": 506.4087499999987,
+      "totalMs": 1464.239458,
+      "physicalCount": 13,
+      "tariffTransactions": 2,
+      "quotes": 3,
+      "ordinaryReadPhases": [
+        {
+          "label": "pricing",
+          "arraySize": null,
+          "start": 0.818583000000217,
+          "rows": 53,
+          "durationMs": 372.11720799999966
+        },
+        {
+          "label": "engines",
+          "arraySize": null,
+          "start": 0.8421660000003612,
+          "rows": 9,
+          "durationMs": 133.07825000000048
+        },
+        {
+          "label": "pricing",
+          "arraySize": null,
+          "start": 0.8527910000011616,
+          "rows": 5,
+          "durationMs": 133.61895899999945
+        },
+        {
+          "label": "editorial",
+          "arraySize": null,
+          "start": 0.9586660000004485,
+          "rows": 104,
+          "durationMs": 516.0432920000003
+        },
+        {
+          "label": "watch-videos",
+          "arraySize": 96,
+          "start": 517.3305,
+          "rows": 96,
+          "durationMs": 405.2442910000009
+        }
+      ]
+    }
+  ]
+}
