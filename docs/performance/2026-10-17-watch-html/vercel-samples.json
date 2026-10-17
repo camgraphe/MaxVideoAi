@@ -1,0 +1,1778 @@
+[
+  {
+    "id": "desktop-1-baseline-cold",
+    "side": "baseline",
+    "device": "desktop",
+    "temperature": "cold",
+    "repeat": 1,
+    "time": "2026-10-17T17:41:39.132Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 56.86500000000001,
+    "fcp": 1898.143,
+    "lcp": 1898.143,
+    "cls": 0,
+    "tbt": 48.4050000000002,
+    "bytes": 513215,
+    "score": 0.81,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "origin": "https://maxvideoai-fr1iincym-camgraphes-projects.vercel.app",
+    "htmlEndMs": 1356.9049999713898,
+    "posterDiscoveredMs": 1219.0029999999997,
+    "lcpPhases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 159.97999993896485
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 1059.023000061035
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 452.13300000000004
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 227.00700000000006
+      }
+    ],
+    "lcpSelector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+    "lcpRect": {
+      "top": 141,
+      "bottom": 717,
+      "left": 69,
+      "right": 393,
+      "width": 324,
+      "height": 576
+    },
+    "cache": "MISS",
+    "responseCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+    "vercelId": "cdg1::iad1::km968-1792258899502-65d2afdfe606",
+    "benchmarkIndex": 3731.5,
+    "networkUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    }
+  },
+  {
+    "id": "desktop-1-baseline-warm",
+    "side": "baseline",
+    "device": "desktop",
+    "temperature": "warm",
+    "repeat": 1,
+    "time": "2026-10-17T17:41:59.813Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 47.301,
+    "fcp": 1286.186,
+    "lcp": 1286.186,
+    "cls": 0,
+    "tbt": 0,
+    "bytes": 34522,
+    "score": 0.93,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "origin": "https://maxvideoai-fr1iincym-camgraphes-projects.vercel.app",
+    "htmlEndMs": 1205.3129999637604,
+    "posterDiscoveredMs": 1078.003,
+    "lcpPhases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 49.802
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 1028.201
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 4.70900000000006
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 203.47399999999993
+      }
+    ],
+    "lcpSelector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+    "lcpRect": {
+      "top": 141,
+      "bottom": 717,
+      "left": 69,
+      "right": 393,
+      "width": 324,
+      "height": 576
+    },
+    "cache": "MISS",
+    "responseCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+    "vercelId": "cdg1::iad1::mbjxk-1792258919964-7b1fed9d8a1f",
+    "benchmarkIndex": 3826,
+    "networkUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    }
+  },
+  {
+    "id": "desktop-1-candidate-cold",
+    "side": "candidate",
+    "device": "desktop",
+    "temperature": "cold",
+    "repeat": 1,
+    "time": "2026-10-17T17:42:18.059Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 47.652,
+    "fcp": 1647.109,
+    "lcp": 1647.109,
+    "cls": 0,
+    "tbt": 51.66199993896498,
+    "bytes": 515017,
+    "score": 0.86,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "origin": "https://maxvideoai-7lo16j3n6-camgraphes-projects.vercel.app",
+    "htmlEndMs": 1091.0929999947548,
+    "posterDiscoveredMs": 946.335,
+    "lcpPhases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 169.494
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 776.841
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 468.50700000000006
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 232.26699999999983
+      }
+    ],
+    "lcpSelector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+    "lcpRect": {
+      "top": 141,
+      "bottom": 717,
+      "left": 69,
+      "right": 393,
+      "width": 324,
+      "height": 576
+    },
+    "cache": "MISS",
+    "responseCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+    "vercelId": "cdg1::iad1::fgmm9-1792258938445-e2306fefd106",
+    "benchmarkIndex": 3746,
+    "networkUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    }
+  },
+  {
+    "id": "desktop-1-candidate-warm",
+    "side": "candidate",
+    "device": "desktop",
+    "temperature": "warm",
+    "repeat": 1,
+    "time": "2026-10-17T17:42:38.582Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 49.729,
+    "fcp": 888.006,
+    "lcp": 977.715,
+    "cls": 0.00008222897001938029,
+    "tbt": 4.7650000000001,
+    "bytes": 34411,
+    "score": 0.98,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "origin": "https://maxvideoai-7lo16j3n6-camgraphes-projects.vercel.app",
+    "htmlEndMs": 918.1629999279976,
+    "posterDiscoveredMs": 793.636,
+    "lcpPhases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 51.903
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 741.733
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 9.314000000000078
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 174.765
+      }
+    ],
+    "lcpSelector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+    "lcpRect": {
+      "top": 141,
+      "bottom": 717,
+      "left": 69,
+      "right": 393,
+      "width": 324,
+      "height": 576
+    },
+    "cache": "MISS",
+    "responseCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+    "vercelId": "cdg1::iad1::x4tl8-1792258958787-6d26fabc3d3d",
+    "benchmarkIndex": 3735,
+    "networkUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    }
+  },
+  {
+    "id": "mobile-1-baseline-cold",
+    "side": "baseline",
+    "device": "mobile",
+    "temperature": "cold",
+    "repeat": 1,
+    "time": "2026-10-17T17:42:56.311Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 70.874,
+    "fcp": 2029.192,
+    "lcp": 2029.192,
+    "cls": 0,
+    "tbt": 50.82099999999991,
+    "bytes": 403365,
+    "score": 0.97,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "origin": "https://maxvideoai-fr1iincym-camgraphes-projects.vercel.app",
+    "htmlEndMs": 1722.1669999957085,
+    "posterDiscoveredMs": 1363.779,
+    "lcpPhases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 194.758
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 1169.021
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 483.7059999999999
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 181.7070000000001
+      }
+    ],
+    "lcpSelector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+    "lcpRect": {
+      "top": 170,
+      "bottom": 609,
+      "left": 72,
+      "right": 318,
+      "width": 247,
+      "height": 439
+    },
+    "cache": "MISS",
+    "responseCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+    "vercelId": "cdg1::iad1::7zgnk-1792258976620-913d852e5a1a",
+    "benchmarkIndex": 3747.5,
+    "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    }
+  },
+  {
+    "id": "mobile-1-baseline-warm",
+    "side": "baseline",
+    "device": "mobile",
+    "temperature": "warm",
+    "repeat": 1,
+    "time": "2026-10-17T17:43:15.299Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 45.830999999999996,
+    "fcp": 1116.3,
+    "lcp": 1307.364,
+    "cls": 0,
+    "tbt": 5.356999999999971,
+    "bytes": 33620,
+    "score": 1,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "origin": "https://maxvideoai-fr1iincym-camgraphes-projects.vercel.app",
+    "htmlEndMs": 1160.936999976635,
+    "posterDiscoveredMs": 1034.602,
+    "lcpPhases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 48.061
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 986.541
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 4.558999999999969
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 268.203
+      }
+    ],
+    "lcpSelector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+    "lcpRect": {
+      "top": 170,
+      "bottom": 609,
+      "left": 72,
+      "right": 318,
+      "width": 247,
+      "height": 439
+    },
+    "cache": "MISS",
+    "responseCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+    "vercelId": "cdg1::iad1::f2v56-1792258995503-371f5af9b74f",
+    "benchmarkIndex": 3741,
+    "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    }
+  },
+  {
+    "id": "mobile-1-candidate-cold",
+    "side": "candidate",
+    "device": "mobile",
+    "temperature": "cold",
+    "repeat": 1,
+    "time": "2026-10-17T17:43:32.304Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 41.974999999999994,
+    "fcp": 1647.206,
+    "lcp": 1666.101,
+    "cls": 0,
+    "tbt": 48.697999938964585,
+    "bytes": 404923,
+    "score": 0.99,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "origin": "https://maxvideoai-7lo16j3n6-camgraphes-projects.vercel.app",
+    "htmlEndMs": 1465.667000055313,
+    "posterDiscoveredMs": 999.676,
+    "lcpPhases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 163.376
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 836.3000000000001
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 549.333
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 117.0920000000001
+      }
+    ],
+    "lcpSelector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+    "lcpRect": {
+      "top": 170,
+      "bottom": 609,
+      "left": 72,
+      "right": 318,
+      "width": 247,
+      "height": 439
+    },
+    "cache": "MISS",
+    "responseCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+    "vercelId": "cdg1::iad1::q89gj-1792259012643-93c2b3ed3424",
+    "benchmarkIndex": 3753,
+    "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    }
+  },
+  {
+    "id": "mobile-1-candidate-warm",
+    "side": "candidate",
+    "device": "mobile",
+    "temperature": "warm",
+    "repeat": 1,
+    "time": "2026-10-17T17:43:51.045Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 42.969,
+    "fcp": 1207.239,
+    "lcp": 1405.557,
+    "cls": 0,
+    "tbt": 7.255000000000109,
+    "bytes": 33623,
+    "score": 1,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "origin": "https://maxvideoai-7lo16j3n6-camgraphes-projects.vercel.app",
+    "htmlEndMs": 1311.3830000162125,
+    "posterDiscoveredMs": 1183.914,
+    "lcpPhases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 45.179000061035154
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 1138.7349999389648
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 22.843000000000075
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 198.79999999999995
+      }
+    ],
+    "lcpSelector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+    "lcpRect": {
+      "top": 170,
+      "bottom": 609,
+      "left": 72,
+      "right": 318,
+      "width": 247,
+      "height": 439
+    },
+    "cache": "MISS",
+    "responseCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+    "vercelId": "cdg1::iad1::4sndj-1792259031243-9eb02daf099f",
+    "benchmarkIndex": 3718,
+    "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    }
+  },
+  {
+    "id": "desktop-2-candidate-cold",
+    "side": "candidate",
+    "device": "desktop",
+    "temperature": "cold",
+    "repeat": 2,
+    "time": "2026-10-17T17:44:08.138Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 46.363,
+    "fcp": 1581.833,
+    "lcp": 1581.833,
+    "cls": 0,
+    "tbt": 56.27800000000025,
+    "bytes": 514963,
+    "score": 0.87,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "origin": "https://maxvideoai-7lo16j3n6-camgraphes-projects.vercel.app",
+    "htmlEndMs": 1211.3499999642372,
+    "posterDiscoveredMs": 904.619,
+    "lcpPhases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 147.352
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 757.267
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 498.313
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 178.90100000000007
+      }
+    ],
+    "lcpSelector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+    "lcpRect": {
+      "top": 141,
+      "bottom": 717,
+      "left": 69,
+      "right": 393,
+      "width": 324,
+      "height": 576
+    },
+    "cache": "MISS",
+    "responseCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+    "vercelId": "cdg1::iad1::4kgzs-1792259048457-0985be035946",
+    "benchmarkIndex": 3780.5,
+    "networkUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    }
+  },
+  {
+    "id": "desktop-2-candidate-warm",
+    "side": "candidate",
+    "device": "desktop",
+    "temperature": "warm",
+    "repeat": 2,
+    "time": "2026-10-17T17:44:27.682Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 47.112,
+    "fcp": 1111.217,
+    "lcp": 1111.217,
+    "cls": 0,
+    "tbt": 0,
+    "bytes": 34524,
+    "score": 0.95,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "origin": "https://maxvideoai-7lo16j3n6-camgraphes-projects.vercel.app",
+    "htmlEndMs": 1036.6259999871254,
+    "posterDiscoveredMs": 907.618,
+    "lcpPhases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 49.076
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 858.542
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 8.057999999999993
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 195.54100000000005
+      }
+    ],
+    "lcpSelector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+    "lcpRect": {
+      "top": 141,
+      "bottom": 717,
+      "left": 69,
+      "right": 393,
+      "width": 324,
+      "height": 576
+    },
+    "cache": "MISS",
+    "responseCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+    "vercelId": "cdg1::iad1::4kgzs-1792259067835-9ba4b5b1d56d",
+    "benchmarkIndex": 3718.5,
+    "networkUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    }
+  },
+  {
+    "id": "desktop-2-baseline-cold",
+    "side": "baseline",
+    "device": "desktop",
+    "temperature": "cold",
+    "repeat": 2,
+    "time": "2026-10-17T17:44:45.872Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 45.407,
+    "fcp": 1944.991,
+    "lcp": 1944.991,
+    "cls": 0.00003424286381219154,
+    "tbt": 48.19200000000001,
+    "bytes": 513221,
+    "score": 0.8,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "origin": "https://maxvideoai-fr1iincym-camgraphes-projects.vercel.app",
+    "htmlEndMs": 1602.6480000019073,
+    "posterDiscoveredMs": 1280.774,
+    "lcpPhases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 167.875
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 1112.899
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 476.1740000000002
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 188.0429999999999
+      }
+    ],
+    "lcpSelector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+    "lcpRect": {
+      "top": 141,
+      "bottom": 717,
+      "left": 69,
+      "right": 393,
+      "width": 324,
+      "height": 576
+    },
+    "cache": "MISS",
+    "responseCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+    "vercelId": "cdg1::iad1::9kjrn-1792259086190-6209a79cca44",
+    "benchmarkIndex": 3787.5,
+    "networkUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    }
+  },
+  {
+    "id": "desktop-2-baseline-warm",
+    "side": "baseline",
+    "device": "desktop",
+    "temperature": "warm",
+    "repeat": 2,
+    "time": "2026-10-17T17:45:05.981Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 264.243,
+    "fcp": 1377.574,
+    "lcp": 1461.988,
+    "cls": 0,
+    "tbt": 10.304999999999836,
+    "bytes": 34463,
+    "score": 0.9,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "origin": "https://maxvideoai-fr1iincym-camgraphes-projects.vercel.app",
+    "htmlEndMs": 1359.0009999871254,
+    "posterDiscoveredMs": 1229.136,
+    "lcpPhases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 266.566
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 962.5699999999999
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 7.217000000000098
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 225.635
+      }
+    ],
+    "lcpSelector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+    "lcpRect": {
+      "top": 141,
+      "bottom": 717,
+      "left": 69,
+      "right": 393,
+      "width": 324,
+      "height": 576
+    },
+    "cache": "MISS",
+    "responseCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+    "vercelId": "cdg1::iad1::mbjxk-1792259106222-b7bfdbd56b63",
+    "benchmarkIndex": 3814,
+    "networkUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    }
+  },
+  {
+    "id": "mobile-2-candidate-cold",
+    "side": "candidate",
+    "device": "mobile",
+    "temperature": "cold",
+    "repeat": 2,
+    "time": "2026-10-17T17:45:24.137Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 49.303,
+    "fcp": 1751.35,
+    "lcp": 1751.35,
+    "cls": 0,
+    "tbt": 50.81200000000035,
+    "bytes": 405029,
+    "score": 0.99,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "origin": "https://maxvideoai-7lo16j3n6-camgraphes-projects.vercel.app",
+    "htmlEndMs": 1364.3219999670982,
+    "posterDiscoveredMs": 1072.864,
+    "lcpPhases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 169.285
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 903.5790000000001
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 474.83500000000004
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 203.65099999999984
+      }
+    ],
+    "lcpSelector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+    "lcpRect": {
+      "top": 170,
+      "bottom": 609,
+      "left": 72,
+      "right": 318,
+      "width": 247,
+      "height": 439
+    },
+    "cache": "MISS",
+    "responseCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+    "vercelId": "cdg1::iad1::lzpzh-1792259124512-f2d7829c0929",
+    "benchmarkIndex": 3757,
+    "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    }
+  },
+  {
+    "id": "mobile-2-candidate-warm",
+    "side": "candidate",
+    "device": "mobile",
+    "temperature": "warm",
+    "repeat": 2,
+    "time": "2026-10-17T17:45:43.353Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 46.703,
+    "fcp": 920.647,
+    "lcp": 1023.092,
+    "cls": 0,
+    "tbt": 37.94100000000003,
+    "bytes": 33557,
+    "score": 1,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "origin": "https://maxvideoai-7lo16j3n6-camgraphes-projects.vercel.app",
+    "htmlEndMs": 950.0080000162125,
+    "posterDiscoveredMs": 818.54,
+    "lcpPhases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 48.859
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 769.6809999999999
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 3.9600000000000364
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 200.59199999999998
+      }
+    ],
+    "lcpSelector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+    "lcpRect": {
+      "top": 170,
+      "bottom": 609,
+      "left": 72,
+      "right": 318,
+      "width": 247,
+      "height": 439
+    },
+    "cache": "MISS",
+    "responseCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+    "vercelId": "cdg1::iad1::9sm8n-1792259143528-9c65b3210c00",
+    "benchmarkIndex": 3797.5,
+    "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    }
+  },
+  {
+    "id": "mobile-2-baseline-cold",
+    "side": "baseline",
+    "device": "mobile",
+    "temperature": "cold",
+    "repeat": 2,
+    "time": "2026-10-17T17:46:00.705Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 50.27300000000001,
+    "fcp": 1872.302,
+    "lcp": 1872.302,
+    "cls": 0,
+    "tbt": 47.13599993896514,
+    "bytes": 403313,
+    "score": 0.98,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "origin": "https://maxvideoai-fr1iincym-camgraphes-projects.vercel.app",
+    "htmlEndMs": 1485.4020000100136,
+    "posterDiscoveredMs": 1200.063,
+    "lcpPhases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 157.548
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 1042.515
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 477.327
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 194.9119999999998
+      }
+    ],
+    "lcpSelector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+    "lcpRect": {
+      "top": 170,
+      "bottom": 609,
+      "left": 72,
+      "right": 318,
+      "width": 247,
+      "height": 439
+    },
+    "cache": "MISS",
+    "responseCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+    "vercelId": "cdg1::iad1::hflmh-1792259161015-4557f1466c6d",
+    "benchmarkIndex": 3785,
+    "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    }
+  },
+  {
+    "id": "mobile-2-baseline-warm",
+    "side": "baseline",
+    "device": "mobile",
+    "temperature": "warm",
+    "repeat": 2,
+    "time": "2026-10-17T17:46:19.598Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 44.442,
+    "fcp": 1290.506,
+    "lcp": 1362.8,
+    "cls": 0,
+    "tbt": 6.579000000000178,
+    "bytes": 33648,
+    "score": 1,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "origin": "https://maxvideoai-fr1iincym-camgraphes-projects.vercel.app",
+    "htmlEndMs": 1273.1969999670982,
+    "posterDiscoveredMs": 1142.479,
+    "lcpPhases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 46.133
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 1096.346
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 5.749000000000024
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 214.5719999999999
+      }
+    ],
+    "lcpSelector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+    "lcpRect": {
+      "top": 170,
+      "bottom": 609,
+      "left": 72,
+      "right": 318,
+      "width": 247,
+      "height": 439
+    },
+    "cache": "MISS",
+    "responseCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+    "vercelId": "cdg1::iad1::jj8wh-1792259179771-4afe4c89dd6d",
+    "benchmarkIndex": 3807,
+    "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    }
+  },
+  {
+    "id": "desktop-3-baseline-cold",
+    "side": "baseline",
+    "device": "desktop",
+    "temperature": "cold",
+    "repeat": 3,
+    "time": "2026-10-17T17:46:36.780Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 46.76299999999998,
+    "fcp": 1920.405,
+    "lcp": 1920.405,
+    "cls": 0,
+    "tbt": 49.41899999999987,
+    "bytes": 513382,
+    "score": 0.81,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "origin": "https://maxvideoai-fr1iincym-camgraphes-projects.vercel.app",
+    "htmlEndMs": 1534.1819999814034,
+    "posterDiscoveredMs": 1248.117,
+    "lcpPhases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 176.66800006103514
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 1071.4489999389648
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 468.2940000000001
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 203.99399999999991
+      }
+    ],
+    "lcpSelector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+    "lcpRect": {
+      "top": 141,
+      "bottom": 717,
+      "left": 69,
+      "right": 393,
+      "width": 324,
+      "height": 576
+    },
+    "cache": "MISS",
+    "responseCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+    "vercelId": "cdg1::iad1::9stkl-1792259197159-abb7c997768e",
+    "benchmarkIndex": 3764,
+    "networkUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    }
+  },
+  {
+    "id": "desktop-3-baseline-warm",
+    "side": "baseline",
+    "device": "desktop",
+    "temperature": "warm",
+    "repeat": 3,
+    "time": "2026-10-17T17:46:56.649Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 46.547999999999995,
+    "fcp": 1402.359,
+    "lcp": 1402.359,
+    "cls": 0,
+    "tbt": 0,
+    "bytes": 34480,
+    "score": 0.91,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "origin": "https://maxvideoai-fr1iincym-camgraphes-projects.vercel.app",
+    "htmlEndMs": 1335.660000026226,
+    "posterDiscoveredMs": 1208.473,
+    "lcpPhases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 48.796999938964845
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 1159.6760000610352
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 4.323000000000093
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 189.56299999999987
+      }
+    ],
+    "lcpSelector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+    "lcpRect": {
+      "top": 141,
+      "bottom": 717,
+      "left": 69,
+      "right": 393,
+      "width": 324,
+      "height": 576
+    },
+    "cache": "MISS",
+    "responseCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+    "vercelId": "cdg1::iad1::n8m8r-1792259216896-2e1f8bfeab00",
+    "benchmarkIndex": 3757,
+    "networkUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    }
+  },
+  {
+    "id": "desktop-3-candidate-cold",
+    "side": "candidate",
+    "device": "desktop",
+    "temperature": "cold",
+    "repeat": 3,
+    "time": "2026-10-17T17:47:14.857Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 46.86,
+    "fcp": 1773.012,
+    "lcp": 1773.012,
+    "cls": 0,
+    "tbt": 44.71299993896491,
+    "bytes": 514976,
+    "score": 0.83,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "origin": "https://maxvideoai-7lo16j3n6-camgraphes-projects.vercel.app",
+    "htmlEndMs": 1349.7259999513626,
+    "posterDiscoveredMs": 1093.849,
+    "lcpPhases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 174.217
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 919.632
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 469.78700000000003
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 209.37599999999998
+      }
+    ],
+    "lcpSelector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+    "lcpRect": {
+      "top": 141,
+      "bottom": 717,
+      "left": 69,
+      "right": 393,
+      "width": 324,
+      "height": 576
+    },
+    "cache": "MISS",
+    "responseCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+    "vercelId": "cdg1::iad1::jjl2z-1792259235167-b49678245808",
+    "benchmarkIndex": 3755.5,
+    "networkUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    }
+  },
+  {
+    "id": "desktop-3-candidate-warm",
+    "side": "candidate",
+    "device": "desktop",
+    "temperature": "warm",
+    "repeat": 3,
+    "time": "2026-10-17T17:47:34.594Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 318.9,
+    "fcp": 1109.537,
+    "lcp": 1181.842,
+    "cls": 0.00008222897001938029,
+    "tbt": 5.6749999999999545,
+    "bytes": 34409,
+    "score": 0.95,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "origin": "https://maxvideoai-7lo16j3n6-camgraphes-projects.vercel.app",
+    "htmlEndMs": 1090.3590000271797,
+    "posterDiscoveredMs": 958.1970000000001,
+    "lcpPhases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 321.20399993896484
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 636.9930000610352
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 3.4980000000000473
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 220.14700000000005
+      }
+    ],
+    "lcpSelector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+    "lcpRect": {
+      "top": 141,
+      "bottom": 717,
+      "left": 69,
+      "right": 393,
+      "width": 324,
+      "height": 576
+    },
+    "cache": "MISS",
+    "responseCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+    "vercelId": "cdg1::iad1::jk6fs-1792259254838-1e49338ac1d3",
+    "benchmarkIndex": 3757,
+    "networkUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    }
+  },
+  {
+    "id": "mobile-3-baseline-cold",
+    "side": "baseline",
+    "device": "mobile",
+    "temperature": "cold",
+    "repeat": 3,
+    "time": "2026-10-17T17:47:52.526Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 45.82600000000001,
+    "fcp": 1834.73,
+    "lcp": 1834.73,
+    "cls": 0,
+    "tbt": 50.208000000000084,
+    "bytes": 403339,
+    "score": 0.98,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "origin": "https://maxvideoai-fr1iincym-camgraphes-projects.vercel.app",
+    "htmlEndMs": 1457.2569999694824,
+    "posterDiscoveredMs": 1170.672,
+    "lcpPhases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 171.172
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 999.5
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 470.24
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 193.81799999999998
+      }
+    ],
+    "lcpSelector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+    "lcpRect": {
+      "top": 170,
+      "bottom": 609,
+      "left": 72,
+      "right": 318,
+      "width": 247,
+      "height": 439
+    },
+    "cache": "MISS",
+    "responseCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+    "vercelId": "cdg1::iad1::vmlsj-1792259272874-6f56fa0b66d2",
+    "benchmarkIndex": 3770.5,
+    "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    }
+  },
+  {
+    "id": "mobile-3-baseline-warm",
+    "side": "baseline",
+    "device": "mobile",
+    "temperature": "warm",
+    "repeat": 3,
+    "time": "2026-10-17T17:48:11.733Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 45.68,
+    "fcp": 1349.728,
+    "lcp": 1349.728,
+    "cls": 0,
+    "tbt": 0,
+    "bytes": 33647,
+    "score": 1,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "origin": "https://maxvideoai-fr1iincym-camgraphes-projects.vercel.app",
+    "htmlEndMs": 1265.005999982357,
+    "posterDiscoveredMs": 1133.9,
+    "lcpPhases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 47.831000061035155
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 1086.068999938965
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 4.58199999999988
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 211.2460000000001
+      }
+    ],
+    "lcpSelector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+    "lcpRect": {
+      "top": 170,
+      "bottom": 609,
+      "left": 72,
+      "right": 318,
+      "width": 247,
+      "height": 439
+    },
+    "cache": "MISS",
+    "responseCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+    "vercelId": "cdg1::iad1::cq6c4-1792259291983-db3b90e49531",
+    "benchmarkIndex": 3820.5,
+    "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    }
+  },
+  {
+    "id": "mobile-3-candidate-cold",
+    "side": "candidate",
+    "device": "mobile",
+    "temperature": "cold",
+    "repeat": 3,
+    "time": "2026-10-17T17:48:28.788Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 47.80499999999999,
+    "fcp": 1586.54,
+    "lcp": 1586.54,
+    "cls": 0,
+    "tbt": 44.309999999999945,
+    "bytes": 404960,
+    "score": 0.99,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "origin": "https://maxvideoai-7lo16j3n6-camgraphes-projects.vercel.app",
+    "htmlEndMs": 1203.8859999775887,
+    "posterDiscoveredMs": 918.824,
+    "lcpPhases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 170.619
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 748.2049999999999
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 470.25200000000007
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 197.46399999999994
+      }
+    ],
+    "lcpSelector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+    "lcpRect": {
+      "top": 170,
+      "bottom": 609,
+      "left": 72,
+      "right": 318,
+      "width": 247,
+      "height": 439
+    },
+    "cache": "MISS",
+    "responseCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+    "vercelId": "cdg1::iad1::gblmp-1792259309160-b59712b5edf4",
+    "benchmarkIndex": 3724.5,
+    "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    }
+  },
+  {
+    "id": "mobile-3-candidate-warm",
+    "side": "candidate",
+    "device": "mobile",
+    "temperature": "warm",
+    "repeat": 3,
+    "time": "2026-10-17T17:48:47.498Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 46.187000000000005,
+    "fcp": 1101.74,
+    "lcp": 1101.74,
+    "cls": 0,
+    "tbt": 0,
+    "bytes": 33567,
+    "score": 1,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "origin": "https://maxvideoai-7lo16j3n6-camgraphes-projects.vercel.app",
+    "htmlEndMs": 1048.323999941349,
+    "posterDiscoveredMs": 917.67,
+    "lcpPhases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 48.008
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 869.6619999999999
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 3.86200000000008
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 180.20799999999997
+      }
+    ],
+    "lcpSelector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+    "lcpRect": {
+      "top": 170,
+      "bottom": 609,
+      "left": 72,
+      "right": 318,
+      "width": 247,
+      "height": 439
+    },
+    "cache": "MISS",
+    "responseCacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+    "vercelId": "cdg1::iad1::snxvj-1792259327678-e154cd5e50ae",
+    "benchmarkIndex": 3757.5,
+    "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    }
+  }
+]

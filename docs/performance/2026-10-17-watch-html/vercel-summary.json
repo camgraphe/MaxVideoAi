@@ -1,0 +1,470 @@
+{
+  "summaries": [
+    {
+      "device": "desktop",
+      "temperature": "cold",
+      "side": "baseline",
+      "n": 3,
+      "ttfb": {
+        "median": 46.76299999999998,
+        "min": 45.407,
+        "max": 56.86500000000001
+      },
+      "htmlEndMs": {
+        "median": 1534.1819999814034,
+        "min": 1356.9049999713898,
+        "max": 1602.6480000019073
+      },
+      "posterDiscoveredMs": {
+        "median": 1248.117,
+        "min": 1219.0029999999997,
+        "max": 1280.774
+      },
+      "fcp": {
+        "median": 1920.405,
+        "min": 1898.143,
+        "max": 1944.991
+      },
+      "lcp": {
+        "median": 1920.405,
+        "min": 1898.143,
+        "max": 1944.991
+      },
+      "cls": {
+        "median": 0,
+        "min": 0,
+        "max": 0.00003424286381219154
+      },
+      "tbt": {
+        "median": 48.4050000000002,
+        "min": 48.19200000000001,
+        "max": 49.41899999999987
+      },
+      "bytes": {
+        "median": 513221,
+        "min": 513215,
+        "max": 513382
+      }
+    },
+    {
+      "device": "desktop",
+      "temperature": "cold",
+      "side": "candidate",
+      "n": 3,
+      "ttfb": {
+        "median": 46.86,
+        "min": 46.363,
+        "max": 47.652
+      },
+      "htmlEndMs": {
+        "median": 1211.3499999642372,
+        "min": 1091.0929999947548,
+        "max": 1349.7259999513626
+      },
+      "posterDiscoveredMs": {
+        "median": 946.335,
+        "min": 904.619,
+        "max": 1093.849
+      },
+      "fcp": {
+        "median": 1647.109,
+        "min": 1581.833,
+        "max": 1773.012
+      },
+      "lcp": {
+        "median": 1647.109,
+        "min": 1581.833,
+        "max": 1773.012
+      },
+      "cls": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "tbt": {
+        "median": 51.66199993896498,
+        "min": 44.71299993896491,
+        "max": 56.27800000000025
+      },
+      "bytes": {
+        "median": 514976,
+        "min": 514963,
+        "max": 515017
+      }
+    },
+    {
+      "device": "desktop",
+      "temperature": "warm",
+      "side": "baseline",
+      "n": 3,
+      "ttfb": {
+        "median": 47.301,
+        "min": 46.547999999999995,
+        "max": 264.243
+      },
+      "htmlEndMs": {
+        "median": 1335.660000026226,
+        "min": 1205.3129999637604,
+        "max": 1359.0009999871254
+      },
+      "posterDiscoveredMs": {
+        "median": 1208.473,
+        "min": 1078.003,
+        "max": 1229.136
+      },
+      "fcp": {
+        "median": 1377.574,
+        "min": 1286.186,
+        "max": 1402.359
+      },
+      "lcp": {
+        "median": 1402.359,
+        "min": 1286.186,
+        "max": 1461.988
+      },
+      "cls": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "tbt": {
+        "median": 0,
+        "min": 0,
+        "max": 10.304999999999836
+      },
+      "bytes": {
+        "median": 34480,
+        "min": 34463,
+        "max": 34522
+      }
+    },
+    {
+      "device": "desktop",
+      "temperature": "warm",
+      "side": "candidate",
+      "n": 3,
+      "ttfb": {
+        "median": 49.729,
+        "min": 47.112,
+        "max": 318.9
+      },
+      "htmlEndMs": {
+        "median": 1036.6259999871254,
+        "min": 918.1629999279976,
+        "max": 1090.3590000271797
+      },
+      "posterDiscoveredMs": {
+        "median": 907.618,
+        "min": 793.636,
+        "max": 958.1970000000001
+      },
+      "fcp": {
+        "median": 1109.537,
+        "min": 888.006,
+        "max": 1111.217
+      },
+      "lcp": {
+        "median": 1111.217,
+        "min": 977.715,
+        "max": 1181.842
+      },
+      "cls": {
+        "median": 0.00008222897001938029,
+        "min": 0,
+        "max": 0.00008222897001938029
+      },
+      "tbt": {
+        "median": 4.7650000000001,
+        "min": 0,
+        "max": 5.6749999999999545
+      },
+      "bytes": {
+        "median": 34411,
+        "min": 34409,
+        "max": 34524
+      }
+    },
+    {
+      "device": "mobile",
+      "temperature": "cold",
+      "side": "baseline",
+      "n": 3,
+      "ttfb": {
+        "median": 50.27300000000001,
+        "min": 45.82600000000001,
+        "max": 70.874
+      },
+      "htmlEndMs": {
+        "median": 1485.4020000100136,
+        "min": 1457.2569999694824,
+        "max": 1722.1669999957085
+      },
+      "posterDiscoveredMs": {
+        "median": 1200.063,
+        "min": 1170.672,
+        "max": 1363.779
+      },
+      "fcp": {
+        "median": 1872.302,
+        "min": 1834.73,
+        "max": 2029.192
+      },
+      "lcp": {
+        "median": 1872.302,
+        "min": 1834.73,
+        "max": 2029.192
+      },
+      "cls": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "tbt": {
+        "median": 50.208000000000084,
+        "min": 47.13599993896514,
+        "max": 50.82099999999991
+      },
+      "bytes": {
+        "median": 403339,
+        "min": 403313,
+        "max": 403365
+      }
+    },
+    {
+      "device": "mobile",
+      "temperature": "cold",
+      "side": "candidate",
+      "n": 3,
+      "ttfb": {
+        "median": 47.80499999999999,
+        "min": 41.974999999999994,
+        "max": 49.303
+      },
+      "htmlEndMs": {
+        "median": 1364.3219999670982,
+        "min": 1203.8859999775887,
+        "max": 1465.667000055313
+      },
+      "posterDiscoveredMs": {
+        "median": 999.676,
+        "min": 918.824,
+        "max": 1072.864
+      },
+      "fcp": {
+        "median": 1647.206,
+        "min": 1586.54,
+        "max": 1751.35
+      },
+      "lcp": {
+        "median": 1666.101,
+        "min": 1586.54,
+        "max": 1751.35
+      },
+      "cls": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "tbt": {
+        "median": 48.697999938964585,
+        "min": 44.309999999999945,
+        "max": 50.81200000000035
+      },
+      "bytes": {
+        "median": 404960,
+        "min": 404923,
+        "max": 405029
+      }
+    },
+    {
+      "device": "mobile",
+      "temperature": "warm",
+      "side": "baseline",
+      "n": 3,
+      "ttfb": {
+        "median": 45.68,
+        "min": 44.442,
+        "max": 45.830999999999996
+      },
+      "htmlEndMs": {
+        "median": 1265.005999982357,
+        "min": 1160.936999976635,
+        "max": 1273.1969999670982
+      },
+      "posterDiscoveredMs": {
+        "median": 1133.9,
+        "min": 1034.602,
+        "max": 1142.479
+      },
+      "fcp": {
+        "median": 1290.506,
+        "min": 1116.3,
+        "max": 1349.728
+      },
+      "lcp": {
+        "median": 1349.728,
+        "min": 1307.364,
+        "max": 1362.8
+      },
+      "cls": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "tbt": {
+        "median": 5.356999999999971,
+        "min": 0,
+        "max": 6.579000000000178
+      },
+      "bytes": {
+        "median": 33647,
+        "min": 33620,
+        "max": 33648
+      }
+    },
+    {
+      "device": "mobile",
+      "temperature": "warm",
+      "side": "candidate",
+      "n": 3,
+      "ttfb": {
+        "median": 46.187000000000005,
+        "min": 42.969,
+        "max": 46.703
+      },
+      "htmlEndMs": {
+        "median": 1048.323999941349,
+        "min": 950.0080000162125,
+        "max": 1311.3830000162125
+      },
+      "posterDiscoveredMs": {
+        "median": 917.67,
+        "min": 818.54,
+        "max": 1183.914
+      },
+      "fcp": {
+        "median": 1101.74,
+        "min": 920.647,
+        "max": 1207.239
+      },
+      "lcp": {
+        "median": 1101.74,
+        "min": 1023.092,
+        "max": 1405.557
+      },
+      "cls": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "tbt": {
+        "median": 7.255000000000109,
+        "min": 0,
+        "max": 37.94100000000003
+      },
+      "bytes": {
+        "median": 33567,
+        "min": 33557,
+        "max": 33623
+      }
+    }
+  ],
+  "paired": [
+    {
+      "device": "desktop",
+      "temperature": "cold",
+      "repeat": 1,
+      "lcpDeltaMs": -251.0340000000001,
+      "posterDiscoveredDeltaMs": -272.66799999999967,
+      "htmlEndDeltaMs": -265.811999976635
+    },
+    {
+      "device": "desktop",
+      "temperature": "cold",
+      "repeat": 2,
+      "lcpDeltaMs": -363.1579999999999,
+      "posterDiscoveredDeltaMs": -376.15499999999986,
+      "htmlEndDeltaMs": -391.29800003767014
+    },
+    {
+      "device": "desktop",
+      "temperature": "cold",
+      "repeat": 3,
+      "lcpDeltaMs": -147.39300000000003,
+      "posterDiscoveredDeltaMs": -154.26800000000003,
+      "htmlEndDeltaMs": -184.45600003004074
+    },
+    {
+      "device": "desktop",
+      "temperature": "warm",
+      "repeat": 1,
+      "lcpDeltaMs": -308.4709999999999,
+      "posterDiscoveredDeltaMs": -284.36699999999996,
+      "htmlEndDeltaMs": -287.1500000357628
+    },
+    {
+      "device": "desktop",
+      "temperature": "warm",
+      "repeat": 2,
+      "lcpDeltaMs": -350.77099999999996,
+      "posterDiscoveredDeltaMs": -321.5179999999999,
+      "htmlEndDeltaMs": -322.375
+    },
+    {
+      "device": "desktop",
+      "temperature": "warm",
+      "repeat": 3,
+      "lcpDeltaMs": -220.51699999999983,
+      "posterDiscoveredDeltaMs": -250.27599999999984,
+      "htmlEndDeltaMs": -245.30099999904633
+    },
+    {
+      "device": "mobile",
+      "temperature": "cold",
+      "repeat": 1,
+      "lcpDeltaMs": -363.0909999999999,
+      "posterDiscoveredDeltaMs": -364.10299999999995,
+      "htmlEndDeltaMs": -256.49999994039536
+    },
+    {
+      "device": "mobile",
+      "temperature": "cold",
+      "repeat": 2,
+      "lcpDeltaMs": -120.952,
+      "posterDiscoveredDeltaMs": -127.19900000000007,
+      "htmlEndDeltaMs": -121.08000004291534
+    },
+    {
+      "device": "mobile",
+      "temperature": "cold",
+      "repeat": 3,
+      "lcpDeltaMs": -248.19000000000005,
+      "posterDiscoveredDeltaMs": -251.84800000000007,
+      "htmlEndDeltaMs": -253.37099999189377
+    },
+    {
+      "device": "mobile",
+      "temperature": "warm",
+      "repeat": 1,
+      "lcpDeltaMs": 98.19299999999998,
+      "posterDiscoveredDeltaMs": 149.3119999999999,
+      "htmlEndDeltaMs": 150.44600003957748
+    },
+    {
+      "device": "mobile",
+      "temperature": "warm",
+      "repeat": 2,
+      "lcpDeltaMs": -339.70799999999997,
+      "posterDiscoveredDeltaMs": -323.9390000000001,
+      "htmlEndDeltaMs": -323.1889999508858
+    },
+    {
+      "device": "mobile",
+      "temperature": "warm",
+      "repeat": 3,
+      "lcpDeltaMs": -247.98800000000006,
+      "posterDiscoveredDeltaMs": -216.23000000000013,
+      "htmlEndDeltaMs": -216.682000041008
+    }
+  ]
+}

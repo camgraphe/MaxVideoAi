@@ -19,8 +19,10 @@
 - [x] Add real PostgreSQL regression coverage for a four-command selector batch, parity, malformed rows, continuous selectors, snapshot consistency and subsequent edits. Run red before implementation.
 - [x] Add `loadCustomerTariffQuoteStates(selectors)` and a microtask-scoped coalescer to the tariff store. Wire the optional selector reader through `computeCanonicalBillingSnapshot` and the watch quote context. Retain existing single-quote and operational executor paths.
 - [x] Run selected-reader, temporal, quote, workspace recreation and watch contracts; confirm frozen current-quote parity and actual SQL counts.
-- [ ] Compare baseline/candidate production builds using the same database in read-only mode, routes, network/CPU and media: three cold and warm visits per device, plus canonical/schema/geometry and first-Play checks.
-- [ ] Document individual samples, variability, source identity, remaining costs and limits. Run lint, typecheck, exposure, relevant integration and financial validation. Obtain a whole-patch review before completion.
+- [x] Compare baseline/candidate production builds using the same database in read-only mode, routes, network/CPU and media: three cold and warm visits per device, plus canonical/schema/geometry and first-Play checks.
+- [x] Document individual samples, variability, source identity, remaining costs and limits. Run lint, typecheck, exposure, relevant integration and financial validation. Obtain a whole-patch review before completion.
 
 Execution: native in this isolated worktree, within the user's authorized correction and measurement scope.
 
+
+Final evidence: `docs/performance/2026-10-17-watch-html/README.md`. The primary comparison is 24 audits between matched Vercel Preview builds with correct device User-Agents; earlier limited protocols and adverse samples remain documented. Both complete financial tests pass locally; the stable initial-cutover rerun accepts all 26,818 checkpoints. Final independent review confirms the measurements and reports no unresolved defect. Production delivery is outside this change; required Quality CI remains a premerge gate.

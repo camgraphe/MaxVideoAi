@@ -25,7 +25,7 @@ for(let repeat=1;repeat<=(pilot?1:3);repeat++) for(const device of (pilot?['desk
       const id=prefix+'-'+temperature;
       const result=await lighthouse(`http://127.0.0.1:${side==='baseline'?3127:3128}${route}`,{
         port:chrome.port,output:'json',logLevel:'error',onlyCategories:['performance'],
-        ...profiles[device],throttlingMethod:'devtools',
+        ...profiles[device],emulatedUserAgent:true,throttlingMethod:'devtools',
         throttling:{requestLatencyMs:150,downloadThroughputKbps:1600,uploadThroughputKbps:750,cpuSlowdownMultiplier:4},
         disableStorageReset:true,maxWaitForLoad:45000,
       });
