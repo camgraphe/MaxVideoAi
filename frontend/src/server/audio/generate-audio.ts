@@ -1,3 +1,4 @@
+import { audioWebSubmissionIdentity, readAudioWebSubmission, reserveAudioWebSubmission } from './audio-web-submission';
 import { buildAudioRunReservation, type ReservedAudioRun } from './audio-run-reservation';
 import { detectMediaBufferDuration } from '@/server/media/detect-has-audio';
 import { upsertLegacyJobOutputs } from '@/server/media-library';
@@ -7,7 +8,7 @@ import {
   type AudioGenerateResponse,
 } from '@/lib/audio-generation';
 import { prepareAudioRun, assertAudioProviderConfigured, assertExpectedAudioQuote } from './prepare-audio';
-import { generateSongTrack, generateAmbienceTrack, generateMinimaxVoiceTrack } from './providers/standalone';
+import { generateSongTrack, generateAmbienceTrack, generateMinimaxVoiceTrack, generateElevenVoiceTrack } from './providers/standalone';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import {
@@ -55,11 +56,19 @@ export async function generateAudioRun(params: {
 
   await ensureBillingSchema();
 
+  const submission = audioWebSubmissionIdentity(params.userId, params.body);
+  if (submission) {
+    const replay = await readAudioWebSubmission(submission);
+    if (replay) return replay;
+  }
   const prepared = await prepareAudioRun(params.body, params.userId);
   assertExpectedAudioQuote(params.body.expectedQuote, { inputKey: prepared.inputKey, pricing: prepared.pricingSnapshot });
   assertAudioProviderConfigured(prepared.normalized);
   const reservation = buildAudioRunReservation(prepared, params.userId);
-  await createInitialAudioJob(reservation.initialJob);
+  if (submission) {
+    const replay = await reserveAudioWebSubmission(submission, reservation);
+    if (replay) return replay;
+  } else await createInitialAudioJob(reservation.initialJob);
   return executeReservedAudioRun(reservation.execution);
 }
 
@@ -117,7 +126,8 @@ export async function executeReservedAudioRun(params: ReservedAudioRun): Promise
             ? 'Generating reference voice over…'
             : 'Generating voice over…',
       });
-      voiceTrack = normalized.voiceModel === 'minimax' ? await generateMinimaxVoiceTrack(normalized) :
+      voiceTrack = normalized.voiceModel === 'eleven-v4' ? await generateElevenVoiceTrack(normalized) :
+        normalized.voiceModel === 'minimax' ? await generateMinimaxVoiceTrack(normalized) :
         normalized.voiceMode === 'clone' && normalized.voiceSampleUrl
           ? await generateClonedVoiceTrack({
               script: normalized.script,
@@ -282,6 +292,7 @@ export async function executeReservedAudioRun(params: ReservedAudioRun): Promise
               providerLabel: voiceTrack.providerLabel,
               model: voiceTrack.model,
               requestId: voiceTrack.requestId ?? null,
+              ...(voiceTrack.timestamps ? { timestamps: voiceTrack.timestamps } : {}),
             }
           : null,
       voiceClone:
@@ -291,6 +302,7 @@ export async function executeReservedAudioRun(params: ReservedAudioRun): Promise
               providerLabel: voiceTrack.providerLabel,
               model: voiceTrack.model,
               requestId: voiceTrack.requestId ?? null,
+              ...(voiceTrack.timestamps ? { timestamps: voiceTrack.timestamps } : {}),
             }
           : null,
       source: sourceVideoUrl ? {

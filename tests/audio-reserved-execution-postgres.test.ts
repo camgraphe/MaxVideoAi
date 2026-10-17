@@ -49,8 +49,9 @@ test('web Audio still reserves once then executes the same runtime, preserving o
   const output = join(folder, 'audio.cjs');
   const mocks: Record<string, string> = {
     './prepare-audio': `export const assertExpectedAudioQuote=globalThis.__audioWebFixture.assertExpectedAudioQuote; export const assertAudioProviderConfigured=()=>{}; export async function prepareAudioRun(){ return globalThis.__audioWebFixture.prepared; }`,
+    '@/lib/fal-client': `export function getFalClient(){return {subscribe:async(model,options)=>{const f=globalThis.__audioWebFixture;f.submitted++;if(model!=='elevenlabs/tts/eleven-v4'||options.input.voice!=='CwhRBWXzGAHq8TQ4Fs17'||'speed' in options.input||'voice_setting' in options.input)throw new Error('Wrong Eleven request');return {requestId:'fal-eleven-existing',data:{audio:{url:'https://fixture.example/original.mp3'},timestamps:[{characters:['H'],character_start_times_seconds:[0],character_end_times_seconds:[0.3]}]}};}}}`,
     '@/lib/schema': `export async function ensureBillingSchema(){} export async function ensureMediaLibrarySchema(){}`,
-    './providers/standalone': `export async function generateSongTrack(input){ const f=globalThis.__audioWebFixture; f.submitted++; if(f.failed) throw new Error('Fixture provider failure'); if(input.lyrics!==f.prepared.normalized.lyrics) throw new Error('Lyrics changed'); return {url:'https://fixture.example/original.mp3',model:'fixture-song',providerKey:'fixture',providerLabel:'Fixture'}; } export const generateAmbienceTrack=()=>{throw new Error('Wrong provider')}; export const generateMinimaxVoiceTrack=generateAmbienceTrack;`,
+    './providers/standalone': `export async function generateSongTrack(input){ const f=globalThis.__audioWebFixture; f.submitted++; if(f.failed) throw new Error('Fixture provider failure'); if(input.lyrics!==f.prepared.normalized.lyrics) throw new Error('Lyrics changed'); return {url:'https://fixture.example/original.mp3',model:'fixture-song',providerKey:'fixture',providerLabel:'Fixture'}; } export const generateAmbienceTrack=()=>{throw new Error('Wrong provider')}; export const generateMinimaxVoiceTrack=generateAmbienceTrack;export {generateElevenVoiceTrack} from ${JSON.stringify(resolve('frontend/src/server/audio/providers/standalone.ts'))};`,
     '@/server/audio/media': `export async function persistOriginalAudio(input){const f=globalThis.__audioWebFixture;f.persistCalls++;if(input.url!=='https://fixture.example/original.mp3')throw new Error('Original changed');if(f.beforePersist)await f.beforePersist(input.jobId);return {audioUrl:'https://fixture.example/stored-original.mp3',durationSec:123.4};} export const mixAudioTracks=()=>{throw new Error('Unexpected transcode')}; export const mixAudioIntoVideo=mixAudioTracks; export const uploadAudioRenderAudio=mixAudioTracks; export const uploadAudioRenderVideo=mixAudioTracks;`,
     '@/server/audio/providers': `export const generateClonedVoiceTrack=()=>{throw new Error('Wrong provider')};export const generateMusicTrack=generateClonedVoiceTrack;export const generateSoundDesignTrack=generateClonedVoiceTrack;export const generateStandardVoiceTrack=generateClonedVoiceTrack;`,
     '@/server/media/detect-has-audio': `export const detectMediaBufferDuration=()=>{throw new Error('Unexpected transcode probe')};`,
@@ -126,4 +127,17 @@ test('web Audio still reserves once then executes the same runtime, preserving o
     message: 'Fixture provider failure',
     refunds: 0,
   });
+  fixture.failed = false;
+  fixture.prepared = await prepareAudioRun({ pack: 'voice_only', voiceModel: 'eleven-v4', elevenVoiceId: 'CwhRBWXzGAHq8TQ4Fs17', script: 'a'.repeat(1000) }, userId,
+    {env: {FAL_KEY: 'fixture'}, pricingPolicy: {loadOverrides: async () => ({status: 'loaded', rules: [], routingRules: []})}});
+  const eleven = await runtime.generateAudioRun({ userId, body: {} });
+  assert.equal(eleven.pricing.totalCents, 25);
+  assert.equal(eleven.audioUrl, 'https://fixture.example/stored-original.mp3');
+  assert.equal(eleven.durationSec, 123.4);
+  const settings = (await database.pool.query('SELECT settings_snapshot FROM app_jobs WHERE job_id=$1', [eleven.jobId])).rows[0].settings_snapshot;
+  assert.equal(settings.elevenVoiceId, 'CwhRBWXzGAHq8TQ4Fs17');
+  assert.equal(settings.providers.tts.model, 'elevenlabs/tts/eleven-v4');
+  assert.equal(settings.providers.tts.requestId, 'fal-eleven-existing');
+  assert.deepEqual(settings.providers.tts.timestamps, [{characters:['H'],character_start_times_seconds:[0],character_end_times_seconds:[0.3]}]);
+
 });

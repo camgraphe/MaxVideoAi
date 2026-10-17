@@ -1,3 +1,4 @@
+import { findElevenVoice } from '@/lib/audio-eleven-voices';
 import type {SeedanceEditSourceFacts} from '../seedance-edit-source';
 import {seedanceEditSourceLabel} from '../seedance-edit-source-copy';
 import type {ImageConversationTurn} from './image-conversation-contract';
@@ -46,7 +47,7 @@ export function conversationQuotePresentation(request: NonNullable<ImageConversa
         request.settings.lyrics ? `${t('Lyrics','Paroles')}: ${request.settings.lyrics}` : ''].filter(Boolean).join('\n\n'),
       referenceSummary,
       settings: [voice ? '' : request.settings.durationSec ? `${request.settings.durationSec} s` : '',
-        request.settings.language, cloned ? t('cloned voice','voix clonée') : request.settings.voiceModel,
+        request.settings.language, findElevenVoice(request.settings.elevenVoiceId)?.name, cloned ? t('cloned voice','voix clonée') : request.settings.voiceModel,
         voice ? request.settings.seedAudioOutputFormat : request.settings.musicModel, request.settings.mood,
         request.settings.musicEnabled===false ? t('no music','sans musique') : ''].filter(Boolean).join(' · ')};
   }

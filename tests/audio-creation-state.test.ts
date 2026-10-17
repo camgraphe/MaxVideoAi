@@ -94,7 +94,7 @@ test('persisted audio drafts repair retired model settings before they can poiso
       sampleRate: state.draft.sampleRate, voiceDelivery: state.draft.voiceDelivery, voiceProfile: state.draft.voiceProfile,
       voiceGender: state.draft.voiceGender, language: state.draft.language,
     }, {
-      voiceModel: 'minimax', minimaxVoiceId: 'English_FriendlyPerson', voice: 'default', speed: 1.06, volume: 1,
+      voiceModel: 'eleven-v4', minimaxVoiceId: 'English_FriendlyPerson', voice: 'default', speed: 1.06, volume: 1,
       pitch: 0, outputFormat: 'mp3', sampleRate: 24000, voiceDelivery: 'cinematic', voiceProfile: 'balanced',
       voiceGender: 'female', language: 'auto',
     });
@@ -174,8 +174,8 @@ test('edited and account-switched quotes cannot be displayed or submitted after 
 test('intent request binds the actual model behind the human voice choice and reference', () => {
   const draft = newAudioDraft('voice');
   const preset = buildAudioCreationRequest('voice', draft, 'fr');
-  assert.equal(preset.voiceModel, 'minimax');
-  assert.equal(preset.minimaxVoiceId, 'English_FriendlyPerson');
+  assert.equal(preset.voiceModel, 'eleven-v4');
+  assert.equal(preset.elevenVoiceId, 'nPczCjzI2devNBz1zQrb');
   const reference = buildAudioCreationRequest('voice', { ...draft, reference: { url: 'https://fixture.example/original.wav', name: 'Reference' } }, 'fr');
   assert.equal(reference.voiceModel, 'seed');
   assert.equal(reference.minimaxVoiceId, undefined);

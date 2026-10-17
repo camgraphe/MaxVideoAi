@@ -1,4 +1,5 @@
 'use client';
+import { getAudioSubmissionId, clearAudioSubmissionId } from '../_lib/audio-submission-identity';
 
 import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
 import { useAudioCreationQuote } from './useAudioCreationQuote';
@@ -142,8 +143,9 @@ export function useAudioGenerationRunner({
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
   const { quote } = useAudioCreationQuote(request, userId, canGenerate);
   const inFlight = useRef(new Set<string>());
+  const submissionIds = useRef(new Map<string, string>());
   const generate = async () => {
-    if (!canGenerate || !quote || quote.expiresAt <= Date.now() || inFlight.current.has(quote.inputKey)) return;
+    if (!userId || !canGenerate || !quote || quote.expiresAt <= Date.now() || inFlight.current.has(quote.inputKey)) return;
     inFlight.current.add(quote.inputKey);
     const startedAt = Date.now();
     const pendingId = `aud_pending_${crypto.randomUUID()}`;
@@ -157,11 +159,12 @@ export function useAudioGenerationRunner({
     ]);
     setNotice(null);
     try {
-      const response = await runAudioGenerate({ ...request, expectedQuote: {
+      const response = await runAudioGenerate({ ...request, submissionId: getAudioSubmissionId(userId, quote.inputKey, submissionIds.current), expectedQuote: {
         inputKey: quote.inputKey, totalCents: quote.pricing.totalCents,
         currency: quote.pricing.currency, expiresAt: quote.expiresAt,
       } });
       if (!alive.current || owner.current !== userId) return;
+      clearAudioSubmissionId(userId, quote.inputKey, submissionIds.current);
       const nextResult: AudioResultState = {
         jobId: response.jobId,
         videoUrl: response.videoUrl,
@@ -169,6 +172,8 @@ export function useAudioGenerationRunner({
         thumbUrl: response.thumbUrl,
         outputKind: response.outputKind,
       };
+      const statusMessage = response.status === 'completed' ? copy.messages.processing.complete
+        : response.status === 'failed' ? copy.messages.generationFailed : copy.rail.statuses.running;
       setResult(nextResult);
       setActiveJob({
         startedAt,
@@ -176,7 +181,7 @@ export function useAudioGenerationRunner({
         jobId: response.jobId,
         status: response.status,
         progress: response.progress,
-        message: copy.messages.processing.complete,
+        message: statusMessage,
         videoUrl: response.videoUrl,
         audioUrl: response.audioUrl ?? null,
         thumbUrl: response.thumbUrl,
@@ -197,13 +202,14 @@ export function useAudioGenerationRunner({
               finalPriceCents: response.pricing.totalCents,
               currency: response.pricing.currency,
               paymentStatus: response.paymentStatus,
-              message: copy.messages.processing.complete,
+              message: statusMessage,
             },
           })
         );
       }
       onGeneratedJobId(response.jobId);
-      setNotice(copy.messages.renderComplete);
+      setNotice(response.status === 'completed' ? copy.messages.renderComplete
+        : response.status === 'failed' ? copy.messages.generationFailed : null);
     } catch (error) {
       if (alive.current && owner.current === userId) setNotice(resolveUiErrorMessage(error, copy.messages.generationFailed));
     } finally {

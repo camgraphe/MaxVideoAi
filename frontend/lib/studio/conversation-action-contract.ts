@@ -34,6 +34,7 @@ export type StudioConversationQuoteSettings = {
   audio?: boolean; durationSec?: number; resolution?: string; aspectRatio?: string;
   quality?: string; imageWidth?: number; imageHeight?: number; outputFormat?: string;
   fps?: number; loop?: boolean; hdr?: boolean; exrExport?: boolean; enableWebSearch?: boolean;
+  elevenVoiceId?: string; elevenStability?: number; elevenSimilarityBoost?: number;
   voiceModel?: string; musicModel?: string; seedAudioOutputFormat?: string; seedAudioSampleRate?: number;
   musicEnabled?: boolean; exportAudioFile?: boolean; language?: string;
   startTimeSec?: number; retakeMode?: string; extendPosition?: string;
@@ -87,7 +88,7 @@ type StudioAudioMode=Omit<AudioCapabilities['modes'][number],'variants'> & {
 type StudioAudioOptions={readonly [K in keyof AudioCapabilities['options']]: readonly AudioCapabilities['options'][K][number][]};
 export type StudioCapabilityDetails =
   | {modelId: string; label: string; lifecycle: AgentModelLifecycle | null; surface: 'image' | 'video'; modes: readonly AgentModelModeDetails[]; referenceIdentity: 'attached_image_asset' | 'attached_owned_media_or_ready_project_output'; outputCount: 1; maxReferences: number; guidance: AgentModelGuidance | null; editorialGuidance?: AgentModelEditorialGuidance; promptingSources: readonly AgentModelPromptingSource[]}
-  | {modelId: string; label: string; surface: 'audio'; modes: StudioAudioMode[]; options: StudioAudioOptions; references: ('source_video'|'voice_sample')[]; outputCount: 1};
+  | {modelId: string; label: string; surface: 'audio'; defaults: AudioCapabilities['defaults']; modes: StudioAudioMode[]; options: StudioAudioOptions; references: ('source_video'|'voice_sample')[]; outputCount: 1};
 export type StudioProjectMedia = {ref: ToolAssetRef; name: string; durationSec: number | null}[];
 export type StudioActionResult =
   | {ok:true;action:'analysis.prepare';data:StudioPreparedAnalysis}

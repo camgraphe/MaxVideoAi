@@ -1,3 +1,4 @@
+import { AUDIO_ELEVEN_VOICE_IDS, DEFAULT_ELEVEN_VOICE_ID } from './audio-eleven-voices';
 import {
   AUDIO_LANGUAGE_VALUES,
   AUDIO_AMBIENCE_DURATION_OPTIONS_SEC,
@@ -28,6 +29,7 @@ export const AUDIO_INTENT_PACK: Record<AudioCreationIntent, AudioPackId> = {
 };
 export type AudioCreationDraft = {
   prompt: string; script: string; lyrics: string; durationSec: number;
+  elevenVoiceId: string; elevenStability: number; elevenSimilarityBoost: number;
   voiceModel: AudioVoiceModel; voice: string; minimaxVoiceId: string; speed: number; volume: number; pitch: number;
   outputFormat: string; sampleRate: number; voiceDelivery: string; voiceProfile: string; voiceGender: string;
   language: string; musicModel: 'clip' | 'pro'; bpm: number; mood: string;
@@ -35,7 +37,8 @@ export type AudioCreationDraft = {
 };
 export function newAudioDraft(intent: AudioCreationIntent): AudioCreationDraft {
   return { prompt: '', script: '', lyrics: '', durationSec: intent === 'sfx' ? 8 : intent === 'ambience' ? 60 : 30,
-    voiceModel: 'minimax', voice: 'default', minimaxVoiceId: 'English_FriendlyPerson', speed: 1.06, volume: 1, pitch: 0,
+    elevenVoiceId: DEFAULT_ELEVEN_VOICE_ID, elevenStability: 0.5, elevenSimilarityBoost: 0.75,
+    voiceModel: 'eleven-v4', voice: 'default', minimaxVoiceId: 'English_FriendlyPerson', speed: 1.06, volume: 1, pitch: 0,
     outputFormat: 'mp3', sampleRate: 24000, voiceDelivery: 'cinematic', voiceProfile: 'balanced', voiceGender: 'female',
     language: 'auto', musicModel: 'clip', bpm: 110, mood: 'dreamy', reference: null };
 }
@@ -61,7 +64,10 @@ export function repairAudioCreationDraft(intent: AudioCreationIntent, draft: Aud
   return {
     ...draft,
     durationSec,
-    voiceModel: oneOf(draft.voiceModel, ['seed', 'minimax'] as const, defaults.voiceModel),
+    voiceModel: oneOf(draft.voiceModel, ['seed', 'minimax', 'eleven-v4'] as const, defaults.voiceModel),
+    elevenVoiceId: oneOf(draft.elevenVoiceId, AUDIO_ELEVEN_VOICE_IDS, defaults.elevenVoiceId),
+    elevenStability: typeof draft.elevenStability === 'number' && Number.isFinite(draft.elevenStability) && draft.elevenStability >= 0 && draft.elevenStability <= 1 ? draft.elevenStability : defaults.elevenStability,
+    elevenSimilarityBoost: typeof draft.elevenSimilarityBoost === 'number' && Number.isFinite(draft.elevenSimilarityBoost) && draft.elevenSimilarityBoost >= 0 && draft.elevenSimilarityBoost <= 1 ? draft.elevenSimilarityBoost : defaults.elevenSimilarityBoost,
     minimaxVoiceId: oneOf(draft.minimaxVoiceId, AUDIO_MINIMAX_VOICE_VALUES, defaults.minimaxVoiceId),
     voice: oneOf(draft.voice, AUDIO_SEED_AUDIO_VOICE_VALUES, defaults.voice),
     speed: typeof draft.speed === 'number' && draft.speed >= 0.5 && draft.speed <= 2 ? draft.speed : defaults.speed,
@@ -83,6 +89,9 @@ export function isAudioIntent(value: unknown): value is AudioCreationIntent {
 }
 export function buildAudioCreationRequest(intent: AudioCreationIntent, draft: AudioCreationDraft, locale: string): AudioGenerateRequestBody {
   const base = { pack: AUDIO_INTENT_PACK[intent], locale };
+  if (intent === 'voice' && !draft.reference && draft.voiceModel === 'eleven-v4') return { ...base, script: draft.script.trim(),
+    voiceModel: 'eleven-v4', elevenVoiceId: draft.elevenVoiceId, elevenStability: draft.elevenStability,
+    elevenSimilarityBoost: draft.elevenSimilarityBoost, language: draft.language };
   if (intent === 'voice') return { ...base, script: draft.script.trim(), voiceModel: draft.reference ? 'seed' : draft.voiceModel,
     ...(!draft.reference && draft.voiceModel === 'minimax' ? { minimaxVoiceId: draft.minimaxVoiceId } : {
       seedAudioVoice: draft.voice, voiceSampleUrl: draft.reference?.url, seedAudioOutputFormat: draft.outputFormat,

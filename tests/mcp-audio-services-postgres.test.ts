@@ -149,6 +149,23 @@ test('Audio prepare/confirm services preserve exact quote and reservation semant
     assert.equal((await pg.pool.query('SELECT state FROM mcp_generation_quotes WHERE quote_id=$1', [quote.quoteId])).rows[0].state, 'accepted');
   });
 
+  await t.test('Eleven v4 exact voice and settings survive a quote and concurrent OAuth confirmation', async () => {
+    const principal = identity('94');
+    await seedWallet(principal, 1000);
+    const quote = await prepare({ schemaVersion: 1, surface: 'audio', engineId: 'audio-voice-only', mode: 'voice_only',
+      prompt: '', settings: { voiceModel: 'eleven-v4', script: 'a'.repeat(1000), elevenVoiceId: 'CwhRBWXzGAHq8TQ4Fs17', elevenStability: 0, elevenSimilarityBoost: 0.8 },
+      references: [], outputCount: 1 }, principal);
+    const stored = (await pg.pool.query('SELECT request_json FROM mcp_generation_quotes WHERE quote_id=$1', [quote.quoteId])).rows[0];
+    assert.equal(stored.request_json.settings.elevenVoiceId, 'CwhRBWXzGAHq8TQ4Fs17');
+    assert.equal(stored.request_json.settings.elevenStability, 0);
+    let executions = 0;
+    const confirm = successfulConfirm(() => { executions++; });
+    const results = await Promise.all([confirm({quoteId: quote.quoteId, confirmed: true}, principal), confirm({quoteId: quote.quoteId, confirmed: true}, principal)]);
+    assert.equal(results[0].jobId, results[1].jobId);
+    assert.equal(executions, 1);
+    assert.equal((await pg.pool.query("SELECT count(*)::int AS n FROM app_receipts WHERE job_id=$1 AND type='charge'", [results[0].jobId])).rows[0].n, 1);
+  });
+
   await t.test('distinct quotes serialize a wallet that can fund only one attempt', async () => {
     const principal = identity('83');
     await seedWallet(principal, 7);

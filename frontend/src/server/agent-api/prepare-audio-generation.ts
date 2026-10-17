@@ -1,3 +1,5 @@
+import { getAudioPackConfig } from '@/lib/audio-generation';
+import { DEFAULT_ELEVEN_VOICE_ID } from '@/lib/audio-eleven-voices';
 import { withDbTransaction, type QueryExecutor, type TransactionQueryExecutor } from '@/lib/db';
 import { getActiveAccountRestriction } from '@/server/fraud-cleanup';
 import { getWalletSummary, type WalletSummary } from '@/server/wallet-summary';
@@ -153,12 +155,15 @@ export async function prepareAudioGenerationForActor(
 
   let request: CanonicalAudioRequest;
   try {
+    const voice = getAudioPackConfig(input.mode).includesVoice;
+    const referenceVoice = input.references?.some(reference => reference.role === 'voice_sample');
+    const settings = input.settings ?? {};
+    const voiceModel = settings.voiceModel ?? (referenceVoice ? 'seed' : 'eleven-v4');
     request = normalizeAudioGenerationRequest({
-      schemaVersion: 1,
-      settings: {},
-      references: [],
-      outputCount: 1,
-      ...input,
+      schemaVersion: 1, references: [], outputCount: 1, ...input,
+      settings: !voice ? settings : voiceModel === 'eleven-v4'
+        ? { elevenVoiceId: DEFAULT_ELEVEN_VOICE_ID, elevenStability: 0.5, elevenSimilarityBoost: 0.75, ...settings, voiceModel }
+        : { ...settings, voiceModel },
     });
   } catch (error) {
     mapPreparationError(error);

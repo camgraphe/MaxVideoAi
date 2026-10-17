@@ -1,0 +1,37 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { randomUUID } from 'node:crypto';
+import { getDb } from '../frontend/src/lib/db';
+import { audioWebSubmissionIdentity, readAudioWebSubmission, reserveAudioWebSubmission } from '../frontend/src/server/audio/audio-web-submission';
+import { prepareAudioRun } from '../frontend/src/server/audio/prepare-audio';
+import { buildAudioRunReservation } from '../frontend/src/server/audio/audio-run-reservation';
+import { completeAudioJob } from '../frontend/src/server/audio/audio-generate-jobs';
+import { createPaidGenerationTestSchema, startDisposablePostgres } from './helpers/disposable-postgres';
+
+test('web Audio replays one owned submission after concurrent reservation or a lost response without another debit', async t => {
+  const database = await startDisposablePostgres('audio-submission');
+  const previous = process.env.DATABASE_URL;
+  process.env.DATABASE_URL = database.databaseUrl;
+  t.after(async () => { await getDb().end(); if (previous === undefined) delete process.env.DATABASE_URL; else process.env.DATABASE_URL = previous; await database.cleanup(); });
+  await createPaidGenerationTestSchema(database.pool);
+  await database.pool.query('CREATE TABLE profiles(id uuid PRIMARY KEY,preferred_currency text)');
+  const userId = '00000000-0000-4000-8000-000000000095';
+  await database.pool.query("INSERT INTO profiles VALUES ($1,'usd')", [userId]);
+  await database.pool.query("INSERT INTO app_receipts(user_id,type,amount_cents,currency) VALUES ($1,'topup',1000,'USD')", [userId]);
+  const body = { pack: 'voice_only', voiceModel: 'eleven-v4' as const, script: 'a'.repeat(1000), submissionId: randomUUID() };
+  const prepared = await prepareAudioRun(body, userId, { env: { FAL_KEY: 'fixture' }, pricingPolicy: { loadOverrides: async () => ({ status: 'loaded', rules: [], routingRules: [] }) } });
+  const identity = audioWebSubmissionIdentity(userId, body)!;
+  const results = await Promise.all([reserveAudioWebSubmission(identity, buildAudioRunReservation(prepared, userId)), reserveAudioWebSubmission(identity, buildAudioRunReservation(prepared, userId))]);
+  assert.equal(results.filter(result => result === null).length, 1, 'only one reservation may execute its provider');
+  assert.equal(results.find(Boolean)?.jobId, identity.jobId);
+  assert.deepEqual((await database.pool.query("SELECT type,amount_cents FROM app_receipts WHERE job_id=$1", [identity.jobId])).rows, [{ type: 'charge', amount_cents: 25 }]);
+  await completeAudioJob(identity.jobId, { progress: 100, message: 'Complete', audioUrl: 'https://fixture.example/original.mp3' });
+  const replay = await readAudioWebSubmission(identity);
+  assert.equal(replay?.status, 'completed');
+  assert.equal(replay?.audioUrl, 'https://fixture.example/original.mp3');
+  assert.equal((await reserveAudioWebSubmission(identity, buildAudioRunReservation(prepared, userId)))?.status, 'completed');
+  await assert.rejects(readAudioWebSubmission(audioWebSubmissionIdentity(userId, { ...body, script: 'Different script' })!), { code: 'audio_submission_conflict' });
+  assert.equal(await readAudioWebSubmission(audioWebSubmissionIdentity('other-owner', body)!), null);
+  assert.throws(() => audioWebSubmissionIdentity(userId, { ...body, submissionId: 'invalid' }), { code: 'audio_submission_invalid' });
+  assert.equal((await database.pool.query("SELECT count(*)::int AS n FROM app_receipts WHERE job_id=$1 AND type='charge'", [identity.jobId])).rows[0].n, 1);
+});

@@ -8,6 +8,10 @@ Les deux essais réels Codex du paquet 0.3.6 et leurs limites restent consignés
 [point de contrôle du 22 septembre](../operations/mcp-main-repository-release-v0.3.6.md). La validation de
 chaque hôte reste distincte ; consulter le [parcours de mise à jour](../operations/mcp-client-updates.md).
 
+## Eleven v4 Audio contract — 17 October 2026
+
+The existing Audio preparation schema and live discovery include the reviewed Eleven v4 voices and exact model controls, shared with Studio and web Audio. No global instruction, tool description, tool name or publication gate changes: existing 2,000-byte metadata budgets remain unchanged. Live results carry names/IDs/accents and read-only official sample links; the catalog is not copied into instructions. New preparations freeze default voice settings before exact-price approval; existing quote replay, ownership and one-attempt boundaries remain in force. No plugin release, deployment or real-host verification is claimed from the local deterministic checks.
+
 ## Returned video artifacts — 14 October 2026
 
 Owned completed-video results add optional `playbackVideoUrl` for full-duration
