@@ -1,3 +1,4 @@
+import type { CharacterBuilderAccountRequest } from './character-builder-types';
 import { dispatchAnalyticsEvent } from '@/lib/analytics-client';
 import { authFetch } from '@/lib/authFetch';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
@@ -115,16 +116,19 @@ export function getUploadTooLargeMessage(copy: CharacterCopy, maxMB: number): st
   return formatTemplate(copy.uploadTooLarge, { maxMB });
 }
 
-export async function uploadImage(file: File, copy: CharacterCopy): Promise<UploadedAsset> {
+export async function uploadImage(file: File, copy: CharacterCopy, request: CharacterBuilderAccountRequest): Promise<UploadedAsset> {
   const preparedFile = await prepareImageFileForUpload(file, {
     maxBytes: DEFAULT_UPLOAD_LIMIT_MB * 1024 * 1024,
   });
 
+  if (!request.isCurrent()) throw new DOMException('Account changed', 'AbortError');
   const formData = new FormData();
   formData.set('file', preparedFile, preparedFile.name);
 
   const response = await authFetch('/api/uploads/image', {
     method: 'POST',
+    headers: { Authorization: `Bearer ${request.accessToken}` },
+    signal: request.signal,
     body: formData,
   });
 
@@ -157,11 +161,11 @@ export async function uploadImage(file: File, copy: CharacterCopy): Promise<Uplo
   };
 }
 
-export function readPersistedState(): CharacterBuilderState | null {
-  if (typeof window === 'undefined') return null;
+export function readPersistedState(accountId: string | null): CharacterBuilderState | null {
+  if (typeof window === 'undefined' || !accountId) return null;
 
   try {
-    const raw = window.localStorage.getItem(CHARACTER_BUILDER_STORAGE_KEY);
+    const raw = window.localStorage.getItem(`${CHARACTER_BUILDER_STORAGE_KEY}:${accountId}`);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as PersistedCharacterBuilderState | null;
     if (!parsed || parsed.version !== CHARACTER_BUILDER_STORAGE_VERSION || !parsed.state) return null;
@@ -188,11 +192,11 @@ export function readPersistedState(): CharacterBuilderState | null {
   }
 }
 
-export function readPersistedPendingRuns(): PendingCharacterRun[] {
-  if (typeof window === 'undefined') return [];
+export function readPersistedPendingRuns(accountId: string | null): PendingCharacterRun[] {
+  if (typeof window === 'undefined' || !accountId) return [];
 
   try {
-    const raw = window.localStorage.getItem(CHARACTER_BUILDER_PENDING_RUNS_STORAGE_KEY);
+    const raw = window.localStorage.getItem(`${CHARACTER_BUILDER_PENDING_RUNS_STORAGE_KEY}:${accountId}`);
     if (!raw) return [];
     const parsed = JSON.parse(raw) as PersistedPendingCharacterRuns | null;
     if (!parsed || parsed.version !== 1 || !Array.isArray(parsed.runs)) return [];
@@ -213,26 +217,26 @@ export function readPersistedPendingRuns(): PendingCharacterRun[] {
   }
 }
 
-export function writePersistedPendingRuns(runs: PendingCharacterRun[]) {
-  if (typeof window === 'undefined') return;
+export function writePersistedPendingRuns(runs: PendingCharacterRun[], accountId: string | null) {
+  if (typeof window === 'undefined' || !accountId) return;
   if (!runs.length) {
-    window.localStorage.removeItem(CHARACTER_BUILDER_PENDING_RUNS_STORAGE_KEY);
+    window.localStorage.removeItem(`${CHARACTER_BUILDER_PENDING_RUNS_STORAGE_KEY}:${accountId}`);
     return;
   }
   const payload: PersistedPendingCharacterRuns = {
     version: 1,
     runs,
   };
-  window.localStorage.setItem(CHARACTER_BUILDER_PENDING_RUNS_STORAGE_KEY, JSON.stringify(payload));
+  window.localStorage.setItem(`${CHARACTER_BUILDER_PENDING_RUNS_STORAGE_KEY}:${accountId}`, JSON.stringify(payload));
 }
 
-export function writePersistedState(state: CharacterBuilderState) {
-  if (typeof window === 'undefined') return;
+export function writePersistedState(state: CharacterBuilderState, accountId: string | null) {
+  if (typeof window === 'undefined' || !accountId) return;
   const payload: PersistedCharacterBuilderState = {
     version: CHARACTER_BUILDER_STORAGE_VERSION,
     state,
   };
-  window.localStorage.setItem(CHARACTER_BUILDER_STORAGE_KEY, JSON.stringify(payload));
+  window.localStorage.setItem(`${CHARACTER_BUILDER_STORAGE_KEY}:${accountId}`, JSON.stringify(payload));
 }
 
 export function normalizeTag(value: string): string {

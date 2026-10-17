@@ -76,6 +76,15 @@ Treat 5 requests per second and 5 concurrent tasks as the current account safety
 
 Alibaba task results are retained by the provider for approximately 24 hours. The application poller must therefore run continuously while direct routing is active. It polls only Alibaba-owned active jobs, records progress in the shared attempt ledger, and marks locally over-age jobs `polling_stalled` for manual review instead of blindly refunding them.
 
+Batch ordering uses `app_jobs.updated_at`, so failed retrievals advance that
+timestamp conditionally on the job still being active. This allows newer jobs
+through after a full failing batch. Successful observation freshness remains
+in `generation_poll_state.checked_at`; `created_at` still controls maximum age.
+The shared claim, individual-job selection and concurrent terminal states are
+preserved. The [shared direct-poller contract](luma-agents-provider.md#polling-and-output-copy)
+and `tests/provider-poll-fairness-postgres.test.ts` cover Alibaba, Luma, Kling
+and Veo together.
+
 A provider success is not an application completion. The output video is first copied through the shared durable media path. The job becomes complete only after the owned video URL is stored and the shared media-library projection is updated. A failed copy remains retryable and must not publish an expiring provider URL as the completed asset.
 
 ## Pricing and observability

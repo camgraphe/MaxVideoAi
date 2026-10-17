@@ -265,7 +265,12 @@ test.describe('admin critical flows', () => {
       return button.contains(document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2));
     });
     expect(firstDestinationHit, 'destination choices are not covered by save controls').toBe(true);
+    const familiesToggle = destinationMenu.locator('[data-destination-section-toggle="families"]');
+    await expect(familiesToggle).toBeVisible();
+    if (await familiesToggle.getAttribute('aria-expanded') !== 'true') await familiesToggle.click();
+    await expect(familiesToggle).toHaveAttribute('aria-expanded', 'true');
     const firstFamily = destinationMenu.locator('[data-destination-group="families"] button[data-destination-id]').first();
+    await expect(firstFamily).toBeVisible();
     const familyLabel = await firstFamily.locator('span').nth(1).innerText();
     await firstFamily.click();
     await expect(destinationMenu).toHaveCount(0);

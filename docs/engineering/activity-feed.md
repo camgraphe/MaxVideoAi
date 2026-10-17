@@ -77,6 +77,45 @@ Stale audio expiry and explicitly requested Fal refresh keep their existing
 status-reconciliation behavior. They are separate from schema/output repair and
 must retain account ownership and payment safeguards.
 
+Audio expiration treats the feed snapshot only as a candidate. The route-local
+`jobs-stale-audio.ts` helper locks the current owned row and checks its current
+surface, active status, missing media and last-update age again. It returns `true`
+only after an expiration commits; the collection reloads only those expired IDs.
+The terminal update and any wallet refund share one transaction through
+`refundAudioChargeInExecutor` in the canonical audio receipt owner. That owner
+validates the persisted debit and an existing refund, so neither caller-supplied
+prices nor a stale snapshot can define the credit. Completion or recent progress
+wins when committed before the lock. Concurrent expiration creates at most one
+refund. Missing/inconsistent paid ledger data or any failed write rolls back both
+state and money; the route logs the reconciliation error and preserves the row.
+Unpaid/free jobs expire without wallet writes. None of these paths initializes
+schema or contacts a provider.
+
+## Browser focus ownership
+
+`SWRFocusResync` owns the shared API/jobs/engines/pricing refresh on application
+routes, including visibility restoration and BFCache `pageshow`. A five-second
+throttle coalesces these signals and emits one `wallet:invalidate` notification.
+`focus-resync-policy.ts` is shared with `SWRProvider`: its middleware disables
+native SWR focus only for keys handled by that owner and only on those routes.
+Other keys retain native SWR behavior, and media-library lists retain their
+explicit focus opt-out. Do not add a second session watchdog that mutates the
+same cache. Reconnect and polling policies remain independent.
+
+SWR Infinite remains under its native focus owner: its page-key loader must reach
+the public `infinite` middleware unchanged, and SWR excludes its aggregate cache
+from filtered `mutate` calls. The provider recognizes that middleware before
+resolving ordinary dependent keys. Activity therefore refreshes its first page
+once on native focus; paginated media lists retain their explicit focus opt-out.
+
+`tests/public-watch-runtime-remount.test.ts` exercises the actual runtime with
+React and SWR: one fetch per owned string/tuple/function key, wallet notification,
+visibility/page-show bursts, cleanup, media-list exclusions and native focus on
+other keys and outside the shared-owner routes. This proves request-count
+behavior, not a measured page-latency or Core Web Vitals improvement.
+`tests/swr-focus-infinite.test.ts` covers initial loading, second-page loading,
+focus behavior and the mounted `/login` → `/app` transition with real SWR Infinite.
+
 ## Diagnostics
 
 Set `JOBS_ROUTE_TIMING=1` in a non-production runtime to add a bounded
@@ -98,6 +137,8 @@ results.
 - `tests/jobs-api-route-architecture.test.ts` for the migrated-table read
   boundary.
 - `tests/jobs-route-timing.test.ts` for bounded non-personal diagnostics.
+- `tests/jobs-stale-audio-postgres.test.ts` for current-state revalidation, concurrent
+  completion/expiration, exact debit reconciliation and atomic rollback on PG17.
 - `tests/recent-generations-service.test.ts` and media continuation/library
   contracts for query ownership, exact originals, and legacy poster fallback.
 - `tests/application-schema-bootstrap-postgres.test.ts` for the new-database

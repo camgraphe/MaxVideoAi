@@ -1,3 +1,4 @@
+import type { CaptureCharacterBuilderAccountRequest } from '../_lib/character-builder-types';
 import { useCallback, type Dispatch, type SetStateAction } from 'react';
 import { normalizeTraitsForSourceMode } from '@/lib/character-builder';
 import type {
@@ -14,6 +15,7 @@ import type { CharacterCopy } from '../_lib/character-builder-copy';
 import type { CharacterLibraryAsset } from '../_lib/character-builder-types';
 
 interface UseCharacterBuilderReferenceAssetsOptions {
+  captureAccountRequest: CaptureCharacterBuilderAccountRequest;
   copy: CharacterCopy;
   libraryModalRole: CharacterBuilderReferenceImage['role'] | null;
   openAuthGate: () => void;
@@ -26,6 +28,7 @@ interface UseCharacterBuilderReferenceAssetsOptions {
 }
 
 export function useCharacterBuilderReferenceAssets({
+  captureAccountRequest,
   copy,
   libraryModalRole,
   openAuthGate,
@@ -61,14 +64,18 @@ export function useCharacterBuilderReferenceAssets({
         openAuthGate();
         return;
       }
+      const request = captureAccountRequest();
+      if (!request) return;
       setError(null);
       setStatusMessage(role === 'identity' ? copy.uploadIdentityStart : copy.uploadStyleStart);
 
       try {
-        const asset = await uploadImage(file, copy);
+        const asset = await uploadImage(file, copy, request);
+        if (!request.isCurrent()) return;
         applyReferenceImage(role, buildReferenceImage(role, asset));
         setStatusMessage(role === 'identity' ? copy.uploadIdentityDone : copy.uploadStyleDone);
       } catch (uploadError) {
+        if (!request.isCurrent()) return;
         if (isAuthRequiredError(uploadError)) {
           openAuthGate();
           return;
@@ -79,6 +86,7 @@ export function useCharacterBuilderReferenceAssets({
     },
     [
       applyReferenceImage,
+      captureAccountRequest,
       copy,
       openAuthGate,
       setError,

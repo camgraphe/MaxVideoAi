@@ -86,6 +86,13 @@ test('character builder workspace delegates copy, local types, and helper logic'
   assert.match(workspaceSource, /from '\.\/character-builder\/_lib\/character-builder-helpers'/, 'workspace should import helpers');
 });
 
+test('character builder account boundary owns runtime isolation and request lifetime', () => {
+  assert.match(workspaceSource, /function CharacterBuilderAccountWorkspace/, 'account changes must replace all stateful tool hooks');
+  assert.match(workspaceSource, /key=\{user\?\.id \?\? 'guest'\}/, 'confirmed identity owns the workspace lifetime');
+  assert.match(workspaceSource, /if \(loading\) return <CharacterBuilderLoadingSkeleton/, 'unresolved authentication must not mount private storage readers');
+  assert.match(workspaceSource, /useCharacterBuilderAccountScope/, 'asynchronous tool work belongs to the mounted account');
+});
+
 test('character builder workspace does not regain extracted ownership', () => {
   assert.doesNotMatch(workspaceSource, /const DEFAULT_CHARACTER_COPY =/, 'default copy belongs in _lib/character-builder-copy.ts');
   assert.doesNotMatch(workspaceSource, /type UploadedAsset =/, 'asset contracts belong in _lib/character-builder-types.ts');

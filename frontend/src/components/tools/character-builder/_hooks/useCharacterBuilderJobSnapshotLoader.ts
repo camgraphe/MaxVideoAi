@@ -1,3 +1,4 @@
+import type { CaptureCharacterBuilderAccountRequest } from '../_lib/character-builder-types';
 import type { Dispatch, SetStateAction } from 'react';
 import { useEffect } from 'react';
 import { authFetch } from '@/lib/authFetch';
@@ -5,6 +6,7 @@ import type { CharacterBuilderState } from '@/types/character-builder';
 import { parseCharacterBuilderSnapshot } from '../_lib/character-builder-helpers';
 
 interface UseCharacterBuilderJobSnapshotLoaderOptions {
+  captureAccountRequest: CaptureCharacterBuilderAccountRequest;
   hydrated: boolean;
   jobIdFromQuery: string | null;
   loadFromJobDoneMessage: string;
@@ -14,6 +16,7 @@ interface UseCharacterBuilderJobSnapshotLoaderOptions {
 }
 
 export function useCharacterBuilderJobSnapshotLoader({
+  captureAccountRequest,
   hydrated,
   jobIdFromQuery,
   loadFromJobDoneMessage,
@@ -28,15 +31,17 @@ export function useCharacterBuilderJobSnapshotLoader({
     let cancelled = false;
 
     async function loadFromJob() {
+      const request = captureAccountRequest();
+      if (!request) return;
       try {
-        const response = await authFetch(`/api/jobs/${encodeURIComponent(activeJobId)}`);
+        const response = await authFetch(`/api/jobs/${encodeURIComponent(activeJobId)}`, { headers: { Authorization: `Bearer ${request.accessToken}` }, signal: request.signal });
         const payload = (await response.json().catch(() => null)) as
           | {
               ok?: boolean;
               settingsSnapshot?: unknown;
             }
           | null;
-        if (!response.ok || !payload?.ok || !payload.settingsSnapshot || cancelled) return;
+        if (!response.ok || !payload?.ok || !payload.settingsSnapshot || cancelled || !request.isCurrent()) return;
         const snapshotState = parseCharacterBuilderSnapshot(payload.settingsSnapshot);
         if (!snapshotState) return;
         setState((previous) => ({
@@ -46,7 +51,7 @@ export function useCharacterBuilderJobSnapshotLoader({
         setShowStyleReferenceSlot(Boolean(snapshotState.referenceImages?.some((image) => image.role === 'style')));
         setStatusMessage(loadFromJobDoneMessage);
       } catch (loadError) {
-        if (!cancelled) {
+        if (!cancelled && request.isCurrent()) {
           console.warn('[character-builder] failed to load job snapshot', loadError);
         }
       }
@@ -57,5 +62,5 @@ export function useCharacterBuilderJobSnapshotLoader({
     return () => {
       cancelled = true;
     };
-  }, [hydrated, jobIdFromQuery, loadFromJobDoneMessage, setShowStyleReferenceSlot, setState, setStatusMessage]);
+  }, [captureAccountRequest, hydrated, jobIdFromQuery, loadFromJobDoneMessage, setShowStyleReferenceSlot, setState, setStatusMessage]);
 }
