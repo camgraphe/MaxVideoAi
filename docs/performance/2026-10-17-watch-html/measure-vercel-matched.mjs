@@ -25,10 +25,11 @@ for(const origin of Object.values(origins)){
 }
 const puppeteer=(await import(pathToFileURL(lhReq.resolve('puppeteer-core')))).default;
 const safeJSON=value=>[...authByOrigin.values()].reduce((text,secret)=>text.replaceAll(secret,'[redacted]'),JSON.stringify(value,(key,v)=>/^(?:cookie|set-cookie|authorization|x-vercel-protection-bypass|x-vercel-trusted-oidc-idp-token)$/i.test(key)?'[redacted]':v));
-const route='/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2';
+const route=process.env.WATCH_HTML_PERF_ROUTE ?? '/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2';
+assert.match(route,/^\/video\/[a-z0-9][a-z0-9-]*$/,'explicit canonical watch route required');
 const profiles={desktop:{formFactor:'desktop',screenEmulation:{mobile:false,width:1440,height:900,deviceScaleFactor:1,disabled:false}},mobile:{formFactor:'mobile',screenEmulation:{mobile:true,width:390,height:844,deviceScaleFactor:1,disabled:false}}};
 const records=fs.existsSync(path.join(out,'samples.json'))?JSON.parse(fs.readFileSync(path.join(out,'samples.json'))):[];
-for(const row of records){assert.equal(row.origin,origins[row.side],'never resume data from another deployment origin');assert.equal(/Android|Mobile/.test(row.settings.emulatedUserAgent),row.device==='mobile','never resume an invalid device profile');}
+for(const row of records){assert.equal(row.route,route,'never resume data from another watch route');assert.equal(row.origin,origins[row.side],'never resume data from another deployment origin');assert.equal(/Android|Mobile/.test(row.settings.emulatedUserAgent),row.device==='mobile','never resume an invalid device profile');}
 const pilot=process.argv.includes('--pilot');
 for(let repeat=1;repeat<=(pilot?1:3);repeat++) for(const device of (pilot?['desktop']:['desktop','mobile'])) {
   const sides=repeat===2?['candidate','baseline']:['baseline','candidate'];
@@ -52,12 +53,15 @@ for(let repeat=1;repeat<=(pilot?1:3);repeat++) for(const device of (pilot?['desk
       const {lhr,artifacts}=result;
       assert.equal(/Android|Mobile/.test(lhr.configSettings.emulatedUserAgent),device==='mobile','device User-Agent must match the profile');
       const lcpNode=lhr.audits['lcp-phases-insight']?.details?.items?.find(item=>item.type==='node');
-      assert.ok(lcpNode?.selector?.includes('video-reader-frame'),'the real watch reader must be rendered');
+      const reader=await page.evaluate(()=>{const frame=document.querySelector('.video-reader-frame'),video=frame?.querySelector('video'),r=frame?.getBoundingClientRect();return {canonical:document.querySelector('link[rel=canonical]')?.href,frame:r?{x:r.x,y:r.y,width:r.width,height:r.height}:null,video:video?{src:video.getAttribute('src'),poster:video.getAttribute('poster'),preload:video.getAttribute('preload')}:null,quotes:[...document.querySelectorAll('.video-reader-quote')].map(n=>n.textContent)};});
+      assert.equal(reader.canonical,'https://maxvideoai.com'+route,'canonical watch page must be rendered');
+      assert.ok(reader.video?.poster&&reader.frame?.width>0&&reader.frame?.height>0,'real watch reader must be rendered');
+      assert.equal(reader.quotes.length,3,'complete comparison quotes must be rendered');
       fs.writeFileSync(path.join(out,id+'.lhr.json'),safeJSON(lhr));
       if(artifacts.Trace)fs.writeFileSync(path.join(out,id+'.trace.json'),safeJSON(artifacts.Trace));
       if(artifacts.DevtoolsLog)fs.writeFileSync(path.join(out,id+'.devtools.json'),safeJSON(artifacts.DevtoolsLog));
       const a=lhr.audits;
-      const row={id,side,device,temperature,repeat,time:lhr.fetchTime,route,
+      const row={id,side,device,temperature,repeat,time:lhr.fetchTime,route,reader,lcpSelector:lcpNode?.selector,
         ttfb:a['server-response-time']?.numericValue,fcp:a['first-contentful-paint']?.numericValue,
         lcp:a['largest-contentful-paint']?.numericValue,cls:a['cumulative-layout-shift']?.numericValue,
         tbt:a['total-blocking-time']?.numericValue,bytes:a['total-byte-weight']?.numericValue,

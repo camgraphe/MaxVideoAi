@@ -26,3 +26,10 @@ Execution: native in this isolated worktree, within the user's authorized correc
 
 
 Final evidence: `docs/performance/2026-10-17-watch-html/README.md`. The primary comparison is 24 audits between matched Vercel Preview builds with correct device User-Agents; earlier limited protocols and adverse samples remain documented. Both complete financial tests pass locally; the stable initial-cutover rerun accepts all 26,818 checkpoints. Final independent review confirms the measurements and reports no unresolved defect. Production delivery is outside this change; required Quality CI remains a premerge gate.
+
+## Requested broader page verification
+
+- [x] Compare MiniMax H3 wildfire, Wan 3 Prime transitions and Kling 3 Pro city flythrough on the same two immutable Vercel previews: 72 sequential audits, three cold/warm repeats per device/version. Predeclared routes and review rule: `multipage-protocol.json`.
+- [x] Verify HTML/quotes/poster/geometry and mobile playback, retain each sample, inspect page-level medians and unfavourable pairs, update report and PR before considering production.
+
+Expanded result: `MULTIPAGE.md` records 72 initial + 18 targeted audits, all twelve primary medians improving, all 18 new mobile pairs improving with CLS zero, six MiniMax tail pairs improving and three Kling cache-controlled pairs improving. Twelve real Play checks pass. The application patch is unchanged; no production release was performed.

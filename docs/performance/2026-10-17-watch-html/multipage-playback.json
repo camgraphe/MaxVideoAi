@@ -1,0 +1,626 @@
+[
+  {
+    "page": "minimax",
+    "route": "/video/minimax-h3-wildfire-lookout-rescue",
+    "device": "desktop",
+    "side": "baseline",
+    "time": "2026-10-17T19:33:33.927Z",
+    "before": {
+      "rect": {
+        "x": 52,
+        "y": 141,
+        "width": 980,
+        "height": 560.875
+      },
+      "media": {
+        "paused": true,
+        "currentTime": 0,
+        "readyState": 0,
+        "error": null,
+        "src": "https://media.maxvideoai.com/marketing/video-renditions/b24035c64a2c2f87be23637337621e0b480dab68499e498eafb2cf0e520e2266/public-demo-v1/desktop/f54a3f128e6da188810eb7c4d955b0211e001d7ddff8e653fbb3b58729de4be6.mp4",
+        "preload": "none"
+      },
+      "viewportWidth": 1440,
+      "documentWidth": 1428
+    },
+    "after": {
+      "rect": {
+        "x": 52,
+        "y": 141,
+        "width": 980,
+        "height": 560.875
+      },
+      "media": {
+        "paused": false,
+        "currentTime": 0.056954,
+        "readyState": 4,
+        "error": null,
+        "src": "https://media.maxvideoai.com/marketing/video-renditions/b24035c64a2c2f87be23637337621e0b480dab68499e498eafb2cf0e520e2266/public-demo-v1/desktop/f54a3f128e6da188810eb7c4d955b0211e001d7ddff8e653fbb3b58729de4be6.mp4",
+        "preload": "none"
+      },
+      "viewportWidth": 1440,
+      "documentWidth": 1428
+    },
+    "firstPlayElapsedMs": 488,
+    "media": [
+      {
+        "url": "https://media.maxvideoai.com/marketing/video-renditions/b24035c64a2c2f87be23637337621e0b480dab68499e498eafb2cf0e520e2266/public-demo-v1/desktop/f54a3f128e6da188810eb7c4d955b0211e001d7ddff8e653fbb3b58729de4be6.mp4",
+        "status": 206,
+        "contentType": "video/mp4"
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "page": "minimax",
+    "route": "/video/minimax-h3-wildfire-lookout-rescue",
+    "device": "desktop",
+    "side": "candidate",
+    "time": "2026-10-17T19:33:37.000Z",
+    "before": {
+      "rect": {
+        "x": 52,
+        "y": 141,
+        "width": 980,
+        "height": 560.875
+      },
+      "media": {
+        "paused": true,
+        "currentTime": 0,
+        "readyState": 0,
+        "error": null,
+        "src": "https://media.maxvideoai.com/marketing/video-renditions/b24035c64a2c2f87be23637337621e0b480dab68499e498eafb2cf0e520e2266/public-demo-v1/desktop/f54a3f128e6da188810eb7c4d955b0211e001d7ddff8e653fbb3b58729de4be6.mp4",
+        "preload": "none"
+      },
+      "viewportWidth": 1440,
+      "documentWidth": 1428
+    },
+    "after": {
+      "rect": {
+        "x": 52,
+        "y": 141,
+        "width": 980,
+        "height": 560.875
+      },
+      "media": {
+        "paused": false,
+        "currentTime": 0.182876,
+        "readyState": 4,
+        "error": null,
+        "src": "https://media.maxvideoai.com/marketing/video-renditions/b24035c64a2c2f87be23637337621e0b480dab68499e498eafb2cf0e520e2266/public-demo-v1/desktop/f54a3f128e6da188810eb7c4d955b0211e001d7ddff8e653fbb3b58729de4be6.mp4",
+        "preload": "none"
+      },
+      "viewportWidth": 1440,
+      "documentWidth": 1428
+    },
+    "firstPlayElapsedMs": 539,
+    "media": [
+      {
+        "url": "https://media.maxvideoai.com/marketing/video-renditions/b24035c64a2c2f87be23637337621e0b480dab68499e498eafb2cf0e520e2266/public-demo-v1/desktop/f54a3f128e6da188810eb7c4d955b0211e001d7ddff8e653fbb3b58729de4be6.mp4",
+        "status": 206,
+        "contentType": "video/mp4"
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "page": "minimax",
+    "route": "/video/minimax-h3-wildfire-lookout-rescue",
+    "device": "mobile",
+    "side": "baseline",
+    "time": "2026-10-17T19:33:39.918Z",
+    "before": {
+      "rect": {
+        "x": 17,
+        "y": 154,
+        "width": 356,
+        "height": 203.734375
+      },
+      "media": {
+        "paused": true,
+        "currentTime": 0,
+        "readyState": 0,
+        "error": null,
+        "src": "https://media.maxvideoai.com/marketing/video-renditions/b24035c64a2c2f87be23637337621e0b480dab68499e498eafb2cf0e520e2266/public-demo-v1/mobile/f46f366b07e5454f5f601710216344ad1216dd3e4a1108621d18adbd7ade1d1c.mp4",
+        "preload": "none"
+      },
+      "viewportWidth": 390,
+      "documentWidth": 390
+    },
+    "after": {
+      "rect": {
+        "x": 17,
+        "y": 154,
+        "width": 356,
+        "height": 203.734375
+      },
+      "media": {
+        "paused": false,
+        "currentTime": 0.060665,
+        "readyState": 4,
+        "error": null,
+        "src": "https://media.maxvideoai.com/marketing/video-renditions/b24035c64a2c2f87be23637337621e0b480dab68499e498eafb2cf0e520e2266/public-demo-v1/mobile/f46f366b07e5454f5f601710216344ad1216dd3e4a1108621d18adbd7ade1d1c.mp4",
+        "preload": "none"
+      },
+      "viewportWidth": 390,
+      "documentWidth": 390
+    },
+    "firstPlayElapsedMs": 800,
+    "media": [
+      {
+        "url": "https://media.maxvideoai.com/marketing/video-renditions/b24035c64a2c2f87be23637337621e0b480dab68499e498eafb2cf0e520e2266/public-demo-v1/mobile/f46f366b07e5454f5f601710216344ad1216dd3e4a1108621d18adbd7ade1d1c.mp4",
+        "status": 206,
+        "contentType": "video/mp4"
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "page": "minimax",
+    "route": "/video/minimax-h3-wildfire-lookout-rescue",
+    "device": "mobile",
+    "side": "candidate",
+    "time": "2026-10-17T19:33:42.623Z",
+    "before": {
+      "rect": {
+        "x": 17,
+        "y": 154,
+        "width": 356,
+        "height": 203.734375
+      },
+      "media": {
+        "paused": true,
+        "currentTime": 0,
+        "readyState": 0,
+        "error": null,
+        "src": "https://media.maxvideoai.com/marketing/video-renditions/b24035c64a2c2f87be23637337621e0b480dab68499e498eafb2cf0e520e2266/public-demo-v1/mobile/f46f366b07e5454f5f601710216344ad1216dd3e4a1108621d18adbd7ade1d1c.mp4",
+        "preload": "none"
+      },
+      "viewportWidth": 390,
+      "documentWidth": 390
+    },
+    "after": {
+      "rect": {
+        "x": 17,
+        "y": 154,
+        "width": 356,
+        "height": 203.734375
+      },
+      "media": {
+        "paused": false,
+        "currentTime": 0.053729,
+        "readyState": 4,
+        "error": null,
+        "src": "https://media.maxvideoai.com/marketing/video-renditions/b24035c64a2c2f87be23637337621e0b480dab68499e498eafb2cf0e520e2266/public-demo-v1/mobile/f46f366b07e5454f5f601710216344ad1216dd3e4a1108621d18adbd7ade1d1c.mp4",
+        "preload": "none"
+      },
+      "viewportWidth": 390,
+      "documentWidth": 390
+    },
+    "firstPlayElapsedMs": 824,
+    "media": [
+      {
+        "url": "https://media.maxvideoai.com/marketing/video-renditions/b24035c64a2c2f87be23637337621e0b480dab68499e498eafb2cf0e520e2266/public-demo-v1/mobile/f46f366b07e5454f5f601710216344ad1216dd3e4a1108621d18adbd7ade1d1c.mp4",
+        "status": 206,
+        "contentType": "video/mp4"
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "page": "wan",
+    "route": "/video/wan-3-prime-ai-match-cut-transitions",
+    "device": "desktop",
+    "side": "baseline",
+    "time": "2026-10-17T19:33:45.523Z",
+    "before": {
+      "rect": {
+        "x": 52,
+        "y": 141,
+        "width": 980,
+        "height": 551.25
+      },
+      "media": {
+        "paused": true,
+        "currentTime": 0,
+        "readyState": 0,
+        "error": null,
+        "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/61dbdd60-f1bd-4422-967b-54fbbd1c29ab.mp4",
+        "preload": "none"
+      },
+      "viewportWidth": 1440,
+      "documentWidth": 1428
+    },
+    "after": {
+      "rect": {
+        "x": 52,
+        "y": 141,
+        "width": 980,
+        "height": 551.25
+      },
+      "media": {
+        "paused": false,
+        "currentTime": 0.062523,
+        "readyState": 4,
+        "error": null,
+        "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/61dbdd60-f1bd-4422-967b-54fbbd1c29ab.mp4",
+        "preload": "none"
+      },
+      "viewportWidth": 1440,
+      "documentWidth": 1428
+    },
+    "firstPlayElapsedMs": 540,
+    "media": [
+      {
+        "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/61dbdd60-f1bd-4422-967b-54fbbd1c29ab.mp4",
+        "status": 206,
+        "contentType": "video/mp4"
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "page": "wan",
+    "route": "/video/wan-3-prime-ai-match-cut-transitions",
+    "device": "desktop",
+    "side": "candidate",
+    "time": "2026-10-17T19:33:48.276Z",
+    "before": {
+      "rect": {
+        "x": 52,
+        "y": 141,
+        "width": 980,
+        "height": 551.25
+      },
+      "media": {
+        "paused": true,
+        "currentTime": 0,
+        "readyState": 0,
+        "error": null,
+        "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/61dbdd60-f1bd-4422-967b-54fbbd1c29ab.mp4",
+        "preload": "none"
+      },
+      "viewportWidth": 1440,
+      "documentWidth": 1428
+    },
+    "after": {
+      "rect": {
+        "x": 52,
+        "y": 141,
+        "width": 980,
+        "height": 551.25
+      },
+      "media": {
+        "paused": false,
+        "currentTime": 0.061369,
+        "readyState": 4,
+        "error": null,
+        "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/61dbdd60-f1bd-4422-967b-54fbbd1c29ab.mp4",
+        "preload": "none"
+      },
+      "viewportWidth": 1440,
+      "documentWidth": 1428
+    },
+    "firstPlayElapsedMs": 452,
+    "media": [
+      {
+        "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/61dbdd60-f1bd-4422-967b-54fbbd1c29ab.mp4",
+        "status": 206,
+        "contentType": "video/mp4"
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "page": "wan",
+    "route": "/video/wan-3-prime-ai-match-cut-transitions",
+    "device": "mobile",
+    "side": "baseline",
+    "time": "2026-10-17T19:33:50.913Z",
+    "before": {
+      "rect": {
+        "x": 17,
+        "y": 154,
+        "width": 356,
+        "height": 200.25
+      },
+      "media": {
+        "paused": true,
+        "currentTime": 0,
+        "readyState": 0,
+        "error": null,
+        "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/61dbdd60-f1bd-4422-967b-54fbbd1c29ab.mp4",
+        "preload": "none"
+      },
+      "viewportWidth": 390,
+      "documentWidth": 390
+    },
+    "after": {
+      "rect": {
+        "x": 17,
+        "y": 154,
+        "width": 356,
+        "height": 200.25
+      },
+      "media": {
+        "paused": false,
+        "currentTime": 0.06359,
+        "readyState": 4,
+        "error": null,
+        "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/61dbdd60-f1bd-4422-967b-54fbbd1c29ab.mp4",
+        "preload": "none"
+      },
+      "viewportWidth": 390,
+      "documentWidth": 390
+    },
+    "firstPlayElapsedMs": 385,
+    "media": [
+      {
+        "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/61dbdd60-f1bd-4422-967b-54fbbd1c29ab.mp4",
+        "status": 206,
+        "contentType": "video/mp4"
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "page": "wan",
+    "route": "/video/wan-3-prime-ai-match-cut-transitions",
+    "device": "mobile",
+    "side": "candidate",
+    "time": "2026-10-17T19:33:53.383Z",
+    "before": {
+      "rect": {
+        "x": 17,
+        "y": 154,
+        "width": 356,
+        "height": 200.25
+      },
+      "media": {
+        "paused": true,
+        "currentTime": 0,
+        "readyState": 0,
+        "error": null,
+        "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/61dbdd60-f1bd-4422-967b-54fbbd1c29ab.mp4",
+        "preload": "none"
+      },
+      "viewportWidth": 390,
+      "documentWidth": 390
+    },
+    "after": {
+      "rect": {
+        "x": 17,
+        "y": 154,
+        "width": 356,
+        "height": 200.25
+      },
+      "media": {
+        "paused": false,
+        "currentTime": 0.051564,
+        "readyState": 4,
+        "error": null,
+        "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/61dbdd60-f1bd-4422-967b-54fbbd1c29ab.mp4",
+        "preload": "none"
+      },
+      "viewportWidth": 390,
+      "documentWidth": 390
+    },
+    "firstPlayElapsedMs": 570,
+    "media": [
+      {
+        "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/61dbdd60-f1bd-4422-967b-54fbbd1c29ab.mp4",
+        "status": 206,
+        "contentType": "video/mp4"
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "page": "kling",
+    "route": "/video/kling-3-pro-futuristic-city-drone-flythrough-example-b3ce25fd",
+    "device": "desktop",
+    "side": "baseline",
+    "time": "2026-10-17T19:33:57.288Z",
+    "before": {
+      "rect": {
+        "x": 52,
+        "y": 141,
+        "width": 980,
+        "height": 551.25
+      },
+      "media": {
+        "paused": true,
+        "currentTime": 0,
+        "readyState": 0,
+        "error": null,
+        "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/d31c8cab-e2ba-454b-a6db-9ffd0b14b784.mp4",
+        "preload": "none"
+      },
+      "viewportWidth": 1440,
+      "documentWidth": 1428
+    },
+    "after": {
+      "rect": {
+        "x": 52,
+        "y": 141,
+        "width": 980,
+        "height": 551.25
+      },
+      "media": {
+        "paused": false,
+        "currentTime": 0.065631,
+        "readyState": 3,
+        "error": null,
+        "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/d31c8cab-e2ba-454b-a6db-9ffd0b14b784.mp4",
+        "preload": "none"
+      },
+      "viewportWidth": 1440,
+      "documentWidth": 1428
+    },
+    "firstPlayElapsedMs": 1164,
+    "media": [
+      {
+        "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/d31c8cab-e2ba-454b-a6db-9ffd0b14b784.mp4",
+        "status": 206,
+        "contentType": "video/mp4"
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "page": "kling",
+    "route": "/video/kling-3-pro-futuristic-city-drone-flythrough-example-b3ce25fd",
+    "device": "desktop",
+    "side": "candidate",
+    "time": "2026-10-17T19:34:00.958Z",
+    "before": {
+      "rect": {
+        "x": 52,
+        "y": 141,
+        "width": 980,
+        "height": 551.25
+      },
+      "media": {
+        "paused": true,
+        "currentTime": 0,
+        "readyState": 0,
+        "error": null,
+        "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/d31c8cab-e2ba-454b-a6db-9ffd0b14b784.mp4",
+        "preload": "none"
+      },
+      "viewportWidth": 1440,
+      "documentWidth": 1428
+    },
+    "after": {
+      "rect": {
+        "x": 52,
+        "y": 141,
+        "width": 980,
+        "height": 551.25
+      },
+      "media": {
+        "paused": false,
+        "currentTime": 0.054697,
+        "readyState": 3,
+        "error": null,
+        "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/d31c8cab-e2ba-454b-a6db-9ffd0b14b784.mp4",
+        "preload": "none"
+      },
+      "viewportWidth": 1440,
+      "documentWidth": 1428
+    },
+    "firstPlayElapsedMs": 901,
+    "media": [
+      {
+        "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/d31c8cab-e2ba-454b-a6db-9ffd0b14b784.mp4",
+        "status": 206,
+        "contentType": "video/mp4"
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "page": "kling",
+    "route": "/video/kling-3-pro-futuristic-city-drone-flythrough-example-b3ce25fd",
+    "device": "mobile",
+    "side": "baseline",
+    "time": "2026-10-17T19:34:04.080Z",
+    "before": {
+      "rect": {
+        "x": 17,
+        "y": 154,
+        "width": 356,
+        "height": 200.25
+      },
+      "media": {
+        "paused": true,
+        "currentTime": 0,
+        "readyState": 0,
+        "error": null,
+        "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/d31c8cab-e2ba-454b-a6db-9ffd0b14b784.mp4",
+        "preload": "none"
+      },
+      "viewportWidth": 390,
+      "documentWidth": 390
+    },
+    "after": {
+      "rect": {
+        "x": 17,
+        "y": 154,
+        "width": 356,
+        "height": 200.25
+      },
+      "media": {
+        "paused": false,
+        "currentTime": 0.055557,
+        "readyState": 3,
+        "error": null,
+        "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/d31c8cab-e2ba-454b-a6db-9ffd0b14b784.mp4",
+        "preload": "none"
+      },
+      "viewportWidth": 390,
+      "documentWidth": 390
+    },
+    "firstPlayElapsedMs": 922,
+    "media": [
+      {
+        "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/d31c8cab-e2ba-454b-a6db-9ffd0b14b784.mp4",
+        "status": 206,
+        "contentType": "video/mp4"
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "page": "kling",
+    "route": "/video/kling-3-pro-futuristic-city-drone-flythrough-example-b3ce25fd",
+    "device": "mobile",
+    "side": "candidate",
+    "time": "2026-10-17T19:34:06.982Z",
+    "before": {
+      "rect": {
+        "x": 17,
+        "y": 154,
+        "width": 356,
+        "height": 200.25
+      },
+      "media": {
+        "paused": true,
+        "currentTime": 0,
+        "readyState": 0,
+        "error": null,
+        "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/d31c8cab-e2ba-454b-a6db-9ffd0b14b784.mp4",
+        "preload": "none"
+      },
+      "viewportWidth": 390,
+      "documentWidth": 390
+    },
+    "after": {
+      "rect": {
+        "x": 17,
+        "y": 154,
+        "width": 356,
+        "height": 200.25
+      },
+      "media": {
+        "paused": false,
+        "currentTime": 0.051635,
+        "readyState": 3,
+        "error": null,
+        "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/d31c8cab-e2ba-454b-a6db-9ffd0b14b784.mp4",
+        "preload": "none"
+      },
+      "viewportWidth": 390,
+      "documentWidth": 390
+    },
+    "firstPlayElapsedMs": 881,
+    "media": [
+      {
+        "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/d31c8cab-e2ba-454b-a6db-9ffd0b14b784.mp4",
+        "status": 206,
+        "contentType": "video/mp4"
+      }
+    ],
+    "pageErrors": []
+  }
+]

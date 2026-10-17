@@ -61,6 +61,10 @@ with no production target or aliases. The candidate is the Git PR preview for
 `a47250dd54376c60359502e63cd2fe16dcd75855`. Later commits in this PR add measurement
 records/protocol corrections only; the measured application patch is unchanged.
 
+## Expanded page coverage
+
+[The additional-page report](MULTIPAGE.md) records 90 further audits on MiniMax H3, Wan 3 Prime and Kling 3 Pro, including targeted checks of a MiniMax HTML peak and a Kling image-cache mismatch. The desktop gain is reproduced; all 18 added mobile pairs improve with CLS zero. Twelve live before/after Play checks also pass. The original observations, including both unusual pairs, remain available.
+
 ## Current verification
 
 - Both production-mode local builds, candidate TypeScript, ESLint (zero errors,

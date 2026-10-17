@@ -1,0 +1,186 @@
+{
+  "profiles": {
+    "desktop": {
+      "output": "json",
+      "maxWaitForFcp": 30000,
+      "maxWaitForLoad": 45000,
+      "pauseAfterFcpMs": 5250,
+      "pauseAfterLoadMs": 5250,
+      "networkQuietThresholdMs": 5250,
+      "cpuQuietThresholdMs": 5250,
+      "formFactor": "desktop",
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 150,
+        "downloadThroughputKbps": 1600,
+        "uploadThroughputKbps": 750,
+        "cpuSlowdownMultiplier": 4
+      },
+      "throttlingMethod": "devtools",
+      "screenEmulation": {
+        "mobile": false,
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 1,
+        "disabled": false
+      },
+      "emulatedUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+      "auditMode": false,
+      "gatherMode": false,
+      "clearStorageTypes": [
+        "file_systems",
+        "shader_cache",
+        "service_workers",
+        "cache_storage"
+      ],
+      "disableStorageReset": true,
+      "debugNavigation": false,
+      "channel": "node",
+      "usePassiveGathering": false,
+      "disableFullPageScreenshot": false,
+      "skipAboutBlank": false,
+      "blankPage": "about:blank",
+      "ignoreStatusCode": false,
+      "locale": "en-US",
+      "blockedUrlPatterns": null,
+      "additionalTraceCategories": null,
+      "extraHeaders": null,
+      "precomputedLanternData": null,
+      "onlyAudits": null,
+      "onlyCategories": [
+        "performance"
+      ],
+      "skipAudits": null
+    },
+    "mobile": {
+      "output": "json",
+      "maxWaitForFcp": 30000,
+      "maxWaitForLoad": 45000,
+      "pauseAfterFcpMs": 5250,
+      "pauseAfterLoadMs": 5250,
+      "networkQuietThresholdMs": 5250,
+      "cpuQuietThresholdMs": 5250,
+      "formFactor": "mobile",
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 150,
+        "downloadThroughputKbps": 1600,
+        "uploadThroughputKbps": 750,
+        "cpuSlowdownMultiplier": 4
+      },
+      "throttlingMethod": "devtools",
+      "screenEmulation": {
+        "mobile": true,
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "disabled": false
+      },
+      "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+      "auditMode": false,
+      "gatherMode": false,
+      "clearStorageTypes": [
+        "file_systems",
+        "shader_cache",
+        "service_workers",
+        "cache_storage"
+      ],
+      "disableStorageReset": true,
+      "debugNavigation": false,
+      "channel": "node",
+      "usePassiveGathering": false,
+      "disableFullPageScreenshot": false,
+      "skipAboutBlank": false,
+      "blankPage": "about:blank",
+      "ignoreStatusCode": false,
+      "locale": "en-US",
+      "blockedUrlPatterns": null,
+      "additionalTraceCategories": null,
+      "extraHeaders": null,
+      "precomputedLanternData": null,
+      "onlyAudits": null,
+      "onlyCategories": [
+        "performance"
+      ],
+      "skipAudits": null
+    }
+  },
+  "authentication": "Owner CLI protection bypass held in memory, injected only into each exact preview origin, removed for every other origin; redacted from all stored artifacts.",
+  "cold": "Fresh temporary Chrome profile; routes and poster URLs were HTTP-primed. Initial priming did not match browser image Accept (Kling first WebP request MISS). Targeted follow-ups explicitly verify matching image/webp HIT on both previews.",
+  "warm": "Second full navigation using the same Chrome profile.",
+  "versionOrder": [
+    "baseline,candidate",
+    "candidate,baseline",
+    "baseline,candidate"
+  ],
+  "source": {
+    "baseline": {
+      "commit": "8211b9d22ccbd198ecc94efa50a69b77ed61faac",
+      "deploymentId": "dpl_5HQ4rmvN1z3n7yaNzTNU4rSt4u7i",
+      "origin": "https://maxvideoai-fr1iincym-camgraphes-projects.vercel.app"
+    },
+    "candidate": {
+      "commit": "a47250dd54376c60359502e63cd2fe16dcd75855",
+      "deploymentId": "dpl_6nPExxJf21KFK3366vdF444x8e8U",
+      "origin": "https://maxvideoai-7lo16j3n6-camgraphes-projects.vercel.app"
+    }
+  },
+  "functionRegion": "iad1",
+  "databaseRegion": "us-east-2",
+  "sameDatabaseIdentityHash": true,
+  "toolbar": "Present on both previews; no request blocking or metric suppression.",
+  "declaredBeforeAuditsAt": "2026-10-17T19:03:16.346444+00:00",
+  "additionalAudits": 72,
+  "repeatsPerDeviceTemperatureVersion": 3,
+  "routes": [
+    {
+      "key": "minimax",
+      "route": "/video/minimax-h3-wildfire-lookout-rescue",
+      "reason": "Different family: MiniMax H3, multi-shot narrative with native audio; already included in server/HTML parity diagnostics."
+    },
+    {
+      "key": "wan",
+      "route": "/video/wan-3-prime-ai-match-cut-transitions",
+      "reason": "Different family: Wan 3 Prime, transition example; already included in server/HTML parity diagnostics."
+    },
+    {
+      "key": "kling",
+      "route": "/video/kling-3-pro-futuristic-city-drone-flythrough-example-b3ce25fd",
+      "reason": "Different family: Kling 3 Pro examples hero, selected from the existing SEO watchlist before observing performance."
+    }
+  ],
+  "routeOrder": [
+    "minimax",
+    "wan",
+    "kling"
+  ],
+  "execution": "Sequential complete route runs, then sequential repeat/device/version pairs within each route. No concurrent performance audits. Same original immutable deployments as the Seedance comparison.",
+  "reviewRule": "Retain every valid sample and every unfavourable result. Inspect each route/device/temperature separately. A slower LCP median or repeated paired deterioration prompts investigation; do not infer field non-regression from a small sample. A reproducible regression blocks production readiness.",
+  "lcpRule": "Measure the actual LCP element; do not require it to be the poster. Independently assert that the canonical watch reader and all three quotes are rendered.",
+  "applicationPatchUnchanged": true,
+  "targetedFollowup": {
+    "declaredAt": "2026-10-17T19:15:10.822695+00:00",
+    "trigger": "MiniMax first desktop cold candidate audit: LCP 4776 ms vs 1905 ms baseline; later desktop visits improve. Investigate this tail sample, rather than relying solely on medians.",
+    "route": "/video/minimax-h3-wildfire-lookout-rescue",
+    "device": "desktop",
+    "temperature": "cold",
+    "pairs": 6,
+    "versionOrder": "Alternating baseline/candidate and candidate/baseline on each successive pair",
+    "execution": "After all 72 predefined audits; same immutable previews, new Chrome profile for each sample, same throttling; no warm visits in this follow-up. Retain separately from the original series."
+  },
+  "posterPrimingLimitation": "Preflight fetched the exact poster URLs using the default Node Accept header. Kling desktop baseline repeat 1 then received an image/webp cache MISS; candidate received HIT. Keep all samples; do not attribute that full LCP difference to SQL. Before targeted follow-ups, fetch with the actual browser image Accept header and require image/webp HIT on each exact preview.",
+  "klingImageCacheFollowup": {
+    "declaredAt": "2026-10-17T19:22:05.801938+00:00",
+    "trigger": "Kling desktop cold first pair has unequal poster cache state: baseline MISS, candidate HIT. Original LCP 3859 vs 1669 ms, but HTML completion 1604 vs 1226 ms.",
+    "route": "/video/kling-3-pro-futuristic-city-drone-flythrough-example-b3ce25fd",
+    "device": "desktop",
+    "temperature": "cold",
+    "pairs": 3,
+    "versionOrder": "baseline/candidate, candidate/baseline, baseline/candidate",
+    "execution": "After all 72 predefined audits, explicit browser-Accept poster priming verified HIT for both previews. Retain separately; original 72 observations remain unchanged."
+  },
+  "browserImageAccept": "image/jxl,image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+  "totalAdditionalAuditsWithFollowups": 90
+}
