@@ -70,9 +70,15 @@ Owners: `frontend/components/auth/SessionWatchdog.tsx`, `frontend/components/swr
 - [x] Commit verified changes on the isolated branch, preserve source checkout/audit artifacts, report exact checks and any limits. Do not merge or deploy without authorization.
 
 The application changes are committed as `c746163ca`. Detailed verification results,
-retry explanations and the outstanding admin-test limitation are recorded in
+retry explanations and the remaining admin-fixture coverage limitation are recorded in
 [`docs/audits/functional-fixes-2026-10-17.md`](../../audits/functional-fixes-2026-10-17.md).
 The financial suite completed successfully with that commit frozen (2 tests,
 26,818 canonical checkpoints). The final follow-up commit contains only the
 Storyboard contract expectation and verification documentation. No application
 code changed after the passing browser, financial and build checks.
+
+The admin follow-up corrects the existing gallery-workbench test to open the
+Families accordion before selecting an entry, preserving all assertions. The
+complete admin browser suite now passes with 26 tests and one existing service-role
+skip; 23 related gallery tests, frontend lint, exposure and diff checks also pass.
+This follow-up changes only the test and verification documentation.

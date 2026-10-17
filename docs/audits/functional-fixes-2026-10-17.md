@@ -28,7 +28,8 @@ Les anciens brouillons Character Builder enregistrés sans propriétaire ne sont
 | Lint frontend | Aucune erreur ; 6 avertissements dans des fichiers Studio/facturation non modifiés |
 | Vérification d’exposition publique et `git diff --check` | Réussis |
 | Build frontend et ses contrôles préalables | Réussi avec configuration publique Supabase locale fictive |
-| Parcours administrateur sur base jetable avec migrations et données fictives | 25 réussis, 1 ignoré, 1 échec détaillé ci-dessous |
+| Parcours administrateur sur base jetable avec migrations et données fictives, suite complète relancée après correction du test | 26 réussis, aucun échec, 1 ignoré détaillé ci-dessous |
+| Tests associés aux galeries admin : architecture, éditeur, interface, ordre, modèles et inspection SEO | 23 réussis, aucun ignoré |
 
 Les suites PostgreSQL utilisent des bases locales jetables. Les tests navigateur emploient des fixtures contrôlées. Une revue indépendante a couvert les cinq corrections ; les problèmes de renouvellement de jeton et de compatibilité SWR Infinite trouvés pendant cette revue ont été corrigés et couverts par des tests.
 
@@ -41,11 +42,15 @@ Le premier `pnpm test:validate` a terminé son groupe standard avec **8 710 réu
 - Le test de bascule tarifaire a détecté que le commit avait changé pendant son exécution. La suite financière a été relancée avec le commit figé : ses deux tests passent, y compris l’acceptation des 26 818 devis, les rejets de certificats périmés, l’annulation de transaction et le retour arrière conservant l’historique.
 - Un contrat Storyboard attendait encore un gestionnaire transmis directement, désormais transmis par l’objet qui protège les actions utilisateur. L’assertion a été adaptée pour vérifier explicitement ce chemin et la transmission au composant. Les 21 tests associés passent.
 
-## Limite du contrôle administrateur
+## Suivi du contrôle administrateur
 
-Le scénario `tests/e2e/admin-critical-flows.spec.ts:269` cherche un bouton de famille sans ouvrir la section « Families ». `DestinationPicker.tsx` ne monte ses boutons qu’après ouverture. Le test et ce composant sont identiques entre la base `20f485` et le code corrigé `c746163ca` ; cet échec reste documenté et n’a pas été masqué par une modification hors périmètre. Il n’a pas fait l’objet d’une exécution séparée sur la branche de base.
+Le premier contrôle du scénario `gallery workbench keeps media visible, navigable and safe across widths` échouait parce qu’il cherchait un bouton de famille sans ouvrir la section « Families ». `DestinationPicker.tsx` ne monte ses boutons qu’après ouverture.
 
-Le scénario d’annuaire utilisateur est ignoré par son garde existant, car la clé Supabase service role n’est pas fournie à cet environnement local. Les 25 autres scénarios admin passent après préparation des données fictives nécessaires.
+Le test ouvre désormais cette section si elle est fermée, vérifie son état ouvert et la visibilité du choix avant de sélectionner la famille. Les assertions de sélection, navigation, géométrie responsive et édition sont conservées. Aucun code applicatif n’a été modifié pour cette correction de test.
+
+Une relance complète des trois fichiers `admin-*.spec.ts`, sans nouvelle tentative automatique, donne **26 réussites, aucun échec et 1 scénario ignoré**. Elle utilise le schéma et les migrations du projet dans PostgreSQL 17 jetable, avec des acteurs, reçus et playlists fictifs ; la base est nettoyée à la fin. Les 23 tests associés aux galeries admin passent également. Le lint frontend termine sans erreur (les 6 avertissements connus restent inchangés), ainsi que le contrôle d’exposition publique et la vérification de diff.
+
+Le scénario d’annuaire utilisateur reste ignoré par son garde existant, car la clé Supabase service role n’est pas fournie à cet environnement local. Ce parcours n’est donc pas couvert par cette exécution.
 
 ## Livraison
 
