@@ -297,7 +297,6 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
       const jobId = detail?.jobId;
       if (!jobId || !pollingOwner.current?.has(jobId)) return;
       pollingOwner.current.error(jobId, detail.status);
-      void mutate(undefined, { revalidate: true });
     };
 
     window.addEventListener('jobs:status', handler as EventListener);

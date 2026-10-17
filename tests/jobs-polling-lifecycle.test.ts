@@ -124,3 +124,17 @@ test('reopening a feed during an old terminal request gives the new owner its ow
     assert.equal(f.w.feeds.one.stableJobs[0].videoUrl,'https://example.invalid/current.mp4');assert.equal(f.timerCount(),0);
   }finally{await f.close();}
 });
+
+
+for(const status of [401,403,404])test(`status ${status} cannot start an unbounded collection retry through SWR defaults`,async()=>{
+  const f=await mountJobsPolling(undefined,{defaultRetries:true});try{
+    const collections=()=>f.w.requests.filter((r:any)=>r.url.startsWith('/api/jobs?'));
+    assert.equal(collections().length,1);
+    f.w.collectionStatus=401;f.w.statusResponses=[status];await f.advance(3_600_000);
+    assert.equal(f.statusRequests().length,1);
+    assert.equal(collections().length,1,'a denied observation must not start automatic collection revalidation');
+    f.w.collectionStatus=200;f.w.statusResponses=[{status:'completed',videoUrl:'https://example.invalid/manual-recovery.mp4'}];
+    await f.w.fx.act(async()=>f.w.feeds.one.mutate());await f.advance(15_000);
+    assert.equal(collections().length,2);assert.equal(f.w.feeds.one.stableJobs[0].status,'completed');
+  }finally{await f.close();}
+});

@@ -102,7 +102,8 @@ automatic retries. Transient errors back off from the normal 15-second cadence
 to 30 and then at most 60 seconds, stopping after five consecutive errors.
 Explicit public Refresh renews a nonterminal retry budget; same-account sign-in
 or token renewal resumes a denied request. Automatic error revalidation never
-renews that budget. Account lifetime is checked in memory, so blocked session
+renews that budget. Status errors do not automatically revalidate the collection:
+that would start a separate SWR retry chain after authentication fails. Account lifetime is checked in memory, so blocked session
 storage cannot disable polling or permit late account responses to affect another
 feed. A fresh
 successful status observation can recover an exhausted or renewed-session entry.

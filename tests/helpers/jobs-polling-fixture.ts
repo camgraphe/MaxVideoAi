@@ -2,7 +2,7 @@ import path from 'node:path';
 import { build } from 'esbuild';
 import { JSDOM } from 'jsdom';
 
-export async function mountJobsPolling(initial: Array<{id:string;surface:string}> = [{id:'one',surface:'video'}], options: { blockedStorage?: boolean } = {}) {
+export async function mountJobsPolling(initial: Array<{id:string;surface:string}> = [{id:'one',surface:'video'}], options: { blockedStorage?: boolean; defaultRetries?: boolean } = {}) {
   const frontend=path.resolve('frontend');
   const stubs:Record<string,string>={
     '@/lib/authFetch':`export const authFetch=(url,init)=>window.fixtureFetch(url,init);`,
@@ -18,7 +18,7 @@ export async function mountJobsPolling(initial: Array<{id:string;surface:string}
       window.IS_REACT_ACT_ENVIRONMENT=true;window.actor='account-A';window.authCallbacks=new Set();window.requests=[];window.statusResponses=[];window.feeds={};
       window.fixtureFetch=async(url)=>{
         const entry={url,actor:window.actor};window.requests.push(entry);
-        if(url.startsWith('/api/jobs?')){const source=new URL(url,'http://localhost').searchParams.get('surface')||'all';return {ok:true,status:200,json:async()=>({ok:true,jobs:[{jobId:window.actor+'-'+source,engineLabel:'Fixture',durationSec:5,prompt:'Fixture',createdAt:'2026-10-17T12:00:00Z',status:'pending'}],nextCursor:null})};}
+        if(url.startsWith('/api/jobs?')){if(window.collectionStatus>=400)return {ok:false,status:window.collectionStatus,json:async()=>({ok:false,error:'fixture collection denied'})};const source=new URL(url,'http://localhost').searchParams.get('surface')||'all';return {ok:true,status:200,json:async()=>({ok:true,jobs:[{jobId:window.actor+'-'+source,engineLabel:'Fixture',durationSec:5,prompt:'Fixture',createdAt:'2026-10-17T12:00:00Z',status:'pending'}],nextCursor:null})};}
         const response=window.statusResponses.shift()??{status:'pending'};
         if(window.holdStatus)return new Promise(resolve=>entry.resolve=resolve);
         const code=typeof response==='number'?response:200;
@@ -26,7 +26,7 @@ export async function mountJobsPolling(initial: Array<{id:string;surface:string}
       };
       function Feed({id,surface}){window.feeds[id]=useInfiniteJobs(12,{surface});return null}
       const root=createRoot(document.getElementById('root'));const cache=new Map();
-      window.fx={act,render:consumers=>root.render(<SWRConfig value={{provider:()=>cache,shouldRetryOnError:false,revalidateOnFocus:false,revalidateOnReconnect:false}}>{consumers.map(c=><Feed key={c.id} {...c}/>)}</SWRConfig>),unmount:()=>root.unmount()};
+      window.fx={act,render:consumers=>root.render(<SWRConfig value={{provider:()=>cache,shouldRetryOnError:${options.defaultRetries ?? false},revalidateOnFocus:false,revalidateOnReconnect:false}}>{consumers.map(c=><Feed key={c.id} {...c}/>)}</SWRConfig>),unmount:()=>root.unmount()};
     `},
   });
   const dom=new JSDOM('<div id="root"></div>',{url:'http://localhost/app',runScripts:'outside-only'});
@@ -40,7 +40,7 @@ export async function mountJobsPolling(initial: Array<{id:string;surface:string}
   const timers=new Map<number,{at:number;callback:()=>void}>();
   const nativeSet=w.setTimeout.bind(w),nativeClear=w.clearTimeout.bind(w);
   w.Date.now=()=>now;
-  w.setTimeout=(callback:()=>void,delay:number,...args:any[])=>{if(delay>=15000){timers.set(++id,{at:now+delay,callback:()=>callback(...args)});return id;}return nativeSet(callback,delay,...args);};
+  w.setTimeout=(callback:()=>void,delay:number,...args:any[])=>{if(delay>=(options.defaultRetries?1000:15000)){timers.set(++id,{at:now+delay,callback:()=>callback(...args)});return id;}return nativeSet(callback,delay,...args);};
   w.clearTimeout=(key:number)=>timers.delete(key)||nativeClear(key);
   w.eval(result.outputFiles[0].text);
   const settle=async()=>{for(let i=0;i<4;i++)await w.fx.act(async()=>await Promise.resolve());};
