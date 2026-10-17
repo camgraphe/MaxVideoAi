@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { listAudioCapabilities } from '../frontend/src/server/agent-api/audio-capabilities';
+import { listAudioCapabilities, listMcpAudioCapabilities } from '../frontend/src/server/agent-api/audio-capabilities';
+import { createDefaultMaxVideoAiMcpServices } from '../frontend/src/server/mcp/server';
+import { resolveMcpConfig } from '../frontend/src/server/mcp/config';
 import { normalizeAudioGenerationRequest } from '../frontend/src/server/agent-api/audio-normalization';
 import { studioAudioCapabilityDetails } from '../frontend/src/server/studio/conversation-capabilities';
 import { projectStudioQuoteSettings } from '../frontend/src/server/studio/conversation-quote-facts';
@@ -9,6 +11,25 @@ import { resolveElevenVoicePreview } from '../frontend/src/server/audio/eleven-v
 import { GET as previewRoute } from '../frontend/app/api/audio/voices/[voiceId]/preview/route';
 
 const roger = 'CwhRBWXzGAHq8TQ4Fs17';
+test('the production MCP service advertises only one bounded Eleven narration route while Studio keeps its catalog', async () => {
+  const env = { FAL_KEY: 'fixture-only' };
+  const publicCatalog = listMcpAudioCapabilities(env);
+  assert.deepEqual(publicCatalog.modes.map(mode => mode.mode), ['voice_only']);
+  assert.deepEqual(publicCatalog.modes[0].variants.map(variant => variant.settings.voiceModel), ['eleven-v4']);
+  assert.equal(publicCatalog.modes[0].available, true);
+  assert.equal(publicCatalog.modes[0].references.voiceSample, 'unsupported');
+  assert.equal(publicCatalog.options.elevenVoices.length, 18);
+  for (const key of ['minimaxVoices', 'seedVoices', 'seedFormats', 'seedSampleRates', 'moods', 'musicBpm'] as const) {
+    assert.deepEqual(publicCatalog.options[key], []);
+  }
+  assert.notEqual(publicCatalog.revision, listAudioCapabilities(env).revision);
+  assert.equal(listMcpAudioCapabilities({}).modes[0].available, false);
+  const services = createDefaultMaxVideoAiMcpServices(resolveMcpConfig({ NODE_ENV: 'production' }), {} as never,
+    { paidGeneration: true, referenceUploads: false, audioGeneration: true }, undefined, undefined, env);
+  assert.deepEqual(await services.listAudioCapabilities!({} as never), publicCatalog);
+  assert.ok(listAudioCapabilities(env).modes.find(mode => mode.mode === 'voice_only')!.variants.some(variant => variant.settings.voiceModel === 'seed'));
+});
+
 test('MCP and Studio discover named voice choices, previews and v4 controls from the same contract', () => {
   const catalog = listAudioCapabilities({ FAL_KEY: 'fixture-only' });
   assert.equal(catalog.defaults.voiceModel, 'eleven-v4');

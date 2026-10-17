@@ -146,6 +146,9 @@ const projectBudget: AgentProjectBudgetResult = {
 
 function services(overrides: Partial<MaxVideoAiMcpServices> = {}): MaxVideoAiMcpServices {
   return {
+    listAudioCapabilities: async () => ({}) as never,
+    prepareAudioGeneration: async () => ({}) as never,
+    confirmAudioGeneration: async () => ({}) as never,
     async getAccountStatus() {
       return account;
     },
@@ -475,6 +478,9 @@ test('all operational tools expose strict schemas and reject unknown keys before
     listMedia: async () => { called('list_media'); return { items: [], nextCursor: null, hasMore: false }; },
     createReferenceUploadLink: async () => { called('create_reference_upload_link'); return {} as never; },
     importReferenceFiles: async () => { called('import_reference_files'); return {} as never; },
+    listAudioCapabilities: async () => { called('list_audio_capabilities'); return {} as never; },
+    prepareAudioGeneration: async () => { called('prepare_audio_generation'); return {} as never; },
+    confirmAudioGeneration: async () => { called('confirm_audio_generation'); return {} as never; },
     prepareGeneration: async () => { called('prepare_generation'); return {} as never; },
     confirmGeneration: async () => { called('confirm_generation'); return {} as never; },
     getGenerationStatus: async () => { called('get_generation_status'); return {} as never; },
@@ -562,6 +568,10 @@ test('all operational tools expose strict schemas and reject unknown keys before
         file_name: 'reference.png',
       }],
     },
+    list_audio_capabilities: {},
+    prepare_audio_generation: { surface: 'audio', engineId: 'audio-voice-only', mode: 'voice_only',
+      prompt: '', settings: { voiceModel: 'eleven-v4', script: 'Hello.' } },
+    confirm_audio_generation: { quoteId: '00000000-0000-4000-8000-000000000001', confirmed: true },
     prepare_generation: {
       surface: 'video',
       engineId: 'seedance-2-5',

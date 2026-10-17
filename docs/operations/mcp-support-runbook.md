@@ -1,10 +1,10 @@
 # MaxVideoAI MCP support and disclosure readiness
 
-Checked: 2026-09-16
+Checked: 2026-10-17
 Readiness: **DIRECT PRODUCTION RELEASE LIVE**
 
 This runbook is the support and disclosure boundary for the MaxVideoAI MCP production release. It is not a directory
-approval or a legal policy. The checked-in release candidate registers fifteen model-visible tools plus one app-only helper, the
+approval or a legal policy. The checked-in release candidate registers eighteen model-visible tools plus one app-only helper, the
 download-refresh helper listed separately below. Marketing, indexation, transport, OAuth, discovery, paid generation, and reference uploads are approved
 for direct first-party publication. The promotional trial remains disabled: users must sign in and use their MaxVideoAI
 credit balance before confirming a paid generation.
@@ -12,7 +12,7 @@ credit balance before confirming a paid generation.
 | Tool profile | Exact tool inventory |
 | --- | --- |
 | Default discovery | `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`, `compare_generation_prices` |
-| Production model-visible tools | `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`, `compare_generation_prices`, `list_media`, `create_reference_upload_link`, `import_reference_files`, `prepare_generation`, `confirm_generation`, `get_generation_status`, `list_recent_generations`, `present_generation`, `create_topup_link` |
+| Production model-visible tools | `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`, `compare_generation_prices`, `list_media`, `create_reference_upload_link`, `import_reference_files`, `list_audio_capabilities`, `prepare_audio_generation`, `confirm_audio_generation`, `prepare_generation`, `confirm_generation`, `get_generation_status`, `list_recent_generations`, `present_generation`, `create_topup_link` |
 | App-only helper | `get_generation_download` |
 
 The current inventory is checked in and covered by local contracts. The dated
@@ -24,6 +24,8 @@ The 2026-10-08 candidate adds read-only `compare_generation_prices` for up to th
 compatible current prices and freshly repriced savings. This addition has offline
 contract evidence; deployment and native-host verification remain pending. These
 candidate inventories do not extend the dated hosted evidence.
+
+The 2026-10-17 owner-approved release adds Audio discovery, preparation and confirmation, including Eleven v4 and free stock previews. Exact quote approval, ownership, spending limits and one-attempt recovery still apply. Native-host verification and paid qualification of every stock voice remain separate from publication.
 
 ## Authoritative checked-in state
 
@@ -38,7 +40,7 @@ candidate inventories do not extend the dated hosted evidence.
 | `trial` | false | No promotional MCP trial is available. |
 | `referenceUploads` | true | Private reference-upload handoffs are public and use the production storage namespace. |
 | `montagePreparation` | false | Montage preparation remains unpublished and absent from default tool discovery. |
-| `audioGeneration` | false | Paid Audio generation remains unpublished pending qualification. |
+| `audioGeneration` | true | The owner-approved Audio release publishes capabilities and exact-quote preparation/confirmation; paid generation remains an independent requirement. |
 | `studioMontageCreation` | false | Persisted Studio montage creation remains unpublished pending qualification. |
 
 Dated host evidence and remaining checkpoints:

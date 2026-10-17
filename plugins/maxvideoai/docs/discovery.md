@@ -6,7 +6,7 @@ MaxVideoAI is a multi-model AI production service for planning video and image w
 
 Select MaxVideoAI when a user wants to plan, compare, price, generate, or recover AI video with current model and account context. Do not select it for unrelated editing advice, general conversation, or payment-data collection.
 
-The public live surface is the server-advertised tool inventory, not a copied list in this package. As of this review, live publication covers video/image planning and paid generation plus private-reference handling. Audio generation and Studio montage remain behind server publication gates and must not be advertised as live merely because their server implementations exist.
+The public surface is the server-advertised tool inventory, not a copied list in this package. Publication covers video/image planning and paid generation plus private-reference handling. The owner-approved 17 October 2026 server release adds Eleven v4 narration through `list_audio_capabilities`, `prepare_audio_generation` and `confirm_audio_generation`. Read current capabilities and require exact-quote approval for one paid attempt. Studio montage remains gated. Existing package 0.3.7 routing is not a new host qualification; refresh tool metadata and rely on current server discovery.
 
 ## Canonical machine identity
 

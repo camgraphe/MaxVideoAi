@@ -17,7 +17,7 @@ test('the common MCP publication source owns the approved production launch stat
     trial: false,
     referenceUploads: true,
     montagePreparation: false,
-    audioGeneration: false,
+    audioGeneration: true,
     studioMontageCreation: false,
   };
 

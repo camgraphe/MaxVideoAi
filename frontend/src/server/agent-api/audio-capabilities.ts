@@ -124,10 +124,25 @@ export function listAudioCapabilities(env: NodeJS.ProcessEnv = process.env) {
   });
   const contract = { schemaVersion: 1, surface: 'audio', modes, quality: { standard: true, high: false },
     defaults: { voiceModel: 'eleven-v4' as const, elevenVoiceId: DEFAULT_ELEVEN_VOICE_ID, elevenStability: 0.5, elevenSimilarityBoost: 0.75 },
-    options: { elevenVoices: AUDIO_ELEVEN_VOICES.map(voice => ({ ...voice, previewUrl: `https://maxvideoai.com/api/audio/voices/${voice.id}/preview` })), minimaxVoices: AUDIO_MINIMAX_VOICE_VALUES, seedVoices: AUDIO_SEED_AUDIO_VOICE_VALUES, seedFormats: AUDIO_SEED_AUDIO_OUTPUT_FORMAT_VALUES,
-      seedSampleRates: AUDIO_SEED_AUDIO_SAMPLE_RATE_VALUES, languages: AUDIO_LANGUAGE_VALUES, moods: AUDIO_MOOD_VALUES, musicBpm: AUDIO_LYRIA3_BPM_VALUES },
+    options: { elevenVoices: AUDIO_ELEVEN_VOICES.map(voice => ({ ...voice, previewUrl: `https://maxvideoai.com/api/audio/voices/${voice.id}/preview` })), minimaxVoices: [...AUDIO_MINIMAX_VOICE_VALUES], seedVoices: [...AUDIO_SEED_AUDIO_VOICE_VALUES], seedFormats: [...AUDIO_SEED_AUDIO_OUTPUT_FORMAT_VALUES],
+      seedSampleRates: [...AUDIO_SEED_AUDIO_SAMPLE_RATE_VALUES], languages: AUDIO_LANGUAGE_VALUES, moods: [...AUDIO_MOOD_VALUES], musicBpm: [...AUDIO_LYRIA3_BPM_VALUES] },
     confirmation: { required: true, prepareTool: 'prepare_audio_generation', confirmTool: 'confirm_audio_generation', automaticRetry: false },
     pricingPolicyRevision: AUDIO_PRICING_POLICY_REVISION };
+  return { ...contract, revision: createHash('sha256').update(JSON.stringify(contract)).digest('hex') };
+}
+
+/** First public MCP Audio release: one bounded Eleven narration attempt. */
+export function listMcpAudioCapabilities(env: NodeJS.ProcessEnv = process.env): ReturnType<typeof listAudioCapabilities> {
+  const full = listAudioCapabilities(env);
+  const { revision: _revision, ...base } = full;
+  void _revision;
+  const modes = full.modes.filter(mode => mode.mode === 'voice_only').map(mode => {
+    const variants = mode.variants.filter(variant => variant.settings.voiceModel === 'eleven-v4');
+    return { ...mode, variants, available: variants.some(variant => variant.available),
+      references: { ...mode.references, voiceSample: 'unsupported' } };
+  });
+  const contract = { ...base, modes, options: { ...full.options,
+    minimaxVoices: [], seedVoices: [], seedFormats: [], seedSampleRates: [], moods: [], musicBpm: [] } };
   return { ...contract, revision: createHash('sha256').update(JSON.stringify(contract)).digest('hex') };
 }
 

@@ -368,11 +368,11 @@ entry.
 
 Current repository truth: `publicMarketing=true`, `publicIndexing=true`, `transport=true`, `oauth=true`,
 `discovery=true`, `paidGeneration=true`, `trial=false`, `referenceUploads=true`, and
-`montagePreparation=false`, `audioGeneration=false`, and `studioMontageCreation=false`.
+`montagePreparation=false`, `audioGeneration=true`, and `studioMontageCreation=false`.
 
-The launch product exposes fourteen model-visible tools plus the app-only
+The launch product exposes eighteen model-visible tools plus the app-only
 `get_generation_download` helper. Its operational profile therefore has
-fourteen model-visible tools plus one app-only helper. It supports free model
+eighteen model-visible tools plus one app-only helper. It supports free model
 advice and project budgets, private image/video/audio references, exact quotes,
 explicitly approved generation, job recovery, MaxVideoAI top-up, and gallery
 continuity. The `get_generation_download` helper is not a model-visible
@@ -427,7 +427,7 @@ legal document, URL, or publication flag changes.
 | Terms URLs | EN `https://maxvideoai.com/legal/terms`; FR `https://maxvideoai.com/fr/legal/terms`; ES `https://maxvideoai.com/es/legal/terms`. Directory-specific acceptance remains an authorized-owner action. |
 | Acceptable use URLs | EN `https://maxvideoai.com/legal/acceptable-use`; FR `https://maxvideoai.com/fr/legal/acceptable-use`; ES `https://maxvideoai.com/es/legal/acceptable-use`. The MCP-specific candidate patch remains Legal-owner pending. |
 | Support URLs | EN `https://maxvideoai.com/contact`; FR `https://maxvideoai.com/fr/contact`; ES `https://maxvideoai.com/es/contact`; operational email `support@maxvideoai.com`. Do not add a response-time guarantee. |
-| Current tools | Discovery: `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`, `compare_generation_prices`. Media and production: `list_media`, `create_reference_upload_link`, `import_reference_files`, `prepare_generation`, `confirm_generation`, `get_generation_status`, `list_recent_generations`, `present_generation`, `create_topup_link`. This is the checked-in candidate inventory: the 2026-10-08 price-comparison addition still awaits deployment and native-host verification. The presenter is read-only and keeps result-link/library fallback when a host does not render its MCP App. Production publication is enabled for direct installation. |
+| Current tools | Discovery: `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`, `compare_generation_prices`. Media and production: `list_media`, `create_reference_upload_link`, `import_reference_files`, `list_audio_capabilities`, `prepare_audio_generation`, `confirm_audio_generation`, `prepare_generation`, `confirm_generation`, `get_generation_status`, `list_recent_generations`, `present_generation`, `create_topup_link`. This is the checked-in candidate inventory: the 2026-10-17 Audio publication is owner-approved; deployment and native-host verification are recorded separately. The presenter is read-only and keeps result-link/library fallback when a host does not render its MCP App. Production publication is enabled for direct installation. |
 | Negative cases | A project estimate is not an exact quote; `prepare_generation` does not debit; `confirm_generation` requires explicit approval of that quote. Payment data never enters chat. The assistant must recover an accepted job instead of submitting a duplicate and must not retry a creative result automatically. Unsupported model modes remain unavailable without disabling supported modes. |
 | Screenshots and demo | Current public product screenshots and Claude-specific UI evidence exist. `getMcpProof()` remains null for a standalone job-and-audit-backed end-to-end proof bundle, so product captures are not universal native-host proof. |
 | Changelog and status | EN `/changelog` and `/status`; FR `/fr/changelog` and `/fr/statut`; ES `/es/changelog` and `/es/estado`. The direct MCP release is live. The owned status page does not yet expose a dedicated MCP component or first-party monitored health feed. |

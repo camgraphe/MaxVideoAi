@@ -1531,6 +1531,7 @@ test('paid generation tools can be gated out and prepare is accurately annotated
   const enabledServer = createMaxVideoAiMcpServer(principal, services, {
     paidGeneration: true,
     referenceUploads: false,
+    audioGeneration: false,
   });
   const [defaultClientTransport, defaultServerTransport] = InMemoryTransport.createLinkedPair();
   const [enabledClientTransport, enabledServerTransport] = InMemoryTransport.createLinkedPair();

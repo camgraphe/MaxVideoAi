@@ -44,7 +44,7 @@ function services(calls: string[]): MaxVideoAiMcpServices {
   };
 }
 
-async function connected(audioGeneration: boolean, paidGeneration = true) {
+async function connected(audioGeneration: boolean | undefined, paidGeneration = true) {
   const calls: string[] = [];
   const server = createMaxVideoAiMcpServer(principal, services(calls), {
     paidGeneration,
@@ -58,7 +58,7 @@ async function connected(audioGeneration: boolean, paidGeneration = true) {
   return { calls, client, server };
 }
 
-test('Audio publication flag defaults closed and independently exposes three strict tools', async (t) => {
+test('Audio publication withdrawal and paid-generation gates independently control three strict tools', async (t) => {
   const disabled = await connected(false);
   t.after(async () => { await disabled.client.close(); await disabled.server.close(); });
   const disabledNames = (await disabled.client.listTools()).tools.map((tool) => tool.name);
@@ -89,6 +89,20 @@ test('Audio publication flag defaults closed and independently exposes three str
   for (const name of ['list_audio_capabilities', 'prepare_audio_generation', 'confirm_audio_generation']) {
     assert.equal(tools.get(name)?.inputSchema.additionalProperties, false);
   }
+});
+
+test('the owner-approved production defaults publish Audio with the Eleven v4 preparation schema', async (t) => {
+  const session = await connected(undefined);
+  t.after(async () => { await session.client.close(); await session.server.close(); });
+  const tools = new Map((await session.client.listTools()).tools.map(tool => [tool.name, tool]));
+  for (const name of ['list_audio_capabilities', 'prepare_audio_generation', 'confirm_audio_generation']) {
+    assert.ok(tools.has(name), `Production discovery must include ${name}`);
+  }
+  const settings = (tools.get('prepare_audio_generation')!.inputSchema.properties?.settings as {
+    properties: { voiceModel: { enum: string[] } };
+  });
+  assert.ok(settings.properties.voiceModel.enum.includes('eleven-v4'));
+  assert.deepEqual(session.calls, [], 'publishing tools cannot prepare, charge or generate');
 });
 
 test('Audio tools pass only schema-validated inputs and the exact OAuth principal', async (t) => {

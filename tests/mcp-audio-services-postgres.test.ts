@@ -6,7 +6,7 @@ import { loadPricingPolicyOverridesWithExecutor } from '../frontend/src/lib/pric
 import { prepareAudioRun } from '../frontend/src/server/audio/prepare-audio';
 import { completeAudioJob, createInitialAudioJobInExecutor, failAudioJob } from '../frontend/src/server/audio/audio-generate-jobs';
 import { refundAudioCharge } from '../frontend/src/server/audio/audio-generate-receipts';
-import { listAudioCapabilities } from '../frontend/src/server/agent-api/audio-capabilities';
+import { listAudioCapabilities, listMcpAudioCapabilities } from '../frontend/src/server/agent-api/audio-capabilities';
 import { createPrepareAudioGenerationService } from '../frontend/src/server/agent-api/prepare-audio-generation';
 import { createConfirmAudioGenerationService } from '../frontend/src/server/agent-api/confirm-audio-generation';
 import { resolveOwnedAudioReference } from '../frontend/src/server/agent-api/audio-reference-assets';
@@ -111,6 +111,52 @@ test('Audio prepare/confirm services preserve exact quote and reservation semant
       role: 'source_video',
       asset: { type: 'job-output', jobId: 'source-video-job', outputId: 'source-video-output', kind: 'video' },
     }), (error: unknown) => (error as { code?: string }).code === 'REFERENCE_NOT_FOUND');
+  });
+
+  await t.test('the public MCP catalog bounds preparation and confirmation before references, quotes and charges', async t => {
+    await pg.pool.query("UPDATE app_pricing_rules SET margin_percent=2 WHERE id='default'");
+    t.after(() => pg.pool.query("UPDATE app_pricing_rules SET margin_percent=.2 WHERE id='default'"));
+    const principal = identity('95');
+    await seedWallet(principal, 1000);
+    const narration = { surface: 'audio' as const, engineId: 'audio-voice-only', mode: 'voice_only' as const,
+      prompt: '', settings: { script: 'a'.repeat(1000) } };
+    let referenceReads = 0;
+    let preparedRuns = 0;
+    let executions = 0;
+    const publicCatalog = () => listMcpAudioCapabilities({ FAL_KEY: 'fixture-provider-configuration' });
+    const publicPrepare = createPrepareAudioGenerationService('https://maxvideoai.com', {
+      paidGenerationEnabled: () => true, listCapabilities: publicCatalog,
+      resolveReference: async () => { referenceReads++; throw new Error('Excluded reference must not resolve'); },
+      prepareRun: (body, userId) => { preparedRuns++; return prepareAudioRun(body, userId, {
+        env: { FAL_KEY: 'fixture-provider-configuration' }, pricingPolicy,
+      }); },
+    });
+    for (const excluded of [sfxRequest,
+      { ...narration, settings: { ...narration.settings, voiceModel: 'seed' as const } },
+      { ...narration, settings: { ...narration.settings, voiceModel: 'minimax' as const } },
+      { ...narration, references: [{ role: 'voice_sample' as const,
+        asset: { type: 'asset' as const, assetId: 'unread-sample', kind: 'audio' as const } }] },
+    ]) {
+      await assert.rejects(publicPrepare(excluded, principal), (error: unknown) => (error as { code?: string }).code === 'ENGINE_UNAVAILABLE');
+    }
+    assert.equal(referenceReads, 0);
+    assert.equal(preparedRuns, 0);
+    const quote = await publicPrepare(narration, principal);
+    assert.equal(quote.summary.settings.voiceModel, 'eleven-v4');
+    assert.equal(quote.price.amountCents, 25);
+    const publicConfirm = createConfirmAudioGenerationService('https://maxvideoai.com', {
+      paidGenerationEnabled: () => true, listCapabilities: publicCatalog,
+      executeRun: async run => { executions++; await completeAudioJob(run.jobId, {
+        progress: 100, message: 'Complete', audioUrl: 'https://media.maxvideoai.com/audio/result.mp3',
+      }); },
+    });
+    const legacyQuote = await prepare({ ...narration, settings: { ...narration.settings, voiceModel: 'seed' } }, principal);
+    await assert.rejects(publicConfirm({ quoteId: legacyQuote.quoteId, confirmed: true }, principal),
+      (error: unknown) => (error as { code?: string }).code === 'QUOTE_EXPIRED');
+    const confirmed = await publicConfirm({ quoteId: quote.quoteId, confirmed: true }, principal);
+    assert.equal(confirmed.status, 'completed');
+    assert.equal(executions, 1);
+    assert.equal((await pg.pool.query("SELECT count(*)::int n FROM app_receipts WHERE user_id=$1 AND type='charge'", [principal.userId])).rows[0].n, 1);
   });
 
   await t.test('prepare writes only its exact expiring quote and exposes top-up facts', async () => {

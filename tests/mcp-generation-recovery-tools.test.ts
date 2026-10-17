@@ -82,7 +82,7 @@ async function connected(
     referenceUploads: false,
   },
 ) {
-  const server = createMaxVideoAiMcpServer(principal, baseServices(overrides), capabilities);
+  const server = createMaxVideoAiMcpServer(principal, baseServices(overrides), { ...capabilities, audioGeneration: false });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   await server.connect(serverTransport);
   const client = new Client({ name: 'p9-contract', version: '1.0.0' });

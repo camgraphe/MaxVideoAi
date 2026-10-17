@@ -171,7 +171,10 @@ export async function prepareAudioGenerationForActor(
 
   const capabilities = dependencies.listCapabilities();
   const capability = capabilities.modes.find(mode => mode.mode === request.mode && mode.engineId === request.engineId);
-  if (!capability?.available) {
+  if (!capability?.available || !capability.variants.some(variant => variant.available
+    && Object.entries(variant.settings).every(([key, value]) =>
+      request.settings[key as keyof typeof request.settings] === undefined
+      || request.settings[key as keyof typeof request.settings] === value))) {
     throw new AgentApiError('ENGINE_UNAVAILABLE', 'The selected Audio mode is unavailable.');
   }
 
