@@ -64,7 +64,15 @@ Owners: `frontend/components/auth/SessionWatchdog.tsx`, `frontend/components/swr
 ## Integration and completion
 
 - [x] Review all five fixes together independently; resolve actionable findings.
-- [ ] Run focused suites, TypeScript, lint, exposure and diff checks.
-- [ ] Run `pnpm test:validate` (required for persistence/polling changes) and the applicable browser smoke checks; record failures honestly and separate pre-existing environment failures.
-- [ ] Build if feasible without production credentials and smoke affected UI locally.
-- [ ] Commit verified changes on the isolated branch, preserve source checkout/audit artifacts, report exact checks and any limits. Do not merge or deploy without authorization.
+- [x] Run focused suites, TypeScript, lint, exposure and diff checks.
+- [x] Run `pnpm test:validate` (required for persistence/polling changes) and the applicable browser smoke checks; record failures honestly and separate pre-existing environment failures.
+- [x] Build if feasible without production credentials and smoke affected UI locally.
+- [x] Commit verified changes on the isolated branch, preserve source checkout/audit artifacts, report exact checks and any limits. Do not merge or deploy without authorization.
+
+The application changes are committed as `c746163ca`. Detailed verification results,
+retry explanations and the outstanding admin-test limitation are recorded in
+[`docs/audits/functional-fixes-2026-10-17.md`](../../audits/functional-fixes-2026-10-17.md).
+The financial suite completed successfully with that commit frozen (2 tests,
+26,818 canonical checkpoints). The final follow-up commit contains only the
+Storyboard contract expectation and verification documentation. No application
+code changed after the passing browser, financial and build checks.
