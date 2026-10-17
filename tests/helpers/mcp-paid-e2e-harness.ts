@@ -230,6 +230,7 @@ export async function connect(identity: AgentPrincipal, services = createService
   const server = createMaxVideoAiMcpServer(identity, services, {
     paidGeneration,
     referenceUploads: false,
+    audioGeneration: false,
   });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   const client = new Client({ name: `p11-${identity.userId}`, version: '1.0.0' });

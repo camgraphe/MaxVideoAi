@@ -123,6 +123,7 @@ async function connected(
   const server = createMaxVideoAiMcpServer(principal, { ...services(onStatusRead), ...overrides }, {
     paidGeneration: true,
     referenceUploads: false,
+    audioGeneration: false,
   });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   await server.connect(serverTransport);

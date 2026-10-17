@@ -9,6 +9,7 @@ import { buildAuthReturnTarget, buildLoginHref } from '@/lib/auth-entry-href';
 import { runAudioGenerate, useInfiniteJobs } from '@/lib/api';
 import { AUDIO_CREATION_INTENTS, AUDIO_INTENT_PACK, buildAudioCreationRequest, isAudioDraftReady, isAudioIntent, type AudioCreationIntent } from '@/lib/audio-creation';
 import type { Job } from '@/types/jobs';
+import { getAudioSubmissionId, clearAudioSubmissionId } from './_lib/audio-submission-identity';
 import { audioCreationReusePatch } from './_lib/audio-creation-reuse';
 import { audioCreationCopy } from './_lib/audio-creation-copy';
 import { fetchJobDetail, uploadAsset } from './_lib/audio-workspace-helpers';
@@ -42,6 +43,7 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
   const { draft, update, saved } = useAudioCreationDraft(userId, intent);
   const body = useMemo(() => buildAudioCreationRequest(intent, draft, locale), [intent, draft, locale]);
   const { quote, loading, error: quoteError, retry, isCurrent: isCurrentQuote } = useAudioCreationQuote(body, userId, isAudioDraftReady(intent, draft) && requestedIntent !== 'video');
+  const submissionIds = useRef(new Map<string, string>());
   const [selection, setSelection] = useState<{ owner: string | null; result: AudioJobDetail | null }>({ owner: null, result: null });
   const result = selection.owner === userId ? selection.result : null;
   const setResult = useCallback((job: AudioJobDetail | null) => setSelection({ owner: userId, result: job }), [userId]);
@@ -123,9 +125,10 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
     const sequence = ++restoreSequence.current;
     submitting.current.add(inputKey); setPending(previous => [...previous, inputKey]); setNotice(null);
     try {
-      const response = await runAudioGenerate({ ...submitted, expectedQuote: { inputKey, totalCents: quote.pricing.totalCents, currency: quote.pricing.currency, expiresAt: quote.expiresAt } });
+      const response = await runAudioGenerate({ ...submitted, submissionId: getAudioSubmissionId(userId, inputKey, submissionIds.current), expectedQuote: { inputKey, totalCents: quote.pricing.totalCents, currency: quote.pricing.currency, expiresAt: quote.expiresAt } });
       if (!stillOwned()) return;
-      if (sequence === restoreSequence.current) setResult({ ...response, engineLabel: copy.intents[intent][0], settingsSnapshot: { pack: submitted.pack, script: submitted.script, prompt: submitted.prompt, lyrics: submitted.lyrics, providers: response.providers, voiceModel: submitted.voiceModel, minimaxVoiceId: submitted.minimaxVoiceId, seedAudioVoice: submitted.seedAudioVoice, seedAudioOutputFormat: submitted.seedAudioOutputFormat, seedAudioSampleRate: Number(submitted.seedAudioSampleRate) || null, voiceDelivery: submitted.voiceDelivery, voiceProfile: submitted.voiceProfile, voiceGender: submitted.voiceGender, seedAudioSpeed: draft.speed, seedAudioVolume: draft.volume, seedAudioPitch: draft.pitch, language: draft.language, musicModel: submitted.musicModel, musicBpm: draft.bpm, refs: { voiceSampleUrl: draft.reference?.url }, measuredDurationSec: response.durationSec, requestedDurationSec: response.requestedDurationSec } });
+      clearAudioSubmissionId(userId, inputKey, submissionIds.current);
+      if (sequence === restoreSequence.current) setResult({ ...response, engineLabel: copy.intents[intent][0], settingsSnapshot: { pack: submitted.pack, script: submitted.script, prompt: submitted.prompt, lyrics: submitted.lyrics, providers: response.providers, voiceModel: submitted.voiceModel, elevenVoiceId: submitted.elevenVoiceId, elevenStability: submitted.elevenStability, elevenSimilarityBoost: submitted.elevenSimilarityBoost, minimaxVoiceId: submitted.minimaxVoiceId, seedAudioVoice: submitted.seedAudioVoice, seedAudioOutputFormat: submitted.seedAudioOutputFormat, seedAudioSampleRate: Number(submitted.seedAudioSampleRate) || null, voiceDelivery: submitted.voiceDelivery, voiceProfile: submitted.voiceProfile, voiceGender: submitted.voiceGender, seedAudioSpeed: draft.speed, seedAudioVolume: draft.volume, seedAudioPitch: draft.pitch, language: draft.language, musicModel: submitted.musicModel, musicBpm: draft.bpm, refs: { voiceSampleUrl: draft.reference?.url }, measuredDurationSec: response.durationSec, requestedDurationSec: response.requestedDurationSec } });
       window.dispatchEvent(new CustomEvent('jobs:status', { detail: { ...response, finalPriceCents: response.pricing.totalCents } }));
       void mutate();
     } catch { if (stillOwned()) { setNotice(copy.error); retry(); } }

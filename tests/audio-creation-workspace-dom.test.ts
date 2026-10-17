@@ -41,6 +41,8 @@ test('actual workspace handles local intent history and retires stale asynchrono
   await writeFile(output, compiled.outputFiles[0].contents);
   const Workspace = require(output).default;
   const dom = new JSDOM('<div id="root"></div>', {url:'http://localhost/app/audio'});
+  dom.window.HTMLMediaElement.prototype.pause = () => {};
+  dom.window.HTMLMediaElement.prototype.load = () => {};
   const nativePush = dom.window.history.pushState.bind(dom.window.history);
   dom.window.history.pushState = (data, unused, url) => {
     nativePush(data, unused, url);
@@ -100,6 +102,7 @@ test('actual workspace handles local intent history and retires stale asynchrono
       localStorage.setItem('maxvideoai.audio.creation.v1:a',JSON.stringify({version:1,drafts:{voice:{...newAudioDraft('voice'),script:'An owned script'}}}));
       await render('a');await tick();
       await click('Generate');const oldRun=review.runs.at(-1);
+      await act(async()=>{ const select=dom.window.document.querySelector('select[aria-label=Model]') as HTMLSelectElement; select.value='seed'; select.dispatchEvent(new dom.window.Event('change',{bubbles:true})); });
       await act(async()=>{const input=dom.window.document.querySelector('input[type=file]')!;Object.defineProperty(input,'files',{configurable:true,value:[new File(['audio'],'reference.wav',{type:'audio/wav'})]});input.dispatchEvent(new dom.window.Event('change',{bubbles:true}));});
       assert.ok(review.uploads.length);const oldUpload=review.uploads.at(-1);
       await click('Restore previous job');const oldRestore=review.restores.at(-1);

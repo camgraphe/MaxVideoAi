@@ -33,7 +33,8 @@ export function buildAdminAudioReferenceInputs(durationSec: number) {
       ? [{ musicModel: 'clip', label: 'Lyria 3 Clip' }, { musicModel: 'pro', label: 'Lyria 3 Pro' }]
       : config.includesVoice ? [{ voiceModel: 'seed', voiceMode: 'standard', label: 'Seed Audio' },
         { voiceModel: 'seed', voiceMode: 'clone', label: 'Seed Audio reference voice' },
-        { voiceModel: 'minimax', voiceMode: 'standard', script: 'a'.repeat(1000), label: 'MiniMax Speech HD · 1,000 characters' }]
+        { voiceModel: 'minimax', voiceMode: 'standard', script: 'a'.repeat(1000), label: 'MiniMax Speech HD · 1,000 characters' },
+        { voiceModel: 'eleven-v4', voiceMode: 'standard', script: 'a'.repeat(1000), label: 'Eleven v4 · 1,000 characters' }]
         : [{ label: config.label }];
     return variants.map(({ label, ...variant }, index) => {
       const seconds = pack === 'song' ? 3 : config.requiresVideo ? Math.min(10, durationSec) : pack === 'sfx_only' ? Math.min(30, durationSec)

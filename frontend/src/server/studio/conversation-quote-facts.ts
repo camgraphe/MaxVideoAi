@@ -6,7 +6,7 @@ const settingTypes: Record<keyof StudioConversationQuoteSettings,'boolean'|'numb
   audio:'boolean',durationSec:'number',resolution:'string',aspectRatio:'string',quality:'string',
   imageWidth:'number',imageHeight:'number',outputFormat:'string',fps:'number',loop:'boolean',
   hdr:'boolean',exrExport:'boolean',enableWebSearch:'boolean',voiceModel:'string',musicModel:'string',
-  seedAudioOutputFormat:'string',seedAudioSampleRate:'number',
+  seedAudioOutputFormat:'string',seedAudioSampleRate:'number',elevenVoiceId:'string',elevenStability:'number',elevenSimilarityBoost:'number',
   musicEnabled:'boolean',exportAudioFile:'boolean',language:'string',startTimeSec:'number',retakeMode:'string',extendPosition:'string',
 };
 export const STUDIO_QUOTE_SETTING_KEYS = Object.freeze(Object.keys(settingTypes));
@@ -39,7 +39,7 @@ export function projectStudioQuoteSettings(value:unknown):StudioConversationQuot
   return Object.fromEntries(Object.entries(settingTypes).flatMap(([key,type]) => {
     const value = storedSettings[key];
     const safe = type === 'string' ? boundedToken(value,64)
-      : type === 'number' ? typeof value === 'number' && Number.isFinite(value) && (key==='startTimeSec'?value>=0:value>0)
+      : type === 'number' ? typeof value === 'number' && Number.isFinite(value) && (['startTimeSec','elevenStability','elevenSimilarityBoost'].includes(key)?value>=0:value>0)
       : typeof value === 'boolean';
     return safe ? [[key,value]] : [];
   })) as StudioConversationQuoteSettings;

@@ -185,7 +185,7 @@ function setReleasePublication(fixture: string): void {
       trial: false,
       referenceUploads: true,
       montagePreparation: false,
-      audioGeneration: false,
+      audioGeneration: true,
       studioMontageCreation: false,
     }, null, 2)}\n`,
   );

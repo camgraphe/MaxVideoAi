@@ -24,6 +24,9 @@ export type GeneratedSourceVideo = {
 export type AudioJobSettingsSnapshot = {
   providers?: Record<string, unknown> | null;
   voiceModel?: string | null;
+  elevenVoiceId?: string | null;
+  elevenStability?: number | null;
+  elevenSimilarityBoost?: number | null;
   minimaxVoiceId?: string | null;
   lyrics?: string | null;
   measuredDurationSec?: number | null;

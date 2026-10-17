@@ -253,6 +253,9 @@ test('authenticated tool calls use explicitly injected MCP services', async () =
     async listMedia() { throw new Error('not exercised'); },
     async createReferenceUploadLink() { throw new Error('not exercised'); },
     async importReferenceFiles() { throw new Error('not exercised'); },
+    async listAudioCapabilities() { throw new Error('not exercised'); },
+    async prepareAudioGeneration() { throw new Error('not exercised'); },
+    async confirmAudioGeneration() { throw new Error('not exercised'); },
   } satisfies MaxVideoAiMcpServices;
   const response = await handleMcpHttpRequest(
     protocolRequest({
@@ -282,6 +285,7 @@ test('exact hosted staging exposes the complete operational tool inventory', asy
     assert.deepEqual(payload.result.tools.map((tool: { name: string }) => tool.name).sort(), [
       'calculate_project_budget',
       'compare_generation_prices',
+      'confirm_audio_generation',
       'confirm_generation',
       'create_reference_upload_link',
       'create_topup_link',
@@ -290,9 +294,11 @@ test('exact hosted staging exposes the complete operational tool inventory', asy
       'get_generation_status',
       'get_model_details',
       'import_reference_files',
+      'list_audio_capabilities',
       'list_media',
       'list_models',
       'list_recent_generations',
+      'prepare_audio_generation',
       'prepare_generation',
       'present_generation',
       'recommend_models',

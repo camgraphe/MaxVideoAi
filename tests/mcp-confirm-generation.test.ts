@@ -1266,6 +1266,7 @@ test('default registry remains discovery and comparison tools and the explicit p
   const enabledServer = createMaxVideoAiMcpServer(principal, services, {
     paidGeneration: true,
     referenceUploads: false,
+    audioGeneration: false,
   });
   const defaultClient = new Client({ name: 'default-confirm-test', version: '1.0.0' });
   const enabledClient = new Client({ name: 'enabled-confirm-test', version: '1.0.0' });

@@ -42,6 +42,9 @@ export function buildInitialAudioSettingsSnapshot(params: {
   return {
     schemaVersion: 3,
     voiceModel: normalized.voiceModel,
+    elevenVoiceId: normalized.elevenVoiceId,
+    elevenStability: normalized.elevenStability,
+    elevenSimilarityBoost: normalized.elevenSimilarityBoost,
     minimaxVoiceId: normalized.minimaxVoiceId,
     lyrics: normalized.lyrics,
     requestedDurationSec: normalized.durationSec,

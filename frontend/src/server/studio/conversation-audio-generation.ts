@@ -36,7 +36,7 @@ export async function validateStudioAudioRequest(actor:StudioGenerationActor,act
   const capabilities=await factory(actor,{enabled}).catalog();
   const entry=capabilities.modes.find(candidate=>candidate.mode===mode&&(!action.modelId||candidate.engineId===action.modelId));
   if(!entry)throw new StudioPreparationInputError('ENGINE_UNAVAILABLE','Choose the top-level Audio model ID and mode from the current Studio catalog; provider selection belongs in settings.');
-  const wanted={...(config.includesVoice?{voiceModel:settings.voiceModel??'seed'}:{}),
+  const wanted={...(config.includesVoice?{voiceModel:settings.voiceModel??(action.references?.some(ref=>ref.role==='voice_sample')?'seed':'eleven-v4')}:{}),
     ...(config.supportsMusicToggle?{musicEnabled:settings.musicEnabled??config.defaultMusicEnabled}:{}),
     ...(mode==='music_only'?{musicModel:settings.musicModel??'clip'}:{})};
   const fallbackKey=config.includesVoice&&settings.voiceModel===undefined&&!action.references?.some(ref=>ref.role==='voice_sample')?'voiceModel'

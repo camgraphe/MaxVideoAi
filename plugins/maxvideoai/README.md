@@ -90,7 +90,7 @@ The public [MaxVideoAI toolbox](https://maxvideoai.com/tools) covers repeatable 
 
 Use the live tool page for current inputs and prices. The remote MCP exposes only the capabilities in its current tool contract.
 
-The current live MCP surface covers video and image planning, quoting, generation, recovery, and private-reference handling. Audio generation and Studio montage are implemented behind server publication gates and are not claimed as live by this package. Trust the tool inventory scanned by the connected client over screenshots, examples, or remembered capability names.
+The current live MCP surface covers video and image planning, quoting, generation, recovery, and private-reference handling. The owner-approved 17 October 2026 server release adds bounded Eleven v4 narration through the independent Audio gate. Studio montage remains gated. Installed package 0.3.7 routing and dated host evidence are separate from that server release; refresh the connected client's tool inventory before using new tools. Trust that inventory over screenshots, examples, or remembered capability names.
 
 ## How do private references and the Library work?
 

@@ -78,6 +78,8 @@ export async function runAudioRoleWithFallback(
         model: candidate.model,
         requestId: result.requestId ?? null,
         customVoiceId,
+        ...(result.data && typeof result.data === 'object' && 'timestamps' in result.data && Array.isArray(result.data.timestamps)
+          ? { timestamps: result.data.timestamps } : {}),
       };
     } catch (error) {
       failures.push({

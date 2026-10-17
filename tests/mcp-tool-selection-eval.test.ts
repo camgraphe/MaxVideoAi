@@ -151,6 +151,9 @@ test('evaluator validates curated arguments with all authoritative runtime schem
     'list_media',
     'create_reference_upload_link',
     'import_reference_files',
+    'list_audio_capabilities',
+    'prepare_audio_generation',
+    'confirm_audio_generation',
     'prepare_generation',
     'confirm_generation',
     'get_generation_status',
@@ -188,6 +191,10 @@ test('evaluator validates curated arguments with all authoritative runtime schem
         file_name: 'reference.png',
       }],
     },
+    list_audio_capabilities: {},
+    prepare_audio_generation: { surface: 'audio', engineId: 'audio-voice-only', mode: 'voice_only',
+      prompt: '', settings: { voiceModel: 'eleven-v4', script: 'Hello.' } },
+    confirm_audio_generation: { quoteId: '11111111-1111-4111-8111-111111111111', confirmed: true },
     prepare_generation: {
       surface: 'video',
       engineId: 'seedance-2-5',
@@ -552,7 +559,7 @@ test('public fixture corpus covers every approved intent with strict labels and 
     trial: false,
     referenceUploads: true,
     montagePreparation: false,
-    audioGeneration: false,
+    audioGeneration: true,
     studioMontageCreation: false,
   });
 });

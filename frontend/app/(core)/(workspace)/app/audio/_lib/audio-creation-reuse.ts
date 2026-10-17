@@ -1,3 +1,4 @@
+import { DEFAULT_ELEVEN_VOICE_ID } from '@/lib/audio-eleven-voices';
 import type { AudioCreationDraft } from '@/lib/audio-creation';
 import type { AudioJobSettingsSnapshot } from './audio-workspace-types';
 
@@ -5,7 +6,8 @@ import type { AudioJobSettingsSnapshot } from './audio-workspace-types';
 export function audioCreationReusePatch(snapshot: AudioJobSettingsSnapshot, draft: AudioCreationDraft, referenceLabel: string): Partial<AudioCreationDraft> {
   return {
     prompt: snapshot.prompt ?? '', script: snapshot.script ?? '', lyrics: snapshot.lyrics ?? '',
-    voiceModel: snapshot.voiceModel === 'minimax' ? 'minimax' : 'seed', minimaxVoiceId: snapshot.minimaxVoiceId ?? 'English_FriendlyPerson',
+    voiceModel: snapshot.voiceModel === 'eleven-v4' ? 'eleven-v4' : snapshot.voiceModel === 'minimax' ? 'minimax' : 'seed',
+    elevenVoiceId: snapshot.elevenVoiceId ?? DEFAULT_ELEVEN_VOICE_ID, elevenStability: snapshot.elevenStability ?? 0.5, elevenSimilarityBoost: snapshot.elevenSimilarityBoost ?? 0.75, minimaxVoiceId: snapshot.minimaxVoiceId ?? 'English_FriendlyPerson',
     voice: snapshot.seedAudioVoice ?? 'default', speed: snapshot.seedAudioSpeed ?? 1, volume: snapshot.seedAudioVolume ?? 1, pitch: snapshot.seedAudioPitch ?? 0,
     outputFormat: snapshot.seedAudioOutputFormat ?? 'mp3', sampleRate: snapshot.seedAudioSampleRate ?? 24000,
     voiceDelivery: snapshot.voiceDelivery ?? 'cinematic', voiceProfile: snapshot.voiceProfile ?? 'balanced', voiceGender: snapshot.voiceGender ?? 'female',
