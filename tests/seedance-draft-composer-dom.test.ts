@@ -11,7 +11,7 @@ import type { Mode } from '../frontend/types/engines';
 
 const noop = () => {};
 const engines = getBaseEngines();
-function composer(engineId: string, controls: SeedanceDraftControls, mode: Mode = 't2v', iterations = 1) {
+function composer(engineId: string, controls: SeedanceDraftControls, mode: Mode = 't2v', iterations = 1, overrides: Partial<React.ComponentProps<typeof WorkspaceComposerSurface>> = {}) {
   const selectedEngine = engines.find(engine => engine.id === engineId)!;
   assert.ok(selectedEngine);
   const props: React.ComponentProps<typeof WorkspaceComposerSurface> = {
@@ -33,6 +33,7 @@ function composer(engineId: string, controls: SeedanceDraftControls, mode: Mode 
     voiceIdsInput: '', setVoiceIdsInput: noop, isSeedance: engineId.includes('seedance'), seedValue: '', handleSeedChange: noop,
     cameraFixedValue: false, handleCameraFixedChange: noop, safetyCheckerValue: true, handleSafetyCheckerChange: noop, showSafetyCheckerControl: false,
     klingElements: [], handleKlingElementAdd: noop, handleKlingElementRemove: noop, handleKlingElementAssetAdd: noop, handleKlingElementAssetRemove: noop, handleOpenKlingAssetLibrary: noop, setViewMode: noop,
+    ...overrides,
   };
   const oldReact = Object.getOwnPropertyDescriptor(globalThis, 'React');
   Object.defineProperty(globalThis, 'React', { configurable: true, value: React });
@@ -42,6 +43,24 @@ function composer(engineId: string, controls: SeedanceDraftControls, mode: Mode 
     if (oldReact) Object.defineProperty(globalThis, 'React', oldReact); else Reflect.deleteProperty(globalThis, 'React');
   }
 }
+
+test('Kling subject reference slots occupy the first composer render', () => {
+  const controls = { available: false, selected: false, phase: 'setup', live: true, toggle: noop, generate: noop } as const;
+  for (const count of [1, 2]) {
+    const dom = composer('kling-o3-pro', controls, 'i2v', 1, {
+      isUnifiedKlingO3: true,
+      supportsKlingV3Controls: true,
+      klingElements: Array.from({ length: count }, (_, index) => ({
+        id: `subject-${index}`, frontal: null, video: null, references: [null, null, null],
+      })),
+    });
+    try {
+      assert.match(dom.window.document.body.textContent ?? '', /Subject references/);
+      assert.equal(dom.window.document.querySelectorAll('input[accept="image/*"]').length, 4 * count);
+      assert.equal(dom.window.document.querySelectorAll('input[accept="video/*"]').length, count);
+    } finally { dom.window.close(); }
+  }
+});
 
 test('unavailable Draft controls do not add instructions or override normal generation labels', () => {
   const controls = { available: false, selected: false, phase: 'setup', live: true, toggle: noop, generate: noop } as const;
