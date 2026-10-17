@@ -1,0 +1,1406 @@
+[
+  {
+    "id": "mobile-extra-1-baseline-cold",
+    "side": "baseline",
+    "device": "mobile",
+    "temperature": "cold",
+    "repeat": 1,
+    "time": "2026-10-17T17:13:49.650Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 3622.47,
+    "fcp": 4367.285,
+    "lcp": 4367.285,
+    "cls": 0,
+    "tbt": 33.83100000000013,
+    "bytes": 407499,
+    "score": 0.74,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "settings": {
+      "output": "json",
+      "maxWaitForFcp": 30000,
+      "maxWaitForLoad": 45000,
+      "pauseAfterFcpMs": 5250,
+      "pauseAfterLoadMs": 5250,
+      "networkQuietThresholdMs": 5250,
+      "cpuQuietThresholdMs": 5250,
+      "formFactor": "mobile",
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 150,
+        "downloadThroughputKbps": 1600,
+        "uploadThroughputKbps": 750,
+        "cpuSlowdownMultiplier": 4
+      },
+      "throttlingMethod": "devtools",
+      "screenEmulation": {
+        "mobile": true,
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "disabled": false
+      },
+      "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+      "auditMode": false,
+      "gatherMode": false,
+      "clearStorageTypes": [
+        "file_systems",
+        "shader_cache",
+        "service_workers",
+        "cache_storage"
+      ],
+      "disableStorageReset": true,
+      "debugNavigation": false,
+      "channel": "node",
+      "usePassiveGathering": false,
+      "disableFullPageScreenshot": false,
+      "skipAboutBlank": false,
+      "blankPage": "about:blank",
+      "ignoreStatusCode": false,
+      "locale": "en-US",
+      "blockedUrlPatterns": null,
+      "additionalTraceCategories": null,
+      "extraHeaders": {
+        "x-watch-perf-sample": "mobile-extra-1-baseline-cold"
+      },
+      "precomputedLanternData": null,
+      "onlyAudits": null,
+      "onlyCategories": [
+        "performance"
+      ],
+      "skipAudits": null
+    },
+    "server": {
+      "sample": "mobile-extra-1-baseline-cold",
+      "path": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "mobile": true,
+      "startMs": 32062.814833,
+      "status": 200,
+      "durationMs": 3627.6222919999964,
+      "physicalCommands": 154,
+      "tariffTransactions": 37,
+      "firstTariffBeginMs": 1243.0067089999975,
+      "afterFirstTariffBeginMs": 2384.615582999999,
+      "maxConnectionAcquireMs": 1555.5319579999996,
+      "phases": {
+        "other": {
+          "count": 4,
+          "totalDurationMs": 775.6791249999987
+        },
+        "editorial": {
+          "count": 1,
+          "totalDurationMs": 524.6341250000005
+        },
+        "watch-videos": {
+          "count": 1,
+          "totalDurationMs": 538.0168329999979
+        },
+        "begin": {
+          "count": 37,
+          "totalDurationMs": 4698.309629999974
+        },
+        "tariff-state": {
+          "count": 37,
+          "totalDurationMs": 5031.399078999995
+        },
+        "tariff-cells": {
+          "count": 37,
+          "totalDurationMs": 5056.889496000018
+        },
+        "commit": {
+          "count": 37,
+          "totalDurationMs": 4719.622374000013
+        }
+      }
+    },
+    "benchmarkIndex": 3732
+  },
+  {
+    "id": "mobile-extra-1-candidate-cold",
+    "side": "candidate",
+    "device": "mobile",
+    "temperature": "cold",
+    "repeat": 1,
+    "time": "2026-10-17T17:14:11.559Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 7755.362,
+    "fcp": 8515.009,
+    "lcp": 8515.009,
+    "cls": 0,
+    "tbt": 34.4199999389657,
+    "bytes": 407494,
+    "score": 0.57,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "settings": {
+      "output": "json",
+      "maxWaitForFcp": 30000,
+      "maxWaitForLoad": 45000,
+      "pauseAfterFcpMs": 5250,
+      "pauseAfterLoadMs": 5250,
+      "networkQuietThresholdMs": 5250,
+      "cpuQuietThresholdMs": 5250,
+      "formFactor": "mobile",
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 150,
+        "downloadThroughputKbps": 1600,
+        "uploadThroughputKbps": 750,
+        "cpuSlowdownMultiplier": 4
+      },
+      "throttlingMethod": "devtools",
+      "screenEmulation": {
+        "mobile": true,
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "disabled": false
+      },
+      "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+      "auditMode": false,
+      "gatherMode": false,
+      "clearStorageTypes": [
+        "file_systems",
+        "shader_cache",
+        "service_workers",
+        "cache_storage"
+      ],
+      "disableStorageReset": true,
+      "debugNavigation": false,
+      "channel": "node",
+      "usePassiveGathering": false,
+      "disableFullPageScreenshot": false,
+      "skipAboutBlank": false,
+      "blankPage": "about:blank",
+      "ignoreStatusCode": false,
+      "locale": "en-US",
+      "blockedUrlPatterns": null,
+      "additionalTraceCategories": null,
+      "extraHeaders": {
+        "x-watch-perf-sample": "mobile-extra-1-candidate-cold"
+      },
+      "precomputedLanternData": null,
+      "onlyAudits": null,
+      "onlyCategories": [
+        "performance"
+      ],
+      "skipAudits": null
+    },
+    "server": {
+      "sample": "mobile-extra-1-candidate-cold",
+      "path": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "mobile": true,
+      "startMs": 52876.009083,
+      "status": 200,
+      "durationMs": 7761.8345000000045,
+      "physicalCommands": 14,
+      "tariffTransactions": 2,
+      "firstTariffBeginMs": 7222.3943750000035,
+      "afterFirstTariffBeginMs": 539.440125000001,
+      "maxConnectionAcquireMs": 1266.190333999999,
+      "phases": {
+        "other": {
+          "count": 4,
+          "totalDurationMs": 893.9065830000109
+        },
+        "editorial": {
+          "count": 1,
+          "totalDurationMs": 2109.307667000001
+        },
+        "watch-videos": {
+          "count": 1,
+          "totalDurationMs": 4156.681417
+        },
+        "begin": {
+          "count": 2,
+          "totalDurationMs": 252.34033399999316
+        },
+        "tariff-state": {
+          "count": 2,
+          "totalDurationMs": 253.98262499999691
+        },
+        "tariff-cells": {
+          "count": 2,
+          "totalDurationMs": 258.6990830000068
+        },
+        "commit": {
+          "count": 2,
+          "totalDurationMs": 278.58550000000105
+        }
+      }
+    },
+    "benchmarkIndex": 3725.5
+  },
+  {
+    "id": "mobile-extra-2-candidate-cold",
+    "side": "candidate",
+    "device": "mobile",
+    "temperature": "cold",
+    "repeat": 2,
+    "time": "2026-10-17T17:14:37.467Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 10005.97,
+    "fcp": 10765.462,
+    "lcp": 10765.462,
+    "cls": 0,
+    "tbt": 34.62800000000061,
+    "bytes": 407494,
+    "score": 0.56,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "settings": {
+      "output": "json",
+      "maxWaitForFcp": 30000,
+      "maxWaitForLoad": 45000,
+      "pauseAfterFcpMs": 5250,
+      "pauseAfterLoadMs": 5250,
+      "networkQuietThresholdMs": 5250,
+      "cpuQuietThresholdMs": 5250,
+      "formFactor": "mobile",
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 150,
+        "downloadThroughputKbps": 1600,
+        "uploadThroughputKbps": 750,
+        "cpuSlowdownMultiplier": 4
+      },
+      "throttlingMethod": "devtools",
+      "screenEmulation": {
+        "mobile": true,
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "disabled": false
+      },
+      "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+      "auditMode": false,
+      "gatherMode": false,
+      "clearStorageTypes": [
+        "file_systems",
+        "shader_cache",
+        "service_workers",
+        "cache_storage"
+      ],
+      "disableStorageReset": true,
+      "debugNavigation": false,
+      "channel": "node",
+      "usePassiveGathering": false,
+      "disableFullPageScreenshot": false,
+      "skipAboutBlank": false,
+      "blankPage": "about:blank",
+      "ignoreStatusCode": false,
+      "locale": "en-US",
+      "blockedUrlPatterns": null,
+      "additionalTraceCategories": null,
+      "extraHeaders": {
+        "x-watch-perf-sample": "mobile-extra-2-candidate-cold"
+      },
+      "precomputedLanternData": null,
+      "onlyAudits": null,
+      "onlyCategories": [
+        "performance"
+      ],
+      "skipAudits": null
+    },
+    "server": {
+      "sample": "mobile-extra-2-candidate-cold",
+      "path": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "mobile": true,
+      "startMs": 78769.036583,
+      "status": 200,
+      "durationMs": 10016.81975000001,
+      "physicalCommands": 14,
+      "tariffTransactions": 2,
+      "firstTariffBeginMs": 9107.920417000001,
+      "afterFirstTariffBeginMs": 908.8993330000085,
+      "maxConnectionAcquireMs": 1521.3897080000024,
+      "phases": {
+        "other": {
+          "count": 4,
+          "totalDurationMs": 779.1083350000117
+        },
+        "editorial": {
+          "count": 1,
+          "totalDurationMs": 2381.4502920000086
+        },
+        "watch-videos": {
+          "count": 1,
+          "totalDurationMs": 5028.041333000001
+        },
+        "begin": {
+          "count": 2,
+          "totalDurationMs": 611.5955410000024
+        },
+        "tariff-state": {
+          "count": 2,
+          "totalDurationMs": 261.10158400000364
+        },
+        "tariff-cells": {
+          "count": 2,
+          "totalDurationMs": 261.80533399998967
+        },
+        "commit": {
+          "count": 2,
+          "totalDurationMs": 260.25737399999343
+        }
+      }
+    },
+    "benchmarkIndex": 3731
+  },
+  {
+    "id": "mobile-extra-2-baseline-cold",
+    "side": "baseline",
+    "device": "mobile",
+    "temperature": "cold",
+    "repeat": 2,
+    "time": "2026-10-17T17:15:05.684Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 4625.997,
+    "fcp": 5389.007,
+    "lcp": 5389.007,
+    "cls": 0,
+    "tbt": 30.47699999999986,
+    "bytes": 407497,
+    "score": 0.66,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "settings": {
+      "output": "json",
+      "maxWaitForFcp": 30000,
+      "maxWaitForLoad": 45000,
+      "pauseAfterFcpMs": 5250,
+      "pauseAfterLoadMs": 5250,
+      "networkQuietThresholdMs": 5250,
+      "cpuQuietThresholdMs": 5250,
+      "formFactor": "mobile",
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 150,
+        "downloadThroughputKbps": 1600,
+        "uploadThroughputKbps": 750,
+        "cpuSlowdownMultiplier": 4
+      },
+      "throttlingMethod": "devtools",
+      "screenEmulation": {
+        "mobile": true,
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "disabled": false
+      },
+      "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+      "auditMode": false,
+      "gatherMode": false,
+      "clearStorageTypes": [
+        "file_systems",
+        "shader_cache",
+        "service_workers",
+        "cache_storage"
+      ],
+      "disableStorageReset": true,
+      "debugNavigation": false,
+      "channel": "node",
+      "usePassiveGathering": false,
+      "disableFullPageScreenshot": false,
+      "skipAboutBlank": false,
+      "blankPage": "about:blank",
+      "ignoreStatusCode": false,
+      "locale": "en-US",
+      "blockedUrlPatterns": null,
+      "additionalTraceCategories": null,
+      "extraHeaders": {
+        "x-watch-perf-sample": "mobile-extra-2-baseline-cold"
+      },
+      "precomputedLanternData": null,
+      "onlyAudits": null,
+      "onlyCategories": [
+        "performance"
+      ],
+      "skipAudits": null
+    },
+    "server": {
+      "sample": "mobile-extra-2-baseline-cold",
+      "path": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "mobile": true,
+      "startMs": 108096.140208,
+      "status": 200,
+      "durationMs": 4631.181500000006,
+      "physicalCommands": 154,
+      "tariffTransactions": 37,
+      "firstTariffBeginMs": 1849.8544170000096,
+      "afterFirstTariffBeginMs": 2781.3270829999965,
+      "maxConnectionAcquireMs": 2264.9405410000036,
+      "phases": {
+        "editorial": {
+          "count": 1,
+          "totalDurationMs": 506.42149999999674
+        },
+        "other": {
+          "count": 4,
+          "totalDurationMs": 766.3594989999983
+        },
+        "watch-videos": {
+          "count": 1,
+          "totalDurationMs": 412.0529999999999
+        },
+        "begin": {
+          "count": 37,
+          "totalDurationMs": 5111.240253999931
+        },
+        "tariff-state": {
+          "count": 37,
+          "totalDurationMs": 4779.9357080000045
+        },
+        "tariff-cells": {
+          "count": 37,
+          "totalDurationMs": 5118.060542000036
+        },
+        "commit": {
+          "count": 37,
+          "totalDurationMs": 5075.722703000036
+        }
+      }
+    },
+    "benchmarkIndex": 3722
+  },
+  {
+    "id": "mobile-extra-3-baseline-cold",
+    "side": "baseline",
+    "device": "mobile",
+    "temperature": "cold",
+    "repeat": 3,
+    "time": "2026-10-17T17:15:28.457Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 4946.148,
+    "fcp": 5697.067,
+    "lcp": 5697.067,
+    "cls": 0,
+    "tbt": 34.82999999999993,
+    "bytes": 407498,
+    "score": 0.65,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "settings": {
+      "output": "json",
+      "maxWaitForFcp": 30000,
+      "maxWaitForLoad": 45000,
+      "pauseAfterFcpMs": 5250,
+      "pauseAfterLoadMs": 5250,
+      "networkQuietThresholdMs": 5250,
+      "cpuQuietThresholdMs": 5250,
+      "formFactor": "mobile",
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 150,
+        "downloadThroughputKbps": 1600,
+        "uploadThroughputKbps": 750,
+        "cpuSlowdownMultiplier": 4
+      },
+      "throttlingMethod": "devtools",
+      "screenEmulation": {
+        "mobile": true,
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "disabled": false
+      },
+      "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+      "auditMode": false,
+      "gatherMode": false,
+      "clearStorageTypes": [
+        "file_systems",
+        "shader_cache",
+        "service_workers",
+        "cache_storage"
+      ],
+      "disableStorageReset": true,
+      "debugNavigation": false,
+      "channel": "node",
+      "usePassiveGathering": false,
+      "disableFullPageScreenshot": false,
+      "skipAboutBlank": false,
+      "blankPage": "about:blank",
+      "ignoreStatusCode": false,
+      "locale": "en-US",
+      "blockedUrlPatterns": null,
+      "additionalTraceCategories": null,
+      "extraHeaders": {
+        "x-watch-perf-sample": "mobile-extra-3-baseline-cold"
+      },
+      "precomputedLanternData": null,
+      "onlyAudits": null,
+      "onlyCategories": [
+        "performance"
+      ],
+      "skipAudits": null
+    },
+    "server": {
+      "sample": "mobile-extra-3-baseline-cold",
+      "path": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "mobile": true,
+      "startMs": 130869.34825,
+      "status": 200,
+      "durationMs": 4954.457375000013,
+      "physicalCommands": 154,
+      "tariffTransactions": 37,
+      "firstTariffBeginMs": 2052.74158300001,
+      "afterFirstTariffBeginMs": 2901.7157920000027,
+      "maxConnectionAcquireMs": 2375.113042000012,
+      "phases": {
+        "other": {
+          "count": 4,
+          "totalDurationMs": 761.6991660000349
+        },
+        "editorial": {
+          "count": 1,
+          "totalDurationMs": 526.8999999999942
+        },
+        "watch-videos": {
+          "count": 1,
+          "totalDurationMs": 553.2795000000042
+        },
+        "begin": {
+          "count": 37,
+          "totalDurationMs": 4714.775625000038
+        },
+        "tariff-state": {
+          "count": 37,
+          "totalDurationMs": 5422.139169000031
+        },
+        "tariff-cells": {
+          "count": 37,
+          "totalDurationMs": 4741.871997999988
+        },
+        "commit": {
+          "count": 37,
+          "totalDurationMs": 5733.977915999945
+        }
+      }
+    },
+    "benchmarkIndex": 3709
+  },
+  {
+    "id": "mobile-extra-3-candidate-cold",
+    "side": "candidate",
+    "device": "mobile",
+    "temperature": "cold",
+    "repeat": 3,
+    "time": "2026-10-17T17:15:51.539Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 3905.491,
+    "fcp": 4670.308,
+    "lcp": 4670.308,
+    "cls": 0,
+    "tbt": 34.66699999999946,
+    "bytes": 407494,
+    "score": 0.71,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "settings": {
+      "output": "json",
+      "maxWaitForFcp": 30000,
+      "maxWaitForLoad": 45000,
+      "pauseAfterFcpMs": 5250,
+      "pauseAfterLoadMs": 5250,
+      "networkQuietThresholdMs": 5250,
+      "cpuQuietThresholdMs": 5250,
+      "formFactor": "mobile",
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 150,
+        "downloadThroughputKbps": 1600,
+        "uploadThroughputKbps": 750,
+        "cpuSlowdownMultiplier": 4
+      },
+      "throttlingMethod": "devtools",
+      "screenEmulation": {
+        "mobile": true,
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "disabled": false
+      },
+      "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+      "auditMode": false,
+      "gatherMode": false,
+      "clearStorageTypes": [
+        "file_systems",
+        "shader_cache",
+        "service_workers",
+        "cache_storage"
+      ],
+      "disableStorageReset": true,
+      "debugNavigation": false,
+      "channel": "node",
+      "usePassiveGathering": false,
+      "disableFullPageScreenshot": false,
+      "skipAboutBlank": false,
+      "blankPage": "about:blank",
+      "ignoreStatusCode": false,
+      "locale": "en-US",
+      "blockedUrlPatterns": null,
+      "additionalTraceCategories": null,
+      "extraHeaders": {
+        "x-watch-perf-sample": "mobile-extra-3-candidate-cold"
+      },
+      "precomputedLanternData": null,
+      "onlyAudits": null,
+      "onlyCategories": [
+        "performance"
+      ],
+      "skipAudits": null
+    },
+    "server": {
+      "sample": "mobile-extra-3-candidate-cold",
+      "path": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "mobile": true,
+      "startMs": 152825.264667,
+      "status": 200,
+      "durationMs": 3910.8613749999786,
+      "physicalCommands": 14,
+      "tariffTransactions": 2,
+      "firstTariffBeginMs": 3375.1524999999965,
+      "afterFirstTariffBeginMs": 535.7088749999821,
+      "maxConnectionAcquireMs": 1174.8392080000194,
+      "phases": {
+        "other": {
+          "count": 4,
+          "totalDurationMs": 749.5079589999514
+        },
+        "editorial": {
+          "count": 1,
+          "totalDurationMs": 952.4207499999902
+        },
+        "watch-videos": {
+          "count": 1,
+          "totalDurationMs": 1066.5793750000012
+        },
+        "begin": {
+          "count": 2,
+          "totalDurationMs": 251.1554570000153
+        },
+        "tariff-state": {
+          "count": 2,
+          "totalDurationMs": 253.40174999999
+        },
+        "tariff-cells": {
+          "count": 2,
+          "totalDurationMs": 254.32645900000352
+        },
+        "commit": {
+          "count": 2,
+          "totalDurationMs": 249.3762090000091
+        }
+      }
+    },
+    "benchmarkIndex": 3738
+  },
+  {
+    "id": "mobile-extra-4-candidate-cold",
+    "side": "candidate",
+    "device": "mobile",
+    "temperature": "cold",
+    "repeat": 4,
+    "time": "2026-10-17T17:16:13.572Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 7538.716,
+    "fcp": 8299.018,
+    "lcp": 8299.018,
+    "cls": 0,
+    "tbt": 30.601999999998952,
+    "bytes": 407493,
+    "score": 0.57,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "settings": {
+      "output": "json",
+      "maxWaitForFcp": 30000,
+      "maxWaitForLoad": 45000,
+      "pauseAfterFcpMs": 5250,
+      "pauseAfterLoadMs": 5250,
+      "networkQuietThresholdMs": 5250,
+      "cpuQuietThresholdMs": 5250,
+      "formFactor": "mobile",
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 150,
+        "downloadThroughputKbps": 1600,
+        "uploadThroughputKbps": 750,
+        "cpuSlowdownMultiplier": 4
+      },
+      "throttlingMethod": "devtools",
+      "screenEmulation": {
+        "mobile": true,
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "disabled": false
+      },
+      "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+      "auditMode": false,
+      "gatherMode": false,
+      "clearStorageTypes": [
+        "file_systems",
+        "shader_cache",
+        "service_workers",
+        "cache_storage"
+      ],
+      "disableStorageReset": true,
+      "debugNavigation": false,
+      "channel": "node",
+      "usePassiveGathering": false,
+      "disableFullPageScreenshot": false,
+      "skipAboutBlank": false,
+      "blankPage": "about:blank",
+      "ignoreStatusCode": false,
+      "locale": "en-US",
+      "blockedUrlPatterns": null,
+      "additionalTraceCategories": null,
+      "extraHeaders": {
+        "x-watch-perf-sample": "mobile-extra-4-candidate-cold"
+      },
+      "precomputedLanternData": null,
+      "onlyAudits": null,
+      "onlyCategories": [
+        "performance"
+      ],
+      "skipAudits": null
+    },
+    "server": {
+      "sample": "mobile-extra-4-candidate-cold",
+      "path": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "mobile": true,
+      "startMs": 174843.598417,
+      "status": 200,
+      "durationMs": 7545.423249999993,
+      "physicalCommands": 14,
+      "tariffTransactions": 2,
+      "firstTariffBeginMs": 6875.020208000002,
+      "afterFirstTariffBeginMs": 670.4030419999908,
+      "maxConnectionAcquireMs": 1189.7670420000213,
+      "phases": {
+        "other": {
+          "count": 4,
+          "totalDurationMs": 775.1597089999705
+        },
+        "editorial": {
+          "count": 1,
+          "totalDurationMs": 1227.3770419999782
+        },
+        "watch-videos": {
+          "count": 1,
+          "totalDurationMs": 4653.626749999996
+        },
+        "begin": {
+          "count": 2,
+          "totalDurationMs": 259.2395410000172
+        },
+        "tariff-state": {
+          "count": 2,
+          "totalDurationMs": 259.16270800001803
+        },
+        "tariff-cells": {
+          "count": 2,
+          "totalDurationMs": 402.074042000022
+        },
+        "commit": {
+          "count": 2,
+          "totalDurationMs": 260.2257919999829
+        }
+      }
+    },
+    "benchmarkIndex": 3734.5
+  },
+  {
+    "id": "mobile-extra-4-baseline-cold",
+    "side": "baseline",
+    "device": "mobile",
+    "temperature": "cold",
+    "repeat": 4,
+    "time": "2026-10-17T17:16:39.373Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 10102.268,
+    "fcp": 10829.287,
+    "lcp": 10829.287,
+    "cls": 0,
+    "tbt": 25.950000000000728,
+    "bytes": 407490,
+    "score": 0.56,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "settings": {
+      "output": "json",
+      "maxWaitForFcp": 30000,
+      "maxWaitForLoad": 45000,
+      "pauseAfterFcpMs": 5250,
+      "pauseAfterLoadMs": 5250,
+      "networkQuietThresholdMs": 5250,
+      "cpuQuietThresholdMs": 5250,
+      "formFactor": "mobile",
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 150,
+        "downloadThroughputKbps": 1600,
+        "uploadThroughputKbps": 750,
+        "cpuSlowdownMultiplier": 4
+      },
+      "throttlingMethod": "devtools",
+      "screenEmulation": {
+        "mobile": true,
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "disabled": false
+      },
+      "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+      "auditMode": false,
+      "gatherMode": false,
+      "clearStorageTypes": [
+        "file_systems",
+        "shader_cache",
+        "service_workers",
+        "cache_storage"
+      ],
+      "disableStorageReset": true,
+      "debugNavigation": false,
+      "channel": "node",
+      "usePassiveGathering": false,
+      "disableFullPageScreenshot": false,
+      "skipAboutBlank": false,
+      "blankPage": "about:blank",
+      "ignoreStatusCode": false,
+      "locale": "en-US",
+      "blockedUrlPatterns": null,
+      "additionalTraceCategories": null,
+      "extraHeaders": {
+        "x-watch-perf-sample": "mobile-extra-4-baseline-cold"
+      },
+      "precomputedLanternData": null,
+      "onlyAudits": null,
+      "onlyCategories": [
+        "performance"
+      ],
+      "skipAudits": null
+    },
+    "server": {
+      "sample": "mobile-extra-4-baseline-cold",
+      "path": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "mobile": true,
+      "startMs": 201867.412917,
+      "status": 200,
+      "durationMs": 10106.797166000004,
+      "physicalCommands": 154,
+      "tariffTransactions": 37,
+      "firstTariffBeginMs": 7276.020832999988,
+      "afterFirstTariffBeginMs": 2830.776333000016,
+      "maxConnectionAcquireMs": 2115.314207999996,
+      "phases": {
+        "other": {
+          "count": 4,
+          "totalDurationMs": 766.448332000029
+        },
+        "editorial": {
+          "count": 1,
+          "totalDurationMs": 1339.643958999979
+        },
+        "watch-videos": {
+          "count": 1,
+          "totalDurationMs": 4830.239542000025
+        },
+        "begin": {
+          "count": 37,
+          "totalDurationMs": 5093.170955999871
+        },
+        "tariff-state": {
+          "count": 37,
+          "totalDurationMs": 4788.5572890000185
+        },
+        "tariff-cells": {
+          "count": 37,
+          "totalDurationMs": 4774.395832999871
+        },
+        "commit": {
+          "count": 37,
+          "totalDurationMs": 5117.704456000007
+        }
+      }
+    },
+    "benchmarkIndex": 3774.5
+  },
+  {
+    "id": "mobile-extra-5-baseline-cold",
+    "side": "baseline",
+    "device": "mobile",
+    "temperature": "cold",
+    "repeat": 5,
+    "time": "2026-10-17T17:17:07.671Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 10523.325,
+    "fcp": 11276.173,
+    "lcp": 11276.173,
+    "cls": 0,
+    "tbt": 24.886000000000422,
+    "bytes": 407498,
+    "score": 0.56,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "settings": {
+      "output": "json",
+      "maxWaitForFcp": 30000,
+      "maxWaitForLoad": 45000,
+      "pauseAfterFcpMs": 5250,
+      "pauseAfterLoadMs": 5250,
+      "networkQuietThresholdMs": 5250,
+      "cpuQuietThresholdMs": 5250,
+      "formFactor": "mobile",
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 150,
+        "downloadThroughputKbps": 1600,
+        "uploadThroughputKbps": 750,
+        "cpuSlowdownMultiplier": 4
+      },
+      "throttlingMethod": "devtools",
+      "screenEmulation": {
+        "mobile": true,
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "disabled": false
+      },
+      "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+      "auditMode": false,
+      "gatherMode": false,
+      "clearStorageTypes": [
+        "file_systems",
+        "shader_cache",
+        "service_workers",
+        "cache_storage"
+      ],
+      "disableStorageReset": true,
+      "debugNavigation": false,
+      "channel": "node",
+      "usePassiveGathering": false,
+      "disableFullPageScreenshot": false,
+      "skipAboutBlank": false,
+      "blankPage": "about:blank",
+      "ignoreStatusCode": false,
+      "locale": "en-US",
+      "blockedUrlPatterns": null,
+      "additionalTraceCategories": null,
+      "extraHeaders": {
+        "x-watch-perf-sample": "mobile-extra-5-baseline-cold"
+      },
+      "precomputedLanternData": null,
+      "onlyAudits": null,
+      "onlyCategories": [
+        "performance"
+      ],
+      "skipAudits": null
+    },
+    "server": {
+      "sample": "mobile-extra-5-baseline-cold",
+      "path": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "mobile": true,
+      "startMs": 230078.258167,
+      "status": 200,
+      "durationMs": 10528.433332999994,
+      "physicalCommands": 155,
+      "tariffTransactions": 37,
+      "firstTariffBeginMs": 7893.980333000014,
+      "afterFirstTariffBeginMs": 2634.4529999999795,
+      "maxConnectionAcquireMs": 2042.5777919999964,
+      "phases": {
+        "other": {
+          "count": 5,
+          "totalDurationMs": 919.8058329999913
+        },
+        "editorial": {
+          "count": 1,
+          "totalDurationMs": 1349.188374999998
+        },
+        "watch-videos": {
+          "count": 1,
+          "totalDurationMs": 5350.200542000006
+        },
+        "begin": {
+          "count": 37,
+          "totalDurationMs": 4732.547748999961
+        },
+        "tariff-state": {
+          "count": 37,
+          "totalDurationMs": 4779.336248999985
+        },
+        "tariff-cells": {
+          "count": 37,
+          "totalDurationMs": 4778.369292000105
+        },
+        "commit": {
+          "count": 37,
+          "totalDurationMs": 5081.6470039999695
+        }
+      }
+    },
+    "benchmarkIndex": 3749
+  },
+  {
+    "id": "mobile-extra-5-candidate-cold",
+    "side": "candidate",
+    "device": "mobile",
+    "temperature": "cold",
+    "repeat": 5,
+    "time": "2026-10-17T17:17:36.329Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 3038.9939999999997,
+    "fcp": 3797.833,
+    "lcp": 3797.833,
+    "cls": 0,
+    "tbt": 26.921000000000276,
+    "bytes": 407494,
+    "score": 0.8,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "settings": {
+      "output": "json",
+      "maxWaitForFcp": 30000,
+      "maxWaitForLoad": 45000,
+      "pauseAfterFcpMs": 5250,
+      "pauseAfterLoadMs": 5250,
+      "networkQuietThresholdMs": 5250,
+      "cpuQuietThresholdMs": 5250,
+      "formFactor": "mobile",
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 150,
+        "downloadThroughputKbps": 1600,
+        "uploadThroughputKbps": 750,
+        "cpuSlowdownMultiplier": 4
+      },
+      "throttlingMethod": "devtools",
+      "screenEmulation": {
+        "mobile": true,
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "disabled": false
+      },
+      "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+      "auditMode": false,
+      "gatherMode": false,
+      "clearStorageTypes": [
+        "file_systems",
+        "shader_cache",
+        "service_workers",
+        "cache_storage"
+      ],
+      "disableStorageReset": true,
+      "debugNavigation": false,
+      "channel": "node",
+      "usePassiveGathering": false,
+      "disableFullPageScreenshot": false,
+      "skipAboutBlank": false,
+      "blankPage": "about:blank",
+      "ignoreStatusCode": false,
+      "locale": "en-US",
+      "blockedUrlPatterns": null,
+      "additionalTraceCategories": null,
+      "extraHeaders": {
+        "x-watch-perf-sample": "mobile-extra-5-candidate-cold"
+      },
+      "precomputedLanternData": null,
+      "onlyAudits": null,
+      "onlyCategories": [
+        "performance"
+      ],
+      "skipAudits": null
+    },
+    "server": {
+      "sample": "mobile-extra-5-candidate-cold",
+      "path": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "mobile": true,
+      "startMs": 257591.709583,
+      "status": 200,
+      "durationMs": 3044.7065839999996,
+      "physicalCommands": 14,
+      "tariffTransactions": 2,
+      "firstTariffBeginMs": 2506.3344170000055,
+      "afterFirstTariffBeginMs": 538.3721669999941,
+      "maxConnectionAcquireMs": 815.7057909999858,
+      "phases": {
+        "other": {
+          "count": 4,
+          "totalDurationMs": 774.7289579999924
+        },
+        "editorial": {
+          "count": 1,
+          "totalDurationMs": 533.6349169999885
+        },
+        "watch-videos": {
+          "count": 1,
+          "totalDurationMs": 987.3777500000142
+        },
+        "begin": {
+          "count": 2,
+          "totalDurationMs": 256.0614160000114
+        },
+        "tariff-state": {
+          "count": 2,
+          "totalDurationMs": 259.96220799998264
+        },
+        "tariff-cells": {
+          "count": 2,
+          "totalDurationMs": 265.4853749999893
+        },
+        "commit": {
+          "count": 2,
+          "totalDurationMs": 259.4643330000108
+        }
+      }
+    },
+    "benchmarkIndex": 3807
+  },
+  {
+    "id": "mobile-extra-6-candidate-cold",
+    "side": "candidate",
+    "device": "mobile",
+    "temperature": "cold",
+    "repeat": 6,
+    "time": "2026-10-17T17:17:57.398Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 6907.775000000001,
+    "fcp": 7667.287,
+    "lcp": 7667.287,
+    "cls": 0,
+    "tbt": 29.245999999999185,
+    "bytes": 407493,
+    "score": 0.58,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "settings": {
+      "output": "json",
+      "maxWaitForFcp": 30000,
+      "maxWaitForLoad": 45000,
+      "pauseAfterFcpMs": 5250,
+      "pauseAfterLoadMs": 5250,
+      "networkQuietThresholdMs": 5250,
+      "cpuQuietThresholdMs": 5250,
+      "formFactor": "mobile",
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 150,
+        "downloadThroughputKbps": 1600,
+        "uploadThroughputKbps": 750,
+        "cpuSlowdownMultiplier": 4
+      },
+      "throttlingMethod": "devtools",
+      "screenEmulation": {
+        "mobile": true,
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "disabled": false
+      },
+      "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+      "auditMode": false,
+      "gatherMode": false,
+      "clearStorageTypes": [
+        "file_systems",
+        "shader_cache",
+        "service_workers",
+        "cache_storage"
+      ],
+      "disableStorageReset": true,
+      "debugNavigation": false,
+      "channel": "node",
+      "usePassiveGathering": false,
+      "disableFullPageScreenshot": false,
+      "skipAboutBlank": false,
+      "blankPage": "about:blank",
+      "ignoreStatusCode": false,
+      "locale": "en-US",
+      "blockedUrlPatterns": null,
+      "additionalTraceCategories": null,
+      "extraHeaders": {
+        "x-watch-perf-sample": "mobile-extra-6-candidate-cold"
+      },
+      "precomputedLanternData": null,
+      "onlyAudits": null,
+      "onlyCategories": [
+        "performance"
+      ],
+      "skipAudits": null
+    },
+    "server": {
+      "sample": "mobile-extra-6-candidate-cold",
+      "path": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "mobile": true,
+      "startMs": 278717.186875,
+      "status": 200,
+      "durationMs": 6913.249375000014,
+      "physicalCommands": 14,
+      "tariffTransactions": 2,
+      "firstTariffBeginMs": 6369.428416999988,
+      "afterFirstTariffBeginMs": 543.8209580000257,
+      "maxConnectionAcquireMs": 1188.3547499999986,
+      "phases": {
+        "other": {
+          "count": 4,
+          "totalDurationMs": 793.4963749999879
+        },
+        "editorial": {
+          "count": 1,
+          "totalDurationMs": 1626.3024580000201
+        },
+        "watch-videos": {
+          "count": 1,
+          "totalDurationMs": 3385.2664170000353
+        },
+        "begin": {
+          "count": 2,
+          "totalDurationMs": 260.3464169999934
+        },
+        "tariff-state": {
+          "count": 2,
+          "totalDurationMs": 254.7915829999838
+        },
+        "tariff-cells": {
+          "count": 2,
+          "totalDurationMs": 261.2092930000508
+        },
+        "commit": {
+          "count": 2,
+          "totalDurationMs": 255.5657909999718
+        }
+      }
+    },
+    "benchmarkIndex": 3745
+  },
+  {
+    "id": "mobile-extra-6-baseline-cold",
+    "side": "baseline",
+    "device": "mobile",
+    "temperature": "cold",
+    "repeat": 6,
+    "time": "2026-10-17T17:18:22.482Z",
+    "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+    "ttfb": 5197.537,
+    "fcp": 5942.758,
+    "lcp": 5942.758,
+    "cls": 0,
+    "tbt": 26.802999938964604,
+    "bytes": 407499,
+    "score": 0.64,
+    "warnings": [],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "settings": {
+      "output": "json",
+      "maxWaitForFcp": 30000,
+      "maxWaitForLoad": 45000,
+      "pauseAfterFcpMs": 5250,
+      "pauseAfterLoadMs": 5250,
+      "networkQuietThresholdMs": 5250,
+      "cpuQuietThresholdMs": 5250,
+      "formFactor": "mobile",
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 150,
+        "downloadThroughputKbps": 1600,
+        "uploadThroughputKbps": 750,
+        "cpuSlowdownMultiplier": 4
+      },
+      "throttlingMethod": "devtools",
+      "screenEmulation": {
+        "mobile": true,
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1,
+        "disabled": false
+      },
+      "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+      "auditMode": false,
+      "gatherMode": false,
+      "clearStorageTypes": [
+        "file_systems",
+        "shader_cache",
+        "service_workers",
+        "cache_storage"
+      ],
+      "disableStorageReset": true,
+      "debugNavigation": false,
+      "channel": "node",
+      "usePassiveGathering": false,
+      "disableFullPageScreenshot": false,
+      "skipAboutBlank": false,
+      "blankPage": "about:blank",
+      "ignoreStatusCode": false,
+      "locale": "en-US",
+      "blockedUrlPatterns": null,
+      "additionalTraceCategories": null,
+      "extraHeaders": {
+        "x-watch-perf-sample": "mobile-extra-6-baseline-cold"
+      },
+      "precomputedLanternData": null,
+      "onlyAudits": null,
+      "onlyCategories": [
+        "performance"
+      ],
+      "skipAudits": null
+    },
+    "server": {
+      "sample": "mobile-extra-6-baseline-cold",
+      "path": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "mobile": true,
+      "startMs": 304947.677375,
+      "status": 200,
+      "durationMs": 5202.275166999956,
+      "physicalCommands": 154,
+      "tariffTransactions": 37,
+      "firstTariffBeginMs": 2228.117499999993,
+      "afterFirstTariffBeginMs": 2974.157666999963,
+      "maxConnectionAcquireMs": 2346.449583999987,
+      "phases": {
+        "other": {
+          "count": 4,
+          "totalDurationMs": 1104.7930010000127
+        },
+        "editorial": {
+          "count": 1,
+          "totalDurationMs": 511.27016699995147
+        },
+        "watch-videos": {
+          "count": 1,
+          "totalDurationMs": 416.2020410000114
+        },
+        "begin": {
+          "count": 37,
+          "totalDurationMs": 4658.382540999912
+        },
+        "tariff-state": {
+          "count": 37,
+          "totalDurationMs": 5000.647545000189
+        },
+        "tariff-cells": {
+          "count": 37,
+          "totalDurationMs": 5424.291878000018
+        },
+        "commit": {
+          "count": 37,
+          "totalDurationMs": 5339.990038999997
+        }
+      }
+    },
+    "benchmarkIndex": 3816.5
+  }
+]

@@ -3,6 +3,7 @@ import {
   quoteCanonicalPricing,
   type PricingCompatibilityProfile,
   type PricingSnapshot,
+  type ManualTariffSelector,
 } from '@maxvideoai/pricing';
 import { getPricingDetails } from '@/lib/fal-catalog';
 import { buildAudioPricingPresentation, type AudioPricingInput } from '@/lib/audio-generation';
@@ -62,6 +63,8 @@ export async function computeCanonicalBillingSnapshot(
     pricingPolicy?: ResolveServerPricingPolicyDependencies;
     membershipDiscounts?: Record<string, number>;
     loadCustomerTariffState?: () => Promise<EffectiveCustomerTariffState>;
+    /** Public concurrent quotes can share selected reads within one response. */
+    loadCustomerTariffQuoteState?: (selector: ManualTariffSelector) => Promise<EffectiveCustomerTariffState>;
     /** Operational cutover validates through the same selector reader before commit. */
     customerTariffExecutor?: QueryExecutor;
   } = {}
@@ -100,9 +103,13 @@ export async function computeCanonicalBillingSnapshot(
   const billingFacts = buildBillingPricingFacts(context, pricingDetails, currency);
   const requiresLasTariff = !context.workflowStep && isSeedance25LasInputPricing(context.engine.id, context.mode);
   const requiresEditTariff = !context.workflowStep && isSeedance25EditInputPricing(context.engine.id, context.mode);
-  if (requiresEditTariff || context.workflowStep || dependencies.loadCustomerTariffState || customerTariffsEnabledByCode()) {
+  if (requiresEditTariff || context.workflowStep || dependencies.loadCustomerTariffState || dependencies.loadCustomerTariffQuoteState || customerTariffsEnabledByCode()) {
     const selector = buildManualTariffScenario(context, billingFacts.facts).selector;
-    const tariffState = await (dependencies.loadCustomerTariffState ?? (() => loadCustomerTariffQuoteState(selector, dependencies.customerTariffExecutor)))();
+    const tariffState = await (dependencies.loadCustomerTariffState
+      ? dependencies.loadCustomerTariffState()
+      : dependencies.loadCustomerTariffQuoteState
+        ? dependencies.loadCustomerTariffQuoteState(selector)
+        : loadCustomerTariffQuoteState(selector, dependencies.customerTariffExecutor));
     const manual = resolveCustomerTariffQuote({ context, facts: billingFacts.facts,
       at: new Date().toISOString(), state: tariffState });
     if (manual) {
