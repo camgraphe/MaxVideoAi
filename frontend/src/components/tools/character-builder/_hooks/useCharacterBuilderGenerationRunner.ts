@@ -1,3 +1,4 @@
+import type { CaptureCharacterBuilderAccountRequest } from '../_lib/character-builder-types';
 import { useCallback, type Dispatch, type SetStateAction } from 'react';
 import type { SWRInfiniteKeyedMutator } from 'swr/infinite';
 import { runCharacterBuilderTool } from '@/lib/api';
@@ -21,6 +22,7 @@ import type {
 } from '../_lib/character-builder-types';
 
 interface UseCharacterBuilderGenerationRunnerOptions {
+  captureAccountRequest: CaptureCharacterBuilderAccountRequest;
   copy: CharacterCopy;
   hasIdentityReference: boolean;
   mutateHistoricalJobs: SWRInfiniteKeyedMutator<JobsPage[]>;
@@ -35,6 +37,7 @@ interface UseCharacterBuilderGenerationRunnerOptions {
 }
 
 export function useCharacterBuilderGenerationRunner({
+  captureAccountRequest,
   copy,
   hasIdentityReference,
   mutateHistoricalJobs,
@@ -53,6 +56,8 @@ export function useCharacterBuilderGenerationRunner({
         openAuthGate();
         return;
       }
+      const request = captureAccountRequest();
+      if (!request) return;
       setError(null);
       setStatusMessage(null);
       const loadingKey = getLoadingRequestKey(action, generateCount);
@@ -113,7 +118,8 @@ export function useCharacterBuilderGenerationRunner({
             parentRunId: null,
             pinnedReferenceResultId: null,
           },
-        });
+        }, request);
+        if (!request.isCurrent()) return;
 
         if (!response.run) {
           throw new Error(copy.missingRun);
@@ -156,6 +162,7 @@ export function useCharacterBuilderGenerationRunner({
         });
         void mutateHistoricalJobs(undefined, { revalidate: true });
       } catch (runError) {
+        if (!request.isCurrent()) return;
         setPendingRuns((previous) => previous.filter((entry) => entry.id !== clientJobId));
         if (isAuthRequiredError(runError)) {
           openAuthGate();
@@ -163,10 +170,11 @@ export function useCharacterBuilderGenerationRunner({
         }
         setError(runError instanceof Error ? runError.message : copy.runFailed);
       } finally {
-        setLoadingActions((previous) => decrementLoadingRequestCount(previous, loadingKey));
+        if (request.isCurrent()) setLoadingActions((previous) => decrementLoadingRequestCount(previous, loadingKey));
       }
     },
     [
+      captureAccountRequest,
       copy.missingRun,
       copy.runFailed,
       copy.runFullBodyDone,

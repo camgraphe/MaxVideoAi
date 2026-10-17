@@ -11,7 +11,6 @@ import GA4EventBridge from '@/components/analytics/GA4EventBridge';
 import GA4RouteTracker from '@/components/analytics/GA4RouteTracker';
 import { CookieBanner } from '@/components/legal/CookieBanner';
 import { JsonLd } from '@/components/SeoJsonLd';
-import { SessionWatchdog } from '@/components/auth/SessionWatchdog';
 import { SWRFocusResync } from '@/components/swr/SWRFocusResync';
 import { SWRProvider } from '@/components/swr/SWRProvider';
 import { I18nProvider } from '@/lib/i18n/I18nProvider';
@@ -60,7 +59,6 @@ export async function AppRuntime({ children, clientMessageNamespaces }: AppRunti
       <I18nProvider locale={locale} dictionary={dictionary} fallback={fallback}>
         <SWRProvider>
           <LocaleSync />
-          <SessionWatchdog />
           <SWRFocusResync />
           <AppExperienceRoot fontClass={appFont.variable}>{children}</AppExperienceRoot>
         </SWRProvider>

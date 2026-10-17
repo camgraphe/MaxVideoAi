@@ -94,3 +94,10 @@ export type HistoricalCharacterGalleryItem = {
   createdAt: string;
   prompt: string | null;
 };
+
+export type CharacterBuilderAccountRequest = {
+  accessToken: string;
+  signal: AbortSignal;
+  isCurrent: () => boolean;
+};
+export type CaptureCharacterBuilderAccountRequest = () => CharacterBuilderAccountRequest | null;

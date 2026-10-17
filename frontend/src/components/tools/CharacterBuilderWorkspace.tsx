@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import { useCallback, useMemo, useRef, useState } from 'react';
+import type { User } from '@supabase/supabase-js';
 import {
   ArrowLeft,
 } from 'lucide-react';
@@ -44,6 +45,7 @@ import { useCharacterBuilderJobSnapshotLoader } from './character-builder/_hooks
 import { useCharacterBuilderLookSummaries } from './character-builder/_hooks/useCharacterBuilderLookSummaries';
 import { useCharacterBuilderGenerationRunner } from './character-builder/_hooks/useCharacterBuilderGenerationRunner';
 import { useCharacterBuilderOptions } from './character-builder/_hooks/useCharacterBuilderOptions';
+import { useCharacterBuilderAccountScope } from './character-builder/_hooks/useCharacterBuilderAccountScope';
 import { useCharacterBuilderPersistence } from './character-builder/_hooks/useCharacterBuilderPersistence';
 import { useCharacterBuilderPendingRunsSync } from './character-builder/_hooks/useCharacterBuilderPendingRunsSync';
 import { useCharacterBuilderReferenceAssets } from './character-builder/_hooks/useCharacterBuilderReferenceAssets';
@@ -65,7 +67,14 @@ import type {
 } from './character-builder/_lib/character-builder-types';
 
 export default function CharacterBuilderPage() {
-  const { loading: authLoading, user } = useRequireAuth({ redirectIfLoggedOut: false });
+  const { loading, user, session } = useRequireAuth({ redirectIfLoggedOut: false });
+  if (loading) return <CharacterBuilderLoadingSkeleton />;
+  return <CharacterBuilderAccountWorkspace key={user?.id ?? 'guest'} user={user} accessToken={session?.access_token ?? null} />;
+}
+
+function CharacterBuilderAccountWorkspace({ user, accessToken }: { user: User | null; accessToken: string | null }) {
+  const authLoading = false;
+  const captureAccountRequest = useCharacterBuilderAccountScope(accessToken);
   const { t } = useI18n();
   const rawCopy = t('workspace.characterBuilder', DEFAULT_CHARACTER_COPY);
   const copy = useMemo<CharacterCopy>(() => {
@@ -105,6 +114,7 @@ export default function CharacterBuilderPage() {
     savingResultId,
     setSavingResultId,
   } = useCharacterBuilderResultActions({
+    captureAccountRequest,
     copy,
     openAuthGate,
     setAdvancedOpen,
@@ -178,6 +188,7 @@ export default function CharacterBuilderPage() {
     user,
   });
   const handleRun = useCharacterBuilderGenerationRunner({
+    captureAccountRequest,
     copy,
     hasIdentityReference,
     mutateHistoricalJobs,
@@ -194,6 +205,7 @@ export default function CharacterBuilderPage() {
     handleLibrarySelect,
     triggerUpload,
   } = useCharacterBuilderReferenceAssets({
+    captureAccountRequest,
     copy,
     libraryModalRole,
     openAuthGate,
@@ -254,6 +266,7 @@ export default function CharacterBuilderPage() {
   const jobIdFromQuery = searchParams?.get('job')?.trim() ?? null;
   const billingProductKey = getCharacterBillingProductKey(state.qualityMode);
   useCharacterBuilderPendingRunsSync({
+    captureAccountRequest,
     authLoading,
     hydrated,
     mutateHistoricalJobs,
@@ -263,6 +276,7 @@ export default function CharacterBuilderPage() {
     user,
   });
   useCharacterBuilderJobSnapshotLoader({
+    captureAccountRequest,
     hydrated,
     jobIdFromQuery,
     loadFromJobDoneMessage: copy.loadFromJobDone,
