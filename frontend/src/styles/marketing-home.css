@@ -119,12 +119,12 @@
 }
 
 /* Homepage excerpt of the current light comparison table (PR #456). */
-.marketing-site .home-choice.home-choice-compact{background:#f5f2ed;color:#242320;border:0;padding-block:56px 24px;--text-primary:#242320;--text-secondary:#666159;--text-muted:#77736c;--surface:#faf8f5;--hairline:#d8d3cb}
+.marketing-site .home-choice.home-choice-compact{background:#f5f2ed;color:#242320;border:0;padding-block:56px 24px;--text-primary:#242320;--text-secondary:#666159;--text-muted:#68635b;--surface:#faf8f5;--hairline:#d8d3cb}
 .marketing-site .choice-comparison.comparison-feature{background:transparent;border:0;border-radius:0;padding:0;grid-template-columns:.72fr 1.28fr;gap:clamp(28px,5vw,64px);align-items:center}
 .marketing-site .comparison-feature .editorial-eyebrow{color:#8b5426}
 .marketing-site .comparison-feature h2{color:#242320;font-size:clamp(34px,3.8vw,52px);max-width:13ch;letter-spacing:-.045em;line-height:1.08}
 .marketing-site .comparison-feature>div>p:not(.editorial-eyebrow){color:#666159;font-size:15px;line-height:1.7;max-width:38ch}
-.marketing-site .comparison-feature>div>p.comparison-editorial-label{color:#77736c;font-size:12px;margin-top:22px}
+.marketing-site .comparison-feature>div>p.comparison-editorial-label{color:#68635b;font-size:12px;margin-top:22px}
 .marketing-site .choice-scorecard.comparison-preview{min-width:0;background:#faf8f5;border:1px solid #d8d3cb;border-radius:8px;padding:24px;box-shadow:0 16px 40px -32px #26231e55;color:#242320}
 .marketing-site .comparison-preview :is(button,a,summary):focus-visible{outline:2px solid #426f99;outline-offset:4px}
 .marketing-site .comparison-discovery-actions{display:flex;flex-direction:column;align-items:flex-start;gap:8px;margin-top:26px}
@@ -137,27 +137,27 @@
 .marketing-site .comparison-preview .comparison-example-label{margin:0 0 22px;padding-bottom:16px;border-bottom:1px solid #d8d3cb;font-size:11px;font-weight:500;line-height:1.7;color:#666159}
 .marketing-site .comparison-example-label span{margin-inline:6px}
 .marketing-site .home-score-grid{width:100%;table-layout:fixed;border-collapse:collapse;text-align:left}
-.marketing-site .home-score-grid caption{caption-side:bottom;padding-top:12px;text-align:left;font-size:10px;line-height:1.5;color:#77736c}
+.marketing-site .home-score-grid caption{caption-side:bottom;padding-top:12px;text-align:left;font-size:10px;line-height:1.5;color:#68635b}
 .marketing-site .home-score-criterion-col{width:36%}
 .marketing-site .home-score-grid thead{border-bottom:1px solid #d8d3cb}
 .marketing-site .home-score-grid thead th{padding:0 12px 18px;vertical-align:top;font-size:11px;font-weight:500}
 .marketing-site .home-score-grid thead th:first-child{padding-left:0;vertical-align:bottom}
-.marketing-site .home-score-grid thead th:first-child small{display:block;color:#77736c;margin-top:4px}
+.marketing-site .home-score-grid thead th:first-child small{display:block;color:#68635b;margin-top:4px}
 .marketing-site .home-score-grid thead th:last-child{padding-right:0}
 .marketing-site .home-score-model{display:flex;align-items:center;gap:8px;min-height:36px;font-size:12px;line-height:1.35;font-weight:600}
 .marketing-site .home-score-model img{object-fit:contain;flex:none;width:22px;height:22px}
 .marketing-site .home-score-overall{display:flex;gap:5px;align-items:baseline;border-left:3px solid #648bb1;padding-left:9px;margin-top:12px}
 .marketing-site .home-score-heading-right .home-score-overall{border-color:#c9964d}
 .marketing-site .home-score-overall strong{font-size:25px;line-height:1;font-weight:600;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
-.marketing-site .home-score-overall small{font-size:9px;line-height:1.4;color:#77736c;font-weight:400}
+.marketing-site .home-score-overall small{font-size:9px;line-height:1.4;color:#68635b;font-weight:400}
 .marketing-site .home-score-grid tbody tr{border-bottom:1px solid #e0dcd6}
 .marketing-site .home-score-grid tbody th{padding:18px 12px 18px 0;vertical-align:middle}
 .marketing-site .home-score-grid tbody th strong{display:block;font-size:12px;line-height:1.4;font-weight:600;color:#242320}
-.marketing-site .home-score-grid tbody th small{display:block;margin-top:4px;font-size:10px;line-height:1.55;font-weight:400;color:#77736c}
+.marketing-site .home-score-grid tbody th small{display:block;margin-top:4px;font-size:10px;line-height:1.55;font-weight:400;color:#68635b}
 .marketing-site .home-score-value{padding:18px 12px;vertical-align:middle}
 .marketing-site .home-score-value:last-child{padding-right:0}
 .marketing-site .home-score-number{display:block;font-size:19px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;color:#242320}
-.marketing-site .home-score-number small{font-size:10px;font-weight:400;color:#77736c;margin-left:4px}
+.marketing-site .home-score-number small{font-size:10px;font-weight:400;color:#68635b;margin-left:4px}
 .marketing-site .home-score-track{display:block;width:100%;height:6px;overflow:hidden;border-radius:99px;background:#e4e2df;margin-top:9px}
 .marketing-site .home-score-track>span{display:block;height:100%;border-radius:inherit;background:#7397b8;transform-origin:left}
 .marketing-site .home-score-value-right .home-score-track>span{background:#cda05d}
@@ -165,10 +165,10 @@
 .marketing-site .comparison-feature .comparison-preview>a.comparison-active-link{display:flex;align-items:center;justify-content:space-between;gap:12px;color:#426f99;border-bottom:1px solid #d8d3cb;padding:16px 0;font-size:13px;font-weight:600;min-height:48px;margin-top:0}
 .marketing-site .comparison-footnotes{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 20px;margin-top:6px}
 .marketing-site .comparison-footnotes>a{color:#426f99;min-height:36px;font-size:11px}
-.marketing-site .comparison-global-note{margin:0;font-size:10px;line-height:1.6;color:#77736c;flex:1 1 230px}
+.marketing-site .comparison-global-note{margin:0;font-size:10px;line-height:1.6;color:#68635b;flex:1 1 230px}
 .marketing-site .comparison-global-note summary{cursor:pointer;min-height:36px;display:list-item;align-content:center}
 .marketing-site .comparison-global-note p{padding-bottom:8px;max-width:55ch}
-.marketing-site .home-choice-compact .choice-attribution{color:#77736c;margin-top:16px}
+.marketing-site .home-choice-compact .choice-attribution{color:#68635b;margin-top:16px;opacity:1}
 .marketing-site .home-choice-compact .choice-attribution a{color:inherit}
 @media(max-width:900px){
  .marketing-site .choice-comparison.comparison-feature{grid-template-columns:1fr;gap:28px}
@@ -226,14 +226,14 @@
 .marketing-site .price-walkthrough-label{display:flex;gap:12px;align-items:center;font-size:12px;color:#6c655c;margin-bottom:12px}
 .marketing-site .price-walkthrough-label small{border:1px solid #c9bfb0;padding:4px 9px;border-radius:4px;color:#292622}
 .marketing-site .price-walkthrough-steps{display:grid}
-.marketing-site .price-walkthrough-steps button{display:flex;align-items:center;gap:16px;padding:12px 6px;border-bottom:1px solid #ccc5ba;text-align:left;color:#756e64;min-height:60px;transition:color .3s,background .3s}
+.marketing-site .price-walkthrough-steps button{display:flex;align-items:center;gap:16px;padding:12px 6px;border-bottom:1px solid #ccc5ba;text-align:left;color:#686055;min-height:60px;transition:color .3s,background .3s}
 .marketing-site .price-walkthrough-steps button[aria-pressed=true]{color:#24211e}
 .marketing-site .price-step-number{font-size:12px;border:1px solid #c8bfb2;border-radius:50%;width:30px;height:30px;display:grid;place-items:center;flex-shrink:0;transition:background .3s,color .3s}
 .marketing-site .price-walkthrough-steps button[aria-pressed=true] .price-step-number{background:#292622;border-color:#292622;color:#f4eee4}
 .marketing-site .price-walkthrough-steps strong{display:block;font-size:18px;font-weight:500;letter-spacing:-.025em}
 .marketing-site .price-walkthrough-steps small{display:block;font-size:12px;margin-top:4px}
 .marketing-site .price-walkthrough-steps button>span:last-child{margin-left:auto}
-.marketing-site .price-walkthrough-description{font-size:14px;color:#686055;line-height:1.6;min-height:44px;margin:12px 0;animation:price-step-in .4s ease both}
+.marketing-site .price-walkthrough-description{font-size:14px;color:#686055;line-height:1.6;min-height:44px;margin:12px 0}
 .marketing-site .price-walkthrough-links{display:flex;flex-wrap:wrap;gap:18px;align-items:center;font-size:13px}
 .marketing-site .price-walkthrough-links a:first-child{background:#292622;color:#fff9ef;border-radius:7px;padding:14px 20px}
 .marketing-site .price-walkthrough-links a{min-height:44px;display:inline-flex;align-items:center}
@@ -281,11 +281,11 @@
 .marketing-site .price-walkthrough-caption{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:10px;font-size:12px;color:#635a4c}
 .marketing-site .price-walkthrough-caption small{display:block;font-size:10px;margin-top:5px}
 .marketing-site .price-walkthrough-caption>strong{font-size:22px;font-weight:500;color:#443524;font-variant-numeric:tabular-nums;animation:price-step-in .4s ease both}
-.marketing-site .price-walkthrough-note{font-size:10px;color:#786e60;line-height:1.6;margin-top:6px}
+.marketing-site .price-walkthrough-note{font-size:10px;color:#686055;line-height:1.6;margin-top:6px}
 .marketing-site .price-walkthrough-guarantees{grid-column:1/-1;display:flex;justify-content:space-between;gap:18px;margin-top:18px;padding-top:14px;border-top:1px solid #cdc5b9;list-style:none;font-size:12px;color:#645b4d}
 .marketing-site .price-walkthrough-guarantees li{display:flex;gap:9px}
 .marketing-site .price-walkthrough-guarantees li>span{color:#946c35}
-.marketing-site .price-demo-related{display:flex;gap:24px;justify-content:flex-end;margin-top:14px;font-size:12px;color:#796b59}
+.marketing-site .price-demo-related{display:flex;gap:24px;justify-content:flex-end;margin-top:14px;font-size:12px;color:#686055}
 .marketing-site .price-walkthrough button:focus-visible,.marketing-site .price-walkthrough a:focus-visible{outline:2px solid #946c35;outline-offset:4px}
 @keyframes price-step-in{from{opacity:.35;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:900px){.marketing-site .price-walkthrough{gap:0 24px;grid-template-columns:.7fr 1.3fr}.marketing-site .price-walkthrough-stage{padding:0}.marketing-site .price-walkthrough-steps strong{font-size:16px}}
@@ -371,3 +371,6 @@
 
 /* Reserve the same narrow toolbar height while its Composer chunk loads. */
 @container(max-width:560px){.marketing-site :is(.price-app-surface,.price-app-placeholder){min-height:386px}}
+
+/* Keep the homepage footer caption readable on its warm background. */
+.marketing-site:has(.home-monochrome) .marketing-footer-assistants .marketing-menu-caption{color:var(--text-secondary)}
