@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import * as React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { JSDOM } from 'jsdom';
 import { McpPageView } from '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpPageView';
 import { getMcpPageCopy } from '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy';
 import { getMcpCompatibilityEvidence } from '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-compatibility';
@@ -16,14 +17,17 @@ const compatibility = getMcpCompatibilityEvidence();
 for (const locale of ['en', 'fr', 'es'] as const) {
   test(`${locale}: hub renders three assistant-made films without eager video playback`, () => {
     const html = renderToStaticMarkup(React.createElement(McpPageView, { locale, compatibility, copy: getMcpPageCopy(locale), publication: live }));
-    const videos = html.match(/<video\b[^>]*src="\/media\/mcp\/creations\/[^>]*>/g) ?? [];
+    const dom = new JSDOM(html, { runScripts: 'dangerously' });
+    const videos = [...dom.window.document.querySelectorAll('video')];
     assert.equal(videos.length, 3);
     for (const tag of videos) {
-      assert.match(tag, /preload="none"/);
-      assert.match(tag, /controls=""/);
-      assert.match(tag, /poster="\/media\/mcp\/creations\//);
-      assert.doesNotMatch(tag, /autoPlay|autoplay/);
+      assert.equal(tag.preload, 'none');
+      assert.equal(tag.controls, true);
+      assert.equal(tag.getAttribute('poster'), null);
+      assert.equal(tag.hasAttribute('data-deferred-poster'), true);
+      assert.equal(tag.autoplay, false);
     }
+    dom.window.close();
     assert.match(html, /id="creative-examples"/);
     assert.match(html, /id="the-hat-stays"/);
     assert.match(html, /creativecommons.org\/licenses\/by\/4.0/);

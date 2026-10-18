@@ -11,7 +11,7 @@ export function McpCreationStories({ locale }: { locale: AppLocale }) {
       <div className="mcp-creation-grid">{copy.stories.map(story => <article id={story.id} key={story.id} className="mcp-creation-card">
         <figure data-creation-film={story.id}>
           <div className="relative aspect-video overflow-hidden rounded-xl bg-black">
-            <PublicVideoPlayer src={`/media/mcp/creations/${story.id}-720p.mp4`} poster={`/media/mcp/creations/${story.id}.webp`} title={story.title} locale={locale} className="h-full w-full object-contain" />
+            <PublicVideoPlayer src={`/media/mcp/creations/${story.id}-720p.mp4`} poster={`/media/mcp/creations/${story.id}.webp`} deferPoster title={story.title} locale={locale} className="h-full w-full object-contain" />
           </div>
           <figcaption>{story.duration} · {story.id === 'main-character' ? 'Main Character' : story.id === 'the-hat-stays' ? 'The Hat Stays' : 'The Daylight Afterparty'}</figcaption>
         </figure>

@@ -304,6 +304,13 @@ Playback hooks stay client-side; encoding, storage and database work stay server
 `McpCreationStories` composes the shared manual `PublicVideoPlayer` for three
 full-duration authored web films on the MCP hub and Codex guide. It preserves
 `preload="none"`, native controls and retry; there is no autoplay or download CTA.
+These below-fold readers opt into `deferPoster`: the same native video stays mounted,
+while its poster is assigned only within 200px of the viewport. Source/poster identity
+and observer cancellation fence stale callbacks. Browsers without IntersectionObserver
+show the poster immediately after hydration; without JavaScript, a native original/poster
+reader replaces the deferred element through `noscript`. Other readers retain their
+existing eager poster. Verify initial poster transfers, first Play and the no-script
+fallback in a real browser; `preload="none"` alone does not defer native posters.
 The [production provenance record](../marketing/mcp-creation-stories.md) separates
 these edited films from raw model outputs and host UI evidence. Their local web
 copies do not alter the automated public rendition catalogue.
