@@ -299,6 +299,15 @@ can make it the LCP element even when its weight is unchanged.
 
 Playback hooks stay client-side; encoding, storage and database work stay server-side. Pages compose these owners. Do not put provider, pricing, storage or encoding responsibilities in a playback component. Route-specific workspace behavior stays under its existing `_hooks`, `_lib` and `_components` boundaries.
 
+### Assistant-directed film examples
+
+`McpCreationStories` composes the shared manual `PublicVideoPlayer` for three
+full-duration authored web films on the MCP hub and Codex guide. It preserves
+`preload="none"`, native controls and retry; there is no autoplay or download CTA.
+The [production provenance record](../marketing/mcp-creation-stories.md) separates
+these edited films from raw model outputs and host UI evidence. Their local web
+copies do not alter the automated public rendition catalogue.
+
 ### Demonstration media inside the app
 
 Image and Audio newcomer samples use separate editorial starter collections and a

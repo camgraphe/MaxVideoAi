@@ -13,6 +13,7 @@ export function IntegrationEntrySection({ locale, client }: { locale: AppLocale;
         <span>0{index + 1}</span><h3>{step.title}</h3><p>{step.body}</p>
       </li>)}</ol>
       <p className="mcp-entry-scope">{copy.scope}</p>
+      {client === 'claude' ? <a className="mcp-text-link" href="https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp">{locale === 'fr' ? 'Disponibilité des connecteurs selon Claude' : locale === 'es' ? 'Disponibilidad de conectores según Claude' : 'Connector availability from Claude'} ↗</a> : null}
     </div>
   </section>;
 }

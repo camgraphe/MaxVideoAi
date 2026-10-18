@@ -13,7 +13,7 @@ const copy: Record<AppLocale, Record<'claude' | 'codex', EntryCopy>> = {
   en: {
     claude: {
       eyebrow: 'Your first clip in Claude Desktop', title: 'Connect. Review. Create.',
-      cost: 'Paid media uses your MaxVideoAI wallet. The model, settings and exact quote come before your approval. Custom connectors require Claude Pro / Max or access enabled by your Team / Enterprise organization. No additional MaxVideoAI subscription is required.',
+      cost: 'Paid media uses your MaxVideoAI wallet. The model, settings and exact quote come before your approval. Claude supports custom connectors on Free (one connector), Pro / Max, and managed Team / Enterprise accounts. No additional MaxVideoAI subscription is required.',
       scope: 'The published Claude Desktop result is a dated controlled staging test. Claude Code has a separate setup guide and remains unverified in the host record.',
       steps: [
         { title: 'Connect and authorize', body: 'Add the custom connector in Claude Desktop. Sign in or create a MaxVideoAI account, review access, then return to your conversation.' },
@@ -35,7 +35,7 @@ const copy: Record<AppLocale, Record<'claude' | 'codex', EntryCopy>> = {
   fr: {
     claude: {
       eyebrow: 'Votre premier clip dans Claude Desktop', title: 'Connectez. Vérifiez. Créez.',
-      cost: 'Les médias payants utilisent votre portefeuille MaxVideoAI. Le modèle, les réglages et le devis exact précèdent votre accord. Les connecteurs personnalisés nécessitent Claude Pro / Max ou un accès activé par votre organisation Team / Enterprise. Aucun abonnement MaxVideoAI supplémentaire n’est requis.',
+      cost: 'Les médias payants utilisent votre portefeuille MaxVideoAI. Le modèle, les réglages et le devis exact précèdent votre accord. Claude propose les connecteurs personnalisés sur Free (un connecteur), Pro / Max et les comptes Team / Enterprise administrés. Aucun abonnement MaxVideoAI supplémentaire n’est requis.',
       scope: 'Le résultat Claude Desktop publié vient d’un test contrôlé daté sur staging. Claude Code possède un guide distinct et reste non vérifié dans le registre des hôtes.',
       steps: [
         { title: 'Connectez et autorisez', body: 'Ajoutez le connecteur personnalisé dans Claude Desktop. Connectez-vous ou créez un compte MaxVideoAI, vérifiez les accès, puis revenez à votre conversation.' },
@@ -57,7 +57,7 @@ const copy: Record<AppLocale, Record<'claude' | 'codex', EntryCopy>> = {
   es: {
     claude: {
       eyebrow: 'Tu primer clip en Claude Desktop', title: 'Conecta. Revisa. Crea.',
-      cost: 'Los medios de pago usan tu monedero MaxVideoAI. Revisa el modelo, los ajustes y el precio exacto antes de aprobar. Los conectores personalizados requieren Claude Pro / Max o acceso habilitado por tu organización Team / Enterprise. No necesitas otra suscripción a MaxVideoAI.',
+      cost: 'Los medios de pago usan tu monedero MaxVideoAI. Revisa el modelo, los ajustes y el precio exacto antes de aprobar. Claude admite conectores personalizados en Free (uno), Pro / Max y cuentas Team / Enterprise administradas. No necesitas otra suscripción a MaxVideoAI.',
       scope: 'El resultado publicado de Claude Desktop procede de una prueba controlada y fechada en staging. Claude Code tiene una guía propia y sigue sin verificar en el registro de clientes.',
       steps: [
         { title: 'Conecta y autoriza', body: 'Añade el conector personalizado en Claude Desktop. Inicia sesión o crea una cuenta MaxVideoAI, revisa el acceso y vuelve a tu conversación.' },
