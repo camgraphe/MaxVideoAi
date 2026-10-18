@@ -262,6 +262,8 @@ test('page builder preserves the complete editorial roster, including legacy vid
   const pageData = buildBenchmarkPageData(staticData, { status: 'unavailable', windowDays: 30, asOf: null, rows: [] });
   assert.equal(pageData.scores.length, staticData.scores.length);
   assert.ok(pageData.scores.some((row) => row.modelSlug === 'ltx-2'));
+  assert.equal(pageData.scores.find((row) => row.modelSlug === 'sora-2')?.generationUnavailable, true);
+  assert.equal(pageData.scores.find((row) => row.modelSlug === 'kling-3-pro')?.generationUnavailable, false);
 });
 
 test('page builder preserves Seedance 2.5 official evidence while distinguishing route-contract provenance from API mechanics', async () => {

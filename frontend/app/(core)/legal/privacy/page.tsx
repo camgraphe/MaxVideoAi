@@ -47,7 +47,7 @@ export default async function PrivacyPage() {
         <p className="text-sm text-text-secondary">
           {locale === 'en' ? (
             <>
-              Controller: MaxVideoAI (sole proprietorship in formation, France). Registered office: see{' '}
+              Controller: Adrien Millot, sole proprietor trading as MaxVideoAI (France, SIREN 753 467 414). Registered office: see{' '}
               <Link href={links.mentionsHref} className="text-brand underline hover:text-brandHover">
                 legal mentions
               </Link>
@@ -55,7 +55,7 @@ export default async function PrivacyPage() {
             </>
           ) : locale === 'fr' ? (
             <>
-              Responsable de traitement : MaxVideoAI (entreprise individuelle en France). Adresse : voir{' '}
+              Responsable de traitement : Adrien Millot, entrepreneur individuel exerçant sous le nom commercial MaxVideoAI (France, SIREN 753 467 414). Adresse : voir{' '}
               <Link href={links.mentionsHref} className="text-brand underline hover:text-brandHover">
                 Mentions légales
               </Link>
@@ -63,7 +63,7 @@ export default async function PrivacyPage() {
             </>
           ) : (
             <>
-              Responsable: MaxVideoAI (empresa individual en Francia). Dirección: consulta las{' '}
+              Responsable: Adrien Millot, empresario individual que opera con el nombre comercial MaxVideoAI (Francia, SIREN 753 467 414). Dirección: consulta las{' '}
               <Link href={links.mentionsHref} className="text-brand underline hover:text-brandHover">
                 menciones legales
               </Link>

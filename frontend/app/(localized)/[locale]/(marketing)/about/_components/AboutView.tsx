@@ -42,7 +42,17 @@ export function AboutView({
               {profile.jobTitle} · {profile.location}
             </p>
           </div>
-          <p className="text-base leading-7 text-text-secondary">{copy.identity.body}</p>
+          <div>
+            <p className="text-base leading-7 text-text-secondary">{copy.identity.body}</p>
+            <h3 className="mt-5 text-sm font-semibold text-text-primary">{copy.work.title}</h3>
+            <ul className="mt-2 space-y-2 text-sm text-text-secondary">
+              {copy.work.items.map((item) => (
+                <li key={item.href}>
+                  <a href={item.href} className="underline underline-offset-4 hover:text-brand">{item.label}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
 

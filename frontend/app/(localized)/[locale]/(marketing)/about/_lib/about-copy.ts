@@ -4,6 +4,7 @@ export type AboutCopy = {
   meta: { title: string; description: string };
   hero: { eyebrow: string; title: string; subtitle: string };
   identity: { label: string; body: string };
+  work: { title: string; items: Array<{ label: string; href: string }> };
   sections: Array<{ title: string; body: string }>;
   independence: { title: string; body: string };
   links: { standards: string; benchmarks: string; company: string; legal: string };
@@ -26,6 +27,13 @@ const COPY: Record<AppLocale, AboutCopy> = {
       label: 'Built and maintained by',
       body:
         'Adrien builds the product, evaluates model behavior, and maintains MaxVideoAI’s practical guides and benchmark methodology.',
+    },
+    work: {
+      title: "Selected work and production notes",
+      items: [
+        { label: "AI podcast: workflow, revisions and editing decisions", href: "/blog/gpt-6-podcast-maxvideoai-premiere-pro" },
+        { label: "Wan 3 Prime: a published match-cut example and its prompt", href: "/video/wan-3-prime-ai-match-cut-transitions" },
+      ],
     },
     sections: [
       {
@@ -73,6 +81,13 @@ const COPY: Record<AppLocale, AboutCopy> = {
       body:
         'Adrien développe le produit, évalue le comportement des modèles et maintient les guides pratiques ainsi que la méthodologie de benchmark de MaxVideoAI.',
     },
+    work: {
+      title: "Réalisations et notes de production",
+      items: [
+        { label: "Podcast IA : workflow, révisions et choix de montage (en anglais)", href: "/blog/gpt-6-podcast-maxvideoai-premiere-pro" },
+        { label: "Wan 3 Prime : exemple publié de transitions et prompt (en anglais)", href: "/video/wan-3-prime-ai-match-cut-transitions" },
+      ],
+    },
     sections: [
       {
         title: 'Ce que nous construisons',
@@ -118,6 +133,13 @@ const COPY: Record<AppLocale, AboutCopy> = {
       label: 'Creado y mantenido por',
       body:
         'Adrien desarrolla el producto, evalúa el comportamiento de los modelos y mantiene las guías prácticas y la metodología de benchmarks de MaxVideoAI.',
+    },
+    work: {
+      title: "Trabajos y notas de producción",
+      items: [
+        { label: "Podcast con IA: flujo, revisiones y decisiones de edición (en inglés)", href: "/blog/gpt-6-podcast-maxvideoai-premiere-pro" },
+        { label: "Wan 3 Prime: ejemplo publicado de transiciones y prompt (en inglés)", href: "/video/wan-3-prime-ai-match-cut-transitions" },
+      ],
     },
     sections: [
       {

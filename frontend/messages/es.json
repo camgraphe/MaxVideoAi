@@ -2940,14 +2940,14 @@
         },
         {
           "question": "¿Puedo sugerir un tema o pedir cobertura?",
-          "answer": "Sí; envía tus ideas a press@maxvideo.ai e incluye renders de referencia si puedes. Priorizamos historias que ayuden a los equipos de producción."
+          "answer": "Sí; envía tus ideas a admin@maxvideoai.com e incluye renders de referencia si puedes. Priorizamos historias que ayuden a los equipos de producción."
         },
         {
           "question": "¿Dónde encuentro las notas de versión?",
           "answer": "Las novedades del producto viven en el changelog y las actualizaciones de API en la documentación para desarrolladores. El blog cubre guías y aprendizajes de campo."
         }
       ],
-      "footnote": "¿Necesitas más detalles? Escribe a press@maxvideo.ai y lo derivaremos al productor adecuado."
+      "footnote": "¿Necesitas más detalles? Escribe a admin@maxvideoai.com y lo derivaremos al productor adecuado."
     }
   },
   "videoPage": {
@@ -3040,10 +3040,10 @@
   "contact": {
     "hero": {
       "title": "Habla con el equipo.",
-      "subtitle": "¿Necesitas soporte, ayuda para tu equipo o información de prensa? Déjanos un mensaje y te responderemos en un día hábil."
+      "subtitle": "Contacta con MaxVideoAI para soporte del producto, colaboraciones o consultas de prensa."
     },
     "intro": {
-      "body": "Escríbenos para soporte, alianzas, necesidades de equipo o solicitudes editoriales. Si compartes contexto sobre tu equipo, los modelos que quieres usar, la fecha límite o los requisitos de cumplimiento, el mensaje llega antes a la persona adecuada. Cada solicitud recibe una respuesta humana.",
+      "body": "Describe tu consulta. Para un problema de generación, incluye el identificador del trabajo; para colaboraciones o prensa, indica tu proyecto, publicación y fecha límite.",
       "cards": {
         "productHelp": {
           "title": "Ayuda de producto",
@@ -3093,7 +3093,7 @@
       "items": [
         {
           "question": "¿Cuánto tardan en responder?",
-          "answer": "Respondemos en horario laboral de Europa y Estados Unidos. La mayoría de los tickets de soporte recibe una respuesta humana en menos de 12 horas y las solicitudes para equipos en menos de 24."
+          "answer": "El tiempo de respuesta depende de la consulta y de la disponibilidad del soporte. Incluye el identificador del trabajo y una descripción clara para facilitar la revisión."
         },
         {
           "question": "¿Ofrecen demos en vivo?",
@@ -3101,13 +3101,13 @@
         },
         {
           "question": "¿Dónde reviso el estado del servicio?",
-          "answer": "Consulta la {link} para revisar la latencia de los motores y el historial de incidentes antes de abrir un ticket."
+          "answer": "Consulta la {email} para ver los avisos de servicio publicados por el equipo de MaxVideoAI. Si una generación se retrasa, contacta con soporte e incluye el identificador del trabajo."
         }
       ]
     },
     "statusCard": {
-      "title": "Revisa el estado de los motores en vivo",
-      "body": "Antes de abrir un ticket, confirma si algún motor ya aparece degradado. La página de estado muestra latencia, notas de incidentes y pasos de mitigación para decidir si conviene reintentar o cambiar de modelo.",
+      "title": "Avisos de servicio",
+      "body": "La página de estado muestra los avisos de servicio publicados por el equipo. Si una generación se retrasa, evita enviar el mismo trabajo de nuevo y contacta con soporte con su identificador.",
       "cta": "página de estado"
     }
   },
