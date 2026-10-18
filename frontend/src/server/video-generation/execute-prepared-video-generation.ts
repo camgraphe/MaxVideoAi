@@ -152,7 +152,7 @@ export async function executePreparedVideoGeneration(params: ExecutePreparedVide
     throw new Error('Invalid pre-reserved video initial state.');
   }
 
-  if (walletInitialState && engine.id === 'seedance-2-5' && mode === 'v2v') {
+  if (walletInitialState && engine.id === 'seedance-2-5' && (mode === 'v2v' || params.seedanceWorkflow)) {
     await persistReservedBytePlusLasExecutionSettings({ jobId, userId, settings: settingsSnapshot,
       priceCents: pricing.totalCents });
   }

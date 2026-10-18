@@ -1,3 +1,4 @@
+import type { PreparedSeedanceWorkflow } from '@/server/seedance-workflow-request';
 import { getPlatformFeeCents } from '@maxvideoai/pricing';
 
 import {
@@ -40,6 +41,7 @@ export type {
 } from './included-trial-generation-execution';
 
 export type PaidGenerationExecution = {
+  seedanceWorkflow?: PreparedSeedanceWorkflow;
   surface: 'video' | 'image';
   quoteId: string;
   userId: string;
@@ -73,6 +75,7 @@ export type PaidVideoContinuationOptions = {
   trustedQuotedBilling: TrustedQuotedBilling;
   trustedResolvedReferences: readonly ResolvedReference[];
   providerEnv?: VideoProviderRoutingEnv;
+  seedanceWorkflow?: PreparedSeedanceWorkflow;
 };
 
 export type PaidGenerationSubmissionOptions = {
@@ -117,6 +120,7 @@ export type ReservePaidGenerationInput = {
   candidate: AgentPublicGenerationEngine;
   pricingSnapshot: Record<string, unknown>;
   resolvedReferences?: ResolvedReference[];
+  seedanceWorkflow?: PreparedSeedanceWorkflow;
 };
 
 type ReservePaidGenerationDependencies = {
@@ -181,8 +185,8 @@ function videoInitialParams(
   const fee = platformFee(pricing);
   const vendorAccountId = vendorAccount(pricing);
   const pricingJson = JSON.stringify(pricing);
-  let provider = candidate.engine.provider;
-  if (quote.request.engineId === 'seedance-2-5' && quote.request.mode === 'v2v') {
+  let provider = quote.request.seedanceWorkflow ? 'byteplus_modelark' : candidate.engine.provider;
+  if (quote.request.engineId === 'seedance-2-5' && quote.request.mode === 'v2v' && !quote.request.seedanceWorkflow) {
     const context = resolveTrustedPaidGenerateRouteContext({
       body: { ...quote.request.settings, payment: { mode: 'wallet' } },
       engine: candidate.engine, jobId: quote.quoteId, mode: 'v2v',
@@ -191,6 +195,7 @@ function videoInitialParams(
     provider = context.context.providerKey;
   }
   return {
+    seedanceFinal: input.seedanceWorkflow?.seedanceFinal,
     jobId: quote.quoteId,
     userId: quote.userId,
     paymentMode: 'wallet',
@@ -225,7 +230,7 @@ function videoInitialParams(
       batchId: null,
       groupId: null,
       iterationIndex: null,
-      iterationCount: null,
+      iterationCount: quote.request.seedanceWorkflow ? 1 : null,
       renderIdsJson: null,
       heroRenderId: null,
       localKey: null,
@@ -307,6 +312,7 @@ export async function reservePaidGenerationInitialJob(
         quoteId: input.quote.quoteId,
         userId: input.quote.userId,
         request: input.quote.request,
+        seedanceWorkflow: input.seedanceWorkflow,
         resolvedReferences: input.resolvedReferences ?? [],
         engine: input.candidate.engine,
         canonicalPricing: pricing,
@@ -446,6 +452,7 @@ export async function submitReservedPaidGeneration(
         preReservedInitialState: execution.trustedInitialState,
         trustedQuotedBilling,
         trustedResolvedReferences: execution.resolvedReferences ?? [],
+        seedanceWorkflow: execution.seedanceWorkflow,
         providerEnv: submissionOptions.providerEnv,
       });
       if (result.body.ok === true) {

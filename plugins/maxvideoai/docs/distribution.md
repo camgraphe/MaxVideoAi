@@ -12,6 +12,17 @@ MaxVideoAI's distributable MCP metadata names the protocol-generic endpoint
 directory distribution so that an installation path is never mistaken for a
 platform approval or a directory record.
 
+## Prepared candidate — 2026-10-18
+
+Source candidate **0.3.8** adds native Draft guidance. It requires a new immutable
+publication and read-back; do not overwrite 0.3.7 or edit installed caches.
+The website/public installation pin remains the observed 0.3.7 release until
+publication is independently verified. Deploy the workflow-capable server,
+refresh each host's connection/catalog by its supported flow, then verify a
+fresh task can see `seedanceWorkflow` in details and preparation. Retain jobs
+through reconnect and recover existing attempts first. Local offline tests do
+not establish deployment, customer installation or real-host behavior.
+
 ## Published release — 2026-10-05
 
 The protected publisher completed source `a833d985a81f9d523e08917674a01f1e220337b1`
