@@ -64,5 +64,6 @@ export {
 export {
   formatTemplate,
   replaceCriteriaCount,
+  replaceSeoCriteriaCount,
   stripAudioReferencesForSilentPair,
 } from './compare-page-text';

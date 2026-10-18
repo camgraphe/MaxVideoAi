@@ -10,26 +10,44 @@
       "description": "Compare Veo 3.1 Lite and Fast by pricing, output quality, audio control, workflow flexibility and when each tier is worth using.",
       "titleBranding": "none"
     },
-    "heroIntro": "Choose Lite for lower-cost 720p or 1080p drafts. Choose Fast for 4K or multiple reference images. Both support optional audio.",
+    "heroIntro": "This page compares Veo 3.1 Fast with Veo 3.1 Lite. Lite keeps the budget down for text prompts, a starting image or first/last-frame tests. Fast adds 4K and a separate multi-reference mode. Neither tier requires you to move every approved clip to standard Veo.",
     "faq": {
       "title": "FAQ",
-      "subtitle": "Short answers to help you choose between the current Fast and Lite Veo tiers.",
+      "subtitle": "Choose the Veo version that fits your shot and budget.",
       "items": [
         {
-          "question": "Which Veo 3 model is better for image-to-video tests?",
-          "answer": "Both support image-to-video and optional audio. Start with Lite for lower-cost 720p or 1080p tests; choose Fast for 4K delivery or multiple reference images."
+          "question": "What do I give up with Veo 3.1 Lite?",
+          "answer": "Lite stops at 1080p and has no dedicated multi-reference-image mode. It accepts a starting image or first/last frames, which is different from supplying several subject references. Fast and standard Veo offer 4K and up to 3 reference images."
         },
         {
-          "question": "Is Veo 3.1 Lite or Veo 3.1 Fast better for text-to-video drafts?",
-          "answer": "Start with Lite for lower-cost drafts in 720p or 1080p. Choose Fast when you need 4K output or a workflow using several reference images. Audio can be enabled or disabled on both."
+          "question": "Does Lite generate audio too?",
+          "answer": "Yes. Lite, Fast and standard Veo can generate native audio on MaxVideoAI. Audio can be turned on or off; keep that setting the same when comparing prices. The presence of audio does not guarantee accurate dialogue in every take."
         },
         {
-          "question": "When should I choose Veo 3.1 Fast instead of Veo 3.1 Lite?",
-          "answer": "Choose Fast for 4K output or multiple reference images. Choose Lite for lower-cost tests up to 1080p. Confirm your duration, resolution and audio setting in the current quote before generating."
+          "question": "How should I compare the cost of these Veo versions?",
+          "answer": "Compare the same mode, duration, resolution and audio setting in the current price table. Lite has a lower listed cost than Fast or standard Veo at shared 720p/1080p settings; Fast costs less than standard Veo at matched settings. Check the full clip total before generating."
+        },
+        {
+          "question": "Can I rely on Lite to extend an existing clip?",
+          "answer": "Check this before planning around it. MaxVideoAI currently lists an Extend mode for Lite, but Google’s Gemini API documentation says Lite does not support extension. These access routes are not interchangeable. Confirm availability for your chosen settings before relying on Lite for this step."
+        },
+        {
+          "question": "Must I remake a successful Fast or Lite clip with standard Veo?",
+          "answer": "No. If the clip meets your brief, resolution and sound requirements, you can keep it. Generating again with standard Veo produces a new take; it is not an automatic upgrade of the same clip."
         }
       ]
     },
-    "decisionSummary": "Choose Lite for lower-cost 720p or 1080p drafts. Choose Fast for 4K or multiple reference images. Both support optional audio."
+    "decisionSummary": "For short Veo tests, start with Lite if 720p or 1080p is enough. Choose Fast when you need 4K or up to 3 reference images. Both let you turn native audio on or off.",
+    "decisionLinks": [
+      {
+        "href": "/ai-video-engines/gemini-omni-flash-vs-veo-3-1-fast",
+        "label": "Omni Flash 1.1 vs Veo 3.1 Fast"
+      },
+      {
+        "href": "/ai-video-engines/veo-3-1-vs-veo-3-1-lite",
+        "label": "Veo 3.1 vs Lite"
+      }
+    ]
   },
   "fr": {
     "pricingCreditLink": {
@@ -41,26 +59,44 @@
       "description": "Comparez Veo 3.1 Lite et Fast selon le prix, la qualité de sortie, le contrôle audio, la souplesse du flux de travail et les cas où chaque version vaut le choix.",
       "titleBranding": "none"
     },
-    "heroIntro": "Choisissez Lite pour des essais moins chers en 720p ou 1080p, et Fast pour la 4K ou plusieurs images de référence. Les deux proposent un audio optionnel.",
+    "heroIntro": "Cette page compare Veo 3.1 Fast à Veo 3.1 Lite. Lite réduit le budget des essais à partir d’un texte, d’une image ou d’images de début et de fin. Fast ajoute la 4K et un mode à plusieurs références. Un clip réussi avec l’un ou l’autre n’a pas à être systématiquement refait avec Veo standard.",
     "faq": {
-      "title": "FAQ",
-      "subtitle": "Reponses courtes pour choisir entre les tiers Veo Fast et Lite actuels.",
+      "title": "Questions fréquentes",
+      "subtitle": "Choisir la version de Veo adaptée au plan et au budget.",
       "items": [
         {
-          "question": "Quel modele Veo 3 convient le mieux pour des tests image-to-video ?",
-          "answer": "Les deux proposent l’image-vers-vidéo et un audio optionnel. Commencez avec Lite pour des essais moins chers en 720p ou 1080p ; choisissez Fast pour la 4K ou plusieurs images de référence."
+          "question": "À quoi renonce-t-on avec Veo 3.1 Lite ?",
+          "answer": "Lite s’arrête au 1080p et ne propose pas de mode dédié à plusieurs images de référence. Il accepte une image de départ ou des images de début et de fin, ce qui est différent d’un ensemble de références du sujet. Fast et Veo standard proposent la 4K et jusqu’à 3 références."
         },
         {
-          "question": "Veo 3.1 Lite ou Veo 3.1 Fast convient mieux a des tests texte-to-video ?",
-          "answer": "Commencez avec Lite pour des brouillons moins chers en 720p ou 1080p. Choisissez Fast pour la 4K ou plusieurs images de référence. L’audio peut être activé ou désactivé sur les deux."
+          "question": "Lite génère-t-il aussi du son ?",
+          "answer": "Oui. Lite, Fast et Veo standard peuvent générer un audio natif dans MaxVideoAI. Vous pouvez l’activer ou le désactiver ; gardez ce réglage identique pour comparer les prix. La présence d’audio ne garantit pas des dialogues exacts à chaque prise."
         },
         {
-          "question": "Quand faut-il choisir Veo 3.1 Fast plutot que Veo 3.1 Lite ?",
-          "answer": "Choisissez Fast pour la 4K ou plusieurs images de référence, et Lite pour des essais moins chers jusqu’au 1080p. Confirmez la durée, la résolution et l’audio dans le devis actuel avant de générer."
+          "question": "Comment comparer le coût de ces versions de Veo ?",
+          "answer": "Comparez le même mode, la même durée, la même résolution et le même réglage audio dans le tableau de prix actuel. Aux réglages communs en 720p/1080p, Lite affiche un tarif inférieur à Fast et à Veo standard ; Fast coûte moins que Veo standard à réglages identiques. Vérifiez le total du clip avant de générer."
+        },
+        {
+          "question": "Peut-on compter sur Lite pour prolonger une vidéo ?",
+          "answer": "Vérifiez ce point avant d’en faire une étape de votre projet. MaxVideoAI liste actuellement un mode Extend pour Lite, mais la documentation de l’API Gemini de Google indique que Lite ne prend pas en charge l’extension. Ces accès ne sont pas interchangeables. Confirmez la disponibilité avec vos réglages avant de compter sur Lite pour cette étape."
+        },
+        {
+          "question": "Faut-il refaire un clip Fast ou Lite réussi avec Veo standard ?",
+          "answer": "Non. Si le clip répond au brief, à la résolution et au son attendus, vous pouvez le conserver. Relancer avec Veo standard produit une nouvelle prise ; ce n’est pas une amélioration automatique du même clip."
         }
       ]
     },
-    "decisionSummary": "Choisissez Lite pour des essais moins chers en 720p ou 1080p, et Fast pour la 4K ou plusieurs images de référence. Les deux proposent un audio optionnel."
+    "decisionSummary": "Pour des essais courts avec Veo, commencez avec Lite si le 720p ou le 1080p suffit. Choisissez Fast pour la 4K ou jusqu’à 3 images de référence. Les deux permettent d’activer ou de couper l’audio natif.",
+    "decisionLinks": [
+      {
+        "href": "/fr/comparatif/gemini-omni-flash-vs-veo-3-1-fast",
+        "label": "Omni Flash 1.1 vs Veo 3.1 Fast"
+      },
+      {
+        "href": "/fr/comparatif/veo-3-1-vs-veo-3-1-lite",
+        "label": "Veo 3.1 vs Lite"
+      }
+    ]
   },
   "es": {
     "pricingCreditLink": {
@@ -72,25 +108,43 @@
       "description": "Compara Veo 3.1 Lite y Fast por precio, calidad de salida, control de audio, flexibilidad del flujo y cuándo conviene elegir cada versión.",
       "titleBranding": "none"
     },
-    "heroIntro": "Elige Lite para pruebas más económicas en 720p o 1080p, y Fast para 4K o varias imágenes de referencia. Ambos ofrecen audio opcional.",
+    "heroIntro": "Esta página compara Veo 3.1 Fast con Veo 3.1 Lite. Lite reduce el presupuesto de pruebas con texto, una imagen o fotogramas inicial y final. Fast añade 4K y un modo con varias referencias. Un clip que funciona con cualquiera de los dos no tiene que rehacerse siempre con Veo estándar.",
     "faq": {
-      "title": "FAQ",
-      "subtitle": "Respuestas cortas para elegir entre los tiers Veo Fast y Lite actuales.",
+      "title": "Preguntas frecuentes",
+      "subtitle": "Elige la versión de Veo que encaje en tu plano y presupuesto.",
       "items": [
         {
-          "question": "Que modelo Veo 3 es mejor para pruebas de image-to-video?",
-          "answer": "Ambos admiten imagen a vídeo y audio opcional. Empieza con Lite para pruebas más económicas en 720p o 1080p; elige Fast para 4K o varias imágenes de referencia."
+          "question": "¿A qué renuncio con Veo 3.1 Lite?",
+          "answer": "Lite llega hasta 1080p y no ofrece un modo específico con varias imágenes de referencia. Admite una imagen inicial o fotogramas inicial y final, algo distinto de un conjunto de referencias del sujeto. Fast y Veo estándar ofrecen 4K y hasta 3 referencias."
         },
         {
-          "question": "Veo 3.1 Lite o Veo 3.1 Fast es mejor para borradores text-to-video?",
-          "answer": "Empieza con Lite para borradores más económicos en 720p o 1080p. Elige Fast para 4K o varias imágenes de referencia. Puedes activar o desactivar el audio en ambos."
+          "question": "¿Lite también genera sonido?",
+          "answer": "Sí. Lite, Fast y Veo estándar pueden generar audio nativo en MaxVideoAI. Puedes activarlo o desactivarlo; mantén el mismo ajuste al comparar precios. Tener audio no garantiza diálogos exactos en cada toma."
         },
         {
-          "question": "Cuando deberia elegir Veo 3.1 Fast en lugar de Veo 3.1 Lite?",
-          "answer": "Elige Fast para 4K o varias imágenes de referencia, y Lite para pruebas más económicas hasta 1080p. Confirma la duración, la resolución y el audio en el precio actual antes de generar."
+          "question": "¿Cómo comparo el coste de estas versiones de Veo?",
+          "answer": "Compara el mismo modo, duración, resolución y audio en la tabla de precios actual. Con ajustes comunes de 720p/1080p, Lite tiene un precio publicado inferior al de Fast y Veo estándar; Fast cuesta menos que Veo estándar con los mismos ajustes. Comprueba el total del clip antes de generar."
+        },
+        {
+          "question": "¿Puedo contar con Lite para ampliar un vídeo?",
+          "answer": "Compruébalo antes de planificar esa parte del proyecto. MaxVideoAI muestra actualmente un modo Extend para Lite, pero la documentación de la API Gemini de Google indica que Lite no admite ampliación. Estas vías de acceso no son intercambiables. Confirma la disponibilidad con tus ajustes antes de depender de Lite para este paso."
+        },
+        {
+          "question": "¿Tengo que rehacer un clip Fast o Lite logrado con Veo estándar?",
+          "answer": "No. Si el clip cumple el brief y los requisitos de resolución y sonido, puedes conservarlo. Generar de nuevo con Veo estándar produce otra toma; no mejora automáticamente el mismo clip."
         }
       ]
     },
-    "decisionSummary": "Elige Lite para pruebas más económicas en 720p o 1080p, y Fast para 4K o varias imágenes de referencia. Ambos ofrecen audio opcional."
+    "decisionSummary": "Para pruebas cortas con Veo, empieza con Lite si basta con 720p o 1080p. Elige Fast para 4K o hasta 3 imágenes de referencia. Ambos permiten activar o desactivar el audio nativo.",
+    "decisionLinks": [
+      {
+        "href": "/es/comparativa/gemini-omni-flash-vs-veo-3-1-fast",
+        "label": "Omni Flash 1.1 vs Veo 3.1 Fast"
+      },
+      {
+        "href": "/es/comparativa/veo-3-1-vs-veo-3-1-lite",
+        "label": "Veo 3.1 vs Lite"
+      }
+    ]
   }
 }

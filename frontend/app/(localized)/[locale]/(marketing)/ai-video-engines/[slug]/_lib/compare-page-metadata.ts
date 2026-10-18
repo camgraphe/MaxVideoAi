@@ -15,7 +15,7 @@ import {
   getCanonicalCompareSlug,
   isPending,
   loadEngineKeySpecs,
-  replaceCriteriaCount,
+  replaceSeoCriteriaCount,
   resolveEngines,
 } from './compare-page-helpers';
 import { getComparePageOverride } from './compare-page-overrides';
@@ -50,13 +50,13 @@ export async function buildComparePageMetadata(props: {
   };
   const resolved = canonicalInfo ? resolveEngines(canonicalInfo.canonicalSlug) : null;
   const pairHasNativeAudio = Boolean(resolved?.left.engine?.audio) || Boolean(resolved?.right.engine?.audio);
-  const criteriaCount = pairHasNativeAudio ? 10 : 9;
+  const criteriaCount = pairHasNativeAudio ? 11 : 10;
   const titleTemplate =
     metaOverride.title ?? compareCopy.meta?.title ?? '{left} vs {right} — Side-by-Side Specs, Pricing & Quality | MaxVideoAI';
   const titleFallback =
     compareCopy.meta?.titleFallback ??
     'Compare AI video engines — Side-by-Side Specs, Pricing & Quality | MaxVideoAI';
-  const descriptionTemplate = replaceCriteriaCount(
+  const descriptionTemplate = replaceSeoCriteriaCount(
     metaOverride.description ??
       compareCopy.meta?.description ??
       `Compare {left} vs {right} on MaxVideoAI with pricing, key specs, and a scorecard across ${criteriaCount} criteria.`,
