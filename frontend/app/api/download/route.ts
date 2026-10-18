@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
+import { downloadMediaStream } from '@/server/media-download';
+import { AgentApiError } from '@/server/agent-api/errors';
 
 export const runtime = 'nodejs';
 
@@ -48,22 +50,21 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const upstream = await fetch(parsedUrl.toString(), { cache: 'no-store' });
-    if (!upstream.ok || !upstream.body) {
-      return NextResponse.json({ ok: false, error: 'FETCH_FAILED' }, { status: 502 });
-    }
-
-    const contentType = inferContentTypeFromFilename(fileName, upstream.headers.get('content-type') ?? 'application/octet-stream');
+    const upstream = await downloadMediaStream(parsedUrl.toString(), req.signal);
+    const contentType = inferContentTypeFromFilename(fileName, upstream.contentType);
     return new Response(upstream.body, {
       status: 200,
       headers: {
         'Content-Type': contentType,
         'Content-Disposition': `attachment; filename="${fileName}"`,
         'Cache-Control': 'private, no-store',
+        'X-Content-Type-Options': 'nosniff',
+        ...(upstream.contentLength ? { 'Content-Length': upstream.contentLength } : {}),
       },
     });
   } catch (error) {
-    console.error('[download] failed', error);
-    return NextResponse.json({ ok: false, error: 'DOWNLOAD_FAILED' }, { status: 500 });
+    // Never log signed original URLs or upstream errors containing credentials.
+    const invalid = error instanceof AgentApiError && error.code === 'REFERENCE_INVALID';
+    return NextResponse.json({ ok: false, error: invalid ? 'INVALID_URL' : 'DOWNLOAD_FAILED' }, { status: invalid ? 400 : 502 });
   }
 }

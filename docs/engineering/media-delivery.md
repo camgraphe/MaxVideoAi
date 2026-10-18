@@ -4,6 +4,37 @@ Read this guide when changing image/video presentation, poster URLs, generated m
 
 For sharing generated videos or public examples, also read `docs/engineering/video-sharing.md`.
 
+## Authenticated original downloads
+
+`GET /api/download` authenticates before network work and serves exact original
+URLs, including their signed query. `server/media-download.ts` streams the body
+with backpressure, a 1 GiB byte ceiling and a 120-second total deadline including
+DNS/redirect work; upstream idle timeout remains 30 seconds. Client disconnect,
+consumer cancellation, oversize and incomplete responses close the upstream.
+Failures after headers have been sent terminate the stream rather than reporting
+a successfully completed truncated file. No complete video buffer is retained.
+
+The shared `server/public-media-transport.ts` permits HTTPS on port 443, refuses
+embedded credentials/fragments/localhost and non-public resolved addresses,
+checks all DNS answers, pins the validated address at socket creation and
+revalidates at most three redirects. It sends no user cookie or Authorization
+header upstream. Existing MCP and tool media imports reuse this connection
+boundary with their own buffered MIME/byte policies. Signed URLs and original
+bytes are never replaced by display derivatives; HTTP-only and private-network
+sources are deliberately refused. This network gate does not create a new media
+ownership grant or issue a storage signature. Logs must not expose signed URLs.
+
+`tests/download-route-security.test.ts` executes the route with synthetic auth
+and DNS/socket boundaries, covering public signed media, private/mixed answers,
+redirect pivots/loops, byte bounds, truncation, streaming cancellation and late
+DNS answers. The existing reference-import suite protects shared compatibility.
+
+Reference selection search currently filters loaded pages. The shared
+`ReferenceLibraryPicker` keeps pagination available while searching and explains
+in EN/FR/ES that loading more extends the search. It must not conceal later
+pages or clear the query to load them. This does not claim server-wide search;
+the paginated readers retain their account/type/source scopes.
+
 ## Portrait backdrops on examples pages
 
 `ExamplesMainVideoFeature` keeps its blurred portrait backdrop on the same responsive
