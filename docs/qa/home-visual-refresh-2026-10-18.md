@@ -202,3 +202,10 @@ Final homepage metadata/robots/hreflang/JSON-LD/redirect comparisons remain equa
 to baseline. Native-browser evidence: `studio-menu-in-app.jpg`; responsive
 captures: `studio-actions-390.png`, `studio-actions-1242.png`,
 `studio-menu-mobile.png` and `studio-menu-desktop.png`.
+
+## Follow-up audit against refreshed main
+
+The [19 October SEO and performance review](home-seo-performance-review-2026-10-19.md)
+supersedes the older baseline comparison above. It integrates current main,
+completes the French meta description, improves secondary-text contrast and
+records the final release candidate's checks and measurement limits.
