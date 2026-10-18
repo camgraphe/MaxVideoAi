@@ -84,9 +84,51 @@ Robots, sitemap URL sets and localized redirects match; all seven added link
 destinations respond successfully or use the expected Studio redirect. Evidence:
 `.reports/home-visual-refresh/audit-price-projection-seo/results.json`.
 
+## Direct Chrome measurements after correction
+
+Fresh Chrome 147 measurements use actual CDP network/CPU throttling and browser
+PerformanceObserver entries. There is no Lantern simulation in these numbers.
+Three alternating pairs per device and cache condition give 24 measured visits,
+plus the priming visits for warm cache. Mobile: 390 × 844, CPU 4×, 1.6 Mbps,
+150 ms latency. Desktop: 1440 × 1000, CPU 1×, 10 Mbps, 40 ms latency. Each visit
+observes six seconds after load, then exercises comparison disclosure, the three
+price steps and the creation section. No requests are mocked or blocked.
+
+| Direct LCP | Main runs (ms) | Corrected runs (ms) | Main / corrected median |
+| --- | --- | --- | --- |
+| Mobile cold | 992 / 956 / 972 | 920 / 916 / 920 | 972 / 920 ms |
+| Desktop cold | 196 / 196 / 200 | 192 / 196 / 188 | 196 / 192 ms |
+| Mobile warm | 240 / 228 / 236 | 224 / 220 / 232 | 236 / 224 ms |
+| Desktop warm | 76 / 68 / 72 | 76 / 64 / 68 | 72 / 68 ms |
+
+No measured regression appears. These local laboratory results do not establish
+production field CWV gains. Candidate CLS is zero initially and after the tested
+interactions on every run. Main's initial CLS is also zero, with very small
+post-interaction shifts up to 0.00065. No JavaScript page errors or horizontal
+overflow occur. Maximum recorded candidate interaction event duration is 48 ms
+on mobile and 32 ms on desktop; these bounded interactions are **not field INP**.
+
+Cold initial median transferred bytes: main/candidate 406,900/406,634 on mobile,
+6,014,147/5,672,888 on desktop. Mobile sends zero media requests initially; desktop
+sends one. Warm reloads reuse 42 same-origin resources on mobile and 44/43 on
+desktop, with zero transfer for these cached resources. Warm document/background
+transfer remains approximately 75–76 KB; no new video transfer occurs on reload.
+
+Raw observations, screenshots, exact source/settings manifests and summaries:
+`.reports/home-visual-refresh/audit-price-projection-cold/` and
+`audit-price-projection-warm/`. Reproduction scripts are
+`measure-price-projection-cold.cjs`, `measure-price-projection-warm.cjs` and
+`summarize-projection.py` in the same reports parent directory.
+
 ## Integration state
 
 PR465 is still in the delivery owner's validation. Its integration receipt,
 checks against the resulting main, and renewed browser/network measurements are
 pending. Release sign-off remains withheld until these checks are complete. No
 push, PR, production merge or deployment has been performed by this task.
+
+The thread heartbeat `revalider-accueil-apr-s-pr465` checks every 15 minutes and
+stays quiet while the delivery state is unchanged. It must obtain the delivery
+receipt, integrate the published main locally, repeat the relevant checks against
+that exact baseline, update this report and show the preview. It does not authorize
+push, merge to main or deployment; pause it after the follow-up is complete.
