@@ -122,12 +122,12 @@
           "answer": "Sí. Lite, Fast y Veo estándar pueden generar audio nativo en MaxVideoAI. Puedes activarlo o desactivarlo; mantén el mismo ajuste al comparar precios. Tener audio no garantiza diálogos exactos en cada toma."
         },
         {
-          "question": "¿Cómo comparo el coste de estas versiones de Veo?",
-          "answer": "Compara el mismo modo, duración, resolución y audio en la tabla de precios actual. Con ajustes comunes de 720p/1080p, Lite tiene un precio publicado inferior al de Fast y Veo estándar; Fast cuesta menos que Veo estándar con los mismos ajustes. Comprueba el total del clip antes de generar."
+          "question": "¿Cómo comparo el costo de estas versiones de Veo?",
+          "answer": "Compara el mismo modo, duración, resolución y audio en la tabla de precios actual. Con ajustes comunes de 720p/1080p, Lite tiene un precio publicado inferior al de Fast y Veo estándar; Fast cuesta menos que Veo estándar con los mismos ajustes. Revisa el total del clip antes de generar."
         },
         {
-          "question": "¿Puedo contar con Lite para ampliar un vídeo?",
-          "answer": "Compruébalo antes de planificar esa parte del proyecto. MaxVideoAI muestra actualmente un modo Extend para Lite, pero la documentación de la API Gemini de Google indica que Lite no admite ampliación. Estas vías de acceso no son intercambiables. Confirma la disponibilidad con tus ajustes antes de depender de Lite para este paso."
+          "question": "¿Puedo contar con Lite para ampliar un video?",
+          "answer": "Revísalo antes de planificar esa parte del proyecto. MaxVideoAI muestra actualmente un modo Extend para Lite, pero la documentación de la API Gemini de Google indica que Lite no admite ampliación. Estas vías de acceso no son intercambiables. Confirma la disponibilidad con tus ajustes antes de depender de Lite para este paso."
         },
         {
           "question": "¿Tengo que rehacer un clip Fast o Lite logrado con Veo estándar?",

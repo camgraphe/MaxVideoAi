@@ -67,7 +67,7 @@
     ]
   },
   "es": {
-    "decisionSummary": "¿Estás probando varias ideas? Esta página compara Omni Flash 1.1 con Veo 3.1 Fast, más económico que Veo estándar. Ambos ofrecen 4K; Omni añade edición de vídeo y más imágenes de referencia.",
+    "decisionSummary": "¿Estás probando varias ideas? Esta página compara Omni Flash 1.1 con Veo 3.1 Fast, más económico que Veo estándar. Ambos ofrecen 4K; Omni añade edición de video y más imágenes de referencia.",
     "heroIntro": "Este comparativo ayuda a elegir entre las herramientas de edición de Omni y varias generaciones con Veo Fast. Fast admite texto, imágenes, hasta 3 referencias y fotogramas inicial y final. Es una versión distinta de Veo, no un ajuste de velocidad de Veo 3.1 estándar. Los enlaces anteriores llevan a las comparativas con estándar y Lite.",
     "decisionLinks": [
       {
@@ -81,7 +81,7 @@
     ],
     "quickVerdict": {
       "title": "¿Probar variantes o editar un clip?",
-      "body": "Fast permite probar prompts y encuadres a un precio publicado inferior al de Veo estándar. Omni también permite editar un vídeo existente o aportar hasta 10 imágenes de referencia. Ninguno de estos nombres garantiza un tiempo de generación. Compara presupuestos con el mismo modo, duración, resolución y audio."
+      "body": "Fast permite probar prompts y encuadres a un precio publicado inferior al de Veo estándar. Omni también permite editar un video existente o aportar hasta 10 imágenes de referencia. Ninguno de estos nombres garantiza un tiempo de generación. Compara presupuestos con el mismo modo, duración, resolución y audio."
     },
     "pricingCreditLink": {
       "href": "/pay-as-you-go-ai-video-generator",

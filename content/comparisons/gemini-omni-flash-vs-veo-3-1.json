@@ -81,7 +81,7 @@
       "href": "/pay-as-you-go-ai-video-generator",
       "label": "Cómo funcionan los créditos"
     },
-    "decisionSummary": "Este comparativo enfrenta Omni Flash 1.1 con Veo 3.1 estándar. Ambos ofrecen 4K y audio nativo; elige Omni para editar un vídeo de origen o trabajar con más imágenes de referencia.",
+    "decisionSummary": "Este comparativo enfrenta Omni Flash 1.1 con Veo 3.1 estándar. Ambos ofrecen 4K y audio nativo; elige Omni para editar un video de origen o trabajar con más imágenes de referencia.",
     "meta": {
       "title": "Gemini Omni Flash 1.1 vs Veo 3.1: notas y specs",
       "description": "Compara Gemini Omni Flash 1.1 y Veo 3.1 en vídeo 4K, edición, referencias, audio, controles y precio.",
@@ -89,7 +89,7 @@
     },
     "quickVerdict": {
       "title": "Elige según el siguiente paso de tu proyecto",
-      "body": "Omni permite editar un vídeo de origen y admite hasta 10 imágenes de referencia. Veo 3.1 admite hasta 3 referencias y fotogramas inicial y final. Ampliar un clip Veo no equivale a editar su contenido existente. Compara precios con la misma duración, resolución y audio; el 4K por sí solo no determina qué modelo tiene mejor calidad."
+      "body": "Omni permite editar un video de origen y admite hasta 10 imágenes de referencia. Veo 3.1 admite hasta 3 referencias y fotogramas inicial y final. Ampliar un clip Veo no equivale a editar su contenido existente. Compara precios con la misma duración, resolución y audio; el 4K por sí solo no determina qué modelo tiene mejor calidad."
     },
     "primaryLinksTitle": "Explorar los modelos",
     "primaryLinks": [
