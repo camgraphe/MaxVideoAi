@@ -10,4 +10,6 @@
 - [x] Wire preparation, pricing, confirmation, atomic reservation and trusted provider continuation. Verify actual draft:true and draft_task payloads with disposable PostgreSQL and substituted HTTP only.
 - [x] Expose live availability, constraints, prices and owned lifecycle through discovery and status/history. Test ordinary 480p, unavailable workflows, expiry, foreign owners, concurrent finals and repeats.
 - [x] Update tool guidance, packaged skills/references, documentation and deterministic evaluation fingerprint. Record release/reconnect needs without claiming publication.
-- [ ] Run affected business tests, MCP client checks, lint, TypeScript and build where feasible; review the patch and prepare a GitHub PR without merging.
+- [x] Run affected business tests, MCP client checks, lint, TypeScript and build where feasible; review the patch and prepare a GitHub PR without merging.
+
+Validation: 1,365 MCP/Seedance tests passed, one existing skip; 68 focused checks passed; MCP client checks, TypeScript, lint/exposure, full frontend build and deterministic plugin archive passed. Reviewed PR: https://github.com/camgraphe/MaxVideoAi/pull/460. No paid canary or production action.
