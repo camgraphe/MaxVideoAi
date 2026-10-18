@@ -82,6 +82,7 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
     handleDeleteAsset,
     handleSaveRecentOutput,
   } = useLibraryAssetMutations({
+    userId: user?.id,
     activeKind,
     activeSource,
     copy,

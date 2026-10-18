@@ -760,3 +760,16 @@ can report its loaded window as the total; this local union reviews the new defa
 not the production admin's private configuration. Captured prompts and original media URLs
 come only from public APIs; no production database or publication writes occur. The server
 caches this file in process, so restart the opted-in dev server after recapturing it.
+
+### Library import account lifetime
+
+`LibraryPageClient` keeps its account-keyed subtree. `useLibraryAssetMutations`
+additionally binds each import to that owner, cancels a previous import and aborts
+on owner change or unmount. After image preparation and session lookup it checks
+that the operation is still current and the session belongs to the selecting user.
+Dispatch uses that explicit bearer token with cookies omitted, preventing an ambient
+session from retargeting the file. Server upload authorization remains authoritative.
+Late responses cannot refresh or change the next account's library. Cancellation
+cannot undo an upload already accepted by the server for its original owner.
+`tests/library-import-account.test.ts` covers image decoding, session lookup, all
+three media kinds, account transitions, navigation and replacement imports.

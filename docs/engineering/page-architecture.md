@@ -464,3 +464,21 @@ request describes connector setup when needed without claiming a connection or
 automatic video ingestion. `tests/example-continuation.test.ts` and the real
 reader browser fixture cover request identity, languages, logos, touch geometry,
 keyboard navigation and clipboard failure.
+
+## Password form submissions and contact returns
+
+`usePasswordAuthSubmission` owns the login form's synchronous single-flight lock,
+visible busy state and completion validity. Mode switches are locked until the
+password request settles, including a click on the already-selected tab. The login
+controller keeps validation, consent submission, auth analytics and redirects. A
+dispatched signup must still persist its captured consent after navigation; stale
+completions must not change UI, analytics, redirects or sign out another session. Rejected client loads and SDK calls
+release the lock and show localized retry feedback. `tests/login-password-submission.test.ts`
+exercises the controller and actual form together with controlled identity/network adapters.
+
+Native Contact submissions use a 303 redirect to a GET. The English wrapper forwards
+search parameters to the shared localized page. Middleware preserves the contact
+result parameters and marks result URLs noindex, while metadata remains canonical
+without query parameters. A retry replaces the previous outcome. JSON API responses
+retain their status/payload contract. `tests/contact-form-return.test.ts` covers the
+route, middleware and rendered EN/FR/ES form with offline mail/Slack adapters.

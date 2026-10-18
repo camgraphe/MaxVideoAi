@@ -6888,6 +6888,7 @@
       "ageRequired": "Confirmez que vous respectez l’âge minimum requis."
     },
     "feedback": {
+      "passwordUnavailable": "Impossible de terminer votre demande. Veuillez réessayer.",
       "signingIn": "Connexion…",
       "signinRedirecting": "Connexion réussie. Redirection…",
       "signinSuggestion": "Ces informations ne permettent pas de vous connecter. Si vous êtes nouveau, créez votre compte sans tout ressaisir.",

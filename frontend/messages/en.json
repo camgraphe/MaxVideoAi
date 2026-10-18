@@ -6860,6 +6860,7 @@
       "ageRequired": "Confirm that you meet the minimum age requirement."
     },
     "feedback": {
+      "passwordUnavailable": "We couldn't complete your request. Please try again.",
       "signingIn": "Signing in…",
       "signinRedirecting": "Signed in. Redirecting…",
       "signinSuggestion": "We couldn't sign you in with those details. If you're new, create your account without retyping anything.",

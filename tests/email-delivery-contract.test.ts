@@ -30,5 +30,5 @@ test('reset form does not expose transport errors and blocks concurrent requests
   assert.match(reset, /requestPasswordReset/);
   assert.doesNotMatch(reset, /setError\(error\.message\)/);
   const ui = read('app/(core)/login/_components/LoginAuthSurface.tsx');
-  assert.match(ui, /disabled=\{isResetSending\}/);
+  assert.match(ui, /disabled=\{isResetSending \|\| isPasswordSubmitting\}/);
 });
