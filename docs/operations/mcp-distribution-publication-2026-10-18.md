@@ -47,8 +47,8 @@ confirmation or generation was performed.
 ## Website follow-up and limits
 
 The source website installation pin now selects the verified public `v0.3.8`
-tag. This follow-up still requires normal PR #461 CI and Git deployment before
-that website instruction is live. Its comparison SEO repair is separate from
+tag. The coordinated delivery candidate containing #461 still requires normal
+PR CI and Git deployment before that website instruction is live. Its comparison SEO repair is separate from
 the immutable plugin package; post-release metadata parity remains required.
 
 No installed cache, host evidence status, third-party directory submission or
