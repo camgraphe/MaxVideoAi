@@ -16,9 +16,9 @@ export function buildHomeComparisonData(scores: Map<string, EngineScore>): HomeC
   return {
     left: model('kling-3-pro', 'Kling 3 Pro', '/brand/partners/kling/kling-mark-light.png'),
     opponents: [
-      model('seedance-2-5', 'Seedance 2.5', '/brand/partners/bytedance/bytedance-mark-dark.svg'),
-      model('veo-3-1', 'Veo 3.1', '/brand/partners/google/google-mark-dark.svg'),
-      model('ltx-2-5-pro', 'LTX 2.5 Pro', '/brand/partners/lightricks/lightricks-mark-dark.png'),
+      model('seedance-2-5', 'Seedance 2.5', '/brand/partners/bytedance/bytedance-mark-light.svg'),
+      model('veo-3-1', 'Veo 3.1', '/brand/partners/google/google-mark-light.svg'),
+      model('ltx-2-5-pro', 'LTX 2.5 Pro', '/brand/partners/lightricks/lightricks-mark-light.png'),
     ].filter(model => model.overall !== null && isPublishedComparisonSlug(`kling-3-pro-vs-${model.slug}`)),
   };
 }

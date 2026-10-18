@@ -127,7 +127,7 @@ test('home score motion preserves actual positions and avoids React commits on a
           await assertPositions(staticPage, [84, 92, 0, 0]);
           assert.match(await staticPage.locator('.paired-values').first().textContent() ?? '', /8\.4.*9\.2/);
           assert.match(await staticPage.locator('.paired-values').nth(3).textContent() ?? '', /—.*—/);
-          assert.match(await staticPage.locator('.comparison-overall').textContent() ?? '', /8\.4.*8\.1/);
+          assert.match(await staticPage.locator('.comparison-model-cards').textContent() ?? '', /8\.4.*8\.1/);
         } finally { await context.close(); }
         const shared = await page.evaluate(metrics => (window as any).scoreFixture.shared(metrics), initialMetrics);
         assert.deepEqual([...shared.matchAll(/style="left:([^"]+)"/g)].map(match => match[1]), ['84%', '92%', '0%', '0%']);

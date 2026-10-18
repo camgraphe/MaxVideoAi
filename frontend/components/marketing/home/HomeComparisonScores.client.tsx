@@ -49,14 +49,21 @@ export function HomeComparisonScores({ metrics, label, right, overallLabel, left
   }, [right?.slug]);
 
   return <div ref={root} className="comparison-duel">
-    <div className="comparison-contenders">
-      <div><Image src="/brand/partners/kling/kling-mark-light.png" alt="" aria-hidden="true" width={36} height={36}/><strong><span className="score-left" aria-hidden>● </span>Kling 3 Pro</strong></div>
-      <span className="comparison-vs">VS</span>
-      <div><Image src={right?.logo ?? '/brand/partners/bytedance/bytedance-mark-dark.svg'} alt="" aria-hidden="true" width={36} height={36}/><strong><span className="score-right" aria-hidden>◆ </span>{right?.name ?? 'Seedance 2.5'}</strong></div>
+    <div className="comparison-model-cards">
+      {[
+        { name: 'Kling 3 Pro', logo: '/brand/partners/kling/kling-mark-light.png', overall: leftOverall, side: 'left', marker: '●' },
+        { name: right?.name ?? 'Seedance 2.5', logo: right?.logo ?? '/brand/partners/bytedance/bytedance-mark-light.svg', overall: right?.overall, side: 'right', marker: '◆' },
+      ].map(model => <div key={model.side} className={`comparison-model-card comparison-model-card-${model.side}`}>
+        <div className="comparison-model-heading">
+          <Image src={model.logo} alt="" aria-hidden="true" width={32} height={32}/>
+          <div className="comparison-model-score"><strong>{model.overall?.toFixed(1) ?? '—'}<small>/10</small></strong><span>{overallLabel}</span></div>
+        </div>
+        <div className="comparison-model-name"><span aria-hidden>{model.marker}</span><strong>{model.name}</strong></div>
+      </div>)}
     </div>
-    {overallLabel ? <div className="comparison-overall"><strong>{leftOverall?.toFixed(1) ?? '—'}<small>/10</small></strong><span>{overallLabel}</span><strong>{right?.overall == null ? '—' : right.overall.toFixed(1)}<small>/10</small></strong></div> : null}
+    <div className="comparison-score-panel">
     <p className="comparison-scale">{label}</p>
     <PairedScores metrics={metrics} className="home-paired-scores" motionProgress={{ left: right ? 1 : 'var(--home-score-progress, 1)', right: 'var(--home-score-progress, 1)' }}/>
-
+    </div>
   </div>;
 }

@@ -570,11 +570,11 @@
           "engineLabel": "2. Compara modelos recomendados",
           "engineRecommendations": [
             {
-              "engineId": "minimax-h3-max",
-              "name": "MiniMax H3 Max",
+              "engineId": "minimax-h3",
+              "name": "MiniMax H3",
               "provider": "MiniMax",
-              "bestFor": "Narrativa cinematográfica de catástrofes",
-              "imageAlt": "Una madre y un niño se refugian durante una catástrofe retrofuturista fotorrealista generada con MiniMax H3 Max.",
+              "bestFor": "Acción cinematográfica",
+              "imageAlt": "Un personaje vuela sobre una bahía tropical a gran velocidad en un video de 15 segundos de MiniMax H3.",
               "fallbackPrice": "Precio actualizado",
               "selected": true,
               "scores": [
@@ -592,17 +592,17 @@
                 }
               ],
               "tags": [
-                "Narrativa",
+                "Acción",
                 "Audio nativo",
-                "Acción real"
+                "Cine"
               ]
             },
             {
               "engineId": "seedance-2-5",
-              "imageAlt": "Vista previa de un video con IA de 10 segundos generado con Seedance 2.5.",
+              "imageAlt": "Un gato naranja se enfrenta a dos hombres en una escena de acción generada con Seedance 2.5.",
               "name": "Seedance 2.5",
               "provider": "ByteDance",
-              "bestFor": "Física cinematográfica compleja",
+              "bestFor": "Acción y humor",
               "fallbackPrice": "Precio actualizado",
               "scores": [
                 {
@@ -619,17 +619,17 @@
                 }
               ],
               "tags": [
-                "Física",
+                "Acción",
                 "Audio",
                 "Cine"
               ]
             },
             {
-              "engineId": "wan-3-prime",
-              "imageAlt": "Vista previa de un video con IA de 5 segundos generado con Wan 3 Prime.",
-              "name": "Wan 3 Prime",
+              "engineId": "wan-3",
+              "imageAlt": "Un video musical de 22 segundos de Wan 3 combina sonidos de la ciudad, un percusionista callejero y el metro.",
+              "name": "Wan 3",
               "provider": "Alibaba",
-              "bestFor": "Movimiento artesanal controlado",
+              "bestFor": "Ritmo y movimiento urbano",
               "fallbackPrice": "Precio actualizado",
               "scores": [
                 {
@@ -646,9 +646,9 @@
                 }
               ],
               "tags": [
-                "Artesanía",
+                "Video musical",
                 "Realismo",
-                "Cámara"
+                "Audio"
               ]
             },
             {

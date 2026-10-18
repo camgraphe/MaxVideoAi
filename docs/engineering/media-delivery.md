@@ -720,3 +720,13 @@ can report its loaded window as the total; this local union reviews the new defa
 not the production admin's private configuration. Captured prompts and original media URLs
 come only from public APIs; no production database or publication writes occur. The server
 caches this file in process, so restart the opted-in dev server after recapturing it.
+
+### Homepage visual refresh, 2026-10-18
+
+The curated hero selects MiniMax H3, Seedance 2.5 and Wan 3 through the authored
+`*-home` source registrations; Kling 3 Pro and LTX 2.5 Pro remain unchanged.
+The workspace proof uses real light-theme captures, and the conversation chapter
+reuses Studio's reviewed static capture. See [preview evidence](../qa/home-visual-refresh-2026-10-18.md)
+for source identity, rendition checks, before/after loading measurements and
+validation limits. Originals, public reader ownership and mobile loading intent
+remain unchanged.

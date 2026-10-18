@@ -55,6 +55,21 @@
       "assetId": "hailuo-family-featured",
       "desktop": "https://media.maxvideoai.com/marketing/video-renditions/418de36009b7617838f463ff189d7d26c4765b61e3772fc2fd488ff4426f2fee/public-demo-v1/desktop/fd15df849b6f9f63789afc0d16cbc110765c6eb8cf4cdc56b094239710436dec.mp4",
       "mobile": "https://media.maxvideoai.com/marketing/video-renditions/418de36009b7617838f463ff189d7d26c4765b61e3772fc2fd488ff4426f2fee/public-demo-v1/mobile/139eb87b33a64acef57857d520fd79609f74c3d97452855be91ca1ec357ad46d.mp4"
+    },
+    "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/5632c9c8-b6d1-4b76-85ca-e32c0643e49f.mp4": {
+      "assetId": "minimax-h3-home",
+      "desktop": "https://media.maxvideoai.com/marketing/video-renditions/8e71802020c0f5f8e8461dc6f6b66eecec638577c3a3bce8d285167a67b227db/public-demo-v1/desktop/4d82815723f0c6f23e5a96711a4c41305ea4f9965d1677891ff75d423321bd56.mp4",
+      "mobile": "https://media.maxvideoai.com/marketing/video-renditions/8e71802020c0f5f8e8461dc6f6b66eecec638577c3a3bce8d285167a67b227db/public-demo-v1/mobile/95ad6ca9765edfade512cdbc12f6884caa1b9f9130421b29c8cd010e57022a1e.mp4"
+    },
+    "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6f085820-dad0-46e2-8b3e-7d50094fb2c4.mp4": {
+      "assetId": "seedance-2-5-home",
+      "desktop": "https://media.maxvideoai.com/marketing/video-renditions/296fa69686df3396fe07862d3a4f8b5e8676fa114dcf87c5385ad49e965e4ea8/public-demo-v1/desktop/1c28cc2aba96bb49616192ff56e8126a8fa59324d602c30e4880d58fdac32817.mp4",
+      "mobile": "https://media.maxvideoai.com/marketing/video-renditions/296fa69686df3396fe07862d3a4f8b5e8676fa114dcf87c5385ad49e965e4ea8/public-demo-v1/mobile/aabe3e681a365b9db9383254869ce59db23abe740778d6e896abe3b41b1ce539.mp4"
+    },
+    "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/c63e754c-4e7b-4fbb-82e8-7fc876fda7bb.mp4": {
+      "assetId": "wan-3-home",
+      "desktop": "https://media.maxvideoai.com/marketing/video-renditions/64f10d5ed2a98a6d956bfb6da667f00e413535c66a5e0d1172f7987e059e8feb/public-demo-v1/desktop/08077282dee4189238992fded487a0a05819c4f589834c371cacefdacdc66fab.mp4",
+      "mobile": "https://media.maxvideoai.com/marketing/video-renditions/64f10d5ed2a98a6d956bfb6da667f00e413535c66a5e0d1172f7987e059e8feb/public-demo-v1/mobile/6463e03e42f8fab9f201206fae19bbbb34e903b9d8ba923d70b314ffd5bea63a.mp4"
     }
   }
 }

@@ -349,6 +349,14 @@ The fallback plus final discovery also increases encoded HTML; the comparable
 local browser runs showed overlapping LCP ranges rather than an established LCP
 gain. Keep that measured delivery cost visible in the media guide.
 
+The homepage conversation chapter is owned by `HomeConversationSection`, after the
+tools section. It presents Studio first and composes `HomeAssistantStrip` for
+external MCP assistants in the same server-rendered group. `HomeCreationSection`
+keeps the workspace screenshots and video/image/audio links. Do not duplicate the
+assistant strip or import Studio's authenticated runtime into marketing: the
+chapter uses a lazy, fixed-dimension screenshot and localized `/studio` link.
+`tests/home-redesign-sections-architecture.test.ts` locks this ownership.
+
 ## Models catalogue initial rendering
 
 `prepareModelsCatalogCards` retains one set of current marketing range reads and
