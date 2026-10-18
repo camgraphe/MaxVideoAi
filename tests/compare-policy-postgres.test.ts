@@ -34,6 +34,9 @@ const policyRows = `INSERT INTO app_pricing_rules (id,engine_id,margin_percent,m
 // normalization breaks complete snapshot and localized output parity.
 test('comparison owner shares effective policy, preserving real PG17 tariff transactions and localized output', async t => {
   const database = await startDisposablePostgres('compare-policy');
+  // Both full renders represent the same instant; keep their exported snapshot
+  // timestamp comparable while retaining every pricing and transaction assertion.
+  t.mock.timers.enable({ apis: ['Date'], now: Date.now() });
   const previous = { DATABASE_URL: process.env.DATABASE_URL, NODE_ENV: process.env.NODE_ENV,
     PRICING_SANDBOX: process.env.PRICING_SANDBOX };
   let appPool: Pool | undefined;
@@ -311,6 +314,7 @@ test('comparison owner shares effective policy, preserving real PG17 tariff tran
         node: process.version, platform: platform(), osRelease: release(), cpu: cpus()[0]?.model, samples } });
     }
   } finally {
+    t.mock.timers.reset();
     before = undefined; after = undefined;
     // Always attempt all disposal stages, including if schema/harness setup fails.
     try {

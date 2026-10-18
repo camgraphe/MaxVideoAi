@@ -2,6 +2,15 @@ import type { AppLocale } from '@/i18n/locales';
 
 // Exact capability phrases only: unknown values keep their original meaning.
 const CAPABILITY_COPY: Record<string, { fr: string; es: string }> = {
+  'edit, extend, and conversational refine': { fr: 'modification, extension et retouches par conversation', es: 'edición, extensión y refinamiento mediante conversación' },
+  'extend from one source video': { fr: 'extension à partir d’une vidéo source', es: 'extensión a partir de un video de origen' },
+  'short source video for edit; previous interaction id for refine': { fr: 'courte vidéo source pour la modification ; interaction précédente pour les retouches par conversation', es: 'video de origen corto para editar; interacción anterior para refinar mediante conversación' },
+  'one source clip for extend': { fr: 'un clip source pour l’extension', es: 'un clip de origen para la extensión' },
+  'image-to-video: 1 start image; reference-to-video: 1-3 stills': { fr: 'Image vers vidéo : 1 image de départ ; génération avec références : 1 à 3 images', es: 'Imagen a video: 1 imagen inicial; generación con referencias: de 1 a 3 imágenes' },
+  'supported in current omni 1.1 route': { fr: 'Pris en charge avec Omni 1.1 dans MaxVideoAI', es: 'Compatible con Omni 1.1 en MaxVideoAI' },
+  'supported through native dialogue and audio generation': { fr: 'Pris en charge via le dialogue et l’audio natifs', es: 'Compatible mediante diálogo y audio nativos' },
+  'prompt-based sound, camera and edit directions': { fr: 'Son, caméra et modifications guidés par le prompt', es: 'Sonido, cámara y edición guiados por el prompt' },
+  'no visible maxvideoai watermark; provider/model provenance markers may apply': { fr: 'Aucun filigrane MaxVideoAI visible ; des marqueurs de provenance du fournisseur ou du modèle peuvent être présents', es: 'Sin marca de agua visible de MaxVideoAI; puede haber marcadores de procedencia del proveedor o del modelo' },
   'optional end frame': { fr: 'image de fin facultative', es: 'imagen final opcional' },
   'single start image plus optional end frame': { fr: 'Une image de départ et une image de fin facultative', es: 'Una imagen inicial y una imagen final opcional' },
   'supported through synchronized audio and audio-to-video workflows': { fr: 'Via l’audio synchronisé et la génération audio-vers-vidéo', es: 'Mediante audio sincronizado y generación de audio a video' },

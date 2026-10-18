@@ -4,6 +4,8 @@ export function formatTemplate(template: string, values: Record<string, string>)
 
 export function replaceCriteriaCount(template: string, count: number) {
   return template
+    .replace(/\ban 11-point scorecard\b/g, `a ${count}-criterion scorecard`)
+    .replace(/\b11-point scorecard\b/g, `${count}-criterion scorecard`)
     .replace(/\b11 criteria\b/g, `${count} criteria`)
     .replace(/\b11 critères\b/g, `${count} critères`)
     .replace(/\b11 criterios\b/g, `${count} criterios`);

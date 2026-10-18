@@ -20,6 +20,7 @@ type CompareEngineFamilySelectProps = {
   noResultsLabel: string;
   engineScores?: Record<string, number | null | undefined>;
   buttonClassName?: string;
+  triggerActionLabel?: string;
   onChange: (value: string) => void;
 };
 
@@ -208,6 +209,7 @@ export function CompareEngineFamilySelect({
   noResultsLabel,
   engineScores,
   buttonClassName,
+  triggerActionLabel,
   onChange,
 }: CompareEngineFamilySelectProps) {
   const locale = useLocale();
@@ -322,6 +324,7 @@ export function CompareEngineFamilySelect({
           <span className="truncate">{selectedOption?.label ?? value}</span>
         </span>
         <span className="flex shrink-0 items-center gap-1.5">
+          {triggerActionLabel ? <span className="compare-engine-trigger-action">{triggerActionLabel}</span> : null}
           <ChevronDown aria-hidden="true" className={clsx('h-3.5 w-3.5 text-text-muted transition', open && 'rotate-180')} />
         </span>
       </button>

@@ -30,6 +30,7 @@ export async function buildCompareRouteData({
   const leftPricingEngine = PRICING_ENGINES.get(left.modelSlug);
   const rightPricingEngine = PRICING_ENGINES.get(right.modelSlug);
   const referenceDuration = getCompareReferenceDuration(leftPricingEngine, rightPricingEngine);
+  const priceSnapshotAt = new Date().toISOString();
   const currentSnapshot = createScopedCurrentPublicSnapshot();
   const quotePoints = (engine: EngineCaps, durationSec?: number) =>
     computeComparePricingPoints(engine, durationSec, undefined, currentSnapshot);
@@ -51,7 +52,7 @@ export async function buildCompareRouteData({
   const leftSpecs = buildSpecValues(left, leftKeySpecs);
   const rightSpecs = buildSpecValues(right, rightKeySpecs);
   const pairHasNativeAudio = Boolean(left.engine?.audio) || Boolean(right.engine?.audio);
-  const criteriaCount = pairHasNativeAudio ? 11 : 10;
+  const criteriaCount = pairHasNativeAudio ? 10 : 9;
   const pairHasKling3Native4k =
     left.modelSlug === 'kling-3-4k' || right.modelSlug === 'kling-3-4k';
   const leftOverall = computeOverall(leftScore);
@@ -65,6 +66,8 @@ export async function buildCompareRouteData({
   const rightIsPrelaunch = isPrelaunchAvailability(right);
 
   return {
+    priceSnapshotAt,
+    specSources: [left, right].map(entry => ({ name: entry.marketingName, urls: keySpecs.get(entry.modelSlug)?.sources ?? keySpecs.get(entry.engineId)?.sources ?? [] })),
     criteriaCount,
     hasPrelaunchEngine: leftIsPrelaunch || rightIsPrelaunch,
     left,
