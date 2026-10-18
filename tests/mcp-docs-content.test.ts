@@ -37,7 +37,7 @@ test('localized guides expose current metadata, OAuth, and the copyable producti
     assert.match(markdown, /^description:\s*['"].+['"]$/m);
     assert.match(markdown, /^date:\s*['"]2026-07-14['"]$/m);
     assert.match(markdown, /^updatedAt:\s*['"]2026-10-03['"]$/m);
-    assert.match(markdown, /^authorId:\s*['"]adrien-millot['"]$/m);
+    assert.match(markdown, /^authorId:\s*['"]maxvideoai['"]$/m);
     assert.match(markdown, /^slug:\s*['"]mcp['"]$/m);
     assert.match(markdown, /```text\s+https:\/\/api\.maxvideoai\.com\/mcp\s+```/);
     assert.match(markdown, /OAuth 2\.1/i);

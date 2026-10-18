@@ -6,6 +6,12 @@ The legal identity correction uses the operator's existing administrative record
 
 The historical Sora/Veo/Pika comparison is revised in EN/FR/ES. Existing URLs and original publication dates are preserved. Unreproducible price estimates, obsolete Sora generation instructions and unsupported claims are removed. Its real revision date is 19 October 2026. The previously rewritten Sora access article receives its established 21 September 2026 revision date in front matter so the visible byline, Article schema and social metadata agree. About links to two existing productions, identified as English-language sources in FR/ES.
 
+## Brand presentation and legal disclosure
+
+The operator requested that MaxVideoAI lead the public presentation, with personal identification limited to legal disclosures. About, the shared editorial profile, blog bylines, Benchmark Lab, editorial standards and the podcast case study now use the brand. Article, TechArticle and benchmark authors are typed as Organization rather than Person, matching the visible attribution. No staffing, scale, credentials or customer claims are added. The historical About fragment remains a compatibility anchor; new links use `#maxvideoai`.
+
+The full verified identity and address remain legible in Legal Notice. Terms and Privacy keep a short operator/controller identification and a direct localized Legal Notice link; repeated SIREN/location information is removed from those headers. The Terms header no longer repeats French law/Paris courts. The existing substantive law/jurisdiction section, legal versions and acceptance records are unchanged. This is a presentation correction, not a full legal compliance certification. The podcast retains its original publication date and gains the actual 19 October revision date.
+
 ## Public latency contract v1.1
 
 `benchmark-lab-metrics.ts` reads the existing `generation_timing_samples` table; it does not create or backfill data. Required migration 45 captures one immutable timestamp when a video becomes completed with an output URL. Migration 46 preserves that application-delivery timestamp when adding provider-only duration data.

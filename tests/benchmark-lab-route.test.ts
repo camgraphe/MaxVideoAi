@@ -185,10 +185,9 @@ test('benchmark schema is limited to WebPage and BreadcrumbList with MaxVideoAI 
     url: 'https://maxvideoai.com',
   });
   assert.deepEqual(webPage.author, {
-    '@type': 'Person',
-    name: 'Adrien Millot',
-    jobTitle: 'Founder & Product Lead',
-    url: 'https://maxvideoai.com/about#adrien-millot',
+    '@type': 'Organization',
+    name: 'MaxVideoAI',
+    url: 'https://maxvideoai.com/about#maxvideoai',
   });
   assert.equal(JSON.stringify(schemas).includes('Dataset'), false);
 });
@@ -399,7 +398,7 @@ test('benchmark lab presentation stays split into focused server components', ()
 test('benchmark lab names its real editorial owner without independent-review claims', () => {
   const source = readFileSync(path.join(routeRoot, '_components/BenchmarkEditorialOwnership.tsx'), 'utf8');
   assert.match(source, /profile\.name/);
-  assert.match(source, /profile\.jobTitle/);
+  assert.doesNotMatch(source, /profile\.jobTitle/);
   assert.match(source, /editorial-standards/);
   assert.doesNotMatch(source, /independently reviewed|certified|laboratory/i);
 });

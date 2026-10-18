@@ -101,7 +101,7 @@ test('blog article view owns article rendering surfaces', () => {
 test('blog author component links identity and editorial standards without fake review claims', () => {
   const source = readFileSync(authorBylinePath, 'utf8');
   assert.match(source, /profile\.name/);
-  assert.match(source, /profile\.jobTitle/);
+  assert.doesNotMatch(source, /profile\.jobTitle/);
   assert.match(source, /editorial-standards/);
   assert.doesNotMatch(source, /independently reviewed|external reviewer|certified/i);
 });

@@ -20,26 +20,29 @@ export const METADATA_COPY: Record<AppLocale, { title: string; description: stri
   },
 };
 
-export const HEADER_COPY: Record<AppLocale, { title: string; versionLabel: string; effectiveLabel: string; companyLine: string; contactLabel: string }> = {
+export const HEADER_COPY: Record<AppLocale, { title: string; versionLabel: string; effectiveLabel: string; companyLine: string; mentionsLabel: string; contactLabel: string }> = {
   en: {
     title: 'Terms of Service',
     versionLabel: 'Version',
     effectiveLabel: 'Effective date',
-    companyLine: 'Operator: Adrien Millot, sole proprietor trading as MaxVideoAI (SIREN 753 467 414) · Governing law: France (Paris courts)',
+    companyLine: 'Operator: MaxVideoAI (Adrien Millot, EI).',
+    mentionsLabel: 'Legal notice',
     contactLabel: 'Contact:',
   },
   fr: {
     title: "Conditions d’utilisation",
     versionLabel: 'Version',
     effectiveLabel: "Date d’entrée en vigueur",
-    companyLine: "Exploitant : Adrien Millot, entrepreneur individuel exerçant sous le nom commercial MaxVideoAI (SIREN 753 467 414) · Droit applicable : France (tribunaux de Paris)",
+    companyLine: "Exploitant : MaxVideoAI (Adrien Millot, EI).",
+    mentionsLabel: 'Mentions légales',
     contactLabel: 'Contact :',
   },
   es: {
     title: 'Términos del servicio',
     versionLabel: 'Versión',
     effectiveLabel: 'Fecha de entrada en vigor',
-    companyLine: 'Operador: Adrien Millot, empresario individual que opera con el nombre comercial MaxVideoAI (SIREN 753 467 414) · Ley aplicable: Francia (tribunales de París)',
+    companyLine: 'Operador: MaxVideoAI (Adrien Millot, EI).',
+    mentionsLabel: 'Aviso legal',
     contactLabel: 'Contacto:',
   },
 };
