@@ -50,6 +50,7 @@ async function executePaidVideoContinuation(
     jobId,
     mode,
     providerEnv: 'providerEnv' in options ? options.providerEnv : undefined,
+    seedanceWorkflow: 'seedanceWorkflow' in options ? options.seedanceWorkflow : undefined,
   });
   if (!routeContext.ok) return { status: routeContext.status, body: routeContext.body };
   const requestOptions = buildGenerateRequestOptions({
@@ -105,6 +106,7 @@ async function executePaidVideoContinuation(
     preReservedInitialState: options.preReservedInitialState,
     trustedQuotedBilling: options.trustedQuotedBilling,
     trustedResolvedReferences: options.trustedResolvedReferences,
+    seedanceWorkflow: options.seedanceWorkflow,
   });
 }
 

@@ -88,6 +88,7 @@ export function resolveTrustedPaidGenerateRouteContext(params: {
   jobId: string;
   mode: Mode;
   providerEnv?: VideoProviderRoutingEnv;
+  seedanceWorkflow?: PreparedSeedanceWorkflow;
 }): GenerateRouteContextResult {
   const { body, engine, jobId, mode, providerEnv } = params;
   if (isArchivedGenerationModel(engine.id)) {
@@ -109,7 +110,7 @@ export function resolveTrustedPaidGenerateRouteContext(params: {
       }
       assertBytePlusSeedanceSubmissionEnabled(engine.id);
       resolveBytePlusSeedanceModelId(engine.id, getBytePlusArkConfig());
-      assertBytePlusTransportConfigured(engine.id, mode);
+      assertBytePlusTransportConfigured(engine.id, params.seedanceWorkflow && engine.id === 'seedance-2-5' ? 't2v' : mode);
     }
   } catch (error) {
     if (error instanceof BytePlusModelArkError) {

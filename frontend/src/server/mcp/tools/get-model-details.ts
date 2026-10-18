@@ -25,7 +25,7 @@ export function registerGetModelDetailsTool(
         'Read the selected mode before budgeting or quoting: required fields, settings, reference roles/counts/kinds, per-file and combined durations, audio policy and limits.',
         't2v creates video from text; i2v and i2v_standard animate a first/source image and may accept a last frame; ref2v uses image/video/audio references; fl2v requires first_frame and last_frame images; v2v edits source video; r2v uses ordered reference videos; extend uses ordered clips; a2v follows owned audio; retake replaces part of an owned clip; reframe changes its canvas.',
         'i2v_standard is the published Standard route; check live prices before calling it cheaper.',
-        'Only live generation-enabled modes are executable.',
+        'Only live generation-enabled modes are executable. Read seedanceWorkflow for native Draft availability, constraints and the direct 1080p versus Draft-then-final choice; ordinary 480p is not a finalizable Draft.',
         'Honor assetRequired and conditional assetRequiredWhen: required references must be private MaxVideoAI assets, never arbitrary public HTTPS URLs.',
         'If aspectRatios is empty, omit aspectRatio; if non-empty, include a supported aspectRatio.',
         'When audio is always_generated or unavailable, omit settings.audio; only send it when optional.',

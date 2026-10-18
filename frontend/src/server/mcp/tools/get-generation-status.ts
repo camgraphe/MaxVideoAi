@@ -30,6 +30,7 @@ export function registerGetGenerationStatusTool(
         'For a technical failure inspect the refund state; do not resubmit automatically.',
         'Every replacement is a new paid attempt requiring a fresh quote and approval.',
         'For a completed job use present_generation once to deliver the saved result.',
+        'Native Seedance Draft lineage includes eligibility, actual expiry and any existing finalJobId; finalize only when finalizationAvailable is true, using a separate quote and approval. Recover an existing final instead of resubmitting.',
         'For Audio, preserve the original output and use the same recovery flow.',
       ].join(' '),
       inputSchema: getGenerationStatusInputSchema,

@@ -1,3 +1,4 @@
+import type { PreparedSeedanceWorkflow } from '@/server/seedance-workflow-request';
 import type { EngineCaps } from '@/types/engines';
 
 import type {
@@ -19,6 +20,7 @@ export type PaidVideoRequestBodyExecution = {
   resolvedReferences?: readonly ResolvedReference[];
   engine: EngineCaps;
   canonicalPricing: Record<string, unknown>;
+  seedanceWorkflow?: PreparedSeedanceWorkflow;
 };
 
 type MaterializedReference = {
@@ -217,6 +219,11 @@ export function buildPaidVideoRequestBody(
   if (execution.request.surface !== 'video') {
     throw new Error('A video request is required for video provider projection.');
   }
+  if (execution.request.seedanceWorkflow?.step === 'final') {
+    if (!execution.seedanceWorkflow?.finalFacts) throw new Error('Verified owned Draft facts are required.');
+    return { ...execution.seedanceWorkflow.body, engineId: execution.request.engineId, jobId: execution.quoteId,
+      payment: { mode: 'wallet' }, membershipTier: resolvePaidMembershipTier(execution.canonicalPricing) };
+  }
   const settings = { ...execution.request.settings };
   if (!supportsAspectRatio(execution)) delete settings.aspectRatio;
   const multiPrompt = projectMultiPrompt(settings);
@@ -232,6 +239,7 @@ export function buildPaidVideoRequestBody(
     ...settings,
     ...(Object.keys(extraInputValues).length ? { extraInputValues } : {}),
     ...(multiPrompt?.length ? { multiPrompt } : {}),
+    ...(execution.request.seedanceWorkflow ? { seedanceWorkflow: execution.request.seedanceWorkflow, iterationCount: 1 } : {}),
     inputs: [],
   };
 
