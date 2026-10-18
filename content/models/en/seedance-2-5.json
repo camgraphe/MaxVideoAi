@@ -223,7 +223,7 @@
     "modelSlug": "seedance-2-5",
     "section": {
       "title": "Prompt Lab — Seedance 2.5",
-      "intro": "Build a longer scene in three passes: define the concept, direct timed beats, then lock the constraints that protect continuity.",
+      "intro": "Start with a scene you can describe clearly. Use the tabs to plan the action, timing and details you want to keep, then compare your plan with the example render.",
       "tip": "Give each time range one visible action and one camera instruction.",
       "guide": null,
       "referencesTitle": "A text-first workflow for longer scenes"
@@ -281,8 +281,8 @@
       "promptLabel": "Timed cinematic scene",
       "prompt": "A grounded city sequence unfolds through clear timed beats. Begin with a wide establishing move, follow one readable human action, transition to a closer performance moment, then settle on a composed ending frame. Keep wardrobe, lighting, direction of movement and environmental reactions consistent throughout.",
       "notes": [
-        "Use the visible action and camera transition to check whether each timed beat remains readable.",
-        "The audio label matches the selected render."
+        "Open the example for the original prompt and settings. The templates above are starting points you can adapt.",
+        "For your next attempt, change one visible action or camera instruction. Watch the full result before adding more complexity."
       ],
       "summary": {
         "subject": "One grounded human story in a city setting",
@@ -308,7 +308,7 @@
     "showWhenEmpty": false,
     "section": {
       "title": "Real Seedance 2.5 outputs",
-      "intro": "Review accepted MaxVideoAI renders that test longer storytelling, controlled camera movement, physical coherence and natural human performance.",
+      "intro": "Open a clip to see its original prompt and settings. Watch the action through to the end, then choose one thing you would change for your own scene.",
       "defaultCtaLabel": "View all Seedance examples",
       "recreateLabel": null
     },
@@ -330,32 +330,32 @@
       {
         "id": "continuity",
         "icon": "users",
-        "title": "Scene continuity",
-        "body": "Inspect how people, wardrobe and setting carry across longer sequences."
+        "title": "Keep the person recognizable",
+        "body": "Check the face and clothing at the start, middle and end, especially when the person turns or leaves the frame."
       },
       {
         "id": "camera",
         "icon": "maximize",
-        "title": "Camera control",
-        "body": "Follow framing and camera movement from one story beat to the next."
+        "title": "Follow the camera",
+        "body": "Watch how the framing changes. For your own version, try changing one camera instruction while keeping the action."
       },
       {
         "id": "physics",
         "icon": "zap",
-        "title": "Physical coherence",
-        "body": "Observe motion, contact and environmental reactions through the scene."
+        "title": "Look for believable contact",
+        "body": "Watch hands, feet and props when they touch or move. Check the moment of contact, not just the opening frame."
       },
       {
         "id": "dialogue",
         "icon": "audio",
-        "title": "Human performance",
-        "body": "Evaluate gestures, expressions and short spoken moments where present."
+        "title": "Listen as well",
+        "body": "For examples with sound, check whether speech, ambience and visible actions line up."
       },
       {
         "id": "production",
         "icon": "shield",
-        "title": "Curated evaluation",
-        "body": "Every example shown here is a real MaxVideoAI render."
+        "title": "Try one change",
+        "body": "Open the original prompt and settings, adapt one detail, then review the new quote before generating."
       }
     ],
     "fallbackItems": null

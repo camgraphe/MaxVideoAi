@@ -15,6 +15,15 @@ export interface ContentFrontMatter {
   updatedAt?: string;
   image?: string;
   imagePosition?: string;
+  /** Visible editorial copy, independent of search metadata. */
+  topic?: string;
+  lead?: string;
+  walkthrough?: {
+    title: string;
+    description: string;
+    steps: { title: string; caption: string; image: string; alt: string; video?: string }[];
+    note: string;
+  };
   keywords?: string[];
   slug: string;
   excerpt?: string;

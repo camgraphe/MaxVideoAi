@@ -223,7 +223,7 @@
     "modelSlug": "seedance-2-5",
     "section": {
       "title": "Prompt Lab — Seedance 2.5",
-      "intro": "Construye una escena más larga en tres pasadas: define el concepto, dirige los momentos temporales y fija las restricciones que protegen la continuidad.",
+      "intro": "Empieza con una escena que puedas describir con claridad. Usa las pestañas para planificar la acción, el ritmo y los detalles que quieres conservar; después compara el plan con el ejemplo.",
       "tip": "Asigna una acción visible y una instrucción de cámara a cada tramo temporal.",
       "guide": null,
       "referencesTitle": "Un flujo desde texto para escenas más largas"
@@ -281,8 +281,8 @@
       "promptLabel": "Escena cinematográfica pautada",
       "prompt": "Una secuencia urbana realista se desarrolla mediante momentos claramente pautados. Empieza con un movimiento general de apertura, sigue una acción humana legible, pasa a un momento de interpretación más cercano y termina en un encuadre compuesto. Mantén coherentes el vestuario, la luz, la dirección del movimiento y las reacciones del entorno.",
       "notes": [
-        "Usa la acción visible y la transición de cámara para comprobar si cada momento se entiende con claridad.",
-        "El estado del audio coincide con el render seleccionado."
+        "Abre el ejemplo para ver el prompt original y los ajustes. Las plantillas anteriores son puntos de partida que puedes adaptar.",
+        "En el siguiente intento, cambia una acción visible o indicación de cámara. Mira el resultado completo antes de complicar el plano."
       ],
       "summary": {
         "subject": "Una historia humana realista en un entorno urbano",
@@ -308,7 +308,7 @@
     "showWhenEmpty": false,
     "section": {
       "title": "Renders reales de Seedance 2.5",
-      "intro": "Revisa renders publicados de MaxVideoAI que prueban narración larga, cámara controlada, coherencia física e interpretación humana natural.",
+      "intro": "Abre un clip para consultar el prompt original y los ajustes. Mira la acción hasta el final y elige un detalle que cambiarías para tu propia escena.",
       "defaultCtaLabel": "Ver todos los ejemplos de Seedance",
       "recreateLabel": null
     },
@@ -330,32 +330,32 @@
       {
         "id": "continuity",
         "icon": "users",
-        "title": "Continuidad de escena",
-        "body": "Observa cómo personas, vestuario y entorno se mantienen en secuencias más largas."
+        "title": "Mantener al personaje reconocible",
+        "body": "Compara la cara y la ropa al principio, a mitad y al final, especialmente cuando la persona gira o sale del plano."
       },
       {
         "id": "camera",
         "icon": "maximize",
-        "title": "Control de cámara",
-        "body": "Sigue el encuadre y el movimiento de cámara de un momento narrativo al siguiente."
+        "title": "Seguir la cámara",
+        "body": "Observa cómo cambia el encuadre. Para tu versión, prueba a modificar una indicación de cámara manteniendo la acción."
       },
       {
         "id": "physics",
         "icon": "zap",
-        "title": "Coherencia física",
-        "body": "Observa el movimiento, el contacto y las reacciones del entorno durante la escena."
+        "title": "Revisar los contactos",
+        "body": "Mira manos, pies y objetos cuando se tocan o se mueven. Revisa el contacto, no solo el primer fotograma."
       },
       {
         "id": "dialogue",
         "icon": "audio",
-        "title": "Interpretación humana",
-        "body": "Evalúa gestos, expresiones y momentos hablados breves cuando estén presentes."
+        "title": "Escuchar también",
+        "body": "En los ejemplos con sonido, comprueba si la voz, el ambiente y las acciones visibles encajan."
       },
       {
         "id": "production",
         "icon": "shield",
-        "title": "Evaluación editorial",
-        "body": "Cada ejemplo que se muestra aquí es un render real de MaxVideoAI."
+        "title": "Probar un cambio",
+        "body": "Abre el prompt original y los ajustes, adapta un detalle y revisa el nuevo presupuesto antes de generar."
       }
     ],
     "fallbackItems": null
