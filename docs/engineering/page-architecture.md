@@ -49,6 +49,20 @@ If that markup contract changes, recheck equal-specificity font/size utilities:
 the article sheet can arrive after the global utilities during navigation, so
 the old duplicate bundle's utility ordering is not a contract for future markup.
 
+### Optional Markdown article walkthrough
+
+Markdown frontmatter may provide `topic`, `lead` and `walkthrough` for a practical
+article. These fields own visible editorial copy only: existing `title`,
+`description`, `image`, canonical and hreflang continue to own search/share
+metadata. `blog-post-view.tsx` composes the server `BlogWalkthrough` outside
+`.blog-prose` and replaces the decorative hero only when a walkthrough exists.
+Articles without these fields keep their existing presentation. Authored media
+must have visible captions and alt text; links expose the full reference image.
+Use the shared `PublicVideoPlayer` (manual play, `preload="none"`) and reserved
+16:9 geometry, not a separate player or autoplay. A walkthrough is an explanatory
+sequence, not evidence of a controlled benchmark; distinguish recorded prompts
+from suggested prompts in the authored article.
+
 ## Server Page Pattern
 
 Use this for marketing, SEO, model, comparison, docs, examples, legal, and admin server pages.

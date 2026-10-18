@@ -5,7 +5,7 @@ description: >-
   avant de passer aux prompts, variations de scènes, retouches et flux vidéo
   à partir d’une image fixe.
 date: '2026-03-22'
-updatedAt: '2026-03-23'
+updatedAt: '2026-10-18'
 image: 'https://media.maxvideoai.com/marketing/marketing/1f327900-618e-41aa-b792-47b41a4c0cbb.jpg'
 imagePosition: 'center top'
 keywords:
@@ -18,172 +18,100 @@ slug: comment-creer-des-personnages-ia-coherents-dans-les-images-et-la-video
 lang: fr
 canonical: 'https://maxvideoai.com/fr/blog/comment-creer-des-personnages-ia-coherents-dans-les-images-et-la-video'
 canonicalSlug: how-to-create-consistent-ai-characters
+topic: "Cohérence des personnages"
+lead: "Vous avez un personnage qui vous plaît. Voici comment le garder reconnaissable dans l’image suivante, puis vérifier le résultat avant de passer à la vidéo."
+walkthrough:
+  title: "Une référence, reprise dans une image puis un clip"
+  description: "Cet exemple existant de Character Builder suit une femme aux cheveux roux bouclés, avec un foulard à motifs et un grand t-shirt sombre. Comparez ces détails à chaque étape."
+  steps:
+    - title: "La référence"
+      caption: "Une planche de huit vues permet de comparer le visage, la tenue et la silhouette sous plusieurs angles."
+      image: "https://media.maxvideoai.com/marketing/marketing/bfe7f0d7-ed39-4953-863c-ec2be73f3065.png"
+      alt: "Planche d’une femme rousse avec un foulard, un t-shirt sombre et un pantalon vert."
+    - title: "La scène"
+      caption: "Placez le personnage dans un autre décor avec Nano Banana. Comparez le visage et les vêtements à la planche avant de passer à la vidéo."
+      image: "https://media.maxvideoai.com/marketing/marketing/ca5357cf-ec09-4327-bc18-03eeff7e7a66.jpg"
+      alt: "Image de scène issue de la planche dans le parcours Nano Banana publié."
+    - title: "Le mouvement"
+      caption: "Lancez cet exemple existant réalisé avec LTX 2.3 Pro. Observez le visage, le foulard et le t-shirt pendant tout le mouvement."
+      image: "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/355c847c-7866-43b9-af28-85d6a64dfec8.jpg"
+      alt: "Exemple LTX 2.3 Pro faisant passer le personnage d’une image de référence au mouvement."
+      video: "https://media.maxvideoai.com/renders/marketing/5816f421-1b4f-456b-aa53-229fa6742cbd.mp4"
+  note: "Cet exemple montre la référence, l’image de scène et la vidéo. Le résultat dépend de vos images et du mouvement demandé : regardez le clip entier avant de le réutiliser."
 ---
 
-Si vous voulez que la même personne, mascotte ou héroïne revienne d’une image à l’autre, le travail de cohérence doit commencer **avant** la génération des scènes.
+Choisissez une référence que vous aurez envie de réutiliser. Changez ensuite la scène autour du personnage, vérifiez l’image obtenue, puis passez à la vidéo quand ce cadre vous convient. Répéter une description seule laisse au modèle la possibilité de réinterpréter le visage et la tenue.
 
-La manière la plus directe d’obtenir des personnages IA cohérents est simple :
+**Il vous manque encore la référence ?** [Character Builder](/fr/outils/character-builder) crée un portrait de référence ou une planche de huit vues. Ce guide explique comment réutiliser ce résultat et repérer ce qui change.
 
-1. définir le personnage une fois
-2. transformer cette identité en référence réutilisable
-3. réutiliser cette référence dans les images, les retouches et la préparation vidéo
+## Choisir la référence adaptée au plan
 
-Dans MaxVideoAI, cette étape de construction de référence se fait avec **[Consistent Character AI](/fr/tools/character-builder)**.
+| Votre prochain plan | Point de départ | À vérifier avant de générer |
+| --- | --- | --- |
+| Un gros plan ou un personnage qui parle | Un portrait net | Forme du visage, implantation des cheveux, yeux et signes distinctifs |
+| Un plan large avec une tenue reconnaissable | Une vue en pied | Silhouette, vêtements, chaussures et accessoires |
+| Plusieurs angles ou un storyboard | La planche pour préparer, puis la vue adaptée | Face, profil et dos correspondent au même personnage |
 
-![Portrait anchor réutilisable préparé à partir de la même identité personnage.](/assets/blog/character-builder/consistent-character-portrait-anchor.webp)
+Une planche de huit vues aide à voir le personnage dans son ensemble. Ce n’est pas forcément le meilleur fichier à envoyer à chaque modèle. Certains peuvent la traiter comme un collage ou mélanger les détails de plusieurs cases. Choisissez le portrait ou la vue en pied adapté au plan et vérifiez les entrées acceptées par le modèle.
 
-*Le portrait anchor est la référence la plus légère : idéal quand la continuité du visage compte avant d’ouvrir vers des scènes plus larges ou la vidéo.*
+Pour préparer la planche, consultez le [guide du générateur de fiches de personnage](/fr/blog/generateur-de-fiche-personnage-ia).
 
-## Pourquoi les personnages IA dérivent
+## Construire la scène suivante en quatre étapes
 
-La plupart des générateurs savent produire une image forte. Ils deviennent moins fiables quand vous leur demandez de refaire le même personnage dans d’autres conditions.
+### 1. Choisir l’identité à conserver
 
-Les causes les plus fréquentes sont concrètes, pas mystérieuses. À chaque nouveau prompt, le modèle a une nouvelle occasion de réinterpréter le personnage :
+Prenez une photo nette ou un rendu précédent qui vous convient. Décidez quels éléments doivent rester : visage, cheveux, tenue, silhouette ou accessoire. Si les vêtements comptent, utilisez une vue où ils sont visibles. Un visage minuscule ou masqué est une référence fragile.
 
-- le prompt dérive d’une scène à l’autre
-- la pose et le cadrage déstabilisent l’identité
-- la tenue est réinventée quand le cadre s’élargit
-- les accessoires et la silhouette sont oubliés ou remplacés
-- la structure du visage change avec la lumière ou l’angle
-- une image fixe faible devient encore moins stable une fois animée
+### 2. Décrire ce qui change dans la scène
 
-En pratique, c’est souvent le visage qui glisse d’abord, puis la garde-robe et la silhouette suivent. Un personnage qui semblait cohérent en gros plan devient soudain moins sûr dès qu’on demande un plan plus large, une autre pose ou une autre ambiance.
+Joignez la référence dans un mode qui accepte une image. Décrivez l’action, le décor et le cadrage séparément des éléments à conserver. Commencez par un changement pour repérer à quel moment le personnage dérive.
 
-Cette dérive apparaît généralement dans :
+**Prompt à adapter, et non prompt d’origine de l’exemple ci-dessus :**
 
-- les détails du visage et des cheveux
-- la silhouette des vêtements
-- les accessoires
-- les proportions du corps
-- la continuité de la première image quand on passe à la vidéo
+> Utilise l’image jointe comme référence du personnage. Conserve ses cheveux roux bouclés, son foulard à motifs, son grand t-shirt sombre et son pantalon cargo vert. Dans un skatepark, elle se tourne vers une amie hors champ et soulève une oreillette de son casque. Cadrage à la taille, caméra à hauteur des yeux, lumière douce de fin d’après-midi. Garde le visage bien visible.
 
-Si chaque scène doit redécouvrir le personnage, les prompts suivants deviennent plus coûteux et moins fiables. La vidéo aggrave encore le problème, parce que le mouvement amplifie toute ambiguïté déjà présente dans l’image fixe.
+Adaptez le décor et l’action à votre histoire. Si le premier résultat change le visage, simplifiez l’angle ou la composition avant d’ajouter des instructions.
 
-## Quel matériau de départ est suffisant
+### 3. Comparer l’image à la référence
 
-Une bonne démarche de cohérence personnage n’a pas besoin d’un matériau source compliqué, mais il lui faut un point de départ identitaire clair.
+Regardez les deux images côte à côte. Comparez la mâchoire, le nez, les cheveux, la forme des vêtements et les détails qui rendent le personnage reconnaissable. Des couleurs proches ne suffisent pas. Corrigez ou écartez une image qui perd déjà l’identité avant de l’animer.
 
-Utilisez **une photo d’identité** quand le visage est déjà bien défini et que votre priorité est de garder le personnage reconnaissable plus tard.
+### 4. Animer l’image qui fonctionne
 
-Ajoutez **une référence de tenue** quand les vêtements, la silhouette ou des détails de style doivent survivre à des plans plus larges et à des changements de scène.
+En image-vers-vidéo, utilisez l’image de scène retenue comme première image. Commencez par un plan court avec une action simple. Vérifiez le début, le milieu et la fin, surtout quand la tête tourne, qu’une main passe devant le visage ou que le personnage devient petit dans le cadre.
 
-Utilisez **un rendu existant de confiance** quand une image capture déjà le bon visage, le bon style ou la bonne mascotte, et que vous voulez ancrer les générations suivantes sur cette version.
+Un mode vidéo à images de référence n’est pas identique à un mode image-vers-vidéo. Vérifiez les [modes et limites du modèle choisi](/fr/modeles) avant d’envoyer une planche ou plusieurs images. Une référence guide le résultat ; elle ne verrouille pas chaque image du clip.
 
-Partez d’un **concept créé à partir de zéro** quand il n’existe pas encore de photo, mais que la direction du personnage est déjà assez claire pour être décrite proprement.
+## Corriger le problème que vous voyez
 
-En pratique, un bon matériau de départ est tout ce qui permet de verrouiller l’identité avant de demander au modèle de produire davantage de scènes.
+| Ce qui change | Prochaine chose à essayer |
+| --- | --- |
+| Le visage ne ressemble plus au personnage après un changement d’angle | Utiliser une vue plus nette et plus proche de l’angle souhaité ; simplifier le plan |
+| Le visage correspond, mais la tenue change | Ajouter une vue en pied adaptée si le modèle l’accepte, ou corriger l’image avant l’animation |
+| La grille de la planche apparaît dans le résultat | Utiliser une seule vue pertinente plutôt que la planche entière |
+| L’image est bonne, mais le visage dérive dans la vidéo | Réduire le mouvement ou les passages devant le visage et tester un plan plus court |
+| De petits accessoires disparaissent | Les rendre visibles dans la référence et vérifier s’ils sont essentiels à ce cadrage |
 
-## Ce que vous obtenez
+Ce sont des pistes de correction, pas des résultats garantis. Gardez la même référence et changez un élément à la fois pour voir ce qui aide.
 
-Le but n’est pas seulement de générer une belle image. Le but est de créer une référence que vous pouvez continuer à réutiliser.
+## Questions avant la prochaine génération
 
-Dans la plupart des cas, on choisit entre deux sorties utiles :
+### Combien d’images de référence faut-il ?
 
-- un **portrait de référence** pour les gros plans, les prompts et les retouches centrées sur le visage
-- une **fiche personnage 8 panneaux** avec quatre vues plein pied et quatre gros plans assortis
+Commencez par une image nette pour un mode qui accepte une seule image. Ajoutez une vue si elle résout un problème précis, comme un profil ou une tenue dans un plan large. Vérifiez d’abord la limite du modèle. Davantage de références ne garantit pas davantage de cohérence.
 
-C’est la distinction la plus importante à garder en tête. Le but n’est pas “faire la scène”. Le but est “verrouiller le personnage”.
+### Faut-il envoyer la planche entière ?
 
-![Fiche personnage 8 panneaux générée depuis Character Builder.](/assets/blog/character-builder/consistent-character-eight-panel-sheet.webp)
+Gardez la planche complète comme référence de conception. Pour générer, choisissez le portrait, la vue en pied ou la case qui correspond au plan et aux entrées acceptées. La planche aide à préparer ; elle ne garantit pas que le modèle interprétera correctement les huit vues.
 
-*La fiche 8 panneaux est la référence large. Le portrait de référence est l’ancrage d’identité le plus resserré.*
+### Pourquoi le visage change-t-il au passage à la vidéo ?
 
-## Faut-il un portrait de référence ou une fiche 8 panneaux ?
+Vérifiez d’abord l’image de départ. Un visage petit ou masqué, un nouvel angle ou un mouvement exigeant compliquent la continuité. Essayez un plan court et plus simple, puis contrôlez le visage et la tenue sur tout le clip avant de poursuivre la séquence.
 
-C’est la première vraie décision du processus.
+### Est-ce nécessaire pour une seule image ?
 
-Utilisez un **portrait de référence** quand :
+Pas forcément. Si le personnage ne réapparaît jamais, un prompt direct peut suffire. Une référence réutilisable devient surtout utile quand une personne, une mascotte ou une tenue doit revenir.
 
-- le visage est le principal risque de dérive
-- les plans resteront serrés
-- les prompts et retouches resteront relativement proches
-- vous voulez une approche plus légère et plus rapide
-- vous n’avez pas encore besoin d’une couverture plein pied
+## Préparer le prochain élément utile
 
-Utilisez une **fiche personnage 8 panneaux** quand :
-
-- la continuité plein pied compte
-- la tenue et la silhouette doivent rester cohérentes
-- le personnage doit revenir dans plusieurs types de scènes
-- vous avez besoin d’une meilleure référence pour les planches, retouches ou la préparation vidéo
-- une référence large est plus utile qu’une seule ancre visage
-
-La règle la plus simple est la suivante :
-
-- utilisez un portrait de référence quand le problème d’identité est surtout un problème de visage
-- utilisez une fiche 8 panneaux quand l’identité est aussi un problème de corps, de garde-robe et de silhouette
-
-Si vous voulez une explication plus détaillée du format, lisez **[Générateur de fiche personnage IA : construire une référence 8 panneaux](/fr/blog/generateur-de-fiche-personnage-ia)**.
-
-## Où réutiliser la référence
-
-Une fois la référence créée, la suite devient plus simple.
-
-Vous pouvez la réutiliser dans :
-
-- des scènes suivantes où le wording des prompts change
-- des retouches d’image et variations de scène
-- du travail de prévisualisation ou de planning
-- des visuels récurrents de campagne ou de série
-- la préparation de la première image avant la vidéo
-
-C’est pour cela que la référence doit venir en premier. Elle donne aux scènes suivantes quelque chose de stable sur quoi construire, au lieu de demander à chaque prompt de reconstruire le même personnage.
-
-Dans MaxVideoAI, cela signifie généralement réutiliser la référence dans **[Image](/app/image)**, l’affiner pour Nano Banana, puis l’emporter vers des outils vidéo qui acceptent une image fixe en entrée.
-
-## Quand cette approche bat le prompting direct
-
-Une approche fondée uniquement sur les prompts peut fonctionner pour des images isolées.
-
-Elle devient moins fiable dès que le personnage doit revenir plus d’une fois.
-
-C’est généralement à ce moment-là que la continuité en pur prompting commence à casser :
-
-- personnages récurrents d’une scène à l’autre
-- porte-parole de marque ou mascottes
-- continuité narrative
-- cohérence personnage en image-vers-vidéo
-
-Dans ces cas-là, la meilleure approche consiste à résoudre l’identité une fois, garder une référence stable, puis la réutiliser chaque fois que le personnage revient.
-
-Le prompting direct reste souvent suffisant pour :
-
-- de l’exploration visuelle libre
-- un poster unique
-- des sujets non récurrents
-- de l’idéation très en amont avant validation du personnage
-
-Mais dès que la continuité devient importante, une référence réutilisable bat généralement les prompts répétés, parce qu’on cesse de demander à chaque scène de redécouvrir qui est le personnage.
-
-## Quand vous n’avez pas besoin de cette approche
-
-Vous n’avez probablement pas besoin d’une référence personnage réutilisable quand :
-
-- vous n’avez besoin que d’une seule image principale
-- le sujet ne reviendra pas ensuite
-- vous êtes encore dans une phase d’exploration libre et l’identité n’est pas validée
-- la variété compte plus que la continuité
-
-Dans ces cas-là, une approche plus simple fondée sur les prompts peut suffire. Cette méthode vaut surtout l’effort supplémentaire quand la continuité est l’objectif principal, pas seulement la génération d’image.
-
-## Erreurs fréquentes
-
-### Traiter chaque scène comme une génération neuve
-
-C’est la manière la plus rapide de perdre la continuité.
-
-### Utiliser le style de scène comme identité
-
-L’environnement, le lensing et l’ambiance peuvent changer. La référence personnage doit survivre à ces variations.
-
-### Passer à la vidéo avant que la référence soit claire
-
-Si l’image fixe est faible, la génération de mouvement doit inventer trop de choses.
-
-## Conclusion
-
-Si votre objectif est seulement un poster unique, vous n’avez peut-être pas besoin d’une référence réutilisable.
-
-Si votre objectif est un personnage qui doit revenir dans plusieurs scènes, retouches ou clips, commencez par une référence claire.
-
-Dans MaxVideoAI, cela signifie en général créer la référence dans **[Consistent Character AI](/fr/tools/character-builder)**, puis passer dans **[Image](/app/image)** et **[Video](/app)** une fois l’identité stabilisée.
+Si le personnage reste à créer, [ouvrez Character Builder](/app/tools/character-builder). Si vous avez déjà la référence, [créez la scène suivante dans Image](/app/image). Quand cette image convient, [choisissez un modèle vidéo](/fr/modeles) avec le mode d’entrée adapté au plan.
