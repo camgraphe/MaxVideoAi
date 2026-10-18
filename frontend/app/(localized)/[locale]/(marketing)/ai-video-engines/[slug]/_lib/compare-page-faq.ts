@@ -82,9 +82,7 @@ export function buildCompareFaqItems({
     return `${formatEngineName(entry)} — ${specLabels.maxResolution}: ${formatFaqValue(specs.maxResolution)}; ${durationCopy.newClip}: ${specs.maxDuration}. ${compareDurationDetails(specs, activeLocale).join('; ')}. ${specs.extensionDuration ? `${durationCopy.extension}: ${formatFaqValue(specs.extensionDuration)}. ` : ''}${specLabels.aspectRatios}: ${specs.aspectRatios}. ${durationCopy.conditions}`;
   });
   const capabilityTemplates = {
-    value:
-      compareCopy.faq?.capabilityDiff ??
-      '{label}: {left} is {leftValue} vs {right} is {rightValue}.',
+    value: '{label} — {left}: {leftValue}; {right}: {rightValue}.',
     pending:
       compareCopy.faq?.capabilityPending ??
       '{label}: both are {status}.',

@@ -374,3 +374,5 @@
 .marketing-site .compare-spec-sources{padding:14px 16px;font-size:11px;line-height:1.7;color:var(--compare-muted)}
 .marketing-site .compare-spec-sources p+p{margin-top:6px}
 .marketing-site .compare-spec-sources a{text-decoration:underline;text-underline-offset:3px}
+
+.marketing-site .compare-spec-details>summary{padding:14px 16px}
