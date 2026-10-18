@@ -1,11 +1,10 @@
-# Public n8n and purchase clarifications — 18 October 2026
+# Public purchase and creation clarifications — 18 October 2026
 
 ## Scope
 
-Two bounded changes from the owner-provided Clarity brief: correct n8n
-publication copy and explain distinct credit balances before purchase.
-The product-ad demonstration is deferred at the owner’s request; the existing
-ads guides remain unchanged. No billing rule, tariff, generation
+Three bounded changes from the owner-provided Clarity brief: correct n8n
+publication copy, explain distinct credit balances before purchase, and add an
+existing product-video case to the ads guide. No billing rule, tariff, generation
 workflow, model ranking or public URL is changed. No paid generation, template
 submission or suspended campaign was started.
 
@@ -56,38 +55,50 @@ remain subject to review under `/return-policy`, including existing consumer
 rights and promotional exclusions. No refund eligibility or banking timeline
 was broadened.
 
-## Deferred product-ad demonstration
+## Ads case and provenance
 
-The owner requested a completely different creative concept from the watch
-video and wants to develop it together in a later session. The proposed watch
-case and its update dates have been removed from all three ads guides. No
-replacement concept, generation or campaign is included in this release.
+`content/{en,fr,es}/best-for/ads.mdx` adds the owned watch case inside the existing
+guide. Source: [the September demo record](2026-09-05-mcp-project-demo.md).
+That record contains the generated starting image's public-use approval, the
+model choice, exact quote approval, the accepted job and the owner's acceptance
+after playback. The guide publishes neither private library assets nor account
+identifiers.
 
-## Credit-policy follow-up
+- Public reference: `/media/mcp/project-demo/watch-static.webp`.
+- Exact original result: `https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/0df5ede1-5a37-4b32-b4bf-2a8c67b69448.mp4`.
+- Wan 3 Prime, same reference in first/last-frame roles, 16:9, six seconds,
+  1080p, audio off. Direction is labelled as a requested motion, not an assertion
+  that the output perfectly obeyed it.
+- Approved historical media quote: USD 2.08. Earlier completed FLUX.3 attempt:
+  USD 2.16, rejected for motion quality. Total: USD 4.24. These are not current
+  quotes, a comparison benchmark or assistance charges.
+- The local published derivative probes as H.264, 1920×1080, 30 fps, exactly
+  six seconds and no audio stream. The exact original was also probed and played
+  through the guide link: it is **1918×1080**, six seconds, 30 fps, with no audio
+  stream. The guide distinguishes the requested 16:9/1080p settings from those
+  original dimensions, rather than borrowing the display derivative’s width.
+  Six sampled display frames retain the recognisable
+  strap/case and show the coloured light sweep. Fine dial details still require
+  inspection. The source has no brand logo, so it cannot prove logo fidelity.
+- Reference and both original/derived public videos responded HTTP 206 to a
+  bounded Range request. The original returned `video/mp4` and a total length of
+  10,902,083 bytes; the existing local display copy is 4,221,289 bytes.
+- Localized Studio links explain the existing Open Studio → sign-in → product-ad
+  conversation path. The current marketing entry uses `starter=product-ad`.
+  Readers attach their own authorized image, review current reference support,
+  approve a fresh exact quote and download an individual clip. No assembled
+  timeline-film export is promised.
 
-This release preserves existing purchase conditions and ledger behavior. A
-24-month expiry has not been adopted. Before considering a future expiry rule,
-measure outstanding purchased balances and their age separately from promotional
-credits; do not infer the age or funding category of a remaining balance from
-account inactivity alone. Define future promotional validity explicitly and
-review service-closure terms and reimbursement obligations with French legal
-advice before changing the commercial policy. Existing balances are not expired
-or reclassified by this change.
+The guide adds ordinary links, not another video reader or download. Existing
+media bytes, posters, loading policy, rankings, canonical URLs and schema owners
+are preserved. No loading-performance improvement is claimed.
 
 ## Verification
 
-Review: [PR #458](https://github.com/camgraphe/MaxVideoAi/pull/458). The owner
-authorized publication of the n8n and credit clarifications. The release must
-still pass the current CI and production-alignment gates before merge. Media
-expiry/inactivity and unspecified promotional-validity decisions remain open.
-
-The reduced candidate passed 61 focused public-content tests with zero failures,
-including the restored ads guides, MCP/n8n copy, PAYG rendering and return policy.
-`git diff --check` passed; all three ads guides match `origin/main` exactly.
-
-The following validation describes the earlier candidate, which also included
-the now-withdrawn ads example. Fresh validation for the reduced release is
-recorded in the PR checks and release evidence.
+Review: [PR #458](https://github.com/camgraphe/MaxVideoAi/pull/458). This is a
+review candidate; it has not been merged or deployed to production. The media
+expiry/inactivity and unspecified promotional-validity decisions above remain
+with the product owner.
 
 Evidence logs and screenshots are retained under
 `.reports/clarity-public-clarifications/` in the isolated
@@ -123,7 +134,6 @@ The first complete validation attempt had 8,782 passing tests, four skips and
 three failures: two stale editorial assertions, now corrected, and one
 financial fixture invalidated by committing while it was running (the fixture
 binds its release to Git HEAD). The complete rerun passed on a stable commit.
-The reduced release removes the proposed watch case from EN/FR/ES and updates
-this evidence record. The latest required Quality CI state is recorded in
-PR #458 and must pass before any merge. No financial assertion or CI requirement
-was weakened.
+The final follow-up changes only the model-choice explanation and this evidence
+record. The latest required Quality CI state is recorded in PR #458 and must
+pass before any merge. No financial assertion or CI requirement was weakened.
