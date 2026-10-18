@@ -6,18 +6,90 @@ import test from 'node:test';
 import { BEST_FOR_PAGES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/best-for/[usecase]/_lib/best-for-detail-config.ts';
 
 const EXPECTED_SHORTLISTS: Record<string, string[]> = {
-  'image-to-video': ['seedance-2-5', 'minimax-h3', 'grok-imagine-video-1-5', 'wan-3-prime', 'kling-o3-pro'],
-  'cinematic-realism': ['seedance-2-5', 'wan-3-prime', 'minimax-h3-max', 'minimax-h3', 'kling-o3-pro'],
-  'character-reference': ['seedance-2-5', 'kling-o3-pro', 'minimax-h3', 'wan-3-prime', 'grok-imagine-video-1-5'],
-  'reference-to-video': ['seedance-2-5', 'minimax-h3', 'wan-3-prime', 'kling-o3-pro', 'grok-imagine-video-1-5'],
-  'multi-shot-video': ['seedance-2-5', 'wan-3-prime', 'minimax-h3', 'kling-o3-pro', 'wan-3'],
-  '4k-video': ['minimax-h3', 'veo-3-1', 'kling-3-4k', 'veo-3-1-fast', 'seedance-2-0'],
-  ads: ['seedance-2-5', 'wan-3-prime', 'minimax-h3', 'kling-o3-pro', 'grok-imagine-video-1-5'],
-  'ugc-ads': ['seedance-2-5', 'happy-horse-1-1', 'minimax-h3', 'grok-imagine-video-1-5', 'kling-o3-pro'],
-  'product-videos': ['seedance-2-5', 'wan-3-prime', 'minimax-h3-max', 'ltx-2-5-pro', 'kling-o3-pro'],
-  'lipsync-dialogue': ['seedance-2-5', 'happy-horse-1-1', 'kling-o3-pro', 'minimax-h3', 'minimax-h3-max'],
-  'fast-drafts': ['ltx-2-5-fast', 'minimax-h3-max', 'grok-imagine-video-1-5', 'seedance-2-0-fast', 'kling-3-standard'],
-  'stylized-anime': ['seedance-2-5', 'minimax-h3', 'kling-o3-pro', 'grok-imagine-video-1-5', 'ltx-2-5-fast'],
+  "image-to-video": [
+    "seedance-2-5",
+    "kling-o3-pro",
+    "minimax-h3",
+    "flux-3",
+    "luma-ray-3-2"
+  ],
+  "cinematic-realism": [
+    "seedance-2-5",
+    "wan-3-prime",
+    "veo-3-1",
+    "minimax-h3",
+    "luma-ray-3-2"
+  ],
+  "character-reference": [
+    "seedance-2-5",
+    "kling-o3-pro",
+    "minimax-h3",
+    "wan-3-prime",
+    "grok-imagine-video-1-5"
+  ],
+  "reference-to-video": [
+    "seedance-2-5",
+    "minimax-h3",
+    "kling-o3-pro",
+    "wan-3-prime",
+    "gemini-omni-flash"
+  ],
+  "multi-shot-video": [
+    "seedance-2-5",
+    "kling-o3-pro",
+    "wan-3-prime",
+    "minimax-h3",
+    "wan-3"
+  ],
+  "4k-video": [
+    "kling-o3-4k",
+    "minimax-h3",
+    "veo-3-1",
+    "gemini-omni-flash",
+    "seedance-2-0"
+  ],
+  "ads": [
+    "seedance-2-5",
+    "kling-o3-pro",
+    "minimax-h3",
+    "wan-3-prime",
+    "gemini-omni-flash"
+  ],
+  "ugc-ads": [
+    "minimax-h3",
+    "seedance-2-5",
+    "happy-horse-1-1",
+    "grok-imagine-video-1-5",
+    "veo-3-1"
+  ],
+  "product-videos": [
+    "seedance-2-5",
+    "kling-o3-pro",
+    "wan-3-prime",
+    "flux-3",
+    "ltx-2-5-pro"
+  ],
+  "lipsync-dialogue": [
+    "minimax-h3",
+    "veo-3-1",
+    "seedance-2-5",
+    "happy-horse-1-1",
+    "ltx-2-5-pro"
+  ],
+  "fast-drafts": [
+    "ltx-2-5-fast",
+    "seedance-2-0-fast",
+    "flux-3-draft",
+    "veo-3-1-lite",
+    "kling-3-turbo-standard"
+  ],
+  "stylized-anime": [
+    "seedance-2-5",
+    "kling-o3-pro",
+    "wan-3-prime",
+    "luma-ray-3-2",
+    "flux-3"
+  ]
 };
 
 const OBSOLETE_RECOMMENDATIONS = new Set([
@@ -41,7 +113,7 @@ function extractRankedModelSlugs(source: string, prefix: string): string[] {
   return Array.from(source.matchAll(pattern), (match) => match[1]);
 }
 
-test('best-for rankings replace obsolete recommendations with current frontier models', () => {
+test('best-for rankings use the reviewed October 19 editorial selections', () => {
   const bySlug = new Map(BEST_FOR_PAGES.map((entry) => [entry.slug, entry.topPicks ?? []]));
 
   assert.equal(bySlug.size, 12);
