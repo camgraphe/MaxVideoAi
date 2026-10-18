@@ -42,3 +42,34 @@ handoff. After the user says funding is complete, call `get_account_status`, the
 approval before confirmation. If a trial condition appears in live results,
 explain it as returned and ask before changing the request. Do not guess account
 eligibility, invent an account URL, or claim the browser step completed.
+
+## Seedance 2.5 native Draft → final
+
+Use the workflow fields only when the retrieved live schema and details expose
+them. For a true Draft, prepare with `seedanceWorkflow: {"step":"draft"}` and
+compatible settings/references. The workflow locks native 480p and one output.
+Show the Draft quote and any returned final supplement and total. Label the
+future final price as a current estimate until a separate final quote exists.
+Never promise a free final, unverified savings or pixel-for-pixel preservation.
+
+After separate explicit Draft approval, confirm once. Recover its MaxVideoAI
+job ID with status/history and deliver the result for review. The returned
+`seedanceWorkflow` reports actual expiry, eligibility and existing final job.
+Only `finalizationAvailable: true` authorizes offering a final quote. For an
+existing finalJobId, recover that job; neither uncertainty nor a refund permits
+an automatic replacement. Expired, failed, pending and reserved Drafts cannot
+be silently replaced or converted from an ordinary 480p video.
+
+To prepare the final, use the same model and
+`seedanceWorkflow: {"step":"final","draftJobId":"<owned MaxVideoAI Draft job ID>"}`.
+Omit mode, prompt, settings and references: the server inherits the Draft's
+creative facts and reuses its private provider reference. Never accept or invent
+a provider task ID. Show the separate exact final quote, the paid Draft cost
+and combined total when returned; wait for new explicit final approval, then
+confirm once. A final quote is not approval of another Draft or a retry.
+
+Do not promise a new seven-day window after completion or reconnection. Use the
+server's actual expiresAt and state, including when a quoted Draft expires
+before confirmation. If an older host schema lacks workflow fields, refresh
+its supported connection/catalog and preserve known jobs. If still unavailable,
+say so and offer the web path only when live availability confirms it.

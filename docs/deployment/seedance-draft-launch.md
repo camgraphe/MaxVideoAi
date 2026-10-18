@@ -5,7 +5,10 @@ selects a separately priced 480p text-to-video Draft, with one output. An owned
 ready Draft can receive a separately quoted and confirmed 1080p final. Prompt,
 duration, framing and audio are inherited; the paid Draft remains available.
 An ordinary 480p generation is a different offer and cannot be finalized through
-this workflow. MCP remains deliberately outside this initial release.
+this workflow. MCP was outside the initial release; the 2026-10-18 source
+candidate adds the explicit workflow described in
+[mode coverage](../engineering/mcp-mode-coverage.md#native-seedance-draft-workflow--2026-10-18-source-candidate).
+Its deployment, plugin publication and host refresh remain separate release gates.
 
 ## Server availability
 

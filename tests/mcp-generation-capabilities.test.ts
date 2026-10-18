@@ -740,12 +740,14 @@ test('HTTP route validators delegate provider rules to a route-independent serve
 });
 
 
-test('the MCP preparation schema intentionally excludes Draft and final workflow authority', async () => {
+test('MCP exposes only explicit native workflow authority and rejects settings/provider aliases', async () => {
   const { prepareGenerationInputSchema } = await import('../frontend/src/server/mcp/tools/prepare-generation');
   const normal = { surface: 'video', engineId: 'seedance-2-5', mode: 't2v', prompt: 'A valley', settings: { durationSec: 5, resolution: '480p' } };
   assert.equal(prepareGenerationInputSchema.safeParse(normal).success, true);
+  assert.equal(prepareGenerationInputSchema.safeParse({ ...normal, seedanceWorkflow: { step: 'draft' } }).success, true);
+  assert.equal(prepareGenerationInputSchema.safeParse({ surface: 'video', engineId: 'seedance-2-5', seedanceWorkflow: { step: 'final', draftJobId: 'owned-draft' } }).success, true);
   for (const unsupported of [
-    { ...normal, seedanceWorkflow: { step: 'draft' } },
+    { ...normal, seedanceWorkflow: { step: 'final', draftJobId: 'owned-draft', providerTaskId: 'forged' } },
     { ...normal, settings: { ...normal.settings, draft: true } },
     { ...normal, settings: { ...normal.settings, workflowStep: 'final', draftJobId: 'owned-draft' } },
     { ...normal, mode: 'draft' },

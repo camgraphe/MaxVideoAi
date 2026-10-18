@@ -46,6 +46,7 @@ function projectEngine(candidate: AgentPublicGenerationEngine): JsonValue {
   return canonicalCapabilityValue({
     surface: candidate.surface,
     publicModes: candidate.publicModes,
+    seedanceWorkflowModes: candidate.seedanceWorkflowModes,
     modeCaps: candidate.modeCaps,
     engine: {
       id: engine.id,

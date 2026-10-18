@@ -118,6 +118,20 @@ the job is accepted, failed, or refunded. A refund does not restore the
 authorization. Every replacement or creative retry requires `prepare_generation`,
 a fresh exact quote, and new explicit approval.
 
+## Seedance native Draft and finalization
+
+Read the live `seedanceWorkflow` details for Seedance 2.5. For a 1080p request,
+briefly offer direct 1080p or native Draft 480p followed by a separately paid
+1080p final when useful, before preparing the selected path. Respect a user who
+has already selected direct rendering; do not keep offering Draft.
+An explicit finalizable Draft selects `seedanceWorkflow.step="draft"`.
+Resolution 480p alone is ordinary generation and must never be called a native,
+finalizable Draft. If the workflow is unavailable, explain that and offer its
+returned web destination only when live details mark it available.
+
+Read [generation safety and recovery](references/generation-safety.md) for the
+owned Draft recovery, finalization eligibility and separate-price procedure.
+
 ## Follow and recover without duplication
 
 After confirmation, use `get_generation_status` for a known job, including after
