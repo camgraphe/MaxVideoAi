@@ -94,3 +94,15 @@ test('only opening a scoped disclosure is measured and listener is cleaned up', 
     for (const [key, descriptor] of saved) { if (descriptor) Object.defineProperty(globalThis, key, descriptor); else Reflect.deleteProperty(globalThis, key); }
   }
 });
+
+test('every selectable comparison model survives the privacy allowlist; unknown values do not', async () => {
+  const { default: catalog } = await import('../frontend/config/engine-catalog.json');
+  const { projectAllowedAnalyticsPayload } = await import('../frontend/lib/analytics/journey');
+  for (const entry of catalog.filter(item => item.surfaces.compare.includeInHub)) {
+    const payload = projectAllowedAnalyticsPayload('comparison_interaction', { action: 'model_change', engine: entry.modelSlug, model_left: entry.modelSlug, model_right: entry.modelSlug });
+    assert.equal(payload?.model_left, entry.modelSlug);
+    assert.equal(payload?.model_right, entry.modelSlug);
+    assert.equal(payload?.engine, entry.modelSlug);
+  }
+  assert.deepEqual(projectAllowedAnalyticsPayload('comparison_interaction', { engine: 'private-user-prompt', model_left: 'private-user-prompt', email: 'private@example.test' }), {});
+});
