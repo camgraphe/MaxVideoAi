@@ -70,6 +70,17 @@ same-account restoration, account changes, superseded work and missing sources.
 
 ## Local review
 
+Background Removal history currently has no verified source projection. Opening
+an older result therefore clears the current input and disables Original; it must
+never pair that result with an unrelated current video. Explicit source selection
+clears the historical result as before. Source uploads carry an AbortSignal and
+an operation identity: another upload, library/URL selection or account unmount
+invalidates their success, error and loading effects. An already-open library may
+accept a newer choice during upload; that choice wins even if aborting the HTTP
+request does not prevent its late completion. This does not cancel accepted paid
+generations or delete an already-stored upload. Behavioral coverage lives in
+`tests/background-media-selection.test.ts`.
+
 The normal isolated preview uses `/app/tools`, `/app/tools/upscale?kind=image`, `/app/tools/upscale?kind=video` and `/app/tools/background-removal`. A logged-out preview displays sign-in and does not execute jobs.
 
 For a no-cost UI review, run `node scripts/toolbox-review.mjs --prepare`, then open `/app/tools/upscale?review=local` on a localhost **development** server. The explicit banner identifies simulated auth, quote/job/library/save responses and sample results. The template blocks external fetches; its sample clip is generated locally with ffmpeg. This verifies UI state/transport, not provider quality, live billing or real account authentication. Run `node scripts/toolbox-review.mjs --clean` before build or commit. The installer saves the original page and refuses to overwrite an unexpected route; the cleaner refuses to discard subsequent edits. No fixture route is included in the committed app.
