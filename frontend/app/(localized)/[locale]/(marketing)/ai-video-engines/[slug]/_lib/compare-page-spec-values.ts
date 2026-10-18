@@ -1,3 +1,4 @@
+import { getFalEngineById } from '@/config/falEngines';
 import { localizeCapabilityDetail } from '@/lib/marketing/spec-capability-copy';
 import type { AppLocale } from '@/i18n/locales';
 import type { CompareSpecValues, EngineCatalogEntry } from './compare-page-types';
@@ -95,7 +96,17 @@ export function buildSpecValues(
   entry: EngineCatalogEntry,
   specs: Record<string, unknown> | undefined
 ): CompareSpecValues {
+  const modes = getFalEngineById(entry.engineId)?.modes ?? [];
+  const durations = modes.flatMap(({ mode, ui }) => {
+    if (!ui.duration || !('options' in ui.duration)) return [];
+    const seconds = ui.duration.options.map(value => Number.parseFloat(String(value))).filter(value => Number.isFinite(value) && value > 0);
+    return seconds.length ? [{ mode, seconds }] : [];
+  });
+  const generationDurations = durations.filter(({ mode }) => ['t2v', 'i2v', 'fl2v', 'ref2v', 'r2v', 'a2v'].includes(mode));
+  const extension = durations.find(({ mode }) => mode === 'extend');
   return {
+    generationDurations,
+    extensionDuration: extension ? `${extension.seconds.join(' / ')} s` : resolveModeSupported(entry, 'extend') === 'Not supported' ? 'Not supported' : undefined,
     textToVideo: resolveKeySpecValue(specs, 'textToVideo', resolveModeSupported(entry, 't2v')),
     imageToVideo: resolveKeySpecValue(specs, 'imageToVideo', resolveModeSupported(entry, 'i2v')),
     videoToVideo: resolveKeySpecValue(specs, 'videoToVideo', resolveVideoToVideoSupport(entry)),
@@ -103,7 +114,7 @@ export function buildSpecValues(
     referenceImageStyle: resolveKeySpecValue(specs, 'referenceImageStyle', resolveReferenceImageSupport(entry)),
     referenceVideo: resolveKeySpecValue(specs, 'referenceVideo', resolveReferenceVideoSupport(entry)),
     maxResolution: resolveKeySpecValue(specs, 'maxResolution', formatMaxResolution(entry)),
-    maxDuration: resolveKeySpecValue(specs, 'maxDuration', formatDuration(entry)),
+    maxDuration: generationDurations.length ? `${Math.max(...generationDurations.flatMap(value => value.seconds))} s` : resolveKeySpecValue(specs, 'maxDuration', formatDuration(entry)),
     aspectRatios: resolveKeySpecValue(specs, 'aspectRatios', formatAspectRatios(entry)),
     fpsOptions: resolveKeySpecValue(specs, 'fpsOptions', formatFps(entry)),
     outputFormats: resolveKeySpecValue(specs, 'outputFormats', 'Data pending'),
@@ -115,7 +126,7 @@ export function buildSpecValues(
       'cameraMotionControls',
       resolveStatus(entry.engine?.motionControls)
     ),
-    watermark: 'No (MaxVideoAI)',
+    watermark: resolveKeySpecValue(specs, 'watermark', 'No (MaxVideoAI)'),
   };
 }
 

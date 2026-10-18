@@ -702,7 +702,7 @@ test('comparison detail split helpers own FAQ, scorecard, and generate card resp
   assert.match(relatedSectionSource, /export function CompareRelatedSection/);
   assert.match(faqSectionSource, /export function CompareFaqSection/);
   assert.match(showdownSectionSource, /CompareShowdownMedia/);
-  assert.match(specsSectionSource, /CompareSpecValue/);
+  assert.match(specsSectionSource, /CompareSpecsTable/);
   assert.match(faqSectionSource, /dangerouslySetInnerHTML/);
 });
 

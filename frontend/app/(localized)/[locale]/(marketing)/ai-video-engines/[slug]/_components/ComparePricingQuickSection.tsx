@@ -1,3 +1,4 @@
+import { compareScenarioChips } from '../_lib/compare-pricing-copy';
 import { ArrowRight } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { EngineIcon } from '@/components/ui/EngineIcon';
@@ -9,6 +10,7 @@ import type { ComparePageOverride } from '../_lib/compare-page-overrides-types';
 
 type ComparePricingQuickSectionProps = {
   activeLocale: AppLocale;
+  priceSnapshotAt: string;
   pricingCreditLink?: ComparePageOverride['pricingCreditLink'];
   left: EngineCatalogEntry;
   leftPricingDisplay: ComparePricingDisplay;
@@ -22,7 +24,7 @@ function getPricingLines(display: ComparePricingDisplay) {
 }
 
 export function ComparePricingQuickSection({
-  activeLocale,
+  activeLocale, priceSnapshotAt,
   pricingCreditLink,
   left,
   leftPricingDisplay,
@@ -34,15 +36,7 @@ export function ComparePricingQuickSection({
   const copy = { title: pricingCopy.pricing, subtitle: pricingCopy.priceNote };
   const leftLines = getPricingLines(leftPricingDisplay);
   const rightLines = getPricingLines(rightPricingDisplay);
-  const scenarioChips = (display: ComparePricingDisplay) => {
-    const scenario = display.scenario;
-    if (!scenario) return [];
-    const mode = activeLocale === 'fr' ? 'Texte vers vidéo' : activeLocale === 'es' ? 'Texto a vídeo' : 'Text to video';
-    const audio = scenario.audio
-      ? activeLocale === 'fr' ? 'audio activé' : activeLocale === 'es' ? 'audio activado' : 'audio on'
-      : activeLocale === 'fr' ? 'sans audio' : activeLocale === 'es' ? 'sin audio' : 'audio off';
-    return [mode, `${scenario.durationSec} s`, scenario.aspectRatio, audio].filter(Boolean);
-  };
+  const scenarioChips = (display: ComparePricingDisplay) => compareScenarioChips(display, activeLocale);
   const perVideo = activeLocale === 'fr' ? 'par vidéo' : activeLocale === 'es' ? 'por vídeo' : 'per video';
 
   return (
@@ -70,7 +64,7 @@ export function ComparePricingQuickSection({
         ))}
       </div>
       <div className="compare-price-next">
-        <p>{actions.pricingNote}</p>
+        <p>{actions.pricingNote}<br /><span>{activeLocale === 'fr' ? 'Estimation en USD · relevé généré le' : activeLocale === 'es' ? 'Estimación en USD · instantánea generada el' : 'USD estimate · snapshot generated'} <time dateTime={priceSnapshotAt}>{new Intl.DateTimeFormat(activeLocale, { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(priceSnapshotAt))}</time></span></p>
         <div className="flex shrink-0 flex-wrap items-center gap-x-6 gap-y-2">
           {pricingCreditLink ? <Link href={pricingCreditLink.href}>{pricingCreditLink.label}<ArrowRight size={16} aria-hidden="true" /></Link> : null}
           <Link href="/pricing">{actions.priceLink}<ArrowRight size={16} aria-hidden="true" /></Link>

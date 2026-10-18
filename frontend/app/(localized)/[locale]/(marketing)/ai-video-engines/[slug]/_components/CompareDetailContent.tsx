@@ -1,3 +1,6 @@
+import { CompareInteractionTracking } from './CompareInteractionTracking.client';
+import { buildComparisonExport, publicComparisonUrl } from '../_lib/compare-export';
+import { formatEngineName } from '../_lib/compare-page-engine-formatting';
 import type { AppLocale } from '@/i18n/locales';
 import { Link } from '@/i18n/navigation';
 import type { SelectOption } from '@/components/ui/SelectMenu';
@@ -22,6 +25,8 @@ import { CompareSpecsSection } from './CompareSpecsSection';
 type CompareDetailContentProps = {
   galleries: { left: CompareGalleryVideo[]; right: CompareGalleryVideo[] };
   returnPath: string;
+  priceSnapshotAt: string;
+  specSources: Array<{ name: string; urls: string[] }>;
   activeLocale: AppLocale;
   breadcrumbJsonLd: unknown;
   compareCopy: ComparePageCopy;
@@ -59,7 +64,7 @@ type CompareDetailContentProps = {
 };
 
 export function CompareDetailContent({
-  galleries, returnPath,
+  galleries, returnPath, priceSnapshotAt, specSources,
   activeLocale,
   breadcrumbJsonLd,
   compareCopy,
@@ -95,8 +100,14 @@ export function CompareDetailContent({
   specRows,
   webPageJsonLd,
 }: CompareDetailContentProps) {
+  const canonicalUrl = publicComparisonUrl(returnPath);
+  const comparisonMarkdown = buildComparisonExport({ locale: activeLocale, path: returnPath,
+    leftName: formatEngineName(left), rightName: formatEngineName(right), metrics: comparisonMetrics, specRows,
+    leftUpdated: leftScoreUpdated, rightUpdated: rightScoreUpdated, leftPricing: leftPricingDisplay,
+    rightPricing: rightPricingDisplay, priceSnapshotAt, labels, sources: specSources, summary: pageOverride?.quickVerdict?.body });
   return (
-    <div className="compare-editorial relative isolate">
+    <div id="comparison-detail" data-model-left={left.modelSlug} data-model-right={right.modelSlug} className="compare-editorial relative isolate">
+      <CompareInteractionTracking locale={activeLocale} />
       <div className="container-page max-w-[1280px] section">
         <div className="space-y-4 sm:space-y-5">
           <CompareDetailHero
@@ -125,6 +136,8 @@ export function CompareDetailContent({
           <CompareModelGalleries locale={activeLocale} left={left} right={right} galleries={galleries} returnPath={returnPath} />
           <section className="mx-auto max-w-[940px]">
             <CompareScorecardSection
+              comparisonMarkdown={comparisonMarkdown}
+              canonicalUrl={canonicalUrl}
               activeLocale={activeLocale}
               compareCopy={compareCopy}
               comparisonMetrics={comparisonMetrics}
@@ -143,6 +156,7 @@ export function CompareDetailContent({
               scorecardProvisionalNote={scorecardProvisionalNote}
             />
             <ComparePricingQuickSection
+              priceSnapshotAt={priceSnapshotAt}
               activeLocale={activeLocale}
               pricingCreditLink={pageOverride?.pricingCreditLink}
               left={left}
@@ -151,6 +165,7 @@ export function CompareDetailContent({
               rightPricingDisplay={rightPricingDisplay}
             />
             <CompareSpecsSection
+              sources={specSources}
               activeLocale={activeLocale}
               compareCopy={compareCopy}
               labels={labels}

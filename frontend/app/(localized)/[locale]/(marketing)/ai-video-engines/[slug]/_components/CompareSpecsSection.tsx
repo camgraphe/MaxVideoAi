@@ -1,6 +1,7 @@
 import { ChevronDown, Timer, Monitor, AudioLines, Ratio } from 'lucide-react';
 import { getCompareEditorialCopy, getCompareDetailActions } from '../_lib/compare-editorial-copy';
-import clsx from 'clsx';
+import { CompareSpecsTable } from './CompareSpecsTable';
+import { compareDurationLabels } from '../_lib/compare-duration-copy';
 import type { AppLocale } from '@/i18n/locales';
 import { Link } from '@/i18n/navigation';
 import type { CompareDetailLabels, ComparePageCopy } from '../_lib/compare-page-copy';
@@ -12,10 +13,10 @@ import {
   stripAudioReferencesForSilentPair,
 } from '../_lib/compare-page-helpers';
 import type { EngineCatalogEntry } from '../_lib/compare-page-types';
-import { renderSpecValue } from './CompareSpecValue';
 
 type CompareSpecsSectionProps = {
   activeLocale: AppLocale;
+  sources: Array<{ name: string; urls: string[] }>;
   compareCopy: ComparePageCopy;
   labels: CompareDetailLabels;
   left: EngineCatalogEntry;
@@ -26,7 +27,7 @@ type CompareSpecsSectionProps = {
 };
 
 export function CompareSpecsSection({
-  activeLocale,
+  activeLocale, sources,
   compareCopy,
   labels,
   left,
@@ -42,7 +43,7 @@ export function CompareSpecsSection({
     { key: 'maxResolution', fallback: 'Max resolution', Icon: Monitor },
     pairHasNativeAudio ? { key: 'audioOutput', fallback: 'Audio output', Icon: AudioLines } : { key: 'aspectRatios', fallback: 'Aspect ratios', Icon: Ratio },
   ].flatMap(({ key, fallback, Icon }) => {
-    const row = specRows.find(item => item.label === (compareCopy.specLabels?.[key] ?? fallback));
+    const row = specRows.find(item => item.key === key || item.label === (compareCopy.specLabels?.[key] ?? fallback));
     return row ? [{ row, Icon }] : [];
   });
   return (
@@ -66,7 +67,7 @@ export function CompareSpecsSection({
           </div>)}</dl>
         </article>)}
       </div>
-      <details className="compare-spec-details">
+      <details className="compare-spec-details" data-comparison-section="specifications">
         <summary className="compare-disclosure-trigger">
           <span className="compare-disclosure-copy">
             <strong className="compare-when-closed">{actions.allSpecs.replace('{count}', String(specRows.length))}</strong>
@@ -75,46 +76,8 @@ export function CompareSpecsSection({
           </span>
           <span className="compare-disclosure-arrow"><ChevronDown size={22} aria-hidden="true" /></span>
         </summary>
-      <div className="mt-4 rounded-card border border-hairline bg-surface shadow-card">
-        <div className="grid grid-cols-[minmax(90px,1fr)_minmax(80px,0.8fr)_minmax(90px,1fr)] gap-2 border-b border-hairline px-3 py-3 text-[10px] font-semibold uppercase tracking-micro text-text-muted min-[840px]:grid-cols-[minmax(200px,2fr)_minmax(220px,1fr)_minmax(200px,2fr)] min-[840px]:gap-4 min-[840px]:px-6 min-[840px]:py-4 min-[840px]:text-xs">
-          <span className="text-left">{formatEngineName(left)}</span>
-          <span className="text-center">{compareCopy.keySpecs?.keyLabel ?? 'Key spec'}</span>
-          <span className="text-right">{formatEngineName(right)}</span>
-        </div>
-        <div className="divide-y divide-hairline">
-          {specRows.map((row, index) => (
-            <div
-              key={row.label}
-              className={clsx(
-                'grid grid-cols-[minmax(90px,1fr)_minmax(80px,0.8fr)_minmax(90px,1fr)] gap-2 px-3 py-3 text-[11px] min-[840px]:grid-cols-[minmax(200px,2fr)_minmax(220px,1fr)_minmax(200px,2fr)] min-[840px]:gap-4 min-[840px]:px-6 min-[840px]:py-4 min-[840px]:text-sm',
-                index % 2 === 1 && 'bg-surface-2'
-              )}
-            >
-              <div className="rounded-md px-1 py-0.5 text-text-secondary sm:px-2 sm:py-1">
-                {renderSpecValue(row.left, activeLocale, {
-                  pending: labels.pending,
-                  supported: labels.supported,
-                  notSupported: labels.notSupported,
-                })}
-                {(row.sublines ?? (row.subline ? [row.subline] : [])).map((line) => (
-                  <div key={line} className="mt-1 text-[10px] text-text-muted">{line}</div>
-                ))}
-              </div>
-              <span className="text-center text-text-primary">{row.label}</span>
-              <div className="rounded-md px-1 py-0.5 text-right text-text-secondary sm:px-2 sm:py-1">
-                {renderSpecValue(row.right, activeLocale, {
-                  pending: labels.pending,
-                  supported: labels.supported,
-                  notSupported: labels.notSupported,
-                })}
-                {(row.rightSublines ?? (row.rightSubline ? [row.rightSubline] : [])).map((line) => (
-                  <div key={line} className="mt-1 text-[10px] text-text-muted">{line}</div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <CompareSpecsTable rows={specRows} locale={activeLocale} labels={labels} leftName={formatEngineName(left)} rightName={formatEngineName(right)} criterionLabel={compareCopy.keySpecs?.keyLabel ?? 'Key spec'} />
+      <p className="px-4 py-3 text-xs leading-5 text-text-muted">{compareDurationLabels(activeLocale).conditions}</p>
 
       {specRows.some((row) => row.kind === 'latency') ? (
         <p className="mt-3 text-xs leading-5 text-text-muted">
@@ -126,6 +89,10 @@ export function CompareSpecsSection({
         </p>
       ) : null}
 
+      <div className="compare-spec-sources">
+        <p>{activeLocale === 'fr' ? 'Capacités disponibles dans MaxVideoAI. Sources fournisseur ci-dessous ; leur date de vérification n’est pas consignée ici.' : activeLocale === 'es' ? 'Capacidades disponibles en MaxVideoAI. Fuentes del proveedor abajo; su fecha de verificación no se registra aquí.' : 'Capabilities available in MaxVideoAI. Provider sources below; their verification dates are not recorded here.'}</p>
+        {sources.map(source => <p key={source.name}><strong>{source.name}: </strong>{source.urls.map((url, index) => <a key={url} href={url} target="_blank" rel="noopener noreferrer">{index > 0 ? ' · ' : ''}{new URL(url).hostname}{source.urls.filter(other => new URL(other).hostname === new URL(url).hostname).length > 1 ? ` (${index + 1})` : ''}</a>)}</p>)}
+      </div>
       </details>
 
       {pageOverride?.primaryLinks?.length ? (

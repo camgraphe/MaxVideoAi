@@ -205,6 +205,8 @@ export default async function CompareDetailPage(
 
   return (
     <CompareDetailContent
+      priceSnapshotAt={routeData.priceSnapshotAt}
+      specSources={routeData.specSources}
       galleries={{ left: leftGallery, right: rightGallery }}
       returnPath={`${localePrefix}/${compareBase}/${canonicalSlug}`}
       activeLocale={activeLocale}

@@ -1,15 +1,13 @@
+import { labelCompareMetric } from './CompareScoreGrid';
 import type { AppLocale } from '@/i18n/locales';
 import type { SelectOption } from '@/components/ui/SelectMenu';
 import { CompareEngineSelector } from '../CompareEngineSelector.client';
 import type { ComparePageCopy } from '../_lib/compare-page-copy';
 import {
-  deriveCompareStrengths,
   type CompareMetric,
 } from '../_lib/compare-page-scorecard';
 import {
   formatEngineName,
-  isPending,
-  localizeBestFor,
 } from '../_lib/compare-page-helpers';
 import type { EngineCatalogEntry } from '../_lib/compare-page-types';
 
@@ -27,7 +25,6 @@ type EngineHeroCardProps = {
 
 function EngineHeroCard({
   activeLocale,
-  compareCopy,
   comparisonMetrics,
   engineScoresBySlug,
   entry,
@@ -36,9 +33,10 @@ function EngineHeroCard({
   overall,
   side,
 }: EngineHeroCardProps) {
-  const bestFor = localizeBestFor(entry.bestFor, activeLocale);
-  const derived = deriveCompareStrengths(comparisonMetrics, side).join(', ');
-  const strengths = bestFor && !isPending(bestFor) ? bestFor : derived;
+  const value = (metric: CompareMetric) => side === 'left' ? metric.leftValue : metric.rightValue;
+  const strengths = comparisonMetrics.filter(metric => typeof value(metric) === 'number')
+    .sort((a, b) => (value(b) ?? 0) - (value(a) ?? 0)).slice(0, 2)
+    .map(metric => labelCompareMetric(metric, activeLocale)).join(', ');
 
   return (
     <article className={`compare-model-card compare-model-card--${side}`}>
@@ -55,13 +53,13 @@ function EngineHeroCard({
             />
           </div>
           <div className="compare-model-score">
-            <span>{overall != null ? overall.toFixed(1) : '—'}</span><small>/10</small><em>{activeLocale === 'fr' ? 'Note globale' : activeLocale === 'es' ? 'Calificación global' : 'Overall score'}</em>
+            <span>{overall != null ? overall.toFixed(1) : '—'}</span><small>/10</small><em>{activeLocale === 'fr' ? 'Note éditoriale' : activeLocale === 'es' ? 'Nota editorial' : 'Editorial score'}</em>
           </div>
         </div>
         {strengths ? (
           <p className="compare-model-strengths">
             <span className="font-semibold text-text-primary">
-              {compareCopy.scorecard?.strengthsLabel ?? 'Strengths'}:
+              {activeLocale === 'fr' ? 'Mieux noté sur' : activeLocale === 'es' ? 'Mejor valorado en' : 'Higher-rated areas'}:
             </span>{' '}
             {strengths}
           </p>

@@ -30,6 +30,7 @@ export async function buildCompareRouteData({
   const leftPricingEngine = PRICING_ENGINES.get(left.modelSlug);
   const rightPricingEngine = PRICING_ENGINES.get(right.modelSlug);
   const referenceDuration = getCompareReferenceDuration(leftPricingEngine, rightPricingEngine);
+  const priceSnapshotAt = new Date().toISOString();
   const currentSnapshot = createScopedCurrentPublicSnapshot();
   const quotePoints = (engine: EngineCaps, durationSec?: number) =>
     computeComparePricingPoints(engine, durationSec, undefined, currentSnapshot);
@@ -65,6 +66,8 @@ export async function buildCompareRouteData({
   const rightIsPrelaunch = isPrelaunchAvailability(right);
 
   return {
+    priceSnapshotAt,
+    specSources: [left, right].map(entry => ({ name: entry.marketingName, urls: keySpecs.get(entry.modelSlug)?.sources ?? keySpecs.get(entry.engineId)?.sources ?? [] })),
     criteriaCount,
     hasPrelaunchEngine: leftIsPrelaunch || rightIsPrelaunch,
     left,

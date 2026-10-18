@@ -1,3 +1,4 @@
+import { SCORE_TEXT } from '../_lib/compare-score-copy';
 import { getCompareEditorialCopy, getCompareDetailActions } from '../_lib/compare-editorial-copy';
 import { ChevronDown } from 'lucide-react';
 import { BenchmarkMethodologyLink } from '@/components/marketing/BenchmarkMethodologyLink';
@@ -11,35 +12,9 @@ import {
 import type { CompareMetric } from '../_lib/compare-page-scorecard';
 import type { EngineCatalogEntry } from '../_lib/compare-page-types';
 import { CompareGenerateCard } from './CompareGenerateCard';
-import { CompareScoreGrid, describeCompareMetric, formatCompareScoreValue, labelCompareMetric, orderCompareMetrics } from './CompareScoreGrid';
+import { CompareScoreGrid, orderCompareMetrics } from './CompareScoreGrid';
 import { CompareScoreActions } from './CompareScoreActions.client';
 
-const SCORE_TEXT = {
-  en: {
-    subtitle: 'We scored each model separately on the dates below. These are not same-prompt test results; watch the videos and check the controls too.',
-    formula: 'The overall scores above average prompt adherence, motion realism and temporal consistency. Small differences are directional, not a verdict.',
-    pricing: 'For cost, compare the current quotes and settings below. Prices are not graded on this scale.',
-    source: 'Source: MaxVideoAI benchmark methodology.',
-    updated: 'Score records last updated',
-    missingDate: 'date unavailable',
-  },
-  fr: {
-    subtitle: 'Nous avons noté chaque modèle séparément aux dates ci-dessous. Ce ne sont pas les résultats d’un test avec le même prompt ; regardez aussi les vidéos et les réglages.',
-    formula: 'Les notes globales ci-dessus sont la moyenne du respect du prompt, du mouvement et de la cohérence temporelle. Un petit écart donne une tendance, pas un verdict.',
-    pricing: 'Pour le coût, comparez les devis et leurs réglages ci-dessous. Les prix ne reçoivent pas de note sur cette échelle.',
-    source: 'Source : méthodologie MaxVideoAI.',
-    updated: 'Dernière mise à jour des fiches de notes',
-    missingDate: 'date indisponible',
-  },
-  es: {
-    subtitle: 'Evaluamos cada modelo por separado en las fechas indicadas. No son resultados obtenidos con el mismo prompt; mira también los videos y los controles.',
-    formula: 'Las notas globales anteriores promedian fidelidad al prompt, movimiento y coherencia temporal. Una diferencia pequeña indica una tendencia, no un veredicto.',
-    pricing: 'Para comparar costes, consulta los presupuestos actuales y sus ajustes abajo. El precio no recibe una nota en esta escala.',
-    source: 'Fuente: metodología de MaxVideoAI.',
-    updated: 'Última actualización de las fichas de notas',
-    missingDate: 'fecha no disponible',
-  },
-} as const;
 
 function formatScoreDate(value: string | null, locale: AppLocale, missing: string) {
   if (!value) return missing;
@@ -51,6 +26,8 @@ function formatScoreDate(value: string | null, locale: AppLocale, missing: strin
 
 type CompareScorecardSectionProps = {
   activeLocale: AppLocale;
+  comparisonMarkdown: string;
+  canonicalUrl: string;
   compareCopy: ComparePageCopy;
   comparisonMetrics: CompareMetric[];
   criteriaCount: number;
@@ -69,7 +46,7 @@ type CompareScorecardSectionProps = {
 };
 
 export function CompareScorecardSection({
-  activeLocale,
+  activeLocale, comparisonMarkdown, canonicalUrl,
   compareCopy,
   comparisonMetrics,
   criteriaCount,
@@ -81,7 +58,6 @@ export function CompareScorecardSection({
   right,
   rightCanGenerate,
   rightScoreUpdated,
-  scorecardCriteriaLabel,
   scorecardProvisionalNote,
 }: CompareScorecardSectionProps) {
   const copy = getCompareEditorialCopy(activeLocale);
@@ -92,19 +68,6 @@ export function CompareScorecardSection({
   const remainingMetrics = orderedMetrics.slice(6);
   const leftName = formatEngineName(left);
   const rightName = formatEngineName(right);
-  const markdown = [
-    `# ${leftName} vs ${rightName}`,
-    `${text.updated}: ${leftName} ${leftScoreUpdated ?? text.missingDate}; ${rightName} ${rightScoreUpdated ?? text.missingDate}.`,
-    text.subtitle,
-    text.formula,
-    '',
-    `| ${scorecardCriteriaLabel} (0–10) | ${leftName} | ${rightName} |`,
-    '| --- | ---: | ---: |',
-    ...orderedMetrics.map((metric) => `| ${labelCompareMetric(metric, activeLocale).replaceAll('|', '\\|')} — ${describeCompareMetric(metric, activeLocale).replaceAll('|', '\\|')} | ${formatCompareScoreValue(metric.leftValue, labels.na)} | ${formatCompareScoreValue(metric.rightValue, labels.na)} |`),
-    '',
-    text.pricing,
-    `${text.source} https://maxvideoai.com/benchmarks`,
-  ].join('\n');
   return (
     <>
       <div id="scores" className="compare-score-panel">
@@ -121,7 +84,7 @@ export function CompareScorecardSection({
         </div>
         <CompareScoreGrid metrics={mainMetrics} locale={activeLocale} leftName={leftName} rightName={rightName} missingLabel={labels.na} />
 
-        {remainingMetrics.length ? <details className="compare-more-scores">
+        {remainingMetrics.length ? <details className="compare-more-scores" data-comparison-section="scores">
           <summary className="compare-disclosure-trigger">
             <span className="compare-disclosure-copy">
               <small className="compare-when-closed">{actions.shown.replace('{shown}', String(mainMetrics.length)).replace('{total}', String(criteriaCount))}</small>
@@ -139,7 +102,7 @@ export function CompareScorecardSection({
             <p>{text.formula}</p>
             <p>{text.pricing}</p>
           </div>
-          <CompareScoreActions locale={activeLocale} markdown={markdown} />
+          <CompareScoreActions locale={activeLocale} markdown={comparisonMarkdown} canonicalUrl={canonicalUrl} />
         </div>
 
       </div>

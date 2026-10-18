@@ -1,5 +1,6 @@
 'use client';
 
+import { trackComparison } from '../_lib/compare-analytics';
 import { useState } from 'react';
 import { Check, Copy, Link2 } from 'lucide-react';
 import type { AppLocale } from '@/i18n/locales';
@@ -10,16 +11,15 @@ const LABELS = {
   es: { copy: 'Copiar la comparación', share: 'Copiar enlace', copied: 'Copiado', failed: 'No se pudo copiar. Inténtalo de nuevo.' },
 } as const;
 
-export function CompareScoreActions({ locale, markdown }: { locale: AppLocale; markdown: string }) {
+export function CompareScoreActions({ locale, markdown, canonicalUrl }: { locale: AppLocale; markdown: string; canonicalUrl: string }) {
   const [message, setMessage] = useState('');
   const [copied, setCopied] = useState<'comparison' | 'link' | null>(null);
   const labels = LABELS[locale];
 
   async function copy(kind: 'comparison' | 'link') {
     try {
-      const url = new URL(window.location.href);
-      url.hash = 'scores';
-      await navigator.clipboard.writeText(kind === 'comparison' ? `${markdown}\n\n${url.toString()}` : url.toString());
+      await navigator.clipboard.writeText(kind === 'comparison' ? markdown : canonicalUrl);
+      trackComparison({ action: kind === 'comparison' ? 'copy_comparison' : 'copy_link', locale });
       setCopied(kind);
       setMessage(labels.copied);
     } catch {

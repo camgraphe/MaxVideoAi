@@ -1,5 +1,6 @@
 'use client';
 
+import { trackComparison } from './_lib/compare-analytics';
 import { useLocale } from 'next-intl';
 import type { SelectOption } from '@/components/ui/SelectMenu';
 import { getPathname, useRouter } from '@/i18n/navigation';
@@ -45,6 +46,7 @@ export function CompareEngineSelector({ options, value, otherValue, side, engine
         });
         const order = sorted[0] === leftSlug ? null : leftSlug;
         const href = order ? `${basePath}?order=${encodeURIComponent(order)}` : basePath;
+        trackComparison({ action: 'model_change', engine: nextValue, section: side, locale });
         router.push(href as never, { scroll: false });
       }}
     />
