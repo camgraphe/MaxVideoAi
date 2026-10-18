@@ -127,8 +127,23 @@ checks against the resulting main, and renewed browser/network measurements are
 pending. Release sign-off remains withheld until these checks are complete. No
 push, PR, production merge or deployment has been performed by this task.
 
+On 19 October, Adrien approved the current homepage preview and explicitly asked
+to send it to the existing **livraison pr** task, conditional on passing checks.
+The visual-approval condition is therefore satisfied; another approval of the
+same preview is not required. Delivery must still include PR465/current main,
+repeat the integration checks above and follow the normal isolated-branch → PR →
+required Quality CI → main → Vercel Git deployment path. The measurements here
+are against `1ed5e5b82`, not evidence of a completed post-PR465 validation.
+
+Handoff source: `codex/home-visual-refresh` in
+`/Users/adrienmillot/.codex/worktrees/home-visual-refresh/MaxVideoAi V2`.
+Application correction: `fcc904f57`; the later commits only record QA evidence.
+Preview: `http://localhost:3100/fr#compare`; main reference: port 3102.
+The delivery owner coordinates the integration/checks and publication so the
+homepage is not pushed or merged concurrently by both tasks.
+
 The thread heartbeat `revalider-accueil-apr-s-pr465` checks every 15 minutes and
-stays quiet while the delivery state is unchanged. It must obtain the delivery
-receipt, integrate the published main locally, repeat the relevant checks against
-that exact baseline, update this report and show the preview. It does not authorize
-push, merge to main or deployment; pause it after the follow-up is complete.
+stays quiet while the delivery state is unchanged. After handoff it must defer to
+the delivery owner's assigned scope before modifying a checkout or launching
+measurements, so it cannot duplicate that work. Pause it when the delivery owner
+accepts the remaining integration/checks or the follow-up is complete.
