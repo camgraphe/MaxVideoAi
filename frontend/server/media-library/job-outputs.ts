@@ -192,8 +192,8 @@ export async function listRecentOutputPage(params: {
   cursor?: string | null;
   q?: string | null;
   jobId?: string | null;
-}): Promise<MediaLibraryPage<JobOutputRecord>> {
-  await ensureMediaLibrarySchema();
+}, options: { ensureSchema?: boolean } = {}): Promise<MediaLibraryPage<JobOutputRecord>> {
+  if (options.ensureSchema !== false) await ensureMediaLibrarySchema();
   const limit = resolveMediaLibraryLimit(params.limit);
   const cursor = decodeMediaLibraryCursor(params.cursor);
   const searchPattern = buildMediaLibrarySearchPattern(params.q);
@@ -247,8 +247,8 @@ export async function listRecentOutputPage(params: {
 export async function listStoryboardKlingFirstFrameOutputs(params: {
   userId: string;
   parentJobIds: string[];
-}): Promise<Map<string, JobOutputRecord>> {
-  await ensureMediaLibrarySchema();
+}, options: { ensureSchema?: boolean } = {}): Promise<Map<string, JobOutputRecord>> {
+  if (options.ensureSchema !== false) await ensureMediaLibrarySchema();
   const parentJobIds = Array.from(
     new Set(
       params.parentJobIds.filter(

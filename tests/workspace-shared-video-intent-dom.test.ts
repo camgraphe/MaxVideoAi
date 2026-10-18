@@ -17,8 +17,9 @@ const video = (id: string) => ({ ok: true, video: {
   durationSec: 24, aspectRatio: '16:9', outputWidth: 1280, outputHeight: 720, hasAudio: true, createdAt: '',
 } });
 
-async function mount(initialSearch: string) {
+async function mount(initialSearch: string, storage: Record<string, string> = {}) {
   const dom = new JSDOM('<div id="root"></div>', { url: `http://localhost/app?${initialSearch}` });
+  for (const [key, value] of Object.entries(storage)) dom.window.sessionStorage.setItem(key, value);
   const previous = new Map<string, PropertyDescriptor | undefined>();
   const requests: Array<{ url: string; resolve: (response: Response) => void }> = [];
   for (const [key, value] of Object.entries({
@@ -39,7 +40,7 @@ async function mount(initialSearch: string) {
       engines, engineMap, provider: 'fal', fromVideoId: params.get('from'), requestedJobId: null, searchString,
       authChecked: true, hydratedForScope: 'intent-tests', storageScope: 'intent-tests', effectiveRequestedEngineId: params.get('engine'),
       effectiveRequestedEngineToken: null, rendersLength: 0, readScopedStorage: () => null, writeScopedStorage: noop,
-      replaceRoute, setSelectedPreview: noop, setNotice: noop,
+      replaceRoute, focusComposer: noop, setSelectedPreview: noop, setNotice: noop,
     });
     current = route;
     return null;
@@ -101,4 +102,16 @@ test('a previous original job cannot replace the draft while a new example is pe
     assert.equal(fixture.current.prompt, 'b public prompt');
     assert.equal(fixture.current.form?.engineId, 'wan-3-prime');
   } finally { await fixture.dispose(); }
+});
+
+
+test('storyboard import ignores ownerless and foreign handoffs but applies its own account handoff',async()=>{
+  const {buildStoryboardGeneratorHandoff}=await import('../frontend/lib/storyboard-generator-handoff');
+  const base='maxvideoai.storyboard.generatorHandoff.v1';
+  const handoff=JSON.stringify(buildStoryboardGeneratorHandoff({targetModel:'seedance',imageUrl:'https://example.invalid/board.png',subject:'Private board source',durationSec:10,frameCount:6}));
+  for(const key of [base,base+':other-account',base+':intent-tests']){
+    const f=await mount('storyboard=1',{[key]:handoff});
+    try{assert.equal(f.current.prompt.includes('Private board source'),key===base+':intent-tests');}
+    finally{await f.dispose();}
+  }
 });

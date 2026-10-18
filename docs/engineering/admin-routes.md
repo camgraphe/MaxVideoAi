@@ -126,6 +126,18 @@ Move out of `page.tsx`:
 
 ## Detail Pages
 
+`DELETE /api/admin/videos/[videoId]` retains its admin authorization and mutation
+bootstrap. Its job lock, playlist removal, homepage reference removal and job
+publication/media update run through one `withDbTransaction` executor. A missing
+job returns 404 before changing references; a failed write rolls back the complete
+operation. The empty thumbnail uses `''` because the canonical baseline's
+`app_jobs.thumb_url` is NOT NULL. Jobs, receipts and unrelated media remain intact.
+`tests/admin-video-delete-postgres.test.ts` qualifies success on the initialized
+PG17 schema, a competing pool consumer, failure at every mutation step, unchanged
+billing, authorization and 404 behavior. The current moderation UI's Make private
+action uses the distinct `/visibility` route; this correction does not change that
+action or introduce a new deletion control.
+
 Generation-spend aggregates use `frontend/server/wallet-receipt-classification.ts`.
 Charges with `fraud_credit_reversal` or `customer_payment_refund_credit_reversal`
 as their metadata reason are payment-credit reversals, not render spending.
