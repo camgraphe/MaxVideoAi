@@ -3,6 +3,7 @@
 import { authFetch } from '@/lib/authFetch';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import type { StoryboardCopy } from './storyboard-workspace-copy';
+import type { CaptureStoryboardAccountRequest } from '../_hooks/useStoryboardAccountScope';
 
 export type StoryboardReferenceImage = {
   url: string;
@@ -33,15 +34,19 @@ export function cleanupStoryboardReferenceImage(image: StoryboardReferenceImage 
   }
 }
 
-export async function uploadStoryboardReferenceImage(file: File, copy: StoryboardCopy): Promise<Omit<StoryboardReferenceImage, 'previewUrl'>> {
+export async function uploadStoryboardReferenceImage(file: File, copy: StoryboardCopy, captureRequest?: CaptureStoryboardAccountRequest): Promise<Omit<StoryboardReferenceImage, 'previewUrl'>> {
   const preparedFile = await prepareImageFileForUpload(file, {
     maxBytes: STORYBOARD_REFERENCE_UPLOAD_LIMIT_MB * 1024 * 1024,
   });
+  const request = captureRequest?.();
+  if (captureRequest && (!request || !request.isCurrent())) throw new DOMException('Request retired', 'AbortError');
   const formData = new FormData();
   formData.set('file', preparedFile, preparedFile.name);
 
   const response = await authFetch('/api/uploads/image', {
     method: 'POST',
+    headers: request ? { Authorization: `Bearer ${request.accessToken}` } : undefined,
+    signal: request?.signal,
     body: formData,
   });
   const payload = (await response.json().catch(() => null)) as
