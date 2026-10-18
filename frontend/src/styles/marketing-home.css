@@ -344,6 +344,11 @@
 
 /* Studio and connected assistants share a single conversation chapter. */
 .marketing-site .home-conversation-detail{font-size:13px;line-height:1.7;color:var(--text-secondary);margin-top:16px;max-width:48ch}
+.marketing-site .home-conversation-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px;margin-top:24px}
+.marketing-site .home-conversation-actions .editorial-action{margin-top:0}
+.marketing-site .home-studio-open{display:inline-flex;align-items:center;gap:14px;min-height:48px;font-size:14px;font-weight:550;color:var(--text-primary)}
+.marketing-site .home-studio-open:hover{text-decoration:underline;text-underline-offset:4px}
+.marketing-site .home-conversation-actions a:focus-visible{outline:2px solid var(--brand);outline-offset:5px}
 .marketing-site .home-studio-preview{display:block;overflow:hidden;border:1px solid var(--hairline);border-radius:10px;box-shadow:0 20px 50px rgb(25 29 20 / .08)}
 .marketing-site .home-studio-preview img{display:block;width:100%;height:auto}
 .marketing-site .home-studio-preview:focus-visible{outline:2px solid var(--brand);outline-offset:5px}

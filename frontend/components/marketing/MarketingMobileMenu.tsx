@@ -124,6 +124,12 @@ export function MarketingMobileMenu({
               );
             }
             const allLabel = t(dropdown.allLabelKey, dropdown.allLabelFallback);
+            const allLink = !dropdown.allLinkInItems ? (
+              <Link prefetch={false} href={dropdown.allHref} onClick={onClose}
+                className="rounded-input px-2 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                {allLabel}
+              </Link>
+            ) : null;
             const panelId = `mobile-${item.key}-panel`;
             const isOpen = Boolean(mobileDropdownOpen[item.key]);
             return (
@@ -137,13 +143,7 @@ export function MarketingMobileMenu({
                   <span className="marketing-menu-chevron" aria-hidden="true" />
                 </summary>
                   <div id={panelId} className="marketing-menu-subnav flex flex-col gap-1 text-sm text-text-secondary">
-                    {!dropdown.allLinkInItems ? <Link prefetch={false}
-                      href={dropdown.allHref}
-                      onClick={onClose}
-                      className="rounded-input px-2 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      {allLabel}
-                    </Link> : null}
+                    {!dropdown.mobileAllLinkAfterItems ? allLink : null}
                     {isOpen ? dropdown.items.map((entry) => {
                       const entryLabel = t<string>(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label) ?? entry.label;
                       const badgeLabel = entry.badge ? t<string>(`nav.badges.${entry.badge}`, entry.badge) : undefined;
@@ -152,7 +152,7 @@ export function MarketingMobileMenu({
                           key={entry.key}
                           href={entry.href}
                           onClick={onClose}
-                          className="rounded-input px-2 py-2 transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className={clsx('rounded-input px-2 py-2 transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', entry.emphasized && 'marketing-menu-featured')}
                         >
                           <MarketingNavEntryContent
                             entry={entry}
@@ -160,9 +160,11 @@ export function MarketingMobileMenu({
                             badgeLabel={badgeLabel}
                             showModelLogo={item.key === 'models'}
                           />
+                          {entry.emphasized && entry.description ? <small>{t<string>(`nav.dropdown.${item.key}.descriptions.${entry.key}`, entry.description)}</small> : null}
                         </Link>
                       );
                     }) : null}
+                    {dropdown.mobileAllLinkAfterItems ? allLink : null}
                     {isOpen ? dropdown.sections?.map((section) => {
                       const sectionLabel = section.titleKey
                         ? t(section.titleKey, section.titleFallback ?? section.key)

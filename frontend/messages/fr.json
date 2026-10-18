@@ -218,7 +218,8 @@
           "upscale": "Agrandir une image ou vidéo",
           "image": "Générer une image",
           "audio": "Créer de l’audio",
-          "background-removal": "Détourer une vidéo"
+          "background-removal": "Détourer une vidéo",
+          "studio": "Studio"
         },
         "heading": "Préparez votre prochaine scène.",
         "intro": "Créez vos références, changez un angle et soignez les détails.",
@@ -229,6 +230,9 @@
               "get-started": "Premiers pas"
             }
           }
+        },
+        "descriptions": {
+          "studio": "Votre espace de création avec l’IA."
         }
       },
       "workflows": {

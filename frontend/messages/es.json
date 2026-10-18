@@ -218,7 +218,8 @@
           "upscale": "Ampliar una imagen o video",
           "image": "Generar imagen",
           "audio": "Crear audio",
-          "background-removal": "Quitar el fondo de un video"
+          "background-removal": "Quitar el fondo de un video",
+          "studio": "Studio"
         },
         "heading": "Prepara tu próxima escena.",
         "intro": "Crea tus referencias, cambia el ángulo y cuida los detalles.",
@@ -229,6 +230,9 @@
               "get-started": "Primeros pasos"
             }
           }
+        },
+        "descriptions": {
+          "studio": "Tu espacio de creación con IA."
         }
       },
       "workflows": {

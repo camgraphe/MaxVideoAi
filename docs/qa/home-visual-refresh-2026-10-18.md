@@ -1,6 +1,6 @@
 # Homepage visual refresh — preview evidence, 2026-10-18
 
-Scope: homepage presentation only. Studio and MCP remain separate products/routes;
+Scope: homepage presentation and public marketing navigation. Studio and MCP remain separate products/routes;
 `HomeConversationSection` groups their discovery on the home page. No deployment,
 redirect, model registry, auth, billing policy or database visibility change.
 Baseline: `a04a56fea` (current main when the isolated worktree was created).
@@ -167,3 +167,38 @@ No reproducible LCP/CLS regression or JavaScript errors. All mobile runs make
 zero video requests before playback intent. Final mobile transfer is 925 bytes
 above baseline; desktop transfer is lower. These remain local measurements, not
 field INP, a GSC audit or evidence of production CDN behavior.
+
+
+## Studio navigation and direct app access
+
+Studio moves from a standalone marketing header link to the first Tools entry,
+with a full-width row, description and separator. Mobile Tools uses the same
+first entry, followed by specialized tools and the all-tools link. Assistants/MCP
+remains separate. The workspace navigation itself is unchanged. Studio's public
+page remains linked in the server-rendered desktop menu in every locale.
+
+The homepage retains “Explore Studio” for the public presentation and adds
+“Open Studio” alongside it. The new link uses the existing marketing-entry route
+with the locale and no starter preset, preserving the Studio access policy and
+existing login/guest flow. Prefetch is disabled. No generation, project creation
+or new Studio client runtime is introduced by the homepage link.
+
+Validation: production build and TypeScript pass; lint has the six existing
+Studio/billing warnings and no errors. The 34 navigation, Studio marketing and
+entry tests pass. The 13 menu browser/rendering/message checks pass after updating
+the deliberate top-level icon count from seven to six. The native mobile menu
+retains 64 SSR elements, 6,310 bytes, no decorative SVG before enhancement, and
+identical icon geometry after hydration. Existing keyboard, native opening,
+focus restoration, no-JavaScript and message-payload contracts remain covered.
+
+Production UI checks pass for EN/FR/ES at 390 and 1242 px: Studio is the first
+Tools entry, no top-level Studio remains, the public presentation link and app
+entry link are both visible, and there is no horizontal overflow or page error.
+An anonymous click reaches `/app/studio` and renders the French Studio guest
+workspace; the existing flow consumes the language query parameter. The original
+smoke harness expected that query to remain and was corrected; the independent
+entry check confirmed the actual page and visible French content.
+Final homepage metadata/robots/hreflang/JSON-LD/redirect comparisons remain equal
+to baseline. Native-browser evidence: `studio-menu-in-app.jpg`; responsive
+captures: `studio-actions-390.png`, `studio-actions-1242.png`,
+`studio-menu-mobile.png` and `studio-menu-desktop.png`.

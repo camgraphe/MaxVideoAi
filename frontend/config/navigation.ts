@@ -36,6 +36,7 @@ export type MarketingNavDropdown = {
   allLabelKey: string;
   allLabelFallback: string;
   allLinkInItems?: boolean;
+  mobileAllLinkAfterItems?: boolean;
   intro?: string;
   heading?: string;
 };
@@ -57,7 +58,6 @@ export const MARKETING_TOP_NAV_LINKS = [
 ] as const satisfies readonly MarketingTopNavLink[];
 
 export const MARKETING_SITE_NAV_LINKS: readonly MarketingTopNavLink[] = [
-  { key: 'studio', href: '/studio' },
   ...MARKETING_TOP_NAV_LINKS.filter((item) => item.key !== 'blog' && item.key !== 'pricing'),
   { key: 'connect', href: '/mcp' },
   { key: 'pricing', href: '/pricing' },
@@ -263,6 +263,7 @@ const MARKETING_COMPARE_DECISION_GUIDES_SECTION: MarketingNavSection = {
 };
 
 export const MARKETING_NAV_TOOLS: MarketingNavItem[] = [
+  { key: 'studio', icon: 'cinema', label: 'Studio', href: '/studio', emphasized: true, description: 'Your creative workspace with AI.' },
   { key: 'character-builder', icon: 'character', label: 'Consistent Character AI', href: toolLink('character-builder') },
   { key: 'angle', icon: 'angle', label: 'Change Camera Angle', href: toolLink('angle') },
   { key: 'upscale', icon: 'upscale', label: 'AI Upscale', href: toolLink('upscale') },
@@ -353,6 +354,7 @@ export const MARKETING_NAV_DROPDOWNS: Partial<Record<string, MarketingNavDropdow
   },
   tools: {
     items: MARKETING_NAV_TOOLS,
+    mobileAllLinkAfterItems: true,
     desktopColumns: 2,
     heading: 'Shape the next part of your story.',
     intro: 'Create your references, change an angle and finish the details.',

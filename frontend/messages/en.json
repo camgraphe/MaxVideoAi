@@ -198,7 +198,8 @@
           "image": "Generate image",
           "audio": "Generate audio",
           "background-removal": "Remove a video background",
-          "upscale": "AI Upscale"
+          "upscale": "AI Upscale",
+          "studio": "Studio"
         },
         "heading": "Shape the next part of your story.",
         "intro": "Create your references, change an angle and finish the details.",
@@ -209,6 +210,9 @@
               "get-started": "Getting started"
             }
           }
+        },
+        "descriptions": {
+          "studio": "Your creative workspace with AI."
         }
       },
       "workflows": {
