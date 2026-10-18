@@ -23,6 +23,7 @@ export interface ContentFrontMatter {
   canonicalSlug?: string;
   authorId?: string;
   editorialArtifact?: string;
+  mcpCreation?: { title: string; body: string; href: string; label: string };
 }
 
 export interface ContentEntry extends ContentFrontMatter {

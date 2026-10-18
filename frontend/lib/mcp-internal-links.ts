@@ -78,7 +78,8 @@ export function getMcpInternalLink(
   placement: McpInternalLinkPlacement,
   publication: McpPublicationInputs = mcpPublication,
 ): { href: string; label: string } | null {
-  if (!getMcpPublicationState(publication).indexable) {
+  const state = getMcpPublicationState(publication);
+  if (!state.renderPublicPage || !state.indexable) {
     return null;
   }
   const prefix = localePathnames[locale];

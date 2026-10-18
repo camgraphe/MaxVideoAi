@@ -1,3 +1,4 @@
+import { getMcpInternalLink } from '@/lib/mcp-internal-links';
 import type { ContentEntry } from '@/lib/content/markdown';
 import '@/components/marketing/public-prose.css';
 import { Check, ChevronRight } from 'lucide-react';
@@ -71,7 +72,12 @@ export function MistakesCard({
   );
 }
 
-export function BestForContent({ content, contentComing }: { content: ContentEntry | null; contentComing: string }) {
+export function BestForContent({ content, contentComing, locale, mcpPublication }: {
+  content: ContentEntry | null;
+  contentComing: string;
+  locale: AppLocale;
+  mcpPublication?: Parameters<typeof getMcpInternalLink>[2];
+}) {
   if (!content) {
     return (
       <div className="rounded-card border border-hairline bg-surface p-6 text-sm text-text-secondary shadow-card">
@@ -82,6 +88,13 @@ export function BestForContent({ content, contentComing }: { content: ContentEnt
 
   return (
     <article id="full-analysis" className="rounded-[16px] border border-hairline bg-surface p-6 shadow-card sm:p-8">
+      {content.mcpCreation && getMcpInternalLink(locale, 'examples', mcpPublication) ? (
+        <section data-mcp-ad-story className="public-prose prose mb-8">
+          <h2>{content.mcpCreation.title}</h2>
+          <p>{content.mcpCreation.body}</p>
+          <a href={content.mcpCreation.href}>{content.mcpCreation.label} →</a>
+        </section>
+      ) : null}
       <div className="public-prose prose" dangerouslySetInnerHTML={{ __html: content.content }} />
     </article>
   );
