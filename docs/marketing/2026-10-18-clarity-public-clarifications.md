@@ -95,6 +95,45 @@ are preserved. No loading-performance improvement is claimed.
 
 ## Verification
 
-Evidence logs and local screenshots are retained under
-`.reports/clarity-public-clarifications/` in this isolated worktree. Final command
-results and PR reference are recorded below after validation.
+Review: [PR #458](https://github.com/camgraphe/MaxVideoAi/pull/458). This is a
+review candidate; it has not been merged or deployed to production. The media
+expiry/inactivity and unspecified promotional-validity decisions above remain
+with the product owner.
+
+Evidence logs and screenshots are retained under
+`.reports/clarity-public-clarifications/` in the isolated
+`clarity-public-clarifications` worktree.
+
+- Complete `pnpm test:validate` rerun passed: 8,785 standard tests plus six
+  isolated Studio integration scenarios, four standard skips and zero failures.
+  Both exhaustive financial cutovers passed on the stable application commit.
+- 200 focused contract tests passed. The corrected n8n/return-policy contracts
+  passed all 14 tests; the final model-choice explanation passed all 13 ads-guide
+  tests.
+- Frontend TypeScript, exposure, i18n parity, SEO/internal links/public-media
+  guard and diff checks passed. Frontend lint passed with six existing warnings.
+  The architecture audit was run; no global size-cleanliness claim is made.
+- The local production build passed, including prebuild gates and 932 generated
+  pages. Vercel also built application commit `e0977e23d` successfully.
+- All 19 touched public routes responded HTTP 200 on that protected Git preview:
+  MCP, n8n, PAYG, Pricing, Terms and the ads guide in EN/FR/ES, plus the existing
+  English return policy. The 77 JSON-LD blocks parsed, canonical/hreflang paths
+  and main-region counts matched the live baseline, and browser checks found no
+  horizontal overflow or JavaScript page errors. Preview-origin URLs were
+  normalized only for comparison, consistent with `resolveSiteOrigin()`.
+- Desktop EN and mobile FR/ES screenshots were inspected. The five translated
+  routes that looped under the standalone local server passed on Vercel.
+  All 15 marketing paths were present in the generated localized sitemaps.
+- Reference and original-result links were checked over HTTP; the original
+  video also played through its guide link. Existing Studio pages and their
+  product-ad entry links were inspected without starting a generation.
+- Independent review of the implementation and its factual corrections found
+  no actionable issue.
+
+The first complete validation attempt had 8,782 passing tests, four skips and
+three failures: two stale editorial assertions, now corrected, and one
+financial fixture invalidated by committing while it was running (the fixture
+binds its release to Git HEAD). The complete rerun passed on a stable commit.
+The final follow-up changes only the model-choice explanation and this evidence
+record. The latest required Quality CI state is recorded in PR #458 and must
+pass before any merge. No financial assertion or CI requirement was weakened.
