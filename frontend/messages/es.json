@@ -3774,7 +3774,14 @@
         "expandSection": "Mostrar",
         "collapseSection": "Ocultar",
         "saving": "Guardando…",
-        "removing": "Quitando…"
+        "removing": "Quitando…",
+        "savePending": "Guardando en Medios…",
+        "saveError": "No se pudo guardar en Medios. Inténtalo de nuevo.",
+        "saveSuccess": "Guardado en Medios.",
+        "removePending": "Quitando del historial…",
+        "removeError": "No se pudo quitar del historial. Inténtalo de nuevo.",
+        "removeSuccess": "Quitado del historial.",
+        "dismiss": "Cerrar"
       }
     },
     "dashboard": {

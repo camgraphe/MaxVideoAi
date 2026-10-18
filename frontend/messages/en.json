@@ -3923,7 +3923,14 @@
         "expandSection": "Show",
         "collapseSection": "Hide",
         "saving": "Saving…",
-        "removing": "Removing…"
+        "removing": "Removing…",
+        "savePending": "Saving to Media…",
+        "saveError": "Could not save to Media. Please try again.",
+        "saveSuccess": "Saved to Media.",
+        "removePending": "Removing from history…",
+        "removeError": "Could not remove from history. Please try again.",
+        "removeSuccess": "Removed from history.",
+        "dismiss": "Dismiss"
       }
     },
     "dashboard": {

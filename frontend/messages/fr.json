@@ -3782,7 +3782,14 @@
         "expandSection": "Afficher",
         "collapseSection": "Masquer",
         "saving": "Enregistrement…",
-        "removing": "Suppression…"
+        "removing": "Suppression…",
+        "savePending": "Enregistrement dans Médias…",
+        "saveError": "Impossible d’enregistrer dans Médias. Réessayez.",
+        "saveSuccess": "Enregistré dans Médias.",
+        "removePending": "Retrait de l’historique…",
+        "removeError": "Impossible de retirer ce résultat de l’historique. Réessayez.",
+        "removeSuccess": "Retiré de l’historique.",
+        "dismiss": "Fermer"
       }
     },
     "dashboard": {
