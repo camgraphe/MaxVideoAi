@@ -2,6 +2,8 @@
 
 import {
   useCallback,
+  useLayoutEffect,
+  useRef,
   type ChangeEvent,
   type ClipboardEvent as ReactClipboardEvent,
   type DragEvent as ReactDragEvent,
@@ -44,6 +46,16 @@ export function useAngleSourceImageHandlers({
   setUploading,
   userPresent,
 }: UseAngleSourceImageHandlersOptions) {
+  const uploadRef = useRef<AbortController | null>(null);
+  const cancelPendingUpload = useCallback(() => {
+    uploadRef.current?.abort();
+    uploadRef.current = null;
+    setUploading(false);
+  }, [setUploading]);
+  useLayoutEffect(() => () => {
+    uploadRef.current?.abort();
+    uploadRef.current = null;
+  }, []);
   const resetResultSelection = useCallback(() => {
     setResult(null);
     setSelectedOutputIndex(0);
@@ -56,12 +68,19 @@ export function useAngleSourceImageHandlers({
         onAuthRequired();
         return;
       }
+      cancelPendingUpload();
+      const controller = new AbortController();
+      uploadRef.current = controller;
+      const isCurrent = () => uploadRef.current === controller && !controller.signal.aborted;
       const localPreviewUrl = URL.createObjectURL(file);
+      const releasePreview = () => cleanupSourcePreview({ url: '', previewUrl: localPreviewUrl });
+      controller.signal.addEventListener('abort', releasePreview, { once: true });
       setUploading(true);
       setError(null);
 
       try {
-        const uploaded = await uploadImage(file, copy);
+        const uploaded = await uploadImage(file, copy, { signal: controller.signal });
+        if (!isCurrent()) return;
         setSourceImage((previous) => {
           cleanupSourcePreview(previous);
           return {
@@ -72,13 +91,17 @@ export function useAngleSourceImageHandlers({
         });
         resetResultSelection();
       } catch (uploadError) {
-        cleanupSourcePreview({ url: '', previewUrl: localPreviewUrl });
+        releasePreview();
+        if (!isCurrent()) return;
         setError(uploadError instanceof Error ? uploadError.message : copy.uploadFailed);
       } finally {
-        setUploading(false);
+        if (isCurrent()) {
+          uploadRef.current = null;
+          setUploading(false);
+        }
       }
     },
-    [copy, onAuthRequired, resetResultSelection, setError, setSourceImage, setUploading, userPresent]
+    [cancelPendingUpload, copy, onAuthRequired, resetResultSelection, setError, setSourceImage, setUploading, userPresent]
   );
 
   const handleFileSelect = useCallback(
@@ -97,6 +120,7 @@ export function useAngleSourceImageHandlers({
         setError(copy.invalidUrl);
         return;
       }
+      cancelPendingUpload();
       setError(null);
       setSourceImage((previous) => {
         cleanupSourcePreview(previous);
@@ -110,7 +134,7 @@ export function useAngleSourceImageHandlers({
       });
       resetResultSelection();
     },
-    [copy.invalidUrl, copy.referenceName, resetResultSelection, setError, setSourceImage]
+    [cancelPendingUpload, copy.invalidUrl, copy.referenceName, resetResultSelection, setError, setSourceImage]
   );
 
   const handleSourceDrop = useCallback(
@@ -159,6 +183,7 @@ export function useAngleSourceImageHandlers({
         onAuthRequired();
         return;
       }
+      cancelPendingUpload();
       setSourceImage((previous) => {
         cleanupSourcePreview(previous);
         return {
@@ -175,10 +200,11 @@ export function useAngleSourceImageHandlers({
       setError(null);
       setLibraryModalOpen(false);
     },
-    [copy.libraryImageName, onAuthRequired, resetResultSelection, setError, setLibraryModalOpen, setSourceImage, userPresent]
+    [cancelPendingUpload, copy.libraryImageName, onAuthRequired, resetResultSelection, setError, setLibraryModalOpen, setSourceImage, userPresent]
   );
 
   const handleRemoveSource = useCallback(() => {
+    cancelPendingUpload();
     setSourceImage((previous) => {
       cleanupSourcePreview(previous);
       return null;
@@ -187,7 +213,7 @@ export function useAngleSourceImageHandlers({
     if (!userPresent) {
       setGuestExampleDismissed(true);
     }
-  }, [resetResultSelection, setGuestExampleDismissed, setSourceImage, userPresent]);
+  }, [cancelPendingUpload, resetResultSelection, setGuestExampleDismissed, setSourceImage, userPresent]);
 
   const handleUploadRequest = useCallback(() => {
     if (!userPresent) {

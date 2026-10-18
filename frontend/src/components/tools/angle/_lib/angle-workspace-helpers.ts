@@ -171,15 +171,18 @@ export function getUploadTooLargeMessage(copy: AngleCopy, maxMB: number): string
   return formatTemplate(copy.uploadTooLarge, { maxMB });
 }
 
-export async function uploadImage(file: File, copy: AngleCopy): Promise<UploadedImage> {
+export async function uploadImage(file: File, copy: AngleCopy, options: { signal?: AbortSignal } = {}): Promise<UploadedImage> {
   const preparedFile = await prepareImageFileForUpload(file, {
     maxBytes: DEFAULT_UPLOAD_LIMIT_MB * 1024 * 1024,
   });
+
+  options.signal?.throwIfAborted();
 
   const formData = new FormData();
   formData.set('file', preparedFile, preparedFile.name);
 
   const response = await authFetch('/api/uploads/image', {
+    signal: options.signal,
     method: 'POST',
     body: formData,
   });

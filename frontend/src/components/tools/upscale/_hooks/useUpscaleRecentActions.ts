@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import type { GroupedJobAction } from '@/components/GroupedJobCard';
 import { listUpscaleToolEngines } from '@/config/tools-upscale-engines';
 import { saveAssetToLibrary } from '@/lib/api';
@@ -33,7 +33,6 @@ import type {
 
 type UseUpscaleRecentActionsOptions = {
   copy: { saved: string; saveFailed: string };
-  hasSourcePreview: boolean;
   locale: string;
   mediaType: UpscaleMediaType;
   setActiveRecentGroupId: (value: string | null) => void;
@@ -83,7 +82,6 @@ function buildRecentUpscaleResult(selection: RecentUpscaleMedia): UpscaleToolRes
 
 export function useUpscaleRecentActions({
   copy,
-  hasSourcePreview,
   locale,
   mediaType,
   setActiveRecentGroupId,
@@ -101,6 +99,13 @@ export function useUpscaleRecentActions({
   setUpscaleFactor,
 }: UseUpscaleRecentActionsOptions) {
   const [savingRecentGroupId, setSavingRecentGroupId] = useState<string | null>(null);
+  const selectionRef = useRef<AbortController | null>(null);
+  const cancelRecentSelection = useCallback(() => {
+    selectionRef.current?.abort();
+    selectionRef.current = null;
+  }, []);
+  useLayoutEffect(() => cancelRecentSelection, [cancelRecentSelection]);
+
 
   const applyRecentUpscaleMediaType = useCallback(
     (selection: RecentUpscaleMedia) => {
@@ -119,7 +124,7 @@ export function useUpscaleRecentActions({
     [mediaType, setEngineId, setMediaType, setMode, setOutputFormat, setTargetResolution, setUpscaleFactor]
   );
 
-  const resolveRecentSelectionWithSource = useCallback(async (group: GroupSummary): Promise<RecentUpscaleMedia | null> => {
+  const resolveRecentSelectionWithSource = useCallback(async (group: GroupSummary, signal: AbortSignal): Promise<RecentUpscaleMedia | null> => {
     const selection = resolveRecentUpscaleMediaFromGroup(group);
     if (selection?.source?.url) return selection;
 
@@ -127,7 +132,7 @@ export function useUpscaleRecentActions({
     if (!baseJob?.jobId) return selection;
 
     try {
-      const response = await authFetch(`/api/jobs/${encodeURIComponent(baseJob.jobId)}`);
+      const response = await authFetch(`/api/jobs/${encodeURIComponent(baseJob.jobId)}`, { signal });
       const payload = (await response.json().catch(() => null)) as JobDetailResponse | null;
       if (!response.ok || !payload?.ok) return selection;
       const detailedJob: Job = {
@@ -152,8 +157,13 @@ export function useUpscaleRecentActions({
 
   const selectRecentUpscale = useCallback(
     async (group: GroupSummary) => {
+      cancelRecentSelection();
+      const controller = new AbortController();
+      selectionRef.current = controller;
       setError(null);
-      const selection = await resolveRecentSelectionWithSource(group);
+      const selection = await resolveRecentSelectionWithSource(group, controller.signal);
+      if (selectionRef.current !== controller || controller.signal.aborted) return;
+      selectionRef.current = null;
       if (!selection) {
         setError('No finished upscale output is available for this job yet.');
         return;
@@ -170,6 +180,9 @@ export function useUpscaleRecentActions({
           name: 'Recent upscale source',
         });
         setMediaUrl(selection.source.url);
+      } else {
+        setSource(null);
+        setMediaUrl('');
       }
       setResult(buildRecentUpscaleResult(selection));
       setActiveRecentGroupId(group.id);
@@ -179,13 +192,12 @@ export function useUpscaleRecentActions({
           ? selection.engineLabel
           : `${selection.engineLabel} · ${formatCurrency(selection.totalCents, selection.currency, locale)}`
       );
-      setPreviewMode(selection.source?.url || (hasSourcePreview && selection.mediaType === mediaType) ? 'compare' : 'result');
+      setPreviewMode(selection.source?.url && selection.mediaType === 'image' ? 'compare' : 'result');
     },
     [
       applyRecentUpscaleMediaType,
-      hasSourcePreview,
+      cancelRecentSelection,
       locale,
-      mediaType,
       resolveRecentSelectionWithSource,
       setActiveRecentGroupId,
       setError,
@@ -254,6 +266,7 @@ export function useUpscaleRecentActions({
   );
 
   return {
+    cancelRecentSelection,
     handleRecentGroupAction,
     savingRecentGroupId,
     selectRecentUpscale,

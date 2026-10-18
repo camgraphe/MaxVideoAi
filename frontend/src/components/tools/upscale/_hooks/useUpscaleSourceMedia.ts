@@ -17,6 +17,7 @@ import { getUpscaleUploadErrorMessage } from '../_lib/upscale-upload-errors';
 
 interface UseUpscaleSourceMediaParams {
   changeMediaType: (next: UpscaleMediaType) => void;
+  onSourceChange: () => void;
   copy: {
     library: string;
   };
@@ -36,6 +37,7 @@ interface UseUpscaleSourceMediaParams {
 
 export function useUpscaleSourceMedia({
   changeMediaType,
+  onSourceChange,
   copy,
   locale,
   mediaType,
@@ -81,6 +83,7 @@ export function useUpscaleSourceMedia({
       const file = event.target.files?.[0];
       event.target.value = '';
       if (!file) return;
+      onSourceChange();
       const detectedType = mediaTypeFromMime(file.type);
       const nextMediaType = detectedType ?? mediaType;
       if (nextMediaType !== mediaType) changeMediaType(nextMediaType);
@@ -102,6 +105,7 @@ export function useUpscaleSourceMedia({
     },
     [
       changeMediaType,
+      onSourceChange,
       locale,
       mediaType,
       setError,
@@ -116,6 +120,7 @@ export function useUpscaleSourceMedia({
 
   const selectLibraryAsset = useCallback(
     (asset: AssetBrowserAsset) => {
+      onSourceChange();
       const nextMediaType: UpscaleMediaType = asset.kind === 'video' || asset.mime?.startsWith('video/') ? 'video' : 'image';
       if (nextMediaType !== mediaType) {
         changeMediaType(nextMediaType);
@@ -138,6 +143,7 @@ export function useUpscaleSourceMedia({
     },
     [
       changeMediaType,
+      onSourceChange,
       copy.library,
       mediaType,
       setError,
