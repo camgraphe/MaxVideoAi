@@ -293,6 +293,9 @@ for (const locale of locales) {
     assertExactHeadingStructure(semantic.topLevelHeadings, expected.headings);
     assert.equal(semantic.topLevelHeadings.length, 15);
     assert.deepEqual(semantic.sectionOpenings, emptySectionOpenings);
+    const walletTerms = `${locale === 'en' ? '' : `/${locale}`}/legal/terms#wallet-credits`;
+    assert.ok(semantic.links.some((link) => link.href === walletTerms), 'purchase terms must open in the reader’s locale');
+    assert.ok(semantic.links.some((link) => link.href === '/return-policy#refund-review'), 'payment refunds link to the existing English review procedure');
     assert.ok(semantic.textNodes.includes(expected.heroIntro));
     assert.ok(semantic.headings.includes(expected.naturalQuestion));
     assert.ok(semantic.textNodes.includes(expected.pricingIntro));

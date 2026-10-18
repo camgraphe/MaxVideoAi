@@ -216,6 +216,30 @@ export const enPayAsYouGoContent = {
     budgetCaveat: "This is a budget illustration, not a promise that three attempts will produce the result you want. Media credits used are separate from the minimum top-up, which starts at $10. Changed settings or prices require a new quote.",
     studioAssistance: "Using Studio? Sol uses included or purchased assistance credits. Media generation has its own quote. Review both when planning your budget.",
     studioLinkLabel: "Open Studio",
+    creditNotes: {
+      "title": "Credit validity before you top up",
+      "items": [
+        {
+          "title": "Purchased media credits",
+          "body": "Unused purchased media credits stay in your wallet between projects, with no subscription required. Our current Terms do not specify an expiry period or an inactivity deadline for this balance. Contact support before buying if you need confirmation of a validity period."
+        },
+        {
+          "title": "Promotional, bonus and free credits",
+          "body": "These have no cash value and are not refundable. Check the specific offer for its validity conditions; if none are stated, ask support before assuming the media-credit or Studio rules apply."
+        },
+        {
+          "title": "Studio assistance credits",
+          "body": "GPT-6.1 Sol includes 500 credits per UTC calendar month. Unused included credits do not carry over. Purchased Sol packs accumulate without expiry or automatic refill. Each pack purchase is confirmed and funded from your MaxVideoAI wallet. Media generation has its own separate quote. GPT-6 Luna has no extra assistance fee, subject to request limits and service availability."
+        }
+      ],
+      "links": {
+        "termsHref": "/legal/terms#wallet-credits",
+        "terms": "Wallet terms",
+        "refunds": "Refund policy and request procedure",
+        "support": "Ask support about credit validity",
+        "studio": "Studio assistance"
+      }
+    },
     labels: {
       'gemini-omni-flash': 'Gemini Omni Flash 1.1 multimodal test',
       'kling-3-turbo-pro': 'Kling 3.0 Turbo Pro 1080p test',
@@ -236,7 +260,7 @@ export const enPayAsYouGoContent = {
   refundPolicy: {
     header: {
       title: 'What happens if a generation fails?',
-      intro: "Each completed generation uses credits. A completed result that does not meet your creative expectations is different from a technical failure. Failed generations are automatically recredited.",
+      intro: "Each completed generation uses credits. A completed result that does not meet your creative expectations is different from a technical failure. Failed generations are automatically recredited. A wallet recredit is not a card or bank refund. For a payment refund or an unused purchased balance, request a review under the refund policy. Each new attempt needs its own current quote.",
     },
     bullets: [
       { icon: 'preview', body: 'You review the price before launching a generation.' },

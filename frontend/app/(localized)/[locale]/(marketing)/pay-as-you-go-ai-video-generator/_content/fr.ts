@@ -216,6 +216,30 @@ export const frPayAsYouGoContent = {
     budgetCaveat: "C’est une illustration de budget, sans garantie que trois essais donnent le résultat souhaité. Les crédits média consommés sont distincts de la recharge minimale, à partir de 10 $. Des réglages ou tarifs différents nécessitent un nouveau devis.",
     studioAssistance: "Vous utilisez Studio ? Sol consomme des crédits d’assistance inclus ou achetés. La génération média dispose de son propre devis. Tenez compte des deux dans votre budget.",
     studioLinkLabel: "Ouvrir Studio",
+    creditNotes: {
+      "title": "Validité des crédits avant de recharger",
+      "items": [
+        {
+          "title": "Crédits média achetés",
+          "body": "Les crédits média achetés non utilisés restent dans votre portefeuille entre vos projets, sans abonnement obligatoire. Nos conditions actuelles ne précisent ni durée d’expiration ni délai d’inactivité pour ce solde. Contactez l’assistance avant l’achat si vous avez besoin de confirmer une durée de validité."
+        },
+        {
+          "title": "Crédits promotionnels, bonus et gratuits",
+          "body": "Ils n’ont pas de valeur monétaire et ne sont pas remboursables. Consultez les conditions de validité de l’offre ; si elles ne sont pas précisées, contactez l’assistance avant de leur appliquer les règles des crédits média ou de Studio."
+        },
+        {
+          "title": "Crédits d’assistance Studio",
+          "body": "GPT-6.1 Sol inclut 500 crédits par mois civil UTC. Les crédits inclus non utilisés ne sont pas reportés. Les packs Sol achetés se cumulent sans expiration ni recharge automatique. Chaque achat de pack est confirmé et financé depuis votre portefeuille MaxVideoAI. La génération média a son propre devis distinct. GPT-6 Luna n’entraîne pas de frais d’assistance supplémentaires, sous réserve des limites de requête et de la disponibilité du service."
+        }
+      ],
+      "links": {
+        "termsHref": "/fr/legal/terms#wallet-credits",
+        "terms": "Conditions du portefeuille",
+        "refunds": "Politique et demande de remboursement (anglais)",
+        "support": "Contacter l’assistance sur la validité des crédits",
+        "studio": "Assistance Studio"
+      }
+    },
     labels: {
       'gemini-omni-flash': 'Essai multimodal avec Gemini Omni Flash 1.1',
       'kling-3-turbo-pro': 'Essai 1080p avec Kling 3.0 Turbo Pro',
@@ -236,7 +260,7 @@ export const frPayAsYouGoContent = {
   refundPolicy: {
     header: {
       title: 'Que se passe-t-il si une génération échoue ?',
-      intro: "Chaque génération terminée consomme des crédits. Un résultat terminé qui ne répond pas à vos attentes créatives se distingue d’un échec technique. Les générations échouées sont automatiquement recréditées.",
+      intro: "Chaque génération terminée consomme des crédits. Un résultat terminé qui ne répond pas à vos attentes créatives se distingue d’un échec technique. Les générations échouées sont automatiquement recréditées. Un retour au portefeuille n’est pas un remboursement sur carte ou compte bancaire. Pour un remboursement du paiement ou d’un solde acheté non utilisé, demandez un examen selon la politique de remboursement. Chaque nouvel essai nécessite son propre devis actuel.",
     },
     bullets: [
       { icon: 'preview', body: 'Vous examinez le prix avant de lancer une génération.' },

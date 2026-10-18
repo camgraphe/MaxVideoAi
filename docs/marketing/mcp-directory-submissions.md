@@ -1,11 +1,10 @@
 # MaxVideoAI MCP distribution packages
 
-Latest submission checkpoint: [5 October 2026 n8n update](#n8n-update-submission--2026-10-05).
+Latest n8n checkpoint: [12 October approval, 18 October availability check](#n8n-approval--2026-10-12-availability-rechecked-2026-10-18).
 Latest package publication: [5 October 2026 plugin and Registry checkpoint](../operations/mcp-distribution-publication-2026-10-05.md).
 Earlier read-only checkpoint: [4 October 2026 distribution rollout](../operations/studio-mcp-distribution-rollout-2026-10-04.md).
-GitHub and the official Registry now expose 0.3.7. The October 5 update to
-n8n workflow 19591 has been submitted and is under review; the public endpoint
-still returns the earlier payload. These observations supersede the dated
+GitHub and the official Registry now expose 0.3.7. The corrected n8n workflow 19591 was approved and published on October 12;
+its canonical public page remains accessible on October 18. These observations supersede the dated
 version/public-visibility claims below; historical evidence is preserved.
 
 Checked: 2026-09-17; n8n public listing rechecked 2026-09-25
@@ -14,6 +13,25 @@ Overall state: **OWNED-SITE DIRECT RELEASE + OFFICIAL MCP REGISTRY 0.3.5 ACTIVE/
 This file records evidence and owner decisions. It does not authorize another submission, account creation, listing,
 deployment, feature-flag change, or use of a third party's marks. Directory rules are current and unstable; recheck all
 linked primary sources on the day an owner authorizes a new submission.
+
+## n8n approval — 2026-10-12; availability rechecked 2026-10-18
+
+The owner-provided `OUTREACH/sources/2026-10-12/n8n-approval/CONTROLE.txt`
+records the approval email received on October 12 at 22:41 Europe/Madrid,
+public availability, and full semantic parity of the public 21-node JSON with
+the corrected file resubmitted on October 11. The companion evidence is
+`approval-mail.txt`, `public-workflow.json`, `json-parity.json` and public captures.
+Serialization hashes differ; this is object parity, not identical upload bytes.
+These records supersede the October 5 pending-update state below.
+
+On October 18 the canonical [template 19591](https://n8n.io/workflows/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/)
+was read again and remained accessible. The store projection returns to `listed`.
+This availability check is not a new compatibility test. OAuth remains manual;
+the tested path is self-hosted n8n 2.38.7 MCP Client, with a fresh exact quote,
+human approval of that quote, then confirmation. n8n Cloud, MCP Client Tool / AI
+Agent and private-reference automation are not newly validated. No workflow was
+submitted, imported or executed, and no generation was purchased for this update.
+The two other candidate workflows have no verified public listing.
 
 ## n8n update submission — 2026-10-05
 

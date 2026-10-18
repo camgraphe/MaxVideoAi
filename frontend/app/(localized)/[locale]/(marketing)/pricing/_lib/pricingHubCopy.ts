@@ -156,6 +156,7 @@ type PricingHubCopy = {
     finalExport: string;
   };
   creditsRefunds: {
+    creditNotes: { title: string; items: Array<{ title: string; body: string }>; links: { termsHref: string; terms: string; refunds: string; support: string; studio: string } };
     title: string;
     intro: string;
     cards: Array<{
@@ -330,6 +331,30 @@ const en: PricingHubCopy = {
     finalExport: 'Final export',
   },
   creditsRefunds: {
+    creditNotes: {
+      "title": "Credit validity before you top up",
+      "items": [
+        {
+          "title": "Purchased media credits",
+          "body": "Unused purchased media credits stay in your wallet between projects, with no subscription required. Our current Terms do not specify an expiry period or an inactivity deadline for this balance. Contact support before buying if you need confirmation of a validity period."
+        },
+        {
+          "title": "Promotional, bonus and free credits",
+          "body": "These have no cash value and are not refundable. Check the specific offer for its validity conditions; if none are stated, ask support before assuming the media-credit or Studio rules apply."
+        },
+        {
+          "title": "Studio assistance credits",
+          "body": "GPT-6.1 Sol includes 500 credits per UTC calendar month. Unused included credits do not carry over. Purchased Sol packs accumulate without expiry or automatic refill. Each pack purchase is confirmed and funded from your MaxVideoAI wallet. Media generation has its own separate quote. GPT-6 Luna has no extra assistance fee, subject to request limits and service availability."
+        }
+      ],
+      "links": {
+        "termsHref": "/legal/terms#wallet-credits",
+        "terms": "Wallet terms",
+        "refunds": "Refund policy and request procedure",
+        "support": "Ask support about credit validity",
+        "studio": "Studio assistance"
+      }
+    },
     title: 'Credits, live quotes and refunds',
     intro: 'Pricing tables are preset references. The app remains the source for job-level live quotes before launch.',
     cards: [
@@ -347,7 +372,7 @@ const en: PricingHubCopy = {
       },
       {
         title: 'Failed generations refunded',
-        body: 'Credits are charged only when a job completes successfully. Failed generations are refunded automatically.',
+        body: 'Technically failed generations are recredited to your wallet. This is not an automatic card or bank refund. Completed results consume credits even if they disappoint; a new attempt has a new quote. Payment-refund requests are reviewed under the refund policy.',
       },
       {
         title: 'Secure checkout',
@@ -518,6 +543,30 @@ const fr: PricingHubCopy = {
     finalExport: 'Export final',
   },
   creditsRefunds: {
+    creditNotes: {
+      "title": "Validité des crédits avant de recharger",
+      "items": [
+        {
+          "title": "Crédits média achetés",
+          "body": "Les crédits média achetés non utilisés restent dans votre portefeuille entre vos projets, sans abonnement obligatoire. Nos conditions actuelles ne précisent ni durée d’expiration ni délai d’inactivité pour ce solde. Contactez l’assistance avant l’achat si vous avez besoin de confirmer une durée de validité."
+        },
+        {
+          "title": "Crédits promotionnels, bonus et gratuits",
+          "body": "Ils n’ont pas de valeur monétaire et ne sont pas remboursables. Consultez les conditions de validité de l’offre ; si elles ne sont pas précisées, contactez l’assistance avant de leur appliquer les règles des crédits média ou de Studio."
+        },
+        {
+          "title": "Crédits d’assistance Studio",
+          "body": "GPT-6.1 Sol inclut 500 crédits par mois civil UTC. Les crédits inclus non utilisés ne sont pas reportés. Les packs Sol achetés se cumulent sans expiration ni recharge automatique. Chaque achat de pack est confirmé et financé depuis votre portefeuille MaxVideoAI. La génération média a son propre devis distinct. GPT-6 Luna n’entraîne pas de frais d’assistance supplémentaires, sous réserve des limites de requête et de la disponibilité du service."
+        }
+      ],
+      "links": {
+        "termsHref": "/fr/legal/terms#wallet-credits",
+        "terms": "Conditions du portefeuille",
+        "refunds": "Politique et demande de remboursement (anglais)",
+        "support": "Contacter l’assistance sur la validité des crédits",
+        "studio": "Assistance Studio"
+      }
+    },
     title: 'Crédits, devis live et remboursements',
     intro: 'Les tableaux sont des références par scénario. L’app reste la source du devis exact par job avant lancement.',
     cards: [
@@ -535,7 +584,7 @@ const fr: PricingHubCopy = {
       },
       {
         title: 'Échecs remboursés',
-        body: 'Les crédits ne sont débités que lorsqu’un job réussit. Les générations échouées sont remboursées automatiquement.',
+        body: 'Les générations en échec technique sont recréditées au portefeuille. Ce n’est pas un remboursement automatique sur carte ou compte bancaire. Un résultat terminé consomme des crédits même s’il déçoit ; un nouvel essai a un nouveau devis. Les demandes de remboursement du paiement sont examinées selon la politique de remboursement.',
       },
       {
         title: 'Paiement sécurisé',
@@ -706,6 +755,30 @@ const es: PricingHubCopy = {
     finalExport: 'Export final',
   },
   creditsRefunds: {
+    creditNotes: {
+      "title": "Validez de los créditos antes de recargar",
+      "items": [
+        {
+          "title": "Créditos de medios comprados",
+          "body": "Los créditos de medios comprados y no usados permanecen en tu monedero entre proyectos, sin suscripción obligatoria. Nuestras condiciones actuales no especifican un plazo de caducidad ni de inactividad para este saldo. Contacta con soporte antes de comprar si necesitas confirmar un periodo de validez."
+        },
+        {
+          "title": "Créditos promocionales, de bonificación y gratuitos",
+          "body": "No tienen valor en efectivo y no son reembolsables. Consulta las condiciones de validez de la oferta; si no se indican, pregunta a soporte antes de aplicar las reglas de los créditos de medios o de Studio."
+        },
+        {
+          "title": "Créditos de asistencia de Studio",
+          "body": "GPT-6.1 Sol incluye 500 créditos por mes natural UTC. Los créditos incluidos no usados no se acumulan. Los paquetes Sol comprados se acumulan sin caducidad ni recarga automática. Cada compra de paquete se confirma y se financia desde tu monedero MaxVideoAI. La generación de medios tiene su propia cotización. GPT-6 Luna no tiene coste adicional de asistencia, sujeto a límites de solicitudes y disponibilidad del servicio."
+        }
+      ],
+      "links": {
+        "termsHref": "/es/legal/terms#wallet-credits",
+        "terms": "Condiciones del monedero",
+        "refunds": "Política y solicitud de reembolso (inglés)",
+        "support": "Consultar la validez con soporte",
+        "studio": "Asistencia de Studio"
+      }
+    },
     title: 'Créditos, precios vivos y reembolsos',
     intro: 'Las tablas son referencias por escenario. La app sigue siendo la fuente del precio exacto por job antes de lanzar.',
     cards: [
@@ -723,7 +796,7 @@ const es: PricingHubCopy = {
       },
       {
         title: 'Fallos reembolsados',
-        body: 'Los créditos solo se cobran cuando un job termina correctamente. Las generaciones fallidas se reembolsan automáticamente.',
+        body: 'Las generaciones con un fallo técnico se abonan de nuevo al monedero. No es un reembolso automático a la tarjeta o cuenta bancaria. Un resultado completado consume créditos aunque decepcione; un nuevo intento tiene una nueva cotización. Las solicitudes de reembolso del pago se revisan según la política de reembolsos.',
       },
       {
         title: 'Pago seguro',

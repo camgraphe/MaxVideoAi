@@ -52,11 +52,20 @@ test('host eligibility is visible and automation never becomes a generic one-cli
   assert.match(html,/data-copy-endpoint/);
   assert.match(html,/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/);
   assert.doesNotMatch(html,/Pending \/ Under review|no public n8n library listing/i);
-  assert.match(n8n.troubleshooting.items[0].answer,/awaiting n8n review|en cours de revue|en revisión/);
-  assert.doesNotMatch(html,/Workflow 19591 is publicly listed|Le workflow 19591 est publié|El flujo 19591 está publicado/);
+  assert.match(n8n.troubleshooting.items[0].answer,/approved|approuvé|aprobada/);
+  assert.doesNotMatch(html,/awaiting n8n review|en cours de revue|en revisión/);
   const faq=getMcpEditorialCopy(locale).faq.map(item=>item.answer).join(' ');
   assert.match(faq,/Business.*Enterprise.*Edu/);assert.match(faq,/Pro/);assert.match(faq,/2\.38\.7/);assert.match(faq,/Cloud/);assert.match(faq,/19591/);assert.match(faq,/manual|manuelle/i);
-  assert.match(faq,/awaiting n8n review|en cours de revue|en revisión/);
+  assert.doesNotMatch(faq,/awaiting n8n review|en cours de revue|en revisión/);
+  for (const answer of [n8n.troubleshooting.items[0].answer, getMcpEditorialCopy(locale).faq[2].answer]) {
+    assert.match(answer,/approved|approuvé|aprobada/);
+    assert.match(answer,/OAuth/);
+    assert.match(answer,/2\.38\.7/);
+    assert.match(answer,/fresh quote|devis frais|cotización nueva/);
+    assert.match(answer,/human approval|accord humain|aprobación humana/);
+    assert.match(answer,/Cloud.*AI Agent/);
+    assert.match(answer,/not been validated|n’ont pas été validés|no se han validado/);
+  }
  }
 });
 test('gated views do not show paid workflow, historical proof or price examples',()=>{

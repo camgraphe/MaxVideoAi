@@ -46,7 +46,7 @@ export default function ReturnPolicyPage() {
         <section className="stack-gap-xl rounded-card border border-border bg-surface p-6 shadow-card sm:p-10">
           <header className="stack-gap-sm">
             <h1 className="text-xl font-semibold text-text-primary">Refund &amp; Return Policy</h1>
-            <p className="text-sm text-text-secondary">Last updated: June 2, 2026</p>
+            <p className="text-sm text-text-secondary">Last clarified: October 18, 2026</p>
           </header>
 
           <article className="stack-gap-lg text-base leading-relaxed text-text-secondary">
@@ -64,6 +64,11 @@ export default function ReturnPolicyPage() {
               <p>
                 If a generation job fails because of a technical issue on MaxVideoAI&apos;s side, we may automatically refund the related
                 charge to the user&apos;s wallet or, where appropriate, refund the original payment method.
+              </p>
+              <p>
+                A wallet recredit restores credits for later use; it does not reverse the card or bank payment used to top up.
+                To request a payment refund, follow the review procedure below. A new generation attempt has its own current quote,
+                including after a completed result that did not meet your creative expectations.
               </p>
               <p>A failed or defective generation may include:</p>
               <ul className="ml-5 list-disc space-y-2">
@@ -86,7 +91,7 @@ export default function ReturnPolicyPage() {
               <p>This does not affect any mandatory consumer rights that may apply in the user&apos;s country of residence.</p>
             </section>
 
-            <section className="stack-gap-sm">
+            <section id="wallet-credits" className="stack-gap-sm scroll-mt-[calc(var(--header-height)+24px)]">
               <h3 className="text-lg font-semibold text-text-primary">4. Wallet credits and unused balances</h3>
               <p>
                 Unused wallet credits may be reviewed for refund on request, subject to payment processor limitations, fraud checks,
@@ -111,7 +116,7 @@ export default function ReturnPolicyPage() {
               <p>We do not offer exchanges, because MaxVideoAI provides digital services and not physical products.</p>
             </section>
 
-            <section className="stack-gap-sm">
+            <section id="refund-review" className="stack-gap-sm scroll-mt-[calc(var(--header-height)+24px)]">
               <h3 className="text-lg font-semibold text-text-primary">7. How to request a refund review</h3>
               <p>
                 To request a refund review, contact us at <SupportEmailLink /> with:

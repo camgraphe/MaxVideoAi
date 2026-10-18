@@ -140,6 +140,7 @@ export type PayAsYouGoContent = {
     budgetCaveat: string;
     studioAssistance: string;
     studioLinkLabel: string;
+    creditNotes: { title: string; items: Array<{ title: string; body: string }>; links: { termsHref: string; terms: string; refunds: string; support: string; studio: string } };
     labels: Record<PaygExampleCostId, string>;
   };
   refundPolicy: { header: PaygHeaderCopy; bullets: Array<{ icon: PaygIconId; body: string }> };
