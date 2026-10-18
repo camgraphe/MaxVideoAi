@@ -28,7 +28,8 @@ test('final pricing inherits owned Draft facts and rejects missing ownership bef
   assert.equal(resolved.body.fps, 24);
   assert.equal(resolved.body.cfgScale, undefined);
   assert.equal(resolved.body.resolution, '1080p');
-  assert.deepEqual(resolved.seedanceFinal, { draftJobId: 'draft-owned', providerTaskId: 'cgt-private', providerModelId: 'same-model' });
+  assert.deepEqual(resolved.seedanceFinal, { draftJobId: 'draft-owned', providerTaskId: 'cgt-private', providerModelId: 'same-model',
+    parentSnapshotFingerprint: (await import('../frontend/server/seedance-workflow-facts')).seedanceDraftBillingFingerprint(parent) });
   await assert.rejects(resolve({ body, userId: 'other', engineId: 'seedance-2-5', enabled: true }, {
     getOwnedReadyFn: async () => null, readParentFn: async () => { throw new Error('must not read foreign parent'); },
   }), /unavailable/i);

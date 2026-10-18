@@ -114,6 +114,18 @@ Treat any model as the best executable fit only when the live recommendation
 and details support the user's priorities. This is a contextual decision, not
 a permanent ranking.
 
+## Seedance 1080p route choice
+
+Read Seedance 2.5's live `seedanceWorkflow` before offering native Draft.
+For a 1080p request, explain direct rendering or a native Draft 480p trial with
+optional separately paid 1080p finalization at the useful choice point.
+Respect an explicit direct choice without repeating the suggestion. Standard
+480p is a different offer and cannot be called a finalizable Draft.
+Use only returned workflow costs and eligibility; do not promise savings, free
+finalization or pixel-for-pixel preservation. Each chosen step goes through
+`generate` for its own exact quote and explicit approval. If unavailable, say
+so; offer a returned web path only when live details confirm its availability.
+
 ## Build comparable proposals
 
 Offer one to four named approaches tied to the user's goal. A proposal may use

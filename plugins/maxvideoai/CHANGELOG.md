@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.8 — 2026-10-18
+
+- Explain native Seedance 2.5 Draft 480p and separately approved 1080p finalization using live workflow fields, prices and owned lifecycle.
+- Offer the direct 1080p versus Draft-then-final choice once, respecting explicit user choices; ordinary 480p is never a finalizable Draft.
+- Requires deployed workflow-capable server metadata and refreshed host discovery; package publication does not establish new host qualification.
+
 ## 0.3.7 — 2026-10-04
 
 - Preserve the brief, selected model, references and known jobs during reconnect;

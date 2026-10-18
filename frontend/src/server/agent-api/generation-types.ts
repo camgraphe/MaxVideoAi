@@ -73,6 +73,8 @@ export type IncludedTrialFundingSnapshot = Readonly<{
   providerCostCents: number;
 }>;
 
+export type SeedanceGenerationWorkflow = { step: 'draft' } | { step: 'final'; draftJobId: string };
+
 export type CanonicalGenerationRequest = {
   schemaVersion: 1;
   surface: CanonicalGenerationSurface;
@@ -82,4 +84,5 @@ export type CanonicalGenerationRequest = {
   settings: Record<string, CanonicalGenerationSettingValue>;
   references: CanonicalGenerationReference[];
   outputCount: number;
+  seedanceWorkflow?: SeedanceGenerationWorkflow;
 };

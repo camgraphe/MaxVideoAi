@@ -238,5 +238,6 @@ export type AgentModelDetails = Readonly<{
     pricing: string | null;
     examples: string | null;
   }>;
+  seedanceWorkflow?: import('./seedance-workflow-discovery').SeedanceWorkflowDiscovery;
   catalogUpdatedAt: string | null;
 }>;

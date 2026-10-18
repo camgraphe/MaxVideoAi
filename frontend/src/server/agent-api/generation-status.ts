@@ -75,6 +75,7 @@ type RecentReader = typeof listRecentGenerations;
 type TrialStatusReader = typeof readTrialJobStatus;
 
 export type AgentGenerationStatusDependencies = {
+  paidGenerationEnabled?(): boolean;
   readStatus?: StatusReader;
   readTrialStatus?: TrialStatusReader;
   accountUrl?: string;
@@ -340,11 +341,14 @@ export async function getAgentGenerationStatus(
   requirePrincipal(principal);
   const record = requireExactObject(input, new Set(['jobId']), 'Only jobId is accepted.');
   const jobId = normalizeJobId(record.jobId);
-  const status = await (dependencies.readStatus ?? getGenerationStatus)({
+  let status = await (dependencies.readStatus ?? getGenerationStatus)({
     userId: principal.userId,
     jobId,
   });
   if (!status) throw new AgentApiError('JOB_FAILED', 'Generation not found.');
+  if (status.seedanceWorkflow && dependencies.paidGenerationEnabled?.() === false) {
+    status = { ...status, seedanceWorkflow: { ...status.seedanceWorkflow, finalizationAvailable: false } };
+  }
   return buildAgentGenerationRecovery(
     await enrichIncludedTrialStatus(
       status,

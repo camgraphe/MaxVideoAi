@@ -171,3 +171,42 @@ projection. Never infer arbitrary custom dimensions from min/max alone, silently
 round a client size or weaken canonical validation: a supported predefined size
 may remain valid even when those dimensions are invalid as a custom request.
 `tests/mcp-model-details-custom-size.test.ts` guards this distinction and parity.
+
+## Native Seedance Draft workflow — 2026-10-18 source candidate
+
+Seedance 2.5 details include `seedanceWorkflow`: live MCP/web availability,
+compatible executable modes and their native `modeDetails`, native 480p single-output constraints, inherited
+1080p finalization, the conservative seven-day validity boundary and assistant
+choice guidance. Ordinary `resolution=480p` remains ordinary generation.
+The workflow uses the existing server release switch and paid-generation gate;
+it does not enable either. Missing independent tariffs refuse quotation.
+
+`prepare_generation` accepts an additive optional `seedanceWorkflow` discriminator:
+`{"step":"draft"}` selects native Draft; `{"step":"final","draftJobId":"…"}`
+resolves an account-owned ready Draft and inherits creative facts. Final requests
+can omit mode, prompt, settings and references. Each step has its own exact quote,
+hash, expiry and explicit `confirm_generation` approval. No provider task ID is
+accepted or returned. The final reserves the parent in the wallet/job transaction;
+competing quotes cannot both charge. Expiry and changed parent facts are rechecked
+before debit. Submitted quotes recover their existing job even after a gate closes.
+
+Status/history label workflow lineage; full status adds current eligibility,
+actual `expiresAt`, `finalJobId` and `finalizationAvailable`. A pending, failed,
+expired or already reserved Draft cannot start another final. The existing
+refund reconciliation alone can release a fully refunded failed final; ambiguity,
+partial refunds and reconnect never authorize replacement work. Original Draft
+media and both receipts remain separate.
+
+`seedanceWorkflowPrices` presents the actual Draft charge, final supplement and
+same-currency total when available. A prospective final price is a current
+canonical estimate, not a second quote or price reservation. Final preparation
+returns the new exact final quote and the stored Draft charge. Missing prices are
+null, never zero or ordinary-tariff fallbacks. Discovery and skills make no free
+finalization, pixel-for-pixel or unverified-savings claim.
+
+Native readiness is computed per selected mode using ModelArk credentials and
+the operator mode allowlist. It does not inherit the ordinary LAS Edit gate or
+require the unrelated t2v mode to be enabled. Ordinary `publicModes` remain
+unchanged; the workflow capability adapter projects ModelArk mode caps separately.
+The public-engine policy stays a pure leaf. Current native mode readiness also
+participates in quote catalog revisions.
