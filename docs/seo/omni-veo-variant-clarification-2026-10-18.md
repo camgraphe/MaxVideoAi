@@ -21,6 +21,21 @@ Editorial decisions:
 - Keep current price calculations and generated Omni FAQs; authored Veo FAQs
   explain how to compare quotes without embedding a new fixed price.
 
+## SEO preservation during delivery
+
+The live post-deployment check of #456 found that removing price from the rating
+rows also changed generic SEO descriptions and authored English “11-point” text.
+This follow-up restores the published description transformation for metadata,
+Open Graph, Twitter and WebPage JSON-LD. The visible scorecard keeps 10 ratings
+with audio or 9 without; pricing stays separate. SEO copy retains the historical
+11/10 comparison count until a separately approved metadata change.
+
+`tests/comparison-seo-preservation.test.ts` reproduces six failing cases before
+the fix and checks the actual metadata and schema builders. Its locale boundary
+uses the authored dictionaries; unexpected database or video I/O fails explicitly.
+The complete post-release metadata comparison must be rerun against the live
+baseline captured before #456. The title experiment remains unstarted.
+
 ## Evidence and limitation
 
 Sources checked on 2026-10-18:
