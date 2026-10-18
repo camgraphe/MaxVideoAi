@@ -46,7 +46,8 @@ export default function ReturnPolicyPage() {
         <section className="stack-gap-xl rounded-card border border-border bg-surface p-6 shadow-card sm:p-10">
           <header className="stack-gap-sm">
             <h1 className="text-xl font-semibold text-text-primary">Refund &amp; Return Policy</h1>
-            <p className="text-sm text-text-secondary">Last clarified: October 18, 2026</p>
+            <p className="text-sm text-text-secondary">Last updated: June 2, 2026</p>
+            <p className="text-sm text-text-secondary">Wallet and payment refund distinction clarified: October 18, 2026</p>
           </header>
 
           <article className="stack-gap-lg text-base leading-relaxed text-text-secondary">

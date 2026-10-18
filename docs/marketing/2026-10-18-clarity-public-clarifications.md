@@ -73,7 +73,11 @@ identifiers.
   USD 2.16, rejected for motion quality. Total: USD 4.24. These are not current
   quotes, a comparison benchmark or assistance charges.
 - The local published derivative probes as H.264, 1920×1080, 30 fps, exactly
-  six seconds and no audio stream. Six sampled frames retain the recognisable
+  six seconds and no audio stream. The exact original was also probed and played
+  through the guide link: it is **1918×1080**, six seconds, 30 fps, with no audio
+  stream. The guide distinguishes the requested 16:9/1080p settings from those
+  original dimensions, rather than borrowing the display derivative’s width.
+  Six sampled display frames retain the recognisable
   strap/case and show the coloured light sweep. Fine dial details still require
   inspection. The source has no brand logo, so it cannot prove logo fidelity.
 - Reference and both original/derived public videos responded HTTP 206 to a
