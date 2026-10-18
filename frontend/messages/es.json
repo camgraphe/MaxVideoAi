@@ -6880,6 +6880,7 @@
       "ageRequired": "Confirma que cumples la edad mínima requerida."
     },
     "feedback": {
+      "passwordUnavailable": "No pudimos completar tu solicitud. Inténtalo de nuevo.",
       "signingIn": "Iniciando sesión…",
       "signinRedirecting": "Sesión iniciada. Redirigiendo…",
       "signinSuggestion": "No pudimos iniciar sesión con esos datos. Si eres nuevo, crea tu cuenta sin volver a escribirlos.",
