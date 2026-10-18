@@ -60,6 +60,7 @@ export async function GET(req: NextRequest) {
         'Cache-Control': 'private, no-store',
         'X-Content-Type-Options': 'nosniff',
         ...(upstream.contentLength ? { 'Content-Length': upstream.contentLength } : {}),
+        ...(upstream.contentEncoding ? { 'Content-Encoding': upstream.contentEncoding } : {}),
       },
     });
   } catch (error) {

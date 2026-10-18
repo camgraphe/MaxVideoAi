@@ -55,6 +55,11 @@ export async function downloadMediaStream(url: string, requestSignal: AbortSigna
       },
       cancel() { finish(); controller.abort(); },
     });
-    return { body, contentType: header('content-type') ?? 'application/octet-stream', contentLength: declared };
+    return {
+      body,
+      contentType: header('content-type') ?? 'application/octet-stream',
+      contentLength: declared,
+      contentEncoding: header('content-encoding'),
+    };
   } catch (error) { cleanup(); controller.abort(); throw error; }
 }

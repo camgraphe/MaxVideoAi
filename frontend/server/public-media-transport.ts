@@ -184,6 +184,7 @@ async function openPinnedHttps(
       method: 'GET',
       headers: {
         Accept: 'image/*,video/*,audio/*,application/octet-stream;q=0.5',
+        'Accept-Encoding': 'identity',
         'User-Agent': 'MaxVideoAI-MCP/1.0',
       },
       maxHeaderSize: 16 * 1024,

@@ -4,6 +4,7 @@ import dns from 'node:dns/promises';
 import https from 'node:https';
 import { EventEmitter } from 'node:events';
 import { Readable } from 'node:stream';
+import { gzipSync } from 'node:zlib';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -99,6 +100,21 @@ test('download follows a bounded public redirect and retains the signed query ex
   assert.deepEqual(f.calls.map(call => call.url), ['https://files.example/start', target]);
   assert.equal(response.headers.get('content-type'), 'video/quicktime');
   assert.equal(f.responses[0].destroyed, true);
+});
+
+test('download requests original representation and preserves unexpected upstream content encoding', async t => {
+  const original = Buffer.from('original-media-bytes');
+  const encoded = gzipSync(original);
+  const f = await fixture(t, undefined, [{
+    headers: { 'content-type': 'video/mp4', 'content-encoding': 'gzip', 'content-length': String(encoded.length) },
+    body: async function* () { yield encoded; },
+  }]);
+  const response = await f.get('https://files.example/encoded.mp4');
+  const body = Buffer.from(await response.arrayBuffer());
+  assert.equal((f.calls[0].options?.headers as Record<string, string>)['Accept-Encoding'], 'identity');
+  assert.equal(response.headers.get('content-encoding'), 'gzip');
+  assert.equal(response.headers.get('content-length'), String(encoded.length));
+  assert.deepEqual(body, encoded, 'encoding metadata must describe the exact streamed representation');
 });
 
 test('download rejects oversized and incomplete bodies instead of successful truncated media', async t => {
