@@ -1,5 +1,9 @@
 # Homepage: final SEO and performance review — 19 October 2026
 
+**Follow-up:** the [mobile LCP investigation](home-mobile-lcp-resolution-2026-10-19.md)
+records the bounded payload correction and fresh comparable measurements. The
+results below describe the earlier `e7da81030` candidate and remain unchanged.
+
 ## Scope and reference
 
 Review requested before push/deployment. Work stays in `codex/home-visual-refresh`;
