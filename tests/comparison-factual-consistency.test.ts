@@ -10,6 +10,7 @@ import es from '../frontend/messages/es.json';
 import { buildSpecValues } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-spec-values';
 import { buildCompareFaqItems, buildCompareFaqJsonLd } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-faq';
 import { renderSpecValue } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_components/CompareSpecValue';
+import { CompareSpecsSection } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_components/CompareSpecsSection';
 import { pickCapabilityDifference, pickOutputDifference } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-score-utils';
 
 // JSX in the source uses the project's classic test transform.
@@ -35,6 +36,23 @@ test('specification rendering preserves limits and accessible yes/no text', () =
     const html = renderToStaticMarkup(renderSpecValue(value, 'en', labels));
     assert.ok(html.includes(value), html);
   }
+});
+
+test('specification sources render model annotations as text and only HTTP sources as links', () => {
+  const miniSources = specsFile.specs.find(x => x.modelSlug === 'dreamina-seedance-2-0-mini')!.sources;
+  const annotation = miniSources.find(value => value.startsWith('Dreamina Seedance API model id:'))!;
+  assert.ok(annotation, 'real catalog includes a non-URL source annotation');
+  const html = renderToStaticMarkup(React.createElement(CompareSpecsSection, {
+    activeLocale: 'en', compareCopy: en.comparePage, labels, left, right,
+    pairHasNativeAudio: true, specRows: [], sources: [{ name: 'Mini', urls: [
+      ...miniSources, 'https://example.com/first', 'https://example.com/second',
+      'javascript:alert(1)', 'file:///private/source', 'not a URL',
+    ] }],
+  }));
+  assert.ok(html.includes(annotation), 'preserve the authored model identity note');
+  assert.match(html, /href="https:\/\/example.com\/first"[^>]*>example.com \(1\)</);
+  assert.match(html, /href="https:\/\/example.com\/second"[^>]*>example.com \(2\)</);
+  assert.doesNotMatch(html, /href="(?:javascript:|file:|Dreamina|not a URL)/);
 });
 
 for (const [locale, dictionary] of Object.entries({ en, fr, es })) {

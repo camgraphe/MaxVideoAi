@@ -26,6 +26,31 @@ type CompareSpecsSectionProps = {
   specRows: CompareSpecRow[];
 };
 
+function formatSourceEntries(values: string[]) {
+  const entries = values.map(value => {
+    try {
+      const url = new URL(value);
+      if (url.protocol === 'https:' || url.protocol === 'http:') {
+        return { value, hostname: url.hostname };
+      }
+    } catch {
+      // Source records may contain a model identity note instead of a URL.
+    }
+    return { value, hostname: null };
+  });
+  const totals = new Map<string, number>();
+  const positions = new Map<string, number>();
+  for (const { hostname } of entries) {
+    if (hostname) totals.set(hostname, (totals.get(hostname) ?? 0) + 1);
+  }
+  return entries.map(({ value, hostname }) => {
+    if (!hostname) return { href: null, label: value };
+    const position = (positions.get(hostname) ?? 0) + 1;
+    positions.set(hostname, position);
+    return { href: value, label: (totals.get(hostname) ?? 0) > 1 ? `${hostname} (${position})` : hostname };
+  });
+}
+
 export function CompareSpecsSection({
   activeLocale, sources,
   compareCopy,
@@ -91,7 +116,9 @@ export function CompareSpecsSection({
 
       <div className="compare-spec-sources">
         <p>{activeLocale === 'fr' ? 'Capacités disponibles dans MaxVideoAI. Sources fournisseur ci-dessous ; leur date de vérification n’est pas consignée ici.' : activeLocale === 'es' ? 'Capacidades disponibles en MaxVideoAI. Fuentes del proveedor abajo; su fecha de verificación no se registra aquí.' : 'Capabilities available in MaxVideoAI. Provider sources below; their verification dates are not recorded here.'}</p>
-        {sources.map(source => <p key={source.name}><strong>{source.name}: </strong>{source.urls.map((url, index) => <a key={url} href={url} target="_blank" rel="noopener noreferrer">{index > 0 ? ' · ' : ''}{new URL(url).hostname}{source.urls.filter(other => new URL(other).hostname === new URL(url).hostname).length > 1 ? ` (${index + 1})` : ''}</a>)}</p>)}
+        {sources.map(source => <p key={source.name}><strong>{source.name}: </strong>{formatSourceEntries(source.urls).map((entry, index) => <span key={`${index}-${entry.label}`}>
+          {index > 0 ? ' · ' : ''}{entry.href ? <a href={entry.href} target="_blank" rel="noopener noreferrer">{entry.label}</a> : <span>{entry.label}</span>}
+        </span>)}</p>)}
       </div>
       </details>
 
