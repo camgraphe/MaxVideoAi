@@ -12,7 +12,7 @@ configuration and a database connection enforcing read-only transactions.
 The shared quote component's two accessibility-hidden sizing labels were visible
 outside `.app-experience`. The `invisible` utility now hides those labels in every
 host; the marketing demo stacks the quote variants and reserves stable settings
-widths. Real unavailable/loading states are preserved. The guided timer starts
+widths. Real unavailable/loading states are preserved. The revised demo has one outer frame, a single aligned settings/Generate toolbar when space allows, and a full-width action on narrow screens. Redundant visible settings below the frame are retained only for screen readers. The guided timer starts
 only after the deferred real Composer mounts. Its placeholder reserves geometry.
 
 `home-price-demo-browser.test.ts` covers 4 widths × 3 locales × 3 exact quote
@@ -46,11 +46,11 @@ posters and old video registrations remain available for cached pages.
 The light workspace captures show the requested `ad885eda-5557-4b5f-8422-60142c3eb00e.mp4`
 inside the real app. Captures exclude the account wallet and unrelated recent
 outputs. Source visibility is unchanged. New display files are
-`app-desktop-light-rae.webp` (1086 × 947) and `app-mobile-light-rae.webp` (366 × 972).
+`app-desktop-light-wide.webp` (1344 × 840, 16:10) and `app-mobile-light-framed.webp` (378 × 794, approximately 19:9). The source interfaces are recaptured and cropped, never stretched. The phone crop excludes the wallet and retains the bottom navigation.
 Studio uses the existing reviewed `studio-conversation-preview.webp`, loaded
 lazily with fixed dimensions and no Studio runtime import.
 
-## Comparable loading evidence
+## Initial-preview comparable loading evidence
 
 Three alternating cold-browser-cache runs per version and viewport. Mobile:
 390 × 844, 4× CPU throttle, 1.6 Mbit/s, 150 ms latency. Desktop: 1440 × 1000,
@@ -73,7 +73,7 @@ analytics/speed-insights script requests abort on localhost in both versions.
 INP and production CDN/field measurements remain outside this local check.
 Final logo contrast corrections do not change geometry or playback policy.
 
-## SEO and functional checks
+## Initial-preview SEO and functional checks
 
 - EN `/`, FR `/fr`, ES `/es`: HTTP 200; canonical, title, H1, robots header/meta,
   hreflang and complete JSON-LD outputs compare equal to baseline.
@@ -94,3 +94,76 @@ Full local logs, unmodified captures, raw network/paint samples and browser
 harnesses are retained in `.reports/home-visual-refresh/` in the review worktree.
 The preview must be approved before following the normal PR/Quality CI/production
 release process. No production merge or application deployment occurred.
+
+## Review revision: devices, comparison and price demo
+
+The first homepage preview was rejected visually. The newer comparison design
+was confirmed through “Prioriser les pages à retravailler”: PR #456,
+`codex/comparison-scorecard-preview` at `7f3ca0e07`, local preview port 8770.
+The public page still showed the older dark scorecard during this review.
+
+The home now uses the new light table composition, blue/amber horizontal bars,
+row descriptions, aligned model columns and the corresponding mobile layout.
+Only the homepage excerpt changes; the comparison route and PR remain untouched.
+Scores keep their canonical source and overall calculation. The displayed count
+excludes price/value, matching the new comparison's ten quality/control criteria.
+The disclosure explains that the models were scored separately. Animation stays
+visibility-triggered, respects reduced motion and causes zero React commits over
+66 measured frames. Missing and out-of-range scores render no bar.
+
+The recaptured device screens use fixed, natural aspect ratios. Both captures
+remain lazy responsive WebP images. New source sizes: 70,564 B desktop and
+34,034 B mobile; no new video fetch, library or client runtime was introduced.
+The price frame reserves the deferred Composer's narrow/wide height. Desktop
+controls and Generate share a centerline; narrow layouts use a full-width action.
+The quote and controls remain stable across all three exact scenarios.
+
+The final review clarified discovery: the left column now has an explicit,
+server-rendered “Compare all models” link to the localized comparison hub and
+“Create with Wan 3” to `/app?engine=wan-3`. The table is labeled as an example,
+showing Wan 3 against Seedance 2.5. Its detail link uses the canonical published
+pair with the existing order query to retain Wan 3 on the left. No model
+publication policy or comparison routes were changed.
+
+The old rotating tab selector has been removed. `HomeComparisonPreview` renders
+on the server; only the existing score-bar animation stays client-side. The
+architecture contract covers this boundary and the canonical route helper.
+The mobile/desktop checks below cover the final production build.
+
+
+## Final revision validation
+
+- Production build succeeds for all 932 generated pages, including the existing
+  SEO, registry, public-rendition and immutable-poster prebuild gates.
+- TypeScript and exposure lint pass. ESLint reports no errors and the same six
+  unrelated Studio/billing warnings.
+- Final comparison/SEO/architecture/motion selection: 23 tests pass. Price browser,
+  loading and motion checks also passed after the device/price layout revision.
+- Production browser smoke: EN/FR/ES at 320, 390, 768 and 1440 px. Both discovery
+  actions are present; the example opens the published Seedance 2.5 / Wan 3 route
+  with Wan 3 first. All three pricing scenarios retain stable action geometry.
+  Images decode, no horizontal overflow and no JavaScript errors.
+- The comparison hub, canonical example URL and `/app?engine=wan-3` return 200.
+- Final production SSR comparison against the baseline: canonical, title, H1,
+  hreflang, robots and complete JSON-LD unchanged in all three locales. Redirect
+  status/destinations are unchanged. Studio/MCP remains a homepage grouping only.
+- Production captures: `revision-compare-en-1242.png`,
+  `revision-compare-fr-1440.png`, `revision-compare-fr-390.png`, and the corresponding
+  `revision-creation-*` / `revision-pricing-*` captures in the ignored QA directory.
+  `clarity-in-app.jpg` records the final French section in the user's preview.
+
+Final loading samples use the same three alternating cold-cache runs and device
+profiles described above, after the server-rendered comparison discovery revision.
+Raw data: `.reports/home-visual-refresh/performance-clarity/runs.json`.
+
+| Device | Version | LCP samples (ms) | Maximum CLS | Median transferred bytes |
+| --- | --- | --- | ---: | ---: |
+| Mobile | Baseline | 1012, 956, 972 | 0 | 407,103 |
+| Mobile | Final candidate | 932, 924, 936 | 0 | 408,028 |
+| Desktop | Baseline | 200, 200, 200 | 0 | 6,014,325 |
+| Desktop | Final candidate | 200, 196, 196 | 0 | 5,674,278 |
+
+No reproducible LCP/CLS regression or JavaScript errors. All mobile runs make
+zero video requests before playback intent. Final mobile transfer is 925 bytes
+above baseline; desktop transfer is lower. These remain local measurements, not
+field INP, a GSC audit or evidence of production CDN behavior.

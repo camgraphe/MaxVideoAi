@@ -63,3 +63,15 @@ test('Studio and MCP stay in one server-rendered conversation section below the 
   assert.match(conversation, /loading="lazy"/);
   assert.doesNotMatch(conversation, /use client|<video|app\/studio|useEffect/);
 });
+
+test('homepage comparison discovery is server-rendered and delegates only bar motion to the client', () => {
+  const section = readSource(join(root, 'frontend/components/marketing/home/HomeComparisonSection.tsx'));
+  const preview = readSource(join(root, 'frontend/components/marketing/home/HomeComparisonPreview.tsx'));
+  for (const source of [section, preview]) {
+    assert.doesNotMatch(source, /['"]use client['"]|useEffect|useState/);
+  }
+  assert.match(preview, /<HomeComparisonScores/);
+  assert.match(preview, /buildCompareRoute\(data.left.slug, right.slug\)/);
+  assert.match(section, /href="\/ai-video-engines"/);
+  assert.match(section, /pathname:'\/app',query:\{engine:'wan-3'\}/);
+});

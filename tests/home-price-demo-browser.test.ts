@@ -30,7 +30,7 @@ test('home demo shows only the exact quote and keeps its button inside the marke
     const name = req.url;
     res.setHeader('content-type', name === '/demo.js' ? 'text/javascript' : name === '/style.css' ? 'text/css' : 'text/html');
     res.end(name === '/demo.js' ? bundle.outputFiles[0].text : name === '/style.css' ? css.css :
-      '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/style.css"></head><body class="marketing-site"><div class="price-app-frame" style="max-width:560px;margin:16px"><div id="root"></div></div><script src="/demo.js"></script></body></html>');
+      '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/style.css"></head><body class="marketing-site"><div class="price-app-frame" style="max-width:760px;margin:16px"><div id="root"></div></div><script src="/demo.js"></script></body></html>');
   });
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
   const address = server.address(); assert.ok(address && typeof address !== 'string');
@@ -49,7 +49,9 @@ test('home demo shows only the exact quote and keeps its button inside the marke
         await page.locator('.app-generation-price').filter({hasText: (step.amountCents / 100).toFixed(2)}).waitFor();
         const state = await page.locator('.app-generation-action').evaluate(button => {
           const b = button.getBoundingClientRect(), frame = document.querySelector('.price-app-frame')!.getBoundingClientRect();
+          const settings = document.querySelector('[data-settings-density] button')!.getBoundingClientRect();
           return { text: (button as HTMLElement).innerText, x:b.x, y:b.y, width:b.width, height:b.height,
+            frameWidth:frame.width, sameBaseline:Math.abs((b.top+b.height/2) - (settings.top+settings.height/2)) < 1, fullWidth:b.width > frame.width-48,
             inside: b.left >= frame.left && b.right <= frame.right,
             overflow: document.documentElement.scrollWidth > innerWidth,
             sizingVisible: [...button.querySelectorAll('.app-generation-quote-size')].some(el => getComputedStyle(el).visibility !== 'hidden') };
@@ -57,6 +59,8 @@ test('home demo shows only the exact quote and keeps its button inside the marke
         evidence.push({ width, locale, step, state });
         assert.equal(state.sizingVisible, false, `Sizing labels must be invisible on marketing: ${JSON.stringify(state)}`);
         assert.doesNotMatch(state.text, /Calculating|unavailable|Calcul…|indisponible|Calculando|no disponible/);
+        if (state.frameWidth >= 600) assert.equal(state.sameBaseline, true, `Generate and settings share a baseline: ${JSON.stringify(state)}`);
+        else assert.equal(state.fullWidth, true, 'The narrow layout has a deliberate full-width action');
         assert.equal(state.inside, true); assert.equal(state.overflow, false);
         boxes.push([state.x, state.y, state.width, state.height]);
       }

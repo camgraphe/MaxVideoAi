@@ -92,9 +92,9 @@ body:has(.marketing-site) .cookie-consent-surface {
 .marketing-site .app-devices{position:relative;padding:24px 30px 70px 0;perspective:1400px}
 .marketing-site .app-laptop{position:relative;border:9px solid #303030;border-radius:18px 18px 6px 6px;background:#171717;box-shadow:0 18px 38px #18181820}
 .marketing-site .app-laptop::after{content:'';position:absolute;height:13px;background:linear-gradient(#adadad,#555555);left:-5%;right:-5%;bottom:-20px;border-radius:0 0 70% 70%}
-.marketing-site .app-laptop img{width:100%;height:auto;display:block;border-radius:8px 8px 0 0}
-.marketing-site .app-phone{position:absolute;right:0;bottom:4px;width:25%;border:5px solid #303030;border-radius:25px;background:#171717;box-shadow:0 14px 28px #18181830;overflow:hidden}
-.marketing-site .app-phone img{display:block;width:100%;height:auto}
+.marketing-site .app-laptop img{width:100%;height:auto;aspect-ratio:8/5;object-fit:contain;display:block;border-radius:8px 8px 0 0}
+.marketing-site .app-phone{position:absolute;right:0;bottom:4px;width:27%;border:5px solid #303030;border-radius:25px;background:#171717;box-shadow:0 14px 28px #18181830;overflow:hidden}
+.marketing-site .app-phone img{display:block;width:100%;height:auto;aspect-ratio:189/397;object-fit:contain}
 .marketing-site .creation-modes{display:grid;gap:0;border-top:1px solid var(--hairline);margin-top:48px}
 .marketing-site .creation-modes a{display:flex;flex-direction:column;gap:8px;padding:24px 18px 24px 0;border-bottom:1px solid var(--hairline);transition:background .2s}
 .marketing-site .creation-modes a:hover{background:var(--surface)}

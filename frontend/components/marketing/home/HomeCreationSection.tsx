@@ -48,8 +48,8 @@ export function HomeCreationSection({ locale }: { locale: AppLocale }) {
           </div>
           <figure>
             <div className="app-devices">
-              <div className="app-laptop"><Image src="/assets/marketing/redesign/app-desktop-light-rae.webp" alt={copy.desktop} width={1086} height={947} sizes="(max-width: 700px) 1px, (max-width: 900px) 90vw, 720px" loading="lazy" /></div>
-              <div className="app-phone"><Image src="/assets/marketing/redesign/app-mobile-light-rae.webp" alt={copy.mobile} width={366} height={972} sizes="(max-width: 700px) 280px, 180px" loading="lazy" /></div>
+              <div className="app-laptop"><Image src="/assets/marketing/redesign/app-desktop-light-wide.webp" alt={copy.desktop} width={1344} height={840} sizes="(max-width: 700px) 1px, (max-width: 900px) 90vw, 720px" loading="lazy" /></div>
+              <div className="app-phone"><Image src="/assets/marketing/redesign/app-mobile-light-framed.webp" alt={copy.mobile} width={378} height={794} sizes="(max-width: 700px) 280px, 180px" loading="lazy" /></div>
             </div>
             <figcaption className="mt-5 text-center text-xs text-text-muted">{copy.capture}</figcaption>
           </figure>

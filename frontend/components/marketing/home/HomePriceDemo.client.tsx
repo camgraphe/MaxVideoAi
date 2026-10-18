@@ -58,9 +58,9 @@ export function HomePriceDemo({locale,models=[],pending=false}:{locale:AppLocale
    <div className="price-walkthrough-play"><span role={!pending && !model ? "status" : undefined}>{!pending && !model ? c.unavailable : c.tag}</span><button type="button" disabled={blocked} onClick={()=>{if(playing){setPlaying(false);}else{setStepIndex(0);setPlaying(true);}}}>{playing&&!reduced ? c.pause : c.replay} <span aria-hidden>{playing&&!reduced?'Ⅱ':'↻'}</span></button></div>
    <div className="price-app-frame" data-price-step={stepIndex}>
     {ready && !pending && model ? <AppSurface model={model} step={model.steps[stepIndex]} locale={locale} onReady={onSurfaceReady}/> : <HomePriceAppPlaceholder/>}
-    <div className="price-app-annotation"><span aria-hidden>↑</span>{c.quote}</div>
    </div>
-   <div className="price-walkthrough-caption" aria-live={playing?'off':'polite'} aria-atomic="true"><span>{c.duration} <strong>{step.seconds} s</strong> · {c.resolution} <strong>{step.resolution}</strong><small>{c.audio}</small></span><strong className="sr-only" key={stepIndex}>{blocked ? '—' : step.display}</strong></div>
+   <div className="price-walkthrough-caption sr-only" aria-live={playing?'off':'polite'} aria-atomic="true"><span>{c.duration} <strong>{step.seconds} s</strong> · {c.resolution} <strong>{step.resolution}</strong><small>{c.audio}</small></span><strong className="sr-only" key={stepIndex}>{blocked ? '—' : step.display}</strong></div>
+   <p className="price-app-annotation"><span aria-hidden>✓</span>{c.quote}</p>
    <p className="price-walkthrough-note">{c.note}</p>
   </div>
   <ul className="price-walkthrough-guarantees">{c.guarantees.map(text=><li key={text}><span aria-hidden>✓</span>{text}</li>)}</ul>
