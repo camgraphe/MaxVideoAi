@@ -1,3 +1,6 @@
+import { seedanceWorkflowCandidate } from './seedance-workflow-capabilities';
+import { seedanceWorkflowDiscovery } from './seedance-workflow-discovery';
+import { agentSeedanceWorkflowEnabled } from './seedance-workflow';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps } from '@/types/engines';
 import { isGptImageFamilyEngineId } from '@/lib/image/gptImage2';
 import type { ImageGenerationMode } from '@/types/image-generation';
@@ -38,6 +41,7 @@ import { normalizeVideoDurationOption } from '@/server/video-generation/executio
 import { resolveEngineMediaFieldConstraint } from '@/lib/media-field-constraints';
 
 export type AgentModelDetailsDeps = AgentModelCatalogDeps & {
+  seedanceWorkflowAvailability?(): { mcp: boolean; web: boolean };
   getGuidance?(engineId: string): AgentModelGuidance | null;
   getPromptingSources?(engineId: string): readonly AgentModelPromptingSource[];
   resolveRuntimeModel?(engineId: string): RuntimeModelEntry | null;
@@ -505,6 +509,8 @@ export async function getAgentModelDetails(
     (deps?.getPromptingSources ?? getAgentModelPromptingSources)(candidate.engine.id),
     candidate.publicModes,
   );
+  const workflowCandidate = seedanceWorkflowCandidate({ engineId: candidate.engine.id, seedanceWorkflow: { step: 'draft' } }, candidate);
+  const workflowAvailability = deps?.seedanceWorkflowAvailability?.() ?? { mcp: agentSeedanceWorkflowEnabled(), web: agentSeedanceWorkflowEnabled() };
   const examples = guidance?.evidenceUrls.find((url) => new URL(url).pathname.includes('/examples/')) ?? null;
   return Object.freeze({
     id: candidate.engine.id,
@@ -528,6 +534,12 @@ export async function getAgentModelDetails(
       pricing: 'https://maxvideoai.com/pricing',
       examples,
     }),
+    ...(candidate.engine.id === 'seedance-2-5' ? { seedanceWorkflow: { ...seedanceWorkflowDiscovery(
+      workflowCandidate.publicModes,
+      { mcp: candidate.generationEnabled && workflowCandidate.publicModes.length > 0 && workflowAvailability.mcp, web: candidate.generationEnabled && workflowCandidate.publicModes.length > 0 && workflowAvailability.web }),
+      modeDetails: workflowCandidate.publicModes
+        .map(mode => projectAgentModelModeDetails(workflowCandidate, mode)),
+    } } : {}),
     catalogUpdatedAt: candidate.engine.updatedAt,
   });
 }

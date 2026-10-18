@@ -17,7 +17,7 @@ Use this route in a Codex build that exposes plugin marketplace installation and
 Run the reviewed release-tag commands from your terminal:
 
 ```sh
-codex plugin marketplace add camgraphe/maxvideoai-plugin --ref v0.3.7
+codex plugin marketplace add camgraphe/maxvideoai-plugin --ref v0.3.8
 codex plugin add maxvideoai@maxvideoai
 ```
 
@@ -115,6 +115,6 @@ Remove the package in Codex → revoke the Codex OAuth connection in MaxVideoAI 
 
 - [MaxVideoAI package repository](https://github.com/camgraphe/maxvideoai-plugin)
 - [MaxVideoAI compatibility evidence](https://maxvideoai.com/docs/mcp)
-- This package’s `.claude-plugin/marketplace.json` and `.codex-plugin/plugin.json`, matching its `v0.3.7` release tag
+- This package’s `.claude-plugin/marketplace.json` and `.codex-plugin/plugin.json`, matching its `v0.3.8` release tag
 
 Last reviewed: 2026-10-04.

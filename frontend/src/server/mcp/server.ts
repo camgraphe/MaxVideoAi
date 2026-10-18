@@ -1,3 +1,4 @@
+import { seedanceWorkflowEnabled } from '@/server/seedance-workflow-request';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import mcpPublication from '@/config/mcp-publication.json';
@@ -238,7 +239,10 @@ export function createDefaultMaxVideoAiMcpServices(
     listModels: (filter, principal) => listAgentModels(filter, catalogDepsFor(principal)),
     getModelDetails: (engineId, principal) => getAgentModelDetails(
       engineId,
-      catalogDepsFor(principal),
+      { ...catalogDepsFor(principal), seedanceWorkflowAvailability: () => {
+        const web = seedanceWorkflowEnabled(config.resourceUrl);
+        return { mcp: capabilities.paidGeneration && web, web };
+      } },
       prelaunchAccessFor(principal),
     ),
     recommendModels: (input, principal) => recommendAgentModels(input, catalogDepsFor(principal)),
@@ -296,6 +300,7 @@ export function createDefaultMaxVideoAiMcpServices(
       },
     )(input, principal),
     getGenerationStatus: (input, principal) => getAgentGenerationStatus(input, principal, {
+      paidGenerationEnabled: () => capabilities.paidGeneration,
       accountUrl: config.accountUrl,
     }),
     listRecentGenerations: (input, principal) => listAgentRecentGenerations(input, principal, {

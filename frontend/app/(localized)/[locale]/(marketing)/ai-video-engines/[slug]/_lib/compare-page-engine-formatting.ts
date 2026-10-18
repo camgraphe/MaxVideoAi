@@ -1,4 +1,3 @@
-import type { CSSProperties } from 'react';
 import type { EngineCatalogEntry } from './compare-page-types';
 
 export type EngineAccent = {
@@ -75,18 +74,4 @@ export function getEngineAccent(entry: EngineCatalogEntry): EngineAccent {
     buttonClass: 'bg-brand text-on-brand hover:bg-brandHover',
     columnTintClass: 'bg-brand/5',
   };
-}
-
-export function getEngineToneVars(entry: EngineCatalogEntry, sweep: number | null): CSSProperties {
-  const brandId = entry.brandId?.trim();
-  const accent = brandId ? `var(--engine-${brandId}-bg)` : 'var(--brand)';
-  const ink = brandId ? `var(--engine-${brandId}-ink)` : 'var(--on-brand)';
-  const scoreSweep = typeof sweep === 'number' ? `${Math.max(0, Math.min(10, sweep)) * 36}deg` : '360deg';
-  return {
-    '--compare-accent': accent,
-    '--compare-ink': ink,
-    background: `conic-gradient(from 220deg, color-mix(in srgb, var(--compare-accent) 78%, var(--brand) 22%) 0deg ${scoreSweep}, color-mix(in srgb, var(--compare-accent) 18%, transparent) ${scoreSweep} 360deg)`,
-    boxShadow:
-      '0 0 0 8px color-mix(in srgb, var(--compare-accent) 10%, transparent), 0 20px 52px color-mix(in srgb, var(--compare-accent) 42%, transparent), 0 8px 18px rgba(15, 23, 42, 0.06)',
-  } as CSSProperties;
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { trackComparison } from './_lib/compare-analytics';
 import { useLocale } from 'next-intl';
 import type { SelectOption } from '@/components/ui/SelectMenu';
 import { getPathname, useRouter } from '@/i18n/navigation';
@@ -19,6 +20,7 @@ export function CompareEngineSelector({ options, value, otherValue, side, engine
   const searchPlaceholder =
     locale === 'fr' ? 'Rechercher un modèle...' : locale === 'es' ? 'Buscar modelo...' : 'Search engine...';
   const noResultsLabel = locale === 'fr' ? 'Aucun résultat' : locale === 'es' ? 'Sin resultados' : 'No results';
+  const changeLabel = locale === 'fr' ? 'Changer' : locale === 'es' ? 'Cambiar' : 'Change';
 
   return (
     <CompareEngineFamilySelect
@@ -28,7 +30,8 @@ export function CompareEngineSelector({ options, value, otherValue, side, engine
       searchPlaceholder={searchPlaceholder}
       noResultsLabel={noResultsLabel}
       engineScores={engineScores}
-      buttonClassName="h-9 w-full max-w-[220px] min-w-0 rounded-[10px] border border-hairline bg-bg/80 px-3 py-2 text-[12px] font-semibold text-text-primary shadow-sm transition hover:border-[var(--brand-border)] hover:bg-surface-2 sm:max-w-none sm:min-w-[180px] md:min-w-[210px] [&>svg]:h-3 [&>svg]:w-3 [&>svg]:opacity-70"
+      triggerActionLabel={changeLabel}
+      buttonClassName="compare-engine-trigger"
       onChange={(next) => {
         const nextValue = String(next);
         if (!nextValue || nextValue === value) return;
@@ -43,6 +46,7 @@ export function CompareEngineSelector({ options, value, otherValue, side, engine
         });
         const order = sorted[0] === leftSlug ? null : leftSlug;
         const href = order ? `${basePath}?order=${encodeURIComponent(order)}` : basePath;
+        trackComparison({ action: 'model_change', engine: nextValue, section: side, locale });
         router.push(href as never, { scroll: false });
       }}
     />

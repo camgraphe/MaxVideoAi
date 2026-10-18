@@ -88,6 +88,7 @@ export type EngineScoresFile = {
 };
 
 export type EngineKeySpecsEntry = {
+  sources?: string[];
   modelSlug?: string;
   engineId?: string;
   keySpecs?: Record<string, unknown>;
@@ -108,6 +109,8 @@ export type CompareSpecValues = {
   referenceVideo: string;
   maxResolution: string;
   maxDuration: string;
+  generationDurations?: Array<{ mode: string; seconds: number[] }>;
+  extensionDuration?: string;
   aspectRatios: string;
   fpsOptions: string;
   outputFormats: string;
@@ -123,8 +126,6 @@ export type ComparePricingDisplay = {
   subline: string | null;
   secondaryLines?: string[];
   prices: number[];
-  scoreLine?: string;
-  scorePrices?: number[];
   quoteUnavailable?: boolean;
   scenario?: import('@/lib/pricing-public-model-contract').PublicModelQuoteInput & { amountCents: number };
   priceRows?: Array<{ resolution: string; unitPrice: string; totalPrice: string }>;

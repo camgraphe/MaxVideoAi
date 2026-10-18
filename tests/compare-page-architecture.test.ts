@@ -621,7 +621,7 @@ test('comparison detail helper facade delegates routing, pricing, specs, and str
   assert.match(helperRoutingSource, /export function getCanonicalCompareSlug/);
   assert.match(helperRoutingSource, /export function resolveExcludedCompareRedirect/);
   assert.match(helperPricingSource, /export async function resolvePricingDisplay/);
-  assert.match(helperPricingSource, /export function computePricingScore/);
+  assert.doesNotMatch(helperPricingSource, /computePricingScore/);
   assert.match(helperSpecValuesSource, /export function buildSpecValues/);
   assert.match(helperSpecValuesSource, /export function localizeSpecDetailValue/);
   assert.match(helperEngineFormattingSource, /export function formatEngineName/);
@@ -670,7 +670,7 @@ test('comparison detail split helpers own FAQ, scorecard, and generate card resp
   assert.match(faqSource, /export function buildCompareFaqItems/);
   assert.match(faqSource, /export function buildCompareFaqJsonLd/);
   assert.match(scorecardSource, /export function buildComparisonMetrics/);
-  assert.match(scorecardSource, /export function buildCompareSummaryRows/);
+  assert.doesNotMatch(scorecardSource, /export function buildCompareSummaryRows/);
   assert.match(scorecardSource, /export function deriveCompareStrengths/);
   assert.match(metadataSource, /export async function buildComparePageMetadata/);
   assert.match(metadataSource, /buildSeoMetadata/);
@@ -702,7 +702,7 @@ test('comparison detail split helpers own FAQ, scorecard, and generate card resp
   assert.match(relatedSectionSource, /export function CompareRelatedSection/);
   assert.match(faqSectionSource, /export function CompareFaqSection/);
   assert.match(showdownSectionSource, /CompareShowdownMedia/);
-  assert.match(specsSectionSource, /CompareSpecValue/);
+  assert.match(specsSectionSource, /CompareSpecsTable/);
   assert.match(faqSectionSource, /dangerouslySetInnerHTML/);
 });
 

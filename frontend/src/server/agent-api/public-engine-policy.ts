@@ -17,6 +17,7 @@ export type AgentPublicGenerationEngine = {
   engine: EngineCaps;
   surface: 'video' | 'image';
   publicModes: AgentGenerationMode[];
+  seedanceWorkflowModes?: AgentGenerationMode[];
   modeCaps: Partial<Record<AgentGenerationMode, EngineModeUiCaps>>;
 };
 

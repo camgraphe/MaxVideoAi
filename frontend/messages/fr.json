@@ -7032,7 +7032,7 @@
     "scorecard": {
       "title": "Comparez les points forts.",
       "subtitle": "Les scores reflètent la qualité et le contrôle sur MaxVideoAI selon 11 critères.",
-      "provisionalNote": "Les scores pré-lancement sont provisoires et seront mis à jour dès que les rendus runtime et le prix final seront disponibles.",
+      "provisionalNote": "Les notes pré-lancement sont provisoires et devront être revues lorsque des rendus seront disponibles.",
       "strengthsLabel": "Points forts",
       "winnerSummary": "À retenir",
       "winnerSummaryPrelaunch": "Leader actuel (pré-lancement)",

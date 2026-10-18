@@ -4,12 +4,9 @@ import { computeMarketingPricePoints } from '../frontend/src/lib/pricing-marketi
 
 import { CATALOG_BY_SLUG, PRICING_ENGINES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-config.ts';
 import { formatSpeedChip } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-engine-formatting.ts';
-import {
-  computePricingScore,
-  resolvePricingDisplay,
-} from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-pricing.ts';
+import { resolvePricingDisplay } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-pricing.ts';
 
-test('Seedance 2.0 comparison pricing exposes exact unit rates and scores the comparable 720p tier', async () => {
+test('Seedance 2.0 comparison pricing exposes exact quotes without an arbitrary price score', async () => {
   const standard = CATALOG_BY_SLUG.get('seedance-2-0');
   const fast = CATALOG_BY_SLUG.get('seedance-2-0-fast');
 
@@ -31,15 +28,11 @@ test('Seedance 2.0 comparison pricing exposes exact unit rates and scores the co
 
   assert.equal(standardPricing.headline, '720p: $0.378/s');
   assert.deepEqual(standardPricing.secondaryLines, ['1080p: $0.936/s', '4K: $1.944/s']);
-  assert.equal(standardPricing.scoreLine, '720p: $0.378/s');
-  assert.ok(Math.abs(standardPricing.scorePrices![0] - 0.378) < 1e-12);
-  assert.equal(computePricingScore(standardPricing.scorePrices ?? standardPricing.prices), 6.4);
+  assert.deepEqual(standardPricing.prices.map(value => Number(value.toFixed(3))), [0.378, 0.936, 1.944]);
 
   assert.equal(fastPricing.headline, '480p: $0.136/s');
   assert.deepEqual(fastPricing.secondaryLines, ['720p: $0.304/s']);
-  assert.equal(fastPricing.scoreLine, '720p: $0.304/s');
-  assert.deepEqual(fastPricing.scorePrices, [0.304]);
-  assert.equal(computePricingScore(fastPricing.scorePrices ?? fastPricing.prices), 7.2);
+  assert.deepEqual(fastPricing.prices.map(value => Number(value.toFixed(3))), [0.136, 0.304]);
 });
 
 test('a failed current comparison quote never falls back to catalogue amounts', async () => {
@@ -57,7 +50,6 @@ test('comparison without a current pricing engine cannot display catalogue margi
     assert.equal(result.headline, 'Current price unavailable', slug);
     assert.equal(result.quoteUnavailable, true);
     assert.deepEqual(result.prices, []);
-    assert.deepEqual(result.scorePrices, []);
   }
 });
 

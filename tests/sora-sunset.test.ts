@@ -43,7 +43,6 @@ test('archived comparison sides have no generation CTA or purchasable price', as
     for (const locale of ['en', 'fr', 'es'] as const) {
       const price = await resolvePricingDisplay(entry, locale);
       assert.deepEqual(price.prices, []);
-      assert.deepEqual(price.scorePrices, []);
     }
   }
   assert.equal(isEngineGeneratable(CATALOG_BY_SLUG.get('seedance-2-5')!), true);

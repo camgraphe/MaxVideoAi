@@ -221,6 +221,23 @@ an unresolved MCP HTTPS reference cannot expose a numeric current tariff by usin
 caller-declared metadata. The generation path rechecks actual media and the
 canonical cost guard.
 
+### MCP native Draft/final quotes — 2026-10-18 source candidate
+
+The canonical agent request retains `seedanceWorkflow` in its normalized hash.
+The MCP adapter resolves the existing owned workflow request before preparation
+and again during confirmation. Only that server-validated step reaches
+`seedanceWorkflowStep` in preflight options or `workflowStep` in transactional
+billing. Ordinary resolutions never acquire a workflow selector. The final uses
+stored verified media facts, including original video timing/framing, without
+reimporting deleted original references. Immutable parent facts are bound to the
+quote and checked again under the initial reservation lock.
+
+Optional workflow price presentation uses the same canonical pricing owner for a
+future final estimate and returns the sum only for known same-currency amounts.
+Each paid step still needs its own exact quote/approval; a final estimate does
+not reserve its tariff. The stored paid Draft charge and new final quote remain
+separate. See the [MCP mode contract](mcp-mode-coverage.md).
+
 ### Proportional normal Seedance video-input tariffs (2026-10-02)
 
 `server/pricing/seedance-input-tariff.ts` owns authoring and whole-domain validation

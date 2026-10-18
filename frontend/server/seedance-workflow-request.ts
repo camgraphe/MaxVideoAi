@@ -1,4 +1,4 @@
-import { query } from '@/lib/db';
+import { query, type QueryExecutor } from '@/lib/db';
 import { isRecord } from './byteplus-record-utils';
 import { getOwnedReadySeedanceDraftLink } from './seedance-draft-links';
 import type { SeedanceFinalReservation } from '@/app/api/generate/_lib/initial-seedance-final';
@@ -25,8 +25,8 @@ export function seedanceWorkflowEnabled(url: string): boolean {
   }
 }
 
-async function readParent(userId: string, jobId: string): Promise<Parent | null> {
-  const rows = await query<Parent>(`SELECT prompt, duration_sec AS "durationSec", aspect_ratio AS "aspectRatio",
+async function readParent(userId: string, jobId: string, queryFn: QueryExecutor['query'] = query): Promise<Parent | null> {
+  const rows = await queryFn<Parent>(`SELECT prompt, duration_sec AS "durationSec", aspect_ratio AS "aspectRatio",
     has_audio AS audio, settings_snapshot AS settings FROM app_jobs
     WHERE job_id = $1 AND user_id = $2 AND engine_id = 'seedance-2-5' AND provider = 'byteplus_modelark' AND status = 'completed'`, [jobId, userId]);
   return rows[0] ?? null;
@@ -35,7 +35,7 @@ async function readParent(userId: string, jobId: string): Promise<Parent | null>
 /** Resolve owner and inherited facts before quotation, then recheck under the debit lock. */
 export async function resolveSeedanceWorkflowRequest(input: {
   body: Record<string, unknown>; userId: string; engineId: string; enabled: boolean;
-}, deps: { getOwnedReadyFn?: typeof getOwnedReadySeedanceDraftLink; readParentFn?: typeof readParent } = {}): Promise<PreparedSeedanceWorkflow | null> {
+}, deps: { getOwnedReadyFn?: typeof getOwnedReadySeedanceDraftLink; readParentFn?: typeof readParent; queryFn?: QueryExecutor['query'] } = {}): Promise<PreparedSeedanceWorkflow | null> {
   const { body } = input;
   const raw = body.seedanceWorkflow;
   const invalid = (message = 'Unsupported Draft workflow.') => new SeedanceWorkflowRequestError(message);
@@ -55,9 +55,9 @@ export async function resolveSeedanceWorkflowRequest(input: {
   }
   const draftJobId = raw.draftJobId;
   if (typeof draftJobId !== 'string' || !draftJobId || draftJobId.length > 255 || /\s|\0/u.test(draftJobId)) throw invalid();
-  const link = await (deps.getOwnedReadyFn ?? getOwnedReadySeedanceDraftLink)(input.userId, draftJobId);
+  const link = await (deps.getOwnedReadyFn ?? getOwnedReadySeedanceDraftLink)(input.userId, draftJobId, deps.queryFn);
   if (!link) throw invalid('This Draft is unavailable, expired or already finalizing.');
-  const parent = await (deps.readParentFn ?? readParent)(input.userId, draftJobId);
+  const parent = await (deps.readParentFn ?? readParent)(input.userId, draftJobId, deps.queryFn);
   const settings = isRecord(parent?.settings) ? parent.settings : {};
   const core = isRecord(settings.core) ? settings.core : {};
   const workflow = isRecord(settings.seedanceWorkflow) ? settings.seedanceWorkflow : {};
@@ -74,7 +74,7 @@ export async function resolveSeedanceWorkflowRequest(input: {
     aspectRatio: parent.aspectRatio, hasVideoInput: false, attachments: [], trustedMediaReferences: [] };
   return { workflow: { step: 'final', draftJobId },
     seedanceFinal: { draftJobId, providerTaskId: link.providerTaskId, providerModelId: link.providerModelId,
-      ...(mediaFacts ? { parentSnapshotFingerprint: seedanceDraftBillingFingerprint(parent) } : {}) },
+      parentSnapshotFingerprint: seedanceDraftBillingFingerprint(parent) },
     finalFacts,
     body: { ...body, mode: settings.inputMode, prompt: parent.prompt, durationSec, duration: durationSec,
       durationOption: mediaFacts?.durationOption ?? core.durationOption,

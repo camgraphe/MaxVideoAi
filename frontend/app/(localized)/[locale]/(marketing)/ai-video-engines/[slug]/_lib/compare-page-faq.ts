@@ -1,3 +1,5 @@
+import { compareDurationDetails, compareDurationLabels } from './compare-duration-copy';
+import { comparePriceLines } from './compare-pricing-copy';
 import type { AppLocale } from '@/i18n/locales';
 import type { ComparePageCopy } from './compare-page-copy';
 import type { ComparePageOverride } from './compare-page-overrides';
@@ -9,7 +11,6 @@ import {
   localizeSpecDetailValue,
   pickFirstCapabilityDifference,
   pickOutputDifference,
-  stripAudioReferencesForSilentPair,
 } from './compare-page-helpers';
 
 export type CompareFaqItem = {
@@ -69,41 +70,25 @@ export function buildCompareFaqItems({
 
   const validatingLabel = compareCopy.faq?.validating ?? 'still being validated';
   const formatFaqValue = (value: string) => formatCompareFaqValue(value, activeLocale, labels, validatingLabel);
-  const faqPricingLeft = formatFaqValue(leftPricingDisplay.headline);
-  const faqPricingRight = formatFaqValue(rightPricingDisplay.headline);
-  const faqT2vLeft = formatFaqValue(leftSpecs.textToVideo);
-  const faqT2vRight = formatFaqValue(rightSpecs.textToVideo);
-  const faqI2vLeft = formatFaqValue(leftSpecs.imageToVideo);
-  const faqI2vRight = formatFaqValue(rightSpecs.imageToVideo);
-  const faqV2vLeft = formatFaqValue(leftSpecs.videoToVideo);
-  const faqV2vRight = formatFaqValue(rightSpecs.videoToVideo);
-  const faqFirstLastLeft = formatFaqValue(leftSpecs.firstLastFrame);
-  const faqFirstLastRight = formatFaqValue(rightSpecs.firstLastFrame);
-  const faqRefImgLeft = formatFaqValue(leftSpecs.referenceImageStyle);
-  const faqRefImgRight = formatFaqValue(rightSpecs.referenceImageStyle);
-  const faqRefVidLeft = formatFaqValue(leftSpecs.referenceVideo);
-  const faqRefVidRight = formatFaqValue(rightSpecs.referenceVideo);
   const faqResLeft = formatFaqValue(leftSpecs.maxResolution);
   const faqResRight = formatFaqValue(rightSpecs.maxResolution);
-  const faqDurLeft = formatFaqValue(leftSpecs.maxDuration);
-  const faqDurRight = formatFaqValue(rightSpecs.maxDuration);
-  const faqArLeft = formatFaqValue(leftSpecs.aspectRatios);
-  const faqArRight = formatFaqValue(rightSpecs.aspectRatios);
-  const faqAudioOutLeft = formatFaqValue(leftSpecs.audioOutput);
-  const faqAudioOutRight = formatFaqValue(rightSpecs.audioOutput);
-  const faqAudioGenLeft = formatFaqValue(leftSpecs.nativeAudioGeneration);
-  const faqAudioGenRight = formatFaqValue(rightSpecs.nativeAudioGeneration);
-  const faqLipLeft = formatFaqValue(leftSpecs.lipSync);
-  const faqLipRight = formatFaqValue(rightSpecs.lipSync);
+  const modelFacts = (keys: Array<keyof CompareSpecValues>) => [left, right].map((entry, i) => {
+    const specs = i === 0 ? leftSpecs : rightSpecs;
+    return `${formatEngineName(entry)} — ${keys.map(key => `${specLabels[key] ?? key}: ${formatFaqValue(String(specs[key]))}`).join('; ')}.`;
+  });
+  const limits = [left, right].map((entry, i) => {
+    const specs = i === 0 ? leftSpecs : rightSpecs;
+    const durationCopy = compareDurationLabels(activeLocale);
+    return `${formatEngineName(entry)} — ${specLabels.maxResolution}: ${formatFaqValue(specs.maxResolution)}; ${durationCopy.newClip}: ${specs.maxDuration}. ${compareDurationDetails(specs, activeLocale).join('; ')}. ${specs.extensionDuration ? `${durationCopy.extension}: ${formatFaqValue(specs.extensionDuration)}. ` : ''}${specLabels.aspectRatios}: ${specs.aspectRatios}. ${durationCopy.conditions}`;
+  });
   const capabilityTemplates = {
-    value:
-      compareCopy.faq?.capabilityDiff ??
-      '{label}: {left} is {leftValue} vs {right} is {rightValue}.',
+    value: '{label} — {left}: {leftValue}; {right}: {rightValue}.',
     pending:
       compareCopy.faq?.capabilityPending ??
       '{label}: both are {status}.',
   };
   const outputTemplates = {
+    shared: activeLocale === 'fr' ? '{label} : {left} et {right} proposent tous les deux {value}.' : activeLocale === 'es' ? '{label}: {left} y {right} ofrecen {value}.' : '{label}: {left} and {right} both offer {value}.',
     value:
       compareCopy.faq?.outputDiff ??
       '{label}: {left} is {leftValue} vs {right} is {rightValue}.',
@@ -115,26 +100,11 @@ export function buildCompareFaqItems({
     left,
     right,
     [
-      { label: specLabels.lipSync ?? 'Lip sync', leftStatus: faqLipLeft, rightStatus: faqLipRight },
-      {
-        label: specLabels.nativeAudioGeneration ?? 'Native audio generation',
-        leftStatus: faqAudioGenLeft,
-        rightStatus: faqAudioGenRight,
-      },
-      {
-        label: specLabels.firstLastFrame ?? 'First/Last frame',
-        leftStatus: faqFirstLastLeft,
-        rightStatus: faqFirstLastRight,
-      },
-      {
-        label: specLabels.referenceImageStyle ?? 'Reference image / style reference',
-        leftStatus: faqRefImgLeft,
-        rightStatus: faqRefImgRight,
-      },
-      { label: specLabels.referenceVideo ?? 'Reference video', leftStatus: faqRefVidLeft, rightStatus: faqRefVidRight },
-      { label: specLabels.videoToVideo ?? 'Video-to-Video', leftStatus: faqV2vLeft, rightStatus: faqV2vRight },
-      { label: specLabels.imageToVideo ?? 'Image-to-Video', leftStatus: faqI2vLeft, rightStatus: faqI2vRight },
-      { label: specLabels.textToVideo ?? 'Text-to-Video', leftStatus: faqT2vLeft, rightStatus: faqT2vRight },
+      { label: specLabels.referenceImageStyle ?? 'Image references', leftStatus: leftSpecs.referenceImageStyle, rightStatus: rightSpecs.referenceImageStyle, includeDetails: true },
+      { label: specLabels.videoToVideo ?? 'Source video', leftStatus: leftSpecs.videoToVideo, rightStatus: rightSpecs.videoToVideo, includeDetails: true },
+      { label: specLabels.firstLastFrame ?? 'First/Last frame', leftStatus: leftSpecs.firstLastFrame, rightStatus: rightSpecs.firstLastFrame },
+      { label: specLabels.nativeAudioGeneration ?? 'Native audio', leftStatus: leftSpecs.nativeAudioGeneration, rightStatus: rightSpecs.nativeAudioGeneration },
+      { label: specLabels.lipSync ?? 'Lip sync', leftStatus: leftSpecs.lipSync, rightStatus: rightSpecs.lipSync },
     ],
     capabilityTemplates,
     validatingLabel,
@@ -222,21 +192,11 @@ export function buildCompareFaqItems({
     },
     {
       question: faqTemplates.q3 ?? 'Which is cheaper on MaxVideoAI?',
-      answer: formatTemplate(
-        stripAudioReferencesForSilentPair(
-          faqTemplates.a3 ??
-          (pairHasNativeAudio
-            ? 'Pricing varies by engine and settings (duration, resolution, audio). Currently, {left} starts at {leftValue} and {right} starts at {rightValue} (see “Pricing (MaxVideoAI)” for details).'
-            : 'Pricing varies by engine and settings (duration and resolution). Currently, {left} starts at {leftValue} and {right} starts at {rightValue} (see “Pricing (MaxVideoAI)” for details).'),
-          pairHasNativeAudio
-        ),
-        {
-          left: formatEngineName(left),
-          right: formatEngineName(right),
-          leftValue: faqPricingLeft,
-          rightValue: faqPricingRight,
-        }
-      ),
+      answer: [
+        `${formatEngineName(left)} — ${comparePriceLines(leftPricingDisplay, activeLocale).join('; ')}.`,
+        `${formatEngineName(right)} — ${comparePriceLines(rightPricingDisplay, activeLocale).join('; ')}.`,
+        activeLocale === 'fr' ? 'Comparez à réglages équivalents. Ces montants sont des estimations en USD, pas des devis réservés.' : activeLocale === 'es' ? 'Compara con los mismos ajustes. Estos importes son estimaciones en USD, no presupuestos reservados.' : 'Compare equivalent settings. These are estimates in USD, not reserved quotes.',
+      ],
     },
     {
       question: formatTemplate(
@@ -248,75 +208,27 @@ export function buildCompareFaqItems({
     {
       question:
         faqTemplates.q5 ?? 'Do they support Text-to-Video / Image-to-Video / Video-to-Video?',
-      answer: formatTemplate(
-        faqTemplates.a5 ??
-          'On MaxVideoAI: Text-to-Video is {t2vLeft} vs {t2vRight}; Image-to-Video is {i2vLeft} vs {i2vRight}; Video-to-Video is {v2vLeft} vs {v2vRight}. Some fields may still be under validation.',
-        {
-          t2vLeft: faqT2vLeft,
-          t2vRight: faqT2vRight,
-          i2vLeft: faqI2vLeft,
-          i2vRight: faqI2vRight,
-          v2vLeft: faqV2vLeft,
-          v2vRight: faqV2vRight,
-        }
-      ),
+      answer: modelFacts(['textToVideo', 'imageToVideo', 'videoToVideo']),
     },
     {
       question: faqTemplates.q6 ?? 'Do they support First/Last frame or references?',
-      answer: formatTemplate(
-        faqTemplates.a6 ??
-          'First/Last frame is {firstLeft} vs {firstRight}. Reference image/style is {refImgLeft} vs {refImgRight}; Reference video is {refVidLeft} vs {refVidRight}.',
-        {
-          firstLeft: faqFirstLastLeft,
-          firstRight: faqFirstLastRight,
-          refImgLeft: faqRefImgLeft,
-          refImgRight: faqRefImgRight,
-          refVidLeft: faqRefVidLeft,
-          refVidRight: faqRefVidRight,
-        }
-      ),
+      answer: modelFacts(['firstLastFrame', 'referenceImageStyle', 'referenceVideo']),
     },
     {
       question: faqTemplates.q7 ?? 'What are the max resolution, duration, and aspect ratios?',
-      answer: formatTemplate(
-        faqTemplates.a7 ??
-          'Max output is {resLeft} / {durLeft} for {left} and {resRight} / {durRight} for {right}. Supported aspect ratios include {arLeft} vs {arRight} (see Key Specs for the full list).',
-        {
-          resLeft: faqResLeft,
-          durLeft: faqDurLeft,
-          left: formatEngineName(left),
-          resRight: faqResRight,
-          durRight: faqDurRight,
-          right: formatEngineName(right),
-          arLeft: faqArLeft,
-          arRight: faqArRight,
-        }
-      ),
+      answer: limits,
     },
     ...(pairHasNativeAudio
       ? [
           {
             question: faqTemplates.q8 ?? 'Do they support audio generation and lip sync?',
-            answer: formatTemplate(
-              faqTemplates.a8 ??
-                'Audio output is {audioOutLeft} vs {audioOutRight}. Native audio generation is {audioGenLeft} vs {audioGenRight}, and lip sync is {lipLeft} vs {lipRight} (some fields may still be under validation).',
-              {
-                audioOutLeft: faqAudioOutLeft,
-                audioOutRight: faqAudioOutRight,
-                audioGenLeft: faqAudioGenLeft,
-                audioGenRight: faqAudioGenRight,
-                lipLeft: faqLipLeft,
-                lipRight: faqLipRight,
-              }
-            ),
+            answer: modelFacts(['audioOutput', 'nativeAudioGeneration', 'lipSync']),
           },
         ]
       : []),
     {
       question: faqTemplates.q9 ?? 'Does MaxVideoAI add a watermark?',
-      answer:
-        faqTemplates.a9 ??
-        'No. MaxVideoAI exports are watermark-free (“Watermark: No (MaxVideoAI)”).',
+      answer: modelFacts(['watermark']),
     },
     {
       question:
