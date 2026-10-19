@@ -1,0 +1,50 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import {readFileSync} from 'node:fs';
+import {startDisposablePostgres,createPaidGenerationTestSchema} from './helpers/disposable-postgres';
+import {createSubtitleJobStore} from '../frontend/src/server/subtitles/jobs';
+import {createSubtitleRepository} from '../frontend/src/server/subtitles/repository';
+import {runSubtitleOperation,pollSubtitleOperation,reconcileSubtitleOperations} from '../frontend/src/server/subtitles/worker';
+import {getDb} from '../frontend/src/lib/db';
+
+const source={ref:{type:'asset' as const,assetId:'owned',kind:'video' as const},fingerprint:'a'.repeat(64),durationMs:10000};
+test('durable subtitle worker resumes provider polling without resubmission, publishes one document, and refunds only certain failures',async t=>{
+  const pg=await startDisposablePostgres('subtitle-worker'),old=process.env.DATABASE_URL;process.env.DATABASE_URL=pg.databaseUrl;
+  t.after(async()=>{await getDb().end();if(old===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=old;await pg.cleanup();});
+  await createPaidGenerationTestSchema(pg.pool);
+  for(const migration of ['70_subtitle_documents.sql','73_subtitle_operations.sql'])await pg.pool.query(readFileSync(`neon/migrations/${migration}`,'utf8'));
+  await pg.pool.query("INSERT INTO app_receipts(user_id,type,amount_cents,currency) VALUES('owner','topup',500,'USD')");
+  const jobs=createSubtitleJobStore({preferredCurrency:async()=> 'usd'}),documents=createSubtitleRepository();
+  const actor={authMethod:'toolbox-session' as const,userId:'owner',clientId:null};
+  const request={source,facts:{durationMs:10000,width:320,height:180,fps:30,hasAudio:true},settings:{keyterms:[]}};
+  const reserve=async()=>{const op=await jobs.prepare(actor,'transcribe',request,{totalCents:17,currency:'USD'});await jobs.reserve(actor,op.id);return op.id;};
+  let submitted=0,cleaned=0,polled=0,dispatched=0;
+  const dependencies={jobs,documents,prepareAudio:async()=>({audioUrl:'https://owned.invalid/audio.wav',storageKey:'audio-key',storageUrl:'https://owned.invalid/audio.wav'}),
+    provider:{submit:async()=>{submitted++;return {requestId:'provider-request'};},poll:async()=>{polled++;return {state:'completed' as const,data:{text:'hello',language_code:'eng',words:[{type:'word',text:'hello',start:1,end:2}]}};}},
+    cleanupAudio:async()=>{cleaned++;},dispatch:async()=>{dispatched++;},render:async()=>({assetId:'video-owned',originalUrl:'https://owned.invalid/video.mp4'})};
+  const id=await reserve();await Promise.all([runSubtitleOperation(id,dependencies),runSubtitleOperation(id,dependencies)]);
+  assert.equal(submitted,1);assert.equal((await jobs.readWork(id))?.state,'provider-pending');
+  await Promise.all([pollSubtitleOperation(id,dependencies),pollSubtitleOperation(id,dependencies)]);
+  assert.equal(submitted,1);assert.ok(polled>=1);assert.equal((await jobs.readWork(id))?.state,'completed');
+  assert.equal((await pg.pool.query('SELECT count(*)::int n FROM subtitle_documents')).rows[0].n,1);
+  assert.equal((await documents.read('owner',`subtitle-${id}`))?.segments[0].text,'hello');
+  assert.equal((await documents.read('stranger',`subtitle-${id}`)),null);assert.equal(cleaned,1);
+  await runSubtitleOperation(id,dependencies);await pollSubtitleOperation(id,dependencies);assert.equal(submitted,1);
+  const uncertain=await reserve();await runSubtitleOperation(uncertain,{...dependencies,provider:{...dependencies.provider,submit:async()=>{submitted++;throw new Error('connection lost after send');}}});
+  assert.equal((await jobs.readWork(uncertain))?.state,'submitting');
+  await runSubtitleOperation(uncertain,dependencies);assert.equal(submitted,2,'unknown submit acceptance must never be retried automatically');
+  const failed=await reserve();await runSubtitleOperation(failed,{...dependencies,prepareAudio:async()=>{throw new Error('SUBTITLE_SOURCE_CHANGED');}});
+  assert.equal((await jobs.readWork(failed))?.state,'failed');
+  assert.equal((await pg.pool.query("SELECT count(*)::int n,sum(amount_cents)::int amount FROM app_receipts WHERE type='refund'")).rows[0].amount,17);
+  const saved=await documents.read('owner',`subtitle-${id}`);assert.ok(saved);
+  const exportOperation=await jobs.prepare(actor,'render',{...request,document:saved!},{totalCents:40,currency:'USD'});await jobs.reserve(actor,exportOperation.id);
+  await runSubtitleOperation(exportOperation.id,{...dependencies,render:async operation=>{assert.equal(operation.request_snapshot.document?.revision,1);return {assetId:'video-owned',originalUrl:'https://owned.invalid/video.mp4'};}});
+  await jobs.fail(exportOperation.id,'must not refund delivered output');
+  assert.equal((await jobs.readWork(exportOperation.id))?.state,'completed');assert.equal((await jobs.readWork(exportOperation.id))?.result?.assetId,'video-owned');
+  assert.equal((await pg.pool.query("SELECT count(*)::int n FROM app_receipts WHERE type='refund'")).rows[0].n,1);
+  const queued=await reserve();await reconcileSubtitleOperations(dependencies);assert.equal(dispatched,1);assert.equal((await jobs.readWork(queued))?.state,'queued','HTTP cron dispatches bounded workers, never starts inline rendering');
+  const expired=await jobs.claim(queued);assert.ok(expired);await pg.pool.query("UPDATE subtitle_operations SET lease_until=NOW()-INTERVAL '1 second' WHERE id=$1",[queued]);
+  const resumed=await jobs.claim(queued);assert.ok(resumed);await assert.rejects(jobs.complete(queued,{documentId:'stale'},expired!.lease_token),/CLAIM_LOST/);
+  await pg.pool.query("UPDATE subtitle_operations SET lease_until=NOW()-INTERVAL '1 second' WHERE id=$1",[queued]);
+  await runSubtitleOperation(queued,dependencies);assert.equal((await jobs.readWork(queued))?.state,'provider-pending');
+});

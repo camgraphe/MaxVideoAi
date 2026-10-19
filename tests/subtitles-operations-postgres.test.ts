@@ -1,0 +1,37 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import {readFileSync} from 'node:fs';
+import {startDisposablePostgres,createPaidGenerationTestSchema} from './helpers/disposable-postgres';
+import {createSubtitleJobStore} from '../frontend/src/server/subtitles/jobs';
+import {createSubtitleOperationsService} from '../frontend/src/server/subtitles/operations';
+import {getDb} from '../frontend/src/lib/db';
+
+const source={ref:{type:'asset' as const,assetId:'owned',kind:'video' as const},fingerprint:'a'.repeat(64),durationMs:10000};
+test('subtitle confirmation scopes quotes and reserves one recoverable charge; failure/refund is terminal and exact',async t=>{
+  const pg=await startDisposablePostgres('subtitle-operations');const old=process.env.DATABASE_URL;process.env.DATABASE_URL=pg.databaseUrl;
+  t.after(async()=>{await getDb().end();if(old===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=old;await pg.cleanup();});
+  await createPaidGenerationTestSchema(pg.pool);await pg.pool.query(readFileSync('neon/migrations/73_subtitle_operations.sql','utf8'));
+  await pg.pool.query("INSERT INTO app_receipts(user_id,type,amount_cents,currency) VALUES('owner','topup',500,'USD')");
+  const jobs=createSubtitleJobStore({preferredCurrency:async()=> 'usd'});let dispatched=0;
+  const actor={authMethod:'toolbox-session' as const,userId:'owner',clientId:null};
+  const dependencies={jobs,readSource:async()=>({source,facts:{durationMs:10000,width:320,height:180,fps:30,hasAudio:true}}),quoteTranscription:async()=>({totalCents:17,currency:'USD',meta:{fixture:true}}),dispatch:async()=>{dispatched++;}};
+  const service=createSubtitleOperationsService(actor,{enabled:true,dependencies});
+  const prepared=await service.prepare({source:source.ref,language:'eng'});
+  assert.equal(prepared.quote.price.amountCents,17);assert.equal(dispatched,0);
+  const foreign=createSubtitleOperationsService({...actor,userId:'stranger'},{enabled:true,dependencies});
+  await assert.rejects(foreign.confirm({operationId:prepared.operationId,confirmed:true}),/NOT_FOUND/);
+  const otherScope=createSubtitleOperationsService({authMethod:'oauth',userId:'owner',clientId:'other-client'} as any,{enabled:true,dependencies});
+  await assert.rejects(otherScope.status(prepared.operationId),/NOT_FOUND/);
+  await assert.rejects(service.confirm({operationId:prepared.operationId,confirmed:false}),/CONFIRMATION/);
+  const results=await Promise.all([service.confirm({operationId:prepared.operationId,confirmed:true}),service.confirm({operationId:prepared.operationId,confirmed:true})]);
+  assert.equal(results[0].jobId,results[1].jobId);assert.equal(dispatched,1);
+  assert.equal((await pg.pool.query("SELECT count(*)::int n FROM app_receipts WHERE type='charge'")).rows[0].n,1);
+  const work=await jobs.claim(prepared.operationId);assert.ok(work);assert.equal(await jobs.claim(prepared.operationId),null);
+  await jobs.fail(work!.id,'Fixture failure');await jobs.fail(work!.id,'Replay');
+  assert.equal((await service.status(prepared.operationId)).state,'failed');
+  assert.equal((await pg.pool.query("SELECT sum(amount_cents)::int amount,count(*)::int n FROM app_receipts WHERE type='refund'")).rows[0].amount,17);
+  assert.equal((await pg.pool.query("SELECT count(*)::int n FROM app_receipts WHERE type='refund'")).rows[0].n,1);
+  await jobs.complete(work!.id,{documentId:'must-not-complete',revision:1});assert.equal((await service.status(prepared.operationId)).state,'failed');
+  const expired=await service.prepare({source:source.ref});await pg.pool.query("UPDATE subtitle_operations SET expires_at=NOW()-INTERVAL '1 second' WHERE id=$1",[expired.operationId]);
+  await assert.rejects(service.confirm({operationId:expired.operationId,confirmed:true}),/EXPIRED/);
+});
