@@ -2,21 +2,19 @@ import type { AppLocale } from '@/i18n/locales';
 import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import { SITE_BASE_URL } from '@/lib/metadataUrls';
 
-export const DEFAULT_EDITORIAL_PROFILE_ID = 'adrien-millot' as const;
+export const DEFAULT_EDITORIAL_PROFILE_ID = 'maxvideoai' as const;
 
 export type ResolvedEditorialProfile = {
   id: typeof DEFAULT_EDITORIAL_PROFILE_ID;
   name: string;
-  jobTitle: string;
-  location: string;
   bio: string;
   aboutHref: string;
 };
 
 const BIOS: Record<AppLocale, string> = {
-  en: 'Adrien Millot is the founder and product lead of MaxVideoAI. He builds the product, evaluates model behavior, and maintains its practical guides and benchmark methodology.',
-  fr: 'Adrien Millot est le fondateur et responsable produit de MaxVideoAI. Il développe le produit, évalue le comportement des modèles et maintient ses guides pratiques ainsi que sa méthodologie de benchmark.',
-  es: 'Adrien Millot es el fundador y responsable de producto de MaxVideoAI. Desarrolla el producto, evalúa el comportamiento de los modelos y mantiene sus guías prácticas y su metodología de benchmarks.',
+  en: 'MaxVideoAI publishes practical guides, model comparisons, and production examples. Its editorial standards distinguish provider specifications, observed measurements, and editorial judgments.',
+  fr: 'MaxVideoAI publie des guides pratiques, des comparatifs de modèles et des exemples de production. Ses normes éditoriales distinguent les spécifications fournisseurs, les mesures observées et les appréciations éditoriales.',
+  es: 'MaxVideoAI publica guías prácticas, comparativas de modelos y ejemplos de producción. Sus estándares editoriales distinguen las especificaciones de proveedores, las mediciones observadas y los juicios editoriales.',
 };
 
 export function getEditorialProfile(
@@ -26,9 +24,7 @@ export function getEditorialProfile(
   const resolvedId = id === DEFAULT_EDITORIAL_PROFILE_ID ? id : DEFAULT_EDITORIAL_PROFILE_ID;
   return {
     id: resolvedId,
-    name: 'Adrien Millot',
-    jobTitle: 'Founder & Product Lead',
-    location: 'France',
+    name: 'MaxVideoAI',
     bio: BIOS[locale] ?? BIOS.en,
     aboutHref: `${localizePathFromEnglish(locale, '/about')}#${resolvedId}`,
   };

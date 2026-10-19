@@ -218,7 +218,8 @@
           "upscale": "Agrandir une image ou vidéo",
           "image": "Générer une image",
           "audio": "Créer de l’audio",
-          "background-removal": "Détourer une vidéo"
+          "background-removal": "Détourer une vidéo",
+          "studio": "Studio"
         },
         "heading": "Préparez votre prochaine scène.",
         "intro": "Créez vos références, changez un angle et soignez les détails.",
@@ -229,6 +230,9 @@
               "get-started": "Premiers pas"
             }
           }
+        },
+        "descriptions": {
+          "studio": "Votre espace de création avec l’IA."
         }
       },
       "workflows": {
@@ -570,11 +574,11 @@
           "engineLabel": "2. Comparer les modèles recommandés",
           "engineRecommendations": [
             {
-              "engineId": "minimax-h3-max",
-              "name": "MiniMax H3 Max",
+              "engineId": "minimax-h3",
+              "name": "MiniMax H3",
               "provider": "MiniMax",
-              "bestFor": "Récit catastrophe cinématographique",
-              "imageAlt": "Une mère et un enfant se mettent à l’abri dans une catastrophe rétrofuturiste photoréaliste générée avec MiniMax H3 Max.",
+              "bestFor": "Action cinématographique",
+              "imageAlt": "Un personnage survole une baie tropicale à grande vitesse dans une vidéo MiniMax H3 de 15 secondes.",
               "fallbackPrice": "Prix actualisé",
               "selected": true,
               "scores": [
@@ -592,17 +596,17 @@
                 }
               ],
               "tags": [
-                "Narration",
+                "Action",
                 "Audio natif",
-                "Prise de vues réelle"
+                "Cinéma"
               ]
             },
             {
               "engineId": "seedance-2-5",
-              "imageAlt": "Aperçu d’une vidéo IA de 10 secondes générée avec Seedance 2.5.",
+              "imageAlt": "Un chat roux affronte deux hommes dans une scène d’action générée avec Seedance 2.5.",
               "name": "Seedance 2.5",
               "provider": "ByteDance",
-              "bestFor": "Physique cinématique complexe",
+              "bestFor": "Action et humour",
               "fallbackPrice": "Prix actualisé",
               "scores": [
                 {
@@ -619,17 +623,17 @@
                 }
               ],
               "tags": [
-                "Physique",
+                "Action",
                 "Audio",
                 "Cinéma"
               ]
             },
             {
-              "engineId": "wan-3-prime",
-              "imageAlt": "Aperçu d’une vidéo IA de 5 secondes générée avec Wan 3 Prime.",
-              "name": "Wan 3 Prime",
+              "engineId": "wan-3",
+              "imageAlt": "Un clip Wan 3 de 22 secondes mêle sons de la ville, percussionniste de rue et métro.",
+              "name": "Wan 3",
               "provider": "Alibaba",
-              "bestFor": "Gestes artisanaux contrôlés",
+              "bestFor": "Rythme et mouvement urbain",
               "fallbackPrice": "Prix actualisé",
               "scores": [
                 {
@@ -646,9 +650,9 @@
                 }
               ],
               "tags": [
-                "Artisanat",
+                "Clip musical",
                 "Réalisme",
-                "Caméra"
+                "Audio"
               ]
             },
             {
@@ -1626,7 +1630,7 @@
     "priceChipSuffix": "Visible avant lancement.",
     "meta": {
       "title": "Générateur vidéo IA sans abonnement | MaxVideoAI",
-      "description": "Comparez Seedance, Kling, Veo, LTX, Wan, Pika et plus avant de générer. Prévisualisez de vrais résultats, voyez le prix à l’avance et générez avec paiement à l’usage."
+      "description": "Comparez Seedance, Kling, Veo, LTX, Wan et Pika. Découvrez de vrais exemples, vérifiez le prix et créez vos vidéos IA à l’usage, sans abonnement."
     },
     "compare": {
       "title": "Comparer les modèles en un coup d’œil",
@@ -2948,14 +2952,14 @@
         },
         {
           "question": "Puis-je proposer un sujet ou demander une couverture ?",
-          "answer": "Oui — envoyez vos sujets à press@maxvideo.ai avec, si possible, des rendus de référence. Nous priorisons les sujets utiles aux équipes de production."
+          "answer": "Oui — envoyez vos sujets à admin@maxvideoai.com avec, si possible, des rendus de référence. Nous priorisons les sujets utiles aux équipes de production."
         },
         {
           "question": "Où trouver les notes de version ?",
           "answer": "Les évolutions produit vivent dans le changelog et les mises à jour API dans la doc développeur. Le blog se concentre sur les workflows et retours du terrain."
         }
       ],
-      "footnote": "Besoin de plus de détails ? Écrivez à press@maxvideo.ai et nous transmettrons à l’équipe concernée."
+      "footnote": "Besoin de plus de détails ? Écrivez à admin@maxvideoai.com et nous transmettrons à l’équipe concernée."
     }
   },
   "videoPage": {
@@ -3048,10 +3052,10 @@
   "contact": {
     "hero": {
       "title": "Contactez l'équipe.",
-      "subtitle": "Besoin d'assistance, d'intégration entreprise ou d'informations presse ? Envoyez-nous un message et nous répondrons dans un délai d'un jour ouvrable."
+      "subtitle": "Contactez MaxVideoAI pour le support produit, les partenariats ou les demandes presse."
     },
     "intro": {
-      "body": "Contactez-nous pour le support, les partenariats, les besoins entreprise ou les demandes éditoriales. Plus votre message contient du contexte sur l’équipe, les modèles visés, l’échéance ou les contraintes conformité, plus vite il arrive à la bonne personne. Chaque demande reçoit une réponse humaine.",
+      "body": "Décrivez votre demande. Pour un problème de génération, ajoutez l’identifiant du job ; pour un partenariat ou la presse, précisez votre projet, publication et échéance.",
       "cards": {
         "productHelp": {
           "title": "Aide produit",
@@ -3101,7 +3105,7 @@
       "items": [
         {
           "question": "Sous quel délai recevez-vous une réponse ?",
-          "answer": "Nous répondons pendant les heures ouvrées en Europe et aux États-Unis. La plupart des demandes support reçoivent une réponse humaine en moins de 12 heures, les demandes entreprise en moins de 24 heures."
+          "answer": "Le délai de réponse dépend de la demande et de la disponibilité du support. Ajoutez l’identifiant du job concerné et une description précise pour faciliter la vérification."
         },
         {
           "question": "Proposez-vous des démos en direct ?",
@@ -3109,13 +3113,13 @@
         },
         {
           "question": "Où vérifier l’état du service ?",
-          "answer": "Consultez la {link} pour vérifier la latence des modèles et l’historique des incidents avant d’ouvrir un ticket."
+          "answer": "Consultez la {email} pour les avis de service publiés par l’équipe MaxVideoAI. Si une génération est retardée, contactez le support avec l’identifiant du job."
         }
       ]
     },
     "statusCard": {
-      "title": "Vérifier l’état des modèles en direct",
-      "body": "Avant d’ouvrir un ticket, vérifiez si un modèle est déjà dégradé. La page de statut liste les latences, les notes d’incident et les mesures d’atténuation pour vous aider à décider s’il faut relancer ou changer de modèle.",
+      "title": "Avis de service",
+      "body": "La page de statut affiche les avis de service publiés par l’équipe. Si une génération est retardée, évitez de relancer le même job et contactez le support avec son identifiant.",
       "cta": "page de statut"
     }
   },
@@ -3782,7 +3786,14 @@
         "expandSection": "Afficher",
         "collapseSection": "Masquer",
         "saving": "Enregistrement…",
-        "removing": "Suppression…"
+        "removing": "Suppression…",
+        "savePending": "Enregistrement dans Médias…",
+        "saveError": "Impossible d’enregistrer dans Médias. Réessayez.",
+        "saveSuccess": "Enregistré dans Médias.",
+        "removePending": "Retrait de l’historique…",
+        "removeError": "Impossible de retirer ce résultat de l’historique. Réessayez.",
+        "removeSuccess": "Retiré de l’historique.",
+        "dismiss": "Fermer"
       }
     },
     "dashboard": {

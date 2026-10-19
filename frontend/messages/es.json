@@ -218,7 +218,8 @@
           "upscale": "Ampliar una imagen o video",
           "image": "Generar imagen",
           "audio": "Crear audio",
-          "background-removal": "Quitar el fondo de un video"
+          "background-removal": "Quitar el fondo de un video",
+          "studio": "Studio"
         },
         "heading": "Prepara tu próxima escena.",
         "intro": "Crea tus referencias, cambia el ángulo y cuida los detalles.",
@@ -229,6 +230,9 @@
               "get-started": "Primeros pasos"
             }
           }
+        },
+        "descriptions": {
+          "studio": "Tu espacio de creación con IA."
         }
       },
       "workflows": {
@@ -570,11 +574,11 @@
           "engineLabel": "2. Compara modelos recomendados",
           "engineRecommendations": [
             {
-              "engineId": "minimax-h3-max",
-              "name": "MiniMax H3 Max",
+              "engineId": "minimax-h3",
+              "name": "MiniMax H3",
               "provider": "MiniMax",
-              "bestFor": "Narrativa cinematográfica de catástrofes",
-              "imageAlt": "Una madre y un niño se refugian durante una catástrofe retrofuturista fotorrealista generada con MiniMax H3 Max.",
+              "bestFor": "Acción cinematográfica",
+              "imageAlt": "Un personaje vuela sobre una bahía tropical a gran velocidad en un video de 15 segundos de MiniMax H3.",
               "fallbackPrice": "Precio actualizado",
               "selected": true,
               "scores": [
@@ -592,17 +596,17 @@
                 }
               ],
               "tags": [
-                "Narrativa",
+                "Acción",
                 "Audio nativo",
-                "Acción real"
+                "Cine"
               ]
             },
             {
               "engineId": "seedance-2-5",
-              "imageAlt": "Vista previa de un video con IA de 10 segundos generado con Seedance 2.5.",
+              "imageAlt": "Un gato naranja se enfrenta a dos hombres en una escena de acción generada con Seedance 2.5.",
               "name": "Seedance 2.5",
               "provider": "ByteDance",
-              "bestFor": "Física cinematográfica compleja",
+              "bestFor": "Acción y humor",
               "fallbackPrice": "Precio actualizado",
               "scores": [
                 {
@@ -619,17 +623,17 @@
                 }
               ],
               "tags": [
-                "Física",
+                "Acción",
                 "Audio",
                 "Cine"
               ]
             },
             {
-              "engineId": "wan-3-prime",
-              "imageAlt": "Vista previa de un video con IA de 5 segundos generado con Wan 3 Prime.",
-              "name": "Wan 3 Prime",
+              "engineId": "wan-3",
+              "imageAlt": "Un video musical de 22 segundos de Wan 3 combina sonidos de la ciudad, un percusionista callejero y el metro.",
+              "name": "Wan 3",
               "provider": "Alibaba",
-              "bestFor": "Movimiento artesanal controlado",
+              "bestFor": "Ritmo y movimiento urbano",
               "fallbackPrice": "Precio actualizado",
               "scores": [
                 {
@@ -646,9 +650,9 @@
                 }
               ],
               "tags": [
-                "Artesanía",
+                "Video musical",
                 "Realismo",
-                "Cámara"
+                "Audio"
               ]
             },
             {
@@ -2940,14 +2944,14 @@
         },
         {
           "question": "¿Puedo sugerir un tema o pedir cobertura?",
-          "answer": "Sí; envía tus ideas a press@maxvideo.ai e incluye renders de referencia si puedes. Priorizamos historias que ayuden a los equipos de producción."
+          "answer": "Sí; envía tus ideas a admin@maxvideoai.com e incluye renders de referencia si puedes. Priorizamos historias que ayuden a los equipos de producción."
         },
         {
           "question": "¿Dónde encuentro las notas de versión?",
           "answer": "Las novedades del producto viven en el changelog y las actualizaciones de API en la documentación para desarrolladores. El blog cubre guías y aprendizajes de campo."
         }
       ],
-      "footnote": "¿Necesitas más detalles? Escribe a press@maxvideo.ai y lo derivaremos al productor adecuado."
+      "footnote": "¿Necesitas más detalles? Escribe a admin@maxvideoai.com y lo derivaremos al productor adecuado."
     }
   },
   "videoPage": {
@@ -3040,10 +3044,10 @@
   "contact": {
     "hero": {
       "title": "Habla con el equipo.",
-      "subtitle": "¿Necesitas soporte, ayuda para tu equipo o información de prensa? Déjanos un mensaje y te responderemos en un día hábil."
+      "subtitle": "Contacta con MaxVideoAI para soporte del producto, colaboraciones o consultas de prensa."
     },
     "intro": {
-      "body": "Escríbenos para soporte, alianzas, necesidades de equipo o solicitudes editoriales. Si compartes contexto sobre tu equipo, los modelos que quieres usar, la fecha límite o los requisitos de cumplimiento, el mensaje llega antes a la persona adecuada. Cada solicitud recibe una respuesta humana.",
+      "body": "Describe tu consulta. Para un problema de generación, incluye el identificador del trabajo; para colaboraciones o prensa, indica tu proyecto, publicación y fecha límite.",
       "cards": {
         "productHelp": {
           "title": "Ayuda de producto",
@@ -3093,7 +3097,7 @@
       "items": [
         {
           "question": "¿Cuánto tardan en responder?",
-          "answer": "Respondemos en horario laboral de Europa y Estados Unidos. La mayoría de los tickets de soporte recibe una respuesta humana en menos de 12 horas y las solicitudes para equipos en menos de 24."
+          "answer": "El tiempo de respuesta depende de la consulta y de la disponibilidad del soporte. Incluye el identificador del trabajo y una descripción clara para facilitar la revisión."
         },
         {
           "question": "¿Ofrecen demos en vivo?",
@@ -3101,13 +3105,13 @@
         },
         {
           "question": "¿Dónde reviso el estado del servicio?",
-          "answer": "Consulta la {link} para revisar la latencia de los motores y el historial de incidentes antes de abrir un ticket."
+          "answer": "Consulta la {email} para ver los avisos de servicio publicados por el equipo de MaxVideoAI. Si una generación se retrasa, contacta con soporte e incluye el identificador del trabajo."
         }
       ]
     },
     "statusCard": {
-      "title": "Revisa el estado de los motores en vivo",
-      "body": "Antes de abrir un ticket, confirma si algún motor ya aparece degradado. La página de estado muestra latencia, notas de incidentes y pasos de mitigación para decidir si conviene reintentar o cambiar de modelo.",
+      "title": "Avisos de servicio",
+      "body": "La página de estado muestra los avisos de servicio publicados por el equipo. Si una generación se retrasa, evita enviar el mismo trabajo de nuevo y contacta con soporte con su identificador.",
       "cta": "página de estado"
     }
   },
@@ -3774,7 +3778,14 @@
         "expandSection": "Mostrar",
         "collapseSection": "Ocultar",
         "saving": "Guardando…",
-        "removing": "Quitando…"
+        "removing": "Quitando…",
+        "savePending": "Guardando en Medios…",
+        "saveError": "No se pudo guardar en Medios. Inténtalo de nuevo.",
+        "saveSuccess": "Guardado en Medios.",
+        "removePending": "Quitando del historial…",
+        "removeError": "No se pudo quitar del historial. Inténtalo de nuevo.",
+        "removeSuccess": "Quitado del historial.",
+        "dismiss": "Cerrar"
       }
     },
     "dashboard": {

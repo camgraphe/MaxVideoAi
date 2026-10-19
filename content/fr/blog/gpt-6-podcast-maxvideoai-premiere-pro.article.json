@@ -53,7 +53,7 @@
                 "bold": true
               },
               {
-                "text": ". GPT-6 Astra et Sol dans Codex ont exécuté la production et le montage dans Premiere Pro, sous la direction d’Adrien. Voici le film, puis les choix qui ont permis d’assembler six générations en une conversation."
+                "text": ". GPT-6 Astra et Sol dans Codex ont exécuté la production et le montage dans Premiere Pro, avec une direction artistique et une validation humaines. Voici le film, puis les choix qui ont permis d’assembler six générations en une conversation."
               }
             ],
             "sourceIds": [
@@ -68,7 +68,7 @@
         "heading": "Voir le film de 86 secondes",
         "videoId": "hwF_A1VlA_U",
         "sourceId": "podcast-production",
-        "credit": "MaxVideoAI / Adrien",
+        "credit": "MaxVideoAI",
         "startSeconds": 0,
         "caption": "Notre interview fictive, carton final compris."
       },
@@ -96,7 +96,7 @@
             ]
           },
           {
-            "text": "Adrien a apporté l’idée, la direction artistique et les retours sur les versions. Il a aussi approuvé les devis, choisi la musique et validé le résultat. Astra et Sol ont exécuté le projet, y compris les corrections de montage. Pour reproduire ce dispositif, il faut donc prévoir la configuration de Premiere en plus de la connexion MaxVideoAI.",
+            "text": "L’idée, la direction artistique, les retours sur les versions, l’approbation des devis, le choix musical et la validation finale relevaient de décisions humaines. Astra et Sol ont exécuté le projet, y compris les corrections de montage. Pour reproduire ce dispositif, il faut donc prévoir la configuration de Premiere en plus de la connexion MaxVideoAI.",
             "sourceIds": [
               "podcast-production"
             ]
@@ -221,7 +221,7 @@
           {
             "spans": [
               {
-                "text": "La première ouverture était trop agitée. Après les retours d’Adrien, "
+                "text": "La première ouverture était trop agitée. Après révision, "
               },
               {
                 "text": "neuf plans sont devenus cinq sur les 21,17 premières secondes",
@@ -255,7 +255,7 @@
             ]
           },
           {
-            "text": "La finition a ajouté les sous-titres, la musique et un carton de six secondes, portant la conversation de 80 à 86 secondes. Après avoir écarté une première proposition musicale, Adrien a retenu Aphelion pour la version finale.",
+            "text": "La finition a ajouté les sous-titres, la musique et un carton de six secondes, portant la conversation de 80 à 86 secondes. Une première proposition musicale a été écartée, puis Aphelion a été retenu pour la version finale.",
             "sourceIds": [
               "podcast-production"
             ]
@@ -466,7 +466,7 @@
     {
       "id": "podcast-production",
       "title": "Is This the End of Video Editing? — author-supplied production records",
-      "publisher": "MaxVideoAI / Adrien",
+      "publisher": "MaxVideoAI",
       "url": "https://www.youtube.com/watch?v=hwF_A1VlA_U",
       "retrievedAt": "2026-09-27"
     },

@@ -22,7 +22,7 @@ test('native mobile navigation keeps a small SSR DOM and stable decoration slots
     assert.equal(before.svgCount,0,'decorative SVGs must wait for an observed opening after JS');
     assert.ok(before.elements<=70,`native SSR navigation should stay below 70 elements, got ${before.elements}`);
     assert.ok(before.bytes<=8500,`native SSR navigation should stay below 8.5KB, got ${before.bytes}`);
-    assert.deepEqual(before.slots,[[21,21],[21,21],[21,21],...Array.from({length:7},()=>[18,18])]);
+    assert.deepEqual(before.slots,[[21,21],[21,21],[21,21],...Array.from({length:6},()=>[18,18])]);
     assert.equal(await menu.locator('.marketing-menu-close-icon').evaluate(node=>getComputedStyle(node,'::before').content),'""');
     assert.equal(await menu.locator('.marketing-menu-chevron').first().evaluate(node=>getComputedStyle(node,'::before').content),'""');
     fixture.releaseHydration();
@@ -32,7 +32,7 @@ test('native mobile navigation keeps a small SSR DOM and stable decoration slots
       svgCount:node.querySelectorAll('svg').length,
       slots:Array.from(node.querySelectorAll('.marketing-menu-icon')).map(slot=>{const rect=slot.getBoundingClientRect();return [rect.width,rect.height].map(value=>Math.round(value*1000)/1000)}),
     }));
-    assert.ok(after.svgCount>=11,'opening adopts the rich decorative icons and language control');
+    assert.ok(after.svgCount>=10,'opening adopts the six top-level entries, media icons and language control');
     assert.deepEqual(after.slots,before.slots,'enhancement must preserve icon geometry');
     assert.deepEqual(await page.evaluate(()=>(window as any).__fixtureHydrationErrors),[]);
     if(process.env.MARKETING_NAV_EVIDENCE_DIR) {

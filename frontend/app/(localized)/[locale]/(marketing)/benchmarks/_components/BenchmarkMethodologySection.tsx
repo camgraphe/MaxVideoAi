@@ -113,7 +113,7 @@ export function BenchmarkMethodologySection({ copy, locale, methodology }: Bench
                   <span aria-hidden="true">·</span>
                   <span>v{entry.version}</span>
                 </p>
-                <p className="mt-2 text-sm leading-6 text-text-secondary">{copy.methodology.initialRelease}</p>
+                <p className="mt-2 text-sm leading-6 text-text-secondary">{entry.version === '1.1.0' ? copy.methodology.deliveryTimingRelease : copy.methodology.initialRelease}</p>
               </li>
             ))}
           </ol>

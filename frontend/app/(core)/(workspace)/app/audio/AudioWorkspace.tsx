@@ -185,17 +185,6 @@ export default function AudioWorkspace() {
     seedAudioVoiceOptions,
     seedAudioVolumeOptions,
   } = useAudioOptionLists(copy);
-  const handlePackChange = useCallback((nextPack: AudioPackId) => {
-    manualWorkspaceOverrideRef.current = true;
-    const nextConfig = getAudioPackConfig(nextPack);
-    setPack(nextPack);
-    resetMusicControlsForPack(nextPack);
-    setMusicEnabled(nextConfig.supportsMusicToggle ? nextConfig.defaultMusicEnabled : false);
-    setExportAudioFile(false);
-    if (!nextConfig.includesVoice) {
-      setVoiceSample(null);
-    }
-  }, [manualWorkspaceOverrideRef, resetMusicControlsForPack]);
 
   useAudioActiveJobPolling({
     activeJob,
@@ -226,10 +215,12 @@ export default function AudioWorkspace() {
 
   const {
     handleClearSourceVideo,
+    handleClearVoiceSample,
     handleSelectGeneratedVideo,
     handleSourceFileSelect,
     handleVoiceFileSelect,
   } = useAudioSourceMediaHandlers({
+    userId: user?.id ?? null,
     copy,
     manualWorkspaceOverrideRef,
     sourceInputRef,
@@ -242,6 +233,18 @@ export default function AudioWorkspace() {
     setSourceVideo,
     setVoiceSample,
   });
+
+  const handlePackChange = useCallback((nextPack: AudioPackId) => {
+    manualWorkspaceOverrideRef.current = true;
+    const nextConfig = getAudioPackConfig(nextPack);
+    setPack(nextPack);
+    resetMusicControlsForPack(nextPack);
+    setMusicEnabled(nextConfig.supportsMusicToggle ? nextConfig.defaultMusicEnabled : false);
+    setExportAudioFile(false);
+    if (!nextConfig.includesVoice) {
+      handleClearVoiceSample();
+    }
+  }, [handleClearVoiceSample, manualWorkspaceOverrideRef, resetMusicControlsForPack]);
 
   const handleGeneratedJobId = useCallback((jobId: string) => {
     router.replace(`${pathname}?intent=video&job=${encodeURIComponent(jobId)}`, { scroll: false });
@@ -292,10 +295,11 @@ export default function AudioWorkspace() {
 
   const handleSelectLatestJob = useCallback(
     (jobId: string) => {
+      handleClearVoiceSample();
       manualWorkspaceOverrideRef.current = false;
       void router.replace(`${pathname}?intent=video&job=${encodeURIComponent(jobId)}`, { scroll: false });
     },
-    [manualWorkspaceOverrideRef, pathname, router]
+    [handleClearVoiceSample, manualWorkspaceOverrideRef, pathname, router]
   );
 
   const quote = audioQuote?.pricing;
@@ -419,7 +423,7 @@ export default function AudioWorkspace() {
           setSeedAudioSpeed={setSeedAudioSpeed}
           setSeedAudioVoice={setSeedAudioVoice}
           setSeedAudioVolume={setSeedAudioVolume}
-          setVoiceSample={setVoiceSample}
+          onClearVoiceSample={handleClearVoiceSample}
           showExportToggle={showExportToggle}
           showIntensity={showIntensity}
           showManualDuration={showManualDuration}

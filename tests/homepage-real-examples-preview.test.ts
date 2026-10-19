@@ -153,10 +153,10 @@ test('homepage hero uses only curated media even when programmed slots exist', (
   const homeHeroSource = source.slice(source.indexOf('export function HomeHero'), source.indexOf('export function ShotTypeEngineSelector'));
 
   assert.match(heroSource, /KLING_3_PRO_HERO_RENDER/);
-  assert.match(heroSource, /showcase-minimax-h3-max-12s\.webp/);
-  assert.match(heroSource, /6e299d72-22dd-46f4-8260-4d6887777558\.mp4/);
-  assert.match(heroSource, /085cc0a7-063d-4801-91f9-ec3d9c5eb95d\.mp4/);
-  assert.match(heroSource, /c8567e3b0531ae10a993534c41d5f76ec8a1fc2329294d0c8fdb7e4b38ab349a\.mp4/);
+  assert.match(heroSource, /showcase-minimax-h3-flight-15s\.webp/);
+  assert.match(heroSource, /5632c9c8-b6d1-4b76-85ca-e32c0643e49f\.mp4/);
+  assert.match(heroSource, /6f085820-dad0-46e2-8b3e-7d50094fb2c4\.mp4/);
+  assert.match(heroSource, /c63e754c-4e7b-4fbb-82e8-7fc876fda7bb\.mp4/);
   assert.match(heroSource, /7b1f1c7b-f7f0-473e-9610-82723604b690\.mp4/);
   assert.match(heroSource, /2506829a4f4f3d7e5d2bd864a701fc6cc2fb7c53182f7a7f5ca10cc580c70aa8\.mp4/);
   assert.match(homeHeroSource, /applyCuratedHeroMedia\(item\)/);
@@ -194,7 +194,7 @@ test('approved hero carousel alts belong to exact localized hero copy rather tha
   }
 });
 
-test('homepage hero opens on the approved MiniMax H3 Max disaster story with coherent media and pricing', () => {
+test('homepage hero opens on the approved MiniMax H3 flight scene with coherent media and pricing', () => {
   (globalThis as typeof globalThis & { React: typeof React }).React = React;
   const cases = [
     ['en', enMessages],
@@ -204,19 +204,19 @@ test('homepage hero opens on the approved MiniMax H3 Max disaster story with coh
   let englishItems: HeroVideoShowcaseItem[] | null = null;
 
   const expectedMiniMaxDescriptions = {
-    en: 'Cinematic disaster storytelling',
-    fr: 'Récit catastrophe cinématographique',
-    es: 'Narrativa cinematográfica de catástrofes',
+    en: 'High-speed cinematic action',
+    fr: 'Action cinématographique',
+    es: 'Acción cinematográfica',
   } as const;
   const expectedMiniMaxChips = {
-    en: ['Narrative', 'Native audio'],
-    fr: ['Narration', 'Audio natif'],
-    es: ['Narrativa', 'Audio nativo'],
+    en: ['Action', 'Native audio'],
+    fr: ['Action', 'Audio natif'],
+    es: ['Acción', 'Audio nativo'],
   } as const;
   const expectedMiniMaxAlts = {
-    en: 'A mother and child shelter during a photorealistic retro-futuristic disaster generated with MiniMax H3 Max.',
-    fr: 'Une mère et un enfant se mettent à l’abri dans une catastrophe rétrofuturiste photoréaliste générée avec MiniMax H3 Max.',
-    es: 'Una madre y un niño se refugian durante una catástrofe retrofuturista fotorrealista generada con MiniMax H3 Max.',
+    en: 'A flying character races above a tropical bay in a 15-second MiniMax H3 video.',
+    fr: 'Un personnage survole une baie tropicale à grande vitesse dans une vidéo MiniMax H3 de 15 secondes.',
+    es: 'Un personaje vuela sobre una bahía tropical a gran velocidad en un video de 15 segundos de MiniMax H3.',
   } as const;
 
   for (const [locale, messages] of cases) {
@@ -227,8 +227,8 @@ test('homepage hero opens on the approved MiniMax H3 Max disaster story with coh
       programmedHeroItems: [
         {
           id: 'programmed-minimax',
-          engineId: 'minimax-h3-max',
-          name: 'MiniMax H3 Max',
+          engineId: 'minimax-h3',
+          name: 'MiniMax H3',
           provider: 'MiniMax',
           bestFor: 'Stale programmed copy',
           chips: ['Stale', 'Programmed'],
@@ -237,7 +237,7 @@ test('homepage hero opens on the approved MiniMax H3 Max disaster story with coh
           estimateLabel: 'Estimate',
           estimateValue: '$9.99',
           estimateMeta: '5s generation',
-          modelHref: { pathname: '/models/[slug]', params: { slug: 'minimax-h3-max' } },
+          modelHref: { pathname: '/models/[slug]', params: { slug: 'minimax-h3' } },
           posterSrc: '/stale-programmed-poster.webp',
           videoSrc: 'https://example.com/stale-programmed-video.mp4',
           duration: '0:05',
@@ -262,7 +262,7 @@ test('homepage hero opens on the approved MiniMax H3 Max disaster story with coh
     assert.ok(showcaseItems, `HomeHero should compose the ${locale} video showcase`);
     assert.deepEqual(
       showcaseItems.map((item) => item.engineId),
-      ['minimax-h3-max', 'seedance-2-5', 'wan-3-prime', 'kling-3-pro', 'ltx-2-5-pro'],
+      ['minimax-h3', 'seedance-2-5', 'wan-3', 'kling-3-pro', 'ltx-2-5-pro'],
       `HomeHero should keep the approved current-model order in ${locale}`,
     );
     assert.equal(showcaseItems[0]?.bestFor, expectedMiniMaxDescriptions[locale]);
@@ -275,8 +275,6 @@ test('homepage hero opens on the approved MiniMax H3 Max disaster story with coh
   assert.deepEqual(
     englishItems.map((item) => ({
       engineId: item.engineId,
-      estimateMeta: item.estimateMeta,
-      estimateValue: item.estimateValue,
       mediaInfo: item.mediaInfo,
       modelHref: item.modelHref,
       posterSrc: item.posterSrc,
@@ -286,42 +284,34 @@ test('homepage hero opens on the approved MiniMax H3 Max disaster story with coh
     })),
     [
       {
-        engineId: 'minimax-h3-max',
-        estimateMeta: '12s generation',
-        estimateValue: '$1.19',
-        mediaInfo: 'Text-to-video · 12s · 16:9',
-        modelHref: { pathname: '/models/[slug]', params: { slug: 'minimax-h3-max' } },
-        posterSrc: '/hero/showcase-minimax-h3-max-12s.webp',
-        videoSrc: 'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6e299d72-22dd-46f4-8260-4d6887777558.mp4',
-        duration: '0:12',
-        resolution: '16:9',
+        engineId: 'minimax-h3',
+        mediaInfo: 'Text-to-video · 15s · 26:15',
+        modelHref: { pathname: '/models/[slug]', params: { slug: 'minimax-h3' } },
+        posterSrc: '/hero/showcase-minimax-h3-flight-15s.webp',
+        videoSrc: 'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/5632c9c8-b6d1-4b76-85ca-e32c0643e49f.mp4',
+        duration: '0:15',
+        resolution: '26:15',
       },
       {
         engineId: 'seedance-2-5',
-        estimateMeta: '10s generation',
-        estimateValue: '$1.46',
-        mediaInfo: 'Text-to-video · 10s · 16:9',
+        mediaInfo: 'Text-to-video · 15s · 16:9',
         modelHref: { pathname: '/models/[slug]', params: { slug: 'seedance-2-5' } },
-        posterSrc: 'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/322680c4-ca2f-405f-89f6-0bdb90f186b9.jpg',
-        videoSrc: 'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/085cc0a7-063d-4801-91f9-ec3d9c5eb95d.mp4',
-        duration: '0:10',
+        posterSrc: '/hero/showcase-seedance-2-5-cat-15s.webp',
+        videoSrc: 'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6f085820-dad0-46e2-8b3e-7d50094fb2c4.mp4',
+        duration: '0:15',
         resolution: '16:9',
       },
       {
-        engineId: 'wan-3-prime',
-        estimateMeta: '5s generation',
-        estimateValue: '$0.70',
-        mediaInfo: 'Text-to-video · 5s · 16:9',
-        modelHref: { pathname: '/models/[slug]', params: { slug: 'wan-3-prime' } },
-        posterSrc: 'https://media.maxvideoai.com/user-asset-thumbs/by-content/c780259ed79d025b4ac74ccc513f18bf/db3ef505b123301c648d118f0d740df7b05d098ec47b5104f0425f42019c069f.jpeg',
-        videoSrc: 'https://media.maxvideoai.com/media-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/c8567e3b0531ae10a993534c41d5f76ec8a1fc2329294d0c8fdb7e4b38ab349a.mp4',
-        duration: '0:05',
+        engineId: 'wan-3',
+        mediaInfo: 'Text-to-video · 22s · 16:9',
+        modelHref: { pathname: '/models/[slug]', params: { slug: 'wan-3' } },
+        posterSrc: '/hero/showcase-wan-3-city-22s.webp',
+        videoSrc: 'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/c63e754c-4e7b-4fbb-82e8-7fc876fda7bb.mp4',
+        duration: '0:22',
         resolution: '16:9',
       },
       {
         engineId: 'kling-3-pro',
-        estimateMeta: '12s generation',
-        estimateValue: '$2.63',
         mediaInfo: 'Image-to-video · 12s · 16:9',
         modelHref: { pathname: '/models/[slug]', params: { slug: 'kling-3-pro' } },
         posterSrc: 'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/01245e62-6bb2-4d5d-89c6-c60923a004ad.jpg',
@@ -331,8 +321,6 @@ test('homepage hero opens on the approved MiniMax H3 Max disaster story with coh
       },
       {
         engineId: 'ltx-2-5-pro',
-        estimateMeta: '6s generation',
-        estimateValue: '$0.72',
         mediaInfo: 'Image-to-video · 6s · 16:9',
         modelHref: { pathname: '/models/[slug]', params: { slug: 'ltx-2-5-pro' } },
         posterSrc: 'https://media.maxvideoai.com/user-asset-thumbs/by-content/c780259ed79d025b4ac74ccc513f18bf/eca62625821feb6bd76c6e023a43988bc8ea18508c783bc6adf4973f172b8d75.jpeg',

@@ -1,3 +1,4 @@
+import { projectMissingAudioDurations } from './audio-duration-projection';
 import { query } from '@/lib/db';
 import { ensureAssetSchema, ensureMediaLibrarySchema } from '@/lib/schema';
 import {
@@ -47,7 +48,15 @@ export async function findLibraryAssetByOrigin(params: {
     const identityRows = await query<DbMediaAssetRow>(
       `/* media-library:exact-origin:identity */
        SELECT id, public_id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes,
-              source, source_job_id, source_output_id, status, metadata, created_at
+              CASE
+                WHEN source = 'import' AND (
+                  source_job_id IS NOT NULL
+                  OR metadata->>'jobId' IS NOT NULL
+                  OR metadata->>'sourceJobId' IS NOT NULL
+                ) THEN 'saved_job_output'
+                ELSE source
+              END AS source,
+              source_job_id, source_output_id, status, metadata, created_at
          FROM media_assets
         WHERE id = $1
           AND user_id = $2
@@ -69,7 +78,7 @@ export async function findLibraryAssetByOrigin(params: {
         LIMIT 1`,
       [identity, params.userId, params.kind, source]
     );
-    if (identityRows[0]) return mapAssetRow(identityRows[0]);
+    if (identityRows[0]) return (await projectMissingAudioDurations(params.userId, [mapAssetRow(identityRows[0])]))[0];
   }
 
   const canonicalRows = await query<DbMediaAssetRow>(
@@ -116,7 +125,7 @@ export async function findLibraryAssetByOrigin(params: {
       LIMIT 1`,
     queryParams
   );
-  if (canonicalRows[0]) return mapAssetRow(canonicalRows[0]);
+  if (canonicalRows[0]) return (await projectMissingAudioDurations(params.userId, [mapAssetRow(canonicalRows[0])]))[0];
 
   const legacyRows = await query<DbMediaAssetRow>(
     `/* media-library:exact-origin:legacy */
@@ -169,7 +178,7 @@ export async function findLibraryAssetByOrigin(params: {
     queryParams
   );
 
-  return legacyRows[0] ? mapAssetRow(legacyRows[0]) : null;
+  return legacyRows[0] ? (await projectMissingAudioDurations(params.userId, [mapAssetRow(legacyRows[0])]))[0] : null;
 }
 
 export async function listLibraryAssetPage(params: {
@@ -364,5 +373,6 @@ export async function listLibraryAssetPage(params: {
     ]
   );
 
-  return sliceMediaLibraryPage(rows.map(mapAssetRow), limit);
+  const page = sliceMediaLibraryPage(rows.map(mapAssetRow), limit);
+  return { ...page, items: await projectMissingAudioDurations(params.userId, page.items) };
 }

@@ -1,4 +1,3 @@
-import { HomeAssistantStrip } from './HomeAssistantStrip';
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
@@ -30,7 +29,7 @@ const COPY = {
   },
 } satisfies Record<AppLocale, unknown>;
 
-export function HomeCreationSection({ locale, assistantHref }: { locale: AppLocale; assistantHref?: string }) {
+export function HomeCreationSection({ locale }: { locale: AppLocale }) {
   const copy = COPY[locale];
   return (
     <section id="create" className="home-create-chapter section border-b border-hairline bg-surface">
@@ -49,8 +48,8 @@ export function HomeCreationSection({ locale, assistantHref }: { locale: AppLoca
           </div>
           <figure>
             <div className="app-devices">
-              <div className="app-laptop"><Image src="/assets/marketing/redesign/app-desktop.jpg" alt={copy.desktop} width={1428} height={1015} sizes="(max-width: 700px) 1px, (max-width: 900px) 90vw, 720px" loading="lazy" /></div>
-              <div className="app-phone"><Image src="/assets/marketing/redesign/app-mobile.jpg" alt={copy.mobile} width={378} height={818} sizes="(max-width: 700px) 280px, 180px" loading="lazy" /></div>
+              <div className="app-laptop"><Image src="/assets/marketing/redesign/app-desktop-light-wide.webp" alt={copy.desktop} width={1344} height={840} sizes="(max-width: 700px) 1px, (max-width: 900px) 90vw, 720px" loading="lazy" /></div>
+              <div className="app-phone"><Image src="/assets/marketing/redesign/app-mobile-light-framed.webp" alt={copy.mobile} width={378} height={794} sizes="(max-width: 700px) 280px, 180px" loading="lazy" /></div>
             </div>
             <figcaption className="mt-5 text-center text-xs text-text-muted">{copy.capture}</figcaption>
           </figure>
@@ -58,7 +57,6 @@ export function HomeCreationSection({ locale, assistantHref }: { locale: AppLoca
         <div className="creation-modes">
           {copy.modes.map(([title, body], index) => <Link key={title} href={['/app', '/app/image', '/app/audio'][index]} prefetch={false}><strong>{title} <span aria-hidden>↗</span></strong><span>{body}</span></Link>)}
         </div>
-        {assistantHref ? <HomeAssistantStrip locale={locale} href={assistantHref}/> : null}
       </div>
     </section>
   );

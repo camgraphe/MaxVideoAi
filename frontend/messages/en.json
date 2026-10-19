@@ -198,7 +198,8 @@
           "image": "Generate image",
           "audio": "Generate audio",
           "background-removal": "Remove a video background",
-          "upscale": "AI Upscale"
+          "upscale": "AI Upscale",
+          "studio": "Studio"
         },
         "heading": "Shape the next part of your story.",
         "intro": "Create your references, change an angle and finish the details.",
@@ -209,6 +210,9 @@
               "get-started": "Getting started"
             }
           }
+        },
+        "descriptions": {
+          "studio": "Your creative workspace with AI."
         }
       },
       "workflows": {
@@ -470,11 +474,11 @@
           "engineLabel": "2. Compare recommended engines",
           "engineRecommendations": [
             {
-              "engineId": "minimax-h3-max",
-              "name": "MiniMax H3 Max",
+              "engineId": "minimax-h3",
+              "name": "MiniMax H3",
               "provider": "MiniMax",
-              "bestFor": "Cinematic disaster storytelling",
-              "imageAlt": "A mother and child shelter during a photorealistic retro-futuristic disaster generated with MiniMax H3 Max.",
+              "bestFor": "High-speed cinematic action",
+              "imageAlt": "A flying character races above a tropical bay in a 15-second MiniMax H3 video.",
               "fallbackPrice": "Live price",
               "selected": true,
               "scores": [
@@ -492,17 +496,17 @@
                 }
               ],
               "tags": [
-                "Narrative",
+                "Action",
                 "Native audio",
-                "Live action"
+                "Cinematic"
               ]
             },
             {
               "engineId": "seedance-2-5",
-              "imageAlt": "Preview of a 10-second AI video generated with Seedance 2.5.",
+              "imageAlt": "A fluffy orange cat faces two men in an action scene generated with Seedance 2.5.",
               "name": "Seedance 2.5",
               "provider": "ByteDance",
-              "bestFor": "Complex cinematic physics",
+              "bestFor": "Playful cinematic action",
               "fallbackPrice": "Live price",
               "scores": [
                 {
@@ -519,17 +523,17 @@
                 }
               ],
               "tags": [
-                "Physics",
+                "Action",
                 "Audio",
                 "Cinematic"
               ]
             },
             {
-              "engineId": "wan-3-prime",
-              "imageAlt": "Preview of a 5-second AI video generated with Wan 3 Prime.",
-              "name": "Wan 3 Prime",
+              "engineId": "wan-3",
+              "imageAlt": "A 22-second Wan 3 music video brings together city sounds, a street drummer and a subway.",
+              "name": "Wan 3",
               "provider": "Alibaba",
-              "bestFor": "Controlled craft motion",
+              "bestFor": "Rhythm and city motion",
               "fallbackPrice": "Live price",
               "scores": [
                 {
@@ -546,9 +550,9 @@
                 }
               ],
               "tags": [
-                "Craft",
+                "Music video",
                 "Realism",
-                "Camera"
+                "Audio"
               ]
             },
             {
@@ -2920,14 +2924,14 @@
         },
         {
           "question": "Can I suggest a topic or request coverage?",
-          "answer": "Yes—send topics to press@maxvideo.ai and include reference renders if you can. We prioritize stories that help production teams stay current."
+          "answer": "Yes—send topics to admin@maxvideoai.com and include reference renders if you can. We prioritize stories that help production teams stay current."
         },
         {
           "question": "Where can I find release notes?",
           "answer": "Feature-level updates live in the product changelog, and API updates post inside the developer docs. The blog covers higher-level workflows."
         }
       ],
-      "footnote": "Need more detail? Email press@maxvideo.ai with your request and we’ll route it to the right producer."
+      "footnote": "Need more detail? Email admin@maxvideoai.com with your request and we’ll route it to the right producer."
     }
   },
   "videoPage": {
@@ -3020,10 +3024,10 @@
   "contact": {
     "hero": {
       "title": "Contact the team.",
-      "subtitle": "Need support, enterprise onboarding, or press information? Send a note and we’ll reply within one business day."
+      "subtitle": "Contact MaxVideoAI for product support, partnerships, or press enquiries."
     },
     "intro": {
-      "body": "Talk to us about support, partnerships, enterprise setup, or editorial coverage. Messages that include context such as team size, target models, deadlines, or compliance requirements reach the right specialist faster. Every request gets a human reply.",
+      "body": "Tell us what you need help with. For a generation issue, include the job ID; for partnerships or press, include your project, publication, and deadline.",
       "cards": {
         "productHelp": {
           "title": "Product help",
@@ -3073,7 +3077,7 @@
       "items": [
         {
           "question": "How fast will someone reply?",
-          "answer": "We answer during European and US business hours. Most support tickets receive a human response in under 12 hours, enterprise requests inside 24."
+          "answer": "Response times vary with the request and support availability. Include the relevant job ID and a clear description so we can investigate."
         },
         {
           "question": "Do you offer live demos?",
@@ -3081,13 +3085,13 @@
         },
         {
           "question": "Where can I check service status?",
-          "answer": "Visit the {email} for current engine latency and incident history before opening a ticket."
+          "answer": "Visit the {email} for service notices published by the MaxVideoAI team. For a delayed generation, contact support with the job ID."
         }
       ]
     },
     "statusCard": {
-      "title": "Check live engine status",
-      "body": "Before opening a ticket, confirm whether an engine is already degraded. Status updates list latency, incident notes, and mitigation steps so you can decide whether to retry or switch models.",
+      "title": "Service notices",
+      "body": "The status page shows service notices published by the team. If a generation is delayed, avoid submitting the same job again and contact support with its job ID.",
       "cta": "status page"
     }
   },
@@ -3923,7 +3927,14 @@
         "expandSection": "Show",
         "collapseSection": "Hide",
         "saving": "Saving…",
-        "removing": "Removing…"
+        "removing": "Removing…",
+        "savePending": "Saving to Media…",
+        "saveError": "Could not save to Media. Please try again.",
+        "saveSuccess": "Saved to Media.",
+        "removePending": "Removing from history…",
+        "removeError": "Could not remove from history. Please try again.",
+        "removeSuccess": "Removed from history.",
+        "dismiss": "Dismiss"
       }
     },
     "dashboard": {

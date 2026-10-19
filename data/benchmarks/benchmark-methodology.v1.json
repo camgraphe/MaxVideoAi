@@ -1,6 +1,6 @@
 {
-  "version": "1.0.0",
-  "effectiveDate": "2026-07-11",
+  "version": "1.1.0",
+  "effectiveDate": "2026-10-19",
   "scoreScale": {
     "minimum": 0,
     "maximum": 10,
@@ -175,6 +175,11 @@
     "MaxVideoAI sells access to the compared models and discloses that commercial interest."
   ],
   "changelog": [
+    {
+      "date": "2026-10-19",
+      "version": "1.1.0",
+      "summary": "Measure first recorded application video delivery from immutable job_completion samples; apply eligibility to valid samples only. Historical provider events, mutable updates and provider-only execution durations are excluded. Editorial scores are unchanged."
+    },
     {
       "date": "2026-07-11",
       "version": "1.0.0",

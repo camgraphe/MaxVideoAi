@@ -10,6 +10,7 @@ export type BenchmarkScoreRow = {
   modelName: string;
   overall: number | null;
   updatedAt: string | null;
+  generationUnavailable?: boolean;
   metrics: Record<(typeof METRIC_IDS)[number], number | null>;
 };
 
@@ -89,7 +90,7 @@ export function buildBenchmarkPageData(
     const modelSlug = score.modelSlug ?? score.engineId;
     const engine = modelSlug ? engineBySlug.get(modelSlug) : null;
     if (!modelSlug || !engine) return [];
-    return [{ modelSlug, modelName: engine.marketingName, overall: computeBenchmarkOverall(score), updatedAt: score.last_updated ?? null, metrics: metricMap(score) }];
+    return [{ modelSlug, modelName: engine.marketingName, generationUnavailable: engine.surfaces.app.enabled === false, overall: computeBenchmarkOverall(score), updatedAt: score.last_updated ?? null, metrics: metricMap(score) }];
   }).sort((left, right) => (right.overall ?? -1) - (left.overall ?? -1) || left.modelName.localeCompare(right.modelName));
 
   const specs = staticData.specs.flatMap((spec) => {
