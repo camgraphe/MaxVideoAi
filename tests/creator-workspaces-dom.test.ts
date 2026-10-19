@@ -107,3 +107,38 @@ test('a captioned MP4 recovery link restores the paid output while new execution
     assert.ok(f.w.requests.every((request:any)=>!request.init?.method || request.init.method==='GET'));
   }finally{await f.close();}
 });
+test('Studio subtitles prepare the pinned sequence mix with an itemized quote and no misleading upload picker',async()=>{
+  const f=await mountToolFixture("import Workspace from './src/components/tools/creator/SubtitleWorkspace.client';function App(){return <Workspace studioSource={{projectId:'project-1',sequenceId:'sequence-2',expectedRevision:7}}/>}",stubs,w=>{w.auth={user:{id:'A'},loading:false};w.pickers={};});
+  try{
+    assert.deepEqual(Object.keys(f.w.pickers),[]);assert.match(f.w.document.body.textContent,/Sequence revision 7/);assert.match(f.w.document.body.textContent,/audio becomes available after preparation/);assert.equal(f.w.requests.length,0);
+    await click(f,'Get an exact quote');const request=f.w.requests.at(-1);assert.equal(request.url,'/api/tools/subtitles/prepare-studio');assert.deepEqual(JSON.parse(request.init.body),{projectId:'project-1',sequenceId:'sequence-2',expectedRevision:7,keyterms:[]});
+    await f.respond(request,{ok:true,operationId:opId,kind:'mix-transcribe',state:'prepared',sourceSummary:{kind:'sequence',name:'Opening sequence',revision:7},quote:{...price,breakdown:{transcription:{amountCents:100,currency:'USD'},mixPreparation:{amountCents:25,currency:'USD'}}}});
+    assert.match(f.w.document.body.textContent,/Opening sequence/);assert.match(f.w.document.body.textContent,/Audio mix preparation\$0.25/);assert.match(f.w.document.body.textContent,/Transcription\$1.00/);
+    await click(f,'Confirm and create');assert.deepEqual(JSON.parse(f.w.requests.at(-1).init.body),{operationId:opId,confirmed:true});
+  }finally{await f.close();}
+});
+test('Motion Control and reference guidance send distinct explicit profiles and invalidate quotes when switching',async()=>{
+  const f=await mountToolFixture("import Workspace from './src/components/tools/creator/CreatorWorkspace.client';function App(){return <Workspace toolId=\"motion-transfer\" motionControlEnabled={true}/>}",stubs,w=>{w.auth={user:{id:'A'},loading:false};w.pickers={};});
+  try{
+    await f.act(async()=>{f.w.pickers.image.onChange(source('image'));f.w.pickers.video.onChange(source('video'));});await click(f,'Get an exact quote');
+    assert.equal(JSON.parse(f.w.requests.at(-1).init.body).profileId,'motion-kling-v3-v1');assert.match(f.w.document.body.textContent,/2–30 seconds/);
+    await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,quote:price});
+    const method=Array.from(f.w.document.querySelectorAll('select')).find((node:any)=>node.value==='motion-kling-v3-v1') as any;
+    await f.act(async()=>{method.value='motion-wan-reference-v1';method.dispatchEvent(new f.w.Event('change',{bubbles:true}));});
+    assert.equal(buttons(f.w,'Confirm and create').length,0);assert.match(f.w.document.body.textContent,/whole-second range of 2–15/);
+    await click(f,'Get an exact quote');assert.equal(JSON.parse(f.w.requests.at(-1).init.body).profileId,'motion-wan-reference-v1');
+    await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,quote:price});
+    const resolution=Array.from(f.w.document.querySelectorAll('select')).find((node:any)=>node.value==='720p') as any;
+    await f.act(async()=>{resolution.value='1080p';resolution.dispatchEvent(new f.w.Event('change',{bubbles:true}));method.value='motion-kling-v3-v1';method.dispatchEvent(new f.w.Event('change',{bubbles:true}));});
+    await click(f,'Get an exact quote');assert.equal(JSON.parse(f.w.requests.at(-1).init.body).settings.resolution,'720p');
+  }finally{await f.close();}
+});
+test('video lip-sync clears the photo instruction before preparing its prompt-free profile',async()=>{
+  const f=await mountToolFixture("import Workspace from './src/components/tools/creator/CreatorWorkspace.client';function App(){return <Workspace toolId=\"lip-sync\" lipVideoEnabled={true}/>}",stubs,w=>{w.auth={user:{id:'A'},loading:false};w.pickers={};});
+  try{
+    const instruction=f.w.document.querySelector('textarea');await f.act(async()=>{Object.getOwnPropertyDescriptor(f.w.HTMLTextAreaElement.prototype,'value')!.set!.call(instruction,'Smile and move the camera');instruction.dispatchEvent(new f.w.Event('input',{bubbles:true}));});
+    await click(f,'Video');assert.equal(f.w.document.querySelector('textarea'),null);
+    await f.act(async()=>{f.w.pickers.video.onChange(source('video'));f.w.pickers.audio.onChange(source('audio'));});await click(f,'Get an exact quote');
+    const input=JSON.parse(f.w.requests.at(-1).init.body);assert.equal(input.profileId,'lip-video-latentsync-v1');assert.equal(input.settings.instruction,'');
+  }finally{await f.close();}
+});

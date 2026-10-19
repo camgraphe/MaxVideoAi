@@ -3,7 +3,7 @@ import test from 'node:test';
 import { mountToolFixture } from './helpers/tool-selection-fixture';
 const opId = '12345678-1234-4234-8234-123456789abc';
 const prepared = { ok: true, operationId: opId, quote: { price: { amountCents: 125, currency: 'USD' }, expiresAt: '2099-01-01T00:00:00Z' } };
-const stubs = { '@/lib/authFetch': 'export const authFetch=(url,init)=>window.fixtureFetch(url,init);' };
+const stubs = { '@/lib/analytics-client': 'export const dispatchAnalyticsEvent=(event,payload)=>{window.analytics??=[];window.analytics.push({event,payload});};', '@/lib/authFetch': 'export const authFetch=(url,init)=>window.fixtureFetch(url,init);' };
 async function mount(storage: Record<string,string> = {}, userId = 'A') {
   return mountToolFixture(`import{useCreatorOperation}from'./src/components/tools/creator/useCreatorOperation';function App(){window.operation=useCreatorOperation({userId:window.userId,toolId:'lip-sync',family:'creator'});return null}`, stubs, w => { w.userId=userId; for(const [key,value]of Object.entries(storage)) w.sessionStorage.setItem(key,value); });
 }
@@ -81,5 +81,14 @@ test('synchronous invalidation blocks confirmation even before React rerenders',
   const f=await mount();try{
     await f.act(async()=>{void f.w.operation.prepare({source:'first'});});await f.respond(f.w.requests[0],prepared);
     await f.act(async()=>{const previous=f.w.operation;previous.invalidate();void previous.confirm();});assert.equal(f.w.requests.length,1);
+  }finally{await f.close();}
+});
+test('tool metrics fire on confirmed work and completion once, without operation IDs or source content',async()=>{
+  const f=await mount();try{
+    await f.act(async()=>{void f.w.operation.prepare({privateCaption:'private content'});});await f.respond(f.w.requests[0],prepared);assert.equal(f.w.analytics,undefined);
+    await f.act(async()=>{void f.w.operation.confirm();});await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,status:'running'});
+    await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,status:'completed',result:{outputs:[{originalUrl:'https://private.invalid/secret'}]}});
+    assert.deepEqual(JSON.parse(JSON.stringify(f.w.analytics)),[{event:'tool_start',payload:{route_family:'app_tools',tool_name:'lip_sync',tool_surface:'workspace',logged_in:true}},{event:'tool_complete',payload:{route_family:'app_tools',tool_name:'lip_sync',tool_surface:'workspace',logged_in:true,result_count:1}}]);
+    await f.act(async()=>f.w.operation.retry());await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,status:'completed',result:{outputs:[]}});assert.equal(f.w.analytics.length,2);
   }finally{await f.close();}
 });

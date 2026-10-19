@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
-import { CREATOR_DEFAULT_SETTINGS, creatorOperationInputSchema, type CreatorOperationResult, type CreatorSourceInput, type CreatorToolId } from '@/lib/toolbox/creator-tools';
+import { CREATOR_DEFAULT_SETTINGS, creatorOperationInputSchema, type CreatorAvailableProfile, type CreatorOperationResult, type CreatorSourceInput, type CreatorToolId } from '@/lib/toolbox/creator-tools';
 import { ToolMediaHandoff } from '@/components/library/ToolMediaHandoff.client';
 import { MediaDestinationActions } from '@/components/library/MediaDestinationActions.client';
 import { ToolAuthNotice, ToolWorkbench } from '../ToolWorkbench';
@@ -18,18 +18,21 @@ import styles from './creator-workspace.module.css';
 
 type CreatorReadableResult = Omit<CreatorOperationResult,'outputs'> & {outputs: Array<CreatorOperationResult['outputs'][number] & {readUrl?: string | null;thumbnailReadUrl?: string | null}>};
 type Role = CreatorSourceInput['role'];
-export default function CreatorWorkspace({ toolId, lipVideoEnabled = false, executionEnabled = true, initialOperationId }: { toolId: CreatorToolId; lipVideoEnabled?: boolean; executionEnabled?:boolean;initialOperationId?:string }) {
+export default function CreatorWorkspace({ toolId, lipVideoEnabled = false, executionEnabled = true, initialOperationId, motionControlEnabled = false, profiles }: { toolId: CreatorToolId; lipVideoEnabled?: boolean; executionEnabled?:boolean;initialOperationId?:string;motionControlEnabled?:boolean;profiles?:CreatorAvailableProfile[] }) {
   const auth = useRequireAuth({ redirectIfLoggedOut:false }), { locale } = useI18n();
-  return <CreatorSession key={`${auth.user?.id ?? 'guest'}:${toolId}:${initialOperationId ?? ''}`} userId={auth.user?.id} locale={locale} toolId={toolId} lipVideoEnabled={lipVideoEnabled} executionEnabled={executionEnabled} initialOperationId={initialOperationId} />;
+  return <CreatorSession key={`${auth.user?.id ?? 'guest'}:${toolId}:${initialOperationId ?? ''}`} userId={auth.user?.id} locale={locale} toolId={toolId} lipVideoEnabled={lipVideoEnabled} executionEnabled={executionEnabled} initialOperationId={initialOperationId} motionControlEnabled={motionControlEnabled} profiles={profiles} />;
 }
-export function CreatorSession({ toolId, userId, locale, lipVideoEnabled = false, executionEnabled = true, initialOperationId }: { toolId: CreatorToolId; userId?: string; locale: string; lipVideoEnabled?: boolean; executionEnabled?:boolean; initialOperationId?:string }) {
+export function CreatorSession({ toolId, userId, locale, lipVideoEnabled = false, executionEnabled = true, initialOperationId, motionControlEnabled = false, profiles }: { toolId: CreatorToolId; userId?: string; locale: string; lipVideoEnabled?: boolean; executionEnabled?:boolean; initialOperationId?:string;motionControlEnabled?:boolean;profiles?:CreatorAvailableProfile[] }) {
   const copy = creatorWorkspaceCopy(locale), operation = useCreatorOperation<CreatorReadableResult>({ userId,toolId,family:'creator',executionEnabled,initialOperationId });
+  const [motionProfileId,setMotionProfileId] = useState(motionControlEnabled ? 'motion-kling-v3-v1' : 'motion-wan-reference-v1');
   const [settings,setSettings] = useState<Record<string,string>>(() => ({ ...CREATOR_DEFAULT_SETTINGS[toolId] }));
   const [sources,setSources] = useState<Partial<Record<Role,CreatorSource>>>({}), [segments,setSegments] = useState<Partial<Record<Role,SegmentDraft>>>({});
   const [uploadBusy,setUploadBusy] = useState(false), [view,setView] = useState<'source'|'result'>('result');
   const [validation,setValidation] = useState(false);
   const disabled = operation.busy || operation.running || uploadBusy;
   const photo = toolId === 'product-photo-editor', lip = toolId === 'lip-sync', motion = toolId === 'motion-transfer';
+  const profileId = motion ? motionProfileId : lip ? settings.mode === 'video' ? 'lip-video-latentsync-v1' : 'lip-photo-ltx-v1' : photo ? settings.model === 'nano-banana-2' ? 'product-photo-nano-v1' : 'product-photo-gpt-v1' : 'product-video-wan-v1';
+  const profile = profiles?.find(value => value.id === profileId);
   const sourceKind = toolId === 'product-video-editor' || (lip && settings.mode === 'video') ? 'video' : 'image';
   const output = operation.result?.outputs[0], source = sources.source;
   const outputReadUrl = output?.readUrl === undefined ? output?.originalUrl : output.readUrl;
@@ -37,7 +40,7 @@ export function CreatorSession({ toolId, userId, locale, lipVideoEnabled = false
   const videoClosed = lip && settings.mode === 'video' && !lipVideoEnabled;
   function changed() { operation.invalidate(); setValidation(false); }
   function changeSettings(patch: Record<string,string>) {
-    if (disabled) return; changed(); setSettings(value => ({ ...value,...patch }));
+    if (disabled) return; changed(); setSettings(value => ({ ...value,...patch,...patch.mode === 'video' ? {instruction:''} : {} }));
     if (patch.mode) { setSources(value => ({ ...value,source:undefined })); setSegments(value => ({ ...value,source:undefined })); }
   }
   function changeSource(role: Role, next: CreatorSource | null) {
@@ -48,7 +51,7 @@ export function CreatorSession({ toolId, userId, locale, lipVideoEnabled = false
     const range = segments[role as Role];
     return [{ role,source:selected.ref,...range?.enabled ? { segment:{startSec:range.start === '' ? NaN : Number(range.start),endSec:range.end === '' ? NaN : Number(range.end)} } : {} }];
   });
-  const block = creatorOperationInputSchema.safeParse({ version:1,toolId,inputs,settings });
+  const block = creatorOperationInputSchema.safeParse({ version:1,toolId,profileId,inputs,settings });
   const sourcePicker = (role: Role,kind: 'image'|'video'|'audio') => <div key={role}>
     <CreatorSourcePicker userId={userId} locale={locale} kind={kind} label={copy.sourceLabels[role]} source={sources[role] ?? null} disabled={disabled}
       onChange={next => changeSource(role,next)} onBusyChange={busy => { setUploadBusy(busy); if (busy) changed(); }} />
@@ -60,10 +63,10 @@ export function CreatorSession({ toolId, userId, locale, lipVideoEnabled = false
       {sourcePicker('source',sourceKind)}{lip ? sourcePicker('audio','audio') : motion ? sourcePicker('motion','video') : photo ? sourcePicker('style','image') : null}
       <p className={styles.notice}>{copy.preserved}</p>
     </div>}
-    settings={<div className={styles.settings}><CreatorSettings locale={locale} toolId={toolId} settings={settings} onChange={changeSettings} disabled={disabled} />
-      {videoClosed ? <p role="status" className={styles.notice}>{copy.videoClosed}</p> : lip || motion || toolId === 'product-video-editor' ? <p className={styles.notice}>{lip ? copy.lipRange : copy.segmentRequired}</p> : null}
+    settings={<div className={styles.settings}><CreatorSettings locale={locale} toolId={toolId} settings={settings} onChange={changeSettings} disabled={disabled} profile={profile} motionProfileId={motionProfileId} motionControlEnabled={motionControlEnabled} onMotionProfileChange={id => {changed();setMotionProfileId(id);if(id === 'motion-kling-v3-v1')setSettings(value => ({...value,resolution:'720p'}));}} />
+      {videoClosed ? <p role="status" className={styles.notice}>{copy.videoClosed}</p> : lip || motion || toolId === 'product-video-editor' ? <p className={styles.notice}>{lip ? settings.mode === 'video' ? copy.lipVideoRange : copy.lipRange : motion && motionProfileId === 'motion-kling-v3-v1' ? `${copy.motionRange} 2–${profile?.constraints.duration?.maxByOrientation?.[settings.orientation as 'image'|'video'] ?? (settings.orientation === 'image' ? 10 : 30)} ${copy.seconds}.` : copy.segmentRequired}</p> : null}
       {validation ? <p className={styles.error} role="alert">{copy.validation}</p> : null}
-      <CreatorOperationPanel locale={locale} operation={operation} disabled={!executionEnabled || !userId || uploadBusy || videoClosed || !block.success} onPrepare={() => { if (!block.success) {setValidation(true);return;} void operation.prepare(block.data); }} />
+      <CreatorOperationPanel locale={locale} operation={operation} disabled={!executionEnabled || !userId || uploadBusy || videoClosed || profile?.deploymentGateOpen === false || !block.success} onPrepare={() => { if (!block.success) {setValidation(true);return;} void operation.prepare(block.data); }} />
     </div>}
     preview={<div className={styles.stage}><div className={styles.stageHeading}><div className={styles.segmented}>
       {(['source','result'] as const).map(mode => <button type="button" key={mode} aria-pressed={(output ? view : 'source') === mode} disabled={mode === 'result' ? !output : !source} onClick={() => setView(mode)}>{mode === 'source' ? copy.original : copy.result}</button>)}

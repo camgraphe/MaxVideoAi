@@ -18,13 +18,14 @@ import { useCreatorOperation, webPricingPolicyHeaders } from './useCreatorOperat
 import { creatorWorkspaceCopy } from './creator-workspace-copy';
 import styles from './creator-workspace.module.css';
 
+export type StudioSubtitleSource = {projectId:string;sequenceId:string;expectedRevision:number};
 type TranscriptResult = { documentId: string; revision: number };
 type RenderResult = TranscriptResult & { assetId: string; originalUrl: string; thumbnailUrl?: string | null; readUrl?: string | null; thumbnailReadUrl?: string | null };
-export default function SubtitleWorkspace({initialDocument,executionEnabled = true,initialOperationId}: {initialDocument?: {id:string;revision?:number};executionEnabled?:boolean;initialOperationId?:string}) {
+export default function SubtitleWorkspace({initialDocument,executionEnabled = true,initialOperationId,studioSource}: {initialDocument?: {id:string;revision?:number};executionEnabled?:boolean;initialOperationId?:string;studioSource?:StudioSubtitleSource}) {
   const auth = useRequireAuth({redirectIfLoggedOut:false}), {locale} = useI18n();
-  return <SubtitleSession key={`${auth.user?.id ?? 'guest'}:${initialDocument?.id ?? ''}:${initialDocument?.revision ?? ''}:${initialOperationId ?? ''}`} userId={auth.user?.id} locale={locale} initialDocument={initialDocument} executionEnabled={executionEnabled} initialOperationId={initialOperationId} />;
+  return <SubtitleSession key={`${auth.user?.id ?? 'guest'}:${initialDocument?.id ?? ''}:${initialDocument?.revision ?? ''}:${initialOperationId ?? ''}:${studioSource?.projectId ?? ''}:${studioSource?.sequenceId ?? ''}:${studioSource?.expectedRevision ?? ''}`} userId={auth.user?.id} locale={locale} initialDocument={initialDocument} executionEnabled={executionEnabled} initialOperationId={initialOperationId} studioSource={studioSource} />;
 }
-export function SubtitleSession({userId,locale,initialDocument,executionEnabled = true,initialOperationId}: {userId?: string; locale: string;initialDocument?: {id:string;revision?:number};executionEnabled?:boolean;initialOperationId?:string}) {
+export function SubtitleSession({userId,locale,initialDocument,executionEnabled = true,initialOperationId,studioSource}: {userId?: string; locale: string;initialDocument?: {id:string;revision?:number};executionEnabled?:boolean;initialOperationId?:string;studioSource?:StudioSubtitleSource}) {
   const copy = creatorWorkspaceCopy(locale);
   const transcription = useCreatorOperation<TranscriptResult | RenderResult>({userId,toolId:'subtitles',family:'subtitles',executionEnabled,initialOperationId});
   const render = useCreatorOperation<RenderResult>({userId,toolId:'subtitles-export',family:'subtitles',executionEnabled});
@@ -115,13 +116,13 @@ export function SubtitleSession({userId,locale,initialDocument,executionEnabled 
   const conflict = error === 'SUBTITLE_REVISION_CONFLICT' || error === 'SUBTITLE_REQUEST_CONFLICT';
   const captionStyle = (patch:Partial<SubtitleStyle>) => { if (draft) changeDocument({...draft,style:{...draft.style,...patch}}); };
   return <ToolWorkbench locale={locale} title={copy.titles.subtitles}
-    source={<div className={styles.sourceGroup}><div className={styles.segmented}>{(['video','audio'] as const).map(value => <button type="button" key={value} aria-pressed={kind === value} disabled={disabled} onClick={() => {changeSource(null);setKind(value);}}>{copy[value]}</button>)}</div>
-      <CreatorSourcePicker userId={userId} locale={locale} label={copy.sourceLabels.source} kind={kind} source={source} onChange={changeSource} disabled={disabled} onBusyChange={busy => {setUploadBusy(busy);if(busy){transcription.invalidate();render.invalidate();}}} /><p className={styles.notice}>{copy.preserved}</p>
+    source={<div className={styles.sourceGroup}>{studioSource ? <section className={styles.sourceCard}><h2>{copy.studioSequence}</h2><p>{transcription.sourceSummary?.name ?? copy.studioSequence}</p><p>{copy.sequenceRevision} {studioSource.expectedRevision}</p><p className={styles.notice}>{copy.mixHint}</p></section> : <><div className={styles.segmented}>{(['video','audio'] as const).map(value => <button type="button" key={value} aria-pressed={kind === value} disabled={disabled} onClick={() => {changeSource(null);setKind(value);}}>{copy[value]}</button>)}</div>
+      <CreatorSourcePicker userId={userId} locale={locale} label={copy.sourceLabels.source} kind={kind} source={source} onChange={changeSource} disabled={disabled} onBusyChange={busy => {setUploadBusy(busy);if(busy){transcription.invalidate();render.invalidate();}}} /><p className={styles.notice}>{copy.preserved}</p></>}
     </div>}
     settings={<div className={styles.settings}>{!draft ? <>
       <label>{copy.language}<select value={language} disabled={disabled} onChange={event => {transcription.invalidate();setLanguage(event.target.value);}}><option value="">{copy.auto}</option><option value="en">English</option><option value="fr">Français</option><option value="es">Español</option></select></label>
       <label>{copy.keyterms}<textarea maxLength={5100} value={keyterms} disabled={disabled} onChange={event => {transcription.invalidate();setKeyterms(event.target.value);}} /><small>{copy.keytermsHint}</small></label>
-      <CreatorOperationPanel locale={locale} operation={transcription} disabled={!executionEnabled || !userId || !source || uploadBusy || loading} onPrepare={() => {if(source)void transcription.prepare({source:source.ref,...language?{language}:{},keyterms:keyterms.split(',').map(value => value.trim()).filter(Boolean)});}} />
+      <CreatorOperationPanel locale={locale} operation={transcription} disabled={!executionEnabled || !userId || (!source && !studioSource) || uploadBusy || loading} onPrepare={() => {const terms=keyterms.split(',').map(value => value.trim()).filter(Boolean),settings={...language?{language}:{},keyterms:terms};if(studioSource)void transcription.prepare({...studioSource,...settings},'/prepare-studio');else if(source)void transcription.prepare({source:source.ref,...settings});}} />
     </> : <>
       <label>{copy.style}<select disabled={disabled} value={draft.style.preset} onChange={event => captionStyle({preset:event.target.value as SubtitleStyle['preset']})}><option value="clean">{copy.clean}</option><option value="active-word">{copy.activeWord}</option><option value="high-contrast">{copy.contrast}</option></select></label>
       <label>{copy.position}<select disabled={disabled} value={draft.style.position} onChange={event => captionStyle({position:event.target.value as SubtitleStyle['position']})}>{(['bottom','center','top'] as const).map(value => <option key={value} value={value}>{copy[value]}</option>)}</select></label>
@@ -135,12 +136,12 @@ export function SubtitleSession({userId,locale,initialDocument,executionEnabled 
     </div> : null}</div>}
     recent={<SubtitleRecentDocuments key={userId} userId={userId} locale={locale} disabled={disabled || dirty} onOpen={id => {transcription.invalidate();render.invalidate();setSource(null);setSaved(null);setDraft(null);setRequestedDocument({id});}} />}
     preview={<div className={styles.stage}><div className={styles.stageHeading}>{copy.transcript}{loading ? <span role="status">{copy.loading}</span> : null}</div>
-      <SubtitlePreview document={draft} source={source} locale={locale} onRefresh={saved ? () => void refreshPreview() : undefined} />
+      {studioSource && !source ? <div className={styles.media}><p className={styles.empty}>{copy.mixPending}</p></div> : <SubtitlePreview document={draft} source={source} locale={locale} onRefresh={saved ? () => void refreshPreview() : undefined} />}
       {draft ? <><SubtitleDocumentEditor locale={locale} document={draft} onChange={changeDocument} disabled={disabled || conflict} /><div className={styles.actions}>
         <button type="button" disabled={dirty || disabled || downloadBusy} onClick={() => void download('srt')}>{copy.exportSrt}</button><button type="button" disabled={dirty || disabled || downloadBusy} onClick={() => void download('vtt')}>{copy.exportVtt}</button>
       </div></> : null}
       {renderResult ? <><p className={styles.stageHeading}>{copy.result} · {copy.savedRevision} {renderResult.revision}</p><CreatorMediaPreview locale={locale} url={renderReadUrl ?? undefined} kind="video" poster={renderPoster} unavailable={!renderReadUrl} onRetry={retryRender} />
         <div className={styles.actions}><button type="button" disabled={!renderReadUrl} onClick={() => {if(renderReadUrl)triggerAppDownload(renderReadUrl,`subtitles-r${renderResult!.revision}.mp4`);}}>{copy.download}</button><MediaDestinationActions locale={locale} userId={userId} asset={{id:renderResult.assetId,url:renderResult.originalUrl,kind:'video',thumbUrl:renderResult.thumbnailUrl}} /></div></> : null}
     </div>}
-  >{!executionEnabled ? <p className={styles.notice} role="status">{copy.executionClosed}</p> : null}{!userId ? <ToolAuthNotice locale={locale} path="/app/tools/subtitles" /> : null}<ToolMediaHandoff userId={userId} destination="subtitles" locale={locale} disabled={disabled} onSelect={asset => {if(asset.kind !== 'audio' && asset.kind !== 'video')throw new Error('Incompatible source');changeSource(selectCreatorSource(asset,asset.kind));setKind(asset.kind);}} /></ToolWorkbench>;
+  >{!executionEnabled ? <p className={styles.notice} role="status">{copy.executionClosed}</p> : null}{!userId ? <ToolAuthNotice locale={locale} path="/app/tools/subtitles" /> : null}{!studioSource ? <ToolMediaHandoff userId={userId} destination="subtitles" locale={locale} disabled={disabled} onSelect={asset => {if(asset.kind !== 'audio' && asset.kind !== 'video')throw new Error('Incompatible source');changeSource(selectCreatorSource(asset,asset.kind));setKind(asset.kind);}} /> : null}</ToolWorkbench>;
 }
