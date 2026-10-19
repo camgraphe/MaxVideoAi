@@ -82,19 +82,56 @@ export async function resolveRelatedBestForGuides(locale: AppLocale, slug: strin
 
 export function getAlsoAvailableModels(slug: string, topPicks: string[]) {
   const preferred: Record<string, string[]> = {
-    'cinematic-realism': ['ltx-2-3-fast', 'wan-2-6', 'pika-text-to-video', 'happy-horse-1-1'],
-    'image-to-video': ['sora-2-pro', 'veo-3-1-fast', 'pika-text-to-video', 'happy-horse-1-1'],
-    'character-reference': ['seedance-2-0', 'sora-2-pro', 'veo-3-1', 'happy-horse-1-1'],
-    'reference-to-video': ['sora-2-pro', 'veo-3-1-fast', 'wan-2-6', 'happy-horse-1-1'],
-    'multi-shot-video': ['ltx-2-3-pro', 'wan-2-6', 'pika-text-to-video', 'happy-horse-1-1'],
-    '4k-video': ['ltx-2-3-pro', 'ltx-2-3-fast', 'kling-3-pro', 'sora-2-pro'],
-    ads: ['veo-3-1-fast', 'sora-2-pro', 'pika-text-to-video', 'happy-horse-1-1'],
-    'ugc-ads': ['ltx-2-3-pro', 'veo-3-1-fast', 'pika-text-to-video', 'happy-horse-1-1'],
-    'product-videos': ['kling-3-4k', 'veo-3-1-fast', 'pika-text-to-video', 'happy-horse-1-1'],
-    'lipsync-dialogue': ['ltx-2-3-pro', 'sora-2', 'pika-text-to-video', 'happy-horse-1-1'],
-    'fast-drafts': ['pika-text-to-video', 'minimax-hailuo-02-text', 'wan-2-6'],
-    'stylized-anime': ['seedance-2-0', 'wan-2-6', 'ltx-2-3-fast'],
-  };
+  "cinematic-realism": [
+    "veo-3-1",
+    "ltx-2-5-pro",
+    "happy-horse-1-1"
+  ],
+  "image-to-video": [
+    "veo-3-1-fast",
+    "ltx-2-5-fast",
+    "happy-horse-1-1"
+  ],
+  "character-reference": [
+    "seedance-2-0",
+    "veo-3-1",
+    "happy-horse-1-1"
+  ],
+  "reference-to-video": [
+    "seedance-2-0",
+    "veo-3-1",
+    "happy-horse-1-1"
+  ],
+  "multi-shot-video": [
+    "seedance-2-0",
+    "minimax-h3-max"
+  ],
+  "4k-video": ["kling-3-4k", "veo-3-1-fast", "ltx-2-5-fast"],
+  "ads": [
+    "veo-3-1-fast",
+    "happy-horse-1-1"
+  ],
+  "ugc-ads": [
+    "ltx-2-5-pro",
+    "veo-3-1-fast"
+  ],
+  "product-videos": [
+    "minimax-h3",
+    "kling-3-4k"
+  ],
+  "lipsync-dialogue": [
+    "kling-o3-pro",
+    "minimax-h3-max"
+  ],
+  "fast-drafts": [
+    "veo-3-1-fast",
+    "wan-3"
+  ],
+  "stylized-anime": [
+    "seedance-2-0",
+    "wan-3"
+  ]
+};
   return filterPublicCurrentModelSlugs(preferred[slug] ?? [])
     .filter((modelSlug) => !topPicks.includes(modelSlug))
     .map((modelSlug) => ENGINE_BY_SLUG.get(modelSlug))

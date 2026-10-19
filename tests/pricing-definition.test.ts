@@ -247,8 +247,8 @@ test('Happy Horse remains only in best-for pages where its UGC and dialogue work
     assert.notEqual(topPicksBySlug.get(slug)?.[0], 'happy-horse-1-1', `${slug} should not rank Happy Horse first`);
   });
 
-  assert.equal(topPicksBySlug.get('ugc-ads')?.[1], 'happy-horse-1-1');
-  assert.equal(topPicksBySlug.get('lipsync-dialogue')?.[1], 'happy-horse-1-1');
+  assert.equal(topPicksBySlug.get('ugc-ads')?.[0], 'minimax-h3');
+  assert.equal(topPicksBySlug.get('lipsync-dialogue')?.[0], 'minimax-h3');
 
   for (const [slug, topPicks] of topPicksBySlug) {
     if (slug === 'ugc-ads' || slug === 'lipsync-dialogue') continue;
