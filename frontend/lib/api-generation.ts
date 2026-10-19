@@ -1,6 +1,7 @@
 import { LIVE_PRICING_POLICY_REVISION, PRICING_POLICY_HEADER } from '@/lib/membership-policy';
 import { AUDIO_PRICING_POLICY_HEADER, AUDIO_PRICING_POLICY_REVISION } from '@/lib/audio-pricing-policy';
 import { authFetch } from '@/lib/authFetch';
+import { normalizeJobStatus } from '@/lib/job-status';
 import { translateError } from '@/lib/error-messages';
 import type { AudioGenerateRequestBody, AudioGenerateResponse } from '@/lib/audio-generation';
 import type { GenerateAttachment } from '@/lib/fal';
@@ -198,7 +199,15 @@ export async function runGenerate(
     throw new Error('Generation response malformed');
   }
 
-  return body as GenerateResult;
+  const result = body as GenerateResult;
+  // Accepted provider responses may still use queued/running, just like polling.
+  // Canonicalize before the workspace stores the result or broadcasts jobs:status.
+  // renderIds can be echoed request metadata; only the video proves output exists.
+  const hasMedia = Boolean(result.videoUrl);
+  return {
+    ...result,
+    status: normalizeJobStatus(typeof result.status === 'string' ? result.status : null, hasMedia) ?? 'pending',
+  };
 }
 
 export async function runImageGeneration(payload: ImageGenerationRequest, pricingSnapshot?: PricingSnapshot | null, request?: { accessToken: string; signal: AbortSignal }): Promise<ImageGenerationResponse> {
