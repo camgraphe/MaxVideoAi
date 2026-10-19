@@ -329,6 +329,14 @@ Selecting Play in the main preview mounts `AppDemoVideo`, which consumes the sha
 public rendition selector and exact-original error fallback. Personal media retain
 their existing reader, and download/reuse/edit URLs remain originals.
 
+For a direct guest entry into `/app`, the server-selected first Starter playlist
+video remains selected when the gallery hydrates, even if its chronological sort
+puts another video first. The gallery action hook applies that same video's prompt
+and settings without autoplay. Explicit example/job/model links, restored drafts
+and prompts already edited by the visitor take precedence over automatic Starter
+selection. `workspace-guest-starter-*.test.ts` and
+`workspace-initial-preview-hydration.test.ts` cover these entry paths.
+
 Replacing an app demonstration automatically retains these loading rules, but does
 not automatically encode the replacement. Verify the exact original selected by the
 app reader, register that source in `public-video-sources.json`, then use the explicit
