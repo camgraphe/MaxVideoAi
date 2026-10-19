@@ -60,7 +60,7 @@ export default function AppClientPage({
   const activeDraft = useWorkspaceDraftHydration({
     ...routeForm,
     ...assetState,
-    authStatus: app.authStatus,
+    authStatus: app.authStatus, initialPreviewGroup,
     accountId: confirmedAccount,
     accessToken: app.session?.access_token ?? null,
     locale: app.uiLocale,

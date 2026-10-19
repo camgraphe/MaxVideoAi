@@ -256,3 +256,37 @@ test('saved Seedance 1.5 settings keep their recorded model instead of silently 
   });
   assert.equal(result.form?.engineId, 'seedance-1-5-pro');
 });
+
+
+test('a fresh workspace uses the server Starter model before the gallery feed arrives', () => {
+  const result = buildInitialWorkspaceFormState({
+    engines: [makeEngine('seedance-2-5'), makeEngine('wan-3-prime')],
+    storedFormRaw: null,
+    effectiveRequestedEngineId: null,
+    effectiveRequestedEngineToken: '',
+    effectiveRequestedMode: null,
+    preferredDefaultEngineId: 'wan-3-prime',
+  });
+  assert.equal(result.form?.engineId, 'wan-3-prime');
+  assert.equal(result.hasStoredForm, false, 'an initial preference is not a restored draft');
+  assert.equal(result.preserveStoredDraft, false);
+});
+
+test('a Starter default never overrides stored forms or explicit models and falls back when the preferred model is absent', () => {
+  const defaults = {
+    engines: [makeEngine('seedance-2-5'), makeEngine('wan-3-prime')],
+    storedFormRaw: null,
+    effectiveRequestedEngineId: null,
+    effectiveRequestedEngineToken: '',
+    effectiveRequestedMode: null,
+    preferredDefaultEngineId: 'wan-3-prime',
+  };
+  const stored = buildInitialWorkspaceFormState({
+    ...defaults, storedFormRaw: { engineId: 'seedance-2-5', mode: 't2v', durationSec: 7 } as StoredFormState,
+  });
+  assert.equal(stored.form?.engineId, 'seedance-2-5');
+  assert.equal(stored.form?.durationSec, 7);
+  assert.equal(stored.hasStoredForm, true);
+  assert.equal(buildInitialWorkspaceFormState({ ...defaults, effectiveRequestedEngineId: 'seedance-2-5' }).form?.engineId, 'seedance-2-5');
+  assert.equal(buildInitialWorkspaceFormState({ ...defaults, preferredDefaultEngineId: 'missing-engine' }).form?.engineId, 'seedance-2-5');
+});

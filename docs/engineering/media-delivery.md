@@ -336,6 +336,10 @@ and settings without autoplay. Explicit example/job/model links, restored drafts
 and prompts already edited by the visitor take precedence over automatic Starter
 selection. `workspace-guest-starter-*.test.ts` and
 `workspace-initial-preview-hydration.test.ts` cover these entry paths.
+For a fresh guest only, initial form hydration uses that server-selected model as
+its last default before the gallery arrives. Keep stored forms, prepared prompts
+and explicit entries ahead of this preference; do not briefly render another
+model's controls while waiting for the sample feed.
 
 The empty preview's mobile guidance reserves three lines while the app font loads.
 Keep that minimum expandable: the French hint otherwise loses a line during the

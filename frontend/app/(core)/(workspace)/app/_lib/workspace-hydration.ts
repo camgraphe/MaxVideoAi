@@ -219,12 +219,14 @@ export function buildInitialWorkspaceFormState({
   effectiveRequestedEngineId,
   effectiveRequestedEngineToken,
   effectiveRequestedMode,
+  preferredDefaultEngineId,
 }: {
   engines: EngineCaps[];
   storedFormRaw: StoredFormState | null;
   effectiveRequestedEngineId: string | null;
   effectiveRequestedEngineToken: string;
   effectiveRequestedMode: Mode | null;
+  preferredDefaultEngineId?: string | null;
 }): InitialWorkspaceFormResult {
   let nextForm: FormState | null = null;
   let formToPersist: FormState | null = null;
@@ -307,8 +309,11 @@ export function buildInitialWorkspaceFormState({
     }
   }
 
-  if (!nextForm && engines[0]) {
-    nextForm = coerceFormState(engines[0], getPreferredEngineMode(engines[0], effectiveRequestedMode), null);
+  if (!nextForm) {
+    const defaultEngine = engines.find((engine) => engine.id === preferredDefaultEngineId) ?? engines[0];
+    if (defaultEngine) {
+      nextForm = coerceFormState(defaultEngine, getPreferredEngineMode(defaultEngine, effectiveRequestedMode), null);
+    }
   }
 
   return {
