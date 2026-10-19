@@ -107,7 +107,8 @@ jobs:
     name: Browser integration
     needs: plan
     if: ${{ needs.plan.outputs.browser == 'true' }}
-    runs-on: ubuntu-latest
+    # Playwright 1.59.1 supports Ubuntu 24.04; ubuntu-latest can resolve to 26.04.
+    runs-on: ubuntu-24.04
     # Connected browser tests take ~11 minutes before the admin smoke suite starts.
     timeout-minutes: 25
     steps:
