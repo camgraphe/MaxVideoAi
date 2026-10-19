@@ -426,9 +426,18 @@ test('MCP montage opens the current conversation with private playback, durable 
     assert.ok(browserFixture.readPrivateRequests().some((entry) => entry.status === 206 && entry.range !== null));
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int AS count FROM studio_projects')).rows[0].count, 2);
     assert.equal((await runtime.database.pool.query("SELECT count(*)::int AS count FROM studio_project_commands WHERE command_kind='create_studio_montage'")).rows[0].count, 1);
-    await first.close();
   } catch (error) {
     throw new Error(`${String(error)}\n${JSON.stringify(await diagnose())}\n${runtime.readLogs().slice(-4000)}`, { cause: error });
-  } finally { releaseJournal(); releaseRenewal(); releaseCanonical(); await browserFixture?.close(); await runtime.close(); }
+  } finally {
+    releaseJournal(); releaseRenewal(); releaseCanonical();
+    // Finish intercepted real reads before closing their page. Discarding an
+    // in-flight route.fetch rejects outside the test's assertion/diagnostic path.
+    // Wait for callbacks instead of suppressing their errors.
+    try {
+      for (const context of browserFixture?.browser.contexts() ?? []) {
+        for (const page of context.pages()) await page.unrouteAll({behavior:'wait'});
+      }
+    } finally { await browserFixture?.close(); await runtime.close(); }
+  }
 });
 }
