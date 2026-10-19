@@ -4,6 +4,11 @@ Follow-up to the [SEO and performance review](home-seo-performance-review-2026-1
 The previous measurements remain intact. This document tracks the requested
 correction and subsequent integration of PR465; it is not a deployment receipt.
 
+**Post-PR465 validation is complete locally:** see the
+[integration and revalidation report](home-post465-revalidation-2026-10-19.md)
+for exact main `af20823d2`, fresh builds, SEO/render checks and paired performance
+results. The earlier measurements below remain evidence against main `1ed5e5b82`.
+
 ## Causal diagnosis
 
 Replayed the saved Lighthouse 12.6.1 trace and DevTools log through its installed
@@ -122,17 +127,17 @@ Raw observations, screenshots, exact source/settings manifests and summaries:
 
 ## Integration state
 
-PR465 is still in the delivery owner's validation. Its integration receipt,
-checks against the resulting main, and renewed browser/network measurements are
-pending. Release sign-off remains withheld until these checks are complete. No
-push, PR, production merge or deployment has been performed by this task.
+The delivery owner supplied the PR465 receipt for main `af20823d2`, confirmed on
+both public domains. That exact main is integrated locally and the renewed checks
+are recorded in the post-PR465 report above. No push, PR, production merge or
+deployment has been performed by this task; remote delivery remains with its owner.
 
 On 19 October, Adrien approved the current homepage preview and explicitly asked
 to send it to the existing **livraison pr** task, conditional on passing checks.
 The visual-approval condition is therefore satisfied; another approval of the
-same preview is not required. Delivery must still include PR465/current main,
-repeat the integration checks above and follow the normal isolated-branch → PR →
-required Quality CI → main → Vercel Git deployment path. The measurements here
+same preview is not required. The local post-PR465 integration/checks are complete;
+publication must still follow the normal isolated-branch → PR → required Quality
+CI → main → Vercel Git deployment path. The measurements here
 are against `1ed5e5b82`, not evidence of a completed post-PR465 validation.
 
 Handoff source: `codex/home-visual-refresh` in
@@ -142,8 +147,7 @@ Preview: `http://localhost:3100/fr#compare`; main reference: port 3102.
 The delivery owner coordinates the integration/checks and publication so the
 homepage is not pushed or merged concurrently by both tasks.
 
-The thread heartbeat `revalider-accueil-apr-s-pr465` checks every 15 minutes and
-stays quiet while the delivery state is unchanged. After handoff it must defer to
-the delivery owner's assigned scope before modifying a checkout or launching
-measurements, so it cannot duplicate that work. Pause it when the delivery owner
-accepts the remaining integration/checks or the follow-up is complete.
+The thread heartbeat `revalider-accueil-apr-s-pr465` waited for the exact delivery
+receipt before this chat's assigned local revalidation. Pause it after the final
+clean-head/evidence receipt is transmitted, so it cannot duplicate the delivery
+owner's remaining publication work.
