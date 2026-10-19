@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { mockBrowserSession } from './helpers/browser-session-fixture';
 import { JSDOM } from 'jsdom';
 import * as React from 'react';
 import { act } from 'react';
@@ -77,6 +78,7 @@ async function mount({
       value,
     });
   }
+  const session = await mockBrowserSession(initialAuth === 'authed' ? accountId : null);
   const { useWorkspaceReferenceAssets } = await import(
     '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceReferenceAssets'
   );
@@ -250,6 +252,7 @@ async function mount({
       authStatus = status;
       accountId = id;
       accessToken = token;
+      session.setUserId(status === 'authed' ? id : null);
       await act(async () => root.render(React.createElement(Fixture)));
     },
     async request(engine: string | null, mode: any = null, job: string | null = null) {
@@ -302,6 +305,7 @@ async function mount({
       accessToken = null;
       await act(async () => root.render(React.createElement(Fixture)));
       await act(async () => root.unmount());
+      await session.restore();
       dom.window.close();
       for (const [key, descriptor] of previous) {
         if (descriptor) Object.defineProperty(globalThis, key, descriptor);

@@ -2,7 +2,7 @@ import { useWorkspaceAssetLifetime } from './useWorkspaceAssetLifetime';
 import { useCallback, useEffect, useRef } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { saveAssetToLibrary, saveImageToLibrary } from '@/lib/api';
-import { authFetch } from '@/lib/authFetch';
+import { useWorkspaceUploadOperation } from './useWorkspaceUploadOperation';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import { uploadVideoFile } from '@/lib/client-video-upload';
 import { getSeedanceFieldBlockKey, isUnifiedSeedanceEngineId } from '@/lib/seedance-workflow';
@@ -73,6 +73,7 @@ export function useWorkspaceReferenceAssets({
   setAssetLibrary,
 }: UseWorkspaceReferenceAssetsOptions) {
   const valid = useWorkspaceAssetLifetime(accountScope);
+  const beginUpload = useWorkspaceUploadOperation(accountScope, valid);
   const assetsRef = useRef<Record<string, (ReferenceAsset | null)[]>>({});
 
   useEffect(() => {
@@ -316,10 +317,11 @@ export function useWorkspaceReferenceAssets({
       if (insertion.replacedAsset) revokeAssetPreview(insertion.replacedAsset);
 
       const upload = async () => {
+        const operation = beginUpload();
         try {
           const assetResponse =
             field.type === 'video'
-              ? await uploadVideoFile(file)
+              ? await uploadVideoFile(file, { request: operation.request, abortRequest: operation.abortRequest })
               : await (async () => {
                   const preparedFile =
                     field.type === 'image'
@@ -339,7 +341,7 @@ export function useWorkspaceReferenceAssets({
                     field.type === 'audio' ? '/api/uploads/audio' : '/api/uploads/image';
                   const uploadAssetType: UploadableAssetKind =
                     field.type === 'audio' ? 'audio' : 'image';
-                  const response = await authFetch(uploadEndpoint, {
+                  const response = await operation.request(uploadEndpoint, {
                     method: 'POST',
                     body: formData,
                   });
@@ -419,6 +421,8 @@ export function useWorkspaceReferenceAssets({
             return { ...previous, [field.id]: next };
           });
           showNotice(message);
+        } finally {
+          operation.finish();
         }
       };
 
@@ -426,6 +430,7 @@ export function useWorkspaceReferenceAssets({
     },
     [
       valid,
+      beginUpload,
       commitInputAssetMutation,
       engineId,
       getSeedanceFieldBlockedMessage,

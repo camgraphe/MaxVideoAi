@@ -820,7 +820,7 @@ model pruning. Replacing one slot leaves other uploads active. Unmount retires a
 operations and releases blob previews; late preparation, session lookup, response
 parsing and errors cannot overwrite or clear a replacement.
 
-`ownedAuthFetch` binds image reference uploads and the shared saved/recent media
+`ownedAuthFetch` binds image reference uploads, the character reference fetcher and the shared saved/recent media
 readers to the supplied owner. It checks the session after refresh, rejects a
 missing or different owner, forwards cancellation and dispatches exactly that
 bearer with cookies omitted. For reads, the owner comes from the SWR key; a
@@ -832,3 +832,27 @@ upload. This is an operation ownership guard, not a replacement for server auth.
 test the actual hooks, SWR cache and transport with synthetic sessions and files.
 They cover delayed session/decoding/body work, A→B→A remounts, selection races,
 independent slots, saved and recent media, and preserved pagination.
+
+### Video workspace reference upload ownership
+
+`useWorkspaceReferenceAssets` and `useWorkspaceKlingElementAssets` share
+`useWorkspaceUploadOperation`. Each upload captures the confirmed account and
+uses `ownedAuthFetch` for every request. Account changes (including A→B→A) and
+unmount abort pending operations; preparation and late responses retain the
+existing account-generation guards. No request may fall back to ambient cookies
+or a newly selected account after session lookup.
+
+Both video inputs use `uploadVideoFile`, including Kling element videos. Files
+above 4 MiB use its existing multipart protocol instead of one oversized function
+request. Each part and finalization recheck the initiating owner. Server limits,
+validation, original URLs and error messages remain authoritative. Cancellation
+cannot undo uploads already accepted for that owner. A separate abort transport
+uses a ten-second signal and the initiating owner to clean acknowledged temporary
+parts even after unmount; it must never use a different account. Existing callers
+without a separate abort transport retain their current cleanup behavior.
+
+`tests/workspace-upload-owner.test.ts` exercises the actual hooks, Kling file
+input, SWR and transport with synthetic sessions/HTTP boundaries. It covers
+session races, unmount, in-flight parts, character cache isolation, and measured
+multipart bodies for 1, 8 and 20 MiB files. These are browser-DOM/transport tests,
+not paid generations or a claim of live storage validation.
