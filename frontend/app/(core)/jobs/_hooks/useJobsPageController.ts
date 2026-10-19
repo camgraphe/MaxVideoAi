@@ -12,6 +12,7 @@ import type { EngineCaps } from '@/types/engines';
 import type { GroupSummary } from '@/types/groups';
 import { activityLoadedJobs } from '../_lib/jobs-activity';
 import { useJobsCopy } from './useJobsCopy';
+import { useJobsActionFeedback } from './useJobsActionFeedback';
 import {
   resolveClientJobSurface,
   resolveEntryLibrarySavePayload,
@@ -28,7 +29,8 @@ export function useJobsPageController() {
   const [status, setStatus] = useState<JobsStatus>('all');
   const { data, stableJobs, error, isLoading, setSize, isValidating, mutate } =
     useInfiniteJobs(JOBS_PAGE_SIZE, { surface: source });
-  useRequireAuth({ redirectIfLoggedOut: false });
+  const { user } = useRequireAuth({ redirectIfLoggedOut: false });
+  const actions = useJobsActionFeedback(user?.id ?? null, source);
   const hasMore = Boolean(data?.length && data[data.length - 1].nextCursor);
   const groupedJobs = useMemo(() => {
     const { groups } = groupJobsIntoSummaries(activityLoadedJobs(data, stableJobs), { includeSinglesAsGroups: true });
@@ -56,7 +58,7 @@ export function useJobsPageController() {
     return map;
   }, [groupedJobs]);
 
-  const [savingImageGroupIds, setSavingImageGroupIds] = useState<Set<string>>(new Set());
+  const savingImageGroupIds = new Set(actions.feedback.filter(entry => entry.status === 'pending' && entry.action === 'save').map(entry => entry.groupId));
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
   const groups = useMemo(() => normalizeGroupSummaries(groupedJobs), [groupedJobs]);
   const normalizedGroupMap = useMemo(() => new Map(groups.map((group) => [group.id, group])), [groups]);
@@ -82,22 +84,16 @@ export function useJobsPageController() {
       if (!original) return;
       const heroJob = original.hero.job;
       if (!heroJob || heroJob.curated) return;
-      try {
+      await actions.run({ groupId: group.id, label: heroJob.prompt ?? group.id, action: 'remove' }, async (isCurrent) => {
         await hideJob(heroJob.jobId);
+        if (!isCurrent()) return;
         setActiveGroupId((current) => (current === group.id ? null : current));
-        const removeFromPages = (pages: typeof data) => {
-          if (!pages) return pages;
-          return pages.map((page) => ({
-            ...page,
-            jobs: page.jobs.filter((entry) => entry.jobId !== heroJob.jobId),
-          }));
-        };
-        await mutate((pages) => removeFromPages(pages), false);
-      } catch (error) {
-        console.error('Failed to hide job', error);
-      }
+        await mutate((pages) => pages?.map(page => ({
+          ...page, jobs: page.jobs.filter(entry => entry.jobId !== heroJob.jobId),
+        })), false);
+      });
     },
-    [mutate, summaryMap]
+    [mutate, summaryMap, actions]
   );
 
   const allowRemove = useCallback(
@@ -111,18 +107,10 @@ export function useJobsPageController() {
   );
 
   const handleSaveGroupToLibrary = useCallback(async (group: GroupSummary) => {
-    const payload = resolveGroupLibrarySavePayload(group);
-    if (!payload) {
-      console.warn('No media available to save for group', group.id);
-      return;
-    }
-    const groupSurface = group.hero.job ? resolveClientJobSurface(group.hero.job) : null;
-    setSavingImageGroupIds((prev) => {
-      const next = new Set(prev);
-      next.add(group.id);
-      return next;
-    });
-    try {
+    await actions.run({ groupId: group.id, label: group.hero.prompt ?? group.id, action: 'save' }, async () => {
+      const payload = resolveGroupLibrarySavePayload(group);
+      if (!payload) throw new Error('No media available to save');
+      const groupSurface = group.hero.job ? resolveClientJobSurface(group.hero.job) : null;
       await saveAssetToLibrary({
         url: payload.url,
         kind: payload.kind,
@@ -132,16 +120,8 @@ export function useJobsPageController() {
         thumbUrl: payload.thumbUrl ?? null,
         previewUrl: payload.previewUrl ?? null,
       });
-    } catch (error) {
-      console.error('Failed to save media to library', error);
-    } finally {
-      setSavingImageGroupIds((prev) => {
-        const next = new Set(prev);
-        next.delete(group.id);
-        return next;
-      });
-    }
-  }, []);
+    });
+  }, [actions]);
 
   const handleSaveLightboxEntryToLibrary = useCallback(async (entry: MediaLightboxEntry) => {
     const payload = resolveEntryLibrarySavePayload(entry);
@@ -191,6 +171,9 @@ export function useJobsPageController() {
 
   return {
     allowRemove,
+    actionFeedback: actions.feedback,
+    onDismissAction: actions.dismiss,
+    onRetryAction: actions.retry,
     source,
     status,
     onSourceChange: (next: JobsSource) => { setActiveGroupId(null); setSource(next); },

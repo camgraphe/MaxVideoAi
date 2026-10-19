@@ -172,3 +172,23 @@ results.
   initialization sequence outside request handling.
 - Compare first-page server latency before and after on the same guarded dataset;
   do not claim browser or field improvement without browser/field evidence.
+
+## Mutation feedback
+
+`useJobsActionFeedback` owns save/remove progress, success and localized error
+feedback for one account/source lifetime. Account-owned locks prevent overlapping
+mutations for the same group before React rerenders and across source-filter changes.
+The hook retains the exact failed action for retry even if a feed refresh removes its
+card, and ignores responses from retired account/filter lifetimes. `JobsPageShell` announces
+errors with `role="alert"` and progress/success with `role="status"`; listing errors
+remain independent. Dismissing feedback never cancels a pending write.
+
+The controller retains library save payloads and history removal orchestration.
+After a removal response, it checks that the action still belongs to the active
+lifetime before changing the viewer or paginated cache. `jobs-action-feedback`
+exercises failure, retry, duplicate actions and account/source/unmount transitions.
+
+Audio reference imports similarly belong to a current account, intent and selection
+version. A later reference selection/removal, model choice or settings reuse
+retires an older import; its result, error and final busy-state update are ignored.
+`audio-reference-selection` tests these transitions and the next submitted reference.
