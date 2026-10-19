@@ -21,7 +21,7 @@ Host records separately identify their integration, display label, evidence stat
 
 The current floor contains `/mcp`, `/docs/mcp`, and the Claude, ChatGPT, and Codex integration pages in English, French, and Spanish: fifteen localized public owners in total. Their canonical URLs, reciprocal hreflang, JSON-LD, sitemap inclusion, public-path recognition, installation actions, and localized copy must remain intact while the global publication gate is open.
 
-Claude Desktop and Codex CLI currently retain `verified`; Claude Code and ChatGPT web retain `not-run`. All three current deep links remain disabled. Existing `verified` evidence cannot be weakened without a newer recorded checkpoint.
+Claude Desktop and Codex CLI retain `verified`; Claude Code retains `not-run`. The 2026-10-19 production checkpoint records ChatGPT Web and the separate Claude Web host as `tested_with_limits`, covering OAuth, discovery, quotes and existing-result recovery only. All three current deep links remain disabled. Existing `verified` evidence cannot be weakened without a newer recorded checkpoint.
 
 The immutable semantic fixture is `tests/fixtures/mcp-integration-public-baseline.json`. Update it only for a separately reviewed public behavior change, never as a shortcut to make a migration pass.
 

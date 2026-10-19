@@ -57,11 +57,19 @@ test('disabled paid workflow never exposes the creation examples or their host b
 });
 
 for (const locale of ['en', 'fr', 'es'] as const) {
- test(`${locale}: ChatGPT connection-only checkpoint is visible outside setup disclosures`, () => {
+ test(`${locale}: ChatGPT production checkpoint and untested paid-generation limit stay visible outside setup disclosures`, () => {
   const html = renderToStaticMarkup(React.createElement(IntegrationPageView, { locale, compatibility: compatibility.clients.chatgpt!, copy: getIntegrationCopy(locale, 'chatgpt'), publication: live }));
   assert.match(html, /data-mcp-connection-scope/);
   const scope = html.match(/<aside data-mcp-connection-scope[^>]*>([\s\S]*?)<\/aside>/)?.[1] ?? '';
-  assert.match(scope, /2026-10-01|01\/10\/2026/);
+  const checkpoint = {
+    en: { date: /19 October 2026/, limit: /New paid generation, inline playback, token refresh and revocation\/reconnect were not tested/ },
+    fr: { date: /19 octobre 2026/, limit: /Nouvelle génération payante, lecture intégrée, rafraîchissement du jeton et révocation\/reconnexion non testés/ },
+    es: { date: /19 de octubre de 2026/, limit: /No se probaron nueva generación de pago, reproducción integrada, renovación del token ni revocación\/reconexión/ },
+  }[locale];
+  assert.match(scope, checkpoint.date);
+  assert.match(scope, /Pro/);
+  assert.match(scope, /OAuth/);
+  assert.match(scope, checkpoint.limit);
   assert.doesNotMatch(scope, /<details/);
  });
 }

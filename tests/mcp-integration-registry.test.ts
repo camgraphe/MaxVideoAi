@@ -60,12 +60,12 @@ test('public integration ids fail closed when a registry entry is withdrawn', ()
 });
 
 test('existing publication, evidence and action floors are preserved', () => {
-  assert.deepEqual(getMcpIntegration('claude').hosts, ['claudeDesktop', 'claudeCode']);
+  assert.deepEqual(getMcpIntegration('claude').hosts, ['claudeWeb', 'claudeDesktop', 'claudeCode']);
   assert.equal(getMcpHost('claudeDesktop').evidence.status, 'verified');
   assert.equal(getMcpHost('claudeCode').evidence.status, 'not-run');
-  assert.equal(getMcpHost('chatgptWeb').evidence.status, 'not-run');
+  assert.equal(getMcpHost('chatgptWeb').evidence.status, 'tested_with_limits');
   assert.equal(getMcpHost('claudeCode').evidence.lastChecked, '2026-08-27');
-  assert.equal(getMcpHost('chatgptWeb').evidence.lastChecked, '2026-08-27');
+  assert.equal(getMcpHost('chatgptWeb').evidence.lastChecked, '2026-10-19');
   assert.equal(getMcpHost('chatgptWeb').label, 'ChatGPT');
   assert.equal(getMcpHost('codexCli').evidence.status, 'verified');
   for (const id of ['claude', 'chatgpt', 'codex'] as const) {
@@ -149,4 +149,14 @@ test('invalid registries fail closed', () => {
     },
     hosts: {},
   }), /missingHost/);
+});
+
+// Web evidence must never promote the untested sibling or overwrite staging proof.
+test('October 19 Web checkpoints remain partial and separate from Desktop and Code', () => {
+  for (const id of ['chatgptWeb', 'claudeWeb'] as const) {
+    assert.equal(getMcpHost(id).evidence.status, 'tested_with_limits');
+    assert.equal(getMcpHost(id).evidence.lastChecked, '2026-10-19');
+  }
+  assert.equal(getMcpHost('claudeDesktop').evidence.lastChecked, '2026-08-27');
+  assert.equal(getMcpHost('claudeCode').evidence.status, 'not-run');
 });
