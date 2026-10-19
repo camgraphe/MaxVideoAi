@@ -13,7 +13,7 @@ test('image handoff uses actual library insertion, validates formats and exact r
   for (const [key, value] of Object.entries(globals)) Object.defineProperty(globalThis, key, { configurable: true, value });
   let slots!: ReturnType<typeof useImageReferenceSlots>;
   function Fixture() {
-    slots = useImageReferenceSlots({ autoModeFromReferences: true, mode: 'i2i', resolvedCopy: DEFAULT_COPY, setError: () => {}, supportedReferenceFormats: ['png'], supportedReferenceFormatsLabel: 'PNG', toolsEnabled: false });
+    slots = useImageReferenceSlots({ accountId: 'insertion-user', autoModeFromReferences: true, mode: 'i2i', resolvedCopy: DEFAULT_COPY, setError: () => {}, supportedReferenceFormats: ['png'], supportedReferenceFormatsLabel: 'PNG', toolsEnabled: false });
     return null;
   }
   const root = createRoot(dom.window.document.getElementById('root')!);
