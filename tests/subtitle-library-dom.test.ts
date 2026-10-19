@@ -17,14 +17,14 @@ test('subtitle library paginates owned summaries and pins links to the displayed
   try {
     assert.match(f.w.requests[0].url,/limit=30/);
     await f.respond(f.w.requests[0],{ok:true,documents:[doc('first',3)],nextCursor:'opaque'});
-    const more = buttons(f.w).find(button=>button.textContent==='Load more');assert.ok(more);
+    const more = buttons(f.w).find(button=>button.textContent==='Show more');assert.ok(more);
     await f.act(async()=>more.click());assert.match(f.w.requests[1].url,/cursor=opaque/);
     await f.respond(f.w.requests[1],{ok:true,documents:[doc('first',3),doc('second',2)],nextCursor:null});
     assert.equal(f.w.document.querySelectorAll('li').length,2);
     const hrefs=Array.from(f.w.document.querySelectorAll('a')).map((a:any)=>a.getAttribute('href'));
     assert.ok(hrefs.includes('/app/tools/subtitles?document=first&revision=3'));
     assert.ok(hrefs.includes('/api/tools/subtitles/documents/first/download?format=srt&revision=3'));
-    assert.equal(buttons(f.w).some(button=>button.textContent==='Load more'),false);
+    assert.equal(buttons(f.w).some(button=>button.textContent==='Show more'),false);
   }finally{await f.close();}
 });
 test('late list responses cannot repopulate the subtitle library after account changes',async()=>{
