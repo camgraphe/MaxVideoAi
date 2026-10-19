@@ -34,7 +34,9 @@ export function useUpscalePreviewState({
   const hasResult = Boolean(output?.url);
   const hasSourcePreview = Boolean(mediaUrl.trim());
   const canCompare = hasResult && hasSourcePreview && mediaType === 'image' && result?.mediaType === mediaType;
-  const activePreviewMode: PreviewMode = hasResult ? (previewMode === 'compare' && !canCompare ? 'result' : previewMode) : 'source';
+  const activePreviewMode: PreviewMode = hasResult
+    ? (!hasSourcePreview || (previewMode === 'compare' && !canCompare) ? 'result' : previewMode)
+    : 'source';
   const sourcePreviewUrl = mediaUrl || SAMPLE_IMAGE_URL;
   const resultPreviewUrl = output?.url || mediaUrl || SAMPLE_IMAGE_URL;
   const sourcePreviewIsVideo = mediaType === 'video' && Boolean(mediaUrl);

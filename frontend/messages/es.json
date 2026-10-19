@@ -1756,7 +1756,7 @@
       "subtitle": "Compara los costos de video, imagen, audio y herramientas antes de crear.",
       "supportingLine": "Paga por uso. Revisa el precio exacto en la app antes de generar. Las generaciones fallidas se reembolsan.",
       "quickStartTitle": "Tres puntos de partida para tu próximo video",
-      "quickStartNote": "Total orientativo por video, en USD. Selecciona un escenario para ver la comparación completa. Confirma el presupuesto en la app antes de generar.",
+      "quickStartNote": "Precio disponible más bajo entre los modelos actuales elegibles para cada ajuste mostrado, en USD por vídeo. Son ajustes distintos, no una clasificación de calidad. Abre la fila para ver los detalles y confirma el presupuesto antes de generar.",
       "primaryCta": "Consultar un precio en la app",
       "secondaryCta": "Comparar precios abajo",
       "badges": [
@@ -1925,7 +1925,7 @@
         },
         {
           "question": "¿Qué motor de video IA es más barato?",
-          "answer": "El motor más barato depende del escenario. Un borrador 5 s 720p, un clip premium 8 s 1080p, un video 10 s 1080p y salida 4K pueden tener ganadores distintos. La tabla destaca primero las opciones de generación actual y lista aparte las rutas budget más antiguas cuando existen."
+          "answer": "Elige primero duración, resolución y audio; después compara la misma columna. El precio destacado es el presupuesto disponible más bajo entre los modelos actuales elegibles de esta tabla. Los modelos anteriores se muestran aparte; un precio menor no garantiza un mejor resultado."
         },
         {
           "question": "¿Qué motor es más barato para video 10 s 1080p?",
@@ -1945,7 +1945,7 @@
         },
         {
           "question": "¿Las generaciones fallidas cuestan créditos?",
-          "answer": "No. Las generaciones fallidas se reembolsan automáticamente. Los créditos se cobran solo cuando una generación termina correctamente."
+          "answer": "Un fallo técnico es distinto de un clip terminado que no te gusta. Las generaciones fallidas reciben un reembolso de créditos; la insatisfacción subjetiva con un resultado terminado normalmente no es reembolsable. Consulta la política de devoluciones para conocer las condiciones."
         },
         {
           "question": "¿Necesito una suscripción?",
@@ -1953,15 +1953,15 @@
         },
         {
           "question": "¿Por qué algunos motores más baratos no aparecen destacados primero?",
-          "answer": "Algunas rutas de generación anterior pueden ser más baratas para pruebas simples, pero MaxVideoAI destaca primero los motores de generación actual porque suelen ser mejores para proyectos nuevos. Las rutas budget más antiguas siguen listadas aparte cuando están disponibles."
+          "answer": "Las tarjetas comparan modelos actuales elegibles con los mismos ajustes. Los modelos de generaciones anteriores siguen en la tabla y pueden costar menos. La agrupación ayuda a elegir; no garantiza más calidad."
         },
         {
           "question": "¿Imagen, audio y herramientas se cobran igual que video?",
           "answer": "No. Video, imagen, audio y herramientas usan reglas de precio distintas. La imagen suele cobrarse por imagen, el audio por duración o modo, y las herramientas por tipo de salida o resolución."
         },
         {
-          "question": "¿Por qué la tabla muestra precios totales en vez de costo por segundo?",
-          "answer": "La mayoría de usuarios compara el costo completo de un render, no tarifas brutas por segundo. MaxVideoAI muestra precios totales para escenarios comunes como 8 s 1080p, 10 s 1080p y salida 4K. Las tarifas por segundo o de proveedor pueden variar según motor, duración, resolución y redondeos, y la app muestra el presupuesto exacto antes de generar."
+          "question": "¿El precio mostrado cubre todos los intentos?",
+          "answer": "Cada nueva generación tiene su propio presupuesto. Si haces varios intentos completados hasta conseguir el plano que buscas, cada uno es una generación distinta. Planifica el gasto total de la escena, además del precio de un solo clip."
         },
         {
           "question": "¿Con qué frecuencia cambian los precios?",
@@ -6884,6 +6884,7 @@
       "ageRequired": "Confirma que cumples la edad mínima requerida."
     },
     "feedback": {
+      "passwordUnavailable": "No pudimos completar tu solicitud. Inténtalo de nuevo.",
       "signingIn": "Iniciando sesión…",
       "signinRedirecting": "Sesión iniciada. Redirigiendo…",
       "signinSuggestion": "No pudimos iniciar sesión con esos datos. Si eres nuevo, crea tu cuenta sin volver a escribirlos.",

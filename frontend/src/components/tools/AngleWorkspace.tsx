@@ -52,7 +52,14 @@ import type {
 } from './angle/_lib/angle-workspace-types';
 
 export default function AngleToolPage() {
-  const { loading: authLoading, user } = useRequireAuth({ redirectIfLoggedOut: false });
+  const auth = useRequireAuth({ redirectIfLoggedOut: false });
+  if (auth.loading && !auth.user) return <AngleLoadingShell />;
+  return <AngleAccountWorkspace key={auth.user?.id ?? 'guest'} auth={auth} />;
+}
+
+function AngleAccountWorkspace({ auth }: { auth: ReturnType<typeof useRequireAuth> }) {
+  const { loading: authLoading, user } = auth;
+  const storageKey = user ? `${ANGLE_TOOL_STORAGE_KEY}:${user.id}` : null;
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { locale, t } = useI18n();
@@ -80,7 +87,6 @@ export default function AngleToolPage() {
   const [activeRecentJobId, setActiveRecentJobId] = useState<string | null>(null);
   const [activeRecentOutputIndex, setActiveRecentOutputIndex] = useState(0);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const visitorSanitizedRef = useRef(false);
   const loginRedirectTarget = useMemo(() => {
     const base = pathname || '/app/tools/angle';
     const search = searchParams?.toString();
@@ -143,11 +149,14 @@ export default function AngleToolPage() {
   }, [sourceImage]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || authLoading) return;
     if (hasHydratedStorageRef.current) return;
     hasHydratedStorageRef.current = true;
     try {
-      const stored = window.localStorage.getItem(ANGLE_TOOL_STORAGE_KEY);
+      // Legacy drafts have no proven account owner; never adopt them.
+      window.localStorage.removeItem(ANGLE_TOOL_STORAGE_KEY);
+      if (!storageKey) return;
+      const stored = window.localStorage.getItem(storageKey);
       if (!stored) return;
       const parsed = parsePersistedAngleToolState(stored);
       if (!parsed) return;
@@ -163,11 +172,11 @@ export default function AngleToolPage() {
     } finally {
       setStorageHydrated(true);
     }
-  }, []);
+  }, [authLoading, storageKey]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (!storageHydrated) return;
+    if (!storageHydrated || !storageKey || authLoading) return;
     const payload: PersistedAngleToolState = {
       version: 1,
       engineId,
@@ -184,36 +193,11 @@ export default function AngleToolPage() {
       selectedOutputIndex,
     };
     try {
-      window.localStorage.setItem(ANGLE_TOOL_STORAGE_KEY, JSON.stringify(payload));
+      window.localStorage.setItem(storageKey, JSON.stringify(payload));
     } catch {
       // ignore storage failures
     }
-  }, [engineId, generateBestAngles, params, result, safeMode, selectedOutputIndex, sourceImage, storageHydrated]);
-
-  useEffect(() => {
-    if (authLoading) return;
-    if (user) {
-      visitorSanitizedRef.current = false;
-      setGuestExampleDismissed(false);
-      return;
-    }
-    if (visitorSanitizedRef.current) return;
-    visitorSanitizedRef.current = true;
-    if (typeof window !== 'undefined') {
-      try {
-        window.localStorage.removeItem(ANGLE_TOOL_STORAGE_KEY);
-      } catch {
-        // ignore storage failures
-      }
-    }
-    setSourceImage((previous) => {
-      cleanupSourcePreview(previous);
-      return null;
-    });
-    setResult(null);
-    setSelectedOutputIndex(0);
-    setError(null);
-  }, [authLoading, user]);
+  }, [authLoading, engineId, generateBestAngles, params, result, safeMode, selectedOutputIndex, sourceImage, storageHydrated, storageKey]);
 
   useEffect(() => {
     if (authLoading || user) return;
@@ -318,23 +302,7 @@ export default function AngleToolPage() {
     }
   };
 
-  if (authLoading) {
-    return (
-      <div className="flex min-h-screen flex-col bg-bg">
-        <HeaderBar />
-        <div className="flex flex-1 min-w-0 flex-col md:flex-row">
-          <AppSidebar />
-          <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
-            <div className="w-full animate-pulse space-y-4 rounded-card border border-border bg-surface p-8">
-              <div className="h-4 w-40 rounded bg-surface-2" />
-              <div className="h-10 w-72 rounded bg-surface-2" />
-              <div className="h-72 rounded bg-surface-2" />
-            </div>
-          </main>
-        </div>
-      </div>
-    );
-  }
+  if (authLoading || !storageHydrated) return <AngleLoadingShell />;
 
   if (!FEATURES.workflows.toolsSection) {
     return (
@@ -439,6 +407,24 @@ export default function AngleToolPage() {
         loginRedirectTarget={loginRedirectTarget}
         copy={copy}
       />
+    </div>
+  );
+}
+
+function AngleLoadingShell() {
+  return (
+    <div className="flex min-h-screen flex-col bg-bg">
+      <HeaderBar />
+      <div className="flex flex-1 min-w-0 flex-col md:flex-row">
+        <AppSidebar />
+        <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
+          <div className="w-full animate-pulse space-y-4 rounded-card border border-border bg-surface p-8">
+            <div className="h-4 w-40 rounded bg-surface-2" />
+            <div className="h-10 w-72 rounded bg-surface-2" />
+            <div className="h-72 rounded bg-surface-2" />
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

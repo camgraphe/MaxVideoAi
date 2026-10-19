@@ -1656,7 +1656,7 @@
       "subtitle": "Compare video, image, audio and tool costs before you create.",
       "supportingLine": "Pay as you go. Confirm the exact price in the app before generating. Failed generations are refunded.",
       "quickStartTitle": "Three starting points for your next video",
-      "quickStartNote": "Indicative total per video, in USD. Select a scenario to see the full comparison. Confirm the live quote in the app before generating.",
+      "quickStartNote": "Lowest available current-generation price for each shown preset, in USD per video. These are different settings, not a quality ranking. Open the row for details and confirm the quote before generating.",
       "primaryCta": "Check a price in the app",
       "secondaryCta": "Compare prices below",
       "badges": [
@@ -1825,7 +1825,7 @@
         },
         {
           "question": "Which AI video engine is cheapest?",
-          "answer": "The cheapest engine depends on the scenario. A 5s 720p draft, an 8s 1080p premium clip, a 10s 1080p video and 4K output can all have different winners. The table highlights current-generation options first and lists older budget routes separately when available."
+          "answer": "Choose the duration, resolution and audio setting first, then compare the same column. The highlighted price is the lowest available quote among the eligible current-generation models in this table. Older models are listed separately; a lower price does not prove a better result."
         },
         {
           "question": "Which engine is cheapest for 10s 1080p video?",
@@ -1845,7 +1845,7 @@
         },
         {
           "question": "Do failed generations cost credits?",
-          "answer": "No. Failed generations are refunded automatically. Credits are charged only when a generation completes successfully."
+          "answer": "A technical failure is different from a completed clip you do not like. Failed generations receive a credit refund; subjective dissatisfaction with a completed result is not normally refundable. Check the Refund & Return Policy for the terms."
         },
         {
           "question": "Do I need a subscription?",
@@ -1853,15 +1853,15 @@
         },
         {
           "question": "Why are some cheaper engines not highlighted first?",
-          "answer": "Some previous-generation routes may be cheaper for simple tests, but MaxVideoAI highlights current-generation engines first because they are usually better choices for new projects. Older budget routes are still listed separately when available."
+          "answer": "The opening cards compare eligible current-generation models at matching settings. Previous-generation options remain in the table and may cost less. The grouping helps you navigate; it does not guarantee better quality."
         },
         {
           "question": "Are image, audio and tools priced the same as video?",
           "answer": "No. Video, image, audio and tools use different pricing rules. Image generation is usually priced per image, audio by duration or mode, and tools by output type or resolution."
         },
         {
-          "question": "Why does the table show total prices instead of cost per second?",
-          "answer": "Most users compare the full cost of a render, not raw per-second rates. MaxVideoAI shows preset total prices for common scenarios such as 8s 1080p, 10s 1080p and 4K output. Per-second or provider-level rates can vary by engine, duration, resolution and rounding, and the app shows the exact live quote before generation."
+          "question": "Does the displayed price cover every attempt?",
+          "answer": "Each new generation has its own quote. If you make several completed attempts to find the shot you want, each is a separate generation. Compare the total you are willing to spend on the scene, not only the price of one clip."
         },
         {
           "question": "How often do prices change?",
@@ -6864,6 +6864,7 @@
       "ageRequired": "Confirm that you meet the minimum age requirement."
     },
     "feedback": {
+      "passwordUnavailable": "We couldn't complete your request. Please try again.",
       "signingIn": "Signing in…",
       "signinRedirecting": "Signed in. Redirecting…",
       "signinSuggestion": "We couldn't sign you in with those details. If you're new, create your account without retyping anything.",

@@ -27,6 +27,7 @@ export function UpscalePreviewCard({
   comparePosition,
   copy,
   hasResult,
+  hasSourcePreview,
   isPixelZoom,
   mediaFitClass,
   onCompareKeyDown,
@@ -56,6 +57,7 @@ export function UpscalePreviewCard({
   comparePosition: number;
   copy: UpscalePreviewCopy;
   hasResult: boolean;
+  hasSourcePreview: boolean;
   isPixelZoom: boolean;
   mediaFitClass: string;
   onCompareKeyDown: KeyboardEventHandler<HTMLDivElement>;
@@ -86,7 +88,7 @@ export function UpscalePreviewCard({
         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <div className="flex rounded-[10px] border border-border bg-bg p-1">
             {([
-              ['source', labels.original, false],
+              ['source', labels.original, !hasSourcePreview],
               ['result', labels.result, !hasResult],
               ['compare', labels.compare, !canCompare],
             ] as const).filter(([modeOption]) => modeOption !== 'compare' || (!sourcePreviewIsVideo && !resultPreviewIsVideo)).map(([modeOption, label, disabled]) => {

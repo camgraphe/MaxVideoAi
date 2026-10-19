@@ -13,10 +13,11 @@ export function PricingPendingQuickStart({ locale, title, note }: { locale: AppL
       <h2 id="pricing-quick-start-title" className="text-sm font-semibold text-text-primary">{title}</h2>
       <span className="sr-only" role="status">{loadingLabel(locale)}</span>
       <div className="mt-3 grid gap-2 sm:grid-cols-3 sm:gap-3" aria-hidden="true">
-        {[highlights.bestDraft, highlights.cheapest10s, highlights.cheapestAudio].map((label) => (
+        {[[highlights.bestDraft, highlights.draftIntent], [highlights.cheapest10s, highlights.detailIntent], [highlights.cheapestAudio, highlights.soundIntent]].map(([label, intent]) => (
           <div key={label} className="flex items-center justify-between gap-4 rounded-xl border border-hairline bg-surface p-4 text-text-primary shadow-card sm:flex-col sm:items-start">
             <span className="min-w-0">
-              <span className="block text-xs leading-5 text-text-secondary">{label}</span>
+              <span className="block text-sm font-semibold leading-5">{intent}</span>
+              <span className="mt-1 block text-xs leading-5 text-text-secondary">{label}</span>
               <span className="mt-1 block h-5 w-32 max-w-full rounded bg-bg" />
             </span>
             <span className="flex min-w-[8.5rem] shrink-0 items-center justify-between gap-3 sm:w-full sm:min-w-0">

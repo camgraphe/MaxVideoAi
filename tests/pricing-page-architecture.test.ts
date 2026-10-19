@@ -377,7 +377,7 @@ test('pricing metadata and FAQ target comparison intent first', () => {
     'Do I need a subscription?',
     'Why are some cheaper engines not highlighted first?',
     'Are image, audio and tools priced the same as video?',
-    'Why does the table show total prices instead of cost per second?',
+    'Does the displayed price cover every attempt?',
     'How often do prices change?',
   ]);
   assert.match(faqSource, /Pricing FAQ/);

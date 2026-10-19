@@ -37,7 +37,7 @@ test('the scorecard keeps price quotes separate from editorial ratings', () => {
   assert.deepEqual(deriveCompareStrengths([metric('motion_realism', 8.8, 8.1)], 'left'), ['motion_realism']);
 });
 
-test('localized metadata counts match the shorter scorecard', () => {
+test('localized UI copy counts match the shorter scorecard', () => {
   assert.equal(replaceCriteriaCount('an 11-point scorecard', 10), 'a 10-criterion scorecard');
   assert.equal(replaceCriteriaCount('11 critères', 9), '9 critères');
   assert.equal(replaceCriteriaCount('11 criterios', 10), '10 criterios');

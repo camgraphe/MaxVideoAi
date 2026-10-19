@@ -2,7 +2,7 @@
 title: "MaxVideoAI MCP : connecteurs, plugins et workflows"
 description: "Connectez MaxVideoAI à Claude, ChatGPT, Codex, OpenClaw ou n8n auto-hébergé : OAuth, devis exact, accord, références et récupération."
 date: "2026-07-14"
-updatedAt: "2026-10-03"
+updatedAt: "2026-10-19"
 authorId: "adrien-millot"
 image: "/og/brand-2026-09-25.png"
 keywords:
@@ -27,6 +27,16 @@ MaxVideoAI relie les assistants et outils d’automatisation compatibles aux mod
 | [Workflow vidéo n8n](/fr/integrations/n8n) | MCP Client auto-hébergé, configuration manuelle | Testé sur 2.38.7 avec devis exact et accord humain. Le [modèle public 19591](https://n8n.io/workflows/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/) est disponible ; configurez OAuth manuellement. Aucun support n8n Cloud ou AI Agent n’est revendiqué. |
 
 Cursor, GitHub Copilot, Gemini CLI et Microsoft Copilot sont en préparation. Leurs pages de connexion MaxVideoAI ne sont pas publiées.
+
+## De la conversation au film monté
+
+Vous pouvez diriger un film sans manipuler un logiciel de montage. Dans nos [exemples créatifs](/fr/mcp#creative-examples), l’assistant a généré les plans via MaxVideoAI, puis les a sélectionnés, montés et mixés avec ses outils dans Codex : publicité pour un produit fictif, scène dialoguée et clip musical. Ces réalisations ne prouvent pas la disponibilité des mêmes outils de montage dans ChatGPT ou Claude.
+
+Partez du résultat souhaité et de vos références. Demandez à l’assistant de comparer les modèles adaptés, de préparer le découpage et de chiffrer chaque tentative payante. Après examen des prises, dirigez les coupes et le son dans la conversation. Le montage dépend des outils disponibles dans l’hôte.
+
+## Voix off via MCP
+
+Consultez les modes et réglages Audio actuels avec `list_audio_capabilities`. Préparez la voix off avec `prepare_audio_generation`, examinez le devis exact, puis donnez votre accord avant `confirm_audio_generation`. Après un délai d’attente, retrouvez le job existant au lieu de le soumettre à nouveau. Ce parcours est distinct du son natif d’un modèle vidéo et de la musique composée avec les outils locaux de l’assistant.
 
 ## Adresse du serveur MCP
 

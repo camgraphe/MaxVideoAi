@@ -63,7 +63,7 @@ test('gated views do not show paid workflow, historical proof or price examples'
  const html=renderToStaticMarkup(React.createElement(McpPageView,{compatibility:getMcpCompatibilityEvidence(),copy:getMcpPageCopy('en'),locale:'en',publication:{...live,connectionAvailable:false,indexable:false,showPaidGenerationClaim:false,showReferenceClaim:false},hostProof:getMcpHostProof('claude','en')}));
  assert.doesNotMatch(html,/data-mcp-host-proof|mcp-story-scene|data-assistant-first-request|mcp-price-context/);
 });
-test('capability answers distinguish image generation from gated standalone audio and montage',()=>{
+test('capability answers distinguish images and voice-over from gated montage',()=>{
  for(const locale of locales){const answer=getMcpEditorialCopy(locale).faq[3].answer;assert.match(answer,/image|imágenes/);assert.match(answer,/audio/);assert.match(answer,/not publicly available|ne sont pas disponibles|no están disponibles/);}
 });
 test('historical Claude evidence stays separate from the illustrated workflow',()=>{

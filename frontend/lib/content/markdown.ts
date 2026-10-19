@@ -15,6 +15,15 @@ export interface ContentFrontMatter {
   updatedAt?: string;
   image?: string;
   imagePosition?: string;
+  /** Visible editorial copy, independent of search metadata. */
+  topic?: string;
+  lead?: string;
+  walkthrough?: {
+    title: string;
+    description: string;
+    steps: { title: string; caption: string; image: string; alt: string; video?: string }[];
+    note: string;
+  };
   keywords?: string[];
   slug: string;
   excerpt?: string;
@@ -23,6 +32,7 @@ export interface ContentFrontMatter {
   canonicalSlug?: string;
   authorId?: string;
   editorialArtifact?: string;
+  mcpCreation?: { title: string; body: string; href: string; label: string };
 }
 
 export interface ContentEntry extends ContentFrontMatter {

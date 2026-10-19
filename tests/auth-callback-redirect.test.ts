@@ -140,12 +140,12 @@ test('login page protects Google PKCE from duplicate starts and host drift', () 
   );
   assert.match(
     loginControllerSource,
-    /if \(googleOAuthStartedRef\.current\) return;/,
+    /if \(passwordSubmission\.pending\.current \|\| googleOAuthStartedRef\.current\) return;/,
     'Google OAuth should ignore repeated clicks once a PKCE flow has started'
   );
   assert.match(
     loginSurfaceSource,
-    /disabled=\{isGoogleOAuthStarting\}/,
+    /disabled=\{isGoogleOAuthStarting \|\| isPasswordSubmitting\}/,
     'the Google button should be disabled while the OAuth URL is being created'
   );
   assert.match(
