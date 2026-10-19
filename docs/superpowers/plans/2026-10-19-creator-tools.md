@@ -110,7 +110,7 @@ add/replace commands with current revisions.
 - [x] Build plus authenticated fixture browser, locale/SEO and accessibility checks.
 - [x] Review domain/integration changes independently; repair material findings and retest.
 - [x] Record each tool's actual app/Studio/MCP/provider availability and evidence.
-- [ ] Commit coherent changes, open/attach reviewable PR(s), run required Quality CI.
+- [x] Commit coherent changes, open/attach reviewable PR(s), run required Quality CI.
 - [ ] Publication only after executable paths and required evidence are ready.
 
 ## Progress
@@ -129,3 +129,7 @@ add/replace commands with current revisions.
   recorded in `docs/engineering/creator-tools-qualification.md`.
 - All public creator release flags remain closed. No paid canary, public launch,
   production mutation or deployment has been performed.
+- Delivery: [PR #478](https://github.com/camgraphe/MaxVideoAi/pull/478), in draft
+  pending qualification. Required Quality CI is attached to the current PR head;
+  its GitHub result is the authority for merge readiness. Publication remains
+  intentionally pending the release evidence recorded in the qualification guide.
