@@ -62,7 +62,7 @@ import {
   type OwnedQuoteJobInput,
 } from './quote-repository';
 import { resolveOwnedReferenceAssetForActor } from './reference-assets';
-import { resolveGenerationReferencesForActor } from './resolve-generation-references';
+import { assertGenerationReferenceUrls, resolveGenerationReferencesForActor } from './resolve-generation-references';
 import type { ResolvedReference } from './reference-types';
 import {
   checkMcpConfirmationSpendingLimits,
@@ -357,6 +357,7 @@ async function confirmationTransaction(
       staleQuote();
     }
     if (includedTrial) assertCanonicalTrialRequest(quote, candidate);
+    assertGenerationReferenceUrls(quote.request);
     try {
       if (!inherited.workflow?.finalFacts) validateCanonicalGenerationCapabilities(quote.request, candidate);
     } catch (error) {

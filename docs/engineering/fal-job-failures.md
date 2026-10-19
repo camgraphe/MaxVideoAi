@@ -1,5 +1,29 @@
 # Fal job failure diagnostics
 
+## Recovery messages reviewed 19 October 2026
+
+The shared public failure projector also recognizes historical MiniMax image
+geometry rejections, unavailable editing modes, generic start/final failures,
+Seedream prompt versus reference-image refusals, and the typed
+IMAGE_HOST_NOT_ALLOWED submission failure. Only allowlisted submission codes
+may become public failure codes. Unknown diagnostics use fixed localized copy.
+
+Wallet recredit confirmation depends on persisted refunded_wallet for all
+failure categories. It does not depend on whether the failure reason was
+recognized, and must never imply a card refund, an included-trial refund, or
+authorization for another paid attempt. Web confirmations can include the
+confirmed amount/currency; refund receipt labels preserve image quantities.
+
+Receipt GET selects only the provider/submission diagnostic fragments through
+the same owner-scoped correlated lookup and paginated SELECT. Historical
+messages are projected at read time; stored descriptions, amounts, currencies,
+payment states and lifecycle logs stay unchanged.
+
+MiniMax H3 start/end frames use the same stored image geometry checks as
+reference images: each side at least 256 pixels, width/height ratio 0.4–2.5.
+Both canonical quote validation and Web preflight enforce these constraints.
+Client dimension claims do not replace stored original metadata.
+
 Fal webhooks place model output or validation details in `payload`. Keep legacy
 `result`, `response` and `data` compatibility, but do not discard the native
 envelope. An outer `Unexpected status code: 422` is transport context, not the

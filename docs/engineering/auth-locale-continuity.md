@@ -32,6 +32,29 @@ browser language and IP location. Core routes such as `/login`, `/app` and
 Direct visits without an explicit language or marketing referrer retain the
 stored preference. Neither IP country nor `Accept-Language` overrides it.
 
+## Authentication service deadlines
+
+Protected-route middleware bounds the complete Supabase session refresh and
+claims verification to eight seconds, including SDK retry delays. The owner is
+frontend/lib/middleware/auth-deadline.ts; updateSession composes its signal into
+the middleware client's fetch calls, checks cancellation after each await and
+ignores late cookie writes. Cancellation uses Edge-compatible event listeners;
+completed refresh cookies are retained on the recovery response if claims stall.
+Normal route/server clients retain their existing
+behavior.
+
+A deadline produces a private, no-store HTTP 503 with Retry-After and a fixed
+message in the stored core locale (EN/FR/ES). It does not authorize access,
+redirect to sign-in, clear the session or treat an unverified token as a user.
+Invalid refresh tokens still follow the existing explicit cookie cleanup path.
+This bounds the historical waiting path without claiming to identify the cause
+of the upstream authentication delay.
+
+Coverage: tests/middleware-auth-deadline.test.ts exercises a stalled real
+updateSession with only the external auth boundary replaced, late cookie
+protection, completed refresh preservation, bundled Edge runtime compatibility,
+and localized recovery response headers.
+
 ## Duplicate password signup
 
 Supabase can return an obfuscated user with empty `identities` and no session

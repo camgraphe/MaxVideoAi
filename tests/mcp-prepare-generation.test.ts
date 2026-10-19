@@ -304,6 +304,48 @@ async function expectAgentError(
   });
 }
 
+test('Veo rejects unsupported reference hosts before pricing or persisting a payable quote', async () => {
+  for (const host of ['cloud.inference.sh', 'tempfile.redpandaai.co']) {
+    const { deps, captures } = baseDependencies({
+      listPublicEngines: async () => [registryCapability('veo-3-1-lite')],
+    });
+    await assert.rejects(prepareGeneration({
+      ...videoInput, engineId: 'veo-3-1-lite', mode: 'fl2v',
+      settings: { durationSec: 6, resolution: '720p', aspectRatio: '9:16', audio: false },
+      references: [
+        { kind: 'https', url: `https://${host}/private-first.png?token=private`, mediaKind: 'image', role: 'first_frame' },
+        { kind: 'https', url: `https://${host}/private-last.png`, mediaKind: 'image', role: 'last_frame' },
+      ],
+    }, principal, deps), (error: unknown) => {
+      assert.ok(error instanceof AgentApiError);
+      assert.equal(error.code, 'REFERENCE_INVALID');
+      assert.equal(error.retryable, false);
+      assert.match(error.message, /import|upload/i);
+      assert.doesNotMatch(error.message, /private|token|inference|redpanda/i);
+      return true;
+    });
+    assert.equal(captures.priced.length, 0);
+    assert.equal(captures.inserted.length, 0);
+    assert.equal(captures.events.includes('wallet'), false);
+  }
+});
+
+test('MiniMax rejects undersized owned start images before pricing or quote creation', async () => {
+  const { deps, captures } = baseDependencies({
+    listPublicEngines: async () => [registryCapability('minimax-h3')],
+    resolveGenerationReferences: async () => [{ assetId: 'small-image', role: 'source', mediaKind: 'image',
+      storageUrl: 'https://media.maxvideoai.com/small.png', mimeType: 'image/png',
+      width: 328, height: 172, sizeBytes: 14152, durationSec: null }],
+  });
+  await assert.rejects(prepareGeneration({ ...videoInput, engineId: 'minimax-h3', mode: 'i2v',
+    settings: { durationSec: 5, resolution: '480P' },
+    references: [{ kind: 'asset', assetId: 'small-image', role: 'source' }],
+  }, principal, deps), (error: unknown) => error instanceof AgentApiError
+    && error.code === 'REFERENCE_INVALID' && /image.*small|minimum.*256/i.test(error.message));
+  assert.equal(captures.priced.length, 0);
+  assert.equal(captures.inserted.length, 0);
+});
+
 test('valid video and image requests persist immutable exact quotes before returning', async () => {
   for (const [input, expectedPrice] of [[videoInput, 125], [imageInput, 45]] as const) {
     const { deps, captures } = baseDependencies();

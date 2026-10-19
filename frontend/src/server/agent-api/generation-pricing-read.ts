@@ -11,7 +11,7 @@ import type {CanonicalGenerationRequest} from './generation-types';
 import type {AgentPublicGenerationEngine} from './model-catalog';
 import type {GenerationPricingResult} from './generation-pricing';
 import type {ResolvedReference} from './reference-types';
-import {resolveGenerationReferencesForActor} from './resolve-generation-references';
+import {assertGenerationReferenceUrls,resolveGenerationReferencesForActor} from './resolve-generation-references';
 import type {PrepareGenerationDependencies} from './prepare-generation';
 
 export type GenerationPricingReadDependencies=Pick<PrepareGenerationDependencies,'listPublicEngines' | 'resolveGenerationReferences' | 'resolveRequestExecutability' | 'resolveMembershipPricing' | 'priceGeneration'>;
@@ -46,6 +46,7 @@ const REFERENCE_CONSTRAINT_MESSAGES: Record<ReferenceConstraintFailure, string> 
   size_exceeded: 'Reference file size exceeds the selected model mode limit. Check get_model_details and import a smaller file.',
   format_unsupported: 'Reference file format is unsupported for the selected model mode. Check get_model_details and import a supported format.',
   image_aspect_ratio_unsupported: 'Reference image aspect ratio is outside the selected model mode limits. Check get_model_details and import a supported image.',
+  image_dimensions_too_small: 'The reference image is too small for the selected model mode. Check get_model_details and import a larger original image.',
 };
 
 export function validateGenerationPricingCapabilities(
@@ -169,6 +170,7 @@ export async function readGenerationPricing(request: CanonicalGenerationRequest,
   }
   if (!finalFacts) validateGenerationPricingCapabilities(request, candidate);
   validateRepresentablePricingFacts(request);
+  assertGenerationReferenceUrls(request);
   let resolvedReferences: ResolvedReference[] = [];
   if (request.references.some((reference) => reference.kind === 'asset')) {
     try {
