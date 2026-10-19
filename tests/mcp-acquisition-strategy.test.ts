@@ -92,11 +92,14 @@ test('public indexation is not blocked by the optional introductory trial', () =
 
 test('the homepage and contextual links own a prospect-facing assistant workflow entry', () => {
   const home = source(`${marketingRoot}/(home)/page.tsx`);
-  const sections = source('frontend/components/marketing/home/HomeRedesignSections.tsx');
+  const conversation = source('frontend/components/marketing/home/HomeConversationSection.tsx');
+  const strip = source('frontend/components/marketing/home/HomeAssistantStrip.tsx');
   const internalLinks = source('frontend/lib/mcp-internal-links.ts');
 
-  assert.match(home, /HomeCreationSection locale=\{locale\} assistantHref=\{mcpLink\?\.href\}/);
-  assert.match(sections, /HomeAssistantWorkflow/);
+  assert.match(home, /getMcpInternalLink\(locale, 'home'\)/);
+  assert.match(home, /HomeConversationSection locale=\{locale\} assistantHref=\{mcpLink\?\.href\}/);
+  assert.match(conversation, /assistantHref \? <HomeAssistantStrip locale=\{locale\} href=\{assistantHref\}/);
+  assert.match(strip, /<Link href=\{href\}/);
   assert.match(internalLinks, /'home'/);
   assert.match(internalLinks, /ChatGPT/);
   assert.match(internalLinks, /Claude/);
