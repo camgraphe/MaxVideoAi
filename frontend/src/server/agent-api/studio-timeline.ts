@@ -47,6 +47,14 @@ export function asStudioTimelineAgentError(error: unknown,projectId: string): un
     if (error.code === 'STUDIO_CONNECTED_PROJECT_REQUIRED') return new AgentApiError('PARAMETER_INVALID','This project does not use connected Studio persistence.');
   }
   const message = error instanceof Error ? error.message : '';
+  // Match authored codes exactly; never echo subtitle data or provider diagnostics.
+  if (message === 'SUBTITLE_NOT_FOUND') return new AgentApiError('REFERENCE_NOT_FOUND','The requested subtitle document or revision is not available.');
+  if (message === 'SUBTITLE_REVISION_INVALID') return new AgentApiError('PARAMETER_INVALID','Provide a positive saved subtitle revision.');
+  if (message === 'SUBTITLE_SOURCE_MISMATCH') return new AgentApiError('REFERENCE_INVALID','These subtitles belong to a different source. Select a document for the exact clip source.');
+  if (message === 'SUBTITLE_SEQUENCE_CHANGED') return new AgentApiError('PARAMETER_INVALID','The saved audio mix changed or does not match these subtitles. Read the timeline again and select subtitles for the current mix.',false,{action:'read_timeline',projectId});
+  if (message === 'SUBTITLE_SEQUENCE_SOURCE_REQUIRED') return new AgentApiError('REFERENCE_INVALID','Each sequence clip needs an owned media reference before sequence subtitles can be attached.');
+  if (message === 'SUBTITLE_MIX_TRANSITION_UNSUPPORTED') return new AgentApiError('PARAMETER_INVALID','Sequence subtitles do not support this transition. Remove it or use clip subtitles.');
+  if (message === 'SUBTITLE_SOURCE_HAS_NO_AUDIO') return new AgentApiError('REFERENCE_INVALID','The current sequence has no audible audio to subtitle.');
   if (['STUDIO_PROJECT_NOT_FOUND','STUDIO_SEQUENCE_CONFLICT','MEDIA_NOT_AVAILABLE'].includes(message)) return new AgentApiError('REFERENCE_NOT_FOUND','The requested project, sequence or media is not available.');
   if (message === 'STUDIO_CONVERSATION_EDITING_DISABLED') return new AgentApiError('ENGINE_UNAVAILABLE','Studio timeline tools are not available.');
   if (message === 'UNAUTHORIZED') return new AgentApiError('AUTH_REQUIRED','Connect MaxVideoAI before editing a Studio timeline.');
