@@ -1,6 +1,6 @@
 /** Public discovery is enabled only after the operation and its evidence are verified. */
-export const CREATOR_TOOL_IDS = ['subtitles', 'lip-sync', 'product-photo-editor', 'product-video-editor', 'motion-transfer'] as const;
-export type CreatorToolId = typeof CREATOR_TOOL_IDS[number];
+import { CREATOR_TOOL_IDS, type CreatorToolId } from './catalogue';
+export { CREATOR_TOOL_IDS, type CreatorToolId } from './catalogue';
 export const CREATOR_TOOL_AVAILABILITY: Readonly<Record<CreatorToolId, { publicReleased: boolean }>> = {
   subtitles: { publicReleased: false },
   'lip-sync': { publicReleased: false },

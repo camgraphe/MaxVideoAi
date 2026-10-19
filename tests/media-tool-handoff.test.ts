@@ -6,7 +6,7 @@ function storage() { const values = new Map<string, string>(); return { getItem:
 const original = { id: 'output-exact-17', sourceOutputId: 'output-exact-17', jobId: 'job-1', url: 'https://media.example/original.mp4?signature=exact', thumbUrl: 'https://media.example/thumb.jpg', kind: 'video' as const };
 test('tool continuations keep the selected original and identity, consume once, and reject wrong kinds/accounts/expired transfers', () => {
   for (const tool of MEDIA_TOOL_DESTINATIONS) {
-    const value = tool === 'angle' ? { ...original, kind: 'image' as const, url: 'https://media.example/original.png' } : original;
+    const value = tool === 'angle' || tool === 'product-photo-editor' ? { ...original, kind: 'image' as const, url: 'https://media.example/original.png' } : original;
     const store = storage();
     const path = stageMediaHandoff(store, 'a', value, tool, 'token', 100);
     assert.ok(path.startsWith(`/app/tools/${tool}?media=token`));

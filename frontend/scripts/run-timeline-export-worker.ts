@@ -21,7 +21,14 @@ async function claimTimelineExportJob(targetExportId: string | null) {
 async function main() {
   const once = process.argv.includes('--once');
   const targetExportId = argValue('--export-id') ?? process.env.TIMELINE_EXPORT_TARGET_ID?.trim() ?? null;
+  const subtitleOperationId = argValue('--subtitle-operation-id') ?? process.env.SUBTITLE_OPERATION_TARGET_ID?.trim();
+  if (subtitleOperationId && targetExportId) throw new Error('MEDIA_WORKER_AMBIGUOUS_TARGET');
   assertTimelineExportWorkerEnvironment({ once });
+  if (subtitleOperationId) {
+    const { runSubtitleOperation } = await import('../src/server/subtitles/operations');
+    await runSubtitleOperation(subtitleOperationId);
+    return;
+  }
   do {
     const job = await claimTimelineExportJob(targetExportId);
     if (job) {

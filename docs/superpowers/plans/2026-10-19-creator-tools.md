@@ -44,10 +44,10 @@ clientId:null}`. `createCreatorGenerationService(actor,{enabled,...dependencies}
 returns canonical `prepare`, `confirm`, `status` methods; it accepts owned assets
 only, binds reference fingerprints and reuses existing generation jobs.
 
-- [ ] Reject cross-origin access and trial funding in failing unit/PG tests.
-- [ ] Add explicit quote scope and migration without changing old rows.
-- [ ] Implement adapter using canonical preparation/confirmation dependencies.
-- [ ] Verify focused tests plus existing MCP/Studio quote/confirmation contracts.
+- [x] Reject cross-origin access and trial funding in failing unit/PG tests.
+- [x] Add explicit quote scope and migration without changing old rows.
+- [x] Implement adapter using canonical preparation/confirmation dependencies.
+- [x] Verify focused tests plus existing MCP/Studio quote/confirmation contracts.
 
 ## Task 2 — Subtitle document, exports and rendering
 
@@ -58,10 +58,10 @@ Interfaces: versioned `SubtitleDocument`; strict validation; word→segment buil
 SRT/VTT serializer; source→sequence projector; renderer receives immutable
 document snapshot and owned source. Persistence uses optimistic revision.
 
-- [ ] Write/run failures for timings, Unicode/markup, trims and revisions.
-- [ ] Build document model, normalization, safe serializers and style geometry.
-- [ ] Integrate transcription, durable document storage and recoverable clip burn.
-- [ ] Test media output and document reuse without retranscription.
+- [x] Write/run failures for timings, Unicode/markup, trims and revisions.
+- [x] Build document model, normalization, safe serializers and style geometry.
+- [x] Integrate transcription, durable document storage and recoverable clip burn.
+- [x] Test media output and document reuse without retranscription.
 
 ## Task 3 — Creative operation profiles and input preparation
 
@@ -72,10 +72,10 @@ Interfaces: four stable tool IDs, strict role-based owned input settings, explic
 segment/audio policy, canonical generation request or specialized tool profile.
 Preparation returns exact frozen engine/scenario; no fallback or duration repair.
 
-- [ ] Pin invalid source/mode/duration combinations with failing tests.
-- [ ] Implement measured-source preparation, profiles and shared execution.
-- [ ] Verify price/reference identity and output lineage/recovery.
-- [ ] Record real qualification gaps without publishing them as successes.
+- [x] Pin invalid source/mode/duration combinations with failing tests.
+- [x] Implement measured-source preparation, profiles and shared execution.
+- [x] Verify price/reference identity and output lineage/recovery.
+- [x] Record real qualification gaps without publishing them as successes.
 
 ## Task 4 — Workspaces and visual marketing
 
@@ -85,10 +85,10 @@ copy, routing/sitemap/hub adapters and focused DOM/metadata tests.
 Interfaces: common source/settings/preview/result workspace slots; server-shared
 availability projection; operation API preparation/confirmation/status results.
 
-- [ ] Build responsive source→settings→result surfaces and truthful examples.
-- [ ] Integrate quote confirmation, pending recovery, errors and saved results.
-- [ ] Add EN/FR/ES route metadata, visual journeys, FAQ and contextual links.
-- [ ] Check renders and interactions with screenshots at mobile/desktop widths.
+- [x] Build responsive source→settings→result surfaces and truthful examples.
+- [x] Integrate quote confirmation, pending recovery, errors and saved results.
+- [x] Add EN/FR/ES route metadata, visual journeys, FAQ and contextual links.
+- [x] Check renders and interactions with screenshots at mobile/desktop widths.
 
 ## Task 5 — Studio, Library, MCP and measurement
 
@@ -99,10 +99,10 @@ Interfaces: canonical asset references, same prepared operation ID and exact
 quote, one-attempt confirmation, status/document recovery and explicit Studio
 add/replace commands with current revisions.
 
-- [ ] Wire eligible contextual entry and result reuse without auto-spending.
-- [ ] Register gated operation discovery/prepare/confirm/status and document tools.
-- [ ] Verify ownership, one-attempt semantics and full structured result fallback.
-- [ ] Update guides and record discovery byte budgets and real-host limitations.
+- [x] Wire eligible contextual entry and result reuse without auto-spending.
+- [x] Register gated operation discovery/prepare/confirm/status and document tools.
+- [x] Verify ownership, one-attempt semantics and full structured result fallback.
+- [x] Update guides and record discovery byte budgets and real-host limitations.
 
 ## Task 6 — Integrated validation and delivery
 
@@ -117,4 +117,13 @@ add/replace commands with current revisions.
 
 - 2026-10-19: isolated worktree, current main, offline dependency installation,
   three independent inventories and 19 passing baseline Toolbox tests.
-- Remaining: all implementation and integrated delivery tasks above.
+- Shared session/OAuth operation scope, versioned subtitles, real subtitle video
+  rendering, canonical creative operations, LatentSync/Kling specialist adapters,
+  localized marketing/workspaces, source selection, recovery, Library and MCP
+  adapters are implemented. Studio mix transcription and global sequence caption
+  attachment are undergoing final integration and media checks.
+- Focused unit, disposable PostgreSQL, real FFmpeg/Remotion and browser fixture
+  checks have passed during implementation. Integrated checks and independent
+  review are in progress; no real-provider or real-host evidence is claimed.
+- All public creator release flags remain closed. No paid canary, public launch,
+  production mutation or deployment has been performed.

@@ -17,6 +17,7 @@ export type CreatorGenerationOptions = {
   prepareDependencies?: Partial<Omit<PrepareGenerationDependencies, 'trialRiskContext'>>;
   confirmDependencies?: Partial<Omit<ConfirmGenerationDependencies, 'trialRiskContext'>>;
   onQuotePrepared?(quote: McpGenerationQuote, executor: TransactionQueryExecutor): Promise<void>;
+  onQuoteLocked?(quote: McpGenerationQuote, executor: TransactionQueryExecutor): Promise<void>;
 };
 
 /** Private transport adapter. Callers authorize the actor and choose a supported tool profile. */
@@ -67,7 +68,11 @@ export function createCreatorGenerationService(actor: GenerationActor, options: 
     paidGenerationEnabled: () => options.enabled,
     trialGenerationEnabled: () => false,
     resolveGenerationReferences: (request, _actor, { executor }) => resolveReferences(request, executor),
-    lockOwnedQuote: quotes.lockOwnedQuote,
+    lockOwnedQuote: async (input, dependencies) => {
+      const locked = await quotes.lockOwnedQuote(input, dependencies);
+      if (locked) await options.onQuoteLocked?.(locked.quote, dependencies.executor);
+      return locked;
+    },
     markQuoteExpired: quotes.markQuoteExpired,
     claimPreparedQuote: quotes.claimPreparedQuote,
     markQuoteAccepted: quotes.markQuoteAccepted,

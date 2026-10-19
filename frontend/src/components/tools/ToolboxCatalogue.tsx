@@ -1,11 +1,14 @@
 'use client';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useId, useState } from 'react';
 import { TOOLBOX, type ToolMediaKind } from '@/lib/toolbox/catalogue';
 import { isQuickToolArtId, QUICK_TOOL_ART, WORKSHOP_ART } from './toolbox-art';
 import { toolboxCopy, type ToolboxVisualId } from './toolbox-copy';
 import styles from './tools-catalogue.module.css';
+import { getReleasedCreatorToolIds } from '@/lib/toolbox/creator-availability';
+const CreatorCatalogueSection = dynamic(() => import('./CreatorCatalogueSection.client'));
 
 /** Capability projection shared with embedded tool choosers. */
 export function ToolboxCatalogue({ locale, mediaKind, onSelect }: { locale: string; mediaKind?: ToolMediaKind; onSelect?: (id: string, kind?: ToolMediaKind) => void }) {
@@ -50,5 +53,6 @@ export function ToolboxCatalogue({ locale, mediaKind, onSelect }: { locale: stri
         </Link></li>;
       })}</ul>
     </section> : null}
+    {getReleasedCreatorToolIds().length > 0 ? <CreatorCatalogueSection locale={locale} filter={filter} onSelect={onSelect} /> : null}
   </div>;
 }

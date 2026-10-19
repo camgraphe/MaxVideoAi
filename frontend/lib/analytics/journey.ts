@@ -81,6 +81,7 @@ const ANALYTICS_ROUTE_FAMILIES = new Set([
 ]);
 const ANALYTICS_LOCALES = new Set(['en', 'fr', 'es']);
 const ANALYTICS_TOOL_NAMES = new Set([
+  'subtitles', 'lip_sync', 'product_photo_editor', 'product_video_editor', 'motion_transfer',
   'tools_hub', 'angle', 'background_removal', 'character_builder', 'storyboard', 'upscale', 'audio',
   'studio',
 ]);
@@ -621,6 +622,7 @@ const CTA_NAMES = new Set([
   ...ENGINE_IDS,
 ]);
 const CTA_LOCATIONS = new Set([
+  'creator_tool_hero', 'creator_tool_final', 'creator_tools_hub',
   'studio_hero', 'studio_closing', 'integration_hero', 'mcp_hero',
   'examples_hero', 'examples_gallery', 'watch_hero', 'watch_sidebar',
   'pricing_hero',

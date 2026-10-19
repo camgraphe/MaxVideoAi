@@ -132,8 +132,11 @@ import {registerStudioTimelineTools} from '@/server/mcp/tools/studio-timeline';
 import {createAgentStudioExportService,type PrepareAgentStudioExportInput,type ConfirmAgentStudioExportInput,type GetAgentStudioExportInput,type AgentStudioExportConfirmation,type AgentStudioExportObservation} from '@/server/agent-api/studio-export';
 import type {StudioPreparedExport} from '@/lib/studio/conversation-export-contract';
 import {registerStudioExportTools} from '@/server/mcp/tools/studio-export';
+import { createAgentCreatorToolsService, type CreatorMcpServices } from '@/server/agent-api/creator-tools';
+import { registerCreatorTools } from '@/server/mcp/tools/creator-tools';
 
 export type MaxVideoAiMcpServices = {
+  creatorTools?: CreatorMcpServices;
   compareGenerationPrices?(input:GenerationPriceComparisonInput,principal:AgentPrincipal):Promise<GenerationPriceComparison>;
   getAccountStatus(principal: AgentPrincipal): Promise<AgentAccountStatus>;
   listModels(filter: AgentModelFilter, principal: AgentPrincipal): Promise<AgentModel[]>;
@@ -207,6 +210,7 @@ export type MaxVideoAiMcpServices = {
 };
 
 export type MaxVideoAiMcpServerOptions = {
+  creatorTools?: boolean;
   paidGeneration?: boolean;
   referenceUploads?: boolean;
   montagePreparation?: boolean;
@@ -235,6 +239,8 @@ export function createDefaultMaxVideoAiMcpServices(
   const studioTimeline = createAgentStudioTimelineService({featureEnabled: true});
   const studioExports = createAgentStudioExportService({enabled:true,requestOrigin:new URL(config.accountUrl).origin});
   return {
+    creatorTools: createAgentCreatorToolsService({ enabled: capabilities.paidGeneration && capabilities.referenceUploads
+      && runtimeEnv.CREATOR_TOOLS_ENABLED === '1' && runtimeEnv.MCP_CREATOR_TOOLS_ENABLED === '1' }),
     getAccountStatus: createAgentAccountStatusService(config.accountUrl, accountStatusDeps),
     listModels: (filter, principal) => listAgentModels(filter, catalogDepsFor(principal)),
     getModelDetails: (engineId, principal) => getAgentModelDetails(
@@ -348,6 +354,7 @@ export function createMaxVideoAiMcpServer(
   const studioMontageCreation = options.studioMontageCreation ?? mcpPublication.studioMontageCreation;
   const studioTimelineEditing = options.studioTimelineEditing ?? mcpPublication.studioMontageCreation;
   const studioExports = options.studioExports ?? mcpPublication.studioMontageCreation;
+  const creatorTools = paidGeneration && referenceUploads && options.creatorTools === true;
   const server = new McpServer(
     {
       name: 'maxvideoai',
@@ -363,6 +370,7 @@ export function createMaxVideoAiMcpServer(
         studioMontageCreation,
         studioTimelineEditing,
         studioExports,
+        creatorTools,
       }),
       capabilities: { tools: {} },
     }
@@ -388,6 +396,10 @@ export function createMaxVideoAiMcpServer(
   }
   if (studioTimelineEditing) registerStudioTimelineTools(server,principal,services);
   if (studioExports) registerStudioExportTools(server,principal,services);
+  if (creatorTools) {
+    if (!services.creatorTools) throw new Error('Creator tool services are required when their gate is enabled.');
+    registerCreatorTools(server, principal, services.creatorTools, { studioTimelineEditing });
+  }
   if (audioGeneration) {
     registerListAudioCapabilitiesTool(server, principal, services);
     registerPrepareAudioGenerationTool(server, principal, services);

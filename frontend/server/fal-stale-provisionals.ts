@@ -121,6 +121,9 @@ async function settleStaleFalProvisional(jobId: string): Promise<boolean> {
           AND provider_job_id IS NULL
           AND COALESCE(provider, 'fal') = 'fal'
           AND engine_id IS DISTINCT FROM 'toolbox-finishing'
+          AND engine_id IS DISTINCT FROM 'toolbox-subtitles'
+          AND engine_id IS DISTINCT FROM 'toolbox-lip-sync'
+          AND engine_id IS DISTINCT FROM 'toolbox-motion-control'
           AND status = 'pending'
           AND NOT (COALESCE(settings_snapshot, '{}'::jsonb) ? 'requestFingerprint')
           AND created_at < NOW() - INTERVAL '5 minutes'
@@ -176,6 +179,9 @@ export async function reconcileStaleFalProvisionals(
         AND NOT (COALESCE(settings_snapshot, '{}'::jsonb) ? 'requestFingerprint')
         AND COALESCE(provider, 'fal') = 'fal'
         AND engine_id IS DISTINCT FROM 'toolbox-finishing'
+          AND engine_id IS DISTINCT FROM 'toolbox-subtitles'
+          AND engine_id IS DISTINCT FROM 'toolbox-lip-sync'
+          AND engine_id IS DISTINCT FROM 'toolbox-motion-control'
         AND status = 'pending'
         AND created_at < NOW() - INTERVAL '5 minutes'
       ORDER BY created_at ASC

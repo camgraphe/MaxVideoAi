@@ -117,6 +117,9 @@ function protocolMethod(body: unknown): string | null {
 }
 
 const AUDITABLE_TOOL_NAMES = new Set([
+  'list_creator_tools', 'prepare_creator_tool', 'confirm_creator_tool', 'get_creator_tool_operation',
+  'get_subtitle_document', 'edit_subtitle_document', 'prepare_subtitle_export', 'export_subtitle_text',
+  'prepare_studio_subtitles',
   'get_account_status',
   'list_models',
   'get_model_details',
@@ -343,7 +346,8 @@ export async function handleMcpHttpRequest(
       capabilities,
       injectedDeps?.accountStatusDeps,
     ),
-    { ...capabilities, studioMontageCreation },
+    { ...capabilities, studioMontageCreation,
+      creatorTools: process.env.CREATOR_TOOLS_ENABLED === '1' && process.env.MCP_CREATOR_TOOLS_ENABLED === '1' },
   );
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
