@@ -39,7 +39,7 @@ export const enCopy: CreatorMarketingDictionary = {
     ],
     questions: [
       { question: 'Can I edit the subtitles after transcription?', answer: 'Yes. Change the words, timing and style without transcribing again. After rewriting a line, check that it still follows the voice.' },
-      { question: 'Which format should I choose?', answer: 'Use SRT or VTT to add subtitles in a player or video editor. A captioned MP4 includes the text in the video itself; this export has its own price, which you confirm after editing.' },
+      { question: 'Which format should I choose?', answer: 'Use SRT or VTT to add subtitles in a player or video editor. A captioned MP4 includes the text in the video itself; this export is included with your transcription, with no additional charge.' },
     ],
   },
   'lip-sync': {

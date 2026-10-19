@@ -8,9 +8,15 @@ import { LIVE_PRICING_POLICY_REVISION, PRICING_POLICY_HEADER } from '@/lib/membe
 
 export const webPricingPolicyHeaders = () => ({ 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION });
 export type CreatorQuote = { price: { amountCents: number; currency: string }; expiresAt: string; topupRequired?: boolean;breakdown?: {transcription:{amountCents:number;currency:string};mixPreparation:{amountCents:number;currency:string}} };
-type Prepared = { sourceSummary?: {kind:'sequence';name:string;revision:number};operationId: string; quote: CreatorQuote; operation?: { profile?: { disclosure?: string } }; exportEstimate?: { amountCents: number; currency: string } | null };
+type Prepared = { sourceSummary?: {kind:'sequence';name:string;revision:number};operationId: string; quote: CreatorQuote; operation?: { profile?: { disclosure?: string } }; exportEstimate?: { amountCents: number; currency: string; included?: boolean } | null };
 type CreatorReadContext = {input?:CreatorOperationInput;sourceMedia?:Array<{role:CreatorSourceInput['role'];ref:CreatorSourceInput['source'];segment?:CreatorSourceInput['segment'];readUrl:string|null;thumbnailReadUrl?:string|null;name?:string;durationSec?:number}>};
 type OperationReply<Result> = { ok: boolean; operationId: string; status?: string; state?: string; result?: Result | null; error?: { code?: string } | string; retryAfterSeconds?: number; needsAttention?: boolean; retryable?: boolean } & Partial<Prepared> & CreatorReadContext;
+// Stored finalization errors predate structured error codes. Only recognize our exact duration failure;
+// never expose arbitrary provider/server error text as interface copy.
+function creatorFailureCode(error: OperationReply<unknown>['error']): string {
+  const durationError = 'Output duration differs from the selected segment. No audio was cut or looped.';
+  return error === durationError || error === `${durationError} The charge was refunded.` ? 'OUTPUT_DURATION_MISMATCH' : 'OPERATION_FAILED';
+}
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function readPrepared(value: Partial<Prepared>): Prepared | null {
   const quote = value.quote;
@@ -82,7 +88,7 @@ export function useCreatorOperation<Result = unknown>({ userId, toolId, family, 
         if (state !== 'prepared' && state !== 'failed' && submittedHere.current.has(pending!)) report('tool_start',pending!);
         if (state === 'completed' && (submittedHere.current.has(pending!) || observedWork.current.has(pending!))) report('tool_complete',pending!,Boolean(data.result));
         if (state === 'completed' || state === 'failed') {
-          setReadRevision(value => value + 1); setResult(state === 'completed' ? data.result ?? null : null); setError(state === 'failed' ? 'OPERATION_FAILED' : null);
+          setReadRevision(value => value + 1); setResult(state === 'completed' ? data.result ?? null : null); setError(state === 'failed' ? creatorFailureCode(data.error) : null);
           setRunning(false); setPending(null); setNeedsConfirmation(false); updatePrepared(null); paid.current = false;
           if (state === 'failed') try { sessionStorage.removeItem(storageKey); } catch { /* Optional storage. */ }
           return;

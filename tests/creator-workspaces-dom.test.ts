@@ -44,12 +44,12 @@ test('Lip Sync prepares distinct Photo and audio refs; uploads and account chang
   } finally {await f.close();}
 });
 test('Video Lip Sync clearly stays closed and Motion handoff assigns the performance input',async()=>{
-  const f=await mount('lip-sync');try {await click(f,'Video');assert.match(f.w.document.body.textContent,/Video Lip Sync is not available at the moment/);assert.equal(buttons(f.w,'See price')[0].disabled,true);}finally{await f.close();}
+  const f=await mountToolFixture("import Workspace from './src/components/tools/creator/CreatorWorkspace.client';function App(){return <Workspace toolId=\"lip-sync\" lipVideoEnabled={false}/>}",stubs,w=>{w.auth={user:{id:'A'},loading:false};w.pickers={};});try {await click(f,'Video');assert.match(f.w.document.body.textContent,/Video Lip Sync is not available at the moment/);assert.equal(buttons(f.w,'See price')[0].disabled,true);}finally{await f.close();}
   const m=await mount('motion-transfer');try {await m.act(async()=>m.w.handoff.onSelect({id:`ma_${'2'.repeat(32)}`,kind:'video',url:'https://private.invalid/performance.mp4'}));assert.equal(m.w.pickers.video.source.url,'https://private.invalid/performance.mp4');assert.equal(m.w.pickers.image.source,null);}finally{await m.close();}
 });
 test('subtitle drafts invalidate export quotes, reject invalid timings and preserve text on revision conflict',async()=>{
   const f=await mount();try {
-    await openDocument(f);await click(f,'See MP4 export price');
+    await openDocument(f);await click(f,'Prepare MP4 export');
     assert.deepEqual(JSON.parse(f.w.requests.at(-1).init.body),{documentId:'captions-1',revision:1});
     await f.respond(f.w.requests.at(-1),{ok:true,operationId:'22345678-1234-4234-8234-123456789abc',quote:price,state:'prepared'});
     await edit(f,'Caption 1','Edited line');assert.equal(buttons(f.w,'Confirm price and create').length,0);assert.equal(buttons(f.w,'Download SRT')[0].disabled,true);
@@ -93,7 +93,7 @@ test('an unavailable signed read URL never falls back to a private canonical res
 test('a disabled execution gate keeps document edits available and export preparation disabled',async()=>{
   const f=await mountToolFixture("import Workspace from './src/components/tools/creator/SubtitleWorkspace.client';function App(){return <Workspace executionEnabled={false} initialDocument={{id:'captions-1',revision:1}}/>}",stubs,w=>{w.auth={user:{id:'A'},loading:false};w.pickers={};});
   try{
-    await f.respond(f.w.requests[0],{ok:true,document});assert.equal(buttons(f.w,'See MP4 export price')[0].disabled,true);
+    await f.respond(f.w.requests[0],{ok:true,document});assert.equal(buttons(f.w,'Prepare MP4 export')[0].disabled,true);
     await edit(f,'Caption 1','Read and edit remains available');assert.equal(buttons(f.w,'Save changes')[0].disabled,false);
     assert.equal(f.w.requests.length,1);
   }finally{await f.close();}
@@ -139,7 +139,7 @@ test('video lip-sync clears the photo instruction before preparing its prompt-fr
     const instruction=f.w.document.querySelector('textarea');await f.act(async()=>{Object.getOwnPropertyDescriptor(f.w.HTMLTextAreaElement.prototype,'value')!.set!.call(instruction,'Smile and move the camera');instruction.dispatchEvent(new f.w.Event('input',{bubbles:true}));});
     await click(f,'Video');assert.equal(f.w.document.querySelector('textarea'),null);
     await f.act(async()=>{f.w.pickers.video.onChange(source('video'));f.w.pickers.audio.onChange(source('audio'));});await click(f,'See price');
-    const input=JSON.parse(f.w.requests.at(-1).init.body);assert.equal(input.profileId,'lip-video-latentsync-v1');assert.equal(input.settings.instruction,'');
+    const input=JSON.parse(f.w.requests.at(-1).init.body);assert.equal(input.profileId,'lip-video-wan-v1');assert.equal(input.settings.instruction,'');
   }finally{await f.close();}
 });
 
@@ -213,5 +213,55 @@ test('completion selects the new result after the original was selected and offe
     assert.equal(buttons(f.w,'Result')[0].getAttribute('aria-pressed'),'true');assert.equal(f.w.document.querySelector('video').src,'https://private.invalid/completed.mp4');
     assert.match(f.w.document.body.textContent,/Your result is saved in Media/);assert.equal(f.w.document.querySelector('a[href="/app/library"]').textContent,'Open Media');
     assert.equal(buttons(f.w,'Start a new creation').length,1);
+  }finally{await f.close();}
+});
+
+test('Lip Sync blocks an overlong recording until an explicit passage is chosen and invalidates its quote on timing edits',async()=>{
+  const f=await mount('lip-sync');try{
+    await f.act(async()=>{f.w.pickers.image.onChange(source('image'));f.w.pickers.audio.onChange({...source('audio'),durationSec:24.75});});
+    assert.equal(buttons(f.w,'See price')[0].disabled,true);
+    assert.match(f.w.document.body.textContent,/24.75 seconds/);
+    assert.equal(f.w.requests.length,0);
+    await click(f,'Select 15 seconds of audio');
+    await click(f,'See price');
+    assert.deepEqual(JSON.parse(f.w.requests.at(-1).init.body).inputs.find((item:any)=>item.role==='audio').segment,{startSec:0,endSec:15});
+    await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,quote:price});
+    await edit(f,'End (seconds) — Voice recording','25','input');
+    assert.equal(buttons(f.w,'Confirm price and create').length,0);
+    assert.equal(buttons(f.w,'See price')[0].disabled,true);
+    assert.match(f.w.document.body.textContent,/past the end/);
+    await edit(f,'End (seconds) — Voice recording','10.34449','input');
+    await click(f,'See price');
+    assert.equal(JSON.parse(f.w.requests.at(-1).init.body).inputs.find((item:any)=>item.role==='audio').segment.endSec,10.34449);
+    assert.match(f.w.document.body.textContent,/Wan 3 generation: 11 seconds/);assert.match(f.w.document.body.textContent,/Target final duration: 10.34449 seconds/);
+  }finally{await f.close();}
+});
+
+test('Video Lip Sync only matches passages on request, preserves starts, and rejects known duration mismatches before pricing',async()=>{
+  const f=await mountToolFixture("import Workspace from './src/components/tools/creator/CreatorWorkspace.client';function App(){return <Workspace toolId=\"lip-sync\" lipVideoEnabled={true}/>}",stubs,w=>{w.auth={user:{id:'A'},loading:false};w.pickers={};});
+  try{
+    await click(f,'Video');
+    await f.act(async()=>{f.w.pickers.video.onChange({...source('video'),durationSec:12});f.w.pickers.audio.onChange({...source('audio'),durationSec:10.34449});});
+    assert.equal(buttons(f.w,'See price')[0].disabled,true);
+    assert.match(f.w.document.body.textContent,/same duration/);
+    await f.act(async()=>f.w.document.querySelector('input[type=checkbox]').click());
+    await edit(f,'Start (seconds) — Your file','2','input');
+    await click(f,'Select 10 seconds for both');
+    assert.equal(f.w.requests.length,0);
+    await click(f,'See price');
+    const input=JSON.parse(f.w.requests.at(-1).init.body);
+    assert.deepEqual(input.inputs.find((item:any)=>item.role==='source').segment,{startSec:2,endSec:12});
+    assert.deepEqual(input.inputs.find((item:any)=>item.role==='audio').segment,{startSec:0,endSec:10});
+  }finally{await f.close();}
+});
+
+test('Lip Sync shows the duration failure instead of a generic outage after a rejected provider result',async()=>{
+  const f=await mount('lip-sync');try{
+    await f.act(async()=>{f.w.pickers.image.onChange(source('image'));f.w.pickers.audio.onChange({...source('audio'),durationSec:10.34449});});
+    await click(f,'See price');await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,quote:price});await click(f,'Confirm price and create');
+    await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,status:'running'});
+    await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,status:'failed',error:'Output duration differs from the selected segment. No audio was cut or looped. The charge was refunded.'});
+    assert.match(f.w.document.querySelector('[role=alert]').textContent,/generated video.*duration.*selected passage/);
+    assert.equal(buttons(f.w,'Download').length,0);
   }finally{await f.close();}
 });

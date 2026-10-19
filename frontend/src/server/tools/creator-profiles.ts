@@ -10,12 +10,14 @@ export type CreatorResolvedSource = { input: CreatorSourceInput; asset: Extract<
 export type CreatorProfile = CreatorProfileDescriptor;
 export const isCreatorLipVideoEnabled=()=>process.env.CREATOR_LIP_VIDEO_ENABLED==='1';
 export const isCreatorMotionControlEnabled=()=>process.env.CREATOR_MOTION_CONTROL_ENABLED==='1';
-export type PreparedCreatorProfile = { input: CreatorOperationInput; profile: CreatorProfile; sources: CreatorResolvedSource[]; request: CanonicalGenerationRequest; expectedDurationSec: number | null; audioPolicy: 'preserve' | 'mute'; audioSourceRole: 'source' | 'audio' | 'motion' | null };
+export type CreatorOutputTiming = { kind: 'trim-generated-tail'; generatedDurationSec: number };
+export type PreparedCreatorProfile = { outputTiming?: CreatorOutputTiming; input: CreatorOperationInput; profile: CreatorProfile; sources: CreatorResolvedSource[]; request: CanonicalGenerationRequest; expectedDurationSec: number | null; audioPolicy: 'preserve' | 'mute'; audioSourceRole: 'source' | 'audio' | 'motion' | null };
 
 export const CREATOR_PROFILES: readonly CreatorProfile[] = [
   { toolId:'product-photo-editor',constraints:{sourceKinds:['image'],audioPolicies:[],resolution:'selectable',pixelPreservation:false},id: 'product-photo-gpt-v1', revision: 1, qualification: 'canonical', disclosure: 'Generative image editing. Appearance preservation is instructed; unchanged pixels are not guaranteed.' },
   { toolId:'product-photo-editor',constraints:{sourceKinds:['image'],audioPolicies:[],resolution:'selectable',pixelPreservation:false},id: 'product-photo-nano-v1', revision: 1, qualification: 'canonical', disclosure: 'Generative image editing. Appearance preservation is instructed; unchanged pixels are not guaranteed.' },
-  { toolId:'lip-sync',constraints:{sourceKinds:['image','audio'],duration:{min:2,max:20,wholeSeconds:false},audioPolicies:['preserve'],resolution:'provider',maxSourceBytes:104857600},id: 'lip-photo-ltx-v1', revision: 1, qualification: 'canonical', disclosure: 'LTX audio-driven portrait animation. Mouth accuracy has not been benchmarked. Selected audio is preserved; export may encode it as AAC.' },
+  { toolId:'lip-sync',constraints:{sourceKinds:['image','audio'],duration:{min:2,max:15,wholeSeconds:false},audioPolicies:['preserve'],resolution:'selectable',maxSourceBytes:104857600},id: 'lip-photo-wan-v1', revision: 1, qualification: 'canonical', disclosure: 'Wan 3 uses your portrait and selected voice recording. Generation rounds up to a whole second; only the extra generated video tail is removed. The selected audio is preserved and may be encoded as AAC. Review mouth fidelity.' },
+  { toolId:'lip-sync',constraints:{sourceKinds:['video','audio'],duration:{min:2,max:15,wholeSeconds:false,matchingAudioVideo:true},audioPolicies:['preserve'],resolution:'selectable',acceptsInstruction:false,minVideoFps:16,maxSourceBytes:104857600},id: 'lip-video-wan-v1', revision: 1, qualification: 'canonical', disclosure: 'Wan 3 edits matching video and voice passages. Generation rounds up to a whole second; only the extra generated video tail is removed. The selected audio is preserved and may be encoded as AAC. Review mouth fidelity.' },
   { toolId:'lip-sync',constraints:{sourceKinds:['video','audio'],duration:{min:2,max:20,wholeSeconds:false,matchingAudioVideo:true},audioPolicies:['preserve'],resolution:'provider',acceptsInstruction:false,maxSourceBytes:104857600},id: 'lip-video-latentsync-v1', revision: 1, qualification: 'tool-specific', disclosure: 'LatentSync video lip synchronization uses matching explicit segments. Release requires qualification; mouth fidelity and account billing have not been benchmarked. Selected sound may be encoded as AAC.' },
   { toolId:'product-video-editor',constraints:{sourceKinds:['video'],duration:{min:2,max:15,wholeSeconds:true},audioPolicies:['preserve','mute'],resolution:'selectable',minVideoFps:16,maxSourceBytes:104857600},id: 'product-video-wan-v1', revision: 1, qualification: 'canonical', disclosure: 'Wan video editing uses a continuous source segment. Visual fidelity has not been benchmarked. Preserved audio may be encoded as AAC.' },
   { toolId:'motion-transfer',constraints:{sourceKinds:['image','video'],duration:{min:2,max:15,wholeSeconds:true},audioPolicies:['preserve','mute'],resolution:'selectable',minVideoFps:16,maxSourceBytes:104857600},id: 'motion-wan-reference-v1', revision: 1, qualification: 'canonical', disclosure: 'Wan uses image and video reference guidance. This is not specialized motion control and exact movement transfer is not guaranteed. Preserved audio may be encoded as AAC.' },
@@ -42,6 +44,7 @@ export function prepareCreatorProfile(input: CreatorOperationInput, sources: Cre
   let profileId: string;
   let request: CanonicalGenerationRequest = { schemaVersion: 1, surface: 'video', engineId: '', mode: 'v2v', prompt: '', settings: {}, references: [], outputCount: 1 };
   let expectedDurationSec: number | null = null;
+  let outputTiming: CreatorOutputTiming | undefined;
   let audioPolicy: 'preserve' | 'mute' = 'mute';
   let audioSourceRole: PreparedCreatorProfile['audioSourceRole'] = null;
   if (input.toolId === 'product-photo-editor') {
@@ -52,19 +55,39 @@ export function prepareCreatorProfile(input: CreatorOperationInput, sources: Cre
     request = { ...request, surface: 'image', engineId: input.settings.model, mode: 'i2i', prompt: `Create a product ${input.settings.action} photograph. Preserve the product's shape, branding, text, materials and colors. ${input.settings.instruction}`, settings: input.settings.model === 'nano-banana-2' ? { aspectRatio: input.settings.aspectRatio, resolution: '1k' } : { aspectRatio: input.settings.aspectRatio, quality: 'medium', resolution, outputFormat: 'png' }, references: [ref('source', 'source'), ...(sources.some(entry => entry.input.role === 'style') ? [ref('style', 'reference')] : [])] };
   } else if (input.toolId === 'lip-sync') {
     const audio = source('audio');
-    expectedDurationSec = duration(audio, 2, 20);
+    const specialist = input.profileId === 'lip-video-latentsync-v1';
+    expectedDurationSec = duration(audio, 2, specialist ? 20 : 15);
     if (!audio.facts.hasAudio) throw new CreatorProfileError('The selected audio has no audio stream.');
     if (input.settings.mode === 'video') {
       if(input.settings.instruction)throw new CreatorProfileError('Video Lip Sync does not accept a text instruction. The selected audio controls speech.');
-      const videoDuration=duration(source('source'),2,20);
-      if (Math.abs(videoDuration - expectedDurationSec) > 0.001 || expectedDurationSec>videoDuration) throw new CreatorProfileError('Video and audio must have the same duration. Select explicit matching segments.');
+      const visual=source('source'), videoDuration=duration(visual,2,specialist ? 20 : 15);
+      // A requested fractional passage can end between video frames. Only that explicit passage may
+      // retain one frame beyond the audio; unselected full-source mismatches remain invalid.
+      const selectedVideo=visual.input.segment ? visual.input.segment.endSec-visual.input.segment.startSec : null;
+      const selectedAudio=audio.input.segment ? audio.input.segment.endSec-audio.input.segment.startSec : expectedDurationSec;
+      const explicitFrameEnd=!specialist && selectedVideo != null && Math.abs(selectedVideo-selectedAudio)<=0.001
+        && Math.abs(selectedVideo-expectedDurationSec)<=0.001 && visual.facts.fps != null && visual.facts.fps>=16
+        && videoDuration>=expectedDurationSec && videoDuration-expectedDurationSec<=1/visual.facts.fps;
+      if (!explicitFrameEnd && (Math.abs(videoDuration - expectedDurationSec) > 0.001 || expectedDurationSec>videoDuration)) throw new CreatorProfileError('Video and audio must have the same duration. Select explicit matching segments.');
+    }
+    if (specialist) {
+      if(input.settings.mode!=='video')throw new CreatorProfileError('The selected profile does not match these tool settings.');
       if(!isCreatorLipVideoEnabled())throw new AgentApiError('ENGINE_UNAVAILABLE',CREATOR_PROFILES.find(entry => entry.id === 'lip-video-latentsync-v1')!.disclosure);
       profileId='lip-video-latentsync-v1';
       request={...request,engineId:'toolbox-lip-sync',mode:'v2v',prompt:'Synchronize the selected video to the selected audio without changing its timing.',settings:{durationSec:Math.ceil(expectedDurationSec)},references:[ref('source','source'),ref('audio','reference')]};
     } else {
-      profileId = 'lip-photo-ltx-v1';
-      // The canonical envelope requires ceil(audio duration); LTX a2v billing/provider use the exact measured audio.
-      request = { ...request, engineId: 'ltx-2-5-fast', mode: 'a2v', prompt: `Animate this portrait speaking naturally to the supplied audio. Preserve identity and framing. ${input.settings.instruction}`, settings: { durationSec: Math.ceil(expectedDurationSec), resolution: '1080p', aspectRatio: 'auto' }, references: [ref('audio', 'source'), ref('source', 'first_frame')] };
+      if(audio.facts.sizeBytes>15*1024*1024||!['audio/mpeg','audio/mp3','audio/wav','audio/x-wav','audio/wave','audio/vnd.wave'].includes(audio.facts.mimeType)) throw new CreatorProfileError('Wan Lip Sync requires MP3 or WAV audio up to 15 MB.');
+      const video = input.settings.mode === 'video';
+      const visual = source('source');
+      const generatedDurationSec = Math.ceil(expectedDurationSec);
+      if(video && (!visual.facts.fps || visual.facts.fps<16 || visual.facts.durationSec!+generatedDurationSec>30)) throw new CreatorProfileError('Wan Lip Sync needs video of at least 16 fps and a combined source/output duration of at most 30 seconds.');
+      const ratio = (visual.facts.width ?? 1) / (visual.facts.height ?? 1);
+      const aspectRatio = (['16:9','4:3','1:1','3:4','9:16'] as const).reduce((best,candidate)=>{const [w,h]=candidate.split(':').map(Number);const [bw,bh]=best.split(':').map(Number);return Math.abs(ratio-w/h)<Math.abs(ratio-bw/bh)?candidate:best;},'1:1');
+      profileId = video ? 'lip-video-wan-v1' : 'lip-photo-wan-v1';
+      outputTiming = {kind:'trim-generated-tail',generatedDurationSec};
+      request = { ...request, engineId:'wan-3', mode:video ? 'v2v' : 'ref2v',
+        prompt:`${video ? 'Synchronize the person in the source video' : 'Animate the person in image reference 1'} speaking the exact words in audio reference 1. Preserve identity, framing and natural facial movement. Follow the voice throughout its full duration. ${input.settings.instruction}`,
+        settings:{durationSec:generatedDurationSec,resolution:input.settings.resolution,aspectRatio,audio:true},references:[ref('source',video ? 'source' : 'reference'),ref('audio','reference')] };
     }
     audioPolicy = 'preserve'; audioSourceRole = 'audio';
   } else {
@@ -91,5 +114,5 @@ export function prepareCreatorProfile(input: CreatorOperationInput, sources: Cre
     const audio=source(audioSourceRole).facts;
     if(audio.audioDurationSec==null||Math.abs(audio.audioDurationSec-expectedDurationSec!)>0.04||audio.audioStartSec==null||Math.abs(audio.audioStartSec)>0.025) throw new CreatorProfileError('The selected audio must cover the complete segment from its start. Choose matching explicit segments.');
   }
-  return { input:{...input,profileId:profile.id}, profile, sources, request:normalizeGenerationRequest(request), expectedDurationSec, audioPolicy, audioSourceRole };
+  return { input:{...input,profileId:profile.id}, profile, sources, request:normalizeGenerationRequest(request), expectedDurationSec, audioPolicy, audioSourceRole, ...(outputTiming ? {outputTiming} : {}) };
 }

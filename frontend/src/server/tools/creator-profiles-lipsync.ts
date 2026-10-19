@@ -1,5 +1,5 @@
-import { projectCanonicalQuoteToSnapshot, quoteCanonicalPricing, type PricingSnapshot } from '@maxvideoai/pricing';
-import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
+import type { PricingSnapshot } from '@maxvideoai/pricing';
+import { quoteCreatorProviderBillingSnapshot } from '@/server/pricing/quote-creator';
 import { resolveServerBillingPolicy, type ResolveServerPricingPolicyDependencies } from '@/server/pricing/resolve-pricing-policy';
 import { AgentApiError } from '@/server/agent-api/errors';
 import type { PreparedCreatorProfile } from './creator-profiles';
@@ -17,8 +17,5 @@ export async function quoteCreatorLipSync(durationSec:number,dependencies:{prici
   const engineId='toolbox-lip-sync';
   const {policy,vendorAccountId}=await resolveServerBillingPolicy({engineId,mode:'latentsync',resolution:'source'},undefined,dependencies.pricingPolicy);
   if(policy.rule.engineId!==engineId||policy.rule.currency!=='USD')throw new AgentApiError('ENGINE_UNAVAILABLE','Lip Sync pricing is not configured.');
-  const compatibilityProfile=getVersionedPricingPolicy().compatibilityProfiles.find(profile=>profile.id==='standard');
-  if(!compatibilityProfile)throw new Error('Missing standard pricing policy.');
-  const quote=quoteCanonicalPricing({facts:{engineId,currency:'USD',vendorSubtotalExactCents:20,unit:'video',quantity:1},scenario:{id:'billing:toolbox-lip-sync:latentsync',engineId,mode:'latentsync',membershipTier:'member',discountPercent:0},policy,compatibilityProfile});
-  return projectCanonicalQuoteToSnapshot({quote,base:{seconds:durationSec,rate:0.2,unit:'video',amountCents:20},addons:[],vendorAccountId,meta:{surface:'tool',toolId:'lip-sync',profileId:'lip-video-latentsync-v1',providerCostKind:'list-reference',providerCostListUsd:0.2,providerCostSource:'https://fal.ai/models/fal-ai/latentsync',providerCostCheckedAt:'2026-10-19',ruleId:policy.sourceRuleId}});
+  return quoteCreatorProviderBillingSnapshot({toolId:'lip-sync',facts:{engineId,currency:'USD',vendorSubtotalExactCents:20,unit:'video',quantity:1},base:{seconds:durationSec,rate:0.2,unit:'video',amountCents:20},addons:[],vendorAccountId,meta:{surface:'tool',toolId:'lip-sync',profileId:'lip-video-latentsync-v1',providerCostKind:'list-reference',providerCostListUsd:0.2,providerCostSource:'https://fal.ai/models/fal-ai/latentsync',providerCostCheckedAt:'2026-10-19',ruleId:policy.sourceRuleId}});
 }

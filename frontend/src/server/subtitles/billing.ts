@@ -7,11 +7,14 @@ import {createQuoteRepository} from '../agent-api/quote-repository';
 import type {GenerationActor} from '../agent-api/generation-actor';
 import {timelineExportManifestHash} from '../timeline-exports/estimate-token';
 import type {SubtitleOperationRecord,SubtitlePricing} from './jobs';
+import {isIncludedSubtitleExport} from './pricing';
 const requestSchema=z.object({schemaVersion:z.literal(1),surface:z.literal('audio'),toolId:z.literal('subtitles'),operationId:z.string().uuid()}).strict();
 const codec={surfaces:['audio'] as const,normalize:(value:unknown)=>requestSchema.parse(value),hash:timelineExportManifestHash,parseFunding:()=>null};
 function repository(actor:GenerationActor){return createQuoteRepository(codec,actor.authMethod==='studio-session'?{origin:actor.authMethod,projectId:actor.projectId}:{origin:actor.authMethod});}
 export async function assertSubtitlePurchaseAllowed(actor:GenerationActor,pricing:SubtitlePricing,executor:TransactionQueryExecutor,confirm:boolean){
   if(await getActiveAccountRestrictionInExecutor(actor.userId,executor))throw new AgentApiError('ACCOUNT_RESTRICTED','This account cannot purchase generation.');
+  // Included document rendering remains authorized, but is not a new purchase.
+  if(isIncludedSubtitleExport(pricing))return;
   const decision=await (confirm?checkMcpConfirmationSpendingLimits:checkMcpSpendingLimits)({userId:actor.userId,priceCents:pricing.totalCents,currency:pricing.currency},{executor});
   if(!decision.allowed)throw new AgentApiError('SPENDING_LIMIT_EXCEEDED','This operation exceeds your account spending controls.');
 }

@@ -31,7 +31,27 @@ test('real local FFmpeg trims one selected segment and maps chosen audio without
 test('finalization cannot silently truncate, loop or time-stretch source sound', () => {
   assert.doesNotThrow(()=>validateCreatorOutputTiming(7.4,7.41,30));
   assert.throws(()=>validateCreatorOutputTiming(7.4,8,30),/duration/);
+  assert.throws(()=>validateCreatorOutputTiming(10.34449,10.041667,24),/duration/);
+  assert.doesNotThrow(()=>validateCreatorOutputTiming(10.34449,10.333333,24));
   const args=buildCreatorMuxArgs('v.mp4','a.wav','out.mp4');
   assert.ok(args.includes('1:a:0'));
   for (const forbidden of ['-shortest','-t','-stream_loop','atempo','apad']) assert.ok(!args.includes(forbidden));
+});
+
+test('real Wan fractional finalization trims generated video only and retains the complete selected voice',async()=>{
+  const { trimCreatorGeneratedVideoTail } = await import('../frontend/src/server/tools/creator-segment-media');
+  const directory=await mkdtemp(join(tmpdir(),'creator-wan-timing-'));
+  try {
+    const video=join(directory,'generated.mp4'),audio=join(directory,'voice.wav');
+    const binary=await ensureExecutableFfmpegPath(ffmpeg.path);
+    await promisify(execFile)(binary,['-v','error','-f','lavfi','-i','color=c=blue:s=160x120:r=30:d=3','-f','lavfi','-i','sine=frequency=200:sample_rate=48000:duration=3','-c:v','libx264','-threads','1','-c:a','aac','-y',video],{timeout:15000});
+    await promisify(execFile)(binary,['-v','error','-f','lavfi','-i','sine=frequency=880:sample_rate=48000:duration=2.53','-c:a','pcm_s16le','-y',audio],{timeout:15000});
+    const originalAudio=await readFile(audio),videoBytes=await readFile(video),videoFacts=await inspectCreatorBytes(videoBytes,'video','video/mp4');
+    const trimmed=await trimCreatorGeneratedVideoTail(videoBytes,videoFacts,2.53);
+    assert.equal(trimmed.facts.hasAudio,false);assert.equal(trimmed.facts.durationSec,2.533333);
+    const final=await muxCreatorBytes(trimmed.bytes,originalAudio);
+    assert.equal(final.facts.hasAudio,true);validateCreatorOutputTiming(2.53,final.facts.audioDurationSec??null,final.facts.fps);
+    assert.deepEqual(await readFile(audio),originalAudio);
+    await assert.rejects(trimCreatorGeneratedVideoTail(videoBytes,videoFacts,3.01),/too short/);
+  }finally{await rm(directory,{recursive:true,force:true});}
 });

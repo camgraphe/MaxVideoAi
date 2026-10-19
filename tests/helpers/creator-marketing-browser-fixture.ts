@@ -21,11 +21,11 @@ export async function createCreatorMarketingFixture() {
   const css = await readFile(join(frontend,'src/components/tools/creator-marketing/creator-marketing.css'),'utf8');
   const ids = ['subtitles','lip-sync','product-photo-editor','product-video-editor','motion-transfer'];
   const server = createServer(async (req,res)=>{
-    if (/^\/assets\/tools\/subtitle-demo\/[a-z0-9.-]+\.(mp4|webp)$/.test(req.url ?? '')) {
+    if (/^\/assets\/tools\/(?:subtitle-demo|creator-results)\/[a-z0-9.-]+\.(mp4|webp|png|jpg|mp3|wav)$/.test(req.url ?? '')) {
       try {
         const bytes=await readFile(join(frontend,'public',req.url!)),range=/^bytes=(\d+)-(\d*)$/.exec(req.headers.range??'');
         const start=range?Number(range[1]):0,end=range&&range[2]?Math.min(Number(range[2]),bytes.length-1):bytes.length-1;
-        res.writeHead(range?206:200,{'content-type':req.url!.endsWith('.mp4')?'video/mp4':'image/webp','accept-ranges':'bytes','content-length':end-start+1,...range?{'content-range':`bytes ${start}-${end}/${bytes.length}`}:{}});res.end(bytes.subarray(start,end+1));
+        res.writeHead(range?206:200,{'content-type':({'mp4':'video/mp4','webp':'image/webp','png':'image/png','jpg':'image/jpeg','mp3':'audio/mpeg','wav':'audio/wav'}[req.url!.split('.').pop()!]??'application/octet-stream'),'accept-ranges':'bytes','content-length':end-start+1,...range?{'content-range':`bytes ${start}-${end}/${bytes.length}`}:{}});res.end(bytes.subarray(start,end+1));
       }catch{res.writeHead(404);res.end();}return;
     }
     if (/^\/assets\/tools\/creator-art\/[a-z-]+-(640|960|1536)\.webp$/.test(req.url ?? '')) {
@@ -40,7 +40,7 @@ export async function createCreatorMarketingFixture() {
     const {markup,labels}=runtime.render(id,locale,url.searchParams.get('released')==='1');
     const data=JSON.stringify({id,labels,locale}).replace(/</g,'\\u003c');
     res.writeHead(200,{'content-type':'text/html; charset=utf-8'});
-    res.end(`<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@font-face{font-family:Geist;src:url('/fixture-font.woff2') format('woff2');font-weight:100 900;font-display:swap}*{box-sizing:border-box}body{margin:0;font-family:Geist,system-ui,sans-serif;background:#faf9f6;color:#20261f}a{color:inherit;text-decoration:none}button,input{font:inherit}button{cursor:pointer}main{display:block}.fixture-banner{padding:12px 20px;background:#20261f;color:#fff;font:12px/1.5 Arial} ${css}</style></head><body><aside class="fixture-banner">Local design review · presentation artwork · no generation or payment</aside><main>${markup}</main><script>window.creatorFixture=${data};window.creatorErrors=[];</script><script defer src="/fixture.js"></script></body></html>`);
+    res.end(`<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="preload" href="/fixture-font.woff2" as="font" type="font/woff2" crossorigin><style>@font-face{font-family:Geist;src:url('/fixture-font.woff2') format('woff2');font-weight:100 900;font-display:swap}*{box-sizing:border-box}body{margin:0;font-family:Geist,system-ui,sans-serif;background:#faf9f6;color:#20261f}a{color:inherit;text-decoration:none}button,input{font:inherit}button{cursor:pointer}main{display:block}.fixture-banner{padding:12px 20px;background:#20261f;color:#fff;font:12px/1.5 Arial} ${css}</style></head><body><aside class="fixture-banner">Local design review · recorded results · no generation or payment</aside><main>${markup}</main><script>window.creatorFixture=${data};window.creatorErrors=[];</script><script defer src="/fixture.js"></script></body></html>`);
   });
   await new Promise<void>(done=>server.listen(0,'127.0.0.1',done));
   const address=server.address();if(!address||typeof address==='string')throw new Error('Fixture address unavailable');

@@ -28,7 +28,7 @@ export const prepareCreatorToolInputSchema = z.object({ request: z.discriminated
   z.object({ ...base, toolId: z.literal('product-video-editor'), settings: z.object({
     action: z.enum(['background', 'lighting', 'style']).optional(), instruction, resolution, audioPolicy,
   }).strict() }).strict(),
-  z.object({ ...base, toolId: z.literal('lip-sync'), settings: z.object({ mode: z.enum(['photo', 'video']), instruction }).strict() }).strict(),
+  z.object({ ...base, toolId: z.literal('lip-sync'), settings: z.object({ mode: z.enum(['photo', 'video']), instruction, resolution }).strict() }).strict(),
   z.object({ ...base, toolId: z.literal('motion-transfer'), settings: z.object({
     orientation: z.enum(['image', 'video']).optional(), instruction, resolution, audioPolicy,
   }).strict() }).strict(),

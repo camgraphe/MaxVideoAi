@@ -17,26 +17,30 @@ export function CreatorLandingView({ id, locale, publicReleased = isCreatorToolP
   const detail = getCreatorDetailCopy(locale), toolDetail = detail.tools[id];
   const canonicalUrl = `https://maxvideoai.com${localizePathFromEnglish(locale, `/tools/${id}`)}`;
   const related = getReleasedCreatorToolIds().filter(tool => tool !== id);
+  const hasIllustratedHero = id === 'subtitles' || id === 'lip-sync';
+  const videoHero = id === 'product-video-editor';
   const appHref = `/app/tools/${id}`;
   const cta = (location: string) => <a className="creator-primary" href={appHref} data-analytics-event="tool_cta_click" data-analytics-tool-name={id.replace(/-/g, '_')} data-analytics-tool-surface="public" data-analytics-cta-location={location}>{toolDetail.action}<ArrowRight aria-hidden="true" size={20}/></a>;
   return <div className="creator-tools-page" data-creator-tool={id}>
-    <section className="creator-hero">
+    <section className={`creator-hero${hasIllustratedHero ? '' : ' creator-hero--editorial'}`}>
       <div className="creator-hero-copy">
         <nav className="creator-breadcrumb" aria-label={labels.tools}><a href={localizePathFromEnglish(locale, '/tools')}>{labels.tools}</a><span aria-hidden="true">/</span><span>{content.name}</span></nav>
         <h1>{content.title}</h1>
         <p className="creator-intro">{content.intro}</p>
         <div className="creator-actions">{cta('creator_tool_hero')}<a className="creator-text-link" href="#workflow">{labels.how}<ArrowDown aria-hidden="true" size={17}/></a></div>
       </div>
-      <figure className="creator-hero-art"><CreatorArtwork id={id} alt={toolDetail.artAlt} priority sizes="(max-width: 760px) 100vw, (max-width: 1100px) 54vw, 58vw"/><figcaption>{labels.illustration}</figcaption></figure>
+      {hasIllustratedHero ? <figure className="creator-hero-art"><CreatorArtwork id={id} alt={toolDetail.artAlt} priority sizes="(max-width: 760px) 100vw, (max-width: 1100px) 54vw, 58vw"/><figcaption>{labels.illustration}</figcaption></figure> : null}
+      {videoHero ? <div className="creator-demo-container creator-video-hero"><CreatorWorkflowDemo id={id} labels={labels} locale={locale}/></div> : null}
     </section>
 
     <div className="creator-flow-summary">{[[labels.inputs, content.input], [labels.settings, content.adjustment], [labels.result, content.output]].map(([title, body]) => <div key={title}><h2>{title}</h2><p>{body}</p></div>)}</div>
 
     <section id="workflow" className="creator-workflow">
+      {id === 'product-photo-editor' ? <div className="creator-demo-container"><CreatorWorkflowDemo id={id} labels={labels} locale={locale}/></div> : null}
       <div className="creator-workflow-copy"><h2>{toolDetail.title}</h2><p className="creator-section-intro">{toolDetail.intro}</p>
         <ol>{content.steps.map((step, index) => <li key={step}><span aria-hidden="true">0{index + 1}</span><div><h3>{toolDetail.steps[index]}</h3><p>{step}</p></div></li>)}</ol>
       </div>
-      <div className="creator-demo-container"><CreatorWorkflowDemo id={id} labels={labels} locale={locale}/></div>
+      {!videoHero && id !== 'product-photo-editor' ? <div className="creator-demo-container"><CreatorWorkflowDemo id={id} labels={labels} locale={locale}/></div> : null}
     </section>
 
     <section className="creator-continuation"><div><h2>{detail.continuationTitle}</h2><p>{id === 'subtitles' ? detail.captionContinuation : detail.continuationBody}</p></div><ol aria-label={detail.continuationTitle}><li>{detail.media}</li><li><ArrowRight aria-hidden="true"/>{detail.studio}</li><li><ArrowRight aria-hidden="true"/>{detail.export}</li></ol></section>

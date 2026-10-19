@@ -1,5 +1,5 @@
-import { projectCanonicalQuoteToSnapshot, quoteCanonicalPricing, type PricingSnapshot } from '@maxvideoai/pricing';
-import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
+import type { PricingSnapshot } from '@maxvideoai/pricing';
+import { quoteCreatorProviderBillingSnapshot } from '@/server/pricing/quote-creator';
 import { resolveServerBillingPolicy, type ResolveServerPricingPolicyDependencies } from '@/server/pricing/resolve-pricing-policy';
 
 const ENGINE_ID = 'toolbox-subtitles';
@@ -20,15 +20,10 @@ export async function quoteSubtitleTranscription(
     { engineId: ENGINE_ID, mode, resolution: 'audio' }, undefined, dependencies.pricingPolicy,
   );
   if (policy.rule.engineId !== ENGINE_ID || policy.rule.currency !== 'USD') throw new Error('TOOL_PRICING_UNAVAILABLE');
-  const compatibilityProfile = getVersionedPricingPolicy().compatibilityProfiles.find(profile => profile.id === 'standard');
-  if (!compatibilityProfile) throw new Error('Missing standard pricing profile.');
-  const quote = quoteCanonicalPricing({
+  return quoteCreatorProviderBillingSnapshot({
+    toolId: 'subtitles',
     facts: { engineId: ENGINE_ID, currency: 'USD', vendorSubtotalExactCents: vendorUsd * 100, unit: 'audio', quantity: 1 },
-    scenario: { id: `billing:${ENGINE_ID}:${mode}`, engineId: ENGINE_ID, mode, membershipTier: 'member', discountPercent: 0 },
-    policy, compatibilityProfile,
-  });
-  return projectCanonicalQuoteToSnapshot({
-    quote, base: { seconds: input.durationSec, rate: LIST_USD_PER_MINUTE / 60, unit: 'audio', amountCents: vendorUsd * 100 },
+    base: { seconds: input.durationSec, rate: LIST_USD_PER_MINUTE / 60, unit: 'audio', amountCents: vendorUsd * 100 },
     addons: [], vendorAccountId,
     meta: { surface: 'tool', toolId: 'subtitles', operation: 'transcription', providerCostKind: 'list-reference',
       providerCostSource: 'https://fal.ai/models/fal-ai/elevenlabs/speech-to-text/scribe-v2', providerCostCheckedAt: '2026-10-19',

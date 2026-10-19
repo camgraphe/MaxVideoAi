@@ -18,7 +18,7 @@ test('five localized workspaces expose usable empty states on mobile and desktop
       assert.ok(await page.locator('input[type=file]').count()>0);assert.ok(await page.locator('button:disabled').count()>0);
       const controls=await page.locator('input[type=file]:visible').evaluateAll(nodes=>nodes.map(node=>({label:node.getAttribute('aria-label'),height:node.getBoundingClientRect().height})));
       for(const control of controls){assert.ok(control.label);assert.ok(control.height>=44);}
-      if(locale==='en'&&tool==='lip-sync'){await page.getByRole('button',{name:'Video',exact:true}).click();await page.getByText('Video Lip Sync is not available at the moment.').waitFor();}
+      if(locale==='en'&&tool==='lip-sync'){await page.getByRole('button',{name:'Video',exact:true}).click();assert.equal(await page.getByRole('button',{name:'Video',exact:true}).getAttribute('aria-pressed'),'true');}
       if(locale==='en'&&tool==='product-photo-editor'){await page.getByRole('button',{name:'Lighting',exact:true}).click();assert.equal(await page.getByRole('button',{name:'Lighting',exact:true}).getAttribute('aria-pressed'),'true');await page.locator('summary').filter({hasText:'Advanced options'}).click();assert.equal(await page.getByLabel('Image model',{exact:true}).inputValue(),'gpt-image-2-5-flare');}
       if(evidence&&locale==='fr')await page.screenshot({path:join(evidence,`${tool}-${width}.png`),fullPage:true});
       assert.deepEqual(errors,[]);

@@ -8,6 +8,7 @@ import {runSubtitleOperation,pollSubtitleOperation,reconcileSubtitleOperations} 
 import {createSubtitleOperationsService} from '../frontend/src/server/subtitles/operations';
 import {buildWorkspaceTimelineRenderManifest} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-render';
 import {getDb} from '../frontend/src/lib/db';
+import {subtitleExportPricing} from '../frontend/src/server/subtitles/pricing';
 
 const source={ref:{type:'asset' as const,assetId:'owned',kind:'video' as const},fingerprint:'a'.repeat(64),durationMs:10000};
 test('durable subtitle worker resumes provider polling without resubmission, publishes one document, and refunds only certain failures',async t=>{
@@ -48,6 +49,34 @@ test('durable subtitle worker resumes provider polling without resubmission, pub
   await jobs.fail(exportOperation.id,'must not refund delivered output');
   assert.equal((await jobs.readWork(exportOperation.id))?.state,'completed');assert.equal((await jobs.readWork(exportOperation.id))?.result?.assetId,'video-owned');
   assert.equal((await pg.pool.query("SELECT count(*)::int n FROM app_receipts WHERE type='refund'")).rows[0].n,2);
+  const receiptCount=(await pg.pool.query('SELECT count(*)::int n FROM app_receipts')).rows[0].n;
+  let checkedSources=0,includedRenders=0;
+  const includedJobs=createSubtitleJobStore({validateSource:async()=>{checkedSources++;},preferredCurrency:async()=> 'usd',
+    reserve:async()=>{throw new Error('Included rendering must never reserve wallet funds.');}});
+  const includedDependencies={jobs:includedJobs,documents,dispatch:async()=>{},
+    readSource:async()=>({source,facts:request.facts,originalIdentity:{id:'owned',url:'https://owned.invalid/source.mp4'}})};
+  const includedService=createSubtitleOperationsService(actor,{enabled:true,dependencies:includedDependencies});
+  await assert.rejects(createSubtitleOperationsService({...actor,userId:'stranger'},{enabled:true,dependencies:includedDependencies}).prepareExport({documentId:saved!.id,revision:1}),/NOT_FOUND/);
+  await assert.rejects(includedJobs.prepare(actor,'transcribe',request,subtitleExportPricing(request.facts)),/PRICING_UNAVAILABLE/);
+  const included=await includedService.prepareExport({documentId:saved!.id,revision:1});
+  assert.equal(included.quote.price.amountCents,0);
+  await Promise.all([includedService.confirm({operationId:included.operationId,confirmed:true}),includedService.confirm({operationId:included.operationId,confirmed:true})]);
+  const renderIncluded=async()=>{includedRenders++;return {assetId:'included-result'};};
+  await Promise.all([runSubtitleOperation(included.operationId,{...dependencies,jobs:includedJobs,render:renderIncluded}),runSubtitleOperation(included.operationId,{...dependencies,jobs:includedJobs,render:renderIncluded})]);
+  assert.equal((await includedJobs.readWork(included.operationId))?.state,'completed');
+  assert.equal((await pg.pool.query('SELECT payment_status,final_price_cents FROM app_jobs WHERE job_id=$1',[`subtitle_${included.operationId}`])).rows[0].payment_status,'platform');
+  assert.equal(includedRenders,1);assert.equal(checkedSources,1);
+  const edited=await documents.update(actor.userId,saved!.id,1,'included-edit',{style:{...saved!.style,preset:'clean'},segments:[{...saved!.segments[0],text:'Corrected text'}]});
+  const editedExport=await includedService.prepareExport({documentId:edited.id,revision:edited.revision});
+  assert.equal(editedExport.quote.price.amountCents,0);
+  await includedService.confirm({operationId:editedExport.operationId,confirmed:true});
+  await runSubtitleOperation(editedExport.operationId,{...dependencies,jobs:includedJobs,render:async()=>{throw new Error('Render failed');}});
+  await includedJobs.fail(editedExport.operationId,'Repeated failure');
+  assert.equal((await includedJobs.readWork(editedExport.operationId))?.state,'failed');
+  assert.equal((await pg.pool.query('SELECT count(*)::int n FROM app_receipts')).rows[0].n,receiptCount,'Included success/failure creates neither charge nor refund receipts');
+  const oldPending=await includedJobs.prepare(actor,'render',{...request,document:saved!},{totalCents:40,currency:'USD',source:'timeline-export-paid-policy'});
+  await assert.rejects(includedJobs.reserve(actor,oldPending.id),/QUOTE_EXPIRED/);
+  assert.equal((await jobs.readWork(exportOperation.id))?.pricing_snapshot.totalCents,40,'Accepted historical export keeps its original paid amount');
   const queued=await reserve();await reconcileSubtitleOperations(dependencies);assert.equal(dispatched,1);assert.equal((await jobs.readWork(queued))?.state,'queued','HTTP cron dispatches bounded workers, never starts inline rendering');
   const expired=await jobs.claim(queued);assert.ok(expired);await pg.pool.query("UPDATE subtitle_operations SET lease_until=NOW()-INTERVAL '1 second' WHERE id=$1",[queued]);
   const resumed=await jobs.claim(queued);assert.ok(resumed);await assert.rejects(jobs.complete(queued,{documentId:'stale'},expired!.lease_token),/CLAIM_LOST/);
@@ -59,7 +88,7 @@ test('durable subtitle worker resumes provider polling without resubmission, pub
   const mix=await service.prepareStudioSubtitles({projectId:'project',sequenceId:'sequence',expectedRevision:7});
   assert.deepEqual(mix.sourceSummary,{kind:'sequence',name:'The film mix',revision:7});
   const breakdown=mix.quote.breakdown as {transcription:{amountCents:number};mixPreparation:{amountCents:number;source:string}};
-  assert.equal(mix.quote.price.amountCents,breakdown.transcription.amountCents+breakdown.mixPreparation.amountCents);assert.equal(breakdown.mixPreparation.source,'timeline-export-paid-policy');assert.ok(breakdown.mixPreparation.amountCents>0);
+  assert.equal(mix.quote.price.amountCents,breakdown.transcription.amountCents);assert.equal(breakdown.mixPreparation.source,'subtitle-mix-included-v1');assert.equal(breakdown.mixPreparation.amountCents,0);
   await service.confirm({operationId:mix.operationId,confirmed:true});
   const mixedSource={ref:{type:'asset' as const,assetId:'owned-mix-audio',kind:'audio' as const},fingerprint:'c'.repeat(64),durationMs:10000,sequenceMix:{sequenceId:'sequence',revision:7,audioManifestHash:sequence.audioManifestHash}};
   let mixes=0;

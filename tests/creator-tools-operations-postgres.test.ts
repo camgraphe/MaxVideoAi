@@ -12,6 +12,7 @@ import { resolveStudioMedia } from '../frontend/src/server/studio/media-resolver
 import { claimCreatorFinalization,readCreatorOperation,settleCreatorFinalization } from '../frontend/src/server/tools/creator-operations-store';
 import { startDisposablePostgres,createPaidGenerationTestSchema } from './helpers/disposable-postgres';
 import { addTopup,ProviderHarness } from './helpers/mcp-paid-e2e-harness';
+import { priceCanonicalGeneration } from '../frontend/src/server/agent-api/generation-pricing';
 
 test('creator operation binds one quote, scopes confirmation, recovers one charge and leases finalization/refund',async t=>{
   const pg=await startDisposablePostgres('creator-operations');const previous=process.env.DATABASE_URL;process.env.DATABASE_URL=pg.databaseUrl;
@@ -34,12 +35,21 @@ test('creator operation binds one quote, scopes confirmation, recovers one charg
   const options={enabled:true,generationOptions,dependencies:{prepare}};
   const service=createCreatorOperationsService(actor,options);
   const prepared=await service.prepare(input);
+  const preparedPricing=(await pg.pool.query('SELECT pricing_snapshot FROM mcp_generation_quotes WHERE quote_id=$1',[prepared.operationId])).rows[0].pricing_snapshot.canonicalPricing;
+  assert.equal(preparedPricing.margin.percentApplied,1.2);
+  assert.equal(preparedPricing.meta.creatorPricingPolicy,'creator-tools:provider-plus-120:v1');
   assert.equal((await pg.pool.query("SELECT count(*)::int AS n FROM app_receipts WHERE type='charge'")).rows[0].n,0);
   await assert.rejects(createCreatorOperationsService({...actor,userId:'foreign'},options).confirm({operationId:prepared.operationId,confirmed:true}),/unavailable/);
   await assert.rejects(createCreatorOperationsService({...actor,authMethod:'oauth',emailVerified:true},options).status(prepared.operationId),/unavailable/);
   await assert.rejects(pg.pool.query("UPDATE creator_operations SET profile_id='other' WHERE id=$1",[prepared.operationId]),/immutable/);
   const ordinary=await createCreatorGenerationService(actor,{enabled:true,...generationOptions}).prepare((await prepare()).request);
   await assert.rejects(service.confirm({operationId:ordinary.quoteId,confirmed:true}),/unavailable/);
+  const ordinaryPricing=(await pg.pool.query('SELECT pricing_snapshot FROM mcp_generation_quotes WHERE quote_id=$1',[ordinary.quoteId])).rows[0].pricing_snapshot.canonicalPricing;
+  assert.equal(ordinaryPricing.meta.creatorPricingPolicy,undefined);
+  const oldPolicyService=createCreatorOperationsService(actor,{...options,generationOptions:{...generationOptions,
+    prepareDependencies:{...generationOptions.prepareDependencies,priceGeneration:(request,tier,context)=>priceCanonicalGeneration(request,tier,undefined,context)}}});
+  const oldPolicyQuote=await oldPolicyService.prepare(input);
+  await assert.rejects(service.confirm({operationId:oldPolicyQuote.operationId,confirmed:true}),/changed|expired|Prepare|prepare/);
   const results=await Promise.all([service.confirm({operationId:prepared.operationId,confirmed:true}),service.confirm({operationId:prepared.operationId,confirmed:true})]);
   assert.ok(results.every(result=>result.jobId===prepared.operationId));assert.equal(provider.captures.length,1);
   assert.equal((await pg.pool.query("SELECT count(*)::int AS n FROM app_receipts WHERE type='charge'")).rows[0].n,1);

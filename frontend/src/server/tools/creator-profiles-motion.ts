@@ -1,5 +1,5 @@
-import { projectCanonicalQuoteToSnapshot, quoteCanonicalPricing, type PricingSnapshot } from '@maxvideoai/pricing';
-import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
+import type { PricingSnapshot } from '@maxvideoai/pricing';
+import { quoteCreatorProviderBillingSnapshot } from '@/server/pricing/quote-creator';
 import { resolveServerBillingPolicy, type ResolveServerPricingPolicyDependencies } from '@/server/pricing/resolve-pricing-policy';
 import { AgentApiError } from '@/server/agent-api/errors';
 import type { PreparedCreatorProfile } from './creator-profiles';
@@ -20,10 +20,7 @@ export async function quoteCreatorMotion(durationSec:number,dependencies:{pricin
   const engineId='toolbox-motion-control';
   const {policy,vendorAccountId}=await resolveServerBillingPolicy({engineId,mode:'kling-v3-standard-motion-control',resolution:'source'},undefined,dependencies.pricingPolicy);
   if(policy.rule.engineId!==engineId||policy.rule.currency!=='USD')throw new AgentApiError('ENGINE_UNAVAILABLE','Motion Control pricing is not configured.');
-  const compatibilityProfile=getVersionedPricingPolicy().compatibilityProfiles.find(profile=>profile.id==='standard');
-  if(!compatibilityProfile)throw new Error('Missing standard pricing policy.');
   const providerCostListUsd=Number((durationSec*0.126).toFixed(8));
   const vendorSubtotalExactCents=providerCostListUsd*100;
-  const quote=quoteCanonicalPricing({facts:{engineId,currency:'USD',vendorSubtotalExactCents,unit:'second',quantity:durationSec},scenario:{id:'billing:toolbox-motion-control:kling-v3-standard-motion-control',engineId,mode:'kling-v3-standard-motion-control',membershipTier:'member',discountPercent:0},policy,compatibilityProfile});
-  return projectCanonicalQuoteToSnapshot({quote,base:{seconds:durationSec,rate:0.126,unit:'second',amountCents:Math.round(vendorSubtotalExactCents)},addons:[],vendorAccountId,meta:{surface:'tool',toolId:'motion-transfer',profileId:'motion-kling-v3-v1',providerCostKind:'list-reference',providerCostListUsd,providerCostSource:'https://fal.ai/models/fal-ai/kling-video/v3/standard/motion-control',providerCostCheckedAt:'2026-10-19',ruleId:policy.sourceRuleId}});
+  return quoteCreatorProviderBillingSnapshot({toolId:'motion-transfer',facts:{engineId,currency:'USD',vendorSubtotalExactCents,unit:'second',quantity:durationSec},base:{seconds:durationSec,rate:0.126,unit:'second',amountCents:Math.round(vendorSubtotalExactCents)},addons:[],vendorAccountId,meta:{surface:'tool',toolId:'motion-transfer',profileId:'motion-kling-v3-v1',providerCostKind:'list-reference',providerCostListUsd,providerCostSource:'https://fal.ai/models/fal-ai/kling-video/v3/standard/motion-control',providerCostCheckedAt:'2026-10-19',ruleId:policy.sourceRuleId}});
 }

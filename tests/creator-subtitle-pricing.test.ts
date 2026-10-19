@@ -10,9 +10,10 @@ test('subtitle list cost and keyterms surcharge pass through canonical customer 
   const normal = await quoteSubtitleTranscription({ durationSec: 60 }, policy);
   const keyterms = await quoteSubtitleTranscription({ durationSec: 60, keyterms: ['MaxVideoAI'] }, policy);
   // Standard policy rounds the margin up before rounding the customer total.
-  assert.equal(normal.totalCents, 3); assert.equal(keyterms.totalCents, 3);
-  assert.equal((await quoteSubtitleTranscription({ durationSec: 240 }, policy)).totalCents, 8);
-  assert.equal((await quoteSubtitleTranscription({ durationSec: 240, keyterms: ['MaxVideoAI'] }, policy)).totalCents, 11);
+  assert.equal(normal.totalCents, 2); assert.equal(keyterms.totalCents, 3);
+  assert.equal((await quoteSubtitleTranscription({ durationSec: 240 }, policy)).totalCents, 7);
+  assert.equal((await quoteSubtitleTranscription({ durationSec: 240, keyterms: ['MaxVideoAI'] }, policy)).totalCents, 9);
+  assert.equal(normal.margin.percentApplied, 1.2);
   assert.equal(normal.meta?.providerCostKind, 'list-reference');
   assert.equal(normal.meta?.providerCostListUsd, 0.008);
   assert.equal(keyterms.meta?.keytermsSurchargePercent, 30);

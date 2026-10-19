@@ -37,14 +37,16 @@ test('product photo maps exact source first and style second to existing canonic
   assert.equal(result.request.outputCount,1);
   assert.match(result.request.prompt,/On a desk/);
 });
-test('Lip photo preserves fractional audio authority and does not invent LTX duration controls', () => {
+test('Wan Lip photo preserves fractional audio authority with an explicit generated-tail policy', () => {
   const request = creatorOperationInputSchema.parse({toolId:'lip-sync',version:1,inputs:[image,audio],settings:{mode:'photo'}});
   const result = prepareCreatorProfile(request,[measured(image),measured(audio,7.4)]);
-  assert.equal(result.request.engineId,'ltx-2-5-fast');
-  assert.equal(result.request.mode,'a2v');
+  assert.equal(result.request.engineId,'wan-3');
+  assert.equal(result.request.mode,'ref2v');
   assert.equal(result.expectedDurationSec,7.4);
-  assert.equal(result.request.settings.durationSec,8); // Required canonical duration envelope; provider timing is audio-derived.
-  assert.deepEqual(result.request.references,[{kind:'asset',assetId:'voice',role:'source'},{kind:'asset',assetId:'product',role:'first_frame'}]);
+  assert.equal(result.request.settings.durationSec,8);
+  assert.equal(result.request.settings.resolution,'480p');assert.equal(result.request.settings.aspectRatio,'1:1');
+  assert.deepEqual(result.outputTiming,{kind:'trim-generated-tail',generatedDurationSec:8});
+  assert.deepEqual(result.request.references,[{kind:'asset',assetId:'product',role:'reference'},{kind:'asset',assetId:'voice',role:'reference'}]);
   assert.equal(result.audioPolicy,'preserve');
 });
 test('Wan edit rejects implicit duration rounding and requests the measured explicit segment', () => {
@@ -57,8 +59,8 @@ test('Wan edit rejects implicit duration rounding and requests the measured expl
   assert.equal(result.request.settings.audio,false);
   assert.equal(result.audioPolicy,'mute');
 });
-test('specialist profiles remain closed and lip video never silently uses Wan', () => {
-  const request = creatorOperationInputSchema.parse({toolId:'lip-sync',version:1,inputs:[video,audio],settings:{mode:'video'}});
+test('explicit specialist profiles remain closed and do not silently switch to Wan', () => {
+  const request = creatorOperationInputSchema.parse({toolId:'lip-sync',version:1,inputs:[video,audio],profileId:'lip-video-latentsync-v1',settings:{mode:'video'}});
   assert.throws(()=>prepareCreatorProfile(request,[measured(video,10),measured(audio,7)]),/same duration/);
   assert.throws(()=>prepareCreatorProfile(request,[measured(video,10),measured(audio,10)]),/qualification/);
 });
@@ -78,6 +80,7 @@ test('every enabled profile normalizes, validates against real registry and uses
     [{toolId:'product-photo-editor',version:1,inputs:[image],settings:{action:'studio'}},[measured(image)]],
     [{toolId:'product-photo-editor',version:1,inputs:[image],settings:{action:'studio',model:'nano-banana-2'}},[measured(image)]],
     [{toolId:'lip-sync',version:1,inputs:[image,audio],settings:{mode:'photo'}},[measured(image),measured(audio,7.4)]],
+    [{toolId:'lip-sync',version:1,inputs:[video,audio],settings:{mode:'video'}},[measured(video,7.4),measured(audio,7.4)]],
     [{toolId:'product-video-editor',version:1,inputs:[video],settings:{}},[measured(video,10)]],
     [{toolId:'motion-transfer',version:1,inputs:[image,motion],settings:{}},[measured(image),measured(motion,10)]],
   ] as const){
@@ -94,4 +97,35 @@ test('every enabled profile normalizes, validates against real registry and uses
     const price=await priceCanonicalGeneration(request,'member',undefined,{resolvedReferences});
     assert.ok(price.priceCents>0,request.engineId);
   }
+});
+
+
+test('Wan Lip video uses a source video and reference audio with a bounded output envelope',()=>{
+  const input=creatorOperationInputSchema.parse({toolId:'lip-sync',version:1,inputs:[video,audio],settings:{mode:'video',resolution:'720p'}});
+  const result=prepareCreatorProfile(input,[measured(video,2.53),measured(audio,2.53)]);
+  assert.equal(result.profile.id,'lip-video-wan-v1');assert.equal(result.request.engineId,'wan-3');assert.equal(result.request.mode,'v2v');
+  assert.deepEqual(result.request.references,[{kind:'asset',assetId:'clip',role:'source'},{kind:'asset',assetId:'voice',role:'reference',slot:0}]);
+  assert.equal(result.expectedDurationSec,2.53);assert.equal(result.request.settings.durationSec,3);assert.equal(result.request.settings.resolution,'720p');
+  assert.deepEqual(result.outputTiming,{kind:'trim-generated-tail',generatedDurationSec:3});
+  assert.throws(()=>prepareCreatorProfile(input,[measured(video,10.041667),measured(audio,10.34449)]),/same duration/);
+  assert.throws(()=>prepareCreatorProfile(input,[{...measured(video,3),facts:{...measured(video,3).facts,fps:15}},measured(audio,3)]),/16 fps/);
+  assert.throws(()=>prepareCreatorProfile(input,[measured(video,15.01),measured(audio,15.01)]),/15/);
+});
+test('Wan Lip rejects retired LTX quotes and oversized or unsupported audio before canonical submission',()=>{
+  const input=creatorOperationInputSchema.parse({toolId:'lip-sync',version:1,inputs:[image,audio],settings:{mode:'photo'}});
+  assert.throws(()=>prepareCreatorProfile({...input,profileId:'lip-photo-ltx-v1'},[measured(image),measured(audio,7.4)]),/qualification/);
+  for(const patch of [{sizeBytes:16*1024*1024},{mimeType:'audio/aac'}]) {
+    assert.throws(()=>prepareCreatorProfile(input,[measured(image),{...measured(audio,7.4),facts:{...measured(audio,7.4).facts,...patch}}]),/MP3|WAV|15 MB/);
+  }
+});
+
+test('Wan video accepts frame-quantized media only for explicitly matched passages that cover all the audio',()=>{
+  const passageVideo={...video,segment:{startSec:1,endSec:3.53}};
+  const passageAudio={...audio,segment:{startSec:0,endSec:2.53}};
+  const input=creatorOperationInputSchema.parse({toolId:'lip-sync',version:1,inputs:[passageVideo,passageAudio],settings:{mode:'video'}});
+  const result=prepareCreatorProfile(input,[measured(passageVideo,2.533333),measured(passageAudio,2.53)]);
+  assert.equal(result.expectedDurationSec,2.53);assert.equal(result.request.settings.durationSec,3);
+  assert.throws(()=>prepareCreatorProfile(input,[measured(passageVideo,2.5),measured(passageAudio,2.53)]),/same duration/);
+  assert.throws(()=>prepareCreatorProfile(input,[measured(passageVideo,2.6),measured(passageAudio,2.53)]),/same duration/);
+  assert.throws(()=>prepareCreatorProfile(input,[measured({...passageVideo,segment:undefined},2.533333),measured(passageAudio,2.53)]),/same duration/);
 });

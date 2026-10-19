@@ -12,7 +12,7 @@ const base = { version: z.literal(1), inputs: z.array(input).min(1).max(3), prof
 export const creatorOperationInputSchema = z.discriminatedUnion('toolId', [
   z.object({ ...base, toolId: z.literal('product-photo-editor'), settings: z.object({ action: z.enum(['studio', 'lifestyle', 'lighting']).default('studio'), instruction, model: z.enum(['gpt-image-2-5-flare', 'nano-banana-2']).default('gpt-image-2-5-flare'), aspectRatio, preservation: z.enum(['appearance', 'pixels']).default('appearance') }).strict() }).strict(),
   z.object({ ...base, toolId: z.literal('product-video-editor'), settings: z.object({ action: z.enum(['background', 'lighting', 'style']).default('background'), instruction, audioPolicy, resolution: z.enum(['480p', '720p', '1080p']).default('720p') }).strict() }).strict(),
-  z.object({ ...base, toolId: z.literal('lip-sync'), settings: z.object({ mode: z.enum(['photo', 'video']), instruction }).strict() }).strict(),
+  z.object({ ...base, toolId: z.literal('lip-sync'), settings: z.object({ mode: z.enum(['photo', 'video']), instruction, resolution: z.enum(['480p', '720p', '1080p']).default('480p') }).strict() }).strict(),
   z.object({ ...base, toolId: z.literal('motion-transfer'), settings: z.object({ orientation: z.enum(['image', 'video']).default('video'), instruction, audioPolicy, resolution: z.enum(['480p', '720p', '1080p']).default('720p') }).strict() }).strict(),
 ]).superRefine((block, ctx) => {
   const roles = block.inputs.map(entry => entry.role);
@@ -46,7 +46,7 @@ export type CreatorOperationStatus = {
 export const CREATOR_DEFAULT_SETTINGS = {
   'product-photo-editor': { action: 'studio', instruction: '', model: 'gpt-image-2-5-flare', aspectRatio: 'auto', preservation: 'appearance' },
   'product-video-editor': { action: 'background', instruction: '', audioPolicy: 'preserve', resolution: '720p' },
-  'lip-sync': { mode: 'photo', instruction: '' },
+  'lip-sync': { mode: 'photo', instruction: '', resolution: '480p' },
   'motion-transfer': { orientation: 'video', instruction: '', audioPolicy: 'preserve', resolution: '720p' },
 } as const;
 

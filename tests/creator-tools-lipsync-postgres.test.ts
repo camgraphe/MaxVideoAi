@@ -14,6 +14,8 @@ import {prepareCreatorLipSyncQuote,confirmCreatorLipSync} from '../frontend/src/
 import {refreshCreatorLipSync} from '../frontend/src/server/tools/creator-operations-lipsync-provider';
 import {readCreatorOperation} from '../frontend/src/server/tools/creator-operations-store';
 import {createCreatorOperationsService} from '../frontend/src/server/tools/creator-operations';
+import {quoteCreatorLipSync} from '../frontend/src/server/tools/creator-profiles-lipsync';
+import {quoteCreatorProviderBillingSnapshot} from '../frontend/server/pricing/quote-creator';
 test('LatentSync uses canonical wallet reservation once; unknown acceptance refunds once without resubmission',async t=>{
   const pg=await startDisposablePostgres('creator-lipsync');const previous=process.env.DATABASE_URL,gate=process.env.CREATOR_LIP_VIDEO_ENABLED;process.env.DATABASE_URL=pg.databaseUrl;process.env.CREATOR_LIP_VIDEO_ENABLED='1';
   t.after(async()=>{await getDb().end();if(previous===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=previous;if(gate===undefined)delete process.env.CREATOR_LIP_VIDEO_ENABLED;else process.env.CREATOR_LIP_VIDEO_ENABLED=gate;await pg.cleanup();});
@@ -25,7 +27,7 @@ test('LatentSync uses canonical wallet reservation once; unknown acceptance refu
   await pg.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,size_bytes,width,height,status,metadata) VALUES
     ('video',$1,'owner','video','https://cdn.maxvideoai.com/v.mp4','video/mp4',1234,640,480,'ready','{"durationSec":10,"mediaFacts":{"source":"probe","durationSec":10}}'),
     ('audio',$2,'owner','audio','https://cdn.maxvideoai.com/a.wav','audio/wav',1234,NULL,NULL,'ready','{"durationSec":10}')`,[video,audio]);
-  const input=creatorOperationInputSchema.parse({toolId:'lip-sync',version:1,inputs:[{role:'source',source:{type:'asset',assetId:video,kind:'video'}},{role:'audio',source:{type:'asset',assetId:audio,kind:'audio'}}],settings:{mode:'video'}});
+  const input=creatorOperationInputSchema.parse({toolId:'lip-sync',version:1,profileId:'lip-video-latentsync-v1',inputs:[{role:'source',source:{type:'asset',assetId:video,kind:'video'}},{role:'audio',source:{type:'asset',assetId:audio,kind:'audio'}}],settings:{mode:'video'}});
   const sources=await Promise.all(input.inputs.map(async entry=>{const original=await resolveStudioMedia('owner',entry.source);return{input:entry,asset:entry.source as {type:'asset';assetId:string;kind:'video'|'audio'},url:original.url,fingerprint:creatorSourceFingerprint(original),facts:{kind:entry.source.kind,width:entry.source.kind==='video'?640:null,height:entry.source.kind==='video'?480:null,durationSec:10,audioDurationSec:10,audioStartSec:0,hasAudio:true,fps:entry.source.kind==='video'?30:null,sizeBytes:1234,mimeType:original.mime}};}));
   const prepared=prepareCreatorProfile(input,sources);const references=await Promise.all(prepared.request.references.map(async ref=>{assert.equal(ref.kind,'asset');return{...await resolveOwnedReferenceAssetForActor(actor,(ref as {assetId:string}).assetId),role:ref.role,...(ref.slot===undefined?{}:{slot:ref.slot})};}));
   const snapshot={...prepared,referenceFingerprint:studioReferenceFingerprint(references)};let submissions=0;
@@ -44,9 +46,15 @@ test('LatentSync uses canonical wallet reservation once; unknown acceptance refu
   assert.deepEqual(receipts.map(row=>row.type),['charge','refund']);assert.equal(receipts[0].amount_cents,receipts[1].amount_cents);
   await confirmCreatorLipSync(actor,quote.quoteId,true,dependencies);assert.equal(submissions,1);
   const changed=await prepareCreatorLipSyncQuote(actor,snapshot,true,dependencies);
-  await pg.pool.query("UPDATE app_pricing_rules SET margin_flat_cents=1 WHERE id='toolbox-lip-sync'");
-  await assert.rejects(confirmCreatorLipSync(actor,changed.quoteId,true,dependencies),/price changed/);assert.equal(submissions,1);
-  await pg.pool.query("UPDATE app_pricing_rules SET margin_flat_cents=0 WHERE id='toolbox-lip-sync'");
+  // A changed supplier list cost must invalidate the immutable quote before charging.
+  // Generic model margin overrides do not own the creator product's price policy.
+  await assert.rejects(confirmCreatorLipSync(actor,changed.quoteId,true,{...dependencies,quote:async(durationSec,pricingDependencies)=>{
+    const current=await quoteCreatorLipSync(durationSec,pricingDependencies);
+    return quoteCreatorProviderBillingSnapshot({toolId:'lip-sync',facts:{engineId:'toolbox-lip-sync',currency:'USD',vendorSubtotalExactCents:21,unit:'video',quantity:1},base:{...current.base,rate:0.21,amountCents:21},addons:current.addons,vendorAccountId:current.vendorAccountId,meta:{...current.meta,providerCostListUsd:0.21}});
+  }}),/price changed/);
+  assert.equal(submissions,1);
+  assert.equal((await readCreatorOperation(actor,changed.quoteId)).status,'prepared');
+  assert.equal((await pg.pool.query("SELECT count(*)::int AS n FROM app_receipts WHERE type='charge'")).rows[0].n,1);
   const success=await prepareCreatorLipSyncQuote(actor,snapshot,true,dependencies);
   await confirmCreatorLipSync(actor,success.quoteId,true,{...dependencies,submit:async()=>{submissions++;return{kind:'accepted',requestId:'provider-id'};}});
   let persists=0;const pending=await readCreatorOperation(actor,success.quoteId);

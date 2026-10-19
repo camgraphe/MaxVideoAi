@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { type QueryExecutor } from '@/lib/db';
 import { creatorOperationInputSchema } from '@/lib/toolbox/creator-tools';
 import { requireGenerationActor, studioReferenceFingerprint, type GenerationActor } from '@/server/agent-api/generation-actor';
-import { hashCanonicalGenerationRequest } from '@/server/agent-api/generation-normalization';
+import { hashCanonicalGenerationRequest, stableJson } from '@/server/agent-api/generation-normalization';
 import { resolveOwnedReferenceAssetForActor } from '@/server/agent-api/reference-assets';
 import { AgentApiError } from '@/server/agent-api/errors';
 import { resolveStudioMedia } from '@/server/studio/media-resolver';
@@ -17,12 +17,12 @@ export { creatorOperationInputSchema, prepareCreatorOperation };
 
 const defaults={prepare:prepareCreatorOperation,revalidate:revalidateCreatorSources,finalize:finalizeCreatorOperation,generation:createCreatorGenerationService,
   read:store.readCreatorOperation,insert:store.insertCreatorOperation,claim:store.claimCreatorFinalization,settle:store.settleCreatorFinalization,markRunning:store.markCreatorRunning,markFailed:store.markCreatorFailed};
-export type CreatorOperationsOptions={enabled:boolean;generationOptions?:Omit<CreatorGenerationOptions,'enabled'|'expectedReferenceFingerprint'|'onQuotePrepared'|'onQuoteLocked'>;dependencies?:Partial<typeof defaults>};
+export type CreatorOperationsOptions={enabled:boolean;generationOptions?:Omit<CreatorGenerationOptions,'enabled'|'toolId'|'expectedReferenceFingerprint'|'onQuotePrepared'|'onQuoteLocked'>;dependencies?:Partial<typeof defaults>};
 function validateSnapshot(row:store.StoredCreatorOperation):void {
   const profile=CREATOR_PROFILES.find(entry=>entry.id===row.profile_id);
   if(!profile||profile.qualification==='closed'||profile.revision!==row.profile_revision||row.snapshot.profile.id!==profile.id) throw new AgentApiError('ENGINE_UNAVAILABLE','This tool profile requires a new qualification.');
   const validated=prepareCreatorProfile(creatorOperationInputSchema.parse(row.snapshot.input),row.snapshot.sources);
-  if(hashCanonicalGenerationRequest(validated.request)!==row.request_hash) throw new AgentApiError('QUOTE_EXPIRED','The operation profile changed. Prepare a new quote.');
+  if(hashCanonicalGenerationRequest(validated.request)!==row.request_hash || stableJson(validated.outputTiming ?? null)!==stableJson(row.snapshot.outputTiming ?? null)) throw new AgentApiError('QUOTE_EXPIRED','The operation profile changed. Prepare a new quote.');
 }
 export function createCreatorOperationsService(actor:GenerationActor,options:CreatorOperationsOptions) {
   requireGenerationActor(actor);
@@ -76,8 +76,8 @@ export function createCreatorOperationsService(actor:GenerationActor,options:Cre
       const snapshot={...prepared,referenceFingerprint:studioReferenceFingerprint(references)};
       const quote=prepared.profile.qualification==='tool-specific'
         ? await prepareCreatorSpecialistQuote(actor,snapshot,options.enabled)
-        : await service({expectedReferenceFingerprint:snapshot.referenceFingerprint,onQuotePrepared:(stored,tx)=>deps.insert(actor,stored,snapshot,tx)}).prepare(prepared.request);
-      return {operationId:quote.quoteId,quoteId:quote.quoteId,quote,operation:{toolId:prepared.input.toolId,profile:prepared.profile,expectedDurationSec:prepared.expectedDurationSec,audioPolicy:prepared.audioPolicy,sourceAssets:prepared.input.inputs.map(entry=>entry.source)}};
+        : await service({toolId:prepared.input.toolId,expectedReferenceFingerprint:snapshot.referenceFingerprint,onQuotePrepared:(stored,tx)=>deps.insert(actor,stored,snapshot,tx)}).prepare(prepared.request);
+      return {operationId:quote.quoteId,quoteId:quote.quoteId,quote,operation:{toolId:prepared.input.toolId,profile:prepared.profile,expectedDurationSec:prepared.expectedDurationSec,...(prepared.outputTiming ? {outputTiming:prepared.outputTiming} : {}),audioPolicy:prepared.audioPolicy,sourceAssets:prepared.input.inputs.map(entry=>entry.source)}};
     },
     async confirm(value:unknown) {
       const input=z.object({operationId:idSchema,confirmed:z.literal(true)}).strict().parse(value);
@@ -99,7 +99,7 @@ export function createCreatorOperationsService(actor:GenerationActor,options:Cre
           if(creatorSourceFingerprint(original)!==source.fingerprint) throw new AgentApiError('REFERENCE_INVALID','An original source changed. Prepare a new quote.');
         }
       };
-      await service({expectedReferenceFingerprint:row.snapshot.referenceFingerprint,onQuoteLocked:onLocked}).confirm({quoteId:row.id,confirmed:true});
+      await service({toolId:row.snapshot.input.toolId,expectedReferenceFingerprint:row.snapshot.referenceFingerprint,onQuoteLocked:onLocked}).confirm({quoteId:row.id,confirmed:true});
       await deps.markRunning(actor,row.id);
       return status(row.id);
     },

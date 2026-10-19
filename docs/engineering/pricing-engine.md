@@ -1169,3 +1169,30 @@ at most eight workers. This is a count of canonical quote calls, not SQL command
 against the full hub for exact and unavailable results. Existing hub queue tests
 retain full-surface limits, failure observation and next-request freshness. No
 cross-request quote cache or tariff arithmetic is introduced.
+
+
+## Five creator tools commercial policy (2026-10-19)
+
+The server-only `server/pricing/quote-creator.ts` owner selects
+`creator-tools:provider-plus-120:v1` for Subtitles, Lip Sync, Product Photo Editor,
+Product Video Editor and Motion Transfer. It passes existing exact provider facts
+to the canonical calculator with a 120% markup (provider cost × 2.20), zero flat
+fee/surcharges and the existing standard rounding profile. It does not multiply
+an already marked-up quote. Generic model customer tariff cells, model policies,
+ordinary generations and MCP generations retain their current prices. Creator
+operations reached through MCP receive the same tool product as web operations.
+
+`generation-pricing.ts` shares trusted-media context normalization between ordinary
+confirmation and creator preparation/confirmation. Only validated creator snapshots
+select the creator billing owner. Quotes persist their tool policy and exact cost
+basis; fresh confirmation compares the complete current quote before reservation.
+Accepted job recovery and refunds keep their original snapshots and amounts.
+Vendor routing, wallet conversion, tax and Stripe settlement owners are unchanged.
+
+Subtitle transcription includes sequence mix preparation and MP4 burn-in, including
+exports after text/style revisions. Their internal processing cost is absorbed;
+zero additional customer price is not a zero provider-cost claim. Export still
+requires an exact owned document/source preparation and durable job confirmation.
+Included exports do not debit the wallet or create charge/refund receipts. Earlier
+accepted paid exports retain historical billing; earlier unaccepted paid quotes
+expire on confirmation. General Studio timeline export prices and quotas are unchanged.

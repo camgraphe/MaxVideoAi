@@ -15,7 +15,7 @@ const en = {
   characterHint: 'This photo supplies the character’s appearance.', motionHint: 'This video supplies the movement.',
   transcriptHint: 'Start with a file containing speech.', styleHint: 'An image to guide the setting or visual atmosphere.',
   importStep: 'Import', editStep: 'Edit captions', exportStep: 'Export', exportTitle: 'Download your captions',
-  exportHint: 'SRT and VTT contain text and timing. A captioned MP4 is quoted separately.',
+  exportHint: 'SRT and VTT contain text and timing. Captioned MP4 exports are included with your transcription.',
   styleTitle: 'Caption appearance', editTitle: 'Edit the words', textColumn: 'Caption text', startColumn: 'Start', endColumn: 'End',
   savedText: 'Your transcript is saved. Edit it, then choose an export.', selectedDuration: 'Selected duration',
   headlines: {
@@ -56,7 +56,7 @@ const fr: Copy = {
   characterHint: 'Cette photo définit l’apparence du personnage.', motionHint: 'Cette vidéo donne le mouvement à suivre.',
   transcriptHint: 'Choisissez un fichier contenant de la parole.', styleHint: 'Une image pour guider le décor ou l’ambiance visuelle.',
   importStep: 'Importer', editStep: 'Modifier', exportStep: 'Exporter', exportTitle: 'Téléchargez vos sous-titres',
-  exportHint: 'Le SRT et le VTT contiennent le texte et les timings. Le MP4 sous-titré a son propre prix.',
+  exportHint: 'Le SRT et le VTT contiennent le texte et les timings. Les exports MP4 sous-titrés sont inclus avec la transcription.',
   styleTitle: 'Apparence des sous-titres', editTitle: 'Modifiez le texte', textColumn: 'Texte du sous-titre', startColumn: 'Début', endColumn: 'Fin',
   savedText: 'Votre transcription est enregistrée. Modifiez-la, puis choisissez un export.', selectedDuration: 'Durée sélectionnée',
   headlines: {
@@ -96,7 +96,7 @@ const es: Copy = {
   characterHint: 'Esta foto define el aspecto del personaje.', motionHint: 'Este vídeo aporta el movimiento.',
   transcriptHint: 'Elige un archivo que contenga voz.', styleHint: 'Una imagen que guíe el escenario o el ambiente visual.',
   importStep: 'Importar', editStep: 'Editar', exportStep: 'Exportar', exportTitle: 'Descarga tus subtítulos',
-  exportHint: 'SRT y VTT contienen texto y tiempos. El MP4 subtitulado tiene un precio aparte.',
+  exportHint: 'SRT y VTT contienen texto y tiempos. Las exportaciones MP4 subtituladas están incluidas con la transcripción.',
   styleTitle: 'Aspecto de los subtítulos', editTitle: 'Edita las palabras', textColumn: 'Texto del subtítulo', startColumn: 'Inicio', endColumn: 'Fin',
   savedText: 'Tu transcripción está guardada. Edítala y elige cómo exportarla.', selectedDuration: 'Duración seleccionada',
   headlines: {

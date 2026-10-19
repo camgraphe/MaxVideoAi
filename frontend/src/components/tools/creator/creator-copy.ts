@@ -14,7 +14,7 @@ const en = {
   segmentHint: 'Only this passage will be used. Your original stays intact.',
   photo: 'Photo', video: 'Video', audio: 'Audio', voice: 'Create a voice', language: 'Language', auto: 'Automatic',
   transcript: 'Subtitles', text: 'Text', clean: 'Clean', activeWord: 'Highlighted word', contrast: 'High contrast', style: 'Style',
-  save: 'Save changes', saved: 'Saved', exportSrt: 'Download SRT', exportVtt: 'Download VTT', burn: 'See MP4 export price',
+  save: 'Save changes', saved: 'Saved', exportSrt: 'Download SRT', exportVtt: 'Download VTT', burn: 'Prepare MP4 export', exportIncluded: 'MP4 export included', exportStart: 'Create the MP4', exportIncludedHint: 'Included with your transcription. No additional charge.',
   titles: { subtitles: 'Subtitles', 'lip-sync': 'Lip Sync', 'product-photo-editor': 'Product Photo Editor', 'product-video-editor': 'Product Video Editor', 'motion-transfer': 'Motion Transfer' },
   sourceLabels: { source: 'Your file', audio: 'Voice recording', style: 'Setting reference (optional)', motion: 'Movement video', mask: 'Mask for details to keep (optional)' },
 };
@@ -35,7 +35,7 @@ const fr: Copy = {
   segmentHint: 'Seul ce passage sera utilisé. Votre original reste intact.',
   photo: 'Photo', video: 'Vidéo', audio: 'Audio', voice: 'Créer une voix', language: 'Langue', auto: 'Automatique',
   transcript: 'Sous-titres', text: 'Texte', clean: 'Sobre', activeWord: 'Mot surligné', contrast: 'Contraste fort', style: 'Style',
-  save: 'Enregistrer les modifications', saved: 'Enregistré', exportSrt: 'Télécharger le SRT', exportVtt: 'Télécharger le VTT', burn: 'Voir le prix de l’export MP4',
+  save: 'Enregistrer les modifications', saved: 'Enregistré', exportSrt: 'Télécharger le SRT', exportVtt: 'Télécharger le VTT', burn: 'Préparer l’export MP4', exportIncluded: 'Export MP4 inclus', exportStart: 'Créer le MP4', exportIncludedHint: 'Inclus avec votre transcription. Aucun supplément.',
   titles: { subtitles: 'Sous-titres', 'lip-sync': 'Lip Sync', 'product-photo-editor': 'Retouche photo produit', 'product-video-editor': 'Retouche vidéo produit', 'motion-transfer': 'Motion Transfer' },
   sourceLabels: { source: 'Votre fichier', audio: 'Enregistrement vocal', style: 'Image d’ambiance (facultative)', motion: 'Vidéo du mouvement', mask: 'Masque des détails à conserver (facultatif)' },
 };
@@ -55,7 +55,7 @@ const es: Copy = {
   segmentHint: 'Solo se usará este fragmento. Tu original se conserva intacto.',
   photo: 'Foto', video: 'Vídeo', audio: 'Audio', voice: 'Crear una voz', language: 'Idioma', auto: 'Automático',
   transcript: 'Subtítulos', text: 'Texto', clean: 'Sencillo', activeWord: 'Palabra resaltada', contrast: 'Alto contraste', style: 'Estilo',
-  save: 'Guardar cambios', saved: 'Guardado', exportSrt: 'Descargar SRT', exportVtt: 'Descargar VTT', burn: 'Ver precio de exportación MP4',
+  save: 'Guardar cambios', saved: 'Guardado', exportSrt: 'Descargar SRT', exportVtt: 'Descargar VTT', burn: 'Preparar exportación MP4', exportIncluded: 'Exportación MP4 incluida', exportStart: 'Crear el MP4', exportIncludedHint: 'Incluida con tu transcripción. Sin coste adicional.',
   titles: { subtitles: 'Subtítulos', 'lip-sync': 'Lip Sync', 'product-photo-editor': 'Editor de fotos de producto', 'product-video-editor': 'Editor de vídeos de producto', 'motion-transfer': 'Motion Transfer' },
   sourceLabels: { source: 'Tu archivo', audio: 'Grabación de voz', style: 'Imagen de ambiente (opcional)', motion: 'Vídeo del movimiento', mask: 'Máscara de detalles que conservar (opcional)' },
 };

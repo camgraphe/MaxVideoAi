@@ -1,0 +1,106 @@
+{
+  "photo": {
+    "source": {
+      "original": "/assets/tools/creator-results/sneaker-source-original-fecffb036e37.png",
+      "width": 1448,
+      "height": 1086,
+      "variants": [
+        {
+          "src": "/assets/tools/creator-results/sneaker-source-480-02ea065af01d.webp",
+          "width": 480
+        },
+        {
+          "src": "/assets/tools/creator-results/sneaker-source-960-d734fd50e883.webp",
+          "width": 960
+        },
+        {
+          "src": "/assets/tools/creator-results/sneaker-source-1440-672c186cb622.webp",
+          "width": 1440
+        }
+      ]
+    },
+    "result": {
+      "original": "/assets/tools/creator-results/sneaker-result-original-1a90faad53af.png",
+      "width": 1200,
+      "height": 896,
+      "variants": [
+        {
+          "src": "/assets/tools/creator-results/sneaker-result-480-432d2319b696.webp",
+          "width": 480
+        },
+        {
+          "src": "/assets/tools/creator-results/sneaker-result-960-7647e705dbf4.webp",
+          "width": 960
+        },
+        {
+          "src": "/assets/tools/creator-results/sneaker-result-1200-129596d1f84e.webp",
+          "width": 1200
+        }
+      ]
+    },
+    "jobId": "3a63f774-5eca-4bc9-9d42-e77126948443",
+    "model": "Nano Banana 2",
+    "mode": "image-to-image"
+  },
+  "video": {
+    "source": {
+      "original": "/assets/tools/creator-results/watch-source-474ff57fb18d.mp4",
+      "poster": "/assets/tools/creator-results/watch-source-poster-a13f1b86fa7c.webp",
+      "width": 1920,
+      "height": 1080,
+      "duration": 6,
+      "hasAudio": false
+    },
+    "result": {
+      "original": "/assets/tools/creator-results/watch-result-90855716b483.mp4",
+      "poster": "/assets/tools/creator-results/watch-result-poster-11d1de4734f5.webp",
+      "width": 854,
+      "height": 480,
+      "duration": 6,
+      "hasAudio": false
+    },
+    "jobId": "1a5ce771-c5f2-43b6-8ade-329404e2fcd3",
+    "model": "Wan 3",
+    "mode": "video-to-video"
+  },
+  "motion": {
+    "character": {
+      "original": "/assets/tools/creator-results/motion-character-original-ff6962428dab.png",
+      "width": 1672,
+      "height": 940,
+      "variants": [
+        {
+          "src": "/assets/tools/creator-results/motion-character-480-506d8fdf19a2.webp",
+          "width": 480
+        },
+        {
+          "src": "/assets/tools/creator-results/motion-character-960-392038ad8263.webp",
+          "width": 960
+        },
+        {
+          "src": "/assets/tools/creator-results/motion-character-1440-67b1133f5f63.webp",
+          "width": 1440
+        }
+      ]
+    },
+    "reference": {
+      "original": "/assets/tools/creator-results/motion-reference-2249d3d41174.mp4",
+      "poster": "/assets/tools/creator-results/motion-reference-poster-f6ae7ce86a3d.webp",
+      "width": 1280,
+      "height": 720,
+      "duration": 4,
+      "hasAudio": false
+    },
+    "result": {
+      "original": "/assets/tools/creator-results/motion-result-ff2f69acbaf9.mp4",
+      "poster": "/assets/tools/creator-results/motion-result-poster-9e5c7dddef2b.webp",
+      "width": 854,
+      "height": 480,
+      "duration": 4,
+      "hasAudio": false
+    },
+    "jobId": "4ac7a5d6-867b-4c33-899f-61e8736d3fcc",
+    "model": "Wan 3",
+    "mode": "reference-to-video"
+  }
+}

@@ -497,3 +497,15 @@ each named host/version, including denied/expired quotes, disconnect recovery,
 subtitle editing, and result presentation. Reconnect through the host's supported
 flow when its catalog is stale; preserve operation/document IDs and recover them
 first. Plugin publication and host refresh remain distinct from server delivery.
+
+### 2026-10-19 — Creator Lip Sync settings and included subtitle exports
+
+The existing creator settings schema accepts optional Lip Sync resolution, shared
+with the web workspace: 480p by default, 720p or 1080p on selection. Wan 3 photo
+and video profiles publish measured audio limits and their explicit output timing
+policy through discovery. The separate LatentSync gate remains unchanged.
+Creator quotes apply provider cost × 2.20; subtitle MP4 exports and sequence mix
+preparation are included. Zero-price exports still require exact revision-bound
+preparation and confirmation, but do not charge the wallet. These changes reuse
+existing tools and approval instructions; no plugin release, production gate
+activation or host compatibility is inferred from local validation.

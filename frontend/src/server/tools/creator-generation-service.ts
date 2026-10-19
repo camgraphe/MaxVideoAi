@@ -1,4 +1,7 @@
 import type { TransactionQueryExecutor } from '@/lib/db';
+import type { CreatorToolId } from '@/lib/toolbox/catalogue';
+import { computeCanonicalCreatorBillingSnapshot } from '@/server/pricing/quote-creator';
+import { priceCanonicalGenerationInExecutor, priceCanonicalGenerationWithBilling } from '@/server/agent-api/generation-pricing';
 import { AgentApiError } from '@/server/agent-api/errors';
 import { requireGenerationActor, requireStudioGenerationRequest, studioReferenceFingerprint, type GenerationActor } from '@/server/agent-api/generation-actor';
 import { normalizeGenerationRequest } from '@/server/agent-api/generation-normalization';
@@ -13,6 +16,8 @@ import { resolveStudioMedia } from '@/server/studio/media-resolver';
 
 export type CreatorGenerationOptions = {
   enabled: boolean;
+  /** Chosen from the validated operation snapshot, never from generation settings. */
+  toolId?: CreatorToolId;
   expectedReferenceFingerprint?: string;
   prepareDependencies?: Partial<Omit<PrepareGenerationDependencies, 'trialRiskContext'>>;
   confirmDependencies?: Partial<Omit<ConfirmGenerationDependencies, 'trialRiskContext'>>;
@@ -53,6 +58,12 @@ export function createCreatorGenerationService(actor: GenerationActor, options: 
 
   const prepare = createPrepareGenerationForActorService(accountUrl, context, {
     ...options.prepareDependencies,
+    ...(options.toolId ? { priceGeneration: options.prepareDependencies?.priceGeneration ?? ((request, membershipTier, referenceContext) => {
+      if (!referenceContext.resolvedEngine) throw new Error('The creator pricing engine is unavailable.');
+      return priceCanonicalGenerationWithBilling(request, membershipTier,
+        { ...referenceContext, resolvedEngine: referenceContext.resolvedEngine },
+        pricingContext => computeCanonicalCreatorBillingSnapshot(options.toolId!, pricingContext));
+    }) } : {}),
     paidGenerationEnabled: () => options.enabled,
     // Tool operations have no trial preset. The original quote scope remains intact.
     getTrialEligibility: async () => ({ status: 'disabled' }),
@@ -65,6 +76,10 @@ export function createCreatorGenerationService(actor: GenerationActor, options: 
   });
   const confirm = createConfirmGenerationForActorService(accountUrl, context, {
     ...options.confirmDependencies,
+    ...(options.toolId ? { priceGeneration: options.confirmDependencies?.priceGeneration ?? ((request, membershipTier, dependencies) =>
+      priceCanonicalGenerationInExecutor(request, membershipTier, { ...dependencies,
+        computeBillingSnapshot: (pricingContext, billingDependencies) => computeCanonicalCreatorBillingSnapshot(options.toolId!, pricingContext, billingDependencies),
+      })) } : {}),
     paidGenerationEnabled: () => options.enabled,
     trialGenerationEnabled: () => false,
     resolveGenerationReferences: (request, _actor, { executor }) => resolveReferences(request, executor),

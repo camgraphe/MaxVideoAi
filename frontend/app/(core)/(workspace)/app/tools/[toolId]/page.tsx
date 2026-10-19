@@ -6,7 +6,7 @@ import { isFinishingProfileReleased } from '@/server/tools/finishing-release';
 import CreatorWorkspace from '@/components/tools/creator/CreatorWorkspace.client';
 import SubtitleWorkspace from '@/components/tools/creator/SubtitleWorkspace.client';
 import { CREATOR_TOOL_IDS } from '@/lib/toolbox/creator-tools';
-import { isCreatorLipVideoEnabled, isCreatorMotionControlEnabled, listCreatorToolProfiles } from '@/server/tools/creator-profiles';
+import { isCreatorMotionControlEnabled, listCreatorToolProfiles } from '@/server/tools/creator-profiles';
 import { isCreatorExecutionEnabled } from '@/server/tools/creator-availability';
 import FinishingWorkspace from '@/components/tools/FinishingWorkspace';
 export default async function ToolPage({ params, searchParams }: { params: Promise<{ toolId: string }>; searchParams?: Promise<Record<string,string | string[] | undefined>> }) {
@@ -32,7 +32,7 @@ export default async function ToolPage({ params, searchParams }: { params: Promi
       return <SubtitleWorkspace studioSource={studioSource} executionEnabled={enabled} initialOperationId={operationId} initialDocument={documentId ? {id:documentId,revision} : undefined} />;
     }
     if (!enabled && !operationId) notFound();
-    return <CreatorWorkspace toolId={creatorId!} executionEnabled={enabled} initialOperationId={operationId} lipVideoEnabled={isCreatorLipVideoEnabled()} motionControlEnabled={isCreatorMotionControlEnabled()} profiles={listCreatorToolProfiles({enabled}).filter(profile => profile.toolId === creatorId)} />;
+    return <CreatorWorkspace toolId={creatorId!} executionEnabled={enabled} initialOperationId={operationId} motionControlEnabled={isCreatorMotionControlEnabled()} profiles={listCreatorToolProfiles({enabled}).filter(profile => profile.toolId === creatorId)} />;
   }
   if (!FEATURES.workflows.toolsSection || !isFinishingToolId(toolId)) notFound();
   const releasedQualities = FINISHING_QUALITY_CHOICES[toolId].filter(quality => {

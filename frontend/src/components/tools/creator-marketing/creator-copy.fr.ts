@@ -39,7 +39,7 @@ export const frCopy: CreatorMarketingDictionary = {
     ],
     questions: [
       { question: 'Puis-je modifier les sous-titres après la transcription ?', answer: 'Oui. Vous pouvez corriger le texte, les temps et le style sans relancer la transcription. Après avoir modifié une phrase, vérifiez qu’elle suit toujours la voix.' },
-      { question: 'Quel format choisir ?', answer: 'SRT et VTT permettent d’ajouter les sous-titres dans un lecteur ou un logiciel de montage. Le MP4 les intègre directement à la vidéo ; cet export a son propre prix, à confirmer après vos corrections.' },
+      { question: 'Quel format choisir ?', answer: 'SRT et VTT permettent d’ajouter les sous-titres dans un lecteur ou un logiciel de montage. Le MP4 les intègre directement à la vidéo ; cet export est inclus avec votre transcription, sans supplément.' },
     ],
   },
   'lip-sync': {

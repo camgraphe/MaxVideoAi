@@ -1,0 +1,263 @@
+{
+  "created": "2026-10-19",
+  "attempts": [
+    {
+      "tool": "lip-sync",
+      "jobId": "f9a1c116-03d0-4aad-87ed-e9e92c38d494",
+      "priceCents": 20,
+      "review": "Rejected by user: three-second test was too short to judge; at least eight seconds required.",
+      "measured": {
+        "audioSourceSec": 2.041667,
+        "videoResultSec": 3
+      }
+    },
+    {
+      "tool": "lip-sync-voice",
+      "jobId": "aud_b1ff3301-d944-45b8-8ff2-05142b4e33f0",
+      "priceCents": 5,
+      "request": {
+        "schemaVersion": 1,
+        "surface": "audio",
+        "engineId": "audio-voice-only",
+        "mode": "voice_only",
+        "prompt": "Intimate English cinematic dialogue. A warm adult woman speaks to someone just off camera, with a gently teasing smile, a natural pause after 'tonight', and an unhurried reflective ending. Aim for eight to twelve seconds of natural speech.",
+        "settings": {
+          "elevenSimilarityBoost": 0.75,
+          "elevenStability": 0.35,
+          "elevenVoiceId": "pFZP5JQG7iQjIQuC4Bku",
+          "language": "english",
+          "script": "I was going to take the last train tonight. Then you walked in, smiling like nothing had happened… and suddenly, leaving didn't feel like such a good idea.",
+          "voiceModel": "eleven-v4"
+        },
+        "references": [],
+        "outputCount": 1
+      },
+      "review": "Female English Lily voice for the longer example.",
+      "measured": {
+        "audioSourceSec": 10.370563
+      }
+    },
+    {
+      "tool": "lip-sync",
+      "jobId": "b9bcebf9-bd7b-401c-bd8c-39412bfdf205",
+      "priceCents": 72,
+      "paymentStatus": "refunded_wallet",
+      "request": {
+        "schemaVersion": 1,
+        "surface": "video",
+        "engineId": "wan-3",
+        "mode": "ref2v",
+        "outputCount": 1,
+        "prompt": "Cinematic intimate dialogue, one continuous medium close-up of the adult woman in image reference 1. Keep her copper bob, face, plum velvet jacket, cream shirt and amber recording-room setting. She looks just beside the camera at someone she knows, with a subtle teasing smile. Use audio reference 2 as the exact performance: preserve its female English voice, words, pacing, pauses and timing. Match every mouth movement to that audio from its original beginning without retiming, adding or repeating words. She says: \"I was going to take the last train tonight. Then you walked in, smiling like nothing had happened… and suddenly, leaving didn't feel like such a good idea.\" Natural restrained facial acting, slight breath and eye movement; no head turns, cuts, camera move, subtitles, captions or graphics. Hold a relaxed closed-mouth expression for the brief remainder after the voice finishes. Film grain, nuanced warm lighting, shallow depth of field, high-end drama scene.",
+        "settings": {
+          "durationSec": 11,
+          "resolution": "480p",
+          "aspectRatio": "16:9",
+          "audio": true,
+          "enablePromptExpansion": false
+        },
+        "references": [
+          {
+            "kind": "asset",
+            "assetId": "ma_b5cf3c4f93cc49e7975471d3d838de99",
+            "role": "reference"
+          },
+          {
+            "kind": "asset",
+            "assetId": "ma_dcf8abad9b624cf7b748817dbe5d62f5",
+            "role": "reference"
+          }
+        ]
+      },
+      "review": "Technical failure before provider submission: generated MP3 was stored under .mpeg extension; exact format validation rejected it. No automatic retry."
+    },
+    {
+      "tool": "lip-sync",
+      "jobId": "2a8a63ac-1a69-4ddf-bec8-0f438d203281",
+      "priceCents": 72,
+      "request": {
+        "schemaVersion": 1,
+        "surface": "video",
+        "engineId": "wan-3",
+        "mode": "ref2v",
+        "outputCount": 1,
+        "prompt": "Cinematic intimate dialogue, one continuous medium close-up of the adult woman in image reference. Keep her copper bob, face, plum velvet jacket, cream shirt and amber recording-room setting. She looks just beside the camera at someone she knows, with a subtle teasing smile. Use audio reference as the exact performance: preserve its female English voice, words, pacing, pauses and timing. Match every mouth movement to that audio from its original beginning without retiming, adding or repeating words. She says: \"I was going to take the last train tonight. Then you walked in, smiling like nothing had happened… and suddenly, leaving didn't feel like such a good idea.\" Natural restrained facial acting, slight breath and eye movement; no head turns, cuts, camera move, subtitles, captions or graphics. Hold a relaxed closed-mouth expression for the brief remainder after the voice finishes. Film grain, nuanced warm lighting, shallow depth of field, high-end drama scene.",
+        "settings": {
+          "durationSec": 11,
+          "resolution": "480p",
+          "aspectRatio": "16:9",
+          "audio": true,
+          "enablePromptExpansion": false
+        },
+        "references": [
+          {
+            "kind": "asset",
+            "assetId": "ma_b5cf3c4f93cc49e7975471d3d838de99",
+            "role": "reference"
+          },
+          {
+            "kind": "asset",
+            "assetId": "ma_a853c7747c164089833944b53ca9e937",
+            "role": "reference"
+          }
+        ]
+      },
+      "review": "Completed; user explicitly approved the video on 2026-10-20. Selected for the presentation after local shared finalizer preserved full selected voice.",
+      "measured": {
+        "source": {
+          "kind": "audio",
+          "width": null,
+          "height": null,
+          "durationSec": 10.370612,
+          "fps": null,
+          "hasAudio": true,
+          "sizeBytes": 914766,
+          "mimeType": "audio/wav",
+          "audioDurationSec": 10.370612,
+          "audioStartSec": 0
+        },
+        "provider": {
+          "kind": "video",
+          "width": 854,
+          "height": 480,
+          "durationSec": 11,
+          "fps": 30,
+          "hasAudio": true,
+          "sizeBytes": 4255013,
+          "mimeType": "video/mp4",
+          "audioDurationSec": 11.029002,
+          "audioStartSec": 0
+        },
+        "final": {
+          "kind": "video",
+          "width": 854,
+          "height": 480,
+          "durationSec": 10.4,
+          "fps": 30,
+          "hasAudio": true,
+          "sizeBytes": 1161825,
+          "mimeType": "video/mp4",
+          "audioDurationSec": 10.37,
+          "audioStartSec": 0
+        }
+      },
+      "audioComparison": {
+        "referenceSec": 10.370625,
+        "nativeSec": 11.0295,
+        "envelopeCorrelationAtZero": 0.9902561436293039,
+        "bestEnvelopeCorrelation": 0.9902561436293039,
+        "lagSec": 0,
+        "note": "Signal-envelope timing check, not a perceptual lip-sync score. Local Whisper Small transcripts match all words; start/end estimates differ by at most40ms."
+      },
+      "artifacts": {
+        "portrait": {
+          "original": "/assets/tools/creator-results/lip-portrait-original-31f8fae51bdc.png",
+          "width": 1448,
+          "height": 1086,
+          "variants": [
+            {
+              "src": "/assets/tools/creator-results/lip-portrait-480-cb62ee637c7b.webp",
+              "width": 480
+            },
+            {
+              "src": "/assets/tools/creator-results/lip-portrait-960-dffc2d0313e3.webp",
+              "width": 960
+            },
+            {
+              "src": "/assets/tools/creator-results/lip-portrait-1448-7b6dc159007d.webp",
+              "width": 1448
+            }
+          ]
+        },
+        "audio": {
+          "original": "/assets/tools/creator-results/lip-voice-original-5cc2e622eaf9.mp3",
+          "reference": "/assets/tools/creator-results/lip-voice-reference-51d39cbf98ce.wav",
+          "duration": 10.370612,
+          "peaks": [
+            0.369,
+            0.639,
+            1,
+            0.865,
+            0.247,
+            0.409,
+            0.549,
+            0.38,
+            0.118,
+            0.683,
+            0.244,
+            0.239,
+            0.13,
+            0.045,
+            0.045,
+            0.045,
+            0.109,
+            0.492,
+            0.572,
+            0.363,
+            0.137,
+            0.173,
+            0.325,
+            0.045,
+            0.045,
+            0.045,
+            0.373,
+            0.543,
+            0.21,
+            0.23,
+            0.461,
+            0.59,
+            0.172,
+            0.281,
+            0.225,
+            0.086,
+            0.141,
+            0.053,
+            0.045,
+            0.045,
+            0.045,
+            0.045,
+            0.248,
+            0.313,
+            0.641,
+            0.282,
+            0.249,
+            0.048,
+            0.045,
+            0.284,
+            0.347,
+            0.332,
+            0.36,
+            0.174,
+            0.356,
+            0.178,
+            0.093,
+            0.122,
+            0.258,
+            0.297,
+            0.229,
+            0.266,
+            0.126,
+            0.045
+          ]
+        },
+        "result": {
+          "original": "/assets/tools/creator-results/lip-performance-096c13c61c23.mp4",
+          "poster": "/assets/tools/creator-results/lip-performance-poster-fac0a8b54411.webp",
+          "width": 854,
+          "height": 480,
+          "duration": 10.4,
+          "hasAudio": true
+        },
+        "provenance": {
+          "jobId": "2a8a63ac-1a69-4ddf-bec8-0f438d203281",
+          "model": "Wan 3",
+          "providerDuration": 11,
+          "selectedAudioDuration": 10.370612,
+          "audioEncoding": "aac",
+          "finalization": "Generated video tail trimmed; complete original selected voice retained.",
+          "userReviewed": "2026-10-20"
+        }
+      }
+    }
+  ]
+}

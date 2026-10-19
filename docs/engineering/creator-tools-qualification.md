@@ -8,8 +8,8 @@ below. Public release remains closed for all five tools.
 
 | Tool | Implemented execution | Shared continuation | Live qualification |
 | --- | --- | --- | --- |
-| Subtitles | Scribe v2 transcription; editable revisions; SRT/VTT; separately quoted captioned MP4 | Library documents; clip and saved-sequence Studio captions; MCP | Paid transcription, deployed ECS image and invoice reconciliation pending |
-| Lip Sync | LTX audio-driven photo; separately gated LatentSync video with matching segments | Owned result, download, Studio add/replace, MCP | Photo/video mouth fidelity, real durations and account billing pending |
+| Subtitles | Scribe v2 transcription; editable revisions; SRT/VTT; captioned MP4 included in transcription | Library documents; clip and saved-sequence Studio captions; MCP | Paid transcription, deployed ECS image and invoice reconciliation pending |
+| Lip Sync | Wan 3 photo/video with complete selected voice; separately gated LatentSync video | Owned result, download, Studio add/replace, MCP | Photo/video mouth fidelity, real durations and account billing pending |
 | Product Photo Editor | Canonical GPT Image 2.5 and Nano Banana 2 image editing | Source/style library inputs; owned result, Studio and MCP | Product/brand fidelity and real billing pending; no pixel-lock claim |
 | Product Video Editor | Canonical Wan 3 continuous-segment editing; explicit audio policy | Private synchronized comparison, owned result, Studio add/replace, MCP | Real edit fidelity, duration/audio and billing pending |
 | Motion Transfer | Explicit Wan reference guidance or separately gated Kling V3 Standard Motion Control | Character Builder/library/Studio entry; owned result, Studio and MCP | Character/motion fidelity, orientation and real billing pending |
@@ -92,7 +92,7 @@ not evidence of live authenticated delivery or provider fidelity.
 
 The [visual review record](../qa/creator-tools-visual-review-2026-10-19.md)
 documents concept comparisons, responsive checks, interaction evidence, loading
-observations and deliberate differences. User visual acceptance is pending.
+observations and deliberate differences. The user accepted the long Wan 3 Lip Sync video on 2026-10-20. Overall release acceptance remains separate.
 
 ### Dialogue and subtitle results added in the same review
 
@@ -111,3 +111,34 @@ repair the issue without relaxing the output guard. Tests cover 44.1kHz input,
 caption intervals and retained audio. Public page CTA wording no longer contains
 “coming soon”; route/publication and execution flags retain their independent
 release requirements. No production deployment or activation was performed.
+
+## Real results, duration and commercial follow-up — 2026-10-20
+
+Each presentation now includes distinct actual inputs/results: sneaker campaign
+(Nano Banana 2), watch edit (Wan 3), character movement (Wan 3), and the approved
+English female speaking portrait (Wan 3), alongside the three subtitle exports.
+The two LTX examples and the three-second Wan test were rejected and are not
+featured. The accepted longer result uses 10.370612 seconds of selected voice;
+local shared finalization measures 10.4 seconds of video and 10.37 of audio.
+Source voice and provider audio retain matching words and timing (local signal
+and transcript evidence, not a general lip-fidelity benchmark). The user explicitly
+accepted the video. Attempt IDs, exact prices and the refunded invalid-extension
+failure are recorded in the engineering evidence JSON files.
+
+All five tools use provider cost × 2.20. Subtitle MP4 exports and sequence mix
+preparation are included, while exact revision confirmation and ownership remain
+required. Generic model/MCP prices are unchanged. The pricing audit has 266
+scenarios, zero mismatches, and 577 unchanged public baseline rows. Focused
+financial tests include real PostgreSQL 17 transactions and historical paid-job
+recovery. Wan's timing policy permits only removal of the extra generated video
+tail, never the chosen voice, and rejects short output.
+
+The observed generated-audio extension defect is fixed in a separate commit:
+MP3 library copies retain `.mp3`, labels cannot determine audio extensions, and
+invalid owned audio is rejected before pricing/reservation. Existing stored
+objects are not modified; no production repair is claimed. New and old-quote
+regressions exercise the no-charge boundary.
+
+Canonical demonstration generations and local finalization still do not establish
+a deployed creator-operation canary, worker deployment, live auth, MCP-host
+qualification or invoice reconciliation. Public discovery remains closed.

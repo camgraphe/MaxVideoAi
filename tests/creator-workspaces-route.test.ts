@@ -15,7 +15,7 @@ test('creator route gates new execution, preserves owned recovery entry and keep
     '@/components/tools/FinishingWorkspace':'export default function FinishingWorkspace(){}',
     '@/lib/toolbox/creator-tools':"export const CREATOR_TOOL_IDS=['lip-sync','product-photo-editor','product-video-editor','motion-transfer'];",
     '@/server/tools/creator-availability':'export const isCreatorExecutionEnabled=()=>globalThis.fixtureCreatorEnabled;',
-    '@/server/tools/creator-profiles':'export const isCreatorLipVideoEnabled=()=>globalThis.fixtureLipEnabled;export const isCreatorMotionControlEnabled=()=>false;export const listCreatorToolProfiles=()=>[];',
+    '@/server/tools/creator-profiles':'export const isCreatorLipVideoEnabled=()=>false;export const isCreatorMotionControlEnabled=()=>false;export const listCreatorToolProfiles=({enabled})=>[{toolId:"lip-sync",id:"lip-video-wan-v1",available:enabled},{toolId:"motion-transfer",id:"motion-wan-v1",available:enabled}];',
   };
   const bundle=await build({entryPoints:['frontend/app/(core)/(workspace)/app/tools/[toolId]/page.tsx'],bundle:true,platform:'node',format:'cjs',write:false,jsx:'automatic',tsconfig:'frontend/tsconfig.json',packages:'external',plugins:[{name:'route-boundaries',setup(b){b.onResolve({filter:/.*/},a=>a.path in stubs?{path:a.path,namespace:'stub'}:undefined);b.onLoad({filter:/.*/,namespace:'stub'},a=>({contents:stubs[a.path],loader:'js'}));}}]});
   const module={exports:{} as any};new Function('require','module','exports',bundle.outputFiles[0].text)(createRequire(resolve('frontend/package.json')),module,module.exports);
@@ -30,6 +30,6 @@ test('creator route gates new execution, preserves owned recovery entry and keep
     (globalThis as any).fixtureCreatorEnabled=true;(globalThis as any).fixtureLipEnabled=true;
     const mix=await page('subtitles',{project:'project-1',sequence:'sequence-2',sequenceRevision:'7'});assert.deepEqual(mix.props.studioSource,{projectId:'project-1',sequenceId:'sequence-2',expectedRevision:7});
     await assert.rejects(page('subtitles',{project:'project-1',sequenceRevision:'7'}),/NOT_FOUND/);
-    const lip=await page('lip-sync');assert.equal(lip.props.executionEnabled,true);assert.equal(lip.props.lipVideoEnabled,true);
+    const lip=await page('lip-sync');assert.equal(lip.props.executionEnabled,true);assert.equal(lip.props.lipVideoEnabled,undefined,'Wan video does not inherit the specialist LatentSync gate');assert.deepEqual(lip.props.profiles,[{toolId:'lip-sync',id:'lip-video-wan-v1',available:true}]);
   }finally{delete (globalThis as any).fixtureCreatorEnabled;delete (globalThis as any).fixtureLipEnabled;}
 });

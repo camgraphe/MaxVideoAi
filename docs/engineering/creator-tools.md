@@ -75,6 +75,19 @@ records, rechecks the saved request/profile and original source identity, and
 claims one charge and one submission. An ordinary generation quote cannot be
 confirmed as a creator operation.
 
+`server/pricing/quote-creator.ts` owns the server-selected commercial product
+`creator-tools:provider-plus-120:v1` for these five tools. Canonical image/video
+profiles reuse the shared trusted-media pricing normalization and provider facts,
+then the canonical calculator applies 120% markup with no model retail margin,
+flat fee or reference-image retail floor layered on top. Specialized Scribe,
+LatentSync and Kling profiles feed their existing list-reference costs into the
+same owner; existing explicit profile configuration and release gates still apply.
+Provider input-video seconds, reference-image costs, vendor routing and standard
+rounding remain authoritative. No ordinary image/video/MCP quote, model tariff
+cell, wallet FX, tax or Stripe settlement rule changes. The immutable creator
+snapshot carries the tool policy and exact provider basis; confirmation recomputes
+it and rejects stale prepared prices. Accepted history is never repriced.
+
 The browser invalidates unaccepted quotes on source/settings edits. Confirmation
 requires the current web pricing-policy header. HTTP authenticates, checks origin,
 checks account restrictions and bounds streamed JSON before executing a paid
@@ -86,8 +99,25 @@ An accepted provider job is not a finished tool result. Status passes through
 generation, finalization and measured-output validation. Finalization has a
 versioned lease so a stale worker cannot settle another worker's result.
 Preserved audio is explicitly composed from the selected source; muted output is
-explicit. AAC re-encoding is disclosed. No hidden loop, stretch, truncation or
-`-shortest` repairs a duration mismatch.
+explicit. AAC re-encoding is disclosed. No hidden loop, stretch or `-shortest`
+repairs a duration mismatch. Selected source audio is never truncated.
+
+Lip Sync defaults to Wan 3: `lip-photo-wan-v1` uses image/audio references and
+`lip-video-wan-v1` uses a selected source video plus audio reference. The default
+resolution is 480p, with 720p and 1080p available. Audio is measured MP3/WAV,
+2–15 seconds and at most 15 MB. The video passage must cover the same selected
+audio duration; explicit cuts can account for at most one video frame of rounding.
+The interface shows selected audio, requested whole-second generation and final
+duration before quotation. Wan generates `ceil(audioSeconds)`; only the extra
+generated video tail may be trimmed before muxing the complete selected audio.
+The immutable timing policy is validated against the profile, request and sources
+at preparation, confirmation and finalization. Short or unexpected-duration
+provider output fails instead of repeating, stretching or cutting the source.
+Audio references guide the performance; matching duration alone does not certify
+word-level articulation. Human review remains necessary for the public example.
+Accepted legacy LTX operations retain their strict historical finalizer; stale
+unaccepted LTX preparations cannot start a new attempt. The specialist LatentSync
+profile remains separately gated.
 
 Final outputs create distinct owned media assets with source and operation
 lineage. Original provider outputs remain identifiable. Permanent finalization
@@ -113,11 +143,19 @@ idempotent.
 Scribe v2 uses its documented endpoint with an explicit language when supplied
 and optional keyterms. The recorded list reference is USD 0.008/minute with a 30%
 keyterms surcharge, checked 2026-10-19; this is not an account invoice claim.
-The explicit policy feeds the canonical pricing kernel, including its existing
-margin and customer rounding. Burn-in is quoted separately using the existing
-paid timeline-render policy with zero free exports. The initial transcription
-quote shows an export estimate; only a later exact export quote can authorize
-that render.
+The creator policy feeds the canonical pricing kernel with a 120% markup
+(provider cost × 2.20), preserving standard fractional-cent and customer rounding.
+MP4 burn-in, including later text/style revisions, and sequence mix preparation
+are included in the transcription price. Internal processing costs are absorbed;
+a zero additional customer charge does not assert zero infrastructure cost.
+The initial transcription quote exposes export as included. A later zero-price
+export preparation still pins the exact document revision, validates owned source
+identity, and requires confirmation before dispatching its durable worker.
+Included exports have platform-funded jobs and create neither wallet receipts nor
+purchase-ledger entries. Their failure creates no financial refund. Already accepted
+paid exports retain their original charge and refund behavior; stale unaccepted
+paid export quotes must be prepared again. General Studio timeline export pricing
+is unchanged.
 
 Rendering uses the same subtitle overlay as preview, pins the saved document
 revision, verifies the original fingerprint, preserves source timing and audio,
@@ -145,6 +183,19 @@ public-video controls, and restores time/play state when changing styles. The
 selected exported file is also the download. Final CTA links are shown in the
 design view; route admission, navigation, sitemap and JSON-LD still retain their
 release ownership. The presentation does not contain a coming-soon CTA.
+
+Photo, Video and Motion presentation examples each show distinct recorded inputs
+and provider results under `public/assets/tools/creator-results`, with responsive
+image derivatives and manual original-video playback. Lip Sync uses a separate
+portrait and an English female recording (10.370612 seconds), followed by the
+user-reviewed Wan 3 result. The shared local finalizer trims the generated tail
+and preserves the entire selected recording: measured video 10.4 seconds, audio
+10.37 seconds. Source voice and result cannot play over one another. A local
+signal-envelope check and matching transcripts establish retained dialogue timing;
+they are not a general perceptual synchronization score. Exact generation attempts,
+rejections, refunded format failure and user review are recorded in
+`docs/engineering/evidence/creator-*-2026-10-19.json`. These real examples do not
+activate public discovery or replace end-to-end release qualification.
 
 Workers run in the existing media-worker ECS image with the explicit
 `SUBTITLE_OPERATION_TARGET_ID` target. Launcher configuration is checked before
@@ -185,9 +236,8 @@ the projection and overlay. The source fingerprint is revalidated at attachment
 and export.
 
 Full-sequence transcription has a separate saved-revision mix operation. Its
-quote exposes mix preparation and transcription as separate line items in one
-total; preparation uses the existing standard paid-render policy, with no Studio
-free quota. The mix source records sequence revision and audio-manifest hash.
+quote exposes transcription and included mix preparation as separate line items;
+only transcription contributes to the total. It does not consume Studio free quota. The mix source records sequence revision and audio-manifest hash.
 Changing the underlying audio invalidates that binding. Studio MP4 export
 availability remains an independent gate.
 
@@ -207,7 +257,7 @@ the actual result; inspiration art disappears as soon as owned source media is
 available. Source previews never convert private originals into public images.
 
 Subtitle editing groups transcript, save status, SRT/VTT downloads and the
-separately quoted MP4 export. Source replacement and revision conflict behavior
+included MP4 export. Source replacement and revision conflict behavior
 remain with their existing controller. Native details, buttons and fields retain
 keyboard focus, reduced-motion support and explicit disabled reasons.
 

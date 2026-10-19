@@ -67,7 +67,7 @@ export async function prepareCreatorOperation(value: unknown, userId: string, de
   // Reject closed profiles before performing storage work. Duration compatibility is validated again in the profile.
   if (input.profileId==='motion-kling-v3-v1'&&!isCreatorMotionControlEnabled()) throw new AgentApiError('ENGINE_UNAVAILABLE','This specialist profile requires qualification.');
   if (input.toolId === 'product-photo-editor' && (input.settings.preservation === 'pixels' || input.inputs.some(entry=>entry.role==='mask'))) throw new AgentApiError('ENGINE_UNAVAILABLE','Pixel or masked preservation requires qualification.');
-  if (input.toolId === 'lip-sync' && input.settings.mode === 'video'&&!isCreatorLipVideoEnabled()) throw new AgentApiError('ENGINE_UNAVAILABLE','Video Lip Sync requires qualification before activation.');
+  if (input.toolId === 'lip-sync' && input.profileId === 'lip-video-latentsync-v1'&&!isCreatorLipVideoEnabled()) throw new AgentApiError('ENGINE_UNAVAILABLE','Video Lip Sync requires qualification before activation.');
   try {return await withCreatorMediaSlot(userId,async()=>prepareCreatorProfile(input,await resolveCreatorSources(input,userId,dependencies)));}
   catch(error){if(error instanceof AgentApiError)throw error;throw new AgentApiError('REFERENCE_INVALID','The selected media could not be prepared. Choose a supported owned source and retry.');}
 }

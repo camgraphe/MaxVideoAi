@@ -8,7 +8,7 @@ import {workspaceProjectDimensions} from '@/app/(core)/(workspace)/app/studio/_s
 import {readOwnedSubtitleSourceFacts} from './source';
 import {subtitleJobs,type SubtitleOperationRecord,type SubtitlePricing} from './jobs';
 import {subtitleRepository} from './repository';
-import {subtitleExportPrice,subtitleMixPricing} from './pricing';
+import {subtitleExportPrice,subtitleExportPricing,subtitleMixPricing} from './pricing';
 const defaults={readSequence:readOwnedSubtitleSequence,assertWorker:async()=>(await import('./ecs-runner')).assertSubtitleOperationWorkerLauncherConfigured(),dispatch:async(operationId:string)=>(await import('./ecs-runner')).launchSubtitleOperationWorkerTask({operationId}),jobs:subtitleJobs,documents:subtitleRepository,readSource:readOwnedSubtitleSourceFacts,
   quoteTranscription:async(input:{durationSec:number;keyterms:string[]}):Promise<SubtitlePricing>=>{
     const {quoteSubtitleTranscription}=await import('../tools/creator-subtitle-pricing');return {...await quoteSubtitleTranscription(input)};
@@ -27,7 +27,7 @@ export function createSubtitleOperationsService(actor:GenerationActor,options:{e
     const settings=scribeSettingsSchema.parse({language:parsed.language,keyterms:parsed.keyterms});
     const pricing=await dependencies.quoteTranscription({durationSec:source.durationMs/1000,keyterms:settings.keyterms});
     const estimate=source.ref.kind==='video'?subtitleExportPrice(facts):undefined;
-    const operation=await dependencies.jobs.prepare(actor,'transcribe',{source,facts,originalIdentity,settings},pricing,estimate?{amountCents:estimate.amountCents,currency:estimate.currency,requiresNewQuote:true}:undefined);
+    const operation=await dependencies.jobs.prepare(actor,'transcribe',{source,facts,originalIdentity,settings},pricing,estimate?{...estimate,requiresNewQuote:false}:undefined);
     return response(operation);
   }
   async function prepareStudioSubtitles(input:unknown){
@@ -46,7 +46,7 @@ export function createSubtitleOperationsService(actor:GenerationActor,options:{e
     if(document.source.ref.kind!=='video')throw new Error('SUBTITLE_VISUAL_BACKGROUND_REQUIRED');if(!document.segments.length)throw new Error('SUBTITLE_DOCUMENT_EMPTY');
     const {source,facts,originalIdentity}=await dependencies.readSource(actor.userId,document.source.ref);
     if(source.fingerprint!==document.source.fingerprint)throw new Error('SUBTITLE_SOURCE_CHANGED');
-    const price=subtitleExportPrice(facts);const pricing={totalCents:price.amountCents,currency:price.currency,source:'timeline-export-paid-policy',qualityPreset:'standard'};
+    const pricing=subtitleExportPricing(facts);
     return response(await dependencies.jobs.prepare(actor,'render',{source,facts,originalIdentity,settings:{keyterms:[]},document},pricing));
   }
   async function confirm(input:unknown){

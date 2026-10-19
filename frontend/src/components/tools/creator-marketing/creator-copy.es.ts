@@ -39,7 +39,7 @@ export const esCopy: CreatorMarketingDictionary = {
     ],
     questions: [
       { question: '¿Puedo editar los subtítulos después de transcribir?', answer: 'Sí. Cambia el texto, los tiempos y el estilo sin volver a transcribir. Después de reescribir una frase, comprueba que siga el ritmo de la voz.' },
-      { question: '¿Qué formato me conviene?', answer: 'SRT y VTT permiten añadir subtítulos en un reproductor o editor de vídeo. El MP4 los integra directamente en la imagen; esta exportación tiene su propio precio, que confirmas después de editar.' },
+      { question: '¿Qué formato me conviene?', answer: 'SRT y VTT permiten añadir subtítulos en un reproductor o editor de vídeo. El MP4 los integra directamente en la imagen; esta exportación está incluida con tu transcripción, sin coste adicional.' },
     ],
   },
   'lip-sync': {

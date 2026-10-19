@@ -82,6 +82,19 @@ export async function trimCreatorBytes(bytes: Uint8Array, facts: CreatorMediaFac
     return {bytes:result,facts:measured};
   });
 }
+/** Only generated video is shortened; provider sound is discarded before the selected audio is muxed. */
+export async function trimCreatorGeneratedVideoTail(bytes: Uint8Array, facts: CreatorMediaFacts, durationSec: number): Promise<{bytes: Buffer; facts: CreatorMediaFacts}> {
+  if (facts.kind !== 'video' || facts.durationSec == null || !Number.isFinite(durationSec) || durationSec < 2 || durationSec > 15 || durationSec > facts.durationSec) throw new CreatorMediaError('Generated video is too short for the selected audio.');
+  return workspace(async directory => {
+    const source = join(directory, 'generated.mp4'), output = join(directory, 'selected-video.mp4');
+    await writeFile(source, bytes);
+    await exec(await ensureExecutableFfmpegPath(ffmpeg.path), ['-hide_banner','-loglevel','error','-nostdin','-threads','2','-protocol_whitelist','file,pipe','-i',source,'-t',String(durationSec),'-map','0:v:0','-an','-c:v','libx264','-preset','veryfast','-crf','18','-threads','2','-movflags','+faststart','-fs',String(MAX_BYTES),'-y',output], {timeout:90_000,maxBuffer:1024*1024});
+    const result = await readOutput(output), measured = await inspectCreatorBytes(result, 'video', 'video/mp4');
+    validateCreatorOutputTiming(durationSec, measured.durationSec, measured.fps);
+    if (measured.hasAudio) throw new CreatorMediaError('Generated sound was not removed.');
+    return {bytes: result, facts: measured};
+  });
+}
 export function buildCreatorMuxArgs(video: string, audio: string | null, output: string): string[] {
   return ['-hide_banner','-loglevel','error','-nostdin','-threads','2','-protocol_whitelist','file,pipe','-i',video,...(audio ? ['-protocol_whitelist','file,pipe','-i',audio] : []),'-map','0:v:0',...(audio ? ['-map','1:a:0','-c:a','aac','-b:a','192k'] : ['-an']),'-c:v','copy','-movflags','+faststart','-fs',String(MAX_BYTES),'-y',output];
 }

@@ -3,8 +3,8 @@
 The five creator tools were redesigned after product feedback rejected the first
 schematic presentation. This revision is implemented in the actual React surfaces,
 with EN/FR/ES copy, authored presentation artwork, the existing MaxVideoAI brand,
-responsive controls, and connected Media/Studio components. User visual acceptance
-is still pending. Public activation and creator-profile qualification remain closed.
+responsive controls, and connected Media/Studio components. The user accepted the longer Wan 3 Lip Sync video on 2026-10-20. Overall page
+acceptance remains separate. Public activation and creator-profile qualification remain closed.
 
 ## Scope and review environment
 
@@ -47,7 +47,7 @@ were checked at 1440px and 390px. The comparison covered:
 | Composition | Editorial hero, dominant 3:2 art, open workflow rows and dark continuation band. App uses a 330px control rail and large preview. | Full landscape art is preserved in the paired scene examples instead of clipping the product into portrait frames. |
 | Typography | Local Geist, explicit title/body/control scales, compact app titles, deliberate mobile line breaks. Font preloading removes the measured fixture font-swap shift. | Existing application typography and navigation remain integrated. |
 | Brand and palette | Actual MaxVideoAI mark and navigation, cream/bronze application tokens, neutral marketing surface. | The generated concept's invented wordmark/header is replaced by the existing product identity. |
-| Artwork | Five separately generated editorial images, responsive WebP variants, reserved dimensions. Subtitles has a distinct real dialogue video in its result section. | Still artwork remains labelled as presentation. The three subtitle examples are actual exported MP4s; other tools' examples remain presentation art. |
+| Artwork | Five separately generated editorial images, responsive WebP variants, reserved dimensions. Subtitles has a distinct real dialogue video in its result section. | Still artwork remains labelled as presentation. The three subtitle examples are actual exported MP4s; the follow-up below adds recorded results for the other four tools. |
 | Copy and action hierarchy | Outcome-first localized copy, source roles, three stages, useful empty states. Download and Studio lead the result footer; other transforms are grouped. | “Bientôt disponible” and the generic price footer were removed from all five presentations. Concrete action links are shown; route and execution gates remain separate. |
 | Responsive behavior | Source precedes preview and settings on mobile; optional references and advanced settings are collapsed. No horizontal overflow in the tested widths. | Desktop two-column sections stack in reading order rather than shrinking the desktop composition. |
 
@@ -117,3 +117,33 @@ Local screenshots `subtitles-result-{390,1536}.png`,
 reaches the actual editor component using local API doubles; no overflow or page
 errors were observed. Paid Scribe transcription and live authenticated exports
 remain outside this evidence. No new field performance claim is made.
+
+## Five distinct result stories — 2026-10-20
+
+- Photo uses a large studio/campaign diptych with a sneaker on sculptural cobalt
+  forms and citron light. The input and edited output appear once each.
+- Video places the electric-blue/crimson watch comparison in its hero, with each
+  complete six-second clip independently playable and the exact output downloadable.
+- Motion presents character, walking reference and generated performance in its
+  own three-part composition.
+- Lip Sync retains a distinct editorial hero, followed by a source portrait,
+  measured voice waveform, English script, manual voice reader and the full
+  approved speaking performance. Its controls never play two audio tracks together.
+- Subtitles retains the real train dialogue and Pop/Cinema/Contrast exports.
+
+All readers defer MP4/MP3 transfer until Play, preserve original downloads and
+fixed image geometry. Browser tests cover all five pages in EN/FR/ES at 320, 390,
+768 and 1440px, real decoding, pause, Range responses, download identity, subtitle
+style changes and Lip Sync audio exclusivity. Local snapshots are
+`/tmp/five-tools-review/real-demos/after-*.png` and
+`/tmp/five-tools-review/lip-integrated-{1440,390}.png`. The comparison ledger for
+Photo/Video/Motion is `/tmp/five-tools-review/real-demos/README.md` with 36 local
+loading runs; CLS remained zero. These are local smoke measurements, not field
+Core Web Vitals results. The live local review remains port 54870 and all account,
+quote and generation actions there remain explicitly simulated.
+
+Lip Sync voice was approved at USD 0.05. The accepted long Wan render was USD
+0.72; a preceding format rejection was refunded in full. Shared local finalization
+retains the entire voice. The user explicitly accepted the video before integration.
+The format bug is covered by regressions preventing invalid audio quotes/charges.
+Creator pricing is now provider × 2.20 and subtitle MP4 export is included.

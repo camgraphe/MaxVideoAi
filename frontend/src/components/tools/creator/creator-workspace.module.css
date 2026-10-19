@@ -100,7 +100,7 @@
 .media audio { width: min(90%,600px); }
 .empty { display: grid; gap: 12px; justify-items: center; color: #e6efed; padding: 32px; text-align: center; font-size: 14px; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 16px; }
-.actions :is(a,button),.primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 14px; border: 1px solid var(--app-line,var(--border)); border-radius: 8px; font-size: 13px; }
+.actions :is(a,button),.primary,.adaptPassage { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 14px; border: 1px solid var(--app-line,var(--border)); border-radius: 8px; font-size: 13px; }
 .primary { background: var(--app-accent,var(--brand)); color: var(--app-accent-ink,#fff); border-color: var(--app-accent,var(--brand)); width: 100%; font-weight: 550; min-height: 48px; }
 .operationPanel { display: grid; gap: 12px; }
 .operationStatus { display: flex; flex-wrap: wrap; gap: 9px; align-items: center; font-size: 13px; }
