@@ -68,7 +68,7 @@ async function readOutput(path: string): Promise<Buffer> {
 }
 export async function trimCreatorBytes(bytes: Uint8Array, facts: CreatorMediaFacts, segment: CreatorSegment): Promise<{bytes:Buffer;facts:CreatorMediaFacts}> {
   validateCreatorSegment(segment, facts.durationSec ?? 0);
-  if (facts.kind === 'image' || segment.endSec - segment.startSec > 20) throw new CreatorMediaError('Choose a segment of at most 20 seconds.');
+  if (facts.kind === 'image' || segment.endSec - segment.startSec > (facts.kind==='video'?30:20)) throw new CreatorMediaError('Choose a video segment of at most 30 seconds or an audio segment of at most 20 seconds.');
   return workspace(async directory => {
     const source = join(directory,'source'), output = join(directory, facts.kind === 'audio' ? 'segment.wav' : 'segment.mp4');
     await writeFile(source,bytes);

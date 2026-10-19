@@ -11,8 +11,8 @@ import { prepareCreatorOperation, revalidateCreatorSources, creatorSourceFingerp
 import { CREATOR_PROFILES, prepareCreatorProfile } from './creator-profiles';
 import { finalizeCreatorOperation, CreatorFinalizationError } from './creator-finalize';
 import * as store from './creator-operations-store';
-import { prepareCreatorLipSyncQuote,confirmCreatorLipSync } from './creator-operations-lipsync';
-import { refreshCreatorLipSync } from './creator-operations-lipsync-provider';
+import { prepareCreatorSpecialistQuote,confirmCreatorSpecialist } from './creator-operations-specialist';
+import { refreshCreatorSpecialist } from './creator-operations-specialist-provider';
 export { creatorOperationInputSchema, prepareCreatorOperation };
 
 const defaults={prepare:prepareCreatorOperation,revalidate:revalidateCreatorSources,finalize:finalizeCreatorOperation,generation:createCreatorGenerationService,
@@ -31,17 +31,16 @@ export function createCreatorOperationsService(actor:GenerationActor,options:Cre
   const service=(extra:Partial<CreatorGenerationOptions>={})=>deps.generation(actor,{...options.generationOptions,enabled:options.enabled,...extra});
   async function status(operationId:string) {
     let row=await deps.read(actor,idSchema.parse(operationId));
-    if(row.status==='completed') {
-      for(const output of row.result?.outputs??[]) await resolveStudioMedia(actor.userId,output.asset);
-      return store.creatorOperationView(row);
-    }
+    // The immutable operation remains completed after a delivered media asset is removed.
+    // Presentation resolves delivery access separately and can report an unavailable artifact.
+    if(row.status==='completed') return store.creatorOperationView(row);
     if(row.status==='failed') return store.creatorOperationView(row);
     if(!row.job_id) {
       if(['failed','expired'].includes(row.quote_state)) {await deps.markFailed(actor,row.id,'The quote is no longer available. Prepare a new quote.');row=await deps.read(actor,row.id);}
       return store.creatorOperationView(row);
     }
     if(row.snapshot.profile.qualification==='tool-specific') {
-      await refreshCreatorLipSync(actor,row);
+      await refreshCreatorSpecialist(actor,row);
       row=await deps.read(actor,row.id);
       if(row.status==='failed')return store.creatorOperationView(row);
     }
@@ -73,7 +72,7 @@ export function createCreatorOperationsService(actor:GenerationActor,options:Cre
       }
       const snapshot={...prepared,referenceFingerprint:studioReferenceFingerprint(references)};
       const quote=prepared.profile.qualification==='tool-specific'
-        ? await prepareCreatorLipSyncQuote(actor,snapshot,options.enabled)
+        ? await prepareCreatorSpecialistQuote(actor,snapshot,options.enabled)
         : await service({expectedReferenceFingerprint:snapshot.referenceFingerprint,onQuotePrepared:(stored,tx)=>deps.insert(actor,stored,snapshot,tx)}).prepare(prepared.request);
       return {operationId:quote.quoteId,quoteId:quote.quoteId,quote,operation:{toolId:prepared.input.toolId,profile:prepared.profile,expectedDurationSec:prepared.expectedDurationSec,audioPolicy:prepared.audioPolicy,sourceAssets:prepared.input.inputs.map(entry=>entry.source)}};
     },
@@ -82,7 +81,7 @@ export function createCreatorOperationsService(actor:GenerationActor,options:Cre
       const row=await deps.read(actor,input.operationId);
       if(row.status==='completed'||row.status==='failed'||row.job_id) return status(row.id);
       if(row.snapshot.profile.qualification==='tool-specific') {
-        await confirmCreatorLipSync(actor,row.id,options.enabled);
+        await confirmCreatorSpecialist(actor,row.id,options.enabled);
         return status(row.id);
       }
       validateSnapshot(row);

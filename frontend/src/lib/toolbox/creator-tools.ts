@@ -48,3 +48,15 @@ export const CREATOR_DEFAULT_SETTINGS = {
   'lip-sync': { mode: 'photo', instruction: '' },
   'motion-transfer': { orientation: 'video', instruction: '', audioPolicy: 'preserve', resolution: '720p' },
 } as const;
+
+/** Serializable profile facts; runtime gates are projected by the server. Prices always come from a quote. */
+export type CreatorProfileDescriptor = {
+  id:string;toolId:CreatorToolId;revision:1;qualification:'canonical'|'tool-specific'|'closed';disclosure:string;
+  constraints:{
+    sourceKinds:Array<'image'|'video'|'audio'>;
+    duration?:{min:number;max:number;wholeSeconds:boolean;matchingAudioVideo?:boolean;maxByOrientation?:{image:number;video:number}};
+    audioPolicies:Array<'preserve'|'mute'>;resolution:'provider'|'selectable';
+    minVideoFps?:number;maxSourceBytes?:number;pixelPreservation?:boolean;acceptsInstruction?:boolean;
+  };
+};
+export type CreatorAvailableProfile=CreatorProfileDescriptor & {deploymentGateOpen:boolean};
