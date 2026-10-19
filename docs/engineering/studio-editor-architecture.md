@@ -226,3 +226,28 @@ Older untitled conversations use a read-only projection of the first ten retaine
 messages (240 characters each), for at most 100 owned projects. Reads never backfill
 storage, fetch workspace JSON or expose those source messages to the browser. The
 next substantive turn can persist a title; manually named projects are excluded.
+
+## Revisioned subtitles (2026-10-19)
+
+`src/lib/subtitles` owns strict timed documents, plain-text serialization, speed-one
+trim projection and the shared browser/Remotion overlay. Documents and revisions
+belong to the account in migration70; a timeline item persists only
+`subtitle: {documentId, revision}`. The reversible `subtitles` timeline command
+checks account ownership and exact source reference inside the existing revisioned
+command transaction. Editing a document does not silently update a pinned clip.
+Moves, trims and splits retain its reference and derive captions from the current
+source interval. Preview/export read the pinned owned revision, and export intent
+includes its exact contents. `subtitleDocument` is a transient read/render projection
+and is stripped from saved workspace JSON.
+
+The inspector lists source-matching documents on explicit interaction. Existing
+source captions are independent of the final audio mix: replacing speech with an
+audio track does not make an earlier transcript describe that new sound. Standalone
+transcription and MP4 burn run through `src/server/subtitles` durable operations,
+not the Studio export flag or free allowance. The same wallet ledger is used;
+source bytes are remeasured before confirmation and canonical identity is locked
+before reservation. Unknown provider acceptance is never submitted again: the
+operation exposes attention state, then the reconciler refunds it exactly once
+after one hour while preserving the audit record. Polling a known request never
+purchases another transcription. Migrations70/73, renderer runtime and explicit
+commercial policy must be available before enabling execution.

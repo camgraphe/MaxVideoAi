@@ -27,5 +27,6 @@ test('owned subtitle revisions are atomic, immutable and idempotent under concur
   await assert.rejects(repository.update('stranger','sub-1',2,'foreign',patch('attack')),/NOT_FOUND/);
   assert.equal((await repository.read('owner','sub-1',1))?.segments[0].text,'original');
   assert.equal((await pg.pool.query('SELECT count(*)::int AS n FROM subtitle_document_revisions')).rows[0].n,2);
+  assert.equal((await repository.list('owner',{source:doc.source.ref}))[0].revision,2);assert.equal((await repository.list('stranger')).length,0);
   await pg.pool.query('SET default_transaction_read_only=on');assert.equal((await repository.read('owner','sub-1'))?.revision,2);
 });

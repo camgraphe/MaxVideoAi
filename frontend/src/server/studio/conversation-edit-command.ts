@@ -1,3 +1,4 @@
+import {validateSubtitleAttachment} from '../subtitles/studio';
 import {createHash} from 'node:crypto';
 import {withDbTransaction, type QueryExecutor} from '@/lib/db';
 import {applyConversationTimelineEdit, conversationTimelineCommandSchema} from '@/lib/studio/conversation-timeline-editing';
@@ -77,7 +78,10 @@ export async function editStudioConversationTimeline(actor: ConversationEditActo
         if (timelineEditTouchesLockedTracks(state.timelineItems,items,state.lockedTimelineTracks ?? [])) throw new Error('Timeline track is locked.');
         if (!projectAssets.some(asset => JSON.stringify(asset.ref) === JSON.stringify(inserted.asset.ref))) projectAssets = [...projectAssets,inserted.asset];
       }
-    } else items = applyConversationTimelineEdit(state.timelineItems,input.edit,settings.fps,state.lockedTimelineTracks ?? []);
+    } else {
+      if(input.edit.kind==='subtitles'&&input.edit.documentId)await validateSubtitleAttachment(actor.userId,state.timelineItems,input.edit,executor);
+      items = applyConversationTimelineEdit(state.timelineItems,input.edit,settings.fps,state.lockedTimelineTracks ?? []);
+    }
     const canonicalSequences = sequences.map(value => createWorkspaceSequenceRecord({
       ...value.timelineState as Parameters<typeof createWorkspaceSequenceRecord>[0],
       id: value.id, name: value.name, projectSettings: value.settings as WorkspaceProjectSettings,

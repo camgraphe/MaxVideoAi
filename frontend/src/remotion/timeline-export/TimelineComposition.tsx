@@ -1,5 +1,6 @@
 import React from 'react';
-import { AbsoluteFill, Audio, Img, Sequence, OffthreadVideo, useVideoConfig } from 'remotion';
+import {TimelineSubtitleOverlay} from '../../lib/subtitles/TimelineSubtitleOverlay';
+import { AbsoluteFill, Audio, Img, Sequence, OffthreadVideo, useVideoConfig, useCurrentFrame } from 'remotion';
 import type { WorkspaceTimelineRenderClip } from '../../../app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-render';
 import type { TimelineExportRenderProps } from './types';
 import {
@@ -41,7 +42,8 @@ function clipTransformStyle(clip: WorkspaceTimelineRenderClip): React.CSSPropert
 }
 
 export function TimelineComposition(props: TimelineExportRenderProps) {
-  const { fps } = useVideoConfig();
+  const { fps,width,height } = useVideoConfig();
+  const frame=useCurrentFrame();
   if (props.mediaTrust !== 'server-validated' && props.manifest.tracks.some((track) => track.clips.length > 0)) {
     throw new Error('TIMELINE_EXPORT_MEDIA_NOT_VALIDATED');
   }
@@ -112,6 +114,7 @@ export function TimelineComposition(props: TimelineExportRenderProps) {
             ))
           )
         : null}
+      <TimelineSubtitleOverlay items={props.manifest.tracks.flatMap(track=>track.clips)} timeMs={frame/fps*1000} width={width} height={height}/>
     </AbsoluteFill>
   );
 }

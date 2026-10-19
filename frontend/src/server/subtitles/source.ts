@@ -21,7 +21,7 @@ const defaults:SubtitleSourceDependencies={
     const file=await createBoundedMediaDownloader({accepted:['video/mp4','video/quicktime','video/webm','audio/mpeg','audio/mp3','audio/wav','audio/x-wav','audio/mp4','audio/aac','audio/ogg','audio/flac'],maxBytes:SUBTITLE_MAX_SOURCE_BYTES})({file_id:'subtitle-owned-source',download_url:url});return file.bytes;
   },
 };
-export type LoadedSubtitleSource={path:string;source:SubtitleSource;facts:Awaited<ReturnType<typeof probeSubtitleMedia>>};
+export type LoadedSubtitleSource={path:string;originalIdentity:{id:string;url:string};source:SubtitleSource;facts:Awaited<ReturnType<typeof probeSubtitleMedia>>};
 /** The callback alone can use the temporary original. Quotes may retain facts and identity, never a grant. */
 export async function withOwnedSubtitleSource<T>(userId:string,input:ToolAssetRef,consume:(source:LoadedSubtitleSource)=>Promise<T>,options:{signal?:AbortSignal;expectedFingerprint?:string}={},dependencies:SubtitleSourceDependencies=defaults):Promise<T>{
   if(!userId)throw new Error('UNAUTHORIZED');const ref=toolAssetRefSchema.parse(input);
@@ -35,10 +35,10 @@ export async function withOwnedSubtitleSource<T>(userId:string,input:ToolAssetRe
   const fingerprint=createHash('sha256').update(bytes).digest('hex');
   if(options.expectedFingerprint&&options.expectedFingerprint!==fingerprint)throw new Error('SUBTITLE_SOURCE_CHANGED');
   const directory=await mkdtemp(join(tmpdir(),'subtitle-source-'));const path=join(directory,'original');
-  try{await writeFile(path,bytes,{mode:0o600});const facts=await probeSubtitleMedia(path);options.signal?.throwIfAborted();return await consume({path,source:{ref,fingerprint,durationMs:facts.durationMs},facts});}
+  try{await writeFile(path,bytes,{mode:0o600});const facts=await probeSubtitleMedia(path);options.signal?.throwIfAborted();return await consume({path,originalIdentity:{id:media.id,url:media.url},source:{ref,fingerprint,durationMs:facts.durationMs},facts});}
   finally{await rm(directory,{recursive:true,force:true});}
 }
-export async function readOwnedSubtitleSourceFacts(userId:string,ref:ToolAssetRef){return withOwnedSubtitleSource(userId,ref,async({source,facts})=>({source,facts}));}
+export async function readOwnedSubtitleSourceFacts(userId:string,ref:ToolAssetRef){return withOwnedSubtitleSource(userId,ref,async({source,facts,originalIdentity})=>({source,facts,originalIdentity}));}
 /** Call only after a paid operation is reserved. Its key is retained until the provider no longer needs it. */
 export async function prepareScribeAudio(userId:string,source:SubtitleSource,signal?:AbortSignal){
   return withOwnedSubtitleSource(userId,source.ref,async loaded=>{

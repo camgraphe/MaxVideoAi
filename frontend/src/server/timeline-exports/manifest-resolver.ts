@@ -1,3 +1,4 @@
+import {hydrateSubtitleTimelineItems} from '../subtitles/studio';
 import { readOwnedLibraryAssetsByIds } from '@/server/media-library/assets';
 import type { MediaAssetRecord } from '@/server/media-library-records';
 import { ownedMediaStorageKeyForUrl } from '@/server/storage';
@@ -56,6 +57,7 @@ export type TimelineExportResolverDependencies = {
     assetIds: readonly string[];
   }) => Promise<MediaAssetRecord[]>;
   isOwnedStorageUrl: (params: { url: string; userId: string; projectId: string }) => boolean;
+  hydrateSubtitles?: typeof hydrateSubtitleTimelineItems;
   validateManifestMediaUrls: typeof validateTimelineExportManifestMediaUrls;
 };
 
@@ -191,6 +193,7 @@ function manifestIntent(manifest: WorkspaceTimelineRenderManifest): unknown {
       durationSec: track.durationSec,
       clips: track.clips.map((clip) => ({
         id: clip.id,
+        subtitle:clip.subtitle??null,subtitleDocument:clip.subtitleDocument??null,
         assetId: clip.assetId ?? null,
         outputNodeId: clip.outputNodeId,
         track: clip.track,
@@ -309,7 +312,7 @@ export async function resolveOwnedTimelineExportRequestWithDependencies(params: 
   });
 
   const manifest = buildWorkspaceTimelineRenderManifest({
-    items: canonicalItems,
+    items: await (dependencies.hydrateSubtitles??hydrateSubtitleTimelineItems)(params.userId,canonicalItems),
     nodes,
     projectName: project.name,
     sequenceId: sequence.id,

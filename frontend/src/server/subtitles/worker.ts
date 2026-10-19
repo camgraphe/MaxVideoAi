@@ -57,7 +57,7 @@ export async function pollSubtitleOperation(operationId:string,overrides:Partial
 export async function reconcileSubtitleOperations(overrides:Partial<SubtitleWorkerDependencies>={}){
   const dependencies={...defaults,...overrides},pending=await dependencies.jobs.pending();let polled=0,dispatched=0,errors=0;
   for(const operation of pending){
-    try{if(operation.provider_request_id){await pollSubtitleOperation(operation.id,dependencies);polled++;}else{await dependencies.dispatch(operation.id);dispatched++;}}
+    try{if(operation.state==='submitting'){await dependencies.jobs.expireUnknown(operation.id);const terminal=await dependencies.jobs.readWork(operation.id);if(terminal?.state==='failed'&&operation.prepared_audio)await dependencies.cleanupAudio(operation.prepared_audio).catch(()=>undefined);}else if(operation.provider_request_id){await pollSubtitleOperation(operation.id,dependencies);polled++;}else{await dependencies.dispatch(operation.id);dispatched++;}}
     catch{errors++;}
   }
   return {checked:pending.length,polled,dispatched,errors};

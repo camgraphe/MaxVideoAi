@@ -16,9 +16,10 @@ export const STUDIO_EDITING_DIRECTOR_TOOLS = [
       variant({kind: {type: 'string',enum: ['move']},clipId,startFrame: integer}),
       variant({kind: {type: 'string',enum: ['gain']},clipId,volume: {type: 'number',minimum: 0,maximum: 100}}),
       variant({kind: {type: 'string',enum: ['remove']},clipId}),
+      variant({kind:{type:'string',enum:['subtitles']},clipId,documentId:{type:['string','null']},revision:{type:'integer',minimum:1}}),
       variant({kind: {type: 'string',enum: ['insert']},...insertFields}),
       variant({kind:{type:'string',enum:['assemble']},clips:{type:'array',minItems:1,maxItems:12,items:variant(insertFields)}}),
     ]},
   }},
 ] as const;
-export type StudioConversationTimeline = {projectId: string;sequenceId: string;sequenceName: string;updatedAt: string;revision: number;fps: number;lockedTracks?: string[];mutedAudioTracks?: string[];clips: {id: string;title: string;kind: string;track: string;startFrame: number;durationFrames: number;sourceInFrame: number;volume?: number;muted?: boolean;ref?: import('@/lib/toolbox/contract').ToolAssetRef}[]};
+export type StudioConversationTimeline = {projectId: string;sequenceId: string;sequenceName: string;updatedAt: string;revision: number;fps: number;lockedTracks?: string[];mutedAudioTracks?: string[];clips: {id: string;title: string;kind: string;track: string;startFrame: number;durationFrames: number;sourceInFrame: number;volume?: number;muted?: boolean;ref?: import('@/lib/toolbox/contract').ToolAssetRef;subtitle?:{documentId:string;revision:number}}[]};

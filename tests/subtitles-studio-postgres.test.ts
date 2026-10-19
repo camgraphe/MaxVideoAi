@@ -1,0 +1,34 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import {readFileSync} from 'node:fs';
+import {randomUUID} from 'node:crypto';
+import {startDisposablePostgres} from './helpers/disposable-postgres';
+import {initializeStudioConnectedFixture,STUDIO_CONNECTED_ASSET_IDS} from './helpers/studio-connected-fixture-data';
+import {STUDIO_FIXTURE_OWNERS} from './helpers/studio-auth-fixture';
+import {createStudioConversationProject,editStudioConversationTimeline} from '../frontend/src/server/studio/conversation-edit-command';
+import {readStudioWorkspace} from '../frontend/src/server/studio/workspace-command';
+import {createSubtitleRepository,type SubtitleRepositoryDependencies} from '../frontend/src/server/subtitles/repository';
+import {normalizeScribeTranscript} from '../frontend/src/lib/subtitles/document';
+import type {WorkspaceTimelineItem} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
+
+test('Studio attaches an owned source-matching revision atomically, retains it across trims, and updates only explicitly',async t=>{
+  const pg=await startDisposablePostgres('subtitles-studio');t.after(()=>pg.cleanup());await initializeStudioConnectedFixture(pg);await pg.pool.query("UPDATE media_assets SET url='https://cdn.maxvideoai.com/' || public_id || '.mp4'");await pg.pool.query(readFileSync('neon/migrations/70_subtitle_documents.sql','utf8'));
+  const transaction:SubtitleRepositoryDependencies['transaction']=async run=>{const client=await pg.pool.connect();try{await client.query('BEGIN');const result=await run({query:async(sql,params)=>(await client.query(sql,params)).rows});await client.query('COMMIT');return result;}catch(error){await client.query('ROLLBACK');throw error;}finally{client.release();}};
+  const repo=createSubtitleRepository({query:async(sql,params)=>(await pg.pool.query(sql,params)).rows,transaction}),deps={withTransaction:transaction,featureEnabled:true};
+  const actor={userId:STUDIO_FIXTURE_OWNERS[0]},project=await createStudioConversationProject(actor,{name:'Subtitles',idempotencyKey:randomUUID()},deps);
+  const ref={type:'asset' as const,assetId:STUDIO_CONNECTED_ASSET_IDS.a,kind:'video' as const};
+  const inserted=await editStudioConversationTimeline(actor,{projectId:project.projectId,sequenceId:project.sequenceId,expectedRevision:0,idempotencyKey:randomUUID(),edit:{kind:'insert',ref,startFrame:0,durationFrames:120,sourceInFrame:30}},deps);
+  const doc=normalizeScribeTranscript({text:'hello world',language_code:'eng',words:[{text:'hello',type:'word',start:1,end:2},{text:' ',type:'spacing'},{text:'world',type:'word',start:3,end:4}]},{id:'owned-subtitle',source:{ref,fingerprint:'a'.repeat(64),durationMs:6000}});
+  await repo.create(actor.userId,doc,'job-subtitle');await repo.create(STUDIO_FIXTURE_OWNERS[1],{...doc,id:'foreign-subtitle'},'foreign-job');
+  await repo.create(actor.userId,{...doc,id:'other-source',source:{...doc.source,ref:{...ref,assetId:STUDIO_CONNECTED_ASSET_IDS.b}}},'other-job');
+  const command=(documentId:string,revision=1)=>({projectId:project.projectId,sequenceId:project.sequenceId,expectedRevision:1,idempotencyKey:randomUUID(),edit:{kind:'subtitles',clipId:inserted.clip!.id,documentId,revision}});
+  await assert.rejects(editStudioConversationTimeline(actor,command('foreign-subtitle'),deps),/SUBTITLE_NOT_FOUND/);
+  await assert.rejects(editStudioConversationTimeline(actor,command('other-source'),deps),/SUBTITLE_SOURCE_MISMATCH/);
+  const input=command(doc.id),attached=await editStudioConversationTimeline(actor,input,deps);assert.equal(attached.revision,2);assert.deepEqual(await editStudioConversationTimeline(actor,input,deps),attached);
+  const read=async()=>{const state=await readStudioWorkspace(actor,project.projectId,deps);return (state.sequences[0].timelineState as {timelineItems:WorkspaceTimelineItem[]}).timelineItems;};
+  assert.deepEqual((await read())[0].subtitle,{documentId:doc.id,revision:1});assert.equal((await read())[0].subtitleDocument,undefined,'Only immutable identity persists with the clip');
+  await repo.update(actor.userId,doc.id,1,'edit-text',{segments:[{...doc.segments[0],text:'corrected'}]});assert.equal((await read())[0].subtitle?.revision,1);
+  await editStudioConversationTimeline(actor,{...command(doc.id,2),expectedRevision:2},deps);assert.equal((await read())[0].subtitle?.revision,2);
+  await editStudioConversationTimeline(actor,{...command(doc.id),expectedRevision:3,edit:{kind:'trim',clipId:inserted.clip!.id,edge:'start',durationFrames:90}},deps);
+  assert.equal((await read())[0].sourceStartSec,2);assert.equal((await read())[0].subtitle?.revision,2);
+});

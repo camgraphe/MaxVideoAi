@@ -15,7 +15,7 @@ const defaults={assertWorker:async()=>(await import('./ecs-runner')).assertSubti
   },
 };
 export type SubtitleOperationsDependencies=typeof defaults&{dispatch:(operationId:string)=>Promise<unknown>};
-function response(operation:SubtitleOperationRecord){return {operationId:operation.id,kind:operation.operation_kind,state:operation.state==='processing'||operation.state==='submitting'||operation.state==='provider-pending'?'running' as const:operation.state,jobId:operation.job_id,quote:{price:{amountCents:operation.pricing_snapshot.totalCents,currency:operation.pricing_snapshot.currency},expiresAt:new Date(operation.expires_at).toISOString()},exportEstimate:operation.export_estimate,result:operation.state==='completed'?operation.result:null,...operation.state==='failed'?{error:operation.message}: {}};}
+function response(operation:SubtitleOperationRecord){return {operationId:operation.id,kind:operation.operation_kind,state:operation.state==='processing'||operation.state==='submitting'||operation.state==='provider-pending'?'running' as const:operation.state,jobId:operation.job_id,...operation.state==='submitting'?{needsAttention:true,retryable:false}: {},quote:{price:{amountCents:operation.pricing_snapshot.totalCents,currency:operation.pricing_snapshot.currency},expiresAt:new Date(operation.expires_at).toISOString()},exportEstimate:operation.export_estimate,result:operation.state==='completed'?operation.result:null,...operation.state==='failed'?{error:operation.message}: {}};}
 function exportPrice(facts:Awaited<ReturnType<typeof readOwnedSubtitleSourceFacts>>['facts']){
   assertSubtitleRenderFacts(facts);
   const resolution=Math.min(facts.width,facts.height)>=2160?'4k':Math.min(facts.width,facts.height)>=1080?'1080p':'720p';
@@ -27,28 +27,31 @@ export function createSubtitleOperationsService(actor:GenerationActor,options:{e
   const available=()=>{if(!options.enabled)throw new Error('SUBTITLE_TOOL_UNAVAILABLE');};
   async function prepare(input:unknown){
     available();const parsed=z.object({source:toolAssetRefSchema,language:scribeSettingsSchema.shape.language,keyterms:scribeSettingsSchema.shape.keyterms}).strict().parse(input);
-    const {source,facts}=await dependencies.readSource(actor.userId,parsed.source);
+    const {source,facts,originalIdentity}=await dependencies.readSource(actor.userId,parsed.source);
     if(!facts.hasAudio)throw new Error('SUBTITLE_SOURCE_HAS_NO_AUDIO');
     const settings=scribeSettingsSchema.parse({language:parsed.language,keyterms:parsed.keyterms});
     const pricing=await dependencies.quoteTranscription({durationSec:source.durationMs/1000,keyterms:settings.keyterms});
     const estimate=source.ref.kind==='video'?exportPrice(facts):undefined;
-    const operation=await dependencies.jobs.prepare(actor,'transcribe',{source,facts,settings},pricing,estimate?{amountCents:estimate.amountCents,currency:estimate.currency,requiresNewQuote:true}:undefined);
+    const operation=await dependencies.jobs.prepare(actor,'transcribe',{source,facts,originalIdentity,settings},pricing,estimate?{amountCents:estimate.amountCents,currency:estimate.currency,requiresNewQuote:true}:undefined);
     return response(operation);
   }
   async function prepareExport(input:unknown){
     available();const parsed=z.object({documentId:z.string().min(1).max(200),revision:z.number().int().positive()}).strict().parse(input);
     const value=await dependencies.documents.read(actor.userId,parsed.documentId,parsed.revision);if(!value)throw new Error('SUBTITLE_NOT_FOUND');const document=parseSubtitleDocument(value);
     if(document.source.ref.kind!=='video')throw new Error('SUBTITLE_VISUAL_BACKGROUND_REQUIRED');if(!document.segments.length)throw new Error('SUBTITLE_DOCUMENT_EMPTY');
-    const {source,facts}=await dependencies.readSource(actor.userId,document.source.ref);
+    const {source,facts,originalIdentity}=await dependencies.readSource(actor.userId,document.source.ref);
     if(source.fingerprint!==document.source.fingerprint)throw new Error('SUBTITLE_SOURCE_CHANGED');
     const price=exportPrice(facts);const pricing={totalCents:price.amountCents,currency:price.currency,source:'timeline-export-paid-policy',qualityPreset:'standard'};
-    return response(await dependencies.jobs.prepare(actor,'render',{source,facts,settings:{keyterms:[]},document},pricing));
+    return response(await dependencies.jobs.prepare(actor,'render',{source,facts,originalIdentity,settings:{keyterms:[]},document},pricing));
   }
   async function confirm(input:unknown){
     available();const parsed=z.object({operationId:z.string().uuid(),confirmed:z.boolean()}).strict().parse(input);if(!parsed.confirmed)throw new Error('SUBTITLE_CONFIRMATION_REQUIRED');
     const current=await dependencies.jobs.read(actor,parsed.operationId);
     if(current.state!=='prepared')return response(current);
     if(!options.dependencies?.dispatch)await dependencies.assertWorker();
+    // Recheck measured bytes outside database locks, then lock their canonical identity with the wallet reservation.
+    const latest=await dependencies.readSource(actor.userId,current.request_snapshot.source.ref);
+    if(latest.source.fingerprint!==current.request_snapshot.source.fingerprint||latest.originalIdentity.id!==current.request_snapshot.originalIdentity?.id||latest.originalIdentity.url!==current.request_snapshot.originalIdentity?.url)throw new Error('SUBTITLE_SOURCE_CHANGED');
     const result=await dependencies.jobs.reserve(actor,parsed.operationId);
     if(result.created){
       // A launcher transport error may still have accepted work. Keep the one job for cron recovery.

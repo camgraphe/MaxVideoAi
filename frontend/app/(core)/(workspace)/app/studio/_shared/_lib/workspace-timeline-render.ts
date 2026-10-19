@@ -47,6 +47,8 @@ export type WorkspaceTimelineRenderTransition = {
 };
 
 export type WorkspaceTimelineRenderClip = {
+  subtitle?: WorkspaceTimelineItem['subtitle'];
+  subtitleDocument?: WorkspaceTimelineItem['subtitleDocument'];
   id: string;
   assetId?: string | null;
   outputNodeId: string;
@@ -314,6 +316,7 @@ function renderClipForItem(
     : null;
   return {
     id: item.id,
+    ...(item.subtitle?{subtitle:item.subtitle,subtitleDocument:item.subtitleDocument}:{}),
     assetId: item.assetId ?? `asset-${item.outputNodeId}`,
     outputNodeId: item.outputNodeId,
     title: issueTitle(item, canvasNodeCopy),

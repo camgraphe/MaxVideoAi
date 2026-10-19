@@ -12,6 +12,7 @@ import {applyConversationTimelineEdit,conversationMonitorTime,conversationLibrar
 import type {ImageLibraryAsset} from '@/lib/studio/image-library';
 import type {WorkspaceTimelineItem} from '../../../_shared/_lib/workspace-types';
 import styles from '../conversation-timeline.module.css';
+import {ConversationSubtitlePicker,ConversationSubtitlePreview} from './ConversationSubtitles.client';
 import {ConversationExport} from './ConversationExport.client';
 import {consumeConversationMediaRenewal} from '@/lib/studio/conversation-preview-access';
 import type {StudioProjectTimelineExport} from '@/server/timeline-exports/contracts';
@@ -104,6 +105,7 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
     {monitor && items.length > 0 && <div className={styles.monitorRow}>
       <div className={styles.monitor} style={{aspectRatio: settings.aspectRatio.replace(':','/')}} aria-label={t('Film monitor','Moniteur du film')}>
         <ProgramPlaybackLayers copy={copy.viewer.monitor} {...layers} mediaReloadKeys={timeline.mediaReloadKeys} onMediaAccessError={mediaFailure} />
+        <ConversationSubtitlePreview items={items} timeMs={conversationMonitorTime(playback.playheadSec,duration,fps)*1000}/>
       </div>
       <button className={styles.close} aria-label={t('Collapse monitor','Replier le moniteur')} onClick={closeMonitor}><X size={16}/></button>
     </div>}
@@ -131,6 +133,7 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
     </div>
     {chosen && inspecting && timelineExpanded && <div className={styles.inspector}>
       <span>{chosen.title}</span>
+      <ConversationSubtitlePicker clip={chosen} busy={timeline.busy} edit={timeline.edit} locale={locale}/>
       <button aria-pressed={trimEdge === 'start'} onClick={() => setTrimEdge('start')}>{t('Start','Début')}</button><button aria-pressed={trimEdge === 'end'} onClick={() => setTrimEdge('end')}>{t('End','Fin')}</button>
       <input key={`${chosen.id}:${chosen.durationSec}`} type="number" min="1" step={1/fps} defaultValue={chosen.durationSec} aria-label={t('Clip duration in seconds','Durée du clip en secondes')} disabled={timeline.busy} onBlur={event => {const seconds = Number(event.target.value);if (Number.isFinite(seconds) && seconds >= 1 && seconds !== chosen.durationSec) void timeline.edit({kind: 'trim',clipId: chosen.id,edge: trimEdge,durationFrames: Math.round(seconds*fps)});}}/>
       <small>s</small>

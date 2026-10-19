@@ -26,5 +26,5 @@ CREATE TABLE IF NOT EXISTS subtitle_operations (
 );
 CREATE INDEX IF NOT EXISTS subtitle_operations_pending_idx
   ON subtitle_operations(last_observed_at NULLS FIRST, created_at)
-  WHERE state IN ('queued','provider-pending','processing');
+  WHERE state IN ('queued','provider-pending','processing','submitting');
 CREATE INDEX IF NOT EXISTS subtitle_operations_owner_idx ON subtitle_operations(user_id,created_at DESC,id);

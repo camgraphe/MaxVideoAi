@@ -1,3 +1,4 @@
+import {subtitleDocumentSchema} from '../../lib/subtitles/document';
 import { z } from 'zod';
 import { timelineExportIdempotencyKeySchema } from './idempotency';
 import type {
@@ -42,6 +43,8 @@ const compositionSchema = z.object({
 }).strict();
 
 const clipSchema = z.object({
+  subtitle:z.object({documentId:ID,revision:z.number().int().positive()}).strict().optional(),
+  subtitleDocument:subtitleDocumentSchema.optional(),
   id: ID,
   assetId: ID.nullable().optional(),
   outputNodeId: ID,
@@ -167,6 +170,7 @@ function assertManifestInvariants(manifest: WorkspaceTimelineRenderManifest): vo
     clipCount += clips.length;
     for (let index = 0; index < clips.length; index += 1) {
       const clip = clips[index];
+      if(Boolean(clip.subtitle)!==Boolean(clip.subtitleDocument)||clip.subtitle&&(clip.subtitle.documentId!==clip.subtitleDocument?.id||clip.subtitle.revision!==clip.subtitleDocument?.revision))throw new Error('EXPORT_SUBTITLE_REFERENCE_INVALID');
       if (clipIds.has(clip.id)) throw new Error('EXPORT_MANIFEST_DUPLICATE_CLIP');
       clipIds.add(clip.id);
       if (clip.track !== track.id) throw new Error('EXPORT_MANIFEST_TRACK_MISMATCH');
