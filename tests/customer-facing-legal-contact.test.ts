@@ -11,6 +11,7 @@ const customerFacingFiles = [
   'frontend/app/(core)/legal/privacy/page.tsx',
   'frontend/app/(core)/legal/terms/page.tsx',
   'frontend/app/(localized)/[locale]/(marketing)/contact/page.tsx',
+  'frontend/app/(localized)/[locale]/(marketing)/blog/page.tsx',
   'frontend/app/(localized)/[locale]/(marketing)/docs/page.tsx',
   'frontend/app/(localized)/[locale]/(marketing)/status/page.tsx',
   'frontend/lib/i18n/dictionaries.ts',
@@ -23,10 +24,10 @@ const customerFacingFiles = [
 
 const stripeLegalAddress = "324 Rue De La Mare D'ovillers, 60730 Novillers, France";
 
-test('customer-facing support references use the maxvideoai.com mailbox', () => {
+test('customer-facing email references never use the unrelated maxvideo.ai domain', () => {
   for (const file of customerFacingFiles) {
     const source = readFileSync(file, 'utf8');
-    assert.doesNotMatch(source, /support@maxvideo\.ai/, `${file} should not use the old support mailbox`);
+    assert.doesNotMatch(source, /maxvideo\.ai/, `${file} should not use an unrelated email domain`);
   }
 });
 

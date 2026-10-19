@@ -20,26 +20,29 @@ export const METADATA_COPY: Record<AppLocale, { title: string; description: stri
   },
 };
 
-export const HEADER_COPY: Record<AppLocale, { title: string; versionLabel: string; effectiveLabel: string; companyLine: string; contactLabel: string }> = {
+export const HEADER_COPY: Record<AppLocale, { title: string; versionLabel: string; effectiveLabel: string; companyLine: string; mentionsLabel: string; contactLabel: string }> = {
   en: {
     title: 'Terms of Service',
     versionLabel: 'Version',
     effectiveLabel: 'Effective date',
-    companyLine: 'Company: MaxVideoAI (sole proprietorship in formation) · Governing law: France (Paris courts)',
+    companyLine: 'Operator: MaxVideoAI (Adrien Millot, EI).',
+    mentionsLabel: 'Legal notice',
     contactLabel: 'Contact:',
   },
   fr: {
     title: "Conditions d’utilisation",
     versionLabel: 'Version',
     effectiveLabel: "Date d’entrée en vigueur",
-    companyLine: "Société : MaxVideoAI (entreprise individuelle en cours de constitution) · Droit applicable : France (tribunaux de Paris)",
+    companyLine: "Exploitant : MaxVideoAI (Adrien Millot, EI).",
+    mentionsLabel: 'Mentions légales',
     contactLabel: 'Contact :',
   },
   es: {
     title: 'Términos del servicio',
     versionLabel: 'Versión',
     effectiveLabel: 'Fecha de entrada en vigor',
-    companyLine: 'Empresa: MaxVideoAI (empresa individual en constitución) · Ley aplicable: Francia (tribunales de París)',
+    companyLine: 'Operador: MaxVideoAI (Adrien Millot, EI).',
+    mentionsLabel: 'Aviso legal',
     contactLabel: 'Contacto:',
   },
 };

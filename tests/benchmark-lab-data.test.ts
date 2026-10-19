@@ -9,8 +9,8 @@ import {
 } from '../frontend/server/benchmark-lab-data';
 
 test('benchmark methodology is versioned and preserves the current overall formula', () => {
-  assert.equal(methodology.version, '1.0.0');
-  assert.equal(methodology.effectiveDate, '2026-07-11');
+  assert.equal(methodology.version, '1.1.0');
+  assert.equal(methodology.effectiveDate, '2026-10-19');
   assert.deepEqual(methodology.overallFormula.fields, ['fidelity', 'motion', 'consistency']);
   assert.equal(methodology.overallFormula.method, 'arithmetic_mean');
   assert.equal(methodology.overallFormula.roundToDecimals, 1);
@@ -32,7 +32,7 @@ test('static loader returns the current score and specification sources unchange
   const data = await loadBenchmarkLabStaticData();
   assert.equal(data.scores.length, scores.scores.length);
   assert.ok(data.specs.length >= data.scores.length);
-  assert.equal(data.methodology.version, '1.0.0');
+  assert.equal(data.methodology.version, '1.1.0');
   assert.equal(data.scores.find((row) => row.modelSlug === 'sora-2')?.last_updated, '2026-01-27');
 });
 

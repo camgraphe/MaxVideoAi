@@ -68,7 +68,7 @@ const HERO_COPY: Record<AppLocale, HeroCopy> = {
       {
         title: 'Need agreements?',
         body:
-          'Enterprise customers can request signed DPAs, security questionnaires, or SOC documentation by emailing {{email}} with their company details and required forms.',
+          'For a data protection or security enquiry, email {{email}} with your company details and requirements. We will confirm which documents are available for your request.',
       },
     ],
     versionLabel: 'Version',
@@ -97,7 +97,7 @@ const HERO_COPY: Record<AppLocale, HeroCopy> = {
       {
         title: 'Besoin d’accords ?',
         body:
-          'Les clients Enterprise peuvent demander des DPA signés, questionnaires sécurité ou documents SOC en écrivant à {{email}} avec le nom de leur société et les formulaires requis.',
+          'Pour une demande relative à la protection des données ou à la sécurité, écrivez à {{email}} en précisant votre entreprise et vos besoins. Nous confirmerons les documents disponibles pour votre demande.',
       },
     ],
     versionLabel: 'Version',
@@ -126,7 +126,7 @@ const HERO_COPY: Record<AppLocale, HeroCopy> = {
       {
         title: '¿Necesitas acuerdos?',
         body:
-          'Los clientes Enterprise pueden solicitar DPAs firmados, cuestionarios de seguridad o informes SOC escribiendo a {{email}} con los datos de su empresa y los formularios requeridos.',
+          'Para una consulta sobre protección de datos o seguridad, escribe a {{email}} con los datos de tu empresa y tus requisitos. Confirmaremos qué documentos están disponibles para tu solicitud.',
       },
     ],
     versionLabel: 'Versión',

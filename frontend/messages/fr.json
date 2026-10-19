@@ -2948,14 +2948,14 @@
         },
         {
           "question": "Puis-je proposer un sujet ou demander une couverture ?",
-          "answer": "Oui — envoyez vos sujets à press@maxvideo.ai avec, si possible, des rendus de référence. Nous priorisons les sujets utiles aux équipes de production."
+          "answer": "Oui — envoyez vos sujets à admin@maxvideoai.com avec, si possible, des rendus de référence. Nous priorisons les sujets utiles aux équipes de production."
         },
         {
           "question": "Où trouver les notes de version ?",
           "answer": "Les évolutions produit vivent dans le changelog et les mises à jour API dans la doc développeur. Le blog se concentre sur les workflows et retours du terrain."
         }
       ],
-      "footnote": "Besoin de plus de détails ? Écrivez à press@maxvideo.ai et nous transmettrons à l’équipe concernée."
+      "footnote": "Besoin de plus de détails ? Écrivez à admin@maxvideoai.com et nous transmettrons à l’équipe concernée."
     }
   },
   "videoPage": {
@@ -3048,10 +3048,10 @@
   "contact": {
     "hero": {
       "title": "Contactez l'équipe.",
-      "subtitle": "Besoin d'assistance, d'intégration entreprise ou d'informations presse ? Envoyez-nous un message et nous répondrons dans un délai d'un jour ouvrable."
+      "subtitle": "Contactez MaxVideoAI pour le support produit, les partenariats ou les demandes presse."
     },
     "intro": {
-      "body": "Contactez-nous pour le support, les partenariats, les besoins entreprise ou les demandes éditoriales. Plus votre message contient du contexte sur l’équipe, les modèles visés, l’échéance ou les contraintes conformité, plus vite il arrive à la bonne personne. Chaque demande reçoit une réponse humaine.",
+      "body": "Décrivez votre demande. Pour un problème de génération, ajoutez l’identifiant du job ; pour un partenariat ou la presse, précisez votre projet, publication et échéance.",
       "cards": {
         "productHelp": {
           "title": "Aide produit",
@@ -3101,7 +3101,7 @@
       "items": [
         {
           "question": "Sous quel délai recevez-vous une réponse ?",
-          "answer": "Nous répondons pendant les heures ouvrées en Europe et aux États-Unis. La plupart des demandes support reçoivent une réponse humaine en moins de 12 heures, les demandes entreprise en moins de 24 heures."
+          "answer": "Le délai de réponse dépend de la demande et de la disponibilité du support. Ajoutez l’identifiant du job concerné et une description précise pour faciliter la vérification."
         },
         {
           "question": "Proposez-vous des démos en direct ?",
@@ -3109,13 +3109,13 @@
         },
         {
           "question": "Où vérifier l’état du service ?",
-          "answer": "Consultez la {link} pour vérifier la latence des modèles et l’historique des incidents avant d’ouvrir un ticket."
+          "answer": "Consultez la {email} pour les avis de service publiés par l’équipe MaxVideoAI. Si une génération est retardée, contactez le support avec l’identifiant du job."
         }
       ]
     },
     "statusCard": {
-      "title": "Vérifier l’état des modèles en direct",
-      "body": "Avant d’ouvrir un ticket, vérifiez si un modèle est déjà dégradé. La page de statut liste les latences, les notes d’incident et les mesures d’atténuation pour vous aider à décider s’il faut relancer ou changer de modèle.",
+      "title": "Avis de service",
+      "body": "La page de statut affiche les avis de service publiés par l’équipe. Si une génération est retardée, évitez de relancer le même job et contactez le support avec son identifiant.",
       "cta": "page de statut"
     }
   },
