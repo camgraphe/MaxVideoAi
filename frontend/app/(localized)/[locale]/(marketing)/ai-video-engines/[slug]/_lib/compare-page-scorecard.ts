@@ -14,6 +14,11 @@ export type CompareMetric = {
   rightValue: number | null;
 };
 
+// Price/value belongs to the broader methodology, not this scorecard.
+export function getComparisonCriteriaCount(pairHasNativeAudio: boolean) {
+  return pairHasNativeAudio ? 10 : 9;
+}
+
 export function buildComparisonMetrics({
   compareCopy,
   leftScore,

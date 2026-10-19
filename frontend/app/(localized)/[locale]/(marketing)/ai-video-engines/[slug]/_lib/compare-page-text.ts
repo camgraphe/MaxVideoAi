@@ -11,14 +11,6 @@ export function replaceCriteriaCount(template: string, count: number) {
     .replace(/\b11 criterios\b/g, `${count} criterios`);
 }
 
-// SEO descriptions retain their published wording during scorecard UI changes.
-export function replaceSeoCriteriaCount(template: string, count: number) {
-  return template
-    .replace(/\b11 criteria\b/g, `${count} criteria`)
-    .replace(/\b11 critères\b/g, `${count} critères`)
-    .replace(/\b11 criterios\b/g, `${count} criterios`);
-}
-
 export function stripAudioReferencesForSilentPair(template: string, pairHasNativeAudio: boolean) {
   if (pairHasNativeAudio) return template;
   return template
