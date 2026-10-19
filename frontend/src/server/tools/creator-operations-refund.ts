@@ -5,11 +5,11 @@ import { stableJson } from '@/server/agent-api/generation-normalization';
  * Raw generation status, provider cost, output and pricing evidence remain intact.
  * Caller holds the operation lease row lock and settles its failure in the same transaction.
  */
-export async function refundCreatorFinalization(tx:TransactionQueryExecutor,userId:string,operationId:string):Promise<void> {
+export async function refundCreatorFinalization(tx:TransactionQueryExecutor,userId:string,operationId:string,options:{providerFailure?:boolean}={}):Promise<void> {
   const [job]=await tx.query<{job_id:string;user_id:string;status:string;payment_status:string;surface:string;final_price_cents:number;currency:string;billing_product_key:string|null;pricing_snapshot:unknown}>(`SELECT j.job_id,j.user_id,j.status,j.payment_status,j.surface,j.final_price_cents,j.currency,j.billing_product_key,j.pricing_snapshot
     FROM app_jobs j JOIN mcp_generation_quotes q ON q.job_id=j.job_id JOIN creator_operations o ON o.id=q.quote_id
     WHERE o.id=$1 AND o.user_id=$2 AND j.user_id=$2 AND q.user_id=$2 FOR UPDATE OF j`,[operationId,userId]);
-  if(!job||job.status!=='completed'||!['image','video'].includes(job.surface)||!['paid_wallet','refunded_wallet'].includes(job.payment_status)) throw new Error('Tool refund job state is inconsistent.');
+  if(!job||job.status!==(options.providerFailure?'failed':'completed')||!['image','video'].includes(job.surface)||!['paid_wallet','refunded_wallet'].includes(job.payment_status)) throw new Error('Tool refund job state is inconsistent.');
   type Receipt={id:string;user_id:string;amount_cents:number;currency:string;surface:string;billing_product_key:string|null;pricing_snapshot:unknown};
   const charges=await tx.query<Receipt>(`SELECT id,user_id,amount_cents,currency,surface,billing_product_key,pricing_snapshot FROM app_receipts WHERE job_id=$1 AND type='charge' ORDER BY id LIMIT 2 FOR UPDATE`,[job.job_id]);
   const charge=charges[0];

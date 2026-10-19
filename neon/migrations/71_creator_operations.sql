@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS creator_operations (
   version integer NOT NULL DEFAULT 0,
   finalize_attempts integer NOT NULL DEFAULT 0,
   next_attempt_at timestamptz,
+  last_observed_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   CHECK ((auth_origin='oauth' AND studio_project_id IS NULL)

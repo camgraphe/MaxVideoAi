@@ -11,6 +11,8 @@ import { prepareCreatorOperation, revalidateCreatorSources, creatorSourceFingerp
 import { CREATOR_PROFILES, prepareCreatorProfile } from './creator-profiles';
 import { finalizeCreatorOperation, CreatorFinalizationError } from './creator-finalize';
 import * as store from './creator-operations-store';
+import { prepareCreatorLipSyncQuote,confirmCreatorLipSync } from './creator-operations-lipsync';
+import { refreshCreatorLipSync } from './creator-operations-lipsync-provider';
 export { creatorOperationInputSchema, prepareCreatorOperation };
 
 const defaults={prepare:prepareCreatorOperation,revalidate:revalidateCreatorSources,finalize:finalizeCreatorOperation,generation:createCreatorGenerationService,
@@ -18,7 +20,7 @@ const defaults={prepare:prepareCreatorOperation,revalidate:revalidateCreatorSour
 export type CreatorOperationsOptions={enabled:boolean;generationOptions?:Omit<CreatorGenerationOptions,'enabled'|'expectedReferenceFingerprint'|'onQuotePrepared'|'onQuoteLocked'>;dependencies?:Partial<typeof defaults>};
 function validateSnapshot(row:store.StoredCreatorOperation):void {
   const profile=CREATOR_PROFILES.find(entry=>entry.id===row.profile_id);
-  if(!profile||profile.qualification!=='canonical'||profile.revision!==row.profile_revision||row.snapshot.profile.id!==profile.id) throw new AgentApiError('ENGINE_UNAVAILABLE','This tool profile requires a new qualification.');
+  if(!profile||profile.qualification==='closed'||profile.revision!==row.profile_revision||row.snapshot.profile.id!==profile.id) throw new AgentApiError('ENGINE_UNAVAILABLE','This tool profile requires a new qualification.');
   const validated=prepareCreatorProfile(creatorOperationInputSchema.parse(row.snapshot.input),row.snapshot.sources);
   if(hashCanonicalGenerationRequest(validated.request)!==row.request_hash) throw new AgentApiError('QUOTE_EXPIRED','The operation profile changed. Prepare a new quote.');
 }
@@ -38,6 +40,12 @@ export function createCreatorOperationsService(actor:GenerationActor,options:Cre
       if(['failed','expired'].includes(row.quote_state)) {await deps.markFailed(actor,row.id,'The quote is no longer available. Prepare a new quote.');row=await deps.read(actor,row.id);}
       return store.creatorOperationView(row);
     }
+    if(row.snapshot.profile.qualification==='tool-specific') {
+      await refreshCreatorLipSync(actor,row);
+      row=await deps.read(actor,row.id);
+      if(row.status==='failed')return store.creatorOperationView(row);
+    }
+    if(!row.job_id) throw new Error('The operation job is unavailable.');
     const generation=await service().status(row.job_id);
     if(!generation) throw new Error('The original generation is unavailable.');
     if(generation.status==='failed') {await deps.markFailed(actor,row.id,'Generation failed. Check the original job for payment recovery.');return store.creatorOperationView(await deps.read(actor,row.id));}
@@ -64,13 +72,19 @@ export function createCreatorOperationsService(actor:GenerationActor,options:Cre
         references.push({...await resolveOwnedReferenceAssetForActor(actor,ref.assetId),role:ref.role,...(ref.slot===undefined?{}:{slot:ref.slot})});
       }
       const snapshot={...prepared,referenceFingerprint:studioReferenceFingerprint(references)};
-      const quote=await service({expectedReferenceFingerprint:snapshot.referenceFingerprint,onQuotePrepared:(stored,tx)=>deps.insert(actor,stored,snapshot,tx)}).prepare(prepared.request);
+      const quote=prepared.profile.qualification==='tool-specific'
+        ? await prepareCreatorLipSyncQuote(actor,snapshot,options.enabled)
+        : await service({expectedReferenceFingerprint:snapshot.referenceFingerprint,onQuotePrepared:(stored,tx)=>deps.insert(actor,stored,snapshot,tx)}).prepare(prepared.request);
       return {operationId:quote.quoteId,quoteId:quote.quoteId,quote,operation:{toolId:prepared.input.toolId,profile:prepared.profile,expectedDurationSec:prepared.expectedDurationSec,audioPolicy:prepared.audioPolicy,sourceAssets:prepared.input.inputs.map(entry=>entry.source)}};
     },
     async confirm(value:unknown) {
       const input=z.object({operationId:idSchema,confirmed:z.literal(true)}).strict().parse(value);
       const row=await deps.read(actor,input.operationId);
       if(row.status==='completed'||row.status==='failed'||row.job_id) return status(row.id);
+      if(row.snapshot.profile.qualification==='tool-specific') {
+        await confirmCreatorLipSync(actor,row.id,options.enabled);
+        return status(row.id);
+      }
       validateSnapshot(row);
       await deps.revalidate(actor.userId,row.snapshot.sources);
       const onLocked=async(quote:{quoteId:string;requestHash:string;state:string},tx:QueryExecutor)=>{
@@ -95,7 +109,7 @@ export async function refreshCreatorOperations(limit=5) {
   const candidates=await store.listCreatorRefreshCandidates(limit);
   const results=[];
   for(const candidate of candidates) {
-    try {const result=await createCreatorOperationsService(candidate.actor,{enabled:false}).status(candidate.id);results.push({operationId:candidate.id,status:result.status});}
+    try {const result=await createCreatorOperationsService(candidate.actor,{enabled:false,dependencies:{read:(actor,id,db,lock)=>store.readCreatorOperation(actor,id,db,lock,true)}}).status(candidate.id);results.push({operationId:candidate.id,status:result.status});}
     catch {results.push({operationId:candidate.id,status:'retryable' as const});}
   }
   return results;

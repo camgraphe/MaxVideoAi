@@ -7,7 +7,7 @@ import { stableJson } from '@/server/agent-api/generation-normalization';
 import { ensureReusableAsset } from '@/server/media-library';
 import { createUploadVideoThumbnail, createUploadImageThumbnail } from '@/server/upload-thumbnails';
 import { downloadCreatorMedia, inspectCreatorBytes, trimCreatorBytes, validateCreatorSegment, withCreatorMediaSlot } from './creator-segment-media';
-import { prepareCreatorProfile, type CreatorMediaFacts, type CreatorResolvedSource } from './creator-profiles';
+import { prepareCreatorProfile, isCreatorLipVideoEnabled, type CreatorMediaFacts, type CreatorResolvedSource } from './creator-profiles';
 
 export const creatorSourceFingerprint = (media: StudioResolvedMedia): string => createHash('sha256').update(JSON.stringify({id:media.id,ref:media.ref,url:media.url,kind:media.kind,mime:media.mime,sizeBytes:media.sizeBytes,width:media.width,height:media.height,durationSec:media.durationSec})).digest('hex');
 export type CreatorSourcesDependencies = {
@@ -62,9 +62,9 @@ export async function prepareCreatorOperation(value: unknown, userId: string, de
   if (!userId) throw new AgentApiError('AUTH_REQUIRED','Authenticate before preparing a tool.');
   const input = creatorOperationInputSchema.parse(value);
   // Reject closed profiles before performing storage work. Duration compatibility is validated again in the profile.
-  if (input.profileId && ['lip-video-latentsync-v1','motion-kling-v3-v1'].includes(input.profileId)) throw new AgentApiError('ENGINE_UNAVAILABLE','This specialist profile requires qualification.');
+  if (input.profileId==='motion-kling-v3-v1') throw new AgentApiError('ENGINE_UNAVAILABLE','This specialist profile requires qualification.');
   if (input.toolId === 'product-photo-editor' && (input.settings.preservation === 'pixels' || input.inputs.some(entry=>entry.role==='mask'))) throw new AgentApiError('ENGINE_UNAVAILABLE','Pixel or masked preservation requires qualification.');
-  if (input.toolId === 'lip-sync' && input.settings.mode === 'video') throw new AgentApiError('ENGINE_UNAVAILABLE','Video Lip Sync requires qualification: the specialized pricing and job adapter is not integrated.');
+  if (input.toolId === 'lip-sync' && input.settings.mode === 'video'&&!isCreatorLipVideoEnabled()) throw new AgentApiError('ENGINE_UNAVAILABLE','Video Lip Sync requires qualification before activation.');
   try {return await withCreatorMediaSlot(userId,async()=>prepareCreatorProfile(input,await resolveCreatorSources(input,userId,dependencies)));}
   catch(error){if(error instanceof AgentApiError)throw error;throw new AgentApiError('REFERENCE_INVALID','The selected media could not be prepared. Choose a supported owned source and retry.');}
 }
