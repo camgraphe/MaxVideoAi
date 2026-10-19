@@ -10,18 +10,18 @@ repository settings, adding a secret, pushing a tag, or publishing a release.
 Obtain the owner approval required by the GitHub commercial-presence plan before
 each external mutation.
 
-## Latest verified release — 2026-10-05
+## Latest verified release — 2026-10-18 UTC
 
-Protected run [37341472219](https://github.com/camgraphe/MaxVideoAi/actions/runs/37341472219),
-attempt 2, published [v0.3.7](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.7)
-from immutable source `a833d985a81f9d523e08917674a01f1e220337b1` to public commit
-`67dfbedad6e32377287b55ba005296e73206b23a`. The downloaded ZIP matches its
-qualified bytes and attached checksum. Official Registry metadata was separately
-published and read back as active/latest 0.3.7. The existing Codex installation
-was updated through supported marketplace commands; all 60 installed package
-files match the verified ZIP. See the
-[publication checkpoint](mcp-distribution-publication-2026-10-05.md) for exact
-artifact and remaining website/n8n gates. This does not certify other hosts.
+Protected run [39171513467](https://github.com/camgraphe/MaxVideoAi/actions/runs/39171513467)
+published [v0.3.8](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.8)
+from immutable source `1ed5e5b8223741d6f78318363ea9bf082a4328df` to public commit
+`f5c401e97c917c00fb28ecece967524893a41881`. The complete prepared diff matched the
+qualified local diff before normal Environment approval. The downloaded ZIP,
+attached checksum and all 60 package files match the qualified archive. Official
+Registry version/latest metadata was separately published and read back active/latest
+0.3.8. No installed cache or host qualification was changed. See the
+[publication checkpoint](mcp-distribution-publication-2026-10-18.md) for exact
+source, tree, digest, domain alignment and the separate website follow-up gate.
 
 ## Historical release state — 2026-08-29
 

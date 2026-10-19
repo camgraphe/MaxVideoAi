@@ -188,7 +188,7 @@ export default async function CompareDetailPage(
   const webPageJsonLd = buildCompareWebPageJsonLd({
     compareCopy,
     comparisonCanonicalUrl,
-    criteriaCount,
+    pairHasNativeAudio,
     left,
     metaOverride,
     pairHasKling3Native4k,

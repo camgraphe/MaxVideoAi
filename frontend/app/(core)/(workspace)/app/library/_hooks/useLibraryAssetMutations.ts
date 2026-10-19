@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, Dispatch, SetStateAction } from 'react';
 import type { AssetBrowserAsset } from '@/components/library/AssetLibraryBrowser';
+import { loadSupabaseClient } from '@/lib/supabaseClientLoader';
 import { authFetch } from '@/lib/authFetch';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import {
@@ -14,6 +15,7 @@ import {
 } from '../_lib/library-page-helpers';
 
 export function useLibraryAssetMutations({
+  userId,
   activeKind,
   activeSource,
   copy,
@@ -22,6 +24,7 @@ export function useLibraryAssetMutations({
   setActiveSource,
   setActiveView,
 }: {
+  userId?: string;
   activeKind: LibraryKind;
   activeSource: SavedAssetSource;
   copy: LibraryCopy;
@@ -38,6 +41,11 @@ export function useLibraryAssetMutations({
   const [importError, setImportError] = useState<string | null>(null);
   const importInputRef = useRef<HTMLInputElement | null>(null);
 
+  const importRequestRef = useRef<AbortController | null>(null);
+  const ownerRef = useRef(userId);
+  ownerRef.current = userId;
+  useEffect(() => () => { importRequestRef.current?.abort(); }, [userId]);
+
   const clearMutationErrors = useCallback(() => {
     setDeleteError(null);
     setImportError(null);
@@ -53,7 +61,12 @@ export function useLibraryAssetMutations({
     async (event: ChangeEvent<HTMLInputElement>) => {
       const file = event.currentTarget.files?.[0] ?? null;
       event.currentTarget.value = '';
-      if (!file) return;
+      if (!file || !userId) return;
+      importRequestRef.current?.abort();
+      const request = new AbortController();
+      importRequestRef.current = request;
+      const isCurrent = () => !request.signal.aborted && ownerRef.current === userId;
+
 
       setImportError(null);
       setSaveError(null);
@@ -63,6 +76,15 @@ export function useLibraryAssetMutations({
           activeKind === 'image'
             ? await prepareImageFileForUpload(file, { maxBytes: 25 * 1024 * 1024 })
             : file;
+        if (!isCurrent()) return;
+        const client = await loadSupabaseClient();
+        if (!isCurrent()) return;
+        const { data, error } = await client.auth.getSession();
+        if (!isCurrent()) return;
+        const session = data.session;
+        if (error || !session?.access_token || session.user.id !== userId) {
+          throw new Error(copy.browser.importFailed);
+        }
         const formData = new FormData();
         formData.append('file', preparedFile, preparedFile.name);
         const uploadEndpoint =
@@ -74,8 +96,13 @@ export function useLibraryAssetMutations({
         const response = await authFetch(uploadEndpoint, {
           method: 'POST',
           body: formData,
+          signal: request.signal,
+          headers: { Authorization: `Bearer ${session.access_token}` },
+          credentials: 'omit',
         });
+        if (!isCurrent()) return;
         const payload = await response.json().catch(() => null);
+        if (!isCurrent()) return;
         if (!response.ok || !payload?.ok || !payload?.asset?.url) {
           const message = resolveImageUploadErrorMessage(response.status, payload?.error, copy.browser.importFailed);
           throw new Error(message);
@@ -87,12 +114,13 @@ export function useLibraryAssetMutations({
         }
         await mutateAssets();
       } catch (error) {
+        if (!isCurrent()) return;
         setImportError(error instanceof Error ? error.message : copy.browser.importFailed);
       } finally {
-        setIsImporting(false);
+        if (isCurrent()) setIsImporting(false);
       }
     },
-    [activeKind, activeSource, copy.browser.importFailed, mutateAssets, setActiveSource, setActiveView]
+    [userId, activeKind, activeSource, copy.browser.importFailed, mutateAssets, setActiveSource, setActiveView]
   );
 
   const handleDeleteAsset = useCallback(

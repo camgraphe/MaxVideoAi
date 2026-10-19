@@ -45,7 +45,8 @@ test('Generate Image paginates canonical image assets while keeping Characters s
   assert.doesNotMatch(dataHook, /\/api\/user-assets/);
   assert.match(modal, /hasMore=\{!isCharacterMode && hasMore\}/);
   assert.match(modal, /onLoadMore=\{loadMore\}/);
-  assert.match(picker, /const loadMoreControl = hasMore && !query\.trim\(\) && onLoadMore/);
+  assert.match(picker, /const loadMoreControl = hasMore && onLoadMore/);
+  assert.match(picker, /\{copy\.searchMore\}/);
   assert.match(picker, /app-picker-empty[\s\S]*\{loadMoreControl\}/);
 });
 

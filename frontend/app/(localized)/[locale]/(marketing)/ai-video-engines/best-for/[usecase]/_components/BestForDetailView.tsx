@@ -138,7 +138,7 @@ export function BestForDetailView({
               <MistakesCard locale={locale} usecaseSlug={entry.slug} criteria={criteria} copy={copy} />
             </section>
 
-            <BestForContent content={content} contentComing={copy.contentComing} />
+            <BestForContent content={content} contentComing={copy.contentComing} locale={locale} />
           </div>
 
           <aside className="space-y-4 lg:sticky lg:top-24">

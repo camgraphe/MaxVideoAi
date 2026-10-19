@@ -5,10 +5,13 @@ GitHub-facing screenshot state, hashes, dimensions, claims, placements, and
 release approval. Run `pnpm github:assets:check` for record and byte integrity,
 or `pnpm github:assets:release-check` before publishing a production README.
 
-The existing files under `frontend/public/media/mcp/` are shot-list references
-only. They are registered as `reference_only`; no historical image becomes
+The historical screenshot files under `frontend/public/media/mcp/` are shot-list
+references only. They are registered as `reference_only`; no historical image becomes
 publication proof until a current capture has complete provenance and explicit
 `publishable_proof` approval in the manifest.
+
+The finished creative films in its `creations/` subdirectory have a separate
+[production provenance record](mcp-creation-stories.md); they are not host UI captures.
 
 A `publishable_proof` also needs a current `freshnessStatus`, a capture no more
 than 90 days old, a review no more than 30 days old, and capture/review
