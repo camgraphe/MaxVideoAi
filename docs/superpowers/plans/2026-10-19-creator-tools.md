@@ -106,10 +106,10 @@ add/replace commands with current revisions.
 
 ## Task 6 — Integrated validation and delivery
 
-- [ ] Lint/exposure/type checks and all focused business/media/PG tests.
-- [ ] Build plus authenticated fixture browser, locale/SEO and accessibility checks.
-- [ ] Review full diff independently; repair material findings and retest.
-- [ ] Record each tool's actual app/Studio/MCP/provider availability and evidence.
+- [x] Lint/exposure/type checks and all focused business/media/PG tests.
+- [x] Build plus authenticated fixture browser, locale/SEO and accessibility checks.
+- [x] Review domain/integration changes independently; repair material findings and retest.
+- [x] Record each tool's actual app/Studio/MCP/provider availability and evidence.
 - [ ] Commit coherent changes, open/attach reviewable PR(s), run required Quality CI.
 - [ ] Publication only after executable paths and required evidence are ready.
 
@@ -120,10 +120,12 @@ add/replace commands with current revisions.
 - Shared session/OAuth operation scope, versioned subtitles, real subtitle video
   rendering, canonical creative operations, LatentSync/Kling specialist adapters,
   localized marketing/workspaces, source selection, recovery, Library and MCP
-  adapters are implemented. Studio mix transcription and global sequence caption
-  attachment are undergoing final integration and media checks.
-- Focused unit, disposable PostgreSQL, real FFmpeg/Remotion and browser fixture
-  checks have passed during implementation. Integrated checks and independent
-  review are in progress; no real-provider or real-host evidence is claimed.
+  adapters, Studio mix transcription, global sequence caption attachment and
+  explicit result add/replace actions are implemented.
+- Final integrated creator/subtitle/media/PG/browser suite: 128 passed, zero
+  failed. Additional Studio action regressions: 4 passed. Independent reviews
+  led to private-read signing, settlement, MCP recovery and Studio retry fixes.
+  Build, TypeScript, lint/exposure and broader fast/Studio suites passed as
+  recorded in `docs/engineering/creator-tools-qualification.md`.
 - All public creator release flags remain closed. No paid canary, public launch,
   production mutation or deployment has been performed.

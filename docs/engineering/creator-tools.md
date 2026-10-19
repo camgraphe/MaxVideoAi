@@ -144,6 +144,10 @@ refund transactions.
 Creator result actions offer a connected Studio film picker with explicit add
 or replace commands. Replacement preserves the selected clip timing, requires
 enough source media and uses the existing revision/ownership/locked-track owner.
+Clip identity, position, duration, track, transforms, audio mix and transitions
+remain unchanged. Source-bound captions detach; historical montage provenance
+remains immutable. Replacing back restores media/timing, while restoring detached
+captions requires their original document revision explicitly.
 It never starts paid generation. Product Video comparison uses manual synchronized
 readers, with the selected source offset and refreshed private URLs.
 
