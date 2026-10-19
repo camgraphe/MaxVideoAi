@@ -516,17 +516,17 @@ test('visible compatibility dates are sourced from the integration registry', as
   assert.doesNotMatch(registrySource, /mcp-client-actions\.json|mcp-compatibility\.json/);
 
   const { getMcpHost } = await import('../frontend/lib/mcp-integration-registry.ts');
-  const hosts = ['claudeDesktop', 'claudeCode', 'chatgptWeb', 'codexCli'] as const;
+  const hosts = ['claudeWeb', 'claudeDesktop', 'claudeCode', 'chatgptWeb', 'codexCli'] as const;
   for (const hostId of hosts) {
     const host = getMcpHost(hostId);
     assert.equal(host.evidence.kind, 'hosted-checkpoint');
-    assert.equal(host.evidence.lastChecked, '2026-08-27');
+    assert.equal(host.evidence.lastChecked, ['claudeWeb', 'chatgptWeb'].includes(hostId) ? '2026-10-19' : '2026-08-27');
     assert.equal(host.evidence.source, 'docs/operations/mcp-host-compatibility-matrix.md');
     assert.match(requireFile(host.evidence.source), new RegExp(host.evidence.lastChecked));
   }
   assert.equal(getMcpHost('claudeDesktop').evidence.status, 'verified');
   assert.equal(getMcpHost('codexCli').evidence.status, 'verified');
-  assert.equal(getMcpHost('chatgptWeb').evidence.status, 'not-run');
+  assert.equal(getMcpHost('chatgptWeb').evidence.status, 'tested_with_limits');
   assert.equal(getMcpHost('claudeCode').evidence.status, 'not-run');
 
   const mcpCopy = requireFile(`${mcpRoot}/_lib/mcp-page-copy.ts`);
@@ -557,7 +557,7 @@ test('the ChatGPT setup renders its machine compatibility state discreetly', asy
     locale: 'en',
   }));
 
-  assert.match(html, />not-run</);
+  assert.match(html, />tested_with_limits</);
   assert.match(html, /Developer.*MCP|MCP.*developer/is);
   assert.match(html, /direct connection does not require a public directory listing/i);
   assert.doesNotMatch(html, /public listing.*approval|OpenAI approval.*public listing/is);

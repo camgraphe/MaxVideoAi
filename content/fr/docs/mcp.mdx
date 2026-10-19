@@ -20,8 +20,8 @@ MaxVideoAI relie les assistants et outils d’automatisation compatibles aux mod
 
 | Environnement | Connexion | À savoir |
 | --- | --- | --- |
-| [Connecteur Claude](/fr/integrations/claude) | Connecteur MCP distant personnalisé | Claude Desktop testé ; le parcours Claude Code est distinct et non vérifié. |
-| [App MCP ChatGPT](/fr/integrations/chatgpt) | Mode développeur | Les actions d’écriture du MCP complet nécessitent un espace Business, Enterprise ou Edu éligible. Pro est limité à la lecture et à la récupération. Aucune présence dans le répertoire public n’est revendiquée. |
+| [Connecteur Claude](/fr/integrations/claude) | Connecteur MCP distant personnalisé | Claude Web Free : production testée avec limites le 19/10/2026. Claude Desktop : contrôle historique distinct sur staging. Claude Code : non testé. |
+| [App MCP ChatGPT](/fr/integrations/chatgpt) | Plugins → custom MCP server | Aucune présence dans le répertoire public n’est revendiquée. Ajoutez un serveur MCP personnalisé dans Plugins. OpenAI documente le MCP complet en écriture pour les espaces Business, Enterprise ou Edu éligibles. Le 19 octobre 2026, notre compte Pro testé a aussi permis une connexion privée, un devis et la récupération d’un résultat existant. Nouvelle génération payante non testée ; disponibilité selon le compte. |
 | [Plugin Codex](/fr/integrations/codex) | Plugin MaxVideoAI 0.3.3 ou MCP distant | Codex CLI testé. |
 | [Skill OpenClaw](/fr/integrations/openclaw) | MCP direct ou skill ClawHub publié | Testé avec limites ; import de références privées et affichage intégré par canal non vérifiés. |
 | [Workflow vidéo n8n](/fr/integrations/n8n) | MCP Client auto-hébergé, configuration manuelle | Testé sur 2.38.7 avec devis exact et accord humain. Le [modèle public 19591](https://n8n.io/workflows/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/) est disponible ; configurez OAuth manuellement. Aucun support n8n Cloud ou AI Agent n’est revendiqué. |
@@ -44,7 +44,7 @@ Consultez les modes et réglages Audio actuels avec `list_audio_capabilities`. P
 https://api.maxvideoai.com/mcp
 ```
 
-Utilisez Streamable HTTP avec OAuth 2.1. Les permissions demandées sont `openid,email,profile`. N’ajoutez ni jeton, ni mot de passe, ni paramètre, ni clé API. Suivez le guide de votre client : il ouvre la connexion MaxVideoAI et le consentement OAuth dans le navigateur.
+Utilisez Streamable HTTP avec OAuth 2.1. Les permissions demandées sont `openid,email,profile` et, selon la demande, `offline_access` ; vérifiez l’écran de consentement. N’ajoutez ni jeton, ni mot de passe, ni paramètre, ni clé API. Suivez le guide de votre client : il ouvre la connexion MaxVideoAI et le consentement OAuth dans le navigateur.
 
 ## Autoriser son compte
 
@@ -55,7 +55,11 @@ Utilisez Streamable HTTP avec OAuth 2.1. Les permissions demandées sont `openid
 
 La connexion est gratuite et la préparation ne demande aucun abonnement MaxVideoAI. Les générations payantes utilisent le même solde de crédits MaxVideoAI que le site ; votre assistant peut imposer ses propres conditions d’abonnement. Pour vous déconnecter, retirez l’intégration du client et révoquez son autorisation dans MaxVideoAI.
 
-La compatibilité est vérifiée par hôte. Claude Desktop et Codex CLI ont des contrôles validés ; aucun contrôle complet n’est enregistré pour ChatGPT web et Claude Code. OpenClaw et MCP Client sur n8n auto-hébergé restent testés avec limites. Les guides précisent les dates et les restrictions.
+Contrôlé le 19 octobre 2026 dans Claude Web avec un compte Free : OAuth en production, découverte des modèles, préparation du devis exact et récupération d’un résultat existant terminé. Nouvelle génération payante, lecture intégrée, rafraîchissement du jeton et révocation/reconnexion non testés. La disponibilité peut varier selon le compte.
+
+Contrôlé le 19 octobre 2026 dans ChatGPT Web avec le compte Pro testé et un plugin MCP privé : OAuth en production, découverte des modèles, préparation du devis exact et récupération d’un résultat existant terminé. Nouvelle génération payante, lecture intégrée, rafraîchissement du jeton et révocation/reconnexion non testés. Cela ne prouve pas un accès complet en écriture pour tous les comptes Pro.
+
+La compatibilité est vérifiée par hôte. Claude Desktop et Codex CLI ont des contrôles validés ; aucun contrôle complet n’est enregistré pour Claude Code. OpenClaw et MCP Client sur n8n auto-hébergé restent testés avec limites. Les guides précisent les dates et les restrictions.
 
 ## Ce que l’assistant doit faire
 
@@ -70,6 +74,10 @@ L’assistant garde la conversation créative : brief, scénario, découpage, pr
 - attendre l’accord explicite sur le devis exact avant `confirm_generation`.
 
 La qualité n’est pas une box « économique/équilibré/premium ». Pour un film multi-plans, l’assistant peut comparer une proposition qualité avec des variantes mono-modèle ou mixtes et justifier chaque choix. Les tentatives créatives sont des scénarios facturables à afficher séparément.
+
+Précisez durée, résolution, format et audio lorsque le modèle les accepte ; comparez seulement des devis aux mêmes réglages.
+
+Exemple de devis : un clip Veo 3.1 texte-vers-vidéo, 8 secondes, 720p, 9:16, `audio: false`. Préparez seulement le devis, sans confirmer la génération.
 
 ## Outils
 
