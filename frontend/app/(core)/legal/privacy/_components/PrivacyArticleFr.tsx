@@ -3,8 +3,6 @@ import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink'
 import type { PrivacyBodyProps } from './PrivacyArticle';
 
 export function PrivacyArticleFr({
-  version,
-  effective,
   links,
 }: {
   version: string;
@@ -73,37 +71,18 @@ export function PrivacyArticleFr({
       <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">4. Conservation</h3>
         <ul className="ml-5 list-disc space-y-2">
-          <li>
-            <strong>Données de compte :</strong> conservées tant que le compte est actif, puis sauvegardes limitées.
-          </li>
-          <li>
-            <strong>Reçus &amp; documents financiers :</strong> stockés selon les durées comptables légales.
-          </li>
-          <li>
-            <strong>Logs &amp; télémétrie :</strong> conservés sur des fenêtres glissantes courtes sauf nécessité de sécurité ou d’enquête.
-          </li>
-          <li>Nous anonymisons ou supprimons les données lorsqu’elles ne sont plus nécessaires.</li>
+          <li><strong>Compte et espace de travail :</strong> les données de compte, projets, conversations et médias sont conservés pour fournir votre espace, l’historique et les téléchargements. Vous pouvez demander leur effacement.</li>
+          <li><strong>Documents comptables :</strong> les factures et pièces justificatives comptables doivent être conservées 10 ans à compter de la clôture de l’exercice concerné.</li>
+          <li><strong>Journaux techniques et sauvegardes :</strong> leur conservation dépend du service concerné et des besoins de sécurité, de reprise et des obligations légales.</li>
         </ul>
+        <p>Une demande de suppression est enregistrée pour traitement ; elle n’efface pas à elle seule toutes les données. L’expiration d’un devis ou d’un lien, ou le retrait d’une galerie, n’efface pas automatiquement les copies stockées.</p>
       </section>
 
       <section className="stack-gap-sm">
-        <h3 className="text-lg font-semibold text-text-primary">5. Partage &amp; sous-traitants</h3>
-        <p>Nous recourons à des prestataires de confiance :</p>
-        <ul className="ml-5 list-disc space-y-2">
-          <li>Stripe (paiements)</li>
-          <li>Hébergement/CDN (ex. Vercel)</li>
-          <li>Stockage objet (ex. AWS S3)</li>
-          <li>Base de données &amp; authentification (Neon, Supabase)</li>
-          <li>Fournisseurs d’inférence IA (ex. Fal.ai)</li>
-          <li>Outils d’e-mail et de support</li>
-        </ul>
-        <p>
-          Nous signons des accords de traitement avec chaque prestataire. La liste à jour est disponible sur{' '}
-          <Link href={links.subprocessorsHref} className="text-brand underline hover:text-brandHover">
-            {links.subprocessorsHref}
-          </Link>
-          .
-        </p>
+        <h3 className="text-lg font-semibold text-text-primary">5. Prestataires</h3>
+        <p>L’hébergement, le stockage, l’authentification, les paiements et les e-mails utilisent les services de notre liste de prestataires. Selon la fonctionnalité, les fournisseurs IA reçoivent les prompts, réglages et références nécessaires à la génération. Studio transmet à OpenAI les messages, le contexte utile du projet et de l’historique, ainsi que les références ou extraits sélectionnés pour l’assistance et les analyses demandées.</p>
+        <p><Link href={links.subprocessorsHref} className="text-brand underline hover:text-brandHover">Prestataires et données concernées</Link>.</p>
+        <p>Si vous utilisez un assistant externe via MCP, les données traitées par cet assistant relèvent aussi de sa propre politique de confidentialité.</p>
       </section>
 
       <section className="stack-gap-sm">
@@ -173,7 +152,7 @@ export function PrivacyArticleFr({
           />
           .
         </p>
-        <p className="text-sm text-text-muted">Dernière mise à jour : {effective ?? version}</p>
+        <p className="text-sm text-text-muted">Informations mises à jour : 19 octobre 2026</p>
       </section>
     </article>
   );
