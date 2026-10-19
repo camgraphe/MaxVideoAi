@@ -2,8 +2,6 @@ import Link from 'next/link';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 
 export function TermsArticleFr({
-  version,
-  effective,
   subprocessorsHref,
 }: {
   version: string;
@@ -85,7 +83,7 @@ export function TermsArticleFr({
             <strong>Licence sur les médias générés.</strong> Pour chaque sortie produite via MaxVideoAI, vous nous accordez une licence mondiale, non exclusive, gratuite, transférable et sous-licenciable pour héberger, reproduire, indexer, afficher et utiliser ces vidéos afin (a) d’exploiter le Service, (b) d’améliorer le routage, les protections et les modèles, (c) de mener des enquêtes sécurité/abus et (d) de présenter la galerie Examples, les pages modèles, études de cas ou supports marketing.
           </li>
           <li>
-            <strong>Contrôles de confidentialité.</strong> Les nouveaux rendus sont privés par défaut. La publication publique, l’indexation site-wide et l’éventuelle inclusion dans le rollout Video SEO sont gérées par MaxVideoAI via un workflow interne de revue. Si vous souhaitez désindexer, retirer d’un moteur ou supprimer un rendu public, vous pouvez écrire à{' '}
+            <strong>Publication et retrait.</strong> Les nouveaux rendus sont privés par défaut et ne figurent pas dans les galeries publiques. MaxVideoAI peut en publier une sélection après revue, selon la licence ci-dessus. Pour demander un retrait, une désindexation ou un effacement, écrivez à{' '}
             <ObfuscatedEmailLink
               user="support"
               domain="maxvideoai.com"
@@ -94,7 +92,7 @@ export function TermsArticleFr({
               unstyled
               className="font-medium"
             />{' '}
-            ; nous honorerons votre demande sauf obligation légale contraire.
+            ; nous honorerons votre demande sauf obligation légale contraire. Un lien de fichier partagé peut donner accès au média. Le retrait d’une page publique n’efface pas à lui seul les fichiers stockés ni les copies déjà téléchargées par des tiers.
           </li>
           <li>
             <strong>Uploads vs. médias générés.</strong> Les logos, images ou vidéos importés restent votre propriété ; nous ne les utilisons que pour produire le rendu demandé ou diagnostiquer la qualité. Les rendus vous appartiennent sous réserve de la licence ci-dessus et vous êtes responsable des droits de tiers incorporés.
@@ -200,7 +198,7 @@ export function TermsArticleFr({
           />
           .
         </p>
-        <p className="text-sm text-text-muted">Dernière mise à jour : {effective ?? version}</p>
+        <p className="text-sm text-text-muted">Informations mises à jour : 19 octobre 2026</p>
       </section>
     </article>
   );
