@@ -364,17 +364,18 @@ export function useWorkspaceEngineModeState({
     [implicitMode, inputAssets, referenceInputStatus.hasAudio, selectedEngine, setForm, showNotice, workflowCopy, workspaceExecutableModes]
   );
 
+  const formEngineId = form?.engineId;
   useEffect(() => {
-    if (!selectedEngine || !authChecked) return;
+    if (!selectedEngine || !authChecked || !formEngineId) return;
     setForm((current) => {
       const candidate = current ?? null;
-      if (!candidate) return candidate;
+      if (!candidate || candidate.engineId !== formEngineId) return candidate;
       const nextMode = getPreferredEngineMode(selectedEngine, candidate?.mode ?? null);
       const normalizedPrevious = candidate ? { ...candidate, mode: nextMode } : null;
       const nextState = coerceFormState(selectedEngine, nextMode, normalizedPrevious);
       return hasFormStateChanged(candidate, nextState) ? nextState : candidate;
     });
-  }, [selectedEngine, authChecked, setForm]);
+  }, [selectedEngine, authChecked, setForm, formEngineId]);
 
   return {
     selectedEngine,

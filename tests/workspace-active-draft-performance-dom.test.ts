@@ -8,6 +8,7 @@ import { createRoot } from 'react-dom/client';
 import { listFalEngines } from '../frontend/src/config/falEngines';
 import { useWorkspaceRouteFormState } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceRouteFormState';
 import { useWorkspaceAssetState } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceAssetState';
+import { useWorkspaceEngineModeState } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceEngineModeState';
 import { useWorkspaceDraftHydration } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceDraftHydration';
 import { decodeWorkspaceActiveDraft, encodeWorkspaceActiveDraft, workspaceActiveDraftKey } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-active-draft';
 import { serializeWorkspaceModelSetup } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-model-setups';
@@ -28,7 +29,7 @@ async function mount(stored: string | null = null, options: { guest?: boolean; i
   let authStatus = options.guest ? 'loggedOut' : 'authed';
   let accountId: string | null = options.guest ? null : 'draft-performance';
   const initialModels: string[] = [];
-  const availableEngines = options.initialPreviewGroup
+  let availableEngines = options.initialPreviewGroup
     ? [...engines, listFalEngines().find(entry => entry.id === 'wan-3-prime')!.engine]
     : engines;
   const readLegacy = (key: string) => key === STORAGE_KEYS.prompt ? options.storedPrompt ?? null : null;
@@ -69,6 +70,15 @@ async function mount(stored: string | null = null, options: { guest?: boolean; i
       recentJobs: jobs, selectedPreview: null, rendersLength: 0, preserveStoredDraftRef, hasStoredFormRef,
       setSelectedPreview: noop, hydratePendingRendersFromStorage: noop, resetRenderState: noop,
     });
+    const requestedEngineOverrideIdRef = React.useRef<string | null>(null);
+    const requestedEngineOverrideTokenRef = React.useRef<string | null>(null);
+    const requestedModeOverrideRef = React.useRef(null);
+    useWorkspaceEngineModeState({
+      ...route, ...assets, engines: availableEngines, effectiveRequestedEngineToken: '',
+      authChecked: true, hydratedForScope, storageScope: accountId ?? 'anon',
+      preserveStoredDraftRef, requestedEngineOverrideIdRef, requestedEngineOverrideTokenRef,
+      requestedModeOverrideRef, writeStorage: noop, uiLocale: 'en', workflowCopy: {} as any, showNotice: noop,
+    });
     current = { ...route, ...assets, hydration };
     if (route.form) initialModels.push(route.form.engineId);
     return React.createElement('output', null, unrelated);
@@ -81,6 +91,7 @@ async function mount(stored: string | null = null, options: { guest?: boolean; i
   return {
     get current() { return current; },
     initialModels,
+    async replaceEngines(next: typeof engines) { availableEngines = next; await act(async () => render()); },
     get writes() { return writes; },
     storage: dom.window.sessionStorage,
     render,
@@ -309,4 +320,15 @@ test('the Starter preference preserves a guest prompt and ignores authenticated 
       if (options.storedPrompt) assert.equal(view.current.prompt, options.storedPrompt);
     } finally { await view.close(); }
   }
+});
+
+
+test('normalization retains the existing fallback when a stable form model leaves the catalogue', async () => {
+  const view = await mount(null, { guest: true });
+  try {
+    assert.equal(view.current.form?.engineId, 'seedance-2-0');
+    const wan = listFalEngines().find(entry => entry.id === 'wan-3-prime')!.engine;
+    await view.replaceEngines([wan]);
+    assert.equal(view.current.form?.engineId, 'wan-3-prime');
+  } finally { await view.close(); }
 });
