@@ -2,8 +2,6 @@ import Link from 'next/link';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 
 export function TermsArticleEn({
-  version,
-  effective,
   subprocessorsHref,
 }: {
   version: string;
@@ -91,8 +89,7 @@ export function TermsArticleEn({
             template pages, case studies, or other marketing placements.
           </li>
           <li>
-            <strong>Privacy controls.</strong> New renders are private by default. Public publishing, site-wide indexing, and any Video SEO rollout are
-            managed by MaxVideoAI through an internal review workflow. If you need a public render delisted, deindexed, or deleted, email{' '}
+            <strong>Publication and removal.</strong> New renders are private by default and are not listed in public galleries. MaxVideoAI may publish a selection after review under the licence above. To request removal, deindexing or erasure, email{' '}
             <ObfuscatedEmailLink
               user="support"
               domain="maxvideoai.com"
@@ -101,7 +98,7 @@ export function TermsArticleEn({
               unstyled
               className="font-medium"
             />{' '}
-            and we will honour reasonable requests unless legal obligations prevent removal.
+            and we will honour reasonable requests unless legal obligations prevent removal. A shared file link may give access to the media. Removing a public listing does not by itself erase stored files or copies already downloaded by third parties.
           </li>
           <li>
             <strong>Uploads vs. generated content.</strong> Uploaded logos, footage, and other inputs remain your property; we only use them to fulfil the
@@ -217,7 +214,7 @@ export function TermsArticleEn({
           />
           .
         </p>
-        <p className="text-sm text-text-muted">Last updated: {effective ?? version}</p>
+        <p className="text-sm text-text-muted">Information updated: 19 October 2026</p>
       </section>
     </article>
   );

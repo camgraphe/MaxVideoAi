@@ -34,6 +34,7 @@ type GuidedNavigation = {
 
 type UseWorkspaceGalleryActionsOptions = {
   guestStarterReady?: boolean;
+  initialPreviewGroup?: VideoGroup | null;
   prompt?: string;
   recentJobs?: Job[];
   provider: ResultProvider;
@@ -77,6 +78,7 @@ type UseWorkspaceGalleryActionsResult = {
 
 export function useWorkspaceGalleryActions({
   guestStarterReady = false,
+  initialPreviewGroup,
   prompt = '',
   recentJobs,
   provider,
@@ -364,14 +366,22 @@ export function useWorkspaceGalleryActions({
 
   useLayoutEffect(() => {
     if (!guestStarterReady || guestStarterApplied.current || !isGuidedSamplesActive) return;
-    const firstSample = guidedSampleGroups.find(group => group.hero.videoUrl && group.hero.prompt?.trim());
+    // Keep the playlist's editorial first item when the gallery sorts its feed by date.
+    const initialStarter = initialPreviewGroup?.items.find(item => item.meta?.curated);
+    const starterId = initialStarter?.jobId ?? initialStarter?.id;
+    const initialGroup = starterId ? guidedSampleGroups.find(group =>
+      group.members.some(member => (member.jobId ?? member.id) === starterId)) : null;
+    const initialMember = initialGroup?.members.find(member => (member.jobId ?? member.id) === starterId);
+    const firstSample = starterId
+      ? (initialGroup && initialMember?.videoUrl && initialMember.prompt?.trim() ? { ...initialGroup, hero: initialMember } : null)
+      : guidedSampleGroups.find(group => group.hero.videoUrl && group.hero.prompt?.trim());
     if (!firstSample) return;
     guestStarterApplied.current = true;
     const previewIsSample = selectedPreview && guidedSampleGroups.some(group =>
       group.members.some(member => member.id === selectedPreview.id || member.jobId === selectedPreview.id));
     if ((selectedPreview && !previewIsSample) || compositeOverrideSummary || (prompt.trim() && prompt !== DEFAULT_PROMPT)) return;
     handleGalleryGroupAction(firstSample, 'open');
-  }, [guestStarterReady, isGuidedSamplesActive, guidedSampleGroups, prompt, selectedPreview, compositeOverrideSummary, handleGalleryGroupAction]);
+  }, [guestStarterReady, initialPreviewGroup, isGuidedSamplesActive, guidedSampleGroups, prompt, selectedPreview, compositeOverrideSummary, handleGalleryGroupAction]);
 
   useEffect(() => {
     if (isGuidedSamplesActive) return;

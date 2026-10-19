@@ -100,6 +100,25 @@ test('the server-selected latest preview survives boot instead of loading a stal
   }
 });
 
+test('a requested model never gets replaced by a curated Starter preview', async () => {
+  const starter: VideoGroup = { ...latest, items: latest.items.map(item => ({ ...item, meta: { curated: true, mediaType: 'video' } })) };
+  const fixture = await mount(starter, { effectiveRequestedEngineId: 'wan-3-prime' });
+  try {
+    assert.equal(fixture.video, null);
+    assert.equal(fixture.prompt, 'Current draft');
+    assert.deepEqual(fixture.requests, []);
+  } finally { await fixture.dispose(); }
+});
+
+test('a requested model still suppresses a personal initial preview', async () => {
+  const fixture = await mount(latest, { effectiveRequestedEngineId: 'wan-3-prime' });
+  try {
+    assert.equal(fixture.video, null);
+    assert.equal(fixture.prompt, 'Current draft');
+    assert.deepEqual(fixture.requests, []);
+  } finally { await fixture.dispose(); }
+});
+
 test('legacy saved-preview restoration remains available when the server has no preview', async () => {
   const fixture = await mount(null);
   try {

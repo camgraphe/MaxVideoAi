@@ -63,7 +63,7 @@ export const BEST_FOR_SERP_SNIPPETS: Record<string, { title: string; description
   'fast-drafts': {
     title: 'Best AI Video Engines for Fast Drafts & Prompt Tests',
     description:
-      'Compare AI video engines for fast drafts, cheaper iterations, timing tests and concept exploration with LTX 2.3 Fast, Seedance Fast and other quick models.',
+      'Explore AI video engines for draft scenes and timing tests: LTX 2.5 Fast, Seedance 2.0 Fast, FLUX 3 Draft, Veo 3.1 Lite and Kling Turbo Standard.',
   },
   'stylized-anime': {
     title: 'Best AI Video Engines for Anime & Stylized Video',

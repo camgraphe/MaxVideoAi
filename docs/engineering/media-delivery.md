@@ -329,6 +329,24 @@ Selecting Play in the main preview mounts `AppDemoVideo`, which consumes the sha
 public rendition selector and exact-original error fallback. Personal media retain
 their existing reader, and download/reuse/edit URLs remain originals.
 
+For a direct guest entry into `/app`, the server-selected first Starter playlist
+video remains selected when the gallery hydrates, even if its chronological sort
+puts another video first. The gallery action hook applies that same video's prompt
+and settings without autoplay. Explicit example/job/model links, restored drafts
+and prompts already edited by the visitor take precedence over automatic Starter
+selection. `workspace-guest-starter-*.test.ts` and
+`workspace-initial-preview-hydration.test.ts` cover these entry paths.
+For a fresh guest only, initial form hydration uses that server-selected model as
+its last default before the gallery arrives. Keep stored forms, prepared prompts
+and explicit entries ahead of this preference; do not briefly render another
+model's controls while waiting for the sample feed.
+
+The empty preview's mobile guidance reserves three lines while the app font loads.
+Keep that minimum expandable: the French hint otherwise loses a line during the
+font swap and moves the following composer. Verify initial loading in EN/FR/ES at
+320px and 390px when changing its copy, typography or geometry; do not clip longer
+text or change global font loading to compensate.
+
 Replacing an app demonstration automatically retains these loading rules, but does
 not automatically encode the replacement. Verify the exact original selected by the
 app reader, register that source in `public-video-sources.json`, then use the explicit
@@ -792,3 +810,25 @@ Late responses cannot refresh or change the next account's library. Cancellation
 cannot undo an upload already accepted by the server for its original owner.
 `tests/library-import-account.test.ts` covers image decoding, session lookup, all
 three media kinds, account transitions, navigation and replacement imports.
+
+### Image references and library read ownership
+
+The account-keyed image workspace passes its owner to `useImageReferenceSlots`.
+`useImageReferenceSlotLifecycle` synchronizes reference state with per-slot upload
+cancellation, including direct draft hydration, library/character selection and
+model pruning. Replacing one slot leaves other uploads active. Unmount retires all
+operations and releases blob previews; late preparation, session lookup, response
+parsing and errors cannot overwrite or clear a replacement.
+
+`ownedAuthFetch` binds image reference uploads and the shared saved/recent media
+readers to the supplied owner. It checks the session after refresh, rejects a
+missing or different owner, forwards cancellation and dispatches exactly that
+bearer with cookies omitted. For reads, the owner comes from the SWR key; a
+different account's response must never enter that cache entry. Server JWT
+validation remains authoritative. Cancellation does not undo a server-accepted
+upload. This is an operation ownership guard, not a replacement for server auth.
+
+`image-reference-upload-account`, `library-owner-cache` and `owned-auth-fetch`
+test the actual hooks, SWR cache and transport with synthetic sessions and files.
+They cover delayed session/decoding/body work, A→B→A remounts, selection races,
+independent slots, saved and recent media, and preserved pagination.
