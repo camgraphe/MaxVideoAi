@@ -12,7 +12,7 @@ export const subtitleStyleSchema=z.object({
   textColor:z.string().regex(/^#[a-fA-F0-9]{6}$/),
   accentColor:z.string().regex(/^#[a-fA-F0-9]{6}$/),
 }).strict();
-export const DEFAULT_SUBTITLE_STYLE:z.infer<typeof subtitleStyleSchema>={preset:'clean',position:'bottom',fontSizePercent:5,textColor:'#FFFFFF',accentColor:'#FDE047'};
+export const DEFAULT_SUBTITLE_STYLE:z.infer<typeof subtitleStyleSchema>={preset:'active-word',position:'bottom',fontSizePercent:7,textColor:'#FFFFFF',accentColor:'#FDE047'};
 export const subtitleSourceSchema=z.object({
   ref:toolAssetRefSchema.refine(ref=>ref.kind==='video'||ref.kind==='audio','An audio or video source is required'),
   fingerprint:z.string().regex(/^[a-f0-9]{64}$/),durationMs:ms.positive(),

@@ -7,6 +7,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { authFetch } from '@/lib/authFetch';
 import { triggerAppDownload } from '@/lib/download';
 import { parseSubtitleDocument, type SubtitleDocument, type SubtitleStyle } from '@/lib/subtitles/document';
+import { SubtitleStylePicker } from './SubtitleStylePicker.client';
 import { ToolMediaHandoff } from '@/components/library/ToolMediaHandoff.client';
 import { MediaDestinationActions } from '@/components/library/MediaDestinationActions.client';
 import { ToolAuthNotice } from '../ToolWorkbench';
@@ -131,9 +132,7 @@ export function SubtitleSession({userId,locale,initialDocument,executionEnabled 
       <details className={styles.advanced}><summary><SlidersHorizontal size={17} aria-hidden="true" />{experience.advanced}</summary><div className={styles.settings}><label>{copy.keyterms}<textarea maxLength={5100} value={keyterms} disabled={disabled} onChange={event => {transcription.invalidate();setKeyterms(event.target.value);}} /><small>{copy.keytermsHint}</small></label></div></details>
       <CreatorOperationPanel locale={locale} operation={transcription} disabledReason={!userId ? copy.signIn : !executionEnabled ? copy.executionClosed : !source && !studioSource ? experience.chooseSource : undefined} disabled={!executionEnabled || !userId || (!source && !studioSource) || uploadBusy || loading} onPrepare={() => {const terms=keyterms.split(',').map(value => value.trim()).filter(Boolean),settings={...language?{language}:{},keyterms:terms};if(studioSource)void transcription.prepare({...studioSource,...settings},'/prepare-studio');else if(source)void transcription.prepare({source:source.ref,...settings});}} />
     </> : <>
-      <fieldset className={styles.choiceFieldset}><legend>{experience.styleTitle}</legend><div className={styles.captionStyles}>{(['clean','active-word','high-contrast'] as const).map(preset => <button type="button" key={preset} disabled={disabled} aria-pressed={draft.style.preset === preset} onClick={() => captionStyle({preset})}>
-        <span className={styles.styleSample} data-preset={preset} aria-hidden="true">{preset === 'active-word' ? <><mark>Aa</mark> Bb</> : 'Aa Bb'}</span><span>{preset === 'clean' ? copy.clean : preset === 'active-word' ? copy.activeWord : copy.contrast}</span>
-      </button>)}</div></fieldset>
+      <SubtitleStylePicker locale={locale} value={draft.style.preset} disabled={disabled} onChange={preset => captionStyle({preset})} />
       <label>{copy.position}<select aria-label={copy.position} disabled={disabled} value={draft.style.position} onChange={event => captionStyle({position:event.target.value as SubtitleStyle['position']})}>{(['bottom','center','top'] as const).map(value => <option key={value} value={value}>{copy[value]}</option>)}</select></label>
       <label>{copy.fontSize}<input type="range" min="2" max="10" step="0.5" value={draft.style.fontSizePercent} disabled={disabled} onChange={event => captionStyle({fontSizePercent:Number(event.target.value)})} /></label>
       <p className={styles.notice}>{experience.savedText}</p>

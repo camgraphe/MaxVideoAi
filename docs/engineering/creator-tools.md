@@ -124,6 +124,28 @@ revision, verifies the original fingerprint, preserves source timing and audio,
 and publishes a distinct video asset. Standalone burn-in requires a video source.
 An audio-only transcript can always be exported as SRT/VTT.
 
+The three presentation presets keep stable stored identities: `active-word`
+(Pop), `clean` (Cinema) and `high-contrast` (Contrast). `presets.ts` and
+`SubtitleStylePicker.client.tsx` share their localized choices; the actual
+`SubtitleOverlay` owns preview and export. New documents default to Pop at 7%;
+saved documents retain their recorded style. Edited text still falls back to
+full-line captions instead of inventing word alignment.
+
+Media duration uses presented audio/video stream ends when available, with a
+container-duration fallback for unknown tracks. The renderer bounds its final
+AAC mux to the saved source duration and keeps the strict output check; encoder
+padding must not lengthen the result. The 44.1kHz regression and actual demo
+cover a source ending between video frames.
+
+The Subtitle marketing demonstration uses three real locally rendered MP4s of
+one Wan 3 dialogue scene, with exact hashed assets and provenance under
+`public/assets/tools/subtitle-demo`. Its local Whisper transcript is not Scribe
+provider qualification. Playback is manual (`preload="none"`), uses the shared
+public-video controls, and restores time/play state when changing styles. The
+selected exported file is also the download. Final CTA links are shown in the
+design view; route admission, navigation, sitemap and JSON-LD still retain their
+release ownership. The presentation does not contain a coming-soon CTA.
+
 Workers run in the existing media-worker ECS image with the explicit
 `SUBTITLE_OPERATION_TARGET_ID` target. Launcher configuration is checked before
 reservation. The image must contain this worker release, Chromium and FFmpeg;

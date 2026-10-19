@@ -6,7 +6,7 @@ import {execFileSync} from 'node:child_process';
 import {mkdtempSync,readFileSync,existsSync,rmSync} from 'node:fs';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
-import {renderSubtitleVideo,extractSubtitleAudio} from '../frontend/src/server/subtitles/render';
+import {renderSubtitleVideo,extractSubtitleAudio,probeSubtitleMedia} from '../frontend/src/server/subtitles/render';
 import {normalizeScribeTranscript} from '../frontend/src/lib/subtitles/document';
 
 test('standalone renderer burns edited captions only in their interval and preserves source sound', {timeout:180_000},async t=>{
@@ -30,4 +30,17 @@ test('standalone renderer burns edited captions only in their interval and prese
   assert.ok(difference(captionArea(before),captionArea(during))>4,'Caption must be visibly burned into its lower safe area');assert.ok(difference(before,after)<1,'Caption disappears after its end');
   const audioPath=join(directory,'audio.wav');await extractSubtitleAudio({sourcePath:outputPath,outputPath:audioPath});
   const audio=readFileSync(audioPath);assert.ok(audio.length>90_000);assert.equal(audio.subarray(0,4).toString(),'RIFF');
+});
+
+test('subtitle export bounds AAC padding when a 44.1kHz source ends between video frames',{timeout:180_000},async t=>{
+  const browserExecutable=process.env.STUDIO_RENDER_BROWSER_EXECUTABLE??chromium.executablePath();
+  const directory=mkdtempSync(join(tmpdir(),'subtitle-aac-test-'));t.after(()=>rmSync(directory,{recursive:true,force:true}));
+  const sourcePath=join(directory,'source.mp4'),outputPath=join(directory,'output.mp4');
+  execFileSync('ffmpeg',['-hide_banner','-loglevel','error','-f','lavfi','-i','color=c=blue:s=320x180:r=30:d=3','-f','lavfi','-i','sine=frequency=440:sample_rate=44100:duration=3.028','-c:v','libx264','-pix_fmt','yuv420p','-c:a','aac',sourcePath]);
+  const source=await probeSubtitleMedia(sourcePath);
+  const document=normalizeScribeTranscript({text:'Last word',language_code:'en',words:[{text:'Last',type:'word',start:2.5,end:2.7},{text:' ',type:'spacing'},{text:'word',type:'word',start:2.7,end:2.99}]},{id:'aac-document',source:{ref:{type:'asset',assetId:'owned',kind:'video'},fingerprint:createHash('sha256').update(readFileSync(sourcePath)).digest('hex'),durationMs:source.durationMs}});
+  document.style.preset='active-word';
+  const output=await renderSubtitleVideo({document,sourcePath,outputPath,browserExecutable});
+  assert.equal(output.hasAudio,true);assert.ok(Math.abs(output.durationMs-source.durationMs)<=44);assert.equal(output.fps,30);
+  const audioPath=join(directory,'audio.wav');await extractSubtitleAudio({sourcePath:outputPath,outputPath:audioPath});assert.ok(readFileSync(audioPath).length>90_000);
 });

@@ -18,9 +18,7 @@ export function CreatorLandingView({ id, locale, publicReleased = isCreatorToolP
   const canonicalUrl = `https://maxvideoai.com${localizePathFromEnglish(locale, `/tools/${id}`)}`;
   const related = getReleasedCreatorToolIds().filter(tool => tool !== id);
   const appHref = `/app/tools/${id}`;
-  const cta = (location: string) => publicReleased
-    ? <a className="creator-primary" href={appHref} data-analytics-event="tool_cta_click" data-analytics-tool-name={id.replace(/-/g, '_')} data-analytics-tool-surface="public" data-analytics-cta-location={location}>{toolDetail.action}<ArrowRight aria-hidden="true" size={20}/></a>
-    : <p className="creator-preview-status">{labels.preview}</p>;
+  const cta = (location: string) => <a className="creator-primary" href={appHref} data-analytics-event="tool_cta_click" data-analytics-tool-name={id.replace(/-/g, '_')} data-analytics-tool-surface="public" data-analytics-cta-location={location}>{toolDetail.action}<ArrowRight aria-hidden="true" size={20}/></a>;
   return <div className="creator-tools-page" data-creator-tool={id}>
     <section className="creator-hero">
       <div className="creator-hero-copy">
@@ -45,7 +43,7 @@ export function CreatorLandingView({ id, locale, publicReleased = isCreatorToolP
 
     <section className="creator-limits"><h2>{labels.limits}</h2><ul>{content.limits.map(limit => <li key={limit}>{limit}</li>)}</ul></section>
     <section className="creator-faq" aria-label={labels.faq}>{content.questions.map(question => <details key={question.question}><summary>{question.question}<Plus aria-hidden="true" size={22}/></summary><p>{question.answer}</p></details>)}</section>
-    <section className="creator-quote"><div><h2>{labels.quoteTitle}</h2><p>{labels.quoteBody}</p></div>{cta('creator_tool_final')}</section>
+    <div className="creator-final-action">{cta('creator_tool_final')}</div>
     {related.length ? <section className="creator-related"><h2>{labels.related}</h2><div>{related.map(tool => <a key={tool} href={localizePathFromEnglish(locale, `/tools/${tool}`)}><CreatorToolMark id={tool}/><span>{getCreatorMarketingCopy(locale, tool).name}<ArrowRight aria-hidden="true" size={18}/></span></a>)}</div></section> : null}
     {publicReleased ? <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(buildToolBreadcrumbJsonLd({ locale, canonicalUrl, breadcrumb: { home: labels.home, tools: labels.tools, current: content.name } })) }}/><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(buildMarketingServiceJsonLd({ name: content.name, description: content.description, url: canonicalUrl, serviceType: content.name })) }}/></> : null}
   </div>;

@@ -2,23 +2,16 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { mountToolFixture } from './helpers/tool-selection-fixture';
 
-test('caption presentation reflects edits and style without performing an operation', async () => {
+test('subtitle presentation offers three real rendered styles without a generation request', async () => {
   const f = await mountToolFixture(`import {CreatorWorkflowDemo} from './src/components/tools/creator-marketing/CreatorWorkflowDemo.client';import {enLabels} from './src/components/tools/creator-marketing/creator-copy.en';function App(){return <CreatorWorkflowDemo id="subtitles" labels={enLabels}/>}`, {});
   try {
-    const input = f.w.document.querySelector('input[type="text"]');
-    await f.act(() => { Object.getOwnPropertyDescriptor(f.w.HTMLInputElement.prototype, 'value')!.set!.call(input, 'An edited brand name.'); input.dispatchEvent(new f.w.Event('input', { bubbles: true })); });
-    assert.equal(f.w.document.querySelector('[data-caption-preview]').textContent, 'An edited brand name.');
-    const contrast = Array.from(f.w.document.querySelectorAll('button')).find((button: any) => button.textContent === 'High contrast') as any;
-    await f.act(() => contrast.click());
-    assert.equal(contrast.getAttribute('aria-pressed'), 'true');
-    assert.equal(f.w.document.querySelector('[data-caption-preview]').getAttribute('data-style'), '2');
-    assert.match(f.w.document.body.textContent, /not a tool result/);
-    assert.match(f.w.document.querySelector('img').getAttribute('srcset'), /subtitles-640.webp 640w/);
-    const highlighted = Array.from(f.w.document.querySelectorAll('button')).find((button: any) => button.textContent === 'Highlighted word') as any;
-    await f.act(() => highlighted.click());
-    assert.equal(f.w.document.querySelector('[data-caption-preview] mark').textContent, 'name.');
-    assert.equal(f.w.document.querySelector('[data-caption-preview]').textContent, 'An edited brand name.');
-    assert.equal(f.w.requests.length, 0);
+    const video=f.w.document.querySelector('video');assert.equal(video.preload,'none');assert.match(video.getAttribute('src'),/active-word/);
+    const buttons=Array.from(f.w.document.querySelectorAll('.subtitle-style-picker button')) as any[];assert.equal(buttons.length,3);
+    const contrast=buttons.find(button=>button.getAttribute('aria-label')==='Contrast');await f.act(()=>contrast.click());
+    assert.equal(contrast.getAttribute('aria-pressed'),'true');assert.match(video.getAttribute('src'),/high-contrast/);
+    assert.equal(f.w.document.querySelector('a[download]').getAttribute('href'),video.getAttribute('src'));
+    assert.equal(f.w.document.querySelectorAll('img').length,0,'the hero still must not repeat in the demo');
+    assert.equal(f.w.requests.length,0);
   } finally { await f.close(); }
 });
 

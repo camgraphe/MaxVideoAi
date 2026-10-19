@@ -93,3 +93,21 @@ not evidence of live authenticated delivery or provider fidelity.
 The [visual review record](../qa/creator-tools-visual-review-2026-10-19.md)
 documents concept comparisons, responsive checks, interaction evidence, loading
 observations and deliberate differences. User visual acceptance is pending.
+
+### Dialogue and subtitle results added in the same review
+
+The user approved one Wan 3 text-to-video presentation source: 12 seconds,
+480p, 16:9, English dialogue with audio, at USD 0.78. The completed generation
+is `e5ad4469-b09c-45da-9a16-d0155167a610`, saved in the connected account's library.
+This is a source scene for demonstrating subtitles, not a creator-profile canary.
+Local MLX Whisper produced the timed transcript. The real shared subtitle worker
+renderer produces Pop, Cinema and Contrast MP4 files; the presentation plays and
+downloads those files. Provenance, source fingerprint and transcript are stored
+alongside the hashed media under `public/assets/tools/subtitle-demo`.
+
+The real source exposed AAC container/encoder padding that incorrectly failed
+the strict duration check. Presented stream duration and a bounded final mux
+repair the issue without relaxing the output guard. Tests cover 44.1kHz input,
+caption intervals and retained audio. Public page CTA wording no longer contains
+“coming soon”; route/publication and execution flags retain their independent
+release requirements. No production deployment or activation was performed.

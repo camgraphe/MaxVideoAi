@@ -1,0 +1,15 @@
+1
+00:00:00,460 --> 00:00:01,620
+You came back.
+
+2
+00:00:02,640 --> 00:00:04,200
+You still owe me a dance.
+
+3
+00:00:05,320 --> 00:00:06,840
+The train leaves in a minute.
+
+4
+00:00:08,400 --> 00:00:10,000
+Then we'd better make it a good one.

@@ -1,0 +1,263 @@
+{
+  "created": "2026-10-19",
+  "generator": "Wan 3",
+  "generationId": "e5ad4469-b09c-45da-9a16-d0155167a610",
+  "sourceSha256": "9d924e3a6ccbd29cc5db7d2b2e12cf953bad5ea67d1e730187f9cb52f29458f0",
+  "settings": {
+    "durationSec": 12,
+    "resolution": "480p",
+    "aspectRatio": "16:9",
+    "audio": true
+  },
+  "approvedPrice": {
+    "amountCents": 78,
+    "currency": "USD"
+  },
+  "transcription": {
+    "engine": "Local MLX Whisper small",
+    "wordTimestamps": true,
+    "note": "Presentation transcript; not a qualification of the paid Scribe transcription path."
+  },
+  "renderer": "frontend/src/server/subtitles/render.ts with the shared SubtitleOverlay",
+  "document": {
+    "version": 1,
+    "id": "night-train-demo",
+    "revision": 1,
+    "source": {
+      "ref": {
+        "type": "asset",
+        "assetId": "night-train-demo-source",
+        "kind": "video"
+      },
+      "fingerprint": "9d924e3a6ccbd29cc5db7d2b2e12cf953bad5ea67d1e730187f9cb52f29458f0",
+      "durationMs": 12028
+    },
+    "language": "en",
+    "words": [
+      {
+        "id": "word-1",
+        "text": "You",
+        "startMs": 460,
+        "endMs": 860
+      },
+      {
+        "id": "word-2",
+        "text": " came",
+        "startMs": 860,
+        "endMs": 1060
+      },
+      {
+        "id": "word-3",
+        "text": " back.",
+        "startMs": 1060,
+        "endMs": 1440
+      },
+      {
+        "id": "word-4",
+        "text": "You",
+        "startMs": 2640,
+        "endMs": 3000
+      },
+      {
+        "id": "word-5",
+        "text": " still",
+        "startMs": 3000,
+        "endMs": 3220
+      },
+      {
+        "id": "word-6",
+        "text": " owe",
+        "startMs": 3220,
+        "endMs": 3380
+      },
+      {
+        "id": "word-7",
+        "text": " me",
+        "startMs": 3380,
+        "endMs": 3520
+      },
+      {
+        "id": "word-8",
+        "text": " a",
+        "startMs": 3520,
+        "endMs": 3620
+      },
+      {
+        "id": "word-9",
+        "text": " dance.",
+        "startMs": 3620,
+        "endMs": 4020
+      },
+      {
+        "id": "word-10",
+        "text": "The",
+        "startMs": 5320,
+        "endMs": 5720
+      },
+      {
+        "id": "word-11",
+        "text": " train",
+        "startMs": 5720,
+        "endMs": 5960
+      },
+      {
+        "id": "word-12",
+        "text": " leaves",
+        "startMs": 5960,
+        "endMs": 6220
+      },
+      {
+        "id": "word-13",
+        "text": " in",
+        "startMs": 6220,
+        "endMs": 6380
+      },
+      {
+        "id": "word-14",
+        "text": " a",
+        "startMs": 6380,
+        "endMs": 6480
+      },
+      {
+        "id": "word-15",
+        "text": " minute.",
+        "startMs": 6480,
+        "endMs": 6660
+      },
+      {
+        "id": "word-16",
+        "text": "Then",
+        "startMs": 8400,
+        "endMs": 8800
+      },
+      {
+        "id": "word-17",
+        "text": " we'd",
+        "startMs": 8800,
+        "endMs": 8960
+      },
+      {
+        "id": "word-18",
+        "text": " better",
+        "startMs": 8960,
+        "endMs": 9100
+      },
+      {
+        "id": "word-19",
+        "text": " make",
+        "startMs": 9100,
+        "endMs": 9300
+      },
+      {
+        "id": "word-20",
+        "text": " it",
+        "startMs": 9300,
+        "endMs": 9400
+      },
+      {
+        "id": "word-21",
+        "text": " a",
+        "startMs": 9400,
+        "endMs": 9480
+      },
+      {
+        "id": "word-22",
+        "text": " good",
+        "startMs": 9480,
+        "endMs": 9620
+      },
+      {
+        "id": "word-23",
+        "text": " one.",
+        "startMs": 9620,
+        "endMs": 9820
+      }
+    ],
+    "segments": [
+      {
+        "id": "segment-1",
+        "text": "You came back.",
+        "startMs": 460,
+        "endMs": 1620,
+        "wordIds": [
+          "word-1",
+          "word-2",
+          "word-3"
+        ],
+        "alignment": "aligned"
+      },
+      {
+        "id": "segment-2",
+        "text": "You still owe me a dance.",
+        "startMs": 2640,
+        "endMs": 4200,
+        "wordIds": [
+          "word-4",
+          "word-5",
+          "word-6",
+          "word-7",
+          "word-8",
+          "word-9"
+        ],
+        "alignment": "aligned"
+      },
+      {
+        "id": "segment-3",
+        "text": "The train leaves in a minute.",
+        "startMs": 5320,
+        "endMs": 6840,
+        "wordIds": [
+          "word-10",
+          "word-11",
+          "word-12",
+          "word-13",
+          "word-14",
+          "word-15"
+        ],
+        "alignment": "aligned"
+      },
+      {
+        "id": "segment-4",
+        "text": "Then we'd better make it a good one.",
+        "startMs": 8400,
+        "endMs": 10000,
+        "wordIds": [
+          "word-16",
+          "word-17",
+          "word-18",
+          "word-19",
+          "word-20",
+          "word-21",
+          "word-22",
+          "word-23"
+        ],
+        "alignment": "aligned"
+      }
+    ],
+    "style": {
+      "preset": "active-word",
+      "position": "bottom",
+      "fontSizePercent": 7,
+      "textColor": "#FFFFFF",
+      "accentColor": "#FDE047"
+    }
+  },
+  "files": {
+    "width": 854,
+    "height": 480,
+    "durationMs": 12028,
+    "source": "/assets/tools/subtitle-demo/night-train-original-9d924e3a6ccb.mp4",
+    "renders": {
+      "active-word": "/assets/tools/subtitle-demo/night-train-active-word-95c873feeb37.mp4",
+      "clean": "/assets/tools/subtitle-demo/night-train-clean-d5d6bf4f0e9a.mp4",
+      "high-contrast": "/assets/tools/subtitle-demo/night-train-high-contrast-62430bce2ce1.mp4"
+    },
+    "posters": {
+      "original": "/assets/tools/subtitle-demo/night-train-original-9d924e3a6ccb.webp",
+      "active-word": "/assets/tools/subtitle-demo/night-train-active-word-95c873feeb37.webp",
+      "clean": "/assets/tools/subtitle-demo/night-train-clean-d5d6bf4f0e9a.webp",
+      "high-contrast": "/assets/tools/subtitle-demo/night-train-high-contrast-62430bce2ce1.webp"
+    }
+  },
+  "prompt": "A 12-second cinematic dialogue scene in English, 16:9 widescreen. Two fictional adults, a woman with a short dark bob in a burgundy coat and a man with dark curly hair in a charcoal suit, face each other in the vestibule of a vintage night train waiting at a rain-soaked station. Sophisticated romantic-comedy film still aesthetics, warm amber lamps, cool cyan rain reflections, rich burgundy, tactile 35mm film grain, natural skin. Real character acting, subtle smiles and charged eye contact, not an advertisement or presenter. Begin on a medium two-shot showing both faces in three-quarter profile; use restrained shot/reverse-shot closeups to show the speaking character, then end on a two-shot as he offers his hand. The dialogue must be clearly audible, natural English with different recognizable voices, no overlapping speech, exact words and speaker order: Woman, surprised but smiling: 'You came back.' Man, gently teasing: 'You still owe me a dance.' Woman, glancing toward the platform: 'The train leaves in a minute.' Man, holding out his hand: 'Then we'd better make it a good one.' Allow tiny reaction pauses; finish the dialogue before the end. Quiet station rain and carriage ambience underneath, no music masking the words. Keep faces away from the bottom fifth to leave room for later captions. No text, no captions, no subtitles, no watermark, no titles. Deliver the clean source film with native dialogue audio."
+}

@@ -18,10 +18,10 @@ test('creator landings show responsive art and truthful interactions on mobile a
         await page.goto(`${fixture.url}/${locale}/${id}`);
         await page.waitForFunction(()=>!!(window as any).creatorReady);
         assert.equal(await page.locator('h1').count(),1);
-        assert.equal(await page.locator('video,audio').count(),0);
+        assert.equal(await page.locator('video,audio').count(),id === 'subtitles' ? 1 : 0);
         assert.equal(await page.locator('script[type="application/ld+json"]').count(),0,'unreleased design preview cannot advertise a service');
-        assert.equal(await page.locator('a[href^="/app/tools"]').count(),0);
-        assert.ok(await page.locator('.creator-preview-status').first().isVisible());
+        assert.equal(await page.locator('a[href^="/app/tools"]').count(),2);
+        assert.equal(await page.locator('.creator-preview-status').count(),0);
         const heroArt = page.locator('.creator-hero-art img');
         assert.equal(await heroArt.getAttribute('loading'),'eager');
         assert.equal(await heroArt.getAttribute('fetchpriority'),'high');
@@ -31,10 +31,10 @@ test('creator landings show responsive art and truthful interactions on mobile a
         assert.equal(await page.locator('.creator-continuation ol li').count(),3);
         assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth),false,`${locale}/${id}/${width} overflows`);
         if(locale==='en'&&id==='subtitles'){
-          await page.getByLabel('Try your own words').fill('The corrected caption.');
-          assert.equal(await page.locator('[data-caption-preview]').textContent(),'The corrected caption.');
-          await page.getByRole('button',{name:'High contrast',exact:true}).click();
-          assert.equal(await page.locator('[data-caption-preview]').getAttribute('data-style'),'2');
+          assert.equal(await page.getByRole('button',{name:'Pop',exact:true}).getAttribute('aria-pressed'),'true');
+          await page.getByRole('button',{name:'Contrast',exact:true}).click();
+          assert.match(await page.locator('video').getAttribute('src')??'',/high-contrast/);
+          assert.equal(await page.locator('video').getAttribute('preload'),'none');
         }
         if(locale==='en'&&id==='lip-sync'){
           await page.getByRole('button',{name:'Video',exact:true}).click();

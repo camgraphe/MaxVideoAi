@@ -31,11 +31,15 @@ export async function renderSubtitleVideo(params:{document:SubtitleDocument;sour
     const inputProps={document,width:facts.width,height:facts.height,fps:facts.fps,durationInFrames:Math.round(document.source.durationMs*facts.fps/1000)};
     const composition=await selectComposition({serveUrl,id:'MaxVideoAISubtitles',inputProps,browserExecutable});
     params.signal?.throwIfAborted();
-    await renderMedia({composition,serveUrl,inputProps,outputLocation:params.outputPath,browserExecutable,codec:'h264',imageFormat:'png',colorSpace:'bt709',concurrency:2,offthreadVideoCacheSizeInBytes:256*1024*1024,timeoutInMilliseconds:60_000,cancelSignal});
+    await renderMedia({composition,serveUrl,inputProps,outputLocation:params.outputPath,browserExecutable,codec:'h264',imageFormat:'png',colorSpace:'bt709',concurrency:2,offthreadVideoCacheSizeInBytes:256*1024*1024,timeoutInMilliseconds:60_000,cancelSignal,
+      // The audio encoder can append AAC padding beyond the composition. Bound the
+      // final mux to the frozen source duration; retain the strict output check below.
+      ffmpegOverride:({type,args})=>type==='stitcher'?[...args.slice(0,-1),'-t',String(document.source.durationMs/1000),args[args.length-1]]:args,
+    });
     params.signal?.throwIfAborted();const sizeBytes=statSync(params.outputPath).size;
     if(sizeBytes<=0||sizeBytes>512*1024*1024)throw new Error('SUBTITLE_RENDER_OUTPUT_INVALID');
     const actual=await probeSubtitleMedia(params.outputPath);
-    if(actual.width!==facts.width||actual.height!==facts.height||Math.abs(actual.durationMs-document.source.durationMs)>Math.ceil(1000/facts.fps)+10||actual.hasAudio!==facts.hasAudio)throw new Error('SUBTITLE_RENDER_OUTPUT_INVALID');
+    if(actual.width!==facts.width||actual.height!==facts.height||Math.abs(actual.durationMs-document.source.durationMs)>Math.ceil(1000/facts.fps)+10||actual.hasAudio!==facts.hasAudio)throw new Error('SUBTITLE_RENDER_OUTPUT_INVALID',{cause:{source:facts,output:actual}});
     return {...actual,sizeBytes};
   }catch(error){await rm(params.outputPath,{force:true});throw error;}
   finally{clearTimeout(deadline);clearInterval(sizeCheck);params.signal?.removeEventListener('abort',abort);await rm(directory,{recursive:true,force:true});}

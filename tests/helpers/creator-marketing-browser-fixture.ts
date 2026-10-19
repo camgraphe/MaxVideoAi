@@ -21,6 +21,13 @@ export async function createCreatorMarketingFixture() {
   const css = await readFile(join(frontend,'src/components/tools/creator-marketing/creator-marketing.css'),'utf8');
   const ids = ['subtitles','lip-sync','product-photo-editor','product-video-editor','motion-transfer'];
   const server = createServer(async (req,res)=>{
+    if (/^\/assets\/tools\/subtitle-demo\/[a-z0-9.-]+\.(mp4|webp)$/.test(req.url ?? '')) {
+      try {
+        const bytes=await readFile(join(frontend,'public',req.url!)),range=/^bytes=(\d+)-(\d*)$/.exec(req.headers.range??'');
+        const start=range?Number(range[1]):0,end=range&&range[2]?Math.min(Number(range[2]),bytes.length-1):bytes.length-1;
+        res.writeHead(range?206:200,{'content-type':req.url!.endsWith('.mp4')?'video/mp4':'image/webp','accept-ranges':'bytes','content-length':end-start+1,...range?{'content-range':`bytes ${start}-${end}/${bytes.length}`}:{}});res.end(bytes.subarray(start,end+1));
+      }catch{res.writeHead(404);res.end();}return;
+    }
     if (/^\/assets\/tools\/creator-art\/[a-z-]+-(640|960|1536)\.webp$/.test(req.url ?? '')) {
       try {const bytes=await readFile(join(frontend,'public',req.url!));res.writeHead(200,{'content-type':'image/webp','cache-control':'public,max-age=3600'});res.end(bytes);} catch {res.writeHead(404);res.end();} return;
     }
