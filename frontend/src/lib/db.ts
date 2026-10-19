@@ -41,6 +41,16 @@ export function getDb() {
       });
     }
     const nextPool = new Pool({ connectionString });
+    // The pool's error listener covers idle clients only. A checked-out client
+    // can also lose its connection between queries and emit an unhandled error.
+    nextPool.on('connect', (client) => {
+      client.on('error', (error) => {
+        const code = (error as Error & { code?: unknown }).code;
+        console.error('[db] Database client connection error', {
+          code: typeof code === 'string' && /^[A-Z0-9_]{1,40}$/.test(code) ? code : 'UNKNOWN',
+        });
+      });
+    });
     nextPool.on('error', (error) => {
       const code = (error as Error & { code?: unknown }).code;
       console.error('[db] Database pool idle client error', {
