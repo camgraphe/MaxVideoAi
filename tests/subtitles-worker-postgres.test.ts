@@ -21,7 +21,7 @@ test('durable subtitle worker resumes provider polling without resubmission, pub
   const request={source,facts:{durationMs:10000,width:320,height:180,fps:30,hasAudio:true},settings:{keyterms:[]}};
   const reserve=async()=>{const op=await jobs.prepare(actor,'transcribe',request,{totalCents:17,currency:'USD'});await jobs.reserve(actor,op.id);return op.id;};
   let submitted=0,cleaned=0,polled=0,dispatched=0;
-  const dependencies={jobs,documents,prepareAudio:async()=>({audioUrl:'https://owned.invalid/audio.wav',storageKey:'audio-key',storageUrl:'https://owned.invalid/audio.wav'}),
+  const dependencies={jobs,documents,prepareMix:async()=>{throw new Error('Unexpected unmocked mix preparation');},prepareAudio:async()=>({audioUrl:'https://owned.invalid/audio.wav',storageKey:'audio-key',storageUrl:'https://owned.invalid/audio.wav'}),
     provider:{submit:async()=>{submitted++;return {requestId:'provider-request'};},poll:async()=>{polled++;return {state:'completed' as const,data:{text:'hello',language_code:'eng',words:[{type:'word',text:'hello',start:1,end:2}]}};}},
     cleanupAudio:async()=>{cleaned++;},dispatch:async()=>{dispatched++;},render:async()=>({assetId:'video-owned',originalUrl:'https://owned.invalid/video.mp4'})};
   const id=await reserve();await Promise.all([runSubtitleOperation(id,dependencies),runSubtitleOperation(id,dependencies)]);
@@ -62,8 +62,20 @@ test('durable subtitle worker resumes provider polling without resubmission, pub
   assert.equal(mix.quote.price.amountCents,breakdown.transcription.amountCents+breakdown.mixPreparation.amountCents);assert.equal(breakdown.mixPreparation.source,'timeline-export-paid-policy');assert.ok(breakdown.mixPreparation.amountCents>0);
   await service.confirm({operationId:mix.operationId,confirmed:true});
   const mixedSource={ref:{type:'asset' as const,assetId:'owned-mix-audio',kind:'audio' as const},fingerprint:'c'.repeat(64),durationMs:10000,sequenceMix:{sequenceId:'sequence',revision:7,audioManifestHash:sequence.audioManifestHash}};
-  let mixes=0;await Promise.all([runSubtitleOperation(mix.operationId,{...dependencies,prepareMix:async()=>{mixes++;return {source:mixedSource,audioUrl:'https://owned.invalid/mix.wav',storageKey:'mix-key',storageUrl:'https://owned.invalid/mix.wav',retainAsAsset:true};}}),runSubtitleOperation(mix.operationId,dependencies)]);
-  assert.equal(mixes,1);assert.equal((await jobs.readWork(mix.operationId))?.request_snapshot.source,null,'No fictitious source exists before the worker creates the owned audio');
+  let mixes=0;
+  const mixDependencies={...dependencies,prepareMix:async()=>{mixes++;return {source:mixedSource,audioUrl:'https://owned.invalid/mix.wav',storageKey:'mix-key',storageUrl:'https://owned.invalid/mix.wav',retainAsAsset:true};}};
+  // Force the second caller to win the PostgreSQL lease, independently of connection scheduling.
+  let releaseSecondClaim!:()=>void;
+  const secondClaimed=new Promise<void>(resolve=>{releaseSecondClaim=resolve;}),winners:number[]=[];
+  const contender=(index:number)=>({...mixDependencies,jobs:{...jobs,claim:async(operationId:string)=>{
+    if(index===0)await secondClaimed;
+    try{const claim=await jobs.claim(operationId);if(claim)winners.push(index);return claim;}
+    finally{if(index===1)releaseSecondClaim();}
+  }}});
+  const submitsBeforeMix=submitted;
+  await Promise.all([runSubtitleOperation(mix.operationId,contender(0)),runSubtitleOperation(mix.operationId,contender(1))]);
+  assert.deepEqual(winners,[1],'The second invocation must be the one that owns the work');
+  assert.equal(mixes,1);assert.equal(submitted,submitsBeforeMix+1);assert.equal((await jobs.readWork(mix.operationId))?.state,'provider-pending');assert.equal((await jobs.readWork(mix.operationId))?.request_snapshot.source,null,'No fictitious source exists before the worker creates the owned audio');
   await pollSubtitleOperation(mix.operationId,dependencies);
   assert.deepEqual((await documents.read('owner',`subtitle-${mix.operationId}`))?.source,mixedSource);
   assert.equal((await pg.pool.query("SELECT count(*)::int n FROM app_receipts WHERE type='charge' AND job_id=$1",[(await jobs.readWork(mix.operationId))?.job_id])).rows[0].n,1);
