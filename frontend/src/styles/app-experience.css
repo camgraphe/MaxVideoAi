@@ -270,6 +270,7 @@
   .app-experience .app-creation-heading h1 { font-size: 20px; }
   .app-experience .app-empty-preview { min-height: 72px; padding: 8px; font-size: 12px; }
   .app-experience .app-empty-preview-frame { width: 58px; height: 38px; }
+  .app-experience .app-empty-preview-hint { min-block-size: 3lh; }
   .app-experience .app-reference-slot-actions button { padding-inline: 6px; font-size: 11px; }
   .app-experience .app-audio-generation-dock { left: 0; bottom: calc(70px + env(safe-area-inset-bottom)); padding: 8px 12px; }
   .app-experience .app-audio-workbench > div:first-child { padding-bottom: 300px; }

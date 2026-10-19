@@ -337,6 +337,12 @@ and prompts already edited by the visitor take precedence over automatic Starter
 selection. `workspace-guest-starter-*.test.ts` and
 `workspace-initial-preview-hydration.test.ts` cover these entry paths.
 
+The empty preview's mobile guidance reserves three lines while the app font loads.
+Keep that minimum expandable: the French hint otherwise loses a line during the
+font swap and moves the following composer. Verify initial loading in EN/FR/ES at
+320px and 390px when changing its copy, typography or geometry; do not clip longer
+text or change global font loading to compensate.
+
 Replacing an app demonstration automatically retains these loading rules, but does
 not automatically encode the replacement. Verify the exact original selected by the
 app reader, register that source in `public-video-sources.json`, then use the explicit
