@@ -19,6 +19,10 @@ test('image reference slots are owned by a route-local hook', () => {
 
   assert.match(workspaceSource, /from '\.\/_hooks\/useImageReferenceSlots'/);
   assert.match(workspaceSource, /useImageReferenceSlots\(/);
+  assert.match(workspaceSource, /useImageReferenceSlots\(\{\s*accountId,/);
+  assert.match(hookSource, /useImageReferenceSlotLifecycle\(accountId\)/);
+  assert.match(hookSource, /ownedAuthFetch/);
+  assert.doesNotMatch(hookSource, /\bcommitSlots\b/, 'slot replacement and upload retirement belong in the lifecycle owner');
 
   assert.doesNotMatch(workspaceSource, /const handleReferenceFile = useCallback/);
   assert.doesNotMatch(workspaceSource, /const handleReferenceUrl = useCallback/);

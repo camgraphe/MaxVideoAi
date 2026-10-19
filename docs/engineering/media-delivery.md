@@ -792,3 +792,25 @@ Late responses cannot refresh or change the next account's library. Cancellation
 cannot undo an upload already accepted by the server for its original owner.
 `tests/library-import-account.test.ts` covers image decoding, session lookup, all
 three media kinds, account transitions, navigation and replacement imports.
+
+### Image references and library read ownership
+
+The account-keyed image workspace passes its owner to `useImageReferenceSlots`.
+`useImageReferenceSlotLifecycle` synchronizes reference state with per-slot upload
+cancellation, including direct draft hydration, library/character selection and
+model pruning. Replacing one slot leaves other uploads active. Unmount retires all
+operations and releases blob previews; late preparation, session lookup, response
+parsing and errors cannot overwrite or clear a replacement.
+
+`ownedAuthFetch` binds image reference uploads and the shared saved/recent media
+readers to the supplied owner. It checks the session after refresh, rejects a
+missing or different owner, forwards cancellation and dispatches exactly that
+bearer with cookies omitted. For reads, the owner comes from the SWR key; a
+different account's response must never enter that cache entry. Server JWT
+validation remains authoritative. Cancellation does not undo a server-accepted
+upload. This is an operation ownership guard, not a replacement for server auth.
+
+`image-reference-upload-account`, `library-owner-cache` and `owned-auth-fetch`
+test the actual hooks, SWR cache and transport with synthetic sessions and files.
+They cover delayed session/decoding/body work, A→B→A remounts, selection races,
+independent slots, saved and recent media, and preserved pagination.

@@ -1,3 +1,4 @@
+import { mockBrowserSession } from './helpers/browser-session-fixture';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import * as React from 'react';
@@ -42,6 +43,7 @@ test('upscale library preserves available thumbnails and enriches duplicate vide
   for (const [key, value] of Object.entries(globals)) {
     Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
   }
+  const session = await mockBrowserSession('owner');
   let library!: ReturnType<typeof useUpscaleLibraryAssets>;
   function Fixture() {
     library = useUpscaleLibraryAssets({ mediaType: 'video', libraryErrorCopy: 'Failed', user: 'owner' });
@@ -55,9 +57,10 @@ test('upscale library preserves available thumbnails and enriches duplicate vide
     let assets = library.visibleLibraryAssets;
     assert.equal(assets.length, 5, 'The first page excludes images, unfinished jobs, and duplicate video URLs');
     assert.equal(library.libraryHasMore, true);
-    assert.deepEqual(requests, [
-      '/api/media-library/assets?limit=30&kind=video&source=generated',
+    // These independent first-page reads run concurrently; session lookup may reorder dispatch.
+    assert.deepEqual([...requests].sort(), [
       '/api/jobs?limit=80&type=video',
+      '/api/media-library/assets?limit=30&kind=video&source=generated',
     ]);
     await act(async () => library.loadMoreLibraryAssets());
     assets = library.visibleLibraryAssets;
@@ -73,13 +76,11 @@ test('upscale library preserves available thumbnails and enriches duplicate vide
     assert.equal(assets.find((asset) => asset.id === 'job:frame')?.thumbUrl, '/renders/frame.jpg');
     assert.equal(assets.find((asset) => asset.id === 'upload')?.thumbUrl ?? null, null, 'No invented thumbnail for an import without one');
     assert.ok(assets.every((asset) => !asset.previewUrl), 'Opening the picker must not enable video downloads');
-    assert.deepEqual(requests, [
-      '/api/media-library/assets?limit=30&kind=video&source=generated',
-      '/api/jobs?limit=80&type=video',
-      '/api/media-library/assets?limit=30&kind=video&source=generated&cursor=page-2',
-    ]);
+    assert.equal(requests.length, 3, 'pagination must add exactly one media read');
+    assert.equal(requests[2], '/api/media-library/assets?limit=30&kind=video&source=generated&cursor=page-2');
   } finally {
     await act(async () => root.unmount());
+    await session.restore();
     dom.window.close();
     for (const [key, descriptor] of previous) {
       if (descriptor) Object.defineProperty(globalThis, key, descriptor);
@@ -120,6 +121,7 @@ test('upscale library isolates loaded assets and pending responses by account', 
     Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
   }
 
+  const session = await mockBrowserSession('account-a');
   let library!: ReturnType<typeof useUpscaleLibraryAssets>;
   function Fixture({ user }: { user: string }) {
     library = useUpscaleLibraryAssets({ mediaType: 'image', libraryErrorCopy: 'Failed', user });
@@ -138,6 +140,7 @@ test('upscale library isolates loaded assets and pending responses by account', 
     });
     assert.equal(mediaRequestCount, 2, 'Account A refresh is pending');
 
+    session.setUserId('account-b');
     await act(async () => root.render(React.createElement(Fixture, { user: 'account-b' })));
     assert.equal(mediaRequestCount, 3, 'Changing account starts a distinct library request');
     assert.deepEqual(library.visibleLibraryAssets, [], 'Account A assets are hidden while account B loads');
@@ -165,6 +168,7 @@ test('upscale library isolates loaded assets and pending responses by account', 
     assert.deepEqual(library.visibleLibraryAssets.map((asset) => asset.id), ['account-b']);
   } finally {
     await act(async () => root.unmount());
+    await session.restore();
     dom.window.close();
     for (const [key, descriptor] of previous) {
       if (descriptor) Object.defineProperty(globalThis, key, descriptor);

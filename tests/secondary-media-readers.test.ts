@@ -1,3 +1,4 @@
+import { mockBrowserSession } from './helpers/browser-session-fixture';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createRequire } from 'node:module';
@@ -136,6 +137,7 @@ test('image selection respects explicit kinds and supports older image records',
 for (const tool of ['angle', 'character'] as const) {
   test(`${tool} library loads stored thumbnails, filters videos and selects the unchanged original`, async () => {
     const f = browserFixture();
+    const session = await mockBrowserSession('owner');
     const previousFetch = globalThis.fetch;
     const requests: string[] = [];
     const asset = { id: 'image', kind: 'image' as const, url: 'https://private.example/original.png?sig=original', thumbUrl: 'https://private.example/thumb.webp?sig=thumb', source: 'saved_job_output' };
@@ -179,12 +181,13 @@ for (const tool of ['angle', 'character'] as const) {
       assert.equal(image.src, asset.url, 'A broken stored thumbnail retains exact-original fallback');
       await act(async () => image.dispatchEvent(new f.dom.window.Event('error')));
       assert.equal(image.src, asset.url, 'Original failure does not start a fallback loop');
-    } finally { globalThis.fetch = previousFetch; await f.cleanup(); }
+    } finally { await session.restore(); globalThis.fetch = previousFetch; await f.cleanup(); }
   });
 }
 
 test('shared contextual Media pages hide the previous account and ignore its late response', async () => {
   const f = browserFixture();
+  const session = await mockBrowserSession('account-a');
   const previousFetch = globalThis.fetch;
   const requests: Array<{ url: string; resolve: (response: Response) => void }> = [];
   const cache = new Map();
@@ -200,6 +203,7 @@ test('shared contextual Media pages hide the previous account and ignore its lat
   });
 
   const render = (userId: string) => act(async () => {
+    session.setUserId(userId);
     f.root.render(React.createElement(
       SWRConfig,
       { value: { provider: () => cache, dedupingInterval: 0 } },
@@ -231,6 +235,7 @@ test('shared contextual Media pages hide the previous account and ignore its lat
     });
     assert.deepEqual(library?.assets.map((asset) => asset.id), ['account-b-image'], 'Late Account A data stays isolated in its own key');
   } finally {
+    await session.restore();
     globalThis.fetch = previousFetch;
     await f.cleanup();
   }
