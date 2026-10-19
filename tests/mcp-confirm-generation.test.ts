@@ -1358,6 +1358,47 @@ test('known MCP rejection forwards its diagnostic to refund persistence', async 
   });
 });
 
+for (const extension of ['mpeg', 'mp3']) {
+  test(`Wan generated audio .${extension} is checked before confirmation reserves a charge`, async () => {
+    const entry = listFalEngines().find(engine => engine.id === 'wan-3');
+    assert.ok(entry);
+    const candidate: AgentPublicGenerationEngine = {
+      engine: entry.engine, surface: 'video', publicModes: ['ref2v'],
+      modeCaps: { ref2v: entry.modes.find(mode => mode.mode === 'ref2v')!.ui },
+    };
+    const request: CanonicalGenerationRequest = {
+      schemaVersion: 1, surface: 'video', engineId: 'wan-3', mode: 'ref2v',
+      prompt: 'Use the supplied voice.', outputCount: 1,
+      settings: { durationSec: 11, resolution: '480p', aspectRatio: '16:9' },
+      references: [{ kind: 'asset', role: 'reference', assetId: 'generated-audio' }],
+    };
+    const catalogRevision = computeGenerationCatalogRevision([candidate]);
+    const base = quoteFor(request, { catalogRevision });
+    const stored = { ...base, pricingSnapshot: { ...base.pricingSnapshot, catalogRevision } };
+    const { dependencies, captures } = baseDependencies(request, {
+      lockOwnedQuote: async () => ({ quote: stored, databaseNow: NOW }),
+      listPublicEngines: async () => [candidate],
+      resolveGenerationReferences: async () => [{
+        assetId: 'generated-audio', role: 'reference', mediaKind: 'audio',
+        storageUrl: `https://media.example.test/media-assets/voice.${extension}`,
+        mimeType: 'audio/mpeg', sizeBytes: 165973, durationSec: 10.371,
+      }],
+    });
+    const confirmation = confirmGeneration({ quoteId: QUOTE_ID, confirmed: true }, principal, dependencies);
+    if (extension === 'mpeg') {
+      await expectAgentError(confirmation, 'QUOTE_EXPIRED');
+      for (const event of ['membership', 'pricing', 'spending', 'reserve_video', 'claim_quote']) {
+        assert.equal(captures.events.includes(event), false, event);
+      }
+      assert.equal(captures.providerCalls, 0);
+    } else {
+      assert.deepEqual(await confirmation, expectedRecovery(request));
+      assert.equal(captures.events.includes('reserve_video'), true);
+      assert.equal(captures.providerCalls, 1);
+    }
+  });
+}
+
 for (const engineId of ['sora-2', 'sora-2-pro']) {
   test(`prepared ${engineId} quote cannot charge or submit after sunset`, async () => {
     const request = { ...videoRequest, engineId };

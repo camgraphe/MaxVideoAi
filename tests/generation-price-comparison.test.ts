@@ -290,6 +290,7 @@ test("reference combinations and metadata are checked by canonical validation be
           mediaKind: "audio",
           role: "reference",
           storageUrl: "https://owned.example/sound.mp3",
+          sizeBytes: 165973,
           mimeType: "audio/mpeg",
           durationSec: 10,
         },

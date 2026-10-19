@@ -81,6 +81,8 @@ function getS3Client(): S3Client {
 }
 
 function inferExtension(mime: string, fallback = 'bin'): string {
+  // MPEG audio is stored as MP3; the MIME subtype is not its file extension.
+  if (mime.split(';', 1)[0]?.trim().toLowerCase() === 'audio/mpeg') return 'mp3';
   const match = mime.match(/^[^/]+\/([^;]+)/);
   if (!match) return fallback;
   return match[1].toLowerCase();
