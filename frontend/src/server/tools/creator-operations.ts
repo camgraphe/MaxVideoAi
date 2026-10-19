@@ -51,13 +51,16 @@ export function createCreatorOperationsService(actor:GenerationActor,options:Cre
     if(generation.status!=='completed') return {...store.creatorOperationView(row),status:'running' as const,retryAfterSeconds:5};
     const lease=await deps.claim(actor,row.id);
     if(lease) {
+      let result:Awaited<ReturnType<typeof deps.finalize>>;
       try {
-        const result=await deps.finalize(actor.userId,row.job_id,row.snapshot);
-        await deps.settle(actor,row.id,lease,{result});
+        result=await deps.finalize(actor.userId,row.job_id,row.snapshot);
       } catch(error) {
         const permanent=error instanceof CreatorFinalizationError||row.finalize_attempts>=4;
         await deps.settle(actor,row.id,lease,{permanent,error:error instanceof CreatorFinalizationError?error.message:permanent?'Finalization could not complete. The original generation remains available in your library.':'Finalization will retry. The original generation is preserved.'});
+        return store.creatorOperationView(await deps.read(actor,row.id));
       }
+      // Publication succeeded. A database error here preserves the lease for recovery and cannot request a refund.
+      await deps.settle(actor,row.id,lease,{result});
     }
     return store.creatorOperationView(await deps.read(actor,row.id));
   }

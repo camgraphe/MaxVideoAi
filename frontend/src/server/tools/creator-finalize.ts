@@ -1,5 +1,6 @@
 import type { CreatorOperationResult } from '@/lib/toolbox/creator-tools';
 import { listJobOutputsByJobIds } from '@/server/media-library';
+import { createConversationMediaReadAccess } from '@/server/studio/conversation-media-read-access';
 import { resolveStudioMedia } from '@/server/studio/media-resolver';
 import { downloadCreatorMedia, inspectCreatorBytes, muxCreatorBytes, validateCreatorOutputTiming, withCreatorMediaSlot } from './creator-segment-media';
 import { persistCreatorMedia } from './creator-sources';
@@ -17,7 +18,7 @@ export function validateCreatorFinalFacts(prepared:PreparedCreatorProfile,facts:
     }
   }
 }
-const defaults={listOutputs:listJobOutputsByJobIds,resolve:resolveStudioMedia,download:downloadCreatorMedia,inspect:inspectCreatorBytes,mux:muxCreatorBytes,persist:persistCreatorMedia};
+const defaults={readAccess:createConversationMediaReadAccess,listOutputs:listJobOutputsByJobIds,resolve:resolveStudioMedia,download:downloadCreatorMedia,inspect:inspectCreatorBytes,mux:muxCreatorBytes,persist:persistCreatorMedia};
 export async function finalizeCreatorOperation(userId:string,jobId:string,prepared:PreparedCreatorProfile,dependencies:Partial<typeof defaults>={}):Promise<CreatorOperationResult> {
   const deps={...defaults,...dependencies};
   return withCreatorMediaSlot(userId,async()=>{
@@ -26,7 +27,8 @@ export async function finalizeCreatorOperation(userId:string,jobId:string,prepar
     if(eligible.length!==1) throw new Error('The generation output is still being saved.');
     const output=eligible[0];
     const original=await deps.resolve(userId,{type:'job-output',jobId,outputId:output.id,kind:output.kind});
-    const downloaded=await deps.download({file_id:output.id,download_url:original.url});
+    const access=await deps.readAccess(userId,original);
+    const downloaded=await deps.download({file_id:output.id,download_url:access.url});
     let bytes:Uint8Array=downloaded.bytes;
     let facts=await deps.inspect(bytes,prepared.request.surface,downloaded.mimeType);
     if(prepared.request.surface==='video') {
@@ -37,7 +39,8 @@ export async function finalizeCreatorOperation(userId:string,jobId:string,prepar
         if(!audio) throw new CreatorFinalizationError('The selected audio snapshot is missing.');
         const owned=await deps.resolve(userId,audio.asset);
         if(owned.url!==audio.url) throw new CreatorFinalizationError('The selected audio changed.');
-        const file=await deps.download({file_id:audio.asset.assetId,download_url:owned.url});
+        const audioAccess=await deps.readAccess(userId,owned);
+        const file=await deps.download({file_id:audio.asset.assetId,download_url:audioAccess.url});
         const measured=await deps.inspect(file.bytes,audio.facts.kind,file.mimeType);
         if(!measured.hasAudio) throw new CreatorFinalizationError('The selected source no longer contains audio.');
         try {validateCreatorOutputTiming(prepared.expectedDurationSec!,measured.audioDurationSec??null,measured.fps);} catch {throw new CreatorFinalizationError('Selected audio duration is incompatible with the generated output.');}

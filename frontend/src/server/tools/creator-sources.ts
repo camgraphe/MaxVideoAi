@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { AgentApiError } from '@/server/agent-api/errors';
 import { creatorOperationInputSchema, type CreatorOperationInput } from '@/lib/toolbox/creator-tools';
+import { createConversationMediaReadAccess } from '@/server/studio/conversation-media-read-access';
 import { resolveStudioMedia, type StudioResolvedMedia } from '@/server/studio/media-resolver';
 import { buildObjectKey, uploadFileBufferToKey } from '@/server/storage';
 import { stableJson } from '@/server/agent-api/generation-normalization';
@@ -12,6 +13,7 @@ import { prepareCreatorProfile, isCreatorLipVideoEnabled, isCreatorMotionControl
 export const creatorSourceFingerprint = (media: StudioResolvedMedia): string => createHash('sha256').update(JSON.stringify({id:media.id,ref:media.ref,url:media.url,kind:media.kind,mime:media.mime,sizeBytes:media.sizeBytes,width:media.width,height:media.height,durationSec:media.durationSec})).digest('hex');
 export type CreatorSourcesDependencies = {
   resolve: typeof resolveStudioMedia;
+  readAccess: typeof createConversationMediaReadAccess;
   download: typeof downloadCreatorMedia;
   inspect: typeof inspectCreatorBytes;
   trim: typeof trimCreatorBytes;
@@ -36,14 +38,15 @@ export async function persistCreatorMedia(userId: string, bytes: Uint8Array, fac
   if (!asset.publicId) throw new Error('The prepared media could not be saved.');
   return { asset: {type:'asset' as const,assetId:asset.publicId,kind:facts.kind}, url: asset.url, thumbnailUrl: asset.thumbUrl };
 }
-const defaults: CreatorSourcesDependencies = { resolve:resolveStudioMedia, download:downloadCreatorMedia, inspect:inspectCreatorBytes, trim:trimCreatorBytes, persist:persistCreatorMedia };
+const defaults: CreatorSourcesDependencies = { readAccess:createConversationMediaReadAccess, resolve:resolveStudioMedia, download:downloadCreatorMedia, inspect:inspectCreatorBytes, trim:trimCreatorBytes, persist:persistCreatorMedia };
 export async function resolveCreatorSources(input: CreatorOperationInput, userId: string, dependencies: Partial<CreatorSourcesDependencies> = {}): Promise<CreatorResolvedSource[]> {
   const deps = {...defaults,...dependencies};
   const sources: CreatorResolvedSource[] = [];
   for (const entry of input.inputs) {
     const original = await deps.resolve(userId,entry.source);
     const fingerprint = creatorSourceFingerprint(original);
-    const downloaded = await deps.download({file_id:original.id,download_url:original.url});
+    const access = await deps.readAccess(userId,original);
+    const downloaded = await deps.download({file_id:original.id,download_url:access.url});
     let bytes: Uint8Array = downloaded.bytes;
     let facts = await deps.inspect(bytes,entry.source.kind,downloaded.mimeType);
     if (facts.kind !== entry.source.kind) throw new AgentApiError('REFERENCE_INVALID','Source kind changed. Choose the source again.');

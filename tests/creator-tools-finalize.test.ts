@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import {createConversationMediaReadAccess} from '../frontend/src/server/studio/conversation-media-read-access';
 import { finalizeCreatorOperation,CreatorFinalizationError } from '../frontend/src/server/tools/creator-finalize';
 import { prepareCreatorProfile } from '../frontend/src/server/tools/creator-profiles';
 import { creatorOperationInputSchema } from '../frontend/src/lib/toolbox/creator-tools';
@@ -33,4 +34,19 @@ test('unusable duration fails before audio mux or publication',async()=>{
     mux:async()=>{effects++;throw new Error('must not run');},persist:async()=>{effects++;throw new Error('must not run');},
   }),CreatorFinalizationError);
   assert.equal(effects,0);
+});
+
+test('private generated output and preserved audio use signed reads without changing canonical snapshots',async()=>{
+  const keys:string[]=[],reads:string[]=[];let savedLineage:unknown;
+  const result=await finalizeCreatorOperation('owner','job',prepared,{
+    listOutputs:async()=>new Map([['job',[output]]]),
+    resolve:async(_userId,ref)=>{const audio=(ref as {type:string}).type==='asset';return{id:'original',ref:ref as typeof source,kind:'video',url:audio?prepared.sources[0].url:output.url,mime:'video/mp4',thumbUrl:null,previewUrl:null,mediaFacts:undefined,originalAccess:{type:'owned-storage',storageKey:audio?'files/owner/audio.mp4':'files/owner/generated.mp4'}};},
+    readAccess:async(userId,media)=>createConversationMediaReadAccess(userId,media,{sign:async key=>{keys.push(key);return 'https://storage.example.com/'+key+'?signature=temporary';}}),
+    download:async file=>{reads.push(file.download_url);assert.match(file.download_url,/signature=temporary$/);return{bytes:Buffer.from(file.download_url.includes('generated')?'provider':'selected-sound'),mimeType:'video/mp4',fileName:'source.mp4'};},
+    inspect:async()=>facts,
+    mux:async(video,audio)=>{assert.equal(Buffer.from(video).toString(),'provider');assert.equal(Buffer.from(audio!).toString(),'selected-sound');return{bytes:Buffer.from('final'),facts};},
+    persist:async(_userId,_bytes,_facts,lineage)=>{savedLineage=lineage;return{asset:{type:'asset',assetId:'ma_final',kind:'video'},url:'https://cdn.example.com/final.mp4',thumbnailUrl:null};},
+  });
+  assert.deepEqual(keys,['files/owner/generated.mp4','files/owner/audio.mp4']);assert.equal(reads.length,2);
+  assert.equal(JSON.stringify({result,savedLineage,prepared}).includes('signature='),false);assert.equal(prepared.sources[0].url,'https://cdn.example.com/source.mp4');
 });
