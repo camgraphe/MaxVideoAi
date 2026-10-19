@@ -25,7 +25,7 @@ export async function readCreatorOperation(actor:GenerationActor,id:string,db:Qu
 }
 export function creatorOperationView(row:StoredCreatorOperation):CreatorOperationStatus {
   const status=row.status==='prepared'&&row.job_id?'running':row.status;
-  return {operationId:row.id,toolId:row.tool_id,jobId:row.job_id,status,result:row.result,error:row.error,retryAfterSeconds:['running','finalizing'].includes(status)?5:null};
+  return {operationId:row.id,toolId:row.tool_id,jobId:row.job_id,status,input:row.snapshot.input,result:row.result,error:row.error,retryAfterSeconds:['running','finalizing'].includes(status)?5:null};
 }
 export async function markCreatorRunning(actor:GenerationActor,id:string):Promise<void> {
   await query(`UPDATE creator_operations o SET status='running',updated_at=now() WHERE ${scopeSql} AND status='prepared'`,scope(actor,id));

@@ -465,8 +465,11 @@ Eight additive tools expose the same shared operations as the web workspaces:
 quotes the saved sequence's actual audio mix independently of the Studio MP4
 export gate. See [creator tools](creator-tools.md) for ownership and release gates.
 
-Discovery requires paid generation, owned reference access,
-`CREATOR_TOOLS_ENABLED=1` and `MCP_CREATOR_TOOLS_ENABLED=1`. Specialist video lip
+Paid preparation and confirmation require paid generation, owned reference
+access, `CREATOR_TOOLS_ENABLED=1` and `MCP_CREATOR_TOOLS_ENABLED=1`. Five
+non-spending discovery/recovery/document tools remain registered whenever the
+service exists, including after these execution gates close. An OAuth attempt
+cannot be recovered through a different browser-session scope. Specialist video lip
 sync and Kling Motion Control have separate execution gates. Discovery returns
 current profile constraints and effective availability; a profile's presence is
 not evidence of activation or measured quality. Marketing publication remains a

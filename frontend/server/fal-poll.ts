@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { reconcileFinishingJobs } from '@/server/tools/finishing-poll';
 import { refreshCreatorOperations } from '@/server/tools/creator-operations';
-import { reconcileSubtitleOperations } from '@/server/subtitles/operations';
+import { reconcileSubtitleOperations } from '@/server/subtitles/reconciliation';
 import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
 import { linkFalJob } from '@/server/admin-job-tools';

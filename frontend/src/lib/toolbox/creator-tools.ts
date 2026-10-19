@@ -39,6 +39,7 @@ export type CreatorOperationResult = {
 };
 export type CreatorOperationStatus = {
   operationId: string; toolId: CreatorToolId; jobId: string | null;
+  input?: CreatorOperationInput;
   status: 'prepared' | 'running' | 'finalizing' | 'completed' | 'failed';
   result: CreatorOperationResult | null; error: string | null; retryAfterSeconds: number | null;
 };

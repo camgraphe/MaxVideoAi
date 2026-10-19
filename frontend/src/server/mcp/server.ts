@@ -396,10 +396,9 @@ export function createMaxVideoAiMcpServer(
   }
   if (studioTimelineEditing) registerStudioTimelineTools(server,principal,services);
   if (studioExports) registerStudioExportTools(server,principal,services);
-  if (creatorTools) {
-    if (!services.creatorTools) throw new Error('Creator tool services are required when their gate is enabled.');
-    registerCreatorTools(server, principal, services.creatorTools, { studioTimelineEditing });
-  }
+  if (creatorTools && !services.creatorTools) throw new Error('Creator tool services are required when their gate is enabled.');
+  // An execution shutdown must not strand an already purchased OAuth operation.
+  if (services.creatorTools) registerCreatorTools(server, principal, services.creatorTools, { studioTimelineEditing, executionEnabled: creatorTools });
   if (audioGeneration) {
     registerListAudioCapabilitiesTool(server, principal, services);
     registerPrepareAudioGenerationTool(server, principal, services);

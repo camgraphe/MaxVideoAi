@@ -35,7 +35,10 @@ test pass.
 
 Execution and recovery are different operations. Account-owned status,
 document editing and caption downloads remain readable after execution closes.
-The app supports explicit operation/document recovery links. A stopped provider
+The app supports explicit operation/document recovery links. MCP discovery,
+status and document access also remain available when purchase gates close.
+Creator status renews original source read access and restores the selected
+settings/segments without another preparation or supplier request. A stopped provider
 or a refund does not authorize a new attempt.
 
 Migrations are explicit deployment ownership, never request-time bootstrap:
@@ -137,6 +140,12 @@ observed without another purchase. Lease tokens fence worker completion and
 refund transactions.
 
 ## Studio and saved documents
+
+Creator result actions offer a connected Studio film picker with explicit add
+or replace commands. Replacement preserves the selected clip timing, requires
+enough source media and uses the existing revision/ownership/locked-track owner.
+It never starts paid generation. Product Video comparison uses manual synchronized
+readers, with the selected source offset and refreshed private URLs.
 
 The transcript library is `/app/library/subtitles`, with an account-filtered
 cursor list and exact-revision edit/download links. Source removal does not erase

@@ -46,19 +46,19 @@ export const editSubtitleDocumentInputSchema = z.object({ ...document, expectedR
 const readAnnotations = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false };
 const prepareAnnotations = { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false };
 
-export function registerCreatorTools(server: McpServer, principal: AgentPrincipal, service: CreatorMcpServices, options: { studioTimelineEditing?: boolean } = {}): void {
+export function registerCreatorTools(server: McpServer, principal: AgentPrincipal, service: CreatorMcpServices, options: { studioTimelineEditing?: boolean; executionEnabled?: boolean } = {}): void {
   const run = (operation: () => Promise<object>) => runAgentTool(async () => { try { return await operation(); } catch (error) { throw asCreatorAgentError(error); } });
   server.registerTool('list_creator_tools', {
     title: 'Discover creative tools and qualified profiles',
     description: 'Read current Subtitles, Lip Sync, Product Photo Editor, Product Video Editor and Motion Transfer profiles before choosing one. Closed profiles cannot execute. Disclosures describe limits, not measured quality. Use owned exact media IDs returned by list_media or reference import; never guess IDs or replace the requested model without approval.',
     inputSchema: z.object({}).strict(), annotations: readAnnotations,
   }, () => run(() => service.list(principal)));
-  server.registerTool('prepare_creator_tool', {
+  if (options.executionEnabled !== false) server.registerTool('prepare_creator_tool', {
     title: 'Prepare an exact creative tool quote',
     description: 'Prepare one non-spending tool operation from private owned media. No provider generation starts here. Source roles are explicit: Lip Sync needs image/video source plus audio; Motion Transfer needs image source plus motion video. Use explicit start/end segments when required; never silently cut, stretch or loop media. Subtitles accepts audio/video and optional language/keyterms. Present the exact returned price, expiry and fidelity/audio disclosures and wait for explicit user approval before confirm_creator_tool. Subtitle burn-in is quoted separately; text/style edits and SRT/VTT export do not retranscribe. Changed sources/settings require a fresh quote.',
     inputSchema: prepareCreatorToolInputSchema, annotations: prepareAnnotations,
   }, input => run(() => service.prepare(input.request, principal)));
-  server.registerTool('confirm_creator_tool', {
+  if (options.executionEnabled !== false) server.registerTool('confirm_creator_tool', {
     title: 'Confirm one quoted creative tool operation',
     description: 'Start only after explicit user approval of this exact fresh quote: one paid attempt. Ambiguous assent is not confirmation. A refund does not restore authorization; another attempt requires a fresh quote and new explicit approval. Send toolId and operationId returned by preparation with confirmed=true. An ambiguous network response must be recovered with get_creator_tool_operation; retrying this same operation is idempotent. Never prepare/confirm a replacement automatically. A submitted job is not a finished result.',
     inputSchema: z.object({ ...operation, confirmed: z.literal(true) }).strict(),
@@ -80,12 +80,12 @@ export function registerCreatorTools(server: McpServer, principal: AgentPrincipa
     inputSchema: editSubtitleDocumentInputSchema,
     annotations: { ...prepareAnnotations, idempotentHint: true },
   }, input => run(() => service.editDocument(input, principal)));
-  server.registerTool('prepare_subtitle_export', {
+  if (options.executionEnabled !== false) server.registerTool('prepare_subtitle_export', {
     title: 'Quote a captioned video export',
     description: 'Prepare the exact paid burn-in quote for an owned subtitle document revision and its original video. Audio-only transcripts require a visual background first and cannot render here. The saved revision, source and style are pinned. Present the exact price and obtain explicit user approval before confirm_creator_tool with toolId=subtitles. Editing afterward requires a new export quote; never reuse Studio free-export quota.',
     inputSchema: z.object({ ...document, revision }).strict(), annotations: prepareAnnotations,
   }, input => run(() => service.prepareExport(input, principal)));
-  if (options.studioTimelineEditing) server.registerTool('prepare_studio_subtitles', {
+  if (options.executionEnabled !== false && options.studioTimelineEditing) server.registerTool('prepare_studio_subtitles', {
     title: 'Quote subtitles for the saved Studio audio mix',
     description: 'Prepare one non-spending quote for transcription of the exact owned saved Studio sequence revision. Read get_studio_timeline first. The server renders the actual mix with its cuts, gains and muted clips; never submit your own manifest or URLs. Present both mix-preparation and transcription charges and their total, then wait for explicit approval before confirm_creator_tool with toolId=subtitles. The resulting document is bound to that audio mix; changed audio requires a fresh transcription quote and approval. This does not start or authorize a Studio MP4 export.',
     inputSchema: z.object({ projectId: id, sequenceId: id, expectedRevision: revision,

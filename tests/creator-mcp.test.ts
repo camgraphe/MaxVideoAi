@@ -15,7 +15,7 @@ const services: MaxVideoAiMcpServices = {
   createTopupLink: unused, createReferenceUploadLink: unused, importReferenceFiles: unused, listMedia: unused,
   readStudioTimeline: unused, editStudioTimeline: unused,
   creatorTools: {
-    list: async () => ({ tools: [] }), prepare: unused, status: unused, readDocument: unused,
+    list: async () => ({ tools: [] }), prepare: unused, status: async (input, actor) => ({ ...input, status: 'completed', owner: actor.userId }), readDocument: unused,
     editDocument: unused, prepareExport: unused, prepareStudio: unused, exportText: unused,
     confirm: async (input, actor) => { calls.push({ input, actor }); return { operationId: input.operationId, status: 'running', retry: { afterSeconds: 5 } }; },
   },
@@ -35,7 +35,14 @@ test('creator MCP discovery requires its own paid/reference gates and keeps meta
     try {
       const tools = (await connection.client.listTools()).tools;
       const exposed = tools.filter(tool => /creator|subtitle/.test(tool.name));
-      assert.equal(exposed.length, paidGeneration && referenceUploads && creatorTools ? 8 : 0);
+      assert.equal(exposed.length, paidGeneration && referenceUploads && creatorTools ? 8 : 5);
+      if (!(paidGeneration && referenceUploads && creatorTools)) {
+        assert.equal(exposed.some(tool => tool.name === 'confirm_creator_tool'), false);
+        const recovered = await connection.client.callTool({ name: 'get_creator_tool_operation', arguments: { toolId: 'lip-sync', operationId: '123e4567-e89b-42d3-a456-426614174000' } });
+        assert.equal(recovered.isError, undefined);
+        assert.equal((recovered.structuredContent as any).status, 'completed');
+        assert.equal((recovered.structuredContent as any).owner, principal.userId);
+      }
       for (const tool of exposed) {
         assert.equal(tool.inputSchema.type, 'object');
         assert.ok(Buffer.byteLength(tool.description ?? '') <= 2000);

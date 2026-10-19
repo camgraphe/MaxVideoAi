@@ -47,3 +47,17 @@ test('removed output and signing downtime keep a completed job recoverable witho
     assert.equal(presented.result.artifactDelivery, 'unavailable');
   }
 });
+test('recovery refreshes every original source and its explicit segment without preparing another attempt', async () => {
+  const { withCreatorMediaReadAccess, state } = await fixture();
+  const input = {version:1,toolId:'product-video-editor',profileId:'product-video-wan-v1',settings:{},inputs:[{role:'source',source:ref,segment:{startSec:2,endSec:7}}]};
+  const presented = await withCreatorMediaReadAccess('owner',{operationId:'attempt',status:'running',input,result:null});
+  assert.equal(presented.sourceMedia.length,1);
+  assert.equal(presented.sourceMedia[0].role,'source');
+  assert.deepEqual(JSON.parse(JSON.stringify(presented.sourceMedia[0].ref)),ref);
+  assert.deepEqual(JSON.parse(JSON.stringify(presented.sourceMedia[0].segment)),{startSec:2,endSec:7});
+  assert.equal(presented.sourceMedia[0].readUrl,'https://owned.invalid/signed?token=fresh');
+  state.unavailable='resolve';
+  const removed=await withCreatorMediaReadAccess('owner',{status:'completed',input,result:null});
+  assert.equal(removed.sourceMedia[0].readUrl,null);
+  assert.equal(removed.status,'completed');
+});

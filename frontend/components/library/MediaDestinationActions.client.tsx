@@ -1,5 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { FEATURES } from '@/content/feature-flags';
 import { useRouter } from 'next/navigation';
 import { authFetch } from '@/lib/authFetch';
 import { AppGlyph } from '@/components/app/AppGlyph';
@@ -7,6 +9,7 @@ import { stageMediaHandoff, supportsMediaDestination, discoverableMediaToolDesti
 import { creatorCopy } from '@/components/tools/creator/creator-copy';
 import { mediaActionCopy } from './media-action-copy';
 import type { AssetBrowserAsset } from './AssetLibraryBrowser';
+const StudioMediaAction = dynamic(() => import('./StudioMediaAction.client').then(module => module.StudioMediaAction));
 export function MediaDestinationActions({ asset, userId, locale, onNavigate, sourceEngineId }: { asset: AssetBrowserAsset; userId?: string | null; locale: string; onNavigate?: () => void; sourceEngineId?: string | null }) {
   const router = useRouter();
   const copy = mediaActionCopy(locale);
@@ -59,6 +62,7 @@ export function MediaDestinationActions({ asset, userId, locale, onNavigate, sou
     {supportsMediaDestination(asset, 'image') ? <button type="button" disabled={pending} onClick={() => void open('image')}><AppGlyph name="image" /><span>{fr ? 'Créer à partir de cette image' : es ? 'Crear con esta imagen' : 'Create with this image'}</span></button> : null}
     {supportsMediaDestination(asset, 'upscale') ? toolButton('upscale') : null}
     {destinations.length ? <details><summary>{fr ? 'Plus d’outils' : es ? 'Más herramientas' : 'More tools'}</summary><div>{destinations.map(toolButton)}</div></details> : null}
+    {FEATURES.studio.maxVideoAiEditor && /^ma_[a-f0-9]{32}$/.test(asset.id) ? <StudioMediaAction key={scope} locale={locale} reference={{type:'asset',assetId:asset.id,kind:asset.kind}} /> : null}
     {pending ? <span role="status">{fr ? 'Préparation…' : es ? 'Preparando…' : 'Preparing…'}</span> : null}
     {error ? <p role="alert">{copy.error}</p> : null}
   </div>;
