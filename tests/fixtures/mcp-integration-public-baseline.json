@@ -36,9 +36,10 @@
   },
   "clients": ["claude", "chatgpt", "codex"],
   "hosts": {
+    "claudeWeb": { "client": "claude", "status": "tested_with_limits" },
     "claudeDesktop": { "client": "claude", "status": "verified" },
     "claudeCode": { "client": "claude", "status": "not-run" },
-    "chatgptWeb": { "client": "chatgpt", "status": "not-run" },
+    "chatgptWeb": { "client": "chatgpt", "status": "tested_with_limits" },
     "codexCli": { "client": "codex", "status": "verified" }
   },
   "deepLinks": {

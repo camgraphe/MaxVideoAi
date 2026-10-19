@@ -37,7 +37,7 @@ test('each integration has a distinct searchable title and truthful installation
    assert.ok(copy.meta.title.length<75);assert.ok(copy.hero.title.length<80);
    assert.ok(copy.setup.hostGuides.length>0);
    for(const guide of copy.setup.hostGuides)assert.ok(guide.installInstruction.length>40);
-   assert.match(copy.hero.liveStatus,client==='chatgpt'?/Business.*Enterprise.*Edu/:client==='n8n'?/2\.38\.7/:client==='openclaw'?/ClawHub/:/test|prob/i);
+   assert.match(copy.hero.liveStatus,client==='chatgpt'?/Pro.*(?:test|prob)/:client==='n8n'?/2\.38\.7/:client==='openclaw'?/ClawHub/:/test|prob/i);
   }
   assert.equal(titles.size,5);
  }
@@ -94,7 +94,7 @@ test('localized host setup titles and introductions do not inherit the English g
 test('installation requests name the production server and the correct setup mechanism for each host', () => {
   for (const locale of locales) {
     const chatgpt = getIntegrationInstallInstruction(locale, 'chatgptWeb');
-    const claude = getIntegrationInstallInstruction(locale, 'claudeDesktop');
+    const claude = getIntegrationInstallInstruction(locale, 'claudeWeb');
     const code = getIntegrationInstallInstruction(locale, 'claudeCode');
     const openclaw = getIntegrationInstallInstruction(locale, 'openclawGateway');
     for (const instruction of [chatgpt, claude, code, openclaw]) {
@@ -105,7 +105,7 @@ test('installation requests name the production server and the correct setup mec
     }
     assert.match(chatgpt, /OAuth/);
     assert.doesNotMatch(chatgpt, /claude mcp|openclaw mcp|codex plugin/);
-    assert.match(claude, /Customize.*Connectors/);
+    assert.match(claude, /(?:Customize.*Connectors|Personnalisation.*Connecteurs)/);
     assert.match(code, /claude mcp add --transport http maxvideoai/);
     assert.match(code, /\/mcp/);
     assert.match(openclaw, /openclaw mcp login maxvideoai/);
@@ -114,17 +114,17 @@ test('installation requests name the production server and the correct setup mec
   }
 });
 
-test('Claude setup guidance covers plan requirements and authentication review without claiming a fresh host test', () => {
+test('Claude setup guidance covers plan requirements and authentication review with separate Web and Desktop evidence', () => {
   for (const locale of locales) {
     const copy = getIntegrationCopy(locale, 'claude');
-    const guide = copy.setup.hostGuides.find(item => item.hostId === 'claudeDesktop')!;
+    const guide = copy.setup.hostGuides.find(item => item.hostId === 'claudeWeb')!;
     const steps = guide.steps.map(item => item.body).join(' ');
     assert.match(steps, /Pro.*Max/);
     assert.match(steps, /Team.*Enterprise/);
-    assert.match(steps, /Continue.*OAuth.*Continue/);
+    assert.match(steps, /(?:Continue|Continuer).*OAuth/);
     assert.match(steps, /Custom.*Web/);
     assert.match(guide.installInstruction, /Pro.*Max/);
-    assert.match(guide.installInstruction, /Continue.*OAuth/);
+    assert.match(guide.installInstruction, /(?:Continue|Continuer).*OAuth/);
     assert.doesNotMatch(steps + guide.installInstruction, /Use Claude’s published identity|Use Claude's published identity/);
     assert.match(copy.compatibility.statuses.claudeDesktop ?? '', /1\.37937\.1/);
   }

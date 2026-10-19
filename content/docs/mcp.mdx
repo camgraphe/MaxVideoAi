@@ -20,8 +20,8 @@ MaxVideoAI connects compatible assistants and automation tools to the models, cr
 
 | Environment | Setup | What to know |
 | --- | --- | --- |
-| [Claude connector](/integrations/claude) | Custom remote MCP connector | Claude Desktop tested; Claude Code has a separate, unverified host path. |
-| [ChatGPT MCP app](/integrations/chatgpt) | Developer mode | Full MCP write actions require an eligible Business, Enterprise or Edu workspace. Pro supports read/fetch only. No public directory listing is claimed. |
+| [Claude connector](/integrations/claude) | Custom remote MCP connector | Claude Web Free: production tested with limits on 2026-10-19. Claude Desktop: separate historical staging checkpoint. Claude Code: not tested. |
+| [ChatGPT MCP app](/integrations/chatgpt) | Plugins → custom MCP server | No public directory listing is claimed. Use Plugins to add a custom MCP server. OpenAI documents full MCP write support for eligible Business, Enterprise or Edu workspaces. On 19 October 2026, our tested Pro account also connected privately, prepared a quote and recovered an existing result. New paid generation was not tested; availability remains account-dependent. |
 | [Codex plugin](/integrations/codex) | MaxVideoAI plugin or remote MCP | Codex CLI tested. |
 | [OpenClaw skill](/integrations/openclaw) | Direct MCP or listed ClawHub skill | Tested with limits; private-reference import and inline channel rendering are unverified. |
 | [n8n video workflow](/integrations/n8n) | Manual, self-hosted MCP Client | Tested on 2.38.7 with an exact quote and human approval. [Public template 19591](https://n8n.io/workflows/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/) is available; configure OAuth manually. No n8n Cloud or AI Agent support is claimed. |
@@ -44,7 +44,7 @@ Ask `list_audio_capabilities` for the current Audio modes and settings. Prepare 
 https://api.maxvideoai.com/mcp
 ```
 
-Use Streamable HTTP with OAuth 2.1. The requested scopes are `openid,email,profile`. Do not append a token, password, query parameter or API key. Follow the guide for your client: it opens the MaxVideoAI sign-in and OAuth consent screen in your browser.
+Use Streamable HTTP with OAuth 2.1. The requested scopes are `openid,email,profile` and, when requested, `offline_access`; review the actual consent screen. Do not append a token, password, query parameter or API key. Follow the guide for your client: it opens the MaxVideoAI sign-in and OAuth consent screen in your browser.
 
 ## Authorize your account
 
@@ -55,7 +55,11 @@ Use Streamable HTTP with OAuth 2.1. The requested scopes are `openid,email,profi
 
 Connecting is free and planning adds no MaxVideoAI subscription. Paid generations use the same MaxVideoAI credit balance as the website; your assistant provider may have its own plan requirements. Remove the integration from the client and revoke its authorization in MaxVideoAI to disconnect.
 
-Compatibility is recorded per host. Claude Desktop and Codex CLI have verified checkpoints; ChatGPT web and Claude Code have no recorded end-to-end checkpoint. OpenClaw and the self-hosted n8n MCP Client retain their tested-with-limits status. See the integration guides for dates and restrictions.
+Checked on 19 October 2026 in Claude Web on a Free account: production OAuth, model discovery, exact quote preparation and recovery of an existing completed result. New paid generation, inline playback, token refresh and revocation/reconnect were not tested. Availability may vary by account.
+
+Checked on 19 October 2026 in ChatGPT Web on the tested Pro account through a private MCP plugin: production OAuth, model discovery, exact quote preparation and recovery of an existing completed result. New paid generation, inline playback, token refresh and revocation/reconnect were not tested. This does not establish full write access for all Pro accounts.
+
+Compatibility is recorded per host. Claude Desktop and Codex CLI have verified checkpoints; Claude Code has no recorded end-to-end checkpoint. OpenClaw and the self-hosted n8n MCP Client retain their tested-with-limits status. See the integration guides for dates and restrictions.
 
 ## What the assistant should do
 
@@ -70,6 +74,10 @@ The assistant remains responsible for the creative conversation: brief, script, 
 - wait for explicit approval of the returned exact quote before `confirm_generation`.
 
 Quality is not a single preset. For multi-shot work, the assistant may compare a quality-first plan with one or more mixed-model alternatives, explaining the model selected for each shot. Creative attempts are billable scenarios and should be shown separately in the budget.
+
+Set duration, resolution, aspect ratio and audio explicitly when the model supports them; compare quotes only for the same settings.
+
+Quote example: one Veo 3.1 text-to-video clip, 8 seconds, 720p, 9:16, `audio: false`. Prepare the quote only; do not confirm generation.
 
 ## Tools
 
