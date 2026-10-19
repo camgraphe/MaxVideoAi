@@ -9,10 +9,10 @@ import { toolboxCopy, type ToolboxVisualId } from './toolbox-copy';
 import styles from './tool-workbench.module.css';
 
 /** Presentation slots keep existing service/quote/media controllers reusable in Studio. */
-export function ToolWorkbench({ locale, visual, source, settings, preview, recent, children, embedded = false }: { locale: string; visual: ToolboxVisualId; source: ReactNode; settings?: ReactNode; preview: ReactNode; recent?: ReactNode; children?: ReactNode; embedded?: boolean }) {
+export function ToolWorkbench({ locale, visual, title, source, settings, preview, recent, children, embedded = false }: { locale: string; visual?: ToolboxVisualId; title?: string; source: ReactNode; settings?: ReactNode; preview: ReactNode; recent?: ReactNode; children?: ReactNode; embedded?: boolean }) {
   const copy = toolboxCopy(locale);
   const body = <div className={styles.workbench}>
-    <header className={styles.header}><Link href="/app/tools" prefetch={false}>← {copy.back}</Link><div><h1>{copy.tools[visual].title}</h1></div></header>
+    <header className={styles.header}><Link href="/app/tools" prefetch={false}>← {copy.back}</Link><div><h1>{title ?? (visual ? copy.tools[visual].title : copy.title)}</h1></div></header>
     {children}
     <div className={styles.layout}><aside className={styles.rail}>{source}{settings}</aside><section className={styles.stage}>{preview}</section></div>
     {recent ? <section className={styles.recent}>{recent}</section> : null}

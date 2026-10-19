@@ -1,0 +1,47 @@
+const en = {
+  source: 'Source', import: 'Import a file', library: 'Choose from Media', change: 'Change', remove: 'Remove', close: 'Close',
+  sourceError: 'This source is unavailable or incompatible. Choose another original from Media.', uploadError: 'Import failed. Check the file type and size, then try again.',
+  loading: 'Loading…', loadMore: 'Load more', empty: 'No compatible media yet. Import a file to get started.', retry: 'Try again', search: 'Search your media', all: 'All media', use: 'Use this source',
+  original: 'Original', result: 'Result', settings: 'Settings', preserved: 'Your original stays in Media.', signIn: 'Sign in to use your media',
+  quote: 'Get an exact quote', confirm: 'Confirm and create', working: 'Processing your media…', pending: 'You can leave this page. Your job will continue.',
+  quoted: 'Review your quote', expired: 'Your settings changed. Get a new quote.', error: 'The operation could not finish. Your existing job is preserved; try checking its status again.',
+  download: 'Download', addStudio: 'Use in Studio', price: 'Price', details: 'Details', newResult: 'Create another result', duration: 'Duration', seconds: 'seconds',
+  segment: 'Use this segment', start: 'Start (seconds)', end: 'End (seconds)', segmentHint: 'Only this range is used. The original is kept.',
+  photo: 'Photo', video: 'Video', audio: 'Audio', voice: 'Create a voice', language: 'Language', auto: 'Detect automatically',
+  transcript: 'Subtitles', text: 'Text', clean: 'Clean', activeWord: 'Active word', contrast: 'High contrast', style: 'Style',
+  save: 'Save changes', saved: 'Saved', exportSrt: 'Download SRT', exportVtt: 'Download VTT', burn: 'Export captioned MP4',
+  titles: { subtitles: 'Subtitles', 'lip-sync': 'Lip Sync', 'product-photo-editor': 'Product Photo', 'product-video-editor': 'Product Video', 'motion-transfer': 'Motion Transfer' },
+  sourceLabels: { source: 'Your source', audio: 'Voice or audio', style: 'Style reference (optional)', motion: 'Performance video', mask: 'Preservation mask (optional)' },
+};
+type Copy = typeof en;
+const fr: Copy = {
+  ...en, source: 'Source', import: 'Importer un fichier', library: 'Choisir dans Médias', change: 'Changer', remove: 'Retirer', close: 'Fermer',
+  sourceError: 'Cette source est indisponible ou incompatible. Choisissez un autre original dans Médias.', uploadError: 'Import impossible. Vérifiez le type et la taille du fichier, puis réessayez.',
+  loading: 'Chargement…', loadMore: 'Afficher plus', empty: 'Aucun média compatible. Importez un fichier pour commencer.', retry: 'Réessayer', search: 'Rechercher dans vos médias', all: 'Tous les médias', use: 'Utiliser cette source',
+  original: 'Original', result: 'Résultat', settings: 'Réglages', preserved: 'Votre original reste dans Médias.', signIn: 'Connectez-vous pour utiliser vos médias',
+  quote: 'Obtenir le devis exact', confirm: 'Confirmer et créer', working: 'Traitement de votre média…', pending: 'Vous pouvez quitter cette page. Le traitement continue.',
+  quoted: 'Vérifiez votre devis', expired: 'Les réglages ont changé. Demandez un nouveau devis.', error: 'L’opération n’a pas pu aboutir. Le traitement existant est conservé ; vérifiez à nouveau son état.',
+  download: 'Télécharger', addStudio: 'Utiliser dans Studio', price: 'Prix', details: 'Détails', newResult: 'Créer un autre résultat', duration: 'Durée', seconds: 'secondes',
+  segment: 'Utiliser ce segment', start: 'Début (secondes)', end: 'Fin (secondes)', segmentHint: 'Seule cette plage est utilisée. L’original est conservé.',
+  photo: 'Photo', video: 'Vidéo', audio: 'Audio', voice: 'Créer une voix', language: 'Langue', auto: 'Détecter automatiquement',
+  transcript: 'Sous-titres', text: 'Texte', clean: 'Sobre', activeWord: 'Mot actif', contrast: 'Contraste renforcé', style: 'Style',
+  save: 'Enregistrer les modifications', saved: 'Enregistré', exportSrt: 'Télécharger le SRT', exportVtt: 'Télécharger le VTT', burn: 'Exporter le MP4 sous-titré',
+  titles: { subtitles: 'Sous-titres', 'lip-sync': 'Lip Sync', 'product-photo-editor': 'Retouche photo produit', 'product-video-editor': 'Retouche vidéo produit', 'motion-transfer': 'Motion Transfer' },
+  sourceLabels: { source: 'Votre source', audio: 'Voix ou audio', style: 'Référence de style (facultative)', motion: 'Vidéo de performance', mask: 'Masque de préservation (facultatif)' },
+};
+const es: Copy = {
+  ...en, source: 'Fuente', import: 'Importar un archivo', library: 'Elegir en Medios', change: 'Cambiar', remove: 'Quitar', close: 'Cerrar',
+  sourceError: 'La fuente no está disponible o no es compatible. Elige otro original en Medios.', uploadError: 'No se pudo importar. Revisa el tipo y el tamaño del archivo e inténtalo de nuevo.',
+  loading: 'Cargando…', loadMore: 'Mostrar más', empty: 'Aún no hay medios compatibles. Importa un archivo para empezar.', retry: 'Reintentar', search: 'Buscar en tus medios', all: 'Todos los medios', use: 'Usar esta fuente',
+  original: 'Original', result: 'Resultado', settings: 'Ajustes', preserved: 'Tu original permanece en Medios.', signIn: 'Inicia sesión para usar tus medios',
+  quote: 'Obtener el precio exacto', confirm: 'Confirmar y crear', working: 'Procesando tus medios…', pending: 'Puedes salir de esta página. El proceso continuará.',
+  quoted: 'Revisa tu presupuesto', expired: 'Los ajustes cambiaron. Solicita un nuevo presupuesto.', error: 'La operación no pudo terminar. El trabajo existente se conserva; consulta de nuevo su estado.',
+  download: 'Descargar', addStudio: 'Usar en Studio', price: 'Precio', details: 'Detalles', newResult: 'Crear otro resultado', duration: 'Duración', seconds: 'segundos',
+  segment: 'Usar este segmento', start: 'Inicio (segundos)', end: 'Fin (segundos)', segmentHint: 'Solo se usa este intervalo. El original se conserva.',
+  photo: 'Foto', video: 'Vídeo', audio: 'Audio', voice: 'Crear una voz', language: 'Idioma', auto: 'Detectar automáticamente',
+  transcript: 'Subtítulos', text: 'Texto', clean: 'Sencillo', activeWord: 'Palabra activa', contrast: 'Alto contraste', style: 'Estilo',
+  save: 'Guardar cambios', saved: 'Guardado', exportSrt: 'Descargar SRT', exportVtt: 'Descargar VTT', burn: 'Exportar MP4 subtitulado',
+  titles: { subtitles: 'Subtítulos', 'lip-sync': 'Lip Sync', 'product-photo-editor': 'Retoque de producto en foto', 'product-video-editor': 'Retoque de producto en vídeo', 'motion-transfer': 'Motion Transfer' },
+  sourceLabels: { source: 'Tu fuente', audio: 'Voz o audio', style: 'Referencia de estilo (opcional)', motion: 'Vídeo de actuación', mask: 'Máscara de conservación (opcional)' },
+};
+export const creatorCopy = (locale: string): Copy => locale === 'fr' ? fr : locale === 'es' ? es : en;
