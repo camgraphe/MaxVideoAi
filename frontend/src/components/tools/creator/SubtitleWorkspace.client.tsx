@@ -34,7 +34,7 @@ export function SubtitleSession({userId,locale,initialDocument,executionEnabled 
   const [language,setLanguage] = useState(''), [keyterms,setKeyterms] = useState(''), [uploadBusy,setUploadBusy] = useState(false);
   const [saved,setSaved] = useState<SubtitleDocument | null>(null), [draft,setDraft] = useState<SubtitleDocument | null>(null);
   const [saving,setSaving] = useState(false), [loading,setLoading] = useState(false), [error,setError] = useState<string | null>(null);
-  const [loadRevision,setLoadRevision] = useState(0), [downloadBusy,setDownloadBusy] = useState(false);
+  const [loadRevision,setLoadRevision] = useState(0), [previewRevision,setPreviewRevision] = useState(0), [downloadBusy,setDownloadBusy] = useState(false);
   const active = useRef(true), saveLock = useRef(false), loadEpoch = useRef(0);
   const saveRequest = useRef<{id:string;fingerprint:string} | null>(null);
   const working = transcription.running || render.running, disabled = working || transcription.busy || render.busy || saving || loading || uploadBusy;
@@ -54,12 +54,12 @@ export function SubtitleSession({userId,locale,initialDocument,executionEnabled 
       if (!response.ok || !data.ok) throw new Error('DOCUMENT_UNAVAILABLE');
       const document = parseSubtitleDocument(data.document);
       if (!active.current || attempt !== loadEpoch.current) return;
-      setSaved(document); setDraft(document); saveRequest.current = null; render.invalidate();
+      setSaved(document); setDraft(document); setPreviewRevision(value => value + 1); saveRequest.current = null; render.invalidate();
       // The route resolves an owned source separately from the immutable caption document.
       if (data.sourceMedia?.url) {
         setSource({ref:document.source.ref,url:data.sourceMedia.url,name:data.sourceMedia.name ?? copy.source,thumbnailUrl:data.sourceMedia.thumbnailUrl});
         setKind(document.source.ref.kind as 'audio'|'video');
-      }
+      } else setSource(null);
     } catch { if (active.current && attempt === loadEpoch.current) setError('DOCUMENT_UNAVAILABLE'); }
     finally { if (active.current && attempt === loadEpoch.current) setLoading(false); }
   // The immutable operation result owns document loads; operation invalidation has no data dependency.
@@ -71,7 +71,7 @@ export function SubtitleSession({userId,locale,initialDocument,executionEnabled 
   }, [userId,loadId,targetRevision,loadRevision]); // eslint-disable-line react-hooks/exhaustive-deps
   function changeSource(next: CreatorSource | null) {
     if (working || saving) return;
-    loadEpoch.current += 1; setRequestedDocument(undefined); transcription.invalidate(); render.invalidate(); setSaved(null); setDraft(null); setError(null); setSource(next); saveRequest.current = null;
+    loadEpoch.current += 1; setLoading(false); setRequestedDocument(undefined); transcription.invalidate(); render.invalidate(); setSaved(null); setDraft(null); setError(null); setSource(next); saveRequest.current = null;
   }
   function changeDocument(next: SubtitleDocument) { if (disabled) return; setDraft(next); setError(null); render.invalidate(); }
   async function save() {
@@ -95,8 +95,11 @@ export function SubtitleSession({userId,locale,initialDocument,executionEnabled 
     const attempt = ++loadEpoch.current; setLoading(true);
     try {
       const response = await authFetch(`/api/tools/subtitles/documents/${encodeURIComponent(saved.id)}?revision=${saved.revision}`), data = await response.json();
-      if (!response.ok || !data.ok || !data.sourceMedia?.url) throw new Error('PREVIEW_UNAVAILABLE');
-      if (active.current && attempt === loadEpoch.current) setSource({ref:saved.source.ref,url:data.sourceMedia.url,name:data.sourceMedia.name ?? copy.source,thumbnailUrl:data.sourceMedia.thumbnailUrl});
+      if (!active.current || attempt !== loadEpoch.current) return;
+      if (!response.ok || !data.ok) throw new Error('PREVIEW_UNAVAILABLE');
+      setPreviewRevision(value => value + 1);
+      setSource(data.sourceMedia?.url ? {ref:saved.source.ref,url:data.sourceMedia.url,name:data.sourceMedia.name ?? copy.source,thumbnailUrl:data.sourceMedia.thumbnailUrl} : null);
+      if (!data.sourceMedia?.url) setError('PREVIEW_UNAVAILABLE');
     } catch { if (active.current && attempt === loadEpoch.current) setError('PREVIEW_UNAVAILABLE'); }
     finally { if (active.current && attempt === loadEpoch.current) setLoading(false); }
   }
@@ -136,11 +139,11 @@ export function SubtitleSession({userId,locale,initialDocument,executionEnabled 
     </div> : null}</div>}
     recent={<SubtitleRecentDocuments key={userId} userId={userId} locale={locale} disabled={disabled || dirty} onOpen={id => {transcription.invalidate();render.invalidate();setSource(null);setSaved(null);setDraft(null);setRequestedDocument({id});}} />}
     preview={<div className={styles.stage}><div className={styles.stageHeading}>{copy.transcript}{loading ? <span role="status">{copy.loading}</span> : null}</div>
-      {studioSource && !source ? <div className={styles.media}><p className={styles.empty}>{copy.mixPending}</p></div> : <SubtitlePreview document={draft} source={source} locale={locale} onRefresh={saved ? () => void refreshPreview() : undefined} />}
+      {studioSource && !source ? <div className={styles.media}><p className={styles.empty}>{copy.mixPending}</p></div> : <SubtitlePreview key={previewRevision} document={draft} source={source} locale={locale} onRefresh={saved ? () => void refreshPreview() : undefined} />}
       {draft ? <><SubtitleDocumentEditor locale={locale} document={draft} onChange={changeDocument} disabled={disabled || conflict} /><div className={styles.actions}>
         <button type="button" disabled={dirty || disabled || downloadBusy} onClick={() => void download('srt')}>{copy.exportSrt}</button><button type="button" disabled={dirty || disabled || downloadBusy} onClick={() => void download('vtt')}>{copy.exportVtt}</button>
       </div></> : null}
-      {renderResult ? <><p className={styles.stageHeading}>{copy.result} · {copy.savedRevision} {renderResult.revision}</p><CreatorMediaPreview locale={locale} url={renderReadUrl ?? undefined} kind="video" poster={renderPoster} unavailable={!renderReadUrl} onRetry={retryRender} />
+      {renderResult ? <><p className={styles.stageHeading}>{copy.result} · {copy.savedRevision} {renderResult.revision}</p><CreatorMediaPreview key={`${render.readRevision}:${transcription.readRevision}`} locale={locale} url={renderReadUrl ?? undefined} kind="video" poster={renderPoster} unavailable={!renderReadUrl} onRetry={retryRender} />
         <div className={styles.actions}><button type="button" disabled={!renderReadUrl} onClick={() => {if(renderReadUrl)triggerAppDownload(renderReadUrl,`subtitles-r${renderResult!.revision}.mp4`);}}>{copy.download}</button><MediaDestinationActions locale={locale} userId={userId} asset={{id:renderResult.assetId,url:renderResult.originalUrl,kind:'video',thumbUrl:renderResult.thumbnailUrl}} /></div></> : null}
     </div>}
   >{!executionEnabled ? <p className={styles.notice} role="status">{copy.executionClosed}</p> : null}{!userId ? <ToolAuthNotice locale={locale} path="/app/tools/subtitles" /> : null}{!studioSource ? <ToolMediaHandoff userId={userId} destination="subtitles" locale={locale} disabled={disabled} onSelect={asset => {if(asset.kind !== 'audio' && asset.kind !== 'video')throw new Error('Incompatible source');changeSource(selectCreatorSource(asset,asset.kind));setKind(asset.kind);}} /> : null}</ToolWorkbench>;

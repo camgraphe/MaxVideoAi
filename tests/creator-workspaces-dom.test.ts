@@ -142,3 +142,53 @@ test('video lip-sync clears the photo instruction before preparing its prompt-fr
     const input=JSON.parse(f.w.requests.at(-1).init.body);assert.equal(input.profileId,'lip-video-latentsync-v1');assert.equal(input.settings.instruction,'');
   }finally{await f.close();}
 });
+
+test('Product Video opens its real signed output beside the original for manual synchronized comparison',async()=>{
+  const f=await mount('product-video-editor');try{
+    await f.act(async()=>f.w.pickers.video.onChange(source('video')));await click(f,'Get an exact quote');await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,quote:price});await click(f,'Confirm and create');
+    await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,status:'running'});
+    await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,status:'completed',result:{toolId:'product-video-editor',jobId:'job-1',version:1,sourceAssets:[],outputs:[{asset:{type:'asset',assetId:`ma_${'2'.repeat(32)}`,kind:'video'},originalUrl:'https://private.invalid/canonical.mp4',kind:'video',readUrl:'https://private.invalid/result.mp4?signature=exact',thumbnailReadUrl:null}]}});
+    const videos=f.w.document.querySelectorAll('video');assert.equal(videos.length,2);assert.equal(videos[0].src,source('video').url);assert.equal(videos[1].src,'https://private.invalid/result.mp4?signature=exact');
+    assert.equal(buttons(f.w,'Compare')[0].getAttribute('aria-pressed'),'true');assert.equal(buttons(f.w,'Play together').length,1);assert.ok(Array.from(videos).every((node:any)=>node.preload==='none'&&!node.autoplay));
+    await click(f,'Result');assert.equal(f.w.document.querySelectorAll('video').length,1);
+  }finally{await f.close();}
+});
+
+const recoveredVideoInput={version:1,toolId:'product-video-editor',profileId:'product-video-wan-v1',inputs:[{role:'source',source:source('video').ref,segment:{startSec:2,endSec:6}}],settings:{action:'lighting',instruction:'Warm light',audioPolicy:'preserve',resolution:'720p'}};
+const recoveredVideo={ok:true,operationId:opId,status:'completed',input:recoveredVideoInput,sourceMedia:[{role:'source',ref:source('video').ref,segment:{startSec:2,endSec:6},readUrl:'https://private.invalid/fresh-source.mp4?signature=A',name:'Owned original'}],result:{toolId:'product-video-editor',jobId:'job-1',version:1,sourceAssets:[],outputs:[{asset:{type:'asset',assetId:`ma_${'2'.repeat(32)}`,kind:'video'},originalUrl:'https://private.invalid/canonical.mp4',kind:'video',readUrl:'https://private.invalid/fresh-result.mp4?signature=A'}]}};
+async function recoverProductVideo(){return mountToolFixture(`import Workspace from './src/components/tools/creator/CreatorWorkspace.client';function App(){return <Workspace toolId="product-video-editor" executionEnabled={false} initialOperationId="${opId}"/>}`,stubs,w=>{w.auth={user:{id:'A'},loading:false};w.pickers={};});}
+test('operation recovery restores owned sources, settings and segment for comparison; removed source drops its stale URL',async()=>{
+  const f=await recoverProductVideo();try{
+    await f.respond(f.w.requests[0],recoveredVideo);
+    let videos=f.w.document.querySelectorAll('video');assert.equal(videos.length,2);assert.equal(videos[0].src,recoveredVideo.sourceMedia[0].readUrl);assert.equal(f.w.document.querySelector('textarea').value,'Warm light');
+    assert.equal(f.w.pickers.video.source.name,'Owned original');assert.equal(buttons(f.w,'Get an exact quote')[0].disabled,true);
+    await f.act(async()=>videos[1].dispatchEvent(new f.w.Event('error')));await click(f,'Try again');
+    await f.respond(f.w.requests.at(-1),{...recoveredVideo,sourceMedia:[{...recoveredVideo.sourceMedia[0],readUrl:null}]});
+    videos=f.w.document.querySelectorAll('video');assert.equal(videos.length,1);assert.equal(videos[0].src,recoveredVideo.result.outputs[0].readUrl);assert.equal(f.w.pickers.video.source,null);assert.match(f.w.document.body.textContent,/source is unavailable/);
+  }finally{await f.close();}
+});
+test('a comparison refresh finishing after an account change cannot restore the previous account media',async()=>{
+  const f=await recoverProductVideo();try{
+    await f.respond(f.w.requests[0],recoveredVideo);await f.act(async()=>f.w.document.querySelectorAll('video')[1].dispatchEvent(new f.w.Event('error')));await click(f,'Try again');const late=f.w.requests.at(-1);
+    f.w.auth={user:{id:'B'},loading:false};await f.render();await f.respond(late,recoveredVideo);assert.equal(f.w.document.querySelectorAll('video').length,0);assert.equal(f.w.pickers.video.source,null);
+    assert.ok(late.init.signal.aborted);await f.respond(f.w.requests.at(-1),{ok:false,error:{code:'OPERATION_UNAVAILABLE'}},404);assert.equal(f.w.document.querySelectorAll('video').length,0);
+  }finally{await f.close();}
+});
+
+test('refreshing an unavailable subtitle source removes stale playback while preserving unsaved caption edits',async()=>{
+  const f=await mountToolFixture("import Workspace from './src/components/tools/creator/SubtitleWorkspace.client';function App(){return <Workspace initialDocument={{id:'captions-1',revision:1}}/>}",stubs,w=>{w.auth={user:{id:'A'},loading:false};w.pickers={};});
+  try{
+    await f.respond(f.w.requests[0],{ok:true,document,sourceMedia:{url:'https://private.invalid/expired-source.mp4',name:'Source'}});await edit(f,'Caption 1','Keep my draft');
+    await f.act(async()=>f.w.document.querySelector('video').dispatchEvent(new f.w.Event('error')));await click(f,'Try again');
+    await f.respond(f.w.requests.at(-1),{ok:true,document,sourceMedia:null});assert.equal(f.w.document.querySelector('video'),null);assert.equal(f.w.document.querySelector('textarea[aria-label="Caption 1"]').value,'Keep my draft');
+    assert.equal(buttons(f.w,'Save changes')[0].disabled,false);
+  }finally{await f.close();}
+});
+test('a subtitle preview refresh cannot restore the old source or draft after an account switch',async()=>{
+  const f=await mountToolFixture("import Workspace from './src/components/tools/creator/SubtitleWorkspace.client';function App(){return <Workspace initialDocument={{id:'captions-1',revision:1}}/>}",stubs,w=>{w.auth={user:{id:'A'},loading:false};w.pickers={};});
+  try{
+    const payload={ok:true,document,sourceMedia:{url:'https://private.invalid/account-a.mp4',name:'Source A'}};await f.respond(f.w.requests[0],payload);await edit(f,'Caption 1','Private A');
+    await f.act(async()=>f.w.document.querySelector('video').dispatchEvent(new f.w.Event('error')));await click(f,'Try again');const late=f.w.requests.at(-1);
+    f.w.auth={user:{id:'B'},loading:false};await f.render();await f.respond(late,payload);assert.equal(f.w.document.querySelector('video'),null);assert.equal(f.w.document.querySelector('textarea[aria-label="Caption 1"]'),null);
+  }finally{await f.close();}
+});

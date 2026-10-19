@@ -49,3 +49,13 @@
 .documentList ul { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit,minmax(min(100%,260px),1fr)); }
 .documentList li button { width: 100%; }
 .sourceGroup audio,.actions audio { max-width: 100%; }
+
+.comparisonVideos { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1px; background: var(--app-line,var(--border)); }
+.comparisonVideos figure { min-width: 0; margin: 0; background: var(--app-panel,var(--surface)); }
+.comparisonVideos figcaption { padding: 12px 18px; font-size: 13px; }
+.comparisonVideos video { display: block; width: 100%; aspect-ratio: 16/9; object-fit: contain; background: #172124; }
+.comparisonSeek { display: grid; gap: 4px; flex: 1 1 180px; min-width: 0; font-size: 12px; }
+.comparisonSeek input { min-height: 44px; width: 100%; accent-color: var(--app-accent,var(--brand)); }
+.comparisonHint { padding: 0 18px 18px; font-size: 12px; color: var(--app-muted,var(--text-secondary)); }
+.comparison .error button { display: inline-block; min-height: 44px; padding: 10px 16px; }
+@media(max-width:760px) { .comparisonVideos { grid-template-columns: 1fr; } }

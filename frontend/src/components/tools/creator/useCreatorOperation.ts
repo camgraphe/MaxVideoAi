@@ -3,12 +3,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { dispatchAnalyticsEvent } from '@/lib/analytics-client';
 import { authFetch } from '@/lib/authFetch';
+import type { CreatorOperationInput, CreatorSourceInput } from '@/lib/toolbox/creator-tools';
 import { LIVE_PRICING_POLICY_REVISION, PRICING_POLICY_HEADER } from '@/lib/membership-policy';
 
 export const webPricingPolicyHeaders = () => ({ 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION });
 export type CreatorQuote = { price: { amountCents: number; currency: string }; expiresAt: string; topupRequired?: boolean;breakdown?: {transcription:{amountCents:number;currency:string};mixPreparation:{amountCents:number;currency:string}} };
 type Prepared = { sourceSummary?: {kind:'sequence';name:string;revision:number};operationId: string; quote: CreatorQuote; operation?: { profile?: { disclosure?: string } }; exportEstimate?: { amountCents: number; currency: string } | null };
-type OperationReply<Result> = { ok: boolean; operationId: string; status?: string; state?: string; result?: Result | null; error?: { code?: string } | string; retryAfterSeconds?: number; needsAttention?: boolean; retryable?: boolean } & Partial<Prepared>;
+type CreatorReadContext = {input?:CreatorOperationInput;sourceMedia?:Array<{role:CreatorSourceInput['role'];ref:CreatorSourceInput['source'];segment?:CreatorSourceInput['segment'];readUrl:string|null;thumbnailReadUrl?:string|null;name?:string;durationSec?:number}>};
+type OperationReply<Result> = { ok: boolean; operationId: string; status?: string; state?: string; result?: Result | null; error?: { code?: string } | string; retryAfterSeconds?: number; needsAttention?: boolean; retryable?: boolean } & Partial<Prepared> & CreatorReadContext;
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function readPrepared(value: Partial<Prepared>): Prepared | null {
   const quote = value.quote;
@@ -23,6 +25,7 @@ export function useCreatorOperation<Result = unknown>({ userId, toolId, family, 
   const [result, setResult] = useState<Result | null>(null), [busy, setBusy] = useState(false), [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null), [needsConfirmation, setNeedsConfirmation] = useState(false), [expired, setExpired] = useState(false);
   const [sourceSummary,setSourceSummary] = useState<Prepared['sourceSummary']>();
+  const [readContext,setReadContext] = useState<CreatorReadContext | null>(null), [readRevision,setReadRevision] = useState(0);
   const preparedRef = useRef<Prepared | null>(null);
   function updatePrepared(value: Prepared | null) { preparedRef.current = value; if(value?.sourceSummary)setSourceSummary(value.sourceSummary); setPrepared(value); }
   const observedWork = useRef(new Set<string>());
@@ -72,13 +75,14 @@ export function useCreatorOperation<Result = unknown>({ userId, toolId, family, 
         }
         if (!response.ok || !data.ok || data.operationId !== pending) throw new Error('STATUS_UNAVAILABLE');
         const state = data.status ?? data.state;
+        if (data.input && data.sourceMedia) setReadContext({input:data.input,sourceMedia:data.sourceMedia});
         if(data.sourceSummary)setSourceSummary(data.sourceSummary);
         setNeedsAttention(data.needsAttention === true || data.retryable === false);
         if (!['prepared','failed','completed'].includes(state ?? '')) observedWork.current.add(pending!);
         if (state !== 'prepared' && state !== 'failed' && submittedHere.current.has(pending!)) report('tool_start',pending!);
         if (state === 'completed' && (submittedHere.current.has(pending!) || observedWork.current.has(pending!))) report('tool_complete',pending!,Boolean(data.result));
         if (state === 'completed' || state === 'failed') {
-          setResult(state === 'completed' ? data.result ?? null : null); setError(state === 'failed' ? 'OPERATION_FAILED' : null);
+          setReadRevision(value => value + 1); setResult(state === 'completed' ? data.result ?? null : null); setError(state === 'failed' ? 'OPERATION_FAILED' : null);
           setRunning(false); setPending(null); setNeedsConfirmation(false); updatePrepared(null); paid.current = false;
           if (state === 'failed') try { sessionStorage.removeItem(storageKey); } catch { /* Optional storage. */ }
           return;
@@ -97,7 +101,7 @@ export function useCreatorOperation<Result = unknown>({ userId, toolId, family, 
   }, [base, pending, pollRevision, storageKey, userId, report]);
   function invalidate() {
     if (paid.current) return;
-    epoch.current += 1; setSourceSummary(undefined); setNeedsAttention(false); lastOperationId.current = null; updatePrepared(null); setError(null); setResult(null); forget();
+    epoch.current += 1; setReadContext(null); setSourceSummary(undefined); setNeedsAttention(false); lastOperationId.current = null; updatePrepared(null); setError(null); setResult(null); forget();
   }
   async function prepare(input: unknown, path = '/prepare') {
     if (!executionEnabled || !userId || locked.current || paid.current) return;
@@ -135,7 +139,7 @@ export function useCreatorOperation<Result = unknown>({ userId, toolId, family, 
     finally { locked.current = false; if (active.current) setBusy(false); }
   }
   return { quote: prepared?.quote ?? null, sourceSummary, disclosure: prepared?.operation?.profile?.disclosure, exportEstimate: prepared?.exportEstimate,
-    result, busy, running, error, needsConfirmation, needsAttention, expired, invalidate, prepare, confirm,
+    result, readContext, readRevision, busy, running, error, needsConfirmation, needsAttention, expired, invalidate, prepare, confirm,
     retry: () => { if (!lastOperationId.current) return; paid.current = true; setRunning(true); setPending(lastOperationId.current); setPollRevision(value => value + 1); },
     discardExpired: () => { if (!expired || !needsConfirmation || locked.current) return; paid.current = false; setRunning(false); setPending(null); setNeedsConfirmation(false); invalidate(); },
     reset: () => { if (paid.current || locked.current) return; invalidate(); setResult(null); },
