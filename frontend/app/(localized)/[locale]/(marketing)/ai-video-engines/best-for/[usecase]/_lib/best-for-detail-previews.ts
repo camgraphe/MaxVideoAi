@@ -1,6 +1,6 @@
 import type { AppLocale } from '@/i18n/locales';
 import { normalizeEngineId } from '@/lib/engine-alias';
-import { getPublicVideosByIds, type GalleryVideo } from '@/server/videos';
+import { getSeoVideosByIds, type GalleryVideo } from '@/server/videos';
 import { BEST_FOR_SCENES } from './best-for-scenes';
 import type { ExamplePreviewPick, RankedPick } from './best-for-detail-config';
 
@@ -34,6 +34,6 @@ export function selectBestForScenes(picks: RankedPick[], videos: Map<string, Gal
 }
 export async function resolveExamplePreviewPicks(picks: RankedPick[], locale: AppLocale = 'en', usecase = ''): Promise<ExamplePreviewPick[]> {
   const ids = BEST_FOR_SCENES.filter(scene => picks.some(pick => pick.slug === scene.model)).map(scene => scene.id);
-  try { return selectBestForScenes(picks, await getPublicVideosByIds(ids), locale, usecase); }
+  try { return selectBestForScenes(picks, await getSeoVideosByIds(ids), locale, usecase); }
   catch { return []; } // A missing public render must never be replaced with another model.
 }

@@ -49,6 +49,8 @@ The initial page renders responsive posters, at most one priority image and no v
 
 ## Release gate
 
-Keep this PR in draft for Adrien’s visual review and coordinated delivery. Local dev screenshots and resource inventories are not comparable CWV measurements. Before promotion, compare mobile/desktop cold and warm production-build loading on equivalent data, inspect initial requests and first Play, and check current public clip eligibility. No claim of an LCP, CLS or INP gain is made.
+Adrien delegated final visual and performance verification on 19 October, followed by handoff to the existing Livraison PR coordinator. Promotion requires desktop/mobile screenshots, native first Play and focus restoration, a same-data cold/warm production-build comparison against main, current public media eligibility and green exact-lock CI. Final dated captures, raw Lighthouse reports, route checks and the independent review are recorded in OUTREACH sources/2026-10-19/best-for-finalization and summarized in the PR. Lab measurements do not establish field CWV or INP gains. The coordinator owns merge and production delivery.
+
+Final review added two withdrawal protections: the curated scenes use the existing SEO watch reader, including source/deletion eligibility, and the assistant creation card follows the shared MCP publication gate. Regression tests cover those boundaries in all locales. Four older model-selection tests now describe the reviewed choices instead of fixing the superseded shortlist.
 
 No title A/B test is launched alongside this content refresh. Record the actual deployment timestamp, establish a new observation baseline, then test one snippet variable with query/device/country/position segmentation.
