@@ -60,6 +60,7 @@ export interface ComposerProps {
   negativePromptField?: EngineInputField;
   negativePromptRequired?: boolean;
   assetFields: AssetFieldConfig[];
+  referenceAuthAction?: { label: string; href: string };
   assets: Record<string, (ComposerAttachment | null)[]>;
   onAssetAdd?: (field: EngineInputField, file: File, slotIndex?: number, meta?: AssetUploadMeta) => void;
   onAssetRemove?: (field: EngineInputField, index: number) => void;

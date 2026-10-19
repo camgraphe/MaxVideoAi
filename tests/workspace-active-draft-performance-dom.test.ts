@@ -8,10 +8,13 @@ import { createRoot } from 'react-dom/client';
 import { listFalEngines } from '../frontend/src/config/falEngines';
 import { useWorkspaceRouteFormState } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceRouteFormState';
 import { useWorkspaceAssetState } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceAssetState';
+import { useWorkspaceEngineModeState } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceEngineModeState';
 import { useWorkspaceDraftHydration } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceDraftHydration';
 import { decodeWorkspaceActiveDraft, encodeWorkspaceActiveDraft, workspaceActiveDraftKey } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-active-draft';
 import { serializeWorkspaceModelSetup } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-model-setups';
 import { prepareWorkspaceModelCandidate, type WorkspaceModelSetup } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-model-candidate';
+import type { VideoGroup } from '../frontend/types/video-groups';
+import { STORAGE_KEYS } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-storage';
 import { coerceFormState } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
 
 const noop = () => {};
@@ -22,9 +25,14 @@ type Current = ReturnType<typeof useWorkspaceRouteFormState> & ReturnType<typeof
   hydration: ReturnType<typeof useWorkspaceDraftHydration>;
 };
 
-async function mount(stored: string | null = null) {
-  let authStatus = 'authed';
-  let accountId: string | null = 'draft-performance';
+async function mount(stored: string | null = null, options: { guest?: boolean; initialPreviewGroup?: VideoGroup; storedPrompt?: string } = {}) {
+  let authStatus = options.guest ? 'loggedOut' : 'authed';
+  let accountId: string | null = options.guest ? null : 'draft-performance';
+  const initialModels: string[] = [];
+  let availableEngines = options.initialPreviewGroup
+    ? [...engines, listFalEngines().find(entry => entry.id === 'wan-3-prime')!.engine]
+    : engines;
+  const readLegacy = (key: string) => key === STORAGE_KEYS.prompt ? options.storedPrompt ?? null : null;
   let revision = 0;
   let writes = 0;
   let current!: Current;
@@ -53,16 +61,26 @@ async function mount(stored: string | null = null) {
     const [hydratedForScope, setHydratedForScope] = React.useState<string | null>(null);
     const preserveStoredDraftRef = React.useRef(false), hasStoredFormRef = React.useRef(false);
     const hydration = useWorkspaceDraftHydration({
-      ...route, ...assets, engines, authStatus, accountId,
+      ...route, ...assets, engines: availableEngines, authStatus, accountId, initialPreviewGroup: options.initialPreviewGroup,
       accessToken: accountId ? 'synthetic-token' : null, locale: 'en',
       requestedJobId: null, fromVideoId: null, effectiveRequestedEngineId: null,
       effectiveRequestedEngineToken: '', effectiveRequestedMode: null,
       storageScope: accountId ?? 'anon', hydratedForScope, setHydratedForScope,
-      readStorage: readEmpty, readScopedStorage: readEmpty, writeStorage: noop,
+      readStorage: readLegacy, readScopedStorage: readEmpty, writeStorage: noop,
       recentJobs: jobs, selectedPreview: null, rendersLength: 0, preserveStoredDraftRef, hasStoredFormRef,
       setSelectedPreview: noop, hydratePendingRendersFromStorage: noop, resetRenderState: noop,
     });
+    const requestedEngineOverrideIdRef = React.useRef<string | null>(null);
+    const requestedEngineOverrideTokenRef = React.useRef<string | null>(null);
+    const requestedModeOverrideRef = React.useRef(null);
+    useWorkspaceEngineModeState({
+      ...route, ...assets, engines: availableEngines, effectiveRequestedEngineToken: '',
+      authChecked: true, hydratedForScope, storageScope: accountId ?? 'anon',
+      preserveStoredDraftRef, requestedEngineOverrideIdRef, requestedEngineOverrideTokenRef,
+      requestedModeOverrideRef, writeStorage: noop, uiLocale: 'en', workflowCopy: {} as any, showNotice: noop,
+    });
     current = { ...route, ...assets, hydration };
+    if (route.form) initialModels.push(route.form.engineId);
     return React.createElement('output', null, unrelated);
   }
   const container = dom.window.document.getElementById('root')!;
@@ -72,6 +90,8 @@ async function mount(stored: string | null = null) {
   await act(async () => render());
   return {
     get current() { return current; },
+    initialModels,
+    async replaceEngines(next: typeof engines) { availableEngines = next; await act(async () => render()); },
     get writes() { return writes; },
     storage: dom.window.sessionStorage,
     render,
@@ -270,3 +290,45 @@ for (const error of ['invalid', 'oversized'] as const) {
     }
   });
 }
+
+
+const starterPreview: VideoGroup = {
+  id: 'initial-editorial-starter', layout: 'x1', provider: 'fal', status: 'ready', createdAt: '2026-10-19',
+  items: [{ id: 'editorial-starter', jobId: 'editorial-starter', engineId: 'wan-3-prime',
+    url: 'https://example.com/starter.mp4', aspect: '16:9', meta: { curated: true } }],
+};
+
+test('a fresh guest renders the server Starter model before any jobs feed, without a default-model flash', async () => {
+  const view = await mount(null, { guest: true, initialPreviewGroup: starterPreview });
+  try {
+    assert.equal(view.current.form?.engineId, 'wan-3-prime');
+    assert.ok(view.initialModels.length);
+    assert.deepEqual([...new Set(view.initialModels)], ['wan-3-prime']);
+    assert.equal(view.current.prompt, 'A quiet cinematic shot of neon-lit Tokyo streets in the rain', 'the later gallery owner still supplies the sample prompt');
+  } finally { await view.close(); }
+});
+
+test('the Starter preference preserves a guest prompt and ignores authenticated or noncurated previews', async () => {
+  for (const options of [
+    { guest: true, initialPreviewGroup: starterPreview, storedPrompt: 'My existing idea' },
+    { guest: false, initialPreviewGroup: starterPreview },
+    { guest: true, initialPreviewGroup: { ...starterPreview, items: starterPreview.items.map(item => ({ ...item, meta: { curated: false } })) } },
+  ]) {
+    const view = await mount(null, options);
+    try {
+      assert.equal(view.current.form?.engineId, 'seedance-2-0');
+      if (options.storedPrompt) assert.equal(view.current.prompt, options.storedPrompt);
+    } finally { await view.close(); }
+  }
+});
+
+
+test('normalization retains the existing fallback when a stable form model leaves the catalogue', async () => {
+  const view = await mount(null, { guest: true });
+  try {
+    assert.equal(view.current.form?.engineId, 'seedance-2-0');
+    const wan = listFalEngines().find(entry => entry.id === 'wan-3-prime')!.engine;
+    await view.replaceEngines([wan]);
+    assert.equal(view.current.form?.engineId, 'wan-3-prime');
+  } finally { await view.close(); }
+});

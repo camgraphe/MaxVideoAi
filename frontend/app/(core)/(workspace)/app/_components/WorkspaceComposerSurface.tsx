@@ -96,6 +96,7 @@ type WorkspaceComposerSurfaceProps = {
   klingO3UnsupportedVideoReason: string | null;
   workflowCopy: WorkflowCopy;
   guestUploadLockedReason: string | null;
+  referenceAuthAction?: ComposerProps['referenceAuthAction'];
   uiLocale: string;
   composerModeToggles: ComposerProps['modeToggles'];
   activeManualMode: Mode | null;
@@ -223,6 +224,7 @@ export function WorkspaceComposerSurface({
   klingO3UnsupportedVideoReason,
   workflowCopy,
   guestUploadLockedReason,
+  referenceAuthAction,
   uiLocale,
   composerModeToggles,
   activeManualMode,
@@ -505,6 +507,7 @@ export function WorkspaceComposerSurface({
         workflowNotice={resolvedWorkflowNotice}
         promotedActions={composerPromotedActions}
         assetFields={composerAssetFields}
+        referenceAuthAction={referenceAuthAction}
         assets={composerAssets}
         onAssetAdd={handleAssetAdd}
         onAssetRemove={handleAssetRemove}
