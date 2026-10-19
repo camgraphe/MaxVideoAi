@@ -24,7 +24,13 @@ export type StudioGenerationActor = {
   projectId: string;
   clientId: null;
 };
-export type GenerationActor = AgentPrincipal | StudioGenerationActor;
+/** Constructed only after authenticated Toolbox session access has been checked. */
+export type ToolboxGenerationActor = {
+  authMethod: 'toolbox-session';
+  userId: string;
+  clientId: null;
+};
+export type GenerationActor = AgentPrincipal | StudioGenerationActor | ToolboxGenerationActor;
 
 function identifier(value: unknown, limit: number): value is string {
   return (
@@ -41,7 +47,9 @@ export function requireGenerationActor(actor: GenerationActor): void {
     !identifier(actor.userId, 128) ||
     !(actor.authMethod === "oauth"
       ? actor.clientId === null || identifier(actor.clientId, 256)
-      : actor.authMethod === "studio-session" &&
+      : actor.authMethod === 'toolbox-session'
+        ? actor.clientId === null
+        : actor.authMethod === "studio-session" &&
         actor.clientId === null &&
         identifier(actor.projectId, 128))
   ) {
@@ -71,7 +79,9 @@ export function quoteMatchesActor<Request>(
     quote.oauthClientId === actor.clientId &&
     (actor.authMethod === "oauth"
       ? (quote.authOrigin ?? "oauth") === "oauth" && !quote.studioProjectId
-      : quote.authOrigin === "studio-session" &&
+      : actor.authMethod === 'toolbox-session'
+        ? quote.authOrigin === 'toolbox-session' && !quote.studioProjectId && quote.fundingMode === 'wallet'
+        : quote.authOrigin === "studio-session" &&
         quote.studioProjectId === actor.projectId &&
         quote.fundingMode === "wallet")
   );
@@ -95,6 +105,9 @@ export function bindStudioReferenceSnapshot(
   actor: GenerationActor,
   references: readonly ResolvedReference[],
 ): Record<string, unknown> {
+  if (actor.authMethod === 'toolbox-session') {
+    return { ...snapshot, toolboxReferenceFingerprint: studioReferenceFingerprint(references) };
+  }
   return actor.authMethod === "studio-session"
     ? {
         ...snapshot,
