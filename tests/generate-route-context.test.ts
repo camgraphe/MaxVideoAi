@@ -48,6 +48,18 @@ test('LAS Edit requires wallet settlement before billing and provider submission
   } finally { Object.assign(ENV, original); }
 });
 
+test('trusted paid context refuses unavailable direct-only Luma modes before provider submission', () => {
+  const engine = getFalEngineById('luma-ray-3-2')!.engine;
+  for (const mode of ['v2v', 'reframe'] as const) {
+    const result = resolveTrustedPaidGenerateRouteContext({
+      body: { engineId: engine.id, mode }, engine, mode, jobId: 'existing-mcp-quote',
+      providerEnv: { LUMA_AGENTS_ENABLED: 'false' },
+    });
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.equal(result.body.error, 'LUMA_MODE_UNAVAILABLE');
+  }
+});
+
 test('generate route delegates engine, provider, db, and admin context', () => {
   assert.ok(existsSync(helperPath), 'route context should live in the generate route _lib folder');
   assert.match(routeSource, /from '\.\/_lib\/route-context'/);

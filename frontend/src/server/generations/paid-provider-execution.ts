@@ -9,6 +9,7 @@ import { resolveTrustedPaidGenerateRouteContext } from '@/app/api/generate/_lib/
 import { videoGenerationAdapters } from '@/app/api/generate/_lib/video-generation-adapters';
 import { query } from '@/lib/db';
 import { buildUserFacingRefundDescription, toUserFacingFailureMessage } from '@/server/user-facing-failure-messages';
+import { getKnownGenerationFailureMessage } from '@/lib/generation-failure-messages';
 import type {
   IncludedTrialVideoContinuationOptions,
   PaidGenerationExecution,
@@ -120,7 +121,8 @@ export async function ensureKnownRejectionRefund(
   const vendorAccountId = typeof pricing.vendorAccountId === 'string'
     ? pricing.vendorAccountId
     : null;
-  const message = toUserFacingFailureMessage(failure?.message);
+  const message = getKnownGenerationFailureMessage({ failureCode: failure?.code, message: failure?.message })
+    ?? toUserFacingFailureMessage(failure?.message);
   const code = failure?.code && /^[a-z0-9_.-]{1,100}$/i.test(failure.code) ? failure.code : null;
   await deps.rollbackPendingPayment({
     pendingReceipt: {

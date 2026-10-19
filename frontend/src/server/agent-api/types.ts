@@ -158,6 +158,7 @@ export type AgentModelReferenceFieldDetails = Readonly<{
   acceptedMimeTypes?: readonly string[];
   acceptedFileExtensions?: readonly string[];
   imageAspectRatio?: Readonly<{ min: number; max: number }>;
+  minImageSidePx?: number;
   assetRequiredWhen?: Readonly<{
     setting: 'resolution';
     values: readonly string[];

@@ -1,5 +1,32 @@
 # MaxVideoAI : découverte, fluidité et continuité MCP
 
+## Generation recovery correction — 19 October 2026
+
+Preparation and confirmation now apply the submission asset-host allowlist to
+HTTPS references before quoting or reserving credits. Confirmation rechecks old
+prepared quotes; it never imports media or starts another generation implicitly.
+Unsupported links return a fixed public REFERENCE_INVALID explanation and an
+import_reference_files next action, without echoing the URL. Owned asset
+references retain their existing exact-owner verification.
+
+Direct-only Luma Modify/Reframe modes become unavailable when direct routing is
+disabled or inaccessible; they cannot use the Fal fallback. Public model
+readiness and the Web/trusted paid route context consume the same routing result.
+
+Tool-call audit events retain only allowlisted public error codes, registered
+model IDs and the video/image surface. Schema/unknown tool failures use a coarse
+MCP_TOOL_ERROR fallback. Prompts, references, error messages, tokens and provider
+bodies remain excluded. A successful status-tool call is still a technical
+success even when the existing generation has failed; generation outcomes keep
+their separate owner.
+
+Agent status confirms wallet recredit for every persisted refunded_wallet
+failure, and retains the fresh-quote/explicit-approval boundary. Known historical
+submission failures, Web messages and receipt reasons share fixed EN/FR/ES copy.
+Receipt projections do not rewrite ledger entries. Tool descriptors, schemas and
+global instructions are unchanged, so this correction does not change their
+byte budgets or establish a new installed-plugin or real-host qualification.
+
 Créé le **21 septembre 2026**, revu le **22 septembre 2026**. Responsable : ingénierie MaxVideoAI.
 Statut de distribution au **18 octobre 2026 UTC** : plugin **0.3.8 publié** et
 registre officiel actif/latest, selon le

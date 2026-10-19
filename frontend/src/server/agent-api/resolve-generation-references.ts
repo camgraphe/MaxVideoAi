@@ -6,6 +6,22 @@ import {
   type OwnedReferenceAsset,
 } from './reference-assets';
 import type { ResolvedReference } from './reference-types';
+import { AgentApiError } from './errors';
+import { isAllowedAssetHost } from '@/server/storage';
+
+/** Match submission URL admissibility before a quote or wallet reservation exists. */
+export function assertGenerationReferenceUrls(request: CanonicalGenerationRequest): void {
+  for (const reference of request.references) {
+    if (reference.kind === 'https' && !isAllowedAssetHost(reference.url)) {
+      throw new AgentApiError(
+        'REFERENCE_INVALID',
+        'This reference link cannot be used. Import the original file into MaxVideoAI before preparing a new quote. No credits were charged.',
+        false,
+        { type: 'import_reference_files' },
+      );
+    }
+  }
+}
 
 export type ResolveGenerationReferencesDependencies = {
   resolveOwnedReferenceAsset(

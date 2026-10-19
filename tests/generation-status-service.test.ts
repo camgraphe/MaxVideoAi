@@ -272,7 +272,7 @@ test('agent status sanitizes terminal failures and preserves refunded state', as
   assert.equal(result?.paymentStatus, 'refunded_wallet');
   assert.equal(
     result?.message,
-    `The render finished without a usable output. ${FAILED_ATTEMPT_BOUNDARY}`
+    `The render finished without a usable output. Your credits were returned to your wallet. ${FAILED_ATTEMPT_BOUNDARY}`
   );
   assert.equal(result?.result, null);
   assert.equal(result?.retryAfterSeconds, null);
@@ -417,7 +417,7 @@ test('agent reference-read failures preserve refund evidence and require a newly
     }));
 
     assert.equal(result?.message,
-      `MaxVideoAI could not read the reference media for this render. Select the reference again or upload a new file before preparing a new request. ${FAILED_ATTEMPT_BOUNDARY}`);
+      `MaxVideoAI could not read the reference media for this render. Select the reference again or upload a new file before preparing a new request. Your credits were returned to your wallet. ${FAILED_ATTEMPT_BOUNDARY}`);
     assert.equal(result?.status, 'failed');
     assert.equal(result?.paymentStatus, 'refunded_wallet');
     assert.equal(result?.result, null);

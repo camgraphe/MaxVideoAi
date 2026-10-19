@@ -9,6 +9,7 @@ import { getMcpApiRewritePath } from '@/lib/mcp-host-routing';
 import { isMcpPublicSourcePath } from '@/lib/mcp-publication';
 import { canVisitorBrowseWorkspacePath } from '@/lib/visitor-access';
 import { editorialSignInRedirect } from '@/lib/editorial/login';
+import { MiddlewareAuthTimeoutError } from '@/lib/middleware/auth-deadline';
 import {
   LOGIN_PATH,
   LOCALE_STRIPPABLE_PREFIXES,
@@ -23,6 +24,7 @@ import {
   isDottedLocalizedEnglishModelCompatibilityPath,
   isLoopbackHost,
   mergeResponseCookies,
+  middlewareAuthUnavailableResponse,
   normalizeLeadingLocaleSegments,
   normalizePublicQueryParams,
   resolveLangParamRedirect,
@@ -223,7 +225,14 @@ export async function middleware(req: NextRequest) {
   }
 
   const { updateSession } = await import('@/lib/supabase-ssr');
-  const { userId } = await updateSession(req, response);
+  let userId: string | null;
+  try {
+    ({ userId } = await updateSession(req, response));
+  } catch (error) {
+    if (!(error instanceof MiddlewareAuthTimeoutError)) throw error;
+    console.warn('[middleware] auth deadline exceeded');
+    return finalizeResponse(middlewareAuthUnavailableResponse(req, response), false, trackingNoindex, appNoindex);
+  }
 
   if (isAdminRoute) {
     response.headers.set('X-Robots-Tag', 'noindex, nofollow');

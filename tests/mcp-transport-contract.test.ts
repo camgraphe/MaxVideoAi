@@ -469,6 +469,23 @@ test('successful initialize/list binds the authenticated funnel once while ordin
   assert.deepEqual(bound, [principal, principal]);
 });
 
+test('tool audit retains a public error code without recording private diagnostics', async () => {
+  const events: McpAuditEvent[] = [];
+  const response = await handleMcpHttpRequest(protocolRequest({
+    jsonrpc: '2.0', id: 10, method: 'tools/call',
+    params: { name: 'get_account_status', arguments: {} },
+  }), deps({
+    recordEvent: async event => { events.push(event); return true; },
+    accountStatusDeps: { async getWalletSummary() {
+      throw new AgentApiError('ACCOUNT_RESTRICTED', 'private failure https://secret.invalid/?token=private');
+    } },
+  }));
+  assert.equal(response.status, 200);
+  assert.equal(events[0]?.outcome, 'failure');
+  assert.equal(events[0]?.errorCode, 'ACCOUNT_RESTRICTED');
+  assert.doesNotMatch(JSON.stringify(events), /private|https|token|failure https/);
+});
+
 test('tool audit records only the allowlisted name and success/failure projection without arguments', async () => {
   const events: McpAuditEvent[] = [];
   const recordEvent = async (event: McpAuditEvent) => {
@@ -544,19 +561,19 @@ test('tool audit records only the allowlisted name and success/failure projectio
     },
     {
       eventType: 'tool_call', userId: 'user-1', oauthClientId: 'client-1',
-      tool: 'get_account_status', outcome: 'failure', surface: null, engineId: null, errorCode: null,
+      tool: 'get_account_status', outcome: 'failure', surface: null, engineId: null, errorCode: 'INTERNAL_ERROR',
     },
     {
       eventType: 'tool_call', userId: 'user-1', oauthClientId: 'client-1',
-      tool: 'get_model_details', outcome: 'success', surface: null, engineId: null, errorCode: null,
+      tool: 'get_model_details', outcome: 'success', surface: null, engineId: 'minimax-h3', errorCode: null,
     },
     {
       eventType: 'tool_call', userId: 'user-1', oauthClientId: 'client-1',
-      tool: 'calculate_project_budget', outcome: 'failure', surface: null, engineId: null, errorCode: null,
+      tool: 'calculate_project_budget', outcome: 'failure', surface: null, engineId: null, errorCode: 'MCP_TOOL_ERROR',
     },
     {
       eventType: 'tool_call', userId: 'user-1', oauthClientId: 'client-1',
-      tool: 'compare_generation_prices', outcome: 'failure', surface: null, engineId: null, errorCode: null,
+      tool: 'compare_generation_prices', outcome: 'failure', surface: null, engineId: null, errorCode: 'MCP_TOOL_ERROR',
     },
   ]);
   assert.doesNotMatch(JSON.stringify(events), /private|prompt|token|provider/i);

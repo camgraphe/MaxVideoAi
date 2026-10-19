@@ -145,11 +145,13 @@ function projectReferences(
     const assetRequiredWhen = conditionalOwnedReferenceAsset(roles, mode, engine.id);
     const durationSec = projectReferenceDuration(engine, field, mode);
     const mediaConstraint = resolveEngineMediaFieldConstraint({ engine, field });
+    const minImageSidePx = field.type === 'image' ? engine.inputSchema?.constraints?.minImageSidePx : undefined;
     return [Object.freeze({
       type: field.type,
       roles: Object.freeze([...roles]),
       assetRequired: requiresOwnedReferenceAsset(roles, mode, engine.id, engine) || durationSec !== null || Boolean(field.imageAspectRatio),
       ...(field.imageAspectRatio ? { imageAspectRatio: Object.freeze({ ...field.imageAspectRatio }) } : {}),
+      ...(typeof minImageSidePx === 'number' && minImageSidePx > 0 ? { minImageSidePx } : {}),
       ...(assetRequiredWhen ? { assetRequiredWhen } : {}),
       ...(durationSec ? { durationSec } : {}),
       ...(mediaConstraint.maxSizeMB ? { maxSizeMB: mediaConstraint.maxSizeMB } : {}),

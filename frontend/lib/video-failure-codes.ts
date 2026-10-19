@@ -13,7 +13,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 export function getVideoFailureCodeFromSettingsSnapshot(settingsSnapshot: unknown): string | null {
-  if (!isRecord(settingsSnapshot) || !isRecord(settingsSnapshot.providerFailure)) return null;
+  if (!isRecord(settingsSnapshot)) return null;
+  if (isRecord(settingsSnapshot.submissionFailure)
+    && settingsSnapshot.submissionFailure.code === 'IMAGE_HOST_NOT_ALLOWED') return 'reference_link_unsupported';
+  if (!isRecord(settingsSnapshot.providerFailure)) return null;
   const providerFailure = settingsSnapshot.providerFailure;
   // Older tasks stored a reference-media code even when the rejection concerned generated audio.
   if (providerFailure.provider === 'byteplus_modelark' &&

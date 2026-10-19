@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import type { NextRequest, NextResponse } from 'next/server';
 import { createServerClient, type CookieOptionsWithName } from '@supabase/ssr';
 import { readBearerAccessToken } from '@/lib/request-auth';
+import { withMiddlewareAuthDeadline } from '@/lib/middleware/auth-deadline';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -92,13 +93,35 @@ export async function createSupabaseRouteClient() {
   return createServerClientWithCookies(cookieStore, cookieOptions);
 }
 
-export function createSupabaseMiddlewareClient(req: NextRequest, res: NextResponse) {
+export function createSupabaseMiddlewareClient(req: NextRequest, res: NextResponse, signal?: AbortSignal) {
   assertSupabaseEnv();
   return createServerClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
     cookieOptions,
+    ...(signal ? { global: { fetch: (input: RequestInfo | URL, init?: RequestInit) => {
+      signal.throwIfAborted();
+      const signals = [signal, init?.signal, input instanceof Request ? input.signal : null]
+        .filter((value): value is AbortSignal => value != null);
+      // Next's Edge runtime does not implement AbortSignal.any. Keep forwarding
+      // cancellation through response-body reads until the auth operation ends.
+      const controller = new AbortController();
+      const listeners = new Map<AbortSignal, () => void>();
+      const cleanup = () => listeners.forEach((listener, source) => source.removeEventListener('abort', listener));
+      for (const source of new Set(signals)) {
+        if (source.aborted) {
+          controller.abort(source.reason);
+          break;
+        }
+        const listener = () => { controller.abort(source.reason); cleanup(); };
+        listeners.set(source, listener);
+        source.addEventListener('abort', listener, { once: true });
+      }
+      if (controller.signal.aborted) cleanup();
+      return fetch(input, { ...init, signal: controller.signal }).catch((error) => { cleanup(); throw error; });
+    } } } : {}),
     cookies: {
       getAll: () => req.cookies.getAll(),
       setAll: (cookiesToSet) => {
+        if (signal?.aborted) return;
         cookiesToSet.forEach(({ name, value, options }) => {
           res.cookies.set(name, value, options);
         });
@@ -108,19 +131,23 @@ export function createSupabaseMiddlewareClient(req: NextRequest, res: NextRespon
 }
 
 export async function updateSession(req: NextRequest, res: NextResponse) {
-  const supabase = createSupabaseMiddlewareClient(req, res);
-  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-  if (isInvalidRefreshTokenError(sessionError)) {
-    clearSupabaseAuthCookies(req, res);
-  }
-  const accessToken = sessionData.session?.access_token ?? null;
-  if (!accessToken || sessionError) {
-    return { supabase, userId: null, error: sessionError };
-  }
-  const { data, error } = await supabase.auth.getClaims(accessToken);
-  const claims = data?.claims as { sub?: string } | null | undefined;
-  const userId = typeof claims?.sub === 'string' ? claims.sub : null;
-  return { supabase, userId, error };
+  return withMiddlewareAuthDeadline(async (signal) => {
+    const supabase = createSupabaseMiddlewareClient(req, res, signal);
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    signal.throwIfAborted();
+    if (isInvalidRefreshTokenError(sessionError)) {
+      clearSupabaseAuthCookies(req, res);
+    }
+    const accessToken = sessionData.session?.access_token ?? null;
+    if (!accessToken || sessionError) {
+      return { supabase, userId: null, error: sessionError };
+    }
+    const { data, error } = await supabase.auth.getClaims(accessToken);
+    signal.throwIfAborted();
+    const claims = data?.claims as { sub?: string } | null | undefined;
+    const userId = typeof claims?.sub === 'string' ? claims.sub : null;
+    return { supabase, userId, error };
+  });
 }
 
 export async function getRouteAuthContext(req?: NextRequest) {

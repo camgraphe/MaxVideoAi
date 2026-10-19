@@ -84,6 +84,22 @@ async function validate(fixtures: ReturnType<typeof mediaFixture>[]) {
   });
 }
 
+test('MiniMax H3 checks start and end frame geometry before generation', async () => {
+  for (const fieldId of ['image_url', 'end_image_url']) {
+    for (const [width, height, allowed] of [[328, 172, false], [2334, 604, false], [256, 256, true], [1280, 720, true]] as const) {
+      const fixture = mediaFixture({ kind: 'image', sizeMB: 1 });
+      Object.assign(fixture.row, { width, height });
+      const result = await validateGenerationMediaConstraints({
+        engineId: 'minimax-h3', mode: 'i2v', userId: 'user-h3', inputSchema,
+        attachments: [{ ...fixture.attachment, slotId: fieldId }],
+        referenceMediaItems: [{ ...fixture.reference, fieldId }],
+        deps: { queryFn: async <T>() => [fixture.row] as T[] },
+      });
+      assert.equal(result.ok, allowed, `${fieldId} ${width}x${height}`);
+    }
+  }
+});
+
 test('MiniMax H3 enforces exact stored media size boundaries', async () => {
   assert.equal((await validate([mediaFixture({ kind: 'image', sizeMB: 30 })])).ok, true);
   assert.equal((await validate([mediaFixture({ kind: 'image', sizeMB: 30 + 1 / MB })])).ok, false);
