@@ -1,3 +1,4 @@
+import { isCreatorPublicPathAvailable } from '@/lib/toolbox/creator-availability';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { AppLocale } from '@/i18n/locales';
@@ -74,7 +75,7 @@ async function resolveCanonicalPathEntries(): Promise<CanonicalPathEntry[]> {
       return;
     }
     const normalizedTemplate = normalizeCompareEnglishPath(template.template);
-    if (shouldExcludeMcpPath(normalizedTemplate)) {
+    if (shouldExcludeMcpPath(normalizedTemplate) || !isCreatorPublicPathAvailable(normalizedTemplate)) {
       return;
     }
     if (seen.has(normalizedTemplate)) {
@@ -103,7 +104,7 @@ async function resolveCanonicalPathEntries(): Promise<CanonicalPathEntry[]> {
         return;
       }
       const normalizedPath = normalizeCompareEnglishPath(entry.englishPath);
-      if (shouldExcludeMcpPath(normalizedPath)) {
+      if (shouldExcludeMcpPath(normalizedPath) || !isCreatorPublicPathAvailable(normalizedPath)) {
         return;
       }
       if (seen.has(normalizedPath)) {
@@ -121,7 +122,7 @@ async function resolveCanonicalPathEntries(): Promise<CanonicalPathEntry[]> {
       return;
     }
     const normalizedPath = normalizeCompareEnglishPath(extra.englishPath);
-    if (shouldExcludeMcpPath(normalizedPath)) {
+    if (shouldExcludeMcpPath(normalizedPath) || !isCreatorPublicPathAvailable(normalizedPath)) {
       return;
     }
     if (seen.has(normalizedPath)) {

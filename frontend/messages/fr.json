@@ -219,7 +219,12 @@
           "image": "Générer une image",
           "audio": "Créer de l’audio",
           "background-removal": "Détourer une vidéo",
-          "studio": "Studio"
+          "studio": "Studio",
+          "subtitles": "Sous-titres vidéo",
+          "lip-sync": "Lip Sync",
+          "product-photo-editor": "Retouche photo produit",
+          "product-video-editor": "Retouche vidéo produit",
+          "motion-transfer": "Motion Transfer"
         },
         "heading": "Préparez votre prochaine scène.",
         "intro": "Créez vos références, changez un angle et soignez les détails.",

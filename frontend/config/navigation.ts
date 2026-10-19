@@ -1,3 +1,4 @@
+import { getReleasedCreatorToolIds } from '@/lib/toolbox/creator-availability';
 import { getMcpPublicIntegrationIds, getMcpIntegration } from '@/lib/mcp-integration-registry';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
 import mcpPublication from '@/config/mcp-publication.json';
@@ -268,6 +269,7 @@ export const MARKETING_NAV_TOOLS: MarketingNavItem[] = [
   { key: 'angle', icon: 'angle', label: 'Change Camera Angle', href: toolLink('angle') },
   { key: 'upscale', icon: 'upscale', label: 'AI Upscale', href: toolLink('upscale') },
   { key: 'background-removal', icon: 'cutout', label: 'Video Background Remover', href: toolLink('background-removal') },
+  ...getReleasedCreatorToolIds().map((id): MarketingNavItem => ({ key: id, icon: 'guides', label: id.replace(/-/g, ' '), href: { pathname: `/tools/${id}` } })),
   { key: 'image', icon: 'image', label: 'Generate image', href: '/app/image' },
   { key: 'audio', icon: 'audio', label: 'Generate audio', href: '/app/audio' },
 ];
