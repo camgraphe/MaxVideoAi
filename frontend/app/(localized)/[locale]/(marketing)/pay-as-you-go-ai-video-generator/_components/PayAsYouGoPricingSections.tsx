@@ -1,3 +1,4 @@
+import { CreditPurchaseNotes } from '@/components/marketing/CreditPurchaseNotes';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { Link } from '@/i18n/navigation';
 import type { PayAsYouGoPageData } from '../_lib/payg-page-data';
@@ -135,6 +136,7 @@ export function PayAsYouGoExampleCostsSection({ data }: PayAsYouGoPageDataProps)
             {data.exampleCosts.studioLinkLabel}
           </Link>
         </div>
+        <CreditPurchaseNotes copy={data.exampleCosts.creditNotes} />
       </div>
     </section>
   );

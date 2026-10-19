@@ -36,6 +36,7 @@ test('return policy route is a public crawlable legal page with Merchant Center 
 
   assert.match(source, /Refund &amp; Return Policy/);
   assert.match(source, /Last updated:\s*June 2, 2026/);
+  assert.match(source, /Wallet and payment refund distinction clarified:\s*October 18, 2026/);
   assert.match(normalizedSource, /digital AI video generation services, wallet credits, and related software access/);
   assert.match(normalizedSource, /We do not sell or ship physical products/);
   assert.match(normalizedSource, /there is no physical return process and no product exchange process/);

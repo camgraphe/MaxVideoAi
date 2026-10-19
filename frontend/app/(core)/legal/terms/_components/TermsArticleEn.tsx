@@ -32,7 +32,7 @@ export function TermsArticleEn({
         </p>
       </section>
 
-      <section className="stack-gap-sm">
+      <section id="wallet-credits" className="stack-gap-sm scroll-mt-[calc(var(--header-height)+24px)]">
         <h3 className="text-lg font-semibold text-text-primary">3. Pricing, payments &amp; wallet</h3>
         <ul className="ml-5 list-disc space-y-2">
           <li>
@@ -51,6 +51,8 @@ export function TermsArticleEn({
             <strong>Refunds.</strong> If we cannot deliver a job because of a technical failure on our side, we may refund the charge to the original payment method or credit your wallet, in line with consumer law.
           </li>
         </ul>
+        <p>Wallet recredits restore your balance for later use; they do not reverse a card payment. See the refund policy for payment-refund requests and unused balances.</p>
+        <p><Link href="/return-policy#refund-review" className="font-medium underline">Refund policy and procedure</Link></p>
       </section>
 
       <section className="stack-gap-sm">

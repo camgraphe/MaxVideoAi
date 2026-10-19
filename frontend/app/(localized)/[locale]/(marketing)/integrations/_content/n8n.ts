@@ -75,7 +75,7 @@ function english(): IntegrationText {
     helpTitle: 'Avoid duplicate spend and hidden credentials',
     helpIntro: 'Use the tested self-hosted workflow with exact quotations, human approval and recoverable results. Attach your manually configured n8n OAuth credential to the imported workflow.',
     helpItems: [
-      { question: 'Where is the n8n template?', answer: 'An update to workflow 19591 is awaiting n8n review. Its page may still show the earlier version until approval. OAuth setup remains manual.', link: { href: MCP_N8N_PUBLIC_TEMPLATE_URL, label: 'Check the template on n8n.' } },
+      { question: 'Where is the n8n template?', answer: 'The approved public n8n template 19591 is available. Configure OAuth manually and use the tested self-hosted n8n 2.38.7 MCP Client workflow. Review a fresh quote, obtain human approval for that exact quote, then confirm generation. n8n Cloud and AI Agent invocation have not been validated here.', link: { href: MCP_N8N_PUBLIC_TEMPLATE_URL, label: 'Check the template on n8n.' } },
       { question: 'Which n8n node should I use?', answer: 'Use MCP Client for the supported deterministic steps. MCP Client Tool for an AI Agent remains not run and unsupported.' },
       { question: 'Does this work on n8n Cloud?', answer: 'No n8n Cloud support is claimed. The tested scope is self-hosted n8n 2.38.7.' },
       { question: 'Can the workflow confirm automatically?', answer: 'No. The candidate templates require a POST approval that matches the fresh quoteId. MaxVideoAI keeps confirmation idempotent for that quote.' },
@@ -136,7 +136,7 @@ function french(): IntegrationText {
     helpTitle: 'Évitez les dépenses doubles et les identifiants cachés',
     helpIntro: 'Utilisez le workflow auto-hébergé testé avec devis exacts, accord humain et résultats récupérables. Associez votre identifiant OAuth n8n configuré manuellement au workflow importé.',
     helpItems: [
-      { question: 'Où trouver le modèle n8n ?', answer: 'Une mise à jour du workflow 19591 est en cours de revue par n8n. Sa page peut encore présenter la version précédente avant validation. L’identifiant OAuth se configure manuellement.', link: { href: MCP_N8N_PUBLIC_TEMPLATE_URL, label: 'Consulter le modèle sur n8n.' } },
+      { question: 'Où trouver le modèle n8n ?', answer: 'Le modèle public n8n 19591 est approuvé et disponible. Configurez OAuth manuellement et utilisez le parcours MCP Client testé sur n8n 2.38.7 auto-hébergé. Vérifiez un devis frais, obtenez l’accord humain sur ce devis exact, puis confirmez la génération. n8n Cloud et l’invocation via AI Agent n’ont pas été validés ici.', link: { href: MCP_N8N_PUBLIC_TEMPLATE_URL, label: 'Consulter le modèle sur n8n.' } },
       { question: 'Quel nœud n8n utiliser ?', answer: 'MCP Client pour les étapes déterministes compatibles. MCP Client Tool pour agent IA reste non testé et non compatible.' },
       { question: 'Cela fonctionne-t-il sur n8n Cloud ?', answer: 'Aucune compatibilité n8n Cloud n’est revendiquée. Le périmètre testé est n8n auto-hébergé 2.38.7.' },
       { question: 'Le workflow peut-il confirmer automatiquement ?', answer: 'Non. Il exige un POST d’accord correspondant au quoteId récent. MaxVideoAI rend la confirmation de ce devis idempotente.' },
@@ -197,7 +197,7 @@ function spanish(): IntegrationText {
     helpTitle: 'Evita gasto duplicado y credenciales ocultas',
     helpIntro: 'Usa el flujo self-hosted probado con precios exactos, aprobación humana y resultados recuperables. Asocia tu credencial OAuth de n8n configurada manualmente al flujo importado.',
     helpItems: [
-      { question: '¿Dónde está la plantilla de n8n?', answer: 'Una actualización del flujo 19591 está en revisión por n8n. Su página puede mostrar todavía la versión anterior hasta su aprobación. La credencial OAuth se configura manualmente.', link: { href: MCP_N8N_PUBLIC_TEMPLATE_URL, label: 'Consultar la plantilla en n8n.' } },
+      { question: '¿Dónde está la plantilla de n8n?', answer: 'La plantilla pública n8n 19591 está aprobada y disponible. Configura OAuth manualmente y usa el flujo MCP Client probado en n8n 2.38.7 autoalojado. Revisa una cotización nueva, obtén la aprobación humana de esa cotización exacta y confirma la generación. n8n Cloud y la invocación mediante AI Agent no se han validado aquí.', link: { href: MCP_N8N_PUBLIC_TEMPLATE_URL, label: 'Consultar la plantilla en n8n.' } },
       { question: '¿Qué nodo n8n debo usar?', answer: 'MCP Client para los pasos deterministas compatibles. MCP Client Tool para agentes sigue sin probar y sin soporte.' },
       { question: '¿Funciona en n8n Cloud?', answer: 'No se afirma soporte para n8n Cloud. El alcance probado es n8n self-hosted 2.38.7.' },
       { question: '¿Puede confirmar automáticamente?', answer: 'No. Exige un POST de aprobación que coincida con el quoteId reciente. MaxVideoAI mantiene idempotente la confirmación de esa cotización.' },

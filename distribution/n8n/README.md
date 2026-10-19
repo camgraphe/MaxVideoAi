@@ -2,13 +2,14 @@
 
 These disabled JSON exports are reviewed workflow candidates. The
 [brief-to-approved-generation workflow](https://n8n.io/workflows/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/)
-was publicly listed as n8n template `19591` on 2026-09-25. On 2026-10-05,
-the October 4 recovery revision was submitted to that same template and the
-Creator Portal now shows **Under review**. The public API still serves the earlier
-20-node payload and its direct page remains readable; the 21-node update is not publicly approved.
-The other two candidates remain unsubmitted while the review disables the
-portal's next-template action. See the
-[submission checkpoint](../../docs/marketing/mcp-directory-submissions.md#n8n-update-submission--2026-10-05).
+was publicly listed as n8n template `19591` on 2026-09-25. The recovery update
+submitted on 2026-10-05 was initially **Under review**. After a corrected
+resubmission on October 11, the update was approved on 2026-10-12; its public
+21-node JSON matched that corrected submission semantically. The template was
+still publicly available on October 18. This does not claim byte parity with
+these repository exports or a new host-compatibility test.
+The other two candidates remain unsubmitted. See the
+[approval checkpoint](../../docs/marketing/mcp-directory-submissions.md#n8n-approval--2026-10-12-availability-rechecked-2026-10-18).
 They use the **MCP Client** node for deterministic workflow steps with explicit
 tool inputs and ordering. Use the **MCP Client Tool** only when a bounded AI
 Agent needs selected discovery or planning tools. Paid confirmation remains a
@@ -92,8 +93,10 @@ local workflow ID was excluded from the source export.
 This checks engine behavior, not current live OAuth, paid generation, n8n
 Cloud, or AI Agent invocation. The earlier live checkpoint above keeps its
 original date and scope. The existing Creator Portal session was resumed and
-the update submitted on October 5. n8n approval and a matching public readback
-of the updated workflow `19591` remain publication gates.
+the update submitted on October 5. The approval and matching public readback
+of the corrected submission were recorded on October 12; see the approval
+checkpoint above. This publication evidence does not extend engine or host
+qualification.
 
 To reproduce from the repository root, use Node.js 24 on `PATH`. Install the
 pinned runtime outside the repository, then run the committed harness:
@@ -153,8 +156,11 @@ step, submit one reviewed workflow at a time, and record the observed result.
 
 The first candidate, `brief-to-approved-generation.json`, updates existing
 [workflow 19591](https://n8n.io/workflows/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/)
-and is pending n8n review. Its setup still requires a manually attached
-MaxVideoAI OAuth2 credential.
+and has an approved public revision. For a future template update, start from
+the corrected October 11 submission recorded in the approval checkpoint so its
+approved layout is preserved. Setup still requires a manually attached
+MaxVideoAI OAuth2 credential, a fresh exact quote and human approval before
+paid confirmation.
 The other two reviewed candidates have no verified public listing. None of the
 three JSON workflows calls `list_media` or
 `create_reference_upload_link`; private-reference automation remains

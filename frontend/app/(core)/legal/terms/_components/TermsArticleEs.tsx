@@ -31,7 +31,7 @@ export function TermsArticleEs({
         </p>
       </section>
 
-      <section className="stack-gap-sm">
+      <section id="wallet-credits" className="stack-gap-sm scroll-mt-[calc(var(--header-height)+24px)]">
         <h3 className="text-lg font-semibold text-text-primary">3. Precios, pagos y wallet</h3>
         <ul className="ml-5 list-disc space-y-2">
           <li>
@@ -50,6 +50,8 @@ export function TermsArticleEs({
             <strong>Reembolsos.</strong> Si no podemos completar un trabajo por un fallo técnico propio, podemos devolver el cobro al método original o acreditar tu wallet, de acuerdo con la normativa de consumo.
           </li>
         </ul>
+        <p>El abono de créditos al monedero restaura tu saldo para uso posterior; no anula un pago con tarjeta. Consulta la política de reembolsos para solicitudes sobre pagos o saldos no usados.</p>
+        <p><Link href="/return-policy#refund-review" className="font-medium underline">Política y procedimiento de reembolso (inglés)</Link></p>
       </section>
 
       <section className="stack-gap-sm">

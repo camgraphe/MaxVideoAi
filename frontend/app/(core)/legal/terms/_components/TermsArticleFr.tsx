@@ -32,7 +32,7 @@ export function TermsArticleFr({
         </p>
       </section>
 
-      <section className="stack-gap-sm">
+      <section id="wallet-credits" className="stack-gap-sm scroll-mt-[calc(var(--header-height)+24px)]">
         <h3 className="text-lg font-semibold text-text-primary">3. Tarification, paiements &amp; wallet</h3>
         <ul className="ml-5 list-disc space-y-2">
           <li>
@@ -51,6 +51,8 @@ export function TermsArticleFr({
             <strong>Remboursements.</strong> Si nous ne pouvons livrer un job suite à une défaillance technique, nous pouvons recréditer la carte d’origine ou votre wallet, conformément au droit de la consommation.
           </li>
         </ul>
+        <p>Un retour de crédits au portefeuille restaure votre solde pour une utilisation ultérieure ; il n’annule pas un paiement par carte. Consultez la politique de remboursement pour les demandes portant sur un paiement ou un solde non utilisé.</p>
+        <p><Link href="/return-policy#refund-review" className="font-medium underline">Politique et procédure de remboursement (anglais)</Link></p>
       </section>
 
       <section className="stack-gap-sm">
