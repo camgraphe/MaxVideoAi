@@ -36,5 +36,6 @@ export function CreatorRealResultDemo({ id, locale }: { id: ResultTool; locale: 
       <div className="creator-motion-generated"><CreatorResultVideo media={media.motion.result} label={copy.motion.result} locale={locale} /></div>
     </div>
     <div className="creator-result-footer"><p className="creator-result-note">{copy.motion.note}</p><a className="creator-result-download" href={media.motion.result.original} download><Download size={16} aria-hidden="true" />{copy.download}</a></div>
+    <p className="creator-result-credit">{copy.motion.credit} <a href={media.motion.reference.credit.url} target="_blank" rel="noopener noreferrer">{media.motion.reference.credit.author} · {media.motion.reference.credit.source}</a></p>
   </div>;
 }

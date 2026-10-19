@@ -266,6 +266,14 @@ existing exact-reference/quote invalidation behavior. Completed operations selec
 the actual result; inspiration art disappears as soon as owned source media is
 available. Source previews never convert private originals into public images.
 
+`CreatorSegmentPreview.client.tsx` keeps the reference playable inside the passage
+selector, independently of the main preview. Native video
+and audio controls use exact owned read URLs with `preload="none"`. Playhead marks
+update the existing segment draft and invalidate its quote; playback alone never
+does. Passage playback seeks to the selected start, pauses at the end and stops
+when its bounds or source change. Removing or collapsing the selector releases
+its player. Numeric fields remain available for precise edits.
+
 Subtitle editing groups transcript, save status, SRT/VTT downloads and the
 included MP4 export. Source replacement and revision conflict behavior
 remain with their existing controller. Native details, buttons and fields retain

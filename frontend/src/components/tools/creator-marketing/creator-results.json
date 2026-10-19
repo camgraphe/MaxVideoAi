@@ -84,22 +84,28 @@
       ]
     },
     "reference": {
-      "original": "/assets/tools/creator-results/motion-reference-2249d3d41174.mp4",
-      "poster": "/assets/tools/creator-results/motion-reference-poster-f6ae7ce86a3d.webp",
-      "width": 1280,
-      "height": 720,
-      "duration": 4,
-      "hasAudio": false
+      "original": "/assets/tools/creator-results/motion-dance-reference-9512b12efc74.mp4",
+      "poster": "/assets/tools/creator-results/motion-dance-reference-poster-6effad335c54.webp",
+      "width": 960,
+      "height": 506,
+      "duration": 8,
+      "hasAudio": false,
+      "credit": {
+        "author": "Antoni Shkraba",
+        "source": "Pexels",
+        "url": "https://www.pexels.com/video/video-of-a-man-dancing-7571381/",
+        "licenseUrl": "https://www.pexels.com/license/"
+      }
     },
     "result": {
-      "original": "/assets/tools/creator-results/motion-result-ff2f69acbaf9.mp4",
-      "poster": "/assets/tools/creator-results/motion-result-poster-9e5c7dddef2b.webp",
+      "original": "/assets/tools/creator-results/motion-dance-result-43ce4f6c6826.mp4",
+      "poster": "/assets/tools/creator-results/motion-dance-result-poster-f41ae8a2db7f.webp",
       "width": 854,
       "height": 480,
-      "duration": 4,
+      "duration": 8,
       "hasAudio": false
     },
-    "jobId": "4ac7a5d6-867b-4c33-899f-61e8736d3fcc",
+    "jobId": "7e678b25-3f9e-4290-82f5-1c9220dc12a8",
     "model": "Wan 3",
     "mode": "reference-to-video"
   }

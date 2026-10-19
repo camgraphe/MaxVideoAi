@@ -161,7 +161,8 @@ async function recoverProductVideo(){return mountToolFixture(`import Workspace f
 test('operation recovery restores owned sources, settings and segment for comparison; removed source drops its stale URL',async()=>{
   const f=await recoverProductVideo();try{
     await f.respond(f.w.requests[0],recoveredVideo);
-    let videos=f.w.document.querySelectorAll('video');assert.equal(videos.length,2);assert.equal(videos[0].src,recoveredVideo.sourceMedia[0].readUrl);assert.equal(f.w.document.querySelector('textarea').value,'Warm light');
+    let videos=f.w.document.querySelectorAll('video:not([data-creator-segment])');assert.equal(videos.length,2);assert.equal(videos[0].src,recoveredVideo.sourceMedia[0].readUrl);assert.equal(f.w.document.querySelector('textarea').value,'Warm light');
+    assert.equal(f.w.document.querySelector('video[data-creator-segment]').src,recoveredVideo.sourceMedia[0].readUrl);
     assert.equal(f.w.pickers.video.source.name,'Owned original');assert.equal(buttons(f.w,'See price')[0].disabled,true);
     await f.act(async()=>videos[1].dispatchEvent(new f.w.Event('error')));await click(f,'Try again');
     await f.respond(f.w.requests.at(-1),{...recoveredVideo,sourceMedia:[{...recoveredVideo.sourceMedia[0],readUrl:null}]});
@@ -170,7 +171,7 @@ test('operation recovery restores owned sources, settings and segment for compar
 });
 test('a comparison refresh finishing after an account change cannot restore the previous account media',async()=>{
   const f=await recoverProductVideo();try{
-    await f.respond(f.w.requests[0],recoveredVideo);await f.act(async()=>f.w.document.querySelectorAll('video')[1].dispatchEvent(new f.w.Event('error')));await click(f,'Try again');const late=f.w.requests.at(-1);
+    await f.respond(f.w.requests[0],recoveredVideo);await f.act(async()=>f.w.document.querySelectorAll('video:not([data-creator-segment])')[1].dispatchEvent(new f.w.Event('error')));await click(f,'Try again');const late=f.w.requests.at(-1);
     f.w.auth={user:{id:'B'},loading:false};await f.render();await f.respond(late,recoveredVideo);assert.equal(f.w.document.querySelectorAll('video').length,0);assert.equal(f.w.pickers.video.source,null);
     assert.ok(late.init.signal.aborted);await f.respond(f.w.requests.at(-1),{ok:false,error:{code:'OPERATION_UNAVAILABLE'}},404);assert.equal(f.w.document.querySelectorAll('video').length,0);
   }finally{await f.close();}

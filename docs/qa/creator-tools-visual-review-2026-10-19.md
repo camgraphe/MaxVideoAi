@@ -124,7 +124,7 @@ remain outside this evidence. No new field performance claim is made.
   forms and citron light. The input and edited output appear once each.
 - Video places the electric-blue/crimson watch comparison in its hero, with each
   complete six-second clip independently playable and the exact output downloadable.
-- Motion presents character, walking reference and generated performance in its
+- Motion presents character, dance reference and generated performance in its
   own three-part composition.
 - Lip Sync retains a distinct editorial hero, followed by a source portrait,
   measured voice waveform, English script, manual voice reader and the full
@@ -147,3 +147,33 @@ Lip Sync voice was approved at USD 0.05. The accepted long Wan render was USD
 retains the entire voice. The user explicitly accepted the video before integration.
 The format bug is covered by regressions preventing invalid audio quotes/charges.
 Creator pricing is now provider × 2.20 and subtitle MP4 export is included.
+
+## Dance, passage playback and connected app surfaces — 2026-10-20
+
+Motion now uses an eight-second full-body dance by Antoni Shkraba from Pexels,
+with source attribution, instead of the walking demonstration. The approved
+USD 1.04 Wan 3 result is eight seconds, 854×480, silent. The source and generated
+choreography were reviewed at one-second intervals. Its provenance, exact request
+and measured output are in `../engineering/evidence/creator-dance-result-2026-10-20.json`.
+
+The shared passage selector now has native reference playback, playhead start/end
+marks and bounded passage playback. Local Chromium at 390 and 1440px verified
+manual first Play, a 2–5 second excerpt stopping at 5 seconds, playhead marks,
+pausing on a range edit and ordinary playback outside the selected interval.
+Opening the selector requests no video bytes. It retains the exact private URL;
+numeric or playhead changes retain existing quote invalidation. Screenshots are
+`/tmp/five-tools-review/motion-segment-{390,1440}.png`. Behavioral tests also cover
+audio, invalid bounds, source replacement, collapsed-player cleanup and errors.
+
+The actual shared appearance menu was checked in light mode for all five tools
+at 390 and 1440px, including persistence after reload. The same run checked no
+horizontal overflow or page errors. Dark primary buttons use the theme's accent
+ink. Files are `/tmp/five-tools-review/{tool}-light-{390,1440}.png` and
+`theme-checks.json`.
+
+Final creator assets now retain their source job provenance so Media's saved
+creations view includes them; prepared source excerpts remain imports. Image and
+video result links open the corresponding saved-media filter. App menus include
+the five creators under their existing release flags. Focused DOM, publication
+and PostgreSQL 17 tests cover those boundaries. Local fixtures still simulate
+account/API boundaries; this is not production availability or live billing evidence.

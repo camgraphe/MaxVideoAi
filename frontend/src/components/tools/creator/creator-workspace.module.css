@@ -84,6 +84,13 @@
 .segmentFields small { color: var(--app-muted,var(--text-secondary)); }
 .timeInputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .timeInputs label { display: grid; gap: 5px; }
+.segmentPreview { display: grid; gap: 9px; min-width: 0; }
+.segmentPreview video { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: contain; background: #101311; border-radius: 9px; }
+.segmentPreview audio { display: block; width: 100%; }
+.segmentMarks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.segmentPreview button { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 8px; border: 1px solid var(--app-line,var(--border)); border-radius: 8px; background: var(--surface,var(--app-panel)); color: inherit; font-size: 12px; cursor: pointer; }
+.segmentPreview button:disabled { opacity: .45; cursor: default; }
+.segmentPreview .segmentPlay { background: var(--app-accent-soft,var(--surface-2)); font-weight: 650; }
 .stage { border: 1px solid var(--app-line,var(--border)); background: var(--app-panel,var(--surface)); border-radius: 12px; overflow: hidden; }
 .inspiration { padding: 12px; }
 .inspirationHeading { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 2px 11px; color: var(--app-muted,var(--text-secondary)); font-size: 12px; }

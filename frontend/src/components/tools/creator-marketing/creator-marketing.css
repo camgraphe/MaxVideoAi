@@ -225,6 +225,8 @@
 .creator-motion-generated{grid-column:1/-1}
 .creator-motion-result .creator-result-footer{display:block}
 .creator-motion-result .creator-result-download{margin-top:14px}
+.creator-result-credit{font-size:11px;line-height:1.6;color:var(--creator-muted);margin:18px 0 0}
+.creator-result-credit a{text-decoration:underline;text-underline-offset:3px}
 @media(max-width:1100px){
   .creator-hero--editorial .creator-hero-copy{column-gap:36px}
   .creator-tools-page[data-creator-tool="product-photo-editor"] .creator-workflow-copy{gap:0 38px}

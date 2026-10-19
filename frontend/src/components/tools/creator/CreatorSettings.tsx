@@ -5,6 +5,7 @@ import type { CreatorLipTiming } from './creator-lip-timing';
 import type { CreatorSource } from './creator-source-selection';
 import { creatorWorkspaceCopy } from './creator-workspace-copy';
 import { creatorExperienceCopy } from './creator-experience-copy';
+import { CreatorSegmentPreview } from './CreatorSegmentPreview.client';
 import styles from './creator-workspace.module.css';
 export type SegmentDraft = { enabled: boolean; start: string; end: string };
 export function CreatorSettings({ toolId, locale, settings, onChange, disabled, profile, motionProfileId, motionControlEnabled, onMotionProfileChange }: {
@@ -36,7 +37,7 @@ export function CreatorSegmentFields({ locale, role, source, value, onChange, di
   const duration = Number(draft.end) - Number(draft.start);
   return <div className={styles.segmentFields}>
     <label className={styles.segmentToggle}><input type="checkbox" checked={draft.enabled} disabled={disabled} onChange={event => onChange({ ...draft, enabled:event.target.checked })} />{copy.segment}</label>
-    {draft.enabled ? <><div className={styles.timeInputs}>
+    {draft.enabled ? <><CreatorSegmentPreview key={source.url} locale={locale} source={source} start={draft.start} end={draft.end} disabled={disabled} onMark={(boundary, seconds) => onChange({ ...draft, [boundary]: seconds })} /><div className={styles.timeInputs}>
       <label>{copy.start}<input aria-label={`${copy.start} — ${copy.sourceLabels[role]}`} type="number" min="0" step="any" value={draft.start} disabled={disabled} onChange={event => onChange({ ...draft,start:event.target.value })} /></label>
       <label>{copy.end}<input aria-label={`${copy.end} — ${copy.sourceLabels[role]}`} type="number" min="0" step="any" max={source.durationSec} value={draft.end} disabled={disabled} onChange={event => onChange({ ...draft,end:event.target.value })} /></label>
     </div><small>{draft.end && draft.start && duration > 0 ? `${experience.selectedDuration}: ${Number(duration.toFixed(3))} ${copy.seconds}. ` : ''}{copy.segmentHint}</small></> : null}
