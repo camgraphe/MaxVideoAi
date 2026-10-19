@@ -16,12 +16,13 @@ import type {
 } from './background-removal-workspace-types';
 import type { Job } from '@/types/jobs';
 
-export async function uploadSourceVideo(file: File): Promise<BackgroundRemovalSourceAsset> {
+export async function uploadSourceVideo(file: File, signal?: AbortSignal): Promise<BackgroundRemovalSourceAsset> {
   const form = new FormData();
   form.append('file', file);
   const response = await authFetch('/api/uploads/video', {
     method: 'POST',
     body: form,
+    signal,
   });
   const payload = (await response.json().catch(() => null)) as {
     ok?: boolean;

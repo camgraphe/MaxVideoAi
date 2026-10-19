@@ -35,6 +35,7 @@ import type { AgentPublicGenerationEngine } from './model-catalog';
 import type { ResolvedReference } from './reference-types';
 import type { AuthoritativeMembershipTier } from '../membership/user-membership-status';
 import { toEngineGenerationMode } from './generation-mode-aliases';
+import type { SeedanceWorkflowMediaFacts } from '@/server/seedance-workflow-facts';
 import {canonicalOmniPricingFacts} from './generation-omni-pricing-facts';
 
 export type GenerationPricingResult = {
@@ -60,11 +61,13 @@ export type ExecutorGenerationPricingDependencies = {
   resolvedReferences?: readonly ResolvedReference[];
   /** Test-only seam; production always uses the canonical billing snapshot. */
   computeBillingSnapshot?: typeof computeCanonicalBillingSnapshot;
+  seedanceFinalFacts?: SeedanceWorkflowMediaFacts;
 };
 
 export type GenerationPricingReferenceContext = Readonly<{
   resolvedReferences?: readonly ResolvedReference[];
   resolvedEngine?: EngineCaps;
+  seedanceFinalFacts?: SeedanceWorkflowMediaFacts;
 }>;
 
 const defaultDependencies: GenerationPricingDependencies = {
@@ -113,6 +116,7 @@ function hasCanonicalVideoInput(
   request: CanonicalGenerationRequest,
   context: GenerationPricingReferenceContext,
 ): boolean {
+  if (context.seedanceFinalFacts) return context.seedanceFinalFacts.hasVideoInput;
   if (request.surface !== 'video') return false;
   if (
     request.mode === 'v2v'
@@ -136,6 +140,7 @@ function canonicalReferenceImageCount(
   request: CanonicalGenerationRequest,
   context: GenerationPricingReferenceContext,
 ): number {
+  if (context.seedanceFinalFacts) return context.seedanceFinalFacts.attachments.filter(a => a.kind === 'image' && !['image_url', 'end_image_url'].includes(a.slotId ?? '')).length;
   return request.references.reduce((count, reference) => {
     if (reference.role !== 'reference') return count;
     if (reference.kind === 'https') {
@@ -178,6 +183,7 @@ function canonicalInputVideoDurationSec(
   request: CanonicalGenerationRequest,
   context: GenerationPricingReferenceContext,
 ): number | undefined {
+  if (context.seedanceFinalFacts) return context.seedanceFinalFacts.inputVideoDurationSec;
   const bytePlus = isBytePlusInputVideoPricingModel(request.engineId);
   if (!isWan3EngineId(request.engineId) && !bytePlus) return undefined;
   if (request.mode !== 'ref2v' && request.mode !== 'v2v' && request.mode !== 'extend') return bytePlus ? undefined : 0;
@@ -206,14 +212,16 @@ function canonicalInputVideoDurationSec(
 }
 
 function canonicalSeedanceEditSource(request: CanonicalGenerationRequest, context: GenerationPricingReferenceContext) {
+  if (context.seedanceFinalFacts) return context.seedanceFinalFacts.seedanceEditSource;
   return resolveSeedance25ModelArkEditSource(request.engineId, request.mode,
     (context.resolvedReferences ?? []).filter(reference => request.references.some(input => input.kind === 'asset'
       && input.assetId === reference.assetId && input.role === reference.role && input.slot === reference.slot))
       .map(reference => ({ kind: reference.mediaKind, durationSec: reference.durationSec, width: reference.width, height: reference.height,
-        fieldId: reference.role === 'source' ? 'video_url' : 'video_urls' })));
+        fieldId: reference.role === 'source' ? 'video_url' : 'video_urls' })), request.seedanceWorkflow ? 'modelark' : undefined);
 }
 
 function canonicalSeedanceSourceAspect(request: CanonicalGenerationRequest, context: GenerationPricingReferenceContext) {
+  if (context.seedanceFinalFacts) return context.seedanceFinalFacts.seedanceSourceAspectRatio;
   const references = (context.resolvedReferences ?? []).filter(reference => request.references.some(input => input.kind === 'asset'
     && input.assetId === reference.assetId && input.role === reference.role && input.slot === reference.slot))
     .filter(reference => request.mode === 'i2v' || request.mode === 'i2v_standard'
@@ -378,6 +386,7 @@ export async function priceCanonicalGeneration(
       ...(Object.keys(extraInputValues).length ? { extraInputValues } : {}),
       user: { memberTier: membershipTier },
     }, {
+      ...(request.seedanceWorkflow ? { seedanceWorkflowStep: request.seedanceWorkflow.step } : {}),
       trustedMediaPricingFacts: canonicalVideoTrustedMediaPricingFacts(request, referenceContext),
       ...(referenceContext.resolvedEngine ? { resolvedEngine: referenceContext.resolvedEngine } : {}),
     });
@@ -447,6 +456,7 @@ export async function priceCanonicalGenerationInExecutor(
       resolution,
       aspectRatio: seedanceEditSource?.pricingAspectRatio ?? optionalString(request.settings, 'aspectRatio'),
       mode: engineMode,
+      ...(request.seedanceWorkflow ? { workflowStep: request.seedanceWorkflow.step } : {}),
       hasVideoInput: hasCanonicalVideoInput(request, dependencies),
       referenceImageCount: canonicalReferenceImageCount(request, dependencies),
       inputAudioDurationSec: canonicalInputAudioDurationSec(request, dependencies),

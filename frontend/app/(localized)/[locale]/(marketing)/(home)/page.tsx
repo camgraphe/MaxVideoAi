@@ -4,6 +4,7 @@ import { buildHomeComparisonData, buildHomeComparisonLinks } from './_lib/home-c
 import { HomePricingSection } from '@/components/marketing/home/HomePricingSection';
 import { HomeDeferredPricing } from './_components/HomeDeferredPricing';
 import { HomeCreativeWorlds } from '@/components/marketing/home/HomeCreativeWorlds';
+import { HomeConversationSection } from '@/components/marketing/home/HomeConversationSection';
 import { HomeCreationSection } from '@/components/marketing/home/HomeCreationSection';
 import { HomeModelChoice } from '@/components/marketing/home/HomeModelChoice';
 import { HomeToolsGallery } from '@/components/marketing/home/HomeToolsGallery';
@@ -79,7 +80,7 @@ export default async function HomePage(props: { params: Promise<{ locale: string
         currentHeroPricesPending={pendingData.heroPrices}
         locale={locale}
       />
-      <DeferredMarketingContent><HomeCreationSection locale={locale} assistantHref={mcpLink?.href} /></DeferredMarketingContent>
+      <DeferredMarketingContent><HomeCreationSection locale={locale} /></DeferredMarketingContent>
       <DeferredMarketingContent>
         <HomeCreativeWorlds locale={locale} cards={primaryBestForCards} examplesCopy={content.examples} modelDiscovery={
           <Suspense fallback={<HomeModelDiscovery locale={locale} examples={fallbackExamples} providers={providers} copy={content.examples} />}>
@@ -92,6 +93,9 @@ export default async function HomePage(props: { params: Promise<{ locale: string
       </DeferredMarketingContent>
       <DeferredMarketingContent>
         <HomeToolsGallery locale={locale} />
+      </DeferredMarketingContent>
+      <DeferredMarketingContent>
+        <HomeConversationSection locale={locale} assistantHref={mcpLink?.href} />
       </DeferredMarketingContent>
       <DeferredMarketingContent>
         <Suspense fallback={<HomePricingSection locale={locale} copy={content.pricingTrust} pending />}>

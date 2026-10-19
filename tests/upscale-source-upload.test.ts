@@ -105,6 +105,7 @@ async function exerciseSourceHook(request: RequestFn, locale: string, file: File
     const [previewMode, setPreviewMode] = useState<PreviewMode>('result');
     state = { error, source, uploading, mediaUrl, previewMode };
     ({ handleUpload } = useUpscaleSourceMedia({
+      onSourceChange: () => {},
       changeMediaType: () => undefined, copy: { library: 'Media' }, locale,
       mediaType: 'video', mediaUrl, source, setError, setSource, setUploading, setMediaUrl, setPreviewMode,
       setMessage: () => undefined, setResult: () => undefined, setLibraryModalOpen: () => undefined,

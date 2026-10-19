@@ -349,11 +349,17 @@ export function mapGenerationStatusRecordToAgent(
   const surface = normalizeAgentSurface(record);
   if (!surface) return null;
   const status = normalizeAgentStatus(record.status);
+  const settings = record.settings_snapshot as { seedanceWorkflow?: { step?: string; draftJobId?: string } } | null;
+  const workflow = record.engine_id === 'seedance-2-5' ? settings?.seedanceWorkflow : undefined;
+  const workflowStep = workflow?.step;
+  const draftJobId = workflowStep === 'draft' ? record.job_id : workflow?.draftJobId;
   const failureCode = status === 'failed'
     ? safeAgentFailureCode(record.settings_snapshot)
     : null;
   return {
     jobId: record.job_id,
+    ...((workflowStep === 'draft' || workflowStep === 'final') && typeof draftJobId === 'string'
+      ? { seedanceWorkflow: { step: workflowStep, draftJobId } } : {}),
     surface,
     status,
     progress: normalizeProgress(record.progress, status),

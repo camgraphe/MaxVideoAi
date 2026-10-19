@@ -83,7 +83,7 @@ interface AudioWorkspaceComposerSurfaceProps {
   setSeedAudioSpeed: (value: number) => void;
   setSeedAudioVoice: (value: AudioSeedAudioVoice) => void;
   setSeedAudioVolume: (value: number) => void;
-  setVoiceSample: (value: { url: string; name: string } | null) => void;
+  onClearVoiceSample: () => void;
   showExportToggle: boolean;
   showIntensity: boolean;
   showManualDuration: boolean;
@@ -167,7 +167,7 @@ export function AudioWorkspaceComposerSurface({
   setSeedAudioSpeed,
   setSeedAudioVoice,
   setSeedAudioVolume,
-  setVoiceSample,
+  onClearVoiceSample,
   showExportToggle,
   showIntensity,
   showManualDuration,
@@ -317,7 +317,7 @@ export function AudioWorkspaceComposerSurface({
               copy={copy}
               inputRef={voiceInputRef}
               isUploading={isUploadingVoice}
-              onClear={() => setVoiceSample(null)}
+              onClear={onClearVoiceSample}
               onFileSelect={onVoiceFileSelect}
               voiceSample={voiceSample}
             />

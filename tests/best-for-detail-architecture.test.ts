@@ -58,7 +58,7 @@ test('best-for detail helper modules own config, rankings, related guides, and s
   assert.match(helperSource, /from '\.\/best-for-detail-schema'/);
   assert.match(contentSource, /export async function getBestForEntry/);
   assert.match(contentSource, /export async function resolveAvailableLocales/);
-  assert.match(rankingSource, /const USECASE_WEIGHTS/);
+  assert.doesNotMatch(rankingSource, /USECASE_WEIGHTS|engine-scores\.v1/);
   assert.match(rankingSource, /export function resolveTopPicks/);
   assert.match(rankingSource, /export function buildRankedPick/);
   assert.match(previewSource, /export async function resolveExamplePreviewPicks/);
@@ -73,10 +73,10 @@ test('best-for detail route-local view owns page sections and cards', () => {
   assert.ok(existsSync(viewPath), 'best-for detail view should live in a route-local component');
   assert.ok(viewSource.split('\n').length < 240, 'best-for detail view should stay an orchestrator');
   assert.match(viewSource, /export function BestForDetailView/);
-  assert.match(viewSource, /TopPicksPanel/);
-  assert.match(viewSource, /RankedShortlistCard/);
+  assert.match(viewSource, /BestForModelChoices/);
+  assert.match(viewSource, /BestForCreatePaths/);
   assert.match(viewSource, /ExamplesPreview/);
-  assert.match(viewSource, /EditorialReasonCard/);
+  assert.ok(viewSource.indexOf("<ExamplesPreview") < viewSource.indexOf("<BestForModelChoices"));
   assert.match(viewSource, /BestForContent/);
   assert.match(topPicksSource, /export function TopPicksPanel/);
   assert.match(shortlistSource, /export function RankedShortlistCard/);

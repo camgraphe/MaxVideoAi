@@ -53,7 +53,7 @@
 .marketing-site .home-compare-chapter .editorial-heading{font-size:clamp(38px,4.5vw,64px)}
 .marketing-site .home-create-chapter{background:#151515;color:#f4f2ee;--bg:#151515;--surface:#202020;--surface-2:#272727;--text-primary:#f4f2ee;--text-secondary:#c6c1b9;--text-muted:#aea79b;--brand:#d3aa78;--brand-gradient:linear-gradient(115deg,#c89b65,#ac7d48);--on-brand:#171411;--hairline:#393632}
 .marketing-site .home-create-chapter .editorial-heading{font-size:clamp(40px,4.7vw,66px)}
-.marketing-site .home-create-chapter .app-devices{padding-block:40px 80px}
+.marketing-site .home-create-chapter .app-devices{padding-block:28px 58px}
 .marketing-site .home-create-chapter .app-laptop{border-color:#53514e;box-shadow:0 28px 60px #0008}
 .marketing-site .home-create-chapter .app-phone{border-color:#53514e;box-shadow:0 24px 40px #0008}
 .marketing-site .home-create-chapter .creation-modes a{padding-block:28px;border-bottom:0}

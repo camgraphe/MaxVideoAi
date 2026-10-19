@@ -14,7 +14,7 @@ export type BenchmarkCopy = {
   };
   nav: { scores: string; specs: string; speed: string; method: string };
   evidence: Array<{ title: string; body: string }>;
-  scores: { title: string; intro: string; model: string; overall: string; updated: string; source: string };
+  scores: { title: string; intro: string; model: string; overall: string; updated: string; source: string; generationUnavailable: string };
   specs: {
     title: string;
     intro: string;
@@ -41,6 +41,7 @@ export type BenchmarkCopy = {
     criteria: Record<string, { label: string; definition: string }>;
     methodNotes: string[];
     initialRelease: string;
+    deliveryTimingRelease: string;
   };
   refundNote: string;
   cta: { title: string; body: string; models: string; compare: string; pricing: string; generate: string };
@@ -66,9 +67,9 @@ const COPY: Record<AppLocale, Omit<BenchmarkCopy, 'scoreLabels'>> = {
       { title: 'Sourced specifications', body: 'Current capabilities checked against provider sources and the MaxVideoAI route.' },
       { title: 'Observed speed', body: 'Rolling 30-day median and P90 generation time for eligible models.' }
     ],
-    scores: { title: 'Model scorecards', intro: 'Compare the current MaxVideoAI editorial view across eleven production criteria.', model: 'Model', overall: 'Overall score (0–10)', updated: 'Score updated', source: 'MaxVideoAI editorial score' },
+    scores: { title: 'Model scorecards', intro: 'Compare the current MaxVideoAI editorial view across eleven production criteria.', model: 'Model', overall: 'Overall score (0–10)', updated: 'Score updated', source: 'MaxVideoAI editorial score', generationUnavailable: 'New generation unavailable' },
     specs: { title: 'Verified model specifications', intro: 'Review the limits and workflows exposed through MaxVideoAI.', source: 'Source', routeContract: 'MaxVideoAI production route contract', apiMechanics: 'Generic API mechanics', release: 'Release', modes: 'Input modes', audio: 'Audio', references: 'References', modeLabels: { textToVideo: 'Text → video', imageToVideo: 'Image → video', videoToVideo: 'Video → video' } },
-    latency: { title: 'Observed generation times', intro: 'Median and P90 end-to-end generation time over a rolling 30-day window.', median: 'Median', p90: 'P90', window: 'Rolling 30 days', unavailable: 'The current latency snapshot is being refreshed.', more: 'Additional models appear as their rolling history matures.' },
+    latency: { title: 'Observed generation times', intro: 'Median and P90 from job creation to the first recorded delivery of a video, for deliveries in the last 30 days. Successful jobs only; queues and delayed detection are included. Historical provider-only events and later file updates are excluded. These are mixed production settings, not a controlled speed test.', median: 'Median', p90: 'P90', window: 'Rolling 30 days', unavailable: 'Verified delivery timing is currently unavailable.', more: 'Additional models appear as their rolling history matures.' },
     methodology: {
       title: 'How the scores work', intro: 'One scoring language, one overall formula, and one canonical prompt pack for future documented runs.', formula: 'Overall score formula', scale: 'Evaluation scale', scoreAnchors: { 2: 'Major visible failures prevent practical use.', 5: 'Usable in selected shots with clear limitations.', 8: 'Strong production-ready behavior for the tested criterion.', 10: 'Exceptional behavior with no material issue in the evaluated outputs.' }, prompts: 'Canonical prompt pack', canonicalPrompt: 'Canonical prompt — English', limitations: 'Method notes', changelog: 'Methodology updates',
       criteria: {
@@ -85,7 +86,8 @@ const COPY: Record<AppLocale, Omit<BenchmarkCopy, 'scoreLabels'>> = {
         pricing: { label: 'Value score', definition: 'Relative production value at the current MaxVideoAI price position; live pricing remains on pricing and generation surfaces.' }
       },
       methodNotes: ['Generative outputs vary between runs.', 'Not every model supports every criterion or prompt type.', 'Provider capacity and queues change over time.', 'Observed production traffic is not a controlled experiment.', 'Rolling performance may reflect incidents, routing changes, and user-selected settings.', 'MaxVideoAI sells access to the compared models and discloses that commercial interest.'],
-      initialRelease: 'Initial score definitions, overall formula, canonical prompt pack, and rolling latency rules.'
+      initialRelease: 'Initial score definitions, overall formula, canonical prompt pack, and rolling latency rules.',
+      deliveryTimingRelease: "Replaced mutable job-update durations with first recorded video delivery; eligibility now applies to valid delivery samples. Editorial scores are unchanged."
     },
     refundNote: 'Failed paid generations are automatically refunded.',
     cta: { title: 'Choose the right model for the next shot', body: 'Move from research to model specs, side-by-side comparisons, live pricing, or generation.', models: 'Browse video models', compare: 'Compare models', pricing: 'View pricing', generate: 'Generate video' }
@@ -100,9 +102,9 @@ const COPY: Record<AppLocale, Omit<BenchmarkCopy, 'scoreLabels'>> = {
       { title: 'Spécifications sourcées', body: 'Des capacités vérifiées selon les sources fournisseur et la route MaxVideoAI.' },
       { title: 'Vitesse observée', body: 'Médiane et P90 sur 30 jours glissants pour les modèles éligibles.' }
     ],
-    scores: { title: 'Scorecards des modèles', intro: 'Comparez la lecture éditoriale MaxVideoAI actuelle sur onze critères de production.', model: 'Modèle', overall: 'Score global (0–10)', updated: 'Score mis à jour', source: 'Score éditorial MaxVideoAI' },
+    scores: { title: 'Scorecards des modèles', intro: 'Comparez la lecture éditoriale MaxVideoAI actuelle sur onze critères de production.', model: 'Modèle', overall: 'Score global (0–10)', updated: 'Score mis à jour', source: 'Score éditorial MaxVideoAI', generationUnavailable: 'Nouvelle génération indisponible' },
     specs: { title: 'Spécifications vérifiées', intro: 'Consultez les limites et workflows réellement exposés dans MaxVideoAI.', source: 'Source', routeContract: 'Contrat de la route de production MaxVideoAI', apiMechanics: 'Mécanique API générique', release: 'Sortie', modes: 'Modes d’entrée', audio: 'Audio', references: 'Références', modeLabels: { textToVideo: 'Texte → vidéo', imageToVideo: 'Image → vidéo', videoToVideo: 'Vidéo → vidéo' } },
-    latency: { title: 'Temps de génération observés', intro: 'Médiane et P90 du temps de génération de bout en bout sur 30 jours glissants.', median: 'Médiane', p90: 'P90', window: '30 jours glissants', unavailable: 'La mesure de latence actuelle est en cours d’actualisation.', more: 'D’autres modèles apparaissent à mesure que leur historique se consolide.' },
+    latency: { title: 'Temps de génération observés', intro: 'Médiane et P90 entre la création du job et la première livraison de vidéo enregistrée, pour les livraisons des 30 derniers jours. Jobs réussis uniquement ; files d’attente et détection tardive incluses. Les événements fournisseur historiques et les modifications ultérieures du fichier sont exclus. Les réglages varient : ce n’est pas un test de vitesse contrôlé.', median: 'Médiane', p90: 'P90', window: '30 jours glissants', unavailable: 'Les temps de livraison vérifiés sont actuellement indisponibles.', more: 'D’autres modèles apparaissent à mesure que leur historique se consolide.' },
     methodology: {
       title: 'Comment fonctionnent les scores', intro: 'Un langage de notation commun, une formule globale et un pack de prompts canonique pour les futurs tests documentés.', formula: 'Formule du score global', scale: 'Échelle d’évaluation', scoreAnchors: { 2: 'Des défauts visibles majeurs empêchent une utilisation pratique.', 5: 'Utilisable pour certains plans, avec des limites nettes.', 8: 'Comportement solide, prêt pour la production sur le critère évalué.', 10: 'Comportement exceptionnel, sans problème notable dans les résultats évalués.' }, prompts: 'Pack de prompts canonique', canonicalPrompt: 'Prompt canonique — anglais', limitations: 'Notes méthodologiques', changelog: 'Mises à jour de la méthode',
       criteria: {
@@ -119,7 +121,8 @@ const COPY: Record<AppLocale, Omit<BenchmarkCopy, 'scoreLabels'>> = {
         pricing: { label: 'Rapport valeur-prix', definition: 'Valeur de production relative au positionnement tarifaire actuel de MaxVideoAI ; les prix live restent sur les pages tarifaires et de génération.' }
       },
       methodNotes: ['Les résultats génératifs peuvent varier d’un essai à l’autre.', 'Tous les modèles ne prennent pas en charge chaque critère ou type de prompt.', 'La capacité et les files d’attente des fournisseurs évoluent.', 'Le trafic de production observé n’est pas une expérience contrôlée.', 'Les performances glissantes peuvent refléter des incidents, des changements de routage et les réglages choisis par les utilisateurs.', 'MaxVideoAI commercialise l’accès aux modèles comparés et déclare cet intérêt commercial.'],
-      initialRelease: 'Première version des définitions, de la formule globale, du pack de prompts canonique et des règles de latence glissante.'
+      initialRelease: 'Première version des définitions, de la formule globale, du pack de prompts canonique et des règles de latence glissante.',
+      deliveryTimingRelease: "Remplacement des durées fondées sur la modification des jobs par la première livraison enregistrée ; les seuils portent sur les mesures valides. Notes éditoriales inchangées."
     },
     refundNote: 'Les générations payantes échouées sont automatiquement remboursées.',
     cta: { title: 'Choisissez le bon modèle pour votre prochain plan', body: 'Passez de la recherche aux fiches modèles, comparaisons, prix live ou à la génération.', models: 'Voir les modèles vidéo', compare: 'Comparer les modèles', pricing: 'Voir les tarifs', generate: 'Générer une vidéo' }
@@ -134,9 +137,9 @@ const COPY: Record<AppLocale, Omit<BenchmarkCopy, 'scoreLabels'>> = {
       { title: 'Especificaciones con fuentes', body: 'Capacidades actuales verificadas con fuentes del proveedor y la ruta de MaxVideoAI.' },
       { title: 'Velocidad observada', body: 'Mediana y P90 de 30 días para modelos con historial suficiente.' }
     ],
-    scores: { title: 'Scorecards de modelos', intro: 'Compara la evaluación editorial actual de MaxVideoAI en once criterios de producción.', model: 'Modelo', overall: 'Puntuación global (0–10)', updated: 'Puntuación actualizada', source: 'Puntuación editorial de MaxVideoAI' },
+    scores: { title: 'Scorecards de modelos', intro: 'Compara la evaluación editorial actual de MaxVideoAI en once criterios de producción.', model: 'Modelo', overall: 'Puntuación global (0–10)', updated: 'Puntuación actualizada', source: 'Puntuación editorial de MaxVideoAI', generationUnavailable: 'Nueva generación no disponible' },
     specs: { title: 'Especificaciones verificadas', intro: 'Revisa los límites y flujos disponibles en MaxVideoAI.', source: 'Fuente', routeContract: 'Contrato de la ruta de producción de MaxVideoAI', apiMechanics: 'Mecánica de la API genérica', release: 'Lanzamiento', modes: 'Modos de entrada', audio: 'Audio', references: 'Referencias', modeLabels: { textToVideo: 'Texto → video', imageToVideo: 'Imagen → video', videoToVideo: 'Video → video' } },
-    latency: { title: 'Tiempos de generación observados', intro: 'Mediana y P90 del tiempo total de generación durante una ventana móvil de 30 días.', median: 'Mediana', p90: 'P90', window: '30 días móviles', unavailable: 'La medición de latencia se está actualizando.', more: 'Aparecerán más modelos cuando su historial móvil esté consolidado.' },
+    latency: { title: 'Tiempos de generación observados', intro: 'Mediana y P90 desde la creación del trabajo hasta la primera entrega de video registrada, para entregas de los últimos 30 días. Solo trabajos completados; incluye colas y detección tardía. Excluye eventos históricos del proveedor y actualizaciones posteriores del archivo. Las configuraciones varían: no es una prueba de velocidad controlada.', median: 'Mediana', p90: 'P90', window: '30 días móviles', unavailable: 'Los tiempos de entrega verificados no están disponibles actualmente.', more: 'Aparecerán más modelos cuando su historial móvil esté consolidado.' },
     methodology: {
       title: 'Cómo funcionan las puntuaciones', intro: 'Un lenguaje de evaluación, una fórmula global y un pack de prompts canónico para futuras pruebas documentadas.', formula: 'Fórmula de puntuación global', scale: 'Escala de evaluación', scoreAnchors: { 2: 'Las fallas visibles importantes impiden un uso práctico.', 5: 'Utilizable en tomas seleccionadas, con limitaciones claras.', 8: 'Desempeño sólido y listo para producción en el criterio evaluado.', 10: 'Desempeño excepcional, sin problemas relevantes en los resultados evaluados.' }, prompts: 'Pack de prompts canónico', canonicalPrompt: 'Prompt canónico — inglés', limitations: 'Notas metodológicas', changelog: 'Actualizaciones de metodología',
       criteria: {
@@ -153,7 +156,8 @@ const COPY: Record<AppLocale, Omit<BenchmarkCopy, 'scoreLabels'>> = {
         pricing: { label: 'Relación valor-precio', definition: 'Valor de producción relativo al precio actual en MaxVideoAI; los precios en vivo permanecen en las páginas de precios y generación.' }
       },
       methodNotes: ['Los resultados generativos pueden variar entre ejecuciones.', 'No todos los modelos admiten cada criterio o tipo de prompt.', 'La capacidad y las colas de los proveedores cambian con el tiempo.', 'El tráfico de producción observado no es un experimento controlado.', 'El rendimiento de la ventana móvil puede reflejar incidentes, cambios de enrutamiento y configuraciones elegidas por los usuarios.', 'MaxVideoAI vende acceso a los modelos comparados y declara ese interés comercial.'],
-      initialRelease: 'Primera versión de las definiciones, la fórmula global, el pack de prompts canónico y las reglas de latencia móvil.'
+      initialRelease: 'Primera versión de las definiciones, la fórmula global, el pack de prompts canónico y las reglas de latencia móvil.',
+      deliveryTimingRelease: "Se sustituyen las duraciones basadas en actualizaciones del trabajo por la primera entrega registrada; los umbrales se aplican a muestras válidas. Las notas editoriales no cambian."
     },
     refundNote: 'Las generaciones pagadas que fallan se reembolsan automáticamente.',
     cta: { title: 'Elige el modelo adecuado para tu siguiente toma', body: 'Pasa de la investigación a las fichas de modelo, comparaciones, precios en vivo o generación.', models: 'Ver modelos de video', compare: 'Comparar modelos', pricing: 'Ver precios', generate: 'Generar video' }

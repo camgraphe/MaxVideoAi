@@ -1,9 +1,10 @@
 # MaxVideoAI : découverte, fluidité et continuité MCP
 
 Créé le **21 septembre 2026**, revu le **22 septembre 2026**. Responsable : ingénierie MaxVideoAI.
-Statut de distribution au **5 octobre 2026** : plugin **0.3.7 publié**, registre
-officiel actif et installation locale Codex mise à jour, selon le
-[point de contrôle de publication](../operations/mcp-distribution-publication-2026-10-05.md).
+Statut de distribution au **18 octobre 2026 UTC** : plugin **0.3.8 publié** et
+registre officiel actif/latest, selon le
+[point de contrôle de publication](../operations/mcp-distribution-publication-2026-10-18.md).
+Cette livraison ne modifie aucune installation existante ni qualification d’hôte.
 Les deux essais réels Codex du paquet 0.3.6 et leurs limites restent consignés au
 [point de contrôle du 22 septembre](../operations/mcp-main-repository-release-v0.3.6.md). La validation de
 chaque hôte reste distincte ; consulter le [parcours de mise à jour](../operations/mcp-client-updates.md).
@@ -413,3 +414,43 @@ suivi. Le total instructions et descriptions des quatorze outils atteint alors
 **12 497 octets** ; le contrôle client compte **135 tests et 70 scénarios hors ligne**.
 La preuve publique du registre a aussi été actualisée à 0.3.5. Les chiffres des
 sections précédentes restent ceux de leurs révisions respectives.
+
+## Native Seedance Draft — 18 October 2026 source candidate
+
+The additive `seedanceWorkflow` preparation field exposes the existing native
+Draft/final business owners. Model details own live availability, constraints
+and the useful direct 1080p versus Draft-then-final choice. The assistant offers
+that choice before the selected quote, respects an explicit direct choice and
+never calls ordinary 480p a finalizable Draft. Each paid step requires its own
+exact quote and explicit approval. Status/history retain account-owned lineage;
+full status reports eligibility, actual expiry and existing final recovery.
+See [mode coverage](mcp-mode-coverage.md#native-seedance-draft-workflow--2026-10-18-source-candidate).
+
+Tool descriptors retain prerequisites/recovery within their individual 2,000-byte
+budgets; global instructions and capability gates are unchanged. New deterministic
+schema/discovery tests join `mcp:client:check`; a disposable PostgreSQL test checks
+separate tariffs, real native request payloads, owner/expiry rejection, concurrent
+reservation and same-attempt recovery with substituted provider HTTP. No paid
+provider call is authorized or performed. These fixtures do not prove real-host
+selection or production activation.
+
+Plugin source candidate 0.3.8 needs the immutable release builder/publication flow.
+The observed public website pin remains 0.3.7. Server deployment, plugin release,
+host catalog refresh and real-host verification are distinct. After authorized
+server delivery, refresh the host by its supported flow and verify a fresh task's
+`get_model_details` and `prepare_generation` schemas contain `seedanceWorkflow`.
+Keep the brief and known Draft/final job IDs through reconnect; recover them first.
+An old schema is not permission to emulate Draft with ordinary 480p. Test explicit
+Draft, unchosen 1080p, explicit direct 1080p, ordinary 480p, unavailable workflow,
+expired/foreign Draft and interrupted final in each named host/version before
+claiming compatibility. Offer the returned web URL only when live web availability
+is true. No production deployment, public release or host qualification is claimed
+by this source candidate.
+
+
+Local metadata measurements for this candidate: `get_model_details` 1,927 UTF-8
+bytes, `prepare_generation` 1,639, `get_generation_status` 1,098 and
+`list_recent_generations` 649. All 128 global gate combinations remain under
+2,000 bytes. The policy fingerprint was refreshed through the documented
+collector to `ace13aa36761736648b4b33f8cb750a22176078abf732e3b6a29bb594a1d725a`;
+the 70 curated decisions and their fixture fingerprint were preserved.

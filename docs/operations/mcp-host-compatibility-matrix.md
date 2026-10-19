@@ -8,12 +8,39 @@ and status facts from `frontend/config/mcp-integrations.json`. This matrix remai
 the owner of detailed tested-host evidence, exact versions, exercised behavior,
 limitations, and explicit non-claims.
 
-The registry's legacy `2026-08-27` checkpoint date for Claude Desktop, Claude
-Code, ChatGPT web, and Codex CLI is the original registry metadata checkpoint.
-It does not assert a completed host lifecycle for Claude Code or ChatGPT web;
-their later documentation preflights and current `not-run` status remain
-separate. The newer dated rows below supersede only the facts they explicitly
-retested, without silently promoting a sibling host.
+The legacy registry checkpoint `2026-08-27` remains for Claude Desktop, Claude Code and Codex CLI; their detailed test dates remain separate.
+Claude Code remains `not-run`. The 19 October production checks below update only
+ChatGPT Web and the separate Claude Web record to `tested_with_limits`.
+
+## ChatGPT Web and Claude Web production checkpoint — 2026-10-19
+
+Both hosts used `https://api.maxvideoai.com/mcp` with the owner's separately
+approved OAuth consent. No credential, account identifier, private prompt,
+media URL or wallet balance is published in this record.
+
+| Host | Observed setup and actions | Limits |
+| --- | --- | --- |
+| ChatGPT Web, tested Pro account; GPT-6, Medium 2/5 | Plugins → Add → Add custom MCP server → detected OAuth/DCR → review warning → Create as a plugin → Connect → browser consent → Try in chat. Production connection, `list_models`, `prepare_generation` with an exact quote requiring confirmation, and recovery of an existing completed video were observed. | Private plugin only; no public directory listing or general Pro write entitlement. No new paid generation, inline playback, token refresh or revocation/reconnect test. |
+| Claude Web, Free account; Sonnet 5.5 Medium | Customize → Connectors → Your connectors → Add custom connector → name/URL → Continue → detected OAuth/DCR and Connect now → Add → Connect → consent. 19 tools were visible. `list_models`, `get_model_details`, `prepare_generation` and `list_recent_generations` completed after one-time tool approvals. | The tested Free account allowed one connector; an empty staging connector was replaced only with owner approval. Removing that entry does not prove server-side grant revocation. No new paid generation, inline playback, token refresh or revocation/reconnect test. Desktop and Code are separate surfaces. |
+
+Consent on both hosts included `openid`, `email`, `profile`, and `offline_access`.
+The controlled quote used a fictional red-paper-boat prompt, one Veo 3.1 t2v clip,
+8 seconds, 720p and 9:16. Explicit `audio: false` produced the same quote on both
+hosts. Omitting audio in Claude produced a different quote, so comparisons must
+retain explicit supported audio settings. Four quotes were prepared overall;
+`confirm_generation` was never called. Existing-result recovery established tool
+access and a returned result/library destination, not inline playback or public
+unauthenticated access. A ChatGPT response-loading error cleared after one page
+reload; its cause was not established and no generation was retried.
+
+Primary evidence: owner-authorized browser recipe in the OUTREACH project,
+`sources/2026-10-19/llm-005-006/PARCOURS.md`, `RECETTE.csv` and dated screenshots.
+The published semantic baseline changes only the new Claude Web host and the
+ChatGPT Web status; existing Desktop, Code and Codex evidence is preserved.
+
+Documentation checked on 2026-10-19:
+- [OpenAI custom MCP connections](https://help.openai.com/en/articles/12584461-connecting-custom-mcp-servers-in-chatgpt): current Plugins path does not require Developer Mode first; full write support is documented for Business/Enterprise/Edu. The observed Pro recipe above does not override that eligibility policy.
+- [Claude remote custom connectors](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp): account/organization rules remain separate from the specific Web recipe.
 
 ## Revocation-fix deployment correction — 2026-09-17
 

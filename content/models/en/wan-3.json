@@ -40,6 +40,10 @@
         {
           "label": "Open the Wan 3 Prompt Lab",
           "href": "#prompting"
+        },
+        {
+          "label": "Watch a scene with Wan 3 dialogue",
+          "href": "/mcp#the-hat-stays"
         }
       ]
     },
@@ -99,6 +103,14 @@
         "cta": {
           "label": "Open Prompt Lab",
           "href": "#prompting"
+        }
+      },
+      {
+        "title": "Native dialogue, then an assistant-led edit",
+        "body": "In The Hat Stays, Wan 3 supplies spoken performances while MiniMax H3 supplies an action shot. The assistant assembles the scene, captions and sound in Codex. This is an edited production, not one uninterrupted model output.",
+        "cta": {
+          "label": "Watch a scene with Wan 3 dialogue",
+          "href": "/mcp#the-hat-stays"
         }
       }
     ],

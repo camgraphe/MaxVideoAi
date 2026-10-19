@@ -1,5 +1,4 @@
 'use client';
-
 import { useCallback, useState } from 'react';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import { ImageMediaHandoff } from './_components/ImageMediaHandoff.client';
@@ -145,6 +144,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     supportsCharacterReferences,
     toggleCharacterReference,
   } = useImageReferenceSlots({
+    accountId,
     autoModeFromReferences,
     mode,
     resolvedCopy,

@@ -195,7 +195,7 @@ export function buildCompareDetailPageText({
       'Side-by-side renders from the same prompt on MaxVideoAI. Prompts are identical; outputs may vary by model.');
   const scorecardProvisionalNote = hasPrelaunchEngine
     ? (compareCopy.scorecard?.provisionalNote ??
-      'Pre-launch scores are provisional and will update once runtime renders and final pricing are available.')
+      'Pre-launch scores are provisional and need review once runtime renders are available.')
     : null;
   const prelaunchTryPromptLabel = hasPrelaunchEngine ? labels.tryPromptPrelaunch : labels.tryPrompt;
   const prelaunchOpensGeneratorLabel = hasPrelaunchEngine ? labels.opensGeneratorPrelaunch : labels.opensGenerator;

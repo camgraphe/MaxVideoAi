@@ -218,7 +218,8 @@
           "upscale": "Ampliar una imagen o video",
           "image": "Generar imagen",
           "audio": "Crear audio",
-          "background-removal": "Quitar el fondo de un video"
+          "background-removal": "Quitar el fondo de un video",
+          "studio": "Studio"
         },
         "heading": "Prepara tu próxima escena.",
         "intro": "Crea tus referencias, cambia el ángulo y cuida los detalles.",
@@ -229,6 +230,9 @@
               "get-started": "Primeros pasos"
             }
           }
+        },
+        "descriptions": {
+          "studio": "Tu espacio de creación con IA."
         }
       },
       "workflows": {
@@ -570,11 +574,11 @@
           "engineLabel": "2. Compara modelos recomendados",
           "engineRecommendations": [
             {
-              "engineId": "minimax-h3-max",
-              "name": "MiniMax H3 Max",
+              "engineId": "minimax-h3",
+              "name": "MiniMax H3",
               "provider": "MiniMax",
-              "bestFor": "Narrativa cinematográfica de catástrofes",
-              "imageAlt": "Una madre y un niño se refugian durante una catástrofe retrofuturista fotorrealista generada con MiniMax H3 Max.",
+              "bestFor": "Acción cinematográfica",
+              "imageAlt": "Un personaje vuela sobre una bahía tropical a gran velocidad en un video de 15 segundos de MiniMax H3.",
               "fallbackPrice": "Precio actualizado",
               "selected": true,
               "scores": [
@@ -592,17 +596,17 @@
                 }
               ],
               "tags": [
-                "Narrativa",
+                "Acción",
                 "Audio nativo",
-                "Acción real"
+                "Cine"
               ]
             },
             {
               "engineId": "seedance-2-5",
-              "imageAlt": "Vista previa de un video con IA de 10 segundos generado con Seedance 2.5.",
+              "imageAlt": "Un gato naranja se enfrenta a dos hombres en una escena de acción generada con Seedance 2.5.",
               "name": "Seedance 2.5",
               "provider": "ByteDance",
-              "bestFor": "Física cinematográfica compleja",
+              "bestFor": "Acción y humor",
               "fallbackPrice": "Precio actualizado",
               "scores": [
                 {
@@ -619,17 +623,17 @@
                 }
               ],
               "tags": [
-                "Física",
+                "Acción",
                 "Audio",
                 "Cine"
               ]
             },
             {
-              "engineId": "wan-3-prime",
-              "imageAlt": "Vista previa de un video con IA de 5 segundos generado con Wan 3 Prime.",
-              "name": "Wan 3 Prime",
+              "engineId": "wan-3",
+              "imageAlt": "Un video musical de 22 segundos de Wan 3 combina sonidos de la ciudad, un percusionista callejero y el metro.",
+              "name": "Wan 3",
               "provider": "Alibaba",
-              "bestFor": "Movimiento artesanal controlado",
+              "bestFor": "Ritmo y movimiento urbano",
               "fallbackPrice": "Precio actualizado",
               "scores": [
                 {
@@ -646,9 +650,9 @@
                 }
               ],
               "tags": [
-                "Artesanía",
+                "Video musical",
                 "Realismo",
-                "Cámara"
+                "Audio"
               ]
             },
             {
@@ -1752,7 +1756,7 @@
       "subtitle": "Compara los costos de video, imagen, audio y herramientas antes de crear.",
       "supportingLine": "Paga por uso. Revisa el precio exacto en la app antes de generar. Las generaciones fallidas se reembolsan.",
       "quickStartTitle": "Tres puntos de partida para tu próximo video",
-      "quickStartNote": "Total orientativo por video, en USD. Selecciona un escenario para ver la comparación completa. Confirma el presupuesto en la app antes de generar.",
+      "quickStartNote": "Precio disponible más bajo entre los modelos actuales elegibles para cada ajuste mostrado, en USD por vídeo. Son ajustes distintos, no una clasificación de calidad. Abre la fila para ver los detalles y confirma el presupuesto antes de generar.",
       "primaryCta": "Consultar un precio en la app",
       "secondaryCta": "Comparar precios abajo",
       "badges": [
@@ -1921,7 +1925,7 @@
         },
         {
           "question": "¿Qué motor de video IA es más barato?",
-          "answer": "El motor más barato depende del escenario. Un borrador 5 s 720p, un clip premium 8 s 1080p, un video 10 s 1080p y salida 4K pueden tener ganadores distintos. La tabla destaca primero las opciones de generación actual y lista aparte las rutas budget más antiguas cuando existen."
+          "answer": "Elige primero duración, resolución y audio; después compara la misma columna. El precio destacado es el presupuesto disponible más bajo entre los modelos actuales elegibles de esta tabla. Los modelos anteriores se muestran aparte; un precio menor no garantiza un mejor resultado."
         },
         {
           "question": "¿Qué motor es más barato para video 10 s 1080p?",
@@ -1941,7 +1945,7 @@
         },
         {
           "question": "¿Las generaciones fallidas cuestan créditos?",
-          "answer": "No. Las generaciones fallidas se reembolsan automáticamente. Los créditos se cobran solo cuando una generación termina correctamente."
+          "answer": "Un fallo técnico es distinto de un clip terminado que no te gusta. Las generaciones fallidas reciben un reembolso de créditos; la insatisfacción subjetiva con un resultado terminado normalmente no es reembolsable. Consulta la política de devoluciones para conocer las condiciones."
         },
         {
           "question": "¿Necesito una suscripción?",
@@ -1949,15 +1953,15 @@
         },
         {
           "question": "¿Por qué algunos motores más baratos no aparecen destacados primero?",
-          "answer": "Algunas rutas de generación anterior pueden ser más baratas para pruebas simples, pero MaxVideoAI destaca primero los motores de generación actual porque suelen ser mejores para proyectos nuevos. Las rutas budget más antiguas siguen listadas aparte cuando están disponibles."
+          "answer": "Las tarjetas comparan modelos actuales elegibles con los mismos ajustes. Los modelos de generaciones anteriores siguen en la tabla y pueden costar menos. La agrupación ayuda a elegir; no garantiza más calidad."
         },
         {
           "question": "¿Imagen, audio y herramientas se cobran igual que video?",
           "answer": "No. Video, imagen, audio y herramientas usan reglas de precio distintas. La imagen suele cobrarse por imagen, el audio por duración o modo, y las herramientas por tipo de salida o resolución."
         },
         {
-          "question": "¿Por qué la tabla muestra precios totales en vez de costo por segundo?",
-          "answer": "La mayoría de usuarios compara el costo completo de un render, no tarifas brutas por segundo. MaxVideoAI muestra precios totales para escenarios comunes como 8 s 1080p, 10 s 1080p y salida 4K. Las tarifas por segundo o de proveedor pueden variar según motor, duración, resolución y redondeos, y la app muestra el presupuesto exacto antes de generar."
+          "question": "¿El precio mostrado cubre todos los intentos?",
+          "answer": "Cada nueva generación tiene su propio presupuesto. Si haces varios intentos completados hasta conseguir el plano que buscas, cada uno es una generación distinta. Planifica el gasto total de la escena, además del precio de un solo clip."
         },
         {
           "question": "¿Con qué frecuencia cambian los precios?",
@@ -2940,14 +2944,14 @@
         },
         {
           "question": "¿Puedo sugerir un tema o pedir cobertura?",
-          "answer": "Sí; envía tus ideas a press@maxvideo.ai e incluye renders de referencia si puedes. Priorizamos historias que ayuden a los equipos de producción."
+          "answer": "Sí; envía tus ideas a admin@maxvideoai.com e incluye renders de referencia si puedes. Priorizamos historias que ayuden a los equipos de producción."
         },
         {
           "question": "¿Dónde encuentro las notas de versión?",
           "answer": "Las novedades del producto viven en el changelog y las actualizaciones de API en la documentación para desarrolladores. El blog cubre guías y aprendizajes de campo."
         }
       ],
-      "footnote": "¿Necesitas más detalles? Escribe a press@maxvideo.ai y lo derivaremos al productor adecuado."
+      "footnote": "¿Necesitas más detalles? Escribe a admin@maxvideoai.com y lo derivaremos al productor adecuado."
     }
   },
   "videoPage": {
@@ -3040,10 +3044,10 @@
   "contact": {
     "hero": {
       "title": "Habla con el equipo.",
-      "subtitle": "¿Necesitas soporte, ayuda para tu equipo o información de prensa? Déjanos un mensaje y te responderemos en un día hábil."
+      "subtitle": "Contacta con MaxVideoAI para soporte del producto, colaboraciones o consultas de prensa."
     },
     "intro": {
-      "body": "Escríbenos para soporte, alianzas, necesidades de equipo o solicitudes editoriales. Si compartes contexto sobre tu equipo, los modelos que quieres usar, la fecha límite o los requisitos de cumplimiento, el mensaje llega antes a la persona adecuada. Cada solicitud recibe una respuesta humana.",
+      "body": "Describe tu consulta. Para un problema de generación, incluye el identificador del trabajo; para colaboraciones o prensa, indica tu proyecto, publicación y fecha límite.",
       "cards": {
         "productHelp": {
           "title": "Ayuda de producto",
@@ -3093,7 +3097,7 @@
       "items": [
         {
           "question": "¿Cuánto tardan en responder?",
-          "answer": "Respondemos en horario laboral de Europa y Estados Unidos. La mayoría de los tickets de soporte recibe una respuesta humana en menos de 12 horas y las solicitudes para equipos en menos de 24."
+          "answer": "El tiempo de respuesta depende de la consulta y de la disponibilidad del soporte. Incluye el identificador del trabajo y una descripción clara para facilitar la revisión."
         },
         {
           "question": "¿Ofrecen demos en vivo?",
@@ -3101,13 +3105,13 @@
         },
         {
           "question": "¿Dónde reviso el estado del servicio?",
-          "answer": "Consulta la {link} para revisar la latencia de los motores y el historial de incidentes antes de abrir un ticket."
+          "answer": "Consulta la {email} para ver los avisos de servicio publicados por el equipo de MaxVideoAI. Si una generación se retrasa, contacta con soporte e incluye el identificador del trabajo."
         }
       ]
     },
     "statusCard": {
-      "title": "Revisa el estado de los motores en vivo",
-      "body": "Antes de abrir un ticket, confirma si algún motor ya aparece degradado. La página de estado muestra latencia, notas de incidentes y pasos de mitigación para decidir si conviene reintentar o cambiar de modelo.",
+      "title": "Avisos de servicio",
+      "body": "La página de estado muestra los avisos de servicio publicados por el equipo. Si una generación se retrasa, evita enviar el mismo trabajo de nuevo y contacta con soporte con su identificador.",
       "cta": "página de estado"
     }
   },
@@ -3774,7 +3778,14 @@
         "expandSection": "Mostrar",
         "collapseSection": "Ocultar",
         "saving": "Guardando…",
-        "removing": "Quitando…"
+        "removing": "Quitando…",
+        "savePending": "Guardando en Medios…",
+        "saveError": "No se pudo guardar en Medios. Inténtalo de nuevo.",
+        "saveSuccess": "Guardado en Medios.",
+        "removePending": "Quitando del historial…",
+        "removeError": "No se pudo quitar del historial. Inténtalo de nuevo.",
+        "removeSuccess": "Quitado del historial.",
+        "dismiss": "Cerrar"
       }
     },
     "dashboard": {
@@ -6880,6 +6891,7 @@
       "ageRequired": "Confirma que cumples la edad mínima requerida."
     },
     "feedback": {
+      "passwordUnavailable": "No pudimos completar tu solicitud. Inténtalo de nuevo.",
       "signingIn": "Iniciando sesión…",
       "signinRedirecting": "Sesión iniciada. Redirigiendo…",
       "signinSuggestion": "No pudimos iniciar sesión con esos datos. Si eres nuevo, crea tu cuenta sin volver a escribirlos.",
@@ -7020,7 +7032,7 @@
     "scorecard": {
       "title": "Compara los puntos fuertes.",
       "subtitle": "Las puntuaciones reflejan la calidad y el control en MaxVideoAI a lo largo de 11 criterios.",
-      "provisionalNote": "Las puntuaciones de prelanzamiento son provisionales y se actualizarán cuando haya renders runtime y precio final.",
+      "provisionalNote": "Las notas de prelanzamiento son provisionales y deberán revisarse cuando haya resultados disponibles.",
       "strengthsLabel": "Fortalezas",
       "winnerSummary": "Lo esencial",
       "winnerSummaryPrelaunch": "Líder actual (prelanzamiento)",

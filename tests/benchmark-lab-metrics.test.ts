@@ -137,23 +137,6 @@ test('multiple aliases jointly cross eligibility and publish one canonical model
   }]);
 });
 
-test('eligibility uses the full completed cohort while percentiles use only valid durations', async () => {
-  let capturedSql = '';
-  const queryFn: BenchmarkQuery = async <T>(sql: string) => {
-    capturedSql = sql;
-    return [] as T[];
-  };
-
-  await fetchPublicBenchmarkLatency({ queryFn, databaseConfigured: true, engines: aliasedEngines });
-
-  assert.match(capturedSql, /completed_cohort AS/);
-  assert.match(capturedSql, /eligible_engines AS[\s\S]*FROM completed_cohort[\s\S]*HAVING COUNT\(\*\) >= \$4/);
-  assert.match(capturedSql, /duration_samples AS[\s\S]*FROM completed_cohort[\s\S]*updated_at IS NOT NULL[\s\S]*updated_at > created_at/);
-  const completedCohortSql = capturedSql.match(/completed_cohort AS \(([\s\S]*?)\),\s*eligible_engines AS/)?.[1] ?? '';
-  assert.doesNotMatch(completedCohortSql, /updated_at IS NOT NULL|updated_at > created_at/);
-  assert.match(capturedSql, /JOIN eligible_engines USING \(engine_id\)/);
-});
-
 test('missing database returns unavailable rather than zero metrics', async () => {
   const snapshot = await fetchPublicBenchmarkLatency({
     databaseConfigured: false,

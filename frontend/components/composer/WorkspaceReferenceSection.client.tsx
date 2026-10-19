@@ -14,9 +14,9 @@ import { WorkspaceReferenceInventory } from './WorkspaceReferenceInventory.clien
 import { WorkspaceReferencePopup } from './WorkspaceReferencePopup.client';
 import { resolveWorkspaceReferenceFieldTitle, workspaceReferenceCopy } from './workspace-reference-copy';
 
-type Props = Pick<ComposerProps, 'engine' | 'caps' | 'assetFields' | 'assets' | 'onAssetAdd' | 'onAssetRemove' | 'onNotice' | 'onOpenLibrary' | 'onAssetUrlSelect'> & { referenceWarning: string };
+type Props = Pick<ComposerProps, 'engine' | 'caps' | 'assetFields' | 'assets' | 'onAssetAdd' | 'onAssetRemove' | 'onNotice' | 'onOpenLibrary' | 'onAssetUrlSelect' | 'referenceAuthAction'> & { referenceWarning: string };
 
-export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, onAssetAdd, onAssetRemove, onNotice, onOpenLibrary, onAssetUrlSelect, referenceWarning }: Props) {
+export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, onAssetAdd, onAssetRemove, onNotice, onOpenLibrary, onAssetUrlSelect, referenceWarning, referenceAuthAction }: Props) {
   const { locale } = useI18n();
   const copy = workspaceReferenceCopy(locale);
   const assetCopy = getLocalizedAssetDropzoneCopy(normalizeUiLocale(locale));
@@ -84,7 +84,9 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
         {assetFields.map((entry) => entry.headerAction ? <span key={entry.field.id}>{entry.headerAction}</span> : null)}
     </div>
     {restrictionReasons.length ? <div id={restrictionId} className="app-reference-restrictions" aria-live="polite">
-      {restrictionReasons.map((reason) => <p key={reason}>{reason}</p>)}
+      {restrictionReasons.map((reason) => <p key={reason}>{referenceAuthAction?.label === reason
+        ? <a className="app-reference-signin" href={referenceAuthAction.href}>{reason}</a>
+        : reason}</p>)}
     </div> : null}
     {collectionRequired.length ? <p id={requiredId} className="app-reference-required">{copy.required} · {collectionRequired.map(({ field, role }) => resolveWorkspaceReferenceFieldTitle(field, role ?? 'generic', locale) || copy.kinds[field.type === 'audio' ? 'audio' : field.type === 'video' ? 'video' : 'image']).join(', ')}</p> : null}
     {selectedCollections.length ? <div className="app-reference-selected-summary">

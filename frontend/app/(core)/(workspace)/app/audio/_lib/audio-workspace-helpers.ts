@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 
 import { authFetch } from '@/lib/authFetch';
+import { loadSupabaseClient } from '@/lib/supabaseClientLoader';
 import type {
   AudioIntensity,
   AudioLanguage,
@@ -140,7 +141,12 @@ export async function probeVideoDuration(url: string): Promise<number | null> {
   });
 }
 
-export async function uploadAsset(file: File, kind: 'video' | 'audio'): Promise<{ url: string; name: string; ref?: ToolAssetRef; mediaFacts?: MediaFacts }> {
+type UploadedWorkspaceAsset = { url: string; name: string; ref?: ToolAssetRef; mediaFacts?: MediaFacts };
+type AudioUploadOperation = { expectedUserId: string; signal: AbortSignal };
+
+export function uploadAsset(file: File, kind: 'video'): Promise<UploadedWorkspaceAsset>;
+export function uploadAsset(file: File, kind: 'audio', operation: AudioUploadOperation): Promise<UploadedWorkspaceAsset>;
+export async function uploadAsset(file: File, kind: 'video' | 'audio', operation?: AudioUploadOperation): Promise<UploadedWorkspaceAsset> {
   if (kind === 'video') {
     const uploaded = await uploadVideoFile(file);
     return {
@@ -151,15 +157,33 @@ export async function uploadAsset(file: File, kind: 'video' | 'audio'): Promise<
     };
   }
 
+  if (!operation?.expectedUserId || !operation.signal) throw new Error('Audio upload requires an owned operation');
+  const ensureActive = () => {
+    if (operation.signal.aborted) throw new DOMException('Upload cancelled', 'AbortError');
+  };
+  ensureActive();
+  const client = await loadSupabaseClient();
+  ensureActive();
+  const { data, error } = await client.auth.getSession();
+  ensureActive();
+  const session = data.session;
+  if (error || !session?.access_token || session.user.id !== operation.expectedUserId) {
+    throw new Error('Audio upload account changed');
+  }
   const formData = new FormData();
   formData.append('file', file, file.name);
   const response = await authFetch('/api/uploads/audio', {
     method: 'POST',
     body: formData,
+    signal: operation.signal,
+    headers: { Authorization: `Bearer ${session.access_token}` },
+    credentials: 'omit',
   });
+  ensureActive();
   const payload = (await response.json().catch(() => null)) as
     | { ok?: boolean; error?: string; asset?: { url?: string; name?: string; assetId?: unknown; mediaFacts?: unknown } }
     | null;
+  ensureActive();
   if (!response.ok || !payload?.ok || !payload.asset?.url) {
     throw new Error(payload?.error ?? 'Upload failed');
   }

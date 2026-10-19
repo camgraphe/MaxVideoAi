@@ -75,6 +75,9 @@ type PricingHubCopy = {
       legacyDescription: string;
     };
     highlights: {
+      draftIntent: string;
+      detailIntent: string;
+      soundIntent: string;
       bestDraft: string;
       cheapest8s: string;
       cheapest10s: string;
@@ -249,6 +252,9 @@ const en: PricingHubCopy = {
       legacyDescription: 'Older or budget routes that may still be useful for low-cost tests.',
     },
     highlights: {
+      draftIntent: 'Try a short idea',
+      detailIntent: 'Give the scene more room',
+      soundIntent: 'Create a scene with sound',
       bestDraft: 'Cheapest current-gen 5s 720p',
       cheapest8s: 'Cheapest current-gen 8s 1080p',
       cheapest10s: 'Cheapest current-gen 10s 1080p',
@@ -461,6 +467,9 @@ const fr: PricingHubCopy = {
       legacyDescription: 'Routes plus anciennes ou budget, encore utiles pour des tests à faible coût.',
     },
     highlights: {
+      draftIntent: 'Tester une idée courte',
+      detailIntent: 'Développer une scène',
+      soundIntent: 'Créer une scène avec du son',
       bestDraft: 'Moins cher actuel 5 s 720p',
       cheapest8s: 'Moins cher actuel 8 s 1080p',
       cheapest10s: 'Moins cher actuel 10 s 1080p',
@@ -673,6 +682,9 @@ const es: PricingHubCopy = {
       legacyDescription: 'Rutas antiguas o budget que aún pueden servir para pruebas de bajo coste.',
     },
     highlights: {
+      draftIntent: 'Probar una idea corta',
+      detailIntent: 'Dar más espacio a la escena',
+      soundIntent: 'Crear una escena con sonido',
       bestDraft: 'Más barato actual 5 s 720p',
       cheapest8s: 'Más barato actual 8 s 1080p',
       cheapest10s: 'Más barato actual 10 s 1080p',

@@ -203,10 +203,11 @@ test('Luma Uni model pages use the strict content-driven image example fallback 
   assert.doesNotMatch(modelPageLayoutSource, /engine\.modelSlug === 'luma-uni-1(?:-max)?'/);
 });
 
-test('Luma Ray 3.2 stays available in the catalog but exits current best-for shortlists', () => {
+test('Luma Ray 3.2 stays available and is recommended only for reviewed visual workflows', () => {
   assert.equal(catalogEntry('luma-ray-3-2').modelSlug, 'luma-ray-3-2');
   assert.ok(score('luma-ray-3-2'));
-  for (const page of compareConfig.bestForPages) {
-    assert.equal(page.topPicks.includes('luma-ray-3-2'), false, `${page.slug} should not include Luma Ray 3.2`);
-  }
+  assert.deepEqual(
+    compareConfig.bestForPages.filter(page => page.topPicks.includes('luma-ray-3-2')).map(page => page.slug).sort(),
+    ['cinematic-realism', 'image-to-video', 'stylized-anime'],
+  );
 });

@@ -223,7 +223,7 @@
     "modelSlug": "seedance-2-5",
     "section": {
       "title": "Prompt Lab — Seedance 2.5",
-      "intro": "Construisez une scène plus longue en trois passages : définissez le concept, dirigez les temps, puis verrouillez les contraintes qui protègent la continuité.",
+      "intro": "Partez d’une scène que vous pouvez décrire clairement. Les onglets aident à préparer l’action, le rythme et les détails à conserver ; comparez ensuite votre intention au rendu d’exemple.",
       "tip": "Attribuez une action visible et une consigne de caméra à chaque plage temporelle.",
       "guide": null,
       "referencesTitle": "Une méthode textuelle pour les scènes plus longues"
@@ -281,8 +281,8 @@
       "promptLabel": "Scène cinématographique minutée",
       "prompt": "Une séquence urbaine réaliste se déploie en temps clairement définis. Commencez par un large mouvement d’ouverture, suivez une action humaine lisible, passez à un moment de jeu plus rapproché, puis terminez sur un plan composé. Gardez la tenue, la lumière, la direction du mouvement et les réactions du décor cohérentes.",
       "notes": [
-        "Utilisez l’action visible et la transition de caméra pour vérifier la lisibilité de chaque temps.",
-        "L’état audio correspond au rendu sélectionné."
+        "Ouvrez l’exemple pour son prompt d’origine et ses réglages. Les modèles de texte ci-dessus sont des points de départ à adapter.",
+        "Pour l’essai suivant, changez une action visible ou une consigne de caméra. Regardez le résultat entier avant de complexifier le plan."
       ],
       "summary": {
         "subject": "Une histoire humaine réaliste en milieu urbain",
@@ -308,7 +308,7 @@
     "showWhenEmpty": false,
     "section": {
       "title": "Rendus réels Seedance 2.5",
-      "intro": "Examinez des rendus MaxVideoAI publiés qui testent la narration longue, la maîtrise de la caméra, la cohérence physique et le jeu naturel des personnages.",
+      "intro": "Ouvrez un clip pour lire son prompt d’origine et ses réglages. Regardez l’action jusqu’au bout, puis choisissez un élément à changer pour votre propre scène.",
       "defaultCtaLabel": "Voir tous les exemples Seedance",
       "recreateLabel": null
     },
@@ -330,32 +330,32 @@
       {
         "id": "continuity",
         "icon": "users",
-        "title": "Continuité de la scène",
-        "body": "Observez comment les personnages, les tenues et le décor se maintiennent dans des séquences plus longues."
+        "title": "Garder le personnage reconnaissable",
+        "body": "Comparez le visage et les vêtements au début, au milieu et à la fin, surtout quand la personne tourne ou sort du cadre."
       },
       {
         "id": "camera",
         "icon": "maximize",
-        "title": "Contrôle de la caméra",
-        "body": "Suivez le cadrage et les mouvements de caméra d’un temps du récit au suivant."
+        "title": "Suivre la caméra",
+        "body": "Observez les changements de cadrage. Pour votre version, essayez de modifier une consigne de caméra en gardant la même action."
       },
       {
         "id": "physics",
         "icon": "zap",
-        "title": "Cohérence physique",
-        "body": "Observez les mouvements, les contacts et les réactions de l’environnement au fil de la scène."
+        "title": "Vérifier les contacts",
+        "body": "Regardez les mains, les pieds et les objets lorsqu’ils se touchent ou bougent. Examinez le contact, pas seulement la première image."
       },
       {
         "id": "dialogue",
         "icon": "audio",
-        "title": "Jeu humain",
-        "body": "Évaluez les gestes, les expressions et les courts moments parlés lorsqu’ils sont présents."
+        "title": "Écouter aussi",
+        "body": "Pour les exemples sonores, vérifiez si les paroles, l’ambiance et les actions visibles s’accordent."
       },
       {
         "id": "production",
         "icon": "shield",
-        "title": "Évaluation éditoriale",
-        "body": "Chaque exemple présenté ici est un vrai rendu MaxVideoAI."
+        "title": "Essayer une modification",
+        "body": "Ouvrez le prompt d’origine et les réglages, adaptez un détail, puis vérifiez le nouveau devis avant de générer."
       }
     ],
     "fallbackItems": null

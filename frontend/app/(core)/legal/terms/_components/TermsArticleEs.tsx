@@ -2,8 +2,6 @@ import Link from 'next/link';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 
 export function TermsArticleEs({
-  version,
-  effective,
   subprocessorsHref,
 }: {
   version: string;
@@ -91,7 +89,7 @@ export function TermsArticleEs({
             acciones de marketing.
           </li>
           <li>
-            <strong>Controles de privacidad.</strong> Los nuevos renders son privados por defecto. La publicación pública, la indexación general del sitio y cualquier inclusión en el rollout de Video SEO son gestionadas por MaxVideoAI mediante un flujo interno de revisión. Si necesitas retirar, desindexar o eliminar un render público, puedes escribir a{' '}
+            <strong>Publicación y retirada.</strong> Los nuevos renders son privados por defecto y no aparecen en las galerías públicas. MaxVideoAI puede publicar una selección tras revisarla, conforme a la licencia anterior. Para solicitar su retirada, desindexación o supresión, escribe a{' '}
             <ObfuscatedEmailLink
               user="support"
               domain="maxvideoai.com"
@@ -100,7 +98,7 @@ export function TermsArticleEs({
               unstyled
               className="font-medium"
             />
-            ; atenderemos la solicitud salvo obligación legal en contrario.
+            ; atenderemos la solicitud salvo obligación legal en contrario. Un enlace de archivo compartido puede dar acceso al medio. Retirar una publicación no borra por sí sola los archivos almacenados ni las copias ya descargadas por terceros.
           </li>
           <li>
             <strong>Cargas vs. contenido generado.</strong> Los logotipos, imágenes o vídeos que cargas siguen siendo tuyos; solo los usamos para producir el render o resolver
@@ -212,7 +210,7 @@ export function TermsArticleEs({
           />
           .
         </p>
-        <p className="text-sm text-text-muted">Última actualización: {effective ?? version}</p>
+        <p className="text-sm text-text-muted">Información actualizada: 19 de octubre de 2026</p>
       </section>
     </article>
   );

@@ -347,4 +347,5 @@ test('homepage promotes published current comparisons without reviving older edi
   assert.ok(links.every(link => !/seedance-1-5|seedance-2-0|ltx-2-3/.test(link.slug)));
   // A new model must never inherit the scores of its predecessor.
   assert.deepEqual(buildHomeComparisonData(new Map()).opponents, []);
+  assert.equal(buildHomeComparisonData(new Map()).left.slug, 'wan-3');
 });

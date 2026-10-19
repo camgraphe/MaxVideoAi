@@ -221,6 +221,23 @@ an unresolved MCP HTTPS reference cannot expose a numeric current tariff by usin
 caller-declared metadata. The generation path rechecks actual media and the
 canonical cost guard.
 
+### MCP native Draft/final quotes — 2026-10-18 source candidate
+
+The canonical agent request retains `seedanceWorkflow` in its normalized hash.
+The MCP adapter resolves the existing owned workflow request before preparation
+and again during confirmation. Only that server-validated step reaches
+`seedanceWorkflowStep` in preflight options or `workflowStep` in transactional
+billing. Ordinary resolutions never acquire a workflow selector. The final uses
+stored verified media facts, including original video timing/framing, without
+reimporting deleted original references. Immutable parent facts are bound to the
+quote and checked again under the initial reservation lock.
+
+Optional workflow price presentation uses the same canonical pricing owner for a
+future final estimate and returns the sum only for known same-currency amounts.
+Each paid step still needs its own exact quote/approval; a final estimate does
+not reserve its tariff. The stored paid Draft charge and new final quote remain
+separate. See the [MCP mode contract](mcp-mode-coverage.md).
+
 ### Proportional normal Seedance video-input tariffs (2026-10-02)
 
 `server/pricing/seedance-input-tariff.ts` owns authoring and whole-domain validation
@@ -534,7 +551,7 @@ and browser evidence is required before claiming TTFB or Core Web Vitals gains.
 
 ## Homepage guided pricing demonstration
 
-`(home)/_lib/home-price-demo-data.ts` selects three exact Wan 3 text-to-video scenarios through Pricing's `getPresetQuote`: 5 s / 720p, 15 s / 720p, 15 s / 1080p, audio enabled. If any scenario is not exact, it omits the demonstration. `HomePriceDemo.client.tsx` selects these server-projected quotes without computing commercial prices; `HomePriceAppSurface.client.tsx` presents them with the shared workspace Composer and CoreSettingsBar in an inert, lazy-loaded surface. The generation handler is a no-op and the real studio is a separate link. Preserve this boundary: the homepage is neither a live quote endpoint nor a generation client. `tests/home-price-demo.test.ts` verifies the public quote projection in EN, FR and ES.
+`(home)/_lib/home-price-demo-data.ts` selects three exact Wan 3 text-to-video scenarios through Pricing's `getPresetQuote`: 5 s / 720p, 15 s / 720p, 15 s / 1080p, audio enabled. If any scenario is not exact, it omits the demonstration. `HomePriceDemo.client.tsx` selects these server-projected quotes without computing commercial prices; `HomePriceAppSurface.client.tsx` presents them with the shared workspace Composer and CoreSettingsBar in an inert, lazy-loaded surface. Only a bounded display projection of the engine reaches the browser: shared control facts and t2v capabilities, without input schemas, supplier metadata or catalog pricing. Server quote calculation still uses the full catalog entry, and the current public quote reader retains canonical ownership. The generation handler is a no-op and the real studio is a separate link. Preserve this boundary: the homepage is neither a live quote endpoint nor a generation client. `tests/home-price-demo.test.ts` verifies the public quote projection in EN, FR and ES, control parity and its serialization budget.
 
 ## Policy precedence
 

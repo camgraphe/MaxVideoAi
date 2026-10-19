@@ -1,3 +1,4 @@
+import { compareDurationDetails, compareDurationLabels } from './compare-duration-copy';
 import type {
   ComparePricingDisplay,
   CompareSpecValues,
@@ -8,6 +9,7 @@ import { localeRegions, type AppLocale } from '@/i18n/locales';
 import type { PublicBenchmarkLatency } from '@/server/benchmark-lab-metrics';
 
 export type CompareSpecRow = {
+  key?: string;
   label: string;
   left: string;
   right: string;
@@ -70,7 +72,9 @@ export function buildCompareSpecRows({
     },
     { label: specLabels.referenceVideo ?? 'Reference video', left: leftSpecs.referenceVideo, right: rightSpecs.referenceVideo },
     { label: specLabels.maxResolution ?? 'Max resolution', left: leftSpecs.maxResolution, right: rightSpecs.maxResolution },
-    { label: specLabels.maxDuration ?? 'Max duration', left: leftSpecs.maxDuration, right: rightSpecs.maxDuration },
+    { key: 'maxDuration', label: compareDurationLabels(activeLocale).newClip, left: leftSpecs.maxDuration, right: rightSpecs.maxDuration,
+      sublines: compareDurationDetails(leftSpecs, activeLocale), rightSublines: compareDurationDetails(rightSpecs, activeLocale) },
+    ...([leftSpecs.extensionDuration, rightSpecs.extensionDuration].some(value => value && value !== 'Not supported') ? [{ label: compareDurationLabels(activeLocale).extension, left: leftSpecs.extensionDuration ?? 'Data pending', right: rightSpecs.extensionDuration ?? 'Data pending' }] : []),
     {
       kind: 'latency' as const,
       label: specLabels.observedMedian ?? 'Observed median (30 days)',

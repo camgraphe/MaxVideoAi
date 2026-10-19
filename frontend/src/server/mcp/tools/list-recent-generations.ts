@@ -30,6 +30,7 @@ export function registerListRecentGenerationsTool(
         'Recover a bounded page from the same connected user\'s MaxVideoAI library before considering any second paid submission.',
         'Filter by surface video, image or audio when known, preserve the existing job IDs and use get_generation_status for follow-up.',
         'Do not claim completion for accepted/running jobs or use this to generate, retry, or charge.',
+        'Native Seedance Draft and final steps retain their draftJobId; inspect get_generation_status for current eligibility and expiry before finalizing.',
         'Completed results can be delivered through present_generation.',
       ].join(' '),
       inputSchema: listRecentGenerationsInputSchema,

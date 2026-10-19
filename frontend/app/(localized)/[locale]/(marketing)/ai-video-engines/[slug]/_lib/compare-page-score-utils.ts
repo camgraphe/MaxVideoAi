@@ -1,3 +1,4 @@
+import { localizeSpecDetailValue } from './compare-page-spec-values';
 import type { AppLocale } from '@/i18n/locales';
 import { formatEngineName } from './compare-page-engine-formatting';
 import { formatTemplate } from './compare-page-text';
@@ -57,6 +58,15 @@ export function computePairScores(leftValue: number | null, rightValue: number |
   return { leftScore, rightScore };
 }
 
+/** Status is compared independently of optional prose describing the capability. */
+export function compareCapabilityStatus(value: string): 'yes' | 'no' | 'pending' | 'detail' {
+  const normalized = value.trim().toLowerCase();
+  if (!normalized || /pending|being validated|en (?:cours de )?validation|en validación/.test(normalized)) return 'pending';
+  if (/not supported|not exposed|not available|non disponible|no disponible/.test(normalized)) return 'no';
+  if (/^(supported|supporté|pris en charge|compatible|yes|true)\b/.test(normalized)) return 'yes';
+  return 'detail';
+}
+
 export function pickCapabilityDifference(
   left: EngineCatalogEntry,
   right: EngineCatalogEntry,
@@ -64,25 +74,33 @@ export function pickCapabilityDifference(
   leftStatus: string,
   rightStatus: string,
   templates: { value: string; pending: string },
-  validatingLabel: string
+  validatingLabel: string,
+  locale: AppLocale = 'en',
+  includeDetails = false
 ): string | null {
-  const leftNormalized = leftStatus.toLowerCase();
-  const rightNormalized = rightStatus.toLowerCase();
-  const leftPending = leftNormalized.includes('pending') || leftNormalized.includes('validated');
-  const rightPending = rightNormalized.includes('pending') || rightNormalized.includes('validated');
-  if (!leftPending && !rightPending && leftStatus !== rightStatus) {
+  const leftState = compareCapabilityStatus(leftStatus);
+  const rightState = compareCapabilityStatus(rightStatus);
+  const leftPending = leftState === 'pending';
+  const rightPending = rightState === 'pending';
+  const sameStatus = leftState === rightState;
+  const different = includeDetails ? leftStatus.trim().toLowerCase() !== rightStatus.trim().toLowerCase()
+    : !sameStatus && leftState !== 'detail' && rightState !== 'detail';
+  const labels = { pending: validatingLabel, supported: locale === 'fr' ? 'pris en charge' : locale === 'es' ? 'compatible' : 'supported',
+    notSupported: locale === 'fr' ? 'non pris en charge' : locale === 'es' ? 'no compatible' : 'not supported' };
+  if (!leftPending && !rightPending && different) {
     return formatTemplate(templates.value, {
       label,
       left: formatEngineName(left),
       right: formatEngineName(right),
-      leftValue: formatCapabilityValue(leftStatus),
-      rightValue: formatCapabilityValue(rightStatus),
+      leftValue: localizeSpecDetailValue(leftStatus, locale, labels),
+      rightValue: localizeSpecDetailValue(rightStatus, locale, labels),
     });
   }
   if (leftPending || rightPending) {
-    return formatTemplate(templates.pending, {
-      label,
-      status: leftStatus === rightStatus ? formatCapabilityValue(leftStatus) : validatingLabel,
+    return formatTemplate(templates.value, {
+      label, left: formatEngineName(left), right: formatEngineName(right),
+      leftValue: localizeSpecDetailValue(leftStatus, locale, labels),
+      rightValue: localizeSpecDetailValue(rightStatus, locale, labels),
     });
   }
   return null;
@@ -96,18 +114,18 @@ export function formatCapabilityValue(value: string) {
 
 export function getFallbackCapabilityDifference(locale: AppLocale) {
   if (locale === 'fr') {
-    return 'Modes clés : les deux modèles couvrent les mêmes routes principales; la vraie différence se joue sur la résolution, le coût et le niveau de finition.';
+    return 'Pour votre projet, comparez les limites des références, les réglages et le devis à paramètres équivalents.';
   }
   if (locale === 'es') {
-    return 'Modos clave: ambos motores cubren las mismas rutas principales; la diferencia real está en la resolución, el costo y el nivel de acabado.';
+    return 'Para tu proyecto, compara los límites de referencias, los controles y el precio con los mismos ajustes.';
   }
-  return 'Core modes: both engines cover the same main routes; the real difference is resolution, cost, and delivery polish.';
+  return 'For your project, compare reference limits, controls and the quote for the same settings.';
 }
 
 export function pickFirstCapabilityDifference(
   left: EngineCatalogEntry,
   right: EngineCatalogEntry,
-  candidates: Array<{ label: string; leftStatus: string; rightStatus: string }>,
+  candidates: Array<{ label: string; leftStatus: string; rightStatus: string; includeDetails?: boolean }>,
   templates: { value: string; pending: string },
   validatingLabel: string,
   locale: AppLocale
@@ -120,7 +138,9 @@ export function pickFirstCapabilityDifference(
       candidate.leftStatus,
       candidate.rightStatus,
       templates,
-      validatingLabel
+      validatingLabel,
+      locale,
+      candidate.includeDetails
     );
     if (diff) return diff;
   }
@@ -133,11 +153,14 @@ export function pickOutputDifference(
   leftValue: string,
   rightValue: string,
   label: string,
-  templates: { value: string; pending: string },
+  templates: { value: string; pending: string; shared?: string },
   validatingLabel: string
 ): string {
-  const leftPending = leftValue.toLowerCase().includes('pending') || leftValue.toLowerCase().includes('validated');
-  const rightPending = rightValue.toLowerCase().includes('pending') || rightValue.toLowerCase().includes('validated');
+  const leftPending = compareCapabilityStatus(leftValue) === 'pending';
+  const rightPending = compareCapabilityStatus(rightValue) === 'pending';
+  if (!leftPending && !rightPending && leftValue.trim().toLowerCase() === rightValue.trim().toLowerCase()) {
+    return formatTemplate(templates.shared ?? '{label}: {left} and {right} both support {value}.', { label, left: leftLabel, right: rightLabel, value: leftValue });
+  }
   if (!leftPending && !rightPending && leftValue !== rightValue) {
     return formatTemplate(templates.value, {
       label,

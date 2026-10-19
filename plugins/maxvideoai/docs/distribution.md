@@ -1,6 +1,6 @@
 # Distribution and installation status
 
-Checked: **2026-10-05**. Directory policy observations retain their separate dates below.
+Checked: **2026-10-18 UTC**. Directory policy observations retain their separate dates below.
 
 Packaging boundary reviewed **2026-09-22**: this is a source-maintainer document,
 excluded from the customer archive along with `evals/` and `AGENTS.md`. The public
@@ -12,7 +12,29 @@ MaxVideoAI's distributable MCP metadata names the protocol-generic endpoint
 directory distribution so that an installation path is never mistaken for a
 platform approval or a directory record.
 
-## Published release — 2026-10-05
+## Published release — 2026-10-18 UTC
+
+Plugin **0.3.8** is published through protected run
+[39171513467](https://github.com/camgraphe/MaxVideoAi/actions/runs/39171513467),
+from source `1ed5e5b8223741d6f78318363ea9bf082a4328df` to public commit
+`f5c401e97c917c00fb28ecece967524893a41881`.
+[Canonical v0.3.8](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.8)
+contains the verified ZIP and checksum. Its 60 entries and every public file
+match the qualified archive, SHA-256
+`f5488a96feb3b530bb2a8d1946d4bd34a6927cd38c06fa41f9018fe6b9d281e0`.
+The official Registry version and latest records were read back active/latest
+0.3.8 with exact authored server metadata at 22:21:22 UTC.
+
+The workflow-capable MCP server was deployed before publication. The website
+installation pin advances to the observed public `v0.3.8` in this source follow-up;
+its own production delivery requires normal PR/CI gates. No existing installed
+cache or host evidence status was changed. Refresh a host's connection/catalog
+through its supported flow, retain known jobs and recover existing attempts first.
+Package publication and deterministic tests do not prove fresh-host behavior.
+No paid generation was launched. See the
+[publication checkpoint](../../../docs/operations/mcp-distribution-publication-2026-10-18.md).
+
+## Historical published release — 2026-10-05
 
 The protected publisher completed source `a833d985a81f9d523e08917674a01f1e220337b1`
 to public commit `67dfbedad6e32377287b55ba005296e73206b23a`.
@@ -82,11 +104,11 @@ verified-client evidence above.
 
 ## Directory status
 
-- **Official MCP Registry — active at `0.3.7`.** The official API record for
+- **Official MCP Registry — active at `0.3.8`.** The official API record for
   [`com.maxvideoai/maxvideoai`](https://registry.modelcontextprotocol.io/v0.1/servers?search=com.maxvideoai%2Fmaxvideoai)
   is active. This protocol registry publication is not an OpenAI, Anthropic, or
   other host-directory listing and does not prove host compatibility.
-  The version and production endpoint were rechecked on **2026-10-05**; this is a dated observation. Check the exact
+  The version and production endpoint were rechecked on **2026-10-18 UTC**; this is a dated observation. Check the exact
   public record again before release. Policy review dates below are
   separate from this registry check.
 - **ChatGPT/OpenAI directory — do not submit.** OpenAI's current plugin

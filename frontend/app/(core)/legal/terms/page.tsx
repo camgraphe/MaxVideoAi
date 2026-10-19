@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { LegalVersionBadge } from '@/components/legal/LegalVersionBadge';
 import { formatLegalDate, getLegalDocument, LEGAL_FALLBACK_VERSIONS } from '@/lib/legal';
 import type { AppLocale } from '@/i18n/locales';
@@ -39,7 +40,12 @@ export default async function TermsPage() {
         <p className="text-sm text-text-secondary">
           {header.versionLabel}: {version} · {header.effectiveLabel}: {effective ?? version}
         </p>
-        <p className="text-sm text-text-secondary">{header.companyLine}</p>
+        <p className="text-sm text-text-secondary">
+          {header.companyLine}{' '}
+          <Link href={localizePathFromEnglish(locale, '/legal/mentions')} className="text-brand underline hover:text-brandHover">
+            {header.mentionsLabel}
+          </Link>
+        </p>
         <p className="text-sm text-text-secondary">
           {header.contactLabel}{' '}
           <ObfuscatedEmailLink

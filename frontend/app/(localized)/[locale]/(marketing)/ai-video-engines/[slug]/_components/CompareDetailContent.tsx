@@ -1,4 +1,6 @@
-import type { CSSProperties } from 'react';
+import { CompareInteractionTracking } from './CompareInteractionTracking.client';
+import { buildComparisonExport, publicComparisonUrl } from '../_lib/compare-export';
+import { formatEngineName } from '../_lib/compare-page-engine-formatting';
 import type { AppLocale } from '@/i18n/locales';
 import { Link } from '@/i18n/navigation';
 import type { SelectOption } from '@/components/ui/SelectMenu';
@@ -7,7 +9,7 @@ import type { CompareFaqItem } from '../_lib/compare-page-faq';
 import type { EngineAccent } from '../_lib/compare-page-helpers';
 import type { ComparePageOverride } from '../_lib/compare-page-overrides';
 import type { RelatedComparisonLink } from '../_lib/compare-page-related-links';
-import type { CompareMetric, CompareSummaryRow } from '../_lib/compare-page-scorecard';
+import type { CompareMetric } from '../_lib/compare-page-scorecard';
 import type { CompareSpecRow } from '../_lib/compare-page-spec-rows';
 import type { ComparePricingDisplay, EngineCatalogEntry } from '../_lib/compare-page-types';
 import { CompareDetailHero } from './CompareDetailHero';
@@ -23,6 +25,8 @@ import { CompareSpecsSection } from './CompareSpecsSection';
 type CompareDetailContentProps = {
   galleries: { left: CompareGalleryVideo[]; right: CompareGalleryVideo[] };
   returnPath: string;
+  priceSnapshotAt: string;
+  specSources: Array<{ name: string; urls: string[] }>;
   activeLocale: AppLocale;
   breadcrumbJsonLd: unknown;
   compareCopy: ComparePageCopy;
@@ -38,9 +42,9 @@ type CompareDetailContentProps = {
   left: EngineCatalogEntry;
   leftAccent: EngineAccent;
   leftCanGenerate: boolean;
+  leftScoreUpdated: string | null;
   leftOverall: number | null;
   leftPricingDisplay: ComparePricingDisplay;
-  leftScoreStyle: CSSProperties;
   pageOverride?: ComparePageOverride | null;
   pairHasNativeAudio: boolean;
   prelaunchNotice: { title: string; body: string } | null;
@@ -50,19 +54,17 @@ type CompareDetailContentProps = {
   right: EngineCatalogEntry;
   rightAccent: EngineAccent;
   rightCanGenerate: boolean;
+  rightScoreUpdated: string | null;
   rightOverall: number | null;
   rightPricingDisplay: ComparePricingDisplay;
-  rightScoreStyle: CSSProperties;
   scorecardCriteriaLabel: string;
   scorecardProvisionalNote: string | null;
   specRows: CompareSpecRow[];
-  summaryRows: CompareSummaryRow[];
   webPageJsonLd: unknown;
-  winnerSummaryHeading: string;
 };
 
 export function CompareDetailContent({
-  galleries, returnPath,
+  galleries, returnPath, priceSnapshotAt, specSources,
   activeLocale,
   breadcrumbJsonLd,
   compareCopy,
@@ -78,9 +80,9 @@ export function CompareDetailContent({
   left,
   leftAccent,
   leftCanGenerate,
+  leftScoreUpdated,
   leftOverall,
   leftPricingDisplay,
-  leftScoreStyle,
   pageOverride,
   pairHasNativeAudio,
   prelaunchNotice,
@@ -90,18 +92,22 @@ export function CompareDetailContent({
   right,
   rightAccent,
   rightCanGenerate,
+  rightScoreUpdated,
   rightOverall,
   rightPricingDisplay,
-  rightScoreStyle,
   scorecardCriteriaLabel,
   scorecardProvisionalNote,
   specRows,
-  summaryRows,
   webPageJsonLd,
-  winnerSummaryHeading,
 }: CompareDetailContentProps) {
+  const canonicalUrl = publicComparisonUrl(returnPath);
+  const comparisonMarkdown = buildComparisonExport({ locale: activeLocale, path: returnPath,
+    leftName: formatEngineName(left), rightName: formatEngineName(right), metrics: comparisonMetrics, specRows,
+    leftUpdated: leftScoreUpdated, rightUpdated: rightScoreUpdated, leftPricing: leftPricingDisplay,
+    rightPricing: rightPricingDisplay, priceSnapshotAt, labels, sources: specSources, summary: pageOverride?.quickVerdict?.body });
   return (
-    <div className="compare-editorial relative isolate">
+    <div id="comparison-detail" data-model-left={left.modelSlug} data-model-right={right.modelSlug} className="compare-editorial relative isolate">
+      <CompareInteractionTracking locale={activeLocale} />
       <div className="container-page max-w-[1280px] section">
         <div className="space-y-4 sm:space-y-5">
           <CompareDetailHero
@@ -121,17 +127,17 @@ export function CompareDetailContent({
             engineScoresBySlug={engineScoresBySlug}
             left={left}
             leftOverall={leftOverall}
-            leftScoreStyle={leftScoreStyle}
             resolvedLeftOptions={resolvedLeftOptions}
             resolvedRightOptions={resolvedRightOptions}
             right={right}
             rightOverall={rightOverall}
-            rightScoreStyle={rightScoreStyle}
           />
 
           <CompareModelGalleries locale={activeLocale} left={left} right={right} galleries={galleries} returnPath={returnPath} />
           <section className="mx-auto max-w-[940px]">
             <CompareScorecardSection
+              comparisonMarkdown={comparisonMarkdown}
+              canonicalUrl={canonicalUrl}
               activeLocale={activeLocale}
               compareCopy={compareCopy}
               comparisonMetrics={comparisonMetrics}
@@ -141,15 +147,16 @@ export function CompareDetailContent({
               left={left}
               leftAccent={leftAccent}
               leftCanGenerate={leftCanGenerate}
+              leftScoreUpdated={leftScoreUpdated}
               right={right}
               rightAccent={rightAccent}
               rightCanGenerate={rightCanGenerate}
+              rightScoreUpdated={rightScoreUpdated}
               scorecardCriteriaLabel={scorecardCriteriaLabel}
               scorecardProvisionalNote={scorecardProvisionalNote}
-              summaryRows={summaryRows}
-              winnerSummaryHeading={winnerSummaryHeading}
             />
             <ComparePricingQuickSection
+              priceSnapshotAt={priceSnapshotAt}
               activeLocale={activeLocale}
               pricingCreditLink={pageOverride?.pricingCreditLink}
               left={left}
@@ -158,6 +165,7 @@ export function CompareDetailContent({
               rightPricingDisplay={rightPricingDisplay}
             />
             <CompareSpecsSection
+              sources={specSources}
               activeLocale={activeLocale}
               compareCopy={compareCopy}
               labels={labels}

@@ -137,3 +137,15 @@ binds its release to Git HEAD). The complete rerun passed on a stable commit.
 The final follow-up changes only the model-choice explanation and this evidence
 record. The latest required Quality CI state is recorded in PR #458 and must
 pass before any merge. No financial assertion or CI requirement was weakened.
+
+## Revalidation for owner preview — 19 October 2026
+
+The owner authorized resuming #458, aligning it with current main and repeating verification without paid generation. The owner must inspect the new preview, particularly the watch example, before any merge. This is not authorization to publish to production or to decide the unresolved credit-validity policy.
+
+The original candidate b2181b2f082e0d85208e9430222843fdedbb07ba is preserved. Current main b0c435a80d3d3123bbd6868aa510961984cc2780 is integrated in the isolated delivery worktree. The three ads guides retain main’s current shortlist, assistant-story metadata and gallery owners; only the documented watch case and its original historical date are added. MCP hub FAQs retain main’s October 19 ChatGPT/Claude evidence and Audio wording while updating only the n8n template availability answers. Other public metadata, current legal data-transparency paragraphs and route ownership remain intact.
+
+Baseline verification on the original proposal: 42 focused tests pass. After integration and conflict resolution: 196 related MCP, Best-for, PAYG and legal tests pass, zero failures or skips. Full validation, current CI and the exact Git preview are separate gates and must refer to the final aligned commit. Their current results are retained outside the tracked tree under output/audits/2026-10-19-resume-458. No historical result above is presented as a new verification.
+
+The official n8n template page remains publicly readable on October 19. The direct public-template API returned HTTP 403 during this recheck; no login, API execution or access-control change was attempted. The 21-node semantic parity remains the dated October 12 evidence, not a new parity measurement. This does not create an n8n Cloud or AI Agent compatibility claim.
+
+The watch reference image and display clip already exist under frontend/public/media/mcp/project-demo/. The guide still links the exact public original and labels historical costs, requested settings and actual dimensions separately. No new media was generated or published. Local browser automation was disabled in Work; do not bypass that setting. Any preview verification must state which HTTP/HTML, CI or browser checks were actually possible.

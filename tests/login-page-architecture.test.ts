@@ -151,3 +151,12 @@ test('hash session delegates account creation measurement to the shared auth ana
   assert.match(authHashSessionHookSource, /from '\.\.\/_lib\/login-auth-analytics'/);
   assert.doesNotMatch(authHashSessionHookSource, /persistPendingAnalyticsEvent\('login_completed'/);
 });
+
+
+test('password submission lifecycle stays in a focused hook while auth orchestration stays in the controller', () => {
+  assert.match(controllerSource, /from '\.\/usePasswordAuthSubmission'/);
+  const lifecycle = readFileSync(join(root, 'frontend/app/(core)/login/_hooks/usePasswordAuthSubmission.ts'), 'utf8');
+  assert.ok(lifecycle.split('\n').length < 100);
+  assert.doesNotMatch(lifecycle, /supabase|signUpWithPassword|submitSignupConsents/);
+  assert.match(controllerSource, /submitPasswordSignupConsents/);
+});

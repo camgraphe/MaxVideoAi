@@ -146,7 +146,7 @@ export const about: Dictionary['about'] = {
 export const contact: Dictionary['contact'] = {
     hero: {
       title: 'Contact the team.',
-      subtitle: 'Need support, enterprise onboarding, or press information? Send a note and we’ll reply within one business day.',
+      subtitle: 'Contact MaxVideoAI for product support, partnerships, or press enquiries.',
     },
     form: {
       name: 'Name',

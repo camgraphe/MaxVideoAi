@@ -60,7 +60,7 @@ export default function AppClientPage({
   const activeDraft = useWorkspaceDraftHydration({
     ...routeForm,
     ...assetState,
-    authStatus: app.authStatus,
+    authStatus: app.authStatus, initialPreviewGroup,
     accountId: confirmedAccount,
     accessToken: app.session?.access_token ?? null,
     locale: app.uiLocale,
@@ -267,7 +267,7 @@ export default function AppClientPage({
       !draft.hasStoredFormRef.current && !draft.fromVideoId && !draft.requestedJobId && !draft.effectiveRequestedEngineId &&
       !draft.effectiveRequestedEngineToken && !draft.effectiveRequestedMode && renderState.renders.length === 0 &&
       (!initialPreviewGroup || initialPreviewGroup.items.every(item => item.meta?.curated)),
-    prompt: routeForm.prompt, provider: app.provider, recentJobs: app.recentJobs,
+    initialPreviewGroup, prompt: routeForm.prompt, provider: app.provider, recentJobs: app.recentJobs,
     renderGroups: renderState.renderGroups,
     batchHeroes: renderState.batchHeroes,
     preflightCurrency: pricing.preflight?.currency,

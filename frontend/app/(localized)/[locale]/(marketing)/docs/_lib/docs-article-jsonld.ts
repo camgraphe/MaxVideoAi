@@ -62,7 +62,7 @@ export function buildDocsTechArticleJsonLd({
     ...(author
       ? {
           author: {
-            '@type': 'Person',
+            '@type': 'Organization',
             name: author.name,
             url: author.url,
           },

@@ -16,6 +16,7 @@ export type AgentApiErrorCode =
   | 'TRIAL_NOT_ELIGIBLE'
   | 'ENGINE_UNAVAILABLE'
   | 'MODE_UNSUPPORTED'
+  | 'SEEDANCE_DRAFT_UNAVAILABLE'
   | 'PARAMETER_INVALID'
   | ReferenceErrorCode
   | 'QUOTE_EXPIRED'

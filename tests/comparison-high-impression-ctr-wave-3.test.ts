@@ -68,6 +68,10 @@ const EARLIER_MODEL_REQUIREMENTS = {
 
 type Locale = 'en' | 'fr' | 'es';
 
+// This page now puts its short decision answer above the scorecard instead of
+// repeating it in a verdict and four context cards.
+const COMPACT_DECISION_SLUG = 'veo-3-1-vs-veo-3-1-lite';
+
 const CATALOG_BY_SLUG = new Map(engineCatalog.map((entry) => [entry.modelSlug, entry]));
 
 function getEntry(locale: Locale, slug: string): ComparePageOverride {
@@ -81,6 +85,8 @@ function collectText(entry: ComparePageOverride): string {
     entry.meta?.title,
     entry.meta?.description,
     entry.heroIntro,
+    entry.decisionSummary,
+    ...(entry.decisionLinks ?? []).map((link) => link.label),
     entry.quickVerdict?.title,
     entry.quickVerdict?.body,
     ...(entry.topCards ?? []).flatMap((card) => [card.title, card.body]),
@@ -278,8 +284,16 @@ function assertCompleteOverride(locale: Locale, slug: string): void {
   assert.ok(description.length >= 120 && description.length <= 170, `${locale} description length for ${slug}: ${description.length}`);
   assert.equal(entry.meta?.titleBranding, 'none', `${locale} should disable title branding for ${slug}`);
   assert.ok((entry.heroIntro?.length ?? 0) >= 140, `${locale} hero should frame the decision for ${slug}`);
-  assert.ok((entry.quickVerdict?.body.length ?? 0) >= 120, `${locale} verdict should be substantive for ${slug}`);
-  assert.equal(entry.topCards?.length, 4, `${locale} should have four decision cards for ${slug}`);
+  if (slug === COMPACT_DECISION_SLUG) {
+    assert.ok((entry.decisionSummary?.length ?? 0) >= 120, `${locale} should have a substantive opening decision for ${slug}`);
+    assert.ok(entry.decisionSummary!.length <= 240, `${locale} opening decision should stay concise for ${slug}`);
+    assert.equal(entry.decisionLinks?.length, 2, `${locale} should link both related comparisons for ${slug}`);
+    assert.equal(entry.quickVerdict, undefined, `${locale} should not duplicate the opening decision for ${slug}`);
+    assert.equal(entry.topCards, undefined, `${locale} should not restore the superseded cards for ${slug}`);
+  } else {
+    assert.ok((entry.quickVerdict?.body.length ?? 0) >= 120, `${locale} verdict should be substantive for ${slug}`);
+    assert.equal(entry.topCards?.length, 4, `${locale} should have four decision cards for ${slug}`);
+  }
   assert.ok((entry.primaryLinks?.length ?? 0) >= 3, `${locale} should have three internal links for ${slug}`);
   assert.ok((entry.faq?.items.length ?? 0) >= 3, `${locale} should have three FAQ items for ${slug}`);
   assert.ok((entry.faq?.items.length ?? 0) <= 5, `${locale} should have at most five FAQ items for ${slug}`);
@@ -321,7 +335,7 @@ for (const locale of ['en', 'fr', 'es'] as const) {
       assertUniqueCopy(uniqueCopy.titles, entry.meta?.title, locale, 'title', slug);
       assertUniqueCopy(uniqueCopy.descriptions, entry.meta?.description, locale, 'description', slug);
       assertUniqueCopy(uniqueCopy.heroIntros, entry.heroIntro, locale, 'hero intro', slug);
-      assertUniqueCopy(uniqueCopy.verdicts, entry.quickVerdict?.body, locale, 'verdict', slug);
+      assertUniqueCopy(uniqueCopy.verdicts, slug === COMPACT_DECISION_SLUG ? entry.decisionSummary : entry.quickVerdict?.body, locale, 'decision', slug);
       (entry.topCards ?? []).forEach((card, index) => {
         assertUniqueCopy(uniqueCopy.cards, `${card.title}\n${card.body}`, locale, `card ${index + 1}`, slug);
       });
@@ -419,7 +433,17 @@ test('English, French, and LATAM Spanish wave-3 blocks are independently localiz
     assertLocalizedField(entries, slug, 'meta.title', (entry) => entry.meta?.title);
     assertLocalizedField(entries, slug, 'meta.description', (entry) => entry.meta?.description);
     assertLocalizedField(entries, slug, 'heroIntro', (entry) => entry.heroIntro);
-    assertLocalizedField(entries, slug, 'quickVerdict.body', (entry) => entry.quickVerdict?.body);
+    if (slug === COMPACT_DECISION_SLUG) {
+      assertLocalizedField(entries, slug, 'decisionSummary', (entry) => entry.decisionSummary);
+      for (let index = 0; index < 2; index += 1) {
+        // These labels consist of shared model names; their destinations are localized.
+        for (const entry of Object.values(entries)) {
+          assert.match(entry.decisionLinks?.[index]?.label ?? '', /Veo 3\.1/);
+        }
+      }
+    } else {
+      assertLocalizedField(entries, slug, 'quickVerdict.body', (entry) => entry.quickVerdict?.body);
+    }
 
     const cardCount = Math.max(...Object.values(entries).map((entry) => entry.topCards?.length ?? 0));
     for (let index = 0; index < cardCount; index += 1) {
