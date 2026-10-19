@@ -1,4 +1,5 @@
 import React from 'react';
+import {SubtitleOverlay} from '../../lib/subtitles/SubtitleOverlay';
 import {TimelineSubtitleOverlay} from '../../lib/subtitles/TimelineSubtitleOverlay';
 import { AbsoluteFill, Audio, Img, Sequence, OffthreadVideo, useVideoConfig, useCurrentFrame } from 'remotion';
 import type { WorkspaceTimelineRenderClip } from '../../../app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-render';
@@ -54,6 +55,11 @@ export function TimelineComposition(props: TimelineExportRenderProps) {
       .filter((clip) => clip.linkedGroupId && clip.audioProvenance !== 'none')
       .map((clip) => clip.linkedGroupId as string)
   )));
+
+  if(props.audioOnly){
+    const audible=props.manifest.tracks.flatMap(track=>track.clips).filter(clip=>props.includeAudio&&clip.mediaKind!=='image'&&(!clip.audioMix?.muted)&&(clip.mediaKind==='audio'||!shouldMuteWorkspaceTimelineVideo({includeAudio:true,audioProvenance:resolveWorkspaceAudioProvenance({kind:'video',audioProvenance:clip.audioProvenance,hasAudio:clip.hasEmbeddedAudio}),hasExternalLinkedAudio:Boolean(clip.linkedGroupId&&externalAudioGroupIds.has(clip.linkedGroupId)),audioMixMuted:false})));
+    return <AbsoluteFill>{audible.map(clip=><Sequence key={clip.id} from={secondsToFrames(clip.startSec,fps)} durationInFrames={secondsToFrames(clip.durationSec,fps)}><Audio src={clip.mediaUrl} trimBefore={secondsToFrames(clip.sourceStartSec,fps)} trimAfter={secondsToFrames(clip.sourceEndSec,fps)} volume={(clip.audioMix?.volume??100)/100}/></Sequence>)}</AbsoluteFill>;
+  }
 
   return (
     <AbsoluteFill style={{ backgroundColor: 'black', overflow: 'hidden' }}>
@@ -114,7 +120,7 @@ export function TimelineComposition(props: TimelineExportRenderProps) {
             ))
           )
         : null}
-      <TimelineSubtitleOverlay items={props.manifest.tracks.flatMap(track=>track.clips)} timeMs={frame/fps*1000} width={width} height={height}/>
+      {props.manifest.sequenceSubtitleDocument?<div style={{position:'absolute',inset:0,zIndex:100}}><SubtitleOverlay document={props.manifest.sequenceSubtitleDocument} timeMs={(frame/fps+props.manifest.exportRange.startSec)*1000} width={width} height={height}/></div>:<TimelineSubtitleOverlay items={props.manifest.tracks.flatMap(track=>track.clips)} timeMs={frame/fps*1000} width={width} height={height}/>}
     </AbsoluteFill>
   );
 }

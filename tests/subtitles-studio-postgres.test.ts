@@ -9,6 +9,8 @@ import {createStudioConversationProject,editStudioConversationTimeline} from '..
 import {readStudioWorkspace} from '../frontend/src/server/studio/workspace-command';
 import {createSubtitleRepository,type SubtitleRepositoryDependencies} from '../frontend/src/server/subtitles/repository';
 import {normalizeScribeTranscript} from '../frontend/src/lib/subtitles/document';
+import {readOwnedSubtitleSequence,assertSubtitleSequenceSnapshot,subtitleSequenceAudioHash} from '../frontend/src/server/subtitles/sequence-source';
+import {readSubtitleSequenceAttachment} from '../frontend/src/server/subtitles/studio';
 import type {WorkspaceTimelineItem} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
 
 test('Studio attaches an owned source-matching revision atomically, retains it across trims, and updates only explicitly',async t=>{
@@ -31,4 +33,26 @@ test('Studio attaches an owned source-matching revision atomically, retains it a
   await editStudioConversationTimeline(actor,{...command(doc.id,2),expectedRevision:2},deps);assert.equal((await read())[0].subtitle?.revision,2);
   await editStudioConversationTimeline(actor,{...command(doc.id),expectedRevision:3,edit:{kind:'trim',clipId:inserted.clip!.id,edge:'start',durationFrames:90}},deps);
   assert.equal((await read())[0].sourceStartSec,2);assert.equal((await read())[0].subtitle?.revision,2);
+  const snapshot=await transaction(tx=>readOwnedSubtitleSequence(actor.userId,{projectId:project.projectId,sequenceId:project.sequenceId,expectedRevision:4},tx));
+  await transaction(tx=>assertSubtitleSequenceSnapshot(actor.userId,snapshot,tx));
+  const renamed=structuredClone(snapshot.manifest);renamed.sequenceName='New title';renamed.tracks[0].clips[0].title='New clip title';renamed.tracks[0].clips[0].transform={x:10,y:10,scale:1.1,rotation:15};
+  assert.equal(subtitleSequenceAudioHash(renamed),snapshot.audioManifestHash,'Naming and visual transforms do not invalidate the sound edit');
+  const visualOnly=structuredClone(snapshot.manifest);visualOnly.tracks.push({id:'video-4',durationSec:3,clips:[{...visualOnly.tracks[0].clips[0],id:'still',mediaKind:'image',mediaUrl:'https://cdn.maxvideoai.com/still.png'}]});assert.equal(subtitleSequenceAudioHash(visualOnly),snapshot.audioManifestHash,'Adding only a visual layer does not invalidate the mix');
+  visualOnly.tracks.at(-1)!.clips[0].mediaKind='video';visualOnly.tracks.at(-1)!.clips[0].audioProvenance='none';visualOnly.tracks.at(-1)!.clips[0].hasEmbeddedAudio=false;assert.equal(subtitleSequenceAudioHash(visualOnly),snapshot.audioManifestHash,'A silent video layer does not affect the mix');
+  const mix=normalizeScribeTranscript({text:'mix',language_code:'eng',words:[{text:'mix',type:'word',start:1,end:2}]},{id:'sequence-mix',source:{ref:{type:'asset',assetId:'owned-audio-mix',kind:'audio'},fingerprint:'b'.repeat(64),durationMs:3000,sequenceMix:{sequenceId:project.sequenceId,revision:4,audioManifestHash:snapshot.audioManifestHash}}});
+  await repo.create(actor.userId,mix,'mix-job');
+  assert.deepEqual((await repo.list(actor.userId,{sequenceId:project.sequenceId})).map(value=>value.id),[mix.id]);
+  const globalCommand=(documentId:string|null,expectedRevision:number)=>({projectId:project.projectId,sequenceId:project.sequenceId,expectedRevision,idempotencyKey:randomUUID(),edit:{kind:'sequence-subtitles',documentId,...documentId?{revision:1}:{}}});
+  await assert.rejects(editStudioConversationTimeline(actor,globalCommand(doc.id,4),deps),/SUBTITLE_SEQUENCE_CHANGED/);
+  await editStudioConversationTimeline(actor,globalCommand(mix.id,4),deps);
+  const readGlobal=async()=>readSubtitleSequenceAttachment(actor.userId,await readStudioWorkspace(actor,project.projectId,deps),project.sequenceId,repo.read);
+  assert.equal((await readGlobal())?.stale,false,'Attaching changes the project revision but leaves its audio intact');
+  assert.equal((await readGlobal())?.document?.id,mix.id);
+  await assert.rejects(transaction(tx=>assertSubtitleSequenceSnapshot(actor.userId,snapshot,tx)),/SUBTITLE_SEQUENCE_CHANGED/,'An unconfirmed quote pins the exact saved project revision');
+  await editStudioConversationTimeline(actor,{projectId:project.projectId,sequenceId:project.sequenceId,expectedRevision:5,idempotencyKey:randomUUID(),edit:{kind:'gain',clipId:inserted.clip!.id,volume:25}},deps);
+  assert.equal((await readGlobal())?.stale,true,'Changing the mix invalidates captions before preview/export');assert.equal((await readGlobal())?.document,null);
+  await editStudioConversationTimeline(actor,globalCommand(null,6),deps);assert.equal(await readGlobal(),null);
+  await editStudioConversationTimeline(actor,{projectId:project.projectId,sequenceId:project.sequenceId,expectedRevision:7,idempotencyKey:randomUUID(),edit:{kind:'gain',clipId:inserted.clip!.id,volume:0}},deps);
+  await assert.rejects(transaction(tx=>readOwnedSubtitleSequence(actor.userId,{projectId:project.projectId,sequenceId:project.sequenceId,expectedRevision:8},tx)),/SUBTITLE_SOURCE_HAS_NO_AUDIO/,'An entirely silent mix is rejected before any quote');
+
 });

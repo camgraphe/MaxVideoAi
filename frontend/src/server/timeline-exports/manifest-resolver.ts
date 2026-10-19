@@ -1,4 +1,4 @@
-import {hydrateSubtitleTimelineItems} from '../subtitles/studio';
+import {hydrateSubtitleTimelineItems,readSubtitleSequenceAttachment} from '../subtitles/studio';
 import { readOwnedLibraryAssetsByIds } from '@/server/media-library/assets';
 import type { MediaAssetRecord } from '@/server/media-library-records';
 import { ownedMediaStorageKeyForUrl } from '@/server/storage';
@@ -57,6 +57,7 @@ export type TimelineExportResolverDependencies = {
     assetIds: readonly string[];
   }) => Promise<MediaAssetRecord[]>;
   isOwnedStorageUrl: (params: { url: string; userId: string; projectId: string }) => boolean;
+  readSequenceSubtitles?:typeof readSubtitleSequenceAttachment;
   hydrateSubtitles?: typeof hydrateSubtitleTimelineItems;
   validateManifestMediaUrls: typeof validateTimelineExportManifestMediaUrls;
 };
@@ -185,6 +186,7 @@ function ownedLegacySourceUrl(params: {
 function manifestIntent(manifest: WorkspaceTimelineRenderManifest): unknown {
   return {
     sequenceId: manifest.sequenceId,
+    sequenceSubtitleDocument:manifest.sequenceSubtitleDocument??null,
     projectSettings: manifest.projectSettings ?? null,
     durationSec: manifest.durationSec,
     exportRange: manifest.exportRange,
@@ -311,7 +313,10 @@ export async function resolveOwnedTimelineExportRequestWithDependencies(params: 
     };
   });
 
+  const sequenceSubtitle=await (dependencies.readSequenceSubtitles??readSubtitleSequenceAttachment)(params.userId,{project,sequences:[sequence]},sequence.id);
+  if(sequenceSubtitle?.stale)throw new Error('SUBTITLE_SEQUENCE_CHANGED');
   const manifest = buildWorkspaceTimelineRenderManifest({
+    sequenceSubtitleDocument:sequenceSubtitle?.document??undefined,
     items: await (dependencies.hydrateSubtitles??hydrateSubtitleTimelineItems)(params.userId,canonicalItems),
     nodes,
     projectName: project.name,

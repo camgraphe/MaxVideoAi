@@ -13,7 +13,7 @@ test('subtitle confirmation scopes quotes and reserves one recoverable charge; f
   await createPaidGenerationTestSchema(pg.pool);await pg.pool.query(readFileSync('neon/migrations/73_subtitle_operations.sql','utf8'));
   await pg.pool.query(`CREATE TABLE job_outputs(id uuid PRIMARY KEY,job_id text,user_id text,kind text,status text);CREATE TABLE media_assets(id uuid PRIMARY KEY,public_id text,user_id text,kind text,url text,mime_type text,status text,deleted_at timestamptz,source_job_id text,source_output_id uuid,metadata jsonb);INSERT INTO media_assets VALUES('20000000-0000-4000-8000-000000000001','owned','owner','video','https://cdn.maxvideoai.com/owned.mp4','video/mp4','ready',NULL,NULL,NULL,'{}')`);
   await pg.pool.query("INSERT INTO app_receipts(user_id,type,amount_cents,currency) VALUES('owner','topup',500,'USD')");
-  const jobs=createSubtitleJobStore({preferredCurrency:async()=> 'usd'});let dispatched=0;
+  const jobs=createSubtitleJobStore({validatePricing:async()=>{},preferredCurrency:async()=> 'usd'});let dispatched=0;
   const actor={authMethod:'toolbox-session' as const,userId:'owner',clientId:null};
   const dependencies={jobs,readSource:async()=>({source,originalIdentity:{id:'20000000-0000-4000-8000-000000000001',url:'https://cdn.maxvideoai.com/owned.mp4'},facts:{durationMs:10000,width:320,height:180,fps:30,hasAudio:true}}),quoteTranscription:async()=>({totalCents:17,currency:'USD',meta:{fixture:true}}),dispatch:async()=>{dispatched++;}};
   const service=createSubtitleOperationsService(actor,{enabled:true,dependencies});

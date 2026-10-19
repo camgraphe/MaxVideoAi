@@ -25,7 +25,7 @@ async function main() {
   if (subtitleOperationId && targetExportId) throw new Error('MEDIA_WORKER_AMBIGUOUS_TARGET');
   assertTimelineExportWorkerEnvironment({ once });
   if (subtitleOperationId) {
-    const { runSubtitleOperation } = await import('../src/server/subtitles/operations');
+    const { runSubtitleOperation } = await import('../src/server/subtitles/worker');
     await runSubtitleOperation(subtitleOperationId);
     return;
   }

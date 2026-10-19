@@ -43,6 +43,8 @@ export const subtitleDocumentSchema=z.object({
     }
   }
 });
+export const subtitleSequenceAttachmentSchema=z.object({documentId:id,revision:z.number().int().positive(),audioManifestHash:z.string().regex(/^[a-f0-9]{64}$/)}).strict();
+export type SubtitleSequenceAttachment=z.infer<typeof subtitleSequenceAttachmentSchema>;
 export type SubtitleDocument=z.infer<typeof subtitleDocumentSchema>;
 export type SubtitleSource=z.infer<typeof subtitleSourceSchema>;
 export type SubtitleWord=z.infer<typeof subtitleWordSchema>;

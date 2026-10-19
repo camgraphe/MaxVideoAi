@@ -50,12 +50,13 @@ export function createSubtitleRepository(dependencies:SubtitleRepositoryDependen
       return next;
     });
   }
-  async function list(userId:string,options:{source?:ToolAssetRef;limit?:number;before?:{updatedAt:string;id:string}}={}){
+  async function list(userId:string,options:{source?:ToolAssetRef;limit?:number;sequenceId?:string;before?:{updatedAt:string;id:string}}={}){
     requireOwner(userId);const source=options.source?toolAssetRefSchema.parse(options.source):undefined;
     const limit=Math.max(1,Math.min(50,Number.isSafeInteger(options.limit)?options.limit!:20));
     const before=options.before;
+    if(options.sequenceId&&options.sequenceId.length>200)throw new Error('SUBTITLE_CURSOR_INVALID');
     if(before&&(!before.id||before.id.length>200||!Number.isFinite(Date.parse(before.updatedAt))))throw new Error('SUBTITLE_CURSOR_INVALID');
-    const rows=await dependencies.query<{id:string;current_revision:number;updated_at:Date|string;source:SubtitleDocument['source'];language:string;segment_count:number;excerpt:string}>(`SELECT d.id,d.current_revision,d.updated_at,r.document->'source' AS source,r.document->>'language' AS language,jsonb_array_length(r.document->'segments') AS segment_count,LEFT(r.document->'segments'->0->>'text',120) AS excerpt FROM subtitle_documents d JOIN subtitle_document_revisions r ON r.document_id=d.id AND r.revision=d.current_revision WHERE d.user_id=$1 AND ($2::jsonb IS NULL OR r.document->'source'->'ref'=$2::jsonb) AND ($4::timestamptz IS NULL OR (d.updated_at,d.id)<($4::timestamptz,$5::text)) ORDER BY d.updated_at DESC,d.id DESC LIMIT $3`,[userId,source?JSON.stringify(source):null,limit,before?.updatedAt??null,before?.id??null]);
+    const rows=await dependencies.query<{id:string;current_revision:number;updated_at:Date|string;source:SubtitleDocument['source'];language:string;segment_count:number;excerpt:string}>(`SELECT d.id,d.current_revision,d.updated_at,r.document->'source' AS source,r.document->>'language' AS language,jsonb_array_length(r.document->'segments') AS segment_count,LEFT(r.document->'segments'->0->>'text',120) AS excerpt FROM subtitle_documents d JOIN subtitle_document_revisions r ON r.document_id=d.id AND r.revision=d.current_revision WHERE d.user_id=$1 AND ($2::jsonb IS NULL OR r.document->'source'->'ref'=$2::jsonb) AND ($4::timestamptz IS NULL OR (d.updated_at,d.id)<($4::timestamptz,$5::text)) AND ($6::text IS NULL OR r.document->'source'->'sequenceMix'->>'sequenceId'=$6) ORDER BY d.updated_at DESC,d.id DESC LIMIT $3`,[userId,source?JSON.stringify(source):null,limit,before?.updatedAt??null,before?.id??null,options.sequenceId??null]);
     return rows.map(row=>({id:row.id,revision:row.current_revision,language:row.language,segmentCount:row.segment_count,source:row.source,excerpt:row.excerpt??'',updatedAt:new Date(row.updated_at).toISOString(),durationMs:row.source.durationMs}));
   }
   return {read,create,update,list};

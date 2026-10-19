@@ -24,3 +24,14 @@ export async function hydrateSubtitleTimelineItems(userId:string,items:Workspace
     return {...item,subtitleDocument:document};
   }));
 }
+
+export async function readSubtitleSequenceAttachment(userId:string,workspace:Awaited<ReturnType<typeof import('../studio/workspace-command').readStudioWorkspace>>,sequenceId:string,read=subtitleRepository.read){
+  const sequence=workspace.sequences.find(value=>value.id===sequenceId);if(!sequence)throw new Error('STUDIO_SEQUENCE_CONFLICT');
+  const raw=(sequence.timelineState as {sequenceSubtitle?:unknown}).sequenceSubtitle;if(!raw)return null;
+  const {subtitleSequenceAttachmentSchema}=await import('../../lib/subtitles/document');const reference=subtitleSequenceAttachmentSchema.parse(raw);
+  const document=await read(userId,reference.documentId,reference.revision);if(!document)throw new Error('SUBTITLE_NOT_FOUND');
+  const {subtitleSequenceAudioHash,subtitleSequenceManifest}=await import('./sequence-source');
+  const currentHash=subtitleSequenceAudioHash(subtitleSequenceManifest(workspace,sequenceId));
+  const stale=document.source.sequenceMix?.sequenceId!==sequenceId||document.source.sequenceMix?.audioManifestHash!==reference.audioManifestHash||currentHash!==reference.audioManifestHash;
+  return {reference,document:stale?null:document,stale};
+}

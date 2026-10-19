@@ -5,6 +5,8 @@ import {startDisposablePostgres,createPaidGenerationTestSchema} from './helpers/
 import {createSubtitleJobStore} from '../frontend/src/server/subtitles/jobs';
 import {createSubtitleRepository} from '../frontend/src/server/subtitles/repository';
 import {runSubtitleOperation,pollSubtitleOperation,reconcileSubtitleOperations} from '../frontend/src/server/subtitles/worker';
+import {createSubtitleOperationsService} from '../frontend/src/server/subtitles/operations';
+import {buildWorkspaceTimelineRenderManifest} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-render';
 import {getDb} from '../frontend/src/lib/db';
 
 const source={ref:{type:'asset' as const,assetId:'owned',kind:'video' as const},fingerprint:'a'.repeat(64),durationMs:10000};
@@ -14,7 +16,7 @@ test('durable subtitle worker resumes provider polling without resubmission, pub
   await createPaidGenerationTestSchema(pg.pool);
   for(const migration of ['70_subtitle_documents.sql','73_subtitle_operations.sql'])await pg.pool.query(readFileSync(`neon/migrations/${migration}`,'utf8'));
   await pg.pool.query("INSERT INTO app_receipts(user_id,type,amount_cents,currency) VALUES('owner','topup',500,'USD')");
-  const jobs=createSubtitleJobStore({validateSource:async()=>{},preferredCurrency:async()=> 'usd'}),documents=createSubtitleRepository();
+  const jobs=createSubtitleJobStore({validatePricing:async()=>{},validateSource:async()=>{},preferredCurrency:async()=> 'usd'}),documents=createSubtitleRepository();
   const actor={authMethod:'toolbox-session' as const,userId:'owner',clientId:null};
   const request={source,facts:{durationMs:10000,width:320,height:180,fps:30,hasAudio:true},settings:{keyterms:[]}};
   const reserve=async()=>{const op=await jobs.prepare(actor,'transcribe',request,{totalCents:17,currency:'USD'});await jobs.reserve(actor,op.id);return op.id;};
@@ -51,4 +53,19 @@ test('durable subtitle worker resumes provider polling without resubmission, pub
   const resumed=await jobs.claim(queued);assert.ok(resumed);await assert.rejects(jobs.complete(queued,{documentId:'stale'},expired!.lease_token),/CLAIM_LOST/);
   await pg.pool.query("UPDATE subtitle_operations SET lease_until=NOW()-INTERVAL '1 second' WHERE id=$1",[queued]);
   await runSubtitleOperation(queued,dependencies);assert.equal((await jobs.readWork(queued))?.state,'provider-pending');
+  const manifest=buildWorkspaceTimelineRenderManifest({items:[{id:'voice',outputNodeId:'voice',track:'audio',mediaKind:'audio',mediaUrl:'https://owned.invalid/source.wav',startSec:0,durationSec:10,sourceStartSec:0,sourceDurationSec:10,title:'Voice',status:'completed'}],nodes:[],projectName:'Film',sequenceId:'sequence',sequenceName:'The film mix',projectSettings:{fps:30,resolution:'720p',aspectRatio:'16:9'}});
+  const sequence={projectId:'project',sequenceId:'sequence',revision:7,audioManifestHash:'b'.repeat(64),manifest,media:[]};
+  const service=createSubtitleOperationsService(actor,{enabled:true,dependencies:{jobs,readSequence:async()=>sequence,quoteTranscription:async()=>({totalCents:17,currency:'USD'}),dispatch:async()=>{}}});
+  const mix=await service.prepareStudioSubtitles({projectId:'project',sequenceId:'sequence',expectedRevision:7});
+  assert.deepEqual(mix.sourceSummary,{kind:'sequence',name:'The film mix',revision:7});
+  const breakdown=mix.quote.breakdown as {transcription:{amountCents:number};mixPreparation:{amountCents:number;source:string}};
+  assert.equal(mix.quote.price.amountCents,breakdown.transcription.amountCents+breakdown.mixPreparation.amountCents);assert.equal(breakdown.mixPreparation.source,'timeline-export-paid-policy');assert.ok(breakdown.mixPreparation.amountCents>0);
+  await service.confirm({operationId:mix.operationId,confirmed:true});
+  const mixedSource={ref:{type:'asset' as const,assetId:'owned-mix-audio',kind:'audio' as const},fingerprint:'c'.repeat(64),durationMs:10000,sequenceMix:{sequenceId:'sequence',revision:7,audioManifestHash:sequence.audioManifestHash}};
+  let mixes=0;await Promise.all([runSubtitleOperation(mix.operationId,{...dependencies,prepareMix:async()=>{mixes++;return {source:mixedSource,audioUrl:'https://owned.invalid/mix.wav',storageKey:'mix-key',storageUrl:'https://owned.invalid/mix.wav',retainAsAsset:true};}}),runSubtitleOperation(mix.operationId,dependencies)]);
+  assert.equal(mixes,1);assert.equal((await jobs.readWork(mix.operationId))?.request_snapshot.source,null,'No fictitious source exists before the worker creates the owned audio');
+  await pollSubtitleOperation(mix.operationId,dependencies);
+  assert.deepEqual((await documents.read('owner',`subtitle-${mix.operationId}`))?.source,mixedSource);
+  assert.equal((await pg.pool.query("SELECT count(*)::int n FROM app_receipts WHERE type='charge' AND job_id=$1",[(await jobs.readWork(mix.operationId))?.job_id])).rows[0].n,1);
+
 });

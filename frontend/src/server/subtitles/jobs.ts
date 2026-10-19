@@ -1,3 +1,5 @@
+import {assertSubtitlePurchaseAllowed,recordSubtitlePurchase,recordSubtitleRefund} from './billing';
+import {revalidateSubtitlePricing} from './pricing';
 import {randomUUID} from 'node:crypto';
 import {query,withDbTransaction} from '@/lib/db';
 import {reserveWalletChargeInExecutor} from '@/lib/wallet';
@@ -7,9 +9,11 @@ import type {SubtitleDocument,SubtitleSource} from '../../lib/subtitles/document
 import type {ScribeSettings} from './scribe';
 import type {probeSubtitleMedia} from './media';
 export type SubtitlePricing={totalCents:number;currency:string;[key:string]:unknown};
-export type SubtitleOperationRequest={source:SubtitleSource;originalIdentity?:{id:string;url:string};facts:Awaited<ReturnType<typeof probeSubtitleMedia>>;settings:ScribeSettings;document?:SubtitleDocument};
-export type SubtitleOperationRecord={id:string;user_id:string;auth_origin:string;oauth_client_id:string|null;studio_project_id:string|null;operation_kind:'transcribe'|'render';state:'prepared'|'queued'|'processing'|'submitting'|'provider-pending'|'completed'|'failed';request_snapshot:SubtitleOperationRequest;pricing_snapshot:SubtitlePricing;export_estimate:Record<string,unknown>|null;job_id:string|null;provider_request_id:string|null;prepared_audio:{audioUrl:string;storageKey:string;storageUrl:string}|null;result:Record<string,unknown>|null;message:string|null;lease_token:string|null;updated_at:Date|string;expires_at:Date|string};
-const defaults={validateSource:async(operation:SubtitleOperationRecord,executor:import('@/lib/db').QueryExecutor)=>{
+export type SubtitleOperationRequest={source:SubtitleSource|null;sequence?:import('./sequence-source').SubtitleSequenceSnapshot;originalIdentity?:{id:string;url:string};facts:Awaited<ReturnType<typeof probeSubtitleMedia>>;settings:ScribeSettings;document?:SubtitleDocument};
+export type SubtitleOperationRecord={id:string;user_id:string;auth_origin:string;oauth_client_id:string|null;studio_project_id:string|null;operation_kind:'transcribe'|'render'|'mix-transcribe';state:'prepared'|'queued'|'processing'|'submitting'|'provider-pending'|'completed'|'failed';request_snapshot:SubtitleOperationRequest;pricing_snapshot:SubtitlePricing;export_estimate:Record<string,unknown>|null;job_id:string|null;provider_request_id:string|null;prepared_audio:{audioUrl:string;storageKey:string;storageUrl:string;source?:SubtitleSource;retainAsAsset?:boolean}|null;result:Record<string,unknown>|null;message:string|null;lease_token:string|null;updated_at:Date|string;expires_at:Date|string};
+const defaults={validatePricing:revalidateSubtitlePricing,assertPurchaseAllowed:assertSubtitlePurchaseAllowed,recordPurchase:recordSubtitlePurchase,recordRefund:recordSubtitleRefund,validateSource:async(operation:SubtitleOperationRecord,executor:import('@/lib/db').QueryExecutor)=>{
+  if(operation.request_snapshot.sequence){await (await import('./sequence-source')).assertSubtitleSequenceSnapshot(operation.user_id,operation.request_snapshot.sequence,executor);return;}
+  if(!operation.request_snapshot.source)throw new Error('SUBTITLE_SOURCE_CHANGED');
   const identity=operation.request_snapshot.originalIdentity;if(!identity)throw new Error('SUBTITLE_SOURCE_CHANGED');
   const media=await (await import('../studio/media-resolver')).resolveStudioMedia(operation.user_id,operation.request_snapshot.source.ref,(sql,values)=>executor.query(sql,values),{lockAsset:true});
   if(media.id!==identity.id||media.url!==identity.url)throw new Error('SUBTITLE_SOURCE_CHANGED');
@@ -21,8 +25,10 @@ export function createSubtitleJobStore(overrides:Partial<typeof defaults>={}){
   async function prepare(actor:GenerationActor,kind:SubtitleOperationRecord['operation_kind'],request:SubtitleOperationRequest,pricing:SubtitlePricing,exportEstimate?:Record<string,unknown>){
     requireGenerationActor(actor);
     if(!Number.isSafeInteger(pricing.totalCents)||pricing.totalCents<1||pricing.currency!=='USD')throw new Error('SUBTITLE_PRICING_UNAVAILABLE');
-    const id=randomUUID();const rows=await dependencies.query<SubtitleOperationRecord>(`INSERT INTO subtitle_operations(id,user_id,auth_origin,oauth_client_id,studio_project_id,operation_kind,request_snapshot,pricing_snapshot,export_estimate,expires_at)
-      VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,$8::jsonb,$9::jsonb,NOW()+INTERVAL '5 minutes') RETURNING *`,[id,...actorValues(actor),kind,JSON.stringify(request),JSON.stringify(pricing),exportEstimate?JSON.stringify(exportEstimate):null]);return rows[0];
+    return dependencies.transaction(async executor=>{
+    await dependencies.assertPurchaseAllowed(actor,pricing,executor,false);
+    const id=randomUUID();const rows=await executor.query<SubtitleOperationRecord>(`INSERT INTO subtitle_operations(id,user_id,auth_origin,oauth_client_id,studio_project_id,operation_kind,request_snapshot,pricing_snapshot,export_estimate,expires_at)
+      VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,$8::jsonb,$9::jsonb,NOW()+INTERVAL '5 minutes') RETURNING *`,[id,...actorValues(actor),kind,JSON.stringify(request),JSON.stringify(pricing),exportEstimate?JSON.stringify(exportEstimate):null]);return rows[0];});
   }
   async function read(actor:GenerationActor,id:string){const rows=await dependencies.query<SubtitleOperationRecord>(`SELECT o.* FROM subtitle_operations o LEFT JOIN app_jobs j ON j.job_id=o.job_id WHERE ${owned} AND j.hidden IS NOT TRUE`,[id,...actorValues(actor)]);if(!rows[0])throw new Error('SUBTITLE_OPERATION_NOT_FOUND');return rows[0];}
   async function reserve(actor:GenerationActor,id:string){
@@ -33,12 +39,15 @@ export function createSubtitleJobStore(overrides:Partial<typeof defaults>={}){
       if(operation.state!=='prepared')return {operation,created:false};
       if(new Date(operation.expires_at).getTime()<=Date.now())throw new Error('SUBTITLE_QUOTE_EXPIRED');
       await dependencies.validateSource(operation,executor);
+      await dependencies.validatePricing(operation,executor);
+      await dependencies.assertPurchaseAllowed(actor,operation.pricing_snapshot,executor,true);
       const jobId=`subtitle_${operation.id}`,pricing=operation.pricing_snapshot;
       if(!Number.isSafeInteger(pricing.totalCents)||pricing.totalCents<1||pricing.currency!=='USD')throw new Error('SUBTITLE_PRICING_UNAVAILABLE');
       const charge=await dependencies.reserve(executor,{userId:actor.userId,jobId,surface:'tool',billingProductKey:`tool:subtitles:${operation.operation_kind}`,amountCents:pricing.totalCents,currency:'USD',description:`Subtitles ${operation.operation_kind}`,pricingSnapshotJson:JSON.stringify(pricing),applicationFeeCents:null,vendorAccountId:null,stripePaymentIntentId:null,stripeChargeId:null},{preferredCurrency:currency});
       if(!charge.ok)throw new Error(charge.errorCode==='currency_mismatch'?'CURRENCY_MISMATCH':'INSUFFICIENT_FUNDS');
       await executor.query(`INSERT INTO app_jobs(job_id,user_id,surface,billing_product_key,engine_id,engine_label,duration_sec,prompt,thumb_url,status,progress,final_price_cents,pricing_snapshot,settings_snapshot,currency,payment_status,visibility,indexable,provisional)
-        VALUES($1,$2,'tool',$3,'toolbox-subtitles','Subtitles',$4,'','/assets/frames/thumb-1x1.svg','queued',0,$5,$6::jsonb,$7::jsonb,'USD','paid_wallet','private',FALSE,TRUE)`,[jobId,actor.userId,`tool:subtitles:${operation.operation_kind}`,Math.ceil(operation.request_snapshot.source.durationMs/1000),pricing.totalCents,JSON.stringify(pricing),JSON.stringify({toolId:'subtitles',operationId:operation.id,operation:operation.operation_kind})]);
+        VALUES($1,$2,'tool',$3,'toolbox-subtitles','Subtitles',$4,'','/assets/frames/thumb-1x1.svg','queued',0,$5,$6::jsonb,$7::jsonb,'USD','paid_wallet','private',FALSE,TRUE)`,[jobId,actor.userId,`tool:subtitles:${operation.operation_kind}`,Math.ceil(operation.request_snapshot.facts.durationMs/1000),pricing.totalCents,JSON.stringify(pricing),JSON.stringify({toolId:'subtitles',operationId:operation.id,operation:operation.operation_kind})]);
+      await dependencies.recordPurchase(actor,operation,jobId,executor);
       const updated=await executor.query<SubtitleOperationRecord>("UPDATE subtitle_operations SET state='queued',job_id=$2,updated_at=NOW() WHERE id=$1 RETURNING *",[id,jobId]);return {operation:updated[0],created:true};
     });
   }
@@ -73,6 +82,7 @@ export function createSubtitleJobStore(overrides:Partial<typeof defaults>={}){
         await executor.query("UPDATE app_jobs SET status='completed',progress=100,video_url=$2,settings_snapshot=settings_snapshot||jsonb_build_object('subtitleResult',$3::jsonb),provisional=FALSE,updated_at=NOW() WHERE job_id=$1",[operation.job_id,typeof result.originalUrl==='string'?result.originalUrl:null,JSON.stringify(result)]);
         await executor.query("UPDATE subtitle_operations SET state='completed',result=$2::jsonb,lease_until=NULL,updated_at=NOW() WHERE id=$1",[id,JSON.stringify(result)]);
       }else{
+        await dependencies.recordRefund(operation,executor);
         await executor.query(`INSERT INTO app_receipts(user_id,type,amount_cents,currency,description,job_id,surface,billing_product_key,pricing_snapshot)
           SELECT user_id,'refund',final_price_cents,currency,'Refund subtitles',job_id,surface,billing_product_key,pricing_snapshot FROM app_jobs WHERE job_id=$1 AND payment_status='paid_wallet' ON CONFLICT DO NOTHING`,[operation.job_id]);
         await executor.query("UPDATE app_jobs SET status='failed',payment_status='refunded_wallet',message=$2,provisional=FALSE,updated_at=NOW() WHERE job_id=$1",[operation.job_id,message??'Subtitle processing failed.']);

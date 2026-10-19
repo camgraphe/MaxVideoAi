@@ -12,7 +12,7 @@ import {applyConversationTimelineEdit,conversationMonitorTime,conversationLibrar
 import type {ImageLibraryAsset} from '@/lib/studio/image-library';
 import type {WorkspaceTimelineItem} from '../../../_shared/_lib/workspace-types';
 import styles from '../conversation-timeline.module.css';
-import {ConversationSubtitlePicker,ConversationSubtitlePreview} from './ConversationSubtitles.client';
+import {ConversationSubtitlePicker,ConversationSubtitlePreview,ConversationSequenceSubtitles} from './ConversationSubtitles.client';
 import {ConversationExport} from './ConversationExport.client';
 import {consumeConversationMediaRenewal} from '@/lib/studio/conversation-preview-access';
 import type {StudioProjectTimelineExport} from '@/server/timeline-exports/contracts';
@@ -105,7 +105,7 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
     {monitor && items.length > 0 && <div className={styles.monitorRow}>
       <div className={styles.monitor} style={{aspectRatio: settings.aspectRatio.replace(':','/')}} aria-label={t('Film monitor','Moniteur du film')}>
         <ProgramPlaybackLayers copy={copy.viewer.monitor} {...layers} mediaReloadKeys={timeline.mediaReloadKeys} onMediaAccessError={mediaFailure} />
-        <ConversationSubtitlePreview items={items} timeMs={conversationMonitorTime(playback.playheadSec,duration,fps)*1000}/>
+        <ConversationSubtitlePreview document={timeline.view?.sequenceSubtitle?.document} items={items} timeMs={conversationMonitorTime(playback.playheadSec,duration,fps)*1000}/>
       </div>
       <button className={styles.close} aria-label={t('Collapse monitor','Replier le moniteur')} onClick={closeMonitor}><X size={16}/></button>
     </div>}
@@ -116,6 +116,7 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
       <button className={styles.addMedia} disabled={!timeline.view || timeline.busy} aria-label={t('Add library media to film','Ajouter un média de la bibliothèque au film')} title={t('Add media to timeline','Ajouter un média à la timeline')} onClick={event => onOpenLibrary(event.currentTarget)}><Plus size={15}/><span>{t('Add media','Ajouter')}</span></button>
       {!!items.length && <button aria-label={monitor ? t('Collapse monitor','Replier le moniteur') : t('Open monitor','Ouvrir le moniteur')} onClick={() => monitor ? closeMonitor() : openMonitor()}>{monitor ? <ChevronDown size={17}/> : <ChevronUp size={17}/>}</button>}
       {timeline.busy && <small role="status">{t('Saving…','Enregistrement…')}</small>}
+      {!!items.length && timeline.view && <ConversationSequenceSubtitles projectId={projectId} sequenceId={timeline.view.data.sequenceId} revision={timeline.view.data.revision} attached={timeline.view.sequenceSubtitle} busy={timeline.busy} edit={timeline.edit} locale={locale}/>}
       {exportAvailable && timeline.view && <ConversationExport projectId={projectId} projectName={projectName} view={timeline.view} pending={exportPending || timeline.busy} jobs={exportJobs} onChange={onExportChange}/>}
     </div>
     <div className={styles.scroll} id="studio-timeline-tracks" hidden={!timelineExpanded}>

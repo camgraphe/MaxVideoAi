@@ -1,3 +1,4 @@
+import {subtitleSequenceAttachmentSchema} from '../../lib/subtitles/document';
 import { withDbTransaction, type QueryExecutor } from '@/lib/db';
 import { assertStudioConnectedSchemaReady } from './connected-schema';
 import { StudioConnectedPersistenceError } from './montage-command';
@@ -137,6 +138,7 @@ function validateSnapshot(input: SaveStudioWorkspaceInput): Array<{
       name: sequence.name.trim().slice(0, 200),
       projectSettings: sequence.projectSettings,
       timelineState: {
+        ...(sequence.sequenceSubtitle?{sequenceSubtitle:subtitleSequenceAttachmentSchema.parse(sequence.sequenceSubtitle)}:{}),
         timelineItems,
         audioTrackCount: sequence.audioTrackCount,
         hiddenVideoTracks: sequence.hiddenVideoTracks,
