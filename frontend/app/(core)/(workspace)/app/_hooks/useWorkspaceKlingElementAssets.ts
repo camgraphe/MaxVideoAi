@@ -2,7 +2,8 @@ import { useWorkspaceAssetLifetime } from './useWorkspaceAssetLifetime';
 import { useCallback, useEffect, useRef } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { KlingElementAsset, KlingElementState } from '@/components/KlingElementsBuilder';
-import { authFetch } from '@/lib/authFetch';
+import { useWorkspaceUploadOperation } from './useWorkspaceUploadOperation';
+import { uploadVideoFile } from '@/lib/client-video-upload';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import {
   buildKlingLibraryAsset,
@@ -39,6 +40,7 @@ export function useWorkspaceKlingElementAssets({
   setAssetPickerTarget,
 }: UseWorkspaceKlingElementAssetsOptions) {
   const valid = useWorkspaceAssetLifetime(accountScope);
+  const beginUpload = useWorkspaceUploadOperation(accountScope, valid);
   const klingElementsRef = useRef<KlingElementState[]>([]);
 
   useEffect(() => {
@@ -164,42 +166,31 @@ export function useWorkspaceKlingElementAssets({
       );
 
       const upload = async () => {
+        const operation = beginUpload();
         try {
-          const preparedFile =
-            slot === 'video'
-              ? file
-              : await prepareImageFileForUpload(file, {
+          const assetResponse = slot === 'video'
+            ? await uploadVideoFile(file, { request: operation.request, abortRequest: operation.abortRequest })
+            : await (async () => {
+                const preparedFile = await prepareImageFileForUpload(file, {
                   maxBytes: 25 * 1024 * 1024,
                 });
+                if (!valid()) throw new Error('Retired upload');
+                const formData = new FormData();
+                formData.append('file', preparedFile, preparedFile.name);
+                const response = await operation.request('/api/uploads/image', {
+                  method: 'POST',
+                  body: formData,
+                });
+                const payload = await response.json().catch(() => null);
+                if (!response.ok || !payload?.ok) {
+                  throw createUploadFailure('image', response.status, payload, 'Upload failed');
+                }
+                return payload.asset as { id: string; url: string; name?: string };
+              })();
           if (!valid()) {
             revokeKlingAssetPreview(baseAsset);
             return;
           }
-          const formData = new FormData();
-          formData.append('file', preparedFile, preparedFile.name);
-          const uploadEndpoint = slot === 'video' ? '/api/uploads/video' : '/api/uploads/image';
-          const response = await authFetch(uploadEndpoint, {
-            method: 'POST',
-            body: formData,
-          });
-          const payload = await response.json().catch(() => null);
-          if (!response.ok || !payload?.ok) {
-            throw createUploadFailure(
-              slot === 'video' ? 'video' : 'image',
-              response.status,
-              payload,
-              'Upload failed',
-            );
-          }
-          if (!valid()) {
-            revokeKlingAssetPreview(baseAsset);
-            return;
-          }
-          const assetResponse = payload.asset as {
-            id: string;
-            url: string;
-            name?: string;
-          };
           setKlingElements((previous) =>
             previous.map((element) => {
               if (element.id !== elementId) return element;
@@ -262,12 +253,14 @@ export function useWorkspaceKlingElementAssets({
             }),
           );
           showNotice(message);
+        } finally {
+          operation.finish();
         }
       };
 
       void upload();
     },
-    [valid, setKlingElements, showNotice],
+    [valid, beginUpload, setKlingElements, showNotice],
   );
 
   return {

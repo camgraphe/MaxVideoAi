@@ -4,7 +4,7 @@ import { useCallback, useMemo } from 'react';
 import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import type { AssetLibrarySource } from '@/components/library/AssetLibraryBrowser';
-import { authFetch } from '@/lib/authFetch';
+import { ownedAuthFetch } from '@/lib/owned-auth-fetch';
 import {
   buildMediaLibraryAssetsKey,
   fetchMediaLibraryAssets,
@@ -41,8 +41,8 @@ export function useImageLibraryData({ userId, source, isCharacterMode }: {
   const characterKey = userId && isCharacterMode
     ? ['/api/character-references?limit=60', userId] as const
     : null;
-  const characterQuery = useSWR<CharacterReferencesResponse>(characterKey, async ([url]: readonly [string, string]) => {
-    const response = await authFetch(url);
+  const characterQuery = useSWR<CharacterReferencesResponse>(characterKey, async ([url, ownerId]: readonly [string, string]) => {
+    const response = await ownedAuthFetch(url, ownerId);
     const payload = (await response.json().catch(() => null)) as CharacterReferencesResponse | null;
     if (!response.ok || !payload?.ok) {
       throw new Error(payload?.error ?? 'Failed to load Media');
