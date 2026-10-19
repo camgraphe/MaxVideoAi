@@ -69,7 +69,7 @@ export function resolveWorkspaceRequestParams(
 ): WorkspaceRequestParams {
   const fromVideoId = searchParams?.get('from') ?? null;
   const requestedJobId = readTrimmedParam(searchParams, 'job');
-  const requestedEngineId = readTrimmedParam(searchParams, 'engine');
+  const requestedEngineId = readTrimmedParam(searchParams, 'engine') ?? readTrimmedParam(searchParams, 'engineId');
   const requestedModeRaw = readTrimmedParam(searchParams, 'mode')?.toLowerCase() ?? null;
   const requestedMode = isModeValue(requestedModeRaw) ? requestedModeRaw : null;
   const resolvedRequestedEngineId =
