@@ -11,6 +11,8 @@ import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import publication from '../frontend/config/mcp-publication.json';
 import { BestForCreatePaths } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/best-for/[usecase]/_components/BestForCreatePaths';
+import { ExamplesPreview } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/best-for/[usecase]/_components/BestForExamplesPreview';
+import { JSDOM } from 'jsdom';
 import { PUBLIC_VIDEO_SOURCE_ELIGIBILITY } from '../frontend/server/videos-query';
 
 (globalThis as typeof globalThis & { React: typeof React }).React = React;
@@ -53,4 +55,17 @@ test('curated scenes use the same source and deletion eligibility as their SEO w
     assert.ok(queries[0].includes(PUBLIC_VIDEO_SOURCE_ELIGIBILITY),'the final media read must enforce the existing deletion and playable-source gate');
     assert.match(queries[0],/visibility = 'public'/);
   } finally { delete (globalThis as Record<string, unknown>)[key]; await rm(directory,{recursive:true,force:true}); }
+});
+
+
+test('scene gallery prioritizes exactly its first rendered poster and never an idle video', () => {
+  const picks = [0,1,2].map(index => ({ slug: 'flux-3', example: {id:'public-scene-'+index, title:'Scene '+index, poster:'/poster-'+index+'.jpg',videoUrl:'https://media.maxvideoai.com/scene-'+index+'.mp4',duration:5,watchFor:'Movement'} }));
+  const html=renderToStaticMarkup(React.createElement(NextIntlClientProvider,{locale:'en',messages:{},timeZone:'UTC'},React.createElement(ExamplesPreview,{locale:'en',picks:picks as any})));
+  const dom=new JSDOM(html);
+  const images=[...dom.window.document.querySelectorAll('img')];
+  assert.equal(images.length,3);
+  assert.deepEqual(images.map(image=>image.getAttribute('fetchpriority')),['high',null,null]);
+  assert.deepEqual(images.map(image=>image.getAttribute('loading')),[null,'lazy','lazy']);
+  assert.equal(dom.window.document.querySelectorAll('video').length,0);
+  dom.window.close();
 });

@@ -21,7 +21,7 @@ export function BestForSceneCard({ slug, name, scene, locale, priority = false, 
     <a href={href} className="bf-scene-cover" aria-label={C.play[locale] + ': ' + scene.title}
       onClick={event => { if (event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) { event.preventDefault(); setOpen(true); } }}>
       <Image src={scene.poster} alt={scene.title} fill sizes={wide ? "(max-width: 767px) calc(100vw - 48px), 760px" : "(max-width: 767px) calc(100vw - 48px), (max-width: 1023px) 46vw, 390px"}
-        priority={priority} className="object-cover transition-transform duration-500 motion-safe:group-hover:scale-[1.02]" />
+        priority={priority} fetchPriority={priority ? 'high' : undefined} className="object-cover transition-transform duration-500 motion-safe:group-hover:scale-[1.02]" />
       <span className="bf-play"><Play size={20} fill="currentColor" aria-hidden /></span>
       <span className="bf-duration">{scene.duration > 0 ? scene.duration + ' s' : C.play[locale]}</span>
     </a>
