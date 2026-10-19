@@ -23,9 +23,8 @@ export function buildBenchmarkWebPageJsonLd({
     inLanguage,
     dateModified: modifiedAt,
     author: {
-      '@type': 'Person',
+      '@type': 'Organization',
       name: editorialProfile.name,
-      jobTitle: editorialProfile.jobTitle,
       url: getEditorialProfileAbsoluteUrl(editorialProfile),
     },
     publisher: {

@@ -26,7 +26,18 @@ Clarity failure cannot retry an already successful GA4 send. Events require a
 loaded eligible SDK, so they are a subset of canonical events, not a revenue ledger.
 Automatic Clarity sign-up/purchase heuristics remain separate from these events.
 
+Generation acknowledgements can return provider states such as `queued` or
+`running`. `runGenerate` normalizes them with the same status policy as polling
+before the workspace stores or broadcasts them. The GA4 bridge independently
+accepts only explicit `completed` and `failed` terminal status events; an
+in-flight or unrecognized state must never fall through to `generation_failed`.
+Nonterminal events still associate the local attempt with its job, preserving
+generation sequence attribution when completion arrives without a local key.
+
 Verification: `tests/clarity-measurement.test.ts` exercises consent separation,
 stored and resolved exclusion, event/URL privacy, loaded-SDK stop/restoration,
 single injection, and success/failure/retry mirroring. Existing analytics, auth,
 consent and role-lifecycle tests cover the shared transport contracts.
+`tests/generation-response-status.test.ts` covers acknowledgement normalization;
+`tests/analytics-role-lifecycle.test.ts` covers queued/running-to-completed event
+sequences and duplicate terminal notifications.

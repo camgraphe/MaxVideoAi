@@ -103,41 +103,42 @@ export async function fetchPublicBenchmarkLatency(options?: {
             alias_map.canonical_engine_id
           FROM UNNEST($6::text[], $7::text[]) AS alias_map(engine_alias, canonical_engine_id)
         ),
-        completed_cohort AS (
+        duration_samples AS (
           SELECT
             canonical.canonical_engine_id AS engine_id,
             jobs.user_id,
-            jobs.created_at,
-            jobs.updated_at
-          FROM app_jobs AS jobs
+            samples.completed_at,
+            EXTRACT(EPOCH FROM (samples.completed_at - samples.started_at)) * 1000 AS duration_ms
+          FROM generation_timing_samples AS samples
+          JOIN app_jobs AS jobs ON jobs.job_id = samples.job_id
           JOIN canonical_engine_aliases AS canonical
-            ON canonical.engine_alias = LOWER(TRIM(jobs.engine_id))
-          WHERE jobs.created_at >= NOW() - make_interval(days => $2)
+            ON canonical.engine_alias = LOWER(TRIM(samples.engine_id))
+          WHERE samples.completed_at >= NOW() - make_interval(days => $2)
+            AND samples.completed_at <= NOW()
+            AND samples.completed_at > samples.started_at
+            AND isfinite(samples.started_at)
+            AND isfinite(samples.completed_at)
+            -- Only first application delivery: historical provider/log completions
+            -- and provider-only execution durations measure a different interval.
+            AND samples.source = 'job_completion'
+            AND jobs.surface = 'video'
+            AND NULLIF(TRIM(jobs.video_url), '') IS NOT NULL
             AND jobs.user_id IS NOT NULL
             AND jobs.user_id <> ALL($1::text[])
             AND LOWER(COALESCE(jobs.status, '')) = ANY($3::text[])
         ),
         eligible_engines AS (
           SELECT engine_id
-          FROM completed_cohort
+          FROM duration_samples
           GROUP BY engine_id
           HAVING COUNT(*) >= $4
              AND COUNT(DISTINCT user_id) >= $5
-        ),
-        duration_samples AS (
-          SELECT
-            engine_id,
-            updated_at,
-            EXTRACT(EPOCH FROM (updated_at - created_at)) * 1000 AS duration_ms
-          FROM completed_cohort
-          WHERE updated_at IS NOT NULL
-            AND updated_at > created_at
         )
         SELECT
           engine_id,
           PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY duration_ms) AS median_duration_ms,
           PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY duration_ms) AS p90_duration_ms,
-          MAX(updated_at) AS as_of
+          MAX(completed_at) AS as_of
         FROM duration_samples
         JOIN eligible_engines USING (engine_id)
         GROUP BY engine_id

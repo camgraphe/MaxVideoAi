@@ -396,10 +396,8 @@ test('Veo 3.1 Lite vs Fast comparison owns tier CTR metadata without a site-name
   assert.equal(meta?.title, title);
   assert.equal(meta?.description, description);
   assert.equal(meta?.titleBranding, 'none');
-  assert.match(
-    override?.heroIntro ?? '',
-    /^Choose Lite for lower-cost 720p or 1080p drafts\. Choose Fast for 4K or multiple reference images\./
-  );
+  assert.match(override?.decisionSummary ?? '', /Lite.*720p or 1080p/);
+  assert.match(override?.decisionSummary ?? '', /Fast.*4K.*reference images/);
 
   const metadata = buildSeoMetadata({
     locale: 'en',

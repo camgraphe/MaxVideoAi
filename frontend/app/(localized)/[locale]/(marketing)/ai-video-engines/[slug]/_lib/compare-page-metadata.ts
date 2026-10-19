@@ -19,6 +19,7 @@ import {
   resolveEngines,
 } from './compare-page-helpers';
 import { getComparePageOverride } from './compare-page-overrides';
+import { getComparisonCriteriaCount } from './compare-page-scorecard';
 import type { Params } from './compare-page-types';
 
 export function resolveComparePublicationRobots(
@@ -50,7 +51,7 @@ export async function buildComparePageMetadata(props: {
   };
   const resolved = canonicalInfo ? resolveEngines(canonicalInfo.canonicalSlug) : null;
   const pairHasNativeAudio = Boolean(resolved?.left.engine?.audio) || Boolean(resolved?.right.engine?.audio);
-  const criteriaCount = pairHasNativeAudio ? 10 : 9;
+  const criteriaCount = getComparisonCriteriaCount(pairHasNativeAudio);
   const titleTemplate =
     metaOverride.title ?? compareCopy.meta?.title ?? '{left} vs {right} — Side-by-Side Specs, Pricing & Quality | MaxVideoAI';
   const titleFallback =

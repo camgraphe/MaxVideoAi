@@ -95,10 +95,17 @@ export async function ensureReusableAsset(params: {
   const source = normalizeMediaAssetSource(params.source);
   const normalizedUrl = normalizeString(params.url);
   if (!normalizedUrl) throw new Error('URL_REQUIRED');
+  const host = new URL(normalizedUrl).host.toLowerCase();
+  const shouldCopy = source === 'saved_job_output' || host === 'fal.media' || host.endsWith('.fal.media');
+  const measureCopiedAudio = params.kind === 'audio' && shouldCopy;
   const ownedGeneratedVideo = params.kind === 'video' && source === 'saved_job_output' && params.sourceOutputId
     ? await resolveOwnedGeneratedVideo({ userId: params.userId, sourceOutputId: params.sourceOutputId,
         sourceJobId: params.sourceJobId, url: params.url.trim() }) : undefined;
   const suppliedMetadata = { ...(params.metadata ?? {}) };
+  if (measureCopiedAudio) {
+    delete suppliedMetadata.durationSec;
+    delete suppliedMetadata.mediaFacts;
+  }
   // Generated measurements come only from the verified output or received bytes.
   if (suppliedMetadata.mediaFacts && typeof suppliedMetadata.mediaFacts === 'object' && 'version' in suppliedMetadata.mediaFacts) {
     delete suppliedMetadata.mediaFacts;
@@ -111,7 +118,7 @@ export async function ensureReusableAsset(params: {
     sourceOutputId: params.sourceOutputId ?? null,
   });
   const durationSec =
-    typeof params.durationSec === 'number' && Number.isFinite(params.durationSec) && params.durationSec > 0
+    !measureCopiedAudio && typeof params.durationSec === 'number' && Number.isFinite(params.durationSec) && params.durationSec > 0
       ? params.durationSec
       : null;
   const mediaWidth =
@@ -201,8 +208,6 @@ export async function ensureReusableAsset(params: {
     return mapAssetRow(existing[0]);
   }
 
-  const host = new URL(normalizedUrl).host.toLowerCase();
-  const shouldCopy = source === 'saved_job_output' || host === 'fal.media' || host.endsWith('.fal.media');
   const copied = shouldCopy
     ? await (dependencies.copyRemoteMediaFn ?? copyRemoteMedia)({
         userId: params.userId,

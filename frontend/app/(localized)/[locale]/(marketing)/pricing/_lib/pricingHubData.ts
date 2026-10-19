@@ -187,7 +187,7 @@ export type VideoPricingHighlight = {
   label: string;
   value: string;
   href?: string;
-  featured?: { engineName: string; price: string };
+  featured?: { engineName: string; price: string; intent: string };
 };
 
 export type VideoPricingMatrixData = {
@@ -796,7 +796,7 @@ export function buildVideoHighlights(rows: VideoPricingRow[], locale: AppLocale)
   return [
     {
       label: copy.video.highlights.bestDraft,
-      featured: bestDraft?.quote.display ? { engineName: bestDraft.row.engineName, price: bestDraft.quote.display } : undefined,
+      featured: bestDraft?.quote.display ? { engineName: bestDraft.row.engineName, price: bestDraft.quote.display, intent: copy.video.highlights.draftIntent } : undefined,
       value: bestDraft ? `${bestDraft.row.engineName} · ${bestDraft.quote.display}` : copy.liveQuote,
       href: bestDraft ? `#${bestDraft.row.anchorId}` : undefined,
     },
@@ -807,13 +807,13 @@ export function buildVideoHighlights(rows: VideoPricingRow[], locale: AppLocale)
     },
     {
       label: copy.video.highlights.cheapest10s,
-      featured: cheapest10s?.quote.display ? { engineName: cheapest10s.row.engineName, price: cheapest10s.quote.display } : undefined,
+      featured: cheapest10s?.quote.display ? { engineName: cheapest10s.row.engineName, price: cheapest10s.quote.display, intent: copy.video.highlights.detailIntent } : undefined,
       value: cheapest10s ? `${cheapest10s.row.engineName} · ${cheapest10s.quote.display}` : copy.liveQuote,
       href: cheapest10s ? `#${cheapest10s.row.anchorId}` : undefined,
     },
     {
       label: copy.video.highlights.cheapestAudio,
-      featured: cheapestAudio?.quote.display ? { engineName: cheapestAudio.row.engineName, price: cheapestAudio.quote.display } : undefined,
+      featured: cheapestAudio?.quote.display ? { engineName: cheapestAudio.row.engineName, price: cheapestAudio.quote.display, intent: copy.video.highlights.soundIntent } : undefined,
       value: cheapestAudio ? `${cheapestAudio.row.engineName} · ${cheapestAudio.quote.display}` : copy.liveQuote,
       href: cheapestAudio ? `#${cheapestAudio.row.anchorId}` : undefined,
     },

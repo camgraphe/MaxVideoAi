@@ -6,7 +6,7 @@ import { routing } from '../frontend/i18n/routing';
 import { buildSeoMetadata } from '../frontend/lib/seo/metadata';
 import { buildMetadataUrls } from '../frontend/lib/metadataUrls';
 import { handleMarketingSlug } from '../frontend/lib/middleware/routing-marketing';
-import { MARKETING_SITE_NAV_LINKS } from '../frontend/config/navigation';
+import { MARKETING_SITE_NAV_LINKS, MARKETING_NAV_DROPDOWNS } from '../frontend/config/navigation';
 import { getStudioMarketingCopy } from '../frontend/app/(localized)/[locale]/(marketing)/studio/_lib/studio-marketing-copy';
 import { buildStudioMarketingSchema } from '../frontend/app/(localized)/[locale]/(marketing)/studio/_lib/studio-marketing-schema';
 
@@ -35,7 +35,10 @@ for (const locale of ['en', 'fr', 'es'] as const) {
 }
 
 test('Studio is discoverable as a public page while app access keeps its existing entry handler', () => {
-  assert.equal(MARKETING_SITE_NAV_LINKS.find(item => item.key === 'studio')?.href, '/studio');
+  assert.equal(MARKETING_SITE_NAV_LINKS.some(item => item.key === 'studio'), false);
+  assert.equal(MARKETING_NAV_DROPDOWNS.tools?.items[0].href, '/studio');
+  assert.equal(MARKETING_NAV_DROPDOWNS.tools?.items[0].emphasized, true);
+  assert.equal(MARKETING_NAV_DROPDOWNS.tools?.mobileAllLinkAfterItems, true);
   const view = readFileSync('frontend/app/(localized)/[locale]/(marketing)/studio/_components/StudioMarketingPage.tsx', 'utf8');
   assert.match(view, /\/api\/studio\/marketing-entry\?starter=product-ad&lang=\$\{locale\}/);
   assert.match(view, /href=\{entryHref\} prefetch=\{false\}/);

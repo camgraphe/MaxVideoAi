@@ -30,7 +30,7 @@ async function bundle() {
     '@/server/homepage': `import {read} from 'probe';export const getHomepageSlotsCached=()=>read('hero-slots',{hero:[],gallery:[]});export const getSuccessfulGenerationCountCached=async()=>20000;`,
     '@/server/videos': `import {read,videos} from 'probe';export const listExamples=async(sort)=>read(sort==='playlist'?'example-playlist':'example-latest',videos);export const listExampleFamilyPage=async()=>({items:[],total:0,limit:24,offset:0,hasMore:false});export const listPlaylistVideos=async()=>[];`,
     '@/server/model-launch-assets': `export const ACCEPTED_DURABLE_MODEL_ASSETS=[];`,
-    '@/server/current-example-price': `import {read} from 'probe';export const quoteCurrentExamplePrices=()=>read('hero-pricing',new Map([['minimax-h3-max',{kind:'reference',modelId:'minimax-h3-max',amountCents:141,currency:'USD',scenarioLabel:'Text to video · 5s · 1080p'}]]));`,
+    '@/server/current-example-price': `import {read} from 'probe';export const quoteCurrentExamplePrices=()=>read('hero-pricing',new Map([['minimax-h3',{kind:'reference',modelId:'minimax-h3',amountCents:141,currency:'USD',scenarioLabel:'Text to video · 5s · 1080p'}]]));`,
     '@/server/public-page-timing': `import {withPublicPageTiming as actual} from ${JSON.stringify(resolve('frontend/server/public-page-timing.ts'))};import {records} from 'probe';export * from ${JSON.stringify(resolve('frontend/server/public-page-timing.ts'))};export const withPublicPageTiming=(context,load)=>actual(context,load,{enabled:true,deployment:'test',emit:record=>records.push(record)});`,
   };
   await build({
@@ -114,7 +114,7 @@ test('real homepage streams the poster before pending exact prices and discovery
       let tail = '';
       for (;;) { const next = await reader.read(); if (next.done) break; tail += decoder.decode(next.value, { stream: true }); }
       assert.match(tail, /selected-real-kling\.webp/);
-      const currentHeroPrices = new Map([['minimax-h3-max', { kind: 'reference', modelId: 'minimax-h3-max', amountCents: 141, currency: 'USD', scenarioLabel: 'Text to video · 5s · 1080p' }]]);
+      const currentHeroPrices = new Map([['minimax-h3', { kind: 'reference', modelId: 'minimax-h3', amountCents: 141, currency: 'USD', scenarioLabel: 'Text to video · 5s · 1080p' }]]);
       const expectedHero = renderToStaticMarkup(wrap(React.createElement(fixture.HomeHero, { ...page.props.children[0].props, currentHeroPricesPending: undefined, currentHeroPrices })));
       const expectedQuotes = expectedHero.match(/<div class="cinema-film-quote[\s\S]*?<\/div>|<details class="cinema-quote-details"[\s\S]*?<\/details>/g) ?? [];
       assert.equal(expectedQuotes.length, 2);

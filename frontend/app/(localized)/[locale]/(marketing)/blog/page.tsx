@@ -98,7 +98,7 @@ const DEFAULT_BLOG_FAQ = {
     {
       question: 'Can I suggest a topic or request coverage?',
       answer:
-        'Yes—send topics to press@maxvideo.ai and include reference renders if you can. We prioritize stories that help production teams stay current.',
+        'Yes—send topics to admin@maxvideoai.com and include reference renders if you can. We prioritize stories that help production teams stay current.',
     },
     {
       question: 'Where can I find release notes?',
@@ -107,10 +107,10 @@ const DEFAULT_BLOG_FAQ = {
     },
   ],
   footnote:
-    'Need more detail? Email press@maxvideo.ai with your request and we’ll route it to the right producer.',
+    'Need more detail? Email admin@maxvideoai.com with your request and we’ll route it to the right producer.',
 };
 
-const PRESS_EMAIL = 'press@maxvideo.ai';
+const PRESS_EMAIL = 'admin@maxvideoai.com';
 
 function renderPressEmail(text?: string) {
   if (typeof text !== 'string' || !text.includes(PRESS_EMAIL)) {
@@ -122,10 +122,10 @@ function renderPressEmail(text?: string) {
       {part}
       {index < parts.length - 1 ? (
         <ObfuscatedEmailLink
-          user="press"
-          domain="maxvideo.ai"
-          label="press@maxvideo.ai"
-          placeholder="press [at] maxvideo.ai"
+          user="admin"
+          domain="maxvideoai.com"
+          label="admin@maxvideoai.com"
+          placeholder="admin [at] maxvideoai.com"
         />
       ) : null}
     </span>

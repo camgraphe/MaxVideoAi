@@ -1,9 +1,10 @@
 # MaxVideoAI : découverte, fluidité et continuité MCP
 
 Créé le **21 septembre 2026**, revu le **22 septembre 2026**. Responsable : ingénierie MaxVideoAI.
-Statut de distribution au **5 octobre 2026** : plugin **0.3.7 publié**, registre
-officiel actif et installation locale Codex mise à jour, selon le
-[point de contrôle de publication](../operations/mcp-distribution-publication-2026-10-05.md).
+Statut de distribution au **18 octobre 2026 UTC** : plugin **0.3.8 publié** et
+registre officiel actif/latest, selon le
+[point de contrôle de publication](../operations/mcp-distribution-publication-2026-10-18.md).
+Cette livraison ne modifie aucune installation existante ni qualification d’hôte.
 Les deux essais réels Codex du paquet 0.3.6 et leurs limites restent consignés au
 [point de contrôle du 22 septembre](../operations/mcp-main-repository-release-v0.3.6.md). La validation de
 chaque hôte reste distincte ; consulter le [parcours de mise à jour](../operations/mcp-client-updates.md).

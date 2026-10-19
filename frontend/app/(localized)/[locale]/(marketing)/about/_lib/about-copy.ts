@@ -4,6 +4,7 @@ export type AboutCopy = {
   meta: { title: string; description: string };
   hero: { eyebrow: string; title: string; subtitle: string };
   identity: { label: string; body: string };
+  work: { title: string; items: Array<{ label: string; href: string }> };
   sections: Array<{ title: string; body: string }>;
   independence: { title: string; body: string };
   links: { standards: string; benchmarks: string; company: string; legal: string };
@@ -14,7 +15,7 @@ const COPY: Record<AppLocale, AboutCopy> = {
     meta: {
       title: 'About MaxVideoAI',
       description:
-        'Meet the founder of MaxVideoAI and learn how the product, model comparisons, and editorial methodology are maintained.',
+        'Discover MaxVideoAI, its production workflows, model comparisons, and editorial methodology.',
     },
     hero: {
       eyebrow: 'About MaxVideoAI',
@@ -23,9 +24,16 @@ const COPY: Record<AppLocale, AboutCopy> = {
         'MaxVideoAI brings model comparison, price-before-generation, and production workflows into one focused workspace.',
     },
     identity: {
-      label: 'Built and maintained by',
+      label: 'The platform',
       body:
-        'Adrien builds the product, evaluates model behavior, and maintains MaxVideoAI’s practical guides and benchmark methodology.',
+        'MaxVideoAI publishes practical guides, model comparisons, and production examples. Its editorial standards distinguish provider specifications, observed measurements, and editorial judgments.',
+    },
+    work: {
+      title: "Selected work and production notes",
+      items: [
+        { label: "AI podcast: workflow, revisions and editing decisions", href: "/blog/gpt-6-podcast-maxvideoai-premiere-pro" },
+        { label: "Wan 3 Prime: a published match-cut example and its prompt", href: "/video/wan-3-prime-ai-match-cut-transitions" },
+      ],
     },
     sections: [
       {
@@ -60,7 +68,7 @@ const COPY: Record<AppLocale, AboutCopy> = {
     meta: {
       title: 'À propos de MaxVideoAI',
       description:
-        'Découvrez le fondateur de MaxVideoAI et la manière dont le produit, les comparatifs et la méthodologie éditoriale sont maintenus.',
+        'Découvrez MaxVideoAI, ses workflows de production, ses comparatifs de modèles et sa méthodologie éditoriale.',
     },
     hero: {
       eyebrow: 'À propos de MaxVideoAI',
@@ -69,9 +77,16 @@ const COPY: Record<AppLocale, AboutCopy> = {
         'MaxVideoAI réunit comparaison des modèles, prix avant génération et workflows de production dans un espace de travail ciblé.',
     },
     identity: {
-      label: 'Conçu et maintenu par',
+      label: 'La plateforme',
       body:
-        'Adrien développe le produit, évalue le comportement des modèles et maintient les guides pratiques ainsi que la méthodologie de benchmark de MaxVideoAI.',
+        'MaxVideoAI publie des guides pratiques, des comparatifs de modèles et des exemples de production. Ses normes éditoriales distinguent les spécifications fournisseurs, les mesures observées et les appréciations éditoriales.',
+    },
+    work: {
+      title: "Réalisations et notes de production",
+      items: [
+        { label: "Podcast IA : workflow, révisions et choix de montage (en anglais)", href: "/blog/gpt-6-podcast-maxvideoai-premiere-pro" },
+        { label: "Wan 3 Prime : exemple publié de transitions et prompt (en anglais)", href: "/video/wan-3-prime-ai-match-cut-transitions" },
+      ],
     },
     sections: [
       {
@@ -106,7 +121,7 @@ const COPY: Record<AppLocale, AboutCopy> = {
     meta: {
       title: 'Acerca de MaxVideoAI',
       description:
-        'Conoce al fundador de MaxVideoAI y cómo se mantienen el producto, las comparativas y la metodología editorial.',
+        'Conoce MaxVideoAI, sus flujos de producción, sus comparativas de modelos y su metodología editorial.',
     },
     hero: {
       eyebrow: 'Acerca de MaxVideoAI',
@@ -115,9 +130,16 @@ const COPY: Record<AppLocale, AboutCopy> = {
         'MaxVideoAI reúne comparación de modelos, precio antes de generar y flujos de producción en un solo espacio de trabajo.',
     },
     identity: {
-      label: 'Creado y mantenido por',
+      label: 'La plataforma',
       body:
-        'Adrien desarrolla el producto, evalúa el comportamiento de los modelos y mantiene las guías prácticas y la metodología de benchmarks de MaxVideoAI.',
+        'MaxVideoAI publica guías prácticas, comparativas de modelos y ejemplos de producción. Sus estándares editoriales distinguen las especificaciones de proveedores, las mediciones observadas y los juicios editoriales.',
+    },
+    work: {
+      title: "Trabajos y notas de producción",
+      items: [
+        { label: "Podcast con IA: flujo, revisiones y decisiones de edición (en inglés)", href: "/blog/gpt-6-podcast-maxvideoai-premiere-pro" },
+        { label: "Wan 3 Prime: ejemplo publicado de transiciones y prompt (en inglés)", href: "/video/wan-3-prime-ai-match-cut-transitions" },
+      ],
     },
     sections: [
       {

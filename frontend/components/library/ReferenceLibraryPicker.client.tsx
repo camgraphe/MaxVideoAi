@@ -33,7 +33,10 @@ export function ReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selec
   const immediate = Boolean(selection.onToggle);
   const filtered = assets.filter(asset => [asset.id, asset.source, asset.mime, asset.createdAt, asset.url, `${asset.width ?? ''}x${asset.height ?? ''}`].join(' ').toLowerCase().includes(query.trim().toLowerCase()));
   const selected = assets.find(asset => asset.id === chosen?.id && asset.url === chosen.url);
-  const loadMoreControl = hasMore && !query.trim() && onLoadMore ? <div className="flex justify-center pt-4"><button type="button" className="rounded-full border border-border bg-surface px-4 py-2 text-sm text-text-secondary hover:bg-surface-2 hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-60" disabled={busy || isLoadingMore} onClick={onLoadMore}>{isLoadingMore ? copy.busy : loadMoreLabel}</button></div> : null;
+  const loadMoreControl = hasMore && onLoadMore ? <div className="flex flex-col items-center gap-2 pt-4">
+    {query.trim() ? <p role="status" className="text-center text-xs text-text-secondary">{copy.searchMore}</p> : null}
+    <button type="button" className="rounded-full border border-border bg-surface px-4 py-2 text-sm text-text-secondary hover:bg-surface-2 hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-60" disabled={busy || isLoadingMore} onClick={onLoadMore}>{isLoadingMore ? copy.busy : loadMoreLabel}</button>
+  </div> : null;
   useEffect(() => {
     if (chosen && !assets.some(asset => asset.id === chosen.id && asset.url === chosen.url)) setChosen(null);
   }, [assets, chosen]);

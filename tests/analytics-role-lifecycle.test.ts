@@ -91,3 +91,28 @@ test('a switched account cannot replay another account deferred actions and fail
     assert.deepEqual(view.sent, []);
   } finally { await view.close(); }
 });
+
+test('in-flight and unrecognized job statuses never emit failure before a successful generation', async () => {
+  const view = await fixture();
+  try {
+    globalThis.fetch = async () => new Response(JSON.stringify({ ok: false, commercialAnalyticsEligible: true }));
+    await React.act(async () => { await resolveBrowserCommercialAnalyticsAuthContext('ordinary', 'local-fixture', {}); });
+    const jobId = 'job_7df6d42a-4b70-4eca-82fe-3a320c4a6eb9';
+    const localKey = 'local_batch_abcd_efgh_1';
+    view.emit('mvai:analytics', { event: 'generation_started', payload: { route_family: 'workspace', local_key: localKey } });
+    for (const status of ['queued', 'running', 'processing', 'pending', 'finalizing', 'unexpected']) {
+      view.emit('jobs:status', { status, jobId, localKey });
+    }
+    assert.deepEqual(view.sent.filter(event => ['generation_completed', 'generation_failed'].includes(event.name)), []);
+    view.emit('jobs:status', { status: 'completed', jobId });
+    view.emit('jobs:status', { status: 'completed', jobId });
+    const completed = view.sent.filter(event => event.name === 'generation_completed');
+    assert.equal(completed.length, 1);
+    assert.equal(completed[0].params.generation_sequence, 1, 'nonterminal updates still correlate local starts to jobs');
+    assert.equal(view.sent.filter(event => event.name === 'generation_failed').length, 0);
+    const failedJob = 'job_8df6d42a-4b70-4eca-82fe-3a320c4a6eb9';
+    view.emit('jobs:status', { status: 'failed', jobId: failedJob });
+    view.emit('jobs:status', { status: 'failed', jobId: failedJob });
+    assert.equal(view.sent.filter(event => event.name === 'generation_failed').length, 1, 'explicit failures remain tracked once');
+  } finally { await view.close(); }
+});

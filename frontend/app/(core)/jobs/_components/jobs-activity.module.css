@@ -38,3 +38,5 @@
   .filters label > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   .filters select { width: 100%; min-width: 0; text-overflow: ellipsis; }
 }
+
+.notice[data-action-status="pending"], .notice[data-action-status="success"] { color: var(--text-primary); }

@@ -15,6 +15,7 @@ import {
   resolvePricingDisplay,
 } from './compare-page-helpers';
 import type { EngineCatalogEntry } from './compare-page-types';
+import { getComparisonCriteriaCount } from './compare-page-scorecard';
 
 export async function buildCompareRouteData({
   activeLocale,
@@ -52,7 +53,7 @@ export async function buildCompareRouteData({
   const leftSpecs = buildSpecValues(left, leftKeySpecs);
   const rightSpecs = buildSpecValues(right, rightKeySpecs);
   const pairHasNativeAudio = Boolean(left.engine?.audio) || Boolean(right.engine?.audio);
-  const criteriaCount = pairHasNativeAudio ? 10 : 9;
+  const criteriaCount = getComparisonCriteriaCount(pairHasNativeAudio);
   const pairHasKling3Native4k =
     left.modelSlug === 'kling-3-4k' || right.modelSlug === 'kling-3-4k';
   const leftOverall = computeOverall(leftScore);

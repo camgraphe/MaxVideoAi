@@ -38,7 +38,7 @@ export function BestForDetailView({ alsoAvailable, content, copy, entry, example
     <BestForModelChoices picks={rankedPicks} locale={locale} usecase={entry.slug} />
     <BestForCreatePaths locale={locale} />
     <section className="bf-reading" aria-label={C.details[locale]}>
-      <h2>{C.details[locale]}</h2><BestForContent content={content} contentComing={copy.contentComing} />
+      <h2>{C.details[locale]}</h2><BestForContent content={content} contentComing={copy.contentComing} locale={locale} />
     </section>
     <div className="bf-next"><CompareCard comparisons={relatedComparisons} copy={copy} /><RelatedGuidesCard guides={relatedGuides} copy={copy} /></div>
     {alsoAvailable.length ? <AlsoAvailableRow models={alsoAvailable} copy={copy} /> : null}

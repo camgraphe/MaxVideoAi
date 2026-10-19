@@ -78,6 +78,8 @@ test('jobs route-local modules expose expected contracts', () => {
   assert.match(copyHookSource, /DEFAULT_JOBS_COPY\.sections/);
   assert.match(controllerHookSource, /export function useJobsPageController/);
   assert.match(controllerHookSource, /useInfiniteJobs/);
+  assert.match(controllerHookSource, /useJobsActionFeedback/, 'mutation feedback has a route-local lifetime owner');
+  assert.match(shellSource, /actionFeedback\.map/, 'the shell renders action outcomes separately from feed errors');
   assert.equal((controllerHookSource.match(/useInfiniteJobs\(JOBS_PAGE_SIZE/g) ?? []).length, 1);
   assert.match(controllerHookSource, /surface: source/);
   assert.match(controllerHookSource, /useState<JobsSource>\('all'\)/);

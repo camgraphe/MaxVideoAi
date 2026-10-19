@@ -47,7 +47,7 @@ export default async function PrivacyPage() {
         <p className="text-sm text-text-secondary">
           {locale === 'en' ? (
             <>
-              Controller: MaxVideoAI (sole proprietorship in formation, France). Registered office: see{' '}
+              Controller: MaxVideoAI (Adrien Millot, EI). Contact details: see{' '}
               <Link href={links.mentionsHref} className="text-brand underline hover:text-brandHover">
                 legal mentions
               </Link>
@@ -55,7 +55,7 @@ export default async function PrivacyPage() {
             </>
           ) : locale === 'fr' ? (
             <>
-              Responsable de traitement : MaxVideoAI (entreprise individuelle en France). Adresse : voir{' '}
+              Responsable de traitement : MaxVideoAI (Adrien Millot, EI). Coordonnées : voir{' '}
               <Link href={links.mentionsHref} className="text-brand underline hover:text-brandHover">
                 Mentions légales
               </Link>
@@ -63,7 +63,7 @@ export default async function PrivacyPage() {
             </>
           ) : (
             <>
-              Responsable: MaxVideoAI (empresa individual en Francia). Dirección: consulta las{' '}
+              Responsable: MaxVideoAI (Adrien Millot, EI). Datos de contacto: consulta las{' '}
               <Link href={links.mentionsHref} className="text-brand underline hover:text-brandHover">
                 menciones legales
               </Link>

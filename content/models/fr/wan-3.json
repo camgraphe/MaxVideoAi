@@ -40,6 +40,10 @@
         {
           "label": "Ouvrir le laboratoire de prompts",
           "href": "#prompting"
+        },
+        {
+          "label": "Voir une scène dialoguée avec Wan 3",
+          "href": "/fr/mcp#the-hat-stays"
         }
       ]
     },
@@ -99,6 +103,14 @@
         "cta": {
           "label": "Ouvrir le laboratoire",
           "href": "#prompting"
+        }
+      },
+      {
+        "title": "Dialogue natif, puis montage par l’assistant",
+        "body": "Dans The Hat Stays, Wan 3 fournit les prises dialoguées et MiniMax H3 un plan d’action. L’assistant assemble la scène, les sous-titres et le son dans Codex. Il s’agit d’une production montée, pas d’une sortie continue d’un seul modèle.",
+        "cta": {
+          "label": "Voir une scène dialoguée avec Wan 3",
+          "href": "/fr/mcp#the-hat-stays"
         }
       }
     ],

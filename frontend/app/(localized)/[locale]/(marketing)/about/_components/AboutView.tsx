@@ -31,18 +31,26 @@ export function AboutView({
       </header>
 
       <section
-        id="adrien-millot"
+        id={profile.id}
         className="scroll-mt-[calc(var(--header-height)+32px)] rounded-[28px] border border-brand/20 bg-accent-subtle/35 p-6 shadow-card sm:p-8"
       >
+        <span id="adrien-millot" aria-hidden="true" />
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand">{copy.identity.label}</p>
         <div className="mt-4 grid gap-5 md:grid-cols-[1fr_2fr]">
           <div>
             <h2 className="text-2xl font-semibold text-text-primary">{profile.name}</h2>
-            <p className="mt-2 text-sm text-text-secondary">
-              {profile.jobTitle} · {profile.location}
-            </p>
           </div>
-          <p className="text-base leading-7 text-text-secondary">{copy.identity.body}</p>
+          <div>
+            <p className="text-base leading-7 text-text-secondary">{copy.identity.body}</p>
+            <h3 className="mt-5 text-sm font-semibold text-text-primary">{copy.work.title}</h3>
+            <ul className="mt-2 space-y-2 text-sm text-text-secondary">
+              {copy.work.items.map((item) => (
+                <li key={item.href}>
+                  <a href={item.href} className="underline underline-offset-4 hover:text-brand">{item.label}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
 

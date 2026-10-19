@@ -33,7 +33,7 @@ type QueuedEvent = {
 
 type JobStatusDetail = {
   jobId?: string | null;
-  status?: 'pending' | 'completed' | 'failed' | null;
+  status?: string | null;
   progress?: number | null;
   finalPriceCents?: number | null;
   currency?: string | null;
@@ -186,7 +186,8 @@ export function GA4EventBridge() {
         }
       }
 
-      if (!jobId || !detail?.status || detail.status === 'pending') {
+      // Only explicit terminal states can produce a conversion or a failure.
+      if (!jobId || (detail?.status !== 'completed' && detail?.status !== 'failed')) {
         return;
       }
 

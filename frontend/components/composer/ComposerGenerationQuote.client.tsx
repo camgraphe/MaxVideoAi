@@ -15,8 +15,8 @@ export function ComposerGenerationQuote({ workspace, hasPrice, isPricing, childr
   const copy = workspaceReferenceCopy(locale);
   return <span className="app-generation-quote" role="status" aria-live="polite">
     {/* Size the shared quote slot from its localized statuses, without retaining a stale price. */}
-    <span className="app-quote-status app-generation-quote-size" aria-hidden="true">{copy.calculating}</span>
-    <span className="app-quote-status app-generation-quote-size" aria-hidden="true">{copy.priceUnavailable}</span>
+    <span className="app-quote-status app-generation-quote-size invisible" aria-hidden="true">{copy.calculating}</span>
+    <span className="app-quote-status app-generation-quote-size invisible" aria-hidden="true">{copy.priceUnavailable}</span>
     {hasPrice ? children : <span key="status" className="app-quote-status relative z-10">{isPricing ? copy.calculating : copy.priceUnavailable}</span>}
   </span>;
 }
