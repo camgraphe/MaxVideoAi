@@ -1,6 +1,6 @@
 'use client';
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AudioLines, CircleAlert, LoaderCircle, Play } from 'lucide-react';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -54,10 +54,16 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
   const [uploading, setUploading] = useState(false);
   const referenceScope = useAudioCreationScope(JSON.stringify([userId, requestedIntent]));
   const referenceVersion = useRef(0);
-  useEffect(() => { setUploading(false); }, [referenceScope]);
+  const referenceUpload = useRef<AbortController | null>(null);
+  useLayoutEffect(() => {
+    setUploading(false);
+    return () => { referenceUpload.current?.abort(); referenceUpload.current = null; };
+  }, [referenceScope]);
   const updateDraft = (patch: Partial<AudioCreationDraft>) => {
     if ('reference' in patch || 'voiceModel' in patch) {
       referenceVersion.current += 1;
+      referenceUpload.current?.abort();
+      referenceUpload.current = null;
       setUploading(false);
     }
     update(patch);
@@ -148,9 +154,13 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
     if (!userId) { setNotice(copy.signIn); return; }
     if (!stillOwned()) return;
     const version = ++referenceVersion.current;
-    const isCurrent = () => stillOwned() && referenceScope.isCurrent() && referenceVersion.current === version;
+    referenceUpload.current?.abort();
+    referenceUpload.current = null;
     setUploading(false);
     if (file.size > 10 * 1024 * 1024 || !/\.(mp3|wav)$/i.test(file.name)) { setNotice(copy.uploadError); return; }
+    const controller = new AbortController();
+    referenceUpload.current = controller;
+    const isCurrent = () => !controller.signal.aborted && referenceUpload.current === controller && stillOwned() && referenceScope.isCurrent() && referenceVersion.current === version;
     setUploading(true);
     try {
       const url = URL.createObjectURL(file);
@@ -163,10 +173,10 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
         });
       } finally { URL.revokeObjectURL(url); }
       if (!isCurrent()) return;
-      const reference = await uploadAsset(file, 'audio');
+      const reference = await uploadAsset(file, 'audio', { expectedUserId: userId, signal: controller.signal });
       if (isCurrent()) update({ reference });
     } catch { if (isCurrent()) setNotice(copy.uploadError); }
-    finally { if (isCurrent()) setUploading(false); }
+    finally { if (isCurrent()) { referenceUpload.current = null; setUploading(false); } }
   };
   const reuse = () => {
     const snapshot = result?.settingsSnapshot;

@@ -20,7 +20,7 @@ const mocks: Record<string, string> = {
   '@/hooks/useRequireAuth': `export const useRequireAuth=()=>({user:{id:globalThis.audioReferenceFixture.owner}});`,
   '@/lib/i18n/I18nProvider': `export const useI18n=()=>({locale:'en'});`,
   '@/lib/api': `export const runAudioGenerate=body=>new Promise(resolve=>globalThis.audioReferenceFixture.runs.push({body,resolve}));export const useInfiniteJobs=()=>({stableJobs:[{jobId:'old-job',prompt:'Restore previous job',createdAt:'2026-09-08',status:'completed',audioUrl:'https://fixture.example/old-job.mp3',engineLabel:'MMAudio V2',pricing:{currency:'USD',totalCents:5}}],mutate:()=>{globalThis.audioReferenceFixture.refreshes++},isLoading:false});`,
-  './_lib/audio-workspace-helpers': `export const uploadAsset=()=>new Promise((resolve,reject)=>globalThis.audioReferenceFixture.uploads.push(Object.assign(resolve,{reject})));export const fetchJobDetail=()=>new Promise(resolve=>globalThis.audioReferenceFixture.restores.push(resolve));`,
+  './_lib/audio-workspace-helpers': `export const uploadAsset=(_file,_kind,operation)=>new Promise((resolve,reject)=>globalThis.audioReferenceFixture.uploads.push(Object.assign(resolve,{reject,...operation})));export const fetchJobDetail=()=>new Promise(resolve=>globalThis.audioReferenceFixture.restores.push(resolve));`,
 };
 
 test('audio reference upload preserves a later library selection or removal', async () => {
@@ -64,13 +64,18 @@ test('audio reference upload preserves a later library selection or removal', as
     const stored = () => JSON.parse(localStorage.getItem('maxvideoai.audio.creation.v1:a')!).drafts.voice.reference;
     const startUpload = async () => {
       await act(async()=>{const input=dom.window.document.querySelector('input[type=file]')!;Object.defineProperty(input,'files',{configurable:true,value:[new File(['audio'],'upload-A.wav',{type:'audio/wav'})]});input.dispatchEvent(new dom.window.Event('change',{bubbles:true}));});
-      assert.ok(review.uploads.length);return review.uploads.at(-1);
+      assert.ok(review.uploads.length);
+      const upload = review.uploads.at(-1);
+      assert.equal(upload.expectedUserId, 'a');
+      assert.equal(upload.signal?.aborted, false);
+      return upload;
     };
     for (const scenario of ['replace','remove']) {
       localStorage.setItem('maxvideoai.audio.creation.v1:a',JSON.stringify({version:1,drafts:{voice:{...newAudioDraft('voice'),voiceModel:'seed',script:'My script'}}}));
       await render('a');await tick();
       const upload = await startUpload();
       await click('Choose from Media');await click('Choose library B');
+      assert.equal(upload.signal.aborted, true, 'replacing a reference must cancel its transport');
       assert.equal(stored().name,'Library B');
       if(scenario==='remove'){await click('Remove');assert.equal(stored(),null);}
       await act(async()=>upload({url:'https://fixture.example/upload-A.wav',name:'Upload A'}));
@@ -109,6 +114,7 @@ test('audio reference upload preserves a later library selection or removal', as
           await click('Restore previous job');await act(async()=>review.restores.at(-1)({jobId:'old-job',status:'completed',audioUrl:'https://fixture.example/old-job.mp3',settingsSnapshot:{pack:'voice_only',script:'Restored script',voiceModel:'seed',refs:{voiceSampleUrl:'https://fixture.example/reused.wav'}}}));
           await click('Reuse settings');
         }
+        assert.equal(first.signal.aborted, true, `${scenario} must cancel the retired transport`);
         await act(async()=>first({url:'https://fixture.example/old.wav',name:'Retired upload'}));
         assert.equal(stored()?.url ?? null,scenario==='reuse'?'https://fixture.example/reused.wav':null);
       }
