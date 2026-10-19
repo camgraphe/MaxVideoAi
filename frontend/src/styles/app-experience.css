@@ -138,6 +138,11 @@
 .app-experience .app-empty-preview { display: flex; align-items: center; justify-content: center; gap: 14px; min-height: 106px; padding: 14px; border: 1px solid var(--app-line); border-radius: 7px; color: var(--app-muted); background: var(--app-panel); }
 .app-experience .app-empty-preview-frame { display: grid; place-items: center; width: 76px; height: 48px; border: 1px solid var(--app-line); border-radius: 4px; }
 .app-experience .app-empty-preview-frame svg { width: 26px; height: 26px; color: var(--app-accent); }
+.app-experience .app-empty-preview-frame { flex-shrink: 0; }
+.app-experience .app-empty-preview-copy { min-width: 0; max-width: 30rem; }
+.app-experience .app-empty-preview-hint { margin-top: 4px; font-size: 12px; line-height: 1.4; }
+.app-experience .app-reference-signin { display: inline-block; padding-block: 6px; color: var(--app-accent); text-decoration: underline; text-underline-offset: 3px; }
+.app-experience .app-reference-signin:focus-visible { outline: 2px solid var(--app-accent); outline-offset: 3px; }
 .app-experience .app-workspace-references { padding: 3px 0; }
 .app-experience .app-reference-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px; }
 .app-experience .app-reference-heading > span { display: flex; align-items: center; gap: 8px; font-weight: 550; }
