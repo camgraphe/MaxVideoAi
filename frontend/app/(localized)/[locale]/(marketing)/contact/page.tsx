@@ -133,7 +133,7 @@ export default async function ContactPage(
               <p className="mt-2">
                 {renderPlaceholderText(
                   introCards.partnerships?.body,
-                  <ObfuscatedEmailLink user="partners" domain="maxvideo.ai" label="partners@maxvideo.ai" />
+                  <ObfuscatedEmailLink user="admin" domain="maxvideoai.com" label="admin@maxvideoai.com" />
                 )}
               </p>
             </div>

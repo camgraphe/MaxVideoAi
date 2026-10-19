@@ -76,6 +76,9 @@ export function BenchmarkScoreTable({ copy, locale, rows }: BenchmarkScoreTableP
                   >
                     {row.modelName}
                   </Link>
+                  {row.generationUnavailable ? (
+                    <span className="block text-xs font-normal text-text-secondary">{copy.scores.generationUnavailable}</span>
+                  ) : null}
                   {row.updatedAt ? (
                     <span className="block text-[11px] font-normal leading-5 text-text-muted">
                       {copy.scores.updated} · {formatDate(row.updatedAt, locale)}

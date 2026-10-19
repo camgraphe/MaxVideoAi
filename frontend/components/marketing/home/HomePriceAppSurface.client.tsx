@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { I18nProvider } from '@/lib/i18n/I18nProvider';
 import type { Dictionary } from '@/lib/i18n/types';
 import { Composer } from '@/components/Composer';
@@ -19,7 +20,8 @@ const COPY = {
 };
 
 /** Real workspace components, inert for this guided demonstration: no generation endpoint. */
-export function HomePriceAppSurface({model,step,locale}:{model:HomePriceModel;step:HomePriceStep;locale:AppLocale}) {
+export function HomePriceAppSurface({model,step,locale,onReady}:{model:HomePriceModel;step:HomePriceStep;locale:AppLocale;onReady?:()=>void}) {
+ useEffect(() => { onReady?.(); }, [onReady]);
  const c = COPY[locale];
  const dictionary = {workspace:model.workspaceCopy} as unknown as Dictionary;
  return <I18nProvider locale={locale} dictionary={dictionary} fallback={dictionary}><div className="price-app-surface" ref={applyDemoInert} aria-hidden="true">

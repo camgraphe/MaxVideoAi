@@ -53,7 +53,7 @@
                 "bold": true
               },
               {
-                "text": ". GPT-6 Astra and Sol in Codex handled the production and Premiere Pro editing; Adrien directed the project and reviewed the versions. Here is the finished film, followed by the choices that made six separate generations work as one conversation."
+                "text": ". GPT-6 Astra and Sol in Codex handled the production and Premiere Pro editing, with human creative direction and review. Here is the finished film, followed by the choices that made six separate generations work as one conversation."
               }
             ],
             "sourceIds": [
@@ -68,7 +68,7 @@
         "heading": "Watch the 86-second film",
         "videoId": "hwF_A1VlA_U",
         "sourceId": "podcast-production",
-        "credit": "MaxVideoAI / Adrien",
+        "credit": "MaxVideoAI",
         "startSeconds": 0,
         "caption": "Our fictional interview, including its closing card."
       },
@@ -96,7 +96,7 @@
             ]
           },
           {
-            "text": "Adrien supplied the idea, creative direction and feedback, approved the generation quotes, chose the music and signed off on the result. Astra and Sol executed the project, including changes to the edit. If you want to reproduce this setup, the Premiere automation needs its own configuration alongside the MaxVideoAI connection.",
+            "text": "The idea, creative direction, feedback, quote approvals, music choice and final sign-off were handled by a human. Astra and Sol executed the project, including changes to the edit. If you want to reproduce this setup, the Premiere automation needs its own configuration alongside the MaxVideoAI connection.",
             "sourceIds": [
               "podcast-production"
             ]
@@ -221,7 +221,7 @@
           {
             "spans": [
               {
-                "text": "The first opening felt too busy. After Adrien’s feedback, "
+                "text": "The first opening felt too busy. After review, "
               },
               {
                 "text": "nine shots became five across the first 21.17 seconds",
@@ -255,7 +255,7 @@
             ]
           },
           {
-            "text": "The finishing pass added subtitles, music and a six-second closing card, bringing the 80-second conversation to 86 seconds. After rejecting an earlier music choice, Adrien selected Aphelion for the final version.",
+            "text": "The finishing pass added subtitles, music and a six-second closing card, bringing the 80-second conversation to 86 seconds. After an earlier music choice was rejected, Aphelion was selected for the final version.",
             "sourceIds": [
               "podcast-production"
             ]
@@ -466,7 +466,7 @@
     {
       "id": "podcast-production",
       "title": "Is This the End of Video Editing? — author-supplied production records",
-      "publisher": "MaxVideoAI / Adrien",
+      "publisher": "MaxVideoAI",
       "url": "https://www.youtube.com/watch?v=hwF_A1VlA_U",
       "retrievedAt": "2026-09-27"
     },

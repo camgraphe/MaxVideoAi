@@ -88,7 +88,7 @@ test('a stale generated projection fails through the shared state validator', ()
 
 test('a pending-only profile does not establish critical homepage readiness', () => {
   const input = currentInput();
-  const entry = entryForHero(input, 'minimax-h3-max');
+  const entry = entryForHero(input, 'minimax-h3');
   const mobile = entry.renditions.mobile!;
   delete entry.renditions.mobile;
   entry.pendingRenditions.mobile = { ...mobile, httpCheck: null, activatedAt: null };
@@ -96,7 +96,7 @@ test('a pending-only profile does not establish critical homepage readiness', ()
 
   assert.throws(
     () => checkCriticalHomeVideoCoverage(input),
-    /minimax-h3-max.*no ready mobile path/,
+    /minimax-h3.*no ready mobile path/,
   );
 });
 
@@ -122,7 +122,7 @@ test('a retryable operational failure without an active rendition or omission is
 
 test('removing a failed replacement candidate retains readiness from the old active rendition', () => {
   const input = currentInput();
-  const entry = entryForHero(input, 'wan-3-prime');
+  const entry = entryForHero(input, 'wan-3');
   const oldActive = entry.renditions.desktop!;
   const replacementSha = 'f'.repeat(64);
   const storageKey = `marketing/video-renditions/${entry.original.sha256}/public-demo-v1/desktop/${replacementSha}.mp4`;

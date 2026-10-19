@@ -12,7 +12,7 @@ test('About trust content has focused copy, schema, and view owners', () => {
   assert.equal(existsSync(viewPath), true);
 });
 
-test('About owns localized human identity and honest commercial disclosure', async () => {
+test('About owns localized brand identity and honest commercial disclosure', async () => {
   const copyModule = await import('../frontend/app/(localized)/[locale]/(marketing)/about/_lib/about-copy') as unknown as {
     getAboutCopy(locale: 'en' | 'fr' | 'es'): {
       hero: { title: string };
@@ -26,9 +26,7 @@ test('About owns localized human identity and honest commercial disclosure', asy
     const copy = copyModule.getAboutCopy(locale);
     const profile = profileModule.getEditorialProfile(locale);
     assert.ok(copy.hero.title.length > 20);
-    assert.equal(profile.name, 'Adrien Millot');
-    assert.equal(profile.jobTitle, 'Founder & Product Lead');
-    assert.equal(profile.location, 'France');
+    assert.equal(profile.name, 'MaxVideoAI');
     assert.equal(copy.sections.length, 3);
     assert.match(copy.independence.body, /sells|commercialise|comercializa/i);
   }
@@ -41,7 +39,7 @@ test('About stays a thin route with focused view and schema modules', () => {
   assert.match(page, /getEditorialProfile/);
   assert.match(page, /buildAboutWebPageJsonLd/);
   assert.doesNotMatch(page, /content\.paragraphs\.map/);
-  assert.match(view, /id="adrien-millot"/);
+  assert.match(view, /id=\{profile.id\}/);
   assert.ok(page.split('\n').length <= 120);
 });
 

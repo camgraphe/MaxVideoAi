@@ -42,6 +42,13 @@ export const DEFAULT_JOBS_COPY = {
   loadMore: 'Load more',
   loading: 'Loading…',
   actions: {
+    savePending: 'Saving to Media…',
+    saveError: 'Could not save to Media. Please try again.',
+    saveSuccess: 'Saved to Media.',
+    removePending: 'Removing from history…',
+    removeError: 'Could not remove from history. Please try again.',
+    removeSuccess: 'Removed from history.',
+    dismiss: 'Dismiss',
     addToLibrary: 'Add to Media',
     saving: 'Saving…',
     recreate: 'Generate same settings',

@@ -11,6 +11,7 @@ import type { EngineCaps } from '@/types/engines';
 import type { GroupSummary } from '@/types/groups';
 import type { VideoGroup } from '@/types/video-groups';
 import type { JobsCopy } from '../_lib/jobs-copy';
+import type { JobsActionFeedback, JobsMutationAction } from '../_hooks/useJobsActionFeedback';
 import { JOBS_SOURCES, type JobsSource, type JobsStatus } from '../_lib/jobs-page-types';
 import { activityGroupStatus, filterActivityGroups } from '../_lib/jobs-activity';
 import { resolveClientJobSurface, resolveWorkspaceJobHref } from '../_lib/jobs-page-helpers';
@@ -25,12 +26,15 @@ const GroupViewerModal = dynamic(
 );
 
 export function JobsPageShell({
-  copy, hasCuratedVideo, groups, source, status, onSourceChange, onStatusChange,
+  copy, actionFeedback, onRetryAction, onDismissAction, hasCuratedVideo, groups, source, status, onSourceChange, onStatusChange,
   hasMore, isInitialLoading, isValidating, error, onRetry, onLoadMore,
   engineLookupById, onGroupOpen, onGroupAction, allowRemove, savingImageGroupIds,
   viewerGroup, onCloseViewer, onRefreshJob, onSaveLightboxEntryToLibrary,
 }: {
   copy: JobsCopy;
+  actionFeedback: JobsActionFeedback[];
+  onRetryAction: (groupId: string, action: JobsMutationAction) => void;
+  onDismissAction: (groupId: string) => void;
   hasCuratedVideo: boolean;
   groups: GroupSummary[];
   source: JobsSource;
@@ -81,6 +85,12 @@ export function JobsPageShell({
           {status !== 'all' ? <p id="activity-status-hint" className={styles.note}>{hasMore ? copy.activity.statusHint : copy.activity.status}</p> : null}
           {hasCuratedVideo ? <p className={styles.note}>{copy.curated}</p> : null}
           {error ? <div role="alert" className={styles.notice}>{copy.error}<Button variant="outline" onClick={onRetry} disabled={isValidating}>{copy.retry}</Button></div> : null}
+          {actionFeedback.map(entry => <div key={entry.groupId} data-action-status={entry.status} className={styles.notice} role={entry.status === 'error' ? 'alert' : 'status'}>
+            <p>{copy.actions[`${entry.action}${entry.status === 'pending' ? 'Pending' : entry.status === 'error' ? 'Error' : 'Success'}`]}</p>
+            <p className="w-full truncate text-sm text-text-muted">{entry.label}</p>
+            {entry.status === 'error' ? <Button variant="outline" onClick={() => onRetryAction(entry.groupId, entry.action)}>{copy.retry}</Button> : null}
+            {entry.status !== 'pending' ? <Button variant="ghost" onClick={() => onDismissAction(entry.groupId)}>{copy.actions.dismiss}</Button> : null}
+          </div>)}
           <section aria-label={copy.activity.title} aria-busy={isValidating}>
             {isInitialLoading ? <><p role="status" className="sr-only">{copy.loading}</p><div className={styles.grid}>{renderSkeletonCards(4, 'activity')}</div></> : null}
             {!isInitialLoading && !error && !visibleGroups.length ? source === 'all' && status === 'all' && !hasMore ? <FirstCreationState /> : <p role="status" className={styles.empty}>{copy.activity.filteredEmpty}</p> : null}
