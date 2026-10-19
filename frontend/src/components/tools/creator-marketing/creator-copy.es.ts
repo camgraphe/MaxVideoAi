@@ -1,11 +1,133 @@
 import type { CreatorMarketingDictionary, CreatorMarketingLabels } from './creator-copy-types';
+
 export const esLabels: CreatorMarketingLabels = {
-  home:'Inicio',tools:'Todas las herramientas',eyebrow:'El siguiente paso de tu creación',open:'Abrir la herramienta',how:'Ver los pasos',inputs:'01 / Entrada',settings:'02 / Ajustes',result:'03 / Salida',workflow:'De tu fuente a un nuevo resultado.',limits:'Los detalles que debes revisar.',faq:'Tus preguntas.',quoteTitle:'Revisa el precio completo antes de empezar.',quoteBody:'Elige tus fuentes y ajustes en la app. Revisa el presupuesto actual y confirma la operación. Tu fuente sigue disponible.',related:'Sigue creando',illustration:'Esquema del flujo — no es un resultado generado',preview:'Vista de diseño · ejecución aún no publicada',demo:'Explora el flujo ilustrado',photo:'Foto',video:'Vídeo',voice:'Voz',character:'Personaje',performance:'Interpretación',source:'Fuente',after:'Salida ilustrada',caption:'Editar el subtítulo de ejemplo',sample:'Cada detalle cuenta una historia.',style:'Estilo de subtítulos',styles:['Limpio','Palabra activa','Alto contraste'],scene:'Ambiente',scenes:['Estudio','Lifestyle','Iluminación'],compare:'Comparar los fotogramas ilustrados',sequence:'Movimiento de referencia',next:'Un siguiente paso claro.',operation:'Elige tus archivos, ajusta una tarea y revisa el resultado.',
+  home: 'Inicio', tools: 'Todas las herramientas', eyebrow: 'Herramientas para tu próxima creación',
+  open: 'Abrir la herramienta', how: 'Cómo funciona',
+  inputs: '01 / Sube', settings: '02 / Personaliza', result: '03 / Descarga',
+  workflow: 'Crea en tres pasos.', limits: 'Para un mejor resultado.', faq: 'Respuestas a tus preguntas.',
+  quoteTitle: 'Ve el precio. Tú decides.',
+  quoteBody: 'Añade tus archivos y elige los ajustes. Verás el precio exacto antes de confirmar.',
+  related: '¿Qué vas a crear después?',
+  illustration: 'Dirección artística · imagen de presentación — no es un resultado de la herramienta',
+  preview: 'Próximamente', demo: 'Explorar la vista previa',
+  photo: 'Foto', video: 'Vídeo', voice: 'Voz', character: 'Personaje', performance: 'Movimiento',
+  source: 'Punto de partida', after: 'Dirección creativa',
+  caption: 'Prueba con tus propias palabras', sample: 'Cada palabra, a tu ritmo.',
+  style: 'Estilo de subtítulos', styles: ['Sencillo', 'Palabra resaltada', 'Alto contraste'],
+  scene: 'Escenario', scenes: ['Estudio', 'En contexto', 'Luz'],
+  compare: 'Comparar los dos escenarios', sequence: 'Movimiento que seguir',
+  next: 'Dale forma a tu idea.', operation: 'Subtitula. Ponle voz. Cambia el escenario. Anima.',
 };
+
 export const esCopy: CreatorMarketingDictionary = {
-  subtitles:{name:'Subtítulos de vídeo',title:'Un lugar para cada palabra.',description:'Crea subtítulos de vídeo editables, revisa el texto y los tiempos, y prepara SRT, VTT o un MP4 subtitulado con MaxVideoAI.',intro:'Convierte la voz en subtítulos que puedes leer, corregir y colocar. Conserva el texto editable antes de preparar el formato de publicación.',input:'Un vídeo con voz o una grabación de audio.',adjustment:'Idioma, texto corregido, tiempos y tres estilos legibles.',output:'Un documento editable, SRT/VTT y un vídeo subtitulado.',steps:['Elige la grabación y revisa su idioma.','Corrige el texto y los tiempos; elige un estilo.','Revisa la vista previa y el formato de exportación.'],limits:['Revisa los nombres y el vocabulario especializado. Un cambio de texto puede necesitar nuevos ajustes de tiempo.','Una fuente de audio necesita un fondo visual para crear un vídeo subtitulado. La exportación de una secuencia Studio tiene su propia disponibilidad.'],questions:[{question:'¿Puedo corregir el texto sin repetir la transcripción?',answer:'El documento separa texto, tiempos y estilo de la transcripción. Revisa los tiempos después de reformular el texto.'},{question:'¿Qué diferencia hay entre SRT, VTT y MP4?',answer:'SRT y VTT contienen texto con tiempos. Un MP4 subtitulado incorpora ese texto directamente a las imágenes del vídeo.'}]},
-  'lip-sync':{name:'Lip Sync',title:'Una voz. Un rostro. Una interpretación.',description:'Explora los modos Foto y Vídeo de Lip Sync: combina un retrato o vídeo con tu voz y elige el segmento que quieres preparar.',intro:'Haz hablar a un retrato o trabaja el diálogo de un vídeo existente. Empieza por el modo que corresponde a tu fuente.',input:'Una foto o un vídeo de un rostro, más una grabación de voz.',adjustment:'Modo Foto/Vídeo, audio seleccionado y segmento de origen.',output:'Un nuevo vídeo para ver, escuchar y comparar con tus fuentes.',steps:['Elige Foto o Vídeo y añade la fuente correspondiente.','Añade tu voz y revisa la duración seleccionada.','Revisa el presupuesto y después la interpretación terminada.'],limits:['Revisa la identidad, los labios y la sincronización con tu propia fuente.','Las duraciones de audio y vídeo deben ser compatibles. No hay bucles, aceleraciones ni cortes ocultos.'],questions:[{question:'¿El modo Foto modifica un vídeo existente?',answer:'Foto parte de un retrato estático. Elige Vídeo si la fuente ya muestra un rostro en movimiento.'},{question:'¿Puedo usar una voz que ya he generado?',answer:'Puedes seleccionar un resultado de audio de tu cuenta si cumple los requisitos actuales de la operación.'}]},
-  'product-photo-editor':{name:'Editor de fotos de producto',title:'Tu producto. Otro escenario.',description:'Prepara una edición de producto con fondo de estudio, escena lifestyle o iluminación, a partir de tu propia fotografía.',intro:'Parte de tu foto de producto y define la dirección de la siguiente imagen. Mantén los detalles visibles para revisar el resultado.',input:'Una foto de producto y una referencia de ambiente opcional.',adjustment:'Estudio, lifestyle o iluminación; descripción, formato y detalles que conservar.',output:'Una imagen nueva para comparar, guardar o usar como primer fotograma.',steps:['Elige una foto de producto clara.','Describe un cambio de escenario o iluminación.','Compara forma, color y texto antes de guardar.'],limits:['Las instrucciones de conservación no bloquean los píxeles. Revisa logotipos, etiquetas y proporciones a tamaño completo.','Los reflejos y otra perspectiva pueden alterar el producto. Cambiar un fondo sencillo no es reconstruir el objeto.'],questions:[{question:'¿La etiqueta quedará exactamente igual?',answer:'La edición generativa puede cambiar el texto. Revisa el resultado real; no se garantiza una conservación exacta de la etiqueta.'},{question:'¿Puedo convertir el resultado en un vídeo?',answer:'Guarda la imagen y úsala como primer fotograma en un flujo de vídeo compatible. Es una operación con presupuesto propio.'}]},
-  'product-video-editor':{name:'Editor de vídeos de producto',title:'Un plano. Una nueva dirección.',description:'Explora la edición de un plano corto de producto: selecciona un segmento, cambia el entorno o la luz y compara el nuevo clip.',intro:'Trabaja con un plano continuo y un cambio cada vez. Revisa el movimiento y los detalles del producto durante todo el nuevo clip.',input:'Un plano corto y continuo de producto, con una referencia de imagen opcional.',adjustment:'Un segmento y un cambio de escenario, ambiente o iluminación.',output:'Un clip nuevo con su duración real y su audio identificados.',steps:['Elige el plano y marca el segmento.','Describe el cambio y los detalles importantes.','Compara el clip antes de añadirlo al proyecto.'],limits:['Revisa texto, manos, forma del producto y cámara durante todo el clip.','La duración o el audio pueden cambiar. Conserva la fuente y elige expresamente entre añadir y reemplazar.'],questions:[{question:'¿Puedo editar un anuncio entero de una vez?',answer:'Este flujo se centra en un plano continuo. Editar varios planos no garantiza la coherencia de todo el anuncio.'},{question:'¿Siempre se conserva el sonido original?',answer:'La política de audio y la duración real deben revisarse para la operación elegida. Una vista previa no garantiza el tratamiento de la banda sonora.'}]},
-  'motion-transfer':{name:'Motion Transfer',title:'Un movimiento que tu personaje pueda seguir.',description:'Combina una imagen de personaje con una interpretación en vídeo, elige el movimiento de referencia y prepara un nuevo vídeo.',intro:'Une un personaje y una interpretación. Elige un movimiento claro y revisa la identidad y el gesto en el nuevo clip.',input:'Una imagen de personaje y un vídeo de movimiento.',adjustment:'El segmento, la orientación compatible y la opción de audio.',output:'Un nuevo vídeo del personaje junto a sus dos referencias originales.',steps:['Elige una imagen de personaje con una pose clara.','Selecciona el segmento de movimiento y el audio.','Revisa identidad, manos y movimientos en el resultado.'],limits:['Un cuerpo visible y pocas oclusiones ayudan a leer la referencia. El resultado sigue necesitando revisión.','Las manos y los objetos sostenidos requieren un control específico. Un buen baile no demuestra fidelidad en una presentación de producto.'],questions:[{question:'¿Puedo empezar desde Character Builder?',answer:'Usa una imagen de personaje guardada. Si tienes una hoja de vistas, elige primero la vista concreta que quieres animar.'},{question:'¿El vídeo de referencia es el resultado?',answer:'Guía el movimiento. La operación crea un vídeo nuevo y conserva ambas fuentes.'}]},
+  subtitles: {
+    name: 'Subtítulos de vídeo',
+    title: 'Subtitula tu vídeo. Cada palabra, a tu ritmo.',
+    description: 'Añade subtítulos a tu vídeo: corrige el texto, ajusta los tiempos y el estilo, y descarga un SRT, un VTT o un MP4 subtitulado.',
+    intro: 'Sube tu vídeo. Corrige las palabras, ajusta cuándo aparecen y elige su estilo. Exporta los subtítulos como texto o integrados en la imagen.',
+    input: 'Un vídeo con voz o un archivo de audio.',
+    adjustment: 'El texto, los tiempos, el tamaño, el estilo y la posición.',
+    output: 'Un archivo SRT o VTT, o tu vídeo subtitulado en MP4.',
+    steps: [
+      'Sube tu vídeo o audio y elige el idioma.',
+      'Revisa los subtítulos, ajusta los tiempos y personaliza su apariencia.',
+      'Descarga el texto en SRT o VTT, o exporta el vídeo subtitulado.',
+    ],
+    limits: [
+      'Añade nombres propios y términos especializados antes de transcribir para ayudar a reconocerlos. Revísalos antes de exportar.',
+      'Con un archivo de audio puedes descargar subtítulos en SRT o VTT. El MP4 subtitulado necesita un vídeo.',
+    ],
+    questions: [
+      { question: '¿Puedo editar los subtítulos después de transcribir?', answer: 'Sí. Cambia el texto, los tiempos y el estilo sin volver a transcribir. Después de reescribir una frase, comprueba que siga el ritmo de la voz.' },
+      { question: '¿Qué formato me conviene?', answer: 'SRT y VTT permiten añadir subtítulos en un reproductor o editor de vídeo. El MP4 los integra directamente en la imagen; esta exportación tiene su propio precio, que confirmas después de editar.' },
+    ],
+  },
+  'lip-sync': {
+    name: 'Lip Sync',
+    title: 'Haz hablar a un retrato. O dale otra voz a un vídeo.',
+    description: 'Anima un retrato con tu voz o sincroniza los labios de un vídeo con un nuevo audio. Elige el modo Foto o Vídeo y añade tu grabación.',
+    intro: 'Un rostro, una voz, un nuevo diálogo. Añade tu grabación a un retrato o a un vídeo y sincroniza los labios con las palabras.',
+    input: 'Un retrato o un vídeo de un rostro, junto con una grabación de voz.',
+    adjustment: 'El modo Foto o Vídeo y el fragmento de audio que quieres usar.',
+    output: 'Un vídeo que habla con la voz que has elegido.',
+    steps: [
+      'Elige Foto para un retrato o Vídeo para un rostro ya en movimiento.',
+      'Añade tu grabación de voz y selecciona el fragmento que quieres hacer pronunciar.',
+      'Confirma el precio y después mira y escucha el nuevo vídeo.',
+    ],
+    limits: [
+      'Elige un rostro bien visible y una grabación de voz clara. Revisa los labios y los rasgos en el vídeo final.',
+      'En modo Vídeo, selecciona fragmentos de audio y vídeo de igual duración. La herramienta no los repite ni acelera para hacerlos coincidir.',
+    ],
+    questions: [
+      { question: '¿Qué diferencia hay entre Foto y Vídeo?', answer: 'Foto anima un retrato fijo para hacerlo hablar. Vídeo adapta los labios de un rostro grabado a tu nuevo audio.' },
+      { question: '¿Puedo usar una voz generada?', answer: 'Sí. Selecciona un audio de tu cuenta o sube tu grabación. Eliges la voz antes de empezar la creación.' },
+    ],
+  },
+  'product-photo-editor': {
+    name: 'Editor de fotos de producto',
+    title: 'Tu producto. Otro escenario.',
+    description: 'Cambia el escenario o la luz de tu foto de producto. Elige un fondo de estudio, una escena cotidiana o una iluminación diferente.',
+    intro: 'Un fondo de estudio, una escena al aire libre, una luz más intensa. Parte de tu foto de producto y describe la imagen que quieres crear.',
+    input: 'Tu foto de producto, con una imagen de ambiente opcional.',
+    adjustment: 'El escenario, la luz, el formato y los detalles que quieres conservar.',
+    output: 'Una nueva foto para comparar y descargar.',
+    steps: [
+      'Sube una foto donde se vean bien el producto y sus detalles.',
+      'Elige el tipo de retoque y describe el escenario que tienes en mente.',
+      'Compara la nueva imagen con tu foto y descárgala.',
+    ],
+    limits: [
+      'Describe los detalles importantes: forma del frasco, color, material. Revisa los logotipos y el texto de la imagen final.',
+      'Otra luz o perspectiva puede cambiar el aspecto del producto. Empieza con un cambio concreto para valorar mejor el resultado.',
+    ],
+    questions: [
+      { question: '¿El logotipo y la etiqueta quedan idénticos?', answer: 'La edición con IA puede cambiar pequeños detalles o texto. Indica qué quieres conservar y revisa las letras a tamaño completo antes de usar la imagen.' },
+      { question: '¿Puedo animar la foto después?', answer: 'Sí. Guarda la imagen y selecciónala en una herramienta de vídeo compatible. La creación del vídeo tiene su propio precio, que confirmas por separado.' },
+    ],
+  },
+  'product-video-editor': {
+    name: 'Editor de vídeos de producto',
+    title: 'Cambia el escenario. Parte del plano que ya tienes.',
+    description: 'Retoca un plano de vídeo de producto: elige un fragmento, describe otro escenario, luz o estilo visual y compara ambos vídeos.',
+    intro: 'Tu producto ya está grabado. Selecciona un fragmento y pide un nuevo escenario, otra iluminación o un estilo visual diferente.',
+    input: 'Un vídeo de producto corto, con un único plano continuo.',
+    adjustment: 'El fragmento, el ambiente y si quieres conservar o quitar el sonido.',
+    output: 'Un nuevo vídeo para comparar con tu plano original.',
+    steps: [
+      'Sube tu vídeo y selecciona el fragmento que quieres retocar.',
+      'Describe el cambio de escenario, luz o estilo.',
+      'Compara los dos vídeos en paralelo y descarga el resultado.',
+    ],
+    limits: [
+      'Utiliza un plano continuo. Los cortes, las manos que tapan el producto o el movimiento rápido pueden dificultar el retoque.',
+      'Mira el resultado completo: el texto, la forma del producto y el movimiento de cámara pueden cambiar con el retoque.',
+    ],
+    questions: [
+      { question: '¿Puedo retocar un anuncio entero?', answer: 'La herramienta trabaja con un plano continuo. Para un anuncio con varios planos, retoca cada fragmento por separado y monta los vídeos en Studio.' },
+      { question: '¿Puedo conservar el sonido de mi vídeo?', answer: 'Sí. Elige conservar el audio original o silenciarlo. Escucha el resultado antes de añadirlo a tu montaje.' },
+    ],
+  },
+  'motion-transfer': {
+    name: 'Motion Transfer',
+    title: 'Dale movimiento a tu personaje.',
+    description: 'Anima una imagen de personaje a partir de un movimiento grabado. Elige tu personaje, un fragmento de vídeo y el método de guía.',
+    intro: 'Una pose, un paso de baile, un gesto. Combina la imagen de tu personaje con un vídeo de movimiento para crear una nueva animación.',
+    input: 'Una imagen de personaje y un vídeo del movimiento que quieres seguir.',
+    adjustment: 'El fragmento, el método, la orientación y el sonido.',
+    output: 'Un vídeo de tu personaje inspirado en el movimiento elegido.',
+    steps: [
+      'Elige una imagen donde se vean bien el personaje y su pose.',
+      'Añade el vídeo de movimiento y selecciona el fragmento que quieres seguir.',
+      'Elige el método, confirma el precio y mira cómo se mueve tu personaje.',
+    ],
+    limits: [
+      'Elige un vídeo donde el cuerpo permanezca visible. Los gestos ocultos y los movimientos muy rápidos son más difíciles de seguir.',
+      'Revisa el rostro, las manos y los objetos que sostiene. El aspecto del personaje y los gestos pueden variar en el vídeo final.',
+    ],
+    questions: [
+      { question: '¿En qué se diferencian los dos métodos?', answer: 'Control de movimiento utiliza un método dedicado a los gestos del personaje. Inspiración en vídeo utiliza el clip como referencia general. Los dos métodos no reproducen el movimiento de la misma manera.' },
+      { question: '¿Puedo usar un personaje de Character Builder?', answer: 'Sí. Selecciona una imagen guardada en Medios. Si tienes una hoja con varias vistas, elige primero la imagen concreta que quieres animar.' },
+    ],
+  },
 };

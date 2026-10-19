@@ -4,6 +4,8 @@ import { SubtitleOverlay } from '@/lib/subtitles/SubtitleOverlay';
 import type { SubtitleDocument } from '@/lib/subtitles/document';
 import type { CreatorSource } from './creator-source-selection';
 import { creatorWorkspaceCopy } from './creator-workspace-copy';
+import { creatorExperienceCopy } from './creator-experience-copy';
+import { Upload } from 'lucide-react';
 import styles from './creator-workspace.module.css';
 export function SubtitlePreview({ document, source, locale, onRefresh }: { document: SubtitleDocument | null; source: CreatorSource | null; locale: string; onRefresh?(): void }) {
   const copy = creatorWorkspaceCopy(locale), frame = useRef<HTMLDivElement>(null);
@@ -16,7 +18,7 @@ export function SubtitlePreview({ document, source, locale, onRefresh }: { docum
     const observer = new ResizeObserver(([entry]) => setSize({width:entry.contentRect.width,height:entry.contentRect.height}));
     observer.observe(element); return () => observer.disconnect();
   }, [source?.url]);
-  if (!source) return <div className={styles.media}><div className={styles.empty}><span aria-hidden="true">↥</span><p>{copy.sourceHint}</p></div></div>;
+  if (!source) return <div className={styles.media}><div className={styles.empty}><Upload size={28} aria-hidden="true" /><p>{copy.sourceHint}</p></div></div>;
   const failure = failed === source.url ? <p className={styles.error} role="alert">{copy.previewError}{onRefresh ? <button type="button" onClick={onRefresh}>{copy.retry}</button> : null}</p> : null;
   if (source.ref.kind === 'audio') return <><div className={styles.media}><audio key={source.url} src={source.url} controls preload="none" onError={() => setFailed(source.url)} onTimeUpdate={event => setTime(Math.round(event.currentTarget.currentTime * 1000))} /></div>{failure}</>;
   return <><div className={styles.media} style={{aspectRatio:'auto'}}><div ref={frame} style={{position:'relative',width:`min(100%, ${60 * ratio}svh)`,aspectRatio:ratio}}>
@@ -27,10 +29,11 @@ export function SubtitlePreview({ document, source, locale, onRefresh }: { docum
   </div></div>{failure}</>;
 }
 export function SubtitleDocumentEditor({ locale, document, onChange, disabled }: { locale: string; document: SubtitleDocument; onChange(document: SubtitleDocument): void; disabled: boolean }) {
-  const copy = creatorWorkspaceCopy(locale);
+  const copy = creatorWorkspaceCopy(locale), experience = creatorExperienceCopy(locale);
   return <div className={styles.captionEditor}>
     <p className={styles.notice}>{copy.editHint}</p>
     {!document.segments.length ? <p role="status">{copy.transcriptEmpty}</p> : null}
+    {document.segments.length ? <div className={styles.captionColumnLabels} aria-hidden="true"><span>{experience.startColumn}</span><span>{experience.textColumn}</span><span>{experience.endColumn}</span></div> : null}
     {document.segments.map((segment,index) => <div className={styles.captionRow} key={segment.id}>
       <input aria-label={`${copy.start} — ${index + 1}`} type="number" min="0" step="0.001" max={document.source.durationMs / 1000} value={segment.startMs / 1000} disabled={disabled}
         onChange={event => onChange({...document,segments:document.segments.map(value => value.id === segment.id ? {...value,startMs:Math.round(Number(event.target.value) * 1000),alignment:'edited'} : value)})} />

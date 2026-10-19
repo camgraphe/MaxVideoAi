@@ -1,15 +1,133 @@
 import type { CreatorMarketingDictionary, CreatorMarketingLabels } from './creator-copy-types';
+
 export const enLabels: CreatorMarketingLabels = {
-  home:'Home', tools:'All tools', eyebrow:'The next step for your media', open:'Open the tool', how:'See the workflow',
-  inputs:'01 / Input',settings:'02 / Adjust',result:'03 / Output',workflow:'From your source to a new result.',limits:'Know what to check.',faq:'Your questions, answered.',
-  quoteTitle:'Review the full price before you start.',quoteBody:'Choose your sources and settings in the app. Review the current quote, then confirm the operation. Your source remains available.',related:'Keep creating',
-  illustration:'Workflow illustration — not a generated result',preview:'Design preview · execution is not publicly released',demo:'Explore the illustrated workflow',photo:'Photo',video:'Video',voice:'Voice',character:'Character',performance:'Performance',
-  source:'Source',after:'Illustrated output',caption:'Edit the sample caption',sample:'Every detail tells a story.',style:'Caption style',styles:['Clean','Active word','High contrast'],scene:'Setting',scenes:['Studio','Lifestyle','Lighting'],compare:'Compare the illustrated frames',sequence:'Reference movement',next:'A clear next step.',operation:'Choose your media, adjust one task, then review the result.',
+  home: 'Home', tools: 'All tools', eyebrow: 'Tools for your next creation',
+  open: 'Open the tool', how: 'How it works',
+  inputs: '01 / Upload', settings: '02 / Make it yours', result: '03 / Download',
+  workflow: 'Create in three steps.', limits: 'For a better result.', faq: 'Your questions, answered.',
+  quoteTitle: 'See the price. Then decide.',
+  quoteBody: 'Add your files and choose your settings. See the exact price before you confirm.',
+  related: 'What will you create next?',
+  illustration: 'Art direction · presentation visual — not a tool result',
+  preview: 'Coming soon', demo: 'Explore the preview',
+  photo: 'Photo', video: 'Video', voice: 'Voice', character: 'Character', performance: 'Movement',
+  source: 'Starting point', after: 'Creative direction',
+  caption: 'Try your own words', sample: 'Every word, at your pace.',
+  style: 'Caption style', styles: ['Clean', 'Highlighted word', 'High contrast'],
+  scene: 'Setting', scenes: ['Studio', 'In context', 'Lighting'],
+  compare: 'Compare the two settings', sequence: 'Movement to follow',
+  next: 'Bring your idea into view.', operation: 'Add captions. Give a voice. Set the scene. Animate.',
 };
+
 export const enCopy: CreatorMarketingDictionary = {
-  subtitles:{name:'Video subtitles',title:'Give every word its place.',description:'Create editable video subtitles, review timing and style, and prepare SRT, VTT or a captioned MP4 with MaxVideoAI.',intro:'Turn spoken audio into captions you can read, correct and place. Keep the text editable before preparing your publishing format.',input:'A video with speech, or an audio recording.',adjustment:'Language, corrected text, segment timing and three readable styles.',output:'An editable subtitle document, SRT/VTT and a captioned video.',steps:['Choose the recording and review its language.','Correct words and timing, then choose a caption style.','Review the preview and choose the export you need.'],limits:['Names and specialist words need a careful review. Changed text may need its timing adjusted.','An audio-only source needs a visual background for a captioned video. Full Studio sequence export has its own availability.'],questions:[{question:'Can I correct the text without transcribing again?',answer:'The editable document keeps text, timing and style separate from transcription. Review timing after changing the wording.'},{question:'What is the difference between SRT, VTT and MP4?',answer:'SRT and VTT contain timed text. A captioned MP4 places that text directly into the video image.'}]},
-  'lip-sync':{name:'Lip Sync',title:'A voice. A face. One performance.',description:'Explore Photo and Video lip sync: pair a portrait or a face video with your voice, review the segment and prepare a new clip.',intro:'Give a portrait a speaking performance, or work on the dialogue of an existing video. Start with the mode that matches your source.',input:'Photo or video of one face, plus a voice recording.',adjustment:'Photo/Video mode, the selected audio and the source segment.',output:'A new video to watch, listen to and compare with your sources.',steps:['Choose Photo or Video and add the matching source.','Add your voice recording and review the selected duration.','Review the quote, then check the completed performance.'],limits:['Identity, mouth movement and audio synchronization need review on your own source.','Audio and video durations must be compatible. No hidden looping, acceleration or cutoff is part of the workflow.'],questions:[{question:'Does Photo mode edit an existing video?',answer:'Photo mode starts from a still portrait. Choose Video when the original is already a moving face.'},{question:'Can I use a voice I already generated?',answer:'An owned audio result can be selected like a recording when it meets the operation’s current input requirements.'}]},
-  'product-photo-editor':{name:'Product Photo Editor',title:'Your product. A different setting.',description:'Prepare product photo edits with a studio background, lifestyle setting or lighting change, using your product image as the source.',intro:'Start with your packshot and give the next image a clear direction. Keep the product details visible as you review the result.',input:'A product photo and an optional setting reference.',adjustment:'Studio, lifestyle or lighting; a brief, aspect ratio and details to preserve.',output:'A new image to compare, save or use as a starting frame.',steps:['Choose a clear product image.','Describe one setting or lighting change.','Compare shape, colour and lettering before saving.'],limits:['Preservation instructions are guidance, not a pixel lock. Check logos, labels and proportions at full size.','Reflections and a new camera perspective can alter the product. A simple background change is a different task from a full reconstruction.'],questions:[{question:'Will the label stay exactly the same?',answer:'Generative editing can change lettering. Inspect the actual result; no exact label-preservation guarantee is implied.'},{question:'Can the result become a product video?',answer:'Save the image and use it as a starting frame in a compatible video workflow. That is a separate quoted operation.'}]},
-  'product-video-editor':{name:'Product Video Editor',title:'Keep the shot. Change its direction.',description:'Explore editing a short product shot: select a segment, request a setting or lighting change and compare the resulting clip.',intro:'Work on one continuous product shot and one change at a time. Compare the movement and product details throughout the new clip.',input:'A short continuous product video, with an optional image reference.',adjustment:'A source segment and one change to the setting, atmosphere or lighting.',output:'A new clip with its actual duration and audio clearly identified.',steps:['Choose the shot and mark the segment.','Describe the change and the details that matter.','Compare the clip before adding it to your project.'],limits:['Check lettering, hands, product shape and camera motion across the entire clip.','The completed duration or audio may differ. Keep the source and choose explicitly whether to add or replace a clip.'],questions:[{question:'Can I edit a whole multi-shot advert at once?',answer:'This workflow focuses on a continuous shot. Editing several shots does not guarantee consistency across the whole advert.'},{question:'Is the original soundtrack always preserved?',answer:'Audio policy and actual duration must be checked for the selected operation. A replacement soundtrack is never implied by a preview.'}]},
-  'motion-transfer':{name:'Motion Transfer',title:'Give your character a move to follow.',description:'Pair a character image with a performance clip, select the reference movement and prepare a new character video.',intro:'Bring an image and a performance together. Choose a readable movement, then review identity and gesture in the new video.',input:'A character image plus a video performance.',adjustment:'The performance segment, supported orientation and audio choice.',output:'A new character video, alongside the two original references.',steps:['Choose a character image with a readable pose.','Select the movement segment and audio policy.','Review identity, hands and movement in the result.'],limits:['A visible body and limited occlusion help the reference stay readable; results still need review.','Hands and held objects are separate quality checks. A convincing dance does not establish product-demo fidelity.'],questions:[{question:'Can I start from Character Builder?',answer:'Use a saved character image as your character reference. For a sheet, first choose the single view you want to animate.'},{question:'Is the performance clip the output?',answer:'It guides the movement. The operation creates a new video and keeps both source references available.'}]},
+  subtitles: {
+    name: 'Video subtitles',
+    title: 'Caption your video. Every word, at your pace.',
+    description: 'Add subtitles to your video: correct the text, adjust timing and style, then download SRT, VTT or a captioned MP4.',
+    intro: 'Upload your video. Edit the words, adjust when they appear and choose their style. Export your subtitles as text or as part of the video.',
+    input: 'A video with speech, or an audio file.',
+    adjustment: 'The words, timing, size, style and position.',
+    output: 'An SRT or VTT file, or your captioned video as an MP4.',
+    steps: [
+      'Upload your video or audio and choose the language.',
+      'Review the captions, adjust their timing and choose how they look.',
+      'Download SRT or VTT, or export the video with captions included.',
+    ],
+    limits: [
+      'Add names and specialist terms before transcription to help recognize them. Check them before exporting.',
+      'An audio file gives you SRT or VTT subtitles. A captioned MP4 needs a video.',
+    ],
+    questions: [
+      { question: 'Can I edit the subtitles after transcription?', answer: 'Yes. Change the words, timing and style without transcribing again. After rewriting a line, check that it still follows the voice.' },
+      { question: 'Which format should I choose?', answer: 'Use SRT or VTT to add subtitles in a player or video editor. A captioned MP4 includes the text in the video itself; this export has its own price, which you confirm after editing.' },
+    ],
+  },
+  'lip-sync': {
+    name: 'Lip Sync',
+    title: 'Make a portrait speak. Or give a video a new voice.',
+    description: 'Animate a portrait with your voice or sync a video’s lips to new audio. Choose Photo or Video mode and add your recording.',
+    intro: 'A face, a voice, a new line to deliver. Add your recording to a portrait or a face video and sync the lips to the words.',
+    input: 'A portrait or a face video, plus a voice recording.',
+    adjustment: 'Photo or Video mode and the audio passage to use.',
+    output: 'A speaking video with the voice you chose.',
+    steps: [
+      'Choose Photo for a still portrait, or Video for a face already in motion.',
+      'Add your voice recording and select the passage to deliver.',
+      'Confirm the price, then watch and listen to the new video.',
+    ],
+    limits: [
+      'Use a clearly visible face and a clean voice recording. Check the lips and facial features in the finished video.',
+      'In Video mode, select audio and video passages of equal length. The tool does not loop or speed them up to make them fit.',
+    ],
+    questions: [
+      { question: 'What is the difference between Photo and Video?', answer: 'Photo animates a still portrait to make it speak. Video adapts the lips of a filmed face to your new recording.' },
+      { question: 'Can I use a generated voice?', answer: 'Yes. Select an audio file from your account or upload your recording. You choose the voice before starting the creation.' },
+    ],
+  },
+  'product-photo-editor': {
+    name: 'Product Photo Editor',
+    title: 'Your product. A different setting.',
+    description: 'Change the setting or lighting in your product photo. Choose a studio background, an everyday scene or a new lighting direction.',
+    intro: 'A studio backdrop, an outdoor scene, more dramatic light. Start with your product photo and describe the image you want to create.',
+    input: 'Your product photo, with an optional image for the setting.',
+    adjustment: 'The setting, lighting, format and details to keep.',
+    output: 'A new photo to compare and download.',
+    steps: [
+      'Upload a photo with a clear view of your product and its details.',
+      'Choose the type of edit and describe the setting you have in mind.',
+      'Compare the new image with your photo, then download it.',
+    ],
+    limits: [
+      'Describe the details that matter: bottle shape, color, material. Check logos and lettering in the finished image.',
+      'New lighting or perspective can change how the product looks. Start with one specific change so you can assess the result.',
+    ],
+    questions: [
+      { question: 'Will the logo and label stay identical?', answer: 'AI editing can change small details or text. Describe what you want to keep, then check lettering at full size before using the image.' },
+      { question: 'Can I animate the photo afterwards?', answer: 'Yes. Save the image and select it in a compatible video tool. Video creation has its own price, which you confirm separately.' },
+    ],
+  },
+  'product-video-editor': {
+    name: 'Product Video Editor',
+    title: 'Change the setting. Start with the shot you have.',
+    description: 'Edit a product video shot: choose a passage, describe a new setting, light or visual style, then compare the videos.',
+    intro: 'Your product is already on camera. Select a passage and ask for a new setting, different lighting or another visual style.',
+    input: 'A short product video with one continuous shot.',
+    adjustment: 'The passage to edit, the look and whether to keep the sound.',
+    output: 'A new video to compare with your original shot.',
+    steps: [
+      'Upload your video and select the passage to edit.',
+      'Describe the change to the setting, lighting or style.',
+      'Compare the two videos side by side and download the result.',
+    ],
+    limits: [
+      'Use one continuous shot. Cuts, hands covering the product or fast movement can make the edit harder.',
+      'Watch the full result: lettering, product shape and camera movement can change during the edit.',
+    ],
+    questions: [
+      { question: 'Can I edit a whole advert?', answer: 'The tool works on one continuous shot. For an advert with several shots, edit each passage separately, then assemble the videos in Studio.' },
+      { question: 'Can I keep my video’s sound?', answer: 'Yes. Choose to keep the original audio or mute it. Listen to the result before adding it to your edit.' },
+    ],
+  },
+  'motion-transfer': {
+    name: 'Motion Transfer',
+    title: 'Give your character a move to follow.',
+    description: 'Animate a character image with a filmed movement. Choose your character, a video passage and a way to guide the animation.',
+    intro: 'A pose, a dance step, a gesture. Pair your character image with a movement video to create a new animation.',
+    input: 'A character image and a video of the movement to follow.',
+    adjustment: 'The passage, motion method, orientation and sound.',
+    output: 'A character video inspired by your chosen movement.',
+    steps: [
+      'Choose an image that clearly shows your character and their pose.',
+      'Add the movement video and select the passage to follow.',
+      'Choose the method, confirm the price and watch your character move.',
+    ],
+    limits: [
+      'Choose a video where the body stays visible. Hidden gestures and very fast movements are harder to follow.',
+      'Check the face, hands and held objects. The character’s appearance and gestures can vary in the finished video.',
+    ],
+    questions: [
+      { question: 'How do the two methods differ?', answer: 'Motion control uses a method dedicated to character movement. Video inspiration uses the clip as a general reference. The two methods do not reproduce movement in the same way.' },
+      { question: 'Can I use a character from Character Builder?', answer: 'Yes. Select a saved image from Media. If you have a sheet with several views, first choose the single image you want to animate.' },
+    ],
+  },
 };

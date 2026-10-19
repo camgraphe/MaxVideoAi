@@ -12,12 +12,14 @@ test('five localized workspaces expose usable empty states on mobile and desktop
     page.on('pageerror',error=>errors.push(error.message));
     try{
       await page.goto(`${fixture.url}/${locale}/${tool}`);await page.locator('h1').waitFor({timeout:5000}).catch(error=>{throw new Error(`${locale}/${tool}: ${errors.join('; ')} ${error.message}`);});
-      assert.equal(await page.locator('h1').count(),1);assert.equal(await page.locator('video,audio,img').count(),0);
+      assert.equal(await page.locator('h1').count(),1);assert.equal(await page.locator('video,audio').count(),0);assert.equal(await page.locator('img').count(),1);assert.match(await page.locator('img').getAttribute('src') ?? '',new RegExp(`/creator-art/${tool}-`));
+      await page.locator('img').evaluate(image => image.decode());
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`${locale}/${tool}/${width} overflow`);
       assert.ok(await page.locator('input[type=file]').count()>0);assert.ok(await page.locator('button:disabled').count()>0);
-      const controls=await page.locator('input[type=file]').evaluateAll(nodes=>nodes.map(node=>({label:node.getAttribute('aria-label'),height:node.getBoundingClientRect().height})));
+      const controls=await page.locator('input[type=file]:visible').evaluateAll(nodes=>nodes.map(node=>({label:node.getAttribute('aria-label'),height:node.getBoundingClientRect().height})));
       for(const control of controls){assert.ok(control.label);assert.ok(control.height>=44);}
       if(locale==='en'&&tool==='lip-sync'){await page.getByRole('button',{name:'Video',exact:true}).click();await page.getByText('Video Lip Sync is not available at the moment.').waitFor();}
+      if(locale==='en'&&tool==='product-photo-editor'){await page.getByRole('button',{name:'Lighting',exact:true}).click();assert.equal(await page.getByRole('button',{name:'Lighting',exact:true}).getAttribute('aria-pressed'),'true');await page.locator('summary').filter({hasText:'Advanced options'}).click();assert.equal(await page.getByLabel('Image model',{exact:true}).inputValue(),'gpt-image-2-5-flare');}
       if(evidence&&locale==='fr')await page.screenshot({path:join(evidence,`${tool}-${width}.png`),fullPage:true});
       assert.deepEqual(errors,[]);
     }finally{await page.close();}

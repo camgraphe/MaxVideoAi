@@ -1,5 +1,7 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { Download, Save, SlidersHorizontal, Loader2, CheckCircle2 } from 'lucide-react';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { authFetch } from '@/lib/authFetch';
@@ -7,7 +9,9 @@ import { triggerAppDownload } from '@/lib/download';
 import { parseSubtitleDocument, type SubtitleDocument, type SubtitleStyle } from '@/lib/subtitles/document';
 import { ToolMediaHandoff } from '@/components/library/ToolMediaHandoff.client';
 import { MediaDestinationActions } from '@/components/library/MediaDestinationActions.client';
-import { ToolAuthNotice, ToolWorkbench } from '../ToolWorkbench';
+import { ToolAuthNotice } from '../ToolWorkbench';
+import { CreatorWorkbench, CreatorInspiration } from './CreatorWorkbench.client';
+import { creatorExperienceCopy } from './creator-experience-copy';
 import { CreatorSourcePicker } from './CreatorSourcePicker.client';
 import { selectCreatorSource, type CreatorSource } from './creator-source-selection';
 import { CreatorOperationPanel } from './CreatorOperationPanel';
@@ -26,7 +30,7 @@ export default function SubtitleWorkspace({initialDocument,executionEnabled = tr
   return <SubtitleSession key={`${auth.user?.id ?? 'guest'}:${initialDocument?.id ?? ''}:${initialDocument?.revision ?? ''}:${initialOperationId ?? ''}:${studioSource?.projectId ?? ''}:${studioSource?.sequenceId ?? ''}:${studioSource?.expectedRevision ?? ''}`} userId={auth.user?.id} locale={locale} initialDocument={initialDocument} executionEnabled={executionEnabled} initialOperationId={initialOperationId} studioSource={studioSource} />;
 }
 export function SubtitleSession({userId,locale,initialDocument,executionEnabled = true,initialOperationId,studioSource}: {userId?: string; locale: string;initialDocument?: {id:string;revision?:number};executionEnabled?:boolean;initialOperationId?:string;studioSource?:StudioSubtitleSource}) {
-  const copy = creatorWorkspaceCopy(locale);
+  const copy = creatorWorkspaceCopy(locale), experience = creatorExperienceCopy(locale);
   const transcription = useCreatorOperation<TranscriptResult | RenderResult>({userId,toolId:'subtitles',family:'subtitles',executionEnabled,initialOperationId});
   const render = useCreatorOperation<RenderResult>({userId,toolId:'subtitles-export',family:'subtitles',executionEnabled});
   const [requestedDocument,setRequestedDocument] = useState(initialDocument);
@@ -118,33 +122,39 @@ export function SubtitleSession({userId,locale,initialDocument,executionEnabled 
   }
   const conflict = error === 'SUBTITLE_REVISION_CONFLICT' || error === 'SUBTITLE_REQUEST_CONFLICT';
   const captionStyle = (patch:Partial<SubtitleStyle>) => { if (draft) changeDocument({...draft,style:{...draft.style,...patch}}); };
-  return <ToolWorkbench locale={locale} title={copy.titles.subtitles}
+  return <CreatorWorkbench locale={locale} toolId="subtitles" title={copy.titles.subtitles} activeStep={renderResult || render.running ? 2 : draft ? 1 : 0}
     source={<div className={styles.sourceGroup}>{studioSource ? <section className={styles.sourceCard}><h2>{copy.studioSequence}</h2><p>{transcription.sourceSummary?.name ?? copy.studioSequence}</p><p>{copy.sequenceRevision} {studioSource.expectedRevision}</p><p className={styles.notice}>{copy.mixHint}</p></section> : <><div className={styles.segmented}>{(['video','audio'] as const).map(value => <button type="button" key={value} aria-pressed={kind === value} disabled={disabled} onClick={() => {changeSource(null);setKind(value);}}>{copy[value]}</button>)}</div>
-      <CreatorSourcePicker userId={userId} locale={locale} label={copy.sourceLabels.source} kind={kind} source={source} onChange={changeSource} disabled={disabled} onBusyChange={busy => {setUploadBusy(busy);if(busy){transcription.invalidate();render.invalidate();}}} /><p className={styles.notice}>{copy.preserved}</p></>}
+      <CreatorSourcePicker userId={userId} locale={locale} label={kind === 'video' ? experience.subtitleVideo : experience.subtitleAudio} hint={experience.transcriptHint} kind={kind} source={source} onChange={changeSource} disabled={disabled} onBusyChange={busy => {setUploadBusy(busy);if(busy){transcription.invalidate();render.invalidate();}}} /><p className={styles.notice}>{copy.preserved}</p></>}
     </div>}
     settings={<div className={styles.settings}>{!draft ? <>
-      <label>{copy.language}<select value={language} disabled={disabled} onChange={event => {transcription.invalidate();setLanguage(event.target.value);}}><option value="">{copy.auto}</option><option value="en">English</option><option value="fr">Français</option><option value="es">Español</option></select></label>
-      <label>{copy.keyterms}<textarea maxLength={5100} value={keyterms} disabled={disabled} onChange={event => {transcription.invalidate();setKeyterms(event.target.value);}} /><small>{copy.keytermsHint}</small></label>
-      <CreatorOperationPanel locale={locale} operation={transcription} disabled={!executionEnabled || !userId || (!source && !studioSource) || uploadBusy || loading} onPrepare={() => {const terms=keyterms.split(',').map(value => value.trim()).filter(Boolean),settings={...language?{language}:{},keyterms:terms};if(studioSource)void transcription.prepare({...studioSource,...settings},'/prepare-studio');else if(source)void transcription.prepare({source:source.ref,...settings});}} />
+      <label>{copy.language}<select aria-label={copy.language} value={language} disabled={disabled} onChange={event => {transcription.invalidate();setLanguage(event.target.value);}}><option value="">{copy.auto}</option><option value="en">English</option><option value="fr">Français</option><option value="es">Español</option></select></label>
+      <details className={styles.advanced}><summary><SlidersHorizontal size={17} aria-hidden="true" />{experience.advanced}</summary><div className={styles.settings}><label>{copy.keyterms}<textarea maxLength={5100} value={keyterms} disabled={disabled} onChange={event => {transcription.invalidate();setKeyterms(event.target.value);}} /><small>{copy.keytermsHint}</small></label></div></details>
+      <CreatorOperationPanel locale={locale} operation={transcription} disabledReason={!userId ? copy.signIn : !executionEnabled ? copy.executionClosed : !source && !studioSource ? experience.chooseSource : undefined} disabled={!executionEnabled || !userId || (!source && !studioSource) || uploadBusy || loading} onPrepare={() => {const terms=keyterms.split(',').map(value => value.trim()).filter(Boolean),settings={...language?{language}:{},keyterms:terms};if(studioSource)void transcription.prepare({...studioSource,...settings},'/prepare-studio');else if(source)void transcription.prepare({source:source.ref,...settings});}} />
     </> : <>
-      <label>{copy.style}<select disabled={disabled} value={draft.style.preset} onChange={event => captionStyle({preset:event.target.value as SubtitleStyle['preset']})}><option value="clean">{copy.clean}</option><option value="active-word">{copy.activeWord}</option><option value="high-contrast">{copy.contrast}</option></select></label>
-      <label>{copy.position}<select disabled={disabled} value={draft.style.position} onChange={event => captionStyle({position:event.target.value as SubtitleStyle['position']})}>{(['bottom','center','top'] as const).map(value => <option key={value} value={value}>{copy[value]}</option>)}</select></label>
+      <fieldset className={styles.choiceFieldset}><legend>{experience.styleTitle}</legend><div className={styles.captionStyles}>{(['clean','active-word','high-contrast'] as const).map(preset => <button type="button" key={preset} disabled={disabled} aria-pressed={draft.style.preset === preset} onClick={() => captionStyle({preset})}>
+        <span className={styles.styleSample} data-preset={preset} aria-hidden="true">{preset === 'active-word' ? <><mark>Aa</mark> Bb</> : 'Aa Bb'}</span><span>{preset === 'clean' ? copy.clean : preset === 'active-word' ? copy.activeWord : copy.contrast}</span>
+      </button>)}</div></fieldset>
+      <label>{copy.position}<select aria-label={copy.position} disabled={disabled} value={draft.style.position} onChange={event => captionStyle({position:event.target.value as SubtitleStyle['position']})}>{(['bottom','center','top'] as const).map(value => <option key={value} value={value}>{copy[value]}</option>)}</select></label>
       <label>{copy.fontSize}<input type="range" min="2" max="10" step="0.5" value={draft.style.fontSizePercent} disabled={disabled} onChange={event => captionStyle({fontSizePercent:Number(event.target.value)})} /></label>
-      <button type="button" className={styles.primary} disabled={disabled || !dirty || conflict} onClick={() => void save()}>{saving ? copy.loading : dirty ? copy.save : copy.saved}</button>
-      <p role="status" className={styles.notice}>{dirty ? copy.unsaved : `${copy.savedRevision} ${saved?.revision}`}</p>
-      {draft.source.ref.kind === 'video' ? <CreatorOperationPanel locale={locale} operation={render} disabled={!executionEnabled || !userId || dirty || saving || loading || uploadBusy || !draft.segments.length} action={copy.burn} onPrepare={() => {if(saved)void render.prepare({documentId:saved.id,revision:saved.revision},'/export/prepare');}} /> : <p className={styles.notice}>{copy.videoRequired}</p>}
+      <p className={styles.notice}>{experience.savedText}</p>
     </>}
     {error ? <div className={styles.error} role="alert"><p>{conflict ? copy.conflict : error === 'INVALID_CAPTIONS' ? copy.invalidCaptions : error === 'DOWNLOAD_FAILED' ? copy.downloadError : copy.error}</p>
       {conflict && saved ? <button type="button" disabled={disabled} onClick={() => void readDocument(saved.id)}>{copy.restore}</button> : error === 'DOCUMENT_UNAVAILABLE' ? <button type="button" disabled={loading} onClick={() => setLoadRevision(value => value + 1)}>{copy.retry}</button> : null}
     </div> : null}</div>}
     recent={<SubtitleRecentDocuments key={userId} userId={userId} locale={locale} disabled={disabled || dirty} onOpen={id => {transcription.invalidate();render.invalidate();setSource(null);setSaved(null);setDraft(null);setRequestedDocument({id});}} />}
-    preview={<div className={styles.stage}><div className={styles.stageHeading}>{copy.transcript}{loading ? <span role="status">{copy.loading}</span> : null}</div>
-      {studioSource && !source ? <div className={styles.media}><p className={styles.empty}>{copy.mixPending}</p></div> : <SubtitlePreview key={previewRevision} document={draft} source={source} locale={locale} onRefresh={saved ? () => void refreshPreview() : undefined} />}
-      {draft ? <><SubtitleDocumentEditor locale={locale} document={draft} onChange={changeDocument} disabled={disabled || conflict} /><div className={styles.actions}>
-        <button type="button" disabled={dirty || disabled || downloadBusy} onClick={() => void download('srt')}>{copy.exportSrt}</button><button type="button" disabled={dirty || disabled || downloadBusy} onClick={() => void download('vtt')}>{copy.exportVtt}</button>
-      </div></> : null}
-      {renderResult ? <><p className={styles.stageHeading}>{copy.result} · {copy.savedRevision} {renderResult.revision}</p><CreatorMediaPreview key={`${render.readRevision}:${transcription.readRevision}`} locale={locale} url={renderReadUrl ?? undefined} kind="video" poster={renderPoster} unavailable={!renderReadUrl} onRetry={retryRender} />
-        <div className={styles.actions}><button type="button" disabled={!renderReadUrl} onClick={() => {if(renderReadUrl)triggerAppDownload(renderReadUrl,`subtitles-r${renderResult!.revision}.mp4`);}}>{copy.download}</button><MediaDestinationActions locale={locale} userId={userId} asset={{id:renderResult.assetId,url:renderResult.originalUrl,kind:'video',thumbUrl:renderResult.thumbnailUrl}} /></div></> : null}
+    preview={<div className={styles.stage}>
+      {working ? <div className={styles.stageStatus} role="status"><Loader2 size={18} className={styles.spinner} aria-hidden="true" />{copy.working}</div> : null}
+      {!source && !draft && !studioSource ? <CreatorInspiration locale={locale} toolId="subtitles" /> : <><div className={styles.stageHeading}><h2>{copy.transcript}</h2>{loading ? <span role="status">{copy.loading}</span> : null}</div>
+        {studioSource && !source ? <div className={styles.media}><p className={styles.empty}>{copy.mixPending}</p></div> : <SubtitlePreview key={previewRevision} document={draft} source={source} locale={locale} onRefresh={saved ? () => void refreshPreview() : undefined} />}
+      </>}
+      {draft ? <><div className={styles.editorToolbar}><div><h2>{experience.editTitle}</h2><p role="status">{dirty ? copy.unsaved : `${copy.savedRevision} ${saved?.revision}`}</p></div>
+        <button type="button" className={styles.primary} disabled={disabled || !dirty || conflict} onClick={() => void save()}><Save size={17} aria-hidden="true" />{saving ? copy.loading : dirty ? copy.save : copy.saved}</button>
+      </div><SubtitleDocumentEditor locale={locale} document={draft} onChange={changeDocument} disabled={disabled || conflict} />
+      <section className={styles.exportSection}><h2>{experience.exportTitle}</h2><p>{experience.exportHint}</p><div className={styles.actions}>
+        <button type="button" disabled={dirty || disabled || downloadBusy} onClick={() => void download('srt')}><Download size={16} aria-hidden="true" />{copy.exportSrt}</button><button type="button" disabled={dirty || disabled || downloadBusy} onClick={() => void download('vtt')}><Download size={16} aria-hidden="true" />{copy.exportVtt}</button>
+      </div>{draft.source.ref.kind === 'video' ? <CreatorOperationPanel locale={locale} operation={render} disabledReason={dirty ? copy.unsaved : !executionEnabled ? copy.executionClosed : undefined} disabled={!executionEnabled || !userId || dirty || saving || loading || uploadBusy || !draft.segments.length} action={copy.burn} onPrepare={() => {if(saved)void render.prepare({documentId:saved.id,revision:saved.revision},'/export/prepare');}} /> : <p className={styles.notice}>{copy.videoRequired}</p>}</section></> : null}
+      {renderResult ? <><p className={styles.stageStatus}><CheckCircle2 size={18} aria-hidden="true" />{copy.result} · {copy.savedRevision} {renderResult.revision}</p><CreatorMediaPreview key={`${render.readRevision}:${transcription.readRevision}`} locale={locale} url={renderReadUrl ?? undefined} kind="video" poster={renderPoster} unavailable={!renderReadUrl} onRetry={retryRender} />
+        <div className={styles.resultSection}><h2>{experience.resultActions}</h2><p>{experience.savedMedia} <Link href="/app/library" prefetch={false}>{experience.openMedia}</Link></p><div className={`${styles.actions} ${styles.resultActions}`}><button type="button" disabled={!renderReadUrl} onClick={() => {if(renderReadUrl)triggerAppDownload(renderReadUrl,`subtitles-r${renderResult!.revision}.mp4`);}}><Download size={17} aria-hidden="true" />{copy.download}</button><MediaDestinationActions presentation="creator" locale={locale} userId={userId} asset={{id:renderResult.assetId,url:renderResult.originalUrl,kind:'video',thumbUrl:renderResult.thumbnailUrl}} /></div></div></> : null}
     </div>}
-  >{!executionEnabled ? <p className={styles.notice} role="status">{copy.executionClosed}</p> : null}{!userId ? <ToolAuthNotice locale={locale} path="/app/tools/subtitles" /> : null}{!studioSource ? <ToolMediaHandoff userId={userId} destination="subtitles" locale={locale} disabled={disabled} onSelect={asset => {if(asset.kind !== 'audio' && asset.kind !== 'video')throw new Error('Incompatible source');changeSource(selectCreatorSource(asset,asset.kind));setKind(asset.kind);}} /> : null}</ToolWorkbench>;
+  >{!executionEnabled ? <p className={styles.notice} role="status">{copy.executionClosed}</p> : null}{!userId ? <ToolAuthNotice locale={locale} path="/app/tools/subtitles" /> : null}{!studioSource ? <ToolMediaHandoff userId={userId} destination="subtitles" locale={locale} disabled={disabled} onSelect={asset => {if(asset.kind !== 'audio' && asset.kind !== 'video')throw new Error('Incompatible source');changeSource(selectCreatorSource(asset,asset.kind));setKind(asset.kind);}} /> : null}</CreatorWorkbench>;
 }

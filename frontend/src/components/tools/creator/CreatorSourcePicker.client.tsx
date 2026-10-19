@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { Upload, Images, X, Film, AudioLines, Loader2 } from 'lucide-react';
+import { creatorExperienceCopy } from './creator-experience-copy';
 import { AssetLibraryBrowser, type AssetBrowserAsset } from '@/components/library/AssetLibraryBrowser';
 import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
 import { authFetch } from '@/lib/authFetch';
@@ -11,11 +13,11 @@ import { creatorCopy } from './creator-copy';
 import { selectCreatorSource, type CreatorSource } from './creator-source-selection';
 import styles from './creator-workspace.module.css';
 
-export function CreatorSourcePicker({ userId, locale, label, kind, source, onChange, onBusyChange, disabled = false }: {
-  userId?: string; locale: string; label: string; kind: ToolMediaKind; source: CreatorSource | null;
+export function CreatorSourcePicker({ userId, locale, label, hint, kind, source, onChange, onBusyChange, disabled = false }: {
+  userId?: string; locale: string; label: string; hint?: string; kind: ToolMediaKind; source: CreatorSource | null;
   onChange(source: CreatorSource | null): void; onBusyChange?(busy: boolean): void; disabled?: boolean;
 }) {
-  const copy = creatorCopy(locale);
+  const copy = creatorCopy(locale), experience = creatorExperienceCopy(locale);
   const [open, setOpen] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState<string | null>(null);
   const mounted = useRef(true), uploading = useRef(false);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
@@ -38,18 +40,27 @@ export function CreatorSourcePicker({ userId, locale, label, kind, source, onCha
     } catch { if (mounted.current) setError(copy.uploadError); }
     finally { uploading.current = false; if (mounted.current) { setBusy(false); onBusyChange?.(false); } }
   }
+  const importLabel = kind === 'image' ? experience.importImage : kind === 'video' ? experience.importVideo : experience.importAudio;
+  const thumbnail = source?.thumbnailUrl ?? (kind === 'image' ? source?.url : undefined);
   return <section className={styles.sourceCard}>
     <h2>{label}</h2>
-    <div className={styles.sourceActions}>
+    {hint ? <p className={styles.sourceHint}>{hint}</p> : null}
+    {source ? <div className={styles.selectedSource}>
+      <div className={styles.sourceThumbnail}>{thumbnail ? /* eslint-disable-next-line @next/next/no-img-element -- Account-owned media stays outside public optimization. */
+        <img src={thumbnail} alt="" /> : kind === 'audio' ? <AudioLines size={22} aria-hidden="true" /> : <Film size={22} aria-hidden="true" />}</div>
+      <div><strong title={source.name}>{source.name || copy.source}</strong><span>{experience.selected}{source.durationSec ? ` · ${Number(source.durationSec.toFixed(2))} ${copy.seconds}` : ''}</span></div>
+      <button type="button" disabled={disabled || busy} onClick={() => onChange(null)} aria-label={`${copy.remove} — ${label}`}><X size={17} aria-hidden="true" /></button>
+    </div> : null}
+    <div className={styles.sourceActions} data-selected={Boolean(source)}>
       <label className={styles.upload} aria-disabled={!userId || disabled || busy}>
-        <input type="file" accept={`${kind}/*`} aria-label={`${copy.import} — ${label}`} disabled={!userId || disabled || busy} onChange={event => {
+        <input type="file" accept={`${kind}/*`} aria-label={`${importLabel} — ${label}`} disabled={!userId || disabled || busy} onChange={event => {
           const file = event.target.files?.[0]; event.target.value = ''; if (file) void upload(file);
         }} />
-        <span aria-hidden="true">↥</span>{busy ? copy.loading : copy.import}
+        {busy ? <Loader2 className={styles.spinner} size={22} aria-hidden="true" /> : <Upload size={22} aria-hidden="true" />}
+        <strong>{busy ? copy.loading : source ? copy.change : importLabel}</strong>
       </label>
-      <button type="button" disabled={!userId || disabled || busy} onClick={() => setOpen(true)}>{copy.library}</button>
+      <button type="button" className={styles.libraryButton} disabled={!userId || disabled || busy} onClick={() => setOpen(true)}><Images size={16} aria-hidden="true" />{copy.library}</button>
     </div>
-    {source ? <div className={styles.sourceName}><span title={source.name}>{source.name || copy.source}</span><button type="button" disabled={disabled || busy} onClick={() => onChange(null)} aria-label={`${copy.remove} — ${label}`}>×</button></div> : null}
     {error ? <p role="alert">{error}</p> : null}
     {open && userId ? <CreatorLibraryPicker key={`${userId}:${kind}`} locale={locale} kind={kind} disabled={disabled || busy}
       onClose={() => setOpen(false)} onSelect={asset => { onChange(selectCreatorSource(asset, kind, copy.library)); setOpen(false); setError(null); }} /> : null}

@@ -169,6 +169,32 @@ free quota. The mix source records sequence revision and audio-manifest hash.
 Changing the underlying audio invalidates that binding. Studio MP4 export
 availability remains an independent gate.
 
+## Product presentation and workspace journeys
+
+`CreatorWorkbench.client.tsx` owns the five creator-specific layouts and reuses
+`HeaderBar`/`AppSidebar`; older `ToolWorkbench` readers keep their presentation.
+DOM and responsive reading order are source, preview, then settings. Three visible
+stages describe the current task, without implying that an unpaid step succeeded.
+`creator-experience-copy.ts` owns task-specific roles, first-action instructions,
+missing-input reasons and artistic inspiration labels in EN/FR/ES.
+
+Creative intent precedes technical controls. Optional reference images and
+advanced model/resolution fields use native disclosures. Source changes keep the
+existing exact-reference/quote invalidation behavior. Completed operations select
+the actual result; inspiration art disappears as soon as owned source media is
+available. Source previews never convert private originals into public images.
+
+Subtitle editing groups transcript, save status, SRT/VTT downloads and the
+separately quoted MP4 export. Source replacement and revision conflict behavior
+remain with their existing controller. Native details, buttons and fields retain
+keyboard focus, reduced-motion support and explicit disabled reasons.
+
+Marketing uses a large artwork-led opening, concise input/action/result summary,
+editable presentation examples, a Media/Studio continuation section, limitations
+and FAQ. `CreatorMarketingLayout` loads the existing local Geist font. The public
+release gate still owns availability, service schema and executable CTAs. Art
+presence alone never opens a page, publishes a model or qualifies a provider.
+
 ## Verification and publication evidence
 
 Behavioral tests exercise real source validation, segmented FFmpeg output,
@@ -176,8 +202,12 @@ PostgreSQL reservations/refunds/revisions, worker leases, subtitle rendering,
 MCP transport and responsive interfaces. Provider transport doubles demonstrate
 our state machine, not supplier quality or live availability.
 
-The public illustrations are explicitly schematic. They are not before/after
-provider samples. No paid provider call, invoice reconciliation or host-selection
+The public visuals and app inspiration states use authored Image Gen artwork
+under `public/assets/tools/creator-art/`, with per-asset provenance and responsive
+640/960/1536 WebP variants. `CreatorArtwork` owns their fixed 3:2 geometry. Only
+the first visible artwork is eager; later demonstrations are lazy. These images
+are labelled presentation art, never before/after provider samples. They are not
+selectable owned inputs and never replace an operation output. No paid provider call, invoice reconciliation or host-selection
 claim follows from an offline test. Before publication, retain the exact approved
 canary quotes, input/output identities, measured duration/audio results and
 human fidelity review for each profile. Record actual MCP host/version separately

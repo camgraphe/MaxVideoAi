@@ -26,18 +26,18 @@ test('manual private comparison decodes two videos, keeps segment offsets and ma
   try{for(const width of [390,1440]){
     const page=await browser.newPage({viewport:{width,height:1000}});const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));requests.length=0;
     try{
-      await page.goto(`http://127.0.0.1:${address.port}/`);await page.getByRole('button',{name:'Play together',exact:true}).waitFor();
+      await page.goto(`http://127.0.0.1:${address.port}/`);await page.getByRole('button',{name:'Play both',exact:true}).waitFor();
       await page.evaluate(`(() => { for (const video of document.querySelectorAll('video')) { const frame = (_now, metadata) => { video.dataset.presentedTime = String(metadata.mediaTime); if (video.isConnected) video.requestVideoFrameCallback(frame); }; video.requestVideoFrameCallback(frame); } })()`);
       assert.equal(requests.length,0);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
       await page.evaluate(()=>{(window as any).mediaEvents=[];for(const video of document.querySelectorAll('video'))for(const name of ['loadedmetadata','waiting','canplay','play','pause','playing','error','seeking','seeked'])video.addEventListener(name,()=>{(window as any).mediaEvents.push({video:video.getAttribute('aria-label'),name,time:video.currentTime,ready:video.readyState});if((window as any).mediaEvents.length>60)(window as any).mediaEvents.shift();});});
-      await page.getByRole('button',{name:'Play together',exact:true}).click();
+      await page.getByRole('button',{name:'Play both',exact:true}).click();
       await page.waitForFunction(()=>{const [a,b]=document.querySelectorAll('video');return a&&!a.paused&&!b.paused&&b.currentTime>.4&&a.getVideoPlaybackQuality().totalVideoFrames>0&&b.getVideoPlaybackQuality().totalVideoFrames>0;},{},{timeout:8000}).catch(async error=>{console.error(await page.evaluate(()=>({events:(window as any).mediaEvents.slice(-40),videos:Array.from(document.querySelectorAll('video')).map(v=>({time:v.currentTime,paused:v.paused,error:v.error?.code,ready:v.readyState})),text:document.body.textContent})));throw error;});
       const drift=await page.evaluate(()=>{const[a,b]=document.querySelectorAll('video');return Math.abs(a.currentTime-b.currentTime-1);});assert.ok(drift<.16,`offset drift ${drift}`);
       await page.getByRole('button',{name:'Pause',exact:true}).click();
       await page.getByRole('slider',{name:'Playback position'}).evaluate((node:HTMLInputElement)=>{Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')!.set!.call(node,'2.5');node.dispatchEvent(new Event('input',{bubbles:true}));});
       await page.waitForFunction(()=>{const[a,b]=document.querySelectorAll('video');return a.paused&&b.paused&&!a.seeking&&!b.seeking&&Math.abs(a.currentTime-3.5)<.05&&Math.abs(b.currentTime-2.5)<.05&&Math.abs(Number(a.dataset.presentedTime)-3.5)<.05&&Math.abs(Number(b.dataset.presentedTime)-2.5)<.05;});
       if(process.env.CREATOR_WORKSPACE_EVIDENCE_DIR){await mkdir(process.env.CREATOR_WORKSPACE_EVIDENCE_DIR,{recursive:true});await page.screenshot({path:join(process.env.CREATOR_WORKSPACE_EVIDENCE_DIR,`product-video-comparison-${width}.png`),fullPage:true});await writeFile(join(process.env.CREATOR_WORKSPACE_EVIDENCE_DIR,`product-video-comparison-${width}.json`),JSON.stringify(await page.locator('video').evaluateAll(nodes=>nodes.map(node=>({role:node.getAttribute('aria-label'),currentTime:node.currentTime,presentedFrameTime:Number(node.dataset.presentedTime),paused:node.paused,seeking:node.seeking}))),null,2));}
-      await page.getByRole('button',{name:'Play together',exact:true}).click();
+      await page.getByRole('button',{name:'Play both',exact:true}).click();
       await page.waitForFunction(()=>{const[a,b]=document.querySelectorAll('video');return a.paused&&b.paused&&Math.abs(a.currentTime-5)<.05&&Math.abs(b.currentTime-4)<.05;},{},{timeout:6000});
       assert.ok(requests.every(url=>url.includes('?signature=')));assert.deepEqual(errors,[]);
     }finally{await page.close();}

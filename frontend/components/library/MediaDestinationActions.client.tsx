@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { ChevronDown } from 'lucide-react';
 import { FEATURES } from '@/content/feature-flags';
 import { useRouter } from 'next/navigation';
 import { authFetch } from '@/lib/authFetch';
@@ -10,7 +11,7 @@ import { creatorCopy } from '@/components/tools/creator/creator-copy';
 import { mediaActionCopy } from './media-action-copy';
 import type { AssetBrowserAsset } from './AssetLibraryBrowser';
 const StudioMediaAction = dynamic(() => import('./StudioMediaAction.client').then(module => module.StudioMediaAction));
-export function MediaDestinationActions({ asset, userId, locale, onNavigate, sourceEngineId }: { asset: AssetBrowserAsset; userId?: string | null; locale: string; onNavigate?: () => void; sourceEngineId?: string | null }) {
+export function MediaDestinationActions({ asset, userId, locale, onNavigate, sourceEngineId, presentation = 'default' }: { asset: AssetBrowserAsset; userId?: string | null; locale: string; onNavigate?: () => void; sourceEngineId?: string | null; presentation?: 'default' | 'creator' }) {
   const router = useRouter();
   const copy = mediaActionCopy(locale);
   const [error, setError] = useState(false);
@@ -56,14 +57,26 @@ export function MediaDestinationActions({ asset, userId, locale, onNavigate, sou
   const creatorLabels = creatorCopy(locale).titles;
   const destinations = discoverableMediaToolDestinations(asset).filter(destination => destination !== 'upscale');
   const toolButton = (destination: typeof MEDIA_TOOL_DESTINATIONS[number]) => <button key={destination} type="button" disabled={pending} onClick={() => void open(destination)}><AppGlyph name="tools" /><span>{destination in creatorLabels ? creatorLabels[destination as keyof typeof creatorLabels] : toolLabels[MEDIA_TOOL_DESTINATIONS.indexOf(destination)]}</span></button>;
-  return <div className="app-media-destinations">
+  const primaryTransforms = <>
     <button type="button" disabled={pending} onClick={() => void open('video')}><AppGlyph name="video" /><span>{asset.kind === 'image' ? copy.animate : (fr ? 'Utiliser comme référence' : es ? 'Usar como referencia' : 'Use as reference')}</span></button>
     {asset.kind === 'video' ? <button type="button" disabled={pending} onClick={() => void open('video', true)}><AppGlyph name="video" /><span>{fr ? 'Prolonger la vidéo' : es ? 'Extender vídeo' : 'Extend video'}</span></button> : null}
     {supportsMediaDestination(asset, 'image') ? <button type="button" disabled={pending} onClick={() => void open('image')}><AppGlyph name="image" /><span>{fr ? 'Créer à partir de cette image' : es ? 'Crear con esta imagen' : 'Create with this image'}</span></button> : null}
     {supportsMediaDestination(asset, 'upscale') ? toolButton('upscale') : null}
+  </>;
+  const studio = FEATURES.studio.maxVideoAiEditor && /^ma_[a-f0-9]{32}$/.test(asset.id)
+    ? <StudioMediaAction key={scope} locale={locale} reference={{type:'asset',assetId:asset.id,kind:asset.kind}} /> : null;
+  const feedback = <>{pending ? <span role="status">{fr ? 'Préparation…' : es ? 'Preparando…' : 'Preparing…'}</span> : null}{error ? <p role="alert">{copy.error}</p> : null}</>;
+  if (presentation === 'creator') return <div className="creator-media-destinations">
+    {studio ? <div className="creator-studio-action">{studio}</div> : null}
+    <details className="creator-other-tools"><summary>{fr ? 'Autres outils' : es ? 'Otras herramientas' : 'Other tools'}<ChevronDown size={16} aria-hidden="true" /></summary>
+      <div>{primaryTransforms}{destinations.map(toolButton)}</div>
+    </details>
+    <div className="creator-media-feedback">{feedback}</div>
+  </div>;
+  return <div className="app-media-destinations">
+    {primaryTransforms}
     {destinations.length ? <details><summary>{fr ? 'Plus d’outils' : es ? 'Más herramientas' : 'More tools'}</summary><div>{destinations.map(toolButton)}</div></details> : null}
-    {FEATURES.studio.maxVideoAiEditor && /^ma_[a-f0-9]{32}$/.test(asset.id) ? <StudioMediaAction key={scope} locale={locale} reference={{type:'asset',assetId:asset.id,kind:asset.kind}} /> : null}
-    {pending ? <span role="status">{fr ? 'Préparation…' : es ? 'Preparando…' : 'Preparing…'}</span> : null}
-    {error ? <p role="alert">{copy.error}</p> : null}
+    {studio}
+    {feedback}
   </div>;
 }

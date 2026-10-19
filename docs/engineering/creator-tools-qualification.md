@@ -73,3 +73,23 @@ evidence can be regenerated with `CREATOR_WORKSPACE_EVIDENCE_DIR` and
 
 No paid canary, production migration, worker deployment, public activation or
 domain change was performed for this delivery.
+
+
+## Visual revision after product review — 2026-10-19
+
+The schematic first pass was rejected in product review. The replacement uses
+five authored artistic renders, direct EN/FR/ES copy, task-specific input labels,
+progressive settings, visible state and grouped subtitle exports. All image
+provenance is recorded in `frontend/public/assets/tools/creator-art/provenance.json`.
+The presentation images are not outputs from the creator operation profiles.
+The public activation and supplier qualification gates remain closed.
+
+The local interactive review mounts the actual navigation, media picker, handoff
+and Studio action components. Only session, routing and API boundaries are
+simulated, with local-only data and zero-dollar quotes; there is no production
+write, provider generation or payment. It is evidence of interface behavior,
+not evidence of live authenticated delivery or provider fidelity.
+
+The [visual review record](../qa/creator-tools-visual-review-2026-10-19.md)
+documents concept comparisons, responsive checks, interaction evidence, loading
+observations and deliberate differences. User visual acceptance is pending.

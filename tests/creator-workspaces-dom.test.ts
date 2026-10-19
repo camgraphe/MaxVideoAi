@@ -24,8 +24,8 @@ async function mount(toolId='subtitles') {
   return mountToolFixture(toolId==='subtitles'?"import App from './src/components/tools/creator/SubtitleWorkspace.client';":`import Workspace from './src/components/tools/creator/CreatorWorkspace.client';function App(){return <Workspace toolId="${toolId}"/>}`,stubs,w=>{w.auth={user:{id:'A'},loading:false};w.pickers={};});
 }
 async function openDocument(f:any) {
-  await f.act(async()=>f.w.pickers.video.onChange(source()));await click(f,'Get an exact quote');
-  await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,state:'prepared',quote:price});await click(f,'Confirm and create');
+  await f.act(async()=>f.w.pickers.video.onChange(source()));await click(f,'See price');
+  await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,state:'prepared',quote:price});await click(f,'Confirm price and create');
   await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,state:'queued'});
   await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,state:'completed',result:{documentId:'captions-1',revision:1}});
   assert.match(f.w.requests.at(-1).url,/documents\/captions-1\?revision=1$/);
@@ -34,30 +34,30 @@ async function openDocument(f:any) {
 test('Lip Sync prepares distinct Photo and audio refs; uploads and account changes remove obsolete quotes',async()=>{
   const f=await mount('lip-sync');try {
     await f.act(async()=>{f.w.pickers.image.onChange(source('image'));f.w.pickers.audio.onChange(source('audio'));});
-    await click(f,'Get an exact quote');const request=f.w.requests.at(-1),body=JSON.parse(request.init.body);
+    await click(f,'See price');const request=f.w.requests.at(-1),body=JSON.parse(request.init.body);
     assert.equal(body.settings.mode,'photo');assert.deepEqual(body.inputs.map((input:any)=>[input.role,input.source.kind]),[['source','image'],['audio','audio']]);
-    await f.respond(request,{ok:true,operationId:opId,quote:price});assert.equal(buttons(f.w,'Confirm and create').length,1);
-    await f.act(async()=>f.w.pickers.image.onBusyChange(true));assert.equal(buttons(f.w,'Confirm and create').length,0);assert.equal(buttons(f.w,'Get an exact quote')[0].disabled,true);
-    await f.act(async()=>f.w.pickers.image.onBusyChange(false));await click(f,'Get an exact quote');const late=f.w.requests.at(-1);
+    await f.respond(request,{ok:true,operationId:opId,quote:price});assert.equal(buttons(f.w,'Confirm price and create').length,1);
+    await f.act(async()=>f.w.pickers.image.onBusyChange(true));assert.equal(buttons(f.w,'Confirm price and create').length,0);assert.equal(buttons(f.w,'See price')[0].disabled,true);
+    await f.act(async()=>f.w.pickers.image.onBusyChange(false));await click(f,'See price');const late=f.w.requests.at(-1);
     f.w.auth={user:{id:'B'},loading:false};await f.render();await f.respond(late,{ok:true,operationId:opId,quote:price});
-    assert.equal(buttons(f.w,'Confirm and create').length,0);assert.equal(f.w.pickers.image.source,null);
+    assert.equal(buttons(f.w,'Confirm price and create').length,0);assert.equal(f.w.pickers.image.source,null);
   } finally {await f.close();}
 });
 test('Video Lip Sync clearly stays closed and Motion handoff assigns the performance input',async()=>{
-  const f=await mount('lip-sync');try {await click(f,'Video');assert.match(f.w.document.body.textContent,/Video Lip Sync is not available at the moment/);assert.equal(buttons(f.w,'Get an exact quote')[0].disabled,true);}finally{await f.close();}
+  const f=await mount('lip-sync');try {await click(f,'Video');assert.match(f.w.document.body.textContent,/Video Lip Sync is not available at the moment/);assert.equal(buttons(f.w,'See price')[0].disabled,true);}finally{await f.close();}
   const m=await mount('motion-transfer');try {await m.act(async()=>m.w.handoff.onSelect({id:`ma_${'2'.repeat(32)}`,kind:'video',url:'https://private.invalid/performance.mp4'}));assert.equal(m.w.pickers.video.source.url,'https://private.invalid/performance.mp4');assert.equal(m.w.pickers.image.source,null);}finally{await m.close();}
 });
 test('subtitle drafts invalidate export quotes, reject invalid timings and preserve text on revision conflict',async()=>{
   const f=await mount();try {
-    await openDocument(f);await click(f,'Export captioned MP4');
+    await openDocument(f);await click(f,'See MP4 export price');
     assert.deepEqual(JSON.parse(f.w.requests.at(-1).init.body),{documentId:'captions-1',revision:1});
     await f.respond(f.w.requests.at(-1),{ok:true,operationId:'22345678-1234-4234-8234-123456789abc',quote:price,state:'prepared'});
-    await edit(f,'Caption 1','Edited line');assert.equal(buttons(f.w,'Confirm and create').length,0);assert.equal(buttons(f.w,'Download SRT')[0].disabled,true);
-    await edit(f,'End (seconds) — 1','9','input');const count=f.w.requests.length;await click(f,'Save changes');assert.equal(f.w.requests.length,count);assert.match(f.w.document.body.textContent,/must not overlap/);
+    await edit(f,'Caption 1','Edited line');assert.equal(buttons(f.w,'Confirm price and create').length,0);assert.equal(buttons(f.w,'Download SRT')[0].disabled,true);
+    await edit(f,'End (seconds) — 1','9','input');const count=f.w.requests.length;await click(f,'Save changes');assert.equal(f.w.requests.length,count);assert.match(f.w.document.body.textContent,/do not overlap/);
     await edit(f,'End (seconds) — 1','1','input');await click(f,'Save changes');const patch=f.w.requests.at(-1),payload=JSON.parse(patch.init.body);
     assert.equal(payload.expectedRevision,1);assert.match(payload.requestId,/^[0-9a-f-]{36}$/);assert.equal(payload.change.segments[0].alignment,'edited');
     await f.respond(patch,{ok:false,error:{code:'SUBTITLE_REVISION_CONFLICT'}},409);
-    assert.equal(f.w.document.querySelector('textarea[aria-label="Caption 1"]').value,'Edited line');assert.match(f.w.document.body.textContent,/Your draft is kept/);
+    assert.equal(f.w.document.querySelector('textarea[aria-label="Caption 1"]').value,'Edited line');assert.match(f.w.document.body.textContent,/Your draft is safe/);
     await click(f,'Open latest saved version');assert.equal(f.w.requests.at(-1).url,'/api/tools/subtitles/documents/captions-1');
     await f.respond(f.w.requests.at(-1),{ok:true,document:{...document,revision:2}});assert.equal(f.w.document.querySelector('textarea[aria-label="Caption 1"]').value,'Hello');
     await click(f,'Download SRT');assert.equal(f.w.requests.at(-1).url,'/api/tools/subtitles/documents/captions-1/download?format=srt&revision=2');
@@ -69,7 +69,7 @@ test('opening a document link reads its pinned revision and owned playback URL w
     assert.equal(f.w.requests[0].url,'/api/tools/subtitles/documents/captions-1?revision=3');
     await f.respond(f.w.requests[0],{ok:true,document:{...document,revision:3},sourceMedia:{url:'https://private.invalid/refresh.mp4?signature=owned',thumbnailUrl:null}});
     assert.equal(f.w.document.querySelector('video').src,'https://private.invalid/refresh.mp4?signature=owned');
-    assert.equal(f.w.requests.length,1);assert.match(f.w.document.body.textContent,/Saved revision 3/);
+    assert.equal(f.w.requests.length,1);assert.match(f.w.document.body.textContent,/Saved version 3/);
   }finally{await f.close();}
 });
 test('a lost save response retries the same document revision and idempotency key',async()=>{
@@ -78,13 +78,13 @@ test('a lost save response retries the same document revision and idempotency ke
     await f.act(async()=>first.reject(Error('Lost response')));await click(f,'Save changes');const retry=f.w.requests.at(-1);
     assert.equal(retry.init.body,first.init.body);
     await f.respond(retry,{ok:true,document:{...document,revision:2,segments:[{...document.segments[0],text:'A corrected caption',alignment:'edited'}]}});
-    assert.equal(buttons(f.w,'Download SRT')[0].disabled,false);assert.match(f.w.document.body.textContent,/Saved revision 2/);
+    assert.equal(buttons(f.w,'Download SRT')[0].disabled,false);assert.match(f.w.document.body.textContent,/Saved version 2/);
   }finally{await f.close();}
 });
 test('an unavailable signed read URL never falls back to a private canonical result URL',async()=>{
   const f=await mount('lip-sync');try{
     await f.act(async()=>{f.w.pickers.image.onChange(source('image'));f.w.pickers.audio.onChange(source('audio'));});
-    await click(f,'Get an exact quote');await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,quote:price});await click(f,'Confirm and create');
+    await click(f,'See price');await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,quote:price});await click(f,'Confirm price and create');
     await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,status:'running'});
     await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,status:'completed',result:{toolId:'lip-sync',jobId:'job-1',version:1,sourceAssets:[],outputs:[{asset:{type:'asset',assetId:`ma_${'2'.repeat(32)}`,kind:'video'},originalUrl:'https://private.invalid/canonical.mp4',kind:'video',readUrl:null,thumbnailReadUrl:null}]}});
     assert.equal(f.w.document.querySelector('video'),null);assert.equal(buttons(f.w,'Download')[0].disabled,true);
@@ -93,7 +93,7 @@ test('an unavailable signed read URL never falls back to a private canonical res
 test('a disabled execution gate keeps document edits available and export preparation disabled',async()=>{
   const f=await mountToolFixture("import Workspace from './src/components/tools/creator/SubtitleWorkspace.client';function App(){return <Workspace executionEnabled={false} initialDocument={{id:'captions-1',revision:1}}/>}",stubs,w=>{w.auth={user:{id:'A'},loading:false};w.pickers={};});
   try{
-    await f.respond(f.w.requests[0],{ok:true,document});assert.equal(buttons(f.w,'Export captioned MP4')[0].disabled,true);
+    await f.respond(f.w.requests[0],{ok:true,document});assert.equal(buttons(f.w,'See MP4 export price')[0].disabled,true);
     await edit(f,'Caption 1','Read and edit remains available');assert.equal(buttons(f.w,'Save changes')[0].disabled,false);
     assert.equal(f.w.requests.length,1);
   }finally{await f.close();}
@@ -110,27 +110,27 @@ test('a captioned MP4 recovery link restores the paid output while new execution
 test('Studio subtitles prepare the pinned sequence mix with an itemized quote and no misleading upload picker',async()=>{
   const f=await mountToolFixture("import Workspace from './src/components/tools/creator/SubtitleWorkspace.client';function App(){return <Workspace studioSource={{projectId:'project-1',sequenceId:'sequence-2',expectedRevision:7}}/>}",stubs,w=>{w.auth={user:{id:'A'},loading:false};w.pickers={};});
   try{
-    assert.deepEqual(Object.keys(f.w.pickers),[]);assert.match(f.w.document.body.textContent,/Sequence revision 7/);assert.match(f.w.document.body.textContent,/audio becomes available after preparation/);assert.equal(f.w.requests.length,0);
-    await click(f,'Get an exact quote');const request=f.w.requests.at(-1);assert.equal(request.url,'/api/tools/subtitles/prepare-studio');assert.deepEqual(JSON.parse(request.init.body),{projectId:'project-1',sequenceId:'sequence-2',expectedRevision:7,keyterms:[]});
+    assert.deepEqual(Object.keys(f.w.pickers),[]);assert.match(f.w.document.body.textContent,/Sequence version 7/);assert.match(f.w.document.body.textContent,/audio will appear here after preparation/);assert.equal(f.w.requests.length,0);
+    await click(f,'See price');const request=f.w.requests.at(-1);assert.equal(request.url,'/api/tools/subtitles/prepare-studio');assert.deepEqual(JSON.parse(request.init.body),{projectId:'project-1',sequenceId:'sequence-2',expectedRevision:7,keyterms:[]});
     await f.respond(request,{ok:true,operationId:opId,kind:'mix-transcribe',state:'prepared',sourceSummary:{kind:'sequence',name:'Opening sequence',revision:7},quote:{...price,breakdown:{transcription:{amountCents:100,currency:'USD'},mixPreparation:{amountCents:25,currency:'USD'}}}});
-    assert.match(f.w.document.body.textContent,/Opening sequence/);assert.match(f.w.document.body.textContent,/Audio mix preparation\$0.25/);assert.match(f.w.document.body.textContent,/Transcription\$1.00/);
-    await click(f,'Confirm and create');assert.deepEqual(JSON.parse(f.w.requests.at(-1).init.body),{operationId:opId,confirmed:true});
+    assert.match(f.w.document.body.textContent,/Opening sequence/);assert.match(f.w.document.body.textContent,/Prepare sequence audio\$0.25/);assert.match(f.w.document.body.textContent,/Transcription\$1.00/);
+    await click(f,'Confirm price and create');assert.deepEqual(JSON.parse(f.w.requests.at(-1).init.body),{operationId:opId,confirmed:true});
   }finally{await f.close();}
 });
 test('Motion Control and reference guidance send distinct explicit profiles and invalidate quotes when switching',async()=>{
   const f=await mountToolFixture("import Workspace from './src/components/tools/creator/CreatorWorkspace.client';function App(){return <Workspace toolId=\"motion-transfer\" motionControlEnabled={true}/>}",stubs,w=>{w.auth={user:{id:'A'},loading:false};w.pickers={};});
   try{
-    await f.act(async()=>{f.w.pickers.image.onChange(source('image'));f.w.pickers.video.onChange(source('video'));});await click(f,'Get an exact quote');
+    await f.act(async()=>{f.w.pickers.image.onChange(source('image'));f.w.pickers.video.onChange(source('video'));});await click(f,'See price');
     assert.equal(JSON.parse(f.w.requests.at(-1).init.body).profileId,'motion-kling-v3-v1');assert.match(f.w.document.body.textContent,/2–30 seconds/);
     await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,quote:price});
     const method=Array.from(f.w.document.querySelectorAll('select')).find((node:any)=>node.value==='motion-kling-v3-v1') as any;
     await f.act(async()=>{method.value='motion-wan-reference-v1';method.dispatchEvent(new f.w.Event('change',{bubbles:true}));});
-    assert.equal(buttons(f.w,'Confirm and create').length,0);assert.match(f.w.document.body.textContent,/whole-second range of 2–15/);
-    await click(f,'Get an exact quote');assert.equal(JSON.parse(f.w.requests.at(-1).init.body).profileId,'motion-wan-reference-v1');
+    assert.equal(buttons(f.w,'Confirm price and create').length,0);assert.match(f.w.document.body.textContent,/2–15 seconds, with whole-second/);
+    await click(f,'See price');assert.equal(JSON.parse(f.w.requests.at(-1).init.body).profileId,'motion-wan-reference-v1');
     await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,quote:price});
     const resolution=Array.from(f.w.document.querySelectorAll('select')).find((node:any)=>node.value==='720p') as any;
     await f.act(async()=>{resolution.value='1080p';resolution.dispatchEvent(new f.w.Event('change',{bubbles:true}));method.value='motion-kling-v3-v1';method.dispatchEvent(new f.w.Event('change',{bubbles:true}));});
-    await click(f,'Get an exact quote');assert.equal(JSON.parse(f.w.requests.at(-1).init.body).settings.resolution,'720p');
+    await click(f,'See price');assert.equal(JSON.parse(f.w.requests.at(-1).init.body).settings.resolution,'720p');
   }finally{await f.close();}
 });
 test('video lip-sync clears the photo instruction before preparing its prompt-free profile',async()=>{
@@ -138,18 +138,18 @@ test('video lip-sync clears the photo instruction before preparing its prompt-fr
   try{
     const instruction=f.w.document.querySelector('textarea');await f.act(async()=>{Object.getOwnPropertyDescriptor(f.w.HTMLTextAreaElement.prototype,'value')!.set!.call(instruction,'Smile and move the camera');instruction.dispatchEvent(new f.w.Event('input',{bubbles:true}));});
     await click(f,'Video');assert.equal(f.w.document.querySelector('textarea'),null);
-    await f.act(async()=>{f.w.pickers.video.onChange(source('video'));f.w.pickers.audio.onChange(source('audio'));});await click(f,'Get an exact quote');
+    await f.act(async()=>{f.w.pickers.video.onChange(source('video'));f.w.pickers.audio.onChange(source('audio'));});await click(f,'See price');
     const input=JSON.parse(f.w.requests.at(-1).init.body);assert.equal(input.profileId,'lip-video-latentsync-v1');assert.equal(input.settings.instruction,'');
   }finally{await f.close();}
 });
 
 test('Product Video opens its real signed output beside the original for manual synchronized comparison',async()=>{
   const f=await mount('product-video-editor');try{
-    await f.act(async()=>f.w.pickers.video.onChange(source('video')));await click(f,'Get an exact quote');await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,quote:price});await click(f,'Confirm and create');
+    await f.act(async()=>f.w.pickers.video.onChange(source('video')));await click(f,'See price');await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,quote:price});await click(f,'Confirm price and create');
     await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,status:'running'});
     await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,status:'completed',result:{toolId:'product-video-editor',jobId:'job-1',version:1,sourceAssets:[],outputs:[{asset:{type:'asset',assetId:`ma_${'2'.repeat(32)}`,kind:'video'},originalUrl:'https://private.invalid/canonical.mp4',kind:'video',readUrl:'https://private.invalid/result.mp4?signature=exact',thumbnailReadUrl:null}]}});
     const videos=f.w.document.querySelectorAll('video');assert.equal(videos.length,2);assert.equal(videos[0].src,source('video').url);assert.equal(videos[1].src,'https://private.invalid/result.mp4?signature=exact');
-    assert.equal(buttons(f.w,'Compare')[0].getAttribute('aria-pressed'),'true');assert.equal(buttons(f.w,'Play together').length,1);assert.ok(Array.from(videos).every((node:any)=>node.preload==='none'&&!node.autoplay));
+    assert.equal(buttons(f.w,'Compare')[0].getAttribute('aria-pressed'),'true');assert.equal(buttons(f.w,'Play both').length,1);assert.ok(Array.from(videos).every((node:any)=>node.preload==='none'&&!node.autoplay));
     await click(f,'Result');assert.equal(f.w.document.querySelectorAll('video').length,1);
   }finally{await f.close();}
 });
@@ -161,10 +161,10 @@ test('operation recovery restores owned sources, settings and segment for compar
   const f=await recoverProductVideo();try{
     await f.respond(f.w.requests[0],recoveredVideo);
     let videos=f.w.document.querySelectorAll('video');assert.equal(videos.length,2);assert.equal(videos[0].src,recoveredVideo.sourceMedia[0].readUrl);assert.equal(f.w.document.querySelector('textarea').value,'Warm light');
-    assert.equal(f.w.pickers.video.source.name,'Owned original');assert.equal(buttons(f.w,'Get an exact quote')[0].disabled,true);
+    assert.equal(f.w.pickers.video.source.name,'Owned original');assert.equal(buttons(f.w,'See price')[0].disabled,true);
     await f.act(async()=>videos[1].dispatchEvent(new f.w.Event('error')));await click(f,'Try again');
     await f.respond(f.w.requests.at(-1),{...recoveredVideo,sourceMedia:[{...recoveredVideo.sourceMedia[0],readUrl:null}]});
-    videos=f.w.document.querySelectorAll('video');assert.equal(videos.length,1);assert.equal(videos[0].src,recoveredVideo.result.outputs[0].readUrl);assert.equal(f.w.pickers.video.source,null);assert.match(f.w.document.body.textContent,/source is unavailable/);
+    videos=f.w.document.querySelectorAll('video');assert.equal(videos.length,1);assert.equal(videos[0].src,recoveredVideo.result.outputs[0].readUrl);assert.equal(f.w.pickers.video.source,null);assert.match(f.w.document.body.textContent,/file is unavailable/);
   }finally{await f.close();}
 });
 test('a comparison refresh finishing after an account change cannot restore the previous account media',async()=>{
@@ -190,5 +190,28 @@ test('a subtitle preview refresh cannot restore the old source or draft after an
     const payload={ok:true,document,sourceMedia:{url:'https://private.invalid/account-a.mp4',name:'Source A'}};await f.respond(f.w.requests[0],payload);await edit(f,'Caption 1','Private A');
     await f.act(async()=>f.w.document.querySelector('video').dispatchEvent(new f.w.Event('error')));await click(f,'Try again');const late=f.w.requests.at(-1);
     f.w.auth={user:{id:'B'},loading:false};await f.render();await f.respond(late,payload);assert.equal(f.w.document.querySelector('video'),null);assert.equal(f.w.document.querySelector('textarea[aria-label="Caption 1"]'),null);
+  }finally{await f.close();}
+});
+
+
+test('missing sources explain the next action beside the disabled price button',async()=>{
+  const f=await mount('lip-sync');try{
+    assert.equal(buttons(f.w,'See price')[0].disabled,true);assert.match(f.w.document.body.textContent,/Choose your source to see the price/);
+    await f.act(async()=>f.w.pickers.image.onChange(source('image')));
+    assert.equal(buttons(f.w,'See price')[0].disabled,true);assert.match(f.w.document.body.textContent,/Add a voice recording to continue/);
+    await f.act(async()=>f.w.pickers.audio.onChange(source('audio')));
+    assert.equal(buttons(f.w,'See price')[0].disabled,false);assert.doesNotMatch(f.w.document.body.textContent,/Add a voice recording to continue/);
+    assert.equal(f.w.requests.length,0);
+  }finally{await f.close();}
+});
+test('completion selects the new result after the original was selected and offers the saved-media next step',async()=>{
+  const f=await mount('lip-sync');try{
+    await f.act(async()=>{f.w.pickers.image.onChange(source('image'));f.w.pickers.audio.onChange(source('audio'));});
+    await click(f,'Original');await click(f,'See price');await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,quote:price});await click(f,'Confirm price and create');
+    await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,status:'running'});
+    await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,status:'completed',result:{toolId:'lip-sync',jobId:'job-1',version:1,sourceAssets:[],outputs:[{asset:{type:'asset',assetId:`ma_${'2'.repeat(32)}`,kind:'video'},originalUrl:'https://private.invalid/canonical.mp4',kind:'video',readUrl:'https://private.invalid/completed.mp4'}]}});
+    assert.equal(buttons(f.w,'Result')[0].getAttribute('aria-pressed'),'true');assert.equal(f.w.document.querySelector('video').src,'https://private.invalid/completed.mp4');
+    assert.match(f.w.document.body.textContent,/Your result is saved in Media/);assert.equal(f.w.document.querySelector('a[href="/app/library"]').textContent,'Open Media');
+    assert.equal(buttons(f.w,'Start a new creation').length,1);
   }finally{await f.close();}
 });

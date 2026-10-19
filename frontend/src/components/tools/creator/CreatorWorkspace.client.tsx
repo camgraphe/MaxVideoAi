@@ -1,12 +1,16 @@
 'use client';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { CheckCircle2, Download, Loader2, Plus, RotateCcw } from 'lucide-react';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { CREATOR_DEFAULT_SETTINGS, creatorOperationInputSchema, type CreatorAvailableProfile, type CreatorOperationResult, type CreatorSourceInput, type CreatorToolId } from '@/lib/toolbox/creator-tools';
 import { ToolMediaHandoff } from '@/components/library/ToolMediaHandoff.client';
 import { MediaDestinationActions } from '@/components/library/MediaDestinationActions.client';
-import { ToolAuthNotice, ToolWorkbench } from '../ToolWorkbench';
+import { ToolAuthNotice } from '../ToolWorkbench';
+import { CreatorWorkbench, CreatorInspiration } from './CreatorWorkbench.client';
+import { creatorExperienceCopy } from './creator-experience-copy';
 import { CreatorSourcePicker } from './CreatorSourcePicker.client';
 import { selectCreatorSource, type CreatorSource } from './creator-source-selection';
 import { CreatorSettings, CreatorSegmentFields, type SegmentDraft } from './CreatorSettings';
@@ -24,7 +28,7 @@ export default function CreatorWorkspace({ toolId, lipVideoEnabled = false, exec
   return <CreatorSession key={`${auth.user?.id ?? 'guest'}:${toolId}:${initialOperationId ?? ''}`} userId={auth.user?.id} locale={locale} toolId={toolId} lipVideoEnabled={lipVideoEnabled} executionEnabled={executionEnabled} initialOperationId={initialOperationId} motionControlEnabled={motionControlEnabled} profiles={profiles} />;
 }
 export function CreatorSession({ toolId, userId, locale, lipVideoEnabled = false, executionEnabled = true, initialOperationId, motionControlEnabled = false, profiles }: { toolId: CreatorToolId; userId?: string; locale: string; lipVideoEnabled?: boolean; executionEnabled?:boolean; initialOperationId?:string;motionControlEnabled?:boolean;profiles?:CreatorAvailableProfile[] }) {
-  const copy = creatorWorkspaceCopy(locale), operation = useCreatorOperation<CreatorReadableResult>({ userId,toolId,family:'creator',executionEnabled,initialOperationId });
+  const copy = creatorWorkspaceCopy(locale), experience = creatorExperienceCopy(locale), operation = useCreatorOperation<CreatorReadableResult>({ userId,toolId,family:'creator',executionEnabled,initialOperationId });
   const [motionProfileId,setMotionProfileId] = useState(motionControlEnabled ? 'motion-kling-v3-v1' : 'motion-wan-reference-v1');
   const [settings,setSettings] = useState<Record<string,string>>(() => ({ ...CREATOR_DEFAULT_SETTINGS[toolId] }));
   const [sources,setSources] = useState<Partial<Record<Role,CreatorSource>>>({}), [segments,setSegments] = useState<Partial<Record<Role,SegmentDraft>>>({});
@@ -50,6 +54,7 @@ export function CreatorSession({ toolId, userId, locale, lipVideoEnabled = false
   const output = operation.result?.outputs[0], source = sources.source;
   const outputReadUrl = output?.readUrl === undefined ? output?.originalUrl : output.readUrl;
   const outputPoster = output?.thumbnailReadUrl === undefined ? output?.thumbnailUrl : output.thumbnailReadUrl;
+  useEffect(() => { if (operation.result) setView(toolId === 'product-video-editor' ? 'compare' : 'result'); }, [operation.result,toolId]);
   const videoClosed = lip && settings.mode === 'video' && !lipVideoEnabled;
   function changed() { operation.invalidate(); setValidation(false); }
   function changeSettings(patch: Record<string,string>) {
@@ -65,8 +70,11 @@ export function CreatorSession({ toolId, userId, locale, lipVideoEnabled = false
     return [{ role,source:selected.ref,...range?.enabled ? { segment:{startSec:range.start === '' ? NaN : Number(range.start),endSec:range.end === '' ? NaN : Number(range.end)} } : {} }];
   });
   const block = creatorOperationInputSchema.safeParse({ version:1,toolId,profileId,inputs,settings });
+  const sourceLabel = photo ? experience.photoSource : lip ? sourceKind === 'video' ? experience.lipVideoSource : experience.portraitSource : motion ? experience.characterSource : experience.videoSource;
+  const sourceHint = photo ? experience.photoHint : lip ? sourceKind === 'video' ? experience.videoHint : experience.faceHint : motion ? experience.characterHint : experience.videoHint;
+  const disabledReason = !userId ? copy.signIn : !executionEnabled ? copy.executionClosed : videoClosed ? copy.videoClosed : profile?.deploymentGateOpen === false ? copy.unavailable : !source ? experience.chooseSource : lip && !sources.audio ? experience.needAudio : motion && !sources.motion ? experience.needMotion : !block.success ? copy.validation : undefined;
   const sourcePicker = (role: Role,kind: 'image'|'video'|'audio') => <div key={role}>
-    <CreatorSourcePicker userId={userId} locale={locale} kind={kind} label={copy.sourceLabels[role]} source={sources[role] ?? null} disabled={disabled}
+    <CreatorSourcePicker userId={userId} locale={locale} kind={kind} label={role === 'source' ? sourceLabel : copy.sourceLabels[role]} hint={role === 'source' ? sourceHint : role === 'audio' ? experience.audioHint : role === 'motion' ? experience.motionHint : experience.styleHint} source={sources[role] ?? null} disabled={disabled}
       onChange={next => changeSource(role,next)} onBusyChange={busy => { setUploadBusy(busy); if (busy) changed(); }} />
     {unavailableSources.includes(role) ? <p role="status" className={styles.notice}>{copy.sourceUnavailable}</p> : null}
     {kind !== 'image' && sources[role] ? <CreatorSegmentFields locale={locale} role={role} source={sources[role]!} value={segments[role]} disabled={disabled} onChange={range => { changed(); setSegments(value => ({ ...value,[role]:range })); }} /> : null}
@@ -74,25 +82,25 @@ export function CreatorSession({ toolId, userId, locale, lipVideoEnabled = false
   const displayedResult = view !== 'source' && output;
   const canCompare = toolId === 'product-video-editor' && source && output?.kind === 'video' && outputReadUrl;
   const selectedRange = segments.source?.enabled ? segments.source : undefined;
-  return <ToolWorkbench locale={locale} title={copy.titles[toolId]}
-    source={<div className={styles.sourceGroup}>{lip ? <div className={styles.segmented}>{(['photo','video'] as const).map(mode => <button type="button" key={mode} aria-pressed={settings.mode === mode} disabled={disabled} onClick={() => changeSettings({mode})}>{copy[mode]}</button>)}</div> : null}
-      {sourcePicker('source',sourceKind)}{lip ? sourcePicker('audio','audio') : motion ? sourcePicker('motion','video') : photo ? sourcePicker('style','image') : null}
+  return <CreatorWorkbench locale={locale} toolId={toolId} title={copy.titles[toolId]} activeStep={output || operation.running ? 2 : source ? 1 : 0}
+    source={<div className={styles.sourceGroup} data-paired={lip || motion}>{lip ? <div className={styles.segmented}>{(['photo','video'] as const).map(mode => <button type="button" key={mode} aria-pressed={settings.mode === mode} disabled={disabled} onClick={() => changeSettings({mode})}>{copy[mode]}</button>)}</div> : null}
+      {sourcePicker('source',sourceKind)}{lip ? sourcePicker('audio','audio') : motion ? sourcePicker('motion','video') : photo ? <details className={styles.optionalSource}><summary><Plus size={16} aria-hidden="true" />{experience.addStyle}</summary>{sourcePicker('style','image')}</details> : null}
       <p className={styles.notice}>{copy.preserved}</p>
     </div>}
     settings={<div className={styles.settings}><CreatorSettings locale={locale} toolId={toolId} settings={settings} onChange={changeSettings} disabled={disabled} profile={profile} motionProfileId={motionProfileId} motionControlEnabled={motionControlEnabled} onMotionProfileChange={id => {changed();setMotionProfileId(id);if(id === 'motion-kling-v3-v1')setSettings(value => ({...value,resolution:'720p'}));}} />
-      {videoClosed ? <p role="status" className={styles.notice}>{copy.videoClosed}</p> : lip || motion || toolId === 'product-video-editor' ? <p className={styles.notice}>{lip ? settings.mode === 'video' ? copy.lipVideoRange : copy.lipRange : motion && motionProfileId === 'motion-kling-v3-v1' ? `${copy.motionRange} 2–${profile?.constraints.duration?.maxByOrientation?.[settings.orientation as 'image'|'video'] ?? (settings.orientation === 'image' ? 10 : 30)} ${copy.seconds}.` : copy.segmentRequired}</p> : null}
+      {videoClosed ? null : lip || motion || toolId === 'product-video-editor' ? <p className={styles.notice}>{lip ? settings.mode === 'video' ? copy.lipVideoRange : copy.lipRange : motion && motionProfileId === 'motion-kling-v3-v1' ? `${copy.motionRange} 2–${profile?.constraints.duration?.maxByOrientation?.[settings.orientation as 'image'|'video'] ?? (settings.orientation === 'image' ? 10 : 30)} ${copy.seconds}.` : copy.segmentRequired}</p> : null}
       {validation ? <p className={styles.error} role="alert">{copy.validation}</p> : null}
-      <CreatorOperationPanel locale={locale} operation={operation} disabled={!executionEnabled || !userId || uploadBusy || videoClosed || profile?.deploymentGateOpen === false || !block.success} onPrepare={() => { if (!block.success) {setValidation(true);return;} void operation.prepare(block.data); }} />
+      <CreatorOperationPanel locale={locale} operation={operation} disabledReason={disabledReason} disabled={!executionEnabled || !userId || uploadBusy || videoClosed || profile?.deploymentGateOpen === false || !block.success} onPrepare={() => { if (!block.success) {setValidation(true);return;} void operation.prepare(block.data); }} />
     </div>}
-    preview={<div className={styles.stage}><div className={styles.stageHeading}><div className={styles.segmented}>
+    preview={<div className={styles.stage}>{operation.running ? <div className={styles.stageStatus} role="status"><Loader2 size={18} className={styles.spinner} aria-hidden="true" />{operation.needsAttention ? copy.verifying : copy.working}</div> : output ? <div className={styles.stageStatus} role="status"><CheckCircle2 size={18} aria-hidden="true" />{experience.resultReady}</div> : null}{source || output ? <><div className={styles.stageHeading}><div className={styles.segmented}>
       {(['source','result'] as const).map(mode => <button type="button" key={mode} aria-pressed={(output ? view : 'source') === mode} disabled={mode === 'result' ? !output : !source} onClick={() => setView(mode)}>{mode === 'source' ? copy.original : copy.result}</button>)}
       {toolId === 'product-video-editor' ? <button type="button" aria-pressed={Boolean(canCompare && view === 'compare')} disabled={!canCompare} onClick={() => setView('compare')}>{copy.compare}</button> : null}
-    </div></div>{canCompare && view === 'compare' ? <CreatorVideoComparison key={operation.readRevision} locale={locale} sourceUrl={source.url} resultUrl={outputReadUrl!} sourcePoster={source.thumbnailUrl} resultPoster={outputPoster} sourceStartSec={selectedRange ? Number(selectedRange.start) : 0} sourceEndSec={selectedRange ? Number(selectedRange.end) : undefined} onRetry={operation.running ? undefined : operation.retry} /> : <CreatorMediaPreview key={operation.readRevision} locale={locale} url={displayedResult ? outputReadUrl ?? undefined : source?.url} kind={displayedResult ? output.kind : sourceKind} poster={displayedResult ? outputPoster : source?.thumbnailUrl} name={source?.name} unavailable={Boolean(displayedResult && !outputReadUrl)} onRetry={displayedResult ? operation.retry : undefined} />}
-      {sources.audio ? <div className={styles.actions}><audio src={sources.audio.url} controls preload="none" aria-label={copy.audio} /></div> : null}
+    </div></div>{canCompare && view === 'compare' ? <CreatorVideoComparison key={operation.readRevision} locale={locale} sourceUrl={source.url} resultUrl={outputReadUrl!} sourcePoster={source.thumbnailUrl} resultPoster={outputPoster} sourceStartSec={selectedRange ? Number(selectedRange.start) : 0} sourceEndSec={selectedRange ? Number(selectedRange.end) : undefined} onRetry={operation.running ? undefined : operation.retry} /> : <CreatorMediaPreview key={operation.readRevision} locale={locale} url={displayedResult ? outputReadUrl ?? undefined : source?.url} kind={displayedResult ? output.kind : sourceKind} poster={displayedResult ? outputPoster : source?.thumbnailUrl} name={source?.name} unavailable={Boolean(displayedResult && !outputReadUrl)} onRetry={displayedResult ? operation.retry : undefined} />}</> : <CreatorInspiration locale={locale} toolId={toolId} />}
+      {sources.audio && !displayedResult ? <div className={styles.actions}><audio src={sources.audio.url} controls preload="none" aria-label={copy.audio} /></div> : null}
       {sources.motion && !displayedResult ? <><p className={styles.stageHeading}>{copy.sourceLabels.motion}</p><CreatorMediaPreview locale={locale} url={sources.motion.url} kind="video" poster={sources.motion.thumbnailUrl} /></> : null}
-      {output ? <div className={styles.actions}><button type="button" disabled={!outputReadUrl} onClick={() => {if(outputReadUrl)triggerAppDownload(outputReadUrl,suggestDownloadFilename(output.originalUrl,toolId));}}>{copy.download}</button>
-        <MediaDestinationActions locale={locale} userId={userId} asset={{id:output.asset.type === 'asset' ? output.asset.assetId : output.asset.outputId,url:output.originalUrl,kind:output.kind,thumbUrl:output.thumbnailUrl,jobId:operation.result!.jobId,sourceOutputId:output.asset.type === 'job-output' ? output.asset.outputId : null}} />
-      </div> : null}
+      {output ? <div className={styles.resultSection}><h2>{experience.resultActions}</h2><p>{experience.savedMedia} <Link href="/app/library" prefetch={false}>{experience.openMedia}</Link></p><div className={`${styles.actions} ${styles.resultActions}`}><button type="button" disabled={!outputReadUrl} onClick={() => {if(outputReadUrl)triggerAppDownload(outputReadUrl,suggestDownloadFilename(output.originalUrl,toolId));}}><Download size={17} aria-hidden="true" />{copy.download}</button>
+        <MediaDestinationActions presentation="creator" locale={locale} userId={userId} asset={{id:output.asset.type === 'asset' ? output.asset.assetId : output.asset.outputId,url:output.originalUrl,kind:output.kind,thumbUrl:output.thumbnailUrl,jobId:operation.result!.jobId,sourceOutputId:output.asset.type === 'job-output' ? output.asset.outputId : null}} />
+      </div><button type="button" className={styles.startAnother} disabled={disabled} onClick={operation.reset}><RotateCcw size={16} aria-hidden="true" />{copy.newResult}</button></div> : null}
     </div>}
   >{!executionEnabled ? <p className={styles.notice} role="status">{copy.executionClosed}</p> : null}{!userId ? <ToolAuthNotice locale={locale} path={`/app/tools/${toolId}`} /> : null}
     <ToolMediaHandoff userId={userId} destination={toolId} locale={locale} disabled={disabled} onSelect={asset => {
@@ -103,5 +111,5 @@ export function CreatorSession({ toolId, userId, locale, lipVideoEnabled = false
       } else if (role === 'source' && asset.kind !== sourceKind) throw new Error('Incompatible source');
       changeSource(role,selectCreatorSource(asset,asset.kind));
     }} />
-  </ToolWorkbench>;
+  </CreatorWorkbench>;
 }
