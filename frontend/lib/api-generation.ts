@@ -202,7 +202,8 @@ export async function runGenerate(
   const result = body as GenerateResult;
   // Accepted provider responses may still use queued/running, just like polling.
   // Canonicalize before the workspace stores the result or broadcasts jobs:status.
-  const hasMedia = Boolean(result.videoUrl) || Boolean(result.renderIds?.length);
+  // renderIds can be echoed request metadata; only the video proves output exists.
+  const hasMedia = Boolean(result.videoUrl);
   return {
     ...result,
     status: normalizeJobStatus(typeof result.status === 'string' ? result.status : null, hasMedia) ?? 'pending',

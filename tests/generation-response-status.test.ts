@@ -7,10 +7,12 @@ test('accepted provider responses expose canonical status before rendering or an
   try {
     for (const { body, expected } of [
       { body: { ok: true, jobId: 'job_queued', providerJobId: 'provider-1', status: 'queued' }, expected: 'pending' },
+      { body: { ok: true, jobId: 'job_batch_queued', status: 'queued', renderIds: ['batch-render-1'] }, expected: 'pending' },
       { body: { ok: true, jobId: 'job_running', status: 'running', progress: 10, deferred: true, message: 'Processing' }, expected: 'pending' },
       { body: { ok: true, jobId: 'job_processing', status: 'processing' }, expected: 'pending' },
       { body: { ok: true, jobId: 'job_accepted' }, expected: 'pending' },
       { body: { ok: true, jobId: 'job_finalizing', status: 'completed', videoUrl: null }, expected: 'pending' },
+      { body: { ok: true, jobId: 'job_batch_finalizing', status: 'completed', videoUrl: null, renderIds: ['batch-render-1'] }, expected: 'pending' },
       { body: { ok: true, jobId: 'job_ready', status: 'completed', videoUrl: 'https://media.example/video.mp4' }, expected: 'completed' },
       { body: { ok: true, jobId: 'job_failed', status: 'failed', paymentStatus: 'refunded' }, expected: 'failed' },
     ]) {
