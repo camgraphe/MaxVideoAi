@@ -1,3 +1,5 @@
+import {createSubtitleRepository} from '../subtitles/repository';
+import {readOwnedSubtitleSequence} from '../subtitles/sequence-source';
 import {validateSubtitleAttachment} from '../subtitles/studio';
 import {createHash} from 'node:crypto';
 import {withDbTransaction, type QueryExecutor} from '@/lib/db';
@@ -5,6 +7,7 @@ import {applyConversationTimelineEdit, conversationTimelineCommandSchema} from '
 import type {ConversationTimelineCommand} from '@/lib/studio/conversation-timeline-editing';
 import type {WorkspaceAssetRecord, WorkspaceTimelineItem, WorkspaceTimelineTrack, WorkspaceProjectSettings} from '@/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
 import {buildWorkspaceTimelineItemsForAsset, insertWorkspaceTimelineItems, layerWorkspaceTimelineAudioItem, timelineEditTouchesLockedTracks} from '@/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-editing';
+import {isWorkspaceTimelineAudioTrack} from '@/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-tracks';
 import {createWorkspaceSequenceRecord, MAX_TIMELINE_AUDIO_TRACKS} from '@/app/(core)/(workspace)/app/studio/_shared/_state/workspace-state';
 import {timelineFrameToSeconds, secondsToTimelineFrame} from '@/app/(core)/(workspace)/app/studio/_shared/_lib/timeline/timeline-frames';
 import {workspaceProjectDimensions} from '@/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-project-settings';
@@ -39,7 +42,7 @@ export async function editStudioConversationTimeline(actor: ConversationEditActo
   const kind = 'conversation_timeline_edit';
   const requestHash = createHash('sha256').update(JSON.stringify(input)).digest('hex');
   const run = dependencies.withTransaction ?? ((callback) => withDbTransaction(callback));
-  const selectedInserts = input.edit.kind === 'insert' ? [input.edit] : input.edit.kind === 'assemble' ? input.edit.clips : [];
+  const selectedInserts = input.edit.kind === 'insert' || input.edit.kind==='replace' ? [input.edit] : input.edit.kind === 'assemble' ? input.edit.clips : [];
   const selectedVideoRefs = new Set(selectedInserts.filter(edit => edit.ref.kind === 'video').map(edit => JSON.stringify(edit.ref)));
   const resolvedVideoSources = new Map<string,string>();
   const preparedVideoRefs = new Set<string>();
@@ -61,11 +64,11 @@ export async function editStudioConversationTimeline(actor: ConversationEditActo
     const sequence = sequences.find(value => value.id === input.sequenceId);
     if (!sequence) throw new Error('STUDIO_SEQUENCE_CONFLICT');
     const settings = sequence.settings as WorkspaceProjectSettings;
-    const state = sequence.timelineState as {timelineItems: WorkspaceTimelineItem[]; lockedTimelineTracks?: WorkspaceTimelineTrack[]; mutedAudioTracks?: WorkspaceTimelineTrack[]};
+    const state = sequence.timelineState as {timelineItems: WorkspaceTimelineItem[]; lockedTimelineTracks?: WorkspaceTimelineTrack[]; mutedAudioTracks?: WorkspaceTimelineTrack[];sequenceSubtitle?:import('@/lib/subtitles/document').SubtitleSequenceAttachment};
     const workspace = project.workspaceState as Record<string, unknown>;
     const existingAssets = Array.isArray(workspace.projectAssets) ? workspace.projectAssets as WorkspaceAssetRecord[] : [];
     let projectAssets = existingAssets;
-    let items: WorkspaceTimelineItem[];
+    let items: WorkspaceTimelineItem[];let sequenceSubtitle=state.sequenceSubtitle;
     if (input.edit.kind === 'insert' || input.edit.kind === 'assemble') {
       const inserts=input.edit.kind==='insert'?[input.edit]:input.edit.clips.map(clip=>({kind:'insert' as const,...clip}));
       items=state.timelineItems;
@@ -78,6 +81,34 @@ export async function editStudioConversationTimeline(actor: ConversationEditActo
         if (timelineEditTouchesLockedTracks(state.timelineItems,items,state.lockedTimelineTracks ?? [])) throw new Error('Timeline track is locked.');
         if (!projectAssets.some(asset => JSON.stringify(asset.ref) === JSON.stringify(inserted.asset.ref))) projectAssets = [...projectAssets,inserted.asset];
       }
+    } else if(input.edit.kind==='replace'){
+      const edit=input.edit;
+      const selected=state.timelineItems.find(item=>item.id===edit.clipId);
+      if(!selected)throw new Error('Timeline clip not found.');
+      if(state.lockedTimelineTracks?.includes(selected.track))throw new Error('Timeline track is locked.');
+      if(isWorkspaceTimelineAudioTrack(selected.track)!==(edit.ref.kind==='audio'))throw new Error('Invalid Studio timeline replacement: keep audio on an audio track and visuals on a video track.');
+      const durationFrames=secondsToTimelineFrame(selected.durationSec,settings.fps);
+      if(Math.abs(timelineFrameToSeconds(durationFrames,settings.fps)-selected.durationSec)>0.000001)throw new Error('Invalid Studio timeline clip duration: selected clip is not frame aligned.');
+      // Resolve and qualify the new owned source through the insertion boundary, then
+      // retain the selected interval verbatim. Never call the ripple/retime helper.
+      const replacement=await insertion(actor,{...input,edit:{kind:'insert',ref:edit.ref,sourceInFrame:edit.sourceInFrame,startFrame:secondsToTimelineFrame(selected.startSec,settings.fps),durationFrames}},settings,executor,resolvedVideoSources);
+      const item:WorkspaceTimelineItem={...replacement.items[0],id:selected.id,startSec:selected.startSec,durationSec:selected.durationSec,track:selected.track,
+        transform:selected.transform,audioMix:selected.audioMix,transitionOut:selected.transitionOut,linkedGroupId:selected.linkedGroupId,linkedGroupKind:selected.linkedGroupKind};
+      // Source captions detach. The original/document stay owned and available;
+      // saveStudioWorkspace retains immutable historical montage provenance.
+      items=state.timelineItems.map(previous=>previous.id===selected.id?item:previous);
+      if(timelineEditTouchesLockedTracks(state.timelineItems,items,state.lockedTimelineTracks??[]))throw new Error('Timeline track is locked.');
+      if(!projectAssets.some(asset=>JSON.stringify(asset.ref)===JSON.stringify(replacement.asset.ref)))projectAssets=[...projectAssets,replacement.asset];
+    } else if(input.edit.kind==='sequence-subtitles'){
+      items=state.timelineItems;
+      if(input.edit.documentId){
+        if(!input.edit.revision)throw new Error('SUBTITLE_REVISION_INVALID');
+        const document=await createSubtitleRepository({...executor,transaction:async run=>run(executor)}).read(actor.userId,input.edit.documentId,input.edit.revision);
+        if(!document)throw new Error('SUBTITLE_NOT_FOUND');
+        const snapshot=await readOwnedSubtitleSequence(actor.userId,{projectId:input.projectId,sequenceId:input.sequenceId,expectedRevision:input.expectedRevision},executor);
+        if(document.source.sequenceMix?.sequenceId!==sequence.id||document.source.sequenceMix.audioManifestHash!==snapshot.audioManifestHash)throw new Error('SUBTITLE_SEQUENCE_CHANGED');
+        sequenceSubtitle={documentId:document.id,revision:document.revision,audioManifestHash:snapshot.audioManifestHash};
+      }else sequenceSubtitle=undefined;
     } else {
       if(input.edit.kind==='subtitles'&&input.edit.documentId)await validateSubtitleAttachment(actor.userId,state.timelineItems,input.edit,executor);
       items = applyConversationTimelineEdit(state.timelineItems,input.edit,settings.fps,state.lockedTimelineTracks ?? []);
@@ -85,6 +116,7 @@ export async function editStudioConversationTimeline(actor: ConversationEditActo
     const canonicalSequences = sequences.map(value => createWorkspaceSequenceRecord({
       ...value.timelineState as Parameters<typeof createWorkspaceSequenceRecord>[0],
       id: value.id, name: value.name, projectSettings: value.settings as WorkspaceProjectSettings,
+      sequenceSubtitle:value.id===sequence.id?sequenceSubtitle:(value.timelineState as {sequenceSubtitle?:import('@/lib/subtitles/document').SubtitleSequenceAttachment}).sequenceSubtitle,
       timelineItems: value.id === sequence.id ? items : (value.timelineState as {timelineItems: WorkspaceTimelineItem[]}).timelineItems,
       createdAt: value.createdAt, updatedAt: value.updatedAt,
     }));
@@ -92,8 +124,8 @@ export async function editStudioConversationTimeline(actor: ConversationEditActo
       name: project.name, canvasTemplateId: project.canvasTemplateId, settings: project.settings,
       workspaceState: {...workspace, projectAssets, sequences: canonicalSequences},
     }},{withTransaction: sameTransaction});
-    const changedClip = input.edit.kind === 'insert' || input.edit.kind==='assemble' ? items.find(item => !state.timelineItems.some(previous => previous.id === item.id)) : items.find(item => input.edit.kind !== 'insert' && input.edit.kind !== 'assemble' && item.id === input.edit.clipId);
-    const result = {projectId: project.id, sequenceId: sequence.id, revision: saved.revision, clipCount: items.length,changed: JSON.stringify(items) !== JSON.stringify(state.timelineItems),
+    const changedClip = input.edit.kind==='sequence-subtitles'?null:input.edit.kind === 'insert' || input.edit.kind==='assemble' ? items.find(item => !state.timelineItems.some(previous => previous.id === item.id)) : items.find(item => input.edit.kind !== 'insert' && input.edit.kind !== 'assemble' && input.edit.kind !== 'sequence-subtitles' && item.id === input.edit.clipId);
+    const result = {projectId: project.id, sequenceId: sequence.id, revision: saved.revision, clipCount: items.length,changed: input.edit.kind==='sequence-subtitles'||JSON.stringify(items) !== JSON.stringify(state.timelineItems),
       clip: changedClip ? {id: changedClip.id,startFrame: secondsToTimelineFrame(changedClip.startSec,settings.fps),durationFrames: secondsToTimelineFrame(changedClip.durationSec,settings.fps),sourceInFrame: secondsToTimelineFrame(changedClip.sourceStartSec ?? 0,settings.fps)} : null,
       totalFrames: secondsToTimelineFrame(items.reduce((end,item) => Math.max(end,item.startSec + item.durationSec),0),settings.fps)};
     await executor.query(`INSERT INTO studio_project_commands(user_id,command_kind,command_version,idempotency_key,request_hash,project_id,sequence_id,request_payload,safe_result) VALUES($1,$2,1,$3,$4,$5,$6,$7::jsonb,$8::jsonb)`,[actor.userId,kind,input.idempotencyKey,requestHash,project.id,sequence.id,JSON.stringify(input),JSON.stringify(result)]);

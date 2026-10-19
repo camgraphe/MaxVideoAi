@@ -30,6 +30,7 @@ export const studioTimelineOutputSchema = z.object({
     id: identifier,title: z.string(),kind: z.string(),track: z.string(),
     startFrame: frame,durationFrames: frame.positive(),sourceInFrame: frame,
     volume: z.number().min(0).max(100).optional(),muted: z.boolean().optional(),ref: studioTimelineAssetRefSchema.optional(),
+    subtitle: z.object({documentId: identifier,revision: z.number().int().positive()}).strict().optional(),
   }).strict()).max(5_000),
 }).strict();
 export const studioTimelineEditOutputSchema = z.object({

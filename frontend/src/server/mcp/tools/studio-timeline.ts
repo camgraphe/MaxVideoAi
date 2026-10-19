@@ -18,6 +18,9 @@ export const editStudioTimelineToolInputSchema = z.object({
     z.object({kind: z.literal('move'),clipId,startFrame: frame}).strict(),
     z.object({kind: z.literal('gain'),clipId,volume: z.number().min(0).max(100)}).strict(),
     z.object({kind: z.literal('remove'),clipId}).strict(),
+    z.object({kind:z.literal('replace'),clipId,ref:studioTimelineAssetRefSchema,sourceInFrame:frame.optional()}).strict(),
+    z.object({kind:z.literal('subtitles'),clipId,documentId:z.string().min(1).max(200).nullable(),revision:z.number().int().positive().optional()}).strict(),
+    z.object({kind:z.literal('sequence-subtitles'),documentId:z.string().min(1).max(200).nullable(),revision:z.number().int().positive().optional()}).strict(),
     z.object({kind: z.literal('insert'),ref: studioTimelineAssetRefSchema,startFrame: frame,durationFrames: frame.positive(),sourceInFrame:frame.optional()}).strict(),
     z.object({kind:z.literal('assemble'),clips:z.array(z.object({ref:studioTimelineAssetRefSchema,startFrame:frame,durationFrames:frame.positive(),sourceInFrame:frame.optional()}).strict()).min(1).max(12)}).strict(),
   ]),
@@ -37,7 +40,7 @@ export function registerStudioTimelineTools(server: McpServer,principal: AgentPr
   }));
   server.registerTool('edit_studio_timeline',{
     title: 'Edit a Studio timeline',
-    description: 'Save one frame-aligned insert, trim, move, remove, audio gain or bounded assembly to an owned connected Studio sequence. Assemble inserts up to 12 supplied clips atomically in list order. Use the current expectedRevision from get_studio_timeline and owned ready assets or account-owned completed job-output refs. sourceInFrame selects the source excerpt (default zero); position/duration remain sequence frames within measured source bounds. Originals are preserved. Visual inserts/trims/removals ripple; moves reorder without overlap. Audio layers on an audible unlocked lane without moving voice or visuals; gain is 0–100 percent. No generation or export charge; assembly does not analyze content. Reuse idempotencyKey only for the same request; changed content needs a new key. On revision conflict read again and preserve manual changes. Respect locked tracks; use integer frames within source duration.',
+    description: 'Save one frame-aligned insert, replacement, trim, move, remove, audio gain, subtitle attachment or bounded assembly to an owned connected Studio sequence. Assemble inserts up to 12 supplied clips atomically in list order. Use the current expectedRevision from get_studio_timeline and owned ready assets or account-owned completed job-output refs. sourceInFrame selects the source excerpt (default zero); position/duration remain sequence frames within measured source bounds. Replace keeps the exact clip ID, interval and track; the new source must cover that duration, with no loop or retiming. Source-specific captions detach on replacement. Pin owned subtitle documents to clip sources or to their unchanged sequence mix. Originals are preserved. Visual inserts/trims/removals ripple; moves reorder without overlap. Audio layers on an audible unlocked lane without moving voice or visuals; gain is 0–100 percent. No generation or export charge; assembly does not analyze content. Reuse idempotencyKey only for the same request; changed content needs a new key. On revision conflict read again and preserve manual changes. Respect locked tracks; use integer frames within source duration.',
     inputSchema: editStudioTimelineToolInputSchema,
     outputSchema: studioTimelineEditOutputSchema,
     annotations: {readOnlyHint: false,destructiveHint: true,idempotentHint: true,openWorldHint: false},

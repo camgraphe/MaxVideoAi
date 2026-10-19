@@ -21,7 +21,7 @@ export const conversationTimelineInsertFields={ref:toolAssetRefSchema,startFrame
 export const conversationTimelineCommandSchema = z.object({
   projectId: z.string().trim().min(1).max(200), sequenceId: z.string().trim().min(1).max(200),
   expectedRevision: z.number().int().nonnegative(), idempotencyKey: z.string().min(1).max(128),
-  edit: z.union([conversationTimelineEditSchema,z.object({kind:z.literal('insert'),...conversationTimelineInsertFields}).strict(),z.object({kind:z.literal('assemble'),clips:z.array(z.object(conversationTimelineInsertFields).strict()).min(1).max(12)}).strict()]),
+  edit: z.union([conversationTimelineEditSchema,z.object({kind:z.literal('replace'),clipId,ref:toolAssetRefSchema,sourceInFrame:frame.optional()}).strict(),z.object({kind:z.literal('sequence-subtitles'),documentId:z.string().min(1).max(200).nullable(),revision:z.number().int().positive().optional()}).strict(),z.object({kind:z.literal('insert'),...conversationTimelineInsertFields}).strict(),z.object({kind:z.literal('assemble'),clips:z.array(z.object(conversationTimelineInsertFields).strict()).min(1).max(12)}).strict()]),
 }).strict();
 export type ConversationTimelineCommand = z.infer<typeof conversationTimelineCommandSchema>;
 export {workspaceTimelineSourceTime as conversationSourceTime};
