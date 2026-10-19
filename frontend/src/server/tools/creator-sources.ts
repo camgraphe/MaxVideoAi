@@ -31,7 +31,11 @@ export async function persistCreatorMedia(userId: string, bytes: Uint8Array, fac
   const thumbnailUrl = facts.kind === 'video'
     ? await createUploadVideoThumbnail({data:Buffer.from(bytes),userId,fileName:'creator-media'})
     : facts.kind === 'image' ? await createUploadImageThumbnail({data:Buffer.from(bytes),userId,fileName:'creator-media'}) : null;
-  const asset = await ensureReusableAsset({ userId, url: stored.url, kind: facts.kind, source: 'import', mimeType: facts.mimeType,
+  const generation = lineage.generation as { jobId?: unknown } | undefined;
+  // The final file has its own identity. Job provenance places it among saved
+  // creations without borrowing the provider output's identity or preview.
+  const sourceJobId = typeof generation?.jobId === 'string' ? generation.jobId : null;
+  const asset = await ensureReusableAsset({ userId, url: stored.url, kind: facts.kind, source: 'import', sourceJobId, mimeType: facts.mimeType,
     width: facts.width, height: facts.height, sizeBytes: facts.sizeBytes, durationSec: facts.durationSec,
     thumbUrl: thumbnailUrl, allowRemoteThumbnailFallback: false,
     metadata: { creator: lineage, durationSec: facts.durationSec, mediaFacts: {source:'probe',...facts} } });

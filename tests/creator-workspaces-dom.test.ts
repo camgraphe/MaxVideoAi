@@ -104,6 +104,7 @@ test('a captioned MP4 recovery link restores the paid output while new execution
     await f.respond(f.w.requests[0],{ok:true,operationId:opId,state:'completed',result:{documentId:'captions-1',revision:1,assetId:`ma_${'3'.repeat(32)}`,originalUrl:'https://private.invalid/canonical.mp4',readUrl:'https://private.invalid/signed.mp4?signature=exact',thumbnailReadUrl:null}});
     await f.respond(f.w.requests.at(-1),{ok:true,document});
     assert.equal(f.w.document.querySelector('video').src,'https://private.invalid/signed.mp4?signature=exact');assert.equal(buttons(f.w,'Download')[0].disabled,false);
+    assert.ok(f.w.document.querySelector('a[href="/app/library?view=saved&kind=video"]'));
     assert.ok(f.w.requests.every((request:any)=>!request.init?.method || request.init.method==='GET'));
   }finally{await f.close();}
 });
@@ -211,7 +212,7 @@ test('completion selects the new result after the original was selected and offe
     await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,status:'running'});
     await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,status:'completed',result:{toolId:'lip-sync',jobId:'job-1',version:1,sourceAssets:[],outputs:[{asset:{type:'asset',assetId:`ma_${'2'.repeat(32)}`,kind:'video'},originalUrl:'https://private.invalid/canonical.mp4',kind:'video',readUrl:'https://private.invalid/completed.mp4'}]}});
     assert.equal(buttons(f.w,'Result')[0].getAttribute('aria-pressed'),'true');assert.equal(f.w.document.querySelector('video').src,'https://private.invalid/completed.mp4');
-    assert.match(f.w.document.body.textContent,/Your result is saved in Media/);assert.equal(f.w.document.querySelector('a[href="/app/library"]').textContent,'Open Media');
+    assert.match(f.w.document.body.textContent,/Your result is saved in Media/);assert.equal(f.w.document.querySelector('a[href="/app/library?view=saved&kind=video"]').textContent,'Open Media');
     assert.equal(buttons(f.w,'Start a new creation').length,1);
   }finally{await f.close();}
 });

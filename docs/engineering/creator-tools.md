@@ -214,6 +214,16 @@ refund transactions.
 
 ## Studio and saved documents
 
+Final creator files preserve their own immutable asset identity and carry their
+generation job as provenance. The existing Media reader therefore classifies
+them as saved creations of the measured image/video kind; prepared reference
+segments do not acquire that provenance. Do not attach the provider's
+`sourceOutputId` to a finalized derivative. Result links open the saved Media
+view with the matching `kind`; subtitle MP4 exports open Videos. The complete
+app menu uses the same released-tool record as the catalogue and contextual
+actions, with EN/FR/ES labels. The five interfaces inherit the shared app theme
+and its persisted Menu → Appearance preference.
+
 Creator result actions offer a connected Studio film picker with explicit add
 or replace commands. Replacement preserves the selected clip timing, requires
 enough source media and uses the existing revision/ownership/locked-track owner.

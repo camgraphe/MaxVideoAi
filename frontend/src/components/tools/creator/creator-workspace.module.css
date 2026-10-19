@@ -1,4 +1,4 @@
-.workbench { max-width: 1500px; margin: 0 auto; padding: 24px 28px 40px; color: var(--app-ink,var(--text-primary)); font-size: 14px; line-height: 1.5; }
+.workbench { --app-accent-ink: var(--on-brand,#fff); max-width: 1500px; margin: 0 auto; padding: 24px 28px 40px; color: var(--app-ink,var(--text-primary)); font-size: 14px; line-height: 1.5; }
 .workbench * { box-sizing: border-box; }
 .workbench :is(h1,h2,p,ol,ul,fieldset) { margin: 0; }
 .workbench :is(button,input,textarea,select) { font: inherit; }
