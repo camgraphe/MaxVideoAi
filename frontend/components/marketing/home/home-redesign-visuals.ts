@@ -61,21 +61,21 @@ export const REFERENCE_WORKFLOW_VISUALS = [
   '/assets/marketing/reference-workflow-final-video.webp',
 ] as const;
 
-export const HERO_VIDEO_ORDER = ['minimax-h3-max', 'seedance-2-5', 'wan-3-prime', 'kling-3-pro', 'ltx-2-5-pro'] as const;
+export const HERO_VIDEO_ORDER = ['minimax-h3', 'seedance-2-5', 'wan-3', 'kling-3-pro', 'ltx-2-5-pro'] as const;
 export const HOME_HERO_IMAGE_URL = '/assets/home/home-hero-reference.webp';
 
 export const HERO_VIDEO_MODE_LABELS: Record<string, string> = {
-  'minimax-h3-max': 'text-to-video',
+  'minimax-h3': 'text-to-video',
   'seedance-2-5': 'text-to-video',
-  'wan-3-prime': 'text-to-video',
+  'wan-3': 'text-to-video',
   'kling-3-pro': 'image-to-video',
   'ltx-2-5-pro': 'image-to-video',
 };
 
 export const HERO_VIDEO_CHIPS: Record<string, string[]> = {
-  'minimax-h3-max': ['Narrative', 'Native audio'],
-  'seedance-2-5': ['Physics', 'Cinematic'],
-  'wan-3-prime': ['Craft motion', 'Realism'],
+  'minimax-h3': ['Action', 'Native audio'],
+  'seedance-2-5': ['Action', 'Cinematic'],
+  'wan-3': ['Music video', 'Realism'],
   'kling-3-pro': ['Cinematic', 'Camera move'],
   'ltx-2-5-pro': ['Fast', 'Image control'],
 };
@@ -116,34 +116,26 @@ export const HERO_ENGINE_MEDIA: Record<
     imageAlt?: string;
   }
 > = {
-  'minimax-h3-max': {
-    posterSrc: '/hero/showcase-minimax-h3-max-12s.webp',
+  'minimax-h3': {
+    posterSrc: '/hero/showcase-minimax-h3-flight-15s.webp',
     videoSrc:
-      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6e299d72-22dd-46f4-8260-4d6887777558.mp4',
-    resolution: '16:9',
-    duration: '0:12',
-    estimateValue: '$1.19',
-    estimateMeta: '12s generation',
+      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/5632c9c8-b6d1-4b76-85ca-e32c0643e49f.mp4',
+    resolution: '26:15',
+    duration: '0:15',
   },
   'seedance-2-5': {
-    posterSrc:
-      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/322680c4-ca2f-405f-89f6-0bdb90f186b9.jpg',
+    posterSrc: '/hero/showcase-seedance-2-5-cat-15s.webp',
     videoSrc:
-      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/085cc0a7-063d-4801-91f9-ec3d9c5eb95d.mp4',
+      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6f085820-dad0-46e2-8b3e-7d50094fb2c4.mp4',
     resolution: '16:9',
-    duration: '0:10',
-    estimateValue: '$1.46',
-    estimateMeta: '10s generation',
+    duration: '0:15',
   },
-  'wan-3-prime': {
-    posterSrc:
-      'https://media.maxvideoai.com/user-asset-thumbs/by-content/c780259ed79d025b4ac74ccc513f18bf/db3ef505b123301c648d118f0d740df7b05d098ec47b5104f0425f42019c069f.jpeg',
+  'wan-3': {
+    posterSrc: '/hero/showcase-wan-3-city-22s.webp',
     videoSrc:
-      'https://media.maxvideoai.com/media-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/c8567e3b0531ae10a993534c41d5f76ec8a1fc2329294d0c8fdb7e4b38ab349a.mp4',
+      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/c63e754c-4e7b-4fbb-82e8-7fc876fda7bb.mp4',
     resolution: '16:9',
-    duration: '0:05',
-    estimateValue: '$0.70',
-    estimateMeta: '5s generation',
+    duration: '0:22',
   },
   'kling-3-pro': {
     ...KLING_3_PRO_HERO_RENDER,

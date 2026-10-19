@@ -198,7 +198,8 @@
           "image": "Generate image",
           "audio": "Generate audio",
           "background-removal": "Remove a video background",
-          "upscale": "AI Upscale"
+          "upscale": "AI Upscale",
+          "studio": "Studio"
         },
         "heading": "Shape the next part of your story.",
         "intro": "Create your references, change an angle and finish the details.",
@@ -209,6 +210,9 @@
               "get-started": "Getting started"
             }
           }
+        },
+        "descriptions": {
+          "studio": "Your creative workspace with AI."
         }
       },
       "workflows": {
@@ -470,11 +474,11 @@
           "engineLabel": "2. Compare recommended engines",
           "engineRecommendations": [
             {
-              "engineId": "minimax-h3-max",
-              "name": "MiniMax H3 Max",
+              "engineId": "minimax-h3",
+              "name": "MiniMax H3",
               "provider": "MiniMax",
-              "bestFor": "Cinematic disaster storytelling",
-              "imageAlt": "A mother and child shelter during a photorealistic retro-futuristic disaster generated with MiniMax H3 Max.",
+              "bestFor": "High-speed cinematic action",
+              "imageAlt": "A flying character races above a tropical bay in a 15-second MiniMax H3 video.",
               "fallbackPrice": "Live price",
               "selected": true,
               "scores": [
@@ -492,17 +496,17 @@
                 }
               ],
               "tags": [
-                "Narrative",
+                "Action",
                 "Native audio",
-                "Live action"
+                "Cinematic"
               ]
             },
             {
               "engineId": "seedance-2-5",
-              "imageAlt": "Preview of a 10-second AI video generated with Seedance 2.5.",
+              "imageAlt": "A fluffy orange cat faces two men in an action scene generated with Seedance 2.5.",
               "name": "Seedance 2.5",
               "provider": "ByteDance",
-              "bestFor": "Complex cinematic physics",
+              "bestFor": "Playful cinematic action",
               "fallbackPrice": "Live price",
               "scores": [
                 {
@@ -519,17 +523,17 @@
                 }
               ],
               "tags": [
-                "Physics",
+                "Action",
                 "Audio",
                 "Cinematic"
               ]
             },
             {
-              "engineId": "wan-3-prime",
-              "imageAlt": "Preview of a 5-second AI video generated with Wan 3 Prime.",
-              "name": "Wan 3 Prime",
+              "engineId": "wan-3",
+              "imageAlt": "A 22-second Wan 3 music video brings together city sounds, a street drummer and a subway.",
+              "name": "Wan 3",
               "provider": "Alibaba",
-              "bestFor": "Controlled craft motion",
+              "bestFor": "Rhythm and city motion",
               "fallbackPrice": "Live price",
               "scores": [
                 {
@@ -546,9 +550,9 @@
                 }
               ],
               "tags": [
-                "Craft",
+                "Music video",
                 "Realism",
-                "Camera"
+                "Audio"
               ]
             },
             {

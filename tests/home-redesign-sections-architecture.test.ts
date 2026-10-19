@@ -50,3 +50,28 @@ test('home redesign section modules stay focused', () => {
   assert.ok(lineCount(examplesSource) <= 230, `HomeRealExamplesPreview should stay below 230 lines, got ${lineCount(examplesSource)}`);
   assert.ok(lineCount(startupSource) <= 40, `HomeStartupFameLink should stay below 40 lines, got ${lineCount(startupSource)}`);
 });
+
+test('Studio and MCP stay in one server-rendered conversation section below the creation proof', () => {
+  const page = readSource(join(root, 'frontend/app/(localized)/[locale]/(marketing)/(home)/page.tsx'));
+  const conversation = readSource(join(root, 'frontend/components/marketing/home/HomeConversationSection.tsx'));
+  const creation = readSource(join(root, 'frontend/components/marketing/home/HomeCreationSection.tsx'));
+  assert.equal((page.match(/<HomeConversationSection/g) ?? []).length, 1);
+  assert.ok(page.indexOf('<HomeConversationSection') > page.indexOf('<HomeCreationSection'));
+  assert.doesNotMatch(creation, /HomeAssistantStrip/);
+  assert.match(conversation, /<HomeAssistantStrip/);
+  assert.match(conversation, /pathname: '\/studio'/);
+  assert.match(conversation, /loading="lazy"/);
+  assert.doesNotMatch(conversation, /use client|<video|app\/studio|useEffect/);
+});
+
+test('homepage comparison discovery is server-rendered and delegates only bar motion to the client', () => {
+  const section = readSource(join(root, 'frontend/components/marketing/home/HomeComparisonSection.tsx'));
+  const preview = readSource(join(root, 'frontend/components/marketing/home/HomeComparisonPreview.tsx'));
+  for (const source of [section, preview]) {
+    assert.doesNotMatch(source, /['"]use client['"]|useEffect|useState/);
+  }
+  assert.match(preview, /<HomeComparisonScores/);
+  assert.match(preview, /buildCompareRoute\(data.left.slug, right.slug\)/);
+  assert.match(section, /href="\/ai-video-engines"/);
+  assert.match(section, /pathname:'\/app',query:\{engine:'wan-3'\}/);
+});

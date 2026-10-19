@@ -218,7 +218,8 @@
           "upscale": "Agrandir une image ou vidéo",
           "image": "Générer une image",
           "audio": "Créer de l’audio",
-          "background-removal": "Détourer une vidéo"
+          "background-removal": "Détourer une vidéo",
+          "studio": "Studio"
         },
         "heading": "Préparez votre prochaine scène.",
         "intro": "Créez vos références, changez un angle et soignez les détails.",
@@ -229,6 +230,9 @@
               "get-started": "Premiers pas"
             }
           }
+        },
+        "descriptions": {
+          "studio": "Votre espace de création avec l’IA."
         }
       },
       "workflows": {
@@ -570,11 +574,11 @@
           "engineLabel": "2. Comparer les modèles recommandés",
           "engineRecommendations": [
             {
-              "engineId": "minimax-h3-max",
-              "name": "MiniMax H3 Max",
+              "engineId": "minimax-h3",
+              "name": "MiniMax H3",
               "provider": "MiniMax",
-              "bestFor": "Récit catastrophe cinématographique",
-              "imageAlt": "Une mère et un enfant se mettent à l’abri dans une catastrophe rétrofuturiste photoréaliste générée avec MiniMax H3 Max.",
+              "bestFor": "Action cinématographique",
+              "imageAlt": "Un personnage survole une baie tropicale à grande vitesse dans une vidéo MiniMax H3 de 15 secondes.",
               "fallbackPrice": "Prix actualisé",
               "selected": true,
               "scores": [
@@ -592,17 +596,17 @@
                 }
               ],
               "tags": [
-                "Narration",
+                "Action",
                 "Audio natif",
-                "Prise de vues réelle"
+                "Cinéma"
               ]
             },
             {
               "engineId": "seedance-2-5",
-              "imageAlt": "Aperçu d’une vidéo IA de 10 secondes générée avec Seedance 2.5.",
+              "imageAlt": "Un chat roux affronte deux hommes dans une scène d’action générée avec Seedance 2.5.",
               "name": "Seedance 2.5",
               "provider": "ByteDance",
-              "bestFor": "Physique cinématique complexe",
+              "bestFor": "Action et humour",
               "fallbackPrice": "Prix actualisé",
               "scores": [
                 {
@@ -619,17 +623,17 @@
                 }
               ],
               "tags": [
-                "Physique",
+                "Action",
                 "Audio",
                 "Cinéma"
               ]
             },
             {
-              "engineId": "wan-3-prime",
-              "imageAlt": "Aperçu d’une vidéo IA de 5 secondes générée avec Wan 3 Prime.",
-              "name": "Wan 3 Prime",
+              "engineId": "wan-3",
+              "imageAlt": "Un clip Wan 3 de 22 secondes mêle sons de la ville, percussionniste de rue et métro.",
+              "name": "Wan 3",
               "provider": "Alibaba",
-              "bestFor": "Gestes artisanaux contrôlés",
+              "bestFor": "Rythme et mouvement urbain",
               "fallbackPrice": "Prix actualisé",
               "scores": [
                 {
@@ -646,9 +650,9 @@
                 }
               ],
               "tags": [
-                "Artisanat",
+                "Clip musical",
                 "Réalisme",
-                "Caméra"
+                "Audio"
               ]
             },
             {
@@ -1626,7 +1630,7 @@
     "priceChipSuffix": "Visible avant lancement.",
     "meta": {
       "title": "Générateur vidéo IA sans abonnement | MaxVideoAI",
-      "description": "Comparez Seedance, Kling, Veo, LTX, Wan, Pika et plus avant de générer. Prévisualisez de vrais résultats, voyez le prix à l’avance et générez avec paiement à l’usage."
+      "description": "Comparez Seedance, Kling, Veo, LTX, Wan et Pika. Découvrez de vrais exemples, vérifiez le prix et créez vos vidéos IA à l’usage, sans abonnement."
     },
     "compare": {
       "title": "Comparer les modèles en un coup d’œil",
