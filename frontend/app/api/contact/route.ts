@@ -67,14 +67,17 @@ function escapeHtml(value: string): string {
 }
 
 function safeRedirectUrl(req: NextRequest, locale?: string | null, success = true, errorCode?: string): string {
-  const defaultPath = locale ? `/${locale}/contact` : '/contact';
+  const defaultPath = locale === 'fr' || locale === 'es' ? `/${locale}/contact` : '/contact';
   // Prefer referer if it is same-origin and points to contact.
   const referer = req.headers.get('referer');
   if (referer) {
     try {
       const url = new URL(referer);
-      const pathMatches = /\/contact\/?$/i.test(url.pathname);
+      const pathMatches = /^\/(?:(?:fr|es)\/)?contact\/?$/.test(url.pathname);
       if (url.origin === req.nextUrl.origin && pathMatches) {
+        url.searchParams.delete('submitted');
+        url.searchParams.delete('error');
+        url.searchParams.delete('error_code');
         url.searchParams.set(success ? 'submitted' : 'error', '1');
         if (!success && errorCode) {
           url.searchParams.set('error_code', errorCode);
@@ -101,7 +104,7 @@ export async function POST(req: NextRequest) {
     const message = error instanceof Error ? error.message : 'Unable to parse request body';
     return wantsJson(req)
       ? NextResponse.json({ ok: false, error: 'invalid_body', detail: message }, { status: 400 })
-      : NextResponse.redirect(safeRedirectUrl(req, null, false, 'invalid_body'));
+      : NextResponse.redirect(safeRedirectUrl(req, null, false, 'invalid_body'), 303);
   }
 
   const result = contactSchema.safeParse(parsed);
@@ -109,7 +112,7 @@ export async function POST(req: NextRequest) {
     console.warn('[contact] invalid_input', result.error.flatten());
     return wantsJson(req)
       ? NextResponse.json({ ok: false, error: 'invalid_input', detail: result.error.flatten() }, { status: 400 })
-      : NextResponse.redirect(safeRedirectUrl(req, (parsed.locale as string) || null, false, 'invalid_input'));
+      : NextResponse.redirect(safeRedirectUrl(req, (parsed.locale as string) || null, false, 'invalid_input'), 303);
   }
 
   const { name, email, topic, message, locale } = result.data;
@@ -125,7 +128,7 @@ export async function POST(req: NextRequest) {
     });
     return wantsJson(req)
       ? NextResponse.json({ ok: false, error: reason }, { status: 500 })
-      : NextResponse.redirect(safeRedirectUrl(req, locale, false, reason));
+      : NextResponse.redirect(safeRedirectUrl(req, locale, false, reason), 303);
   }
 
   const from = getDefaultFromAddress() || 'no-reply@maxvideoai.com';
@@ -165,7 +168,7 @@ export async function POST(req: NextRequest) {
     console.warn('[contact] failed to send email', error instanceof Error ? error.message : error);
     return wantsJson(req)
       ? NextResponse.json({ ok: false, error: 'send_failed' }, { status: 500 })
-      : NextResponse.redirect(safeRedirectUrl(req, locale, false, 'send_failed'));
+      : NextResponse.redirect(safeRedirectUrl(req, locale, false, 'send_failed'), 303);
   }
 
   // Slack is optional; failure should not block the form.
@@ -184,5 +187,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
-  return NextResponse.redirect(safeRedirectUrl(req, locale, true));
+  return NextResponse.redirect(safeRedirectUrl(req, locale, true), 303);
 }

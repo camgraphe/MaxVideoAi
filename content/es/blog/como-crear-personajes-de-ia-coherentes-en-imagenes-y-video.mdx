@@ -5,7 +5,7 @@ description: >-
   antes de pasar a prompts, variaciones de escena, ediciones y flujos de video
   a partir de una imagen fija.
 date: '2026-03-22'
-updatedAt: '2026-03-23'
+updatedAt: '2026-10-18'
 image: 'https://media.maxvideoai.com/marketing/marketing/1f327900-618e-41aa-b792-47b41a4c0cbb.jpg'
 imagePosition: 'center top'
 keywords:
@@ -18,172 +18,100 @@ slug: como-crear-personajes-de-ia-coherentes-en-imagenes-y-video
 lang: es
 canonical: 'https://maxvideoai.com/es/blog/como-crear-personajes-de-ia-coherentes-en-imagenes-y-video'
 canonicalSlug: how-to-create-consistent-ai-characters
+topic: "Coherencia de personajes"
+lead: "Ya tienes un personaje que te gusta. Así puedes mantenerlo reconocible en la siguiente imagen y revisar el resultado antes de pasar al vídeo."
+walkthrough:
+  title: "Una referencia, llevada a una imagen y a un clip"
+  description: "Este ejemplo existente de Character Builder sigue a una mujer de pelo rizado pelirrojo, pañuelo estampado y camiseta oscura holgada. Compara esos detalles en cada paso."
+  steps:
+    - title: "La referencia"
+      caption: "Una hoja de ocho vistas permite comparar la cara, la ropa y la silueta desde varios ángulos."
+      image: "https://media.maxvideoai.com/marketing/marketing/bfe7f0d7-ed39-4953-863c-ec2be73f3065.png"
+      alt: "Hoja de personaje de una mujer pelirroja con pañuelo, camiseta oscura y pantalón verde."
+    - title: "La escena"
+      caption: "Sitúa al personaje en otro entorno con Nano Banana. Compara la cara y la ropa con la hoja antes de pasar al vídeo."
+      image: "https://media.maxvideoai.com/marketing/marketing/ca5357cf-ec09-4327-bc18-03eeff7e7a66.jpg"
+      alt: "Imagen de escena derivada de la hoja en el flujo publicado de Nano Banana."
+    - title: "El movimiento"
+      caption: "Reproduce el ejemplo existente de LTX 2.3 Pro. Observa la cara, el pañuelo y la camiseta durante todo el movimiento."
+      image: "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/355c847c-7866-43b9-af28-85d6a64dfec8.jpg"
+      alt: "Ejemplo de LTX 2.3 Pro que lleva al personaje de una imagen de referencia al movimiento."
+      video: "https://media.maxvideoai.com/renders/marketing/5816f421-1b4f-456b-aa53-229fa6742cbd.mp4"
+  note: "Este ejemplo muestra la referencia, la imagen de escena y el vídeo. El resultado depende de las entradas y del movimiento que pidas: revisa el clip completo antes de reutilizarlo."
 ---
 
-Si quieres que la misma persona, mascota o protagonista vuelva de una imagen a otra, el trabajo de consistencia tiene que empezar **antes** de generar escenas.
+Elige una referencia que quieras volver a usar. Después cambia la escena alrededor del personaje, revisa la imagen y pasa al vídeo cuando ese fotograma funcione. Repetir solo una descripción deja espacio para que el modelo reinterprete la cara y la ropa.
 
-La forma más directa de conseguir personajes de IA coherentes es:
+**¿Todavía necesitas crear la referencia?** [Character Builder](/es/herramientas/character-builder) crea un retrato de referencia o una hoja de ocho vistas. Esta guía explica cómo reutilizar el resultado y detectar qué cambia.
 
-1. definir el personaje una vez
-2. convertir esa identidad en una referencia reutilizable
-3. reutilizar esa referencia en imágenes, ediciones y preparación de video
+## Elige la referencia para el plano
 
-En MaxVideoAI, ese paso de construcción de referencia se resuelve con **[Consistent Character AI](/es/tools/character-builder)**.
+| Tu próximo plano | Empieza con | Qué revisar antes de generar |
+| --- | --- | --- |
+| Un primer plano o un personaje que habla | Un retrato nítido | Forma de la cara, línea del pelo, ojos y rasgos distintivos |
+| Un plano abierto con ropa reconocible | Una vista de cuerpo entero | Silueta, ropa, calzado y accesorios |
+| Varios ángulos o un storyboard | La hoja para planificar y después la vista adecuada | Frente, perfil y espalda corresponden al mismo diseño |
 
-![Portrait anchor reutilizable preparado a partir de la misma identidad del personaje.](/assets/blog/character-builder/consistent-character-portrait-anchor.webp)
+Una hoja de ocho vistas ayuda a ver el personaje completo. No es necesariamente el mejor archivo para enviar a cualquier modelo. Puede interpretarse como un collage o mezclar detalles de varios paneles. Elige el retrato o la vista de cuerpo entero que encaje con el plano y comprueba qué entradas admite el modelo.
 
-*El portrait anchor es la referencia más ligera: ideal cuando la continuidad del rostro importa más antes de abrir el plano o pasar a video.*
+Para preparar la hoja, consulta la [guía del generador de hojas de personaje](/es/blog/generador-de-fichas-de-personaje-con-ia).
 
-## Por qué los personajes de IA derivan
+## Construye la siguiente escena en cuatro pasos
 
-La mayoría de los generadores pueden hacer una imagen fuerte. Les cuesta más cuando les pides volver a mostrar el mismo personaje bajo condiciones distintas.
+### 1. Elige la identidad que quieres conservar
 
-Las causas más comunes son prácticas, no misteriosas. Cada nuevo prompt le da al modelo otra oportunidad de reinterpretar al personaje:
+Usa una foto clara o un resultado anterior que te convenza. Decide qué debe mantenerse: cara, pelo, ropa, silueta o un accesorio concreto. Si importa el vestuario, incluye una vista donde se vea. Una cara pequeña u oculta es una referencia débil.
 
-- el prompt deriva de una escena a la siguiente
-- la pose y el encuadre desestabilizan la identidad
-- el vestuario se reimagina cuando el plano se abre
-- los accesorios y la silueta se pierden o se sustituyen
-- la estructura del rostro cambia con la luz o el ángulo
-- una imagen fija débil se vuelve aún menos estable cuando pasa a video
+### 2. Describe qué cambia en la escena
 
-Eso suele hacer que primero se deslice el rostro, luego el vestuario y la silueta. Un personaje que parecía estable en primer plano puede empezar a sentirse incierto en cuanto pides un plano más abierto, otra pose u otro tono.
+Adjunta la referencia en un modo compatible con imágenes. Describe la acción, el entorno y el encuadre por separado de los detalles que quieres conservar. Empieza con un cambio para detectar dónde se pierde la continuidad.
 
-Esa deriva suele aparecer en:
+**Prompt para adaptar, no el prompt original del ejemplo anterior:**
 
-- detalles de rostro y cabello
-- silueta del vestuario
-- accesorios
-- proporciones corporales
-- continuidad de la primera imagen cuando pasas a video
+> Usa la imagen adjunta como referencia del personaje. Conserva su pelo rizado pelirrojo, pañuelo estampado, camiseta oscura holgada y pantalón cargo verde. En un skatepark, se vuelve hacia una amiga fuera de plano y levanta un auricular. Plano de cintura, cámara a la altura de los ojos, luz suave de última hora de la tarde. Mantén la cara claramente visible.
 
-Si cada escena tiene que redescubrir al personaje, los prompts posteriores se vuelven más caros y menos fiables. El video empeora el problema porque el movimiento amplifica cualquier ambigüedad que ya existía en la imagen fija.
+Adapta el entorno y la acción a tu historia. Si el primer resultado cambia la cara, simplifica el ángulo o la composición antes de añadir instrucciones.
 
-## Qué material de partida es suficiente
+### 3. Compara la imagen con la referencia
 
-Un buen proceso de consistencia de personaje no necesita material fuente complicado, pero sí un punto de partida identitario claro.
+Mira ambas imágenes juntas. Revisa mandíbula, nariz, pelo, formas de la ropa y los detalles que hacen reconocible al personaje. Una paleta de colores parecida no basta. Corrige o descarta una imagen que ya pierde la identidad antes de animarla.
 
-Usa **una foto de identidad** cuando el rostro ya está bien definido y lo principal es que el personaje siga siendo reconocible después.
+### 4. Anima la imagen que funciona
 
-Añade **una referencia de vestuario** cuando la ropa, la silueta o ciertos detalles de estilo necesitan sobrevivir a planos más abiertos y cambios de escena.
+En imagen a vídeo, usa la escena aprobada como primer fotograma. Empieza con un plano corto y una acción sencilla. Revisa el inicio, la mitad y el final, sobre todo cuando gira la cabeza, una mano tapa la cara o el personaje se aleja.
 
-Usa **un render previo de confianza** cuando una imagen ya captura el rostro, el estilo o la mascota correctos y quieres anclar las siguientes generaciones a esa versión.
+Los modos de vídeo con imágenes de referencia y los de imagen a vídeo no son la misma entrada. Comprueba los [modos y límites del modelo elegido](/es/modelos) antes de subir una hoja o varias imágenes. Una referencia orienta el resultado; no fija todos los fotogramas.
 
-Empieza desde un **concepto creado desde cero** cuando todavía no existe una foto, pero la dirección del personaje ya está lo bastante clara como para describirla con precisión.
+## Corrige el problema concreto
 
-En la práctica, un buen material de partida es cualquier cosa que deje clara la decisión de identidad antes de pedirle al modelo más escenas.
+| Qué observas | Qué probar después |
+| --- | --- |
+| La cara cambia al cambiar el ángulo | Usar una vista más clara y cercana al ángulo previsto; simplificar el plano |
+| La cara coincide, pero cambia la ropa | Añadir una referencia de cuerpo entero si se admite, o corregir la imagen antes de animarla |
+| Aparece la cuadrícula de la hoja en el resultado | Usar un panel adecuado en vez de la hoja completa |
+| La imagen funciona, pero la cara cambia en movimiento | Reducir el movimiento o las oclusiones y probar un plano más corto |
+| Desaparecen accesorios pequeños | Hacerlos visibles en la referencia y comprobar si son esenciales con ese encuadre |
 
-## Qué obtienes
+Son pasos para resolver problemas, no soluciones garantizadas. Conserva la misma referencia y cambia una cosa cada vez para evaluar qué ayuda.
 
-El objetivo no es solo generar una imagen bonita. El objetivo es crear una referencia que puedas seguir reutilizando.
+## Preguntas antes de la siguiente generación
 
-En la práctica, la mayoría de los equipos termina eligiendo entre dos salidas útiles:
+### ¿Cuántas imágenes de referencia necesito?
 
-- un **retrato de referencia** para primeros planos, prompts y ediciones centradas en el rostro
-- una **ficha de personaje de 8 paneles** con cuatro ángulos de cuerpo completo y cuatro primeros planos correspondientes
+Empieza con una referencia clara para un flujo que acepte una sola imagen. Añade otra vista cuando resuelva un problema concreto, como un perfil o la ropa en un plano abierto. Comprueba primero el límite del modelo. Más referencias no mejoran automáticamente la coherencia.
 
-Esa es la distinción más importante. El objetivo no es “hacer la escena”. El objetivo es “fijar el personaje”.
+### ¿Debo subir la hoja completa?
 
-![Ficha de personaje de 8 paneles generada desde Character Builder.](/assets/blog/character-builder/consistent-character-eight-panel-sheet.webp)
+Conserva la hoja como referencia de diseño. Para generar, elige el retrato, la vista de cuerpo entero o el panel que encaje con el plano y las entradas admitidas. La hoja ayuda a planificar; no garantiza que el modelo interprete correctamente los ocho paneles.
 
-*La ficha de 8 paneles es la referencia amplia. El retrato de referencia es el anclaje de identidad más cerrado.*
+### ¿Por qué cambia la cara al convertir una imagen en vídeo?
 
-## ¿Necesitas un retrato de referencia o una ficha de 8 paneles?
+Revisa primero la imagen inicial. Una cara pequeña u oculta, un ángulo nuevo o un movimiento exigente pueden dificultar la continuidad. Prueba un plano corto y sencillo, y revisa la cara y la ropa durante todo el clip antes de continuar la secuencia.
 
-Esta es la primera decisión real del proceso.
+### ¿Lo necesito para una sola imagen?
 
-Usa un **retrato de referencia** cuando:
+No siempre. Si el personaje no va a reaparecer, un prompt directo puede bastar. Una referencia reutilizable resulta especialmente útil cuando la misma persona, mascota o ropa debe volver a aparecer.
 
-- el rostro es el principal riesgo de deriva
-- los encuadres van a ser más cerrados
-- los prompts y las ediciones seguirán relativamente cerca
-- quieres un flujo más ligero y más rápido
-- todavía no necesitas cobertura de cuerpo completo
+## Prepara el siguiente recurso útil
 
-Usa una **ficha de personaje de 8 paneles** cuando:
-
-- importa la continuidad de cuerpo completo
-- el vestuario y la silueta deben mantenerse
-- el personaje va a volver en varios tipos de escena
-- necesitas una referencia más fuerte para tableros, ediciones o preparación de video
-- una referencia amplia resulta más útil que una sola referencia facial
-
-La regla más simple es:
-
-- usa un retrato de referencia cuando el problema de identidad es sobre todo facial
-- usa una ficha de 8 paneles cuando la identidad también es un problema de cuerpo, vestuario y silueta
-
-Si quieres el desglose específico del formato, lee **[Generador de fichas de personaje con IA: cómo construir una referencia de 8 paneles](/es/blog/generador-de-fichas-de-personaje-con-ia)**.
-
-## Dónde reutilizar la referencia
-
-Una vez creada la referencia, la siguiente etapa se vuelve mucho más limpia.
-
-Puedes reutilizarla en:
-
-- escenas posteriores donde cambie el wording del prompt
-- ediciones y variaciones de imagen
-- previsualización o trabajo de planificación
-- piezas recurrentes de campaña o serie
-- preparación de la primera imagen antes del video
-
-Por eso la referencia debe ir primero. Les da a las escenas siguientes una base estable sobre la que construir, en lugar de obligar a cada prompt a reconstruir el mismo personaje.
-
-Dentro de MaxVideoAI, eso suele significar reutilizar la referencia en **[Image](/app/image)**, afinarla para Nano Banana y luego llevarla a flujos de video que aceptan imágenes fijas como referencia.
-
-## Cuándo esto supera al prompting directo
-
-Un enfoque basado solo en prompts puede funcionar para imágenes aisladas.
-
-Se debilita cuando el personaje tiene que volver más de una vez.
-
-Ese suele ser el momento en que la continuidad basada solo en prompts empieza a romperse:
-
-- personajes recurrentes entre escenas
-- portavoces de marca o mascotas
-- continuidad narrativa
-- coherencia de personaje en imagen a video
-
-En esos casos, lo mejor es resolver la identidad una vez, conservar una referencia estable y reutilizarla cada vez que el personaje regrese.
-
-El prompting directo sigue siendo suficiente en muchos casos para:
-
-- exploración visual libre
-- un póster puntual
-- sujetos no recurrentes
-- ideación temprana antes de que la identidad esté aprobada
-
-Pero cuando la continuidad importa, una referencia reutilizable suele rendir mejor que repetir prompts, porque dejas de pedirle a cada escena que redescubra quién es el personaje.
-
-## Cuándo no necesitas este flujo
-
-Probablemente no necesitas una referencia de personaje reutilizable cuando:
-
-- solo necesitas una imagen principal
-- el sujeto no va a volver
-- sigues en una fase de exploración libre y la identidad no está aprobada
-- la variedad importa más que la continuidad
-
-En esos casos, puede bastar un flujo más simple basado en prompts. Este enfoque merece la pena cuando la continuidad es el objetivo principal, no solo generar una imagen.
-
-## Errores comunes
-
-### Tratar cada escena como una generación nueva
-
-Es la manera más rápida de perder continuidad.
-
-### Usar el estilo de la escena como identidad
-
-El entorno, la lente y el tono pueden cambiar. La referencia del personaje tiene que sobrevivir a esos cambios.
-
-### Pasar a video antes de que la referencia esté clara
-
-Si la imagen fija es débil, la generación de movimiento tiene que inventar demasiado.
-
-## Conclusión
-
-Si tu objetivo es solo un póster único, quizá no necesites una referencia reutilizable.
-
-Si tu objetivo es un personaje que debe volver en escenas, ediciones o clips, empieza por una referencia clara.
-
-En MaxVideoAI, eso suele significar construir la referencia en **[Consistent Character AI](/es/tools/character-builder)** y después pasar a **[Image](/app/image)** y **[Video](/app)** una vez que la identidad ya está estable.
+Si aún necesitas crear al personaje, [abre Character Builder](/app/tools/character-builder). Si ya tienes la referencia, [crea la siguiente escena en Image](/app/image). Cuando la imagen funcione, [elige un modelo de vídeo](/es/modelos) con la entrada adecuada para el plano.

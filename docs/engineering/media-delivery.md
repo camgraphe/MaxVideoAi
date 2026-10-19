@@ -4,6 +4,37 @@ Read this guide when changing image/video presentation, poster URLs, generated m
 
 For sharing generated videos or public examples, also read `docs/engineering/video-sharing.md`.
 
+## Authenticated original downloads
+
+`GET /api/download` authenticates before network work and serves exact original
+URLs, including their signed query. `server/media-download.ts` streams the body
+with backpressure, a 1 GiB byte ceiling and a 120-second total deadline including
+DNS/redirect work; upstream idle timeout remains 30 seconds. Client disconnect,
+consumer cancellation, oversize and incomplete responses close the upstream.
+Failures after headers have been sent terminate the stream rather than reporting
+a successfully completed truncated file. No complete video buffer is retained.
+
+The shared `server/public-media-transport.ts` permits HTTPS on port 443, refuses
+embedded credentials/fragments/localhost and non-public resolved addresses,
+checks all DNS answers, pins the validated address at socket creation and
+revalidates at most three redirects. It sends no user cookie or Authorization
+header upstream. Existing MCP and tool media imports reuse this connection
+boundary with their own buffered MIME/byte policies. Signed URLs and original
+bytes are never replaced by display derivatives; HTTP-only and private-network
+sources are deliberately refused. This network gate does not create a new media
+ownership grant or issue a storage signature. Logs must not expose signed URLs.
+
+`tests/download-route-security.test.ts` executes the route with synthetic auth
+and DNS/socket boundaries, covering public signed media, private/mixed answers,
+redirect pivots/loops, byte bounds, truncation, streaming cancellation and late
+DNS answers. The existing reference-import suite protects shared compatibility.
+
+Reference selection search currently filters loaded pages. The shared
+`ReferenceLibraryPicker` keeps pagination available while searching and explains
+in EN/FR/ES that loading more extends the search. It must not conceal later
+pages or clear the query to load them. This does not claim server-wide search;
+the paginated readers retain their account/type/source scopes.
+
 ## Portrait backdrops on examples pages
 
 `ExamplesMainVideoFeature` keeps its blurred portrait backdrop on the same responsive
@@ -267,6 +298,22 @@ can make it the LCP element even when its weight is unchanged.
 | Image repair inventory, references and guarded transactions | `frontend/scripts/_lib/image-thumbnail-projections.ts` |
 
 Playback hooks stay client-side; encoding, storage and database work stay server-side. Pages compose these owners. Do not put provider, pricing, storage or encoding responsibilities in a playback component. Route-specific workspace behavior stays under its existing `_hooks`, `_lib` and `_components` boundaries.
+
+### Assistant-directed film examples
+
+`McpCreationStories` composes the shared manual `PublicVideoPlayer` for three
+full-duration authored web films on the MCP hub and Codex guide. It preserves
+`preload="none"`, native controls and retry; there is no autoplay or download CTA.
+These below-fold readers opt into `deferPoster`: the same native video stays mounted,
+while its poster is assigned only within 200px of the viewport. Source/poster identity
+and observer cancellation fence stale callbacks. Browsers without IntersectionObserver
+show the poster immediately after hydration; without JavaScript, a native original/poster
+reader replaces the deferred element through `noscript`. Other readers retain their
+existing eager poster. Verify initial poster transfers, first Play and the no-script
+fallback in a real browser; `preload="none"` alone does not defer native posters.
+The [production provenance record](../marketing/mcp-creation-stories.md) separates
+these edited films from raw model outputs and host UI evidence. Their local web
+copies do not alter the automated public rendition catalogue.
 
 ### Demonstration media inside the app
 
@@ -722,3 +769,16 @@ can report its loaded window as the total; this local union reviews the new defa
 not the production admin's private configuration. Captured prompts and original media URLs
 come only from public APIs; no production database or publication writes occur. The server
 caches this file in process, so restart the opted-in dev server after recapturing it.
+
+### Library import account lifetime
+
+`LibraryPageClient` keeps its account-keyed subtree. `useLibraryAssetMutations`
+additionally binds each import to that owner, cancels a previous import and aborts
+on owner change or unmount. After image preparation and session lookup it checks
+that the operation is still current and the session belongs to the selecting user.
+Dispatch uses that explicit bearer token with cookies omitted, preventing an ambient
+session from retargeting the file. Server upload authorization remains authoritative.
+Late responses cannot refresh or change the next account's library. Cancellation
+cannot undo an upload already accepted by the server for its original owner.
+`tests/library-import-account.test.ts` covers image decoding, session lookup, all
+three media kinds, account transitions, navigation and replacement imports.

@@ -1,5 +1,5 @@
 import type { ComparePageCopy } from './compare-page-copy';
-import { formatEngineName, formatTemplate, replaceCriteriaCount } from './compare-page-helpers';
+import { formatEngineName, formatTemplate, replaceSeoCriteriaCount } from './compare-page-helpers';
 import type { EngineCatalogEntry } from './compare-page-types';
 
 type CompareMetaOverride = {
@@ -43,7 +43,7 @@ export function buildCompareBreadcrumbJsonLd({
 export function buildCompareWebPageJsonLd({
   compareCopy,
   comparisonCanonicalUrl,
-  criteriaCount,
+  pairHasNativeAudio,
   left,
   metaOverride,
   pairHasKling3Native4k,
@@ -51,13 +51,14 @@ export function buildCompareWebPageJsonLd({
 }: {
   compareCopy: ComparePageCopy;
   comparisonCanonicalUrl: string;
-  criteriaCount: number;
+  pairHasNativeAudio: boolean;
   left: EngineCatalogEntry;
   metaOverride?: CompareMetaOverride | null;
   pairHasKling3Native4k: boolean;
   right: EngineCatalogEntry;
 }) {
-  const descriptionTemplate = replaceCriteriaCount(
+  const criteriaCount = pairHasNativeAudio ? 11 : 10;
+  const descriptionTemplate = replaceSeoCriteriaCount(
     metaOverride?.description ??
       (pairHasKling3Native4k
         ? `Compare {left} vs {right} across native 4K delivery, iteration cost, key specs, and a scorecard across ${criteriaCount} criteria on MaxVideoAI.`

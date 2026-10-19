@@ -1,5 +1,6 @@
 import type { AppLocale } from '@/i18n/locales';
 import type { FalEngineEntry } from '@/config/falEngines';
+import { getMcpInternalLink } from '@/lib/mcp-internal-links';
 import { isPublishedComparisonSlug } from '@/lib/compare-hub/data';
 
 import { buildDecisionPricingScenarios, type ModelDecisionPricingScenario } from './model-page-decision-pricing';
@@ -79,7 +80,9 @@ function comparisonSlugFromHref(href: string): string | null {
 function isPublishedDecisionHref(
   href: string,
   isComparisonPublished: (slug: string) => boolean,
+  mcpCreationAvailable: boolean,
 ): boolean {
+  if (/^\/(?:fr\/|es\/)?mcp#/.test(href)) return mcpCreationAvailable;
   const comparisonSlug = comparisonSlugFromHref(href);
   return comparisonSlug === null || isComparisonPublished(comparisonSlug);
 }
@@ -88,8 +91,9 @@ function publishedLinkOrFallback(
   link: ModelDecisionLink,
   fallbackHref: string,
   isComparisonPublished: (slug: string) => boolean,
+  mcpCreationAvailable: boolean,
 ): ModelDecisionLink {
-  return isPublishedDecisionHref(link.href, isComparisonPublished) ? link : { ...link, href: fallbackHref };
+  return isPublishedDecisionHref(link.href, isComparisonPublished, mcpCreationAvailable) ? link : { ...link, href: fallbackHref };
 }
 
 export function buildModelDecisionData({
@@ -97,16 +101,19 @@ export function buildModelDecisionData({
   locale,
   decisionContent,
   isComparisonPublished = isPublishedComparisonSlug,
+  mcpPublication,
 }: {
   engine: FalEngineEntry;
   locale: AppLocale;
   decisionContent: unknown;
   isComparisonPublished?: (slug: string) => boolean;
+  mcpPublication?: Parameters<typeof getMcpInternalLink>[2];
 }): ModelDecisionData | null {
   const template = getModelPageTemplateConfig(engine.modelSlug);
 
   if (!template) return null;
 
+  const mcpCreationAvailable = Boolean(getMcpInternalLink(locale, 'examples', mcpPublication));
   const copy = parseModelDecisionContent(
     decisionContent,
     engine.modelSlug,
@@ -122,13 +129,13 @@ export function buildModelDecisionData({
   return {
     hero: {
       ...copy.hero,
-      primaryCta: publishedLinkOrFallback(copy.hero.primaryCta, template.hero.primaryCtaHref, isComparisonPublished),
-      secondaryCta: publishedLinkOrFallback(copy.hero.secondaryCta, template.hero.secondaryCtaHref, isComparisonPublished),
-      quickLinks: copy.hero.quickLinks.filter((link) => isPublishedDecisionHref(link.href, isComparisonPublished)),
+      primaryCta: publishedLinkOrFallback(copy.hero.primaryCta, template.hero.primaryCtaHref, isComparisonPublished, mcpCreationAvailable),
+      secondaryCta: publishedLinkOrFallback(copy.hero.secondaryCta, template.hero.secondaryCtaHref, isComparisonPublished, mcpCreationAvailable),
+      quickLinks: copy.hero.quickLinks.filter((link) => isPublishedDecisionHref(link.href, isComparisonPublished, mcpCreationAvailable)),
     },
     media: copy.media,
     features: copy.features,
-    decisionCards: copy.decisionCards.filter((card) => isPublishedDecisionHref(card.cta.href, isComparisonPublished)),
+    decisionCards: copy.decisionCards.filter((card) => isPublishedDecisionHref(card.cta.href, isComparisonPublished, mcpCreationAvailable)),
     referenceWorkflows: copy.referenceWorkflows,
     meta: copy.meta,
     pricing: {
@@ -139,6 +146,7 @@ export function buildModelDecisionData({
         { label: copy.pricingCopy.ctaLabel, href: copy.pricingCopy.ctaHref },
         template.pricing.anchorHref,
         isComparisonPublished,
+        mcpCreationAvailable,
       ),
       scenarios,
     },

@@ -46,7 +46,7 @@ export function CompareDetailHero({
         </h1>
         <p className="compare-opening-intro">{pageOverride?.decisionSummary ?? copy.intro}</p>
         {pageOverride?.decisionLinks?.length ? (
-          <nav aria-label={activeLocale === 'fr' ? 'Comparaisons de versions LTX' : activeLocale === 'es' ? 'Comparaciones de versiones LTX' : 'LTX version comparisons'} className="compare-decision-links">
+          <nav aria-label={activeLocale === 'fr' ? 'Comparatifs associés' : activeLocale === 'es' ? 'Comparativas relacionadas' : 'Related comparisons'} className="compare-decision-links">
             {pageOverride.decisionLinks.map(link => <Link key={link.href} href={link.href}>{link.label}</Link>)}
           </nav>
         ) : null}

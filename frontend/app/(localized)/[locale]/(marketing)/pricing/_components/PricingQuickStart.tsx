@@ -31,7 +31,8 @@ export function PricingQuickStart({
             data-analytics-target-family="pricing"
           >
             <span className="min-w-0">
-              <span className="block text-xs leading-5 text-text-secondary">{highlight.label}</span>
+              <span className="block text-sm font-semibold leading-5">{highlight.featured!.intent}</span>
+              <span className="mt-1 block text-xs leading-5 text-text-secondary">{highlight.label}</span>
               <span className="mt-1 block text-sm font-semibold">{highlight.featured!.engineName}</span>
             </span>
             <span className="flex min-w-[8.5rem] shrink-0 items-center justify-between gap-3 sm:w-full sm:min-w-0">

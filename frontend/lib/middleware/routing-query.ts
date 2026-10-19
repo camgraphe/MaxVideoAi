@@ -28,6 +28,7 @@ const QUERY_PARAM_STRIP_PREFIXES = [
 ];
 const QUERY_PARAM_ALLOWLISTS = {
   examples: new Set(['sort', 'engine', 'page']),
+  contact: new Set(['submitted', 'error', 'error_code']),
   login: new Set(['next', 'mode', 'authError', 'code', 'state']),
   video: new Set(['from']),
   compare: new Set(['order']),
@@ -65,10 +66,12 @@ export function shouldMarkTrackingNoindex(req: NextRequest, pathname: string, is
   if (isAdminRoute) {
     return false;
   }
-  if (!hasTrackingParams(req.nextUrl.searchParams)) {
+  const { pathWithoutLocale } = splitLocaleFromPath(pathname);
+  const hasContactResult = pathWithoutLocale === '/contact' &&
+    (req.nextUrl.searchParams.has('submitted') || req.nextUrl.searchParams.has('error'));
+  if (!hasTrackingParams(req.nextUrl.searchParams) && !hasContactResult) {
     return false;
   }
-  const { pathWithoutLocale } = splitLocaleFromPath(pathname);
   return shouldStripQueryParams(pathWithoutLocale);
 }
 
@@ -94,6 +97,9 @@ function resolveQueryAllowlist(pathWithoutLocale: string): Set<string> | null {
     pathWithoutLocale.startsWith('/comparativa')
   ) {
     return QUERY_PARAM_ALLOWLISTS.compare;
+  }
+  if (pathWithoutLocale === '/contact') {
+    return QUERY_PARAM_ALLOWLISTS.contact;
   }
   if (pathWithoutLocale === '/login') {
     return QUERY_PARAM_ALLOWLISTS.login;

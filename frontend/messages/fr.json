@@ -1753,7 +1753,7 @@
       "subtitle": "Comparez le coût des vidéos, des images, de l’audio et des outils avant de créer.",
       "supportingLine": "Payez à l’usage. Vérifiez le prix exact dans l’app avant de générer. Les générations échouées sont remboursées.",
       "quickStartTitle": "Trois repères pour votre prochaine vidéo",
-      "quickStartNote": "Total indicatif par vidéo, en USD. Sélectionnez un scénario pour voir le comparatif complet. Confirmez le devis dans l’app avant de générer.",
+      "quickStartNote": "Prix disponible le plus bas parmi les modèles actuels admissibles, pour chaque réglage indiqué, en USD par vidéo. Les réglages diffèrent : ce n’est pas un classement de qualité. Ouvrez la ligne pour les détails et confirmez le devis avant de générer.",
       "primaryCta": "Vérifier un prix dans l’app",
       "secondaryCta": "Comparer les prix ci-dessous",
       "badges": [
@@ -1922,7 +1922,7 @@
         },
         {
           "question": "Quel moteur vidéo IA est le moins cher ?",
-          "answer": "Le moteur le moins cher dépend du scénario. Un brouillon 5 s 720p, un clip premium 8 s 1080p, une vidéo 10 s 1080p et une sortie 4K peuvent avoir des gagnants différents. Le tableau met d’abord en avant les moteurs de génération actuelle et liste séparément les routes budget plus anciennes quand elles existent."
+          "answer": "Choisissez d’abord la durée, la résolution et l’audio, puis comparez la même colonne. Le prix mis en avant est le devis disponible le plus bas parmi les modèles actuels admissibles du tableau. Les anciens modèles restent listés séparément ; un prix inférieur ne garantit pas un meilleur résultat."
         },
         {
           "question": "Quel moteur est le moins cher pour une vidéo 10 s 1080p ?",
@@ -1942,7 +1942,7 @@
         },
         {
           "question": "Les générations échouées coûtent-elles des crédits ?",
-          "answer": "Non. Les générations échouées sont remboursées automatiquement. Les crédits ne sont débités que lorsqu’une génération se termine avec succès."
+          "answer": "Un échec technique est différent d’un clip terminé qui ne vous plaît pas. Les générations échouées donnent lieu à un remboursement de crédits ; l’insatisfaction subjective concernant un résultat terminé n’est normalement pas remboursable. Consultez la politique de remboursement pour les conditions."
         },
         {
           "question": "Faut-il un abonnement ?",
@@ -1950,15 +1950,15 @@
         },
         {
           "question": "Pourquoi certains moteurs moins chers ne sont-ils pas mis en avant ?",
-          "answer": "Certaines routes de génération précédente peuvent être moins chères pour de simples tests, mais MaxVideoAI met d’abord en avant les moteurs de génération actuelle, généralement meilleurs pour les nouveaux projets. Les routes budget plus anciennes restent listées séparément quand elles sont disponibles."
+          "answer": "Les cartes comparent les modèles actuels admissibles à réglages identiques. Les modèles de génération précédente restent dans le tableau et peuvent coûter moins cher. Ce regroupement aide à choisir ; il ne garantit pas une meilleure qualité."
         },
         {
           "question": "Les images, l’audio et les outils sont-ils tarifés comme la vidéo ?",
           "answer": "Non. La vidéo, l’image, l’audio et les outils suivent des règles différentes. L’image est souvent facturée par image, l’audio par durée ou mode, et les outils par type de sortie ou résolution."
         },
         {
-          "question": "Pourquoi le tableau affiche-t-il des prix totaux plutôt qu’un coût par seconde ?",
-          "answer": "La plupart des utilisateurs comparent le coût complet d’un rendu, pas un tarif brut à la seconde. MaxVideoAI affiche des prix totaux sur des scénarios courants comme 8 s 1080p, 10 s 1080p et la sortie 4K. Les tarifs à la seconde ou provider peuvent varier selon le moteur, la durée, la résolution et les arrondis, et l’app affiche le devis exact avant génération."
+          "question": "Le prix affiché couvre-t-il toutes les tentatives ?",
+          "answer": "Chaque nouvelle génération a son propre devis. Si vous réalisez plusieurs essais terminés pour obtenir le plan souhaité, chaque essai est une génération distincte. Prévoyez un budget pour la scène, au-delà du prix d’un seul clip."
         },
         {
           "question": "À quelle fréquence les prix changent-ils ?",
@@ -6895,6 +6895,7 @@
       "ageRequired": "Confirmez que vous respectez l’âge minimum requis."
     },
     "feedback": {
+      "passwordUnavailable": "Impossible de terminer votre demande. Veuillez réessayer.",
       "signingIn": "Connexion…",
       "signinRedirecting": "Connexion réussie. Redirection…",
       "signinSuggestion": "Ces informations ne permettent pas de vous connecter. Si vous êtes nouveau, créez votre compte sans tout ressaisir.",

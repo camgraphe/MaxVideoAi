@@ -400,7 +400,7 @@ test('contextual MCP links are localized, varied, and absent until the shared ga
     }
     assert.ok(links.every((link) => Boolean(link?.label.trim())));
     const expectedHref = locale === 'en' ? '/mcp' : `/${locale}/mcp`;
-    links.forEach((link) => assert.equal(link?.href, expectedHref));
+    links.forEach((link, index) => assert.equal(link?.href, expectedHref + (placements[index] === 'examples' ? '#creative-examples' : '')));
   }
 
   const footerSource = readFileSync('frontend/components/marketing/MarketingFooter.tsx', 'utf8');
@@ -415,6 +415,7 @@ test('contextual MCP links are localized, varied, and absent until the shared ga
     `${routeRoot}/models/_components/ModelsCatalogPricingLimitsSection.tsx`,
     `${routeRoot}/models/[slug]/_components/ModelPrepLinksSection.tsx`,
     `${routeRoot}/ai-video-engines/[slug]/_components/CompareRelatedSection.tsx`,
+    `${routeRoot}/ai-video-engines/page.tsx`,
     `${routeRoot}/examples/_components/examples-route-sections.tsx`,
     `${routeRoot}/docs/_components/DocsIndexView.tsx`,
   ]) {

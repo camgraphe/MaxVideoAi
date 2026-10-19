@@ -4,7 +4,7 @@ description: >-
   A practical workflow for building one reusable character reference before you
   move into prompts, scene variations, edits, and still-reference video.
 date: '2026-03-22'
-updatedAt: '2026-03-23'
+updatedAt: '2026-10-18'
 image: 'https://media.maxvideoai.com/marketing/marketing/1f327900-618e-41aa-b792-47b41a4c0cbb.jpg'
 imagePosition: 'center top'
 keywords:
@@ -17,172 +17,100 @@ slug: how-to-create-consistent-ai-characters
 lang: en
 canonical: 'https://maxvideoai.com/blog/how-to-create-consistent-ai-characters'
 canonicalSlug: how-to-create-consistent-ai-characters
+topic: "Character consistency"
+lead: "You have a character you like. Here’s how to keep that person recognizable in the next image—and check the result before moving into video."
+walkthrough:
+  title: "One reference, carried into an image and a clip"
+  description: "This existing Character Builder example follows a woman with curly red hair, a patterned headscarf and an oversized dark T-shirt. Compare those details at each step."
+  steps:
+    - title: "The reference"
+      caption: "An eight-panel sheet gives you several views of the face, outfit and silhouette."
+      image: "https://media.maxvideoai.com/marketing/marketing/bfe7f0d7-ed39-4953-863c-ec2be73f3065.png"
+      alt: "Character sheet showing a red-haired woman in a headscarf, dark T-shirt and green trousers."
+    - title: "The scene"
+      caption: "Place the character in a new setting with Nano Banana. Compare the face and clothing with the sheet before moving into video."
+      image: "https://media.maxvideoai.com/marketing/marketing/ca5357cf-ec09-4327-bc18-03eeff7e7a66.jpg"
+      alt: "Scene image derived from the character sheet in the published Nano Banana workflow."
+    - title: "The motion"
+      caption: "Play the existing LTX 2.3 Pro example. Watch the face, headscarf and shirt throughout the movement."
+      image: "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/355c847c-7866-43b9-af28-85d6a64dfec8.jpg"
+      alt: "LTX 2.3 Pro character example carried from a reference image into motion."
+      video: "https://media.maxvideoai.com/renders/marketing/5816f421-1b4f-456b-aa53-229fa6742cbd.mp4"
+  note: "This example shows the reference, the scene image and the video. Results depend on your inputs and the movement you request; inspect the full clip before reusing it."
 ---
 
-If you want the same person, mascot, or lead character to survive more than one prompt, the workflow needs to start **before** scene generation.
+Start with a reference you would be happy to use again. Then change the scene around the character, review the still, and only move into video when that frame works. Repeating a description alone gives the model room to reinterpret the face and outfit.
 
-The fastest way to get consistent AI characters is:
+**Need to create the reference first?** [Character Builder](/tools/character-builder) makes a portrait reference or an eight-panel sheet. This guide explains how to use that result and spot what changes.
 
-1. define the character once
-2. turn that identity into a reusable reference
-3. reuse that reference across stills, edits, and video prep
+## Choose the reference for the shot
 
-That broad reference-building step is the role of **[Consistent Character AI](/tools/character-builder)** inside MaxVideoAI.
+| Your next shot | Start with | Check before generating |
+| --- | --- | --- |
+| A close-up or a talking character | A clear portrait | Face shape, hairline, eyes and distinguishing details |
+| A wide shot with a recognizable outfit | A full-body view | Silhouette, clothing, footwear and accessories |
+| Several angles or a storyboard | A character sheet for planning, then the relevant view | Front, profile and back agree on the same design |
 
-![Reusable portrait anchor prepared from the same character identity.](/assets/blog/character-builder/consistent-character-portrait-anchor.webp)
+An eight-panel sheet is useful for seeing the whole character. It is not automatically the best file to upload to every model. A model may treat it as a collage or mix details between panels. Use the portrait or full-body view that fits your shot, and check which inputs the selected model accepts.
 
-*A portrait anchor is the lighter reference: ideal when face continuity matters most before you widen out into scenes or motion.*
+For the sheet-building step, see [how to make an eight-panel character reference](/blog/ai-character-sheet-generator).
 
-## Why AI characters drift
+## Build the next scene in four steps
 
-Most generators can make one strong image. They struggle when you ask for the same character again under different conditions.
+### 1. Pick the identity you want to keep
 
-The most common causes are practical, not mysterious. Each new prompt gives the model another chance to reinterpret the same character:
+Use a clear photo or a previous render you trust. Decide which details matter: face, hair, outfit, silhouette or a particular accessory. If wardrobe must match, include a view where it is visible. Avoid asking a small or obscured face to carry the whole identity.
 
-- prompt drift from one scene to the next
-- pose and framing changes that make identity less stable
-- outfit reinterpretation once the camera moves wider
-- accessories and silhouette details that get dropped or reinvented
-- facial structure that shifts when lighting or angle changes
-- weak stills that become even less stable once motion starts
+### 2. Describe what changes in the scene
 
-That usually means the face starts to slide first, then the wardrobe and silhouette follow. A character that felt stable in one close-up can start looking less certain the moment you ask for a wider frame, a new pose, or a different mood.
+Attach the reference in a workflow that supports image input. Describe the action, setting and framing separately from the details you want to keep. Start with one change so you can see where continuity begins to slip.
 
-That drift usually shows up in:
+**Prompt to adapt, not the recorded prompt of the example above:**
 
-- face and hair details
-- clothing silhouette
-- accessories
-- body proportions
-- first-frame continuity once you move into motion
+> Use the attached image as the character reference. Keep her curly red hair, patterned headscarf, oversized dark T-shirt and green cargo trousers. At a skatepark, she turns toward a friend just outside the frame and lifts one headphone from her ear. Waist-up, eye-level framing, soft late-afternoon light. Keep the face clearly visible.
 
-If each scene has to rediscover the character, every later prompt gets more expensive and less reliable. Video makes that worse because motion amplifies any ambiguity that already existed in the still.
+Change the setting or action to fit your story. If the first result changes the face, simplify the angle or composition before adding more instructions.
 
-## What kind of starting material is enough
+### 3. Compare the still with the reference
 
-A good consistent-character workflow does not need complicated source material, but it does need a clear identity starting point.
+Look at the two images together. Check the jaw and nose, hairline, clothing shapes and the details that make this character recognizable. A similar colour palette is not enough. Reject or edit an image that already loses the identity; it is a weak starting point for motion.
 
-Use **one identity photo** when the face is already clear and you mainly need the character to stay recognizable later.
+### 4. Animate the frame that works
 
-Add an **outfit reference** when wardrobe, silhouette, or signature styling details need to survive wider shots and scene changes.
+For image-to-video, use the approved scene image as the starting frame. Begin with a short shot and a simple action. Review the beginning, middle and end, especially when the head turns, a hand crosses the face or the subject becomes small in frame.
 
-Use **one prior render you trust** when it already captures the right face, styling, or mascot design and you want to anchor future generations to that version.
+Reference-image video modes and image-to-video are different inputs. Check the [selected model’s modes and limits](/models) before uploading a sheet or several images. A reference helps guide the result; it does not lock every frame.
 
-Start from a **scratch-built concept** when there is no photo yet, but the character direction is already clear enough to describe.
+## When the character changes, fix the specific problem
 
-In practice, good starting material is anything that makes the identity decision clear before you ask the model to make more scenes.
+| What you notice | What to try next |
+| --- | --- |
+| A different-looking face after changing the angle | Use a clearer view closer to the intended angle; simplify the shot |
+| The face matches, but the outfit changes | Add a relevant full-body reference if supported, or correct the still before animation |
+| A character sheet appears as a grid in the result | Use one suitable panel instead of the whole sheet |
+| The still looks right, but the face drifts in motion | Reduce movement or occlusion and test a shorter shot |
+| Small accessories disappear | Make them visible in the reference and check whether they are essential at that framing |
 
-## What comes out
+These are troubleshooting steps, not guaranteed fixes. Keep the same reference and change one thing at a time so you can judge what helped.
 
-The goal is not only to create a nice image. The goal is to create a reference you can keep using.
+## Questions before your next generation
 
-In practice, most teams end up choosing between two useful outputs:
+### How many reference images do I need?
 
-- a **portrait anchor** for close-ups, prompts, and face-led edits
-- an **8-panel character sheet** with four full-body angles and four matching close-ups
+Start with one clear reference for a workflow that accepts a single image. Add another view when it resolves a specific problem, such as a profile or an outfit in a wide shot. Check the model’s input limit first. More references do not automatically improve consistency.
 
-That is the most important distinction to keep in mind. The goal is not “make the scene.” The goal is “lock the character.”
+### Should I upload the whole character sheet?
 
-![8-panel character sheet output generated from Character Builder.](/assets/blog/character-builder/consistent-character-eight-panel-sheet.webp)
+Keep the full sheet as your design reference. For generation, choose the portrait, full-body view or other panel that fits the shot and the supported inputs. A sheet helps you plan; it does not guarantee that a model will interpret all eight panels correctly.
 
-*The 8-panel sheet is the broad reference asset. The portrait anchor is the tighter identity asset.*
+### Why does the face change when I turn an image into video?
 
-## Do you need a portrait anchor or an 8-panel sheet?
+Check the starting image first. A small or obscured face, a new angle or a demanding movement can make continuity harder. Try a short, simpler shot and inspect the face and outfit throughout the clip before extending the sequence.
 
-This is the first real decision in the workflow.
+### Do I need this for a single image?
 
-Use a **portrait anchor** when:
+Not necessarily. If the character will never return, direct prompting may be enough. A reusable reference is most useful when the same person, mascot or outfit needs to appear again.
 
-- the face is the main continuity risk
-- close-ups matter most
-- prompts and edits will stay relatively tight
-- you want a lighter, faster reference workflow
-- you do not need full-body coverage yet
+## Make the next useful asset
 
-Use an **8-panel character sheet** when:
-
-- whole-body continuity matters
-- outfit and silhouette consistency matter
-- the character will return across multiple scene types
-- you need a stronger reference for boards, edits, or video prep
-- one broad reusable reference is more useful than one tight face anchor
-
-The simplest rule is:
-
-- use a portrait anchor when identity is mainly a face problem
-- use an 8-panel sheet when identity is also a body, wardrobe, and silhouette problem
-
-If you want the deeper sheet-specific breakdown, read **[AI Character Sheet Generator: How to Build an 8-Panel Character Reference](/blog/ai-character-sheet-generator)**.
-
-## Where to reuse the reference
-
-Once the character reference exists, the rest of the workflow gets cleaner.
-
-You can reuse it in:
-
-- later scenes where prompt wording changes
-- image edits and scene variations
-- previs or planning work
-- recurring campaign or series assets
-- first-frame prep before motion
-
-That is why the reference should come first. It gives later scenes something stable to build from instead of asking each prompt to reconstruct the same character again.
-
-Inside MaxVideoAI, that usually means reusing the reference in **[Image](/app/image)**, Nano Banana start-frame prep, and video workflows that accept still references.
-
-## When this beats direct prompting
-
-A prompt-only workflow can work for one-off images.
-
-It gets weaker once the character has to come back more than once.
-
-That is usually the point where prompt-only continuity starts to break:
-
-- recurring characters across scenes
-- branded spokespeople or mascots
-- story continuity
-- image-to-video character consistency
-
-In those cases, the better workflow is to solve identity once, keep a stable reference, and reuse it whenever the character returns.
-
-Direct prompting is often still fine for:
-
-- loose concept exploration
-- one-off posters
-- non-recurring subjects
-- early ideation before identity is approved
-
-But once continuity matters, a reusable reference usually outperforms repeated prompting because you stop asking every new scene to rediscover who the character is.
-
-## When you do not need this workflow
-
-You probably do not need a reusable character reference when:
-
-- you only need one hero image
-- the subject will not return later
-- you are still in loose exploration and identity is not approved
-- continuity is less important than variety
-
-In those cases, a simpler prompt-first workflow may be enough. This approach becomes worth the extra structure when continuity is the point, not just image generation itself.
-
-## Common mistakes
-
-### Treating each scene like a fresh generation
-
-That is the fastest way to lose continuity.
-
-### Using scene styling as identity
-
-Environment, lensing, and mood can change. The character reference should survive those changes.
-
-### Moving into video before the reference is clear
-
-If the still is weak, motion generation has to invent too much.
-
-## Final takeaway
-
-If your goal is only one poster frame, you may not need a reusable reference.
-
-If your goal is a character that has to come back across scenes, edits, or clips, start with the reference first.
-
-In MaxVideoAI, that usually means building the reference in **[Consistent Character AI](/tools/character-builder)**, then moving into **[Image](/app/image)** and **[Video](/app)** after identity is already stable.
+If you still need the character, [open Character Builder](/app/tools/character-builder). If you already have a reference, [create the next scene in Image](/app/image). When that still is ready, [choose a video model](/models) with the input mode your shot needs.

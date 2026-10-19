@@ -63,6 +63,10 @@ configuration as part of a customer request.
 - `listBillingProducts` reads migrated `app_billing_products` without billing
   schema initialization or default-product seeds. `/api/billing-products`,
   commercial admin inventory and current Pricing projections share this reader.
+  The public GET itself also stays read-only: it must not wrap the reader in
+  `ensureBillingSchema`. `tests/billing-products-route-postgres.test.ts` runs
+  the actual route with read-only PG17 permissions, including active/surface/key
+  filters, changed prices and missing-schema failure without recreation.
   Missing schema is an explicit unavailable state. Fixed-product mutation helpers
   retain their initialization owner. The disposable product-pricing PostgreSQL
   test runs the application reader with default read-only transactions and checks

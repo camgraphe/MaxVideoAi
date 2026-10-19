@@ -26,7 +26,7 @@ const LABELS: Record<AppLocale, Record<McpInternalLinkPlacement, string>> = {
     models: 'Choose a video model with your AI assistant',
     model: 'Create with an AI assistant: see compatible models',
     comparison: 'Continue this comparison in your AI assistant',
-    examples: 'Create your next video with an AI assistant',
+    examples: 'See films generated and edited with an AI assistant',
     docs: 'Explore video creation and automation with MCP',
   },
   fr: {
@@ -37,7 +37,7 @@ const LABELS: Record<AppLocale, Record<McpInternalLinkPlacement, string>> = {
     models: 'Choisir un modèle vidéo avec votre assistant IA',
     model: 'Créer avec un assistant IA : voir les modèles compatibles',
     comparison: 'Poursuivre ce comparatif dans votre assistant IA',
-    examples: 'Créer votre prochaine vidéo avec un assistant IA',
+    examples: 'Voir des films générés et montés avec un assistant IA',
     docs: 'Découvrir la création et l’automatisation vidéo avec MCP',
   },
   es: {
@@ -48,7 +48,7 @@ const LABELS: Record<AppLocale, Record<McpInternalLinkPlacement, string>> = {
     models: 'Elige un modelo de video con tu asistente de IA',
     model: 'Crea con un asistente de IA: consulta los modelos compatibles',
     comparison: 'Continúa esta comparación en tu asistente de IA',
-    examples: 'Crea tu próximo video con un asistente de IA',
+    examples: 'Ver películas generadas y editadas con un asistente de IA',
     docs: 'Explora la creación y automatización de video con MCP',
   },
 };
@@ -78,12 +78,13 @@ export function getMcpInternalLink(
   placement: McpInternalLinkPlacement,
   publication: McpPublicationInputs = mcpPublication,
 ): { href: string; label: string } | null {
-  if (!getMcpPublicationState(publication).indexable) {
+  const state = getMcpPublicationState(publication);
+  if (!state.renderPublicPage || !state.indexable) {
     return null;
   }
   const prefix = localePathnames[locale];
   return {
-    href: `/${[prefix, 'mcp'].filter(Boolean).join('/')}`,
+    href: `/${[prefix, 'mcp'].filter(Boolean).join('/')}${placement === 'examples' ? '#creative-examples' : ''}`,
     label: LABELS[locale][placement],
   };
 }

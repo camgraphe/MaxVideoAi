@@ -1,5 +1,6 @@
 import '@/styles/marketing-mcp.css';
 import { McpIntegrationCards } from '@/components/marketing/mcp/McpIntegrationCards';
+import { McpCreationStories, McpCreationHostBridge } from '@/components/marketing/mcp/McpCreationStories';
 import type { AppLocale } from '@/i18n/locales';
 import { AssistantFirstRequest } from '@/components/marketing/AssistantFirstRequest';
 import type { McpPublicationState } from '@/lib/mcp-publication';
@@ -28,12 +29,17 @@ export function IntegrationPageView({
   return (
     <div className="mcp-redesign">
       <IntegrationHeroSection copy={copy} publication={publication} locale={locale} hostProof={hostProof} />
+      {copy.client === 'chatgpt' && publication.connectionAvailable ? <aside data-mcp-connection-scope className="container-page py-6 text-sm text-text-secondary"><p>{copy.compatibility.statuses.chatgptWeb}</p></aside> : null}
       {publication.connectionAvailable && publication.showPaidGenerationClaim ? <IntegrationEntrySection locale={locale} client={copy.client} /> : null}
       <IntegrationSetupSection compatibility={compatibility} copy={copy} locale={locale} />
       {publication.connectionAvailable && publication.showPaidGenerationClaim ? (
         <AssistantFirstRequest locale={locale} />
       ) : null}
       <IntegrationWorkflowSection copy={copy} publication={publication} />
+      {publication.connectionAvailable && publication.showPaidGenerationClaim ? (
+        copy.client === 'codex' ? <McpCreationStories locale={locale} /> :
+          copy.client === 'chatgpt' || copy.client === 'claude' ? <McpCreationHostBridge locale={locale} /> : null
+      ) : null}
       <IntegrationTroubleshootingSection copy={copy} locale={locale} publication={publication} />
       <McpIntegrationCards locale={locale} compact />
     </div>
