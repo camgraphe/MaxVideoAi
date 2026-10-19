@@ -80,4 +80,3 @@ test('an empty Starter collection keeps the existing empty fallback', async () =
   fixture.videos = [];
   assert.equal((await Page({ searchParams: Promise.resolve({}) })).props.initialPreviewGroup, null);
 });
-
