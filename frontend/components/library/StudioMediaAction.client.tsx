@@ -18,7 +18,7 @@ export function StudioMediaAction({reference,locale}:{reference:Extract<ToolAsse
  const t=copy[locale.startsWith('fr')?'fr':locale.startsWith('es')?'es':'en'];
  const [open,setOpen]=useState(false),[projects,setProjects]=useState<Array<{id:string;name:string}>>([]),[project,setProject]=useState('');
  const [mediaFacts,setMediaFacts]=useState<MediaFacts>(),[timeline,setTimeline]=useState<Timeline|null>(null),[mode,setMode]=useState<'insert'|'replace'>('insert'),[clipId,setClipId]=useState('');
- const [busy,setBusy]=useState(false),[error,setError]=useState<string|null>(null),[saved,setSaved]=useState(false),[reload,setReload]=useState(0),[uncertain,setUncertain]=useState(false);
+ const [busy,setBusy]=useState(false),[error,setError]=useState<string|null>(null),[saved,setSaved]=useState(false),[reload,setReload]=useState(0),[timelineReload,setTimelineReload]=useState(0),[uncertain,setUncertain]=useState(false);
  const alive=useRef(true),receipt=useRef<{path:string;body:string}|null>(null);
  useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
  useEffect(()=>{
@@ -34,9 +34,10 @@ export function StudioMediaAction({reference,locale}:{reference:Extract<ToolAsse
   const controller=new AbortController();setBusy(true);setError(null);
   void authFetch(`/api/studio/projects/${encodeURIComponent(project)}/conversation-timeline?preview=1`,{signal:controller.signal}).then(async response=>{const data=await response.json();if(!response.ok||!data.ok)throw Error();if(!controller.signal.aborted)setTimeline(data.result);}).catch(()=>{if(!controller.signal.aborted)setError(t.error);}).finally(()=>{if(!controller.signal.aborted)setBusy(false);});
   return()=>controller.abort();
- },[project,t.error]);
+ },[project,t.error,timelineReload]);
  const duration=timeline?.items.reduce((max,item)=>Math.max(max,item.startSec+item.durationSec),0)??0;
- const timing=timeline?conversationLibraryInsertTiming({kind:reference.kind,mediaFacts,timelineDurationSec:duration,fps:timeline.settings.fps}):null;
+ const sourceTiming=timeline?conversationLibraryInsertTiming({kind:reference.kind,mediaFacts,timelineDurationSec:reference.kind==='audio'?0:duration,fps:timeline.settings.fps}):null;
+ const timing=reference.kind==='audio'&&timeline&&sourceTiming?{...sourceTiming,startFrame:Math.round(duration*timeline.settings.fps)}:sourceTiming;
  const selected=timeline?.items.find(item=>item.id===clipId),compatible=timeline?.items.filter(item=>reference.kind==='audio'?item.mediaKind==='audio':['image','video'].includes(item.mediaKind))??[];
  const eligible=Boolean(timeline&&(mode==='insert'?timing:selected&&(reference.kind==='image'||(mediaFacts?.durationSec??0)>=selected.durationSec)));
  async function apply(){
@@ -56,6 +57,6 @@ export function StudioMediaAction({reference,locale}:{reference:Extract<ToolAsse
    {mode==='replace'?<><label>{t.clip}<select className="block min-h-11 w-full" value={clipId} disabled={busy||uncertain} onChange={event=>setClipId(event.target.value)}><option value="">—</option>{compatible.map(item=><option key={item.id} value={item.id}>{item.title} · {item.durationSec} {t.seconds}</option>)}</select></label><p>{t.replacement}</p></>:<p>{t.duration}: {timing?(timing.durationFrames/timeline.settings.fps).toFixed(2):'—'} {t.seconds}</p>}
    <button type="button" disabled={busy||(!uncertain&&!eligible)} onClick={()=>void apply()}>{uncertain?t.retry:t.apply}</button></>:null}
   {saved?<p role="status">{t.done} · <Link prefetch={false} href={`/app/studio/conversation/${encodeURIComponent(project)}`}>{t.visit}</Link></p>:null}
-  {error&&!uncertain&&!project?<button type="button" disabled={busy} onClick={()=>setReload(value=>value+1)}>{locale.startsWith('fr')?'Recharger':locale.startsWith('es')?'Volver a cargar':'Reload'}</button>:null}
+  {error&&!uncertain?<button type="button" disabled={busy} onClick={()=>project?setTimelineReload(value=>value+1):setReload(value=>value+1)}>{locale.startsWith('fr')?'Recharger':locale.startsWith('es')?'Volver a cargar':'Reload'}</button>:null}
  </div></details>;
 }
