@@ -18,6 +18,10 @@ native GA campaign fields. The bootstrap sets the same safe defaults for automat
 engagement and refreshes them on route changes with `send_page_view: false`.
 The app's route tracker remains the authored page-view mechanism.
 
+The observed source-only `utm_source=chatgpt.com` is retained in native GA and
+Vercel without inventing a medium. This does not expand the stricter custom
+first/last-touch campaign contract or prove a click from ChatGPT.
+
 Required GA4 administration: disable enhanced history-based page views.
 Automatic outbound clicks, site search, form interaction and file downloads
 must also remain disabled: their separate parameters can carry free text or

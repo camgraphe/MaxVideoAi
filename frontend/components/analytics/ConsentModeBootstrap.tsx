@@ -50,8 +50,10 @@ export default function ConsentModeBootstrap() {
     if (!pageContext || typeof window.gtag !== 'function') return;
     // Also set defaults for automatic engagement events. Never let the tag fall
     // back to the private location.href or document.title after SPA navigation.
-    window.gtag('set', pageContext);
-    window.gtag('config', GA_ID, { ...pageContext, send_page_view: false });
+    try {
+      window.gtag('set', pageContext);
+      window.gtag('config', GA_ID, { ...pageContext, send_page_view: false });
+    } catch { /* A blocked collector must not interrupt product navigation. */ }
   }, [pathname, analyticsConsentGranted, routeContext.excludedFromGa4]);
 
   useEffect(() => {

@@ -31,6 +31,10 @@ const PUBLIC_ROOTS = new Set([
 function approvedCampaign(url: URL): AnalyticsCampaignContext {
   const source = url.searchParams.get('utm_source')?.trim().toLowerCase();
   const medium = url.searchParams.get('utm_medium')?.trim().toLowerCase();
+  // Observed ChatGPT links carry only this fixed source. Preserve it for native
+  // GA acquisition without inventing a medium or accepting arbitrary UTM text.
+  if (source === 'chatgpt.com' && !medium && !url.searchParams.has('utm_campaign')
+    && !url.searchParams.has('utm_content')) return { campaign_source: source };
   if (!source || !medium) return {};
   const touch = resolveAnalyticsTouch({
     href: url.href, referrer: '', siteOrigin: url.origin, landingRouteFamily: 'marketing',

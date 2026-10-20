@@ -112,3 +112,15 @@ test('cleaning campaign URLs preserves approved native GA acquisition fields wit
     }
   });
 });
+
+test('the source-only ChatGPT tag survives URL cleaning without inventing a medium or accepting free query text', () => {
+  withPage('https://maxvideoai.com/?utm_source=chatgpt.com&email=private-query', () => {
+    const calls: Record<string, unknown>[] = [];
+    sendPreparedAnalyticsEvents((_command, _name, payload) => calls.push(payload as Record<string, unknown>),
+      prepareBrowserAnalyticsEvents('page_view', { route_family: 'marketing' }));
+    assert.equal(calls.at(-1)?.campaign_source, 'chatgpt.com');
+    assert.equal(calls.at(-1)?.campaign_medium, undefined);
+    assert.equal(calls.at(-1)?.page_location, 'https://maxvideoai.com/');
+    assert.doesNotMatch(JSON.stringify(calls), /private-query/);
+  });
+});
