@@ -2,14 +2,17 @@
 import {useEffect,useRef,useState} from 'react';
 import type {ImageLibraryAsset} from '@/lib/studio/image-library';
 import type {ImageConversationTurn,ImageTurnInput} from '@/lib/studio/image-conversation-contract';
+import {imageTurnInputSchema} from '@/lib/studio/image-conversation-contract';
 import type {ConversationLocale} from '@/lib/studio/conversation-quote-presentation';
 import {rememberShelfMedia,type ShelfMedia} from '../_lib/conversation-media-shelf';
 
-export function useConversationMediaShelf(turns:ImageConversationTurn[],locale:ConversationLocale,mediaEnabled:boolean) {
+export function useConversationMediaShelf(turns:ImageConversationTurn[],locale:ConversationLocale,mediaEnabled:boolean,selection?:{scopeKey:string;ready:boolean}) {
   const [items,setItems]=useState<ShelfMedia[]>([]),[references,setReferences]=useState<ShelfMedia[]>([]);
   const [selectedId,setSelectedId]=useState<string|null>(null),[expanded,setExpanded]=useState(true);
   const [uploading,setUploading]=useState(false),[error,setError]=useState<string|null>(null);
   const all=useRef(items),attached=useRef(references),busy=useRef(false),alive=useRef(true);
+  const initialized=useRef<string|null>(null);
+  const storageKey=selection?'maxvideoai:studio:selection:v1:'+selection.scopeKey:null;
   const history=turns.flatMap(turn=>turn.referenceMentions??[]);
   const latestHistory=useRef(history);latestHistory.current=history;
   const t=(en:string,fr:string)=>locale==='fr'?fr:en;
@@ -29,6 +32,32 @@ export function useConversationMediaShelf(turns:ImageConversationTurn[],locale:C
     }
     if(next!==all.current){all.current=next;setItems(next);}
   },[turns]);
+  useEffect(()=>{
+    if(!storageKey||!selection?.ready||initialized.current===storageKey)return;
+    initialized.current=storageKey;
+    let input:Pick<ImageTurnInput,'references'|'attachments'|'referenceMentions'>|undefined;
+    try {
+      const saved=window.sessionStorage.getItem(storageKey);
+      if(saved!==null){
+        const parsed=imageTurnInputSchema.safeParse({...JSON.parse(saved),requestId:'00000000-0000-4000-8000-000000000001',message:'Restore selected media'});
+        // Invalid local data never restores a different historical selection.
+        input=parsed.success?parsed.data:{references:[]};
+      }
+    } catch {input={references:[]};}
+    input??=turns.at(-1);
+    if(input)restore(input);
+    // Restore once, after the owned history loads. Polling must not undo a removal.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[storageKey,selection?.ready,turns]);
+  function saveSelection() {
+    if(!storageKey)return;
+    const refs=attached.current;
+    try {window.sessionStorage.setItem(storageKey,JSON.stringify({
+      references:refs.filter(ref=>!ref.kind||ref.kind==='image').map(ref=>ref.assetId),
+      attachments:refs.flatMap(ref=>ref.kind==='video'||ref.kind==='audio'?[{type:'asset',assetId:ref.assetId,kind:ref.kind}]:[]),
+      referenceMentions:refs.map(({assetId,label})=>({assetId,label})),
+    }));} catch {/* A blocked store must not prevent using the current visible selection. */}
+  }
   function remember(asset:ImageLibraryAsset) {
     const next=rememberShelfMedia(all.current,asset,latestHistory.current);
     all.current=next.items;setItems(next.items);return next.item;
@@ -42,14 +71,15 @@ export function useConversationMediaShelf(turns:ImageConversationTurn[],locale:C
     }
     const item=remember(asset);
     if(!attached.current.some(ref=>ref.assetId===asset.assetId)) {attached.current=[...attached.current,item];setReferences(attached.current);}
-    setSelectedId(item.assetId);setExpanded(window.matchMedia('(min-width: 801px)').matches);setError(null);return item;
+    saveSelection();setSelectedId(item.assetId);setExpanded(window.matchMedia('(min-width: 801px)').matches);setError(null);return item;
   }
   function detach(assetId:string) {
     attached.current=attached.current.filter(item=>item.assetId!==assetId);setReferences(attached.current);
+    saveSelection();
     setError(!mediaEnabled&&attached.current.some(item=>item.kind!=='image')?t('Remove the video or audio references to send a new message in this image-only workspace.','Retirez les références vidéo ou audio pour envoyer un nouveau message dans cet espace image.'):null);
   }
-  function clear() {attached.current=[];setReferences([]);}
-  function restore(input:ImageTurnInput) {
+  function clear() {attached.current=[];setReferences([]);saveSelection();}
+  function restore(input:Pick<ImageTurnInput,'references'|'attachments'|'referenceMentions'>) {
     const values=[...input.references.map(assetId=>({assetId,kind:'image' as const})),...(input.attachments??[]).flatMap(ref=>ref.type==='asset'?[{assetId:ref.assetId,kind:ref.kind}]:[])];
     const previous=all.current;
     const known=[...latestHistory.current,...previous];
@@ -63,6 +93,7 @@ export function useConversationMediaShelf(turns:ImageConversationTurn[],locale:C
     for(const item of previous)if(!next.some(value=>value.assetId===item.assetId))next=rememberShelfMedia(next,item,known).items;
     all.current=next;setItems(next);
     attached.current=values.map(value=>next.find(item=>item.assetId===value.assetId)!);setReferences(attached.current);
+    saveSelection();
     setSelectedId(attached.current.at(-1)?.assetId??null);setExpanded(window.matchMedia('(min-width: 801px)').matches);
     setError(!mediaEnabled&&attached.current.some(item=>item.kind!=='image')?t('Remove the video or audio references to send a new message in this image-only workspace.','Retirez les références vidéo ou audio pour envoyer un nouveau message dans cet espace image.'):null);
   }

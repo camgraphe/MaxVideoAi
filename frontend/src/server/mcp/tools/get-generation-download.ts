@@ -30,7 +30,7 @@ export function registerGetGenerationDownloadTool(
       title: 'Refresh a MaxVideoAI generation download',
       description:
         'Use this from the MaxVideoAI result app to create a fresh short-lived attachment URL for one completed owned generation.',
-      inputSchema: getGenerationStatusInputSchema,
+      inputSchema: getGenerationStatusInputSchema.extend({ outputRole: z.enum(['primary', 'last_frame']).optional() }).strict(),
       outputSchema: generationDownloadOutputSchema,
       annotations: {
         readOnlyHint: true,
@@ -44,10 +44,10 @@ export function registerGetGenerationDownloadTool(
       },
     },
     async (input) => runAgentTool(async () => {
-      const recovery = await services.getGenerationStatus!(input, principal);
+      const recovery = await services.getGenerationStatus!({ jobId: input.jobId }, principal);
       return {
         jobId: recovery.jobId,
-        download: await resolveGenerationDownload(recovery, principal, services),
+        download: await resolveGenerationDownload(recovery, principal, services, input.outputRole),
       };
     }),
   );

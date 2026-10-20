@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
 import type { AppLocale } from '@/i18n/locales';
@@ -12,19 +13,21 @@ import {
   type ModelsPageScope,
 } from './_lib/models-catalog-utils';
 import {
-  buildModelsCatalogCards,
+  prepareModelsCatalogCards,
   type ModelsCatalogEngineMetaCopy,
   type ModelsCatalogGalleryCopy,
 } from './_lib/models-catalog-cards';
 import { buildModelsFaqItems } from './_lib/models-catalog-sections';
-import { buildModelsCatalogDecisionData } from './_lib/models-catalog-decision-data';
+import { buildModelsCatalogDecisionData, buildModelsCatalogHeroData } from './_lib/models-catalog-decision-data';
 import {
   buildModelsCatalogBreadcrumbJsonLd,
   buildModelsCatalogFaqJsonLd,
   buildModelsCatalogItemListJsonLd,
 } from './_lib/models-catalog-jsonld';
+import { ModelsCatalogAnchorRestore } from './_components/ModelsCatalogAnchorRestore.client';
 import { ModelsCatalogDecisionFaq } from './_components/ModelsCatalogDecisionFaq';
 import { ModelsCatalogGallerySection } from './_components/ModelsCatalogGallerySection';
+import { ModelsCatalogDirectory, ModelsCatalogScopeNav } from './_components/ModelsCatalogDirectory';
 import { ModelsCatalogHero } from './_components/ModelsCatalogHero';
 import { ModelsCatalogJsonLdScripts } from './_components/ModelsCatalogJsonLdScripts';
 import { ModelsCatalogPopularComparisons } from './_components/ModelsCatalogPopularComparisons';
@@ -121,17 +124,14 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
     scope === 'all'
       ? decisionCopy.heroSubtitle ?? listingCopy.hero?.subtitle ?? content.hero?.subtitle ?? scopeDefaults.heroSubhead
       : scopeDefaults.heroSubhead;
-  const modelCards = await buildModelsCatalogCards({
+  const { heroCards, cards } = await prepareModelsCatalogCards({
     activeLocale,
     engineMetaCopy: (content.meta ?? {}) as ModelsCatalogEngineMetaCopy,
     engineTypeLabelOverrides: content.engineTypeLabels as Record<string, string> | undefined,
     galleryCopy,
     scope,
   });
-  const decisionData = buildModelsCatalogDecisionData({
-    activeLocale,
-    cards: modelCards,
-  });
+  const heroData = buildModelsCatalogHeroData({ activeLocale, cards: heroCards });
 
   const heroTitleParts = splitModelsHeroTitle(heroTitle);
   const heroAccentParts = splitHeroAccentTitle(heroTitleParts.accent);
@@ -145,108 +145,119 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
     scope === 'all' ? listingCopy.grid?.srTitle ?? scopeDefaults.gridSrTitle : scopeDefaults.gridSrTitle;
   const galleryBridgeText =
     scope === 'all' ? listingCopy.grid?.bridgeText ?? scopeDefaults.bridgeText : scopeDefaults.bridgeText;
-  const faqItems =
-    scope === 'all'
-      ? decisionData.faqItems
-      : buildModelsFaqItems({
-          listingFaq: listingCopy.reliability?.faq,
-          scope,
-        });
+  async function ModelsCatalogSections() {
+    const modelCards = await cards;
+    const decisionData = buildModelsCatalogDecisionData({ activeLocale, cards: modelCards });
+    const faqItems =
+      scope === 'all'
+        ? decisionData.faqItems
+        : buildModelsFaqItems({
+            listingFaq: listingCopy.reliability?.faq,
+            scope,
+          });
 
-  const breadcrumbJsonLd = buildModelsCatalogBreadcrumbJsonLd({
-    activeLocale,
-    breadcrumbCurrent: scopeDefaults.breadcrumbCurrent,
-    scope,
-  });
-  const itemListJsonLd = buildModelsCatalogItemListJsonLd({ activeLocale, modelCards, scope });
-  const faqJsonLd = buildModelsCatalogFaqJsonLd(faqItems);
+    const breadcrumbJsonLd = buildModelsCatalogBreadcrumbJsonLd({
+      activeLocale,
+      breadcrumbCurrent: scopeDefaults.breadcrumbCurrent,
+      scope,
+    });
+    const itemListJsonLd = buildModelsCatalogItemListJsonLd({ activeLocale, modelCards, scope });
+    const faqJsonLd = buildModelsCatalogFaqJsonLd(faqItems);
+    return (
+      <>
+        {scope === 'all' && decisionData.recommendedCards.length ? (
+          <ModelsCatalogRecommendedSection
+            locale={activeLocale}
+            title={decisionCopy.recommendedTitle ?? scopeDefaults.chooseOutcomeTitle}
+            subtitle={decisionCopy.recommendedSubtitle ?? scopeDefaults.chooseOutcomeSubtitle}
+            cards={decisionData.recommendedCards}
+            allModelsLabel={decisionCopy.recommendedSeeAll ?? decisionCopy.allModelsTitle ?? gallerySrTitle}
+            statsLabels={{
+              from: decisionCopy.recommendedFromLabel ?? galleryCopy.stats?.from ?? 'From',
+              duration: decisionCopy.recommendedDurationLabel ?? galleryCopy.stats?.maxDurShort ?? 'Max dur.',
+              resolution: decisionCopy.recommendedResolutionLabel ?? galleryCopy.stats?.maxResShort ?? 'Max res.',
+            }}
+          />
+        ) : null}
+
+        <div className="py-8 sm:py-10">
+          <ModelsCatalogGallerySection
+            allowCompare={scope !== 'image'}
+            bridgeText={galleryBridgeText}
+            cards={modelCards}
+            copy={content.gallery}
+            ctaLabel={content.cardCtaLabel ?? 'View specs'}
+            initialEngineType={scope === 'image' ? 'image' : 'video'}
+            srTitle={gallerySrTitle}
+            showEngineTypeTabs={scope === 'all'}
+            title={scope === 'all' ? decisionCopy.allModelsTitle ?? scopeDefaults.gridSrTitle : scopeDefaults.gridSrTitle}
+            subtitle={scope === 'all' ? decisionCopy.allModelsSubtitle ?? scopeDefaults.bridgeText : scopeDefaults.bridgeText}
+            visibleFilters={galleryVisibleFilters}
+          />
+        </div>
+
+        <div className="container-page max-w-[1248px] pb-[var(--section-padding-y)]">
+          <div className="space-y-6">
+            {scope === 'all' ? (
+              <>
+                <ModelsCatalogPopularComparisons
+                  title={decisionCopy.popularComparisonsTitle ?? scopeDefaults.reliabilityTitle}
+                  subtitle={decisionCopy.popularComparisonsSubtitle ?? scopeDefaults.reliabilitySubtitle}
+                  hubLabel={decisionCopy.compareHubLabel ?? 'Compare hub'}
+                  comparisons={decisionData.popularComparisons}
+                />
+                <ModelsCatalogPricingLimitsSection
+                  title={decisionCopy.pricingLimitsTitle ?? scopeDefaults.reliabilityTitle}
+                  body={decisionCopy.pricingLimitsBody ?? scopeDefaults.reliabilitySubtitle}
+                  items={decisionData.pricingLimits}
+                  locale={activeLocale}
+                />
+              </>
+            ) : null}
+            <ModelsCatalogDecisionFaq
+              title={scope === 'all' ? decisionCopy.faqTitle ?? scopeDefaults.reliabilityTitle : scopeDefaults.reliabilityTitle}
+              items={faqItems}
+            />
+          </div>
+        </div>
+
+        <ModelsCatalogJsonLdScripts
+          breadcrumbJsonLd={breadcrumbJsonLd}
+          faqJsonLd={faqJsonLd}
+          itemListJsonLd={itemListJsonLd}
+        />
+      </>
+    );
+  }
 
   return (
     <div className="bg-bg text-text-primary">
+      <ModelsCatalogAnchorRestore />
       <ModelsCatalogHero
-        badges={decisionData.badges}
+        badges={heroData.badges}
         eyebrow={decisionCopy.eyebrow ?? scopeDefaults.breadcrumbCurrent ?? 'AI model directory'}
         heroAccentParts={heroAccentParts}
         heroSubhead={heroSubhead}
         heroTitleParts={heroTitleParts}
         primaryCtaLabel={decisionCopy.primaryCta ?? 'Browse models'}
         secondaryCtaLabel={decisionCopy.secondaryCta ?? 'Compare engines'}
-        topPicks={decisionData.topPicks}
+        topPicks={heroData.topPicks}
         topPicksTitle={decisionCopy.topPicksTitle ?? 'Recommended starting points'}
         topPicksViewAllLabel={decisionCopy.topPicksViewAll ?? 'View all recommendations'}
       />
-
+      <ModelsCatalogScopeNav locale={activeLocale} scope={scope} />
       {scope === 'all' ? (
-        <>
-          <ModelsCatalogUseCaseStrip
-            bestLabel={decisionCopy.bestLabel ?? 'Best'}
-            title={decisionCopy.useCasesTitle ?? scopeDefaults.chooseOutcomeTitle}
-            viewAllLabel={decisionCopy.useCasesViewAll ?? scopeDefaults.ctaPrimaryLabel}
-            items={decisionData.useCases}
-          />
-          {decisionData.recommendedCards.length ? (
-            <ModelsCatalogRecommendedSection
-              locale={activeLocale}
-              title={decisionCopy.recommendedTitle ?? scopeDefaults.chooseOutcomeTitle}
-              subtitle={decisionCopy.recommendedSubtitle ?? scopeDefaults.chooseOutcomeSubtitle}
-              cards={decisionData.recommendedCards}
-              allModelsLabel={decisionCopy.recommendedSeeAll ?? decisionCopy.allModelsTitle ?? gallerySrTitle}
-              statsLabels={{
-                from: decisionCopy.recommendedFromLabel ?? galleryCopy.stats?.from ?? 'From',
-                duration: decisionCopy.recommendedDurationLabel ?? galleryCopy.stats?.maxDurShort ?? 'Max dur.',
-                resolution: decisionCopy.recommendedResolutionLabel ?? galleryCopy.stats?.maxResShort ?? 'Max res.',
-              }}
-            />
-          ) : null}
-        </>
-      ) : null}
-
-      <div className="py-8 sm:py-10">
-        <ModelsCatalogGallerySection
-          allowCompare={scope !== 'image'}
-          bridgeText={galleryBridgeText}
-          cards={modelCards}
-          copy={content.gallery}
-          ctaLabel={content.cardCtaLabel ?? 'View specs'}
-          initialEngineType={scope === 'image' ? 'image' : 'video'}
-          srTitle={gallerySrTitle}
-          showEngineTypeTabs={scope === 'all'}
-          title={scope === 'all' ? decisionCopy.allModelsTitle ?? scopeDefaults.gridSrTitle : scopeDefaults.gridSrTitle}
-          subtitle={scope === 'all' ? decisionCopy.allModelsSubtitle ?? scopeDefaults.bridgeText : scopeDefaults.bridgeText}
-          visibleFilters={galleryVisibleFilters}
+        <ModelsCatalogUseCaseStrip
+          bestLabel={decisionCopy.bestLabel ?? 'Best'}
+          title={decisionCopy.useCasesTitle ?? scopeDefaults.chooseOutcomeTitle}
+          viewAllLabel={decisionCopy.useCasesViewAll ?? scopeDefaults.ctaPrimaryLabel}
+          items={heroData.useCases}
         />
-      </div>
-
-      <div className="container-page max-w-[1248px] pb-[var(--section-padding-y)]">
-        <div className="space-y-6">
-          {scope === 'all' ? (
-            <>
-              <ModelsCatalogPopularComparisons
-                title={decisionCopy.popularComparisonsTitle ?? scopeDefaults.reliabilityTitle}
-                subtitle={decisionCopy.popularComparisonsSubtitle ?? scopeDefaults.reliabilitySubtitle}
-                hubLabel={decisionCopy.compareHubLabel ?? 'Compare hub'}
-                comparisons={decisionData.popularComparisons}
-              />
-              <ModelsCatalogPricingLimitsSection
-                title={decisionCopy.pricingLimitsTitle ?? scopeDefaults.reliabilityTitle}
-                body={decisionCopy.pricingLimitsBody ?? scopeDefaults.reliabilitySubtitle}
-                items={decisionData.pricingLimits}
-                locale={activeLocale}
-              />
-            </>
-          ) : null}
-          <ModelsCatalogDecisionFaq
-            title={scope === 'all' ? decisionCopy.faqTitle ?? scopeDefaults.reliabilityTitle : scopeDefaults.reliabilityTitle}
-            items={faqItems}
-          />
-        </div>
-      </div>
-
-      <ModelsCatalogJsonLdScripts
-        breadcrumbJsonLd={breadcrumbJsonLd}
-        faqJsonLd={faqJsonLd}
-        itemListJsonLd={itemListJsonLd}
-      />
+      ) : null}
+      <Suspense fallback={<div className="min-h-screen" aria-hidden="true" />}>
+        <ModelsCatalogSections />
+      </Suspense>
+      <ModelsCatalogDirectory cards={heroCards} locale={activeLocale} />
     </div>
   );
 }

@@ -1,0 +1,16 @@
+{
+  "baselineCommit": "8211b9d22ccbd198ecc94efa50a69b77ed61faac",
+  "candidateServerPatchSha256": "7232f59be00eab86cb2ae028f2700e73a6c26f5e8c0cf84e50acad972ca9b102",
+  "baselineBuildId": "jyzSxzmZp4DfUmruX4SVY",
+  "candidateBuildId": "wYsbl5fV4Wng8G-6_Tu_L",
+  "next": "15.5.25",
+  "node": "v22.23.2",
+  "database": "same configured remote database; credentials omitted; read-only startup enforced",
+  "browserCold": "fresh temporary Chrome profile",
+  "browserWarm": "second full document navigation with same profile",
+  "serverCold": false,
+  "baselineDeployment": "dpl_CBA9Xr7FYR2WXsKC2atd2a8MfqtZ",
+  "productionFunctionRegion": "iad1",
+  "databaseRegion": "us-east-2",
+  "localProbeTimezone": "Europe/Madrid"
+}

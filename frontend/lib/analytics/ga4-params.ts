@@ -1,15 +1,18 @@
 const GA4_MAX_EVENT_PARAMS = 25;
 // Transport, commerce, source and milestone evidence precede optional diagnostics.
 const GA4_PARAM_PRIORITY = [
+  'page_location', 'page_referrer', 'page_title', 'page_path',
   'session_id', 'engagement_time_msec', 'transaction_id', 'value', 'currency',
   'is_first_recorded_external_payment', 'payment_provider', 'payment_flow', 'item_category',
   'journey_id', 'acquisition_cohort', 'first_touch_source', 'first_touch_medium',
+  'route_family', 'workspace_section', 'completion_source', 'output_count',
   'first_touch_campaign', 'first_touch_content', 'last_touch_source', 'last_touch_medium',
   'last_touch_campaign', 'last_touch_content', 'is_first_wallet_topup', 'funnel_stage',
-  'route_family', 'workspace_section', 'generation_sequence', 'is_first_generation',
-  'job_id', 'completion_source', 'tool_name', 'tool_surface', 'result_count', 'output_count',
+  'generation_sequence', 'is_first_generation',
+  'job_id', 'tool_name', 'tool_surface', 'result_count',
   'cta_name', 'cta_location', 'target_family', 'topup_amount_cents', 'settlement_currency',
   'topup_tier_id', 'settlement_amount_minor',
+  'campaign_source', 'campaign_medium', 'campaign_name', 'campaign_content',
 ] as const;
 
 export function boundGa4EventParams<T>(params: Record<string, T>): Record<string, T> {

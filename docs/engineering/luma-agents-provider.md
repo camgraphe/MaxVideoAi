@@ -47,6 +47,12 @@ Single-keyframe extend workflows remain unsupported in the current runtime, even
 
 If a direct-only request cannot be accepted, fail/refund through the normal provider error path. Do not launch a second fal render.
 
+The 19 October 2026 correction makes disabled/admin-only/public-disabled direct
+Modify and Reframe routes return luma_agents_unavailable instead of fal_only.
+Model readiness excludes those modes, and both Web and trusted paid contexts
+reject them before payment. A prepared MCP quote is rechecked at confirmation.
+An unavailable mode is not a reason to enable a provider flag automatically.
+
 ## Environment
 
 Server-only variables:
@@ -122,6 +128,18 @@ Video:
 - Completed provider MP4s pass through the normal fast-start/copy path before completion.
 - Thumbnails, previews, keyframes, and legacy media-library outputs are written after the stable copy exists.
 - Stalled jobs are marked for provider review rather than submitted to fal.
+
+The Luma, Kling, Alibaba and Veo batch pollers order active jobs by
+`app_jobs.updated_at`. A failed retrieval advances that scheduling timestamp
+only while the job is still active, matching the existing Fal retry rotation.
+Otherwise ten persistent errors can occupy the entire batch indefinitely.
+This is not a successful provider observation: `generation_poll_state.checked_at`
+advances only after retrieval succeeds. The shared claim still owns throttling
+and lease release, and maximum age still uses `created_at`. A concurrent terminal
+transition is never changed by failure scheduling. Individual `jobId` polls keep
+their targeted selection and the same claim protection.
+`tests/provider-poll-fairness-postgres.test.ts` exercises these boundaries with
+real SQL and claims for all four providers, without provider or storage calls.
 
 Image:
 

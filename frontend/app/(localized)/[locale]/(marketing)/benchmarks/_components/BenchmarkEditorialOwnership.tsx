@@ -31,8 +31,6 @@ export function BenchmarkEditorialOwnership({
         </Link>
       </span>
       <span aria-hidden="true">·</span>
-      <span>{profile.jobTitle}</span>
-      <span aria-hidden="true">·</span>
       <span>
         {copy.ownership.methodologyVersion} v{methodology.version}
       </span>

@@ -299,7 +299,7 @@ test('LTX 2.5 a2v requires private audio with trusted duration bounds', () => {
   const resolved = { resolvedReferences: [{
     assetId, role: 'source' as const, mediaKind: 'audio' as const,
     storageUrl: 'https://cdn.example.com/audio.wav', width: null, height: null,
-    durationSec: 8, mimeType: 'audio/wav',
+    durationSec: 8, mimeType: 'audio/wav', sizeBytes: 16000,
   }] };
   expectCapabilityFailure({ ...base, prompt: '' }, 'prompt', resolved);
   assert.doesNotThrow(() => validateCanonicalGenerationCapabilities({

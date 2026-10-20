@@ -1,14 +1,12 @@
 import { getPublicConfiguredEnginesByCategory } from '@/server/engines';
-import { query } from '@/lib/db';
 import { loadPricingPolicyOverrides, type PricingPolicyOverrideLoadResult } from '@/lib/pricing-rule-store';
 import type { EngineCaps } from '@/types/engines';
 import type { ExampleQuoteProvider } from './example-comparison-quotes';
-import { BASE_SELECT_WITH_SETTINGS } from './videos-query';
-import { CURATION_ELIGIBILITY } from './playlists/curation-service';
-import { mapGalleryVideoRow, type GalleryVideo, type VideoRow } from './videos-normalization';
+import { getSeoVideoById, type GalleryVideo } from './videos';
 import { isLocalPublicExamplesEnabled, getLocalPublicExample } from './local-public-examples';
 import { getResolvedVideoSeoEditorialEntry } from './video-seo-editorial';
 import { computeCurrentPublicSnapshot } from './pricing/quote-public';
+import { createScopedCustomerTariffQuoteLoader, customerTariffsEnabledByCode } from './pricing/customer-tariff-store';
 import { projectExampleWatchDetail } from './example-watch-detail';
 import { deriveWatchPageSignals, type WatchPageDerivedSignals } from './watch-page-signals';
 import { resolveWatchSourceImageOriginalUrls } from './watch-source-image-originals';
@@ -25,14 +23,16 @@ export async function prepareExampleWatchDetailContext(dependencies: {
   loadOverrides: loadPricingPolicyOverrides,
 }): Promise<ExampleWatchDetailContext> {
   const [engines, overrides] = await Promise.all([dependencies.loadEngines(), dependencies.loadOverrides()]);
-  return { engines, quote: context => computeCurrentPublicSnapshot(context, { pricingPolicy: { loadOverrides: async () => overrides } }) };
+  const loadCustomerTariffQuoteState = customerTariffsEnabledByCode() ? createScopedCustomerTariffQuoteLoader() : undefined;
+  return { engines, quote: context => computeCurrentPublicSnapshot(context, {
+    pricingPolicy: { loadOverrides: async () => overrides },
+    ...(loadCustomerTariffQuoteState ? { loadCustomerTariffQuoteState } : {}),
+  }) };
 }
 
-/** No schema/bootstrap writes on this public read path. Eligibility is rechecked on each open. */
+/** Recheck public watch eligibility on every API/Studio open, including legacy indexable=NULL. */
 export async function getExampleWatchDetail(id: string) {
-  const local = isLocalPublicExamplesEnabled();
-  const rows = local ? [] : await query<VideoRow>(`${BASE_SELECT_WITH_SETTINGS} WHERE job_id=$1 AND ${CURATION_ELIGIBILITY} LIMIT 1`, [id]);
-  const video = local ? getLocalPublicExample(id) : rows[0] ? mapGalleryVideoRow(rows[0]) : null;
+  const video = isLocalPublicExamplesEnabled() ? getLocalPublicExample(id) : await getSeoVideoById(id);
   if (!video) return null;
   return buildExampleWatchDetail(video);
 }

@@ -1,7 +1,10 @@
 import { isRecord } from './byteplus-record-utils';
+import type { BytePlusPendingJob } from './byteplus-poll-types';
+type QueryFn = <T = unknown>(sql: string, params?: unknown[]) => Promise<T[]>;
 
 const BYTEPLUS_OUTPUT_COPY_WINDOW_MS = 3 * 60 * 60_000;
 const DEFAULT_PROVIDER_VIDEO_COPY_MAX_ATTEMPTS = 6;
+const ACTIVE_JOB_STATUSES = ['pending', 'queued', 'running', 'processing', 'in_progress', 'provider_polling_stalled'];
 const BYTEPLUS_STORAGE_COPY_RETRY_DELAYS_MS = [2, 5, 15, 45, 90].map((minutes) => minutes * 60_000);
 
 export type BytePlusStorageCopyState = {
@@ -89,4 +92,34 @@ export function shouldRetryBytePlusStorageCopy(params: {
   if (!Number.isFinite(retryWindowStartedAtMs)) return true;
   const copyWindowMs = params.copyWindowMs ?? BYTEPLUS_OUTPUT_COPY_WINDOW_MS;
   return (params.nowMs ?? Date.now()) - retryWindowStartedAtMs < copyWindowMs;
+}
+
+export async function deferBytePlusStorageCopyRetry(
+  job: BytePlusPendingJob,
+  state: BytePlusStorageCopyState,
+  providerStatus: string | null | undefined,
+  queryFn: QueryFn,
+  recordBytePlusPollEventFn: (job: BytePlusPendingJob, event: string, payload: Record<string, unknown>) => Promise<void>,
+) {
+  await queryFn(
+    `UPDATE app_jobs
+        SET status = 'processing',
+            progress = GREATEST(progress, 90),
+            message = $2,
+            settings_snapshot = jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb), '{byteplusStorageCopy}', $3::jsonb, true),
+            updated_at = NOW()
+      WHERE job_id = $1
+        AND status = ANY($4::text[])`,
+    [
+      job.job_id,
+      'Generated video is ready. Preparing it for download.',
+      JSON.stringify(state),
+      ACTIVE_JOB_STATUSES,
+    ]
+  );
+  await recordBytePlusPollEventFn(job, 'poll:storage-copy-retry', {
+    providerStatus: providerStatus ?? null,
+    attempts: state.attempts,
+    maxAttempts: resolveBytePlusStorageCopyMaxAttempts(),
+  });
 }

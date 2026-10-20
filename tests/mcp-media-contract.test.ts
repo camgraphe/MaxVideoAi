@@ -140,7 +140,8 @@ test('reference and upload failures have one stable AgentApiError code owner', a
   const errorsSource = source(errorsPath);
   assert.match(errorsSource, /export const REFERENCE_ERROR_CODES\s*=/u);
   assert.match(errorsSource, /export type ReferenceErrorCode\s*=/u);
-  assert.match(errorsSource, /export type AgentApiErrorCode\s*=[\s\S]*?ReferenceErrorCode/u);
+  assert.match(errorsSource, /export const AGENT_API_ERROR_CODES\s*=[\s\S]*?\.\.\.REFERENCE_ERROR_CODES/u);
+  assert.match(errorsSource, /export type AgentApiErrorCode\s*=\s*\(typeof AGENT_API_ERROR_CODES\)\[number\]/u);
   for (const code of expected) {
     assert.equal(
       errorsSource.match(new RegExp(`'${code}'`, 'gu'))?.length,
@@ -151,6 +152,7 @@ test('reference and upload failures have one stable AgentApiError code owner', a
 
   const errors = await import('../frontend/src/server/agent-api/errors') as Record<string, unknown>;
   assert.deepEqual(errors.REFERENCE_ERROR_CODES, expected);
+  for (const code of expected) assert.ok((errors.AGENT_API_ERROR_CODES as readonly string[]).includes(code));
   const AgentError = errors.AgentApiError as new (
     code: string,
     message: string,

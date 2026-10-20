@@ -5,32 +5,113 @@
       "href": "/pay-as-you-go-ai-video-generator",
       "label": "How credits work"
     },
-    "decisionSummary": "Choose Omni Flash 1.1 for larger image-reference sets and source-video editing. Choose Veo 3.1 for text or image-led shots. Both reach 4K with native audio.",
-    "meta": { "title": "Gemini Omni Flash 1.1 vs Veo 3.1: Scores & Specs", "description": "Compare Gemini Omni Flash 1.1 and Veo 3.1 for 4K video, editing, references, audio, controls and price.", "titleBranding": "none" },
-    "quickVerdict": { "title": "Quick verdict", "body": "Choose Gemini Omni Flash 1.1 for conversational refine, larger reference stacks and flexible video editing. Choose Veo 3.1 for the established Veo production workflow and cinematic first-pass generation." },
+    "decisionSummary": "This compares Omni Flash 1.1 with standard Veo 3.1. Both offer 4K and native audio; choose Omni when you need to edit a source clip or work with more image references.",
+    "meta": {
+      "title": "Gemini Omni Flash 1.1 vs Veo 3.1: Scores & Specs",
+      "description": "Compare Gemini Omni Flash 1.1 and Veo 3.1 for 4K video, editing, references, audio, controls and price.",
+      "titleBranding": "none"
+    },
+    "quickVerdict": {
+      "title": "Choose by the next step in your project",
+      "body": "Omni supports source-video editing and up to 10 reference images. Veo 3.1 supports up to 3 reference images and first/last frames. Extending a Veo clip is different from editing its existing content. Compare the same duration, resolution and audio setting in the price table; 4K alone does not establish a quality winner."
+    },
     "primaryLinksTitle": "Explore the models",
-    "primaryLinks": [{ "href": "/models/gemini-omni-flash", "label": "Gemini Omni Flash 1.1" }, { "href": "/models/veo-3-1", "label": "Veo 3.1" }]
+    "primaryLinks": [
+      {
+        "href": "/models/gemini-omni-flash",
+        "label": "Gemini Omni Flash 1.1"
+      },
+      {
+        "href": "/models/veo-3-1",
+        "label": "Veo 3.1"
+      }
+    ],
+    "heroIntro": "Already have a clip to change, or several images to keep in view? Start with Omni Flash 1.1. Veo 3.1 also creates shots from text, images or references, and can extend a Veo clip. This page compares the standard Veo model; Fast and Lite have their own comparisons.",
+    "decisionLinks": [
+      {
+        "href": "/ai-video-engines/gemini-omni-flash-vs-veo-3-1-fast",
+        "label": "Omni Flash 1.1 vs Veo 3.1 Fast"
+      },
+      {
+        "href": "/ai-video-engines/veo-3-1-vs-veo-3-1-lite",
+        "label": "Veo 3.1 vs Lite"
+      }
+    ]
   },
   "fr": {
     "pricingCreditLink": {
       "href": "/pay-as-you-go-ai-video-generator",
       "label": "Comment fonctionnent les crédits"
     },
-    "decisionSummary": "Choisissez Omni Flash 1.1 pour davantage d’images de référence et l’édition d’une vidéo source, ou Veo 3.1 pour des plans guidés par texte ou image. Les deux atteignent la 4K avec audio natif.",
-    "meta": { "title": "Gemini Omni Flash 1.1 vs Veo 3.1 : notes et specs", "description": "Comparez Gemini Omni Flash 1.1 et Veo 3.1 sur la 4K, édition, références, audio, contrôles et prix.", "titleBranding": "none" },
-    "quickVerdict": { "title": "Verdict rapide", "body": "Choisissez Gemini Omni Flash 1.1 pour le raffinement conversationnel, les grandes piles de références et l’édition vidéo flexible. Choisissez Veo 3.1 pour son workflow de production établi et sa génération cinématographique dès le premier rendu." },
+    "decisionSummary": "Ce comparatif oppose Omni Flash 1.1 à Veo 3.1 standard. Les deux proposent la 4K et un audio natif ; choisissez Omni pour modifier une vidéo source ou utiliser davantage d’images de référence.",
+    "meta": {
+      "title": "Gemini Omni Flash 1.1 vs Veo 3.1 : notes et specs",
+      "description": "Comparez Gemini Omni Flash 1.1 et Veo 3.1 sur la 4K, édition, références, audio, contrôles et prix.",
+      "titleBranding": "none"
+    },
+    "quickVerdict": {
+      "title": "Choisir selon la suite de votre projet",
+      "body": "Omni permet de modifier une vidéo source et accepte jusqu’à 10 images de référence. Veo 3.1 accepte jusqu’à 3 références et des images de début et de fin. Prolonger un clip Veo ne revient pas à modifier son contenu existant. Comparez les prix à durée, résolution et audio identiques ; la 4K seule ne désigne pas un gagnant en qualité."
+    },
     "primaryLinksTitle": "Explorer les modèles",
-    "primaryLinks": [{ "href": "/fr/modeles/gemini-omni-flash", "label": "Gemini Omni Flash 1.1" }, { "href": "/fr/modeles/veo-3-1", "label": "Veo 3.1" }]
+    "primaryLinks": [
+      {
+        "href": "/fr/modeles/gemini-omni-flash",
+        "label": "Gemini Omni Flash 1.1"
+      },
+      {
+        "href": "/fr/modeles/veo-3-1",
+        "label": "Veo 3.1"
+      }
+    ],
+    "heroIntro": "Vous avez déjà un clip à modifier, ou plusieurs images à garder en référence ? Commencez par Omni Flash 1.1. Veo 3.1 crée aussi des plans à partir de texte, d’images ou de références et peut prolonger un clip Veo. Cette page porte sur Veo standard ; Fast et Lite ont leurs propres comparatifs.",
+    "decisionLinks": [
+      {
+        "href": "/fr/comparatif/gemini-omni-flash-vs-veo-3-1-fast",
+        "label": "Omni Flash 1.1 vs Veo 3.1 Fast"
+      },
+      {
+        "href": "/fr/comparatif/veo-3-1-vs-veo-3-1-lite",
+        "label": "Veo 3.1 vs Lite"
+      }
+    ]
   },
   "es": {
     "pricingCreditLink": {
       "href": "/pay-as-you-go-ai-video-generator",
       "label": "Cómo funcionan los créditos"
     },
-    "decisionSummary": "Elige Omni Flash 1.1 para más imágenes de referencia y edición de vídeo, o Veo 3.1 para planos guiados por texto o imagen. Ambos llegan a 4K con audio nativo.",
-    "meta": { "title": "Gemini Omni Flash 1.1 vs Veo 3.1: notas y specs", "description": "Compara Gemini Omni Flash 1.1 y Veo 3.1 en vídeo 4K, edición, referencias, audio, controles y precio.", "titleBranding": "none" },
-    "quickVerdict": { "title": "Veredicto rápido", "body": "Elige Gemini Omni Flash 1.1 para refinado conversacional, grandes pilas de referencias y edición flexible. Elige Veo 3.1 para el flujo de producción Veo establecido y generación cinematográfica desde el primer render." },
+    "decisionSummary": "Este comparativo enfrenta Omni Flash 1.1 con Veo 3.1 estándar. Ambos ofrecen 4K y audio nativo; elige Omni para editar un video de origen o trabajar con más imágenes de referencia.",
+    "meta": {
+      "title": "Gemini Omni Flash 1.1 vs Veo 3.1: notas y specs",
+      "description": "Compara Gemini Omni Flash 1.1 y Veo 3.1 en vídeo 4K, edición, referencias, audio, controles y precio.",
+      "titleBranding": "none"
+    },
+    "quickVerdict": {
+      "title": "Elige según el siguiente paso de tu proyecto",
+      "body": "Omni permite editar un video de origen y admite hasta 10 imágenes de referencia. Veo 3.1 admite hasta 3 referencias y fotogramas inicial y final. Ampliar un clip Veo no equivale a editar su contenido existente. Compara precios con la misma duración, resolución y audio; el 4K por sí solo no determina qué modelo tiene mejor calidad."
+    },
     "primaryLinksTitle": "Explorar los modelos",
-    "primaryLinks": [{ "href": "/es/modelos/gemini-omni-flash", "label": "Gemini Omni Flash 1.1" }, { "href": "/es/modelos/veo-3-1", "label": "Veo 3.1" }]
+    "primaryLinks": [
+      {
+        "href": "/es/modelos/gemini-omni-flash",
+        "label": "Gemini Omni Flash 1.1"
+      },
+      {
+        "href": "/es/modelos/veo-3-1",
+        "label": "Veo 3.1"
+      }
+    ],
+    "heroIntro": "¿Ya tienes un clip que quieres cambiar o varias imágenes de referencia? Empieza con Omni Flash 1.1. Veo 3.1 también crea planos a partir de texto, imágenes o referencias y puede ampliar un clip Veo. Esta página compara Veo estándar; Fast y Lite tienen sus propios comparativos.",
+    "decisionLinks": [
+      {
+        "href": "/es/comparativa/gemini-omni-flash-vs-veo-3-1-fast",
+        "label": "Omni Flash 1.1 vs Veo 3.1 Fast"
+      },
+      {
+        "href": "/es/comparativa/veo-3-1-vs-veo-3-1-lite",
+        "label": "Veo 3.1 vs Lite"
+      }
+    ]
   }
 }

@@ -15,13 +15,16 @@ import {ImageConversationComposer} from '../conversation/[projectId]/_components
 import styles from '../conversation/[projectId]/image-conversation.module.css';
 import shelf from '../conversation/[projectId]/conversation-media-shelf.module.css';
 import demo from './studio-guest-demo.module.css';
+import {buildExampleRequest,type ExampleRequestSource} from '@/lib/example-continuation';
+import {exampleContinuationCopy} from '@/lib/example-continuation-copy';
+import {SITE_ORIGIN} from '@/lib/siteOrigin';
 
 type DemoView={image:'product'|'character'}|{action:StudioGuestAction};
 
-export function StudioGuestDemo({starter,available=false}:{starter?:string;available?:boolean}) {
+export function StudioGuestDemo({starter,example,available=false}:{starter?:string;example?:ExampleRequestSource;available?:boolean}) {
   const {locale}=useI18n();
   const copy=studioGuestDemoCopy(locale);
-  const [text,setText]=useState(()=>studioMarketingStarterMessage(starter,locale));
+  const [text,setText]=useState(()=>example?buildExampleRequest(example,locale,'studio'):studioMarketingStarterMessage(starter,locale));
   const [view,setView]=useState<DemoView|null>(null);
   const [audioError,setAudioError]=useState(false);
   const audio=useRef<HTMLAudioElement>(null);
@@ -35,13 +38,13 @@ export function StudioGuestDemo({starter,available=false}:{starter?:string;avail
   function gate(action:StudioGuestAction) {if(available)setView({action});}
   return <section className={styles.studio} aria-label="Studio" data-studio-guest-demo>
     <header className={styles.header}>
-      <div><h1>Studio<span className={styles.headerDot}>.</span></h1><span>{copy.project}</span></div>
+      <div><h1>Studio<span className={styles.headerDot}>.</span></h1><span>{example?exampleContinuationCopy(locale).source:copy.project}</span></div>
       <button className={demo.primary} disabled={!available} onClick={()=>gate('create')}>{copy.create}<ArrowUpRight size={14}/></button>
     </header>
     <div className={`${styles.canvas} ${demo.canvas}`}
       onDragOver={event=>{if(event.dataTransfer.types.includes('Files')){event.preventDefault();event.dataTransfer.dropEffect=available?'copy':'none';}}}
       onDrop={event=>{if(event.dataTransfer.types.includes('Files')){event.preventDefault();gate('import');}}}>
-      <aside className={shelf.shelf} data-expanded="true" aria-label={copy.references}>
+      {!example&&<aside className={shelf.shelf} data-expanded="true" aria-label={copy.references}>
         <div className={shelf.heading}><span>{copy.references}</span></div>
         <div className={shelf.content}>
           {(['product','character'] as const).map((kind,index)=><article key={kind} className={shelf.card} data-demo-reference={kind}>
@@ -61,10 +64,15 @@ export function StudioGuestDemo({starter,available=false}:{starter?:string;avail
             {audioError&&<p className={demo.audioError} role="alert">{copy.audioError}</p>}
           </article>
         </div>
-      </aside>
+      </aside>}
       <div className={styles.conversation}>
         <div className={styles.log} aria-label={copy.project}>
-          <article className={styles.turn}>
+          {example?<article className={styles.turn} data-studio-example-entry>
+            <div className={styles.reply}>
+              <p>{exampleContinuationCopy(locale).ready}</p>
+              <a className={demo.exampleLink} href={new URL(example.watchHref,SITE_ORIGIN).href} target="_blank" rel="noopener noreferrer"><span>{example.title}</span><ArrowUpRight size={14}/></a>
+            </div>
+          </article>:<><article className={styles.turn}>
             <p className={styles.userMessage}>{copy.initial}</p>
             <div className={styles.reply}><p>{copy.request}</p></div>
           </article>
@@ -82,7 +90,7 @@ export function StudioGuestDemo({starter,available=false}:{starter?:string;avail
               <div className={demo.musicTrack}><Music2 size={13}/>Audio 1 · 00:00 → 00:14</div>
             </div>
             <button className={demo.primary} disabled={!available} onClick={()=>gate('create')}>{copy.makeAd}<ArrowUpRight size={15}/></button>
-          </article>
+          </article></>}
         </div>
         <div className={demo.composerRegion}>
           <ImageConversationComposer text={text} onTextChange={setText} onSend={()=>gate('send')} blocked={!available} onOpenLibrary={()=>gate('import')} libraryTrigger={libraryTrigger} libraryLabel={copy.addMedia} locale={locale}/>
@@ -90,11 +98,11 @@ export function StudioGuestDemo({starter,available=false}:{starter?:string;avail
         <p className={styles.footnote}>{available?copy.note:copy.unavailable}</p>
       </div>
     </div>
-    {view&&<DemoDialog view={view} copy={copy} locale={locale} onClose={()=>setView(null)}/>}
+    {view&&<DemoDialog view={view} copy={copy} locale={locale} nextPath={example?`/app/studio?example=${encodeURIComponent(example.id)}`:'/app/studio'} onClose={()=>setView(null)}/>}
   </section>;
 }
 
-function DemoDialog({view,copy,locale,onClose}:{view:DemoView;copy:StudioGuestCopy;locale:'en'|'fr'|'es';onClose:()=>void}) {
+function DemoDialog({view,copy,locale,nextPath,onClose}:{view:DemoView;copy:StudioGuestCopy;locale:'en'|'fr'|'es';nextPath:string;onClose:()=>void}) {
   const {dialogRef,onDialogKeyDown}=useAccessibleModal({onClose});
   const image='image' in view?view.image:null;
   return <div className={demo.backdrop} onClick={event=>{if(event.target===event.currentTarget)onClose();}}>
@@ -102,8 +110,8 @@ function DemoDialog({view,copy,locale,onClose}:{view:DemoView;copy:StudioGuestCo
       <header><h2 id="studio-guest-dialog-title">{image?copy[image]:copy.loginTitle}</h2><button aria-label={copy.close} onClick={onClose}><X size={20}/></button></header>
       {image?<Image src={STUDIO_GUEST_MEDIA[image]} alt={copy[image]} width={900} height={900} sizes="(max-width:600px) 90vw, 600px"/>:<>
         <p>{'action' in view?copy.actions[view.action]:''}</p><small>{copy.loginNote}</small>
-        <Link className={demo.primary} data-modal-initial-focus="true" href={buildLoginHref({mode:'signup',nextPath:'/app/studio',locale})} prefetch={false}>{copy.signup}</Link>
-        <Link href={buildLoginHref({mode:'signin',nextPath:'/app/studio',locale})} prefetch={false}>{copy.signin}</Link>
+        <Link className={demo.primary} data-modal-initial-focus="true" href={buildLoginHref({mode:'signup',nextPath,locale})} prefetch={false}>{copy.signup}</Link>
+        <Link href={buildLoginHref({mode:'signin',nextPath,locale})} prefetch={false}>{copy.signin}</Link>
       </>}
     </div>
   </div>;

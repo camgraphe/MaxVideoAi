@@ -5,7 +5,7 @@ candidate. The authorized paid-provider qualification and production activation
 procedure are recorded in `docs/operations/studio-media-tasks-activation-2026-10-06.md`.
 
 `src/lib/studio/task-budget-contract.ts` owns the separately versioned resource
-policy `studio-task-budget-2026-10-06-v1`. Existing assistance v1/v2 tariffs,
+policies `studio-task-budget-2026-10-06-v1` and `studio-task-budget-2026-10-11-v2`. Existing assistance v1/v2 tariffs,
 500 monthly credits and pack prices stay unchanged. Ceilings are not flat fees.
 The public UI offers only Sol and Luna, without a work-profile picker. Sol starts
 with 500 included credits; new messages use the internal Standard work bounds.
@@ -14,15 +14,61 @@ Sol consumes free credits before explicitly enabled purchased credits; Luna stay
 sponsored. Conservative next-call quotes must fit the remaining ceiling before
 reservation, so the financial cap can stop work before the call/token maxima.
 
+Standalone greetings in English, French and Spanish are answered locally by
+`conversation-intent.ts` before a model checkpoint: no token count, assistance
+reservation or provider dispatch. Attached media or a greeting followed by real
+work still reaches the director. Any existing response checkpoint disables the
+local shortcut, so historical paid usage is settled and the saved answer replayed
+even on the first recovery before the deadline. The normal owned journal/task
+records and rate limits remain in force.
+
+New multi-clip film requests use `pricing_compare.filmDurationSec`, separate from
+the component `durationSec`. `conversation-film-pricing.ts` verifies complete
+cut variants against the canonical comparison owner, preferring 10/20/30 seconds
+and falling back to live model duration capabilities. An explicit component
+length is preserved; selected models remain constraints. The composer sums
+integer customer cents per generated output, including a separately priced tail.
+Only a proven unsupported tail duration permits a priced full clip to be trimmed,
+with both generated and final timing disclosed. Explicit settings/model choices
+remain constraints; unspecified films use a disclosed 720p baseline (16:9 for
+text-only requests). Missing prices never become estimates. The director returns
+the full result directly after that action, without reserving a presentation call
+or extending the selected ceiling. A narrow natural-duration routing hint makes
+the first call compare the entire new film before any component preparation.
+It excludes edits, exports and scripts. The hint normalizes the total and removes
+only a component length that incorrectly repeats that total before saving the
+fresh response checkpoint. Explicit component lengths remain intact; saved
+responses are never rewritten, so replay keeps the action's original identity.
+Planning up to 1200 seconds creates no quote, job or wallet transaction; clients
+choose the cut, then review/confirm exact quotes. Added soundtracks/narration,
+retakes and exports remain separate pricing owners. Historical actions omit the
+new optional field unchanged, preserving their original replay hashes. The
+comparison's ordinary `options` retain each plan's canonical component estimate,
+so the existing owned historical-facts projection provides verified model IDs
+and settings to the next turn. These remain per-output historical estimates;
+only `filmPlans[].price` represents the complete film, and neither authorizes a
+purchase.
+
 | Profile | Maximum credits | Calls/segment | Output/call | Input/call | Time | Recent turns |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | Quick | 100 ($0.10) | 2 | 2,200 | 12,000 | 180s | 4 |
 | Standard | 250 ($0.25) | 4 | 2,200 | 24,000 | 300s | 8 |
 | Complex, explicitly confirmed Sol | 500 ($0.50) | 8 | 6,000 | 48,000 | 600s | 12 |
 
-Sol reasoning is low, medium, and adaptive medium/high respectively; Luna always uses high reasoning. Visible replies
+Sol reasoning is low, medium, and adaptive medium/high respectively. New Luna
+requests retain the current high-reasoning policy and 6,000 output tokens; frozen
+historical task/fallback allowances are unchanged. Visible replies
 remain bounded to 2,400 characters; long generation directions belong in tools.
 Caching follows recorded provider facts; no hit or saving is assumed.
+
+The table describes Sol and the historical v1 profiles. New v2 Luna Quick and
+Standard tasks use high reasoning and allow 6,000 output tokens per call,
+including reasoning; their calls, input, time, history and client credit ceilings
+are unchanged. Luna remains sponsored. Sol profiles and previously frozen v1
+tasks retain their recorded resources, including when resumed. Current and
+historical commands must identify the task's exact policy version; resumption
+cannot upgrade a saved profile. Apply `67_studio_luna_reasoning.sql` before the
+v2 runtime. Enqueue checks its readiness without bootstrapping schema.
 
 ## Ownership and recovery
 
@@ -31,6 +77,14 @@ model, profile and owned source fingerprint with the existing assistance turn.
 Client model/revision must match the locked account. There is one active queued,
 running or unknown task per account; paid Sol allows 60 initial tasks/hour,
 included-only Sol and Luna retain 20.
+
+For v2 video attachments, `tasks/source.ts` fingerprints the exact reference,
+original URL, MIME and stored byte size after the same ownership/readiness checks.
+Measured duration and dimensions can be established by canonical qualification
+during an edit without changing that source identity or pausing the final reply.
+Images, audio and historical v1 fingerprints retain their existing recipe; saved
+fingerprints are never rewritten. Original replacement, unavailable media and
+ownership/provenance changes still stop dispatch.
 
 `tasks/conversation-adapter.ts` returns queued turns immediately. GET and polling
 never execute the worker, count tokens or dispatch. Generation, analysis and
@@ -47,6 +101,39 @@ a new execution segment of the same task. All segments share cumulative credits,
 one ceiling and cent rounding; old segments cannot dispatch. Exact historical
 action replay returns the immutable receipt and a replay marker. Previous saved
 work is supplied to the director to avoid repeating successful edits/preparations.
+
+`tasks/previous-work.ts` also carries failed action receipts and selected historical
+model mode facts across owned segments. Its query joins the same task/account/project
+and excludes deleted projects and the current segment. Authored prompts, raw provider
+payloads, private media URLs and historical prices are not projected. At most twelve
+receipts are returned, with bounded fact payloads and explicit omission markers.
+An action receipt marked completed may have `result.ok=false`; it is not successful
+work. Historical facts never bypass current canonical quote validation.
+
+The director fingerprints proven unsupported single-clip duration scenarios
+independently of prompt wording and setting order. A repeated identical scenario
+stops before another comparison executes and ends without a continuation loop, only
+after checking the diagnostic's catalog fingerprint against the current matching
+catalog. Newly available candidates or changed duration capabilities invalidate
+the negative evidence without another paid discovery call.
+Generic/legacy no-match failures, prompt corrections and temporary pricing outages
+can still be revalidated; they do not prove an impossible duration. Changed component
+scenarios, creation quotes and timeline edits remain available. The history projection
+retains safe duration/audio/format facts from comparison failures as well as model
+details. It caps each payload at 4,000 characters and the complete array at 12,000,
+reserving minimal failure identities before optional facts. Fingerprints use the
+stored scenario internally; unknown settings, prompts and URLs are omitted from
+model-visible comparison summaries.
+
+Recovering a paid comparison Response with no action receipt checks the current
+catalog: the same fingerprint reproduces the stop; changed/missing evidence allows
+one current comparison, followed only by replay of previously purchased Responses.
+This also covers interruption before the original catalog check completed. If no
+paid follow-up remains, a bounded reply preserves recovered prices/errors and
+reports the unfinished film without another continuation. `readCompletedStudioAction`
+verifies account/project/turn/lease and exact action hash without claiming or
+executing it. Older completed receipts still recover subsequent purchased outputs;
+the guard cannot reserve another model call.
 
 Continue retains the ceiling. Sol extensions permit +100/+250/+500 credits, up to
 2,000 credits and 24 calls total; UI offers a labelled +100 choice. Nothing buys

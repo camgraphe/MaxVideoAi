@@ -1,18 +1,16 @@
 import { generationStage, isStaleGenerationUpdate, mergeGenerationObservation, normalizeGenerationObservation } from '@/lib/generation-observation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import useSWRInfinite from 'swr/infinite';
 import { authFetch } from '@/lib/authFetch';
 import { normalizeJobMessage, normalizeJobProgress, normalizeJobStatus } from '@/lib/job-status';
 import { readLastKnownUserId, writeLastKnownUserId } from '@/lib/last-known';
 import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
 import {
-  clearMissingStatusRetries,
-  clearStatusRetry,
-  getStatusRetryMeta,
+  getJobStatus,
   jobHasRenderableMedia,
-  scheduleStatusRetry,
   type JobStatusResult,
 } from '@/lib/api-job-status';
+import { createJobStatusPollingOwner } from './job-status-polling';
 import type { JobSurface } from '@/types/billing';
 import type { Job, JobsPage } from '@/types/jobs';
 
@@ -25,7 +23,7 @@ function normalizeJobFromApi(job: Job): Job {
   const hasImageMedia =
     Array.isArray(job.renderIds) && job.renderIds.some((value) => typeof value === 'string' && value.length);
   const hasMedia = Boolean(job.videoUrl || job.audioUrl) || hasImageMedia;
-  const normalizedStatus = normalizeJobStatus(job.status ?? null, hasMedia);
+  const normalizedStatus = normalizeJobStatus(job.status ?? null, hasMedia, job.outputPreparationState);
   const status: Job['status'] =
     normalizedStatus ?? (hasMedia ? 'completed' : 'pending');
   const progress = normalizeJobProgress(job.progress, status as 'pending' | 'completed' | 'failed', hasMedia);
@@ -108,6 +106,7 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
       : 'all';
   const feedScope = JSON.stringify([cacheKey, pageSize, feedType, feedSurface]);
   const lastRevalidateRef = useRef<number>(0);
+  const pollingOwner = useRef<ReturnType<typeof createJobStatusPollingOwner> | null>(null);
   const lastKnownUserIdRef = useRef<string | null>(typeof window === 'undefined' ? null : readLastKnownUserId());
   const [stableStore, setStableStore] = useState<{
     scope: string;
@@ -167,9 +166,11 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
           }
           const nextUserId = session?.user?.id ?? null;
           if (nextUserId) {
+            const sameAccount = lastKnownUserIdRef.current === nextUserId;
             lastKnownUserIdRef.current = nextUserId;
             writeLastKnownUserId(nextUserId);
             setCacheKey(nextUserId);
+            if (sameAccount && (eventType === 'TOKEN_REFRESHED' || eventType === 'SIGNED_IN')) pollingOwner.current?.resume('session');
             return;
           }
           await updateCacheKey();
@@ -203,6 +204,15 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
   const swr = useSWRInfinite<JobsPage, Error>(getJobsKey, fetchJobs, { keepPreviousData: false, persistSize: false });
 
   const { mutate } = swr;
+  useEffect(() => {
+    if (!cacheKey || cacheKey === 'anonymous') return;
+    const owner = createJobStatusPollingOwner(cacheKey, getJobStatus, () => lastKnownUserIdRef.current === cacheKey);
+    pollingOwner.current = owner;
+    return () => {
+      owner.dispose();
+      if (pollingOwner.current === owner) pollingOwner.current = null;
+    };
+  }, [cacheKey]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -210,15 +220,7 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
       const detail = (event as CustomEvent<JobStatusResult>).detail;
       if (!detail || !detail.jobId) return;
 
-      const normalizedStatus = typeof detail.status === 'string' ? detail.status.toLowerCase() : '';
-      if (normalizedStatus === 'completed' || normalizedStatus === 'failed') {
-        clearStatusRetry(detail.jobId);
-      } else {
-        const meta = getStatusRetryMeta(detail.jobId);
-        if (!meta || meta.timer === null) {
-          scheduleStatusRetry(detail.jobId, meta?.attempt ?? 0);
-        }
-      }
+      pollingOwner.current?.observe(detail);
 
       let jobFound = false;
       void mutate(
@@ -246,6 +248,9 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
                     : job.progress,
                 videoUrl: detail.videoUrl ?? job.videoUrl,
                 previewVideoUrl: detail.previewVideoUrl ?? job.previewVideoUrl,
+                playbackVideoUrl: detail.playbackVideoUrl ?? job.playbackVideoUrl,
+                outputPreparationState: detail.outputPreparationState,
+                lastFrameUrl: detail.lastFrameUrl ?? job.lastFrameUrl,
                 audioUrl: detail.audioUrl ?? job.audioUrl,
                 thumbUrl: detail.thumbUrl ?? job.thumbUrl,
                 finalPriceCents: detail.finalPriceCents ?? job.finalPriceCents,
@@ -288,13 +293,10 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
     };
 
     const errorHandler = (event: Event) => {
-      const detail = (event as CustomEvent<{ jobId?: string }>).detail;
+      const detail = (event as CustomEvent<{ jobId?: string; status?: number }>).detail;
       const jobId = detail?.jobId;
-      if (!jobId) return;
-      const meta = getStatusRetryMeta(jobId);
-      if (meta?.timer) return;
-      scheduleStatusRetry(jobId, meta?.attempt ?? 0);
-      void mutate(undefined, { revalidate: true });
+      if (!jobId || !pollingOwner.current?.has(jobId)) return;
+      pollingOwner.current.error(jobId, detail.status);
     };
 
     window.addEventListener('jobs:status', handler as EventListener);
@@ -410,25 +412,16 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const jobs = swr.data?.flatMap((page) => page.jobs) ?? [];
-    const seen = new Set<string>();
+    const pending = new Set<string>();
+    const terminal = new Set<string>();
     jobs.forEach((job) => {
-      const jobId = job?.jobId;
-      if (!jobId) return;
-      seen.add(jobId);
-      const normalizedStatus =
-        normalizeJobStatus(job.status ?? null, jobHasRenderableMedia(job)) ??
-        (jobHasRenderableMedia(job) ? 'completed' : 'pending');
-      if (normalizedStatus === 'completed' || normalizedStatus === 'failed') {
-        clearStatusRetry(jobId);
-      } else if (normalizedStatus === 'pending') {
-        const meta = getStatusRetryMeta(jobId);
-        if (!meta || meta.timer === null) {
-          scheduleStatusRetry(jobId, meta?.attempt ?? 0);
-        }
-      }
+      if (!job?.jobId) return;
+      const status = normalizeJobStatus(job.status ?? null, jobHasRenderableMedia(job), job.outputPreparationState);
+      if (status === 'completed' || status === 'failed' || job.outputPreparationState === 'manual_review') terminal.add(job.jobId);
+      else pending.add(job.jobId);
     });
-    clearMissingStatusRetries(seen);
-  }, [swr.data]);
+    pollingOwner.current?.sync(pending, terminal);
+  }, [swr.data, cacheKey]);
 
   const stableJobs = useMemo(
     () => stableStore.scope === feedScope
@@ -437,13 +430,20 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
     [feedScope, stableStore]
   );
 
-  return { ...swr, stableJobs } as typeof swr & { stableJobs: Job[] };
+  const refreshJobs: typeof mutate = useCallback((data, options) => {
+    const revalidate = typeof options === 'boolean' ? options : options?.revalidate;
+    if (data === undefined && revalidate !== false) pollingOwner.current?.resume('manual');
+    return mutate(data, options);
+  }, [mutate]);
+
+  return { ...swr, mutate: refreshJobs, stableJobs } as typeof swr & { stableJobs: Job[] };
 }
 
-export async function hideJob(jobId: string): Promise<void> {
+export async function hideJob(jobId: string, request?: { accessToken: string; signal: AbortSignal }): Promise<void> {
   const response = await authFetch(`/api/jobs/${encodeURIComponent(jobId)}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(request ? { Authorization: `Bearer ${request.accessToken}` } : {}) },
+    signal: request?.signal,
     body: JSON.stringify({ hidden: true }),
   });
   const payload = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;

@@ -18,7 +18,9 @@ const attribution = {
   },
   fingerprint: 'a'.repeat(32),
 };
+const addressPolicy = { wallet_express_tax_address: '1' };
 const openSession = {
+  metadata: addressPolicy,
   clientSecret: 'cs_secret_123',
   created: 1_799_000,
   expiresAt: 1_801_000,
@@ -34,6 +36,7 @@ assert.equal(
 
 assert.equal(
   isReusableStripeCheckoutSession({
+    metadata: addressPolicy,
     clientSecret: 'cs_secret_123',
     created: 1_799_000,
     expiresAt: 1_801_000,
@@ -47,6 +50,7 @@ assert.equal(
 
 assert.equal(
   isReusableStripeCheckoutSession({
+    metadata: addressPolicy,
     clientSecret: 'cs_secret_123',
     created: 1_799_000,
     expiresAt: 1_801_000,
@@ -60,6 +64,7 @@ assert.equal(
 
 assert.equal(
   isReusableStripeCheckoutSession({
+    metadata: addressPolicy,
     clientSecret: null,
     created: 1_799_000,
     expiresAt: 1_801_000,
@@ -73,6 +78,7 @@ assert.equal(
 
 assert.equal(
   isReusableStripeCheckoutSession({
+    metadata: addressPolicy,
     clientSecret: 'cs_secret_123',
     created: 1_799_000,
     expiresAt: 1_799_999,
@@ -89,6 +95,7 @@ assert.equal(
   isReusableStripeCheckoutSession({
     ...openSession,
     metadata: {
+      ...addressPolicy,
       journey_id: attribution.journey.journeyId,
       attribution_fingerprint: attribution.fingerprint,
       ga_session_id: '1788255000',
@@ -102,6 +109,7 @@ assert.equal(
   isReusableStripeCheckoutSession({
     ...openSession,
     metadata: {
+      ...addressPolicy,
       journey_id: attribution.journey.journeyId,
       attribution_fingerprint: 'b'.repeat(32),
     },
@@ -109,11 +117,12 @@ assert.equal(
   }),
   false
 );
-assert.equal(isReusableStripeCheckoutSession({ ...openSession, metadata: {}, attribution: null }), true);
+assert.equal(isReusableStripeCheckoutSession({ ...openSession, metadata: addressPolicy, attribution: null }), true);
 assert.equal(
   isReusableStripeCheckoutSession({
     ...openSession,
     metadata: {
+      ...addressPolicy,
       journey_id: attribution.journey.journeyId,
       attribution_fingerprint: attribution.fingerprint,
     },
@@ -121,3 +130,6 @@ assert.equal(
   }),
   false
 );
+
+assert.equal(isReusableStripeCheckoutSession({ ...openSession, metadata: {} }), false, 'a pre-fix session must not hide Google Pay again');
+assert.equal(isReusableStripeCheckoutSession({ ...openSession, metadata: { wallet_express_tax_address: '0' } }), false);

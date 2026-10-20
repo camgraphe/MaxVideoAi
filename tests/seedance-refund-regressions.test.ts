@@ -86,8 +86,13 @@ test('generic media safety rejections do not turn into an image failure on the r
   assert.doesNotMatch(translated!, /personne reconnaissable/);
 });
 
-test('unrelated provider messages do not acquire a new refund claim', () => {
-  assert.equal(getWorkspaceGenerationFailureMessage({ message: 'Unrelated provider failure', paymentStatus: 'refunded_wallet' }, copy, { locale: 'fr' }), 'Unrelated provider failure');
+test('unknown failed renders use safe translated copy and announce only a confirmed wallet refund', () => {
+  for (const paymentStatus of ['refunded_wallet', 'refunded', 'paid_wallet']) {
+    const message = getWorkspaceGenerationFailureMessage({ status: 'failed', message: 'Unrelated provider failure', paymentStatus }, copy, { locale: 'fr' })!;
+    assert.match(message, /pas pu terminer/);
+    assert.doesNotMatch(message, /Unrelated|provider/);
+    assert.equal(/recrédit/.test(message), paymentStatus === 'refunded_wallet');
+  }
 });
 
 test('French customer guidance includes a verified wallet refund amount', () => {

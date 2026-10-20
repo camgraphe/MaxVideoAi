@@ -72,6 +72,7 @@ export const MINIMAX_H3_ENGINE: EngineCaps = {
         minCount: 0,
         maxCount: 1,
         maxSizeMB: 30,
+        imageAspectRatio: { min: 0.4, max: 2.5 },
         acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
         acceptedFileExtensions: [...IMAGE_FORMATS],
         source: 'either',
@@ -85,6 +86,7 @@ export const MINIMAX_H3_ENGINE: EngineCaps = {
         minCount: 0,
         maxCount: 1,
         maxSizeMB: 30,
+        imageAspectRatio: { min: 0.4, max: 2.5 },
         acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
         acceptedFileExtensions: [...IMAGE_FORMATS],
         source: 'either',
@@ -207,6 +209,7 @@ export const MINIMAX_H3_ENGINE: EngineCaps = {
       countUniqueUrls: true,
     },
     constraints: {
+      minImageSidePx: 256,
       supportedFormats: [...IMAGE_FORMATS, ...VIDEO_FORMATS, ...AUDIO_FORMATS],
       maxImageSizeMB: 30,
       maxVideoSizeMB: 50,

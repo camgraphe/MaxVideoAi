@@ -68,6 +68,7 @@ export type PersistedWorkspaceState = {
 };
 
 export type WorkspaceSequenceRecord = {
+  sequenceSubtitle?:import('@/lib/subtitles/document').SubtitleSequenceAttachment;
   id: string;
   name: string;
   timelineItems: WorkspaceTimelineItem[];
@@ -250,6 +251,7 @@ export function deleteWorkspaceTimelineTrackIds(trackIds: WorkspaceTimelineTrack
 }
 
 export function createWorkspaceSequenceRecord(params: {
+  sequenceSubtitle?:import('@/lib/subtitles/document').SubtitleSequenceAttachment;
   id: string;
   name: string;
   timelineItems: WorkspaceTimelineItem[];
@@ -272,6 +274,7 @@ export function createWorkspaceSequenceRecord(params: {
   const videoTrackCount = coerceVideoTrackCount(params.videoTrackCount, timelineItems);
   const timestamp = new Date().toISOString();
   return {
+    ...(params.sequenceSubtitle?{sequenceSubtitle:params.sequenceSubtitle}:{}),
     id: params.id,
     name: params.name.trim() || 'Untitled sequence',
     timelineItems,
@@ -294,6 +297,7 @@ export function normalizeWorkspaceSequenceRecord(value: unknown): WorkspaceSeque
   const record = value as Partial<WorkspaceSequenceRecord>;
   if (typeof record.id !== 'string' || !Array.isArray(record.timelineItems)) return null;
   return createWorkspaceSequenceRecord({
+    sequenceSubtitle:record.sequenceSubtitle,
     id: record.id,
     name: typeof record.name === 'string' ? record.name : 'Untitled sequence',
     timelineItems: record.timelineItems,

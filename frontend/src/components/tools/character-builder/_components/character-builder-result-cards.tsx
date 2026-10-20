@@ -3,6 +3,9 @@
 /* eslint-disable @next/next/no-img-element */
 
 import clsx from 'clsx';
+import dynamic from 'next/dynamic';
+import {isCreatorToolPublic} from '@/lib/toolbox/creator-availability';
+const CharacterContinuation=dynamic(()=>import('./CharacterContinuation.client').then(module=>module.CharacterContinuation));
 import { Check, Download, Loader2, Sparkles, WandSparkles } from 'lucide-react';
 
 import { Button } from '@/components/ui/Button';
@@ -104,6 +107,7 @@ export function ResultCard({
           </Button>
         </div>
       </div>
+      {isCreatorToolPublic('motion-transfer') ? <CharacterContinuation result={result}/> : null}
     </Card>
   );
 }

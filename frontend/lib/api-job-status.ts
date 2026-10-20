@@ -16,6 +16,9 @@ export type JobStatusResult = {
   progress: number;
   videoUrl: string | null;
   previewVideoUrl?: string | null;
+  playbackVideoUrl?: string | null;
+  outputPreparationState?: 'active' | 'manual_review';
+  lastFrameUrl?: string | null;
   audioUrl?: string | null;
   thumbUrl: string | null;
   aspectRatio?: string | null;
@@ -38,87 +41,49 @@ export type JobStatusResult = {
   etaLabel?: string | null;
 };
 
-type StatusRetryMeta = {
-  attempt: number;
-  timer: number | null;
-};
-
 export function jobHasRenderableMedia(job: Pick<Job, 'videoUrl' | 'audioUrl' | 'renderIds'>): boolean {
   const hasImageMedia =
     Array.isArray(job.renderIds) && job.renderIds.some((value) => typeof value === 'string' && value.length);
   return Boolean(job.videoUrl || job.audioUrl) || hasImageMedia;
 }
 
-const STATUS_RETRY_TIMERS = new Map<string, StatusRetryMeta>();
-const STATUS_RETRY_BASE_DELAY_MS = 15_000;
-const STATUS_RETRY_MAX_DELAY_MS = 15_000;
-
-export function clearStatusRetry(jobId: string): void {
-  if (typeof window === 'undefined') return;
-  const existing = STATUS_RETRY_TIMERS.get(jobId);
-  if (existing?.timer != null) {
-    window.clearTimeout(existing.timer);
-  }
-  STATUS_RETRY_TIMERS.delete(jobId);
-}
-
-export function scheduleStatusRetry(jobId: string, attempt: number): void {
-  if (typeof window === 'undefined') return;
-  const existing = STATUS_RETRY_TIMERS.get(jobId);
-  if (existing?.timer != null) {
-    window.clearTimeout(existing.timer);
-  }
-  const delay = Math.min(STATUS_RETRY_BASE_DELAY_MS * Math.pow(2, attempt), STATUS_RETRY_MAX_DELAY_MS);
-  const timer = window.setTimeout(() => {
-    STATUS_RETRY_TIMERS.set(jobId, { attempt: attempt + 1, timer: null });
-    void getJobStatus(jobId).catch(() => {
-      scheduleStatusRetry(jobId, attempt + 1);
-    });
-  }, delay);
-  STATUS_RETRY_TIMERS.set(jobId, { attempt, timer });
-}
-
-export function getStatusRetryMeta(jobId: string): StatusRetryMeta | undefined {
-  return STATUS_RETRY_TIMERS.get(jobId);
-}
-
-export function clearMissingStatusRetries(seenJobIds: Set<string>): void {
-  STATUS_RETRY_TIMERS.forEach((_meta, jobId) => {
-    if (!seenJobIds.has(jobId)) {
-      clearStatusRetry(jobId);
-    }
-  });
-}
-
 const RECENT_STATUS = new Map<string, { until: number; result: JobStatusResult }>();
-const IN_FLIGHT_STATUS = new Map<string, Promise<JobStatusResult>>();
+const IN_FLIGHT_STATUS = new Map<string, { request: Promise<JobStatusResult>; isCurrent: () => boolean }>();
 
-export function getJobStatus(jobId: string): Promise<JobStatusResult> {
-  const principal = readLastKnownUserId();
+export type JobStatusScope = { principal: string; isCurrent: () => boolean };
+
+export function getJobStatus(jobId: string, scope?: JobStatusScope): Promise<JobStatusResult> {
+  const principal = scope?.principal ?? readLastKnownUserId();
+  const isCurrent = scope?.isCurrent ?? (() => readLastKnownUserId() === principal);
   // Only coalesce in the authenticated browser scope; never share server requests.
-  if (typeof window === 'undefined' || !principal) return fetchJobStatus(jobId);
+  if (typeof window === 'undefined' || !principal) return fetchJobStatus(jobId, isCurrent);
   const key = JSON.stringify([principal, jobId]);
   const recent = RECENT_STATUS.get(key);
-  if (recent && recent.until > Date.now()) return Promise.resolve(recent.result);
+  if (recent && recent.until > Date.now()) {
+    if (scope && isCurrent()) window.dispatchEvent(new CustomEvent<JobStatusResult>('jobs:status', { detail: recent.result }));
+    return Promise.resolve(recent.result);
+  }
   const existing = IN_FLIGHT_STATUS.get(key);
-  if (existing) return existing;
+  if (existing?.isCurrent()) return existing.request;
   const startedAt = Date.now();
-  const request = fetchJobStatus(jobId).then(result => {
-    RECENT_STATUS.set(key, { until: startedAt + 15_000, result });
+  const request = fetchJobStatus(jobId, isCurrent).then(result => {
+    if (isCurrent()) RECENT_STATUS.set(key, { until: startedAt + 15_000, result });
     if (RECENT_STATUS.size > 1000) RECENT_STATUS.delete(RECENT_STATUS.keys().next().value!);
     return result;
-  }).finally(() => IN_FLIGHT_STATUS.delete(key));
-  IN_FLIGHT_STATUS.set(key, request);
+  }).finally(() => {
+    if (IN_FLIGHT_STATUS.get(key)?.request === request) IN_FLIGHT_STATUS.delete(key);
+  });
+  IN_FLIGHT_STATUS.set(key, { request, isCurrent });
   return request;
 }
 
-async function fetchJobStatus(jobId: string): Promise<JobStatusResult> {
+async function fetchJobStatus(jobId: string, isCurrent: () => boolean): Promise<JobStatusResult> {
   const checkedAt = Date.now();
   let response: Response;
   try {
     response = await authFetch(`/api/jobs/${encodeURIComponent(jobId)}`);
   } catch (error) {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && isCurrent()) {
       window.dispatchEvent(new CustomEvent('jobs:status-error', { detail: { jobId } }));
     }
     throw error;
@@ -129,8 +94,8 @@ async function fetchJobStatus(jobId: string): Promise<JobStatusResult> {
     | null;
 
   if (!response.ok) {
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('jobs:status-error', { detail: { jobId } }));
+    if (typeof window !== 'undefined' && isCurrent()) {
+      window.dispatchEvent(new CustomEvent('jobs:status-error', { detail: { jobId, status: response.status } }));
     }
     const message = payload?.error ?? `Status fetch failed (${response.status})`;
     const error = new Error(message);
@@ -139,7 +104,7 @@ async function fetchJobStatus(jobId: string): Promise<JobStatusResult> {
   }
 
   if (!payload) {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && isCurrent()) {
       window.dispatchEvent(new CustomEvent('jobs:status-error', { detail: { jobId } }));
     }
     throw new Error('Status payload missing');
@@ -158,7 +123,7 @@ async function fetchJobStatus(jobId: string): Promise<JobStatusResult> {
         ? null
         : undefined;
   const hasMedia = Boolean(payload.videoUrl || payload.audioUrl) || Boolean(renderIds?.length);
-  const statusFromPayload = normalizeJobStatus(payload.status ?? null, hasMedia);
+  const statusFromPayload = normalizeJobStatus(payload.status ?? null, hasMedia, payload.outputPreparationState);
   const normalizedStatus = (statusFromPayload ?? (hasMedia ? 'completed' : 'pending')) as JobStatusResult['status'];
   const progressValue = normalizeJobProgress(payload.progress, normalizedStatus, hasMedia);
   const progress = progressValue ?? (normalizedStatus === 'completed' ? 100 : 0);
@@ -179,6 +144,9 @@ async function fetchJobStatus(jobId: string): Promise<JobStatusResult> {
     progress,
     videoUrl: payload.videoUrl ?? null,
     previewVideoUrl: payload.previewVideoUrl ?? null,
+    playbackVideoUrl: payload.playbackVideoUrl ?? null,
+    outputPreparationState: payload.outputPreparationState,
+    lastFrameUrl: payload.lastFrameUrl ?? null,
     audioUrl: payload.audioUrl ?? null,
     thumbUrl: payload.thumbUrl ?? null,
     aspectRatio: payload.aspectRatio ?? null,
@@ -201,7 +169,7 @@ async function fetchJobStatus(jobId: string): Promise<JobStatusResult> {
     etaLabel: payload.etaLabel ?? null,
   };
 
-  if (typeof window !== 'undefined') {
+  if (typeof window !== 'undefined' && isCurrent()) {
     window.dispatchEvent(new CustomEvent<JobStatusResult>('jobs:status', { detail: result }));
   }
 

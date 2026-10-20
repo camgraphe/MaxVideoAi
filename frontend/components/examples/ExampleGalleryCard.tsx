@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, type MouseEvent } from 'react';
+import { useEffect, useRef, type MouseEvent, type ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Play } from 'lucide-react';
@@ -12,13 +12,14 @@ import styles from './examples-masonry.module.css';
 
 type Props = {
   video: ExampleGalleryVideo; locale: string; altText: string; detailsCtaLabel: string;
+  priceSlot?: ReactNode;
   prioritizePoster: boolean; noPreviewLabel: string; audioAvailableLabel: string;
   requested: boolean; frame?: 'lead'|'portrait'|'side';
   onVisibility: (id:string,visible:boolean)=>void; onIntent:(id:string|null)=>void;
   onOpen?:(video:ExampleGalleryVideo)=>void;
 };
 export function ExampleGalleryCard({video,locale,altText,detailsCtaLabel,prioritizePoster,noPreviewLabel,audioAvailableLabel,
-  requested,frame,onVisibility,onIntent,onOpen}:Props) {
+  requested,frame,onVisibility,onIntent,onOpen,priceSlot}:Props) {
   const cardRef=useRef<HTMLDivElement>(null);
   const {videoRef,playbackAttempt,events,videoReady}=useExampleCardPlayback(video.previewVideoUrl??null,requested,false);
   const watchAnchorText=buildWatchAnchorText(locale,video);
@@ -54,7 +55,9 @@ export function ExampleGalleryCard({video,locale,altText,detailsCtaLabel,priorit
       <span className={styles.playIcon} aria-hidden="true"><Play size={18} fill="currentColor" /></span>
       <span className={styles.caption}>
         <strong>{video.engineLabel}</strong><span>{video.aspectRatio??'Auto'} · {video.durationSec} s</span>
-        {video.priceLabel && <span>{video.priceLabel}</span>}
+        {video.sourcePromptExcerpt ? <span className={styles.promptExcerpt} data-example-prompt>{video.sourcePromptExcerpt}</span> : null}
+        {priceSlot !== undefined ? <span className={styles.priceSlot}>{priceSlot}</span>
+          : video.priceLabel && <span>{video.priceLabel}</span>}
         <p aria-hidden="true" className={styles.detailLabel}>{detailsCtaLabel} ↗</p>
       </span>
       {video.hasAudio?<span className="sr-only">{audioAvailableLabel}</span>:null}

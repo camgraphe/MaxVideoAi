@@ -551,6 +551,9 @@ export type WorkspaceTimelineAudioMix = {
 };
 
 export type WorkspaceTimelineItem = {
+  subtitle?: {documentId:string;revision:number};
+  /** Owned read projection only; never stored with a sequence. */
+  subtitleDocument?: import('@/lib/subtitles/document').SubtitleDocument;
   ref?: import('@/src/lib/toolbox/contract').ToolAssetRef;
   mediaFacts?: import('@/lib/media-identity').MediaFacts;
   /** Ephemeral authenticated playback projection. Never persist this URL. */

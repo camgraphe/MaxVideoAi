@@ -1,11 +1,15 @@
-import { query } from '@/lib/db';
+import { withDbTransaction } from '@/lib/db';
 import { deriveJobSurface } from '@/lib/job-surface';
-import type { PricingSnapshot } from '@/types/engines';
+import { refundAudioChargeInExecutor } from '@/server/audio/audio-generate-receipts';
 import type { JobRow } from './jobs-route-types';
 
 const STALE_AUDIO_JOB_TIMEOUT_MS = 10 * 60 * 1000;
 
-export function isStaleAudioJob(row: JobRow): boolean {
+type StaleAudioCandidate = Pick<JobRow,
+  'job_id' | 'surface' | 'settings_snapshot' | 'engine_id' | 'video_url' | 'audio_url' | 'render_ids' | 'status' | 'updated_at'
+>;
+
+export function isStaleAudioJob(row: StaleAudioCandidate): boolean {
   const surface = deriveJobSurface({
     surface: row.surface,
     settingsSnapshot: row.settings_snapshot,
@@ -23,85 +27,30 @@ export function isStaleAudioJob(row: JobRow): boolean {
   return Date.now() - updatedAt.getTime() > STALE_AUDIO_JOB_TIMEOUT_MS;
 }
 
-export async function expireStaleAudioJob(row: JobRow, userId: string): Promise<void> {
-  const refundAmountCents =
-    typeof row.final_price_cents === 'number'
-      ? row.final_price_cents
-      : typeof row.pricing_snapshot?.totalCents === 'number'
-        ? row.pricing_snapshot.totalCents
-        : 0;
-  const refundCurrency = row.currency ?? row.pricing_snapshot?.currency ?? 'USD';
-  const refundSnapshot =
-    row.pricing_snapshot ??
-    ({
-      currency: refundCurrency,
-      totalCents: refundAmountCents,
-      subtotalBeforeDiscountCents: refundAmountCents,
-      base: {
-        seconds: 0,
-        rate: 0,
-        unit: 'sec',
-        amountCents: refundAmountCents,
-      },
-      addons: [],
-      margin: {
-        amountCents: 0,
-      },
-      membershipTier: 'member',
-      meta: {
-        surface: 'audio',
-      },
-    } satisfies PricingSnapshot);
-
-  if (refundAmountCents > 0 && row.payment_status === 'paid_wallet') {
-    const existingRefund = await query<{ present: number }>(
-      `SELECT 1 AS present
-         FROM app_receipts
-        WHERE job_id = $1
-          AND type = 'refund'
-        LIMIT 1`,
-      [row.job_id]
+export async function expireStaleAudioJob(row: Pick<JobRow, 'job_id'>, userId: string): Promise<boolean> {
+  return withDbTransaction(async executor => {
+    // Feed rows are only candidates: completion or progress may win before this lock.
+    const currentRows = await executor.query<StaleAudioCandidate & Pick<JobRow, 'payment_status'>>(
+      `SELECT job_id, surface, settings_snapshot, engine_id, video_url,
+              audio_url, render_ids, status, payment_status, updated_at
+         FROM app_jobs
+        WHERE job_id = $1 AND user_id = $2
+        FOR UPDATE`,
+      [row.job_id, userId]
     );
-    if (!existingRefund[0]) {
-      await query(
-        `INSERT INTO app_receipts (
-           user_id,
-           type,
-           amount_cents,
-           currency,
-           description,
-           job_id,
-           surface,
-           billing_product_key,
-           pricing_snapshot,
-           application_fee_cents,
-           vendor_account_id
-         )
-         VALUES ($1, 'refund', $2, $3, $4, $5, 'audio', $6, $7::jsonb, 0, NULL)`,
-        [
-          userId,
-          refundAmountCents,
-          refundCurrency,
-          'Refund stale audio render',
-          row.job_id,
-          row.billing_product_key ?? null,
-          JSON.stringify(refundSnapshot),
-        ]
-      );
-    }
-  }
+    const current = currentRows[0];
+    if (!current || !isStaleAudioJob(current)) return false;
 
-  await query(
-    `UPDATE app_jobs
-        SET status = 'failed',
-            progress = 0,
-            message = $1,
-            payment_status = CASE
-              WHEN payment_status = 'paid_wallet' THEN 'refunded_wallet'
-              ELSE payment_status
-            END,
-            updated_at = NOW()
-      WHERE job_id = $2`,
-    ['Audio render timed out before completion.', row.job_id]
-  );
+    await executor.query(
+      `UPDATE app_jobs
+          SET status = 'failed', progress = 0, message = $2, updated_at = NOW()
+        WHERE job_id = $1`,
+      [current.job_id, 'Audio render timed out before completion.']
+    );
+    if (current.payment_status === 'paid_wallet' || current.payment_status === 'refunded_wallet') {
+      // A missing/inconsistent debit or failed ledger write rolls back expiration too.
+      await refundAudioChargeInExecutor(executor, { userId, jobId: current.job_id });
+    }
+    return true;
+  });
 }

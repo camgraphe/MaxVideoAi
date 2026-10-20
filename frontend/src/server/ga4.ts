@@ -5,7 +5,8 @@ import { boundGa4EventParams } from '@/lib/analytics/ga4-params';
 
 type Ga4ParamValue = string | number | boolean;
 
-type SendGa4EventArgs = {
+export type SendGa4EventArgs = {
+  timestampMicros?: number;
   name: string;
   params?: Record<string, unknown>;
   clientId?: string | null;
@@ -73,22 +74,31 @@ export function extractGaClientId(raw: string | null | undefined): string | null
   return null;
 }
 
-export async function sendGa4Event({ name, params, clientId, sessionId, userId }: SendGa4EventArgs): Promise<boolean> {
+export type Ga4DeliveryResult = {
+  status: 'accepted' | 'retry' | 'dead';
+  code: string;
+  httpStatus?: number;
+};
+
+export async function sendGa4EventWithResult(
+  { name, params, clientId, sessionId, userId, timestampMicros }: SendGa4EventArgs,
+  options: { timeoutMs?: number } = {},
+): Promise<Ga4DeliveryResult> {
   const measurementId = ENV.GA4_MEASUREMENT_ID;
   const apiSecret = ENV.GA4_API_SECRET;
 
   if (!measurementId || !apiSecret) {
-    return false;
+    return { status: 'retry', code: 'configuration_missing' };
   }
 
   const resolvedClientId = extractGaClientId(clientId) ?? deriveClientIdFromUserId(userId);
   if (!resolvedClientId) {
-    return false;
+    return { status: 'dead', code: 'client_id_missing' };
   }
 
   const eventName = (name || '').trim().slice(0, 40);
   if (!eventName) {
-    return false;
+    return { status: 'dead', code: 'event_name_missing' };
   }
 
   const endpoint = `https://www.google-analytics.com/mp/collect?measurement_id=${encodeURIComponent(
@@ -117,27 +127,35 @@ export async function sendGa4Event({ name, params, clientId, sessionId, userId }
     payload.user_id = userId;
   }
 
+  if (timestampMicros !== undefined) {
+    if (!Number.isSafeInteger(timestampMicros) || timestampMicros <= 0) {
+      return { status: 'dead', code: 'invalid_timestamp' };
+    }
+    payload.timestamp_micros = timestampMicros;
+  }
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), Math.max(1, Math.min(5000, options.timeoutMs ?? 5000)));
   try {
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
+      signal: controller.signal,
+      redirect: 'error',
     });
-    if (!response.ok) {
-      const body = await response.text().catch(() => '');
-      console.warn('[ga4] Measurement Protocol request failed', {
-        status: response.status,
-        body: body.slice(0, 200),
-        eventName,
-      });
-      return false;
-    }
-    return true;
-  } catch (error) {
-    console.warn('[ga4] Measurement Protocol request error', {
-      eventName,
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return false;
+    // Google advises correcting non-2xx requests, not replaying them unchanged.
+    // Neither response bodies nor fetch error strings are safe diagnostic data.
+    void response.body?.cancel().catch(() => undefined);
+    return response.ok
+      ? { status: 'accepted', code: 'http_2xx', httpStatus: response.status }
+      : { status: 'dead', code: 'http_error', httpStatus: response.status };
+  } catch {
+    return { status: 'retry', code: controller.signal.aborted ? 'timeout' : 'network' };
+  } finally {
+    clearTimeout(timeout);
   }
+}
+
+export async function sendGa4Event(args: SendGa4EventArgs): Promise<boolean> {
+  return (await sendGa4EventWithResult(args)).status === 'accepted';
 }

@@ -1,0 +1,109 @@
+{
+  "portrait": {
+    "original": "/assets/tools/creator-results/lip-portrait-original-31f8fae51bdc.png",
+    "width": 1448,
+    "height": 1086,
+    "variants": [
+      {
+        "src": "/assets/tools/creator-results/lip-portrait-480-cb62ee637c7b.webp",
+        "width": 480
+      },
+      {
+        "src": "/assets/tools/creator-results/lip-portrait-960-dffc2d0313e3.webp",
+        "width": 960
+      },
+      {
+        "src": "/assets/tools/creator-results/lip-portrait-1448-7b6dc159007d.webp",
+        "width": 1448
+      }
+    ]
+  },
+  "audio": {
+    "original": "/assets/tools/creator-results/lip-voice-original-5cc2e622eaf9.mp3",
+    "reference": "/assets/tools/creator-results/lip-voice-reference-51d39cbf98ce.wav",
+    "duration": 10.370612,
+    "peaks": [
+      0.369,
+      0.639,
+      1,
+      0.865,
+      0.247,
+      0.409,
+      0.549,
+      0.38,
+      0.118,
+      0.683,
+      0.244,
+      0.239,
+      0.13,
+      0.045,
+      0.045,
+      0.045,
+      0.109,
+      0.492,
+      0.572,
+      0.363,
+      0.137,
+      0.173,
+      0.325,
+      0.045,
+      0.045,
+      0.045,
+      0.373,
+      0.543,
+      0.21,
+      0.23,
+      0.461,
+      0.59,
+      0.172,
+      0.281,
+      0.225,
+      0.086,
+      0.141,
+      0.053,
+      0.045,
+      0.045,
+      0.045,
+      0.045,
+      0.248,
+      0.313,
+      0.641,
+      0.282,
+      0.249,
+      0.048,
+      0.045,
+      0.284,
+      0.347,
+      0.332,
+      0.36,
+      0.174,
+      0.356,
+      0.178,
+      0.093,
+      0.122,
+      0.258,
+      0.297,
+      0.229,
+      0.266,
+      0.126,
+      0.045
+    ]
+  },
+  "result": {
+    "original": "/assets/tools/creator-results/lip-performance-096c13c61c23.mp4",
+    "poster": "/assets/tools/creator-results/lip-performance-poster-fac0a8b54411.webp",
+    "width": 854,
+    "height": 480,
+    "duration": 10.4,
+    "hasAudio": true
+  },
+  "provenance": {
+    "jobId": "2a8a63ac-1a69-4ddf-bec8-0f438d203281",
+    "model": "Wan 3",
+    "providerDuration": 11,
+    "selectedAudioDuration": 10.370612,
+    "audioEncoding": "aac",
+    "finalization": "Generated video tail trimmed; complete original selected voice retained.",
+    "userReviewed": "2026-10-20"
+  }
+}

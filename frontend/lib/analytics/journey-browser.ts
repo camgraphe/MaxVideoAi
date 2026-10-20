@@ -2,6 +2,7 @@ import { clearPendingAnalyticsEvent, clearPendingTopupCancelledEvent } from '../
 import { getAnalyticsRouteContext, type AnalyticsRouteContext } from '../analytics-route';
 import { hasAnalyticsConsentInBrowser } from './consent-client';
 import { isBrowserCommercialAnalyticsExcluded, shouldDeferCommercialAnalyticsEvent } from './commercial-client';
+import { isBrowserAnalyticsRouteExcluded, readBrowserAnalyticsPageContext } from './page-context';
 import {
   ANALYTICS_JOURNEY_STORAGE_KEY,
   ANALYTICS_JOURNEY_TTL_MS,
@@ -176,6 +177,7 @@ export function prepareBrowserAnalyticsEvents(
     return [];
   }
   if (shouldDeferCommercialAnalyticsEvent(event, payload)) return [];
+  if (isBrowserAnalyticsRouteExcluded()) return [];
 
   const now = Date.now();
   const touch = resolveCurrentTouch();
@@ -194,7 +196,13 @@ export function prepareBrowserAnalyticsEvents(
 
   const prepared = prepareJourneyEvents(record, event, payload, now);
   persistAnalyticsJourney(prepared.record);
-  return prepared.events;
+  // Page context is derived after the untrusted event projection, and retained
+  // with queued events so delayed delivery cannot attribute them to a later page.
+  const pageContext = readBrowserAnalyticsPageContext();
+  return prepared.events.map(preparedEvent => ({
+    ...preparedEvent,
+    payload: { ...preparedEvent.payload, ...pageContext },
+  }));
 }
 
 export function readWalletAnalyticsJourney(): WalletAnalyticsJourney | null {

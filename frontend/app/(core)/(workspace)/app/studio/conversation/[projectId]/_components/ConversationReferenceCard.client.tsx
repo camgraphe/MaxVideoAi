@@ -1,6 +1,9 @@
 'use client';
 
 import {useEffect, useRef, useState} from 'react';
+import dynamic from 'next/dynamic';
+import {getReleasedCreatorToolIds} from '@/lib/toolbox/creator-availability';
+const CreatorToolLinks=dynamic(()=>import('@/components/library/CreatorToolLinks.client').then(module=>module.CreatorToolLinks));
 import {ArrowUpLeft, Check, Expand, Film, Image as ImageIcon, Music2, RefreshCw, ListVideo} from 'lucide-react';
 import type {ConversationLocale} from '@/lib/studio/conversation-quote-presentation';
 import type {ConversationReferencePreview} from '@/lib/studio/conversation-reference-previews';
@@ -50,6 +53,7 @@ export function ConversationReferenceCard({projectId, item, active, compact, att
   }, [active, compact]);
   function failPreview() {access.current = null; setFailed(true);}
   const icon = kind === 'video' ? <Film size={22}/> : kind === 'audio' ? <Music2 size={22}/> : <ImageIcon size={22}/>;
+  const mediaName = preview?.name ?? item.name;
   const imageUrl = preview && (preview.thumbUrl || (kind === 'image' ? preview.url : null));
   const showPlayer = active && !compact && preview && !failed && !loading && kind !== 'image';
   return <article ref={card} className={styles.card} data-media-card={item.assetId} data-selected={active} data-compact={compact}>
@@ -57,12 +61,12 @@ export function ConversationReferenceCard({projectId, item, active, compact, att
       {showPlayer ? kind === 'video' ? <video key={preview.url} ref={node => {player.current = node;}} src={preview.url} poster={preview.thumbUrl ?? undefined} controls playsInline preload="none" aria-label={item.label} onError={failPreview}/> : <div className={styles.audio}>{icon}<audio key={preview.url} ref={node => {player.current = node;}} src={preview.url} controls preload="none" aria-label={item.label} onError={failPreview}/></div> :
         <button className={styles.select} aria-label={t('Preview ', 'Aperçu de ') + item.label} aria-pressed={active} onClick={onSelect} draggable
           onDragStart={event => {event.dataTransfer.effectAllowed = 'copy'; event.dataTransfer.setData(MEDIA_SHELF_DRAG_TYPE, item.assetId);}}>
-          {imageUrl && !failed ? <img src={imageUrl} alt={item.name ?? item.label} draggable={false} onLoad={event => {const image = event.currentTarget; if (image.naturalHeight) setRatio(image.naturalWidth / image.naturalHeight);}} onError={failPreview}/> : <span className={styles.placeholder}>{icon}{!compact && <small>{loading ? t('Opening…', 'Ouverture…') : failed ? t('Preview unavailable', 'Aperçu indisponible') : item.label}</small>}</span>}
+          {imageUrl && !failed ? <img src={imageUrl} alt={mediaName ?? item.label} draggable={false} onLoad={event => {const image = event.currentTarget; if (image.naturalHeight) setRatio(image.naturalWidth / image.naturalHeight);}} onError={failPreview}/> : <span className={styles.placeholder}>{icon}{!compact && <small>{loading ? t('Opening…', 'Ouverture…') : failed ? t('Preview unavailable', 'Aperçu indisponible') : item.label}</small>}</span>}
         </button>}
       {attached && <span className={styles.attachedMark} aria-label={t('Attached', 'Joint')}><Check size={11}/></span>}
     </div>
     {!compact && <div className={styles.caption}>
-      <span className={styles.captionLabel} title={item.name}>{item.label}</span>
+      <span className={styles.captionLabel} title={mediaName}>{item.label}</span>
       {active && <div className={styles.actions}>
         <button onClick={onMention} aria-label={t('Mention in message', 'Citer dans le message')} title={t('Mention in message', 'Citer dans le message')}><ArrowUpLeft size={16}/></button>
         {onInsert&&<button onClick={()=>onInsert(shelfTimelineAsset(item,preview))} aria-label={t('Add to timeline','Ajouter à la timeline')} title={t('Add to timeline','Ajouter à la timeline')}><ListVideo size={16}/></button>}
@@ -71,6 +75,7 @@ export function ConversationReferenceCard({projectId, item, active, compact, att
         {failed && <button onClick={() => {access.current = null; setRetry(value => value + 1);}} aria-label={t('Try again', 'Réessayer')}><RefreshCw size={14}/></button>}
       </div>}
     </div>}
+    {active && !compact && preview && !failed && getReleasedCreatorToolIds().length > 0 ? <CreatorToolLinks key={item.assetId} locale={locale} asset={{id:item.assetId,kind,url:preview.url,thumbUrl:preview.thumbUrl}}/> : null}
     {lightbox && preview && <ConversationReferenceLightbox url={preview.url} label={item.label} locale={locale} trigger={enlargeTrigger} onClose={() => setLightbox(false)}/>}
   </article>;
 }

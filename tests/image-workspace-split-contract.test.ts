@@ -236,3 +236,23 @@ test('image library presentation delegates account-scoped listing to its route-l
   assert.match(data, /\/api\/character-references\?limit=60/);
   assert.doesNotMatch(data, /\/api\/user-assets/);
 });
+
+test('image composer user actions share gallery hydration cancellation at the route boundary', () => {
+  const source = readImageWorkspace();
+  assert.match(source, /useImageGallerySelection\(\{\s*accountId,/);
+  const guardedActions = source.match(/const composerActionProps = guardComposerActions\(\{([\s\S]*?)\}\);/)?.[1] ?? '';
+  for (const action of [
+    'setAspectRatio', 'setBackground', 'setCustomImageHeight', 'setCustomImageWidth', 'setEnableWebSearch',
+    'setEngineId', 'setLimitGenerations', 'setMaskUrl', 'setMode', 'setNumImagesPreset', 'setOutputFormat',
+    'setPrompt', 'setQuality', 'setResolutionPreset', 'setSeed', 'setStyle', 'setThinkingLevel', 'setWatermark',
+    'handleEditSelectedPreview', 'handleReferenceFile', 'handleReferenceUrl', 'handleRemoveReferenceSlot',
+    'handleRun', 'handleLibrarySelect', 'toggleCharacterReference', 'selectStarter',
+  ]) assert.match(guardedActions, new RegExp(`\\b${action}\\b`), `${action} must cancel stale gallery hydration`);
+  assert.doesNotMatch(guardedActions, /\b(?:setError|setSelectedPreviewImageIndex)\b/, 'notices and preview-only navigation do not change composer intent');
+  assert.match(source, /\.\.\.composerActionProps/);
+  assert.match(source, /onInsert=\{composerActionProps.handleLibrarySelect\}/);
+  assert.match(source, /handleLibrarySelect=\{composerActionProps.handleLibrarySelect\}/);
+  assert.match(source, /toggleCharacterReference=\{composerActionProps.toggleCharacterReference\}/);
+  assert.match(source, /onSelectStarter: composerActionProps.selectStarter/);
+  assert.match(source, /starterNavigation=\{[\s\S]*guardComposerActions\(\{\s*onPrev: starterNavigation.onPrev, onNext: starterNavigation.onNext/);
+});

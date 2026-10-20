@@ -2,8 +2,6 @@ import { isDatabaseConfigured } from '@/lib/db';
 import type { AppLocale } from '@/i18n/locales';
 import { listGalleryVideos, listPlaylistVideos, type GalleryVideo } from '@/server/videos';
 import type { PayAsYouGoContent, PaygShowcaseTitleId } from '../_content/types';
-import { quoteCurrentExamplePrices, type CurrentExamplePrice } from '@/server/current-example-price';
-import { formatCurrentExamplePrice } from '@/lib/current-example-price-display';
 
 export const PAYG_VIDEO_PLAYLIST_SLUG = 'payg-ai-video-generator';
 const SHOWCASE_LIMIT = 7;
@@ -23,7 +21,6 @@ export type PayAsYouGoShowcaseVideo = {
   id: string;
   engineId: string;
   engineLabel: string;
-  priceLabel: string;
   durationLabel: string;
   title: string;
   useCase: string;
@@ -139,7 +136,6 @@ export function buildPayAsYouGoShowcaseVideo(
   video: GalleryVideo,
   locale: AppLocale,
   copy: PayAsYouGoShowcaseRuntimeCopy,
-  currentPrice?: CurrentExamplePrice,
 ): PayAsYouGoShowcaseVideo {
   const duration = Math.max(1, Math.round(video.durationSec || 0));
   const engineLabel = video.engineLabel || video.engineId || copy.defaultEngineLabel;
@@ -148,7 +144,6 @@ export function buildPayAsYouGoShowcaseVideo(
     id: video.id,
     engineId: video.engineId,
     engineLabel,
-    priceLabel: formatCurrentExamplePrice(currentPrice, locale) ?? copy.priceUnavailable,
     durationLabel: `${duration}s`,
     title: formatVideoTitle(video.promptExcerpt || video.prompt || '', titleEngineLabel, copy),
     useCase: formatVideoUseCase(video, copy),
@@ -190,6 +185,5 @@ export async function loadPayAsYouGoVideoShowcase({
   }
 
   const selected = pickDiverseVideos(videos);
-  const prices = await quoteCurrentExamplePrices(selected);
-  return selected.map((video) => buildPayAsYouGoShowcaseVideo(video, locale, copy, prices.get(video.id)));
+  return selected.map((video) => buildPayAsYouGoShowcaseVideo(video, locale, copy));
 }

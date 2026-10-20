@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import test, {type TestContext} from 'node:test';
 import {randomUUID} from 'node:crypto';
 import {startDisposablePostgres} from './helpers/disposable-postgres';
 import {initializeStudioConnectedFixture, STUDIO_CONNECTED_ASSET_IDS, STUDIO_CONNECTED_MONTAGE_INPUT} from './helpers/studio-connected-fixture-data';
@@ -9,6 +9,343 @@ import {readStudioWorkspace} from '../frontend/src/server/studio/workspace-comma
 import type {QueryExecutor} from '../frontend/src/lib/db';
 import type {WorkspaceTimelineItem} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
 import {buildWorkspaceTimelineRenderManifest} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-render';
+import {hydrateOwnedVideoMediaFacts} from '../frontend/server/media-library/owned-video-facts';
+
+async function videoQualificationFixture(t: TestContext) {
+  const {createStudioConversationProject} = await import('../frontend/src/server/studio/conversation-edit-command');
+  const pg = await startDisposablePostgres('stchat-video-facts');
+  t.after(() => pg.cleanup());
+  await initializeStudioConnectedFixture(pg);
+  await pg.pool.query(`ALTER TABLE media_assets ADD COLUMN width integer, ADD COLUMN height integer,
+    ADD COLUMN updated_at timestamptz`);
+  await pg.pool.query("UPDATE media_assets SET url='https://cdn.maxvideoai.com/' || public_id || '.mp4'");
+  let activeTransactions = 0;
+  const withTransaction = async <T>(callback: (executor: QueryExecutor) => Promise<T>) => {
+    const client = await pg.pool.connect();
+    try {
+      await client.query('BEGIN');
+      activeTransactions++;
+      const result = await callback({query: async (sql, values) => (await client.query(sql, values)).rows});
+      await client.query('COMMIT');
+      return result;
+    } catch (error) {await client.query('ROLLBACK'); throw error;}
+    finally {activeTransactions--; client.release();}
+  };
+  const actor = {userId: STUDIO_FIXTURE_OWNERS[0]};
+  const deps = {withTransaction,featureEnabled: true};
+  const project = await createStudioConversationProject(actor,{name: 'Older owned clips',idempotencyKey: randomUUID()},deps);
+  const inspections: string[] = [];
+  const inspectionHook: {after?: (url: string) => Promise<void>} = {};
+  const measured = {durationSec: 25,width: 320,height: 180,hasAudio: true};
+  const hydrateVideoFacts: typeof hydrateOwnedVideoMediaFacts = input => hydrateOwnedVideoMediaFacts(input,{
+    query: async <T>(sql: string,values: readonly unknown[] = []) => (await pg.pool.query(sql,[...values])).rows as T[],
+    createReadUrl: async ({userId,url}) => {assert.equal(userId,actor.userId); return url;},
+    inspectVideo: async url => {
+      assert.equal(activeTransactions,0,'Source inspection must run after editor locks are released.');
+      inspections.push(url);
+      await inspectionHook.after?.(url);
+      return measured;
+    },
+  });
+  const unmeasure = (assetIds: readonly string[]) => pg.pool.query(`UPDATE media_assets SET metadata=$2::jsonb
+    WHERE public_id=ANY($1::text[])`,[[...assetIds],JSON.stringify({durationSec: 25,legacy: true})]);
+  const assembly = (assetIds: readonly string[]) => ({
+    projectId: project.projectId,sequenceId: project.sequenceId,expectedRevision: 0,idempotencyKey: randomUUID(),
+    edit: {kind: 'assemble' as const,clips: assetIds.map((assetId,index) => ({
+      ref: {type: 'asset' as const,assetId,kind: 'video' as const},startFrame: index*600,durationFrames: 600,sourceInFrame: 0,
+    }))},
+  });
+  const assertNoEdit = async () => {
+    const read = await readStudioWorkspace(actor,project.projectId,deps);
+    assert.equal(read.project.revision,0);
+    assert.deepEqual((read.sequences[0].timelineState as {timelineItems: WorkspaceTimelineItem[]}).timelineItems,[]);
+    assert.equal((await pg.pool.query("SELECT count(*)::int AS n FROM studio_project_commands WHERE command_kind='conversation_timeline_edit'")).rows[0].n,0);
+  };
+  return {pg,actor,deps,project,inspections,inspectionHook,hydrateVideoFacts,unmeasure,assembly,assertNoEdit};
+}
+
+test('replacement preserves one exact clip interval, rejects short/foreign/locked sources and remains reversible and idempotent',async t=>{
+  const {editStudioConversationTimeline}=await import('../frontend/src/server/studio/conversation-edit-command');
+  const {pg,actor,deps,project,assembly}=await videoQualificationFixture(t);
+  const initial=assembly([STUDIO_CONNECTED_ASSET_IDS.a,STUDIO_CONNECTED_ASSET_IDS.b]);
+  initial.edit.clips=initial.edit.clips.map((clip,index)=>({...clip,startFrame:index*60,durationFrames:60}));
+  await editStudioConversationTimeline(actor,initial,deps);
+  const read=()=>readStudioWorkspace(actor,project.projectId,deps);
+  const before=await read();const clips=(before.sequences[0].timelineState as {timelineItems:WorkspaceTimelineItem[]}).timelineItems;
+  const original=clips[0];
+  const request={projectId:project.projectId,sequenceId:project.sequenceId,expectedRevision:1,idempotencyKey:randomUUID(),edit:{kind:'replace' as const,clipId:original.id,ref:{type:'asset' as const,assetId:STUDIO_CONNECTED_ASSET_IDS.b,kind:'video' as const},sourceInFrame:30}};
+  await assert.rejects(editStudioConversationTimeline(actor,{...request,edit:{...request.edit,sourceInFrame:150}},deps),/duration/);
+  await assert.rejects(editStudioConversationTimeline(actor,{...request,edit:{...request.edit,ref:{...request.edit.ref,assetId:STUDIO_CONNECTED_ASSET_IDS.foreign}}},deps),/MEDIA_NOT_AVAILABLE/);
+  await assert.rejects(editStudioConversationTimeline(actor,{...request,edit:{...request.edit,ref:{...request.edit.ref,kind:'audio'}}},deps),/keep audio/);
+  await pg.pool.query('UPDATE studio_sequences SET timeline_state=timeline_state||$2::jsonb WHERE id=$1',[project.sequenceId,JSON.stringify({lockedTimelineTracks:[original.track]})]);
+  await assert.rejects(editStudioConversationTimeline(actor,request,deps),/locked/);
+  await pg.pool.query('UPDATE studio_sequences SET timeline_state=timeline_state||$2::jsonb WHERE id=$1',[project.sequenceId,JSON.stringify({lockedTimelineTracks:[]})]);
+  const rejectedBefore=await read();
+  await assert.rejects(editStudioConversationTimeline(actor,request,{...deps,afterMutation:()=>{throw new Error('rollback-replace');}}),/rollback-replace/);
+  assert.deepEqual(await read(),rejectedBefore);
+  const result=await editStudioConversationTimeline(actor,request,deps);
+  assert.equal(result.revision,2);assert.equal(result.clip?.id,original.id);assert.equal(result.totalFrames,120);
+  const replaced=await read();const after=(replaced.sequences[0].timelineState as {timelineItems:WorkspaceTimelineItem[]}).timelineItems;
+  assert.deepEqual(after[1],clips[1]);
+  for(const key of ['id','startSec','durationSec','track','transform','audioMix','linkedGroupId','linkedGroupKind'] as const)assert.deepEqual(after[0][key],original[key],key);
+  assert.deepEqual(after[0].ref,request.edit.ref);assert.equal(after[0].sourceStartSec,1);assert.equal(after[0].sourceDurationSec,6);
+  assert.deepEqual(await editStudioConversationTimeline(actor,request,deps),result);
+  assert.deepEqual(await read(),replaced);
+  await assert.rejects(editStudioConversationTimeline(actor,{...request,edit:{...request.edit,sourceInFrame:0}},deps),{code:'STUDIO_IDEMPOTENCY_CONFLICT'});
+  await assert.rejects(editStudioConversationTimeline(actor,{...request,idempotencyKey:randomUUID()},deps),{code:'STUDIO_REVISION_CONFLICT'});
+  await editStudioConversationTimeline(actor,{...request,expectedRevision:2,idempotencyKey:randomUUID(),edit:{...request.edit,ref:original.ref!,sourceInFrame:Math.round((original.sourceStartSec??0)*30)}},deps);
+  const restored=((await read()).sequences[0].timelineState as {timelineItems:WorkspaceTimelineItem[]}).timelineItems;
+  assert.deepEqual(restored,clips,'A reverse replacement restores the source without moving any timeline clip.');
+});
+
+test('replacement qualifies its owned source outside locks and rechecks revision and ownership before saving',async t=>{
+  const {editStudioConversationTimeline}=await import('../frontend/src/server/studio/conversation-edit-command');
+  for(const scenario of ['success','manual-revision','owner-change'] as const){
+    await t.test(scenario,async subtest=>{
+      const {pg,actor,deps,project,assembly,inspections,inspectionHook,hydrateVideoFacts,unmeasure}=await videoQualificationFixture(subtest);
+      const initial=assembly([STUDIO_CONNECTED_ASSET_IDS.a]);initial.edit.clips[0].durationFrames=60;
+      await editStudioConversationTimeline(actor,initial,deps);
+      const before=await readStudioWorkspace(actor,project.projectId,deps);
+      const original=(before.sequences[0].timelineState as {timelineItems:WorkspaceTimelineItem[]}).timelineItems[0];
+      await unmeasure([STUDIO_CONNECTED_ASSET_IDS.b]);
+      if(scenario==='manual-revision')inspectionHook.after=async()=>{await pg.pool.query('UPDATE studio_projects SET revision=revision+1,name=$2 WHERE id=$1',[project.projectId,'Concurrent manual edit']);};
+      if(scenario==='owner-change')inspectionHook.after=async()=>{await pg.pool.query('UPDATE media_assets SET user_id=$2 WHERE public_id=$1',[STUDIO_CONNECTED_ASSET_IDS.b,STUDIO_FIXTURE_OWNERS[1]]);};
+      const request={projectId:project.projectId,sequenceId:project.sequenceId,expectedRevision:1,idempotencyKey:randomUUID(),edit:{kind:'replace' as const,clipId:original.id,ref:{type:'asset' as const,assetId:STUDIO_CONNECTED_ASSET_IDS.b,kind:'video' as const},sourceInFrame:300}};
+      if(scenario==='success'){
+        const result=await editStudioConversationTimeline(actor,request,{...deps,hydrateVideoFacts});
+        assert.equal(result.revision,2);
+        const state=(await readStudioWorkspace(actor,project.projectId,deps)).sequences[0].timelineState as {timelineItems:WorkspaceTimelineItem[]};
+        assert.equal(state.timelineItems[0].sourceStartSec,10);assert.equal(state.timelineItems[0].sourceDurationSec,25);
+        assert.equal(state.timelineItems[0].durationSec,original.durationSec);
+        assert.deepEqual(await editStudioConversationTimeline(actor,request,{...deps,hydrateVideoFacts}),result);
+      }else{
+        await assert.rejects(editStudioConversationTimeline(actor,request,{...deps,hydrateVideoFacts}),scenario==='manual-revision'?{code:'STUDIO_REVISION_CONFLICT'}:/MEDIA_NOT_AVAILABLE/);
+        const after=await readStudioWorkspace(actor,project.projectId,deps);
+        assert.deepEqual(after.sequences[0].timelineState,before.sequences[0].timelineState);
+        assert.equal(after.project.revision,scenario==='manual-revision'?2:1);
+        assert.equal((await pg.pool.query("SELECT count(*)::int AS n FROM studio_project_commands WHERE command_kind='conversation_timeline_edit'")).rows[0].n,1);
+      }
+      assert.deepEqual(inspections,[`https://cdn.maxvideoai.com/${STUDIO_CONNECTED_ASSET_IDS.b}.mp4`]);
+    });
+  }
+});
+
+test('replacement detaches old source captions while preserving immutable history, transitions and linked peers',async t=>{
+  const {editStudioConversationTimeline}=await import('../frontend/src/server/studio/conversation-edit-command');
+  const {pg,actor,deps,project,assembly}=await videoQualificationFixture(t);
+  const initial=assembly([STUDIO_CONNECTED_ASSET_IDS.a,STUDIO_CONNECTED_ASSET_IDS.b]);
+  initial.edit.clips=initial.edit.clips.map((clip,index)=>({...clip,startFrame:index*60,durationFrames:60}));
+  await editStudioConversationTimeline(actor,initial,deps);
+  const before=await readStudioWorkspace(actor,project.projectId,deps);
+  const state=before.sequences[0].timelineState as {timelineItems:WorkspaceTimelineItem[]};
+  const original=state.timelineItems[0];
+  Object.assign(original,{subtitle:{documentId:'retained-owned-document',revision:1},montageSource:{commandKind:'create_studio_montage',commandVersion:1,orderIndex:0,assetId:STUDIO_CONNECTED_ASSET_IDS.a,sourceInFrame:0,durationFrames:60,fps:30},transitionOut:{type:'crossfade',durationSec:.25},linkedGroupId:'manual-pair',linkedGroupKind:'manual',audioMix:{volume:35,muted:true}});
+  Object.assign(state.timelineItems[1],{linkedGroupId:'manual-pair',linkedGroupKind:'manual'});
+  await pg.pool.query('UPDATE studio_sequences SET timeline_state=$2::jsonb WHERE id=$1',[project.sequenceId,JSON.stringify(state)]);
+  await editStudioConversationTimeline(actor,{projectId:project.projectId,sequenceId:project.sequenceId,expectedRevision:1,idempotencyKey:randomUUID(),edit:{kind:'replace',clipId:original.id,ref:{type:'asset',assetId:STUDIO_CONNECTED_ASSET_IDS.b,kind:'video'}}},deps);
+  const items=((await readStudioWorkspace(actor,project.projectId,deps)).sequences[0].timelineState as {timelineItems:WorkspaceTimelineItem[]}).timelineItems;
+  assert.equal(items[0].subtitle,undefined);assert.equal(items[0].subtitleDocument,undefined);assert.deepEqual(items[0].montageSource,original.montageSource);
+  for(const key of ['id','startSec','durationSec','track','transitionOut','linkedGroupId','linkedGroupKind','audioMix'] as const)assert.deepEqual(items[0][key],original[key],key);
+  assert.deepEqual(items[1],state.timelineItems[1]);
+  assert.equal((await pg.pool.query('SELECT count(*)::int AS n FROM media_assets WHERE public_id=$1 AND user_id=$2',[STUDIO_CONNECTED_ASSET_IDS.a,actor.userId])).rows[0].n,1,'Replacement does not modify or delete the original media.');
+});
+
+test('assembly qualifies two distinct older sources before saving all three requested excerpts',async t => {
+  const {editStudioConversationTimeline} = await import('../frontend/src/server/studio/conversation-edit-command');
+  const fixture = await videoQualificationFixture(t);
+  const {pg,actor,deps,project,inspections,hydrateVideoFacts,unmeasure,assembly} = fixture;
+  await unmeasure([STUDIO_CONNECTED_ASSET_IDS.a,STUDIO_CONNECTED_ASSET_IDS.b]);
+  const before = (await pg.pool.query('SELECT public_id,user_id,url,metadata FROM media_assets ORDER BY public_id')).rows;
+  const input = assembly([STUDIO_CONNECTED_ASSET_IDS.a,STUDIO_CONNECTED_ASSET_IDS.b,STUDIO_CONNECTED_ASSET_IDS.a]);
+  const result = await editStudioConversationTimeline(actor,input,{...deps,hydrateVideoFacts});
+  assert.equal(result.revision,1); assert.equal(result.clipCount,3); assert.equal(result.totalFrames,1800);
+  const read = await readStudioWorkspace(actor,project.projectId,deps);
+  const items = (read.sequences[0].timelineState as {timelineItems: WorkspaceTimelineItem[]}).timelineItems;
+  assert.deepEqual(items.map(item => [item.startSec,item.durationSec,item.sourceStartSec,item.sourceDurationSec]),[
+    [0,20,0,25],[20,20,0,25],[40,20,0,25],
+  ]);
+  assert.deepEqual(inspections,[
+    `https://cdn.maxvideoai.com/${STUDIO_CONNECTED_ASSET_IDS.a}.mp4`,
+    `https://cdn.maxvideoai.com/${STUDIO_CONNECTED_ASSET_IDS.b}.mp4`,
+  ],'A repeated selected source needs only one inspection.');
+  const after = (await pg.pool.query('SELECT public_id,user_id,url,metadata FROM media_assets ORDER BY public_id')).rows;
+  assert.deepEqual(after.map(({metadata,...row}) => row),before.map(({metadata,...row}) => row),'Originals and ownership remain intact.');
+  for (const assetId of [STUDIO_CONNECTED_ASSET_IDS.a,STUDIO_CONNECTED_ASSET_IDS.b]) {
+    const metadata = after.find(row => row.public_id === assetId).metadata;
+    assert.deepEqual(metadata,{durationSec: 25,legacy: true,mediaFacts: {source: 'probe',durationSec: 25,width: 320,height: 180,hasAudio: true}});
+  }
+  assert.deepEqual(await editStudioConversationTimeline(actor,input,{...deps,hydrateVideoFacts}),result);
+  assert.equal(inspections.length,2,'Receipt replay neither inspects again nor repeats the edit.');
+  assert.equal((await pg.pool.query("SELECT count(*)::int AS n FROM studio_project_commands WHERE command_kind='conversation_timeline_edit'")).rows[0].n,1);
+});
+
+test('the full twelve-source assembly qualifies every source once and rejects a thirteenth clip before inspection',async t => {
+  const {editStudioConversationTimeline} = await import('../frontend/src/server/studio/conversation-edit-command');
+  const {pg,actor,deps,inspections,hydrateVideoFacts,assembly,assertNoEdit} = await videoQualificationFixture(t);
+  const assetIds = Array.from({length: 12},(_,index) => `ma_${(index+16).toString(16).padStart(32,'0')}`);
+  for (const assetId of assetIds) {
+    await pg.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,status,metadata)
+      VALUES($1,$2,$3,'video',$4,'video/mp4','ready',$5::jsonb)`,[
+      randomUUID(),assetId,actor.userId,`https://cdn.maxvideoai.com/${assetId}.mp4`,JSON.stringify({durationSec: 25}),
+    ]);
+  }
+  await assert.rejects(editStudioConversationTimeline(actor,assembly([...assetIds,assetIds[0]]),{...deps,hydrateVideoFacts}),/Invalid Studio timeline command/);
+  assert.equal(inspections.length,0);
+  await assertNoEdit();
+  const result = await editStudioConversationTimeline(actor,assembly(assetIds),{...deps,hydrateVideoFacts});
+  assert.equal(result.revision,1); assert.equal(result.clipCount,12); assert.equal(result.totalFrames,7200);
+  assert.deepEqual(inspections,assetIds.map(assetId => `https://cdn.maxvideoai.com/${assetId}.mp4`));
+});
+
+test('facts returned without persistence stop after one qualification attempt for the same selected source',async t => {
+  const {editStudioConversationTimeline} = await import('../frontend/src/server/studio/conversation-edit-command');
+  const {actor,deps,unmeasure,assembly,assertNoEdit} = await videoQualificationFixture(t);
+  await unmeasure([STUDIO_CONNECTED_ASSET_IDS.a,STUDIO_CONNECTED_ASSET_IDS.b]);
+  let attempts = 0;
+  const hydrateVideoFacts: typeof hydrateOwnedVideoMediaFacts = async () => {
+    attempts++;
+    return {source: 'probe',durationSec: 25,width: 320,height: 180,hasAudio: true};
+  };
+  await assert.rejects(editStudioConversationTimeline(actor,assembly([STUDIO_CONNECTED_ASSET_IDS.a,STUDIO_CONNECTED_ASSET_IDS.a,STUDIO_CONNECTED_ASSET_IDS.b]),{...deps,hydrateVideoFacts}),/MEDIA_METADATA_REQUIRED/);
+  assert.equal(attempts,1);
+  await assertNoEdit();
+});
+
+test('failure qualifying the second source saves no excerpts or edit receipt',async t => {
+  const {editStudioConversationTimeline} = await import('../frontend/src/server/studio/conversation-edit-command');
+  const {pg,actor,deps,inspections,hydrateVideoFacts,unmeasure,assembly,assertNoEdit} = await videoQualificationFixture(t);
+  await unmeasure([STUDIO_CONNECTED_ASSET_IDS.a,STUDIO_CONNECTED_ASSET_IDS.b]);
+  let attempts = 0;
+  await assert.rejects(editStudioConversationTimeline(actor,assembly([STUDIO_CONNECTED_ASSET_IDS.a,STUDIO_CONNECTED_ASSET_IDS.b]),{
+    ...deps,hydrateVideoFacts: async input => {
+      attempts++;
+      if (input.ref.type === 'asset' && input.ref.assetId === STUDIO_CONNECTED_ASSET_IDS.b) throw new Error('MEDIA_METADATA_REQUIRED');
+      return hydrateVideoFacts(input);
+    },
+  }),/MEDIA_METADATA_REQUIRED/);
+  assert.equal(attempts,2); assert.equal(inspections.length,1);
+  await assertNoEdit();
+  const metadata = (await pg.pool.query('SELECT public_id,metadata FROM media_assets WHERE public_id=ANY($1::text[]) ORDER BY public_id',[[STUDIO_CONNECTED_ASSET_IDS.a,STUDIO_CONNECTED_ASSET_IDS.b]])).rows;
+  assert.equal(metadata[0].metadata.mediaFacts.source,'probe','Useful measured facts survive even though the edit is rejected.');
+  assert.equal(metadata[1].metadata.mediaFacts,undefined);
+});
+
+test('a foreign second source is rejected without inspecting it or saving a partial assembly',async t => {
+  const {editStudioConversationTimeline} = await import('../frontend/src/server/studio/conversation-edit-command');
+  const {actor,deps,inspections,hydrateVideoFacts,unmeasure,assembly,assertNoEdit} = await videoQualificationFixture(t);
+  await unmeasure([STUDIO_CONNECTED_ASSET_IDS.a,STUDIO_CONNECTED_ASSET_IDS.foreign]);
+  await assert.rejects(editStudioConversationTimeline(actor,assembly([STUDIO_CONNECTED_ASSET_IDS.a,STUDIO_CONNECTED_ASSET_IDS.foreign]),{...deps,hydrateVideoFacts}),/MEDIA_NOT_AVAILABLE/);
+  assert.deepEqual(inspections,[`https://cdn.maxvideoai.com/${STUDIO_CONNECTED_ASSET_IDS.a}.mp4`]);
+  await assertNoEdit();
+});
+
+test('original or owner changes during inspection prevent facts and timeline persistence',async t => {
+  const {editStudioConversationTimeline} = await import('../frontend/src/server/studio/conversation-edit-command');
+  for (const change of ['original','owner'] as const) {
+    await t.test(change,async subtest => {
+      const {pg,actor,deps,inspections,inspectionHook,hydrateVideoFacts,unmeasure,assembly,assertNoEdit} = await videoQualificationFixture(subtest);
+      await unmeasure([STUDIO_CONNECTED_ASSET_IDS.a]);
+      inspectionHook.after = async () => {
+        if (change === 'original') await pg.pool.query('UPDATE media_assets SET url=$2 WHERE public_id=$1',[STUDIO_CONNECTED_ASSET_IDS.a,'https://cdn.maxvideoai.com/replaced.mp4']);
+        else await pg.pool.query('UPDATE media_assets SET user_id=$2 WHERE public_id=$1',[STUDIO_CONNECTED_ASSET_IDS.a,STUDIO_FIXTURE_OWNERS[1]]);
+      };
+      await assert.rejects(editStudioConversationTimeline(actor,assembly([STUDIO_CONNECTED_ASSET_IDS.a]),{...deps,hydrateVideoFacts}),/MEDIA_NOT_AVAILABLE/);
+      assert.equal(inspections.length,1);
+      assert.equal((await pg.pool.query('SELECT metadata FROM media_assets WHERE public_id=$1',[STUDIO_CONNECTED_ASSET_IDS.a])).rows[0].metadata.mediaFacts,undefined);
+      await assertNoEdit();
+    });
+  }
+});
+
+test('a qualified source changed while another is inspected cannot become a different assembled original',async t => {
+  const {editStudioConversationTimeline} = await import('../frontend/src/server/studio/conversation-edit-command');
+  const {pg,actor,deps,inspections,inspectionHook,hydrateVideoFacts,unmeasure,assembly,assertNoEdit} = await videoQualificationFixture(t);
+  await unmeasure([STUDIO_CONNECTED_ASSET_IDS.a,STUDIO_CONNECTED_ASSET_IDS.b]);
+  inspectionHook.after = async url => {
+    if (url.endsWith(`${STUDIO_CONNECTED_ASSET_IDS.b}.mp4`)) {
+      await pg.pool.query('UPDATE media_assets SET url=$2 WHERE public_id=$1',[STUDIO_CONNECTED_ASSET_IDS.a,'https://cdn.maxvideoai.com/replaced-with-complete-facts.mp4']);
+    }
+  };
+  await assert.rejects(editStudioConversationTimeline(actor,assembly([STUDIO_CONNECTED_ASSET_IDS.a,STUDIO_CONNECTED_ASSET_IDS.b]),{...deps,hydrateVideoFacts}),/MEDIA_NOT_AVAILABLE/);
+  assert.equal(inspections.length,2);
+  await assertNoEdit();
+});
+
+test('an already measured source stays pinned while a later source is qualified',async t => {
+  const {editStudioConversationTimeline} = await import('../frontend/src/server/studio/conversation-edit-command');
+  const {pg,actor,deps,inspections,inspectionHook,hydrateVideoFacts,unmeasure,assembly,assertNoEdit} = await videoQualificationFixture(t);
+  await pg.pool.query('UPDATE media_assets SET metadata=$2::jsonb WHERE public_id=$1',[
+    STUDIO_CONNECTED_ASSET_IDS.a,JSON.stringify({mediaFacts: {source: 'probe',durationSec: 25,width: 320,height: 180,hasAudio: true}}),
+  ]);
+  await unmeasure([STUDIO_CONNECTED_ASSET_IDS.b]);
+  inspectionHook.after = async () => {
+    await pg.pool.query('UPDATE media_assets SET url=$2 WHERE public_id=$1',[
+      STUDIO_CONNECTED_ASSET_IDS.a,'https://cdn.maxvideoai.com/replaced-measured-original.mp4',
+    ]);
+  };
+  await assert.rejects(editStudioConversationTimeline(actor,assembly([STUDIO_CONNECTED_ASSET_IDS.a,STUDIO_CONNECTED_ASSET_IDS.b]),{...deps,hydrateVideoFacts}),/MEDIA_NOT_AVAILABLE/);
+  assert.deepEqual(inspections,[`https://cdn.maxvideoai.com/${STUDIO_CONNECTED_ASSET_IDS.b}.mp4`]);
+  await assertNoEdit();
+});
+
+test('a concurrent manual revision stops assembly after qualification without overwriting the manual change',async t => {
+  const {editStudioConversationTimeline} = await import('../frontend/src/server/studio/conversation-edit-command');
+  const {pg,actor,deps,project,inspections,inspectionHook,hydrateVideoFacts,unmeasure,assembly} = await videoQualificationFixture(t);
+  await unmeasure([STUDIO_CONNECTED_ASSET_IDS.a,STUDIO_CONNECTED_ASSET_IDS.b]);
+  inspectionHook.after = async url => {
+    if (url.endsWith(`${STUDIO_CONNECTED_ASSET_IDS.b}.mp4`)) {
+      await pg.pool.query('UPDATE studio_projects SET revision=revision+1,name=$2 WHERE id=$1',[project.projectId,'Manual change']);
+    }
+  };
+  await assert.rejects(editStudioConversationTimeline(actor,assembly([STUDIO_CONNECTED_ASSET_IDS.a,STUDIO_CONNECTED_ASSET_IDS.b]),{...deps,hydrateVideoFacts}),{code: 'STUDIO_REVISION_CONFLICT'});
+  assert.equal(inspections.length,2);
+  const read = await readStudioWorkspace(actor,project.projectId,deps);
+  assert.equal(read.project.revision,1); assert.equal(read.project.name,'Manual change');
+  assert.deepEqual((read.sequences[0].timelineState as {timelineItems: WorkspaceTimelineItem[]}).timelineItems,[]);
+  assert.equal((await pg.pool.query("SELECT count(*)::int AS n FROM studio_project_commands WHERE command_kind='conversation_timeline_edit'")).rows[0].n,0);
+});
+
+test('completed job outputs retain conversation scope through qualification and repeated-source assembly',async t => {
+  const {editStudioConversationTimeline} = await import('../frontend/src/server/studio/conversation-edit-command');
+  const {pg,actor,deps,project,inspections,inspectionHook,hydrateVideoFacts,assertNoEdit} = await videoQualificationFixture(t);
+  await pg.pool.query(`ALTER TABLE app_jobs ADD COLUMN status text;
+    ALTER TABLE job_outputs ADD COLUMN width integer, ADD COLUMN height integer, ADD COLUMN updated_at timestamptz;
+    CREATE TABLE mcp_generation_quotes(job_id text,user_id text,studio_project_id text,auth_origin text,state text)`);
+  const refs = [0,1].map(index => ({type: 'job-output' as const,jobId: `older-video-${index}`,outputId: randomUUID(),kind: 'video' as const}));
+  for (const ref of refs) {
+    await pg.pool.query("INSERT INTO app_jobs(job_id,user_id,status) VALUES($1,$2,'completed')",[ref.jobId,actor.userId]);
+    await pg.pool.query(`INSERT INTO job_outputs(id,job_id,user_id,kind,url,mime_type,status,metadata)
+      VALUES($1,$2,$3,'video',$4,'video/mp4','ready',$5::jsonb)`,[
+      ref.outputId,ref.jobId,actor.userId,`https://cdn.maxvideoai.com/${ref.jobId}.mp4`,JSON.stringify({durationSec: 25,legacy: true}),
+    ]);
+    await pg.pool.query(`INSERT INTO mcp_generation_quotes(job_id,user_id,studio_project_id,auth_origin,state)
+      VALUES($1,$2,$3,'studio-session','accepted')`,[ref.jobId,actor.userId,project.projectId]);
+  }
+  const input = {projectId: project.projectId,sequenceId: project.sequenceId,expectedRevision: 0,idempotencyKey: randomUUID(),
+    edit: {kind: 'assemble',clips: [refs[0],refs[1],refs[0]].map((ref,index) => ({ref,startFrame: index*600,durationFrames: 600,sourceInFrame: 0}))}};
+  await pg.pool.query('UPDATE mcp_generation_quotes SET studio_project_id=$2 WHERE job_id=$1',[refs[0].jobId,'another-conversation']);
+  await assert.rejects(editStudioConversationTimeline(actor,input,{...deps,hydrateVideoFacts}),/MEDIA_NOT_AVAILABLE/);
+  assert.equal(inspections.length,0,'Out-of-project outputs cannot start inspection.');
+  await assertNoEdit();
+  await pg.pool.query('UPDATE mcp_generation_quotes SET studio_project_id=$2 WHERE job_id=$1',[refs[0].jobId,project.projectId]);
+  inspectionHook.after = async url => {
+    if (url.endsWith(`${refs[1].jobId}.mp4`)) {
+      await pg.pool.query('UPDATE mcp_generation_quotes SET studio_project_id=$2 WHERE job_id=$1',[refs[0].jobId,'another-conversation']);
+    }
+  };
+  await assert.rejects(editStudioConversationTimeline(actor,input,{...deps,hydrateVideoFacts}),/MEDIA_NOT_AVAILABLE/);
+  assert.equal(inspections.length,2);
+  await assertNoEdit();
+  await pg.pool.query('UPDATE mcp_generation_quotes SET studio_project_id=$2 WHERE job_id=$1',[refs[0].jobId,project.projectId]);
+  const result = await editStudioConversationTimeline(actor,input,{...deps,hydrateVideoFacts});
+  assert.equal(result.revision,1); assert.equal(result.clipCount,3); assert.equal(result.totalFrames,1800);
+  assert.equal(inspections.length,2,'Restored scope reuses durable source facts without another inspection.');
+  const outputs = (await pg.pool.query('SELECT job_id,user_id,url,metadata FROM job_outputs ORDER BY job_id')).rows;
+  assert.deepEqual(outputs.map(row => [row.job_id,row.user_id,row.url,row.metadata.durationSec,row.metadata.mediaFacts.source]),[
+    ['older-video-0',actor.userId,'https://cdn.maxvideoai.com/older-video-0.mp4',25,'probe'],
+    ['older-video-1',actor.userId,'https://cdn.maxvideoai.com/older-video-1.mp4',25,'probe'],
+  ]);
+});
 
 test('one bounded assembly preserves source ranges, applies atomically and keeps a supplied long music track',async t=>{
   const {editStudioConversationTimeline}=await import('../frontend/src/server/studio/conversation-edit-command');

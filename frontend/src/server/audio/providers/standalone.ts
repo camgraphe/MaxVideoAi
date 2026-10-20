@@ -2,6 +2,17 @@ import { AUDIO_AMBIENCE_MODEL_ID, AUDIO_MINIMAX_SPEECH_MODEL_ID, AUDIO_SONG_MODE
 import type { ValidatedAudioGenerateRequest } from '../audio-generate-validation';
 import { runAudioRoleWithFallback } from './fal-runner';
 import type { AudioProviderSubscribe } from './types';
+import { AUDIO_ELEVEN_V4_MODEL_ID } from '@/lib/audio-eleven-voices';
+
+export async function generateElevenVoiceTrack(input: ValidatedAudioGenerateRequest, subscribe?: AudioProviderSubscribe) {
+  const languageCodes: Record<string, string> = { english: 'en', french: 'fr', spanish: 'es', german: 'de' };
+  return runAudioRoleWithFallback('tts', () => ({
+    text: input.script, voice: input.elevenVoiceId, stability: input.elevenStability,
+    similarity_boost: input.elevenSimilarityBoost,
+    ...(input.language && input.language !== 'auto' ? { language_code: languageCodes[input.language] } : {}),
+    output_format: 'mp3_44100_128', apply_text_normalization: 'auto', timestamps: true,
+  }), { candidates: [{ key: 'eleven_v4', label: 'Eleven v4', model: AUDIO_ELEVEN_V4_MODEL_ID }], subscribe });
+}
 
 /** Exact routes: one candidate means no second paid generation after failure/timeout. */
 export async function generateSongTrack(input: { prompt: string; lyrics: string }, subscribe?: AudioProviderSubscribe) {

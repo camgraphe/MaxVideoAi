@@ -89,7 +89,7 @@ else
       "trial": false,
       "referenceUploads": true,
       "montagePreparation": false,
-      "audioGeneration": false,
+      "audioGeneration": true,
       "studioMontageCreation": false
     }
   ' "$PUBLICATION_CONFIG" >/dev/null; then

@@ -1,3 +1,6 @@
+import { seedanceWorkflowCandidate } from './seedance-workflow-capabilities';
+import { seedanceWorkflowDiscovery } from './seedance-workflow-discovery';
+import { agentSeedanceWorkflowEnabled } from './seedance-workflow';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps } from '@/types/engines';
 import { isGptImageFamilyEngineId } from '@/lib/image/gptImage2';
 import type { ImageGenerationMode } from '@/types/image-generation';
@@ -38,6 +41,7 @@ import { normalizeVideoDurationOption } from '@/server/video-generation/executio
 import { resolveEngineMediaFieldConstraint } from '@/lib/media-field-constraints';
 
 export type AgentModelDetailsDeps = AgentModelCatalogDeps & {
+  seedanceWorkflowAvailability?(): { mcp: boolean; web: boolean };
   getGuidance?(engineId: string): AgentModelGuidance | null;
   getPromptingSources?(engineId: string): readonly AgentModelPromptingSource[];
   resolveRuntimeModel?(engineId: string): RuntimeModelEntry | null;
@@ -141,11 +145,13 @@ function projectReferences(
     const assetRequiredWhen = conditionalOwnedReferenceAsset(roles, mode, engine.id);
     const durationSec = projectReferenceDuration(engine, field, mode);
     const mediaConstraint = resolveEngineMediaFieldConstraint({ engine, field });
+    const minImageSidePx = field.type === 'image' ? engine.inputSchema?.constraints?.minImageSidePx : undefined;
     return [Object.freeze({
       type: field.type,
       roles: Object.freeze([...roles]),
       assetRequired: requiresOwnedReferenceAsset(roles, mode, engine.id, engine) || durationSec !== null || Boolean(field.imageAspectRatio),
       ...(field.imageAspectRatio ? { imageAspectRatio: Object.freeze({ ...field.imageAspectRatio }) } : {}),
+      ...(typeof minImageSidePx === 'number' && minImageSidePx > 0 ? { minImageSidePx } : {}),
       ...(assetRequiredWhen ? { assetRequiredWhen } : {}),
       ...(durationSec ? { durationSec } : {}),
       ...(mediaConstraint.maxSizeMB ? { maxSizeMB: mediaConstraint.maxSizeMB } : {}),
@@ -263,6 +269,7 @@ const CANONICAL_SETTING_BY_FIELD_ID: Readonly<Record<string, string>> = Object.f
   multi_prompt: 'multiPrompt',
   negative_prompt: 'negativePrompt',
   output_format: 'outputFormat',
+  return_last_frame: 'returnLastFrame',
   prompt_expansion_mode: 'promptExpansionMode',
   quality: 'quality',
   retake_mode: 'retakeMode',
@@ -405,7 +412,11 @@ export function projectAgentModelModeDetails(
       max: outputCount.max,
       default: outputCount.defaultValue,
     }),
-    settings: Object.freeze([...projectBaseSettings(baseControls), ...projectSettings(candidate.engine, mode)]),
+    settings: Object.freeze([...projectBaseSettings(baseControls), ...projectSettings(candidate.engine, mode),
+      ...(candidate.engine.id.startsWith('seedance-2-') && caps.duration && 'options' in caps.duration && caps.duration.options.includes('auto')
+        ? [{key: 'durationOption', type: 'enum' as const, required: false, values: Object.freeze(['auto']), min: null, max: null, default: null}]
+        : []),
+    ]),
     ...(imageSize ? { imageSize } : {}),
     references: projectReferences(candidate.engine, mode),
     ...(referenceRequirement ? { referenceRequirement } : {}),
@@ -500,6 +511,8 @@ export async function getAgentModelDetails(
     (deps?.getPromptingSources ?? getAgentModelPromptingSources)(candidate.engine.id),
     candidate.publicModes,
   );
+  const workflowCandidate = seedanceWorkflowCandidate({ engineId: candidate.engine.id, seedanceWorkflow: { step: 'draft' } }, candidate);
+  const workflowAvailability = deps?.seedanceWorkflowAvailability?.() ?? { mcp: agentSeedanceWorkflowEnabled(), web: agentSeedanceWorkflowEnabled() };
   const examples = guidance?.evidenceUrls.find((url) => new URL(url).pathname.includes('/examples/')) ?? null;
   return Object.freeze({
     id: candidate.engine.id,
@@ -523,6 +536,12 @@ export async function getAgentModelDetails(
       pricing: 'https://maxvideoai.com/pricing',
       examples,
     }),
+    ...(candidate.engine.id === 'seedance-2-5' ? { seedanceWorkflow: { ...seedanceWorkflowDiscovery(
+      workflowCandidate.publicModes,
+      { mcp: candidate.generationEnabled && workflowCandidate.publicModes.length > 0 && workflowAvailability.mcp, web: candidate.generationEnabled && workflowCandidate.publicModes.length > 0 && workflowAvailability.web }),
+      modeDetails: workflowCandidate.publicModes
+        .map(mode => projectAgentModelModeDetails(workflowCandidate, mode)),
+    } } : {}),
     catalogUpdatedAt: candidate.engine.updatedAt,
   });
 }

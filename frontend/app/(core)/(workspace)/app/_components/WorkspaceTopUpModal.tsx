@@ -35,6 +35,7 @@ type WorkspaceTopUpCopy = {
 export type WorkspaceTopUpModalProps = {
   modal: NonNullable<TopUpModalState>;
   copy: WorkspaceTopUpCopy;
+  locale?: string;
   currency: string;
   chargeCurrency: string;
   topUpAmount: number;
@@ -60,6 +61,7 @@ const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '';
 export function WorkspaceTopUpModal({
   modal,
   copy,
+  locale,
   currency,
   chargeCurrency,
   topUpAmount,
@@ -197,6 +199,7 @@ export function WorkspaceTopUpModal({
                   {TURNSTILE_SITE_KEY ? (
                     <div className="mt-3">
                       <TurnstileChallenge
+                        locale={locale}
                         siteKey={TURNSTILE_SITE_KEY}
                         onToken={onCheckoutCaptchaToken}
                         onError={onCheckoutCaptchaError}

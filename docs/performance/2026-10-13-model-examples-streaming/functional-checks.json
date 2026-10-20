@@ -1,0 +1,94 @@
+{
+  "seo": [
+    {
+      "route": "/models/veo-3-1",
+      "status": 200,
+      "canonical": true,
+      "hreflang": true,
+      "jsonldPayloadMultiset": true,
+      "schemaCount": 6
+    },
+    {
+      "route": "/examples",
+      "status": 200,
+      "canonical": true,
+      "hreflang": true,
+      "jsonldPayloadMultiset": true,
+      "schemaCount": 5
+    },
+    {
+      "route": "/examples/veo",
+      "status": 200,
+      "canonical": true,
+      "hreflang": true,
+      "jsonldPayloadMultiset": true,
+      "schemaCount": 5
+    },
+    {
+      "route": "/fr/modeles/veo-3-1",
+      "status": 200,
+      "canonical": true,
+      "hreflang": true,
+      "jsonldPayloadMultiset": true,
+      "schemaCount": 6
+    },
+    {
+      "route": "/es/modelos/veo-3-1",
+      "status": 200,
+      "canonical": true,
+      "hreflang": true,
+      "jsonldPayloadMultiset": true,
+      "schemaCount": 6
+    },
+    {
+      "route": "/fr/galerie",
+      "status": 200,
+      "canonical": true,
+      "hreflang": true,
+      "jsonldPayloadMultiset": true,
+      "schemaCount": 5
+    },
+    {
+      "route": "/es/galeria",
+      "status": 200,
+      "canonical": true,
+      "hreflang": true,
+      "jsonldPayloadMultiset": true,
+      "schemaCount": 5
+    }
+  ],
+  "anchors": {
+    "final-specs-anchor.json": {
+      "ready": "complete",
+      "scroll": 10246,
+      "target": 139.8203125,
+      "url": "http://localhost:3132/models/veo-3-1#specs"
+    },
+    "final-price-anchor.json": {
+      "ready": "complete",
+      "scroll": 1508.5,
+      "target": 100.0078125,
+      "url": "http://localhost:3132/models/veo-3-1#decision-pricing"
+    },
+    "final-click-anchor.json": {
+      "ready": "complete",
+      "scroll": 4482.5,
+      "target": 139.9765625,
+      "url": "http://localhost:3132/models/veo-3-1#prompting"
+    }
+  },
+  "mobilePosterGeometry": {
+    "viewport": [
+      390,
+      844
+    ],
+    "locales": [
+      "en",
+      "fr",
+      "es"
+    ],
+    "openingPostersComparedPerLocale": 4,
+    "rectanglesUnchanged": true
+  },
+  "review": "Independent reviewer found no concrete remaining bugs; final anchor P2 closed after browser checks."
+}

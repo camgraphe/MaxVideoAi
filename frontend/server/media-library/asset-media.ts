@@ -1,3 +1,5 @@
+import { type MediaFacts } from '@/lib/media-identity';
+import { probeMediaBuffer } from '@/server/media/detect-has-audio';
 import { type GeneratedVideoFacts } from '@/lib/generated-video-media-facts';
 import { measureGeneratedVideoBuffer } from '@/server/media/generated-video-facts';
 import { uploadFileBuffer, uploadImageToStorage } from '@/server/storage';
@@ -12,7 +14,7 @@ export async function copyRemoteMedia(params: {
   mimeType?: string | null;
   fileName?: string | null;
   ownedGeneratedVideo?: { mediaFacts: GeneratedVideoFacts | null };
-}, dependencies: { uploadImage?: typeof uploadImageToStorage } = {}): Promise<{ mediaFacts?: GeneratedVideoFacts | null; url: string; thumbUrl: string | null; mimeType: string | null; width: number | null; height: number | null; sizeBytes: number | null }> {
+}, dependencies: { uploadImage?: typeof uploadImageToStorage } = {}): Promise<{ mediaFacts?: GeneratedVideoFacts | MediaFacts | null; url: string; thumbUrl: string | null; mimeType: string | null; width: number | null; height: number | null; sizeBytes: number | null }> {
   const sourceUrl = await createOwnedMediaReadUrl({ url: params.url, userId: params.userId });
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8000);
@@ -25,7 +27,7 @@ export async function copyRemoteMedia(params: {
   if (!response.ok) {
     throw new Error(`FETCH_FAILED:${response.status}`);
   }
-  const mimeType = response.headers.get('content-type') ?? params.mimeType ?? inferMimeFromUrl(params.url, params.kind);
+  let mimeType = response.headers.get('content-type') ?? params.mimeType ?? inferMimeFromUrl(params.url, params.kind);
   const buffer = Buffer.from(await response.arrayBuffer());
   if (!buffer.length) throw new Error('EMPTY_MEDIA');
   if (params.kind === 'image') {
@@ -45,15 +47,20 @@ export async function copyRemoteMedia(params: {
       sizeBytes: upload.size,
     };
   }
+  const audioProbe = params.kind === 'audio'
+    ? await probeMediaBuffer(buffer, { mimeType, fileName: params.fileName }).catch(() => null) : null;
+  if (audioProbe?.kind === 'audio') mimeType = audioProbe.canonicalMime;
   const upload = await uploadFileBuffer({
     data: buffer,
     mime: mimeType,
     userId: params.userId,
     prefix: 'media-assets',
-    fileName: params.fileName,
+    // Library labels are display text, not trusted audio filenames (for example, Voice.v2).
+    fileName: params.kind === 'audio' ? undefined : params.fileName,
   });
   const mediaFacts = params.kind === 'video' && params.ownedGeneratedVideo
-    ? await measureGeneratedVideoBuffer(buffer, upload.url, params.ownedGeneratedVideo.mediaFacts).catch(() => null) : null;
+    ? await measureGeneratedVideoBuffer(buffer, upload.url, params.ownedGeneratedVideo.mediaFacts).catch(() => null)
+    : audioProbe?.kind === 'audio' ? { source: 'probe' as const, durationSec: audioProbe.durationSec } : null;
   const thumbUrl =
     params.kind === 'video'
       ? await createUploadVideoThumbnail({

@@ -1,3 +1,4 @@
+import {hydrateSubtitleTimelineItems,readSubtitleSequenceAttachment} from '../subtitles/studio';
 import {readStudioWorkspace} from './workspace-command';
 import type {StudioConversationTimeline} from '@/lib/studio/conversation-editing-contract';
 import type {WorkspaceProjectSettings,WorkspaceTimelineItem} from '@/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
@@ -20,7 +21,7 @@ export function projectStudioConversationTimeline({project,sequences}: Awaited<R
     clips: state.timelineItems.map(item => {
       const ref = toolAssetRefSchema.safeParse(item.ref);
       return {
-        id: item.id,title: item.title,kind: item.mediaKind ?? 'video',track: item.track,
+        id: item.id,...item.subtitle?{subtitle:item.subtitle}:{},title: item.title,kind: item.mediaKind ?? 'video',track: item.track,
         startFrame: secondsToTimelineFrame(item.startSec,settings.fps),
         durationFrames: secondsToTimelineFrame(item.durationSec,settings.fps),
         sourceInFrame: secondsToTimelineFrame(item.sourceStartSec ?? 0,settings.fps),
@@ -33,8 +34,10 @@ export function projectStudioConversationTimeline({project,sequences}: Awaited<R
 }
 
 export async function readStudioConversationTimeline(actor: {userId: string;projectId: string},preview = false) {
-  const {data,settings,items: rawItems} = projectStudioConversationTimeline(await readStudioWorkspace(actor,actor.projectId));
+  const workspace=await readStudioWorkspace(actor,actor.projectId);
+  const {data,settings,items: rawItems} = projectStudioConversationTimeline(workspace);
   if (!preview) return {data,settings,items: [] as WorkspaceTimelineItem[]};
-  const items = await buildConversationPreviewMedia(actor.userId,rawItems);
-  return {data,settings,items};
+  const items = await hydrateSubtitleTimelineItems(actor.userId,await buildConversationPreviewMedia(actor.userId,rawItems));
+  const sequenceSubtitle=await readSubtitleSequenceAttachment(actor.userId,workspace,data.sequenceId);
+  return {data,settings,items,sequenceSubtitle};
 }

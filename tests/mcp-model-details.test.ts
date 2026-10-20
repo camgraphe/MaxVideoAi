@@ -397,6 +397,10 @@ test('MiniMax reference image details require verified assets and publish the ac
   assert.ok(field);
   assert.equal(field.assetRequired, true);
   assert.deepEqual(field.imageAspectRatio, { min: 0.4, max: 2.5 });
+  assert.equal(field.minImageSidePx, 256);
+  for (const reference of details.modes.find((mode) => mode.mode === 'i2v')!.references.filter((reference) => reference.type === 'image')) {
+    assert.equal(reference.minImageSidePx, 256);
+  }
 });
 
 test('Luma Ray 2 V2V details explain source-derived duration and fixed pricing resolution', async () => {

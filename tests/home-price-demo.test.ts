@@ -22,3 +22,19 @@ test('guided Wan 3 demo uses supported settings and exact canonical quotes in ev
   assert.ok(demo.steps[2].amountCents > demo.steps[1].amountCents);
  }
 });
+
+test('homepage display projection keeps exact text-to-video controls without serializing the full engine catalog', () => {
+ const engine = listFalEngines().find(item => item.modelSlug === 'wan-3')!.engine;
+ const before = JSON.stringify(engine);
+ const [demo] = buildHomePriceDemo('en');
+ assert.deepEqual(demo.engine.modeCaps, { t2v: engine.modeCaps?.t2v });
+ assert.deepEqual(demo.engine.inputLimits, engine.inputLimits);
+ for (const field of ['id', 'label', 'maxDurationSec', 'audio', 'resolutions', 'aspectRatios', 'fps'] as const) {
+  assert.deepEqual(demo.engine[field], engine[field]);
+ }
+ for (const field of ['inputSchema', 'pricing', 'pricingDetails', 'providerMeta', 'brandAssetPolicy']) {
+  assert.equal(Object.hasOwn(demo.engine, field), false, `${field} is not part of this inert display`);
+ }
+ assert.ok(Buffer.byteLength(JSON.stringify(demo.engine)) < 2_500, 'keep the display projection bounded');
+ assert.equal(JSON.stringify(engine), before, 'the shared engine catalog stays intact');
+});

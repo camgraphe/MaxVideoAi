@@ -45,6 +45,7 @@ export async function loadEngineKeySpecs(): Promise<Map<string, EngineKeySpecsEn
             modelSlug: entry.modelSlug,
             engineId: entry.engineId,
             keySpecs: entry.keySpecs,
+            sources: entry.sources,
           });
         }
       });

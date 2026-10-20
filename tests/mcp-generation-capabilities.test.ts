@@ -224,7 +224,7 @@ test('real Seedance 2.5 v2v and extend modes require bounded source references',
   rejectsCapability(seedance, { ...extendRequest, references: [...extendRequest.references, source('clip-4')] });
 });
 
-test('Seedance source and reference fields enforce canonical HTTPS media kinds', () => {
+test('Seedance Edit requires owned assets while ModelArk reference fields retain HTTPS media kinds', () => {
   const seedance = registryCapability('seedance-2-5');
   const httpsReference = (
     id: string,
@@ -242,7 +242,10 @@ test('Seedance source and reference fields enforce canonical HTTPS media kinds',
     settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9' },
     references: [httpsReference('source-video', 'source', 'video')],
   });
-  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(v2v, seedance));
+  rejectsCapability(seedance, v2v);
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities({ ...v2v,
+    references: [{ kind: 'asset', assetId: 'owned-source-video', role: 'source' }],
+  }, seedance));
   rejectsCapability(seedance, {
     ...v2v,
     references: [httpsReference('source-image', 'source', 'image')],
@@ -737,12 +740,14 @@ test('HTTP route validators delegate provider rules to a route-independent serve
 });
 
 
-test('the MCP preparation schema intentionally excludes Draft and final workflow authority', async () => {
+test('MCP exposes only explicit native workflow authority and rejects settings/provider aliases', async () => {
   const { prepareGenerationInputSchema } = await import('../frontend/src/server/mcp/tools/prepare-generation');
   const normal = { surface: 'video', engineId: 'seedance-2-5', mode: 't2v', prompt: 'A valley', settings: { durationSec: 5, resolution: '480p' } };
   assert.equal(prepareGenerationInputSchema.safeParse(normal).success, true);
+  assert.equal(prepareGenerationInputSchema.safeParse({ ...normal, seedanceWorkflow: { step: 'draft' } }).success, true);
+  assert.equal(prepareGenerationInputSchema.safeParse({ surface: 'video', engineId: 'seedance-2-5', seedanceWorkflow: { step: 'final', draftJobId: 'owned-draft' } }).success, true);
   for (const unsupported of [
-    { ...normal, seedanceWorkflow: { step: 'draft' } },
+    { ...normal, seedanceWorkflow: { step: 'final', draftJobId: 'owned-draft', providerTaskId: 'forged' } },
     { ...normal, settings: { ...normal.settings, draft: true } },
     { ...normal, settings: { ...normal.settings, workflowStep: 'final', draftJobId: 'owned-draft' } },
     { ...normal, mode: 'draft' },

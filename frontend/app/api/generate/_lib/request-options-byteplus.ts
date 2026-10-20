@@ -1,5 +1,8 @@
 import { requireBytePlusSeedanceProfile } from '@/server/video-providers/byteplus-modelark';
 import type { Mode } from '@/types/engines';
+import { getBytePlusSeedanceModeResolutions } from '@/lib/byteplus-mode-capabilities';
+import { seedanceAutomaticDurationBounds, isSeedanceAdaptiveAspect } from '@/lib/seedance-option-pricing';
+import { resolveBytePlusTransport } from '@/server/video-providers/byteplus-modelark-transport';
 
 type RequestOptionsFailure = {
   ok: false;
@@ -14,9 +17,11 @@ type RequestOptionsFailure = {
 export function normalizeBytePlusOptions(params: {
   engineId: string;
   durationSec: number;
+  durationOption?: number | string | null;
   requestedResolution: string;
   aspectRatio: string | null;
   mode?: Mode;
+  workflowStep?: 'draft' | 'final';
 }):
   | {
       ok: true;
@@ -27,11 +32,17 @@ export function normalizeBytePlusOptions(params: {
     }
   | RequestOptionsFailure {
   const profile = requireBytePlusSeedanceProfile(params.engineId);
-  const normalizedDuration = Math.trunc(params.durationSec);
+  const automaticBounds = seedanceAutomaticDurationBounds(params.engineId);
+  if (params.durationOption === 'auto' && !automaticBounds) {
+    return { ok: false, status: 400, body: { ok: false, error: 'BYTEPLUS_DURATION_UNSUPPORTED',
+      message: 'Automatic duration is unavailable for this route.' } };
+  }
+  const pricingDuration = params.durationOption === 'auto' && automaticBounds ? automaticBounds.max : params.durationSec;
+  const normalizedDuration = Math.trunc(pricingDuration);
   const allowedDurations = profile.durationOptions;
   if (
-    !Number.isFinite(params.durationSec) ||
-    normalizedDuration !== params.durationSec ||
+    !Number.isFinite(pricingDuration) ||
+    normalizedDuration !== pricingDuration ||
     !allowedDurations.includes(normalizedDuration as never)
   ) {
     const minDuration = allowedDurations[0] ?? 5;
@@ -50,7 +61,8 @@ export function normalizeBytePlusOptions(params: {
       },
     };
   }
-  const allowedResolutions = profile.resolutions;
+  const allowedResolutions = getBytePlusSeedanceModeResolutions(params.engineId, params.mode, profile.resolutions,
+    params.workflowStep ? 'modelark' : resolveBytePlusTransport(params.engineId, params.mode));
   const bytePlusResolution =
     params.requestedResolution === 'auto'
       ? profile.defaultResolution
@@ -73,13 +85,15 @@ export function normalizeBytePlusOptions(params: {
   const inheritsSourceAspectRatio =
     params.engineId === 'seedance-2-5' && params.mode === 'i2v';
   const bytePlusAspectRatio =
-    inheritsSourceAspectRatio
+    isSeedanceAdaptiveAspect(params.aspectRatio) && automaticBounds
+      ? 'auto'
+      : inheritsSourceAspectRatio
       ? null
       : !params.aspectRatio || params.aspectRatio === 'auto'
         ? profile.defaultAspectRatio
         : params.aspectRatio;
   if (
-    bytePlusAspectRatio &&
+    bytePlusAspectRatio && bytePlusAspectRatio !== 'auto' &&
     !profile.aspectRatios.includes(bytePlusAspectRatio as (typeof profile.aspectRatios)[number])
   ) {
     return {

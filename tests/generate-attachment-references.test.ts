@@ -29,11 +29,26 @@ const attachment = (overrides: Partial<NormalizedAttachment>): NormalizedAttachm
   ...overrides,
 });
 
+test('Seedance Edit selects its exact source slot instead of an earlier reference or preview video', () => {
+  const result = deriveGenerationAttachmentReferences({ engineId: 'seedance-2-5', mode: 'v2v', attachments: [
+    attachment({ kind: 'video', slotId: 'video_urls', url: 'https://example.test/motion-reference.mp4' }),
+    attachment({ kind: 'video', slotId: 'video_url', url: 'https://example.test/exact-original.mp4' }),
+  ] });
+  assert.equal(result.sourceInputVideoUrl, 'https://example.test/exact-original.mp4');
+  assert.deepEqual(result.videoUrls, ['https://example.test/exact-original.mp4', 'https://example.test/motion-reference.mp4']);
+  assert.deepEqual(result.referenceValuesByField.video_urls, ['https://example.test/motion-reference.mp4']);
+  const missingSource = deriveGenerationAttachmentReferences({ engineId: 'seedance-2-5', mode: 'v2v', attachments: [
+    attachment({ kind: 'video', slotId: 'video_urls', url: 'https://example.test/motion-reference.mp4' }),
+  ] });
+  assert.equal(missingSource.sourceInputVideoUrl, undefined);
+  assert.deepEqual(missingSource.videoUrls, ['https://example.test/motion-reference.mp4']);
+});
+
 test('generate route delegates attachment reference derivation', () => {
   assert.ok(existsSync(helperPath), 'attachment reference derivation should live in the generate route _lib folder');
   assert.ok(existsSync(processingPath), 'attachment reference orchestration should live in the generate route _lib folder');
   assert.match(serviceSource, /generate\/_lib\/generation-attachment-processing/);
-  assert.match(serviceSource, /processAndValidateGenerationAttachments\(\{/);
+  assert.match(serviceSource, /processAndValidateGenerationAttachments\(/);
   assert.match(
     readFileSync(processingPath, 'utf8'),
     /from '\.\/normalized-generation-attachment-validation'/,

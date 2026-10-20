@@ -1,12 +1,56 @@
 # MaxVideoAI : découverte, fluidité et continuité MCP
 
+## Generation recovery correction — 19 October 2026
+
+Preparation and confirmation now apply the submission asset-host allowlist to
+HTTPS references before quoting or reserving credits. Confirmation rechecks old
+prepared quotes; it never imports media or starts another generation implicitly.
+Unsupported links return a fixed public REFERENCE_INVALID explanation and an
+import_reference_files next action, without echoing the URL. Owned asset
+references retain their existing exact-owner verification.
+
+Direct-only Luma Modify/Reframe modes become unavailable when direct routing is
+disabled or inaccessible; they cannot use the Fal fallback. Public model
+readiness and the Web/trusted paid route context consume the same routing result.
+
+Tool-call audit events retain only allowlisted public error codes, registered
+model IDs and the video/image surface. Schema/unknown tool failures use a coarse
+MCP_TOOL_ERROR fallback. Prompts, references, error messages, tokens and provider
+bodies remain excluded. A successful status-tool call is still a technical
+success even when the existing generation has failed; generation outcomes keep
+their separate owner.
+
+Agent status confirms wallet recredit for every persisted refunded_wallet
+failure, and retains the fresh-quote/explicit-approval boundary. Known historical
+submission failures, Web messages and receipt reasons share fixed EN/FR/ES copy.
+Receipt projections do not rewrite ledger entries. Tool descriptors, schemas and
+global instructions are unchanged, so this correction does not change their
+byte budgets or establish a new installed-plugin or real-host qualification.
+
 Créé le **21 septembre 2026**, revu le **22 septembre 2026**. Responsable : ingénierie MaxVideoAI.
-Statut de distribution au **5 octobre 2026** : plugin **0.3.7 publié**, registre
-officiel actif et installation locale Codex mise à jour, selon le
-[point de contrôle de publication](../operations/mcp-distribution-publication-2026-10-05.md).
+Statut de distribution au **18 octobre 2026 UTC** : plugin **0.3.8 publié** et
+registre officiel actif/latest, selon le
+[point de contrôle de publication](../operations/mcp-distribution-publication-2026-10-18.md).
+Cette livraison ne modifie aucune installation existante ni qualification d’hôte.
 Les deux essais réels Codex du paquet 0.3.6 et leurs limites restent consignés au
 [point de contrôle du 22 septembre](../operations/mcp-main-repository-release-v0.3.6.md). La validation de
 chaque hôte reste distincte ; consulter le [parcours de mise à jour](../operations/mcp-client-updates.md).
+
+## Eleven v4 Audio contract — 17 October 2026
+
+The existing Audio preparation schema and live discovery include the reviewed Eleven v4 voices and exact model controls, shared with Studio and web Audio. The owner explicitly authorized production release on 17 October. The independent Audio publication gate is now enabled, with the first MCP catalog restricted to `voice_only` plus `eleven-v4`. The same projection controls discovery, preparation and confirmation. Existing conditional Audio guidance becomes visible without rewriting global instructions or tool descriptions; the 2,000-byte metadata budgets remain unchanged. Live results carry names/IDs/accents and read-only official sample links; the catalog is not copied into instructions. New preparations freeze default voice settings before exact-price approval; existing quote replay, ownership and one-attempt boundaries remain in force. The reviewed policy fingerprint now includes the three published Audio schemas; the existing curated conversation decisions remain unchanged. Measured production instructions: 1,551 UTF-8 bytes; 18 model-visible tool descriptions, maximum 1,767 bytes. The reviewed fingerprint is `edaf4dc36c6f35ccd6538b02ab985faa6f05af0c3323f62182433aa2eeae3990`; the 70 existing curated decisions and their fixture contract are unchanged. No plugin package release or real-host verification is inferred from deterministic checks. Deployment evidence is recorded separately.
+
+## Returned video artifacts — 14 October 2026
+
+Owned completed-video results add optional `playbackVideoUrl` for full-duration
+browser playback and `lastFrameUrl` for the separately stored supplier JPEG. They
+retain the original `videoUrl` and existing short preview/thumbnail roles. Result
+app v6 uses the full playback URL while its primary download remains the original;
+its independent frame download uses the app-only `get_generation_download`
+`outputRole='last_frame'` option. Frame reuse opens that owned job's image results
+in Media. Established v1-v5 resources remain readable with their existing documents.
+Local executable-app and signed-descriptor tests cover these contracts; deployment,
+plugin release and real-host qualification remain independent evidence.
 
 ## Customer price presentation — 5 October 2026
 
@@ -397,3 +441,98 @@ suivi. Le total instructions et descriptions des quatorze outils atteint alors
 **12 497 octets** ; le contrôle client compte **135 tests et 70 scénarios hors ligne**.
 La preuve publique du registre a aussi été actualisée à 0.3.5. Les chiffres des
 sections précédentes restent ceux de leurs révisions respectives.
+
+## Native Seedance Draft — 18 October 2026 source candidate
+
+The additive `seedanceWorkflow` preparation field exposes the existing native
+Draft/final business owners. Model details own live availability, constraints
+and the useful direct 1080p versus Draft-then-final choice. The assistant offers
+that choice before the selected quote, respects an explicit direct choice and
+never calls ordinary 480p a finalizable Draft. Each paid step requires its own
+exact quote and explicit approval. Status/history retain account-owned lineage;
+full status reports eligibility, actual expiry and existing final recovery.
+See [mode coverage](mcp-mode-coverage.md#native-seedance-draft-workflow--2026-10-18-source-candidate).
+
+Tool descriptors retain prerequisites/recovery within their individual 2,000-byte
+budgets; global instructions and capability gates are unchanged. New deterministic
+schema/discovery tests join `mcp:client:check`; a disposable PostgreSQL test checks
+separate tariffs, real native request payloads, owner/expiry rejection, concurrent
+reservation and same-attempt recovery with substituted provider HTTP. No paid
+provider call is authorized or performed. These fixtures do not prove real-host
+selection or production activation.
+
+Plugin source candidate 0.3.8 needs the immutable release builder/publication flow.
+The observed public website pin remains 0.3.7. Server deployment, plugin release,
+host catalog refresh and real-host verification are distinct. After authorized
+server delivery, refresh the host by its supported flow and verify a fresh task's
+`get_model_details` and `prepare_generation` schemas contain `seedanceWorkflow`.
+Keep the brief and known Draft/final job IDs through reconnect; recover them first.
+An old schema is not permission to emulate Draft with ordinary 480p. Test explicit
+Draft, unchosen 1080p, explicit direct 1080p, ordinary 480p, unavailable workflow,
+expired/foreign Draft and interrupted final in each named host/version before
+claiming compatibility. Offer the returned web URL only when live web availability
+is true. No production deployment, public release or host qualification is claimed
+by this source candidate.
+
+
+Local metadata measurements for this candidate: `get_model_details` 1,927 UTF-8
+bytes, `prepare_generation` 1,639, `get_generation_status` 1,098 and
+`list_recent_generations` 649. All 128 global gate combinations remain under
+2,000 bytes. The policy fingerprint was refreshed through the documented
+collector to `ace13aa36761736648b4b33f8cb750a22176078abf732e3b6a29bb594a1d725a`;
+the 70 curated decisions and their fixture fingerprint were preserved.
+
+## Creator tools — 19 October 2026 source candidate
+
+Eight additive tools expose the same shared operations as the web workspaces:
+`list_creator_tools`, `prepare_creator_tool`, `confirm_creator_tool`,
+`get_creator_tool_operation`, `get_subtitle_document`, `edit_subtitle_document`,
+`prepare_subtitle_export` and `export_subtitle_text`. The ninth,
+`prepare_studio_subtitles`, additionally requires timeline editing access. It
+quotes the saved sequence's actual audio mix independently of the Studio MP4
+export gate. See [creator tools](creator-tools.md) for ownership and release gates.
+
+Paid preparation and confirmation require paid generation, owned reference
+access, `CREATOR_TOOLS_ENABLED=1` and `MCP_CREATOR_TOOLS_ENABLED=1`. Five
+non-spending discovery/recovery/document tools remain registered whenever the
+service exists, including after these execution gates close. An OAuth attempt
+cannot be recovered through a different browser-session scope. Specialist video lip
+sync and Kling Motion Control have separate execution gates. Discovery returns
+current profile constraints and effective availability; a profile's presence is
+not evidence of activation or measured quality. Marketing publication remains a
+separate, closed projection until real qualification is recorded.
+
+Each attempt requires its exact quote and explicit approval. Preparation pins
+source fingerprints, selected segments, profile, audio policy and price. Status
+is scoped to the account and OAuth client; documents belong to the account.
+Interrupted or ambiguous requests must recover the existing operation before
+another attempt is considered. Text/style edits and sidecar exports do not
+retranscribe. Fresh signed presentation links do not replace stored originals.
+A removed output or temporary signing failure keeps the operation's financial
+completion state and reports unavailable artifact delivery.
+
+The general instructions add only the discovery pointer and retain the shared
+approval rule. All **256** instruction gate combinations stay within the
+2,000-byte host budget (maximum **1,998 UTF-8 bytes**); each added descriptor is
+also bounded at 2,000 bytes. In-memory SDK tests verify gated discovery, strict
+confirmation, principal scope, complete compact JSON fallback, explicit segment
+transport and independent Studio mix/export gates. They join `mcp:client:check`.
+
+No paid provider canary or real-host compatibility is claimed by these local
+checks. After authorized release, verify discovery and one quoted attempt in
+each named host/version, including denied/expired quotes, disconnect recovery,
+subtitle editing, and result presentation. Reconnect through the host's supported
+flow when its catalog is stale; preserve operation/document IDs and recover them
+first. Plugin publication and host refresh remain distinct from server delivery.
+
+### 2026-10-19 — Creator Lip Sync settings and included subtitle exports
+
+The existing creator settings schema accepts optional Lip Sync resolution, shared
+with the web workspace: 480p by default, 720p or 1080p on selection. Wan 3 photo
+and video profiles publish measured audio limits and their explicit output timing
+policy through discovery. The separate LatentSync gate remains unchanged.
+Creator quotes apply provider cost × 2.20; subtitle MP4 exports and sequence mix
+preparation are included. Zero-price exports still require exact revision-bound
+preparation and confirmation, but do not charge the wallet. These changes reuse
+existing tools and approval instructions; no plugin release, production gate
+activation or host compatibility is inferred from local validation.

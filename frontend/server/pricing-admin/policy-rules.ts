@@ -110,6 +110,12 @@ function buildReferences(
   [...buildPricingAuditScenarios(), ...buildLiveProductPolicyScenarios()].forEach((scenario) =>
     add(scenario.engineId, scenario.mode, scenario.resolution)
   );
+  // Dedicated creator billing domains are not published generation models.
+  // Their persisted rules still participate in whole-policy validation.
+  add('toolbox-subtitles', 'transcription', 'audio');
+  add('toolbox-subtitles', 'transcription-keyterms', 'audio');
+  add('toolbox-lip-sync', 'latentsync', 'source');
+  add('toolbox-motion-control', 'kling-v3-standard-motion-control', 'source');
   policy.rules.forEach((rule) =>
     rule.engineId && add(rule.engineId, rule.mode, rule.resolution)
   );

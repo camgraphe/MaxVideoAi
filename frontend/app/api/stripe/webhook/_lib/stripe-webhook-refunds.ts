@@ -1,7 +1,7 @@
 import Stripe from 'stripe';
 import { query } from '@/lib/db';
-import { extractGaClientId, sendGa4Event } from '@/server/ga4';
-import { isCommercialPaymentAnalyticsEligible } from '@/server/wallet-first-topup';
+import { extractGaClientId } from '@/server/ga4';
+import { enqueueGa4PaymentEvent } from '@/server/ga4-payment-outbox';
 
 type TopupTrackingMetadata = {
   kind: string | null;
@@ -11,6 +11,7 @@ type TopupTrackingMetadata = {
   topupTierId: string | null;
   topupTierLabel: string | null;
   walletCurrency: string | null;
+  consentObservedAt: Date;
 };
 
 function minorToMajorAmount(amountMinor: number): number {
@@ -24,7 +25,7 @@ function readMetadataString(metadata: Stripe.Metadata | null | undefined, key: s
   return trimmed ? trimmed : null;
 }
 
-function parseTopupTrackingMetadata(metadata: Stripe.Metadata | null | undefined): TopupTrackingMetadata {
+function parseTopupTrackingMetadata(metadata: Stripe.Metadata | null | undefined, created?: number): TopupTrackingMetadata {
   const consentValue = readMetadataString(metadata, 'analytics_consent') ?? '';
   return {
     kind: readMetadataString(metadata, 'kind'),
@@ -34,6 +35,8 @@ function parseTopupTrackingMetadata(metadata: Stripe.Metadata | null | undefined
     topupTierId: readMetadataString(metadata, 'topup_tier_id'),
     topupTierLabel: readMetadataString(metadata, 'topup_tier_label'),
     walletCurrency: readMetadataString(metadata, 'wallet_currency'),
+    consentObservedAt: new Date(readMetadataString(metadata, 'ga4_consent_observed_at')
+      ?? (typeof created === 'number' && Number.isFinite(created) ? created * 1000 : 0)),
   };
 }
 
@@ -41,7 +44,7 @@ async function resolveTopupTrackingMetadataFromCharge(
   charge: Stripe.Charge,
   stripe: Stripe
 ): Promise<TopupTrackingMetadata> {
-  const fromCharge = parseTopupTrackingMetadata(charge.metadata);
+  const fromCharge = parseTopupTrackingMetadata(charge.metadata, charge.created);
   if (fromCharge.kind === 'topup') {
     return fromCharge;
   }
@@ -52,7 +55,7 @@ async function resolveTopupTrackingMetadataFromCharge(
   }
   try {
     const intent = await stripe.paymentIntents.retrieve(paymentIntentId);
-    const fromIntent = parseTopupTrackingMetadata(intent.metadata);
+    const fromIntent = parseTopupTrackingMetadata(intent.metadata, intent.created);
     return fromIntent.kind === 'topup' ? fromIntent : fromCharge;
   } catch (error) {
     console.warn('[stripe-webhook] failed to resolve refund metadata from payment intent', {
@@ -73,7 +76,7 @@ export async function handleChargeRefunded(event: Stripe.Event, stripe: Stripe):
   if (!metadata.analyticsConsentGranted || !metadata.userId) {
     return;
   }
-  if (!await isCommercialPaymentAnalyticsEligible({ query }, metadata.userId, charge.livemode)) return;
+  if (!Number.isFinite(metadata.consentObservedAt.getTime())) return;
 
   const previous = (event.data.previous_attributes ?? {}) as { amount_refunded?: number };
   const previousAmountRefunded =
@@ -94,7 +97,12 @@ export async function handleChargeRefunded(event: Stripe.Event, stripe: Stripe):
   }
 
   const currency = (charge.currency ?? metadata.walletCurrency ?? 'usd').toUpperCase();
-  await sendGa4Event({
+  await enqueueGa4PaymentEvent({ query }, {
+    key: `refund:${charge.id}:${currentAmountRefunded}`,
+    userId: metadata.userId,
+    occurredAt: new Date(event.created * 1000),
+    consentObservedAt: metadata.consentObservedAt,
+    event: {
     name: 'topup_refunded',
     clientId: metadata.gaClientId,
     userId: metadata.userId,
@@ -111,6 +119,7 @@ export async function handleChargeRefunded(event: Stripe.Event, stripe: Stripe):
         typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id ?? undefined,
       topup_tier_id: metadata.topupTierId ?? undefined,
       topup_tier_label: metadata.topupTierLabel ?? undefined,
+    },
     },
   });
 }

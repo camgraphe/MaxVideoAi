@@ -47,7 +47,7 @@ const expected = [
     defaultAspectRatio: '16:9',
     motionControls: true,
     resolutions: ['480p', '720p', '1080p', '4k'],
-    durations: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+    durations: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
     alwaysDirect: false,
     providerOverrideKey: 'SEEDANCE_2_PROVIDER',
     adminOnlyKey: 'SEEDANCE_2_BYTEPLUS_ADMIN_ONLY',
@@ -62,7 +62,7 @@ const expected = [
     defaultAspectRatio: '16:9',
     motionControls: true,
     resolutions: ['480p', '720p'],
-    durations: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+    durations: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
     alwaysDirect: false,
     providerOverrideKey: 'SEEDANCE_FAST_PROVIDER',
     adminOnlyKey: 'SEEDANCE_FAST_BYTEPLUS_ADMIN_ONLY',
@@ -92,7 +92,7 @@ const expected = [
     defaultAspectRatio: '16:9',
     motionControls: true,
     resolutions: ['480p', '720p'],
-    durations: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+    durations: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
     alwaysDirect: true,
     providerOverrideKey: 'SEEDANCE_FAST_PROVIDER',
     adminOnlyKey: 'SEEDANCE_FAST_BYTEPLUS_ADMIN_ONLY',
@@ -133,7 +133,7 @@ test('every current BytePlus Seedance engine has an explicit parity profile', ()
     assert.deepEqual(profile.supportedModes, entry.engineId === 'seedance-1-5-pro'
       ? ['t2v', 'i2v']
       : ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']);
-    assert.deepEqual(profile.aspectRatios, ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
+    assert.deepEqual(profile.aspectRatios, [...(entry.engineId === 'seedance-1-5-pro' ? [] : ['auto']), '21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
     assert.equal(profile.framesPerSecond, 24);
     assert.equal(profile.generatedAudio, true);
   }
@@ -278,6 +278,7 @@ test('Seedance 2.5 runtime keeps its canary defaults while accepting 1080p outpu
   assert.equal(fields.find((field) => field.id === 'resolution')?.default, '480p');
   assert.equal(fields.find((field) => field.id === 'aspect_ratio')?.default, '16:9');
   assert.deepEqual(fields.find((field) => field.id === 'aspect_ratio')?.values, [
+    'auto',
     '21:9',
     '16:9',
     '4:3',
@@ -410,7 +411,7 @@ test('recognized model selection preserves all current config keys', () => {
   assert.equal(isBytePlusSeedanceHiddenEngine('seedance-2-5'), false);
   assert.deepEqual(
     getBytePlusSeedanceAllowedAspectRatios('seedance-2-0'),
-    ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16']
+    ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16']
   );
 });
 

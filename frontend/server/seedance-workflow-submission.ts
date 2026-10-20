@@ -1,6 +1,8 @@
 import { BytePlusModelArkError } from '@/server/video-providers/byteplus-modelark-error';
 import { buildSeedance25DraftRequest, buildSeedance25FinalRequest } from '@/server/video-providers/byteplus-modelark-draft';
 import { captureSeedanceDraftValidityStart, markSeedanceFinalState, registerSeedanceDraftLink } from './seedance-draft-links';
+import { SEEDANCE_WORKFLOW_MODES, type SeedanceWorkflowMode } from './seedance-workflow-facts';
+import { isRecord } from './byteplus-record-utils';
 
 export type SeedanceSubmissionWorkflow = { step: 'draft' } | { step: 'final'; draftJobId: string };
 type QueryFn = (sql: string, params?: unknown[]) => Promise<unknown>;
@@ -19,16 +21,18 @@ export async function prepareSeedanceWorkflowSubmission(input: {
   payloadInput: Parameters<typeof buildSeedance25DraftRequest>[0];
 }, queryFn: QueryFn) {
   const invalid = () => new BytePlusModelArkError('Invalid owned Draft workflow.', { status: 400, code: 'SEEDANCE_DRAFT_UNAVAILABLE' });
-  if (input.engineId !== 'seedance-2-5' || input.payloadInput.mode !== 't2v'
+  if (input.engineId !== 'seedance-2-5' || !SEEDANCE_WORKFLOW_MODES.includes(input.payloadInput.mode as SeedanceWorkflowMode)
     || input.iterationCount !== 1 || input.paymentMode !== 'wallet') throw invalid();
   const read = repositoryQuery(queryFn);
-  const jobs = await read<{ settings_snapshot: { seedanceWorkflow?: SeedanceSubmissionWorkflow } }>(`
+  const jobs = await read<{ settings_snapshot: { seedanceWorkflow?: SeedanceSubmissionWorkflow; inputMode?: string; advanced?: unknown } }>(`
     SELECT settings_snapshot FROM app_jobs
     WHERE job_id = $1 AND user_id = $2 AND engine_id = 'seedance-2-5'
       AND provider = 'byteplus_modelark' AND status = 'pending' AND provider_job_id IS NULL
   `, [input.jobId, input.userId]);
-  const stored = jobs[0]?.settings_snapshot?.seedanceWorkflow;
+  const settings = jobs[0]?.settings_snapshot;
+  const stored = settings?.seedanceWorkflow;
   if (!stored || stored.step !== input.workflow.step) throw invalid();
+  if (settings?.inputMode && settings.inputMode !== input.payloadInput.mode) throw invalid();
   if (input.workflow.step === 'final') {
     if (stored.step !== 'final' || stored.draftJobId !== input.workflow.draftJobId || input.payloadInput.resolution !== '1080p') throw invalid();
     const links = await read<{ provider_task_id: string; provider_model_id: string }>(`
@@ -41,7 +45,11 @@ export async function prepareSeedanceWorkflowSubmission(input: {
     `, [input.userId, input.workflow.draftJobId, input.jobId]);
     const link = links[0];
     if (!link) throw invalid();
-    return { payload: buildSeedance25FinalRequest({ modelId: link.provider_model_id, draftProviderTaskId: link.provider_task_id }),
+    const advanced = isRecord(settings?.advanced) ? settings.advanced : {};
+    const extra = isRecord(advanced.extraInputValues) ? advanced.extraInputValues : {};
+    return { payload: buildSeedance25FinalRequest({ modelId: link.provider_model_id, draftProviderTaskId: link.provider_task_id,
+      outputFormat: extra.output_format as 'mp4' | 'mov' | undefined,
+      returnLastFrame: extra.return_last_frame as boolean | undefined, watermark: extra.watermark as boolean | undefined }),
       recordAccepted: async () => {
         if (!await markSeedanceFinalState(input.userId, input.jobId, 'submitted', read)) throw new Error('Could not persist final lineage.');
       } };

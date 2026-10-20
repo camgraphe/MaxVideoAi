@@ -14,13 +14,14 @@ export const conversationTimelineEditSchema = z.discriminatedUnion('kind', [
   // Workspace audioMix stores percentages, shared by preview and render.
   z.object({kind: z.literal('gain'), clipId, volume: z.number().min(0).max(100)}).strict(),
   z.object({kind: z.literal('remove'), clipId}).strict(),
+  z.object({kind:z.literal('subtitles'),clipId,documentId:z.string().min(1).max(200).nullable(),revision:z.number().int().positive().optional()}).strict(),
 ]);
 export type ConversationTimelineEdit = z.infer<typeof conversationTimelineEditSchema>;
 export const conversationTimelineInsertFields={ref:toolAssetRefSchema,startFrame:frame,durationFrames:frame.positive(),sourceInFrame:frame.optional()};
 export const conversationTimelineCommandSchema = z.object({
   projectId: z.string().trim().min(1).max(200), sequenceId: z.string().trim().min(1).max(200),
   expectedRevision: z.number().int().nonnegative(), idempotencyKey: z.string().min(1).max(128),
-  edit: z.union([conversationTimelineEditSchema,z.object({kind:z.literal('insert'),...conversationTimelineInsertFields}).strict(),z.object({kind:z.literal('assemble'),clips:z.array(z.object(conversationTimelineInsertFields).strict()).min(1).max(12)}).strict()]),
+  edit: z.union([conversationTimelineEditSchema,z.object({kind:z.literal('replace'),clipId,ref:toolAssetRefSchema,sourceInFrame:frame.optional()}).strict(),z.object({kind:z.literal('sequence-subtitles'),documentId:z.string().min(1).max(200).nullable(),revision:z.number().int().positive().optional()}).strict(),z.object({kind:z.literal('insert'),...conversationTimelineInsertFields}).strict(),z.object({kind:z.literal('assemble'),clips:z.array(z.object(conversationTimelineInsertFields).strict()).min(1).max(12)}).strict()]),
 }).strict();
 export type ConversationTimelineCommand = z.infer<typeof conversationTimelineCommandSchema>;
 export {workspaceTimelineSourceTime as conversationSourceTime};
@@ -57,6 +58,9 @@ export function applyConversationTimelineEdit(items: WorkspaceTimelineItem[], ra
       break;
     }
     case 'move': next = positionWorkspaceTimelineItem(items, item.id, timelineFrameToSeconds(edit.startFrame, fps)); break;
+    case 'subtitles':
+      if(edit.documentId&&!edit.revision)throw new Error('SUBTITLE_REVISION_INVALID');
+      next=items.map(candidate=>candidate.id===item.id?{...candidate,subtitle:edit.documentId?{documentId:edit.documentId,revision:edit.revision!}:undefined,subtitleDocument:undefined}:candidate);break;
     case 'remove': next = deleteWorkspaceTimelineItem(items, item.id, {ripple: true}); break;
     case 'gain':
       if (item.mediaKind !== 'audio' && item.hasEmbeddedAudio !== true) throw new Error('This clip has no audio to mix.');

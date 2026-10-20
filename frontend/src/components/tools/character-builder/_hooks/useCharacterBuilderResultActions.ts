@@ -1,3 +1,4 @@
+import type { CaptureCharacterBuilderAccountRequest } from '../_lib/character-builder-types';
 import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
 import { saveImageToLibrary } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
@@ -15,6 +16,7 @@ import {
 import type { HistoricalCharacterGalleryItem } from '../_lib/character-builder-types';
 
 interface UseCharacterBuilderResultActionsOptions {
+  captureAccountRequest: CaptureCharacterBuilderAccountRequest;
   copy: CharacterCopy;
   openAuthGate: () => void;
   setAdvancedOpen: Dispatch<SetStateAction<boolean>>;
@@ -26,6 +28,7 @@ interface UseCharacterBuilderResultActionsOptions {
 }
 
 export function useCharacterBuilderResultActions({
+  captureAccountRequest,
   copy,
   openAuthGate,
   setAdvancedOpen,
@@ -66,6 +69,8 @@ export function useCharacterBuilderResultActions({
         openAuthGate();
         return;
       }
+      const request = captureAccountRequest();
+      if (!request) return;
       setSavingResultId(result.id);
       setError(null);
       setStatusMessage(null);
@@ -75,19 +80,22 @@ export function useCharacterBuilderResultActions({
           jobId: result.jobId,
           label: copy.generatePanel.portraitTitle,
           source: 'character',
-        });
+        }, request);
+        if (!request.isCurrent()) return;
         setStatusMessage(copy.savedToLibrary);
       } catch (saveError) {
+        if (!request.isCurrent()) return;
         if (isAuthRequiredError(saveError)) {
           openAuthGate();
           return;
         }
         setError(saveError instanceof Error ? saveError.message : copy.saveToLibraryFailed);
       } finally {
-        setSavingResultId(null);
+        if (request.isCurrent()) setSavingResultId(null);
       }
     },
     [
+      captureAccountRequest,
       copy.generatePanel.portraitTitle,
       copy.savedToLibrary,
       copy.saveToLibraryFailed,
@@ -104,6 +112,8 @@ export function useCharacterBuilderResultActions({
         openAuthGate();
         return;
       }
+      const request = captureAccountRequest();
+      if (!request) return;
       setSavingResultId(item.id);
       setError(null);
       setStatusMessage(null);
@@ -113,19 +123,22 @@ export function useCharacterBuilderResultActions({
           jobId: item.jobId,
           label: copy.generatePanel.portraitTitle,
           source: 'character',
-        });
+        }, request);
+        if (!request.isCurrent()) return;
         setStatusMessage(copy.savedToLibrary);
       } catch (saveError) {
+        if (!request.isCurrent()) return;
         if (isAuthRequiredError(saveError)) {
           openAuthGate();
           return;
         }
         setError(saveError instanceof Error ? saveError.message : copy.saveToLibraryFailed);
       } finally {
-        setSavingResultId(null);
+        if (request.isCurrent()) setSavingResultId(null);
       }
     },
     [
+      captureAccountRequest,
       copy.generatePanel.portraitTitle,
       copy.savedToLibrary,
       copy.saveToLibraryFailed,
@@ -142,13 +155,16 @@ export function useCharacterBuilderResultActions({
         openAuthGate();
         return;
       }
+      const request = captureAccountRequest();
+      if (!request) return;
       setError(null);
       setStatusMessage(null);
       try {
-        const response = await authFetch(`/api/jobs/${encodeURIComponent(item.jobId)}`);
+        const response = await authFetch(`/api/jobs/${encodeURIComponent(item.jobId)}`, { headers: { Authorization: `Bearer ${request.accessToken}` }, signal: request.signal });
         const payload = (await response.json().catch(() => null)) as
           | { ok?: boolean; settingsSnapshot?: unknown; error?: string }
           | null;
+        if (!request.isCurrent()) return;
         if (!response.ok || !payload?.ok || !payload.settingsSnapshot) {
           throw new Error(payload?.error ?? copy.runFailed);
         }
@@ -165,6 +181,7 @@ export function useCharacterBuilderResultActions({
         setShowStyleReferenceSlot(Boolean(snapshotState.referenceImages?.some((image) => image.role === 'style')));
         setStatusMessage(copy.duplicateDone);
       } catch (duplicateError) {
+        if (!request.isCurrent()) return;
         if (isAuthRequiredError(duplicateError)) {
           openAuthGate();
           return;
@@ -173,6 +190,7 @@ export function useCharacterBuilderResultActions({
       }
     },
     [
+      captureAccountRequest,
       copy.duplicateDone,
       copy.missingRun,
       copy.runFailed,

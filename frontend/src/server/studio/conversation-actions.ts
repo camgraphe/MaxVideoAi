@@ -16,9 +16,11 @@ import type {StudioQuoteDiscardResult} from './conversation-quote-command';
 import {studioVisualCapabilityDetails,studioVisualCapabilitySummary,studioAudioCapabilityDetails} from './conversation-capabilities';
 import {conversationSelectionSettings} from '@/lib/studio/conversation-creation-contract';
 import {studioAudioCapabilitySummary} from './conversation-audio-discovery';
+import {priceStudioFilm} from './conversation-film-pricing';
 
 export function createStudioActionExecutor(actor: StudioGenerationActor, dependencies: {
   enabled: boolean;
+  referenceFingerprint?: string;
   generation?: ReturnType<typeof createStudioImageGenerationService>;
   prepareImage(request: Extract<StudioActionRequest, {action: 'image.prepare'}>): Promise<PreparedGeneration>;
   mediaEnabled?: boolean;
@@ -65,8 +67,11 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
               if(selection.ref.type!=='asset') throw new AgentApiError('REFERENCE_INVALID','Attach a saved library image.');
               return {kind:'asset' as const,assetId:selection.ref.assetId,role:selection.role,...(selection.slot==null?{}:{slot:selection.slot})};
             })};
-          if(request.action==='pricing.compare') return {ok:true,action:request.action,data:await service.compare({...scenario,prompt:request.prompt,
-            ...(request.baselineModelId?{baselineModelId:request.baselineModelId}:{}),...(request.baselineSettings?{baselineSettings:conversationSelectionSettings(request.baselineSettings)}:{}),...(request.candidateModelIds?{candidateModelIds:request.candidateModelIds}:{})})};
+          if(request.action==='pricing.compare') {
+            const comparison={...scenario,prompt:request.prompt,
+              ...(request.baselineModelId?{baselineModelId:request.baselineModelId}:{}),...(request.baselineSettings?{baselineSettings:conversationSelectionSettings(request.baselineSettings)}:{}),...(request.candidateModelIds?{candidateModelIds:request.candidateModelIds}:{})};
+            return {ok:true,action:request.action,data:request.filmDurationSec?await priceStudioFilm(comparison,request.filmDurationSec,service):await service.compare(comparison)};
+          }
           return {ok:true,action:request.action,data:await service.estimate({...scenario,engineId:request.modelId,prompt:'Studio pricing scenario',outputCount:1})};
         }
         case 'export.prepare':
@@ -121,6 +126,11 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
         }
       }
     } catch (error) {
+      // Only an exact single-clip validation failure can be reused across messages.
+      // A failed film component does not prove every possible full-film cut impossible.
+      if(request.action==='pricing.compare'&&!request.filmDurationSec&&dependencies.referenceFingerprint&&error instanceof AgentApiError
+        &&error.nextAction?.type==='generation_comparison'&&error.nextAction.constraintMismatch===true)
+        error=new AgentApiError(error.code,error.message,error.retryable,{...error.nextAction,referenceFingerprint:dependencies.referenceFingerprint});
       return {...toAgentApiFailure(error instanceof AgentApiError ? error : new AgentApiError('INTERNAL_ERROR', 'Studio could not complete this action. Resume the saved request.', true)), action: request.action};
     }
   };

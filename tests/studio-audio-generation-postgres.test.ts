@@ -43,6 +43,7 @@ test('session voice/music retain exact Audio billing, recovery, refund and OAuth
   const service = module.createStudioAudioGenerationService(actor, options);
   assert.deepEqual((await service.catalog()).modes.map(mode=>mode.mode),['music_only','voice_only','sfx_only','song','ambience_only','cinematic','cinematic_voice']);
   const requests = [
+    {surface: 'audio' as const, engineId: 'audio-voice-only', mode: 'voice_only' as const, prompt: '', settings: {script: 'Your film starts with a conversation.', voiceModel: 'eleven-v4' as const, elevenVoiceId: 'CwhRBWXzGAHq8TQ4Fs17', elevenStability: 0, elevenSimilarityBoost: 0.8, language: 'english' as const}, references: []},
     {surface: 'audio' as const, engineId: 'audio-voice-only', mode: 'voice_only' as const, prompt: '', settings: {script: 'Your film starts with a conversation.', voiceModel: 'seed' as const, language: 'english' as const}, references: []},
     {surface: 'audio' as const, engineId: 'audio-music-only', mode: 'music_only' as const, prompt: 'Quiet elegant instrumental piano, no vocals', settings: {musicModel: 'clip' as const, mood: 'dreamy' as const, durationSec: 30}, references: []},
   ];

@@ -1,4 +1,5 @@
 'use client';
+import { findElevenVoice } from '@/lib/audio-eleven-voices';
 import type { ReactNode } from 'react';
 import { Download, RotateCcw } from 'lucide-react';
 import type { AudioCreationIntent } from '@/lib/audio-creation';
@@ -15,6 +16,7 @@ export function AudioCreationResults({ copy, result, pending, onReuse, children 
       {result.audioUrl ? <audio key={result.audioUrl} controls preload="none" src={result.audioUrl} aria-label={copy.output} /> : null}
       <div className={styles.playerActions}><a href={result.audioUrl ?? result.videoUrl ?? ''} target="_blank" rel="noreferrer" download aria-label={copy.download} title={copy.download}><Download size={18} aria-hidden /></a>{result.settingsSnapshot ? <button type="button" onClick={onReuse} aria-label={copy.reuse} title={copy.reuse}><RotateCcw size={18} aria-hidden /></button> : null}</div>
       <details className={styles.metadata}><summary>{copy.details}</summary><dl>
+        {result.settingsSnapshot?.elevenVoiceId ? <><dt>{copy.voice}</dt><dd>{findElevenVoice(result.settingsSnapshot.elevenVoiceId)?.name ?? result.settingsSnapshot.elevenVoiceId}</dd></> : null}
         <dt>Job</dt><dd>{result.jobId}</dd>
         {Object.entries(result.settingsSnapshot?.providers ?? {}).flatMap(([role, value]) => value && typeof value === 'object' && 'model' in value && typeof value.model === 'string' ? [<div key={role} className={styles.providerDetail}><dt>{copy.model}</dt><dd>{value.model}</dd></div>] : [])}
         {result.settingsSnapshot?.measuredDurationSec ? <><dt>{copy.measured}</dt><dd>{result.settingsSnapshot.measuredDurationSec.toFixed(2)} s</dd></> : null}

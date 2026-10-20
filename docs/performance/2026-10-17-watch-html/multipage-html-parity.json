@@ -1,0 +1,238 @@
+{
+  "checks": [
+    "Before/after full schema equality after normalizing only preview site origins",
+    "Before/after title, H1, canonical, robots, all displayed quotes, video and poster/preload attributes, frame style",
+    "Rendered poster HTTP 200 on each preview",
+    "Legacy ID redirects match 308"
+  ],
+  "pages": [
+    {
+      "slug": "minimax-h3-wildfire-lookout-rescue",
+      "side": "baseline",
+      "status": 200,
+      "title": "MiniMax H3 Wildfire Lookout Rescue with Native Audio \u2014 MaxVideoAI",
+      "h1": "MiniMax H3 wildfire lookout rescue video with native audio",
+      "canonical": "https://maxvideoai.com/video/minimax-h3-wildfire-lookout-rescue",
+      "robots": "index, follow",
+      "quotes": [
+        "MiniMax H3 Max15 s1080p16:9Audio onSuggested video settings$3.12Estimated / videoUse this modelOpen app",
+        "Kling 3 Pro15 s1080p16:9Audio onSuggested video settings$3.28Estimated / videoUse this modelOpen app",
+        "Wan 2.6 Text & Image to Video15 s1080p16:9Audio onSuggested video settings$2.93Estimated / videoUse this modelOpen app"
+      ],
+      "video": [
+        {
+          "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/10186dec-e084-4141-8249-8d39331b3a23.mp4",
+          "poster": "/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F1a5ea6c8-1d4e-4675-bc10-6e91abd3fd99.jpg&w=1200&q=72",
+          "preload": "none",
+          "playsinline": "",
+          "aria-label": "MiniMax H3 wildfire lookout rescue video with native audio"
+        }
+      ],
+      "posterPreloads": [
+        {
+          "href": "/assets/branding/logo-mark.svg",
+          "imagesrcset": null,
+          "imagesizes": null,
+          "fetchpriority": null
+        },
+        {
+          "href": "/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F1a5ea6c8-1d4e-4675-bc10-6e91abd3fd99.jpg&w=1200&q=72",
+          "imagesrcset": null,
+          "imagesizes": null,
+          "fetchpriority": "high"
+        }
+      ],
+      "frame": "--ratio:1.7472527472527473"
+    },
+    {
+      "slug": "minimax-h3-wildfire-lookout-rescue",
+      "side": "candidate",
+      "status": 200,
+      "title": "MiniMax H3 Wildfire Lookout Rescue with Native Audio \u2014 MaxVideoAI",
+      "h1": "MiniMax H3 wildfire lookout rescue video with native audio",
+      "canonical": "https://maxvideoai.com/video/minimax-h3-wildfire-lookout-rescue",
+      "robots": "index, follow",
+      "quotes": [
+        "MiniMax H3 Max15 s1080p16:9Audio onSuggested video settings$3.12Estimated / videoUse this modelOpen app",
+        "Kling 3 Pro15 s1080p16:9Audio onSuggested video settings$3.28Estimated / videoUse this modelOpen app",
+        "Wan 2.6 Text & Image to Video15 s1080p16:9Audio onSuggested video settings$2.93Estimated / videoUse this modelOpen app"
+      ],
+      "video": [
+        {
+          "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/10186dec-e084-4141-8249-8d39331b3a23.mp4",
+          "poster": "/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F1a5ea6c8-1d4e-4675-bc10-6e91abd3fd99.jpg&w=1200&q=72",
+          "preload": "none",
+          "playsinline": "",
+          "aria-label": "MiniMax H3 wildfire lookout rescue video with native audio"
+        }
+      ],
+      "posterPreloads": [
+        {
+          "href": "/assets/branding/logo-mark.svg",
+          "imagesrcset": null,
+          "imagesizes": null,
+          "fetchpriority": null
+        },
+        {
+          "href": "/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F1a5ea6c8-1d4e-4675-bc10-6e91abd3fd99.jpg&w=1200&q=72",
+          "imagesrcset": null,
+          "imagesizes": null,
+          "fetchpriority": "high"
+        }
+      ],
+      "frame": "--ratio:1.7472527472527473"
+    },
+    {
+      "slug": "wan-3-prime-ai-match-cut-transitions",
+      "side": "baseline",
+      "status": 200,
+      "title": "Wan 3 Prime AI Match Cut Transitions Example \u2014 MaxVideoAI",
+      "h1": "Wan 3 Prime video transitions: cinematic match cuts",
+      "canonical": "https://maxvideoai.com/video/wan-3-prime-ai-match-cut-transitions",
+      "robots": "index, follow",
+      "quotes": [
+        "Wan 3 PrimeUsed for this video22 s720p16:9Audio onMatches original video settings$4.01Estimated / videoUse this modelOpen app",
+        "Wan 322 s720p16:9Audio onMatches original video settings$2.86Estimated / videoUse this modelOpen app",
+        "Seedance 2.522 s720p16:9Audio onMatches original video settings$12.72Estimated / videoUse this modelOpen app"
+      ],
+      "video": [
+        {
+          "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/61dbdd60-f1bd-4422-967b-54fbbd1c29ab.mp4",
+          "poster": "/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F0c5f5b6a-0feb-4d89-8ac1-4dcc55995a80.jpg&w=1200&q=72",
+          "preload": "none",
+          "playsinline": "",
+          "aria-label": "Wan 3 Prime video transitions: cinematic match cuts"
+        }
+      ],
+      "posterPreloads": [
+        {
+          "href": "/assets/branding/logo-mark.svg",
+          "imagesrcset": null,
+          "imagesizes": null,
+          "fetchpriority": null
+        },
+        {
+          "href": "/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F0c5f5b6a-0feb-4d89-8ac1-4dcc55995a80.jpg&w=1200&q=72",
+          "imagesrcset": null,
+          "imagesizes": null,
+          "fetchpriority": "high"
+        }
+      ],
+      "frame": "--ratio:1.7777777777777777"
+    },
+    {
+      "slug": "wan-3-prime-ai-match-cut-transitions",
+      "side": "candidate",
+      "status": 200,
+      "title": "Wan 3 Prime AI Match Cut Transitions Example \u2014 MaxVideoAI",
+      "h1": "Wan 3 Prime video transitions: cinematic match cuts",
+      "canonical": "https://maxvideoai.com/video/wan-3-prime-ai-match-cut-transitions",
+      "robots": "index, follow",
+      "quotes": [
+        "Wan 3 PrimeUsed for this video22 s720p16:9Audio onMatches original video settings$4.01Estimated / videoUse this modelOpen app",
+        "Wan 322 s720p16:9Audio onMatches original video settings$2.86Estimated / videoUse this modelOpen app",
+        "Seedance 2.522 s720p16:9Audio onMatches original video settings$12.72Estimated / videoUse this modelOpen app"
+      ],
+      "video": [
+        {
+          "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/61dbdd60-f1bd-4422-967b-54fbbd1c29ab.mp4",
+          "poster": "/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F0c5f5b6a-0feb-4d89-8ac1-4dcc55995a80.jpg&w=1200&q=72",
+          "preload": "none",
+          "playsinline": "",
+          "aria-label": "Wan 3 Prime video transitions: cinematic match cuts"
+        }
+      ],
+      "posterPreloads": [
+        {
+          "href": "/assets/branding/logo-mark.svg",
+          "imagesrcset": null,
+          "imagesizes": null,
+          "fetchpriority": null
+        },
+        {
+          "href": "/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F0c5f5b6a-0feb-4d89-8ac1-4dcc55995a80.jpg&w=1200&q=72",
+          "imagesrcset": null,
+          "imagesizes": null,
+          "fetchpriority": "high"
+        }
+      ],
+      "frame": "--ratio:1.7777777777777777"
+    },
+    {
+      "slug": "kling-3-pro-futuristic-city-drone-flythrough-example-b3ce25fd",
+      "side": "baseline",
+      "status": 200,
+      "title": "Kling 3 Pro Futuristic City Drone Flythrough Example \u2014 MaxVideoAI",
+      "h1": "Kling 3 Pro futuristic city drone flythrough example",
+      "canonical": "https://maxvideoai.com/video/kling-3-pro-futuristic-city-drone-flythrough-example-b3ce25fd",
+      "robots": "index, follow",
+      "quotes": [
+        "Kling 3 ProUsed for this video15 s1080p16:9No audioMatches original video settings$2.19Estimated / videoUse this modelOpen app",
+        "Kling 3 Standard15 s1080p16:9No audioMatches original video settings$1.64Estimated / videoUse this modelOpen app",
+        "Wan 2.6 Text & Image to Video15 s1080p16:9No audioMatches original video settings$2.93Estimated / videoUse this modelOpen app"
+      ],
+      "video": [
+        {
+          "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/d31c8cab-e2ba-454b-a6db-9ffd0b14b784.mp4",
+          "poster": "/_next/image?url=https%3A%2F%2Fvideohub-uploads-us.s3.amazonaws.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F44523fb0-8f16-45b7-9cf9-c7edcd6cd767.jpg&w=1200&q=72",
+          "preload": "none",
+          "playsinline": "",
+          "aria-label": "Kling 3 Pro futuristic city drone flythrough example"
+        }
+      ],
+      "posterPreloads": [
+        {
+          "href": "/assets/branding/logo-mark.svg",
+          "imagesrcset": null,
+          "imagesizes": null,
+          "fetchpriority": null
+        },
+        {
+          "href": "/_next/image?url=https%3A%2F%2Fvideohub-uploads-us.s3.amazonaws.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F44523fb0-8f16-45b7-9cf9-c7edcd6cd767.jpg&w=1200&q=72",
+          "imagesrcset": null,
+          "imagesizes": null,
+          "fetchpriority": "high"
+        }
+      ],
+      "frame": "--ratio:1.7777777777777777"
+    },
+    {
+      "slug": "kling-3-pro-futuristic-city-drone-flythrough-example-b3ce25fd",
+      "side": "candidate",
+      "status": 200,
+      "title": "Kling 3 Pro Futuristic City Drone Flythrough Example \u2014 MaxVideoAI",
+      "h1": "Kling 3 Pro futuristic city drone flythrough example",
+      "canonical": "https://maxvideoai.com/video/kling-3-pro-futuristic-city-drone-flythrough-example-b3ce25fd",
+      "robots": "index, follow",
+      "quotes": [
+        "Kling 3 ProUsed for this video15 s1080p16:9No audioMatches original video settings$2.19Estimated / videoUse this modelOpen app",
+        "Kling 3 Standard15 s1080p16:9No audioMatches original video settings$1.64Estimated / videoUse this modelOpen app",
+        "Wan 2.6 Text & Image to Video15 s1080p16:9No audioMatches original video settings$2.93Estimated / videoUse this modelOpen app"
+      ],
+      "video": [
+        {
+          "src": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/d31c8cab-e2ba-454b-a6db-9ffd0b14b784.mp4",
+          "poster": "/_next/image?url=https%3A%2F%2Fvideohub-uploads-us.s3.amazonaws.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F44523fb0-8f16-45b7-9cf9-c7edcd6cd767.jpg&w=1200&q=72",
+          "preload": "none",
+          "playsinline": "",
+          "aria-label": "Kling 3 Pro futuristic city drone flythrough example"
+        }
+      ],
+      "posterPreloads": [
+        {
+          "href": "/assets/branding/logo-mark.svg",
+          "imagesrcset": null,
+          "imagesizes": null,
+          "fetchpriority": null
+        },
+        {
+          "href": "/_next/image?url=https%3A%2F%2Fvideohub-uploads-us.s3.amazonaws.com%2Frenders%2F301cc489-d689-477f-94c4-0b051deda0bc%2F44523fb0-8f16-45b7-9cf9-c7edcd6cd767.jpg&w=1200&q=72",
+          "imagesrcset": null,
+          "imagesizes": null,
+          "fetchpriority": "high"
+        }
+      ],
+      "frame": "--ratio:1.7777777777777777"
+    }
+  ]
+}

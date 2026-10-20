@@ -5,7 +5,8 @@ import { classifyMcpClient } from '@/server/mcp/client-family';
 import { getMcpRequestHost, isMcpApiHost } from '@/lib/mcp-host-routing';
 import { FEATURES } from '@/content/feature-flags';
 import type { AgentAccountStatusWalletDeps } from '@/server/agent-api/account-status';
-import { AgentApiError } from '@/server/agent-api/errors';
+import { AgentApiError, AGENT_API_ERROR_CODES } from '@/server/agent-api/errors';
+import { getFalEngineById } from '@/config/falEngines';
 import { recordMcpEvent, type McpAuditEvent } from '@/server/agent-api/audit-events';
 import {
   bindAuthenticatedMcpConnection,
@@ -117,6 +118,9 @@ function protocolMethod(body: unknown): string | null {
 }
 
 const AUDITABLE_TOOL_NAMES = new Set([
+  'list_creator_tools', 'prepare_creator_tool', 'confirm_creator_tool', 'get_creator_tool_operation',
+  'get_subtitle_document', 'edit_subtitle_document', 'prepare_subtitle_export', 'export_subtitle_text',
+  'prepare_studio_subtitles',
   'get_account_status',
   'list_models',
   'get_model_details',
@@ -193,6 +197,25 @@ function toolOutcome(payload: Record<string, unknown>): 'success' | 'failure' {
     : 'success';
 }
 
+const PUBLIC_ERROR_CODES = new Set<string>(AGENT_API_ERROR_CODES);
+
+function toolErrorCode(payload: Record<string, unknown>): string | null {
+  if (toolOutcome(payload) !== 'failure') return null;
+  const protocolError = payload.error as { code?: unknown } | undefined;
+  if (protocolError?.code === -32602 || protocolError?.code === -32600) return 'PARAMETER_INVALID';
+  const result = payload.result as { structuredContent?: { error?: { code?: unknown } } } | undefined;
+  const code = result?.structuredContent?.error?.code;
+  return typeof code === 'string' && PUBLIC_ERROR_CODES.has(code) ? code : 'MCP_TOOL_ERROR';
+}
+
+function toolAuditDimensions(body: unknown): Pick<McpAuditEvent, 'surface' | 'engineId'> {
+  const args = (body as { params?: { arguments?: Record<string, unknown> } } | null)?.params?.arguments;
+  const surface = args?.surface === 'video' || args?.surface === 'image' ? args.surface : null;
+  const id = args?.engineId ?? args?.id;
+  const engineId = typeof id === 'string' && getFalEngineById(id) ? id : null;
+  return { surface, engineId };
+}
+
 async function recordProtocolActivity(
   body: unknown,
   response: Response,
@@ -233,9 +256,8 @@ async function recordProtocolActivity(
       oauthClientId: principal.clientId,
       tool,
       outcome: toolOutcome(payload),
-      surface: null,
-      engineId: null,
-      errorCode: null,
+      ...toolAuditDimensions(body),
+      errorCode: toolErrorCode(payload),
     }).catch(() => false);
   }
 }
@@ -343,7 +365,8 @@ export async function handleMcpHttpRequest(
       capabilities,
       injectedDeps?.accountStatusDeps,
     ),
-    { ...capabilities, studioMontageCreation },
+    { ...capabilities, studioMontageCreation,
+      creatorTools: process.env.CREATOR_TOOLS_ENABLED === '1' && process.env.MCP_CREATOR_TOOLS_ENABLED === '1' },
   );
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,

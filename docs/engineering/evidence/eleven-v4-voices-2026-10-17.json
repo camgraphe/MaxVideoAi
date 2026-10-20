@@ -1,0 +1,181 @@
+{
+  "observedAtUtc": "2026-10-17T01:17:16.392678+00:00",
+  "endpoint": "elevenlabs/tts/eleven-v4",
+  "providerSchemaUrl": "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=elevenlabs/tts/eleven-v4",
+  "stockMetadataUrl": "https://api.elevenlabs.io/v1/voices",
+  "inferenceCalls": 0,
+  "voices": [
+    {
+      "id": "CwhRBWXzGAHq8TQ4Fs17",
+      "name": "Roger",
+      "gender": "male",
+      "accent": "american",
+      "sampleHttpStatus": 206,
+      "sampleRecognizedAudio": true,
+      "verification": "fal_schema_and_current_stock_metadata_with_sample_range_request"
+    },
+    {
+      "id": "EXAVITQu4vr4xnSDxMaL",
+      "name": "Sarah",
+      "gender": "female",
+      "accent": "american",
+      "sampleHttpStatus": 206,
+      "sampleRecognizedAudio": true,
+      "verification": "fal_schema_and_current_stock_metadata_with_sample_range_request"
+    },
+    {
+      "id": "FGY2WhTYpPnrIDTdsKH5",
+      "name": "Laura",
+      "gender": "female",
+      "accent": "american",
+      "sampleHttpStatus": 206,
+      "sampleRecognizedAudio": true,
+      "verification": "fal_schema_and_current_stock_metadata_with_sample_range_request"
+    },
+    {
+      "id": "IKne3meq5aSn9XLyUdCD",
+      "name": "Charlie",
+      "gender": "male",
+      "accent": "australian",
+      "sampleHttpStatus": 206,
+      "sampleRecognizedAudio": true,
+      "verification": "fal_schema_and_current_stock_metadata_with_sample_range_request"
+    },
+    {
+      "id": "JBFqnCBsd6RMkjVDRZzb",
+      "name": "George",
+      "gender": "male",
+      "accent": "british",
+      "sampleHttpStatus": 206,
+      "sampleRecognizedAudio": true,
+      "verification": "fal_schema_and_current_stock_metadata_with_sample_range_request"
+    },
+    {
+      "id": "N2lVS1w4EtoT3dr4eOWO",
+      "name": "Callum",
+      "gender": "male",
+      "accent": "american",
+      "sampleHttpStatus": 206,
+      "sampleRecognizedAudio": true,
+      "verification": "fal_schema_and_current_stock_metadata_with_sample_range_request"
+    },
+    {
+      "id": "SAz9YHcvj6GT2YYXdXww",
+      "name": "River",
+      "gender": "neutral",
+      "accent": "american",
+      "sampleHttpStatus": 206,
+      "sampleRecognizedAudio": true,
+      "verification": "fal_schema_and_current_stock_metadata_with_sample_range_request"
+    },
+    {
+      "id": "TX3LPaxmHKxFdv7VOQHJ",
+      "name": "Liam",
+      "gender": "male",
+      "accent": "american",
+      "sampleHttpStatus": 206,
+      "sampleRecognizedAudio": true,
+      "verification": "fal_schema_and_current_stock_metadata_with_sample_range_request"
+    },
+    {
+      "id": "Xb7hH8MSUJpSbSDYk0k2",
+      "name": "Alice",
+      "gender": "female",
+      "accent": "british",
+      "sampleHttpStatus": 206,
+      "sampleRecognizedAudio": true,
+      "verification": "fal_schema_and_current_stock_metadata_with_sample_range_request"
+    },
+    {
+      "id": "XrExE9yKIg1WjnnlVkGX",
+      "name": "Matilda",
+      "gender": "female",
+      "accent": "american",
+      "sampleHttpStatus": 206,
+      "sampleRecognizedAudio": true,
+      "verification": "fal_schema_and_current_stock_metadata_with_sample_range_request"
+    },
+    {
+      "id": "bIHbv24MWmeRgasZH58o",
+      "name": "Will",
+      "gender": "male",
+      "accent": "american",
+      "sampleHttpStatus": 206,
+      "sampleRecognizedAudio": true,
+      "verification": "fal_schema_and_current_stock_metadata_with_sample_range_request"
+    },
+    {
+      "id": "cgSgspJ2msm6clMCkdW9",
+      "name": "Jessica",
+      "gender": "female",
+      "accent": "american",
+      "sampleHttpStatus": 206,
+      "sampleRecognizedAudio": true,
+      "verification": "fal_schema_and_current_stock_metadata_with_sample_range_request"
+    },
+    {
+      "id": "cjVigY5qzO86Huf0OWal",
+      "name": "Eric",
+      "gender": "male",
+      "accent": "american",
+      "sampleHttpStatus": 206,
+      "sampleRecognizedAudio": true,
+      "verification": "fal_schema_and_current_stock_metadata_with_sample_range_request"
+    },
+    {
+      "id": "iP95p4xoKVk53GoZ742B",
+      "name": "Chris",
+      "gender": "male",
+      "accent": "american",
+      "sampleHttpStatus": 206,
+      "sampleRecognizedAudio": true,
+      "verification": "fal_schema_and_current_stock_metadata_with_sample_range_request"
+    },
+    {
+      "id": "nPczCjzI2devNBz1zQrb",
+      "name": "Brian",
+      "gender": "male",
+      "accent": "american",
+      "sampleHttpStatus": 206,
+      "sampleRecognizedAudio": true,
+      "verification": "fal_schema_and_current_stock_metadata_with_sample_range_request"
+    },
+    {
+      "id": "onwK4e9ZLuTAKqWW03F9",
+      "name": "Daniel",
+      "gender": "male",
+      "accent": "british",
+      "sampleHttpStatus": 206,
+      "sampleRecognizedAudio": true,
+      "verification": "fal_schema_and_current_stock_metadata_with_sample_range_request"
+    },
+    {
+      "id": "pFZP5JQG7iQjIQuC4Bku",
+      "name": "Lily",
+      "gender": "female",
+      "accent": "british",
+      "sampleHttpStatus": 206,
+      "sampleRecognizedAudio": true,
+      "verification": "fal_schema_and_current_stock_metadata_with_sample_range_request"
+    },
+    {
+      "id": "pqHfZKP75CvOlQylNhV4",
+      "name": "Bill",
+      "gender": "male",
+      "accent": "american",
+      "sampleHttpStatus": 206,
+      "sampleRecognizedAudio": true,
+      "verification": "fal_schema_and_current_stock_metadata_with_sample_range_request"
+    }
+  ],
+  "notInCurrentStockMetadata": [
+    "Aria",
+    "Charlotte"
+  ],
+  "stockVoicesNotDocumentedByFal": [
+    "Harry",
+    "Bella",
+    "Adam"
+  ],
+  "limitation": "Documented availability, not new paid inference qualification. Audition samples are official stock samples, not a promise of Eleven v4 generated delivery. Preview URLs are resolved live, never frozen in this evidence."
+}

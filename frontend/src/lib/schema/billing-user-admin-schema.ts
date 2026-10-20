@@ -49,6 +49,12 @@ export async function ensureBillingUserAdminSchema(): Promise<void> {
     `);
 
     await query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS checkout_attempts_turnstile_token_once_idx
+      ON checkout_attempts ((metadata ->> 'turnstileTokenHash'))
+      WHERE captcha_passed IS TRUE AND metadata ? 'turnstileTokenHash';
+    `);
+
+    await query(`
       CREATE TABLE IF NOT EXISTS checkout_interaction_events (
         id BIGSERIAL PRIMARY KEY,
         checkout_attempt_id BIGINT REFERENCES checkout_attempts(id) ON DELETE SET NULL,

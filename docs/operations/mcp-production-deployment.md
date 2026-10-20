@@ -380,6 +380,8 @@ Other providers remain independent:
   `BYTEPLUS_ARK_ENABLED`/Seedance provider, mode, and admin/public-routing gates.
   LAS additionally requires `BYTEPLUS_LAS_API_KEY`; keep LAS and V2V disabled
   until their separate accounting and failure canary passes.
+  Follow the [LAS Edit release procedure](../model-launch/seedance-2-5-las-edit.md)
+  for its separate tariff correction, wallet-only settlement and bounded canary.
 - Kling direct requires `KLING_ACCESS_KEY`, `KLING_SECRET_KEY`, its explicit
   direct/public/admin gates, and `KLING_DIRECT_POLL_TOKEN`.
 - Vertex Veo/Omni requires the exact project/location/service-account names,

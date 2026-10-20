@@ -53,6 +53,21 @@ test('alignment accepts Git builds and identified Git redeploys, rejects raw CLI
   assert.throws(() => deploymentRevision({ ...deployment, meta: { ...deployment.meta, githubCommitRef: 'feature' } }), /no verified/);
 });
 
+test('alignment recognizes the current Vercel redeploy source while retaining original deployment and Git identity checks', () => {
+  const redeployment = { ...deployment, source: 'redeploy', meta: {
+    ...deployment.meta, originalDeploymentId: 'dpl_original',
+  } };
+  assert.equal(deploymentRevision(redeployment), sha);
+  for (const originalDeploymentId of ['', 'unknown', 'dpl_', 'dpl_invalid/id']) {
+    assert.throws(() => deploymentRevision({ ...redeployment, meta: { ...redeployment.meta, originalDeploymentId } }), /no verified/);
+  }
+  for (const patch of [{ projectId: STAGING_PROJECT_ID }, { readyState: 'ERROR' }, { target: 'preview' }, { meta: {} }]) {
+    assert.throws(() => deploymentRevision({ ...redeployment, ...patch }), /no verified/);
+  }
+  assert.throws(() => deploymentRevision({ ...redeployment, meta: { ...redeployment.meta, githubCommitRef: 'feature' } }), /no verified/);
+  assert.throws(() => deploymentRevision({ ...redeployment, source: 'cli' }), /no verified/, 'Raw CLI uploads still require the identified redeploy action');
+});
+
 test('alignment blocks missing production commits and branches based on stale main', () => {
   const ancestor = (a: string, b: string) => a === b || (a === 'prod' && b === 'main') || (a === 'main' && b === 'candidate');
   assert.doesNotThrow(() => checkAncestry('prod', 'main', 'candidate', ancestor));

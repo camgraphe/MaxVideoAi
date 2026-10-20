@@ -207,6 +207,8 @@ export function applyAcceptedGenerationResultToRender(
     readyVideoUrl: projection.videoUrl ?? render.readyVideoUrl,
     videoUrl: projection.videoUrl ?? render.videoUrl,
     previewVideoUrl: render.previewVideoUrl,
+    playbackVideoUrl: render.playbackVideoUrl,
+    lastFrameUrl: render.lastFrameUrl,
   };
 }
 
@@ -234,6 +236,8 @@ export function applyAcceptedGenerationResultToSelectedPreview(
     etaLabel: projection.etaLabel ?? undefined,
     videoUrl: projection.videoUrl ?? current.videoUrl,
     previewVideoUrl: current.previewVideoUrl,
+    playbackVideoUrl: current.playbackVideoUrl,
+    lastFrameUrl: current.lastFrameUrl,
     status: projection.visibleStatus,
     observation: { stage: generationStage(projection.status) },
   };

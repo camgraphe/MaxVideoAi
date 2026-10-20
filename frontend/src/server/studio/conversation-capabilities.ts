@@ -41,20 +41,22 @@ export function studioAudioCapabilityDetails(capabilities: ReturnType<typeof lis
   if (!modes.length) return null;
   const variants=modes.flatMap(mode=>mode.variants.filter(variant=>variant.available));
   const seed=variants.some(variant=>variant.settings.voiceModel==='seed');
+  const eleven=variants.some(variant=>variant.settings.voiceModel==='eleven-v4');
   const minimax=variants.some(variant=>variant.settings.voiceModel==='minimax');
   const music=modes.some(mode=>mode.mode==='music_only'||mode.mode==='cinematic'||mode.mode==='cinematic_voice');
   const parameters=modes.flatMap(mode=>mode.variants.filter(variant=>variant.available).flatMap(variant=>projectAudioVariantSettings(mode.mode,variant)));
   const permits=(key: 'seedAudioOutputFormat' | 'seedAudioSampleRate',value: string | number)=>parameters.some(parameter=>parameter.key===key && parameter.values?.includes(value));
   const options={...capabilities.options,
+    elevenVoices: eleven ? capabilities.options.elevenVoices : [],
     seedVoices: seed ? capabilities.options.seedVoices : [],minimaxVoices: minimax ? capabilities.options.minimaxVoices : [],
     seedFormats: capabilities.options.seedFormats.filter(format=>permits('seedAudioOutputFormat',format)),
     seedSampleRates: capabilities.options.seedSampleRates.filter(rate=>permits('seedAudioSampleRate',rate)),
-    languages: seed || minimax ? capabilities.options.languages : [],moods: music ? capabilities.options.moods : [],musicBpm: music ? capabilities.options.musicBpm : [],
+    languages: seed || minimax || eleven ? capabilities.options.languages : [],moods: music ? capabilities.options.moods : [],musicBpm: music ? capabilities.options.musicBpm : [],
   };
   const references:('source_video'|'voice_sample')[]=[];
   if(modes.some(mode=>mode.references.sourceVideo!=='unsupported'))references.push('source_video');
   if(modes.some(mode=>mode.variants.some(variant=>studioAudioVariantVoiceSample(mode,variant)==='optional')))references.push('voice_sample');
-  return {modelId,label: modes[0].label,surface: 'audio',options,references,outputCount: 1,
+  return {modelId,label: modes[0].label,surface: 'audio',defaults: capabilities.defaults,options,references,outputCount: 1,
     modes: modes.map(mode=>{
       const audioWorkflow=studioAudioWorkflowFacts(mode);
       return {...mode,audioWorkflow,references:{...mode.references,voiceSample:audioWorkflow.references.voiceSample},

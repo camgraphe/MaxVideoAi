@@ -52,7 +52,7 @@ export const VIDEO_SEO_EDITORIAL_ENTRIES = [
     targetKeyword: 'MiniMax H3 wildfire rescue video',
     intent: 'audio-enabled',
     modelSlug: 'minimax-h3',
-    examplesSlug: 'minimax',
+    examplesSlug: 'hailuo',
     canonicalSlug: 'minimax-h3-wildfire-lookout-rescue',
   },
   {
@@ -70,7 +70,7 @@ export const VIDEO_SEO_EDITORIAL_ENTRIES = [
     targetKeyword: 'MiniMax H3 lighthouse keeper video',
     intent: 'audio-enabled',
     modelSlug: 'minimax-h3',
-    examplesSlug: 'minimax',
+    examplesSlug: 'hailuo',
     canonicalSlug: 'minimax-h3-lighthouse-keeper-rescue',
   },
   {

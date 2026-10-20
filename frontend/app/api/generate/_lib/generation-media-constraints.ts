@@ -174,7 +174,8 @@ export async function validateGenerationMediaConstraints(params: {
   if (!engine) return { ok: true };
   const combinedModes = params.inputSchema?.constraints?.combinedDurationModes;
   const applyCombinedLimits = !Array.isArray(combinedModes) || combinedModes.includes(params.mode);
-  const requiresOwnedMedia = params.inputSchema?.constraints?.ownedAssetModes?.includes(params.mode) === true;
+  const requiresExactOwnedMedia = params.engineId === 'seedance-2-5' && params.mode === 'v2v';
+  const requiresOwnedMedia = requiresExactOwnedMedia || params.inputSchema?.constraints?.ownedAssetModes?.includes(params.mode) === true;
 
   const constrainedFields = [
     ...(params.inputSchema?.required ?? []),
@@ -298,12 +299,12 @@ export async function validateGenerationMediaConstraints(params: {
     const matchingRows = rows.filter((row) => {
       const rowUrl = normalizeUrl(row.url);
       const originUrl = normalizeUrl(row.origin_url);
-      return rowUrl === candidate.url || originUrl === candidate.url;
+      return rowUrl === candidate.url || (!requiresExactOwnedMedia && originUrl === candidate.url);
     });
     const stored =
       (candidate.assetId
         ? matchingRows.find((row) => row.asset_id === candidate.assetId)
-        : undefined) ?? matchingRows[0];
+        : undefined) ?? (requiresExactOwnedMedia && candidate.assetId ? undefined : matchingRows[0]);
     const sizeBytes = stored ? normalizeSizeBytes(stored.size_bytes) : null;
     if (!stored || sizeBytes == null) {
       if (candidate.kind === 'image' && !requiresOwnedMedia) continue;
@@ -348,6 +349,7 @@ export async function validateGenerationMediaConstraints(params: {
     const trustedHeight = normalizeDimension(stored.height);
     const trustedReference: MinimaxH3MaxPricingReference = {
       kind: candidate.kind,
+      fieldId: candidate.fieldId,
       url: candidate.url,
       width: trustedWidth,
       height: trustedHeight,
@@ -368,6 +370,7 @@ export async function validateGenerationMediaConstraints(params: {
     }
     if (
       requiresOwnedMedia
+      && !(requiresExactOwnedMedia && field.type === 'video')
       && (field.type === 'image' || field.type === 'video')
       && (trustedWidth == null || trustedHeight == null)
     ) {
@@ -416,7 +419,7 @@ export async function validateGenerationMediaConstraints(params: {
     ) {
       let width = trustedWidth;
       let height = trustedHeight;
-      if (!requiresOwnedMedia && (width == null || height == null)) {
+      if ((!requiresOwnedMedia || requiresExactOwnedMedia) && (width == null || height == null)) {
         const detected = await detectVideoDimensionsFn(stored.url).catch(() => null);
         width = normalizeDimension(detected?.width);
         height = normalizeDimension(detected?.height);
@@ -439,6 +442,8 @@ export async function validateGenerationMediaConstraints(params: {
           minimumPixelCount,
         });
       }
+      trustedReference.width = width;
+      trustedReference.height = height;
     }
 
     const combinedDurationLimit =

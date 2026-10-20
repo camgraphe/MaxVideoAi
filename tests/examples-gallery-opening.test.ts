@@ -10,19 +10,19 @@ import type { ExampleGalleryVideo } from '../frontend/components/examples/exampl
 
 const videos: ExampleGalleryVideo[] = Array.from({length:24},(_,i)=>i%4===1?'9:16':'16:9').map((aspectRatio, i) => ({
   id: `v${i}`, href: `/video/v${i}`, engineLabel: 'Example', engineIconId: 'example',
-  priceLabel: i === 0 ? 'Current price $1.41' : null, prompt: 'A cinematic public example', aspectRatio, durationSec: 10,
+  priceLabel: i === 0 ? 'Current price $1.41' : null, prompt: 'A cinematic public example', sourcePromptExcerpt: `Original scene direction for video ${i}`, aspectRatio, durationSec: 10,
   hasAudio: false, rawPosterUrl: `/test-${i}.jpg`,
   ...(i === 0 ? { recreateHref: '/app?from=v0' } : {}),
 }));
 
-async function renderGallery(prioritizeFirstPoster: boolean, openingEnabled = true, openingDetails?: React.ReactNode) {
+async function renderGallery(prioritizeFirstPoster: boolean, openingEnabled = true) {
   const require = createRequire(import.meta.url);
   const previous = require.extensions['.css'];
   require.extensions['.css'] = () => {};
   try {
     const { default: Grid } = await import('../frontend/components/examples/ExamplesGalleryGrid.client');
     return new JSDOM(renderToStaticMarkup(React.createElement(Grid, {
-      initialExamples: videos, prioritizeFirstPoster, openingEnabled, openingDetails, sort: 'playlist', initialOffset: 8,
+      initialExamples: videos, prioritizeFirstPoster, openingEnabled, sort: 'playlist', initialOffset: 8,
       pageOffsetEnd: 16, locale: 'en',
     })));
   } finally {
@@ -31,20 +31,32 @@ async function renderGallery(prioritizeFirstPoster: boolean, openingEnabled = tr
   }
 }
 
-test('server prompt shortcuts follow the opening and retain the complete poster-only SSR gallery', async () => {
-  const details = React.createElement('section', { id: 'prompt-shortcuts' },
-    React.createElement('a', { href: '/video/v0' }, 'Open the exact version prompt'));
-  const dom = await renderGallery(true, true, details);
+test('the gallery continues directly from the opening into the remaining videos', async () => {
+  const dom = await renderGallery(true);
   try {
     const doc = dom.window.document;
     const opening = doc.querySelector('[data-gallery-opening]')!;
-    const shortcuts = doc.querySelector('#prompt-shortcuts')!;
-    const continuation = doc.querySelector('a[href="/video/v4"]')!;
-    assert.ok(opening.compareDocumentPosition(shortcuts) & dom.window.Node.DOCUMENT_POSITION_FOLLOWING);
-    assert.ok(shortcuts.compareDocumentPosition(continuation) & dom.window.Node.DOCUMENT_POSITION_FOLLOWING);
+    const continuation = opening.nextElementSibling!;
+    assert.equal(continuation.querySelector('a')?.getAttribute('href'), '/video/v4');
+    assert.equal(opening.parentElement?.querySelector('h2'), null, 'no redundant continuation heading separates the videos');
+    assert.equal(opening.parentElement?.querySelector('section, blockquote'), null, 'no duplicate editorial block splits the videos');
     assert.equal(doc.querySelectorAll('img').length, 24);
     assert.equal(doc.querySelectorAll('img[fetchpriority="high"]').length, 1);
     assert.equal(doc.querySelector('video'), null);
+  } finally { dom.window.close(); }
+});
+
+test('every server-rendered watch card visibly associates its original prompt excerpt with its video', async () => {
+  const dom = await renderGallery(true);
+  try {
+    const links = [...dom.window.document.querySelectorAll('a[data-analytics-cta-name="view_example_details"]')];
+    assert.equal(links.length, 24);
+    links.forEach((link, index) => {
+      assert.equal(link.querySelector('[data-example-prompt]')?.textContent?.trim(), `Original scene direction for video ${index}`);
+      assert.notEqual(link.querySelector('[data-example-prompt]')?.getAttribute('aria-hidden'), 'true');
+      assert.equal(link.getAttribute('href'), `/video/v${index}`);
+    });
+    assert.equal(dom.window.document.querySelector('video'), null);
   } finally { dom.window.close(); }
 });
 

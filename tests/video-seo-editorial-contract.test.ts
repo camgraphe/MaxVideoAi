@@ -16,8 +16,8 @@ const deriveSource = readFileSync('frontend/server/watch-page-signals/derive.ts'
 const canonicalSignalsSource = readFileSync('frontend/server/watch-page-signals/canonical.ts', 'utf8');
 const sitemapRouteSource = readFileSync('frontend/server/sitemaps/video.ts', 'utf8');
 const sitemapXmlSource = readFileSync('frontend/server/sitemaps/video-xml.ts', 'utf8');
-const contentSource = readFileSync('frontend/app/(core)/video/[id]/_components/VideoWatchContent.tsx', 'utf8');
-const pageSource = readFileSync('frontend/app/(core)/video/[id]/page.tsx', 'utf8');
+const contentSource = readFileSync('frontend/app/(public-watch)/video/[id]/_components/VideoWatchContent.tsx', 'utf8');
+const pageSource = readFileSync('frontend/app/(public-watch)/video/[id]/page.tsx', 'utf8');
 const editorialSource = readFileSync('frontend/config/video-seo-editorial.ts', 'utf8');
 
 const removedFromSitemap = new Set([

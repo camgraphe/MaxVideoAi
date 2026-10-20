@@ -148,17 +148,18 @@ test('model-directory capture provenance describes only the visible public hero'
   assert.match(record.reviewTrigger, /hero.*actions.*pricing.*specification cues.*artwork/i);
 });
 
-test('gallery capture provenance excludes off-crop examples and detail destinations', () => {
+test('gallery capture provenance matches the current four-card opening', () => {
   const record = manifest.assets.find((asset) => asset.id === 'maxvideoai-examples-gallery-live');
   assert.ok(record);
   for (const text of [record.claim, record.alt, record.reviewTrigger]) {
     assert.doesNotMatch(text, /product.style|duration|settings|price destinations/i);
   }
   for (const text of [record.claim, record.alt]) {
-    assert.match(text, /public.*gallery hero.*filters/i);
-    assert.match(text, /cinematic Paris.*animated runner previews/i);
-    assert.match(text, /partial model labels/i);
+    assert.match(text, /MaxVideoAI examples gallery.*brand filters.*four opening/i);
+    assert.match(text, /Wan.*Seedance.*FLUX/i);
+    assert.doesNotMatch(text, /cinematic Paris|animated runner previews|partial model labels/i);
   }
+  assert.match(record.claim, /Wan 3 Prime.*Seedance 2\.0 Fast.*FLUX 3/i);
   assert.match(record.reviewTrigger, /gallery hero.*filters.*previews.*model labels/i);
 });
 

@@ -1,4 +1,5 @@
-import { query } from '@/lib/db';
+import { applicationJobSql } from '../app-job-origin';
+import { query, isTransactionQueryExecutor, type TransactionQueryExecutor } from '@/lib/db';
 import { buildStoredImageRenderEntries } from '@/lib/image-renders';
 import { ensureMediaLibrarySchema } from '@/lib/schema';
 import {
@@ -17,11 +18,13 @@ import {
   type MediaLibraryPage,
 } from './pagination';
 
-export async function upsertJobOutputs(outputs: JobOutputRecord[]): Promise<void> {
+export async function upsertJobOutputs(outputs: JobOutputRecord[], options: { executor?: TransactionQueryExecutor } = {}): Promise<void> {
   if (!outputs.length) return;
-  await ensureMediaLibrarySchema();
+  if (options.executor && !isTransactionQueryExecutor(options.executor)) throw new Error('Active transaction required for job outputs.');
+  if (!options.executor) await ensureMediaLibrarySchema();
+  const execute = options.executor ? options.executor.query.bind(options.executor) : query;
   for (const output of outputs) {
-    const persisted = await query<{ id: string }>(
+    const persisted = await execute<{ id: string }>(
       `INSERT INTO job_outputs (
          id, job_id, user_id, kind, url, storage_url, thumb_url, preview_url, mime_type, width, height,
          duration_sec, position, status, metadata
@@ -46,7 +49,7 @@ export async function upsertJobOutputs(outputs: JobOutputRecord[]): Promise<void
          status = EXCLUDED.status,
          metadata = (CASE WHEN COALESCE(job_outputs.storage_url, job_outputs.url) IS NOT DISTINCT FROM COALESCE(EXCLUDED.storage_url, EXCLUDED.url)
                           THEN COALESCE(job_outputs.metadata, '{}'::jsonb)
-                          ELSE COALESCE(job_outputs.metadata, '{}'::jsonb) - 'mediaFacts' END) || EXCLUDED.metadata,
+                          ELSE COALESCE(job_outputs.metadata, '{}'::jsonb) - 'mediaFacts' - 'inheritedOutputDurationSec' END) || EXCLUDED.metadata,
          updated_at = NOW()
        WHERE job_outputs.user_id IS NOT DISTINCT FROM EXCLUDED.user_id
        RETURNING id`,
@@ -62,7 +65,7 @@ export async function upsertJobOutputs(outputs: JobOutputRecord[]): Promise<void
         output.mimeType,
         output.width,
         output.height,
-        output.durationSec,
+        output.kind === 'video' && output.durationSec !== null ? Math.round(output.durationSec) : output.durationSec,
         output.position,
         output.status,
         JSON.stringify(output.metadata ?? {}),
@@ -74,10 +77,23 @@ export async function upsertJobOutputs(outputs: JobOutputRecord[]): Promise<void
   }
 }
 
-export async function upsertLegacyJobOutputs(row: LegacyJobMediaRow): Promise<void> {
+export async function upsertLegacyJobOutputs(row: LegacyJobMediaRow, options: {
+  requireMcpPromotion?: boolean; promoteMcpOutputsFn?: typeof promoteCompletedMcpJobOutputs;
+} = {}): Promise<void> {
   const outputs = mapLegacyJobRowToOutputs(row);
   await upsertJobOutputs(outputs);
-  await promoteCompletedMcpJobOutputs(outputs).catch((error) => {
+  const promote = options.promoteMcpOutputsFn ?? promoteCompletedMcpJobOutputs;
+  if (options.requireMcpPromotion) {
+    const result = await promote(outputs);
+    if (result.failed > 0) throw new Error('Completed MCP output library promotion is pending.');
+    if (result.promoted < outputs.length) {
+      const ownedQuotes = await query<{ job_id: string }>(`SELECT job_id FROM mcp_generation_quotes
+        WHERE job_id = $1 AND user_id IS NOT DISTINCT FROM $2 LIMIT 1`, [row.job_id, row.user_id]);
+      if (ownedQuotes.length) throw new Error('Owned MCP output library promotion is pending.');
+    }
+    return;
+  }
+  await promote(outputs).catch((error) => {
     console.warn('[media-library] failed to promote completed MCP job outputs', {
       jobId: row.job_id,
       error,
@@ -117,13 +133,16 @@ export function applyOutputsToJobPayload<T extends {
   videoUrl?: string | null;
   audioUrl?: string | null;
   previewVideoUrl?: string | null;
+  playbackVideoUrl?: string | null;
+  lastFrameUrl?: string | null;
   renderIds?: string[] | null;
   renderThumbUrls?: string[] | null;
 }>(job: T, outputs: JobOutputRecord[] | undefined): T {
   if (!outputs?.length) return job;
   const videos = outputs.filter((output) => output.kind === 'video').sort((a, b) => a.position - b.position);
   const audios = outputs.filter((output) => output.kind === 'audio').sort((a, b) => a.position - b.position);
-  const images = outputs.filter((output) => output.kind === 'image').sort((a, b) => a.position - b.position);
+  const images = outputs.filter((output) => output.kind === 'image' && output.metadata.role !== 'last_frame').sort((a, b) => a.position - b.position);
+  const lastFrame = outputs.find(output => output.kind === 'image' && output.metadata.role === 'last_frame');
   const firstVideo = videos[0];
   const firstAudio = audios[0];
   const imageEntries = images.map((output) => ({
@@ -138,6 +157,8 @@ export function applyOutputsToJobPayload<T extends {
     ...job,
     videoUrl: firstVideo?.url ?? job.videoUrl,
     previewVideoUrl: firstVideo?.previewUrl ?? job.previewVideoUrl,
+    ...(typeof firstVideo?.metadata.playbackVideoUrl === 'string' ? { playbackVideoUrl: firstVideo.metadata.playbackVideoUrl } : {}),
+    ...(lastFrame ? { lastFrameUrl: lastFrame.url } : {}),
     audioUrl: firstAudio?.url ?? job.audioUrl,
     thumbUrl: firstVideo?.thumbUrl ?? images[0]?.thumbUrl ?? job.thumbUrl,
     renderIds: images.length ? images.map((output) => output.url) : job.renderIds,
@@ -174,8 +195,8 @@ export async function listRecentOutputPage(params: {
   cursor?: string | null;
   q?: string | null;
   jobId?: string | null;
-}): Promise<MediaLibraryPage<JobOutputRecord>> {
-  await ensureMediaLibrarySchema();
+}, options: { ensureSchema?: boolean } = {}): Promise<MediaLibraryPage<JobOutputRecord>> {
+  if (options.ensureSchema !== false) await ensureMediaLibrarySchema();
   const limit = resolveMediaLibraryLimit(params.limit);
   const cursor = decodeMediaLibraryCursor(params.cursor);
   const searchPattern = buildMediaLibrarySearchPattern(params.q);
@@ -193,6 +214,7 @@ export async function listRecentOutputPage(params: {
         AND saved.source_output_id = o.id
         AND saved.deleted_at IS NULL
       WHERE o.user_id = $1
+        AND ($5::text IS NOT NULL OR ${applicationJobSql('j')})
         AND j.hidden IS NOT TRUE
         AND o.status = 'ready'
         AND ($3::text IS NULL OR o.kind = $3::text)
@@ -229,8 +251,8 @@ export async function listRecentOutputPage(params: {
 export async function listStoryboardKlingFirstFrameOutputs(params: {
   userId: string;
   parentJobIds: string[];
-}): Promise<Map<string, JobOutputRecord>> {
-  await ensureMediaLibrarySchema();
+}, options: { ensureSchema?: boolean } = {}): Promise<Map<string, JobOutputRecord>> {
+  if (options.ensureSchema !== false) await ensureMediaLibrarySchema();
   const parentJobIds = Array.from(
     new Set(
       params.parentJobIds.filter(

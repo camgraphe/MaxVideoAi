@@ -7,6 +7,8 @@ import { supportsSeedanceInputTariff } from '@/lib/seedance-input-tariff';
 import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
 import { compileCurrentContinuousTariffPrice } from './compile-current-continuous-tariff';
 import { prepareReviewedSeedanceMigrationPrice } from './seedance-reviewed-migration';
+import { isSeedance25LasInputPricing } from '@/server/byteplus-las-tariff';
+import { prepareReviewedSeedanceLasPrice, SEEDANCE_LAS_INITIALIZATION_POLICY } from './seedance-las-authoring';
 
 const key = (selector: object) => JSON.stringify(Object.entries(selector).sort(([a],[b]) => a.localeCompare(b)));
 
@@ -30,7 +32,9 @@ export async function assertReviewedCustomerTariffCutoverPolicy(input: {
       if (!cell) throw new Error('Reviewed continuous curve missing.');
       if (!checkedCurves.has(cell.id)) {
         const seedance = supportsSeedanceInputTariff(scenario.modelId,scenario.selector.mode,scenario.selector.billingInputType);
-        const expected = seedance ? prepareReviewedSeedanceMigrationPrice(scenario,row.beforeCents,
+        const las = isSeedance25LasInputPricing(scenario.modelId, scenario.selector.mode);
+        if (las && input.release.approvedSeedanceLasPolicy !== SEEDANCE_LAS_INITIALIZATION_POLICY) throw new Error('Explicit LAS initialization approval is required.');
+        const expected = las ? prepareReviewedSeedanceLasPrice(scenario.context) : seedance ? prepareReviewedSeedanceMigrationPrice(scenario,row.beforeCents,
           s => original.get(key(s)),input.release.capturedAt).price : await compileCurrentContinuousTariffPrice(scenario,input.policy);
         if (cutoverDigest(cell.price) !== cutoverDigest(expected)) throw new Error('Continuous curve changed outside the reviewed baseline and margin policy.');
         checkedCurves.add(cell.id);

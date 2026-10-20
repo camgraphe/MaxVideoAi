@@ -1,5 +1,4 @@
 'use client';
-
 import { useCallback, useState } from 'react';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import { ImageMediaHandoff } from './_components/ImageMediaHandoff.client';
@@ -145,6 +144,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     supportsCharacterReferences,
     toggleCharacterReference,
   } = useImageReferenceSlots({
+    accountId,
     autoModeFromReferences,
     mode,
     resolvedCopy,
@@ -329,7 +329,8 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     watermark,
   });
 
-  const handleSelectGalleryGroup = useImageGallerySelection({
+  const { handleSelectGalleryGroup, guardComposerActions } = useImageGallerySelection({
+    accountId,
     applyImageSettingsSnapshot,
     engines,
     historyEntries,
@@ -397,12 +398,13 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     resolvedCopy,
     supportsCharacterReferences,
   });
-  const composerSetterProps = {
-    setAspectRatio, setBackground, setCustomImageHeight, setCustomImageWidth, setEnableWebSearch, setEngineId, setError,
+  const composerActionProps = guardComposerActions({
+    setAspectRatio, setBackground, setCustomImageHeight, setCustomImageWidth, setEnableWebSearch, setEngineId,
     setLimitGenerations, setMaskUrl, setMode, setNumImagesPreset: setReferenceAwareNumImagesPreset, setOutputFormat,
-    setPrompt, setQuality, setResolutionPreset, setSeed, setSelectedPreviewImageIndex, setStyle, setThinkingLevel,
-    setWatermark,
-  };
+    setPrompt, setQuality, setResolutionPreset, setSeed, setStyle, setThinkingLevel, setWatermark,
+    handleEditSelectedPreview, handleReferenceFile, handleReferenceUrl, handleRemoveReferenceSlot, handleRun,
+    handleLibrarySelect, toggleCharacterReference, selectStarter,
+  });
   const composerVisibilityProps = {
     showAspectRatioControl, showBackgroundControl, showCustomImageSizeControl, showEnableWebSearchControl, showLimitGenerationsControl,
     showMaskUrlControl: Boolean(maskUrlField), showNumImagesControl, showOutputFormatControl, showQualityControl,
@@ -422,7 +424,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
 
   return (
     <>
-      <ImageMediaHandoff modelName={selectedEngine?.name} slots={displayedReferenceSlots} limit={referenceSlotLimit} onInsert={handleLibrarySelect} />
+      <ImageMediaHandoff modelName={selectedEngine?.name} slots={displayedReferenceSlots} limit={referenceSlotLimit} onInsert={composerActionProps.handleLibrarySelect} />
       <ImageWorkspaceShell
         isDesktopLayout={isDesktopLayout}
         galleryRailProps={{
@@ -431,11 +433,13 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
           isImageJob,
           onOpenGroup: handleSelectGalleryGroup,
           selectedEngineCaps,
-          onSelectStarter: selectStarter,
+          onSelectStarter: composerActionProps.selectStarter,
         }}
       >
         <ImageWorkspaceComposerSurface
-              starterPreview={starterPreview} starterNavigation={starterNavigation}
+              starterPreview={starterPreview} starterNavigation={{ ...starterNavigation, ...guardComposerActions({
+                onPrev: starterNavigation.onPrev, onNext: starterNavigation.onNext,
+              }) }}
               advancedSettingsTitle={advancedSettingsTitle}
               composerError={composerError}
               composerReferenceAssets={composerReferenceAssets}
@@ -447,13 +451,8 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
               handleAddToLibrary={handleAddToLibrary}
               handleCopy={handleCopy}
               handleDownload={handleDownload}
-              handleEditSelectedPreview={handleEditSelectedPreview}
               handleOpenHistoryEntry={handleOpenHistoryEntry}
-              handleReferenceFile={handleReferenceFile}
-              handleReferenceUrl={handleReferenceUrl}
               handleRemoveFromLibrary={handleRemoveFromLibrary}
-              handleRemoveReferenceSlot={handleRemoveReferenceSlot}
-              handleRun={handleRun}
               imageCountOptions={effectiveImageCountOptions}
               pendingGenerations={pendingGenerations}
               isInLibrary={isInLibrary}
@@ -469,7 +468,8 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
               selectedEngineCaps={selectedEngineCaps}
               selectedEngineId={selectedEngine.id}
               selectedPreviewImageIndex={selectedPreviewImageIndex}
-              {...composerSetterProps}
+              setError={setError} setSelectedPreviewImageIndex={setSelectedPreviewImageIndex}
+              {...composerActionProps}
               {...composerSettingsProps}
               {...composerVisibilityProps}
               statusMessage={statusMessage}
@@ -481,7 +481,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
         characterSelectionLimit={characterSelectionLimit}
         closeLibraryModal={closeLibraryModal}
         closeViewer={closeViewer}
-        handleLibrarySelect={handleLibrarySelect}
+        handleLibrarySelect={composerActionProps.handleLibrarySelect}
         handleSaveVariantToLibrary={handleSaveVariantToLibrary}
         libraryModal={libraryModal}
         loginRedirectTarget={loginRedirectTarget}
@@ -490,7 +490,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
         setAuthModalOpen={setAuthModalOpen}
         supportedReferenceFormats={supportedReferenceFormats}
         supportedReferenceFormatsLabel={supportedReferenceFormatsLabel}
-        toggleCharacterReference={toggleCharacterReference}
+        toggleCharacterReference={composerActionProps.toggleCharacterReference}
         toolsEnabled={toolsEnabled}
         viewerGroup={viewerGroup}
       />

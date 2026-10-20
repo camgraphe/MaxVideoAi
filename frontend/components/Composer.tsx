@@ -53,6 +53,7 @@ export function Composer({
   negativePromptField,
   negativePromptRequired = false,
   assetFields,
+  referenceAuthAction,
   assets,
   onAssetAdd,
   onAssetRemove,
@@ -354,6 +355,7 @@ export function Composer({
 
         {workspaceDensity && assetFields.length > 0 ? <>
           <WorkspaceReferenceSection engine={engine} caps={caps} assetFields={orderedAssetFields} assets={assets}
+            referenceAuthAction={referenceAuthAction}
             onAssetAdd={onAssetAdd} onAssetRemove={onAssetRemove} onNotice={onNotice}
             onOpenLibrary={onOpenLibrary} onAssetUrlSelect={onAssetUrlSelect} referenceWarning={composerCopy.assetSlots.referenceWarning} />
           {showSoraImageWarning ? <p className="text-xs text-text-muted" role="note">Real people — including public figures — cannot be generated. Input images with faces of humans are currently rejected. OpenAI</p> : null}

@@ -2,7 +2,6 @@
 
 import type { ChangeEvent, Ref } from 'react';
 import type { Stripe } from '@stripe/stripe-js';
-import { CreditCard } from 'lucide-react';
 import { TurnstileChallenge } from './TurnstileChallenge';
 import { WalletAmountPicker } from './WalletAmountPicker';
 import { WalletCheckoutSummary } from './WalletCheckoutSummary';
@@ -17,6 +16,7 @@ type WalletTopupPanelProps = {
   checkoutCaptchaRequired: boolean;
   checkoutCaptchaResetGeneration: number;
   checkoutCaptchaToken: string | null;
+  takeCheckoutCaptchaToken: () => string | null;
   copy: BillingCopy;
   currencyLoading: boolean;
   currencyOptions: string[];
@@ -50,6 +50,7 @@ type WalletTopupPanelProps = {
   selectedTopupPaymentLabel: string | null;
   session: BillingSession;
   stripePromise: Promise<Stripe | null> | null;
+  retryStripeConnection?: () => void;
   turnstileSiteKey: string;
   wallet: { balance: number; currency: string; hasCompletedTopUp?: boolean } | null;
 };
@@ -61,6 +62,7 @@ export function WalletTopupPanel(props: WalletTopupPanelProps) {
     checkoutCaptchaRequired,
     checkoutCaptchaResetGeneration,
     checkoutCaptchaToken,
+    takeCheckoutCaptchaToken,
     copy,
     currencyLoading,
     currencyOptions,
@@ -94,19 +96,14 @@ export function WalletTopupPanel(props: WalletTopupPanelProps) {
     selectedTopupPaymentLabel,
     session,
     stripePromise,
+    retryStripeConnection,
     turnstileSiteKey,
     wallet,
   } = props;
 
   return (
     <section className={styles.fundingSurface} aria-labelledby="billing-funding-title">
-      <header className={styles.fundingHeader}>
-        <span aria-hidden="true"><CreditCard size={19} /></span>
-        <div>
-          <h2 id="billing-funding-title">{copy.wallet.addCreditsTitle}</h2>
-          <p>{copy.wallet.description}</p>
-        </div>
-      </header>
+      <h2 id="billing-funding-title" className="sr-only">{copy.wallet.addCreditsTitle}</h2>
 
       <div className={styles.fundingBody}>
         <WalletAmountPicker
@@ -132,7 +129,6 @@ export function WalletTopupPanel(props: WalletTopupPanelProps) {
               <span>2</span>
               <span>
                 <strong id="billing-review-title">{copy.wallet.stepReview}</strong>
-                <small>{copy.wallet.stepReviewHint}</small>
               </span>
             </div>
             <CurrencySelect
@@ -161,6 +157,7 @@ export function WalletTopupPanel(props: WalletTopupPanelProps) {
                 {turnstileSiteKey ? (
                   <div className="mt-3">
                     <TurnstileChallenge
+                      locale={locale}
                       siteKey={turnstileSiteKey}
                       onToken={handleCheckoutCaptchaToken}
                       onError={handleCheckoutCaptchaError}
@@ -182,11 +179,16 @@ export function WalletTopupPanel(props: WalletTopupPanelProps) {
                 chargeCurrency={normalizedChargeCurrency}
                 locale={locale}
                 captchaToken={checkoutCaptchaToken}
+                takeCaptchaToken={takeCheckoutCaptchaToken}
+                captchaSiteKey={turnstileSiteKey}
                 session={session}
                 stripePromise={stripePromise}
+                onRetryConnection={retryStripeConnection}
                 labels={{
                   expressTitle: copy.wallet.expressTitle,
                   expressLoading: copy.wallet.expressLoading,
+                  expressSlow: copy.wallet.expressSlow,
+                  expressRetry: copy.wallet.expressRetry,
                   expressUnavailable: copy.wallet.expressUnavailable,
                   expressError: copy.wallet.expressError,
                   expressClosed: copy.wallet.expressClosed,
@@ -238,7 +240,7 @@ function CurrencySelect({
         ) : null}
         {currencyOptions.map((option) => <option key={option} value={option}>{option}</option>)}
       </select>
-      <p className={currencyStatusClass} data-error={currencyStatusClass.includes('warning')}>{currencyStatus}</p>
+      <p className={`${currencyStatusClass} ${!currencyLoading && !currencyStatusClass.includes('warning') ? 'sr-only' : ''}`} data-error={currencyStatusClass.includes('warning')}>{currencyStatus}</p>
     </div>
   );
 }

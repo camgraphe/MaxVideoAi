@@ -1,0 +1,102 @@
+{
+  "slug": "gemini-omni-flash-vs-veo-3-1-fast",
+  "en": {
+    "decisionSummary": "Testing several ideas? This page compares Omni Flash 1.1 with Veo 3.1 Fast, the lower-cost Veo tier versus standard. Both offer 4K; Omni adds source-video editing and larger reference sets.",
+    "heroIntro": "Use this comparison to weigh Omni’s editing tools against repeated Veo Fast generations. Fast supports text, images, up to 3 references and first/last frames. It is a separate Veo tier, not a speed switch on standard Veo 3.1. Use the links above if you meant standard Veo or Lite.",
+    "decisionLinks": [
+      {
+        "href": "/ai-video-engines/gemini-omni-flash-vs-veo-3-1",
+        "label": "Omni Flash 1.1 vs Veo 3.1"
+      },
+      {
+        "href": "/ai-video-engines/veo-3-1-fast-vs-veo-3-1-lite",
+        "label": "Veo 3.1 Fast vs Lite"
+      }
+    ],
+    "quickVerdict": {
+      "title": "Iterations or edits?",
+      "body": "Fast is useful for trying prompts and framing at a lower listed cost than standard Veo. Omni is useful when you need to change an existing clip or supply up to 10 image references. Neither name guarantees a render time. Match the mode, duration, resolution and audio before comparing their current quotes."
+    },
+    "pricingCreditLink": {
+      "href": "/pay-as-you-go-ai-video-generator",
+      "label": "How credits work"
+    },
+    "primaryLinksTitle": "Explore the models",
+    "primaryLinks": [
+      {
+        "href": "/models/gemini-omni-flash",
+        "label": "Gemini Omni Flash 1.1"
+      },
+      {
+        "href": "/models/veo-3-1-fast",
+        "label": "Veo 3.1 Fast"
+      }
+    ]
+  },
+  "fr": {
+    "decisionSummary": "Vous testez plusieurs idées ? Cette page compare Omni Flash 1.1 à Veo 3.1 Fast, moins cher que Veo standard. Les deux proposent la 4K ; Omni ajoute l’édition vidéo et davantage de références.",
+    "heroIntro": "Ce comparatif aide à choisir entre les outils d’édition d’Omni et plusieurs générations avec Veo Fast. Fast accepte texte, images, jusqu’à 3 références et des images de début et de fin. C’est une version distincte de Veo, pas un réglage de vitesse de Veo 3.1 standard. Les liens ci-dessus mènent aux comparatifs standard et Lite.",
+    "decisionLinks": [
+      {
+        "href": "/fr/comparatif/gemini-omni-flash-vs-veo-3-1",
+        "label": "Omni Flash 1.1 vs Veo 3.1"
+      },
+      {
+        "href": "/fr/comparatif/veo-3-1-fast-vs-veo-3-1-lite",
+        "label": "Veo 3.1 Fast vs Lite"
+      }
+    ],
+    "quickVerdict": {
+      "title": "Tester des variantes ou modifier un clip ?",
+      "body": "Fast permet d’essayer des prompts et des cadrages à un tarif affiché inférieur à Veo standard. Omni sert aussi à modifier une vidéo existante ou à fournir jusqu’à 10 images de référence. Aucun de ces noms ne garantit un délai de rendu. Comparez leurs devis à mode, durée, résolution et audio identiques."
+    },
+    "pricingCreditLink": {
+      "href": "/pay-as-you-go-ai-video-generator",
+      "label": "Comment fonctionnent les crédits"
+    },
+    "primaryLinksTitle": "Explorer les modèles",
+    "primaryLinks": [
+      {
+        "href": "/fr/modeles/gemini-omni-flash",
+        "label": "Gemini Omni Flash 1.1"
+      },
+      {
+        "href": "/fr/modeles/veo-3-1-fast",
+        "label": "Veo 3.1 Fast"
+      }
+    ]
+  },
+  "es": {
+    "decisionSummary": "¿Estás probando varias ideas? Esta página compara Omni Flash 1.1 con Veo 3.1 Fast, más económico que Veo estándar. Ambos ofrecen 4K; Omni añade edición de video y más imágenes de referencia.",
+    "heroIntro": "Este comparativo ayuda a elegir entre las herramientas de edición de Omni y varias generaciones con Veo Fast. Fast admite texto, imágenes, hasta 3 referencias y fotogramas inicial y final. Es una versión distinta de Veo, no un ajuste de velocidad de Veo 3.1 estándar. Los enlaces anteriores llevan a las comparativas con estándar y Lite.",
+    "decisionLinks": [
+      {
+        "href": "/es/comparativa/gemini-omni-flash-vs-veo-3-1",
+        "label": "Omni Flash 1.1 vs Veo 3.1"
+      },
+      {
+        "href": "/es/comparativa/veo-3-1-fast-vs-veo-3-1-lite",
+        "label": "Veo 3.1 Fast vs Lite"
+      }
+    ],
+    "quickVerdict": {
+      "title": "¿Probar variantes o editar un clip?",
+      "body": "Fast permite probar prompts y encuadres a un precio publicado inferior al de Veo estándar. Omni también permite editar un video existente o aportar hasta 10 imágenes de referencia. Ninguno de estos nombres garantiza un tiempo de generación. Compara presupuestos con el mismo modo, duración, resolución y audio."
+    },
+    "pricingCreditLink": {
+      "href": "/pay-as-you-go-ai-video-generator",
+      "label": "Cómo funcionan los créditos"
+    },
+    "primaryLinksTitle": "Explorar los modelos",
+    "primaryLinks": [
+      {
+        "href": "/es/modelos/gemini-omni-flash",
+        "label": "Gemini Omni Flash 1.1"
+      },
+      {
+        "href": "/es/modelos/veo-3-1-fast",
+        "label": "Veo 3.1 Fast"
+      }
+    ]
+  }
+}

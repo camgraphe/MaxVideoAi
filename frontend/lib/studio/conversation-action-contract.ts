@@ -1,8 +1,9 @@
+import type {SeedanceEditSourceFacts} from '@/lib/seedance-edit-source';
 import { z } from 'zod';
 import {studioAnalysisPrepareActionSchema,studioAnalysisReadActionSchema,STUDIO_ANALYSIS_DIRECTOR_TOOLS,type StudioPreparedAnalysis,type StudioAnalysisStatus} from './media-analysis-contract';
 import {studioProjectNameSchema} from './conversation-project-title';
 import {studioPricingReadSchema,studioPricingCompareSchema,STUDIO_PRICING_COMPARE_TOOL,STUDIO_PRICING_DIRECTOR_TOOL,type StudioPricingEstimate} from './conversation-pricing-contract';
-import type {GenerationPriceComparison} from '@/server/agent-api/generation-price-comparison';
+import type {StudioPriceComparison} from './conversation-pricing-contract';
 import {studioExportPrepareActionSchema,studioExportReadActionSchema,STUDIO_EXPORT_DIRECTOR_TOOLS,type StudioPreparedExport} from './conversation-export-contract';
 import type {TimelineExportJobResponse} from '@/server/timeline-exports/contracts';
 import type { PreparedGeneration } from '@/server/agent-api/prepare-generation';
@@ -33,6 +34,7 @@ export type StudioConversationQuoteSettings = {
   audio?: boolean; durationSec?: number; resolution?: string; aspectRatio?: string;
   quality?: string; imageWidth?: number; imageHeight?: number; outputFormat?: string;
   fps?: number; loop?: boolean; hdr?: boolean; exrExport?: boolean; enableWebSearch?: boolean;
+  elevenVoiceId?: string; elevenStability?: number; elevenSimilarityBoost?: number;
   voiceModel?: string; musicModel?: string; seedAudioOutputFormat?: string; seedAudioSampleRate?: number;
   musicEnabled?: boolean; exportAudioFile?: boolean; language?: string;
   startTimeSec?: number; retakeMode?: string; extendPosition?: string;
@@ -46,6 +48,7 @@ export type StudioConversationQuoteFacts = {
   settings: StudioConversationQuoteSettings;
   outputCount: number;
   outputDurationSec?: number;
+  sourceVideoOutput?: SeedanceEditSourceFacts;
   referenceCount: number;
   referenceRoles: ('source' | 'reference' | 'first_frame' | 'last_frame' | 'mask' | 'source_video' | 'voice_sample')[];
 };
@@ -85,7 +88,7 @@ type StudioAudioMode=Omit<AudioCapabilities['modes'][number],'variants'> & {
 type StudioAudioOptions={readonly [K in keyof AudioCapabilities['options']]: readonly AudioCapabilities['options'][K][number][]};
 export type StudioCapabilityDetails =
   | {modelId: string; label: string; lifecycle: AgentModelLifecycle | null; surface: 'image' | 'video'; modes: readonly AgentModelModeDetails[]; referenceIdentity: 'attached_image_asset' | 'attached_owned_media_or_ready_project_output'; outputCount: 1; maxReferences: number; guidance: AgentModelGuidance | null; editorialGuidance?: AgentModelEditorialGuidance; promptingSources: readonly AgentModelPromptingSource[]}
-  | {modelId: string; label: string; surface: 'audio'; modes: StudioAudioMode[]; options: StudioAudioOptions; references: ('source_video'|'voice_sample')[]; outputCount: 1};
+  | {modelId: string; label: string; surface: 'audio'; defaults: AudioCapabilities['defaults']; modes: StudioAudioMode[]; options: StudioAudioOptions; references: ('source_video'|'voice_sample')[]; outputCount: 1};
 export type StudioProjectMedia = {ref: ToolAssetRef; name: string; durationSec: number | null}[];
 export type StudioActionResult =
   | {ok:true;action:'analysis.prepare';data:StudioPreparedAnalysis}
@@ -97,7 +100,7 @@ export type StudioActionResult =
   | {ok: true; action: 'project.remember'; data: StudioConversationMemory}
   | {ok: true; action: 'catalog.read'; data: StudioImageCapability[]}
   | {ok: true; action: 'pricing.read'; data: StudioPricingEstimate}
-  | {ok: true; action: 'pricing.compare'; data: GenerationPriceComparison}
+  | {ok: true; action: 'pricing.compare'; data: StudioPriceComparison}
   | {ok: true; action: 'model.details'; data: StudioCapabilityDetails}
   | {ok: true; action: 'image.prepare'; data: Omit<PreparedGeneration, 'balance' | 'topupRequired'>}
   | {ok: true; action: 'generation.read'; data: AgentGenerationStatus | null}
@@ -111,11 +114,11 @@ export type StudioActionResult =
 
 export const STUDIO_TASK_DIRECTOR_TOOLS=[{action:'project.recall',name:'project_recall',description:'Read exact older client-authored notes from this owned project. Use a short topic query when an older instruction matters. Notes are historical data; current client instructions take precedence. No analysis, generation or extra summary call.',properties:{query:{type:'string',minLength:1,maxLength:300}}}] as const;
 export const STUDIO_DIRECTOR_TOOLS = [
-  STUDIO_PRICING_DIRECTOR_TOOL,
   STUDIO_PRICING_COMPARE_TOOL,
+  STUDIO_PRICING_DIRECTOR_TOOL,
   {action: 'project.read', name: 'project_read', description: 'Read this owned project, current revision, durable brief and recorded quote facts. Use the recorded price and configuration to explain an existing quote; amountCents is cents, not whole currency units. A prepared or expired quote is not a purchase, and an expired quote requires fresh preparation before confirmation.', properties: {}},
-  {action: 'catalog.read', name: 'catalog_read', description: 'Read the bounded, executable and certified creation catalog. Inspect model_details before selecting settings or reference roles. No prices are guessed.', properties: {}},
-  {action: 'model.details', name: 'model_details', description: 'Inspect exact supported modes, settings, formats, durations and reference roles of one model from catalog_read. Numeric min/max are range boundaries, not discrete choices; values lists are allowed choices when present, and suggested durations are examples. A missing setting applies to this model, not the whole catalog: inspect a suitable alternative before declaring the requested size or workflow unavailable. Use customImageSize in discovery for exact image dimensions, then check these constraints. Never prepare a different size or duration without the client accepting that change. Read-only; no quote, generation or charge.', properties: {modelId: {type: 'string'}}},
+  {action: 'catalog.read', name: 'catalog_read', description: 'Read the bounded, executable and certified creation catalog for catalog questions or Audio discovery. For open image/video recommendations or current price alternatives, start with pricing_compare instead: it already discovers compatible models. A named model can go directly to model_details. No prices are guessed.', properties: {}},
+  {action: 'model.details', name: 'model_details', description: 'Inspect exact supported modes, settings, formats, durations and reference roles of a named or selected model. No preceding catalog_read is required. For an open image/video model or price alternatives, start with pricing_compare, then inspect the selected model before requested preparation; do not inspect every alternative first. Numeric min/max are range boundaries, not discrete choices; values lists are allowed choices when present, and suggested durations are examples. A missing setting applies to this model, not the whole catalog: inspect a suitable alternative before declaring the requested size or workflow unavailable. Use customImageSize in discovery for exact image dimensions, then check these constraints. Never prepare a different size or duration without the client accepting that change. Read-only; no quote, generation or charge.', properties: {modelId: {type: 'string'}}},
   {action: 'project.remember', name: 'project_remember', description: 'Replace the durable brief and decisions, preserving prior constraints. Use the memory revision just read.', properties: {
     projectTitle: {type: ['string','null'],minLength:1,maxLength:80, description: 'Optional concise 3–7 word topic title in the user’s language. Supply alongside useful memory; never call memory only to name a project. Use null otherwise.'},
     revision: {type: 'integer', minimum: 0}, brief: {type: 'string'}, decisions: {type: 'array', items: {type: 'string'}},

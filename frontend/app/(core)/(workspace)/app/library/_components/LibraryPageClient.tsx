@@ -4,6 +4,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import deepmerge from 'deepmerge';
 import { AudioWaveform, Clapperboard, Images, CheckCircle2, Plus, RefreshCw, Trash2, Upload, X } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
@@ -14,6 +15,7 @@ import { MediaVisitorIntro } from '@/components/library/MediaVisitorIntro.client
 import { MediaEmptyState } from '@/components/library/MediaEmptyState';
 import { AssetLibraryBrowser } from '@/components/library/AssetLibraryBrowser';
 import { FEATURES } from '@/content/feature-flags';
+import { isCreatorToolPublic } from '@/lib/toolbox/creator-availability';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { buildAuthReturnTarget } from '@/lib/auth-entry-href';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
@@ -82,6 +84,7 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
     handleDeleteAsset,
     handleSaveRecentOutput,
   } = useLibraryAssetMutations({
+    userId: user?.id,
     activeKind,
     activeSource,
     copy,
@@ -288,6 +291,9 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                   </>
                 }
                 headerActions={<>
+                    {isCreatorToolPublic('subtitles') ? <Link href="/app/library/subtitles" prefetch={false} className="inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm">
+                      {locale.startsWith('fr') ? 'Sous-titres' : locale.startsWith('es') ? 'Subtítulos' : 'Subtitles'}
+                    </Link> : null}
                     <Button
                         type="button"
                         variant="outline"

@@ -61,12 +61,14 @@ export type RankedPick = {
   score?: number;
   accent: string;
   reason: string;
+  limitation?: string;
   bullets: string[];
 };
 
 export type ExamplePreviewPick = RankedPick & {
   examplesSlug: string;
   heroThumbUrl?: string | null;
+  example?: { id: string; videoUrl: string; poster: string; duration: number; title: string; watchFor: string };
 };
 
 export function buildPublicBestForEntries(
@@ -128,7 +130,7 @@ export const DETAIL_COPY: Record<
   en: {
     eyebrow: 'Best for',
     shortlist: 'Recommended shortlist',
-    shortlistDescription: 'Model cards use the same visual language as the model pages, with the strongest engines shown first.',
+    shortlistDescription: "Compare the options by what your scene needs.",
     ranked: 'Ranked picks',
     rank: 'Rank',
     topPick: 'Top pick',
@@ -149,12 +151,12 @@ export const DETAIL_COPY: Record<
     whyTitle: 'Why these models fit this use case',
     mistakesTitle: 'Avoid these mistakes',
     fullAnalysis: 'Read the full analysis',
-    relatedGuides: 'Related best-for guides',
+    relatedGuides: 'Explore another use case',
     allGuides: 'View all guides',
     score: 'Score',
     overall: 'Best overall',
     criteriaNote: 'Scores combine quality, control, consistency, and cost efficiency.',
-    compareShortlist: 'Compare the shortlist',
+    compareShortlist: 'Compare the models',
     compareDescription: 'Useful side-by-side pages for validating tradeoffs before picking a model.',
     contentComing: 'Content coming soon.',
     backToHub: 'Back to Best-for hub',
@@ -167,7 +169,7 @@ export const DETAIL_COPY: Record<
   fr: {
     eyebrow: 'Meilleur pour',
     shortlist: 'Shortlist recommandée',
-    shortlistDescription: 'Les cards reprennent le style des pages modèles, avec les modèles les plus adaptés en premier.',
+    shortlistDescription: "Comparez les options selon les besoins de votre scène.",
     ranked: 'Sélection classée',
     rank: 'Rang',
     topPick: 'Premier choix',
@@ -179,7 +181,7 @@ export const DETAIL_COPY: Record<
     viewModel: 'Voir le modèle',
     viewExamples: 'Voir les exemples',
     compareWith: 'Comparer avec',
-    compareShortlistCta: 'Comparer la shortlist',
+    compareShortlistCta: 'Comparer les modèles',
     examplesCta: 'Voir les exemples cinéma',
     alsoAvailable: 'Aussi disponible',
     chooseTitle: 'Quand choisir chaque modèle ?',
@@ -188,12 +190,12 @@ export const DETAIL_COPY: Record<
     whyTitle: 'Pourquoi ces modèles conviennent',
     mistakesTitle: 'Erreurs à éviter',
     fullAnalysis: 'Lire l’analyse complète',
-    relatedGuides: 'Guides Best-for liés',
+    relatedGuides: 'À explorer aussi',
     allGuides: 'Voir tous les guides',
     score: 'Score',
     overall: 'Meilleur choix',
     criteriaNote: 'Les scores combinent qualité, contrôle, cohérence et efficacité coût.',
-    compareShortlist: 'Comparer la shortlist',
+    compareShortlist: 'Comparer les modèles',
     compareDescription: 'Des pages côte à côte utiles pour valider les compromis avant de choisir un modèle.',
     contentComing: 'Contenu bientôt disponible.',
     backToHub: 'Retour au hub Best-for',
@@ -206,7 +208,7 @@ export const DETAIL_COPY: Record<
   es: {
     eyebrow: 'Mejor para',
     shortlist: 'Shortlist recomendada',
-    shortlistDescription: 'Las cards reutilizan el lenguaje visual de las páginas de modelos, con los modelos ideales primero.',
+    shortlistDescription: "Compara las opciones según lo que necesita tu escena.",
     ranked: 'Selección ordenada',
     rank: 'Puesto',
     topPick: 'Primera opción',
@@ -227,12 +229,12 @@ export const DETAIL_COPY: Record<
     whyTitle: 'Por qué estos modelos encajan',
     mistakesTitle: 'Evita estos errores',
     fullAnalysis: 'Leer el análisis completo',
-    relatedGuides: 'Guías Mejor para relacionadas',
+    relatedGuides: 'Explora otros usos',
     allGuides: 'Ver todas las guías',
     score: 'Puntuación',
     overall: 'Mejor opción',
     criteriaNote: 'Las puntuaciones combinan calidad, control, consistencia y eficiencia de precio.',
-    compareShortlist: 'Comparar la shortlist',
+    compareShortlist: 'Comparar modelos',
     compareDescription: 'Páginas lado a lado útiles para validar compromisos antes de elegir modelo.',
     contentComing: 'Contenido próximamente.',
     backToHub: 'Volver al espacio Mejor para',

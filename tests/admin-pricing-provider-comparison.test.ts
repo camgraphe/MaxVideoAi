@@ -244,7 +244,7 @@ function video(overrides: Partial<ProviderCostComparisonInput> = {}): ProviderCo
     brandId: 'bytedance',
     engineId: 'seedance-2-5',
     executionProvider: 'byteplus_modelark',
-    mode: 'v2v',
+    mode: 'extend',
     resolution: '1080p',
     durationSec: 5,
     aspectRatio: '16:9',

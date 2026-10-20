@@ -1,3 +1,4 @@
+import { SELECTION_REVIEWED_AT } from './best-for-selection-review';
 import type { AppLocale } from '@/i18n/locales';
 import { getLocalizedUrl } from '@/lib/metadataUrls';
 import type {
@@ -34,12 +35,13 @@ export function buildBestForItemListJsonLd(locale: AppLocale, picks: RankedPick[
   return {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    name: `Ranked AI video engines for ${canonicalUrl.split('/').pop()?.replace(/-/g, ' ') ?? 'this use case'}`,
+    name: `AI video model shortlist for ${canonicalUrl.split('/').pop()?.replace(/-/g, ' ') ?? 'this use case'}`,
     itemListOrder: 'https://schema.org/ItemListOrderAscending',
     itemListElement: picks.map((pick) => ({
       '@type': 'ListItem',
       position: pick.rank,
       name: pick.engine?.marketingName ?? pick.slug,
+      description: pick.reason,
       url: getLocalizedUrl(locale, `/models/${pick.slug}`),
     })),
   };
@@ -49,6 +51,7 @@ export function buildBestForWebPageJsonLd(title: string, description: string, ca
   return {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
+    dateModified: SELECTION_REVIEWED_AT,
     name: title,
     url: canonicalUrl,
     description,

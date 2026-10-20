@@ -38,9 +38,12 @@ export function createPreflightPostHandler(dependencies: PreflightPostDependenci
         trustedSeedanceWorkflow = await resolveSeedanceWorkflowRequest({ body: { ...request, engineId: request.engine },
           userId: userId ?? '', engineId: request.engine, enabled: seedanceWorkflowEnabled(req.url) });
         const normalized = trustedSeedanceWorkflow!.body;
-        request = { ...request, durationSec: normalized.durationSec as number,
+        request = { ...request, mode: normalized.mode as PreflightRequest['mode'], durationSec: normalized.durationSec as number,
+          durationOption: normalized.durationOption as PreflightRequest['durationOption'],
           resolution: normalized.resolution as PreflightRequest['resolution'], aspectRatio: normalized.aspectRatio as PreflightRequest['aspectRatio'],
-          audio: normalized.audio as boolean, inputs: [] };
+          audio: normalized.audio as boolean, extraInputValues: normalized.extraInputValues as PreflightRequest['extraInputValues'],
+          // Final media remains in the server-owned context; strict browser references are not needed again.
+          inputs: trustedSeedanceWorkflow?.finalFacts ? [] : request.inputs };
       } catch (error) {
         if (!(error instanceof SeedanceWorkflowRequestError)) throw error;
         return NextResponse.json({ ok: false, messages: [error.message], error: { code: error.code, message: error.message } },

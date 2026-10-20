@@ -21,7 +21,7 @@ test('the owner-approved production launch publishes MCP while keeping the trial
     trial: false,
     referenceUploads: true,
     montagePreparation: false,
-    audioGeneration: false,
+    audioGeneration: true,
     studioMontageCreation: false,
   });
 });

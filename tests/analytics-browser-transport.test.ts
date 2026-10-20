@@ -41,7 +41,11 @@ test('legacy Google Ads return conversion never sends before eligibility and sen
     assert.equal(await result, true);
     browser.dispatch(new Event(COMMERCIAL_ANALYTICS_RESOLVED_EVENT));
     browser.runNextTimer();
-    assert.deepEqual(calls, [['event', 'conversion', { send_to: 'AW-local-fixture', value: 25, currency: 'USD' }]]);
+    assert.deepEqual(calls, [['event', 'conversion', {
+      send_to: 'AW-local-fixture', value: 25, currency: 'USD',
+      page_location: 'https://maxvideoai.com/billing', page_path: '/billing',
+      page_title: 'MaxVideoAI — billing', page_referrer: '',
+    }]]);
     assert.equal(browser.timerCount(), 0);
     assert.equal(browser.listenerCount(COMMERCIAL_ANALYTICS_RESOLVED_EVENT), 0);
     assert.equal(browser.listenerCount(COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT), 0);

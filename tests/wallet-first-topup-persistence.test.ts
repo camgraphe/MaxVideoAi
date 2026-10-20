@@ -40,6 +40,8 @@ test('Stripe receipt insertion owns the transaction and GA4 uses its authoritati
   assert.match(source, /withDbTransaction\(async \(executor\) =>/);
   assert.match(source, /lockAndResolveFirstWalletTopup\(executor, userId\)/);
   assert.match(source, /first_wallet_topup:\s*String\(isFirstWalletTopup\)/);
-  assert.match(source, /is_first_wallet_topup:\s*persistenceResult\.isFirstWalletTopup/);
+  assert.match(source, /enqueueGa4WalletReceiptSafely\(executor/);
   assert.doesNotMatch(source, /String\(metadataRecord\.first_wallet_topup/);
+  const projection = readFileSync('frontend/server/ga4-wallet-events.ts', 'utf8');
+  assert.match(projection, /is_first_wallet_topup:\s*m\.first_wallet_topup === 'true'/);
 });

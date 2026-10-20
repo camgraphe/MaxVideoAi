@@ -18,7 +18,7 @@ export function ConversationExport({projectId,projectName,view,pending,jobs,onCh
   const [quality,setQuality] = useState<WorkspaceTimelineExportQualityPreset>('draft');
   const [notice,setNotice] = useState<string | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
-  const manifest = useMemo(() => buildWorkspaceTimelineRenderManifest({items: view.items,nodes: [],projectName,sequenceId: view.data.sequenceId,sequenceName: view.data.sequenceName,projectSettings: view.settings,createdAt: view.data.updatedAt}),[view,projectName]);
+  const manifest = useMemo(() => buildWorkspaceTimelineRenderManifest({sequenceSubtitleDocument:view.sequenceSubtitle?.document??undefined,items: view.items,nodes: [],projectName,sequenceId: view.data.sequenceId,sequenceName: view.data.sequenceName,projectSettings: view.settings,createdAt: view.data.updatedAt}),[view,projectName]);
   const recoveredJobs = useMemo(() => jobs.flatMap(job => {const normalized = normalizeTimelineExportClientJob(job);return normalized ? [{...normalized,idempotencyKey: job.idempotencyKey}] : [];}) as (TimelineExportClientJob & {idempotencyKey: string})[],[jobs]);
   const controller = useExportController({manifest,projectId,qualityPreset: quality,copy: copy.exportDialog,notices: copy.notices,onNotice: setNotice,recoveredJobs});
   useEffect(() => {if (controller.isExportDialogOpen) dialog.current?.showModal();else dialog.current?.close();},[controller.isExportDialogOpen]);
@@ -29,7 +29,7 @@ export function ConversationExport({projectId,projectName,view,pending,jobs,onCh
   const price = (working || completed) && !controller.exportEstimate ? t('Export confirmed','Export confirmé') : formatPrice(controller.exportEstimate);
   const submissionSettings = controller.submissionManifest.projectSettings ?? view.settings;
   return <>
-    <button disabled={pending || manifest.status !== 'ready'} aria-label={t('Export film','Exporter le film')} onClick={controller.openExportDialog}><Download size={17}/></button>
+    <button disabled={pending || view.sequenceSubtitle?.stale || manifest.status !== 'ready'} aria-label={t('Export film','Exporter le film')} onClick={controller.openExportDialog}><Download size={17}/></button>
     <dialog ref={dialog} className={styles.exportDialog} onCancel={controller.closeExportDialog}>
       <div className={styles.exportHeading}><strong>{t('Your film','Votre film')}</strong><button aria-label={t('Close export','Fermer l’export')} onClick={controller.closeExportDialog}><X size={16}/></button></div>
       <p>{controller.submissionManifest.durationSec.toFixed(1)} s · {submissionSettings.resolution} · {submissionSettings.aspectRatio} · {submissionSettings.fps} fps</p>

@@ -1,3 +1,4 @@
+import type { PreparedSeedanceWorkflow } from '@/server/seedance-workflow-request';
 import type { EngineCaps } from '@/types/engines';
 
 import type {
@@ -19,6 +20,7 @@ export type PaidVideoRequestBodyExecution = {
   resolvedReferences?: readonly ResolvedReference[];
   engine: EngineCaps;
   canonicalPricing: Record<string, unknown>;
+  seedanceWorkflow?: PreparedSeedanceWorkflow;
 };
 
 type MaterializedReference = {
@@ -157,6 +159,9 @@ function invalidModeReferences(): never {
 }
 
 const EXTRA_INPUT_FIELD_BY_SETTING: Readonly<Record<string, string>> = Object.freeze({
+  outputFormat: 'output_format',
+  returnLastFrame: 'return_last_frame',
+  watermark: 'watermark',
   contextSec: 'context',
   cropEndX: 'x_end',
   cropEndY: 'y_end',
@@ -214,6 +219,11 @@ export function buildPaidVideoRequestBody(
   if (execution.request.surface !== 'video') {
     throw new Error('A video request is required for video provider projection.');
   }
+  if (execution.request.seedanceWorkflow?.step === 'final') {
+    if (!execution.seedanceWorkflow?.finalFacts) throw new Error('Verified owned Draft facts are required.');
+    return { ...execution.seedanceWorkflow.body, engineId: execution.request.engineId, jobId: execution.quoteId,
+      payment: { mode: 'wallet' }, membershipTier: resolvePaidMembershipTier(execution.canonicalPricing) };
+  }
   const settings = { ...execution.request.settings };
   if (!supportsAspectRatio(execution)) delete settings.aspectRatio;
   const multiPrompt = projectMultiPrompt(settings);
@@ -229,6 +239,7 @@ export function buildPaidVideoRequestBody(
     ...settings,
     ...(Object.keys(extraInputValues).length ? { extraInputValues } : {}),
     ...(multiPrompt?.length ? { multiPrompt } : {}),
+    ...(execution.request.seedanceWorkflow ? { seedanceWorkflow: execution.request.seedanceWorkflow, iterationCount: 1 } : {}),
     inputs: [],
   };
 
@@ -387,7 +398,7 @@ export function buildPaidVideoRequestBody(
     body.inputs = [
       input(source[0]!, 'video_url'),
       ...(guideFrames[0] && guideFieldId ? [input(guideFrames[0], guideFieldId)] : []),
-      ...(imageFieldId && imageFieldId !== 'image_urls'
+      ...(imageFieldId && (imageFieldId !== 'image_urls' || execution.engine.id === 'seedance-2-5')
         ? imageReferences.map((reference) => input(reference, imageFieldId)) : []),
       ...(audioFieldId ? audioReferences.map((reference) => input(reference, audioFieldId)) : []),
     ];

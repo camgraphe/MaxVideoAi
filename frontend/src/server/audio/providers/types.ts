@@ -13,6 +13,7 @@ export type AudioProviderResult = {
   model: string;
   requestId?: string | null;
   customVoiceId?: string | null;
+  timestamps?: unknown[];
 };
 
 export type AudioProviderAttemptFailure = {

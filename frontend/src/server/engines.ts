@@ -135,6 +135,8 @@ export async function getConfiguredEngineIncludingHiddenInExecutor(
 }
 
 export type TrustedPreflightMediaPricingFacts = Readonly<{
+  seedanceSourceAspectRatio?: import('@/types/engines').AspectRatio;
+  seedanceEditSource?: import('@/lib/seedance-edit-source').SeedanceEditSourceFacts;
   referenceImageCount?: number;
   inputAudioDurationSec?: number;
   inputVideoDurationSec?: number;
@@ -280,6 +282,7 @@ export async function computeConfiguredPreflight(
     || Object.prototype.hasOwnProperty.call(rawExtraInputValues, 'inputVideoDurationSec')
     || Object.prototype.hasOwnProperty.call(rawExtraInputValues, 'verifiedReferenceTokenCount')
     || Object.prototype.hasOwnProperty.call(rawExtraInputValues, 'referenceTokenBudget')
+    || Object.prototype.hasOwnProperty.call(rawExtraInputValues, 'seedanceSourceAspectRatio')
   ) {
     return {
       ok: false,
@@ -298,6 +301,8 @@ export async function computeConfiguredPreflight(
     verifiedReferenceTokenCount,
     inputImageCount,
     inheritedDurationSec,
+    seedanceEditSource,
+    seedanceSourceAspectRatio,
   } = options.trustedMediaPricingFacts ?? {};
   const pricingAddons = {
     ...(addons ?? {}),
@@ -308,14 +313,14 @@ export async function computeConfiguredPreflight(
     snapshot = await computeCanonicalPublicSnapshot({
       workflowStep: options.seedanceWorkflowStep,
       engine: pricingEngine,
-      durationSec,
+      durationSec: seedanceEditSource?.billedDurationSec ?? durationSec,
       resolution: effectiveResolution,
-      aspectRatio: request.aspectRatio,
+      aspectRatio: seedanceEditSource?.pricingAspectRatio ?? request.aspectRatio,
       mode: request.mode,
       membershipTier: memberTier,
       loop,
       hasVideoInput: request.hasVideoInput,
-      durationOption: durationInfo?.label,
+      durationOption: durationInfo?.label ?? request.durationOption,
       addons: Object.keys(pricingAddons).length ? pricingAddons : undefined,
       referenceImageCount,
       inputAudioDurationSec,
@@ -324,6 +329,8 @@ export async function computeConfiguredPreflight(
       verifiedReferenceTokenCount,
       inputImageCount,
       inheritedDurationSec,
+      seedanceEditSource,
+      seedanceSourceAspectRatio,
     });
   } catch (error) {
     return {

@@ -36,12 +36,15 @@ export type BytePlusSeedanceFastPayload = {
   model: string;
   content: BytePlusContentItem[];
   resolution: '480p' | '720p' | '1080p' | '4k';
-  ratio?: '21:9' | '16:9' | '4:3' | '1:1' | '3:4' | '9:16';
+  ratio?: 'adaptive' | '21:9' | '16:9' | '4:3' | '1:1' | '3:4' | '9:16';
+  omni_reference_task_type?: 'edit' | 'extend';
   duration: number;
   generate_audio: boolean;
   camera_fixed?: boolean;
   seed?: number;
-  watermark: false;
+  watermark: boolean;
+  output_format?: 'mp4' | 'mov';
+  return_last_frame?: boolean;
 };
 
 export type BytePlusSeedancePayload = BytePlusSeedanceFastPayload;
@@ -82,7 +85,9 @@ export function buildBytePlusSeedancePayload(params: {
   modelId: string;
   prompt: string;
   durationSec: number;
+  durationOption?: number | string | null;
   mode?: Extract<Mode, 't2v' | 'i2v' | 'ref2v' | 'v2v' | 'extend'>;
+  transport?: 'modelark' | 'las';
   imageUrl?: string | null;
   endImageUrl?: string | null;
   referenceImageUrls?: string[];
@@ -94,6 +99,9 @@ export function buildBytePlusSeedancePayload(params: {
   generateAudio?: boolean;
   cameraFixed?: boolean;
   seed?: number;
+  outputFormat?: 'mp4' | 'mov';
+  returnLastFrame?: boolean;
+  watermark?: boolean;
   allowedModes?: readonly Mode[];
   allowedAspectRatios?: readonly AspectRatio[];
   allowedResolutions?: Resolution[];
@@ -104,6 +112,15 @@ export function buildBytePlusSeedancePayload(params: {
   const prompt = params.prompt.trim();
   const duration = Math.trunc(params.durationSec);
   const mode = params.mode ?? 't2v';
+  const isSeedance25 = params.modelId.trim().toLowerCase().includes('seedance-2-5');
+  if ((params.outputFormat !== undefined && !['mp4', 'mov'].includes(params.outputFormat))
+    || (params.returnLastFrame !== undefined && typeof params.returnLastFrame !== 'boolean')
+    || (params.watermark !== undefined && typeof params.watermark !== 'boolean')) {
+    throw new BytePlusModelArkError('Invalid video output options.', { code: 'BYTEPLUS_OUTPUT_OPTIONS_INVALID' });
+  }
+  if (params.outputFormat === 'mov' && (!isSeedance25 || params.transport === 'las')) {
+    throw new BytePlusModelArkError('MOV output requires Seedance 2.5 ModelArk.', { code: 'BYTEPLUS_OUTPUT_FORMAT_UNSUPPORTED' });
+  }
   const imageUrl = typeof params.imageUrl === 'string' ? params.imageUrl.trim() : '';
   const endImageUrl = typeof params.endImageUrl === 'string' ? params.endImageUrl.trim() : '';
   const referenceMediaItems = params.referenceBudget
@@ -167,6 +184,14 @@ export function buildBytePlusSeedancePayload(params: {
   const referenceAudioUrls = uniqueNonEmptyUrls(
     resolveTypedPayloadUrls('audio', params.referenceAudioUrls)
   );
+  const mediaLimits = isSeedance25 ? [30, 10, 10] : [9, 3, 3];
+  for (const [index, urls] of [referenceImageUrls, referenceVideoUrls, referenceAudioUrls].entries()) {
+    if (urls.length > mediaLimits[index]) {
+      throw new BytePlusModelArkError('The model reference limit for this media type was exceeded.', {
+        code: 'BYTEPLUS_REFERENCE_TYPE_BUDGET_EXCEEDED',
+      });
+    }
+  }
   const resolveTypedPayloadScalar = (
     kind: ReferenceBudgetMediaItem['kind'],
     fieldIds: readonly string[],
@@ -253,6 +278,11 @@ export function buildBytePlusSeedancePayload(params: {
     ? params.resolution.trim()
     : '720p') as Resolution;
   const requestedRatio = (typeof params.ratio === 'string' && params.ratio.trim() ? params.ratio.trim() : '16:9') as AspectRatio;
+  // ModelArk rejects fixed ratios for Seedance 2.5 extensions after task creation.
+  const isSeedance25Extension =
+    mode === 'extend' && params.modelId.trim().toLowerCase().includes('seedance-2-5');
+  const isSeedance25ModelArkEdit = mode === 'v2v' && params.transport === 'modelark'
+    && params.modelId.trim().toLowerCase().includes('seedance-2-5');
   const inheritsSourceAspectRatio =
     mode === 'i2v' &&
     (params.inheritSourceAspectRatio === true ||
@@ -275,7 +305,7 @@ export function buildBytePlusSeedancePayload(params: {
       code: 'REFERENCE_URL_REQUIRED',
     });
   }
-  if (mode === 'ref2v' && referenceImageUrls.length + referenceVideoUrls.length === 0) {
+  if (mode === 'ref2v' && !isSeedance25 && referenceImageUrls.length + referenceVideoUrls.length === 0) {
     throw new BytePlusModelArkError('At least one reference image or video URL is required for BytePlus Seedance reference-to-video.', {
       code: 'REFERENCE_MEDIA_REQUIRED',
     });
@@ -307,7 +337,7 @@ export function buildBytePlusSeedancePayload(params: {
       code: 'BYTEPLUS_RESOLUTION_UNSUPPORTED',
     });
   }
-  if (!inheritsSourceAspectRatio && !allowedAspectRatios.includes(requestedRatio)) {
+  if (!inheritsSourceAspectRatio && !isSeedance25Extension && !isSeedance25ModelArkEdit && requestedRatio !== 'auto' && !allowedAspectRatios.includes(requestedRatio)) {
     throw new BytePlusModelArkError('BytePlus Seedance aspect ratio is not supported.', {
       code: 'BYTEPLUS_RATIO_UNSUPPORTED',
     });
@@ -358,14 +388,20 @@ export function buildBytePlusSeedancePayload(params: {
     model: params.modelId.trim(),
     content,
     resolution: requestedResolution as BytePlusSeedancePayload['resolution'],
-    ...(inheritsSourceAspectRatio
-      ? {}
-      : { ratio: requestedRatio as BytePlusSeedancePayload['ratio'] }),
-    duration,
+    ...(isSeedance25ModelArkEdit
+      ? { ratio: 'adaptive' as const, omni_reference_task_type: 'edit' as const }
+      : isSeedance25Extension
+      ? { ratio: 'adaptive' as const, omni_reference_task_type: 'extend' as const }
+      : inheritsSourceAspectRatio
+        ? {}
+        : { ratio: requestedRatio === 'auto' ? 'adaptive' : requestedRatio as BytePlusSeedancePayload['ratio'] }),
+    duration: isSeedance25ModelArkEdit || params.durationOption === 'auto' ? -1 : duration,
     generate_audio: params.generateAudio === true,
     ...(typeof params.cameraFixed === 'boolean' ? { camera_fixed: params.cameraFixed } : {}),
     ...(params.seed !== undefined ? { seed: params.seed } : {}),
-    watermark: false,
+    watermark: params.watermark ?? false,
+    ...(params.outputFormat !== undefined ? { output_format: params.outputFormat } : {}),
+    ...(params.returnLastFrame !== undefined ? { return_last_frame: params.returnLastFrame } : {}),
   };
 }
 

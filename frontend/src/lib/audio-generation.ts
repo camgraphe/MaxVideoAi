@@ -78,7 +78,7 @@ const AUDIO_PRICE_SEED_AUDIO_CENTS_PER_MINUTE = 18.75;
 export const AUDIO_PACK_VALUES = ['music_only', 'voice_only', 'sfx_only', 'song', 'ambience_only', 'cinematic', 'cinematic_voice'] as const;
 export type AudioPackId = (typeof AUDIO_PACK_VALUES)[number];
 
-export type AudioVoiceModel = 'seed' | 'minimax';
+export type AudioVoiceModel = 'seed' | 'minimax' | 'eleven-v4';
 export const AUDIO_MINIMAX_VOICE_VALUES = ['English_FriendlyPerson', 'Wise_Woman'] as const;
 export const AUDIO_MINIMAX_SPEECH_MODEL_ID = 'fal-ai/minimax/speech-02-hd';
 export const AUDIO_SONG_MODEL_ID = 'fal-ai/minimax-music/v2.6';
@@ -223,8 +223,12 @@ const AUDIO_PACK_CONFIG: Record<AudioPackId, AudioPackConfig> = {
 
 export type AudioGenerateRequestBody = {
   voiceModel?: AudioVoiceModel;
+  elevenVoiceId?: string;
+  elevenStability?: number;
+  elevenSimilarityBoost?: number;
   minimaxVoiceId?: string;
   lyrics?: string;
+  submissionId?: string;
   expectedQuote?: { inputKey: string; totalCents: number; currency: string; expiresAt: number };
   sourceVideoUrl?: string;
   sourceJobId?: string;
@@ -379,7 +383,7 @@ export function estimateVoiceScriptDurationSec(script: string): number {
 }
 
 function countAudioBillingCharacters(script?: string | null, fallbackDurationSec?: number | null): number {
-  const characterCount = script?.trim().length ?? 0;
+  const characterCount = Array.from(script?.trim() ?? '').length;
   if (characterCount > 0) return characterCount;
   if (typeof fallbackDurationSec === 'number' && Number.isFinite(fallbackDurationSec) && fallbackDurationSec > 0) {
     return Math.max(1, Math.round((fallbackDurationSec / 60) * AUDIO_VOICE_ESTIMATE_WORDS_PER_MINUTE * 6));
@@ -412,6 +416,11 @@ function buildMusicVendorCostComponent(input: { durationSec: number; musicModel?
 }
 
 function buildVoiceVendorCostComponent(durationSec: number, script?: string | null, voiceModel?: AudioVoiceModel | null, wholeCentEstimate = false) {
+  if (voiceModel === 'eleven-v4') {
+    const characters = Array.from(script?.trim() ?? '').length;
+    return { type: 'voice_eleven_v4', label: 'Eleven v4', model: 'elevenlabs/tts/eleven-v4',
+      unit: 'character', units: characters, amountCents: characters * 0.008 };
+  }
   if (voiceModel === 'minimax') {
     const characters = Array.from(script?.trim() ?? '').length;
     return { type: 'voice_minimax_speech_02_hd', label: 'MiniMax Speech-02 HD', model: AUDIO_MINIMAX_SPEECH_MODEL_ID,

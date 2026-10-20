@@ -26,7 +26,7 @@ monthly credits and Luna fair use; the public contract lives in
 `frontend/src/lib/studio/assistance-contract.ts`.
 
 Studio starts on GPT‑6.1 Sol with the existing 500 included credits. The compact
-model selector offers exactly GPT‑6.1 Sol and GPT‑6 Luna; Luna uses high reasoning.
+model selector offers exactly GPT‑6.1 Sol and GPT‑6 Luna; new Luna requests keep the current high-reasoning policy.
 There is no public Quick/Standard/Complex picker. New requests use the existing
 internal Standard work bounds; stored task profiles and approvals remain valid.
 While Luna is selected, a discreet sentence below the composer opens Sol credits.
@@ -97,7 +97,9 @@ lease admits one active message per account. Reservation also refuses another
 request while a Luna call has unresolved usage. Its generous context bound is
 128,000 input tokens; the existing 2,200 output-token and four-call message bounds
 remain. Complex creative direction may recommend GPT‑6.1 Sol; a change requires
-an explicit customer choice. Luna uses `reasoning.effort=high`, including a task's funding fallback. The sponsored campaign remains an operational availability gate, with
+an explicit customer choice. New Luna task requests use the current high-reasoning
+policy and 6,000 output-token allowance. Historical task and fallback allowances
+retain their frozen policy. The sponsored campaign remains an operational availability gate, with
 its existing persisted $100 supplier ceiling; this code does not increase or renew
 it. Production launch requires an explicit operational funding decision, in
 addition to policy approval. For conservative campaign protection, a Sol message

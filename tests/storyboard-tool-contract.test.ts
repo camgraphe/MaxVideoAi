@@ -99,7 +99,8 @@ test('image workspace hydrates storyboard tool query and keeps result actions ro
   assert.match(imageWorkspaceSource, /librarySource/);
   assert.match(imageWorkspaceSource, /suppressDefaultPreview:\s*librarySource === 'storyboard'/);
   assert.match(imageWorkspaceSource, /handleEditSelectedPreview/);
-  assert.match(imageWorkspaceSource, /handleEditSelectedPreview=\{handleEditSelectedPreview\}/);
+  assert.match(imageWorkspaceSource, /const composerActionProps = guardComposerActions\(\{[\s\S]*?\bhandleEditSelectedPreview\b[\s\S]*?\}\);/);
+  assert.match(imageWorkspaceSource, /<ImageWorkspaceComposerSurface[\s\S]*?\{\.\.\.composerActionProps\}/);
   assert.doesNotMatch(imageWorkspaceSource, /saveImageToLibrary/, 'library saves should stay in useImagePreviewActions');
 
   assert.match(previewActionsHookSource, /librarySource/);

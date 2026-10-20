@@ -49,6 +49,20 @@ If that markup contract changes, recheck equal-specificity font/size utilities:
 the article sheet can arrive after the global utilities during navigation, so
 the old duplicate bundle's utility ordering is not a contract for future markup.
 
+### Optional Markdown article walkthrough
+
+Markdown frontmatter may provide `topic`, `lead` and `walkthrough` for a practical
+article. These fields own visible editorial copy only: existing `title`,
+`description`, `image`, canonical and hreflang continue to own search/share
+metadata. `blog-post-view.tsx` composes the server `BlogWalkthrough` outside
+`.blog-prose` and replaces the decorative hero only when a walkthrough exists.
+Articles without these fields keep their existing presentation. Authored media
+must have visible captions and alt text; links expose the full reference image.
+Use the shared `PublicVideoPlayer` (manual play, `preload="none"`) and reserved
+16:9 geometry, not a separate player or autoplay. A walkthrough is an explanatory
+sequence, not evidence of a controlled benchmark; distinguish recorded prompts
+from suggested prompts in the authored article.
+
 ## Server Page Pattern
 
 Use this for marketing, SEO, model, comparison, docs, examples, legal, and admin server pages.
@@ -109,6 +123,24 @@ Extract client pages in this order:
 4. self-contained panels/cards
 5. heavy optional UI with `next/dynamic`
 
+### Image gallery settings hydration
+
+`app/image/_hooks/useImageGallerySelection.ts` owns gallery selection defaults and
+the asynchronous job settings lookup. Each selection replaces and aborts the
+previous lookup. Check request identity after JSON parsing as well as abort state;
+an already received response can finish parsing after a newer selection. Account
+changes and unmount invalidate the active request in layout cleanup.
+
+`ImageWorkspace.tsx` wraps composer user actions with `guardComposerActions`,
+including settings, reference insertion/removal, character references, starter
+selection and generation submission. These actions cancel pending gallery
+hydration before changing the form. Keep internal setters used by selection
+defaults, snapshot application, persistence and schema normalization unwrapped:
+an effect watching all composer state would cancel valid hydration itself.
+`tests/image-gallery-selection-dom.test.ts` exercises real React lifecycle and
+delayed transport responses; `tests/image-workspace-split-contract.test.ts` keeps
+the user-action wiring at the route boundary.
+
 ## Data Builder Pattern
 
 When a route has many derived props, create a builder:
@@ -137,8 +169,26 @@ Avoid passing the entire dictionary or entire engine object unless the section t
 ## JSON-LD Pattern
 
 MaxVideoAI's organization identity and profiles belong in `frontend/lib/seo/site-organization-schema.ts`.
-Both `LocaleRuntime` and the core layout render its shared builder; retain `/#organization`
+Both `LocaleRuntime` and the shared `AppRuntime` render its shared builder; retain `/#organization`
 when adding a profile, and keep profile-only schema changes independent of visible social links.
+
+Core and direct public watch pages use the same server `app/_components/AppRuntime.tsx`
+under the existing HTML root. Core calls it without a namespace selection and keeps full
+messages; `(public-watch)/layout.tsx` selects the existing `nav`/`footer` namespaces.
+The runtime selects valid cookies in `mvid_locale`, then `NEXT_LOCALE`, then default
+order and filters both the dictionary and its English fallback before the client
+provider. If the resolver shares its EN dictionary/fallback object, keep that identity
+after selection. `LocaleRuntime` has separate public locale/fallback semantics and
+must not substitute for this runtime.
+
+The shared runtime retains the existing provider/effect order, app styles, Geist font,
+analytics, consent and organization/WebSite schemas. Both sibling layouts re-export
+metadata/viewport from `app/_lib/app-runtime-metadata.ts`; neither imports the other's
+layout. Only `video/**` lives in `(public-watch)`, preserving `/video/[id]` URLs and
+the unchanged marketing auth snapshot, reader copy, data, redirects and SEO owners.
+Group transitions remount these lower layouts. The runtime behavior and remount tests
+cover dictionary props, fallback, effect cleanup, cache and theme; production browser
+navigation and comparable loading measurements remain required for performance work.
 
 Build schema payloads in pure helpers, then render them at the route/shell level:
 
@@ -203,6 +253,35 @@ shared by the pair, and quote through `computeCurrentPublicSnapshot` with explic
 mode, resolution, aspect and audio. Project the exact video total and per-second
 rate without a catalogue fallback. Avoid initializing the complete tariff audit
 coverage on the request path; the public quote API remains a parity check in tests.
+
+Examples pagination keeps its path and page number in the canonical, Open Graph URL
+and every hreflang alternate. The route-local `examples-pagination-seo.ts` owns
+strict decimal page parsing and the distinction between the default series and
+sort/filter variants. Localize the base path before appending the page query.
+Page 1 and invalid values redirect to a normalized destination; out-of-range
+requests retain the existing last-page redirect. Normalize legacy `engine` links
+to their family before discarding invalid query values. Preserve intentional
+`public_noindex` families. Pagination hrefs are already localized strings because
+the shared navigation renderer uses `next/link`, not the locale-aware wrapper.
+
+The model catalogue exposes scope navigation and a text-only server directory in
+`ModelsCatalogDirectory.tsx`, using the same price-free selection as the hero.
+Keep all admitted catalogue model links available without clicking tabs or scrolling,
+including image models and separately labelled legacy versions. Do not expand the
+interactive six-card initial batch, fetch extra media, or wait for current prices
+to render these links. Deep archives remain accessible through their existing
+family/history routes, not current-model promotion. Tests in
+`examples-pagination-seo`, `examples-price-streaming`, `examples-family-metadata`
+and `models-catalog-streaming` cover these boundaries.
+
+The comparison hub's directory includes every published, locale-indexable pair
+among its available, limited and waitlist engines. Executable selectors keep their
+own narrower availability policy; archives retain their separate historical routes.
+Render all directory anchors in the initial HTML, with the first 24 outside a native
+`details` disclosure and the remainder inside it. Search can filter the list after
+hydration, but discovery must never depend on a load-more handler. Keep prefetch off
+and the directory free of media. `comparisons-directory-discovery.test.ts` exercises
+the actual component, localized links and publication selection.
 
 LTX and Seedance gallery prompt shortcuts use only examples already present on the
 current first SSR page, after its four opening cards. Select distinct exact versions
@@ -284,6 +363,37 @@ The fallback plus final discovery also increases encoded HTML; the comparable
 local browser runs showed overlapping LCP ranges rather than an established LCP
 gain. Keep that measured delivery cost visible in the media guide.
 
+The homepage conversation chapter is owned by `HomeConversationSection`, after the
+tools section. It presents Studio first and composes `HomeAssistantStrip` for
+external MCP assistants in the same server-rendered group. `HomeCreationSection`
+keeps the workspace screenshots and video/image/audio links. Do not duplicate the
+assistant strip or import Studio's authenticated runtime into marketing: the
+chapter uses a lazy, fixed-dimension screenshot and localized `/studio` link.
+`tests/home-redesign-sections-architecture.test.ts` locks this ownership.
+
+## Models catalogue initial rendering
+
+`prepareModelsCatalogCards` retains one set of current marketing range reads and
+exposes only model identity, localized label, score and href before those reads
+settle. The full `buildModelsCatalogCards` API still waits for the exact same
+price-bearing cards. `buildModelsCatalogHeroData` uses only that narrow metadata,
+so the complete hero, top picks and use-case strip keep their existing geometry.
+The catalogue route streams the remaining recommended cards, gallery filters,
+comparison/FAQ sections and native JSON-LD together after exact cards resolve.
+No provisional card prices or cross-request quote cache are introduced.
+
+A viewport-height fallback keeps the footer out of the initial viewport while
+those sections wait. `ModelsCatalogAnchorRestore.client.tsx` handles the two
+route-local delayed anchors (`models-grid`, `recommended`) and cancels restoration
+when the visitor changes navigation or scroll intent. The model-detail restorer
+remains separately owned. Held-price SSR tests cover all/video/image in EN/FR/ES,
+complete final output, unavailable quotes and original rejected errors; DOM tests
+cover anchor restoration and cancellation. These tests establish composition,
+not measured HTTP/cache or browser Core Web Vitals gains. Comparable browser
+geometry, anchor and performance checks are required before accepting a release.
+Once the shell is sent, a later quote rejection cannot change its HTTP status;
+React/Next may retain the pending boundary until its error/retry handling.
+
 ## Refactor Checklist
 
 Before moving code:
@@ -343,3 +453,40 @@ the database is unavailable. These contracts are covered by
 `ExamplesMainVideoFeature` offers an explicit workspace continuation (`/app?from=<public video id>`) beside the watch/details link. The linked model name remains the model entry point. Keep the card media lifecycle unchanged and do not prefetch the workspace from public galleries. `example-reuse-copy.ts` describes available settings, user references and the next quote; it must not promise an exact clone. Full family copy remains in the server-rendered disclosure when the hero is condensed. CTA analytics uses the existing bridge and bounded labels, not prompts or video identifiers.
 
 `useWorkspaceVideoSettings` owns failed shared-example loading notices, including locale and stale/account guards. The public video GET enforces visibility before returning data: public shares remain available independently of search indexability; private videos require their owner. Keep its no-store response, original payload boundary and identical missing/unauthorized 404. `tests/examples-acquisition-journey.test.ts`, `tests/workspace-shared-video-load-dom.test.ts` and `tests/video-read-access-route.test.ts` cover these contracts.
+
+The shared watch/dialog reader keeps the existing app reuse link as its primary
+action. `ExampleContinuationActions.client.tsx` owns the secondary Studio link,
+ChatGPT/Claude draft links, existing partner marks and complete-request clipboard
+recovery. `frontend/lib/example-continuation.ts` builds localized requests from
+the public `ExampleWatchDetail` projection: original prompt, known settings,
+canonical example and original video links, approved public references and an
+exact-quote approval reminder. Comparison proposals and historical charges are
+not original template settings. Missing configuration stays explicit.
+
+External `q` URLs are best-effort draft handoffs, not verified MCP installation
+links; they do not change the integration registry's installation or host-proof
+state. An explicit assistant click also copies the full request. URLs over 8,000
+characters open the assistant without a query; the full request remains available
+through Copy request and a selectable fallback when clipboard access fails. The
+request describes connector setup when needed without claiming a connection or
+automatic video ingestion. `tests/example-continuation.test.ts` and the real
+reader browser fixture cover request identity, languages, logos, touch geometry,
+keyboard navigation and clipboard failure.
+
+## Password form submissions and contact returns
+
+`usePasswordAuthSubmission` owns the login form's synchronous single-flight lock,
+visible busy state and completion validity. Mode switches are locked until the
+password request settles, including a click on the already-selected tab. The login
+controller keeps validation, consent submission, auth analytics and redirects. A
+dispatched signup must still persist its captured consent after navigation; stale
+completions must not change UI, analytics, redirects or sign out another session. Rejected client loads and SDK calls
+release the lock and show localized retry feedback. `tests/login-password-submission.test.ts`
+exercises the controller and actual form together with controlled identity/network adapters.
+
+Native Contact submissions use a 303 redirect to a GET. The English wrapper forwards
+search parameters to the shared localized page. Middleware preserves the contact
+result parameters and marks result URLs noindex, while metadata remains canonical
+without query parameters. A retry replaces the previous outcome. JSON API responses
+retain their status/payload contract. `tests/contact-form-return.test.ts` covers the
+route, middleware and rendered EN/FR/ES form with offline mail/Slack adapters.

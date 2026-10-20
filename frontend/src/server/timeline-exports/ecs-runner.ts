@@ -21,6 +21,7 @@ type TimelineExportEcsConfig = {
   subnets: string[];
   securityGroups: string[];
   containerName: string;
+  credentials?: { accessKeyId: string; secretAccessKey: string };
 };
 
 export type TimelineExportWorkerLaunchResult =
@@ -45,6 +46,10 @@ function splitCsv(value: string, label: string): string[] {
 function readTimelineExportEcsConfig(env: NodeJS.ProcessEnv = process.env): TimelineExportEcsConfig {
   const missingKeys = REQUIRED_ENV.filter((key) => !env[key]?.trim());
   if (missingKeys.length) throw new Error(`MISSING_${missingKeys.join(',')}`);
+  const accessKeyId = env.TIMELINE_EXPORT_ECS_ACCESS_KEY_ID?.trim();
+  const secretAccessKey = env.TIMELINE_EXPORT_ECS_SECRET_ACCESS_KEY?.trim();
+  if (accessKeyId && !secretAccessKey) throw new Error('MISSING_TIMELINE_EXPORT_ECS_SECRET_ACCESS_KEY');
+  if (secretAccessKey && !accessKeyId) throw new Error('MISSING_TIMELINE_EXPORT_ECS_ACCESS_KEY_ID');
   const readRequiredEnv = (key: TimelineExportEcsEnvKey) => String(env[key]).trim();
   return {
     cluster: readRequiredEnv('TIMELINE_EXPORT_ECS_CLUSTER'),
@@ -54,6 +59,7 @@ function readTimelineExportEcsConfig(env: NodeJS.ProcessEnv = process.env): Time
     securityGroups: splitCsv(readRequiredEnv('TIMELINE_EXPORT_ECS_SECURITY_GROUP'), 'TIMELINE_EXPORT_ECS_SECURITY_GROUP'),
     containerName:
       env.TIMELINE_EXPORT_ECS_CONTAINER_NAME?.trim() || DEFAULT_TIMELINE_EXPORT_ECS_CONTAINER_NAME,
+    ...(accessKeyId && secretAccessKey ? { credentials: { accessKeyId, secretAccessKey } } : {}),
   };
 }
 
@@ -68,28 +74,31 @@ function ecsFailureMessage(failures: Failure[]): string {
     .join('; ');
 }
 
-export async function launchTimelineExportWorkerTask(params: {
-  exportId: string;
+export async function launchMediaWorkerTask(params: {
+  target: { kind: 'timeline-export' | 'subtitles'; id: string };
   env?: NodeJS.ProcessEnv;
 }): Promise<TimelineExportWorkerLaunchResult> {
   const env = params.env ?? process.env;
   if (env.NODE_ENV === 'test') return { status: 'skipped', reason: 'test_environment' };
 
   const config = readTimelineExportEcsConfig(env);
-  const client = new ECSClient({ region: config.region });
+  const client = new ECSClient({ region: config.region, ...(config.credentials ? { credentials: config.credentials } : {}) });
   const response = await client.send(
     new RunTaskCommand({
       cluster: config.cluster,
       taskDefinition: config.taskDefinition,
       launchType: 'FARGATE',
       count: 1,
-      startedBy: `timeline-export:${params.exportId}`.slice(0, 36),
-      group: 'maxvideoai-timeline-export',
+      startedBy: `${params.target.kind}:${params.target.id}`.slice(0, 36),
+      group: `maxvideoai-${params.target.kind}`,
       overrides: {
         containerOverrides: [
           {
             name: config.containerName,
-            environment: [{ name: 'TIMELINE_EXPORT_TARGET_ID', value: params.exportId }],
+            environment: [{
+              name: params.target.kind === 'subtitles' ? 'SUBTITLE_OPERATION_TARGET_ID' : 'TIMELINE_EXPORT_TARGET_ID',
+              value: params.target.id,
+            }],
           },
         ],
       },
@@ -102,8 +111,8 @@ export async function launchTimelineExportWorkerTask(params: {
       },
       tags: [
         { key: 'app', value: 'maxvideoai' },
-        { key: 'surface', value: 'timeline-export' },
-        { key: 'exportId', value: params.exportId },
+        { key: 'surface', value: params.target.kind },
+        { key: params.target.kind === 'subtitles' ? 'operationId' : 'exportId', value: params.target.id },
       ],
     })
   );
@@ -115,4 +124,8 @@ export async function launchTimelineExportWorkerTask(params: {
   const taskArns = (response.tasks ?? []).map((task) => task.taskArn).filter((arn): arn is string => Boolean(arn));
   if (!taskArns.length) throw new Error('TIMELINE_EXPORT_ECS_RUN_TASK_EMPTY');
   return { status: 'launched', taskArns };
+}
+
+export function launchTimelineExportWorkerTask(params: { exportId: string; env?: NodeJS.ProcessEnv }) {
+  return launchMediaWorkerTask({ target: { kind: 'timeline-export', id: params.exportId }, env: params.env });
 }

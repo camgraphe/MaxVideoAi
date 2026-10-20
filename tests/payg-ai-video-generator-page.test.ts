@@ -44,7 +44,7 @@ test('pay-as-you-go page exists with focused route-local boundaries', () => {
   assert.match(pageSource, /export async function generateMetadata/);
   assert.match(pageSource, /buildPayAsYouGoPageData/);
   assert.match(pageSource, /loadPayAsYouGoVideoShowcase/);
-  assert.match(pageSource, /PayAsYouGoPageView/);
+  assert.match(pageSource, /PayAsYouGoStreamingView/);
   assert.match(pageSource, /buildPayAsYouGoBreadcrumbJsonLd/);
   assert.match(pageSource, /buildPayAsYouGoServiceJsonLd/);
   assert.match(pageSource, /buildPayAsYouGoWebApplicationJsonLd/);
@@ -67,7 +67,7 @@ test('pay-as-you-go page targets natural-language AI search questions', () => {
     'Where can I compare current AI video model families in one place?',
     'What makes a good pay-as-you-go AI video generator?',
     'Quick answers before you spend credits',
-    'Recommended testing order for pay-as-you-go AI video',
+    'Choose a model for your next test',
     'What pay-as-you-go means',
     'Why no subscription matters',
     'Who uses pay-as-you-go AI video credits?',
@@ -115,12 +115,12 @@ test('pay-as-you-go page uses an admin-controlled public video playlist strip', 
   assert.match(showcaseDataSource, /PAYG_VIDEO_PLAYLIST_SLUG = 'payg-ai-video-generator'/);
   assert.match(showcaseDataSource, /listPlaylistVideos\(PAYG_VIDEO_PLAYLIST_SLUG/);
   assert.match(showcaseDataSource, /listGalleryVideos\('starter'/);
-  assert.match(showcaseDataSource, /quoteCurrentExamplePrices/);
+  assert.doesNotMatch(showcaseDataSource, /quoteCurrentExamplePrices/);
   assert.doesNotMatch(showcaseDataSource, /finalPriceCents/);
   assert.match(showcaseDataSource, /SHOWCASE_DISALLOWED_MODEL_PATTERN/);
   assert.match(showcaseDataSource, /SHOWCASE_MODEL_PRIORITY/);
   assert.match(showcaseDataSource, /formatVideoTitle/);
-  assert.match(pageSource, /const showcaseVideos = await loadPayAsYouGoVideoShowcase/);
+  assert.match(pageSource, /buildCurrentVideoPricingData\(locale\)/);
   assert.match(viewSource, /<PayAsYouGoVideoShowcase videos=\{showcaseVideos\}/);
   assert.match(showcaseSource, /<PayAsYouGoPreview/);
   assert.doesNotMatch(showcaseSource, /<video|autoPlay/);
@@ -161,11 +161,11 @@ test('pay-as-you-go page localizes every route-local content surface', () => {
   const showcaseSource = read(showcasePath);
   const showcaseDataSource = read(showcaseDataPath);
 
-  assert.doesNotMatch(pageSource, /<PayAsYouGoPageView\s+locale=\{locale\}/);
-  assert.match(pageSource, /<PayAsYouGoPageView\s+data=\{data\}/);
+  assert.doesNotMatch(pageSource, /<PayAsYouGoStreamingView\s+locale=\{locale\}/);
+  assert.match(pageSource, /<PayAsYouGoStreamingView\s+data=\{data\}/);
   assert.match(pageSource, /loadPayAsYouGoVideoShowcase\(\{ locale, copy: content\.showcase\.runtime \}\)/);
   assert.match(pageSource, /const content = getPayAsYouGoContent\(locale\)/);
-  assert.match(pageSource, /buildPayAsYouGoPageData\(\{ locale, content \}\)/);
+  assert.match(pageSource, /buildPayAsYouGoPageData\(\{ locale, content, pricingHub \}\)/);
   assert.doesNotMatch(dataSource, /PAYG_COPY_BY_LOCALE|PRICE_LOOKUP_COPY|modelBestFor|localizedLabels/);
   assert.doesNotMatch(viewSource, /getPayAsYouGoViewCopy|copy\.text|locale ===|\[locale\]/);
   assert.match(viewSource, /<PayAsYouGoVideoShowcase videos=\{showcaseVideos\} copy=\{showcaseCopy\} \/>/);

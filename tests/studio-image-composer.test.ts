@@ -201,3 +201,21 @@ test("composer prevents keyboard and form submissions while busy or blank, and d
     assert.equal(empty.sends,0);
   } finally {await empty.close();}
 });
+
+test('a long example request stays intact and asks for shortening before Studio submission', async () => {
+  const view = await mountComposer();
+  try {
+    const request = 'Full original prompt '.repeat(250);
+    await view.changeText(request);
+    assert.equal(view.textarea.value, request);
+    assert.equal(view.dom.window.document.querySelector<HTMLButtonElement>('[type="submit"]')!.disabled, true);
+    assert.match(view.dom.window.document.querySelector('[role="status"]')?.textContent ?? '', /4.?000/);
+    await act(async () => view.dom.window.document.querySelector('form')!.dispatchEvent(new view.dom.window.Event('submit', { bubbles: true, cancelable: true })));
+    await act(async () => view.textarea.dispatchEvent(new view.dom.window.KeyboardEvent('keydown', {key:'Enter',bubbles:true,cancelable:true})));
+    assert.equal(view.sends, 0);
+    await view.changeText('x'.repeat(4000));
+    assert.equal(view.dom.window.document.querySelector<HTMLButtonElement>('[type="submit"]')!.disabled, false);
+    await act(async () => view.dom.window.document.querySelector('form')!.dispatchEvent(new view.dom.window.Event('submit', { bubbles: true, cancelable: true })));
+    assert.equal(view.sends,1,'only an explicit submission at the existing 4,000-character limit sends');
+  } finally { await view.close(); }
+});

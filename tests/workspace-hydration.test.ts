@@ -49,6 +49,29 @@ test('workspace request params normalize aliases and preserve redirect target', 
   assert.equal(result.loginRedirectTarget, '/app?engine=pika-image-to-video&mode=i2v&job=+job_123+&from=vid_1');
 });
 
+test('engineId model links retain an explicit model through guest request parsing and form hydration', () => {
+  const request = resolveWorkspaceRequestParams(new URLSearchParams('engineId=seedance-2-5'), '/app');
+  assert.equal(request.requestedEngineId, 'seedance-2-5');
+  assert.equal(request.resolvedRequestedEngineId, 'seedance-2-5');
+  assert.equal(request.loginRedirectTarget, '/app?engineId=seedance-2-5');
+  const state = buildInitialWorkspaceFormState({
+    engines: [makeEngine('wan-3-prime'), makeEngine('seedance-2-5')],
+    storedFormRaw: null,
+    effectiveRequestedEngineId: request.resolvedRequestedEngineId,
+    effectiveRequestedEngineToken: request.requestedEngineToken,
+    effectiveRequestedMode: request.requestedMode,
+  });
+  assert.equal(state.form?.engineId, 'seedance-2-5', 'the explicit model wins over the default engine');
+});
+
+test('engine retains priority over engineId, while a blank engine permits the alias', () => {
+  const canonical = resolveWorkspaceRequestParams(new URLSearchParams('engine=wan-3&engineId=seedance-2-5'), '/app');
+  assert.equal(canonical.requestedEngineId, 'wan-3');
+  const alias = resolveWorkspaceRequestParams(new URLSearchParams('engine=%20&engineId=pika-image-to-video'), '/app');
+  assert.equal(alias.requestedEngineId, 'pika-image-to-video');
+  assert.equal(alias.resolvedRequestedEngineId, 'pika-text-to-video');
+});
+
 test('stored multi-prompt scenes are sanitized with stable fallback', () => {
   const scenes = parseStoredMultiPromptScenes(
     JSON.stringify([
@@ -232,4 +255,38 @@ test('saved Seedance 1.5 settings keep their recorded model instead of silently 
     effectiveRequestedMode: null,
   });
   assert.equal(result.form?.engineId, 'seedance-1-5-pro');
+});
+
+
+test('a fresh workspace uses the server Starter model before the gallery feed arrives', () => {
+  const result = buildInitialWorkspaceFormState({
+    engines: [makeEngine('seedance-2-5'), makeEngine('wan-3-prime')],
+    storedFormRaw: null,
+    effectiveRequestedEngineId: null,
+    effectiveRequestedEngineToken: '',
+    effectiveRequestedMode: null,
+    preferredDefaultEngineId: 'wan-3-prime',
+  });
+  assert.equal(result.form?.engineId, 'wan-3-prime');
+  assert.equal(result.hasStoredForm, false, 'an initial preference is not a restored draft');
+  assert.equal(result.preserveStoredDraft, false);
+});
+
+test('a Starter default never overrides stored forms or explicit models and falls back when the preferred model is absent', () => {
+  const defaults = {
+    engines: [makeEngine('seedance-2-5'), makeEngine('wan-3-prime')],
+    storedFormRaw: null,
+    effectiveRequestedEngineId: null,
+    effectiveRequestedEngineToken: '',
+    effectiveRequestedMode: null,
+    preferredDefaultEngineId: 'wan-3-prime',
+  };
+  const stored = buildInitialWorkspaceFormState({
+    ...defaults, storedFormRaw: { engineId: 'seedance-2-5', mode: 't2v', durationSec: 7 } as StoredFormState,
+  });
+  assert.equal(stored.form?.engineId, 'seedance-2-5');
+  assert.equal(stored.form?.durationSec, 7);
+  assert.equal(stored.hasStoredForm, true);
+  assert.equal(buildInitialWorkspaceFormState({ ...defaults, effectiveRequestedEngineId: 'seedance-2-5' }).form?.engineId, 'seedance-2-5');
+  assert.equal(buildInitialWorkspaceFormState({ ...defaults, preferredDefaultEngineId: 'missing-engine' }).form?.engineId, 'seedance-2-5');
 });

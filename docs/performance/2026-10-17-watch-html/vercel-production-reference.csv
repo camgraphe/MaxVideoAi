@@ -1,0 +1,8 @@
+id,time,side,device,temperature,ttfb,lcp,cls,tbt,bytes,origin
+desktop-1-baseline-cold,2026-10-17T17:30:06.210Z,baseline,desktop,cold,42.441,1495.862,0,49.152000000000044,452908,https://maxvideoai.com
+desktop-1-baseline-warm,2026-10-17T17:30:25.217Z,baseline,desktop,warm,47.651999999999994,1199.255,0,6.289999999999964,33727,https://maxvideoai.com
+desktop-1-candidate-cold,2026-10-17T17:30:56.511Z,candidate,desktop,cold,45.112999999999985,1717.05,0,60.24800000000005,514828,https://maxvideoai-7lo16j3n6-camgraphes-projects.vercel.app
+desktop-1-candidate-warm,2026-10-17T17:31:16.389Z,candidate,desktop,warm,43.234,1226.071,0,0,34476,https://maxvideoai-7lo16j3n6-camgraphes-projects.vercel.app
+mobile-1-baseline-cold,2026-10-17T17:31:34.424Z,baseline,mobile,cold,49.35300000000001,1524.769,0,49.2170000000001,403108,https://maxvideoai.com
+mobile-1-baseline-warm,2026-10-17T17:31:53.165Z,baseline,mobile,warm,46.813,1058.185,0,0,33412,https://maxvideoai.com
+mobile-1-candidate-cold,2026-10-17T17:32:09.800Z,candidate,mobile,cold,74.74799999999999,2022.082,0,49.50799999999981,405011,https://maxvideoai-7lo16j3n6-camgraphes-projects.vercel.app

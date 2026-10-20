@@ -8,7 +8,7 @@ import type { Pool } from 'pg';
 import { getFalEngineById } from '../../frontend/src/config/falEngines';
 import { applyEngineVariantPricing, buildEngineAddonInput } from '../../frontend/src/lib/pricing-addons';
 import { getAgentAccountStatus } from '../../frontend/src/server/agent-api/account-status';
-import { createConfirmGenerationService } from '../../frontend/src/server/agent-api/confirm-generation';
+import { createConfirmGenerationService, type ConfirmGenerationDependencies } from '../../frontend/src/server/agent-api/confirm-generation';
 import { getAgentGenerationStatus, listAgentRecentGenerations } from '../../frontend/src/server/agent-api/generation-status';
 import { normalizeGenerationRequest } from '../../frontend/src/server/agent-api/generation-normalization';
 import { priceCanonicalGeneration } from '../../frontend/src/server/agent-api/generation-pricing';
@@ -20,7 +20,7 @@ import {
   type PaidGenerationExecution,
   type PaidGenerationProviderOutcome,
 } from '../../frontend/src/server/agent-api/paid-generation-execution';
-import { createPrepareGenerationService } from '../../frontend/src/server/agent-api/prepare-generation';
+import { createPrepareGenerationService, type PrepareGenerationDependencies } from '../../frontend/src/server/agent-api/prepare-generation';
 import type { AgentGenerationExecutabilityDecision } from '../../frontend/src/server/agent-runtime/model-executability';
 import type { AgentPrincipal } from '../../frontend/src/server/agent-api/principal';
 import { createMcpTopupHandoffService } from '../../frontend/src/server/agent-api/topup-handoff';
@@ -85,6 +85,8 @@ export function createServices(options: {
   prepareNow?: () => Date;
   publicEngines?: readonly AgentPublicGenerationEngine[];
   resolveRequestExecutability?: () => AgentGenerationExecutabilityDecision;
+  preparePriceGeneration?: PrepareGenerationDependencies['priceGeneration'];
+  confirmPriceGeneration?: ConfirmGenerationDependencies['priceGeneration'];
 } = {}): MaxVideoAiMcpServices {
   const publicEngines = options.publicEngines ?? catalog;
   const publicCatalogDependencies = {
@@ -110,6 +112,7 @@ export function createServices(options: {
         resolveRequestExecutability: options.resolveRequestExecutability
           ?? (() => ({ executable: true, reason: 'available' })),
         ...(options.prepareNow ? { now: options.prepareNow } : {}),
+        ...(options.preparePriceGeneration ? { priceGeneration: options.preparePriceGeneration } : {}),
       },
     ),
     confirmGeneration: createConfirmGenerationService(
@@ -121,6 +124,7 @@ export function createServices(options: {
         resolveRequestExecutability: options.resolveRequestExecutability
           ?? (() => ({ executable: true, reason: 'available' })),
         submitPaidGeneration: options.submitPaidGeneration ?? (async () => ({ kind: 'accepted' })),
+        ...(options.confirmPriceGeneration ? { priceGeneration: options.confirmPriceGeneration } : {}),
       },
     ),
     getGenerationStatus: (input, identity) => getAgentGenerationStatus(input, identity),
@@ -226,6 +230,7 @@ export async function connect(identity: AgentPrincipal, services = createService
   const server = createMaxVideoAiMcpServer(identity, services, {
     paidGeneration,
     referenceUploads: false,
+    audioGeneration: false,
   });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   const client = new Client({ name: `p11-${identity.userId}`, version: '1.0.0' });

@@ -137,3 +137,37 @@ The new production policy requires its own `studio-credits-2026-10-05-v2` approv
 Retain this additive financial evidence on rollback. Qualification is local
 disposable PostgreSQL only; no hosted migration was run for this implementation.
 See `docs/engineering/studio-assistance-economics.md`.
+
+## Studio Luna reasoning (migration 67)
+
+Apply `67_studio_luna_reasoning.sql` explicitly after migration 65 and before
+deploying the v2 task runtime. New Luna tasks use high reasoning with a 6,000
+output-token allowance. The migration admits both task resource policy versions
+and checks newly inserted v2 profiles; it does not update existing task snapshots,
+credit lots, tariffs, wallets or receipts. Old workers and v1 resumptions remain
+compatible. Enqueue readiness requires the new guard for v2 requests. Validate
+the ordered 65 → 67 sequence and replay on disposable PostgreSQL 17 before release.
+
+## External Fal result provenance (migration 76)
+
+`76_external_fal_import.sql` follows generation timing migrations 45/46. It adds
+external-request uniqueness and immutable provenance/ownership, enforces null
+application billing fields and skips timing capture for explicitly imported
+external results. It changes no existing rows and creates no generation, media,
+receipt or tariff. Qualify on disposable PostgreSQL and apply via the normal
+migration process before an external result is adopted. Deploy the matching
+runtime exclusions before adoption too; migration alone does not update runtime
+metrics, Activity, library projection or resync behavior. See
+`docs/engineering/external-fal-provenance.md`. Keep compatible readers and these
+guards if rolling back after external rows exist.
+
+## GA4 payment outbox (migration 77)
+
+`77_ga4_payment_outbox.sql` adds the measurement-only durable queue. Apply the exact
+file before its cron/runtime; no receipt backfill, wallet mutation or request-time DDL.
+Keep deduplication tombstones during rollback. See `docs/engineering/ga4-payment-outbox.md`.
+
+The outbox SQL was initially qualified/applied as `76_ga4_payment_outbox.sql` on
+2026-10-20 before the parallel external-import migration landed. Its contents are
+unchanged under `77_ga4_payment_outbox.sql`; do not treat the rename as a new schema
+change or replay financial data. Existing outbox tables need no reapplication.

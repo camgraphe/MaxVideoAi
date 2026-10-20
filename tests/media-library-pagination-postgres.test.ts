@@ -221,6 +221,18 @@ test('recent output search and cursors run against PostgreSQL', { timeout: 90_00
     assert.deepEqual(deduplicatedOriginal.items.map((item) => ({ id: item.id, url: item.url })), [
       { id: 'saved-output-user-a-004', url: durableUrl },
     ]);
+    // Creator finalization publishes a distinct owned file with job provenance;
+    // it belongs to saved creations without replacing the provider original.
+    await database.pool.query(`INSERT INTO media_assets
+      (id,user_id,kind,url,mime_type,source,source_job_id,status,metadata,created_at)
+      VALUES ('creator-final','user-a','video','https://storage.example.test/final.mp4','video/mp4','import','creator-job','ready','{}'::jsonb,$1),
+        ('creator-source','user-a','video','https://storage.example.test/segment.mp4','video/mp4','import',NULL,'ready','{}'::jsonb,$1)`, [timestamp]);
+    const creations = await listLibraryAssetPage({userId:'user-a',kind:'video',source:'saved_job_output'});
+    assert.deepEqual(creations.items.map(item => item.id), ['creator-final']);
+    assert.equal(creations.items[0].sourceJobId, 'creator-job');
+    assert.equal(creations.items[0].sourceOutputId, null);
+    assert.equal((await listLibraryAssetPage({userId:'user-a',kind:'image',source:'saved_job_output'})).items.some(item=>item.id==='creator-final'), false);
+    assert.equal((await listLibraryAssetPage({userId:'user-b',kind:'video',source:'saved_job_output'})).items.length, 0);
   } finally {
     const { getDb } = await import('../frontend/src/lib/db');
     await getDb().end();

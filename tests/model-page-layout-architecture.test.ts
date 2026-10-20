@@ -33,6 +33,7 @@ const decisionCompareSectionPath = join(root, 'frontend/app/(localized)/[locale]
 const decisionSafetyFaqSectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionSafetyFaqSection.tsx');
 
 const readSource = (path: string) => readFileSync(path, 'utf8');
+const specsSectionSourceForContract = () => readSource(specsSectionPath);
 const lineCount = (source: string) => source.split('\n').length;
 
 test('scored video model pages link their specs to the benchmark methodology', () => {
@@ -40,7 +41,7 @@ test('scored video model pages link their specs to the benchmark methodology', (
   const layoutSource = readSource(layoutPath);
   const specsSectionSource = readSource(specsSectionPath);
 
-  assert.match(modelPageSource, /loadModelPageInputs/);
+  assert.match(modelPageSource, /prepareModelPageInputs/);
   assert.match(readSource(join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-inputs.ts')), /loadBenchmarkScoreSlugs/);
   assert.match(layoutSource, /showBenchmarkLink/);
   assert.match(specsSectionSource, /BenchmarkMethodologyLink/);
@@ -61,7 +62,8 @@ test('model page layout delegates prep link copy and schema payload composition'
 
   assert.match(layoutSource, /buildModelPrepLinksSection/, 'layout should delegate prep link copy selection');
   assert.match(layoutSource, /buildModelPricingCallout/, 'layout should delegate pricing callout copy selection');
-  assert.match(layoutSource, /buildModelSchemaPayloads/, 'layout should delegate schema payload composition');
+  assert.match(layoutSource, /ModelCurrentDetails/, 'layout should stream native schema through the existing payload owner');
+  assert.match(readSource(join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCurrentDetails.tsx')), /buildModelSchemaPayloads/);
   assert.doesNotMatch(layoutSource, /NANO_BANANA_MODEL_SLUGS|VIDEO_PREP_MODEL_SLUGS|itemListElement/, 'layout should not own prep link copy tables or JSON-LD internals');
   assert.match(prepLinksSource, /NANO_BANANA_MODEL_SLUGS|VIDEO_PREP_MODEL_SLUGS|export function buildModelPrepLinksSection/, 'prep link helper should own localized prep link rules');
   assert.match(pricingCalloutsSource, /seedance-2-0-pricing|ltx-2-3-fast-pricing|kling-3-pro-pricing/, 'pricing callout helper should own stable pricing anchors');
@@ -129,12 +131,13 @@ test('model page layout delegates template page ownership', () => {
   const decisionCompareSource = readSource(decisionCompareSectionPath);
   const decisionSafetyFaqSource = readSource(decisionSafetyFaqSectionPath);
 
-  assert.match(layoutSource, /buildCurrentModelDecisionData/, 'layout should delegate current template data building');
+  assert.match(layoutSource, /buildModelDecisionData/, 'layout should compose strict pure template data before quotes');
+  assert.match(layoutSource, /prepareModelCommercialData/, 'layout should prepare one shared commercial result for price slots');
   assert.match(layoutSource, /parseModelPromptingContent/, 'layout should validate exact-locale Prompt Lab content');
   assert.match(layoutSource, /buildModelPromptingViewModel/, 'layout should derive Prompt Lab display state once');
   assert.match(layoutSource, /ModelDecisionHeroSection/, 'layout should render the template hero');
-  assert.match(layoutSource, /ModelDecisionPricingCard/, 'layout should render the template pricing card');
-  assert.match(layoutSource, /ModelPageContentSections/, 'layout should delegate ordered model content sections');
+  assert.match(readSource(join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCurrentDetails.tsx')), /ModelDecisionPricingCard/, 'exact details own the template pricing card');
+  assert.match(readSource(join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelCurrentDetails.tsx')), /ModelPageContentSections/, 'exact details delegate ordered model content sections');
   assert.match(layoutSource, /templateData\s*\?/, 'layout should conditionally use templateData');
   assert.match(layoutSource, /!templateData\s*&&\s*pricingCallout/, 'layout should keep legacy pricing callouts out of template pages');
 
@@ -143,8 +146,13 @@ test('model page layout delegates template page ownership', () => {
   assert.match(decisionDataSource, /parseModelDecisionContent/);
   assert.match(decisionDataSource, /decisionContent:\s*unknown/);
   assert.match(modelPageSource, /decisionContent:\s*localized\.decision/);
-  assert.match(layoutSource, /buildCurrentModelDecisionData\(engine, locale, localizedContent\.decision, quoteModel\)/);
-  assert.match(layoutSource, /resolveCurrentModelPublicOffer\(engine, pricingEngine, quoteModel\)/);
+  const commercialSource = readSource(join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-commercial-data.ts'));
+  assert.match(commercialSource, /refreshModelDecisionPricingScenarios/);
+  assert.match(commercialSource, /resolveCurrentModelPublicOffer\(engine, pricingEngine, quoteModel\)/);
+  assert.match(layoutSource, /streamDetails = isVideoEngine && Boolean\(templateData\)/);
+  assert.match(layoutSource, /streamDetails \? null : \(await Promise\.all\(\[pricing, commercial\]\)\)\[0\]/);
+  assert.match(layoutSource, /<Suspense fallback=\{<div aria-hidden="true" className="min-h-screen" \/>\}>\{details\}<\/Suspense>/);
+  assert.doesNotMatch(specsSectionSourceForContract(), /pricing:\s*Promise|Suspense/, 'spec rows remain fully resolved, without unstable per-price placeholders');
   assert.doesNotMatch(
     decisionDataSource,
     /SEEDANCE_20_COPY|SEEDANCE_20_FAST_COPY|LTX_23_FAST_COPY|COPY_BY_MODEL_SLUG|buildSlugMap\('pricing'\)|Seedance 2\.0 or Fast\?/,

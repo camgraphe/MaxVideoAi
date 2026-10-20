@@ -1,3 +1,7 @@
+import { seedanceWorkflowCandidate } from './seedance-workflow-capabilities';
+import { resolveAgentSeedanceWorkflow, assertSeedanceWorkflowQuoteBinding, seedanceWorkflowQuoteBinding } from './seedance-workflow';
+import type { PreparedSeedanceWorkflow } from '@/server/seedance-workflow-request';
+import type { SeedanceWorkflowMediaFacts } from '@/server/seedance-workflow-facts';
 import mcpPublication from '@/config/mcp-publication.json';
 import { withDbTransaction, type TransactionQueryExecutor } from '@/lib/db';
 import { retireMembershipPricing } from '@/lib/membership-policy';
@@ -58,7 +62,7 @@ import {
   type OwnedQuoteJobInput,
 } from './quote-repository';
 import { resolveOwnedReferenceAssetForActor } from './reference-assets';
-import { resolveGenerationReferencesForActor } from './resolve-generation-references';
+import { assertGenerationReferenceUrls, resolveGenerationReferencesForActor } from './resolve-generation-references';
 import type { ResolvedReference } from './reference-types';
 import {
   checkMcpConfirmationSpendingLimits,
@@ -112,6 +116,7 @@ export type ConfirmGenerationDependencies = {
     dependencies: ExecutorDependencies & {
       candidate: AgentPublicGenerationEngine;
       resolvedReferences?: readonly ResolvedReference[];
+      seedanceFinalFacts?: SeedanceWorkflowMediaFacts;
     },
   ): Promise<GenerationPricingResult>;
   checkSpendingLimits(
@@ -141,6 +146,7 @@ export type ConfirmGenerationDependencies = {
       candidate: AgentPublicGenerationEngine;
       pricingSnapshot: Record<string, unknown>;
       resolvedReferences?: ResolvedReference[];
+      seedanceWorkflow?: PreparedSeedanceWorkflow;
     },
     dependencies: ExecutorDependencies,
   ): Promise<PaidGenerationReservation>;
@@ -340,16 +346,20 @@ async function confirmationTransaction(
       staleQuote();
     }
 
+    const inherited = await resolveAgentSeedanceWorkflow(quote.request, principal.userId, { queryFn: executor.query.bind(executor) });
+    assertSeedanceWorkflowQuoteBinding(quote.request, inherited.request, quote.pricingSnapshot, inherited.workflow);
     const publicEngines = await dependencies.listPublicEngines({ executor });
-    const candidate = publicEngines.find((entry) =>
+    const publicCandidate = publicEngines.find((entry) =>
       entry.engine.id === quote.request.engineId && entry.surface === quote.request.surface);
+    const candidate = publicCandidate ? seedanceWorkflowCandidate(quote.request, publicCandidate) : undefined;
     if (!candidate || !candidate.publicModes.includes(quote.request.mode)) {
       if (includedTrial) trialNotEligible();
       staleQuote();
     }
     if (includedTrial) assertCanonicalTrialRequest(quote, candidate);
+    assertGenerationReferenceUrls(quote.request);
     try {
-      validateCanonicalGenerationCapabilities(quote.request, candidate);
+      if (!inherited.workflow?.finalFacts) validateCanonicalGenerationCapabilities(quote.request, candidate);
     } catch (error) {
       if (error instanceof GenerationCapabilityError) {
         if (includedTrial) trialNotEligible();
@@ -414,7 +424,7 @@ async function confirmationTransaction(
       pricing = await dependencies.priceGeneration(
         quote.request,
         membership.tier,
-        { executor, candidate, resolvedReferences },
+        { executor, candidate, resolvedReferences, seedanceFinalFacts: inherited.workflow?.finalFacts },
       );
     } catch (error) {
       if (error instanceof AgentApiError) throw error;
@@ -423,12 +433,12 @@ async function confirmationTransaction(
     }
     let pricingSnapshot: Record<string, unknown>;
     try {
-      pricingSnapshot = bindStudioReferenceSnapshot(buildGenerationPricingSnapshot(
+      pricingSnapshot = bindStudioReferenceSnapshot({ ...buildGenerationPricingSnapshot(
         pricing,
         quote.request,
         catalogRevision,
         membership,
-      ), principal, resolvedReferences);
+      ), ...seedanceWorkflowQuoteBinding(inherited.workflow) }, principal, resolvedReferences);
     } catch {
       if (includedTrial) trialNotEligible();
       staleQuote();
@@ -456,7 +466,7 @@ async function confirmationTransaction(
       if (!spending.allowed) throw spendingError(dependencies);
       try {
         reservation = await dependencies.reserveInitialJob(
-          { quote, candidate, pricingSnapshot, resolvedReferences },
+          { quote, candidate, pricingSnapshot, resolvedReferences, seedanceWorkflow: inherited.workflow },
           { executor },
         );
       } catch (error) {
@@ -468,6 +478,9 @@ async function confirmationTransaction(
           ? Number((error as { status?: unknown }).status)
           : 0;
         const responseCode = isRecord(error) && isRecord(error.body) ? error.body.error : undefined;
+        if (quote.request.seedanceWorkflow && /Draft/i.test(error instanceof Error ? error.message : '')) {
+          throw new AgentApiError('SEEDANCE_DRAFT_UNAVAILABLE', 'This Draft is unavailable, expired or already finalizing. Recover the existing final job before another quote.');
+        }
         if (code === 'PRICING_REFRESH_REQUIRED' || responseCode === 'PRICING_REFRESH_REQUIRED') staleQuote();
         if (status === 402 || /insufficient/i.test(code)) {
           throw new AgentApiError('INSUFFICIENT_FUNDS', 'Add funds before confirming this generation.');

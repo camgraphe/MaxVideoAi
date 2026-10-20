@@ -1,5 +1,5 @@
 import type {QueryExecutor} from '@/lib/db';
-import {STUDIO_TASK_POLICY_VERSION,STUDIO_TASK_PROFILES} from '@/lib/studio/task-budget-contract';
+import {studioTaskProfileForModel} from '@/lib/studio/task-budget-contract';
 import {stableJson} from '@/server/agent-api/generation-normalization';
 import {studioTaskSchemaReady,type StudioTaskRow} from './repository';
 import {StudioTaskStop} from './policy';
@@ -17,7 +17,11 @@ export async function readStudioTaskBudget(db:QueryExecutor,scope:{userId:string
   if(row.project_deleted)throw new StudioTaskStop('permission','This project is no longer available.');
   if(row.state!=='running'||row.worker_id!==scope.leaseId||row.segment_request_id!==scope.requestId)throw new StudioTaskStop('permission','This task worker lease or segment was superseded.');
   if(!row.lease_valid)throw new StudioTaskStop('deadline','This task reached its current time allowance.');
-  if(row.policy_version!==STUDIO_TASK_POLICY_VERSION||stableJson(row.profile_json)!==stableJson(STUDIO_TASK_PROFILES[row.profile]))throw new StudioTaskStop('unavailable','This task resource policy is not available.');
+  try{
+    const selection=row.input_json.taskBudget;
+    if(!selection||selection.policyVersion!==row.policy_version||selection.profile!==row.profile
+      ||stableJson(row.profile_json)!==stableJson(studioTaskProfileForModel(selection,row.model)))throw new Error('Resource policy changed');
+  }catch{throw new StudioTaskStop('unavailable','This task resource policy is not available.');}
   try{
     const fingerprint=await studioTaskSourceFingerprint({userId:scope.userId,projectId:scope.projectId,authMethod:'studio-session',clientId:null},row.input_json,db,true);
     if(fingerprint!==row.source_fingerprint)throw new Error('Source changed');

@@ -1,0 +1,17 @@
+{
+  "width": 854,
+  "height": 480,
+  "durationMs": 12028,
+  "source": "/assets/tools/subtitle-demo/night-train-original-9d924e3a6ccb.mp4",
+  "renders": {
+    "active-word": "/assets/tools/subtitle-demo/night-train-active-word-95c873feeb37.mp4",
+    "clean": "/assets/tools/subtitle-demo/night-train-clean-d5d6bf4f0e9a.mp4",
+    "high-contrast": "/assets/tools/subtitle-demo/night-train-high-contrast-62430bce2ce1.mp4"
+  },
+  "posters": {
+    "original": "/assets/tools/subtitle-demo/night-train-original-9d924e3a6ccb.webp",
+    "active-word": "/assets/tools/subtitle-demo/night-train-active-word-95c873feeb37.webp",
+    "clean": "/assets/tools/subtitle-demo/night-train-clean-d5d6bf4f0e9a.webp",
+    "high-contrast": "/assets/tools/subtitle-demo/night-train-high-contrast-62430bce2ce1.webp"
+  }
+}

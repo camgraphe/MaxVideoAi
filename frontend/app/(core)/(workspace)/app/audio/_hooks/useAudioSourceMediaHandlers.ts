@@ -1,4 +1,5 @@
-import { useCallback, type Dispatch, type MutableRefObject, type RefObject, type SetStateAction } from 'react';
+import { useCallback, useLayoutEffect, useRef, type Dispatch, type MutableRefObject, type RefObject, type SetStateAction } from 'react';
+import { useAudioCreationScope } from './useAudioCreationScope';
 
 import type { AudioWorkspaceCopy } from '../copy';
 import {
@@ -13,6 +14,7 @@ import type {
 } from '../_lib/audio-workspace-types';
 
 type UseAudioSourceMediaHandlersArgs = {
+  userId: string | null;
   copy: AudioWorkspaceCopy;
   manualWorkspaceOverrideRef: MutableRefObject<boolean>;
   sourceInputRef: RefObject<HTMLInputElement | null>;
@@ -27,6 +29,7 @@ type UseAudioSourceMediaHandlersArgs = {
 };
 
 export function useAudioSourceMediaHandlers({
+  userId,
   copy,
   manualWorkspaceOverrideRef,
   sourceInputRef,
@@ -39,6 +42,20 @@ export function useAudioSourceMediaHandlers({
   setSourceVideo,
   setVoiceSample,
 }: UseAudioSourceMediaHandlersArgs) {
+  const voiceScope = useAudioCreationScope(userId);
+  const voiceUpload = useRef<AbortController | null>(null);
+  useLayoutEffect(() => {
+    setIsUploadingVoice(false);
+    return () => { voiceUpload.current?.abort(); voiceUpload.current = null; };
+  }, [voiceScope, setIsUploadingVoice]);
+  const handleClearVoiceSample = useCallback(() => {
+    if (!voiceScope.isCurrent()) return;
+    voiceUpload.current?.abort();
+    voiceUpload.current = null;
+    setIsUploadingVoice(false);
+    setVoiceSample(null);
+    if (voiceInputRef.current) voiceInputRef.current.value = '';
+  }, [setIsUploadingVoice, setVoiceSample, voiceInputRef, voiceScope]);
   const handleSourceFileSelect = useCallback(async (fileList: FileList | null) => {
     const file = fileList?.[0];
     if (!file) return;
@@ -82,18 +99,24 @@ export function useAudioSourceMediaHandlers({
   const handleVoiceFileSelect = useCallback(async (fileList: FileList | null) => {
     const file = fileList?.[0];
     if (!file) return;
+    if (!userId || !voiceScope.isCurrent()) { setNotice(copy.messages.voiceUploadFailed); return; }
+    voiceUpload.current?.abort();
+    const controller = new AbortController();
+    voiceUpload.current = controller;
+    const isCurrent = () => !controller.signal.aborted && voiceUpload.current === controller && voiceScope.isCurrent();
     manualWorkspaceOverrideRef.current = true;
     setIsUploadingVoice(true);
     setNotice(null);
     try {
-      const uploaded = await uploadAsset(file, 'audio');
-      setVoiceSample(uploaded);
+      const uploaded = await uploadAsset(file, 'audio', { expectedUserId: userId, signal: controller.signal });
+      if (isCurrent()) setVoiceSample(uploaded);
     } catch (error) {
-      setNotice(resolveUiErrorMessage(error, copy.messages.voiceUploadFailed, ['Upload failed']));
+      if (isCurrent()) setNotice(resolveUiErrorMessage(error, copy.messages.voiceUploadFailed, ['Upload failed']));
     } finally {
-      setIsUploadingVoice(false);
-      if (voiceInputRef.current) {
-        voiceInputRef.current.value = '';
+      if (isCurrent()) {
+        voiceUpload.current = null;
+        setIsUploadingVoice(false);
+        if (voiceInputRef.current) voiceInputRef.current.value = '';
       }
     }
   }, [
@@ -103,6 +126,8 @@ export function useAudioSourceMediaHandlers({
     setNotice,
     setVoiceSample,
     voiceInputRef,
+    userId,
+    voiceScope,
   ]);
 
   const handleSelectGeneratedVideo = useCallback(async (video: GeneratedSourceVideo) => {
@@ -142,6 +167,7 @@ export function useAudioSourceMediaHandlers({
   }, [manualWorkspaceOverrideRef, setNotice, setResult, setSourceVideo, sourceInputRef]);
 
   return {
+    handleClearVoiceSample,
     handleClearSourceVideo,
     handleSelectGeneratedVideo,
     handleSourceFileSelect,

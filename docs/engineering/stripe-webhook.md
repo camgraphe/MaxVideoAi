@@ -44,6 +44,14 @@ Both successful top-up translators call the canonical `recordStripeTopup` functi
 invoice fields, checkout attribution, and analytics updates in one transaction-oriented flow.
 Document normalization and Stripe receipt lookup stay in `stripe-webhook-documents.ts`.
 
+GA4 delivery is owned by the [durable payment outbox](ga4-payment-outbox.md).
+The receipt transaction queues both wallet events under a savepoint; a versioned
+receipt marker allows recent-only repair without changing credit. The webhook
+never waits for Google. Refund notifications enqueue the existing `topup_refunded`
+delta by charge/cumulative amount; an enqueue failure propagates so the processor
+releases its event marker for Stripe retry. Admin and consent eligibility are
+rechecked by the worker, not inferred from HTTP receipt.
+
 Wallet top-up Checkout Sessions enable Stripe's post-purchase invoice creation. The completed
 Session or PaymentIntent supplies the invoice or charge identity; the canonical top-up receipt
 stores those identifiers and cached URLs when available. `GET /api/receipts` resolves a hosted
@@ -60,10 +68,49 @@ releases its idempotency marker so Stripe can retry document synchronization. Un
 invoices remain acknowledged. This adds no credit and does not repair old cached links.
 The live webhook endpoint must subscribe to every handled event in the table above.
 
-Failed top-up cards are owned by `stripe-webhook-failed-payments.ts`. It records deduplicated failed
-card attempts for first-wallet-top-up checkout attempts. At five failed attempts, it expires an open,
-unpaid Checkout Session and records the rate-limited outcome, subject to the existing receipt and
-session-state guards.
+Failed top-up cards are translated by `stripe-webhook-failed-payments.ts`; their failure history,
+card identity, cooldown anchor and account-wide counter belong to `stripe-webhook-failed-card-history.ts`.
+Three distinct card fingerprints refused within ten minutes across a user's sessions start a
+30-minute cooldown and expire that user's recent open, unpaid Checkout Sessions. Both first and
+returning customers are covered. Retrying a known card with a new PaymentMethod ID does not count
+as another card. The existing five deduplicated failures on one checkout remain an additional
+safeguard, including repeated probing of one known card. That legacy limit starts a cooldown only
+after its own session is confirmed open/unpaid and successfully expired; an expired or previously
+handled session cannot rearm an old cooldown.
+
+The history uses the signed Stripe event's timestamp, so delayed old failures cannot form a new
+burst. PaymentIntent authentication errors use `last_payment_error.payment_method`: `latest_charge`
+can still refer to an older card. Charge and PaymentIntent notifications for an actual charge are
+deduplicated under the user's `wallet-checkout-user` advisory transaction lock and the owning
+`checkout_attempts` row lock. This user lock is shared with checkout preparation so different
+sessions cannot race the counter or create a session before the cooldown commits.
+
+The distinct-card cooldown starts in a separate `stripe_failed_card_cooldown_started` event before
+Stripe network calls. Both new session creation and express reuse honor it even if session expiration fails.
+Replayed notifications and later session expiry do not restart an active cooldown. Session expiration uses a stable Stripe
+idempotency key and atomically records its outcome and marker only once. The receipt for the current
+Session/PaymentIntent and Stripe's current paid/complete state prevent expiry. PaymentIntent failures
+retain their signed snapshot but fetch current paid state separately, so delayed failures cannot
+penalize a payment already completed before receipt synchronization. Successful older top-ups do
+not exempt a later checkout, and this policy never refunds payments, reverses credit or bans users.
+The existing CAPTCHA policy and Stripe CVV/Radar configuration are unchanged.
+`tests/stripe-failed-cards-postgres.test.ts` covers cross-session and concurrent failures, duplicate
+notifications, delayed events, stale charge identities, account isolation and paid-session/ledger
+protection on disposable PostgreSQL. `tests/checkout-guard-reuse-postgres.test.ts` covers the persistent
+cooldown without CAPTCHA availability.
+
+## Manual dispute containment
+
+`charge.dispute.*` is not handled by this processor. Stripe dispute notifications still require
+an operator to review the exact charge, account, principal, fees, deadline and reason. A fraud claim
+does not by itself prove who used a card; service delivery is not proof of cardholder authorization.
+Preserve the charge, identity linkage, receipts, jobs and failed-card history before containment.
+Use `user_account_restrictions` and its audit for reversible spending restrictions, and Supabase Auth
+for a reversible login suspension when the evidence warrants it. Preserve the wallet ledger and
+record any credit reversal explicitly; never treat an internal credit refund as a bank refund.
+Check the live Stripe state before any response. Accepting a chargeback is irreversible and requires
+an explicit merchant decision; never issue a separate refund for a principal already charged back.
+Automatic dispute restrictions and ledger adjustments require their own reviewed lifecycle policy.
 
 ## Verification
 

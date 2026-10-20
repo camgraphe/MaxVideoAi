@@ -12,12 +12,26 @@ import { buildPopularChecks, buildPricingHubData, buildVideoHighlights,
   orderPricingRows, VIDEO_PRICE_PRESETS, type PricingHubData, type PresetQuote,
   type VideoPricePresetId, type VideoPricingRow } from './pricingHubData';
 
+type ModelQuoter = (input: PublicModelQuoteInput) => Promise<PublicModelQuote>;
+export type CurrentVideoPricingData = Pick<PricingHubData, 'video'>;
+
 /** Keep server-rendered Pricing amounts on the same database-aware quote as a new charge. */
-export async function buildCurrentPricingHubData(
-  locale: AppLocale,
-  quote?: (input: PublicModelQuoteInput) => Promise<PublicModelQuote>,
-  otherDependencies?: CurrentOtherPricingDependencies,
+export function buildCurrentPricingHubData(
+  locale: AppLocale, quote?: ModelQuoter, otherDependencies?: CurrentOtherPricingDependencies,
 ): Promise<PricingHubData> {
+  return buildCurrentPricingData('all', locale, quote, otherDependencies);
+}
+
+/** PAYG consumes only video quotes; never wait for unused image, audio or tool prices. */
+export function buildCurrentVideoPricingData(locale: AppLocale, quote?: ModelQuoter): Promise<CurrentVideoPricingData> {
+  return buildCurrentPricingData('video', locale, quote);
+}
+
+function buildCurrentPricingData(scope: 'all', locale: AppLocale, quote?: ModelQuoter, otherDependencies?: CurrentOtherPricingDependencies): Promise<PricingHubData>;
+function buildCurrentPricingData(scope: 'video', locale: AppLocale, quote?: ModelQuoter): Promise<CurrentVideoPricingData>;
+async function buildCurrentPricingData(
+  scope: 'all' | 'video', locale: AppLocale, quote?: ModelQuoter, otherDependencies?: CurrentOtherPricingDependencies,
+): Promise<PricingHubData | CurrentVideoPricingData> {
   const quoteModel = quote ?? createScopedPublicModelQuoter();
   const base = buildPricingHubData(locale);
   const entries = new Map(listFalEngines().map((entry) => [entry.id, entry]));
@@ -48,21 +62,26 @@ export async function buildCurrentPricingHubData(
       const old = row.quotes[preset.id];
       if (old.status !== 'exact') continue;
       const input = getExactVideoPresetInput(entry, preset, locale);
+      // A toggle may be supported even when audio has no separate price tier.
+      const note = input?.audio === false
+        ? [old.note?.split(' · ').filter((part) => part !== copy.quote.audioIncluded).join(' · '),
+            copy.quote.audioOff].filter(Boolean).join(' · ')
+        : old.note;
       const apply = (result: PublicModelQuote) => {
         row.quotes[preset.id] = result.status === 'exact'
-          ? { ...old, amountCents: result.amountCents,
+          ? { ...old, note, amountCents: result.amountCents,
               display: formatCurrencyForLocale(locale, result.currency, result.amountCents / 100),
               rateDisplay: copy.quote.perSecond(formatPricePerUnit(locale, result.currency,
                 result.amountCents / input!.durationSec / 100)),
               sortValue: result.amountCents, isCheapest: false }
-          : { status: 'live_quote', display: copy.liveQuote, note: old.note,
+          : { status: 'live_quote', display: copy.liveQuote, note,
               sortValue: Number.POSITIVE_INFINITY };
       };
       if (input) addQuote(input, apply);
       else apply({ status: 'unavailable' });
     }
   }
-  const imageRows = base.otherSurfaces.imageRows.map((row) => ({ ...row }));
+  const imageRows = scope === 'all' ? base.otherSurfaces.imageRows.map((row) => ({ ...row })) : [];
   for (const row of imageRows) {
     const entry = entries.get(row.id);
     if (!entry) continue;
@@ -83,8 +102,9 @@ export async function buildCurrentPricingHubData(
   });
   // Observe every worker, even after an earlier rejection, before releasing its budget.
   const modelWorkersSettled = Promise.allSettled(modelWorkers).then(() => undefined);
-  const otherPricing = buildCurrentOtherPricing({ ...base.otherSurfaces, imageRows }, locale,
-    otherDependencies, { modelWorkersSettled });
+  const otherPricing = scope === 'all'
+    ? buildCurrentOtherPricing({ ...base.otherSurfaces, imageRows }, locale, otherDependencies, { modelWorkersSettled })
+    : undefined;
   const [, otherSurfaces] = await Promise.all([Promise.all(modelWorkers), otherPricing]);
   rows.forEach((row, index) => {
     const quotes = row.quotes;
@@ -95,8 +115,9 @@ export async function buildCurrentPricingHubData(
       exactRank * 1_000_000 + amount * 100 + index;
   });
   const currentRows = markCheapestQuotes(orderPricingRows(rows));
-  return { ...base,
-    video: { ...base.video, rows: currentRows, highlights: buildVideoHighlights(currentRows, locale) },
+  const video = { ...base.video, rows: currentRows, highlights: buildVideoHighlights(currentRows, locale) };
+  if (!otherSurfaces) return { video };
+  return { ...base, video,
     popularChecks: buildPopularChecks(locale, currentRows, imageRows,
       otherSurfaces.audioRows, otherSurfaces.toolRows),
     otherSurfaces };

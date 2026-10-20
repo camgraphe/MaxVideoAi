@@ -82,7 +82,19 @@ const imageRequest: CanonicalGenerationRequest = {
   outputCount: 1,
 };
 
-test('confirmation pricing preserves the prepared Seedance video-input tier', async () => {
+test('confirmation rejects an older payable quote with an unsupported reference host before reserving credits', async () => {
+  const request: CanonicalGenerationRequest = { ...videoRequest, mode: 'i2v', references: [
+    { kind: 'https', mediaKind: 'image', role: 'source', url: 'https://cloud.inference.sh/private.png' },
+  ] };
+  const { dependencies, captures } = baseDependencies(request);
+  await assert.rejects(confirmGeneration({ quoteId: QUOTE_ID, confirmed: true }, principal, dependencies),
+    (error: unknown) => error instanceof AgentApiError && error.code === 'REFERENCE_INVALID');
+  assert.equal(captures.events.includes('reserve_video'), false);
+  assert.equal(captures.events.includes('claim_quote'), false);
+  assert.equal(captures.providerCalls, 0);
+});
+
+test('confirmation pricing preserves the prepared ModelArk extension video-input tier', async () => {
   const entry = listFalEngines().find((candidate) => candidate.id === 'seedance-2-5');
   assert.ok(entry);
   const candidate: AgentPublicGenerationEngine = {
@@ -95,21 +107,23 @@ test('confirmation pricing preserves the prepared Seedance video-input tier', as
     schemaVersion: 1,
     surface: 'video',
     engineId: 'seedance-2-5',
-    mode: 'v2v',
-    prompt: 'Edit the source video.',
+    mode: 'extend',
+    prompt: 'Extend the source video.',
     settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
     references: [{
-      kind: 'https',
-      url: 'https://cdn.example.com/source.mp4',
+      kind: 'asset',
+      assetId: 'owned-extend-source',
       role: 'source',
-      mediaKind: 'video',
     }],
     outputCount: 1,
   };
-  const prepared = await priceCanonicalGeneration(request, 'member');
+  const resolvedReferences = [{ assetId: 'owned-extend-source', role: 'source' as const, mediaKind: 'video' as const,
+    storageUrl: 'https://media.example.test/source.mp4', durationSec: 4, width: 1280, height: 720, mimeType: 'video/mp4' }];
+  const prepared = await priceCanonicalGeneration(request, 'member', undefined, { resolvedReferences, resolvedEngine: entry.engine });
   const confirmed = await priceCanonicalGenerationInExecutor(request, 'member', {
     candidate,
     executor: { async query() { return []; } } as TransactionQueryExecutor,
+    resolvedReferences,
   });
   assert.equal(
     (prepared.pricingSnapshot.meta as Record<string, unknown>).byteplus_billing_input_type,
@@ -801,8 +815,8 @@ test('Seedance accepts one frame URL in distinct first and last roles through re
     prompt: 'Animate one intentionally repeated frame.',
     settings: { durationSec: 4, resolution: '480p', audio: true },
     references: [
-      { kind: 'https', url: duplicateUrl, role: 'first_frame', mediaKind: 'image' },
-      { kind: 'https', url: duplicateUrl, role: 'last_frame', mediaKind: 'image' },
+      { kind: 'asset', assetId: 'duplicate-frame', role: 'first_frame' },
+      { kind: 'asset', assetId: 'duplicate-frame', role: 'last_frame' },
     ],
     outputCount: 1,
   };
@@ -815,6 +829,9 @@ test('Seedance accepts one frame URL in distinct first and last roles through re
   const { dependencies, captures } = baseDependencies(request, {
     lockOwnedQuote: async () => ({ quote: stored, databaseNow: NOW }),
     listPublicEngines: async () => [candidate],
+    resolveGenerationReferences: async () => ['first_frame', 'last_frame'].map(role => ({ assetId: 'duplicate-frame',
+      role: role as 'first_frame' | 'last_frame', storageUrl: duplicateUrl, mediaKind: 'image' as const,
+      width: 1024, height: 1024, durationSec: null, mimeType: 'image/png' })),
   });
 
   const result = await confirmGeneration(
@@ -1261,6 +1278,7 @@ test('default registry remains discovery and comparison tools and the explicit p
   const enabledServer = createMaxVideoAiMcpServer(principal, services, {
     paidGeneration: true,
     referenceUploads: false,
+    audioGeneration: false,
   });
   const defaultClient = new Client({ name: 'default-confirm-test', version: '1.0.0' });
   const enabledClient = new Client({ name: 'enabled-confirm-test', version: '1.0.0' });
@@ -1351,6 +1369,47 @@ test('known MCP rejection forwards its diagnostic to refund persistence', async 
     message: 'This engine does not support the selected aspect ratio.',
   });
 });
+
+for (const extension of ['mpeg', 'mp3']) {
+  test(`Wan generated audio .${extension} is checked before confirmation reserves a charge`, async () => {
+    const entry = listFalEngines().find(engine => engine.id === 'wan-3');
+    assert.ok(entry);
+    const candidate: AgentPublicGenerationEngine = {
+      engine: entry.engine, surface: 'video', publicModes: ['ref2v'],
+      modeCaps: { ref2v: entry.modes.find(mode => mode.mode === 'ref2v')!.ui },
+    };
+    const request: CanonicalGenerationRequest = {
+      schemaVersion: 1, surface: 'video', engineId: 'wan-3', mode: 'ref2v',
+      prompt: 'Use the supplied voice.', outputCount: 1,
+      settings: { durationSec: 11, resolution: '480p', aspectRatio: '16:9' },
+      references: [{ kind: 'asset', role: 'reference', assetId: 'generated-audio' }],
+    };
+    const catalogRevision = computeGenerationCatalogRevision([candidate]);
+    const base = quoteFor(request, { catalogRevision });
+    const stored = { ...base, pricingSnapshot: { ...base.pricingSnapshot, catalogRevision } };
+    const { dependencies, captures } = baseDependencies(request, {
+      lockOwnedQuote: async () => ({ quote: stored, databaseNow: NOW }),
+      listPublicEngines: async () => [candidate],
+      resolveGenerationReferences: async () => [{
+        assetId: 'generated-audio', role: 'reference', mediaKind: 'audio',
+        storageUrl: `https://media.example.test/media-assets/voice.${extension}`,
+        mimeType: 'audio/mpeg', sizeBytes: 165973, durationSec: 10.371,
+      }],
+    });
+    const confirmation = confirmGeneration({ quoteId: QUOTE_ID, confirmed: true }, principal, dependencies);
+    if (extension === 'mpeg') {
+      await expectAgentError(confirmation, 'QUOTE_EXPIRED');
+      for (const event of ['membership', 'pricing', 'spending', 'reserve_video', 'claim_quote']) {
+        assert.equal(captures.events.includes(event), false, event);
+      }
+      assert.equal(captures.providerCalls, 0);
+    } else {
+      assert.deepEqual(await confirmation, expectedRecovery(request));
+      assert.equal(captures.events.includes('reserve_video'), true);
+      assert.equal(captures.providerCalls, 1);
+    }
+  });
+}
 
 for (const engineId of ['sora-2', 'sora-2-pro']) {
   test(`prepared ${engineId} quote cannot charge or submit after sunset`, async () => {

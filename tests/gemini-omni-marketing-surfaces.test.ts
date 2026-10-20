@@ -228,8 +228,16 @@ test('Gemini Omni Flash comparison pages are published as scorecard-only with lo
   assert.ok(englishComparison, 'missing EN Omni vs Veo override');
   assert.ok(frenchComparison, 'missing FR Omni vs Veo override');
   assert.ok(spanishComparison, 'missing ES Omni vs Veo override');
-  assert.equal(englishComparison.heroIntro, undefined);
-  assert.match(englishComparison.quickVerdict?.body ?? '', /conversational refine/i);
+  for (const comparison of [englishComparison, frenchComparison, spanishComparison]) {
+    assert.ok((comparison.heroIntro?.length ?? 0) >= 140, 'localized context should explain the exact Veo variant');
+    assert.match(comparison.heroIntro ?? '', /Omni Flash 1\.1/);
+    assert.match(comparison.heroIntro ?? '', /Veo 3\.1/);
+    assert.ok((comparison.decisionSummary?.length ?? 0) >= 120, 'the opening should retain a substantive decision');
+    assert.ok(comparison.decisionSummary!.length <= 240, 'the opening should remain concise');
+    assert.match(comparison.quickVerdict?.body ?? '', /\b10\b/);
+    assert.match(comparison.quickVerdict?.body ?? '', /\b3\b/);
+  }
+  assert.match(englishComparison.quickVerdict?.body ?? '', /source-video editing/i);
   assert.match(englishComparison.quickVerdict?.body ?? '', /Veo 3\.1/i);
 });
 

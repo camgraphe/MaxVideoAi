@@ -64,11 +64,10 @@ them executable:
   without reusing the image-only `i2i` name;
 - `t2i` and `i2i`: text and reference-image generation.
 
-Seedance 2.5 uses ModelArk for `t2v`, `i2v`, `ref2v`, and `extend`. Its `v2v`
-mode is represented by the same canonical contract but remains hidden from
-executable discovery in environments without the separate LAS access and key.
-This does not restrict its image-to-video, multimodal-reference, or extension
-workflows.
+Seedance 2.5 uses the existing ModelArk account and key for all five modes when
+`SEEDANCE_2_5_EDIT_TRANSPORT=modelark` and the reviewed Edit flag is enabled.
+ModelArk Edit includes 1080p. Environments explicitly retaining LAS preserve
+its separate access, key and narrower resolution requirements.
 
 Gemini Omni Flash is exposed under the stable `gemini-omni-flash` identity and
 the visible 1.1 label. Its executable MCP projection is Google-direct only and
@@ -151,10 +150,19 @@ model and family playlists. None has an editorial watch page or video-sitemap
 entry; any later Video SEO enrollment must still use the normal admin SEO
 workflow.
 
-Mode details normalize provider duration labels to executable numeric seconds;
-provider-only values such as `auto` are never advertised as MCP inputs. P0 and
-P1 modes continue to derive settings, references, prices, and paid request
-bodies from the shared engine, pricing, and site execution owners.
+Mode details keep `durationSec` positive and numeric. Current Seedance modes
+that support Auto additionally advertise `durationOption: "auto"`; canonical
+pricing fixes the billed duration at 15s (2.0) or 30s (2.5), while the provider
+receives -1. Source-preserving 2.5 Edit keeps its verified source timing. Auto
+aspect pricing uses the highest current exact tariff among the six documented
+formats, or the verified source class when framing is inherited. Unsupported
+arbitrary inherited framing fails closed until its pricing domain is reviewed.
+
+Seedance output settings map `outputFormat`, `returnLastFrame` and `watermark`
+to the shared creative input schema. MOV selection belongs to 2.5. Original
+downloads, full compatible playback and the reusable last-frame JPEG remain
+distinct owned artifacts. P0 and P1 modes continue to derive settings,
+references, prices and paid request bodies from the site execution owners.
 
 Numeric mode settings also project their authored `step`. Custom image modes
 project the five public `imageSize` limits (pixel multiples, total pixel bounds,
@@ -163,3 +171,42 @@ projection. Never infer arbitrary custom dimensions from min/max alone, silently
 round a client size or weaken canonical validation: a supported predefined size
 may remain valid even when those dimensions are invalid as a custom request.
 `tests/mcp-model-details-custom-size.test.ts` guards this distinction and parity.
+
+## Native Seedance Draft workflow — 2026-10-18 source candidate
+
+Seedance 2.5 details include `seedanceWorkflow`: live MCP/web availability,
+compatible executable modes and their native `modeDetails`, native 480p single-output constraints, inherited
+1080p finalization, the conservative seven-day validity boundary and assistant
+choice guidance. Ordinary `resolution=480p` remains ordinary generation.
+The workflow uses the existing server release switch and paid-generation gate;
+it does not enable either. Missing independent tariffs refuse quotation.
+
+`prepare_generation` accepts an additive optional `seedanceWorkflow` discriminator:
+`{"step":"draft"}` selects native Draft; `{"step":"final","draftJobId":"…"}`
+resolves an account-owned ready Draft and inherits creative facts. Final requests
+can omit mode, prompt, settings and references. Each step has its own exact quote,
+hash, expiry and explicit `confirm_generation` approval. No provider task ID is
+accepted or returned. The final reserves the parent in the wallet/job transaction;
+competing quotes cannot both charge. Expiry and changed parent facts are rechecked
+before debit. Submitted quotes recover their existing job even after a gate closes.
+
+Status/history label workflow lineage; full status adds current eligibility,
+actual `expiresAt`, `finalJobId` and `finalizationAvailable`. A pending, failed,
+expired or already reserved Draft cannot start another final. The existing
+refund reconciliation alone can release a fully refunded failed final; ambiguity,
+partial refunds and reconnect never authorize replacement work. Original Draft
+media and both receipts remain separate.
+
+`seedanceWorkflowPrices` presents the actual Draft charge, final supplement and
+same-currency total when available. A prospective final price is a current
+canonical estimate, not a second quote or price reservation. Final preparation
+returns the new exact final quote and the stored Draft charge. Missing prices are
+null, never zero or ordinary-tariff fallbacks. Discovery and skills make no free
+finalization, pixel-for-pixel or unverified-savings claim.
+
+Native readiness is computed per selected mode using ModelArk credentials and
+the operator mode allowlist. It does not inherit the ordinary LAS Edit gate or
+require the unrelated t2v mode to be enabled. Ordinary `publicModes` remain
+unchanged; the workflow capability adapter projects ModelArk mode caps separately.
+The public-engine policy stays a pure leaf. Current native mode readiness also
+participates in quote catalog revisions.

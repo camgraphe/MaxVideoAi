@@ -65,6 +65,7 @@ export function SettingsControls({
   variant = 'full',
 }: SettingsControlsProps) {
   const showCore = variant !== 'advanced';
+  const inheritsSourceVideo = engine.modeAvailability?.[mode]?.inheritsSourceVideo === true;
   const controlState = useSettingsControlState({
     advancedFields,
     audioControlDisabled,
@@ -203,7 +204,7 @@ export function SettingsControls({
                 </div>
                 <span className="text-[11px] text-text-muted">{controlsCopy.frames.hint}</span>
               </div>
-            ) : durationManaged ? (
+            ) : durationManaged || inheritsSourceVideo ? (
               <div className="rounded-input border border-dashed border-border bg-surface-glass-60 p-3 text-[12px] text-text-muted">
                 {resolvedDurationManagedLabel}
               </div>
@@ -312,7 +313,7 @@ export function SettingsControls({
               </p>
             ) : null}
 
-            {showAspectControl && (
+            {showAspectControl && !inheritsSourceVideo && (
               <FieldGroup
                 label={controlsCopy.aspect.label}
                 options={aspectOptions}

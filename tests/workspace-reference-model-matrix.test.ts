@@ -85,11 +85,13 @@ test('unified Seedance variants expose their real cross-mode fields and delegate
       assert.deepEqual(budget, {
         fieldIds: ['image_url', 'end_image_url', 'image_urls', 'video_url', 'video_urls', 'extension_source_videos', 'audio_urls'],
         maxTotal: 50,
+        maxByType: { image: 30, video: 10, audio: 10 },
         countUniqueUrls: true,
         modes: ['i2v', 'ref2v', 'v2v', 'extend'],
       });
     } else {
-      assert.equal(budget, undefined, `${id} does not inherit Seedance 2.5's budget`);
+      assert.equal(budget?.maxTotal, 15);
+      assert.deepEqual(budget?.maxByType, { image: 9, video: 3, audio: 3 });
     }
   }
 });

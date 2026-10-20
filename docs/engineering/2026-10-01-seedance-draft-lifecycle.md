@@ -121,6 +121,31 @@ session reads cannot revive a logged-out account.
 MCP intentionally excludes both workflow steps from its public preparation
 schema. A normal 480p generation remains distinct from a Draft task.
 
+## Multimodal creative options (2026-10-14)
+
+The workspace Draft hook now consumes the same prepared media roles and upload
+validation as ordinary generation. It preserves the complete original request
+and strict quote references for same-job recovery across T2V, I2V, reference,
+Edit and Extend, including Auto duration and output options.
+
+After server media validation, Draft execution captures immutable
+`seedanceWorkflow.mediaFacts`: original mode, canonical billing duration,
+duration choice, framing, input-video quantity, reviewed source class, normalized
+attachments and verified media metadata. Final inherits these facts from its
+owned completed Draft rather than reading current library assets; deletion of an
+original input therefore cannot erase its billing quantity or prevent reuse of
+the provider Draft. Missing or inconsistent multimodal snapshots fail closed.
+Legacy text-only Drafts retain their existing reader.
+
+Final preparation runs before route transport gating. Only this server-resolved
+context selects ModelArk when ordinary Edit is configured for LAS. A hash of the
+owned creative and billing snapshot is rechecked under a shared parent-row lock
+inside the wallet/reservation transaction. Final provider content remains the
+owned `draft_task` alone, with 1080p and the original output-format, returned-frame
+and watermark choices. The expiry, uncertain-acknowledgement and exact-refund
+retry rules above remain unchanged. Multimodal workflow prices require explicit
+active stage cells; no missing stage can fall back to ordinary pricing.
+
 ## Local verification checkpoint
 
 - PostgreSQL 17 lifecycle/submission/poll/charge and workflow pricing/seed checks: 43 passed, zero skipped. Definitive submission rejection unlocks final retry only after its exact refund receipt; uncertain acknowledgement keeps the reservation.

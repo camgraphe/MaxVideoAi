@@ -1,3 +1,4 @@
+import type {SeedanceEditSourceFacts} from '../seedance-edit-source';
 import { z } from "zod";
 import {studioPreparedAnalysisSchema,type StudioPreparedAnalysis} from '@/lib/studio/media-analysis-contract';
 import {studioPreparedExportSchema,type StudioPreparedExport} from "@/lib/studio/conversation-export-contract";
@@ -81,6 +82,7 @@ export type ImageConversationTurn = {
         wallet: { amountCents: number; currency: string } | null;
         /** Recorded canonical output timing; distinct from a model's ignored request default. */
         outputDurationSec?: number;
+        sourceVideoOutput?: SeedanceEditSourceFacts;
       })
     | null;
   generation: AgentGenerationStatus | null;

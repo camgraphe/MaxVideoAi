@@ -1,3 +1,4 @@
+import { AUDIO_ELEVEN_VOICES, AUDIO_ELEVEN_VOICE_IDS, DEFAULT_ELEVEN_VOICE_ID } from '@/lib/audio-eleven-voices';
 import { createHash } from 'node:crypto';
 import {
   AUDIO_MINIMAX_VOICE_VALUES, AUDIO_PACK_VALUES, AUDIO_MIN_DURATION_SEC, AUDIO_MAX_DURATION_SEC, AUDIO_SFX_MAX_DURATION_SEC,
@@ -27,7 +28,7 @@ function normalizeCapabilityVariant(mode: AudioPackId,variant: AudioVariant) {
 }
 export function projectAudioVariantFixedOutput(mode: AudioPackId,variant: AudioVariant) {
   const normalized=normalizeCapabilityVariant(mode,variant);
-  return mode==='voice_only' && normalized?.voiceModel==='minimax'
+  return mode==='voice_only' && (normalized?.voiceModel==='minimax' || normalized?.voiceModel==='eleven-v4')
     ? {format: normalized.seedAudioOutputFormat,sampleRate: normalized.seedAudioSampleRate} : null;
 }
 
@@ -57,6 +58,12 @@ export function projectAudioVariantSettings(mode: AudioPackId,variant: AudioVari
   if(mode==='sfx_only'||mode==='ambience_only')fields.push({key:'durationSec',type:'number',required:true,values:null,
     min:AUDIO_MIN_DURATION_SEC,max:mode==='sfx_only'?AUDIO_SFX_MAX_DURATION_SEC:AUDIO_MAX_DURATION_SEC,default:normalized.durationSec,integer:true});
   if(!config.includesVoice)return fields;
+  if (normalized.voiceModel === 'eleven-v4') return [...fields,
+    { key: 'script', type: 'text', required: true, values: null, min: null, max: null, default: null, maxChars: AUDIO_SCRIPT_MAX_LENGTH },
+    choice('voiceModel', ['eleven-v4']), choice('elevenVoiceId', AUDIO_ELEVEN_VOICE_IDS), choice('language', AUDIO_LANGUAGE_VALUES),
+    ...(['elevenStability', 'elevenSimilarityBoost'] as const).map(key => ({ key, type: 'number' as const, required: false,
+      min: 0, max: 1, values: null, default: normalized[key] ?? null, step: 0.01 })),
+  ];
   const voice: AudioSettingDetails[]=[...fields,
     choice('voiceModel',[normalized.voiceModel!]),choice('language',AUDIO_LANGUAGE_VALUES),
     choice('voiceGender',AUDIO_VOICE_GENDER_VALUES),choice('voiceProfile',AUDIO_VOICE_PROFILE_VALUES),choice('voiceDelivery',AUDIO_VOICE_DELIVERY_VALUES),
@@ -78,7 +85,7 @@ function variantRequests(pack: AudioPackId): AudioGenerateRequestBody[] {
     ...(pack === 'song' ? { lyrics: 'Audio capability validation' } : {}),
     ...(['music_only', 'sfx_only', 'ambience_only'].includes(pack) ? { durationSec: 30 } : {}),
   };
-  const voices = config.includesVoice ? [{ ...base, voiceModel: 'seed' as const }, { ...base, voiceModel: 'minimax' as const }] : [base];
+  const voices = config.includesVoice ? [{ ...base, voiceModel: 'seed' as const }, { ...base, voiceModel: 'minimax' as const }, { ...base, voiceModel: 'eleven-v4' as const }] : [base];
   if (config.supportsMusicToggle) return voices.flatMap(voice => [{ ...voice, musicEnabled: false }, { ...voice, musicEnabled: true }]);
   if (pack === 'music_only') return [{ ...base, musicModel: 'clip' }, { ...base, musicModel: 'pro', durationSec: 60 }];
   return voices;
@@ -116,10 +123,26 @@ export function listAudioCapabilities(env: NodeJS.ProcessEnv = process.env) {
     };
   });
   const contract = { schemaVersion: 1, surface: 'audio', modes, quality: { standard: true, high: false },
-    options: { minimaxVoices: AUDIO_MINIMAX_VOICE_VALUES, seedVoices: AUDIO_SEED_AUDIO_VOICE_VALUES, seedFormats: AUDIO_SEED_AUDIO_OUTPUT_FORMAT_VALUES,
-      seedSampleRates: AUDIO_SEED_AUDIO_SAMPLE_RATE_VALUES, languages: AUDIO_LANGUAGE_VALUES, moods: AUDIO_MOOD_VALUES, musicBpm: AUDIO_LYRIA3_BPM_VALUES },
+    defaults: { voiceModel: 'eleven-v4' as const, elevenVoiceId: DEFAULT_ELEVEN_VOICE_ID, elevenStability: 0.5, elevenSimilarityBoost: 0.75 },
+    options: { elevenVoices: AUDIO_ELEVEN_VOICES.map(voice => ({ ...voice, previewUrl: `https://maxvideoai.com/api/audio/voices/${voice.id}/preview` })), minimaxVoices: [...AUDIO_MINIMAX_VOICE_VALUES], seedVoices: [...AUDIO_SEED_AUDIO_VOICE_VALUES], seedFormats: [...AUDIO_SEED_AUDIO_OUTPUT_FORMAT_VALUES],
+      seedSampleRates: [...AUDIO_SEED_AUDIO_SAMPLE_RATE_VALUES], languages: AUDIO_LANGUAGE_VALUES, moods: [...AUDIO_MOOD_VALUES], musicBpm: [...AUDIO_LYRIA3_BPM_VALUES] },
     confirmation: { required: true, prepareTool: 'prepare_audio_generation', confirmTool: 'confirm_audio_generation', automaticRetry: false },
     pricingPolicyRevision: AUDIO_PRICING_POLICY_REVISION };
+  return { ...contract, revision: createHash('sha256').update(JSON.stringify(contract)).digest('hex') };
+}
+
+/** First public MCP Audio release: one bounded Eleven narration attempt. */
+export function listMcpAudioCapabilities(env: NodeJS.ProcessEnv = process.env): ReturnType<typeof listAudioCapabilities> {
+  const full = listAudioCapabilities(env);
+  const { revision: _revision, ...base } = full;
+  void _revision;
+  const modes = full.modes.filter(mode => mode.mode === 'voice_only').map(mode => {
+    const variants = mode.variants.filter(variant => variant.settings.voiceModel === 'eleven-v4');
+    return { ...mode, variants, available: variants.some(variant => variant.available),
+      references: { ...mode.references, voiceSample: 'unsupported' } };
+  });
+  const contract = { ...base, modes, options: { ...full.options,
+    minimaxVoices: [], seedVoices: [], seedFormats: [], seedSampleRates: [], moods: [], musicBpm: [] } };
   return { ...contract, revision: createHash('sha256').update(JSON.stringify(contract)).digest('hex') };
 }
 

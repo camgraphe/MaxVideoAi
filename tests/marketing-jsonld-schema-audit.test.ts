@@ -456,9 +456,9 @@ test('site Organization schema keeps one canonical complete entity', () => {
   const reference = buildSiteOrganizationReference();
   assert.equal(reference['@id'], organization['@id']);
   assert.ok(reference.sameAs.every((profile) => organization.sameAs.includes(profile)));
-  const coreLayout = readFileSync('frontend/app/(core)/layout.tsx', 'utf8');
-  assert.match(coreLayout, /const orgSchema = buildSiteOrganizationSchema\(\)/);
-  assert.doesNotMatch(coreLayout, /sameAs:/);
+  const appRuntime = readFileSync('frontend/app/_components/AppRuntime.tsx', 'utf8');
+  assert.match(appRuntime, /const orgSchema = buildSiteOrganizationSchema\(\)/);
+  assert.doesNotMatch(appRuntime, /sameAs:/);
 });
 
 test('homepage application features use the declared language and canonical provider entity', () => {
@@ -522,7 +522,7 @@ test('historical models with app publication disabled keep editorial schemas wit
   }
 });
 
-test('blog Article schema identifies the visible person while retaining MaxVideoAI as publisher', () => {
+test('blog Article schema identifies the visible organization while retaining MaxVideoAI as publisher', () => {
   const localization = buildBlogPostLocalization({
     canonicalSlug: 'author-schema-sample',
     locale: 'en',
@@ -545,10 +545,9 @@ test('blog Article schema identifies the visible person while retaining MaxVideo
   });
 
   assert.deepEqual(articleSchema.author, {
-    '@type': 'Person',
-    name: 'Adrien Millot',
-    jobTitle: 'Founder & Product Lead',
-    url: `${SITE_ORIGIN}/about#adrien-millot`,
+    '@type': 'Organization',
+    name: 'MaxVideoAI',
+    url: `${SITE_ORIGIN}/about#maxvideoai`,
   });
   assert.equal(articleSchema.publisher['@type'], 'Organization');
   assert.equal(articleSchema.publisher.name, 'MaxVideo AI');

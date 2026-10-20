@@ -12,6 +12,7 @@ import type { ImageGenerationMode } from '@/types/image-generation';
 import { isLumaRay2EngineId } from '@/lib/luma-ray2';
 import { isGptImageFamilyEngineId, validateGptImage2CustomImageSize } from '@/lib/image/gptImage2';
 import { SEEDREAM_MAX_IMAGE_SET_IMAGES } from '@/lib/image/seedream';
+import { seedanceAutomaticDurationBounds } from '@/lib/seedance-option-pricing';
 import {
   isVideoDurationSupported,
   validateProviderControls,
@@ -37,6 +38,9 @@ import {
 } from '@/lib/media-field-constraints';
 
 const VIDEO_FIELD_BY_SETTING: Record<string, string> = {
+  outputFormat: 'output_format',
+  returnLastFrame: 'return_last_frame',
+  watermark: 'watermark',
   cameraFixed: 'camera_fixed',
   cfgScale: 'cfg_scale',
   contextSec: 'context',
@@ -96,7 +100,8 @@ export type ReferenceConstraintFailure =
   | 'combined_duration_exceeded'
   | 'size_exceeded'
   | 'format_unsupported'
-  | 'image_aspect_ratio_unsupported';
+  | 'image_aspect_ratio_unsupported'
+  | 'image_dimensions_too_small';
 
 export class GenerationCapabilityError extends Error {
   constructor(
@@ -173,6 +178,9 @@ function validateVideoModeCaps(
   candidate: AgentPublicGenerationEngine,
 ): void {
   const duration = request.settings.durationSec;
+  if (request.settings.durationOption !== undefined && (request.settings.durationOption !== 'auto'
+    || !seedanceAutomaticDurationBounds(candidate.engine.id) || !caps.duration || !('options' in caps.duration)
+    || !caps.duration.options.includes('auto'))) fail('durationOption');
   if (!Number.isSafeInteger(duration) || (duration as number) < 1) fail('durationSec');
   if (caps.frames) fail('durationSec');
   if (caps.duration && !isVideoDurationSupported(duration, caps.duration, candidate.engine.maxDurationSec)) {
@@ -633,6 +641,35 @@ function resolvedReference(
     && candidate.slot === reference.slot) ?? null;
 }
 
+/** Quote the same owned audio file that the paid submission will validate. */
+function validateTrustedAudioFormat(
+  reference: CanonicalGenerationReference,
+  fields: readonly EngineInputField[],
+  candidate: AgentPublicGenerationEngine,
+  options: GenerationCapabilityValidationOptions,
+): void {
+  if (fields.length !== 1 || fields[0]!.type !== 'audio'
+    || reference.kind !== 'asset' || !options.resolvedReferences) return;
+  const field = fields[0]!;
+  // These field-level audio formats also run at the paid attachment boundary.
+  if (!field.acceptedMimeTypes?.length && !field.acceptedFileExtensions?.length) return;
+  const resolved = resolvedReference(reference, options);
+  if (!resolved) fail('references', 'reference_invalid');
+  const sizeBytes = resolved.sizeBytes;
+  if (typeof sizeBytes !== 'number' || !Number.isSafeInteger(sizeBytes)
+    || sizeBytes <= 0 || !resolved.mimeType) {
+    fail('references', 'reference_invalid', 'metadata_unverified');
+  }
+  const validation = validateMediaFileAgainstConstraint({
+    name: resolved.originalName ?? resolved.storageUrl,
+    mimeType: resolved.mimeType,
+    sizeBytes,
+    constraint: resolveEngineMediaFieldConstraint({ engine: candidate.engine, field }),
+  });
+  if (!validation.ok) fail('references', 'reference_invalid',
+    validation.reason === 'size' ? 'size_exceeded' : 'format_unsupported');
+}
+
 function validateTrustedReferenceDuration(
   request: CanonicalGenerationRequest,
   reference: CanonicalGenerationReference,
@@ -802,6 +839,22 @@ function validateReferences(
     );
     if (!fields.length) fail('references', 'reference_invalid');
     validateTrustedReferenceDuration(request, reference, fields, candidate, options);
+    validateTrustedAudioFormat(reference, fields, candidate, options);
+    // H3's executable references already require owned, measured originals.
+    const minimumImageSide = candidate.engine.id === 'minimax-h3'
+      ? candidate.engine.inputSchema?.constraints?.minImageSidePx : undefined;
+    if (fields.length === 1 && fields[0]!.type === 'image'
+      && typeof minimumImageSide === 'number' && minimumImageSide > 0 && options.resolvedReferences) {
+      const resolved = resolvedReference(reference, options);
+      if (typeof resolved?.width !== 'number' || typeof resolved.height !== 'number'
+        || !Number.isFinite(resolved.width) || !Number.isFinite(resolved.height)
+        || resolved.width <= 0 || resolved.height <= 0) {
+        fail('references', 'reference_invalid', 'dimensions_unverified');
+      }
+      if (resolved.width < minimumImageSide || resolved.height < minimumImageSide) {
+        fail('references', 'reference_invalid', 'image_dimensions_too_small');
+      }
+    }
     if (fields.length === 1 && fields[0]!.imageAspectRatio) {
       if (reference.kind !== 'asset') {
         // Budget estimates may describe unverified media; executable quotes may not.

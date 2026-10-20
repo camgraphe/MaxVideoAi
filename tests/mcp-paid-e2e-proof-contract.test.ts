@@ -44,7 +44,7 @@ test('operational staging proof remains isolated from the active production publ
     trial: false,
     referenceUploads: true,
     montagePreparation: false,
-    audioGeneration: false,
+    audioGeneration: true,
     studioMontageCreation: false,
   });
   assert.match(script, /capture_production_baseline "\$ARTIFACTS\/production-before"/);

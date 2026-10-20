@@ -1,3 +1,4 @@
+import { AUDIO_ELEVEN_VOICE_IDS } from '@/lib/audio-eleven-voices';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 
@@ -34,7 +35,10 @@ const audioGenerationSettingsSchema = z.object({
   musicBpm: z.number().refine((value) => (AUDIO_LYRIA3_BPM_VALUES as readonly number[]).includes(value)).optional(),
   musicEnabled: z.boolean().optional(),
   exportAudioFile: z.boolean().optional(),
-  voiceModel: z.enum(['seed', 'minimax']).optional(),
+  voiceModel: z.enum(['seed', 'minimax', 'eleven-v4']).optional(),
+  elevenVoiceId: z.string().refine(value => (AUDIO_ELEVEN_VOICE_IDS as readonly string[]).includes(value)).optional(),
+  elevenStability: z.number().finite().min(0).max(1).optional(),
+  elevenSimilarityBoost: z.number().finite().min(0).max(1).optional(),
   minimaxVoiceId: z.enum(AUDIO_MINIMAX_VOICE_VALUES).optional(),
   voiceGender: z.enum(AUDIO_VOICE_GENDER_VALUES).optional(),
   voiceProfile: z.enum(AUDIO_VOICE_PROFILE_VALUES).optional(),

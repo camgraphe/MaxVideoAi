@@ -1,11 +1,10 @@
 # MaxVideoAI MCP distribution packages
 
-Latest submission checkpoint: [5 October 2026 n8n update](#n8n-update-submission--2026-10-05).
+Latest n8n checkpoint: [12 October approval, 18 October availability check](#n8n-approval--2026-10-12-availability-rechecked-2026-10-18).
 Latest package publication: [5 October 2026 plugin and Registry checkpoint](../operations/mcp-distribution-publication-2026-10-05.md).
 Earlier read-only checkpoint: [4 October 2026 distribution rollout](../operations/studio-mcp-distribution-rollout-2026-10-04.md).
-GitHub and the official Registry now expose 0.3.7. The October 5 update to
-n8n workflow 19591 has been submitted and is under review; the public endpoint
-still returns the earlier payload. These observations supersede the dated
+GitHub and the official Registry now expose 0.3.7. The corrected n8n workflow 19591 was approved and published on October 12;
+its canonical public page remains accessible on October 18. These observations supersede the dated
 version/public-visibility claims below; historical evidence is preserved.
 
 Checked: 2026-09-17; n8n public listing rechecked 2026-09-25
@@ -14,6 +13,25 @@ Overall state: **OWNED-SITE DIRECT RELEASE + OFFICIAL MCP REGISTRY 0.3.5 ACTIVE/
 This file records evidence and owner decisions. It does not authorize another submission, account creation, listing,
 deployment, feature-flag change, or use of a third party's marks. Directory rules are current and unstable; recheck all
 linked primary sources on the day an owner authorizes a new submission.
+
+## n8n approval — 2026-10-12; availability rechecked 2026-10-18
+
+The owner-provided `OUTREACH/sources/2026-10-12/n8n-approval/CONTROLE.txt`
+records the approval email received on October 12 at 22:41 Europe/Madrid,
+public availability, and full semantic parity of the public 21-node JSON with
+the corrected file resubmitted on October 11. The companion evidence is
+`approval-mail.txt`, `public-workflow.json`, `json-parity.json` and public captures.
+Serialization hashes differ; this is object parity, not identical upload bytes.
+These records supersede the October 5 pending-update state below.
+
+On October 18 the canonical [template 19591](https://n8n.io/workflows/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/)
+was read again and remained accessible. The store projection returns to `listed`.
+This availability check is not a new compatibility test. OAuth remains manual;
+the tested path is self-hosted n8n 2.38.7 MCP Client, with a fresh exact quote,
+human approval of that quote, then confirmation. n8n Cloud, MCP Client Tool / AI
+Agent and private-reference automation are not newly validated. No workflow was
+submitted, imported or executed, and no generation was purchased for this update.
+The two other candidate workflows have no verified public listing.
 
 ## n8n update submission — 2026-10-05
 
@@ -368,11 +386,11 @@ entry.
 
 Current repository truth: `publicMarketing=true`, `publicIndexing=true`, `transport=true`, `oauth=true`,
 `discovery=true`, `paidGeneration=true`, `trial=false`, `referenceUploads=true`, and
-`montagePreparation=false`, `audioGeneration=false`, and `studioMontageCreation=false`.
+`montagePreparation=false`, `audioGeneration=true`, and `studioMontageCreation=false`.
 
-The launch product exposes fourteen model-visible tools plus the app-only
+The launch product exposes eighteen model-visible tools plus the app-only
 `get_generation_download` helper. Its operational profile therefore has
-fourteen model-visible tools plus one app-only helper. It supports free model
+eighteen model-visible tools plus one app-only helper. It supports free model
 advice and project budgets, private image/video/audio references, exact quotes,
 explicitly approved generation, job recovery, MaxVideoAI top-up, and gallery
 continuity. The `get_generation_download` helper is not a model-visible
@@ -427,7 +445,7 @@ legal document, URL, or publication flag changes.
 | Terms URLs | EN `https://maxvideoai.com/legal/terms`; FR `https://maxvideoai.com/fr/legal/terms`; ES `https://maxvideoai.com/es/legal/terms`. Directory-specific acceptance remains an authorized-owner action. |
 | Acceptable use URLs | EN `https://maxvideoai.com/legal/acceptable-use`; FR `https://maxvideoai.com/fr/legal/acceptable-use`; ES `https://maxvideoai.com/es/legal/acceptable-use`. The MCP-specific candidate patch remains Legal-owner pending. |
 | Support URLs | EN `https://maxvideoai.com/contact`; FR `https://maxvideoai.com/fr/contact`; ES `https://maxvideoai.com/es/contact`; operational email `support@maxvideoai.com`. Do not add a response-time guarantee. |
-| Current tools | Discovery: `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`, `compare_generation_prices`. Media and production: `list_media`, `create_reference_upload_link`, `import_reference_files`, `prepare_generation`, `confirm_generation`, `get_generation_status`, `list_recent_generations`, `present_generation`, `create_topup_link`. This is the checked-in candidate inventory: the 2026-10-08 price-comparison addition still awaits deployment and native-host verification. The presenter is read-only and keeps result-link/library fallback when a host does not render its MCP App. Production publication is enabled for direct installation. |
+| Current tools | Discovery: `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`, `compare_generation_prices`. Media and production: `list_media`, `create_reference_upload_link`, `import_reference_files`, `list_audio_capabilities`, `prepare_audio_generation`, `confirm_audio_generation`, `prepare_generation`, `confirm_generation`, `get_generation_status`, `list_recent_generations`, `present_generation`, `create_topup_link`. This is the checked-in candidate inventory: the 2026-10-17 Audio publication is owner-approved; deployment and native-host verification are recorded separately. The presenter is read-only and keeps result-link/library fallback when a host does not render its MCP App. Production publication is enabled for direct installation. |
 | Negative cases | A project estimate is not an exact quote; `prepare_generation` does not debit; `confirm_generation` requires explicit approval of that quote. Payment data never enters chat. The assistant must recover an accepted job instead of submitting a duplicate and must not retry a creative result automatically. Unsupported model modes remain unavailable without disabling supported modes. |
 | Screenshots and demo | Current public product screenshots and Claude-specific UI evidence exist. `getMcpProof()` remains null for a standalone job-and-audit-backed end-to-end proof bundle, so product captures are not universal native-host proof. |
 | Changelog and status | EN `/changelog` and `/status`; FR `/fr/changelog` and `/fr/statut`; ES `/es/changelog` and `/es/estado`. The direct MCP release is live. The owned status page does not yet expose a dedicated MCP component or first-party monitored health feed. |

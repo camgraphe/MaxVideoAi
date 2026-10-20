@@ -57,6 +57,7 @@ const TOP_LEVEL_FIELDS = new Set([
   'settings',
   'references',
   'outputCount',
+  'seedanceWorkflow',
 ]);
 const ASSET_REFERENCE_FIELDS = new Set(['kind', 'assetId', 'role']);
 const HTTPS_REFERENCE_FIELDS = new Set(['kind', 'url', 'role', 'mediaKind']);
@@ -66,6 +67,9 @@ const SAFE_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]*$/;
 const SAFE_SETTING_KEY_PATTERN = /^[A-Za-z][A-Za-z0-9._-]*$/;
 const UNSAFE_CONTROL_CHARACTER_PATTERN = /[\u0000-\u001f\u007f-\u009f]/u;
 const VIDEO_SETTING_KEYS = new Set([
+  'outputFormat',
+  'returnLastFrame',
+  'watermark',
   'aspectRatio',
   'audio',
   'cameraFixed',
@@ -76,6 +80,7 @@ const VIDEO_SETTING_KEYS = new Set([
   'cropStartX',
   'cropStartY',
   'durationSec',
+  'durationOption',
   'documentUrl',
   'enablePromptExpansion',
   'fps',
@@ -501,17 +506,38 @@ export function normalizeGenerationRequest(input: unknown): CanonicalGenerationR
     fail('schemaVersion', 'schemaVersion must be 1.');
   }
 
+  const workflow = input.seedanceWorkflow;
+  let seedanceWorkflow: CanonicalGenerationRequest['seedanceWorkflow'];
+  if (workflow !== undefined) {
+    assertPlainDataObject(workflow, 'seedanceWorkflow');
+    assertExactFields(workflow, new Set(workflow.step === 'final' ? ['step', 'draftJobId'] : ['step']), 'seedanceWorkflow');
+    if (input.engineId !== 'seedance-2-5' || input.surface !== 'video'
+      || !['draft', 'final'].includes(String(workflow.step))) fail('seedanceWorkflow', 'Unsupported Draft workflow.');
+    if (workflow.step === 'final') {
+      const draftJobId = normalizeText(workflow.draftJobId, 'draftJobId', 255, false);
+      if (!SAFE_ID_PATTERN.test(draftJobId)) fail('seedanceWorkflow', 'Invalid Draft job identifier.');
+      seedanceWorkflow = { step: 'final', draftJobId };
+    } else seedanceWorkflow = { step: 'draft' };
+  }
+  const final = seedanceWorkflow?.step === 'final';
   const surface = normalizeSurface(input.surface);
-  const mode = normalizeMode(input.mode);
+  const mode = normalizeMode(final && input.mode === undefined ? 't2v' : input.mode);
+  if (seedanceWorkflow && !['t2v', 'i2v', 'ref2v', 'v2v', 'extend'].includes(mode)) fail('seedanceWorkflow', 'Unsupported Draft mode.');
   assertSurfaceMode(surface, mode);
 
   const settings = normalizeSettings(input.settings, mode);
-  const prompt = normalizeText(input.prompt, 'prompt', MAX_CANONICAL_PROMPT_CHARS, true);
-  if (!prompt && !Array.isArray(settings.multiPrompt)) {
+  const prompt = normalizeText(final && input.prompt === undefined ? '' : input.prompt, 'prompt', MAX_CANONICAL_PROMPT_CHARS, true);
+  if (!prompt && !final && !Array.isArray(settings.multiPrompt)) {
     fail('prompt', 'prompt has an invalid length.');
+  }
+  if (seedanceWorkflow?.step === 'draft') {
+    if (settings.resolution !== undefined && settings.resolution !== '480p') fail('resolution', 'Native Draft requires 480p.');
+    settings.resolution = '480p';
+    if (settings.audio === undefined) settings.audio = true;
   }
   return {
     schemaVersion: 1,
+    ...(seedanceWorkflow ? { seedanceWorkflow } : {}),
     surface,
     engineId: normalizeEngineId(input.engineId),
     mode,

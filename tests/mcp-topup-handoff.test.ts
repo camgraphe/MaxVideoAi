@@ -488,7 +488,7 @@ test('create_topup_link has exact UUID input, annotations, and explicit non-paym
         },
       };
     },
-  }), { paidGeneration: true, referenceUploads: false });
+  }), { paidGeneration: true, referenceUploads: false, audioGeneration: false });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   await server.connect(serverTransport);
   const client = new Client({ name: 'p9-topup', version: '1.0.0' });

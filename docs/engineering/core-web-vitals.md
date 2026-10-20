@@ -75,6 +75,15 @@ The Performance widget documents LCP, INP and CLS as p75; opening its related re
 
 ## Representative lab protocol
 
+The Kling subject-reference slots are part of the first workspace composer render.
+`WorkspaceComposerSurface` imports their small reader synchronously; a separate lazy
+boundary with an empty fallback inserted the full panel later and moved the mobile
+results rail. Keep the larger Luma/Omni editors and storyboard modal deferred. Test
+the initial subject slots with `tests/seedance-draft-composer-dom.test.ts`, and pair
+any loading-boundary change with repeated connected browser measurements on Kling
+and another engine at mobile and desktop widths. Development fixture timings do
+not establish production LCP or field INP improvements.
+
 ```bash
 CWV_DEVICE=mobile CWV_FAMILY=comparisons pnpm --dir frontend lighthouse:site
 CWV_DEVICE=desktop CWV_FAMILY=docs pnpm --dir frontend lighthouse:site

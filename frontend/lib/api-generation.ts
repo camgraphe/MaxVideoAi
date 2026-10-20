@@ -1,6 +1,7 @@
 import { LIVE_PRICING_POLICY_REVISION, PRICING_POLICY_HEADER } from '@/lib/membership-policy';
 import { AUDIO_PRICING_POLICY_HEADER, AUDIO_PRICING_POLICY_REVISION } from '@/lib/audio-pricing-policy';
 import { authFetch } from '@/lib/authFetch';
+import { normalizeJobStatus } from '@/lib/job-status';
 import { translateError } from '@/lib/error-messages';
 import type { AudioGenerateRequestBody, AudioGenerateResponse } from '@/lib/audio-generation';
 import type { GenerateAttachment } from '@/lib/fal';
@@ -198,14 +199,23 @@ export async function runGenerate(
     throw new Error('Generation response malformed');
   }
 
-  return body as GenerateResult;
+  const result = body as GenerateResult;
+  // Accepted provider responses may still use queued/running, just like polling.
+  // Canonicalize before the workspace stores the result or broadcasts jobs:status.
+  // renderIds can be echoed request metadata; only the video proves output exists.
+  const hasMedia = Boolean(result.videoUrl);
+  return {
+    ...result,
+    status: normalizeJobStatus(typeof result.status === 'string' ? result.status : null, hasMedia) ?? 'pending',
+  };
 }
 
-export async function runImageGeneration(payload: ImageGenerationRequest, pricingSnapshot?: PricingSnapshot | null): Promise<ImageGenerationResponse> {
+export async function runImageGeneration(payload: ImageGenerationRequest, pricingSnapshot?: PricingSnapshot | null, request?: { accessToken: string; signal: AbortSignal }): Promise<ImageGenerationResponse> {
   const response = await authFetch('/api/images/generate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION,
-      ...customerTariffRequestHeaders(pricingSnapshot) },
+      ...customerTariffRequestHeaders(pricingSnapshot), ...(request ? { Authorization: `Bearer ${request.accessToken}` } : {}) },
+    signal: request?.signal,
     body: JSON.stringify(payload),
   });
   const data = (await response.json().catch(() => null)) as ImageGenerationResponse | null;
@@ -254,10 +264,15 @@ export async function runAudioGenerate(payload: AudioGenerateRequestBody): Promi
   return data;
 }
 
-export async function runCharacterBuilderTool(payload: CharacterBuilderRequest): Promise<CharacterBuilderResponse> {
+export async function runCharacterBuilderTool(
+  payload: CharacterBuilderRequest,
+  request?: { accessToken: string; signal: AbortSignal }
+): Promise<CharacterBuilderResponse> {
   const response = await authFetch('/api/tools/character-builder', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION },
+    headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION,
+      ...(request ? { Authorization: `Bearer ${request.accessToken}` } : {}) },
+    signal: request?.signal,
     body: JSON.stringify(payload),
   });
   const data = (await response.json().catch(() => null)) as CharacterBuilderResponse | null;

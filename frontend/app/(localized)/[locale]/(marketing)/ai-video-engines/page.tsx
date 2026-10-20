@@ -6,6 +6,7 @@ import { FAQSchema } from '@/components/seo/FAQSchema';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { BenchmarkMethodologyLink } from '@/components/marketing/BenchmarkMethodologyLink';
 import { buildSlugMap } from '@/lib/i18nSlugs';
+import { getMcpInternalLink } from '@/lib/mcp-internal-links';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveDictionary } from '@/lib/i18n/server';
 import {
@@ -49,6 +50,7 @@ export async function generateMetadata(props: { params: Promise<{ locale: AppLoc
 export default async function AiVideoEnginesPage() {
   const { locale } = await resolveDictionary();
   const copy = getHubCopy(locale);
+  const mcpLink = getMcpInternalLink(locale, 'models');
   const bestForCta = getBestForCta(locale);
   const engines = getHubEngines();
   const enginesWithWaitlist = getHubEngines({ includeLimited: true, includeWaitlist: true });
@@ -87,7 +89,7 @@ export default async function AiVideoEnginesPage() {
   const engineCards = toEngineCards(engines);
   const extendedEngineCards = toEngineCards(enginesWithWaitlist);
 
-  const allComparisonEntries = getRankedComparisonPairs(engines)
+  const allComparisonEntries = getRankedComparisonPairs(enginesWithWaitlist)
     .filter((pair) => isIndexablePair(pair.slug))
     .map((pair) => ({
       slug: pair.slug,
@@ -277,6 +279,11 @@ export default async function AiVideoEnginesPage() {
             <p className="mt-2 text-sm leading-relaxed text-text-secondary">{copy.sections.useCasesIntro}</p>
           </div>
           <UseCaseExplorer buckets={useCaseBuckets} compareLabel={copy.popularCompareLabel} />
+          {mcpLink ? (
+            <Link href={mcpLink.href} className="inline-flex text-sm font-semibold text-brand transition hover:text-brandHover">
+              {mcpLink.label} →
+            </Link>
+          ) : null}
           <div className="rounded-2xl border border-hairline bg-surface p-5 shadow-card">
             <h3 className="text-base font-semibold text-text-primary">{bestForCta.title}</h3>
             <p className="mt-2 text-sm leading-relaxed text-text-secondary">{bestForCta.body}</p>
@@ -334,7 +341,6 @@ export default async function AiVideoEnginesPage() {
             entries={allComparisonEntries}
             labels={copy.listLabels}
             initialCount={24}
-            step={24}
           />
         </section>
 

@@ -133,7 +133,7 @@ test('MCP activity is under Overview and publication matches the production rele
     trial: false,
     referenceUploads: true,
     montagePreparation: false,
-    audioGeneration: false,
+    audioGeneration: true,
     studioMontageCreation: false,
   });
 });

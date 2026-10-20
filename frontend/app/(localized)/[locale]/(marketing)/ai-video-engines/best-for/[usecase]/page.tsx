@@ -25,13 +25,13 @@ import {
   getPublishedRelatedComparisons,
   getUsecaseChips,
   getUsecaseCriteria,
-  loadEngineScores,
   resolveAvailableLocales,
   resolveExamplePreviewPicks,
   resolveRelatedBestForGuides,
   resolveTopPicks,
   serializeJsonLd,
 } from './_lib/best-for-detail-helpers';
+import { getUsecaseIntroduction } from './_lib/best-for-usecase-introductions';
 import { BestForDetailView } from './_components/BestForDetailView';
 
 export const dynamicParams = false;
@@ -85,12 +85,11 @@ export default async function BestForDetailPage(props: { params: Promise<Params>
     notFound();
   }
   const locale = params.locale ?? 'en';
-  const [content, scores, relatedGuides] = await Promise.all([
+  const [content, relatedGuides] = await Promise.all([
     getBestForEntry(locale, entry.slug),
-    loadEngineScores(),
     resolveRelatedBestForGuides(locale, entry.slug),
   ]);
-  const topPicks = resolveTopPicks(entry, scores);
+  const topPicks = resolveTopPicks(entry);
   const copy = DETAIL_COPY[locale] ?? DETAIL_COPY.en;
   const criteria = getUsecaseCriteria(locale, entry.slug);
   const rankedPicks = topPicks.map((slug, index) =>
@@ -98,15 +97,13 @@ export default async function BestForDetailPage(props: { params: Promise<Params>
       usecaseSlug: entry.slug,
       modelSlug: slug,
       rank: index + 1,
-      scores,
-      criteria,
       copy,
       locale,
     })
   );
-  const examplePicks = await resolveExamplePreviewPicks(rankedPicks);
+  const examplePicks = await resolveExamplePreviewPicks(rankedPicks, locale, entry.slug);
   const heroTitle = getBestForDisplayTitle(locale, entry, content?.title);
-  const heroDescription = buildBestForHeroDescription(locale, entry, content?.description);
+  const heroDescription = getUsecaseIntroduction(entry.slug, locale) ?? buildBestForHeroDescription(locale, entry, content?.description);
   const chips = getUsecaseChips(locale, entry.slug, criteria);
   const alsoAvailable = getAlsoAvailableModels(entry.slug, topPicks);
   const relatedComparisons = getPublishedRelatedComparisons(entry, locale);

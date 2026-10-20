@@ -6,11 +6,11 @@ import { getCurationAliases } from './playlists/curation-store';
 import { CURATION_ELIGIBILITY, expandCatalogAliases } from './playlists/curation-eligibility';
 import { BASE_SELECT } from './videos-query';
 import { mapGalleryVideoRow, type VideoRow } from './videos-normalization';
-import type { ExampleSort, ListExamplesPageResult } from './videos-examples';
+import type { ExampleSort, ExampleVersionSample, ListExamplesPageResult } from './videos-examples';
 
 export type CatalogCurationOverride = { playlistId: string; draft: import('@/lib/admin/playlist-curation').CurationDraft };
 
-type CatalogRow = VideoRow & { total: number; suppressed_source_slugs?: string[] };
+type CatalogRow = VideoRow & { total: number; suppressed_source_slugs?: string[]; version_samples?: ExampleVersionSample[] };
 
 type CatalogPageOptions = {
   curationOverride?: CatalogCurationOverride;
@@ -19,6 +19,7 @@ type CatalogPageOptions = {
   sort: ExampleSort;
   limit: number;
   offset: number;
+  includeVersionSamples?: boolean;
 };
 
 const SORT_SQL: Record<ExampleSort, string> = {
@@ -30,7 +31,10 @@ const SORT_SQL: Record<ExampleSort, string> = {
   'engine-asc': "COALESCE(engine_label,'') ASC, created_at DESC, job_id ASC",
 };
 
-function catalogSql(sort: ExampleSort, withCuration: boolean, idsOnly = false, override = false): string {
+// Match absent source text after JavaScript trim(), including Unicode spaces/BOM.
+const HAS_PROMPT_SQL = "prompt ~ '[^[:space:]\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]'";
+
+function catalogSql(sort: ExampleSort, withCuration: boolean, idsOnly = false, override = false, includeVersionSamples = false): string {
   const savedCurationColumns = withCuration
     ? "c.mode,ARRAY(SELECT jsonb_array_elements_text(NULLIF(to_jsonb(c)->'opening_ids','null'::jsonb))) || c.ordered_ids AS ordered_ids,c.excluded_ids"
     : 'NULL::text AS mode,NULL::text[] AS ordered_ids,NULL::text[] AS excluded_ids';
@@ -50,7 +54,7 @@ function catalogSql(sort: ExampleSort, withCuration: boolean, idsOnly = false, o
       AND (s.source_rank=0 OR NOT EXISTS (SELECT 1 FROM sources WHERE source_rank=0 AND mode IS NOT NULL))
       AND NOT EXISTS (SELECT 1 FROM sources parent WHERE parent.slug=s.parent_slug AND parent.mode IS NOT NULL)
   ), eligible AS NOT MATERIALIZED (
-    SELECT job_id,engine_id,engine_label,created_at,duration_sec FROM app_jobs
+    SELECT job_id,engine_id,engine_label,created_at,duration_sec${includeVersionSamples ? `,${HAS_PROMPT_SQL} AS has_prompt` : ''} FROM app_jobs
     WHERE ${CURATION_ELIGIBILITY} AND LOWER(engine_id)=ANY($2::text[])
   ), memberships AS (
     SELECT j.*,s.source_rank,CASE WHEN pi.order_index IS NULL THEN 1 ELSE 0 END AS selection_group,
@@ -72,7 +76,12 @@ function catalogSql(sort: ExampleSort, withCuration: boolean, idsOnly = false, o
   ) ${idsOnly ? `SELECT totals.total,page.job_id,
       ARRAY(SELECT slug FROM sources WHERE is_public=TRUE AND id NOT IN (SELECT id FROM active_sources) ORDER BY slug) AS suppressed_source_slugs
     FROM (SELECT COUNT(*)::int AS total FROM unique_memberships) totals
-    LEFT JOIN selected_page page ON TRUE ORDER BY page.ordinal` : `SELECT totals.total,media.*
+    LEFT JOIN selected_page page ON TRUE ORDER BY page.ordinal` : `SELECT totals.total,${includeVersionSamples ? `
+      CASE WHEN page.ordinal=$4+1 OR page.job_id IS NULL THEN (
+        SELECT COALESCE(jsonb_agg(jsonb_build_object('engineId',engine_id,'videoId',job_id) ORDER BY ${SORT_SQL[sort]}),'[]'::jsonb)
+        FROM (SELECT DISTINCT ON(engine_id) * FROM unique_memberships WHERE has_prompt
+          ORDER BY engine_id,${SORT_SQL[sort]}) version_samples
+      ) END AS version_samples,` : ''}media.*
     FROM (SELECT COUNT(*)::int AS total FROM unique_memberships) totals
     LEFT JOIN selected_page page ON TRUE
     LEFT JOIN LATERAL (${BASE_SELECT} WHERE app_jobs.job_id=page.job_id) media ON TRUE
@@ -101,12 +110,12 @@ async function readCatalogRows(options: CatalogPageOptions, idsOnly: boolean, db
   const params = [JSON.stringify(sources), expandCatalogAliases(aliases), limit, offset, ...(options.curationOverride ? [JSON.stringify(options.curationOverride)] : [])];
   let result: CatalogRow[];
   try {
-    result = await db.query<CatalogRow>(catalogSql(options.sort, true, idsOnly, Boolean(options.curationOverride)), params);
+    result = await db.query<CatalogRow>(catalogSql(options.sort, true, idsOnly, Boolean(options.curationOverride), options.includeVersionSamples), params);
   } catch (error) {
     // Missing optional curation storage is the only schema error that permits fallback.
     const failure = error as { code?: string; message?: string };
     if (options.curationOverride || failure.code !== '42P01' || !failure.message?.includes('playlist_curations')) throw error;
-    result = await db.query<CatalogRow>(catalogSql(options.sort, false, idsOnly), params);
+    result = await db.query<CatalogRow>(catalogSql(options.sort, false, idsOnly, false, options.includeVersionSamples), params);
   }
   return result;
 }
@@ -127,7 +136,8 @@ export async function listCatalogPage(options: CatalogPageOptions): Promise<List
   const result = await readCatalogRows(options, false, { query });
   const total = Number(result[0]?.total ?? 0);
   const items = result.filter(row => row.job_id).map(mapGalleryVideoRow);
-  return { items, total, limit, offset, hasMore: offset + items.length < total };
+  return { items, total, limit, offset, hasMore: offset + items.length < total,
+    ...(options.includeVersionSamples ? { versionSamples: result[0]?.version_samples ?? [] } : {}) };
 }
 
 /** Preview diagnostics use the exact same active-source CTE as public membership. */

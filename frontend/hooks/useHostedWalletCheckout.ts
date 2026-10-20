@@ -21,6 +21,7 @@ import {
 } from '@/lib/wallet/hosted-checkout';
 
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '';
 
 type LegacyCheckoutStripe = Stripe & {
   redirectToCheckout?: (params: { sessionId: string }) => Promise<{ error?: { message?: string } }>;
@@ -68,6 +69,7 @@ export function useHostedWalletCheckout({
   );
   const [failureReason, setFailureReason] = useState<HostedWalletCheckoutFailureReason | null>(null);
   const [retryAfterSeconds, setRetryAfterSeconds] = useState<number | null>(null);
+  const captchaTokenRef = useRef<string | null>(null);
   const submissionGuardRef = useRef(createHostedCheckoutSubmissionGuard());
   const stripePromiseRef = useRef<{ locale: AppLocale; promise: Promise<Stripe | null> } | null>(null);
   const getStripePromise = useCallback(
@@ -86,6 +88,7 @@ export function useHostedWalletCheckout({
   );
 
   const resetCheckout = useCallback(() => {
+    captchaTokenRef.current = null;
     dispatchChallenge({ type: 'reset' });
     setFailureReason(null);
     setRetryAfterSeconds(null);
@@ -96,16 +99,27 @@ export function useHostedWalletCheckout({
   }, [amountCents, currency, resetCheckout]);
 
   const requireCaptcha = useCallback(() => {
+    captchaTokenRef.current = null;
     dispatchChallenge({ type: 'captcha_required' });
   }, []);
 
   const handleCaptchaToken = useCallback((token: string | null) => {
+    captchaTokenRef.current = token;
     dispatchChallenge({ type: 'captcha_token_changed', token });
   }, []);
 
   const handleCaptchaError = useCallback(() => {
+    captchaTokenRef.current = null;
     dispatchChallenge({ type: 'captcha_error' });
   }, []);
+
+  const takeCaptchaToken = useCallback(() => {
+    const token = captchaTokenRef.current;
+    // Both payment paths claim the same single-use proof synchronously, before
+    // awaiting a request. Refresh the widget without discarding a Stripe session.
+    if (token) requireCaptcha();
+    return token;
+  }, [requireCaptcha]);
 
   const reportFailure = useCallback((reason: HostedWalletCheckoutFailureReason, checkoutAttemptId: number | null) => {
     clearPendingWalletCheckoutReturn();
@@ -134,17 +148,18 @@ export function useHostedWalletCheckout({
       source,
       metadata: { currency, locale },
     });
-    const submittedCaptchaToken = challengeState.captchaToken;
-
     try {
       const analyticsJourney = readWalletAnalyticsJourney();
-      const ga4Context = await readGa4CheckoutContext();
+      let ga4LookupStatus = 'unobserved';
+      const ga4Context = await readGa4CheckoutContext({ onDiagnostic: status => { ga4LookupStatus = status; } });
+      const submittedCaptchaToken = takeCaptchaToken();
       const result = await requestHostedWalletCheckout({
         amountCents,
         currency,
         locale,
         accessToken,
         captchaToken: submittedCaptchaToken ?? undefined,
+        captchaSiteKey: TURNSTILE_SITE_KEY,
         gaClientId: ga4Context.clientId,
         gaSessionId: ga4Context.sessionId,
         analyticsJourney,
@@ -163,7 +178,6 @@ export function useHostedWalletCheckout({
       }
 
       if (result.kind === 'rate_limited') {
-        dispatchChallenge({ type: 'checkout_not_redirected', submittedCaptchaToken });
         setRetryAfterSeconds(result.retryAfterSeconds);
         recordCheckoutInteractionEvent({
           amountCents,
@@ -177,7 +191,6 @@ export function useHostedWalletCheckout({
       }
 
       if (result.kind === 'failed') {
-        dispatchChallenge({ type: 'checkout_not_redirected', submittedCaptchaToken });
         reportFailure(result.reason, result.checkoutAttemptId);
         return;
       }
@@ -193,6 +206,7 @@ export function useHostedWalletCheckout({
         metadata: {
           currency,
           redirectMethod: result.url ? 'url' : 'stripe_js',
+          ga4LookupStatus,
         },
       });
 
@@ -214,13 +228,8 @@ export function useHostedWalletCheckout({
           }
         }
       }
-      dispatchChallenge({ type: 'checkout_not_redirected', submittedCaptchaToken });
       reportFailure('stripe', result.checkoutAttemptId);
     } catch {
-      dispatchChallenge({
-        type: 'checkout_not_redirected',
-        submittedCaptchaToken,
-      });
       reportFailure('stripe', null);
     } finally {
       submissionGuardRef.current.finish();
@@ -229,7 +238,6 @@ export function useHostedWalletCheckout({
   }, [
     accessToken,
     amountCents,
-    challengeState.captchaToken,
     currency,
     getStripePromise,
     locale,
@@ -239,6 +247,7 @@ export function useHostedWalletCheckout({
     requireCaptcha,
     returnTarget,
     source,
+    takeCaptchaToken,
   ]);
 
   return {
@@ -254,5 +263,6 @@ export function useHostedWalletCheckout({
     resetCheckout,
     retryAfterSeconds,
     startCheckout,
+    takeCaptchaToken,
   };
 }

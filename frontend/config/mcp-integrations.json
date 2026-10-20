@@ -18,7 +18,7 @@
         "target": "anthropic-connectors-directory",
         "status": "policy_blocked"
       },
-      "hosts": ["claudeDesktop", "claudeCode"]
+      "hosts": ["claudeWeb", "claudeDesktop", "claudeCode"]
     },
     "chatgpt": {
       "label": "ChatGPT",
@@ -87,7 +87,7 @@
         "deepLinkEnabled": false,
         "deepLink": null
       },
-      "store": { "target": "n8n-template-library", "status": "submitted" },
+      "store": { "target": "n8n-template-library", "status": "listed" },
       "hosts": ["n8nMcpClient", "n8nMcpClientTool"]
     },
     "cursor": {
@@ -156,6 +156,16 @@
     }
   },
   "hosts": {
+    "claudeWeb": {
+      "integration": "claude",
+      "label": "Claude Web",
+      "evidence": {
+        "kind": "hosted-checkpoint",
+        "status": "tested_with_limits",
+        "lastChecked": "2026-10-19",
+        "source": "docs/operations/mcp-host-compatibility-matrix.md"
+      }
+    },
     "claudeDesktop": {
       "integration": "claude",
       "label": "Claude Desktop",
@@ -181,8 +191,8 @@
       "label": "ChatGPT",
       "evidence": {
         "kind": "hosted-checkpoint",
-        "status": "not-run",
-        "lastChecked": "2026-08-27",
+        "status": "tested_with_limits",
+        "lastChecked": "2026-10-19",
         "source": "docs/operations/mcp-host-compatibility-matrix.md"
       }
     },

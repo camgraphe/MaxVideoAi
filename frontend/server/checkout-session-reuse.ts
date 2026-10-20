@@ -1,5 +1,6 @@
 import type Stripe from 'stripe';
 import { query } from '@/lib/db';
+import { WALLET_EXPRESS_TAX_ADDRESS_POLICY } from '@/lib/stripe-checkout';
 import {
   matchesWalletAttribution,
   type NormalizedWalletAttribution,
@@ -37,6 +38,7 @@ export function isReusableStripeCheckoutSession({
   const expiresAtSeconds = typeof expiresAt === 'number' && Number.isFinite(expiresAt) ? expiresAt : null;
   return Boolean(
     clientSecret &&
+      metadata?.wallet_express_tax_address === WALLET_EXPRESS_TAX_ADDRESS_POLICY &&
       status === 'open' &&
       paymentStatus === 'unpaid' &&
       expiresAtSeconds !== null &&
@@ -51,7 +53,6 @@ export async function findReusableExpressCheckoutSession(
     amountCents,
     attribution,
     currency,
-    hasCompletedTopUp = false,
     userId,
   }: {
     amountCents: number;
@@ -72,15 +73,17 @@ export async function findReusableExpressCheckoutSession(
         AND metadata->>'currency' = $3
         AND metadata->>'checkoutUiMode' = 'elements'
         AND created_at >= NOW() - ($4::int * INTERVAL '1 second')
-        AND ($5::boolean OR NOT EXISTS (
+        AND NOT EXISTS (
           SELECT 1 FROM checkout_interaction_events event
            WHERE event.user_id = $1
-             AND event.event_name = 'stripe_checkout_session_expired_for_failed_cards'
+             AND (event.event_name = 'stripe_failed_card_cooldown_started'
+               OR (event.event_name = 'stripe_checkout_session_expired_for_failed_cards'
+                 AND event.metadata->>'cooldown_started_separately' IS DISTINCT FROM 'true'))
              AND event.created_at >= NOW() - INTERVAL '30 minutes'
-        ))
+        )
       ORDER BY created_at DESC
       LIMIT 3`,
-    [userId, amountCents, currency.toUpperCase(), EXPRESS_CHECKOUT_REUSE_WINDOW_SECONDS, hasCompletedTopUp]
+    [userId, amountCents, currency.toUpperCase(), EXPRESS_CHECKOUT_REUSE_WINDOW_SECONDS]
   );
 
   const now = Math.floor(Date.now() / 1000);

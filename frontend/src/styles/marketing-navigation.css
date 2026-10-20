@@ -19,6 +19,10 @@
 .marketing-mega-links.two-columns {grid-template-columns:repeat(2,minmax(0,1fr))}
 .marketing-site > header .marketing-mega-link {display:flex;flex-direction:column;align-items:stretch;justify-content:center;min-height:48px;padding:10px 12px;border-radius:7px;font-size:13px;color:var(--text-primary);transition:background .16s}
 .marketing-site > header .marketing-mega-link:hover {background:var(--surface-2)}
+.marketing-site > header .marketing-mega-link.marketing-menu-featured {grid-column:1/-1;border-bottom:1px solid var(--hairline);border-radius:0;margin-bottom:8px;padding-bottom:18px}
+.marketing-menu-featured .marketing-entry-content {font-weight:600}
+.marketing-menu-subnav .marketing-menu-featured {border-bottom:1px solid var(--hairline);border-radius:0;padding-bottom:14px;margin-bottom:6px}
+.marketing-menu-subnav .marketing-menu-featured small {display:block;padding-left:40px;margin-top:3px;font-size:11px;line-height:1.5;color:var(--text-muted)}
 .marketing-mega-link small {color:var(--text-muted);font-size:11px;line-height:1.5;padding-left:36px;margin-top:3px;font-weight:400}
 .marketing-entry-content {font-weight:450;line-height:1.4}
 .marketing-entry-logo {width:28px;height:28px;object-fit:contain;flex-shrink:0}

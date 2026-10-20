@@ -1,0 +1,1874 @@
+[
+  {
+    "id": "desktop-1-baseline-cold",
+    "fetchTime": "2026-10-17T17:02:56.766Z",
+    "lcpNode": {
+      "type": "node",
+      "lhId": "page-1-VIDEO",
+      "path": "1,HTML,1,BODY,1,DIV,1,DIV,2,MAIN,0,DIV,1,ARTICLE,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,VIDEO",
+      "selector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+      "boundingRect": {
+        "top": 141,
+        "bottom": 717,
+        "left": 69,
+        "right": 393,
+        "width": 324,
+        "height": 576
+      },
+      "snippet": "<video src=\"https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/…\" poster=\"/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d…\" playsinline=\"\" preload=\"none\" aria-label=\"Seedance 2.0 Fast ecommerce product ad example from storyboard reference\">",
+      "nodeLabel": "Seedance 2.0 Fast ecommerce product ad example from storyboard reference"
+    },
+    "phases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 4768.326999938965
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 37.983000061035455
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 544.7569999999996
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 179.9989999999998
+      }
+    ],
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    },
+    "document": {
+      "url": "http://127.0.0.1:3127/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "rendererStartTime": 0,
+      "networkRequestTime": 0.4459999203681946,
+      "networkEndTime": 5080.169999957085,
+      "finished": true,
+      "transferSize": 44132,
+      "resourceSize": 203517,
+      "statusCode": 200,
+      "mimeType": "text/html",
+      "resourceType": "Document",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    "benchmarkIndex": 3302,
+    "runWarnings": []
+  },
+  {
+    "id": "desktop-1-baseline-warm",
+    "fetchTime": "2026-10-17T17:03:29.796Z",
+    "lcpNode": {
+      "type": "node",
+      "lhId": "page-0-VIDEO",
+      "path": "1,HTML,1,BODY,1,DIV,1,DIV,2,MAIN,0,DIV,1,ARTICLE,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,VIDEO",
+      "selector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+      "boundingRect": {
+        "top": 141,
+        "bottom": 717,
+        "left": 69,
+        "right": 393,
+        "width": 324,
+        "height": 576
+      },
+      "snippet": "<video src=\"https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/…\" poster=\"/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d…\" playsinline=\"\" preload=\"none\" aria-label=\"Seedance 2.0 Fast ecommerce product ad example from storyboard reference\">",
+      "nodeLabel": "Seedance 2.0 Fast ecommerce product ad example from storyboard reference"
+    },
+    "phases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 5029.445
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 37.014000000000124
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 0.6140000000004875
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 117.40599999999995
+      }
+    ],
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    },
+    "document": {
+      "url": "http://127.0.0.1:3127/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "rendererStartTime": 0,
+      "networkRequestTime": 0.3489999771118164,
+      "networkEndTime": 5256.689999938011,
+      "finished": true,
+      "transferSize": 44132,
+      "resourceSize": 203517,
+      "statusCode": 200,
+      "mimeType": "text/html",
+      "resourceType": "Document",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    "benchmarkIndex": 3712,
+    "runWarnings": []
+  },
+  {
+    "id": "desktop-1-candidate-cold",
+    "fetchTime": "2026-10-17T17:03:50.872Z",
+    "lcpNode": {
+      "type": "node",
+      "lhId": "page-1-VIDEO",
+      "path": "1,HTML,1,BODY,1,DIV,1,DIV,2,MAIN,0,DIV,1,ARTICLE,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,VIDEO",
+      "selector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+      "boundingRect": {
+        "top": 141,
+        "bottom": 717,
+        "left": 69,
+        "right": 393,
+        "width": 324,
+        "height": 576
+      },
+      "snippet": "<video src=\"https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/…\" poster=\"/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d…\" playsinline=\"\" preload=\"none\" aria-label=\"Seedance 2.0 Fast ecommerce product ad example from storyboard reference\">",
+      "nodeLabel": "Seedance 2.0 Fast ecommerce product ad example from storyboard reference"
+    },
+    "phases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 2381.232
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 22.010999999999967
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 551.2249999999999
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 182.337
+      }
+    ],
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    },
+    "document": {
+      "url": "http://127.0.0.1:3128/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "rendererStartTime": 0,
+      "networkRequestTime": 0.41999995708465576,
+      "networkEndTime": 2719.035999953747,
+      "finished": true,
+      "transferSize": 44127,
+      "resourceSize": 203517,
+      "statusCode": 200,
+      "mimeType": "text/html",
+      "resourceType": "Document",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    "benchmarkIndex": 3718.5,
+    "runWarnings": []
+  },
+  {
+    "id": "desktop-1-candidate-warm",
+    "fetchTime": "2026-10-17T17:04:11.462Z",
+    "lcpNode": {
+      "type": "node",
+      "lhId": "page-0-VIDEO",
+      "path": "1,HTML,1,BODY,1,DIV,1,DIV,2,MAIN,0,DIV,1,ARTICLE,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,VIDEO",
+      "selector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+      "boundingRect": {
+        "top": 141,
+        "bottom": 717,
+        "left": 69,
+        "right": 393,
+        "width": 324,
+        "height": 576
+      },
+      "snippet": "<video src=\"https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/…\" poster=\"/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d…\" playsinline=\"\" preload=\"none\" aria-label=\"Seedance 2.0 Fast ecommerce product ad example from storyboard reference\">",
+      "nodeLabel": "Seedance 2.0 Fast ecommerce product ad example from storyboard reference"
+    },
+    "phases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 2823.982999938965
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 41.867000061035014
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 0.5
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 120.73199999999997
+      }
+    ],
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    },
+    "document": {
+      "url": "http://127.0.0.1:3128/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "rendererStartTime": 0,
+      "networkRequestTime": 0.3479999303817749,
+      "networkEndTime": 3044.479999959469,
+      "finished": true,
+      "transferSize": 44127,
+      "resourceSize": 203517,
+      "statusCode": 200,
+      "mimeType": "text/html",
+      "resourceType": "Document",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    "benchmarkIndex": 3699.5,
+    "runWarnings": []
+  },
+  {
+    "id": "mobile-1-baseline-cold",
+    "fetchTime": "2026-10-17T17:04:31.483Z",
+    "lcpNode": {
+      "type": "node",
+      "lhId": "page-1-VIDEO",
+      "path": "1,HTML,1,BODY,1,DIV,1,DIV,2,MAIN,0,DIV,1,ARTICLE,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,VIDEO",
+      "selector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+      "boundingRect": {
+        "top": 170,
+        "bottom": 609,
+        "left": 72,
+        "right": 318,
+        "width": 247,
+        "height": 439
+      },
+      "snippet": "<video src=\"https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/…\" poster=\"/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d…\" playsinline=\"\" preload=\"none\" aria-label=\"Seedance 2.0 Fast ecommerce product ad example from storyboard reference\">",
+      "nodeLabel": "Seedance 2.0 Fast ecommerce product ad example from storyboard reference"
+    },
+    "phases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 5868.5370000610355
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 51.18399993896401
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 537.1560000000009
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 174.11799999999948
+      }
+    ],
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    },
+    "document": {
+      "url": "http://127.0.0.1:3127/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "rendererStartTime": 0,
+      "networkRequestTime": 0.3720000386238098,
+      "networkEndTime": 6141.84500002861,
+      "finished": true,
+      "transferSize": 44132,
+      "resourceSize": 203517,
+      "statusCode": 200,
+      "mimeType": "text/html",
+      "resourceType": "Document",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    "benchmarkIndex": 3724,
+    "runWarnings": []
+  },
+  {
+    "id": "mobile-1-baseline-warm",
+    "fetchTime": "2026-10-17T17:04:55.587Z",
+    "lcpNode": {
+      "type": "node",
+      "lhId": "page-0-VIDEO",
+      "path": "1,HTML,1,BODY,1,DIV,1,DIV,2,MAIN,0,DIV,1,ARTICLE,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,VIDEO",
+      "selector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+      "boundingRect": {
+        "top": 170,
+        "bottom": 609,
+        "left": 72,
+        "right": 318,
+        "width": 247,
+        "height": 439
+      },
+      "snippet": "<video src=\"https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/…\" poster=\"/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d…\" playsinline=\"\" preload=\"none\" aria-label=\"Seedance 2.0 Fast ecommerce product ad example from storyboard reference\">",
+      "nodeLabel": "Seedance 2.0 Fast ecommerce product ad example from storyboard reference"
+    },
+    "phases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 4636.605000061035
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 42.69299993896493
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 0.9499999999998181
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 101.98700000000008
+      }
+    ],
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    },
+    "document": {
+      "url": "http://127.0.0.1:3127/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "rendererStartTime": 0,
+      "networkRequestTime": 0.3360000252723694,
+      "networkEndTime": 4862.869000017643,
+      "finished": true,
+      "transferSize": 44132,
+      "resourceSize": 203517,
+      "statusCode": 200,
+      "mimeType": "text/html",
+      "resourceType": "Document",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    "benchmarkIndex": 3697.5,
+    "runWarnings": []
+  },
+  {
+    "id": "mobile-1-candidate-cold",
+    "fetchTime": "2026-10-17T17:05:17.160Z",
+    "lcpNode": {
+      "type": "node",
+      "lhId": "page-1-VIDEO",
+      "path": "1,HTML,1,BODY,1,DIV,1,DIV,2,MAIN,0,DIV,1,ARTICLE,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,VIDEO",
+      "selector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+      "boundingRect": {
+        "top": 170,
+        "bottom": 609,
+        "left": 72,
+        "right": 318,
+        "width": 247,
+        "height": 439
+      },
+      "snippet": "<video src=\"https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/…\" poster=\"/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d…\" playsinline=\"\" preload=\"none\" aria-label=\"Seedance 2.0 Fast ecommerce product ad example from storyboard reference\">",
+      "nodeLabel": "Seedance 2.0 Fast ecommerce product ad example from storyboard reference"
+    },
+    "phases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 5504.058999938965
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 41.55500006103466
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 535.3070000000007
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 188.1880000000001
+      }
+    ],
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    },
+    "document": {
+      "url": "http://127.0.0.1:3128/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "rendererStartTime": 0,
+      "networkRequestTime": 0.3989999294281006,
+      "networkEndTime": 5816.6099999547005,
+      "finished": true,
+      "transferSize": 44127,
+      "resourceSize": 203517,
+      "statusCode": 200,
+      "mimeType": "text/html",
+      "resourceType": "Document",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    "benchmarkIndex": 3674,
+    "runWarnings": []
+  },
+  {
+    "id": "mobile-1-candidate-warm",
+    "fetchTime": "2026-10-17T17:05:40.562Z",
+    "lcpNode": {
+      "type": "node",
+      "lhId": "page-0-VIDEO",
+      "path": "1,HTML,1,BODY,1,DIV,1,DIV,2,MAIN,0,DIV,1,ARTICLE,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,VIDEO",
+      "selector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+      "boundingRect": {
+        "top": 170,
+        "bottom": 609,
+        "left": 72,
+        "right": 318,
+        "width": 247,
+        "height": 439
+      },
+      "snippet": "<video src=\"https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/…\" poster=\"/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d…\" playsinline=\"\" preload=\"none\" aria-label=\"Seedance 2.0 Fast ecommerce product ad example from storyboard reference\">",
+      "nodeLabel": "Seedance 2.0 Fast ecommerce product ad example from storyboard reference"
+    },
+    "phases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 2587.701
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 46.666999999999916
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 1.2449999999998909
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 127.55799999999999
+      }
+    ],
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    },
+    "document": {
+      "url": "http://127.0.0.1:3128/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "rendererStartTime": 0,
+      "networkRequestTime": 0.3569999933242798,
+      "networkEndTime": 2812.608999967575,
+      "finished": true,
+      "transferSize": 44127,
+      "resourceSize": 203517,
+      "statusCode": 200,
+      "mimeType": "text/html",
+      "resourceType": "Document",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    "benchmarkIndex": 3740,
+    "runWarnings": []
+  },
+  {
+    "id": "desktop-2-candidate-cold",
+    "fetchTime": "2026-10-17T17:06:00.139Z",
+    "lcpNode": {
+      "type": "node",
+      "lhId": "page-1-VIDEO",
+      "path": "1,HTML,1,BODY,1,DIV,1,DIV,2,MAIN,0,DIV,1,ARTICLE,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,VIDEO",
+      "selector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+      "boundingRect": {
+        "top": 141,
+        "bottom": 717,
+        "left": 69,
+        "right": 393,
+        "width": 324,
+        "height": 576
+      },
+      "snippet": "<video src=\"https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/…\" poster=\"/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d…\" playsinline=\"\" preload=\"none\" aria-label=\"Seedance 2.0 Fast ecommerce product ad example from storyboard reference\">",
+      "nodeLabel": "Seedance 2.0 Fast ecommerce product ad example from storyboard reference"
+    },
+    "phases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 2594.715
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 36.60799999999972
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 551.5830000000001
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 167.61299999999983
+      }
+    ],
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    },
+    "document": {
+      "url": "http://127.0.0.1:3128/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "rendererStartTime": 0,
+      "networkRequestTime": 0.38700002431869507,
+      "networkEndTime": 2898.0509999990463,
+      "finished": true,
+      "transferSize": 44127,
+      "resourceSize": 203517,
+      "statusCode": 200,
+      "mimeType": "text/html",
+      "resourceType": "Document",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    "benchmarkIndex": 3731,
+    "runWarnings": []
+  },
+  {
+    "id": "desktop-2-candidate-warm",
+    "fetchTime": "2026-10-17T17:06:20.904Z",
+    "lcpNode": {
+      "type": "node",
+      "lhId": "page-0-VIDEO",
+      "path": "1,HTML,1,BODY,1,DIV,1,DIV,2,MAIN,0,DIV,1,ARTICLE,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,VIDEO",
+      "selector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+      "boundingRect": {
+        "top": 141,
+        "bottom": 717,
+        "left": 69,
+        "right": 393,
+        "width": 324,
+        "height": 576
+      },
+      "snippet": "<video src=\"https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/…\" poster=\"/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d…\" playsinline=\"\" preload=\"none\" aria-label=\"Seedance 2.0 Fast ecommerce product ad example from storyboard reference\">",
+      "nodeLabel": "Seedance 2.0 Fast ecommerce product ad example from storyboard reference"
+    },
+    "phases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 2489.444
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 37.710000000000036
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 0.6700000000000728
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 106.41300000000001
+      }
+    ],
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    },
+    "document": {
+      "url": "http://127.0.0.1:3128/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "rendererStartTime": 0,
+      "networkRequestTime": 0.36299997568130493,
+      "networkEndTime": 2711.324999988079,
+      "finished": true,
+      "transferSize": 44127,
+      "resourceSize": 203517,
+      "statusCode": 200,
+      "mimeType": "text/html",
+      "resourceType": "Document",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    "benchmarkIndex": 3734,
+    "runWarnings": []
+  },
+  {
+    "id": "desktop-2-baseline-cold",
+    "fetchTime": "2026-10-17T17:06:40.419Z",
+    "lcpNode": {
+      "type": "node",
+      "lhId": "page-1-VIDEO",
+      "path": "1,HTML,1,BODY,1,DIV,1,DIV,2,MAIN,0,DIV,1,ARTICLE,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,VIDEO",
+      "selector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+      "boundingRect": {
+        "top": 141,
+        "bottom": 717,
+        "left": 69,
+        "right": 393,
+        "width": 324,
+        "height": 576
+      },
+      "snippet": "<video src=\"https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/…\" poster=\"/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d…\" playsinline=\"\" preload=\"none\" aria-label=\"Seedance 2.0 Fast ecommerce product ad example from storyboard reference\">",
+      "nodeLabel": "Seedance 2.0 Fast ecommerce product ad example from storyboard reference"
+    },
+    "phases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 4374.597
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 31.676000000000386
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 551.4219999999996
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 178.34900000000016
+      }
+    ],
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    },
+    "document": {
+      "url": "http://127.0.0.1:3127/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "rendererStartTime": 0,
+      "networkRequestTime": 0.40699994564056396,
+      "networkEndTime": 4715.983999967575,
+      "finished": true,
+      "transferSize": 44132,
+      "resourceSize": 203517,
+      "statusCode": 200,
+      "mimeType": "text/html",
+      "resourceType": "Document",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    "benchmarkIndex": 3741.5,
+    "runWarnings": []
+  },
+  {
+    "id": "desktop-2-baseline-warm",
+    "fetchTime": "2026-10-17T17:07:02.681Z",
+    "lcpNode": {
+      "type": "node",
+      "lhId": "page-0-VIDEO",
+      "path": "1,HTML,1,BODY,1,DIV,1,DIV,2,MAIN,0,DIV,1,ARTICLE,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,VIDEO",
+      "selector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+      "boundingRect": {
+        "top": 141,
+        "bottom": 717,
+        "left": 69,
+        "right": 393,
+        "width": 324,
+        "height": 576
+      },
+      "snippet": "<video src=\"https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/…\" poster=\"/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d…\" playsinline=\"\" preload=\"none\" aria-label=\"Seedance 2.0 Fast ecommerce product ad example from storyboard reference\">",
+      "nodeLabel": "Seedance 2.0 Fast ecommerce product ad example from storyboard reference"
+    },
+    "phases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 4866.939000061036
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 32.138999938964844
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 0.5209999999997308
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 133.45100000000002
+      }
+    ],
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    },
+    "document": {
+      "url": "http://127.0.0.1:3127/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "rendererStartTime": 0,
+      "networkRequestTime": 0.3580000400543213,
+      "networkEndTime": 5088.268000006676,
+      "finished": true,
+      "transferSize": 44132,
+      "resourceSize": 203517,
+      "statusCode": 200,
+      "mimeType": "text/html",
+      "resourceType": "Document",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    "benchmarkIndex": 3731,
+    "runWarnings": []
+  },
+  {
+    "id": "mobile-2-candidate-cold",
+    "fetchTime": "2026-10-17T17:07:24.751Z",
+    "lcpNode": {
+      "type": "node",
+      "lhId": "page-1-VIDEO",
+      "path": "1,HTML,1,BODY,1,DIV,1,DIV,2,MAIN,0,DIV,1,ARTICLE,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,VIDEO",
+      "selector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+      "boundingRect": {
+        "top": 170,
+        "bottom": 609,
+        "left": 72,
+        "right": 318,
+        "width": 247,
+        "height": 439
+      },
+      "snippet": "<video src=\"https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/…\" poster=\"/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d…\" playsinline=\"\" preload=\"none\" aria-label=\"Seedance 2.0 Fast ecommerce product ad example from storyboard reference\">",
+      "nodeLabel": "Seedance 2.0 Fast ecommerce product ad example from storyboard reference"
+    },
+    "phases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 6903.721
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 24.902000000000044
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 548.3150000000005
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 149.54100000000017
+      }
+    ],
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    },
+    "document": {
+      "url": "http://127.0.0.1:3128/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "rendererStartTime": 0,
+      "networkRequestTime": 0.4129999876022339,
+      "networkEndTime": 7242.027999997139,
+      "finished": true,
+      "transferSize": 44127,
+      "resourceSize": 203517,
+      "statusCode": 200,
+      "mimeType": "text/html",
+      "resourceType": "Document",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    "benchmarkIndex": 3739.5,
+    "runWarnings": []
+  },
+  {
+    "id": "mobile-2-candidate-warm",
+    "fetchTime": "2026-10-17T17:07:49.501Z",
+    "lcpNode": {
+      "type": "node",
+      "lhId": "page-0-VIDEO",
+      "path": "1,HTML,1,BODY,1,DIV,1,DIV,2,MAIN,0,DIV,1,ARTICLE,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,VIDEO",
+      "selector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+      "boundingRect": {
+        "top": 170,
+        "bottom": 609,
+        "left": 72,
+        "right": 318,
+        "width": 247,
+        "height": 439
+      },
+      "snippet": "<video src=\"https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/…\" poster=\"/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d…\" playsinline=\"\" preload=\"none\" aria-label=\"Seedance 2.0 Fast ecommerce product ad example from storyboard reference\">",
+      "nodeLabel": "Seedance 2.0 Fast ecommerce product ad example from storyboard reference"
+    },
+    "phases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 2604.217999938965
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 55.69100006103508
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 0.9249999999997272
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 135.50900000000001
+      }
+    ],
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    },
+    "document": {
+      "url": "http://127.0.0.1:3128/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "rendererStartTime": 0,
+      "networkRequestTime": 0.35199999809265137,
+      "networkEndTime": 2829.7950000166893,
+      "finished": true,
+      "transferSize": 44127,
+      "resourceSize": 203517,
+      "statusCode": 200,
+      "mimeType": "text/html",
+      "resourceType": "Document",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    "benchmarkIndex": 3738.5,
+    "runWarnings": []
+  },
+  {
+    "id": "mobile-2-baseline-cold",
+    "fetchTime": "2026-10-17T17:08:09.107Z",
+    "lcpNode": {
+      "type": "node",
+      "lhId": "page-1-VIDEO",
+      "path": "1,HTML,1,BODY,1,DIV,1,DIV,2,MAIN,0,DIV,1,ARTICLE,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,VIDEO",
+      "selector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+      "boundingRect": {
+        "top": 170,
+        "bottom": 609,
+        "left": 72,
+        "right": 318,
+        "width": 247,
+        "height": 439
+      },
+      "snippet": "<video src=\"https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/…\" poster=\"/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d…\" playsinline=\"\" preload=\"none\" aria-label=\"Seedance 2.0 Fast ecommerce product ad example from storyboard reference\">",
+      "nodeLabel": "Seedance 2.0 Fast ecommerce product ad example from storyboard reference"
+    },
+    "phases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 5151.931000061035
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 25.050999938965106
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 548.8720000000003
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 180.6279999999997
+      }
+    ],
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    },
+    "document": {
+      "url": "http://127.0.0.1:3127/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "rendererStartTime": 0,
+      "networkRequestTime": 0.39800000190734863,
+      "networkEndTime": 5491.111999928951,
+      "finished": true,
+      "transferSize": 44132,
+      "resourceSize": 203517,
+      "statusCode": 200,
+      "mimeType": "text/html",
+      "resourceType": "Document",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    "benchmarkIndex": 3743.5,
+    "runWarnings": []
+  },
+  {
+    "id": "mobile-2-baseline-warm",
+    "fetchTime": "2026-10-17T17:08:32.081Z",
+    "lcpNode": {
+      "type": "node",
+      "lhId": "page-0-VIDEO",
+      "path": "1,HTML,1,BODY,1,DIV,1,DIV,2,MAIN,0,DIV,1,ARTICLE,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,VIDEO",
+      "selector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+      "boundingRect": {
+        "top": 170,
+        "bottom": 609,
+        "left": 72,
+        "right": 318,
+        "width": 247,
+        "height": 439
+      },
+      "snippet": "<video src=\"https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/…\" poster=\"/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d…\" playsinline=\"\" preload=\"none\" aria-label=\"Seedance 2.0 Fast ecommerce product ad example from storyboard reference\">",
+      "nodeLabel": "Seedance 2.0 Fast ecommerce product ad example from storyboard reference"
+    },
+    "phases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 4944.95
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 45.02300000000014
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 1.074999999999818
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 126.17799999999988
+      }
+    ],
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    },
+    "document": {
+      "url": "http://127.0.0.1:3127/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "rendererStartTime": 0,
+      "networkRequestTime": 0.4710000157356262,
+      "networkEndTime": 5166.806999981403,
+      "finished": true,
+      "transferSize": 44132,
+      "resourceSize": 203517,
+      "statusCode": 200,
+      "mimeType": "text/html",
+      "resourceType": "Document",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    "benchmarkIndex": 3740.5,
+    "runWarnings": []
+  },
+  {
+    "id": "desktop-3-baseline-cold",
+    "fetchTime": "2026-10-17T17:08:54.056Z",
+    "lcpNode": {
+      "type": "node",
+      "lhId": "page-1-VIDEO",
+      "path": "1,HTML,1,BODY,1,DIV,1,DIV,2,MAIN,0,DIV,1,ARTICLE,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,VIDEO",
+      "selector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+      "boundingRect": {
+        "top": 141,
+        "bottom": 717,
+        "left": 69,
+        "right": 393,
+        "width": 324,
+        "height": 576
+      },
+      "snippet": "<video src=\"https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/…\" poster=\"/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d…\" playsinline=\"\" preload=\"none\" aria-label=\"Seedance 2.0 Fast ecommerce product ad example from storyboard reference\">",
+      "nodeLabel": "Seedance 2.0 Fast ecommerce product ad example from storyboard reference"
+    },
+    "phases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 7702.3
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 28.27300000000014
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 544.5029999999988
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 184.10500000000138
+      }
+    ],
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    },
+    "document": {
+      "url": "http://127.0.0.1:3127/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "rendererStartTime": 0,
+      "networkRequestTime": 0.39800000190734863,
+      "networkEndTime": 8039.828999996185,
+      "finished": true,
+      "transferSize": 44132,
+      "resourceSize": 203517,
+      "statusCode": 200,
+      "mimeType": "text/html",
+      "resourceType": "Document",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    "benchmarkIndex": 3751.5,
+    "runWarnings": []
+  },
+  {
+    "id": "desktop-3-baseline-warm",
+    "fetchTime": "2026-10-17T17:09:19.682Z",
+    "lcpNode": {
+      "type": "node",
+      "lhId": "page-0-VIDEO",
+      "path": "1,HTML,1,BODY,1,DIV,1,DIV,2,MAIN,0,DIV,1,ARTICLE,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,VIDEO",
+      "selector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+      "boundingRect": {
+        "top": 141,
+        "bottom": 717,
+        "left": 69,
+        "right": 393,
+        "width": 324,
+        "height": 576
+      },
+      "snippet": "<video src=\"https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/…\" poster=\"/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d…\" playsinline=\"\" preload=\"none\" aria-label=\"Seedance 2.0 Fast ecommerce product ad example from storyboard reference\">",
+      "nodeLabel": "Seedance 2.0 Fast ecommerce product ad example from storyboard reference"
+    },
+    "phases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 5267.029
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 27.605999999999767
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 0.5230000000001382
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 200.08799999999974
+      }
+    ],
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    },
+    "document": {
+      "url": "http://127.0.0.1:3127/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "rendererStartTime": 0,
+      "networkRequestTime": 0.37800002098083496,
+      "networkEndTime": 5499.094000041485,
+      "finished": true,
+      "transferSize": 44132,
+      "resourceSize": 203517,
+      "statusCode": 200,
+      "mimeType": "text/html",
+      "resourceType": "Document",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    "benchmarkIndex": 3727,
+    "runWarnings": []
+  },
+  {
+    "id": "desktop-3-candidate-cold",
+    "fetchTime": "2026-10-17T17:09:40.916Z",
+    "lcpNode": {
+      "type": "node",
+      "lhId": "page-1-VIDEO",
+      "path": "1,HTML,1,BODY,1,DIV,1,DIV,2,MAIN,0,DIV,1,ARTICLE,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,VIDEO",
+      "selector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+      "boundingRect": {
+        "top": 141,
+        "bottom": 717,
+        "left": 69,
+        "right": 393,
+        "width": 324,
+        "height": 576
+      },
+      "snippet": "<video src=\"https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/…\" poster=\"/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d…\" playsinline=\"\" preload=\"none\" aria-label=\"Seedance 2.0 Fast ecommerce product ad example from storyboard reference\">",
+      "nodeLabel": "Seedance 2.0 Fast ecommerce product ad example from storyboard reference"
+    },
+    "phases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 3764.275
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 33.86200000000008
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 543.3969999999995
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 168.84200000000055
+      }
+    ],
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    },
+    "document": {
+      "url": "http://127.0.0.1:3128/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "rendererStartTime": 0,
+      "networkRequestTime": 0.3930000066757202,
+      "networkEndTime": 4106.472999989986,
+      "finished": true,
+      "transferSize": 44127,
+      "resourceSize": 203517,
+      "statusCode": 200,
+      "mimeType": "text/html",
+      "resourceType": "Document",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    "benchmarkIndex": 3693.5,
+    "runWarnings": []
+  },
+  {
+    "id": "desktop-3-candidate-warm",
+    "fetchTime": "2026-10-17T17:10:02.496Z",
+    "lcpNode": {
+      "type": "node",
+      "lhId": "page-0-VIDEO",
+      "path": "1,HTML,1,BODY,1,DIV,1,DIV,2,MAIN,0,DIV,1,ARTICLE,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,VIDEO",
+      "selector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+      "boundingRect": {
+        "top": 141,
+        "bottom": 717,
+        "left": 69,
+        "right": 393,
+        "width": 324,
+        "height": 576
+      },
+      "snippet": "<video src=\"https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/…\" poster=\"/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d…\" playsinline=\"\" preload=\"none\" aria-label=\"Seedance 2.0 Fast ecommerce product ad example from storyboard reference\">",
+      "nodeLabel": "Seedance 2.0 Fast ecommerce product ad example from storyboard reference"
+    },
+    "phases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 2538.4349999389647
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 19.886000061035247
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 1.1350000000002183
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 258.41100000000006
+      }
+    ],
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    },
+    "document": {
+      "url": "http://127.0.0.1:3128/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "rendererStartTime": 0,
+      "networkRequestTime": 0.38999998569488525,
+      "networkEndTime": 2766.3550000190735,
+      "finished": true,
+      "transferSize": 44127,
+      "resourceSize": 203517,
+      "statusCode": 200,
+      "mimeType": "text/html",
+      "resourceType": "Document",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    "benchmarkIndex": 3717.5,
+    "runWarnings": []
+  },
+  {
+    "id": "mobile-3-baseline-cold",
+    "fetchTime": "2026-10-17T17:10:21.004Z",
+    "lcpNode": {
+      "type": "node",
+      "lhId": "page-1-VIDEO",
+      "path": "1,HTML,1,BODY,1,DIV,1,DIV,2,MAIN,0,DIV,1,ARTICLE,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,VIDEO",
+      "selector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+      "boundingRect": {
+        "top": 170,
+        "bottom": 609,
+        "left": 72,
+        "right": 318,
+        "width": 247,
+        "height": 439
+      },
+      "snippet": "<video src=\"https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/…\" poster=\"/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d…\" playsinline=\"\" preload=\"none\" aria-label=\"Seedance 2.0 Fast ecommerce product ad example from storyboard reference\">",
+      "nodeLabel": "Seedance 2.0 Fast ecommerce product ad example from storyboard reference"
+    },
+    "phases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 4715.356
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 47.240999999999985
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 536.0240000000003
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 173.95799999999963
+      }
+    ],
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    },
+    "document": {
+      "url": "http://127.0.0.1:3127/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "rendererStartTime": 0,
+      "networkRequestTime": 0.3790000081062317,
+      "networkEndTime": 5013.822000026703,
+      "finished": true,
+      "transferSize": 44132,
+      "resourceSize": 203517,
+      "statusCode": 200,
+      "mimeType": "text/html",
+      "resourceType": "Document",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    "benchmarkIndex": 3740.5,
+    "runWarnings": []
+  },
+  {
+    "id": "mobile-3-baseline-warm",
+    "fetchTime": "2026-10-17T17:10:43.262Z",
+    "lcpNode": {
+      "type": "node",
+      "lhId": "page-0-VIDEO",
+      "path": "1,HTML,1,BODY,1,DIV,1,DIV,2,MAIN,0,DIV,1,ARTICLE,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,VIDEO",
+      "selector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+      "boundingRect": {
+        "top": 170,
+        "bottom": 609,
+        "left": 72,
+        "right": 318,
+        "width": 247,
+        "height": 439
+      },
+      "snippet": "<video src=\"https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/…\" poster=\"/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d…\" playsinline=\"\" preload=\"none\" aria-label=\"Seedance 2.0 Fast ecommerce product ad example from storyboard reference\">",
+      "nodeLabel": "Seedance 2.0 Fast ecommerce product ad example from storyboard reference"
+    },
+    "phases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 5356.753
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 48.82600000000002
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 0.9090000000005602
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 173.29699999999957
+      }
+    ],
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    },
+    "document": {
+      "url": "http://127.0.0.1:3127/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "rendererStartTime": 0,
+      "networkRequestTime": 0.33399999141693115,
+      "networkEndTime": 5582.841999948025,
+      "finished": true,
+      "transferSize": 44132,
+      "resourceSize": 203517,
+      "statusCode": 200,
+      "mimeType": "text/html",
+      "resourceType": "Document",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    "benchmarkIndex": 3724,
+    "runWarnings": []
+  },
+  {
+    "id": "mobile-3-candidate-cold",
+    "fetchTime": "2026-10-17T17:11:04.472Z",
+    "lcpNode": {
+      "type": "node",
+      "lhId": "page-1-VIDEO",
+      "path": "1,HTML,1,BODY,1,DIV,1,DIV,2,MAIN,0,DIV,1,ARTICLE,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,VIDEO",
+      "selector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+      "boundingRect": {
+        "top": 170,
+        "bottom": 609,
+        "left": 72,
+        "right": 318,
+        "width": 247,
+        "height": 439
+      },
+      "snippet": "<video src=\"https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/…\" poster=\"/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d…\" playsinline=\"\" preload=\"none\" aria-label=\"Seedance 2.0 Fast ecommerce product ad example from storyboard reference\">",
+      "nodeLabel": "Seedance 2.0 Fast ecommerce product ad example from storyboard reference"
+    },
+    "phases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 2624.17
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 45.327999999999975
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 535.29
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 167.846
+      }
+    ],
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    },
+    "document": {
+      "url": "http://127.0.0.1:3128/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "rendererStartTime": 0,
+      "networkRequestTime": 0.45899999141693115,
+      "networkEndTime": 2918.5839999318123,
+      "finished": true,
+      "transferSize": 44127,
+      "resourceSize": 203517,
+      "statusCode": 200,
+      "mimeType": "text/html",
+      "resourceType": "Document",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    "benchmarkIndex": 3716.5,
+    "runWarnings": []
+  },
+  {
+    "id": "mobile-3-candidate-warm",
+    "fetchTime": "2026-10-17T17:11:24.594Z",
+    "lcpNode": {
+      "type": "node",
+      "lhId": "page-0-VIDEO",
+      "path": "1,HTML,1,BODY,1,DIV,1,DIV,2,MAIN,0,DIV,1,ARTICLE,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,VIDEO",
+      "selector": "div.video-reader-player > div.video-reader-stage > div.video-reader-frame > video",
+      "boundingRect": {
+        "top": 170,
+        "bottom": 609,
+        "left": 72,
+        "right": 318,
+        "width": 247,
+        "height": 439
+      },
+      "snippet": "<video src=\"https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/…\" poster=\"/_next/image?url=https%3A%2F%2Fmedia.maxvideoai.com%2Frenders%2F301cc489-d…\" playsinline=\"\" preload=\"none\" aria-label=\"Seedance 2.0 Fast ecommerce product ad example from storyboard reference\">",
+      "nodeLabel": "Seedance 2.0 Fast ecommerce product ad example from storyboard reference"
+    },
+    "phases": [
+      {
+        "phase": "timeToFirstByte",
+        "label": "Time to first byte",
+        "duration": 2496.335999938965
+      },
+      {
+        "phase": "resourceLoadDelay",
+        "label": "Resource load delay",
+        "duration": 48.75700006103489
+      },
+      {
+        "phase": "resourceLoadDuration",
+        "label": "Resource load duration",
+        "duration": 0.9039999999999964
+      },
+      {
+        "phase": "elementRenderDelay",
+        "label": "Element render delay",
+        "duration": 139.75800000000027
+      }
+    ],
+    "lcpDiscovery": {
+      "type": "checklist",
+      "items": {
+        "priorityHinted": {
+          "label": "fetchpriority=high applied",
+          "value": true
+        },
+        "requestDiscoverable": {
+          "label": "Request is discoverable in initial document",
+          "value": true
+        },
+        "eagerlyLoaded": {
+          "label": "lazy load not applied",
+          "value": true
+        }
+      }
+    },
+    "document": {
+      "url": "http://127.0.0.1:3128/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "sessionTargetType": "page",
+      "protocol": "http/1.1",
+      "rendererStartTime": 0,
+      "networkRequestTime": 0.35899996757507324,
+      "networkEndTime": 2717.772000014782,
+      "finished": true,
+      "transferSize": 44127,
+      "resourceSize": 203517,
+      "statusCode": 200,
+      "mimeType": "text/html",
+      "resourceType": "Document",
+      "priority": "VeryHigh",
+      "experimentalFromMainFrame": true,
+      "entity": "127.0.0.1"
+    },
+    "benchmarkIndex": 3700.5,
+    "runWarnings": []
+  }
+]

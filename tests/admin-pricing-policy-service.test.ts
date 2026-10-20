@@ -24,6 +24,39 @@ import type { PricingRule } from '../frontend/src/lib/pricing-rule-store.ts';
 
 const actorId = '00000000-0000-0000-0000-000000000001';
 
+test('creator billing identities do not block unrelated model policy previews', async () => {
+  const creatorRules = ['toolbox-subtitles', 'toolbox-lip-sync', 'toolbox-motion-control'].map((engineId) =>
+    policyRule(engineId, {
+      engineId, mode: undefined, resolution: undefined, marginPercent: 1.5,
+      surchargeAudioPercent: 0, surchargeUpscalePercent: 0,
+    })
+  );
+  const proposal: PricingPolicyChangeProposal = {
+    operation: 'update', targetId: 'kling', rule: policyRule('kling', { marginPercent: 0.35 }),
+  };
+  const baseline = await previewPricingPolicyChange(proposal, createMemoryHarness([policyRule('kling')]).deps);
+  for (const existingCreatorRules of [...creatorRules.map((rule) => [rule]), creatorRules]) {
+    const initialRules = [policyRule('kling'), ...existingCreatorRules];
+    const harness = createMemoryHarness(initialRules);
+    const preview = await previewPricingPolicyChange(proposal, harness.deps);
+    assert.deepEqual(preview.rows, baseline.rows, 'unrelated tool billing rules cannot change model prices');
+    assert.ok(preview.rows.some((row) => row.deltaCents > 0));
+    assert.deepEqual(harness.rules, initialRules, 'preview cannot rewrite migrated commercial rules');
+    assert.equal(harness.events.length, 0);
+  }
+});
+
+test('unknown creator billing identities remain invalid in the complete policy', async () => {
+  const harness = createMemoryHarness([
+    policyRule('kling'),
+    policyRule('unknown-tool', { engineId: 'toolbox-unknown', mode: undefined, resolution: undefined }),
+  ]);
+  await assert.rejects(
+    previewPricingPolicyChange({ operation: 'update', targetId: 'kling', rule: policyRule('kling', { marginPercent: 0.35 }) }, harness.deps),
+    (error: unknown) => error instanceof PricingAdminError && error.code === 'unknown_engine'
+  );
+});
+
 test('after cutover model and global percentage rules are read-only, while scoped product pricing remains editable', async () => {
   const harness = createMemoryHarness([policyRule('kling')]);
   const deps = { ...harness.deps, loadManualTariffsActive: async () => true };

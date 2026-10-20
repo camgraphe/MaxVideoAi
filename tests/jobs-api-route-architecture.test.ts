@@ -109,3 +109,12 @@ test('jobs list reads migrated tables without request-time schema or legacy repa
     'the list response should read already-migrated output rows directly'
   );
 });
+
+test('stale audio expiration composes the canonical ledger owner without schema bootstrap', () => {
+  const receiptsSource = readFileSync(join(root, 'frontend/src/server/audio/audio-generate-receipts.ts'), 'utf8');
+  assert.match(staleAudioSource, /refundAudioChargeInExecutor/);
+  assert.match(receiptsSource, /executor: TransactionQueryExecutor/);
+  assert.doesNotMatch(staleAudioSource, /INSERT INTO app_receipts|ensureBillingSchema|ensureMediaLibrarySchema/);
+  assert.doesNotMatch(receiptsSource, /ensureBillingSchema|ensureMediaLibrarySchema/);
+  assert.match(routeSource, /if \(await expireStaleAudioJob\(jobRow, userId\)\)\s*\{\s*expiredIds\.push\(jobRow\.job_id\)/);
+});

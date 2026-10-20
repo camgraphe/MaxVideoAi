@@ -22,6 +22,9 @@ export type LocalRender = {
   status: 'pending' | 'completed' | 'failed';
   videoUrl?: string;
   previewVideoUrl?: string;
+  playbackVideoUrl?: string;
+  outputPreparationState?: 'active' | 'manual_review';
+  lastFrameUrl?: string;
   readyVideoUrl?: string;
   thumbUrl?: string;
   hasAudio?: boolean;
@@ -70,6 +73,9 @@ type PersistedRender = {
   status: 'pending' | 'completed' | 'failed';
   videoUrl?: string | null;
   previewVideoUrl?: string | null;
+  playbackVideoUrl?: string | null;
+  outputPreparationState?: 'active' | 'manual_review';
+  lastFrameUrl?: string | null;
   readyVideoUrl?: string | null;
   thumbUrl?: string | null;
   hasAudio?: boolean;
@@ -169,6 +175,9 @@ function coercePersistedRender(entry: PersistedRender): LocalRender | null {
     message: typeof entry.message === 'string' && entry.message.length ? entry.message : '',
     status,
     videoUrl: typeof entry.videoUrl === 'string' && entry.videoUrl.length ? entry.videoUrl : undefined,
+    playbackVideoUrl: typeof entry.playbackVideoUrl === 'string' && entry.playbackVideoUrl.length ? entry.playbackVideoUrl : undefined,
+    outputPreparationState: entry.outputPreparationState === 'active' || entry.outputPreparationState === 'manual_review' ? entry.outputPreparationState : undefined,
+    lastFrameUrl: typeof entry.lastFrameUrl === 'string' && entry.lastFrameUrl.length ? entry.lastFrameUrl : undefined,
     previewVideoUrl:
       typeof entry.previewVideoUrl === 'string' && entry.previewVideoUrl.length ? entry.previewVideoUrl : undefined,
     readyVideoUrl:
@@ -253,6 +262,9 @@ export function serializePendingRenders(renders: LocalRender[]): string | null {
       status: render.status,
       videoUrl: render.videoUrl,
       previewVideoUrl: render.previewVideoUrl,
+      playbackVideoUrl: render.playbackVideoUrl,
+      outputPreparationState: render.outputPreparationState,
+      lastFrameUrl: render.lastFrameUrl,
       readyVideoUrl: render.readyVideoUrl,
       thumbUrl: render.thumbUrl,
       hasAudio: render.hasAudio,

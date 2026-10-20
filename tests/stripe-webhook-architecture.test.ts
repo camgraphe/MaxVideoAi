@@ -43,6 +43,8 @@ test('failed-payment protection and refund analytics have separate owners', () =
   assert.match(failedPayments, /const FAILED_CARD_ATTEMPT_LIMIT = CHECKOUT_GUARD_LIMITS.failedCardAttempts/);
   assert.match(readFileSync('frontend/server/checkout-guard-policy.ts', 'utf8'), /failedCardAttempts: 5/);
   assert.match(failedPayments, /stripe_checkout_session_expired_for_failed_cards/);
+  assert.match(failedPayments, /from ['"]\.\/stripe-webhook-failed-card-history['"]/);
+  assert.doesNotMatch(route, /stripe-webhook-failed-card-history/);
   assert.match(refunds, /name: 'topup_refunded'/);
 });
 
@@ -57,8 +59,8 @@ test('successful Stripe events share one canonical top-up persistence owner', ()
   assert.equal((topupEvents.match(/recordStripeTopup\(/g) ?? []).length, 2);
   assert.match(persistence, /withDbTransaction/);
   assert.match(persistence, /lockAndResolveFirstWalletTopup/);
-  assert.match(persistence, /name: 'topup_completed'/);
-  assert.match(persistence, /name: 'purchase'/);
+  assert.match(persistence, /enqueueGa4WalletReceiptSafely/);
+  assert.doesNotMatch(persistence, /sendGa4Event/);
   assert.doesNotMatch(route, /recordStripeTopup|withDbTransaction|topup_completed/);
 });
 
@@ -92,6 +94,7 @@ test('Stripe webhook modules stay focused instead of creating a new catch-all', 
   for (const path of [
     eventStatePath,
     failedPaymentsPath,
+    'frontend/app/api/stripe/webhook/_lib/stripe-webhook-failed-card-history.ts',
     refundsPath,
     documentsPath,
     invoiceEventsPath,

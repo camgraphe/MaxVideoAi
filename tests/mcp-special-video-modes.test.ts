@@ -285,6 +285,7 @@ test('LTX audio-to-video and retake project verified source media and canonical 
     height: null,
     durationSec: 11.7,
     mimeType: 'audio/wav',
+    sizeBytes: 1123244,
   }];
   assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(
     a2v,

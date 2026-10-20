@@ -16,6 +16,9 @@ import { assertCustomerTariffCutoverRelease, collectCustomerTariffCutoverCheckpo
 import { captureCustomerTariffCutoverBindings, customerTariffCommercialHash, customerTariffCurrentGridHash } from './customer-tariff-cutover-state';
 import { pricingCutoverTarget } from './cutover-target';
 import { assertReviewedCustomerTariffCutoverPolicy } from './customer-tariff-cutover-policy';
+import { projectInitialCustomerTariffCutoverCells } from './customer-tariff-cutover-evidence';
+import { CustomerTariffUnavailableError } from './resolve-customer-tariff';
+import { ManualTariffError } from '@maxvideoai/pricing';
 export { captureCustomerTariffCutoverBindings } from './customer-tariff-cutover-state';
 
 type Mode = 'rehearsal' | 'production';
@@ -124,7 +127,8 @@ export async function activateInitialCustomerTariffGrid(executor: TransactionQue
   const policy = await loadPricingPolicyOverridesWithExecutor(executor);
   if (policy.status !== 'loaded') throw new Error('Effective database policy unavailable.');
   const effectiveFrom = new Date().toISOString();
-  const cells = input.release.cells.map(cell => validateCustomerTariffCell({ ...cell,source: 'database',version: 1,effectiveFrom }));
+  const projected = projectInitialCustomerTariffCutoverCells(input.release.cells);
+  const cells = projected.cells.map(cell => validateCustomerTariffCell({ ...cell,source: 'database',version: 1,effectiveFrom }));
   const indexed = new Map(cells.map(cell => [selectorKey(cell.selector),cell]));
   if (indexed.size !== cells.length || new Set(cells.map(cell => cell.id)).size !== cells.length) throw new Error('Duplicate candidate identity.');
   const [settings,overrides] = await Promise.all([fetchEngineSettingsReadOnlyWithExecutor(executor),fetchEngineOverridesReadOnlyWithExecutor(executor)]);
@@ -141,9 +145,10 @@ export async function activateInitialCustomerTariffGrid(executor: TransactionQue
     point.scenario = { ...point.scenario,context: { ...point.scenario.context,engine: engines.get(point.scenario.modelId)! } };
   }
   await assertReviewedCustomerTariffCutoverPolicy({ release: input.release,policy,
-    scenarios: cases.filter(row => row.kind === 'ordinary').map(row => row.scenario) });
+    scenarios: cases.filter(row => row.kind === 'ordinary' && row.currentStatus === 'quoted').map(row => row.scenario) });
   const validatedDomains = new Set<string>();
-  for (const { scenario } of cases) {
+  for (const { scenario, currentStatus } of cases) {
+    if (currentStatus === 'unavailable') continue;
     const continuous = continuousInputTariffSelector(scenario.selector);
     if (!continuous) continue;
     const cell = indexed.get(selectorKey(continuous));
@@ -163,6 +168,13 @@ export async function activateInitialCustomerTariffGrid(executor: TransactionQue
   const used = new Set<string>();
   await withLockedCustomerTariffQuoteReadBatch(executor,cases.map(point => point.scenario.selector),async () => {
     for (const point of cases) {
+      if (point.currentStatus === 'unavailable') {
+        let refused = false;
+        try { await computeCanonicalBillingSnapshot(point.scenario.context,{ pricingPolicy: { loadOverrides: async () => policy },customerTariffExecutor: executor }); }
+        catch (error) { if (error instanceof CustomerTariffUnavailableError || (error instanceof ManualTariffError && error.code === 'missing_cell')) refused = true; else throw error; }
+        if (!refused || expected.get(point.key)?.status !== 'unavailable') throw new Error('Unsupported historical LAS scenario exposed a current price.');
+        continue;
+      }
       const quote = await computeCanonicalBillingSnapshot(point.scenario.context,{ pricingPolicy: { loadOverrides: async () => policy },customerTariffExecutor: executor });
       const row = expected.get(point.key)!;
       if (quote.meta?.pricingMode !== 'manual_tariff' || quote.meta?.customerTariffRevision !== 1
@@ -182,8 +194,10 @@ export async function activateInitialCustomerTariffGrid(executor: TransactionQue
   if (!event) throw new Error('Immutable activation evidence missing.');
   await insertPricingChangeEvent(executor,{ domain: 'customer_tariff',operation: 'update',targetId: 'initial-all-model-cutover',actorId: input.actorId,
     previousState: { active: false,revision: 0 },nextState: { active: true,revision: 1,eventId: event.id,gridHash },
-    previewSummary: { fingerprint: input.fingerprint,mode: input.mode,candidateCells: cells.length,checkedQuotes: cases.length },affectedScenarioIds: cases.map(row => row.key) });
-  return { revision: 1,eventId: event.id,effectiveFrom,candidateCells: cells.length,checkedQuotes: cases.length };
+    previewSummary: { fingerprint: input.fingerprint,mode: input.mode,candidateCells: cells.length,archivedLegacyCells: projected.archivedLegacyCells.length,
+      checkedQuotes: cases.length,unavailableQuotes: cases.filter(row => row.currentStatus === 'unavailable').length },affectedScenarioIds: cases.map(row => row.key) });
+  return { revision: 1,eventId: event.id,effectiveFrom,candidateCells: cells.length,archivedLegacyCells: projected.archivedLegacyCells.length,
+    checkedQuotes: cases.length,unavailableQuotes: cases.filter(row => row.currentStatus === 'unavailable').length };
 }
 
 /** Compensating database deactivation, preserving every cell, version, receipt

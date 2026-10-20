@@ -22,8 +22,6 @@ export function BlogAuthorByline({ copy, modifiedLabel, profile, publishedLabel 
         </Link>
       </span>
       <span aria-hidden="true">·</span>
-      <span>{profile.jobTitle}</span>
-      <span aria-hidden="true">·</span>
       <span>
         {copy.published} {publishedLabel}
       </span>
@@ -45,7 +43,6 @@ export function BlogAuthorCard({ copy, locale, profile }: Omit<BlogAuthorProps, 
     <section className="rounded-[24px] border border-hairline bg-surface/80 p-6 shadow-sm sm:p-7">
       <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-muted">{copy.aboutAuthor}</p>
       <h2 className="mt-3 text-xl font-semibold text-text-primary">{profile.name}</h2>
-      <p className="mt-1 text-sm font-medium text-brand">{profile.jobTitle}</p>
       <p className="mt-4 max-w-3xl text-sm leading-7 text-text-secondary">{profile.bio}</p>
       <div className="mt-5 flex flex-wrap gap-3 text-sm font-semibold">
         <Link href={profile.aboutHref} className="text-link transition hover:text-link-hover">

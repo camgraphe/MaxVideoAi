@@ -115,7 +115,7 @@ export function QuadSingleTilesGrid({
                     data-quad-video={shouldPlayPreview ? 'active' : 'idle'}
                     data-quad-tile-fallback
                     key={tile.videoUrl}
-                    src={tile.videoUrl}
+                    src={tile.playbackVideoUrl ?? tile.videoUrl}
                     className="absolute inset-0 h-full w-full object-cover pointer-events-none"
                     muted
                     playsInline

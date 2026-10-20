@@ -6,10 +6,15 @@ import { resolveBytePlusSeedanceRouteProfile } from '@/server/video-providers/by
 import { getBytePlusVideoListRate, quoteSeedreamListCost } from './byteplus-list-tariff';
 import { signedBytePlusContractCost } from './byteplus-account-contract';
 import { estimateBytePlusBillableTokens } from './byteplus-accounting';
+import { isSeedance25LasInputPricing, isSeedance25EditInputPricing, quoteSeedance25LasListCost } from './byteplus-las-tariff';
+import { normalizeSeedancePricingContext } from '@/lib/seedance-option-pricing';
 
 type NormalUsage = {
   engineId: string;
   resolution: string;
+  transport?: 'modelark' | 'las';
+  outputDurationSec?: number;
+  inputVideoDurationSec?: number;
   billingInputType?: 'no_video_input' | 'video_input';
   videoTokens?: number | null;
   outputPixels?: number[];
@@ -21,6 +26,11 @@ const VIDEO_PROFILES = { 'seedance-2-0': 'standard', 'seedance-2-0-fast': 'fast'
 /** The same dated normal-task LIST estimate serves admin comparison and manual settlement. */
 export function bytePlusNormalListCost(usage: NormalUsage) {
   try {
+    if (usage.transport === 'las') {
+      return usage.engineId === 'seedance-2-5' && usage.billingInputType === 'video_input'
+        ? quoteSeedance25LasListCost({ resolution: usage.resolution,
+          outputDurationSec: usage.outputDurationSec ?? NaN, inputVideoDurationSec: usage.inputVideoDurationSec }) : null;
+    }
     if (usage.engineId === 'seedream' || usage.engineId === 'seedream-5-0-pro') {
       if (!usage.outputPixels?.length || usage.inputImages == null) return null;
       const list = quoteSeedreamListCost({ model: usage.engineId === 'seedream' ? 'lite' : 'pro',
@@ -38,11 +48,22 @@ export function bytePlusNormalListCost(usage: NormalUsage) {
 
 /** Factual cost only: never derive a customer tariff from the supplier discount. */
 export function normalBytePlusSupplierCost(context: PricingContext, at: string) {
+  context = normalizeSeedancePricingContext(context);
   const { engine, resolution, mode } = context;
   const declared = engine.providerMeta?.provider;
   const image = engine.id === 'seedream' || engine.id === 'seedream-5-0-pro';
   if (image ? declared !== 'byteplus_modelark' : !resolveBytePlusSeedanceRouteProfile(engine.id, declared)) return null;
-  const usage: NormalUsage = { engineId: engine.id, resolution };
+  if (!context.workflowStep && isSeedance25LasInputPricing(engine.id, mode)) {
+    const usage: NormalUsage = { engineId: engine.id, resolution, transport: 'las', billingInputType: 'video_input',
+      outputDurationSec: context.durationSec, inputVideoDurationSec: context.inputVideoDurationSec };
+    const list = context.hasVideoInput === false ? null : bytePlusNormalListCost(usage);
+    if (!list) return null;
+    return { amountUsd: list.amountUsd, listAmountUsd: list.amountUsd, kind: 'published_list_estimate' as const,
+      source: 'BytePlus LAS Enhanced published LIST', sourceUrl: list.sourceUrl, checkedAt: list.checkedAt,
+      contract: undefined, usage };
+  }
+  const usage: NormalUsage = { engineId: engine.id, resolution,
+    ...(!context.workflowStep && isSeedance25EditInputPricing(engine.id, mode) ? { transport: 'modelark' as const } : {}) };
   if (image) {
     const quantity = context.durationSec;
     const dimensions = /^(\d+)x(\d+)$/.exec(resolveSeedreamProviderSize(resolution, context.aspectRatio));

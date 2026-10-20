@@ -1,3 +1,4 @@
+import {hydrateSubtitleTimelineItems,readSubtitleSequenceAttachment} from '../subtitles/studio';
 import {AgentApiError} from '@/server/agent-api/errors';
 import {randomUUID} from 'node:crypto';
 import {query,withDbTransaction,type TransactionQueryExecutor} from '@/lib/db';
@@ -77,7 +78,9 @@ export async function prepareStudioTimelineExport(actor:StudioExportActor,rawInp
     filterHiddenVideoTrackItems(state.timelineItems,coerceHiddenVideoTracks(state.hiddenVideoTracks,coerceVideoTrackCount(state.videoTrackCount,state.timelineItems))),
     coerceMutedAudioTracks(state.mutedAudioTracks,coerceAudioTrackCount(state.audioTrackCount,state.timelineItems)),
   );
-  const manifest=buildWorkspaceTimelineRenderManifest({items,nodes:(initial.workspace.project.workspaceState as {nodes:WorkspaceGraphNode[]}).nodes,projectName:initial.workspace.project.name,sequenceId:sequence.id,sequenceName:sequence.name,projectSettings:settings,createdAt});
+  const sequenceSubtitle=await readSubtitleSequenceAttachment(actor.userId,initial.workspace,sequence.id);
+  if(sequenceSubtitle?.stale)throw new StudioExportCommandError('SUBTITLE_SEQUENCE_CHANGED',409);
+  const manifest=buildWorkspaceTimelineRenderManifest({sequenceSubtitleDocument:sequenceSubtitle?.document??undefined,items:await hydrateSubtitleTimelineItems(actor.userId,items),nodes:(initial.workspace.project.workspaceState as {nodes:WorkspaceGraphNode[]}).nodes,projectName:initial.workspace.project.name,sequenceId:sequence.id,sequenceName:sequence.name,projectSettings:settings,createdAt});
   const request=parseTimelineExportRequest(buildWorkspaceTimelineVideoExportRequest(manifest,{projectId:input.projectId,idempotencyKey,createdAt,qualityPreset:input.qualityPreset,includeAudio:input.includeAudio}));
   const estimated=await (dependencies.estimate??estimateOwnedTimelineExport)({userId:actor.userId,requestOrigin:dependencies.requestOrigin,rawRequest:request});
   if(!estimated.body.ok)throw new StudioExportCommandError(estimated.body.error,estimated.status);

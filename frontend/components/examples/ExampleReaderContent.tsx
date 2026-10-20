@@ -6,11 +6,13 @@ import { EngineIcon } from '@/components/ui/EngineIcon';
 import { copyTextToClipboard } from '@/lib/clipboard';
 import { SITE_ORIGIN } from '@/lib/siteOrigin';
 import type { ExampleWatchDetail } from '@/lib/example-watch-detail';
-import { VideoWatchShare } from '@/app/(core)/video/[id]/_components/VideoWatchShare.client';
+import { VideoWatchShare } from '@/components/examples/VideoWatchShare.client';
 import { DiscoveryVideoPlayer, type ReaderNavigation } from './DiscoveryVideoPlayer.client';
 import type { ReaderCopy } from './example-reader-copy';
 import styles from './example-reader-styles';
 import { ExampleReaderContext } from './ExampleReaderContext';
+import { ExampleContinuationActions } from './ExampleContinuationActions.client';
+import { exampleRequestSource } from '@/lib/example-continuation';
 
 type Props = { detail: ExampleWatchDetail; copy: ReaderCopy; locale: string; navigation?: ReaderNavigation; onClose?: () => void; headingLevel?: 'h1' | 'h2' };
 
@@ -70,7 +72,10 @@ export function ExampleReaderContent({ detail, copy, locale, navigation, onClose
               {detail.modelHref && <a className={styles.modelLink} href={detail.modelHref}>{copy.model}<ArrowUpRight size={14}/></a>}
             </div>
           </div>
-          {detail.recreateHref && <a className={styles.primary} href={detail.recreateHref} data-analytics-event="cta_click" data-analytics-cta-name="reuse_example" data-analytics-cta-location="example_reader">{copy.create}<ArrowUpRight size={17}/></a>}
+          <div className={styles.creationActions}>
+            {detail.recreateHref && <a className={styles.primary} href={detail.recreateHref} data-analytics-event="cta_click" data-analytics-cta-name="reuse_example" data-analytics-cta-location="example_reader">{copy.create}<ArrowUpRight size={17}/></a>}
+            <ExampleContinuationActions key={`${detail.id}:${locale}`} source={exampleRequestSource(detail)} locale={locale}/>
+          </div>
         </section>
         <section className={styles.prompt} aria-labelledby="example-reader-prompt-title">
           <div className={styles.promptHeading}><SectionHeading id="example-reader-prompt-title">{copy.prompt}</SectionHeading>

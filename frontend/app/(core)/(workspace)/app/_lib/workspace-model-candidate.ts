@@ -7,7 +7,7 @@ import type { EngineCaps } from '@/types/engines';
 import { buildAssetFieldIdSet, buildReferenceAudioFieldIds, reconcileReferenceAssets, type ReferenceAsset } from './workspace-assets';
 import { coerceFormState, coerceFormStateForEngineChange, getPreferredEngineModeForEngineRequest } from './workspace-engine-helpers';
 import { normalizeExtraInputValue, type FormState } from './workspace-form-state';
-import { getGenerationIterationGuardMessage, getLumaRay2GenerationContext, getStartRenderValidationMessage } from './workspace-generation-guards';
+import { getGenerationIterationGuardMessage, getLumaRay2GenerationContext, getStartRenderValidationMessage, getWorkspaceGenerationModeMessage } from './workspace-generation-guards';
 import { prepareGenerationInputs } from './workspace-generation-inputs';
 import { workspaceModeSupportsRequestField } from './workspace-mode-request-fields';
 import { summarizeWorkspaceInputSchema, type WorkspaceInputSchemaSummary } from './workspace-input-schema';
@@ -121,8 +121,10 @@ function normalizedSetup(setup: WorkspaceModelSetup, engine: EngineCaps, workflo
   };
 }
 
-function validateCandidate(engine: EngineCaps, setup: WorkspaceModelSetup, workflow: WorkspaceWorkflowProjection, composer: WorkspaceComposerFacts, summary: WorkspaceInputSchemaSummary) {
+function validateCandidate(engine: EngineCaps, setup: WorkspaceModelSetup, workflow: WorkspaceWorkflowProjection, composer: WorkspaceComposerFacts, summary: WorkspaceInputSchemaSummary, locale: string) {
   const reasons: WorkspaceModelCandidateReason[] = [];
+  const modeMessage = getWorkspaceGenerationModeMessage(engine, workflow.submissionMode, locale);
+  if (modeMessage) reasons.push({ code: 'unsupported-workflow', scope: 'generation', message: modeMessage });
   if (composer.promptCharLimitExceeded) reasons.push({ code: 'prompt-too-long', scope: 'generation', message: `Prompt exceeds the ${composer.promptMaxChars}-character limit.` });
   const extraInputFields = [...summary.promotedFields, ...summary.secondaryFields];
   const validation = getStartRenderValidationMessage({
@@ -200,7 +202,7 @@ export function prepareWorkspaceModelCandidate({ engine, current, locale, curren
     const restoredKeys = new Set(keptReferences.map(referenceKey));
     if (referencesFor(restoreSetup, seedSummary).some(reference => !restoredKeys.has(referenceKey(reference)))) blockingReasons.push({code:'invalid-reference',scope:'apply',message:'Some saved references no longer fit this model.'});
   }
-  const validation = validateCandidate(engine, setup, workflow, composer, inputSchemaSummary);
+  const validation = validateCandidate(engine, setup, workflow, composer, inputSchemaSummary, locale);
   blockingReasons.push(...validation.reasons);
   const changes: WorkspaceModelSettingChange[] = [];
   function change(field: string, before: unknown, after: unknown, reason: WorkspaceModelSettingChange['reason'] = 'adapted') {

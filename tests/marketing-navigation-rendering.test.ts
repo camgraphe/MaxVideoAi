@@ -14,7 +14,7 @@ test('closed desktop panels keep their complete SSR link roster and render decor
     const dropdown=MARKETING_NAV_DROPDOWNS[item.key];
     if(!dropdown)return [];
     return [{id:`marketing-${item.key}-dropdown`,links:[
-      {href:href(dropdown.allHref),label:translate(dropdown.allLabelKey,dropdown.allLabelFallback),badge:null,description:null},
+      ...(!dropdown.allLinkInItems ? [{href:href(dropdown.allHref),label:translate(dropdown.allLabelKey,dropdown.allLabelFallback),badge:null,description:null}] : []),
       ...dropdown.items.map(entry=>({href:href(entry.href),label:translate(`nav.dropdown.${item.key}.items.${entry.key}`,entry.label),badge:entry.badge?translate(`nav.badges.${entry.badge}`,entry.badge):null,description:entry.description?translate(`nav.dropdown.${item.key}.descriptions.${entry.key}`,entry.description):null})),
       ...(dropdown.sections??[]).flatMap(section=>section.items.map(entry=>({href:href(entry.href),label:translate(`nav.dropdown.${item.key}.sections.${section.key}.items.${entry.key}`,entry.label),badge:null,description:null}))),
     ]}];
@@ -51,6 +51,11 @@ test('closed desktop panels keep their complete SSR link roster and render decor
       await trigger.focus();
       await page.keyboard.press('ArrowDown');
       await panel.waitFor({state:'visible'});
+      if (id === 'marketing-examples-dropdown') {
+        assert.equal(await panel.locator('a[href="/examples"]').count(), 1, 'one clear entry opens the main gallery');
+        assert.equal(await panel.locator('.marketing-mega-links a').first().getAttribute('href'), '/examples');
+        assert.equal(await panel.locator('header a[href="/examples"]').count(), 0);
+      }
       assert.ok(await panel.locator('.marketing-entry-content img, .marketing-entry-content svg, .marketing-entry-content [role="img"]').count()>0,'visible panels render their original entry decoration');
       assert.ok(await panel.locator('.lucide-arrow-up-right').count()>0,'panel action arrows appear with the panel');
       assert.deepEqual(await roster(),expected,'enhancement must preserve the complete link roster');
@@ -92,6 +97,9 @@ test('mobile actions skip unchanged desktop menus while desktop state and locale
     await page.locator('summary[aria-controls="mobile-examples-panel"]').tap();
     await page.locator('#mobile-examples-panel a[href="/examples/veo"]').waitFor();
     assert.ok(await page.locator('#mobile-examples-panel a[href="/examples"]').isVisible());
+    assert.equal(await page.locator('#mobile-examples-panel a[href="/examples"]').count(), 1);
+    assert.equal(await page.locator('#mobile-examples-panel > a').first().getAttribute('href'), '/examples');
+    assert.ok(await page.locator('#mobile-examples-panel > a').first().locator('.marketing-entry-content').count() > 0, 'the main gallery has the same entry presentation as model galleries');
     assert.ok(await page.locator('#mobile-examples-panel .marketing-entry-content img').count()>0,'mobile entries retain their decoration by default');
     assert.equal(await countReads(),before,'expanding a mobile section must leave desktop model links untouched');
     await page.getByRole('button',{name:'Close menu',exact:true}).tap();
@@ -111,4 +119,40 @@ test('mobile actions skip unchanged desktop menus while desktop state and locale
     assert.deepEqual(errors,[]);
     assert.deepEqual(await page.evaluate(()=>(window as any).__fixtureHydrationErrors),[]);
   } finally {await browser.close();await fixture.close()}
+});
+
+test('the first examples entry opens the complete localized gallery on desktop and mobile', async () => {
+  const fixture = await createMarketingNavigationBrowserFixture();
+  const browser = await chromium.launch({ headless: true });
+  try {
+    fixture.releaseHydration();
+    for (const [locale, label, destination] of [
+      ['en', 'All examples', '/examples'],
+      ['fr', 'Tous les exemples', '/fr/galerie'],
+      ['es', 'Todos los ejemplos', '/es/galeria'],
+    ]) {
+      for (const mobile of [false, true]) {
+        const page = await browser.newPage({ viewport: { width: mobile ? 390 : 1440, height: 900 }, isMobile: mobile, hasTouch: mobile });
+        try {
+          await page.goto(fixture.url + (locale === 'en' ? '/' : `/${locale}`));
+          await page.waitForFunction(() => !!(window as any).__fixtureHydrated);
+          if (mobile) {
+            await page.locator('.marketing-menu-invoker[aria-haspopup="dialog"]').click();
+            await page.locator('summary[aria-controls="mobile-examples-panel"]').click();
+          } else {
+            await page.locator('button[aria-controls="marketing-examples-dropdown"]').click();
+          }
+          const panel = page.locator(mobile ? '#mobile-examples-panel' : '#marketing-examples-dropdown');
+          const entry = panel.locator(mobile ? ':scope > a' : '.marketing-mega-links a').first();
+          assert.equal(await entry.getAttribute('href'), destination, `${locale}/${mobile}: main gallery comes first`);
+          assert.equal(await entry.getByText(label, { exact: true }).count(), 1);
+          assert.equal(await panel.locator(`a[href="${destination}"]`).count(), 1, 'no duplicate small heading action');
+          await entry.click();
+          assert.equal(new URL(page.url()).pathname, destination);
+          assert.equal(await page.locator(mobile ? '.marketing-menu-overlay' : '#marketing-examples-dropdown').isVisible(), false);
+          assert.deepEqual(await page.evaluate(() => (window as any).__fixtureHydrationErrors), []);
+        } finally { await page.close(); }
+      }
+    }
+  } finally { await browser.close(); await fixture.close(); }
 });

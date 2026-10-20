@@ -2,6 +2,7 @@ import type { ManualTariffPrice, ManualTariffSelector } from '@maxvideoai/pricin
 import type { ManualTariffCoverageScenario } from '@/lib/pricing-audit/manual-tariff-coverage';
 import { normalBytePlusSupplierCost } from '@/server/byteplus-normal-cost';
 import { prepareSeedanceInputTariffPrice } from './seedance-input-tariff';
+import { isSeedance25LasInputPricing } from '@/server/byteplus-las-tariff';
 
 /** Explicitly approved initialization from captured cents, never a live percentage rule. */
 export function prepareReviewedSeedanceMigrationPrice(scenario: ManualTariffCoverageScenario,
@@ -10,6 +11,9 @@ export function prepareReviewedSeedanceMigrationPrice(scenario: ManualTariffCove
     const price: ManualTariffPrice = { kind: 'unit_components', rounding: 'up', components: [{ id: 'retail', rounding: 'none',
       flatCents: currentCustomerCents, terms: [{ unit: 'input_video_seconds', centsPerUnit: 0 }] }] };
     return { price, minimumCustomerCents: currentCustomerCents, marginSource: 'other_route' as const };
+  }
+  if (isSeedance25LasInputPricing(scenario.modelId, scenario.context.mode)) {
+    throw new Error('LAS Edit requires its dedicated reviewed tariff release.');
   }
   const minimum = normalBytePlusSupplierCost({ ...scenario.context, inputVideoDurationSec: Number.MIN_VALUE }, at);
   if (!minimum) throw new Error('Current BytePlus supplier reference is required for reviewed migration.');

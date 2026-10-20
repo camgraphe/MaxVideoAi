@@ -1,3 +1,6 @@
+import { readOwnedSeedanceWorkflowView } from '@/server/seedance-workflow-view';
+import { agentSeedanceWorkflowEnabled } from '@/server/agent-api/seedance-workflow';
+import type { SeedanceWorkflowView } from '@/lib/seedance-workflow-contract';
 import { generationStage, type GenerationObservation } from '@/lib/generation-observation';
 import { query } from '@/lib/db';
 import { deriveJobSurface } from '@/lib/job-surface';
@@ -9,6 +12,7 @@ import { readTrialJobStatus } from '@/server/agent-api/trial-outcomes';
 import { mapGenerationStatusRecordToAgent } from './agent-generation-policy';
 import { getKnownGenerationFailureMessage } from '@/lib/generation-failure-messages';
 import { getVideoFailureCodeFromSettingsSnapshot } from '@/lib/video-failure-codes';
+import { generatedVideoArtifactProjection, generatedVideoOutputPreparationState } from '@/lib/generated-video-output-artifacts';
 
 export { mapGenerationStatusRecordToAgent };
 
@@ -16,6 +20,8 @@ export type AgentGenerationResult =
   | {
       surface: 'video';
       videoUrl: string;
+      playbackVideoUrl?: string | null;
+      lastFrameUrl?: string | null;
       previewUrl: string | null;
       thumbnailUrl: string | null;
       audioUrl: string | null;
@@ -43,6 +49,8 @@ export type AgentGenerationStatus = {
   priceCents: number | null;
   currency: string | null;
   paymentStatus: string | null;
+  seedanceWorkflow?: { step: 'draft' | 'final'; draftJobId: string; eligibility?: SeedanceWorkflowView['eligibility'];
+    expiresAt?: string | null; finalJobId?: string | null; finalizationAvailable?: boolean };
   failureCode?: string;
   funding?: 'included_trial';
   entitlementState?: 'reserved' | 'consumed' | 'released';
@@ -127,7 +135,13 @@ export async function getGenerationStatus(params: {
 }): Promise<AgentGenerationStatus | null> {
   const record = await readOwnedGenerationRecord(params);
   if (!record) return null;
-  const status = mapGenerationStatusRecordToAgent(record);
+  let status = mapGenerationStatusRecordToAgent(record);
+  if (status?.seedanceWorkflow) {
+    const view = await readOwnedSeedanceWorkflowView(params.userId, status.seedanceWorkflow.draftJobId);
+    if (view) status = { ...status, seedanceWorkflow: { ...status.seedanceWorkflow, eligibility: view.eligibility,
+      expiresAt: view.expiresAt, finalJobId: view.final?.jobId ?? null,
+      finalizationAvailable: agentSeedanceWorkflowEnabled() && view.eligibility === 'ready' } };
+  }
   if (!status || status.paymentStatus !== 'included_mcp_trial') return status;
   const trial = await readTrialJobStatus({ userId: params.userId, jobId: params.jobId });
   if (!trial) throw new Error('Included trial lifecycle state is unavailable.');
@@ -235,6 +249,8 @@ export function mapGenerationStatusRecordToWeb(
     progress: override('progress', record.progress ?? undefined),
     observation: overrides.observation ?? { stage: generationStage(override('status', record.status ?? undefined), Boolean((record.settings_snapshot as { providerVideoCopy?: unknown } | null)?.providerVideoCopy)) },
     videoUrl: normalizeMediaUrl(override('videoUrl', record.video_url)) ?? undefined,
+    outputPreparationState: generatedVideoOutputPreparationState(record.settings_snapshot, override('videoUrl', record.video_url), record.provider_job_id, override('status', record.status ?? undefined)),
+    ...generatedVideoArtifactProjection(record.settings_snapshot, override('videoUrl', record.video_url), record.provider_job_id),
     previewVideoUrl: normalizeMediaUrl(override('previewVideoUrl', record.preview_video_url)) ?? undefined,
     audioUrl: normalizeMediaUrl(override('audioUrl', record.audio_url)) ?? undefined,
     thumbUrl: normalizeMediaUrl(override('thumbUrl', record.thumb_url)) ?? undefined,

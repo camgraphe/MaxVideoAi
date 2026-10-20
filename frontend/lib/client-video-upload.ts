@@ -103,7 +103,7 @@ async function uploadVideoThroughApi(file: File, request: RequestFn): Promise<Up
   return asset;
 }
 
-async function uploadVideoInChunks(file: File, request: RequestFn): Promise<UploadedVideoAsset> {
+async function uploadVideoInChunks(file: File, request: RequestFn, abortRequest: RequestFn): Promise<UploadedVideoAsset> {
   let uploadId = '';
   let key = '';
   const parts: Array<{ partNumber: number; etag: string; key: string; size: number }> = [];
@@ -191,7 +191,7 @@ async function uploadVideoInChunks(file: File, request: RequestFn): Promise<Uplo
     return asset;
   } catch (error) {
     if (uploadId && parts.length > 0) {
-      request('/api/uploads/video/multipart/abort', {
+      abortRequest('/api/uploads/video/multipart/abort', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ uploadId, key, parts }),
@@ -201,8 +201,8 @@ async function uploadVideoInChunks(file: File, request: RequestFn): Promise<Uplo
   }
 }
 
-async function uploadLargeVideoFile(file: File, request: RequestFn): Promise<UploadedVideoAsset> {
-  return uploadVideoInChunks(file, request);
+async function uploadLargeVideoFile(file: File, request: RequestFn, abortRequest: RequestFn): Promise<UploadedVideoAsset> {
+  return uploadVideoInChunks(file, request, abortRequest);
 }
 
 export function shouldUseChunkedVideoUpload(file: { size: number }): boolean {
@@ -215,10 +215,10 @@ export function shouldUseDirectVideoUpload(file: { size: number }): boolean {
 
 export async function uploadVideoFile(
   file: File,
-  options: { request?: RequestFn } = {}
+  options: { request?: RequestFn; abortRequest?: RequestFn } = {}
 ): Promise<UploadedVideoAsset> {
   const request = options.request ?? authFetch;
   return shouldUseChunkedVideoUpload(file)
-    ? uploadLargeVideoFile(file, request)
+    ? uploadLargeVideoFile(file, request, options.abortRequest ?? request)
     : uploadVideoThroughApi(file, request);
 }

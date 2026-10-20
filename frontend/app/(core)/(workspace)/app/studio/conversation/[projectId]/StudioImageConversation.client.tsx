@@ -33,8 +33,10 @@ import {insertMediaMention,removeMediaMention,readShelfDrag,MEDIA_SHELF_DRAG_TYP
 import {studioMarketingStarterMessage} from '../../_lib/studio-project-marketing-entry';
 import {consumeGuestCreationFromLocation} from '@/lib/guest-creation-continuation';
 import {parseStudioGuestDraft} from '../../_lib/studio-guest-draft';
+import {buildExampleRequest,type ExampleRequestSource} from '@/lib/example-continuation';
 function StudioImageConversationWorkspace({
   starter,
+  example,
   projectId,
   accountKey,
   projectName,
@@ -45,6 +47,7 @@ function StudioImageConversationWorkspace({
   exportAvailable = false,
 }: {
   starter?: string | string[];
+  example?: ExampleRequestSource;
   projectId: string;
   accountKey: string;
   projectName: string;
@@ -75,12 +78,20 @@ function StudioImageConversationWorkspace({
   const [following, setFollowing] = useState(true);
   const helpTrigger = useRef<HTMLButtonElement>(null);
   const composerRegion = useRef<HTMLDivElement>(null);
-  const [text, setText] = useState(() => studioMarketingStarterMessage(starter,appLocale));
+  const [text, setText] = useState(() => example?buildExampleRequest(example,appLocale,'studio'):studioMarketingStarterMessage(starter,appLocale));
   useEffect(()=>{
     const draft=parseStudioGuestDraft(consumeGuestCreationFromLocation('/app/studio'));
     if(draft)setText(draft);
   },[]);
-  const shelf = useConversationMediaShelf(studio.conversation.turns,locale,mediaEnabled);
+  const exampleEntryId=example?.id;
+  useEffect(()=>{
+    if(exampleEntryId){
+      const url=new URL(window.location.href);
+      url.searchParams.delete('example');
+      window.history.replaceState(window.history.state,'',url.pathname+url.search+url.hash);
+    }
+  },[exampleEntryId]);
+  const shelf = useConversationMediaShelf(studio.conversation.turns,locale,mediaEnabled,{scopeKey:`${accountKey}:${projectId}`,ready:!studio.loading&&!studio.error});
   const references = shelf.references;
   const unavailableReferences = !mediaEnabled&&references.some(ref=>ref.kind&&ref.kind!=='image');
   const [dropping,setDropping] = useState(false);
@@ -130,13 +141,13 @@ function StudioImageConversationWorkspace({
     const input:ImageTurnInput = {
       requestId: crypto.randomUUID(),
       message: text,
-      ...(tasksEnabled?{locale,taskBudget:{profile:'standard',maxCredits:STUDIO_TASK_PROFILES.standard.maxCredits,policyVersion:STUDIO_TASK_POLICY_VERSION,model:assistance.status!.selectedModel,assistanceRevision:assistance.status!.revision}}:{}),
+      locale:appLocale,
+      ...(tasksEnabled?{taskBudget:{profile:'standard',maxCredits:STUDIO_TASK_PROFILES.standard.maxCredits,policyVersion:STUDIO_TASK_POLICY_VERSION,model:assistance.status!.selectedModel,assistanceRevision:assistance.status!.revision}}:{}),
       references: references.filter(ref => !ref.kind || ref.kind === 'image').map((ref) => ref.assetId),
       ...(references.length ? {referenceMentions:references.map(ref=>({assetId:ref.assetId,label:ref.label}))} : {}),
       ...(mediaEnabled ? {attachments: references.filter(ref => ref.kind === 'video' || ref.kind === 'audio').map(ref => ({type: 'asset' as const, assetId: ref.assetId, kind: ref.kind as 'video' | 'audio'}))} : {}),
     };
     setText("");setFollowupNotice(false);
-    shelf.clear();
     follow.current = true;
     await studio.submit(input);
   }

@@ -9,7 +9,7 @@ import { missingDisposablePostgresCommand, startDisposablePostgres } from './hel
 
 const requireFrontend = createRequire(resolve('frontend/package.json'));
 
-test('first-top-up reuse preserves fraud cooldown and guard/report counts reflect real session creation', { timeout: 60_000 }, async (t) => {
+test('checkout reuse preserves fraud cooldown for every customer and guard/report counts reflect real session creation', { timeout: 60_000 }, async (t) => {
   const missing = missingDisposablePostgresCommand();
   if (missing) return t.skip(`${missing} unavailable`);
   const pg = await startDisposablePostgres('checkout-guard-reuse');
@@ -68,18 +68,20 @@ test('first-top-up reuse preserves fraud cooldown and guard/report counts reflec
   });
   const mod = requireFrontend(output);
   let inspections = 0;
-  const session = { id: 'cs_reuse', client_secret: 'test-secret', status: 'open', payment_status: 'unpaid', expires_at: Date.now()/1000 + 1800, metadata: {} };
+  const session = { id: 'cs_reuse', client_secret: 'test-secret', status: 'open', payment_status: 'unpaid', expires_at: Date.now()/1000 + 1800, metadata: { wallet_express_tax_address: '1' } };
   const stripe = { checkout: { sessions: { retrieve: async () => { inspections++; return session; } } } };
   const input = { userId: 'first-user', amountCents: 1000, currency: 'EUR', hasCompletedTopUp: false };
   assert.equal((await mod.findReusableExpressCheckoutSession(stripe, input)).id, 'cs_reuse');
   assert.equal((await mod.findReusableExpressCheckoutSession(stripe, input)).checkoutAttemptId, 1);
-  session.metadata = { ga_session_id: '1789486466' };
+  session.metadata = { wallet_express_tax_address: '1', ga_session_id: '1789486466' };
   assert.equal(
     (await mod.findReusableExpressCheckoutSession(stripe, input)).id,
     'cs_reuse',
     'another tab for the same checkout must reuse the payable session even when its analytics session differs',
   );
   session.metadata = {};
+  assert.equal(await mod.findReusableExpressCheckoutSession(stripe, input), null, 'legacy sessions without wallet tax address collection are not reused');
+  session.metadata = { wallet_express_tax_address: '1' };
   assert.equal((await pg.pool.query('SELECT count(*)::int AS n FROM checkout_attempts')).rows[0].n, 1, 'reuse never creates or resets an attempt');
   for (const changed of [{ userId: 'other-user' }, { currency: 'USD' }, { amountCents: 2500 }]) {
     assert.equal(await mod.findReusableExpressCheckoutSession(stripe, { ...input, ...changed }), null);
@@ -93,11 +95,22 @@ test('first-top-up reuse preserves fraud cooldown and guard/report counts reflec
   const beforeCooldown = inspections;
   assert.equal(await mod.findReusableExpressCheckoutSession(stripe, input), null, 'no first-payer reuse during a failed-card cooldown');
   assert.equal(inspections, beforeCooldown, 'cooldown is checked before any Stripe retrieval');
-  assert.equal((await mod.findReusableExpressCheckoutSession(stripe, { ...input, hasCompletedTopUp: true })).id, 'cs_reuse');
+  assert.equal(await mod.findReusableExpressCheckoutSession(stripe, { ...input, hasCompletedTopUp: true }), null, 'returning customers must not bypass cooldown through reuse');
+  assert.equal(inspections, beforeCooldown, 'returning-user cooldown is checked before Stripe retrieval too');
   const guardInput = { userId: 'first-user', clientIp: null, amountCents: 1000, mode: 'express_checkout', hasCompletedTopUp: false, isPresetTopupTier: true };
   assert.equal((await mod.evaluateWalletCheckoutGuard(guardInput)).reason, 'failed_card_attempt_cooldown');
+  assert.equal((await mod.evaluateWalletCheckoutGuard({ ...guardInput, hasCompletedTopUp: true })).reason, 'failed_card_attempt_cooldown');
   await pg.pool.query("UPDATE checkout_interaction_events SET created_at = now() - interval '31 minutes'");
   assert.equal((await mod.findReusableExpressCheckoutSession(stripe, input)).id, 'cs_reuse');
+  await pg.pool.query("INSERT INTO checkout_interaction_events (user_id, event_name) VALUES ('first-user', 'stripe_failed_card_cooldown_started')");
+  assert.equal(await mod.findReusableExpressCheckoutSession(stripe, input), null, 'a cooldown persists even if Stripe session expiration failed');
+  assert.equal((await mod.evaluateWalletCheckoutGuard({ userId: 'first-user', clientIp: null, amountCents: 1000, mode: 'express_checkout', hasCompletedTopUp: true, isPresetTopupTier: true })).reason, 'failed_card_attempt_cooldown');
+  await pg.pool.query("UPDATE checkout_interaction_events SET created_at = now() - interval '31 minutes'");
+  await pg.pool.query(`INSERT INTO checkout_interaction_events (user_id,event_name,metadata,created_at)
+    VALUES ('first-user','stripe_checkout_session_expired_for_failed_cards','{"cooldown_started_separately":true}',now()-interval '10 minutes')`);
+  assert.equal((await mod.findReusableExpressCheckoutSession(stripe,input))?.id,'cs_reuse','a late session expiry must not extend the original thirty-minute cooldown');
+  assert.equal((await mod.evaluateWalletCheckoutGuard({ ...guardInput,hasCompletedTopUp:true })).reason,'under_limits');
+  await pg.pool.query("UPDATE checkout_interaction_events SET created_at = now() - interval '31 minutes'");
   await pg.pool.query(`INSERT INTO checkout_attempts (user_id, amount_cents, mode, outcome, stripe_checkout_session_id)
     SELECT 'first-user',1000,'express_checkout','session_failed','cs_expired_' || n FROM generate_series(1,5) n;
     INSERT INTO checkout_attempts (user_id, amount_cents, mode, outcome, reason)

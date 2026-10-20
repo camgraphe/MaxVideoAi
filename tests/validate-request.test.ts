@@ -2630,7 +2630,8 @@ test('Seedance 2.0 REF2V accepts Fal-style multimodal references and keeps audio
     prompt: 'Keep the same hero and outfit',
     duration: 'auto',
   });
-  assert.deepEqual(promptOnly, OK);
+  assert.equal(promptOnly.ok, false);
+  assert.equal(promptOnly.error?.field, 'references');
 
   const valid = validateRequest('seedance-2-0', 'ref2v', {
     prompt: 'Keep the same hero and outfit',

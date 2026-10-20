@@ -10,8 +10,8 @@ import { Play } from 'lucide-react';
 import { useExampleCardPlayback } from '@/components/examples/useExampleCardPlayback';
 import type { CompareGalleryVideo } from '../_lib/compare-gallery-data';
 
-export function CompareGalleryCard({ item, name, watchLabel, returnPath, locale }: {
-  locale: AppLocale; item: CompareGalleryVideo; name: string; watchLabel: string; returnPath: string;
+export function CompareGalleryCard({ item, name, engine, watchLabel, returnPath, locale }: {
+  engine: string; locale: AppLocale; item: CompareGalleryVideo; name: string; watchLabel: string; returnPath: string;
 }) {
   const [open, setOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
@@ -40,5 +40,5 @@ export function CompareGalleryCard({ item, name, watchLabel, returnPath, locale 
       className={`absolute inset-0 h-full w-full object-cover ${videoReady ? 'opacity-100' : 'opacity-0'}`} /> : null}
     <span className="compare-gallery-play"><Play size={16} fill="currentColor" aria-hidden="true" /></span>
     {item.duration > 0 ? <span className="compare-gallery-duration">{item.duration} s</span> : null}
-  </Link>{open ? <CompareVideoDialog item={item} name={name} locale={locale} href={href} onClose={close} /> : null}</>;
+  </Link>{open ? <CompareVideoDialog engine={engine} item={item} name={name} locale={locale} href={href} onClose={close} /> : null}</>;
 }

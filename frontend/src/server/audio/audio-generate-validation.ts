@@ -1,3 +1,4 @@
+import { DEFAULT_ELEVEN_VOICE_ID, findElevenVoice } from '@/lib/audio-eleven-voices';
 import {
   AUDIO_MAX_DURATION_SEC,
   AUDIO_MINIMAX_VOICE_VALUES,
@@ -54,6 +55,9 @@ import {
 } from '@/lib/audio-generation';
 
 type NormalizedAudioGenerateInput = {
+  elevenVoiceId?: string;
+  elevenStability?: number;
+  elevenSimilarityBoost?: number;
   voiceModel: AudioVoiceModel | null;
   minimaxVoiceId: string | null;
   lyrics: string | null;
@@ -238,8 +242,31 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
 
   const packConfig = getAudioPackConfig(pack);
   const voiceModel = packConfig.includesVoice ? body.voiceModel ?? 'seed' : null;
-  if ((body.voiceModel && !packConfig.includesVoice) || (voiceModel && !['seed', 'minimax'].includes(voiceModel))) {
+  if ((body.voiceModel && !packConfig.includesVoice) || (voiceModel && !['seed', 'minimax', 'eleven-v4'].includes(voiceModel))) {
     throw new AudioGenerationError('Voice model is unsupported.', { status: 400, code: 'voice_model_invalid', field: 'voiceModel' });
+  }
+  const elevenVoiceId = voiceModel === 'eleven-v4' ? (body.elevenVoiceId === undefined ? DEFAULT_ELEVEN_VOICE_ID : body.elevenVoiceId) : null;
+  if (voiceModel === 'eleven-v4' && (typeof elevenVoiceId !== 'string' || !findElevenVoice(elevenVoiceId))) {
+    throw new AudioGenerationError('ElevenLabs voice is unavailable.', { status: 400, code: 'voice_preset_invalid', field: 'elevenVoiceId' });
+  }
+  for (const field of ['elevenVoiceId', 'elevenStability', 'elevenSimilarityBoost'] as const) {
+    if (body[field] != null && voiceModel !== 'eleven-v4') throw new AudioGenerationError('ElevenLabs settings require Eleven v4.', { status: 400, code: 'eleven_option_unsupported', field });
+  }
+  const elevenRange = (field: 'elevenStability' | 'elevenSimilarityBoost', fallback: number) => {
+    const value = body[field] === undefined ? fallback : body[field];
+    if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 1) {
+      throw new AudioGenerationError('ElevenLabs voice setting must be between 0 and 1.', { status: 400, code: 'eleven_setting_invalid', field });
+    }
+    return value;
+  };
+  const elevenStability = voiceModel === 'eleven-v4' ? elevenRange('elevenStability', 0.5) : null;
+  const elevenSimilarityBoost = voiceModel === 'eleven-v4' ? elevenRange('elevenSimilarityBoost', 0.75) : null;
+  if (voiceModel === 'eleven-v4') {
+    if (body.voiceSampleUrl != null) throw new AudioGenerationError('Use Seed Audio for audio references.', { status: 400, code: 'voice_reference_unsupported', field: 'voiceSampleUrl' });
+    for (const field of ['minimaxVoiceId', 'seedAudioVoice', 'seedAudioOutputFormat', 'seedAudioSampleRate',
+      'seedAudioSpeed', 'seedAudioVolume', 'seedAudioPitch', 'voiceGender', 'voiceProfile', 'voiceDelivery'] as const) {
+      if (body[field] != null) throw new AudioGenerationError('This setting is not supported by Eleven v4.', { status: 400, code: 'eleven_option_unsupported', field });
+    }
   }
   const minimaxVoiceId = voiceModel === 'minimax' ? normalizeString(body.minimaxVoiceId) ?? 'English_FriendlyPerson' : null;
   if (body.minimaxVoiceId && (voiceModel !== 'minimax' || !(AUDIO_MINIMAX_VOICE_VALUES as readonly string[]).includes(body.minimaxVoiceId))) {
@@ -508,7 +535,7 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
 
   const seedAudioSampleRate = packConfig.includesVoice
     ? body.seedAudioSampleRate == null
-      ? voiceModel === 'minimax' ? 44100 : DEFAULT_SEED_AUDIO_SAMPLE_RATE
+      ? voiceModel === 'minimax' || voiceModel === 'eleven-v4' ? 44100 : DEFAULT_SEED_AUDIO_SAMPLE_RATE
       : coerceSeedAudioSampleRate(body.seedAudioSampleRate)
     : null;
   if (packConfig.includesVoice && body.seedAudioSampleRate != null && !seedAudioSampleRate) {
@@ -591,6 +618,7 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
   const locale = normalizeString(body.locale);
 
   return {
+    ...(voiceModel === 'eleven-v4' ? { elevenVoiceId: elevenVoiceId!, elevenStability: elevenStability!, elevenSimilarityBoost: elevenSimilarityBoost! } : {}),
     voiceModel,
     minimaxVoiceId,
     lyrics,

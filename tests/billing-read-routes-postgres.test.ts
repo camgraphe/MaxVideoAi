@@ -18,7 +18,7 @@ test('Billing GETs read only the authenticated ledger and expose database failur
   const pg = await startDisposablePostgres('billing-read-routes');
   const folder = mkdtempSync(join(tmpdir(), 'billing-get-bundle-'));
   const previousUrl = process.env.DATABASE_URL;
-  const fixture = { userId: fixtureUser as string | null, statements: [] as string[] };
+  const fixture = { userId: fixtureUser as string | null, statements: [] as string[], stripeLookups: [] as string[] };
   const globals = globalThis as typeof globalThis & { __billingReadFixture?: typeof fixture };
   globals.__billingReadFixture = fixture;
   let closeDb: (() => Promise<void>) | undefined;
@@ -57,8 +57,18 @@ test('Billing GETs read only the authenticated ledger and expose database failur
         '@/lib/supabase-ssr': `export async function getRouteAuthContext(){return {userId:globalThis.__billingReadFixture.userId};}`,
         '@/lib/db': `export * from ${JSON.stringify(dbPath)}; import * as real from ${JSON.stringify(dbPath)};
           export async function query(text, params){globalThis.__billingReadFixture.statements.push(text);return real.query(text,params);}`,
+        '@/lib/env': `export const ENV = { STRIPE_SECRET_KEY: 'sk_live_receipt_fixture' };`,
+        stripe: `export default class Stripe {
+          paymentIntents = { retrieve: async (id) => {
+            globalThis.__billingReadFixture.stripeLookups.push(id);
+            if (id.startsWith('pi_test_')) throw { code: 'resource_missing', statusCode: 404 };
+            return { id, latest_charge: { id: 'ch_current', receipt_url: 'https://example.com/current-receipt' } };
+          } };
+          invoices = { retrieve: async (id) => ({ id, hosted_invoice_url: 'https://example.com/current-invoice' }) };
+          charges = { retrieve: async (id) => ({ id, receipt_url: 'https://example.com/current-receipt' }) };
+        }`,
       };
-      builder.onResolve({ filter: /.*/ }, args => args.path in mocks ? { path: args.path, namespace: 'fixture' }
+      builder.onResolve({ filter: /.*/ }, args => args.path in mocks && (args.path !== '@/lib/env' || args.importer.endsWith('/api/receipts/route.ts')) ? { path: args.path, namespace: 'fixture' }
         : /^(next\/server|stripe|pg)$/.test(args.path) ? { path: requireFrontend.resolve(args.path), external: true } : undefined);
       builder.onLoad({ filter: /.*/, namespace: 'fixture' }, args => ({ contents: mocks[args.path], loader: 'ts', resolveDir: process.cwd() }));
     } }],
@@ -157,6 +167,59 @@ test('Billing GETs read only the authenticated ledger and expose database failur
     assert.equal(response.status, 400);
     assert.deepEqual(fixture.statements, []);
   });
+  await t.test('live document reads skip historical test sessions without hiding live documents or rewriting the ledger', async () => {
+    const camelMetadata = JSON.stringify({ sessionId: 'cs_test_historical_camel' });
+    const snakeMetadata = JSON.stringify({ session_id: 'cs_test_historical_snake' });
+    await pg.pool.query(`INSERT INTO app_receipts
+      (user_id,type,amount_cents,currency,description,stripe_payment_intent_id,stripe_checkout_session_id,stripe_receipt_url,metadata) VALUES
+      ($1,'topup',2500,'USD','Legacy camel test','pi_test_camel',NULL,NULL,$2),
+      ($1,'topup',2500,'USD','Legacy snake test','pi_test_snake',NULL,NULL,$3),
+      ($1,'topup',2500,'USD','Canonical test','pi_test_canonical','cs_test_canonical',NULL,'{}'),
+      ($1,'topup',1000,'USD','Canonical live','pi_current','cs_live_current',NULL,$2),
+      ($1,'topup',1000,'USD','Unknown legacy mode','pi_legacy',NULL,NULL,'{}'),
+      ($1,'topup',1000,'USD','Cached test receipt','pi_test_cached',NULL,'https://example.com/cached-receipt',$2)`,
+    [fixtureUser, camelMetadata, snakeMetadata]);
+    const before = (await pg.pool.query('SELECT * FROM app_receipts ORDER BY id')).rows;
+    fixture.stripeLookups.length = 0;
+    fixture.statements.length = 0;
+    for (let visit = 0; visit < 2; visit++) {
+      const response = await routes.getReceipts(new Request('http://localhost/api/receipts?limit=100&scope=documents'));
+      assert.equal(response.status, 200);
+      const data = await response.json();
+      const find = (description: string) => data.receipts.find((row: { description: string }) => row.description === description);
+      for (const description of ['Legacy camel test', 'Legacy snake test', 'Canonical test']) {
+        assert.equal(find(description).document_url, null);
+        assert.equal(find(description).amount_cents, 2500);
+        assert.equal(find(description).metadata, undefined);
+      }
+      assert.equal(find('Canonical live').document_url, 'https://example.com/current-receipt');
+      assert.equal(find('Unknown legacy mode').document_url, 'https://example.com/current-receipt');
+      assert.equal(find('Cached test receipt').document_url, 'https://example.com/cached-receipt');
+    }
+    assert.ok(fixture.stripeLookups.every(id => !id.startsWith('pi_test_')), 'test objects must not be requested with the live key');
+    assert.ok(fixture.stripeLookups.includes('pi_current'), 'the canonical live session takes precedence over legacy metadata');
+    assert.ok(fixture.stripeLookups.includes('pi_legacy'), 'unknown mode must not suppress legitimate historical receipts');
+    assert.deepEqual((await pg.pool.query('SELECT * FROM app_receipts ORDER BY id')).rows, before);
+    assert.ok(fixture.statements.every(sql => /^\s*SELECT\b/i.test(sql)));
+  });
+  await t.test('historical rejected reference links explain recovery without rewriting receipts', async () => {
+    await pg.pool.query(`INSERT INTO app_jobs (job_id,user_id,engine_id,engine_label,duration_sec,prompt,thumb_url,settings_snapshot)
+      VALUES ('veo-link-refusal',$1,'veo-3-1-lite','Veo Lite',6,'private prompt','',$2::jsonb)`,
+    [fixtureUser, JSON.stringify({ submissionFailure: { code: 'IMAGE_HOST_NOT_ALLOWED' } })]);
+    await pg.pool.query(`INSERT INTO app_receipts (user_id,type,amount_cents,currency,description,job_id)
+      VALUES ($1,'refund',24,'USD','Refund Google Veo 3.1 Lite - 6s - MaxVideoAI could not complete this render.','veo-link-refusal')`, [fixtureUser]);
+    const before = (await pg.pool.query('SELECT * FROM app_receipts ORDER BY id')).rows;
+    fixture.statements.length = 0;
+    const response = await routes.getReceipts(new Request('http://localhost/api/receipts?limit=100'));
+    assert.equal(response.status, 200);
+    const data = await response.json();
+    const row = data.receipts.find((receipt: { job_id: string }) => receipt.job_id === 'veo-link-refusal');
+    assert.match(row.description, /reference link.*import/i);
+    assert.equal(row.amount_cents, 24);
+    assert.equal(fixture.statements.length, 1);
+    assert.doesNotMatch(JSON.stringify(data), /submissionFailure|IMAGE_HOST_NOT_ALLOWED|private prompt/);
+    assert.deepEqual((await pg.pool.query('SELECT * FROM app_receipts ORDER BY id')).rows, before);
+  });
   await t.test('historical output refusals are projected without rewriting the ledger or reading another owner', async () => {
     const snapshot = { providerFailure: { provider: 'byteplus_modelark', providerErrorCode: 'OutputAudioSensitiveContentDetected', failureCode: 'seedance_reference_media_blocked' } };
     await pg.pool.query(`INSERT INTO app_jobs (job_id,user_id,engine_id,engine_label,duration_sec,prompt,thumb_url,settings_snapshot)
@@ -179,8 +242,9 @@ test('Billing GETs read only the authenticated ledger and expose database failur
     const wan = data.receipts.find((row: { job_id: string }) => row.job_id === 'wan-refusal');
     assert.match(wan.description, /generated image.*blocked/i);
     assert.doesNotMatch(wan.description, /Green net/i);
-    assert.equal(data.receipts.find((row: { job_id: string }) => row.job_id === 'other-audio-refusal').description,
-      'Refund Seedance 2.0 Fast - 5s - Render could not be completed.');
+    const otherOwnerReason = data.receipts.find((row: { job_id: string }) => row.job_id === 'other-audio-refusal').description;
+    assert.match(otherOwnerReason, /could not complete this render/i);
+    assert.doesNotMatch(otherOwnerReason, /generated audio|reference media/i);
     assert.doesNotMatch(JSON.stringify(data), /providerErrorCode|providerFailure|settings_snapshot|private prompt/);
     assert.deepEqual((await pg.pool.query('SELECT * FROM app_receipts ORDER BY id')).rows, before);
     assert.equal(fixture.statements.length, 1);

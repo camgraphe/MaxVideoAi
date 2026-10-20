@@ -71,9 +71,17 @@ per-session card-failure limits.
 
 ## Fraud and payment-method constraints
 
-Hosted and native Checkout accept the account's supported card brands, including
-Amex, from the first purchase. Do not reinstate a blanket brand ban as a proxy
-for card testing. First-purchase metadata still drives the existing shared rate
+As a temporary merchant-approved incident response on 2026-10-14, hosted Checkout
+blocks American Express on first and returning top-ups with Stripe's existing
+`payment_method_options.card.restrictions.brands_blocked` filter. This also blocks
+Amex saved in Link, Apple Pay and Google Pay on the hosted page. Native Elements
+buttons remain available with their supported brands, including Amex. The filter
+is intentionally not a global Stripe/Radar rule and does not cover native wallets
+or legacy direct PaymentIntents. Review after 48 hours, including possible migration
+to Visa/Mastercard and client friction; do not automatically re-enable Amex. To
+remove the temporary filter and its preparation flag, set
+`HOSTED_CHECKOUT_BLOCK_AMEX` to false in the wallet route.
+First-purchase metadata still drives the existing shared rate
 limits, progressive CAPTCHA, and failed-payment cooldown. Stripe owns card
 testing mitigations and required 3DS; no global manual 3DS override is sent.
 
@@ -84,10 +92,31 @@ Vercel sensitive environment variables are unreadable in local exports. An empty
 export does not prove an absent CAPTCHA secret: check variable metadata and
 recent `checkout_attempts` configuration/challenge outcomes before changing it.
 
-Hosted Checkout with automatic tax has additional Google Pay conditions around
-shipping address availability. Do not add a shipping form to digital credits
-solely to force a wallet button. Validate the actual native flow on supported
-iPhone and Android devices; desktop emulation cannot certify their payment sheet.
+Google Pay with Stripe Tax requires shipping-address collection or an existing
+customer shipping address ([Stripe Tax](https://docs.stripe.com/tax/checkout/page)).
+Native Elements sessions collect the address inside the wallet sheet and save it
+with `customer_update.shipping=auto`. Use all Stripe-supported address countries;
+there is no shipping fee or physical delivery. Apple Pay and Link may also ask the
+customer to confirm an address. Hosted sessions retain billing-only collection
+for customers without a saved shipping address. For returning wallet customers,
+hosted Checkout exposes the saved address for editing: Stripe Tax prefers it to
+billing, so hiding it would prevent a customer from correcting the tax location.
+The customer owner returns this flag from its existing retrieval; no extra Stripe
+read or customer-address mutation is needed before session creation.
+
+Both native Apple Pay and Google Pay use `always`: Stripe still checks supported
+browser/device/currency, but a missing saved card does not suppress the button.
+Google sign-in already supplies name/email to the Stripe customer; it grants no
+access to Google Pay cards. Do not request additional OAuth scopes or infer wallet
+availability from the authentication provider. Stripe owns the payment sheet and
+customer confirmation. Validate the actual native flow on supported iPhone and
+Android devices; desktop fixtures cannot certify their payment sheet.
+
+Native sessions carry `wallet_express_tax_address=1`. Server reuse requires this
+policy so sessions prepared before the fix cannot hide Google Pay again. Existing
+failed-card cooldown and ownership checks still run before reuse. CAPTCHA tokens
+remain single-use across all wallets and the hosted fallback; session reuse never
+reuses a consumed CAPTCHA proof.
 
 New local methods require account eligibility, a supported charge currency,
 confirmation and return-flow testing, and webhook fulfillment verification.
@@ -113,9 +142,10 @@ updating the endpoint, and never credit a pending payment on browser return.
 
 `checkout-report.ts` treats a canonical receipt as paid regardless of missing
 browser events. No eligible wallet is a passive view, not a technical error.
-The historical Amex metric counts sessions with the old restriction applied,
-not card declines. Preserve its reader for older records; new sessions no longer
-write the deprecated restriction metadata.
+The Amex metric counts guard attempts flagged for hosted filtering, including
+denied preparations that never create a Stripe Session; it is not a count of
+restricted Sessions or card declines. Preserve its reader for older records; hosted preparations
+again write `amexBlocked: true`, while native preparations record false.
 Automatic wallet preparation creates passive sessions: measure confirmation and
 paid receipts separately from session creation when comparing conversion.
 
@@ -142,7 +172,7 @@ Server preparation is serialized by account and hashed IP with transaction advis
 concurrent tabs release their database connection between lock retries, then repeat the
 reuse lookup after the first preparation finishes. Unrelated account and IP scopes continue
 in parallel.
-For a first top-up it also excludes an active failed-card cooldown before returning a
+For every customer it also excludes an active failed-card cooldown before returning a
 session. Reuse retains the original attempt and its failed-card history, and creates no
 new guard row. New payable Stripe sessions consume the quota even if later expired;
 CAPTCHA requests, visual remounts, wallet cancellation and preparation telemetry do not.
@@ -152,13 +182,13 @@ read-only admin summary. First top-ups require CAPTCHA after three sessions or f
 custom amount. With CAPTCHA configured the maximum is 12 new sessions per 15 minutes,
 allowing the four presets in two currencies plus hosted fallback after verification.
 Without CAPTCHA the maximum remains six. Returning-user and IP limits remain unchanged;
-five failed first-top-up card attempts still expire the session and impose a 30-minute
-cooldown. No Amex brand restriction is active.
+five failed card attempts on any wallet top-up expire the unpaid session and impose a 30-minute
+cooldown. The temporary hosted-only Amex restriction is described above.
 
 The admin report separates preparation counts from confirmed paid receipts. Unpaid sessions
 after 30 minutes include passive wallet preparation, so this is not a customer conversion
 or proven-abandonment measure. Guard interventions do not prove fraud. The Amex restriction
-metric is explicitly historical, card-failure telemetry is scoped to first top-ups, and
+metric counts hosted preparations, card-failure telemetry covers first and returning top-ups, and
 wallet credits (USD) are displayed separately from payment currency.
 
 Receipt document reads deduplicate in-flight lookups by Stripe client and object identity.
@@ -206,3 +236,9 @@ Regression coverage: `transaction-audit-persistence-postgres.test.ts`,
 `admin-provider-credit-incidents.test.ts`, `billing-read-routes-postgres.test.ts`,
 `billing-wallet-presentation.test.ts`, `mcp-confirm-generation.test.ts`,
 `image-generation-provider-persistence.test.ts` and `kling-3-turbo-fallback.test.ts`.
+
+### Wallet readiness and compact billing layout
+
+The native wallet loading deadline is a soft ten-second notice, not a cancellation. A late Stripe `ready` event can still reveal usable buttons. Explicit retries remount the widget through the existing session cache or in-flight preparation promise; they do not reset Stripe session failure limits or reuse a CAPTCHA proof. Retired effects (amount, identity, or hosted handoff) still ignore late callbacks. `express_checkout_ready.metadata.recoveredAfterTimeout` distinguishes recovered loads from immediately ready wallets. A rate-limited preparation does not offer the connection retry control. Explicit retries also ask BillingClient to reload Stripe.js so a failed initial script promise is recoverable, while the native session cache remains mounted.
+
+Billing keeps one visible Add credits heading, a compact balance row and side-by-side payment/credit amounts. The card/hosted fallback stays below the native wallet area regardless of readiness. Keep amount and currency touch targets at least 44 px; preserve visible tax disclosure and error states. `tests/wallet-express-checkout-recovery.test.ts` exercises slow preparation, in-flight and cached retry, late readiness and hosted retirement; the CAPTCHA handoff browser fixture covers Apple Pay, Google Pay and Link switching.

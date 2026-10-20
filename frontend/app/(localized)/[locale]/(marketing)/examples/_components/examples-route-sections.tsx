@@ -92,14 +92,13 @@ type ExamplesModelLandingCardsSectionProps = {
 };
 
 type ExamplesGallerySectionProps = {
-  familyLabel?: string;
   openingEnabled?: boolean;
-  openingDetails?: ReactNode;
   audioAvailableLabel: string;
   detailsCtaLabel: string;
   engineFilter: string | null;
   initialDesktopBatch: number;
   initialExamples: ExampleGalleryVideo[];
+  priceSlots?: Record<string, ReactNode>;
   initialMobileBatch: number;
   initialOffset: number;
   loadMoreLabel: string;
@@ -204,7 +203,7 @@ export function ExamplesModelLinksSection({
           <span className={styles.eyebrow}>
             {locale === 'fr' ? 'Les modèles' : locale === 'es' ? 'Los modelos' : 'The models'}
           </span>
-          <h2 id="examples-model-pages-title">{usesCurrentAndSupportedBlocks ? currentModelPagesLabel : modelPagesLabel}</h2>
+          <h2 id="examples-model-pages-title">{usesCurrentAndSupportedBlocks && primaryModelLinks.length ? currentModelPagesLabel : modelPagesLabel}</h2>
         </div>
         <Link href={pricingPath} className={styles.pricingAction}>
           {pricingLinkLabel}<span aria-hidden="true"> ↗</span>
@@ -278,14 +277,13 @@ export function ExamplesModelLandingCardsSection({ sections }: ExamplesModelLand
 }
 
 export function ExamplesGallerySection({
-  openingDetails,
-  familyLabel,
   openingEnabled,
   audioAvailableLabel,
   detailsCtaLabel,
   engineFilter,
   initialDesktopBatch,
   initialExamples,
+  priceSlots,
   initialMobileBatch,
   initialOffset,
   loadMoreLabel,
@@ -302,11 +300,10 @@ export function ExamplesGallerySection({
   return (
     <section id="gallery" className="min-w-0">
       <ExamplesGalleryGrid
-        familyLabel={familyLabel}
         openingEnabled={openingEnabled}
-        openingDetails={openingDetails}
         detailsCtaLabel={detailsCtaLabel}
         initialExamples={initialExamples}
+        priceSlots={priceSlots}
         loadMoreLabel={loadMoreLabel}
         loadingLabel={loadingLabel}
         noPreviewLabel={noPreviewLabel}

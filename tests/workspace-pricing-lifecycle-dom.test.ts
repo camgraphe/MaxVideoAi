@@ -53,6 +53,20 @@ async function mount() {
 function masked(fixture: Awaited<ReturnType<typeof mount>>) {
   assert.ok(fixture.observed.every(value => value.preflight === null && value.price === null));
 }
+test('Edit availability immediately revokes its quote and requests a fresh quote when restored', async () => {
+  const f = await mount();
+  try {
+    const selectedEngine = { ...f.options.selectedEngine!, id: 'seedance-2-5', modeAvailability: { v2v: { available: true, reason: 'available' } } } as Options['selectedEngine'];
+    await f.update({ selectedEngine, submissionMode: 'v2v', form: { ...f.options.form!, engineId: 'seedance-2-5', mode: 'v2v' } });
+    await f.tick(); await f.respond(0); assert.equal(f.current.price, 1.25);
+    await f.update({ selectedEngine: { ...selectedEngine!, modeAvailability: { v2v: { available: false, reason: 'provider_disabled' } } } as Options['selectedEngine'] });
+    masked(f); assert.equal(f.current.isPricing, false);
+    assert.match(f.current.preflightError ?? '', /unavailable/i);
+    await f.tick(); assert.equal(f.requests.length, 1);
+    await f.update({ selectedEngine }); masked(f); await f.tick();
+    assert.equal(f.requests.length, 2); await f.respond(1); assert.equal(f.current.price, 1.25);
+  } finally { await f.dispose(); }
+});
 test('the French composer explains a preflight reference-duration rejection before charging', async () => {
   const f = await mount();
   try {

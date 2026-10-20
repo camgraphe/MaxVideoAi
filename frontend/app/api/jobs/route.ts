@@ -115,8 +115,9 @@ export async function GET(req: NextRequest) {
         const expiredIds: string[] = [];
         for (const jobRow of staleAudioJobs) {
           try {
-            await expireStaleAudioJob(jobRow, userId);
-            expiredIds.push(jobRow.job_id);
+            if (await expireStaleAudioJob(jobRow, userId)) {
+              expiredIds.push(jobRow.job_id);
+            }
           } catch (error) {
             console.warn('[api/jobs] failed to expire stale audio job', jobRow.job_id, error);
           }
@@ -186,6 +187,7 @@ export async function GET(req: NextRequest) {
           surface: 'video' as const,
           billingProductKey: undefined,
           settingsSnapshot: undefined,
+          outputPreparationState: undefined,
           engineLabel: video.engineLabel,
           durationSec: video.durationSec,
           prompt: video.prompt,

@@ -6,6 +6,7 @@ export type MaxVideoAiMcpInstructionCapabilities = {
   studioMontageCreation?: boolean;
   studioTimelineEditing?: boolean;
   studioExports?: boolean;
+  creatorTools?: boolean;
 };
 
 // Discovery entrypoint. Detailed rules live in each tool descriptor.
@@ -46,6 +47,9 @@ export function buildMaxVideoAiMcpInstructions(
   }
   if (capabilities.studioExports) {
     instructions.push('prepare_studio_export quotes a saved cut; confirm_studio_export needs exact-quote approval. Recover with get_studio_export, never rerender.');
+  }
+  if (capabilities.creatorTools && capabilities.paidGeneration && capabilities.referenceUploads) {
+    instructions.push('Creative tools: list_creator_tools; same exact-quote approval rule.');
   }
   return instructions.join('\n');
 }

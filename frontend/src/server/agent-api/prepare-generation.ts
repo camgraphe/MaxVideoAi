@@ -1,3 +1,4 @@
+import { readSeedanceWorkflowPrices, type SeedanceWorkflowPrices } from './seedance-workflow-prices';
 import { withDbTransaction, type QueryExecutor, type TransactionQueryExecutor } from '@/lib/db';
 import {customerDisplayPrice,type CustomerDisplayPrice} from '@/lib/customer-price-presentation';
 import { getActiveAccountRestriction } from '@/server/fraud-cleanup';
@@ -65,15 +66,19 @@ import type { TrialStatus } from './types';
 
 export type PrepareGenerationInput = Omit<
   CanonicalGenerationRequest,
-  'schemaVersion' | 'settings' | 'references' | 'outputCount'
+  'schemaVersion' | 'settings' | 'references' | 'outputCount' | 'mode' | 'prompt'
 > & {
   schemaVersion?: 1;
+  mode?: CanonicalGenerationRequest['mode'];
+  prompt?: string;
   settings?: CanonicalGenerationRequest['settings'];
   references?: CanonicalGenerationRequest['references'];
   outputCount?: number;
 };
 
 export type PreparedGeneration = {
+  seedanceWorkflowPrices?: SeedanceWorkflowPrices;
+  sourceVideoOutput?: import('@/lib/seedance-edit-source').SeedanceEditSourceFacts;
   quoteId: string;
   expiresAt: string;
   requestHash: string;
@@ -276,7 +281,7 @@ export async function prepareGenerationForActor(
   dependencies: PrepareGenerationDependencies,
 ): Promise<PreparedGeneration> {
   requireGenerationActor(principal);
-  if (principal.authMethod === 'studio-session') {
+  if (principal.authMethod !== 'oauth') {
     let pilotRequest: CanonicalGenerationRequest;
     try { pilotRequest = normalizeGenerationRequest(input); } catch { invalidParameter(); }
     requireStudioGenerationRequest(pilotRequest);
@@ -309,7 +314,8 @@ export async function prepareGenerationForActor(
   }
   if (originalTrialCandidate && !prospectiveTrial) requirePaidGeneration(dependencies);
 
-  const {pricing, pricingSnapshot: verifiedPricingSnapshot, resolvedReferences, catalogRevision} = await readGenerationPricing(request, principal, dependencies);
+  const {pricing, pricingSnapshot: verifiedPricingSnapshot, resolvedReferences, catalogRevision, request: verifiedRequest, resolvedEngine} = await readGenerationPricing(request, principal, dependencies);
+  request = verifiedRequest;
   const pricingSnapshot = bindStudioReferenceSnapshot(verifiedPricingSnapshot, principal, resolvedReferences);
   const requestHash = hashCanonicalGenerationRequest(request);
   const clock = dependencies.now;
@@ -413,11 +419,17 @@ export async function prepareGenerationForActor(
 
   const customerChargeCents = fundingMode === 'trial' ? 0 : pricing.priceCents;
   const topupRequired = fundingMode === 'wallet' && balanceBefore < pricing.priceCents;
+  const seedanceWorkflowPrices = await readSeedanceWorkflowPrices(request, principal.userId, pricing,
+    { resolvedReferences, resolvedEngine }, dependencies);
   return {
+    ...(seedanceWorkflowPrices ? { seedanceWorkflowPrices } : {}),
     quoteId: quote.quoteId,
     expiresAt: quote.expiresAt.toISOString(),
     requestHash,
     summary: request,
+    ...(pricing.pricingSnapshot.meta && typeof pricing.pricingSnapshot.meta === 'object'
+      && (pricing.pricingSnapshot.meta as Record<string, unknown>).seedanceEditSource
+      ? { sourceVideoOutput: (pricing.pricingSnapshot.meta as Record<string, unknown>).seedanceEditSource as import('@/lib/seedance-edit-source').SeedanceEditSourceFacts } : {}),
     price: customerDisplayPrice(customerChargeCents,pricing.currency),
     balance: {
       beforeCents: balanceBefore,

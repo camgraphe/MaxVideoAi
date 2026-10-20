@@ -33,8 +33,9 @@ type GenerationDownloadDependencies = {
 
 type GenerationDownloadServices = Pick<MaxVideoAiMcpServices, 'createGenerationDownload'>;
 
-function primaryOutputUrl(recovery: AgentGenerationRecovery): string | null {
+function primaryOutputUrl(recovery: AgentGenerationRecovery, outputRole: 'primary' | 'last_frame' = 'primary'): string | null {
   if (recovery.status !== 'completed' || !recovery.result) return null;
+  if (outputRole === 'last_frame') return recovery.result.surface === 'video' ? recovery.result.lastFrameUrl ?? null : null;
   if (recovery.result.surface === 'video') return recovery.result.videoUrl;
   if (recovery.result.surface === 'audio') {
     return recovery.result.audioUrl ?? recovery.result.videoUrl;
@@ -66,14 +67,16 @@ function generationDownloadFilename(recovery: AgentGenerationRecovery, mediaUrl:
 export async function createGenerationDownloadDescriptor(
   recovery: AgentGenerationRecovery,
   dependencies: GenerationDownloadDependencies = {},
+  outputRole: 'primary' | 'last_frame' = 'primary',
 ): Promise<AgentGenerationDownload | null> {
-  const mediaUrl = primaryOutputUrl(recovery);
+  const mediaUrl = primaryOutputUrl(recovery, outputRole);
   if (!mediaUrl) return null;
   const extractKey = dependencies.extractStorageKeyFromUrl ?? extractStorageKeyFromUrl;
   const storageKey = extractKey(mediaUrl);
   if (!storageKey) return null;
 
-  const filename = generationDownloadFilename(recovery, mediaUrl);
+  const originalFilename = generationDownloadFilename(recovery, mediaUrl);
+  const filename = outputRole === 'last_frame' ? originalFilename.replace(/\.[a-z0-9]+$/i, '-last-frame.jpg') : originalFilename;
   const signDownload = dependencies.createSignedDownloadUrl ?? createSignedDownloadUrl;
   const url = await signDownload(storageKey, {
     expiresInSeconds: DOWNLOAD_TTL_SECONDS,
@@ -93,7 +96,9 @@ export async function resolveGenerationDownload(
   recovery: AgentGenerationRecovery,
   principal: AgentPrincipal,
   services: GenerationDownloadServices,
+  outputRole: 'primary' | 'last_frame' = 'primary',
 ): Promise<AgentGenerationDownload | null> {
+  if (outputRole === 'last_frame') return createGenerationDownloadDescriptor(recovery, {}, outputRole);
   return services.createGenerationDownload
     ? services.createGenerationDownload(recovery, principal)
     : createGenerationDownloadDescriptor(recovery);

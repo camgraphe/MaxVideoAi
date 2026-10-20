@@ -1,5 +1,5 @@
 import type { AssetBrowserAsset } from '@/components/library/AssetLibraryBrowser';
-import { authFetch } from '@/lib/authFetch';
+import { ownedAuthFetch } from '@/lib/owned-auth-fetch';
 import { translateError } from '@/lib/error-messages';
 import {
   buildMediaLibraryAssetsKey,
@@ -41,6 +41,8 @@ export type RecentOutput = {
   url: string;
   thumbUrl?: string | null;
   previewUrl?: string | null;
+  playbackVideoUrl?: string | null;
+  role?: 'last_frame';
   kind: 'image' | 'video' | 'audio';
   mime?: string | null;
   width?: number | null;
@@ -286,8 +288,8 @@ export function formatTemplate(template: string, values: Record<string, string |
 
 export const assetsFetcher = fetchMediaLibraryAssets;
 
-export const recentOutputsFetcher = async ([url]: readonly [string, string]): Promise<RecentOutputsResponse> => {
-  const res = await authFetch(url);
+export const recentOutputsFetcher = async ([url, userId]: readonly [string, string]): Promise<RecentOutputsResponse> => {
+  const res = await ownedAuthFetch(url, userId);
   const json = (await res.json().catch(() => null)) as RecentOutputsResponse | null;
   if (!res.ok || !json) {
     throw new Error(json && typeof json.error === 'string' ? json.error : 'Failed to load recent renders');

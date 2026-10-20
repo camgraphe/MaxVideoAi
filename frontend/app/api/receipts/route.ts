@@ -12,6 +12,7 @@ export const runtime = 'nodejs';
 const stripe = ENV.STRIPE_SECRET_KEY
   ? new Stripe(ENV.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' })
   : null;
+const stripeLivemode = /^(sk|rk)_live_/.test(ENV.STRIPE_SECRET_KEY ?? '');
 
 export async function GET(req: NextRequest) {
   const databaseConfigured = isDatabaseConfigured();
@@ -64,12 +65,13 @@ export async function GET(req: NextRequest) {
     tax_amount_cents: number | null;
     discount_amount_cents: number | null;
     stripe_payment_intent_id: string | null;
+    stripe_checkout_session_id: string | null;
     stripe_charge_id: string | null;
     stripe_invoice_id: string | null;
     stripe_hosted_invoice_url: string | null;
     stripe_invoice_pdf: string | null;
     stripe_receipt_url: string | null;
-    job_provider_failure: unknown;
+    job_failure_snapshot: unknown;
   };
 
   let rows: ReceiptRow[];
@@ -90,17 +92,21 @@ export async function GET(req: NextRequest) {
          NULL::bigint AS tax_amount_cents,
          NULL::bigint AS discount_amount_cents,
          stripe_payment_intent_id,
+         COALESCE(NULLIF(stripe_checkout_session_id, ''), metadata->>'sessionId', metadata->>'session_id') AS stripe_checkout_session_id,
          stripe_charge_id,
          stripe_invoice_id,
          stripe_hosted_invoice_url,
          stripe_invoice_pdf,
          stripe_receipt_url,
          CASE WHEN type = 'refund' THEN (
-           SELECT jobs.settings_snapshot->'providerFailure'
+           SELECT jsonb_build_object(
+             'providerFailure', jobs.settings_snapshot->'providerFailure',
+             'submissionFailure', jobs.settings_snapshot->'submissionFailure'
+           )
            FROM app_jobs AS jobs
            WHERE jobs.job_id = app_receipts.job_id AND jobs.user_id = app_receipts.user_id
            LIMIT 1
-         ) END AS job_provider_failure
+         ) END AS job_failure_snapshot
        FROM app_receipts
        ${where}
        ORDER BY id DESC
@@ -120,7 +126,9 @@ export async function GET(req: NextRequest) {
     items.map(async (row) => {
       const hasCachedInvoice = Boolean(row.stripe_hosted_invoice_url || row.stripe_invoice_pdf);
       const hasCachedReceiptWithoutInvoice = Boolean(row.stripe_receipt_url && !row.stripe_invoice_id);
-      const lookupClient = hasCachedInvoice || hasCachedReceiptWithoutInvoice ? null : stripe;
+      // Legacy test checkouts can remain in the ledger; their objects do not exist in live mode.
+      const testCheckoutInLiveMode = stripeLivemode && row.stripe_checkout_session_id?.startsWith('cs_test_');
+      const lookupClient = hasCachedInvoice || hasCachedReceiptWithoutInvoice || testCheckoutInLiveMode ? null : stripe;
       const document = await resolveStripeBillingDocument(lookupClient, {
         type: row.kind,
         stripeInvoiceId: row.stripe_invoice_id,
@@ -139,7 +147,7 @@ export async function GET(req: NextRequest) {
         payment_amount_cents: row.kind === 'topup' ? row.original_amount_cents : null,
         payment_currency: row.kind === 'topup' ? row.original_currency : null,
         description: row.kind === 'refund'
-          ? localizeGenerationRefundDescription(row.description, 'en', getVideoFailureCodeFromSettingsSnapshot({ providerFailure: row.job_provider_failure }))
+          ? localizeGenerationRefundDescription(row.description, 'en', getVideoFailureCodeFromSettingsSnapshot(row.job_failure_snapshot))
           : row.description,
         created_at: row.created_at,
         job_id: row.job_id,

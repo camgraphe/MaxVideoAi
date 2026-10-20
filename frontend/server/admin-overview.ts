@@ -1,3 +1,4 @@
+import { applicationJobSql } from '@/server/app-job-origin';
 import { query } from '@/lib/db';
 import { getSupabaseAdmin } from '@/server/supabase-admin';
 import { adminReportingWindow } from '@/lib/admin/reporting-window';
@@ -62,7 +63,7 @@ async function loadFinance(from: string, to: string, excludedUserIds: string[], 
       [from, to, excludedUserIds]
     ),
     query<{ count: string }>(
-      `SELECT COUNT(*)::text AS count FROM app_jobs j WHERE ${unresolvedFailedCondition('j')}
+      `SELECT COUNT(*)::text AS count FROM app_jobs j WHERE ${applicationJobSql('j')} AND ${unresolvedFailedCondition('j')}
        AND j.created_at >= $1::timestamptz AND j.created_at < $2::timestamptz
        AND (j.user_id IS NULL OR j.user_id <> ALL($3::text[]))`,
       [from, to, excludedUserIds]

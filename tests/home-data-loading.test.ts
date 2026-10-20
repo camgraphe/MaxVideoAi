@@ -47,7 +47,7 @@ test('homepage starts retained reads together, drops unused proof reads and reco
           if (/^@\/components\/marketing\/(?:home\/)?[A-Z]/.test(args.path)) return { path: args.path, namespace: 'components' };
           if (!args.path.startsWith('.') && !args.path.startsWith('/') && !args.path.startsWith('@/') && !args.path.startsWith('node:')) return { path: requireFrontend.resolve(args.path), external: true };
         });
-        builder.onLoad({ filter: /.*/, namespace: 'components' }, () => ({ loader: 'js', contents: `export const HomeHero=()=>null,HomeFaq=()=>null,WorkflowSeoSummary=()=>null,DeferredMarketingContent=()=>null,HomeCreativeWorlds=()=>null,HomeModelDiscovery=()=>null,HomeCreationSection=()=>null,HomeModelChoice=()=>null,HomeToolsGallery=()=>null,HomePricingSection=()=>null;` }));
+        builder.onLoad({ filter: /.*/, namespace: 'components' }, () => ({ loader: 'js', contents: `export const HomeHero=()=>null,HomeFaq=()=>null,WorkflowSeoSummary=()=>null,DeferredMarketingContent=()=>null,HomeCreativeWorlds=()=>null,HomeModelDiscovery=()=>null,HomeCreationSection=()=>null,HomeModelChoice=()=>null,HomeToolsGallery=()=>null,HomeConversationSection=()=>null,HomePricingSection=()=>null;` }));
         builder.onLoad({ filter: /.*/, namespace: 'controlled' }, args => ({ loader: 'js', resolveDir: process.cwd(), contents: mocks[args.path] ?? (args.path === 'examples'
           ? `import {read,examples} from 'probe';export const loadHomepageExamples=()=>read('examples',examples);export const assembleHomepageExampleCards=()=>examples;export const selectHomepageHeroPreviews=cards=>cards.slice(0,5);export const buildHomepageP0PromotionTargets=()=>[];`
           : args.path === 'demo-pricing' ? `import {read} from 'probe';export const buildCurrentHomePriceDemo=()=>read('demo-pricing',[]);`
@@ -56,6 +56,33 @@ test('homepage starts retained reads together, drops unused proof reads and reco
     });
     const fixture = requireFrontend(output);
     const tick = () => new Promise<void>(done => setImmediate(done));
+    await t.test('the initial hero data stays ready while both canonical price reads are pending', async () => {
+      fixture.reset();
+      const content = JSON.parse(await readFile('frontend/messages/en.json', 'utf8')).home.redesign;
+      const prepared = fixture.prepareHomePageData('en', content);
+      let ready = false;
+      const critical = prepared.critical.then((value: unknown) => { ready = true; return value; });
+      fixture.release('hero-slots'); fixture.release('scores');
+      await tick();
+      const posterDataReadyBeforePrices = ready;
+      fixture.release();
+      await critical; await prepared.completed;
+      assert.equal(posterDataReadyBeforePrices, true, 'Pending exact prices must not hold the initial poster data');
+    });
+    await t.test('a failed price read rejects its boundary while poster data and timing stay independent', async () => {
+      const failure = new Error('private price fixture');
+      fixture.reset(failure, 'hero-pricing');
+      const content = JSON.parse(await readFile('frontend/messages/en.json', 'utf8')).home.redesign;
+      const pending = fixture.prepareHomePageData('en', content);
+      const priceRejected = assert.rejects(pending.heroPrices, error => error === failure);
+      const timingRejected = assert.rejects(pending.completed, error => error === failure);
+      fixture.release();
+      assert.deepEqual((await pending.critical).programmedHeroSlots, []);
+      await priceRejected; await timingRejected;
+      assert.equal(fixture.records.length, 1);
+      assert.equal(fixture.records[0].status, 'error');
+      assert.equal(JSON.stringify(fixture.records).includes(failure.message), false);
+    });
     await t.test('critical data resolves while gallery and its full timing record remain pending', async () => {
       assert.equal(typeof fixture.prepareHomePageData, 'function', 'The route needs independently awaitable critical and discovery data');
       fixture.reset();

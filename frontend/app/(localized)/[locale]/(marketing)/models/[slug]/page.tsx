@@ -22,13 +22,14 @@ import { resolvePublicMarketingVideoUrl } from '@/lib/media';
 import { listPlaylistVideos, getPublicVideosByIds, getPublicVideoIds, type GalleryVideo } from '@/server/videos';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
 import { createScopedPublicPricingReaders } from '@/server/pricing/quote-public-model-scenario';
-import { loadModelPageInputs } from './_lib/model-page-inputs';
+import { prepareModelPageInputs } from './_lib/model-page-inputs';
 import {
   buildDetailSlugMap,
   MODELS_BASE_PATH_MAP,
 } from './_lib/model-page-links';
 import { buildModelDecisionData } from './_lib/model-page-decision-data';
 import { isPublishedModelPage } from './_lib/model-page-publication';
+import { buildModelPageSpecProjection } from './_lib/model-page-spec-projection';
 import { buildModelPagePriceProjection } from './_lib/model-page-pricing';
 import {
   pickDemoMedia,
@@ -47,14 +48,8 @@ import {
   type DetailCopy,
 } from './_lib/model-page-copy';
 import {
-  buildSpecValues,
-  isPending,
-  isUnsupported,
-  normalizeMaxResolution,
   resolveAudioPricingLabels,
-  resolveSpecRowDefs,
   resolveSpecRowLabel,
-  type KeySpecRow,
 } from './_lib/model-page-specs';
 import { MarketingModelPageLayout } from './_components/MarketingModelPageLayout';
 import {
@@ -199,7 +194,7 @@ async function renderMarketingModelPage({
   })();
   const showPriceInSpecs =
     engine.id !== 'lumaRay2' && engine.surfaces.pricing.includeInEstimator;
-  const { benchmarkScoreSlugs, keySpecsMap, gallery, pricing } = await loadModelPageInputs(
+  const inputs = prepareModelPageInputs(
     locale,
     async () => {
       let examples: GalleryVideo[] = [];
@@ -238,9 +233,9 @@ async function renderMarketingModelPage({
       return { pricingEngine, ...projection };
     },
   );
+  const { benchmarkScoreSlugs, keySpecsMap, gallery } = await inputs.critical;
   const { galleryVideos, preferredIds, managed: managedCuration } = gallery;
   const showBenchmarkLink = isVideoEngine && benchmarkScoreSlugs.has(engine.modelSlug);
-  const { pricingEngine, pricePerSecondLabel, pricePerImageLabel, priceRows } = pricing;
   const modelName = localizedContent.marketingName ?? engine.marketingName;
   const fallbackMedia: FeaturedMedia = {
     id: `${engine.modelSlug}-hero-fallback`,
@@ -278,55 +273,13 @@ async function renderMarketingModelPage({
   const faqEntries = localizedContent.faqs.length ? localizedContent.faqs : copy.faqs;
   const keySpecsEntry =
     keySpecsMap.get(engine.modelSlug) ?? keySpecsMap.get(engine.id) ?? null;
-  const keySpecValues = buildSpecValues(engine, keySpecsEntry?.keySpecs, {
-    pricePerSecond: pricePerSecondLabel,
-    pricePerImage: pricePerImageLabel,
+  const specInput = { engine, locale, isImageEngine, showPriceInSpecs, keySpecs: keySpecsEntry?.keySpecs };
+  const { keySpecValues, keySpecRows } = buildModelPageSpecProjection(specInput);
+  const pricing = inputs.pricing.then((projection) => {
+    if (!projection) throw new Error('Model price projection was not started');
+    return { ...projection, ...buildModelPageSpecProjection({ ...specInput, projection }) };
   });
-  const rowDefs = resolveSpecRowDefs(locale, isImageEngine);
-  const pricePerSecondRowLabel = resolveSpecRowLabel(locale, 'pricePerSecond', false);
-  const pricePerImageRowLabel = resolveSpecRowLabel(locale, 'pricePerImage', true);
-  const keySpecDefs = rowDefs.filter((row) => row.key !== (isImageEngine ? 'pricePerImage' : 'pricePerSecond'));
-  const fallbackPriceRows: KeySpecRow[] = !showPriceInSpecs
-    ? []
-    : priceRows.length
-    ? []
-    : isImageEngine
-      ? keySpecValues?.pricePerImage && !isUnsupported(keySpecValues.pricePerImage)
-        ? [
-            {
-              id: 'pricePerImage',
-              key: 'pricePerImage',
-              label: pricePerImageRowLabel,
-              value: keySpecValues.pricePerImage,
-            },
-          ]
-        : []
-      : keySpecValues?.pricePerSecond && !isUnsupported(keySpecValues.pricePerSecond)
-      ? [
-          {
-            id: 'pricePerSecond',
-            key: 'pricePerSecond',
-            label: pricePerSecondRowLabel,
-            value: keySpecValues.pricePerSecond,
-          },
-        ]
-      : [];
-  const keySpecRows: KeySpecRow[] = keySpecValues
-    ? [
-        ...(priceRows.length ? priceRows : fallbackPriceRows),
-        ...keySpecDefs
-          .map(({ key, label }) => ({
-            id: key,
-            key,
-            label,
-            value:
-              key === 'maxResolution' && !isImageEngine
-                ? normalizeMaxResolution(keySpecValues[key])
-                : keySpecValues[key],
-          }))
-          .filter((row) => !isPending(row.value) && !isUnsupported(row.value)),
-      ]
-    : [];
+  void pricing.catch(() => undefined);
 
   return (
     <MarketingModelPageLayout
@@ -335,7 +288,7 @@ async function renderMarketingModelPage({
       localizedContent={localizedContent}
       copy={copy}
       engine={engine}
-      pricingEngine={pricingEngine}
+      pricing={pricing}
       quoteModel={quoteModel}
       isVideoEngine={isVideoEngine}
       isImageEngine={isImageEngine}
@@ -347,8 +300,6 @@ async function renderMarketingModelPage({
       faqEntries={faqEntries}
       keySpecRows={keySpecRows}
       keySpecValues={keySpecValues}
-      pricePerImageLabel={pricePerImageLabel}
-      pricePerSecondLabel={pricePerSecondLabel}
       engineSlug={engine.modelSlug}
       locale={locale}
       canonicalUrl={canonicalUrl}

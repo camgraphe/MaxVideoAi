@@ -32,6 +32,8 @@ import type { useWorkspaceRenderState } from '../_hooks/useWorkspaceRenderState'
 import type { useWorkspaceRouteFormState } from '../_hooks/useWorkspaceRouteFormState';
 import { formatWorkspaceTopupPaymentAmount } from '../_lib/workspace-topup';
 import { buildPendingGenerations } from '@/lib/pending-generations';
+import { prepareSeedanceDraftWorkspaceRequest } from '../_lib/seedance-draft-request';
+import { buildLoginHref } from '@/lib/auth-entry-href';
 
 const WorkspaceModelReview = dynamic(() => import('./WorkspaceModelReview.client').then(module => module.WorkspaceModelReview), { ssr: false });
 
@@ -182,6 +184,7 @@ export function WorkspaceAppReadyView({
   const {
     guestUploadLockedReason,
     inputSchemaSummary,
+    extraInputFields, primaryAssetFieldIds, referenceAssetFieldIds, genericImageFieldIds, frameAssetFieldIds, referenceAudioFieldIds,
   } = inputSchema;
   const {
     authModalOpen,
@@ -250,8 +253,17 @@ export function WorkspaceAppReadyView({
   });
   const workflowAccount = app.authStatus === 'authed' && app.user?.id && app.session?.access_token
     ? { userId: app.user.id, token: app.session.access_token } : null;
+  const draftRequest = selectedEngine?.id === 'seedance-2-5' && form ? prepareSeedanceDraftWorkspaceRequest({
+    selectedEngineId: selectedEngine.id, selectedEngineLabel: selectedEngine.label, activeMode, submissionMode, form, prompt,
+    inputSchema: selectedEngine.inputSchema, inputSchemaSummary, extraInputFields, inputAssets,
+    primaryAssetFieldIds, referenceAssetFieldIds, genericImageFieldIds, frameAssetFieldIds, referenceAudioFieldIds,
+    supportsKlingV3Controls: false, klingElements: [], multiPromptActive: false, multiPromptScenes: [],
+  }) : null;
   const draftWorkflow = useSeedanceDraftWorkflow({ enabled: seedanceDraftWorkflowEnabled && !localSeedanceDraftPreview,
     form, engineId: selectedEngine?.id, mode: submissionMode, prompt, account: workflowAccount,
+    preparedPayload: draftRequest?.ok ? draftRequest.payload : undefined,
+    preflightInputs: draftRequest?.ok ? draftRequest.preflightInputs : undefined,
+    inputPreparationError: draftRequest && !draftRequest.ok ? draftRequest.message : undefined,
     onResolutionChange: handleResolutionChange, showNotice });
   const candidateDraftControls = localSeedanceDraftPreview ? draftPreview : seedanceDraftWorkflowEnabled ? draftWorkflow : undefined;
   const draftControls = candidateDraftControls?.available ? candidateDraftControls : undefined;
@@ -341,6 +353,10 @@ export function WorkspaceAppReadyView({
             klingO3UnsupportedVideoReason={klingO3UnsupportedVideoReason}
             workflowCopy={workflowCopy}
             guestUploadLockedReason={guestUploadLockedReason}
+            referenceAuthAction={app.authStatus === 'loggedOut' && guestUploadLockedReason ? {
+              label: guestUploadLockedReason,
+              href: buildLoginHref({ mode: 'signin', nextPath: loginRedirectTarget }),
+            } : undefined}
             uiLocale={uiLocale}
             composerModeToggles={composerModeToggles}
             activeManualMode={activeManualMode}
@@ -431,6 +447,7 @@ export function WorkspaceAppReadyView({
           }}
         />} /> : null}
       <WorkspaceRuntimeModals
+        locale={uiLocale}
         viewerGroup={viewerGroup}
         onCloseViewer={() => setViewerTarget(null)}
         onRefreshJob={handleRefreshJob}

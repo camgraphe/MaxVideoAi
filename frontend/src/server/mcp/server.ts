@@ -1,3 +1,4 @@
+import { seedanceWorkflowEnabled } from '@/server/seedance-workflow-request';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import mcpPublication from '@/config/mcp-publication.json';
@@ -55,7 +56,7 @@ import {
   type PrepareGenerationInput,
   type TrialRiskRequestContext,
 } from '@/server/agent-api/prepare-generation';
-import { listAudioCapabilities } from '@/server/agent-api/audio-capabilities';
+import { listAudioCapabilities, listMcpAudioCapabilities } from '@/server/agent-api/audio-capabilities';
 import {
   createPrepareAudioGenerationService,
   type PreparedAudioGeneration,
@@ -131,8 +132,11 @@ import {registerStudioTimelineTools} from '@/server/mcp/tools/studio-timeline';
 import {createAgentStudioExportService,type PrepareAgentStudioExportInput,type ConfirmAgentStudioExportInput,type GetAgentStudioExportInput,type AgentStudioExportConfirmation,type AgentStudioExportObservation} from '@/server/agent-api/studio-export';
 import type {StudioPreparedExport} from '@/lib/studio/conversation-export-contract';
 import {registerStudioExportTools} from '@/server/mcp/tools/studio-export';
+import { createAgentCreatorToolsService, type CreatorMcpServices } from '@/server/agent-api/creator-tools';
+import { registerCreatorTools } from '@/server/mcp/tools/creator-tools';
 
 export type MaxVideoAiMcpServices = {
+  creatorTools?: CreatorMcpServices;
   compareGenerationPrices?(input:GenerationPriceComparisonInput,principal:AgentPrincipal):Promise<GenerationPriceComparison>;
   getAccountStatus(principal: AgentPrincipal): Promise<AgentAccountStatus>;
   listModels(filter: AgentModelFilter, principal: AgentPrincipal): Promise<AgentModel[]>;
@@ -206,6 +210,7 @@ export type MaxVideoAiMcpServices = {
 };
 
 export type MaxVideoAiMcpServerOptions = {
+  creatorTools?: boolean;
   paidGeneration?: boolean;
   referenceUploads?: boolean;
   montagePreparation?: boolean;
@@ -234,11 +239,16 @@ export function createDefaultMaxVideoAiMcpServices(
   const studioTimeline = createAgentStudioTimelineService({featureEnabled: true});
   const studioExports = createAgentStudioExportService({enabled:true,requestOrigin:new URL(config.accountUrl).origin});
   return {
+    creatorTools: createAgentCreatorToolsService({ enabled: capabilities.paidGeneration && capabilities.referenceUploads
+      && runtimeEnv.CREATOR_TOOLS_ENABLED === '1' && runtimeEnv.MCP_CREATOR_TOOLS_ENABLED === '1' }),
     getAccountStatus: createAgentAccountStatusService(config.accountUrl, accountStatusDeps),
     listModels: (filter, principal) => listAgentModels(filter, catalogDepsFor(principal)),
     getModelDetails: (engineId, principal) => getAgentModelDetails(
       engineId,
-      catalogDepsFor(principal),
+      { ...catalogDepsFor(principal), seedanceWorkflowAvailability: () => {
+        const web = seedanceWorkflowEnabled(config.resourceUrl);
+        return { mcp: capabilities.paidGeneration && web, web };
+      } },
       prelaunchAccessFor(principal),
     ),
     recommendModels: (input, principal) => recommendAgentModels(input, catalogDepsFor(principal)),
@@ -296,6 +306,7 @@ export function createDefaultMaxVideoAiMcpServices(
       },
     )(input, principal),
     getGenerationStatus: (input, principal) => getAgentGenerationStatus(input, principal, {
+      paidGenerationEnabled: () => capabilities.paidGeneration,
       accountUrl: config.accountUrl,
     }),
     listRecentGenerations: (input, principal) => listAgentRecentGenerations(input, principal, {
@@ -309,14 +320,14 @@ export function createDefaultMaxVideoAiMcpServices(
     createReferenceUploadLink: createDefaultReferenceUploadLinkService(config.accountUrl),
     importReferenceFiles: createDefaultReferenceFileImportService(config.accountUrl),
     prepareMontage: createPrepareMontageService(),
-    listAudioCapabilities: async () => listAudioCapabilities(runtimeEnv),
+    listAudioCapabilities: async () => listMcpAudioCapabilities(runtimeEnv),
     prepareAudioGeneration: (input, principal) => createPrepareAudioGenerationService(
       config.accountUrl,
-      { paidGenerationEnabled: () => capabilities.paidGeneration },
+      { paidGenerationEnabled: () => capabilities.paidGeneration, listCapabilities: () => listMcpAudioCapabilities(runtimeEnv) },
     )(input, principal),
     confirmAudioGeneration: (input, principal) => createConfirmAudioGenerationService(
       config.accountUrl,
-      { paidGenerationEnabled: () => capabilities.paidGeneration },
+      { paidGenerationEnabled: () => capabilities.paidGeneration, listCapabilities: () => listMcpAudioCapabilities(runtimeEnv) },
     )(input, principal),
     createStudioMontage: (input, principal) => createStudioMontageProject(
       { userId: principal.userId },
@@ -343,6 +354,7 @@ export function createMaxVideoAiMcpServer(
   const studioMontageCreation = options.studioMontageCreation ?? mcpPublication.studioMontageCreation;
   const studioTimelineEditing = options.studioTimelineEditing ?? mcpPublication.studioMontageCreation;
   const studioExports = options.studioExports ?? mcpPublication.studioMontageCreation;
+  const creatorTools = paidGeneration && referenceUploads && options.creatorTools === true;
   const server = new McpServer(
     {
       name: 'maxvideoai',
@@ -358,6 +370,7 @@ export function createMaxVideoAiMcpServer(
         studioMontageCreation,
         studioTimelineEditing,
         studioExports,
+        creatorTools,
       }),
       capabilities: { tools: {} },
     }
@@ -383,6 +396,9 @@ export function createMaxVideoAiMcpServer(
   }
   if (studioTimelineEditing) registerStudioTimelineTools(server,principal,services);
   if (studioExports) registerStudioExportTools(server,principal,services);
+  if (creatorTools && !services.creatorTools) throw new Error('Creator tool services are required when their gate is enabled.');
+  // An execution shutdown must not strand an already purchased OAuth operation.
+  if (services.creatorTools) registerCreatorTools(server, principal, services.creatorTools, { studioTimelineEditing, executionEnabled: creatorTools });
   if (audioGeneration) {
     registerListAudioCapabilitiesTool(server, principal, services);
     registerPrepareAudioGenerationTool(server, principal, services);

@@ -241,17 +241,8 @@ test('published fixtures have model, family, pricing and evidence-backed best-fo
   const families = buildModelFamilyDefinitions(models, readinessFixture());
   const familyResolver = createExampleFamilyResolver({ families, engines: publishedFalEntries() });
   const pricingRows = buildVideoPricingRowsFromEntries(publishedFalEntries(), 'en');
-  const scores = new Map(P0_IDS.map((id, index) => [id, {
-    modelSlug: id,
-    fidelity: 9 - index / 10,
-    motion: 8,
-    consistency: 8,
-    anatomy: 8,
-    textRendering: 8,
-  }]));
   const ranked = bestFor.resolveTopPicks(
     { slug: 'cinematic-realism', title: 'Fixture', tier: 1, topPicks: [...P0_IDS] },
-    scores,
     { models, catalog: publishedFalEntries().map((entry) => ({ engineId: entry.id, modelSlug: entry.modelSlug, marketingName: entry.marketingName })) },
   );
 
@@ -264,40 +255,23 @@ test('published fixtures have model, family, pricing and evidence-backed best-fo
   }
 });
 
-test('best-for explicit and fallback ranking require complete relevant numeric evidence', () => {
+test('best-for editorial selections require current public models and never synthesize a score fallback', () => {
   const visible = publishedFixture();
-  const oneScore = new Map([
-    [P0_IDS[0], {
-      modelSlug: P0_IDS[0],
-      fidelity: 9,
-      motion: 9,
-      consistency: 8,
-      anatomy: 8,
-      textRendering: 8,
-    }],
-    [P0_IDS[1], { modelSlug: P0_IDS[1] }],
-    [P0_IDS[2], { modelSlug: P0_IDS[2], fidelity: 9 }],
-    [P0_IDS[3], { modelSlug: P0_IDS[3], sequencingQuality: 9 }],
-  ]);
   const catalog = publishedFalEntries().map((entry) => ({ engineId: entry.id, modelSlug: entry.modelSlug, marketingName: entry.marketingName }));
   const explicit = bestFor.resolveTopPicks(
     { slug: 'cinematic-realism', title: 'Fixture', tier: 1, topPicks: [...P0_IDS, ...LEGACY_IDS, ...DEEP_LEGACY_IDS] },
-    oneScore,
     { models: visible, catalog },
   );
   const fallback = bestFor.resolveTopPicks(
     { slug: 'cinematic-realism', title: 'Fixture', tier: 1 },
-    oneScore,
     { models: visible, catalog },
   );
-  assert.deepEqual(explicit, [P0_IDS[0]]);
-  assert.deepEqual(fallback, [P0_IDS[0]]);
+  assert.deepEqual(explicit, [...P0_IDS]);
+  assert.deepEqual(fallback, []);
   assert.equal(bestFor.buildRankedPick({
     usecaseSlug: 'cinematic-realism',
     modelSlug: P0_IDS[1],
     rank: 1,
-    scores: oneScore,
-    criteria: ['Fidelity'],
     copy: DETAIL_COPY.en,
     locale: 'en',
   }).score, undefined);
@@ -310,9 +284,8 @@ test('best-for explicit and fallback ranking require complete relevant numeric e
   );
   assert.deepEqual(bestFor.resolveTopPicks(
     { slug: 'cinematic-realism', title: 'Fixture', tier: 1, topPicks: [...P0_IDS] },
-    oneScore,
     { models: runtime.listRuntimeModels(), catalog },
-  ), [P0_IDS[0]]);
+  ), [...P0_IDS]);
 });
 
 test('symmetric comparison publication requires both endpoint flags and a complete localized scoreboard', () => {

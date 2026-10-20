@@ -46,7 +46,7 @@ const cases: RecoveryCase[] = [
       settings: [{name: 'duration', value: 8}, {name: 'resolution', value: '720p'}],
       references: [{ref: {type: 'asset', kind: 'image', assetId: firstFrame}, role: 'first_frame', slot: null}]},
     expected: {schemaVersion: 1, surface: 'video', engineId: 'seedance-2-0-mini', mode: 'i2v', prompt: videoPrompt,
-      settings: {aspectRatio: '9:16', audio: true, durationSec: 8, resolution: '720p'},
+      settings: {aspectRatio: '9:16', audio: true, durationSec: 8, resolution: '720p', returnLastFrame: false, watermark: false},
       references: [{kind: 'asset', assetId: firstFrame, role: 'first_frame'}], outputCount: 1},
   },
   {
@@ -216,7 +216,7 @@ test('selected media survives an interrupted canonical quote transaction and ret
         assert.equal(body.endImageUrl, 'https://cdn.maxvideoai.com/frame-1.png');
       } else {
         assert.equal(Object.hasOwn(body, 'endImageUrl'), false);
-        assert.equal(Object.hasOwn(body, 'extraInputValues'), false);
+        assert.deepEqual(body.extraInputValues, { return_last_frame: false, watermark: false });
       }
     } else {
       const run = audioExecutions.find(execution => execution.jobId === accepted[0].jobId)!.normalized;

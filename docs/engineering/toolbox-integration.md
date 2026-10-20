@@ -14,6 +14,12 @@ A result contains the source identities and canonical returned output identities
 
 ## MCP
 
+The five creator tools now have separate role-aware, quote-bound adapters and
+gated MCP descriptors. See [Creator tools](creator-tools.md) for their ownership,
+activation, durable jobs, subtitles and Studio integration. The older quick-tool
+statements below describe their existing adapters; they do not grant execution
+to a new creator profile.
+
 Existing MCP supports model discovery, prepare/confirm generation, media import/listing and status/presentation. Quick tools are not currently executable through MCP. Catalogue `mcpExecution: false` is explicit. The browser-safe contract can support a future shared prepare/confirm adapter, but no new MCP tool registration or standalone audio generation is included. Montage preparation/persistence belongs to Studio.
 
 ## Qualification backlog
@@ -42,7 +48,44 @@ The read-only server quote adapter calls the existing Upscale/Background Removal
 
 `normalizeQuickToolResult` is an additive bridge for canonical returned asset IDs. Missing job/asset IDs return null instead of a guessed output identity. Long legacy `url:<owner>:<kind>:<URL>` IDs must be resolved to canonical public IDs by the media owner before using the v1 schema; they must not be truncated. Studio's existing adapters and project persistence remain separate; this branch does not claim to wire every new surface into Studio.
 
+## Standalone account and selection lifetimes
+
+Angle mounts its editable workspace only after an account or guest is resolved,
+and keys that workspace by account ID. Drafts use
+`maxvideoai.tools.angle.v1:<userId>`; unowned legacy drafts are discarded rather
+than assigned to the next account. Guests keep only an in-memory example.
+Token refresh for the same account must preserve the draft. The key boundary
+also prevents late results from being persisted into another account's state.
+
+Angle source selection cancels the previous upload on library choice, URL paste,
+removal, replacement or unmount. Check cancellation after file preparation and
+before upload dispatch, and ignore superseded success, error and loading updates.
+Release discarded blob previews. This cancels client upload work, not a provider
+generation that has already been accepted.
+
+Upscale history hydration applies only the latest requested selection. Source
+edits, uploads, library choices, engine/media changes, generation and session
+unmount invalidate pending history reads. A historical output with no recovered
+source clears the current input and shows the result alone; a current unrelated
+image must never be used as its before/after source.
+
+`tests/angle-account-selection.test.ts` and
+`tests/upscale-recent-selection.test.ts` exercise the real React owners with
+controlled authentication, storage and delayed network responses. They cover
+same-account restoration, account changes, superseded work and missing sources.
+
 ## Local review
+
+Background Removal history currently has no verified source projection. Opening
+an older result therefore clears the current input and disables Original; it must
+never pair that result with an unrelated current video. Explicit source selection
+clears the historical result as before. Source uploads carry an AbortSignal and
+an operation identity: another upload, library/URL selection or account unmount
+invalidates their success, error and loading effects. An already-open library may
+accept a newer choice during upload; that choice wins even if aborting the HTTP
+request does not prevent its late completion. This does not cancel accepted paid
+generations or delete an already-stored upload. Behavioral coverage lives in
+`tests/background-media-selection.test.ts`.
 
 The normal isolated preview uses `/app/tools`, `/app/tools/upscale?kind=image`, `/app/tools/upscale?kind=video` and `/app/tools/background-removal`. A logged-out preview displays sign-in and does not execute jobs.
 

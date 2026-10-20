@@ -1,3 +1,4 @@
+import { isExternalFalImport } from './app-job-origin';
 import { readGeneratedVideoFacts, type GeneratedVideoFacts } from '@/lib/generated-video-media-facts';
 import { query } from '@/lib/db';
 import { syncProviderAttemptTerminalStatus } from '@/server/video-providers/provider-attempts';
@@ -112,6 +113,12 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
     console.warn('[fal-webhook] Unable to resolve job for provider_job_id', requestId);
     return;
   }
+
+  // Imported results have their own adoption owner, with no application completion events.
+  if (isExternalFalImport(job.settings_snapshot)) return;
+
+  // Subtitle documents and rendered outputs have a separate durable completion owner.
+  if (job.engine_id === 'toolbox-subtitles' || job.engine_id === 'toolbox-lip-sync' || job.engine_id === 'toolbox-motion-control') return;
 
   const originalEngineId = job.engine_id;
   // Correlation can recover a submission whose acknowledgment or DB write was lost.

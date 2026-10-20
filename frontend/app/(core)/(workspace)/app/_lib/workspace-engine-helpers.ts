@@ -5,6 +5,7 @@ import { isHappyHorseEngineId } from '@/lib/happy-horse-workflow';
 import { getLocalizedModeLabel } from '@/lib/ltx-localization';
 import { UNIFIED_SEEDANCE_ENGINE_IDS } from '@/lib/seedance-workflow';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps, Mode } from '@/types/engines';
+import { isEngineModeRuntimeAvailable } from '@/lib/engine-mode-availability';
 import { isKlingO3EngineId } from './kling-o3-unified-workflow';
 import type { FormState } from './workspace-form-state';
 
@@ -148,6 +149,7 @@ function getEngineFieldsForMode(engine: EngineCaps, mode: Mode): EngineInputFiel
 }
 
 export function isWorkspaceModeAvailable(engine: EngineCaps, mode: Mode): boolean {
+  if (!isEngineModeRuntimeAvailable(engine, mode)) return false;
   if (!engine.modes.includes(mode)) return false;
   if (engine.modeCaps && !engine.modeCaps[mode]) return false;
   if (mode === 'extend') {
@@ -477,7 +479,9 @@ export function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormSt
           ?? parsedOptions.find((meta) => matchesDurationOption(meta, defaultRaw as number | string, defaultMeta.value))
           ?? parsedOptions[0]
           ?? defaultMeta;
-        const resolvedDurationValue = selected.isAuto ? fallbackDurationSec : selected.value;
+        const resolvedDurationValue = selected.isAuto
+          ? UNIFIED_SEEDANCE_ENGINE_IDS.has(engine.id) ? engine.maxDurationSec : fallbackDurationSec
+          : selected.value;
         const clampedSeconds = Math.max(1, Math.min(engine.maxDurationSec, Math.round(resolvedDurationValue)));
         return {
           durationSec: clampedSeconds,

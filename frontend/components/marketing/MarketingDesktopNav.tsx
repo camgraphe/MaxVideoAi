@@ -37,7 +37,7 @@ export const MarketingDesktopNav = memo(function MarketingDesktopNav({ desktopDr
     {links.map(item => {
       const dropdown = MARKETING_NAV_DROPDOWNS[item.key];
       const label = t<string>(`nav.linkLabels.${item.key}`, item.key) ?? item.key;
-      const active = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+      const active = pathname === item.href || pathname?.startsWith(`${item.href}/`) || dropdown?.items.some(entry => typeof entry.href === 'string' && (pathname === entry.href || pathname?.startsWith(`${entry.href}/`)));
       if (!dropdown) return <Link key={item.key} href={item.href} prefetch={false} className="marketing-nav-trigger" aria-current={active ? 'page' : undefined}>{label}</Link>;
       const isOpen = desktopDropdownOpen === item.key;
       const panelId = `marketing-${item.key}-dropdown`;
@@ -59,7 +59,7 @@ export const MarketingDesktopNav = memo(function MarketingDesktopNav({ desktopDr
         </button>
         <div id={panelId} className="marketing-mega-menu" hidden={!isOpen}>
           <header className="marketing-mega-heading"><div><p>{t(`nav.dropdown.${item.key}.heading`, dropdown.heading)}</p><span>{t(`nav.dropdown.${item.key}.intro`, dropdown.intro)}</span></div>
-            <Link href={dropdown.allHref} prefetch={false} onClick={() => onCloseDesktopDropdown(0)}>{t(dropdown.allLabelKey, dropdown.allLabelFallback)}{isOpen ? <ArrowUpRight size={16} aria-hidden="true" /> : null}</Link>
+            {!dropdown.allLinkInItems ? <Link href={dropdown.allHref} prefetch={false} onClick={() => onCloseDesktopDropdown(0)}>{t(dropdown.allLabelKey, dropdown.allLabelFallback)}{isOpen ? <ArrowUpRight size={16} aria-hidden="true" /> : null}</Link> : null}
           </header>
           <div className={clsx('marketing-mega-content', dropdown.sections?.length && 'has-aside')}>
             <div className={clsx('marketing-mega-links', twoColumns && 'two-columns')}>
@@ -67,7 +67,7 @@ export const MarketingDesktopNav = memo(function MarketingDesktopNav({ desktopDr
                 const entryLabel = t<string>(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label) ?? entry.label;
                 const badgeLabel = entry.badge ? t<string>(`nav.badges.${entry.badge}`, entry.badge) : undefined;
                 const description = entry.description ? t<string>(`nav.dropdown.${item.key}.descriptions.${entry.key}`, entry.description) : undefined;
-                return <Link key={entry.key} href={entry.href} prefetch={false} onClick={() => onCloseDesktopDropdown(0)} className="marketing-mega-link">
+                return <Link key={entry.key} href={entry.href} prefetch={false} onClick={() => onCloseDesktopDropdown(0)} className={clsx('marketing-mega-link', entry.emphasized && 'marketing-menu-featured')}>
                   <MarketingNavEntryContent entry={entry} label={entryLabel} badgeLabel={badgeLabel} showModelLogo={item.key === 'models'} showDecoration={isOpen} />
                   {description ? <small>{description}</small> : null}
                 </Link>;

@@ -1,6 +1,6 @@
 'use client';
 
-import { FileText, RefreshCw, WalletCards } from 'lucide-react';
+import { FileText, RefreshCw } from 'lucide-react';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import type { BillingWalletStatus } from '../_hooks/useBillingSessionState';
 import type { BillingCopy } from '../_lib/billing-copy';
@@ -37,24 +37,21 @@ export function BillingWalletOverview({
   return (
     <section className={styles.walletOverview} aria-labelledby="billing-wallet-title">
       <div className={styles.walletIntro}>
-        <p className={styles.eyebrow}>{copy.title}</p>
-        <h1 id="billing-wallet-title">{copy.wallet.title}</h1>
+        <h1 id="billing-wallet-title">{copy.wallet.addCreditsTitle}</h1>
         <p>{copy.hero.subtitle}</p>
       </div>
 
       <div className={styles.balanceCluster}>
-        <div className={styles.balanceIcon} aria-hidden="true">
-          <WalletCards size={22} strokeWidth={1.8} />
-        </div>
         <div className={styles.balanceValue}>
           <span>{copy.wallet.balanceLabel}</span>
           <strong data-wallet-balance>{wallet ? `$${wallet.balance.toFixed(2)}` : '—'}</strong>
-          <small role="status" aria-live="polite">{balanceStatus}</small>
+          <small className={walletStatus === 'ready' && wallet ? 'sr-only' : undefined} role="status" aria-live="polite">{balanceStatus}</small>
         </div>
         <Button
           type="button"
           size="md"
           variant="ghost"
+          aria-label={copy.wallet.refreshBalance}
           onClick={onRefresh}
           disabled={!canRefresh || isRefreshing}
           className={styles.refreshButton}

@@ -1,3 +1,4 @@
+import {studioConversationLanguage} from './conversation-language';
 import {assertStudioTaskExecution,setStudioTaskPhase,type StudioTaskExecution} from "./tasks/execution";
 import {StudioTaskStop} from "./tasks/policy";
 import {recallStudioTaskMemory} from "./tasks/memory";
@@ -11,8 +12,9 @@ import {openStudioAssistanceTurn,type StudioLunaFallback} from './assistance-led
 import {readStudioTaskUsage} from './tasks/repository';
 import {studioAssistancePolicy,type StudioAssistancePolicy} from './assistance-policy';
 import {prepareStudioTimelineExport,readStudioTimelineExport,asStudioExportAgentError,type StudioExportDependencies} from './conversation-export-command';
-import {withDbTransaction,isTransactionQueryExecutor} from '@/lib/db';
+import {withDbTransaction,isTransactionQueryExecutor,query} from '@/lib/db';
 import {AgentApiError, toAgentApiFailure} from '@/server/agent-api/errors';
+import {generationComparisonCatalogFingerprint} from '@/server/agent-api/generation-price-comparison';
 import {getActiveAccountRestrictionStrict} from '@/server/fraud-cleanup/restrictions';
 import type {StudioGenerationActor} from '@/server/agent-api/generation-actor';
 import type {ResolvedReference} from '@/server/agent-api/reference-types';
@@ -22,7 +24,7 @@ import {createStudioConversationDirector, type StudioResponseCreator} from './co
 import {createStudioActionExecutor} from './conversation-actions';
 import {createStudioAnalysisService} from './media-analysis/service';
 import {studioAnalysisPolicy} from './media-analysis/policy';
-import {beginStudioAction, completeStudioAction, checkpointStudioResponse, readStudioConversationProject, saveStudioConversationMemory} from './conversation-run-repository';
+import {beginStudioAction, completeStudioAction, checkpointStudioResponse, readCompletedStudioAction, readStudioConversationProject, saveStudioConversationMemory} from './conversation-run-repository';
 import {attachImageQuote, persistImageDraft, type StoredImageTurn} from './image-conversation-repository';
 import {imageRequestFromDraft,imageReferenceFingerprintFromReview, type ImageGenerationFactory} from './image-conversation-service';
 import {validateStudioMediaRequest, type StudioMediaFactories} from './conversation-media-generation';
@@ -39,6 +41,7 @@ import {readStudioWorkspace} from './workspace-command';
 import {StudioConnectedPersistenceError} from './montage-command';
 import {discardStudioPreparedQuote} from './conversation-quote-command';
 import {imageSelectionSchema} from '@/lib/studio/conversation-creation-contract';
+import {studioGreetingReply} from './conversation-intent';
 
 async function prepareMediaAction(options: {
   actor: StudioGenerationActor; turn: StoredImageTurn; input: ImageTurnInput;
@@ -116,6 +119,7 @@ export async function runStudioImageActions(options: {
   requestOrigin?: string;exportDependencies?: Partial<StudioExportDependencies>;
 }) {
   const {actor, turn, input, factory} = options;
+  const replyLocale=studioConversationLanguage(input.message,options.history,input.locale??options.taskExecution?.locale??'en');
   const generation = factory(actor, {enabled: options.enabled});
   const policy = options.assistancePolicy ?? studioAssistancePolicy();
   // Injected response creators are offline qualification seams. Native dispatch always requires the monetary gate.
@@ -126,9 +130,11 @@ export async function runStudioImageActions(options: {
   const analysisPolicy=studioAnalysisPolicy();
   const analysisEnabled=!!analysisPolicy&&policy.credits===true;
   const analysis=createStudioAnalysisService(actor,{assistancePolicy:policy});
-  const director = createStudioConversationDirector({model: assistance?.model,modelForNextCall:()=>currentModel,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,analysisEnabled,analysisProfiles:{video:!!analysisPolicy?.video,audio:!!analysisPolicy?.audio},assistanceCreditsEnabled:policy.credits===true,taskExecution:options.taskExecution});
+  const hasGreetingCheckpoint=studioGreetingReply(input.message,options.references.length>0)
+    ? (await query<{exists:boolean}>('SELECT EXISTS(SELECT 1 FROM studio_conversation_responses WHERE user_id=$1 AND project_id=$2 AND request_id=$3) exists',[actor.userId,actor.projectId,turn.request_id]))[0].exists:false;
+  const director = createStudioConversationDirector({model: assistance?.model,modelForNextCall:()=>currentModel,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,analysisEnabled,analysisProfiles:{video:!!analysisPolicy?.video,audio:!!analysisPolicy?.audio},assistanceCreditsEnabled:policy.credits===true,taskExecution:options.taskExecution,localGreetingEnabled:!options.responseReplayOnly&&!hasGreetingCheckpoint});
   let currentCallId: string;
-  const execute = createStudioActionExecutor(actor, {enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
+  const execute = createStudioActionExecutor(actor, {referenceFingerprint:options.referenceFingerprint,enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
     recallProject:options.taskExecution?text=>recallStudioTaskMemory(actor,text):undefined,
     analysisEnabled,
     readAnalysis:id=>analysis.read(id),
@@ -157,7 +163,7 @@ export async function runStudioImageActions(options: {
       return data;
     }),
     editTimeline: async action => {
-      const insertedRefs=action.edit.kind==='insert'?[action.edit.ref]:action.edit.kind==='assemble'?action.edit.clips.map(clip=>clip.ref):[];
+      const insertedRefs=action.edit.kind==='insert'||action.edit.kind==='replace'?[action.edit.ref]:action.edit.kind==='assemble'?action.edit.clips.map(clip=>clip.ref):[];
       let projectRefs:Set<string>|undefined;
       for(const ref of insertedRefs.filter(ref=>ref.type==='asset')){
         const attached = ref.kind === 'image' ? input.references.includes(ref.assetId) : input.attachments?.some(item => item.type === 'asset' && item.assetId === ref.assetId && item.kind === ref.kind);
@@ -210,7 +216,7 @@ export async function runStudioImageActions(options: {
       }).prepare(request);
     },
   });
-  const draft = await director({message: input.message, history: options.history, references: options.references, referenceMentions: input.referenceMentions, historyFacts: options.historyFacts,
+  const draft = await director({referenceFingerprint:options.referenceFingerprint,message: input.message, locale:input.locale, history: options.history, references: options.references, referenceMentions: input.referenceMentions, historyFacts: options.historyFacts,
     project: await readStudioConversationProject(actor,{exportsEnabled:options.editingEnabled&&options.exportsEnabled,...(options.taskExecution?{taskContext:{message:input.message,requestId:options.taskExecution.taskRequestId}}:{})}),
     checkpoint: async (index, create, params, checkpointOptions) => {
       let solBounds:StudioLunaFallback['solBounds'];
@@ -222,6 +228,8 @@ export async function runStudioImageActions(options: {
       if(options.taskExecution){await assertStudioTaskExecution(actor,options.taskExecution);await setStudioTaskPhase(actor,options.taskExecution,"thinking");}
       if (!params) throw new AgentApiError('INTERNAL_ERROR','Studio is missing its model request bounds.');
       if(lunaFallback){
+        params.max_output_tokens=Math.min(params.max_output_tokens??2200,2200);
+        params.reasoning={effort:params.reasoning?.effort==='low'?'low':'medium'};
         checkpointOptions?.prepareLunaInput?.();
         params.instructions=(params.instructions??'')+'\nStudio has continued this task with sponsored GPT-6 Luna because the next Sol call could not be funded. Continue the remaining client request from the saved work. This assistance change does not authorize a different generation model, a credit purchase or a media confirmation.';
       }
@@ -242,9 +250,14 @@ export async function runStudioImageActions(options: {
           ||typeof action.reason!=='string'||!['included_exhausted','paid_budget_exhausted'].includes(action.reason))throw error;
         // The declined reservation created no response/call. Retry this same step once with Luna.
         currentModel='gpt-6-luna';lunaFallback={solBounds};
-        params.model=currentModel;params.max_output_tokens=Math.min(params.max_output_tokens??2200,2200);params.reasoning={effort:'high'};
+        params.model=currentModel;params.max_output_tokens=Math.min(params.max_output_tokens??2200,2200);params.reasoning={effort:params.reasoning?.effort==='low'?'low':'medium'};
         return checkpoint();
       }
+    },
+    readCompletedAction: (callId,action)=>readCompletedStudioAction(actor,turn,callId,action),
+    comparisonCatalogFingerprint: async action=>{
+      const service=action.surface==='image'?generation:options.mediaEnabled&&options.factories?options.factories.video(actor,{enabled:options.enabled}):null;
+      return service?generationComparisonCatalogFingerprint(action,await service.catalog()):null;
     },
     execute: async (callId: string, action: StudioActionRequest): Promise<StudioActionResult> => {
       if(options.taskExecution)await setStudioTaskPhase(actor,options.taskExecution,action.action.endsWith(".prepare")?"preparing":action.action==="timeline.edit"?"editing":"reading");
@@ -278,7 +291,7 @@ export async function runStudioImageActions(options: {
     },
   }).catch(async (error: unknown) => {
     if(options.taskExecution&&(error instanceof StudioTaskStop||error instanceof AgentApiError&&["SPENDING_LIMIT_EXCEEDED","ACCOUNT_RESTRICTED"].includes(error.code))){
-      const paused=await studioTaskStopDraft(actor,options.taskExecution,error);
+      const paused=await studioTaskStopDraft(actor,{...options.taskExecution,locale:replyLocale},error);
       return paused;
     }
     if (error instanceof AgentApiError && error.nextAction?.type === 'studio_assistance' && error.nextAction.canStartFollowup === true) {
@@ -289,7 +302,7 @@ export async function runStudioImageActions(options: {
     throw error;
   });
   if(options.taskExecution&&draft.continuation&&!draft.continuation.lastError?.code){
-    const localized=await studioTaskStopDraft(actor,options.taskExecution,new StudioTaskStop(draft.continuation.reason==='output_limit'?'output':'steps','Task allowance reached'));
+    const localized=await studioTaskStopDraft(actor,{...options.taskExecution,locale:replyLocale},new StudioTaskStop(draft.continuation.reason==='output_limit'?'output':'steps','Task allowance reached'));
     draft.reply=localized.reply;draft.continuation={...localized.continuation!,completedEdits:draft.continuation.completedEdits};
   }
   if (!draft.image && !draft.media) await persistImageDraft(actor, turn, draft, options.referenceFingerprint);

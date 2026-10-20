@@ -1,4 +1,5 @@
 import { FEATURES } from '@/content/feature-flags';
+import { getReleasedCreatorToolIds, type CreatorToolId } from '@/lib/toolbox/creator-availability';
 import type { AppGlyphName } from './AppGlyph';
 
 type NavItemDefinition = {
@@ -54,6 +55,13 @@ const TOOL_ITEMS: readonly AppNavItem[] = [
   { id: 'fix-blur', label: 'Fix Motion Blur', href: '/app/tools/fix-blur', glyph: 'video' },
   { id: 'smooth-motion', label: 'Smooth Motion', href: '/app/tools/smooth-motion', glyph: 'video' },
 ];
+const CREATOR_TOOL_ITEMS: Record<CreatorToolId, AppNavItem> = {
+  subtitles: { id: 'subtitles', label: 'Subtitles', href: '/app/tools/subtitles', glyph: 'tools' },
+  'lip-sync': { id: 'lip-sync', label: 'Lip Sync', href: '/app/tools/lip-sync', glyph: 'video' },
+  'product-photo-editor': { id: 'product-photo-editor', label: 'Product Photo Editor', href: '/app/tools/product-photo-editor', glyph: 'image' },
+  'product-video-editor': { id: 'product-video-editor', label: 'Product Video Editor', href: '/app/tools/product-video-editor', glyph: 'video' },
+  'motion-transfer': { id: 'motion-transfer', label: 'Motion Transfer', href: '/app/tools/motion-transfer', glyph: 'video' },
+};
 export function canShowStudioNavigation(): boolean {
   return FEATURES.studio.maxVideoAiEditor;
 }
@@ -77,6 +85,7 @@ export function getAppMenuItems(
       ? PRIMARY_ITEMS.filter((item) => item.id === 'studio')
       : []),
     ...(toolsEnabled ? TOOL_ITEMS : []),
+    ...(toolsEnabled ? getReleasedCreatorToolIds().map(id => CREATOR_TOOL_ITEMS[id]) : []),
     { id: 'jobs', label: 'Activity', href: '/jobs', glyph: 'prompt' },
     { id: 'billing', label: 'Billing', href: '/billing', glyph: 'wallet' },
     { id: 'settings', label: 'Settings', href: '/settings', glyph: 'settings' },
@@ -100,6 +109,8 @@ export function getAppNavigationSelection(
 }
 
 const LOCAL_LABELS: Record<string, [string, string]> = {
+  subtitles: ['Sous-titres', 'Subtítulos'], 'lip-sync': ['Lip Sync', 'Lip Sync'],
+  'product-photo-editor': ['Photo produit', 'Foto de producto'], 'product-video-editor': ['Vidéo produit', 'Vídeo de producto'], 'motion-transfer': ['Motion Transfer', 'Transferencia de movimiento'],
   create: ['Créer', 'Crear'], media: ['Médias', 'Medios'], tools: ['Outils', 'Herramientas'], activity: ['Activité', 'Actividad'], account: ['Compte', 'Cuenta'],
   studio: ['Studio', 'Studio'],
   video: ['Vidéo', 'Vídeo'], image: ['Image', 'Imagen'], audio: ['Audio', 'Audio'], library: ['Médias', 'Medios'], jobs: ['Activité', 'Actividad'], billing: ['Facturation', 'Facturación'], settings: ['Paramètres', 'Ajustes'], connections: ['Connexions', 'Conexiones'],

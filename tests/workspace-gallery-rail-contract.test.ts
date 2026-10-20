@@ -106,10 +106,22 @@ test('Seedance completion persists canonical video outputs before preview enrich
     path.join(process.cwd(), 'frontend/server/byteplus-poll.ts'),
     'utf8'
   );
+  const outputSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/server/byteplus-output-persistence.ts'), 'utf8'
+  );
 
   assert.match(pollSource, /upsertLegacyJobOutputs/);
-  assert.match(pollSource, /video_url:\s*copiedVideoUrl/);
-  assert.match(pollSource, /thumb_url:\s*thumb/);
+  assert.match(pollSource, /bytePlusCompletedOutputRow\(job, copiedVideoUrl, thumb, videoMediaFacts\)/);
+  assert.match(outputSource, /video_url:\s*videoUrl/);
+  assert.match(outputSource, /thumb_url:\s*thumbUrl/);
+  assert.match(outputSource, /await input\.upsertOutputsFn[\s\S]*requireMcpPromotion:\s*true/);
+  const lasProjection = pollSource.indexOf('await persistBytePlusLasOutputBeforeCompletion');
+  const completion = pollSource.indexOf("SET status = 'completed'");
+  const ordinaryProjection = pollSource.indexOf('await upsertLegacyJobOutputsFn');
+  const previewEnrichment = pollSource.indexOf('await Promise.allSettled');
+  assert.ok(lasProjection > 0 && lasProjection < completion, 'LAS owned output projection must finish before terminal completion');
+  assert.ok(ordinaryProjection > completion && ordinaryProjection < previewEnrichment,
+    'ModelArk canonical output projection must precede preview enrichment');
   assert.match(pollSource, /generateAndPersistJobPreviewVideo/);
 });
 
@@ -128,7 +140,7 @@ test('composite preview modal button opens direct preview groups', () => {
   assert.match(previewDockSource, /setViewerTarget\(\{\s*kind:\s*'group',\s*group:\s*nextGroup\s*\}\)/);
 });
 
-test('composite preview preserves preview urls but plays canonical video urls', () => {
+test('composite preview preserves short previews and separate full playback/original roles', () => {
   const renderGroupSource = fs.readFileSync(
     path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/_lib/workspace-render-groups.ts'),
     'utf8'
@@ -155,7 +167,8 @@ test('composite preview preserves preview urls but plays canonical video urls', 
   assert.match(videoJobMediaSource, /previewVideoUrl:\s*patch\.previewVideoUrl\s*\?\?\s*current\.previewVideoUrl/);
   assert.match(videoJobMediaSource, /previewUrl:\s*patch\.previewVideoUrl\s*\?\?\s*item\.previewUrl/);
   assert.match(renderGroupSource, /previewVideoUrl:\s*item\.previewVideoUrl\s*\?\?\s*null/);
-  assert.match(dockUtilsSource, /function getInlinePreviewUrl\(item: VideoItem\): string \{\s*return item\.url;\s*\}/);
+  assert.match(dockUtilsSource, /function getInlinePreviewUrl\(item: VideoItem\): string \{\s*return item\.playbackVideoUrl \?\? item\.url;\s*\}/);
+  assert.match(dockUtilsSource, /if \(videoItem\?\.url\) return videoItem\.url/);
   assert.doesNotMatch(dockUtilsSource, /return item\.previewUrl \?\? item\.url/);
 });
 

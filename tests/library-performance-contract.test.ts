@@ -32,7 +32,7 @@ test('library page avoids focus revalidation flashes for media lists', () => {
     'utf8'
   );
   const focusResyncSource = fs.readFileSync(
-    path.join(process.cwd(), 'frontend/components/swr/SWRFocusResync.tsx'),
+    path.join(process.cwd(), 'frontend/components/swr/focus-resync-policy.ts'),
     'utf8'
   );
 

@@ -126,6 +126,7 @@
       },
       "examples": {
         "items": {
+          "all-examples": "All examples",
           "sora": "Sora",
           "sora-2": "Sora 2",
           "sora-2-pro": "Sora 2 Pro",
@@ -152,7 +153,10 @@
           "ltx-2-fast": "LTX 2 Fast"
         },
         "heading": "Watch before you choose.",
-        "intro": "Real videos, prompts and model details."
+        "intro": "Real videos, prompts and model details.",
+        "descriptions": {
+          "all-examples": "Videos and prompts from every model."
+        }
       },
       "compare": {
         "items": {
@@ -194,7 +198,13 @@
           "image": "Generate image",
           "audio": "Generate audio",
           "background-removal": "Remove a video background",
-          "upscale": "AI Upscale"
+          "upscale": "AI Upscale",
+          "studio": "Studio",
+          "subtitles": "Video subtitles",
+          "lip-sync": "Lip Sync",
+          "product-photo-editor": "Product Photo Editor",
+          "product-video-editor": "Product Video Editor",
+          "motion-transfer": "Motion Transfer"
         },
         "heading": "Shape the next part of your story.",
         "intro": "Create your references, change an angle and finish the details.",
@@ -205,6 +215,9 @@
               "get-started": "Getting started"
             }
           }
+        },
+        "descriptions": {
+          "studio": "Your creative workspace with AI."
         }
       },
       "workflows": {
@@ -466,11 +479,11 @@
           "engineLabel": "2. Compare recommended engines",
           "engineRecommendations": [
             {
-              "engineId": "minimax-h3-max",
-              "name": "MiniMax H3 Max",
+              "engineId": "minimax-h3",
+              "name": "MiniMax H3",
               "provider": "MiniMax",
-              "bestFor": "Cinematic disaster storytelling",
-              "imageAlt": "A mother and child shelter during a photorealistic retro-futuristic disaster generated with MiniMax H3 Max.",
+              "bestFor": "High-speed cinematic action",
+              "imageAlt": "A flying character races above a tropical bay in a 15-second MiniMax H3 video.",
               "fallbackPrice": "Live price",
               "selected": true,
               "scores": [
@@ -488,17 +501,17 @@
                 }
               ],
               "tags": [
-                "Narrative",
+                "Action",
                 "Native audio",
-                "Live action"
+                "Cinematic"
               ]
             },
             {
               "engineId": "seedance-2-5",
-              "imageAlt": "Preview of a 10-second AI video generated with Seedance 2.5.",
+              "imageAlt": "A fluffy orange cat faces two men in an action scene generated with Seedance 2.5.",
               "name": "Seedance 2.5",
               "provider": "ByteDance",
-              "bestFor": "Complex cinematic physics",
+              "bestFor": "Playful cinematic action",
               "fallbackPrice": "Live price",
               "scores": [
                 {
@@ -515,17 +528,17 @@
                 }
               ],
               "tags": [
-                "Physics",
+                "Action",
                 "Audio",
                 "Cinematic"
               ]
             },
             {
-              "engineId": "wan-3-prime",
-              "imageAlt": "Preview of a 5-second AI video generated with Wan 3 Prime.",
-              "name": "Wan 3 Prime",
+              "engineId": "wan-3",
+              "imageAlt": "A 22-second Wan 3 music video brings together city sounds, a street drummer and a subway.",
+              "name": "Wan 3",
               "provider": "Alibaba",
-              "bestFor": "Controlled craft motion",
+              "bestFor": "Rhythm and city motion",
               "fallbackPrice": "Live price",
               "scores": [
                 {
@@ -542,9 +555,9 @@
                 }
               ],
               "tags": [
-                "Craft",
+                "Music video",
                 "Realism",
-                "Camera"
+                "Audio"
               ]
             },
             {
@@ -1648,7 +1661,7 @@
       "subtitle": "Compare video, image, audio and tool costs before you create.",
       "supportingLine": "Pay as you go. Confirm the exact price in the app before generating. Failed generations are refunded.",
       "quickStartTitle": "Three starting points for your next video",
-      "quickStartNote": "Indicative total per video, in USD. Select a scenario to see the full comparison. Confirm the live quote in the app before generating.",
+      "quickStartNote": "Lowest available current-generation price for each shown preset, in USD per video. These are different settings, not a quality ranking. Open the row for details and confirm the quote before generating.",
       "primaryCta": "Check a price in the app",
       "secondaryCta": "Compare prices below",
       "badges": [
@@ -1817,7 +1830,7 @@
         },
         {
           "question": "Which AI video engine is cheapest?",
-          "answer": "The cheapest engine depends on the scenario. A 5s 720p draft, an 8s 1080p premium clip, a 10s 1080p video and 4K output can all have different winners. The table highlights current-generation options first and lists older budget routes separately when available."
+          "answer": "Choose the duration, resolution and audio setting first, then compare the same column. The highlighted price is the lowest available quote among the eligible current-generation models in this table. Older models are listed separately; a lower price does not prove a better result."
         },
         {
           "question": "Which engine is cheapest for 10s 1080p video?",
@@ -1837,7 +1850,7 @@
         },
         {
           "question": "Do failed generations cost credits?",
-          "answer": "No. Failed generations are refunded automatically. Credits are charged only when a generation completes successfully."
+          "answer": "A technical failure is different from a completed clip you do not like. Failed generations receive a credit refund; subjective dissatisfaction with a completed result is not normally refundable. Check the Refund & Return Policy for the terms."
         },
         {
           "question": "Do I need a subscription?",
@@ -1845,15 +1858,15 @@
         },
         {
           "question": "Why are some cheaper engines not highlighted first?",
-          "answer": "Some previous-generation routes may be cheaper for simple tests, but MaxVideoAI highlights current-generation engines first because they are usually better choices for new projects. Older budget routes are still listed separately when available."
+          "answer": "The opening cards compare eligible current-generation models at matching settings. Previous-generation options remain in the table and may cost less. The grouping helps you navigate; it does not guarantee better quality."
         },
         {
           "question": "Are image, audio and tools priced the same as video?",
           "answer": "No. Video, image, audio and tools use different pricing rules. Image generation is usually priced per image, audio by duration or mode, and tools by output type or resolution."
         },
         {
-          "question": "Why does the table show total prices instead of cost per second?",
-          "answer": "Most users compare the full cost of a render, not raw per-second rates. MaxVideoAI shows preset total prices for common scenarios such as 8s 1080p, 10s 1080p and 4K output. Per-second or provider-level rates can vary by engine, duration, resolution and rounding, and the app shows the exact live quote before generation."
+          "question": "Does the displayed price cover every attempt?",
+          "answer": "Each new generation has its own quote. If you make several completed attempts to find the shot you want, each is a separate generation. Compare the total you are willing to spend on the scene, not only the price of one clip."
         },
         {
           "question": "How often do prices change?",
@@ -2916,14 +2929,14 @@
         },
         {
           "question": "Can I suggest a topic or request coverage?",
-          "answer": "Yes—send topics to press@maxvideo.ai and include reference renders if you can. We prioritize stories that help production teams stay current."
+          "answer": "Yes—send topics to admin@maxvideoai.com and include reference renders if you can. We prioritize stories that help production teams stay current."
         },
         {
           "question": "Where can I find release notes?",
           "answer": "Feature-level updates live in the product changelog, and API updates post inside the developer docs. The blog covers higher-level workflows."
         }
       ],
-      "footnote": "Need more detail? Email press@maxvideo.ai with your request and we’ll route it to the right producer."
+      "footnote": "Need more detail? Email admin@maxvideoai.com with your request and we’ll route it to the right producer."
     }
   },
   "videoPage": {
@@ -3016,10 +3029,10 @@
   "contact": {
     "hero": {
       "title": "Contact the team.",
-      "subtitle": "Need support, enterprise onboarding, or press information? Send a note and we’ll reply within one business day."
+      "subtitle": "Contact MaxVideoAI for product support, partnerships, or press enquiries."
     },
     "intro": {
-      "body": "Talk to us about support, partnerships, enterprise setup, or editorial coverage. Messages that include context such as team size, target models, deadlines, or compliance requirements reach the right specialist faster. Every request gets a human reply.",
+      "body": "Tell us what you need help with. For a generation issue, include the job ID; for partnerships or press, include your project, publication, and deadline.",
       "cards": {
         "productHelp": {
           "title": "Product help",
@@ -3069,7 +3082,7 @@
       "items": [
         {
           "question": "How fast will someone reply?",
-          "answer": "We answer during European and US business hours. Most support tickets receive a human response in under 12 hours, enterprise requests inside 24."
+          "answer": "Response times vary with the request and support availability. Include the relevant job ID and a clear description so we can investigate."
         },
         {
           "question": "Do you offer live demos?",
@@ -3077,13 +3090,13 @@
         },
         {
           "question": "Where can I check service status?",
-          "answer": "Visit the {email} for current engine latency and incident history before opening a ticket."
+          "answer": "Visit the {email} for service notices published by the MaxVideoAI team. For a delayed generation, contact support with the job ID."
         }
       ]
     },
     "statusCard": {
-      "title": "Check live engine status",
-      "body": "Before opening a ticket, confirm whether an engine is already degraded. Status updates list latency, incident notes, and mitigation steps so you can decide whether to retry or switch models.",
+      "title": "Service notices",
+      "body": "The status page shows service notices published by the team. If a generation is delayed, avoid submitting the same job again and contact support with its job ID.",
       "cta": "status page"
     }
   },
@@ -3919,7 +3932,14 @@
         "expandSection": "Show",
         "collapseSection": "Hide",
         "saving": "Saving…",
-        "removing": "Removing…"
+        "removing": "Removing…",
+        "savePending": "Saving to Media…",
+        "saveError": "Could not save to Media. Please try again.",
+        "saveSuccess": "Saved to Media.",
+        "removePending": "Removing from history…",
+        "removeError": "Could not remove from history. Please try again.",
+        "removeSuccess": "Removed from history.",
+        "dismiss": "Dismiss"
       }
     },
     "dashboard": {
@@ -4042,7 +4062,7 @@
       "title": "Billing",
       "hero": {
         "title": "Add credits",
-        "subtitle": "Choose an amount, then complete payment in secure Stripe Checkout.",
+        "subtitle": "One-time payment. No subscription.",
         "liveMode": "Live Mode",
         "testMode": "Test Mode"
       },
@@ -4058,7 +4078,7 @@
         "guestBalance": "Sign in to view your balance",
         "refreshBalance": "Refresh balance",
         "stepChoose": "Choose wallet credits",
-        "stepChooseHint": "Credits are stored in USD and do not expire while your account remains active.",
+        "stepChooseHint": "From $10 · Credits in USD",
         "stepReview": "Review payment",
         "stepReviewHint": "Pay in EUR or USD. Your bank may charge currency conversion fees.",
         "paymentAmount": "Amount before tax",
@@ -4072,7 +4092,7 @@
         "checkoutSecure": "Secure payment by",
         "checkoutNote": "Credits are added after confirmation; your receipt is saved here.",
         "customLabel": "Custom amount",
-        "customPresetLabel": "Custom",
+        "customPresetLabel": "Other",
         "customPresetHint": "Enter amount",
         "customPlaceholder": "Minimum $10",
         "customHint": "Enter any amount from $10.",
@@ -4083,6 +4103,8 @@
         "chooseAmount": "Select",
         "expressTitle": "Pay instantly",
         "expressLoading": "Loading secure payment options…",
+        "expressSlow": "Payment options are taking longer to load. You can also pay by card below.",
+        "expressRetry": "Try again",
         "expressUnavailable": "Instant payment is unavailable. Choose another payment method below.",
         "expressError": "Unable to open instant payment. Choose another payment method below.",
         "expressClosed": "Payment window closed. Try again or choose another method below.",
@@ -6854,6 +6876,7 @@
       "ageRequired": "Confirm that you meet the minimum age requirement."
     },
     "feedback": {
+      "passwordUnavailable": "We couldn't complete your request. Please try again.",
       "signingIn": "Signing in…",
       "signinRedirecting": "Signed in. Redirecting…",
       "signinSuggestion": "We couldn't sign you in with those details. If you're new, create your account without retyping anything.",
@@ -6994,7 +7017,7 @@
     "scorecard": {
       "title": "Compare the strengths.",
       "subtitle": "Scores reflect quality and control on MaxVideoAI across 11 criteria.",
-      "provisionalNote": "Pre-launch scores are provisional and will update once runtime renders and final pricing are available.",
+      "provisionalNote": "Pre-launch scores are provisional and need review once runtime renders are available.",
       "strengthsLabel": "Strengths",
       "winnerSummary": "At a glance",
       "winnerSummaryPrelaunch": "Current leader (pre-launch)",

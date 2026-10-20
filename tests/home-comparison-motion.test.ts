@@ -15,7 +15,7 @@ const initialMetrics = [
 ];
 const opponent = { slug: 'first', name: 'First model', logo: '/first.svg', overall: 8.1, criteriaCount: 3, scores: [9.2, 0, null] };
 
-// Exercise the real owner, shared scoreboard and browser CSS calculation. Only
+// Exercise the real owner, score grid and browser CSS calculation. Only
 // the clock, RAF queue and observer notification are controlled test boundaries.
 const fixtureSource = `
   import React, { act, Profiler } from 'react';
@@ -76,9 +76,9 @@ const fixtureSource = `
 `;
 
 async function positions(page: Page) {
-  return page.locator('.paired-dot').evaluateAll(markers => markers.map(marker => {
+  return page.locator('.home-score-track > span').evaluateAll(markers => markers.map(marker => {
     const track = marker.parentElement!;
-    return parseFloat(getComputedStyle(marker).left) / parseFloat(getComputedStyle(track).width) * 100;
+    return marker.getBoundingClientRect().width / track.getBoundingClientRect().width * 100;
   }));
 }
 
@@ -88,7 +88,7 @@ async function assertPositions(page: Page, expected: number[]) {
   actual.forEach((value, index) => assert.ok(Math.abs(value - expected[index]) < 0.02, `marker ${index}: expected ${expected[index]}%, received ${value}%`));
 }
 
-test('home score motion preserves actual positions and avoids React commits on animation frames', { timeout: 60_000 }, async t => {
+test('home score motion preserves actual bar lengths and avoids React commits on animation frames', { timeout: 60_000 }, async t => {
   const owners = ['frontend/components/marketing/home/HomeComparisonScores.client.tsx', 'frontend/components/marketing/PairedScores.tsx'];
   const sourceFiles = new Map(await Promise.all(owners.map(async path => [path, await readFile(path, 'utf8')] as const)));
   const bundle = await build({
@@ -125,9 +125,9 @@ test('home score motion preserves actual positions and avoids React commits on a
         try {
           await staticPage.setContent(`<html><head><style>${css}</style></head><body class="marketing-site"><div style="width:600px">${html}</div></body></html>`);
           await assertPositions(staticPage, [84, 92, 0, 0]);
-          assert.match(await staticPage.locator('.paired-values').first().textContent() ?? '', /8\.4.*9\.2/);
-          assert.match(await staticPage.locator('.paired-values').nth(3).textContent() ?? '', /—.*—/);
-          assert.match(await staticPage.locator('.comparison-overall').textContent() ?? '', /8\.4.*8\.1/);
+          assert.match(await staticPage.locator('.home-score-grid tbody tr').first().textContent() ?? '', /8\.4.*9\.2/);
+          assert.match(await staticPage.locator('.home-score-grid tbody tr').nth(3).textContent() ?? '', /—.*—/);
+          assert.match(await staticPage.locator('.home-score-grid thead').textContent() ?? '', /8\.4.*8\.1/);
         } finally { await context.close(); }
         const shared = await page.evaluate(metrics => (window as any).scoreFixture.shared(metrics), initialMetrics);
         assert.deepEqual([...shared.matchAll(/style="left:([^"]+)"/g)].map(match => match[1]), ['84%', '92%', '0%', '0%']);
@@ -162,7 +162,7 @@ test('home score motion preserves actual positions and avoids React commits on a
             fixtureSha256: createHash('sha256').update(fixtureSource).digest('hex'),
             stylesSha256: createHash('sha256').update(css).digest('hex'),
             scope: 'Owner animation callbacks and React commits only; not field INP or page CWV',
-            viewport: { width: 1200, height: 900 }, elapsedMs: 1100, markerEndpoints: await positions(page),
+            viewport: { width: 1200, height: 900 }, elapsedMs: 1100, barEndpoints: await positions(page),
             reactCommitsDuringAnimation: measurements.commits.length, ...measurements,
           }, null, 2));
         }
@@ -182,7 +182,7 @@ test('home score motion preserves actual positions and avoids React commits on a
         await assertPositions(page, [0, 0, 0, 0]);
         await page.evaluate(() => (window as any).scoreFixture.step(550));
         await assertPositions(page, [73.5, 80.5, 0, 0]);
-        assert.match(await page.locator('.paired-values').first().textContent() ?? '', /8\.4.*9\.2/);
+        assert.match(await page.locator('.home-score-grid tbody tr').first().textContent() ?? '', /8\.4.*9\.2/);
         await page.evaluate(() => (window as any).scoreFixture.step(1100));
         await assertPositions(page, [84, 92, 0, 0]);
       } finally { await page.close(); }

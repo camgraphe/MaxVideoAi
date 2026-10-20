@@ -225,6 +225,8 @@ test('linked job and output state is revalidated under locks before any montage 
       withTransaction: transactionFor(database.pool), featureEnabled: true,
       createIds: () => ({ projectId: 'project-linked-race', sequenceId: 'sequence-linked-race' }),
     });
+    // Attach before COMMIT can release the failing request, even under scheduler contention.
+    const rejected = assert.rejects(create, /MEDIA_NOT_AVAILABLE/u);
     let waiting = false;
     for (let attempt = 0; attempt < 100; attempt += 1) {
       const activity = await database.pool.query(`SELECT EXISTS (
@@ -236,7 +238,7 @@ test('linked job and output state is revalidated under locks before any montage 
     }
     assert.equal(waiting, true, 'the source revalidation must wait on the concurrent app_jobs update');
     await blocker.query('COMMIT');
-    await assert.rejects(create, /MEDIA_NOT_AVAILABLE/u);
+    await rejected;
     assert.equal((await database.pool.query("SELECT count(*)::int AS count FROM studio_projects WHERE id='project-linked-race'")).rows[0].count, 0);
   } finally {
     await blocker.query('ROLLBACK').catch(() => undefined);

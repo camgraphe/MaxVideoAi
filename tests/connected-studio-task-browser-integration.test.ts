@@ -13,13 +13,18 @@ import {createStudioConversationProject} from '../frontend/src/server/studio/con
 import {studioAssistancePolicy} from '../frontend/src/server/studio/assistance-policy';
 import {runStudioTaskWorkerOnce} from '../frontend/src/server/studio/tasks/worker';
 import type {ImageGenerationFactory} from '../frontend/src/server/studio/image-conversation-service';
+import {createStudioImageGenerationService} from '../frontend/src/server/studio/image-generation-service';
+
+const selectedImage='ma_'+'e'.repeat(32),selectedImageUrl='https://cdn.maxvideoai.com/studio-local-fixture/selected.webp';
 
 test('Sol starts with 500 included credits and Luna offers discreet top-up on desktop/mobile without work-profile controls',async()=>{
   const previous=process.env.DATABASE_URL;
   const runtime=await startStudioIntegrationRuntime({mcp:{studioMontageCreation:false},conversation:true,conversationTasks:true,initializeDatabase:async db=>{
     await initializeStudioConnectedFixture(db);
-    for(const name of ['00_create_profiles.sql','01_legal_documents.sql','02_user_consents.sql','04_profiles_timestamps.sql','12_app_settings.sql','30_mcp_paid_generation.sql','39_mcp_quote_lifetime.sql','49_studio_generation_scope.sql','50_studio_image_conversation.sql','51_studio_image_model_usage.sql','52_studio_conversation_runs.sql','53_studio_media_generation_scope.sql','54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','65_studio_task_budgets.sql'])await db.pool.query(await readFile('neon/migrations/'+name,'utf8'));
+    for(const name of ['00_create_profiles.sql','01_legal_documents.sql','02_user_consents.sql','04_profiles_timestamps.sql','12_app_settings.sql','30_mcp_paid_generation.sql','39_mcp_quote_lifetime.sql','49_studio_generation_scope.sql','50_studio_image_conversation.sql','51_studio_image_model_usage.sql','52_studio_conversation_runs.sql','53_studio_media_generation_scope.sql','54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','65_studio_task_budgets.sql','67_studio_luna_reasoning.sql'])await db.pool.query(await readFile('neon/migrations/'+name,'utf8'));
     await db.pool.query('ALTER TABLE app_jobs ADD COLUMN status text');
+    await db.pool.query('ALTER TABLE media_assets ADD COLUMN width integer, ADD COLUMN height integer, ADD COLUMN size_bytes bigint');
+    await db.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,status,original_name,metadata) VALUES($1,$2,$3,'image',$4,'image/webp','ready','Selected product',$5::jsonb)`,[randomUUID(),selectedImage,STUDIO_FIXTURE_OWNERS[0],selectedImageUrl,JSON.stringify({mediaFacts:{source:'probe',width:1024,height:1024}})]);
     await db.pool.query(`CREATE TABLE user_account_restrictions(user_id text PRIMARY KEY,reason text NOT NULL,message text,active boolean NOT NULL DEFAULT true,restricted_at timestamptz NOT NULL DEFAULT clock_timestamp())`);
   }});
   process.env.DATABASE_URL=runtime.database.databaseUrl;
@@ -31,6 +36,7 @@ test('Sol starts with 500 included credits and Luna offers discreet top-up on de
     const owned=await browser.newContext(session,{viewport:{width:1440,height:900},locale:'en-US',reducedMotion:'reduce'}),page=owned.page;
     const assistanceActions:string[]=[];page.on('request',request=>{if(request.url().endsWith('/api/studio/assistance')&&request.method()==='POST')assistanceActions.push(request.postDataJSON().action);});
     await page.route('**/api/legal/reconsent',route=>route.fulfill({json:{ok:true,needsReconsent:false,documents:[]}}));
+    await page.route('**/api/wallet',route=>route.fulfill({json:{balance:0,balanceCents:0,currency:'USD'}}));
     const conversationPath=`/app/studio/conversation/${project.projectId}`;
     // This suite checks behavior, not compilation speed. Prepare the owned
     // dev routes with real authenticated GETs before the 30-second UI waiters.
@@ -48,6 +54,11 @@ test('Sol starts with 500 included credits and Luna offers discreet top-up on de
     const evidence=process.env.STUDIO_PROOF_DIRECTORY??'/tmp/studio-sol-review';await mkdir(evidence,{recursive:true});
     const initialBody=await initial.json();assert.equal(initial.status(),200,JSON.stringify(initialBody));assert.ok(initialBody.result.taskPolicyVersion);
     assert.equal(assistance.status(),200,JSON.stringify(await assistance.json()));
+    await page.route(selectedImageUrl,route=>route.fulfill({contentType:'image/webp',path:'frontend/public/media/mcp/project-demo/watch-static.webp'}));
+    await page.route('**/api/media-library/assets?*',route=>route.fulfill({json:{ok:true,assets:[{assetId:selectedImage,kind:'image',name:'Selected product',url:selectedImageUrl}],nextCursor:null}}));
+    await page.getByRole('button',{name:'Open library',exact:true}).click();
+    await page.getByRole('button',{name:'Choose Selected product',exact:true}).click();
+    await page.getByRole('button',{name:'Add to conversation',exact:true}).click();
     const picker=page.getByRole('group',{name:'Work allowance'}),message=page.getByRole('textbox',{name:'Message Studio'});
     const selector=page.getByRole('button',{name:'Studio assistance and budget',exact:true});
     const assistanceBody=await assistance.json();
@@ -81,14 +92,18 @@ test('Sol starts with 500 included credits and Luna offers discreet top-up on de
     const posted=page.waitForResponse(response=>response.url().endsWith('/image-conversation')&&response.request().method()==='POST');
     await send.click();const submitted=await posted;assert.equal(submitted.status(),200,JSON.stringify(await submitted.json()));
     const sent=JSON.parse(submitted.request().postData()!);assert.equal(sent.taskBudget.profile,'standard');assert.equal(sent.taskBudget.maxCredits,250);
+    await send.click();const submitted=await posted;assert.deepEqual(submitted.request().postDataJSON().references,[selectedImage]);assert.equal(submitted.status(),200,JSON.stringify(await submitted.json()));
+    await expect(page.getByRole('button',{name:'Remove Image 1',exact:true})).toBeVisible();
+
     const taskCard=page.getByRole('region',{name:'Studio task'});await expect(taskCard.getByText('Waiting for Studio')).toBeVisible();
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM studio_assistance_calls')).rows[0].n,0);
-    const generationFactory=(()=>({resolveReferences:async()=>[],walletSummary:async()=>({balanceCents:0,currency:'USD'}),catalog:async()=>[],getQuote:async()=>null})) as unknown as ImageGenerationFactory;
+    const generationFactory=((actor,options)=>({resolveReferences:createStudioImageGenerationService(actor,options).resolveReferences,walletSummary:async()=>({balanceCents:0,currency:'USD'}),catalog:async()=>[],getQuote:async()=>null})) as ImageGenerationFactory;
     let calls=0;
     const worker={enabled:true,assistancePolicy:studioAssistancePolicy({STUDIO_ASSISTANCE_ENABLED:'true'}),serviceOptions:{generationFactory,countInputTokens:async()=>100,createActionResponse:async()=>{
       calls++;return {id:'offline-'+calls,model:'gpt-6.1-sol',status:'completed' as const,service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50},output_text:'',output:[{type:'function_call' as const,name:'project_read',call_id:'read-'+calls,arguments:'{}'}]};
     }}};
     await runStudioTaskWorkerOnce(worker);assert.equal(calls,4);
+
     await expect(taskCard.getByText('Request paused')).toBeVisible({timeout:15_000});
     await page.setViewportSize({width:390,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true);
     await page.screenshot({path:join(evidence,'task-mobile.png'),fullPage:true});
@@ -103,7 +118,7 @@ test('Sol starts with 500 included credits and Luna offers discreet top-up on de
     await runtime.database.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=480 WHERE user_id=$1',[STUDIO_FIXTURE_OWNERS[0]]);
     await message.fill('Continue with the approved vertical framing.');
     const fallbackPosted=page.waitForResponse(response=>response.url().endsWith('/image-conversation')&&response.request().method()==='POST');
-    await send.click();assert.equal((await fallbackPosted).status(),200);
+    await send.click();const followup=await fallbackPosted;assert.equal(followup.status(),200);assert.deepEqual(followup.request().postDataJSON().references,[selectedImage],'A follow-up keeps the visible owned selection after sending and reloading');
     await runStudioTaskWorkerOnce({...worker,serviceOptions:{...worker.serviceOptions,createActionResponse:async params=>{
       calls++;assert.equal(params.model,'gpt-6-luna');assert.match(JSON.stringify(params.input),/approved vertical framing/);
       return {id:'fallback-finished',model:params.model!,status:'completed' as const,service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50},output_text:JSON.stringify({reply:'Continued with the approved framing.'}),output:[]};
@@ -114,6 +129,8 @@ test('Sol starts with 500 included credits and Luna offers discreet top-up on de
     await expect(page.getByText('Your Sol credits',{exact:true})).toBeVisible();await page.getByRole('button',{name:'Close assistance',exact:true}).click();
     await page.reload();await expect(page.getByText('Continued with the approved framing.')).toBeVisible();assert.equal(calls,6);
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM mcp_generation_quotes')).rows[0].n,0,'Assistance fallback cannot implicitly prepare or confirm generation');
+    await page.getByRole('button',{name:'Remove Image 1',exact:true}).click();
+    await page.reload();await expect(page.getByRole('button',{name:'Remove Image 1',exact:true})).toHaveCount(0);
     await runtime.database.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=500 WHERE user_id=$1',[STUDIO_FIXTURE_OWNERS[0]]);
     await page.reload();await expect(picker).toHaveCount(0);await expect(selector).toHaveText('Sol');
     await message.fill('Continue when no Sol credits remain.');await expect(send).toBeEnabled();
@@ -123,7 +140,22 @@ test('Sol starts with 500 included credits and Luna offers discreet top-up on de
       calls++;assert.equal(params.model,'gpt-6-luna');return {id:'zero-finished',model:params.model!,status:'completed' as const,service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50},output_text:JSON.stringify({reply:'Continued with zero Sol credits.'}),output:[]};
     }}});
     await expect(page.getByText('Continued with zero Sol credits.')).toBeVisible({timeout:15_000});assert.equal(calls,7);
+
+    await message.fill('HEY!');
+    const greetingPosted=page.waitForResponse(response=>response.url().endsWith('/image-conversation')&&response.request().method()==='POST');
+    await send.click();assert.equal((await greetingPosted).status(),200);
+    await runStudioTaskWorkerOnce({...worker,serviceOptions:{...worker.serviceOptions,
+      countInputTokens:async()=>{throw new Error('A greeting must not count provider input.');},
+      createActionResponse:async()=>{throw new Error('A greeting must not buy a model call.');}}});
+    await expect(page.getByText('Hey! What would you like to create today?')).toBeVisible({timeout:15_000});
+    const greetingTask=page.getByRole('region',{name:'Studio task'}).last();
+    await expect(greetingTask.getByText('Request complete')).toBeVisible();
+    assert.equal(calls,7);
+    const greetingUsage=(await runtime.database.pool.query('SELECT sum(consumed_credits)::int consumed,sum(reserved_credits)::int reserved FROM studio_assistance_credit_lots WHERE user_id=$1',[STUDIO_FIXTURE_OWNERS[0]])).rows[0];
+    assert.deepEqual(greetingUsage,{consumed:500,reserved:0});
+    await page.reload();await expect(page.getByText('Hey! What would you like to create today?')).toBeVisible();assert.equal(calls,7);
     assert.deepEqual(errors,[],'The Studio flow has no browser runtime errors');
+
   }catch(error){
     console.error(summarizeStudioReadinessFailure(runtime.readLogs(),8000));
     throw error;

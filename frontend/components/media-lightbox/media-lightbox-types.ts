@@ -6,6 +6,9 @@ export interface MediaLightboxEntry {
   label: string;
   videoUrl?: string | null;
   previewUrl?: string | null;
+  playbackVideoUrl?: string | null;
+  lastFrameUrl?: string | null;
+  outputRole?: 'last_frame';
   audioUrl?: string | null;
   imageUrl?: string | null;
   thumbUrl?: string | null;

@@ -40,6 +40,20 @@ function render(overrides: Partial<LocalRender> = {}): LocalRender {
   };
 }
 
+test('normal render statuses retain progress messages through the localized polling projection', () => {
+  const copy = { messages: { seedanceCopyrightBlocked: 'Blocked', seedanceCopyrightBlockedRefunded: 'Refunded' } };
+  for (const status of ['pending', 'completed'] as const) {
+    for (const message of [null, 'Processing', 'Ready']) {
+      const providerStatus = { status, message, progress: status === 'completed' ? 100 : 40, videoUrl: status === 'completed' ? 'https://media.maxvideoai.com/final.mp4' : null };
+      const localized = getWorkspaceGenerationFailureMessage(providerStatus, copy, { locale: 'fr' });
+      assert.equal(localized, message);
+      const projection = projectGenerationPollStatus({ status: { ...providerStatus, message: localized }, target: render(), jobId: 'job_123', localKey: 'local_batch_1', now: 5000 });
+      assert.doesNotMatch(applyGenerationPollToRender(render(), projection).message ?? '', /pas pu|support|refund/i);
+    }
+  }
+  assert.match(getWorkspaceGenerationFailureMessage({ status: 'failed', message: null }, copy, { locale: 'fr' })!, /pas pu terminer/);
+});
+
 test('projectGenerationPollStatus shows completed videos immediately despite a legacy minReadyAt', () => {
   const target = render({ readyVideoUrl: 'https://cdn.example.com/previous.mp4' });
   const projection = projectGenerationPollStatus({

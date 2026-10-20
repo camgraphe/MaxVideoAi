@@ -30,6 +30,7 @@ type LoginAuthSurfaceProps = {
   signupSuggestion: SignupSuggestion | null;
   isGoogleOAuthStarting: boolean;
   isResetSending: boolean;
+  isPasswordSubmitting?: boolean;
   acceptTerms: boolean;
   ageConfirmed: boolean;
   marketingOptIn: boolean;
@@ -90,6 +91,7 @@ export function LoginAuthSurface({
   signupSuggestion,
   isGoogleOAuthStarting,
   isResetSending,
+  isPasswordSubmitting = false,
   acceptTerms,
   ageConfirmed,
   marketingOptIn,
@@ -199,6 +201,7 @@ export function LoginAuthSurface({
                 variant={effectiveMode === 'signin' ? 'primary' : 'ghost'}
                 size="sm"
                 aria-pressed={effectiveMode === 'signin'}
+                disabled={isPasswordSubmitting}
                 onClick={() => onModeChange('signin')}
                 className={clsx(
                   'min-h-11 flex-1 rounded-pill px-3 py-2',
@@ -212,6 +215,7 @@ export function LoginAuthSurface({
                 variant={effectiveMode === 'signup' ? 'primary' : 'ghost'}
                 size="sm"
                 aria-pressed={effectiveMode === 'signup'}
+                disabled={isPasswordSubmitting}
                 onClick={() => onModeChange('signup')}
                 className={clsx(
                   'min-h-11 flex-1 rounded-pill px-3 py-2',
@@ -230,7 +234,7 @@ export function LoginAuthSurface({
               type="button"
               onClick={onGoogleSignIn}
               variant="outline"
-              disabled={isGoogleOAuthStarting}
+              disabled={isGoogleOAuthStarting || isPasswordSubmitting}
               aria-busy={isGoogleOAuthStarting}
               className="w-full justify-center gap-2 font-medium"
             >
@@ -369,6 +373,8 @@ export function LoginAuthSurface({
 
               <Button
                 type="submit"
+                disabled={isPasswordSubmitting}
+                aria-busy={isPasswordSubmitting}
                 variant={mode === 'signup' ? 'primary' : 'outline'}
                 className="w-full"
               >
@@ -382,6 +388,7 @@ export function LoginAuthSurface({
                   type="button"
                   variant="ghost"
                   size="sm"
+                  disabled={isPasswordSubmitting}
                   onClick={() => onModeChange('reset')}
                   className="self-start text-brand hover:text-brandHover"
                 >
@@ -422,7 +429,7 @@ export function LoginAuthSurface({
                 {authCopy.links.backToSignIn}
               </Button>
             </div>
-            <Button type="submit" variant="outline" className="w-full gap-2" disabled={isResetSending} aria-busy={isResetSending}>
+            <Button type="submit" variant="outline" className="w-full gap-2" disabled={isResetSending || isPasswordSubmitting} aria-busy={isResetSending}>
               {isResetSending ? <><LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin motion-reduce:animate-none" />{authCopy.feedback.sendingReset}</> : authCopy.actions.reset}
             </Button>
           </form>

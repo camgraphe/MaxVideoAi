@@ -40,4 +40,18 @@ test('known MCP rejection persists sanitized diagnostics and refunds exactly onc
   assert.equal(refunds.length, 1);
   assert.equal(refunds[0].amount_cents, 111);
   assert.match(refunds[0].description, /not supported/);
+  await db.pool.query("INSERT INTO app_jobs (job_id,user_id,engine_id,engine_label,status,settings_snapshot) VALUES ('veo-host-job','audit-user','veo-3-1-lite','Veo Lite','queued','{}')");
+  await db.pool.query("INSERT INTO app_receipts (user_id,type,amount_cents,currency,job_id) VALUES ('audit-user','charge',111,'USD','veo-host-job')");
+  const hostExecution = { ...(execution as unknown as Record<string, unknown>), quoteId: 'veo-host-job',
+    engine: { label: 'Veo Lite' } } as never;
+  const hostFailure = { code: 'IMAGE_HOST_NOT_ALLOWED', status: 422, message: null };
+  assert.equal(await ensureKnownRejectionRefund(hostExecution, hostFailure), true);
+  assert.equal(await ensureKnownRejectionRefund(hostExecution, hostFailure), true);
+  const hostJob = (await db.pool.query("SELECT message,payment_status FROM app_jobs WHERE job_id='veo-host-job'")).rows[0];
+  assert.match(hostJob.message, /reference link.*import/i);
+  assert.equal(hostJob.payment_status, 'refunded_wallet');
+  const hostRefunds = (await db.pool.query("SELECT amount_cents,description FROM app_receipts WHERE type='refund' AND job_id='veo-host-job'")).rows;
+  assert.equal(hostRefunds.length, 1);
+  assert.equal(hostRefunds[0].amount_cents, 111);
+  assert.match(hostRefunds[0].description, /reference link.*import/i);
 });

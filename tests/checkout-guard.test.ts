@@ -2,6 +2,23 @@ import assert from 'node:assert/strict';
 
 import { classifyCheckoutGuardDecision } from '../frontend/server/checkout-guard';
 
+for (const hasCompletedTopUp of [false, true]) {
+  assert.deepEqual(
+    classifyCheckoutGuardDecision({
+      hasCompletedTopUp,
+      isPresetTopupTier: true,
+      captchaConfigured: true,
+      captchaPassed: false,
+      userAttempts15m: 0,
+      userAttempts1h: 0,
+      ipAttempts15m: 0,
+      userFailedCardLimits30m: 0,
+    }),
+    { action: 'allow', reason: 'under_limits', retryAfterSeconds: null },
+    'a normal initial or returning checkout must remain allowed without a failed-card cooldown'
+  );
+}
+
 assert.deepEqual(
   classifyCheckoutGuardDecision({
     hasCompletedTopUp: false,
@@ -105,11 +122,11 @@ assert.deepEqual(
     userFailedCardLimits30m: 1,
   }),
   {
-    action: 'allow',
-    reason: 'under_limits',
-    retryAfterSeconds: null,
+    action: 'rate_limited',
+    reason: 'failed_card_attempt_cooldown',
+    retryAfterSeconds: 1800,
   },
-  'returning paying users must not be cooled down by the first-top-up failed-card guard'
+  'returning paying users must cool down after repeated failed cards too'
 );
 
 // Four presets in two currencies plus a hosted fallback fit after verification.

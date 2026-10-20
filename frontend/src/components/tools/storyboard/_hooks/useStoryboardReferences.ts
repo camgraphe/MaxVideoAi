@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { CaptureStoryboardAccountRequest } from './useStoryboardAccountScope';
 import type { AssetSlotAttachment } from '@/components/AssetDropzone';
 import type { EngineInputField } from '@/types/engines';
 import {
@@ -23,6 +24,7 @@ import type { StoryboardCopy } from '../_lib/storyboard-workspace-copy';
 
 export type UseStoryboardReferencesParams = {
   authenticated: boolean;
+  captureAccountRequest: CaptureStoryboardAccountRequest;
   copy: StoryboardCopy;
   onAuthRequired: () => void;
   onError: (message: string) => void;
@@ -42,17 +44,26 @@ export function useStoryboardReferences(params: UseStoryboardReferencesParams): 
   closeReferenceLibrary: () => void;
   handleReferenceLibrarySelect: (asset: StoryboardLibraryAsset) => void;
 } {
-  const { authenticated, copy, onAuthRequired, onError, onFeedbackReset } = params;
+  const { authenticated, captureAccountRequest, copy, onAuthRequired, onError, onFeedbackReset } = params;
   const [referenceImages, setReferenceImages] = useState<(StoryboardReferenceImage | null)[]>(
     () => Array.from({ length: STORYBOARD_REFERENCE_SLOT_COUNT }, () => null)
   );
   const [libraryModal, setLibraryModal] = useState<StoryboardLibraryModalState>(CLOSED_STORYBOARD_LIBRARY_MODAL);
   const referenceImagesRef = useRef(referenceImages);
+  const uploadsRef = useRef(new Map<number, AbortController>());
+
+  const retireUpload = (index: number) => {
+    uploadsRef.current.get(index)?.abort();
+    uploadsRef.current.delete(index);
+  };
 
   referenceImagesRef.current = referenceImages;
 
   useEffect(() => {
+    const uploads = uploadsRef.current;
     return () => {
+      uploads.forEach(controller => controller.abort());
+      uploads.clear();
       referenceImagesRef.current.forEach(cleanupStoryboardReferenceImage);
     };
   }, []);
@@ -90,10 +101,22 @@ export function useStoryboardReferences(params: UseStoryboardReferencesParams): 
   );
 
   async function handleReferenceFile(_field: EngineInputField, file: File, slotIndex = 0) {
-    if (!authenticated) {
+    const account = captureAccountRequest();
+    if (!authenticated || !account) {
       onAuthRequired();
       return;
     }
+
+    retireUpload(slotIndex);
+    const controller = new AbortController();
+    uploadsRef.current.set(slotIndex, controller);
+    const abort = () => controller.abort();
+    account.signal.addEventListener('abort', abort, { once: true });
+    const request = {
+      ...account,
+      signal: controller.signal,
+      isCurrent: () => account.isCurrent() && uploadsRef.current.get(slotIndex) === controller && !controller.signal.aborted,
+    };
 
     const previewUrl = URL.createObjectURL(file);
     onFeedbackReset();
@@ -111,15 +134,23 @@ export function useStoryboardReferences(params: UseStoryboardReferencesParams): 
       return next;
     });
     try {
-      const uploaded = await uploadStoryboardReferenceImage(file, copy);
+      const uploaded = await uploadStoryboardReferenceImage(file, copy, () => {
+        if (!request.isCurrent()) return null;
+        const currentAccount = captureAccountRequest();
+        return currentAccount ? { ...currentAccount, signal: controller.signal, isCurrent: request.isCurrent } : null;
+      });
+      if (!request.isCurrent()) return;
       setReferenceImages((current) => {
+        if (!request.isCurrent()) return current;
         const next = current.slice();
         next[slotIndex] = { ...uploaded, previewUrl, size: file.size, type: file.type, status: 'ready' };
         return next;
       });
     } catch (uploadError) {
+      if (!request.isCurrent()) return;
       const messageText = uploadError instanceof Error ? uploadError.message : copy.uploadFailed;
       setReferenceImages((current) => {
+        if (!request.isCurrent()) return current;
         const next = current.slice();
         next[slotIndex] = {
           url: previewUrl,
@@ -133,10 +164,13 @@ export function useStoryboardReferences(params: UseStoryboardReferencesParams): 
         return next;
       });
       onError(messageText);
+    } finally {
+      account.signal.removeEventListener('abort', abort);
     }
   }
 
   function handleRemoveReferenceSlot(_field: EngineInputField, index: number) {
+    retireUpload(index);
     setReferenceImages((current) => {
       const next = current.slice();
       cleanupStoryboardReferenceImage(next[index] ?? null);
@@ -170,6 +204,7 @@ export function useStoryboardReferences(params: UseStoryboardReferencesParams): 
       libraryModal.slotIndex,
       STORYBOARD_REFERENCE_SLOT_COUNT
     );
+    retireUpload(slotIndex);
     onFeedbackReset();
     setReferenceImages((current) => {
       const next = current.slice();

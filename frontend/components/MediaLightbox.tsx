@@ -26,7 +26,7 @@ export function MediaLightbox({
   subtitle,
   prompt,
   metadata = [],
-  entries,
+  entries: sourceEntries,
   onClose,
   onRefreshEntry,
   onSaveToLibrary,
@@ -36,6 +36,11 @@ export function MediaLightbox({
   templateLabel,
 }: MediaLightboxProps) {
   const { t, locale } = useI18n();
+  const entries = useMemo(() => sourceEntries.flatMap(entry => entry.lastFrameUrl ? [entry, {
+    id: `${entry.id}-last-frame`, label: 'Last frame', outputRole: 'last_frame' as const, jobId: entry.jobId,
+    imageUrl: entry.lastFrameUrl, mediaType: 'image' as const, status: 'completed' as const,
+    engineId: entry.engineId, engineLabel: entry.engineLabel, createdAt: entry.createdAt,
+  }] : [entry]), [sourceEntries]);
   const [selectedId, setSelectedId] = useState(entries[0]?.id);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [refreshStates, setRefreshStates] = useState<Record<string, MediaLightboxLoadingState>>({});
@@ -209,13 +214,15 @@ export function MediaLightbox({
   const entry = entries.find(item => item.id === selectedId) ?? entries[0];
   const fr = locale.startsWith('fr'), es = locale.startsWith('es');
   const outputLabel = fr ? 'Sortie' : es ? 'Resultado' : 'Output';
-  const navigation = entries.length > 1 ? <div role="group" aria-label={outputLabel}>{entries.map((item, index) => <button type="button" key={item.id} aria-pressed={item.id === entry?.id} onClick={() => setSelectedId(item.id)}>{outputLabel} {index + 1}</button>)}</div> : null;
+  const frameLabel = fr ? 'Dernière image' : es ? 'Último fotograma' : 'Last frame';
+  const navigation = entries.length > 1 ? <div role="group" aria-label={outputLabel}>{entries.map((item, index) => <button type="button" key={item.id} aria-pressed={item.id === entry?.id} onClick={() => setSelectedId(item.id)}>{item.outputRole === 'last_frame' ? frameLabel : `${outputLabel} ${index + 1}`}</button>)}</div> : null;
   const heading = entry?.engineLabel || t('workspace.result.title', 'Result') || 'Result';
   const closeLabel = t('workspace.result.close', 'Close') || 'Close';
   const url = entry?.videoUrl || entry?.audioUrl || entry?.imageUrl;
   if (entry && url && entry.status !== 'pending' && entry.status !== 'failed') {
     const kind = entry.videoUrl ? 'video' : entry.audioUrl ? 'audio' : 'image';
-    const asset = { id: entry.id, jobId: entry.jobId, url, kind, thumbUrl: entry.thumbUrl, durationSec: entry.durationSec, source: entry.jobId ? 'gallery' : undefined } as const;
+    const asset = { id: entry.id, jobId: entry.jobId, url, kind, playbackVideoUrl: entry.playbackVideoUrl,
+      thumbUrl: entry.thumbUrl, durationSec: entry.durationSec, source: entry.jobId ? 'gallery' : undefined } as const;
     const libraryState = libraryStates[entry.id];
     return <MediaActionPanel asset={asset} locale={locale} title={heading} onClose={onClose} navigation={navigation} details={<>
       {entry.prompt || prompt ? <p>{entry.prompt || prompt}</p> : null}

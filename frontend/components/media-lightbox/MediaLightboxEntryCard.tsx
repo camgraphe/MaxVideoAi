@@ -120,7 +120,7 @@ export function MediaLightboxEntryCard({
   onUseTemplate,
 }: MediaLightboxEntryCardProps) {
   const { t } = useI18n();
-  const videoUrl = entry.videoUrl ?? undefined;
+  const videoUrl = entry.playbackVideoUrl ?? entry.videoUrl ?? undefined;
   const audioUrl = entry.audioUrl ?? undefined;
   const imageUrl = entry.imageUrl ?? undefined;
   const thumbUrl = entry.thumbUrl ?? undefined;

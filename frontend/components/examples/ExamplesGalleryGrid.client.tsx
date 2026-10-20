@@ -16,9 +16,9 @@ export type { ExampleGalleryVideo } from './examples-gallery-types';
 
 const ExampleReader = dynamic(() => import('./ExampleReader.client'), { ssr: false });
 
-export default function ExamplesGalleryGridClient({initialExamples,detailsCtaLabel='View settings & price',
+export default function ExamplesGalleryGridClient({initialExamples,priceSlots,detailsCtaLabel='View settings & price',
   noPreviewLabel='No preview',prioritizeFirstPoster=false,audioAvailableLabel='Audio available on playback',
-  openingEnabled,openingDetails,sort,locale,engineFilter,initialOffset,familyLabel}:ExamplesGalleryProps) {
+  openingEnabled,sort,locale,engineFilter,initialOffset}:ExamplesGalleryProps) {
   const videos=useMemo(()=>dedupeExamples(initialExamples),[initialExamples]);
   const {opening,rest}=useMemo(()=>buildGalleryOpening(videos,openingEnabled??(prioritizeFirstPoster&&sort==='playlist')),[videos,openingEnabled,prioritizeFirstPoster,sort]);
   const visibleVideos=useMemo(()=>[...opening,...rest],[opening,rest]);
@@ -27,16 +27,13 @@ export default function ExamplesGalleryGridClient({initialExamples,detailsCtaLab
   const preview=useGalleryPreviewBudget(ids,Boolean(reader.selected));
   const firstVisibleId=visibleVideos[0]?.id;
   const card=(video:ExampleGalleryVideo,frame?:'lead'|'portrait'|'side')=><ExampleGalleryCard key={video.id} video={video} locale={locale}
+    priceSlot={priceSlots?.[video.id]}
     altText={getImageAlt({kind:'renderThumb',engine:video.engineLabel,label:video.prompt,locale})}
     detailsCtaLabel={detailsCtaLabel} audioAvailableLabel={audioAvailableLabel} noPreviewLabel={noPreviewLabel}
     prioritizePoster={prioritizeFirstPoster && video.id === firstVisibleId} requested={preview.active.has(video.id)} frame={frame}
     onVisibility={preview.onVisibility} onIntent={preview.setIntent} onOpen={reader.open} />;
   const pauseLabel=locale==='fr'?'Pause des aperçus':locale==='es'?'Pausar vistas previas':'Pause previews';
   const resumeLabel=locale==='fr'?'Animer les aperçus':locale==='es'?'Animar vistas previas':'Animate previews';
-  const continuationLabel=familyLabel
-    ? locale==='fr'?`Plus de vidéos ${familyLabel}`:locale==='es'?`Más videos de ${familyLabel}`:`More ${familyLabel} videos`
-    : locale==='fr'?'Encore des vidéos':locale==='es'?'Más vídeos':'More videos';
-  const pageCountLabel=locale==='fr'?'sur cette page':locale==='es'?'en esta página':'on this page';
   const guideLabel=locale==='fr'?'Ouvrez une vidéo pour voir comment elle a été créée.':locale==='es'?'Abre un vídeo para ver cómo se creó.':'Open any video to see how it was made.';
   const guidePills=locale==='fr'?['Prompt','Réglages','Prix actuel']:locale==='es'?['Prompt','Ajustes','Precio actual']:['Prompt','Settings','Current price'];
   const createLabel=locale==='fr'?'Créer dans l’app':locale==='es'?'Crear en la app':'Create in the app';
@@ -59,8 +56,6 @@ export default function ExamplesGalleryGridClient({initialExamples,detailsCtaLab
           data-analytics-target-family="workspace">{createLabel}<ArrowUpRight size={14} aria-hidden="true"/></Link>
       </div>
     </div>:null}
-    {openingDetails}
-    {opening.length>0&&rest.length>0?<div className={styles.continuationHeading}><h2>{continuationLabel}</h2><span>{rest.length} {pageCountLabel}</span></div>:null}
     <div className={styles.gallery}>{rest.map(video=><div key={video.id} className={styles.item} style={{'--video-ratio':galleryVideoRatio(video)} as CSSProperties}>{card(video)}</div>)}</div>
   </div>;
 }

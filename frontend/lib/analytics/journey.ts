@@ -81,6 +81,7 @@ const ANALYTICS_ROUTE_FAMILIES = new Set([
 ]);
 const ANALYTICS_LOCALES = new Set(['en', 'fr', 'es']);
 const ANALYTICS_TOOL_NAMES = new Set([
+  'subtitles', 'lip_sync', 'product_photo_editor', 'product_video_editor', 'motion_transfer',
   'tools_hub', 'angle', 'background_removal', 'character_builder', 'storyboard', 'upscale', 'audio',
   'studio',
 ]);
@@ -463,6 +464,7 @@ const TOPUP_PAYLOAD_KEYS = [
 ] as const;
 
 const ANALYTICS_EVENT_PAYLOAD_KEYS = {
+  comparison_interaction: ['route_family', 'action', 'engine', 'section', 'locale', 'model_left', 'model_right'],
   studio_guided_template_started: ['template_id', 'step_id', 'locale', 'elapsed_ms', 'viewport_class'],
   studio_guide_step_focused: ['template_id', 'step_id', 'locale', 'elapsed_ms', 'viewport_class'],
   studio_guide_hidden: ['template_id', 'step_id', 'locale', 'elapsed_ms', 'viewport_class'],
@@ -593,6 +595,9 @@ function analyticsPrimitive(value: unknown): string | number | boolean | undefin
 type AnalyticsPrimitive = string | number | boolean;
 
 const ENGINE_IDS = new Set([
+  'luma-ray-2', 'luma-ray-2-flash', 'kling-3-turbo-standard', 'kling-3-turbo-pro',
+  'dreamina-seedance-2-0-mini', 'ltx-2-3-pro', 'minimax-h3-max', 'wan-3', 'wan-3-prime',
+  'ltx-2-5-fast', 'ltx-2-5-pro', 'grok-imagine-video-1-5', 'flux-3', 'flux-3-draft',
   'happy-horse-1-0', 'happy-horse-1-1', 'seedance-2-0-mini', 'seedance-1-5-pro',
   'seedance-2-0', 'seedance-2-0-fast', 'seedance-2-5', 'seedream', 'seedream-5-0-pro',
   'nano-banana', 'nano-banana-2', 'nano-banana-lite', 'nano-banana-pro', 'gemini-omni-flash',
@@ -617,11 +622,12 @@ const CTA_NAMES = new Set([
   ...ENGINE_IDS,
 ]);
 const CTA_LOCATIONS = new Set([
+  'creator_tool_hero', 'creator_tool_final', 'creator_tools_hub',
   'studio_hero', 'studio_closing', 'integration_hero', 'mcp_hero',
   'examples_hero', 'examples_gallery', 'watch_hero', 'watch_sidebar',
   'pricing_hero',
   'marketing_nav_mobile', 'marketing_nav_desktop', 'home_assistant_workflow', 'comparison_intro',
-  'comparison_preview', 'reference_workflow', 'toolbox', 'toolbox_cta', 'transparent_pricing',
+  'comparison_scorecard', 'comparison_preview', 'reference_workflow', 'toolbox', 'toolbox_cta', 'transparent_pricing',
   'home_hero', 'examples_preview', 'examples_preview_cta', 'examples_preview_featured_model',
   'examples_preview_header', 'examples_preview_model', 'shot_type_hub_cta', 'shot_type_selector',
   'tools_hub_hero', 'tool_angle_final', 'tool_angle_hero', 'tool_angle_examples',
@@ -639,7 +645,7 @@ const EXACT_STRING_VALUES: Readonly<Record<string, ReadonlySet<string>>> = {
   cta_name: CTA_NAMES,
   cta_location: CTA_LOCATIONS,
   target_family: new Set(['auth', 'workspace', 'examples', 'compare', 'models', 'tools', 'pricing', 'mcp', 'studio', 'best-for', 'public_tools', 'app_tools']),
-  action: new Set(['connect', 'copy_endpoint', 'generate', 'full_body_fix', 'lighting_variant', 'continue', 'refine', 'branch', 'copy', 'open']),
+  action: new Set(['copy_comparison', 'copy_link', 'model_change', 'details_open', 'video_play', 'connect', 'copy_endpoint', 'generate', 'full_body_fix', 'lighting_variant', 'continue', 'refine', 'branch', 'copy', 'open']),
   client: new Set(['claude', 'chatgpt', 'codex']),
   destination: new Set(['verified_deep_link', 'setup_guide', 'manual_setup']),
   locale: ANALYTICS_LOCALES,
@@ -651,6 +657,9 @@ const EXACT_STRING_VALUES: Readonly<Record<string, ReadonlySet<string>>> = {
   quality_mode: new Set(['draft', 'final']),
   format_mode: new Set(['standard', '2k', '4k']),
   engine: ENGINE_IDS,
+  model_left: ENGINE_IDS,
+  model_right: ENGINE_IDS,
+  section: new Set(['scores', 'specifications', 'left', 'right']),
   mode: new Set(['t2v', 'i2v', 'ref2v', 'v2v', 'r2v', 'fl2v', 'a2v', 't2i', 'i2i', 'extend', 'retake', 'reframe']),
   payment_mode: new Set(['wallet', 'platform']),
   payment_status: new Set(['pending_payment', 'paid_wallet', 'paid_direct', 'refunded_wallet', 'included_mcp_trial', 'platform', 'quoted', 'curated', 'completed']),

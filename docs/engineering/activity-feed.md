@@ -77,6 +77,72 @@ Stale audio expiry and explicitly requested Fal refresh keep their existing
 status-reconciliation behavior. They are separate from schema/output repair and
 must retain account ownership and payment safeguards.
 
+Audio expiration treats the feed snapshot only as a candidate. The route-local
+`jobs-stale-audio.ts` helper locks the current owned row and checks its current
+surface, active status, missing media and last-update age again. It returns `true`
+only after an expiration commits; the collection reloads only those expired IDs.
+The terminal update and any wallet refund share one transaction through
+`refundAudioChargeInExecutor` in the canonical audio receipt owner. That owner
+validates the persisted debit and an existing refund, so neither caller-supplied
+prices nor a stale snapshot can define the credit. Completion or recent progress
+wins when committed before the lock. Concurrent expiration creates at most one
+refund. Missing/inconsistent paid ledger data or any failed write rolls back both
+state and money; the route logs the reconciliation error and preserves the row.
+Unpaid/free jobs expire without wallet writes. None of these paths initializes
+schema or contacts a provider.
+
+## Browser focus ownership
+
+Status polling has a separate owner in `frontend/lib/job-status-polling.ts`.
+Each mounted feed registers its pending jobs under the confirmed account. A
+shared account/job entry retains one timer until its last subscriber leaves;
+changing a source or closing another feed cannot remove a live subscriber's
+timer. Final statuses and manual-review states stop polling. HTTP 401/403/404 stop
+automatic retries. Transient errors back off from the normal 15-second cadence
+to 30 and then at most 60 seconds, stopping after five consecutive errors.
+Explicit public Refresh renews a nonterminal retry budget; same-account sign-in
+or token renewal resumes a denied request. Automatic error revalidation never
+renews that budget. Status errors do not automatically revalidate the collection:
+that would start a separate SWR retry chain after authentication fails. Account lifetime is checked in memory, so blocked session
+storage cannot disable polling or permit late account responses to affect another
+feed. A fresh
+successful status observation can recover an exhausted or renewed-session entry.
+In-flight results cannot recreate a disposed entry, and status events from a
+previous principal are suppressed. The existing account-scoped in-flight and
+15-second successful-response coalescing in `api-job-status.ts` remains intact.
+A reopened feed cannot join a retired owner's request; stale completion cannot
+replace or remove a newer in-flight request. A current cached observation still
+reaches the feed before the poller stops on a terminal result.
+
+`tests/jobs-polling-lifecycle.test.ts` uses the real SWR feed and status transport
+adapter with controlled HTTP responses and time. It covers closing feeds,
+independent sources, shared subscribers, permanent/transient errors, recovery and
+late account responses. `tests/jobs-feed-lifecycle.test.ts` no longer replaces the
+polling implementation with no-op stubs.
+
+`SWRFocusResync` owns the shared API/jobs/engines/pricing refresh on application
+routes, including visibility restoration and BFCache `pageshow`. A five-second
+throttle coalesces these signals and emits one `wallet:invalidate` notification.
+`focus-resync-policy.ts` is shared with `SWRProvider`: its middleware disables
+native SWR focus only for keys handled by that owner and only on those routes.
+Other keys retain native SWR behavior, and media-library lists retain their
+explicit focus opt-out. Do not add a second session watchdog that mutates the
+same cache. Reconnect and polling policies remain independent.
+
+SWR Infinite remains under its native focus owner: its page-key loader must reach
+the public `infinite` middleware unchanged, and SWR excludes its aggregate cache
+from filtered `mutate` calls. The provider recognizes that middleware before
+resolving ordinary dependent keys. Activity therefore refreshes its first page
+once on native focus; paginated media lists retain their explicit focus opt-out.
+
+`tests/public-watch-runtime-remount.test.ts` exercises the actual runtime with
+React and SWR: one fetch per owned string/tuple/function key, wallet notification,
+visibility/page-show bursts, cleanup, media-list exclusions and native focus on
+other keys and outside the shared-owner routes. This proves request-count
+behavior, not a measured page-latency or Core Web Vitals improvement.
+`tests/swr-focus-infinite.test.ts` covers initial loading, second-page loading,
+focus behavior and the mounted `/login` → `/app` transition with real SWR Infinite.
+
 ## Diagnostics
 
 Set `JOBS_ROUTE_TIMING=1` in a non-production runtime to add a bounded
@@ -98,9 +164,31 @@ results.
 - `tests/jobs-api-route-architecture.test.ts` for the migrated-table read
   boundary.
 - `tests/jobs-route-timing.test.ts` for bounded non-personal diagnostics.
+- `tests/jobs-stale-audio-postgres.test.ts` for current-state revalidation, concurrent
+  completion/expiration, exact debit reconciliation and atomic rollback on PG17.
 - `tests/recent-generations-service.test.ts` and media continuation/library
   contracts for query ownership, exact originals, and legacy poster fallback.
 - `tests/application-schema-bootstrap-postgres.test.ts` for the new-database
   initialization sequence outside request handling.
 - Compare first-page server latency before and after on the same guarded dataset;
   do not claim browser or field improvement without browser/field evidence.
+
+## Mutation feedback
+
+`useJobsActionFeedback` owns save/remove progress, success and localized error
+feedback for one account/source lifetime. Account-owned locks prevent overlapping
+mutations for the same group before React rerenders and across source-filter changes.
+The hook retains the exact failed action for retry even if a feed refresh removes its
+card, and ignores responses from retired account/filter lifetimes. `JobsPageShell` announces
+errors with `role="alert"` and progress/success with `role="status"`; listing errors
+remain independent. Dismissing feedback never cancels a pending write.
+
+The controller retains library save payloads and history removal orchestration.
+After a removal response, it checks that the action still belongs to the active
+lifetime before changing the viewer or paginated cache. `jobs-action-feedback`
+exercises failure, retry, duplicate actions and account/source/unmount transitions.
+
+Audio reference imports similarly belong to a current account, intent and selection
+version. A later reference selection/removal, model choice or settings reuse
+retires an older import; its result, error and final busy-state update are ignored.
+`audio-reference-selection` tests these transitions and the next submitted reference.

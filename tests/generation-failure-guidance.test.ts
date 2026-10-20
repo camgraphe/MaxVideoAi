@@ -53,6 +53,16 @@ test('MiniMax preflight duration rejection distinguishes input and output durati
   assert.match(message, /No credits were charged/);
 });
 
+test('request validation, sign-in and review guidance remains actionable', () => {
+  for (const [error, message] of [
+    ['INVALID_MODE', 'Choose a supported generation mode.'],
+    ['UNAUTHORIZED', 'Sign in before generating.'],
+    ['PRICING_REFRESH_REQUIRED', 'Review the updated quote before confirming.'],
+  ]) {
+    assert.equal(getWorkspaceGenerationRequestFailureMessage({ error }, message, copy, { locale: 'en', engineId: 'veo-3-1-lite' }), message);
+  }
+});
+
 test('copyright copy does not claim a wallet refund from another payment status', () => {
   for (const paymentStatus of ['refunded', 'paid_wallet', 'included_mcp_trial']) {
     assert.equal(getWorkspaceGenerationFailureMessage({ failureCode: 'seedance_output_copyright_restricted', paymentStatus }, copy), copy.messages.seedanceCopyrightBlocked);

@@ -56,6 +56,21 @@
       "assetId": "hailuo-family-featured",
       "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1b29e9b2-c68d-46a3-8415-7677deed674a.mp4",
       "sha256": "418de36009b7617838f463ff189d7d26c4765b61e3772fc2fd488ff4426f2fee"
+    },
+    {
+      "assetId": "minimax-h3-home",
+      "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/5632c9c8-b6d1-4b76-85ca-e32c0643e49f.mp4",
+      "sha256": "8e71802020c0f5f8e8461dc6f6b66eecec638577c3a3bce8d285167a67b227db"
+    },
+    {
+      "assetId": "seedance-2-5-home",
+      "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6f085820-dad0-46e2-8b3e-7d50094fb2c4.mp4",
+      "sha256": "296fa69686df3396fe07862d3a4f8b5e8676fa114dcf87c5385ad49e965e4ea8"
+    },
+    {
+      "assetId": "wan-3-home",
+      "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/c63e754c-4e7b-4fbb-82e8-7fc876fda7bb.mp4",
+      "sha256": "64f10d5ed2a98a6d956bfb6da667f00e413535c66a5e0d1172f7987e059e8feb"
     }
   ]
 }

@@ -224,6 +224,9 @@ export async function collectPolicyFingerprintInput(): Promise<PolicyFingerprint
     getGenerationStatus: unavailable,
     listRecentGenerations: unavailable,
     createTopupLink: unavailable,
+    listAudioCapabilities: unavailable,
+    prepareAudioGeneration: unavailable,
+    confirmAudioGeneration: unavailable,
   };
   const server = createMaxVideoAiMcpServer(principal, services, {
     paidGeneration: true,

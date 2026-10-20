@@ -2,6 +2,8 @@ import { claimGenerationPoll } from '@/server/generation-poll-state';
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { reconcileFinishingJobs } from '@/server/tools/finishing-poll';
+import { refreshCreatorOperations } from '@/server/tools/creator-operations';
+import { reconcileSubtitleOperations } from '@/server/subtitles/reconciliation';
 import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
 import { linkFalJob } from '@/server/admin-job-tools';
@@ -28,16 +30,19 @@ const POLL_INITIAL_DELAY_MS = 5_000;
 const FAILURE_STATES = new Set(['FAILED', 'FAIL', 'ERROR', 'ERRORED', 'CANCELLED', 'CANCELED']);
 const COMPLETED_STATES = new Set(['COMPLETED', 'FINISHED', 'SUCCESS', 'SUCCEEDED', 'OK']);
 
-const defaults = { claimGenerationPoll, query, getFalClient, linkFalJob, updateJobFromFalWebhook, backfillCompletedMcpJobOutputs, reconcileFinishingJobs, reconcileStaleFalProvisionals };
+const defaults = { claimGenerationPoll, query, getFalClient, linkFalJob, updateJobFromFalWebhook, backfillCompletedMcpJobOutputs, reconcileFinishingJobs, refreshCreatorOperations, reconcileSubtitleOperations, reconcileStaleFalProvisionals };
 
 export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
-  const { claimGenerationPoll, query, getFalClient, linkFalJob, updateJobFromFalWebhook, backfillCompletedMcpJobOutputs, reconcileFinishingJobs, reconcileStaleFalProvisionals } = { ...defaults, ...dependencies };
+  const { claimGenerationPoll, query, getFalClient, linkFalJob, updateJobFromFalWebhook, backfillCompletedMcpJobOutputs, reconcileFinishingJobs, refreshCreatorOperations, reconcileSubtitleOperations, reconcileStaleFalProvisionals } = { ...defaults, ...dependencies };
   const rows = await query<FalPendingJob>(
     `SELECT job_id, surface, engine_id, provider_job_id, status, updated_at, created_at
 	     FROM app_jobs
 	     WHERE provider_job_id IS NOT NULL
 	       AND COALESCE(provider, 'fal') = 'fal'
 	       AND engine_id IS DISTINCT FROM 'toolbox-finishing'
+         AND engine_id IS DISTINCT FROM 'toolbox-subtitles'
+          AND engine_id IS DISTINCT FROM 'toolbox-lip-sync'
+          AND engine_id IS DISTINCT FROM 'toolbox-motion-control'
 	       AND status IN ('pending', 'queued', 'running', 'processing', 'in_progress')
      ORDER BY updated_at ASC
      LIMIT 10`
@@ -47,7 +52,7 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
   let updates = 0;
 
   for (const job of rows) {
-    if (job.surface === 'audio' || job.engine_id === 'toolbox-finishing' || job.engine_id.startsWith('audio-')) {
+    if (job.surface === 'audio' || job.engine_id === 'toolbox-finishing' || job.engine_id === 'toolbox-subtitles' || job.engine_id === 'toolbox-lip-sync' || job.engine_id === 'toolbox-motion-control' || job.engine_id.startsWith('audio-')) {
       continue;
     }
 
@@ -357,6 +362,9 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
       WHERE provider_job_id IS NOT NULL
         AND COALESCE(provider, 'fal') = 'fal'
         AND engine_id IS DISTINCT FROM 'toolbox-finishing'
+         AND engine_id IS DISTINCT FROM 'toolbox-subtitles'
+          AND engine_id IS DISTINCT FROM 'toolbox-lip-sync'
+          AND engine_id IS DISTINCT FROM 'toolbox-motion-control'
         AND status = 'completed'
         AND video_url ILIKE '%.fal.media/%'
         AND updated_at > NOW() - INTERVAL '7 days'
@@ -400,8 +408,16 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
     finishing.failures = 1;
     console.warn('[fal-poll] finishing reconciliation deferred');
   }
+  let creatorOperations: Awaited<ReturnType<typeof refreshCreatorOperations>> = [];
+  let subtitleOperations: unknown = null;
+  try { creatorOperations = await refreshCreatorOperations(); }
+  catch { console.warn('[fal-poll] creator operations reconciliation deferred'); }
+  try { subtitleOperations = await reconcileSubtitleOperations(); }
+  catch { console.warn('[fal-poll] subtitle operations reconciliation deferred'); }
   return NextResponse.json({
     ok: true,
+    creatorOperations,
+    subtitleOperations,
     checked: rows.length,
     updates,
     durableRecoveries,

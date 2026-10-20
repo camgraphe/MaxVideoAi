@@ -6,6 +6,7 @@ import { join, resolve } from 'node:path';
 import test from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
+import type { HomePriceModel } from '../frontend/components/marketing/home/home-price-demo-types';
 
 const requireFrontend = createRequire(resolve('frontend/package.json'));
 const home = './frontend/app/(localized)/[locale]/(marketing)/(home)';
@@ -29,11 +30,11 @@ async function bundle() {
     '@/server/homepage': `import {read} from 'probe';export const getHomepageSlotsCached=()=>read('hero-slots',{hero:[],gallery:[]});export const getSuccessfulGenerationCountCached=async()=>20000;`,
     '@/server/videos': `import {read,videos} from 'probe';export const listExamples=async(sort)=>read(sort==='playlist'?'example-playlist':'example-latest',videos);export const listExampleFamilyPage=async()=>({items:[],total:0,limit:24,offset:0,hasMore:false});export const listPlaylistVideos=async()=>[];`,
     '@/server/model-launch-assets': `export const ACCEPTED_DURABLE_MODEL_ASSETS=[];`,
-    '@/server/current-example-price': `import {read} from 'probe';export const quoteCurrentExamplePrices=()=>read('hero-pricing',new Map([['minimax-h3-max',{kind:'reference',modelId:'minimax-h3-max',amountCents:141,currency:'USD',scenarioLabel:'Text to video · 5s · 1080p'}]]));`,
+    '@/server/current-example-price': `import {read} from 'probe';export const quoteCurrentExamplePrices=()=>read('hero-pricing',new Map([['minimax-h3',{kind:'reference',modelId:'minimax-h3',amountCents:141,currency:'USD',scenarioLabel:'Text to video · 5s · 1080p'}]]));`,
     '@/server/public-page-timing': `import {withPublicPageTiming as actual} from ${JSON.stringify(resolve('frontend/server/public-page-timing.ts'))};import {records} from 'probe';export * from ${JSON.stringify(resolve('frontend/server/public-page-timing.ts'))};export const withPublicPageTiming=(context,load)=>actual(context,load,{enabled:true,deployment:'test',emit:record=>records.push(record)});`,
   };
   await build({
-    stdin: { contents: `export {default as HomePage} from '${home}/page';export {HomeModelDiscovery} from './frontend/components/marketing/home/HomeModelDiscovery';export {I18nProvider} from './frontend/lib/i18n/I18nProvider';export {assembleHomepageExampleCards} from '${home}/_lib/home-route-data/examples';export * from 'probe';`, resolveDir: process.cwd() },
+    stdin: { contents: `export {default as HomePage} from '${home}/page';export {HomeModelDiscovery} from './frontend/components/marketing/home/HomeModelDiscovery';export {HomeHero} from './frontend/components/marketing/home/HomeHeroSection';export {HomePricingSection} from './frontend/components/marketing/home/HomePricingSection';export {buildHomePriceDemo} from '${home}/_lib/home-price-demo-data';export {I18nProvider} from './frontend/lib/i18n/I18nProvider';export {assembleHomepageExampleCards} from '${home}/_lib/home-route-data/examples';export * from 'probe';`, resolveDir: process.cwd() },
     define: { 'import.meta.url': JSON.stringify(pathToFileURL(resolve('frontend/server/video-keyframes.ts')).href) },
     outfile: output, bundle: true, platform: 'node', format: 'cjs', packages: 'external', tsconfig: 'frontend/tsconfig.json', jsx: 'automatic',
     plugins: [{ name: 'controlled-home-io', setup(builder) {
@@ -49,13 +50,13 @@ async function bundle() {
       });
       builder.onLoad({ filter: /.*/, namespace: 'controlled' }, args => ({ loader: 'js', resolveDir: process.cwd(), contents: mocks[args.path] ?? (args.path === 'scores'
         ? `import {read} from 'probe';export const loadEngineScores=()=>read('scores',new Map());`
-        : `import {read} from 'probe';export const buildCurrentHomePriceDemo=()=>read('demo-pricing',[]);`) }));
+        : `import {read} from 'probe';import {buildHomePriceDemo} from ${JSON.stringify(resolve('frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-price-demo-data.ts'))};export const buildCurrentHomePriceDemo=(locale)=>read('demo-pricing',buildHomePriceDemo(locale).map(model=>({...model,steps:model.steps.map((step,index)=>({...step,amountCents:[73,211,421][index],display:['$0.73','$2.11','$4.21'][index]}))}))); `) }));
     } }],
   });
   return { directory, output, controlledBoundaries: [...Object.keys(mocks), 'compare-page-data-loaders', 'current-home-price-demo-data'] };
 }
 
-test('real homepage streams critical poster and stable films before held discovery in EN/FR/ES', async (t) => {
+test('real homepage streams the poster before pending exact prices and discovery in EN/FR/ES', async (t) => {
   const Module = requireFrontend('node:module');
   const priorResolve = Module._resolveFilename;
   const aliases = Object.fromEntries(['react', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'react-dom', 'react-dom/server', 'react-dom/client'].map(name => [name, requireFrontend.resolve(`next/dist/compiled/${name}`)]));
@@ -81,9 +82,9 @@ test('real homepage streams critical poster and stable films before held discove
       let pageReady = false;
       const pagePromise = fixture.HomePage({ params: Promise.resolve({ locale }) }).then((page: unknown) => { pageReady = true; return page; });
       await tick();
-      for (const phase of ['hero-slots', 'scores', 'hero-pricing', 'demo-pricing']) fixture.release(phase);
+      for (const phase of ['hero-slots', 'scores']) fixture.release(phase);
       await tick();
-      assert.equal(pageReady, true, 'The real route cannot wait for held gallery reads');
+      assert.equal(pageReady, true, 'The real route cannot wait for held exact price reads');
       const page = await pagePromise;
       const stream = await renderToReadableStream(wrap(page));
       const reader = stream.getReader();
@@ -106,10 +107,23 @@ test('real homepage streams critical poster and stable films before held discove
       assert.match(shell, /id="explore-models"/);
       assert.doesNotMatch(shell, /selected-real-kling\.webp/);
       assert.equal(fixture.records.length, 0, 'Server diagnostics must wait for the eventual gallery duration');
+      assert.match(shell, /Loading price…|Chargement du prix…|Cargando precio…/);
+      assert.doesNotMatch(shell, /\$1[.,]41|\$0[.,]73|\$2[.,]11|\$4[.,]21/, 'Pending canonical amounts must not appear in the initial shell');
+      fixture.release('hero-pricing'); fixture.release('demo-pricing');
       fixture.release('example-latest'); fixture.release('example-playlist');
       let tail = '';
       for (;;) { const next = await reader.read(); if (next.done) break; tail += decoder.decode(next.value, { stream: true }); }
       assert.match(tail, /selected-real-kling\.webp/);
+      const currentHeroPrices = new Map([['minimax-h3', { kind: 'reference', modelId: 'minimax-h3', amountCents: 141, currency: 'USD', scenarioLabel: 'Text to video · 5s · 1080p' }]]);
+      const expectedHero = renderToStaticMarkup(wrap(React.createElement(fixture.HomeHero, { ...page.props.children[0].props, currentHeroPricesPending: undefined, currentHeroPrices })));
+      const expectedQuotes = expectedHero.match(/<div class="cinema-film-quote[\s\S]*?<\/div>|<details class="cinema-quote-details"[\s\S]*?<\/details>/g) ?? [];
+      assert.equal(expectedQuotes.length, 2);
+      for (const quote of expectedQuotes) {
+        assert.ok(tail.replace(/<!--[\s\S]*?-->/g, '').includes(quote.replace(/<!--[\s\S]*?-->/g, '')), 'The streamed quote must preserve the canonical amount, scenario and reference label');
+      }
+      const finalModels = fixture.buildHomePriceDemo(locale).map((model: HomePriceModel) => ({ ...model, steps: model.steps.map((step, index) => ({ ...step, amountCents: [73,211,421][index], display: ['$0.73','$2.11','$4.21'][index] })) }));
+      const expectedPricing = renderToStaticMarkup(wrap(React.createElement(fixture.HomePricingSection, { locale, models: finalModels, copy: dictionary.home.redesign.pricingTrust })));
+      assert.ok(tail.replace(/<!--[\s\S]*?-->/g, '').includes(expectedPricing), 'The revealed pricing demo preserves the exact canonical scenarios');
       assert.doesNotMatch(tail, /home-hero-section|creative-film/, 'The later reveal must replace discovery alone');
       const finalCards = fixture.assembleHomepageExampleCards({ locale, content: dictionary.home.redesign, globalCandidates: fixture.videos, familyVideos: new Map(), acceptedAssets: [] });
       const providers = page.props.children[2].props.children.props.modelDiscovery.props.children.props.providers;
@@ -132,7 +146,7 @@ test('real homepage streams critical poster and stable films before held discove
           writeFile(join(reportDirectory, `proof-${locale}.json`), JSON.stringify({
             locale, renderer: React.version, sourceOwners: 'real HomePage/HomeHero/HomeCreativeWorlds/HomeDiscovery/HomeModelDiscovery',
             controlledBoundaries: bundled.controlledBoundaries, calls: fixture.calls, records: fixture.records,
-            criticalShellBeforeGallery: true, stableCreativeFilms: 4, seoScriptsInShell: 3,
+            criticalShellBeforeGallery: true, criticalShellBeforePrices: true, exactHeroQuoteMarkupEqual: true, exactDemoMarkupEqual: true, stableCreativeFilms: 4, seoScriptsInShell: 3,
             heroReplacedInReveal: false, creativeFilmsReplacedInReveal: false, finalDiscoveryMarkupEqual: true,
             shellBytes: Buffer.byteLength(shell), revealBytes: Buffer.byteLength(tail),
             limitation: 'Controlled I/O and Next bundled React rendering; not HTTP cache, browser playback, CLS or LCP evidence.',

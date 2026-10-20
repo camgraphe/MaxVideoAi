@@ -7,6 +7,7 @@ import {
   normalizeReceipts,
 } from './normalizers';
 import { deriveOutcome, isRefundedJob } from './outcomes';
+import { isExternalFalImport } from '../app-job-origin';
 import type { AdminJobAuditRecord, RawJobAuditRow } from './types';
 
 const ARCHIVE_THRESHOLD_MS = 30 * 60 * 1000;
@@ -49,7 +50,8 @@ export function normalizeTimeline(
 }
 
 export function mapJobAuditRow(row: RawJobAuditRow, now = Date.now()): AdminJobAuditRecord {
-  const finalPrice = coerceNumber(row.final_price_cents);
+  const externalImport = isExternalFalImport(row.settings_snapshot);
+  const finalPrice = externalImport && row.final_price_cents == null ? null : coerceNumber(row.final_price_cents);
   const totalCharge = coerceNumber(row.total_charge_cents);
   const totalRefund = coerceNumber(row.total_refund_cents);
   const netCharge = totalCharge - totalRefund;
@@ -62,7 +64,7 @@ export function mapJobAuditRow(row: RawJobAuditRow, now = Date.now()): AdminJobA
   });
   const outcome = deriveOutcome(row.status, refunded);
 
-  const paymentOk =
+  const paymentOk = externalImport ? finalPrice === null && netCharge === 0 && !row.charge_count && !row.refund_count :
     paymentStatus.includes('refunded') || refunded ? netCharge <= 0 : finalPrice === netCharge;
 
   const falStatus = row.fal_status;
@@ -131,6 +133,7 @@ export function mapJobAuditRow(row: RawJobAuditRow, now = Date.now()): AdminJobA
     message: row.message,
     paymentStatus: row.payment_status,
     finalPriceCents: finalPrice,
+    externalImport,
     currency,
     surface,
     videoUrl,

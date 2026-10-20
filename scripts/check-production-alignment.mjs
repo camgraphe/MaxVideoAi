@@ -4,9 +4,10 @@ import { PRODUCTION_PROJECT_ID } from './check-production-git.mjs';
 
 export function deploymentRevision(deployment) {
   const meta = deployment.meta ?? {};
-  // A Vercel redeploy of a Git deployment legitimately has source=cli.
-  const gitSource = deployment.source === 'git' ||
-    (deployment.source === 'cli' && meta.action === 'redeploy' && /^dpl_/.test(meta.originalDeploymentId ?? ''));
+  // Vercel reports redeploys as source=redeploy, or source=cli with legacy action metadata.
+  const identifiedRedeploy = /^dpl_[a-zA-Z0-9]+$/.test(meta.originalDeploymentId ?? '') &&
+    (deployment.source === 'redeploy' || (deployment.source === 'cli' && meta.action === 'redeploy'));
+  const gitSource = deployment.source === 'git' || identifiedRedeploy;
   if (!gitSource || deployment.projectId !== PRODUCTION_PROJECT_ID || deployment.readyState !== 'READY' ||
       deployment.target !== 'production' || meta.githubCommitOrg !== 'camgraphe' ||
       meta.githubCommitRepo !== 'MaxVideoAi' || meta.githubCommitRef !== 'main' ||

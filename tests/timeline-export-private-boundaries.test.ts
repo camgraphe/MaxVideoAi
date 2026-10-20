@@ -105,7 +105,7 @@ test('stable media GET/HEAD renew transport on demand with exact ownership and n
   const props = {params:Promise.resolve({exportId:fixture.job.id})};
   // A browser can reopen this durable URL at any later time: each request signs anew.
   for (const handler of [route.GET,route.GET,route.HEAD]) {
-    const response = await handler({nextUrl:{origin:'https://maxvideoai.com'}},props);
+    const response = await handler({nextUrl:new URL('https://maxvideoai.com')},props);
     assert.equal(response.status,307);assert.equal(response.headers.get('Cache-Control'),'private, no-store');
     const location = new URL(response.headers.get('Location')!);
     assert.equal(location.pathname,new URL(output).pathname);assert.ok(location.searchParams.get('X-Amz-Signature'));
@@ -113,7 +113,7 @@ test('stable media GET/HEAD renew transport on demand with exact ownership and n
   assert.equal(fixture.reads,3);assert.equal(JSON.stringify(fixture.job),before);
   fixture.job.user_id = 'other';assert.equal((await route.GET({},props)).status,404);
   fixture.job.user_id = 'owner';fixture.job.status = 'rendering';assert.equal((await route.GET({},props)).status,404);
-  fixture.job.status = 'completed';fixture.job.output_url=output.replace('/owner/','/other/');assert.equal((await route.GET({nextUrl:{origin:'https://maxvideoai.com'}},props)).status,404);
+  fixture.job.status = 'completed';fixture.job.output_url=output.replace('/owner/','/other/');assert.equal((await route.GET({nextUrl:new URL('https://maxvideoai.com')},props)).status,404);
   fixture.authorized=false;const reads=fixture.reads;assert.equal((await route.GET({},props)).status,401);assert.equal(fixture.reads,reads);
 });
 
@@ -133,7 +133,7 @@ test('HTTP redirect preserves Range and HEAD, and reopens a completed download a
       fixture.reads.push({method:req.method!,range:req.headers.range});
       res.writeHead(req.headers.range?206:200,{'Content-Type':'video/mp4','Content-Length':'8'});res.end(req.method === 'HEAD' ? undefined : 'fixture!');return;
     }
-    const response=await route[req.method === 'HEAD' ? 'HEAD' : 'GET']({nextUrl:{origin:fixture.origin}},{params:Promise.resolve({exportId:fixture.job.id})});
+    const response=await route[req.method === 'HEAD' ? 'HEAD' : 'GET']({nextUrl:new URL(req.url!,fixture.origin)},{params:Promise.resolve({exportId:fixture.job.id})});
     res.writeHead(response.status,Object.fromEntries(response.headers));res.end();
   });
   await new Promise<void>(resolve=>server.listen(0,'127.0.0.1',resolve));
@@ -148,4 +148,38 @@ test('HTTP redirect preserves Range and HEAD, and reopens a completed download a
     const head=await fetch(stable,{method:'HEAD'});assert.equal(head.status,200);
     assert.deepEqual(fixture.reads,[{method:'GET',range:'bytes=0-7'},{method:'HEAD',range:undefined}]);
   } finally {await new Promise<void>((resolve,reject)=>server.close(error=>error?reject(error):resolve()));}
+});
+
+test('completed download signs an attachment named by the owned job while preview and HEAD retain ordinary media access', async () => {
+  const fixture = {job:{...makeJob(),project_name:'Film\r\nX-Test: forged'},authorized:true};
+  const route = await load(`export {GET,HEAD} from './app/api/studio/timeline-exports/[exportId]/media/route';`,{
+    ...common,
+    '../../../_lib/studio-route-utils':'export const resolveStudioRouteContext = async () => fixture.authorized ? {userId:"owner"} : {response:new Response(null,{status:401})};',
+    '@/lib/db':'export const query = async (_sql,values) => values[0] === fixture.job.id && values[1] === fixture.job.user_id ? [fixture.job] : [];',
+  },fixture);
+  const before = JSON.stringify(fixture.job);
+  const props = {params:Promise.resolve({exportId:fixture.job.id})};
+  const request = (query = '') => ({nextUrl:new URL('https://maxvideoai.com/api/studio/timeline-exports/'+fixture.job.id+'/media'+query)});
+  const response = await route.GET(request('?download=1&filename=attacker.mp4'),props);
+  assert.equal(response.status,307);
+  assert.equal(response.headers.get('Cache-Control'),'private, no-store');
+  assert.equal(response.headers.get('Referrer-Policy'),'no-referrer');
+  const location = new URL(response.headers.get('Location')!);
+  assert.equal(location.pathname,new URL(output).pathname);
+  assert.equal(location.searchParams.get('response-content-disposition'),'attachment; filename="Film-X-Test-forged.mp4"');
+  assert.ok(location.searchParams.get('X-Amz-Signature'));
+  for (const [handler,query] of [[route.GET,''],[route.GET,'?download=0'],[route.HEAD,''],[route.HEAD,'?download=1']] as const) {
+    const preview = await handler(request(query),props);
+    assert.equal(preview.status,307);
+    assert.equal(new URL(preview.headers.get('Location')!).searchParams.get('response-content-disposition'),null);
+  }
+  assert.equal(JSON.stringify(fixture.job),before,'Delivery cannot mutate the job or its confirmed billing.');
+  fixture.job.user_id='foreign';
+  const foreign = await route.GET(request('?download=1'),props);
+  assert.equal(foreign.status,404);assert.equal(foreign.headers.get('Location'),null);
+  assert.equal(foreign.headers.get('Cache-Control'),'private, no-store');
+  fixture.job.user_id='owner';fixture.job.status='rendering';
+  assert.equal((await route.GET(request('?download=1'),props)).status,404);
+  fixture.job.status='completed';fixture.job.output_url=output.replace('/owner/','/foreign/');
+  assert.equal((await route.GET(request('?download=1'),props)).status,404);
 });

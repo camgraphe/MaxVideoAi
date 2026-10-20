@@ -12,6 +12,30 @@ A coordinated read-only production check at 2026-10-05T13:08:15Z confirmed conve
 
 Removing a presentation label does not change feature flags, access gates, grant types or immutable assistance-policy versions containing `beta` or `preview`. Historical dated guides and captures retain the status they actually recorded. A hidden export flag is not evidence about whether renderer secrets are configured; masked environment reads cannot establish that fact.
 
+## Public example entry — 2026-10-16
+
+`/app/studio?example=<public-example-id>` starts an editable example brief.
+`frontend/server/studio-example-entry.ts` validates the bounded identifier and
+reuses the public watch eligibility and sanitized detail projection, including
+legacy public rows with `indexable=NULL`; catalog curation still requires explicit
+`indexable=true`. The
+root entry skips the recent-project redirect, `StudioStart` carries the identifier
+to the new owned conversation, and that route revalidates the public example.
+Only the public request facts cross into the client; raw job snapshots, owners,
+historical charges and comparison prices do not. The conversation consumes the
+query after draft initialization so refreshing a sent conversation does not
+reinsert the example request.
+
+Guests see the selected example and its editable brief rather than unrelated
+demonstration media. Login destinations retain the example identifier; existing
+one-use draft continuation preserves edits within its shared 100,000-character serialized
+payload bound, independently of the send limit. Requests above the existing
+4,000-character Studio limit remain visible in full, with submission disabled and
+an instruction to shorten them. Oversized guest drafts are never silently sliced
+into the continuation store. Entry does not send a message, import private media,
+generate, export or approve spending. `tests/studio-example-entry.test.ts`, guest
+DOM tests and composer tests cover these boundaries.
+
 ## Ownership map
 
 | Owner | Responsibility |
@@ -48,13 +72,51 @@ may reprice original `baselineSettings` for verified savings; the quote card
 invites model, resolution, duration and budget comparisons. Historical options
 remain bounded receipt facts, never current prices or purchase authorization.
 
+Media selection continuity (reviewed 2026-10-16) belongs to
+`useConversationMediaShelf`. Sending a message keeps its visible selection.
+Session storage is scoped to account and project and stores only asset identities,
+kinds and labels. Restore once after owned history loads, falling back to the
+latest turn only when no local selection exists. An explicit empty selection stays
+empty; polling must not reattach removed media. Server ownership and measured-source
+validation still run on every request. The connected browser tests cover sending,
+reloading, following up and explicitly removing a reference.
+
+Film estimates support t2v, i2v and ref2v, including several images when the live
+mode supports their roles. A failed film comparison permits at most one changed
+comparison within the original response allowance. Freeze the approved film total
+before checkpointing. The full action fingerprint includes the prompt; a shortened
+prompt is a real correction. An identical failed action is skipped in fresh and
+replayed responses. Recover only recorded responses after a historical failure;
+never buy a new response just to reconstruct its missing terminal reply.
+
+`tasks/previous-work.ts` projects up to 12 receipts within 12,000 characters.
+Current-task receipts take priority; other messages contribute only failed reads
+from the same owned project within seven days. Prompts and media URLs are excluded.
+The immutable action hash supplies exact attempt identity without copying a prompt.
+Only a proven single-clip capability rejection can suppress a repeated read, with
+unchanged action, reviewed source fingerprint and complete catalog capability
+fingerprint (including input limits). Tariff outages and legacy incomplete evidence
+are revalidated. The separate duration cache never applies to film plans: failure
+of one film component is not proof that every cut is impossible. Paid follow-up
+responses remain recoverable in replay-only mode even after a comparison receipt.
+
+Server-authored comparison/preparation replies follow the client's conversation
+language, including short confirmations using recent authored history. Requested
+voice-over/dialogue language does not change Studio's reply language. Failure
+copy distinguishes a proven incompatibility from an unverified price and never
+asks a client to interpret raw comparison tool errors. Preparation validation
+receipts carry canonical mode capabilities to support their single correction.
+Instructions cannot promise pixel-identical subject preservation or deterministic
+interpolation from a generative model; source-derived timing and requested integer
+output timing remain separate mode contracts.
+
 Preparation recovery is bounded inside the existing four Responses and assistance-call allowance (reviewed 2026-10-05). Discovery publishes canonical base setting names, including `durationSec`, `resolution`, `aspectRatio`, `fps` and an `audio` boolean only when that mode has a toggle. Always-generated or unavailable sound does not grant an audio toggle. Null discovery defaults preserve the generation adapters' existing default ownership.
 
 When required model/source facts are known, prepare by Response 3; optional `project_remember` writes are no longer offered from that response. A required third discovery read remains available, so a workflow can still use three reads and prepare on Response 4. An explicit `studio_preparation_input` rejection before draft/quote creation can use one remaining Response to correct only the same preparation tool. A second rejection stops with the saved error and a follow-up continuation. Wallet, lease, ownership, catalog, provider and post-mutation errors do not acquire this correction marker. Older recorded correction paths may include additional reads or saved mutations: recover their immutable responses and receipts. Once the new correction allowance is exhausted, subsequent checkpoints are replay-only and run before token counting or financial reservation; unresolved supplier usage remains terminal. Recovery never purchases a fifth response, repeats completed mutations or confirms a generation. A rejection on Response 4 still requires a user follow-up, including historical requests that already exhausted all four checkpoints.
 
 The visible timeline edits canonical sequence state with revision and ownership checks. It reuses pure frame-aware operations for clipping, source bounds and linked audio. Library selection does not automatically insert every new generation into the timeline. Preview media uses transient stored grants; signed URLs and private originals must not leak into journal/tool projections or saved command payloads.
 
-`useConversationTimeline` owns periodic preview refresh. Its polling waits for all current-project reads to settle, including a forced replacement for a refused grant that still appears valid to the browser clock. Explicit refreshes, revisioned edits and lifecycle invalidations retain their epoch ordering. Read counts belong to each project path and are released in `finally`, so failed or obsolete reads cannot release another project's polling gate. `tests/studio-conversation-timeline-refresh-dom.test.ts` exercises the real hook with deferred responses; the connected montage browser test retains separate preview/new-grant diagnostic flags without exposing signed URLs.
+`useConversationTimeline` owns periodic preview refresh. Its polling waits for all current-project reads to settle, including a forced replacement for a refused grant that still appears valid to the browser clock. Explicit refreshes, revisioned edits and lifecycle invalidations retain their epoch ordering. Pending grant replacements belong to the project path and survive superseded or failed reads until the winning successful canonical response replaces those grants. A late journal response must not lose that renewal intent; the obsolete response still cannot reset canonical revisions. Replacement sources and decoder retry keys commit atomically in the hook; completing an obsolete or failed request never retries the refused source. Grant retention and retry keys never cross project boundaries. Read counts belong to each project path and are released in `finally`, so failed or obsolete reads cannot release another project's polling gate. `tests/studio-conversation-timeline-refresh-dom.test.ts` exercises the real hook with deferred responses; the connected montage browser test deliberately delivers the initial journal while renewal is pending, tests both response orders with the old URL persistently refused, and retains separate preview/new-grant diagnostic flags without exposing signed URLs.
 
 The 2026-10-06 branch candidate adds bounded atomic assembly (up to 12 insertions)
 and source-in frames to the same edit owner. Explicit Sol media analysis is a
@@ -63,6 +125,16 @@ generation completion or polling. See [Studio media analysis](studio-media-analy
 for qualified profiles, shared-credit recovery and activation prerequisites.
 
 Exports use the canonical worker contract and backend pricing/idempotency. The browser estimates, confirms, polls and recovers; it does not manufacture completed MP4s. Completed exports and reusable library media remain account artifacts even if a project is later deleted.
+
+MP4 activation and worker provenance are documented in
+[Studio MP4 exports](../deployment/studio-timeline-exports.md). Completed chat
+cards offer an explicit download through the same owned stable media route as
+playback. `download=1` requests an attachment named by the saved export; the
+storage signer sanitizes that filename. Ordinary GET/HEAD preview grants and
+Range delivery retain their existing behavior. Polling, quota and idempotency
+reads use migrated tables without schema bootstrap; reservation and worker
+initialization retain their existing ownership. The dated availability checks
+above remain historical evidence, not an assertion about a later activation.
 
 ## Retired entry points
 
@@ -154,3 +226,59 @@ Older untitled conversations use a read-only projection of the first ten retaine
 messages (240 characters each), for at most 100 owned projects. Reads never backfill
 storage, fetch workspace JSON or expose those source messages to the browser. The
 next substantive turn can persist a title; manually named projects are excluded.
+
+## Revisioned subtitles (2026-10-19)
+
+`src/lib/subtitles` owns strict timed documents, plain-text serialization, speed-one
+trim projection and the shared browser/Remotion overlay. Documents and revisions
+belong to the account in migration70; a timeline item persists only
+`subtitle: {documentId, revision}`. The reversible `subtitles` timeline command
+checks account ownership and exact source reference inside the existing revisioned
+command transaction. Editing a document does not silently update a pinned clip.
+Moves, trims and splits retain its reference and derive captions from the current
+source interval. Preview/export read the pinned owned revision, and export intent
+includes its exact contents. `subtitleDocument` is a transient read/render projection
+and is stripped from saved workspace JSON.
+
+The inspector lists source-matching documents on explicit interaction. Existing
+source captions are independent of the final audio mix: replacing speech with an
+audio track does not make an earlier transcript describe that new sound. Standalone
+transcription and MP4 burn run through `src/server/subtitles` durable operations,
+not the Studio export flag or free allowance. The same wallet ledger is used;
+source bytes are remeasured before confirmation and canonical identity is locked
+before reservation. Unknown provider acceptance is never submitted again: the
+operation exposes attention state, then the reconciler refunds it exactly once
+after one hour while preserving the audit record. Polling a known request never
+purchases another transcription. Migrations70/73, renderer runtime and explicit
+commercial policy must be available before enabling execution.
+
+
+Saved sequence transcription uses `prepareStudioSubtitles` and a durable
+`mix-transcribe` operation. It snapshots the exact project revision, owned source
+identities and audio manifest hash before quoting. Confirmation locks and verifies
+the current project/media and pricing policy, checks account restrictions and
+shared MCP spending limits, then reserves one wallet charge for the displayed
+mix preparation and transcription line items. Mix preparation deliberately uses
+`timeline-export-paid-policy` with zero free exports; it is not supplier audio cost.
+
+The worker renders a WAV through the existing timeline composition's audio-only
+branch, preserving trims, timeline positions, gains, mutes and linked-audio rules.
+It never fetches still images or publishes an intermediate MP4. A private owned
+audio asset records `{sequenceId, revision, audioManifestHash}` and remains the
+subtitle document's real source. Unsupported transitions fail before quoting;
+speed remains one. The standalone mix path does not enable the Studio MP4 gate.
+
+`sequence-subtitles` attaches a pinned document at sequence level. Preview and
+canonical export use its global clock; source clip captions remain a separate
+attachment. Audio edit changes invalidate the mix document and block export until
+it is removed or regenerated. Names, captions and visual transforms do not affect
+the audio hash. The Studio picker opens the tool with exact saved revision and
+requires an explicit quote confirmation.
+
+Subtitle operations share the canonical quote ledger for accepted spending and
+refunds. Their public quotes expire after five minutes and every commercial
+snapshot is revalidated under policy locks before charging. A provider POST with
+unknown acceptance is never retried: status reports `needsAttention`, and durable
+reconciliation refunds once after one hour while retaining its audit. Temporary
+provider audio is cleaned after terminal state; owned sequence source audio remains
+available with the document. Apply migrations 70/72/73 explicitly before release.

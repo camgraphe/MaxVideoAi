@@ -9,8 +9,11 @@ test('admin offers independent Draft/final cells with locked resolutions under t
   const normal = collectSellableManualTariffCoverage().scenarios.filter(s => s.modelId === 'seedance-2-5');
   const workflows = seedanceWorkflowScenarios(normal);
   assert.ok(workflows.length > 0);
-  assert.ok(workflows.every(s => s.modelId === 'seedance-2-5' && s.context.mode === 't2v'));
+  assert.ok(workflows.every(s => s.modelId === 'seedance-2-5'));
+  assert.deepEqual([...new Set(workflows.map(s => s.context.mode))].sort(), ['extend', 'i2v', 'ref2v', 't2v', 'v2v']);
   assert.equal(new Set(workflows.map(s => s.id)).size, workflows.length);
+  assert.equal(workflows.filter(s => s.context.mode === 'v2v' && s.context.workflowStep === 'final'
+    && s.context.resolution === '1080p').length, 162, 'Owned Final keeps its ModelArk raster independently of normal LAS Edit.');
   for (const [step, resolution] of [['draft', '480p'], ['final', '1080p']] as const) {
     const { scenario, choices } = chooseCustomerTariffScenario([...normal, ...workflows], {
       workflowStep: step, mode: 't2v', resolution, durationSec: '5', aspectRatio: '16:9',

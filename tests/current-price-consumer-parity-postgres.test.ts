@@ -124,8 +124,8 @@ test('confirmed admin tariffs propagate to billing, public quotes, Pricing, mode
       assert.equal(buildSpecValues(entry, { pricePerSecond: '$9.99/s' }, { pricePerSecond: label }).pricePerSecond, label);
       const comparison = await resolvePricingDisplay(CATALOG_BY_SLUG.get(entry.modelSlug)!, 'en', entry.engine);
       assert.equal(comparison.headline, `720p: $${unitUsd}/s`);
-      assert.equal(comparison.scorePrices?.length, 1);
-      assert.ok(Math.abs(comparison.scorePrices![0] - unitUsd) < 1e-12);
+      assert.equal(comparison.prices.length, 1);
+      assert.ok(Math.abs(comparison.prices[0] - unitUsd) < 1e-12);
       const compareEntry = CATALOG_BY_SLUG.get(entry.modelSlug)!;
       const specRows = buildCompareSpecRows({ left: compareEntry, right: compareEntry,
         leftSpecs: buildCompareSpecValues(compareEntry), rightSpecs: buildCompareSpecValues(compareEntry),

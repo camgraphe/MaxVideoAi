@@ -1,3 +1,4 @@
+import { getReleasedCreatorToolIds } from '@/lib/toolbox/creator-availability';
 import { getMcpPublicIntegrationIds, getMcpIntegration } from '@/lib/mcp-integration-registry';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
 import mcpPublication from '@/config/mcp-publication.json';
@@ -35,6 +36,8 @@ export type MarketingNavDropdown = {
   allHref: LocalizedLinkHref;
   allLabelKey: string;
   allLabelFallback: string;
+  allLinkInItems?: boolean;
+  mobileAllLinkAfterItems?: boolean;
   intro?: string;
   heading?: string;
 };
@@ -56,7 +59,6 @@ export const MARKETING_TOP_NAV_LINKS = [
 ] as const satisfies readonly MarketingTopNavLink[];
 
 export const MARKETING_SITE_NAV_LINKS: readonly MarketingTopNavLink[] = [
-  { key: 'studio', href: '/studio' },
   ...MARKETING_TOP_NAV_LINKS.filter((item) => item.key !== 'blog' && item.key !== 'pricing'),
   { key: 'connect', href: '/mcp' },
   { key: 'pricing', href: '/pricing' },
@@ -262,10 +264,12 @@ const MARKETING_COMPARE_DECISION_GUIDES_SECTION: MarketingNavSection = {
 };
 
 export const MARKETING_NAV_TOOLS: MarketingNavItem[] = [
+  { key: 'studio', icon: 'cinema', label: 'Studio', href: '/studio', emphasized: true, description: 'Your creative workspace with AI.' },
   { key: 'character-builder', icon: 'character', label: 'Consistent Character AI', href: toolLink('character-builder') },
   { key: 'angle', icon: 'angle', label: 'Change Camera Angle', href: toolLink('angle') },
   { key: 'upscale', icon: 'upscale', label: 'AI Upscale', href: toolLink('upscale') },
   { key: 'background-removal', icon: 'cutout', label: 'Video Background Remover', href: toolLink('background-removal') },
+  ...getReleasedCreatorToolIds().map((id): MarketingNavItem => ({ key: id, icon: 'guides', label: id.replace(/-/g, ' '), href: { pathname: `/tools/${id}` } })),
   { key: 'image', icon: 'image', label: 'Generate image', href: '/app/image' },
   { key: 'audio', icon: 'audio', label: 'Generate audio', href: '/app/audio' },
 ];
@@ -318,7 +322,8 @@ export const MARKETING_NAV_DROPDOWNS: Partial<Record<string, MarketingNavDropdow
     allLabelFallback: 'All models',
   },
   examples: {
-    items: MARKETING_NAV_EXAMPLES,
+    items: [{ key: 'all-examples', label: 'All examples', href: { pathname: '/examples' }, icon: 'cinema', description: 'Videos and prompts from every model.' }, ...MARKETING_NAV_EXAMPLES],
+    allLinkInItems: true,
     heading: 'Watch before you choose.',
     intro: 'Real videos, prompts and model details.',
     sections: [{ key: 'moreExamples', titleKey: 'nav.dropdown.moreExamples', titleFallback: 'More to explore', items: OTHER_EXAMPLES.map(item => ({key:item.slug,label:item.label,href:exampleLink(item.slug),brandId:['sora', 'flux'].includes(item.slug) ? undefined : item.brandId,...(['sora', 'flux'].includes(item.slug) ? {icon:'cinema' as const} : {})})) }],
@@ -351,6 +356,7 @@ export const MARKETING_NAV_DROPDOWNS: Partial<Record<string, MarketingNavDropdow
   },
   tools: {
     items: MARKETING_NAV_TOOLS,
+    mobileAllLinkAfterItems: true,
     desktopColumns: 2,
     heading: 'Shape the next part of your story.',
     intro: 'Create your references, change an angle and finish the details.',

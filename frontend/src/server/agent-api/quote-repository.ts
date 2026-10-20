@@ -25,10 +25,11 @@ export type McpGenerationQuoteState =
 
 export type GenerationQuoteScope =
   | { origin: 'oauth' }
+  | { origin: 'toolbox-session' }
   | { origin: 'studio-session'; projectId: string };
 
 export type McpGenerationQuote<Request = CanonicalGenerationRequest> = {
-  authOrigin?: 'oauth' | 'studio-session';
+  authOrigin?: 'oauth' | 'studio-session' | 'toolbox-session';
   studioProjectId?: string | null;
   quoteId: string;
   userId: string;
@@ -269,13 +270,14 @@ export function createQuoteRepository<Request>(codec: {
   hash(value: Request): string;
   parseFunding(snapshot: Record<string, unknown>, priceCents: number, currency: string, mode: GenerationFundingMode, request: Request, persistedRead?: boolean): IncludedTrialFundingSnapshot | null;
 }, scope: GenerationQuoteScope = { origin: 'oauth' }) {
-  if (scope.origin !== 'oauth' && (scope.origin !== 'studio-session' || !isBoundedText(scope.projectId, 128))) {
+  if (scope.origin !== 'oauth' && scope.origin !== 'toolbox-session' && (scope.origin !== 'studio-session' || !isBoundedText(scope.projectId, 128))) {
     throw new Error('Invalid quote scope.');
   }
   const studio = scope.origin === 'studio-session';
+  const session = scope.origin !== 'oauth';
   const scopePredicate = (parameter: number) => studio
     ? `AND auth_origin = 'studio-session' AND studio_project_id = $${parameter}`
-    : `AND auth_origin = 'oauth' AND studio_project_id IS NULL`;
+    : `AND auth_origin = '${scope.origin}' AND studio_project_id IS NULL`;
   const scopedParams = (params: unknown[]) => studio ? [...params, scope.projectId] : params;
   if (!codec.surfaces.length || codec.surfaces.some(surface => !['video', 'image', 'audio'].includes(surface))) throw new Error('Invalid quote surface codec.');
   // Internal allowlisted literals; request values never enter SQL text.
@@ -297,8 +299,8 @@ export function createQuoteRepository<Request>(codec: {
       || !FUNDING_MODES.has(value.fundingMode as GenerationFundingMode)) {
       throw new Error('Invalid prepared quote input.');
     }
-    if (studio && (value.oauthClientId !== null || value.fundingMode !== 'wallet')) {
-      throw new Error('Invalid Studio quote scope.');
+    if (session && (value.oauthClientId !== null || value.fundingMode !== 'wallet')) {
+      throw new Error('Invalid session quote scope.');
     }
     let canonical: Request;
     try {
@@ -351,6 +353,7 @@ export function createQuoteRepository<Request>(codec: {
     if (origin !== scope.origin || (studio ? projectId !== scope.projectId || row.oauth_client_id !== null || row.funding_mode !== 'wallet' : projectId !== null)) {
       throw new Error('Invalid quote row scope.');
     }
+    if (session && (row.oauth_client_id !== null || row.funding_mode !== 'wallet')) throw new Error('Invalid quote row scope.');
     const requestRecord = jsonRecord(row.request_json);
     const pricingSnapshot = jsonRecord(row.pricing_snapshot);
     const expiresAt = finiteDate(row.expires_at);

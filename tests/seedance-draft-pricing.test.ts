@@ -5,6 +5,7 @@ import { buildBillingPricingFacts } from '../frontend/src/lib/pricing-billing-fa
 import { buildManualTariffScenario } from '../frontend/src/lib/pricing-manual-scenario';
 import { computeCanonicalBillingSnapshot } from '../frontend/server/pricing/quote-billing';
 import type { PricingContext } from '../frontend/src/lib/pricing-context';
+import { continuousInputTariffSelector } from '../frontend/src/lib/pricing-manual-scenario';
 
 function context(resolution: string, step?: 'draft' | 'final'): PricingContext {
   const engine = getFalEngineById('seedance-2-5')!.engine;
@@ -43,7 +44,29 @@ test('Draft/final prices never alias a normal 480p/1080p customer tariff', async
 
 test('unsupported Draft pricing settings are refused before a quote', () => {
   for (const invalid of [context('720p', 'draft'), context('480p', 'final'),
-    { ...context('480p', 'draft'), mode: 'i2v' }, { ...context('480p', 'draft'), engine: getFalEngineById('seedance-2-0')!.engine }]) {
+    { ...context('480p', 'draft'), mode: 'i2v', hasVideoInput: true }, { ...context('480p', 'draft'), engine: getFalEngineById('seedance-2-0')!.engine }]) {
     assert.throws(() => selector(invalid as PricingContext), /Draft|workflow/i);
   }
+});
+
+test('multimodal stages have independent continuous input tariffs and never fall back to normal cells', async () => {
+  const normal = { ...context('480p'), mode: 'ref2v' as const, hasVideoInput: true, inputVideoDurationSec: 4.25 };
+  const draft = { ...normal, workflowStep: 'draft' as const };
+  const normalSelector = continuousInputTariffSelector(selector(normal))!;
+  const draftSelector = continuousInputTariffSelector(selector(draft))!;
+  assert.equal(draftSelector.workflowStep, 'draft');
+  assert.equal(draftSelector.inputVideoDurationSec, 'continuous');
+  assert.notDeepEqual(draftSelector, normalSelector);
+  const price = { kind: 'unit_components' as const, rounding: 'up' as const, components: [{ id: 'retail', rounding: 'none' as const,
+    flatCents: 5000, terms: [{ unit: 'input_video_seconds', centsPerUnit: 100, includedUnits: 0 }] }] };
+  const cell = { id: 'normal-video', source: 'versioned' as const, version: 1, currency: 'USD', effectiveFrom: '2026-01-01T00:00:00Z', selector: normalSelector, price };
+  const state = { status: 'loaded' as const, active: true, revision: 9, databaseCells: [], versionedCells: [cell] };
+  const deps = { pricingPolicy: { loadOverrides: async () => ({ status: 'loaded' as const, rules: [] }) }, loadCustomerTariffState: async () => state };
+  await assert.rejects(computeCanonicalBillingSnapshot(draft, deps), /tariff/i);
+  state.versionedCells.push({ ...cell, id: 'draft-video', selector: draftSelector });
+  const quote = await computeCanonicalBillingSnapshot(draft, deps);
+  assert.equal(quote.totalCents, 5425);
+  assert.equal(quote.meta?.workflowStep, 'draft');
+  assert.equal(quote.meta?.customerTariffCellId, 'draft-video');
+  assert.equal(quote.meta?.providerCostContract, undefined);
 });

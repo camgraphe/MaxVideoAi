@@ -1,3 +1,4 @@
+import {recordedGenerationSourceVideoOutput} from '@/lib/generation-output-duration';
 import type {StudioConversationProject,StudioConversationQuoteFacts,StudioConversationQuoteSettings} from '@/lib/studio/conversation-action-contract';
 import {customerDisplayPrice} from '@/lib/customer-price-presentation';
 
@@ -5,7 +6,7 @@ const settingTypes: Record<keyof StudioConversationQuoteSettings,'boolean'|'numb
   audio:'boolean',durationSec:'number',resolution:'string',aspectRatio:'string',quality:'string',
   imageWidth:'number',imageHeight:'number',outputFormat:'string',fps:'number',loop:'boolean',
   hdr:'boolean',exrExport:'boolean',enableWebSearch:'boolean',voiceModel:'string',musicModel:'string',
-  seedAudioOutputFormat:'string',seedAudioSampleRate:'number',
+  seedAudioOutputFormat:'string',seedAudioSampleRate:'number',elevenVoiceId:'string',elevenStability:'number',elevenSimilarityBoost:'number',
   musicEnabled:'boolean',exportAudioFile:'boolean',language:'string',startTimeSec:'number',retakeMode:'string',extendPosition:'string',
 };
 export const STUDIO_QUOTE_SETTING_KEYS = Object.freeze(Object.keys(settingTypes));
@@ -20,13 +21,14 @@ export type StudioConversationQuoteRow = {
   modelId: unknown; mode: unknown; settings: unknown; outputCount: unknown;
   referenceCount: unknown; referenceRoles: unknown;
   outputDurationSec?: unknown;
+  sourceVideoOutput?: unknown;
 };
 
 function positiveDuration(value:unknown):number|undefined {
   return typeof value==='number'&&Number.isFinite(value)&&value>0?value:undefined;
 }
 
-export {recordedGenerationOutputDuration as recordedStudioOutputDuration} from '@/lib/generation-output-duration';
+export {recordedGenerationOutputDuration as recordedStudioOutputDuration, recordedGenerationSourceVideoOutput as recordedStudioSourceVideoOutput} from '@/lib/generation-output-duration';
 
 function boundedToken(value: unknown,maxLength: number): value is string {
   return typeof value === 'string' && value.length <= maxLength && /^[A-Za-z0-9][A-Za-z0-9_.:-]*$/.test(value);
@@ -37,7 +39,7 @@ export function projectStudioQuoteSettings(value:unknown):StudioConversationQuot
   return Object.fromEntries(Object.entries(settingTypes).flatMap(([key,type]) => {
     const value = storedSettings[key];
     const safe = type === 'string' ? boundedToken(value,64)
-      : type === 'number' ? typeof value === 'number' && Number.isFinite(value) && (key==='startTimeSec'?value>=0:value>0)
+      : type === 'number' ? typeof value === 'number' && Number.isFinite(value) && (['startTimeSec','elevenStability','elevenSimilarityBoost'].includes(key)?value>=0:value>0)
       : typeof value === 'boolean';
     return safe ? [[key,value]] : [];
   })) as StudioConversationQuoteSettings;
@@ -55,10 +57,12 @@ function safeQuoteFacts(row: StudioConversationQuoteRow): StudioConversationQuot
   const roles = Array.isArray(row.referenceRoles) ? row.referenceRoles.filter((role): role is StudioConversationQuoteFacts['referenceRoles'][number] =>
     typeof role === 'string' && referenceRoles.has(role as StudioConversationQuoteFacts['referenceRoles'][number])) : [];
   const outputDurationSec=row.surface==='video'?positiveDuration(row.outputDurationSec):undefined;
+  const sourceVideoOutput=row.surface==='video'?recordedGenerationSourceVideoOutput({canonicalPricing:{meta:{seedanceEditSource:row.sourceVideoOutput}}}):undefined;
   return {price:customerDisplayPrice(row.amountCents,row.currency),expiresAt:expiresAt.toISOString(),
     expiredUnconfirmedQuote:row.quoteState === 'expired' || (row.quoteState === 'prepared' && expiresAt.getTime() <= now.getTime()),
     modelId:row.modelId,mode:row.mode,settings,outputCount:row.outputCount,
     ...(outputDurationSec===undefined?{}:{outputDurationSec}),
+    ...(sourceVideoOutput?{sourceVideoOutput}:{}),
     referenceCount:row.referenceCount,referenceRoles:[...new Set(roles)]};
 }
 
