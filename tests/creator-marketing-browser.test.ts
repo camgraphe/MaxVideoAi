@@ -34,6 +34,10 @@ test('creator landings show responsive art and truthful interactions on mobile a
         assert.equal(await page.locator('#workflow ol li').count(),3);
         assert.equal(await page.locator('.creator-continuation ol li').count(),3);
         assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth),false,`${locale}/${id}/${width} overflows`);
+        assert.ok(await page.locator('.creator-related a').evaluateAll(links=>links.every(link=>{
+          const card=link.getBoundingClientRect(),art=link.querySelector('.creator-tool-mark')!.getBoundingClientRect(),label=link.querySelector('span')!.getBoundingClientRect();
+          return label.top>=art.bottom&&label.bottom<=card.bottom+1;
+        })),`${locale}/${id}/${width} related labels must remain within their cards`);
         if(locale==='en'&&id==='subtitles'){
           assert.equal(await page.getByRole('button',{name:'Pop',exact:true}).getAttribute('aria-pressed'),'true');
           await page.getByRole('button',{name:'Contrast',exact:true}).click();

@@ -81,6 +81,7 @@
 .creator-related h2{font-size:28px;font-weight:650;line-height:1.25;letter-spacing:-.03em;margin:0 0 24px}
 .creator-related>div{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
 .creator-related a>span{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;font-weight:600;line-height:1.5;margin-top:12px}
+.creator-related .creator-tool-mark{height:auto}
 .creator-tool-mark{width:100%;height:100%;aspect-ratio:3/2;overflow:hidden;border-radius:9px;background:#e7e2da}
 .creator-tool-mark img{display:block;width:100%;height:100%;object-fit:cover}
 @media(min-width:1600px){.creator-hero h1{font-size:74px}}
