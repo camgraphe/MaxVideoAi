@@ -55,6 +55,16 @@ Migrations are explicit deployment ownership, never request-time bootstrap:
 Missing explicit pricing policy fails preparation instead of inheriting a generic
 database rule. Applying migrations alone does not activate a tool.
 
+Deploy the compatible web admin policy validator before inserting the three billing
+identities from migrations 72, 74 and 75 (`toolbox-subtitles`, `toolbox-lip-sync`,
+`toolbox-motion-control`). Older web versions validate the complete stored policy
+against their known identities, so these rows can block unrelated admin pricing
+previews before any creator operation runs. Schema preparation can precede the web
+release, but defer these policy inserts until the compatible web deployment is
+ready; if already deferred, restore the exact preserved rows then. Keep the tools
+gated until their required policy rows are present. This ordering never resets
+configured commercial values or removes rows used by accepted operations.
+
 ## Sources and exact quotes
 
 Inputs contain exact owned asset IDs or exact job/output IDs returned by the media
