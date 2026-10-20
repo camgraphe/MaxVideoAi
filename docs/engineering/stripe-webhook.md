@@ -44,6 +44,14 @@ Both successful top-up translators call the canonical `recordStripeTopup` functi
 invoice fields, checkout attribution, and analytics updates in one transaction-oriented flow.
 Document normalization and Stripe receipt lookup stay in `stripe-webhook-documents.ts`.
 
+GA4 delivery is owned by the [durable payment outbox](ga4-payment-outbox.md).
+The receipt transaction queues both wallet events under a savepoint; a versioned
+receipt marker allows recent-only repair without changing credit. The webhook
+never waits for Google. Refund notifications enqueue the existing `topup_refunded`
+delta by charge/cumulative amount; an enqueue failure propagates so the processor
+releases its event marker for Stripe retry. Admin and consent eligibility are
+rechecked by the worker, not inferred from HTTP receipt.
+
 Wallet top-up Checkout Sessions enable Stripe's post-purchase invoice creation. The completed
 Session or PaymentIntent supplies the invoice or charge identity; the canonical top-up receipt
 stores those identifiers and cached URLs when available. `GET /api/receipts` resolves a hosted

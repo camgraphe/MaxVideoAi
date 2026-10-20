@@ -77,6 +77,9 @@ export function buildCheckoutSessionTopupInput(
       topup_tier_id: session.metadata.topup_tier_id ?? null,
       topup_tier_label: session.metadata.topup_tier_label ?? null,
       analytics_consent: session.metadata.analytics_consent ?? null,
+      ...(session.metadata.ga4_consent_observed_at || typeof session.created === 'number' ? {
+        ga4_consent_observed_at: session.metadata.ga4_consent_observed_at ?? new Date(session.created * 1000).toISOString(),
+      } : {}),
       ga_client_id: session.metadata.ga_client_id ?? null,
       ga_session_id: session.metadata.ga_session_id ?? null,
       first_wallet_topup: session.metadata.first_wallet_topup ?? null,
@@ -144,6 +147,9 @@ export function buildPaymentIntentTopupInput(
       topup_tier_id: intent.metadata.topup_tier_id ?? null,
       topup_tier_label: intent.metadata.topup_tier_label ?? null,
       analytics_consent: intent.metadata.analytics_consent ?? null,
+      ...(intent.metadata.ga4_consent_observed_at || typeof intent.created === 'number' ? {
+        ga4_consent_observed_at: intent.metadata.ga4_consent_observed_at ?? new Date(intent.created * 1000).toISOString(),
+      } : {}),
       ga_client_id: intent.metadata.ga_client_id ?? null,
       ga_session_id: intent.metadata.ga_session_id ?? null,
       first_wallet_topup: intent.metadata.first_wallet_topup ?? null,

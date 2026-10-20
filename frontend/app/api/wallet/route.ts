@@ -351,6 +351,7 @@ export async function POST(req: NextRequest) {
       sessionMetadata.topup_tier_label = tier.label;
     }
     sessionMetadata.analytics_consent = analyticsConsentGranted ? 'granted' : 'denied';
+    if (analyticsConsentGranted) sessionMetadata.ga4_consent_observed_at = new Date().toISOString();
     Object.assign(sessionMetadata, walletGa4Context.metadata);
     if (currencyResolution.country) {
       sessionMetadata.currency_country = currencyResolution.country;

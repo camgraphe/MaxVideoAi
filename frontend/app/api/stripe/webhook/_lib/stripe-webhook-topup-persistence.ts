@@ -2,15 +2,12 @@ import { ensureUserPreferredCurrency, normalizeCurrencyCode } from '@/lib/curren
 import { query, withDbTransaction, type QueryExecutor } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import { recordMockWalletTopUp } from '@/lib/wallet';
-import { extractGaClientId, sendGa4Event } from '@/server/ga4';
-import { normalizeGa4SessionId } from '@/lib/analytics/ga-session-id';
+import { enqueueGa4WalletReceiptSafely } from '@/server/ga4-wallet-events';
 import {
   recordConfirmedMcpWalletFunding,
   resolveMcpTrialToWalletWindowSeconds,
 } from '@/server/agent-api/mcp-funnel';
-import { buildTopupAttributionGa4Params } from '@/server/wallet-attribution';
 import {
-  isCommercialPaymentAnalyticsEligible,
   lockAndResolveFirstWalletTopup,
   resolveFirstExternalPaymentUnderWalletLock,
 } from '@/server/wallet-first-topup';
@@ -91,10 +88,6 @@ async function findCanonicalTopupReceipt(
     [value],
   );
   return rows[0] ? toCanonicalReceipt(rows[0]) : null;
-}
-
-function minorToMajorAmount(amountMinor: number): number {
-  return amountMinor / 100;
 }
 
 async function updateTopupDocumentFields(
@@ -260,6 +253,7 @@ export async function recordStripeTopup(
       const combinedMetadata = {
         ...(metadata ?? {}),
         stripe_livemode: stripeLiveMode ?? null,
+        ga4_outbox_version: '1',
         first_recorded_external_payment: isFirstExternalPayment === null ? 'unknown' : String(isFirstExternalPayment),
         first_wallet_topup: String(isFirstWalletTopup),
         wallet_amount_cents: normalizedWalletAmount,
@@ -332,6 +326,8 @@ export async function recordStripeTopup(
         return { kind: 'duplicate' as const, receipt: null };
       }
 
+      await enqueueGa4WalletReceiptSafely(executor, String(rows[0].id));
+
       return {
         kind: 'inserted' as const,
         receipt: toCanonicalReceipt(rows[0]),
@@ -365,76 +361,9 @@ export async function recordStripeTopup(
       return;
     }
 
-    const { combinedMetadata } = persistenceResult;
-
     const resolvedCurrency = normalizeCurrencyCode(walletCurrencyUpper.toLowerCase());
     if (resolvedCurrency) {
       await ensureUserPreferredCurrency(userId, resolvedCurrency);
-    }
-
-    const metadataRecord = combinedMetadata as Record<string, unknown>;
-    const consentValue = typeof metadataRecord.analytics_consent === 'string' ? metadataRecord.analytics_consent : '';
-    const analyticsConsentGranted = consentValue.toLowerCase() === 'granted';
-    if (analyticsConsentGranted && persistenceResult.isFirstExternalPayment !== null
-      && await isCommercialPaymentAnalyticsEligible({ query }, userId, stripeLiveMode)) {
-      const attributionParams = buildTopupAttributionGa4Params(metadataRecord);
-      const gaClientId = extractGaClientId(
-        typeof metadataRecord.ga_client_id === 'string' ? metadataRecord.ga_client_id : null
-      );
-      const gaSessionId = normalizeGa4SessionId(metadataRecord.ga_session_id);
-      const sourceEvent = typeof metadataRecord.source === 'string' ? metadataRecord.source : null;
-      const topupTierId = typeof metadataRecord.topup_tier_id === 'string' ? metadataRecord.topup_tier_id : null;
-      const topupTierLabel =
-        typeof metadataRecord.topup_tier_label === 'string' ? metadataRecord.topup_tier_label : null;
-      const fxSource = typeof metadataRecord.fx_source === 'string' ? metadataRecord.fx_source : null;
-      const transactionId = paymentIntentId ?? chargeId ?? `topup_${persistenceResult.receipt.id}`;
-      const purchaseValueMinor = normalizedSettlementAmount ?? normalizedWalletAmount;
-      const purchaseCurrency = settlementCurrencyUpper;
-      const commonParams = {
-        ...attributionParams,
-        funnel_stage: 'topup_completed',
-        is_first_wallet_topup: persistenceResult.isFirstWalletTopup,
-        is_first_recorded_external_payment: persistenceResult.isFirstExternalPayment,
-        value: minorToMajorAmount(purchaseValueMinor),
-        currency: purchaseCurrency,
-        wallet_currency: walletCurrencyUpper,
-        wallet_amount_usd: minorToMajorAmount(normalizedWalletAmount),
-        wallet_amount_cents: normalizedWalletAmount,
-        credits_amount: minorToMajorAmount(normalizedWalletAmount),
-        topup_amount_usd: normalizedWalletAmount / 100,
-        topup_amount_cents: normalizedWalletAmount,
-        settlement_amount_minor: purchaseValueMinor,
-        settlement_currency: settlementCurrencyUpper,
-        payment_provider: 'stripe',
-        payment_flow: 'checkout',
-        source_event: sourceEvent ?? undefined,
-        stripe_payment_intent_id: paymentIntentId ?? undefined,
-        stripe_charge_id: chargeId ?? undefined,
-        topup_tier_id: topupTierId ?? undefined,
-        topup_tier_label: topupTierLabel ?? undefined,
-        fx_source: fxSource ?? undefined,
-        transaction_id: transactionId,
-      };
-
-      await Promise.allSettled([
-        sendGa4Event({
-          name: 'topup_completed',
-          clientId: gaClientId,
-          sessionId: gaSessionId,
-          userId,
-          params: commonParams,
-        }),
-        sendGa4Event({
-          name: 'purchase',
-          clientId: gaClientId,
-          sessionId: gaSessionId,
-          userId,
-          params: {
-            ...commonParams,
-            item_category: 'wallet_topup',
-          },
-        }),
-      ]);
     }
 
     console.log('[stripe-webhook] Recorded wallet top-up', {
