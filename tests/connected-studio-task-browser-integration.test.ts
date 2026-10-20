@@ -35,6 +35,11 @@ test('Sol starts with 500 included credits and Luna offers discreet top-up on de
     browser=await startStudioConnectedBrowserFixture({runtime,browserName:'chromium'});
     const owned=await browser.newContext(session,{viewport:{width:1440,height:900},locale:'en-US',reducedMotion:'reduce'}),page=owned.page;
     const assistanceActions:string[]=[];page.on('request',request=>{if(request.url().endsWith('/api/studio/assistance')&&request.method()==='POST')assistanceActions.push(request.postDataJSON().action);});
+    // Keep the real endpoint and cover a selection slower than the UI matcher's default wait.
+    await page.route('**/api/studio/assistance',async route=>{
+      if(route.request().method()==='POST'&&route.request().postDataJSON().action==='select_luna')await new Promise(resolve=>setTimeout(resolve,6000));
+      await route.continue();
+    });
     await page.route('**/api/legal/reconsent',route=>route.fulfill({json:{ok:true,needsReconsent:false,documents:[]}}));
     await page.route('**/api/wallet',route=>route.fulfill({json:{balance:0,balanceCents:0,currency:'USD'}}));
     const conversationPath=`/app/studio/conversation/${project.projectId}`;
@@ -77,14 +82,19 @@ test('Sol starts with 500 included credits and Luna offers discreet top-up on de
     await expect(page.getByRole('radio')).toHaveCount(0);
     await expect(page.getByLabel('Monthly included Sol credits remaining')).toHaveAttribute('value','500');
     await modelChoices.filter({hasText:'GPT‑6 Luna'}).click();
+    const lunaSelected=page.waitForResponse(response=>response.url().endsWith('/api/studio/assistance')&&response.request().method()==='POST'&&response.request().postDataJSON().action==='select_luna',{timeout:30_000});
     await page.getByRole('button',{name:'Continue with GPT‑6 Luna',exact:true}).click();
+    const lunaSelection=await lunaSelected,lunaBody=await lunaSelection.json();assert.equal(lunaSelection.status(),200,JSON.stringify(lunaBody));assert.equal(lunaBody.result.selectedModel,'gpt-6-luna');
     await expect(selector).toHaveText('Luna');await expect(page.getByText('You’re using Luna.',{exact:false})).toBeVisible();
     const topup=page.getByRole('button',{name:'Top up Sol',exact:true});await expect(topup).toBeVisible();
     await page.setViewportSize({width:390,height:844});await page.screenshot({path:join(evidence,'luna-mobile.png')});await page.setViewportSize({width:1440,height:900});
     await topup.click();await expect(page.getByText('Your Sol credits',{exact:true})).toBeVisible();await expect(picker).toHaveCount(0);
     assert.deepEqual(assistanceActions,['select_luna'],'A top-up link only opens options and cannot buy a pack');
     await page.getByRole('button',{name:'Close assistance',exact:true}).click();await expect(topup).toBeFocused();
-    await topup.click();await page.getByRole('button',{name:'Continue with GPT‑6.1 Sol',exact:true}).click();
+    await topup.click();
+    const solSelected=page.waitForResponse(response=>response.url().endsWith('/api/studio/assistance')&&response.request().method()==='POST'&&response.request().postDataJSON().action==='select_sol',{timeout:30_000});
+    await page.getByRole('button',{name:'Continue with GPT‑6.1 Sol',exact:true}).click();
+    const solSelection=await solSelected,solBody=await solSelection.json();assert.equal(solSelection.status(),200,JSON.stringify(solBody));assert.equal(solBody.result.selectedModel,'gpt-6.1-sol');
     await expect(selector).toHaveText('Sol');await expect(selector).toBeFocused();await expect(picker).toHaveCount(0);
     await expect(page.getByText('You’re using Luna.',{exact:false})).toHaveCount(0);
     await message.fill('Help shape this film');
