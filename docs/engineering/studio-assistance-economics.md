@@ -25,14 +25,15 @@ remain disabled; neither approval implies the other. `assistance-policy.ts` sele
 monthly credits and Luna fair use; the public contract lives in
 `frontend/src/lib/studio/assistance-contract.ts`.
 
-Studio starts on GPT‑6 Luna with high reasoning (2026-10-21). The compact model
-selector displays only Luna or Sol. A small sentence below the composer offers
-Sol while Luna is active; complex requests may also receive a brief contextual
-recommendation in the chat. Switching to Sol remains an explicit client action.
-Credit balances, packs and per-request Sol profiles appear only in the assistance
-dialog. Migration 66 changes the stored default and moves accounts that never
-chose Sol to Luna; explicit Sol choices and frozen in-flight turns are preserved.
-The legacy injected policy retains its historical Sol default.
+Studio starts on GPT‑6.1 Sol with the existing 500 included credits. The compact
+model selector offers exactly GPT‑6.1 Sol and GPT‑6 Luna; Luna uses high reasoning.
+There is no public Quick/Standard/Complex picker. New requests use the existing
+internal Standard work bounds; stored task profiles and approvals remain valid.
+While Luna is selected, a discreet sentence below the composer opens Sol credits.
+A Luna task, including a funding fallback, also offers a small Sol top-up link.
+Complex requests may receive a brief contextual recommendation in the chat.
+Credits and pack purchases remain in the on-demand assistance dialog, with
+explicit purchase confirmation. No default-model migration is required.
 
 GPT‑6.1 Sol receives **500 free credits per UTC calendar month**. 1,000 credits
 represent USD $1 of customer usage, not 1,000 raw model tokens. Free credits do not

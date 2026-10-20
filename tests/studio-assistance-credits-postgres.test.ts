@@ -65,7 +65,6 @@ test('Sol packs debit once, accumulate, and reserve free credits before purchase
   assert.equal(competing.filter(result=>result.status==='fulfilled').length,1,'Distinct purchases cannot both use one stale revision');
   assert.equal((await ledger.readStudioAssistanceStatus('race',policy)).credits?.purchased.total,2000);
   const freeActor={...actor,userId:'free-race'},freeRequests=[randomUUID(),randomUUID()];
-  await ledger.chooseStudioAssistance(freeActor.userId,{action:'select_sol',expectedRevision:0},policy);
   for(const request of freeRequests)await ledger.openStudioAssistanceTurn(freeActor,request,policy);
   const simultaneous=await Promise.allSettled(freeRequests.map(request=>ledger.reserveStudioAssistanceCall({...freeActor,requestId:request,leaseId:randomUUID(),index:0,inputTokens:100000,outputTokens:0},policy)));
   assert.equal(simultaneous.filter(result=>result.status==='fulfilled').length,1,'Free credits cannot be reserved by two requests');
@@ -90,7 +89,6 @@ test('Sol packs debit once, accumulate, and reserve free credits before purchase
   await ledger.settleStudioAssistanceCall(lunaCall.id,lunaActor.userId,{id:randomUUID(),model:'gpt-6-luna',service_tier:'default',usage:{input_tokens:128000,input_tokens_details:{cached_tokens:0},output_tokens:100}});
   await ledger.reserveStudioAssistanceCall({...lunaActor,requestId:otherLuna,leaseId:randomUUID(),index:0,inputTokens:100,outputTokens:1},policy);
   const smallActor={...actor,userId:'subcent-free'},smallRequest=randomUUID();
-  await ledger.chooseStudioAssistance(smallActor.userId,{action:'select_sol',expectedRevision:0},policy);
   await ledger.openStudioAssistanceTurn(smallActor,smallRequest,policy);
   for(let index=0;index<2;index++){
     const small=await ledger.reserveStudioAssistanceCall({...smallActor,requestId:smallRequest,leaseId:randomUUID(),index,inputTokens:40,outputTokens:0},policy);

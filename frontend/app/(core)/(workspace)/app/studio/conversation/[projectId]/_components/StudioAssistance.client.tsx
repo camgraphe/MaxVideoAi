@@ -5,9 +5,8 @@ import {ArrowUpRight,ChevronDown,Check, X} from 'lucide-react';
 import type {StudioAssistanceChoice,StudioAssistanceStatus} from '@/lib/studio/assistance-contract';
 import {additionalAssistanceBudget} from '../_lib/conversation-assistance';
 import styles from './studio-assistance.module.css';
-import type {TaskBudgetPickerProps} from './TaskBudgetPicker.client';
 import {StudioAssistanceCreditsDialog} from './StudioAssistanceCredits.client';
-export type StudioAssistanceProps={tasksEnabled?:boolean;taskBudget?:Omit<TaskBudgetPickerProps,'sol'|'disabled'|'locale'>;openSignal?:number;status:StudioAssistanceStatus|null;busy:boolean;error:string|null;locale:'en'|'fr';conversationBusy:boolean;choose:(choice:StudioAssistanceChoice)=>Promise<boolean>;refresh:()=>Promise<void>;onChoice:()=>void};
+export type StudioAssistanceProps={tasksEnabled?:boolean;openSignal?:number;status:StudioAssistanceStatus|null;busy:boolean;error:string|null;locale:'en'|'fr';conversationBusy:boolean;choose:(choice:StudioAssistanceChoice)=>Promise<boolean>;refresh:()=>Promise<void>;onChoice:()=>void};
 type Props=StudioAssistanceProps;
 const money=(cents:number)=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(cents/100);
 export function StudioAssistance(props:Props) {
@@ -16,7 +15,7 @@ export function StudioAssistance(props:Props) {
   const {status,locale}=props,t=(en:string,fr:string)=>locale==='fr'?fr:en;
   if(status&&!status.enabled)return null;
   const luna=status?.mode==='sponsored_luna';
-  function close(){if(props.taskBudget?.profile==='complex'&&!props.taskBudget.confirmed)props.taskBudget.onProfile('standard');setOpen(false);}
+  function close(){setOpen(false);}
   return <>
     <button ref={trigger} className={styles.trigger} aria-haspopup="dialog" aria-expanded={open} aria-label={t('Studio assistance and budget','Assistance et budget Studio')} onClick={event=>{returnFocus.current=event.currentTarget;setRequestedSol(false);setOpen(true);}}><span>{status?(luna?'Luna':'Sol'):'…'}</span><ChevronDown size={12}/></button>
     {open&&(status?.credits?<StudioAssistanceCreditsDialog {...props} initialView={requestedSol?'sol':undefined} trigger={returnFocus} fallbackTrigger={trigger} onClose={close}/>:<AssistanceDialog {...props} trigger={returnFocus} fallbackTrigger={trigger} onClose={close}/>)}

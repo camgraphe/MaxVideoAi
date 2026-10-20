@@ -29,13 +29,11 @@ test('task status exposes bounded resource progress without private worker or me
   for(const delta of [{sourceUrl:'https://private.invalid/video'},{workerId:randomUUID()},{allowedCalls:25},{maxCredits:2010},{consumedCredits:61},{phase:'100% complete'}])assert.equal(studioTaskStatusSchema.safeParse({...value,...delta}).success,false);
 });
 
-// Architecture contract: paid task controls belong to the explicit assistant dialog.
-test('the composer delegates Sol task controls to the assistance dialog',()=>{
+// Architecture contract: the public Studio assistant has two model choices, no task-profile picker.
+test('the composer and assistance dialog keep work profiles internal',()=>{
   const base='frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/';
-  const workspace=readFileSync(base+'StudioImageConversation.client.tsx','utf8');
-  const dialog=readFileSync(base+'_components/StudioAssistanceCredits.client.tsx','utf8');
-  assert.doesNotMatch(workspace,/import \{TaskBudgetPicker\}/);
-  assert.match(workspace,/<StudioAssistance taskBudget=/);
-  assert.match(dialog,/import \{TaskBudgetPicker\}/);
-  assert.match(dialog,/taskBudget&&status\.selectedModel==='gpt-6\.1-sol'&&<TaskBudgetPicker/);
+  for(const file of ['StudioImageConversation.client.tsx','_components/StudioAssistance.client.tsx','_components/StudioAssistanceCredits.client.tsx']){
+    assert.doesNotMatch(readFileSync(base+file,'utf8'),/TaskBudgetPicker/);
+  }
+  assert.match(readFileSync(base+'StudioImageConversation.client.tsx','utf8'),/profile:'standard'/);
 });

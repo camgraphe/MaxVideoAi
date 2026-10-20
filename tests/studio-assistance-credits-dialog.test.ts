@@ -58,13 +58,7 @@ test('the product dialog reviews cumulative packs before purchase and preserves 
     await render(status,null,'fr');
     for(const link of Array.from(dom.window.document.querySelectorAll('a')).filter(link=>link.href.includes('/integrations/'))){assert.match(new URL(link.href).pathname,/^\/fr\/integrations\//);assert.equal(new URL(link.href).searchParams.get('lang'),'fr');}
     await act(async()=>button('Fermer l’assistance').click());
-    const profiles:string[]=[];
-    const taskBudget={profile:'complex' as const,confirmed:false,onProfile:(profile:string)=>profiles.push(profile),onConfirmed:()=>{}};
-    await render(status,null,'en',{taskBudget});await act(async()=>button('Studio assistance and budget').click());
-    await act(async()=>button('Close assistance').click());
-    assert.deepEqual(profiles,['standard'],'Dismissing unconfirmed Complex restores a sendable Standard request');
-    await render(status,null,'en',{taskBudget:{...taskBudget,confirmed:true}});await act(async()=>button('Studio assistance and budget').click());
-    await act(async()=>button('Close assistance').click());assert.deepEqual(profiles,['standard'],'An explicitly confirmed Complex choice is retained');
+    assert.equal(dom.window.document.querySelectorAll('input[type=radio]').length,0,'Work profiles are not exposed in the assistance dialog');
     const sentenceOpener=dom.window.document.createElement('button');sentenceOpener.textContent='Switch to Sol';dom.window.document.body.append(sentenceOpener);sentenceOpener.focus();
     await render(status,null,'en',{openSignal:1});await act(async()=>button('Close assistance').click());
     assert.equal(dom.window.document.activeElement===sentenceOpener,true,'The sentence entry returns keyboard focus to its actual opener');

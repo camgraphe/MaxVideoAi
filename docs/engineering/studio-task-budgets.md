@@ -6,9 +6,10 @@ procedure are recorded in `docs/operations/studio-media-tasks-activation-2026-10
 
 `src/lib/studio/task-budget-contract.ts` owns the separately versioned resource
 policy `studio-task-budget-2026-10-06-v1`. Existing assistance v1/v2 tariffs,
-Sol profiles and their credit ceilings are reviewed in the assistance dialog, never as a permanent composer block. Luna starts with the internal Standard work bounds and high reasoning.
-
 500 monthly credits and pack prices stay unchanged. Ceilings are not flat fees.
+The public UI offers only Sol and Luna, without a work-profile picker. Sol starts
+with 500 included credits; new messages use the internal Standard work bounds.
+Historical Quick/Complex tasks keep their stored profile, ceilings and approvals.
 Sol consumes free credits before explicitly enabled purchased credits; Luna stays
 sponsored. Conservative next-call quotes must fit the remaining ceiling before
 reservation, so the financial cap can stop work before the call/token maxima.
@@ -49,9 +50,8 @@ work is supplied to the director to avoid repeating successful edits/preparation
 
 Continue retains the ceiling. Sol extensions permit +100/+250/+500 credits, up to
 2,000 credits and 24 calls total; UI offers a labelled +100 choice. Nothing buys
-a pack or resumes purchased usage. Complex needs a fresh checkbox
-for each new request. Context/output pauses offer simplification or a new Complex
-request; more credits alone do not expand a frozen profile. Funding opens assistance.
+a pack or resumes purchased usage. Historical Complex requests retain their recorded explicit approval.
+Context/output pauses offer simplification or a focused follow-up; more credits alone do not expand a frozen profile. Funding opens assistance.
 
 Under the monthly-credit policy, an owned task whose next Sol reservation fails
 with `included_exhausted` or `paid_budget_exhausted` automatically retries that

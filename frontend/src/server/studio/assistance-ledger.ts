@@ -29,13 +29,13 @@ export async function stopStudioAssistanceReplay(actor:StudioGenerationActor,req
   throw new AgentApiError('RATE_LIMITED','This message reached its retry limit.');
 }
 function requireEnabled(policy:StudioAssistancePolicy){if(!policy.enabled)throw new AgentApiError('ENGINE_UNAVAILABLE','Studio assistance is unavailable until its usage policy is enabled.');}
-function emptyAccount(userId:string,policy:StudioAssistancePolicy):Account{return {user_id:userId,selected_model:policy.credits?'gpt-6-luna':'gpt-6.1-sol',paid_enabled:false,paid_authorized_cents:0,tariff_version:null,sol_limit_nano_usd:policy.solAllowanceNanoUsd,luna_limit_nano_usd:policy.lunaAllowanceNanoUsd,revision:0};}
+function emptyAccount(userId:string,policy:StudioAssistancePolicy):Account{return {user_id:userId,selected_model:'gpt-6.1-sol',paid_enabled:false,paid_authorized_cents:0,tariff_version:null,sol_limit_nano_usd:policy.solAllowanceNanoUsd,luna_limit_nano_usd:policy.lunaAllowanceNanoUsd,revision:0};}
 export async function lockAccount(tx:TransactionQueryExecutor,userId:string,policy:StudioAssistancePolicy):Promise<Account>{
   if(!userId)throw new AgentApiError('AUTH_REQUIRED','Sign in to use Studio assistance.');
   // Always campaign -> account -> wallet, including settlement. No request-time schema work.
   await tx.query('INSERT INTO studio_assistance_campaigns(id,limit_nano_usd) VALUES($1,$2) ON CONFLICT DO NOTHING',[CAMPAIGN,policy.campaignNanoUsd]);
   await tx.query('SELECT id FROM studio_assistance_campaigns WHERE id=$1 FOR UPDATE',[CAMPAIGN]);
-  await tx.query('INSERT INTO studio_assistance_accounts(user_id,sol_limit_nano_usd,luna_limit_nano_usd,selected_model) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING',[userId,policy.solAllowanceNanoUsd,policy.lunaAllowanceNanoUsd,emptyAccount(userId,policy).selected_model]);
+  await tx.query('INSERT INTO studio_assistance_accounts(user_id,sol_limit_nano_usd,luna_limit_nano_usd) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[userId,policy.solAllowanceNanoUsd,policy.lunaAllowanceNanoUsd]);
   return (await tx.query<Account>('SELECT * FROM studio_assistance_accounts WHERE user_id=$1 FOR UPDATE',[userId]))[0];
 }
 type Totals = {sol:number;luna:number;paidSpent:number;paidReserved:number;unresolved:number};
