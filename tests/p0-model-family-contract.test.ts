@@ -39,7 +39,7 @@ const FAMILY_DEFAULTS = {
   ltx: 'ltx-2-5-pro',
   wan: 'wan-3-prime',
   grok: 'grok-imagine-video-1-5',
-  flux: 'flux-3',
+  flux: 'flux-3-max',
 } as const;
 
 const p0Ids = Object.keys(P0_MODELS);
@@ -111,8 +111,8 @@ test('P0 family defaults and new family example routes are public', () => {
   assert.deepEqual(getModelFamilyExamplesPageConfig('flux'), {
     stage: 'indexed',
     showInNav: true,
-    publishedModelSlugs: ['flux-3', 'flux-3-draft'],
-    currentModelSlugs: ['flux-3', 'flux-3-draft'],
+    publishedModelSlugs: ['flux-3-max', 'flux-3', 'flux-3-draft'],
+    currentModelSlugs: ['flux-3-max', 'flux-3', 'flux-3-draft'],
   });
 });
 

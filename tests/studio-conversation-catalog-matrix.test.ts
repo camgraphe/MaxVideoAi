@@ -30,7 +30,7 @@ const currentCertified=[
   'nano-banana-2','nano-banana-lite','nano-banana-pro','pika-text-to-video',
   'seedance-2-0','seedance-2-0-fast','seedance-2-0-mini','seedance-2-5','seedream','seedream-5-0-pro',
   'veo-3-1','veo-3-1-fast','veo-3-1-lite','wan-3','wan-3-prime',
-  'kling-3-turbo-pro','kling-3-turbo-standard','minimax-h3-max','ltx-2-5-fast','ltx-2-5-pro','grok-imagine-video-1-5','flux-3','flux-3-draft',
+  'kling-3-turbo-pro','kling-3-turbo-standard','minimax-h3-max','ltx-2-5-fast','ltx-2-5-pro','grok-imagine-video-1-5','flux-3','flux-3-draft','flux-3-max',
 ];
 const uncertified=[
   'gpt-image-2-5-sunburst',

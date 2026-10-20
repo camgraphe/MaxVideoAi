@@ -13,6 +13,12 @@
       "sourceManifest": "docs/model-launch/p1-video-example-pack.json",
       "sourceStatus": "validated",
       "sourceDigest": "9d2949a7eff28bc67fccf52109be708c3de7caf21efdbdd638417ee92a48d834"
+    },
+    {
+      "waveId": "flux-3-max",
+      "sourceManifest": "docs/model-launch/flux-3-max-video-example-pack.json",
+      "sourceStatus": "missing",
+      "sourceDigest": null
     }
   ],
   "assets": [

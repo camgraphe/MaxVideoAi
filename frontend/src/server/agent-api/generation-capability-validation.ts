@@ -52,6 +52,8 @@ const VIDEO_FIELD_BY_SETTING: Record<string, string> = {
   editDepthBlur: 'edit_depth_blur',
   editFace: 'edit_face',
   editKeyframeIndexes: 'edit_keyframe_indexes',
+  reasoningLevel: 'reasoning_level',
+  keyframeIndexes: 'keyframe_indexes',
   editNormalsAugmentation: 'edit_normals_augmentation',
   editPoseStrength: 'edit_pose_strength',
   editStrength: 'edit_strength',

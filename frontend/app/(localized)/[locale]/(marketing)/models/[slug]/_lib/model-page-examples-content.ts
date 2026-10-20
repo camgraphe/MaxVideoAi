@@ -40,6 +40,10 @@ const schema = z.object({
     alt: nonEmpty,
     tags: z.array(filterId).min(1),
   }).strict()).nullable(),
+  keyframeDemo: z.object({
+    title: nonEmpty, intro: nonEmpty, imagesLabel: nonEmpty, timelineLabel: nonEmpty, resultLabel: nonEmpty,
+    promptLabel: nonEmpty, frameLabel: nonEmpty, secondsLabel: nonEmpty, recreateLabel: nonEmpty, limitation: nonEmpty,
+  }).strict().optional(),
 }).strict();
 
 export type ModelExamplesContent = z.infer<typeof schema>;

@@ -67,7 +67,8 @@ export type ModelLaunchProjections = {
 };
 
 export type P0LaunchProjections = ModelLaunchProjections;
-export type ModelLaunchSourceByWave = Record<ModelLaunchWaveId, string | null>;
+// Omitted sources remain unready, including waves added after a legacy caller.
+export type ModelLaunchSourceByWave = Partial<Record<ModelLaunchWaveId, string | null>>;
 
 type LaunchSourceRule = {
   sourceKind: AcceptedDurableModelAsset['sourceKind'];
@@ -93,7 +94,8 @@ function isDurableMediaUrl(value: unknown): value is string {
   if (!nonEmptyString(value)) return false;
   try {
     const url = new URL(value);
-    return url.protocol === 'https:' && url.hostname === 'media.maxvideoai.com';
+    return url.protocol === 'https:' && url.hostname === 'media.maxvideoai.com' &&
+      !url.username && !url.password && !url.search && !url.hash;
   } catch {
     return false;
   }
@@ -127,6 +129,21 @@ function getCanonicalP0LaunchSourceRule(modelId: P0VideoExampleModelId, mode: st
     sourceKind: mediaType,
     minCount: requiredMediaFields.reduce((total, field) => total + (field.minCount ?? 1), 0),
     maxCount: requiredMediaFields.reduce((total, field) => total + (field.maxCount ?? field.minCount ?? 1), 0),
+  };
+}
+
+function getCanonicalMaxLaunchSourceRule(mode: string): LaunchSourceRule | null {
+  const entry = RAW_FAL_ENGINE_REGISTRY.find(({ id }) => id === 'flux-3-max');
+  const canonicalMode = entry?.engine.modes.find(candidate => candidate === mode);
+  if (!entry || !canonicalMode || !entry.modes.some(candidate => candidate.mode === canonicalMode)) return null;
+  const mediaFields = [...(entry.engine.inputSchema?.required ?? []), ...(entry.engine.inputSchema?.optional ?? [])]
+    .filter(field => (field.type === 'image' || field.type === 'video' || field.type === 'audio') && field.modes?.includes(canonicalMode));
+  if (!mediaFields.length) return { sourceKind: 'text', minCount: 0, maxCount: 0 };
+  if (mediaFields.some(field => field.type !== 'image')) return null;
+  return {
+    sourceKind: canonicalMode === 'ref2v' ? 'references' : 'image',
+    minCount: mediaFields.reduce((sum, field) => sum + (field.requiredInModes?.includes(canonicalMode) ? field.minCount ?? 1 : 0), 0),
+    maxCount: mediaFields.reduce((sum, field) => sum + (field.maxCount ?? field.minCount ?? 1), 0),
   };
 }
 
@@ -192,6 +209,11 @@ function parseAcceptedDurableModelAssetForWave(
     ) {
       return null;
     }
+  }
+  if (waveId === 'flux-3-max') {
+    const sourceRule = getCanonicalMaxLaunchSourceRule(value.mode);
+    if (!sourceRule || value.sourceKind !== sourceRule.sourceKind ||
+      value.sourceAssetIds.length < sourceRule.minCount || value.sourceAssetIds.length > sourceRule.maxCount) return null;
   }
 
   return {
@@ -332,7 +354,7 @@ export function buildModelLaunchProjectionsFromSources(sources: ModelLaunchSourc
 
   for (const wave of MODEL_LAUNCH_WAVES) {
     const source = sources[wave.id];
-    if (source === null) {
+    if (source == null) {
       fullWaves.push(createMissingAssetWaveProjection(wave));
       readinessWaves.push(createMissingReadinessWaveProjection(wave));
       continue;
@@ -404,11 +426,10 @@ export function createModelLaunchReadinessProjection({
   }
   const p0 = MODEL_LAUNCH_WAVES[0];
   const p0Readiness = buildValidatedReadinessWaveProjection(p0, sourceDigest);
-  const p1Readiness = createMissingReadinessWaveProjection(MODEL_LAUNCH_WAVES[1]);
   return {
     schemaVersion: 1,
     generatedBy: GENERATED_BY,
-    waves: [p0Readiness, p1Readiness],
+    waves: MODEL_LAUNCH_WAVES.map(wave => wave.id === 'p0' ? p0Readiness : createMissingReadinessWaveProjection(wave)),
     models: p0Readiness.models,
   };
 }

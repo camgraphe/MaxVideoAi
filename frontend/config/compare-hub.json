@@ -1,5 +1,6 @@
 {
   "popularComparisons": [
+    { "left": "flux-3-max", "right": "flux-3", "tags": ["flux", "audio", "controls"] },
     { "left": "minimax-h3", "right": "seedance-2-5", "tags": ["audio", "4k", "value"] },
     { "left": "seedance-2-5", "right": "wan-3", "tags": ["multishot", "audio", "trending"] },
     { "left": "minimax-h3-max", "right": "seedance-2-5", "tags": ["quality", "speed", "value"] },

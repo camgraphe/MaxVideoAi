@@ -4,10 +4,12 @@ import test from 'node:test';
 import type { ExampleGalleryVideo } from '../frontend/components/examples/ExamplesGalleryGrid.tsx';
 import {
   getHeroMediaBadges,
+  pickDemoMedia,
   pickHeroMedia,
   type FeaturedMedia,
 } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-media.ts';
 import { PREFERRED_MEDIA } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-static-media.ts';
+import { requiresPinnedModelPromptingDemo } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-prompt-source.ts';
 
 const fallback: FeaturedMedia = {
   id: 'fallback',
@@ -40,6 +42,25 @@ test('a model hero prefers a playable landscape clip over the first portrait pla
 test('Seedance 2.5 and Veo 3.1 pin reviewed clips from their own models', () => {
   assert.equal(PREFERRED_MEDIA['seedance-2-5']?.hero, 'job_ff94f180-0a2f-4f2b-acb2-bda8352fa9d9');
   assert.equal(PREFERRED_MEDIA['veo-3-1']?.hero, 'job_680c9803-172b-4179-950b-e56d288456c2');
+});
+
+test('Max pins its actual public fantasy hero and science-fiction Prompt Lab separately', () => {
+  assert.deepEqual(PREFERRED_MEDIA['flux-3-max'], {
+    hero: 'job_external_fal_3cdccbf38fa871d2667fa1597de53e6fc52d036d',
+    demo: 'job_external_fal_70534037da6795d2e16dd135bf2a0ec3bfa550cc',
+  });
+});
+
+test('a pinned Prompt Lab waits for its selected scene without borrowing another clip or hero fallback', () => {
+  const other = card('other-scene', '16:9');
+  const selected = card('selected-scene', '16:9');
+  const requirePreferred = requiresPinnedModelPromptingDemo('flux-3-max');
+  assert.equal(requirePreferred, true);
+  assert.equal(requiresPinnedModelPromptingDemo('flux-3'), false);
+  assert.equal(pickDemoMedia([other], other.id, null, fallback, { requirePreferred }), null);
+  assert.equal(pickDemoMedia([other], other.id, selected.id, fallback, { requirePreferred }), null);
+  assert.equal(pickDemoMedia([other, selected], other.id, selected.id, fallback, { requirePreferred })?.id, selected.id);
+  assert.equal(pickDemoMedia([selected], selected.id, selected.id, fallback, { requirePreferred })?.id, selected.id);
 });
 
 test('video hero badges describe the displayed clip; image badges keep editorial copy', () => {

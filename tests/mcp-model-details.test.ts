@@ -359,9 +359,9 @@ test('real image model details publish canonical controls Claude and ChatGPT can
   assert.deepEqual(mode.settings, [
     { key: 'resolution', type: 'enum', required: false, values: ['0.5k', '1k', '2k', '4k'], min: null, max: null, default: null },
     { key: 'aspectRatio', type: 'enum', required: false, values: ['auto', '21:9', '16:9', '3:2', '4:3', '5:4', '1:1', '4:5', '3:4', '2:3', '9:16', '4:1', '1:4', '8:1', '1:8'], min: null, max: null, default: null },
-    { key: 'seed', type: 'number', required: false, values: null, min: null, max: null, default: null },
+    { key: 'seed', description: 'Reuse a seed to iterate on the same composition.', type: 'number', required: false, values: null, min: null, max: null, default: null },
     { key: 'outputFormat', type: 'enum', required: false, values: ['jpeg', 'png', 'webp'], min: null, max: null, default: 'jpeg' },
-    { key: 'enableWebSearch', type: 'boolean', required: false, values: null, min: null, max: null, default: false },
+    { key: 'enableWebSearch', description: 'Optional web grounding is quoted before generation.', type: 'boolean', required: false, values: null, min: null, max: null, default: false },
     { key: 'thinkingLevel', type: 'enum', required: false, values: ['minimal', 'high'], min: null, max: null, default: 'minimal' },
     { key: 'limitGenerations', type: 'boolean', required: false, values: null, min: null, max: null, default: false },
   ]);

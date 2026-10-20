@@ -1,5 +1,6 @@
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
 import { listRuntimeModels } from '@/config/model-runtime';
+import { buildMarketingModelMenu } from '@/config/navigation';
 import type { AppLocale } from '@/i18n/locales';
 import { getEnginePictogram } from '@/lib/engine-branding';
 import { getLocalizedCapabilityKeywords, getLocalizedModelUseCases } from '@/lib/ltx-localization';
@@ -139,6 +140,9 @@ export async function prepareModelsCatalogCards({
   const scoresMap = await loadEngineScores();
   const catalogBySlug = getCatalogBySlug();
   const engines = listPublishedModelsByScope(scope);
+  const discoveryBadges = new Map(
+    buildMarketingModelMenu(listRuntimeModels()).map(({ slug, badge }) => [slug, badge]),
+  );
 
   const localizedMap = new Map<string, Awaited<ReturnType<typeof getEngineLocalized>>>(
     await Promise.all(
@@ -228,7 +232,7 @@ export async function prepareModelsCatalogCards({
     const href = { pathname: '/models/[slug]', params: { slug: engine.modelSlug } };
     // Price-free metadata is complete before any card waits for its exact range.
     // Only this narrow projection may enter the initial hero.
-    heroCards.push({ id: engine.modelSlug, label: titleLabel, overallScore, href });
+    heroCards.push({ id: engine.modelSlug, label: titleLabel, overallScore, scoreReview: scoreEntry?.review ?? null, href });
     const pricingRange = (await pricingRangeMap).get(engine.modelSlug) ?? null;
     const priceFromCents = pricingRange?.min.cents ?? null;
     const isPrelaunchWaitlist = engine.availability === 'waitlist';
@@ -295,7 +299,9 @@ export async function prepareModelsCatalogCards({
       brandId: engine.brandId ?? engine.engine.brandId ?? null,
       description: microDescription,
       versionLabel,
+      badge: discoveryBadges.get(engine.modelSlug) ?? null,
       overallScore,
+      scoreReview: scoreEntry?.review ?? null,
       priceNote: showPrelaunchPricePlaceholder ? getPrelaunchPricingNote(activeLocale) : null,
       priceNoteHref: null,
       href,

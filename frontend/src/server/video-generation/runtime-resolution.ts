@@ -2,6 +2,7 @@ import { getEngineCaps } from '@/fixtures/engineCaps';
 import { resolveActiveVideoInputField } from '@/lib/video-input-schema';
 import { isKling3TurboEngineId } from '@/lib/kling-3-turbo';
 import { isMinimaxH3MaxEngineId } from '@/lib/minimax-h3-max';
+import { isFlux3MaxEngineId } from '@/lib/flux-3-max';
 import type { EngineCaps, Mode } from '@/types/engines';
 import { isPrivateRuntimeEngineId } from './private-engine-registry';
 
@@ -17,6 +18,7 @@ export function resolveRuntimeResolutionPolicy(
   mode: Mode,
 ): RuntimeResolutionPolicy {
   const usesSchemaDefaults = isPrivateRuntimeEngineId(engine.id)
+    || isFlux3MaxEngineId(engine.id)
     || isKling3TurboEngineId(engine.id)
     || isMinimaxH3MaxEngineId(engine.id);
   const schemaField = resolveActiveVideoInputField({

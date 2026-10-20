@@ -3,6 +3,7 @@ import {useEffect,useRef,useState} from 'react';
 import type {ImageLibraryAsset} from '@/lib/studio/image-library';
 import type {ImageConversationTurn,ImageTurnInput} from '@/lib/studio/image-conversation-contract';
 import {imageTurnInputSchema} from '@/lib/studio/image-conversation-contract';
+import {STUDIO_CONVERSATION_MAX_ATTACHMENTS} from '@/lib/studio/conversation-creation-contract';
 import type {ConversationLocale} from '@/lib/studio/conversation-quote-presentation';
 import {rememberShelfMedia,type ShelfMedia} from '../_lib/conversation-media-shelf';
 
@@ -66,8 +67,8 @@ export function useConversationMediaShelf(turns:ImageConversationTurn[],locale:C
     if(!mediaEnabled&&asset.kind&&asset.kind!=='image') {
       setError(t('Video and audio references are unavailable in this workspace. You can still preview them.','Les références vidéo et audio sont indisponibles dans cet espace. Vous pouvez toujours les consulter.'));return null;
     }
-    if(!attached.current.some(ref=>ref.assetId===asset.assetId)&&attached.current.length>=8) {
-      setError(t('You can attach up to eight media to one message.','Vous pouvez joindre huit médias par message.'));return null;
+    if(!attached.current.some(ref=>ref.assetId===asset.assetId)&&attached.current.length>=STUDIO_CONVERSATION_MAX_ATTACHMENTS) {
+      setError(t('You can attach up to ten media to one message.','Vous pouvez joindre dix médias par message.'));return null;
     }
     const item=remember(asset);
     if(!attached.current.some(ref=>ref.assetId===asset.assetId)) {attached.current=[...attached.current,item];setReferences(attached.current);}
@@ -100,7 +101,7 @@ export function useConversationMediaShelf(turns:ImageConversationTurn[],locale:C
   async function upload(files:File[]) {
     if(busy.current)return;
     const kinds:Record<string,'image'|'video'|'audio'>={'image/png':'image','image/jpeg':'image','image/webp':'image','video/mp4':'video','video/quicktime':'video','audio/mpeg':'audio','audio/wav':'audio','audio/x-wav':'audio'};
-    if(files.length+attached.current.length>8) {setError(t('Attach up to eight media at a time.','Joignez huit médias au maximum.'));return;}
+    if(files.length+attached.current.length>STUDIO_CONVERSATION_MAX_ATTACHMENTS) {setError(t('Attach up to ten media at a time.','Joignez dix médias au maximum.'));return;}
     if(files.some(file=>!kinds[file.type]||(!mediaEnabled&&kinds[file.type]!=='image'))) {setError(t('Choose a supported image'+(mediaEnabled?', MP4/MOV video, or MP3/WAV audio.':': PNG, JPEG or WebP.'),'Choisissez une image compatible'+(mediaEnabled?', une vidéo MP4/MOV ou un audio MP3/WAV.':' : PNG, JPEG ou WebP.')));return;}
     busy.current=true;setUploading(true);setError(null);
     try {

@@ -43,6 +43,7 @@ export function WorkspacePreviewDock({
   onModeChange,
   disabledEngineReasons,
   engineScores,
+  engineScoreReviews,
   modelReviewCommands,
   renderGroups,
   compositeOverrideSummary,
@@ -65,6 +66,7 @@ export function WorkspacePreviewDock({
   onModeChange: (mode: Mode) => void;
   disabledEngineReasons?: Record<string, string>;
   engineScores?: Record<string, number>;
+  engineScoreReviews?: import('@/types/engines').EngineScoreReviews;
   modelReviewCommands?: ReactNode;
   renderGroups: ReadonlyMap<string, unknown>;
   compositeOverrideSummary: GroupSummary | null;
@@ -81,6 +83,7 @@ export function WorkspacePreviewDock({
           modeOptions={engineModeOptions}
           disabledEngineReasons={disabledEngineReasons}
           engineScores={engineScores}
+          engineScoreReviews={engineScoreReviews}
           modeLabel={getEngineModeLabel(selectedEngineId, activeMode, modeLabelLocale)}
           showModeBadge={false}
           controlPresentation="workspace"

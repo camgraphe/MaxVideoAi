@@ -8,6 +8,7 @@ export const EXAMPLE_ENGINE_PRIORITY = [
   'ltx-2-5-pro',
   'wan-3-prime',
   'grok-imagine-video-1-5',
+  'flux-3-max',
   'flux-3',
   'seedance-2-0',
   'kling-3-pro',
@@ -94,7 +95,7 @@ export const DEFAULT_MODEL_BY_EXAMPLE_FAMILY: Record<HomepageExampleFamily, stri
   'happy-horse': 'happy-horse-1-1',
   wan: 'wan-3-prime',
   grok: 'grok-imagine-video-1-5',
-  flux: 'flux-3',
+  flux: 'flux-3-max',
 };
 
 export const HOMEPAGE_EXAMPLE_VIDEO_OVERRIDES: Partial<Record<string, { videoId?: string; imageSrc?: string }>> = {
@@ -128,6 +129,7 @@ export const FALLBACK_MODE_BY_ENGINE: Record<string, Mode> = {
   'ltx-2-5-fast': 't2v',
   'ltx-2-5-pro': 't2v',
   'grok-imagine-video-1-5': 't2v',
+  'flux-3-max': 't2v',
   'flux-3': 't2v',
   'flux-3-draft': 't2v',
   'sora-2': 't2v',

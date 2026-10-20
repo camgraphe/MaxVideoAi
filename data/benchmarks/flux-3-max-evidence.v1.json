@@ -1,0 +1,472 @@
+{
+  "version": "v1",
+  "modelSlug": "flux-3-max",
+  "checkedAt": "2026-10-20",
+  "editorialReview": {
+    "status": "editorial-estimated",
+    "methodologyFile": "benchmark-methodology.v1.json",
+    "methodologyVersion": "1.1.0",
+    "evaluationDate": "2026-10-20",
+    "modelVersion": "FLUX 3 Max on fal",
+    "evaluator": "MaxVideoAI editorial research",
+    "reviewer": "Independent AI-assisted consistency review, 2026-10-20",
+    "assessmentProtocol": "public-evidence-editorial-estimate-v1",
+    "controlledOutputsReviewed": 0,
+    "criterionScoresPublished": true,
+    "publicVideosInspected": 6,
+    "inspectionMethod": "Selected rendered video frames inspected in Chrome through the official fal showcase and linked API output examples. This is a qualitative public-sample assessment, not continuous video or synchronized audio analysis.",
+    "promptPackExecuted": false,
+    "retryCount": null,
+    "failureCount": null,
+    "sampleSelection": "Provider-selected public examples; no random sampling or repeated runs.",
+    "note": "Scores are editorial estimates on the existing 0-10 rubric, calibrated against current FLUX 3 and peer scorecards. Direct sample observations, documented controls, provider claims and inference are separated below. Artificial Analysis contextualizes overall preference only; Elo is not converted into criterion scores."
+  },
+  "externalEvaluations": [
+    {
+      "publisher": "Artificial Analysis",
+      "benchmark": "AA-Video-I2V v1.1",
+      "mode": "image-to-video",
+      "audio": true,
+      "modelLabel": "FLUX 3 Max (720p)",
+      "resolution": "720p",
+      "elo": 1138,
+      "confidenceLevel": 0.95,
+      "confidenceInterval": [
+        1123,
+        1153
+      ],
+      "displayedRank": 2,
+      "rankRange": [
+        1,
+        5
+      ],
+      "samples": 5054,
+      "sourceUrl": "https://artificialanalysis.ai/video/leaderboard/image-to-video"
+    },
+    {
+      "publisher": "Artificial Analysis",
+      "benchmark": "AA-Video-T2V v2.1",
+      "mode": "text-to-video",
+      "audio": true,
+      "modelLabel": "FLUX 3 Max (720p)",
+      "resolution": "720p",
+      "elo": 1159,
+      "confidenceLevel": 0.95,
+      "confidenceInterval": [
+        1143,
+        1175
+      ],
+      "displayedRank": 4,
+      "rankRange": [
+        1,
+        7
+      ],
+      "samples": 4767,
+      "sourceUrl": "https://artificialanalysis.ai/video/leaderboard/text-to-video"
+    }
+  ],
+  "externalEvaluationLimitations": [
+    "Dated leaderboard snapshot; ranks, sample counts and ratings can change.",
+    "These boards use blind pairwise preference votes from Artificial Analysis's validated private evaluators.",
+    "Confidence intervals overlap leading models; displayed rank does not establish a unique winner.",
+    "The two benchmark versions and tasks have separate Elo scales; do not average or directly compare them.",
+    "Neither board measures the eleven MaxVideoAI editorial criteria separately.",
+    "The model label specifies 720p; do not represent these results as a separate 1080p evaluation.",
+    "Leaderboard API prices are excluded from commercial pricing decisions; use the exact provider endpoint and MaxVideoAI quote."
+  ],
+  "providerBenchmark": {
+    "publisher": "fal",
+    "sourceUrl": "https://fal.ai/flux-3-max",
+    "clipDurationSeconds": 10,
+    "aspectRatio": "16:9",
+    "resolution": "720p",
+    "reportedGenerationSeconds": 12.45,
+    "comparison": {
+      "model": "FLUX 3",
+      "reportedGenerationSeconds": 126.44
+    },
+    "note": "Provider-reported comparison, not measured MaxVideoAI median/P90 or a completion-time guarantee. Endpoint marketing also mentions approximately 11 seconds; retain each claim with its source and configuration."
+  },
+  "publicCopy": {
+    "en": "Editorial estimate, 20 October 2026: our eleven scores use selected public fal examples, documented controls and prices, with Artificial Analysis as overall preference context. We did not run a controlled MaxVideoAI test set. Confidence varies by criterion; lip sync and delivery reliability remain weakly evidenced. The 8.7/10 overall is an editorial estimate, not an Elo conversion.",
+    "fr": "Estimation éditoriale du 20 octobre 2026 : nos onze notes reposent sur des exemples publics sélectionnés par fal, les contrôles et tarifs documentés, avec Artificial Analysis comme contexte de préférence globale. Nous n’avons pas exécuté de série de tests contrôlés MaxVideoAI. La confiance varie selon le critère ; la synchronisation labiale et la fiabilité de livraison restent peu documentées. La note globale de 8,7/10 est une estimation éditoriale, pas une conversion des Elo.",
+    "es": "Estimación editorial del 20 de octubre de 2026: las once notas se basan en ejemplos públicos seleccionados por fal, controles y precios documentados, con Artificial Analysis como contexto de preferencia global. No ejecutamos una batería de pruebas controladas de MaxVideoAI. La confianza varía por criterio; la sincronización labial y la fiabilidad de entrega tienen pruebas limitadas. El 8,7/10 global es una estimación editorial, no una conversión de Elo."
+  },
+  "keyframeContract": {
+    "sourceUrl": "https://fal.ai/models/blackforestlabs/flux-3-max/keyframes-to-video/api",
+    "openApiUrl": "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=blackforestlabs/flux-3-max/keyframes-to-video",
+    "checkedAt": "2026-10-20",
+    "minimumImages": 1,
+    "maximumImages": 10,
+    "imageFormats": [
+      "PNG",
+      "JPEG",
+      "WebP"
+    ],
+    "frameIndexMinimum": 0,
+    "frameIndexMaximum": "duration * 24",
+    "frameIndicesUnique": true,
+    "timelineFps": 24,
+    "note": "The 24 fps timeline defines keyframe positions; the API does not expose an FPS selector. Required provider fields are prompt and keyframes[{image_url, frame_index}]."
+  },
+  "sources": [
+    {
+      "id": "fal-showcase",
+      "url": "https://fal.ai/flux-3-max",
+      "kind": "provider-selected-examples-and-provider-claims",
+      "checkedAt": "2026-10-20"
+    },
+    {
+      "id": "fal-t2v",
+      "url": "https://fal.ai/models/blackforestlabs/flux-3-max/text-to-video",
+      "kind": "provider-example-controls-and-pricing",
+      "checkedAt": "2026-10-20"
+    },
+    {
+      "id": "fal-keyframes",
+      "url": "https://fal.ai/models/blackforestlabs/flux-3-max/keyframes-to-video",
+      "kind": "provider-example-and-controls",
+      "checkedAt": "2026-10-20"
+    },
+    {
+      "id": "fal-i2v-api",
+      "url": "https://fal.ai/models/blackforestlabs/flux-3-max/image-to-video/api",
+      "kind": "primary-api-contract",
+      "checkedAt": "2026-10-20"
+    },
+    {
+      "id": "aa-i2v",
+      "url": "https://artificialanalysis.ai/video/leaderboard/image-to-video",
+      "kind": "independent-global-preference-ranking",
+      "checkedAt": "2026-10-20"
+    },
+    {
+      "id": "aa-t2v",
+      "url": "https://artificialanalysis.ai/video/leaderboard/text-to-video",
+      "kind": "independent-global-preference-ranking",
+      "checkedAt": "2026-10-20"
+    },
+    {
+      "id": "internal-calibration",
+      "path": "data/benchmarks/engine-scores.v1.json",
+      "kind": "existing-editorial-calibration-not-new-experimental-evidence",
+      "modelSlugs": [
+        "flux-3",
+        "flux-3-draft",
+        "seedance-2-5",
+        "minimax-h3",
+        "grok-imagine-video-1-5"
+      ]
+    }
+  ],
+  "publicSampleObservations": [
+    {
+      "id": "cowboy-product",
+      "sourceId": "fal-t2v",
+      "mediaUrl": "https://v3b.fal.media/files/b/0aaf089d/xK85LuINx9cTiZDatlzUB_alligator.mp4",
+      "mode": "text-to-video",
+      "providerSeed": 482180067,
+      "width": 1280,
+      "height": 704,
+      "fps": 24,
+      "durationSeconds": 10.041667,
+      "inspectedSeconds": [
+        0,
+        5.020833,
+        9.619202
+      ],
+      "observation": "A cowboy retrieves and holds a bottle; the sampled face, blue shirt and red neckerchief remain coherent. The final bottle label and large overlay both visibly read LONE STAR. Warm sunset lighting and glass detail are convincing.",
+      "limits": "One selected branded-text example; arbitrary typography, intermediate frame stability and word-level audio alignment were not tested. Provider metadata, not an internally recorded run."
+    },
+    {
+      "id": "keyframe-journey",
+      "sourceId": "fal-keyframes",
+      "mediaUrl": "https://v3b.fal.media/files/b/0aaf0893/vFaOSlMPjPLDw3eCOI8_I_alligator.mp4",
+      "mode": "keyframes-to-video",
+      "providerSeed": 245574244,
+      "width": 1280,
+      "height": 704,
+      "fps": 24,
+      "durationSeconds": 10.041667,
+      "inspectedSeconds": [
+        0,
+        3.282227,
+        6.613201,
+        9.619202
+      ],
+      "observation": "The sampled sequence follows the advertised mesa, riding, storm and night-camp milestones. The cowboy and dark horse retain a coherent broad appearance across the daylight and night scenes.",
+      "limits": "Four supplied images guide the result. Sparse frames do not establish flawless transitions, precise facial identity, or unrestricted text-only multi-shot reliability."
+    },
+    {
+      "id": "relay-mail",
+      "sourceId": "fal-showcase",
+      "mediaUrl": "https://v3b.fal.media/files/b/0aaeac2d/WiYUGNxaiV0I_CQQ0qpzf_flux-3-max-example-relay-mail.mp4",
+      "durationSeconds": 10.1,
+      "observation": "Sampled views show a rider approaching and two mounted riders handing over a pouch; horse and rider silhouettes remain recognizable during the exchange.",
+      "limits": "Selected early and later browser frames; fast hand contact and every gallop phase were not audited."
+    },
+    {
+      "id": "brim-lift",
+      "sourceId": "fal-showcase",
+      "mediaUrl": "https://v3b.fal.media/files/b/0aaeac38/BcDTAMfLqkFDirNbEP1Vx_flux-3-max-example-closeup-graded.mp4",
+      "durationSeconds": 6.1,
+      "observation": "The portrait resolves skin, hat and braid well. The sample starts considerably wider than the extreme close-up specified in its prompt, before reaching a close view.",
+      "limits": "Provider-selected sample; filename denotes grading. No assumption that all showcase media are unprocessed."
+    },
+    {
+      "id": "robotaxi",
+      "sourceId": "fal-showcase",
+      "mediaUrl": "https://v3b.fal.media/files/b/0aaeab54/ok-7Oevcm_qP1DiXJgK_c_flux-3-max-example-t05_robotaxi.mp4",
+      "durationSeconds": 10.192,
+      "observation": "A modern white vehicle remains recognizable within the Western setting in the sampled beginning and later views.",
+      "limits": "Partial visible browser frames; full wheel and reflection trajectories were not audited."
+    },
+    {
+      "id": "robodog",
+      "sourceId": "fal-showcase",
+      "mediaUrl": "https://v3b.fal.media/files/b/0aaeab54/FPAo1jNIOYdt9_sb78TCY_flux-3-max-example-t06_robodog.mp4",
+      "durationSeconds": 10.192,
+      "observation": "A robot dog, horse and mounted rider remain distinct in the sampled cattle-yard views; the rider visibly raises a hand to his hat.",
+      "limits": "Partial visible browser frames; robot gait and hand topology were not audited frame by frame."
+    }
+  ],
+  "criterionAssessments": [
+    {
+      "criterion": "fidelity",
+      "score": 8.8,
+      "confidence": "medium",
+      "evidenceTypes": [
+        "primary-sample-observation",
+        "editorial-inference"
+      ],
+      "sampleIds": [
+        "cowboy-product",
+        "keyframe-journey",
+        "brim-lift"
+      ],
+      "sourceIds": [
+        "fal-t2v",
+        "fal-keyframes",
+        "aa-t2v"
+      ],
+      "rationale": "Requested subjects and ordered actions are visibly recognizable in the product and keyframe examples. The portrait opening is wider than requested, so precise compositional compliance is not treated as perfect.",
+      "calibration": "Slightly above the existing FLUX 3 8.7 prior; the observed examples and independent global preference standing support a strong estimate, not an Elo conversion."
+    },
+    {
+      "criterion": "visualQuality",
+      "score": 9.0,
+      "confidence": "medium",
+      "evidenceTypes": [
+        "primary-sample-observation",
+        "editorial-inference"
+      ],
+      "sampleIds": [
+        "cowboy-product",
+        "brim-lift",
+        "keyframe-journey"
+      ],
+      "sourceIds": [
+        "fal-t2v",
+        "fal-keyframes",
+        "aa-i2v",
+        "aa-t2v"
+      ],
+      "rationale": "Selected frames show detailed faces, coherent sunset lighting, glass, weather and landscape materials. Native evaluated examples are 720p-class; optional 1080p output is upscaled.",
+      "calibration": "Retains FLUX 3’s 9.0 visual prior and stays below Seedance 2.5’s 9.2; curated samples and resolution limits do not justify an exceptional score."
+    },
+    {
+      "criterion": "motion",
+      "score": 8.7,
+      "confidence": "low",
+      "evidenceTypes": [
+        "primary-sample-observation",
+        "editorial-inference"
+      ],
+      "sampleIds": [
+        "relay-mail",
+        "keyframe-journey",
+        "robodog"
+      ],
+      "sourceIds": [
+        "fal-showcase",
+        "fal-keyframes",
+        "aa-i2v"
+      ],
+      "rationale": "The sampled rider actions and changing positions are physically readable. This is an inference about motion quality from sparse frames, supported by global video preference results, not a continuous playback audit.",
+      "calibration": "A modest increase over FLUX 3 8.5, below Seedance 2.5 9.2; fast contacts and limb trajectories remain uncertain."
+    },
+    {
+      "criterion": "consistency",
+      "score": 8.6,
+      "confidence": "medium",
+      "evidenceTypes": [
+        "primary-sample-observation",
+        "editorial-inference"
+      ],
+      "sampleIds": [
+        "cowboy-product",
+        "keyframe-journey",
+        "robotaxi"
+      ],
+      "sourceIds": [
+        "fal-t2v",
+        "fal-keyframes",
+        "aa-i2v"
+      ],
+      "rationale": "Face, clothing and main objects remain coherent across sampled moments. The four-keyframe journey preserves broad subject appearance across settings, but distant faces do not establish exact identity.",
+      "calibration": "Retains the FLUX 3 8.6 prior; no blanket temporal improvement is inferred from the higher global preference rank."
+    },
+    {
+      "criterion": "anatomy",
+      "score": 8.5,
+      "confidence": "medium",
+      "evidenceTypes": [
+        "primary-sample-observation",
+        "editorial-inference"
+      ],
+      "sampleIds": [
+        "cowboy-product",
+        "brim-lift",
+        "relay-mail"
+      ],
+      "sourceIds": [
+        "fal-t2v",
+        "fal-showcase"
+      ],
+      "rationale": "The close portraits and bottle grip look plausible in inspected frames. Moving hand-to-hand contact is visible at a distance and does not verify fine finger anatomy.",
+      "calibration": "Close to FLUX 3 8.6 and below Seedance 2.5 8.9; the limited hand-interaction sample warrants restraint."
+    },
+    {
+      "criterion": "textRendering",
+      "score": 7.8,
+      "confidence": "low",
+      "evidenceTypes": [
+        "primary-sample-observation",
+        "editorial-inference"
+      ],
+      "sampleIds": [
+        "cowboy-product"
+      ],
+      "sourceIds": [
+        "fal-t2v"
+      ],
+      "rationale": "The final bottle label and overlay render the requested two-word brand legibly. This demonstrates short familiar text in one example, not arbitrary copy, long labels or full-clip letter stability.",
+      "calibration": "Slightly above FLUX 3 7.6; below Seedance 2.5 8.5 because no diverse text set was inspected."
+    },
+    {
+      "criterion": "lipsyncQuality",
+      "score": 7.0,
+      "confidence": "very-low",
+      "evidenceTypes": [
+        "documented-audio-support",
+        "indirect-global-preference-context",
+        "editorial-prior-inference"
+      ],
+      "sampleIds": [
+        "cowboy-product"
+      ],
+      "sourceIds": [
+        "fal-t2v",
+        "aa-i2v",
+        "aa-t2v",
+        "internal-calibration"
+      ],
+      "rationale": "The example includes a dialogue prompt and visible speaking context, and the independent boards evaluate audio-capable video. Synchronized audio was not heard or analyzed; exact speech and mouth alignment are unverified.",
+      "calibration": "Retains the existing FLUX 3 7.0 prior as an explicitly uncertain editorial estimate. No measured Max lip-sync improvement is asserted."
+    },
+    {
+      "criterion": "sequencingQuality",
+      "score": 8.3,
+      "confidence": "low",
+      "evidenceTypes": [
+        "primary-sample-observation",
+        "editorial-inference"
+      ],
+      "sampleIds": [
+        "keyframe-journey"
+      ],
+      "sourceIds": [
+        "fal-keyframes"
+      ],
+      "rationale": "The sampled keyframe output follows four requested scene milestones in order with a coherent Western subject and palette. It does not prove arbitrary text-only cuts, dialogue continuity or seamless transitions.",
+      "calibration": "Near FLUX 3 8.4 and below Seedance 2.5 9.4; the evidence supports guided short sequences rather than broad multi-shot mastery."
+    },
+    {
+      "criterion": "controllability",
+      "score": 8.6,
+      "confidence": "medium",
+      "evidenceTypes": [
+        "primary-sample-observation",
+        "editorial-inference"
+      ],
+      "sampleIds": [
+        "keyframe-journey",
+        "brim-lift"
+      ],
+      "sourceIds": [
+        "fal-keyframes",
+        "fal-i2v-api",
+        "fal-t2v"
+      ],
+      "rationale": "Documented start/end frames, up to ten positioned keyframes, seed, duration, aspect ratio, audio and reasoning controls provide substantial direction. There is no explicit camera-motion/FPS control, editing or continuation in this route; the portrait reveals a framing limitation.",
+      "calibration": "Slightly below FLUX 3 8.8 because Max’s current workflow excludes editing/continuation; API availability alone does not prove perfect control reliability."
+    },
+    {
+      "criterion": "speedStability",
+      "score": 8.8,
+      "confidence": "low",
+      "evidenceTypes": [
+        "provider-reported-performance",
+        "editorial-inference"
+      ],
+      "sampleIds": [],
+      "sourceIds": [
+        "fal-showcase",
+        "fal-t2v",
+        "fal-keyframes"
+      ],
+      "rationale": "fal reports a 12.45-second average for a 10-second clip; the two public result records report inference-only values of 9.53 and 12.47 seconds. These support rapid iteration, but exclude observed MaxVideoAI delivery percentiles and failure rates.",
+      "calibration": "Above FLUX 3 7.4, below the existing Draft 9.2 estimate. Stability is unmeasured, so this is not an SLA or an end-to-end latency claim."
+    },
+    {
+      "criterion": "pricing",
+      "score": 8.0,
+      "confidence": "medium",
+      "evidenceTypes": [
+        "documented-commercial-policy",
+        "editorial-inference"
+      ],
+      "sampleIds": [],
+      "sourceIds": [
+        "fal-t2v",
+        "internal-calibration"
+      ],
+      "rationale": "The approved launch tariff is normal list plus 30%, rounded once: $2.21 for 10 seconds at 720p and $3.77 at 1080p. Strong visual quality and provider-reported iteration speed support good value at this premium price position.",
+      "calibration": "Modestly above FLUX 3 7.6, well below low-cost MiniMax H3 9.7 and Draft 9.1. The supplier promotion is excluded; activation of authored customer cells remains separate."
+    }
+  ],
+  "assessmentLimitations": [
+    "Six provider-selected public videos were inspected at selected frames; no controlled MaxVideoAI generations or standard prompt-pack runs were made.",
+    "Selected showcase outputs can be unusually successful; one filename explicitly indicates grading. Retry counts and failure rates are unavailable.",
+    "Sparse frames can support composition, identity, text and material observations but cannot verify continuous motion, every intermediate artifact or lip sync.",
+    "Audio alignment was not audited. The lip-sync estimate is a low-confidence prior, not an observation.",
+    "Global Artificial Analysis Elo scores are independent context, never a mathematical mapping to the eleven editorial criteria.",
+    "Confidence describes the strength of the evidence, not a statistical confidence interval for these editorial numbers.",
+    "The speed estimate uses provider-reported results; live MaxVideoAI median/P90 delivery stays governed by the separate operational sample policy.",
+    "Value uses the approved normal-list-plus-30-percent launch price, excludes the fal promotion and does not assert production tariff activation."
+  ],
+  "externalBenchmarkCopy": {
+    "en": "Artificial Analysis snapshot, 20 October 2026: FLUX 3 Max (720p) has 1,138 Elo in image-to-video with audio and 1,159 in text-to-video with audio. The two boards have separate Elo scales and overlapping confidence intervals with leading models.",
+    "fr": "Relevé Artificial Analysis du 20 octobre 2026 : FLUX 3 Max (720p) obtient 1 138 Elo en image vers vidéo avec audio et 1 159 en texte vers vidéo avec audio. Ces deux classements ont des échelles Elo distinctes et des intervalles de confiance qui se recouvrent avec ceux des modèles de tête.",
+    "es": "Datos de Artificial Analysis del 20 de octubre de 2026: FLUX 3 Max (720p) obtiene 1.138 Elo en imagen a video con audio y 1.159 en texto a video con audio. Las dos clasificaciones tienen escalas Elo independientes e intervalos de confianza que se solapan con los modelos líderes."
+  },
+  "independentReview": {
+    "reviewedAt": "2026-10-20",
+    "reviewerRole": "Second research agent",
+    "scope": "Consistency of criterion scores, canonical overall formula, evidence types, calibration priors and disclosed limitations.",
+    "outcome": "No numeric correction justified; all eleven estimates retained.",
+    "mediaReinspected": false,
+    "controlledValidation": false,
+    "note": "This is a methodological consistency review, not a second visual/audio evaluation or human validation."
+  }
+}

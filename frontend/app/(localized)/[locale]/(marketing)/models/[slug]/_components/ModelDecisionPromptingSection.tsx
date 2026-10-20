@@ -90,6 +90,7 @@ export function ModelDecisionPromptingSection({
             labels={ui}
             exampleHref={viewModel.tabs.exampleHref}
             usePromptHref={viewModel.tabs.usePromptHref}
+            notesById={viewModel.tabs.notesById}
           />
 
           <div className="space-y-4 lg:pt-14">

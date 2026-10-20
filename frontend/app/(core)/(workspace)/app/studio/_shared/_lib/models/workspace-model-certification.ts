@@ -91,10 +91,10 @@ const VIDEO_EXTEND_MODELS = new Set(['seedance-2-5', 'wan-3', 'wan-3-prime']);
 const CONVERSATION_VIDEO_MODELS = new Set<string>([
   ...VIDEO_TEXT_IMAGE_MODELS,
   'kling-3-turbo-pro', 'kling-3-turbo-standard', 'minimax-h3-max',
-  'ltx-2-5-fast', 'ltx-2-5-pro', 'grok-imagine-video-1-5', 'flux-3', 'flux-3-draft',
+  'ltx-2-5-fast', 'ltx-2-5-pro', 'grok-imagine-video-1-5', 'flux-3', 'flux-3-draft', 'flux-3-max',
 ]);
 const CONVERSATION_REFERENCE_VIDEO_MODELS = new Set<string>([
-  ...REFERENCE_VIDEO_MODELS, 'minimax-h3-max', 'grok-imagine-video-1-5',
+  ...REFERENCE_VIDEO_MODELS, 'minimax-h3-max', 'grok-imagine-video-1-5', 'flux-3-max',
 ]);
 const CONVERSATION_VIDEO_EDIT_MODELS = new Set([
   'gemini-omni-flash', 'lumaRay2', 'lumaRay2_flash', 'luma-ray-3-2',

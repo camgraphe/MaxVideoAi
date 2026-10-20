@@ -29,6 +29,9 @@ async function main(): Promise<void> {
       'utf8',
     ),
   ) as { rows: typeof rows };
+  const fluxMaxLaunch = JSON.parse(await readFile(
+    new URL('../../tests/fixtures/flux-3-max-public-pricing-launch-2026-10-20.json', import.meta.url), 'utf8',
+  )) as { rows: typeof rows };
   const audioChange = JSON.parse(await readFile(new URL('../../tests/fixtures/audio-pricing-change-2026-09-08.json', import.meta.url), 'utf8')) as { rows: Array<{ id: string; previousCents: number; totalCents: number }> };
   const audioChanges = new Map(audioChange.rows.map(row => [row.id, row]));
   if (audioChanges.size !== audioChange.rows.length || audioChanges.size !== 15) throw new Error('Invalid reviewed Audio pricing change matrix.');
@@ -112,9 +115,13 @@ async function main(): Promise<void> {
   ) {
     throw new Error('Invalid reviewed GPT Image 2.5 public pricing launch matrix.');
   }
+  if (fluxMaxLaunch.rows.length !== 12 || new Set(fluxMaxLaunch.rows.map((row) => row.id)).size !== 12
+    || fluxMaxLaunch.rows.some((row) => row.engineId !== 'flux-3-max' || historicalIds.has(row.id) || launchIds.has(row.id))) {
+    throw new Error('Invalid reviewed FLUX.3 Max public pricing launch matrix.');
+  }
   // Approved archive sunsets: remove purchasable surfaces and invalidate Product offers.
   // Keep the pre-archive fixtures intact as historical pricing evidence.
-  const expectedWithLaunch = [...expected, ...launchAdditions.rows].map((row) => {
+  const expectedWithLaunch = [...expected, ...launchAdditions.rows, ...fluxMaxLaunch.rows].map((row) => {
     const repair = customerOfferRepairs.get(row.id);
     if (!repair) return row;
     if (row.surface !== 'json-ld' || row.status !== 'exact' || row.customerTotalCents !== repair.previousCents) {

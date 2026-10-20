@@ -227,7 +227,7 @@ test('wave 1 sitemap contains exactly the indexable localized comparison URLs', 
     }),
   );
 
-  assert.equal(publishedSlugs.length, 312);
+  assert.equal(publishedSlugs.length, 313);
   assert.equal(comparisonEntries.length, publishedSlugs.length);
   assert.equal(
     comparisonUrlKeys.size,

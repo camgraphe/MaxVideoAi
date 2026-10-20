@@ -37,6 +37,7 @@ export function EngineSelect({
   modeLabelOverrides,
   disabledEngineReasons,
   engineScores,
+  engineScoreReviews,
   showModeSelect = true,
   modeLayout = 'inline',
   variant = 'card',
@@ -224,6 +225,8 @@ export function EngineSelect({
               selectedEngine={selectedEngine}
               selectedIds={selectedIds}
               engineScores={engineScores}
+              engineScoreReviews={engineScoreReviews}
+              locale={locale}
               showLegacy={showLegacy}
               triggerId={triggerId}
               visibleEngines={visibleEngines}

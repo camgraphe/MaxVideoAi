@@ -400,7 +400,7 @@ test('Seedance 2.5 and Seedance 2.0 lead the app menu while P1 models enter mark
 
   assert.deepEqual(
     MARKETING_NAV_MODELS.map((item) => item.key),
-    ['minimax-h3', 'minimax-h3-max', 'seedance-2-5', 'kling-3-pro', 'kling-3-turbo-pro', 'veo-3-1', 'ltx-2-5-pro', 'ltx-2-5-fast', 'wan-3', 'wan-3-prime', 'happy-horse-1-1']
+    ['flux-3-max', 'minimax-h3', 'minimax-h3-max', 'seedance-2-5', 'kling-3-pro', 'kling-3-turbo-pro', 'veo-3-1', 'ltx-2-5-pro', 'ltx-2-5-fast', 'wan-3', 'wan-3-prime']
   );
   assert.deepEqual(
     MARKETING_NAV_COMPARE.map((item) => item.key),
@@ -438,7 +438,7 @@ test('Seedance 1.5 Pro stays historical while Seedance 2.0 keeps the primary ali
 });
 
 test('Header model menu keeps H3 and the current P1 representatives in the bounded set', () => {
-  assert.deepEqual(MARKETING_NAV_MODELS.map((item) => item.key), ['minimax-h3', 'minimax-h3-max', 'seedance-2-5', 'kling-3-pro', 'kling-3-turbo-pro', 'veo-3-1', 'ltx-2-5-pro', 'ltx-2-5-fast', 'wan-3', 'wan-3-prime', 'happy-horse-1-1']);
+  assert.deepEqual(MARKETING_NAV_MODELS.map((item) => item.key), ['flux-3-max', 'minimax-h3', 'minimax-h3-max', 'seedance-2-5', 'kling-3-pro', 'kling-3-turbo-pro', 'veo-3-1', 'ltx-2-5-pro', 'ltx-2-5-fast', 'wan-3', 'wan-3-prime']);
 });
 
 test('Examples hub family order follows the current business priority without reordering global families', () => {

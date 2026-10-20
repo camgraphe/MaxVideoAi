@@ -1,4 +1,5 @@
-import { query } from '@/lib/db';
+import { applicationJobSql } from '../app-job-origin';
+import { query, isTransactionQueryExecutor, type TransactionQueryExecutor } from '@/lib/db';
 import { buildStoredImageRenderEntries } from '@/lib/image-renders';
 import { ensureMediaLibrarySchema } from '@/lib/schema';
 import {
@@ -17,11 +18,13 @@ import {
   type MediaLibraryPage,
 } from './pagination';
 
-export async function upsertJobOutputs(outputs: JobOutputRecord[]): Promise<void> {
+export async function upsertJobOutputs(outputs: JobOutputRecord[], options: { executor?: TransactionQueryExecutor } = {}): Promise<void> {
   if (!outputs.length) return;
-  await ensureMediaLibrarySchema();
+  if (options.executor && !isTransactionQueryExecutor(options.executor)) throw new Error('Active transaction required for job outputs.');
+  if (!options.executor) await ensureMediaLibrarySchema();
+  const execute = options.executor ? options.executor.query.bind(options.executor) : query;
   for (const output of outputs) {
-    const persisted = await query<{ id: string }>(
+    const persisted = await execute<{ id: string }>(
       `INSERT INTO job_outputs (
          id, job_id, user_id, kind, url, storage_url, thumb_url, preview_url, mime_type, width, height,
          duration_sec, position, status, metadata
@@ -211,6 +214,7 @@ export async function listRecentOutputPage(params: {
         AND saved.source_output_id = o.id
         AND saved.deleted_at IS NULL
       WHERE o.user_id = $1
+        AND ($5::text IS NOT NULL OR ${applicationJobSql('j')})
         AND j.hidden IS NOT TRUE
         AND o.status = 'ready'
         AND ($3::text IS NULL OR o.kind = $3::text)

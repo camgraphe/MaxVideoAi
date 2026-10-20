@@ -11,6 +11,7 @@ import { stripKlingDirectOnlyExtraInputValues } from '@/lib/kling-direct-extra-v
 import { buildFalElementInputs } from '@/lib/video-provider-elements';
 import { isHappyHorseFalModelId, supportsHappyHorseVideoEdit } from '@/lib/happy-horse-workflow';
 import { buildMinimaxH3FalRequest, isMinimaxH3EngineId } from '@/lib/minimax-h3';
+import { buildFlux3MaxFalRequest, isFlux3MaxEngineId } from '@/lib/flux-3-max';
 import {
   buildMinimaxH3MaxFalRequestFromPayload,
   isMinimaxH3MaxEngineId,
@@ -32,6 +33,7 @@ export function buildFalGenerationRequest(
   payload: GeneratePayload,
   defaultModel: string
 ): { model: string; requestBody: Record<string, unknown> } {
+  if (isFlux3MaxEngineId(payload.engineId)) return buildFlux3MaxFalRequest(payload);
   if (isKling3TurboEngineId(payload.engineId)) {
     const mode = payload.mode ?? 't2v';
     if (mode !== 't2v' && mode !== 'i2v') {

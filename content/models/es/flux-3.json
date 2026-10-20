@@ -23,10 +23,18 @@
         "href": "/app?engine=flux-3"
       },
       "secondaryCta": {
-        "label": "Ver la galería FLUX",
-        "href": "/es/galeria/flux"
+        "label": "Nuevo: descubre FLUX 3 Max",
+        "href": "/es/modelos/flux-3-max"
       },
       "quickLinks": [
+        {
+          "label": "FLUX 3 Max vs FLUX 3",
+          "href": "/es/comparativa/flux-3-vs-flux-3-max?order=flux-3-max"
+        },
+        {
+          "label": "Explorar la galería FLUX",
+          "href": "/es/galeria/flux"
+        },
         {
           "label": "Descubrir FLUX 3 Draft",
           "href": "/es/modelos/flux-3-draft"
@@ -36,7 +44,7 @@
           "href": "/es/comparativa/flux-3-vs-flux-3-draft?order=flux-3"
         },
         {
-          "label": "Comparar FLUX 3 con Grok",
+          "label": "Comparar FLUX 3 y Grok",
           "href": "/es/comparativa/flux-3-vs-grok-imagine-video-1-5?order=flux-3"
         },
         {
@@ -51,7 +59,7 @@
     },
     "media": {
       "caption": "Galería de pruebas de FLUX 3",
-      "description": "Los resultados FLUX 3 aprobados aparecerán después de la revisión",
+      "description": "Vídeos FLUX 3 con sus prompts y ajustes",
       "renderLabel": "Revisar el render aceptado",
       "badges": [
         "Cuatro flujos",
@@ -92,11 +100,11 @@
         }
       },
       {
-        "title": "Menos adecuado para explorar sin pregunta",
-        "body": "Para probar una idea todavía abierta, Draft puede responder la pregunta antes de trasladar las fuentes seleccionadas a FLUX 3.",
+        "title": "¿Buscas FLUX 3 Max?",
+        "body": "FLUX 3 Max es la nueva variante entrenada por fal, con vídeo desde texto, animación de imágenes, primer y último fotograma y audio generado opcional. Esta página presenta FLUX 3 estándar, que también ofrece extensión de vídeo.",
         "cta": {
-          "label": "Ver FLUX 3 Draft",
-          "href": "/es/modelos/flux-3-draft"
+          "label": "Nuevo: descubre FLUX 3 Max",
+          "href": "/es/modelos/flux-3-max"
         }
       },
       {
@@ -230,7 +238,7 @@
     "showWhenEmpty": false,
     "section": {
       "title": "Ejemplos revisados de FLUX 3",
-      "intro": "La galería permanece oculta hasta que dos videos FLUX 3 duraderos sean aprobados y asociados correctamente.",
+      "intro": "Explora los vídeos FLUX 3 y revisa el prompt, los ajustes y el movimiento de cada resultado.",
       "defaultCtaLabel": "Ver todos los ejemplos de FLUX",
       "recreateLabel": null
     },

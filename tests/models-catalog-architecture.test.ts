@@ -257,7 +257,7 @@ test('models catalog helper module exposes the route contract', () => {
 test('catalogue initial hero metadata is narrow and exact-price sections share one server boundary', () => {
   assert.match(cardsSource, /export async function prepareModelsCatalogCards/);
   assert.match(cardsSource, /heroCards: ModelsCatalogHeroCard\[\]/);
-  assert.match(decisionDataSource, /Pick<ModelGalleryCard, 'id' \| 'label' \| 'overallScore' \| 'href'>/);
+  assert.match(decisionDataSource, /Pick<ModelGalleryCard, 'id' \| 'label' \| 'overallScore' \| 'scoreReview' \| 'href'>/);
   assert.match(pageSource, /await prepareModelsCatalogCards/);
   assert.match(pageSource, /buildModelsCatalogHeroData/);
   assert.match(pageSource, /<Suspense fallback=\{<div className="min-h-screen" aria-hidden="true" \/>\}>/);

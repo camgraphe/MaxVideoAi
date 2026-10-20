@@ -3,6 +3,8 @@
 import { ArrowRight, Images, Scale } from 'lucide-react';
 import { Link, useRouter } from '@/i18n/navigation';
 import { EngineIcon } from '@/components/ui/EngineIcon';
+import { useI18n } from '@/lib/i18n/I18nProvider';
+import { getBenchmarkScoreReviewCopy } from '@/lib/benchmark-score-review';
 import type {
   ModelGalleryCard,
   ModelsGalleryCardActionsCopy,
@@ -48,6 +50,9 @@ export function ModelCard({
   onActivateCompare: () => void;
 }) {
   const router = useRouter();
+  const { t, locale } = useI18n();
+  const reviewCopy = getBenchmarkScoreReviewCopy(locale);
+  const scoreEstimated = card.scoreReview?.status === 'editorial-estimated';
   type RouterPushInput = Parameters<typeof router.push>[0];
   const accent = card.backgroundColor ?? '#6366f1';
   const normalizedCtaLabel = normalizeCtaLabel(ctaLabel);
@@ -198,38 +203,61 @@ export function ModelCard({
               <div className="relative z-20 flex flex-col items-center justify-center leading-none">
                 <div className="flex items-end gap-0.5">
                   <span className="tabular-nums text-[15px] font-semibold tracking-normal text-text-primary dark:text-white sm:text-[24px]">
-                    {scoreValue}
+                    {scoreEstimated ? '≈' : ''}{scoreValue}
                   </span>
                   <span className="mb-[2px] text-[6px] font-semibold uppercase tracking-[0.12em] text-slate-400 dark:text-white/58 sm:mb-[3px] sm:text-[8px] sm:tracking-[0.18em]">
                     /10
                   </span>
                 </div>
                 <span className="mt-0.5 text-[5px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-white/56 sm:mt-1 sm:text-[7px] sm:tracking-[0.26em]">
-                  Score
+                  {scoreEstimated ? reviewCopy.short : 'Score'}
                 </span>
               </div>
             </div>
           </div>
         ) : null}
         <div className="min-h-7 min-w-0 pr-11 sm:min-h-8 sm:pr-24">
-          {card.provider ? (
+          {card.provider || card.badge ? (
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex max-w-full items-center gap-1 rounded-full border border-[color:var(--provider-badge-border)] bg-[color:var(--provider-badge-bg)] px-1.5 py-1 text-[9px] font-semibold tracking-normal text-[color:var(--provider-badge-text)] shadow-[0_7px_18px_rgba(15,23,42,0.06),inset_0_1px_0_rgba(255,255,255,0.95)] backdrop-blur-sm dark:border-[color:var(--provider-badge-border-dark)] dark:bg-[color:var(--provider-badge-bg-dark)] dark:text-[color:var(--provider-badge-text-dark)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:gap-2 sm:px-3 sm:py-1.5 sm:text-[11px]">
-                <EngineIcon
-                  engine={{ id: card.engineId ?? card.id, label: card.label, brandId: card.brandId ?? undefined }}
-                  size={14}
-                  framed={false}
-                  rounded="full"
-                  className="shrink-0"
-                />
-                <span className="truncate">{card.provider}</span>
-              </span>
+              {card.provider ? (
+                <span className="inline-flex max-w-full items-center gap-1 rounded-full border border-[color:var(--provider-badge-border)] bg-[color:var(--provider-badge-bg)] px-1.5 py-1 text-[9px] font-semibold tracking-normal text-[color:var(--provider-badge-text)] shadow-[0_7px_18px_rgba(15,23,42,0.06),inset_0_1px_0_rgba(255,255,255,0.95)] backdrop-blur-sm dark:border-[color:var(--provider-badge-border-dark)] dark:bg-[color:var(--provider-badge-bg-dark)] dark:text-[color:var(--provider-badge-text-dark)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:gap-2 sm:px-3 sm:py-1.5 sm:text-[11px]">
+                  <EngineIcon
+                    engine={{ id: card.engineId ?? card.id, label: card.label, brandId: card.brandId ?? undefined }}
+                    size={14}
+                    framed={false}
+                    rounded="full"
+                    className="shrink-0"
+                  />
+                  <span className="truncate">{card.provider}</span>
+                </span>
+              ) : null}
+              {card.badge === 'new' ? (
+                <span
+                  data-model-novelty="new"
+                  className="inline-flex shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-1.5 py-1 text-[9px] font-semibold text-emerald-800 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-200 sm:px-2 sm:text-[11px]"
+                >
+                  {t('nav.badges.new')}
+                </span>
+              ) : null}
             </div>
           ) : null}
         </div>
         <h3 className="mt-2.5 line-clamp-2 pr-8 text-balance text-[16px] font-semibold leading-[1.08] tracking-normal text-text-primary dark:text-white sm:mt-4 sm:pr-20 sm:text-[24px]">
           {card.label}
         </h3>
+
+        {scoreEstimated ? (
+          <Link
+            href={{ pathname: '/benchmarks', hash: `review-${card.id}` }}
+            title={card.scoreReview?.disclosure[locale]}
+            data-score-review="editorial-estimated"
+            className="mt-2 text-[10px] font-medium text-text-secondary underline underline-offset-2 sm:text-xs"
+            onClick={(event) => event.stopPropagation()}
+            onKeyDown={(event) => event.stopPropagation()}
+          >
+            {reviewCopy.label}
+          </Link>
+        ) : null}
 
         {card.strengths?.length ? (
           <p className="mt-3 flex items-center gap-1 text-[9px] leading-4 text-text-secondary dark:text-white/90 sm:mt-7 sm:gap-2 sm:text-[12px] sm:leading-5">

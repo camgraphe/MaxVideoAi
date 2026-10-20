@@ -76,7 +76,7 @@ export function WorkspaceAppReadyView({
   renderState,
   routeForm,
 }: WorkspaceAppReadyViewProps) {
-  const { engineMap, engineScores, engines, showCenterGallery, uiLocale, workflowCopy, workspaceCopy } = app;
+  const { engineMap, engineScores, engineScoreReviews, engines, showCenterGallery, uiLocale, workflowCopy, workspaceCopy } = app;
   const { loginRedirectTarget } = draft;
   const { notice, showNotice } = noticeState;
   const {
@@ -325,6 +325,7 @@ export function WorkspaceAppReadyView({
         handleModeChange={handleModeChange}
         disabledEngineReasons={modelReview.selectorDisabledReasons}
         engineScores={engineScores}
+        engineScoreReviews={engineScoreReviews}
         renderGroups={renderGroups}
         compositeOverrideSummary={compositeOverrideSummary}
         setViewerTarget={setViewerTarget}

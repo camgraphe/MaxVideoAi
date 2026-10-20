@@ -105,6 +105,13 @@
           "modelPlaylistSlug": "examples-minimax-h3-max"
         }
       ]
+    },
+    {
+      "waveId": "flux-3-max",
+      "sourceManifest": "docs/model-launch/flux-3-max-video-example-pack.json",
+      "sourceStatus": "missing",
+      "sourceDigest": null,
+      "models": []
     }
   ],
   "models": [

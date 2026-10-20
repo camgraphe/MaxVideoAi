@@ -9,7 +9,7 @@ import { filterProviderComparisonRows } from '../frontend/app/(core)/admin/prici
 test('admin comparison inventory contains every app-published model, including pricing-hidden legacy Luma', () => {
   const expected = listRuntimeModels().filter((model) => model.publication.app.published);
   const rows = buildAllModelComparisonScenarios();
-  assert.equal(expected.length, 48);
+  assert.equal(expected.length, 49);
   assert.equal(rows.length, expected.length);
   assert.deepEqual(new Set(rows.map(({ entry }) => entry.id)), new Set(expected.map((model) => model.id)));
   assert.ok(rows.some(({ entry }) => entry.id === 'lumaRay2'));
@@ -17,7 +17,8 @@ test('admin comparison inventory contains every app-published model, including p
   assert.equal(new Set(expected.map((model) => model.family)).size, 15);
   assert.ok(rows.every(({ scenario }) => scenario.durationSec && scenario.resolution && scenario.mode));
   const quotes = quoteCanonicalAdminScenarios({ databaseRules: [], scenarios: rows.map(({ scenario }) => scenario) });
-  assert.equal(quotes.filter((quote) => quote.status === 'quoted').length, 48);
+  assert.equal(quotes.filter((quote) => quote.status === 'quoted').length, 49);
+  assert.ok(rows.some(({ entry }) => entry.id === 'flux-3-max'));
 });
 
 test('representative admin quotes use catalog defaults instead of the cheapest enumerated option', () => {

@@ -66,6 +66,14 @@ function buildRawJobAuditRow(overrides: Partial<RawJobAuditRow> = {}): RawJobAud
   };
 }
 
+test('external imports have no historical customer price and are identified in the audit', () => {
+  const result = mapJobAuditRow(buildRawJobAuditRow({ settings_snapshot: { origin: 'external_fal_import' },
+    payment_status: 'external_not_billed', final_price_cents: null, total_charge_cents: 0, charge_count: 0, receipts: [] }));
+  assert.equal(result.externalImport, true);
+  assert.equal(result.finalPriceCents, null);
+  assert.equal(result.paymentOk, true);
+});
+
 test('admin job audit outcome helpers classify filters and SQL conditions', () => {
   assert.equal(deriveOutcome('failed', false), 'failed_action_required');
   assert.equal(deriveOutcome('failed', true), 'refunded_failure_resolved');

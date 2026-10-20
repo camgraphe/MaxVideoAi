@@ -91,7 +91,7 @@ test("turn input schema rejects blank/oversized messages, excess or malformed re
   assert.throws(() =>
     imageTurnInputSchema.parse({
       ...valid,
-      references: Array.from({ length: 9 }, (_, index) =>
+      references: Array.from({ length: 11 }, (_, index) =>
         `ma_${String(index).padStart(32, "a")}`,
       ),
     }),

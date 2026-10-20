@@ -12,9 +12,10 @@ type CompareEngineSelectorProps = {
   otherValue: string;
   side: 'left' | 'right';
   engineScores?: Record<string, number | null | undefined>;
+  engineScoreReviews?: Record<string, 'editorial-estimated'>;
 };
 
-export function CompareEngineSelector({ options, value, otherValue, side, engineScores }: CompareEngineSelectorProps) {
+export function CompareEngineSelector({ options, value, otherValue, side, engineScores, engineScoreReviews }: CompareEngineSelectorProps) {
   const router = useRouter();
   const locale = useLocale();
   const searchPlaceholder =
@@ -30,6 +31,7 @@ export function CompareEngineSelector({ options, value, otherValue, side, engine
       searchPlaceholder={searchPlaceholder}
       noResultsLabel={noResultsLabel}
       engineScores={engineScores}
+      engineScoreReviews={engineScoreReviews}
       triggerActionLabel={changeLabel}
       buttonClassName="compare-engine-trigger"
       onChange={(next) => {

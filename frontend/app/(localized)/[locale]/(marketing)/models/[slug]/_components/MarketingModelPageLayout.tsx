@@ -1,7 +1,6 @@
 import { Suspense } from 'react';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
-import type { AppLocale } from '@/i18n/locales';
-import { localePathnames, localeRegions } from '@/i18n/locales';
+import { localePathnames, localeRegions, type AppLocale } from '@/i18n/locales';
 import type { FalEngineEntry } from '@/config/falEngines';
 import type { EngineLocalizedContent } from '@/lib/models/i18n';
 import { getLocalizedModelMetaLabels } from '@/lib/ltx-localization';
@@ -71,6 +70,8 @@ import { getModelExamplesUiCopy } from '../_lib/model-page-examples-ui-copy';
 import { resolveModelExampleFallbackPosters } from '../_lib/model-page-example-media';
 import { buildModelExamplePreviewAlts, resolveModelExamplesRuntimePolicy } from '../_lib/model-page-examples-runtime-policy';
 import { buildModelExamplesViewModel } from '../_lib/model-page-examples-view-model';
+import { buildModelKeyframeDemoViewModel } from '../_lib/model-page-keyframe-demo';
+import { loadModelKeyframeDemo } from '@/server/model-keyframe-demo';
 
 export async function MarketingModelPageLayout({
   engine,
@@ -266,7 +267,7 @@ export async function MarketingModelPageLayout({
       : copy.specSections;
   const specSectionsToShow = isImageEngine ? specSections : specSections.slice(0, 2);
   const strengths = copy.strengths;
-  const boundaries = copy.boundaries.length ? copy.boundaries : isVideoEngine ? buildVideoBoundaries(keySpecValues, locale) : [];
+  const boundaries = copy.boundaries.length ? copy.boundaries : isVideoEngine ? buildVideoBoundaries(keySpecValues, locale, engine.engine.resolutions) : [];
   const supportsNativeAudio = Boolean(
     keySpecValues &&
       (isSupported(keySpecValues.audioOutput) || isSupported(keySpecValues.nativeAudioGeneration))
@@ -345,7 +346,10 @@ export async function MarketingModelPageLayout({
     examplesLinkHref,
     imageWorkspaceHref: `/app/image?engine=${encodeURIComponent(engine.modelSlug)}`,
   });
-  const hasExamples = examplesViewModel.visible;
+  const keyframeDemo = examplesContent.keyframeDemo ? buildModelKeyframeDemoViewModel(
+    await loadModelKeyframeDemo(engine.modelSlug), examplesContent.keyframeDemo, locale, engine.surfaces.app.enabled,
+  ) : null;
+  const hasExamples = examplesViewModel.visible || Boolean(keyframeDemo);
   const hasTextSection = true;
   const hasTipsSection =
     strengths.length > 0 || boundaries.length > 0 || troubleshootingItems.length > 0 || Boolean(copy.tipsTitle || copy.tipsIntro);
@@ -383,6 +387,7 @@ export async function MarketingModelPageLayout({
     demoPromptSource,
     defaultDemoPromptSource,
     demoMedia,
+    galleryVideos,
     defaultDemoPresentation: {
       audioBadgeLabel,
       altContext: mediaAltContexts.demo,
@@ -426,7 +431,7 @@ export async function MarketingModelPageLayout({
         pricingCallout: legacyPricingCallout,
         microCta: legacyMicroCta,
         microCtaHref: normalizedPrimaryCtaHref,
-        examplesProps: { viewModel: examplesViewModel },
+        examplesProps: { viewModel: examplesViewModel, keyframeDemo },
         decisionCards: templateData?.decisionCards ?? null,
         promptingProps: { viewModel: promptingViewModel },
         prepLinksProps: { prepLinksSection, locale },

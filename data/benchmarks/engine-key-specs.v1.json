@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-09-03",
+  "last_updated": "2026-10-20",
   "specs": [
     {
       "modelSlug": "sora-2",
@@ -1798,6 +1798,65 @@
         "cameraMotionControls": "Prompt-based",
         "watermark": "No visible MaxVideoAI watermark; provider provenance markers may apply",
         "releaseDate": "Aug 2026"
+      }
+    },
+    {
+      "modelSlug": "flux-3-max",
+      "sources": [
+        "https://fal.ai/models/blackforestlabs/flux-3-max/text-to-video/api",
+        "https://fal.ai/models/blackforestlabs/flux-3-max/image-to-video/api",
+        "https://fal.ai/models/blackforestlabs/flux-3-max/keyframes-to-video/api",
+        "https://fal.ai/models/blackforestlabs/flux-3-max/text-to-video"
+      ],
+      "provenance": {
+        "basis": "maxvideoai-production-route-contract",
+        "mechanicsSources": [
+          "https://fal.ai/models/blackforestlabs/flux-3-max/text-to-video/api",
+          "https://fal.ai/models/blackforestlabs/flux-3-max/image-to-video/api",
+          "https://fal.ai/models/blackforestlabs/flux-3-max/keyframes-to-video/api"
+        ],
+        "note": "Launch route supports text, one opening image, first/last frames and 1-10 keyframes with unique frame positions on a 24 fps timeline. Specifications checked on 2026-10-20; external preference scores are documented separately in flux-3-max-evidence.v1.json."
+      },
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not supported",
+        "firstLastFrame": "Supported (optional ending image in image-to-video)",
+        "referenceImageStyle": "Opening image and optional ending image, or 1-10 keyframes at specified frame positions",
+        "referenceVideo": "Not supported",
+        "maxResolution": "1080p (upscaled from 720p)",
+        "maxDuration": "20s",
+        "aspectRatios": [
+          "auto",
+          "21:9",
+          "2:1",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16"
+        ],
+        "fpsOptions": [
+          "24 fps keyframe timeline; no FPS control"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Optional",
+        "nativeAudioGeneration": "Optional (enabled by default)",
+        "lipSync": "Prompted dialogue; no dedicated lip-sync control",
+        "cameraMotionControls": "Prompt-based; no dedicated camera-motion control",
+        "watermark": "Provider watermark policy not specified in endpoint documentation",
+        "releaseDate": "Oct 2026",
+        "workflows": [
+          "Text-to-video",
+          "Image-to-video",
+          "First and last frames",
+          "Keyframes-to-video"
+        ],
+        "durationOptions": "5-20 seconds in whole-second increments; default 5 seconds",
+        "reasoningLevel": "Low or high; default high",
+        "referenceLimit": "1-10 keyframe images; unique frame indices from 0 through duration × 24"
       }
     }
   ]

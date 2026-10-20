@@ -70,6 +70,36 @@
       "assetId": "wan-3-home",
       "desktop": "https://media.maxvideoai.com/marketing/video-renditions/64f10d5ed2a98a6d956bfb6da667f00e413535c66a5e0d1172f7987e059e8feb/public-demo-v1/desktop/08077282dee4189238992fded487a0a05819c4f589834c371cacefdacdc66fab.mp4",
       "mobile": "https://media.maxvideoai.com/marketing/video-renditions/64f10d5ed2a98a6d956bfb6da667f00e413535c66a5e0d1172f7987e059e8feb/public-demo-v1/mobile/6463e03e42f8fab9f201206fae19bbbb34e903b9d8ba923d70b314ffd5bea63a.mp4"
+    },
+    "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/35955650ca4bca917f881c6782174f76f6cb5318fafeead8c0cd3595ab1b5400.mp4": {
+      "assetId": "flux-3-max-last-exit",
+      "desktop": "https://media.maxvideoai.com/marketing/video-renditions/35955650ca4bca917f881c6782174f76f6cb5318fafeead8c0cd3595ab1b5400/public-demo-v1/desktop/81426a871cc2b98216011a4de9586f3227b0651e23b2e64e019262a5be3d5004.mp4",
+      "mobile": "https://media.maxvideoai.com/marketing/video-renditions/35955650ca4bca917f881c6782174f76f6cb5318fafeead8c0cd3595ab1b5400/public-demo-v1/mobile/4608d7d0206353a8a06483d148f9c52574bc0bfa465970be9c5d78b5a521e280.mp4"
+    },
+    "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/129578bb105f5270776bff78ce498566093132bb7e670c27b82eb875e4479f8c.mp4": {
+      "assetId": "flux-3-max-sleeping-guardian",
+      "desktop": "https://media.maxvideoai.com/marketing/video-renditions/129578bb105f5270776bff78ce498566093132bb7e670c27b82eb875e4479f8c/public-demo-v1/desktop/e6db3d5818dcdd52ed8a5c2658b1e2988f8567c7e1a0ce5691ce261b5b3b5f4d.mp4",
+      "mobile": "https://media.maxvideoai.com/marketing/video-renditions/129578bb105f5270776bff78ce498566093132bb7e670c27b82eb875e4479f8c/public-demo-v1/mobile/b53543c543c52525fbdc8fb69bed87f6fcdea7a5f1772b9e3fff8d384ff15631.mp4"
+    },
+    "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/ed8fa206322db54926ebcb9d1baf07a57f80558dc4314a12d7772ecc2713f2f2.mp4": {
+      "assetId": "flux-3-max-one-last-wash",
+      "desktop": "https://media.maxvideoai.com/marketing/video-renditions/ed8fa206322db54926ebcb9d1baf07a57f80558dc4314a12d7772ecc2713f2f2/public-demo-v1/desktop/ddbb6c1672fdbfcd34090ee1e950af91c26c57f6fe4809b49657c167933f6c15.mp4",
+      "mobile": "https://media.maxvideoai.com/marketing/video-renditions/ed8fa206322db54926ebcb9d1baf07a57f80558dc4314a12d7772ecc2713f2f2/public-demo-v1/mobile/21c6f9453aa5e2da2c9ef658f37298fe840d422ad1e038176016037d32807358.mp4"
+    },
+    "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/556d12f7c45a0726eebc946615f4a0cbf4fba1993565c5f6cc6b469b90d726c3.mp4": {
+      "assetId": "flux-3-max-someone-answers",
+      "desktop": "https://media.maxvideoai.com/marketing/video-renditions/556d12f7c45a0726eebc946615f4a0cbf4fba1993565c5f6cc6b469b90d726c3/public-demo-v1/desktop/76539967fbf3a0d71f54ed74e4ef62404813c28ad2612a57cb2c2f007642b9f3.mp4",
+      "mobile": "https://media.maxvideoai.com/marketing/video-renditions/556d12f7c45a0726eebc946615f4a0cbf4fba1993565c5f6cc6b469b90d726c3/public-demo-v1/mobile/21bac837b55ec7c60f83616c0295ee376e3cb486a52d015c1a18ba857bf35cf9.mp4"
+    },
+    "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/1d8365734d43e3108ba8d1ab9fbf017d3f7c02f9841648fe42d6a86705d41af7.mp4": {
+      "assetId": "flux-3-max-door-to-spring",
+      "desktop": "https://media.maxvideoai.com/marketing/video-renditions/1d8365734d43e3108ba8d1ab9fbf017d3f7c02f9841648fe42d6a86705d41af7/public-demo-v1/desktop/e09f2f1aabbcac8fae39cd9f640d99c71de5f34c5789d04ae5279fef06ec4bdf.mp4",
+      "mobile": "https://media.maxvideoai.com/marketing/video-renditions/1d8365734d43e3108ba8d1ab9fbf017d3f7c02f9841648fe42d6a86705d41af7/public-demo-v1/mobile/b7df5f5c3c349abc1683ee8ba84017829dbbe40feb7452555e4bb7fa79a68449.mp4"
+    },
+    "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/0613e0c1a1dbdcba500079699da48c63a76f1fcfded03017a268f66508b07c2a.mp4": {
+      "assetId": "flux-3-max-five-more-minutes",
+      "desktop": "https://media.maxvideoai.com/marketing/video-renditions/0613e0c1a1dbdcba500079699da48c63a76f1fcfded03017a268f66508b07c2a/public-demo-v1/desktop/376e580cef025c17d369bc8136aa8fd6471a11dae2618372391a611a48a51dea.mp4",
+      "mobile": "https://media.maxvideoai.com/marketing/video-renditions/0613e0c1a1dbdcba500079699da48c63a76f1fcfded03017a268f66508b07c2a/public-demo-v1/mobile/daf49d1a5ea4e8f5500b95a6120bd5f4c875e08a61d0ec7dd514606d81e915b2.mp4"
     }
   }
 }

@@ -15,6 +15,7 @@ import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
 import type { EngineModeDurationCaps, Mode } from '@/types/engines';
 import { SEEDANCE_2_5_ENGINE_ID } from '@/server/video-providers/byteplus-modelark-constants';
 import { isKling3TurboEngineId } from '@/lib/kling-3-turbo';
+import { getFlux3MaxConstraintViolation, isFlux3MaxEngineId } from '@/lib/flux-3-max';
 
 const MINIMAX_H3_MODES = ['t2v', 'i2v', 'ref2v'] as const;
 
@@ -244,6 +245,10 @@ export function validateProviderSpecificConstraints(params: {
   normalizedMode: Mode;
   payload: Record<string, unknown>;
 }): VideoExecutionValidationResult {
+  if (isFlux3MaxEngineId(params.engineId)) {
+    const violation = getFlux3MaxConstraintViolation(params.normalizedMode, params.payload);
+    return violation ? { ok: false, error: { code: 'ENGINE_CONSTRAINT', ...violation } } : { ok: true };
+  }
   if (isKling3TurboEngineId(params.engineId)) {
     const rawMultiPrompt = params.payload.multi_prompt;
     const multiPrompt = Array.isArray(rawMultiPrompt) ? rawMultiPrompt : [];

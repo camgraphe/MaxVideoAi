@@ -38,6 +38,7 @@ import { nanoBananaTemplateConfig } from './model-page-templates/nano-banana';
 import { pikaTextToVideoTemplateConfig } from './model-page-templates/pika-text-to-video';
 import { flux3TemplateConfig } from './model-page-templates/flux-3';
 import { flux3DraftTemplateConfig } from './model-page-templates/flux-3-draft';
+import { flux3MaxTemplateConfig } from './model-page-templates/flux-3-max';
 import { seedance15ProTemplateConfig } from './model-page-templates/seedance-1-5-pro';
 import { seedance20TemplateConfig } from './model-page-templates/seedance-2-0';
 import { seedance20FastTemplateConfig } from './model-page-templates/seedance-2-0-fast';
@@ -94,6 +95,7 @@ const MODEL_PAGE_TEMPLATE_REGISTRY: Record<string, ModelPageTemplateConfig> = {
   [pikaTextToVideoTemplateConfig.slug]: pikaTextToVideoTemplateConfig,
   [flux3TemplateConfig.slug]: flux3TemplateConfig,
   [flux3DraftTemplateConfig.slug]: flux3DraftTemplateConfig,
+  [flux3MaxTemplateConfig.slug]: flux3MaxTemplateConfig,
   [seedance15ProTemplateConfig.slug]: seedance15ProTemplateConfig,
   [seedance20TemplateConfig.slug]: seedance20TemplateConfig,
   [seedance20FastTemplateConfig.slug]: seedance20FastTemplateConfig,

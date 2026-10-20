@@ -1,4 +1,5 @@
 import type { AppLocale } from '@/i18n/locales';
+import type { BenchmarkScoreReview } from '@/lib/benchmark-score-review';
 import type { CompareSpecRow } from './compare-page-spec-rows';
 import type { CompareMetric } from './compare-page-scorecard';
 import type { ComparePricingDisplay } from './compare-page-types';
@@ -18,6 +19,7 @@ export function buildComparisonExport(input: {
   leftPricing: ComparePricingDisplay; rightPricing: ComparePricingDisplay; priceSnapshotAt: string;
   labels: { pending: string; supported: string; notSupported: string; na: string };
   sources: Array<{ name: string; urls: string[] }>; summary?: string;
+  scoreReviews?: Array<{ name: string; review?: BenchmarkScoreReview | null }>;
 }): string {
   const { locale, leftName, rightName, labels } = input;
   const text = SCORE_TEXT[locale];
@@ -31,8 +33,9 @@ export function buildComparisonExport(input: {
     `# ${leftName} vs ${rightName}`, input.summary ?? '', publicComparisonUrl(input.path), '',
     `## ${headings.scores}`, text.subtitle, text.formula,
     `${text.updated}: ${leftName}: ${input.leftUpdated ?? text.missingDate}; ${rightName}: ${input.rightUpdated ?? text.missingDate}.`,
+    ...(input.scoreReviews ?? []).flatMap(({ name, review }) => review ? [`${name}: ${review.disclosure[locale]}`, review.sourceUrl ?? ''] : []),
     `| ${headings.criterion} | ${leftName} | ${rightName} |`, '| --- | --- | --- |',
-    ...orderCompareMetrics(input.metrics).map(metric => `| ${escapeCell(labelCompareMetric(metric, locale))} — ${escapeCell(describeCompareMetric(metric, locale))} | ${formatCompareScoreValue(metric.leftValue, labels.na)} | ${formatCompareScoreValue(metric.rightValue, labels.na)} |`),
+    ...orderCompareMetrics(input.metrics).map(metric => `| ${escapeCell(labelCompareMetric(metric, locale))} — ${escapeCell(describeCompareMetric(metric, locale))} | ${metric.leftEstimated && metric.leftValue != null ? '≈' : ''}${formatCompareScoreValue(metric.leftValue, labels.na)} | ${metric.rightEstimated && metric.rightValue != null ? '≈' : ''}${formatCompareScoreValue(metric.rightValue, labels.na)} |`),
     text.pricing, `${text.source} https://maxvideoai.com/benchmarks`, '',
     `## ${headings.specs}`, `| ${headings.criterion} | ${leftName} | ${rightName} |`, '| --- | --- | --- |',
     ...input.specRows.map(row => `| ${escapeCell(row.label)} | ${specCell(row.left, row.sublines, row.subline)} | ${specCell(row.right, row.rightSublines, row.rightSubline)} |`),

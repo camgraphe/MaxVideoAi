@@ -1,10 +1,10 @@
 import type { QueryExecutor } from '@/lib/db';
 import { curationItemFormat, type CurationDraft, type CurationItem, type EffectiveCurationPreview } from '@/lib/admin/playlist-curation';
 import { getExampleFamilyIds } from '@/lib/model-families';
-import { listCatalogPreviewIds } from '../videos-catalog-page';
+import { listCatalogPreviewPair } from '../videos-catalog-page';
 import { getCurationCandidateAliases } from './curation-candidate-aliases';
 import { listCurationCandidates } from './curation-candidates';
-import { readEffectiveModelPageGallery } from './curation-model-preview';
+import { createCurationModelMediaReader, readEffectiveModelPageGallery, type CurationSourceState } from './curation-model-preview';
 import { modelExamplePlaylistKeys } from '../model-gallery-projection';
 import { curationFingerprint } from './curation-store';
 import { getExamplesHubPlaylistSlug, getFamilyFeedSourceSlugs } from './slugs';
@@ -16,32 +16,43 @@ export function effectiveSourceSlugs(slug: string): string[] {
 
 /** Full ID sets, not hydrated media, establish exact additions/removals beyond page one. */
 export async function readEffectiveCurationPreview(
-  { playlistId, slug, draft, candidates: suppliedCandidates }: { playlistId: string; slug: string; draft: CurationDraft; candidates?: CurationItem[] },
+  { playlistId, slug, draft, candidates: suppliedCandidates, sources }: {
+    playlistId: string; slug: string; draft: CurationDraft; candidates?: CurationItem[];
+    sources?: ReadonlyMap<string, CurationSourceState>;
+  },
   db: QueryExecutor,
 ): Promise<EffectiveCurationPreview> {
   const candidates = suppliedCandidates ?? await listCurationCandidates(slug, db, getCurationCandidateAliases(slug));
   const isCatalog = slug === getExamplesHubPlaylistSlug() || slug.startsWith('family-');
   const familyId = slug.startsWith('family-') ? slug.slice(7) : undefined;
-  const collect = async (override: boolean) => {
-    if (!isCatalog) {
-      const media = await readEffectiveModelPageGallery({slug,...(override ? {draft} : {})},db);
-      return {ids:media.map(item=>item.id),total:media.length,suppressedSourceSlugs:[] as string[],media};
-    }
-    const ids: string[] = [];
-    let total = 0;
-    let suppressedSourceSlugs: string[] = [];
+  const readMedia = createCurationModelMediaReader(db);
+  type Collected = { ids: string[]; total: number; suppressedSourceSlugs: string[]; media?: Awaited<ReturnType<typeof readEffectiveModelPageGallery>> };
+  let current: Collected;
+  let next: Collected;
+  if (isCatalog) {
+    current = { ids: [], total: 0, suppressedSourceSlugs: [] };
+    next = { ids: [], total: 0, suppressedSourceSlugs: [] };
+    let offset = 0;
     do {
-      const page = await listCatalogPreviewIds({ familyId, sort: 'playlist', limit: 500, offset: ids.length,
-        ...(override ? { curationOverride: { playlistId, draft } } : {}) }, db);
-      ids.push(...page.ids);
-      total = page.total;
-      if ('suppressedSourceSlugs' in page) suppressedSourceSlugs = page.suppressedSourceSlugs as string[];
-      if (!page.ids.length) break;
-    } while (ids.length < total);
-    return { ids: ids.slice(0,total), total, suppressedSourceSlugs, media: undefined };
-  };
-  const current = await collect(false);
-  const next = await collect(true);
+      const pair = await listCatalogPreviewPair({ familyId, sort: 'playlist', limit: 500, offset,
+        curationOverride: { playlistId, draft } }, db);
+      for (const [result, page] of [[current, pair.current], [next, pair.next]] as const) {
+        result.ids.push(...page.ids); result.total = page.total; result.suppressedSourceSlugs = page.suppressedSourceSlugs;
+      }
+      if (!pair.current.ids.length && !pair.next.ids.length) break;
+      offset += 500;
+    } while (current.ids.length < current.total || next.ids.length < next.total);
+    current.ids = current.ids.slice(0, current.total);
+    next.ids = next.ids.slice(0, next.total);
+  } else {
+    const collect = async (override: boolean): Promise<Collected> => {
+      const media = await readEffectiveModelPageGallery({slug, sources, readMedia, ...(override ? {draft, candidates} : {})},db);
+      return {ids:media.map(item=>item.id),total:media.length,suppressedSourceSlugs:[],media};
+    };
+    // Same snapshot/locked transaction: hydrate the selection first, then reuse it for current preferred cards.
+    next = await collect(true);
+    current = await collect(false);
+  }
   const previousIds = new Set(current.ids);
   const nextIds = new Set(next.ids);
   const removedCount = current.ids.filter(id => !nextIds.has(id)).length;

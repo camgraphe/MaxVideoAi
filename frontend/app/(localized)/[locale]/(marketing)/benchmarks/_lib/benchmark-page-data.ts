@@ -2,6 +2,7 @@ import { listFalEngines } from '@/config/falEngines';
 import { supportsVideoGeneration } from '@/lib/models/catalog';
 import { computeBenchmarkOverall, type BenchmarkLabStaticData, type BenchmarkScore } from '@/server/benchmark-lab-data';
 import type { PublicBenchmarkLatencySnapshot } from '@/server/benchmark-lab-metrics';
+import type { BenchmarkScoreReview } from '@/lib/benchmark-score-review';
 
 const METRIC_IDS = ['fidelity', 'visualQuality', 'motion', 'consistency', 'anatomy', 'textRendering', 'lipsyncQuality', 'sequencingQuality', 'controllability', 'speedStability', 'pricing'] as const;
 
@@ -9,6 +10,7 @@ export type BenchmarkScoreRow = {
   modelSlug: string;
   modelName: string;
   overall: number | null;
+  review?: BenchmarkScoreReview | null;
   updatedAt: string | null;
   generationUnavailable?: boolean;
   metrics: Record<(typeof METRIC_IDS)[number], number | null>;
@@ -90,7 +92,7 @@ export function buildBenchmarkPageData(
     const modelSlug = score.modelSlug ?? score.engineId;
     const engine = modelSlug ? engineBySlug.get(modelSlug) : null;
     if (!modelSlug || !engine) return [];
-    return [{ modelSlug, modelName: engine.marketingName, generationUnavailable: engine.surfaces.app.enabled === false, overall: computeBenchmarkOverall(score), updatedAt: score.last_updated ?? null, metrics: metricMap(score) }];
+    return [{ modelSlug, modelName: engine.marketingName, generationUnavailable: engine.surfaces.app.enabled === false, overall: computeBenchmarkOverall(score), review: score.review ?? null, updatedAt: score.last_updated ?? null, metrics: metricMap(score) }];
   }).sort((left, right) => (right.overall ?? -1) - (left.overall ?? -1) || left.modelName.localeCompare(right.modelName));
 
   const specs = staticData.specs.flatMap((spec) => {

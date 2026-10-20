@@ -1,6 +1,8 @@
 'use client';
 
 import clsx from 'clsx';
+import type { AppLocale } from '@/i18n/locales';
+import { EngineScoreLabel } from './EngineScoreLabel';
 import { Check, ChevronRight, ExternalLink, Info, Search, X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
@@ -22,12 +24,14 @@ import {
 import type { DropdownPosition, EngineRegistryMeta } from './engine-select-types';
 
 type EngineSelectDropdownProps = {
+  locale?: AppLocale;
   title?: string;
   activeOptionId?: string;
   contentRef: RefObject<HTMLDivElement>;
   copy: EngineSelectCopy;
   engines: EngineCaps[];
   engineScores?: Record<string, number | null | undefined>;
+  engineScoreReviews?: import('@/types/engines').EngineScoreReviews;
   formatEngineShort: (engine: EngineCaps | null | undefined) => string;
   hasLegacyEngines: boolean;
   highlightedIndex: number;
@@ -76,11 +80,13 @@ export function getDropdownGeometry(position: DropdownPosition, viewport?: { wid
 }
 
 export function EngineSelectDropdown({
+  locale = 'en',
   title,
   contentRef,
   copy,
   engines,
   engineScores,
+  engineScoreReviews,
   formatEngineShort,
   hasLegacyEngines,
   highlightedIndex,
@@ -371,7 +377,7 @@ export function EngineSelectDropdown({
                       <div className="space-y-2 pb-3 text-sm text-text-secondary">
                         <p>{engine.provider}{meta?.versionLabel || engine.version ? ` · ${meta?.versionLabel ?? engine.version}` : ''}</p>
                         <p>{AVAILABILITY_LABELS[availability]}{engine.isLab ? ' · Lab' : ''}{engine.status ? ` · ${engine.status}` : ''}</p>
-                        {scoreLabel ? <p>{copy.score}: {scoreLabel}/10</p> : null}
+                        {scoreLabel ? <EngineScoreLabel scoreLabel={scoreLabel} label={copy.score} locale={locale} reviewStatus={engineScoreReviews?.[engine.id]} /> : null}
                         {avgDurationLabel ? <p>{copy.avgDuration.replace('{value}', avgDurationLabel)}{engine.durationSource === 'completion_event' ? ` · ${copy.observedTiming}${engine.durationSampleCount ? ` (${engine.durationSampleCount})` : ''}` : ''}</p> : null}
                         <p>{visibleModes.map(getCompactModeLabel).join(' · ')}</p>
                       </div>

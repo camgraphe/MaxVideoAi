@@ -69,6 +69,7 @@ test('a missing P1 manifest preserves validated P0 readiness and marks P1 unread
         models: P0_EXPECTED_MODELS.map((modelId) => ({ modelId, waveId: 'p0' })),
       },
       { waveId: 'p1', sourceStatus: 'missing', models: [] },
+      { waveId: 'flux-3-max', sourceStatus: 'missing', models: [] },
     ],
   );
   assert.deepEqual(

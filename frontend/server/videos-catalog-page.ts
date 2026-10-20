@@ -10,7 +10,7 @@ import type { ExampleSort, ExampleVersionSample, ListExamplesPageResult } from '
 
 export type CatalogCurationOverride = { playlistId: string; draft: import('@/lib/admin/playlist-curation').CurationDraft };
 
-type CatalogRow = VideoRow & { total: number; suppressed_source_slugs?: string[]; version_samples?: ExampleVersionSample[] };
+type CatalogRow = VideoRow & { total: number; suppressed_source_slugs?: string[]; version_samples?: ExampleVersionSample[]; preview_variant?: 'current' | 'next' };
 
 type CatalogPageOptions = {
   curationOverride?: CatalogCurationOverride;
@@ -73,7 +73,7 @@ function catalogSql(sort: ExampleSort, withCuration: boolean, idsOnly = false, o
   ), selected_page AS (
     SELECT job_id,ROW_NUMBER() OVER (ORDER BY ${SORT_SQL[sort]}) AS ordinal
     FROM unique_memberships ORDER BY ${SORT_SQL[sort]} LIMIT $3 OFFSET $4
-  ) ${idsOnly ? `SELECT totals.total,page.job_id,
+  ) ${idsOnly ? `SELECT totals.total,page.job_id,page.ordinal AS preview_ordinal,
       ARRAY(SELECT slug FROM sources WHERE is_public=TRUE AND id NOT IN (SELECT id FROM active_sources) ORDER BY slug) AS suppressed_source_slugs
     FROM (SELECT COUNT(*)::int AS total FROM unique_memberships) totals
     LEFT JOIN selected_page page ON TRUE ORDER BY page.ordinal` : `SELECT totals.total,${includeVersionSamples ? `
@@ -88,7 +88,7 @@ function catalogSql(sort: ExampleSort, withCuration: boolean, idsOnly = false, o
     ORDER BY page.ordinal`}`;
 }
 
-async function readCatalogRows(options: CatalogPageOptions, idsOnly: boolean, db: QueryExecutor) {
+async function readCatalogRows(options: CatalogPageOptions, idsOnly: boolean, db: QueryExecutor, compare = false) {
   const limit = Number.isFinite(options.limit) ? Math.max(1, Math.floor(options.limit)) : 24;
   const offset = Number.isFinite(options.offset) ? Math.max(0, Math.floor(options.offset)) : 0;
   const empty: CatalogRow[] = [];
@@ -110,7 +110,12 @@ async function readCatalogRows(options: CatalogPageOptions, idsOnly: boolean, db
   const params = [JSON.stringify(sources), expandCatalogAliases(aliases), limit, offset, ...(options.curationOverride ? [JSON.stringify(options.curationOverride)] : [])];
   let result: CatalogRow[];
   try {
-    result = await db.query<CatalogRow>(catalogSql(options.sort, true, idsOnly, Boolean(options.curationOverride), options.includeVersionSamples), params);
+    const sql = compare
+      ? `SELECT 'current' AS preview_variant,current_page.* FROM (${catalogSql(options.sort, true, true)}) current_page
+         UNION ALL SELECT 'next' AS preview_variant,next_page.* FROM (${catalogSql(options.sort, true, true, true)}) next_page
+         ORDER BY preview_variant,preview_ordinal`
+      : catalogSql(options.sort, true, idsOnly, Boolean(options.curationOverride), options.includeVersionSamples);
+    result = await db.query<CatalogRow>(sql, params);
   } catch (error) {
     // Missing optional curation storage is the only schema error that permits fallback.
     const failure = error as { code?: string; message?: string };
@@ -143,9 +148,25 @@ export async function listCatalogPage(options: CatalogPageOptions): Promise<List
 /** Preview diagnostics use the exact same active-source CTE as public membership. */
 export async function listCatalogPreviewIds(options: CatalogPageOptions, db: QueryExecutor) {
   const rows = await readCatalogRows(options, true, db);
+  return projectPreviewRows(rows);
+}
+
+function projectPreviewRows(rows: CatalogRow[]) {
   return {
     ids: rows.filter(row => row.job_id).map(row => row.job_id),
     total: Number(rows[0]?.total ?? 0),
     suppressedSourceSlugs: rows[0]?.suppressed_source_slugs ?? [],
+  };
+}
+
+/** Two exact public-reader CTEs, one round-trip and one PostgreSQL snapshot. */
+export async function listCatalogPreviewPair(
+  options: CatalogPageOptions & { curationOverride: CatalogCurationOverride }, db: QueryExecutor,
+) {
+  const limit = Number.isFinite(options.limit) ? Math.max(1, Math.min(500, Math.floor(options.limit))) : 500;
+  const rows = await readCatalogRows({ ...options, limit }, true, db, true);
+  return {
+    current: projectPreviewRows(rows.filter(row => row.preview_variant === 'current')),
+    next: projectPreviewRows(rows.filter(row => row.preview_variant === 'next')),
   };
 }

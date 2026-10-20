@@ -468,6 +468,28 @@ locks on six source tables with a two-second SQL deadline; writer contention ret
 a retryable 409. Never retry automatically with an old token. Existing optional-schema
 fallback remains for public reads; first family adoption needs opening storage.
 
+Snapshot reads combine schema flags and row projections into two round-trips (plus
+inherited sources for an unconfigured family). Reconstruct fingerprint objects in
+their historical property order and keep native PostgreSQL timestamps and textual
+revisions; JSONB key order must not alter an existing preview token. After the save
+guard successfully locks the curation table, its existence is established and the
+snapshot needs only one query; opening-column availability is still read under that
+lock. A preview shares
+its source facts, candidates and public-media lookups only within that transaction.
+Its proposed gallery is hydrated first so the current preferred cards can reuse it;
+both complete projections still enter the fingerprint. Ordinary inventory reads do
+not reuse this cache. Hub/family previews batch the unchanged current and proposed
+public catalog CTEs in one parameterized `UNION ALL`, explicitly ordered by variant
+and page ordinal. Both sides retain their own totals and suppressed sources and
+continue in 500-ID pages until both complete. Save returns the actual `INSERT ... RETURNING` curation row
+combined with the freshly locked playlist/membership facts, avoiding another
+snapshot read while holding the source locks. Curation writes must not introduce
+triggers that mutate those playlist/membership facts without updating this contract.
+Tests compare the returned snapshot to a fresh committed read, preserve legacy schema
+behavior, and prove timeout rollback and lock release. The two-second deadline and
+NOWAIT behavior remain authoritative when network latency or larger catalogs exceed
+the budget.
+
 ### Read-only gallery release checklist
 
 - Record the exact candidate SHA and verify the local server's checkout. Read the

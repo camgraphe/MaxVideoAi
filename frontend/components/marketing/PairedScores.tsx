@@ -4,6 +4,8 @@ export type PairedMetric = {
   tooltip?: string;
   leftValue: number | null;
   rightValue: number | null;
+  leftEstimated?: boolean;
+  rightEstimated?: boolean;
 };
 
 function validScore(value: number | null) {
@@ -28,7 +30,7 @@ export function PairedScores({ metrics, naLabel = '—', className = '', motionP
       const left = validScore(metric.leftValue);
       const right = validScore(metric.rightValue);
       return <div className="paired-row" key={metric.id}><details>
-        <summary><span>{metric.label} <span aria-hidden className="text-text-muted">+</span></span><span className="paired-values"><span className="score-left">● {left?.toFixed(1) ?? naLabel}</span><span className="score-right">◆ {right?.toFixed(1) ?? naLabel}</span></span></summary>
+        <summary><span>{metric.label} <span aria-hidden className="text-text-muted">+</span></span><span className="paired-values"><span className="score-left">● {metric.leftEstimated && left !== null ? '≈' : ''}{left?.toFixed(1) ?? naLabel}</span><span className="score-right">◆ {metric.rightEstimated && right !== null ? '≈' : ''}{right?.toFixed(1) ?? naLabel}</span></span></summary>
         {metric.tooltip ? <p>{metric.tooltip}</p> : null}
         </details>
         <div className="paired-track" aria-hidden>

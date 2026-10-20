@@ -13,6 +13,7 @@ const collectorPath = 'frontend/src/lib/pricing-audit/legacy-collectors.ts';
 const fixturePath = 'tests/fixtures/pricing-parity.v1.json';
 const launchAdditionsFixturePath = 'tests/fixtures/pricing-shadow-additions.v1.json';
 const P1_PUBLIC_VIDEO_MODEL_IDS = [
+  'flux-3-max',
   'kling-3-turbo-standard',
   'kling-3-turbo-pro',
   'minimax-h3-max',

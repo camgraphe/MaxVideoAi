@@ -24,6 +24,7 @@ export interface EngineSelectProps {
   modeLabelOverrides?: Partial<Record<Mode, string>>;
   disabledEngineReasons?: Record<string, string>;
   engineScores?: Record<string, number | null | undefined>;
+  engineScoreReviews?: import('@/types/engines').EngineScoreReviews;
   showModeSelect?: boolean;
   modeLayout?: 'inline' | 'stacked';
   variant?: 'card' | 'bar';

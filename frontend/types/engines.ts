@@ -72,6 +72,7 @@ export type Resolution =
   | 'auto';
 export type AspectRatio =
   | '16:9'
+  | '2:1'
   | '9:16'
   | '9:21'
   | '1:1'
@@ -282,9 +283,13 @@ export interface EngineCaps {
   modeCaps?: Partial<Record<Mode, EngineModeUiCaps>>;
 }
 
+export type EngineScoreReviewStatus = 'editorial-estimated';
+export type EngineScoreReviews = Record<string, EngineScoreReviewStatus>;
+
 export interface EnginesResponse {
   engines: EngineCaps[];
   engineScores?: Record<string, number>;
+  engineScoreReviews?: EngineScoreReviews;
 }
 
 export interface PreflightRequest {

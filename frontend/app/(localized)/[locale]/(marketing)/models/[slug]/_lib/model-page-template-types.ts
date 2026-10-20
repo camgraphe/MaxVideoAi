@@ -72,6 +72,7 @@ export type ModelPageTemplateQuickLink = {
 export type ModelPageTemplateConfig = {
   slug: string;
   intent: ModelPageTemplateIntent;
+  comparisonLimit?: 1 | 2 | 3;
   hero: {
     eyebrow: string;
     subtitleHighlightTerms: string[];

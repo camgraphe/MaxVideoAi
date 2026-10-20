@@ -8,7 +8,7 @@ const HERO_PICK_IDS = [
   'ltx-2-5-pro',
   'wan-3-prime',
   'grok-imagine-video-1-5',
-  'flux-3',
+  'flux-3-max',
   'seedance-2-5',
   'seedance-2-0',
   'kling-3-pro',
@@ -30,7 +30,7 @@ test('models hero stops recommendations at Seedance 2.5 while the full section k
     'ltx-2-5-pro',
     'wan-3-prime',
     'grok-imagine-video-1-5',
-    'flux-3',
+    'flux-3-max',
     'seedance-2-5',
   ]);
   assert.deepEqual(

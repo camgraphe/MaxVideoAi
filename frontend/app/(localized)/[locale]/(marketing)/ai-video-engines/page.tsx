@@ -24,7 +24,7 @@ import { UseCaseExplorer } from './UseCaseExplorer.client';
 import { EnginesCatalog, type EngineCatalogCard } from './EnginesCatalog.client';
 import { ComparisonsDirectory } from './ComparisonsDirectory.client';
 import { getBestForCta, getHubCopy } from './_lib/ai-video-engines-copy';
-import { loadHubEngineScoreMap } from './_lib/ai-video-engines-scores';
+import { loadHubEngineScoreData } from './_lib/ai-video-engines-scores';
 
 const COMPARE_SLUG_MAP = buildSlugMap('compare');
 
@@ -54,7 +54,7 @@ export default async function AiVideoEnginesPage() {
   const bestForCta = getBestForCta(locale);
   const engines = getHubEngines();
   const enginesWithWaitlist = getHubEngines({ includeLimited: true, includeWaitlist: true });
-  const scoreMap = await loadHubEngineScoreMap();
+  const { scores: scoreMap, reviews: scoreReviews } = await loadHubEngineScoreData();
   const enginesBySlug = new Map(engines.map((engine) => [engine.modelSlug, engine]));
   const isIndexablePair = (slug: string) => isComparisonIndexable(locale, slug);
 
@@ -100,6 +100,7 @@ export default async function AiVideoEnginesPage() {
       engine.modelSlug,
       {
         overall: scoreMap.get(engine.modelSlug) ?? null,
+        reviewStatus: scoreReviews[engine.modelSlug] ?? null,
         strengths: engine.bestFor ?? null,
         modes: engine.modes,
       },

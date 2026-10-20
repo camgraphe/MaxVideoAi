@@ -1,6 +1,7 @@
 import type { AppLocale } from '@/i18n/locales';
 import { localeRegions } from '@/i18n/locales';
 import { Link } from '@/i18n/navigation';
+import { getBenchmarkScoreReviewCopy } from '@/lib/benchmark-score-review';
 import type { BenchmarkCopy } from '../_lib/benchmark-copy';
 import type { BenchmarkScoreRow } from '../_lib/benchmark-page-data';
 
@@ -18,12 +19,12 @@ function formatDate(value: string, locale: AppLocale): string {
   }).format(new Date(value));
 }
 
-function ScoreValue({ value }: { value: number | null }) {
+function ScoreValue({ value, estimated }: { value: number | null; estimated: boolean }) {
   if (value == null) return <span className="text-text-muted">—</span>;
   const width = `${Math.max(0, Math.min(100, value * 10))}%`;
   return (
     <div className="min-w-[72px]">
-      <span className="text-sm font-semibold tabular-nums text-text-primary">{value.toFixed(1)}</span>
+      <span className="text-sm font-semibold tabular-nums text-text-primary">{estimated ? '≈' : ''}{value.toFixed(1)}</span>
       <span className="mt-1 block h-1 overflow-hidden rounded-full bg-surface-subtle">
         <span className="block h-full rounded-full bg-brand/70" style={{ width }} />
       </span>
@@ -32,6 +33,8 @@ function ScoreValue({ value }: { value: number | null }) {
 }
 
 export function BenchmarkScoreTable({ copy, locale, rows }: BenchmarkScoreTableProps) {
+  const reviewCopy = getBenchmarkScoreReviewCopy(locale);
+  const estimatedRows = rows.filter((row) => row.review?.status === 'editorial-estimated');
   return (
     <div className="overflow-hidden rounded-[24px] border border-hairline bg-surface/80 shadow-card">
       <div className="border-b border-hairline bg-surface-2/45 px-5 py-3">
@@ -79,6 +82,11 @@ export function BenchmarkScoreTable({ copy, locale, rows }: BenchmarkScoreTableP
                   {row.generationUnavailable ? (
                     <span className="block text-xs font-normal text-text-secondary">{copy.scores.generationUnavailable}</span>
                   ) : null}
+                  {row.review?.status === 'editorial-estimated' ? (
+                    <a href={`#review-${row.modelSlug}`} className="block text-xs font-medium text-brand underline underline-offset-2">
+                      {reviewCopy.label}
+                    </a>
+                  ) : null}
                   {row.updatedAt ? (
                     <span className="block text-[11px] font-normal leading-5 text-text-muted">
                       {copy.scores.updated} · {formatDate(row.updatedAt, locale)}
@@ -90,13 +98,13 @@ export function BenchmarkScoreTable({ copy, locale, rows }: BenchmarkScoreTableP
                     <span className="text-text-muted">—</span>
                   ) : (
                     <span className="inline-flex min-w-12 justify-center rounded-full bg-brand px-2.5 py-1.5 text-sm font-bold tabular-nums text-on-brand shadow-sm">
-                      {row.overall.toFixed(1)}
+                      {row.review?.status === 'editorial-estimated' ? '≈' : ''}{row.overall.toFixed(1)}
                     </span>
                   )}
                 </td>
                 {copy.scoreLabels.map((metric) => (
                   <td key={metric.id} className="px-3 py-4 align-top">
-                    <ScoreValue value={row.metrics[metric.id as keyof BenchmarkScoreRow['metrics']]} />
+                    <ScoreValue value={row.metrics[metric.id as keyof BenchmarkScoreRow['metrics']]} estimated={row.review?.status === 'editorial-estimated'} />
                   </td>
                 ))}
               </tr>
@@ -104,6 +112,20 @@ export function BenchmarkScoreTable({ copy, locale, rows }: BenchmarkScoreTableP
           </tbody>
         </table>
       </div>
+      {estimatedRows.length ? (
+        <div className="space-y-4 border-t border-hairline px-5 py-4">
+          {estimatedRows.map((row) => (
+            <aside key={row.modelSlug} id={`review-${row.modelSlug}`} data-score-review="editorial-estimated" className="scroll-mt-[calc(var(--header-height)+76px)] text-sm leading-6 text-text-secondary">
+              <h3 className="font-semibold text-text-primary">{row.modelName} · {reviewCopy.label}</h3>
+              <p className="mt-1">{row.review?.disclosure[locale]}</p>
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+                {row.review?.sourceUrl ? <a href={row.review.sourceUrl} target="_blank" rel="noreferrer noopener" className="font-medium text-brand underline underline-offset-2">{reviewCopy.source}</a> : null}
+                <a href="#methodology" className="font-medium text-brand underline underline-offset-2">{reviewCopy.method}</a>
+              </div>
+            </aside>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }

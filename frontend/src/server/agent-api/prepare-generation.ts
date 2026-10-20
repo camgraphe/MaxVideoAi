@@ -284,7 +284,7 @@ export async function prepareGenerationForActor(
   if (principal.authMethod !== 'oauth') {
     let pilotRequest: CanonicalGenerationRequest;
     try { pilotRequest = normalizeGenerationRequest(input); } catch { invalidParameter(); }
-    requireStudioGenerationRequest(pilotRequest);
+    requireStudioGenerationRequest(pilotRequest,{enforceReferenceLimit:principal.authMethod==='studio-session'});
   }
   const originalTrialCandidate = principal.authMethod === 'oauth' ? trialCandidateFromOriginal(input) : null;
   if (!originalTrialCandidate) requirePaidGeneration(dependencies);

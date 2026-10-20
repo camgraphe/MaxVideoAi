@@ -49,7 +49,7 @@ test('every P1 model has exactly eleven reviewed finite scores', () => {
     scores: Array<Record<string, unknown> & { modelSlug: string }>;
   };
 
-  assert.equal(document.last_updated, '2026-09-03');
+  assert.equal(document.last_updated, '2026-10-20');
   for (const modelId of MODEL_IDS) {
     const rows = document.scores.filter(({ modelSlug }) => modelSlug === modelId);
     assert.equal(rows.length, 1, `${modelId} should have one score row`);
@@ -70,7 +70,7 @@ test('every P1 model has a complete sourced key-spec row', () => {
     specs: Array<{ modelSlug: string; sources: string[]; keySpecs: Record<string, unknown> }>;
   };
 
-  assert.equal(document.last_updated, '2026-09-03');
+  assert.equal(document.last_updated, '2026-10-20');
   for (const modelId of MODEL_IDS) {
     const rows = document.specs.filter(({ modelSlug }) => modelSlug === modelId);
     assert.equal(rows.length, 1, `${modelId} should have one key-spec row`);

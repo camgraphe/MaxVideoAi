@@ -5,14 +5,16 @@ import { AgentApiError } from "./errors";
 import type { AgentPrincipal } from "./principal";
 import type { McpGenerationQuote } from "./quote-repository";
 import {CANONICAL_VIDEO_GENERATION_MODES,type CanonicalGenerationRequest} from './generation-types';
+import {studioGenerationReferenceLimit} from '@/server/studio/conversation-reference-limits';
 
 export function isStudioGenerationMode(surface: 'image' | 'video',mode: string): boolean {
   return (surface === 'image' ? ['t2i','i2i'] : CANONICAL_VIDEO_GENERATION_MODES).includes(mode as never);
 }
 
 /** Studio uses the public canonical modes, one output and owned assets; runtime/certification remain separate gates. */
-export function requireStudioGenerationRequest(request: CanonicalGenerationRequest): void {
-  if (!isStudioGenerationMode(request.surface,request.mode) || request.outputCount !== 1 || request.references.some(ref=>ref.kind !== 'asset')) {
+export function requireStudioGenerationRequest(request: CanonicalGenerationRequest,options:{enforceReferenceLimit?:boolean}={}): void {
+  if (!isStudioGenerationMode(request.surface,request.mode) || request.outputCount !== 1 || request.references.some(ref=>ref.kind !== 'asset')
+    || (options.enforceReferenceLimit!==false&&request.references.length>studioGenerationReferenceLimit(request.engineId,request.surface,request.mode))) {
     throw new AgentApiError('PARAMETER_INVALID','One or more generation settings are invalid for the selected model.');
   }
 }

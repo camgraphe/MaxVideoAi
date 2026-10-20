@@ -6,6 +6,8 @@ import { join, resolve } from 'node:path';
 import test from 'node:test';
 import { build } from 'esbuild';
 import { JSDOM } from 'jsdom';
+import { buildMarketingModelMenu } from '../frontend/config/navigation';
+import { listRuntimeModels } from '../frontend/config/model-runtime';
 
 const requireFrontend = createRequire(resolve('frontend/package.json'));
 const directoryPath = 'frontend/app/(localized)/[locale]/(marketing)/models';
@@ -123,6 +125,23 @@ test('catalogue streams the complete stable hero before prices and reveals exact
         const controlDoc=new JSDOM(await new Response(control).text());
         assert.deepEqual(projection(final.window.document),projection(controlDoc.window.document),'Streaming preserves localized final cards, filters, hero and native schemas');
         const cards=await h.buildModelsCatalogCards({activeLocale:locale,engineMetaCopy:dictionary.models.meta??{},engineTypeLabelOverrides:dictionary.models.engineTypeLabels,galleryCopy:dictionary.models.gallery,scope});
+        const expectedNewModels=new Set(buildMarketingModelMenu(listRuntimeModels()).filter(item=>item.badge==='new').map(item=>item.slug));
+        for(const card of cards)assert.equal(card.badge,expectedNewModels.has(card.id)?'new':null,`${card.id}: badge must follow published editorial discovery`);
+        const noveltyBadges=[...final.window.document.querySelectorAll('#models-grid [data-model-novelty="new"]')];
+        for(const badge of noveltyBadges)assert.equal(badge.textContent,dictionary.nav.badges.new,`${locale}: localized novelty badge`);
+        if(scope!=='image') {
+          const maxCard=[...final.window.document.querySelectorAll('#models-grid article')].find(card=>card.querySelector('h3')?.textContent==='FLUX 3 Max');
+          assert.ok(maxCard,'The new current model must be visible in the initial catalogue cards');
+          assert.equal(maxCard.querySelector('[data-model-novelty="new"]')?.textContent,dictionary.nav.badges.new);
+          const reviewLabel={en:'Editorial estimate',fr:'Estimation éditoriale',es:'Estimación editorial'}[locale as 'en'|'fr'|'es'];
+          assert.equal(maxCard.querySelector('[data-score-review="editorial-estimated"]')?.textContent,reviewLabel);
+          assert.ok(maxCard.textContent?.includes('≈8.7'));
+          assert.ok(maxCard.querySelector('[data-score-review]')?.getAttribute('href')?.endsWith('/benchmarks#review-flux-3-max'));
+          for(const section of scope==='all'?['.catalog-top-picks','#recommended']:['.catalog-top-picks']) {
+            const review=final.window.document.querySelector(`${section} [data-score-review="editorial-estimated"]`);
+            assert.equal(review?.textContent,reviewLabel,`${section}: estimated score must be qualified in ${locale}`);
+          }
+        }
         for(const card of cards)assert.ok(targets.has(`${catalogBase}/${card.id}`), `Missing SSR directory destination ${card.id}`);
         assert.ok(cards.every((card:any)=>card.filterMeta.priceFrom===7.31||card.filterMeta.priceFrom===null));
         assert.ok(h.calls.every((call:any)=>call.options.requireCurrentPolicy===true&&call.options.durationSec===5&&call.options.memberTier==='member'));

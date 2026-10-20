@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { listFalEngines } from '@/config/falEngines';
+import type { EngineScoreReviewStatus } from '@/types/engines';
 
 type EngineScoreRow = {
   modelSlug?: string;
@@ -8,6 +9,7 @@ type EngineScoreRow = {
   fidelity?: number | null;
   motion?: number | null;
   consistency?: number | null;
+  reviewStatus?: string;
 };
 
 function computeOverallFromScore(score?: EngineScoreRow | null) {
@@ -39,13 +41,14 @@ function buildVideoEngineIdLookup() {
   return lookup;
 }
 
-export async function loadAppEngineScoreMap(): Promise<Record<string, number>> {
+async function loadAppEngineScores() {
   const lookup = buildVideoEngineIdLookup();
   for (const candidate of getScoreFileCandidates()) {
     try {
       const raw = await fs.readFile(candidate, 'utf8');
       const parsed = JSON.parse(raw) as { scores?: EngineScoreRow[] };
       const scoreMap: Record<string, number> = {};
+      const reviewMap: Record<string, EngineScoreReviewStatus> = {};
       (parsed.scores ?? []).forEach((entry) => {
         const key = entry.modelSlug ?? entry.engineId;
         if (!key) return;
@@ -54,12 +57,21 @@ export async function loadAppEngineScoreMap(): Promise<Record<string, number>> {
         const overall = computeOverallFromScore(entry);
         if (overall != null) {
           scoreMap[engineId] = overall;
+          if (entry.reviewStatus === 'editorial-estimated') reviewMap[engineId] = entry.reviewStatus;
         }
       });
-      return scoreMap;
+      return { scoreMap, reviewMap };
     } catch {
       // Try next candidate path.
     }
   }
-  return {};
+  return { scoreMap: {}, reviewMap: {} };
+}
+
+export async function loadAppEngineScoreMap(): Promise<Record<string, number>> {
+  return (await loadAppEngineScores()).scoreMap;
+}
+
+export async function loadAppEngineScoreReviewMap(): Promise<Record<string, EngineScoreReviewStatus>> {
+  return (await loadAppEngineScores()).reviewMap;
 }

@@ -99,4 +99,12 @@ test('a fresh Response receives exact owned historical estimates and quoted draf
     assert.doesNotMatch(JSON.stringify(facts),/PRIVATE|provider/);
     assert.deepEqual(await historyModule.readStudioHistoricalEstimates(actor,[id]),[]);
   });
+  await t.test('ten Max keyframes remain in historical facts without expanding other model limits',async()=>{
+    const id=await turn('owner','other');
+    const options=['flux-3-max','wan-3'].map(modelId=>({modelId,surface:'video',mode:'ref2v',settings:{durationSec:20,resolution:'720p',keyframeIndexes:'0,48,96,144,192,240,288,336,384,480'},outputCount:1,referenceCount:10,price:{amountCents:442,currency:'USD'},estimatedAt:'2026-10-20T20:00:00Z',quoteRequired:true}));
+    await pg.pool.query(`INSERT INTO studio_conversation_steps(user_id,project_id,request_id,call_id,lease_id,action_hash,action_json,observed_revision,state,result_json,created_at)
+      VALUES('owner','other',$1,$2,$3,$4,$5::jsonb,0,'completed',$6::jsonb,clock_timestamp())`,[id,randomUUID(),randomUUID(),'0'.repeat(64),JSON.stringify({action:'pricing.compare'}),JSON.stringify({ok:true,action:'pricing.compare',data:{options}})]);
+    const facts=await historyModule.readStudioHistoricalEstimates({...actor,projectId:'other'},[id]);
+    assert.deepEqual(facts.map(fact=>[fact.modelId,fact.referenceCount]),[['flux-3-max',10]]);
+  });
 });

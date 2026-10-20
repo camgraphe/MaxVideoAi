@@ -18,6 +18,7 @@ export function workflowAction(candidate:AgentPublicGenerationEngine,mode:Canoni
   const details=projectAgentModelModeDetails(candidate,mode);
   const pairs: [ResolvedReference['mediaKind'],ResolvedReference['role']][]=mode==='t2v'?[]:mode==='fl2v'?[['image','first_frame'],['image','last_frame']]:mode==='ref2v'?[['image','reference']]:mode==='r2v'?[['video','reference']]:mode==='a2v'?[['audio','source']]:['v2v','extend','retake','reframe'].includes(mode)?[['video','source']]:[['image','first_frame']];
   const settings=details.settings.filter(s=>s.default!==null&&s.type!=='multi_prompt'&&!['durationSec','resolution','aspectRatio','documentUrl','webpageUrl'].includes(s.key)).map(s=>({name:s.key,value:s.default}));
+  if(candidate.engine.id==='flux-3-max'&&mode==='ref2v')settings.push({name:'keyframeIndexes',value:'0'});
   const derived=mode==='a2v'||mode==='reframe'||mode==='v2v'&&isLumaRay2EngineId(candidate.engine.id);
   settings.push({name:'durationSec',value:derived?6:details.duration?.options?.[0]??details.duration?.range?.min??5});
   settings.push({name:'resolution',value:mode==='v2v'&&isLumaRay2EngineId(candidate.engine.id)?candidate.engine.resolutions.find(r=>r!=='auto')!:details.resolutions[0]});

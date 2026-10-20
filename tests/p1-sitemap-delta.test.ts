@@ -12,18 +12,20 @@ const comparisonPaths = getHubComparisonSlugsForSitemap().map(
 const modelPaths = modelRoster.map(({ modelSlug }) => `/models/${modelSlug}`);
 const dynamicPaths = new Set([...modelPaths, ...comparisonPaths]);
 
-test('P1 plus GPT Image 2.5 add eleven English routes while the safe GSC cleanup prunes 82 weak localized locs', () => {
-  assert.equal(modelPaths.length - fixture.publishedModelCount, 5);
-  assert.equal(comparisonPaths.length - fixture.publishedComparisonCount, 6);
-  assert.equal(dynamicPaths.size - fixture.dynamicEnglishCanonicalCount, 11);
+test('P1 and subsequent launches add thirteen English routes while the safe GSC cleanup prunes 82 weak localized locs', () => {
+  assert.equal(modelPaths.length - fixture.publishedModelCount, 6);
+  assert.equal(comparisonPaths.length - fixture.publishedComparisonCount, 7);
+  assert.equal(dynamicPaths.size - fixture.dynamicEnglishCanonicalCount, 13);
 
   const localizedLocCount = modelRoster.length * 3 + getHubComparisonSlugsForSitemap().reduce(
     (total, slug) => total + getIndexableComparisonLocales(slug).length,
     0,
   );
-  assert.equal(localizedLocCount - fixture.localizedLocCount, 29 - 82);
+  assert.equal(localizedLocCount - fixture.localizedLocCount, 35 - 82);
   for (const path of fixture.expectedNewEnglishPaths) assert.equal(dynamicPaths.has(path), true, path);
   for (const path of [
+    '/models/flux-3-max',
+    '/ai-video-engines/flux-3-vs-flux-3-max',
     '/ai-video-engines/seedance-2-5-vs-wan-3',
     '/ai-video-engines/minimax-h3-max-vs-seedance-2-5',
   ]) assert.equal(dynamicPaths.has(path), true, path);

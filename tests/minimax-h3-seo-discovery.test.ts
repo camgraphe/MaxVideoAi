@@ -98,22 +98,23 @@ test('score order keeps H3 just below Kling O3 Pro and below Seedance 2.5', () =
   assert.equal(scoreFor('minimax-h3'), 8.5);
 });
 
-test('bounded discovery surfaces lead with the two H3 variants and retain Seedance 2.5', () => {
+test('bounded discovery surfaces retain both H3 variants and Seedance 2.5 after the Max launch', () => {
   assert.deepEqual(
-    MARKETING_NAV_MODELS.slice(0, 2).map(({ key, badge }) => ({ key, badge })),
+    MARKETING_NAV_MODELS.slice(0, 4).map(({ key, badge }) => ({ key, badge })),
     [
+      { key: 'flux-3-max', badge: 'new' },
       { key: 'minimax-h3', badge: 'new' },
       { key: 'minimax-h3-max', badge: 'new' },
+      { key: 'seedance-2-5', badge: 'new' },
     ],
   );
-  assert.equal(MARKETING_NAV_MODELS[2]?.key, 'seedance-2-5');
   assert.equal(MARKETING_NAV_COMPARE.length, 8);
   assert.equal(MARKETING_NAV_COMPARE[0]?.key, 'minimax-h3-vs-seedance-2-5');
   assert.ok(MARKETING_NAV_COMPARE.some(({ key }) => key === 'minimax-h3-vs-seedance-2-5'));
 
   const popular = getPopularComparisons();
-  assert.equal(compareHubConfig.popularComparisons.length, 44, 'planned comparison inventory includes the P0, P1 and trend scoreboards');
-  assert.equal(popular[0]?.slug, 'minimax-h3-vs-seedance-2-5');
+  assert.equal(compareHubConfig.popularComparisons.length, 45, 'planned comparison inventory includes P0, P1, trend and Max scoreboards');
+  assert.deepEqual(popular.slice(0, 2).map(({ slug }) => slug), ['flux-3-vs-flux-3-max', 'minimax-h3-vs-seedance-2-5']);
 
   const buckets = new Map(getUseCaseBuckets().map((bucket) => [bucket.id, bucket.pairs]));
   for (const bucketId of ['cinematic', 'audio', 'best-value', 'best-quality', 'text-to-video', 'image-to-video']) {

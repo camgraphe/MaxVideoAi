@@ -73,6 +73,19 @@ function uniqueNonEmpty(values: string[]): string[] {
   return values.filter((url, index, self) => url.length > 0 && self.indexOf(url) === index);
 }
 
+// A keyframe may reuse the same image at several times. Direct URLs and
+// attachments are two projections of those slots, not two sets of new frames.
+function mergeOrderedImageProjections(direct: string[], attachments: string[]): string[] {
+  const remaining = new Map<string, number>();
+  direct.forEach(url => remaining.set(url, (remaining.get(url) ?? 0) + 1));
+  return [...direct, ...attachments.filter(url => {
+    const count = remaining.get(url) ?? 0;
+    if (!count) return true;
+    remaining.set(url, count - 1);
+    return false;
+  })];
+}
+
 function positiveDuration(value: unknown): number | null {
   if (typeof value === 'number' && Number.isFinite(value) && value > 0) return value;
   return null;
@@ -158,9 +171,10 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
     })
     .map((attachment) => attachment.url!.trim())
     .filter((url) => url.length > 0);
-  const normalizedReferenceImages = Array.from(
-    new Set([...normalizeStringList(referenceImagesInput), ...attachmentReferenceImageUrls])
-  );
+  const directImageReferences = normalizeStringList(referenceImagesInput);
+  const normalizedReferenceImages = params.engineId === 'flux-3-max' && params.mode === 'ref2v'
+    ? mergeOrderedImageProjections(directImageReferences, attachmentReferenceImageUrls)
+    : Array.from(new Set([...directImageReferences, ...attachmentReferenceImageUrls]));
   const sourceOrderedEdit = params.mode === 'v2v' && ['seedance-2-5','seedance-2-0','seedance-2-0-fast','seedance-2-0-mini'].includes(params.engineId);
   const rawVideoUrls = params.attachments
     .filter((attachment) => attachment.kind === 'video' && typeof attachment.url === 'string')

@@ -8,16 +8,16 @@ Source : Google Search Console, propriété `sc-domain:maxvideoai.com`, recherch
 
 | Mesure | Total |
 | --- | ---: |
-| Slugs publiés | 312 |
-| URLs localisées auditées | 936 |
+| Slugs publiés | 313 |
+| URLs localisées auditées | 939 |
 | URLs présentes dans l'export GSC | 639 |
-| URLs sans ligne GSC dans les 996 premières pages | 297 |
+| URLs sans ligne GSC dans les 996 premières pages | 300 |
 | URLs avec au moins un clic | 144 |
 | Lignes GSC hors du périmètre publié | 21 |
 | Lignes hors périmètre avec clics | 2 |
-| Keep | 350 |
+| Keep | 356 |
 | Enrich | 28 |
-| Review | 345 |
+| Review | 342 |
 | Noindex candidate | 213 |
 
 ## Règles conservatrices
@@ -104,7 +104,6 @@ Source : Google Search Console, propriété `sc-domain:maxvideoai.com`, recherch
 | es | [ltx-2-vs-ltx-2-fast](https://maxvideoai.com/es/comparativa/ltx-2-vs-ltx-2-fast) | 0 | 86 | 10 | gsc_review_opportunity |
 | en | [kling-3-standard-vs-kling-o3-4k](https://maxvideoai.com/ai-video-engines/kling-3-standard-vs-kling-o3-4k) | 0 | 84 | 9.1 | gsc_review_opportunity |
 | en | [kling-3-standard-vs-veo-3-1](https://maxvideoai.com/ai-video-engines/kling-3-standard-vs-veo-3-1) | 0 | 84 | 16.7 | gsc_review_opportunity |
-| en | [kling-o3-4k-vs-veo-3-1](https://maxvideoai.com/ai-video-engines/kling-o3-4k-vs-veo-3-1) | 0 | 84 | 9.1 | gsc_review_opportunity |
 | en | [kling-o3-standard-vs-veo-3-1](https://maxvideoai.com/ai-video-engines/kling-o3-standard-vs-veo-3-1) | 0 | 81 | 10.7 | gsc_review_opportunity |
 | es | [sora-2-vs-sora-2-pro](https://maxvideoai.com/es/comparativa/sora-2-vs-sora-2-pro) | 0 | 79 | 9.2 | opponent_override, gsc_review_opportunity, strategic_localization_review |
 | en | [kling-3-pro-vs-kling-o3-standard](https://maxvideoai.com/ai-video-engines/kling-3-pro-vs-kling-o3-standard) | 0 | 78 | 16.3 | gsc_review_opportunity |
@@ -129,6 +128,7 @@ Source : Google Search Console, propriété `sc-domain:maxvideoai.com`, recherch
 | en | [kling-3-pro-vs-luma-ray-2-flash](https://maxvideoai.com/ai-video-engines/kling-3-pro-vs-luma-ray-2-flash) | 0 | 56 | 10.7 | gsc_review_opportunity |
 | en | [ltx-2-fast-vs-pika-text-to-video](https://maxvideoai.com/ai-video-engines/ltx-2-fast-vs-pika-text-to-video) | 0 | 55 | 9.6 | gsc_review_opportunity |
 | en | [luma-ray-2-vs-veo-3-1-lite](https://maxvideoai.com/ai-video-engines/luma-ray-2-vs-veo-3-1-lite) | 0 | 55 | 8.3 | gsc_review_opportunity |
+| en | [kling-3-standard-vs-sora-2](https://maxvideoai.com/ai-video-engines/kling-3-standard-vs-sora-2) | 0 | 54 | 14.5 | gsc_review_opportunity |
 
 ## Premier lot de candidates à valider manuellement
 
@@ -189,7 +189,7 @@ Ce lot commence par les URLs absentes de l'export GSC, puis par celles avec le m
 
 ## URLs GSC hors du périmètre publié
 
-Ces anciennes URLs ou variantes ne font pas partie des 312 slugs actuellement publiés. Celles qui ont des clics doivent être vérifiées en priorité pour décider entre republication, redirection 301 pertinente ou maintien temporaire.
+Ces anciennes URLs ou variantes ne font pas partie des 313 slugs actuellement publiés. Celles qui ont des clics doivent être vérifiées en priorité pour décider entre republication, redirection 301 pertinente ou maintien temporaire.
 
 - 19 anciennes variantes Veo `first-last` sont déjà normalisées par une redirection permanente vers les comparatifs Veo 3.1 canoniques.
 - Les 2 URLs localisées Happy Horse 1.0 vs Sora 2 Pro passent désormais par une redirection permanente vers le comparatif publié Happy Horse 1.1 vs Sora 2 Pro dans cette branche.
@@ -218,4 +218,4 @@ Ces anciennes URLs ou variantes ne font pas partie des 312 slugs actuellement pu
 | es | [seedance-2-0-vs-veo-3-1-first-last](https://maxvideoai.com/es/comparativa/seedance-2-0-vs-veo-3-1-first-last) | 0 | 1 | 9 |
 | es | [veo-3-1-fast-vs-veo-3-1-first-last](https://maxvideoai.com/es/comparativa/veo-3-1-fast-vs-veo-3-1-first-last) | 0 | 1 | 11 |
 
-L'inventaire exhaustif des 936 URLs se trouve dans `docs/seo/comparison-indexation-matrix-2026-07-08.json`.
+L'inventaire exhaustif des 939 URLs se trouve dans `docs/seo/comparison-indexation-matrix-2026-07-08.json`.

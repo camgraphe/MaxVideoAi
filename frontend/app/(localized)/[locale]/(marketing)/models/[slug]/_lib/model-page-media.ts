@@ -166,16 +166,18 @@ export function pickDemoMedia(
   heroId: string | null,
   preferredId: string | null,
   fallback: FeaturedMedia | null,
-  options?: { allowFallbackReuse?: boolean }
+  options?: { allowFallbackReuse?: boolean; requirePreferred?: boolean }
 ): FeaturedMedia | null {
   const preferred =
-    preferredId && preferredId !== heroId
+    preferredId && (options?.requirePreferred || preferredId !== heroId)
       ? cards.find((card) => card.id === preferredId && Boolean(card.videoUrl))
       : null;
   if (preferred) {
     const resolved = toFeaturedMedia(preferred, true);
     if (resolved) return resolved;
   }
+  // A specifically authored recipe must not acquire an unrelated gallery clip.
+  if (options?.requirePreferred) return null;
   const candidate =
     cards.find((card) => card.id !== heroId && Boolean(card.videoUrl) && isLandscape(card.aspectRatio)) ??
     cards.find((card) => card.id !== heroId);

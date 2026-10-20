@@ -1,0 +1,358 @@
+{
+  "marketingName": "FLUX 3 Max",
+  "versionLabel": "3 Max",
+  "seo": {
+    "title": "FLUX 3 Max | AI Video, Audio & Frame Control | MaxVideoAI",
+    "description": "Create 5–20 second videos with FLUX 3 Max from text, an image or first and last frames. Explore optional audio, 720p and 1080p upscaling, prompts and pricing."
+  },
+  "overview": "FLUX 3 Max is a video model post-trained by fal in collaboration with Black Forest Labs. Create a scene from text, animate an opening image, guide the first and last frames, or build a sequence with timed keyframes. Choose 5–20 seconds, optional generated audio, and 720p or 1080p output with upscaling.",
+  "decision": {
+    "modelSlug": "flux-3-max",
+    "hero": {
+      "eyebrow": "FLUX VIDEO WITH TEXT AND FRAME CONTROL",
+      "title": "FLUX 3 Max",
+      "subtitle": "Turn text or images into 5–20 second videos with optional audio and first-and-last-frame guidance.",
+      "subtitleHighlights": [
+        "text or images",
+        "5–20 second videos",
+        "optional audio"
+      ],
+      "paragraph": "Direct a cinematic scene, a product film or a talking portrait. Start with your prompt or provide the composition you want to animate. Add an ending image when the final frame matters, then choose your duration, format and audio before reviewing the price.",
+      "primaryCta": {
+        "label": "Generate with FLUX 3 Max",
+        "href": "/app?engine=flux-3-max"
+      },
+      "secondaryCta": {
+        "label": "Explore the FLUX gallery",
+        "href": "/examples/flux"
+      },
+      "quickLinks": [
+        {
+          "label": "Explore FLUX 3",
+          "href": "/models/flux-3"
+        },
+        {
+          "label": "Compare FLUX 3 Max and FLUX 3",
+          "href": "/ai-video-engines/flux-3-vs-flux-3-max?order=flux-3-max"
+        },
+        {
+          "label": "View FLUX 3 Max pricing",
+          "href": "/pricing#flux-3-max-pricing"
+        },
+        {
+          "label": "Try a prompt",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "FLUX 3 Max examples",
+      "description": "Explore selected FLUX 3 Max films, with their original prompts and generation settings.",
+      "renderLabel": "Watch the video",
+      "badges": [
+        "5–20 seconds",
+        "Optional audio",
+        "1080p upscaling"
+      ],
+      "altContext": "FLUX 3 Max video example"
+    },
+    "features": [
+      {
+        "title": "Start with text or an image",
+        "body": "Describe a new scene, animate one image, connect first and last images, or place keyframes throughout a sequence.",
+        "tone": "reference"
+      },
+      {
+        "title": "Shape your scene’s rhythm",
+        "body": "Choose any whole-second duration from 5 to 20 seconds. Leave room for action, dialogue and the pauses that give the scene its rhythm.",
+        "tone": "duration"
+      },
+      {
+        "title": "Direct the sound",
+        "body": "Generate dialogue, ambience or music with the scene, or turn audio off. Put the words and sounds you want directly in your prompt.",
+        "tone": "audio"
+      },
+      {
+        "title": "Choose the delivery format",
+        "body": "Use landscape, portrait, square or wider framing. 720p is the default; 1080p uses upscaling. High reasoning is the default, with low also available.",
+        "tone": "quality"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Cinematic scenes and product films",
+        "body": "Describe the action, the progression between shots and the rhythm of the reveal. Adapt framing, light and sound to the genre; exact cuts are not guaranteed.",
+        "cta": {
+          "label": "Try FLUX 3 Max",
+          "href": "/app?engine=flux-3-max"
+        }
+      },
+      {
+        "title": "A portrait you already designed",
+        "body": "Begin with a clear image and describe a small change of expression or pose while preserving the subject and composition.",
+        "cta": {
+          "label": "Plan your animation",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "A specific beginning and ending",
+        "body": "Use two compatible images of the same subject or space. Explain the movement or lighting change that connects them.",
+        "cta": {
+          "label": "Open Prompt Lab",
+          "href": "#prompting"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "From text",
+        "body": "Name the subject, visible action, camera movement and sound. No reference image is required."
+      },
+      {
+        "title": "From an image",
+        "body": "Provide the opening image, then direct movement without redesigning the face, product or scene."
+      },
+      {
+        "title": "From first and last images",
+        "body": "Provide both images and describe one continuous path between their compositions."
+      },
+      {
+        "title": "Timed keyframes",
+        "body": "Arrange 1–10 images at selected positions in the clip to guide how the scene changes over time."
+      }
+    ],
+    "pricingCopy": {
+      "title": "FLUX 3 Max pricing",
+      "subtitle": "Compare five seconds at 720p and 1080p, then a ten-second 720p scene.",
+      "footnote": "The per-second figure is the effective rate for the five-second example. Each clip total is rounded to the cent. Review the current quote before generating.",
+      "ctaLabel": "Generate with FLUX 3 Max",
+      "ctaHref": "/app?engine=flux-3-max"
+    },
+    "meta": {
+      "title": "FLUX 3 Max | AI Video, Audio & Frame Control | MaxVideoAI",
+      "description": "Create 5–20 second videos with FLUX 3 Max from text, an image or first and last frames. Explore optional audio, 720p and 1080p upscaling, prompts and pricing."
+    }
+  },
+  "prompting": {
+    "modelSlug": "flux-3-max",
+    "section": {
+      "title": "Prompt Lab — FLUX 3 Max",
+      "intro": "Copy the exact English prompts behind four original films. Shape the editing, acting and sound around the rhythm of each genre.",
+      "tip": "Describe the progression and desired angle changes. Use a continuous shot when the scene needs one; exact cut timing is not guaranteed.",
+      "guide": {
+        "label": "Read the fal FLUX 3 Max prompting guide",
+        "href": "https://fal.ai/learn/tools/flux-3-max-prompting-guide"
+      },
+      "referencesTitle": "Prepare the action, sound and reference images"
+    },
+    "tabs": [
+      {
+        "id": "action",
+        "label": "Action",
+        "title": "Last Exit",
+        "description": "An escape through a museum security shutter, followed by a quiet reveal.",
+        "copy": "Inside a museum bathed in red alarm light, an adult woman in a black jacket runs toward a descending metal security shutter. She slides underneath just in time; her small bag is trapped on the other side. She pauses to catch her breath, then opens her hand: the emerald is there. She smiles and disappears into the night. Urgent editing close to the running action, with hard cuts and clear spatial geography; slow the rhythm decisively for the final reveal. Sound: muffled alarm, footsteps, fabric scraping the floor, the metal shutter slamming, breathing. No dialogue.",
+        "matchPublicExample": true
+      },
+      {
+        "id": "romance",
+        "label": "Romance",
+        "title": "Five More Minutes",
+        "description": "A missed train becomes an excuse to stay together, with two short English lines.",
+        "copy": "An adult woman in a camel coat and an adult man in a blue jacket meet on a nearly empty railway platform at the end of a rainy evening. Behind them, their train begins to leave. They watch it, then look at each other. She murmurs in English, \"We missed it again.\" He smiles and answers in English, \"Good.\" Their hands meet. Intimate cinema, warm light from the train falling across their faces, gentle rain. Let the editing follow their glances and make room for silence; do not rush to change shots. Sound: the departing train, rain, two close voices, a few very quiet notes of original piano music.",
+        "matchPublicExample": true
+      },
+      {
+        "id": "scifi",
+        "label": "Science fiction",
+        "title": "Someone Answers",
+        "description": "An astronaut and a luminous presence meet through an observation window.",
+        "copy": "Inside a silent space station, an adult astronaut with a visible face and an ivory spacesuit places a hand against a large observation window overlooking a dark nebula. Outside, an immense translucent shape slowly approaches; one of its long luminous extremities comes to rest directly opposite the astronaut's palm, on the other side of the glass. The astronaut holds their breath. End the encounter on these two answering gestures. Contemplative science fiction: begin with the astronaut's solitude, gradually reveal the scale of the presence, then return to the intimacy of the contact. Sound: interior ventilation, breathing, original low, delicate music; no exterior impact sound in the vacuum. No dialogue.",
+        "matchPublicExample": true
+      },
+      {
+        "id": "keyframes",
+        "label": "Fantasy · keyframes",
+        "title": "The Door to Spring",
+        "description": "Three source images guide a passage from a snowy clearing into a spring garden.",
+        "copy": "In a snowy clearing, an adult woman in a long ocher coat brings a lantern close to an old freestanding stone doorway, closed by a dark wooden door. The outline of the doorway lights up. She pushes the door open and discovers a sunlit spring garden just beyond it. She crosses the threshold; a few petals settle on the snow left outside. A fantasy film with tangible light, blue winter outside and golden light within. Spacious staging, attentive to the threshold and the character's reaction; let the transformation breathe instead of multiplying effects. Sound: cold wind, wood, then birds and a warm breeze from the garden; light original music. No dialogue.",
+        "matchPublicExample": true
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "action",
+        "body": "Text to video · 18 seconds requested · 16:9 · 720p · audio on."
+      },
+      {
+        "tabId": "romance",
+        "body": "Text to video · 16 seconds requested · 16:9 · 720p · audio on."
+      },
+      {
+        "tabId": "scifi",
+        "body": "Text to video · 16 seconds requested · 16:9 · 720p · audio on."
+      },
+      {
+        "tabId": "keyframes",
+        "body": "Three images at 0, 8 and 16 seconds: frame indexes 0, 192 and 384 at 24 fps. 16 seconds requested · 16:9 · 720p · audio on. Pinned images do not guarantee exact cuts."
+      }
+    ],
+    "globalPrinciples": [
+      "Describe what should visibly happen.",
+      "Let the editing follow the scene, from rapid action to a quiet pause.",
+      "Write dialogue exactly and specify the speaker.",
+      "Check faces, hands, contact and sound across the complete clip."
+    ],
+    "engineWhy": [
+      "Text generation can begin without a reference image.",
+      "An opening image supplies the composition to animate.",
+      "First and last images give the transition two visual anchors."
+    ],
+    "demo": {
+      "title": "Someone Answers",
+      "prompt": "Inside a silent space station, an adult astronaut with a visible face and an ivory spacesuit places a hand against a large observation window overlooking a dark nebula. Outside, an immense translucent shape slowly approaches; one of its long luminous extremities comes to rest directly opposite the astronaut's palm, on the other side of the glass. The astronaut holds their breath. End the encounter on these two answering gestures. Contemplative science fiction: begin with the astronaut's solitude, gradually reveal the scale of the presence, then return to the intimacy of the contact. Sound: interior ventilation, breathing, original low, delicate music; no exterior impact sound in the vacuum. No dialogue.",
+      "promptLabel": "Prompt used for this film",
+      "notes": [
+        "The scene moves from solitude to scale, then to an intimate gesture.",
+        "Interior sound keeps the space setting grounded."
+      ],
+      "summary": {
+        "subject": "An astronaut and a luminous presence beyond the window",
+        "action": "Two hands meet on opposite sides of the glass",
+        "camera": "Reveal the scale, then return to the contact",
+        "style": "Contemplative science fiction",
+        "output": "16 seconds requested · 16:9 · 720p"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Text to video",
+        "outputLabel": "Rendered scene",
+        "duration": "16 s",
+        "aspectRatio": "16:9",
+        "audioChipMode": "media",
+        "audioChipLabel": null,
+        "altContext": "Someone Answers — FLUX 3 Max science-fiction scene"
+      }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "flux-3-max",
+    "showWhenEmpty": false,
+    "section": {
+      "title": "FLUX 3 Max examples",
+      "intro": "Explore scenes made with FLUX 3 Max and their generation settings.",
+      "defaultCtaLabel": "View all FLUX examples",
+      "recreateLabel": null
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinematic"
+      },
+      {
+        "id": "product",
+        "label": "Product"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "anchors",
+        "icon": "image",
+        "title": "Compare the reference",
+        "body": "For image-based clips, check the result against the supplied starting and ending images."
+      },
+      {
+        "id": "motion",
+        "icon": "zap",
+        "title": "Follow the movement",
+        "body": "Look for clear action, stable objects and believable contact."
+      },
+      {
+        "id": "identity",
+        "icon": "users",
+        "title": "Review the subject",
+        "body": "Check that faces, clothing and proportions stay consistent throughout the clip."
+      },
+      {
+        "id": "delivery",
+        "icon": "maximize",
+        "title": "Inspect the complete clip",
+        "body": "Review framing, detail and the final beat at normal playback speed."
+      },
+      {
+        "id": "audio",
+        "icon": "audio",
+        "title": "Listen to the sound",
+        "body": "Check spoken words, synchronization and the balance of dialogue and ambience."
+      }
+    ],
+    "fallbackItems": null,
+    "keyframeDemo": {
+      "title": "From keyframes to video",
+      "intro": "Explore the input images, their positions and the video they guided, then reuse the same recipe.",
+      "imagesLabel": "Input images",
+      "timelineLabel": "Positions in the clip",
+      "resultLabel": "Generated video",
+      "promptLabel": "Prompt used",
+      "frameLabel": "Keyframe",
+      "secondsLabel": "s",
+      "recreateLabel": "Use this recipe",
+      "limitation": "Keyframes guide visual states at chosen moments. They do not define cuts, and the exact editing and transitions are not guaranteed."
+    }
+  },
+  "faqs": [
+    {
+      "q": "What is FLUX 3 Max?",
+      "a": "FLUX 3 Max is a video model post-trained by fal in collaboration with Black Forest Labs, based on the FLUX 3 Video family. On MaxVideoAI, it creates videos from text, an opening image, first and last images, or a timed sequence of keyframes."
+    },
+    {
+      "q": "Can I use FLUX 3 Max online without an API key?",
+      "a": "Yes. Choose FLUX 3 Max in the MaxVideoAI web workspace, write a prompt, add images if your mode requires them, and select your settings. Review the quote and generate from your account; you do not need your own fal API key."
+    },
+    {
+      "q": "Does FLUX 3 Max generate audio?",
+      "a": "Audio generation is optional and enabled by default. Describe the dialogue, ambience or music in the prompt, or turn audio off for a silent video."
+    },
+    {
+      "q": "What durations and resolutions are available?",
+      "a": "Choose a whole-second duration from 5 to 20 seconds. The default output is 720p; the 1080p option uses upscaling. Landscape, portrait, square and wider aspect ratios are available."
+    },
+    {
+      "q": "Can I use a first and last image?",
+      "a": "Yes. Image-to-video starts from one image. First-and-last-frame generation uses two supplied images to guide the beginning and ending. Keep the subject, perspective and geometry compatible, and describe how the scene moves between them."
+    },
+    {
+      "q": "How is FLUX 3 Max different from FLUX 3?",
+      "a": "Max is fal’s post-trained variant of FLUX 3 Video. This MaxVideoAI integration supports text-to-video, image-to-video, first-and-last-frame generation and timed keyframes. Standard FLUX 3 also has a source-video extension workflow; extension is not included in the Max integration."
+    },
+    {
+      "q": "How much does FLUX 3 Max cost?",
+      "a": "The price depends on the duration, resolution and selected settings. This page shows current scenario prices from MaxVideoAI. Your generation quote confirms the amount before you spend credits."
+    },
+    {
+      "q": "How fast is FLUX 3 Max?",
+      "a": "In fal’s published comparison, a 10-second 16:9 clip at 720p took 12.45 seconds to generate. This is a provider benchmark, not a measured MaxVideoAI delivery time. Your wait also depends on settings, queueing and processing."
+    },
+    {
+      "q": "What do independent evaluations show?",
+      "a": "Artificial Analysis snapshot, 20 October 2026: FLUX 3 Max (720p) has 1,138 Elo in image-to-video with audio and 1,159 in text-to-video with audio. The two boards have separate Elo scales and overlapping confidence intervals with leading models."
+    },
+    {
+      "q": "How are the MaxVideoAI scores estimated?",
+      "a": "Editorial estimate, 20 October 2026: our eleven scores use selected public fal examples, documented controls and prices, with Artificial Analysis as overall preference context. We did not run a controlled MaxVideoAI test set. Confidence varies by criterion; lip sync and delivery reliability remain weakly evidenced. The 8.7/10 overall is an editorial estimate, not an Elo conversion."
+    },
+    {
+      "q": "Where can I find FLUX 3 Max prompts and examples?",
+      "a": "The Prompt Lab shows the exact English prompts for four original films: action, romance, science fiction and a fantasy keyframe scene. Each prompt links to its own rendered example and reuse action. The keyframe demonstration also shows its three input images and positions."
+    },
+    {
+      "q": "How do keyframes work in FLUX 3 Max?",
+      "a": "Provide 1–10 images and place each one at a chosen position in the clip. Describe the action and camera movement between them. These are timed visual anchors for a sequence, rather than free-form reference images for a character."
+    }
+  ]
+}

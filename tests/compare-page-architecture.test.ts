@@ -412,6 +412,7 @@ test('Veo 3.1 Lite vs Fast comparison owns tier CTR metadata without a site-name
 
 test('Seedance family comparisons use video showdowns while Mini and Gemini pages stay scoreboard-only', () => {
   assert.deepEqual(compareConfig.scoreboardOnlyComparisons, [
+    'flux-3-vs-flux-3-max',
     ...miniScoreboardOnlyComparisons,
     ...geminiScoreboardOnlyComparisons,
     ...p0ScoreboardOnlyComparisons,

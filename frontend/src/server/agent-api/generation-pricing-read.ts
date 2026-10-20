@@ -25,7 +25,7 @@ const PUBLIC_CANONICAL_PARAMETER_FIELDS = new Set([
   'promptExpansionMode','reframeGridPositionX','reframeGridPositionY','retakeMode','safetyChecker',
   'shotType','webpageUrl','sourcePositionHeight','sourcePositionWidth','sourcePositionX','sourcePositionY',
   'startTimeSec','extendPosition','modifyStrength','multiPrompt','exrExport','editDepthBlur','editFace',
-  'editKeyframeIndexes','editNormalsAugmentation','editPoseStrength','editStrength','editTrajectorySparsity',
+  'reasoningLevel','keyframeIndexes','editKeyframeIndexes','editNormalsAugmentation','editPoseStrength','editStrength','editTrajectorySparsity',
   'enableWebSearch','limitGenerations','imageHeight','imageWidth','outputFormat','quality','style','thinkingLevel','watermark',
 ]);
 

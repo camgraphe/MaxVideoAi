@@ -1,7 +1,9 @@
 import type { GenerationObservation } from '@/lib/generation-observation';
+import type { PublicKeyframeRecipe } from '@/lib/public-keyframe-demo';
 import type { ResultProvider, VideoGroup, VideoItem } from '@/types/video-groups';
 
 export type SharedVideoPreview = {
+  keyframeRecipe?: PublicKeyframeRecipe | null;
   playbackVideoUrl?: string;
   lastFrameUrl?: string;
   id: string;

@@ -3133,8 +3133,8 @@
       "successorId": null
     },
     {
-      "id": "flux-3",
-      "slug": "flux-3",
+      "id": "flux-3-max",
+      "slug": "flux-3-max",
       "family": "flux",
       "category": "video",
       "aliases": {
@@ -3156,10 +3156,56 @@
           "published": true,
           "indexed": true,
           "suggestedOpponentIds": [
+            "flux-3"
+          ],
+          "publishedPairIds": [
+            "flux-3"
+          ]
+        },
+        "app": {
+          "published": true
+        },
+        "pricing": {
+          "published": true
+        },
+        "sitemap": {
+          "published": true
+        }
+      },
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
+    },
+    {
+      "id": "flux-3",
+      "slug": "flux-3",
+      "family": "flux",
+      "category": "video",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": true,
+          "indexable": true
+        },
+        "examples": {
+          "published": true,
+          "includeInFamilyCopy": true,
+          "current": true,
+          "familyRank": 1
+        },
+        "compare": {
+          "published": true,
+          "indexed": true,
+          "suggestedOpponentIds": [
+            "flux-3-max",
             "flux-3-draft",
             "grok-imagine-video-1-5"
           ],
           "publishedPairIds": [
+            "flux-3-max",
             "flux-3-draft",
             "grok-imagine-video-1-5"
           ]
@@ -3196,7 +3242,7 @@
           "published": true,
           "includeInFamilyCopy": true,
           "current": true,
-          "familyRank": 1
+          "familyRank": 2
         },
         "compare": {
           "published": true,

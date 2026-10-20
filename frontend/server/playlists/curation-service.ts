@@ -1,7 +1,7 @@
 import { getCurationCandidateAliases } from './curation-candidate-aliases';
 import { guardCurationSave } from './curation-save-guard';
 import { effectiveSourceSlugs, readEffectiveCurationPreview } from './curation-effective-preview';
-import { assertDestinationWritable, DestinationWriteError } from './destination-protection';
+import { assertDestinationSlugWritable, DestinationWriteError } from './destination-protection';
 import { query, withDbTransaction, type QueryExecutor } from '@/lib/db';
 import {
   parseCurationDraft,
@@ -17,6 +17,11 @@ import {
   getCurationAliases,
   lockCuration,
   readCurationSnapshot,
+  readCurationSnapshotState,
+  snapshotFromCurationState,
+  snapshotAfterCurationSave,
+  type CurationSnapshotState,
+  type SavedCurationRow,
 } from './curation-store';
 export { CurationError } from './curation-store';
 export const getCurationSnapshot = readCurationSnapshot;
@@ -31,14 +36,16 @@ async function buildPreview(
   input: unknown,
   revision: string,
   db: QueryExecutor,
-): Promise<CurationPreview> {
-  try { await assertDestinationWritable(db, playlistId); }
+  options: { curationTableLocked?: true } = {},
+): Promise<{ preview: CurationPreview; state: CurationSnapshotState }> {
+  const state = await readCurationSnapshotState(playlistId, db, options);
+  const snapshot = snapshotFromCurationState(state);
+  try { assertDestinationSlugWritable(snapshot.slug); }
   catch (error) {
     if (error instanceof DestinationWriteError) throw new CurationError(error.message, error.status);
     throw error;
   }
   const draft = parseCurationDraft(input);
-  const snapshot = await readCurationSnapshot(playlistId, db);
   if (!snapshot.available) throw new CurationError('Site placements setup is not available yet', 503);
   if (!snapshot.supported) throw new CurationError('Curation is not supported for this destination', 400);
   if (snapshot.revision !== revision) throw new CurationError('This destination changed. Reload it before saving.');
@@ -54,18 +61,19 @@ async function buildPreview(
   try { validateCurationOpening(draft, candidates); }
   catch (error) { throw new CurationError((error as Error).message); }
   const items = snapshot.isPublic ? resolveCuration(draft, candidates) : [];
-  const effective = await readEffectiveCurationPreview({ playlistId, slug: snapshot.slug, draft, candidates }, db);
   // Bind every source, including suppressed sources and off-page membership, to the preview.
-  const sources = await db.query(`SELECT p.*,to_jsonb(c) AS curation,
+  const sources = await db.query<{ slug: string; is_public: boolean; curation: unknown }>(`SELECT p.*,to_jsonb(c) AS curation,
     (SELECT jsonb_agg(to_jsonb(pi) ORDER BY pi.video_id) FROM playlist_items pi WHERE pi.playlist_id=p.id) AS membership
     FROM playlists p LEFT JOIN playlist_curations c ON c.playlist_id=p.id
     WHERE p.slug=ANY($1::text[]) ORDER BY p.slug`, [effectiveSourceSlugs(snapshot.slug)]);
-  return { items, revision, effective, token: curationFingerprint({ revision, draft, eligibleMedia: candidates, effective, sources }) };
+  const effective = await readEffectiveCurationPreview({ playlistId, slug: snapshot.slug, draft, candidates,
+    sources: new Map(sources.map(source => [source.slug, { is_public: source.is_public, managed: source.curation !== null }])) }, db);
+  return { state, preview: { items, revision, effective, token: curationFingerprint({ revision, draft, eligibleMedia: candidates, effective, sources }) } };
 }
 export async function previewCuration(playlistId: string, draft: unknown, revision: string) {
   return withDbTransaction(async db => {
     await db.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY');
-    return buildPreview(playlistId, draft, revision, db);
+    return (await buildPreview(playlistId, draft, revision, db)).preview;
   });
 }
 export async function saveCuration(
@@ -80,19 +88,21 @@ export async function saveCuration(
     const before = await readCurationSnapshot(playlistId, transaction);
     if (!before.available) throw new CurationError('Site placements setup is not available yet', 503);
     const db = await guardCurationSave(transaction);
-    const preview = await buildPreview(playlistId, input, revision, db);
+    const { preview, state } = await buildPreview(playlistId, input, revision, db, { curationTableLocked: true });
     if (preview.token !== token) throw new CurationError('The preview changed. Preview the page again before saving.');
     const draft = parseCurationDraft(input);
-    const hasOpening = before.openingAvailable;
-    await db.query(
+    const hasOpening = state.openingAvailable;
+    const [saved] = await db.query<SavedCurationRow>(
       `INSERT INTO playlist_curations(playlist_id,mode,ordered_ids,excluded_ids,updated_by${hasOpening ? ',opening_ids' : ''})
       VALUES($1,$2,$3,$4,$5${hasOpening ? ',$6' : ''}) ON CONFLICT(playlist_id) DO UPDATE SET
       mode=EXCLUDED.mode,ordered_ids=EXCLUDED.ordered_ids,excluded_ids=EXCLUDED.excluded_ids,
       updated_by=EXCLUDED.updated_by,updated_at=now(),revision=playlist_curations.revision+1
-      ${hasOpening ? ',opening_ids=EXCLUDED.opening_ids' : ''}`,
+      ${hasOpening ? ',opening_ids=EXCLUDED.opening_ids' : ''}
+      RETURNING mode,ordered_ids,excluded_ids,revision::text,${hasOpening ? 'opening_ids' : 'NULL AS opening_ids'}`,
       [playlistId, draft.mode, draft.orderedIds, draft.excludedIds, actor, ...(hasOpening ? [draft.openingIds ?? null] : [])],
     );
-    return readCurationSnapshot(playlistId, db);
+    if (!saved) throw new CurationError('The saved destination could not be verified. Preview again and retry saving.');
+    return snapshotAfterCurationSave(state, saved);
   }).catch(error => {
     if (['55P03', '57014'].includes((error as { code?: string }).code ?? ''))
       throw new CurationError('Media is changing or validation took too long. Preview again and retry saving.');

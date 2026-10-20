@@ -1,7 +1,12 @@
 import { publicExampleRequestedResolution, publicExampleResolution } from '@/lib/example-recreation';
 import type { SharedVideoPreview } from '@/lib/video-preview-group';
+import { buildPublicKeyframeSettingsSnapshot, parsePublicKeyframeRecipe } from '@/lib/public-keyframe-demo';
 
 export function buildVideoSettingsSnapshotFromSharedVideo(sharedVideo: SharedVideoPreview): unknown {
+  const recipe = parsePublicKeyframeRecipe(sharedVideo.keyframeRecipe);
+  if (recipe && recipe.jobId === sharedVideo.id && recipe.engineId === sharedVideo.engineId) {
+    return buildPublicKeyframeSettingsSnapshot(recipe);
+  }
   const durationSec =
     typeof sharedVideo.durationSec === 'number' && sharedVideo.durationSec > 0 ? sharedVideo.durationSec : null;
   const aspectRatio =
@@ -21,9 +26,9 @@ export function buildVideoSettingsSnapshotFromSharedVideo(sharedVideo: SharedVid
       durationOption: null,
       numFrames: null,
       aspectRatio,
-      resolution: sharedVideo.outputWidth && sharedVideo.outputHeight
-        ? publicExampleResolution(sharedVideo.outputWidth, sharedVideo.outputHeight)
-        : publicExampleRequestedResolution(sharedVideo.requestedResolution),
+      // Reuse the recorded input resolution; dimensions remain measured output metadata.
+      resolution: publicExampleRequestedResolution(sharedVideo.requestedResolution)
+        ?? publicExampleResolution(sharedVideo.outputWidth, sharedVideo.outputHeight),
       fps: null,
       iterationCount: 1,
       audio: typeof sharedVideo.hasAudio === 'boolean' ? sharedVideo.hasAudio : null,

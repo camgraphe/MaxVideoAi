@@ -13,6 +13,8 @@ import { formatFramecode, getTimelineLeft, type KeyframeSlot } from '../_lib/lum
 import type { ReferenceAsset } from '../_lib/workspace-assets';
 
 type LumaRay32KeyframeTimelineProps = {
+  title?: string;
+  uiLocale?: string;
   canAddKeyframe: boolean;
   canRemoveKeyframe: boolean;
   filledKeyframeCount: number;
@@ -41,6 +43,8 @@ type LumaRay32KeyframeTimelineProps = {
 };
 
 export function LumaRay32KeyframeTimeline({
+  title = 'Modify keyframes',
+  uiLocale = 'en',
   canAddKeyframe,
   canRemoveKeyframe,
   filledKeyframeCount,
@@ -67,11 +71,16 @@ export function LumaRay32KeyframeTimeline({
   onTimelineClick,
   onUploadDisabled,
 }: LumaRay32KeyframeTimelineProps) {
+  const copy = uiLocale === 'fr'
+    ? { add: 'Ajouter une image clé', select: 'Sélectionner l’image clé', drag: 'Glisser pour ajuster le moment', choose: 'Choisir ou importer l’image clé', media: 'Choisir dans les médias pour l’image clé', remove: 'Retirer l’image clé', uploading: 'Importation', failed: 'Échec de l’importation' }
+    : uiLocale === 'es'
+      ? { add: 'Añadir fotograma clave', select: 'Seleccionar fotograma clave', drag: 'Arrastrar para ajustar el momento', choose: 'Elegir o subir fotograma clave', media: 'Elegir en medios para fotograma clave', remove: 'Eliminar fotograma clave', uploading: 'Subiendo', failed: 'Error al subir' }
+      : { add: 'Add keyframe', select: 'Select keyframe', drag: 'Drag to adjust timing', choose: 'Choose from Media or upload keyframe', media: 'Choose from Media for keyframe', remove: 'Remove keyframe', uploading: 'Uploading', failed: 'Upload failed' };
   return (
     <div className="rounded-[24px] bg-surface/80 p-4 dark:bg-black/10">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">Modify keyframes</span>
+          <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{title}</span>
           <span className="rounded-full bg-surface-3 px-2 py-1 text-[10px] font-semibold text-text-muted dark:bg-white/[0.06]">
             {filledKeyframeCount}/{keyframeSlots.length}
           </span>
@@ -85,7 +94,7 @@ export function LumaRay32KeyframeTimeline({
           onClick={onAddKeyframe}
           disabled={!canAddKeyframe || Boolean(keyframesTimelineDisabledReason)}
         >
-          Add keyframe
+          {copy.add}
         </button>
       </div>
 
@@ -165,8 +174,8 @@ export function LumaRay32KeyframeTimeline({
                   onPointerUp={(event) => onKeyframePointerUp(event, slot)}
                   onPointerCancel={(event) => onKeyframePointerUp(event, slot)}
                   onMouseDown={(event) => onKeyframeMouseDown(event, slot, index)}
-                  aria-label={`Select keyframe ${index + 1}`}
-                  title="Drag to adjust timing"
+                  aria-label={`${copy.select} ${index + 1}`}
+                  title={copy.drag}
                 >
                   {slotAsset?.kind === 'image' ? (
                     <img src={slotAsset.previewUrl} alt="" className="h-full w-full object-cover" />
@@ -195,8 +204,8 @@ export function LumaRay32KeyframeTimeline({
                   }}
                   onDragOver={(event) => event.preventDefault()}
                   onDrop={(event) => onDrop(event, slot)}
-                  aria-label={`Choose from Media or upload keyframe ${index + 1}`}
-                  title={keyframesUploadDisabledReason ?? `Choose from Media or upload keyframe at ${formatFramecode(slot.frameIndex, fps)}`}
+                  aria-label={`${copy.choose} ${index + 1}`}
+                  title={keyframesUploadDisabledReason ?? (uiLocale === 'en' ? `Choose from Media or upload keyframe at ${formatFramecode(slot.frameIndex, fps)}` : `${copy.choose} · ${formatFramecode(slot.frameIndex, fps)}`)}
                 >
                   {slotAsset?.kind === 'image' ? (
                     <img src={slotAsset.previewUrl} alt={slotAsset.name} className="h-full w-full object-cover" />
@@ -207,12 +216,12 @@ export function LumaRay32KeyframeTimeline({
                   )}
                   {slotAsset?.status === 'uploading' ? (
                     <span className="absolute inset-0 flex items-center justify-center bg-black/55 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-white">
-                      Uploading
+                      {copy.uploading}
                     </span>
                   ) : null}
                   {slotAsset?.status === 'error' ? (
                     <span className="absolute inset-0 flex items-center justify-center bg-black/65 px-2 text-center text-[10px] font-semibold text-white">
-                      Upload failed
+                      {copy.failed}
                     </span>
                   ) : null}
                 </button>
@@ -235,7 +244,7 @@ export function LumaRay32KeyframeTimeline({
                       onOpenLibrary(slot);
                     }}
                     disabled={Boolean(keyframesUploadDisabledReason)}
-                    aria-label={`Choose from Media for keyframe ${index + 1}`}
+                    aria-label={`${copy.media} ${index + 1}`}
                   >
                     <Library className="h-3.5 w-3.5" aria-hidden />
                   </button>
@@ -247,7 +256,7 @@ export function LumaRay32KeyframeTimeline({
                       onRemoveKeyframe(index);
                     }}
                     disabled={!canRemoveKeyframe || Boolean(keyframesTimelineDisabledReason)}
-                    aria-label={`Remove keyframe ${index + 1}`}
+                    aria-label={`${copy.remove} ${index + 1}`}
                   >
                     <X className="h-3.5 w-3.5" aria-hidden />
                   </button>

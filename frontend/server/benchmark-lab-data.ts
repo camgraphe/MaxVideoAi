@@ -1,7 +1,10 @@
 import path from 'node:path';
 import { promises as fs } from 'node:fs';
+import type { BenchmarkScoreReview } from '@/lib/benchmark-score-review';
+import { loadBenchmarkScoreReview, type BenchmarkScoreReviewMetadata } from '@/server/benchmark-score-review';
 
-export type BenchmarkScore = {
+export type BenchmarkScore = BenchmarkScoreReviewMetadata & {
+  review?: BenchmarkScoreReview | null;
   modelSlug?: string;
   engineId?: string;
   fidelity?: number | null;
@@ -111,8 +114,8 @@ export function loadBenchmarkLabStaticData(): Promise<BenchmarkLabStaticData> {
       readFirstJson<{ scores?: BenchmarkScore[] }>('engine-scores.v1.json'),
       readFirstJson<{ specs?: BenchmarkSpec[] }>('engine-key-specs.v1.json'),
       readFirstJson<BenchmarkMethodology>('benchmark-methodology.v1.json'),
-    ]).then(([scoresFile, specsFile, methodology]) => ({
-      scores: scoresFile.scores ?? [],
+    ]).then(async ([scoresFile, specsFile, methodology]) => ({
+      scores: await Promise.all((scoresFile.scores ?? []).map(async (score) => ({ ...score, review: await loadBenchmarkScoreReview(score) }))),
       specs: specsFile.specs ?? [],
       methodology,
     }));

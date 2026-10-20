@@ -13,6 +13,8 @@ test('video GET preserves public sharing and limits private videos to their owne
   const fixture = {
     configured: true, userId: null as string | null, authCalls: 0, bootstrapCalls: 0,
     video: null as Record<string, unknown> | null,
+    seoVideo: null as Record<string, unknown> | null, seoReads: 0,
+    selections: [] as Array<{ modelSlug: string; jobId: string; referenceImages: string[] }>,
   };
   const globals = globalThis as typeof globalThis & { __videoReadFixture?: typeof fixture };
   globals.__videoReadFixture = fixture;
@@ -25,7 +27,8 @@ test('video GET preserves public sharing and limits private videos to their owne
       const mocks: Record<string, string> = {
         '@/lib/db': 'export function isDatabaseConfigured(){return globalThis.__videoReadFixture.configured;}',
         '@/lib/schema': 'export async function ensureBillingSchema(){globalThis.__videoReadFixture.bootstrapCalls++; throw new Error("Schema writes are forbidden on this read-only connection");}',
-        '@/server/videos': 'export async function getVideoById(){return globalThis.__videoReadFixture.video;} export async function updateVideoIndexableForUser(){throw new Error("No writes in GET tests");}',
+        '@/server/videos': 'export async function getVideoById(){return globalThis.__videoReadFixture.video;} export async function getSeoVideoById(){globalThis.__videoReadFixture.seoReads++;return globalThis.__videoReadFixture.seoVideo;} export async function updateVideoIndexableForUser(){throw new Error("No writes in GET tests");}',
+        '@/config/model-keyframe-demos.json': 'export default {get demos(){return globalThis.__videoReadFixture.selections;}};',
         '@/lib/supabase-ssr': 'export async function getRouteAuthContext(){globalThis.__videoReadFixture.authCalls++; return {userId:globalThis.__videoReadFixture.userId};}',
       };
       builder.onResolve({ filter: /.*/ }, (args) => args.path in mocks
@@ -46,8 +49,28 @@ test('video GET preserves public sharing and limits private videos to their owne
       assert.deepEqual(await response.json(), { ok: true, video: fixture.video });
       assert.equal(fixture.authCalls, 0);
       assert.equal(fixture.bootstrapCalls, 0, 'sharing an existing video must work with read-only storage');
+      assert.equal(fixture.seoReads, 0, 'ordinary shared videos do not fetch teaching recipes');
       assert.equal(response.headers.get('cache-control'), 'private, no-store');
     }
+  });
+  await t.test('an explicitly selected Max example exposes only its approved public keyframe recipe', async () => {
+    const images = ['https://media.maxvideoai.com/references/start.png', 'https://media.maxvideoai.com/references/end.png'];
+    fixture.selections = [{ modelSlug: 'flux-3-max', jobId: 'example', referenceImages: images }];
+    fixture.video = { ...video, engineId: 'flux-3-max', durationSec: 20 };
+    fixture.seoVideo = { ...fixture.video, thumbUrl: 'https://media.maxvideoai.com/render.jpg',
+      settingsSnapshot: { engineId: 'flux-3-max', inputMode: 'ref2v', prompt: video.prompt,
+        core: { durationSec: 20, resolution: '720p', aspectRatio: 'auto', audio: true },
+        advanced: { seed: 9, extraInputValues: { keyframe_indexes: '0,480', reasoning_level: 'high' } },
+        refs: { referenceImages: images }, meta: { privateNote: 'secret' } } };
+    const response = await request();
+    assert.equal(response.status, 200);
+    const payload = await response.json();
+    assert.deepEqual(payload.video.keyframeRecipe.keyframes, [{ imageUrl: images[0], frameIndex: 0 }, { imageUrl: images[1], frameIndex: 480 }]);
+    assert.equal('settingsSnapshot' in payload.video, false);
+    assert.doesNotMatch(JSON.stringify(payload), /privateNote|secret/);
+    fixture.seoVideo = null;
+    assert.deepEqual((await (await request()).json()).video, fixture.video, 'removal from the public eligible reader removes the recipe');
+    fixture.selections = [];
   });
   await t.test('private videos are indistinguishable from missing ones for guests and other accounts', async () => {
     for (const userId of [null, 'other-user']) {
