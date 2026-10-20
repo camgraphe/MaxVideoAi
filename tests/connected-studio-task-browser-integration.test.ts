@@ -92,7 +92,7 @@ test('Sol starts with 500 included credits and Luna offers discreet top-up on de
     const posted=page.waitForResponse(response=>response.url().endsWith('/image-conversation')&&response.request().method()==='POST');
     await send.click();const submitted=await posted;assert.equal(submitted.status(),200,JSON.stringify(await submitted.json()));
     const sent=JSON.parse(submitted.request().postData()!);assert.equal(sent.taskBudget.profile,'standard');assert.equal(sent.taskBudget.maxCredits,250);
-    await send.click();const submitted=await posted;assert.deepEqual(submitted.request().postDataJSON().references,[selectedImage]);assert.equal(submitted.status(),200,JSON.stringify(await submitted.json()));
+    assert.deepEqual(sent.references,[selectedImage]);
     await expect(page.getByRole('button',{name:'Remove Image 1',exact:true})).toBeVisible();
 
     const taskCard=page.getByRole('region',{name:'Studio task'});await expect(taskCard.getByText('Waiting for Studio')).toBeVisible();
