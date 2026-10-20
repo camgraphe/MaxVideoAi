@@ -150,7 +150,8 @@ export function useHostedWalletCheckout({
     });
     try {
       const analyticsJourney = readWalletAnalyticsJourney();
-      const ga4Context = await readGa4CheckoutContext();
+      let ga4LookupStatus = 'unobserved';
+      const ga4Context = await readGa4CheckoutContext({ onDiagnostic: status => { ga4LookupStatus = status; } });
       const submittedCaptchaToken = takeCaptchaToken();
       const result = await requestHostedWalletCheckout({
         amountCents,
@@ -205,6 +206,7 @@ export function useHostedWalletCheckout({
         metadata: {
           currency,
           redirectMethod: result.url ? 'url' : 'stripe_js',
+          ga4LookupStatus,
         },
       });
 

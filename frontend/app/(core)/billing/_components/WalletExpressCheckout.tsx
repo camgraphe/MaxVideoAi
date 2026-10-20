@@ -191,8 +191,9 @@ export function WalletExpressCheckout({
         });
       }, EXPRESS_CHECKOUT_READY_TIMEOUT_MS);
       const analyticsJourney = readWalletAnalyticsJourney();
+      let ga4LookupStatus = 'consent_or_role_excluded';
       const ga4Context = analyticsConsentGranted
-        ? await readGa4CheckoutContext()
+        ? await readGa4CheckoutContext({ onDiagnostic: status => { ga4LookupStatus = status; } })
         : { clientId: null, sessionId: null };
       if (cancelled) return;
       const attributionKey = `${analyticsConsentGranted ? 'analytics-granted' : 'analytics-denied'}:${walletAnalyticsJourneyCacheKey(analyticsJourney)}:${ga4Context.clientId ?? 'no-client'}:${ga4Context.sessionId ?? 'no-session'}`;
@@ -244,6 +245,7 @@ export function WalletExpressCheckout({
           stripeCheckoutSessionId: checkoutSessionResult.sessionId,
           metadata: {
             currency: normalizedChargeCurrency,
+            ga4LookupStatus,
           },
         });
 

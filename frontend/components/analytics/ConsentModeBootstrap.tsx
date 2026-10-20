@@ -13,6 +13,7 @@ import { loadCookiePolicyVersion } from '@/components/legal/cookie-policy-versio
 import { readConsentCookie, updateGoogleConsent } from '@/components/legal/cookie-banner-client';
 import { parseConsent } from '@/lib/consent';
 import { getAnalyticsRouteContext } from '@/lib/analytics-route';
+import { readBrowserAnalyticsPageContext } from '@/lib/analytics/page-context';
 import {
   COMMERCIAL_ANALYTICS_CONTEXT_CHANGED_EVENT,
   COMMERCIAL_ANALYTICS_RESOLVED_EVENT,
@@ -42,6 +43,16 @@ export default function ConsentModeBootstrap() {
   const [externalScriptReady, setExternalScriptReady] = useState(false);
   const [policyVersion, setPolicyVersion] = useState<string | null>(null);
   const routeContext = getAnalyticsRouteContext(pathname);
+
+  useEffect(() => {
+    if (!GA_ID || DISABLE_GA || !analyticsConsentGranted || routeContext.excludedFromGa4) return;
+    const pageContext = readBrowserAnalyticsPageContext();
+    if (!pageContext || typeof window.gtag !== 'function') return;
+    // Also set defaults for automatic engagement events. Never let the tag fall
+    // back to the private location.href or document.title after SPA navigation.
+    window.gtag('set', pageContext);
+    window.gtag('config', GA_ID, { ...pageContext, send_page_view: false });
+  }, [pathname, analyticsConsentGranted, routeContext.excludedFromGa4]);
 
   useEffect(() => {
     if (!routeContext.excludedFromGa4) return;
@@ -136,6 +147,9 @@ export default function ConsentModeBootstrap() {
   if (DISABLE_GA) return null;
   if (routeContext.excludedFromGa4) return null;
   if (!analyticsConsentGranted) return null;
+  const pageContext = readBrowserAnalyticsPageContext();
+  if (!pageContext) return null;
+  const serializedPageContext = JSON.stringify(pageContext).replace(/</g, '\\u003c');
 
   return (
     <>
@@ -166,8 +180,10 @@ export default function ConsentModeBootstrap() {
         {`
           window.dataLayer = window.dataLayer || [];
           window.gtag = window.gtag || function(){dataLayer.push(arguments);};
+          gtag('set', ${serializedPageContext});
           gtag('js', new Date());
           gtag('config', '${GA_ID}', {
+            ...${serializedPageContext},
             anonymize_ip: true,
             allow_google_signals: false,
             send_page_view: false${process.env.NODE_ENV !== 'production' ? `,

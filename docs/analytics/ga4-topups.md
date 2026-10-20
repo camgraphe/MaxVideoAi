@@ -20,6 +20,10 @@ Reviewed locally on 2026-10-05. Measure milestones independently: payment may ha
 
 ## Transport and consent
 
+The [browser page-context contract](browser-page-context.md) describes the
+2026-10-20 URL protection, bounded late-tag recovery and aggregate checkout
+diagnostics. Reuse that transport rather than passing raw URLs to `gtag`.
+
 Server transport needs `GA4_MEASUREMENT_ID` and `GA4_API_SECRET`. Browser checkout captures GA4 client/session IDs from its configured tag only with analytics consent; the wallet API independently checks the consent cookie before copying IDs and bounded first/last touch attribution into Stripe metadata. Denied or withdrawn consent clears journey and pending browser events. No pre-consent replay is allowed.
 
 Both browser and Measurement Protocol senders cap emitted parameters at 25. Session, transaction/value/currency, acquisition source/campaign/content and milestone evidence take priority over optional diagnostics. Do not expect every diagnostic field on a fully attributed purchase. Optional history lookup uses a savepoint: an SQL measurement error returns unknown, suppresses commercial emission, and permits the wallet receipt transaction to continue.

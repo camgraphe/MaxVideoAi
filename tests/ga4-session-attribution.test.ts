@@ -64,6 +64,43 @@ test('browser GA4 session lookup fails open when the tag is unavailable', async 
   assert.equal(await readGa4SessionId({ measurementId: 'G-TEST123', gtag: null }), null);
 });
 
+test('checkout waits within its existing budget for a late tag without losing session linkage', async () => {
+  const started = Date.now();
+  const context = await readGa4CheckoutContext({
+    measurementId: 'G-TEST123',
+    timeoutMs: 100,
+    getGtag: () => Date.now() - started < 15 ? null : (_command, _id, field, callback) =>
+      callback(field === 'client_id' ? '123456789.987654321' : '1788255901'),
+  });
+  assert.equal(context.clientId, '123456789.987654321');
+  assert.equal(context.sessionId, '1788255901');
+});
+
+test('checkout tag reads stop when consent is absent or withdrawn', async () => {
+  let granted = false;
+  let calls = 0;
+  const getGtag = () => (_command: unknown, _id: unknown, _field: unknown, callback: (value: unknown) => void) => {
+    calls++;
+    granted = false;
+    callback('123456789.987654321');
+  };
+  assert.deepEqual(await readGa4CheckoutContext({ measurementId: 'G-TEST123', getGtag, canRead: () => granted }), { clientId: null, sessionId: null });
+  assert.equal(calls, 0);
+  granted = true;
+  assert.deepEqual(await readGa4CheckoutContext({ measurementId: 'G-TEST123', getGtag, canRead: () => granted }), { clientId: null, sessionId: null });
+});
+
+test('a blocked checkout tag cannot hold the payment longer than the bounded lookup budget', async () => {
+  const started = Date.now();
+  const diagnostics: string[] = [];
+  assert.deepEqual(await readGa4CheckoutContext({
+    measurementId: 'G-TEST123', timeoutMs: 30, getGtag: () => null,
+    onDiagnostic: status => diagnostics.push(status),
+  }), { clientId: null, sessionId: null });
+  assert.ok(Date.now() - started < 250);
+  assert.deepEqual(diagnostics, ['tag_unavailable']);
+});
+
 test('wallet checkout keeps GA4 identifiers only with server-confirmed consent', () => {
   assert.deepEqual(
     resolveWalletGa4CheckoutContext({
