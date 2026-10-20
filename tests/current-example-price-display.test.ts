@@ -64,10 +64,13 @@ test('homepage hero replaces authored prices with current reference quotes', () 
     }
     pending.push(...React.Children.toArray((node.props as { children?: React.ReactNode }).children));
   }
-  assert.equal(items[0]?.engineId, 'minimax-h3');
-  assert.equal(items[0]?.estimateValue, '$1.41');
-  assert.equal(items[0]?.priceKind, 'reference');
-  assert.equal(items[0]?.quoteScenario, 'Text to video · 5s · 1080p');
+  assert.equal(items[4]?.engineId, 'minimax-h3');
+  assert.equal(items[4]?.estimateValue, '$1.41');
+  assert.equal(items[4]?.priceKind, 'reference');
+  assert.equal(items[4]?.quoteScenario, 'Text to video · 5s · 1080p');
+  assert.equal(items[0]?.engineId, 'flux-3-max');
+  assert.equal(items[0]?.priceKind, 'unavailable');
+  assert.equal(items[0]?.estimateValue, 'Unavailable');
   assert.equal(items[1]?.priceKind, 'unavailable');
   assert.equal(items[1]?.estimateValue, 'Unavailable');
 });

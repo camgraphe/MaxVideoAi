@@ -17,8 +17,8 @@
     {
       "waveId": "flux-3-max",
       "sourceManifest": "docs/model-launch/flux-3-max-video-example-pack.json",
-      "sourceStatus": "missing",
-      "sourceDigest": null
+      "sourceStatus": "validated",
+      "sourceDigest": "aa9bcabd2ddd185a5e32c2d738476ccd96e75d4c6e5768e0a5bb8299238aa6fa"
     }
   ],
   "assets": [
@@ -672,6 +672,64 @@
       "playlistSlugs": [
         "family-hailuo",
         "examples-minimax-h3-max"
+      ]
+    },
+    {
+      "waveId": "flux-3-max",
+      "assetId": "job_external_fal_3cdccbf38fa871d2667fa1597de53e6fc52d036d_video_0",
+      "videoId": "job_external_fal_3cdccbf38fa871d2667fa1597de53e6fc52d036d",
+      "libraryAssetId": "ma_b9863ed858ea43119a290e66b6874520",
+      "jobId": "job_external_fal_3cdccbf38fa871d2667fa1597de53e6fc52d036d",
+      "modelId": "flux-3-max",
+      "engineId": "flux-3-max",
+      "familyId": "flux",
+      "mode": "t2v",
+      "prompt": "An original 2D animated film with painted backgrounds and late-summer light. In an overgrown courtyard, a young adult woman wearing a red cape approaches an enormous sleeping stone stag. She places a small glowing seed on its forehead. Golden veins spread through the stone; one eye opens. The stag gently lowers its antlers toward her. Her fear becomes a smile. Let the shot progression move from her caution to the guardian's monumental awakening, then return to their meeting; leave a breath of wonder at the end. Sound: leaves, stone gently cracking, a deep breath, original orchestral music awakening with the stag.",
+      "sourceKind": "text",
+      "sourceAssetIds": [],
+      "videoUrl": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/129578bb105f5270776bff78ce498566093132bb7e670c27b82eb875e4479f8c.mp4",
+      "thumbnailUrl": "https://media.maxvideoai.com/user-asset-thumbs/301cc489-d689-477f-94c4-0b051deda0bc/e6f0523d-0918-47f8-8441-920c20a0f848.jpg",
+      "width": 1280,
+      "height": 704,
+      "durationSec": 18.041667,
+      "acceptedAt": "2026-10-20T22:58:52.681816+00:00",
+      "reviewStatus": "accepted",
+      "publicationState": "gallery_only",
+      "watchPageCandidate": false,
+      "familyPlaylistId": "4ac61466-b6a9-45cf-b903-b326462126d7",
+      "modelPlaylistId": "5ab02623-aa61-4a87-b8ac-88debeb4007a",
+      "playlistSlugs": [
+        "family-flux",
+        "examples-flux-3-max"
+      ]
+    },
+    {
+      "waveId": "flux-3-max",
+      "assetId": "job_external_fal_70534037da6795d2e16dd135bf2a0ec3bfa550cc_video_0",
+      "videoId": "job_external_fal_70534037da6795d2e16dd135bf2a0ec3bfa550cc",
+      "libraryAssetId": "ma_cc662ee6084148a7bdd26080ea21e941",
+      "jobId": "job_external_fal_70534037da6795d2e16dd135bf2a0ec3bfa550cc",
+      "modelId": "flux-3-max",
+      "engineId": "flux-3-max",
+      "familyId": "flux",
+      "mode": "t2v",
+      "prompt": "Inside a silent space station, an adult astronaut with a visible face and an ivory spacesuit places a hand against a large observation window overlooking a dark nebula. Outside, an immense translucent shape slowly approaches; one of its long luminous extremities comes to rest directly opposite the astronaut's palm, on the other side of the glass. The astronaut holds their breath. End the encounter on these two answering gestures. Contemplative science fiction: begin with the astronaut's solitude, gradually reveal the scale of the presence, then return to the intimacy of the contact. Sound: interior ventilation, breathing, original low, delicate music; no exterior impact sound in the vacuum. No dialogue.",
+      "sourceKind": "text",
+      "sourceAssetIds": [],
+      "videoUrl": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/556d12f7c45a0726eebc946615f4a0cbf4fba1993565c5f6cc6b469b90d726c3.mp4",
+      "thumbnailUrl": "https://media.maxvideoai.com/user-asset-thumbs/301cc489-d689-477f-94c4-0b051deda0bc/e4f84cab-510f-4a23-8458-871470e71ff7.jpg",
+      "width": 1280,
+      "height": 704,
+      "durationSec": 16.041667,
+      "acceptedAt": "2026-10-20T22:58:52.681816+00:00",
+      "reviewStatus": "accepted",
+      "publicationState": "gallery_only",
+      "watchPageCandidate": false,
+      "familyPlaylistId": "4ac61466-b6a9-45cf-b903-b326462126d7",
+      "modelPlaylistId": "5ab02623-aa61-4a87-b8ac-88debeb4007a",
+      "playlistSlugs": [
+        "family-flux",
+        "examples-flux-3-max"
       ]
     }
   ]

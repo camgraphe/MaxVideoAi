@@ -1,6 +1,8 @@
 import { readEffectiveModelPageGallery } from './curation-model-preview';
 import { getFalEngineBySlug } from '@/config/falEngines';
+import { listRuntimeModels, type RuntimeModelEntry } from '@/config/model-runtime';
 import { query } from '@/lib/db';
+import { isDiscoverableExampleEngine } from '@/lib/examples/discovery';
 import { getExampleFamilyIds, getExampleFamilyLabel, getExampleFamilyModelSlugs } from '@/lib/model-families';
 import { STARTER_MEDIA_SLUGS } from '@/lib/starter-media';
 import { listCatalogPage } from '../videos-catalog-page';
@@ -12,10 +14,15 @@ import type { PlaylistDestination, PlaylistRecord } from './types';
 
 type DestinationSpec = Pick<PlaylistDestination, 'id' | 'kind' | 'slug' | 'label' | 'path' | 'familyId' | 'modelSlug' | 'sourceSlugs'>;
 
-function destinationSpecs(): DestinationSpec[] {
+function destinationSpecs(models: readonly RuntimeModelEntry[] = listRuntimeModels()): DestinationSpec[] {
   const hub = getExamplesHubPlaylistSlug();
   const starter = getStarterPlaylistSlug();
   const families = getExampleFamilyIds();
+  // Admin preparation must precede public asset readiness; keep the public ordering where available.
+  const modelSlugs = (familyId: string) => [...new Set([
+    ...getExampleFamilyModelSlugs(familyId),
+    ...models.filter(model => model.family === familyId).map(model => model.slug),
+  ])].filter(slug => isDiscoverableExampleEngine(slug, models));
   const spec = (id: string, kind: PlaylistDestination['kind'], slug: string, label: string, path: string): DestinationSpec =>
     ({ id, kind, slug, label, path, familyId: null, modelSlug: null, sourceSlugs: [slug] });
   return [
@@ -23,7 +30,7 @@ function destinationSpecs(): DestinationSpec[] {
     spec('starter', 'starter', starter, 'Starter video', '/app?tab=starter'),
     ...families.flatMap(familyId => [
       { ...spec(`family:${familyId}`, 'family', getFamilyPlaylistSlug(familyId), getExampleFamilyLabel(familyId) ?? familyId, `/examples/${familyId}`), familyId, sourceSlugs: getFamilyFeedSourceSlugs(familyId) },
-      ...getExampleFamilyModelSlugs(familyId).map(modelSlug => ({
+      ...modelSlugs(familyId).map(modelSlug => ({
         ...spec(`model:${modelSlug}`, 'model', getModelPlaylistSlug(modelSlug), getFalEngineBySlug(modelSlug)?.marketingName ?? modelSlug, `/models/${modelSlug}`), familyId, modelSlug,
       })),
     ]),
@@ -32,10 +39,13 @@ function destinationSpecs(): DestinationSpec[] {
 }
 
 /** Effective counts are keyed by runtime slug, never by the playlist display name. */
-export function buildPlaylistDestinations(playlists: readonly PlaylistRecord[], effectiveCounts: ReadonlyMap<string, number>): PlaylistDestination[] {
+export function buildPlaylistDestinations(
+  playlists: readonly PlaylistRecord[], effectiveCounts: ReadonlyMap<string, number>,
+  models: readonly RuntimeModelEntry[] = listRuntimeModels(),
+): PlaylistDestination[] {
   const bySlug = new Map(playlists.map(playlist => [playlist.slug, playlist]));
   const connected = new Set<string>();
-  const destinations: PlaylistDestination[] = destinationSpecs().map(spec => {
+  const destinations: PlaylistDestination[] = destinationSpecs(models).map(spec => {
     const playlist = bySlug.get(spec.slug);
     if (playlist) connected.add(playlist.id);
     const publicCount = effectiveCounts.get(spec.slug) ?? (playlist?.isPublic ? playlist.siteVisibleCount : 0);

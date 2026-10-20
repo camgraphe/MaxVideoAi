@@ -61,10 +61,11 @@ export const REFERENCE_WORKFLOW_VISUALS = [
   '/assets/marketing/reference-workflow-final-video.webp',
 ] as const;
 
-export const HERO_VIDEO_ORDER = ['minimax-h3', 'seedance-2-5', 'wan-3', 'kling-3-pro', 'ltx-2-5-pro'] as const;
+export const HERO_VIDEO_ORDER = ['flux-3-max', 'seedance-2-5', 'wan-3', 'kling-3-pro', 'minimax-h3'] as const;
 export const HOME_HERO_IMAGE_URL = '/assets/home/home-hero-reference.webp';
 
 export const HERO_VIDEO_MODE_LABELS: Record<string, string> = {
+  'flux-3-max': 'text-to-video',
   'minimax-h3': 'text-to-video',
   'seedance-2-5': 'text-to-video',
   'wan-3': 'text-to-video',
@@ -73,6 +74,7 @@ export const HERO_VIDEO_MODE_LABELS: Record<string, string> = {
 };
 
 export const HERO_VIDEO_CHIPS: Record<string, string[]> = {
+  'flux-3-max': ['Fantasy', 'Native audio'],
   'minimax-h3': ['Action', 'Native audio'],
   'seedance-2-5': ['Action', 'Cinematic'],
   'wan-3': ['Music video', 'Realism'],
@@ -116,6 +118,12 @@ export const HERO_ENGINE_MEDIA: Record<
     imageAlt?: string;
   }
 > = {
+  'flux-3-max': {
+    posterSrc: '/hero/showcase-flux-3-max-uncrowned-18s.webp',
+    videoSrc: 'https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/4f6d6a092189ae292be5d06216af34edbbc9bd6ee553182a8f7c96f2b3a495eb.mp4',
+    resolution: '16:9',
+    duration: '0:18',
+  },
   'minimax-h3': {
     posterSrc: '/hero/showcase-minimax-h3-flight-15s.webp',
     videoSrc:

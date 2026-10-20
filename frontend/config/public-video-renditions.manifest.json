@@ -3332,6 +3332,519 @@
       "pendingRenditions": {},
       "omissions": [],
       "failures": []
+    },
+    {
+      "assetId": "flux-3-max-uncrowned",
+      "role": "public-demo",
+      "original": {
+        "url": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/4f6d6a092189ae292be5d06216af34edbbc9bd6ee553182a8f7c96f2b3a495eb.mp4",
+        "sha256": "4f6d6a092189ae292be5d06216af34edbbc9bd6ee553182a8f7c96f2b3a495eb",
+        "bytes": 8462784,
+        "probe": {
+          "width": 1280,
+          "height": 704,
+          "durationSeconds": 18.041667,
+          "containerDurationSeconds": 18.042,
+          "videoStartSeconds": 0,
+          "videoFrameCount": 433,
+          "cadence": {
+            "kind": "cfr",
+            "frameCount": 433,
+            "firstTimestampSeconds": 0,
+            "lastTimestampSeconds": 18,
+            "minDeltaSeconds": 0.041665999999999315,
+            "maxDeltaSeconds": 0.04166700000000034,
+            "timestampsSha256": "2ad1596c6893d64ff8b37c90369c49999caf39fb05f5a73606231cee4c96a3cf"
+          },
+          "frameRate": {
+            "numerator": 24,
+            "denominator": 1
+          },
+          "videoCodec": "h264",
+          "pixelFormat": "yuv420p",
+          "sampleAspectRatio": {
+            "numerator": 1,
+            "denominator": 1
+          },
+          "colorTransfer": null,
+          "rotationDegrees": 0,
+          "audio": {
+            "codec": "aac",
+            "channels": 1,
+            "sampleRateHz": 44100,
+            "durationSeconds": 18,
+            "startSeconds": 0,
+            "packetPayloadSha256": "7cc55e4d0e23db60f75abc2b367d3c989cd356ec38f481c7ba03dcdf88979f4d"
+          },
+          "fastStart": true,
+          "decodeOk": true
+        }
+      },
+      "renditions": {
+        "desktop": {
+          "profileVersion": "public-demo-v1",
+          "url": "https://media.maxvideoai.com/marketing/video-renditions/4f6d6a092189ae292be5d06216af34edbbc9bd6ee553182a8f7c96f2b3a495eb/public-demo-v1/desktop/244cd023064bc503dd5b6baf3a6cb49c2522112f516059f83427ffa722450467.mp4",
+          "storageKey": "marketing/video-renditions/4f6d6a092189ae292be5d06216af34edbbc9bd6ee553182a8f7c96f2b3a495eb/public-demo-v1/desktop/244cd023064bc503dd5b6baf3a6cb49c2522112f516059f83427ffa722450467.mp4",
+          "sha256": "244cd023064bc503dd5b6baf3a6cb49c2522112f516059f83427ffa722450467",
+          "bytes": 3972246,
+          "probe": {
+            "width": 1280,
+            "height": 704,
+            "durationSeconds": 18.041667,
+            "containerDurationSeconds": 18.042,
+            "videoStartSeconds": 0,
+            "videoFrameCount": 433,
+            "cadence": {
+              "kind": "cfr",
+              "frameCount": 433,
+              "firstTimestampSeconds": 0,
+              "lastTimestampSeconds": 18,
+              "minDeltaSeconds": 0.041665999999999315,
+              "maxDeltaSeconds": 0.04166700000000034,
+              "timestampsSha256": "2ad1596c6893d64ff8b37c90369c49999caf39fb05f5a73606231cee4c96a3cf"
+            },
+            "frameRate": {
+              "numerator": 24,
+              "denominator": 1
+            },
+            "videoCodec": "h264",
+            "pixelFormat": "yuv420p",
+            "sampleAspectRatio": {
+              "numerator": 1,
+              "denominator": 1
+            },
+            "colorTransfer": null,
+            "rotationDegrees": 0,
+            "audio": {
+              "codec": "aac",
+              "channels": 1,
+              "sampleRateHz": 44100,
+              "durationSeconds": 18,
+              "startSeconds": 0,
+              "packetPayloadSha256": "7cc55e4d0e23db60f75abc2b367d3c989cd356ec38f481c7ba03dcdf88979f4d"
+            },
+            "fastStart": true,
+            "decodeOk": true
+          },
+          "visualReview": {
+            "reviewedAt": "2026-10-20T23:05:06.424Z",
+            "evidence": "docs/qa/flux-3-max-selected-media-2026-10-21.md"
+          },
+          "httpCheck": {
+            "checkedAt": "2026-10-20T23:06:20.665Z",
+            "contentType": "video/mp4",
+            "bytes": 3972246,
+            "rangeStart": 0,
+            "rangeEnd": 31,
+            "totalBytes": 3972246
+          },
+          "activatedAt": "2026-10-20T23:06:20.393Z"
+        },
+        "mobile": {
+          "profileVersion": "public-demo-v1",
+          "url": "https://media.maxvideoai.com/marketing/video-renditions/4f6d6a092189ae292be5d06216af34edbbc9bd6ee553182a8f7c96f2b3a495eb/public-demo-v1/mobile/d1e23f89f6a60afc8edd7980da68e2bd210de46013e3d6cb28add7014a920786.mp4",
+          "storageKey": "marketing/video-renditions/4f6d6a092189ae292be5d06216af34edbbc9bd6ee553182a8f7c96f2b3a495eb/public-demo-v1/mobile/d1e23f89f6a60afc8edd7980da68e2bd210de46013e3d6cb28add7014a920786.mp4",
+          "sha256": "d1e23f89f6a60afc8edd7980da68e2bd210de46013e3d6cb28add7014a920786",
+          "bytes": 3107038,
+          "probe": {
+            "width": 1280,
+            "height": 704,
+            "durationSeconds": 18.041667,
+            "containerDurationSeconds": 18.042,
+            "videoStartSeconds": 0,
+            "videoFrameCount": 433,
+            "cadence": {
+              "kind": "cfr",
+              "frameCount": 433,
+              "firstTimestampSeconds": 0,
+              "lastTimestampSeconds": 18,
+              "minDeltaSeconds": 0.041665999999999315,
+              "maxDeltaSeconds": 0.04166700000000034,
+              "timestampsSha256": "2ad1596c6893d64ff8b37c90369c49999caf39fb05f5a73606231cee4c96a3cf"
+            },
+            "frameRate": {
+              "numerator": 24,
+              "denominator": 1
+            },
+            "videoCodec": "h264",
+            "pixelFormat": "yuv420p",
+            "sampleAspectRatio": {
+              "numerator": 1,
+              "denominator": 1
+            },
+            "colorTransfer": null,
+            "rotationDegrees": 0,
+            "audio": {
+              "codec": "aac",
+              "channels": 1,
+              "sampleRateHz": 44100,
+              "durationSeconds": 18,
+              "startSeconds": 0,
+              "packetPayloadSha256": "7cc55e4d0e23db60f75abc2b367d3c989cd356ec38f481c7ba03dcdf88979f4d"
+            },
+            "fastStart": true,
+            "decodeOk": true
+          },
+          "visualReview": {
+            "reviewedAt": "2026-10-20T23:05:06.424Z",
+            "evidence": "docs/qa/flux-3-max-selected-media-2026-10-21.md"
+          },
+          "httpCheck": {
+            "checkedAt": "2026-10-20T23:06:20.806Z",
+            "contentType": "video/mp4",
+            "bytes": 3107038,
+            "rangeStart": 0,
+            "rangeEnd": 31,
+            "totalBytes": 3107038
+          },
+          "activatedAt": "2026-10-20T23:06:20.393Z"
+        }
+      },
+      "pendingRenditions": {},
+      "omissions": [],
+      "failures": []
+    },
+    {
+      "assetId": "flux-3-max-after-the-bell",
+      "role": "public-demo",
+      "original": {
+        "url": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/89a0cad4a8f434fe42e65eba0a3889e3039c785c2b68a8633497b247c097db49.mp4",
+        "sha256": "89a0cad4a8f434fe42e65eba0a3889e3039c785c2b68a8633497b247c097db49",
+        "bytes": 7313333,
+        "probe": {
+          "width": 1280,
+          "height": 704,
+          "durationSeconds": 18.041667,
+          "containerDurationSeconds": 18.042,
+          "videoStartSeconds": 0,
+          "videoFrameCount": 433,
+          "cadence": {
+            "kind": "cfr",
+            "frameCount": 433,
+            "firstTimestampSeconds": 0,
+            "lastTimestampSeconds": 18,
+            "minDeltaSeconds": 0.041665999999999315,
+            "maxDeltaSeconds": 0.04166700000000034,
+            "timestampsSha256": "2ad1596c6893d64ff8b37c90369c49999caf39fb05f5a73606231cee4c96a3cf"
+          },
+          "frameRate": {
+            "numerator": 24,
+            "denominator": 1
+          },
+          "videoCodec": "h264",
+          "pixelFormat": "yuv420p",
+          "sampleAspectRatio": {
+            "numerator": 1,
+            "denominator": 1
+          },
+          "colorTransfer": null,
+          "rotationDegrees": 0,
+          "audio": {
+            "codec": "aac",
+            "channels": 1,
+            "sampleRateHz": 44100,
+            "durationSeconds": 18,
+            "startSeconds": 0,
+            "packetPayloadSha256": "252cdc033521d40cabd4317461bea9ab0f0fafa5767d6149ecc73b1fa32d2112"
+          },
+          "fastStart": true,
+          "decodeOk": true
+        }
+      },
+      "renditions": {
+        "desktop": {
+          "profileVersion": "public-demo-v1",
+          "url": "https://media.maxvideoai.com/marketing/video-renditions/89a0cad4a8f434fe42e65eba0a3889e3039c785c2b68a8633497b247c097db49/public-demo-v1/desktop/ccaa6fe9f582baff5b6f5ab4e6b0de88ee29f2e0f1558c39f331c0fd92c31857.mp4",
+          "storageKey": "marketing/video-renditions/89a0cad4a8f434fe42e65eba0a3889e3039c785c2b68a8633497b247c097db49/public-demo-v1/desktop/ccaa6fe9f582baff5b6f5ab4e6b0de88ee29f2e0f1558c39f331c0fd92c31857.mp4",
+          "sha256": "ccaa6fe9f582baff5b6f5ab4e6b0de88ee29f2e0f1558c39f331c0fd92c31857",
+          "bytes": 3446491,
+          "probe": {
+            "width": 1280,
+            "height": 704,
+            "durationSeconds": 18.041667,
+            "containerDurationSeconds": 18.042,
+            "videoStartSeconds": 0,
+            "videoFrameCount": 433,
+            "cadence": {
+              "kind": "cfr",
+              "frameCount": 433,
+              "firstTimestampSeconds": 0,
+              "lastTimestampSeconds": 18,
+              "minDeltaSeconds": 0.041665999999999315,
+              "maxDeltaSeconds": 0.04166700000000034,
+              "timestampsSha256": "2ad1596c6893d64ff8b37c90369c49999caf39fb05f5a73606231cee4c96a3cf"
+            },
+            "frameRate": {
+              "numerator": 24,
+              "denominator": 1
+            },
+            "videoCodec": "h264",
+            "pixelFormat": "yuv420p",
+            "sampleAspectRatio": {
+              "numerator": 1,
+              "denominator": 1
+            },
+            "colorTransfer": null,
+            "rotationDegrees": 0,
+            "audio": {
+              "codec": "aac",
+              "channels": 1,
+              "sampleRateHz": 44100,
+              "durationSeconds": 18,
+              "startSeconds": 0,
+              "packetPayloadSha256": "252cdc033521d40cabd4317461bea9ab0f0fafa5767d6149ecc73b1fa32d2112"
+            },
+            "fastStart": true,
+            "decodeOk": true
+          },
+          "visualReview": {
+            "reviewedAt": "2026-10-20T23:05:06.424Z",
+            "evidence": "docs/qa/flux-3-max-selected-media-2026-10-21.md"
+          },
+          "httpCheck": {
+            "checkedAt": "2026-10-20T23:06:20.939Z",
+            "contentType": "video/mp4",
+            "bytes": 3446491,
+            "rangeStart": 0,
+            "rangeEnd": 31,
+            "totalBytes": 3446491
+          },
+          "activatedAt": "2026-10-20T23:06:20.393Z"
+        },
+        "mobile": {
+          "profileVersion": "public-demo-v1",
+          "url": "https://media.maxvideoai.com/marketing/video-renditions/89a0cad4a8f434fe42e65eba0a3889e3039c785c2b68a8633497b247c097db49/public-demo-v1/mobile/d8e8dc49380e396de180d1b17c271621c6fd6a1ded39e9ba0667fdb7c8e090ce.mp4",
+          "storageKey": "marketing/video-renditions/89a0cad4a8f434fe42e65eba0a3889e3039c785c2b68a8633497b247c097db49/public-demo-v1/mobile/d8e8dc49380e396de180d1b17c271621c6fd6a1ded39e9ba0667fdb7c8e090ce.mp4",
+          "sha256": "d8e8dc49380e396de180d1b17c271621c6fd6a1ded39e9ba0667fdb7c8e090ce",
+          "bytes": 2686472,
+          "probe": {
+            "width": 1280,
+            "height": 704,
+            "durationSeconds": 18.041667,
+            "containerDurationSeconds": 18.042,
+            "videoStartSeconds": 0,
+            "videoFrameCount": 433,
+            "cadence": {
+              "kind": "cfr",
+              "frameCount": 433,
+              "firstTimestampSeconds": 0,
+              "lastTimestampSeconds": 18,
+              "minDeltaSeconds": 0.041665999999999315,
+              "maxDeltaSeconds": 0.04166700000000034,
+              "timestampsSha256": "2ad1596c6893d64ff8b37c90369c49999caf39fb05f5a73606231cee4c96a3cf"
+            },
+            "frameRate": {
+              "numerator": 24,
+              "denominator": 1
+            },
+            "videoCodec": "h264",
+            "pixelFormat": "yuv420p",
+            "sampleAspectRatio": {
+              "numerator": 1,
+              "denominator": 1
+            },
+            "colorTransfer": null,
+            "rotationDegrees": 0,
+            "audio": {
+              "codec": "aac",
+              "channels": 1,
+              "sampleRateHz": 44100,
+              "durationSeconds": 18,
+              "startSeconds": 0,
+              "packetPayloadSha256": "252cdc033521d40cabd4317461bea9ab0f0fafa5767d6149ecc73b1fa32d2112"
+            },
+            "fastStart": true,
+            "decodeOk": true
+          },
+          "visualReview": {
+            "reviewedAt": "2026-10-20T23:05:06.424Z",
+            "evidence": "docs/qa/flux-3-max-selected-media-2026-10-21.md"
+          },
+          "httpCheck": {
+            "checkedAt": "2026-10-20T23:06:21.076Z",
+            "contentType": "video/mp4",
+            "bytes": 2686472,
+            "rangeStart": 0,
+            "rangeEnd": 31,
+            "totalBytes": 2686472
+          },
+          "activatedAt": "2026-10-20T23:06:20.393Z"
+        }
+      },
+      "pendingRenditions": {},
+      "omissions": [],
+      "failures": []
+    },
+    {
+      "assetId": "flux-3-max-unavailable",
+      "role": "public-demo",
+      "original": {
+        "url": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/0ed92d4517b23b3218ff97c2464fbec9d42b33d283f9aec2d43e103b65c6b2f1.mp4",
+        "sha256": "0ed92d4517b23b3218ff97c2464fbec9d42b33d283f9aec2d43e103b65c6b2f1",
+        "bytes": 5587443,
+        "probe": {
+          "width": 1280,
+          "height": 704,
+          "durationSeconds": 16.041667,
+          "containerDurationSeconds": 16.042,
+          "videoStartSeconds": 0,
+          "videoFrameCount": 385,
+          "cadence": {
+            "kind": "cfr",
+            "frameCount": 385,
+            "firstTimestampSeconds": 0,
+            "lastTimestampSeconds": 16,
+            "minDeltaSeconds": 0.041665999999999315,
+            "maxDeltaSeconds": 0.04166700000000034,
+            "timestampsSha256": "214abcc965a789cd236ef41cbcba808136ddb585cd8a78f501d7d34b59af1e41"
+          },
+          "frameRate": {
+            "numerator": 24,
+            "denominator": 1
+          },
+          "videoCodec": "h264",
+          "pixelFormat": "yuv420p",
+          "sampleAspectRatio": {
+            "numerator": 1,
+            "denominator": 1
+          },
+          "colorTransfer": null,
+          "rotationDegrees": 0,
+          "audio": {
+            "codec": "aac",
+            "channels": 1,
+            "sampleRateHz": 44100,
+            "durationSeconds": 16,
+            "startSeconds": 0,
+            "packetPayloadSha256": "63422c1e5cacfd6b13d6a40b9af007005b0263760472397a178366fe2b992319"
+          },
+          "fastStart": true,
+          "decodeOk": true
+        }
+      },
+      "renditions": {
+        "desktop": {
+          "profileVersion": "public-demo-v1",
+          "url": "https://media.maxvideoai.com/marketing/video-renditions/0ed92d4517b23b3218ff97c2464fbec9d42b33d283f9aec2d43e103b65c6b2f1/public-demo-v1/desktop/6ad8e4d4f894130e0537a36ffcd0f80ad0854c4fd57b6fd1e6ab0ce6fe858572.mp4",
+          "storageKey": "marketing/video-renditions/0ed92d4517b23b3218ff97c2464fbec9d42b33d283f9aec2d43e103b65c6b2f1/public-demo-v1/desktop/6ad8e4d4f894130e0537a36ffcd0f80ad0854c4fd57b6fd1e6ab0ce6fe858572.mp4",
+          "sha256": "6ad8e4d4f894130e0537a36ffcd0f80ad0854c4fd57b6fd1e6ab0ce6fe858572",
+          "bytes": 3041269,
+          "probe": {
+            "width": 1280,
+            "height": 704,
+            "durationSeconds": 16.041667,
+            "containerDurationSeconds": 16.042,
+            "videoStartSeconds": 0,
+            "videoFrameCount": 385,
+            "cadence": {
+              "kind": "cfr",
+              "frameCount": 385,
+              "firstTimestampSeconds": 0,
+              "lastTimestampSeconds": 16,
+              "minDeltaSeconds": 0.041665999999999315,
+              "maxDeltaSeconds": 0.04166700000000034,
+              "timestampsSha256": "214abcc965a789cd236ef41cbcba808136ddb585cd8a78f501d7d34b59af1e41"
+            },
+            "frameRate": {
+              "numerator": 24,
+              "denominator": 1
+            },
+            "videoCodec": "h264",
+            "pixelFormat": "yuv420p",
+            "sampleAspectRatio": {
+              "numerator": 1,
+              "denominator": 1
+            },
+            "colorTransfer": null,
+            "rotationDegrees": 0,
+            "audio": {
+              "codec": "aac",
+              "channels": 1,
+              "sampleRateHz": 44100,
+              "durationSeconds": 16,
+              "startSeconds": 0,
+              "packetPayloadSha256": "63422c1e5cacfd6b13d6a40b9af007005b0263760472397a178366fe2b992319"
+            },
+            "fastStart": true,
+            "decodeOk": true
+          },
+          "visualReview": {
+            "reviewedAt": "2026-10-20T23:05:06.424Z",
+            "evidence": "docs/qa/flux-3-max-selected-media-2026-10-21.md"
+          },
+          "httpCheck": {
+            "checkedAt": "2026-10-20T23:06:21.212Z",
+            "contentType": "video/mp4",
+            "bytes": 3041269,
+            "rangeStart": 0,
+            "rangeEnd": 31,
+            "totalBytes": 3041269
+          },
+          "activatedAt": "2026-10-20T23:06:20.393Z"
+        },
+        "mobile": {
+          "profileVersion": "public-demo-v1",
+          "url": "https://media.maxvideoai.com/marketing/video-renditions/0ed92d4517b23b3218ff97c2464fbec9d42b33d283f9aec2d43e103b65c6b2f1/public-demo-v1/mobile/705bc1b82395fa6e416cecaef4a2362c1dc318617b8f808bcb19517366eac267.mp4",
+          "storageKey": "marketing/video-renditions/0ed92d4517b23b3218ff97c2464fbec9d42b33d283f9aec2d43e103b65c6b2f1/public-demo-v1/mobile/705bc1b82395fa6e416cecaef4a2362c1dc318617b8f808bcb19517366eac267.mp4",
+          "sha256": "705bc1b82395fa6e416cecaef4a2362c1dc318617b8f808bcb19517366eac267",
+          "bytes": 2338359,
+          "probe": {
+            "width": 1280,
+            "height": 704,
+            "durationSeconds": 16.041667,
+            "containerDurationSeconds": 16.042,
+            "videoStartSeconds": 0,
+            "videoFrameCount": 385,
+            "cadence": {
+              "kind": "cfr",
+              "frameCount": 385,
+              "firstTimestampSeconds": 0,
+              "lastTimestampSeconds": 16,
+              "minDeltaSeconds": 0.041665999999999315,
+              "maxDeltaSeconds": 0.04166700000000034,
+              "timestampsSha256": "214abcc965a789cd236ef41cbcba808136ddb585cd8a78f501d7d34b59af1e41"
+            },
+            "frameRate": {
+              "numerator": 24,
+              "denominator": 1
+            },
+            "videoCodec": "h264",
+            "pixelFormat": "yuv420p",
+            "sampleAspectRatio": {
+              "numerator": 1,
+              "denominator": 1
+            },
+            "colorTransfer": null,
+            "rotationDegrees": 0,
+            "audio": {
+              "codec": "aac",
+              "channels": 1,
+              "sampleRateHz": 44100,
+              "durationSeconds": 16,
+              "startSeconds": 0,
+              "packetPayloadSha256": "63422c1e5cacfd6b13d6a40b9af007005b0263760472397a178366fe2b992319"
+            },
+            "fastStart": true,
+            "decodeOk": true
+          },
+          "visualReview": {
+            "reviewedAt": "2026-10-20T23:05:06.424Z",
+            "evidence": "docs/qa/flux-3-max-selected-media-2026-10-21.md"
+          },
+          "httpCheck": {
+            "checkedAt": "2026-10-20T23:06:21.389Z",
+            "contentType": "video/mp4",
+            "bytes": 2338359,
+            "rangeStart": 0,
+            "rangeEnd": 31,
+            "totalBytes": 2338359
+          },
+          "activatedAt": "2026-10-20T23:06:20.393Z"
+        }
+      },
+      "pendingRenditions": {},
+      "omissions": [],
+      "failures": []
     }
   ]
 }

@@ -13,8 +13,8 @@ const homeHeroPath = join(root, 'frontend/components/marketing/home/HomeHeroSect
 const heroShowcasePath = join(root, 'frontend/components/marketing/home/HeroVideoShowcase.tsx');
 const homeLcpImagePath = join(root, 'frontend/components/marketing/home/home-lcp-image.ts');
 const homeLcpPosterComponentPath = join(root, 'frontend/components/marketing/home/HomeLcpPoster.tsx');
-const desktopPosterPath = join(root, 'frontend/public/hero/showcase-minimax-h3-flight-15s.webp');
-const mobilePosterPath = join(root, 'frontend/public/hero/showcase-minimax-h3-flight-15s-mobile.webp');
+const desktopPosterPath = join(root, 'frontend/public/hero/showcase-flux-3-max-uncrowned-18s.webp');
+const mobilePosterPath = join(root, 'frontend/public/hero/showcase-flux-3-max-uncrowned-18s-mobile.webp');
 const require = createRequire(import.meta.url);
 const nextConfig = require('../frontend/next.config.js') as {
   headers: () => Promise<Array<{ source: string; headers: Array<{ key: string; value: string }> }>>;
@@ -41,7 +41,7 @@ test('homepage keeps responsive LCP discovery in the initial markup without dupl
   assert.equal(existsSync(homeLcpImagePath), true, 'homepage LCP image config should be shared by head and hero');
 
   const imageConfigSource = readSource(homeLcpImagePath);
-  assert.match(imageConfigSource, /showcase-minimax-h3-flight-15s\.webp/);
+  assert.match(imageConfigSource, /showcase-flux-3-max-uncrowned-18s\.webp/);
   assert.match(heroSource, /HOME_LCP_POSTER_SRC/);
   assert.match(heroSource, /engineId === HERO_VIDEO_ORDER\[0\]/);
   assert.ok(
@@ -55,7 +55,7 @@ test('homepage renders a mobile source while preserving the exact desktop poster
   const { HomeLcpPoster } = await import(
     '../frontend/components/marketing/home/HomeLcpPoster.tsx'
   );
-  const picture = HomeLcpPoster({ alt: 'MiniMax H3 cinematic flight scene' });
+  const picture = HomeLcpPoster({ alt: 'FLUX 3 Max The Uncrowned scene' });
   const [source, image] = React.Children.toArray(picture.props.children) as Array<
     React.ReactElement<Record<string, unknown>>
   >;
@@ -73,8 +73,8 @@ test('homepage mobile LCP asset is materially smaller than the approved desktop 
   assert.equal(existsSync(mobilePosterPath), true);
   assert.equal(
     createHash('sha256').update(readFileSync(desktopPosterPath)).digest('hex'),
-    '691333dead10f729e4ac212b64243b2676fb958d7724083611d7e4b5524eb633',
-    'the approved MiniMax H3 desktop poster must stay byte-for-byte unchanged'
+    '02b41d9d4f46e3776cd4a1d51bf842606c1cddc9aa640bde48438897555c9285',
+    'the approved FLUX 3 Max desktop poster must stay byte-for-byte unchanged'
   );
   assert.ok(statSync(mobilePosterPath).size <= 26_000, 'the mobile poster should stay within 26 KB');
   assert.ok(
@@ -108,7 +108,7 @@ test('homepage avoids HTTP image preloads that make mobile fetch both responsive
     .filter((header) => header.key.toLowerCase() === 'link');
 
   assert.equal(
-    homepageLinkHeaders.some((header) => header.value.includes('showcase-minimax-h3-flight-15s')),
+    homepageLinkHeaders.some((header) => header.value.includes('showcase-flux-3-max-uncrowned-18s')),
     false
   );
   assert.match(homeHeroSource, /unoptimizedPoster:\s*true/);

@@ -150,17 +150,17 @@
       {
         "id": "action",
         "label": "Action",
-        "title": "Last Exit",
-        "description": "An escape through a museum security shutter, followed by a quiet reveal.",
-        "copy": "Inside a museum bathed in red alarm light, an adult woman in a black jacket runs toward a descending metal security shutter. She slides underneath just in time; her small bag is trapped on the other side. She pauses to catch her breath, then opens her hand: the emerald is there. She smiles and disappears into the night. Urgent editing close to the running action, with hard cuts and clear spatial geography; slow the rhythm decisively for the final reveal. Sound: muffled alarm, footsteps, fabric scraping the floor, the metal shutter slamming, breathing. No dialogue.",
+        "title": "Still Here",
+        "description": "A woman reaches cover in a concrete parking garage, then answers over her radio.",
+        "copy": "A grounded action-thriller scene in an empty concrete parking garage at night. An adult woman with short dark hair, wearing a charcoal jacket and dark trousers, sprints from left to right toward a thick square concrete pillar. A burst of gunfire from offscreen behind her chips the wall she has just passed. She reaches the pillar, turns around its near corner, and presses her back against the sheltered side. The firing stops. Dust settles. Hold close on her face as she catches her breath and listens. She lifts the radio clipped to her jacket and says quietly in English, \"I'm still here.\" Cut to black. Start with a clear wide view of the route and cover; use urgent cuts following her run, then let the final pause last. Preserve the same woman, clothes, pillar and screen direction throughout. Hard fluorescent light, a red emergency light in the distance. Sound: running footsteps, offscreen gunfire, concrete impacts, breathing, radio static and her voice. No music or visible injuries.",
         "matchPublicExample": true
       },
       {
         "id": "romance",
         "label": "Romance",
-        "title": "Five More Minutes",
-        "description": "A missed train becomes an excuse to stay together, with two short English lines.",
-        "copy": "An adult woman in a camel coat and an adult man in a blue jacket meet on a nearly empty railway platform at the end of a rainy evening. Behind them, their train begins to leave. They watch it, then look at each other. She murmurs in English, \"We missed it again.\" He smiles and answers in English, \"Good.\" Their hands meet. Intimate cinema, warm light from the train falling across their faces, gentle rain. Let the editing follow their glances and make room for silence; do not rush to change shots. Sound: the departing train, rain, two close voices, a few very quiet notes of original piano music.",
+        "title": "After the Bell",
+        "description": "Two former fighters approach each other in a boxing ring, then trade their guard for a slow dance.",
+        "copy": "An intimate romantic film scene at dawn in an old boxing gym. Alone inside the ring are two adult former fighters: a woman in her forties with tightly braided black hair, a small scar above her lip and a worn crimson boxing robe; and a broad man in his fifties with a graying beard, a broken nose and a plain white vest. Their hands are bare, their faces tired, their affection unspoken. Golden light enters through high dusty windows. A small radio outside the ring plays an original, barely audible slow waltz. Begin wide with them standing apart on the worn canvas, then cut to their eyes as they approach with the caution of opponents. She almost raises her hands into a guard, changes her mind, and offers him an open hand instead. She says softly in English, \"You lead.\" He takes her hand. After one awkward step, they begin a simple slow dance in the center of the ring. Keep their full bodies readable during the first steps, then move closer as their guarded expressions give way to private smiles. End in a quiet wide view beyond the ropes, the ring containing their tenderness. Sound: the little radio, shoes brushing canvas, breathing and her voice. No boxing gloves, punches, audience or additional dialogue.",
         "matchPublicExample": true
       },
       {
@@ -183,19 +183,19 @@
     "tabNotes": [
       {
         "tabId": "action",
-        "body": "Text to video · 18 seconds requested · 16:9 · 720p · audio on."
+        "body": "Requested settings: text to video · 14 s · 16:9 · 720p · audio on."
       },
       {
         "tabId": "romance",
-        "body": "Text to video · 16 seconds requested · 16:9 · 720p · audio on."
+        "body": "Requested settings: text to video · 18 s · 16:9 · 720p · audio on."
       },
       {
         "tabId": "scifi",
-        "body": "Text to video · 16 seconds requested · 16:9 · 720p · audio on."
+        "body": "Requested settings: text to video · 16 s · 16:9 · 720p · audio on."
       },
       {
         "tabId": "keyframes",
-        "body": "Three images at 0, 8 and 16 seconds: frame indexes 0, 192 and 384 at 24 fps. 16 seconds requested · 16:9 · 720p · audio on. Pinned images do not guarantee exact cuts."
+        "body": "Three images at 0, 8 and 16 seconds: frame indexes 0, 192 and 384 at 24 fps. Requested settings: 16 seconds · 16:9 · 720p · audio on. Pinned images do not guarantee exact cuts."
       }
     ],
     "globalPrinciples": [
@@ -210,28 +210,28 @@
       "First and last images give the transition two visual anchors."
     ],
     "demo": {
-      "title": "Someone Answers",
-      "prompt": "Inside a silent space station, an adult astronaut with a visible face and an ivory spacesuit places a hand against a large observation window overlooking a dark nebula. Outside, an immense translucent shape slowly approaches; one of its long luminous extremities comes to rest directly opposite the astronaut's palm, on the other side of the glass. The astronaut holds their breath. End the encounter on these two answering gestures. Contemplative science fiction: begin with the astronaut's solitude, gradually reveal the scale of the presence, then return to the intimacy of the contact. Sound: interior ventilation, breathing, original low, delicate music; no exterior impact sound in the vacuum. No dialogue.",
+      "title": "After the Bell",
+      "prompt": "An intimate romantic film scene at dawn in an old boxing gym. Alone inside the ring are two adult former fighters: a woman in her forties with tightly braided black hair, a small scar above her lip and a worn crimson boxing robe; and a broad man in his fifties with a graying beard, a broken nose and a plain white vest. Their hands are bare, their faces tired, their affection unspoken. Golden light enters through high dusty windows. A small radio outside the ring plays an original, barely audible slow waltz. Begin wide with them standing apart on the worn canvas, then cut to their eyes as they approach with the caution of opponents. She almost raises her hands into a guard, changes her mind, and offers him an open hand instead. She says softly in English, \"You lead.\" He takes her hand. After one awkward step, they begin a simple slow dance in the center of the ring. Keep their full bodies readable during the first steps, then move closer as their guarded expressions give way to private smiles. End in a quiet wide view beyond the ropes, the ring containing their tenderness. Sound: the little radio, shoes brushing canvas, breathing and her voice. No boxing gloves, punches, audience or additional dialogue.",
       "promptLabel": "Prompt used for this film",
       "notes": [
-        "The scene moves from solitude to scale, then to an intimate gesture.",
-        "Interior sound keeps the space setting grounded."
+        "The prompt lets guarded gestures soften into a simple dance.",
+        "One English line, “You lead,” and a quiet radio waltz set the intimate tone."
       ],
       "summary": {
-        "subject": "An astronaut and a luminous presence beyond the window",
-        "action": "Two hands meet on opposite sides of the glass",
-        "camera": "Reveal the scale, then return to the contact",
-        "style": "Contemplative science fiction",
-        "output": "16 seconds requested · 16:9 · 720p"
+        "subject": "Two former fighters alone in a boxing ring",
+        "action": "An offered hand becomes a slow dance",
+        "camera": "Full-body first steps, then closer reactions",
+        "style": "Intimate romantic cinema",
+        "output": "Requested settings: 18 seconds · 16:9 · 720p"
       },
       "presentationOverrides": {
         "modeLabel": "Text to video",
         "outputLabel": "Rendered scene",
-        "duration": "16 s",
+        "duration": "18 s",
         "aspectRatio": "16:9",
         "audioChipMode": "media",
         "audioChipLabel": null,
-        "altContext": "Someone Answers — FLUX 3 Max science-fiction scene"
+        "altContext": "After the Bell — FLUX 3 Max romantic scene"
       }
     },
     "imageExamples": null

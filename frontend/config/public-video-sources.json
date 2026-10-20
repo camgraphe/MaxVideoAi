@@ -101,6 +101,21 @@
       "assetId": "flux-3-max-five-more-minutes",
       "url": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/0613e0c1a1dbdcba500079699da48c63a76f1fcfded03017a268f66508b07c2a.mp4",
       "sha256": "0613e0c1a1dbdcba500079699da48c63a76f1fcfded03017a268f66508b07c2a"
+    },
+    {
+      "assetId": "flux-3-max-uncrowned",
+      "url": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/4f6d6a092189ae292be5d06216af34edbbc9bd6ee553182a8f7c96f2b3a495eb.mp4",
+      "sha256": "4f6d6a092189ae292be5d06216af34edbbc9bd6ee553182a8f7c96f2b3a495eb"
+    },
+    {
+      "assetId": "flux-3-max-after-the-bell",
+      "url": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/89a0cad4a8f434fe42e65eba0a3889e3039c785c2b68a8633497b247c097db49.mp4",
+      "sha256": "89a0cad4a8f434fe42e65eba0a3889e3039c785c2b68a8633497b247c097db49"
+    },
+    {
+      "assetId": "flux-3-max-unavailable",
+      "url": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/0ed92d4517b23b3218ff97c2464fbec9d42b33d283f9aec2d43e103b65c6b2f1.mp4",
+      "sha256": "0ed92d4517b23b3218ff97c2464fbec9d42b33d283f9aec2d43e103b65c6b2f1"
     }
   ]
 }

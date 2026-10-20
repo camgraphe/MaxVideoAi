@@ -430,6 +430,14 @@ unmanaged preferred/featured additions. At most four model projections run
 concurrently; each reads at most 200 playlist videos plus the finite authored
 addition IDs. Counts retain legacy behavior when optional curation storage is absent.
 
+Admin model destinations use the same discoverability rule as curation, including
+published app/examples identities before their launch media are ready. They retain
+the public family ordering where available and append eligible launch identities.
+This permits preparation of the exact model collection without changing public
+readiness, visibility, indexability or membership. Retired, deep-legacy and
+unpublished identities do not become model destinations; inactive reserved
+hub/starter collections retain their historical diagnostics.
+
 The picker opens the connected hub, otherwise the first connected family. Its
 menu separates Examples & starters, Families, and Models; model submenus are
 grouped by family. Search reveals matching destinations across all sections,

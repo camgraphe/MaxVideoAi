@@ -1,14 +1,14 @@
 {
   "desktop": {
-    "source": "/hero/showcase-minimax-h3-flight-15s.webp",
-    "url": "/hero/prepared/691333dead10f729e4ac212b64243b2676fb958d7724083611d7e4b5524eb633.webp",
-    "sha256": "691333dead10f729e4ac212b64243b2676fb958d7724083611d7e4b5524eb633",
-    "bytes": 11712
+    "source": "/hero/showcase-flux-3-max-uncrowned-18s.webp",
+    "url": "/hero/prepared/02b41d9d4f46e3776cd4a1d51bf842606c1cddc9aa640bde48438897555c9285.webp",
+    "sha256": "02b41d9d4f46e3776cd4a1d51bf842606c1cddc9aa640bde48438897555c9285",
+    "bytes": 28668
   },
   "mobile": {
-    "source": "/hero/showcase-minimax-h3-flight-15s-mobile.webp",
-    "url": "/hero/prepared/7f13abf304ffb9aca84446d43dbf73594f1e2c38d9f162cd289fe8dd423ed063.webp",
-    "sha256": "7f13abf304ffb9aca84446d43dbf73594f1e2c38d9f162cd289fe8dd423ed063",
-    "bytes": 6750
+    "source": "/hero/showcase-flux-3-max-uncrowned-18s-mobile.webp",
+    "url": "/hero/prepared/c1ef6cf20564447329b275cb01895b08e0fe8bf38c32a6efaa254d39d0534f52.webp",
+    "sha256": "c1ef6cf20564447329b275cb01895b08e0fe8bf38c32a6efaa254d39d0534f52",
+    "bytes": 12562
   }
 }

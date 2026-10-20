@@ -806,6 +806,12 @@ for source identity, rendition checks, before/after loading measurements and
 validation limits. Originals, public reader ownership and mobile loading intent
 remain unchanged.
 
+The 2026-10-21 FLUX 3 Max selection replaces the first hero with film 16,
+The Uncrowned, and moves the exact MiniMax H3 flight scene to fifth. Seedance 2.5,
+Wan 3 and Kling 3 Pro retain their positions. The authored source registration,
+canonical rendition activation and new immutable first-poster evidence are in
+[the selected-media review](../qa/flux-3-max-selected-media-2026-10-21.md).
+
 ### Library import account lifetime
 
 `LibraryPageClient` keeps its account-keyed subtree. `useLibraryAssetMutations`

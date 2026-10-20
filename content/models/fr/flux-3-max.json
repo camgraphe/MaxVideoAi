@@ -150,17 +150,17 @@
       {
         "id": "action",
         "label": "Action",
-        "title": "Dernière sortie",
-        "description": "Une fuite sous le rideau de sécurité d’un musée, suivie d’une révélation au calme.",
-        "copy": "Inside a museum bathed in red alarm light, an adult woman in a black jacket runs toward a descending metal security shutter. She slides underneath just in time; her small bag is trapped on the other side. She pauses to catch her breath, then opens her hand: the emerald is there. She smiles and disappears into the night. Urgent editing close to the running action, with hard cuts and clear spatial geography; slow the rhythm decisively for the final reveal. Sound: muffled alarm, footsteps, fabric scraping the floor, the metal shutter slamming, breathing. No dialogue.",
+        "title": "Toujours là",
+        "description": "Une femme rejoint un abri dans un parking en béton, puis répond à la radio.",
+        "copy": "A grounded action-thriller scene in an empty concrete parking garage at night. An adult woman with short dark hair, wearing a charcoal jacket and dark trousers, sprints from left to right toward a thick square concrete pillar. A burst of gunfire from offscreen behind her chips the wall she has just passed. She reaches the pillar, turns around its near corner, and presses her back against the sheltered side. The firing stops. Dust settles. Hold close on her face as she catches her breath and listens. She lifts the radio clipped to her jacket and says quietly in English, \"I'm still here.\" Cut to black. Start with a clear wide view of the route and cover; use urgent cuts following her run, then let the final pause last. Preserve the same woman, clothes, pillar and screen direction throughout. Hard fluorescent light, a red emergency light in the distance. Sound: running footsteps, offscreen gunfire, concrete impacts, breathing, radio static and her voice. No music or visible injuries.",
         "matchPublicExample": true
       },
       {
         "id": "romance",
         "label": "Romance",
-        "title": "Encore cinq minutes",
-        "description": "Un train manqué devient un prétexte pour rester ensemble, avec deux courtes répliques en anglais.",
-        "copy": "An adult woman in a camel coat and an adult man in a blue jacket meet on a nearly empty railway platform at the end of a rainy evening. Behind them, their train begins to leave. They watch it, then look at each other. She murmurs in English, \"We missed it again.\" He smiles and answers in English, \"Good.\" Their hands meet. Intimate cinema, warm light from the train falling across their faces, gentle rain. Let the editing follow their glances and make room for silence; do not rush to change shots. Sound: the departing train, rain, two close voices, a few very quiet notes of original piano music.",
+        "title": "Après la cloche",
+        "description": "Deux anciens boxeurs s’approchent sur un ring, puis abandonnent leur garde pour une danse lente.",
+        "copy": "An intimate romantic film scene at dawn in an old boxing gym. Alone inside the ring are two adult former fighters: a woman in her forties with tightly braided black hair, a small scar above her lip and a worn crimson boxing robe; and a broad man in his fifties with a graying beard, a broken nose and a plain white vest. Their hands are bare, their faces tired, their affection unspoken. Golden light enters through high dusty windows. A small radio outside the ring plays an original, barely audible slow waltz. Begin wide with them standing apart on the worn canvas, then cut to their eyes as they approach with the caution of opponents. She almost raises her hands into a guard, changes her mind, and offers him an open hand instead. She says softly in English, \"You lead.\" He takes her hand. After one awkward step, they begin a simple slow dance in the center of the ring. Keep their full bodies readable during the first steps, then move closer as their guarded expressions give way to private smiles. End in a quiet wide view beyond the ropes, the ring containing their tenderness. Sound: the little radio, shoes brushing canvas, breathing and her voice. No boxing gloves, punches, audience or additional dialogue.",
         "matchPublicExample": true
       },
       {
@@ -183,19 +183,19 @@
     "tabNotes": [
       {
         "tabId": "action",
-        "body": "Texte vers vidéo · 18 secondes demandées · 16:9 · 720p · audio activé."
+        "body": "Réglages demandés : texte vers vidéo · 14 s · 16:9 · 720p · audio activé."
       },
       {
         "tabId": "romance",
-        "body": "Texte vers vidéo · 16 secondes demandées · 16:9 · 720p · audio activé."
+        "body": "Réglages demandés : texte vers vidéo · 18 s · 16:9 · 720p · audio activé."
       },
       {
         "tabId": "scifi",
-        "body": "Texte vers vidéo · 16 secondes demandées · 16:9 · 720p · audio activé."
+        "body": "Réglages demandés : texte vers vidéo · 16 s · 16:9 · 720p · audio activé."
       },
       {
         "tabId": "keyframes",
-        "body": "Trois images à 0, 8 et 16 secondes : indices 0, 192 et 384 à 24 i/s. 16 secondes demandées · 16:9 · 720p · audio activé. Les images épinglées ne garantissent pas les coupes exactes."
+        "body": "Trois images à 0, 8 et 16 secondes : indices 0, 192 et 384 à 24 i/s. Réglages demandés : 16 secondes · 16:9 · 720p · audio activé. Les images épinglées ne garantissent pas les coupes exactes."
       }
     ],
     "globalPrinciples": [
@@ -210,28 +210,28 @@
       "Les images de début et de fin donnent deux repères visuels à la transition."
     ],
     "demo": {
-      "title": "Quelqu’un répond",
-      "prompt": "Inside a silent space station, an adult astronaut with a visible face and an ivory spacesuit places a hand against a large observation window overlooking a dark nebula. Outside, an immense translucent shape slowly approaches; one of its long luminous extremities comes to rest directly opposite the astronaut's palm, on the other side of the glass. The astronaut holds their breath. End the encounter on these two answering gestures. Contemplative science fiction: begin with the astronaut's solitude, gradually reveal the scale of the presence, then return to the intimacy of the contact. Sound: interior ventilation, breathing, original low, delicate music; no exterior impact sound in the vacuum. No dialogue.",
+      "title": "Après la cloche",
+      "prompt": "An intimate romantic film scene at dawn in an old boxing gym. Alone inside the ring are two adult former fighters: a woman in her forties with tightly braided black hair, a small scar above her lip and a worn crimson boxing robe; and a broad man in his fifties with a graying beard, a broken nose and a plain white vest. Their hands are bare, their faces tired, their affection unspoken. Golden light enters through high dusty windows. A small radio outside the ring plays an original, barely audible slow waltz. Begin wide with them standing apart on the worn canvas, then cut to their eyes as they approach with the caution of opponents. She almost raises her hands into a guard, changes her mind, and offers him an open hand instead. She says softly in English, \"You lead.\" He takes her hand. After one awkward step, they begin a simple slow dance in the center of the ring. Keep their full bodies readable during the first steps, then move closer as their guarded expressions give way to private smiles. End in a quiet wide view beyond the ropes, the ring containing their tenderness. Sound: the little radio, shoes brushing canvas, breathing and her voice. No boxing gloves, punches, audience or additional dialogue.",
       "promptLabel": "Prompt utilisé pour ce film",
       "notes": [
-        "La scène passe de la solitude à une présence immense, puis à un geste intime.",
-        "Le son intérieur ancre la scène dans la station spatiale."
+        "Le prompt laisse les gestes de défense s’adoucir en une danse simple.",
+        "Une seule réplique en anglais, « You lead », et une valse discrète à la radio donnent le ton intime."
       ],
       "summary": {
-        "subject": "Un astronaute et une présence lumineuse derrière la vitre",
-        "action": "Deux mains se rejoignent de part et d’autre du verre",
-        "camera": "Révéler l’échelle, puis revenir au contact",
-        "style": "Science-fiction contemplative",
-        "output": "16 secondes demandées · 16:9 · 720p"
+        "subject": "Deux anciens boxeurs seuls sur un ring",
+        "action": "Une main tendue devient une danse lente",
+        "camera": "Les premiers pas en pied, puis les réactions en plans rapprochés",
+        "style": "Cinéma romantique intimiste",
+        "output": "Réglages demandés : 18 secondes · 16:9 · 720p"
       },
       "presentationOverrides": {
         "modeLabel": "Texte vers vidéo",
         "outputLabel": "Scène générée",
-        "duration": "16 s",
+        "duration": "18 s",
         "aspectRatio": "16:9",
         "audioChipMode": "media",
         "audioChipLabel": null,
-        "altContext": "Someone Answers — scène de science-fiction FLUX 3 Max"
+        "altContext": "After the Bell — scène romantique FLUX 3 Max"
       }
     },
     "imageExamples": null

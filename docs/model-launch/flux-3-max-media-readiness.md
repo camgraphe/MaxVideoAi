@@ -1,80 +1,93 @@
 # FLUX 3 Max media readiness
 
-The independent `flux-3-max` wave in `frontend/config/model-launch-waves.ts`
-requires two accepted Max videos. P0 and P1 retain their existing manifests,
-targets and asset identities. The new source path is
-`docs/model-launch/flux-3-max-video-example-pack.json`.
+Updated 2026-10-21 after the final user selection, external adoption and saved
+admin curations. The independent `flux-3-max` wave is now backed by two accepted
+text-to-video examples in `flux-3-max-video-example-pack.json`: film 05,
+**The Sleeping Guardian**, and film 09, **Someone Answers**. Both remain
+`gallery_only`, with `watchPageCandidate: false`. They establish launch media
+readiness; they are not the final model hero or Prompt Lab demonstration.
 
-Checkpoint 2026-10-21: all eleven genuine external Fal jobs have been adopted
-with their original provider provenance and no wallet, receipt or synthetic timing
-side effects. Eight jobs (02–07,09,10) are public/indexable; films 01,08,11 remain private.
-The user rejected film01 for visual inconsistencies; its bounded withdrawal is
-complete and preserved its original media, all other jobs and all financial facts.
-The launch selection and curations are paused for the user’s final viewing selection. The provisional preview hero 05, Prompt Lab 09 and the separate keyframe teaching example 10 are
-pinned to their actual public jobs, with the reviewed reference images and captions.
+## Final selection and saved destinations
 
-The source manifest still stays absent because completed playlist evidence is
-pending. The Max collection exists, but the historical nine-film preview is obsolete after
-film01’s withdrawal. Its initial canonical save rolled back at its deadline.
-The optimized canonical owner preserves tokens and guards in tests/read-only
-comparisons; no later save has been performed. A preview is
-not a saved membership. The generator therefore continues to represent the Max
-wave as `missing`, with no Max launch assets or ready model; earlier validated
-waves are unchanged. Do not populate it with predicted IDs or pending reviews.
+The user retained 18 of the 20 films, excluding only **Last Exit (01)** and
+**The Wrong Reflection (08)**. The accepted jobs are public/indexable for gallery
+eligibility; 01 and 08 remain private and non-indexable. Final roles are:
 
-The historical private preparation in
-`.local/flux-3-max/launch-readiness-template.json` selects films 01 and 09. Its null
-fields were intentionally left incomplete before adoption; current read-back
-reports now supply actual job IDs, durable originals and measured facts. Do not
-copy the incomplete template directly. Replace the rejected film 01 evidence with a reviewed accepted pair, then wait
-for the three revision-bound saves
-(model, family and examples hub), read back memberships and preserved selections,
-then author the accepted source from those real records.
+- Model hero: **Unavailable (19)**, first in the saved model selection.
+- Prompt Lab demonstration: **After the Bell (18)**.
+- Homepage hero: **The Uncrowned (16)**.
+- Keyframe teaching example: **The Door to Spring (10)**.
 
-## Final evidence contract
+Admin Playlists saved `examples-flux-3-max` as a manual selection of the 18
+accepted jobs. The family selection `family-flux` contains its 13 existing
+videos plus those 18 jobs, preserving the existing four opening videos. The
+main examples hub was deliberately left unchanged; its canonical read-back
+retained all 285 selected videos. No hub save is required for this launch pair.
 
-Each of the two `assets` entries in the final schemaVersion 1 document requires:
+The evidence captured before readiness generation distinguishes 31 stored
+family selections from 13 effective public family videos: the public asset gate
+still excluded Max at that point. Generating readiness admits Max through the
+existing family policy; verify the effective public projection again after the
+new code is loaded. A stored selection is not by itself proof of a deployed
+page or its current card count.
 
-- `waveId: "flux-3-max"`, `modelId` and `engineId: "flux-3-max"`, `familyId: "flux"`.
-- Actual `assetId` (the existing output), `videoId`, `jobId` and private
-  `libraryAssetId`, read back after external Fal adoption. Preserve the external
-  provenance; a launch manifest never proves an app generation or wallet charge.
-- Exact submitted `prompt`, supported `mode`, matching `sourceKind` and ordered
-  `sourceAssetIds`. The selected pair is text-to-video with `sourceKind: "text"`
-  and an empty source list. Other modes must match the raw engine's source
-  requirements; unsupported modes and missing references are rejected.
-- Original `videoUrl` and `thumbnailUrl` on `https://media.maxvideoai.com`, without
-  credentials, query strings or fragments; actual
-  measured `width`, `height` and `durationSec`. Requested duration remains in the
-  job/settings snapshot and must not be replaced with the measured extra frame.
-- The actual review `acceptedAt`, `reviewStatus: "accepted"`,
-  `publicationState: "gallery_only"` and `watchPageCandidate: false`.
-- Actual distinct `familyPlaylistId` and `modelPlaylistId`, with the two slugs
-  `family-flux` and `examples-flux-3-max`. The pair uses the same family playlist
-  and same model playlist; verify both memberships through the existing owner.
+## Evidence and authored source
 
-Admin family candidates include published catalog models in that family before
-their launch assets are ready. Use the existing preview/token/save owner to
-record their real membership. Its effective preview and the public reader still
-apply asset readiness, so a prepared selection is not proof of public exposure.
-Retired, deep legacy, unpublished and other-family models remain ineligible.
+The private repeatable-read evidence is
+`.local/flux-3-max/selection-2026-10-21/readiness-film-05-09-evidence.json`, captured
+at `2026-10-20T23:27:58.913Z`, with SHA-256
+`709fa1627944e8e7a51d8476fb9f5d09806862e7e6876947ffcce7683723c288`.
+It records the actual completed jobs, ready outputs, saved library records,
+provider provenance, original prompts, measured media facts and canonical
+curation snapshots. Playlist identities are corroborated by the same folder's
+`admin-after-curation.json`; `admin-after-curation-canonical.json` preserves the
+hub and earlier family membership evidence. Private account metadata remains
+outside the tracked source manifest.
 
-After those actions have been completed and reviewed, write the real source
-manifest, then run `pnpm model:launch-assets:generate` and
-`pnpm model:launch-assets:check`. Both generated projections are derived files;
-never edit them by hand. The generator is an offline evidence consistency check,
-not a database/publication operation or a substitute for checking actual jobs,
-media access, playlists and content.
+The authored pair uses the real output IDs as `assetId`, actual job IDs as
+`videoId` and `jobId`, and the durable uploaded media IDs as `libraryAssetId`.
+Both entries use `modelId` / `engineId: flux-3-max`, `familyId: flux`, `mode: t2v`,
+`sourceKind: text` and an empty source list. Their exact original and poster URLs
+are on `media.maxvideoai.com`, without temporary credentials or query strings.
+The recorded acceptance time is the final user-selection timestamp, distinct
+from generation, import and curation timestamps.
 
-Public display derivatives have their separate measured, review, HTTP/Range and
-activation contract in [media delivery](../engineering/media-delivery.md).
-Launch readiness does not certify those derivatives or enroll a watch page in
-video SEO. The keyframe teaching demonstration has its own exact-job selection;
-these two text-to-video examples do not activate it.
+| Film | Requested duration | Measured duration | Measured dimensions |
+| --- | ---: | ---: | --- |
+| 05 — The Sleeping Guardian | 18 s | 18.041667 s | 1280 × 704 |
+| 09 — Someone Answers | 16 s | 16.041667 s | 1280 × 704 |
 
-The latest user review keeps final hero choice, marketing curation and launch
-readiness pending a viewing selection. The approved replacement12 and eight additional scenes13–20 are rendered once
-each. The user explicitly delegated the eight prompts and their execution without
-intermediate approval and removed the original overall budget cap. These new
-outputs remain review candidates; the preview pin is not final editorial approval.
-No extra retry or new publication follows automatically from that delegation.
+The shared family and model playlist IDs were read from the persisted records,
+and each job appears in both saved selections. External Fal adoption retains
+`external_fal_import` provenance and `external_not_billed` payment status; this
+manifest does not represent a MaxVideoAI generation charge.
+
+## Projection checks and remaining release work
+
+`pnpm model:launch-assets:generate` authored the two derived projections through
+the canonical generator, and `pnpm model:launch-assets:check` confirms coherence.
+Max has `acceptedAssetCount: 2`. The P0/P1 source files are byte-identical to the
+pre-generation snapshot, and all non-Max assets, waves and readiness model
+records are structurally unchanged. The local preservation report is
+`selection-2026-10-21/readiness-preservation-qa.json` under the private media folder.
+The engine catalog also consumes family readiness: its canonical generator
+updated only `familyExamplesPage` on the three FLUX entries to include Max.
+All other catalog fields and entries are unchanged, and `model:registry:check`
+passes after that dependent projection was regenerated.
+
+The previously failing public family contract passes after generation, together
+with Max family continuity, source validation, admin destination/candidate and
+Video SEO separation checks. This is offline validation, not a deployment or a
+browser playback certification.
+
+The three Video SEO entries for 16, 18 and 19 were saved through the dedicated
+admin editor as **drafts**. Their approval and publication are deferred until the
+reviewed release is available and its watch pages pass the real admin and public
+checks. Films 05/09 are not enrolled in that watch-page work. Readiness alone
+neither approves SEO nor proves Google indexing.
+
+Public display derivatives have their own measured review, HTTP/Range and
+activation record in [the selected-media review](../qa/flux-3-max-selected-media-2026-10-21.md).
+The keyframe example retains its exact-job/reference contract. Deployment,
+localized playback, canonical/sitemap checks and editor handoff verification
+remain separate release gates.

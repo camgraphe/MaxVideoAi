@@ -194,7 +194,7 @@ test('approved hero carousel alts belong to exact localized hero copy rather tha
   }
 });
 
-test('homepage hero opens on the approved MiniMax H3 flight scene with coherent media and pricing', () => {
+test('homepage opens on FLUX 3 Max and moves the exact MiniMax H3 scene into the former LTX slot', () => {
   (globalThis as typeof globalThis & { React: typeof React }).React = React;
   const cases = [
     ['en', enMessages],
@@ -227,6 +227,7 @@ test('homepage hero opens on the approved MiniMax H3 flight scene with coherent 
       programmedHeroItems: [
         {
           id: 'programmed-minimax',
+          examplesHref: { pathname: '/examples/[model]', params: { model: 'hailuo' } },
           engineId: 'minimax-h3',
           name: 'MiniMax H3',
           provider: 'MiniMax',
@@ -262,12 +263,18 @@ test('homepage hero opens on the approved MiniMax H3 flight scene with coherent 
     assert.ok(showcaseItems, `HomeHero should compose the ${locale} video showcase`);
     assert.deepEqual(
       showcaseItems.map((item) => item.engineId),
-      ['minimax-h3', 'seedance-2-5', 'wan-3', 'kling-3-pro', 'ltx-2-5-pro'],
+      ['flux-3-max', 'seedance-2-5', 'wan-3', 'kling-3-pro', 'minimax-h3'],
       `HomeHero should keep the approved current-model order in ${locale}`,
     );
-    assert.equal(showcaseItems[0]?.bestFor, expectedMiniMaxDescriptions[locale]);
-    assert.deepEqual(showcaseItems[0]?.chips, expectedMiniMaxChips[locale]);
-    assert.equal(showcaseItems[0]?.imageAlt, expectedMiniMaxAlts[locale]);
+    assert.equal(showcaseItems[4]?.bestFor, expectedMiniMaxDescriptions[locale]);
+    assert.deepEqual(showcaseItems[4]?.chips, expectedMiniMaxChips[locale]);
+    assert.equal(showcaseItems[4]?.imageAlt, expectedMiniMaxAlts[locale]);
+    assert.equal(showcaseItems[0]?.engineId, 'flux-3-max');
+    assert.match(showcaseItems[0]?.imageAlt ?? '', /The Uncrowned/);
+    assert.equal(showcaseItems[0]?.videoSrc?.includes('4f6d6a092189ae292be5d06216af34edbbc9bd6ee553182a8f7c96f2b3a495eb'), true);
+    assert.deepEqual(showcaseItems[0]?.examplesHref, { pathname: '/examples/[model]', params: { model: 'flux' } });
+    assert.deepEqual(showcaseItems[4]?.examplesHref, { pathname: '/examples/[model]', params: { model: 'hailuo' } });
+    assert.equal(copy.mockup.engineRecommendations.find(item => item.selected)?.engineId, 'flux-3-max');
     if (locale === 'en') englishItems = showcaseItems;
   }
 
@@ -284,13 +291,13 @@ test('homepage hero opens on the approved MiniMax H3 flight scene with coherent 
     })),
     [
       {
-        engineId: 'minimax-h3',
-        mediaInfo: 'Text-to-video · 15s · 26:15',
-        modelHref: { pathname: '/models/[slug]', params: { slug: 'minimax-h3' } },
-        posterSrc: '/hero/showcase-minimax-h3-flight-15s.webp',
-        videoSrc: 'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/5632c9c8-b6d1-4b76-85ca-e32c0643e49f.mp4',
-        duration: '0:15',
-        resolution: '26:15',
+        engineId: 'flux-3-max',
+        mediaInfo: 'Text-to-video · 18s · 16:9',
+        modelHref: { pathname: '/models/[slug]', params: { slug: 'flux-3-max' } },
+        posterSrc: '/hero/showcase-flux-3-max-uncrowned-18s.webp',
+        videoSrc: 'https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/4f6d6a092189ae292be5d06216af34edbbc9bd6ee553182a8f7c96f2b3a495eb.mp4',
+        duration: '0:18',
+        resolution: '16:9',
       },
       {
         engineId: 'seedance-2-5',
@@ -320,13 +327,13 @@ test('homepage hero opens on the approved MiniMax H3 flight scene with coherent 
         resolution: '16:9',
       },
       {
-        engineId: 'ltx-2-5-pro',
-        mediaInfo: 'Image-to-video · 6s · 16:9',
-        modelHref: { pathname: '/models/[slug]', params: { slug: 'ltx-2-5-pro' } },
-        posterSrc: 'https://media.maxvideoai.com/user-asset-thumbs/by-content/c780259ed79d025b4ac74ccc513f18bf/eca62625821feb6bd76c6e023a43988bc8ea18508c783bc6adf4973f172b8d75.jpeg',
-        videoSrc: 'https://media.maxvideoai.com/media-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/2506829a4f4f3d7e5d2bd864a701fc6cc2fb7c53182f7a7f5ca10cc580c70aa8.mp4',
-        duration: '0:06',
-        resolution: '16:9',
+        engineId: 'minimax-h3',
+        mediaInfo: 'Text-to-video · 15s · 26:15',
+        modelHref: { pathname: '/models/[slug]', params: { slug: 'minimax-h3' } },
+        posterSrc: '/hero/showcase-minimax-h3-flight-15s.webp',
+        videoSrc: 'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/5632c9c8-b6d1-4b76-85ca-e32c0643e49f.mp4',
+        duration: '0:15',
+        resolution: '26:15',
       },
     ],
   );
