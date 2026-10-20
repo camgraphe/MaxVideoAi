@@ -67,6 +67,8 @@ test('the product dialog reviews cumulative packs before purchase and preserves 
     await act(async()=>button('Close assistance').click());assert.deepEqual(profiles,['standard'],'An explicitly confirmed Complex choice is retained');
     const sentenceOpener=dom.window.document.createElement('button');sentenceOpener.textContent='Switch to Sol';dom.window.document.body.append(sentenceOpener);sentenceOpener.focus();
     await render(status,null,'en',{openSignal:1});await act(async()=>button('Close assistance').click());
-    assert.equal(dom.window.document.activeElement,sentenceOpener,'The sentence entry returns keyboard focus to its actual opener');sentenceOpener.remove();
+    assert.equal(dom.window.document.activeElement===sentenceOpener,true,'The sentence entry returns keyboard focus to its actual opener');
+    sentenceOpener.focus();await render(status,null,'en',{openSignal:2});sentenceOpener.remove();await act(async()=>button('Close assistance').click());
+    assert.equal(dom.window.document.activeElement===button('Studio assistance and budget'),true,'A removed Luna sentence falls back to the persistent model selector');
   }finally{await act(async()=>root.unmount());dom.window.close();for(const[key,value]of previous){if(value)Object.defineProperty(globalThis,key,value);else Reflect.deleteProperty(globalThis,key);}if(oldCss)require.extensions['.css']=oldCss;else delete require.extensions['.css'];}
 });

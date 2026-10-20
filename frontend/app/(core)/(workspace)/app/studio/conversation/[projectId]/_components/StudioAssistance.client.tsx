@@ -19,13 +19,13 @@ export function StudioAssistance(props:Props) {
   function close(){if(props.taskBudget?.profile==='complex'&&!props.taskBudget.confirmed)props.taskBudget.onProfile('standard');setOpen(false);}
   return <>
     <button ref={trigger} className={styles.trigger} aria-haspopup="dialog" aria-expanded={open} aria-label={t('Studio assistance and budget','Assistance et budget Studio')} onClick={event=>{returnFocus.current=event.currentTarget;setRequestedSol(false);setOpen(true);}}><span>{status?(luna?'Luna':'Sol'):'…'}</span><ChevronDown size={12}/></button>
-    {open&&(status?.credits?<StudioAssistanceCreditsDialog {...props} initialView={requestedSol?'sol':undefined} trigger={returnFocus} onClose={close}/>:<AssistanceDialog {...props} trigger={returnFocus} onClose={close}/>)}
+    {open&&(status?.credits?<StudioAssistanceCreditsDialog {...props} initialView={requestedSol?'sol':undefined} trigger={returnFocus} fallbackTrigger={trigger} onClose={close}/>:<AssistanceDialog {...props} trigger={returnFocus} fallbackTrigger={trigger} onClose={close}/>)}
   </>;
 }
-function AssistanceDialog({status,busy,error,locale,conversationBusy,choose,refresh,onChoice,trigger,onClose}:Props&{trigger:RefObject<HTMLButtonElement>;onClose:()=>void}) {
+function AssistanceDialog({status,busy,error,locale,conversationBusy,choose,refresh,onChoice,trigger,fallbackTrigger,onClose}:Props&{trigger:RefObject<HTMLButtonElement>;fallbackTrigger?:RefObject<HTMLButtonElement>;onClose:()=>void}) {
   const dialog=useRef<HTMLDialogElement>(null),id=useId(),t=(en:string,fr:string)=>locale==='fr'?fr:en;
   const [amount,setAmount]=useState(500);
-  useEffect(()=>{const el=dialog.current,opener=trigger.current;el?.showModal();return()=>{el?.close();opener?.focus();};},[trigger]);
+  useEffect(()=>{const el=dialog.current,opener=trigger.current,fallback=fallbackTrigger?.current;el?.showModal();return()=>{el?.close();(opener?.isConnected?opener:fallback)?.focus();};},[trigger,fallbackTrigger]);
   async function select(choice:StudioAssistanceChoice) {if(await choose(choice)){onChoice();onClose();}}
   const locked=busy||conversationBusy||!!status?.unresolvedCalls;
   const availableAmounts=[500,1000,2000].filter(value=>value<=(status?.paid.maxAdditionalBudgetCents??0));

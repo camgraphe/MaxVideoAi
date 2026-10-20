@@ -65,7 +65,7 @@ test('task ceilings, explicit continuation and saved progress work on desktop/mo
     await expect(page.getByRole('button',{name:'switch to GPT‑6.1 Sol'})).toBeFocused();
     await page.getByRole('button',{name:'switch to GPT‑6.1 Sol'}).click();
     await page.getByRole('button',{name:'Continue with GPT‑6.1 Sol',exact:true}).click();
-    await expect(selector).toHaveText('Sol');await expect(picker).toHaveCount(0);
+    await expect(selector).toHaveText('Sol');await expect(selector).toBeFocused();await expect(picker).toHaveCount(0);
     await expect(page.getByText('You’re using Luna.',{exact:false})).toHaveCount(0);
     async function selectProfile(profile:string,confirm=false){
       await selector.click();await expect(picker).toBeVisible();

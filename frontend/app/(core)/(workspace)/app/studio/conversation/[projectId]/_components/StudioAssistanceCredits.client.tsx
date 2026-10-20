@@ -12,7 +12,7 @@ import styles from './studio-assistance-credits.module.css';
 const setupLinks=(['chatgpt','claude','codex'] as const).map(getMcpIntegration).filter(integration=>integration.site.publication==='live'&&integration.installation.directMcp==='available');
 type Review={amountCents:200|500|1000;expectedRevision:number;tariffVersion:string;purchaseKey:string;remaining:number};
 
-export function StudioAssistanceCreditsDialog({tasksEnabled,taskBudget,initialView,status,busy,error,locale,conversationBusy,choose,refresh,onChoice,trigger,onClose}:StudioAssistanceProps&{initialView?:'sol'|'luna';trigger:RefObject<HTMLButtonElement>;onClose:()=>void}){
+export function StudioAssistanceCreditsDialog({tasksEnabled,taskBudget,initialView,status,busy,error,locale,conversationBusy,choose,refresh,onChoice,trigger,fallbackTrigger,onClose}:StudioAssistanceProps&{initialView?:'sol'|'luna';trigger:RefObject<HTMLButtonElement>;fallbackTrigger?:RefObject<HTMLButtonElement>;onClose:()=>void}){
   const dialog=useRef<HTMLDialogElement>(null),back=useRef<HTMLButtonElement>(null),id=useId();
   const [view,setView]=useState<'sol'|'luna'>(initialView??(status?.selectedModel==='gpt-6-luna'?'luna':'sol'));
   const [pack,setPack]=useState<200|500|1000>(200),[review,setReview]=useState<Review|null>(null);
@@ -20,7 +20,7 @@ export function StudioAssistanceCreditsDialog({tasksEnabled,taskBudget,initialVi
   const quantity=(value:number)=>new Intl.NumberFormat(locale==='fr'?'fr-FR':'en-US').format(value);
   const price=(cents:number)=>'$'+cents/100;
   const mcpHref=(pathname:string,hash='')=>'https://maxvideoai.com'+buildMarketingLocaleSwitchHref({pathname,targetLocale:locale,hash});
-  useEffect(()=>{const element=dialog.current,opener=trigger.current;element?.showModal();return()=>{element?.close();opener?.focus();};},[trigger]);
+  useEffect(()=>{const element=dialog.current,opener=trigger.current,fallback=fallbackTrigger?.current;element?.showModal();return()=>{element?.close();(opener?.isConnected?opener:fallback)?.focus();};},[trigger,fallbackTrigger]);
   useEffect(()=>{dialog.current?.scrollTo?.({top:0});if(review)back.current?.focus();},[view,review]);
   const credits=status?.credits,locked=busy||conversationBusy||!!status?.unresolvedCalls||!!error;
   const solUnavailable=status?.sponsoredAvailable===false&&!!credits?.included.remaining,lunaUnavailable=status?.sponsoredAvailable===false;
