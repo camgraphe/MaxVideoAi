@@ -4,7 +4,7 @@ import '@/styles/app-experience.css';
 import '@/styles/app-shell.css';
 import { cookies } from 'next/headers';
 import type { ReactNode } from 'react';
-import { Analytics as VercelAnalytics } from '@vercel/analytics/react';
+import VercelAnalytics from '@/components/analytics/VercelAnalytics';
 import { AnalyticsScripts } from '@/components/analytics/AnalyticsScripts';
 import ConsentModeBootstrap from '@/components/analytics/ConsentModeBootstrap';
 import GA4EventBridge from '@/components/analytics/GA4EventBridge';

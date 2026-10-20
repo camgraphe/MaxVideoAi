@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Analytics as VercelAnalytics } from '@vercel/analytics/react';
+import VercelAnalytics from '@/components/analytics/VercelAnalytics';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { AnalyticsScripts } from '@/components/analytics/AnalyticsScripts';
 import ConsentModeBootstrap from '@/components/analytics/ConsentModeBootstrap';

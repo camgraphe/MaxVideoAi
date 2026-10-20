@@ -72,6 +72,19 @@ test('fresh consented marketing loaders suppress a stored admin before GA init o
     await act(async () => { release(new Response(JSON.stringify({ ok: false, commercialAnalyticsEligible: true }))); await ordinaryRole; });
     assert.ok(document.querySelector('script#ga-init'));
     assert.deepEqual(disableAtInit, [false], 'eligible restoration clears disable before actual Next script initialization');
+    const configCommands = () => Array.from(dom.window.dataLayer as ArrayLike<ArrayLike<unknown>>)
+      .map(command => Array.from(command))
+      .filter(command => command[0] === 'config');
+    assert.equal((configCommands().at(-1)?.[2] as Record<string, unknown>).page_location, 'https://maxvideoai.com/integrations/claude');
+    await act(async () => {
+      dom.window.history.pushState(null, '', '/app/studio/conversation/project_private?token=private-query');
+      document.title = 'Private customer project';
+      root!.render(React.createElement(React.Fragment, null, React.createElement(Bootstrap), React.createElement(GTM, { delayMs: 0 })));
+    });
+    const updatedConfig = configCommands().at(-1)?.[2] as Record<string, unknown>;
+    assert.equal(updatedConfig.page_location, 'https://maxvideoai.com/app/studio');
+    assert.equal(updatedConfig.send_page_view, false);
+    assert.doesNotMatch(JSON.stringify(updatedConfig), /private|Private/);
     await act(async () => { dom.window.dispatchEvent(new dom.window.Event('load')); for (const callback of idleCallbacks.values()) callback({ didTimeout: false, timeRemaining: () => 50 }); idleCallbacks.clear(); for (const callback of timers.values()) callback(); timers.clear(); });
     assert.ok(document.querySelector('script[src*="googletagmanager.com/gtag/js?id=G-BOOTSTRAP-LOCAL"]'));
     assert.ok(document.querySelector('script[src*="googletagmanager.com/gtm.js?id=GTM-BOOTSTRAP-LOCAL"]'));
