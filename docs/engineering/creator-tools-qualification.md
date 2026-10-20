@@ -35,6 +35,17 @@ samples, avoiding FFprobe-version-specific MP4 duration rounding. The connected
 Studio browser test prepares its real journal response before inducing expiry and
 drains held callbacks before teardown; both response orders remain asserted.
 
+The pre-merge journey review additionally repaired prepared-quote recovery,
+terminal missing-operation handling, revision-bound subtitle export recovery,
+and account changes during image/audio/video uploads. Scoped session recovery
+retains confirmed work across reloads without a new preparation or purchase.
+Subtitle MP4 publication now preserves probed media facts through the owned Studio
+route. Audio extraction retains delayed starts and timestamp gaps as silence.
+The final recovery batch passed 67 focused tests and two PostgreSQL 17 tests;
+subtitle offset, rendering and publication have separate real-media/PG regressions.
+Independent review found no remaining actionable P0/P1/P2 in the inspected paths;
+this remains code/test evidence, not a live paid customer journey.
+
 ## Delivered paths
 
 | Tool | Implemented execution | Shared continuation | Live qualification |

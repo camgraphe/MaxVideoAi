@@ -58,3 +58,9 @@ test('creator JSON cancels oversized streams early and HTTP never exposes unexpe
   const response = creatorHttpFailure(new Error('secret connection string'));
   assert.doesNotMatch(JSON.stringify(await response.json()), /secret connection/);
 });
+test('missing, foreign and hidden creator operations return a terminal unavailable response', async () => {
+  const { creatorHttpFailure } = await fixture();
+  const response = creatorHttpFailure(new Error('CREATOR_OPERATION_NOT_FOUND'));
+  assert.equal(response.status,404);
+  assert.equal((await response.json()).error.code,'CREATOR_OPERATION_NOT_FOUND');
+});

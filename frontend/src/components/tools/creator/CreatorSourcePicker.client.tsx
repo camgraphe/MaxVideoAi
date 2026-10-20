@@ -6,6 +6,7 @@ import { creatorExperienceCopy } from './creator-experience-copy';
 import { AssetLibraryBrowser, type AssetBrowserAsset } from '@/components/library/AssetLibraryBrowser';
 import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
 import { authFetch } from '@/lib/authFetch';
+import { ownedAuthFetch } from '@/lib/owned-auth-fetch';
 import { uploadVideoFile } from '@/lib/client-video-upload';
 import { buildMediaLibraryAssetsUrl, type MediaLibraryAssetsResponse } from '@/lib/media-library-client';
 import type { ToolMediaKind } from '@/lib/toolbox/catalogue';
@@ -20,25 +21,31 @@ export function CreatorSourcePicker({ userId, locale, label, hint, kind, source,
   const copy = creatorCopy(locale), experience = creatorExperienceCopy(locale);
   const [open, setOpen] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState<string | null>(null);
   const mounted = useRef(true), uploading = useRef(false);
-  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  const uploadController = useRef<AbortController | null>(null);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; uploadController.current?.abort(); }; }, [userId]);
   async function upload(file: File) {
     if (!userId || disabled || uploading.current) return;
     uploading.current = true; setBusy(true); onBusyChange?.(true); setError(null);
+    const controller = new AbortController(); uploadController.current = controller;
+    const request = (input: RequestInfo | URL, init?: RequestInit) => ownedAuthFetch(input, userId, {...init,signal:controller.signal});
     try {
       if (!file.type.startsWith(`${kind}/`)) throw new Error('Wrong kind');
       let asset: unknown;
-      if (kind === 'video') asset = await uploadVideoFile(file);
+      if (kind === 'video') asset = await uploadVideoFile(file, {request,
+        // Multipart cleanup can outlive this picker, but remains bound to its initiating account.
+        abortRequest: (input,init) => ownedAuthFetch(input,userId,{...init,signal:AbortSignal.timeout(10_000)}),
+      });
       else {
         const body = new FormData(); body.append('file', file, file.name);
-        const response = await authFetch(`/api/uploads/${kind}`, { method: 'POST', body });
+        const response = await request(`/api/uploads/${kind}`, { method: 'POST', body });
         const data = await response.json();
         if (!response.ok || !data.ok) throw new Error('Upload failed');
         asset = data.asset;
       }
       const selected = selectCreatorSource(asset, kind, file.name);
-      if (mounted.current) onChange(selected);
-    } catch { if (mounted.current) setError(copy.uploadError); }
-    finally { uploading.current = false; if (mounted.current) { setBusy(false); onBusyChange?.(false); } }
+      if (mounted.current && !controller.signal.aborted) onChange(selected);
+    } catch { if (mounted.current && !controller.signal.aborted) setError(copy.uploadError); }
+    finally { uploading.current = false; if (uploadController.current === controller) uploadController.current = null; if (mounted.current && !controller.signal.aborted) { setBusy(false); onBusyChange?.(false); } }
   }
   const importLabel = kind === 'image' ? experience.importImage : kind === 'video' ? experience.importVideo : experience.importAudio;
   const thumbnail = source?.thumbnailUrl ?? (kind === 'image' ? source?.url : undefined);

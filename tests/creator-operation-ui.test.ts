@@ -92,3 +92,27 @@ test('tool metrics fire on confirmed work and completion once, without operation
     await f.act(async()=>f.w.operation.retry());await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,status:'completed',result:{outputs:[]}});assert.equal(f.w.analytics.length,2);
   }finally{await f.close();}
 });
+for(const family of ['creator','subtitles'])test(`${family} prepared deep links restore the exact quote and wait for explicit confirmation`,async()=>{
+  const f=await mountToolFixture(`import{useCreatorOperation}from'./src/components/tools/creator/useCreatorOperation';function App(){window.operation=useCreatorOperation({userId:'A',toolId:'${family==='creator'?'lip-sync':'subtitles'}',family:'${family}',initialOperationId:'${opId}'});return null}`,stubs);
+  try{
+    await f.respond(f.w.requests[0],{...prepared,status:'prepared'});
+    assert.equal(f.w.operation.quote?.price.amountCents,125);
+    assert.equal(f.w.operation.running,false);
+    assert.equal(f.w.operation.needsConfirmation,true);
+    assert.equal(f.w.requests.length,1,'Recovering a quote never submits it.');
+    await f.act(async()=>{void f.w.operation.confirm();});
+    assert.equal(f.w.requests[1].url,`/api/tools/${family}/confirm`);
+    assert.deepEqual(JSON.parse(f.w.requests[1].init.body),{operationId:opId,confirmed:true});
+  }finally{await f.close();}
+});
+test('an unavailable recovered operation unlocks the form and removes its stale browser receipt',async()=>{
+  const key='creator:operation:A:lip-sync';
+  const f=await mount({[key]:JSON.stringify({operationId:opId,quote:prepared.quote})});
+  try{
+    await f.respond(f.w.requests[0],{ok:false,error:{code:'CREATOR_OPERATION_NOT_FOUND'}},404);
+    assert.equal(f.w.operation.running,false);assert.equal(f.w.operation.error,'OPERATION_UNAVAILABLE');
+    assert.equal(f.w.sessionStorage.getItem(key),null);
+    await f.act(async()=>{void f.w.operation.prepare({source:'replacement'});});
+    assert.equal(f.w.requests[1].url,'/api/tools/creator/prepare');
+  }finally{await f.close();}
+});

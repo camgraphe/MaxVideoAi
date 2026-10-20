@@ -31,6 +31,134 @@ async function openDocument(f:any) {
   assert.match(f.w.requests.at(-1).url,/documents\/captions-1\?revision=1$/);
   await f.respond(f.w.requests.at(-1),{ok:true,document});
 }
+test('a prepared subtitle deep link restores its source and enables the saved quote without a new preparation',async()=>{
+  const f=await mountToolFixture(`import Workspace from './src/components/tools/creator/SubtitleWorkspace.client';function App(){return <Workspace initialOperationId="${opId}"/>}`,stubs,w=>{w.auth={user:{id:'A'},loading:false};w.pickers={};});
+  try{
+    await f.respond(f.w.requests[0],{ok:true,operationId:opId,state:'prepared',quote:price,subtitle:{source:source().ref,settings:{language:'fr',keyterms:['MaxVideoAI']},sourceMedia:{readUrl:source().url,name:'Original'}}});
+    assert.equal(f.w.pickers.video.source?.url,source().url);
+    assert.equal(f.w.document.querySelector('select[aria-label="Language"]').value,'fr');
+    await click(f,'Retry price confirmation');
+    assert.equal(f.w.requests[1].url,'/api/tools/subtitles/confirm');
+    assert.equal(f.w.requests.filter((r:any)=>r.url.endsWith('/prepare')).length,0);
+  }finally{await f.close();}
+});
+test('a prepared creator deep link restores the original input and confirms its saved quote',async()=>{
+  const f=await mountToolFixture(`import Workspace from './src/components/tools/creator/CreatorWorkspace.client';function App(){return <Workspace toolId="product-photo-editor" initialOperationId="${opId}"/>}`,stubs,w=>{w.auth={user:{id:'A'},loading:false};w.pickers={};});
+  try{
+    const original=source('image');
+    await f.respond(f.w.requests[0],{ok:true,operationId:opId,status:'prepared',quote:price,input:{version:1,toolId:'product-photo-editor',inputs:[{role:'source',source:original.ref}],settings:{instruction:'Warm studio light'}},sourceMedia:[{role:'source',ref:original.ref,readUrl:original.url,name:'Original'}]});
+    assert.equal(f.w.document.querySelector('textarea').value,'Warm studio light');
+    await click(f,'Retry price confirmation');assert.equal(f.w.requests[1].url,'/api/tools/creator/confirm');
+    assert.deepEqual(JSON.parse(f.w.requests[1].init.body),{operationId:opId,confirmed:true});
+  }finally{await f.close();}
+});
+test('a prepared Studio subtitle deep link restores its pinned sequence without an upload',async()=>{
+  const f=await mountToolFixture(`import Workspace from './src/components/tools/creator/SubtitleWorkspace.client';function App(){return <Workspace initialOperationId="${opId}"/>}`,stubs,w=>{w.auth={user:{id:'A'},loading:false};w.pickers={};});
+  try{
+    await f.respond(f.w.requests[0],{ok:true,operationId:opId,state:'prepared',quote:price,sourceSummary:{kind:'sequence',name:'Opening',revision:7},subtitle:{source:null,settings:{keyterms:[]},sequence:{projectId:'project-1',sequenceId:'sequence-2',expectedRevision:7}}});
+    assert.match(f.w.document.body.textContent,/Sequence version 7/);assert.match(f.w.document.body.textContent,/Opening/);
+    await click(f,'Retry price confirmation');assert.equal(f.w.requests[1].url,'/api/tools/subtitles/confirm');
+    assert.deepEqual(JSON.parse(f.w.requests[1].init.body),{operationId:opId,confirmed:true});
+  }finally{await f.close();}
+});
+test('a prepared subtitle export deep link restores its pinned document and confirms the existing included export',async()=>{
+  const f=await mountToolFixture(`import Workspace from './src/components/tools/creator/SubtitleWorkspace.client';function App(){return <Workspace initialOperationId="${opId}"/>}`,stubs,w=>{w.auth={user:{id:'A'},loading:false};w.pickers={};});
+  try{
+    await f.respond(f.w.requests[0],{ok:true,operationId:opId,state:'prepared',quote:{...price,price:{amountCents:0,currency:'USD'}},subtitle:{source:source().ref,settings:{keyterms:[]},document:{id:'captions-1',revision:1},sourceMedia:{readUrl:source().url,name:'Original'}}});
+    assert.equal(f.w.requests[1]?.url,'/api/tools/subtitles/documents/captions-1?revision=1');
+    await f.respond(f.w.requests[1],{ok:true,document,sourceMedia:{url:source().url}});
+    assert.match(f.w.document.body.textContent,/included/i);
+    await click(f,'Retry price confirmation');
+    assert.equal(f.w.requests[2].url,'/api/tools/subtitles/confirm');
+    assert.deepEqual(JSON.parse(f.w.requests[2].init.body),{operationId:opId,confirmed:true});
+  }finally{await f.close();}
+});
+for (const continuation of ['edit','complete','expired'] as const) test(`a recovered subtitle export can ${continuation} and prepare a new export with the displayed revision`,async()=>{
+  const f=await mountToolFixture(`import Workspace from './src/components/tools/creator/SubtitleWorkspace.client';function App(){return <Workspace initialOperationId="${opId}"/>}`,stubs,w=>{w.auth={user:{id:'A'},loading:false};w.pickers={};});
+  const nextId='22345678-1234-4234-8234-123456789abc';
+  try{
+    await f.respond(f.w.requests[0],{ok:true,operationId:opId,state:'prepared',quote:{...price,expiresAt:continuation==='expired'?'2000-01-01T00:00:00Z':price.expiresAt,price:{amountCents:0,currency:'USD'}},subtitle:{source:source().ref,settings:{keyterms:[]},document:{id:'captions-1',revision:1},sourceMedia:{readUrl:source().url,name:'Original'}}});
+    await f.respond(f.w.requests[1],{ok:true,document,sourceMedia:{url:source().url}});
+    if (continuation==='edit') {
+      await edit(f,'Caption 1','New revision');
+      assert.equal(buttons(f.w,'Retry price confirmation').length,0,'Editing must invalidate the recovered export quote');
+      await click(f,'Save changes');
+      await f.respond(f.w.requests.at(-1),{ok:true,document:{...document,revision:2,segments:[{...document.segments[0],text:'New revision',alignment:'edited'}]}});
+    } else if (continuation==='complete') {
+      await click(f,'Retry price confirmation');await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,state:'queued'});
+      await f.respond(f.w.requests.at(-1),{ok:true,operationId:opId,state:'completed',result:{documentId:document.id,revision:1,assetId:`ma_${'2'.repeat(32)}`,originalUrl:'https://private.invalid/export.mp4',readUrl:'https://private.invalid/export.mp4'}});
+    }
+    await click(f,'Prepare MP4 export');const preparation=f.w.requests.at(-1);
+    assert.equal(preparation.url,'/api/tools/subtitles/export/prepare');
+    assert.deepEqual(JSON.parse(preparation.init.body),{documentId:document.id,revision:continuation==='edit'?2:1});
+    await f.respond(preparation,{ok:true,operationId:nextId,state:'prepared',quote:{...price,price:{amountCents:0,currency:'USD'}}});
+    await click(f,'Create the MP4');
+    assert.deepEqual(JSON.parse(f.w.requests.at(-1).init.body),{operationId:nextId,confirmed:true});
+    const receipt=Array.from({length:f.w.sessionStorage.length},(_,i)=>f.w.sessionStorage.key(i)).map((key:any)=>[key,f.w.sessionStorage.getItem(key)]);
+    const reloaded=await mountToolFixture(`import Workspace from './src/components/tools/creator/SubtitleWorkspace.client';function App(){return <Workspace initialOperationId="${opId}"/>}`,stubs,w=>{w.auth={user:{id:'A'},loading:false};w.pickers={};for(const[key,value]of receipt)w.sessionStorage.setItem(key,value);});
+    try{assert.equal(reloaded.w.requests[0].url,`/api/tools/subtitles/operations/${nextId}`,'The same operation link must recover its newly confirmed successor');}finally{await reloaded.close();}
+  }finally{await f.close();}
+});
+for(const state of ['prepared','completed'] as const) for(const order of ['export-first','document-first'] as const) test(`session recovery preserves a ${state} subtitle export when ${order}`,async()=>{
+  const exportId='22345678-1234-4234-8234-123456789abc';
+  const f=await mountToolFixture("import App from './src/components/tools/creator/SubtitleWorkspace.client';",stubs,w=>{
+    w.auth={user:{id:'A'},loading:false};w.pickers={};
+    w.sessionStorage.setItem('creator:operation:A:subtitles',JSON.stringify({operationId:opId,quote:price}));
+    w.sessionStorage.setItem('creator:operation:A:subtitles-export',JSON.stringify({operationId:exportId,quote:price}));
+  });
+  try{
+    const transcription=f.w.requests.find((r:any)=>r.url.endsWith(opId)),exportRead=f.w.requests.find((r:any)=>r.url.endsWith(exportId));
+    await f.respond(transcription,{ok:true,operationId:opId,state:'completed',result:{documentId:document.id,revision:1}});
+    const documentRead=f.w.requests.at(-1);
+    const readDocument=()=>f.respond(documentRead,{ok:true,document,sourceMedia:{url:source().url}});
+    if(order==='document-first')await readDocument();
+    await f.respond(exportRead,{ok:true,operationId:exportId,state,quote:price,subtitle:{source:source().ref,settings:{keyterms:[]},document:{id:document.id,revision:1}},result:state==='completed'?{documentId:document.id,revision:1,assetId:`ma_${'2'.repeat(32)}`,originalUrl:'https://private.invalid/export.mp4',readUrl:'https://private.invalid/export.mp4'}:null});
+    if(order==='export-first')await readDocument();
+    if(state==='prepared'){
+      await click(f,'Retry price confirmation');assert.deepEqual(JSON.parse(f.w.requests.at(-1).init.body),{operationId:exportId,confirmed:true});
+    }else{
+      assert.equal(buttons(f.w,'Download')[0]?.disabled,false);assert.ok(Array.from(f.w.document.querySelectorAll('video')).some((v:any)=>v.src==='https://private.invalid/export.mp4'));
+    }
+  }finally{await f.close();}
+});
+test('an explicit subtitle document link cannot be replaced by an older session export',async()=>{
+  const exportId='22345678-1234-4234-8234-123456789abc';
+  const f=await mountToolFixture("import Workspace from './src/components/tools/creator/SubtitleWorkspace.client';function App(){return <Workspace initialDocument={{id:'chosen-document',revision:3}}/>}",stubs,w=>{
+    w.auth={user:{id:'A'},loading:false};w.pickers={};
+    w.sessionStorage.setItem('creator:operation:A:subtitles-export',JSON.stringify({operationId:exportId,quote:price}));
+  });
+  try{
+    const chosen=f.w.requests.find((r:any)=>r.url==='/api/tools/subtitles/documents/chosen-document?revision=3');assert.ok(chosen);
+    await f.respond(chosen,{ok:true,document:{...document,id:'chosen-document',revision:3},sourceMedia:{url:source().url}});
+    const stale=f.w.requests.find((r:any)=>r.url.endsWith(exportId));
+    if(stale)await f.respond(stale,{ok:true,operationId:exportId,state:'prepared',quote:price,subtitle:{source:source().ref,settings:{keyterms:[]},document:{id:'older-document',revision:1}}});
+    assert.equal(f.w.requests.filter((r:any)=>r.url.includes('/documents/older-document')).length,0);
+    assert.equal(buttons(f.w,'Retry price confirmation').length,0);
+    await click(f,'Prepare MP4 export');assert.deepEqual(JSON.parse(f.w.requests.at(-1).init.body),{documentId:'chosen-document',revision:3});
+  }finally{await f.close();}
+});
+for(const sourceType of ['document','sequence'] as const)test(`reloading a ${sourceType} link resumes the operation confirmed from that same link`,async()=>{
+  const props=sourceType==='document'?"initialDocument={{id:'captions-1',revision:1}}":"studioSource={{projectId:'project-1',sequenceId:'sequence-2',expectedRevision:7}}";
+  const app=`import Workspace from './src/components/tools/creator/SubtitleWorkspace.client';function App(){return <Workspace ${props}/>}`;
+  const first=await mountToolFixture(app,stubs,w=>{w.auth={user:{id:'A'},loading:false};w.pickers={};});
+  let receipt:Array<[string,string]>=[];
+  try{
+    if(sourceType==='document')await first.respond(first.w.requests[0],{ok:true,document,sourceMedia:{url:source().url}});
+    await click(first,sourceType==='document'?'Prepare MP4 export':'See price');
+    await first.respond(first.w.requests.at(-1),{ok:true,operationId:opId,state:'prepared',quote:price});await click(first,'Confirm price and create');
+    receipt=Array.from({length:first.w.sessionStorage.length},(_,i)=>first.w.sessionStorage.key(i)).map((key:any)=>[key,first.w.sessionStorage.getItem(key)]);
+    assert.equal(receipt.filter(([key])=>key.startsWith('creator:operation:')).length,1);
+  }finally{await first.close();}
+  const reloaded=await mountToolFixture(app,stubs,w=>{w.auth={user:{id:'A'},loading:false};w.pickers={};for(const [key,value]of receipt)w.sessionStorage.setItem(key,value);});
+  try{
+    const status=reloaded.w.requests.find((r:any)=>r.url===`/api/tools/subtitles/operations/${opId}`);assert.ok(status,'Reload must read the original confirmed operation');
+    await reloaded.respond(status,{ok:true,operationId:opId,state:'queued'});
+    if(sourceType==='document')await reloaded.respond(reloaded.w.requests.find((r:any)=>r.url.includes('/documents/')),{ok:true,document,sourceMedia:{url:source().url}});
+    assert.equal(reloaded.w.requests.filter((r:any)=>r.init?.method==='POST').length,0);
+    assert.match(reloaded.w.document.body.textContent,/Creating your result/);
+    assert.ok(buttons(reloaded.w,sourceType==='document'?'Prepare MP4 export':'See price').every(button=>button.disabled));
+  }finally{await reloaded.close();}
+});
 test('Lip Sync prepares distinct Photo and audio refs; uploads and account changes remove obsolete quotes',async()=>{
   const f=await mount('lip-sync');try {
     await f.act(async()=>{f.w.pickers.image.onChange(source('image'));f.w.pickers.audio.onChange(source('audio'));});

@@ -15,7 +15,14 @@ const defaults={readSequence:readOwnedSubtitleSequence,assertWorker:async()=>(aw
   },
 };
 export type SubtitleOperationsDependencies=typeof defaults&{dispatch:(operationId:string)=>Promise<unknown>};
-function response(operation:SubtitleOperationRecord){return {...operation.request_snapshot.sequence?{sourceSummary:{kind:'sequence' as const,name:operation.request_snapshot.sequence.manifest.sequenceName,revision:operation.request_snapshot.sequence.revision}}:{},operationId:operation.id,kind:operation.operation_kind,state:operation.state==='processing'||operation.state==='submitting'||operation.state==='provider-pending'?'running' as const:operation.state,jobId:operation.job_id,...operation.state==='submitting'?{needsAttention:true,retryable:false}: {},quote:{price:{amountCents:operation.pricing_snapshot.totalCents,currency:operation.pricing_snapshot.currency},expiresAt:new Date(operation.expires_at).toISOString(),...operation.pricing_snapshot.breakdown?{breakdown:operation.pricing_snapshot.breakdown}:{}},exportEstimate:operation.export_estimate,result:operation.state==='completed'?operation.result:null,...operation.state==='failed'?{error:operation.message}: {}};}
+function response(operation:SubtitleOperationRecord){
+  const request=operation.request_snapshot;
+  return {...request.sequence?{sourceSummary:{kind:'sequence' as const,name:request.sequence.manifest.sequenceName,revision:request.sequence.revision}}:{},operationId:operation.id,kind:operation.operation_kind,state:operation.state==='processing'||operation.state==='submitting'||operation.state==='provider-pending'?'running' as const:operation.state,jobId:operation.job_id,...operation.state==='submitting'?{needsAttention:true,retryable:false}: {},quote:{price:{amountCents:operation.pricing_snapshot.totalCents,currency:operation.pricing_snapshot.currency},expiresAt:new Date(operation.expires_at).toISOString(),...operation.pricing_snapshot.breakdown?{breakdown:operation.pricing_snapshot.breakdown}:{}},exportEstimate:operation.export_estimate,result:operation.state==='completed'?operation.result:null,...operation.state==='failed'?{error:operation.message}: {},
+    ...(operation.state==='prepared'?{subtitle:{source:request.source?.ref??null,settings:request.settings,
+      ...(request.document?{document:{id:request.document.id,revision:request.document.revision}}:{}),
+      ...(request.sequence?{sequence:{projectId:request.sequence.projectId,sequenceId:request.sequence.sequenceId,expectedRevision:request.sequence.revision}}:{}),
+    }}:{})};
+}
 /** The caller supplies a trusted session/OAuth/Studio actor and a bounded durable worker launcher. */
 export function createSubtitleOperationsService(actor:GenerationActor,options:{enabled:boolean;dependencies?:Partial<SubtitleOperationsDependencies>}){
   requireGenerationActor(actor);const dependencies={...defaults,...options.dependencies};

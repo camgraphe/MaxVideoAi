@@ -7,7 +7,7 @@ import type { PreparedCreatorProfile } from './creator-profiles';
 import { refundCreatorFinalization } from './creator-operations-refund';
 
 export type CreatorOperationSnapshot = PreparedCreatorProfile & { referenceFingerprint: string };
-export type StoredCreatorOperation = { id:string;user_id:string;auth_origin:GenerationActor['authMethod'];oauth_client_id:string|null;studio_project_id:string|null;tool_id:CreatorOperationStatus['toolId'];profile_id:string;profile_revision:number;request_hash:string;snapshot:CreatorOperationSnapshot;status:CreatorOperationStatus['status'];result:CreatorOperationResult|null;error:string|null;version:number;lease_token:string|null;finalize_attempts:number;job_id:string|null;quote_state:string;provider_state?:string|null;provider_request_id?:string|null;provider_started_at?:string|null };
+export type StoredCreatorOperation = { id:string;user_id:string;auth_origin:GenerationActor['authMethod'];oauth_client_id:string|null;studio_project_id:string|null;tool_id:CreatorOperationStatus['toolId'];profile_id:string;profile_revision:number;request_hash:string;snapshot:CreatorOperationSnapshot;status:CreatorOperationStatus['status'];result:CreatorOperationResult|null;error:string|null;version:number;lease_token:string|null;finalize_attempts:number;job_id:string|null;quote_state:string;quote_price_cents:number;quote_currency:string;quote_expires_at:Date|string;provider_state?:string|null;provider_request_id?:string|null;provider_started_at?:string|null };
 const executor: QueryExecutor = {query};
 const scopeSql = 'o.id=$1 AND o.user_id=$2 AND o.auth_origin=$3 AND o.oauth_client_id IS NOT DISTINCT FROM $4 AND o.studio_project_id IS NOT DISTINCT FROM $5';
 function scope(actor:GenerationActor,id:string) { return [id,actor.userId,actor.authMethod,actor.clientId,actor.authMethod==='studio-session'?actor.projectId:null]; }
@@ -16,16 +16,17 @@ export async function insertCreatorOperation(actor:GenerationActor,quote:McpGene
     VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb)`, [...scope(actor,quote.quoteId),snapshot.input.toolId,snapshot.profile.id,snapshot.profile.revision,quote.requestHash,JSON.stringify(snapshot)]);
 }
 export async function readCreatorOperation(actor:GenerationActor,id:string,db:QueryExecutor=executor,lock=false,includeHidden=false):Promise<StoredCreatorOperation> {
-  const rows=await db.query<StoredCreatorOperation>(`SELECT o.*,q.job_id,q.state AS quote_state FROM creator_operations o
+  const rows=await db.query<StoredCreatorOperation>(`SELECT o.*,q.job_id,q.state AS quote_state,q.price_cents AS quote_price_cents,q.currency AS quote_currency,q.expires_at AS quote_expires_at FROM creator_operations o
     JOIN mcp_generation_quotes q ON q.quote_id=o.id
     LEFT JOIN app_jobs j ON j.job_id=q.job_id
     WHERE ${scopeSql} AND (q.job_id IS NULL OR (j.user_id=o.user_id${includeHidden?'':' AND j.hidden IS NOT TRUE'}))${lock?' FOR SHARE OF o':''}`,scope(actor,id));
-  if(!rows[0]) throw new Error('Tool operation is unavailable.');
+  if(!rows[0]) throw new Error('CREATOR_OPERATION_NOT_FOUND');
   return rows[0];
 }
 export function creatorOperationView(row:StoredCreatorOperation):CreatorOperationStatus {
   const status=row.status==='prepared'&&row.job_id?'running':row.status;
-  return {operationId:row.id,toolId:row.tool_id,jobId:row.job_id,status,input:row.snapshot.input,result:row.result,error:row.error,retryAfterSeconds:['running','finalizing'].includes(status)?5:null};
+  return {operationId:row.id,toolId:row.tool_id,jobId:row.job_id,status,input:row.snapshot.input,result:row.result,error:row.error,retryAfterSeconds:['running','finalizing'].includes(status)?5:null,
+    ...(status==='prepared'?{quote:{price:{amountCents:row.quote_price_cents,currency:row.quote_currency},expiresAt:new Date(row.quote_expires_at).toISOString()}}:{})};
 }
 export async function markCreatorRunning(actor:GenerationActor,id:string):Promise<void> {
   await query(`UPDATE creator_operations o SET status='running',updated_at=now() WHERE ${scopeSql} AND status='prepared'`,scope(actor,id));

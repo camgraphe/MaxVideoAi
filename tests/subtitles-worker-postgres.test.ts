@@ -60,6 +60,9 @@ test('durable subtitle worker resumes provider polling without resubmission, pub
   await assert.rejects(includedJobs.prepare(actor,'transcribe',request,subtitleExportPricing(request.facts)),/PRICING_UNAVAILABLE/);
   const included=await includedService.prepareExport({documentId:saved!.id,revision:1});
   assert.equal(included.quote.price.amountCents,0);
+  const recoveredExport=await includedService.status(included.operationId);
+  assert.deepEqual(recoveredExport.subtitle,{source:source.ref,settings:{keyterms:[]},document:{id:saved!.id,revision:1}});
+  assert.deepEqual(recoveredExport.quote,included.quote);
   await Promise.all([includedService.confirm({operationId:included.operationId,confirmed:true}),includedService.confirm({operationId:included.operationId,confirmed:true})]);
   const renderIncluded=async()=>{includedRenders++;return {assetId:'included-result'};};
   await Promise.all([runSubtitleOperation(included.operationId,{...dependencies,jobs:includedJobs,render:renderIncluded}),runSubtitleOperation(included.operationId,{...dependencies,jobs:includedJobs,render:renderIncluded})]);
@@ -87,6 +90,7 @@ test('durable subtitle worker resumes provider polling without resubmission, pub
   const service=createSubtitleOperationsService(actor,{enabled:true,dependencies:{jobs,readSequence:async()=>sequence,quoteTranscription:async()=>({totalCents:17,currency:'USD'}),dispatch:async()=>{}}});
   const mix=await service.prepareStudioSubtitles({projectId:'project',sequenceId:'sequence',expectedRevision:7});
   assert.deepEqual(mix.sourceSummary,{kind:'sequence',name:'The film mix',revision:7});
+  assert.deepEqual((await service.status(mix.operationId)).subtitle,{source:null,settings:{keyterms:[]},sequence:{projectId:'project',sequenceId:'sequence',expectedRevision:7}});
   const breakdown=mix.quote.breakdown as {transcription:{amountCents:number};mixPreparation:{amountCents:number;source:string}};
   assert.equal(mix.quote.price.amountCents,breakdown.transcription.amountCents);assert.equal(breakdown.mixPreparation.source,'subtitle-mix-included-v1');assert.equal(breakdown.mixPreparation.amountCents,0);
   await service.confirm({operationId:mix.operationId,confirmed:true});

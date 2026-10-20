@@ -61,3 +61,16 @@ test('recovery refreshes every original source and its explicit segment without 
   assert.equal(removed.sourceMedia[0].readUrl,null);
   assert.equal(removed.status,'completed');
 });
+test('a prepared subtitle recovery gets owner-scoped source access without persisting a signed URL',async()=>{
+  const {withCreatorMediaReadAccess,state}=await fixture();
+  const operation={operationId:'attempt',state:'prepared',subtitle:{source:ref,settings:{language:'fr',keyterms:['MaxVideoAI']},document:{id:'captions',revision:2}}};
+  const presented=await withCreatorMediaReadAccess('owner',operation);
+  assert.deepEqual(state.users,['owner']);
+  assert.equal(presented.subtitle.sourceMedia.readUrl,'https://owned.invalid/signed?token=fresh');
+  assert.equal(presented.subtitle.document.revision,2);
+  assert.equal('sourceMedia' in operation.subtitle,false);
+  state.unavailable='resolve';
+  const removed=await withCreatorMediaReadAccess('owner',operation);
+  assert.equal(removed.subtitle.sourceMedia.readUrl,null);
+  assert.equal(removed.state,'prepared');
+});

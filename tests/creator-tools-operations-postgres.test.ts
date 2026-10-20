@@ -35,15 +35,22 @@ test('creator operation binds one quote, scopes confirmation, recovers one charg
   const options={enabled:true,generationOptions,dependencies:{prepare}};
   const service=createCreatorOperationsService(actor,options);
   const prepared=await service.prepare(input);
+  const recovered=await service.status(prepared.operationId);
+  assert.equal(recovered.status,'prepared');
+  assert.equal(recovered.quote?.price.amountCents,prepared.quote.price.amountCents);
+  assert.equal(recovered.quote?.price.currency,prepared.quote.price.currency);
+  assert.equal(recovered.quote?.expiresAt,prepared.quote.expiresAt);
   const preparedPricing=(await pg.pool.query('SELECT pricing_snapshot FROM mcp_generation_quotes WHERE quote_id=$1',[prepared.operationId])).rows[0].pricing_snapshot.canonicalPricing;
   assert.equal(preparedPricing.margin.percentApplied,1.2);
   assert.equal(preparedPricing.meta.creatorPricingPolicy,'creator-tools:provider-plus-120:v1');
   assert.equal((await pg.pool.query("SELECT count(*)::int AS n FROM app_receipts WHERE type='charge'")).rows[0].n,0);
-  await assert.rejects(createCreatorOperationsService({...actor,userId:'foreign'},options).confirm({operationId:prepared.operationId,confirmed:true}),/unavailable/);
-  await assert.rejects(createCreatorOperationsService({...actor,authMethod:'oauth',emailVerified:true},options).status(prepared.operationId),/unavailable/);
+  await assert.rejects(createCreatorOperationsService({...actor,userId:'foreign'},options).confirm({operationId:prepared.operationId,confirmed:true}),/CREATOR_OPERATION_NOT_FOUND/);
+  await assert.rejects(createCreatorOperationsService({...actor,userId:'foreign'},options).status(prepared.operationId),/CREATOR_OPERATION_NOT_FOUND/);
+  await assert.rejects(service.status('00000000-0000-4000-8000-000000000000'),/CREATOR_OPERATION_NOT_FOUND/);
+  await assert.rejects(createCreatorOperationsService({...actor,authMethod:'oauth',emailVerified:true},options).status(prepared.operationId),/CREATOR_OPERATION_NOT_FOUND/);
   await assert.rejects(pg.pool.query("UPDATE creator_operations SET profile_id='other' WHERE id=$1",[prepared.operationId]),/immutable/);
   const ordinary=await createCreatorGenerationService(actor,{enabled:true,...generationOptions}).prepare((await prepare()).request);
-  await assert.rejects(service.confirm({operationId:ordinary.quoteId,confirmed:true}),/unavailable/);
+  await assert.rejects(service.confirm({operationId:ordinary.quoteId,confirmed:true}),/CREATOR_OPERATION_NOT_FOUND/);
   const ordinaryPricing=(await pg.pool.query('SELECT pricing_snapshot FROM mcp_generation_quotes WHERE quote_id=$1',[ordinary.quoteId])).rows[0].pricing_snapshot.canonicalPricing;
   assert.equal(ordinaryPricing.meta.creatorPricingPolicy,undefined);
   const oldPolicyService=createCreatorOperationsService(actor,{...options,generationOptions:{...generationOptions,
@@ -71,4 +78,6 @@ test('creator operation binds one quote, scopes confirmation, recovers one charg
   const changed=await service.prepare(input);await pg.pool.query("UPDATE media_assets SET url='https://cdn.maxvideoai.com/replaced.png' WHERE public_id=$1",[assetId]);
   await assert.rejects(service.confirm({operationId:changed.operationId,confirmed:true}),/original source changed/);
   assert.equal(provider.captures.length,1);
+  await pg.pool.query('UPDATE app_jobs SET hidden=true WHERE job_id=$1',[prepared.operationId]);
+  await assert.rejects(service.status(prepared.operationId),/CREATOR_OPERATION_NOT_FOUND/);
 });

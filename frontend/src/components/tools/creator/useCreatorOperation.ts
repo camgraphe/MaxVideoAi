@@ -9,8 +9,15 @@ import { LIVE_PRICING_POLICY_REVISION, PRICING_POLICY_HEADER } from '@/lib/membe
 export const webPricingPolicyHeaders = () => ({ 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION });
 export type CreatorQuote = { price: { amountCents: number; currency: string }; expiresAt: string; topupRequired?: boolean;breakdown?: {transcription:{amountCents:number;currency:string};mixPreparation:{amountCents:number;currency:string}} };
 type Prepared = { sourceSummary?: {kind:'sequence';name:string;revision:number};operationId: string; quote: CreatorQuote; operation?: { profile?: { disclosure?: string } }; exportEstimate?: { amountCents: number; currency: string; included?: boolean } | null };
+type SubtitleRecovery = {
+  source: CreatorSourceInput['source'] | null;
+  settings: {language?:string;keyterms:string[]};
+  document?: {id:string;revision:number};
+  sequence?: {projectId:string;sequenceId:string;expectedRevision:number};
+  sourceMedia?: {readUrl:string|null;thumbnailReadUrl?:string|null;name?:string;durationSec?:number};
+};
 type CreatorReadContext = {input?:CreatorOperationInput;sourceMedia?:Array<{role:CreatorSourceInput['role'];ref:CreatorSourceInput['source'];segment?:CreatorSourceInput['segment'];readUrl:string|null;thumbnailReadUrl?:string|null;name?:string;durationSec?:number}>};
-type OperationReply<Result> = { ok: boolean; operationId: string; status?: string; state?: string; result?: Result | null; error?: { code?: string } | string; retryAfterSeconds?: number; needsAttention?: boolean; retryable?: boolean } & Partial<Prepared> & CreatorReadContext;
+type OperationReply<Result> = { ok: boolean; operationId: string; status?: string; state?: string; result?: Result | null; error?: { code?: string } | string; retryAfterSeconds?: number; needsAttention?: boolean; retryable?: boolean; subtitle?:SubtitleRecovery } & Partial<Prepared> & CreatorReadContext;
 // Stored finalization errors predate structured error codes. Only recognize our exact duration failure;
 // never expose arbitrary provider/server error text as interface copy.
 function creatorFailureCode(error: OperationReply<unknown>['error']): string {
@@ -25,12 +32,14 @@ function readPrepared(value: Partial<Prepared>): Prepared | null {
 }
 
 /** A confirmation always refers to the same server snapshot, including after transport failure. */
-export function useCreatorOperation<Result = unknown>({ userId, toolId, family, executionEnabled = true, initialOperationId }: { userId?: string; toolId: string; family: 'creator' | 'subtitles';executionEnabled?:boolean;initialOperationId?:string }) {
-  const base = `/api/tools/${family}`, storageKey = `creator:operation:${userId ?? 'guest'}:${toolId}`;
+export function useCreatorOperation<Result = unknown>({ userId, toolId, family, executionEnabled = true, initialOperationId, resumeStored = true, recoveryScope }: { userId?: string; toolId: string; family: 'creator' | 'subtitles';executionEnabled?:boolean;initialOperationId?:string;resumeStored?:boolean;recoveryScope?:string }) {
+  const context = recoveryScope ?? (initialOperationId ? JSON.stringify(['operation',initialOperationId]) : undefined);
+  const base = `/api/tools/${family}`, storageKey = `creator:operation:${userId ?? 'guest'}:${toolId}${context ? `:${encodeURIComponent(context)}` : ''}`;
   const [prepared, setPrepared] = useState<Prepared | null>(null), [pending, setPending] = useState<string | null>(null);
   const [result, setResult] = useState<Result | null>(null), [busy, setBusy] = useState(false), [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null), [needsConfirmation, setNeedsConfirmation] = useState(false), [expired, setExpired] = useState(false);
   const [sourceSummary,setSourceSummary] = useState<Prepared['sourceSummary']>();
+  const [subtitle,setSubtitle] = useState<SubtitleRecovery>();
   const [readContext,setReadContext] = useState<CreatorReadContext | null>(null), [readRevision,setReadRevision] = useState(0);
   const preparedRef = useRef<Prepared | null>(null);
   function updatePrepared(value: Prepared | null) { preparedRef.current = value; if(value?.sourceSummary)setSourceSummary(value.sourceSummary); setPrepared(value); }
@@ -51,12 +60,12 @@ export function useCreatorOperation<Result = unknown>({ userId, toolId, family, 
   useEffect(() => { active.current = true; return () => { active.current = false; epoch.current += 1; }; }, []);
   useEffect(() => {
     if (!userId) return;
-    if (initialOperationId && uuid.test(initialOperationId)) {lastOperationId.current = initialOperationId;setPending(initialOperationId);setRunning(true);paid.current = true;return;}
-    try {
+    if (resumeStored) try {
       const stored = readPrepared(JSON.parse(sessionStorage.getItem(storageKey) ?? 'null') ?? {});
-      if (stored) { observedWork.current.add(stored.operationId); lastOperationId.current = stored.operationId; updatePrepared(stored); setPending(stored.operationId); setRunning(true); paid.current = true; }
+      if (stored) { observedWork.current.add(stored.operationId); lastOperationId.current = stored.operationId; updatePrepared(stored); setPending(stored.operationId); setRunning(true); paid.current = true; return; }
     } catch { /* Malformed or unavailable browser storage is not execution authority. */ }
-  }, [storageKey, userId, initialOperationId]);
+    if (initialOperationId && uuid.test(initialOperationId)) {lastOperationId.current = initialOperationId;setPending(initialOperationId);setRunning(true);paid.current = true;}
+  }, [storageKey, userId, initialOperationId, resumeStored]);
   useEffect(() => {
     if (!prepared) { setExpired(false); return; }
     const delay = Date.parse(prepared.quote.expiresAt) - Date.now();
@@ -95,7 +104,14 @@ export function useCreatorOperation<Result = unknown>({ userId, toolId, family, 
         }
         setError(null);
         if (data.needsAttention || data.retryable === false) { setNeedsConfirmation(false); return; }
-        setNeedsConfirmation(state === 'prepared');
+        if (state === 'prepared') {
+          const recovered = readPrepared(data);
+          if (!recovered) throw new Error('STATUS_UNAVAILABLE');
+          setSubtitle(data.subtitle);
+          updatePrepared(recovered); setNeedsConfirmation(true); setRunning(false); setPending(null); paid.current = false;
+          return;
+        }
+        setNeedsConfirmation(false);
         timer = setTimeout(() => void poll(), Math.min(30, Math.max(2, data.retryAfterSeconds ?? 5)) * 1000);
       } catch {
         if (cancelled) return;
@@ -107,12 +123,12 @@ export function useCreatorOperation<Result = unknown>({ userId, toolId, family, 
   }, [base, pending, pollRevision, storageKey, userId, report]);
   function invalidate() {
     if (paid.current) return;
-    epoch.current += 1; setReadContext(null); setSourceSummary(undefined); setNeedsAttention(false); lastOperationId.current = null; updatePrepared(null); setError(null); setResult(null); forget();
+    epoch.current += 1; setReadContext(null); setSourceSummary(undefined); setSubtitle(undefined); setNeedsAttention(false); setNeedsConfirmation(false); lastOperationId.current = null; updatePrepared(null); setError(null); setResult(null); forget();
   }
   async function prepare(input: unknown, path = '/prepare') {
     if (!executionEnabled || !userId || locked.current || paid.current) return;
     const attempt = ++epoch.current;
-    locked.current = true; setBusy(true); setError(null); updatePrepared(null);
+    locked.current = true; setBusy(true); setError(null); setNeedsConfirmation(false); updatePrepared(null);
     try {
       const response = await authFetch(`${base}${path}`, { method: 'POST', headers: webPricingPolicyHeaders(), body: JSON.stringify(input) });
       const data = await response.json() as OperationReply<Result>;
@@ -144,7 +160,7 @@ export function useCreatorOperation<Result = unknown>({ userId, toolId, family, 
     } catch { if (active.current) { setPending(snapshot.operationId); setPollRevision(value => value + 1); setError('STATUS_UNAVAILABLE'); } }
     finally { locked.current = false; if (active.current) setBusy(false); }
   }
-  return { quote: prepared?.quote ?? null, sourceSummary, disclosure: prepared?.operation?.profile?.disclosure, exportEstimate: prepared?.exportEstimate,
+  return { quote: prepared?.quote ?? null, sourceSummary, subtitle, disclosure: prepared?.operation?.profile?.disclosure, exportEstimate: prepared?.exportEstimate,
     result, readContext, readRevision, busy, running, error, needsConfirmation, needsAttention, expired, invalidate, prepare, confirm,
     retry: () => { if (!lastOperationId.current) return; paid.current = true; setRunning(true); setPending(lastOperationId.current); setPollRevision(value => value + 1); },
     discardExpired: () => { if (!expired || !needsConfirmation || locked.current) return; paid.current = false; setRunning(false); setPending(null); setNeedsConfirmation(false); invalidate(); },

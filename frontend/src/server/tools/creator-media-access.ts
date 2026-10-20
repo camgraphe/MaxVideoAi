@@ -17,9 +17,11 @@ export async function withCreatorMediaReadAccess<T extends object>(userId: strin
     }
   }
   const input = creatorOperationInputSchema.safeParse(value.input);
-  const presented = input.success ? { ...operation, sourceMedia: await Promise.all(input.data.inputs.map(async source => ({
+  let presented = input.success ? { ...operation, sourceMedia: await Promise.all(input.data.inputs.map(async source => ({
     role: source.role, ref: source.source, segment: source.segment, ...await access(source.source),
   }))) } : operation;
+  const subtitle = value.subtitle && typeof value.subtitle === 'object' ? value.subtitle as Record<string,unknown> : null;
+  if (subtitle?.source) presented = {...presented,subtitle:{...subtitle,sourceMedia:await access(subtitle.source)}};
   if (!value.result || typeof value.result !== 'object') return presented;
   const result = value.result as Record<string, unknown>;
   if (Array.isArray(result.outputs)) {
