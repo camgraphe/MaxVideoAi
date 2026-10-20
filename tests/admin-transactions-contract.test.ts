@@ -27,6 +27,8 @@ function rawTransaction(overrides: Partial<RawTransactionRow> = {}): RawTransact
     amount_cents: '900',
     currency: 'usd',
     description: 'Generation',
+    billing_product_key: null,
+    generation_auth_origin: null,
     refund_reason_code: null,
     refund_note: null,
     job_id: 'job_1',

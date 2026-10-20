@@ -1,13 +1,17 @@
 import { query } from '@/lib/db';
 
 export async function transactionSelectForCurrentSchema() {
-  const [relation] = await query<{ available: boolean }>(
-    "SELECT to_regclass('public.mcp_generation_quotes') IS NOT NULL AS available",
+  const [relation] = await query<{ available: boolean; quote_origin: boolean; billing_product: boolean }>(
+    `SELECT to_regclass('public.mcp_generation_quotes') IS NOT NULL AS available,
+      EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public'
+        AND table_name='mcp_generation_quotes' AND column_name='auth_origin') AS quote_origin,
+      EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public'
+        AND table_name='app_receipts' AND column_name='billing_product_key') AS billing_product`,
   );
-  return buildTransactionSelect(Boolean(relation?.available));
+  return buildTransactionSelect(Boolean(relation?.available), Boolean(relation?.quote_origin), Boolean(relation?.billing_product));
 }
 
-function buildTransactionSelect(mcpQuotesAvailable: boolean) {
+function buildTransactionSelect(mcpQuotesAvailable: boolean, quoteOriginAvailable: boolean, billingProductAvailable: boolean) {
   return `SELECT
        r.id AS receipt_id,
        r.user_id,
@@ -15,6 +19,7 @@ function buildTransactionSelect(mcpQuotesAvailable: boolean) {
        r.amount_cents,
        r.currency,
        r.description,
+       ${billingProductAvailable ? 'r.billing_product_key' : 'NULL::text'} AS billing_product_key,
        CASE WHEN r.type = 'refund' THEN r.metadata ->> 'reason' END AS refund_reason_code,
        CASE WHEN r.type = 'refund' THEN r.metadata ->> 'note' END AS refund_note,
        r.job_id,
@@ -28,11 +33,8 @@ function buildTransactionSelect(mcpQuotesAvailable: boolean) {
        j.progress AS job_progress,
        j.created_at AS job_created_at,
        j.duration_sec AS job_duration_sec,
-       ${mcpQuotesAvailable ? `EXISTS (
-         SELECT 1 FROM mcp_generation_quotes quote
-         WHERE quote.job_id = r.job_id
-           AND quote.user_id = r.user_id::text
-       )` : 'FALSE'} AS is_mcp_generation,
+       ${mcpQuotesAvailable ? "COALESCE(generation_origin.auth_origin = 'oauth', FALSE)" : 'FALSE'} AS is_mcp_generation,
+       ${mcpQuotesAvailable ? 'generation_origin.auth_origin' : 'NULL::text'} AS generation_auth_origin,
        EXISTS (
          SELECT 1
          FROM app_receipts r2
@@ -52,5 +54,11 @@ function buildTransactionSelect(mcpQuotesAvailable: boolean) {
        ) AS latest_charge_id
      FROM app_receipts r
      LEFT JOIN app_jobs j ON j.job_id = r.job_id
+     ${mcpQuotesAvailable ? `LEFT JOIN LATERAL (
+       SELECT ${quoteOriginAvailable ? 'quote.auth_origin' : "'oauth'::text"} AS auth_origin
+       FROM mcp_generation_quotes quote
+       WHERE quote.job_id = r.job_id AND quote.user_id = r.user_id::text
+       LIMIT 1
+     ) generation_origin ON TRUE` : ''}
 `;
 }

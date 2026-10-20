@@ -92,6 +92,35 @@ test('history filters before pagination, retains precision and resolves receipts
     const mcpHistory = await fetchTransactionHistory({ period: 'all', query: 'mcp-job', type: 'all', limit: 50 }, now);
     assert.equal(mcpHistory.transactions.length, 1);
     assert.equal(mcpHistory.transactions[0]?.isMcpGeneration, true);
+
+    await db.pool.query(`
+      ALTER TABLE mcp_generation_quotes ADD COLUMN auth_origin text NOT NULL DEFAULT 'oauth';
+      ALTER TABLE app_receipts ADD COLUMN billing_product_key text;
+      INSERT INTO app_jobs(job_id,status,payment_status,engine_label,created_at)
+        VALUES ('studio-job','completed','paid_wallet','Wan 3','2026-09-22T10:00:00Z'),
+               ('toolbox-job','completed','paid_wallet','Lip sync','2026-09-22T10:00:00Z');
+      INSERT INTO app_receipts(id,user_id,type,amount_cents,currency,job_id,description,created_at)
+        VALUES (125,'11111111-1111-4111-8111-111111111111','charge',500,'USD','studio-job','Generation','2026-09-22T10:00:00Z'),
+               (126,'11111111-1111-4111-8111-111111111111','refund',500,'USD','studio-job','Refund','2026-09-22T10:01:00Z'),
+               (127,'11111111-1111-4111-8111-111111111111','charge',500,'USD','toolbox-job','Generation','2026-09-22T10:00:00Z'),
+               (128,'11111111-1111-4111-8111-111111111111','charge',100,'USD',NULL,'Studio MCP description without evidence','2026-09-22T10:00:00Z');
+      INSERT INTO mcp_generation_quotes(job_id,user_id,auth_origin)
+        VALUES ('studio-job','11111111-1111-4111-8111-111111111111','studio-session'),
+               ('toolbox-job','11111111-1111-4111-8111-111111111111','toolbox-session');
+    `);
+    const studioCharge = await fetchTransactionReceipt('125');
+    assert.equal(studioCharge?.isMcpGeneration, false, 'Studio uses the shared quote ledger without being MCP');
+    assert.equal(studioCharge?.origin, 'studio');
+    assert.equal((await fetchTransactionReceipt('126'))?.origin, 'studio', 'refunds retain the generation origin');
+    assert.equal((await fetchTransactionReceipt('123'))?.origin, 'mcp');
+    assert.equal((await fetchTransactionReceipt('124'))?.origin, 'unknown', 'another account cannot supply origin');
+    assert.equal((await fetchTransactionReceipt('127'))?.origin, 'toolbox');
+    assert.equal((await fetchTransactionReceipt('127'))?.isMcpGeneration, false);
+    assert.equal((await fetchTransactionReceipt('128'))?.origin, 'unknown', 'descriptions are not provenance');
+    await db.pool.query("UPDATE app_receipts SET billing_product_key='studio_assistance_pack' WHERE id=128");
+    assert.equal((await fetchTransactionReceipt('128'))?.origin, 'studio', 'Studio credit purchases have no generation quote');
+    const studioHistory = await fetchTransactionHistory({period:'all',query:'studio-job',type:'all',limit:50},now);
+    assert.deepEqual(studioHistory.transactions.map(row => row.origin), ['studio','studio']);
   } finally {
     await getDb().end();
     await db.cleanup();

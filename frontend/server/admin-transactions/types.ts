@@ -1,3 +1,5 @@
+export type AdminTransactionOrigin = 'mcp' | 'studio' | 'toolbox' | 'unknown';
+
 export type RawTransactionRow = {
   receipt_id: number;
   user_id: string | null;
@@ -5,6 +7,8 @@ export type RawTransactionRow = {
   amount_cents: number | string | null;
   currency: string | null;
   description: string | null;
+  billing_product_key: string | null;
+  generation_auth_origin: string | null;
   refund_reason_code: string | null;
   refund_note: string | null;
   job_id: string | null;
@@ -39,6 +43,7 @@ export type AdminTransactionRecord = {
   jobVideoUrl: string | null;
   jobDurationSec: number | null;
   isMcpGeneration: boolean;
+  origin: AdminTransactionOrigin;
   jobCreatedAt: string | null;
   jobProgress: number | null;
   jobMessage: string | null;

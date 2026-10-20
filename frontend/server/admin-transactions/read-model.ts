@@ -51,6 +51,11 @@ export function mapAdminTransactionRow(row: RawTransactionRow, userEmail: string
     jobVideoUrl: row.job_video_url ? (normalizeMediaUrl(row.job_video_url) ?? row.job_video_url) : null,
     jobDurationSec: row.job_duration_sec ?? null,
     isMcpGeneration: row.is_mcp_generation,
+    origin: row.generation_auth_origin === 'oauth' ? 'mcp'
+      : row.generation_auth_origin === 'studio-session' ? 'studio'
+        : row.generation_auth_origin === 'toolbox-session' ? 'toolbox'
+          : ['studio_assistance', 'studio_assistance_pack'].includes(row.billing_product_key ?? '') ? 'studio'
+            : 'unknown',
     jobCreatedAt: row.job_created_at,
     jobProgress: row.job_progress ?? null,
     jobMessage: row.job_message,
