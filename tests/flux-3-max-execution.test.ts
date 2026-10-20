@@ -17,6 +17,24 @@ const textEndpoint = 'blackforestlabs/flux-3-max/text-to-video';
 const imageEndpoint = 'blackforestlabs/flux-3-max/image-to-video';
 const base: GeneratePayload = { engineId: 'flux-3-max', mode: 't2v', prompt: 'A glass bird unfolds its wings.' };
 
+test('FLUX 3 Max generation accepts the workspace numeric duration strings in all four modes', () => {
+  const engine = getFalEngineById('flux-3-max')!.engine;
+  for (const mode of ['t2v', 'i2v', 'fl2v', 'ref2v'] as const) {
+    for (const durationSec of [8, 16]) {
+      const payload: GeneratePayload = { ...base, mode, durationSec, durationOption: String(durationSec),
+        ...(mode === 'i2v' || mode === 'fl2v' ? { imageUrl: 'https://media.example/start.png' } : {}),
+        ...(mode === 'fl2v' ? { endImageUrl: 'https://media.example/end.png' } : {}),
+        ...(mode === 'ref2v' ? { referenceImages: ['https://media.example/start.png', 'https://media.example/end.png'],
+          extraInputValues: { keyframe_indexes: `0,${durationSec * 24}` } } : {}),
+      };
+      const options = buildGenerateRequestOptions({ body: payload, engine, mode, isBytePlusV1a: false });
+      assert.equal(options.ok, true);
+      if (options.ok) assert.equal(options.options.durationSec, durationSec);
+      assert.equal(buildFalGenerationRequest(payload, textEndpoint).requestBody.duration, durationSec);
+    }
+  }
+});
+
 test('FLUX 3 Max 2:1 option reaches preflight while unknown aspect ratios are rejected', () => {
   const request = { engine: 'flux-3-max', mode: 't2v', durationSec: 5, resolution: '720p', aspectRatio: '2:1', fps: 24 };
   assert.equal(parsePreflightRequestPayload(request).ok, true);
