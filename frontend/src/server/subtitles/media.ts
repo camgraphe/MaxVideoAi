@@ -27,7 +27,9 @@ export async function probeSubtitleMedia(sourcePath:string){
 export async function extractSubtitleAudio({sourcePath,outputPath,signal}:{sourcePath:string;outputPath:string;signal?:AbortSignal}){
   const facts=await probeSubtitleMedia(sourcePath);if(!facts.hasAudio)throw new Error('SUBTITLE_SOURCE_HAS_NO_AUDIO');
   signal?.throwIfAborted();const installer=await import('@ffmpeg-installer/ffmpeg');const executable=await ensureExecutableFfmpegPath(installer.path);
-  await execute(executable,['-nostdin','-loglevel','error','-y','-protocol_whitelist','file,pipe','-i',sourcePath,'-map','0:a:0','-vn','-ac','1','-ar','16000','-c:a','pcm_s16le',outputPath],{timeout:120_000,signal,maxBuffer:64*1024});
+  // Scribe timestamps belong to the original presentation clock. Normalize the
+  // container origin while retaining delayed audio and gaps as actual silence.
+  await execute(executable,['-nostdin','-loglevel','error','-y','-copyts','-start_at_zero','-protocol_whitelist','file,pipe','-i',sourcePath,'-map','0:a:0','-vn','-af','aresample=async=1:first_pts=0','-ac','1','-ar','16000','-c:a','pcm_s16le',outputPath],{timeout:120_000,signal,maxBuffer:64*1024});
   return facts;
 }
 
