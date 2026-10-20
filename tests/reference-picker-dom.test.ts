@@ -1,3 +1,4 @@
+import { mockBrowserSession } from './helpers/browser-session-fixture';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import React, { act, useState } from 'react';
@@ -212,6 +213,7 @@ test('video reference Media picker appends cursor pages without replacing the fi
 test('image and character library SWR caches are account scoped across reopen and late responses', async () => {
   const { useImageLibraryData } = await import('../frontend/app/(core)/(workspace)/app/image/_hooks/useImageLibraryData');
   const h = await harness(); const oldFetch = globalThis.fetch;
+  const session = await mockBrowserSession('A');
   const requests: { url: string; resolve: (response: Response) => void }[] = [];
   globalThis.fetch = async input => new Promise(resolve => requests.push({ url: String(input), resolve }));
   let ids: string[] = [];
@@ -221,7 +223,10 @@ test('image and character library SWR caches are account scoped across reopen an
     return React.createElement('output', {}, ids.join(','));
   }
   const cache = new Map();
-  const view = (userId: string | null, character = false, open = true) => React.createElement(SWRConfig, { value: { provider: () => cache } }, open ? React.createElement(Owner, { userId, character }) : null);
+  const view = (userId: string | null, character = false, open = true) => {
+    session.setUserId(userId);
+    return React.createElement(SWRConfig, { value: { provider: () => cache } }, open ? React.createElement(Owner, { userId, character }) : null);
+  };
   try {
     await h.render(view('A')); assert.equal(requests.length, 1);
     await h.render(view('B')); assert.deepEqual(ids, []); assert.equal(requests.length, 2);
@@ -234,7 +239,7 @@ test('image and character library SWR caches are account scoped across reopen an
     assert.deepEqual(ids, ['B-character']);
     await h.render(view(null)); assert.deepEqual(ids, []);
     assert.match(requests[0].url, /kind=image/); assert.match(requests[2].url, /character-references/);
-  } finally { globalThis.fetch = oldFetch; await h.close(); }
+  } finally { await session.restore(); globalThis.fetch = oldFetch; await h.close(); }
 });
 
 test('audio source-video owner masks account data/loading/errors synchronously and rejects late replies on switch, logout and reopen', async () => {

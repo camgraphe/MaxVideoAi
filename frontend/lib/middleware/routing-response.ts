@@ -1,6 +1,22 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { LOGOUT_INTENT_COOKIE } from '@/lib/logout-intent-cookie';
+import { LOCALE_COOKIE } from '@/lib/i18n/constants';
+
+export function middlewareAuthUnavailableResponse(req: NextRequest, sessionResponse?: NextResponse): NextResponse {
+  const locale = req.cookies.get(LOCALE_COOKIE)?.value ?? req.cookies.get('NEXT_LOCALE')?.value ?? 'en';
+  const message = locale === 'fr'
+    ? 'La vérification de connexion est temporairement indisponible. Votre session est conservée. Réessayez dans quelques instants.'
+    : locale === 'es'
+      ? 'La verificación de acceso no está disponible temporalmente. Tu sesión se ha conservado. Inténtalo de nuevo en unos momentos.'
+      : 'Sign-in verification is temporarily unavailable. Your session has been preserved. Please try again in a few moments.';
+  const response = new NextResponse(message, { status: 503, headers: {
+    'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'private, no-store, max-age=0',
+    'Vercel-CDN-Cache-Control': 'no-store', 'Retry-After': '10', 'X-Robots-Tag': 'noindex, nofollow', Vary: 'Cookie',
+  } });
+  if (sessionResponse) mergeResponseCookies(response, sessionResponse);
+  return response;
+}
 
 export const LOGIN_PATH = '/login';
 const LOCAL_ADMIN_BYPASS_COOKIE = 'mva_local_admin_bypass';

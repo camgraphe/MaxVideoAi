@@ -1,3 +1,4 @@
+import { CreditPurchaseNotes } from '@/components/marketing/CreditPurchaseNotes';
 import { BadgeDollarSign, CreditCard, Eye, RotateCcw } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
@@ -32,6 +33,7 @@ export function PricingCreditsRefundsSection({ locale }: { locale: AppLocale }) 
           );
         })}
       </div>
+      <CreditPurchaseNotes copy={copy.creditsRefunds.creditNotes} />
     </section>
   );
 }

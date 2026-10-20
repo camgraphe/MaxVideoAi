@@ -2,8 +2,6 @@ import Link from 'next/link';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 
 export function TermsArticleEn({
-  version,
-  effective,
   subprocessorsHref,
 }: {
   version: string;
@@ -34,7 +32,7 @@ export function TermsArticleEn({
         </p>
       </section>
 
-      <section className="stack-gap-sm">
+      <section id="wallet-credits" className="stack-gap-sm scroll-mt-[calc(var(--header-height)+24px)]">
         <h3 className="text-lg font-semibold text-text-primary">3. Pricing, payments &amp; wallet</h3>
         <ul className="ml-5 list-disc space-y-2">
           <li>
@@ -53,6 +51,8 @@ export function TermsArticleEn({
             <strong>Refunds.</strong> If we cannot deliver a job because of a technical failure on our side, we may refund the charge to the original payment method or credit your wallet, in line with consumer law.
           </li>
         </ul>
+        <p>Wallet recredits restore your balance for later use; they do not reverse a card payment. See the refund policy for payment-refund requests and unused balances.</p>
+        <p><Link href="/return-policy#refund-review" className="font-medium underline">Refund policy and procedure</Link></p>
       </section>
 
       <section className="stack-gap-sm">
@@ -91,8 +91,7 @@ export function TermsArticleEn({
             template pages, case studies, or other marketing placements.
           </li>
           <li>
-            <strong>Privacy controls.</strong> New renders are private by default. Public publishing, site-wide indexing, and any Video SEO rollout are
-            managed by MaxVideoAI through an internal review workflow. If you need a public render delisted, deindexed, or deleted, email{' '}
+            <strong>Publication and removal.</strong> New renders are private by default and are not listed in public galleries. MaxVideoAI may publish a selection after review under the licence above. To request removal, deindexing or erasure, email{' '}
             <ObfuscatedEmailLink
               user="support"
               domain="maxvideoai.com"
@@ -101,7 +100,7 @@ export function TermsArticleEn({
               unstyled
               className="font-medium"
             />{' '}
-            and we will honour reasonable requests unless legal obligations prevent removal.
+            and we will honour reasonable requests unless legal obligations prevent removal. A shared file link may give access to the media. Removing a public listing does not by itself erase stored files or copies already downloaded by third parties.
           </li>
           <li>
             <strong>Uploads vs. generated content.</strong> Uploaded logos, footage, and other inputs remain your property; we only use them to fulfil the
@@ -217,7 +216,7 @@ export function TermsArticleEn({
           />
           .
         </p>
-        <p className="text-sm text-text-muted">Last updated: {effective ?? version}</p>
+        <p className="text-sm text-text-muted">Information updated: 19 October 2026</p>
       </section>
     </article>
   );

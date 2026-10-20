@@ -79,6 +79,7 @@ const FAILED_ATTEMPT_BOUNDARY =
   'No new generation was started after this failure. A refund or recredit does not restore the previous authorization. To try again, prepare a fresh exact quote and wait for explicit user approval.';
 
 const SAFE_AGENT_FAILURE_CODES = new Set([
+  'reference_link_unsupported',
   SEEDANCE_OUTPUT_AUDIO_BLOCKED,
   SEEDANCE_I2V_RATIO_REJECTED,
   SEEDANCE_INPUT_VIDEO_TOO_SMALL,
@@ -337,7 +338,7 @@ function buildAgentMessage(
       }
     }
     // Only a persisted wallet-refunded state establishes a wallet recredit.
-    if (knownMessage) failureMessage = appendConfirmedWalletRefund(failureMessage, { paymentStatus });
+    failureMessage = appendConfirmedWalletRefund(failureMessage, { paymentStatus });
     return `${failureMessage} ${FAILED_ATTEMPT_BOUNDARY}`;
   }
   return null;

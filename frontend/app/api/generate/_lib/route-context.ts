@@ -146,9 +146,14 @@ export function resolveTrustedPaidGenerateRouteContext(params: {
   }
   if (
     providerRoutingPlan.kind === 'google_vertex_unavailable'
+    || providerRoutingPlan.kind === 'luma_agents_unavailable'
     || providerRoutingPlan.kind === 'alibaba_model_studio_unavailable'
   ) {
-    return { ok: false, status: 503, body: { ok: false, error: 'Engine unavailable' } };
+    return { ok: false, status: 503, body: { ok: false,
+      error: providerRoutingPlan.kind === 'luma_agents_unavailable' ? 'LUMA_MODE_UNAVAILABLE' : 'Engine unavailable',
+      ...(providerRoutingPlan.kind === 'luma_agents_unavailable'
+        ? { message: 'This video editing mode is currently unavailable. Choose another model.' } : {}),
+    } };
   }
 
   return {
@@ -394,9 +399,14 @@ export async function resolveGenerateRouteContext(params: {
   }
   if (
     providerRoutingPlan.kind === 'google_vertex_unavailable'
+    || providerRoutingPlan.kind === 'luma_agents_unavailable'
     || providerRoutingPlan.kind === 'alibaba_model_studio_unavailable'
   ) {
-    return { ok: false, status: 503, body: { ok: false, error: 'Engine unavailable' } };
+    return { ok: false, status: 503, body: { ok: false,
+      error: providerRoutingPlan.kind === 'luma_agents_unavailable' ? 'LUMA_MODE_UNAVAILABLE' : 'Engine unavailable',
+      ...(providerRoutingPlan.kind === 'luma_agents_unavailable'
+        ? { message: 'This video editing mode is currently unavailable. Choose another model.' } : {}),
+    } };
   }
   const providerKey = isBytePlusV1a ? BYTEPLUS_MODELARK_PROVIDER : providerRoutingPlan.primaryProvider;
 

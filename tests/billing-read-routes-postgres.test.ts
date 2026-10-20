@@ -202,6 +202,24 @@ test('Billing GETs read only the authenticated ledger and expose database failur
     assert.deepEqual((await pg.pool.query('SELECT * FROM app_receipts ORDER BY id')).rows, before);
     assert.ok(fixture.statements.every(sql => /^\s*SELECT\b/i.test(sql)));
   });
+  await t.test('historical rejected reference links explain recovery without rewriting receipts', async () => {
+    await pg.pool.query(`INSERT INTO app_jobs (job_id,user_id,engine_id,engine_label,duration_sec,prompt,thumb_url,settings_snapshot)
+      VALUES ('veo-link-refusal',$1,'veo-3-1-lite','Veo Lite',6,'private prompt','',$2::jsonb)`,
+    [fixtureUser, JSON.stringify({ submissionFailure: { code: 'IMAGE_HOST_NOT_ALLOWED' } })]);
+    await pg.pool.query(`INSERT INTO app_receipts (user_id,type,amount_cents,currency,description,job_id)
+      VALUES ($1,'refund',24,'USD','Refund Google Veo 3.1 Lite - 6s - MaxVideoAI could not complete this render.','veo-link-refusal')`, [fixtureUser]);
+    const before = (await pg.pool.query('SELECT * FROM app_receipts ORDER BY id')).rows;
+    fixture.statements.length = 0;
+    const response = await routes.getReceipts(new Request('http://localhost/api/receipts?limit=100'));
+    assert.equal(response.status, 200);
+    const data = await response.json();
+    const row = data.receipts.find((receipt: { job_id: string }) => receipt.job_id === 'veo-link-refusal');
+    assert.match(row.description, /reference link.*import/i);
+    assert.equal(row.amount_cents, 24);
+    assert.equal(fixture.statements.length, 1);
+    assert.doesNotMatch(JSON.stringify(data), /submissionFailure|IMAGE_HOST_NOT_ALLOWED|private prompt/);
+    assert.deepEqual((await pg.pool.query('SELECT * FROM app_receipts ORDER BY id')).rows, before);
+  });
   await t.test('historical output refusals are projected without rewriting the ledger or reading another owner', async () => {
     const snapshot = { providerFailure: { provider: 'byteplus_modelark', providerErrorCode: 'OutputAudioSensitiveContentDetected', failureCode: 'seedance_reference_media_blocked' } };
     await pg.pool.query(`INSERT INTO app_jobs (job_id,user_id,engine_id,engine_label,duration_sec,prompt,thumb_url,settings_snapshot)
@@ -224,8 +242,9 @@ test('Billing GETs read only the authenticated ledger and expose database failur
     const wan = data.receipts.find((row: { job_id: string }) => row.job_id === 'wan-refusal');
     assert.match(wan.description, /generated image.*blocked/i);
     assert.doesNotMatch(wan.description, /Green net/i);
-    assert.equal(data.receipts.find((row: { job_id: string }) => row.job_id === 'other-audio-refusal').description,
-      'Refund Seedance 2.0 Fast - 5s - Render could not be completed.');
+    const otherOwnerReason = data.receipts.find((row: { job_id: string }) => row.job_id === 'other-audio-refusal').description;
+    assert.match(otherOwnerReason, /could not complete this render/i);
+    assert.doesNotMatch(otherOwnerReason, /generated audio|reference media/i);
     assert.doesNotMatch(JSON.stringify(data), /providerErrorCode|providerFailure|settings_snapshot|private prompt/);
     assert.deepEqual((await pg.pool.query('SELECT * FROM app_receipts ORDER BY id')).rows, before);
     assert.equal(fixture.statements.length, 1);

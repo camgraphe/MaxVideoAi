@@ -202,7 +202,7 @@ export function resolveAgentGenerationModeExecutability(
         isAdmin: false,
         env: providerEnv,
       });
-      if (routingPlan.kind === 'google_vertex_unavailable') {
+      if (routingPlan.kind === 'google_vertex_unavailable' || routingPlan.kind === 'luma_agents_unavailable') {
         return { executable: false, reason: 'provider_disabled' };
       }
       if (routingPlan.kind === 'fal_only') {

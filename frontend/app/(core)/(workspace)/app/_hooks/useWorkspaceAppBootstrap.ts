@@ -84,6 +84,7 @@ export function useWorkspaceAppBootstrap() {
         ...job,
         message: getWorkspaceGenerationFailureMessage(
           {
+            status: job.status,
             failureCode: getVideoFailureCodeFromSettingsSnapshot(job.settingsSnapshot),
             message: job.message,
             paymentStatus: job.paymentStatus,

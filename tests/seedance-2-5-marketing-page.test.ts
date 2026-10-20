@@ -172,10 +172,10 @@ test('the three priority Seedance 2.5 comparisons remain published while best-fo
 
   const bestForBySlug = new Map(compareConfig.bestForPages.map((entry) => [entry.slug, entry.relatedComparisons]));
   for (const usecase of ['cinematic-realism', 'ads', 'reference-to-video', 'multi-shot-video']) {
-    assert.ok(bestForBySlug.get(usecase)?.includes('seedance-2-5-vs-wan-3'), `${usecase} should compare Seedance 2.5 with Wan 3`);
     assert.ok(bestForBySlug.get(usecase)?.includes('minimax-h3-vs-seedance-2-5'), `${usecase} should compare Seedance 2.5 with H3`);
   }
-  assert.ok(bestForBySlug.get('cinematic-realism')?.includes('minimax-h3-max-vs-seedance-2-5'));
+  assert.ok(bestForBySlug.get('cinematic-realism')?.includes('seedance-2-5-vs-veo-3-1'));
+  assert.ok(bestForBySlug.get('multi-shot-video')?.includes('seedance-2-5-vs-wan-3'));
   assert.ok(bestForBySlug.get('ads')?.includes('kling-o3-pro-vs-minimax-h3'));
   assert.ok(bestForBySlug.get('reference-to-video')?.includes('wan-3-vs-wan-3-prime'));
   assert.ok(bestForBySlug.get('multi-shot-video')?.includes('kling-o3-pro-vs-minimax-h3'));

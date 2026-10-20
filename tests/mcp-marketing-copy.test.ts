@@ -37,7 +37,7 @@ test('each integration has a distinct searchable title and truthful installation
    assert.ok(copy.meta.title.length<75);assert.ok(copy.hero.title.length<80);
    assert.ok(copy.setup.hostGuides.length>0);
    for(const guide of copy.setup.hostGuides)assert.ok(guide.installInstruction.length>40);
-   assert.match(copy.hero.liveStatus,client==='chatgpt'?/Business.*Enterprise.*Edu/:client==='n8n'?/2\.38\.7/:client==='openclaw'?/ClawHub/:/test|prob/i);
+   assert.match(copy.hero.liveStatus,client==='chatgpt'?/Pro.*(?:test|prob)/:client==='n8n'?/2\.38\.7/:client==='openclaw'?/ClawHub/:/test|prob/i);
   }
   assert.equal(titles.size,5);
  }
@@ -52,11 +52,20 @@ test('host eligibility is visible and automation never becomes a generic one-cli
   assert.match(html,/data-copy-endpoint/);
   assert.match(html,/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/);
   assert.doesNotMatch(html,/Pending \/ Under review|no public n8n library listing/i);
-  assert.match(n8n.troubleshooting.items[0].answer,/awaiting n8n review|en cours de revue|en revisión/);
-  assert.doesNotMatch(html,/Workflow 19591 is publicly listed|Le workflow 19591 est publié|El flujo 19591 está publicado/);
+  assert.match(n8n.troubleshooting.items[0].answer,/approved|approuvé|aprobada/);
+  assert.doesNotMatch(html,/awaiting n8n review|en cours de revue|en revisión/);
   const faq=getMcpEditorialCopy(locale).faq.map(item=>item.answer).join(' ');
   assert.match(faq,/Business.*Enterprise.*Edu/);assert.match(faq,/Pro/);assert.match(faq,/2\.38\.7/);assert.match(faq,/Cloud/);assert.match(faq,/19591/);assert.match(faq,/manual|manuelle/i);
-  assert.match(faq,/awaiting n8n review|en cours de revue|en revisión/);
+  assert.doesNotMatch(faq,/awaiting n8n review|en cours de revue|en revisión/);
+  for (const answer of [n8n.troubleshooting.items[0].answer, getMcpEditorialCopy(locale).faq[2].answer]) {
+    assert.match(answer,/approved|approuvé|aprobada/);
+    assert.match(answer,/OAuth/);
+    assert.match(answer,/2\.38\.7/);
+    assert.match(answer,/fresh quote|devis frais|cotización nueva/);
+    assert.match(answer,/human approval|accord humain|aprobación humana/);
+    assert.match(answer,/Cloud.*AI Agent/);
+    assert.match(answer,/not been validated|n’ont pas été validés|no se han validado/);
+  }
  }
 });
 test('gated views do not show paid workflow, historical proof or price examples',()=>{
@@ -94,7 +103,7 @@ test('localized host setup titles and introductions do not inherit the English g
 test('installation requests name the production server and the correct setup mechanism for each host', () => {
   for (const locale of locales) {
     const chatgpt = getIntegrationInstallInstruction(locale, 'chatgptWeb');
-    const claude = getIntegrationInstallInstruction(locale, 'claudeDesktop');
+    const claude = getIntegrationInstallInstruction(locale, 'claudeWeb');
     const code = getIntegrationInstallInstruction(locale, 'claudeCode');
     const openclaw = getIntegrationInstallInstruction(locale, 'openclawGateway');
     for (const instruction of [chatgpt, claude, code, openclaw]) {
@@ -105,7 +114,7 @@ test('installation requests name the production server and the correct setup mec
     }
     assert.match(chatgpt, /OAuth/);
     assert.doesNotMatch(chatgpt, /claude mcp|openclaw mcp|codex plugin/);
-    assert.match(claude, /Customize.*Connectors/);
+    assert.match(claude, /(?:Customize.*Connectors|Personnalisation.*Connecteurs)/);
     assert.match(code, /claude mcp add --transport http maxvideoai/);
     assert.match(code, /\/mcp/);
     assert.match(openclaw, /openclaw mcp login maxvideoai/);
@@ -114,17 +123,17 @@ test('installation requests name the production server and the correct setup mec
   }
 });
 
-test('Claude setup guidance covers plan requirements and authentication review without claiming a fresh host test', () => {
+test('Claude setup guidance covers plan requirements and authentication review with separate Web and Desktop evidence', () => {
   for (const locale of locales) {
     const copy = getIntegrationCopy(locale, 'claude');
-    const guide = copy.setup.hostGuides.find(item => item.hostId === 'claudeDesktop')!;
+    const guide = copy.setup.hostGuides.find(item => item.hostId === 'claudeWeb')!;
     const steps = guide.steps.map(item => item.body).join(' ');
     assert.match(steps, /Pro.*Max/);
     assert.match(steps, /Team.*Enterprise/);
-    assert.match(steps, /Continue.*OAuth.*Continue/);
+    assert.match(steps, /(?:Continue|Continuer).*OAuth/);
     assert.match(steps, /Custom.*Web/);
     assert.match(guide.installInstruction, /Pro.*Max/);
-    assert.match(guide.installInstruction, /Continue.*OAuth/);
+    assert.match(guide.installInstruction, /(?:Continue|Continuer).*OAuth/);
     assert.doesNotMatch(steps + guide.installInstruction, /Use Claude’s published identity|Use Claude's published identity/);
     assert.match(copy.compatibility.statuses.claudeDesktop ?? '', /1\.37937\.1/);
   }

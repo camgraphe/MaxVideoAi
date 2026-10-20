@@ -216,6 +216,30 @@ export const esPayAsYouGoContent = {
     budgetCaveat: "Es una ilustración de presupuesto, no una garantía de obtener el resultado deseado en tres intentos. Los créditos consumidos son distintos de la recarga mínima, que empieza en $10. Otros ajustes o precios requieren una nueva cotización.",
     studioAssistance: "¿Usas Studio? Sol utiliza créditos de asistencia incluidos o comprados. La generación de medios tiene su propia cotización. Ten en cuenta ambos al planificar tu presupuesto.",
     studioLinkLabel: "Abrir Studio",
+    creditNotes: {
+      "title": "Validez de los créditos antes de recargar",
+      "items": [
+        {
+          "title": "Créditos de medios comprados",
+          "body": "Los créditos de medios comprados y no usados permanecen en tu monedero entre proyectos, sin suscripción obligatoria. Nuestras condiciones actuales no especifican un plazo de caducidad ni de inactividad para este saldo. Contacta con soporte antes de comprar si necesitas confirmar un periodo de validez."
+        },
+        {
+          "title": "Créditos promocionales, de bonificación y gratuitos",
+          "body": "No tienen valor en efectivo y no son reembolsables. Consulta las condiciones de validez de la oferta; si no se indican, pregunta a soporte antes de aplicar las reglas de los créditos de medios o de Studio."
+        },
+        {
+          "title": "Créditos de asistencia de Studio",
+          "body": "GPT-6.1 Sol incluye 500 créditos por mes natural UTC. Los créditos incluidos no usados no se acumulan. Los paquetes Sol comprados se acumulan sin caducidad ni recarga automática. Cada compra de paquete se confirma y se financia desde tu monedero MaxVideoAI. La generación de medios tiene su propia cotización. GPT-6 Luna no tiene coste adicional de asistencia, sujeto a límites de solicitudes y disponibilidad del servicio."
+        }
+      ],
+      "links": {
+        "termsHref": "/es/legal/terms#wallet-credits",
+        "terms": "Condiciones del monedero",
+        "refunds": "Política y solicitud de reembolso (inglés)",
+        "support": "Consultar la validez con soporte",
+        "studio": "Asistencia de Studio"
+      }
+    },
     labels: {
       'gemini-omni-flash': 'Prueba multimodal con Gemini Omni Flash 1.1',
       'kling-3-turbo-pro': 'Prueba 1080p con Kling 3.0 Turbo Pro',
@@ -236,7 +260,7 @@ export const esPayAsYouGoContent = {
   refundPolicy: {
     header: {
       title: '¿Qué ocurre si falla una generación?',
-      intro: "Cada generación completada consume créditos. Un resultado completado que no cumple tus expectativas creativas es distinto de un fallo técnico. Las generaciones fallidas se abonan automáticamente a tu saldo.",
+      intro: "Cada generación completada consume créditos. Un resultado completado que no cumple tus expectativas creativas es distinto de un fallo técnico. Las generaciones fallidas se abonan automáticamente a tu saldo. Un abono al monedero no es un reembolso a la tarjeta o cuenta bancaria. Para el reembolso de un pago o de un saldo comprado no usado, solicita una revisión según la política de reembolsos. Cada nuevo intento necesita su propia cotización actual.",
     },
     bullets: [
       { icon: 'preview', body: 'Revisas el precio antes de iniciar una generación.' },

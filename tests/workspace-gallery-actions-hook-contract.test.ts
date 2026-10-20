@@ -50,4 +50,7 @@ test('guest starter boot and explicit guided selection use the gallery action ow
   assert.match(hookSource, /handleGalleryGroupAction\(firstSample, 'open'\)/);
   assert.match(appSource, /guestStarterReady: app.authStatus === 'loggedOut' && activeDraft.ready/);
   assert.match(appSource, /!draft.hasStoredFormRef.current && !draft.fromVideoId && !draft.requestedJobId/);
+  assert.match(appSource, /!draft.effectiveRequestedEngineId/);
+  assert.match(appSource, /!draft.effectiveRequestedEngineToken && !draft.effectiveRequestedMode/);
+  assert.match(appSource, /initialPreviewGroup,\s+prompt: routeForm.prompt/);
 });

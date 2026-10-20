@@ -47,6 +47,12 @@ Single-keyframe extend workflows remain unsupported in the current runtime, even
 
 If a direct-only request cannot be accepted, fail/refund through the normal provider error path. Do not launch a second fal render.
 
+The 19 October 2026 correction makes disabled/admin-only/public-disabled direct
+Modify and Reframe routes return luma_agents_unavailable instead of fal_only.
+Model readiness excludes those modes, and both Web and trusted paid contexts
+reject them before payment. A prepared MCP quote is rechecked at confirmation.
+An unavailable mode is not a reason to enable a provider flag automatically.
+
 ## Environment
 
 Server-only variables:

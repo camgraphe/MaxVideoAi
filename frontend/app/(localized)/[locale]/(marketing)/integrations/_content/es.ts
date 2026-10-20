@@ -20,18 +20,18 @@ function buildSpanishGuides(client: McpClientId): IntegrationHostGuide[] {
   if (client === 'claude') {
     return [
       {
-        hostId: 'claudeDesktop',
+        hostId: 'claudeWeb',
         title: 'Conectar MaxVideoAI con Claude',
         intro: 'Añade MaxVideoAI como conector remoto personalizado y autoriza tu cuenta en el navegador.',
-        installInstruction: getIntegrationInstallInstruction('es', 'claudeDesktop'),
+        installInstruction: getIntegrationInstallInstruction('es', 'claudeWeb'),
         steps: [
-          { title: 'Abrir los ajustes', body: 'Con un plan individual de Claude (Free, Pro o Max), abre Customize → Connectors → + Add → Add custom connector. En Team o Enterprise, un propietario usa primero Organization settings → Connectors → Add → Custom → Web.' },
-          { title: 'Añadir MaxVideoAI', body: 'Introduce MaxVideoAI y la URL de producción de abajo. Elige Continue, revisa los ajustes OAuth detectados y pulsa Continue. Conserva OAuth, revisa las opciones de conexión y termina con Add.' },
+          { title: 'Abrir los ajustes', body: "Con un plan individual de Claude (Free, Pro o Max), abre Customize → Connectors → Your connectors → Add → Add custom connector. En Team o Enterprise, un propietario usa primero Organization settings → Connectors → Add → Custom → Web." },
+          { title: 'Añadir MaxVideoAI', body: "Introduce MaxVideoAI y la URL de producción indicada, después Continue. Revisa OAuth y el registro automático del cliente, conserva Connect now y pulsa Add. Elige Connect y revisa el consentimiento de MaxVideoAI." },
           { title: 'Aprobar la conexión', body: 'Inicia sesión o crea tu cuenta MaxVideoAI y revisa el acceso. Los miembros de Team o Enterprise eligen Connect en el conector añadido por su propietario. Vuelve a Claude y activa MaxVideoAI en + → Connectors dentro del chat.' },
         ],
         commands: [],
         setupValues: [{ label: 'Servidor MaxVideoAI', value: MCP_PRODUCTION_RESOURCE_URL }],
-        limitation: 'Los créditos, referencias privadas y videos terminados quedan en la misma cuenta MaxVideoAI que usas en la web.',
+        limitation: "La cuenta Free probada permitía un conector personalizado. Si la plaza está ocupada, decide cuál conservar antes de eliminarlo. Eliminar un conector en Claude no demuestra la revocación de su autorización en MaxVideoAI.",
       },
       {
         hostId: 'claudeCode',
@@ -62,11 +62,11 @@ function buildSpanishGuides(client: McpClientId): IntegrationHostGuide[] {
         "steps": [
           {
             "title": "Abrir la configuración MCP personalizada",
-            "body": "En Plugins, añade una app MCP personalizada. Si hace falta, activa el modo desarrollador en Ajustes → Seguridad e inicio de sesión."
+            "body": "En Plugins, elige Add → Add custom MCP server. Esta ruta actual no requiere activar antes Developer mode. Se siguen aplicando los permisos de la cuenta y del espacio."
           },
           {
             "title": "Crear MaxVideoAI y conectar la cuenta",
-            "body": "Nombre: MaxVideoAI. Servidor: la dirección siguiente. Autenticación: OAuth. Elige Conectar y autoriza los permisos en maxvideoai.com. Evita la entrada Staging."
+            "body": "Usa el nombre MaxVideoAI y la dirección de producción indicada; conserva OAuth detectado. Revisa el aviso, elige Create as a plugin, después Connect y aprueba el acceso en maxvideoai.com. Evita la entrada Staging."
           },
           {
             "title": "Probar en un chat nuevo",
@@ -154,7 +154,8 @@ export function buildSpanishIntegrationCopy(client: McpClientId): IntegrationPag
       statuses: {
         claudeDesktop: 'Claude Desktop 1.37937.1 completó en staging controlado OAuth, catálogo, presupuestos, precio exacto, medios, recuperación, carga y recarga.',
         claudeCode: 'La configuración del conector compartido está lista, pero todavía no se ha registrado una comprobación directa de Claude Code en producción.',
-        chatgptWeb: "Instalación en producción, OAuth en el navegador, regreso a ChatGPT y consulta de cuenta y modelos comprobados el 01/10/2026. Generación de pago, renovación, revocación y reconexión siguen sin verificar en ChatGPT.",
+        claudeWeb: "Comprobado el 19 de octubre de 2026 en Claude Web con una cuenta Free: OAuth en producción, consulta de modelos, preparación del precio exacto y recuperación de un resultado existente terminado. No se probaron nueva generación de pago, reproducción integrada, renovación del token ni revocación/reconexión. La disponibilidad puede variar según la cuenta.",
+        chatgptWeb: "Comprobado el 19 de octubre de 2026 en ChatGPT Web con la cuenta Pro probada y un plugin MCP privado: OAuth en producción, consulta de modelos, preparación del precio exacto y recuperación de un resultado existente terminado. No se probaron nueva generación de pago, reproducción integrada, renovación del token ni revocación/reconexión. Esto no demuestra acceso completo de escritura para todas las cuentas Pro.",
         codexCli: 'Codex CLI 0.150.0-alpha.8 completó en producción la instalación, OAuth, cuenta, catálogo, recomendaciones, presupuestos, precio exacto, generación de pago, recuperación y contrato del reproductor integrado.',
       },
     },
@@ -166,7 +167,7 @@ export function buildSpanishIntegrationCopy(client: McpClientId): IntegrationPag
       installAction: getIntegrationInstallAction('es', clientLabel),
       hostGuides: buildSpanishGuides(client),
       oauthTitle: 'Qué ocurre al conectar',
-      oauthBody: 'El navegador abre el acceso y consentimiento de MaxVideoAI. El asistente nunca recibe tu contraseña, datos de pago ni acceso directo a la base.',
+      oauthBody: "Revisa los permisos solicitados, que pueden incluir openid, email, profile y offline_access. El asistente nunca recibe tu contraseña, datos de pago ni acceso directo a la base.",
       oauthSteps: ["Conecta la misma cuenta MaxVideoAI que usas en la web; crea una solo si hace falta", "Revisa y aprueba los permisos en MaxVideoAI; confirma el correo si acabas de crear una cuenta", `Vuelve a ${clientLabel} y comprueba la cuenta y los modelos sin generar`],
     },
     workflow: {
@@ -177,13 +178,13 @@ export function buildSpanishIntegrationCopy(client: McpClientId): IntegrationPag
       previewSteps: [
         { title: 'Desarrollar el brief', body: `${clientLabel} aclara decisiones, prepara el plan y escribe prompts.` },
         { title: 'Comparar opciones reales', body: 'MaxVideoAI devuelve capacidades y presupuestos actuales para calidad, ahorro o una mezcla razonada.' },
-        { title: 'Revisar el precio exacto', body: 'Modelo, ajustes, referencias y precio se validan juntos antes de gastar.' },
+        { title: 'Revisar el precio exacto', body: "Modelo, ajustes, referencias y precio se validan juntos antes de gastar. Especifica duración, resolución, formato y audio cuando el modelo los admita; compara precios solo con los mismos ajustes." },
         { title: 'Aprobar y seguir', body: 'La generación espera tu aprobación; el resultado queda en la biblioteca MaxVideoAI conectada.' },
       ],
       liveSteps: [
         { title: 'Desarrollar el brief', body: `${clientLabel} aclara creatividad, formato, calidad y presupuesto.` },
         { title: 'Comparar modelos actuales', body: 'MaxVideoAI propone la mejor opción y alternativas creíbles con sus diferencias.' },
-        { title: 'Revisar el precio exacto', body: 'Comprueba prompt, ajustes, referencias, precio y efecto sobre el saldo.' },
+        { title: 'Revisar el precio exacto', body: "Comprueba prompt, ajustes, referencias, precio y efecto sobre el saldo. Especifica duración, resolución, formato y audio cuando el modelo los admita; compara precios solo con los mismos ajustes." },
         { title: 'Generar y seguir', body: 'Aprueba una vez, recupera el estado y encuentra el resultado en tu biblioteca MaxVideoAI.' },
       ],
     },

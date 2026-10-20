@@ -100,7 +100,8 @@ export type ReferenceConstraintFailure =
   | 'combined_duration_exceeded'
   | 'size_exceeded'
   | 'format_unsupported'
-  | 'image_aspect_ratio_unsupported';
+  | 'image_aspect_ratio_unsupported'
+  | 'image_dimensions_too_small';
 
 export class GenerationCapabilityError extends Error {
   constructor(
@@ -839,6 +840,21 @@ function validateReferences(
     if (!fields.length) fail('references', 'reference_invalid');
     validateTrustedReferenceDuration(request, reference, fields, candidate, options);
     validateTrustedAudioFormat(reference, fields, candidate, options);
+    // H3's executable references already require owned, measured originals.
+    const minimumImageSide = candidate.engine.id === 'minimax-h3'
+      ? candidate.engine.inputSchema?.constraints?.minImageSidePx : undefined;
+    if (fields.length === 1 && fields[0]!.type === 'image'
+      && typeof minimumImageSide === 'number' && minimumImageSide > 0 && options.resolvedReferences) {
+      const resolved = resolvedReference(reference, options);
+      if (typeof resolved?.width !== 'number' || typeof resolved.height !== 'number'
+        || !Number.isFinite(resolved.width) || !Number.isFinite(resolved.height)
+        || resolved.width <= 0 || resolved.height <= 0) {
+        fail('references', 'reference_invalid', 'dimensions_unverified');
+      }
+      if (resolved.width < minimumImageSide || resolved.height < minimumImageSide) {
+        fail('references', 'reference_invalid', 'image_dimensions_too_small');
+      }
+    }
     if (fields.length === 1 && fields[0]!.imageAspectRatio) {
       if (reference.kind !== 'asset') {
         // Budget estimates may describe unverified media; executable quotes may not.

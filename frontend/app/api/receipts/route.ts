@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
     stripe_hosted_invoice_url: string | null;
     stripe_invoice_pdf: string | null;
     stripe_receipt_url: string | null;
-    job_provider_failure: unknown;
+    job_failure_snapshot: unknown;
   };
 
   let rows: ReceiptRow[];
@@ -99,11 +99,14 @@ export async function GET(req: NextRequest) {
          stripe_invoice_pdf,
          stripe_receipt_url,
          CASE WHEN type = 'refund' THEN (
-           SELECT jobs.settings_snapshot->'providerFailure'
+           SELECT jsonb_build_object(
+             'providerFailure', jobs.settings_snapshot->'providerFailure',
+             'submissionFailure', jobs.settings_snapshot->'submissionFailure'
+           )
            FROM app_jobs AS jobs
            WHERE jobs.job_id = app_receipts.job_id AND jobs.user_id = app_receipts.user_id
            LIMIT 1
-         ) END AS job_provider_failure
+         ) END AS job_failure_snapshot
        FROM app_receipts
        ${where}
        ORDER BY id DESC
@@ -144,7 +147,7 @@ export async function GET(req: NextRequest) {
         payment_amount_cents: row.kind === 'topup' ? row.original_amount_cents : null,
         payment_currency: row.kind === 'topup' ? row.original_currency : null,
         description: row.kind === 'refund'
-          ? localizeGenerationRefundDescription(row.description, 'en', getVideoFailureCodeFromSettingsSnapshot({ providerFailure: row.job_provider_failure }))
+          ? localizeGenerationRefundDescription(row.description, 'en', getVideoFailureCodeFromSettingsSnapshot(row.job_failure_snapshot))
           : row.description,
         created_at: row.created_at,
         job_id: row.job_id,

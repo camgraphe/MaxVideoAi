@@ -17359,6 +17359,10 @@
             "minCount": 0,
             "maxCount": 1,
             "maxSizeMB": 30,
+            "imageAspectRatio": {
+              "min": 0.4,
+              "max": 2.5
+            },
             "acceptedMimeTypes": [
               "image/jpeg",
               "image/png",
@@ -17383,6 +17387,10 @@
             "minCount": 0,
             "maxCount": 1,
             "maxSizeMB": 30,
+            "imageAspectRatio": {
+              "min": 0.4,
+              "max": 2.5
+            },
             "acceptedMimeTypes": [
               "image/jpeg",
               "image/png",
@@ -17612,6 +17620,7 @@
           "countUniqueUrls": true
         },
         "constraints": {
+          "minImageSidePx": 256,
           "supportedFormats": [
             "jpg",
             "jpeg",

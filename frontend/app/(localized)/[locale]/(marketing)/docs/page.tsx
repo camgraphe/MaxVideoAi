@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { resolveDictionary } from '@/lib/i18n/server';
 import type { AppLocale } from '@/i18n/locales';
+import { locales } from '@/i18n/locales';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
@@ -16,6 +18,7 @@ export const revalidate = 600;
 export async function generateMetadata(props: { params: Promise<{ locale: AppLocale }> }): Promise<Metadata> {
   const params = await props.params;
   const locale = params.locale;
+  if (!locales.includes(locale)) notFound();
   const { dictionary } = await resolveDictionary({ locale });
   const metaCopy = dictionary.docs?.meta ?? {};
   const title = metaCopy.title ?? 'Docs — Onboarding, Brand Safety, Refunds & API Webhooks';
@@ -42,6 +45,7 @@ export async function generateMetadata(props: { params: Promise<{ locale: AppLoc
 export default async function DocsIndexPage(props: { params: Promise<{ locale: AppLocale }> }) {
   const params = await props.params;
   const locale = params.locale;
+  if (!locales.includes(locale)) notFound();
   const { dictionary } = await resolveDictionary({ locale });
   const metadataUrls = buildMetadataUrls(locale, DOCS_SLUG_MAP, { englishPath: '/docs' });
   const docs = await getDocsEntries(locale);

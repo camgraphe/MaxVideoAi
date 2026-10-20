@@ -22,6 +22,7 @@ declare module 'pg' {
 
   export class Pool {
     constructor(config?: PoolConfig);
+    on(event: 'connect', listener: (client: PoolClient) => void): this;
     on(event: 'error', listener: (error: Error, client: PoolClient) => void): this;
     query<T = unknown>(text: string, params?: ReadonlyArray<unknown>): Promise<QueryResult<T>>;
     connect(): Promise<PoolClient>;

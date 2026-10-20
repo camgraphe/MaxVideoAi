@@ -82,6 +82,18 @@ const imageRequest: CanonicalGenerationRequest = {
   outputCount: 1,
 };
 
+test('confirmation rejects an older payable quote with an unsupported reference host before reserving credits', async () => {
+  const request: CanonicalGenerationRequest = { ...videoRequest, mode: 'i2v', references: [
+    { kind: 'https', mediaKind: 'image', role: 'source', url: 'https://cloud.inference.sh/private.png' },
+  ] };
+  const { dependencies, captures } = baseDependencies(request);
+  await assert.rejects(confirmGeneration({ quoteId: QUOTE_ID, confirmed: true }, principal, dependencies),
+    (error: unknown) => error instanceof AgentApiError && error.code === 'REFERENCE_INVALID');
+  assert.equal(captures.events.includes('reserve_video'), false);
+  assert.equal(captures.events.includes('claim_quote'), false);
+  assert.equal(captures.providerCalls, 0);
+});
+
 test('confirmation pricing preserves the prepared ModelArk extension video-input tier', async () => {
   const entry = listFalEngines().find((candidate) => candidate.id === 'seedance-2-5');
   assert.ok(entry);

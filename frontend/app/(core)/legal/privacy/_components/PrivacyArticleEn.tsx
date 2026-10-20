@@ -3,8 +3,6 @@ import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink'
 import type { PrivacyBodyProps } from './PrivacyArticle';
 
 export function PrivacyArticleEn({
-  version,
-  effective,
   links,
 }: {
   version: string;
@@ -73,37 +71,18 @@ export function PrivacyArticleEn({
       <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">4. Retention</h3>
         <ul className="ml-5 list-disc space-y-2">
-          <li>
-            <strong>Account data:</strong> kept for as long as you have an account, plus limited backup retention.
-          </li>
-          <li>
-            <strong>Receipts &amp; financial records:</strong> stored per statutory accounting periods.
-          </li>
-          <li>
-            <strong>Logs &amp; telemetry:</strong> retained for short rolling windows unless needed for security or abuse investigations.
-          </li>
-          <li>We anonymise or delete data when it is no longer required for the purposes above.</li>
+          <li><strong>Account and workspace:</strong> account data, projects, conversations and media are kept to provide your workspace, history and downloads. You may request erasure.</li>
+          <li><strong>Accounting records:</strong> invoices and supporting accounting documents must be retained for 10 years from the end of the relevant financial year.</li>
+          <li><strong>Technical logs and backups:</strong> retention depends on the service concerned and the needs of security, recovery and legal obligations.</li>
         </ul>
+        <p>A deletion request is recorded for processing; it does not itself erase all data. Expiring a quote or link, or removing a gallery item, does not automatically erase stored copies.</p>
       </section>
 
       <section className="stack-gap-sm">
-        <h3 className="text-lg font-semibold text-text-primary">5. Sharing &amp; sub-processors</h3>
-        <p>We use trusted providers to operate the Service. Typical sub-processors include:</p>
-        <ul className="ml-5 list-disc space-y-2">
-          <li>Stripe (payments)</li>
-          <li>Hosting/CDN (e.g., Vercel)</li>
-          <li>Object storage (e.g., AWS S3)</li>
-          <li>Database &amp; auth (Neon, Supabase)</li>
-          <li>AI inference providers (e.g., Fal.ai)</li>
-          <li>Email &amp; support tooling (transactional email, helpdesk)</li>
-        </ul>
-        <p>
-          We maintain data-processing agreements with each provider. A current list is available at{' '}
-          <Link href={links.subprocessorsHref} className="text-brand underline hover:text-brandHover">
-            {links.subprocessorsHref}
-          </Link>
-          .
-        </p>
+        <h3 className="text-lg font-semibold text-text-primary">5. Service providers</h3>
+        <p>Hosting, storage, authentication, payments and emails use the services listed in our provider register. Depending on the feature, AI providers receive the prompts, settings and references needed for generation. Studio sends OpenAI messages, relevant project/history context and selected references or media excerpts for assistance and requested analyses.</p>
+        <p><Link href={links.subprocessorsHref} className="text-brand underline hover:text-brandHover">Providers and data concerned</Link>.</p>
+        <p>If you use an external assistant through MCP, data handled by that assistant also falls under its own privacy policy.</p>
       </section>
 
       <section className="stack-gap-sm">
@@ -171,7 +150,7 @@ export function PrivacyArticleEn({
           />
           .
         </p>
-        <p className="text-sm text-text-muted">Last updated: {effective ?? version}</p>
+        <p className="text-sm text-text-muted">Information updated: 19 October 2026</p>
       </section>
     </article>
   );

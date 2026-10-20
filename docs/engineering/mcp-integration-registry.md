@@ -21,7 +21,7 @@ Host records separately identify their integration, display label, evidence stat
 
 The current floor contains `/mcp`, `/docs/mcp`, and the Claude, ChatGPT, and Codex integration pages in English, French, and Spanish: fifteen localized public owners in total. Their canonical URLs, reciprocal hreflang, JSON-LD, sitemap inclusion, public-path recognition, installation actions, and localized copy must remain intact while the global publication gate is open.
 
-Claude Desktop and Codex CLI currently retain `verified`; Claude Code and ChatGPT web retain `not-run`. All three current deep links remain disabled. Existing `verified` evidence cannot be weakened without a newer recorded checkpoint.
+Claude Desktop and Codex CLI retain `verified`; Claude Code retains `not-run`. The 2026-10-19 production checkpoint records ChatGPT Web and the separate Claude Web host as `tested_with_limits`, covering OAuth, discovery, quotes and existing-result recovery only. All three current deep links remain disabled. Existing `verified` evidence cannot be weakened without a newer recorded checkpoint.
 
 The immutable semantic fixture is `tests/fixtures/mcp-integration-public-baseline.json`. Update it only for a separately reviewed public behavior change, never as a shortcut to make a migration pass.
 
@@ -71,15 +71,15 @@ have not been verified.
 n8n is `live`, indexable, and acquisition-enabled only for the tested
 self-hosted deterministic MCP Client workflow. The MCP Client host remains
 `tested_with_limits`; MCP Client Tool remains `not-run`, n8n Cloud is not
-claimed. The template-library store state is `submitted` for the October 5 update to
-[workflow 19591](https://n8n.io/workflows/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/).
-The Creator Portal shows `Pending` / `Under review`; the public API still
-returns the historical 20-node version and its direct page remains readable.
-The earlier public listing was observed on 2026-09-25. This changes distribution state only; users still
-configure OAuth manually, and the self-hosted 2.38.7 MCP Client checkpoint
-remains `tested_with_limits`. The other two reviewed JSON workflows have no
-verified public listing. The earlier private review and submission history is
-recorded in `docs/marketing/mcp-directory-submissions.md`.
+claimed. The template-library store state is `listed` for the corrected
+[workflow 19591](https://n8n.io/workflows/19591-turn-creative-briefs-into-approved-maxvideoai-generations-with-human-review/),
+approved on October 12 and publicly accessible on October 18. Approval and
+21-node public JSON parity are recorded in `docs/marketing/mcp-directory-submissions.md`.
+This is distribution evidence only: OAuth is configured manually and the
+self-hosted 2.38.7 MCP Client checkpoint remains `tested_with_limits`, with its
+original checkpoint date. A fresh exact quote must receive human approval before
+confirmation. n8n Cloud and AI Agent invocation remain unvalidated. The other
+two reviewed JSON workflows have no verified public listing.
 
 ## Later-host promotion sequence
 

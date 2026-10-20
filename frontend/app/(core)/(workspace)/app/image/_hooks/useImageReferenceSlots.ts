@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetState
 import type { CharacterReferenceSelection, ImageGenerationMode } from '@/types/image-generation';
 import type { EngineCaps } from '@/types/engines';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
-import { authFetch } from '@/lib/authFetch';
+import { ownedAuthFetch } from '@/lib/owned-auth-fetch';
+import { useImageReferenceSlotLifecycle } from './useImageReferenceSlotLifecycle';
 import {
   inferImageFormatFromUrl,
   isSupportedImageFormat,
@@ -29,6 +30,7 @@ import {
 } from '../_lib/image-workspace-types';
 
 type UseImageReferenceSlotsParams = {
+  accountId: string | null;
   autoModeFromReferences: boolean;
   mode: ImageGenerationMode;
   resolvedCopy: ImageWorkspaceCopy;
@@ -40,6 +42,7 @@ type UseImageReferenceSlotsParams = {
 };
 
 export function useImageReferenceSlots({
+  accountId,
   autoModeFromReferences,
   mode,
   resolvedCopy,
@@ -49,9 +52,7 @@ export function useImageReferenceSlots({
   supportedReferenceFormatsLabel,
   toolsEnabled,
 }: UseImageReferenceSlotsParams) {
-  const [referenceSlots, setReferenceSlots] = useState<(ReferenceSlotValue | null)[]>(
-    Array(MAX_REFERENCE_SLOTS).fill(null)
-  );
+  const { referenceSlots, setReferenceSlots, beginUpload } = useImageReferenceSlotLifecycle(accountId);
   const [libraryModal, setLibraryModal] = useState<ImageLibraryModalState>({
     open: false,
     slotIndex: null,
@@ -141,7 +142,7 @@ export function useImageReferenceSlots({
       }
       return mutated ? next : previous;
     });
-  }, [baseReferenceSlotLimit]);
+  }, [baseReferenceSlotLimit, setReferenceSlots]);
 
   const showUnsupportedFormatError = useCallback(() => {
     setError(
@@ -174,7 +175,7 @@ export function useImageReferenceSlots({
       next[index] = null;
       return next;
     });
-  }, []);
+  }, [setReferenceSlots]);
 
   const handleReferenceFile = useCallback(
     async (index: number, file: File | null) => {
@@ -200,17 +201,22 @@ export function useImageReferenceSlots({
         };
         return next;
       });
+      const operation = beginUpload(index, slotId);
       try {
         const preparedFile = await prepareImageFileForUpload(file, {
           maxBytes: DEFAULT_UPLOAD_LIMIT_MB * 1024 * 1024,
         });
+        if (!operation.isCurrent()) return;
         const formData = new FormData();
         formData.append('file', preparedFile, preparedFile.name);
-        const response = await authFetch('/api/uploads/image', {
+        const response = await ownedAuthFetch('/api/uploads/image', accountId, {
           method: 'POST',
           body: formData,
+          signal: operation.signal,
         });
+        if (!operation.isCurrent()) return;
         const payload = await response.json().catch(() => null);
+        if (!operation.isCurrent()) return;
         if (!response.ok || !payload?.ok) {
           const uploadError = new Error(
             typeof payload?.error === 'string' ? payload.error : 'UPLOAD_FAILED'
@@ -251,10 +257,12 @@ export function useImageReferenceSlots({
           return next;
         });
       } catch (uploadError) {
+        if (!operation.isCurrent()) return;
         console.error('[image-workspace] reference upload failed', uploadError);
         setReferenceSlots((previous) => {
           const next = previous.slice();
           const current = next[index];
+          if (!current || current.id !== slotId) return previous;
           if (current?.previewUrl) {
             try {
               URL.revokeObjectURL(current.previewUrl);
@@ -276,14 +284,19 @@ export function useImageReferenceSlots({
         } else {
           setError(resolvedCopy.errors.uploadFailed);
         }
+      } finally {
+        operation.finish();
       }
     },
     [
+      accountId,
+      beginUpload,
       resolvedCopy.errors.fileTooLarge,
       resolvedCopy.errors.onlyImages,
       resolvedCopy.errors.unauthorized,
       resolvedCopy.errors.uploadFailed,
       setError,
+      setReferenceSlots,
     ]
   );
 
@@ -307,7 +320,7 @@ export function useImageReferenceSlots({
         return next;
       });
     },
-    [isSupportedReferenceAsset, showUnsupportedFormatError]
+    [isSupportedReferenceAsset, showUnsupportedFormatError, setReferenceSlots]
   );
 
   const resolveTargetReferenceSlotIndex = useCallback(
@@ -373,6 +386,7 @@ export function useImageReferenceSlots({
       referenceSlotLimit,
       resolveTargetReferenceSlotIndex,
       showUnsupportedFormatError,
+      setReferenceSlots,
     ]
   );
 
@@ -417,6 +431,7 @@ export function useImageReferenceSlots({
       resolveTargetReferenceSlotIndex,
       selectedCharacterReferences.length,
       supportsCharacterReferences,
+      setReferenceSlots,
     ]
   );
 
