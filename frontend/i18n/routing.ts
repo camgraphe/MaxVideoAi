@@ -43,6 +43,31 @@ export const routing = defineRouting({
       fr: '/outils',
       es: '/herramientas',
     },
+    '/tools/subtitles': {
+      en: '/tools/subtitles',
+      fr: '/outils/subtitles',
+      es: '/herramientas/subtitles',
+    },
+    '/tools/lip-sync': {
+      en: '/tools/lip-sync',
+      fr: '/outils/lip-sync',
+      es: '/herramientas/lip-sync',
+    },
+    '/tools/product-photo-editor': {
+      en: '/tools/product-photo-editor',
+      fr: '/outils/product-photo-editor',
+      es: '/herramientas/product-photo-editor',
+    },
+    '/tools/product-video-editor': {
+      en: '/tools/product-video-editor',
+      fr: '/outils/product-video-editor',
+      es: '/herramientas/product-video-editor',
+    },
+    '/tools/motion-transfer': {
+      en: '/tools/motion-transfer',
+      fr: '/outils/motion-transfer',
+      es: '/herramientas/motion-transfer',
+    },
     '/tools/angle': {
       en: '/tools/angle',
       fr: '/outils/angle',

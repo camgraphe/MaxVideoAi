@@ -113,6 +113,9 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
     return;
   }
 
+  // Subtitle documents and rendered outputs have a separate durable completion owner.
+  if (job.engine_id === 'toolbox-subtitles' || job.engine_id === 'toolbox-lip-sync' || job.engine_id === 'toolbox-motion-control') return;
+
   const originalEngineId = job.engine_id;
   // Correlation can recover a submission whose acknowledgment or DB write was lost.
   if (identifiers.jobId === job.job_id && job.job_id.startsWith('tool_upscale_')) {

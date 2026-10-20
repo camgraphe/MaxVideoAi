@@ -226,3 +226,59 @@ Older untitled conversations use a read-only projection of the first ten retaine
 messages (240 characters each), for at most 100 owned projects. Reads never backfill
 storage, fetch workspace JSON or expose those source messages to the browser. The
 next substantive turn can persist a title; manually named projects are excluded.
+
+## Revisioned subtitles (2026-10-19)
+
+`src/lib/subtitles` owns strict timed documents, plain-text serialization, speed-one
+trim projection and the shared browser/Remotion overlay. Documents and revisions
+belong to the account in migration70; a timeline item persists only
+`subtitle: {documentId, revision}`. The reversible `subtitles` timeline command
+checks account ownership and exact source reference inside the existing revisioned
+command transaction. Editing a document does not silently update a pinned clip.
+Moves, trims and splits retain its reference and derive captions from the current
+source interval. Preview/export read the pinned owned revision, and export intent
+includes its exact contents. `subtitleDocument` is a transient read/render projection
+and is stripped from saved workspace JSON.
+
+The inspector lists source-matching documents on explicit interaction. Existing
+source captions are independent of the final audio mix: replacing speech with an
+audio track does not make an earlier transcript describe that new sound. Standalone
+transcription and MP4 burn run through `src/server/subtitles` durable operations,
+not the Studio export flag or free allowance. The same wallet ledger is used;
+source bytes are remeasured before confirmation and canonical identity is locked
+before reservation. Unknown provider acceptance is never submitted again: the
+operation exposes attention state, then the reconciler refunds it exactly once
+after one hour while preserving the audit record. Polling a known request never
+purchases another transcription. Migrations70/73, renderer runtime and explicit
+commercial policy must be available before enabling execution.
+
+
+Saved sequence transcription uses `prepareStudioSubtitles` and a durable
+`mix-transcribe` operation. It snapshots the exact project revision, owned source
+identities and audio manifest hash before quoting. Confirmation locks and verifies
+the current project/media and pricing policy, checks account restrictions and
+shared MCP spending limits, then reserves one wallet charge for the displayed
+mix preparation and transcription line items. Mix preparation deliberately uses
+`timeline-export-paid-policy` with zero free exports; it is not supplier audio cost.
+
+The worker renders a WAV through the existing timeline composition's audio-only
+branch, preserving trims, timeline positions, gains, mutes and linked-audio rules.
+It never fetches still images or publishes an intermediate MP4. A private owned
+audio asset records `{sequenceId, revision, audioManifestHash}` and remains the
+subtitle document's real source. Unsupported transitions fail before quoting;
+speed remains one. The standalone mix path does not enable the Studio MP4 gate.
+
+`sequence-subtitles` attaches a pinned document at sequence level. Preview and
+canonical export use its global clock; source clip captions remain a separate
+attachment. Audio edit changes invalidate the mix document and block export until
+it is removed or regenerated. Names, captions and visual transforms do not affect
+the audio hash. The Studio picker opens the tool with exact saved revision and
+requires an explicit quote confirmation.
+
+Subtitle operations share the canonical quote ledger for accepted spending and
+refunds. Their public quotes expire after five minutes and every commercial
+snapshot is revalidated under policy locks before charging. A provider POST with
+unknown acceptance is never retried: status reports `needsAttention`, and durable
+reconciliation refunds once after one hour while retaining its audit. Temporary
+provider audio is cleaned after terminal state; owned sequence source audio remains
+available with the document. Apply migrations 70/72/73 explicitly before release.

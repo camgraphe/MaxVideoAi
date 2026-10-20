@@ -73,4 +73,3 @@ test('a fatal error on a checked-out database client cannot crash the server or 
     await db.cleanup();
   }
 });
-

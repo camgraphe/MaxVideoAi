@@ -641,6 +641,35 @@ function resolvedReference(
     && candidate.slot === reference.slot) ?? null;
 }
 
+/** Quote the same owned audio file that the paid submission will validate. */
+function validateTrustedAudioFormat(
+  reference: CanonicalGenerationReference,
+  fields: readonly EngineInputField[],
+  candidate: AgentPublicGenerationEngine,
+  options: GenerationCapabilityValidationOptions,
+): void {
+  if (fields.length !== 1 || fields[0]!.type !== 'audio'
+    || reference.kind !== 'asset' || !options.resolvedReferences) return;
+  const field = fields[0]!;
+  // These field-level audio formats also run at the paid attachment boundary.
+  if (!field.acceptedMimeTypes?.length && !field.acceptedFileExtensions?.length) return;
+  const resolved = resolvedReference(reference, options);
+  if (!resolved) fail('references', 'reference_invalid');
+  const sizeBytes = resolved.sizeBytes;
+  if (typeof sizeBytes !== 'number' || !Number.isSafeInteger(sizeBytes)
+    || sizeBytes <= 0 || !resolved.mimeType) {
+    fail('references', 'reference_invalid', 'metadata_unverified');
+  }
+  const validation = validateMediaFileAgainstConstraint({
+    name: resolved.originalName ?? resolved.storageUrl,
+    mimeType: resolved.mimeType,
+    sizeBytes,
+    constraint: resolveEngineMediaFieldConstraint({ engine: candidate.engine, field }),
+  });
+  if (!validation.ok) fail('references', 'reference_invalid',
+    validation.reason === 'size' ? 'size_exceeded' : 'format_unsupported');
+}
+
 function validateTrustedReferenceDuration(
   request: CanonicalGenerationRequest,
   reference: CanonicalGenerationReference,
@@ -810,6 +839,7 @@ function validateReferences(
     );
     if (!fields.length) fail('references', 'reference_invalid');
     validateTrustedReferenceDuration(request, reference, fields, candidate, options);
+    validateTrustedAudioFormat(reference, fields, candidate, options);
     // H3's executable references already require owned, measured originals.
     const minimumImageSide = candidate.engine.id === 'minimax-h3'
       ? candidate.engine.inputSchema?.constraints?.minImageSidePx : undefined;

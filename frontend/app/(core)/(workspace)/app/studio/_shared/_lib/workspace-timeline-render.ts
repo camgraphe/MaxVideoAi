@@ -47,6 +47,8 @@ export type WorkspaceTimelineRenderTransition = {
 };
 
 export type WorkspaceTimelineRenderClip = {
+  subtitle?: WorkspaceTimelineItem['subtitle'];
+  subtitleDocument?: WorkspaceTimelineItem['subtitleDocument'];
   id: string;
   assetId?: string | null;
   outputNodeId: string;
@@ -89,6 +91,7 @@ export type WorkspaceTimelineRenderExportRange = {
 };
 
 export type WorkspaceTimelineRenderManifest = {
+  sequenceSubtitleDocument?:import('@/lib/subtitles/document').SubtitleDocument;
   version: typeof WORKSPACE_TIMELINE_RENDER_VERSION;
   source: 'maxvideoai-editor';
   projectName: string;
@@ -314,6 +317,7 @@ function renderClipForItem(
     : null;
   return {
     id: item.id,
+    ...(item.subtitle?{subtitle:item.subtitle,subtitleDocument:item.subtitleDocument}:{}),
     assetId: item.assetId ?? `asset-${item.outputNodeId}`,
     outputNodeId: item.outputNodeId,
     title: issueTitle(item, canvasNodeCopy),
@@ -432,6 +436,7 @@ function transitionIssues(
 }
 
 export function buildWorkspaceTimelineRenderManifest(params: {
+  sequenceSubtitleDocument?:import('@/lib/subtitles/document').SubtitleDocument;
   items: WorkspaceTimelineItem[];
   nodes: WorkspaceGraphNode[];
   projectName: string;
@@ -486,6 +491,7 @@ export function buildWorkspaceTimelineRenderManifest(params: {
   const status = issues.some((issue) => issue.severity === 'blocking') ? 'blocked' : 'ready';
 
   return {
+    ...(params.sequenceSubtitleDocument?{sequenceSubtitleDocument:params.sequenceSubtitleDocument}:{}),
     version: WORKSPACE_TIMELINE_RENDER_VERSION,
     source: 'maxvideoai-editor',
     projectName: params.projectName,

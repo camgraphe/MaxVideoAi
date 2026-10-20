@@ -1,0 +1,163 @@
+{
+  "created": "2026-10-19",
+  "purpose": "Real creator tool presentation examples; canonical provider outputs are not release certification of the end-to-end tool operation.",
+  "approvedBatch": {
+    "currency": "USD",
+    "amountCents": 316,
+    "oneAttemptEach": true
+  },
+  "attempts": [
+    {
+      "tool": "product-photo-editor",
+      "jobId": "3a63f774-5eca-4bc9-9d42-e77126948443",
+      "priceCents": 11,
+      "request": {
+        "surface": "image",
+        "engineId": "nano-banana-2",
+        "mode": "i2i",
+        "prompt": "Create a product campaign photograph. Preserve the exact sneaker from the reference: pearl ivory mesh, sculptural brushed silver chrome cage, cobalt translucent sole, coral eyelet, all proportions and construction. Transform only the setting and lighting into a daring museum-scale fashion campaign: the shoe rests on a polished obsidian plinth in a pool of vivid citron-yellow light; enormous folded cobalt-blue paper-like architectural fins arc behind it, a hard diagonal sunbeam, deep graphic shadows, precise subtle chrome reflections. Keep the same left-facing three-quarter view, same complete product and same framing, no cropping, no floating debris. Immaculate tangible editorial photography, sophisticated art direction, not a collage or poster. No text, no brand, no watermark.",
+        "settings": {
+          "resolution": "1k",
+          "aspectRatio": "4:3",
+          "outputFormat": "png"
+        },
+        "references": [
+          {
+            "kind": "asset",
+            "assetId": "ma_e894df56937e44b6be4c5c6a454ef231",
+            "role": "reference"
+          }
+        ],
+        "outputCount": 1
+      },
+      "review": "Selected for the real input/output presentation. Generative detail differences must remain visible."
+    },
+    {
+      "tool": "lip-sync",
+      "jobId": "4e50c3d0-4fbe-47a5-9aba-ca5801e77a3d",
+      "priceCents": 175,
+      "request": {
+        "surface": "video",
+        "engineId": "ltx-2-5-fast",
+        "mode": "a2v",
+        "prompt": "Animate this portrait speaking naturally to the supplied audio. Preserve identity and framing exactly: copper-haired adult storyteller in a plum velvet jacket in an intimate amber recording room. The person looks directly at the camera and delivers the supplied English voice recording with precise natural articulation, subtle human facial expressions, tiny eye movements, a gentle confident smile near the end. Static camera. Keep the face, hairstyle, clothes, lighting, background and composition stable. No cuts, no subtitles, no text, no music, no added voice.",
+        "settings": {
+          "resolution": "1080p",
+          "aspectRatio": "auto",
+          "durationSec": 11
+        },
+        "references": [
+          {
+            "kind": "asset",
+            "assetId": "ma_31cc889ac48f4b3cadde5bfbcdd39c24",
+            "role": "source"
+          },
+          {
+            "kind": "asset",
+            "assetId": "ma_b5cf3c4f93cc49e7975471d3d838de99",
+            "role": "first_frame"
+          }
+        ],
+        "outputCount": 1
+      },
+      "review": "Rejected: male voice on female portrait, insufficient mouth synchronization; not presented as a qualified result.",
+      "measured": {
+        "audioSourceSec": 10.34449,
+        "videoResultSec": 10.041667
+      }
+    },
+    {
+      "tool": "product-video-editor",
+      "jobId": "1a5ce771-c5f2-43b6-8ade-329404e2fcd3",
+      "priceCents": 78,
+      "request": {
+        "surface": "video",
+        "engineId": "wan-3",
+        "mode": "v2v",
+        "prompt": "Edit only the setting and lighting of the supplied watch video; preserve the product, branding, dial text, watch geometry, blue strap, metal finish, movement, framing and timing. Replace the surrounding blue neon environment with a cinematic surreal obsidian landscape: a glossy black glass floor with a softly glowing coral-red eclipse and large sculptural crimson light arcs in the distance, thin low atmospheric mist, refined red rim light and clean reflections on the unchanged silver watch. Luxurious fashion-film precision, restrained composition, no extra product, no new text, no watermark. Keep the exact camera movement and six-second structure of the original. The blue watch must stay blue. Silent.",
+        "settings": {
+          "durationSec": 6,
+          "resolution": "480p",
+          "aspectRatio": "16:9",
+          "audio": false
+        },
+        "references": [
+          {
+            "kind": "asset",
+            "assetId": "ma_58b8c72230444669b161e3df8d4adc53",
+            "role": "source"
+          }
+        ],
+        "outputCount": 1
+      },
+      "review": "Selected for original versus generative edit. Fine product changes not claimed absent."
+    },
+    {
+      "tool": "motion-transfer",
+      "jobId": "4ac7a5d6-867b-4c33-899f-61e8736d3fcc",
+      "priceCents": 52,
+      "request": {
+        "surface": "video",
+        "engineId": "wan-3",
+        "mode": "ref2v",
+        "prompt": "Use the character in image reference 1 and the movement in video reference 1. Preserve the character identity: dark brown skin, platinum close-cropped hair, architectural cobalt pleated jumpsuit and ivory sneakers. Reinterpret the exact natural walking performance shown in the four-second source video: confident side-on steps, alternating leg swing, light natural arm swing, body weight shift and relaxed poise. Show the image character walking across their own pale peach architectural gallery with the vermilion circular doorway. Keep the character's full body and feet visible throughout, grounded realistic foot contact and flowing pleated fabric. A refined editorial fashion film, no cuts, no teleporting, no extra limbs, no change of costume. Do not copy the source performer's pink clothes or face. Silent, no text or watermark.",
+        "settings": {
+          "durationSec": 4,
+          "resolution": "480p",
+          "aspectRatio": "16:9",
+          "audio": false
+        },
+        "references": [
+          {
+            "kind": "asset",
+            "assetId": "ma_fd36e8f901aa4c719490ceee71a7bfce",
+            "role": "reference"
+          },
+          {
+            "kind": "asset",
+            "assetId": "ma_6ca143820a064ea58e25a226d63b9de7",
+            "role": "reference"
+          }
+        ],
+        "outputCount": 1
+      },
+      "review": "Walking demo replaced by the 8-second dance result on 2026-10-20; retained as historical evidence."
+    },
+    {
+      "tool": "lip-sync",
+      "jobId": "31de0e50-7d79-4353-9536-5c19d5477ad6",
+      "priceCents": 35,
+      "separatelyApproved": true,
+      "request": {
+        "surface": "video",
+        "engineId": "ltx-2-5-fast",
+        "mode": "a2v",
+        "outputCount": 1,
+        "prompt": "A locked-off intimate cinematic close-up of the woman in the reference portrait. Preserve her copper bob haircut, face, plum velvet jacket and warm recording-room lighting. She speaks the supplied short female voice recording naturally, saying exactly: 'The train leaves in a minute.' One complete sentence, crisp articulation: lips press together for 'minute', upper teeth briefly touch lower lip for 'leaves', natural jaw and tongue motion, very subtle breath and eyes. Keep her facing the camera with her mouth clearly visible. Begin and finish in a relaxed closed-mouth pose. Match the supplied audio timing precisely. No head turn, no hand gestures, no camera movement, no cuts, no added speech, no subtitles, no text.",
+        "settings": {
+          "durationSec": 3,
+          "resolution": "1080p",
+          "aspectRatio": "16:9"
+        },
+        "references": [
+          {
+            "kind": "asset",
+            "assetId": "ma_b6e635c7fb05412c8d700817dfa5a719",
+            "role": "source"
+          },
+          {
+            "kind": "asset",
+            "assetId": "ma_b5cf3c4f93cc49e7975471d3d838de99",
+            "role": "first_frame"
+          }
+        ]
+      },
+      "review": "Diagnostic only. User changed the requested tool model to Wan 3 after this LTX attempt was submitted.",
+      "measured": {
+        "audioSourceSec": 2.041667,
+        "videoResultSec": 2.041667,
+        "audioResultSec": 2.041
+      }
+    }
+  ]
+}

@@ -14,6 +14,12 @@ A result contains the source identities and canonical returned output identities
 
 ## MCP
 
+The five creator tools now have separate role-aware, quote-bound adapters and
+gated MCP descriptors. See [Creator tools](creator-tools.md) for their ownership,
+activation, durable jobs, subtitles and Studio integration. The older quick-tool
+statements below describe their existing adapters; they do not grant execution
+to a new creator profile.
+
 Existing MCP supports model discovery, prepare/confirm generation, media import/listing and status/presentation. Quick tools are not currently executable through MCP. Catalogue `mcpExecution: false` is explicit. The browser-safe contract can support a future shared prepare/confirm adapter, but no new MCP tool registration or standalone audio generation is included. Montage preparation/persistence belongs to Studio.
 
 ## Qualification backlog

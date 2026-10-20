@@ -1,0 +1,46 @@
+import {chromium} from '@playwright/test';
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+import {mkdtempSync,readFileSync,existsSync,rmSync} from 'node:fs';
+import {join} from 'node:path';
+import {tmpdir} from 'node:os';
+import {renderSubtitleVideo,extractSubtitleAudio,probeSubtitleMedia} from '../frontend/src/server/subtitles/render';
+import {normalizeScribeTranscript} from '../frontend/src/lib/subtitles/document';
+
+test('standalone renderer burns edited captions only in their interval and preserves source sound', {timeout:180_000},async t=>{
+  const browserExecutable=process.env.STUDIO_RENDER_BROWSER_EXECUTABLE??chromium.executablePath();
+  assert.ok(existsSync(browserExecutable),'Install the test browser before this suite; no runtime download.');
+  const directory=mkdtempSync(join(tmpdir(),'subtitle-render-test-'));t.after(()=>rmSync(directory,{recursive:true,force:true}));
+  const sourcePath=join(directory,'source.mp4'),outputPath=join(directory,'output.mp4');
+  execFileSync('ffmpeg',['-hide_banner','-loglevel','error','-f','lavfi','-i','color=c=blue:s=320x180:r=24:d=3','-f','lavfi','-i','sine=frequency=440:sample_rate=48000:duration=3','-c:v','libx264','-pix_fmt','yuv420p','-c:a','aac','-shortest',sourcePath]);
+  const document=normalizeScribeTranscript({text:'Amélie',language_code:'fra',words:[{text:'Amélie',type:'word',start:1,end:2}]},{id:'render-document',source:{ref:{type:'asset',assetId:'owned',kind:'video'},fingerprint:createHash('sha256').update(readFileSync(sourcePath)).digest('hex'),durationMs:3000}});
+  document.style.preset='high-contrast';document.style.fontSizePercent=9;
+  await assert.rejects(renderSubtitleVideo({document:{...document,source:{...document.source,fingerprint:'f'.repeat(64)}},sourcePath,outputPath,browserExecutable}),/SOURCE_CHANGED/);
+  const facts=await renderSubtitleVideo({document,sourcePath,outputPath,browserExecutable});
+  assert.deepEqual([facts.width,facts.height,facts.fps,facts.hasAudio],[320,180,24,true]);
+  const probe=JSON.parse(execFileSync('ffprobe',['-v','error','-show_streams','-of','json',outputPath],{encoding:'utf8'}));
+  assert.equal(Number(probe.streams.find((s:any)=>s.codec_type==='video').nb_frames),72);assert.ok(probe.streams.some((s:any)=>s.codec_type==='audio'));
+  const frame=(time:string)=>execFileSync('ffmpeg',['-v','error','-ss',time,'-i',outputPath,'-frames:v','1','-pix_fmt','rgb24','-f','rawvideo','pipe:1']);
+  const before=frame('0.5'),during=frame('1.5'),after=frame('2.5');
+  const difference=(a:Buffer,b:Buffer)=>a.reduce((total,value,index)=>total+Math.abs(value-b[index]),0)/a.length;
+  t.diagnostic(JSON.stringify({duringDifference:difference(before,during),afterDifference:difference(before,after)}));
+  const captionArea=(bytes:Buffer)=>bytes.subarray(120*320*3,175*320*3);
+  assert.ok(difference(captionArea(before),captionArea(during))>4,'Caption must be visibly burned into its lower safe area');assert.ok(difference(before,after)<1,'Caption disappears after its end');
+  const audioPath=join(directory,'audio.wav');await extractSubtitleAudio({sourcePath:outputPath,outputPath:audioPath});
+  const audio=readFileSync(audioPath);assert.ok(audio.length>90_000);assert.equal(audio.subarray(0,4).toString(),'RIFF');
+});
+
+test('subtitle export bounds AAC padding when a 44.1kHz source ends between video frames',{timeout:180_000},async t=>{
+  const browserExecutable=process.env.STUDIO_RENDER_BROWSER_EXECUTABLE??chromium.executablePath();
+  const directory=mkdtempSync(join(tmpdir(),'subtitle-aac-test-'));t.after(()=>rmSync(directory,{recursive:true,force:true}));
+  const sourcePath=join(directory,'source.mp4'),outputPath=join(directory,'output.mp4');
+  execFileSync('ffmpeg',['-hide_banner','-loglevel','error','-f','lavfi','-i','color=c=blue:s=320x180:r=30:d=3','-f','lavfi','-i','sine=frequency=440:sample_rate=44100:duration=3.028','-c:v','libx264','-pix_fmt','yuv420p','-c:a','aac',sourcePath]);
+  const source=await probeSubtitleMedia(sourcePath);
+  const document=normalizeScribeTranscript({text:'Last word',language_code:'en',words:[{text:'Last',type:'word',start:2.5,end:2.7},{text:' ',type:'spacing'},{text:'word',type:'word',start:2.7,end:2.99}]},{id:'aac-document',source:{ref:{type:'asset',assetId:'owned',kind:'video'},fingerprint:createHash('sha256').update(readFileSync(sourcePath)).digest('hex'),durationMs:source.durationMs}});
+  document.style.preset='active-word';
+  const output=await renderSubtitleVideo({document,sourcePath,outputPath,browserExecutable});
+  assert.equal(output.hasAudio,true);assert.ok(Math.abs(output.durationMs-source.durationMs)<=44);assert.equal(output.fps,30);
+  const audioPath=join(directory,'audio.wav');await extractSubtitleAudio({sourcePath:outputPath,outputPath:audioPath});assert.ok(readFileSync(audioPath).length>90_000);
+});

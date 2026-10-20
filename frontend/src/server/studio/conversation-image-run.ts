@@ -163,7 +163,7 @@ export async function runStudioImageActions(options: {
       return data;
     }),
     editTimeline: async action => {
-      const insertedRefs=action.edit.kind==='insert'?[action.edit.ref]:action.edit.kind==='assemble'?action.edit.clips.map(clip=>clip.ref):[];
+      const insertedRefs=action.edit.kind==='insert'||action.edit.kind==='replace'?[action.edit.ref]:action.edit.kind==='assemble'?action.edit.clips.map(clip=>clip.ref):[];
       let projectRefs:Set<string>|undefined;
       for(const ref of insertedRefs.filter(ref=>ref.type==='asset')){
         const attached = ref.kind === 'image' ? input.references.includes(ref.assetId) : input.attachments?.some(item => item.type === 'asset' && item.assetId === ref.assetId && item.kind === ref.kind);

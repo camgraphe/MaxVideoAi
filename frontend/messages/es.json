@@ -219,7 +219,12 @@
           "image": "Generar imagen",
           "audio": "Crear audio",
           "background-removal": "Quitar el fondo de un video",
-          "studio": "Studio"
+          "studio": "Studio",
+          "subtitles": "Subtítulos de vídeo",
+          "lip-sync": "Lip Sync",
+          "product-photo-editor": "Editor de fotos de producto",
+          "product-video-editor": "Editor de vídeos de producto",
+          "motion-transfer": "Motion Transfer"
         },
         "heading": "Prepara tu próxima escena.",
         "intro": "Crea tus referencias, cambia el ángulo y cuida los detalles.",

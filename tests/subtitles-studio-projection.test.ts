@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import {normalizeScribeTranscript} from '../frontend/src/lib/subtitles/document';
+import {projectSubtitleClip} from '../frontend/src/lib/subtitles/timeline';
+import {splitWorkspaceTimelineItem,resizeWorkspaceTimelineItem} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-editing';
+import {buildWorkspaceTimelineRenderManifest} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-render';
+import {parseTimelineExportManifest} from '../frontend/src/server/timeline-exports/render-request';
+import type {WorkspaceTimelineItem} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
+const document=normalizeScribeTranscript({text:'one two three',language_code:'eng',words:[{text:'one',type:'word',start:0,end:1},{text:' ',type:'spacing'},{text:'two',type:'word',start:1,end:2},{text:' ',type:'spacing'},{text:'three',type:'word',start:2,end:3}]},{id:'captions',source:{ref:{type:'asset',assetId:'owned',kind:'video'},fingerprint:'a'.repeat(64),durationMs:4000}});
+const clip:WorkspaceTimelineItem={id:'clip',assetId:'owned',outputNodeId:'owned',track:'video',title:'Clip',mediaKind:'video',startSec:0,durationSec:4,sourceStartSec:0,sourceDurationSec:4,sourceWidth:320,sourceHeight:180,mediaUrl:'https://owned.example/clip.mp4',subtitle:{documentId:document.id,revision:1},subtitleDocument:document};
+test('split and trim retain pinned documents; preview/export projection removes discarded words and remaps local time',()=>{
+  const split=splitWorkspaceTimelineItem([clip],clip.id,2);assert.equal(split.length,2);assert.deepEqual(split.map(item=>item.subtitle),[clip.subtitle,clip.subtitle]);
+  const left=projectSubtitleClip(split[0]),right=projectSubtitleClip(split[1]);assert.equal(left?.segments[0].text,'one two');assert.equal(right?.segments[0].text,'three');assert.equal(right?.segments[0].startMs,0);
+  const trimmed=resizeWorkspaceTimelineItem({items:[clip],itemId:clip.id,edge:'start',nextStartSec:0,nextDurationSec:3,mode:'ripple'})[0];
+  assert.equal(projectSubtitleClip(trimmed)?.segments[0].text,'two three');
+  const manifest=buildWorkspaceTimelineRenderManifest({items:split,nodes:[],projectName:'Captions',sequenceId:'sequence',sequenceName:'Sequence',projectSettings:{fps:30,resolution:'720p',aspectRatio:'16:9'},createdAt:new Date(0).toISOString()});
+  assert.equal(parseTimelineExportManifest(manifest).tracks[0].clips[1].subtitleDocument?.revision,1);
+  assert.equal(projectSubtitleClip({...manifest.tracks[0].clips[1],subtitle:clip.subtitle})?.segments[0].text,right?.segments[0].text);
+  assert.throws(()=>parseTimelineExportManifest({...manifest,tracks:manifest.tracks.map(track=>({...track,clips:track.clips.map(item=>({...item,subtitle:{documentId:'forged',revision:9}}))}))}),/SUBTITLE/);
+});

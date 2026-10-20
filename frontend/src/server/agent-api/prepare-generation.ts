@@ -281,7 +281,7 @@ export async function prepareGenerationForActor(
   dependencies: PrepareGenerationDependencies,
 ): Promise<PreparedGeneration> {
   requireGenerationActor(principal);
-  if (principal.authMethod === 'studio-session') {
+  if (principal.authMethod !== 'oauth') {
     let pilotRequest: CanonicalGenerationRequest;
     try { pilotRequest = normalizeGenerationRequest(input); } catch { invalidParameter(); }
     requireStudioGenerationRequest(pilotRequest);

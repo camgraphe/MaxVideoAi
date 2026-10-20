@@ -1,0 +1,57 @@
+{
+  "date": "2026-10-20",
+  "tool": "motion-transfer",
+  "jobId": "7e678b25-3f9e-4290-82f5-1c9220dc12a8",
+  "priceCents": 104,
+  "currency": "USD",
+  "status": "completed",
+  "source": {
+    "page": "https://www.pexels.com/video/video-of-a-man-dancing-7571381/",
+    "author": "Antoni Shkraba",
+    "license": "https://www.pexels.com/license/",
+    "excerpt": {
+      "startSec": 0,
+      "durationSec": 8,
+      "width": 960,
+      "height": 506,
+      "fps": 25,
+      "audio": false
+    },
+    "assetId": "ma_853e150975ec4177b8101d2db9108c3b"
+  },
+  "request": {
+    "surface": "video",
+    "engineId": "wan-3",
+    "mode": "ref2v",
+    "outputCount": 1,
+    "prompt": "Use the identity, clothing and environment from image reference 1, and transfer the eight-second DANCE performance from video reference 1 onto that character. The dark-skinned platinum-haired character wears the architectural cobalt-blue pleated jumpsuit and ivory sneakers from the image. They perform the reference dancer's contemporary choreography: a springing sideways step, sweeping arm circles, a small jump into a wide grounded lunge, an expressive upper-body twist and fluid weight changes. Follow the order, direction, rhythm and timing of the supplied dance; this is a dancing performance, not walking. Preserve the cobalt costume, face and pale peach sculptural gallery with its vermilion circular doorway. Wide, locked camera; full body, hands and both feet remain inside the frame throughout. Realistic planted feet, readable balance, natural cloth movement. One uninterrupted eight-second shot with no cuts, no extra people, no extra limbs, no costume change, no text or watermark. Do not copy the reference dancer's face, white shirt or black trousers. Silent.",
+    "settings": {
+      "durationSec": 8,
+      "resolution": "480p",
+      "aspectRatio": "16:9",
+      "audio": false
+    },
+    "references": [
+      {
+        "kind": "asset",
+        "assetId": "ma_fd36e8f901aa4c719490ceee71a7bfce",
+        "role": "reference"
+      },
+      {
+        "kind": "asset",
+        "assetId": "ma_853e150975ec4177b8101d2db9108c3b",
+        "role": "reference"
+      }
+    ]
+  },
+  "result": {
+    "original": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/13841052-62c4-4ec8-aa09-8e967a3033af.mp4",
+    "durationSec": 8,
+    "width": 854,
+    "height": 480,
+    "fps": 30,
+    "audio": false
+  },
+  "review": "All eight seconds inspected at one-second intervals. Cobalt character, environment and full-body framing retained; arm sweeps, lifted foot and low lunge follow the reference. Qualitative demo, not a frame-exact motion-transfer benchmark.",
+  "replaces": "4ac7a5d6-867b-4c33-899f-61e8736d3fcc"
+}

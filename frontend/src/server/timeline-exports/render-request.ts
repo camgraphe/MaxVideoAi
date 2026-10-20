@@ -1,3 +1,4 @@
+import {subtitleDocumentSchema} from '../../lib/subtitles/document';
 import { z } from 'zod';
 import { timelineExportIdempotencyKeySchema } from './idempotency';
 import type {
@@ -42,6 +43,8 @@ const compositionSchema = z.object({
 }).strict();
 
 const clipSchema = z.object({
+  subtitle:z.object({documentId:ID,revision:z.number().int().positive()}).strict().optional(),
+  subtitleDocument:subtitleDocumentSchema.optional(),
   id: ID,
   assetId: ID.nullable().optional(),
   outputNodeId: ID,
@@ -97,6 +100,7 @@ const issueSchema = z.object({
 }).strict();
 
 const manifestSchema = z.object({
+  sequenceSubtitleDocument:subtitleDocumentSchema.optional(),
   version: z.literal(1),
   source: z.literal('maxvideoai-editor'),
   projectName: z.string().trim().min(1).max(200),
@@ -154,6 +158,7 @@ function assertManifestInvariants(manifest: WorkspaceTimelineRenderManifest): vo
     !almostEqual(manifest.durationSec, manifest.exportRange.durationSec)
     || !almostEqual(manifest.exportRange.endSec - manifest.exportRange.startSec, manifest.exportRange.durationSec)
   ) throw new Error('EXPORT_MANIFEST_RANGE_INVALID');
+  if(manifest.sequenceSubtitleDocument&&(manifest.sequenceSubtitleDocument.source.sequenceMix?.sequenceId!==manifest.sequenceId||manifest.sequenceSubtitleDocument.source.durationMs+2<manifest.exportRange.endSec*1000))throw new Error('EXPORT_SUBTITLE_REFERENCE_INVALID');
   const fps = manifest.projectSettings?.fps ?? 30;
   if (Math.ceil(manifest.durationSec * fps) > MAX_EXPORT_FRAMES) throw new Error('EXPORT_RESOURCE_LIMIT');
 
@@ -167,6 +172,7 @@ function assertManifestInvariants(manifest: WorkspaceTimelineRenderManifest): vo
     clipCount += clips.length;
     for (let index = 0; index < clips.length; index += 1) {
       const clip = clips[index];
+      if(Boolean(clip.subtitle)!==Boolean(clip.subtitleDocument)||clip.subtitle&&(clip.subtitle.documentId!==clip.subtitleDocument?.id||clip.subtitle.revision!==clip.subtitleDocument?.revision))throw new Error('EXPORT_SUBTITLE_REFERENCE_INVALID');
       if (clipIds.has(clip.id)) throw new Error('EXPORT_MANIFEST_DUPLICATE_CLIP');
       clipIds.add(clip.id);
       if (clip.track !== track.id) throw new Error('EXPORT_MANIFEST_TRACK_MISMATCH');

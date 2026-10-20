@@ -6,5 +6,6 @@ export type TimelineExportRenderProps = {
   height: number;
   fps: number;
   includeAudio: boolean;
+  audioOnly?: boolean;
   mediaTrust: 'server-validated' | 'untrusted';
 };

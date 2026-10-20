@@ -4,6 +4,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { JSDOM } from 'jsdom';
 import { HeaderWalletStatus } from '../frontend/components/header/HeaderWalletStatus';
+import { CREATOR_TOOL_AVAILABILITY, CREATOR_TOOL_IDS } from '../frontend/src/lib/toolbox/creator-availability';
 import {
   NAV_ITEMS,
   appNavLabel,
@@ -57,6 +58,28 @@ test('the global media destination keeps the same product name across navigation
   assert.equal(accountMenuMedia?.label, 'Media');
   assert.equal(appNavLabel(completeMenuMedia!, 'fr'), 'Médias');
   assert.equal(appNavLabel(completeMenuMedia!, 'es'), 'Medios');
+});
+
+test('the complete app menu exposes each released creator once and localizes its label', () => {
+  const previous = CREATOR_TOOL_IDS.map(id => CREATOR_TOOL_AVAILABILITY[id].publicReleased);
+  try {
+    for (const id of CREATOR_TOOL_IDS) CREATOR_TOOL_AVAILABILITY[id].publicReleased = false;
+    assert.ok(getAppMenuItems(true).every(item => !CREATOR_TOOL_IDS.includes(item.id as typeof CREATOR_TOOL_IDS[number])));
+    for (const id of CREATOR_TOOL_IDS) {
+      CREATOR_TOOL_AVAILABILITY[id].publicReleased = true;
+      const entries = getAppMenuItems(true).filter(item => item.id === id);
+      assert.equal(entries.length, 1);
+      assert.equal(entries[0].href, `/app/tools/${id}`);
+      assert.ok(appNavLabel(entries[0], 'fr'));
+      assert.ok(appNavLabel(entries[0], 'es'));
+      assert.deepEqual(getAppNavigationSelection(entries[0].href), { primary: 'tools', activity: null });
+      CREATOR_TOOL_AVAILABILITY[id].publicReleased = false;
+    }
+    for (const id of CREATOR_TOOL_IDS) CREATOR_TOOL_AVAILABILITY[id].publicReleased = true;
+    assert.ok(getAppMenuItems(false).every(item => !item.href.startsWith('/app/tools')));
+  } finally {
+    CREATOR_TOOL_IDS.forEach((id, index) => { CREATOR_TOOL_AVAILABILITY[id].publicReleased = previous[index]; });
+  }
 });
 
 test('the jobs destination is named Activity on every app navigation surface', () => {

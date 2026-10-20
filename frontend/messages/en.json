@@ -199,7 +199,12 @@
           "audio": "Generate audio",
           "background-removal": "Remove a video background",
           "upscale": "AI Upscale",
-          "studio": "Studio"
+          "studio": "Studio",
+          "subtitles": "Video subtitles",
+          "lip-sync": "Lip Sync",
+          "product-photo-editor": "Product Photo Editor",
+          "product-video-editor": "Product Video Editor",
+          "motion-transfer": "Motion Transfer"
         },
         "heading": "Shape the next part of your story.",
         "intro": "Create your references, change an angle and finish the details.",

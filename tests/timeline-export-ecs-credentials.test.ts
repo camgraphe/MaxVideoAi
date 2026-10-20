@@ -55,6 +55,15 @@ test('ECS launch retains the AWS default credential chain when neither dedicated
   }
 });
 
+test('subtitle tasks use an explicit operation target without impersonating a Studio export',async()=>{
+  const {runner,fixture}=await load(environment());
+  await runner.launchMediaWorkerTask({target:{kind:'subtitles',id:'subtitle-operation'}});
+  assert.deepEqual(JSON.parse(JSON.stringify(fixture.commands[0].overrides.containerOverrides[0].environment)),
+    [{name:'SUBTITLE_OPERATION_TARGET_ID',value:'subtitle-operation'}]);
+  assert.equal(fixture.commands[0].group,'maxvideoai-subtitles');
+  assert.equal(fixture.commands[0].tags.find((tag:any)=>tag.key==='surface').value,'subtitles');
+});
+
 const incompletePairs=[
   {env:{TIMELINE_EXPORT_ECS_ACCESS_KEY_ID:'dedicated-key'},missing:'TIMELINE_EXPORT_ECS_SECRET_ACCESS_KEY'},
   {env:{TIMELINE_EXPORT_ECS_SECRET_ACCESS_KEY:'dedicated-secret',TIMELINE_EXPORT_ECS_ACCESS_KEY_ID:' '},missing:'TIMELINE_EXPORT_ECS_ACCESS_KEY_ID'},

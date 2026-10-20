@@ -2,6 +2,14 @@
 
 Audio owns standalone voice, instrumental music, songs, punctual sound effects and continuous ambiences. Studio owns placement, timeline and persistence; Toolbox owns transformations. Provider routes are technical adapters, not additional public model identities. No model registry publication changes are part of this work.
 
+## Generated audio reused as a reference — 2026-10-20
+
+`persistOriginalAudio` preserves the original MP3 bytes and measured duration. Library copies use the probed audio MIME to name their storage object: `audio/mpeg` means `.mp3`, not `.mpeg`. Display labels such as `Voice.v2` do not supply an audio file extension. The copy remains a distinct owned object with the same bytes; its exact stored URL is what reference resolution, quote preparation and paid submission retain.
+
+For audio fields with explicit accepted formats, canonical preparation validates the resolved owned file's MIME, filename and size using the same constraint owner as paid submission. An incompatible legacy `.mpeg` copy fails before pricing, wallet access or quote creation. Confirmation repeats that validation before reserving a charge, including for an older prepared quote. The asset requires an explicit reimport; metadata `originUrl` never silently substitutes another source, and MP3/WAV constraints are not relaxed. This change performs no production repair or migration.
+
+`tests/generated-audio-reference-parity.test.ts` exercises original persistence, the real library-copy path, preparation/confirmation parity, early rejection, exact-source trust and account isolation. `tests/mcp-confirm-generation.test.ts` checks old-quote rejection before reservation and valid MP3 continuation. Their transport, probe, storage and payment fixtures make no external writes or paid calls.
+
 ## Eleven v4 integration — 2026-10-17
 
 Adrien approved Eleven v4 as the default narration model, a selectable voice catalog with auditions, and the existing Audio commercial rule (supplier cost ×3, rounded upward once to $0.05). MiniMax and Seed remain available. Existing drafts and results retain their selected model; only fresh narration defaults change. This supersedes the older Standard/High-quality presentation decision below. Provider endpoint IDs remain adapters under the existing Audio pack identities, not new model-registry publications.

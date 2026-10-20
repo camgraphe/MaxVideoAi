@@ -1,6 +1,9 @@
 'use client';
 
 import {useEffect, useRef, useState} from 'react';
+import dynamic from 'next/dynamic';
+import {getReleasedCreatorToolIds} from '@/lib/toolbox/creator-availability';
+const CreatorToolLinks=dynamic(()=>import('@/components/library/CreatorToolLinks.client').then(module=>module.CreatorToolLinks));
 import {ArrowUpLeft, Check, Expand, Film, Image as ImageIcon, Music2, RefreshCw, ListVideo} from 'lucide-react';
 import type {ConversationLocale} from '@/lib/studio/conversation-quote-presentation';
 import type {ConversationReferencePreview} from '@/lib/studio/conversation-reference-previews';
@@ -72,6 +75,7 @@ export function ConversationReferenceCard({projectId, item, active, compact, att
         {failed && <button onClick={() => {access.current = null; setRetry(value => value + 1);}} aria-label={t('Try again', 'Réessayer')}><RefreshCw size={14}/></button>}
       </div>}
     </div>}
+    {active && !compact && preview && !failed && getReleasedCreatorToolIds().length > 0 ? <CreatorToolLinks key={item.assetId} locale={locale} asset={{id:item.assetId,kind,url:preview.url,thumbUrl:preview.thumbUrl}}/> : null}
     {lightbox && preview && <ConversationReferenceLightbox url={preview.url} label={item.label} locale={locale} trigger={enlargeTrigger} onClose={() => setLightbox(false)}/>}
   </article>;
 }

@@ -1,16 +1,25 @@
 import type { AssetBrowserAsset } from '@/components/library/AssetLibraryBrowser';
+import { CREATOR_TOOL_IDS, isCreatorToolPublic } from '@/lib/toolbox/creator-availability';
 
 export const MEDIA_HANDOFF_KEY = 'maxvideoai:media-handoff:v1';
 const MAX_AGE = 10 * 60 * 1000;
-export const MEDIA_TOOL_DESTINATIONS = ['upscale', 'angle', 'background-removal', 'restore-video', 'denoise', 'fix-blur', 'smooth-motion'] as const;
+export const MEDIA_TOOL_DESTINATIONS = ['upscale', 'angle', 'background-removal', 'restore-video', 'denoise', 'fix-blur', 'smooth-motion', ...CREATOR_TOOL_IDS] as const;
 export type MediaToolDestination = typeof MEDIA_TOOL_DESTINATIONS[number];
 export type MediaDestination = 'image' | 'video' | MediaToolDestination;
 type StorageLike = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 export function supportsMediaDestination(asset: Pick<AssetBrowserAsset, 'kind'>, destination: MediaDestination) {
   if (destination === 'video') return true;
+  if (destination === 'subtitles') return asset.kind === 'video' || asset.kind === 'audio';
+  if (destination === 'lip-sync') return ['image', 'video', 'audio'].includes(asset.kind);
+  if (destination === 'product-photo-editor') return asset.kind === 'image';
+  if (destination === 'motion-transfer') return asset.kind === 'image' || asset.kind === 'video';
   if (destination === 'image' || destination === 'angle') return asset.kind === 'image';
   if (destination === 'upscale') return asset.kind === 'image' || asset.kind === 'video';
   return MEDIA_TOOL_DESTINATIONS.includes(destination) && asset.kind === 'video';
+}
+export function discoverableMediaToolDestinations(asset: Pick<AssetBrowserAsset, 'kind'>): MediaToolDestination[] {
+  return MEDIA_TOOL_DESTINATIONS.filter(destination => supportsMediaDestination(asset, destination)
+    && (!CREATOR_TOOL_IDS.some(id => id === destination) || isCreatorToolPublic(destination)));
 }
 export function stageMediaHandoff(storage: StorageLike, account: string, asset: AssetBrowserAsset, destination: MediaDestination, token: string, now = Date.now()) {
   if (!account || !supportsMediaDestination(asset, destination)) throw new Error('Invalid media destination');

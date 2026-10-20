@@ -481,3 +481,58 @@ bytes, `prepare_generation` 1,639, `get_generation_status` 1,098 and
 2,000 bytes. The policy fingerprint was refreshed through the documented
 collector to `ace13aa36761736648b4b33f8cb750a22176078abf732e3b6a29bb594a1d725a`;
 the 70 curated decisions and their fixture fingerprint were preserved.
+
+## Creator tools — 19 October 2026 source candidate
+
+Eight additive tools expose the same shared operations as the web workspaces:
+`list_creator_tools`, `prepare_creator_tool`, `confirm_creator_tool`,
+`get_creator_tool_operation`, `get_subtitle_document`, `edit_subtitle_document`,
+`prepare_subtitle_export` and `export_subtitle_text`. The ninth,
+`prepare_studio_subtitles`, additionally requires timeline editing access. It
+quotes the saved sequence's actual audio mix independently of the Studio MP4
+export gate. See [creator tools](creator-tools.md) for ownership and release gates.
+
+Paid preparation and confirmation require paid generation, owned reference
+access, `CREATOR_TOOLS_ENABLED=1` and `MCP_CREATOR_TOOLS_ENABLED=1`. Five
+non-spending discovery/recovery/document tools remain registered whenever the
+service exists, including after these execution gates close. An OAuth attempt
+cannot be recovered through a different browser-session scope. Specialist video lip
+sync and Kling Motion Control have separate execution gates. Discovery returns
+current profile constraints and effective availability; a profile's presence is
+not evidence of activation or measured quality. Marketing publication remains a
+separate, closed projection until real qualification is recorded.
+
+Each attempt requires its exact quote and explicit approval. Preparation pins
+source fingerprints, selected segments, profile, audio policy and price. Status
+is scoped to the account and OAuth client; documents belong to the account.
+Interrupted or ambiguous requests must recover the existing operation before
+another attempt is considered. Text/style edits and sidecar exports do not
+retranscribe. Fresh signed presentation links do not replace stored originals.
+A removed output or temporary signing failure keeps the operation's financial
+completion state and reports unavailable artifact delivery.
+
+The general instructions add only the discovery pointer and retain the shared
+approval rule. All **256** instruction gate combinations stay within the
+2,000-byte host budget (maximum **1,998 UTF-8 bytes**); each added descriptor is
+also bounded at 2,000 bytes. In-memory SDK tests verify gated discovery, strict
+confirmation, principal scope, complete compact JSON fallback, explicit segment
+transport and independent Studio mix/export gates. They join `mcp:client:check`.
+
+No paid provider canary or real-host compatibility is claimed by these local
+checks. After authorized release, verify discovery and one quoted attempt in
+each named host/version, including denied/expired quotes, disconnect recovery,
+subtitle editing, and result presentation. Reconnect through the host's supported
+flow when its catalog is stale; preserve operation/document IDs and recover them
+first. Plugin publication and host refresh remain distinct from server delivery.
+
+### 2026-10-19 — Creator Lip Sync settings and included subtitle exports
+
+The existing creator settings schema accepts optional Lip Sync resolution, shared
+with the web workspace: 480p by default, 720p or 1080p on selection. Wan 3 photo
+and video profiles publish measured audio limits and their explicit output timing
+policy through discovery. The separate LatentSync gate remains unchanged.
+Creator quotes apply provider cost × 2.20; subtitle MP4 exports and sequence mix
+preparation are included. Zero-price exports still require exact revision-bound
+preparation and confirmation, but do not charge the wallet. These changes reuse
+existing tools and approval instructions; no plugin release, production gate
+activation or host compatibility is inferred from local validation.

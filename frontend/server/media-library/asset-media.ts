@@ -55,7 +55,8 @@ export async function copyRemoteMedia(params: {
     mime: mimeType,
     userId: params.userId,
     prefix: 'media-assets',
-    fileName: params.fileName,
+    // Library labels are display text, not trusted audio filenames (for example, Voice.v2).
+    fileName: params.kind === 'audio' ? undefined : params.fileName,
   });
   const mediaFacts = params.kind === 'video' && params.ownedGeneratedVideo
     ? await measureGeneratedVideoBuffer(buffer, upload.url, params.ownedGeneratedVideo.mediaFacts).catch(() => null)

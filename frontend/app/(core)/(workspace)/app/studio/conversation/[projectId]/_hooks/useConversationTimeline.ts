@@ -5,7 +5,7 @@ import type {ConversationTimelineCommand} from '@/lib/studio/conversation-timeli
 import {retainConversationMediaAccess} from '@/lib/studio/conversation-preview-access';
 import type {WorkspaceProjectSettings,WorkspaceTimelineItem} from '../../../_shared/_lib/workspace-types';
 
-export type ConversationTimelineView = {data: StudioConversationTimeline;settings: WorkspaceProjectSettings;items: WorkspaceTimelineItem[]};
+export type ConversationTimelineView = {data: StudioConversationTimeline;settings: WorkspaceProjectSettings;items: WorkspaceTimelineItem[];sequenceSubtitle?:{reference:import('@/lib/subtitles/document').SubtitleSequenceAttachment;document:import('@/lib/subtitles/document').SubtitleDocument|null;stale:boolean}|null};
 export function useConversationTimeline(projectId: string,refreshKey: unknown) {
   const [{view,mediaReloadKeys},setPreviewState] = useState<{view: ConversationTimelineView | null;mediaReloadKeys: Record<string,number>}>({view: null,mediaReloadKeys: {}});
   const [legacy,setLegacy] = useState(false);

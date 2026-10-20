@@ -1,5 +1,18 @@
 /** Product identities, never provider routing or commercial policy. */
 export type ToolMediaKind = 'image' | 'video' | 'audio';
+export const CREATOR_TOOL_IDS = ['subtitles', 'lip-sync', 'product-photo-editor', 'product-video-editor', 'motion-transfer'] as const;
+export type CreatorToolId = typeof CREATOR_TOOL_IDS[number];
+/** These richer operations use their own role-aware contract; a document is not a media file. */
+export const CREATOR_TOOLBOX: readonly {
+  id: CreatorToolId; inputKinds: readonly ToolMediaKind[]; outputKinds: readonly (ToolMediaKind | 'subtitle-document')[];
+  href: string; mcpExecution: 'gated';
+}[] = [
+  { id: 'subtitles', inputKinds: ['video', 'audio'], outputKinds: ['subtitle-document', 'video'], href: '/app/tools/subtitles', mcpExecution: 'gated' },
+  { id: 'lip-sync', inputKinds: ['image', 'video', 'audio'], outputKinds: ['video'], href: '/app/tools/lip-sync', mcpExecution: 'gated' },
+  { id: 'product-photo-editor', inputKinds: ['image'], outputKinds: ['image'], href: '/app/tools/product-photo-editor', mcpExecution: 'gated' },
+  { id: 'product-video-editor', inputKinds: ['video'], outputKinds: ['video'], href: '/app/tools/product-video-editor', mcpExecution: 'gated' },
+  { id: 'motion-transfer', inputKinds: ['image', 'video'], outputKinds: ['video'], href: '/app/tools/motion-transfer', mcpExecution: 'gated' },
+];
 export type ToolId = 'upscale' | 'background-removal' | 'character-builder' | 'storyboard' | 'angle' | 'restore-video' | 'denoise' | 'fix-blur' | 'smooth-motion';
 export type ToolDefinition = {
   id: ToolId;

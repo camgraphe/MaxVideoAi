@@ -74,8 +74,8 @@ function ecsFailureMessage(failures: Failure[]): string {
     .join('; ');
 }
 
-export async function launchTimelineExportWorkerTask(params: {
-  exportId: string;
+export async function launchMediaWorkerTask(params: {
+  target: { kind: 'timeline-export' | 'subtitles'; id: string };
   env?: NodeJS.ProcessEnv;
 }): Promise<TimelineExportWorkerLaunchResult> {
   const env = params.env ?? process.env;
@@ -89,13 +89,16 @@ export async function launchTimelineExportWorkerTask(params: {
       taskDefinition: config.taskDefinition,
       launchType: 'FARGATE',
       count: 1,
-      startedBy: `timeline-export:${params.exportId}`.slice(0, 36),
-      group: 'maxvideoai-timeline-export',
+      startedBy: `${params.target.kind}:${params.target.id}`.slice(0, 36),
+      group: `maxvideoai-${params.target.kind}`,
       overrides: {
         containerOverrides: [
           {
             name: config.containerName,
-            environment: [{ name: 'TIMELINE_EXPORT_TARGET_ID', value: params.exportId }],
+            environment: [{
+              name: params.target.kind === 'subtitles' ? 'SUBTITLE_OPERATION_TARGET_ID' : 'TIMELINE_EXPORT_TARGET_ID',
+              value: params.target.id,
+            }],
           },
         ],
       },
@@ -108,8 +111,8 @@ export async function launchTimelineExportWorkerTask(params: {
       },
       tags: [
         { key: 'app', value: 'maxvideoai' },
-        { key: 'surface', value: 'timeline-export' },
-        { key: 'exportId', value: params.exportId },
+        { key: 'surface', value: params.target.kind },
+        { key: params.target.kind === 'subtitles' ? 'operationId' : 'exportId', value: params.target.id },
       ],
     })
   );
@@ -121,4 +124,8 @@ export async function launchTimelineExportWorkerTask(params: {
   const taskArns = (response.tasks ?? []).map((task) => task.taskArn).filter((arn): arn is string => Boolean(arn));
   if (!taskArns.length) throw new Error('TIMELINE_EXPORT_ECS_RUN_TASK_EMPTY');
   return { status: 'launched', taskArns };
+}
+
+export function launchTimelineExportWorkerTask(params: { exportId: string; env?: NodeJS.ProcessEnv }) {
+  return launchMediaWorkerTask({ target: { kind: 'timeline-export', id: params.exportId }, env: params.env });
 }
