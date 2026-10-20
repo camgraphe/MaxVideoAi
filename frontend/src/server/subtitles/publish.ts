@@ -20,7 +20,8 @@ export async function renderAndPublishSubtitles(operation:SubtitleOperationRecor
       createLocalThumbnail:createVideoThumbnailFromFile,
       uploadPath:params=>storage.uploadFilePath({...params,prefix:'renders'}),
       ensureAsset:params=>ensureReusableAsset({...params,sourceJobId:operation.job_id,durationSec:facts.durationMs/1000,
-        metadata:{toolId:'subtitles',subtitleDocumentId:document.id,subtitleRevision:document.revision,subtitleOperationId:operation.id,sourceRefs:[document.source.ref],sourceFingerprint:document.source.fingerprint}}),
+        metadata:{toolId:'subtitles',subtitleDocumentId:document.id,subtitleRevision:document.revision,subtitleOperationId:operation.id,sourceRefs:[document.source.ref],sourceFingerprint:document.source.fingerprint,
+          mediaFacts:{source:'probe',durationSec:facts.durationMs/1000,width:facts.width,height:facts.height,hasAudio:facts.hasAudio}}}),
       deleteRemote:storage.deleteStorageObjectByUrl,
     });
     return {assetId:asset.publicId??asset.id,ref:{type:'asset',assetId:asset.publicId??asset.id,kind:'video'},originalUrl:asset.url,thumbnailUrl:asset.thumbUrl,documentId:document.id,revision:document.revision};
