@@ -29,6 +29,7 @@ test('Sol starts with 500 included credits and Luna offers discreet top-up on de
     const session=runtime.auth.createSession(STUDIO_FIXTURE_OWNERS[0],{clientId:'task-browser-fixture'});
     browser=await startStudioConnectedBrowserFixture({runtime,browserName:'chromium'});
     const owned=await browser.newContext(session,{viewport:{width:1440,height:900},locale:'en-US',reducedMotion:'reduce'}),page=owned.page;
+    const assistanceActions:string[]=[];page.on('request',request=>{if(request.url().endsWith('/api/studio/assistance')&&request.method()==='POST')assistanceActions.push(request.postDataJSON().action);});
     await page.route('**/api/legal/reconsent',route=>route.fulfill({json:{ok:true,needsReconsent:false,documents:[]}}));
     const conversationPath=`/app/studio/conversation/${project.projectId}`;
     // This suite checks behavior, not compilation speed. Prepare the owned
@@ -70,7 +71,7 @@ test('Sol starts with 500 included credits and Luna offers discreet top-up on de
     const topup=page.getByRole('button',{name:'Top up Sol',exact:true});await expect(topup).toBeVisible();
     await page.setViewportSize({width:390,height:844});await page.screenshot({path:join(evidence,'luna-mobile.png')});await page.setViewportSize({width:1440,height:900});
     await topup.click();await expect(page.getByText('Your Sol credits',{exact:true})).toBeVisible();await expect(picker).toHaveCount(0);
-    assert.equal((await runtime.database.pool.query("SELECT count(*)::int n FROM app_receipts WHERE type='charge'")).rows[0].n,0,'A top-up link only opens options');
+    assert.deepEqual(assistanceActions,['select_luna'],'A top-up link only opens options and cannot buy a pack');
     await page.getByRole('button',{name:'Close assistance',exact:true}).click();await expect(topup).toBeFocused();
     await topup.click();await page.getByRole('button',{name:'Continue with GPT‑6.1 Sol',exact:true}).click();
     await expect(selector).toHaveText('Sol');await expect(selector).toBeFocused();await expect(picker).toHaveCount(0);
