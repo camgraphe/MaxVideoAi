@@ -94,10 +94,8 @@ test('application UI changes keep integration and browser coverage without unrel
   });
 });
 
-test('financial inputs, shared backend code and CI selection changes require exhaustive cutovers', () => {
+test('non-financial runtime and validation changes defer exhaustive cutovers to full runs', () => {
   for (const file of [
-    'frontend/server/pricing/quote-billing.ts',
-    'frontend/src/lib/wan3-pricing.ts',
     'frontend/lib/arbitrary-shared-helper.ts',
     'frontend/content/feature-flags.ts',
     'content/new-runtime.ts',
@@ -105,26 +103,121 @@ test('financial inputs, shared backend code and CI selection changes require exh
     'frontend/messages/runtime.ts',
     'frontend/styles/runtime.js',
     'frontend/config/model-registry.json',
+    'frontend/config/model-runtime.json',
+    'frontend/src/config/engineCatalog.overrides.ts',
+    'frontend/src/config/fal-engine-materialization.ts',
     'frontend/app/api/generate/route.ts',
     'frontend/app/auth/callback/route.ts',
     'frontend/app/(core)/admin/consents.csv/route.ts',
     'frontend/app/(core)/admin/users/page.tsx',
-    'frontend/components/admin/ManualCreditForm.tsx',
-    'frontend/app/(core)/(workspace)/app/_hooks/useWorkspacePreflightQuote.ts',
-    'frontend/components/PriceFactorsBar.tsx',
-    'frontend/app/(core)/admin/pricing/page.tsx',
-    'packages/pricing/src/index.ts',
-    'neon/migrations/51_example.sql',
-    'tests/fixtures/customer-tariff-seed.json',
-    'tests/customer-tariff-initial-cutover-postgres.test.ts',
+    'frontend/src/server/studio/conversation-director-instructions.ts',
+    'tests/studio-assistance-director.test.ts',
     'tests/helpers/disposable-postgres.ts',
     '.github/workflows/quality.yml',
     'scripts/select-ci-validation.mjs',
+    'scripts/_lib/ci-validation-policy.mjs',
     'pnpm-lock.yaml',
     'frontend/next.config.js',
+    'neon/migrations/51_example.sql',
     'unknown/new-runtime.ts',
   ]) {
+    assert.deepEqual(select([file]), { integration: 'true', tariffs: 'false', browser: 'true' }, file);
+  }
+  assert.equal(select(['frontend/server/activity-feed.ts', 'tests/activity-feed.test.ts'], 'push').tariffs, 'false');
+});
+
+test('financial presentation and ordinary tests retain normal coverage without exhaustive cutovers', () => {
+  for (const file of [
+    'frontend/components/admin/ManualCreditForm.tsx',
+    'frontend/components/PriceFactorsBar.tsx',
+    'frontend/app/(core)/admin/pricing/page.tsx',
+    'frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/_components/StudioAssistanceCredits.client.tsx',
+    'tests/studio-assistance-credits-dialog.test.ts',
+    'tests/pricing-canonical-kernel.test.ts',
+    'tests/wallet-direct-pricing.test.ts',
+    'tests/provider-cost.test.ts',
+  ]) {
+    assert.deepEqual(select([file]), { integration: 'true', tariffs: 'false', browser: 'true' }, file);
+  }
+  for (const file of [
+    'frontend/components/marketing/PriceEstimator.tsx',
+    'frontend/app/(core)/admin/pricing/pricing.css',
+    'frontend/app/(core)/admin/pricing/provider-cost.css',
+    'frontend/messages/pricing.fr.json',
+  ]) {
+    assert.deepEqual(select([file]), { integration: 'true', tariffs: 'false', browser: 'true' }, file);
+  }
+  assert.deepEqual(select(['content/en/blog/pricing.mdx']), { integration: 'true', tariffs: 'false', browser: 'true' });
+});
+
+test('tariff and billing changes retain exhaustive cutovers', () => {
+  for (const file of [
+    'frontend/server/pricing/quote-billing.ts',
+    'frontend/src/lib/wan3-pricing.ts',
+    'frontend/app/(core)/(workspace)/app/_hooks/useWorkspacePreflightQuote.ts',
+    'packages/pricing/src/index.ts',
+    'frontend/app/api/stripe/webhook/route.ts',
+    'frontend/server/fal-webhook-refunds.ts',
+    'frontend/src/server/studio/assistance-ledger.ts',
+    'frontend/src/lib/currency.ts',
+    'frontend/src/config/topupTiers.ts',
+    'frontend/src/server/video-providers/google-vertex-veo/cost.ts',
+    'frontend/server/byteplus-accounting.ts',
+    'neon/migrations/54_customer_tariff_cells.sql',
+    'tests/fixtures/customer-tariff-seed.json',
+    'tests/customer-tariff-initial-cutover-postgres.test.ts',
+    'tests/local-customer-tariff-activation-postgres.test.ts',
+  ]) {
     assert.deepEqual(select([file]), { integration: 'true', tariffs: 'true', browser: 'true' }, file);
+  }
+});
+
+test('commercial input owners without financial filenames retain exhaustive cutovers', () => {
+  for (const file of [
+    'frontend/config/engine-catalog.json',
+    'frontend/config/published-supplier-rates.json',
+    'frontend/fixtures/fal-models.json',
+    'frontend/src/config/falEngines.ts',
+    'frontend/src/config/fal-engines/seedance-2-byteplus.ts',
+    'frontend/src/lib/fal-catalog.ts',
+    'frontend/src/lib/audio-generation.ts',
+    'frontend/src/server/engine-settings.ts',
+    'frontend/src/server/engine-settings-defaults.ts',
+    'frontend/src/server/engine-configuration-read.ts',
+    'frontend/src/server/engine-configuration-projection.ts',
+    'neon/migrations/09_engine_settings.sql',
+  ]) {
+    assert.deepEqual(select([file]), { integration: 'true', tariffs: 'true', browser: 'true' }, file);
+  }
+});
+
+test('image and video tool supplier rates retain exhaustive cutovers', () => {
+  for (const file of [
+    'frontend/src/config/tools-angle-engines.ts',
+    'frontend/src/config/tools-upscale-engines.ts',
+    'frontend/src/config/tools-background-removal-engines.ts',
+  ]) {
+    assert.equal(select([file]).tariffs, 'true', file);
+  }
+});
+
+test('unnamed monetary formulas and Studio tariffs retain exhaustive cutovers', () => {
+  for (const file of [
+    'frontend/lib/image/gptImage2.ts',
+    'frontend/src/lib/tools-angle.ts',
+    'frontend/src/lib/tools-upscale.ts',
+    'frontend/src/lib/tools-background-removal.ts',
+    'frontend/src/lib/exchange.ts',
+    'frontend/src/lib/fxProvider.ts',
+    'frontend/src/lib/kling-3-turbo.ts',
+    'frontend/src/lib/studio/assistance-contract.ts',
+    'frontend/src/server/studio/assistance-provider-facts.ts',
+    'frontend/src/server/studio/media-analysis/policy.ts',
+    'frontend/config/studio-media-analysis-policy.json',
+    'frontend/src/server/tools/creator-profiles-lipsync.ts',
+    'frontend/src/server/tools/creator-profiles-motion.ts',
+  ]) {
+    assert.equal(select([file]).tariffs, 'true', file);
   }
 });
 
@@ -142,7 +235,9 @@ test('nightly, manual, empty and unavailable comparisons fail closed to exhausti
 });
 
 test('push selection accounts for the whole pushed batch', () => {
-  assert.equal(select(['frontend/server/wallet.ts', 'README.md'], 'push').tariffs, 'true');
+  for (const event of ['push', 'pull_request']) {
+    assert.equal(select(['frontend/server/activity-feed.ts', 'frontend/server/wallet.ts', 'frontend/components/PriceFactorsBar.tsx', 'README.md'], event).tariffs, 'true');
+  }
 });
 
 test('moving a financial owner into a presentation path retains the removed owner in the comparison', () => {
