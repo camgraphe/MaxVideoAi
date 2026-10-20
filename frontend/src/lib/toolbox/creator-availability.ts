@@ -1,12 +1,12 @@
-/** Public discovery is enabled only after the operation and its evidence are verified. */
+/** Public release identities. Authenticated execution retains its deployment gate. */
 import { CREATOR_TOOL_IDS, type CreatorToolId } from './catalogue';
 export { CREATOR_TOOL_IDS, type CreatorToolId } from './catalogue';
 export const CREATOR_TOOL_AVAILABILITY: Readonly<Record<CreatorToolId, { publicReleased: boolean }>> = {
-  subtitles: { publicReleased: false },
-  'lip-sync': { publicReleased: false },
-  'product-photo-editor': { publicReleased: false },
-  'product-video-editor': { publicReleased: false },
-  'motion-transfer': { publicReleased: false },
+  subtitles: { publicReleased: true },
+  'lip-sync': { publicReleased: true },
+  'product-photo-editor': { publicReleased: true },
+  'product-video-editor': { publicReleased: true },
+  'motion-transfer': { publicReleased: true },
 };
 export function isCreatorToolPublic(id: string): id is CreatorToolId {
   return Object.prototype.hasOwnProperty.call(CREATOR_TOOL_AVAILABILITY, id)

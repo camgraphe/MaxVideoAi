@@ -1,18 +1,17 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import test from 'node:test';
-import { CREATOR_TOOL_IDS, isCreatorToolPublic, getReleasedCreatorToolIds, isCreatorPublicPathAvailable } from '../frontend/src/lib/toolbox/creator-availability';
+import { CREATOR_TOOL_IDS, CREATOR_TOOL_AVAILABILITY, isCreatorToolPublic, getReleasedCreatorToolIds, isCreatorPublicPathAvailable } from '../frontend/src/lib/toolbox/creator-availability';
 import { getCreatorMarketingCopy } from '../frontend/src/components/tools/creator-marketing/creator-copy';
 import { buildCreatorToolMetadata } from '../frontend/src/components/tools/creator-marketing/creator-marketing-routing';
 import { localizePathFromEnglish, englishPathFromLocale } from '../frontend/lib/i18n/paths';
 import { routing } from '../frontend/i18n/routing';
 
-// Catches publication via a route/link/sitemap while execution is still unqualified.
-test('creator publication stays closed and rejects unknown identities without hiding unrelated tools', () => {
-  assert.deepEqual(getReleasedCreatorToolIds(), []);
+test('the five released creators are discoverable without publishing unknown identities', () => {
+  assert.deepEqual(getReleasedCreatorToolIds(), CREATOR_TOOL_IDS);
   for (const id of CREATOR_TOOL_IDS) {
-    assert.equal(isCreatorToolPublic(id), false);
-    assert.equal(isCreatorPublicPathAvailable(`/tools/${id}`), false);
+    assert.equal(isCreatorToolPublic(id), true);
+    assert.equal(isCreatorPublicPathAvailable(`/tools/${id}`), true);
   }
   assert.equal(isCreatorToolPublic('invented'), false);
   assert.equal(isCreatorPublicPathAvailable('/tools/upscale'), true);
@@ -39,7 +38,7 @@ test('all creator pages retain exact localized canonical and reciprocal language
   }
 });
 
-test('unreleased creator routes are absent from the actual discovered sitemap', async () => {
+test('released creator routes appear in the actual discovered sitemap', async () => {
   const react = createRequire(new URL('../frontend/package.json', import.meta.url))('react');
   react.cache ??= (fn: unknown) => fn;
   const old = process.env.NODE_ENV;
@@ -48,7 +47,7 @@ test('unreleased creator routes are absent from the actual discovered sitemap', 
     const { getCanonicalPathEntries } = await import('../frontend/lib/sitemap/route-discovery');
     const entries = await getCanonicalPathEntries();
     assert.ok(entries.some(entry => entry.englishPath === '/tools/upscale'));
-    for (const id of CREATOR_TOOL_IDS) assert.ok(!entries.some(entry => entry.englishPath === `/tools/${id}`));
+    for (const id of CREATOR_TOOL_IDS) assert.ok(entries.some(entry => entry.englishPath === `/tools/${id}`));
   } finally {
     if (old === undefined) delete process.env.NODE_ENV; else process.env.NODE_ENV = old;
   }
@@ -58,14 +57,23 @@ test('unreleased route rendering and metadata stop at the same not-found gate', 
   for (const id of CREATOR_TOOL_IDS) {
     const route = await import(`../frontend/app/(localized)/[locale]/(marketing)/tools/${id}/page.tsx`);
     const props = { params: Promise.resolve({ locale: 'fr' }) };
-    await assert.rejects(route.default(props), /NEXT_HTTP_ERROR_FALLBACK;404/);
-    await assert.rejects(route.generateMetadata(props), /NEXT_HTTP_ERROR_FALLBACK;404/);
+    assert.ok(await route.default(props));
+    assert.equal((await route.generateMetadata(props)).alternates?.canonical, `https://maxvideoai.com/fr/outils/${id}`);
+    const released = CREATOR_TOOL_AVAILABILITY[id].publicReleased;
+    CREATOR_TOOL_AVAILABILITY[id].publicReleased = false;
+    try {
+      assert.equal(isCreatorPublicPathAvailable(`/tools/${id}`), false);
+      await assert.rejects(route.default(props), /NEXT_HTTP_ERROR_FALLBACK;404/);
+      await assert.rejects(route.generateMetadata(props), /NEXT_HTTP_ERROR_FALLBACK;404/);
+    } finally {
+      CREATOR_TOOL_AVAILABILITY[id].publicReleased = released;
+    }
   }
 });
 
-test('unreleased creators do not leak into public hub or marketing navigation', async () => {
+test('released creators appear in the public hub and marketing navigation', async () => {
   const { CreatorToolsCollection } = await import('../frontend/src/components/tools/creator-marketing/CreatorToolsCollection');
   const { MARKETING_NAV_TOOLS } = await import('../frontend/config/navigation');
-  assert.equal(CreatorToolsCollection({ locale: 'en' }), null);
-  for (const id of CREATOR_TOOL_IDS) assert.ok(!MARKETING_NAV_TOOLS.some(item => item.key === id));
+  assert.ok(CreatorToolsCollection({ locale: 'en' }));
+  for (const id of CREATOR_TOOL_IDS) assert.ok(MARKETING_NAV_TOOLS.some(item => item.key === id));
 });

@@ -30,8 +30,9 @@ Do not add a fake model-registry entry to route a specialized tool.
 the independent paid-generation and reference-upload capabilities. Specialized
 profiles retain their own gates. Public marketing routes, navigation, sitemap,
 Tools cards and library continuation actions use the explicit public release
-record; they are closed by default. Never turn on public discovery to make a
-test pass.
+record. The five canonical tools are released in the candidate authorized on
+2026-10-20; this does not enable specialist profiles or remove the runtime gate.
+Never turn on public discovery merely to make a test pass.
 
 Execution and recovery are different operations. Account-owned status,
 document editing and caption downloads remain readable after execution closes.

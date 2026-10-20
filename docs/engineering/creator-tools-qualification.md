@@ -1,8 +1,31 @@
 # Creator tools qualification record
 
-Reviewed 2026-10-19 against the isolated `codex/five-creator-tools` branch.
+Reviewed 2026-10-20 against the isolated `codex/five-creator-tools` branch.
 Implementation and local verification are complete only to the extent recorded
-below. Public release remains closed for all five tools.
+below. The historical records below describe the initially closed release.
+
+## Authorized production delivery — 2026-10-20
+
+The product owner explicitly requested production deployment followed by testing
+in production, instead of restoring the expired test environment. The candidate
+therefore publishes the five canonical tools in pages, menus, library continuation
+and sitemap. This is a release decision, not evidence that live canaries passed.
+Specialist LatentSync and Kling profiles retain their separate gates. MCP host
+qualification remains separate from the web release.
+
+Normal delivery still requires current-main ancestry, successful required Quality
+CI, migrations 69–75, a compatible media worker, and `CREATOR_TOOLS_ENABLED=1`.
+The release must use the GitHub/Vercel path and verify both production domains.
+Production deployment details and post-deployment findings must be recorded after
+execution; no pending step is represented here as complete. New paid canaries
+still require explicit confirmation of their exact account quote.
+
+The readiness fixes preserve the incoming H3 image dimension guard together with
+the creator audio-format guard. Audio fixtures now have valid file extensions.
+The media regression checks 76 decoded frames and preserved beginning/end audio
+samples, avoiding FFprobe-version-specific MP4 duration rounding. The connected
+Studio browser test prepares its real journal response before inducing expiry and
+drains held callbacks before teardown; both response orders remain asserted.
 
 ## Delivered paths
 
