@@ -62,8 +62,8 @@ function StudioImageConversationWorkspace({
   const tasksEnabled=studio.conversation.taskPolicyVersion===STUDIO_TASK_POLICY_VERSION;
   const [taskProfile,setTaskProfile]=useState<StudioTaskProfile>('standard');
   const [complexConfirmed,setComplexConfirmed]=useState(false);
-  useEffect(()=>{setComplexConfirmed(false);},[assistance.status?.revision,taskProfile]);
-  useEffect(()=>{if(assistance.status?.selectedModel==='gpt-6-luna')setTaskProfile('standard');},[assistance.status?.selectedModel]);
+  useEffect(()=>{setTaskProfile('standard');setComplexConfirmed(false);},[assistance.status?.revision]);
+  useEffect(()=>{setComplexConfirmed(false);},[taskProfile]);
   const taskConfirmationMissing=tasksEnabled&&(taskProfile==='complex'&&(!complexConfirmed||assistance.status?.selectedModel!=='gpt-6.1-sol')||!assistance.status);
   const taskUsageKey=studio.conversation.turns.filter(turn=>turn.task).map(turn=>`${turn.task!.requestId}:${turn.task!.state}:${turn.task!.consumedCredits}:${turn.task!.reservedCredits}`).join('|');
   const refreshAssistance=assistance.refresh;
@@ -327,7 +327,7 @@ function StudioImageConversationWorkspace({
           />
           </div>
           <p className={styles.footnote}>
-            {luna?<>{t('You’re using Luna. For more accomplished responses, ','Vous utilisez Luna. Pour des réponses plus abouties, ')}<button type="button" onClick={()=>setBudgetPrompt(value=>value+1)}>{t('switch to GPT‑6.1 Sol','passez à GPT‑6.1 Sol')}</button>.</>:t('Drop a reference. Follow an idea.', 'Déposez une référence. Suivez une idée.')}
+            {luna?<>{t('You’re using Luna. For more detailed responses, ','Vous utilisez Luna. Pour des réponses plus abouties, ')}<button type="button" onClick={()=>setBudgetPrompt(value=>value+1)}>{t('switch to GPT‑6.1 Sol','passez à GPT‑6.1 Sol')}</button>.</>:t('Drop a reference. Follow an idea.', 'Déposez une référence. Suivez une idée.')}
           </p>
         </div>
         <ConversationMediaShelf projectId={projectId} items={shelf.items} selectedId={shelf.selectedId} expanded={shelf.expanded} attachedIds={references.map(ref=>ref.assetId)} locale={locale} onSelect={shelf.setSelectedId} onToggle={()=>shelf.setExpanded(current=>!current)} onMention={mention} onAttach={shelf.attach} onDetach={detach} onInsert={editingEnabled?asset=>setTimelineInsertion({key:crypto.randomUUID(),asset}):undefined}/>

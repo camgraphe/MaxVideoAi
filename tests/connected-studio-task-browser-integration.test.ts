@@ -61,6 +61,9 @@ test('task ceilings, explicit continuation and saved progress work on desktop/mo
     await page.setViewportSize({width:1440,height:900});
     await page.getByRole('button',{name:'switch to GPT‑6.1 Sol'}).click();
     await expect(page.getByText('Your Sol credits',{exact:true})).toBeVisible();
+    await page.getByRole('button',{name:'Close assistance',exact:true}).click();
+    await expect(page.getByRole('button',{name:'switch to GPT‑6.1 Sol'})).toBeFocused();
+    await page.getByRole('button',{name:'switch to GPT‑6.1 Sol'}).click();
     await page.getByRole('button',{name:'Continue with GPT‑6.1 Sol',exact:true}).click();
     await expect(selector).toHaveText('Sol');await expect(picker).toHaveCount(0);
     await expect(page.getByText('You’re using Luna.',{exact:false})).toHaveCount(0);
@@ -71,7 +74,7 @@ test('task ceilings, explicit continuation and saved progress work on desktop/mo
       await page.getByRole('button',{name:'Close assistance',exact:true}).click();
     }
     await selectProfile('Complex');await message.fill('Help shape this film');
-    const send=page.getByRole('button',{name:'Send to Studio',exact:true});await expect(send).toBeDisabled();
+    const send=page.getByRole('button',{name:'Send to Studio',exact:true});await expect(send).toBeEnabled();
     await selectProfile('Complex',true);await expect(send).toBeEnabled();
     await selectProfile('Quick');
     const posted=page.waitForResponse(response=>response.url().endsWith('/image-conversation')&&response.request().method()==='POST');
