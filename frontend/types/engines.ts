@@ -300,7 +300,7 @@ export interface PreflightRequest {
   durationOption?: number | string;
   resolution?: Resolution;
   aspectRatio?: AspectRatio;
-  fps: number;
+  fps?: number;
   seedLocked?: boolean;
   loop?: boolean;
   audio?: boolean;

@@ -11,6 +11,8 @@ The customer decision is the normal fal list rate plus 30%: 17 US cents/second a
 
 Scope: 128 exact selectors covering `t2v`, `i2v`, `fl2v` and `ref2v` (keyframes), every integer duration from 5 through 20 seconds, and both resolutions. Orientation, audio and keyframe count are unpriced dimensions in the canonical facts. The canonical coverage collector and quotation reader must agree before any cell can be persisted. Any coverage gap, changed normal supplier rate or existing Max tariff (including inactive history) blocks this initialization. Existing prices require a separately reviewed admin change.
 
+The workspace sends `inputs: []` for Max preflight because these prices do not use image identity, count, dimensions or duration. This also lets a reviewed public keyframe recipe reach quotation without fabricating library ownership for its public image URLs. The restored images, their order and frame positions remain in the generation payload and undergo its normal validation. The strict persisted-reference preflight schema is unchanged for other models; in particular, reference-priced Grok still sends every reference and rejects an unresolved asset. If Max gains media-dependent pricing or owned-media requirements, its preflight projection must be reviewed alongside that contract change.
+
 Primary price evidence: <https://fal.ai/models/blackforestlabs/flux-3-max/text-to-video>, checked 2026-10-20. The advertised supplier promotion ends November 7, 2026, without a confirmed cutoff time/timezone. No expiration job is needed for these customer cells, because they never use the promotional supplier rate. Supplier accounting and any later negotiated offer are separate decisions.
 
 ## Offline projection evidence

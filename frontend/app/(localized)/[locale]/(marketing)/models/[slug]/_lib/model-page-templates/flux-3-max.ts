@@ -20,7 +20,7 @@ export const flux3MaxTemplateConfig: ModelPageTemplateConfig = {
     presets: [
       { id: '5s-720p-t2v', seconds: 5, resolution: '720p', audio: true, mode: 't2v', labelKey: 'standardPreview' },
       { id: '5s-1080p-t2v', seconds: 5, resolution: '1080p', audio: true, mode: 't2v', labelKey: 'deliveryRender' },
-      { id: '10s-720p-t2v', seconds: 10, resolution: '720p', audio: true, mode: 't2v', labelKey: 'commonProductionCheck', highlightKey: 'mostPopular' },
+      { id: '10s-720p-t2v', seconds: 10, resolution: '720p', audio: true, mode: 't2v', labelKey: 'commonProductionCheck' },
     ],
   },
   sections: { examples: true, prompting: true, tips: true, compare: true, specs: true, safety: true, faq: true },

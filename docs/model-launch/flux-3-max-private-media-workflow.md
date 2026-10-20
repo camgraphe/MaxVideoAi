@@ -91,6 +91,18 @@ audio, seed and reasoning, and revalidates them before use. Owned-job recall
 keeps its separate behavior. Signed-in and logged-out handoff checks in EN/FR/ES
 remain browser verification work; source/contract tests do not certify them.
 
+Workspace preflight now follows the same FPS capability projection as generation:
+the editor retains its 24 fps clock for keyframe positions, but does not send it
+as a provider setting when the selected mode exposes no FPS control. The API
+accepts an omitted FPS and still rejects unsupported explicit values.
+Max's quote depends on mode, duration and resolution only, so its preflight does
+not submit reference media as pricing dependencies. The generation request keeps
+every original URL and frame position and retains its normal media validation.
+Other models keep their persisted-reference checks and measured pricing inputs.
+`workspace-preflight-fps.test.ts`, `workspace-preflight-request.test.ts` and
+`model-keyframe-demo.test.ts` exercise the public recipe through restoration,
+request parsing and runtime validation; no paid generation is part of these tests.
+
 ## Any future generation is a separate attempt
 
 `frontend/scripts/run-flux-3-max-direct.ts` retains the bounded preparation path:

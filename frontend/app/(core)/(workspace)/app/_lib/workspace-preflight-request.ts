@@ -20,6 +20,9 @@ export function buildWorkspacePreflightRequest({
   voiceControlEnabled, inputAssets, memberTier,
 }: WorkspacePreflightRequestOptions): PreflightRequest {
   const capability = selectedEngine.modeCaps?.[submissionMode];
+  // Match generation: the editor's frame clock is not an unsupported provider control.
+  const shouldSendFps = !capability
+    || (Array.isArray(capability.fps) ? capability.fps.length > 0 : typeof capability.fps === 'number');
   const shouldSendResolution = workspaceModeSupportsRequestField({
     inputSchema: selectedEngine.inputSchema,
     capability,
@@ -48,12 +51,14 @@ export function buildWorkspacePreflightRequest({
     ...(shouldSendAspectRatio
       ? { aspectRatio: form.aspectRatio as PreflightRequest['aspectRatio'] }
       : {}),
-    fps: form.fps,
+    ...(shouldSendFps ? { fps: form.fps } : {}),
     seedLocked: Boolean(form.seedLocked),
     loop: form.loop,
     ...(supportsAudioToggle ? { audio: form.audio } : {}),
     ...(voiceControlEnabled ? { voiceControl: true } : {}),
-    inputs: buildWorkspacePreflightInputs(inputAssets),
+    // Max tariffs depend on mode, duration and resolution, not reference media.
+    // Keep URL-only public recipes in generation without inventing owned asset IDs for a quote.
+    inputs: selectedEngine.id === 'flux-3-max' ? [] : buildWorkspacePreflightInputs(inputAssets),
     ...(Object.keys(form.extraInputValues).length ? { extraInputValues: form.extraInputValues } : {}),
     user: { memberTier },
   };

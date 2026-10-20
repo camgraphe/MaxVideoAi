@@ -2,7 +2,13 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { projectPublicKeyframeDemo } from '../frontend/lib/public-keyframe-demo';
 import { buildVideoSettingsSnapshotFromSharedVideo } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-shared-video-snapshot';
-import { resolveVideoSettingsSnapshot } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-video-settings';
+import { buildVideoSettingsFormState, resolveVideoSettingsSnapshot } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-video-settings';
+import { buildWorkspacePreflightRequest } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-preflight-request';
+import { prepareGenerationInputs } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-generation-inputs';
+import { summarizeWorkspaceInputSchema } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-input-schema';
+import { parsePreflightRequestPayload } from '../frontend/app/api/preflight/_lib/preflight-request';
+import { resolveMediaAwarePreflight } from '../frontend/app/api/preflight/_lib/media-aware-preflight';
+import { computeCanonicalBillingSnapshot } from '../frontend/server/pricing/quote-billing';
 import { getFalEngineById } from '../frontend/src/config/falEngines';
 import { buildFlux3MaxFalRequest } from '../frontend/src/lib/flux-3-max';
 import { loadModelKeyframeDemo } from '../frontend/server/model-keyframe-demo';
@@ -211,4 +217,51 @@ test('the authored Max teaching selection loads only film 10 with all three orde
   assert.deepEqual(result?.recipe.keyframes.map(frame => frame.imageUrl), selected.referenceImages);
   assert.deepEqual(result?.referenceCaptions, selected.referenceCaptions);
   assert.equal(result?.recipe.seed, 0);
+  assert.ok(result);
+  const engine = getFalEngineById('flux-3-max')!.engine;
+  const replaySnapshot = buildVideoSettingsSnapshotFromSharedVideo({ ...source, keyframeRecipe: result.recipe });
+  const restored = resolveVideoSettingsSnapshot(replaySnapshot, { engines: [engine], engineMap: new Map([[engine.id, engine]]),
+    createLocalId: prefix => prefix, createFallbackScene: () => ({ id: 'scene', prompt: '', duration: 5 }),
+    createFallbackKlingElement: () => ({ id: 'element', frontal: null, references: [] }) });
+  assert.ok(restored?.inputAssets);
+  const form = buildVideoSettingsFormState(restored, null);
+  const before = structuredClone(restored.inputAssets);
+  const preflight = buildWorkspacePreflightRequest({ form, selectedEngine: engine, submissionMode: restored.mode,
+    effectiveDurationSec: 16, supportsAudioToggle: true, voiceControlEnabled: false,
+    inputAssets: restored.inputAssets, memberTier: 'Member' });
+  assert.equal(parsePreflightRequestPayload(JSON.parse(JSON.stringify(preflight))).ok, true);
+  assert.deepEqual(preflight.inputs, []);
+  assert.deepEqual(restored.inputAssets, before, 'Pricing must not remove restored images from generation.');
+  const priced = await resolveMediaAwarePreflight({ request: preflight }, {
+    getConfiguredEngineFn: async () => engine,
+    processAttachmentsFn: async () => { throw new Error('Max quotation must not resolve reference media.'); },
+    computeConfiguredPreflightFn: async request => {
+      const quote = await computeCanonicalBillingSnapshot({ engine, mode: request.mode, durationSec: request.durationSec,
+        resolution: request.resolution, aspectRatio: request.aspectRatio, addons: { audio: request.audio } }, {
+        loadCustomerTariffState: async () => ({ status: 'loaded', active: true, revision: 1, versionedCells: [], databaseCells: [{
+          id: 'reviewed-max-16s', selector: { engineId: 'flux-3-max', mode: 'ref2v', durationSec: '16', resolution: '1080p' },
+          currency: 'USD', price: { kind: 'fixed', customerCents: 604 }, source: 'database', version: 1, effectiveFrom: '2026-10-20T00:00:00Z',
+        }] }),
+        pricingPolicy: { loadOverrides: async () => ({ status: 'loaded', rules: [], routingRules: [] }) },
+      });
+      return { ok: true, total: quote.totalCents, currency: quote.currency, pricing: quote };
+    },
+  });
+  assert.equal(priced.ok, true, JSON.stringify(priced));
+  assert.equal(priced.total, 604);
+  const summary = summarizeWorkspaceInputSchema({ selectedEngine: engine, activeMode: restored.mode, uiLocale: 'en',
+    allowsUnifiedVeoFirstLast: false, isUnifiedHappyHorse: false, isUnifiedSeedance: false, isUnifiedGeminiOmni: false });
+  const prepared = prepareGenerationInputs({ selectedEngineId: engine.id, selectedEngineLabel: engine.label,
+    activeMode: restored.mode, submissionMode: restored.mode, form, inputSchema: engine.inputSchema,
+    inputSchemaSummary: summary, extraInputFields: [...summary.secondaryFields, ...summary.promotedFields],
+    inputAssets: restored.inputAssets, primaryAssetFieldIds: new Set(), referenceAssetFieldIds: new Set(['reference_image_urls']),
+    genericImageFieldIds: new Set(['reference_image_urls']), frameAssetFieldIds: new Set(), referenceAudioFieldIds: new Set(),
+    supportsKlingV3Controls: false, klingElements: [], multiPromptActive: false, multiPromptScenes: [] });
+  assert.ok(prepared.ok);
+  const generation = buildFlux3MaxFalRequest({ engineId: engine.id, mode: restored.mode, prompt: restored.prompt,
+    durationSec: form.durationSec, durationOption: form.durationOption, resolution: form.resolution, aspectRatio: form.aspectRatio,
+    audio: form.audio, seed: form.seed ?? undefined, inputs: prepared.inputsPayload,
+    referenceImages: prepared.referenceImageUrls, extraInputValues: prepared.extraInputValues });
+  assert.deepEqual(generation.requestBody.keyframes, selected.referenceImages.map((image_url: string, index: number) =>
+    ({ image_url, frame_index: [0, 192, 384][index] })));
 });

@@ -5,6 +5,7 @@ import { buildManualTariffCoverageScenario } from '../frontend/lib/pricing-audit
 import { prepareFlux3MaxTariffs, applyFlux3MaxTariffs } from '../frontend/server/pricing/flux-3-max-tariffs';
 import { assertFlux3MaxReleaseReview } from '../frontend/scripts/_lib/flux-3-max-release-input';
 import type { TransactionQueryExecutor } from '../frontend/src/lib/db';
+import { computeCanonicalBillingSnapshot } from '../frontend/server/pricing/quote-billing';
 
 const identity = { actorId: '11111111-1111-4111-8111-111111111111', candidateCommit: 'a'.repeat(40) };
 const state = { status: 'loaded' as const, active: true, revision: 3, versionedCells: [], databaseCells: [] };
@@ -39,6 +40,25 @@ test('FLUX 3 Max freezes normal list plus 30 percent for every mode, resolution 
   assert.deepEqual(state, before);
   assert.equal((await prepareFlux3MaxTariffs({ ...input(), at: '2026-10-19T00:00:00Z' })).fingerprint, prepared.fingerprint);
   assert.notEqual((await prepareFlux3MaxTariffs({ ...input(), state: { ...state, revision: 4 } })).fingerprint, prepared.fingerprint);
+});
+
+test('Max reference images do not change canonical selectors or frozen customer prices', async () => {
+  const prepared = await prepareFlux3MaxTariffs(input());
+  const engine = getFalEngineById('flux-3-max')!.engine;
+  for (const mode of ['t2v', 'i2v', 'fl2v', 'ref2v'] as const) {
+    for (const [resolution, expectedCents] of [['720p', 354], ['1080p', 604]] as const) {
+      for (const count of [0, 1, 3, 10]) {
+        const quote = await computeCanonicalBillingSnapshot({ engine, mode, durationSec: 16, resolution,
+          inputImageCount: count, referenceImageCount: count, addons: { audio: true } }, {
+          loadCustomerTariffState: async () => ({ ...state, databaseCells: prepared.cells }),
+          pricingPolicy: { loadOverrides: async () => ({ status: 'loaded', rules: [], routingRules: [] }) },
+        });
+        assert.equal(quote.totalCents, expectedCents);
+        assert.equal(quote.meta?.customerTariffCellId, prepared.cells.find(cell =>
+          cell.selector.mode === mode && cell.selector.resolution === resolution && cell.selector.durationSec === '16')?.id);
+      }
+    }
+  }
 });
 
 test('tariff initialization rejects incomplete coverage, inactive state and existing model tariffs without overwriting', async () => {
