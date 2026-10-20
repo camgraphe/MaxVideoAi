@@ -60,7 +60,7 @@ Review the original cause and the GA window before authorizing any targeted reco
 
 ## Release and rollback
 
-Apply only `neon/migrations/76_ga4_payment_outbox.sql` in a transaction to the verified
+Apply only `neon/migrations/77_ga4_payment_outbox.sql` in a transaction to the verified
 Neon target before this runtime. It is additive and replayable; it does not rewrite
 receipts or change balances. Validate its schema/index and the existing role/consent
 tables. Follow `docs/deployment/github-vercel.md` for GitHub CI and production delivery.

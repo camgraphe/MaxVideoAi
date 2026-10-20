@@ -67,6 +67,7 @@ export function JobAuditExpandedDetails({ job }: { job: AdminJobAuditRecord }) {
           </DetailCard>
 
           <DetailCard title="Billing">
+            {job.externalImport ? <p>External Fal result imported. No MaxVideoAI generation charge.</p> : null}
             <p>Status: {job.paymentStatus ?? '—'}</p>
             <p>Expected: {formatCurrency(job.finalPriceCents, job.currency)}</p>
             <p>Charges: {formatCurrency(job.totalChargeCents, job.currency)}</p>

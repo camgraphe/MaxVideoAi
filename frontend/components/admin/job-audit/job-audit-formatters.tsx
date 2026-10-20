@@ -12,7 +12,8 @@ const dateTimeFormatter = new Intl.DateTimeFormat('en-GB', {
   timeZone: 'Europe/Paris',
 });
 
-export function formatCurrency(amountCents: number, currency: string) {
+export function formatCurrency(amountCents: number | null, currency: string) {
+  if (amountCents === null) return 'Not billed';
   try {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',

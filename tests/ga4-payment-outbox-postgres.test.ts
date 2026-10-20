@@ -9,7 +9,7 @@ test('durable payment intents survive restarts, dedupe concurrent inserts and fe
   const pg = await startDisposablePostgres('ga4-outbox');
   t.after(() => pg.cleanup());
   const db = createQueryExecutor(pg.pool);
-  const migration = readFileSync('neon/migrations/76_ga4_payment_outbox.sql', 'utf8');
+  const migration = readFileSync('neon/migrations/77_ga4_payment_outbox.sql', 'utf8');
   await pg.pool.query(migration);
   await pg.pool.query(migration);
   const input = { key: 'receipt:1:purchase', userId: 'fixture', occurredAt: new Date(), consentObservedAt: new Date(), event: { name: 'purchase' as const, clientId: '123.456', userId: 'fixture', params: { value: 25, currency: 'EUR', transaction_id: 'pi_fixture' } } };
@@ -45,7 +45,7 @@ test('durable payment intents survive restarts, dedupe concurrent inserts and fe
 test('expired events and exhausted crash leases become scrubbed terminal records', async (t) => {
   const pg = await startDisposablePostgres('ga4-expiry'); t.after(() => pg.cleanup());
   const db = createQueryExecutor(pg.pool);
-  await pg.pool.query(readFileSync('neon/migrations/76_ga4_payment_outbox.sql', 'utf8'));
+  await pg.pool.query(readFileSync('neon/migrations/77_ga4_payment_outbox.sql', 'utf8'));
   const input = { key: 'old', userId: 'fixture', occurredAt: new Date(Date.now()-72*3600_000), consentObservedAt: new Date(0), event: { name: 'purchase' as const, userId: 'fixture' } };
   await enqueueGa4PaymentEvent(db, input);
   assert.deepEqual(await claimGa4PaymentEvents(db, 20), []);

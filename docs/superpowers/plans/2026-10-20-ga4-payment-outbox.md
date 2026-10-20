@@ -15,7 +15,7 @@ Concurrent delivery and stale lease acknowledgment; receipt success despite queu
 
 ### Task 1: Durable store and transport
 - [ ] Write and run failing `tests/ga4-payment-outbox-postgres.test.ts` for rollback, uniqueness, competing claims, stale acknowledgments, expiry and payload scrubbing.
-- [ ] Add `neon/migrations/76_ga4_payment_outbox.sql` and `frontend/server/ga4-payment-outbox.ts`: enqueueGa4PaymentEvent(executor,input), claimGa4PaymentEvents(executor,limit), finishGa4PaymentEvent(executor,row,result).
+- [ ] Add `neon/migrations/77_ga4_payment_outbox.sql` and `frontend/server/ga4-payment-outbox.ts`: enqueueGa4PaymentEvent(executor,input), claimGa4PaymentEvents(executor,limit), finishGa4PaymentEvent(executor,row,result).
 - [ ] Add `sendGa4EventWithResult(args)` retaining boolean sendGa4Event; test original timestamp, timeout, HTTP terminal and accepted responses.
 - [ ] Run focused tests and commit.
 

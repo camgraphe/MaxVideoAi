@@ -109,6 +109,7 @@ export function JobAuditRows({
               <div className="flex flex-wrap gap-2">
                 <span className={meta.className}>{meta.label}</span>
                 {technicalStatusBadge(job.status)}
+                {job.externalImport ? <span className="text-xs text-text-secondary">External Fal import</span> : null}
               </div>
               <p className="text-xs text-text-secondary">Progress {job.progress ?? 0}%</p>
               {job.failureOrigin ? <p className="text-xs text-text-secondary">Origin {job.failureOrigin}</p> : null}
@@ -119,7 +120,7 @@ export function JobAuditRows({
             <div className="space-y-3">
               <IntegrityPill
                 ok={job.paymentOk}
-                label="Payment OK"
+                label={job.externalImport ? 'Not billed by MaxVideoAI' : 'Payment OK'}
                 warningLabel="Payment drift"
                 helper={`Net ${formatCurrency(job.netChargeCents, job.currency)} · expected ${formatCurrency(job.finalPriceCents, job.currency)}`}
               />

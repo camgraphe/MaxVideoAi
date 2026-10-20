@@ -348,6 +348,15 @@ export async function saveJobOutputToLibrary(params: {
   );
   if (!rows[0]) throw new Error('OUTPUT_NOT_FOUND');
   const output = mapOutputRow(rows[0]);
+  // External adoption already owns an uploaded durable asset. Reuse its public identity;
+  // never copy it again or relabel it as an application-generated asset.
+  if (output.metadata.origin === 'external_fal_import') {
+    const assets = await query<DbMediaAssetRow>(`SELECT * FROM media_assets
+      WHERE source_output_id=$1 AND source_job_id=$2 AND user_id=$3 AND url=$4 AND status='ready' AND deleted_at IS NULL`,
+      [output.id, output.jobId, params.userId, output.url]);
+    if (assets.length !== 1) throw new Error('IMPORTED_OUTPUT_ASSET_UNAVAILABLE');
+    return mapAssetRow(assets[0]);
+  }
   const outputFacts = output.metadata.mediaFacts;
   // Versioned generated facts must keep their original-byte provenance through the copy path.
   const mediaFacts = outputFacts && typeof outputFacts === 'object' && 'version' in outputFacts

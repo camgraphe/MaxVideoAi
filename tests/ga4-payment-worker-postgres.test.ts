@@ -17,7 +17,7 @@ test('worker repairs only new consented live receipts and protects terminal inte
  // Missing outbox schema must not abort the financial transaction; marker survives for repair.
  const client=await pg.pool.connect();
  try {await client.query('BEGIN');assert.equal(await enqueueGa4WalletReceiptSafely(createQueryExecutor(client),'1'),false);await client.query("INSERT INTO app_receipts(user_id,type,amount_cents,metadata) VALUES ('legacy','topup',1000,'{}')");await client.query('COMMIT');}finally{client.release();}
- await pg.pool.query(readFileSync('neon/migrations/76_ga4_payment_outbox.sql','utf8'));
+ await pg.pool.query(readFileSync('neon/migrations/77_ga4_payment_outbox.sql','utf8'));
  assert.equal(await repairGa4WalletIntents(db),1);
  assert.equal(await repairGa4WalletIntents(db),0);
  await db.query("INSERT INTO user_consents VALUES ('ordinary','cookies.analytics',true,$1)",[new Date(Date.now()-120000)]);
@@ -43,7 +43,7 @@ test('worker repairs only new consented live receipts and protects terminal inte
 
 test('unavailable eligibility never sends, retries are bounded and one failed event does not replay its accepted sibling',async(t)=>{
  const pg=await startDisposablePostgres('ga4-retries');t.after(()=>pg.cleanup());const db=createQueryExecutor(pg.pool);
- await pg.pool.query(readFileSync('neon/migrations/76_ga4_payment_outbox.sql','utf8'));
+ await pg.pool.query(readFileSync('neon/migrations/77_ga4_payment_outbox.sql','utf8'));
  await pg.pool.query('CREATE TABLE user_roles(user_id text,role text); CREATE TABLE user_consents(user_id text,doc_key text,accepted boolean,accepted_at timestamptz)');
  for(const name of ['purchase','topup_completed'] as const)await enqueueGa4PaymentEvent(db,{key:name,userId:'fixture',occurredAt:new Date(),consentObservedAt:new Date(),event:{name,userId:'fixture'}});
  let calls=0;const sender=async(e:any)=>{calls++;return e.name==='purchase'?{status:'accepted' as const,code:'http_2xx'}:{status:'retry' as const,code:'network'};};

@@ -1,3 +1,4 @@
+import { assertApplicationJobResync } from './app-job-origin';
 import { query } from '@/lib/db';
 import { updateJobFromFalWebhook } from '@/server/fal-webhook-handler';
 import { fetchFalJobMedia } from '@/server/fal-job-sync';
@@ -10,6 +11,7 @@ type LinkableJobRow = {
   aspect_ratio: string | null;
   thumb_url: string | null;
   status: string | null;
+  settings_snapshot: unknown;
 };
 
 type LinkFalJobResult = {
@@ -34,7 +36,7 @@ export async function linkFalJob(options: {
   }
 
   const rows = await query<LinkableJobRow>(
-    `SELECT job_id, engine_id, provider_job_id, user_id, aspect_ratio, thumb_url, status
+    `SELECT job_id, engine_id, provider_job_id, user_id, aspect_ratio, thumb_url, status, settings_snapshot
        FROM app_jobs
       WHERE job_id = $1
       LIMIT 1`,
@@ -44,6 +46,8 @@ export async function linkFalJob(options: {
   if (!job) {
     throw new Error(`Job ${jobId} not found.`);
   }
+
+  assertApplicationJobResync(job.settings_snapshot);
 
   const providerJobId = options.providerJobId?.trim() || job.provider_job_id?.trim();
   if (!providerJobId) {

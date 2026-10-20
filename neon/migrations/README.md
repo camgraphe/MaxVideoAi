@@ -148,8 +148,26 @@ credit lots, tariffs, wallets or receipts. Old workers and v1 resumptions remain
 compatible. Enqueue readiness requires the new guard for v2 requests. Validate
 the ordered 65 → 67 sequence and replay on disposable PostgreSQL 17 before release.
 
-## GA4 payment outbox (migration 76)
+## External Fal result provenance (migration 76)
 
-`76_ga4_payment_outbox.sql` adds the measurement-only durable queue. Apply the exact
+`76_external_fal_import.sql` follows generation timing migrations 45/46. It adds
+external-request uniqueness and immutable provenance/ownership, enforces null
+application billing fields and skips timing capture for explicitly imported
+external results. It changes no existing rows and creates no generation, media,
+receipt or tariff. Qualify on disposable PostgreSQL and apply via the normal
+migration process before an external result is adopted. Deploy the matching
+runtime exclusions before adoption too; migration alone does not update runtime
+metrics, Activity, library projection or resync behavior. See
+`docs/engineering/external-fal-provenance.md`. Keep compatible readers and these
+guards if rolling back after external rows exist.
+
+## GA4 payment outbox (migration 77)
+
+`77_ga4_payment_outbox.sql` adds the measurement-only durable queue. Apply the exact
 file before its cron/runtime; no receipt backfill, wallet mutation or request-time DDL.
 Keep deduplication tombstones during rollback. See `docs/engineering/ga4-payment-outbox.md`.
+
+The outbox SQL was initially qualified/applied as `76_ga4_payment_outbox.sql` on
+2026-10-20 before the parallel external-import migration landed. Its contents are
+unchanged under `77_ga4_payment_outbox.sql`; do not treat the rename as a new schema
+change or replay financial data. Existing outbox tables need no reapplication.

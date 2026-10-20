@@ -1,3 +1,4 @@
+import { applicationJobSql } from '@/server/app-job-origin';
 import { getEngineAliases, listFalEngines } from '@/config/falEngines';
 import { query } from '@/lib/db';
 import {
@@ -271,7 +272,7 @@ async function readRecentGenerationRecords(params: {
   const rows = await queryFn(
     `SELECT ${RECENT_GENERATIONS_SELECT}
        FROM app_jobs
-      WHERE ${conditions.join(' AND ')}
+      WHERE ${conditions.join(' AND ')} AND ${applicationJobSql()}
       ORDER BY created_at DESC, id DESC
       LIMIT $${queryParams.length}`,
     queryParams
@@ -362,7 +363,7 @@ async function readRecentAgentGenerationRecords(params: {
                 ORDER BY j.created_at DESC, j.id DESC
               ) AS provider_rank
          FROM app_jobs j
-        WHERE ${ownedConditions.join(' AND ')}
+        WHERE ${ownedConditions.join(' AND ')} AND ${applicationJobSql('j')}
      ), deduped AS (
        SELECT ${RECENT_GENERATIONS_SELECT}
          FROM ranked
