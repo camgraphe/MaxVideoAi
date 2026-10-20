@@ -45,6 +45,13 @@ test('Stripe producers commit unique recoverable wallet events and distinct refu
  const refunds=(await pg.pool.query("SELECT payload->'params'->>'refund_amount_cents' AS delta FROM ga4_payment_outbox WHERE event_name='topup_refunded' ORDER BY event_key")).rows;
  assert.deepEqual(refunds,[{delta:'500'},{delta:'500'}]);
  assert.equal((await pg.pool.query('SELECT count(*) FROM app_receipts')).rows[0].count,'2','refund analytics cannot mutate wallet ledger');
+ const legacyRefund=refund('evt_legacy_refund',300,0);
+ const legacyCharge=legacyRefund.data.object as Stripe.Charge;
+ legacyCharge.id='ch_legacy'; legacyCharge.created=Math.floor(Date.now()/1000)-3600;
+ delete legacyCharge.metadata.ga4_consent_observed_at;
+ await mod.handleChargeRefunded(legacyRefund,{});
+ const [legacyStored]=(await pg.pool.query("SELECT consent_observed_at FROM ga4_payment_outbox WHERE event_key='refund:ch_legacy:300'")).rows;
+ assert.equal(legacyStored.consent_observed_at.getTime(),legacyCharge.created*1000,'signed charge creation preserves a legacy granted snapshot');
  await pg.pool.query('ALTER TABLE ga4_payment_outbox RENAME TO ga4_payment_outbox_unavailable');
  await assert.rejects(mod.handleChargeRefunded(refund('evt_retry',1500,1000),{}),/ga4_payment_outbox/,'enqueue failure must reach Stripe event rollback/retry');
 });

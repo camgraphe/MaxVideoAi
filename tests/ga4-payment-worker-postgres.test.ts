@@ -20,6 +20,7 @@ test('worker repairs only new consented live receipts and protects terminal inte
  await pg.pool.query(readFileSync('neon/migrations/76_ga4_payment_outbox.sql','utf8'));
  assert.equal(await repairGa4WalletIntents(db),1);
  assert.equal(await repairGa4WalletIntents(db),0);
+ await db.query("INSERT INTO user_consents VALUES ('ordinary','cookies.analytics',true,$1)",[new Date(Date.now()-120000)]);
  const sent:any[]=[];
  const sender=async(event:any)=>{sent.push(event);return {status:'accepted' as const,code:'http_2xx'};};
  const result=await drainGa4Payments(db,{send:sender}); assert.equal(result.accepted,2);

@@ -25,7 +25,7 @@ function readMetadataString(metadata: Stripe.Metadata | null | undefined, key: s
   return trimmed ? trimmed : null;
 }
 
-function parseTopupTrackingMetadata(metadata: Stripe.Metadata | null | undefined): TopupTrackingMetadata {
+function parseTopupTrackingMetadata(metadata: Stripe.Metadata | null | undefined, created?: number): TopupTrackingMetadata {
   const consentValue = readMetadataString(metadata, 'analytics_consent') ?? '';
   return {
     kind: readMetadataString(metadata, 'kind'),
@@ -35,7 +35,8 @@ function parseTopupTrackingMetadata(metadata: Stripe.Metadata | null | undefined
     topupTierId: readMetadataString(metadata, 'topup_tier_id'),
     topupTierLabel: readMetadataString(metadata, 'topup_tier_label'),
     walletCurrency: readMetadataString(metadata, 'wallet_currency'),
-    consentObservedAt: new Date(readMetadataString(metadata, 'ga4_consent_observed_at') ?? 0),
+    consentObservedAt: new Date(readMetadataString(metadata, 'ga4_consent_observed_at')
+      ?? (typeof created === 'number' && Number.isFinite(created) ? created * 1000 : 0)),
   };
 }
 
@@ -43,7 +44,7 @@ async function resolveTopupTrackingMetadataFromCharge(
   charge: Stripe.Charge,
   stripe: Stripe
 ): Promise<TopupTrackingMetadata> {
-  const fromCharge = parseTopupTrackingMetadata(charge.metadata);
+  const fromCharge = parseTopupTrackingMetadata(charge.metadata, charge.created);
   if (fromCharge.kind === 'topup') {
     return fromCharge;
   }
@@ -54,7 +55,7 @@ async function resolveTopupTrackingMetadataFromCharge(
   }
   try {
     const intent = await stripe.paymentIntents.retrieve(paymentIntentId);
-    const fromIntent = parseTopupTrackingMetadata(intent.metadata);
+    const fromIntent = parseTopupTrackingMetadata(intent.metadata, intent.created);
     return fromIntent.kind === 'topup' ? fromIntent : fromCharge;
   } catch (error) {
     console.warn('[stripe-webhook] failed to resolve refund metadata from payment intent', {
