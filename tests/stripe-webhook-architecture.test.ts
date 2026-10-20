@@ -59,8 +59,8 @@ test('successful Stripe events share one canonical top-up persistence owner', ()
   assert.equal((topupEvents.match(/recordStripeTopup\(/g) ?? []).length, 2);
   assert.match(persistence, /withDbTransaction/);
   assert.match(persistence, /lockAndResolveFirstWalletTopup/);
-  assert.match(persistence, /name: 'topup_completed'/);
-  assert.match(persistence, /name: 'purchase'/);
+  assert.match(persistence, /enqueueGa4WalletReceiptSafely/);
+  assert.doesNotMatch(persistence, /sendGa4Event/);
   assert.doesNotMatch(route, /recordStripeTopup|withDbTransaction|topup_completed/);
 });
 

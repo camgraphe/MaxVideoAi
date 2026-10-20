@@ -1,6 +1,6 @@
 # GA4 acquisition milestones and wallet payments
 
-Reviewed locally on 2026-10-05. Measure milestones independently: payment may happen before media generation; a Studio visit or an MCP setup-guide click does not prove a completed generation or an effective connection. Do not use a prescribed signup → generation → wallet top-up order as the visitor-to-revenue denominator.
+Reviewed locally on 2026-10-20. Measure milestones independently: payment may happen before media generation; a Studio visit or an MCP setup-guide click does not prove a completed generation or an effective connection. Do not use a prescribed signup → generation → wallet top-up order as the visitor-to-revenue denominator.
 
 ## Evidence and scope
 
@@ -34,7 +34,7 @@ Known exclusion also suppresses GA initialization and configured GTM insertion o
 
 The measurement-only role request runs only when analytics or Ads consent is granted. A later consent update resolves eligibility from the current session without making authentication, wallet/header reads or legal-consent UI wait on measurement.
 
-Canonical receipt identity and the per-user transaction lock prevent duplicate wallet fulfillment and duplicate GA4 emission attempts across Checkout/PaymentIntent deliveries. GA4 delivery remains **best effort, at most one attempt per inserted wallet receipt**. Collector/role failures are not retried by the duplicate receipt or processed webhook path; there is no GA4 outbox. HTTP 2xx confirms transport receipt, not event acceptance. Reconcile stored payment receipts with Stripe separately from GA4.
+Canonical receipt identity and the per-user transaction lock prevent duplicate wallet fulfillment. New receipts now carry durable `purchase` and `topup_completed` intents; see [payment outbox operations](../engineering/ga4-payment-outbox.md). A savepoint keeps analytics failures from aborting the receipt, and a bounded repair scans only newly versioned receipts. Delivery is at least once within the retry/age budget, not exactly once. `accepted` means HTTP transport receipt, not event ingestion. Terminal failures are visible for review and never blindly replayed. Reconcile stored receipts with Stripe separately from GA4.
 
 The legacy Google Ads browser success-return conversion now requires resolved eligible role state. While the role is pending, one in-memory payload uses the existing bounded 20 × 200ms retry budget and sends at most once. Consent withdrawal, administrator resolution, account reset or expiry permanently cancel it. The return URL does not establish a live captured payment or a unique canonical receipt. It remains unsuitable for first-payer reporting or purchase optimization. No advertising channel or external conversion configuration is activated by this preparation.
 

@@ -147,3 +147,9 @@ and checks newly inserted v2 profiles; it does not update existing task snapshot
 credit lots, tariffs, wallets or receipts. Old workers and v1 resumptions remain
 compatible. Enqueue readiness requires the new guard for v2 requests. Validate
 the ordered 65 → 67 sequence and replay on disposable PostgreSQL 17 before release.
+
+## GA4 payment outbox (migration 76)
+
+`76_ga4_payment_outbox.sql` adds the measurement-only durable queue. Apply the exact
+file before its cron/runtime; no receipt backfill, wallet mutation or request-time DDL.
+Keep deduplication tombstones during rollback. See `docs/engineering/ga4-payment-outbox.md`.

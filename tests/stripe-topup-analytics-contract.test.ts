@@ -13,19 +13,13 @@ test('wallet validates once and copies attribution to Stripe metadata', () => {
   assert.equal((source.match(/normalizeWalletAttribution\(/g) ?? []).length, 1);
 });
 
-test('Stripe completion emits accepted attribution and first-topup state', () => {
-  const source = readFileSync(
-    'frontend/app/api/stripe/webhook/_lib/stripe-webhook-topup-persistence.ts',
-    'utf8'
-  );
-  assert.match(source, /buildTopupAttributionGa4Params/);
-  assert.match(source, /\.\.\.attributionParams/);
-  assert.match(source, /funnel_stage: 'topup_completed'/);
-  assert.match(source, /is_first_wallet_topup: persistenceResult\.isFirstWalletTopup/);
-  assert.doesNotMatch(source, /String\(metadataRecord\.first_wallet_topup/);
-  assert.match(source, /name: 'topup_completed'/);
-  assert.match(source, /name: 'purchase'/);
-  assert.match(source, /sessionId: gaSessionId/);
-  assert.match(source, /await Promise\.allSettled\(\[/);
-  assert.doesNotMatch(source, /attribution_fingerprint:\s*metadataRecord/);
+test('Stripe completion persists recoverable receipt intents and delegates GA4 projection', () => {
+  const source = readFileSync('frontend/app/api/stripe/webhook/_lib/stripe-webhook-topup-persistence.ts','utf8');
+  assert.match(source, /enqueueGa4WalletReceiptSafely\(executor/);
+  assert.match(source, /ga4_outbox_version: '1'/);
+  assert.doesNotMatch(source, /sendGa4Event/);
+  const projection = readFileSync('frontend/server/ga4-wallet-events.ts','utf8');
+  assert.match(projection, /buildTopupAttributionGa4Params/);
+  assert.match(projection, /normalizeGa4SessionId/);
+  assert.doesNotMatch(projection, /attribution_fingerprint:\s*m/);
 });
