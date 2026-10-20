@@ -26,13 +26,14 @@ for(const scenario of [
   {name:'delayed audio',origin:0,delay:1,gap:false},
   {name:'delayed audio with a nonzero container origin',origin:5,delay:1,gap:false},
   {name:'delayed audio and an internal timestamp gap',origin:5,delay:1,gap:true},
+  {name:'delayed audio extending past the video',origin:5,delay:1,gap:false,audioDuration:5},
 ])test(`subtitle WAV preserves the original presentation clock for ${scenario.name}`,async t=>{
   const directory=await mkdtemp(join(tmpdir(),'subtitle-offset-'));t.after(()=>rm(directory,{recursive:true,force:true}));
   const sourcePath=join(directory,'source.mp4'),outputPath=join(directory,'transcription.wav');
   // The signal begins at delay seconds relative to the video's first frame.
   // Shift the whole container independently; that shift must never become silence.
   execFileSync('ffmpeg',['-v','error','-f','lavfi','-i','color=c=black:s=320x180:r=25:d=5',
-    '-f','lavfi','-i','sine=frequency=1000:sample_rate=16000:duration=2','-map','0:v','-map','1:a',
+    '-f','lavfi','-i',`sine=frequency=1000:sample_rate=16000:duration=${scenario.audioDuration??2}`,'-map','0:v','-map','1:a',
     '-af',`asetpts='PTS+${scenario.delay}/TB${scenario.gap?'+gte(T,0.5)/TB':''}'`,
     '-c:v','libx264','-c:a','aac','-output_ts_offset',String(scenario.origin),'-y',sourcePath]);
   const source=probe(sourcePath),origin=Number(source.format.start_time),audio=source.streams.find((stream:any)=>stream.codec_type==='audio');
@@ -40,7 +41,8 @@ for(const scenario of [
   const audioOffset=Number(audio.start_time)-origin;
   assert.ok(Math.abs(audioOffset-scenario.delay)<0.1,JSON.stringify(source));
   const facts=await extractSubtitleAudio({sourcePath,outputPath});
-  assert.equal(facts.durationMs,5000);assert.equal(facts.hasAudio,true);
+  const audioEnd=scenario.delay+(scenario.audioDuration??2)+(scenario.gap?1:0);
+  assert.equal(facts.durationMs,Math.max(5,audioEnd)*1000);assert.equal(facts.hasAudio,true);
   const pcm=samples(outputPath),durationSec=pcm.length/2/16000;
   t.diagnostic(JSON.stringify({origin,audioOffset,wavDurationSec:durationSec}));
   if(scenario.delay)assert.ok(energy(pcm,0.2,0.7)<1,'Leading silence must retain the original audio delay.');
@@ -52,6 +54,6 @@ for(const scenario of [
     assert.ok(energy(pcm,scenario.delay+0.8,scenario.delay+1.2)<1,'Internal timestamp gaps must stay silent.');
     assert.ok(energy(pcm,scenario.delay+1.7,scenario.delay+1.9)>1000,'Audio following a gap must keep its original time.');
   }
-  assert.ok(durationSec>=scenario.delay+2+(scenario.gap?1:0)-0.1);
+  assert.ok(durationSec>=audioEnd-0.1);
   assert.ok(durationSec<=facts.durationMs/1000+0.1,'A nonzero absolute origin must not extend the source clock.');
 });

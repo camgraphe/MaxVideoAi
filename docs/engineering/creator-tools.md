@@ -163,6 +163,12 @@ revision, verifies the original fingerprint, preserves source timing and audio,
 and publishes a distinct video asset. Standalone burn-in requires a video source.
 An audio-only transcript can always be exported as SRT/VTT.
 
+Transcription WAVs normalize the container origin while retaining delayed audio
+and internal timestamp gaps as silence. Duration facts keep those presentation
+offsets. For MOV/MP4, a separate metadata read caps edit-list spans by the media
+track lengths, matching modern FFprobe and avoiding inflated durations in 4.0.2;
+it does not disable edit lists during audio extraction or change source bytes.
+
 The three presentation presets keep stable stored identities: `active-word`
 (Pop), `clean` (Cinema) and `high-contrast` (Contrast). `presets.ts` and
 `SubtitleStylePicker.client.tsx` share their localized choices; the actual
