@@ -206,6 +206,17 @@ bounded reconciliation and dispatch; it does not run a long renderer in an HTTP
 request. Generic Fal polling, webhook completion and provisional expiry exclude
 the specialized subtitle jobs.
 
+The production worker also requires `FAL_KEY` through its existing execution
+role's SSM access. Its storage identity writes only export and thumbnail prefixes:
+set `VIDEO_RENDER_STORAGE_PREFIX=timeline-exports` in the worker definition to
+map subtitle WAV, sequence-mix and MP4 uploads into the existing owned export
+namespace. Do not set that override on the web runtime or broaden source-write
+permissions. Pin the image by digest, retain its published source SHA, and update
+the launcher's exact task-definition ARN allowlist for each new revision.
+Health tasks must use an explicit nonexistent target, never claim arbitrary queued
+work. Keep a compatible worker for accepted subtitle operations during rollback;
+the previous timeline-only worker cannot resume them.
+
 Provider submission is a single transport attempt. An ambiguous acknowledgment
 is never resubmitted automatically. Subtitle acceptance left unknown for one hour
 is refunded once by reconciliation; the audit is retained. The status exposes

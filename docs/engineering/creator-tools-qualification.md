@@ -20,6 +20,14 @@ Production deployment details and post-deployment findings must be recorded afte
 execution; no pending step is represented here as complete. New paid canaries
 still require explicit confirmation of their exact account quote.
 
+Preparation on 2026-10-20 applied the exact migrations 69–75 in one bounded
+transaction on production Neon `main`. Subsequent reads confirmed the four new
+tables, quote-origin constraint and three explicit tool policy rows; operation
+tables were empty. The worker's dedicated Fal SecureString was created. Runtime
+activation, worker dispatch and the Git-backed web release were still pending at
+this checkpoint. Existing pricing overrides and customer ledger rows were not
+rewritten.
+
 The readiness fixes preserve the incoming H3 image dimension guard together with
 the creator audio-format guard. Audio fixtures now have valid file extensions.
 The media regression checks 76 decoded frames and preserved beginning/end audio
