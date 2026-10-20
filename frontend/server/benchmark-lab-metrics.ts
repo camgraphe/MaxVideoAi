@@ -1,3 +1,4 @@
+import { applicationJobSql } from '@/server/app-job-origin';
 import { getEngineAliases, listFalEngines, type FalEngineEntry } from '@/config/falEngines';
 import { isDatabaseConfigured, query } from '@/lib/db';
 import { ADMIN_EXCLUDED_USER_IDS } from '@/lib/admin/exclusions';
@@ -113,7 +114,7 @@ export async function fetchPublicBenchmarkLatency(options?: {
           JOIN app_jobs AS jobs ON jobs.job_id = samples.job_id
           JOIN canonical_engine_aliases AS canonical
             ON canonical.engine_alias = LOWER(TRIM(samples.engine_id))
-          WHERE samples.completed_at >= NOW() - make_interval(days => $2)
+          WHERE ${applicationJobSql('jobs')} AND samples.completed_at >= NOW() - make_interval(days => $2)
             AND samples.completed_at <= NOW()
             AND samples.completed_at > samples.started_at
             AND isfinite(samples.started_at)

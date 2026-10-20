@@ -147,3 +147,16 @@ and checks newly inserted v2 profiles; it does not update existing task snapshot
 credit lots, tariffs, wallets or receipts. Old workers and v1 resumptions remain
 compatible. Enqueue readiness requires the new guard for v2 requests. Validate
 the ordered 65 → 67 sequence and replay on disposable PostgreSQL 17 before release.
+
+## External Fal result provenance (migration 76)
+
+`76_external_fal_import.sql` follows generation timing migrations 45/46. It adds
+external-request uniqueness and immutable provenance/ownership, enforces null
+application billing fields and skips timing capture for explicitly imported
+external results. It changes no existing rows and creates no generation, media,
+receipt or tariff. Qualify on disposable PostgreSQL and apply via the normal
+migration process before an external result is adopted. Deploy the matching
+runtime exclusions before adoption too; migration alone does not update runtime
+metrics, Activity, library projection or resync behavior. See
+`docs/engineering/external-fal-provenance.md`. Keep compatible readers and these
+guards if rolling back after external rows exist.

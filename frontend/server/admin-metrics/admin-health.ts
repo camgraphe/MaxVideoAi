@@ -1,3 +1,4 @@
+import { applicationJobSql } from '@/server/app-job-origin';
 import { isDatabaseConfigured } from '@/lib/db';
 import { getServiceNoticeSetting } from '@/server/app-settings';
 import type { AdminHealthSnapshot, EngineHealthStat } from '@/lib/admin/types';
@@ -36,7 +37,7 @@ export async function fetchAdminHealth(): Promise<AdminHealthSnapshot> {
       `
         SELECT COUNT(*)::bigint AS count
         FROM app_jobs j
-        WHERE ${unresolvedFailedCondition('j')}
+        WHERE ${applicationJobSql('j')} AND ${unresolvedFailedCondition('j')}
           AND created_at >= NOW() - INTERVAL '${HEALTH_WINDOW_HOURS} hours'
       `
     ),
@@ -44,7 +45,7 @@ export async function fetchAdminHealth(): Promise<AdminHealthSnapshot> {
       `
         SELECT COUNT(*)::bigint AS count
         FROM app_jobs j
-        WHERE ${refundedFailedCondition('j')}
+        WHERE ${applicationJobSql('j')} AND ${refundedFailedCondition('j')}
           AND created_at >= NOW() - INTERVAL '${HEALTH_WINDOW_HOURS} hours'
       `
     ),
@@ -52,7 +53,7 @@ export async function fetchAdminHealth(): Promise<AdminHealthSnapshot> {
       `
         SELECT COUNT(*)::bigint AS count
         FROM app_jobs
-        WHERE status = 'pending'
+        WHERE ${applicationJobSql('app_jobs')} AND status = 'pending'
           AND created_at <= NOW() - INTERVAL '${PENDING_STALE_MINUTES} minutes'
       `
     ),
@@ -64,7 +65,7 @@ export async function fetchAdminHealth(): Promise<AdminHealthSnapshot> {
           COUNT(*) FILTER (WHERE ${unresolvedFailedCondition('j')})::bigint AS failed_count,
           COUNT(*) FILTER (WHERE (${unresolvedFailedCondition('j')} OR ${completedCondition('j')}))::bigint AS total_count
         FROM app_jobs j
-        WHERE created_at >= NOW() - INTERVAL '${HEALTH_WINDOW_HOURS} hours'
+        WHERE ${applicationJobSql('j')} AND created_at >= NOW() - INTERVAL '${HEALTH_WINDOW_HOURS} hours'
         GROUP BY engine_id, engine_label
         HAVING COUNT(*) FILTER (WHERE (${unresolvedFailedCondition('j')} OR ${completedCondition('j')})) > 0
       `

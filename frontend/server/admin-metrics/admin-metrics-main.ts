@@ -1,3 +1,4 @@
+import { applicationJobSql } from '@/server/app-job-origin';
 import { RENDER_CHARGE_SQL } from '@/server/wallet-receipt-classification';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
@@ -59,7 +60,6 @@ export async function fetchAdminMetrics(
   }
 
   await ensureBillingSchema();
-
   const [
     signupDailyRows,
     activeDailyRows,
@@ -99,7 +99,7 @@ export async function fetchAdminMetrics(
       `
         SELECT date_trunc('day', created_at) AS bucket, COUNT(DISTINCT user_id)::bigint AS count
         FROM app_jobs
-        WHERE created_at >= NOW() - INTERVAL '${range.days} days'
+        WHERE ${applicationJobSql('app_jobs')} AND created_at >= NOW() - INTERVAL '${range.days} days'
           AND status = 'completed'
           AND user_id IS NOT NULL
           ${excludeUserIdClause('user_id')}
@@ -207,7 +207,7 @@ export async function fetchAdminMetrics(
       `
         SELECT COUNT(DISTINCT user_id)::bigint AS total
         FROM app_jobs
-        WHERE status = 'completed'
+        WHERE ${applicationJobSql('app_jobs')} AND status = 'completed'
           AND created_at >= NOW() - INTERVAL '30 days'
           AND user_id IS NOT NULL
           ${excludeUserIdClause('user_id')}
@@ -247,7 +247,7 @@ export async function fetchAdminMetrics(
         first_renders AS (
           SELECT user_id, MIN(created_at) AS first_render_at
           FROM app_jobs
-          WHERE status = 'completed'
+          WHERE ${applicationJobSql('app_jobs')} AND status = 'completed'
             ${excludeUserIdClause('user_id', { allowNulls: true })}
           GROUP BY user_id
         )
@@ -295,7 +295,7 @@ export async function fetchAdminMetrics(
         first_renders AS (
           SELECT user_id, MIN(created_at) AS first_render_at
           FROM app_jobs
-          WHERE status = 'completed'
+          WHERE ${applicationJobSql('app_jobs')} AND status = 'completed'
             ${excludeUserIdClause('user_id', { allowNulls: true })}
           GROUP BY user_id
         )
@@ -319,7 +319,7 @@ export async function fetchAdminMetrics(
           SELECT j.user_id, COUNT(*)::bigint AS render_count
           FROM app_jobs j
           JOIN paying_users p ON p.user_id = j.user_id
-          WHERE j.status = 'completed'
+          WHERE ${applicationJobSql('j')} AND j.status = 'completed'
             AND j.created_at >= NOW() - INTERVAL '30 days'
             ${excludeUserIdClause('j.user_id')}
           GROUP BY j.user_id
@@ -336,7 +336,7 @@ export async function fetchAdminMetrics(
         WITH current_window AS (
           SELECT DISTINCT user_id
           FROM app_jobs
-          WHERE status = 'completed'
+          WHERE ${applicationJobSql('app_jobs')} AND status = 'completed'
             AND user_id IS NOT NULL
             AND created_at >= NOW() - INTERVAL '7 days'
             ${excludeUserIdClause('user_id')}
@@ -344,7 +344,7 @@ export async function fetchAdminMetrics(
         previous_window AS (
           SELECT DISTINCT user_id
           FROM app_jobs
-          WHERE status = 'completed'
+          WHERE ${applicationJobSql('app_jobs')} AND status = 'completed'
             AND user_id IS NOT NULL
             AND created_at >= NOW() - INTERVAL '14 days'
             AND created_at < NOW() - INTERVAL '7 days'
@@ -382,7 +382,7 @@ export async function fetchAdminMetrics(
             MIN(created_at) AS first_render_at,
             MAX(created_at) AS last_render_at
           FROM app_jobs
-          WHERE status = 'completed'
+          WHERE ${applicationJobSql('app_jobs')} AND status = 'completed'
             ${excludeUserIdClause('user_id', { allowNulls: true })}
           GROUP BY user_id
         )
@@ -417,7 +417,7 @@ export async function fetchAdminMetrics(
           COUNT(*) FILTER (WHERE ${unresolvedFailedCondition('j')})::bigint AS failed_count,
           COUNT(*) FILTER (WHERE (${unresolvedFailedCondition('j')} OR ${completedCondition('j')}))::bigint AS total_count
         FROM app_jobs j
-        WHERE created_at >= NOW() - INTERVAL '${range.days} days'
+        WHERE ${applicationJobSql('j')} AND created_at >= NOW() - INTERVAL '${range.days} days'
           ${excludeUserIdClause('j.user_id', { allowNulls: true })}
       `,
       exclusionParams
@@ -430,7 +430,7 @@ export async function fetchAdminMetrics(
           COUNT(*) FILTER (WHERE ${unresolvedFailedCondition('j')})::bigint AS failed_count,
           COUNT(*) FILTER (WHERE (${unresolvedFailedCondition('j')} OR ${completedCondition('j')}))::bigint AS total_count
         FROM app_jobs j
-        WHERE created_at >= NOW() - INTERVAL '${range.days} days'
+        WHERE ${applicationJobSql('j')} AND created_at >= NOW() - INTERVAL '${range.days} days'
           ${excludeUserIdClause('j.user_id', { allowNulls: true })}
         GROUP BY engine_id, engine_label
         HAVING COUNT(*) FILTER (WHERE (${unresolvedFailedCondition('j')} OR ${completedCondition('j')})) > 0
