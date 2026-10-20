@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import test from 'node:test';
-import { expect } from '@playwright/test';
+import { expect, type Route } from '@playwright/test';
 import { startStudioIntegrationRuntime } from './helpers/studio-integration-runtime';
 import { startStudioConnectedBrowserFixture } from './helpers/studio-connected-browser-fixture';
 import { STUDIO_FIXTURE_OWNERS } from './helpers/studio-auth-fixture';
@@ -43,6 +43,14 @@ test('MCP montage opens the current conversation with private playback, durable 
   const journalGate = new Promise<void>(resolve => {releaseJournal = resolve;});
   const renewalGate = new Promise<void>(resolve => {releaseRenewal = resolve;});
   const canonicalGate = new Promise<void>(resolve => {releaseCanonical = resolve;});
+  let journalBlocked = false, closing = false;
+  const interceptedReads: Promise<void>[] = [];
+  const interceptRead = (read: (route: Route) => Promise<void>) => (route: Route) => {
+    if (closing) return route.continue();
+    const pending = read(route);
+    interceptedReads.push(pending);
+    return pending;
+  };
   let firstContext = true, holdRenewal = false, renewalBlocked = false, holdCanonical = false, canonicalBlocked = false;
 
   try {
@@ -91,14 +99,17 @@ test('MCP montage opens the current conversation with private playback, durable 
     const prepareFresh = async (browserSession = session, viewport = { width: 1440, height: 900 }) => {
       const owned = await browserFixture!.newContext(browserSession, { viewport, locale: 'en-US', colorScheme: 'light', reducedMotion: 'reduce' });
       assert.deepEqual((await owned.context.storageState()).origins, [], 'A fresh context has no Canvas drafts or previous media grants.');
-      // Delay real responses only: a cold journal read can invalidate the
-      // timeline while its rejected private grant is being renewed.
+      // Prepare the real journal response before testing delivery order. Cold
+      // compilation belongs to setup, not the renewal/canonical race below.
       if (firstContext) {
         firstContext = false;
-        await owned.page.route(`${runtime.browserOrigin}${endpoint}/image-conversation`, async route => {
-          await journalGate; await route.continue();
-        });
-        await owned.page.route(`${timelineEndpoint}?preview=1`, async route => {
+        await owned.page.route(`${runtime.browserOrigin}${endpoint}/image-conversation`, interceptRead(async route => {
+          const response = await route.fetch();
+          journalBlocked = true;
+          await journalGate;
+          await route.fulfill({response});
+        }));
+        await owned.page.route(`${timelineEndpoint}?preview=1`, interceptRead(async route => {
           if (holdRenewal) {
             holdRenewal = false;
             const response = await route.fetch();
@@ -112,7 +123,7 @@ test('MCP montage opens the current conversation with private playback, durable 
             await canonicalGate;
             await route.fulfill({response});
           } else await route.continue();
-        });
+        }));
       }
 
       // Only unrelated account/consent readers are simulated. Studio persistence,
@@ -150,12 +161,13 @@ test('MCP montage opens the current conversation with private playback, durable 
     const first = await openFresh(true), page = first.page;
     diagnose = async () => {
       await proof('failure', page);
-      return { alerts: await page.getByRole('alert').allTextContents(), timelineWrites, retiredWrites, renewalResponses, privateRequests: browserFixture!.readPrivateRequests(),
+      return { journalBlocked, renewalBlocked, canonicalBlocked, alerts: await page.getByRole('alert').allTextContents(), timelineWrites, retiredWrites, renewalResponses, privateRequests: browserFixture!.readPrivateRequests(),
         videos: await page.locator('video').evaluateAll((elements) => elements.map((element) => {
           const video = element as HTMLVideoElement;
           return { id: video.dataset.playbackItemId, ready: video.readyState, time: video.currentTime, error: video.error?.code };
         })) };
     };
+    await expect.poll(() => journalBlocked, {timeout: 45_000, message: 'real journal response must be ready before expiry'}).toBe(true);
     await expect(page.locator('[data-timeline-item="montage-clip-01"]')).toHaveAttribute('data-timeline-start', '0');
     await expect(page.locator('[data-timeline-item="montage-clip-02"]')).toHaveAttribute('data-timeline-start', '2');
     await expect(page.getByLabel('Film monitor', { exact: true })).toHaveCount(0);
@@ -217,11 +229,11 @@ test('MCP montage opens the current conversation with private playback, durable 
     expiredPrivateUrl = oldSignedUrl;
     await firstVideo.evaluate((element) => (element as HTMLVideoElement).load());
     await expect.poll(() => browserFixture!.readPrivateRequests().slice(privateRequestCount).some((entry) => entry.status === 403)).toBe(true);
-    await expect.poll(() => renewalBlocked).toBe(true);
+    await expect.poll(() => renewalBlocked, {message: 'renewal response must be held'}).toBe(true);
     holdCanonical = true;
     releaseJournal();
     // The later canonical read wins; the held renewal response is obsolete.
-    await expect.poll(() => canonicalBlocked).toBe(true);
+    await expect.poll(() => canonicalBlocked, {message: 'canonical response must be held after journal delivery'}).toBe(true);
     if (renewalFirst) {
       releaseRenewal();
       const obsolete = await renewed;await obsolete.finished();
@@ -429,11 +441,12 @@ test('MCP montage opens the current conversation with private playback, durable 
   } catch (error) {
     throw new Error(`${String(error)}\n${JSON.stringify(await diagnose())}\n${runtime.readLogs().slice(-4000)}`, { cause: error });
   } finally {
+    closing = true;
     releaseJournal(); releaseRenewal(); releaseCanonical();
-    // Finish intercepted real reads before closing their page. Discarding an
-    // in-flight route.fetch rejects outside the test's assertion/diagnostic path.
-    // Wait for callbacks instead of suppressing their errors.
+    // Settle our held callbacks while their routes are still registered. Removing
+    // interceptors first can race their late fulfill/continue during failure cleanup.
     try {
+      await Promise.all(interceptedReads);
       for (const context of browserFixture?.browser.contexts() ?? []) {
         for (const page of context.pages()) await page.unrouteAll({behavior:'wait'});
       }
