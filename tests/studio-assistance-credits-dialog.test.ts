@@ -18,7 +18,7 @@ test('the product dialog reviews cumulative packs before purchase and preserves 
     const {StudioAssistance}=await import('../frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/_components/StudioAssistance.client');
     const render=async(value=status,error:string|null=null,locale:'en'|'fr'='en')=>act(async()=>root.render(React.createElement(StudioAssistance,{status:value,locale,busy:false,error,conversationBusy:false,choose:async choice=>{choices.push(choice);return true;},refresh:async()=>{},onChoice:()=>changed++})));
     const button=(label:string)=>Array.from(dom.window.document.querySelectorAll('button')).find(el=>(el.getAttribute('aria-label')??el.textContent??'').trim()===label)!;
-    await render();await act(async()=>button('Studio assistance and budget').click());
+    await render();assert.equal(button('Studio assistance and budget').textContent?.trim(),'Sol');assert.doesNotMatch(dom.window.document.body.textContent??'',/credits|quota|remaining/i);await act(async()=>button('Studio assistance and budget').click());
     assert.match(dom.window.document.body.textContent??'',/360/);
     assert.match(dom.window.document.body.textContent??'',/500 credits/);
     assert.match(dom.window.document.body.textContent??'',/1,280/);
@@ -42,7 +42,7 @@ test('the product dialog reviews cumulative packs before purchase and preserves 
     await render(status,'STALE');assert.equal(button('Buy $2 Sol pack').disabled,true);
     await act(async()=>button('Close assistance').click());
     const paused={...status,selectedModel:'gpt-6-luna' as const,mode:'sponsored_luna' as const,paid:{...status.paid,enabled:false}};
-    await render(paused);assert.match(button('Studio assistance and budget').textContent??'',/No monthly quota/);await act(async()=>button('Studio assistance and budget').click());
+    await render(paused);assert.match(button('Studio assistance and budget').textContent??'',/^Luna$/);await act(async()=>button('Studio assistance and budget').click());
     await act(async()=>(dom.window.document.querySelector('[aria-label="Assistant model"] button') as HTMLButtonElement).click());
     await act(async()=>button('Continue with GPT‑6.1 Sol').click());
     assert.deepEqual(choices[2],{action:'select_sol',expectedRevision:3},'Changing models must preserve a purchased-credit pause');

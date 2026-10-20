@@ -6,7 +6,6 @@ import {useStudioAssistance} from './_hooks/useStudioAssistance';
 import {StudioAssistance} from './_components/StudioAssistance.client';
 import { useImageConversation } from "./_hooks/useImageConversation";
 import {ConversationExportQuote} from "./_components/ConversationExportQuote.client";
-import {TaskBudgetPicker} from './_components/TaskBudgetPicker.client';
 import {ConversationTask} from './_components/ConversationTask.client';
 import {STUDIO_TASK_POLICY_VERSION,STUDIO_TASK_PROFILES,type StudioTaskProfile} from '@/lib/studio/task-budget-contract';
 import {ConversationAnalysis} from './_components/ConversationAnalysis.client';
@@ -64,6 +63,7 @@ function StudioImageConversationWorkspace({
   const [taskProfile,setTaskProfile]=useState<StudioTaskProfile>('standard');
   const [complexConfirmed,setComplexConfirmed]=useState(false);
   useEffect(()=>{setComplexConfirmed(false);},[assistance.status?.revision,taskProfile]);
+  useEffect(()=>{if(assistance.status?.selectedModel==='gpt-6-luna')setTaskProfile('standard');},[assistance.status?.selectedModel]);
   const taskConfirmationMissing=tasksEnabled&&(taskProfile==='complex'&&(!complexConfirmed||assistance.status?.selectedModel!=='gpt-6.1-sol')||!assistance.status);
   const taskUsageKey=studio.conversation.turns.filter(turn=>turn.task).map(turn=>`${turn.task!.requestId}:${turn.task!.state}:${turn.task!.consumedCredits}:${turn.task!.reservedCredits}`).join('|');
   const refreshAssistance=assistance.refresh;
@@ -139,7 +139,7 @@ function StudioImageConversationWorkspace({
       ...(references.length ? {referenceMentions:references.map(ref=>({assetId:ref.assetId,label:ref.label}))} : {}),
       ...(mediaEnabled ? {attachments: references.filter(ref => ref.kind === 'video' || ref.kind === 'audio').map(ref => ({type: 'asset' as const, assetId: ref.assetId, kind: ref.kind as 'video' | 'audio'}))} : {}),
     };
-    setComplexConfirmed(false);setText("");setFollowupNotice(false);
+    setTaskProfile('standard');setComplexConfirmed(false);setText("");setFollowupNotice(false);
     shelf.clear();
     follow.current = true;
     await studio.submit(input);
@@ -156,7 +156,7 @@ function StudioImageConversationWorkspace({
           <span>{studio.conversation.projectName}</span>
         </div>
         <div className={styles.headerActions}>
-          <StudioAssistance tasksEnabled={tasksEnabled} {...assistance} locale={locale} conversationBusy={studio.busy} onChoice={afterAssistanceChoice} openSignal={budgetPrompt}/>
+          <StudioAssistance taskBudget={tasksEnabled?{profile:taskProfile,onProfile:setTaskProfile,confirmed:complexConfirmed,onConfirmed:setComplexConfirmed}:undefined} tasksEnabled={tasksEnabled} {...assistance} locale={locale} conversationBusy={studio.busy} onChoice={afterAssistanceChoice} openSignal={budgetPrompt}/>
           <button ref={helpTrigger} aria-label={t('Studio help','Aide Studio')} onClick={() => setHelp(true)}><HelpCircle size={18}/></button>
           <ConversationProjects accountKey={accountKey} currentProjectId={projectId} locale={locale} onRename={id=>{if(id===projectId)void studio.refresh();}}/>
         </div>
@@ -316,7 +316,6 @@ function StudioImageConversationWorkspace({
           <div ref={composerRegion} className={styles.composerRegion}
             onDragOver={event=>{if(event.dataTransfer.types.includes(MEDIA_SHELF_DRAG_TYPE)){event.preventDefault();event.dataTransfer.dropEffect='copy';}}}
             onDrop={event=>{const item=readShelfDrag(event.dataTransfer,shelf.items);if(item){event.preventDefault();event.stopPropagation();mention(item);}}}>
-          {tasksEnabled&&<TaskBudgetPicker profile={taskProfile} onProfile={setTaskProfile} confirmed={complexConfirmed} onConfirmed={setComplexConfirmed} sol={assistance.status?.selectedModel==='gpt-6.1-sol'} disabled={studio.loading||studio.busy||!!studio.pending} locale={locale}/>}
           <ImageConversationComposer
             text={text}
             onTextChange={setText}
@@ -328,7 +327,7 @@ function StudioImageConversationWorkspace({
           />
           </div>
           <p className={styles.footnote}>
-            {luna?t('Luna is active · Included assistance. Sol offers stronger creative guidance.','Luna est actif · Assistance incluse. Sol offre des conseils créatifs plus approfondis.'):t('Drop a reference. Follow an idea.', 'Déposez une référence. Suivez une idée.')}
+            {luna?<>{t('You’re using Luna. For more accomplished responses, ','Vous utilisez Luna. Pour des réponses plus abouties, ')}<button type="button" onClick={()=>setBudgetPrompt(value=>value+1)}>{t('switch to GPT‑6.1 Sol','passez à GPT‑6.1 Sol')}</button>.</>:t('Drop a reference. Follow an idea.', 'Déposez une référence. Suivez une idée.')}
           </p>
         </div>
         <ConversationMediaShelf projectId={projectId} items={shelf.items} selectedId={shelf.selectedId} expanded={shelf.expanded} attachedIds={references.map(ref=>ref.assetId)} locale={locale} onSelect={shelf.setSelectedId} onToggle={()=>shelf.setExpanded(current=>!current)} onMention={mention} onAttach={shelf.attach} onDetach={detach} onInsert={editingEnabled?asset=>setTimelineInsertion({key:crypto.randomUUID(),asset}):undefined}/>

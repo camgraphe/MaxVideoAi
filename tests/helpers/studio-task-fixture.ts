@@ -15,6 +15,9 @@ export async function studioTaskFixture(t:{after:(fn:()=>Promise<void>)=>void}) 
   const policy=studioAssistancePolicy({STUDIO_ASSISTANCE_ENABLED:'true'});
   async function actor() {
     const id=randomUUID();await pg.pool.query("INSERT INTO studio_projects(id,user_id,name,persistence_mode) VALUES($1,$1,'Creative task','connected')",[id]);
+    // Most worker cases exercise a client who already selected Sol. New-account defaults have their own integration test.
+    await pg.pool.query("INSERT INTO studio_assistance_accounts(user_id,selected_model,sol_limit_nano_usd,luna_limit_nano_usd) VALUES($1,'gpt-6.1-sol',$2,$3)",[id,policy.solAllowanceNanoUsd,policy.lunaAllowanceNanoUsd]);
+    await pg.pool.query("INSERT INTO studio_assistance_choices(user_id,revision,action,authorized_cents) VALUES($1,0,'select_sol',0)",[id]);
     return {authMethod:'studio-session' as const,userId:id,projectId:id,clientId:null};
   }
   function input(profile:StudioTaskProfile='standard',message='Create the requested film') {

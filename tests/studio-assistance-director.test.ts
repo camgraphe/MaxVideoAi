@@ -6,6 +6,7 @@ test('an explicit Luna handoff keeps the full action tools and passes the identi
  let sent:unknown,checkpointed:unknown;
  const director=createStudioConversationDirector({model:'gpt-6-luna',createResponse:async params=>{sent=params;return {id:'luna',model:'gpt-6-luna',status:'completed',service_tier:'default',usage:null,output:[],output_text:JSON.stringify({reply:'Let us plan the next scene.'})};}});
  const result=await director({message:'Plan the next scene',references:[],history:[],project:{name:'Film',revision:0,memory:{revision:0,brief:'Preserve warm light',decisions:[]},generations:[]},execute:async()=>{throw new Error('No tool action expected');},checkpoint:async(index,create,params)=>{assert.equal(index,0);checkpointed=params;return create();}});
+ assert.equal((sent as {reasoning:{effort:string}}).reasoning.effort,'high');
  assert.equal((sent as {model:string}).model,'gpt-6-luna');assert.equal((sent as {service_tier:string}).service_tier,'default');assert.equal(sent,checkpointed);
  assert.match(JSON.stringify(sent),/Preserve warm light/);assert.match(JSON.stringify(sent),/image_prepare/);assert.equal(result.reply,'Let us plan the next scene.');
 });

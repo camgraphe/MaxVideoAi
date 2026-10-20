@@ -137,3 +137,14 @@ The new production policy requires its own `studio-credits-2026-10-05-v2` approv
 Retain this additive financial evidence on rollback. Qualification is local
 disposable PostgreSQL only; no hosted migration was run for this implementation.
 See `docs/engineering/studio-assistance-economics.md`.
+
+## Studio default assistant (migration 66)
+
+`66_studio_luna_default.sql` follows migration 54. Apply explicitly with the Luna
+default release. It changes the database default and moves unpaid accounts with
+no recorded Sol choice to Luna, incrementing their settings revision once. It
+preserves explicit Sol choices, purchased balances and all frozen request/call
+identities. Reapplying it does not rewrite accounts already on Luna. New credit
+accounts also receive Luna explicitly from the runtime; legacy injected policies
+retain their historical default. This change has only been applied to disposable
+local PostgreSQL fixtures.

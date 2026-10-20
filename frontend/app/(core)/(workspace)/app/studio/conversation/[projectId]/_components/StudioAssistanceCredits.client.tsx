@@ -5,15 +5,16 @@ import {ArrowLeft,ArrowUpRight,Check,ChevronDown,MessageCircle,Sparkles,X} from 
 import {STUDIO_SOL_PACK_CENTS,type StudioAssistanceChoice} from '@/lib/studio/assistance-contract';
 import {getMcpIntegration} from '@/lib/mcp-integration-registry';
 import {buildMarketingLocaleSwitchHref} from '@/lib/i18n/marketing-locale-switch';
+import {TaskBudgetPicker} from './TaskBudgetPicker.client';
 import type {StudioAssistanceProps} from './StudioAssistance.client';
 import styles from './studio-assistance-credits.module.css';
 
 const setupLinks=(['chatgpt','claude','codex'] as const).map(getMcpIntegration).filter(integration=>integration.site.publication==='live'&&integration.installation.directMcp==='available');
 type Review={amountCents:200|500|1000;expectedRevision:number;tariffVersion:string;purchaseKey:string;remaining:number};
 
-export function StudioAssistanceCreditsDialog({tasksEnabled,status,busy,error,locale,conversationBusy,choose,refresh,onChoice,trigger,onClose}:StudioAssistanceProps&{trigger:RefObject<HTMLButtonElement>;onClose:()=>void}){
+export function StudioAssistanceCreditsDialog({tasksEnabled,taskBudget,initialView,status,busy,error,locale,conversationBusy,choose,refresh,onChoice,trigger,onClose}:StudioAssistanceProps&{initialView?:'sol'|'luna';trigger:RefObject<HTMLButtonElement>;onClose:()=>void}){
   const dialog=useRef<HTMLDialogElement>(null),back=useRef<HTMLButtonElement>(null),id=useId();
-  const [view,setView]=useState<'sol'|'luna'>(status?.selectedModel==='gpt-6-luna'?'luna':'sol');
+  const [view,setView]=useState<'sol'|'luna'>(initialView??(status?.selectedModel==='gpt-6-luna'?'luna':'sol'));
   const [pack,setPack]=useState<200|500|1000>(200),[review,setReview]=useState<Review|null>(null);
   const t=(en:string,fr:string)=>locale==='fr'?fr:en;
   const quantity=(value:number)=>new Intl.NumberFormat(locale==='fr'?'fr-FR':'en-US').format(value);
@@ -44,6 +45,7 @@ export function StudioAssistanceCreditsDialog({tasksEnabled,status,busy,error,lo
         <button aria-pressed={view==='luna'} onClick={()=>setView('luna')}><div><MessageCircle size={15}/><span>GPT‑6 Luna</span>{status.selectedModel==='gpt-6-luna'&&<Check size={14}/>}</div><small>{t('Everyday chat & simple edits','Conversations et retouches simples')}</small></button>
       </div>
       {view==='sol'?<>
+        {taskBudget&&status.selectedModel==='gpt-6.1-sol'&&<TaskBudgetPicker {...taskBudget} sol disabled={locked} locale={locale}/>}
         <div className={styles.usage}><div className={styles.usageTitle}><h3>{t('Your Sol credits','Vos crédits Sol')}</h3><span>{quantity(credits.creditsPerDollar)} {t('credits = $1','crédits = $1')}</span></div>
           <section><div><span>{t('Included this month','Inclus ce mois-ci')}</span></div><p className={styles.creditCount}><strong>{quantity(credits.included.remaining)}</strong><span>/ {quantity(credits.included.total)} {t('credits left','crédits restants')}</span></p><progress max={credits.included.total} value={credits.included.remaining} aria-label={t('Monthly included Sol credits remaining','Crédits Sol mensuels restants')}/><small>{t('Used first · renews ','Utilisés en premier · renouvellement le ')}{new Intl.DateTimeFormat(locale,{month:'short',day:'numeric',timeZone:'UTC'}).format(new Date(credits.included.renewsAt))}</small>{credits.included.reserved>0&&<small className={styles.held}>{quantity(credits.included.reserved)} {t('reserved','réservés')}</small>}</section>
           <section><div><span>{t('Purchased balance','Solde acheté')}</span></div><p className={styles.creditCount}><strong>{quantity(credits.purchased.remaining)}</strong><span>/ {quantity(credits.purchased.total)} {t('credits left','crédits restants')}</span></p><progress max={credits.purchased.total||1} value={credits.purchased.remaining} aria-label={t('Purchased Sol credits remaining','Crédits Sol achetés restants')}/><small>{quantity(credits.purchased.total)} {t('bought','achetés')} · {quantity(credits.purchased.total-credits.purchased.remaining-credits.purchased.reserved)} {t('used','utilisés')}</small>{credits.purchased.reserved>0&&<small className={styles.held}>{quantity(credits.purchased.reserved)} {t('reserved','réservés')}</small>}</section>

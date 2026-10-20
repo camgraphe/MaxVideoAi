@@ -5,21 +5,20 @@ import {ArrowUpRight,ChevronDown,Check, X} from 'lucide-react';
 import type {StudioAssistanceChoice,StudioAssistanceStatus} from '@/lib/studio/assistance-contract';
 import {additionalAssistanceBudget} from '../_lib/conversation-assistance';
 import styles from './studio-assistance.module.css';
+import type {TaskBudgetPickerProps} from './TaskBudgetPicker.client';
 import {StudioAssistanceCreditsDialog} from './StudioAssistanceCredits.client';
-export type StudioAssistanceProps={tasksEnabled?:boolean;openSignal?:number;status:StudioAssistanceStatus|null;busy:boolean;error:string|null;locale:'en'|'fr';conversationBusy:boolean;choose:(choice:StudioAssistanceChoice)=>Promise<boolean>;refresh:()=>Promise<void>;onChoice:()=>void};
+export type StudioAssistanceProps={tasksEnabled?:boolean;taskBudget?:Omit<TaskBudgetPickerProps,'sol'|'disabled'|'locale'>;openSignal?:number;status:StudioAssistanceStatus|null;busy:boolean;error:string|null;locale:'en'|'fr';conversationBusy:boolean;choose:(choice:StudioAssistanceChoice)=>Promise<boolean>;refresh:()=>Promise<void>;onChoice:()=>void};
 type Props=StudioAssistanceProps;
 const money=(cents:number)=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(cents/100);
 export function StudioAssistance(props:Props) {
-  const [open,setOpen]=useState(false),trigger=useRef<HTMLButtonElement>(null);
-  useEffect(()=>{if(props.openSignal)setOpen(true);},[props.openSignal]);
+  const [open,setOpen]=useState(false),[requestedSol,setRequestedSol]=useState(false),trigger=useRef<HTMLButtonElement>(null);
+  useEffect(()=>{if(props.openSignal){setRequestedSol(true);setOpen(true);}},[props.openSignal]);
   const {status,locale}=props,t=(en:string,fr:string)=>locale==='fr'?fr:en;
   if(status&&!status.enabled)return null;
   const luna=status?.mode==='sponsored_luna';
-  const detail=status?status.mode==='paid_sol'?money(status.paid.remainingCents)+' '+t('left','restants'):Math.round((luna?status.sponsoredLuna:status.includedSol).remainingPercent)+'%':props.error?t('Unavailable','Indisponible'):'…';
-  const creditDetail=status?.credits?luna?(status.sponsoredAvailable===false?t('Unavailable','Indisponible'):t('No monthly quota','Sans quota mensuel')):new Intl.NumberFormat(locale).format(status.credits.included.remaining+(status.paid.enabled?status.credits.purchased.remaining:0))+' '+t('credits','crédits'):detail;
   return <>
-    <button ref={trigger} className={styles.trigger} aria-haspopup="dialog" aria-expanded={open} aria-label={t('Studio assistance and budget','Assistance et budget Studio')} onClick={()=>setOpen(true)}><span className={styles.dot} data-luna={luna}/><span>{luna?'GPT‑6 Luna':'GPT‑6.1 Sol'} <small>{creditDetail}</small></span><ChevronDown size={12}/></button>
-    {open&&(status?.credits?<StudioAssistanceCreditsDialog {...props} trigger={trigger} onClose={()=>setOpen(false)}/>:<AssistanceDialog {...props} trigger={trigger} onClose={()=>setOpen(false)}/>)}
+    <button ref={trigger} className={styles.trigger} aria-haspopup="dialog" aria-expanded={open} aria-label={t('Studio assistance and budget','Assistance et budget Studio')} onClick={()=>{setRequestedSol(false);setOpen(true);}}><span>{status?(luna?'Luna':'Sol'):'…'}</span><ChevronDown size={12}/></button>
+    {open&&(status?.credits?<StudioAssistanceCreditsDialog {...props} initialView={requestedSol?'sol':undefined} trigger={trigger} onClose={()=>setOpen(false)}/>:<AssistanceDialog {...props} trigger={trigger} onClose={()=>setOpen(false)}/>)}
   </>;
 }
 function AssistanceDialog({status,busy,error,locale,conversationBusy,choose,refresh,onChoice,trigger,onClose}:Props&{trigger:RefObject<HTMLButtonElement>;onClose:()=>void}) {

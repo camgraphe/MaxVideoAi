@@ -18,7 +18,7 @@ test('task ceilings, explicit continuation and saved progress work on desktop/mo
   const previous=process.env.DATABASE_URL;
   const runtime=await startStudioIntegrationRuntime({mcp:{studioMontageCreation:false},conversation:true,conversationTasks:true,initializeDatabase:async db=>{
     await initializeStudioConnectedFixture(db);
-    for(const name of ['00_create_profiles.sql','01_legal_documents.sql','02_user_consents.sql','04_profiles_timestamps.sql','12_app_settings.sql','30_mcp_paid_generation.sql','39_mcp_quote_lifetime.sql','49_studio_generation_scope.sql','50_studio_image_conversation.sql','51_studio_image_model_usage.sql','52_studio_conversation_runs.sql','53_studio_media_generation_scope.sql','54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','65_studio_task_budgets.sql'])await db.pool.query(await readFile('neon/migrations/'+name,'utf8'));
+    for(const name of ['00_create_profiles.sql','01_legal_documents.sql','02_user_consents.sql','04_profiles_timestamps.sql','12_app_settings.sql','30_mcp_paid_generation.sql','39_mcp_quote_lifetime.sql','49_studio_generation_scope.sql','50_studio_image_conversation.sql','51_studio_image_model_usage.sql','52_studio_conversation_runs.sql','53_studio_media_generation_scope.sql','54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','65_studio_task_budgets.sql','66_studio_luna_default.sql'])await db.pool.query(await readFile('neon/migrations/'+name,'utf8'));
     await db.pool.query('ALTER TABLE app_jobs ADD COLUMN status text');
     await db.pool.query(`CREATE TABLE user_account_restrictions(user_id text PRIMARY KEY,reason text NOT NULL,message text,active boolean NOT NULL DEFAULT true,restricted_at timestamptz NOT NULL DEFAULT clock_timestamp())`);
   }});
@@ -43,14 +43,37 @@ test('task ceilings, explicit continuation and saved progress work on desktop/mo
     const [,initial,assistance]=await Promise.all([
       page.goto(runtime.browserOrigin+conversationPath),loaded,assistanceLoaded,
     ]);
+    const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
+    const evidence=process.env.STUDIO_PROOF_DIRECTORY??'/tmp/studio-luna-review';await mkdir(evidence,{recursive:true});
     const initialBody=await initial.json();assert.equal(initial.status(),200,JSON.stringify(initialBody));assert.ok(initialBody.result.taskPolicyVersion);
     assert.equal(assistance.status(),200,JSON.stringify(await assistance.json()));
     const picker=page.getByRole('group',{name:'Work allowance'}),message=page.getByRole('textbox',{name:'Message Studio'});
-    await expect(picker).toBeVisible();await expect(picker.getByRole('radio',{name:/Complex/})).toBeEnabled();
-    await picker.getByRole('radio',{name:/Complex/}).check();await message.fill('Help shape this film');
+    const selector=page.getByRole('button',{name:'Studio assistance and budget',exact:true});
+    await expect(selector).toHaveText('Luna');await expect(picker).toHaveCount(0);
+    await expect(page.getByText('You’re using Luna.',{exact:false})).toBeVisible();
+    await expect(page.getByRole('button',{name:'switch to GPT‑6.1 Sol'})).toBeVisible();
+    assert.equal((await assistance.json()).result.selectedModel,'gpt-6-luna');
+    assert.match(await page.title(),/Studio|MaxVideoAI/);assert.equal(new URL(page.url()).pathname,conversationPath);
+    await page.screenshot({path:join(evidence,'luna-desktop.png')});
+    await page.setViewportSize({width:390,height:844});
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true);
+    await page.screenshot({path:join(evidence,'luna-mobile.png')});
+    await page.setViewportSize({width:1440,height:900});
+    await page.getByRole('button',{name:'switch to GPT‑6.1 Sol'}).click();
+    await expect(page.getByText('Your Sol credits',{exact:true})).toBeVisible();
+    await page.getByRole('button',{name:'Continue with GPT‑6.1 Sol',exact:true}).click();
+    await expect(selector).toHaveText('Sol');await expect(picker).toHaveCount(0);
+    await expect(page.getByText('You’re using Luna.',{exact:false})).toHaveCount(0);
+    async function selectProfile(profile:string,confirm=false){
+      await selector.click();await expect(picker).toBeVisible();
+      await picker.getByRole('radio',{name:new RegExp(profile)}).check();
+      if(confirm)await picker.getByRole('checkbox').check();
+      await page.getByRole('button',{name:'Close assistance',exact:true}).click();
+    }
+    await selectProfile('Complex');await message.fill('Help shape this film');
     const send=page.getByRole('button',{name:'Send to Studio',exact:true});await expect(send).toBeDisabled();
-    await picker.getByRole('checkbox').check();await expect(send).toBeEnabled();
-    await picker.getByRole('radio',{name:/Quick/}).check();
+    await selectProfile('Complex',true);await expect(send).toBeEnabled();
+    await selectProfile('Quick');
     const posted=page.waitForResponse(response=>response.url().endsWith('/image-conversation')&&response.request().method()==='POST');
     await send.click();const submitted=await posted;assert.equal(submitted.status(),200,JSON.stringify(await submitted.json()));
     const taskCard=page.getByRole('region',{name:'Studio task'});await expect(taskCard.getByText('Waiting for Studio')).toBeVisible();
@@ -63,7 +86,7 @@ test('task ceilings, explicit continuation and saved progress work on desktop/mo
     await runStudioTaskWorkerOnce(worker);assert.equal(calls,2);
     await expect(taskCard.getByText('Request paused')).toBeVisible({timeout:15_000});
     await page.setViewportSize({width:390,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true);
-    const evidence=join(process.cwd(),'.superpowers/sdd/2026-10-06-studio-task-budgets/browser');await mkdir(evidence,{recursive:true});await page.screenshot({path:join(evidence,'task-mobile.png'),fullPage:true});
+    await page.screenshot({path:join(evidence,'task-mobile.png'),fullPage:true});
     const resumed=page.waitForResponse(response=>response.url().includes('/conversation-tasks/')&&response.request().method()==='POST');
     await taskCard.getByRole('button',{name:'Continue · same ceiling'}).click();const approved=await resumed;assert.equal(approved.status(),200,JSON.stringify(await approved.json()));
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM studio_task_approvals')).rows[0].n,1);assert.equal(calls,2);
@@ -73,7 +96,7 @@ test('task ceilings, explicit continuation and saved progress work on desktop/mo
     await page.reload();await expect(page.getByText('The requested guidance is complete.')).toBeVisible();assert.equal(calls,3);
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM studio_tasks')).rows[0].n,1);
     await runtime.database.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=380 WHERE user_id=$1',[STUDIO_FIXTURE_OWNERS[0]]);
-    await picker.getByRole('radio',{name:/Complex/}).check();await picker.getByRole('checkbox').check();
+    await selectProfile('Complex',true);
     await message.fill('Continue with the approved vertical framing.');
     const fallbackPosted=page.waitForResponse(response=>response.url().endsWith('/image-conversation')&&response.request().method()==='POST');
     await send.click();assert.equal((await fallbackPosted).status(),200);
@@ -86,8 +109,8 @@ test('task ceilings, explicit continuation and saved progress work on desktop/mo
     await page.reload();await expect(page.getByText('Continued with the approved framing.')).toBeVisible();assert.equal(calls,4);
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM mcp_generation_quotes')).rows[0].n,0,'Assistance fallback cannot implicitly prepare or confirm generation');
     await runtime.database.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=500 WHERE user_id=$1',[STUDIO_FIXTURE_OWNERS[0]]);
-    await page.reload();await expect(picker).toBeVisible();
-    await picker.getByRole('radio',{name:/Complex/}).check();await picker.getByRole('checkbox').check();
+    await page.reload();await expect(picker).toHaveCount(0);await expect(selector).toHaveText('Sol');
+    await selectProfile('Complex',true);
     await message.fill('Continue when no Sol credits remain.');await expect(send).toBeEnabled();
     const zeroPosted=page.waitForResponse(response=>response.url().endsWith('/image-conversation')&&response.request().method()==='POST');
     await send.click();assert.equal((await zeroPosted).status(),200);
@@ -95,6 +118,7 @@ test('task ceilings, explicit continuation and saved progress work on desktop/mo
       calls++;assert.equal(params.model,'gpt-6-luna');return {id:'zero-finished',model:params.model!,status:'completed' as const,service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50},output_text:JSON.stringify({reply:'Continued with zero Sol credits.'}),output:[]};
     }}});
     await expect(page.getByText('Continued with zero Sol credits.')).toBeVisible({timeout:15_000});assert.equal(calls,5);
+    assert.deepEqual(errors,[],'The Studio flow has no browser runtime errors');
   }catch(error){
     console.error(summarizeStudioReadinessFailure(runtime.readLogs(),8000));
     throw error;

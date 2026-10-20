@@ -100,7 +100,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       const model=options.modelForNextCall?.()??options.model??'gpt-6.1-sol';
       const effort=options.taskExecution?(options.taskExecution.profile.reasoning==='high'&&lastResult?.action==='catalog.read'?'medium':options.taskExecution.profile.reasoning):'medium';
       const params: ResponseCreateParamsNonStreaming = {
-        model, service_tier: 'default', store: false, reasoning: {effort: model==='gpt-6-luna'&&effort==='high'?'medium':effort}, max_output_tokens: Math.min(options.taskExecution?.profile.maxOutputTokens??2200,model==='gpt-6-luna'?2200:6000),
+        model, service_tier: 'default', store: false, reasoning: {effort: model==='gpt-6-luna'?'high':effort}, max_output_tokens: Math.min(options.taskExecution?.profile.maxOutputTokens??2200,model==='gpt-6-luna'?2200:6000),
         include: ['reasoning.encrypted_content'],
         parallel_tool_calls: false,
         tool_choice: 'auto',

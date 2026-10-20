@@ -25,6 +25,15 @@ remain disabled; neither approval implies the other. `assistance-policy.ts` sele
 monthly credits and Luna fair use; the public contract lives in
 `frontend/src/lib/studio/assistance-contract.ts`.
 
+Studio starts on GPT‑6 Luna with high reasoning (2026-10-21). The compact model
+selector displays only Luna or Sol. A small sentence below the composer offers
+Sol while Luna is active; complex requests may also receive a brief contextual
+recommendation in the chat. Switching to Sol remains an explicit client action.
+Credit balances, packs and per-request Sol profiles appear only in the assistance
+dialog. Migration 66 changes the stored default and moves accounts that never
+chose Sol to Luna; explicit Sol choices and frozen in-flight turns are preserved.
+The legacy injected policy retains its historical Sol default.
+
 GPT‑6.1 Sol receives **500 free credits per UTC calendar month**. 1,000 credits
 represent USD $1 of customer usage, not 1,000 raw model tokens. Free credits do not
 carry forward. Purchased $2/$5/$10 packs grant 2,000/5,000/10,000 credits, accumulate
@@ -87,8 +96,7 @@ lease admits one active message per account. Reservation also refuses another
 request while a Luna call has unresolved usage. Its generous context bound is
 128,000 input tokens; the existing 2,200 output-token and four-call message bounds
 remain. Complex creative direction may recommend GPT‑6.1 Sol; a change requires
-an explicit customer choice. Luna uses `reasoning.effort=medium`, like the existing
-director. The sponsored campaign remains an operational availability gate, with
+an explicit customer choice. Luna uses `reasoning.effort=high`, including a task's funding fallback. The sponsored campaign remains an operational availability gate, with
 its existing persisted $100 supplier ceiling; this code does not increase or renew
 it. Production launch requires an explicit operational funding decision, in
 addition to policy approval. For conservative campaign protection, a Sol message

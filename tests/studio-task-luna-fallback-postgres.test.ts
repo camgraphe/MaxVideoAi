@@ -18,7 +18,7 @@ test('120 remaining Sol credits automatically continue a complex request with sp
   const counted:string[]=[],models:string[]=[];
   const worker={enabled:true,assistancePolicy:f.policy,serviceOptions:{generationFactory,
     countInputTokens:async params=>{counted.push(params.model!);return 100;},
-    createActionResponse:async params=>{models.push(params.model!);assert.equal(params.max_output_tokens,2200);assert.equal(params.reasoning?.effort,'medium');assert.match(JSON.stringify(params.input),/approved vertical framing/);return response(params.model!,'luna-funded');}}};
+    createActionResponse:async params=>{models.push(params.model!);assert.equal(params.max_output_tokens,2200);assert.equal(params.reasoning?.effort,'high');assert.match(JSON.stringify(params.input),/approved vertical framing/);return response(params.model!,'luna-funded');}}};
   assert.equal(await runStudioTaskWorkerOnce(worker),true);
   const task=await service.read(input.requestId);
   assert.equal(task.state,'completed','Funding should continue with Luna instead of pausing');assert.equal(task.model,'gpt-6-luna');

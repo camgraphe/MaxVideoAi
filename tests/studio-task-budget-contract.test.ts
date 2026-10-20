@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {randomUUID} from 'node:crypto';
 import {STUDIO_TASK_POLICY_VERSION,STUDIO_TASK_PROFILES,studioTaskSelectionSchema,studioTaskResumeSchema,studioTaskStatusSchema,studioTaskProfileForModel} from '../frontend/src/lib/studio/task-budget-contract';
 import {imageTurnInputSchema,imageTurnRetryInput} from '../frontend/src/lib/studio/image-conversation-contract';
@@ -26,4 +27,15 @@ test('task status exposes bounded resource progress without private worker or me
   const value={requestId:randomUUID(),profile:'standard',policyVersion:STUDIO_TASK_POLICY_VERSION,model:'gpt-6.1-sol',state:'paused',phase:'paused',maxCredits:250,consumedCredits:60,reservedCredits:0,completedCalls:1,allowedCalls:4,revision:0,canContinue:true,error:'steps'};
   assert.equal(studioTaskStatusSchema.parse(value).consumedCredits,60);
   for(const delta of [{sourceUrl:'https://private.invalid/video'},{workerId:randomUUID()},{allowedCalls:25},{maxCredits:2010},{consumedCredits:61},{phase:'100% complete'}])assert.equal(studioTaskStatusSchema.safeParse({...value,...delta}).success,false);
+});
+
+// Architecture contract: paid task controls belong to the explicit assistant dialog.
+test('the composer delegates Sol task controls to the assistance dialog',()=>{
+  const base='frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/';
+  const workspace=readFileSync(base+'StudioImageConversation.client.tsx','utf8');
+  const dialog=readFileSync(base+'_components/StudioAssistanceCredits.client.tsx','utf8');
+  assert.doesNotMatch(workspace,/import \{TaskBudgetPicker\}/);
+  assert.match(workspace,/<StudioAssistance taskBudget=/);
+  assert.match(dialog,/import \{TaskBudgetPicker\}/);
+  assert.match(dialog,/taskBudget&&status\.selectedModel==='gpt-6\.1-sol'&&<TaskBudgetPicker/);
 });

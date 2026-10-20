@@ -242,7 +242,7 @@ export async function runStudioImageActions(options: {
           ||typeof action.reason!=='string'||!['included_exhausted','paid_budget_exhausted'].includes(action.reason))throw error;
         // The declined reservation created no response/call. Retry this same step once with Luna.
         currentModel='gpt-6-luna';lunaFallback={solBounds};
-        params.model=currentModel;params.max_output_tokens=Math.min(params.max_output_tokens??2200,2200);params.reasoning={effort:params.reasoning?.effort==='low'?'low':'medium'};
+        params.model=currentModel;params.max_output_tokens=Math.min(params.max_output_tokens??2200,2200);params.reasoning={effort:'high'};
         return checkpoint();
       }
     },

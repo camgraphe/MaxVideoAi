@@ -2,7 +2,8 @@
 import {useId} from 'react';
 import {STUDIO_TASK_PROFILES,type StudioTaskProfile} from '@/lib/studio/task-budget-contract';
 import styles from './conversation-task.module.css';
-export function TaskBudgetPicker({profile,onProfile,confirmed,onConfirmed,sol,disabled,locale}:{profile:StudioTaskProfile;onProfile:(profile:StudioTaskProfile)=>void;confirmed:boolean;onConfirmed:(value:boolean)=>void;sol:boolean;disabled:boolean;locale:'en'|'fr'}) {
+export type TaskBudgetPickerProps={profile:StudioTaskProfile;onProfile:(profile:StudioTaskProfile)=>void;confirmed:boolean;onConfirmed:(value:boolean)=>void;sol:boolean;disabled:boolean;locale:'en'|'fr'};
+export function TaskBudgetPicker({profile,onProfile,confirmed,onConfirmed,sol,disabled,locale}:TaskBudgetPickerProps) {
   const id=useId(),t=(en:string,fr:string)=>locale==='fr'?fr:en;
   return <fieldset className={styles.picker} disabled={disabled}>
     <legend>{t('Work allowance','Enveloppe de travail')}</legend>

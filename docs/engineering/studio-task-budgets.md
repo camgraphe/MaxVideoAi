@@ -6,6 +6,8 @@ procedure are recorded in `docs/operations/studio-media-tasks-activation-2026-10
 
 `src/lib/studio/task-budget-contract.ts` owns the separately versioned resource
 policy `studio-task-budget-2026-10-06-v1`. Existing assistance v1/v2 tariffs,
+Sol profiles and their credit ceilings are reviewed in the assistance dialog, never as a permanent composer block. Luna starts with the internal Standard work bounds and high reasoning.
+
 500 monthly credits and pack prices stay unchanged. Ceilings are not flat fees.
 Sol consumes free credits before explicitly enabled purchased credits; Luna stays
 sponsored. Conservative next-call quotes must fit the remaining ceiling before
@@ -17,7 +19,7 @@ reservation, so the financial cap can stop work before the call/token maxima.
 | Standard | 250 ($0.25) | 4 | 2,200 | 24,000 | 300s | 8 |
 | Complex, explicitly confirmed Sol | 500 ($0.50) | 8 | 6,000 | 48,000 | 600s | 12 |
 
-Reasoning is low, medium, and adaptive medium/high respectively. Visible replies
+Sol reasoning is low, medium, and adaptive medium/high respectively; Luna always uses high reasoning. Visible replies
 remain bounded to 2,400 characters; long generation directions belong in tools.
 Caching follows recorded provider facts; no hit or saving is assumed.
 
