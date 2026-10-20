@@ -12,7 +12,8 @@ const image = { role: 'source', source: asset('product', 'image') };
 const video = { role: 'source', source: asset('clip', 'video'), segment: { startSec: 2, endSec: 12 } };
 const audio = { role: 'audio', source: asset('voice', 'audio') };
 function measured(input: typeof image, durationSec: number | null = null) {
-  return { input, asset: asset(input.source.assetId, input.source.kind), url: `https://owned.example/${input.source.assetId}`,
+  const extension = input.source.kind === 'audio' ? 'wav' : input.source.kind === 'video' ? 'mp4' : 'png';
+  return { input, asset: asset(input.source.assetId, input.source.kind), url: `https://owned.example/${input.source.assetId}.${extension}`,
     facts: { kind: input.source.kind, width: input.source.kind === 'audio' ? null : 1024, height: input.source.kind === 'audio' ? null : 1024,
       durationSec, audioDurationSec:durationSec,audioStartSec:0, fps: input.source.kind === 'video' ? 30 : null, hasAudio: input.source.kind !== 'image', sizeBytes: 5000,
       mimeType: input.source.kind === 'image' ? 'image/png' : input.source.kind === 'audio' ? 'audio/wav' : 'video/mp4' },
