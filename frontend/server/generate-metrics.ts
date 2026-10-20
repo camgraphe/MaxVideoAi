@@ -1,3 +1,4 @@
+import { applicationJobSql } from '@/server/app-job-origin';
 import { getEngineAliases, listFalEngines } from '@/config/falEngines';
 import { isDatabaseConfigured, query } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
@@ -195,7 +196,7 @@ export async function fetchObservedGenerationDurations(days = 30, options?: {
         WHERE l.job_id = j.job_id AND LOWER(l.status) IN ('completed', 'poll:completed')
         ORDER BY l.created_at ASC LIMIT 1
       ) completion ON completion.created_at > j.created_at
-      WHERE j.status = 'completed' AND j.created_at >= NOW() - ($1::text || ' days')::interval
+      WHERE ${applicationJobSql('j')} AND j.status = 'completed' AND j.created_at >= NOW() - ($1::text || ' days')::interval
     )
     SELECT engine_id, COUNT(*) AS completed_count, AVG(duration_ms) AS avg_duration_ms,
       PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY duration_ms) AS p95_duration_ms

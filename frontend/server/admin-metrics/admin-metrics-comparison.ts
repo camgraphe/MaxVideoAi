@@ -1,3 +1,4 @@
+import { applicationJobSql } from '@/server/app-job-origin';
 import { CREDIT_REVERSAL_SQL, RENDER_CHARGE_SQL } from '@/server/wallet-receipt-classification';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
@@ -77,7 +78,7 @@ export async function fetchAdminMetricsComparison(
       `
         SELECT date_trunc('day', created_at) AS bucket, COUNT(DISTINCT user_id)::bigint AS count
         FROM app_jobs
-        WHERE created_at >= NOW() - INTERVAL '${doubledRange.days} days'
+        WHERE ${applicationJobSql('app_jobs')} AND created_at >= NOW() - INTERVAL '${doubledRange.days} days'
           AND status = 'completed'
           AND user_id IS NOT NULL
           ${excludeUserIdClause('user_id')}

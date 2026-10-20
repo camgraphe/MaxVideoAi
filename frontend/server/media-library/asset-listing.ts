@@ -1,4 +1,5 @@
 import { projectMissingAudioDurations } from './audio-duration-projection';
+import { applicationJobSql } from '../app-job-origin';
 import { query } from '@/lib/db';
 import { ensureAssetSchema, ensureMediaLibrarySchema } from '@/lib/schema';
 import {
@@ -281,6 +282,7 @@ export async function listLibraryAssetPage(params: {
          ON j.job_id = o.job_id
         AND j.user_id = o.user_id
        WHERE $8::boolean
+         AND ${applicationJobSql('j')}
          AND o.user_id = $1
          AND j.hidden IS NOT TRUE
          AND o.status = 'ready'

@@ -25,6 +25,7 @@ export type RawJobAuditRow = {
   message: string | null;
   payment_status: string | null;
   final_price_cents: number | string | null;
+  settings_snapshot?: unknown;
   currency: string | null;
   surface: string | null;
   video_url: string | null;
@@ -72,7 +73,8 @@ export type AdminJobAuditRecord = {
   progress: number | null;
   message: string | null;
   paymentStatus: string | null;
-  finalPriceCents: number;
+  finalPriceCents: number | null;
+  externalImport?: boolean;
   currency: string;
   surface: string | null;
   videoUrl: string | null;

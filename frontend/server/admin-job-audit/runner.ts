@@ -46,6 +46,7 @@ export async function fetchRecentJobAudits({
         j.message,
         j.payment_status,
         j.final_price_cents,
+        j.settings_snapshot,
         j.currency,
         j.surface,
         j.video_url,

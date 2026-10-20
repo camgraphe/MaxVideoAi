@@ -1,3 +1,4 @@
+import { applicationJobSql } from '@/server/app-job-origin';
 import { RENDER_CHARGE_SQL } from '@/server/wallet-receipt-classification';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
@@ -24,7 +25,7 @@ export async function loadEngineUsageRows(excludedUserIds?: string[]): Promise<E
           COALESCE(NULLIF(engine_label, ''), COALESCE(NULLIF(engine_id, ''), 'unknown')) AS engine_label,
           user_id
         FROM app_jobs
-        WHERE status = 'completed'
+        WHERE ${applicationJobSql('app_jobs')} AND status = 'completed'
           AND created_at >= NOW() - INTERVAL '${ENGINE_USAGE_WINDOW_DAYS} days'
           AND user_id IS NOT NULL
           ${excludeUserIdClause}

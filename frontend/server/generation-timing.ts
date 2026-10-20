@@ -1,4 +1,5 @@
 import { getEngineAliases, listFalEngines } from '@/config/falEngines';
+import { applicationJobSql } from './app-job-origin';
 import { isDatabaseConfigured, query } from '@/lib/db';
 import type { GenerationTimingCell } from '@/lib/generation-timing';
 import type { DurationQuery } from './generate-metrics';
@@ -29,6 +30,8 @@ export async function fetchGenerationTimingMatrix(options?: {
         s.completed_at, COALESCE(s.provider_duration_ms, EXTRACT(EPOCH FROM (s.completed_at - s.started_at)) * 1000) AS duration_ms
       FROM generation_timing_samples s
       LEFT JOIN aliases a ON a.alias = LOWER(TRIM(s.engine_id))
+      LEFT JOIN app_jobs j ON j.job_id = s.job_id
+      WHERE ${applicationJobSql('j')}
     )
     SELECT engine_id, mode, duration_sec, resolution,
       COUNT(*) AS sample_count, AVG(duration_ms) AS avg_ms,

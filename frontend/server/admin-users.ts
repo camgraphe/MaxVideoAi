@@ -1,3 +1,4 @@
+import { applicationJobSql } from '@/server/app-job-origin';
 import { CREDIT_REVERSAL_SQL } from '@/server/wallet-receipt-classification';
 import { query } from '@/lib/db';
 import { getWalletBalanceCents } from '@/lib/wallet';
@@ -170,9 +171,9 @@ async function fetchUsage(userId: string): Promise<AdminUserUsage | null> {
   if (!hasDatabase) return null;
   try {
     const [totalRows, recentRows, engineRows, jobRows] = await Promise.all([
-      query<CountRow>(`SELECT COUNT(*)::bigint AS count FROM app_jobs WHERE user_id = $1 AND status = 'completed'`, [userId]),
+      query<CountRow>(`SELECT COUNT(*)::bigint AS count FROM app_jobs WHERE ${applicationJobSql('app_jobs')} AND user_id = $1 AND status = 'completed'`, [userId]),
       query<CountRow>(
-        `SELECT COUNT(*)::bigint AS count FROM app_jobs WHERE user_id = $1 AND status = 'completed' AND created_at >= NOW() - INTERVAL '30 days'`,
+        `SELECT COUNT(*)::bigint AS count FROM app_jobs WHERE ${applicationJobSql('app_jobs')} AND user_id = $1 AND status = 'completed' AND created_at >= NOW() - INTERVAL '30 days'`,
         [userId]
       ),
       query<EngineBreakdownRow>(
@@ -183,7 +184,7 @@ async function fetchUsage(userId: string): Promise<AdminUserUsage | null> {
             COUNT(*)::bigint AS render_count,
             COALESCE(SUM(final_price_cents), 0)::bigint AS spend_cents
           FROM app_jobs
-          WHERE user_id = $1
+          WHERE ${applicationJobSql('app_jobs')} AND user_id = $1
             AND status = 'completed'
           GROUP BY engine_label, engine_id
           ORDER BY spend_cents DESC
@@ -200,7 +201,7 @@ async function fetchUsage(userId: string): Promise<AdminUserUsage | null> {
             final_price_cents,
             video_url
           FROM app_jobs
-          WHERE user_id = $1
+          WHERE ${applicationJobSql('app_jobs')} AND user_id = $1
           ORDER BY created_at DESC
           LIMIT 10
         `,
