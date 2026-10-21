@@ -59,7 +59,8 @@ test('workspace pricing and auth gate orchestration is owned by route-local modu
   assert.match(hookSource, /useWorkspacePreflightQuote/);
   assert.match(hookSource, /buildWorkspacePreflightRequest/);
   assert.doesNotMatch(hookSource, /runPreflight|buildWorkspacePreflightInputs/);
-  assert.match(requestSource, /inputs: buildWorkspacePreflightInputs\(inputAssets\)/);
+  assert.match(requestSource, /import \{ buildWorkspacePreflightInputs \} from '\.\/workspace-generation-inputs';/);
+  assert.match(requestSource, /buildWorkspacePreflightInputs\(inputAssets\)/);
   assert.match(requestSource, /workspaceModeSupportsRequestField/);
   assert.doesNotMatch(requestSource, /iterations|runPreflight|useEffect/);
   assert.match(quoteSource, /runPreflight\(payload, \{ accessToken \}\)/);
