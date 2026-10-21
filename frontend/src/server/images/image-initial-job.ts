@@ -174,9 +174,16 @@ export type CreateImageInitialJobParams = {
 };
 
 async function validateInitialImageTariffRevision(executor: TransactionQueryExecutor, params: CreateImageInitialJobParams) {
+  const snapshot = params.auditPricingSnapshot ?? JSON.parse(params.pricingSnapshotJson);
+  const meta = (snapshot as { meta?: Record<string, unknown> } | null)?.meta;
+  // Fixed tool products have their own prices, independent of the model tariff grid.
+  // Require the matching internal product context; model quotes keep their revision guard.
+  if (params.billingProductKey && meta?.pricingModel === 'billing-product'
+    && meta.billingProductKey === params.billingProductKey && meta.surface === params.surface
+    && meta.pricingMode !== 'manual_tariff') return;
+
   try {
-    await lockQuotedCustomerTariffRevision(executor, params.engineId,
-      params.auditPricingSnapshot ?? JSON.parse(params.pricingSnapshotJson));
+    await lockQuotedCustomerTariffRevision(executor, params.engineId, snapshot);
   } catch (error) {
     if (!(error instanceof CustomerTariffRevisionError)) throw error;
     throw new ImageGenerationExecutionError(error.message, { mode: params.mode, status: 409, code: error.code });

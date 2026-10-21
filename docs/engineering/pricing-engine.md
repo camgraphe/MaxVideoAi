@@ -1,5 +1,16 @@
 # Pricing Engine
 
+## Fixed image tool product reservations
+
+Character Builder prices come from its billing products, independently of the
+underlying image model's customer tariff grid. `image-initial-job.ts` skips the
+model tariff revision lock only for a fixed `billing-product` snapshot whose
+product key and surface match the internal reservation context. Manual model
+tariff snapshots retain their revision lock, including when they carry product
+labels. Wallet funding, atomic reservation and existing-job recovery still apply.
+`tests/character-builder-pricing-postgres.test.ts` covers Draft/Final quantities,
+receipt preservation, replay, insufficient funds and mismatched pricing contexts.
+
 ## Seedance 2.5 LAS Edit
 
 Current new-work classification follows `SEEDANCE_2_5_EDIT_TRANSPORT`. The
