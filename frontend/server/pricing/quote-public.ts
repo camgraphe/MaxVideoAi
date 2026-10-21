@@ -10,13 +10,18 @@ import {
   type CanonicalStoryboardSnapshotInput,
 } from './quote-billing';
 import { createScopedPublicPolicyLoader } from './scoped-public-policy';
+import { createScopedCustomerTariffQuoteLoader, customerTariffsEnabledByCode } from './customer-tariff-store';
 
 /** Contextual readers share policy without loading public model admission. */
 export function createScopedCurrentPublicSnapshot(
   loadOverrides: () => Promise<PricingPolicyOverrideLoadResult> = loadPricingPolicyOverrides,
 ): (context: PricingContext) => Promise<PricingSnapshot> {
   const loadScopedPolicy = createScopedPublicPolicyLoader(loadOverrides);
-  return (context) => computeCurrentPublicSnapshot(context, { pricingPolicy: { loadOverrides: loadScopedPolicy } });
+  const loadCustomerTariffQuoteState = customerTariffsEnabledByCode() ? createScopedCustomerTariffQuoteLoader() : undefined;
+  return (context) => computeCurrentPublicSnapshot(context, {
+    pricingPolicy: { loadOverrides: loadScopedPolicy },
+    ...(loadCustomerTariffQuoteState ? { loadCustomerTariffQuoteState } : {}),
+  });
 }
 
 /** A label claiming today's price requires a successful effective-policy read. */

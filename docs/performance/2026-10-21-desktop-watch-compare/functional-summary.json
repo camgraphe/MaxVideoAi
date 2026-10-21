@@ -1,0 +1,122 @@
+{
+  "commit": "a966f2883eb557e09a45e344830932bd203df944",
+  "visits": 16,
+  "pairs": [
+    {
+      "page": "watch",
+      "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "device": "desktop",
+      "normalizedContentSha256": "aeeb28152a88effeb3cfbe6c7d14960d1752a5083c5d6321ee62acb01cff3a6e",
+      "contentAndSeoParity": true,
+      "noMediaBeforeIntent": true,
+      "playbackVerifiedBothVersions": true,
+      "relatedLinks": 4,
+      "galleryLinks": 0,
+      "frame": {
+        "x": 69,
+        "y": 141,
+        "width": 324,
+        "height": 576
+      }
+    },
+    {
+      "page": "watch",
+      "route": "/video/seedance-2-0-fast-ecommerce-product-ad-example-storyboard-to-video-452f05f2",
+      "device": "mobile",
+      "normalizedContentSha256": "372f1bf09fbee2dee316e37eecabf335c5933b68f9dc6addcacc90790a1b511f",
+      "contentAndSeoParity": true,
+      "noMediaBeforeIntent": true,
+      "playbackVerifiedBothVersions": true,
+      "relatedLinks": 4,
+      "galleryLinks": 0,
+      "frame": {
+        "x": 71.5625,
+        "y": 170,
+        "width": 246.859375,
+        "height": 438.859375
+      }
+    },
+    {
+      "page": "compare",
+      "route": "/es/comparativa/kling-3-pro-vs-veo-3-1",
+      "device": "desktop",
+      "normalizedContentSha256": "4e594ecb4b0b0b60e1d38e952f488693e7ee9b0f72e282b4d87fad9dd4751512",
+      "contentAndSeoParity": true,
+      "noMediaBeforeIntent": true,
+      "playbackVerifiedBothVersions": true,
+      "relatedLinks": 0,
+      "galleryLinks": 6,
+      "frame": null
+    },
+    {
+      "page": "compare",
+      "route": "/es/comparativa/kling-3-pro-vs-veo-3-1",
+      "device": "mobile",
+      "normalizedContentSha256": "4e594ecb4b0b0b60e1d38e952f488693e7ee9b0f72e282b4d87fad9dd4751512",
+      "contentAndSeoParity": true,
+      "noMediaBeforeIntent": true,
+      "playbackVerifiedBothVersions": true,
+      "relatedLinks": 0,
+      "galleryLinks": 6,
+      "frame": null
+    },
+    {
+      "page": "landscape",
+      "route": "/video/wan-3-prime-ai-match-cut-transitions",
+      "device": "desktop",
+      "normalizedContentSha256": "53115dd95b00c87d9d94887a939fe17b10be6aa5af967fdf58158fb16ae10fd0",
+      "contentAndSeoParity": true,
+      "noMediaBeforeIntent": true,
+      "playbackVerifiedBothVersions": true,
+      "relatedLinks": 4,
+      "galleryLinks": 0,
+      "frame": {
+        "x": 52,
+        "y": 141,
+        "width": 980,
+        "height": 551.25
+      }
+    },
+    {
+      "page": "landscape",
+      "route": "/video/wan-3-prime-ai-match-cut-transitions",
+      "device": "mobile",
+      "normalizedContentSha256": "01327e00825265235dd275f277410a96837afbba1e0b2e64c9624a4122e689e2",
+      "contentAndSeoParity": true,
+      "noMediaBeforeIntent": true,
+      "playbackVerifiedBothVersions": true,
+      "relatedLinks": 4,
+      "galleryLinks": 0,
+      "frame": {
+        "x": 17,
+        "y": 154,
+        "width": 356,
+        "height": 200.25
+      }
+    },
+    {
+      "page": "compare2",
+      "route": "/es/comparativa/kling-2-5-turbo-vs-ltx-2-3-fast",
+      "device": "desktop",
+      "normalizedContentSha256": "bfd737692de3c1391e7ea378a4ea2e9e6f24e8623e1e9a1145a5a3a15cef745e",
+      "contentAndSeoParity": true,
+      "noMediaBeforeIntent": true,
+      "playbackVerifiedBothVersions": true,
+      "relatedLinks": 0,
+      "galleryLinks": 6,
+      "frame": null
+    },
+    {
+      "page": "compare2",
+      "route": "/es/comparativa/kling-2-5-turbo-vs-ltx-2-3-fast",
+      "device": "mobile",
+      "normalizedContentSha256": "bfd737692de3c1391e7ea378a4ea2e9e6f24e8623e1e9a1145a5a3a15cef745e",
+      "contentAndSeoParity": true,
+      "noMediaBeforeIntent": true,
+      "playbackVerifiedBothVersions": true,
+      "relatedLinks": 0,
+      "galleryLinks": 6,
+      "frame": null
+    }
+  ]
+}

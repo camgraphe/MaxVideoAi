@@ -29,7 +29,7 @@ async function loadRealRoute() {
     react: 'export const cache = fn => fn;',
     'react/jsx-runtime': 'export const jsx = (type, props) => ({type, props}); export const jsxs = jsx;',
     'next/navigation': 'export function notFound(){throw Error("NOT_FOUND")} export function permanentRedirect(path){throw Error("REDIRECT:"+path)}',
-    '@/server/video-seo': `export async function getVideoWatchPageDataById(){const f=${fixture};f.events.push('watch');return f.loadPage();}`,
+    '@/server/video-seo': `export async function getVideoWatchPageDataById(id,options){if(options?.includeRelated!==false)throw Error('WATCH_BLOCKED_BY_RECOMMENDATIONS');const f=${fixture};f.events.push('watch');return f.loadPage();}`,
     '@/server/example-watch-detail-loader': `export async function prepareExampleWatchDetailContext(){const f=${fixture};f.events.push('quotes');return f.loadQuotes();}`,
     '@/lib/video-seo-canonical': `export const buildExpectedVideoCanonicalUrl=()=>"https://example.test/video/job";export const getVideoCanonicalRedirectPath=()=>${fixture}.redirect;`,
     './_components/VideoUnavailableState': 'export const VideoUnavailableState="unavailable";',
@@ -120,6 +120,7 @@ test('watch route guards do not depend on speculative quote preparation', async 
       assert.equal(outcome.value.type, 'watch-content');
       assert.equal(outcome.value.props.page, page);
       assert.equal(outcome.value.props.quoteContext, context);
+      assert.equal(outcome.value.props.deferRelated, true);
     }
   });
 

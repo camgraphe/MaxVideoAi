@@ -6,6 +6,7 @@ const run = promisify(execFile);
 
 export interface StyleCompileOptions {
   legacyTypography?: boolean;
+  priorSheets?: string[];
 }
 
 // Compile with the real production plugins and scan. The reference option
@@ -33,7 +34,14 @@ export async function compileBlogStyles(relativePath: string, options: StyleComp
     }
     const plugins = Object.entries(config.plugins).map(([name, settings]) =>
       require(name)(name === 'tailwindcss' && legacyConfig ? legacyConfig : settings));
-    postcss(plugins).process(source, { from: file }).then(result => process.stdout.write(result.css))
+    const processor = postcss(plugins);
+    (async () => {
+      for (const previous of options.priorSheets ?? []) {
+        const previousFile = path.resolve(previous);
+        await processor.process(fs.readFileSync(previousFile, 'utf8'), { from: previousFile });
+      }
+      return processor.process(source, { from: file });
+    })().then(result => process.stdout.write(result.css))
       .catch(error => { console.error(error); process.exitCode = 1; });
   `, relativePath, JSON.stringify(options)], { cwd: frontend, maxBuffer: 4 * 1024 * 1024 });
   return stdout;

@@ -76,10 +76,12 @@ async function startFixture() {
     readFile(join(frontend, 'src/styles/app-experience.css'), 'utf8'),
     readFile(join(frontend, 'app/(core)/(workspace)/app/_components/workspace-model-review.module.css'), 'utf8'),
   ]);
+  // This fixture injects the production config with absolute content paths.
+  // Remove file-level config selection; public-prose-styles tests the real @config boundary.
   const css = await postcss([tailwind({ ...tailwindConfig, content: [
     ...tailwindConfig.content.map((pattern: string) => join(frontend, pattern)),
     { raw: fixtureSource, extension: 'tsx' },
-  ] })]).process(styles.join('\n').replace(/@import[^;]+;/g, ''), { from: join(frontend, 'app/globals.css') });
+  ] })]).process(styles.join('\n').replace(/@(?:import|config)[^;]+;/g, ''), { from: join(frontend, 'app/globals.css') });
   files.set('styles.css', css.css);
   const server = createServer(async (request, response) => {
     const pathname = new URL(request.url ?? '/', 'http://fixture').pathname;

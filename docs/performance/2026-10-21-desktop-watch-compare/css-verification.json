@@ -1,0 +1,16 @@
+{
+  "baseline": {
+    "decodedBytes": 227421,
+    "sha256": "0329f3f507614aa3821892f39151891a66ad045f621dbe83805b5ed8d46f1861"
+  },
+  "intermediate": {
+    "decodedBytes": 239730,
+    "sha256": "2df08a00af66ecefa882607d6041f243ab4d767546e062c4ae42e5c37635e2eb"
+  },
+  "final": {
+    "decodedBytes": 227421,
+    "sha256": "0329f3f507614aa3821892f39151891a66ad045f621dbe83805b5ed8d46f1861"
+  },
+  "finalMatchesBaselineExactly": true,
+  "removedDecodedBytes": 12309
+}

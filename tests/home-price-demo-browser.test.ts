@@ -23,9 +23,11 @@ test('home demo shows only the exact quote and keeps its button inside the marke
   // Marketing deliberately does not load the authenticated app stylesheet.
   const styles = await Promise.all(['app/globals.css', 'src/styles/tokens.css', 'src/styles/marketing-home.css']
     .map(path => readFile(join(frontend, path), 'utf8')));
+  // This fixture injects the production config with absolute content paths.
+  // Remove file-level config selection; public-prose-styles tests the real @config boundary.
   const css = await requireFrontend('postcss')([requireFrontend('tailwindcss')({ ...tailwindConfig,
     content: tailwindConfig.content.map(pattern => join(frontend, pattern)),
-  })]).process(styles.join('\n').replace(/@import[^;]+;/g, ''), { from: join(frontend, 'app/globals.css') });
+  })]).process(styles.join('\n').replace(/@(?:import|config)[^;]+;/g, ''), { from: join(frontend, 'app/globals.css') });
   const server = createServer((req, res) => {
     const name = req.url;
     res.setHeader('content-type', name === '/demo.js' ? 'text/javascript' : name === '/style.css' ? 'text/css' : 'text/html');

@@ -52,9 +52,11 @@ async function startFixture() {
     jsx: 'automatic', minify: true, tsconfig: join(frontend, 'tsconfig.json'), define: { 'process.env.NODE_ENV': '"production"' } });
   const styles = await Promise.all(['app/globals.css', 'src/styles/tokens.css', 'src/styles/skeleton.css', 'src/styles/app-experience.css']
     .map(path => readFile(join(frontend, path), 'utf8')));
+  // This fixture injects the production config with absolute content paths.
+  // Remove file-level config selection; public-prose-styles tests the real @config boundary.
   const css = await requireFrontend('postcss')([requireFrontend('tailwindcss')({ ...tailwindConfig, content: [
     ...tailwindConfig.content.map(pattern => join(frontend, pattern)), { raw: fixtureSource, extension: 'tsx' },
-  ] })]).process(styles.join('\n').replace(/@import[^;]+;/g, ''), { from: join(frontend, 'app/globals.css') });
+  ] })]).process(styles.join('\n').replace(/@(?:import|config)[^;]+;/g, ''), { from: join(frontend, 'app/globals.css') });
   const files = new Map(bundle.outputFiles.map(file => [basename(file.path), file.text]));
   files.set('styles.css', css.css);
   const script = [...files.keys()].find(name => name.endsWith('.js'))!;

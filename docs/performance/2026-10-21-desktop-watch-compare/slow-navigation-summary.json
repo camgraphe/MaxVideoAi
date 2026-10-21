@@ -1,0 +1,28 @@
+[
+  {
+    "sample": "mobile-2-baseline-cold",
+    "time": "2026-10-21T11:18:00.934Z",
+    "lcpMs": 4742.269,
+    "navigationTtfbMs": 215.65,
+    "firstStylesheetRequestMs": 4080.5750000476837,
+    "documentEndMs": 4461.273000001907,
+    "comparisonDataDurationMs": 504.04,
+    "rootThemeDataDurationMs": 161.96,
+    "serverLogJoin": "exact document x-vercel-id request identifier",
+    "startTypeMetric": "unavailable: Observability Plus payment_required",
+    "browserSource": "mobile-2-baseline-cold.lhr.json (local ignored raw evidence)"
+  },
+  {
+    "sample": "desktop-3-candidate-cold",
+    "time": "2026-10-21T11:18:47.122Z",
+    "lcpMs": 4845.142,
+    "navigationTtfbMs": 159.481,
+    "firstStylesheetRequestMs": 4244.057999968529,
+    "documentEndMs": 4364.888000011444,
+    "comparisonDataDurationMs": 387.78,
+    "rootThemeDataDurationMs": 116.19,
+    "serverLogJoin": "exact document x-vercel-id request identifier",
+    "startTypeMetric": "unavailable: Observability Plus payment_required",
+    "browserSource": "desktop-3-candidate-cold.lhr.json (local ignored raw evidence)"
+  }
+]

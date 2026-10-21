@@ -470,6 +470,17 @@ keyframe section. Tests: `example-reader-context-dom` and `video-page-architectu
 
 Admin SEO writes revalidate the affected ID and canonical-slug routes after persistence, including the previous slug when changed, plus the video sitemap routes. Failed validation or persistence does not invalidate. SEO status and existing quality gates still govern robots, redirect and sitemap eligibility; opening a public gallery video does not approve it for indexing.
 
+Standalone watch metadata and the initial reader use `getVideoWatchPageDataById`
+with `includeRelated: false`. The request-scoped editorial context still evaluates
+rollout membership and duplicate-name QA, but only the selected public video is
+hydrated. Related examples retain the complete public/SEO eligibility and ranking
+owner and stream in a server Suspense boundary after the reader. Do not make
+metadata, the critical poster or current quotes wait for that catalogue, move
+recommendations above the reader, or weaken the selected video's deletion gate.
+The default complete data projection remains available to existing consumers.
+`video-seo-no-unused-price`, `video-page-quote-context-route` and the real PostgreSQL
+`examples-catalog-pagination-postgres` tests protect parity and bounded hydration.
+
 ### Playback observations
 
 The shared observer emits only `public_video_startup`, `public_video_rebuffer` and `public_video_error` through the existing consented analytics dispatcher. Common fields are allowlisted `asset_id`, `playback_profile` (`original`, `mobile`, `desktop`), `playback_surface` (`home`, `model`, `examples`, `watch`, `comparison`, `examples-card`) and `playback_trigger` (`user`, `automatic`). Startup adds `measurement_method` (`video_frame_callback` or explicitly labelled `playing_fallback`) and `duration_ms` from 0 to 120,000. Rebuffer adds `duration_ms` from 0 to 120,000 and `rebuffer_count` from 1 to 5. Error may add the native `media_error_code` from 1 to 4 and emits at most twice per observer.
