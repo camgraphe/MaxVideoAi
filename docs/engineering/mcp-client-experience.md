@@ -1,5 +1,38 @@
 # MaxVideoAI : découverte, fluidité et continuité MCP
 
+## Keyframe project budgets — 21 October 2026 source candidate
+
+`calculate_project_budget.settings.keyframeIndexes` now carries the optional
+canonical keyframe control already exposed by model details and preparation.
+It accepts a comma-separated string of at most 128 characters; null and omission
+retain the existing optional-field normalization. For FLUX 3 Max reference mode,
+each declared image requires one unique position from 0 through duration × 24
+inclusive. Input order stays paired with reference order, without automatic
+sorting or invented positions. Missing or invalid positions return the public
+`keyframeIndexes` field in the existing line-edit action before pricing.
+
+Canonical mode validation and pricing are unchanged. Local regressions cover
+the four Max modes, 720p/1080p at 5/10 seconds, exact position preservation,
+invalid positions and unsupported model/mode combinations. In-memory MCP tests
+cover nullable compatibility and explicit transport. These are nonspending
+checks; a budget still requires a fresh exact quote and explicit approval before
+generation.
+
+Measured metadata: the budget descriptor remains 1,046 UTF-8 bytes, its serialized
+input schema is 4,100 bytes, and the collector's global instruction string remains
+1,551 bytes. The additive schema changes the reviewed policy fingerprint to
+`85856e4ca6626277e799d69532eb3175a9d613df13ede09ae147b1b3f8fb97a3`;
+the 70 curated decisions and fixture fingerprint are unchanged. Delivery and
+host-catalog refresh remain separate; no installed-plugin or real-host
+qualification is inferred from these local checks.
+
+Validation: the four added budget regressions failed before the correction;
+the focused budget/Max suites then passed 39/39. `mcp:client:check` passed
+173 tests with one skip and all 70 curated scenarios. TypeScript, exposure lint
+and diff checks passed; frontend lint reported zero errors and six existing
+warnings. An independent read-only review reran the budget/SDK subset (23/23)
+without a blocking finding. No provider submission or database write occurred.
+
 ## FLUX 3 Max keyframe continuity — 20 October 2026 source candidate
 
 Live model-setting results now retain authored public field descriptions, so

@@ -32,6 +32,9 @@ const settingsSchema = z.object({
   loop: z.boolean().nullable().default(null).describe(
     'Intent to create a looping clip when supported, or null when the user did not request it.',
   ),
+  keyframeIndexes: z.string().max(128).nullable().default(null).describe(
+    'Use only when model details report keyframeIndexes. Unique integer frame positions, comma-separated in the same order as referenceRoles; FLUX 3 Max uses 24 fps and accepts 0 through durationSec × 24 inclusive. One position per declared image reference.',
+  ),
 }).strict().describe('Only the concrete video settings that affect capability validation and current pricing.');
 
 const lineSchema = z.object({

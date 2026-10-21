@@ -10,6 +10,11 @@ export type ExampleSectionItem = {
   body: string;
 };
 
+export type ExampleHeroLink = {
+  label: string;
+  href: string;
+};
+
 export type ExampleModelLanding = {
   slug: string;
   label: string;
@@ -17,6 +22,7 @@ export type ExampleModelLanding = {
   metaDescription: string;
   heroTitle: string;
   heroSubtitle: string;
+  heroLink?: ExampleHeroLink;
   guideTitle?: string;
   intro: string;
   summary?: string;
@@ -31,6 +37,7 @@ export type LocalizedModelDescriptor = {
   metaTitle?: string;
   metaDescription?: string;
   heroTitle?: string;
+  heroLink?: ExampleHeroLink;
   guideTitle?: string;
   sectionTitles?: readonly [prompt: string, limits: string, pricing: string];
   summary?: string;

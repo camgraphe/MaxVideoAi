@@ -276,8 +276,10 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   flux: {
-    "heroTitle": "FLUX 3 & FLUX 3 Draft examples",
-    "subtitle": "Explore FLUX videos, prompts and settings. Check the model label on each clip to distinguish Max, standard and Draft.",
+    "metaTitle": "FLUX 3, FLUX 3 Draft & FLUX 3 Max Examples | MaxVideoAI",
+    "heroTitle": "FLUX 3, FLUX 3 Draft & FLUX 3 Max examples",
+    "subtitle": "Explore FLUX 3, FLUX 3 Draft and FLUX 3 Max videos with original prompts and settings. Each clip keeps its model label.",
+    "heroLink": { "label": "Explore FLUX 3 Max", "href": "/models/flux-3-max" },
     "intro": "Explore FLUX 3 and FLUX 3 Draft videos with their original prompts, settings and source workflows. Both support text-to-video, opening-image animation, first-and-last-frame transitions and a separate Extend workflow for continuing an existing clip. Draft offers 720p exploration; standard FLUX 3 has its own higher-resolution option. FLUX 3 Max is an additional fal post-trained variant of Black Forest Labs’ FLUX 3 Video, with optional generated audio, 5–20-second clips, timed keyframes and 720p or upscaled 1080p output. Each video keeps the exact model that generated it. Compare the selected model’s controls and current quote before creating a new clip.",
     "promptPatterns": "Write one clear scene: a subject, a physical action, a camera move and an ending. For image-to-video, describe what moves while preserving the starting composition. For a first-and-last-frame transition, use compatible images and explain the movement between them. With Max audio enabled, identify the speaker, put the spoken words in quotation marks and describe the background sound. Keep dialogue short enough for the requested duration. Review the complete result, including motion, hands, reflections and sound, before choosing a take.",
     "strengthsLimits": "Compare Max, standard and Draft using the same creative brief, but judge each actual output independently. A Draft or standard clip is not evidence of Max quality. Image references guide the shot; they do not guarantee perfect identity or geometry. Max offers optional audio and 1080p through upscaling. Standard and Draft have their own controls, including the separate Extend workflow. Check the selected model page for exact input limits and supported settings.",

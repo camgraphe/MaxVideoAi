@@ -318,9 +318,13 @@ test('server advertises the read-only discovery and price comparison tools with 
   const settingsSchema = record(record(lineSchema.properties).settings);
   const aspectRatioSchema = record(record(settingsSchema.properties).aspectRatio);
   const audioSchema = record(record(settingsSchema.properties).audio);
-  for (const field of ['aspectRatio', 'fps', 'audio', 'loop']) {
+  for (const field of ['aspectRatio', 'fps', 'audio', 'loop', 'keyframeIndexes']) {
     assertSchemaAllowsNull(record(settingsSchema.properties)[field], `calculate_project_budget.settings.${field}`);
   }
+  const keyframeSchema = record(record(settingsSchema.properties).keyframeIndexes);
+  assert.equal(nonNullSchema(keyframeSchema).maxLength, 128);
+  assert.match(String(keyframeSchema.description), /same order as referenceRoles/);
+  assert.match(String(keyframeSchema.description), /24.*inclusive/);
   assertSchemaAllowsNull(record(lineSchema.properties).referenceRoles, 'calculate_project_budget.referenceRoles');
   assert.match(String(aspectRatioSchema.description), /aspectRatios.*non-empty.*include/i);
   assert.match(String(aspectRatioSchema.description), /empty.*omit/i);
@@ -801,6 +805,7 @@ test('tools return structured content and pass validated filters to facade servi
             fps: null,
             audio: null,
             loop: null,
+            keyframeIndexes: null,
           },
           referenceRoles: null,
           clipCount: 1,
@@ -823,6 +828,17 @@ test('tools return structured content and pass validated filters to facade servi
       }],
     }],
   });
+
+  const keyframeBudgetArguments = { proposals: [{ name: 'Ordered frames', lines: [{
+    purpose: 'Three-image scene', engineId: 'flux-3-max', mode: 'ref2v',
+    settings: { durationSec: 5, resolution: '720p', aspectRatio: '16:9', audio: true, keyframeIndexes: '120,0,60' },
+    referenceRoles: ['reference', 'reference', 'reference'], clipCount: 1, attemptsPerClip: 1,
+  }] }] };
+  const keyframeBudgetResult = await connected.client.callTool({
+    name: 'calculate_project_budget', arguments: keyframeBudgetArguments,
+  });
+  assert.notEqual(keyframeBudgetResult.isError, true);
+  assert.deepEqual(budgetInput, keyframeBudgetArguments);
 
   const nullableListArguments = Object.fromEntries(
     Object.keys(record((await connected.client.listTools()).tools.find((tool) => tool.name === 'list_models')?.inputSchema.properties))

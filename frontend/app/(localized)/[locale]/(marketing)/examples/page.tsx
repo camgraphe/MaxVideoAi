@@ -344,6 +344,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
       heroLead={heroLead}
       heroSubtitle={heroSubtitle}
       heroTitle={heroTitle}
+      heroLink={modelLanding?.heroLink}
       initialDesktopBatch={initialDesktopBatch}
       initialExamples={initialExamples}
       priceSlots={buildExamplesPriceSlots(initialExamples, { currentPrices, locale: appLocale })}
