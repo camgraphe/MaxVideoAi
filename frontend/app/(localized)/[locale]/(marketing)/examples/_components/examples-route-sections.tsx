@@ -5,6 +5,7 @@ import { BadgeDollarSign, FilePenLine, Scale } from 'lucide-react';
 import { ExamplesGalleryGrid, type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import type { AppLocale } from '@/i18n/locales';
+import type { ExampleHeroLink } from '@/lib/examples/modelLandingTypes';
 import { getMcpInternalLink } from '@/lib/mcp-internal-links';
 import type { ExampleSort } from '@/server/videos';
 import type { ExamplesNextStepLink } from '../_lib/examples-page-copy';
@@ -15,6 +16,7 @@ type ExamplesIntroHeroProps = {
   heroLead: string;
   heroSubtitle: string;
   heroTitle: string;
+  heroLink?: ExampleHeroLink;
 };
 
 type ExamplesFamilyIntroProps = {
@@ -141,12 +143,15 @@ type ExamplesFaqSectionProps = {
   };
 };
 
-export function ExamplesIntroHero({ heroLead, heroSubtitle, heroTitle }: ExamplesIntroHeroProps) {
+export function ExamplesIntroHero({ heroLead, heroSubtitle, heroTitle, heroLink }: ExamplesIntroHeroProps) {
   return (
     <section className={styles.hero}>
       <header className={styles.heroCopy}>
         <h1>{heroTitle}</h1>
-        <p>{heroSubtitle || heroLead}</p>
+        <p>
+          {heroSubtitle || heroLead}
+          {heroLink ? <>{' '}<Link href={heroLink.href} prefetch={false} className="font-medium underline underline-offset-4">{heroLink.label}</Link></> : null}
+        </p>
       </header>
     </section>
   );

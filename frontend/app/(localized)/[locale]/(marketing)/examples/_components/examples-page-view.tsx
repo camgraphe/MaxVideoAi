@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import styles from './examples-editorial.module.css';
 import type { ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import type { AppLocale } from '@/i18n/locales';
+import type { ExampleHeroLink } from '@/lib/examples/modelLandingTypes';
 import type { ExampleSort, listExamplesPage } from '@/server/videos';
 import type { ExamplesModelLink } from '../_lib/examples-page-data';
 import type { ExamplesNextStepLink } from '../_lib/examples-page-copy';
@@ -55,6 +56,7 @@ type ExamplesPageViewProps = {
   heroLead: string;
   heroSubtitle: string;
   heroTitle: string;
+  heroLink?: ExampleHeroLink;
   initialDesktopBatch: number;
   initialExamples: ExampleGalleryVideo[];
   priceSlots?: Record<string, ReactNode>;
@@ -133,6 +135,7 @@ export function ExamplesPageView({
   heroLead,
   heroSubtitle,
   heroTitle,
+  heroLink,
   initialDesktopBatch,
   initialExamples,
   priceSlots,
@@ -196,6 +199,7 @@ export function ExamplesPageView({
             heroLead={heroLead}
             heroSubtitle={isModelLanding ? heroSubtitle : hubSubtitle}
             heroTitle={heroTitle}
+            heroLink={isModelLanding ? heroLink : undefined}
           />
 
           <ExamplesGallerySection

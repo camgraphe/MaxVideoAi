@@ -52,6 +52,7 @@ export type AgentProjectBudgetInput = Readonly<{
         fps?: number;
         audio?: boolean;
         loop?: boolean;
+        keyframeIndexes?: string;
       }>;
       referenceRoles?: readonly ProjectReferenceRole[];
       clipCount: number;
@@ -73,6 +74,7 @@ export type AgentProjectBudgetLine = Readonly<{
     fps?: number;
     audio?: boolean;
     loop?: boolean;
+    keyframeIndexes?: string;
   }>;
   referenceCount: number;
   clipCount: number;
@@ -226,6 +228,7 @@ function safeCapabilityField(field: string): string {
     duration: 'durationSec',
     aspect_ratio: 'aspectRatio',
     generate_audio: 'audio',
+    keyframe_indexes: 'keyframeIndexes',
     image_url: 'references',
     first_frame_url: 'references',
     last_frame_url: 'references',
@@ -238,7 +241,7 @@ function safeCapabilityField(field: string): string {
   const normalized = aliases[field] ?? field;
   return new Set([
     'engineId', 'mode', 'prompt', 'durationSec', 'resolution', 'aspectRatio', 'fps',
-    'audio', 'loop', 'references', 'settings',
+    'audio', 'loop', 'keyframeIndexes', 'references', 'settings',
   ]).has(normalized) ? normalized : 'settings';
 }
 
@@ -313,7 +316,7 @@ function normalizeSettings(
   if (!isPlainObject(value)) {
     editProjectLine('PARAMETER_INVALID', 'Project line settings are invalid.', proposalIndex, lineIndex, 'settings');
   }
-  const allowed = new Set(['durationSec', 'resolution', 'aspectRatio', 'fps', 'audio', 'loop']);
+  const allowed = new Set(['durationSec', 'resolution', 'aspectRatio', 'fps', 'audio', 'loop', 'keyframeIndexes']);
   if (Object.keys(value).some((key) => !allowed.has(key))) {
     editProjectLine('PARAMETER_INVALID', 'Project line settings contain an unsupported field.', proposalIndex, lineIndex, 'settings');
   }
@@ -326,6 +329,9 @@ function normalizeSettings(
   const fps = settings.fps === undefined
     ? undefined
     : requireLineInteger(settings.fps, 1, 240, proposalIndex, lineIndex, 'fps');
+  const keyframeIndexes = settings.keyframeIndexes === undefined
+    ? undefined
+    : requireLineText(settings.keyframeIndexes, 128, proposalIndex, lineIndex, 'keyframeIndexes');
   if (settings.audio !== undefined && typeof settings.audio !== 'boolean') {
     editProjectLine('PARAMETER_INVALID', 'Project line audio intent is invalid.', proposalIndex, lineIndex, 'audio');
   }
@@ -339,6 +345,7 @@ function normalizeSettings(
     ...(fps === undefined ? {} : { fps }),
     ...(settings.audio === undefined ? {} : { audio: settings.audio }),
     ...(settings.loop === undefined ? {} : { loop: settings.loop }),
+    ...(keyframeIndexes === undefined ? {} : { keyframeIndexes }),
   };
 }
 

@@ -6,6 +6,7 @@ import { listRuntimeModels, getRuntimeModelById, resolveRuntimePublicSlug } from
 import { getExamplesHref } from '../frontend/lib/examples-links';
 import { getExampleFamilyPrimaryModelSlug } from '../frontend/lib/model-families';
 import { getExampleModelLanding } from '../frontend/lib/examples/modelLanding';
+import { buildSeoMetadata } from '../frontend/lib/seo/metadata';
 import { buildExamplesVersionLinks } from '../frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-version-links';
 import { buildExamplesPaginationHref } from '../frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-page-hrefs';
 import { getExamplesPaginationSeo, withExamplesPaginationMetadata } from '../frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-pagination-seo';
@@ -44,13 +45,21 @@ test('full-catalog version samples preserve original model labels and watch dest
   assert.ok(after.every(link => link.current), 'previous release is not automatically historical');
 });
 
-for (const [locale, base, title] of [
-  ['en', '/examples', 'FLUX 3 & FLUX 3 Draft examples'],
-  ['fr', '/fr/galerie', 'Exemples FLUX 3 et FLUX 3 Draft'],
-  ['es', '/es/galeria', 'Ejemplos de FLUX 3 y FLUX 3 Draft'],
-] as const) test(`${locale}: family identity, pagination and query-indexing policy survive the new model`, () => {
+for (const [locale, base, title, modelHref, linkLabel] of [
+  ['en', '/examples', 'FLUX 3, FLUX 3 Draft & FLUX 3 Max examples', '/models/flux-3-max', 'Explore FLUX 3 Max'],
+  ['fr', '/fr/galerie', 'Exemples FLUX 3, FLUX 3 Draft et FLUX 3 Max', '/fr/modeles/flux-3-max', 'Découvrir FLUX 3 Max'],
+  ['es', '/es/galeria', 'Ejemplos de FLUX 3, FLUX 3 Draft y FLUX 3 Max', '/es/modelos/flux-3-max', 'Descubrir FLUX 3 Max'],
+] as const) test(`${locale}: family entry names all three models while preserving identity and indexing`, () => {
   const landing = getExampleModelLanding(locale, 'flux')!;
   assert.equal(landing.heroTitle, title);
+  for (const name of ['FLUX 3', 'FLUX 3 Draft', 'FLUX 3 Max']) {
+    assert.ok(landing.heroSubtitle.includes(name), `${name} should be visible before the gallery`);
+    assert.ok(landing.metaTitle.includes(name), `${name} should remain in the family search title`);
+  }
+  assert.deepEqual(landing.heroLink, { label: linkLabel, href: modelHref });
+  const pageMetadata = buildSeoMetadata({ locale, title: landing.metaTitle, description: landing.metaDescription, englishPath: '/examples/flux' });
+  assert.equal(typeof pageMetadata.title === 'object' ? pageMetadata.title?.absolute : pageMetadata.title, landing.metaTitle);
+  assert.equal(pageMetadata.alternates?.canonical, `https://maxvideoai.com${base}/flux`);
   assert.match(landing.intro, /FLUX 3 Max/);
   assert.match(landing.intro, /Extend/);
   const href = buildExamplesPaginationHref({ engineFromPath: 'flux', modelLandingSlug: 'flux', galleryBasePath: base, selectedEngine: 'flux', sort: 'playlist', targetPage: 2 });

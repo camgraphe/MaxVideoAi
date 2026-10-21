@@ -4,6 +4,7 @@ import test from 'node:test';
 import { listFalEngines } from '../frontend/src/config/falEngines';
 import { AgentApiError } from '../frontend/src/server/agent-api/errors';
 import { priceCanonicalGeneration } from '../frontend/src/server/agent-api/generation-pricing';
+import { computeCanonicalBillingSnapshot } from '../frontend/server/pricing/quote-billing';
 import {
   calculateAgentProjectBudget,
   type AgentProjectBudgetDependencies,
@@ -94,6 +95,84 @@ function line(overrides: Record<string, unknown> = {}) {
 }
 
 function input(proposals: AgentProjectBudgetInput['proposals']): AgentProjectBudgetInput { return { proposals }; }
+
+test('FLUX 3 Max project budgets preserve keyframe pairing and canonical prices in every mode', async () => {
+  const candidate = registryCapability('flux-3-max');
+  const calls: Array<Record<string, unknown>> = [];
+  const deps = makeDeps({
+    listPublicEngines: async () => [candidate],
+    priceGeneration: async (request) => {
+      calls.push(request as unknown as Record<string, unknown>);
+      assert.ok(request.mode === 't2v' || request.mode === 'i2v' || request.mode === 'fl2v' || request.mode === 'ref2v');
+      const pricing = await computeCanonicalBillingSnapshot({
+        engine: candidate.engine, mode: request.mode,
+        durationSec: Number(request.settings.durationSec), resolution: String(request.settings.resolution),
+        addons: { audio: request.settings.audio === true },
+      }, {
+        loadCustomerTariffState: async () => ({ status: 'loaded', active: false, revision: 0, databaseCells: [], versionedCells: [] }),
+        pricingPolicy: { loadOverrides: async () => ({ status: 'loaded', rules: [], routingRules: [] }) },
+      });
+      return { priceCents: pricing.totalCents, currency: 'USD', membershipTier: 'member', pricingSnapshot: pricing };
+    },
+  });
+  for (const [durationSec, resolution, cents] of [[5, '720p', 111], [5, '1080p', 189], [10, '720p', 221], [10, '1080p', 377]] as const) {
+    for (const mode of ['t2v', 'i2v', 'fl2v', 'ref2v'] as const) {
+      const referenceRoles = mode === 't2v' ? [] : mode === 'i2v' ? ['source'] : mode === 'fl2v' ? ['first_frame', 'last_frame'] : ['reference', 'reference', 'reference'];
+      // Nonchronological input order is valid; positions remain paired with references.
+      for (const keyframeIndexes of mode === 'ref2v' ? ['0,60,120', '120,0,60'] : [undefined]) {
+        const settings = { durationSec, resolution, aspectRatio: '16:9', audio: true,
+          ...(keyframeIndexes === undefined ? {} : { keyframeIndexes }) };
+        const value = input([{ name: 'Exact frame plan', lines: [line({ engineId: candidate.engine.id, mode, settings, referenceRoles })] }]);
+        assert.equal(calculateProjectBudgetInputSchema.safeParse(value).success, true);
+        const result = await calculateAgentProjectBudget(value, principal, deps);
+        assert.deepEqual(result.proposals[0]?.lines[0]?.settings, settings);
+        assert.deepEqual(calls.at(-1)?.settings, settings);
+        assert.equal(result.proposals[0]?.lines[0]?.referenceCount, referenceRoles.length);
+        assert.equal(result.proposals[0]?.lines[0]?.unitPrice.amountCents, cents);
+        assert.equal(result.quoteRequired, true);
+      }
+    }
+  }
+});
+
+test('FLUX 3 Max project budgets reject invalid keyframe positions before pricing with an actionable field', async () => {
+  const deps = makeDeps({ listPublicEngines: async () => [registryCapability('flux-3-max')] });
+  for (const keyframeIndexes of [undefined, '', '0,120', '0,60,60', '0,60,121', '-1,60,120', '0,60.5,120', 120, [0, 60, 120], '0'.repeat(129)]) {
+    const settings = { durationSec: 5, resolution: '720p', aspectRatio: '16:9', audio: true,
+      ...(keyframeIndexes === undefined ? {} : { keyframeIndexes }) };
+    await assertLineError(calculateAgentProjectBudget(input([{
+      name: 'Invalid frame plan', lines: [line({ engineId: 'flux-3-max', mode: 'ref2v', settings,
+        referenceRoles: ['reference', 'reference', 'reference'] })],
+    }]), principal, deps), 'PARAMETER_INVALID', { proposalIndex: 0, lineIndex: 0, field: 'keyframeIndexes' });
+  }
+  assert.equal(deps.calls.length, 0);
+});
+
+test('keyframe positions remain unsupported for other budget modes and models', async () => {
+  const deps = makeDeps({ listPublicEngines: async () => [registryCapability('flux-3-max'), seedance] });
+  for (const [engineId, mode] of [['flux-3-max', 't2v'], ['flux-3-max', 'i2v'], ['seedance-2-5', 'ref2v']] as const) {
+    await assertLineError(calculateAgentProjectBudget(input([{
+      name: 'Wrong control', lines: [line({ engineId, mode,
+        settings: { durationSec: 5, resolution: '720p', aspectRatio: '16:9', keyframeIndexes: '0' },
+        referenceRoles: mode === 'i2v' ? ['source'] : mode === 'ref2v' ? ['reference'] : [] })],
+    }]), principal, deps), 'PARAMETER_INVALID', { proposalIndex: 0, lineIndex: 0, field: 'keyframeIndexes' });
+  }
+  assert.equal(deps.calls.length, 0);
+});
+
+test('budget schema accepts omitted or null keyframe positions and bounds explicit text', () => {
+  for (const keyframeIndexes of [undefined, null, '0,60,120']) {
+    const value = { proposals: [{ name: 'Frame plan', lines: [line({ settings: {
+      durationSec: 5, resolution: '720p', ...(keyframeIndexes === undefined ? {} : { keyframeIndexes }),
+    } })] }] };
+    assert.equal(calculateProjectBudgetInputSchema.safeParse(value).success, true);
+  }
+  for (const keyframeIndexes of [120, [0, 60, 120], '0'.repeat(129)]) {
+    assert.equal(calculateProjectBudgetInputSchema.safeParse({ proposals: [{ name: 'Wrong type', lines: [line({
+      settings: { durationSec: 5, resolution: '720p', keyframeIndexes },
+    })] }] }).success, false);
+  }
+});
 
 test('H3 Max reference project estimates request owned assets before pricing an exact customer quote', async () => {
   const deps = makeDeps({ listPublicEngines: async () => [registryCapability('minimax-h3-max')] });
