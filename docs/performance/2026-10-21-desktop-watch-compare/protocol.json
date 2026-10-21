@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-21",
+  "baseline": {
+    "commit": "dffd394c2e52820ad3ccc4828bd606fe92bf0e44",
+    "tree": "e209c7ec619baffb0b56ed38bceb94afbc96f610",
+    "productionEquivalent": "1f35e4963ac1f02818d3ea68d5aec9110aca1336",
+    "deployment": "dpl_HEGEgudNvcpHJ49egJsqji5FDFZU",
+    "origin": "https://maxvideoai-8xydulvm2-camgraphes-projects.vercel.app"
+  },
+  "candidate": {
+    "commit": "a966f2883eb557e09a45e344830932bd203df944",
+    "deployment": "dpl_6pGo4YRteTSP6y6Z1Kr74Tn2Ss5r",
+    "origin": "https://maxvideoai-cur7tz9nk-camgraphes-projects.vercel.app",
+    "frontendTree": "5275e38a5a329a70e858405b50161c70256f7f76"
+  },
+  "deploymentMetadataRegions": [
+    "iad1"
+  ],
+  "runtimeLogRegion": "cdg1",
+  "observedResponseRegionPath": "cdg1::iad1",
+  "lighthouseVersion": "12.6.1",
+  "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+  "throttlingMethod": "devtools",
+  "throttling": {
+    "rttMs": 150,
+    "throughputKbps": 1638.4,
+    "requestLatencyMs": 150,
+    "downloadThroughputKbps": 1600,
+    "uploadThroughputKbps": 750,
+    "cpuSlowdownMultiplier": 4
+  },
+  "desktop": {
+    "screen": {
+      "mobile": false,
+      "width": 1440,
+      "height": 900,
+      "deviceScaleFactor": 1,
+      "disabled": false
+    },
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  "mobile": {
+    "screen": {
+      "mobile": true,
+      "width": 390,
+      "height": 844,
+      "deviceScaleFactor": 1,
+      "disabled": false
+    },
+    "userAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36"
+  },
+  "freshBrowserPerRun": true,
+  "serverColdStartForced": false,
+  "feedbackToolbarRetained": true,
+  "authHeadersSaved": false,
+  "baseSamples": 48,
+  "followUpSamples": 0,
+  "sampleStart": "2026-10-21T10:59:11.453Z",
+  "sampleEnd": "2026-10-21T11:33:19.310Z",
+  "postMeasurementDomCheck": "Lighthouse BFCache gathering can reload the page after LCP collection. The final harness awaits that returned DOM, while validating the measured URL and recording the LCP node from the original LHR. Initial measurement options are unchanged.",
+  "interruptions": [
+    {
+      "page": "compare",
+      "afterSample": "mobile-2-candidate-cold",
+      "resumedSample": "mobile-2-baseline-cold",
+      "reason": "Baseline comparison body guard failed; trace was not retained by the original harness. Measurement paused during test-fixture repairs. Completed samples and the slow retry are retained; see excluded-attempts.json."
+    },
+    {
+      "page": "compare2",
+      "afterSample": "desktop-1-baseline-cold",
+      "resumedSample": "desktop-1-candidate-cold",
+      "reason": "Post-BFCache DOM was incomplete after an otherwise valid initial LHR. Original LCP1640.745ms and artifacts retained in the exclusion record. Awaited post-measurement DOM check added without changing Lighthouse settings."
+    }
+  ],
+  "testOnlyFollowup": {
+    "commit": "a81240e84027ad764337c66ff5b37d619ec2fd9b",
+    "frontendTree": "5275e38a5a329a70e858405b50161c70256f7f76"
+  }
+}
