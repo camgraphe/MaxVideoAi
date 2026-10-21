@@ -51,6 +51,7 @@ export function BackgroundRemovalSession({ auth }: { auth: ReturnType<typeof use
   const autoSelectedResultJobIdRef = useRef<string | null>(null);
 
   const sourceMedia = useBackgroundRemovalSourceMedia({
+    userId: user?.id,
     maxDurationSeconds: BACKGROUND_REMOVAL_MAX_STUDIO_DURATION_SECONDS,
     onSourceChanged: () => {
       setViewMode('source');

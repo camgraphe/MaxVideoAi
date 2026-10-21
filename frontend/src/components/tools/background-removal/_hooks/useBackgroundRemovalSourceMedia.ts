@@ -12,6 +12,7 @@ import type {
 type LibrarySource = 'all' | 'upload' | 'generated' | 'background-removal';
 
 export function useBackgroundRemovalSourceMedia(params: {
+  userId?: string;
   onSourceChanged?: () => void;
   maxDurationSeconds: number;
 }) {
@@ -69,14 +70,14 @@ export function useBackgroundRemovalSourceMedia(params: {
 
   const handleUpload = useCallback(
     async (file: File | null | undefined) => {
-      if (!file) return;
+      if (!file || !params.userId) return;
       uploadRequestRef.current?.abort();
       const controller = new AbortController();
       uploadRequestRef.current = controller;
       setUploading(true);
       setSourceError(null);
       try {
-        const uploaded = await uploadSourceVideo(file, controller.signal);
+        const uploaded = await uploadSourceVideo(file, params.userId, controller.signal);
         if (controller.signal.aborted || uploadRequestRef.current !== controller) return;
         applySource(uploaded, uploaded.url);
       } catch (error) {
@@ -89,7 +90,7 @@ export function useBackgroundRemovalSourceMedia(params: {
         }
       }
     },
-    [applySource]
+    [applySource, params.userId]
   );
 
   const refreshLibrary = useCallback(async () => {

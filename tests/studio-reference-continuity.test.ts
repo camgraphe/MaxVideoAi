@@ -18,7 +18,7 @@ test('selected media survive a follow-up and reload, while removal and account/p
   const root=createRoot(dom.window.document.getElementById('root')!);
   let state!:ReturnType<typeof useConversationMediaShelf>;
   function Probe({scope,ready,turns}:{scope:string;ready:boolean;turns:ImageConversationTurn[]}) {
-    state=useConversationMediaShelf(turns,'en',true,{scopeKey:scope,ready});return null;
+    state=useConversationMediaShelf(turns,'en',true,scope.split(':')[0],{scopeKey:scope,ready});return null;
   }
   const render=async(scope='account-a:project-a',ready=true,turns=history)=>act(async()=>{root.render(React.createElement(Probe,{key:scope,scope,ready,turns}));});
   try {
