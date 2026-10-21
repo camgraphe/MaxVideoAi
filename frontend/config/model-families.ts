@@ -40,6 +40,7 @@ const ASSET_GATED_LAUNCH_MODEL_IDS = new Set([
   'kling-3-turbo-standard',
   'kling-3-turbo-pro',
   'minimax-h3-max',
+  'kling-v4',
 ]);
 
 const MODEL_FAMILY_SOURCES = [

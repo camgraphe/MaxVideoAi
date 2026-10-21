@@ -82,6 +82,8 @@ export interface ComposerProps {
     minDurationSec: number;
     maxDurationSec: number;
     maxPromptChars?: number;
+    minSceneDurationSec?: number;
+    strictIntegerDurations?: boolean;
     onToggle: (enabled: boolean) => void;
     onAddScene: () => void;
     onRemoveScene: (id: string) => void;

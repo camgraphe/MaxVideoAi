@@ -6,6 +6,9 @@ import { dispatchGaEvent } from '@/lib/analytics/ga-events';
 import { classifyTopupFailure } from '@/lib/analytics/topup-failure';
 import { getEngineModeUnavailableMessage } from '@/lib/engine-mode-availability';
 import { formatRateLimitMessage } from '@/lib/wallet/rate-limit-message';
+import type { KlingElementState } from '@/components/KlingElementsBuilder';
+import { getWorkspaceKlingV4MediaError } from '../_lib/workspace-kling-v4-media';
+import { buildKlingElementsPayload } from '../_lib/workspace-generation-inputs';
 import type { EngineCaps, Mode, PreflightResponse } from '@/types/engines';
 import type { WorkspaceCopy } from '../_lib/workspace-copy';
 import type { ReferenceAsset } from '../_lib/workspace-assets';
@@ -40,6 +43,7 @@ type UseWorkspacePricingGateOptions = {
   voiceControlEnabled: boolean;
   submissionMode: Mode;
   inputAssets: Record<string, (ReferenceAsset | null)[]>;
+  klingElements?: KlingElementState[];
 };
 
 type UseWorkspacePricingGateResult = {
@@ -87,19 +91,25 @@ export function useWorkspacePricingGate({
   voiceControlEnabled,
   submissionMode,
   inputAssets,
+  klingElements = [],
 }: UseWorkspacePricingGateOptions): UseWorkspacePricingGateResult {
+  const elementValidation = selectedEngine?.id === 'kling-v4' ? buildKlingElementsPayload({
+    selectedEngineId: selectedEngine.id, submissionMode, supportsKlingV3Controls: false, klingElements,
+  }) : null;
+  const elementError = elementValidation && !elementValidation.ok ? elementValidation.message
+    : selectedEngine?.id === 'kling-v4' ? getWorkspaceKlingV4MediaError({ mode: submissionMode, inputAssets, klingElements }) : null;
   const modeUnavailableMessage = getEngineModeUnavailableMessage(selectedEngine, submissionMode, locale);
   const { preflight, preflightError: quoteError, setPreflightError, isPricing, price, currency } = useWorkspacePreflightQuote({
-    request: form && selectedEngine && !modeUnavailableMessage ? buildWorkspacePreflightRequest({
+    request: form && selectedEngine && !modeUnavailableMessage && !elementError ? buildWorkspacePreflightRequest({
       form, selectedEngine, memberTier, supportsAudioToggle,
-      effectiveDurationSec, voiceControlEnabled, submissionMode, inputAssets,
+      effectiveDurationSec, voiceControlEnabled, submissionMode, inputAssets, klingElements,
     }) : null,
     iterations: form?.iterations ?? 1,
     accessToken,
     authChecked,
     locale,
   });
-  const preflightError = modeUnavailableMessage ?? quoteError;
+  const preflightError = modeUnavailableMessage ?? elementError ?? quoteError;
   const [topUpModal, setTopUpModal] = useState<TopUpModalState>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [topUpAmount, setTopUpAmount] = useState<number>(1000);

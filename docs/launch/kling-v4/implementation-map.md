@@ -19,7 +19,7 @@ Generated owners (regenerate, do not hand edit): `frontend/config/model-runtime.
 
 ## Exact prepared control envelope
 
-The current source is the captured Fal contract; see `provider-evidence-2026-10-21.md`. Direct Kling remains the intended primary route, but no direct V4 request contract or cross-provider voice identity has been established. Do not invent a V4 direct endpoint or reuse the V3 direct request shape.
+The current source is the captured Fal contract; see `provider-evidence-2026-10-21.md`. Fal is now the initial target. No direct V4 request contract or cross-provider voice identity has been established for a later direct route. Do not invent a V4 direct endpoint or reuse the V3 direct request shape.
 
 | Mode | Prepared inputs | Deliberately absent |
 | --- | --- | --- |
@@ -34,7 +34,7 @@ Each shot has 1–512 prompt characters and an integer duration from 1 through30
 
 - `frontend/src/lib/video-provider-elements.ts`: explicit `{engineId:'kling-v4'}` scope preserves seven subjects and per-element `voiceId`; rejects overflow instead of truncating. Default normalization and direct V3 element-list behavior remain unchanged.
 - `frontend/app/api/generate/_lib/request-option-normalizers.ts` and `request-options.ts`: V4 shot durations reject rounding, empty scenes, overflows and mismatched total; route-shaped elements preserve `voiceId` and seven entries. Invalid normalized controls return400. These are preparation functions behind the release gate.
-- `frontend/src/server/agent-api/generation-normalization.ts`: V4 integer shot-plan budget and ordered reference semantics. No new canonical elements field was introduced.
+- `frontend/src/server/agent-api/generation-normalization.ts`: V4 integer shot-plan budget and ordered reference semantics. Explicit canonical subjects now bind existing ordered reference slots; subject media cannot arrive as arbitrary settings URLs.
 - `frontend/src/server/agent-api/generation-capability-validation.ts`: per-model multi-shot limits, retaining V3 defaults.
 - `frontend/src/server/mcp/tools/prepare-generation.ts`: outer schema can represent the V4 envelope; canonical validation still applies the selected model's limit and executable model discovery remains closed.
 - `frontend/src/server/agent-api/paid-video-request-body.ts`: V4 `image_urls` entries also remain in `inputs`, preserving asset IDs, dimensions, sizes and other metadata; existing video slots are preserved. Existing private-reference resolution is required, never bypassed.
@@ -42,23 +42,23 @@ Each shot has 1–512 prompt characters and an integer duration from 1 through30
 
 The dedicated provider request builder, no-spend gates, direct routing policy and pricing/media workflow are owned separately by this change's lead. Relevant files include `frontend/src/lib/kling-v4.ts`, `fal-request-body.ts`, `fal.ts`, `frontend/app/api/generate/_lib/route-context.ts`, `frontend/src/server/agent-runtime/model-executability.ts`, `frontend/app/api/preflight/_lib/media-aware-preflight.ts` and the model launch asset configuration. Keep these gates closed even if a pure projection test succeeds.
 
-## App, Studio and MCP gaps that block certification
+## App, Studio and MCP offline completion
 
-This branch does **not** claim fully working Kling V4 controls in all product editors.
+The follow-on phase implements explicit V4 workspace controls, strict shot editing, active-mode reference projection, seven owned subjects, saved setup recreation and preflight subjects. V3 defaults remain separate. Hidden inactive assets survive mode changes without entering the active request. Arbitrary voice bindings are preserved for explanation but cannot be submitted.
 
-1. `workspace-workflow-projection.ts`, `useWorkspaceEngineModeState.ts`, `WorkspaceComposerSurface.tsx` and the existing Kling controls still require an explicit V4 UI design. The common workspace state uses V3 fifteen-second totals and global voice handling. The Composer editor supports adding scenes; six scenes is a canonical V3 limit, not a hardcoded six-row rendering limit. Do not expose V4 by simply broadening `supportsKlingV3Controls` because that also enables V3 shotType/CFG/voice behavior.
-2. `workspace-generation-inputs.ts` currently builds elements according to V3/Omni rules (including a single video element). `workspace-generation-payload.ts` groups elements with those controls. Their editor/state/persistence paths need V4-specific seven-subject, max-three video and max-three voiced-element validation before app certification. `KlingElementsBuilder.tsx`, `workspace-video-settings.ts` and `workspace-model-setups.ts` do not yet provide a complete per-element voice editor and persistence contract.
-3. Canonical agent requests support flat controlled/owned references plus settings; they have no canonical element grouping or voice-binding structure. **Do not inject element URLs via arbitrary settings.** A future contract must preserve ownership checks, reference identity/order, quote hashing, confirmation immutability and provider-specific voice provenance. Touchpoints: `generation-types.ts`, `generation-normalization.ts`, reference resolution, capability validation, paid body projection and MCP input schemas.
-4. `frontend/src/server/studio/conversation-capabilities.ts` deliberately filters out `multi_prompt` settings. Studio conversation input/action schemas and editors need an explicit shot-plan representation before exposure. Do not claim Studio multi-shot support merely because the canonical MCP schema accepts the array.
-5. `workspace-model-certification.ts` remains unchanged. No V4 mode is newly certified. Exact-model editorial/quality evidence is required; siblings cannot confer certification.
+Canonical subjects group existing owned reference slots. Materialization retains the exact original IDs/URLs in provider elements without duplicating them in flat inputs. Owned resolution precedes pricing; exact video cadence, dimensions and duration are checked. The immutable pricing snapshot binds those resolved physical facts, so changed source facts require a new quote at confirmation. A conservative 15-visual-source ceiling counts subject views while the provider's mixed-limit wording remains unqualified.
 
-Future tests must cover all four app modes through the actual editor state and saved setups; thirty-second shot plans without stale durationOption; rejection of fractions/overflow; seven subjects with mixed allowed visual inputs; per-element voices limited to three and bound to the chosen provider; ownership failure before quote and confirmation; canonical hash changes when element order or voice changes; parity of Studio/MCP/app paid bodies; direct-primary/fallback equivalence only after the direct contract exists. Then execute explicitly approved canaries for every claimed mode and inspect complete audio/video outputs. A fixture alone cannot establish output quality, provider access or fallback equivalence.
+Studio exposes structured shot plans in `video.prepare`, quote presentation and editing. An edited plan travels in a bounded persisted revision and requires a fresh quote; a long plan does not bypass the ordinary message limit. The video action can reference up to50 existing media, while the ordinary chat attachment pool remains10: larger subject sets must use ready project outputs. MCP carries the same subjects and strict model-specific normalization. Discovery/execution remain gated.
+
+Server validation requires an owned original for every flat or subject reference, ignores browser-supplied facts, preserves repetitions and probes source cadence without rounding or an invented30FPS default. Images require300px sides, video700–4553px sides, ratio0.4–2.5, documented file-size caps and source tolerances. The media30.05s tolerance does not expand the30s combined reference budget or integer output limit.
+
+Remaining certification prerequisites are real approved provider calls and full-output review, provider billing precision, exact-model evidence, and a server-owned fal voice issuance/selection workflow if voices are offered. No V4 mode is newly certified. A fixture cannot establish quality, entitlement or future direct/fallback parity.
 
 ## Media and normal-page empty states
 
 No fake hero, poster, generated prompt demonstration, quality score or reference file is supplied. The normal page's draft ideas are editorial text. `_lib/model-page-media.ts` returns no media badges when neither playable video nor poster exists. `_components/ModelDecisionMediaCard.tsx` suppresses media caption/watch links in that case. `_components/ModelDecisionPromptingSection.tsx` suppresses a demonstration lacking playable media or poster rather than displaying view-model fallback duration/audio as evidence. Existing real media keeps its badges/caption.
 
-Launch asset readiness is a separate gate and remains incomplete without real accepted assets. Follow the lead's media-readiness/preview requirements; empty playlists and fallback media are not substitutes. `external-fal-import/contract.ts` remains FLUX-specific unless separately generalized with an explicit Kling adapter; never feed it a Kling manifest by renaming the model. No admin playlist write or reorder is part of this preparation.
+Launch asset readiness is a separate gate and remains incomplete without real accepted assets. Follow the lead's media-readiness/preview requirements; empty playlists and fallback media are not substitutes. `external-fal-import/kling-v4.ts` now provides an explicit four-mode adapter beside FLUX. It verifies original/poster/short-preview evidence and retains owned ordered references. Historical provider field names map to the workspace schema for recreation; never relabel another model’s manifest. No admin playlist write or reorder is part of this preparation.
 
 ## Local verification commands
 

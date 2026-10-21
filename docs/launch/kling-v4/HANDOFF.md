@@ -1,50 +1,47 @@
 # Kling V4 — preparation handoff
 
-22 October 2026, Europe/Madrid. Branch `codex/kling-v4-launch-prep`, based on `28b0d14f6c0b59220b85b458427c670a6f6b8896`. This is a draft launch preparation, not a working or released V4 integration.
+22 October 2026, Europe/Madrid. Worktree `kling-v4-launch-prep`, branch `codex/kling-v4-launch-prep`, draft PR494. Phase 1 head `6a076843b28dc143662d0d86907cd62a6d816dad`; phase 2 completes the offline application and media preparation. This is not an activated V4 release.
 
-## Decisions that persist
+## Current decision and access
 
-- Direct Kling is the intended primary provider, fal the fallback. Both require separate V4 account access and parity qualification. Do not infer direct endpoints from V3 or fal. A timeout, missing ID or ambiguous server failure must never cause a second paid submission.
-- Normal published fal cost plus30% is the customer price-authoring basis. The prepared matrix uses the existing canonical pricing calculator; it is not an active tariff or a quote. No spend is authorized for V4.
-- Preserve all historical model/family URLs and current owner-curated playlist ordering. Add new launch media later through the dedicated admin/library and video-SEO workflows.
-- Normal model template in EN/FR/ES, noindex and protected preview only. No fake generated examples, poster, hero, score or VideoObject. No production deployment, merge, indexing, gallery edit or tariff activation.
+The latest decision is **fal first for the initial launch**. This supersedes the earlier direct-first sequence. Direct Kling account recovery, an actual direct V4 contract and fallback parity are independent future work. Never infer a direct endpoint from V3 or submit again after an ambiguous accepted attempt.
 
-## Prepared work
+The user opened the fal integration account in Chrome. Its Kling 4 T2V playground has an enabled Run control; no generation was launched. Four official schemas were refreshed and are semantically unchanged. See `provider-refresh-2026-10-22.md`. Public copy still says API coming soon. A usable playground is not proof of a working queue/API credential or completed paid generation.
 
-Read `PLAN.md`, `implementation-map.md`, `provider-evidence-2026-10-21.md`, `pricing-plan.md` and `media-qualification.md` for exact owners and blockers. Ten cinematic scenarios with English prompts and French explanations are in `films.json` / `films.md`. The private static creative review runs at `http://127.0.0.1:3046/`; the local model page at `http://127.0.0.1:3042/models/kling-v4`.
+Normal fal list cost plus 30% remains the customer price-authoring basis. There is no activated V4 tariff or approved V4 generation spend. Historical FLUX generation approvals do not authorize this new batch.
 
-The pure fal adapter covers four documented modes, strict durations/shot sums, seven elements with per-element voice binding, reference counts and mode restrictions. Transport preserves owned reference metadata/order. Rejection happens for unsupported FPS/controls, unconsumed attachment slots, malformed elements and conflicting duration selectors. The new API-key authentication path preserves legacy JWT; no real credential was changed.
+## Prepared implementation
 
-The hard release gate blocks V4 before billing/provider work, including trusted continuations and agent execution. Publication flags, maintenance flags or provider environment flags cannot alone bypass it. Direct V4 is deliberately not registered. App/Studio/MCP editors and canonical element/voice ownership still require design and implementation after the exact direct contract is known; no new mode certification was added.
+- Four-mode fal request adapter, explicit workspace modes/options, strict integer 3–30s output,1–512-character shots, exact shot totals and 2500-character main prompt. V3 defaults stay separate.
+- Seven owned subjects, at most three video subjects, image-only subjects for Edit; original media identity and ordered repeated references survive saved setup recreation and the full workspace-to-fal chain.
+- Canonical subject groups bind owned reference slots. MCP and Studio share ownership checks and exact measured video facts before pricing. Immutable price snapshots bind source identity/order/dimensions/duration/cadence, so changes require a new quote at confirmation.
+- Studio has a shot-plan editor and a bounded persisted revision. Revisions require a new quote and exact confirmation; the ordinary 4000-character chat-message limit is unchanged. Video actions can reference up to 50 existing assets; chat attachments remain 10, with larger subject sets using ready project outputs.
+- Exact original/asset matching, trusted video probing without rounded/default cadence, individual media tolerances and 30s R2V aggregate budget. Every repeated video consumes its own budget occurrence. The conservative 15-visual-source limit includes subject views pending provider clarification.
+- Explicit external-fal Kling importer beside FLUX: private/idempotent adoption, zero financial mutations, immutable journal/original evidence, poster/short-preview hashes and owned reference reconstruction. Raw provider input is preserved, while documented omitted defaults are materialized for replay. Offline inventory and revision-aware admin handoff are in `media-qualification.md`.
+- Normal EN/FR/ES model template remains noindex, with no fabricated media or scores. Existing family URLs, clips and owner ordering are preserved. `seo-linking-plan.md` prepares additive family copy, menus, one useful same-family comparison and selected video SEO; V4 family membership remains media-gated.
 
-Launch readiness explicitly reports missing V4 source media and requires durable originals, posters and short previews. Existing FLUX/Kling media was not modified. The completed FLUX project is separate and must not be replayed.
+Provider voice issuance/owned selection is not implemented: arbitrary voice IDs are blocked. The pure provider shape can describe voice binding, but the application must not advertise it as an available owned-voice workflow. No mode has gained certification from fixture tests.
 
-## Verification and limits
+## Film and media coordination
 
-Independent read-only review found four P2 semantic-preservation issues; all were corrected and independently rechecked. Reviewer final verdict: suitable for a draft PR, no actionable remaining finding within the reviewed preparation scope. This is not launch approval.
+At the user's request, the existing chat “Monter une vidéo Flux 3 Max” received the Kling 4 YouTube preparation brief. It also made the MiniMax/Seedance films. It owns creative development in `/Users/adrienmillot/Documents/youtube`, with English prompts, cinematic sequence writing,1080p preparation, a reusable source-clip manifest and a separately reviewed generation budget. Subsequent creative feedback in that chat is authoritative.
 
-The final focused run passed all 129 request/projection/auth/fallback/gate/media and marketing tests. TypeScript, registry projections, launch-asset projection, exposure guard and lint pass (six existing warnings, zero errors). The updated MCP schema fingerprint is backed by `mcp-offline-evidence.json`, with 70 curated decisions and 173 MCP tests passing plus one skipped; no real-host or paid-provider evidence is claimed.
+Each real future result must retain prompt/shot plan/mode/settings, reference identities/order, accepted provider request ID, original bytes, measured media facts, cost evidence, poster and silent short preview. Import into the Camgraph owner with the prepared adapter only after actual provider and storage evidence exists. Then use the existing admin playlists and video-SEO module. No fake result manifest or replacement borrowed from another model is acceptable.
 
-The first full fast run completed8,336 tests:8,321 passed,14 failed,one skipped. Twelve failures were stale exact model/content counts or the MCP schema fingerprint and were repaired and retested in their focused suites. Two remaining environment failures are the shared installed Sharp0.34.5/libheif1.20.2 versus the committed Sharp0.35.4 expectation. This worktree currently uses symlinked dependencies from the shared checkout; the shared install was not modified. Do not report the full suite green. A clean locked CI install must verify those checks and all selected lanes before any merge.
+## Verification ledger
 
-The Vercel project read showed SSO protection enabled for all deployments except custom domains. Noindex is not access control. Verify the actual draft deployment protection, status and rendered output after the Git-backed preview exists. Local EN/FR/ES rendering checks passed without an application error: normal model sections, noindex, self-canonical, locale alternates, no video and no VideoObject. The local anonymous preview uses dummy public auth configuration only, without a production account/database.
+Phase 1 selected GitHubCI lanes passed on `6a0768`; its Vercel preview was READY, SSO-protected and noindex in EN/FR/ES. Those results do not validate later phase 2 changes.
 
-A local full build was deferred with only 2.2 GiB disk space available and stale symlinked dependencies. The clean Git-backed preview/CI must supply the build result; local development rendering is not a production build claim.
+Phase 2 implementation-agent evidence: workspace 139 tests plus a styled Chromium fixture passed; the subsequent repeated-reference full-chain regression passed in an 80-test batch. Canonical/Studio 143 tests passed; importer initial 18 tests passed with disposable PostgreSQL17, followed by 14 focused tests covering real media, default settings and source tolerance. Root TypeScript and lint passed (six existing warnings, no errors). The independent review identified integration defects that were corrected with reproducing regressions.
 
-## Account and early access follow-up
+Root final integration: `npm run qa:editor` passed (1347 tests passed, one skipped), including TypeScript, lint and diff checks. MCP passed173 tests with one skipped; registry, launch-asset projection and public-exposure checks passed. The latest importer run passed16 tests including disposable PostgreSQL. Browser results and the final commit/CI state are recorded in the private `.local/kling-v4/LIRE-EN-PREMIER.md` handoff and PR checks once available. Do not infer passing results from an unfinished log. Local evidence is under `.local/kling-v4/phase2/`; user/account data and raw captures stay out of Git.
 
-The official documentation banner links to a Business Inquiry form for V4 early access. No request was sent. An exact851-character request draft is kept locally at `.local/kling-v4/review/early-access-request.md`; do not include private account/credential details in the PR.
+## Remaining release work
 
-The SOCIETE recovery investigation was consulted at Adrien's request. Its archived messages establish historical API purchases and consumption on the inaccessible mailbox, with six purchased packs shown in an October 12 console capture. It found no evidence of migration to the proposed admin or alternative mailbox. A read-only sign-in to the alternative existing account on October 22 confirmed a different profile, zero purchased packs and no displayed API keys. The admin Google flow presented first-time consent and was cancelled; this does not rule out a separate password-based account. Exact identities and private evidence paths are recorded only in `.local/kling-v4/review/account-identity.md`.
+1. Review a concrete generation batch and budget with the user, then establish an available fal submission channel. No key creation, account purchase or support message is authorized by this preparation.
+2. Qualify bounded real fal jobs for every advertised mode, full outputs/audio/reference behavior and actual billing precision. Fix failures before certifying modes or activating customer tariffs.
+3. Review real clips, evaluate scores by criterion, verify originals/posters/previews and import under the correct owner. Add accepted media through admin without replacing current family order.
+4. Prepare immutable tariff activation through the existing pricing owner, using normal fal price +30%; candidate matrices never backfill missing live tariff cells.
+5. Apply reviewed public linking/media/indexing only after latest checks and explicit release authorization. No merge or production deployment has been performed. Direct recovery can continue separately.
 
-The existing local legacy credentials still authenticate on a free account read, but that response does not identify their mailbox or establish V4 entitlement. Recovery of the historical account or explicit provider confirmation is still needed. No account/key was created or rotated and no support/early-access request was sent.
-
-A private fal support reply dated8 October stated early access was Enterprise-only then. It does not establish today's entitlement, pricing or a permanent restriction. Recheck fal separately before advertising a working fallback. The current public pages still provide schemas without proving account-level execution.
-
-## Next authorized preparation steps
-
-1. Resolve the actual API account from the recovery evidence and console; prepare the exact early-access request for individual user validation if needed. No external message was preapproved.
-2. Obtain direct V4 create/poll/callback/cancel schemas, billing precision, regional/plan access and provider-specific voice rules. Implement direct-first routing and conservative recovery using these sources.
-3. Complete the App/Studio/MCP controls and ownership/hash/persistence contracts described in `implementation-map.md`. Keep gates closed until all modes are verified.
-4. Review an exact bounded quote for the user-selected creative batch. Only then generate, inspect, score and deliver real owned media via `media-qualification.md`.
-5. Prepare immutable tariffs and add approved media/linking through the existing owners. Obtain explicit release authorization after latest selected CI and protected preview checks; never treat the draft PR as authorization to merge.
+Private identity/recovery evidence remains in `.local/kling-v4/review/account-identity.md`; there is no proof the historical account migrated to the proposed admin mailbox. Existing credentials were not changed. The completed FLUX project is separate and must not be replayed.

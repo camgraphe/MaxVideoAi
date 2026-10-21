@@ -9678,7 +9678,7 @@
         "promptMaxCharsSource": "official",
         "imageMaxMB": 30,
         "videoMaxMB": 300,
-        "videoMaxDurationSec": 30
+        "videoMaxDurationSec": 30.05
       },
       "inputSchema": {
         "required": [
@@ -9724,7 +9724,7 @@
             "maxCount": 1,
             "maxSizeMB": 300,
             "minDurationSec": 3,
-            "maxDurationSec": 30,
+            "maxDurationSec": 30.05,
             "id": "video_url",
             "type": "video",
             "label": "Video to edit",
@@ -9788,7 +9788,7 @@
             "maxCount": 5,
             "maxSizeMB": 300,
             "minDurationSec": 3,
-            "maxDurationSec": 30,
+            "maxDurationSec": 30.05,
             "id": "video_urls",
             "type": "video",
             "label": "Reference videos",
@@ -9906,10 +9906,18 @@
           }
         },
         "constraints": {
+          "ownedAssetModes": [
+            "i2v",
+            "ref2v",
+            "v2v"
+          ],
           "minImageSidePx": 300,
           "maxImageSizeMB": 30,
           "maxVideoSizeMB": 300,
-          "maxCombinedVideoDurationSec": 30
+          "maxCombinedVideoDurationSec": 30,
+          "combinedDurationModes": [
+            "ref2v"
+          ]
         }
       },
       "updatedAt": "2026-10-21T00:00:00Z",

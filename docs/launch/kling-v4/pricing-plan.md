@@ -1,8 +1,8 @@
 # Kling 4.0 pricing preparation
 
-Status: **offline preparation; no active tariff, customer quote, provider generation, database write or pricing-admin publication**. Source date is 2026-10-21 UTC; preparation continued on 2026-10-22 in Europe/Madrid. The user selected Kling direct first with fal fallback and a customer-authoring basis of normal fal price plus 30% markup. This document preserves that intent without changing current policy or installing tariff cells.
+Status: **offline preparation; no active tariff, customer quote, provider generation, database write or pricing-admin publication**. Source date is 2026-10-21 UTC; preparation continued on 2026-10-22 in Europe/Madrid. The latest user decision selects fal for initial qualification, with normal fal price plus 30% markup as the customer-authoring basis. Direct recovery/qualification is a later independent route. This document preserves that intent without changing current policy or installing tariff cells.
 
-[Provider evidence](provider-evidence-2026-10-21.md) owns the exact schema/access qualifications. [Prepared matrix](pricing-matrix-2026-10-21.json) contains 1,624 integer input/output rows and 10 fractional-source examples, calculated through `packages/pricing/src/canonical.ts#quoteCanonicalPricing`. Its explicit flags keep execution, activation and current customer pricing false. No runtime candidate estimator was added: direct V4 request contracts are still missing, and the existing canonical package already supplies the required offline commercial calculation.
+[Provider evidence](provider-evidence-2026-10-21.md) owns the exact schema/access qualifications. [Prepared matrix](pricing-matrix-2026-10-21.json) contains 1,624 integer input/output rows and 10 fractional-source examples, calculated through `packages/pricing/src/canonical.ts#quoteCanonicalPricing`. Its explicit flags keep execution, activation and current customer pricing false. No runtime candidate estimator was added: account-level paid behavior and billing precision remain unqualified, and the existing canonical package already supplies the required offline commercial calculation.
 
 ## Supplier reference matrix
 
@@ -48,12 +48,12 @@ New direct API design is distinguished by versioned paths and a generic new call
 
 ## Required work before any tariff activation
 
-1. Obtain direct V4 endpoint/input/output/poll/cancel documentation and verify account eligibility. Recheck fal API availability independently. Keep both routes disabled until their own requirements pass.
+1. Verify fal execution eligibility and its accepted request/result/billing behavior first. The authenticated playground Run control is enabled, but no paid call has been made. Keep application execution disabled until qualification passes. Direct endpoint/input/output/poll/cancel documentation and account recovery are separate prerequisites for adding a later direct route.
 2. Revalidate rates and define supplier source-duration rounding with actual provider evidence. If it remains unknown, retain explicit estimate status and a conservative qualification gate, not a fabricated exact quote.
 3. Use the existing canonical tariff-authoring flow to prepare every supported output/mode/resolution selector. Continuous input needs reviewed literal unit components or bands and full-domain validation; a sample matrix cannot certify it.
 4. Retain provider facts, normal fal customer basis, prepared customer cents, effective supplier costs and observed invoice amounts as separate records. Bind future quotes to trusted input facts and selected provider provenance.
 5. Review the exact commercial matrix through the existing preview/confirmation process. Add immutable tariff versions and activation evidence only under separate authorization. No fallback to catalog price or this JSON when live tariff coverage is absent.
-6. After budget authorization, compare bounded real direct and fal jobs against their exact recorded quote, output metadata and ledger. Test ambiguous submission, failures, refunds and fallback eligibility without ever double-submitting an accepted task.
+6. After budget authorization, compare bounded real fal jobs against their exact recorded quote, output metadata and ledger. Qualify any later direct route separately. Test ambiguous submission, failures, refunds and fallback eligibility without ever double-submitting an accepted task.
 
 ## Offline validation performed
 

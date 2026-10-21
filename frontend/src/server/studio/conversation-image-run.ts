@@ -198,6 +198,7 @@ export async function runStudioImageActions(options: {
       return options.factories ? options.factories[surface](actor, {enabled: options.enabled}).recover(quoteId) : generation.recover(quoteId);
     },
     prepareImage: async action => {
+      if(input.shotPlanRevision)throw new AgentApiError('PARAMETER_INVALID','The revised shot plan requires a new video quote.');
       const draft = {reply: action.reply,image: imageSelectionSchema.strip().parse(action)};
       // Validate selection before saving intent. Catalog/ownership failures remain terminal.
       const catalog = await generation.catalog();
@@ -216,7 +217,7 @@ export async function runStudioImageActions(options: {
       }).prepare(request);
     },
   });
-  const draft = await director({referenceFingerprint:options.referenceFingerprint,message: input.message, locale:input.locale, history: options.history, references: options.references, referenceMentions: input.referenceMentions, historyFacts: options.historyFacts,
+  const draft = await director({referenceFingerprint:options.referenceFingerprint,message: input.message, shotPlanRevision:input.shotPlanRevision, locale:input.locale, history: options.history, references: options.references, referenceMentions: input.referenceMentions, historyFacts: options.historyFacts,
     project: await readStudioConversationProject(actor,{exportsEnabled:options.editingEnabled&&options.exportsEnabled,...(options.taskExecution?{taskContext:{message:input.message,requestId:options.taskExecution.taskRequestId}}:{})}),
     checkpoint: async (index, create, params, checkpointOptions) => {
       let solBounds:StudioLunaFallback['solBounds'];

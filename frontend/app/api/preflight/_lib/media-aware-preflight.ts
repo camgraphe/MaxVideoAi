@@ -257,6 +257,7 @@ export async function resolveMediaAwarePreflight(
     mode: request.mode,
     inputSchema: engine.inputSchema,
     mediaConstraintDeps: dependencies.mediaConstraintDeps,
+    elements: request.elements,
   });
   if (!processed.ok) {
     const body = processed.body;

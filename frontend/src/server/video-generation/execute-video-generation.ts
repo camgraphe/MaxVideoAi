@@ -130,6 +130,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     endImageUrl,
     isBytePlusV1a,
     trustedResolvedReferences,
+    elements: elements ?? undefined,
   };
   const attachmentProcessing = finalFacts ? restoreSeedanceFinalAttachments(finalFacts, attachmentParams)
     : await processAndValidateGenerationAttachments(attachmentParams);

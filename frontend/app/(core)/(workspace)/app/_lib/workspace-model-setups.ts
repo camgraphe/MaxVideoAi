@@ -58,7 +58,8 @@ function asset(value: unknown, fieldId?: string): unknown {
     'status',
     'url',
     'assetId',
-    ...(fieldId ? ['fieldId', 'type', 'size', 'width', 'height', 'durationSec'] : []),
+    'type', 'size', 'width', 'height', 'durationSec',
+    ...(fieldId ? ['fieldId'] : []),
   ]) {
     if (value[key] !== undefined) result[key] = value[key];
   }
@@ -177,11 +178,13 @@ export function serializeWorkspaceModelSetup(
         !('video' in element)
       )
         throw new Error('invalid');
+      if (element.voiceId !== undefined && !text(element.voiceId)) throw new Error('invalid');
       return {
         id: element.id,
         frontal: asset(element.frontal),
         video: asset(element.video),
         references: element.references.map((entry) => asset(entry)),
+        ...(element.voiceId !== undefined ? { voiceId: element.voiceId } : {}),
       };
     });
     const setup = {

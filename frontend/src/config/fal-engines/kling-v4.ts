@@ -18,7 +18,7 @@ const imageInput: Partial<EngineInputField> = {
 };
 const videoInput: Partial<EngineInputField> = {
   source: 'either', minCount: 0, maxCount: 1, maxSizeMB: 300,
-  minDurationSec: 3, maxDurationSec: 30,
+  minDurationSec: 3, maxDurationSec: 30.05,
 };
 const modeCaps: NonNullable<EngineCaps['modeCaps']> = Object.fromEntries(modes.map(mode => [mode, {
   modes: [mode], duration: { options: KLING_V4_DURATIONS, default: '5' },
@@ -37,7 +37,7 @@ export const KLING_V4_ENGINE: EngineCaps = {
   modes, maxDurationSec: 30, resolutions: [...KLING_V4_RESOLUTIONS],
   aspectRatios: [...KLING_V4_ASPECT_RATIOS], fps: [], audio: true,
   upscale4k: false, extend: false, motionControls: false, keyframes: false, params: {},
-  inputLimits: { promptMaxChars: 2500, promptMaxCharsSource: 'official', imageMaxMB: 30, videoMaxMB: 300, videoMaxDurationSec: 30 },
+  inputLimits: { promptMaxChars: 2500, promptMaxCharsSource: 'official', imageMaxMB: 30, videoMaxMB: 300, videoMaxDurationSec: 30.05 },
   inputSchema: {
     required: [
       { id: 'prompt', type: 'text', label: 'Prompt', modes, requiredInModes: ['v2v'], description: 'Generation accepts a prompt or multi-shot scenes. Video editing requires a prompt.' },
@@ -55,7 +55,7 @@ export const KLING_V4_ENGINE: EngineCaps = {
       { id: 'aspect_ratio', type: 'enum', label: 'Aspect ratio', modes: ['ref2v'], values: ['auto', ...KLING_V4_ASPECT_RATIOS], default: '16:9' },
     ],
     referenceBudget: { fieldIds: ['image_url', 'image_urls', 'video_urls'], modes: ['ref2v'], maxTotal: 15, countUniqueUrls: false, maxByType: { image: 10, video: 5 } },
-    constraints: { minImageSidePx: 300, maxImageSizeMB: 30, maxVideoSizeMB: 300, maxCombinedVideoDurationSec: 30 },
+    constraints: { ownedAssetModes: ['i2v', 'ref2v', 'v2v'], minImageSidePx: 300, maxImageSizeMB: 30, maxVideoSizeMB: 300, maxCombinedVideoDurationSec: 30, combinedDurationModes: ['ref2v'] },
   },
   // Source rates and input-video billing are owned by the dedicated pricing adapter.
   // An unpublished contract supplies neither a customer tariff nor a price hint.

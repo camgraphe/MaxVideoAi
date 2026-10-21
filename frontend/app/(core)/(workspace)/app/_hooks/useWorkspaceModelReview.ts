@@ -186,6 +186,7 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
           supportsAudioToggle: candidate.supportsAudioToggle,
           voiceControlEnabled: candidate.voiceControlEnabled,
           inputAssets: candidate.setup.inputAssets,
+          klingElements: candidate.setup.klingElements,
           memberTier,
         })
       : null;

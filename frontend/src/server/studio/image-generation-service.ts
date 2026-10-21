@@ -1,3 +1,5 @@
+import {verifyResolvedGenerationReferencesForActor} from '@/server/agent-api/resolve-generation-references';
+import type {KlingV4OwnedMediaDependencies} from '@/app/api/generate/_lib/kling-v4-owned-media';
 import { isWorkspaceModelCertifiedForBlock, isStudioConversationVideoModeCertified } from "@/app/(core)/(workspace)/app/studio/_shared/_lib/models/workspace-model-certification";
 import {recordedStudioOutputDuration,recordedStudioSourceVideoOutput} from './conversation-quote-facts';
 import {customerDisplayPrice} from '@/lib/customer-price-presentation';
@@ -72,6 +74,7 @@ function certified(catalog: AgentPublicGenerationEngine[], surface: 'image' | 'v
 
 export type StudioImageGenerationOptions = {
   enabled: boolean;
+  referenceDependencies?: {resolveOwnedReferenceAsset?: typeof resolveOwnedReferenceAssetForActor; resolveMedia?: typeof resolveStudioMedia; klingV4Media?: KlingV4OwnedMediaDependencies};
   expectedReferenceFingerprint?: string;
   prepareDependencies?: Partial<
     Omit<PrepareGenerationDependencies, "trialRiskContext">
@@ -121,6 +124,8 @@ function createStudioVisualGenerationService(
     executor?: TransactionQueryExecutor,
   ): Promise<ResolvedReference[]> {
     const references: ResolvedReference[] = [];
+    const resolveOwned = options.referenceDependencies?.resolveOwnedReferenceAsset ?? resolveOwnedReferenceAssetForActor;
+    const resolveMedia = options.referenceDependencies?.resolveMedia ?? resolveStudioMedia;
     for (const reference of request.references) {
       if (reference.kind !== "asset")
         throw new AgentApiError(
@@ -128,13 +133,13 @@ function createStudioVisualGenerationService(
           "Select owned reference media from your library.",
         );
       try {
-        const observed = await resolveOwnedReferenceAssetForActor(
+        const observed = await resolveOwned(
           actor,
           reference.assetId,
           executor ? { executor } : {},
         );
         const ref = { type: 'asset', assetId: reference.assetId, kind: observed.mediaKind };
-        await resolveStudioMedia(
+        await resolveMedia(
           actor.userId,
           ref,
           executor ? (sql, params) => executor.query(sql, params) : undefined,
@@ -143,7 +148,7 @@ function createStudioVisualGenerationService(
         // Confirmation locks the strict asset and source provenance first.
         // Read canonical facts again under that lock; the initial kind lookup
         // must never supply stale URL/duration facts to pricing or dispatch.
-        const asset=executor?await resolveOwnedReferenceAssetForActor(actor,reference.assetId,{executor}):observed;
+        const asset=executor?await resolveOwned(actor,reference.assetId,{executor}):observed;
         if (surface==='image'&&asset.mediaKind !== "image") throw new Error("IMAGE_REQUIRED");
         references.push({
           ...asset,
@@ -157,16 +162,17 @@ function createStudioVisualGenerationService(
         );
       }
     }
+    const verifiedReferences=await verifyResolvedGenerationReferencesForActor(request,actor,references,options.referenceDependencies?.klingV4Media);
     if (
       options.expectedReferenceFingerprint !== undefined &&
-      studioReferenceFingerprint(references) !==
+      studioReferenceFingerprint(verifiedReferences) !==
         options.expectedReferenceFingerprint
     )
       throw new AgentApiError(
         "REFERENCE_INVALID",
         "The references changed after Studio reviewed them. Send a new message to review them again.",
       );
-    return references;
+    return verifiedReferences;
   }
   const prepare = createPrepareGenerationForActorService(
     accountUrl,

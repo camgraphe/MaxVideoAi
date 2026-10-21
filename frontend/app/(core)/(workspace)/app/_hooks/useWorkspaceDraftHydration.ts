@@ -205,13 +205,7 @@ export function useWorkspaceDraftHydration({
 
       const storedMultiPromptEnabled = readStorage(STORAGE_KEYS.multiPromptEnabled);
       setMultiPromptEnabled(storedMultiPromptEnabled === 'true');
-      setMultiPromptScenes(
-        parseStoredMultiPromptScenes(
-          readStorage(STORAGE_KEYS.multiPromptScenes),
-          createLocalId,
-          createMultiPromptScene,
-        ),
-      );
+
 
       const storedShotType = readStorage(STORAGE_KEYS.shotType);
       if (storedShotType === 'customize' || storedShotType === 'intelligent') {
@@ -237,6 +231,14 @@ export function useWorkspaceDraftHydration({
           ? initialPreviewGroup?.items.find((item) => item.meta?.curated)?.engineId ?? null
           : null,
       });
+      setMultiPromptScenes(
+        parseStoredMultiPromptScenes(
+          readStorage(STORAGE_KEYS.multiPromptScenes),
+          createLocalId,
+          createMultiPromptScene,
+          initialForm.form?.engineId === 'kling-v4',
+        ),
+      );
       preserveStoredDraftRef.current = initialForm.preserveStoredDraft;
       hasStoredFormRef.current = initialForm.hasStoredForm;
       if (initialForm.form) {

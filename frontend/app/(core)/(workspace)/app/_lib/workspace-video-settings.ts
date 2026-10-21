@@ -123,8 +123,13 @@ function readVoiceIdsInput(value: unknown): string {
   return ids.filter((entry) => entry.length > 0).join(', ');
 }
 
-function readMultiPromptScenes(value: unknown, createLocalId: CreateLocalId): MultiPromptScene[] | null {
+function readMultiPromptScenes(value: unknown, createLocalId: CreateLocalId, preserveExact = false): MultiPromptScene[] | null {
   if (!Array.isArray(value)) return null;
+  if (preserveExact) return value.map((entry) => {
+    const record = readRecord(entry);
+    if (typeof record.prompt !== 'string' || typeof record.duration !== 'number' || !Number.isFinite(record.duration)) throw new Error('Invalid Kling 4.0 shot plan in saved settings.');
+    return { id: typeof record.id === 'string' ? record.id : createLocalId('scene'), prompt: record.prompt, duration: record.duration };
+  });
   const scenes = value
     .map((entry) => {
       if (!entry || typeof entry !== 'object') return null;
@@ -183,6 +188,7 @@ function readSnapshotInputAssets(value: unknown): Record<string, (ReferenceAsset
       url,
       width,
       height,
+      ...(typeof attachment.durationSec === 'number' ? { durationSec: attachment.durationSec } : {}),
       assetId,
       status: 'ready',
     };
@@ -207,11 +213,56 @@ function buildKlingAssetFromUrl(
   };
 }
 
+/** V4 snapshots refuse malformed subjects instead of filtering entries and changing identity order. */
+function readKlingV4SnapshotElements(value: unknown, createLocalId: CreateLocalId): KlingElementState[] {
+  if (value === null) return [];
+  if (!Array.isArray(value) || value.length > 7) throw new Error('Invalid Kling 4.0 saved subjects.');
+  return value.map((entry, index) => {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) throw new Error('Invalid Kling 4.0 saved subject.');
+    const record = entry as Record<string, unknown>;
+    const optionalString = (key: string): string | undefined => {
+      const field = record[key];
+      if (field === undefined || field === null) return undefined;
+      if (typeof field !== 'string' || !field.trim()) throw new Error(`Invalid saved subject ${key}.`);
+      return field;
+    };
+    const strings = (key: string): string[] => {
+      const field = record[key];
+      if (field === undefined || field === null) return [];
+      if (!Array.isArray(field) || field.length > 3 || field.some((item) => typeof item !== 'string' || !item.trim())) {
+        throw new Error(`Invalid saved subject ${key}.`);
+      }
+      return field as string[];
+    };
+    const urls = strings('referenceImageUrls');
+    const ids = strings('referenceAssetIds');
+    if (ids.length && ids.length !== urls.length) throw new Error('Saved subject reference identities do not match its views.');
+    const makeAsset = (url: string | undefined, kind: 'image' | 'video', assetId: string | undefined, view: number) =>
+      url ? { ...buildKlingAssetFromUrl(url, kind, view, createLocalId), ...(assetId ? { assetId } : {}) } : null;
+    const frontalUrl = optionalString('frontalImageUrl');
+    const videoUrl = optionalString('videoUrl');
+    const voiceId = optionalString('voiceId');
+    if (!frontalUrl && !videoUrl && !urls.length) throw new Error('Saved subject has no visual reference.');
+    return {
+      id: optionalString('id') ?? createLocalId(`element_${index}`),
+      frontal: makeAsset(frontalUrl, 'image', optionalString('frontalAssetId'), 0),
+      video: makeAsset(videoUrl, 'video', optionalString('videoAssetId'), 0),
+      references: Array.from({ length: 3 }, (_, view) => makeAsset(urls[view], 'image', ids[view], view)),
+      ...(voiceId ? { voiceId } : {}),
+    };
+  });
+}
+
 function readSnapshotKlingElements(
   value: unknown,
   createLocalId: CreateLocalId,
-  createFallbackKlingElement: () => KlingElementState
+  createFallbackKlingElement: () => KlingElementState,
+  preserveExact = false
 ): KlingElementState[] | null {
+  if (preserveExact) {
+    const elements = readKlingV4SnapshotElements(value, createLocalId);
+    return elements.length ? elements : [createFallbackKlingElement()];
+  }
   if (value !== null && !Array.isArray(value)) return null;
   const elements = Array.isArray(value)
     ? value
@@ -232,13 +283,13 @@ function readSnapshotKlingElements(
             typeof record.videoUrl === 'string' && record.videoUrl.trim().length ? record.videoUrl.trim() : null;
           if (!frontalUrl && referenceUrls.length === 0 && !videoUrl) return null;
           const references = Array.from({ length: 3 }, (_, index) =>
-            referenceUrls[index] ? buildKlingAssetFromUrl(referenceUrls[index], 'image', index, createLocalId) : null
+            referenceUrls[index] ? { ...buildKlingAssetFromUrl(referenceUrls[index], 'image', index, createLocalId), ...(typeof (record.referenceAssetIds as unknown[])?.[index] === 'string' ? {assetId: (record.referenceAssetIds as string[])[index]} : {}) } : null
           );
           return {
             id: createLocalId(`element_${elementIndex}`),
-            frontal: frontalUrl ? buildKlingAssetFromUrl(frontalUrl, 'image', 0, createLocalId) : null,
+            frontal: frontalUrl ? { ...buildKlingAssetFromUrl(frontalUrl, 'image', 0, createLocalId), ...(typeof record.frontalAssetId === 'string' ? {assetId: record.frontalAssetId} : {}) } : null,
             references,
-            video: videoUrl ? buildKlingAssetFromUrl(videoUrl, 'video', 0, createLocalId) : null,
+            video: videoUrl ? { ...buildKlingAssetFromUrl(videoUrl, 'video', 0, createLocalId), ...(typeof record.videoAssetId === 'string' ? {assetId: record.videoAssetId} : {}) } : null,
           } satisfies KlingElementState;
         })
         .filter((element): element is KlingElementState => Boolean(element))
@@ -280,7 +331,7 @@ export function resolveVideoSettingsSnapshot(
   const advanced = readRecord(record.advanced);
   const refs = readRecord(record.refs);
   const meta = readRecord(record.meta);
-  const multiPromptScenes = readMultiPromptScenes(advanced.multiPrompt, options.createLocalId);
+  const multiPromptScenes = readMultiPromptScenes(advanced.multiPrompt, options.createLocalId, engine.id === 'kling-v4');
 
   return {
     engine,
@@ -325,7 +376,7 @@ export function resolveVideoSettingsSnapshot(
     },
     inputAssets: Object.prototype.hasOwnProperty.call(refs, 'inputs') ? readSnapshotInputAssets(refs.inputs) : null,
     klingElements: Object.prototype.hasOwnProperty.call(refs, 'elements')
-      ? readSnapshotKlingElements(refs.elements, options.createLocalId, options.createFallbackKlingElement)
+      ? readSnapshotKlingElements(refs.elements, options.createLocalId, options.createFallbackKlingElement, engine.id === 'kling-v4')
       : null,
   };
 }

@@ -230,7 +230,26 @@ export function buildPaidVideoRequestBody(
   if (!supportsAspectRatio(execution)) delete settings.aspectRatio;
   const multiPrompt = projectMultiPrompt(settings);
   const extraInputValues = projectExtraInputValues(settings);
-  const references = materializeReferences(execution);
+  const materialized = materializeReferences(execution);
+  const subjectSlots = new Set<number>();
+  const subjectReference = (slot: number, kind: 'image' | 'video') => {
+    const reference = materialized.find(reference => reference.role === 'reference' && reference.slot === slot);
+    if (!reference?.assetId || reference.kind !== kind) throw new Error('A verified owned subject reference is required before provider submission.');
+    subjectSlots.add(slot);
+    return reference;
+  };
+  const elements = execution.request.subjects?.map(subject => {
+    if (execution.request.engineId !== 'kling-v4' || !['ref2v', 'v2v'].includes(execution.request.mode)) throw new Error('Unsupported subjects.');
+    if (subject.kind === 'video') {
+      const video = subjectReference(subject.referenceSlot, 'video');
+      return {videoUrl: video.url, videoAssetId: video.assetId};
+    }
+    const front = subjectReference(subject.frontalReferenceSlot, 'image');
+    const views = subject.referenceSlots.map(slot => subjectReference(slot, 'image'));
+    return {frontalImageUrl: front.url, frontalAssetId: front.assetId,
+      referenceImageUrls: views.map(view => view.url), referenceAssetIds: views.map(view => view.assetId!)};
+  });
+  const references = materialized.filter(reference => reference.role !== 'reference' || reference.slot === undefined || !subjectSlots.has(reference.slot));
   const body: Record<string, unknown> = {
     engineId: execution.request.engineId,
     mode: toEngineGenerationMode(execution.request.engineId, execution.request.mode),
@@ -241,6 +260,7 @@ export function buildPaidVideoRequestBody(
     ...settings,
     ...(Object.keys(extraInputValues).length ? { extraInputValues } : {}),
     ...(multiPrompt?.length ? { multiPrompt } : {}),
+    ...(elements?.length ? { elements } : {}),
     ...(execution.request.seedanceWorkflow ? { seedanceWorkflow: execution.request.seedanceWorkflow, iterationCount: 1 } : {}),
     inputs: [],
   };
@@ -323,7 +343,7 @@ export function buildPaidVideoRequestBody(
     const audio = audioReferences.map(({ url }) => url);
     const hasDocumentReference = typeof extraInputValues.file_url === 'string'
       || typeof extraInputValues.web_url === 'string';
-    if (!referenceMedia.length && !start.length && !hasDocumentReference) invalidModeReferences();
+    if (!referenceMedia.length && !start.length && !hasDocumentReference && !elements?.length) invalidModeReferences();
     if (start[0]) body.imageUrl = start[0].url;
     if (end[0]) body.endImageUrl = end[0].url;
     if (images.length) body.referenceImages = images;

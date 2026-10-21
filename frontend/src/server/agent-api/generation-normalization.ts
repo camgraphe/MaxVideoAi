@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 
 import type {
   CanonicalGenerationMode,
+  CanonicalGenerationSubject,
   CanonicalGenerationMultiPromptScene,
   CanonicalGenerationReference,
   CanonicalGenerationReferenceRole,
@@ -56,6 +57,7 @@ const TOP_LEVEL_FIELDS = new Set([
   'prompt',
   'settings',
   'references',
+  'subjects',
   'outputCount',
   'seedanceWorkflow',
 ]);
@@ -354,7 +356,8 @@ function normalizeSettings(
   const ordered = Object.fromEntries(
     Object.entries(settings).sort(([left], [right]) => compareCodeUnits(left, right))
   ) as Record<string, CanonicalGenerationSettingValue>;
-  if (Buffer.byteLength(stableJson(ordered), 'utf8') > MAX_CANONICAL_SETTINGS_JSON_BYTES) {
+  const maxSettingsBytes = engineId === 'kling-v4' && Array.isArray(settings.multiPrompt) ? 65_536 : MAX_CANONICAL_SETTINGS_JSON_BYTES;
+  if (Buffer.byteLength(stableJson(ordered), 'utf8') > maxSettingsBytes) {
     fail('settings', 'settings exceeds the canonical size limit.');
   }
   return ordered;
@@ -493,6 +496,42 @@ function assertSurfaceMode(surface: CanonicalGenerationSurface, mode: CanonicalG
   }
 }
 
+function normalizeSubjects(value: unknown, engineId: string, mode: CanonicalGenerationMode,
+  references: CanonicalGenerationReference[]): CanonicalGenerationSubject[] | undefined {
+  if (value === undefined) return undefined;
+  if (engineId !== 'kling-v4' || !['ref2v', 'v2v'].includes(mode)) fail('subjects', 'Subjects are unsupported for this model and mode.');
+  assertDenseDataArray(value, 'subjects', 7);
+  if (!value.length) fail('subjects', 'Provide at least one subject, or omit subjects.');
+  const usedSlots = new Set<number>();
+  const slot = (value: unknown): number => {
+    if (!Number.isSafeInteger(value) || (value as number) < 0) fail('subjects', 'Subject slots must be non-negative integers.');
+    const reference = references.find(reference => reference.role === 'reference' && reference.slot === value);
+    if (!reference || reference.kind !== 'asset') fail('subjects', 'Each subject slot must identify an existing owned asset reference.');
+    if (usedSlots.has(value as number)) fail('subjects', 'Each reference slot may belong to only one subject view.');
+    usedSlots.add(value as number);
+    return value as number;
+  };
+  let videos = 0;
+  return value.map((entry, index) => {
+    const field = `subjects[${index}]`;
+    assertPlainDataObject(entry, field);
+    // No voice ID is accepted until an owned, provider-scoped issuance registry exists.
+    if ('voiceId' in entry || 'voiceBinding' in entry) fail(field, 'Kling voices require verified owned fal issuance provenance; this binding is unavailable.');
+    if (entry.kind === 'image') {
+      assertExactFields(entry, new Set(['kind', 'frontalReferenceSlot', 'referenceSlots']), field);
+      assertDenseDataArray(entry.referenceSlots, `${field}.referenceSlots`, 3);
+      if (!entry.referenceSlots.length) fail(field, 'An image subject requires 1–3 additional views.');
+      return {kind: 'image', frontalReferenceSlot: slot(entry.frontalReferenceSlot), referenceSlots: entry.referenceSlots.map(slot)};
+    }
+    if (entry.kind === 'video') {
+      assertExactFields(entry, new Set(['kind', 'referenceSlot']), field);
+      if (mode !== 'ref2v' || ++videos > 3) fail(field, 'Only reference generation supports up to three video subjects.');
+      return {kind: 'video', referenceSlot: slot(entry.referenceSlot)};
+    }
+    return fail(field, 'Choose an image or video subject.');
+  });
+}
+
 function normalizeOutputCount(
   value: unknown,
   surface: CanonicalGenerationSurface,
@@ -537,7 +576,9 @@ export function normalizeGenerationRequest(input: unknown): CanonicalGenerationR
   assertSurfaceMode(surface, mode);
 
   const settings = normalizeSettings(input.settings, mode, normalizeEngineId(input.engineId));
-  const prompt = normalizeText(final && input.prompt === undefined ? '' : input.prompt, 'prompt', MAX_CANONICAL_PROMPT_CHARS, true);
+  const engineId = normalizeEngineId(input.engineId);
+  const prompt = normalizeText(final && input.prompt === undefined ? '' : input.prompt, 'prompt', engineId === 'kling-v4' ? 2500 : MAX_CANONICAL_PROMPT_CHARS, true);
+  if (engineId === 'kling-v4' && prompt && Array.isArray(settings.multiPrompt)) fail('prompt', 'Choose a prompt or shot plan, exclusively.');
   if (!prompt && !final && !Array.isArray(settings.multiPrompt)) {
     fail('prompt', 'prompt has an invalid length.');
   }
@@ -546,15 +587,18 @@ export function normalizeGenerationRequest(input: unknown): CanonicalGenerationR
     settings.resolution = '480p';
     if (settings.audio === undefined) settings.audio = true;
   }
+  const references = normalizeReferences(input.references, mode, engineId);
+  const subjects = normalizeSubjects(input.subjects, engineId, mode, references);
   return {
     schemaVersion: 1,
+    ...(subjects ? {subjects} : {}),
     ...(seedanceWorkflow ? { seedanceWorkflow } : {}),
     surface,
     engineId: normalizeEngineId(input.engineId),
     mode,
     prompt,
     settings,
-    references: normalizeReferences(input.references, mode, normalizeEngineId(input.engineId)),
+    references,
     outputCount: normalizeOutputCount(input.outputCount, surface),
   };
 }

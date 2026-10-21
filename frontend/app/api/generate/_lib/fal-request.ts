@@ -144,7 +144,7 @@ export function buildFalRequestParts(params: {
         ? params.loop
         : undefined,
     multiPrompt: params.multiPrompt ?? undefined,
-    shotType: params.mode === 'i2v' ? 'customize' : params.shotType ?? undefined,
+    shotType: params.mode === 'i2v' && params.engineId !== 'kling-v4' ? 'customize' : params.shotType ?? undefined,
     seed: typeof params.seed === 'number' ? params.seed : undefined,
     cameraFixed: typeof params.cameraFixed === 'boolean' ? params.cameraFixed : undefined,
     safetyChecker: typeof params.safetyChecker === 'boolean' ? params.safetyChecker : undefined,
