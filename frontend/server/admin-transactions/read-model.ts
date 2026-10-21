@@ -51,6 +51,7 @@ export function mapAdminTransactionRow(row: RawTransactionRow, userEmail: string
     jobVideoUrl: row.job_video_url ? (normalizeMediaUrl(row.job_video_url) ?? row.job_video_url) : null,
     jobDurationSec: row.job_duration_sec ?? null,
     isMcpGeneration: row.is_mcp_generation,
+    isStudioGeneration: row.is_studio_generation,
     jobCreatedAt: row.job_created_at,
     jobProgress: row.job_progress ?? null,
     jobMessage: row.job_message,
