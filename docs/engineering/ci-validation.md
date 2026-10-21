@@ -12,11 +12,13 @@ failed, canceled, missing or unexpectedly skipped required jobs.
 | --- | --- | --- |
 | Fast checks | Exposure guard, catalogue/roster audits, TypeScript, ESLint, image alt checks and fast validation files | Every run |
 | Database and media integration | Disposable PostgreSQL, real FFmpeg tests and three isolated Studio route integrations | Runtime/UI changes; financial changes; full runs |
-| Exhaustive financial cutovers | Both complete cutover/rollback tests, including all 26,818 canonical quote checkpoints | Financial/shared runtime inputs; CI changes; full runs |
+| Exhaustive financial cutovers | Both complete cutover/rollback tests, including all 26,818 canonical quote checkpoints | Tariff/billing changes and explicit commercial inputs; full runs |
 | Browser | Connected Studio, editorial media, prompting tabs and admin smoke | UI/layout/translation changes; runtime/financial changes; full runs |
 
 These lanes run in parallel. The initial financial migration's complete matrix is
-preserved; no quote sampling or assertions were removed. The fast lane requires no
+preserved; no quote sampling or assertions were removed. Fast pricing, canonical
+quote and wallet policy tests remain in the fast lane on every PR and main push,
+including when exhaustive cutovers are not selected. The fast lane requires no
 PostgreSQL, FFmpeg or Chromium installation. Full runs occur daily at 03:23 UTC and
 on manual dispatch of Quality CI. Network source checks and the optional remote
 runtime audit run on these full runs as non-blocking audits.
@@ -26,29 +28,51 @@ runtime audit run on these full runs as non-blocking audits.
 `scripts/select-ci-validation.mjs` compares the entire PR against its base using
 the merge base, or all commits in a main push against the event's previous SHA.
 Rename detection is disabled so both removed and added paths participate.
-An empty diff, unavailable history, invalid event or unknown path requests all
-lanes. Manual and scheduled runs always request all lanes.
+An empty diff, unavailable history or invalid event requests all lanes because
+the comparison cannot establish which inputs changed. Manual and scheduled runs
+always request all lanes. A known diff containing an unrecognized path retains
+database/media and browser coverage without automatically selecting exhaustive
+financial cutovers.
 
 `scripts/_lib/ci-validation-policy.mjs` owns the selection policy:
 
 - Human Markdown documentation and AGENTS instructions use fast checks.
 - Authored Markdown/MDX/JSON content and media/font/text assets use fast checks
-  unless their path identifies financial behavior. Runtime TS/JS files in these
-  directories (including `frontend/content/feature-flags.ts`) request all lanes.
+  unless their path identifies financial behavior, which retains database/media
+  and browser checks. Runtime TS/JS files in these
+  directories (including `frontend/content/feature-flags.ts`) retain database/media
+  and browser coverage.
   Marketing TSX components, CSS and JSON message dictionaries
   additionally retain real browser checks.
-- Other component TSX and route-local UI hooks/clients retain database/media and
-  browser checks. Server pages, route handlers and shared helpers request all lanes.
+- Other component TSX, route-local UI hooks/clients, server pages, route handlers
+  and shared helpers retain database/media and browser checks.
+- Display components, styles, translated copy and ordinary validation tests do
+  not select exhaustive cutovers merely because their path contains a financial
+  word. Their existing fast, database/media and browser checks are preserved.
 - Pricing, tariffs, billing, wallets, checkout, payment, Stripe, quote, credit,
-  transaction, membership and subscription paths always
-  request the complete financial coverage.
-- Shared backend/library code, API routes, model configuration, migrations,
-  dependency/build inputs, tests/fixtures/helpers, scripts, CI files and
-  unrecognized paths request all lanes.
+  transaction, membership, subscription, refund, invoice, ledger, top-up and
+  currency runtime paths and financial fixtures request the complete financial
+  coverage. Both exhaustive cutover test files also select their own lane.
+- Commercial inputs without financial filenames are selected explicitly: the
+  generated engine catalogue, published supplier rates, FAL model fixtures and
+  engine definitions, image/tool supplier rates and monetary formulas, live
+  FAL/audio pricing readers, exchange rates, Studio assistance/media-analysis
+  tariffs and billing formulas, engine-settings pricing storage/projection,
+  its migration, and provider cost/accounting modules. These explicit owners
+  take priority over display/test exemptions.
+  Model identity and marketing-only configuration do not own monetary amounts.
+- Other shared backend/library code, API routes, model configuration, migrations,
+  dependency/build inputs, tests/fixtures/helpers, scripts, CI files and unknown
+  paths do not select exhaustive financial cutovers merely because of their
+  location. They retain normal integration coverage and receive the exhaustive
+  replay on nightly/manual full runs.
 
-Keep these exemptions small. If a presentation component gains ownership of
-financial logic, move that logic into its established server/library owner and
-update the selection tests. New runtime owners default to exhaustive coverage.
+Keep the commercial-input list explicit and update the selection tests when a
+new tariff or billing owner has no financial filename. If a presentation
+component gains ownership of financial logic, move that logic into its established
+server/library owner. Changes to financial fixtures and the two exhaustive
+cutover test files select exhaustive cutovers; changes to other tests or CI
+configuration alone do not.
 
 ## Local commands and test placement
 
