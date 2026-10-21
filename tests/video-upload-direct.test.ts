@@ -2,6 +2,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import { uploadSourceVideo } from '../frontend/src/components/tools/background-removal/_lib/background-removal-workspace-helpers';
+import { chunkedVideoUploadFixture } from './helpers/chunked-video-upload-fixture';
+import { uploadSessionFixture } from './helpers/upload-session-fixture';
 
 import {
   uploadVideoFile,
@@ -15,6 +18,40 @@ test('reference videos over the Vercel function payload limit use chunked upload
   assert.equal(VERCEL_FUNCTION_BODY_LIMIT_BYTES, 4.5 * 1024 * 1024);
   assert.equal(shouldUseChunkedVideoUpload({ size: fourPointSixMb }), true);
   assert.equal(shouldUseChunkedVideoUpload({ size: 1024 * 1024 }), false);
+});
+
+test('background removal imports MOV videos larger than the function body limit',async()=>{
+  const session=await uploadSessionFixture();
+  const upload=chunkedVideoUploadFixture();
+  const original=globalThis.fetch;
+  globalThis.fetch=upload.request;
+  try {
+    const file=new File([new Uint8Array(5*1024*1024)],'reference.mov',{type:'video/quicktime'});
+    const result=await uploadSourceVideo(file,'account-A');
+    assert.equal(upload.completed,true);
+    assert.equal(result.url,upload.asset.url);
+    assert.equal(result.name,'reference.mov');
+    assert.equal(result.mime,'video/quicktime');
+  }finally{session.restore();globalThis.fetch=original;}
+});
+
+test('background removal stops a multipart upload when the authenticated account changes',async()=>{
+  const session=await uploadSessionFixture();
+  let release!:()=>void;
+  let start!:()=>void;
+  const part=new Promise<void>(resolve=>{release=resolve;});
+  const started=new Promise<void>(resolve=>{start=resolve;});
+  const upload=chunkedVideoUploadFixture(()=>{start();return part;});
+  const original=globalThis.fetch;
+  globalThis.fetch=upload.request;
+  try {
+    const file=new File([new Uint8Array(5*1024*1024)],'reference.mov',{type:'video/quicktime'});
+    const pending=uploadSourceVideo(file,'account-A');
+    await started;
+    session.switchTo('account-B');release();
+    await assert.rejects(pending,/UNAUTHORIZED/);
+    assert.equal(upload.completed,false);
+  }finally{release();session.restore();globalThis.fetch=original;}
 });
 
 test('workspace video reference uploads bypass the Next API body limit for large files', () => {
@@ -31,6 +68,26 @@ test('workspace video reference uploads bypass the Next API body limit for large
   assert.ok(fs.existsSync(path.join(root, 'frontend/app/api/uploads/video/multipart/part/route.ts')));
   assert.ok(fs.existsSync(path.join(root, 'frontend/app/api/uploads/video/multipart/complete/route.ts')));
   assert.ok(fs.existsSync(path.join(root, 'frontend/app/api/uploads/video/multipart/abort/route.ts')));
+});
+
+test('browser video upload routes keep single-request transport inside the shared uploader',()=>{
+  const root=process.cwd();
+  const files:string[]=[];
+  function visit(directory:string) {
+    for(const entry of fs.readdirSync(path.join(root,directory),{withFileTypes:true})) {
+      const file=path.join(directory,entry.name);
+      if(entry.isDirectory()&&!['node_modules','.next','server','api','scripts'].includes(entry.name))visit(file);
+      else if(entry.isFile()&&/\.[jt]sx?$/.test(entry.name))files.push(file);
+    }
+  }
+  visit('frontend');
+  const directSenders:string[]=[];
+  for(const file of files) {
+    const source=fs.readFileSync(path.join(root,file),'utf8');
+    if(/['"]\/api\/uploads\/video['"]/.test(source)&&/\b(?:fetch|authFetch|ownedAuthFetch|request)\s*\(/.test(source))directSenders.push(file);
+    if(/\/api\/uploads\/(?:\$\{|['"]\s*\+)/.test(source))assert.match(source,/import\s*\{[^}]*\buploadVideoFile\b[^}]*\}\s*from\s*['"]@\/lib\/client-video-upload['"]/,file+' must route video files through the shared uploader');
+  }
+  assert.deepEqual(directSenders.sort(),['frontend/lib/client-video-upload.ts']);
 });
 
 test('audio source video uploads use the chunked video upload helper', () => {

@@ -1,4 +1,6 @@
 import { authFetch } from '@/lib/authFetch';
+import { uploadVideoFile } from '@/lib/client-video-upload';
+import { ownedAuthFetch } from '@/lib/owned-auth-fetch';
 import {
   BACKGROUND_REMOVAL_OUTPUT_CODECS,
   BACKGROUND_REMOVAL_STUDIO_COLORS,
@@ -16,23 +18,11 @@ import type {
 } from './background-removal-workspace-types';
 import type { Job } from '@/types/jobs';
 
-export async function uploadSourceVideo(file: File, signal?: AbortSignal): Promise<BackgroundRemovalSourceAsset> {
-  const form = new FormData();
-  form.append('file', file);
-  const response = await authFetch('/api/uploads/video', {
-    method: 'POST',
-    body: form,
-    signal,
+export async function uploadSourceVideo(file: File, userId: string, signal?: AbortSignal): Promise<BackgroundRemovalSourceAsset> {
+  return uploadVideoFile(file, {
+    request: (input, init) => ownedAuthFetch(input, userId, {...init, signal}),
+    abortRequest: (input, init) => ownedAuthFetch(input, userId, {...init, signal: AbortSignal.timeout(10_000)}),
   });
-  const payload = (await response.json().catch(() => null)) as {
-    ok?: boolean;
-    error?: string;
-    asset?: BackgroundRemovalSourceAsset;
-  } | null;
-  if (!response.ok || !payload?.ok || !payload.asset?.url) {
-    throw new Error(payload?.error ?? `Upload failed (${response.status})`);
-  }
-  return payload.asset;
 }
 
 export function readBackgroundRemovalVideoMetadata(url: string): Promise<BackgroundRemovalVideoMetadata> {

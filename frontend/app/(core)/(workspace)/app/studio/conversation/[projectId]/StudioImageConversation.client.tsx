@@ -91,7 +91,7 @@ function StudioImageConversationWorkspace({
       window.history.replaceState(window.history.state,'',url.pathname+url.search+url.hash);
     }
   },[exampleEntryId]);
-  const shelf = useConversationMediaShelf(studio.conversation.turns,locale,mediaEnabled,{scopeKey:`${accountKey}:${projectId}`,ready:!studio.loading&&!studio.error});
+  const shelf = useConversationMediaShelf(studio.conversation.turns,locale,mediaEnabled,accountKey,{scopeKey:`${accountKey}:${projectId}`,ready:!studio.loading&&!studio.error});
   const references = shelf.references;
   const unavailableReferences = !mediaEnabled&&references.some(ref=>ref.kind&&ref.kind!=='image');
   const [dropping,setDropping] = useState(false);
@@ -342,6 +342,7 @@ function StudioImageConversationWorkspace({
       {help && <ConversationHelp locale={locale} editingEnabled={editingEnabled} onClose={() => setHelp(false)} trigger={helpTrigger}/>}
       {library && (
         <ImageReferenceLibrary
+          accountKey={accountKey}
           onClose={() => setLibrary(false)}
           onSelect={select}
           mediaEnabled={mediaEnabled}

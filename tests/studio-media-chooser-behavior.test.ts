@@ -5,6 +5,8 @@ import {JSDOM} from 'jsdom';
 import * as React from 'react';
 import {createRoot} from 'react-dom/client';
 import type {ImageLibraryAsset} from '../frontend/src/lib/studio/image-library';
+import {chunkedVideoUploadFixture} from './helpers/chunked-video-upload-fixture';
+import {uploadSessionFixture} from './helpers/upload-session-fixture';
 
 const require = createRequire(import.meta.url);
 require.extensions['.css'] = module => {module.exports = new Proxy({}, {get: (_target, property) => property === '__esModule' ? false : String(property)});};
@@ -32,20 +34,21 @@ async function mountChooser(request: typeof fetch, options: {purpose?: 'referenc
     Object.defineProperty(globalThis,key,{configurable: true,writable: true,value});
   }
   const {ImageReferenceLibrary} = await import('../frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/_components/ImageReferenceLibrary.client');
+  const session=await uploadSessionFixture();
   const selected: ImageLibraryAsset[] = [];
   const originalTrigger = dom.window.document.getElementById('opener')!;
   dom.window.document.getElementById(explicitOpener ? 'composer' : 'opener')!.focus();
   const root = createRoot(dom.window.document.getElementById('root')!);
   let mounted = true;
   const unmount = async () => {if(mounted){await React.act(async () => root.unmount());mounted=false;}};
-  const element = React.createElement(ImageReferenceLibrary,{onClose: () => {},onSelect: asset => selected.push(asset),mediaEnabled: true,...options,...(explicitOpener ? {returnFocusTo: originalTrigger} : {})});
+  const element = React.createElement(ImageReferenceLibrary,{accountKey:'account-A',onClose: () => {},onSelect: asset => selected.push(asset),mediaEnabled: true,...options,...(explicitOpener ? {returnFocusTo: originalTrigger} : {})});
   await React.act(async () => root.render(strict ? React.createElement(React.StrictMode,null,element) : element));
   const settle = () => React.act(async () => {await new Promise(resolve => setTimeout(resolve,230));});
   const button = (label: string) => [...dom.window.document.querySelectorAll<HTMLButtonElement>('button')].find(item => item.getAttribute('aria-label') === label || item.textContent?.trim() === label);
   await settle();
-  return {dom,selected,button,settle,unmount,focusBeforeModal,
+  return {dom,selected,button,settle,unmount,focusBeforeModal,session,
     async click(label: string) {const target = button(label);assert.ok(target,'button '+label+' exists');await React.act(async () => target.click());},
-    async dispose() {await unmount();dom.window.close();for(const [key,descriptor] of previous){if(descriptor)Object.defineProperty(globalThis,key,descriptor);else Reflect.deleteProperty(globalThis,key);}},
+    async dispose() {await unmount();session.restore();dom.window.close();for(const [key,descriptor] of previous){if(descriptor)Object.defineProperty(globalThis,key,descriptor);else Reflect.deleteProperty(globalThis,key);}},
   };
 }
 
@@ -111,6 +114,47 @@ test('a failed upload clears the file input for retry and late upload results ca
     await React.act(async () => finish(response({ok:true,asset:image})));
     assert.deepEqual(fixture.selected,[],'a replaced upload intent must not attach to the current filter');
   } finally {await fixture.dispose();}
+});
+
+for (const purpose of ['reference','timeline'] as const) {
+  test('Studio '+purpose+' library imports a MOV larger than the function body limit',async()=>{
+    const upload=chunkedVideoUploadFixture();
+    const fixture=await mountChooser(upload.request,{purpose});
+    try {
+      await fixture.click('Videos');await fixture.settle();
+      const input=fixture.dom.window.document.querySelector<HTMLInputElement>('input[type="file"]')!;
+      const file=new fixture.dom.window.File([new Uint8Array(5*1024*1024)],'reference.mov',{type:'video/quicktime'});
+      Object.defineProperty(input,'files',{configurable:true,value:[file]});
+      await React.act(async()=>input.dispatchEvent(new fixture.dom.window.Event('change',{bubbles:true})));
+      assert.equal(fixture.dom.window.document.querySelector('[role="alert"]')===null,true,'the video import must succeed');
+      assert.equal(upload.completed,true);
+      assert.equal(fixture.selected.length,1);
+      assert.equal(fixture.selected[0].assetId,upload.asset.assetId);
+      assert.equal(fixture.selected[0].kind,'video');
+      assert.equal(fixture.selected[0].name,'reference.mov');
+      assert.deepEqual(fixture.selected[0].mediaFacts,upload.asset.mediaFacts);
+    }finally{await fixture.dispose();}
+  });
+}
+
+for(const change of ['filter','account'] as const)test('changing the library '+change+' cancels a chunked MOV import without attaching it',async()=>{
+  let release!:()=>void;
+  const part=new Promise<void>(resolve=>{release=resolve;});
+  const upload=chunkedVideoUploadFixture(()=>part);
+  const fixture=await mountChooser(upload.request);
+  try {
+    await fixture.click('Videos');await fixture.settle();
+    const input=fixture.dom.window.document.querySelector<HTMLInputElement>('input[type="file"]')!;
+    const file=new fixture.dom.window.File([new Uint8Array(5*1024*1024)],'reference.mov',{type:'video/quicktime'});
+    Object.defineProperty(input,'files',{configurable:true,value:[file]});
+    await React.act(async()=>input.dispatchEvent(new fixture.dom.window.Event('change',{bubbles:true})));
+    assert.equal(fixture.button('Uploading…')?.disabled,true);
+    if(change==='filter')await fixture.click('Images');else fixture.session.switchTo('account-B');
+    await React.act(async()=>{release();await part;});
+    assert.equal(upload.completed,false);
+    assert.deepEqual(fixture.selected,[]);
+    if(change==='filter')assert.equal(fixture.dom.window.document.querySelector('[role="alert"]')===null,true);
+  }finally{release();await fixture.dispose();}
 });
 
 for (const [locale,add,upload] of [['fr','Ajouter à la conversation','Importer depuis cet appareil'],['es','Añadir a la conversación','Subir desde este dispositivo']] as const) {

@@ -256,7 +256,7 @@ export function AssetLibraryModal({
   const importingLabel = copyAssetLibrary.importing ?? DEFAULT_ASSET_LIBRARY_COPY.importing;
   const importFailedLabel = copyAssetLibrary.importFailed ?? DEFAULT_ASSET_LIBRARY_COPY.importFailed;
   const importAccept = assetType === 'video' ? 'video/*' : 'image/*';
-  const importEndpoint = assetType === 'video' ? '/api/uploads/video' : '/api/uploads/image';
+  const importEndpoint = '/api/uploads/image';
   const emptyLabel =
     source === 'recent'
       ? assetType === 'video'
