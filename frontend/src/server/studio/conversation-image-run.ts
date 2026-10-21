@@ -42,15 +42,21 @@ import {StudioConnectedPersistenceError} from './montage-command';
 import {discardStudioPreparedQuote} from './conversation-quote-command';
 import {imageSelectionSchema} from '@/lib/studio/conversation-creation-contract';
 import {studioGreetingReply} from './conversation-intent';
+import {planStudioExtensionAssembly,studioExtensionSourceSnapshot} from './conversation-extension-assembly';
+import {readStudioConversationTimeline} from './conversation-timeline';
 
 async function prepareMediaAction(options: {
   actor: StudioGenerationActor; turn: StoredImageTurn; input: ImageTurnInput;
   references:ResolvedReference[];
-  referenceFingerprint: string; enabled: boolean; factories: StudioMediaFactories;
+  referenceFingerprint: string; enabled: boolean; factories: StudioMediaFactories;editingEnabled?:boolean;
 }, action: StudioMediaIntent, callId: string) {
   const {actor, turn, factories} = options;
   const selection = await validateStudioMediaRequest(actor, action, options.input, factories, options.enabled,{reviewedReferences:options.references});
-  if (!turn.draft_json) await persistImageDraft(actor, turn, {reply: action.reply, image: null, media: action}, options.referenceFingerprint);
+  if (!turn.draft_json) {
+    const source=selection.extensionSource;
+    const extensionAssembly=source&&options.editingEnabled&&selection.extensionOutput==='continuation'?planStudioExtensionAssembly(action,(await readStudioConversationTimeline(actor)).data,source.mediaFacts?.source==='probe'?source.mediaFacts.durationSec??null:null,studioExtensionSourceSnapshot(source)):undefined;
+    await persistImageDraft(actor, turn, {reply: action.reply, image: null, media: action,...(extensionAssembly?{extensionAssembly}:{})}, options.referenceFingerprint);
+  }
   const request = await selection.materialize();
   const onQuotePrepared = async (quote: McpGenerationQuote<CanonicalGenerationRequest | CanonicalAudioRequest>, executor: TransactionQueryExecutor) => {
     await attachImageQuote(actor, turn, quote.quoteId, executor);
@@ -66,7 +72,7 @@ async function prepareMediaAction(options: {
 export async function resumeStudioImageAction(options: {
   actor: StudioGenerationActor; turn: StoredImageTurn; input: ImageTurnInput;
   references: ResolvedReference[]; referenceFingerprint: string; enabled: boolean; factory: ImageGenerationFactory;
-  factories?: StudioMediaFactories; mediaEnabled?: boolean;
+  factories?: StudioMediaFactories; mediaEnabled?: boolean;editingEnabled?:boolean;
 }) {
   const {actor, turn, factory} = options;
   const draft = turn.draft_json;

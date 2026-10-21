@@ -215,6 +215,8 @@ export type EngineModeDurationCaps =
     };
 
 export interface EngineModeUiCaps {
+  /** Verified artifact layout; absent modes require manual continuity review. */
+  extensionOutput?:'continuation'|'combined';
   modes: Mode[];
   duration?: EngineModeDurationCaps;
   frames?: number[];

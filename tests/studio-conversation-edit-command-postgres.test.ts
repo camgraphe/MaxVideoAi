@@ -64,6 +64,40 @@ async function videoQualificationFixture(t: TestContext) {
   return {pg,actor,deps,project,inspections,inspectionHook,hydrateVideoFacts,unmeasure,assembly,assertNoEdit};
 }
 
+test('assembling an original and its continuation derives a ten-second sequence from measured files',async t=>{
+  const {editStudioConversationTimeline}=await import('../frontend/src/server/studio/conversation-edit-command');
+  const {pg,actor,deps,project}=await videoQualificationFixture(t);
+  await pg.pool.query("UPDATE media_assets SET metadata=$1::jsonb",[JSON.stringify({mediaFacts:{source:'probe',durationSec:5.02,width:320,height:180,hasAudio:true}})]);
+  const input={projectId:project.projectId,sequenceId:project.sequenceId,expectedRevision:0,idempotencyKey:randomUUID(),edit:{kind:'assemble',clips:[STUDIO_CONNECTED_ASSET_IDS.a,STUDIO_CONNECTED_ASSET_IDS.b].map(assetId=>({ref:{type:'asset',assetId,kind:'video'}}))}};
+  const result=await editStudioConversationTimeline(actor,input,deps);
+  assert.equal(result.totalFrames,300);
+  assert.equal(result.clipCount,2);
+  const read=await readStudioWorkspace(actor,project.projectId,deps);
+  const items=(read.sequences[0].timelineState as {timelineItems:WorkspaceTimelineItem[]}).timelineItems;
+  assert.deepEqual(items.map(item=>[item.startSec,item.durationSec,item.sourceStartSec]),[[0,5,0],[5,5,0]]);
+  assert.deepEqual(await editStudioConversationTimeline(actor,input,deps),result);
+  assert.deepEqual(await readStudioWorkspace(actor,project.projectId,deps),read,'Recovery cannot append the same continuation twice.');
+  await assert.rejects(editStudioConversationTimeline(actor,{...input,expectedRevision:1,idempotencyKey:randomUUID(),edit:{kind:'assemble',clips:[{ref:{type:'asset',assetId:STUDIO_CONNECTED_ASSET_IDS.foreign,kind:'video'}}]}},deps),/MEDIA_NOT_AVAILABLE/);
+  assert.deepEqual(await readStudioWorkspace(actor,project.projectId,deps),read);
+});
+
+test('a longer music bed never pushes automatically assembled visuals past the end of the picture',async t=>{
+  const {editStudioConversationTimeline}=await import('../frontend/src/server/studio/conversation-edit-command');
+  for(const audioFirst of [true,false])await t.test(audioFirst?'audio first':'audio last',async subtest=>{
+    const {pg,actor,deps,project}=await videoQualificationFixture(subtest);
+    const audio={type:'asset' as const,assetId:'ma_'+ '5'.repeat(32),kind:'audio' as const};
+    await pg.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,status,metadata)
+      VALUES($1,$2,$3,'audio','https://cdn.maxvideoai.com/music.mp3','audio/mpeg','ready',$4::jsonb)`,[randomUUID(),audio.assetId,actor.userId,JSON.stringify({mediaFacts:{source:'probe',durationSec:30,hasAudio:true}})]);
+    const visuals=[STUDIO_CONNECTED_ASSET_IDS.a,STUDIO_CONNECTED_ASSET_IDS.b].map(assetId=>({ref:{type:'asset',assetId,kind:'video'}}));
+    const clips=audioFirst?[{ref:audio},...visuals]:[...visuals,{ref:audio}];
+    await editStudioConversationTimeline(actor,{projectId:project.projectId,sequenceId:project.sequenceId,expectedRevision:0,idempotencyKey:randomUUID(),edit:{kind:'assemble',clips}},deps);
+    const read=await readStudioWorkspace(actor,project.projectId,deps);
+    const items=(read.sequences[0].timelineState as {timelineItems:WorkspaceTimelineItem[]}).timelineItems;
+    assert.deepEqual(items.filter(item=>item.mediaKind==='video').map(item=>[item.startSec,item.durationSec]),[[0,6],[6,6]]);
+    assert.equal(items.find(item=>item.mediaKind==='audio')?.startSec,0);
+  });
+});
+
 test('uploaded audio with long internal IDs keeps bounded reusable timeline identities and exact owned originals',async t => {
   const {editStudioConversationTimeline} = await import('../frontend/src/server/studio/conversation-edit-command');
   const {pg,actor,deps,project} = await videoQualificationFixture(t);

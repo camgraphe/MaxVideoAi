@@ -9,7 +9,7 @@ import type {PreparedGeneration} from '@/server/agent-api/prepare-generation';
 import type {PreparedAudioGeneration} from '@/server/agent-api/prepare-audio-generation';
 import type {StudioMediaIntent} from '@/lib/studio/conversation-media-contract';
 import type {AgentGenerationStatus} from '@/server/generations/generation-status';
-import {readStudioProjectMedia, type StudioMediaFactories} from './conversation-media-generation';
+import {readStudioProjectMedia,studioPricingSourceSelection, type StudioMediaFactories} from './conversation-media-generation';
 import {readStudioConversationTimeline} from './conversation-timeline';
 import type {ConversationEditResult} from './conversation-edit-command';
 import type {StudioQuoteDiscardResult} from './conversation-quote-command';
@@ -56,23 +56,22 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
           if(!dependencies.readAnalysis)throw new AgentApiError('ENGINE_UNAVAILABLE','Studio analysis results are unavailable.');
           return {ok:true,action:request.action,data:await dependencies.readAnalysis(request.analysisId)};
         case 'pricing.read': case 'pricing.compare': {
-          if (request.references.some(({ref})=>ref.type!=='asset'||!(ref.kind==='image'?dependencies.attachedImageIds?.includes(ref.assetId):dependencies.attachedMedia?.some(attached=>attached.assetId===ref.assetId&&attached.mediaKind===ref.kind)))) {
+          if (request.references.some(({ref})=>ref.type==='asset'&&!(ref.kind==='image'?dependencies.attachedImageIds?.includes(ref.assetId):dependencies.attachedMedia?.some(attached=>attached.assetId===ref.assetId&&attached.mediaKind===ref.kind)))) {
             throw new AgentApiError('REFERENCE_INVALID','Attach this saved library media before estimating its use.');
           }
           const service=request.surface==='image' ? generation : dependencies.mediaEnabled && dependencies.factories
             ? dependencies.factories.video(actor,{enabled:dependencies.enabled}) : null;
           if (!service) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio video estimates are unavailable.');
+          const selected=studioPricingSourceSelection(actor,request.references,{references:[...dependencies.attachedImageIds??[]],attachments:dependencies.attachedMedia?.filter(ref=>ref.mediaKind!=='image').map(ref=>({type:'asset' as const,assetId:ref.assetId,kind:ref.mediaKind}))});
           const scenario={surface:request.surface,mode:request.mode,
-            settings:conversationSelectionSettings(request.settings),references:request.references.map(selection=>{
-              if(selection.ref.type!=='asset') throw new AgentApiError('REFERENCE_INVALID','Attach a saved library image.');
-              return {kind:'asset' as const,assetId:selection.ref.assetId,role:selection.role,...(selection.slot==null?{}:{slot:selection.slot})};
-            })};
+            settings:conversationSelectionSettings(request.settings),references:selected.references};
           if(request.action==='pricing.compare') {
             const comparison={...scenario,prompt:request.prompt,
               ...(request.baselineModelId?{baselineModelId:request.baselineModelId}:{}),...(request.baselineSettings?{baselineSettings:conversationSelectionSettings(request.baselineSettings)}:{}),...(request.candidateModelIds?{candidateModelIds:request.candidateModelIds}:{})};
-            return {ok:true,action:request.action,data:request.filmDurationSec?await priceStudioFilm(comparison,request.filmDurationSec,service):await service.compare(comparison)};
+            const pricingService={...service,compare:(input:Parameters<typeof service.compare>[0])=>service.compare(input,selected.resolveReferences)};
+            return {ok:true,action:request.action,data:request.filmDurationSec?await priceStudioFilm(comparison,request.filmDurationSec,pricingService):await pricingService.compare(comparison)};
           }
-          return {ok:true,action:request.action,data:await service.estimate({...scenario,engineId:request.modelId,prompt:'Studio pricing scenario',outputCount:1})};
+          return {ok:true,action:request.action,data:await service.estimate({...scenario,engineId:request.modelId,prompt:'Studio pricing scenario',outputCount:1},selected.resolveReferences)};
         }
         case 'export.prepare':
           if (!dependencies.editingEnabled || !dependencies.exportsEnabled || !dependencies.prepareExport) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio export tools are unavailable.');

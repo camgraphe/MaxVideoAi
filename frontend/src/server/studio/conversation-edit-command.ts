@@ -22,7 +22,7 @@ export {createStudioConversationProject} from './conversation-project-command';
 
 type TransactionRunner = <T>(callback: (executor: QueryExecutor) => Promise<T>) => Promise<T>;
 export type ConversationEditResult = {projectId: string; sequenceId: string; revision: number; clipCount: number; totalFrames: number;changed: boolean;clip: {id: string;startFrame: number;durationFrames: number;sourceInFrame: number} | null};
-export type ConversationEditDependencies = {withTransaction?: TransactionRunner; featureEnabled?: boolean; hydrateVideoFacts?: typeof hydrateOwnedVideoMediaFacts; afterMutation?: (executor: QueryExecutor, result: ConversationEditResult) => Promise<void> | void};
+export type ConversationEditDependencies = {withTransaction?: TransactionRunner; featureEnabled?: boolean; hydrateVideoFacts?: typeof hydrateOwnedVideoMediaFacts; beforeMutation?: (executor: QueryExecutor) => Promise<void>; afterMutation?: (executor: QueryExecutor, result: ConversationEditResult) => Promise<void> | void};
 /** OAuth identity is derived by the agent adapter; browser/session calls retain project-output scope. */
 export type ConversationEditActor = {userId: string; authOrigin?: 'studio-session'; clientId?: null}
   | {userId: string; authOrigin: 'oauth'; clientId: string};
@@ -63,6 +63,9 @@ export async function editStudioConversationTimeline(actor: ConversationEditActo
     if (project.revision !== input.expectedRevision) throw new StudioConnectedPersistenceError('STUDIO_REVISION_CONFLICT',409);
     const sequence = sequences.find(value => value.id === input.sequenceId);
     if (!sequence) throw new Error('STUDIO_SEQUENCE_CONFLICT');
+    // Internal continuation guards repeat under the aggregate lock on every
+    // qualification retry. Receipt replay deliberately retains its saved result.
+    await dependencies.beforeMutation?.(executor);
     const settings = sequence.settings as WorkspaceProjectSettings;
     const state = sequence.timelineState as {timelineItems: WorkspaceTimelineItem[]; lockedTimelineTracks?: WorkspaceTimelineTrack[]; mutedAudioTracks?: WorkspaceTimelineTrack[];sequenceSubtitle?:import('@/lib/subtitles/document').SubtitleSequenceAttachment};
     const workspace = project.workspaceState as Record<string, unknown>;
@@ -73,11 +76,13 @@ export async function editStudioConversationTimeline(actor: ConversationEditActo
       const inserts=input.edit.kind==='insert'?[input.edit]:input.edit.clips.map(clip=>({kind:'insert' as const,...clip}));
       items=state.timelineItems;
       for(const [index,edit] of inserts.entries()){
-        const inserted = await insertion(actor,{...input,edit,idempotencyKey:requestHash.slice(0,32)+':'+index},settings,executor,resolvedVideoSources);
+        const visualEnd=items.filter(item=>!isWorkspaceTimelineAudioTrack(item.track)).reduce((end,item)=>Math.max(end,item.startSec+item.durationSec),0);
+        const selected={...edit,startFrame:edit.startFrame??(edit.ref.kind==='audio'?0:secondsToTimelineFrame(visualEnd,settings.fps))};
+        const inserted = await insertion(actor,{...input,edit:selected,idempotencyKey:requestHash.slice(0,32)+':'+index},settings,executor,resolvedVideoSources);
         const previousItems=items;
         items = inserted.asset.kind === 'audio'
-          ? layerWorkspaceTimelineAudioItem({items: previousItems,item: inserted.items[0],startFrame: edit.startFrame,fps: settings.fps,maxAudioTracks: MAX_TIMELINE_AUDIO_TRACKS,unavailableTracks: [...state.lockedTimelineTracks ?? [],...state.mutedAudioTracks ?? []]})
-          : insertWorkspaceTimelineItems({items: previousItems, newItems: inserted.items, mode: 'insert', playheadSec: timelineFrameToSeconds(edit.startFrame,settings.fps), idSeed: requestHash.slice(0,20)+':'+index});
+          ? layerWorkspaceTimelineAudioItem({items: previousItems,item: inserted.items[0],startFrame: selected.startFrame,fps: settings.fps,maxAudioTracks: MAX_TIMELINE_AUDIO_TRACKS,unavailableTracks: [...state.lockedTimelineTracks ?? [],...state.mutedAudioTracks ?? []]})
+          : insertWorkspaceTimelineItems({items: previousItems, newItems: inserted.items, mode: 'insert', playheadSec: timelineFrameToSeconds(selected.startFrame,settings.fps), idSeed: requestHash.slice(0,20)+':'+index});
         if (timelineEditTouchesLockedTracks(state.timelineItems,items,state.lockedTimelineTracks ?? [])) throw new Error('Timeline track is locked.');
         if (!projectAssets.some(asset => asset.id === inserted.asset.id || JSON.stringify(asset.ref) === JSON.stringify(inserted.asset.ref))) projectAssets = [...projectAssets,inserted.asset];
       }
@@ -148,8 +153,8 @@ export async function editStudioConversationTimeline(actor: ConversationEditActo
   throw new Error('MEDIA_METADATA_REQUIRED');
 }
 
-async function insertion(actor: ConversationEditActor, input: ConversationTimelineCommand, settings: WorkspaceProjectSettings, executor: QueryExecutor, resolvedVideoSources: Map<string,string>) {
-  if (input.edit.kind !== 'insert') throw new Error('Invalid Studio timeline command.');
+type InsertionInput=Omit<ConversationTimelineCommand,'edit'>&{edit:{kind:'insert';ref:import('@/lib/toolbox/contract').ToolAssetRef;startFrame:number;durationFrames?:number|null;sourceInFrame?:number}};
+async function insertion(actor: ConversationEditActor, input: InsertionInput, settings: WorkspaceProjectSettings, executor: QueryExecutor, resolvedVideoSources: Map<string,string>) {
   const edit = input.edit;
   if (edit.ref.type === 'job-output') {
     const rows = actor.authOrigin === 'oauth'
@@ -166,14 +171,16 @@ async function insertion(actor: ConversationEditActor, input: ConversationTimeli
     // for qualification, including videos that already have measured facts.
     resolvedVideoSources.set(refKey,media.url);
   }
-  const durationSec = timelineFrameToSeconds(edit.durationFrames,settings.fps);
   const sourceStartSec=timelineFrameToSeconds(edit.sourceInFrame??0,settings.fps);
   if(media.kind==='image'&&sourceStartSec!==0)throw new Error('Invalid Studio image source offset.');
-  if (durationSec < 1 || durationSec > 1800) throw new Error('Invalid Studio timeline clip duration.');
   if (media.kind !== 'image' && (!media.mediaFacts?.durationSec || media.mediaFacts.source !== 'probe')) {
     if (media.kind === 'video') throw new VideoFactsPreparationRequired(media);
     throw new Error('MEDIA_METADATA_REQUIRED');
   }
+  // Full source assembly uses whole measured frames, never rounded generation defaults.
+  const durationFrames=edit.durationFrames??(media.kind==='image'?5*settings.fps:Math.floor((media.mediaFacts!.durationSec!-sourceStartSec)*settings.fps+1e-6));
+  const durationSec = timelineFrameToSeconds(durationFrames,settings.fps);
+  if (durationSec < 1 || durationSec > 1800) throw new Error('Invalid Studio timeline clip duration.');
   if (media.kind !== 'image' && durationSec+sourceStartSec > media.mediaFacts!.durationSec! + .000001) throw new Error('Invalid Studio timeline clip duration.');
   const id = createHash('sha256').update(input.idempotencyKey).digest('hex').slice(0,24);
   // Keep existing valid identities; URL-backed upload IDs can exceed the timeline's 200-character bound.

@@ -27,6 +27,9 @@ test('MCP timeline inputs preserve the canonical frame, gain, reference and stri
     {edit:{kind:'insert',ref:{type:'asset',assetId:'music',kind:'audio'},startFrame:0,durationFrames:900,sourceInFrame:-1},valid:false},
     {edit:{kind:'assemble',clips:[{ref:{type:'asset',assetId:'one',kind:'video'},startFrame:0,durationFrames:300,sourceInFrame:0},{ref:{type:'asset',assetId:'two',kind:'video'},startFrame:300,durationFrames:300,sourceInFrame:60}]},valid:true},
     {edit:{kind:'assemble',clips:[]},valid:false},
+    {edit:{kind:'assemble',clips:[{ref:{type:'asset',assetId:'one',kind:'video'}}]},valid:true},
+    {edit:{kind:'assemble',clips:[{ref:{type:'asset',assetId:'one',kind:'video'},startFrame:null,durationFrames:null,sourceInFrame:0}]},valid:true},
+    {edit:{kind:'assemble',clips:[{ref:{type:'asset',assetId:'one',kind:'video'},startFrame:-1,durationFrames:null}]},valid:false},
     {edit: {kind: 'insert',ref: {type: 'asset',assetId: 'returned-id',kind: 'image',url: 'https://forged.example'},startFrame: 0,durationFrames: 30},valid: false},
   ];
   for (const {edit,valid} of fixtures) {
@@ -47,6 +50,7 @@ test('replacement and pinned clip/sequence subtitles have canonical MCP and dire
   const properties=STUDIO_EDITING_DIRECTOR_TOOLS.find(tool=>tool.name==='timeline_edit')!.properties;
   const director=new AjvJsonSchemaValidator().getValidator({type:'object',additionalProperties:false,properties,required:Object.keys(properties)} as JsonSchemaType);
   const directorInput=(edit:unknown)=>({sequenceId:base.sequenceId,expectedRevision:base.expectedRevision,edit});
+  assert.equal(director(directorInput({kind:'assemble',clips:[{ref,startFrame:null,durationFrames:null,sourceInFrame:0}]})).valid,true);
   for(const edit of [{kind:'replace',clipId:'clip',ref},{kind:'replace',clipId:'clip',ref,sourceInFrame:30},{kind:'subtitles',clipId:'clip',documentId:'document',revision:1},{kind:'sequence-subtitles',documentId:null},{kind:'sequence-subtitles',documentId:'document',revision:2}]){
     assert.equal(conversationTimelineCommandSchema.safeParse({...base,edit}).success,true);
     assert.equal(editStudioTimelineToolInputSchema.safeParse({...base,edit}).success,true);

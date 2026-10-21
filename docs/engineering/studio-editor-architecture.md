@@ -1,5 +1,56 @@
 # Studio architecture
 
+## Source continuity correction — 22 October 2026 candidate
+
+Full-source `assemble` clips may omit or pass null for `startFrame` and
+`durationFrames`. The existing revisioned command owner derives consecutive
+visual positions and floors the remaining measured source duration to whole
+sequence frames; images retain the five-second default and audio layers from
+zero. Explicit excerpt frames retain their existing meaning. Qualification,
+atomic receipts, ownership, manual revisions and track locks remain authoritative.
+For an original plus a separately delivered continuation, assemble both once;
+when the original is already on the timeline, append only the continuation.
+Generation completion alone does not establish an assembled sequence or MP4.
+
+For continuation-only extension modes, preparation freezes a deterministic
+assembly plan before quoting: sequence/revision, original identity, original
+URL/type/MIME hash, measured duration and known size facts. Legacy approximate
+durations do not masquerade as measured facts; qualification can refine them.
+The mode capability
+`extensionOutput: continuation` currently certifies Wan 3 only, based on the
+reviewed original and separate five-second production continuation. Other modes
+retain explicit assembly. A whole original at the correct sequence boundary is
+kept once; trimmed, displaced or ambiguous edits decline automatic planning.
+The director sets `assembleExtension: false` for an explicit continuation-only
+request or a request to leave the timeline alone; that choice persists in the draft.
+
+After an explicitly confirmed generation completes, the conversation hook calls
+the same-origin extension POST with only the turn request ID. The server derives
+the accepted quote and ready output from the account/project, then applies the
+canonical idempotent command. Original validation repeats under source/project
+locks after any qualification retry. A changed original or project revision
+blocks assembly. A completed job may precede its output projection: only the
+explicit retryable not-ready state retries, with five bounded delays totaling
+56 seconds. Other failures expose a manual retry or ask for a fresh source/edit
+review. Reopening the conversation resumes a pending plan; GET remains read-only.
+No extra assistant call, generation or charge is made, and MP4 export stays gated.
+
+Studio pricing accepts the same exact ready project-output references as video
+preparation. Read-only pricing aliases resolve through current project and media
+ownership checks without promoting outputs or writing library copies. Attached
+library assets still require attachment. The aliases are pricing-local and never
+become saved generation references. Confirmation continues through the canonical
+owned-asset generation boundary. Quote cards distinguish new text generation,
+source-guided regeneration and extension; director guidance must not substitute
+text-only creation for a failed source edit without agreement.
+
+Local qualification covers the one-request quote/confirmation/completion flow,
+five-second original/continuation assembly, fractional source boundaries,
+source replacement during qualification, manual revision conflicts, receipt
+replay, delayed output readiness, account isolation and project-output pricing
+without library writes. Production deployment and live assistant qualification
+are separate from these deterministic checks.
+
 The isolated 2026-10-06 task-budget candidate is documented in [Studio task budgets](studio-task-budgets.md); this link does not establish production activation.
 
 Reviewed 2026-10-05. Studio has one public conversational interface. The private React Flow Canvas, its templates and local-only project management were retired at the owner's request. Its personal saved projects are deleted without migration; current chats and MCP montages remain supported.

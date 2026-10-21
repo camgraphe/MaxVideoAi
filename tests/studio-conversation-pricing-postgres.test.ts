@@ -1,12 +1,82 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import {readFileSync} from 'node:fs';
 import {getDb} from '../frontend/src/lib/db';
 import {getFalEngineById} from '../frontend/src/config/falEngines';
-import {createStudioImageGenerationService} from '../frontend/src/server/studio/image-generation-service';
+import {createStudioImageGenerationService,createStudioVideoGenerationService} from '../frontend/src/server/studio/image-generation-service';
 import {createStudioActionExecutor} from '../frontend/src/server/studio/conversation-actions';
 import {createStudioConversationDirector} from '../frontend/src/server/studio/conversation-director';
 import type {StudioActionRequest} from '../frontend/lib/studio/conversation-action-contract';
 import {createPaidGenerationTestSchema,startDisposablePostgres} from './helpers/disposable-postgres';
+
+test('a ready project output can be priced directly without saving or attaching another library copy',async t=>{
+  const pg=await startDisposablePostgres('studio-output-pricing');
+  const previous=process.env.DATABASE_URL;process.env.DATABASE_URL=pg.databaseUrl;
+  t.after(async()=>{await getDb().end();if(previous===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=previous;await pg.cleanup();});
+  await createPaidGenerationTestSchema(pg.pool);
+  await pg.pool.query(`CREATE TABLE studio_projects(id text PRIMARY KEY,user_id text,name text,deleted_at timestamptz,revision bigint);
+    INSERT INTO studio_projects VALUES('project','owner','Film',NULL,0),('other','owner','Other',NULL,0);
+    CREATE TABLE studio_conversation_memory(user_id text,project_id text,revision bigint,brief text,decisions jsonb);
+    CREATE TABLE studio_image_turns(user_id text,project_id text,quote_id uuid,created_at timestamptz);
+    CREATE TABLE job_outputs(id text PRIMARY KEY,job_id text,user_id text,status text,kind text,url text,mime_type text,width int,height int,size_bytes bigint,duration_sec double precision,metadata jsonb,created_at timestamptz DEFAULT clock_timestamp());
+    CREATE TABLE media_assets(id text PRIMARY KEY,public_id text,user_id text,kind text,url text,mime_type text,status text,deleted_at timestamptz,metadata jsonb,source_job_id text,source_output_id text);
+    INSERT INTO app_jobs(job_id,user_id,engine_id,engine_label,status) VALUES('original','owner','gpt-image-2','Image','completed');
+    INSERT INTO job_outputs VALUES('output','original','owner','ready','image','https://cdn.maxvideoai.com/original.png','image/png',1024,1024,1024,NULL,'{}',clock_timestamp());
+    INSERT INTO mcp_generation_quotes(quote_id,user_id,request_json,request_hash,catalog_revision,pricing_snapshot,price_cents,currency,funding_mode,state,job_id,expires_at,auth_origin,studio_project_id)
+      VALUES('10000000-0000-4000-8000-000000000001','owner','{"schemaVersion":1,"surface":"image"}',repeat('a',64),'catalog','{}',1,'USD','wallet','prepared',NULL,now()+interval '45 minutes','studio-session','project');
+    UPDATE mcp_generation_quotes SET state='claimed',job_id='original',claimed_at=clock_timestamp(),updated_at=clock_timestamp();
+    UPDATE mcp_generation_quotes SET state='accepted';`);
+  const actor={authMethod:'studio-session' as const,userId:'owner',projectId:'project',clientId:null};
+  const entry=getFalEngineById('gpt-image-2')!;
+  const generation=createStudioImageGenerationService(actor,{enabled:true,prepareDependencies:{
+    listPublicEngines:async()=>[{engine:entry.engine,surface:'image',publicModes:['i2i'],modeCaps:Object.fromEntries(entry.modes.map(mode=>[mode.mode,mode.ui]))}],
+    resolveMembershipPricing:async()=>({tier:'member',source:'app_receipts_rolling_30d',spent30Cents:0,thresholdCents:0,discountPercent:0}),
+    resolveRequestExecutability:()=>({executable:true,reason:'available'}),
+    priceGeneration:async()=>({priceCents:123,currency:'USD',membershipTier:'member',pricingSnapshot:{totalCents:123,currency:'USD',membershipTier:'member'}}),
+  }});
+  const execute=createStudioActionExecutor(actor,{enabled:true,generation,prepareImage:async()=>{throw new Error('No quote during pricing.');}});
+  const request={action:'pricing.read',surface:'image',mode:'i2i',modelId:entry.id,settings:[{name:'resolution',value:'1024x1024'},{name:'quality',value:'high'}],references:[{ref:{type:'job-output',jobId:'original',outputId:'output',kind:'image'},role:'reference',slot:null}],outputCount:1} as const;
+  const result=await execute(request as never);
+  assert.equal(result.ok,true,JSON.stringify(result));
+  if(!result.ok||result.action!=='pricing.read')throw new Error('Expected an estimate');
+  assert.equal(result.data.price.amountCents,123);
+  assert.equal((await pg.pool.query('SELECT count(*)::int AS n FROM media_assets')).rows[0].n,0);
+  assert.equal((await pg.pool.query('SELECT count(*)::int AS n FROM mcp_generation_quotes')).rows[0].n,1);
+  const denied=await createStudioActionExecutor({...actor,projectId:'other'},{enabled:true,generation,prepareImage:async()=>{throw new Error('No quote.');}})(request as never);
+  assert.equal(denied.ok,false);
+  if(!denied.ok)assert.equal(denied.error.code,'REFERENCE_INVALID');
+  await pg.pool.query(readFileSync('neon/migrations/53_studio_media_generation_scope.sql','utf8'));
+  await pg.pool.query(`INSERT INTO app_jobs(job_id,user_id,engine_id,engine_label,status) VALUES('video-original','owner','wan-3','Wan','completed');
+    INSERT INTO job_outputs VALUES('video-output','video-original','owner','ready','video','https://cdn.maxvideoai.com/original.mp4','video/mp4',1280,720,1024,5.104,'{"mediaFacts":{"source":"probe","durationSec":5.104,"width":1280,"height":720,"hasAudio":true}}',clock_timestamp());
+    INSERT INTO mcp_generation_quotes(quote_id,user_id,request_json,request_hash,catalog_revision,pricing_snapshot,price_cents,currency,funding_mode,state,expires_at,auth_origin,studio_project_id)
+      VALUES('10000000-0000-4000-8000-000000000002','owner','{"schemaVersion":1,"surface":"video"}',repeat('b',64),'catalog','{}',1,'USD','wallet','prepared',now()+interval '45 minutes','studio-session','project');
+    UPDATE mcp_generation_quotes SET state='claimed',job_id='video-original',claimed_at=clock_timestamp(),updated_at=clock_timestamp() WHERE state='prepared';
+    UPDATE mcp_generation_quotes SET state='accepted' WHERE state='claimed';`);
+  const wan=getFalEngineById('wan-3')!;
+  const video=createStudioVideoGenerationService(actor,{enabled:true,prepareDependencies:{
+    listPublicEngines:async()=>[{engine:wan.engine,surface:'video',publicModes:['extend'],modeCaps:Object.fromEntries(wan.modes.map(mode=>[mode.mode,mode.ui]))}],
+    resolveMembershipPricing:async()=>({tier:'member',source:'app_receipts_rolling_30d',spent30Cents:0,thresholdCents:0,discountPercent:0}),
+    resolveRequestExecutability:()=>({executable:true,reason:'available'}),
+    priceGeneration:async(_request,tier,context)=>{
+      assert.equal(context.resolvedReferences?.[0]?.durationSec,5.104);
+      assert.equal(context.resolvedReferences?.[0]?.mediaKind,'video');
+      assert.equal(context.resolvedReferences?.[0]?.slot,0);
+      return {priceCents:65,currency:'USD',membershipTier:tier,pricingSnapshot:{totalCents:65,currency:'USD',membershipTier:tier}};
+    },
+  }});
+  const videoExecute=createStudioActionExecutor(actor,{enabled:true,generation,mediaEnabled:true,factories:{video:()=>video} as never,prepareImage:async()=>{throw new Error('No quote.');}});
+  const videoScenario={surface:'video',mode:'extend',settings:[{name:'durationSec',value:5},{name:'resolution',value:'480p'},{name:'aspectRatio',value:'16:9'}],references:[{ref:{type:'job-output',jobId:'video-original',outputId:'video-output',kind:'video'},role:'source',slot:null}],outputCount:1};
+  const videoEstimate=await videoExecute({...videoScenario,action:'pricing.read',modelId:'wan-3'} as never);
+  assert.equal(videoEstimate.ok,true,JSON.stringify(videoEstimate));
+  const videoComparison=await videoExecute({...videoScenario,action:'pricing.compare',prompt:'Add five seconds',baselineModelId:null,candidateModelIds:['wan-3']} as never);
+  assert.equal(videoComparison.ok,true,JSON.stringify(videoComparison));
+  if(videoComparison.ok&&videoComparison.action==='pricing.compare')assert.equal(videoComparison.data.options[0]?.price.amountCents,65);
+  assert.equal((await pg.pool.query('SELECT count(*)::int AS n FROM media_assets')).rows[0].n,0);
+  assert.equal((await pg.pool.query('SELECT count(*)::int AS n FROM mcp_generation_quotes')).rows[0].n,2);
+  await pg.pool.query("UPDATE app_jobs SET hidden=true WHERE job_id='video-original'");
+  const hidden=await videoExecute({...videoScenario,action:'pricing.read',modelId:'wan-3'} as never);
+  assert.equal(hidden.ok,false);if(!hidden.ok)assert.equal(hidden.error.code,'REFERENCE_INVALID');
+});
 
 test('price comparison reads owned attached images and preserves prepared quotes, receipts and assets',async t=> {
   const pg=await startDisposablePostgres('studio-pricing-read');

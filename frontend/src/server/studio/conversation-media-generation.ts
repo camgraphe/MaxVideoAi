@@ -54,7 +54,26 @@ export type StudioMotionSourceDependencies = {
   reviewedReferences?:readonly ResolvedReference[];
 };
 
-async function requireStudioMediaSource(actor: StudioGenerationActor, source: ToolAssetRef, input: ImageTurnInput, dependencies: StudioMotionSourceDependencies,referenceFactsSignal?:AbortSignal) {
+/** Read-only pricing aliases keep native project outputs out of the asset library. */
+export function studioPricingSourceSelection(actor:StudioGenerationActor,selections:NonNullable<Extract<StudioMediaIntent,{action:'video.prepare'}>['references']>,input:Pick<ImageTurnInput,'references'|'attachments'>,dependencies:StudioMotionSourceDependencies={}) {
+  const ids=selections.map(({ref})=>ref.type==='asset'?ref.assetId:`studio-project-output-${selections.findIndex(selection=>selection.ref.type==='job-output'&&selection.ref.jobId===ref.jobId&&selection.ref.outputId===ref.outputId&&selection.ref.kind===ref.kind)}`);
+  return {
+    references:selections.map((selection,index)=>({kind:'asset' as const,assetId:ids[index],role:selection.role,...(selection.slot==null?{}:{slot:selection.slot})})),
+    resolveReferences:async(request:CanonicalGenerationRequest):Promise<ResolvedReference[]>=>{
+      const signal=AbortSignal.timeout(8_000);
+      const references:ResolvedReference[]=[];
+      for(const reference of request.references){
+        const index=reference.kind==='asset'?ids.indexOf(reference.assetId):-1;
+        if(index<0)throw new AgentApiError('REFERENCE_INVALID','Select attached media or a ready output in this project.');
+        const media=await requireStudioMediaSource(actor,selections[index].ref,input,dependencies,signal);
+        references.push(mediaReference(media,{assetId:ids[index],role:reference.role,...(reference.slot===undefined?{}:{slot:reference.slot})}));
+      }
+      return references;
+    },
+  };
+}
+
+async function requireStudioMediaSource(actor: StudioGenerationActor, source: ToolAssetRef, input: Pick<ImageTurnInput,'references'|'attachments'>, dependencies: StudioMotionSourceDependencies,referenceFactsSignal?:AbortSignal) {
   if (source.type === 'asset') {
     // Library media must be explicitly attached; the model cannot browse arbitrary private assets.
     const attached=source.kind==='image'?input.references.includes(source.assetId):input.attachments?.some(ref=>ref.type==='asset'&&ref.assetId===source.assetId&&ref.kind===source.kind);
@@ -128,7 +147,7 @@ function videoDefaults(candidate: AgentPublicGenerationEngine, mode: CanonicalGe
 }
 
 type StudioCanonicalMediaRequest=(CanonicalGenerationRequest & {surface:'video'})|CanonicalAudioRequest;
-type ValidatedStudioMediaRequest={materialize():Promise<StudioCanonicalMediaRequest>;referenceFingerprint?():string|undefined};
+type ValidatedStudioMediaRequest={materialize():Promise<StudioCanonicalMediaRequest>;referenceFingerprint?():string|undefined;extensionOutput?:'continuation'|'combined';extensionSource?:StudioResolvedMedia};
 function comparableReference(reference:ResolvedReference):ResolvedReference{const {slot,...facts}=reference;return {...facts,...(slot===undefined?{}:{slot}),sizeBytes:reference.sizeBytes??null,originalName:reference.originalName??null};}
 function mediaReference(media:StudioResolvedMedia,identity:Pick<ResolvedReference,'assetId'|'role'|'slot'>):ResolvedReference {
   return {...identity,mediaKind:media.kind,storageUrl:media.url,mimeType:media.mime,width:media.width??media.mediaFacts?.width??null,height:media.height??media.mediaFacts?.height??null,durationSec:media.durationSec??media.mediaFacts?.durationSec??null,sizeBytes:media.sizeBytes,originalName:media.originalName};
@@ -188,6 +207,7 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
     // Check every source before the first library write; an unattached later
     // selection must not cause an earlier ready output to be promoted.
     const resolvedReferences:ResolvedReference[]=[];
+    let extensionSource:StudioResolvedMedia|undefined;
     const nativeBaselines=new Map<number,ResolvedReference>();
     const used=new Set<string>();
     const referenceFactsSignal=AbortSignal.timeout(8_000);
@@ -198,6 +218,7 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
       const identity={assetId:preflightIds[index],role:selection.role,...(canonicalRef.slot===undefined?{}:{slot:canonicalRef.slot})};
       const raw=selection.ref.type==='job-output'?await requireStudioMediaSource(actor,selection.ref,input,dependencies):null;
       const media=await requireStudioMediaSource(actor,selection.ref,input,dependencies,referenceFactsSignal);
+      if(mode==='extend'&&selection.role==='source')extensionSource=raw??media;
       if(raw){
         const baseline=mediaReference(raw,identity);const current=await requireStudioMediaSource(actor,selection.ref,input,dependencies);
         if(!sameReferenceFacts(baseline,mediaReference(current,identity)))throw new AgentApiError('REFERENCE_INVALID','The project output changed while its reference facts were verified.');
@@ -217,7 +238,7 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
     }
     build(preflightIds,true,resolvedReferences);
     let preparedFingerprint:string|undefined;
-    return {referenceFingerprint:()=>preparedFingerprint,materialize:async()=>{
+    return {extensionSource,extensionOutput:candidate.modeCaps[mode]?.extensionOutput,referenceFingerprint:()=>preparedFingerprint,materialize:async()=>{
       const verifyNativeSources=async()=>{
         for(const [index,selection]of selections.entries())if(selection.ref.type==='job-output'){
           const media=await requireStudioMediaSource(actor,selection.ref,input,dependencies);

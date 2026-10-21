@@ -40,7 +40,7 @@ export function conversationQuotePresentation(request: NonNullable<ImageConversa
       cinematic:t('Video soundtrack','Bande-son vidéo'), cinematic_voice:t('Video soundtrack with voice','Bande-son vidéo avec voix'),
     };
     const cloned=request.references?.some(reference=>reference.role==='voice_sample');
-    return {title: titles[request.mode],
+    return {title: titles[request.mode],operation:'',
       create: voice ? t('Create voiceover', 'Créer la voix') : request.mode==='music_only' ? t('Create music','Créer la musique')
         : request.mode==='cinematic'||request.mode==='cinematic_voice' ? t('Create soundtrack','Créer la bande-son') : t('Create audio','Créer le son'),
       direction: voice ? request.settings.script ?? '' : [request.prompt,
@@ -71,7 +71,13 @@ export function conversationQuotePresentation(request: NonNullable<ImageConversa
   const videoTitle=request.mode==='extend' ? t('Clip extension','Extension du clip') : request.mode==='v2v' ? t('Video edit','Modification vidéo')
     : request.mode==='r2v' ? t('Video from clips','Vidéo depuis des clips') : request.mode==='a2v' ? t('Audio-driven video','Vidéo guidée par le son')
       : request.mode==='retake' ? t('Clip retake','Reprise du clip') : request.mode==='reframe' ? t('Reframed video','Vidéo recadrée') : t('Video','Vidéo');
-  return {title: video ? videoTitle : t('Image', 'Une image'), create: video ? request.mode==='extend' ? t('Extend clip','Prolonger le clip') : t('Create video', 'Créer la vidéo') : t('Create image', 'Créer l’image'),
+  const operation=!video?'':request.mode==='extend'
+    ? t('This quote generates an extension. If delivered as a separate continuation, it needs assembly with the original to play the full sequence.','Ce devis génère une prolongation. Si elle est livrée dans un clip distinct, elle doit être assemblée avec l’original pour lire la séquence complète.')
+    : request.mode==='v2v'
+      ? t('This quote regenerates visuals using the source video as guidance.','Ce devis régénère les images à partir de la vidéo source.')
+      : request.mode==='t2v'
+        ? t('This quote creates a new video from your description.','Ce devis crée une nouvelle vidéo à partir de votre description.') : '';
+  return {title: video ? videoTitle : t('Image', 'Une image'),operation, create: video ? request.mode==='extend' ? t('Extend clip','Prolonger le clip') : t('Create video', 'Créer la vidéo') : t('Create image', 'Créer l’image'),
     direction: request.prompt,
     referenceSummary,
     settings: [video&&sourceVideoOutput?seedanceEditSourceLabel(sourceVideoOutput,locale):request.settings.aspectRatio, dimensions,dimensions&&request.settings.resolution==='custom'?'':request.settings.resolution,

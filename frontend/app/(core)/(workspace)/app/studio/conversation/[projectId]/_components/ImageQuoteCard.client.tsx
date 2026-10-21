@@ -9,6 +9,7 @@ import styles from "../image-conversation.module.css";
 import {conversationFailurePresentation, conversationQuotePresentation, type ConversationLocale} from '@/lib/studio/conversation-quote-presentation';
 import {formatCustomerAmount} from '@/lib/customer-price-presentation';
 export function ImageQuoteCard({
+  assemblyError,onRetryAssembly,
   turn,
   busy,
   onConfirm,
@@ -17,6 +18,8 @@ export function ImageQuoteCard({
   localQa = false,
   locale = 'fr',
 }: {
+  assemblyError?:string;
+  onRetryAssembly?:()=>void;
   turn: ImageConversationTurn;
   busy: boolean;
   onConfirm: () => void;
@@ -55,6 +58,17 @@ export function ImageQuoteCard({
           ? presentation.referenceSummary || `${referenceCount} ${t('reference', 'référence')}${referenceCount > 1 ? "s" : ""}`
           : t('Original creation', 'Création originale')}
       </p>
+      {presentation.operation && <p className={styles.muted}>{presentation.operation}</p>}
+      {turn.extensionAssembly && turn.generation?.status!=='failed' && <p className={styles.muted} role="status">
+        {turn.extensionAssembly.state==='saved'
+          ? t(`Sequence assembled · ${turn.extensionAssembly.durationSec} s. Open the timeline to play it.`,`Séquence assemblée · ${turn.extensionAssembly.durationSec} s. Ouvrez la timeline pour la lire.`)
+          : turn.extensionAssembly.state==='blocked'||assemblyError==='STUDIO_REVISION_CONFLICT'
+            ? t('The timeline changed. Ask Studio to assemble the continuation while preserving your edits.','La timeline a changé. Demandez à Studio d’assembler la prolongation en conservant vos modifications.')
+            : assemblyError==='EXTENSION_SOURCE_CHANGED'?t('The original media changed. Ask Studio to review the source before assembling.','Le média d’origine a changé. Demandez à Studio de vérifier la source avant l’assemblage.')
+            : assemblyError?t('Assembly did not finish. Your two clips are saved.','L’assemblage n’a pas abouti. Vos deux clips sont conservés.')
+              : t('The original and continuation will be assembled in the timeline after creation, provided your edit has not changed.','L’original et la prolongation seront assemblés dans la timeline après création, si votre montage n’a pas changé.')}
+      </p>}
+      {assemblyError&&!['STUDIO_REVISION_CONFLICT','EXTENSION_SOURCE_CHANGED'].includes(assemblyError)&&turn.extensionAssembly?.state==='pending'&&onRetryAssembly&&<button onClick={onRetryAssembly}>{t('Retry assembly','Reprendre l’assemblage')}</button>}
       <details>
         <summary>{t('View direction and settings', 'Voir la direction et les réglages')}</summary>
         <p style={{whiteSpace:'pre-wrap'}}>{presentation.direction}</p>

@@ -587,3 +587,17 @@ preparation are included. Zero-price exports still require exact revision-bound
 preparation and confirmation, but do not charge the wallet. These changes reuse
 existing tools and approval instructions; no plugin release, production gate
 activation or host compatibility is inferred from local validation.
+
+### 2026-10-22 — Whole-source timeline assembly candidate
+
+The existing timeline edit tool accepts omitted or null `startFrame` and
+`durationFrames` for `assemble` clips. The canonical server appends visuals in
+supplied order using measured whole source frames; audio begins at zero. Explicit
+excerpt frames and single-clip insert requirements retain their existing meaning.
+The strict Studio director schema requires both nullable properties; HTTP/MCP
+may omit them. Schema parity and the client-experience gate cover both forms.
+No tool/descriptor or permanent MCP instruction is added. This local candidate
+does not establish deployment, plugin publication or refreshed host discovery.
+The local client gate passes 173 tests (one real-host case skipped) and 70
+curated selection fixtures; all 256 instruction combinations retain their
+1,998-byte maximum. Real-host discovery measurements remain unrecorded.

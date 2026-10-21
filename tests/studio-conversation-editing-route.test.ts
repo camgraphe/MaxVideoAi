@@ -2,6 +2,21 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {NextRequest} from 'next/server';
 import {handleStudioConversationEditing} from '../frontend/app/api/studio/_lib/studio-conversation-editing-handler';
+import {StudioConnectedPersistenceError} from '../frontend/src/server/studio/montage-command';
+
+test('finishing an extension accepts only the request identity after account, origin and feature checks',async()=>{
+  const requestId='10000000-0000-4000-8000-000000000001';let mutations=0;
+  const options={enabled:true,resolveAccess:async()=>({ok:true as const,userId:'owner'}),finishExtension:async(actor:{userId:string;projectId:string},id:string)=>{assert.deepEqual(actor,{userId:'owner',projectId:'film'});assert.equal(id,requestId);mutations++;return {};}};
+  const req=(body:unknown,origin='http://localhost:4320')=>new NextRequest('http://localhost:4320/api/studio/projects/film/conversation-timeline/extension',{method:'POST',headers:{origin},body:JSON.stringify(body)});
+  const finish=(body:unknown,origin?:string)=>handleStudioConversationEditing(req(body,origin),'finish-extension' as never,'film',options);
+  assert.equal((await finish({requestId,userId:'foreign'})).status,400);
+  assert.equal((await finish({requestId},'https://foreign.example')).status,403);
+  assert.equal(mutations,0);
+  assert.equal((await finish({requestId})).status,200);
+  assert.equal(mutations,1);
+  const pending=await handleStudioConversationEditing(req({requestId}),'finish-extension','film',{...options,finishExtension:async()=>{throw new StudioConnectedPersistenceError('EXTENSION_NOT_READY',409);}});
+  assert.equal(pending.status,409);assert.deepEqual(await pending.json(),{ok:false,error:'EXTENSION_NOT_READY',retryable:true});
+});
 
 test('native editing guards account, gate, origin and bounded scope before any mutation',async () => {
   const url = 'http://localhost:4320/api/studio/projects/film/conversation-timeline';
