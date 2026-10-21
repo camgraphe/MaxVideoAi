@@ -7,7 +7,7 @@ import {STUDIO_FIXTURE_OWNERS} from './helpers/studio-auth-fixture';
 import {createStudioMontageProject} from '../frontend/src/server/studio/montage-command';
 import {readStudioWorkspace} from '../frontend/src/server/studio/workspace-command';
 import type {QueryExecutor} from '../frontend/src/lib/db';
-import type {WorkspaceTimelineItem} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
+import type {WorkspaceAssetRecord, WorkspaceTimelineItem} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
 import {buildWorkspaceTimelineRenderManifest} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-render';
 import {hydrateOwnedVideoMediaFacts} from '../frontend/server/media-library/owned-video-facts';
 
@@ -63,6 +63,67 @@ async function videoQualificationFixture(t: TestContext) {
   };
   return {pg,actor,deps,project,inspections,inspectionHook,hydrateVideoFacts,unmeasure,assembly,assertNoEdit};
 }
+
+test('uploaded audio with long internal IDs keeps bounded reusable timeline identities and exact owned originals',async t => {
+  const {editStudioConversationTimeline} = await import('../frontend/src/server/studio/conversation-edit-command');
+  const {pg,actor,deps,project} = await videoQualificationFixture(t);
+  // Upload-backed IDs can contain an original URL; the older shared fixture uses UUIDs.
+  await pg.pool.query('ALTER TABLE media_assets ALTER COLUMN id TYPE text USING id::text');
+  const prefix = 'https://cdn.maxvideoai.com/uploads/audio/';
+  const facts = {source: 'probe',durationSec: 12.408,hasAudio: true};
+  const refs = ['5','6'].map(digit => ({type: 'asset' as const,assetId: `ma_${digit.repeat(32)}`,kind: 'audio' as const}));
+  for (const [index,ref] of refs.entries()) {
+    const url = `${prefix}${'a'.repeat(200-prefix.length-5)}${index}.mp3`;
+    assert.equal(url.length,200);
+    await pg.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,status,original_name,metadata)
+      VALUES($1,$2,$3,'audio',$1,'audio/mpeg','ready',$4,$5::jsonb)`,[
+      url,ref.assetId,actor.userId,`Uploaded audio ${index}`,JSON.stringify({mediaFacts: facts,upload: true}),
+    ]);
+  }
+  const originals = (await pg.pool.query("SELECT * FROM media_assets WHERE kind='audio' ORDER BY public_id")).rows;
+  const input = {projectId: project.projectId,sequenceId: project.sequenceId,expectedRevision: 0,idempotencyKey: randomUUID(),
+    edit: {kind: 'insert' as const,ref: refs[0],startFrame: 0,durationFrames: 60,sourceInFrame: 30}};
+  const first = await editStudioConversationTimeline(actor,input,deps);
+  assert.equal(first.revision,1);
+  const readFirst = await readStudioWorkspace(actor,project.projectId,deps);
+  assert.deepEqual(await editStudioConversationTimeline(actor,input,deps),first);
+  assert.deepEqual(await readStudioWorkspace(actor,project.projectId,deps),readFirst,'Receipt replay does not insert again.');
+  const repeated = await editStudioConversationTimeline(actor,{...input,expectedRevision: 1,idempotencyKey: randomUUID(),
+    edit: {...input.edit,ref: {kind: refs[0].kind,assetId: refs[0].assetId,type: refs[0].type},startFrame: 90}},deps);
+  const distinct = await editStudioConversationTimeline(actor,{...input,expectedRevision: 2,idempotencyKey: randomUUID(),
+    edit: {...input.edit,ref: refs[1]}},deps);
+  const loaded = await readStudioWorkspace(actor,project.projectId,deps);
+  const assets = (loaded.project.workspaceState as {projectAssets: WorkspaceAssetRecord[]}).projectAssets;
+  const items = (loaded.sequences[0].timelineState as {timelineItems: WorkspaceTimelineItem[]}).timelineItems;
+  assert.equal(loaded.project.revision,3);
+  assert.equal(assets.length,2,'Repeated insertions retain one project asset per canonical ref.');
+  assert.equal(items.length,3);
+  const firstClip = items.find(item => item.id === first.clip!.id)!;
+  const repeatedClip = items.find(item => item.id === repeated.clip!.id)!;
+  const distinctClip = items.find(item => item.id === distinct.clip!.id)!;
+  assert.equal(repeatedClip.outputNodeId,firstClip.outputNodeId);
+  assert.notEqual(distinctClip.outputNodeId,firstClip.outputNodeId,'Long IDs sharing a prefix must remain distinct.');
+  for (const [index,ref] of refs.entries()) {
+    const asset = assets.find(value => value.ref?.type === 'asset' && value.ref.assetId === ref.assetId)!;
+    assert.ok(asset.id.length <= 200);
+    assert.deepEqual(asset.ref,ref);
+    assert.equal(asset.url,originals[index].url);
+    assert.deepEqual(asset.mediaFacts,facts);
+    assert.equal(asset.mediaAccessRequired,true);
+    for (const item of items.filter(value => value.ref?.type === 'asset' && value.ref.assetId === ref.assetId)) {
+      assert.equal(item.outputNodeId,asset.id);
+      assert.equal(item.assetId,asset.id);
+      assert.deepEqual(item.mediaFacts,facts);
+      assert.equal(item.sourceStartSec,1);
+      assert.equal(item.sourceDurationSec,12.408);
+      assert.equal(item.durationSec,2);
+      assert.equal(item.mediaAccessRequired,true);
+    }
+  }
+  assert.deepEqual((await pg.pool.query("SELECT * FROM media_assets WHERE kind='audio' ORDER BY public_id")).rows,originals,
+    'Timeline insertion preserves the owned media rows, original URLs and measured metadata.');
+  assert.equal((await pg.pool.query("SELECT count(*)::int AS n FROM studio_project_commands WHERE command_kind='conversation_timeline_edit'")).rows[0].n,3);
+});
 
 test('replacement preserves one exact clip interval, rejects short/foreign/locked sources and remains reversible and idempotent',async t=>{
   const {editStudioConversationTimeline}=await import('../frontend/src/server/studio/conversation-edit-command');
@@ -417,6 +478,7 @@ test('conversation edits use canonical revisions and receipts, preserving manual
   assert.equal(inserted.clipCount, 3);
   const insertedRead = await readStudioWorkspace(actor,project.projectId,deps);
   const insertedItem = (insertedRead.sequences[0].timelineState as any).timelineItems.find((item: any) => item.id === inserted.clip!.id);
+  assert.equal(insertedItem.outputNodeId,'studio-media-20000000-0000-4000-8000-000000000001','Existing bounded source identities stay compatible.');
   const originalFit = state.timelineItems.find((item: any) => item.ref.assetId === STUDIO_CONNECTED_ASSET_IDS.a).transform.scale;
   assert.equal(insertedItem.transform?.scale,originalFit,'Inserting the same measured source must fit the same program frame as the existing montage.');
   await assert.rejects(module.editStudioConversationTimeline(actor, {...insert, expectedRevision: 2, idempotencyKey: randomUUID(), edit: {...insert.edit, ref: {...insert.edit.ref, assetId: STUDIO_CONNECTED_ASSET_IDS.foreign}}}, deps), /MEDIA_NOT_AVAILABLE/);
