@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import type * as TypeScript from '../frontend/node_modules/typescript';
 import test from 'node:test';
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
@@ -1610,10 +1612,54 @@ test('paid generation tools can be gated out and prepare is accurately annotated
   assert.deepEqual(result.structuredContent, prepared);
 });
 
+const ts: typeof TypeScript = createRequire(import.meta.url)('../frontend/node_modules/typescript');
+const prepareAdapterImports = new Set([
+  '@modelcontextprotocol/sdk/server/mcp.js', 'zod/v4',
+  '@/server/agent-api/principal', '@/server/agent-api/generation-types',
+  '@/server/mcp/server', '@/server/mcp/optional-tool-input', '@/server/mcp/tool-result',
+]);
+function assertPrepareAdapterBoundary(source: string): void {
+  const tree = ts.createSourceFile('prepare-generation.ts', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  function visit(node: TypeScript.Node): void {
+    if ((ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) && node.moduleSpecifier) {
+      assert.ok(ts.isStringLiteral(node.moduleSpecifier) && prepareAdapterImports.has(node.moduleSpecifier.text),
+        `Unexpected adapter dependency: ${node.moduleSpecifier.getText(tree)}`);
+    }
+    assert.equal(ts.isImportEqualsDeclaration(node), false, 'Import-equals can bypass the reviewed dependency list');
+    if (ts.isCallExpression(node)) {
+      assert.equal(node.expression.kind === ts.SyntaxKind.ImportKeyword, false, 'Dynamic imports are not allowed in this adapter');
+      assert.equal(ts.isIdentifier(node.expression) && node.expression.text === 'require', false, 'Require bypasses the reviewed dependency list');
+    }
+    // Inspect executable identifiers and table access, not descriptive schema prose.
+    if (ts.isIdentifier(node)) assert.doesNotMatch(node.text, /provider|reserveWallet|app_receipts|create.*Job/i);
+    if (ts.isStringLiteralLike(node) || ts.isTemplateHead(node) || ts.isTemplateMiddle(node) || ts.isTemplateTail(node))
+      assert.doesNotMatch(node.text, /reserveWallet|app_receipts|create.*Job/i);
+    if (ts.isElementAccessExpression(node) && ts.isStringLiteralLike(node.argumentExpression))
+      assert.doesNotMatch(node.argumentExpression.text, /provider/i);
+    ts.forEachChild(node, visit);
+  }
+  visit(tree);
+}
+
 test('MCP tool adapter cannot import providers, wallet mutation, or job creation', () => {
   const source = readFileSync('frontend/src/server/mcp/tools/prepare-generation.ts', 'utf8');
-  assert.doesNotMatch(source, /video-providers|image-providers|provider|reserveWallet|app_receipts|create.*Job/i);
+  assertPrepareAdapterBoundary(source);
   assert.match(source, /readOnlyHint:\s*false/);
   assert.match(source, /destructiveHint:\s*false/);
   assert.match(source, /openWorldHint:\s*false/);
+});
+
+test('adapter boundary permits provider guidance but rejects executable dependency and mutation paths', () => {
+  assert.doesNotThrow(() => assertPrepareAdapterBoundary(`const schema = z.string().describe('Never pass provider voice IDs.');`));
+  for (const source of [
+    `import { submit as run } from '@/server/video-providers';`,
+    `import * as ledger from '@/server/wallet';`,
+    `export { createJob as run } from '@/server/jobs';`,
+    `const mod = import('@/server/video-providers');`,
+    `const mod = require('@/server/wallet');`,
+    `import ledger = require('@/server/wallet');`,
+    `services.reserveWallet();`, `services.createVideoJob();`, `services.provider.submit();`,
+    `services['reserveWallet']();`, `services['provider'].submit();`,
+    `query('INSERT INTO app_receipts VALUES (1)');`,
+  ]) assert.throws(() => assertPrepareAdapterBoundary(source), undefined, source);
 });
