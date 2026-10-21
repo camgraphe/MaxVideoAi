@@ -1,0 +1,37 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {randomUUID} from 'node:crypto';
+import test from 'node:test';
+import {getDb} from '../frontend/src/lib/db';
+import {startDisposablePostgres,createPaidGenerationTestSchema} from './helpers/disposable-postgres';
+import {studioAssistancePolicy} from '../frontend/src/server/studio/assistance-policy';
+import * as ledger from '../frontend/src/server/studio/assistance-ledger';
+
+test('new Studio accounts start with 500 included Sol credits; Luna preserves the remaining balance without a wallet debit',async t=>{
+  const pg=await startDisposablePostgres('studio-sol-default'),previous=process.env.DATABASE_URL;
+  process.env.DATABASE_URL=pg.databaseUrl;
+  t.after(async()=>{await getDb().end();if(previous===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=previous;await pg.cleanup();});
+  await createPaidGenerationTestSchema(pg.pool);
+  for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
+  const policy=studioAssistancePolicy({STUDIO_ASSISTANCE_ENABLED:'true'}),actor={userId:'new-client',projectId:'film',authMethod:'studio-session' as const,clientId:null};
+  const initial=await ledger.readStudioAssistanceStatus(actor.userId,policy);
+  assert.equal(initial.selectedModel,'gpt-6.1-sol');assert.equal(initial.mode,'included_sol');assert.equal(initial.credits?.included.remaining,500);
+  assert.equal((await pg.pool.query('SELECT count(*)::int n FROM studio_assistance_accounts')).rows[0].n,0,'Opening status stays read-only');
+  const requestId=randomUUID();assert.equal((await ledger.openStudioAssistanceTurn(actor,requestId,policy)).model,'gpt-6.1-sol');
+  const call=await ledger.reserveStudioAssistanceCall({...actor,requestId,leaseId:randomUUID(),index:0,inputTokens:100,outputTokens:2200},policy);
+  await ledger.settleStudioAssistanceCall(call.id,actor.userId,{id:'sol-default',model:'gpt-6.1-sol',service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50}});
+  const afterSol=await ledger.readStudioAssistanceStatus(actor.userId,policy);
+  assert.equal(afterSol.credits?.included.remaining,490);assert.equal(afterSol.paid.enabled,false);
+  const luna=await ledger.chooseStudioAssistance(actor.userId,{action:'select_luna',expectedRevision:afterSol.revision},policy);
+  assert.equal(luna.selectedModel,'gpt-6-luna');
+  const lunaRequest=randomUUID();await ledger.openStudioAssistanceTurn(actor,lunaRequest,policy);
+  const lunaCall=await ledger.reserveStudioAssistanceCall({...actor,requestId:lunaRequest,leaseId:randomUUID(),index:0,inputTokens:100,outputTokens:2200},policy);
+  await ledger.settleStudioAssistanceCall(lunaCall.id,actor.userId,{id:'luna-selected',model:'gpt-6-luna',service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50}});
+  const afterLuna=await ledger.readStudioAssistanceStatus(actor.userId,policy);
+  assert.equal(afterLuna.credits?.included.remaining,490);assert.equal(afterLuna.paid.enabled,false);
+  assert.equal((await pg.pool.query("SELECT count(*)::int n FROM app_receipts WHERE type='charge'")).rows[0].n,0);
+  const selected=await ledger.chooseStudioAssistance(actor.userId,{action:'select_sol',expectedRevision:afterLuna.revision},policy);
+  assert.equal(selected.selectedModel,'gpt-6.1-sol');assert.equal(selected.paid.enabled,false);
+  assert.equal((await ledger.openStudioAssistanceTurn(actor,lunaRequest,policy)).model,'gpt-6-luna','A later choice cannot change an in-flight request');
+  assert.equal((await ledger.openStudioAssistanceTurn(actor,randomUUID(),policy)).model,'gpt-6.1-sol');
+});

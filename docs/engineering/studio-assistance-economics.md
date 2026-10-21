@@ -25,6 +25,16 @@ remain disabled; neither approval implies the other. `assistance-policy.ts` sele
 monthly credits and Luna fair use; the public contract lives in
 `frontend/src/lib/studio/assistance-contract.ts`.
 
+Studio starts on GPT‑6.1 Sol with the existing 500 included credits. The compact
+model selector offers exactly GPT‑6.1 Sol and GPT‑6 Luna; new Luna requests keep the current high-reasoning policy.
+There is no public Quick/Standard/Complex picker. New requests use the existing
+internal Standard work bounds; stored task profiles and approvals remain valid.
+While Luna is selected, a discreet sentence below the composer opens Sol credits.
+A Luna task, including a funding fallback, also offers a small Sol top-up link.
+Complex requests may receive a brief contextual recommendation in the chat.
+Credits and pack purchases remain in the on-demand assistance dialog, with
+explicit purchase confirmation. No default-model migration is required.
+
 GPT‑6.1 Sol receives **500 free credits per UTC calendar month**. 1,000 credits
 represent USD $1 of customer usage, not 1,000 raw model tokens. Free credits do not
 carry forward. Purchased $2/$5/$10 packs grant 2,000/5,000/10,000 credits, accumulate
@@ -87,8 +97,9 @@ lease admits one active message per account. Reservation also refuses another
 request while a Luna call has unresolved usage. Its generous context bound is
 128,000 input tokens; the existing 2,200 output-token and four-call message bounds
 remain. Complex creative direction may recommend GPT‑6.1 Sol; a change requires
-an explicit customer choice. Luna uses `reasoning.effort=medium`, like the existing
-director. The sponsored campaign remains an operational availability gate, with
+an explicit customer choice. New Luna task requests use the current high-reasoning
+policy and 6,000 output-token allowance. Historical task and fallback allowances
+retain their frozen policy. The sponsored campaign remains an operational availability gate, with
 its existing persisted $100 supplier ceiling; this code does not increase or renew
 it. Production launch requires an explicit operational funding decision, in
 addition to policy approval. For conservative campaign protection, a Sol message

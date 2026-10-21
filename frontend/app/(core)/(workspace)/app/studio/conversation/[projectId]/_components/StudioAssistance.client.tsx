@@ -10,22 +10,21 @@ export type StudioAssistanceProps={tasksEnabled?:boolean;openSignal?:number;stat
 type Props=StudioAssistanceProps;
 const money=(cents:number)=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(cents/100);
 export function StudioAssistance(props:Props) {
-  const [open,setOpen]=useState(false),trigger=useRef<HTMLButtonElement>(null);
-  useEffect(()=>{if(props.openSignal)setOpen(true);},[props.openSignal]);
+  const [open,setOpen]=useState(false),[requestedSol,setRequestedSol]=useState(false),trigger=useRef<HTMLButtonElement>(null),returnFocus=useRef<HTMLButtonElement|null>(null);
+  useEffect(()=>{if(props.openSignal){const active=document.activeElement;returnFocus.current=active?.tagName==='BUTTON'?active as HTMLButtonElement:trigger.current;setRequestedSol(true);setOpen(true);}},[props.openSignal]);
   const {status,locale}=props,t=(en:string,fr:string)=>locale==='fr'?fr:en;
   if(status&&!status.enabled)return null;
   const luna=status?.mode==='sponsored_luna';
-  const detail=status?status.mode==='paid_sol'?money(status.paid.remainingCents)+' '+t('left','restants'):Math.round((luna?status.sponsoredLuna:status.includedSol).remainingPercent)+'%':props.error?t('Unavailable','Indisponible'):'…';
-  const creditDetail=status?.credits?luna?(status.sponsoredAvailable===false?t('Unavailable','Indisponible'):t('No monthly quota','Sans quota mensuel')):new Intl.NumberFormat(locale).format(status.credits.included.remaining+(status.paid.enabled?status.credits.purchased.remaining:0))+' '+t('credits','crédits'):detail;
+  function close(){setOpen(false);}
   return <>
-    <button ref={trigger} className={styles.trigger} aria-haspopup="dialog" aria-expanded={open} aria-label={t('Studio assistance and budget','Assistance et budget Studio')} onClick={()=>setOpen(true)}><span className={styles.dot} data-luna={luna}/><span>{luna?'GPT‑6 Luna':'GPT‑6.1 Sol'} <small>{creditDetail}</small></span><ChevronDown size={12}/></button>
-    {open&&(status?.credits?<StudioAssistanceCreditsDialog {...props} trigger={trigger} onClose={()=>setOpen(false)}/>:<AssistanceDialog {...props} trigger={trigger} onClose={()=>setOpen(false)}/>)}
+    <button ref={trigger} className={styles.trigger} aria-haspopup="dialog" aria-expanded={open} aria-label={t('Studio assistance and budget','Assistance et budget Studio')} onClick={event=>{returnFocus.current=event.currentTarget;setRequestedSol(false);setOpen(true);}}><span>{status?(luna?'Luna':'Sol'):'…'}</span><ChevronDown size={12}/></button>
+    {open&&(status?.credits?<StudioAssistanceCreditsDialog {...props} initialView={requestedSol?'sol':undefined} trigger={returnFocus} fallbackTrigger={trigger} onClose={close}/>:<AssistanceDialog {...props} trigger={returnFocus} fallbackTrigger={trigger} onClose={close}/>)}
   </>;
 }
-function AssistanceDialog({status,busy,error,locale,conversationBusy,choose,refresh,onChoice,trigger,onClose}:Props&{trigger:RefObject<HTMLButtonElement>;onClose:()=>void}) {
+function AssistanceDialog({status,busy,error,locale,conversationBusy,choose,refresh,onChoice,trigger,fallbackTrigger,onClose}:Props&{trigger:RefObject<HTMLButtonElement>;fallbackTrigger?:RefObject<HTMLButtonElement>;onClose:()=>void}) {
   const dialog=useRef<HTMLDialogElement>(null),id=useId(),t=(en:string,fr:string)=>locale==='fr'?fr:en;
   const [amount,setAmount]=useState(500);
-  useEffect(()=>{const el=dialog.current,opener=trigger.current;el?.showModal();return()=>{el?.close();opener?.focus();};},[trigger]);
+  useEffect(()=>{const el=dialog.current,opener=trigger.current,fallback=fallbackTrigger?.current;el?.showModal();return()=>{el?.close();(opener?.isConnected?opener:fallback)?.focus();};},[trigger,fallbackTrigger]);
   async function select(choice:StudioAssistanceChoice) {if(await choose(choice)){onChoice();onClose();}}
   const locked=busy||conversationBusy||!!status?.unresolvedCalls;
   const availableAmounts=[500,1000,2000].filter(value=>value<=(status?.paid.maxAdditionalBudgetCents??0));

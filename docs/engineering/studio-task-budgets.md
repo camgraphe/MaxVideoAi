@@ -7,6 +7,9 @@ procedure are recorded in `docs/operations/studio-media-tasks-activation-2026-10
 `src/lib/studio/task-budget-contract.ts` owns the separately versioned resource
 policies `studio-task-budget-2026-10-06-v1` and `studio-task-budget-2026-10-11-v2`. Existing assistance v1/v2 tariffs,
 500 monthly credits and pack prices stay unchanged. Ceilings are not flat fees.
+The public UI offers only Sol and Luna, without a work-profile picker. Sol starts
+with 500 included credits; new messages use the internal Standard work bounds.
+Historical Quick/Complex tasks keep their stored profile, ceilings and approvals.
 Sol consumes free credits before explicitly enabled purchased credits; Luna stays
 sponsored. Conservative next-call quotes must fit the remaining ceiling before
 reservation, so the financial cap can stop work before the call/token maxima.
@@ -52,7 +55,9 @@ purchase.
 | Standard | 250 ($0.25) | 4 | 2,200 | 24,000 | 300s | 8 |
 | Complex, explicitly confirmed Sol | 500 ($0.50) | 8 | 6,000 | 48,000 | 600s | 12 |
 
-Reasoning is low, medium, and adaptive medium/high respectively. Visible replies
+Sol reasoning is low, medium, and adaptive medium/high respectively. New Luna
+requests retain the current high-reasoning policy and 6,000 output tokens; frozen
+historical task/fallback allowances are unchanged. Visible replies
 remain bounded to 2,400 characters; long generation directions belong in tools.
 Caching follows recorded provider facts; no hit or saving is assumed.
 
@@ -132,9 +137,8 @@ the guard cannot reserve another model call.
 
 Continue retains the ceiling. Sol extensions permit +100/+250/+500 credits, up to
 2,000 credits and 24 calls total; UI offers a labelled +100 choice. Nothing buys
-a pack or resumes purchased usage. Complex needs a fresh checkbox
-for each new request. Context/output pauses offer simplification or a new Complex
-request; more credits alone do not expand a frozen profile. Funding opens assistance.
+a pack or resumes purchased usage. Historical Complex requests retain their recorded explicit approval.
+Context/output pauses offer simplification or a focused follow-up; more credits alone do not expand a frozen profile. Funding opens assistance.
 
 Under the monthly-credit policy, an owned task whose next Sol reservation fails
 with `included_exhausted` or `paid_budget_exhausted` automatically retries that
