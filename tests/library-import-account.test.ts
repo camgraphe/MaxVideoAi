@@ -2,12 +2,13 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { bundleClientFlow, createClientFlowDom } from './helpers/client-flow-dom';
 import { deferred } from './helpers/auth-legal-client-fixture';
+import { chunkedVideoUploadFixture } from './helpers/chunked-video-upload-fixture';
 
   const boundaries = {
     '@/components/HeaderBar': 'export const HeaderBar=()=>null;',
     '@/components/AppSidebar': 'export const AppSidebar=()=>null;',
     '@/components/library/MediaDestinationActions.client': 'export const MediaDestinationActions=()=>null;',
-    '@/components/library/AssetLibraryBrowser': 'export const AssetLibraryBrowser=p=><section>{p.headerActions}</section>;',
+    '@/components/library/AssetLibraryBrowser': 'export const AssetLibraryBrowser=p=><section>{p.headerActions}{p.error?<p role="alert">{p.error}</p>:null}</section>;',
     '@/hooks/useRequireAuth': 'export const useRequireAuth=()=>({user:window.actor,loading:false});',
     '@/lib/i18n/I18nProvider': "export const useI18n=()=>({locale:'en',t:(_key,fallback)=>fallback});",
     'next/navigation': "export const useSearchParams=()=>new URLSearchParams('kind='+window.kind);export const useRouter=()=>({replace(){}});export const usePathname=()=>'/app/library';",
@@ -19,7 +20,7 @@ import { deferred } from './helpers/auth-legal-client-fixture';
 
 const bundle = bundleClientFlow(`import React,{act}from'react';import{createRoot}from'react-dom/client';import{LibraryPageClient}from'./app/(core)/(workspace)/app/library/_components/LibraryPageClient';window.IS_REACT_ACT_ENVIRONMENT=true;const root=createRoot(document.getElementById('root'));window.fx={act,render:()=>root.render(<LibraryPageClient/>),unmount:()=>root.unmount()};`, boundaries);
 
-async function mount(kind = 'image') {
+async function mount(kind = 'image', uploadRequest?: typeof fetch) {
   const dom = createClientFlowDom('/app/library');
   const w = dom.window;
   const decode = deferred<unknown>();
@@ -29,16 +30,17 @@ async function mount(kind = 'image') {
   w.getSession = async () => ({ data: { session: w.actor ? { user: w.actor, access_token: 'token-'+w.actor.id } : null }, error: null });
   w.createImageBitmap = () => decode.promise;
   w.fetch = (url: string, init: RequestInit) => {
+    if (uploadRequest) return uploadRequest(url, init);
     assert.equal(url, '/api/uploads/'+kind);
     const request = { url, init, body: init.body as FormData, ...deferred<unknown>() }; requests.push(request); return request.promise;
   };
   w.eval(await bundle);
   await w.fx.act(async () => w.fx.render());
   return { w, requests,
-    async select(name = 'private-A.png') {
+    async select(name = 'private-A.png', size = 9, mime = kind+'/png') {
       await w.fx.act(async () => {
         const input = w.document.querySelector('input[type=file]')!;
-        Object.defineProperty(input, 'files', { configurable: true, value: [new w.File(['synthetic'], name, { type: kind+'/png' })] });
+        Object.defineProperty(input, 'files', { configurable: true, value: [new w.File([new Uint8Array(size)], name, { type: mime })] });
         input.dispatchEvent(new w.Event('change', { bubbles: true }));
       });
     },
@@ -96,6 +98,48 @@ test('current upload succeeds and refreshes saved media', async () => {
     await f.w.fx.act(async () => f.requests[0].resolve({ok:true,json:async()=>({ok:true,asset:{url:'https://example.invalid/synthetic.png'}})}));
     assert.equal(f.w.refreshes, 1);
   } finally { await f.dispose(); }
+});
+
+test('the media library imports a large MOV and keeps every part bound to its initiating account',async()=>{
+  const upload=chunkedVideoUploadFixture();
+  const f=await mount('video',async(input,init)=>{
+    assert.equal(new Headers(init?.headers).get('Authorization'),'Bearer token-account-A');
+    assert.equal(init?.credentials,'omit');
+    return upload.request(input,init);
+  });
+  try {
+    await f.select('reference.mov',5*1024*1024,'video/quicktime');
+    assert.equal(upload.completed,true);
+    assert.equal(f.w.refreshes,1);
+    assert.equal(f.w.document.querySelector('[role="alert"]')===null,true);
+  }finally{await f.dispose();}
+});
+
+test('switching account during a large video import stops the chunks and cannot refresh the new library',async()=>{
+  let release!:()=>void;
+  let partStarted=false;
+  const part=new Promise<void>(resolve=>{release=resolve;});
+  const upload=chunkedVideoUploadFixture(async()=>{partStarted=true;await part;});
+  const f=await mount('video',upload.request);
+  try {
+    await f.select('reference.mov',5*1024*1024,'video/quicktime');
+    assert.equal(partStarted,true);
+    await f.switchTo('account-B');
+    await f.w.fx.act(async()=>{release();await part;});
+    assert.equal(upload.completed,false);
+    assert.equal(f.w.refreshes,0);
+  }finally{release();await f.dispose();}
+});
+
+test('a rejected video import retains a readable error instead of exposing the transport code',async()=>{
+  const f=await mount('video',async()=>Response.json({ok:false,error:'FILE_TOO_LARGE'},{status:413}));
+  try {
+    await f.select('reference.mov',5*1024*1024,'video/quicktime');
+    assert.equal(f.w.refreshes,0);
+    const message=f.w.document.body.textContent??'';
+    assert.match(message,/too large to import/);
+    assert.doesNotMatch(message,/FILE_TOO_LARGE/);
+  }finally{await f.dispose();}
 });
 
 for (const transition of ['switch', 'unmount']) test(`session lookup finishing after ${transition} cannot dispatch an upload`, async () => {

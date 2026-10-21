@@ -3,6 +3,8 @@
 import {useEffect, useId, useRef, useState} from 'react';
 import {AudioWaveform, Check, Film, ImageIcon, Search, Upload, X} from 'lucide-react';
 import {LibraryImageThumbnail} from '@/components/library/LibraryImageThumbnail.client';
+import {uploadVideoFile} from '@/lib/client-video-upload';
+import {ownedAuthFetch} from '@/lib/owned-auth-fetch';
 import {saveRecentMediaReference, type RecentImage, type ImageLibraryAsset} from '@/lib/studio/image-library';
 import type {ConversationLocale} from '@/lib/studio/conversation-quote-presentation';
 import styles from './image-reference-library.module.css';
@@ -25,7 +27,8 @@ function MediaPreview({item, kind, name}: {item: ImageLibraryAsset | RecentImage
   return kind === 'video' ? <Film className={styles.mediaIcon} size={34} aria-hidden="true" /> : <AudioWaveform className={styles.mediaIcon} size={42} aria-hidden="true" />;
 }
 
-export function ImageReferenceLibrary({onClose, onSelect, mediaEnabled = false, locale = 'en', purpose = 'reference', returnFocusTo}: {
+export function ImageReferenceLibrary({accountKey, onClose, onSelect, mediaEnabled = false, locale = 'en', purpose = 'reference', returnFocusTo}: {
+  accountKey: string;
   onClose: () => void;
   onSelect: (asset: ImageLibraryAsset) => void;
   mediaEnabled?: boolean;
@@ -154,6 +157,15 @@ export function ImageReferenceLibrary({onClose, onSelect, mediaEnabled = false, 
     setWorking('upload');
     setError(null);
     try {
+      if (uploadKind === 'video') {
+        const asset = await uploadVideoFile(file, {
+          request: (url, init) => ownedAuthFetch(url, accountKey, {...init, signal: controller.signal}),
+          abortRequest: (url, init) => ownedAuthFetch(url, accountKey, {...init, signal: AbortSignal.timeout(10_000)}),
+        });
+        if (!asset.assetId) throw new Error('UPLOAD_FAILED');
+        if (alive.current && scope.current === intent && !controller.signal.aborted) onSelect({...asset, assetId: asset.assetId, kind: uploadKind, name: file.name});
+        return;
+      }
       const body = new FormData();
       body.set('file', file);
       const response = await fetch(`/api/uploads/${uploadKind}`, {method: 'POST', body, signal: controller.signal});

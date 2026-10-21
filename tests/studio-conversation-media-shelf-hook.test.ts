@@ -6,6 +6,8 @@ import {act} from 'react';
 import {createRoot} from 'react-dom/client';
 import {useConversationMediaShelf} from '../frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/_hooks/useConversationMediaShelf';
 import {imageTurnInputSchema,type ImageConversationTurn,type ImageTurnInput} from '../frontend/src/lib/studio/image-conversation-contract';
+import {chunkedVideoUploadFixture} from './helpers/chunked-video-upload-fixture';
+import {uploadSessionFixture} from './helpers/upload-session-fixture';
 
 const asset=(number:number,kind:'image'|'video'|'audio'='image')=>({assetId:'ma_'+number.toString(16).padStart(32,'0'),kind,url:'https://example.com/media'});
 const requestId='a2899f64-2203-4771-9836-ec6abb8f9bdd';
@@ -19,7 +21,7 @@ function deferred<T>() {
   return {promise,resolve};
 }
 type UploadResponse={ok:boolean;payload:unknown};
-async function mount(initialTurns:ImageConversationTurn[]=[],mediaEnabled=true,desktop=true) {
+async function mount(initialTurns:ImageConversationTurn[]=[],mediaEnabled=true,desktop=true,uploadRequest?:typeof fetch) {
   const dom=new JSDOM('<div id="root"></div>',{url:'http://localhost/'});
   const mediaListeners=new Set<()=>void>();
   Object.defineProperty(dom.window,'matchMedia',{value:()=>({get matches(){return desktop;},
@@ -32,6 +34,7 @@ async function mount(initialTurns:ImageConversationTurn[]=[],mediaEnabled=true,d
     File:dom.window.File,FormData:dom.window.FormData,IS_REACT_ACT_ENVIRONMENT:true,
     fetch:async(url:string,options?:RequestInit)=>{
       requests.push({url,options});
+      if(uploadRequest)return uploadRequest(url,options);
       const response=await responses.shift()?.();
       if(!response)throw new Error('Unexpected upload');
       return {ok:response.ok,json:async()=>response.payload};
@@ -39,21 +42,22 @@ async function mount(initialTurns:ImageConversationTurn[]=[],mediaEnabled=true,d
     old.set(key,Object.getOwnPropertyDescriptor(globalThis,key));
     Object.defineProperty(globalThis,key,{value,writable:true,configurable:true});
   }
+  const session=await uploadSessionFixture();
   let turns=initialTurns;
   let state!:ReturnType<typeof useConversationMediaShelf>;
-  function Fixture(){state=useConversationMediaShelf(turns,'en',mediaEnabled);return null;}
+  function Fixture(){state=useConversationMediaShelf(turns,'en',mediaEnabled,'account-A');return null;}
   const root=createRoot(dom.window.document.getElementById('root')!);
   const render=()=>root.render(React.createElement(React.StrictMode,null,React.createElement(Fixture)));
   await act(async()=>render());
   let unmounted=false;
   return {
-    get state(){return state;},requests,
+    get state(){return state;},requests,session,
     file:(name='image.png',type='image/png')=>new dom.window.File(['fixture'],name,{type}),
     queue(response:UploadResponse|(()=>Promise<UploadResponse>)){responses.push(typeof response==='function'?response:async()=>response);},
     async rerender(next:ImageConversationTurn[]){turns=next;await act(async()=>render());},
     async viewport(isDesktop:boolean){desktop=isDesktop;await act(async()=>{for(const listener of mediaListeners)listener();});},
     async unmount(){if(!unmounted){await act(async()=>root.unmount());unmounted=true;}},
-    async close(){if(!unmounted)await act(async()=>root.unmount());dom.window.close();for(const [key,value] of old){if(value)Object.defineProperty(globalThis,key,value);else Reflect.deleteProperty(globalThis,key);}},
+    async close(){if(!unmounted)await act(async()=>root.unmount());session.restore();dom.window.close();for(const [key,value] of old){if(value)Object.defineProperty(globalThis,key,value);else Reflect.deleteProperty(globalThis,key);}},
   };
 }
 function currentInput(view:Awaited<ReturnType<typeof mount>>):ImageTurnInput {
@@ -155,6 +159,41 @@ test('image-only Studio refuses a video upload before network work',async()=>{
     assert.equal(view.requests.length,0);
     assert.match(view.state.error??'',/PNG, JPEG or WebP/);
   }finally{await view.close();}
+});
+
+test('Studio drop imports a MOV larger than the function body limit and retains its measured identity',async()=>{
+  const upload=chunkedVideoUploadFixture();
+  const view=await mount([],true,true,upload.request);
+  try {
+    const file=new window.File([new Uint8Array(5*1024*1024)],'reference.mov',{type:'video/quicktime'});
+    await act(async()=>view.state.upload([file]));
+    assert.equal(view.state.error,null);
+    assert.equal(view.state.uploading,false);
+    assert.equal(upload.completed,true);
+    assert.equal(view.state.references.length,1);
+    assert.equal(view.state.references[0].assetId,upload.asset.assetId);
+    assert.equal(view.state.references[0].kind,'video');
+    assert.equal(view.state.references[0].name,'reference.mov');
+    assert.deepEqual(view.state.references[0].mediaFacts,upload.asset.mediaFacts);
+    assert.equal(imageTurnInputSchema.safeParse(currentInput(view)).success,true);
+  }finally{await view.close();}
+});
+
+for(const change of ['unmount','account'] as const)test('a large Studio drop stops after '+change,async()=>{
+  let release!:()=>void;
+  const part=new Promise<void>(resolve=>{release=resolve;});
+  const upload=chunkedVideoUploadFixture(()=>part);
+  const view=await mount([],true,true,upload.request);
+  try {
+    const file=new window.File([new Uint8Array(5*1024*1024)],'reference.mov',{type:'video/quicktime'});
+    let pending!:Promise<void>;
+    await act(async()=>{pending=view.state.upload([file]);});
+    assert.equal(view.state.uploading,true);
+    if(change==='unmount')await view.unmount();else view.session.switchTo('account-B');
+    await act(async()=>{release();await pending;});
+    assert.equal(upload.completed,false);
+    assert.deepEqual(view.state.references,[]);
+  }finally{release();await view.close();}
 });
 
 test('image-only Studio cannot reattach historical video or audio and submit an unbound mention',async()=>{

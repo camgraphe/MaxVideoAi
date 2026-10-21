@@ -5,6 +5,8 @@ import type { ChangeEvent, Dispatch, SetStateAction } from 'react';
 import type { AssetBrowserAsset } from '@/components/library/AssetLibraryBrowser';
 import { loadSupabaseClient } from '@/lib/supabaseClientLoader';
 import { authFetch } from '@/lib/authFetch';
+import { ownedAuthFetch } from '@/lib/owned-auth-fetch';
+import { uploadVideoFile } from '@/lib/client-video-upload';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import {
   resolveImageUploadErrorMessage,
@@ -85,27 +87,35 @@ export function useLibraryAssetMutations({
         if (error || !session?.access_token || session.user.id !== userId) {
           throw new Error(copy.browser.importFailed);
         }
-        const formData = new FormData();
-        formData.append('file', preparedFile, preparedFile.name);
-        const uploadEndpoint =
-          activeKind === 'video'
-            ? '/api/uploads/video'
-            : activeKind === 'audio'
-              ? '/api/uploads/audio'
-              : '/api/uploads/image';
-        const response = await authFetch(uploadEndpoint, {
-          method: 'POST',
-          body: formData,
-          signal: request.signal,
-          headers: { Authorization: `Bearer ${session.access_token}` },
-          credentials: 'omit',
-        });
-        if (!isCurrent()) return;
-        const payload = await response.json().catch(() => null);
-        if (!isCurrent()) return;
-        if (!response.ok || !payload?.ok || !payload?.asset?.url) {
-          const message = resolveImageUploadErrorMessage(response.status, payload?.error, copy.browser.importFailed);
-          throw new Error(message);
+        if (activeKind === 'video') {
+          try {
+            await uploadVideoFile(file, {
+              request: (input, init) => ownedAuthFetch(input, userId, {...init, signal: request.signal}),
+              abortRequest: (input, init) => ownedAuthFetch(input, userId, {...init, signal: AbortSignal.timeout(10_000)}),
+            });
+          } catch (error) {
+            const failure = error as {status?: number; code?: unknown};
+            throw new Error(resolveImageUploadErrorMessage(failure.status ?? 0, failure.code, copy.browser.importFailed));
+          }
+          if (!isCurrent()) return;
+        } else {
+          const formData = new FormData();
+          formData.append('file', preparedFile, preparedFile.name);
+          const uploadEndpoint = activeKind === 'audio' ? '/api/uploads/audio' : '/api/uploads/image';
+          const response = await authFetch(uploadEndpoint, {
+            method: 'POST',
+            body: formData,
+            signal: request.signal,
+            headers: { Authorization: `Bearer ${session.access_token}` },
+            credentials: 'omit',
+          });
+          if (!isCurrent()) return;
+          const payload = await response.json().catch(() => null);
+          if (!isCurrent()) return;
+          if (!response.ok || !payload?.ok || !payload?.asset?.url) {
+            const message = resolveImageUploadErrorMessage(response.status, payload?.error, copy.browser.importFailed);
+            throw new Error(message);
+          }
         }
 
         setActiveView('saved');

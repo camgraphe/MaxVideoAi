@@ -4,6 +4,26 @@ Read this guide when changing image/video presentation, poster URLs, generated m
 
 For sharing generated videos or public examples, also read `docs/engineering/video-sharing.md`.
 
+## Browser video uploads
+
+Every browser video import uses `frontend/lib/client-video-upload.ts` and its
+`uploadVideoFile` entry point, including Studio drops and reference/timeline
+pickers, the media library, generation references, Kling elements, audio source
+videos, Creator/finishing tools, upscale and background removal. This owner sends
+files larger than 4 MiB through the existing multipart relay with 3.5 MiB parts;
+posting the whole video to a function would hit Vercel's 4.5 MB body limit.
+Small uploads retain the single-request path inside that same owner. This changes
+transport, not `ASSET_MAX_VIDEO_MB` or the server's verified media policy.
+
+Pass an abortable request for controls that can close or change selection, and a
+separate cleanup request that survives cancellation. Account-scoped imports must
+bind every part and cleanup request to their initiating account. Preserve the
+returned canonical asset identity, measured media facts and original file name;
+only attach or refresh the library after completion. Image and audio transports
+keep their own owners. `tests/video-upload-direct.test.ts` guards this shared
+boundary, with behavioral coverage for large MOVs in Studio, library and
+background-removal tests.
+
 ## Authenticated original downloads
 
 `GET /api/download` authenticates before network work and serves exact original
