@@ -1,4 +1,5 @@
 import { isArchivedGenerationModel } from '@/lib/model-generation-policy';
+import { isKlingV4ReleaseBlocked } from '@/server/video-generation/kling-v4-release-policy';
 import { randomUUID } from 'crypto';
 import type { NextRequest } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
@@ -91,6 +92,9 @@ export function resolveTrustedPaidGenerateRouteContext(params: {
   seedanceWorkflow?: PreparedSeedanceWorkflow;
 }): GenerateRouteContextResult {
   const { body, engine, jobId, mode, providerEnv } = params;
+  if (isKlingV4ReleaseBlocked(engine.id)) {
+    return { ok: false, status: 503, body: { ok: false, error: 'KLING_V4_NOT_QUALIFIED' } };
+  }
   if (isArchivedGenerationModel(engine.id)) {
     return { ok: false, status: 410, body: { ok: false, error: 'ENGINE_RETIRED' } };
   }
@@ -182,6 +186,9 @@ export async function resolveGenerateRouteContext(params: {
     ...params.boundaryOverrides,
   };
   const requestedEngineId = String(body.engineId || '');
+  if (isKlingV4ReleaseBlocked(requestedEngineId)) {
+    return { ok: false, status: 503, body: { ok: false, error: 'KLING_V4_NOT_QUALIFIED' } };
+  }
   if (isArchivedGenerationModel(requestedEngineId)) {
     return { ok: false, status: 410, body: { ok: false, error: 'ENGINE_RETIRED' } };
   }

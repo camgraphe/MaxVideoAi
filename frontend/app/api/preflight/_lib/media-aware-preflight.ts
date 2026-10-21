@@ -2,6 +2,7 @@ import { bytePlusInputVideoDurationSec, isBytePlusInputVideoPricingModel } from 
 import { calculateMinimaxH3MaxReferenceTokenBudget } from '@/lib/minimax-h3-max-pricing';
 import { getWan3InputVideoDurationSec } from '@/lib/wan3-pricing';
 import { getGenerationModelIdentity, isArchivedGenerationModel } from '@/lib/model-generation-policy';
+import { isKlingV4ReleaseBlocked } from '@/server/video-generation/kling-v4-release-policy';
 import {
   BytePlusModelArkError,
   assertBytePlusSeedanceSubmissionEnabled,
@@ -117,6 +118,9 @@ export async function resolveMediaAwarePreflight(
   const parsedRequest = parsePreflightRequestPayload(input.request);
   if (!parsedRequest.ok) return parsedRequest.response;
   const request = parsedRequest.request;
+  if (isKlingV4ReleaseBlocked(request.engine)) {
+    return mediaPricingFailure('ENGINE_UNAVAILABLE', 'This model is not available for generation.');
+  }
   if (request.seedanceWorkflow && !input.trustedSeedanceWorkflow) {
     return mediaPricingFailure('SEEDANCE_DRAFT_UNAVAILABLE', 'An owned Draft workflow is required.');
   }

@@ -31,6 +31,7 @@ test('all Seedance and Kling engines that accept images require a 300 px minimum
       'kling-o3-4k',
       'kling-o3-pro',
       'kling-o3-standard',
+      'kling-v4',
       'seedance-1-5-pro',
       'seedance-2-0',
       'seedance-2-0-fast',

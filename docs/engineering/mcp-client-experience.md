@@ -1,5 +1,35 @@
 # MaxVideoAI : découverte, fluidité et continuité MCP
 
+## Kling V4 bounded preparation — 22 October 2026 source candidate
+
+The outer `prepare_generation.settings.multiPrompt` schema can now represent up
+to thirty scenes with integer scene durations from one through thirty seconds.
+Per-model canonical validation retains the existing V3 six-scene/fifteen-second
+limits; V4 requires a total of three through thirty seconds equal to the requested
+duration. Thirty scenes follows from that duration budget, not a separate provider
+scene-count claim. V4 publication, pricing and execution remain gated. App and
+Studio editors, canonical element grouping and cross-provider voice identity are
+not certified by this bounded transport change.
+
+The reviewed metadata change consists of exactly two numeric schema bounds.
+Using `collectPolicyFingerprintInput` and `computePolicyFingerprintSha256`,
+reverting just those bounds reproduces the prior fingerprint
+`85856e4ca6626277e799d69532eb3175a9d613df13ede09ae147b1b3f8fb97a3`.
+The refreshed fingerprint is
+`07f2512e47a74c41c9e8b5d2d83495182f47374164e4d884a7ff3bdd49060cbe`.
+Only `policyFingerprintSha256` changed in the curated artifact: all 70 decisions,
+the fixture fingerprint and 39 policy checks are preserved.
+
+The collector measures 1,551 UTF-8 bytes of global instructions and 18 model-visible
+tools, with a maximum descriptor size of 1,927 bytes. `prepare_generation` has
+1,639 description bytes and 9,422 serialized input-schema bytes. The deterministic
+`mcp:client:check` passes 173 tests with one skip, followed by all 70 curated scenarios.
+The metadata collector invokes no tool service; subsequent checks use local
+fixtures, without a provider call, account access or real host. This is local
+evidence, not deployment, plugin publication, host refresh or generation access.
+The exact measurements and preserved coverage are recorded in
+[`mcp-offline-evidence.json`](../launch/kling-v4/mcp-offline-evidence.json).
+
 ## Keyframe project budgets — 21 October 2026 source candidate
 
 `calculate_project_budget.settings.keyframeIndexes` now carries the optional

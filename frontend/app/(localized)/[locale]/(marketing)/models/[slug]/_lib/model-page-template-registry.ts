@@ -12,6 +12,7 @@ import { kling25TurboTemplateConfig } from './model-page-templates/kling-2-5-tur
 import { kling26ProTemplateConfig } from './model-page-templates/kling-2-6-pro';
 import { kling34kTemplateConfig } from './model-page-templates/kling-3-4k';
 import { kling3ProTemplateConfig } from './model-page-templates/kling-3-pro';
+import { klingV4TemplateConfig } from './model-page-templates/kling-v4';
 import { kling3StandardTemplateConfig } from './model-page-templates/kling-3-standard';
 import { kling3TurboProTemplateConfig, kling3TurboStandardTemplateConfig } from './model-page-templates/kling-3-turbo';
 import { klingO34kTemplateConfig } from './model-page-templates/kling-o3-4k';
@@ -68,6 +69,7 @@ const MODEL_PAGE_TEMPLATE_REGISTRY: Record<string, ModelPageTemplateConfig> = {
   [kling26ProTemplateConfig.slug]: kling26ProTemplateConfig,
   [kling34kTemplateConfig.slug]: kling34kTemplateConfig,
   [kling3ProTemplateConfig.slug]: kling3ProTemplateConfig,
+  [klingV4TemplateConfig.slug]: klingV4TemplateConfig,
   [kling3StandardTemplateConfig.slug]: kling3StandardTemplateConfig,
   [kling3TurboProTemplateConfig.slug]: kling3TurboProTemplateConfig,
   [kling3TurboStandardTemplateConfig.slug]: kling3TurboStandardTemplateConfig,

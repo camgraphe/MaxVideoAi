@@ -267,12 +267,15 @@ function validateVideoModeCaps(
     const field = applicableField(candidate, fieldId, request.mode);
     if (!field) fail(setting);
     if (setting === 'multiPrompt') {
-      if (!Array.isArray(value) || value.length < 1 || value.length > 6) fail(setting);
+      const v4 = request.engineId === 'kling-v4';
+      if (!Array.isArray(value) || value.length < 1 || value.length > (v4 ? 30 : 6)) fail(setting);
       const total = value.reduce((sum, scene) => sum + scene.durationSec, 0);
       if (
         request.prompt.length > 0
         || total !== request.settings.durationSec
-        || value.some((scene) => !scene.prompt || scene.prompt.length > 512)
+        || value.some((scene) => !scene.prompt || scene.prompt.length > 512
+          || !Number.isInteger(scene.durationSec) || scene.durationSec < 1 || scene.durationSec > (v4 ? 30 : 15))
+        || (v4 && (total < 3 || total > 30))
       ) fail(setting);
       continue;
     }

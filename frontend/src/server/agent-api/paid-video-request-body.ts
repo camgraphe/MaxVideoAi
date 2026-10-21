@@ -347,7 +347,7 @@ export function buildPaidVideoRequestBody(
     body.inputs = [
       ...(start[0] && startFieldId ? [input(start[0], startFieldId)] : []),
       ...(end[0] && endFieldId ? [input(end[0], endFieldId)] : []),
-      ...(imageFieldId && imageFieldId !== 'image_urls'
+      ...(imageFieldId && (imageFieldId !== 'image_urls' || execution.engine.id === 'kling-v4')
         ? referenceMedia.filter((reference) => reference.kind === 'image')
           .map((reference) => input(reference, imageFieldId))
         : []),
@@ -400,7 +400,7 @@ export function buildPaidVideoRequestBody(
     body.inputs = [
       input(source[0]!, 'video_url'),
       ...(guideFrames[0] && guideFieldId ? [input(guideFrames[0], guideFieldId)] : []),
-      ...(imageFieldId && (imageFieldId !== 'image_urls' || execution.engine.id === 'seedance-2-5')
+      ...(imageFieldId && (imageFieldId !== 'image_urls' || ['seedance-2-5','kling-v4'].includes(execution.engine.id))
         ? imageReferences.map((reference) => input(reference, imageFieldId)) : []),
       ...(audioFieldId ? audioReferences.map((reference) => input(reference, audioFieldId)) : []),
     ];

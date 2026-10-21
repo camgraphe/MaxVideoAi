@@ -21,8 +21,8 @@ const reference = z.discriminatedUnion('kind', [
 export const canonicalSettingsSchema = z.object({
   multiPrompt: z.array(z.object({
     prompt: z.string().trim().min(1).max(512),
-    durationSec: z.number().int().min(1).max(15),
-  }).strict()).min(1).max(6).nullable().default(null).describe(
+    durationSec: z.number().int().min(1).max(30),
+  }).strict()).min(1).max(30).nullable().default(null).describe(
     'Kling multi-shot scenes. Use only when get_model_details reports the multiPrompt setting; otherwise send null or omit it. Omit the top-level prompt text content for this form.',
   ),
   durationSec: z.number().int().min(1).max(86_400).nullable().default(null).describe(

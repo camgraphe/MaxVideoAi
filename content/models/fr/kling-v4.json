@@ -1,0 +1,391 @@
+{
+  "marketingName": "Kling 4.0",
+  "versionLabel": "4.0",
+  "seo": {
+    "title": "Kling 4.0 — diriger la scène, les références et le son | MaxVideoAI",
+    "description": "Découvrez Kling 4.0 : vidéos de 3 à 30 secondes, 720p et 1080p, plans minutés, audio natif, références image et vidéo et modification vidéo."
+  },
+  "overview": "Kling 4.0 réunit direction de scène, génération guidée par des références et modification vidéo. Pensez ensemble l’action, le cadrage et le son, puis choisissez le mode adapté aux éléments dont vous disposez.",
+  "pricingNotes": [
+    "Les devis clients restent désactivés pendant la qualification de l’accès et de la facturation.",
+    "Les tarifs du fournisseur ne constituent pas un prix client MaxVideoAI. Chaque génération nécessitera un devis actuel et une validation explicite."
+  ],
+  "hero": {
+    "title": "Kling 4.0 — diriger la scène, les références et le son",
+    "intro": "Kling 4.0 réunit direction de scène, génération guidée par des références et modification vidéo. Pensez ensemble l’action, le cadrage et le son, puis choisissez le mode adapté aux éléments dont vous disposez.",
+    "badge": "3–30 s · 720p / 1080p",
+    "ctaPrimary": {
+      "label": "Explorer les idées de prompts",
+      "href": "#prompting"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Lire les caractéristiques",
+        "href": "#specs"
+      }
+    ]
+  },
+  "bestUseCases": [
+    "Une révélation produit",
+    "Un dialogue court",
+    "Un personnage récurrent"
+  ],
+  "faqs": [
+    {
+      "q": "Qu’est-ce que Kling 4.0 ?",
+      "a": "Kling 4.0 est le modèle vidéo de Kuaishou dont la documentation décrit des parcours texte, image, références et modification. Cette page présente ce contrat et des conseils de préparation."
+    },
+    {
+      "q": "Puis-je générer avec Kling 4.0 dans MaxVideoAI maintenant ?",
+      "a": "La génération et les devis clients sont désactivés. La documentation du fournisseur ne prouve ni un accès opérationnel ni un résultat MaxVideoAI évalué."
+    },
+    {
+      "q": "Quelles durées et résolutions sont documentées ?",
+      "a": "Le schéma accepte des durées entières de 3 à 30 secondes et des sorties 720p ou 1080p. Les valeurs par défaut de génération sont 5 secondes et 1080p. La modification peut reprendre la durée source lorsqu’elle est omise."
+    },
+    {
+      "q": "Le modèle génère-t-il du son ?",
+      "a": "Le fournisseur annonce audio stéréo, dialogue, chant et synchronisation labiale natifs. Les schémas ne proposent ni interrupteur audio ni fichier audio en entrée. Ces annonces ne constituent pas des mesures audio MaxVideoAI."
+    },
+    {
+      "q": "Peut-on fournir une première et une dernière image ?",
+      "a": "Le mode image vers vidéo exige une image initiale et accepte une image finale. Le mode par références accepte une image initiale facultative, mais pas de paramètre d’image finale documenté. Aucun ne propose une liste d’images clés minutées."
+    },
+    {
+      "q": "Comment fonctionnent les plans minutés ?",
+      "a": "Les modes de génération acceptent une liste de prompts de plans. Chaque prompt fait au maximum 512 caractères et chaque durée va de 1 à 30 secondes entières. Leur somme doit correspondre au clip demandé, de 3 à 30 secondes. Aucun nombre maximal explicite de plans ne figure dans le schéma consulté."
+    },
+    {
+      "q": "Quels médias de référence sont acceptés ?",
+      "a": "La génération par références accepte jusqu’à 10 images, image initiale comprise, 5 vidéos et 7 éléments. Le fournisseur annonce un budget global de 15 éléments multimédias. Les vidéos et éléments vidéo partagent 30 secondes ; chaque vidéo doit durer de 3 à 30 secondes. Les contraintes des éléments s’appliquent également."
+    },
+    {
+      "q": "Peut-on réutiliser une voix ?",
+      "a": "Le schéma des éléments de référence comporte un identifiant vocal, avec au maximum trois éléments portant une voix. La création et l’usage effectif des voix doivent être qualifiés séparément. Les modes texte et image ordinaires n’exposent pas de liste de voix."
+    },
+    {
+      "q": "En quoi la modification vidéo diffère-t-elle ?",
+      "a": "Elle exige une vidéo source et un prompt et accepte des images et éléments visuels facultatifs. Elle n’expose ni plans multiples, ni éléments vocaux, ni réglage de format. Les durées d’entrée et de sortie interviennent dans la facturation fournisseur."
+    },
+    {
+      "q": "Les anciens exemples Kling seront-ils remplacés ?",
+      "a": "Les pages et vidéos Kling existantes conservent leur identité, leurs prompts et leurs réglages. Une vidéo Kling 3 ou Omni ne devient pas un exemple Kling 4.0."
+    }
+  ],
+  "custom": {
+    "whyTitle": "Kling 4.0",
+    "heroHighlights": [
+      "Diriger une séquence||Décrivez une scène continue ou plusieurs plans minutés dont les durées forment le clip complet. Donnez une action claire à chaque plan.",
+      "Guider le sujet et le décor||Partez d’une image, ajoutez une image finale facultative ou utilisez des images, vidéos et éléments de référence pour guider une nouvelle scène.",
+      "Écrire le son dans la scène||Le fournisseur annonce dialogues, chant et audio stéréo natifs. Décrivez les paroles, les voix et l’ambiance dans le prompt ; aucun interrupteur audio distinct n’est documenté.",
+      "Modifier une vidéo existante||Le mode de modification reçoit une vidéo source et un prompt, avec des images et éléments visuels facultatifs. Ses entrées diffèrent de celles de la génération par références."
+    ],
+    "specTitle": "Contrôles documentés de Kling 4.0",
+    "specNote": "Documentation fournisseur relevée le 21 octobre 2026. L’accès, les sorties mesurées et l’exécution dans MaxVideoAI sont des contrôles distincts.",
+    "specSections": [
+      {
+        "title": "Texte vers vidéo",
+        "intro": "Un prompt ou des plans minutés, de 3 à 30 secondes, en 720p ou 1080p, avec cadrage paysage, portrait, carré ou 21:9.",
+        "items": []
+      },
+      {
+        "title": "Image vers vidéo",
+        "intro": "Une image initiale est obligatoire. Une image finale est facultative. Les images déterminent le cadrage.",
+        "items": []
+      },
+      {
+        "title": "Génération par références",
+        "intro": "Jusqu’à 10 images, image initiale facultative comprise, et 5 vidéos. Les vidéos de référence et les éléments vidéo partagent une limite de 30 secondes.",
+        "items": []
+      },
+      {
+        "title": "Modification vidéo",
+        "intro": "Fournissez une vidéo source et un prompt. Des images et éléments visuels peuvent guider la modification ; ce mode ne propose ni plans minutés ni éléments vocaux.",
+        "items": []
+      }
+    ],
+    "tipsTitle": "Conseils de direction et limites",
+    "tipsIntro": "Précisez le sujet, l’action, la caméra et le son. Les plans minutés guident la séquence sans garantir des coupes exactes.",
+    "strengths": [
+      "Donnez une action claire à chaque plan.",
+      "Gardez des références cohérentes en identité et en lumière.",
+      "Écrivez les paroles exactes et identifiez la personne qui parle.",
+      "Évaluez la vidéo et la bande sonore complètes avant de retenir un résultat."
+    ],
+    "troubleshootingItems": [],
+    "boundaries": [
+      "Les clips générés durent de 3 à 30 secondes entières.",
+      "720p et 1080p sont documentés ; aucun palier 4K n’est déclaré ici.",
+      "Aucune graine, CFG, consigne négative, sélection de cadence ou liste d’images clés minutées n’est documentée.",
+      "La génération par références et la modification ont des limites différentes."
+    ],
+    "safetyNote": "Utilisez des médias et voix avec les autorisations nécessaires. Vérifiez l’identité, les paroles et les risques de confusion avant tout partage."
+  },
+  "decision": {
+    "modelSlug": "kling-v4",
+    "hero": {
+      "eyebrow": "KLING 4.0",
+      "title": "Kling 4.0 — diriger la scène, les références et le son",
+      "subtitle": "Préparez des vidéos de 3 à 30 secondes à partir de texte, d’images ou de références vidéo, avec audio natif et un mode de modification vidéo distinct.",
+      "subtitleHighlights": [
+        "3 à 30"
+      ],
+      "paragraph": "Cette page décrit le contrat publié par le fournisseur. La génération Kling 4.0 et les devis clients ne sont pas activés dans MaxVideoAI ; aucun rendu MaxVideoAI n’a encore été évalué.",
+      "primaryCta": {
+        "label": "Explorer les idées de prompts",
+        "href": "#prompting"
+      },
+      "secondaryCta": {
+        "label": "Lire les caractéristiques",
+        "href": "#specs"
+      },
+      "quickLinks": [
+        {
+          "label": "Explorer les idées de prompts",
+          "href": "#prompting"
+        },
+        {
+          "label": "Lire les caractéristiques",
+          "href": "#specs"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Évaluation des médias Kling 4.0",
+      "description": "Aucun résultat Kling 4.0 n’est présenté comme un exemple MaxVideoAI évalué.",
+      "renderLabel": "Voir l’exemple",
+      "badges": [
+        "Aucun exemple évalué"
+      ],
+      "altContext": "Évaluation des médias Kling 4.0"
+    },
+    "features": [
+      {
+        "title": "Diriger une séquence",
+        "body": "Décrivez une scène continue ou plusieurs plans minutés dont les durées forment le clip complet. Donnez une action claire à chaque plan.",
+        "tone": "duration"
+      },
+      {
+        "title": "Guider le sujet et le décor",
+        "body": "Partez d’une image, ajoutez une image finale facultative ou utilisez des images, vidéos et éléments de référence pour guider une nouvelle scène.",
+        "tone": "reference"
+      },
+      {
+        "title": "Écrire le son dans la scène",
+        "body": "Le fournisseur annonce dialogues, chant et audio stéréo natifs. Décrivez les paroles, les voix et l’ambiance dans le prompt ; aucun interrupteur audio distinct n’est documenté.",
+        "tone": "audio"
+      },
+      {
+        "title": "Modifier une vidéo existante",
+        "body": "Le mode de modification reçoit une vidéo source et un prompt, avec des images et éléments visuels facultatifs. Ses entrées diffèrent de celles de la génération par références.",
+        "tone": "quality"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Une révélation produit",
+        "body": "Prévoyez une vue initiale, un mouvement précis et une composition finale lisible.",
+        "cta": {
+          "label": "Explorer les idées de prompts",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Un dialogue court",
+        "body": "Identifiez la personne qui parle, écrivez une phrase brève et laissez un temps de réaction.",
+        "cta": {
+          "label": "Explorer les idées de prompts",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Un personnage récurrent",
+        "body": "Préparez des images cohérentes et décrivez l’action sans redéfinir constamment le sujet.",
+        "cta": {
+          "label": "Explorer les idées de prompts",
+          "href": "#prompting"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Texte vers vidéo",
+        "body": "Un prompt ou des plans minutés, de 3 à 30 secondes, en 720p ou 1080p, avec cadrage paysage, portrait, carré ou 21:9."
+      },
+      {
+        "title": "Image vers vidéo",
+        "body": "Une image initiale est obligatoire. Une image finale est facultative. Les images déterminent le cadrage."
+      },
+      {
+        "title": "Génération par références",
+        "body": "Jusqu’à 10 images, image initiale facultative comprise, et 5 vidéos. Les vidéos de référence et les éléments vidéo partagent une limite de 30 secondes."
+      },
+      {
+        "title": "Modification vidéo",
+        "body": "Fournissez une vidéo source et un prompt. Des images et éléments visuels peuvent guider la modification ; ce mode ne propose ni plans minutés ni éléments vocaux."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Prix de Kling 4.0",
+      "subtitle": "Les devis clients restent désactivés pendant la qualification de l’accès et de la facturation.",
+      "footnote": "Les tarifs du fournisseur ne constituent pas un prix client MaxVideoAI. Chaque génération nécessitera un devis actuel et une validation explicite.",
+      "ctaLabel": "Lire les caractéristiques",
+      "ctaHref": "#specs"
+    },
+    "meta": {
+      "title": "Kling 4.0 — diriger la scène, les références et le son | MaxVideoAI",
+      "description": "Découvrez Kling 4.0 : vidéos de 3 à 30 secondes, 720p et 1080p, plans minutés, audio natif, références image et vidéo et modification vidéo."
+    }
+  },
+  "prompting": {
+    "modelSlug": "kling-v4",
+    "section": {
+      "title": "Laboratoire de prompts — Kling 4.0",
+      "intro": "Ces prompts originaux sont des propositions à adapter, pas des prompts issus de rendus Kling 4.0 réalisés.",
+      "tip": "Précisez le sujet, l’action, la caméra et le son. Les plans minutés guident la séquence sans garantir des coupes exactes.",
+      "guide": {
+        "label": "Lire la présentation du fournisseur",
+        "href": "https://fal.ai/kling-4"
+      },
+      "referencesTitle": "Préparer des références cohérentes"
+    },
+    "tabs": [
+      {
+        "id": "scene",
+        "label": "Direction",
+        "title": "Ignition — proposition de film non générée",
+        "description": "Un client sabote sa moto réparée pour rester auprès de la mécanicienne. Elle comprend sa ruse et lui tend un casque. Proposition originale ; aucun rendu Kling 4.0 généré ni évalué.",
+        "copy": "An adult romantic film scene in a small motorcycle repair shop at closing time. A sharp-faced woman in her fifties, with tied brown hair and one broad white streak, wears open blue coveralls over a dark vest. Her customer is a man in his sixties with an aquiline nose, carefully combed gray hair and a camel coat too elegant for the workshop. She reconnects one accessible cable on his old motorcycle, wipes her hands and turns toward the bench. He checks that she is looking away, then quietly disconnects the very same cable. In the reflection of the shop window, she sees what he has done. Let her look at him for a moment before he notices. She returns, reconnects the cable and holds his gaze. Without scolding him, she takes two plain helmets from the shelf, offers one to him and keeps the other. She says softly in English, \"You could just ask.\" His practiced composure gives way to an embarrassed, relieved smile. She smiles back. End with the two helmets between them and the invitation understood. Warm late-afternoon light, tangible grease and worn leather, restrained performances. Follow the cable only long enough to explain his excuse; give the discovery and final exchange more room. Sound: workshop ambience, the connector, cloth, helmets and her natural voice. A few quiet notes of original guitar may enter after his smile. No additional dialogue or text.",
+        "matchPublicExample": false
+      },
+      {
+        "id": "image",
+        "label": "Image initiale",
+        "title": "Une révélation mesurée",
+        "description": "Adaptez ce prompt à votre propre image initiale.",
+        "copy": "Continue à partir de l’image fournie. Préserve le sujet, les matières et la lumière. Déplace lentement la caméra vers la droite pendant que le sujet effectue un petit mouvement naturel. Termine sur une composition stable. Ambiance intérieure discrète.",
+        "matchPublicExample": false
+      },
+      {
+        "id": "reference",
+        "label": "Références",
+        "title": "Le même personnage, ailleurs",
+        "description": "Utilisez uniquement des références que vous avez le droit d’employer.",
+        "copy": "Utilise les références fournies pour préserver le visage, les vêtements et les proportions du personnage adulte. Place-le dans une gare calme au lever du soleil. Il regarde un train arriver, puis fait un pas déterminé vers l’avant. Léger rapprochement de caméra, bruit du train au loin, sans dialogue.",
+        "matchPublicExample": false
+      },
+      {
+        "id": "edit",
+        "label": "Modification",
+        "title": "Changer l’atmosphère",
+        "description": "Décrivez la modification souhaitée de votre vidéo source.",
+        "copy": "Conserve les personnes, les mouvements et la composition de la vidéo source. Donne à la scène une atmosphère de fin d’après-midi, avec des ombres plus douces et une lumière dorée subtile. Préserve des visages lisibles et des textures naturelles.",
+        "matchPublicExample": false
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "scene",
+        "body": "Ce prompt n’a pas été généré ni évalué avec Kling 4.0."
+      },
+      {
+        "tabId": "image",
+        "body": "Ce prompt n’a pas été généré ni évalué avec Kling 4.0."
+      },
+      {
+        "tabId": "reference",
+        "body": "Ce prompt n’a pas été généré ni évalué avec Kling 4.0."
+      },
+      {
+        "tabId": "edit",
+        "body": "Ce prompt n’a pas été généré ni évalué avec Kling 4.0."
+      }
+    ],
+    "globalPrinciples": [
+      "Donnez une action claire à chaque plan.",
+      "Gardez des références cohérentes en identité et en lumière.",
+      "Écrivez les paroles exactes et identifiez la personne qui parle.",
+      "Évaluez la vidéo et la bande sonore complètes avant de retenir un résultat."
+    ],
+    "engineWhy": [
+      "Un prompt ou des plans minutés, de 3 à 30 secondes, en 720p ou 1080p, avec cadrage paysage, portrait, carré ou 21:9.",
+      "Une image initiale est obligatoire. Une image finale est facultative. Les images déterminent le cadrage.",
+      "Jusqu’à 10 images, image initiale facultative comprise, et 5 vidéos. Les vidéos de référence et les éléments vidéo partagent une limite de 30 secondes.",
+      "Fournissez une vidéo source et un prompt. Des images et éléments visuels peuvent guider la modification ; ce mode ne propose ni plans minutés ni éléments vocaux."
+    ],
+    "demo": {
+      "title": "Ignition — proposition de film non générée",
+      "promptLabel": "Prompt proposé, sans exemple généré",
+      "prompt": "An adult romantic film scene in a small motorcycle repair shop at closing time. A sharp-faced woman in her fifties, with tied brown hair and one broad white streak, wears open blue coveralls over a dark vest. Her customer is a man in his sixties with an aquiline nose, carefully combed gray hair and a camel coat too elegant for the workshop. She reconnects one accessible cable on his old motorcycle, wipes her hands and turns toward the bench. He checks that she is looking away, then quietly disconnects the very same cable. In the reflection of the shop window, she sees what he has done. Let her look at him for a moment before he notices. She returns, reconnects the cable and holds his gaze. Without scolding him, she takes two plain helmets from the shelf, offers one to him and keeps the other. She says softly in English, \"You could just ask.\" His practiced composure gives way to an embarrassed, relieved smile. She smiles back. End with the two helmets between them and the invitation understood. Warm late-afternoon light, tangible grease and worn leather, restrained performances. Follow the cable only long enough to explain his excuse; give the discovery and final exchange more room. Sound: workshop ambience, the connector, cloth, helmets and her natural voice. A few quiet notes of original guitar may enter after his smile. No additional dialogue or text.",
+      "notes": [
+        "Ce prompt n’a pas été généré ni évalué avec Kling 4.0."
+      ],
+      "summary": {
+        "subject": "Une mécanicienne quinquagénaire et son client sexagénaire",
+        "action": "Il débranche le câble réparé ; elle le reconnecte et lui offre un casque",
+        "camera": "Suivre brièvement le câble, puis laisser vivre les regards et l’échange final",
+        "style": "Romance adulte et jeu retenu dans un garage habité",
+        "output": "Scène proposée ; aucune sortie mesurée"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Texte vers vidéo",
+        "outputLabel": "Prompt proposé, sans exemple généré",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "supported",
+        "audioChipLabel": null,
+        "altContext": "Évaluation des médias Kling 4.0"
+      }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "kling-v4",
+    "showWhenEmpty": false,
+    "section": {
+      "title": "Exemples Kling 4.0",
+      "intro": "Seuls des résultats Kling 4.0 évalués apparaîtront ici.",
+      "defaultCtaLabel": null,
+      "recreateLabel": null
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "0",
+        "icon": "image",
+        "title": "Comparer les références",
+        "body": "Donnez une action claire à chaque plan."
+      },
+      {
+        "id": "1",
+        "icon": "zap",
+        "title": "Suivre l’action",
+        "body": "Gardez des références cohérentes en identité et en lumière."
+      },
+      {
+        "id": "2",
+        "icon": "users",
+        "title": "Examiner le sujet",
+        "body": "Écrivez les paroles exactes et identifiez la personne qui parle."
+      },
+      {
+        "id": "3",
+        "icon": "maximize",
+        "title": "Vérifier le cadrage",
+        "body": "Évaluez la vidéo et la bande sonore complètes avant de retenir un résultat."
+      },
+      {
+        "id": "4",
+        "icon": "audio",
+        "title": "Écouter la bande sonore",
+        "body": "Évaluez la vidéo et la bande sonore complètes avant de retenir un résultat."
+      }
+    ],
+    "fallbackItems": null
+  }
+}

@@ -266,7 +266,7 @@ function normalizeSettingKey(value: string, allowedKeys: ReadonlySet<string>): s
   return key;
 }
 
-function normalizeSettingValue(value: unknown, key: string): CanonicalGenerationSettingValue {
+function normalizeSettingValue(value: unknown, key: string, engineId: string): CanonicalGenerationSettingValue {
   if ((key === 'documentUrl' || key === 'webpageUrl') && value !== null) {
     try {
       return normalizeControlledHttpsReferenceUrl(value);
@@ -275,7 +275,8 @@ function normalizeSettingValue(value: unknown, key: string): CanonicalGeneration
     }
   }
   if (key === 'multiPrompt') {
-    assertDenseDataArray(value, 'settings.multiPrompt', 6);
+    const maxDuration = engineId === 'kling-v4' ? 30 : 15;
+    assertDenseDataArray(value, 'settings.multiPrompt', engineId === 'kling-v4' ? 30 : 6);
     if (value.length === 0) fail('settings.multiPrompt', 'multiPrompt must contain at least one scene.');
     return value.map((entry, index): CanonicalGenerationMultiPromptScene => {
       const field = `settings.multiPrompt[${index}]`;
@@ -283,8 +284,8 @@ function normalizeSettingValue(value: unknown, key: string): CanonicalGeneration
       assertExactFields(entry, new Set(['prompt', 'durationSec']), field);
       const prompt = normalizeText(entry.prompt, `${field}.prompt`, 512, false);
       const durationSec = entry.durationSec;
-      if (!Number.isSafeInteger(durationSec) || (durationSec as number) < 1 || (durationSec as number) > 15) {
-        fail(`${field}.durationSec`, 'multiPrompt durationSec must be an integer from 1 through 15.');
+      if (!Number.isSafeInteger(durationSec) || (durationSec as number) < 1 || (durationSec as number) > maxDuration) {
+        fail(`${field}.durationSec`, `multiPrompt durationSec must be an integer from 1 through ${maxDuration}.`);
       }
       return { prompt, durationSec: durationSec as number };
     });
@@ -324,7 +325,8 @@ export function stableJson(value: unknown): string {
 
 function normalizeSettings(
   value: unknown,
-  mode: CanonicalGenerationMode
+  mode: CanonicalGenerationMode,
+  engineId: string,
 ): Record<string, CanonicalGenerationSettingValue> {
   if (value === undefined) return {};
   assertPlainDataObject(value, 'settings');
@@ -340,7 +342,13 @@ function normalizeSettings(
     if (Object.hasOwn(settings, key)) {
       fail('settings', 'settings contains duplicate canonical keys.');
     }
-    settings[key] = normalizeSettingValue(value[rawKey], key);
+    settings[key] = normalizeSettingValue(value[rawKey], key, engineId);
+  }
+  if (engineId === 'kling-v4' && Array.isArray(settings.multiPrompt)) {
+    const total = settings.multiPrompt.reduce((sum, scene) => sum + scene.durationSec, 0);
+    if (!['t2v','i2v','ref2v'].includes(mode) || total < 3 || total > 30 || total !== settings.durationSec) {
+      fail('settings.multiPrompt', 'Kling V4 shot durations must total the requested 3–30 whole seconds in a generation mode.');
+    }
   }
 
   const ordered = Object.fromEntries(
@@ -452,7 +460,7 @@ function normalizeReferences(
   assertDenseDataArray(value, 'references', MAX_CANONICAL_REFERENCES);
   const orderedRole = mode === 'extend'
     ? 'source'
-    : mode === 'r2v' || mode === 'v2v' || (engineId === 'flux-3-max' && mode === 'ref2v')
+    : mode === 'r2v' || mode === 'v2v' || (['flux-3-max','kling-v4'].includes(engineId) && mode === 'ref2v')
       ? 'reference'
       : null;
   let nextOrderedSlot = 0;
@@ -528,7 +536,7 @@ export function normalizeGenerationRequest(input: unknown): CanonicalGenerationR
   if (seedanceWorkflow && !['t2v', 'i2v', 'ref2v', 'v2v', 'extend'].includes(mode)) fail('seedanceWorkflow', 'Unsupported Draft mode.');
   assertSurfaceMode(surface, mode);
 
-  const settings = normalizeSettings(input.settings, mode);
+  const settings = normalizeSettings(input.settings, mode, normalizeEngineId(input.engineId));
   const prompt = normalizeText(final && input.prompt === undefined ? '' : input.prompt, 'prompt', MAX_CANONICAL_PROMPT_CHARS, true);
   if (!prompt && !final && !Array.isArray(settings.multiPrompt)) {
     fail('prompt', 'prompt has an invalid length.');

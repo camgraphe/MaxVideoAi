@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "evidenceKind": "deterministic-offline-metadata",
+  "reviewedAtLocalDate": "2026-10-22",
+  "modelReleaseQualified": false,
+  "realHostVerified": false,
+  "providerCalls": 0,
+  "reviewedChange": "prepare_generation settings.multiPrompt outer maxItems 6→30 and scene durationSec maximum 15→30; per-model canonical validation retains old limits and V4 stays gated",
+  "previousPolicyFingerprintSha256": "85856e4ca6626277e799d69532eb3175a9d613df13ede09ae147b1b3f8fb97a3",
+  "policyFingerprintSha256": "07f2512e47a74c41c9e8b5d2d83495182f47374164e4d884a7ff3bdd49060cbe",
+  "priorFingerprintReproducedByRevertingOnlyReviewedBounds": true,
+  "fixtureContractSha256": "05f0fd68e1f8b0a403760bd68368a1cfeb73d85308750ffbc6808dc7e08cdb04",
+  "curatedDecisionCount": 70,
+  "curatedDecisionsUnchanged": true,
+  "policyCoverage": {
+    "fixtureCount": 70,
+    "policyCheckCount": 39,
+    "requiredChecks": {
+      "selected_seedance_details": 7,
+      "i2v_first_last_images": 1,
+      "ref2v_multimodal_media": 1,
+      "v2v_source_and_guidance": 1,
+      "extend_ordered_sources": 1,
+      "budget_only_no_quote_or_confirm": 3,
+      "quote_only_waits_for_approval": 7,
+      "confirmed_exact_quote_once": 1,
+      "ambiguous_approval_no_confirm": 1,
+      "recovery_without_resubmit": 4,
+      "account_destination_without_invention": 2,
+      "topup_from_prepared_quote": 1,
+      "funding_requote_before_confirm": 1,
+      "library_recovery_without_resubmit": 2,
+      "private_media_kind_selection": 1,
+      "reference_upload_then_list": 1,
+      "failure_status_without_resubmit": 1,
+      "no_payment_data_or_invented_url": 2,
+      "stale_quote_no_confirm": 1
+    }
+  },
+  "globalInstructionBytes": 1551,
+  "modelVisibleToolCount": 18,
+  "largestDescriptorBytes": 1927,
+  "prepareDescriptionBytes": 1639,
+  "prepareSchemaBytes": 9422,
+  "validation": {
+    "mcpClientCheck": {
+      "passed": 173,
+      "skipped": 1,
+      "failed": 0
+    },
+    "curatedScenarios": {
+      "passed": 70,
+      "changedDecisions": 0
+    },
+    "targetedFollowupTests": {
+      "passed": 78,
+      "failed": 0
+    },
+    "typescript": "passed"
+  }
+}

@@ -40,6 +40,7 @@ export function createKlingJwt(params: {
 
 export function getKlingDirectConfig() {
   return {
+    apiKey: ENV.KLING_API_KEY,
     accessKey: ENV.KLING_ACCESS_KEY,
     secretKey: ENV.KLING_SECRET_KEY,
     baseUrl: trimTrailingSlash(ENV.KLING_API_BASE_URL ?? 'https://api-singapore.klingai.com'),
@@ -53,24 +54,31 @@ function timeoutSignal(timeoutMs: number): AbortSignal {
 }
 
 export class KlingDirectClient {
+  private readonly apiKey: string | undefined;
   private readonly accessKey: string;
   private readonly secretKey: string;
   private readonly baseUrl: string;
   private readonly timeoutMs: number;
 
   constructor(params: {
-    accessKey: string;
-    secretKey: string;
+    apiKey?: string;
+    accessKey?: string;
+    secretKey?: string;
     baseUrl: string;
     timeoutMs?: number;
   }) {
-    this.accessKey = params.accessKey;
-    this.secretKey = params.secretKey;
+    this.apiKey = params.apiKey?.trim() || undefined;
+    this.accessKey = params.accessKey?.trim() ?? '';
+    this.secretKey = params.secretKey?.trim() ?? '';
+    if (!this.apiKey && (!this.accessKey || !this.secretKey)) {
+      throw new KlingDirectError('Kling direct API keys are not configured.', { code: 'KLING_CREDENTIALS_MISSING' });
+    }
     this.baseUrl = trimTrailingSlash(params.baseUrl);
     this.timeoutMs = params.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   }
 
   private authHeader(): string {
+    if (this.apiKey) return `Bearer ${this.apiKey}`;
     return `Bearer ${createKlingJwt({ accessKey: this.accessKey, secretKey: this.secretKey })}`;
   }
 
@@ -193,11 +201,5 @@ export class KlingDirectClient {
 
 export function getKlingDirectClient(): KlingDirectClient {
   const config = getKlingDirectConfig();
-  const { accessKey, secretKey, baseUrl } = config;
-  if (!accessKey || !secretKey) {
-    throw new KlingDirectError('Kling direct API keys are not configured.', {
-      code: 'KLING_CREDENTIALS_MISSING',
-    });
-  }
-  return new KlingDirectClient({ accessKey, secretKey, baseUrl });
+  return new KlingDirectClient(config);
 }
