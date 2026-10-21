@@ -24,6 +24,7 @@ test('history filters before pagination, retains precision and resolves receipts
     );
     assert.equal(defaultArchive.transactions.length, 1, 'the default view includes older receipts');
     assert.equal(defaultArchive.transactions[0]?.isMcpGeneration, false, 'older schemas still serve receipts');
+    assert.equal(defaultArchive.transactions[0]?.isStudioGeneration, false);
     const all = await fetchTransactionHistory({ period: 'all', query: '', type: 'all', limit: 50 }, now);
     assert.equal(all.transactions.length, 50);
     assert.equal(String(all.transactions[0].receiptId), '120');
@@ -92,6 +93,35 @@ test('history filters before pagination, retains precision and resolves receipts
     const mcpHistory = await fetchTransactionHistory({ period: 'all', query: 'mcp-job', type: 'all', limit: 50 }, now);
     assert.equal(mcpHistory.transactions.length, 1);
     assert.equal(mcpHistory.transactions[0]?.isMcpGeneration, true);
+
+    await db.pool.query(`ALTER TABLE mcp_generation_quotes ADD COLUMN auth_origin text DEFAULT 'oauth'`);
+    const owner = '11111111-1111-4111-8111-111111111111';
+    for (const [id, jobId, origin, quoteOwner, mcp, studio] of [
+      [125, 'studio-image', 'studio-session', owner, false, true],
+      [126, 'studio-video', 'studio-session', owner, false, true],
+      [127, 'studio-audio', 'studio-session', owner, false, true],
+      [128, 'toolbox-job', 'toolbox-session', owner, false, false],
+      [129, 'unknown-origin', 'future-origin', owner, false, false],
+      [130, 'foreign-studio', 'studio-session', '22222222-2222-4222-8222-222222222222', false, false],
+    ] as const) {
+      await db.pool.query(`INSERT INTO app_receipts(id,user_id,type,amount_cents,currency,job_id,created_at)
+        VALUES ($1,$2,'charge',500,'USD',$3,'2026-09-22T10:00:00Z')`, [id, owner, jobId]);
+      await db.pool.query(`INSERT INTO mcp_generation_quotes(job_id,user_id,auth_origin) VALUES ($1,$2,$3)`,
+        [jobId, quoteOwner, origin]);
+      const receipt = await fetchTransactionReceipt(String(id));
+      assert.equal(receipt?.isMcpGeneration, mcp, `${jobId}: MCP attribution`);
+      assert.equal(receipt?.isStudioGeneration, studio, `${jobId}: Studio attribution`);
+    }
+    assert.equal((await fetchTransactionReceipt('123'))?.isMcpGeneration, true, 'OAuth remains MCP');
+    assert.equal((await fetchTransactionReceipt('123'))?.isStudioGeneration, false);
+    await db.pool.query(`INSERT INTO app_receipts(id,user_id,type,amount_cents,currency,job_id,created_at)
+      VALUES (131,$1,'refund',500,'USD','studio-image','2026-09-22T10:01:00Z')`, [owner]);
+    const studioHistory = await fetchTransactionHistory({ period: 'all', query: 'studio-image', type: 'all', limit: 50 }, now);
+    assert.equal(studioHistory.transactions.length, 2, 'the charge and its refund retain origin');
+    for (const receipt of studioHistory.transactions) {
+      assert.equal(receipt.isMcpGeneration, false);
+      assert.equal(receipt.isStudioGeneration, true);
+    }
   } finally {
     await getDb().end();
     await db.cleanup();
