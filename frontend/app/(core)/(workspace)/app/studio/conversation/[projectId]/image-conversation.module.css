@@ -313,6 +313,9 @@
   color: var(--studio-ink);
   border: 0;
 }
+.footnote button {padding:0;border:0;background:transparent;color:inherit;font:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
+.footnote button:hover {color:var(--studio-text);}
+.footnote button:focus-visible {outline:2px solid var(--studio-accent);outline-offset:3px;border-radius:2px;}
 .footnote {
   text-align: center;
   font-size: 11px;

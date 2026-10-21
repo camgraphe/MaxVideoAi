@@ -6,9 +6,8 @@ import {useStudioAssistance} from './_hooks/useStudioAssistance';
 import {StudioAssistance} from './_components/StudioAssistance.client';
 import { useImageConversation } from "./_hooks/useImageConversation";
 import {ConversationExportQuote} from "./_components/ConversationExportQuote.client";
-import {TaskBudgetPicker} from './_components/TaskBudgetPicker.client';
 import {ConversationTask} from './_components/ConversationTask.client';
-import {STUDIO_TASK_POLICY_VERSION,STUDIO_TASK_PROFILES,type StudioTaskProfile} from '@/lib/studio/task-budget-contract';
+import {STUDIO_TASK_POLICY_VERSION,STUDIO_TASK_PROFILES} from '@/lib/studio/task-budget-contract';
 import {ConversationAnalysis} from './_components/ConversationAnalysis.client';
 import { ImageQuoteCard } from "./_components/ImageQuoteCard.client";
 import { ImageConversationComposer } from "./_components/ImageConversationComposer.client";
@@ -64,10 +63,7 @@ function StudioImageConversationWorkspace({
   const studio = useImageConversation(projectId, accountKey, projectName, locale);
   const assistance=useStudioAssistance(accountKey,studio.busy);
   const tasksEnabled=studio.conversation.taskPolicyVersion===STUDIO_TASK_POLICY_VERSION;
-  const [taskProfile,setTaskProfile]=useState<StudioTaskProfile>('standard');
-  const [complexConfirmed,setComplexConfirmed]=useState(false);
-  useEffect(()=>{setComplexConfirmed(false);},[assistance.status?.revision,taskProfile]);
-  const taskConfirmationMissing=tasksEnabled&&(taskProfile==='complex'&&(!complexConfirmed||assistance.status?.selectedModel!=='gpt-6.1-sol')||!assistance.status);
+  const assistanceLoading=tasksEnabled&&!assistance.status;
   const taskUsageKey=studio.conversation.turns.filter(turn=>turn.task).map(turn=>`${turn.task!.requestId}:${turn.task!.state}:${turn.task!.consumedCredits}:${turn.task!.reservedCredits}`).join('|');
   const refreshAssistance=assistance.refresh;
   const lastTaskUsage=useRef(taskUsageKey);
@@ -141,17 +137,17 @@ function StudioImageConversationWorkspace({
     }
   }
   async function send() {
-    if (taskConfirmationMissing || assistanceBlocked || !text.trim() || studio.loading || studio.busy || studio.pending || shelf.uploading || unavailableReferences) return;
+    if (assistanceLoading || assistanceBlocked || !text.trim() || studio.loading || studio.busy || studio.pending || shelf.uploading || unavailableReferences) return;
     const input:ImageTurnInput = {
       requestId: crypto.randomUUID(),
       message: text,
       locale:appLocale,
-      ...(tasksEnabled?{taskBudget:{profile:taskProfile,maxCredits:STUDIO_TASK_PROFILES[taskProfile].maxCredits,policyVersion:STUDIO_TASK_POLICY_VERSION,model:assistance.status!.selectedModel,assistanceRevision:assistance.status!.revision,...(taskProfile==='complex'?{confirmedComplex:true as const}:{})}}:{}),
+      ...(tasksEnabled?{taskBudget:{profile:'standard',maxCredits:STUDIO_TASK_PROFILES.standard.maxCredits,policyVersion:STUDIO_TASK_POLICY_VERSION,model:assistance.status!.selectedModel,assistanceRevision:assistance.status!.revision}}:{}),
       references: references.filter(ref => !ref.kind || ref.kind === 'image').map((ref) => ref.assetId),
       ...(references.length ? {referenceMentions:references.map(ref=>({assetId:ref.assetId,label:ref.label}))} : {}),
       ...(mediaEnabled ? {attachments: references.filter(ref => ref.kind === 'video' || ref.kind === 'audio').map(ref => ({type: 'asset' as const, assetId: ref.assetId, kind: ref.kind as 'video' | 'audio'}))} : {}),
     };
-    setComplexConfirmed(false);setText("");setFollowupNotice(false);
+    setText("");setFollowupNotice(false);
     follow.current = true;
     await studio.submit(input);
   }
@@ -221,8 +217,7 @@ function StudioImageConversationWorkspace({
                     {t('Resume this exchange', 'Reprendre cet échange')}
                   </button>
                 )}
-                {luna&&turn.quote&&<p className={styles.assistanceNote}>{t('Luna is active. For more nuanced creative direction, switch to Sol before refining your next request.','Luna est actif. Pour une direction créative plus fine, passez à Sol avant d’affiner votre prochaine demande.')} <button onClick={()=>setBudgetPrompt(value=>value+1)}>{t('Use Sol','Utiliser Sol')}</button></p>}
-                {turn.task&&<ConversationTask task={turn.task} projectId={projectId} accountKey={accountKey} locale={locale} onChanged={()=>{void studio.refresh();void assistance.refresh();}} onAssistance={()=>setBudgetPrompt(value=>value+1)} onSimplify={()=>{studio.discardPending();setText(turn.message);shelf.restore(imageTurnRetryInput(turn));setComplexConfirmed(false);composerRegion.current?.querySelector('textarea')?.focus();}}/>}
+                {turn.task&&<ConversationTask task={turn.task} projectId={projectId} accountKey={accountKey} locale={locale} onChanged={()=>{void studio.refresh();void assistance.refresh();}} onAssistance={()=>setBudgetPrompt(value=>value+1)} onSimplify={()=>{studio.discardPending();setText(turn.message);shelf.restore(imageTurnRetryInput(turn));composerRegion.current?.querySelector('textarea')?.focus();}}/>}
                 <ImageQuoteCard
                   turn={turn}
                   busy={studio.busy}
@@ -233,7 +228,7 @@ function StudioImageConversationWorkspace({
                     void studio.confirm(turn.requestId, turn.quote!.quoteId)
                   }
                   onRenew={() => {
-                    if(tasksEnabled){setText(turn.message);shelf.restore(imageTurnRetryInput(turn));setComplexConfirmed(false);composerRegion.current?.querySelector('textarea')?.focus();return;}
+                    if(tasksEnabled){setText(turn.message);shelf.restore(imageTurnRetryInput(turn));composerRegion.current?.querySelector('textarea')?.focus();return;}
                     void studio.submit({
                       requestId: crypto.randomUUID(),
                       message: turn.message,
@@ -244,7 +239,7 @@ function StudioImageConversationWorkspace({
                     });
                   }}
                 />
-                {exportsEnabled && turn.exportQuote && <ConversationExportQuote quote={turn.exportQuote} jobs={exports.jobs} busy={studio.busy} locale={locale} onChange={exports.refresh} onRenew={()=>{const message=locale==='fr'?`Prépare un nouveau devis d’export ${turn.exportQuote!.qualityPreset} pour le montage actuel, ${turn.exportQuote!.includeAudio?'avec':'sans'} audio.`:`Prepare a fresh ${turn.exportQuote!.qualityPreset} export quote for the current cut, ${turn.exportQuote!.includeAudio?'with':'without'} audio.`;if(tasksEnabled){setText(message);shelf.clear();setComplexConfirmed(false);composerRegion.current?.querySelector('textarea')?.focus();}else void studio.submit({requestId:crypto.randomUUID(),message,references:[]});}}/>}
+                {exportsEnabled && turn.exportQuote && <ConversationExportQuote quote={turn.exportQuote} jobs={exports.jobs} busy={studio.busy} locale={locale} onChange={exports.refresh} onRenew={()=>{const message=locale==='fr'?`Prépare un nouveau devis d’export ${turn.exportQuote!.qualityPreset} pour le montage actuel, ${turn.exportQuote!.includeAudio?'avec':'sans'} audio.`:`Prepare a fresh ${turn.exportQuote!.qualityPreset} export quote for the current cut, ${turn.exportQuote!.includeAudio?'with':'without'} audio.`;if(tasksEnabled){setText(message);shelf.clear();composerRegion.current?.querySelector('textarea')?.focus();}else void studio.submit({requestId:crypto.randomUUID(),message,references:[]});}}/>}
                 {turn.analysisQuote&&<ConversationAnalysis quote={turn.analysisQuote} projectId={projectId} accountKey={accountKey} locale={locale} busy={studio.busy} onConfirmed={()=>void assistance.refresh()} onRenew={()=>{shelf.restore(imageTurnRetryInput(turn));setText(turn.message);composerRegion.current?.querySelector('textarea')?.focus();}}/>}
                 {turn.generation?.result && <ConversationMedia result={turn.generation.result} locale={locale} />}
                 {turn.generation &&
@@ -327,19 +322,18 @@ function StudioImageConversationWorkspace({
           <div ref={composerRegion} className={styles.composerRegion}
             onDragOver={event=>{if(event.dataTransfer.types.includes(MEDIA_SHELF_DRAG_TYPE)){event.preventDefault();event.dataTransfer.dropEffect='copy';}}}
             onDrop={event=>{const item=readShelfDrag(event.dataTransfer,shelf.items);if(item){event.preventDefault();event.stopPropagation();mention(item);}}}>
-          {tasksEnabled&&<TaskBudgetPicker profile={taskProfile} onProfile={setTaskProfile} confirmed={complexConfirmed} onConfirmed={setComplexConfirmed} sol={assistance.status?.selectedModel==='gpt-6.1-sol'} disabled={studio.loading||studio.busy||!!studio.pending} locale={locale}/>}
           <ImageConversationComposer
             text={text}
             onTextChange={setText}
             onSend={() => void send()}
-            blocked={taskConfirmationMissing || assistanceBlocked || studio.loading || studio.busy || !!studio.pending || shelf.uploading || unavailableReferences}
+            blocked={assistanceLoading || assistanceBlocked || studio.loading || studio.busy || !!studio.pending || shelf.uploading || unavailableReferences}
             libraryTrigger={libraryTrigger}
             onOpenLibrary={openReferences}
             locale={locale}
           />
           </div>
-          <p className={styles.footnote}>
-            {luna?t('Luna is active · Included assistance. Sol offers stronger creative guidance.','Luna est actif · Assistance incluse. Sol offre des conseils créatifs plus approfondis.'):t('Drop a reference. Follow an idea.', 'Déposez une référence. Suivez une idée.')}
+          <p className={styles.footnote} role={luna?'status':undefined}>
+            {luna?<>{t('You’re using Luna. For more detailed responses, return to GPT‑6.1 Sol. ','Vous utilisez Luna. Pour des réponses plus abouties, retrouvez GPT‑6.1 Sol. ')}<button type="button" onClick={()=>setBudgetPrompt(value=>value+1)}>{t('Top up Sol','Recharger Sol')}</button>.</>:t('Drop a reference. Follow an idea.', 'Déposez une référence. Suivez une idée.')}
           </p>
         </div>
         <ConversationMediaShelf projectId={projectId} items={shelf.items} selectedId={shelf.selectedId} expanded={shelf.expanded} attachedIds={references.map(ref=>ref.assetId)} locale={locale} onSelect={shelf.setSelectedId} onToggle={()=>shelf.setExpanded(current=>!current)} onMention={mention} onAttach={shelf.attach} onDetach={detach} onInsert={editingEnabled?asset=>setTimelineInsertion({key:crypto.randomUUID(),asset}):undefined}/>

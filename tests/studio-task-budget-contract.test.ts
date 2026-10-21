@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {randomUUID} from 'node:crypto';
 import {STUDIO_TASK_POLICY_VERSION,STUDIO_TASK_PROFILES,studioTaskSelectionSchema,studioTaskResumeSchema,studioTaskStatusSchema,studioTaskProfileForModel} from '../frontend/src/lib/studio/task-budget-contract';
 import {imageTurnInputSchema,imageTurnRetryInput} from '../frontend/src/lib/studio/image-conversation-contract';
@@ -48,4 +49,13 @@ test('historical task commands preserve the frozen Luna reasoning allowance',()=
   const requestId=randomUUID();
   assert.equal(studioTaskResumeSchema.parse({requestId,approvalId:randomUUID(),expectedRevision:0,action:'continue',maxCredits:250,policyVersion,confirmed:true}).policyVersion,policyVersion);
   assert.equal(studioTaskSelectionSchema.safeParse({...selection,policyVersion:'unreviewed-policy'}).success,false);
+});
+
+// Architecture contract: the public Studio assistant has two model choices, no task-profile picker.
+test('the composer and assistance dialog keep work profiles internal',()=>{
+  const base='frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/';
+  for(const file of ['StudioImageConversation.client.tsx','_components/StudioAssistance.client.tsx','_components/StudioAssistanceCredits.client.tsx']){
+    assert.doesNotMatch(readFileSync(base+file,'utf8'),/TaskBudgetPicker/);
+  }
+  assert.match(readFileSync(base+'StudioImageConversation.client.tsx','utf8'),/profile:'standard'/);
 });
