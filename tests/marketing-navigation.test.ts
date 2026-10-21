@@ -261,6 +261,25 @@ test('marketing footer projects the current bounded model menu instead of a seco
   assert.doesNotMatch(marketingFooterSource, /slug: 'wan-2-6'/);
 });
 
+test('marketing footer adds FLUX 3 Max before the seven existing model links', () => {
+  const preservedModelKeys = [
+    'minimax-h3', 'seedance-2-5', 'kling-3-pro', 'veo-3-1',
+    'ltx-2-5-pro', 'wan-3', 'wan-3-prime',
+  ];
+  assert.deepEqual(FOOTER_MODELS.map(item => item.key), ['flux-3-max', ...preservedModelKeys]);
+  assert.deepEqual(FOOTER_MODELS[0].href, {
+    pathname: '/models/[slug]', params: { slug: 'flux-3-max' },
+  });
+  assert.deepEqual(
+    FOOTER_MODELS.slice(1),
+    preservedModelKeys.map(key => MARKETING_NAV_MODELS.find(item => item.key === key)),
+    'Existing labels and destinations remain intact and in the same order',
+  );
+  assert.deepEqual(FOOTER_EXAMPLES.map(item => item.key), [
+    'ltx', 'kling', 'seedance', 'wan', 'veo', 'hailuo', 'happy-horse',
+  ]);
+});
+
 test('marketing navigation avoids background-prefetching every crawlable destination', () => {
   for (const [surface, source] of [
     ['desktop navigation', marketingDesktopNavSource],
