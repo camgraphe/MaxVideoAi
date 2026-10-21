@@ -23,10 +23,18 @@
         "href": "/app?engine=flux-3"
       },
       "secondaryCta": {
-        "label": "Voir la galerie FLUX",
-        "href": "/fr/galerie/flux"
+        "label": "Nouveau : découvrir FLUX 3 Max",
+        "href": "/fr/modeles/flux-3-max"
       },
       "quickLinks": [
+        {
+          "label": "FLUX 3 Max ou FLUX 3 ?",
+          "href": "/fr/comparatif/flux-3-vs-flux-3-max?order=flux-3-max"
+        },
+        {
+          "label": "Explorer la galerie FLUX",
+          "href": "/fr/galerie/flux"
+        },
         {
           "label": "Découvrir FLUX 3 Draft",
           "href": "/fr/modeles/flux-3-draft"
@@ -36,7 +44,7 @@
           "href": "/fr/comparatif/flux-3-vs-flux-3-draft?order=flux-3"
         },
         {
-          "label": "Comparer FLUX 3 à Grok",
+          "label": "Comparer FLUX 3 et Grok",
           "href": "/fr/comparatif/flux-3-vs-grok-imagine-video-1-5?order=flux-3"
         },
         {
@@ -51,7 +59,7 @@
     },
     "media": {
       "caption": "Galerie de preuves FLUX 3",
-      "description": "Les sorties FLUX 3 validées apparaîtront après revue",
+      "description": "Vidéos FLUX 3 avec leurs prompts et réglages",
       "renderLabel": "Examiner le rendu accepté",
       "badges": [
         "Quatre workflows",
@@ -92,11 +100,11 @@
         }
       },
       {
-        "title": "Moins adapté à une exploration sans question",
-        "body": "Pour tester rapidement une idée encore ouverte, Draft peut répondre à la question avant de transférer les sources retenues vers FLUX 3.",
+        "title": "Vous cherchez FLUX 3 Max ?",
+        "body": "FLUX 3 Max est la nouvelle variante entraînée par fal, avec génération depuis du texte, animation d’image, première/dernière image et audio généré en option. Cette page présente FLUX 3 standard, qui propose aussi la prolongation vidéo.",
         "cta": {
-          "label": "Voir FLUX 3 Draft",
-          "href": "/fr/modeles/flux-3-draft"
+          "label": "Nouveau : découvrir FLUX 3 Max",
+          "href": "/fr/modeles/flux-3-max"
         }
       },
       {
@@ -230,7 +238,7 @@
     "showWhenEmpty": false,
     "section": {
       "title": "Exemples FLUX 3 vérifiés",
-      "intro": "La galerie reste masquée jusqu'à ce que deux vidéos FLUX 3 durables soient acceptées et correctement associées.",
+      "intro": "Découvrez les vidéos FLUX 3 et examinez le prompt, les réglages et le mouvement de chaque résultat.",
       "defaultCtaLabel": "Voir tous les exemples FLUX",
       "recreateLabel": null
     },

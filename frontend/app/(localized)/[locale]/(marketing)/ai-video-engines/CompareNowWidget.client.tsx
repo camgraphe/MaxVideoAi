@@ -1,6 +1,9 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useLocale } from 'next-intl';
+import type { AppLocale } from '@/i18n/locales';
+import { getBenchmarkScoreReviewCopy } from '@/lib/benchmark-score-review';
 import clsx from 'clsx';
 import { Link } from '@/i18n/navigation';
 import type { SelectOption } from '@/components/ui/SelectMenu';
@@ -11,7 +14,7 @@ type CompareNowWidgetProps = {
   options: SelectOption[];
   defaultLeft: string;
   defaultRight: string;
-  engineMetaBySlug: Record<string, { overall: number | null; strengths: string | null; modes?: string[] }>;
+  engineMetaBySlug: Record<string, { overall: number | null; strengths: string | null; modes?: string[]; reviewStatus?: 'editorial-estimated' | null }>;
   labels: {
     left: string;
     right: string;
@@ -48,6 +51,9 @@ export function CompareNowWidget({
   className,
   embedded = false,
 }: CompareNowWidgetProps) {
+  const locale = useLocale() as AppLocale;
+  const reviewCopy = getBenchmarkScoreReviewCopy(locale);
+  const engineScoreReviews = Object.fromEntries(Object.entries(engineMetaBySlug).flatMap(([slug, meta]) => meta.reviewStatus ? [[slug, meta.reviewStatus] as const] : []));
   const [left, setLeft] = useState(defaultLeft);
   const [right, setRight] = useState(defaultRight);
 
@@ -83,10 +89,11 @@ export function CompareNowWidget({
       <div className="compare-pair-side-label"><span>{side.side}</span><span aria-hidden>{String(index+1).padStart(2,'0')}</span></div>
       <h3>{side.label}</h3>
       <CompareEngineFamilySelect options={options} value={side.value} disabledValue={side.other}
-        searchPlaceholder={labels.searchPlaceholder} noResultsLabel={labels.noResults} engineScores={engineScores}
+        searchPlaceholder={labels.searchPlaceholder} noResultsLabel={labels.noResults} engineScores={engineScores} engineScoreReviews={engineScoreReviews}
         onChange={(next)=>{if(next && next!==side.other) side.set(next);}}
         buttonClassName="w-full min-w-0 min-h-[44px] rounded-[4px] bg-surface text-xs"/>
-      <div className="compare-pair-score" aria-live="polite"><strong>{side.meta.overall == null ? '—' : side.meta.overall.toFixed(1)}</strong>{side.meta.overall != null ? <span>/10</span> : null}</div>
+      <div className="compare-pair-score" aria-live="polite"><strong>{side.meta.reviewStatus && side.meta.overall != null ? '≈' : ''}{side.meta.overall == null ? '—' : side.meta.overall.toFixed(1)}</strong>{side.meta.overall != null ? <span>/10</span> : null}</div>
+      {side.meta.reviewStatus ? <Link href={{ pathname: '/benchmarks', hash: `review-${side.value}` }} className="text-xs text-brand underline underline-offset-2">{reviewCopy.label}</Link> : null}
       <div className="compare-pair-modes">{side.meta.modes?.slice(0,3).map(mode=><span key={mode}>{modeChipLabel(mode,labels)}</span>)}</div>
     </div>)}</div>
     <Link href={href} prefetch={false} className="compare-pair-action">{labels.compare}<span aria-hidden>↗</span></Link>

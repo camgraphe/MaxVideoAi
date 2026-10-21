@@ -39,6 +39,42 @@
       "equivalenceKey": "flux-3-draft:t2v:1:720p:pro"
     },
     {
+      "scenarioId": "billing:flux-3-max:t2v:5:720p:member",
+      "surface": "billing",
+      "currency": "USD",
+      "vendorSubtotalCents": 85,
+      "marginCents": 26,
+      "surchargeCents": 0,
+      "customerTotalCents": 111,
+      "unit": "sec",
+      "quantity": 5,
+      "equivalenceKey": "flux-3-max:t2v:5:720p:member"
+    },
+    {
+      "scenarioId": "billing:flux-3-max:t2v:5:720p:plus",
+      "surface": "billing",
+      "currency": "USD",
+      "vendorSubtotalCents": 85,
+      "marginCents": 26,
+      "surchargeCents": 0,
+      "customerTotalCents": 105,
+      "unit": "sec",
+      "quantity": 5,
+      "equivalenceKey": "flux-3-max:t2v:5:720p:plus"
+    },
+    {
+      "scenarioId": "billing:flux-3-max:t2v:5:720p:pro",
+      "surface": "billing",
+      "currency": "USD",
+      "vendorSubtotalCents": 85,
+      "marginCents": 26,
+      "surchargeCents": 0,
+      "customerTotalCents": 100,
+      "unit": "sec",
+      "quantity": 5,
+      "equivalenceKey": "flux-3-max:t2v:5:720p:pro"
+    },
+    {
       "scenarioId": "billing:flux-3:t2v:1:720p:member",
       "surface": "billing",
       "currency": "USD",
@@ -902,6 +938,19 @@
       "quantity": 5,
       "displayedAmount": "$0.39",
       "equivalenceKey": "flux-3-draft:t2v:1:720p:member"
+    },
+    {
+      "scenarioId": "estimator:flux-3-max:5:720p",
+      "surface": "estimator",
+      "currency": "USD",
+      "vendorSubtotalCents": 85,
+      "marginCents": 26,
+      "surchargeCents": 0,
+      "customerTotalCents": 111,
+      "unit": "sec",
+      "quantity": 5,
+      "displayedAmount": "$1.11",
+      "equivalenceKey": "flux-3-max:t2v:5:720p:member"
     },
     {
       "scenarioId": "estimator:flux-3:1:720p",

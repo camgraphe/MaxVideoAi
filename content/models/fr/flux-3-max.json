@@ -1,0 +1,358 @@
+{
+  "marketingName": "FLUX 3 Max",
+  "versionLabel": "3 Max",
+  "seo": {
+    "title": "FLUX 3 Max | Vidéo IA, audio et contrôle d’images | MaxVideoAI",
+    "description": "Créez des vidéos de 5 à 20 secondes avec FLUX 3 Max depuis du texte, une image ou deux images. Audio optionnel, 720p, 1080p avec upscale, prompts et tarifs."
+  },
+  "overview": "FLUX 3 Max est un modèle vidéo post-entraîné par fal en collaboration avec Black Forest Labs. Créez une scène depuis du texte, animez une image d’ouverture, guidez le début et la fin ou construisez une séquence d’images clés placées dans le temps. Choisissez une durée de 5 à 20 secondes, un audio généré optionnel et une sortie 720p ou 1080p avec upscale.",
+  "decision": {
+    "modelSlug": "flux-3-max",
+    "hero": {
+      "eyebrow": "VIDÉO FLUX DEPUIS DU TEXTE OU DES IMAGES",
+      "title": "FLUX 3 Max",
+      "subtitle": "Transformez du texte ou des images en vidéos de 5 à 20 secondes, avec audio optionnel et images de début et de fin.",
+      "subtitleHighlights": [
+        "du texte ou des images",
+        "5 à 20 secondes",
+        "audio optionnel"
+      ],
+      "paragraph": "Dirigez une scène de cinéma, un film produit ou un portrait qui parle. Partez de votre prompt ou fournissez la composition à animer. Ajoutez une image de fin si le dernier cadre compte, puis choisissez durée, format et audio avant de consulter le prix.",
+      "primaryCta": {
+        "label": "Générer avec FLUX 3 Max",
+        "href": "/app?engine=flux-3-max"
+      },
+      "secondaryCta": {
+        "label": "Explorer la galerie FLUX",
+        "href": "/fr/galerie/flux"
+      },
+      "quickLinks": [
+        {
+          "label": "Découvrir FLUX 3",
+          "href": "/fr/modeles/flux-3"
+        },
+        {
+          "label": "Comparer FLUX 3 Max et FLUX 3",
+          "href": "/fr/comparatif/flux-3-vs-flux-3-max?order=flux-3-max"
+        },
+        {
+          "label": "Voir les tarifs de FLUX 3 Max",
+          "href": "/fr/tarifs#flux-3-max-pricing"
+        },
+        {
+          "label": "Essayer un prompt",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Exemples FLUX 3 Max",
+      "description": "Découvrez une sélection de films FLUX 3 Max, avec leurs prompts d’origine et leurs paramètres de génération.",
+      "renderLabel": "Lire la vidéo",
+      "badges": [
+        "5 à 20 secondes",
+        "Audio optionnel",
+        "1080p avec upscale"
+      ],
+      "altContext": "exemple vidéo FLUX 3 Max"
+    },
+    "features": [
+      {
+        "title": "Partir du texte ou d’une image",
+        "body": "Décrivez une scène, animez une image, reliez les images de début et de fin ou placez des images clés dans une séquence.",
+        "tone": "reference"
+      },
+      {
+        "title": "Donner son rythme à la scène",
+        "body": "Choisissez une durée entière de 5 à 20 secondes. Laissez de la place à l’action, au dialogue et aux pauses qui donnent son rythme à la scène.",
+        "tone": "duration"
+      },
+      {
+        "title": "Diriger le son",
+        "body": "Générez dialogue, ambiance ou musique avec la scène, ou désactivez l’audio. Écrivez les paroles et les sons souhaités dans le prompt.",
+        "tone": "audio"
+      },
+      {
+        "title": "Choisir le format de sortie",
+        "body": "Utilisez un format paysage, portrait, carré ou plus large. Le 720p est proposé par défaut ; le 1080p utilise un upscale. Le raisonnement élevé est activé par défaut, avec une option faible.",
+        "tone": "quality"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Scènes de cinéma et films produits",
+        "body": "Décrivez l’action, la progression entre les plans et le rythme de la révélation. Adaptez cadrage, lumière et son au genre ; les coupes exactes ne sont pas garanties.",
+        "cta": {
+          "label": "Essayer FLUX 3 Max",
+          "href": "/app?engine=flux-3-max"
+        }
+      },
+      {
+        "title": "Un portrait déjà composé",
+        "body": "Partez d’une image nette et décrivez un petit changement d’expression ou de pose en conservant le sujet et la composition.",
+        "cta": {
+          "label": "Préparer l’animation",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Un début et une fin précis",
+        "body": "Utilisez deux images compatibles du même sujet ou lieu. Expliquez le mouvement ou le changement de lumière qui les relie.",
+        "cta": {
+          "label": "Ouvrir le laboratoire de prompts",
+          "href": "#prompting"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Depuis du texte",
+        "body": "Nommez le sujet, l’action visible, le mouvement de caméra et le son. Aucune image de référence n’est nécessaire."
+      },
+      {
+        "title": "Depuis une image",
+        "body": "Fournissez l’image d’ouverture, puis dirigez le mouvement en conservant le visage, le produit ou le décor."
+      },
+      {
+        "title": "Depuis deux images",
+        "body": "Fournissez le début et la fin, puis décrivez un passage continu entre les deux compositions."
+      },
+      {
+        "title": "Séquence d’images clés",
+        "body": "Placez de 1 à 10 images à des moments choisis du clip pour guider l’évolution de la scène."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Tarifs de FLUX 3 Max",
+      "subtitle": "Comparez cinq secondes en 720p et 1080p, puis une scène de dix secondes en 720p.",
+      "footnote": "Le montant par seconde est le tarif effectif de l’exemple de cinq secondes. Le total de chaque clip est arrondi au centime. Consultez le devis actualisé avant de générer.",
+      "ctaLabel": "Générer avec FLUX 3 Max",
+      "ctaHref": "/app?engine=flux-3-max"
+    },
+    "meta": {
+      "title": "FLUX 3 Max | Vidéo IA, audio et contrôle d’images | MaxVideoAI",
+      "description": "Créez des vidéos de 5 à 20 secondes avec FLUX 3 Max depuis du texte, une image ou deux images. Audio optionnel, 720p, 1080p avec upscale, prompts et tarifs."
+    }
+  },
+  "prompting": {
+    "modelSlug": "flux-3-max",
+    "section": {
+      "title": "Laboratoire de prompts — FLUX 3 Max",
+      "intro": "Copiez les prompts anglais exacts de quatre films originaux. Adaptez le montage, le jeu et le son au rythme de chaque genre.",
+      "tip": "Décrivez la progression et les changements d’angle souhaités. Demandez un plan continu lorsque la scène le nécessite ; le moment exact des coupes n’est pas garanti.",
+      "guide": {
+        "label": "Lire le guide de prompts FLUX 3 Max de fal",
+        "href": "https://fal.ai/learn/tools/flux-3-max-prompting-guide"
+      },
+      "referencesTitle": "Préparer l’action, le son et les images de référence"
+    },
+    "tabs": [
+      {
+        "id": "action",
+        "label": "Action",
+        "title": "Toujours là",
+        "description": "Une femme rejoint un abri dans un parking en béton, puis répond à la radio.",
+        "copy": "A grounded action-thriller scene in an empty concrete parking garage at night. An adult woman with short dark hair, wearing a charcoal jacket and dark trousers, sprints from left to right toward a thick square concrete pillar. A burst of gunfire from offscreen behind her chips the wall she has just passed. She reaches the pillar, turns around its near corner, and presses her back against the sheltered side. The firing stops. Dust settles. Hold close on her face as she catches her breath and listens. She lifts the radio clipped to her jacket and says quietly in English, \"I'm still here.\" Cut to black. Start with a clear wide view of the route and cover; use urgent cuts following her run, then let the final pause last. Preserve the same woman, clothes, pillar and screen direction throughout. Hard fluorescent light, a red emergency light in the distance. Sound: running footsteps, offscreen gunfire, concrete impacts, breathing, radio static and her voice. No music or visible injuries.",
+        "matchPublicExample": true
+      },
+      {
+        "id": "romance",
+        "label": "Romance",
+        "title": "Après la cloche",
+        "description": "Deux anciens boxeurs s’approchent sur un ring, puis abandonnent leur garde pour une danse lente.",
+        "copy": "An intimate romantic film scene at dawn in an old boxing gym. Alone inside the ring are two adult former fighters: a woman in her forties with tightly braided black hair, a small scar above her lip and a worn crimson boxing robe; and a broad man in his fifties with a graying beard, a broken nose and a plain white vest. Their hands are bare, their faces tired, their affection unspoken. Golden light enters through high dusty windows. A small radio outside the ring plays an original, barely audible slow waltz. Begin wide with them standing apart on the worn canvas, then cut to their eyes as they approach with the caution of opponents. She almost raises her hands into a guard, changes her mind, and offers him an open hand instead. She says softly in English, \"You lead.\" He takes her hand. After one awkward step, they begin a simple slow dance in the center of the ring. Keep their full bodies readable during the first steps, then move closer as their guarded expressions give way to private smiles. End in a quiet wide view beyond the ropes, the ring containing their tenderness. Sound: the little radio, shoes brushing canvas, breathing and her voice. No boxing gloves, punches, audience or additional dialogue.",
+        "matchPublicExample": true
+      },
+      {
+        "id": "scifi",
+        "label": "Science-fiction",
+        "title": "Quelqu’un répond",
+        "description": "Un astronaute et une présence lumineuse se rencontrent à travers une baie d’observation.",
+        "copy": "Inside a silent space station, an adult astronaut with a visible face and an ivory spacesuit places a hand against a large observation window overlooking a dark nebula. Outside, an immense translucent shape slowly approaches; one of its long luminous extremities comes to rest directly opposite the astronaut's palm, on the other side of the glass. The astronaut holds their breath. End the encounter on these two answering gestures. Contemplative science fiction: begin with the astronaut's solitude, gradually reveal the scale of the presence, then return to the intimacy of the contact. Sound: interior ventilation, breathing, original low, delicate music; no exterior impact sound in the vacuum. No dialogue.",
+        "matchPublicExample": true
+      },
+      {
+        "id": "keyframes",
+        "label": "Fantastique · images clés",
+        "title": "La porte du printemps",
+        "description": "Trois images sources guident le passage d’une clairière enneigée vers un jardin printanier.",
+        "copy": "In a snowy clearing, an adult woman in a long ocher coat brings a lantern close to an old freestanding stone doorway, closed by a dark wooden door. The outline of the doorway lights up. She pushes the door open and discovers a sunlit spring garden just beyond it. She crosses the threshold; a few petals settle on the snow left outside. A fantasy film with tangible light, blue winter outside and golden light within. Spacious staging, attentive to the threshold and the character's reaction; let the transformation breathe instead of multiplying effects. Sound: cold wind, wood, then birds and a warm breeze from the garden; light original music. No dialogue.",
+        "matchPublicExample": true
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "action",
+        "body": "Réglages demandés : texte vers vidéo · 14 s · 16:9 · 720p · audio activé."
+      },
+      {
+        "tabId": "romance",
+        "body": "Réglages demandés : texte vers vidéo · 18 s · 16:9 · 720p · audio activé."
+      },
+      {
+        "tabId": "scifi",
+        "body": "Réglages demandés : texte vers vidéo · 16 s · 16:9 · 720p · audio activé."
+      },
+      {
+        "tabId": "keyframes",
+        "body": "Trois images à 0, 8 et 16 secondes : indices 0, 192 et 384 à 24 i/s. Réglages demandés : 16 secondes · 16:9 · 720p · audio activé. Les images épinglées ne garantissent pas les coupes exactes."
+      }
+    ],
+    "globalPrinciples": [
+      "Décrivez ce qui doit se produire à l’image.",
+      "Laissez le montage suivre la scène, de l’action rapide à une pause silencieuse.",
+      "Écrivez les paroles exactes et précisez qui parle.",
+      "Vérifiez visages, mains, contacts et son sur tout le clip."
+    ],
+    "engineWhy": [
+      "La génération depuis du texte ne nécessite pas d’image de référence.",
+      "L’image d’ouverture apporte la composition à animer.",
+      "Les images de début et de fin donnent deux repères visuels à la transition."
+    ],
+    "demo": {
+      "title": "Après la cloche",
+      "prompt": "An intimate romantic film scene at dawn in an old boxing gym. Alone inside the ring are two adult former fighters: a woman in her forties with tightly braided black hair, a small scar above her lip and a worn crimson boxing robe; and a broad man in his fifties with a graying beard, a broken nose and a plain white vest. Their hands are bare, their faces tired, their affection unspoken. Golden light enters through high dusty windows. A small radio outside the ring plays an original, barely audible slow waltz. Begin wide with them standing apart on the worn canvas, then cut to their eyes as they approach with the caution of opponents. She almost raises her hands into a guard, changes her mind, and offers him an open hand instead. She says softly in English, \"You lead.\" He takes her hand. After one awkward step, they begin a simple slow dance in the center of the ring. Keep their full bodies readable during the first steps, then move closer as their guarded expressions give way to private smiles. End in a quiet wide view beyond the ropes, the ring containing their tenderness. Sound: the little radio, shoes brushing canvas, breathing and her voice. No boxing gloves, punches, audience or additional dialogue.",
+      "promptLabel": "Prompt utilisé pour ce film",
+      "notes": [
+        "Le prompt laisse les gestes de défense s’adoucir en une danse simple.",
+        "Une seule réplique en anglais, « You lead », et une valse discrète à la radio donnent le ton intime."
+      ],
+      "summary": {
+        "subject": "Deux anciens boxeurs seuls sur un ring",
+        "action": "Une main tendue devient une danse lente",
+        "camera": "Les premiers pas en pied, puis les réactions en plans rapprochés",
+        "style": "Cinéma romantique intimiste",
+        "output": "Réglages demandés : 18 secondes · 16:9 · 720p"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Texte vers vidéo",
+        "outputLabel": "Scène générée",
+        "duration": "18 s",
+        "aspectRatio": "16:9",
+        "audioChipMode": "media",
+        "audioChipLabel": null,
+        "altContext": "After the Bell — scène romantique FLUX 3 Max"
+      }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "flux-3-max",
+    "showWhenEmpty": false,
+    "section": {
+      "title": "Exemples FLUX 3 Max",
+      "intro": "Découvrez les scènes créées avec FLUX 3 Max et leurs réglages de génération.",
+      "defaultCtaLabel": "Voir tous les exemples FLUX",
+      "recreateLabel": null
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinéma"
+      },
+      {
+        "id": "product",
+        "label": "Produit"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "anchors",
+        "icon": "image",
+        "title": "Comparer aux références",
+        "body": "Pour les clips issus d’images, comparez le résultat aux images de début et de fin fournies."
+      },
+      {
+        "id": "motion",
+        "icon": "zap",
+        "title": "Suivre le mouvement",
+        "body": "Observez la lisibilité de l’action, la stabilité des objets et les contacts."
+      },
+      {
+        "id": "identity",
+        "icon": "users",
+        "title": "Revoir le sujet",
+        "body": "Vérifiez que visages, vêtements et proportions restent cohérents pendant tout le clip."
+      },
+      {
+        "id": "delivery",
+        "icon": "maximize",
+        "title": "Regarder le clip complet",
+        "body": "Examinez cadrage, détail et fin du plan à vitesse normale."
+      },
+      {
+        "id": "audio",
+        "icon": "audio",
+        "title": "Écouter le son",
+        "body": "Vérifiez les paroles, leur synchronisation et l’équilibre entre dialogue et ambiance."
+      }
+    ],
+    "fallbackItems": null,
+    "keyframeDemo": {
+      "title": "Des images clés à la vidéo",
+      "intro": "Découvrez les images de départ, leurs positions et la vidéo qu’elles ont guidée, puis reprenez la même recette.",
+      "imagesLabel": "Images fournies",
+      "timelineLabel": "Positions dans le clip",
+      "resultLabel": "Vidéo générée",
+      "promptLabel": "Prompt utilisé",
+      "frameLabel": "Image clé",
+      "secondsLabel": "s",
+      "recreateLabel": "Reprendre cette recette",
+      "limitation": "Les images clés guident des états visuels à des moments choisis. Elles ne définissent pas des coupes ; le montage et les transitions exacts ne sont pas garantis."
+    }
+  },
+  "faqs": [
+    {
+      "q": "Qu’est-ce que FLUX 3 Max ?",
+      "a": "FLUX 3 Max est un modèle vidéo post-entraîné par fal en collaboration avec Black Forest Labs, issu de la famille FLUX 3 Video. Sur MaxVideoAI, il crée des vidéos depuis du texte, une image d’ouverture, des images de début et de fin ou une séquence d’images clés placées dans le temps."
+    },
+    {
+      "q": "Puis-je utiliser FLUX 3 Max en ligne sans clé API ?",
+      "a": "Oui. Choisissez FLUX 3 Max dans l’espace de création web de MaxVideoAI, écrivez un prompt, ajoutez les images nécessaires au mode et sélectionnez vos réglages. Consultez le devis puis générez depuis votre compte, sans clé API fal personnelle."
+    },
+    {
+      "q": "FLUX 3 Max génère-t-il de l’audio ?",
+      "a": "La génération audio est optionnelle et activée par défaut. Décrivez le dialogue, l’ambiance ou la musique dans le prompt, ou désactivez l’audio pour obtenir une vidéo muette."
+    },
+    {
+      "q": "Quelles durées et résolutions sont disponibles ?",
+      "a": "Choisissez une durée entière de 5 à 20 secondes. La sortie par défaut est en 720p ; l’option 1080p utilise un upscale. Les formats paysage, portrait, carré et plus larges sont disponibles."
+    },
+    {
+      "q": "Puis-je fournir une image de début et une image de fin ?",
+      "a": "Oui. L’animation d’image part d’une image. Le mode première et dernière image utilise deux images fournies pour guider le début et la fin. Gardez sujet, perspective et géométrie compatibles, puis décrivez le mouvement qui les relie."
+    },
+    {
+      "q": "Quelle différence entre FLUX 3 Max et FLUX 3 ?",
+      "a": "Max est la variante de FLUX 3 Video post-entraînée par fal. Cette intégration MaxVideoAI permet la création depuis du texte, l’animation d’image, le guidage par images de début et de fin et les séquences d’images clés. FLUX 3 standard propose aussi l’extension d’une vidéo source ; cette fonction n’est pas incluse dans l’intégration Max."
+    },
+    {
+      "q": "Combien coûte FLUX 3 Max ?",
+      "a": "Le prix dépend de la durée, de la résolution et des réglages choisis. Cette page affiche les prix de scénarios actualisés de MaxVideoAI. Le devis de génération confirme le montant avant la dépense de crédits."
+    },
+    {
+      "q": "Quelle est la vitesse de FLUX 3 Max ?",
+      "a": "Dans la comparaison publiée par fal, un clip de 10 secondes en 16:9 et 720p a demandé 12,45 secondes de génération. Il s’agit d’un test fournisseur, pas d’un délai de livraison mesuré sur MaxVideoAI. L’attente dépend aussi des réglages, de la file et du traitement."
+    },
+    {
+      "q": "Que montrent les évaluations indépendantes ?",
+      "a": "Relevé Artificial Analysis du 20 octobre 2026 : FLUX 3 Max (720p) obtient 1 138 Elo en image vers vidéo avec audio et 1 159 en texte vers vidéo avec audio. Ces deux classements ont des échelles Elo distinctes et des intervalles de confiance qui se recouvrent avec ceux des modèles de tête."
+    },
+    {
+      "q": "Comment les notes MaxVideoAI sont-elles estimées ?",
+      "a": "Estimation éditoriale du 20 octobre 2026 : nos onze notes reposent sur des exemples publics sélectionnés par fal, les contrôles et tarifs documentés, avec Artificial Analysis comme contexte de préférence globale. Nous n’avons pas exécuté de série de tests contrôlés MaxVideoAI. La confiance varie selon le critère ; la synchronisation labiale et la fiabilité de livraison restent peu documentées. La note globale de 8,7/10 est une estimation éditoriale, pas une conversion des Elo."
+    },
+    {
+      "q": "Où trouver des prompts et exemples FLUX 3 Max ?",
+      "a": "Le laboratoire de prompts présente les prompts anglais exacts de quatre films originaux : action, romance, science-fiction et scène fantastique à images clés. Chaque prompt renvoie à son propre rendu et à sa reprise dans l’éditeur. La démonstration à images clés montre aussi ses trois images sources et leurs positions."
+    },
+    {
+      "q": "Comment utiliser les images clés dans FLUX 3 Max ?",
+      "a": "Fournissez de 1 à 10 images et placez chacune à un moment choisi du clip. Décrivez l’action et le mouvement de caméra entre elles. Ce sont des repères visuels temporels pour une séquence, plutôt que des références libres de personnage."
+    }
+  ]
+}

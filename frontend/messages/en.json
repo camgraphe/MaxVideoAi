@@ -479,32 +479,19 @@
           "engineLabel": "2. Compare recommended engines",
           "engineRecommendations": [
             {
-              "engineId": "minimax-h3",
-              "name": "MiniMax H3",
-              "provider": "MiniMax",
-              "bestFor": "High-speed cinematic action",
-              "imageAlt": "A flying character races above a tropical bay in a 15-second MiniMax H3 video.",
+              "engineId": "flux-3-max",
+              "name": "FLUX 3 Max",
+              "provider": "Black Forest Labs",
+              "bestFor": "Cinematic fantasy",
+              "imageAlt": "An armored queen crosses a throne hall in The Uncrowned, an 18-second FLUX 3 Max video.",
               "fallbackPrice": "Live price",
-              "selected": true,
-              "scores": [
-                {
-                  "label": "Motion",
-                  "value": 91
-                },
-                {
-                  "label": "Realism",
-                  "value": 88
-                },
-                {
-                  "label": "Speed",
-                  "value": 92
-                }
-              ],
               "tags": [
-                "Action",
+                "Fantasy",
                 "Native audio",
                 "Cinematic"
-              ]
+              ],
+              "selected": true,
+              "scores": []
             },
             {
               "engineId": "seedance-2-5",
@@ -588,30 +575,30 @@
               ]
             },
             {
-              "engineId": "ltx-2-5-pro",
-              "imageAlt": "Preview of a 6-second image-to-video clip generated with LTX 2.5 Pro.",
-              "name": "LTX 2.5 Pro",
-              "provider": "Lightricks",
-              "bestFor": "Fast image animation",
+              "engineId": "minimax-h3",
+              "name": "MiniMax H3",
+              "provider": "MiniMax",
+              "bestFor": "High-speed cinematic action",
+              "imageAlt": "A flying character races above a tropical bay in a 15-second MiniMax H3 video.",
               "fallbackPrice": "Live price",
               "scores": [
                 {
                   "label": "Motion",
-                  "value": 88
+                  "value": 91
                 },
                 {
                   "label": "Realism",
-                  "value": 84
+                  "value": 88
                 },
                 {
                   "label": "Speed",
-                  "value": 87
+                  "value": 92
                 }
               ],
               "tags": [
-                "Fast",
-                "Image",
-                "Control"
+                "Action",
+                "Native audio",
+                "Cinematic"
               ]
             }
           ],

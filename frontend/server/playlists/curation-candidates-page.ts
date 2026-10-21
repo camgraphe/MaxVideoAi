@@ -1,7 +1,7 @@
 import { EXAMPLE_OPENING_RATIO_TOLERANCE } from '@/lib/aspect';
 import { query, type QueryExecutor } from '@/lib/db';
 import type { CurationItem } from '@/lib/admin/playlist-curation';
-import { getExampleFamilyEngineAliases, getExampleModelEngineAliases } from '@/lib/model-families';
+import { getExampleModelEngineAliases } from '@/lib/model-families';
 import { videoOutputDimensionSelect } from '../videos-query';
 import { CURATION_ELIGIBILITY, expandCatalogAliases } from './curation-eligibility';
 import { getCurationCandidateAliases, usesCatalogCurationAliases } from './curation-candidate-aliases';
@@ -60,7 +60,7 @@ export async function searchCurationCandidatesPage(options: CandidatePageOptions
   let aliases = aliasesFor(options.slug);
   const filterAliases = (values: string[]) => usesCatalogCurationAliases(options.slug) ? expandCatalogAliases(values) : values.map(id => id.toLowerCase());
   if (options.familyId) {
-    const familyAliases = new Set(filterAliases(getExampleFamilyEngineAliases(options.familyId)));
+    const familyAliases = new Set(filterAliases(getCurationCandidateAliases(`family-${options.familyId}`) ?? []));
     aliases = aliases.filter(alias => familyAliases.has(alias));
   }
   if (options.modelSlug) {

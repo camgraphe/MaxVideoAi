@@ -63,21 +63,21 @@ function currentInput(view:Awaited<ReturnType<typeof mount>>):ImageTurnInput {
     referenceMentions:refs.map(({assetId,label})=>({assetId,label}))};
 }
 
-test('duplicate media stays one exact attachment; eight is enforced and detach/reattach retains its label',async()=>{
+test('duplicate media stays one exact attachment; ten is enforced and detach/reattach retains its label',async()=>{
   const view=await mount();
   try {
     await act(async()=>{view.state.attach(asset(1));view.state.attach({...asset(1),name:'renamed.png'});});
     assert.equal(view.state.references.length,1);
     assert.equal(view.state.items.length,1);
     assert.equal(view.state.references[0].label,'Image 1');
-    await act(async()=>{for(let index=2;index<=8;index++)view.state.attach(asset(index));});
-    await act(async()=>{assert.equal(view.state.attach(asset(9)),null);});
-    assert.equal(view.state.references.length,8);
-    assert.equal(view.state.items.length,8);
-    assert.match(view.state.error??'',/eight/);
+    await act(async()=>{for(let index=2;index<=10;index++)view.state.attach(asset(index));});
+    await act(async()=>{assert.equal(view.state.attach(asset(11)),null);});
+    assert.equal(view.state.references.length,10);
+    assert.equal(view.state.items.length,10);
+    assert.match(view.state.error??'',/ten/);
     await act(async()=>{view.state.detach(asset(1).assetId);view.state.attach(asset(1));});
     assert.equal(view.state.references.at(-1)?.label,'Image 1');
-    assert.equal(view.state.items.length,8);
+    assert.equal(view.state.items.length,10);
     assert.equal(imageTurnInputSchema.safeParse(currentInput(view)).success,true);
   }finally{await view.close();}
 });
@@ -141,9 +141,9 @@ test('an unsupported or over-cap upload batch fails before importing any file',a
     assert.equal(view.requests.length,0);
     assert.deepEqual(view.state.references.map(item=>item.assetId),[asset(1).assetId]);
     assert.match(view.state.error??'',/supported/);
-    await act(async()=>view.state.upload(Array.from({length:8},()=>view.file())));
+    await act(async()=>view.state.upload(Array.from({length:10},()=>view.file())));
     assert.equal(view.requests.length,0);
-    assert.match(view.state.error??'',/eight/);
+    assert.match(view.state.error??'',/ten/);
     assert.equal(view.state.uploading,false);
   }finally{await view.close();}
 });

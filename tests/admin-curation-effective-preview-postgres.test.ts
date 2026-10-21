@@ -12,6 +12,16 @@ test('effective preview and atomic save', async t => {
   process.env.DATABASE_URL = db.databaseUrl;
   process.env.EXAMPLES_PLAYLIST_SLUG = 'examples';
   const { getDb } = await import('../frontend/src/lib/db');
+  let slowSourceRead = false;
+  getDb().on('connect', client => {
+    const query = client.query.bind(client);
+    client.query = ((text: string, params?: unknown[]) => query(
+      slowSourceRead && text.startsWith('SELECT p.*,to_jsonb(c) AS curation')
+        ? text.replace('SELECT p.*,to_jsonb(c) AS curation,', 'SELECT p.*,to_jsonb(c) AS curation,pg_sleep(3) AS test_only_delay,')
+        : text,
+      params,
+    )) as typeof client.query;
+  });
   try {
     await db.pool.query(`CREATE TABLE playlists(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),slug text UNIQUE,is_public boolean DEFAULT true,updated_at timestamptz DEFAULT now());
       CREATE TABLE playlist_items(playlist_id uuid,video_id text,order_index int,pinned boolean DEFAULT false,PRIMARY KEY(playlist_id,video_id));
@@ -38,13 +48,33 @@ test('effective preview and atomic save', async t => {
         if (slug==='family-wan') await assert.rejects(service.previewCuration(id,{mode:'manual',orderedIds:['v1'],excludedIds:[]},snapshot.revision), /four opening/i);
         const draft = {mode:'manual',orderedIds:['v4','v7','v8'],excludedIds:[],openingIds};
         const preview = await service.previewCuration(id,draft,snapshot.revision);
+        if (slug !== 'examples-wan-3') {
+          const { listCatalogPreviewIds, listCatalogPreviewPair } = await import('../frontend/server/videos-catalog-page');
+          const options = { familyId: slug === 'family-wan' ? 'wan' : undefined, sort: 'playlist' as const, limit: 500, offset: 0 };
+          const read = { async query<T>(sql: string, params?: readonly unknown[]): Promise<T[]> {
+            return (await db.pool.query(sql, params as unknown[])).rows as T[];
+          } };
+          const current = await listCatalogPreviewIds(options, read);
+          const next = await listCatalogPreviewIds({ ...options, curationOverride: { playlistId: id, draft } }, read);
+          let pairReads = 0;
+          const pair = await listCatalogPreviewPair({ ...options, curationOverride: { playlistId: id, draft } }, {
+            async query<T>(sql: string, params?: readonly unknown[]): Promise<T[]> { pairReads++; return read.query<T>(sql, params); },
+          });
+          assert.deepEqual(pair, { current, next }, 'batched current/next keeps exact public membership, totals and suppressions');
+          assert.equal(pairReads, 1);
+        }
         assert.equal(preview.effective.total,6);
         assert.equal(preview.effective.currentTotal,slug==='examples-wan-3'?200:220);
         assert.equal(preview.effective.removedCount,slug==='examples-wan-3'?200:214);
         assert.deepEqual(preview.effective.openingFormats,['16:9','9:16','16:9','16:9']);
         assert.ok(preview.effective.warnings.some(w => /remov/i.test(w)));
         if(slug==='family-wan') assert.deepEqual(preview.effective.suppressedSourceSlugs,['examples','examples-wan-3']);
-        await service.saveCuration(id,draft,snapshot.revision,preview.token,null);
+        const saved = await service.saveCuration(id,draft,snapshot.revision,preview.token,null);
+        assert.deepEqual(saved, await service.getCurationSnapshot(id), 'RETURNING must rebuild exactly the committed snapshot');
+        const updatePreview = await service.previewCuration(id, draft, saved.revision);
+        const updated = await service.saveCuration(id, draft, saved.revision, updatePreview.token, null);
+        assert.notEqual(updated.revision, saved.revision, 'even an identical selection increments the persisted revision');
+        assert.deepEqual(updated, await service.getCurationSnapshot(id), 'the update response must reflect the returned revision');
         const published = slug==='examples-wan-3'
           ? await listPlaylistVideosWithOptions({slug,limit:200})
           : (await listCatalogPage({familyId:slug==='family-wan'?'wan':undefined,sort:'playlist',limit:24,offset:0})).items;
@@ -90,7 +120,8 @@ test('effective preview and atomic save', async t => {
       assert.equal(preview.effective.addedCount,1);
       assert.ok(preview.effective.warnings.some(w=>/200.*playlist|playlist.*200/i.test(w)));
       assert.ok(!preview.effective.warnings.some(w=>/render at most 200/.test(w)));
-      await service.saveCuration(id,draft,snapshot.revision,preview.token,null);
+      const saved = await service.saveCuration(id,draft,snapshot.revision,preview.token,null);
+      assert.deepEqual(saved, await service.getCurationSnapshot(id), 'updated curation revision must come from the stored row');
       const {readEffectiveModelPageGallery}=await import('../frontend/server/playlists/curation-model-preview');
       const reader={query:async <T>(sql:string,params?:readonly unknown[])=>(await db.pool.query(sql,params as unknown[])).rows as T[]};
       const actual=await readEffectiveModelPageGallery({slug:'examples-wan-3'},reader);
@@ -241,6 +272,24 @@ test('effective preview and atomic save', async t => {
       } finally { await writer.query('ROLLBACK'); writer.release(); await pending; }
       assert.equal(outcome,409,'save must not queue broad locks behind ongoing generation writes');
       assert.equal((await db.pool.query('SELECT * FROM playlist_curations')).rowCount,0);
+    });
+    await t.test('the original two-second deadline rolls back and releases the source locks', async () => {
+      const id = ids.get('examples')!;
+      const snapshot = await service.getCurationSnapshot(id);
+      const draft = { mode: 'manual', orderedIds: ['v1'], excludedIds: [] };
+      const preview = await service.previewCuration(id, draft, snapshot.revision);
+      const before = (await db.pool.query('SELECT * FROM playlist_curations ORDER BY playlist_id')).rows;
+      try {
+        slowSourceRead = true;
+        await assert.rejects(service.saveCuration(id, draft, snapshot.revision, preview.token, null), /validation took too long/i);
+      } finally { slowSourceRead = false; }
+      assert.deepEqual((await db.pool.query('SELECT * FROM playlist_curations ORDER BY playlist_id')).rows, before);
+      assert.deepEqual(await service.getCurationSnapshot(id), snapshot);
+      const writer = await db.pool.connect();
+      try {
+        await writer.query('BEGIN');
+        await writer.query('LOCK TABLE playlists,playlist_items,playlist_curations,app_jobs,job_outputs,media_assets IN ROW EXCLUSIVE MODE NOWAIT');
+      } finally { await writer.query('ROLLBACK'); writer.release(); }
     });
     await t.test('historical catalog aliases also bind media changes into the token', async () => {
       const id=ids.get('family-wan')!;

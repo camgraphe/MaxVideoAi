@@ -10,6 +10,7 @@ const tabSchema = z.object({
   title: nonEmptyString,
   description: nullableString,
   copy: nonEmptyString,
+  matchPublicExample: z.boolean().optional(),
 }).strict();
 const demoSchema = z.object({
   title: nonEmptyString,

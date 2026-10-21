@@ -1,6 +1,6 @@
 import {recordedGenerationSourceVideoOutput} from '@/lib/generation-output-duration';
 import {query} from '@/lib/db';
-import {STUDIO_CONVERSATION_MAX_REFERENCES} from '@/lib/studio/conversation-creation-contract';
+import {studioGenerationReferenceLimit} from './conversation-reference-limits';
 import type {StudioConversationHistoryFacts} from '@/lib/studio/image-conversation-contract';
 import {customerDisplayPrice} from '@/lib/customer-price-presentation';
 import {requireGenerationActor,type StudioGenerationActor} from '@/server/agent-api/generation-actor';
@@ -39,7 +39,7 @@ export function projectStudioQuoteDirections(turns:readonly StoredImageTurn[]):S
 type EstimateRow={requestId:string;modelId:unknown;surface:unknown;mode:unknown;settings:unknown;outputCount:unknown;referenceCount:unknown;amountCents:unknown;currency:unknown;estimatedAt:unknown;quoteRequired:unknown;outputDurationSec:unknown;sourceVideoOutput:unknown};
 function projectHistoricalEstimate(row:EstimateRow):StudioConversationHistoryFacts['estimates'][number]|null {
   if(!uuid.test(row.requestId)||!token(row.modelId,128)||!token(row.mode,64)||!['image','video'].includes(row.surface as string)
-    ||row.outputCount!==1||typeof row.referenceCount!=='number'||!Number.isSafeInteger(row.referenceCount)||row.referenceCount<0||row.referenceCount>STUDIO_CONVERSATION_MAX_REFERENCES
+    ||row.outputCount!==1||typeof row.referenceCount!=='number'||!Number.isSafeInteger(row.referenceCount)||row.referenceCount<0||row.referenceCount>studioGenerationReferenceLimit(row.modelId,row.surface as string,row.mode)
     ||typeof row.amountCents!=='number'||!Number.isSafeInteger(row.amountCents)||row.amountCents<0||typeof row.currency!=='string'||!/^[A-Z]{3}$/.test(row.currency)
     ||typeof row.estimatedAt!=='string'||!Number.isFinite(Date.parse(row.estimatedAt))||row.quoteRequired!==true)return null;
   const sourceVideoOutput=recordedGenerationSourceVideoOutput({canonicalPricing:{meta:{seedanceEditSource:row.sourceVideoOutput}}});

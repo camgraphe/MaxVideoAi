@@ -56,6 +56,10 @@ export const canonicalSettingsSchema = z.object({
   editDepthBlur: z.number().nullable().default(null),
   editFace: z.boolean().nullable().default(null),
   editKeyframeIndexes: z.string().max(4_096).nullable().default(null),
+  reasoningLevel: z.enum(['low', 'high']).nullable().default(null),
+  keyframeIndexes: z.string().max(128).nullable().default(null).describe(
+    'Use only when model details report keyframeIndexes. Unique integer frame positions, comma-separated in the same order as image references; FLUX 3 Max uses 24 fps and accepts 0 through durationSec × 24 inclusive.',
+  ),
   editNormalsAugmentation: z.number().nullable().default(null),
   editPoseStrength: z.string().trim().min(1).max(64).nullable().default(null),
   editStrength: z.string().trim().min(1).max(64).nullable().default(null),

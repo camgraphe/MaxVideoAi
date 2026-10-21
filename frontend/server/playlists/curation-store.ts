@@ -48,26 +48,54 @@ export async function assertLegacyPlaylistEditable(db: QueryExecutor, playlistId
   if (rows.length) throw new CurationError('This destination uses Site placements. Edit its selection there.');
 }
 
-export async function readCurationSnapshot(
-  playlistId: string,
-  db: QueryExecutor = { query },
-): Promise<CurationSnapshot> {
-  const [playlist] = await db.query<{ slug: string; is_public: boolean; updated_at: string }>(
-    'SELECT slug,is_public,updated_at FROM playlists WHERE id=$1',
-    [playlistId],
+export type SavedCurationRow = { mode: CurationDraft['mode']; ordered_ids: string[]; excluded_ids: string[]; revision: string; opening_ids: CurationDraft['openingIds'] };
+type SnapshotItem = { video_id: string; order_index: number; pinned: boolean };
+export type CurationSnapshotState = {
+  available: boolean; openingAvailable: boolean;
+  playlist: { slug: string; is_public: boolean; updated_at: string };
+  saved: SavedCurationRow | null; items: SnapshotItem[]; inherited: unknown;
+};
+
+/** Preserve the historical JSON property order: existing preview tokens bind these exact bytes. */
+function normalizeSavedCuration(row: SavedCurationRow): SavedCurationRow {
+  return { mode: row.mode, ordered_ids: row.ordered_ids, excluded_ids: row.excluded_ids,
+    revision: row.revision, opening_ids: row.opening_ids ?? null };
+}
+
+export function snapshotFromCurationState(state: CurationSnapshotState): CurationSnapshot {
+  const { available, openingAvailable, playlist, saved, items, inherited } = state;
+  return {
+    available, openingAvailable, supported: getCurationAliases(playlist.slug) !== null,
+    slug: playlist.slug, isPublic: playlist.is_public,
+    config: saved ? { mode: saved.mode, orderedIds: saved.ordered_ids, excludedIds: saved.excluded_ids, openingIds: saved.opening_ids ?? null } : null,
+    revision: curationFingerprint({ playlist, saved, items, inherited }), legacyIds: items.map(item => item.video_id),
+  };
+}
+
+/** Only use with the row actually returned by the write while the source tables remain locked. */
+export function snapshotAfterCurationSave(state: CurationSnapshotState, saved: SavedCurationRow): CurationSnapshot {
+  return snapshotFromCurationState({ ...state, saved: normalizeSavedCuration(saved), inherited: null });
+}
+
+export async function readCurationSnapshotState(
+  playlistId: string, db: QueryExecutor, options: { curationTableLocked?: true } = {},
+): Promise<CurationSnapshotState> {
+  // A successful SHARE table lock establishes existence. Do not reuse a pre-lock
+  // snapshot: opening-column availability and all row facts are still read below.
+  const available = options.curationTableLocked === true || await curationSchemaAvailable(db);
+  const [row] = await db.query<CurationSnapshotState['playlist'] & SavedCurationRow & { items: SnapshotItem[]; opening_available: boolean }>(
+    `SELECT p.slug,p.is_public,p.updated_at,
+      ${available ? "c.mode,c.ordered_ids,c.excluded_ids,c.revision::text,to_jsonb(c)->'opening_ids' AS opening_ids" : 'NULL AS mode,NULL AS ordered_ids,NULL AS excluded_ids,NULL AS revision,NULL AS opening_ids'},
+      EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public'
+        AND table_name='playlist_curations' AND column_name='opening_ids') AS opening_available,
+      COALESCE((SELECT jsonb_agg(jsonb_build_object('video_id',pi.video_id,'order_index',pi.order_index,'pinned',pi.pinned)
+        ORDER BY pi.order_index DESC,pi.video_id) FROM playlist_items pi WHERE pi.playlist_id=p.id),'[]'::jsonb) AS items
+      FROM playlists p ${available ? 'LEFT JOIN playlist_curations c ON c.playlist_id=p.id' : ''} WHERE p.id=$1`, [playlistId],
   );
-  if (!playlist) throw new CurationError('Destination not found', 404);
-  const available = await curationSchemaAvailable(db);
-  const [saved] = available
-    ? await db.query<{ mode: CurationDraft['mode']; ordered_ids: string[]; excluded_ids: string[]; revision: string; opening_ids: CurationDraft['openingIds'] }>(
-        "SELECT mode,ordered_ids,excluded_ids,revision::text,to_jsonb(c)->'opening_ids' AS opening_ids FROM playlist_curations c WHERE playlist_id=$1",
-        [playlistId],
-      )
-    : [];
-  const items = await db.query<{ video_id: string; order_index: number; pinned: boolean }>(
-    'SELECT video_id,order_index,pinned FROM playlist_items WHERE playlist_id=$1 ORDER BY order_index DESC,video_id',
-    [playlistId],
-  );
+  if (!row) throw new CurationError('Destination not found', 404);
+  const playlist = { slug: row.slug, is_public: row.is_public, updated_at: row.updated_at };
+  const saved = row.mode ? normalizeSavedCuration(row) : null;
+  const items = row.items.map(item => ({ video_id: item.video_id, order_index: item.order_index, pinned: item.pinned }));
   let inherited: unknown = null;
   if (!saved && playlist.slug.startsWith('family-') && getCurationAliases(playlist.slug) !== null) {
     const slugs = getFamilyFeedSourceSlugs(playlist.slug.slice(7));
@@ -87,14 +115,9 @@ export async function readCurationSnapshot(
       : [];
     inherited = { sources, sourceItems, sourceCurations };
   }
-  return {
-    available,
-    openingAvailable: available && (await db.query<{available: boolean}>("SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='playlist_curations' AND column_name='opening_ids') AS available"))[0]?.available === true,
-    supported: getCurationAliases(playlist.slug) !== null,
-    slug: playlist.slug,
-    isPublic: playlist.is_public,
-    config: saved ? { mode: saved.mode, orderedIds: saved.ordered_ids, excludedIds: saved.excluded_ids, openingIds: saved.opening_ids ?? null } : null,
-    revision: curationFingerprint({ playlist, saved: saved ?? null, items, inherited }),
-    legacyIds: items.map((item) => item.video_id),
-  };
+  return { available, openingAvailable: available && row.opening_available === true, playlist, saved, items, inherited };
+}
+
+export async function readCurationSnapshot(playlistId: string, db: QueryExecutor = { query }): Promise<CurationSnapshot> {
+  return snapshotFromCurationState(await readCurationSnapshotState(playlistId, db));
 }

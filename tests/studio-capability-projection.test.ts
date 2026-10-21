@@ -71,7 +71,7 @@ const flareFacts = {
   settings: [
     { key: 'imageWidth', type: 'number', required: false, values: null, min: 16, max: 3840, step: 16, default: 1024 },
     { key: 'imageHeight', type: 'number', required: false, values: null, min: 16, max: 3840, step: 16, default: 768 },
-    { key: 'quality', type: 'enum', required: false, values: ['low', 'medium', 'high', 'xhigh', 'max'], min: null, max: null, default: 'high' },
+    { key: 'quality', type: 'enum', required: false, values: ['low', 'medium', 'high', 'xhigh', 'max'], min: null, max: null, default: 'high', description: 'Choose a deterministic quality tier; higher tiers cost more.' },
     { key: 'outputFormat', type: 'enum', required: false, values: ['png', 'jpeg', 'webp'], min: null, max: null, default: 'png' },
   ],
 } as const;

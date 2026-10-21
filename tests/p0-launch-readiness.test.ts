@@ -99,7 +99,7 @@ test('the complete P0 graph publishes atomically across public discovery surface
         published: true,
         includeInFamilyCopy: true,
         current: true,
-        familyRank: id === 'wan-3-prime' || id === 'ltx-2-5-pro' || id === 'grok-imagine-video-1-5' || id === 'flux-3' ? 0 : 1,
+        familyRank: id === 'flux-3' ? 1 : id === 'flux-3-draft' ? 2 : id === 'wan-3-prime' || id === 'ltx-2-5-pro' || id === 'grok-imagine-video-1-5' ? 0 : 1,
       },
       compare: publication?.compare,
       app: { published: true },

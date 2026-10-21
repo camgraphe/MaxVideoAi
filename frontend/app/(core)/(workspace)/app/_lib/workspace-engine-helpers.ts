@@ -137,6 +137,9 @@ export function isModeValue(value: unknown): value is Mode {
 }
 
 export function getEngineModeLabel(engineId: string | null | undefined, mode: Mode, locale?: string | null): string {
+  if (engineId === 'flux-3-max' && mode === 'ref2v') {
+    return locale === 'fr' ? 'Images clés' : locale === 'es' ? 'Fotogramas clave' : 'Keyframes';
+  }
   if (isHappyHorseEngineId(engineId) && mode === 'ref2v') {
     return 'R2V';
   }
@@ -227,6 +230,7 @@ export function buildComposerModeToggles({
 }): ComposerModeToggle[] | undefined {
   if (!selectedEngine) return undefined;
   const explicitModes =
+    selectedEngine.id === 'flux-3-max' ? (['ref2v'] as const) :
     selectedEngine.id === 'wan-3' || selectedEngine.id === 'wan-3-prime'
       ? (['ref2v', 'v2v', 'extend'] as const)
       : isLumaRay2EngineId(selectedEngine.id)

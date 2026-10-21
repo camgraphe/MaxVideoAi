@@ -23,10 +23,18 @@
         "href": "/app?engine=flux-3"
       },
       "secondaryCta": {
-        "label": "Explore the FLUX gallery",
-        "href": "/examples/flux"
+        "label": "New: discover FLUX 3 Max",
+        "href": "/models/flux-3-max"
       },
       "quickLinks": [
+        {
+          "label": "FLUX 3 Max vs FLUX 3",
+          "href": "/ai-video-engines/flux-3-vs-flux-3-max?order=flux-3-max"
+        },
+        {
+          "label": "Explore the FLUX gallery",
+          "href": "/examples/flux"
+        },
         {
           "label": "Review FLUX 3 Draft",
           "href": "/models/flux-3-draft"
@@ -36,7 +44,7 @@
           "href": "/ai-video-engines/flux-3-vs-flux-3-draft?order=flux-3"
         },
         {
-          "label": "Compare FLUX 3 with Grok",
+          "label": "Compare FLUX 3 and Grok",
           "href": "/ai-video-engines/flux-3-vs-grok-imagine-video-1-5?order=flux-3"
         },
         {
@@ -51,7 +59,7 @@
     },
     "media": {
       "caption": "FLUX 3 production evidence",
-      "description": "Accepted FLUX 3 outputs will appear after review",
+      "description": "FLUX 3 videos with their prompts and settings",
       "renderLabel": "Review accepted output",
       "badges": [
         "Four workflows",
@@ -92,11 +100,11 @@
         }
       },
       {
-        "title": "Not ideal: low-cost exploratory batches",
-        "body": "When a team is still testing many directions at 720p, use Draft as the iteration sibling and reserve standard FLUX 3 for the selected brief.",
+        "title": "Looking for FLUX 3 Max?",
+        "body": "FLUX 3 Max is the new fal post-trained variant, with text-to-video, image animation, first-and-last frames and optional generated audio. This page describes standard FLUX 3, which also offers video extension.",
         "cta": {
-          "label": "Open FLUX 3 Draft",
-          "href": "/models/flux-3-draft"
+          "label": "New: discover FLUX 3 Max",
+          "href": "/models/flux-3-max"
         }
       },
       {
@@ -230,7 +238,7 @@
     "showWhenEmpty": false,
     "section": {
       "title": "Reviewed FLUX 3 examples",
-      "intro": "The gallery remains hidden until two accepted FLUX 3 assets are durable and correctly attached.",
+      "intro": "Explore FLUX 3 videos and inspect the prompt, settings and motion in each result.",
       "defaultCtaLabel": "View all FLUX examples",
       "recreateLabel": null
     },

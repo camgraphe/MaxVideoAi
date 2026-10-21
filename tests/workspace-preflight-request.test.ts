@@ -2,6 +2,9 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { buildWorkspacePreflightRequest, type WorkspacePreflightRequestOptions } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-preflight-request';
 import type { ReferenceAsset } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-assets';
+import { coerceFormState } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
+import { getFalEngineById } from '../frontend/src/config/falEngines';
+import { parsePreflightRequestPayload } from '../frontend/app/api/preflight/_lib/preflight-request';
 
 function options(): WorkspacePreflightRequestOptions {
   return {
@@ -21,8 +24,34 @@ test('request preserves supported fields and one-output semantics', () => {
 test('workspace sends Auto duration to preflight instead of quoting a stale numeric hint', () => {
   const input = options();
   input.form.durationOption = 'auto';
-  assert.equal((buildWorkspacePreflightRequest(input) as {durationOption?: string}).durationOption, 'auto');
+  const request = buildWorkspacePreflightRequest(input);
+  assert.equal(request.durationOption, 'auto');
+  assert.equal(parsePreflightRequestPayload(request).ok, true);
 });
+for (const mode of ['t2v', 'ref2v'] as const) {
+  for (const durationSec of [8, 16]) {
+    test(`Max ${mode} ${durationSec}s workspace duration passes the API preflight schema`, () => {
+      const input = options();
+      input.selectedEngine = getFalEngineById('flux-3-max')!.engine;
+      input.submissionMode = mode;
+      input.form = coerceFormState(input.selectedEngine, mode, { ...input.form, durationSec, durationOption: durationSec });
+      input.effectiveDurationSec = durationSec;
+      input.supportsAudioToggle = true;
+      if (mode === 'ref2v') {
+        input.form.extraInputValues = { reasoning_level: 'high', keyframe_indexes: `0,${durationSec * 12},${durationSec * 24}` };
+        input.inputAssets = { reference_image_urls: [0, 1, 2].map(index => ({
+          id: `frame-${index}`, assetId: `stored-frame-${index}`, fieldId: 'reference_image_urls', kind: 'image',
+          status: 'ready', url: `https://media.example/frame-${index}.png`, previewUrl: `https://media.example/frame-${index}.png`,
+        } as ReferenceAsset)) };
+      }
+      const request = JSON.parse(JSON.stringify(buildWorkspacePreflightRequest(input)));
+      const parsed = parsePreflightRequestPayload(request);
+      assert.equal(parsed.ok, true, JSON.stringify(parsed));
+      assert.equal(request.durationOption, durationSec);
+      assert.equal(request.durationSec, durationSec);
+    });
+  }
+}
 test('request omits unsupported schema fields and keeps optional audio/voice/extra values exact', () => {
   const input = options(); input.submissionMode = 'i2v'; input.supportsAudioToggle = true; input.voiceControlEnabled = true;
   input.form.extraInputValues = { count: 0, enabled: false, ids: ['x', 'y'] }; input.memberTier = 'Plus';
@@ -43,6 +72,39 @@ test('request preserves original URLs, unresolved IDs and input order without pr
     { assetId: 'stored-id', slotId: 'image_url', kind: 'image', url: asset.url },
     { assetId: '', slotId: 'image_url', kind: 'image', url: asset.url },
   ]);
+});
+
+test('Max opening-image preflight does not send a unified composer slot as a pricing dependency', () => {
+  const input = options();
+  input.selectedEngine = getFalEngineById('flux-3-max')!.engine;
+  input.submissionMode = 'i2v';
+  input.form = coerceFormState(input.selectedEngine, 'i2v', null);
+  input.effectiveDurationSec = 5;
+  input.inputAssets = { start_image_url: [{ id: 'opening', assetId: 'owned-opening', kind: 'image',
+    fieldId: 'start_image_url', status: 'ready', url: 'https://media.example/opening.png' } as ReferenceAsset] };
+  const before = structuredClone(input.inputAssets);
+  const request = buildWorkspacePreflightRequest(input);
+  assert.equal(parsePreflightRequestPayload(JSON.parse(JSON.stringify(request))).ok, true);
+  assert.deepEqual(request.inputs, []);
+  assert.deepEqual(input.inputAssets, before);
+});
+
+test('reference-priced Grok keeps every reference and rejects unresolved media before quoting', () => {
+  const input = options();
+  input.selectedEngine = getFalEngineById('grok-imagine-video-1-5')!.engine;
+  input.submissionMode = 'ref2v';
+  input.form = coerceFormState(input.selectedEngine, 'ref2v', null);
+  input.effectiveDurationSec = input.form.durationSec;
+  assert.ok(input.selectedEngine.pricingDetails?.referenceImages?.modes.includes('ref2v'));
+  input.inputAssets = { reference_image_urls: [0, 1].map(index => ({ id: `ref-${index}`, assetId: `owned-${index}`,
+    kind: 'image', fieldId: 'reference_image_urls', status: 'ready', url: `https://media.example/ref-${index}.png` } as ReferenceAsset)) };
+  const request = buildWorkspacePreflightRequest(input);
+  assert.deepEqual(request.inputs?.map(reference => reference.assetId), ['owned-0', 'owned-1']);
+  assert.equal(parsePreflightRequestPayload(JSON.parse(JSON.stringify(request))).ok, true);
+  input.inputAssets.reference_image_urls[1]!.assetId = undefined;
+  const unresolved = buildWorkspacePreflightRequest(input);
+  assert.equal(unresolved.inputs?.length, 2, 'An unresolved priced reference must never silently disappear.');
+  assert.equal(parsePreflightRequestPayload(JSON.parse(JSON.stringify(unresolved))).ok, false);
 });
 
 test('runtime Happy Horse edit schema omits user-selected framing fields', async () => {

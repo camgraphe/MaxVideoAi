@@ -51,7 +51,7 @@ test('model Examples parses and builds once before rendering', () => {
   assert.equal(count(layoutSource, 'buildModelExamplesViewModel('), 1);
   assert.match(
     layoutSource,
-    /<ModelCurrentDetails\b[\s\S]*?contentProps=\{\{[\s\S]*?examplesProps:\s*\{\s*viewModel:\s*examplesViewModel\s*\}/,
+    /<ModelCurrentDetails\b[\s\S]*?contentProps=\{\{[\s\S]*?examplesProps:\s*\{\s*viewModel:\s*examplesViewModel,\s*keyframeDemo\s*\}/,
   );
   assert.match(readSource(paths.currentDetails), /<ModelPageContentSections\s+\{\.\.\.contentProps\}/);
   assert.match(readSource(paths.contentSections), /<ModelExamplesSection\s+\{\.\.\.examplesProps\}/);

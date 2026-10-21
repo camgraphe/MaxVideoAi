@@ -124,6 +124,7 @@ setup action.
 
 The runner automatically places `*-postgres.test.ts` files and tests importing
 the disposable PostgreSQL/Studio runtime helpers, a `*-postgres-fixture` helper,
+the external fal import evidence owner (which probes real video bytes),
 or using initdb/FFmpeg in the
 integration lane. Tests directly launching Chromium, Firefox or WebKit, or using
 their installed executable paths for a renderer, belong in the browser lane, as

@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { loadBenchmarkScoreReview } from '@/server/benchmark-score-review';
 import { promises as fs } from 'node:fs';
 import { isDatabaseConfigured } from '@/lib/db';
 import { getPublicVideosByIds } from '@/server/videos';
@@ -14,12 +15,12 @@ export async function loadEngineScores(): Promise<Map<string, EngineScore>> {
       const raw = await fs.readFile(candidate, 'utf8');
       const data = JSON.parse(raw) as EngineScoresFile;
       const map = new Map<string, EngineScore>();
-      (data.scores ?? []).forEach((entry) => {
+      await Promise.all((data.scores ?? []).map(async (entry) => {
         const key = entry.modelSlug ?? entry.engineId;
         if (key) {
-          map.set(key, entry);
+          map.set(key, { ...entry, review: await loadBenchmarkScoreReview(entry) });
         }
-      });
+      }));
       return map;
     } catch {
       // keep trying

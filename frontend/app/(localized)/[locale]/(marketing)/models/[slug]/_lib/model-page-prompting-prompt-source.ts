@@ -13,6 +13,7 @@ const REVIEWED_LAUNCH_MODEL_IDS = new Set<string>(
 
 const VERIFIED_MEDIA_PROMPT_MODEL_IDS = new Set<string>([
   ...REVIEWED_LAUNCH_MODEL_IDS,
+  'flux-3-max',
   'seedance-1-5-pro',
   'seedance-2-5',
   'veo-3-1-fast',
@@ -23,6 +24,11 @@ const VERIFIED_MEDIA_PROMPT_MODEL_IDS = new Set<string>([
   'luma-ray-2-flash',
   'minimax-hailuo-02-text',
 ]);
+
+/** This authored recipe must wait for its explicitly reviewed public scene. */
+export function requiresPinnedModelPromptingDemo(modelSlug: string): boolean {
+  return modelSlug === 'flux-3-max';
+}
 
 export function resolveDefaultModelPromptingDemoPromptSource(
   demoMedia: FeaturedMedia | null,

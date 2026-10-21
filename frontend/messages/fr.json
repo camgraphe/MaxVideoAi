@@ -579,32 +579,19 @@
           "engineLabel": "2. Comparer les modèles recommandés",
           "engineRecommendations": [
             {
-              "engineId": "minimax-h3",
-              "name": "MiniMax H3",
-              "provider": "MiniMax",
-              "bestFor": "Action cinématographique",
-              "imageAlt": "Un personnage survole une baie tropicale à grande vitesse dans une vidéo MiniMax H3 de 15 secondes.",
-              "fallbackPrice": "Prix actualisé",
-              "selected": true,
-              "scores": [
-                {
-                  "label": "Motion",
-                  "value": 91
-                },
-                {
-                  "label": "Réalisme",
-                  "value": 88
-                },
-                {
-                  "label": "Vitesse",
-                  "value": 92
-                }
-              ],
+              "engineId": "flux-3-max",
+              "name": "FLUX 3 Max",
+              "provider": "Black Forest Labs",
+              "bestFor": "Fantastique cinématographique",
+              "imageAlt": "Une reine en armure traverse une salle du trône dans The Uncrowned, une vidéo FLUX 3 Max de 18 secondes.",
+              "fallbackPrice": "Tarif en direct",
               "tags": [
-                "Action",
+                "Fantastique",
                 "Audio natif",
-                "Cinéma"
-              ]
+                "Cinématique"
+              ],
+              "selected": true,
+              "scores": []
             },
             {
               "engineId": "seedance-2-5",
@@ -688,30 +675,30 @@
               ]
             },
             {
-              "engineId": "ltx-2-5-pro",
-              "imageAlt": "Aperçu d’une image animée en vidéo de 6 secondes avec LTX 2.5 Pro.",
-              "name": "LTX 2.5 Pro",
-              "provider": "Lightricks",
-              "bestFor": "Animation d’image rapide",
+              "engineId": "minimax-h3",
+              "name": "MiniMax H3",
+              "provider": "MiniMax",
+              "bestFor": "Action cinématographique",
+              "imageAlt": "Un personnage survole une baie tropicale à grande vitesse dans une vidéo MiniMax H3 de 15 secondes.",
               "fallbackPrice": "Prix actualisé",
               "scores": [
                 {
                   "label": "Motion",
-                  "value": 88
+                  "value": 91
                 },
                 {
                   "label": "Réalisme",
-                  "value": 84
+                  "value": 88
                 },
                 {
                   "label": "Vitesse",
-                  "value": 87
+                  "value": 92
                 }
               ],
               "tags": [
-                "Rapide",
-                "Image",
-                "Contrôle"
+                "Action",
+                "Audio natif",
+                "Cinéma"
               ]
             }
           ],

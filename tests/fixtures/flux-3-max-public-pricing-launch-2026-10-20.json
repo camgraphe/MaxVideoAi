@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "generatedFrom": "reviewed-flux-3-max-normal-list-launch",
+  "reviewedAt": "2026-10-20",
+  "rows": [
+    {
+      "id": "estimator:flux-3-max:member:default",
+      "surface": "estimator",
+      "engineId": "flux-3-max",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 85,
+      "marginCents": 26,
+      "discountCents": 0,
+      "customerTotalCents": 111,
+      "unit": "sec",
+      "quantity": 5,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "estimator:flux-3-max:plus:default",
+      "surface": "estimator",
+      "engineId": "flux-3-max",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 85,
+      "marginCents": 26,
+      "discountCents": 0,
+      "customerTotalCents": 111,
+      "unit": "sec",
+      "quantity": 5,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "estimator:flux-3-max:pro:default",
+      "surface": "estimator",
+      "engineId": "flux-3-max",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 85,
+      "marginCents": 26,
+      "discountCents": 0,
+      "customerTotalCents": 111,
+      "unit": "sec",
+      "quantity": 5,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "json-ld:flux-3-max:offer",
+      "surface": "json-ld",
+      "engineId": "flux-3-max",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 111,
+      "unit": "offer",
+      "quantity": 1,
+      "structuredDataAmount": "1.11",
+      "compatibilityProfile": "schema-current"
+    },
+    {
+      "id": "model-page:flux-3-max:default",
+      "surface": "model-page",
+      "engineId": "flux-3-max",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 85,
+      "marginCents": 26,
+      "discountCents": 0,
+      "customerTotalCents": 111,
+      "unit": "sec",
+      "quantity": 5,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "pricing-hub-video:flux-3-max:10s-1080p",
+      "surface": "pricing-hub-video",
+      "engineId": "flux-3-max",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 377,
+      "unit": "scenario",
+      "quantity": 1,
+      "displayedAmount": "$3.77",
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "pricing-hub-video:flux-3-max:10s-1080p-audio",
+      "surface": "pricing-hub-video",
+      "engineId": "flux-3-max",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 377,
+      "unit": "scenario",
+      "quantity": 1,
+      "displayedAmount": "$3.77",
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "pricing-hub-video:flux-3-max:10s-720p",
+      "surface": "pricing-hub-video",
+      "engineId": "flux-3-max",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 221,
+      "unit": "scenario",
+      "quantity": 1,
+      "displayedAmount": "$2.21",
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "pricing-hub-video:flux-3-max:4k-route",
+      "surface": "pricing-hub-video",
+      "engineId": "flux-3-max",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:flux-3-max:5s-720p",
+      "surface": "pricing-hub-video",
+      "engineId": "flux-3-max",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 111,
+      "unit": "scenario",
+      "quantity": 1,
+      "displayedAmount": "$1.11",
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "pricing-hub-video:flux-3-max:8s-1080p",
+      "surface": "pricing-hub-video",
+      "engineId": "flux-3-max",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 302,
+      "unit": "scenario",
+      "quantity": 1,
+      "displayedAmount": "$3.02",
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "pricing-hub-video:flux-3-max:entry-route",
+      "surface": "pricing-hub-video",
+      "engineId": "flux-3-max",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 221,
+      "unit": "scenario",
+      "quantity": 1,
+      "displayedAmount": "$2.21",
+      "compatibilityProfile": "standard"
+    }
+  ]
+}

@@ -75,7 +75,7 @@ test('reference preview HTTP boundary enforces session, pilot, same origin, proj
   const crossSite = request(body);crossSite.headers.set('sec-fetch-site','cross-site');
   assert.equal((await module.handleStudioReferencePreviews(crossSite,'film',options)).status,403);
   assert.equal((await module.handleStudioReferencePreviews(request(body),' film',options)).status,400);
-  for(const invalid of [{refs:[]},{refs:Array.from({length:9},()=>ref('a'))},{refs:[{...ref('a'),url:'https://foreign.test/secret'}]},{refs:[{...ref('a'),assetId:'internal'}]},{refs:[{type:'job-output',jobId:'job',outputId:'out',kind:'image'}]},{refs:[ref('a')],projectId:'foreign'}]) assert.equal((await module.handleStudioReferencePreviews(request(JSON.stringify(invalid)),'film',options)).status,400);
+  for(const invalid of [{refs:[]},{refs:Array.from({length:11},()=>ref('a'))},{refs:[{...ref('a'),url:'https://foreign.test/secret'}]},{refs:[{...ref('a'),assetId:'internal'}]},{refs:[{type:'job-output',jobId:'job',outputId:'out',kind:'image'}]},{refs:[ref('a')],projectId:'foreign'}]) assert.equal((await module.handleStudioReferencePreviews(request(JSON.stringify(invalid)),'film',options)).status,400);
   assert.equal((await module.handleStudioReferencePreviews(request('{'),'film',options)).status,400);
   assert.equal((await module.handleStudioReferencePreviews(request('x'.repeat(12001)),'film',options)).status,413);
   assert.equal(reads,0,'Denied and invalid requests never reach the media reader.');

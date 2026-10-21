@@ -49,6 +49,8 @@ test('CI suites partition every validation file without losing expensive financi
   assert.ok(plan.integration.includes('tests/mcp-confirm-generation-concurrency.test.ts'));
   assert.ok(plan.integration.includes('tests/generation-initial-job-transaction.test.ts'));
   assert.ok(plan.integration.includes('tests/public-video-renditions-real-media.test.ts'));
+  assert.ok(plan.integration.includes('tests/external-fal-import-evidence.test.ts'), 'Media evidence probes real video bytes with an external media tool');
+  assert.equal(plan.fast.includes('tests/external-fal-import-evidence.test.ts'), false);
   assert.ok(plan.integration.includes('tests/admin-customer-tariff-service-postgres.test.ts'));
   assert.ok(plan.integration.includes('tests/preflight-media-pricing.test.ts'), 'LAS preflight uses a real PostgreSQL fixture');
   assert.equal(plan.fast.includes('tests/preflight-media-pricing.test.ts'), false);

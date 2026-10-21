@@ -171,6 +171,8 @@ const EXTRA_INPUT_FIELD_BY_SETTING: Readonly<Record<string, string>> = Object.fr
   editDepthBlur: 'edit_depth_blur',
   editFace: 'edit_face',
   editKeyframeIndexes: 'edit_keyframe_indexes',
+  reasoningLevel: 'reasoning_level',
+  keyframeIndexes: 'keyframe_indexes',
   editNormalsAugmentation: 'edit_normals_augmentation',
   editPoseStrength: 'edit_pose_strength',
   editStrength: 'edit_strength',

@@ -39,10 +39,11 @@ export function ModelsCatalogTopPicksPanel({ title, viewAllLabel, items }: Model
               <span className="block text-xs font-semibold text-text-muted">{item.reason}</span>
               <span className="block truncate text-[13px] font-semibold leading-tight text-text-primary">{item.label}</span>
               <span className="mt-1 block text-xs leading-5 text-text-secondary">{item.detail}</span>
+              {item.scoreReviewLabel ? <span title={item.scoreReviewDisclosure ?? undefined} data-score-review="editorial-estimated" className="block text-[10px] font-medium text-text-muted">{item.scoreReviewLabel}</span> : null}
             </span>
             <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-hairline bg-surface text-sm font-semibold text-text-primary">
               <span>
-                {item.score != null ? item.score.toFixed(1) : '-'}
+                {item.scoreReviewLabel && item.score != null ? '≈' : ''}{item.score != null ? item.score.toFixed(1) : '-'}
                 <span className="text-[8px] font-medium text-text-muted">/10</span>
               </span>
             </span>

@@ -4,6 +4,7 @@ import { EngineIcon } from '@/components/ui/EngineIcon';
 import { BenchmarkMethodologyLink } from '@/components/marketing/BenchmarkMethodologyLink';
 import type { ModelGalleryCard } from '@/components/marketing/ModelsGallery';
 import type { AppLocale } from '@/i18n/locales';
+import { getBenchmarkScoreReviewCopy } from '@/lib/benchmark-score-review';
 
 type ModelsCatalogRecommendedSectionProps = {
   locale: AppLocale;
@@ -63,12 +64,13 @@ export function ModelsCatalogRecommendedSection({
                 </span>
                 <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-hairline bg-bg text-sm font-semibold text-text-primary">
                   <span>
-                    {card.overallScore != null ? card.overallScore.toFixed(1) : '-'}
+                    {card.scoreReview && card.overallScore != null ? '≈' : ''}{card.overallScore != null ? card.overallScore.toFixed(1) : '-'}
                     <span className="text-[8px] font-medium text-text-muted">/10</span>
                   </span>
                 </span>
               </div>
               <h3 className="mt-3 text-lg font-semibold leading-tight text-text-primary">{card.label}</h3>
+              {card.scoreReview ? <p title={card.scoreReview.disclosure[locale]} data-score-review="editorial-estimated" className="mt-1 text-xs font-medium text-text-muted">{getBenchmarkScoreReviewCopy(locale).label}</p> : null}
               <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-text-secondary">{card.description}</p>
               <dl className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-hairline pt-3 text-[11px] text-text-secondary">
                 <div className="inline-flex items-center gap-1.5">

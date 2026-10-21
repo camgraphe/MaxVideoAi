@@ -63,7 +63,7 @@ test('engine select modules expose the expected contracts', () => {
   assert.match(dropdownSource, /createPortal/);
   assert.match(dropdownSource, /getModeDisplayOrder/);
   assert.match(dropdownSource, /formatEngineSelectScore\(engineScores\?\.\[engine\.id\]\)/);
-  assert.match(dropdownSource, /copy\.score.*scoreLabel.*\/10/);
+  assert.match(dropdownSource, /<EngineScoreLabel scoreLabel=\{scoreLabel\} label=\{copy\.score\} locale=\{locale\} reviewStatus=\{engineScoreReviews\?\.\[engine\.id\]\}/);
   assert.doesNotMatch(dropdownSource, /formatEngineSelectScorePercent\(engineScores/);
   assert.match(dropdownSource, /app-engine-browser-body grid min-h-0/);
   assert.match(dropdownSource, /app-engine-families app-scroll-surface/);

@@ -32,7 +32,7 @@ const resolutions = [
 ] as const;
 
 const aspectRatios = [
-  '16:9', '9:16', '9:21', '1:1', '4:1', '1:4', '8:1', '1:8', '4:5', '5:4', '4:3',
+  '16:9', '2:1', '9:16', '9:21', '1:1', '4:1', '1:4', '8:1', '1:8', '4:5', '5:4', '4:3',
   '3:4', '3:2', '2:3', '21:9', 'custom', 'source', 'auto',
 ] as const;
 
@@ -74,7 +74,7 @@ const preflightRequestSchema = z.object({
   durationOption: z.union([z.number().finite().positive().max(3_600), z.literal('auto')]).optional(),
   resolution: z.enum(resolutions).optional(),
   aspectRatio: z.enum(aspectRatios).optional(),
-  fps: z.number().finite().positive().max(240),
+  fps: z.number().finite().positive().max(240).optional(),
   seedLocked: z.boolean().optional(),
   loop: z.boolean().optional(),
   audio: z.boolean().optional(),

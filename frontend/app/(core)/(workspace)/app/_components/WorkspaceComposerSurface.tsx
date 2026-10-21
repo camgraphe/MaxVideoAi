@@ -293,6 +293,7 @@ export function WorkspaceComposerSurface({
   const klingO3VideoToVideoSupported = supportsKlingO3VideoToVideo(selectedEngine);
   const klingO3VideoReferenceDisabledReason =
     isUnifiedKlingO3 && !klingO3VideoToVideoSupported ? KLING_O3_SOURCE_VIDEO_UNSUPPORTED_MESSAGE : null;
+  const showFlux3MaxKeyframeEditor = selectedEngine.id === 'flux-3-max' && submissionMode === 'ref2v';
   const showLumaRay32KeyframeEditor = selectedEngine.id === 'luma-ray-3-2' && submissionMode === 'v2v';
   const showOmniStudioPanel = selectedEngine.id === 'gemini-omni-flash';
   const showMultiPrompt = supportsWorkspaceMultiPrompt(selectedEngine, submissionMode);
@@ -307,14 +308,14 @@ export function WorkspaceComposerSurface({
   const composerAssetFields = useMemo(() => getWorkspaceReferenceFields(inputSchemaSummary.assetFields, {
     inputAssets, isUnifiedSeedance, isUnifiedKlingO3, klingO3VideoToVideoSupported,
     hasAnyVideoInput: klingO3AssetState.hasAnyVideoInput, guestUploadLockedReason, workflowCopy,
-    showOmniStudioPanel, showLumaRay32KeyframeEditor,
+    showOmniStudioPanel, showLumaRay32KeyframeEditor, showFlux3MaxKeyframeEditor,
     previousInteractionId: form.extraInputValues.previous_interaction_id,
   }).map((entry) => ({ ...entry,
     guidance: isUnifiedSeedance && shouldShowSeedanceReferenceGuidance(entry.field)
       ? getSeedanceReferenceGuidance(uiLocale) : entry.guidance,
   })), [inputSchemaSummary.assetFields, inputAssets, isUnifiedSeedance, isUnifiedKlingO3,
     klingO3VideoToVideoSupported, klingO3AssetState.hasAnyVideoInput, guestUploadLockedReason,
-    workflowCopy, showOmniStudioPanel, showLumaRay32KeyframeEditor, uiLocale, form.extraInputValues.previous_interaction_id]);
+    workflowCopy, showOmniStudioPanel, showLumaRay32KeyframeEditor, showFlux3MaxKeyframeEditor, uiLocale, form.extraInputValues.previous_interaction_id]);
 
   const settingsCaps = localDraftPreview?.selected
     ? { ...capability, modes: capability?.modes ?? [submissionMode], resolution: ['480p'], resolutionLocked: true }
@@ -328,14 +329,15 @@ export function WorkspaceComposerSurface({
     const shouldHideInlineField = (field: EngineInputField) =>
       Boolean(hdrFieldEntry && field.id === hdrFieldEntry.field.id) ||
       (showMultiPrompt && field.id === 'multi_prompt') ||
-      (showOmniStudioPanel && OMNI_CUSTOM_FIELD_IDS.has(field.id));
+      (showOmniStudioPanel && OMNI_CUSTOM_FIELD_IDS.has(field.id)) ||
+      (showFlux3MaxKeyframeEditor && field.id === 'keyframe_indexes');
     if (!showLumaRay32KeyframeEditor) {
       return inputSchemaSummary.secondaryFields.filter(({ field }) => !shouldHideInlineField(field));
     }
     return inputSchemaSummary.secondaryFields.filter(
       ({ field }) => !LUMA_RAY32_MODIFY_ADVANCED_FIELD_IDS.has(field.id) && !shouldHideInlineField(field)
     );
-  }, [hdrFieldEntry, inputSchemaSummary.secondaryFields, showLumaRay32KeyframeEditor, showMultiPrompt, showOmniStudioPanel]);
+  }, [hdrFieldEntry, inputSchemaSummary.secondaryFields, showLumaRay32KeyframeEditor, showFlux3MaxKeyframeEditor, showMultiPrompt, showOmniStudioPanel]);
 
   const handleExtraInputValueChange = useCallback(
     (field: EngineInputField, value: unknown) => {
@@ -433,7 +435,7 @@ export function WorkspaceComposerSurface({
     supportsKlingV3Controls &&
     (isUnifiedKlingO3 || activeMode === 'i2v' || activeMode === 'ref2v');
   const showExtraFields = Boolean(
-    showLumaRay32KeyframeEditor ||
+    showLumaRay32KeyframeEditor || showFlux3MaxKeyframeEditor ||
     showOmniStudioPanel ||
     showRetakeWorkflowAction ||
     showKlingElementsBuilder ||
@@ -533,8 +535,9 @@ export function WorkspaceComposerSurface({
         disableGenerate={Boolean(modeUnavailableMessage) || quoteUnavailable || draftSettingsLocked || multiPromptInvalid || audioWorkflowUnsupported || Boolean(klingO3UnsupportedVideoReason)}
         extraFields={showExtraFields ? (
           <>
-            {showLumaRay32KeyframeEditor ? (
+            {showLumaRay32KeyframeEditor || showFlux3MaxKeyframeEditor ? (
               <LumaRay32KeyframeEditor
+                uiLocale={uiLocale}
                 engine={selectedEngine}
                 caps={capability}
                 form={form}

@@ -64,7 +64,8 @@ export type EngineCatalogEntry = {
   };
 };
 
-export type EngineScore = {
+export type EngineScore = import('@/server/benchmark-score-review').BenchmarkScoreReviewMetadata & {
+  review?: import('@/lib/benchmark-score-review').BenchmarkScoreReview | null;
   engineId?: string;
   modelSlug?: string;
   fidelity?: number;

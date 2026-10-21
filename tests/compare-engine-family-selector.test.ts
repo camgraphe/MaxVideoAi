@@ -34,7 +34,8 @@ test('compare engine selectors use the family/model selector instead of a flat s
   assert.match(familySelectSource, /overflow-x-auto overscroll-x-contain/);
   assert.match(familySelectSource, /max-h-\[min\(36vh,300px\)\]/);
   assert.match(familySelectSource, /formatEngineSelectScore\(engineScores\?\.\[option\.value\]\)/);
-  assert.match(familySelectSource, /Score \$\{value\}\/10/);
+  assert.match(familySelectSource, /estimatedLabel \?\? 'Score'/);
+  assert.match(familySelectSource, /engineScoreReviews\?\.\[option\.value\]/);
   assert.doesNotMatch(familySelectSource, /formatEngineSelectScorePercent\(engineScores/);
   assert.match(familySelectSource, /getEngineSelectFamilyRank/);
   assert.match(familySelectSource, /EngineIcon/);

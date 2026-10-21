@@ -4,6 +4,7 @@ import type {
   ComposerPromotedAction,
 } from '@/components/Composer';
 import { localizeLtxField } from '@/lib/ltx-localization';
+import { localizeFlux3MaxField } from '@/lib/flux-3-max-localization';
 import { localizeSeedanceOutputField } from '@/lib/seedance-modelark-options';
 import type { EngineCaps, EngineInputField, Mode } from '@/types/engines';
 import { resolveActiveVideoInputField, VIDEO_MEDIA_FIELD_CANDIDATES } from '@/lib/video-input-schema';
@@ -231,7 +232,7 @@ export function summarizeWorkspaceInputSchema({
     if (!fields) return;
     fields.forEach((field) => {
       if (!appliesToMode(field)) return;
-      const localizedField = localizeSeedanceOutputField(localizeLtxField(field, uiLocale, selectedEngine?.id), uiLocale);
+      const localizedField = localizeFlux3MaxField(localizeSeedanceOutputField(localizeLtxField(field, uiLocale, selectedEngine?.id), uiLocale), uiLocale, selectedEngine?.id);
       const normalizedId = normalizeFieldId(localizedField.id);
       const required = isRequired(localizedField, origin);
       if (localizedField.type === 'text') {

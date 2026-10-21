@@ -37,6 +37,7 @@ import { LTX_2_5_FAST_FAL_ENGINE_REGISTRY } from './ltx-2-5-fast';
 import { LTX_2_5_PRO_FAL_ENGINE_REGISTRY } from './ltx-2-5-pro';
 import { GROK_IMAGINE_VIDEO_1_5_FAL_ENGINE_REGISTRY } from './grok-imagine-video-1-5';
 import { FLUX_3_FAL_ENGINE_REGISTRY } from './flux-3';
+import { FLUX_3_MAX_FAL_ENGINE_REGISTRY } from './flux-3-max';
 import { FLUX_3_DRAFT_FAL_ENGINE_REGISTRY } from './flux-3-draft';
 import { HAILUO_FAL_ENGINE_REGISTRY } from './hailuo';
 import { MINIMAX_H3_FAL_ENGINE_REGISTRY } from './minimax-h3';
@@ -101,5 +102,6 @@ export const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   ...LTX_2_5_PRO_FAL_ENGINE_REGISTRY,
   ...GROK_IMAGINE_VIDEO_1_5_FAL_ENGINE_REGISTRY,
   ...FLUX_3_FAL_ENGINE_REGISTRY,
+  ...FLUX_3_MAX_FAL_ENGINE_REGISTRY,
   ...FLUX_3_DRAFT_FAL_ENGINE_REGISTRY,
 ];

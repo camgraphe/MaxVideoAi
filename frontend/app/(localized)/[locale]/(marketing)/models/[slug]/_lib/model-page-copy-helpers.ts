@@ -6,8 +6,9 @@ import {
   isUnsupported,
 } from './model-page-spec-status';
 import type { KeySpecValues } from './model-page-specs-types';
+import { getModelPageTemplateConfig } from './model-page-template-registry';
 
-export function pickCompareEngines(allEngines: FalEngineEntry[], currentSlug: string, limit = 3): FalEngineEntry[] {
+export function pickCompareEngines(allEngines: FalEngineEntry[], currentSlug: string, limit = getModelPageTemplateConfig(currentSlug)?.comparisonLimit ?? 3): FalEngineEntry[] {
   const filtered = allEngines.filter((entry) => {
     if (entry.modelSlug === currentSlug) return false;
     const modes = entry.engine?.modes ?? [];
@@ -51,7 +52,7 @@ export function pickCompareEngines(allEngines: FalEngineEntry[], currentSlug: st
   return selected;
 }
 
-export function buildVideoBoundaries(values: KeySpecValues | null, locale: 'en' | 'fr' | 'es' = 'en'): string[] {
+export function buildVideoBoundaries(values: KeySpecValues | null, locale: 'en' | 'fr' | 'es' = 'en', resolutions: readonly string[] = []): string[] {
   const copy = {
     en: { duration: (v: string) => `Clip duration: ${v}. Assemble several clips for longer edits.`, resolution: (v: string) => `Available resolutions: ${v}.`, video: 'Video input is not supported on this model.', image: 'Image-to-video is not supported on this model.', audio: 'This model does not generate native audio.', iteration: 'Refine your prompt and compare variations before choosing a result.' },
     fr: { duration: (v: string) => `Durée des clips : ${v}. Assemblez plusieurs clips pour un montage plus long.`, resolution: (v: string) => `Résolutions disponibles : ${v}.`, video: 'Ce modèle n’accepte pas de vidéo en entrée.', image: 'Ce modèle ne permet pas de générer une vidéo à partir d’une image.', audio: 'Ce modèle ne génère pas d’audio natif.', iteration: 'Affinez votre prompt et comparez les variantes avant de retenir un résultat.' },
@@ -60,7 +61,12 @@ export function buildVideoBoundaries(values: KeySpecValues | null, locale: 'en' 
   if (!values) return [copy.iteration];
   const items: string[] = [];
   if (values.maxDuration && !isPending(values.maxDuration)) items.push(copy.duration(values.maxDuration));
-  if (values.maxResolution && !isPending(values.maxResolution)) items.push(copy.resolution(normalizeMaxResolution(values.maxResolution)));
+  const available = [...new Set(resolutions.filter(value => value.trim()))];
+  if (available.length) items.push(copy.resolution(available.join(' / ')));
+  else if (values.maxResolution && !isPending(values.maxResolution)) {
+    const label = { en: 'Maximum output resolution', fr: 'Résolution de sortie maximale', es: 'Resolución de salida máxima' }[locale];
+    items.push(`${label}: ${normalizeMaxResolution(values.maxResolution)}.`);
+  }
   if (isUnsupported(values.videoToVideo)) items.push(copy.video);
   if (isUnsupported(values.imageToVideo)) items.push(copy.image);
   if (isUnsupported(values.audioOutput)) items.push(copy.audio);

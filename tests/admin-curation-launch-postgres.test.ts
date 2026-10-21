@@ -1,0 +1,51 @@
+import assert from 'node:assert/strict';
+import {mkdtempSync,readFileSync,rmSync} from 'node:fs';
+import {createRequire} from 'node:module';
+import {tmpdir} from 'node:os';
+import {join,resolve} from 'node:path';
+import {pathToFileURL} from 'node:url';
+import test from 'node:test';
+import {build} from 'esbuild';
+import {startDisposablePostgres} from './helpers/disposable-postgres';
+
+test('canonical admin preview and save prepare Max membership without exposing its unready public family media',async t=>{
+  const pg=await startDisposablePostgres('curation-launch');
+  const folder=mkdtempSync(join(tmpdir(),'curation-launch-'));
+  const previous=process.env.DATABASE_URL;
+  const requireFrontend=createRequire(resolve('frontend/package.json'));
+  let reader:any;
+  t.after(async()=>{await reader?.getDb().end();if(previous===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=previous;rmSync(folder,{recursive:true,force:true});await pg.cleanup();});
+  await pg.pool.query(`CREATE TABLE playlists(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),slug text UNIQUE,is_public boolean DEFAULT true,updated_at timestamptz DEFAULT now());
+    CREATE TABLE playlist_items(playlist_id uuid,video_id text,order_index int,pinned boolean DEFAULT false,PRIMARY KEY(playlist_id,video_id));
+    CREATE TABLE app_jobs(job_id text PRIMARY KEY,user_id text,engine_id text,engine_label text,prompt text DEFAULT 'Fixture',thumb_url text,video_url text DEFAULT '/video.mp4',status text DEFAULT 'completed',surface text DEFAULT 'video',visibility text DEFAULT 'public',indexable boolean DEFAULT true,created_at timestamptz DEFAULT now(),duration_sec int,aspect_ratio text DEFAULT '16:9',has_audio boolean,can_upscale boolean,featured boolean,featured_order int,final_price_cents int,currency text,pricing_snapshot jsonb);
+    CREATE TABLE media_assets(user_id text,url text,status text,deleted_at timestamptz);
+    CREATE TABLE job_outputs(job_id text,kind text,status text,width int,height int,position int,created_at timestamptz,thumb_url text,url text,storage_url text);
+    INSERT INTO playlists(slug) VALUES ('family-flux');
+    INSERT INTO app_jobs(job_id,engine_id) VALUES ('standard','flux-3'),('max','flux-3-max'),('foreign','wan-3');`);
+  for(const file of ['52_playlist_curations.sql','53_playlist_opening.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
+  const id=(await pg.pool.query("SELECT id FROM playlists WHERE slug='family-flux'")).rows[0].id;
+  await pg.pool.query("INSERT INTO playlist_curations(playlist_id,mode,ordered_ids,excluded_ids) VALUES($1,'manual',ARRAY['standard'],'{}')",[id]);
+  const out=join(folder,'reader.cjs');
+  await build({stdin:{contents:`export * from './frontend/server/playlists/curation-service';export * from './frontend/server/playlists/curation-candidates-page';export * from './frontend/server/videos-catalog-page';export {getDb} from './frontend/src/lib/db';`,resolveDir:process.cwd()},outfile:out,bundle:true,platform:'node',format:'cjs',packages:'external',tsconfig:'frontend/tsconfig.json',define:{'import.meta.url':JSON.stringify(pathToFileURL(resolve('frontend/server/video-keyframes.ts')).href)},plugins:[{name:'unready-launch',setup(builder){
+    builder.onLoad({filter:/model-launch-readiness\.generated\.json$/},args=>{
+      const projection=JSON.parse(readFileSync(args.path,'utf8'));
+      projection.waves=projection.waves.map((wave:any)=>wave.waveId==='flux-3-max'?{...wave,sourceStatus:'missing',sourceDigest:null,models:[]}:wave);
+      projection.models=projection.models.filter((model:any)=>model.modelId!=='flux-3-max');
+      return {contents:JSON.stringify(projection),loader:'json'};
+    });
+    builder.onResolve({filter:/^pg$/},args=>({path:requireFrontend.resolve(args.path),external:true}));
+  }}]});
+  process.env.DATABASE_URL=pg.databaseUrl;
+  reader=requireFrontend(out);
+  const candidates=await reader.searchCurationCandidatesPage({slug:'family-flux',familyId:'flux'});
+  assert.deepEqual(candidates.items.map((item:any)=>item.id).sort(),['max','standard']);
+  const snapshot=await reader.getCurationSnapshot(id);
+  const draft={mode:'manual',orderedIds:['standard','max'],excludedIds:[]};
+  const preview=await reader.previewCuration(id,draft,snapshot.revision);
+  assert.deepEqual(preview.items.map((item:any)=>item.id),['standard','max']);
+  assert.deepEqual(preview.effective.firstPageIds,['standard']);
+  await reader.saveCuration(id,draft,snapshot.revision,preview.token,null);
+  assert.deepEqual((await pg.pool.query('SELECT ordered_ids FROM playlist_curations WHERE playlist_id=$1',[id])).rows[0].ordered_ids,['standard','max']);
+  const published=await reader.listCatalogPage({familyId:'flux',sort:'playlist',limit:24,offset:0});
+  assert.deepEqual(published.items.map((item:any)=>item.id),['standard']);
+});

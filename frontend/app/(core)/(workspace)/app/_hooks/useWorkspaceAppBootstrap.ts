@@ -38,6 +38,7 @@ export function useWorkspaceAppBootstrap() {
   });
   const engines = useMemo(() => data?.engines ?? [], [data]);
   const engineScores = useMemo(() => data?.engineScores ?? {}, [data?.engineScores]);
+  const engineScoreReviews = useMemo(() => data?.engineScoreReviews ?? {}, [data?.engineScoreReviews]);
   const { data: latestJobsPages, mutate: mutateLatestJobs } = useInfiniteJobs(24, { type: 'video' });
   const provider = useResultProvider();
   const showCenterGallery = CLIENT_ENV.WORKSPACE_CENTER_GALLERY === 'true';
@@ -113,6 +114,7 @@ export function useWorkspaceAppBootstrap() {
     engineIdByLabel,
     engineMap,
     engineScores,
+    engineScoreReviews,
     engines,
     enginesError,
     formatTakeLabel,

@@ -266,7 +266,18 @@ test('P0 links are localized, decision-complete, and future comparison links sta
         && !href.includes(locale === 'en' ? '/pricing' : locale === 'fr' ? '/fr/tarifs' : '/es/precios')
         && href !== '#prompting',
       );
-      assert.ok(contextual.length >= 2 && contextual.length <= 4, `${slug}/${locale} should have 2-4 contextual destinations, got ${contextual.length}`);
+      if (slug === 'flux-3') {
+        // The Max launch adds its model and comparison without removing existing decision links.
+        assert.deepEqual(contextual.map((href) => href.split('?')[0]).sort(), [
+          localizedModelHref(locale, 'flux-3-max'),
+          localizedModelHref(locale, 'flux-3-draft'),
+          localizedComparisonToken(locale, 'flux-3-vs-flux-3-max'),
+          localizedComparisonToken(locale, 'flux-3-vs-flux-3-draft'),
+          localizedComparisonToken(locale, 'flux-3-vs-grok-imagine-video-1-5'),
+        ].sort());
+      } else {
+        assert.ok(contextual.length >= 2 && contextual.length <= 4, `${slug}/${locale} should have 2-4 contextual destinations, got ${contextual.length}`);
+      }
     }
   }
 });

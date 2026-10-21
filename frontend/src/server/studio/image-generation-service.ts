@@ -37,7 +37,7 @@ import { withDbTransaction, type TransactionQueryExecutor } from "@/lib/db";
 import { resolveStudioMedia } from "./media-resolver";
 import { getWalletSummary } from "@/server/wallet-summary";
 import {projectAgentModelModeDetails} from '@/server/agent-api/model-details';
-import {STUDIO_CONVERSATION_MAX_REFERENCES} from '@/lib/studio/conversation-creation-contract';
+import {studioGenerationReferenceLimit} from './conversation-reference-limits';
 import type {StudioPricingEstimate} from '@/lib/studio/conversation-pricing-contract';
 import {GenerationNormalizationError,normalizeGenerationRequest} from '@/server/agent-api/generation-normalization';
 import {readGenerationPricing} from '@/server/agent-api/generation-pricing-read';
@@ -57,7 +57,7 @@ function certified(catalog: AgentPublicGenerationEngine[], surface: 'image' | 'v
         .filter(mode => {
           const details=projectAgentModelModeDetails(candidate,mode);
           return !details.settings.some(setting=>setting.required && setting.type==='multi_prompt')
-            && !details.references.some(ref=>ref.required && ((surface==='image'&&ref.type!=='image') || (ref.min ?? 1)>STUDIO_CONVERSATION_MAX_REFERENCES));
+            && !details.references.some(ref=>ref.required && ((surface==='image'&&ref.type!=='image') || (ref.min ?? 1)>studioGenerationReferenceLimit(candidate.engine.id,surface,mode)));
         })
         .filter((mode) =>
           surface === 'video' ? isStudioConversationVideoModeCertified(candidate.engine.id, mode) : isWorkspaceModelCertifiedForBlock({
@@ -228,7 +228,10 @@ function createStudioVisualGenerationService(
         listPublicEngines:catalog,resolveGenerationReferences:request=>resolveReferences(request),
         resolveMembershipPricing:prepareDeps.resolveMembershipPricing??(async userId=>(await getUserMembershipStatus(userId)).pricing),
         priceGeneration:prepareDeps.priceGeneration??((request,tier,context)=>priceCanonicalGeneration(request,tier,undefined,context)),
-        resolveRequestExecutability:prepareDeps.resolveRequestExecutability??((request,candidate,references)=>resolveAgentGenerationRequestExecutability(request,candidate.engine,references)),
+        resolveRequestExecutability:(request,candidate,references)=>{
+          requireStudioGenerationRequest(request);
+          return (prepareDeps.resolveRequestExecutability??((current,engine,refs)=>resolveAgentGenerationRequestExecutability(current,engine.engine,refs)))(request,candidate,references);
+        },
       });
     },
     async estimate(input: PrepareGenerationInput): Promise<StudioPricingEstimate> {

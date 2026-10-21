@@ -430,6 +430,14 @@ unmanaged preferred/featured additions. At most four model projections run
 concurrently; each reads at most 200 playlist videos plus the finite authored
 addition IDs. Counts retain legacy behavior when optional curation storage is absent.
 
+Admin model destinations use the same discoverability rule as curation, including
+published app/examples identities before their launch media are ready. They retain
+the public family ordering where available and append eligible launch identities.
+This permits preparation of the exact model collection without changing public
+readiness, visibility, indexability or membership. Retired, deep-legacy and
+unpublished identities do not become model destinations; inactive reserved
+hub/starter collections retain their historical diagnostics.
+
 The picker opens the connected hub, otherwise the first connected family. Its
 menu separates Examples & starters, Families, and Models; model submenus are
 grouped by family. Search reveals matching destinations across all sections,
@@ -467,6 +475,28 @@ survives a 409 and Save stays disabled until a fresh preview. Save uses NOWAIT S
 locks on six source tables with a two-second SQL deadline; writer contention returns
 a retryable 409. Never retry automatically with an old token. Existing optional-schema
 fallback remains for public reads; first family adoption needs opening storage.
+
+Snapshot reads combine schema flags and row projections into two round-trips (plus
+inherited sources for an unconfigured family). Reconstruct fingerprint objects in
+their historical property order and keep native PostgreSQL timestamps and textual
+revisions; JSONB key order must not alter an existing preview token. After the save
+guard successfully locks the curation table, its existence is established and the
+snapshot needs only one query; opening-column availability is still read under that
+lock. A preview shares
+its source facts, candidates and public-media lookups only within that transaction.
+Its proposed gallery is hydrated first so the current preferred cards can reuse it;
+both complete projections still enter the fingerprint. Ordinary inventory reads do
+not reuse this cache. Hub/family previews batch the unchanged current and proposed
+public catalog CTEs in one parameterized `UNION ALL`, explicitly ordered by variant
+and page ordinal. Both sides retain their own totals and suppressed sources and
+continue in 500-ID pages until both complete. Save returns the actual `INSERT ... RETURNING` curation row
+combined with the freshly locked playlist/membership facts, avoiding another
+snapshot read while holding the source locks. Curation writes must not introduce
+triggers that mutate those playlist/membership facts without updating this contract.
+Tests compare the returned snapshot to a fresh committed read, preserve legacy schema
+behavior, and prove timeout rollback and lock release. The two-second deadline and
+NOWAIT behavior remain authoritative when network latency or larger catalogs exceed
+the budget.
 
 ### Read-only gallery release checklist
 

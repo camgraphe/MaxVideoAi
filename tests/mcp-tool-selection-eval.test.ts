@@ -243,6 +243,35 @@ test('evaluator validates curated arguments with all authoritative runtime schem
   }
 });
 
+test('evaluator accepts the reviewed Max settings contract and rejects unsupported types, enums and aliases', () => {
+  const request = {
+    surface: 'video', engineId: 'flux-3-max', mode: 'ref2v', prompt: 'A continuous journey between the supplied frames.',
+    settings: { durationSec: 5, resolution: '720p', reasoningLevel: 'high', keyframeIndexes: '120,0' },
+    references: ['https://media.example/end.png', 'https://media.example/start.png'].map((url) => ({
+      kind: 'https', url, role: 'reference', mediaKind: 'image',
+    })),
+  };
+  for (const reasoningLevel of ['low', 'high', null]) {
+    assert.doesNotThrow(() => evaluatorApi.validateCuratedToolArguments('prepare_generation', {
+      ...request, settings: { ...request.settings, reasoningLevel },
+    }));
+  }
+  // Cross-field frame bounds and ordered media pairing are checked by the model
+  // capability validator; this evaluator owns the published tool argument schema.
+  for (const settings of [
+    { ...request.settings, reasoningLevel: 'medium' },
+    { ...request.settings, keyframeIndexes: [120, 0] },
+    { ...request.settings, keyframeIndexes: '0'.repeat(129) },
+    { ...request.settings, reasoning_level: 'high' },
+    { ...request.settings, keyframe_indexes: '120,0' },
+  ]) {
+    assert.throws(() => evaluatorApi.validateCuratedToolArguments('prepare_generation', { ...request, settings }), /schema|argument|invalid/i);
+  }
+  assert.doesNotThrow(() => evaluatorApi.validateCuratedToolArguments('prepare_generation', {
+    ...request, settings: { durationSec: 5, resolution: '720p' },
+  }));
+});
+
 test('policy fingerprint changes with instructions or tool metadata and stale artifacts are rejected', async () => {
   const collect = (evaluatorApi as any).collectPolicyFingerprintInput;
   const compute = (evaluatorApi as any).computePolicyFingerprintSha256;
@@ -295,6 +324,16 @@ test('policy fingerprint changes with instructions or tool metadata and stale ar
   toolChanged.tools[0].description += ' Material tool mutation.';
   assert.notEqual(compute(toolChanged), expected);
   assert.throws(() => assertCurrent(expected, toolChanged), /stale.*policy fingerprint/i);
+
+  for (const field of ['reasoningLevel', 'keyframeIndexes']) {
+    const schemaChanged = structuredClone(current);
+    const prepare = schemaChanged.tools.find((tool: { name: string }) => tool.name === 'prepare_generation');
+    const settings = prepare.inputSchema.properties.settings.anyOf.find((schema: { type: string }) => schema.type === 'object');
+    assert.ok(settings.properties[field], `${field} must be included in the inspected live metadata`);
+    delete settings.properties[field];
+    assert.notEqual(compute(schemaChanged), expected);
+    assert.throws(() => assertCurrent(expected, schemaChanged), /stale.*policy fingerprint/i);
+  }
 });
 
 test('evaluator throws on every curated policy release-gate violation', async () => {

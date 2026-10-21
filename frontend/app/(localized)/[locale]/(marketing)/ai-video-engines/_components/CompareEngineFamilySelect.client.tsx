@@ -2,6 +2,8 @@
 
 import clsx from 'clsx';
 import { useLocale } from 'next-intl';
+import { getBenchmarkScoreReviewCopy } from '@/lib/benchmark-score-review';
+import type { AppLocale } from '@/i18n/locales';
 import { Check, ChevronDown, ChevronRight, Search } from 'lucide-react';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { EngineIcon } from '@/components/ui/EngineIcon';
@@ -19,6 +21,7 @@ type CompareEngineFamilySelectProps = {
   searchPlaceholder: string;
   noResultsLabel: string;
   engineScores?: Record<string, number | null | undefined>;
+  engineScoreReviews?: Record<string, 'editorial-estimated'>;
   buttonClassName?: string;
   triggerActionLabel?: string;
   onChange: (value: string) => void;
@@ -121,21 +124,22 @@ function getDropdownPosition(trigger: HTMLButtonElement): DropdownPosition {
   };
 }
 
-function ScoreBadge({ value }: { value: string }) {
+function ScoreBadge({ value, estimatedLabel }: { value: string; estimatedLabel?: string }) {
   const numeric = Number(value);
   const progress = Number.isFinite(numeric) ? Math.max(0, Math.min(100, numeric <= 10 ? numeric * 10 : numeric)) : 0;
   const ringColor = progress < 83 ? '#f59e0b' : '#10b981';
   const textTone = progress < 83 ? 'text-amber-700' : 'text-text-primary';
   return (
     <span
-      aria-label={`Score ${value}/10`}
+      aria-label={`${estimatedLabel ?? 'Score'} ${value}/10`}
+      title={estimatedLabel}
       className="grid h-7 w-7 shrink-0 place-items-center rounded-full p-[2px]"
       style={{
         background: `conic-gradient(${ringColor} 0% ${progress}%, rgba(148,163,184,0.22) ${progress}% 100%)`,
       }}
     >
       <span className={clsx('grid h-full w-full place-items-center rounded-full bg-surface text-[9px] font-semibold leading-none', textTone)}>
-        {value}
+        {estimatedLabel ? '≈' : ''}{value}
       </span>
     </span>
   );
@@ -208,6 +212,7 @@ export function CompareEngineFamilySelect({
   searchPlaceholder,
   noResultsLabel,
   engineScores,
+  engineScoreReviews,
   buttonClassName,
   triggerActionLabel,
   onChange,
@@ -435,7 +440,7 @@ export function CompareEngineFamilySelect({
                               </span>
                             ) : null}
                           </span>
-                          {score ? <ScoreBadge value={score} /> : null}
+                          {score ? <ScoreBadge value={score} estimatedLabel={engineScoreReviews?.[option.value] === 'editorial-estimated' ? getBenchmarkScoreReviewCopy(locale as AppLocale).label : undefined} /> : null}
                           {active ? <Check aria-hidden="true" className="h-4 w-4 text-brand" /> : null}
                         </button>
                       </li>

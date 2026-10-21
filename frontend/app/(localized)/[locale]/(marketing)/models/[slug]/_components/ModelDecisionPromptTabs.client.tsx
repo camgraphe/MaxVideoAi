@@ -13,9 +13,10 @@ import { ModelDecisionCopyButton } from './ModelDecisionCopyButton.client';
 
 type ModelDecisionPromptTabsProps = {
   tabs: ModelPromptingViewModel['tabs']['items'];
-  labels: Pick<ModelPromptingUiCopy, 'copyTemplate' | 'copied' | 'example' | 'viewRender' | 'usePrompt'>;
+  labels: Pick<ModelPromptingUiCopy, 'copyTemplate' | 'copyPrompt' | 'copied' | 'example' | 'viewRender' | 'usePrompt'>;
   exampleHref: string | null;
   usePromptHref: string | null;
+  notesById?: Record<string, string>;
 };
 
 const TAB_ICONS = [FileText, Box, Camera, Sparkles] as const;
@@ -36,12 +37,15 @@ export function ModelDecisionPromptTabs({
   labels,
   exampleHref,
   usePromptHref,
+  notesById = {},
 }: ModelDecisionPromptTabsProps) {
   const [activeId, setActiveId] = useState(() => tabs[0]?.id ?? 'quick');
   const activeTab = tabs.find((tab) => tab.id === activeId) ?? tabs[0] ?? null;
   const activeCopy = useMemo(() => splitPromptCopy(activeTab?.copy ?? ''), [activeTab?.copy]);
 
   if (!activeTab) return null;
+  const activeExampleHref = activeTab.exampleLinks ? activeTab.exampleLinks.exampleHref : exampleHref;
+  const activeUsePromptHref = activeTab.exampleLinks ? activeTab.exampleLinks.usePromptHref : usePromptHref;
 
   return (
     <div>
@@ -78,7 +82,7 @@ export function ModelDecisionPromptTabs({
           </div>
           <ModelDecisionCopyButton
             copyText={activeCopy.template || activeTab.copy}
-            label={labels.copyTemplate}
+            label={activeTab.matchPublicExample ? labels.copyPrompt : labels.copyTemplate}
             copiedLabel={labels.copied}
           />
         </div>
@@ -86,6 +90,9 @@ export function ModelDecisionPromptTabs({
         <pre className="mt-4 max-h-[250px] overflow-auto whitespace-pre-wrap rounded-xl border border-hairline bg-bg px-4 py-4 font-mono text-[0.82rem] leading-6 text-text-primary dark:!bg-slate-950/[0.72]">
           {activeCopy.template}
         </pre>
+        {notesById[activeTab.id] ? (
+          <p className="mt-3 text-xs leading-5 text-text-secondary">{notesById[activeTab.id]}</p>
+        ) : null}
 
         <div className="mt-4 rounded-xl border border-hairline bg-bg/80 p-4 dark:!bg-slate-950/[0.42]">
           <div className="mb-3 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.08em] text-blue-600 dark:text-blue-300">
@@ -93,12 +100,12 @@ export function ModelDecisionPromptTabs({
             <span>{labels.example}</span>
           </div>
           <p className="text-sm leading-6 text-text-secondary">
-            {activeCopy.example || activeTab.copy.split('\n').slice(-3).join(' ')}
+            {activeTab.matchPublicExample ? activeTab.description : activeCopy.example || activeTab.copy.split('\n').slice(-3).join(' ')}
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
-            {exampleHref ? (
+            {activeExampleHref ? (
               <Link
-                href={exampleHref}
+                href={activeExampleHref}
                 prefetch={false}
                 className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-primary shadow-sm transition hover:bg-surface-2"
               >
@@ -107,9 +114,9 @@ export function ModelDecisionPromptTabs({
                 <UIIcon icon={ArrowRight} size={15} />
               </Link>
             ) : null}
-            {usePromptHref ? (
+            {activeUsePromptHref ? (
               <Link
-                href={usePromptHref}
+                href={activeUsePromptHref}
                 prefetch={false}
                 className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-primary shadow-sm transition hover:bg-surface-2"
               >

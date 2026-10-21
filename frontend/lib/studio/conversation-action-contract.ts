@@ -38,6 +38,7 @@ export type StudioConversationQuoteSettings = {
   voiceModel?: string; musicModel?: string; seedAudioOutputFormat?: string; seedAudioSampleRate?: number;
   musicEnabled?: boolean; exportAudioFile?: boolean; language?: string;
   startTimeSec?: number; retakeMode?: string; extendPosition?: string;
+  keyframeIndexes?: string; reasoningLevel?: string; seed?: number;
 };
 export type StudioConversationQuoteFacts = {
   price: CustomerDisplayPrice;

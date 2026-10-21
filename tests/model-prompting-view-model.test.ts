@@ -194,8 +194,8 @@ function localizedPrompting(locale: 'en' | 'fr' | 'es', slug: string): ModelProm
   return parseModelPromptingContent(document.prompting, slug, locale, `${filePath}#prompting`);
 }
 
-function buildLocalizedRouteViewModel(locale: 'en' | 'fr' | 'es', content: ModelPromptingContent) {
-  const demoMedia = media({
+function buildLocalizedRouteViewModel(locale: 'en' | 'fr' | 'es', content: ModelPromptingContent, selectedMedia?: FeaturedMedia) {
+  const demoMedia = selectedMedia ?? media({
     id: 'job_e34e8979-9056-4564-bbfd-27e8d886fa26',
     prompt: VEO_FAST_MEDIA_PROMPT,
     label: 'Veo 3.1 Fast',
@@ -236,6 +236,27 @@ test('localized Veo Fast routes use the exact prompt from the adjacent pinned vi
     assert.equal(result.viewModel.demo?.summary, null, `${locale} stale editorial summary`);
     assert.equal(result.viewModel.defaultPresentation.demo?.promptLabel, undefined);
     assert.deepEqual(result.viewModel.defaultPresentation.demo?.promptLines, []);
+  }
+});
+
+test('FLUX 3 Max uses the selected video prompt and actual settings in every locale', () => {
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const content = localizedPrompting(locale, 'flux-3-max');
+    assert.ok(content.demo);
+    const originalPrompt = content.demo.prompt;
+    const selectedMedia = media({ prompt: originalPrompt, label: 'FLUX 3 Max', aspectRatio: '9:16' });
+    const result = buildLocalizedRouteViewModel(locale, {
+      ...content,
+      demo: { ...content.demo, prompt: 'An older editorial prompt.' },
+    }, selectedMedia);
+
+    assert.equal(result.demoPromptSource, 'media', `${locale} Max media must own its prompt`);
+    assert.equal(result.viewModel.demo?.prompt, originalPrompt);
+    assert.equal(result.viewModel.demo?.summary, null);
+    assert.equal(result.viewModel.demo?.durationLabel, locale === 'en' ? '12s' : '12 s');
+    assert.equal(result.viewModel.demo?.aspectLabel, '9:16');
+    assert.equal(result.viewModel.demo?.audioChipLabel, result.viewModel.ui.audioOff);
+    assert.equal(result.viewModel.demo?.videoSrc, selectedMedia.videoUrl);
   }
 });
 
@@ -489,4 +510,42 @@ test('building the view model does not mutate frozen editorial or runtime inputs
   assert.deepEqual(input, before);
   assert.equal(result.demo?.prompt, 'Runtime prompt');
   assert.deepEqual(result.tabs.notesById, { quick: 'Keep the subject explicit.' });
+});
+
+test('each rendered prompt tab binds only its exact public gallery recipe, including keyframe replay', () => {
+  const content = videoContent();
+  content.tabs = ['action', 'romance', 'scifi', 'keyframes'].map(id => ({
+    id, label: id, title: id, description: null, copy: `Exact ${id} prompt`, matchPublicExample: true,
+  }));
+  const galleryVideos = content.tabs.map((tab, index) => ({
+    id: `public-${index}`, promptFull: tab.copy, videoUrl: `/film-${index}.mp4`,
+    href: `/video/public-${index}`, recreateHref: `/app?engine=fixture-engine&from=public-${index}`,
+  }));
+  const view = buildModelPromptingViewModel(videoInput({ content, galleryVideos, demoMedia: media() }));
+  for (const [index, tab] of view.tabs.items.entries()) {
+    assert.deepEqual(tab.exampleLinks, {
+      exampleHref: galleryVideos[index].href, usePromptHref: galleryVideos[index].recreateHref,
+    });
+  }
+  assert.match(view.tabs.items[3].exampleLinks!.usePromptHref!, /from=public-3/,
+    'Replay must restore the keyframe job, not a text-only prompt or shared demo.');
+  const unlinked = buildModelPromptingViewModel(videoInput({ content, demoMedia: media(), galleryVideos: [
+    { ...galleryVideos[0], promptFull: 'Different prompt' },
+    { ...galleryVideos[1], videoUrl: null },
+  ] }));
+  for (const tab of unlinked.tabs.items) assert.deepEqual(tab.exampleLinks, { exampleHref: null, usePromptHref: null });
+  const disabled = buildModelPromptingViewModel(videoInput({ content, galleryVideos, appGenerationEnabled: false }));
+  assert.equal(disabled.tabs.items[3].exampleLinks!.exampleHref, '/video/public-3');
+  assert.equal(disabled.tabs.items[3].exampleLinks!.usePromptHref, null);
+});
+
+test('an exact rendered recipe retains its localized creative title instead of the engine label', () => {
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const content = localizedPrompting(locale, 'flux-3-max');
+    const result = buildLocalizedRouteViewModel(locale, content, media({
+      prompt: content.demo!.prompt, label: 'FLUX 3 Max',
+    }));
+    assert.equal(result.viewModel.demo?.title, content.demo!.title);
+    assert.ok(result.viewModel.demo?.alt.startsWith(content.demo!.title));
+  }
 });

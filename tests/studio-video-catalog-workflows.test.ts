@@ -42,7 +42,7 @@ test('Studio video discovery retains every executable public transport-neutral t
   const canonical=(await videoCatalog()).filter(e=>e.surface==='video');
   const studio=await createStudioVideoGenerationService(actor,{enabled:true,prepareDependencies:{listPublicEngines:async()=>canonical}}).catalog();
   assert.deepEqual(studio.map(e=>[e.engine.id,e.publicModes]),canonical.map(e=>[e.engine.id,e.publicModes]));
-  assert.equal(studio.reduce((count,entry)=>count+entry.publicModes.length,0),132,'Conversation qualification preserves every proven public tuple.');
+  assert.equal(studio.reduce((count,entry)=>count+entry.publicModes.length,0),136,'Conversation qualification preserves every proven public tuple.');
   assert.equal(studio.find(e=>e.engine.id==='gemini-omni-flash')!.publicModes.includes('retake'),false,'Private interaction continuity remains excluded by the public catalog.');
   for(const candidate of studio){const details=studioVisualCapabilityDetails(candidate);assert.ok(details.surface==='video');for(const mode of details.modes){const canonical=projectAgentModelModeDetails(candidate,mode.mode);assert.deepEqual(mode.references.map(r=>[r.type,r.roles,r.required,r.min]),canonical.references.map(r=>[r.type,r.roles,r.required,r.min]));}}
 });

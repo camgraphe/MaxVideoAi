@@ -8,6 +8,7 @@ export const EXAMPLE_ENGINE_PRIORITY = [
   'ltx-2-5-pro',
   'wan-3-prime',
   'grok-imagine-video-1-5',
+  'flux-3-max',
   'flux-3',
   'seedance-2-0',
   'kling-3-pro',
@@ -59,9 +60,10 @@ export const PROVIDER_MODEL_LINKS: Partial<Record<string, LocalizedLinkHref>> = 
   Alibaba: { pathname: '/examples/[model]', params: { model: 'happy-horse' } },
 };
 
-export type HeroEngineId = 'minimax-h3' | 'seedance-2-5' | 'wan-3' | 'kling-3-pro' | 'ltx-2-5-pro';
+export type HeroEngineId = 'flux-3-max' | 'minimax-h3' | 'seedance-2-5' | 'wan-3' | 'kling-3-pro' | 'ltx-2-5-pro';
 
 export const HERO_VIDEO_CHIPS: Record<string, string[]> = {
+  'flux-3-max': ['Fantasy', 'Native audio'],
   'minimax-h3': ['Action', 'Native audio'],
   'seedance-2-5': ['Action', 'Cinematic'],
   'wan-3': ['Music video', 'Realism'],
@@ -78,6 +80,7 @@ export const HERO_ENGINE_TARGETS: Record<
     mode: Mode;
   }
 > = {
+  'flux-3-max': { name: 'FLUX 3 Max', exampleFamily: 'flux', modelSlug: 'flux-3-max', mode: 't2v' },
   'minimax-h3': { name: 'MiniMax H3', exampleFamily: 'hailuo', modelSlug: 'minimax-h3', mode: 't2v' },
   'seedance-2-5': { name: 'Seedance 2.5', exampleFamily: 'seedance', modelSlug: 'seedance-2-5', mode: 't2v' },
   'wan-3': { name: 'Wan 3', exampleFamily: 'wan', modelSlug: 'wan-3', mode: 't2v' },
@@ -94,7 +97,7 @@ export const DEFAULT_MODEL_BY_EXAMPLE_FAMILY: Record<HomepageExampleFamily, stri
   'happy-horse': 'happy-horse-1-1',
   wan: 'wan-3-prime',
   grok: 'grok-imagine-video-1-5',
-  flux: 'flux-3',
+  flux: 'flux-3-max',
 };
 
 export const HOMEPAGE_EXAMPLE_VIDEO_OVERRIDES: Partial<Record<string, { videoId?: string; imageSrc?: string }>> = {
@@ -128,6 +131,7 @@ export const FALLBACK_MODE_BY_ENGINE: Record<string, Mode> = {
   'ltx-2-5-fast': 't2v',
   'ltx-2-5-pro': 't2v',
   'grok-imagine-video-1-5': 't2v',
+  'flux-3-max': 't2v',
   'flux-3': 't2v',
   'flux-3-draft': 't2v',
   'sora-2': 't2v',

@@ -3,6 +3,8 @@ import { getCompareEditorialCopy, getCompareDetailActions } from '../_lib/compar
 import { ChevronDown } from 'lucide-react';
 import { BenchmarkMethodologyLink } from '@/components/marketing/BenchmarkMethodologyLink';
 import type { AppLocale } from '@/i18n/locales';
+import { Link } from '@/i18n/navigation';
+import { getBenchmarkScoreReviewCopy, type BenchmarkScoreReview } from '@/lib/benchmark-score-review';
 import type { CompareDetailLabels, ComparePageCopy } from '../_lib/compare-page-copy';
 import type { EngineAccent } from '../_lib/compare-page-helpers';
 import {
@@ -26,6 +28,8 @@ function formatScoreDate(value: string | null, locale: AppLocale, missing: strin
 
 type CompareScorecardSectionProps = {
   activeLocale: AppLocale;
+  leftScoreReview?: BenchmarkScoreReview | null;
+  rightScoreReview?: BenchmarkScoreReview | null;
   comparisonMarkdown: string;
   canonicalUrl: string;
   compareCopy: ComparePageCopy;
@@ -46,7 +50,7 @@ type CompareScorecardSectionProps = {
 };
 
 export function CompareScorecardSection({
-  activeLocale, comparisonMarkdown, canonicalUrl,
+  activeLocale, comparisonMarkdown, canonicalUrl, leftScoreReview, rightScoreReview,
   compareCopy,
   comparisonMetrics,
   criteriaCount,
@@ -78,6 +82,16 @@ export function CompareScorecardSection({
           <p>{text.subtitle}</p>
           <p className="compare-score-dates">{text.updated}: {leftName} {leftScoreUpdated ? <time dateTime={leftScoreUpdated}>{formatScoreDate(leftScoreUpdated, activeLocale, text.missingDate)}</time> : text.missingDate} · {rightName} {rightScoreUpdated ? <time dateTime={rightScoreUpdated}>{formatScoreDate(rightScoreUpdated, activeLocale, text.missingDate)}</time> : text.missingDate}</p>
           <BenchmarkMethodologyLink locale={activeLocale} />
+          {[{ entry: left, review: leftScoreReview }, { entry: right, review: rightScoreReview }].map(({ entry, review }) => review ? (
+            <aside key={entry.modelSlug} data-score-review="editorial-estimated" className="mt-3 text-sm leading-6 text-text-secondary">
+              <p className="font-semibold">{formatEngineName(entry)} · {getBenchmarkScoreReviewCopy(activeLocale).label}</p>
+              <p>{review.disclosure[activeLocale]}</p>
+              <div className="flex flex-wrap gap-x-4">
+                {review.sourceUrl ? <a href={review.sourceUrl} target="_blank" rel="noreferrer noopener" className="text-brand underline underline-offset-2">{getBenchmarkScoreReviewCopy(activeLocale).source}</a> : null}
+                <Link href={{ pathname: '/benchmarks', hash: `review-${entry.modelSlug}` }} className="text-brand underline underline-offset-2">{getBenchmarkScoreReviewCopy(activeLocale).method}</Link>
+              </div>
+            </aside>
+          ) : null)}
           {scorecardProvisionalNote ? (
             <p className="mt-2 text-xs font-semibold text-text-muted">{scorecardProvisionalNote}</p>
           ) : null}

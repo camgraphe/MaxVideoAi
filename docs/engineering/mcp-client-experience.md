@@ -1,5 +1,23 @@
 # MaxVideoAI : découverte, fluidité et continuité MCP
 
+## FLUX 3 Max keyframe continuity — 20 October 2026 source candidate
+
+Live model-setting results now retain authored public field descriptions, so
+Studio and MCP discovery can explain the required keyframe index format,
+reference order and inclusive duration × 24 bound. The shared generation handler
+preserves repeated images at distinct Max keyframe positions without counting
+the mirrored direct-URL/attachment projection twice. Other reference modes keep
+their existing deduplication. Studio distinguishes positions inside the generated
+clip from project-timeline edits; no exact-cut guarantee is introduced.
+
+Local verification includes the repeated-reference handler regression and 4,096
+nonspending control combinations through canonical validation and Fal payload
+construction. `mcp:client:check` passes (173 tests, one skip, zero failures) with
+the deterministic selection evaluation. Existing global-instruction and tool-
+description byte-budget tests pass; no MCP descriptor wording or global
+instruction changed in this correction. These checks do not establish a live
+host qualification, plugin release, deployment or media publication.
+
 ## Generation recovery correction — 19 October 2026
 
 Preparation and confirmation now apply the submission asset-host allowlist to

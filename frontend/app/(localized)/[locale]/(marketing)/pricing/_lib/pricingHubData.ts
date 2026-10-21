@@ -50,6 +50,7 @@ const PRICING_DISPLAY_MODEL_ORDER = [
   'wan-3',
   'wan-2-6',
   'grok-imagine-video-1-5',
+  'flux-3-max',
   'flux-3',
   'flux-3-draft',
   'minimax-h3',
@@ -80,7 +81,7 @@ const PRICING_FAMILY_VARIANT_ORDER: Readonly<Record<string, readonly string[]>> 
   ltx: ['ltx-2-5-pro', 'ltx-2-5-fast', 'ltx-2-3', 'ltx-2-3-fast'],
   wan: ['wan-3-prime', 'wan-3', 'wan-2-6'],
   grok: ['grok-imagine-video-1-5'],
-  flux: ['flux-3', 'flux-3-draft'],
+  flux: ['flux-3-max', 'flux-3', 'flux-3-draft'],
 };
 const PRICING_DISPLAY_MODEL_RANK = new Map<string, number>(
   PRICING_DISPLAY_MODEL_ORDER.map((slug, index) => [slug, index] as const)

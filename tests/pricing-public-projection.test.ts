@@ -52,11 +52,14 @@ test('public pricing baseline exhaustively covers eligible catalog and public su
   const launch = JSON.parse(
     readFileSync('tests/fixtures/gpt-image-2-5-public-pricing-launch-2026-09-15.json', 'utf8')
   ) as PublicProjectionFixture;
+  const fluxMaxLaunch = JSON.parse(
+    readFileSync('tests/fixtures/flux-3-max-public-pricing-launch-2026-10-20.json', 'utf8')
+  ) as PublicProjectionFixture;
   assert.equal(fixture.version, 1);
   assert.equal(fixture.generatedFrom, 'canonical-public-pricing-paths');
   assert.ok(fixture.rows.length >= 250, `expected at least 250 public projection rows, got ${fixture.rows.length}`);
 
-  const rows = [...fixture.rows, ...launch.rows];
+  const rows = [...fixture.rows, ...launch.rows, ...fluxMaxLaunch.rows];
   const ids = rows.map((row) => row.id);
   assert.equal(new Set(ids).size, ids.length, 'public projection scenario ids must be unique');
 
@@ -145,7 +148,25 @@ test('public pricing baseline ignores machine-specific pricing environment overr
     },
   });
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-  assert.match(result.stdout, /current \(577 rows\)/);
+  assert.match(result.stdout, /current \(589 rows\)/);
+});
+
+test('Max launch adds only normal-list-plus-30-percent public projections and reproduces offline', () => {
+  const launch = JSON.parse(readFileSync('tests/fixtures/flux-3-max-public-pricing-launch-2026-10-20.json', 'utf8')) as PublicProjectionFixture;
+  assert.equal(launch.rows.length, 12);
+  assert.ok(launch.rows.every((row) => row.engineId === 'flux-3-max'));
+  const rows = new Map(launch.rows.map((row) => [row.id, row]));
+  for (const tier of ['member', 'plus', 'pro']) {
+    assert.equal(rows.get(`estimator:flux-3-max:${tier}:default`)?.customerTotalCents, 111);
+  }
+  assert.equal(rows.get('pricing-hub-video:flux-3-max:5s-720p')?.customerTotalCents, 111);
+  assert.equal(rows.get('pricing-hub-video:flux-3-max:10s-720p')?.customerTotalCents, 221);
+  assert.equal(rows.get('pricing-hub-video:flux-3-max:10s-1080p')?.customerTotalCents, 377);
+  assert.equal(rows.get('pricing-hub-video:flux-3-max:4k-route')?.status, 'unavailable');
+  const result = spawnSync('pnpm', ['exec', 'tsx', '--tsconfig', 'frontend/tsconfig.json', 'frontend/scripts/pricing-flux-3-max-launch.ts'], {
+    cwd: process.cwd(), encoding: 'utf8', env: { ...process.env, DATABASE_URL: 'postgresql://must-not-connect.invalid/test' },
+  });
+  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
 });
 
 test('canonical public pricing adapters exist and stay browser safe', () => {

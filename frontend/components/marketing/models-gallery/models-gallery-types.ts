@@ -1,4 +1,5 @@
 import type { LocalizedLinkHref } from '@/i18n/navigation';
+import type { BenchmarkScoreReview } from '@/lib/benchmark-score-review';
 
 export type ModelGalleryCard = {
   id: string;
@@ -8,7 +9,9 @@ export type ModelGalleryCard = {
   brandId?: string | null;
   description: string;
   versionLabel?: string;
+  badge?: 'new' | null;
   overallScore?: number | null;
+  scoreReview?: BenchmarkScoreReview | null;
   priceNote?: string | null;
   priceNoteHref?: string | null;
   href: LocalizedLinkHref;

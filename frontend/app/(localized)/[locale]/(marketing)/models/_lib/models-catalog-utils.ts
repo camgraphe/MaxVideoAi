@@ -6,6 +6,8 @@ import type { FalEngineEntry } from '@/config/falEngines';
 import type { AppLocale } from '@/i18n/locales';
 import { isImageOnlyModel, supportsVideoGeneration } from '@/lib/models/catalog';
 import { applyDisplayedPriceMarginCents } from '@/lib/pricing-display';
+import type { BenchmarkScoreReview } from '@/lib/benchmark-score-review';
+import { loadBenchmarkScoreReview, type BenchmarkScoreReviewMetadata } from '@/server/benchmark-score-review';
 
 export {
   DEFAULT_ENGINE_TYPE_LABELS,
@@ -20,7 +22,8 @@ export type { ModelsPageScope, ScopePageDefaults } from './models-catalog-copy';
 
 type EngineCatalogEntry = (typeof engineCatalog)[number];
 
-export type EngineScore = {
+export type EngineScore = BenchmarkScoreReviewMetadata & {
+  review?: BenchmarkScoreReview | null;
   engineId?: string;
   modelSlug?: string;
   fidelity?: number;
@@ -84,12 +87,12 @@ export async function loadEngineScores(): Promise<Map<string, EngineScore>> {
       const raw = await fs.readFile(candidate, 'utf8');
       const data = JSON.parse(raw) as EngineScoresFile;
       const map = new Map<string, EngineScore>();
-      (data.scores ?? []).forEach((entry) => {
+      await Promise.all((data.scores ?? []).map(async (entry) => {
         const key = entry.modelSlug ?? entry.engineId;
         if (key) {
-          map.set(key, entry);
+          map.set(key, { ...entry, review: await loadBenchmarkScoreReview(entry) });
         }
-      });
+      }));
       return map;
     } catch {
       // keep trying

@@ -38,22 +38,22 @@
     "safety": "Recommendation only; no sitemap, robots, canonical, or noindex change is applied."
   },
   "summary": {
-    "publishedSlugs": 312,
-    "totalUrls": 936,
+    "publishedSlugs": 313,
+    "totalUrls": 939,
     "withGscRows": 639,
-    "withoutGscRows": 297,
+    "withoutGscRows": 300,
     "withClicks": 144,
     "gscRowsOutsidePublishedSet": 21,
     "gscRowsOutsidePublishedSetWithClicks": 2,
     "byLocale": {
-      "en": 312,
-      "fr": 312,
-      "es": 312
+      "en": 313,
+      "fr": 313,
+      "es": 313
     },
     "byClassification": {
-      "keep": 350,
+      "keep": 356,
       "enrich": 28,
-      "review": 345,
+      "review": 342,
       "noindex_candidate": 213
     }
   },
@@ -236,6 +236,27 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/ai-video-engines/flux-3-vs-flux-3-max",
+      "locale": "en",
+      "slug": "flux-3-vs-flux-3-max",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override",
+        "english_strategic_surface"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/ai-video-engines/flux-3-vs-grok-imagine-video-1-5",
       "locale": "en",
       "slug": "flux-3-vs-grok-imagine-video-1-5",
@@ -293,6 +314,7 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": false,
       "strategicSignals": [
+        "best_for_related",
         "opponent_override",
         "related_graph",
         "scoreboard"
@@ -339,6 +361,7 @@
       ],
       "hasLocalizedOverride": true,
       "strategicSignals": [
+        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -363,7 +386,7 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/gemini-omni-flash-vs-veo-3-1-fast"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [
         "opponent_override",
         "related_graph",
@@ -371,6 +394,7 @@
       ],
       "classification": "keep",
       "rationale": [
+        "localized_editorial_override",
         "english_strategic_surface"
       ]
     },
@@ -386,7 +410,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "scoreboard"
@@ -645,6 +668,7 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
+        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -667,7 +691,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -1812,7 +1835,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "related_graph"
       ],
       "classification": "keep",
@@ -2870,10 +2892,12 @@
         "https://maxvideoai.com/ai-video-engines/kling-o3-4k-vs-veo-3-1"
       ],
       "hasLocalizedOverride": false,
-      "strategicSignals": [],
-      "classification": "review",
+      "strategicSignals": [
+        "best_for_related"
+      ],
+      "classification": "keep",
       "rationale": [
-        "gsc_review_opportunity"
+        "english_strategic_surface"
       ]
     },
     {
@@ -3015,7 +3039,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -4819,6 +4842,7 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
+        "best_for_related",
         "opponent_override",
         "related_graph"
       ],
@@ -4865,7 +4889,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -5634,10 +5657,13 @@
         "https://maxvideoai.com/ai-video-engines/seedance-2-0-fast-vs-veo-3-1-lite"
       ],
       "hasLocalizedOverride": false,
-      "strategicSignals": [],
+      "strategicSignals": [
+        "best_for_related"
+      ],
       "classification": "keep",
       "rationale": [
-        "gsc_clicks"
+        "gsc_clicks",
+        "english_strategic_surface"
       ]
     },
     {
@@ -6275,7 +6301,6 @@
       ],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override"
       ],
       "classification": "keep",
@@ -6587,6 +6612,26 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/fr/comparatif/flux-3-vs-flux-3-max",
+      "locale": "fr",
+      "slug": "flux-3-vs-flux-3-max",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/fr/comparatif/flux-3-vs-grok-imagine-video-1-5",
       "locale": "fr",
       "slug": "flux-3-vs-grok-imagine-video-1-5",
@@ -6642,6 +6687,7 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": false,
       "strategicSignals": [
+        "best_for_related",
         "opponent_override",
         "related_graph",
         "scoreboard"
@@ -6686,6 +6732,7 @@
       ],
       "hasLocalizedOverride": true,
       "strategicSignals": [
+        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -6709,16 +6756,15 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/fr/comparatif/gemini-omni-flash-vs-veo-3-1-fast"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [
         "opponent_override",
         "related_graph",
         "scoreboard"
       ],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review",
-        "strategic_localization_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -6733,7 +6779,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "scoreboard"
@@ -6977,6 +7022,7 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": false,
       "strategicSignals": [
+        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -6999,7 +7045,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -8092,7 +8137,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "related_graph"
       ],
       "classification": "review",
@@ -9096,10 +9140,13 @@
         "https://maxvideoai.com/fr/comparatif/kling-o3-4k-vs-veo-3-1"
       ],
       "hasLocalizedOverride": false,
-      "strategicSignals": [],
+      "strategicSignals": [
+        "best_for_related"
+      ],
       "classification": "review",
       "rationale": [
-        "gsc_top_10_review"
+        "gsc_top_10_review",
+        "strategic_localization_review"
       ]
     },
     {
@@ -9234,7 +9281,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -10936,6 +10982,7 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
+        "best_for_related",
         "opponent_override",
         "related_graph"
       ],
@@ -10978,7 +11025,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -11699,10 +11745,13 @@
         "https://maxvideoai.com/fr/comparatif/seedance-2-0-fast-vs-veo-3-1-lite"
       ],
       "hasLocalizedOverride": false,
-      "strategicSignals": [],
+      "strategicSignals": [
+        "best_for_related"
+      ],
       "classification": "review",
       "rationale": [
-        "gsc_top_10_review"
+        "gsc_top_10_review",
+        "strategic_localization_review"
       ]
     },
     {
@@ -12311,7 +12360,6 @@
       ],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override"
       ],
       "classification": "keep",
@@ -12612,6 +12660,26 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/es/comparativa/flux-3-vs-flux-3-max",
+      "locale": "es",
+      "slug": "flux-3-vs-flux-3-max",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/es/comparativa/flux-3-vs-grok-imagine-video-1-5",
       "locale": "es",
       "slug": "flux-3-vs-grok-imagine-video-1-5",
@@ -12669,6 +12737,7 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
+        "best_for_related",
         "opponent_override",
         "related_graph",
         "scoreboard"
@@ -12717,6 +12786,7 @@
       ],
       "hasLocalizedOverride": true,
       "strategicSignals": [
+        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -12740,16 +12810,15 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/gemini-omni-flash-vs-veo-3-1-fast"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [
         "opponent_override",
         "related_graph",
         "scoreboard"
       ],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review",
-        "strategic_localization_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -12764,7 +12833,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "scoreboard"
@@ -13010,6 +13078,7 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": false,
       "strategicSignals": [
+        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -13034,7 +13103,6 @@
       ],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -14152,7 +14220,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "best_for_related",
         "related_graph"
       ],
       "classification": "review",
@@ -15195,10 +15262,13 @@
         "https://maxvideoai.com/es/comparativa/kling-o3-4k-vs-veo-3-1"
       ],
       "hasLocalizedOverride": false,
-      "strategicSignals": [],
+      "strategicSignals": [
+        "best_for_related"
+      ],
       "classification": "review",
       "rationale": [
-        "gsc_top_10_review"
+        "gsc_top_10_review",
+        "strategic_localization_review"
       ]
     },
     {
@@ -15337,7 +15407,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -17092,6 +17161,7 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
+        "best_for_related",
         "opponent_override",
         "related_graph"
       ],
@@ -17137,7 +17207,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override",
         "popular",
         "related_graph",
@@ -17885,7 +17954,9 @@
         "https://maxvideoai.com/es/comparativa/seedance-2-0-fast-vs-veo-3-1-lite"
       ],
       "hasLocalizedOverride": false,
-      "strategicSignals": [],
+      "strategicSignals": [
+        "best_for_related"
+      ],
       "classification": "keep",
       "rationale": [
         "gsc_clicks"
@@ -18512,7 +18583,6 @@
       ],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "opponent_override"
       ],
       "classification": "keep",

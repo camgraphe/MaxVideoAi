@@ -129,7 +129,7 @@ test('visible pricing fixtures keep current family variants before legacy histor
   ]);
   assert.deepEqual(idsByFamily('wan'), ['wan-3-prime', 'wan-3', 'wan-2-6']);
   assert.deepEqual(idsByFamily('grok'), ['grok-imagine-video-1-5']);
-  assert.deepEqual(idsByFamily('flux'), ['flux-3', 'flux-3-draft']);
+  assert.deepEqual(idsByFamily('flux'), ['flux-3-max', 'flux-3', 'flux-3-draft']);
 
   for (const id of ['ltx-2-3', 'ltx-2-3-fast', 'wan-2-6']) {
     assert.equal(rows.find((row) => row.id === id)?.pricingGroup, 'legacy');

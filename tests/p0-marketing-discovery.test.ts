@@ -457,13 +457,38 @@ test('published P0 cards enter curated picks without creating unauthored compari
 
   assert.deepEqual(
     decision.topPicks.map(({ id }) => id),
-    P0_MENU_REPRESENTATIVES,
+    ['ltx-2-5-pro', 'wan-3-prime', 'grok-imagine-video-1-5'],
   );
   assert.deepEqual(
     decision.recommendedCards.map(({ id }) => id),
     P0_IDS,
   );
   assert.deepEqual(decision.popularComparisons, []);
+
+  const withMax = buildModelsCatalogDecisionData({
+    activeLocale: 'en',
+    cards: [...cards, {
+      id: 'flux-3-max',
+      label: 'FLUX 3 Max',
+      href: { pathname: '/models/[slug]', params: { slug: 'flux-3-max' } },
+      overallScore: null,
+    } as ModelGalleryCard],
+  });
+  assert.deepEqual(withMax.topPicks.map(({ id }) => id), [
+    'ltx-2-5-pro', 'wan-3-prime', 'grok-imagine-video-1-5', 'flux-3-max',
+  ]);
+  assert.deepEqual(withMax.recommendedCards.map(({ id }) => id), [
+    'wan-3', 'wan-3-prime', 'ltx-2-5-fast', 'ltx-2-5-pro',
+    'grok-imagine-video-1-5', 'flux-3-max', 'flux-3', 'flux-3-draft',
+  ]);
+  assert.deepEqual(withMax.popularComparisons, [{
+    label: 'FLUX 3 Max vs FLUX 3',
+    href: {
+      pathname: '/ai-video-engines/[slug]',
+      params: { slug: 'flux-3-vs-flux-3-max' },
+      query: { order: 'flux-3-max' },
+    },
+  }]);
 });
 
 test('family routing requires both publication and named accepted durable asset evidence', () => {

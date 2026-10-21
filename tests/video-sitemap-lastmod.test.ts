@@ -37,13 +37,19 @@ test('P0 model and family pages receive the launch timestamp without pre-bumping
     '/models/ltx-2-5-fast',
     '/models/ltx-2-5-pro',
     '/models/grok-imagine-video-1-5',
-    '/models/flux-3',
     '/models/flux-3-draft',
     '/examples/wan',
     '/examples/ltx',
     '/examples/grok',
-    '/examples/flux',
   ]) {
     assert.equal(SITEMAP_MANUAL_TIMESTAMPS.routes?.[route], '2026-09-02', route);
+  }
+  for (const route of [
+    '/models/flux-3-max',
+    '/models/flux-3',
+    '/examples/flux',
+    '/ai-video-engines/flux-3-vs-flux-3-max',
+  ]) {
+    assert.equal(SITEMAP_MANUAL_TIMESTAMPS.routes?.[route], '2026-10-20', route);
   }
 });

@@ -23,11 +23,15 @@ export class DestinationWriteError extends Error {
   }
 }
 
+export function assertDestinationSlugWritable(slug: string): void {
+  if (isInactiveHistoricalCoreSlug(slug)) {
+    throw new DestinationWriteError('This historical destination is disconnected from runtime configuration. Reconcile configuration before editing.');
+  }
+}
+
 /** Read-only in previews; callers serialize mutations in their existing transaction. */
 export async function assertDestinationWritable(db: QueryExecutor, playlistId: string): Promise<void> {
   const [playlist] = await db.query<{ slug: string }>('SELECT slug FROM playlists WHERE id=$1', [playlistId]);
   if (!playlist) throw new DestinationWriteError('Destination not found', 404);
-  if (isInactiveHistoricalCoreSlug(playlist.slug)) {
-    throw new DestinationWriteError('This historical destination is disconnected from runtime configuration. Reconcile configuration before editing.');
-  }
+  assertDestinationSlugWritable(playlist.slug);
 }

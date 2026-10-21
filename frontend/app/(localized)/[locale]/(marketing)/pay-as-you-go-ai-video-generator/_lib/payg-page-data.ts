@@ -40,7 +40,7 @@ const MODEL_FAMILY_PREFERRED_IDS: Record<(typeof MODEL_FAMILIES)[number], readon
 };
 const PAYG_COMPARE_ALLOWED_MODEL_IDS = new Set([
   ...Object.values(MODEL_FAMILY_PREFERRED_IDS).flat(),
-  'ltx-2-3-pro',
+  'flux-3-max', 'ltx-2-3-pro',
 ]);
 const PAYG_COMPARE_CANONICAL_HREFS: Record<string, string> = {
   '/ai-video-engines/veo-3-1-vs-kling-3-pro': '/ai-video-engines/kling-3-pro-vs-veo-3-1',

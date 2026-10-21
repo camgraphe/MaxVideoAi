@@ -47,7 +47,7 @@ export function HomeModelDiscovery({ locale, examples, providers, copy }: {
         <Link href={{pathname:'/models/[slug]',params:{slug:'seedance-2-5'}}}>{copy.featuredModelCta}</Link>
         <Link href={{pathname:'/examples/[model]',params:{model:'grok'}}}>Grok · {labels[0]}</Link>
         <Link href={{pathname:'/examples/[model]',params:{model:'flux'}}}>Flux · {labels[0]}</Link>
-        <Link href={{pathname:'/models/[slug]',params:{slug:'flux-3'}}}>Flux 3 · {labels[1]}</Link>
+        <Link href={{pathname:'/models/[slug]',params:{slug:'flux-3-max'}}}>FLUX 3 Max · {labels[1]}</Link>
         {extraProviders.map(provider => <Link key={provider.model} href={provider.href!}>{provider.model}</Link>)}
       </div>
     </div>

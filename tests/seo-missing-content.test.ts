@@ -116,7 +116,7 @@ test('missing-content candidate selection uses one current canonical P0 target p
     '/models/wan-3-prime',
     '/models/ltx-2-5-pro',
     '/models/grok-imagine-video-1-5',
-    '/models/flux-3',
+    '/models/flux-3-max',
   ]);
   const selectedPaths = new Set<string>();
 

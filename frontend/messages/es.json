@@ -579,32 +579,19 @@
           "engineLabel": "2. Compara modelos recomendados",
           "engineRecommendations": [
             {
-              "engineId": "minimax-h3",
-              "name": "MiniMax H3",
-              "provider": "MiniMax",
-              "bestFor": "Acción cinematográfica",
-              "imageAlt": "Un personaje vuela sobre una bahía tropical a gran velocidad en un video de 15 segundos de MiniMax H3.",
-              "fallbackPrice": "Precio actualizado",
-              "selected": true,
-              "scores": [
-                {
-                  "label": "Movimiento",
-                  "value": 91
-                },
-                {
-                  "label": "Realismo",
-                  "value": 88
-                },
-                {
-                  "label": "Velocidad",
-                  "value": 92
-                }
-              ],
+              "engineId": "flux-3-max",
+              "name": "FLUX 3 Max",
+              "provider": "Black Forest Labs",
+              "bestFor": "Fantasía cinematográfica",
+              "imageAlt": "Una reina con armadura cruza un salón del trono en The Uncrowned, un video de 18 segundos de FLUX 3 Max.",
+              "fallbackPrice": "Precio en directo",
               "tags": [
-                "Acción",
+                "Fantasía",
                 "Audio nativo",
-                "Cine"
-              ]
+                "Cinemático"
+              ],
+              "selected": true,
+              "scores": []
             },
             {
               "engineId": "seedance-2-5",
@@ -688,30 +675,30 @@
               ]
             },
             {
-              "engineId": "ltx-2-5-pro",
-              "imageAlt": "Vista previa de un video de 6 segundos generado a partir de una imagen con LTX 2.5 Pro.",
-              "name": "LTX 2.5 Pro",
-              "provider": "Lightricks",
-              "bestFor": "Animación rápida de imagen",
+              "engineId": "minimax-h3",
+              "name": "MiniMax H3",
+              "provider": "MiniMax",
+              "bestFor": "Acción cinematográfica",
+              "imageAlt": "Un personaje vuela sobre una bahía tropical a gran velocidad en un video de 15 segundos de MiniMax H3.",
               "fallbackPrice": "Precio actualizado",
               "scores": [
                 {
                   "label": "Movimiento",
-                  "value": 88
+                  "value": 91
                 },
                 {
                   "label": "Realismo",
-                  "value": 84
+                  "value": 88
                 },
                 {
                   "label": "Velocidad",
-                  "value": 87
+                  "value": 92
                 }
               ],
               "tags": [
-                "Rápido",
-                "Imagen",
-                "Control"
+                "Acción",
+                "Audio nativo",
+                "Cine"
               ]
             }
           ],

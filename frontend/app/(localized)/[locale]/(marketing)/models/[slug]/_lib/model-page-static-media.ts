@@ -1,4 +1,8 @@
 export const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string | null }> = {
+  'flux-3-max': {
+    hero: 'job_external_fal_38061bc977ff126b5248f9f835436a9370a2f7bb',
+    demo: 'job_external_fal_348334c2377e9d31bda23c030095861ad2e9d55c',
+  },
   'minimax-h3': {
     hero: 'job_87d713f7-9193-4831-a9e5-59ce1e0c668c',
     demo: 'job_91c6f549-7b07-45b3-ad45-cbaf67d10959',

@@ -76,6 +76,25 @@
     }
   },
   {
+    "engineId": "flux-3-max",
+    "marketingName": "FLUX 3 Max",
+    "brandId": "black-forest-labs",
+    "modelSlug": "flux-3-max",
+    "family": "flux",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "versionLabel": "3 Max",
+    "availability": "available",
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
     "engineId": "seedance-2-0-mini",
     "marketingName": "Dreamina Seedance 2.0 Mini",
     "brandId": "bytedance",

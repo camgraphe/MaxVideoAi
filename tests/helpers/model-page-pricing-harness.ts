@@ -140,6 +140,7 @@ export async function makeModelPagePricingHarness({
       plugins: [{ name: 'model-pricing-io', setup(builder) {
         builder.onResolve({ filter: /.*/ }, args => {
           if (args.path === 'server-only' || args.path.endsWith('.css')) return {path:'empty',namespace:'controlled'};
+          if (args.path === '@/server/model-keyframe-demo') return {path:'keyframe-demo',namespace:'keyframe-fixture'};
           if (executeInputs && args.importer.endsWith('/model-page-inputs.ts')) {
             return args.path === '@/server/public-page-timing'
               ? {path:'timing',namespace:'model-timing'}
@@ -162,6 +163,7 @@ export async function makeModelPagePricingHarness({
           if (executeSections && !args.path.startsWith('.') && !args.path.startsWith('/') && !args.path.startsWith('@/') && !args.path.startsWith('node:')) return {path:requireFrontend.resolve(args.path),external:true};
         });
         builder.onLoad({ filter: /.*/, namespace: 'controlled' }, args => ({ contents: args.path === 'empty' ? '' : fixture, loader: 'js' }));
+        builder.onLoad({ filter: /.*/, namespace: 'keyframe-fixture' }, () => ({ contents: 'export async function loadModelKeyframeDemo(){return null;}', loader: 'js' }));
         builder.onLoad({ filter: /.*/, namespace: 'model-timing' }, () => ({ contents: `
           import {withPublicPageTiming as measure} from ${JSON.stringify(timingPath)};
           import {timingRecords} from 'pricing-fixture';

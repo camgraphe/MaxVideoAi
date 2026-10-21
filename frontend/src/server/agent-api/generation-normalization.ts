@@ -110,6 +110,8 @@ const VIDEO_SETTING_KEYS = new Set([
   'editDepthBlur',
   'editFace',
   'editKeyframeIndexes',
+  'reasoningLevel',
+  'keyframeIndexes',
   'editNormalsAugmentation',
   'editPoseStrength',
   'editStrength',
@@ -444,12 +446,13 @@ function compareReferences(left: CanonicalGenerationReference, right: CanonicalG
 function normalizeReferences(
   value: unknown,
   mode: CanonicalGenerationMode,
+  engineId: string,
 ): CanonicalGenerationReference[] {
   if (value === undefined) return [];
   assertDenseDataArray(value, 'references', MAX_CANONICAL_REFERENCES);
   const orderedRole = mode === 'extend'
     ? 'source'
-    : mode === 'r2v' || mode === 'v2v'
+    : mode === 'r2v' || mode === 'v2v' || (engineId === 'flux-3-max' && mode === 'ref2v')
       ? 'reference'
       : null;
   let nextOrderedSlot = 0;
@@ -543,7 +546,7 @@ export function normalizeGenerationRequest(input: unknown): CanonicalGenerationR
     mode,
     prompt,
     settings,
-    references: normalizeReferences(input.references, mode),
+    references: normalizeReferences(input.references, mode, normalizeEngineId(input.engineId)),
     outputCount: normalizeOutputCount(input.outputCount, surface),
   };
 }

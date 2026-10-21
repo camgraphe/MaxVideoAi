@@ -272,21 +272,33 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   flux: {
-    heroTitle: 'Ejemplos de FLUX 3 y FLUX 3 Draft',
-    subtitle: 'Ejemplos de FLUX 3 y FLUX 3 Draft para texto a vídeo, fotogramas inicial/final y Extend.',
-    intro:
-      'Esta página compara la ruta FLUX 3 estándar con FLUX 3 Draft mediante la distribución Fal de MaxVideoAI. Incluye texto a vídeo, imagen a vídeo desde un fotograma inicial, transiciones entre primera y última imagen y el flujo Extend separado para continuar un clip existente. La vista de familia ayuda a elegir tanto el nivel de modelo como la entrada. Draft sirve para exploración controlada a 720p cuando el equipo todavía debe validar acción, cámara, compatibilidad de fuentes o lógica de transición. FLUX 3 estándar es el modelo hermano orientado a producción y expone la opción de resolución superior indicada en su página. Ninguna etiqueta elimina la necesidad de revisar la salida. Un ejemplo útil registra el papel de la fuente, el prompt, el modo, la duración, la resolución y la pregunta visual que debe responder. Compara tareas equivalentes: un puente entre dos imágenes se evalúa por el recorrido entre anclas, una extensión por la continuidad con el clip fuente y un inicio de texto por la toma inventada desde el brief. Black Forest Labs es propietario de FLUX; la ruta aquí descrita se distribuye mediante Fal y no afirma ejecución directa en el proveedor.',
-    promptPatterns:
-      'Describe una sola toma, un movimiento de cámara específico, una acción medible del sujeto, el entorno físico y un final que pueda revisarse. Evita combinar varios beats sin relación en un render de diagnóstico. Para imagen a vídeo, indica primero qué debe conservarse de la composición inicial y añade después el movimiento. Al usar primera y última imagen, aporta las dos anclas obligatorias y escribe la transición: cómo evolucionan pose, posición del objeto, material, cámara y luz sin un salto imposible. Perspectiva e identidad compatibles facilitan evaluar el puente. Para Extend, describe lo que sucede después del clip fuente en vez de repetirlo. Continúa primero el vector final de cámara, la trayectoria del sujeto, la iluminación, el ritmo y el estado de la escena antes de introducir algo nuevo. Un corte oculto, una pose reiniciada o un sujeto sustituido son fallos de continuidad aunque el último fotograma resulte atractivo. Usa Draft para comparar una sola variable y conserva los archivos fuente ganadores, la estructura del prompt y los criterios de aceptación al probar FLUX 3 estándar.',
-    strengthsLimits:
-      'FLUX 3 es la ruta de calidad estándar y Draft está pensado para iterar con mayor rapidez en su nivel fijo de 720p. Ambos modelos exponen contratos distintos de texto, imagen inicial, primera/última imagen y extensión; una entrada obligatoria no se vuelve opcional en Draft. Extend es un modo separado de continuación de vídeo con un clip fuente elegible y hechos canónicos de precio propios. Un flujo de inicio/final no equivale a un conjunto libre de referencias, y el uso de imagen inicial no debe implicar una relación de aspecto seleccionable aparte cuando la fuente controla el encuadre. No infieras audio nativo, lip sync, transformación de vídeo de referencia fuera de Extend ni controles que no aparezcan en el modo elegido. Revisa conservación de fuente, continuidad de cámara, identidad, anatomía, geometría, texto accidental, marcas de agua y beat final. Un resultado Draft aporta evidencia para una decisión creativa; no garantiza que estándar reproduzca cada píxel. Para la entrega, vuelve a ejecutar la dirección elegida en el modelo hermano previsto y revisa ese resultado de forma independiente.',
-    pricingNotes:
-      'Draft ayuda a validar una dirección antes de una pasada FLUX 3 estándar. Confirma la cotización previa porque duración, resolución, nivel y modo afectan al coste, y Extend nunca debe heredar por omisión una tarifa de generación normal. Esta página familiar no contiene una cantidad fija. Compara costes con la misma fuente y ajustes, registra intentos fallidos o rechazados y sube de nivel únicamente las direcciones que cumplen el criterio visual escrito. Un borrador más barato es valioso cuando elimina incertidumbre; repetir borradores sin control no constituye automáticamente un proceso eficiente.',
-    faq: [
-      { question: '¿Cuándo conviene FLUX 3 Draft?', answer: 'Usa Draft cuando una prueba a 720p pueda responder una pregunta concreta sobre dirección del prompt, movimiento, conservación de la imagen inicial, compatibilidad de fotogramas o continuidad de la extensión. Guarda el prompt y las fuentes aprobados para la pasada estándar. No presentes Draft como equivalencia de entrega ni asumas que una miniatura atractiva demuestra que la transición funciona.' },
-      { question: '¿FLUX 3 puede ampliar un vídeo?', answer: 'Sí. Elige el modo Extend separado, aporta un clip fuente elegible y describe la continuación después de su estado final visible. Conserva dirección de cámara, posición del sujeto, luz y ritmo antes de introducir una acción nueva. El precio y la validación de extensión siguen siendo específicos del modo y no heredan el contrato de generación normal.' },
-      { question: '¿En qué se diferencian inicio/final e imagen a vídeo?', answer: 'Imagen a vídeo anima una sola composición inicial. El modo de primera y última imagen exige dos anclas y debe construir un recorrido plausible entre ellas. Usa imágenes compatibles, indica qué se transforma y qué permanece estable y evalúa el puente completo en lugar de mirar únicamente sus extremos.' },
-      { question: '¿FLUX 3 genera audio nativo?', answer: 'Esta página familiar no afirma capacidad de audio. Utiliza solo las entradas y controles visibles para el modo FLUX seleccionado y planifica voz, música o diseño sonoro como una etapa de producción separada salvo que los detalles en vivo del modelo indiquen explícitamente un cambio.' },
-    ],
+    "heroTitle": "Ejemplos de FLUX 3 y FLUX 3 Draft",
+    "subtitle": "Explora vídeos FLUX con sus prompts y ajustes. La etiqueta de cada clip distingue Max, estándar y Draft.",
+    "intro": "Explora vídeos de FLUX 3 y FLUX 3 Draft con sus prompts originales, ajustes y fuentes. Ambos ofrecen texto a vídeo, animación de una imagen inicial, transiciones entre primer y último fotograma y un flujo Extend separado para continuar un clip. Draft permite explorar en 720p; FLUX 3 estándar tiene su propia opción de mayor resolución. FLUX 3 Max añade una variante entrenada por fal a partir de FLUX 3 Video de Black Forest Labs, con audio generado opcional, clips de 5 a 20 segundos, fotogramas clave temporizados y salida 720p o 1080p reescalada. Cada vídeo conserva el modelo exacto que lo generó. Compara los controles y la cotización actual del modelo elegido antes de crear un nuevo clip.",
+    "promptPatterns": "Describe una escena clara: un sujeto, una acción física, un movimiento de cámara y un final. Para imagen a vídeo, explica qué se mueve mientras mantienes la composición inicial. Para unir un primer y un último fotograma, utiliza imágenes compatibles y describe el movimiento entre ambas. Con el audio de Max activado, identifica al hablante, escribe sus palabras entre comillas y describe el ambiente sonoro. Ajusta la longitud del diálogo a la duración. Revisa el resultado completo, incluidos movimiento, manos, reflejos y sonido.",
+    "strengthsLimits": "Compara Max, estándar y Draft con el mismo brief y evalúa cada resultado por separado. Un clip Draft o estándar no demuestra la calidad de Max. Las imágenes guían la toma, sin garantizar identidad o geometría perfectas. Max ofrece audio opcional y 1080p mediante reescalado. Estándar y Draft tienen sus propios controles, incluido el flujo Extend separado. Consulta la página del modelo elegido para conocer los límites de entrada y los ajustes disponibles.",
+    "pricingNotes": "La cotización depende del modelo, la duración, la resolución y el modo. Revisa el precio antes de generar y conserva los mismos ajustes al comparar dos modelos. El importe mostrado en MaxVideoAI es el precio al cliente; una promoción del proveedor no promete un descuento equivalente al cliente.",
+    "faq": [
+      {
+        "question": "¿Qué vídeos se generaron con FLUX 3 Max?",
+        "answer": "Consulta la etiqueta del modelo de cada vídeo. La galería también contiene vídeos de FLUX 3 estándar y Draft que conservan sus etiquetas originales."
+      },
+      {
+        "question": "¿FLUX 3 Max puede generar audio?",
+        "answer": "Sí. Activa el audio generado y describe diálogo, música o ambiente en el prompt. Puedes desactivarlo para obtener un clip sin sonido."
+      },
+      {
+        "question": "¿Puedo aportar un primer y un último fotograma?",
+        "answer": "Sí. Elige ese flujo y aporta ambas imágenes. Mantén un sujeto y una perspectiva compatibles y describe una transición plausible."
+      },
+      {
+        "question": "¿Puedo guiar FLUX 3 Max con fotogramas clave temporizados?",
+        "answer": "Sí. Coloca de 1 a 10 imágenes en posiciones elegidas de la línea de tiempo a 24 fps. Guían estados visuales en momentos concretos; no son referencias libres de personajes ni cortes de montaje garantizados. Describe el movimiento entre imágenes compatibles y revisa las transiciones obtenidas."
+      },
+      {
+        "question": "¿Qué modelo FLUX puede ampliar un vídeo?",
+        "answer": "Usa el flujo Extend separado de FLUX 3 estándar o FLUX 3 Draft. La integración Max tiene sus propios modos de generación."
+      }
+    ]
   },
 };

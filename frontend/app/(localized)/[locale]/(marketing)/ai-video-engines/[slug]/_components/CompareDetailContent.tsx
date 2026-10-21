@@ -2,6 +2,7 @@ import { CompareInteractionTracking } from './CompareInteractionTracking.client'
 import { buildComparisonExport, publicComparisonUrl } from '../_lib/compare-export';
 import { formatEngineName } from '../_lib/compare-page-engine-formatting';
 import type { AppLocale } from '@/i18n/locales';
+import type { BenchmarkScoreReview } from '@/lib/benchmark-score-review';
 import { Link } from '@/i18n/navigation';
 import type { SelectOption } from '@/components/ui/SelectMenu';
 import type { CompareDetailLabels, ComparePageCopy } from '../_lib/compare-page-copy';
@@ -34,6 +35,9 @@ type CompareDetailContentProps = {
   comparisonMetrics: CompareMetric[];
   criteriaCount: number;
   engineScoresBySlug: Record<string, number>;
+  engineScoreReviewsBySlug?: Record<string, 'editorial-estimated'>;
+  leftScoreReview?: BenchmarkScoreReview | null;
+  rightScoreReview?: BenchmarkScoreReview | null;
   faqItems: CompareFaqItem[];
   faqJsonLd: unknown;
   generateWithLabel: string;
@@ -72,6 +76,9 @@ export function CompareDetailContent({
   comparisonMetrics,
   criteriaCount,
   engineScoresBySlug,
+  engineScoreReviewsBySlug,
+  leftScoreReview,
+  rightScoreReview,
   faqItems,
   faqJsonLd,
   generateWithLabel,
@@ -102,6 +109,7 @@ export function CompareDetailContent({
 }: CompareDetailContentProps) {
   const canonicalUrl = publicComparisonUrl(returnPath);
   const comparisonMarkdown = buildComparisonExport({ locale: activeLocale, path: returnPath,
+    scoreReviews: [{ name: formatEngineName(left), review: leftScoreReview }, { name: formatEngineName(right), review: rightScoreReview }],
     leftName: formatEngineName(left), rightName: formatEngineName(right), metrics: comparisonMetrics, specRows,
     leftUpdated: leftScoreUpdated, rightUpdated: rightScoreUpdated, leftPricing: leftPricingDisplay,
     rightPricing: rightPricingDisplay, priceSnapshotAt, labels, sources: specSources, summary: pageOverride?.quickVerdict?.body });
@@ -125,6 +133,7 @@ export function CompareDetailContent({
             compareCopy={compareCopy}
             comparisonMetrics={comparisonMetrics}
             engineScoresBySlug={engineScoresBySlug}
+            engineScoreReviewsBySlug={engineScoreReviewsBySlug}
             left={left}
             leftOverall={leftOverall}
             resolvedLeftOptions={resolvedLeftOptions}
@@ -136,6 +145,8 @@ export function CompareDetailContent({
           <CompareModelGalleries locale={activeLocale} left={left} right={right} galleries={galleries} returnPath={returnPath} />
           <section className="mx-auto max-w-[940px]">
             <CompareScorecardSection
+              leftScoreReview={leftScoreReview}
+              rightScoreReview={rightScoreReview}
               comparisonMarkdown={comparisonMarkdown}
               canonicalUrl={canonicalUrl}
               activeLocale={activeLocale}

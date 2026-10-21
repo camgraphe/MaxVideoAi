@@ -1,5 +1,6 @@
 import { listFalEngines } from '@/config/falEngines';
 import type { GeneratePayload } from '@/lib/fal-types';
+import { isFlux3MaxEngineId, resolveFlux3MaxEndpoint } from '@/lib/flux-3-max';
 import { isLumaRay32EngineId } from '@/lib/luma-agents';
 import {
   isMinimaxH3MaxEngineId,
@@ -106,6 +107,7 @@ export function resolveFalVideoResolutionInput(
 }
 
 export function resolveFalModelSlug(payload: GeneratePayload, fallback?: string): string | undefined {
+  if (isFlux3MaxEngineId(payload.engineId)) return resolveFlux3MaxEndpoint(payload.mode ?? 't2v');
   if (isKling3TurboEngineId(payload.engineId)) {
     const mode = payload.mode ?? 't2v';
     return mode === 't2v' || mode === 'i2v'

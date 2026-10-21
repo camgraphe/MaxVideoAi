@@ -510,6 +510,14 @@ Sharp encoding quality and Next's admitted request quality are separate contract
 
 The model launch-asset validator does not enforce rendition readiness. The public rendition command below owns measured byte, metadata, review, and HTTP activation gates. Historical grids and model pages outside the selected homepage set keep exact-original fallback until prepared; the critical-home build check is intentionally not a claim that every historical public video has been transcoded.
 
+Authored launch waves live in `frontend/config/model-launch-waves.ts`. A missing
+source manifest leaves that wave unready while preserving earlier validated
+waves. FLUX 3 Max has its own wave, separate from P0/P1; its
+[media readiness contract](../model-launch/flux-3-max-media-readiness.md) keeps
+private preparation apart from actual adopted jobs, accepted public originals
+and completed playlist memberships. Generated launch projections are offline
+evidence checks and never perform or establish publication by themselves.
+
 For additional public sources, prioritize the exact media observed in the rendered page using recent page exposure and measured file size. A model's fallback demo in configuration may differ from its selected gallery hero. Page views are not video plays or CDN transfer counts. Add each verified original to the same authored catalogue and run the lifecycle with explicit `--asset-id` selections; the default five-asset limit can otherwise leave later entries unprocessed. Confirm the generated URL is actually selected by the owning reader before calling that surface optimized. Watch and full-video card fallback consume the shared projection; comparison readers deliberately retain Original by default. Short card previews remain a separate display role. An integrated reader does not mean all historical source files have been prepared. Do not replace full-quality download, editing or schema sources when extending display coverage.
 
 ### Public full-duration rendition command
@@ -797,6 +805,12 @@ reuses Studio's reviewed static capture. See [preview evidence](../qa/home-visua
 for source identity, rendition checks, before/after loading measurements and
 validation limits. Originals, public reader ownership and mobile loading intent
 remain unchanged.
+
+The 2026-10-21 FLUX 3 Max selection replaces the first hero with film 16,
+The Uncrowned, and moves the exact MiniMax H3 flight scene to fifth. Seedance 2.5,
+Wan 3 and Kling 3 Pro retain their positions. The authored source registration,
+canonical rendition activation and new immutable first-poster evidence are in
+[the selected-media review](../qa/flux-3-max-selected-media-2026-10-21.md).
 
 ### Library import account lifetime
 

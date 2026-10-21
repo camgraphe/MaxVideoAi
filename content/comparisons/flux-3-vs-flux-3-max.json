@@ -1,0 +1,69 @@
+{
+  "slug": "flux-3-vs-flux-3-max",
+  "en": {
+    "meta": {
+      "title": "FLUX 3 Max vs FLUX 3: Audio, Controls & Pricing",
+      "description": "Compare FLUX 3 Max with standard FLUX 3: text and image generation, frame controls, audio, extension and current MaxVideoAI prices.",
+      "titleBranding": "none"
+    },
+    "quickVerdict": {
+      "title": "Which FLUX 3 should you choose?",
+      "body": "Choose FLUX 3 Max for a new text-to-video or image-to-video project with optional generated audio and clips from 5 to 20 seconds. It is the fal post-trained variant of the Black Forest Labs model. Keep standard FLUX 3 when you need the video extension workflow offered on its page. Max supports 720p output and 1080p through upscaling. Compare identical durations and settings in the price cards below; the quote shown before generation is the amount you approve. Published fal speed figures measure model inference, not your full waiting time on MaxVideoAI."
+    },
+    "primaryLinksTitle": "Explore the models",
+    "primaryLinks": [
+      {
+        "href": "/models/flux-3-max",
+        "label": "FLUX 3 Max"
+      },
+      {
+        "href": "/models/flux-3",
+        "label": "FLUX 3"
+      }
+    ]
+  },
+  "fr": {
+    "meta": {
+      "title": "FLUX 3 Max vs FLUX 3 : audio, contrôles et prix",
+      "description": "Comparez FLUX 3 Max et FLUX 3 standard : génération texte ou image, contrôle des images, audio, prolongation et tarifs MaxVideoAI.",
+      "titleBranding": "none"
+    },
+    "quickVerdict": {
+      "title": "Quel FLUX 3 choisir ?",
+      "body": "Choisissez FLUX 3 Max pour créer depuis du texte ou une image, avec audio généré en option et des clips de 5 à 20 secondes. Il s’agit de la variante entraînée par fal à partir du modèle Black Forest Labs. Gardez FLUX 3 standard pour le parcours de prolongation vidéo présenté sur sa page. Max produit du 720p et du 1080p par mise à l’échelle. Comparez les mêmes durées et réglages dans les cartes tarifaires ; le devis affiché avant la génération est le montant que vous approuvez. Les chiffres de vitesse publiés par fal mesurent l’inférence du modèle, pas le délai complet dans MaxVideoAI."
+    },
+    "primaryLinksTitle": "Explorer les modèles",
+    "primaryLinks": [
+      {
+        "href": "/models/flux-3-max",
+        "label": "FLUX 3 Max"
+      },
+      {
+        "href": "/models/flux-3",
+        "label": "FLUX 3"
+      }
+    ]
+  },
+  "es": {
+    "meta": {
+      "title": "FLUX 3 Max vs FLUX 3: audio, controles y precios",
+      "description": "Compara FLUX 3 Max y FLUX 3 estándar: vídeo desde texto o imagen, control de fotogramas, audio, extensión y precios de MaxVideoAI.",
+      "titleBranding": "none"
+    },
+    "quickVerdict": {
+      "title": "¿Qué FLUX 3 elegir?",
+      "body": "Elige FLUX 3 Max para crear desde texto o una imagen, con audio generado opcional y clips de 5 a 20 segundos. Es la variante entrenada por fal a partir del modelo de Black Forest Labs. Mantén FLUX 3 estándar para el flujo de extensión de vídeo descrito en su página. Max genera 720p y 1080p mediante reescalado. Compara duraciones y ajustes idénticos en las tarjetas de precios; la cotización antes de generar es el importe que apruebas. Las cifras de velocidad de fal miden la inferencia del modelo, no la espera completa en MaxVideoAI."
+    },
+    "primaryLinksTitle": "Explorar los modelos",
+    "primaryLinks": [
+      {
+        "href": "/models/flux-3-max",
+        "label": "FLUX 3 Max"
+      },
+      {
+        "href": "/models/flux-3",
+        "label": "FLUX 3"
+      }
+    ]
+  }
+}

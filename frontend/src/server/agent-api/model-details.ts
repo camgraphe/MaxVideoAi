@@ -250,6 +250,8 @@ const CANONICAL_SETTING_BY_FIELD_ID: Readonly<Record<string, string>> = Object.f
   enable_prompt_expansion: 'enablePromptExpansion',
   edit_face: 'editFace',
   edit_keyframe_indexes: 'editKeyframeIndexes',
+  reasoning_level: 'reasoningLevel',
+  keyframe_indexes: 'keyframeIndexes',
   edit_normals_augmentation: 'editNormalsAugmentation',
   edit_pose_strength: 'editPoseStrength',
   edit_strength: 'editStrength',
@@ -311,6 +313,7 @@ function projectSettings(
       ? field.default === 'true' : field.default;
     return [Object.freeze({
       key,
+      ...(field.description ? { description: field.description } : {}),
       type: field.id === 'multi_prompt'
         ? 'multi_prompt'
         : booleanSafetyEnum ? 'boolean' : field.type as AgentModelSettingDetails['type'],

@@ -7,7 +7,7 @@ import type { AgentGenerationStatus } from "@/server/generations/generation-stat
 import {studioMediaIntentSchema} from '@/lib/studio/conversation-media-contract';
 import {toolAssetRefSchema} from '@/lib/toolbox/contract';
 import type {PreparedAudioGeneration} from '@/server/agent-api/prepare-audio-generation';
-import {imageSelectionSchema,STUDIO_CONVERSATION_MAX_REFERENCES} from '@/lib/studio/conversation-creation-contract';
+import {imageSelectionSchema,STUDIO_CONVERSATION_MAX_ATTACHMENTS} from '@/lib/studio/conversation-creation-contract';
 import {projectStudioReply} from './conversation-reply';
 import type {StudioPricingEstimate} from '@/lib/studio/conversation-pricing-contract';
 import {studioTaskSelectionSchema,type StudioTaskSelection,type StudioTaskStatus} from './task-budget-contract';
@@ -21,16 +21,16 @@ export const imageTurnInputSchema = z
   .object({
     requestId: z.string().uuid(),
     message: z.string().trim().min(1).max(4000),
-    references: z.array(z.string().regex(/^ma_[a-f0-9]{32}$/)).max(STUDIO_CONVERSATION_MAX_REFERENCES),
-    attachments: z.array(toolAssetRefSchema.refine(ref => ref.type === 'asset' && ref.kind !== 'image')).max(STUDIO_CONVERSATION_MAX_REFERENCES).optional(),
-    referenceMentions: z.array(studioReferenceMentionSchema).max(STUDIO_CONVERSATION_MAX_REFERENCES).optional(),
+    references: z.array(z.string().regex(/^ma_[a-f0-9]{32}$/)).max(STUDIO_CONVERSATION_MAX_ATTACHMENTS),
+    attachments: z.array(toolAssetRefSchema.refine(ref => ref.type === 'asset' && ref.kind !== 'image')).max(STUDIO_CONVERSATION_MAX_ATTACHMENTS).optional(),
+    referenceMentions: z.array(studioReferenceMentionSchema).max(STUDIO_CONVERSATION_MAX_ATTACHMENTS).optional(),
     renewedFromRequestId: z.string().uuid().optional(),
     taskBudget:studioTaskSelectionSchema.optional(),
     locale:z.enum(['en','fr','es']).optional(),
   })
   .strict().superRefine((input, context) => {
     const ids = [...input.references, ...(input.attachments ?? []).map(ref => ref.type === 'asset' ? ref.assetId : ref.outputId)];
-    if (ids.length > STUDIO_CONVERSATION_MAX_REFERENCES || new Set(ids).size !== ids.length) context.addIssue({code: z.ZodIssueCode.custom, message: 'Attach up to eight distinct references.'});
+    if (ids.length > STUDIO_CONVERSATION_MAX_ATTACHMENTS || new Set(ids).size !== ids.length) context.addIssue({code: z.ZodIssueCode.custom, message: 'Attach up to ten distinct references.'});
     const labels = new Set<string>();
     const mentionedIds = new Set<string>();
     for (const [index, mention] of (input.referenceMentions ?? []).entries()) {

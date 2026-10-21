@@ -12,6 +12,7 @@ import { parseModelExamplesContent } from '../frontend/app/(localized)/[locale]/
 import { buildModelDecisionDataFromContent } from './helpers/model-decision-content.ts';
 
 const MIGRATED_TEMPLATE_SLUGS = [
+  'flux-3-max',
   'seedance-1-5-pro',
   'seedance-2-0',
   'seedance-2-0-fast',

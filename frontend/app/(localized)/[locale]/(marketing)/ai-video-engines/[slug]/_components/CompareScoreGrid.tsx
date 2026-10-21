@@ -98,7 +98,8 @@ export function formatCompareScoreValue(value: number | null, missingLabel: stri
   return typeof value === 'number' && Number.isFinite(value) ? value.toFixed(1) : missingLabel;
 }
 
-function ScoreCell({ value, side, modelName, missingLabel }: {
+function ScoreCell({ value, side, modelName, missingLabel, estimated }: {
+  estimated?: boolean;
   value: number | null;
   side: 'left' | 'right';
   modelName: string;
@@ -109,7 +110,7 @@ function ScoreCell({ value, side, modelName, missingLabel }: {
     <td className={`compare-score-value compare-score-value--${side}`}>
       <div className="compare-score-cell">
         <span className="compare-score-mobile-name">{modelName}</span>
-        <span className="compare-score-number">{formatCompareScoreValue(value, missingLabel)}<small>{valid ? '/10' : null}</small></span>
+        <span className="compare-score-number">{estimated && valid ? '≈' : ''}{formatCompareScoreValue(value, missingLabel)}<small>{valid ? '/10' : null}</small></span>
         <span className="compare-score-track" aria-hidden="true"><span style={{ width: `${valid ? Math.max(0, Math.min(value, 10)) * 10 : 0}%` }} /></span>
       </div>
     </td>
@@ -133,8 +134,8 @@ export function CompareScoreGrid({ metrics, locale, leftName, rightName, missing
       </tr></thead>
       <tbody>{metrics.map((metric) => <tr key={metric.id}>
         <th scope="row"><strong>{labelCompareMetric(metric, locale)}</strong><small>{describeCompareMetric(metric, locale)}</small></th>
-        <ScoreCell value={metric.leftValue} side="left" modelName={leftName} missingLabel={missingLabel} />
-        <ScoreCell value={metric.rightValue} side="right" modelName={rightName} missingLabel={missingLabel} />
+        <ScoreCell estimated={metric.leftEstimated} value={metric.leftValue} side="left" modelName={leftName} missingLabel={missingLabel} />
+        <ScoreCell estimated={metric.rightEstimated} value={metric.rightValue} side="right" modelName={rightName} missingLabel={missingLabel} />
       </tr>)}</tbody>
     </table>
   );

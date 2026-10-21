@@ -2,6 +2,7 @@ import {query,type QueryExecutor} from '@/lib/db';
 import {z} from 'zod';
 import type {StudioGenerationActor} from '@/server/agent-api/generation-actor';
 import {studioTaskSchemaReady} from './repository';
+import {STUDIO_CONVERSATION_MAX_ATTACHMENTS} from '@/lib/studio/conversation-creation-contract';
 export type StudioAuthoredNote={requestId:string;message:string;referenceIds:string[];createdAt:string;truncated:boolean};
 /** Exact authored history, including legacy rows, with no summary/embedding call. */
 async function notes(actor:StudioGenerationActor,text:string,exclude:string|null,db:QueryExecutor,full:boolean):Promise<StudioAuthoredNote[]> {
@@ -17,7 +18,7 @@ async function notes(actor:StudioGenerationActor,text:string,exclude:string|null
   relevant AS (SELECT a.* FROM authored a WHERE ($3::uuid IS NULL OR a.request_id<>$3) AND NOT EXISTS(SELECT 1 FROM initial i WHERE i.request_id=a.request_id)
     ORDER BY COALESCE(ts_rank(to_tsvector('simple',a.message),CASE WHEN $4='' THEN NULL ELSE to_tsquery('simple',$4) END),0) DESC,a.created_at DESC,a.request_id LIMIT 3)
   SELECT * FROM initial UNION ALL SELECT * FROM relevant`,[actor.userId,actor.projectId,exclude,terms]);
-  return rows.map((row,index)=>{const bound=full||index===0?4000:1800;return {requestId:row.request_id,message:row.message.slice(0,bound),referenceIds:row.reference_ids.slice(0,8),createdAt:new Date(row.created_at).toISOString(),truncated:row.message.length>bound};});
+  return rows.map((row,index)=>{const bound=full||index===0?4000:1800;return {requestId:row.request_id,message:row.message.slice(0,bound),referenceIds:row.reference_ids.slice(0,STUDIO_CONVERSATION_MAX_ATTACHMENTS),createdAt:new Date(row.created_at).toISOString(),truncated:row.message.length>bound};});
 }
 export function readStudioTaskMemory(actor:StudioGenerationActor,message:string,requestId:string,db:QueryExecutor={query}) {return notes(actor,message,requestId,db,false);}
 export function recallStudioTaskMemory(actor:StudioGenerationActor,text:string,db:QueryExecutor={query}) {return notes(actor,z.string().trim().min(1).max(300).parse(text),null,db,true);}

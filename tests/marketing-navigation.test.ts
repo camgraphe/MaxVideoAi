@@ -11,7 +11,7 @@ import {
   MARKETING_TOP_NAV_LINKS,
 } from '../frontend/config/navigation.ts';
 import { FOOTER_MODELS, FOOTER_COMPARISONS, FOOTER_EXAMPLES } from '../frontend/config/marketing-footer';
-import { getPartnerBrandMark } from '../frontend/src/lib/brand-partners.ts';
+import { getPartnerBrandMark, resolvePartnerBrand } from '../frontend/src/lib/brand-partners.ts';
 
 const marketingNavSource = readFileSync('frontend/components/marketing/MarketingNav.tsx', 'utf8');
 const marketingDesktopNavSource = readFileSync('frontend/components/marketing/MarketingDesktopNav.tsx', 'utf8');
@@ -91,13 +91,14 @@ test('marketing top navigation stays clean while Best-For links live inside drop
   assert.match(marketingDesktopNavSource, /font-semibold text-text-primary/);
 });
 
-test('public dropdowns limit launch badges to five current models with none on comparisons', () => {
+test('public dropdowns limit launch badges to six current models with none on comparisons', () => {
   const badgedEntries = Object.values(MARKETING_NAV_DROPDOWNS)
     .flatMap((dropdown) => dropdown?.items ?? [])
     .filter(({ badge }) => badge === 'new')
     .map(({ key }) => key);
 
   assert.deepEqual(badgedEntries, [
+    'flux-3-max',
     'minimax-h3',
     'minimax-h3-max',
     'seedance-2-5',
@@ -136,7 +137,7 @@ test('public dropdowns limit launch badges to five current models with none on c
   }
 });
 
-test('visible model dropdown entries show the shared engine logo before every model name', () => {
+test('visible model dropdown entries use the shared brand mark or approved text identity', () => {
   assert.match(navEntryContentSource, /EngineIcon/);
   assert.match(navEntryContentSource, /showModelLogo/);
   assert.match(navEntryContentSource, /brandId:\s*entry\.brandId/);
@@ -144,8 +145,8 @@ test('visible model dropdown entries show the shared engine logo before every mo
   for (const entry of MARKETING_NAV_MODELS) {
     assert.ok(entry.brandId, `${entry.label} should expose its canonical family brand`);
     assert.ok(
-      getPartnerBrandMark({ id: entry.key, brandId: entry.brandId }),
-      `${entry.label} should resolve to a real shared engine logo`,
+      getPartnerBrandMark({ id: entry.key, brandId: entry.brandId }) || resolvePartnerBrand({ id: entry.key, brandId: entry.brandId })?.policy.textOnly,
+      `${entry.label} should resolve to a shared logo or explicit text-only policy`,
     );
   }
 
@@ -167,9 +168,9 @@ test('visible model dropdown entries show the shared engine logo before every mo
 test('editorial navigation promotes current models and preserves comparisons with search demand', () => {
   assert.deepEqual(
     MARKETING_NAV_MODELS
-      .filter(({ key }) => ['ltx-2-5-pro', 'wan-3-prime', 'happy-horse-1-1'].includes(key))
+      .filter(({ key }) => ['flux-3-max', 'ltx-2-5-pro', 'wan-3-prime'].includes(key))
       .map(({ key }) => key),
-    ['ltx-2-5-pro', 'wan-3-prime', 'happy-horse-1-1'],
+    ['flux-3-max', 'ltx-2-5-pro', 'wan-3-prime'],
   );
   const expectedComparisons = [
     'minimax-h3-vs-seedance-2-5',
@@ -258,6 +259,25 @@ test('marketing footer projects the current bounded model menu instead of a seco
   for (const item of FOOTER_MODELS) assert.ok(MARKETING_NAV_MODELS.some(model => model.key === item.key));
   assert.doesNotMatch(marketingFooterSource, /slug: 'ltx-2-3-fast'/);
   assert.doesNotMatch(marketingFooterSource, /slug: 'wan-2-6'/);
+});
+
+test('marketing footer adds FLUX 3 Max before the seven existing model links', () => {
+  const preservedModelKeys = [
+    'minimax-h3', 'seedance-2-5', 'kling-3-pro', 'veo-3-1',
+    'ltx-2-5-pro', 'wan-3', 'wan-3-prime',
+  ];
+  assert.deepEqual(FOOTER_MODELS.map(item => item.key), ['flux-3-max', ...preservedModelKeys]);
+  assert.deepEqual(FOOTER_MODELS[0].href, {
+    pathname: '/models/[slug]', params: { slug: 'flux-3-max' },
+  });
+  assert.deepEqual(
+    FOOTER_MODELS.slice(1),
+    preservedModelKeys.map(key => MARKETING_NAV_MODELS.find(item => item.key === key)),
+    'Existing labels and destinations remain intact and in the same order',
+  );
+  assert.deepEqual(FOOTER_EXAMPLES.map(item => item.key), [
+    'ltx', 'kling', 'seedance', 'wan', 'veo', 'hailuo', 'happy-horse',
+  ]);
 });
 
 test('marketing navigation avoids background-prefetching every crawlable destination', () => {

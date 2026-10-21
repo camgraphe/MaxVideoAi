@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "demos": [
+    {
+      "modelSlug": "flux-3-max",
+      "jobId": "job_external_fal_894f66d3e579164505f1d132faa830ca39d9cd9a",
+      "referenceImages": [
+        "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/cedf6a595ad0e7d34a4b3e5393b3c1916b3222ccabf52c44e1de44fc95980475.png",
+        "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/b4a2d807f9033bbe0fb037655fd4f0b7dfff64d8895b331d98e29a68c26310f8.png",
+        "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/8fa3334da6b5add8ff01eb4c2283427113fcb468a17abbdf4c66d9a2bd69b148.png"
+      ],
+      "referenceCaptions": [
+        {
+          "en": "Closed door in the snow",
+          "fr": "Porte fermée dans la neige",
+          "es": "Puerta cerrada en la nieve"
+        },
+        {
+          "en": "The door opens onto spring",
+          "fr": "La porte s’ouvre sur le printemps",
+          "es": "La puerta se abre a la primavera"
+        },
+        {
+          "en": "The keeper enters the garden",
+          "fr": "La gardienne entre dans le jardin",
+          "es": "La guardiana entra en el jardín"
+        }
+      ]
+    }
+  ]
+}

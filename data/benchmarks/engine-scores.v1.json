@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-09-03",
+  "last_updated": "2026-10-20",
   "method": "manual-v1-internet-calibrated-with-platform-pricing",
   "scores": [
     {
@@ -643,6 +643,38 @@
       "speedStability": 9.2,
       "pricing": 9.1,
       "last_updated": "2026-09-02"
+    },
+    {
+      "modelSlug": "flux-3-max",
+      "fidelity": 8.8,
+      "visualQuality": 9.0,
+      "motion": 8.7,
+      "consistency": 8.6,
+      "anatomy": 8.5,
+      "textRendering": 7.8,
+      "lipsyncQuality": 7.0,
+      "sequencingQuality": 8.3,
+      "controllability": 8.6,
+      "speedStability": 8.8,
+      "pricing": 8.0,
+      "last_updated": "2026-10-20",
+      "reviewStatus": "editorial-estimated",
+      "evidenceFile": "flux-3-max-evidence.v1.json",
+      "reviewNote": "Public-evidence editorial estimates dated 2026-10-20, based on selected provider examples, primary documentation and separately reported Artificial Analysis context. No controlled MaxVideoAI runs; confidence varies and audio alignment / operational reliability were not measured.",
+      "reviewSourceUrl": "https://fal.ai/flux-3-max",
+      "reviewConfidence": {
+        "fidelity": "medium",
+        "visualQuality": "medium",
+        "motion": "low",
+        "consistency": "medium",
+        "anatomy": "medium",
+        "textRendering": "low",
+        "lipsyncQuality": "very-low",
+        "sequencingQuality": "low",
+        "controllability": "medium",
+        "speedStability": "low",
+        "pricing": "medium"
+      }
     }
   ]
 }

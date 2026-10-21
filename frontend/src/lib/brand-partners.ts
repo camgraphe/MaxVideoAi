@@ -323,7 +323,7 @@ const PARTNER_BRANDS: PartnerBrand[] = [
       'Use text-only Black Forest Labs attribution; no licensed durable logo asset is recorded.'
     ),
     defaultAvailability: 'available',
-    engineIds: ['flux-3', 'flux-3-draft'],
+    engineIds: ['flux-3-max', 'flux-3', 'flux-3-draft'],
   },
   {
     id: 'bytedance',

@@ -42,9 +42,12 @@ test('public reuse preserves recorded resolution without exposing the private sn
   assert.equal((await read()).snapshot.core.resolution, '720p', 'recorded settings survive absent output dimensions');
   await database.pool.query(`INSERT INTO job_outputs (job_id, kind, status, width, height, position, created_at)
     VALUES ('example', 'video', 'completed', 1920, 1080, 0, NOW())`);
-  assert.equal((await read()).snapshot.core.resolution, '1080p', 'measured output takes precedence');
+  assert.equal((await read()).snapshot.core.resolution, '720p', 'recreation preserves the recorded request, not the delivered dimensions');
+  assert.deepEqual([(await read()).video.outputWidth, (await read()).video.outputHeight], [1920, 1080]);
+  await database.pool.query(`UPDATE job_outputs SET width = 1280, height = 704`);
+  assert.equal((await read()).snapshot.core.resolution, '720p', 'provider alignment does not make the recorded request incomplete');
   await database.pool.query(`UPDATE job_outputs SET width = 1000, height = 1000`);
-  assert.equal((await read()).snapshot.core.resolution, null, 'unknown measured output cannot claim the requested size');
+  assert.equal((await read()).snapshot.core.resolution, '720p', 'input settings do not relabel measured output');
   await database.pool.query(`DELETE FROM job_outputs`);
   for (const resolution of ['unknown', '', null, { private: 'value' }]) {
     await database.pool.query(`UPDATE app_jobs SET settings_snapshot = $1::jsonb`, [JSON.stringify({ ...snapshot, core: { resolution } })]);
@@ -52,6 +55,9 @@ test('public reuse preserves recorded resolution without exposing the private sn
     assert.equal(result.video.requestedResolution, undefined);
     assert.equal(result.snapshot.core.resolution, null, 'invalid or absent settings are not invented');
   }
+  await database.pool.query(`INSERT INTO job_outputs (job_id, kind, status, width, height, position, created_at) VALUES ('example', 'video', 'completed', 1920, 1080, 0, NOW())`);
+  assert.equal((await read()).snapshot.core.resolution, '1080p', 'measured metadata is the fallback when the request was not recorded');
+  await database.pool.query(`DELETE FROM job_outputs`);
   await database.pool.query('ALTER TABLE app_jobs DROP COLUMN settings_snapshot');
   assert.equal((await read()).snapshot.core.resolution, null, 'older read schemas remain usable without bootstrap writes');
 });

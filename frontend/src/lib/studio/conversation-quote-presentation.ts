@@ -2,6 +2,7 @@ import { findElevenVoice } from '@/lib/audio-eleven-voices';
 import type {SeedanceEditSourceFacts} from '../seedance-edit-source';
 import {seedanceEditSourceLabel} from '../seedance-edit-source-copy';
 import type {ImageConversationTurn} from './image-conversation-contract';
+import {isFlux3MaxEngineId,parseFlux3MaxKeyframeIndexes} from '@/lib/flux-3-max';
 export type ConversationLocale = 'en' | 'fr';
 export function conversationFailurePresentation(
   generation: ImageConversationTurn['generation'],
@@ -52,6 +53,15 @@ export function conversationQuotePresentation(request: NonNullable<ImageConversa
         request.settings.musicEnabled===false ? t('no music','sans musique') : ''].filter(Boolean).join(' · ')};
   }
   const video = request.surface === 'video';
+  const fluxMax = video && isFlux3MaxEngineId(request.engineId);
+  const keyframeIndexes = fluxMax && request.mode === 'ref2v' ? parseFlux3MaxKeyframeIndexes(request.settings.keyframeIndexes) : null;
+  const keyframeTimes = keyframeIndexes?.map(index => `${new Intl.NumberFormat(locale, {maximumFractionDigits:3}).format(index / 24)} s`).join(', ');
+  const maxControls = fluxMax ? [
+    keyframeTimes ? `${t('keyframes','images clés')} ${keyframeTimes}` : '',
+    request.settings.reasoningLevel === 'low' || request.settings.reasoningLevel === 'high'
+      ? `${t('reasoning','analyse')} ${request.settings.reasoningLevel === 'high' ? t('high','approfondie') : t('low','rapide')}` : '',
+    typeof request.settings.seed === 'number' ? `${t('seed','graine')} ${request.settings.seed}` : '',
+  ] : [];
   const duration=typeof outputDurationSec==='number'&&Number.isFinite(outputDurationSec)&&outputDurationSec>0
     ? outputDurationSec : request.settings.durationSec;
   const dimensions=!video&&typeof request.settings.imageWidth==='number'&&typeof request.settings.imageHeight==='number'
@@ -66,5 +76,5 @@ export function conversationQuotePresentation(request: NonNullable<ImageConversa
     referenceSummary,
     settings: [video&&sourceVideoOutput?seedanceEditSourceLabel(sourceVideoOutput,locale):request.settings.aspectRatio, dimensions,dimensions&&request.settings.resolution==='custom'?'':request.settings.resolution,
       segment || (video && duration && !sourceVideoOutput ? `${duration} s` : ''),
-      video ? request.settings.audio === false ? t('silent', 'sans audio') : '' : request.settings.outputFormat ?? 'PNG'].filter(Boolean).join(' · ')};
+      video ? request.settings.audio === false ? t('silent', 'sans audio') : '' : request.settings.outputFormat ?? 'PNG', ...maxControls].filter(Boolean).join(' · ')};
 }

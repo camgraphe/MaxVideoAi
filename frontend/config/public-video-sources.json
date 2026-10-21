@@ -71,6 +71,51 @@
       "assetId": "wan-3-home",
       "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/c63e754c-4e7b-4fbb-82e8-7fc876fda7bb.mp4",
       "sha256": "64f10d5ed2a98a6d956bfb6da667f00e413535c66a5e0d1172f7987e059e8feb"
+    },
+    {
+      "assetId": "flux-3-max-last-exit",
+      "url": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/35955650ca4bca917f881c6782174f76f6cb5318fafeead8c0cd3595ab1b5400.mp4",
+      "sha256": "35955650ca4bca917f881c6782174f76f6cb5318fafeead8c0cd3595ab1b5400"
+    },
+    {
+      "assetId": "flux-3-max-sleeping-guardian",
+      "url": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/129578bb105f5270776bff78ce498566093132bb7e670c27b82eb875e4479f8c.mp4",
+      "sha256": "129578bb105f5270776bff78ce498566093132bb7e670c27b82eb875e4479f8c"
+    },
+    {
+      "assetId": "flux-3-max-one-last-wash",
+      "url": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/ed8fa206322db54926ebcb9d1baf07a57f80558dc4314a12d7772ecc2713f2f2.mp4",
+      "sha256": "ed8fa206322db54926ebcb9d1baf07a57f80558dc4314a12d7772ecc2713f2f2"
+    },
+    {
+      "assetId": "flux-3-max-someone-answers",
+      "url": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/556d12f7c45a0726eebc946615f4a0cbf4fba1993565c5f6cc6b469b90d726c3.mp4",
+      "sha256": "556d12f7c45a0726eebc946615f4a0cbf4fba1993565c5f6cc6b469b90d726c3"
+    },
+    {
+      "assetId": "flux-3-max-door-to-spring",
+      "url": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/1d8365734d43e3108ba8d1ab9fbf017d3f7c02f9841648fe42d6a86705d41af7.mp4",
+      "sha256": "1d8365734d43e3108ba8d1ab9fbf017d3f7c02f9841648fe42d6a86705d41af7"
+    },
+    {
+      "assetId": "flux-3-max-five-more-minutes",
+      "url": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/0613e0c1a1dbdcba500079699da48c63a76f1fcfded03017a268f66508b07c2a.mp4",
+      "sha256": "0613e0c1a1dbdcba500079699da48c63a76f1fcfded03017a268f66508b07c2a"
+    },
+    {
+      "assetId": "flux-3-max-uncrowned",
+      "url": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/4f6d6a092189ae292be5d06216af34edbbc9bd6ee553182a8f7c96f2b3a495eb.mp4",
+      "sha256": "4f6d6a092189ae292be5d06216af34edbbc9bd6ee553182a8f7c96f2b3a495eb"
+    },
+    {
+      "assetId": "flux-3-max-after-the-bell",
+      "url": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/89a0cad4a8f434fe42e65eba0a3889e3039c785c2b68a8633497b247c097db49.mp4",
+      "sha256": "89a0cad4a8f434fe42e65eba0a3889e3039c785c2b68a8633497b247c097db49"
+    },
+    {
+      "assetId": "flux-3-max-unavailable",
+      "url": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/0ed92d4517b23b3218ff97c2464fbec9d42b33d283f9aec2d43e103b65c6b2f1.mp4",
+      "sha256": "0ed92d4517b23b3218ff97c2464fbec9d42b33d283f9aec2d43e103b65c6b2f1"
     }
   ]
 }

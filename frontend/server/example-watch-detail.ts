@@ -9,6 +9,24 @@ import type { WatchPageDerivedSignals } from './watch-page-signals';
 import { deriveWatchPageSignals } from './watch-page-signals';
 import { parseSnapshot } from './watch-page-signals/snapshot';
 import type { GalleryVideo } from './videos-normalization';
+import { buildExampleRecreationSnapshot } from '@/app/(core)/(workspace)/app/_lib/workspace-example-recreation';
+
+/** Submitted controls describe recreation; encoded dimensions still describe the output. */
+function recordedTextScenario(video: GalleryVideo, engines: EngineCaps[]) {
+  const record = (value: unknown): Record<string, unknown> | null => value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : null;
+  const settings = record(video.settingsSnapshot);
+  const core = record(settings?.core);
+  if (!settings || !core || settings.schemaVersion !== 1 || settings.surface !== 'video' ||
+    settings.engineId !== video.engineId || settings.inputMode !== 't2v' || settings.prompt !== video.prompt ||
+    core.durationSec !== video.durationSec || typeof core.durationSec !== 'number' ||
+    typeof core.resolution !== 'string' || typeof core.aspectRatio !== 'string' || typeof core.audio !== 'boolean') return null;
+  const href = buildExampleRecreationHref(video.id, video.engineId, {
+    durationSec: core.durationSec, resolution: core.resolution, aspectRatio: core.aspectRatio, audio: core.audio, mode: 't2v',
+  });
+  const query = href.split('?')[1];
+  const shared = { ...video, outputWidth: video.outputWidth ?? undefined, outputHeight: video.outputHeight ?? undefined };
+  return buildExampleRecreationSnapshot(shared, query, engines) ? parseExampleRecreationSettings(new URLSearchParams(query)) : null;
+}
 
 /** Explicit public DTO: never serialize ownership or the raw generation snapshot. */
 export async function projectExampleWatchDetail(video: GalleryVideo, editorial: VideoSeoEditorialEntry | null, quote: ExampleQuoteProvider, engines: EngineCaps[], preparedSignals?: WatchPageDerivedSignals): Promise<ExampleWatchDetail | null> {
@@ -16,14 +34,14 @@ export async function projectExampleWatchDetail(video: GalleryVideo, editorial: 
   const signals = preparedSignals ?? deriveWatchPageSignals({ video, editorial });
   const snapshot = parseSnapshot(video);
   const measuredResolution = publicExampleResolution(video.outputWidth ?? undefined, video.outputHeight ?? undefined);
-  // Measured output wins over authored settings. Unknown measured sizes cannot claim a different resolution.
+  // Legacy fallback uses measured output; unknown sizes remain unknown.
   const resolution = video.outputWidth && video.outputHeight ? measuredResolution : snapshot.core.resolution;
   const ratio = video.outputWidth && video.outputHeight ? video.outputWidth / video.outputHeight : Number((snapshot.core.aspectRatio ?? '').split(':')[0]) / Number((snapshot.core.aspectRatio ?? '').split(':')[1]);
   const aspectRatio = ['16:9', '9:16', '1:1', '4:3', '3:4', '21:9'].find(value => {
     const [w, h] = value.split(':').map(Number); return Math.abs(ratio / (w / h) - 1) < 0.02;
   });
   const proposed = { durationSec: video.durationSec, resolution: resolution ?? '', aspectRatio: aspectRatio ?? '', audio: video.hasAudio, mode: 't2v' as const };
-  const scenario = parseExampleRecreationSettings(new URLSearchParams(buildExampleRecreationHref(video.id, video.engineId, proposed).split('?')[1]));
+  const scenario = recordedTextScenario(video, engines) ?? parseExampleRecreationSettings(new URLSearchParams(buildExampleRecreationHref(video.id, video.engineId, proposed).split('?')[1]));
   const quotes = await buildExampleComparisonQuotes(video, scenario, quote, engines);
   // PostgreSQL can return Date objects despite the legacy GalleryVideo string type.
   // Keep this public DTO identical over RSC and JSON, including the <time> attribute.

@@ -105,6 +105,22 @@
           "modelPlaylistSlug": "examples-minimax-h3-max"
         }
       ]
+    },
+    {
+      "waveId": "flux-3-max",
+      "sourceManifest": "docs/model-launch/flux-3-max-video-example-pack.json",
+      "sourceStatus": "validated",
+      "sourceDigest": "aa9bcabd2ddd185a5e32c2d738476ccd96e75d4c6e5768e0a5bb8299238aa6fa",
+      "models": [
+        {
+          "waveId": "flux-3-max",
+          "modelId": "flux-3-max",
+          "familyId": "flux",
+          "acceptedAssetCount": 2,
+          "familyPlaylistSlug": "family-flux",
+          "modelPlaylistSlug": "examples-flux-3-max"
+        }
+      ]
     }
   ],
   "models": [
@@ -195,6 +211,14 @@
       "acceptedAssetCount": 2,
       "familyPlaylistSlug": "family-hailuo",
       "modelPlaylistSlug": "examples-minimax-h3-max"
+    },
+    {
+      "waveId": "flux-3-max",
+      "modelId": "flux-3-max",
+      "familyId": "flux",
+      "acceptedAssetCount": 2,
+      "familyPlaylistSlug": "family-flux",
+      "modelPlaylistSlug": "examples-flux-3-max"
     }
   ]
 }

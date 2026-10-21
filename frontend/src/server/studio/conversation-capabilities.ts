@@ -5,7 +5,7 @@ import {getAgentModelGuidance,getAgentModelEditorialGuidance,getAgentModelEditor
 import {getAgentModelPromptingSources} from '@/server/agent-api/model-prompting-sources';
 import type {AgentPublicGenerationEngine} from '@/server/agent-api/model-catalog';
 import {projectAudioVariantSettings,projectAudioVariantFixedOutput,type listAudioCapabilities} from '@/server/agent-api/audio-capabilities';
-import {STUDIO_CONVERSATION_MAX_REFERENCES} from '@/lib/studio/conversation-creation-contract';
+import {studioGenerationReferenceLimit} from './conversation-reference-limits';
 import {studioAudioWorkflowFacts,studioAudioVariantVoiceSample} from './conversation-audio-discovery';
 
 /** Called only with the authorized adapter's executable and certified catalog, never a global lookup. */
@@ -13,13 +13,14 @@ export function studioVisualCapabilityDetails(candidate: AgentPublicGenerationEn
   return {modelId: candidate.engine.id,label: candidate.engine.label,lifecycle: getRuntimeModelById(candidate.engine.id)?.lifecycle ?? null,surface: candidate.surface,
     modes: candidate.publicModes.map(mode => {
       const canonical=projectAgentModelModeDetails(candidate,mode);
+      const maxReferences=studioGenerationReferenceLimit(candidate.engine.id,candidate.surface,mode);
       return {...canonical,outputCount: {min: 1,max: 1,default: 1},
         settings: canonical.settings.filter(setting => setting.type !== 'multi_prompt'&&!['documentUrl','webpageUrl'].includes(setting.key)),
         references: canonical.references.filter(reference => candidate.surface==='video'||reference.type === 'image').map(reference=>({...reference,
-          max: Math.min(reference.max ?? STUDIO_CONVERSATION_MAX_REFERENCES,STUDIO_CONVERSATION_MAX_REFERENCES)}))};
+          max: Math.min(reference.max ?? maxReferences,maxReferences)}))};
     }),
     referenceIdentity: candidate.surface === 'image' ? 'attached_image_asset' : 'attached_owned_media_or_ready_project_output',
-    outputCount: 1,maxReferences: STUDIO_CONVERSATION_MAX_REFERENCES,guidance: getAgentModelGuidance(candidate.engine.id),
+    outputCount: 1,maxReferences: Math.max(...candidate.publicModes.map(mode=>studioGenerationReferenceLimit(candidate.engine.id,candidate.surface,mode))),guidance: getAgentModelGuidance(candidate.engine.id),
     editorialGuidance: getAgentModelEditorialGuidance(candidate.engine.id),
     promptingSources: getAgentModelPromptingSources(candidate.engine.id).flatMap(source => {
       const modes=source.modes.filter(mode=>candidate.publicModes.includes(mode));

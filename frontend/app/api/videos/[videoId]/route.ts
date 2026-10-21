@@ -4,6 +4,7 @@ import { ensureBillingSchema } from '@/lib/schema';
 import { getVideoById, updateVideoIndexableForUser } from '@/server/videos';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { canReadVideo } from './_lib/video-read-access';
+import { loadPublicKeyframeRecipeForVideo } from '@/server/model-keyframe-demo';
 
 function privateJson(body: unknown, status = 200) {
   return NextResponse.json(body, { status, headers: { 'Cache-Control': 'private, no-store' } });
@@ -35,7 +36,9 @@ export async function GET(_req: NextRequest, props: RouteParams) {
     if (!canReadVideo(video, viewerId)) {
       return privateJson({ ok: false, error: 'Not found' }, 404);
     }
-    return privateJson({ ok: true, video });
+    const keyframeRecipe = video.visibility === 'public'
+      ? await loadPublicKeyframeRecipeForVideo(video.id, video.engineId) : null;
+    return privateJson({ ok: true, video: keyframeRecipe ? { ...video, keyframeRecipe } : video });
   } catch (error) {
     console.error('[api/videos/:id] failed', error);
     return privateJson({ ok: false, error: 'Server error' }, 500);
