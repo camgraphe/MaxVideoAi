@@ -79,7 +79,7 @@ export async function editStudioConversationTimeline(actor: ConversationEditActo
           ? layerWorkspaceTimelineAudioItem({items: previousItems,item: inserted.items[0],startFrame: edit.startFrame,fps: settings.fps,maxAudioTracks: MAX_TIMELINE_AUDIO_TRACKS,unavailableTracks: [...state.lockedTimelineTracks ?? [],...state.mutedAudioTracks ?? []]})
           : insertWorkspaceTimelineItems({items: previousItems, newItems: inserted.items, mode: 'insert', playheadSec: timelineFrameToSeconds(edit.startFrame,settings.fps), idSeed: requestHash.slice(0,20)+':'+index});
         if (timelineEditTouchesLockedTracks(state.timelineItems,items,state.lockedTimelineTracks ?? [])) throw new Error('Timeline track is locked.');
-        if (!projectAssets.some(asset => JSON.stringify(asset.ref) === JSON.stringify(inserted.asset.ref))) projectAssets = [...projectAssets,inserted.asset];
+        if (!projectAssets.some(asset => asset.id === inserted.asset.id || JSON.stringify(asset.ref) === JSON.stringify(inserted.asset.ref))) projectAssets = [...projectAssets,inserted.asset];
       }
     } else if(input.edit.kind==='replace'){
       const edit=input.edit;
@@ -98,7 +98,7 @@ export async function editStudioConversationTimeline(actor: ConversationEditActo
       // saveStudioWorkspace retains immutable historical montage provenance.
       items=state.timelineItems.map(previous=>previous.id===selected.id?item:previous);
       if(timelineEditTouchesLockedTracks(state.timelineItems,items,state.lockedTimelineTracks??[]))throw new Error('Timeline track is locked.');
-      if(!projectAssets.some(asset=>JSON.stringify(asset.ref)===JSON.stringify(replacement.asset.ref)))projectAssets=[...projectAssets,replacement.asset];
+      if(!projectAssets.some(asset=>asset.id===replacement.asset.id||JSON.stringify(asset.ref)===JSON.stringify(replacement.asset.ref)))projectAssets=[...projectAssets,replacement.asset];
     } else if(input.edit.kind==='sequence-subtitles'){
       items=state.timelineItems;
       if(input.edit.documentId){
@@ -176,7 +176,11 @@ async function insertion(actor: ConversationEditActor, input: ConversationTimeli
   }
   if (media.kind !== 'image' && durationSec+sourceStartSec > media.mediaFacts!.durationSec! + .000001) throw new Error('Invalid Studio timeline clip duration.');
   const id = createHash('sha256').update(input.idempotencyKey).digest('hex').slice(0,24);
-  const asset: WorkspaceAssetRecord = {id: `studio-media-${media.id}`,ref: media.ref,kind: media.kind,filename: media.originalName ?? `${media.kind} clip`,subtitle: media.kind,url: media.url,mimeType: media.mime,thumbUrl: media.thumbUrl ?? undefined,mediaFacts: media.mediaFacts,mediaAccessRequired: true,durationSec: media.mediaFacts?.durationSec,width: media.mediaFacts?.width,height: media.mediaFacts?.height,hasAudio: media.mediaFacts?.hasAudio,audioProvenance: media.mediaFacts?.hasAudio ? 'embedded' : 'none'};
+  // Keep existing valid identities; URL-backed upload IDs can exceed the timeline's 200-character bound.
+  const legacyAssetId = `studio-media-${media.id}`;
+  const sourceIdentity = media.ref.type === 'asset' ? [media.ref.type,media.ref.kind,media.ref.assetId] : [media.ref.type,media.ref.kind,media.ref.jobId,media.ref.outputId];
+  const assetId = legacyAssetId.length <= 200 ? legacyAssetId : `studio-media-${createHash('sha256').update(JSON.stringify(sourceIdentity)).digest('hex')}`;
+  const asset: WorkspaceAssetRecord = {id: assetId,ref: media.ref,kind: media.kind,filename: media.originalName ?? `${media.kind} clip`,subtitle: media.kind,url: media.url,mimeType: media.mime,thumbUrl: media.thumbUrl ?? undefined,mediaFacts: media.mediaFacts,mediaAccessRequired: true,durationSec: media.mediaFacts?.durationSec,width: media.mediaFacts?.width,height: media.mediaFacts?.height,hasAudio: media.mediaFacts?.hasAudio,audioProvenance: media.mediaFacts?.hasAudio ? 'embedded' : 'none'};
   const drafts = buildWorkspaceTimelineItemsForAsset({assetNodeId: asset.id,title: asset.filename,asset,startSec: 0,idSeed: id});
   const draft = drafts[0];
   if (!draft) throw new Error('MEDIA_NOT_AVAILABLE');
