@@ -17,7 +17,7 @@ import {
 
 type PageProps = { params: Promise<{ id: string }> };
 
-const getWatchPageData = cache(async (id: string) => getVideoWatchPageDataById(id));
+const getWatchPageData = cache(async (id: string) => getVideoWatchPageDataById(id, { includeRelated: false }));
 
 export const revalidate = 1800;
 
@@ -95,5 +95,5 @@ export default async function VideoPage(props: PageProps) {
 
   const quoteResult = await quotePreparation;
   if ('error' in quoteResult) throw quoteResult.error;
-  return <VideoWatchContent page={page} quoteContext={quoteResult.value} />;
+  return <VideoWatchContent page={page} quoteContext={quoteResult.value} deferRelated />;
 }

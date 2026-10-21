@@ -143,15 +143,20 @@ export async function listSeoWatchVideos(): Promise<SeoWatchVideoMeta[]> {
     .sort((a, b) => b.priority - a.priority);
 }
 
-const loadSeoWatchVideoRows = cache(async (): Promise<SeoWatchVideoRow[]> => {
+const loadSeoWatchEditorialContext = cache(async () => {
   const editorialMap = await listVideoSeoEditorialEntryMap();
   const ids = buildSeoWatchVideoIds(editorialMap);
-  const videoMap = await getSeoVideosByIds(ids);
   const activeEditorialEntries = ids.flatMap((id) => {
     const editorial = editorialMap.get(id);
     return editorial ? [editorial] : [];
   });
   const duplicateVideoObjectNames = getDuplicateVideoObjectNames(activeEditorialEntries);
+  return { editorialMap, ids, duplicateVideoObjectNames };
+});
+
+const loadSeoWatchVideoRows = cache(async (): Promise<SeoWatchVideoRow[]> => {
+  const { editorialMap, ids, duplicateVideoObjectNames } = await loadSeoWatchEditorialContext();
+  const videoMap = await getSeoVideosByIds(ids);
   const entries = ids.map((id) =>
     buildMetaFromEditorial({
       id,
@@ -222,11 +227,43 @@ export async function getSeoWatchVideoRowById(id?: string | null): Promise<SeoWa
   return rows.find((row) => row.entry.id === id) ?? null;
 }
 
-export async function getVideoWatchPageDataById(id: string): Promise<VideoWatchPageData | null> {
+/** Metadata and the reader need one video; related-page hydration can stream later. */
+async function getPrimaryVideoWatchPageData(id: string): Promise<VideoWatchPageData | null> {
+  const { editorialMap, ids, duplicateVideoObjectNames } = await loadSeoWatchEditorialContext();
+  const requestedSlug = normalizeVideoSeoCanonicalSlug(decodeIdentifier(id));
+  const selectedId = ids.find(candidate => candidate === id || (requestedSlug && editorialMap.get(candidate)?.canonicalSlug === requestedSlug));
+  const excludedEditorial = selectedId ? null : [...editorialMap.values()].find(entry =>
+    entry.rolloutExcluded && (entry.id === id || (requestedSlug && entry.canonicalSlug === requestedSlug))) ?? null;
+  const resolvedId = selectedId ?? excludedEditorial?.id ?? id;
+  const video = await getSeoVideoById(resolvedId);
+  if (!video) return null;
+  const editorial = selectedId ? editorialMap.get(selectedId) ?? null : excludedEditorial;
+  const entry = selectedId || excludedEditorial ? buildMetaFromEditorial({
+    id: resolvedId, base: BASE_WATCH_VIDEO_MAP.get(resolvedId) ?? null, editorial, video,
+  }) : null;
+  const baseSignals = deriveWatchPageSignals({ entry, video, editorial,
+    ...(selectedId ? { duplicateVideoObjectNames } : {}),
+  });
+  const sourceImages = await resolveWatchSourceImageOriginalUrls({ video, sourceImages: baseSignals.sourceImages });
+  const signals = sourceImages === baseSignals.sourceImages ? baseSignals : { ...baseSignals, sourceImages };
+  return { entry, video, signals, related: [], isSelected: Boolean(selectedId),
+    isEligible: Boolean(selectedId && isEligibleSeoWatchVideo(video) && signals.indexable) };
+}
+
+export async function getVideoWatchRelatedPages(page: VideoWatchPageData): Promise<WatchPageRelatedLink[]> {
+  if (isLocalPublicExamplesEnabled()) return [];
+  const rows = await listSeoWatchVideoRows();
+  const candidates = rows.flatMap(row => row.isEligible && row.video && row.signals
+    ? [toWatchPageRelatedCandidate({ entry: row.entry, video: row.video, signals: row.signals })] : []);
+  return pickRelatedWatchPages({ currentId: page.video.id, currentSignals: page.signals, candidates, limit: 4 });
+}
+
+export async function getVideoWatchPageDataById(id: string, options: { includeRelated?: boolean } = {}): Promise<VideoWatchPageData | null> {
   if (isLocalPublicExamplesEnabled()) {
     const video = getLocalPublicExample(id);
     return video ? { entry: null, video, signals: deriveWatchPageSignals({ video }), related: [], isSelected: false, isEligible: false } : null;
   }
+  if (options.includeRelated === false) return getPrimaryVideoWatchPageData(id);
   const selectedRows = await listSeoWatchVideoRows();
   const requestedSlug = normalizeVideoSeoCanonicalSlug(decodeIdentifier(id));
   const selectedRow =

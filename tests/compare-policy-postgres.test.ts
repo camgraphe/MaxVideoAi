@@ -17,7 +17,7 @@ import { makeComparePagePricingHarness } from './helpers/compare-page-pricing-ha
 
 type Counts = Record<'policy' | 'begin' | 'state' | 'selected' | 'commit' | 'rollback' | 'other', number>;
 const emptyCounts = (): Counts => ({ policy: 0, begin: 0, state: 0, selected: 0, commit: 0, rollback: 0, other: 0 });
-const healthyCounts = (policy: number): Counts => ({ policy, begin: 6, state: 6, selected: 6, commit: 6, rollback: 0, other: 0 });
+const healthyCounts = (policy: number): Counts => ({ policy, begin: 1, state: 1, selected: 1, commit: 1, rollback: 0, other: 0 });
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value));
 const actor = '11111111-1111-4111-8111-111111111111';
 const locales = ['en', 'fr', 'es'] as const;
@@ -30,9 +30,9 @@ const policyRows = `INSERT INTO app_pricing_rules (id,engine_id,margin_percent,m
   ('fast','veo-3-1-fast',0.4,3,0.2,0.5,'USD','acct_compare_fast');`;
 
 // Break caught: the real route failing to supply one shared contextual reader
-// repeats six effective-policy SELECTs; tariff/quote caching or context
+// repeats effective-policy and tariff reads; tariff caching or context
 // normalization breaks complete snapshot and localized output parity.
-test('comparison owner shares effective policy, preserving real PG17 tariff transactions and localized output', async t => {
+test('comparison owner batches selected tariffs with real PG17 snapshot and localized output parity', async t => {
   const database = await startDisposablePostgres('compare-policy');
   // Both full renders represent the same instant; keep their exported snapshot
   // timestamp comparable while retaining every pricing and transaction assertion.
@@ -105,12 +105,12 @@ test('comparison owner shares effective policy, preserving real PG17 tariff tran
       assert.deepEqual(candidate, baseline, 'complete contexts, snapshots, route props and localized price/score rows');
       assert.equal(baselineCounts.policy, n);
       assert.equal(candidateCounts.policy, 1, 'one policy SELECT across both real pricing sides');
-      assert.deepEqual({ ...candidateCounts, policy: n }, baselineCounts, 'every tariff SQL command remains independent');
-      assert.equal(candidateCounts.begin, n); assert.equal(candidateCounts.commit, n);
+      assert.equal(baselineCounts.begin, n);
+      assert.deepEqual(candidateCounts, healthyCounts(1), 'concurrent selected tariffs share one read-only snapshot');
       return candidate;
     }
 
-    await t.test('six ordinary scenarios reduce pricing commands from 30 to 25', async () => {
+    await t.test('six ordinary scenarios reduce pricing commands from 30 to 5', async () => {
       for (const locale of locales) {
         const result = await parity(routeInput(locale), 'inactive tariff state / distinct effective policy and routing');
         assert.deepEqual(counts, healthyCounts(1));
@@ -216,7 +216,7 @@ test('comparison owner shares effective policy, preserving real PG17 tariff tran
         const scope = h.scopes.at(-1)!;
         const recovered = await computeComparePricingPoints(PRICING_ENGINES.get('veo-3-1')!, 4, undefined, scope);
         assert.equal(recovered.length, 3);
-        assert.deepEqual(counts, { policy: 2, begin: 3, state: 3, selected: 3, commit: 3, rollback: 0, other: 0 });
+        assert.deepEqual(counts, { policy: 2, begin: 1, state: 1, selected: 1, commit: 1, rollback: 0, other: 0 });
         evidence.push({ label: 'simulated first policy failure; bounded shared failure and same-scope recovery', baseline: baselineCounts,
           candidateFailed: failedCounts, afterSameScopeRetry: { ...counts } });
       } finally { before = undefined; }
@@ -225,14 +225,14 @@ test('comparison owner shares effective policy, preserving real PG17 tariff tran
       assert.ok(next.snapshots.every(snapshot => 'totalCents' in snapshot));
     });
 
-    await t.test('tariff state failures keep six rollback transactions and truthful unavailable output', async () => {
+    await t.test('tariff state failures roll back the shared read and preserve truthful unavailable output', async () => {
       await database.pool.query('ALTER TABLE app_customer_tariff_state RENAME TO fixture_saved_tariff_state');
       try {
         reset(); const baseline = await render(routeInput(), false); const baselineCounts = { ...counts };
         reset(); const candidate = await render(routeInput(), true);
         assert.deepEqual(candidate, baseline);
-        assert.deepEqual(counts, { policy: 1, begin: 6, state: 6, selected: 0, commit: 0, rollback: 6, other: 0 });
-        assert.deepEqual({ ...counts, policy: 6 }, baselineCounts);
+        assert.deepEqual(counts, { policy: 1, begin: 1, state: 1, selected: 0, commit: 0, rollback: 1, other: 0 });
+        assert.deepEqual(baselineCounts, { policy: 6, begin: 6, state: 6, selected: 0, commit: 0, rollback: 6, other: 0 });
         evidence.push({ label: 'real missing state table', baseline: baselineCounts, candidate: { ...counts }, commands: [...commands] });
       } finally { await database.pool.query('ALTER TABLE fixture_saved_tariff_state RENAME TO app_customer_tariff_state'); }
     });
@@ -258,7 +258,7 @@ test('comparison owner shares effective policy, preserving real PG17 tariff tran
         releaseGate();
         assert.deepEqual(await first, original, 'the first render keeps the complete policy already read');
         assert.notDeepEqual(second.snapshots, original.snapshots);
-        assert.deepEqual(counts, { policy: 2, begin: 12, state: 12, selected: 12, commit: 12, rollback: 0, other: 0 });
+        assert.deepEqual(counts, { policy: 2, begin: 2, state: 2, selected: 2, commit: 2, rollback: 0, other: 0 });
         evidence.push({ label: 'overlapping scopes observe separate committed policies', counts: { ...counts }, first: await first, second });
       } finally {
         releaseGate(); await first; after = undefined;

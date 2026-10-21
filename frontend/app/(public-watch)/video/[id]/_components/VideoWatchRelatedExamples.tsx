@@ -1,12 +1,18 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import { getVideoWatchRelatedPages } from '@/server/video-seo';
 import type { WatchPageData } from '../_lib/video-watch-page-utils';
 import { VideoWatchCard } from './VideoWatchCard';
 
 type VideoWatchRelatedExamplesProps = {
   related: WatchPageData['related'];
 };
+
+export async function DeferredVideoWatchRelatedExamples({ page }: { page: WatchPageData }) {
+  const related = await getVideoWatchRelatedPages(page);
+  return related.length > 0 ? <div className="mt-8 px-5 sm:px-0"><VideoWatchRelatedExamples related={related}/></div> : null;
+}
 
 export function VideoWatchRelatedExamples({ related }: VideoWatchRelatedExamplesProps) {
   if (!related.length) return null;

@@ -170,12 +170,13 @@ from provider event receipt and production field measurements. See
 
 `loadComparePageData` owns the comparison's independent data and gallery reads. It starts them together; the qualified benchmark, exact prices and complete gallery results still resolve before rendering. Keep prelaunch gallery exclusions in this owner. Its concurrency test holds all read boundaries open to prove that none waits for unrelated data.
 
-Comparison policy sharing (2026-10-09) belongs to one `buildCompareRouteData`
-invocation. Its lazy contextual reader retains the first successful complete
-policy across both engines and keeps every quote's tariff transaction separate.
-The PG17 contract measures Veo 3.1/Fast's six 4-second audio scenarios at
-720p/1080p/4K: 30 to 25 pricing commands, with policy SELECTs 6 to 1 and all six
-tariff transactions retained. EN/FR/ES complete contexts, snapshots and route
+Comparison policy sharing belongs to one `buildCompareRouteData` invocation.
+Its lazy contextual reader retains the first successful complete policy across
+both engines. Since 2026-10-21, concurrent selected tariff reads also use the
+existing read-only repeatable-read batch owner. The PG17 contract measures Veo
+3.1/Fast's six 4-second audio scenarios at 720p/1080p/4K: the original 30 pricing
+commands became 25 with policy sharing, and now become 5 with one tariff
+transaction. Later batches still read current tariff state again. EN/FR/ES complete contexts, snapshots and route
 pricing outputs match for healthy, partial and unavailable cases. The empty-policy
 case is covered in EN.
 Veo/Lite has five quoted points, not six. These counts describe pricing commands
@@ -183,7 +184,7 @@ only. A shared transient policy failure affects the concurrent group together;
 later work may retry, while a new render has a fresh scope. See the pricing guide
 for failure-group and freshness ownership.
 
-The controlled owner capture used Node 22.23.2, PostgreSQL 17.6 and an Apple M3
+The historical policy-only controlled owner capture used Node 22.23.2, PostgreSQL 17.6 and an Apple M3
 Max on Darwin 25.6.0, with the same warm pool/fixtures and instrumentation disabled
 for both variants. Three ABBA blocks retained six samples per variant, without
 imposed latency: baseline median 1.331 ms (1.274–1.388), candidate 1.188 ms
