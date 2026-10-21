@@ -328,6 +328,13 @@ links to their all-time transaction history. The ledger searches receipt/account
 IDs, generation IDs, description, model and status. These reads perform no schema
 bootstrap. The existing anomaly scan and refund command retain their owners.
 
+Generation badges use the owned quote's immutable `auth_origin`, rather than its
+presence in `mcp_generation_quotes`: `studio-session` displays **Studio**, while
+`oauth` displays **MCP**. Toolbox and unknown origins receive neither badge.
+Attribution requires matching both the receipt's job and account, including refunds.
+The shared transaction projection also serves historical receipts: absent quote
+storage yields no badge, and pre-origin quote schemas retain their OAuth/MCP meaning.
+
 First family adoption fingerprints inherited playlists, selections and curation states. Selection writers share an advisory transaction lock; first adoption additionally holds source tables against uncoordinated creation/deletion while revalidating. Configured model galleries bypass static reinsertion and aspect-ratio sorting. Unsupported unconfigured collections retain manual controls; retired configured collections stay closed.
 
 ### Four-video gallery opening

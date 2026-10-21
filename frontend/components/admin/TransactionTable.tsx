@@ -329,12 +329,17 @@ function TransactionAmount({ row }: { row: AdminTransactionRecord }) {
     <td className="whitespace-nowrap px-3 py-2.5 font-medium tabular-nums">
       <div className="flex items-center gap-2">
         <span>{formatCurrency(row.amountCents, row.currency)}</span>
-        {row.isMcpGeneration ? (
+        {row.isStudioGeneration || row.isMcpGeneration ? (
           <span
-            className="rounded border border-brand/20 bg-brand/10 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-brand"
-            title="Generation submitted via MCP"
+            className={clsx(
+              'rounded border px-1.5 py-0.5 text-[10px] font-semibold leading-none',
+              row.isStudioGeneration
+                ? 'border-violet-500/20 bg-violet-500/10 text-violet-600 dark:text-violet-400'
+                : 'border-brand/20 bg-brand/10 text-brand',
+            )}
+            title={row.isStudioGeneration ? 'Generation submitted from Studio' : 'Generation submitted via MCP'}
           >
-            MCP
+            {row.isStudioGeneration ? 'Studio' : 'MCP'}
           </span>
         ) : null}
       </div>
