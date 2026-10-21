@@ -1,10 +1,10 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { getEngineAliases, listFalEngines } from '@/config/falEngines';
 import { isDatabaseConfigured, query } from '@/lib/db';
 import { requireAdmin, adminErrorToResponse } from '@/server/admin';
 import { normalizeMediaUrl } from '@/lib/media';
 import { getSeoWatchStates } from '@/server/video-seo';
-import type { JobSurface } from '@/types/billing';
+import { parseModerationSurface as parseSurface, type ModerationSurface } from '@/lib/admin/moderation-filters';
+import { buildModerationSurfaceFilterClause as buildSurfaceFilterClause } from '@/server/admin-moderation-filters';
 
 type PendingVideoRow = {
   job_id: string;
@@ -34,13 +34,8 @@ type PlaylistAssignmentRow = {
 
 type ModerationBucket = 'not-published' | 'published' | 'all';
 type PublicationState = 'published' | 'private' | 'legacy-mismatch';
-type ModerationSurface = JobSurface;
 
 const FAILURE_STATES = ['failed', 'error', 'errored', 'cancelled', 'canceled', 'aborted'];
-const IMAGE_ENGINE_ALIASES = listFalEngines()
-  .filter((engine) => (engine.category ?? 'video') === 'image')
-  .flatMap((engine) => getEngineAliases(engine));
-
 function parseBucket(value: string | null): ModerationBucket {
   switch ((value ?? '').trim().toLowerCase()) {
     case 'needs-review':
@@ -55,89 +50,6 @@ function parseBucket(value: string | null): ModerationBucket {
     default:
       return 'not-published';
   }
-}
-
-function parseSurface(value: string | null): ModerationSurface {
-  switch ((value ?? '').trim().toLowerCase()) {
-    case 'image':
-      return 'image';
-    case 'audio':
-      return 'audio';
-    case 'character':
-      return 'character';
-    case 'angle':
-      return 'angle';
-    case 'upscale':
-      return 'upscale';
-    case 'background-removal':
-      return 'background-removal';
-    default:
-      return 'video';
-  }
-}
-
-function buildSurfaceFilterClause(surface: ModerationSurface, params: Array<string | string[]>) {
-  params.push(surface);
-  const directIndex = params.length;
-
-  if (surface === 'character') {
-    return `(surface = $${directIndex} OR settings_snapshot->>'surface' = 'character-builder')`;
-  }
-
-  if (surface === 'angle') {
-    return `(surface = $${directIndex} OR job_id LIKE 'tool_angle_%' OR settings_snapshot->>'surface' = 'angle')`;
-  }
-
-  if (surface === 'upscale') {
-    return `(surface = $${directIndex} OR job_id LIKE 'tool_upscale_%' OR settings_snapshot->>'surface' = 'upscale')`;
-  }
-
-  if (surface === 'background-removal') {
-    return `(surface = $${directIndex} OR job_id LIKE 'tool_background_removal_%' OR settings_snapshot->>'surface' = 'background-removal')`;
-  }
-
-  if (surface === 'image') {
-    params.push(IMAGE_ENGINE_ALIASES);
-    const imageAliasIndex = params.length;
-    return `(
-      surface = $${directIndex}
-      OR (
-        (
-          settings_snapshot->>'surface' = 'image'
-          OR render_ids IS NOT NULL
-          OR COALESCE(engine_id, '') = ANY($${imageAliasIndex}::text[])
-        )
-        AND COALESCE(surface, '') NOT IN ('character', 'angle', 'upscale', 'background-removal')
-        AND COALESCE(settings_snapshot->>'surface', '') NOT IN ('character-builder', 'angle', 'upscale', 'background-removal', 'video')
-        AND job_id NOT LIKE 'tool_angle_%'
-        AND job_id NOT LIKE 'tool_upscale_%'
-        AND job_id NOT LIKE 'tool_background_removal_%'
-      )
-    )`;
-  }
-
-  if (surface === 'video') {
-    params.push(IMAGE_ENGINE_ALIASES);
-    const imageAliasIndex = params.length;
-    return `(
-      (
-        surface = $${directIndex}
-        OR COALESCE(video_url, '') <> ''
-        OR settings_snapshot->>'surface' = 'video'
-      )
-      AND NOT (
-        COALESCE(surface, '') = 'audio'
-        OR settings_snapshot->>'surface' IN ('image', 'character-builder', 'angle', 'audio', 'upscale', 'background-removal')
-        OR job_id LIKE 'tool_angle_%'
-        OR job_id LIKE 'tool_upscale_%'
-        OR job_id LIKE 'tool_background_removal_%'
-        OR render_ids IS NOT NULL
-        OR COALESCE(engine_id, '') = ANY($${imageAliasIndex}::text[])
-      )
-    )`;
-  }
-
-  return `surface = $${directIndex}`;
 }
 
 function buildWhereClause(bucket: ModerationBucket, surface: ModerationSurface): { sql: string; params: unknown[] } {

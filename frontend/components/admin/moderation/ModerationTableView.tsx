@@ -8,11 +8,12 @@ import {
   StatePill,
   formatDate,
   getPublicationLabel,
+  getModerationPreviewUrls,
   isFailedVideo,
 } from '@/components/admin/moderation/moderation-table-utils';
 import type { ModerationBucket, ModerationSurface, ModerationVideo } from '@/components/admin/moderation/moderation-types';
 import { Button, ButtonLink } from '@/components/ui/Button';
-import { isPlaceholderMediaUrl, normalizeMediaUrl } from '@/lib/media';
+import { isPlaceholderMediaUrl } from '@/lib/media';
 
 type ModerationTableViewProps = {
   bucket: ModerationBucket;
@@ -51,8 +52,7 @@ export function ModerationTableView({
         <tbody className="divide-y divide-border">
           {displayItems.map((video) => {
             const isFailed = isFailedVideo(video);
-            const normalizedVideoUrl = video.videoUrl ? normalizeMediaUrl(video.videoUrl) ?? video.videoUrl : undefined;
-            const normalizedThumbUrl = video.thumbUrl ? normalizeMediaUrl(video.thumbUrl) ?? video.thumbUrl : undefined;
+            const { videoUrl: normalizedVideoUrl, thumbUrl: normalizedThumbUrl, animatedImageUrl } = getModerationPreviewUrls(video);
             const hasThumbPreview = Boolean(normalizedThumbUrl && !isPlaceholderMediaUrl(normalizedThumbUrl));
             const hasVideoPreview = Boolean(normalizedVideoUrl);
             const posterUrl = hasThumbPreview ? normalizedThumbUrl : undefined;
@@ -63,7 +63,9 @@ export function ModerationTableView({
               <tr key={video.id} className={clsx(isPending && 'opacity-90')}>
                 <td className="px-4 py-4">
                   <div className="relative h-24 w-40 overflow-hidden rounded-card border border-hairline bg-black">
-                    {hasVideoPreview ? (
+                    {animatedImageUrl ? (
+                      <Image src={animatedImageUrl} alt="Tool output" fill unoptimized className="object-cover" sizes="160px" />
+                    ) : hasVideoPreview ? (
                       <video
                         src={normalizedVideoUrl}
                         poster={posterUrl}

@@ -1,7 +1,9 @@
 "use client";
 
 import clsx from 'clsx';
-import { BUCKET_OPTIONS, SURFACE_OPTIONS } from '@/components/admin/moderation/moderation-table-utils';
+import { useId, useState } from 'react';
+import { ChevronDown } from 'lucide-react';
+import { BUCKET_OPTIONS, SURFACE_OPTIONS, TOOL_SURFACE_OPTIONS } from '@/components/admin/moderation/moderation-table-utils';
 import type { ModerationBucket, ModerationSurface, ModerationViewMode } from '@/components/admin/moderation/moderation-types';
 import { Button } from '@/components/ui/Button';
 
@@ -32,6 +34,9 @@ export function ModerationTableHeader({
   surface: ModerationSurface;
   viewMode: ModerationViewMode;
 }) {
+  const [toolsExpanded, setToolsExpanded] = useState(false);
+  const toolFiltersId = useId();
+  const activeTool = TOOL_SURFACE_OPTIONS.find(option => option.id === surface);
   return (
     <header className="flex flex-col gap-3 border-b border-border pb-4 xl:flex-row xl:items-start xl:justify-between">
       <div className="space-y-2">
@@ -53,7 +58,10 @@ export function ModerationTableHeader({
               variant="outline"
               disabled={isLoadingBucket}
               aria-pressed={surface === option.id}
-              onClick={() => onLoadBucket(bucket, { surface: option.id })}
+              onClick={() => {
+                setToolsExpanded(false);
+                onLoadBucket(bucket, { surface: option.id });
+              }}
               className={clsx(
                 'gap-2 border-border px-3 text-left',
                 surface === option.id ? 'border-text-primary bg-surface text-text-primary' : 'bg-bg text-text-secondary hover:bg-surface'
@@ -62,7 +70,37 @@ export function ModerationTableHeader({
               <span>{option.label}</span>
             </Button>
           ))}
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            aria-expanded={toolsExpanded}
+            aria-controls={toolFiltersId}
+            onClick={() => setToolsExpanded(expanded => !expanded)}
+            className={clsx('gap-2 border-border px-3', activeTool ? 'border-text-primary bg-surface text-text-primary' : 'bg-bg text-text-secondary hover:bg-surface')}
+          >
+            Tools
+            <ChevronDown aria-hidden="true" size={14} className={clsx('transition-transform', toolsExpanded && 'rotate-180')} />
+          </Button>
         </div>
+        {toolsExpanded ? (
+          <div id={toolFiltersId} role="group" aria-label="Tool filters" className="flex flex-wrap gap-2 rounded-input border border-border bg-bg p-2">
+            {TOOL_SURFACE_OPTIONS.map(option => (
+              <Button
+                key={option.id}
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={isLoadingBucket}
+                aria-pressed={surface === option.id}
+                onClick={() => onLoadBucket(bucket, { surface: option.id })}
+                className={clsx('border-border px-3 aria-pressed:border-text-primary aria-pressed:bg-surface-2', surface === option.id ? 'border-text-primary bg-surface text-text-primary' : 'bg-bg text-text-secondary hover:bg-surface')}
+              >
+                {option.label}
+              </Button>
+            ))}
+          </div>
+        ) : null}
         <div className="flex flex-wrap gap-2">
           {BUCKET_OPTIONS.map((option) => (
             <Button
@@ -82,7 +120,10 @@ export function ModerationTableHeader({
             </Button>
           ))}
         </div>
-        <p className="text-xs text-text-muted">{BUCKET_OPTIONS.find((option) => option.id === bucket)?.helper ?? 'Moderation queue'}</p>
+        <p className="text-xs text-text-muted">
+          {activeTool ? <span className="font-medium text-text-secondary">Tool: {activeTool.label} · </span> : null}
+          {BUCKET_OPTIONS.find((option) => option.id === bucket)?.helper ?? 'Moderation queue'}
+        </p>
 
       </div>
 

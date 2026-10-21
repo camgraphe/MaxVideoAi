@@ -124,6 +124,29 @@ Move out of `page.tsx`:
 - support/action rails
 - SWR or URL state hooks
 
+## Moderation tool filters
+
+Moderation keeps Video, Image and Audio on the primary line. A collapsed Tools
+control exposes Upscale, Background removal, Character, Storyboard, Angle,
+Restore video, Denoise, Fix blur and Smooth motion. The selected tool stays in
+the context label when the panel is collapsed; publication buckets and paging
+retain that filter. Selecting a primary media type closes the panel.
+
+`frontend/lib/admin/moderation-filters.ts` owns the shared filter identities and
+labels. `frontend/server/admin-moderation-filters.ts` owns the SQL projection,
+including legacy tool prefixes and the individual `settings_snapshot.toolId`
+values stored under `surface = 'tool'`. The authenticated pending-media route
+retains publication buckets, hidden/failure exclusions, pagination and response
+mapping. The filters do not publish media or change customer visibility.
+Tool GIF exports stored in `video_url` render as unoptimized animated images in
+the wall, inspector and table. The inspector retains an original-file link for
+formats the browser cannot decode; originals and stored thumbnails are unchanged.
+
+`tests/admin-moderation-filters-postgres.test.ts` exercises real stored job
+shapes on disposable PostgreSQL; `tests/admin-moderation-tools-browser.test.ts`
+checks the actual header's selection, keyboard disclosure, pending state and
+mobile layout. Publication failures and incidents remain in Jobs.
+
 ## Detail Pages
 
 `DELETE /api/admin/videos/[videoId]` retains its admin authorization and mutation
