@@ -135,7 +135,7 @@ export function AdminTransactionTable({
         <AdminDataTable tableClassName="min-w-full">
           <thead>
             <tr>
-              {['Receipt', 'Account', 'Type', 'Amount', 'Status', ''].map((title, index) => (
+              {['Receipt', 'Account', 'Type', 'Origin', 'Amount', 'Status', ''].map((title, index) => (
                 <th key={index} className="relative px-3 py-3 text-xs font-medium text-text-secondary">
                   {title || <span className="sr-only">Details</span>}
                 </th>
@@ -181,6 +181,9 @@ export function AdminTransactionTable({
                     {TYPE_LABEL[row.type]}
                   </span>
                 </td>
+                <td className="px-3 py-2.5 text-xs">
+                  <TransactionOrigin origin={row.origin} />
+                </td>
                 <TransactionAmount row={row} />
                 <td className="px-3 py-2.5 text-xs">
                   {needsReview(row) ? (
@@ -205,7 +208,7 @@ export function AdminTransactionTable({
             ))}
             {!visibleRows.length ? (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-text-secondary">
+                <td colSpan={7} className="py-12 text-center text-text-secondary">
                   No transactions match these filters. Try another period, type or search.
                 </td>
               </tr>
@@ -232,6 +235,10 @@ export function AdminTransactionTable({
               {formatCurrency(selected.amountCents, selected.currency)}
             </p>
             <dl className="space-y-4 text-sm">
+              <div>
+                <dt className="text-xs text-text-secondary">Origin</dt>
+                <dd className="mt-1"><TransactionOrigin origin={selected.origin} /></dd>
+              </div>
               <div>
                 <dt className="text-xs text-text-secondary">Entry</dt>
                 <dd>{TYPE_LABEL[selected.type]}</dd>
@@ -329,14 +336,6 @@ function TransactionAmount({ row }: { row: AdminTransactionRecord }) {
     <td className="whitespace-nowrap px-3 py-2.5 font-medium tabular-nums">
       <div className="flex items-center gap-2">
         <span>{formatCurrency(row.amountCents, row.currency)}</span>
-        {row.isMcpGeneration ? (
-          <span
-            className="rounded border border-brand/20 bg-brand/10 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-brand"
-            title="Generation submitted via MCP"
-          >
-            MCP
-          </span>
-        ) : null}
       </div>
       {model || duration ? (
         <div className="mt-0.5 flex max-w-[180px] items-center gap-1 text-xs font-normal text-text-secondary">
@@ -350,6 +349,19 @@ function TransactionAmount({ row }: { row: AdminTransactionRecord }) {
         </div>
       ) : null}
     </td>
+  );
+}
+
+function TransactionOrigin({ origin }: { origin: AdminTransactionRecord['origin'] }) {
+  const label = { mcp: 'MCP', studio: 'Studio', toolbox: 'Toolbox', unknown: 'Unknown' }[origin] ?? 'Unknown';
+  return (
+    <span
+      className={clsx('inline-flex whitespace-nowrap rounded border px-2 py-1 text-xs font-medium',
+        origin === 'unknown' ? 'border-border text-text-secondary' : 'border-brand/20 bg-brand/10 text-brand')}
+      title={origin === 'unknown' ? 'The stored transaction does not identify its origin.' : `Recorded origin: ${label}`}
+    >
+      {label}
+    </span>
   );
 }
 

@@ -323,6 +323,16 @@ Receipt deep links resolve independently of the visible page. Filter state is
 in the URL and navigation uses a pending Next router transition, without a
 second client-side copy of the query results. The table never sorts a page again.
 
+Transactions expose their recorded origin in the list and receipt inspector:
+MCP (`auth_origin=oauth`), Studio (`studio-session`) and Toolbox
+(`toolbox-session`). The shared `mcp_generation_quotes` table also stores Studio
+and Toolbox requests; its presence alone never establishes MCP attribution.
+The projection binds quote evidence to both job and account. Pre-Studio quote
+schemas retain their historical OAuth meaning. Studio assistance reservations
+and credit packs use their explicit billing product keys. Unattributed receipts
+show Unknown; descriptions and missing quote evidence do not establish a web or
+MCP origin. This read-only projection preserves amounts and refund eligibility.
+
 Email lookup remains in Users (Supabase Auth owns that data); each user detail
 links to their all-time transaction history. The ledger searches receipt/account
 IDs, generation IDs, description, model and status. These reads perform no schema
