@@ -77,7 +77,9 @@ export async function createMarketingNavigationBrowserFixture({forcePopoverFallb
   const browserBundle = await build({ stdin: { contents: fixture + `import {hydrateRoot} from 'react-dom/client';window.__fixtureHydrationStarted=performance.now();window.__fixtureRoot=hydrateRoot(document.getElementById('root'),<Fixture/>,{onRecoverableError:error=>window.__fixtureHydrationErrors.push(error.message)});`, loader:'tsx',resolveDir:frontendRoot },
     write:false,bundle:true,platform:'browser',format:'iife',jsx:'automatic',tsconfig:join(frontendRoot,'tsconfig.json'),define:{'process.env.NODE_ENV':'"production"'},plugins:[plugin(false)] });
   const styles = await Promise.all(['app/globals.css','src/styles/tokens.css','src/styles/skeleton.css','src/styles/marketing-cinema.css','src/styles/marketing-navigation.css','src/styles/cookie-consent.css'].map(path => readFile(join(frontendRoot,path),'utf8')));
-  const cssInput = styles.join('\n').replace(/^@import .*;$/gm,'');
+  // This fixture injects the production config with absolute content paths.
+  // Remove file-level config selection; public-prose-styles tests the real @config boundary.
+  const cssInput = styles.join('\n').replace(/^@(?:import|config) .*;$/gm,'');
   const postcss = frontendRequire('postcss');
   const tailwind = frontendRequire('tailwindcss');
   const realCss = (await postcss([tailwind({...tailwindConfig,content:tailwindConfig.content.map(path=>join(frontendRoot,path))})]).process(cssInput,{from:undefined})).css;

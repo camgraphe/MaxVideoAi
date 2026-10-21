@@ -24,7 +24,9 @@ test('real MCP views retain their computed layout when route CSS arrives after t
   const frontend = resolve('frontend');
   const require = createRequire(join(frontend, 'package.json'));
   const paths = ['app/globals.css', 'src/styles/tokens.css', 'src/styles/skeleton.css'];
-  const source = (await Promise.all(paths.map(path => readFile(join(frontend, path), 'utf8')))).join('\n').replace(/^@import .*;$/gm, '');
+  // This fixture injects the production config with absolute content paths.
+  // Remove file-level config selection; public-prose-styles tests the real @config boundary.
+  const source = (await Promise.all(paths.map(path => readFile(join(frontend, path), 'utf8')))).join('\n').replace(/^@(?:import|config) .*;$/gm, '');
   const base = (await require('postcss')([require('tailwindcss')({ ...tailwindConfig,
     content: tailwindConfig.content.map(path => join(frontend, path)) })]).process(source, { from: undefined })).css;
   const common = (await Promise.all(['marketing-redesign', 'marketing-cinema', 'marketing-navigation']
