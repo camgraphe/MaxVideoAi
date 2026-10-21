@@ -10,8 +10,14 @@ type VideoWatchRelatedExamplesProps = {
 };
 
 export async function DeferredVideoWatchRelatedExamples({ page }: { page: WatchPageData }) {
-  const related = await getVideoWatchRelatedPages(page);
-  return related.length > 0 ? <div className="mt-8 px-5 sm:px-0"><VideoWatchRelatedExamples related={related}/></div> : null;
+  try {
+    const related = await getVideoWatchRelatedPages(page);
+    return related.length > 0 ? <div className="mt-8 px-5 sm:px-0"><VideoWatchRelatedExamples related={related}/></div> : null;
+  } catch {
+    // Optional recommendations must not replace the already streamed reader.
+    console.warn('[video-watch] related examples unavailable');
+    return null;
+  }
 }
 
 export function VideoWatchRelatedExamples({ related }: VideoWatchRelatedExamplesProps) {
