@@ -36,6 +36,14 @@ test('default output removes typography while preserving every other ordered glo
   assert.deepEqual(after, before.filter(rule => !typography(rule.selector)));
 });
 
+test('shared PostCSS processing cannot inherit an editorial config into global styles', async () => {
+  const [, global] = await globalStyles;
+  for (const prior of [publicProseStylesPath, blogStylesPath]) {
+    const afterEditorial = await compileBlogStyles('app/globals.css', { priorSheets: [prior] });
+    assert.deepEqual(rules(afterEditorial), rules(global), `${prior} must not add typography to the next global compilation`);
+  }
+});
+
 test('native public prose equals the effective slate/width cascade and emits no reset or utilities', async () => {
   const [[legacy], scoped] = await Promise.all([globalStyles, compileBlogStyles(publicProseStylesPath)]);
   const effective = (css: string) => {

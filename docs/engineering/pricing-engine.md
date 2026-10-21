@@ -1166,6 +1166,17 @@ upgrade on replay. Do not substitute padded retail cents for this supplier budge
 
 ## Public page loading scopes (2026-10-12)
 
+`createScopedCurrentPublicSnapshot` retains one successful effective policy per
+invocation and batches concurrent selected customer tariffs through
+`createScopedCustomerTariffQuoteLoader` when customer tariffs are enabled. This
+uses the same canonical calculator and selected exact/continuous tariff reader
+as watch quotes. One batch shares a read-only repeatable-read snapshot; a later
+batch rereads current prices and revision. No result or tariff state is cached
+across batches or requests. A failed shared read makes its concurrent group
+unavailable, while later work can retry. The comparison PG17 contract checks
+complete EN/FR/ES output parity, partial/zero/missing prices, failures, overlapping
+scopes and committed tariff edits with the same existing scope.
+
 `buildCurrentPricingHubData` keeps the complete Pricing-page projection. Its
 request-local canonical worker queue and shared policy scope remain unchanged.
 `buildCurrentVideoPricingData` reuses that same owner but exposes only `video`:

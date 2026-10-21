@@ -1,14 +1,15 @@
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { ExampleReaderContent } from '@/components/examples/ExampleReaderContent';
 import { readerCopy } from '@/components/examples/example-reader-copy';
 import styles from '@/components/examples/example-reader-styles';
 import { buildExampleWatchDetail, type ExampleWatchDetailContext } from '@/server/example-watch-detail-loader';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { FALLBACK_POSTER, FALLBACK_THUMB, SITE, serializeJsonLd, toAbsoluteUrl, toDurationIso, type WatchPageData } from '../_lib/video-watch-page-utils';
-import { VideoWatchRelatedExamples } from './VideoWatchRelatedExamples';
+import { DeferredVideoWatchRelatedExamples, VideoWatchRelatedExamples } from './VideoWatchRelatedExamples';
 import { VideoUnavailableState } from './VideoUnavailableState';
 
-export async function VideoWatchContent({ page, quoteContext }: { page: WatchPageData; quoteContext?: ExampleWatchDetailContext }) {
+export async function VideoWatchContent({ page, quoteContext, deferRelated = false }: { page: WatchPageData; quoteContext?: ExampleWatchDetailContext; deferRelated?: boolean }) {
   const { video, signals, related, isEligible } = page;
   const canonical = signals.canonicalUrl;
   const videoUrl = toAbsoluteUrl(video.videoUrl) ?? video.videoUrl ?? canonical;
@@ -65,7 +66,8 @@ export async function VideoWatchContent({ page, quoteContext }: { page: WatchPag
     <article className={`${styles.dialog} ${styles.standalone}`}>
       <ExampleReaderContent detail={{...detail,posterUrl:playbackPoster}} copy={readerCopy('en')} locale="en" headingLevel="h1"/>
     </article>
-    {related.length > 0 && <div className="mt-8 px-5 sm:px-0"><VideoWatchRelatedExamples related={related}/></div>}
+    {deferRelated ? <Suspense fallback={null}><DeferredVideoWatchRelatedExamples page={page}/></Suspense>
+      : related.length > 0 && <div className="mt-8 px-5 sm:px-0"><VideoWatchRelatedExamples related={related}/></div>}
     {videoJsonLd && <script id={`video-jsonld-${video.id}`} type="application/ld+json" dangerouslySetInnerHTML={{__html:serializeJsonLd(videoJsonLd)}}/>}
     {breadcrumbJsonLd && <script id={`video-breadcrumb-jsonld-${video.id}`} type="application/ld+json" dangerouslySetInnerHTML={{__html:serializeJsonLd(breadcrumbJsonLd)}}/>}
   </div>;

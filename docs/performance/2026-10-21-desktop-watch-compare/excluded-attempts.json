@@ -1,0 +1,33 @@
+[
+  {
+    "page": "compare",
+    "device": "mobile",
+    "side": "baseline",
+    "repeat": 2,
+    "attempt": 1,
+    "timeWindowUtc": "2026-10-21T11:05:45Z\u20132026-10-21T11:07:00Z (approximate; original fetchTime not retained)",
+    "failure": "real comparison must be rendered",
+    "expectedCanonicalPassed": true,
+    "comparisonBodyGuardPassed": false,
+    "cause": "undetermined",
+    "artifactsRetained": false,
+    "disposition": "Rejected before a metric row was written; baseline repeat 2 was retried at 2026-10-21T11:18:00.934Z with unchanged profile and passed the render guard (LCP 4742.269 ms, retained). Capture now precedes the guard so any recurrence retains the trace and DOM summary.",
+    "scope": "This was a baseline navigation, not a candidate measurement. All valid earlier samples remain included."
+  },
+  {
+    "page": "compare2",
+    "device": "desktop",
+    "side": "candidate",
+    "repeat": 1,
+    "attempt": 1,
+    "timeUtc": "2026-10-21T11:24:31.765Z",
+    "failure": "Post-Lighthouse DOM was incomplete; error logging also assumed document.body existed.",
+    "originalLighthouseLcpMs": 1640.745,
+    "originalLighthouseRuntimeError": null,
+    "originalLighthouseWarnings": [],
+    "originalLcpNodeLabel": "Kling 2.5 Turbo",
+    "artifactsRetained": true,
+    "cause": "Lighthouse BFCache gatherer navigates to chrome://terms and back, then waits 100 ms; post-measurement DOM can still be reloading. This does not invalidate the captured initial navigation metric, but the planned content guard did not pass.",
+    "disposition": "Preserve the original metric and artifacts separately; retry under unchanged measurement settings with an awaited post-BFCache DOM check. Original 1640.745 ms is not silently discarded or replaced in the exclusion record."
+  }
+]

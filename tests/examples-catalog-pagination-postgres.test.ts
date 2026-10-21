@@ -357,6 +357,7 @@ test('public gallery traverses every eligible video beyond the old window and hy
     for(const id of ['private','hidden','running','image','deleted-output','deleted-asset','missing']) {
       assert.equal(await reader.getExampleWatchDetail(id),null);
       assert.equal(await reader.getVideoWatchPageDataById(id),null,`direct watch rejects ${id}`);
+      assert.equal(await reader.getVideoWatchPageDataById(id,{includeRelated:false}),null,`bounded watch rejects ${id}`);
       assert.equal(await reader.loadStudioExampleEntry(id),null,`Studio rejects ${id}`);
     }
     await postgres.pool.query("UPDATE app_jobs SET visibility='private' WHERE job_id='kling-20'");
@@ -395,6 +396,10 @@ test('public gallery traverses every eligible video beyond the old window and hy
     const page=await reader.getVideoWatchPageDataById('kling-dance-film');
     assert.ok(page);assert.equal(page.isEligible,true,JSON.stringify(page.signals.editorialQaErrors));
     statements.length=0;
+    const primary=await reader.getVideoWatchPageDataById('kling-dance-film',{includeRelated:false});
+    assert.deepEqual(primary,{...page,related:[]},'bounded reader retains canonical, eligibility, editorial and media data');
+    assert.ok(statements.filter(statement=>statement.text.includes('FROM app_jobs')).every(statement=>statement.rows===1));
+    statements.length=0;
     const direct=await reader.buildExampleWatchDetail(page.video,page.signals);
     assert.ok(!statements.some(statement=>statement.text.includes('video_seo_pages')),
       'the prepared watch page already owns editorial reads; projecting its reader must not repeat them');
@@ -403,12 +408,14 @@ test('public gallery traverses every eligible video beyond the old window and hy
     assert.deepEqual(popup,direct,'both surfaces project the same persisted editorial entry');
     await postgres.pool.query(`INSERT INTO media_assets(user_id,url,status) SELECT user_id,video_url,'deleted' FROM app_jobs WHERE job_id='kling-21'`);
     assert.equal(await reader.getVideoWatchPageDataById('kling-dance-film'),null,'an approved slug cannot expose a deleted output');
+    assert.equal(await reader.getVideoWatchPageDataById('kling-dance-film',{includeRelated:false}),null);
     await postgres.pool.query(`DELETE FROM media_assets WHERE url='https://media.maxvideoai.com/fixture/kling-21.mp4'`);
     await postgres.pool.query(`UPDATE video_seo_pages SET h1='A new editorial title',seo_status='disabled' WHERE video_id='kling-21'`);
     const changed=await reader.getExampleWatchDetail('kling-21');
     const disabledPage=await reader.getVideoWatchPageDataById('kling-dance-film');
     assert.equal(changed.title,'A new editorial title');assert.equal(disabledPage.isEligible,false);
     assert.equal(disabledPage.signals.title,changed.title);
+    assert.deepEqual(await reader.getVideoWatchPageDataById('kling-dance-film',{includeRelated:false}),{...disabledPage,related:[]});
   });
 
 });

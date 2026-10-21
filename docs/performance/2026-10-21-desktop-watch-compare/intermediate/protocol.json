@@ -1,0 +1,56 @@
+{
+  "date": "2026-10-21",
+  "baseline": {
+    "commit": "dffd394c2e52820ad3ccc4828bd606fe92bf0e44",
+    "tree": "e209c7ec619baffb0b56ed38bceb94afbc96f610",
+    "productionEquivalent": "1f35e4963ac1f02818d3ea68d5aec9110aca1336",
+    "deployment": "dpl_HEGEgudNvcpHJ49egJsqji5FDFZU",
+    "origin": "https://maxvideoai-8xydulvm2-camgraphes-projects.vercel.app"
+  },
+  "candidate": {
+    "commit": "d71c8f2cf1429be53c9508b7d84738708eba45ed",
+    "deployment": "dpl_G2u1HEBSmPCdb8vecjfvdEhtDoTu",
+    "origin": "https://maxvideoai-brx04n1to-camgraphes-projects.vercel.app"
+  },
+  "region": "iad1",
+  "lighthouseVersion": "12.6.1",
+  "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+  "throttlingMethod": "devtools",
+  "throttling": {
+    "rttMs": 150,
+    "throughputKbps": 1638.4,
+    "requestLatencyMs": 150,
+    "downloadThroughputKbps": 1600,
+    "uploadThroughputKbps": 750,
+    "cpuSlowdownMultiplier": 4
+  },
+  "desktop": {
+    "screen": {
+      "mobile": false,
+      "width": 1440,
+      "height": 900,
+      "deviceScaleFactor": 1,
+      "disabled": false
+    },
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+  },
+  "mobile": {
+    "screen": {
+      "mobile": true,
+      "width": 390,
+      "height": 844,
+      "deviceScaleFactor": 1,
+      "disabled": false
+    },
+    "userAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36"
+  },
+  "freshBrowserPerRun": true,
+  "serverColdStartForced": false,
+  "feedbackToolbarRetained": true,
+  "authHeadersSaved": false,
+  "baseSamples": 48,
+  "followUpSamples": 12,
+  "followUpReason": "Two additional alternating pairs on landscape mobile investigate the retained 2.724 s outlier; two further pairs on both devices of compare2 investigate higher medians with mixed paired differences. All 60 intermediate samples are retained. These precede the explicit global Tailwind config fix.",
+  "sampleStart": "2026-10-21T10:27:13.419Z",
+  "sampleEnd": "2026-10-21T10:49:49.684Z"
+}
