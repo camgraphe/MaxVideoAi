@@ -280,6 +280,15 @@ existing article-only `blog-prose.css` output with the dedicated config. Keep
 these imports out of shared layouts and avoid adding Tailwind reset/utility
 directives to a reader sheet.
 
+`app/globals.css` explicitly selects the default config. Tailwind 3 retains the
+most recent `@config` in a reused PostCSS plugin instance, so relying on automatic
+default discovery lets an earlier editorial sheet enable typography in a later
+global compilation. This appeared in the 2026-10-21 Git Preview as 12,309 extra
+decoded CSS bytes. The shared-processor test in `public-prose-styles.test.ts`
+compiles each editorial owner before globals and requires the same ordered
+global rules as an isolated default compilation. Preserve this explicit config
+even when a clean isolated build happens to omit the extra rules.
+
 The 2026-10-09 isolated production builds retain every non-typography global rule
 and reduce the global CSS from 242,672 to 229,247 decoded bytes. Controlled gzip
 at level 6 falls from 37,574 to 35,862 bytes; those numbers are separate from CDN
