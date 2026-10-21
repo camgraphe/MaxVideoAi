@@ -4,6 +4,7 @@ import test from 'node:test';
 import { mkdtempSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { selectValidationLanes } from '../scripts/_lib/ci-validation-policy.mjs';
 
 test('validation runner isolates Next-backed Studio integrations from the standard test process', () => {
   const result = spawnSync(process.execPath, ['scripts/run-validation-tests.mjs', '--plan'], {
@@ -29,10 +30,22 @@ test('CI suites partition every validation file without losing expensive financi
   assert.equal(result.status, 0, result.stderr);
   const plan = JSON.parse(result.stdout);
   assert.ok(plan.fast?.includes('tests/mcp-oauth-principal.test.ts'), 'fast suite must exist');
+  for (const file of [
+    'tests/pricing-canonical-kernel.test.ts',
+    'tests/pricing-definition.test.ts',
+    'tests/pricing-policy.test.ts',
+    'tests/pricing-billing-authority.test.ts',
+    'tests/wallet-direct-pricing.test.ts',
+  ]) {
+    assert.ok(plan.fast.includes(file), `${file} must run even when exhaustive cutovers are not selected`);
+  }
   assert.deepEqual(plan.tariffs, [
     'tests/customer-tariff-initial-cutover-postgres.test.ts',
     'tests/local-customer-tariff-activation-postgres.test.ts',
   ]);
+  for (const file of plan.tariffs) {
+    assert.equal(selectValidationLanes([file]).tariffs, true, `${file} must select its exhaustive suite when changed`);
+  }
   assert.ok(plan.integration.includes('tests/mcp-confirm-generation-concurrency.test.ts'));
   assert.ok(plan.integration.includes('tests/generation-initial-job-transaction.test.ts'));
   assert.ok(plan.integration.includes('tests/public-video-renditions-real-media.test.ts'));
