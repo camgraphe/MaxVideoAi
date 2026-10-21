@@ -12,7 +12,8 @@ async function fixture(contents: string, stubs: Record<string,string> = {}) {
   const dom = new JSDOM('<div id="root"></div>', { url: 'https://example.invalid/app/tools/background-removal', runScripts: 'dangerously', pretendToBeVisual: true });
   const w: any = dom.window;
   w.MessageChannel = class { port1 = { onmessage(){} }; port2 = { postMessage: () => setTimeout(() => this.port1.onmessage(), 0) }; };
-  w.fetch = () => { throw Error('Unmocked network forbidden'); };
+  w.Headers = Headers;
+  w.fetch = (...args: any[]) => { if (!w.fixtureFetch) throw Error('Unmocked network forbidden'); return w.fixtureFetch(...args); };
   w.process = { env: {} };
   w.eval(bundle.outputFiles[0].text);
   return { w, doc: w.document, click: async (el: any) => { assert.ok(el); await w.fx.act(async () => el.click()); },
@@ -43,7 +44,7 @@ const commonStubs = {
   '@/hooks/useRequireAuth': `export const useRequireAuth=()=>({loading:false,user:window.actor});`,
   '@/lib/i18n/I18nProvider': `export const useI18n=()=>({locale:'en',t:(_key,fallback)=>fallback});`,
   '@/lib/api': `export const saveAssetToLibrary=()=>{throw Error('Save forbidden')};export const runBackgroundRemovalTool=()=>{throw Error('Paid generation forbidden')};`,
-  '@/lib/authFetch': `export const authFetch=(url,options)=>window.fixtureFetch(url,options);`,
+  '@/lib/supabaseClientLoader': `export const loadSupabaseClient=async()=>({auth:{getSession:async()=>({data:{session:window.actor?{access_token:'token-'+window.actor.id,user:window.actor}:null},error:null})}});`,
   './background-removal/_hooks/useBackgroundRemovalPricingPreview': `export const useBackgroundRemovalPricingPreview=()=>({pricePreview:{ready:true},priceLabel:'$0.10',priceHint:'',refreshQuote(){}});`,
   './background-removal/_hooks/useBackgroundRemovalRecentJobs': `export const useBackgroundRemovalRecentJobs=()=>({mutate(){},recentResults:window.recentResults});`,
   '../_lib/background-removal-workspace-helpers': `export * from ${JSON.stringify(helpersPath)};export async function readBackgroundRemovalVideoMetadata(){return {durationSec:5,width:640,height:360}};`,
