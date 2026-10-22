@@ -141,7 +141,7 @@ export default function AppClientPage({
     voiceIdsInput: routeForm.voiceIdsInput,
     shotType: routeForm.shotType,
     setShotType: routeForm.setShotType,
-    effectiveRequestedEngineToken: draft.effectiveRequestedEngineToken,
+    effectiveRequestedEngineToken: draft.effectiveRequestedEngineToken, requestedWorkflow: draft.requestedWorkflow,
     authChecked: draft.authChecked,
     hydratedForScope: draft.hydratedForScope,
     storageScope: draft.storageScope,

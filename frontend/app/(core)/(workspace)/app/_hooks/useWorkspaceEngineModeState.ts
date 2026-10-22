@@ -1,11 +1,12 @@
 import { isArchivedGenerationModel, archivedGenerationMessage } from '@/lib/model-generation-policy';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { KlingElementState } from '@/components/KlingElementsBuilder';
 import type { EngineCaps, EngineModeUiCaps, Mode } from '@/types/engines';
 import { getKlingO3DisabledEngineReasons } from '../_lib/kling-o3-unified-workflow';
 import type { ReferenceAsset } from '../_lib/workspace-assets';
 import type { FormState } from '../_lib/workspace-form-state';
+import type { WorkspaceWorkflowRequest } from '../_lib/workspace-hydration';
 import { resolveWorkspaceWorkflow, type WorkspaceWorkflowProjection } from '../_lib/workspace-workflow-projection';
 import {
   buildComposerModeToggles,
@@ -45,6 +46,7 @@ type UseWorkspaceEngineModeStateOptions = {
   shotType: ShotType;
   setShotType: Dispatch<SetStateAction<ShotType>>;
   effectiveRequestedEngineToken: string | null;
+  requestedWorkflow?: WorkspaceWorkflowRequest | null;
   authChecked: boolean;
   hydratedForScope: string | null;
   storageScope: string;
@@ -121,6 +123,7 @@ export function useWorkspaceEngineModeState({
   shotType,
   setShotType,
   effectiveRequestedEngineToken,
+  requestedWorkflow = null,
   authChecked,
   hydratedForScope,
   storageScope,
@@ -280,6 +283,28 @@ export function useWorkspaceEngineModeState({
       return nextState;
     });
   }, [engineOverride, preserveStoredDraftRef, requestedModeOverrideRef, setForm, writeStorage]);
+
+  const appliedWorkflowRequestRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!requestedWorkflow) {
+      appliedWorkflowRequestRef.current = null;
+      return;
+    }
+    if (!authChecked || hydratedForScope !== storageScope || !form) return;
+    const requestKey = JSON.stringify([storageScope, requestedWorkflow.engineToken, requestedWorkflow.mode, requestedWorkflow.mediaToken]);
+    if (appliedWorkflowRequestRef.current === requestKey) return;
+    const engine = engines.find((entry) => matchesEngineToken(entry, requestedWorkflow.engineToken));
+    if (!engine) return;
+    // Same-engine navigation still selects a workflow. Consume it once so later user
+    // choices survive rerenders, while another gallery card (media token) applies again.
+    appliedWorkflowRequestRef.current = requestKey;
+    setForm((current) => {
+      if (!current) return current;
+      const mode = getPreferredEngineModeForEngineRequest({ engine, requestedMode: requestedWorkflow.mode, carryoverMode: current.mode });
+      if (current.engineId === engine.id && current.mode === mode) return current;
+      return coerceFormStateForEngineChange(engine, mode, current);
+    });
+  }, [authChecked, engines, form, hydratedForScope, requestedWorkflow, setForm, storageScope]);
 
   useEffect(() => {
     const pinnedToken = requestedEngineOverrideTokenRef.current;

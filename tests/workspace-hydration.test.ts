@@ -64,6 +64,16 @@ test('engineId model links retain an explicit model through guest request parsin
   assert.equal(state.form?.engineId, 'seedance-2-5', 'the explicit model wins over the default engine');
 });
 
+test('workflow requests retain the gallery token independently of incidental query parameters', () => {
+  const first = resolveWorkspaceRequestParams(new URLSearchParams('engine=wan-3&mode=extend&media=one'), '/app');
+  const reordered = resolveWorkspaceRequestParams(new URLSearchParams('media=one&mode=EXTEND&engine=wan-3&panel=recent'), '/app');
+  assert.deepEqual(first.requestedWorkflow, { engineToken: 'wan3', mode: 'extend', mediaToken: 'one' });
+  assert.deepEqual(reordered.requestedWorkflow, first.requestedWorkflow);
+  for (const query of ['mode=extend', 'engine=wan-3', 'engine=wan-3&mode=invalid']) {
+    assert.equal(resolveWorkspaceRequestParams(new URLSearchParams(query), '/app').requestedWorkflow, null);
+  }
+});
+
 test('engine retains priority over engineId, while a blank engine permits the alias', () => {
   const canonical = resolveWorkspaceRequestParams(new URLSearchParams('engine=wan-3&engineId=seedance-2-5'), '/app');
   assert.equal(canonical.requestedEngineId, 'wan-3');
