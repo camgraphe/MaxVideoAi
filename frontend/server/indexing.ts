@@ -52,6 +52,7 @@ export async function removeVideosFromIndexablePlaylists(videoIds: string[]): Pr
       WITH deleted AS (
         DELETE FROM playlist_items
         WHERE video_id = ANY($1::text[])
+          ${process.env.MARKETING_MEDIA_ENABLED === '1' ? "AND NOT EXISTS (SELECT 1 FROM marketing_media m WHERE m.video_id=playlist_items.video_id AND m.state='ready')" : ''}
           AND playlist_id IN (
             SELECT id FROM playlists WHERE slug = ANY($2::text[])
           )
@@ -75,7 +76,7 @@ export async function removeUserVideosFromIndexablePlaylists(userId: string): Pr
     `
       WITH deleted AS (
         DELETE FROM playlist_items
-        WHERE playlist_id IN (
+        WHERE ${process.env.MARKETING_MEDIA_ENABLED === '1' ? "NOT EXISTS (SELECT 1 FROM marketing_media m WHERE m.video_id=playlist_items.video_id AND m.state='ready') AND" : ''} playlist_id IN (
           SELECT id FROM playlists WHERE slug = ANY($2::text[])
         )
           AND video_id IN (

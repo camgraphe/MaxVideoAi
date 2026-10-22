@@ -434,6 +434,16 @@ async function listStorageObjectKeys(prefix: string, limit: number): Promise<str
   return (result.Contents ?? []).flatMap((entry) => typeof entry.Key === 'string' ? [entry.Key] : []);
 }
 
+/** Site-owned publication cleanup, including interrupted attempts in the same namespace. */
+export async function purgeMarketingStorageObjects(copyId: string): Promise<void> {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(copyId)) throw new Error('Invalid marketing copy ID');
+  const prefix = `marketing-media/${copyId}/`;
+  const keys = await listStorageObjectKeys(prefix, 1000);
+  if (keys.some(key => !key.startsWith(prefix))) throw new Error('Unexpected marketing storage key');
+  for (const key of keys) await deleteStorageObjectKey(key);
+  if ((await listStorageObjectKeys(prefix, 1)).length) throw new Error('Marketing cleanup incomplete; retry deletion');
+}
+
 export async function purgeMcpReferenceStagingObjects(
   options: { limit?: number } = {},
   dependencies: {

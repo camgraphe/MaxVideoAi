@@ -1,3 +1,4 @@
+import { marketingVideoReader } from '@/server/marketing-media/public-read';
 import { NextResponse, type NextRequest } from 'next/server';
 import { isDatabaseConfigured, query } from '@/lib/db';
 import { requireAdmin, adminErrorToResponse } from '@/server/admin';
@@ -128,7 +129,7 @@ export async function GET(req: NextRequest) {
     const limitIndex = params.length + 1;
     params.push(limit + 1);
 
-    const rows = await query<PendingVideoRow>(
+    const rows = await marketingVideoReader({ query }).query<PendingVideoRow>(
       `
         SELECT job_id, user_id, status, message, updated_at, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url,
                aspect_ratio, created_at, visibility, indexable, featured, surface

@@ -23,3 +23,28 @@ CREATE TABLE IF NOT EXISTS marketing_media (
   CHECK (state <> 'ready' OR (publication->>'job_id'=video_id AND publication->>'video_url' IS NOT NULL))
 );
 CREATE INDEX IF NOT EXISTS marketing_media_updated_idx ON marketing_media(updated_at DESC,video_id);
+
+-- A stale admin tab must not attach a deleting/deleted marketing identity.
+-- Guards only; these triggers never rewrite membership or editorial facts.
+CREATE OR REPLACE FUNCTION guard_marketing_media_placement() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE selected_id text; selected_state text; payload jsonb := to_jsonb(NEW);
+BEGIN
+ FOR selected_id IN
+  SELECT DISTINCT value FROM jsonb_array_elements_text(
+   CASE WHEN payload->>'video_id' IS NULL THEN '[]'::jsonb ELSE jsonb_build_array(payload->>'video_id') END
+   || COALESCE(NULLIF(payload->'ordered_ids','null'::jsonb),'[]'::jsonb)
+   || COALESCE(NULLIF(payload->'opening_ids','null'::jsonb),'[]'::jsonb))
+ LOOP
+  SELECT state INTO selected_state FROM marketing_media WHERE video_id=selected_id FOR SHARE;
+  IF selected_state IN ('deleting','deleted') THEN RAISE EXCEPTION 'This marketing media is no longer available' USING ERRCODE='23514'; END IF;
+ END LOOP;
+ RETURN NEW;
+END $$;
+DO $$ DECLARE target text; BEGIN
+ FOREACH target IN ARRAY ARRAY['playlist_items','homepage_sections','playlist_curations'] LOOP
+  IF to_regclass('public.'||target) IS NOT NULL THEN
+   EXECUTE format('DROP TRIGGER IF EXISTS marketing_media_placement_guard ON %I',target);
+   EXECUTE format('CREATE TRIGGER marketing_media_placement_guard BEFORE INSERT OR UPDATE ON %I FOR EACH ROW EXECUTE FUNCTION guard_marketing_media_placement()',target);
+  END IF;
+ END LOOP;
+END $$;

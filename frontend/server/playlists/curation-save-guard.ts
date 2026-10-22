@@ -8,6 +8,7 @@ import { CurationError } from './curation-store';
  */
 export async function guardCurationSave(db: QueryExecutor): Promise<QueryExecutor> {
   await db.query('LOCK TABLE playlists, playlist_items, playlist_curations, app_jobs, job_outputs, media_assets IN SHARE MODE NOWAIT');
+  if (process.env.MARKETING_MEDIA_ENABLED === '1') await db.query('LOCK TABLE marketing_media IN SHARE MODE NOWAIT');
   const deadline = Date.now() + 2000;
   return {
     async query<T>(text: string, params?: ReadonlyArray<unknown>): Promise<T[]> {
