@@ -32,6 +32,22 @@ trimmed. The shared facts reach library readers and source-inheriting models.
 Existing stored metadata is not repaired on reads; older assets need a verified
 re-import or a separately bounded metadata repair after deployment.
 
+## Generated Omni outputs
+
+Generated Omni outputs are selected only from `model_output` steps; the
+Interactions GET response also contains `user_input` media. Never publish that
+echoed source as a completed render. For an explicit `has_audio=false` request,
+the poller passes the downloaded generated output through
+`server/media/generated-video-audio.ts` before durable storage. This copies video
+packets into an MP4 without audio, using the bundled executable and a 30-second
+deadline, and removes temporary files on success or failure. Audio-on/unspecified
+outputs retain their original bytes. A preparation failure follows the existing
+output-copy retry path and must not publish the audible file. This is delivery
+preparation, not a provider audio-disable parameter or an audio price discount.
+`tests/generated-video-audio-media.test.ts` checks real audio removal, unchanged
+video packet hashes, geometry and timing; the Omni runtime test covers completion
+and failure ordering. Phone originals and public display derivatives are untouched.
+
 ## Authenticated original downloads
 
 `GET /api/download` authenticates before network work and serves exact original

@@ -292,6 +292,7 @@ export function resolveWorkspaceComposerFacts({
     if (multiPromptActive) return multiPromptTotalSec;
     if (submissionMode === 'a2v' && typeof primaryAudioDurationSec === 'number') return primaryAudioDurationSec;
     const hasSeparateOutputDuration = (selectedEngine?.id === 'luma-ray-3-2' && submissionMode === 'reframe')
+      || (selectedEngine && getModeCaps(selectedEngine, submissionMode)?.durationPolicy === 'requested')
       || (typeof selectedEngine?.inputSchema?.constraints?.maxSourcePlusOutputDurationSec === 'number'
         && !selectedEngine?.modeAvailability?.[submissionMode]?.inheritsSourceVideo);
     if ((submissionMode === 'v2v' || submissionMode === 'reframe') && typeof primaryVideoDurationSec === 'number'

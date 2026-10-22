@@ -149,6 +149,16 @@ test('Gemini Omni Flash response accepts SDK output_video data payloads', () => 
   assert.equal(normalized.message, null);
 });
 
+test('Omni polling selects the generated video and never the echoed source input', () => {
+  const userVideo = { type: 'user_input', content: [{ type: 'video', uri: 'gs://inputs/phone.mov', mime_type: 'video/mp4' }] };
+  const normalized = normalizeGoogleVertexOmniInteraction({ ...completedInteraction,
+    steps: [userVideo, { type: 'thought', content: [{ type: 'video', uri: 'gs://internal/intermediate.mp4' }] }, ...completedInteraction.steps] });
+  assert.equal(normalized.videoUrl, 'gs://omni-output/job_omni_123.mp4');
+  const missing = normalizeGoogleVertexOmniInteraction({ ...completedInteraction, steps: [userVideo] });
+  assert.equal(missing.status, 'failed');
+  assert.equal(missing.videoUrl, null);
+});
+
 test('Gemini Omni Flash direct extension submission carries one owned source video', async () => {
   const queries: Array<{ sql: string; params?: unknown[] }> = [];
   const metrics: Array<{ kind: string; event?: unknown }> = [];
@@ -577,6 +587,43 @@ test('Gemini Omni Flash unsupported direct input fails on Google without invokin
   assert.equal(result.body.error, 'negative_prompt_not_supported');
   assert.ok(queries.some((entry) => /SET status = 'failed'/.test(entry.sql)));
   assert.equal(metrics[0]?.kind, 'rejected');
+});
+
+test('Omni delivers requested silence before storage and never completes if audio preparation fails', async () => {
+  for (const fail of [false, true]) {
+    const queries: string[] = [];
+    const uploads: Buffer[] = [];
+    let preparations = 0;
+    await runGoogleVertexOmniPoll({ deps: {
+      claimPollFn: allowGenerationPoll,
+      queryFn: async (sql) => {
+        queries.push(sql);
+        if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) return [{ ...baseJob, has_audio: false }] as never;
+        if (/FROM provider_attempts/.test(sql)) return [{ id: 42, attempt_index: 1 }] as never;
+        if (/UPDATE app_jobs/.test(sql) && /RETURNING job_id/.test(sql)) return [{ job_id: baseJob.job_id }] as never;
+        return [] as never;
+      },
+      getGoogleVertexOmniClientFn: () => ({ createInteraction: async () => { throw new Error('no new generation'); },
+        fetchInteraction: async () => completedInteraction,
+        downloadOutputUri: async () => ({ data: Buffer.from('generated-with-audio'), mime: 'video/mp4' }) }),
+      isStorageConfiguredFn: () => true,
+      removeGeneratedVideoAudioFn: async (bytes) => {
+        preparations++;
+        assert.equal(bytes.toString(), 'generated-with-audio');
+        if (fail) throw new Error('audio preparation failed');
+        return Buffer.from('generated-silent');
+      },
+      uploadFileBufferFn: async (payload) => { uploads.push(payload.data); return { key: 'render', url: 'https://cdn.maxvideoai.com/render.mp4' }; },
+      ensureJobThumbnailFn: async () => 'https://cdn.maxvideoai.com/thumb.jpg',
+      upsertLegacyJobOutputsFn: async () => {},
+      generateAndPersistJobPreviewVideoFn: async () => null,
+      generateAndPersistJobKeyframesFn: async () => [],
+    } });
+    assert.equal(preparations, 1);
+    assert.deepEqual(uploads.map(bytes => bytes.toString()), fail ? [] : ['generated-silent']);
+    assert.equal(queries.some(sql => /SET status = 'completed'/.test(sql)), !fail);
+    assert.equal(queries.some(sql => /SET status = 'processing'/.test(sql)), fail);
+  }
 });
 
 test('Gemini Omni Flash poll copies Interactions video output before marking the job completed', async () => {

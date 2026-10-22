@@ -38,6 +38,29 @@ const generationAdapterSource = readFileSync(join(root, 'frontend/app/api/genera
 const providerSubmissionSource = readFileSync(join(root, 'frontend/app/api/generate/_lib/video-provider-submission.ts'), 'utf8');
 const jobDetailRouteSource = readFileSync(join(root, 'frontend/app/api/jobs/[jobId]/route.ts'), 'utf8');
 
+test('Kling Modify preserves requested duration, source, references and keep-audio on both transports', () => {
+  for (const [engineId, tier] of [['kling-o3-standard', 'standard'], ['kling-o3-pro', 'pro']]) {
+    for (const durationSec of [3, 6, 15]) {
+      const source = 'https://example.com/source.mov';
+      const reference = 'https://example.com/style.jpg';
+      const extraInputValues = { keep_audio: false };
+      const fal = buildFalGenerationRequest({ engineId, mode: 'v2v', prompt: 'Change the room in @Video1', durationSec,
+        inputs: [{ name: 'source.mov', kind: 'video', type: 'video/quicktime', size: 100, slotId: 'video_url', url: source }],
+        referenceImages: [reference], extraInputValues }, `fal-ai/kling-video/o3/${tier}/video-to-video/reference`);
+      assert.equal(fal.requestBody.duration, String(durationSec));
+      assert.equal(fal.requestBody.video_url, source);
+      assert.deepEqual(fal.requestBody.image_urls, [reference]);
+      assert.equal(fal.requestBody.keep_audio, false);
+      assert.equal(fal.requestBody.resolution, undefined);
+      const direct = buildKlingDirectPayload({ engineId, mode: 'v2v', jobId: 'qualification', prompt: 'Change the room',
+        durationSec, sourceVideoUrl: source, referenceImageUrls: [reference], extraInputValues });
+      assert.equal(direct.body.duration, String(durationSec));
+      assert.equal(direct.body.mode, tier === 'standard' ? 'std' : 'pro');
+      assert.deepEqual(direct.body.video_list, [{ video_url: source, refer_type: 'feature', keep_original_sound: 'no' }]);
+    }
+  }
+});
+
 test('Kling direct router selects admin-only primary routing for V3 and O3 public engine slugs', () => {
   const klingEngineIds = [
     'kling-3-standard',

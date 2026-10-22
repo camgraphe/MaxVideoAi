@@ -7239,7 +7239,8 @@
             "type": "enum",
             "label": "Resolution",
             "values": [
-              "1080p"
+              "1080p",
+              "720p"
             ],
             "default": "1080p"
           },
@@ -7298,7 +7299,8 @@
         "perSecondCents": {
           "default": 12.6,
           "byResolution": {
-            "1080p": 12.6
+            "1080p": 12.6,
+            "720p": 12.6
           }
         },
         "addons": {
@@ -7311,7 +7313,8 @@
         "unit": "USD/s",
         "base": 0.126,
         "byResolution": {
-          "1080p": 0.126
+          "1080p": 0.126,
+          "720p": 0.126
         },
         "currency": "USD",
         "notes": "Provider cost: $0.084/s audio off and $0.126/s audio on for Kling 3.0 Omni Standard. MaxVideoAI display prices add platform margin before showing quotes."
@@ -7458,8 +7461,9 @@
             ],
             "default": 5
           },
+          "durationPolicy": "requested",
           "resolution": [
-            "1080p"
+            "720p"
           ],
           "resolutionLocked": true,
           "aspectRatio": [
@@ -7622,8 +7626,9 @@
             ],
             "default": 5
           },
+          "durationPolicy": "requested",
           "resolution": [
-            "1080p"
+            "720p"
           ],
           "resolutionLocked": true,
           "aspectRatio": [
@@ -8102,6 +8107,7 @@
             ],
             "default": 5
           },
+          "durationPolicy": "requested",
           "resolution": [
             "1080p"
           ],
@@ -8266,6 +8272,7 @@
             ],
             "default": 5
           },
+          "durationPolicy": "requested",
           "resolution": [
             "1080p"
           ],
@@ -11968,6 +11975,7 @@
           "modes": [
             "v2v"
           ],
+          "durationPolicy": "requested",
           "duration": {
             "options": [
               "auto",
@@ -12815,6 +12823,7 @@
           "modes": [
             "v2v"
           ],
+          "durationPolicy": "requested",
           "duration": {
             "options": [
               "auto",
@@ -13580,6 +13589,7 @@
           "modes": [
             "v2v"
           ],
+          "durationPolicy": "requested",
           "duration": {
             "options": [
               "auto",

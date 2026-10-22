@@ -61,12 +61,13 @@ test('candidate does not guess equivalent roles or rename start/end fields betwe
   assert.equal(candidate.comparable, false);
 });
 
-test('candidate keeps same-role source identity and derives duration from the retained video', () => {
+test('Kling candidate keeps source identity and the independently requested output duration', () => {
   const current = setup('kling-o3-standard', { inputAssets: { video_url: [asset('video_url', 'video', 'source', 7.2)] } });
   const candidate = prepareWorkspaceModelCandidate({ engine: engine('kling-o3-pro'), current, locale: 'en' });
   assert.equal(candidate.workflow.submissionMode, 'v2v');
   assert.equal(candidate.setup.form.mode, 'v2v');
-  assert.equal(candidate.effectiveDurationSec, 8);
+  assert.equal(candidate.effectiveDurationSec, current.form.durationSec);
+  assert.equal(candidate.keptReferences[0].asset.durationSec, 7.2);
   assert.equal(candidate.keptReferences[0].asset.assetId, 'source');
   assert.equal(candidate.removedReferences.length, 0);
   assert.notEqual(candidate.setup.inputAssets.video_url[0], current.inputAssets.video_url[0]);

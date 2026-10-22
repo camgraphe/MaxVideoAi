@@ -38,3 +38,17 @@ test('base-control discovery does not grant an audio toggle to always-generated 
     assert.equal(mode.settings.some(setting=>setting.key==='audio'),false,id);
   }
 });
+
+test('Kling Modify discovery and canonical validation agree on Standard 720p and Pro 1080p', async () => {
+  for (const [id, resolution] of [['kling-o3-standard', '720p'], ['kling-o3-pro', '1080p']] as const) {
+    const mode = (await getAgentModelDetails(id, deps)).modes.find(mode => mode.mode === 'v2v')!;
+    assert.deepEqual(mode.resolutions, [resolution]);
+    assert.equal(mode.durationPolicy, 'requested');
+    const request = { schemaVersion: 1, surface: 'video', engineId: id, mode: 'v2v', prompt: 'Change the room',
+      references: [{ kind: 'asset', assetId: 'ma_source', role: 'source' }], outputCount: 1,
+      settings: { durationSec: 15, resolution, aspectRatio: '9:16' } };
+    assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(normalizeGenerationRequest(request), videoCandidate(id)));
+    if (id === 'kling-o3-standard') assert.throws(() => validateCanonicalGenerationCapabilities(
+      normalizeGenerationRequest({ ...request, settings: { ...request.settings, resolution: '1080p' } }), videoCandidate(id)), { field: 'resolution' });
+  }
+});
