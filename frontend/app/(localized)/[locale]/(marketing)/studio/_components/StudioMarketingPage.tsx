@@ -11,7 +11,7 @@ const STUDIO_PREVIEW_IMAGE = '/assets/studio/studio-milo-preview.webp';
 const icons = [MessageCircle, Sparkles, PanelsTopLeft];
 
 export function StudioMarketingPage({ copy, locale }: { copy: StudioMarketingCopy; locale: AppLocale }) {
-  const entryHref = `/api/studio/marketing-entry?starter=product-ad&lang=${locale}`;
+  const entryHref = `/api/studio/marketing-entry?lang=${locale}`;
   return <div className={styles.page}>
     <section className={styles.hero} aria-labelledby="studio-title">
       <div className={styles.heroCopy}>

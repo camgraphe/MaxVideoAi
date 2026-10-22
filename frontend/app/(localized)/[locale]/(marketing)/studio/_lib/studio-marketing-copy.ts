@@ -34,7 +34,7 @@ const copy: Record<AppLocale, StudioMarketingCopy> = {
     imageAlt: 'Studio workspace with a central creative conversation, visual references and a sequence timeline',
     imageCaption: 'Studio with example media.',
     workflow: { eyebrow: 'From the first thought to the next frame', title: 'Your brief sets the pace.', steps: [
-      { title: 'Bring your product brief', body: 'Open a conversation after signing in. Describe the product scene you want and add an owned reference from your media library if it helps.' },
+      { title: 'Start with your idea', body: 'Describe what you want to create or change. Milo develops the prompt with you. Add a reference from your media library whenever it helps.' },
       { title: 'Refine and review the quote', body: 'Let Milo develop the prompt. Review the model, references, settings and current exact price before choosing to generate.' },
       { title: 'Approve and keep the media', body: 'Confirm the generation quote to start creating. When it completes, download the individual image or clip from your media library.' },
     ] },
@@ -66,7 +66,7 @@ const copy: Record<AppLocale, StudioMarketingCopy> = {
     imageAlt: 'Interface Studio avec une conversation créative centrale, des références visuelles et une timeline',
     imageCaption: 'Studio avec des médias d’exemple.',
     workflow: { eyebrow: 'De la première idée au prochain plan', title: 'Votre brief donne le rythme.', steps: [
-      { title: 'Apportez votre brief produit', body: 'Ouvrez une conversation après connexion. Décrivez la scène produit souhaitée et ajoutez une référence de votre bibliothèque si elle précise votre intention.' },
+      { title: 'Partez de votre idée', body: 'Décrivez ce que vous voulez créer ou modifier. Milo développe le prompt avec vous. Ajoutez une référence de votre bibliothèque si elle précise votre intention.' },
       { title: 'Affinez et vérifiez le devis', body: 'Laissez Milo développer le prompt. Vérifiez le modèle, les références, les réglages et le prix exact actuel avant de décider de générer.' },
       { title: 'Validez et conservez le média', body: 'Confirmez le devis pour lancer la création. Une fois terminée, téléchargez l’image ou le clip individuel depuis votre bibliothèque de médias.' },
     ] },
@@ -98,7 +98,7 @@ const copy: Record<AppLocale, StudioMarketingCopy> = {
     imageAlt: 'Interfaz de Studio con una conversación creativa central, referencias visuales y una línea de tiempo',
     imageCaption: 'Studio con medios de ejemplo.',
     workflow: { eyebrow: 'De la primera idea al siguiente plano', title: 'Tu idea marca el ritmo.', steps: [
-      { title: 'Trae tu brief de producto', body: 'Abre una conversación después de iniciar sesión. Describe la escena de producto y añade una referencia de tu biblioteca si ayuda a explicar la dirección.' },
+      { title: 'Empieza con tu idea', body: 'Describe lo que quieres crear o cambiar. Milo desarrolla el prompt contigo. Añade una referencia de tu biblioteca cuando te ayude.' },
       { title: 'Define y revisa el precio', body: 'Deja que Milo desarrolle el prompt. Revisa el modelo, las referencias, los ajustes y el precio exacto actual antes de decidir si quieres generar.' },
       { title: 'Aprueba y conserva el medio', body: 'Confirma el precio para empezar a crear. Cuando termine, descarga la imagen o el clip individual desde tu biblioteca de medios.' },
     ] },

@@ -40,7 +40,7 @@ test('Studio is discoverable as a public page while app access keeps its existin
   assert.equal(MARKETING_NAV_DROPDOWNS.tools?.items[0].emphasized, true);
   assert.equal(MARKETING_NAV_DROPDOWNS.tools?.mobileAllLinkAfterItems, true);
   const view = readFileSync('frontend/app/(localized)/[locale]/(marketing)/studio/_components/StudioMarketingPage.tsx', 'utf8');
-  assert.match(view, /\/api\/studio\/marketing-entry\?starter=product-ad&lang=\$\{locale\}/);
+  assert.match(view, /\/api\/studio\/marketing-entry\?lang=\$\{locale\}/);
   assert.match(view, /href=\{entryHref\} prefetch=\{false\}/);
   assert.doesNotMatch(view, /<main|\/api\/(?:generate|studio\/chat)|fetch\(/);
   const page = readFileSync('frontend/app/(localized)/[locale]/(marketing)/studio/page.tsx', 'utf8');

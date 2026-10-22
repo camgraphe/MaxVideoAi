@@ -1,19 +1,24 @@
-import {quoteStudioAssistance} from '../../../server/pricing/quote-studio-assistance';
-import {studioProviderReservation} from './assistance-provider-facts';
+/** Server-authored authorization. Immutable funding remains the customer cap authority. */
+export type StudioCreditCompletion = {
+  version: 1;
+  customerCapCents: number;
+  maximumIncrementCents: number;
+  accountedIncrementCents?: number;
+  giftCents?: number;
+};
 
-/** Fit a new Max response to spendable credits using the same cumulative tariff as settlement.
- * Input is already counted; only the output cap changes, never the counted payload or price.
- * Call under the account lock and persist the selected cap before provider dispatch.
- */
-export function fitStudioCreditOutput(input:{inputTokens:number;outputTokens:number;approvedOutputBound:number;basis:number;chargedCents:number;availableCredits:number;tariffVersion:string}):number|null {
-  if(input.availableCredits<=0)return null;
-  const fits=(outputTokens:number)=>{
-    const reserved=studioProviderReservation('gpt-6.1-sol',input.inputTokens,outputTokens,input.approvedOutputBound);
-    return (quoteStudioAssistance(input.basis+reserved,input.tariffVersion).customerTotalCents-input.chargedCents)*10<=input.availableCredits;
-  };
-  // Keep a small positive output floor; otherwise let Standard continue.
-  let low=16,high=input.outputTokens;
-  if(high<low||!fits(low))return null;
-  while(low<high){const mid=Math.ceil((low+high)/2);if(fits(mid))low=mid;else high=mid-1;}
-  return low;
+export function readStudioCreditCompletion(snapshot: unknown, fundingCapCents?: number): StudioCreditCompletion | null {
+  const raw = snapshot && typeof snapshot === 'object' ? (snapshot as Record<string, unknown>).creditCompletion : undefined;
+  if (raw === undefined) return null;
+  const value = raw as StudioCreditCompletion;
+  const valid = (n: unknown): n is number => Number.isSafeInteger(n) && Number(n) >= 0;
+  if (!value || value.version !== 1 || !valid(value.customerCapCents) || value.customerCapCents <= 0
+    || !valid(value.maximumIncrementCents) || value.maximumIncrementCents <= value.customerCapCents
+    || (fundingCapCents !== undefined && value.customerCapCents !== fundingCapCents)
+    || ((value.accountedIncrementCents !== undefined || value.giftCents !== undefined)
+      && (!valid(value.accountedIncrementCents) || value.accountedIncrementCents > value.maximumIncrementCents
+        || !valid(value.giftCents) || value.giftCents !== Math.max(0, value.accountedIncrementCents - value.customerCapCents)))) {
+    throw new Error('Invalid Studio credit completion authorization');
+  }
+  return value;
 }

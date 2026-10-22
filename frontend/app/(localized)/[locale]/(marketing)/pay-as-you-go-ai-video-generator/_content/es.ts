@@ -214,7 +214,7 @@ export const esPayAsYouGoContent = {
     budgetTemplate: "¿Planeas tres intentos? Con una cotización sin cambios de {unitPrice}, tres generaciones completadas consumirían {totalPrice} en créditos de medios.",
     budgetContext: "LTX 2.5 Pro · 10s 720p · audio desactivado.",
     budgetCaveat: "Es una ilustración de presupuesto, no una garantía de obtener el resultado deseado en tres intentos. Los créditos consumidos son distintos de la recarga mínima, que empieza en $10. Otros ajustes o precios requieren una nueva cotización.",
-    studioAssistance: "¿Usas Studio? Sol utiliza créditos de asistencia incluidos o comprados. La generación de medios tiene su propia cotización. Ten en cuenta ambos al planificar tu presupuesto.",
+    studioAssistance: "¿Usas Studio? Milo Max utiliza créditos de asistencia incluidos o comprados. La generación de medios tiene su propia cotización. Ten en cuenta ambos al planificar tu presupuesto.",
     studioLinkLabel: "Abrir Studio",
     creditNotes: {
       "title": "Validez de los créditos antes de recargar",

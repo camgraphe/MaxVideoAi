@@ -214,7 +214,7 @@ export const frPayAsYouGoContent = {
     budgetTemplate: "Vous prévoyez trois essais ? Avec un devis inchangé de {unitPrice}, trois générations terminées consommeraient {totalPrice} de crédits média.",
     budgetContext: "LTX 2.5 Pro · 10s 720p · audio désactivé.",
     budgetCaveat: "C’est une illustration de budget, sans garantie que trois essais donnent le résultat souhaité. Les crédits média consommés sont distincts de la recharge minimale, à partir de 10 $. Des réglages ou tarifs différents nécessitent un nouveau devis.",
-    studioAssistance: "Vous utilisez Studio ? Sol consomme des crédits d’assistance inclus ou achetés. La génération média dispose de son propre devis. Tenez compte des deux dans votre budget.",
+    studioAssistance: "Vous utilisez Studio ? Milo Max consomme des crédits d’assistance inclus ou achetés. La génération média dispose de son propre devis. Tenez compte des deux dans votre budget.",
     studioLinkLabel: "Ouvrir Studio",
     creditNotes: {
       "title": "Validité des crédits avant de recharger",

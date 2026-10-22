@@ -12,6 +12,7 @@ import {getDb} from '../frontend/src/lib/db';
 import {createStudioConversationProject} from '../frontend/src/server/studio/conversation-project-command';
 import {studioAssistancePolicy} from '../frontend/src/server/studio/assistance-policy';
 import {runStudioTaskWorkerOnce} from '../frontend/src/server/studio/tasks/worker';
+import type {StudioResponseCreator} from '../frontend/src/server/studio/conversation-director';
 import type {ImageGenerationFactory} from '../frontend/src/server/studio/image-conversation-service';
 import {createStudioImageGenerationService} from '../frontend/src/server/studio/image-generation-service';
 
@@ -130,19 +131,20 @@ test('Milo modes preserve model selection, credits, references and explicit cons
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM studio_assistance_calls')).rows[0].n,0);
     const generationFactory=((actor,options)=>({resolveReferences:createStudioImageGenerationService(actor,options).resolveReferences,walletSummary:async()=>({balanceCents:0,currency:'USD'}),catalog:async()=>[],getQuote:async()=>null})) as ImageGenerationFactory;
     let calls=0;
-    const worker={enabled:true,assistancePolicy:studioAssistancePolicy({STUDIO_ASSISTANCE_ENABLED:'true'}),serviceOptions:{generationFactory,countInputTokens:async()=>100,createActionResponse:async()=>{
-      calls++;return {id:'offline-'+calls,model:'gpt-6.1-sol',status:'completed' as const,service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50},output_text:'',output:[{type:'function_call' as const,name:'project_read',call_id:'read-'+calls,arguments:'{}'}]};
+    const worker={enabled:true,assistancePolicy:studioAssistancePolicy({STUDIO_ASSISTANCE_ENABLED:'true'}),serviceOptions:{generationFactory,countInputTokens:async()=>8000,createActionResponse:async(params:Parameters<StudioResponseCreator>[0])=>{
+      calls++;return {id:'offline-'+calls,model:params.model!,status:'completed' as const,service_tier:'default',usage:{input_tokens:8000,input_tokens_details:{cached_tokens:0},output_tokens:2200},output_text:'',output:[{type:'function_call' as const,name:'project_read',call_id:'read-'+calls,arguments:'{}'}]};
     }}};
     await runStudioTaskWorkerOnce(worker);assert.equal(calls,4);
 
     await expect(taskCard.getByText('Request paused')).toBeVisible({timeout:15_000});
+    await expect(taskCard.getByText('250 Max credits already used')).toBeVisible();
     await page.setViewportSize({width:390,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true);
     await page.screenshot({path:join(evidence,'task-mobile.png'),fullPage:true});
     const resumed=page.waitForResponse(response=>response.url().includes('/conversation-tasks/')&&response.request().method()==='POST');
     await taskCard.getByRole('button',{name:'Continue · same ceiling'}).click();const approved=await resumed;assert.equal(approved.status(),200,JSON.stringify(await approved.json()));
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM studio_task_approvals')).rows[0].n,1);assert.equal(calls,4);
     await page.reload();await expect(page.getByRole('region',{name:'Studio task'}).getByText('Waiting for Milo')).toBeVisible();assert.equal(calls,4);
-    await runStudioTaskWorkerOnce({...worker,serviceOptions:{...worker.serviceOptions,createActionResponse:async()=>{calls++;return {id:'finished',model:'gpt-6.1-sol',status:'completed' as const,service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50},output_text:JSON.stringify({reply:'The requested guidance is complete.'}),output:[]};}}});
+    await runStudioTaskWorkerOnce({...worker,serviceOptions:{...worker.serviceOptions,createActionResponse:async params=>{calls++;assert.equal(params.model,'gpt-6-luna');return {id:'finished',model:params.model!,status:'completed' as const,service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50},output_text:JSON.stringify({reply:'The requested guidance is complete.'}),output:[]};}}});
     await expect(page.getByText('The requested guidance is complete.')).toBeVisible({timeout:15_000});assert.equal(calls,5);
     await page.reload();await expect(page.getByText('The requested guidance is complete.')).toBeVisible();assert.equal(calls,5);
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM studio_tasks')).rows[0].n,1);
@@ -153,8 +155,8 @@ test('Milo modes preserve model selection, credits, references and explicit cons
     await runStudioTaskWorkerOnce({...worker,serviceOptions:{...worker.serviceOptions,createActionResponse:async params=>{
       calls++;assert.match(JSON.stringify(params.input),/approved vertical framing/);
       if(calls===6){
-        assert.equal(params.model,'gpt-6.1-sol');assert.equal(params.max_output_tokens,1975,'The remaining 40 credits can fund a bounded Max response');
-        return {id:'last-max-credits',model:params.model!,status:'incomplete' as const,incomplete_details:{reason:'max_output_tokens' as const},service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:1975},output_text:'',output:[]};
+        assert.equal(params.model,'gpt-6.1-sol');assert.equal(params.max_output_tokens,2200,'The final credits keep the full response allowance');
+        return {id:'last-max-credits',model:params.model!,status:'incomplete' as const,incomplete_details:{reason:'max_output_tokens' as const},service_tier:'default',usage:{input_tokens:8000,input_tokens_details:{cached_tokens:0},output_tokens:2200},output_text:'',output:[]};
       }
       assert.equal(params.model,'gpt-6-luna');
       return {id:'fallback-finished',model:params.model!,status:'completed' as const,service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50},output_text:JSON.stringify({reply:'Continued with the approved framing.'}),output:[]};

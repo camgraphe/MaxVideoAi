@@ -101,28 +101,34 @@ message quote. It **never debits the wallet a second time**. Purchases use
 charges. Credit funding stores total quoted/settled customer cents (including free
 usage); the call's `charged_cents` records only the purchased portion consumed.
 
-The 2026-10-23 low-balance fix removes the requirement to afford the entire requested
-output allowance before an owned Max conversation task can proceed. Under the account lock,
-`assistance-credit-budget.ts` finds the largest output cap affordable by the current
-spendable credits and remaining task ceiling, using the exact existing cumulative quote and counted input.
-For example, with 100 input tokens, 40 remaining credits can fund up to 1,975 output
-tokens; the last 10 credits can fund up to 475. The checkpoint persists that cap
-and applies it to the provider payload before dispatch, and restores it on replay.
-Only actual usage is consumed; a shorter response returns its unused reservation.
-There is no new tariff, minimum credit balance, negative balance, automatic pack
-purchase, or extra wallet charge. The existing upward cent rounding remains, so
-credit balances change in multiples of 10 rather than individual credits.
+The 2026-10-23 completion policy lets an owned Max task use its final positive
+balance without reducing the requested output allowance. Under the account lock,
+the customer reservation is capped at spendable credits and the remaining task
+monetary ceiling. MaxVideoAI sponsors any excess and conservatively reserves the
+full supplier exposure against the existing campaign, including purchased-only
+balances. Normal profile input/output/call/time limits still apply.
 
-If the input plus the minimum 16-token output allowance cannot fit, the existing
-task fallback continues with sponsored Standard and preserves the unspent Max
-credits. Zero credits therefore do not stop a task while sponsored assistance is
-available. If a fitted Max output reaches its reduced limit, another existing task
-step can continue, including with Standard after depletion; incomplete tool calls
-are discarded and never executed. Mandatory first film comparisons remain required
-after an incomplete output. Non-task legacy calls retain their original fixed bounds.
-Task call/time/credit ceilings, unavailable
-campaigns, paused purchased usage and unknown-usage recovery still apply. Replay
-settles the saved bounded call before any new step. Explicit media-analysis quotes
+`assistance-credit-budget.ts` validates the versioned `creditCompletion` marker in
+`pricing_snapshot`. The immutable funding `quoted_cents` is the authoritative
+customer cap; the snapshot is mutable until settlement. Settlement bills only
+actual incremental usage up to that cap and records the per-call gift separately.
+Cumulative tariff accounting subtracts both charged and gifted amounts, so a later
+purchase or explicitly continued segment never bills the gift back. Task ceilings
+count actual customer charges only. A shorter response releases unused credits;
+zero is a lower bound, not a forced debit. The existing upward cent rounding means
+balances change in multiples of 10 credits. There is no new tariff, negative balance,
+automatic pack purchase or second wallet charge.
+
+At zero spendable credits or zero remaining customer task allowance, sponsored
+Standard can continue within the existing task resource limits. A final Max output
+that still reaches its full output bound can use another existing step; incomplete
+tools are discarded and mandatory first film comparisons remain required. Saved
+completion authorization and output bounds survive checkpoint replay. Unknown
+usage remains held until recovery or support resolution; waived calls stay excluded
+from future customer tariff accounting. Non-task legacy calls retain fixed bounds.
+Unavailable campaigns, paused purchased usage and request limits still apply.
+Same-ceiling continuation remains available after legitimate step/time/budget pauses.
+Explicit media-analysis quotes
 and historical financial evidence are unaffected.
 
 GPT‑6 Luna has **no monthly per-account quota**. The existing owned conversation

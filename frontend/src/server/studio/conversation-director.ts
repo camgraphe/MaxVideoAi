@@ -36,7 +36,7 @@ export type StudioDirectorContext = {
   execute(callId: string, request: StudioActionRequest): Promise<StudioActionResult>;
   readCompletedAction?(callId: string, request: StudioActionRequest): Promise<StudioActionResult|null>;
   comparisonCatalogFingerprint?(request:Extract<StudioActionRequest,{action:'pricing.compare'}>):Promise<string|null>;
-  checkpoint(index: number, create: () => Promise<StudioDirectorResponse>, params?: ResponseCreateParamsNonStreaming, options?: {replayOnly?: boolean;prepareLunaInput?:()=>void}): Promise<StudioDirectorResponse>;
+  checkpoint(index: number, create: () => Promise<StudioDirectorResponse>, params?: ResponseCreateParamsNonStreaming, options?: {replayOnly?: boolean;prepareLunaInput?:()=>void;onCreditCompletion?:()=>void}): Promise<StudioDirectorResponse>;
 };
 const replySchema = z.object({reply: z.string().min(1).max(2400).transform(projectStudioReply)}).strict();
 function pendingDirectorReply(reason: 'action_limit'|'output_limit',completedEdits: number,lastResult?: StudioActionResult,correctionRejected = false,locale:'en'|'fr'|'es'='en'): ImageDraft {
@@ -166,9 +166,10 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         text: {format: {type: 'json_schema', name: 'studio_reply', strict: true, schema: {type: 'object', additionalProperties: false, required: ['reply'], properties: {reply: {type: 'string'}}}}},
       };
       let freshResponse = false;
+      let creditCompletion = false;
       let response: StudioDirectorResponse;
       try {
-        response = await context.checkpoint(index, async () => {freshResponse = true; return freezeStudioFilmResponse(await create(params),filmDuration??failedFilmComparison?.request.filmDurationSec??null);}, params, {replayOnly: correctionRejected||!!comparisonReplayOnly||failedFilmComparison?.replayOnly,prepareLunaInput:()=>{params.input=lunaInput();}});
+        response = await context.checkpoint(index, async () => {freshResponse = true; return freezeStudioFilmResponse(await create(params),filmDuration??failedFilmComparison?.request.filmDurationSec??null);}, params, {replayOnly: correctionRejected||!!comparisonReplayOnly||failedFilmComparison?.replayOnly,prepareLunaInput:()=>{params.input=lunaInput();},onCreditCompletion:()=>{creditCompletion=true;}});
       } catch (error) {
         if ((correctionRejected||comparisonReplayOnly||failedFilmComparison?.replayOnly) && error instanceof AgentApiError && (error.code === 'RATE_LIMITED'
           || (error.code === 'SPENDING_LIMIT_EXCEEDED' && error.nextAction?.type === 'studio_assistance' && error.nextAction.reason === 'call_limit'))) {
@@ -181,10 +182,10 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       }
       if (response.status !== 'completed') {
         if (response.status === 'incomplete' && response.incomplete_details?.reason === 'max_output_tokens'){
-          // A credit-fitted Max response may exhaust its smaller allowance. Its incomplete
+          // A sponsored final Max response may still reach its output bound. Its incomplete
           // tools are never executed; the next metered step can finish with sponsored Standard.
           // Keep the task's existing call cap, including replay of this saved response.
-          if(options.taskExecution&&response.model==='gpt-6.1-sol'&&(params.max_output_tokens??0)<options.taskExecution.profile.maxOutputTokens&&index<maxResponses-1)continue;
+          if(options.taskExecution&&response.model==='gpt-6.1-sol'&&(creditCompletion||(params.max_output_tokens??0)<options.taskExecution.profile.maxOutputTokens)&&index<maxResponses-1)continue;
           return pendingDirectorReply('output_limit',completedEdits,lastResult,false,locale);
         }
         throw new AgentApiError('INTERNAL_ERROR', 'Studio could not finish this message. Resume the saved request.', true);

@@ -214,7 +214,7 @@ export const enPayAsYouGoContent = {
     budgetTemplate: "Planning three attempts? At an unchanged quote of {unitPrice}, three completed generations would use {totalPrice} in media credits.",
     budgetContext: "LTX 2.5 Pro · 10s 720p · audio off.",
     budgetCaveat: "This is a budget illustration, not a promise that three attempts will produce the result you want. Media credits used are separate from the minimum top-up, which starts at $10. Changed settings or prices require a new quote.",
-    studioAssistance: "Using Studio? Sol uses included or purchased assistance credits. Media generation has its own quote. Review both when planning your budget.",
+    studioAssistance: "Using Studio? Milo Max uses included or purchased assistance credits. Media generation has its own quote. Review both when planning your budget.",
     studioLinkLabel: "Open Studio",
     creditNotes: {
       "title": "Credit validity before you top up",
