@@ -29,11 +29,6 @@ observed prolonged dependency downloads on the new image. The shared PostgreSQL
 17/FFmpeg setup and the complete tariff suite remain required; the runner pin does
 not change coverage or the aggregate Quality CI gate.
 
-On the Milo release candidate, Ubuntu 26.04 spent nearly 22 minutes installing
-PostgreSQL/FFmpeg before the database/media job reached its 25-minute limit.
-Pinning that lane to the same stable image preserves both the complete integration
-suite and the isolated Studio route checks; it does not turn a timeout into a pass.
-
 The fast job has a 30-minute limit, including setup, audits, type checking and
 lint. Its 1,300+ tools-free test files include complete pricing projections;
 the former 20-minute job limit canceled a still-progressing suite on hosted
@@ -156,6 +151,11 @@ CI runs. A new PR push cancels obsolete validation for that PR. Main, nightly an
 manual runs use separate concurrency groups and do not cancel the PR's check.
 Before merge, wait for Quality CI on the latest candidate and follow the normal
 production alignment checks in `docs/deployment/github-vercel.md`.
+
+On the Milo release candidate, Ubuntu 26.04 spent nearly 22 minutes installing
+PostgreSQL/FFmpeg before the database/media job reached its 25-minute limit.
+Pinning that lane to the same stable image preserves both the complete integration
+suite and the isolated Studio route checks; it does not turn a timeout into a pass.
 
 `frontend/next.config.js` explicitly enables `experimental.webpackBuildWorker`
 because next-intl adds a custom Webpack hook, which disables Next 15's automatic

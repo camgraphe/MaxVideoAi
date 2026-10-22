@@ -74,7 +74,7 @@ jobs:
     name: Database and media integration
     needs: plan
     if: ${{ needs.plan.outputs.integration == 'true' }}
-    # Match the validated PostgreSQL/FFmpeg image; 26.04 setup consumed nearly the full job budget.
+    # Match the validated PostgreSQL/FFmpeg image; 26.04 package downloads timed out before tests.
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
