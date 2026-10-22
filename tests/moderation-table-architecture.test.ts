@@ -136,3 +136,14 @@ test('moderation playlist select keeps an accessible label in compact and full l
 test('moderation date labels use the fixed admin timezone to avoid hydration text drift', () => {
   assert.match(utilsSource, /timeZone:\s*'Europe\/Paris'/);
 });
+
+test('moderation transport and controls share filter identities while SQL stays server-side', () => {
+  const routeSource = readFileSync(join(root, 'frontend/app/api/admin/videos/pending/route.ts'), 'utf8');
+  const filtersSource = readFileSync(join(root, 'frontend/lib/admin/moderation-filters.ts'), 'utf8');
+  assert.match(routeSource, /parseModerationSurface as parseSurface/);
+  assert.match(routeSource, /buildModerationSurfaceFilterClause as buildSurfaceFilterClause/);
+  assert.doesNotMatch(routeSource, /function buildSurfaceFilterClause/);
+  assert.match(utilsSource, /from '@\/lib\/admin\/moderation-filters'/);
+  assert.doesNotMatch(filtersSource, /from '@\/server\//);
+  assert.doesNotMatch(filtersSource, /from '@\/lib\/db'/);
+});

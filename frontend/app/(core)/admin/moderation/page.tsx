@@ -3,10 +3,11 @@ import { notFound } from 'next/navigation';
 import { ModerationTable, type ModerationVideo } from '@/components/admin/ModerationTable';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { requireAdmin } from '@/server/admin';
+import type { ModerationSurface } from '@/lib/admin/moderation-filters';
 import { AdminActionLink } from '@/components/admin-system/shell/AdminActionLink';
 
 type ModerationBucket = 'not-published' | 'published' | 'all';
-type ModerationSurface = 'video' | 'image' | 'audio' | 'character' | 'angle';
+
 
 async function getBaseUrl() {
   const headerStore = await headers();

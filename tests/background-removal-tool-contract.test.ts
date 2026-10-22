@@ -155,6 +155,7 @@ test('background removal library and recent flows stay scoped to video assets', 
   const sourceMediaSource = readFileSync(sourceMediaPath, 'utf8');
   const mediaAssetsSource = readFileSync(mediaAssetsPath, 'utf8');
   const adminPendingSource = readFileSync(adminPendingPath, 'utf8');
+  const adminFiltersSource = readFileSync(join(root, 'frontend/server/admin-moderation-filters.ts'), 'utf8');
 
   assert.match(recentActionsSource, /source:\s*'background-removal'/);
   assert.match(recentActionsSource, /kind:\s*'video'/);
@@ -162,6 +163,7 @@ test('background removal library and recent flows stay scoped to video assets', 
   assert.match(recentJobsSource, /useInfiniteJobs\(12,\s*\{\s*surface:\s*'background-removal'\s*\}\)/);
   assert.match(sourceMediaSource, /type LibrarySource = 'all' \| 'upload' \| 'generated' \| 'background-removal'/);
   assert.match(mediaAssetsSource, /source IN \('upload', 'storyboard', 'character', 'angle', 'upscale', 'background-removal'\)/);
-  assert.match(adminPendingSource, /tool_background_removal_/);
-  assert.match(adminPendingSource, /background-removal/);
+  assert.match(adminPendingSource, /buildModerationSurfaceFilterClause as buildSurfaceFilterClause/);
+  assert.match(adminFiltersSource, /tool_background_removal_/);
+  assert.match(adminFiltersSource, /background-removal/);
 });
