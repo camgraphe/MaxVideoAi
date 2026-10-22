@@ -81,7 +81,7 @@
 - [x] Document storage ownership, activation/migration/rollback and exact route/SEO compatibility gates in `docs/engineering/marketing-media.md`.
 - [x] Run focused tests, PostgreSQL integrations, TypeScript, frontend lint, exposure guard, production build and relevant existing public/browser suites. Broaden only for unresolved concerns.
 - [x] Independently review the complete branch, fix substantive findings with failing-then-passing tests, and record limitations.
-- [ ] Commit, push a dedicated PR and attach it. Leave production unchanged until normal reviewed delivery.
+- [x] Commit, push a dedicated PR and attach it. Leave production unchanged until normal reviewed delivery.
 
 ## Baseline
 
@@ -94,3 +94,5 @@ The independent whole-branch review found four lifecycle/source-independence iss
 TypeScript, frontend lint (six existing warnings, no errors), exposure checks and the production build pass. PostgreSQL 17 exercises real publication, deletion and catalog/watch readers. Browser fixtures cover 390/1440 widths and no original MP4 request before Play. Built-app smoke checks returned 401 for unauthenticated new admin API actions and 200 with existing canonical/hreflang/JSON-LD output for examples and localized/family examples. No public page-route, redirect or sitemap owner was changed.
 
 Production activation remains deliberately disabled. Migration 78, the server feature flag, storage/CDN checks and normal reviewed deployment are still required before live use. Registered authored demos require their separate rendition-preserving migration; the feature refuses to silently replace them.
+
+Delivery: draft PR [#500](https://github.com/camgraphe/MaxVideoAi/pull/500), attached to the implementation chat. No merge or production activation performed.
