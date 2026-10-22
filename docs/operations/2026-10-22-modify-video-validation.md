@@ -178,3 +178,14 @@ and preserve per-model limits. All 39 affected capacity/Studio checks passed.
 The remaining initial-tariff-cutover test rejected a code-revision change because
 a commit was created while that long test was running. Its binding check is
 preserved; financial qualification requires the stable candidate's CI run.
+
+The stable `358256bbd` run passed Fast checks and its Vercel preview, then exposed
+an independent stale total in the exhaustive initial-cutover test: 26,982 quotes
+were accepted, but the fixture expected 26,946. The missing 36 cases are the
+reviewed intermediate Luma Modify durations. The fixture now asserts that exact
+expansion before replay, without dropping financial or rollback checks. Database
+integration timed out while downloading Ubuntu 26.04 packages; browser validation
+spent over 12 minutes preparing tools and reached its 25-minute total timeout
+while tests were still passing. Database/media now uses the same Ubuntu 24.04
+image as tariffs/browser, and the browser total budget is 40 minutes. Both full
+suites and the aggregate Quality CI gate remain required on the next candidate.

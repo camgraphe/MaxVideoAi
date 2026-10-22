@@ -57,11 +57,16 @@ test('initial cutover is atomic, validates the actual reader, and rollback prese
     assert.equal(policy.status, 'loaded');
     if (policy.status !== 'loaded') throw new Error('Fixture policy unavailable');
     const coverage = collectSellableManualTariffCoverage();
-    // Keep the historical population explicit; the live registry adds the exact Max launch scope.
+    // Keep historical coverage and each reviewed expansion explicit.
     const maxCells = coverage.scenarios.filter(row => row.modelId === 'flux-3-max').length;
     assert.equal(maxCells, 128, 'four modes × sixteen integer durations × two resolutions');
-    const expectedCheckedQuotes = 26818 + maxCells;
-    const expectedCandidateCells = 14829 + maxCells;
+    const lumaModifyExtraCells = coverage.scenarios.filter(row => row.modelId === 'luma-ray-3-2'
+      && row.context.mode === 'v2v' && ![5, 10].includes(row.context.durationSec)).length;
+    assert.equal(lumaModifyExtraCells, 36, 'twelve additional source-duration classes × three resolutions');
+    const expectedCheckedQuotes = 26818 + maxCells + lumaModifyExtraCells;
+    const expectedCandidateCells = 14829 + maxCells + lumaModifyExtraCells;
+    assert.equal(collectCustomerTariffCutoverCheckpoints().length, expectedCheckedQuotes,
+      'Review inventory changes before running the exhaustive monetary replay');
     assert.equal(collectCustomerTariffCutoverCheckpoints().filter(row => row.scenario.modelId === 'flux-3-max').length, maxCells);
     const inactive = { status: 'loaded' as const, active: false, revision: 0, databaseCells: [], versionedCells: [] };
     const quoteLegacy = (scenario: typeof coverage.scenarios[number]) => computeCustomerTariffInitializationBaseline(scenario.context, policy);
@@ -161,7 +166,7 @@ test('initial cutover is atomic, validates the actual reader, and rollback prese
     assert.equal(applied.checkedQuotes,expectedCheckedQuotes);
     assert.equal(applied.candidateCells,expectedCandidateCells);
     assert.equal(applied.archivedLegacyCells,162);
-    assert.equal(applied.candidateCells + applied.archivedLegacyCells,14991 + maxCells);
+    assert.equal(applied.candidateCells + applied.archivedLegacyCells,14991 + maxCells + lumaModifyExtraCells);
     assert.equal(applied.unavailableQuotes,486);
     t.diagnostic('Actual reader activation accepted before commit.');
     await assert.rejects(run(), /initial.*empty|revision/i);

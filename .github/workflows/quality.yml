@@ -74,7 +74,8 @@ jobs:
     name: Database and media integration
     needs: plan
     if: ${{ needs.plan.outputs.integration == 'true' }}
-    runs-on: ubuntu-latest
+    # Match the validated PostgreSQL/FFmpeg image; 26.04 package downloads timed out before tests.
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - name: Checkout
@@ -94,7 +95,7 @@ jobs:
     if: ${{ needs.plan.outputs.tariffs == 'true' }}
     # Keep the validated toolchain stable during the ubuntu-latest 26.04 migration.
     runs-on: ubuntu-24.04
-    # Preserve all 26,818 canonical quotes and atomic failure/recovery checks.
+    # Preserve the complete current-registry quote matrix and atomic failure/recovery checks.
     timeout-minutes: 60
     steps:
       - name: Checkout
@@ -112,8 +113,8 @@ jobs:
     if: ${{ needs.plan.outputs.browser == 'true' }}
     # Playwright 1.59.1 supports Ubuntu 24.04; ubuntu-latest can resolve to 26.04.
     runs-on: ubuntu-24.04
-    # Connected browser tests take ~11 minutes before the admin smoke suite starts.
-    timeout-minutes: 25
+    # Tool/browser installation can take 12 minutes before the complete browser and admin suites.
+    timeout-minutes: 40
     steps:
       - name: Checkout
         uses: actions/checkout@v5
