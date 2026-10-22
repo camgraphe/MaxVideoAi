@@ -37,6 +37,7 @@ const OFFICIAL_HOSTS = new Set([
   'docs.byteplus.com',
   'docs.ltx.io',
   'docs.lumalabs.ai',
+  'docs.agents.lumalabs.ai',
   'docs.modelstudio.console.alibabacloud.com',
   'docs.x.ai',
   'bfl.ai',

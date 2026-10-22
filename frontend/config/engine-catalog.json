@@ -3564,7 +3564,7 @@
         "v2v",
         "reframe"
       ],
-      "maxDurationSec": 30,
+      "maxDurationSec": 10,
       "resolutions": [
         "540p",
         "720p",
@@ -3590,7 +3590,7 @@
       "inputLimits": {
         "imageMaxMB": 50,
         "videoMaxMB": 200,
-        "videoMaxDurationSec": 30
+        "videoMaxDurationSec": 18
       },
       "inputSchema": {
         "required": [
@@ -3631,19 +3631,33 @@
             "id": "video_url",
             "type": "video",
             "label": "Source video",
-            "description": "Use one MP4/MOV/WebM source clip for Ray 3.2 Modify or Reframe.",
+            "description": "Modify preserves source timing. Use an owned clip of exactly 5s or 10s and select the matching duration (provider source limit: 18s).",
             "modes": [
-              "v2v",
+              "v2v"
+            ],
+            "requiredInModes": [
+              "v2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either",
+            "maxDurationSec": 18
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Source video",
+            "description": "Use one owned source clip up to 10s for Reframe. Select the output duration separately.",
+            "modes": [
               "reframe"
             ],
             "requiredInModes": [
-              "v2v",
               "reframe"
             ],
             "minCount": 1,
             "maxCount": 1,
             "source": "either",
-            "maxDurationSec": 30
+            "maxDurationSec": 10
           }
         ],
         "optional": [
@@ -3659,7 +3673,8 @@
             "modes": [
               "t2v",
               "i2v",
-              "v2v"
+              "v2v",
+              "reframe"
             ]
           },
           {
@@ -3924,7 +3939,7 @@
           ],
           "maxImageSizeMB": 50,
           "maxVideoSizeMB": 200,
-          "maxVideoDurationSec": 30
+          "maxVideoDurationSec": 18
         }
       },
       "updatedAt": "2026-06-09T00:00:00Z",
@@ -4039,7 +4054,7 @@
           ],
           "maxUploadMB": 200,
           "audioToggle": false,
-          "notes": "Modify a source video with Ray 3.2 using source-video conditioning, strength presets, guide frames, and keyframes."
+          "notes": "Modify preserves timing. Upload an owned video of exactly 5s or 10s and select the matching duration. Guide frames and keyframes are optional."
         }
       },
       {
@@ -4049,6 +4064,13 @@
           "modes": [
             "reframe"
           ],
+          "duration": {
+            "options": [
+              "5s",
+              "10s"
+            ],
+            "default": "5s"
+          },
           "resolution": [
             "540p",
             "720p",
@@ -4070,7 +4092,7 @@
           ],
           "maxUploadMB": 200,
           "audioToggle": false,
-          "notes": "Outpaint a source video into a new Ray 3.2 aspect ratio while preserving the original content frame-for-frame."
+          "notes": "Outpaint a source video up to 10s into a new aspect ratio. Choose a 5s or 10s output."
         }
       }
     ],

@@ -333,14 +333,14 @@ test('LTX audio-to-video and retake project verified source media and canonical 
   });
 });
 
-test('Luma reframe uses source duration, fixed execution resolution, and canonical crop controls', () => {
+test('Luma reframe uses selected output duration, fixed execution resolution, and canonical crop controls', () => {
   const sourceAssetId = 'ma_reframeaaaaaaaaaaaaaaaaaaaaaaaaa';
   const sourceUrl = 'https://cdn.example.com/reframe.mp4';
   const reframe = request({
     engineId: 'luma-ray-3-2',
     mode: 'reframe',
     settings: {
-      durationSec: 8,
+      durationSec: 10,
       resolution: '720p',
       aspectRatio: '9:16',
       sourcePositionX: 0.1,

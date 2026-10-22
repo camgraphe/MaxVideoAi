@@ -1,3 +1,4 @@
+import { isLumaSourceVideoMode, validateLumaSourceVideoTiming } from '@/lib/luma-source-video';
 import { bytePlusInputVideoDurationSec, isBytePlusInputVideoPricingModel } from '@/server/byteplus-accounting';
 import { calculateMinimaxH3MaxReferenceTokenBudget } from '@/lib/minimax-h3-max-pricing';
 import { getWan3InputVideoDurationSec } from '@/lib/wan3-pricing';
@@ -209,6 +210,7 @@ export async function resolveMediaAwarePreflight(
     );
   }
 
+  const needsLumaSourceTiming = isLumaSourceVideoMode(engine.id, request.mode);
   const needsReferenceTokenBudget = engine.id === 'minimax-h3-max' && request.mode === 'ref2v';
   const needsWanVideoDuration = (engine.id === 'wan-3' || engine.id === 'wan-3-prime')
     && (request.mode === 'v2v' || request.mode === 'extend' || request.inputs?.some((reference) => reference.kind === 'video') === true);
@@ -221,7 +223,7 @@ export async function resolveMediaAwarePreflight(
   const needsSeedanceSourceAspect = Boolean(seedanceAutomaticDurationBounds(engine.id)
     && (isSeedanceAdaptiveAspect(request.aspectRatio) || (engine.id === 'seedance-2-5' && ['i2v', 'extend'].includes(request.mode)))
     && ['i2v', 'v2v', 'extend'].includes(request.mode));
-  if (!needsReferenceTokenBudget && !needsReferenceImageCount && !needsInputAudioDuration && !needsTrustedOwnedMedia && !needsWanVideoDuration && !needsSeedanceReferenceDuration && !needsSeedanceSourceAspect) {
+  if (!needsLumaSourceTiming && !needsReferenceTokenBudget && !needsReferenceImageCount && !needsInputAudioDuration && !needsTrustedOwnedMedia && !needsWanVideoDuration && !needsSeedanceReferenceDuration && !needsSeedanceSourceAspect) {
     const priced = normalizeSeedancePricingContext({ ...request, engine, resolution: request.resolution ?? '480p' });
     return computeConfiguredPreflightFn({ ...request, durationSec: priced.durationSec }, {
       seedanceWorkflowStep: input.trustedSeedanceWorkflow?.workflow.step,
@@ -266,6 +268,11 @@ export async function resolveMediaAwarePreflight(
       ...(typeof body.maxDurationSec === 'number' ? { maxDurationSec: body.maxDurationSec } : {}),
     });
   }
+
+  const lumaTimingError = validateLumaSourceVideoTiming({ engineId: engine.id, mode: request.mode,
+    sourceDurationSec: processed.trustedDurationSecByField.video_url?.length === 1
+      ? processed.trustedDurationSecByField.video_url[0] : undefined, durationSec: request.durationSec });
+  if (lumaTimingError) return mediaPricingFailure('SOURCE_VIDEO_DURATION_UNSUPPORTED', lumaTimingError);
 
   let referenceTokenBudget: number | undefined;
   let inputVideoDurationSec: number | undefined;

@@ -104,7 +104,7 @@ function normalizeDuration(params: {
     if (normalized === '10' || normalized === '10s') return '10s';
   }
   if (typeof raw === 'number' && Number.isFinite(raw)) {
-    const duration = Math.trunc(raw);
+    const duration = raw;
     if (duration === 5) return '5s';
     if (duration === 10) return '10s';
   }
@@ -380,13 +380,10 @@ export function buildLumaAgentsVideoPayload(params: {
     invalidRequest('Prompt is required for Luma Agents video generation.', 'LUMA_AGENTS_PROMPT_REQUIRED');
   }
 
-  const duration =
-    route.type === 'video_reframe'
-      ? LUMA_AGENTS_DEFAULT_VIDEO_DURATION
-      : normalizeDuration({
-          durationOption: params.durationOption,
-          durationSec: params.durationSec,
-        });
+  const duration = normalizeDuration({
+    durationOption: route.type === 'video' ? params.durationOption : undefined,
+    durationSec: params.durationSec,
+  });
   const resolution = normalizeResolution(params.resolution);
   const aspectRatio = validateAspectRatio(params.aspectRatio);
   const extra = params.extraInputValues ?? {};
@@ -430,7 +427,7 @@ export function buildLumaAgentsVideoPayload(params: {
   const video: LumaAgentsVideoOptions = {
     resolution,
   };
-  if (route.type !== 'video_reframe') video.duration = duration;
+  video.duration = duration;
   if (loop && route.type === 'video') video.loop = true;
   if (startFrameUrl && route.type !== 'video_reframe') video.start_frame = { url: startFrameUrl };
   if (endFrameUrl && route.type === 'video') video.end_frame = { url: endFrameUrl };

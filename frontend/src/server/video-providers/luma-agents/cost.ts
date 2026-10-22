@@ -25,17 +25,23 @@ function normalizeResolution(value: string | null | undefined): Resolution {
   return value === '540p' || value === '1080p' || value === '720p' ? value : '720p';
 }
 
-function normalizeDuration(durationSec: number): Duration {
-  return Math.trunc(durationSec) === 10 ? '10s' : '5s';
-}
-
 export function estimateLumaAgentsVideoCost(input: ProviderCostInput): ProviderCostEstimate {
   const resolution = normalizeResolution(input.resolution);
-  const duration = normalizeDuration(input.durationSec);
+  const hdr = input.hdr === true;
+  const exrExport = input.exrExport === true;
+  if ((input.resolution != null && !['540p', '720p', '1080p'].includes(input.resolution))
+    || (input.durationSec !== 5 && input.durationSec !== 10)
+    || (exrExport && !hdr)
+    || ((hdr || exrExport) && (resolution === '540p' || input.mode === 'reframe'))
+    || (hdr && input.mode !== 'v2v' && input.durationSec === 10)) {
+    return { providerCostUnits: null, providerCostUsd: null, source: 'luma_agents_pricing_unavailable' };
+  }
+  const duration: Duration = input.durationSec === 10 ? '10s' : '5s';
+  const multiplier = exrExport ? 3 : hdr ? 2 : 1;
   if (input.mode === 'v2v') {
     return {
       providerCostUnits: null,
-      providerCostUsd: LUMA_AGENTS_RAY_32_EDIT_PRICE_USD[resolution][duration],
+      providerCostUsd: Number((LUMA_AGENTS_RAY_32_EDIT_PRICE_USD[resolution][duration] * multiplier).toFixed(4)),
       source: 'luma_agents_video_edit_public_pricing_estimate',
     };
   }
@@ -49,7 +55,7 @@ export function estimateLumaAgentsVideoCost(input: ProviderCostInput): ProviderC
   }
   return {
     providerCostUnits: null,
-    providerCostUsd: LUMA_AGENTS_RAY_32_GENERATION_PRICE_USD[resolution][duration],
+    providerCostUsd: Number((LUMA_AGENTS_RAY_32_GENERATION_PRICE_USD[resolution][duration] * multiplier).toFixed(4)),
     source: 'luma_agents_public_pricing_estimate',
   };
 }

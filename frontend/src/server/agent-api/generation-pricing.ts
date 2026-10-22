@@ -1,3 +1,4 @@
+import { assertCanonicalLumaSourceTiming } from './generation-luma-source';
 import { bytePlusInputVideoDurationSec, isBytePlusInputVideoPricingModel } from '@/server/byteplus-accounting';
 import { resolveSeedance25ModelArkEditSource } from '@/server/seedance-edit-source';
 import { seedanceSourcePricingAspectRatio } from '@/lib/seedance-option-pricing';
@@ -364,6 +365,7 @@ export async function priceCanonicalGeneration(
 ): Promise<GenerationPricingResult> {
   membershipTier = LIVE_MEMBERSHIP_POLICY.tier;
   if (request.surface === 'video') {
+    assertCanonicalLumaSourceTiming(request, referenceContext.resolvedReferences);
     if (referenceContext.resolvedEngine && referenceContext.resolvedEngine.id !== request.engineId) {
       throw new Error('Canonical pricing engine mismatch.');
     }
@@ -449,6 +451,7 @@ export async function priceCanonicalGenerationWithBilling(
   if (engine.id !== request.engineId) throw new Error('Canonical pricing engine mismatch.');
   let snapshot: PricingSnapshot;
   if (request.surface === 'video') {
+    assertCanonicalLumaSourceTiming(request, referenceContext.resolvedReferences);
     const engineMode = toEngineGenerationMode(engine.id, request.mode);
     const pricingEngine = applyEngineVariantPricing(engine, engineMode);
     const durationSec = requiredPositiveInteger(request.settings, 'durationSec');
