@@ -3,12 +3,12 @@
 .identity {display:inline-flex;align-items:center;gap:9px;color:var(--studio-text);font-size:13px;font-weight:500;}
 .identity > span {width:7px;height:7px;border-radius:50%;background:var(--studio-accent);}
 .modes {display:flex;align-items:center;padding:3px;border:1px solid var(--studio-line);border-radius:24px;background:var(--studio-panel);}
-.modes button {min-width:72px;min-height:32px;padding:5px 15px;border:0;border-radius:20px;background:transparent;color:var(--studio-muted);font:inherit;font-size:11px;}
-.modes button[aria-pressed=true] {background:var(--studio-accent);color:var(--studio-ink);}
-.modes button:not(:disabled):hover {color:var(--studio-text);}
-.modes button[aria-pressed=true]:hover {color:var(--studio-ink);}
-.modes button:focus-visible {outline:2px solid var(--studio-accent);outline-offset:3px;}
-.modes button:disabled {opacity:.5;cursor:wait;}
+.control .modes button {min-width:72px;min-height:32px;padding:5px 15px;border:0;border-radius:20px;background:transparent;color:var(--studio-muted);font:inherit;font-size:11px;}
+.control .modes button[aria-pressed=true] {background:var(--studio-accent);color:var(--studio-ink);}
+.control .modes button:not(:disabled):hover {color:var(--studio-text);}
+.control .modes button[aria-pressed=true]:hover {color:var(--studio-ink);}
+.control .modes button:focus-visible {outline:2px solid var(--studio-accent);outline-offset:3px;}
+.control .modes button:disabled {opacity:.5;cursor:wait;}
 .modeHint {margin:7px 0 0;color:var(--studio-muted);font-size:11px;line-height:1.6;}
 .trigger.trigger {display:grid;place-items:center;min-width:40px;min-height:40px;margin-left:auto;padding:8px;border:0;border-radius:50%;background:transparent;color:var(--studio-muted);}
 .trigger.trigger:hover{color:var(--studio-text);background:color-mix(in srgb,var(--studio-line) 35%,transparent);}
