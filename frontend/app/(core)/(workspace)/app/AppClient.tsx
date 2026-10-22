@@ -142,6 +142,7 @@ export default function AppClientPage({
     shotType: routeForm.shotType,
     setShotType: routeForm.setShotType,
     effectiveRequestedEngineToken: draft.effectiveRequestedEngineToken,
+    requestedWorkflow: draft.requestedWorkflow,
     authChecked: draft.authChecked,
     hydratedForScope: draft.hydratedForScope,
     storageScope: draft.storageScope,

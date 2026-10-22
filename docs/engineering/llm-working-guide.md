@@ -113,6 +113,7 @@ Keep these boundaries stable when continuing workspace cleanup:
 - `WorkspaceAppShell` owns route shell rendering.
 - `WorkspaceRuntimeModals` owns shared modal wiring.
 - `useWorkspaceEngineModeState` owns engine/mode orchestration.
+- Explicit engine/mode navigation is applied once after draft hydration, including when the engine is already selected. The request parser retains the `media` handoff token so another gallery action reapplies the requested mode without locking subsequent manual choices. `tests/workspace-requested-workflow-dom.test.ts` covers same-model Extend/Modify navigation and source preparation.
 - `useWorkspaceComposerState` owns prompt/input field state.
 - `useWorkspaceWalletPreflight` owns wallet balance preflight.
 - Explicit video extension exposes only fields declared for `extend`, even for unified composers. `lib/video-extension.ts` resolves the real source field and upload state; the workspace pricing gate waits for that source before requesting a quote. Shared composer presentation puts that source before optional references and explains the pending price without an alert. Core settings label generated duration and omit controls absent from the mode capabilities; fixed values are informational. Do not imply that every provider returns an assembled original plus continuation (see the Studio `extensionOutput` contract). This does not replace server duration/ownership validation or permit generation without a fresh quote. `tests/workspace-extend-*.test.ts` and `tests/workspace-pricing-lifecycle-dom.test.ts` cover this boundary.

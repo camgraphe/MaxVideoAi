@@ -62,6 +62,9 @@ test('targeted engine links stay authoritative over stored drafts', () => {
   assert.doesNotMatch(engineModeHookSource, /if\s*\(\s*hasStoredFormRef\.current\s*\)\s*return null;/);
   assert.doesNotMatch(engineModeHookSource, /if\s*\(\s*hasStoredFormRef\.current\s*\)\s*return;\s*setForm/);
   assert.match(engineModeHookSource, /candidate\?\.engineId !== nextState\.engineId/);
+  assert.match(appSource, /requestedWorkflow: draft.requestedWorkflow/);
+  const composerSource = readFileSync('frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceComposerState.ts', 'utf8');
+  assert.match(composerSource, /useWorkspaceEngineModeState\(\{[\s\S]*?requestedWorkflow,/);
 
   assert.doesNotMatch(appSource, /suppressGuidedSampleAutoApply/);
 });

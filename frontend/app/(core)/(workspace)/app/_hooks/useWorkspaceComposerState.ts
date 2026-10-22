@@ -5,6 +5,7 @@ import type { KlingElementState } from '@/components/KlingElementsBuilder';
 import type { EngineCaps, EngineModeUiCaps, Mode } from '@/types/engines';
 import type { ReferenceAsset } from '../_lib/workspace-assets';
 import type { FormState } from '../_lib/workspace-form-state';
+import type { WorkspaceWorkflowRequest } from '../_lib/workspace-hydration';
 import { framesToSeconds } from '../_lib/workspace-engine-helpers';
 import { createMultiPromptScene } from '../_lib/workspace-input-helpers';
 import { resolveWorkspaceComposerFacts } from '../_lib/workspace-workflow-projection';
@@ -32,6 +33,7 @@ type UseWorkspaceComposerStateOptions = {
   shotType: ShotType;
   setShotType: Dispatch<SetStateAction<ShotType>>;
   effectiveRequestedEngineToken: string | null;
+  requestedWorkflow?: WorkspaceWorkflowRequest | null;
   authChecked: boolean;
   hydratedForScope: string | null;
   storageScope: string;
@@ -119,6 +121,7 @@ export function useWorkspaceComposerState({
   shotType,
   setShotType,
   effectiveRequestedEngineToken,
+  requestedWorkflow,
   authChecked,
   hydratedForScope,
   storageScope,
@@ -172,6 +175,7 @@ export function useWorkspaceComposerState({
     shotType,
     setShotType,
     effectiveRequestedEngineToken,
+    requestedWorkflow,
     authChecked,
     hydratedForScope,
     storageScope,
