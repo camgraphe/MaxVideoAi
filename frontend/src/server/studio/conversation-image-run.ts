@@ -244,9 +244,9 @@ export async function runStudioImageActions(options: {
       if (!Number.isSafeInteger(inputTokens) || inputTokens < 0 || inputTokens > 272000) throw new AgentApiError('PARAMETER_INVALID','This Studio context exceeds the supported assistance limit.');
       if(options.taskExecution&&inputTokens>options.taskExecution.profile.maxInputTokens)throw new StudioTaskStop("context","The current context exceeds this task allowance.");
       const outputTokens=params.max_output_tokens??2200;
-      if(currentModel==='gpt-6.1-sol')solBounds={inputTokens,outputTokens};
+      if(currentModel==='gpt-6.1-sol')solBounds={inputTokens,outputTokens,fitAvailableCredits:true};
       return {policy,inputTokens,outputTokens,lunaFallback};
-    }} : undefined, {replayOnly: options.responseReplayOnly || checkpointOptions?.replayOnly});
+    },applyReservation:call=>{if(params)params.max_output_tokens=call.output_token_bound;}} : undefined, {replayOnly: options.responseReplayOnly || checkpointOptions?.replayOnly});
       try{return await checkpoint();}
       catch(error){
         const action=error instanceof AgentApiError?error.nextAction:undefined;

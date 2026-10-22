@@ -126,6 +126,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
     let failedFilmComparison:{request:Extract<StudioActionRequest,{action:'pricing.compare'}>;result:Extract<StudioActionResult,{ok:false}>;fingerprint:string|null;replayOnly:boolean}|undefined;
     let comparisonReplayOnly: Parameters<typeof studioRepeatedComparisonReply>[0] | undefined;
     let recoveredComparison: StudioActionResult | undefined;
+    let needsFilmComparison=!!filmDuration;
     const failedInputs=new Map<string,Parameters<typeof studioRepeatedComparisonReply>[0]>();
     const failedComparisons=new Map<string,Extract<StudioActionResult,{ok:false}>>();
     for(const work of options.taskExecution?.previousWork??[]){
@@ -139,7 +140,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       const availableTools = [...STUDIO_DIRECTOR_TOOLS,...(options.taskExecution?STUDIO_TASK_DIRECTOR_TOOLS:[]), ...(options.mediaEnabled ? STUDIO_MEDIA_DIRECTOR_TOOLS : []),...(options.editingEnabled ? STUDIO_EDITING_DIRECTOR_TOOLS : []),...(options.exportsEnabled ? STUDIO_EXPORT_DIRECTOR_TOOLS : []),...analysisTools];
       // A final comparison renders its own reply; other reads need another Response.
       // Older checkpointed reads remain recoverable during paid-response replay.
-      const tools = failedFilmComparison ? availableTools.filter(tool=>tool.action==='pricing.compare') : index===0&&filmDuration ? availableTools.filter(tool=>tool.action==='pricing.compare') : correctionAction
+      const tools = failedFilmComparison ? availableTools.filter(tool=>tool.action==='pricing.compare') : needsFilmComparison ? availableTools.filter(tool=>tool.action==='pricing.compare') : correctionAction
         ? availableTools.filter(tool => tool.action === correctionAction)
         : index === maxResponses-1 ? availableTools.filter(tool => tool.action.endsWith('.prepare') || tool.action === 'timeline.edit' || tool.action === 'quote.discard' || tool.action === 'pricing.compare')
         : index === Math.max(0,maxResponses-2) ? availableTools.filter(tool => tool.action !== 'project.remember') : availableTools;
@@ -149,7 +150,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         model, service_tier: 'default', store: false, reasoning: {effort}, max_output_tokens: options.taskExecution?.profile.maxOutputTokens??2200,
         include: ['reasoning.encrypted_content'],
         parallel_tool_calls: false,
-        tool_choice: index===0&&filmDuration?{type:'function',name:'pricing_compare'}:'auto',
+        tool_choice: needsFilmComparison?{type:'function',name:'pricing_compare'}:'auto',
         instructions: buildStudioDirectorInstructions({...options,taskEnabled:!!options.taskExecution})
           + `\n\nResponse ${index + 1} of ${maxResponses}: ${maxResponses - index} Responses remain, including this one. Open-model/alternative-price work starts with pricing_compare. Preserve selected models and reply-only planning; leave room to answer.`
           + (filmDuration?`\n\nThe requested complete film is ${filmDuration} seconds. First compare with filmDurationSec=${filmDuration}, surface video and t2v/i2v/ref2v as appropriate. Preserve explicitly selected models via candidateModelIds and all requested settings/references. Omit durationSec from settings unless the client explicitly set a component length; do not guess one. This call returns several fully priced cut plans; do not prepare the opening clip before the client chooses.`:'' )
@@ -179,8 +180,13 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         throw error;
       }
       if (response.status !== 'completed') {
-        if (response.status === 'incomplete' && response.incomplete_details?.reason === 'max_output_tokens')
+        if (response.status === 'incomplete' && response.incomplete_details?.reason === 'max_output_tokens'){
+          // A credit-fitted Max response may exhaust its smaller allowance. Its incomplete
+          // tools are never executed; the next metered step can finish with sponsored Standard.
+          // Keep the task's existing call cap, including replay of this saved response.
+          if(options.taskExecution&&response.model==='gpt-6.1-sol'&&(params.max_output_tokens??0)<options.taskExecution.profile.maxOutputTokens&&index<maxResponses-1)continue;
           return pendingDirectorReply('output_limit',completedEdits,lastResult,false,locale);
+        }
         throw new AgentApiError('INTERNAL_ERROR', 'Studio could not finish this message. Resume the saved request.', true);
       }
       const calls = response.output.filter(item => item.type === 'function_call');
@@ -194,8 +200,9 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       let action: StudioActionRequest;
       try { action = actionFromTool(call.name, JSON.parse(call.arguments)); }
       catch { throw new AgentApiError('PARAMETER_INVALID', 'Studio requested an unavailable or invalid action.'); }
-      if(freshResponse&&index===0&&filmDuration&&(action.action!=='pricing.compare'||action.surface!=='video'))
+      if(freshResponse&&needsFilmComparison&&(action.action!=='pricing.compare'||action.surface!=='video'))
         throw new AgentApiError('PARAMETER_INVALID','Compare the complete film cuts before preparing a component quote.');
+      needsFilmComparison=false;
       if (freshResponse && correctionAction && action.action !== correctionAction)
         throw new AgentApiError('PARAMETER_INVALID', 'Studio can only correct the rejected preparation in this response.');
       if (!options.mediaEnabled && STUDIO_MEDIA_DIRECTOR_TOOLS.some(tool => tool.action === action.action))

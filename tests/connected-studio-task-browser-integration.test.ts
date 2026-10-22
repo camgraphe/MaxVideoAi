@@ -146,19 +146,25 @@ test('Milo modes preserve model selection, credits, references and explicit cons
     await expect(page.getByText('The requested guidance is complete.')).toBeVisible({timeout:15_000});assert.equal(calls,5);
     await page.reload();await expect(page.getByText('The requested guidance is complete.')).toBeVisible();assert.equal(calls,5);
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM studio_tasks')).rows[0].n,1);
-    await runtime.database.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=480 WHERE user_id=$1',[STUDIO_FIXTURE_OWNERS[0]]);
+    await runtime.database.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=460 WHERE user_id=$1',[STUDIO_FIXTURE_OWNERS[0]]);
     await message.fill('Continue with the approved vertical framing.');
     const fallbackPosted=page.waitForResponse(response=>response.url().endsWith('/image-conversation')&&response.request().method()==='POST');
     await send.click();const followup=await fallbackPosted;assert.equal(followup.status(),200);assert.deepEqual(followup.request().postDataJSON().references,[selectedImage],'A follow-up keeps the visible owned selection after sending and reloading');
     await runStudioTaskWorkerOnce({...worker,serviceOptions:{...worker.serviceOptions,createActionResponse:async params=>{
-      calls++;assert.equal(params.model,'gpt-6-luna');assert.match(JSON.stringify(params.input),/approved vertical framing/);
+      calls++;assert.match(JSON.stringify(params.input),/approved vertical framing/);
+      if(calls===6){
+        assert.equal(params.model,'gpt-6.1-sol');assert.equal(params.max_output_tokens,1975,'The remaining 40 credits can fund a bounded Max response');
+        return {id:'last-max-credits',model:params.model!,status:'incomplete' as const,incomplete_details:{reason:'max_output_tokens' as const},service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:1975},output_text:'',output:[]};
+      }
+      assert.equal(params.model,'gpt-6-luna');
       return {id:'fallback-finished',model:params.model!,status:'completed' as const,service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50},output_text:JSON.stringify({reply:'Continued with the approved framing.'}),output:[]};
     }}});
     await expect(page.getByText('Continued with the approved framing.')).toBeVisible({timeout:15_000});
     await expect(page.getByRole('region',{name:'Studio task'}).last().getByText('Standard · Included assistance',{exact:false})).toBeVisible();
     await page.getByRole('region',{name:'Studio task'}).last().getByRole('button',{name:'Explore Max',exact:true}).click();
     await expect(page.getByText('Your Max credits',{exact:true})).toBeVisible();await page.getByRole('button',{name:'Close assistance',exact:true}).click();
-    await page.reload();await expect(page.getByText('Continued with the approved framing.')).toBeVisible();assert.equal(calls,6);
+    await page.reload();await expect(page.getByText('Continued with the approved framing.')).toBeVisible();assert.equal(calls,7);
+    assert.equal(Number((await runtime.database.pool.query('SELECT total_credits-consumed_credits-reserved_credits remaining FROM studio_assistance_credit_lots WHERE user_id=$1',[STUDIO_FIXTURE_OWNERS[0]])).rows[0].remaining),0);
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM mcp_generation_quotes')).rows[0].n,0,'Assistance fallback cannot implicitly prepare or confirm generation');
     await page.getByRole('button',{name:'Remove Image 1',exact:true}).click();
     await page.reload();await expect(page.getByRole('button',{name:'Remove Image 1',exact:true})).toHaveCount(0);
@@ -170,7 +176,7 @@ test('Milo modes preserve model selection, credits, references and explicit cons
     await runStudioTaskWorkerOnce({...worker,serviceOptions:{...worker.serviceOptions,createActionResponse:async params=>{
       calls++;assert.equal(params.model,'gpt-6-luna');return {id:'zero-finished',model:params.model!,status:'completed' as const,service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50},output_text:JSON.stringify({reply:'Continued with zero Sol credits.'}),output:[]};
     }}});
-    await expect(page.getByText('Continued with zero Sol credits.')).toBeVisible({timeout:15_000});assert.equal(calls,7);
+    await expect(page.getByText('Continued with zero Sol credits.')).toBeVisible({timeout:15_000});assert.equal(calls,8);
 
     await message.fill('HEY!');
     const greetingPosted=page.waitForResponse(response=>response.url().endsWith('/image-conversation')&&response.request().method()==='POST');
@@ -181,10 +187,10 @@ test('Milo modes preserve model selection, credits, references and explicit cons
     await expect(page.getByText('Hey! What would you like to create today?')).toBeVisible({timeout:15_000});
     const greetingTask=page.getByRole('region',{name:'Studio task'}).last();
     await expect(greetingTask.getByText('Request complete')).toBeVisible();
-    assert.equal(calls,7);
+    assert.equal(calls,8);
     const greetingUsage=(await runtime.database.pool.query('SELECT sum(consumed_credits)::int consumed,sum(reserved_credits)::int reserved FROM studio_assistance_credit_lots WHERE user_id=$1',[STUDIO_FIXTURE_OWNERS[0]])).rows[0];
     assert.deepEqual(greetingUsage,{consumed:500,reserved:0});
-    await page.reload();await expect(page.getByText('Hey! What would you like to create today?')).toBeVisible();assert.equal(calls,7);
+    await page.reload();await expect(page.getByText('Hey! What would you like to create today?')).toBeVisible();assert.equal(calls,8);
     assert.deepEqual(errors,[],'The Studio flow has no browser runtime errors');
 
   }catch(error){

@@ -101,6 +101,30 @@ message quote. It **never debits the wallet a second time**. Purchases use
 charges. Credit funding stores total quoted/settled customer cents (including free
 usage); the call's `charged_cents` records only the purchased portion consumed.
 
+The 2026-10-23 low-balance fix removes the requirement to afford the entire requested
+output allowance before an owned Max conversation task can proceed. Under the account lock,
+`assistance-credit-budget.ts` finds the largest output cap affordable by the current
+spendable credits and remaining task ceiling, using the exact existing cumulative quote and counted input.
+For example, with 100 input tokens, 40 remaining credits can fund up to 1,975 output
+tokens; the last 10 credits can fund up to 475. The checkpoint persists that cap
+and applies it to the provider payload before dispatch, and restores it on replay.
+Only actual usage is consumed; a shorter response returns its unused reservation.
+There is no new tariff, minimum credit balance, negative balance, automatic pack
+purchase, or extra wallet charge. The existing upward cent rounding remains, so
+credit balances change in multiples of 10 rather than individual credits.
+
+If the input plus the minimum 16-token output allowance cannot fit, the existing
+task fallback continues with sponsored Standard and preserves the unspent Max
+credits. Zero credits therefore do not stop a task while sponsored assistance is
+available. If a fitted Max output reaches its reduced limit, another existing task
+step can continue, including with Standard after depletion; incomplete tool calls
+are discarded and never executed. Mandatory first film comparisons remain required
+after an incomplete output. Non-task legacy calls retain their original fixed bounds.
+Task call/time/credit ceilings, unavailable
+campaigns, paused purchased usage and unknown-usage recovery still apply. Replay
+settles the saved bounded call before any new step. Explicit media-analysis quotes
+and historical financial evidence are unaffected.
+
 GPT‑6 Luna has **no monthly per-account quota**. The existing owned conversation
 lease admits one active message per account. Reservation also refuses another
 request while a Luna call has unresolved usage. Its generous context bound is
