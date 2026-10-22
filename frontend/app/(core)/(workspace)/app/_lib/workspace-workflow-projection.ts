@@ -291,8 +291,9 @@ export function resolveWorkspaceComposerFacts({
   const effectiveDurationSec = (() => {
     if (multiPromptActive) return multiPromptTotalSec;
     if (submissionMode === 'a2v' && typeof primaryAudioDurationSec === 'number') return primaryAudioDurationSec;
-    const hasSeparateOutputDuration = typeof selectedEngine?.inputSchema?.constraints?.maxSourcePlusOutputDurationSec === 'number'
-      && !selectedEngine?.modeAvailability?.[submissionMode]?.inheritsSourceVideo;
+    const hasSeparateOutputDuration = (selectedEngine?.id === 'luma-ray-3-2' && submissionMode === 'reframe')
+      || (typeof selectedEngine?.inputSchema?.constraints?.maxSourcePlusOutputDurationSec === 'number'
+        && !selectedEngine?.modeAvailability?.[submissionMode]?.inheritsSourceVideo);
     if ((submissionMode === 'v2v' || submissionMode === 'reframe') && typeof primaryVideoDurationSec === 'number'
       && !hasSeparateOutputDuration) {
       return primaryVideoDurationSec;

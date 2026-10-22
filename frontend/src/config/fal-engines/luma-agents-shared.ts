@@ -27,7 +27,7 @@ export const LUMA_UNI_IMAGE_MAX_MB = 50;
 
 export const LUMA_RAY_32_IMAGE_MAX_MB = 50;
 export const LUMA_RAY_32_VIDEO_MAX_MB = 200;
-export const LUMA_RAY_32_VIDEO_MAX_DURATION_SEC = 30;
+export { LUMA_MODIFY_SOURCE_MAX_SEC as LUMA_RAY_32_VIDEO_MAX_DURATION_SEC, LUMA_REFRAME_SOURCE_MAX_SEC } from '../../lib/luma-source-video';
 export const LUMA_RAY_32_REFERENCE_IMAGE_UI_LIMIT = 64;
 
 export const LUMA_SUPPORTED_IMAGE_FORMATS = ['jpg', 'jpeg', 'png', 'webp'] as const;

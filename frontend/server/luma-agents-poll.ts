@@ -120,12 +120,16 @@ function getResolutionFromJob(job: LumaAgentsPendingJob): string | null {
 }
 
 function estimateCostForJob(job: LumaAgentsPendingJob): ProviderCostEstimate {
+  const extra = asRecord(asRecord(asRecord(job.settings_snapshot)?.advanced)?.extraInputValues);
+  const enabled = (value: unknown) => value === true || (typeof value === 'string' && ['1', 'true', 'yes', 'on'].includes(value.trim().toLowerCase()));
   return estimateLumaAgentsVideoCost({
     engineId: job.engine_id,
     mode: getModeFromJob(job),
     durationSec: job.duration_sec,
     audioEnabled: job.has_audio === true,
     resolution: getResolutionFromJob(job),
+    hdr: enabled(extra?.hdr),
+    exrExport: enabled(extra?.exr_export ?? extra?.exrExport),
   });
 }
 

@@ -128,3 +128,14 @@ test('pure composer facts preserve current Kling multi-prompt and voice behavior
   const turboWorkflow = resolveWorkspaceWorkflow({ engine: turbo, form: { ...form, engineId: turbo.id }, inputAssets: {}, klingElements: [] });
   assert.equal(turboWorkflow.supportsKlingV3Controls, false, 'schema multi-prompt availability must not expand existing family controls');
 });
+
+test('Ray 3.2 Reframe keeps selected output duration while Modify inherits source timing', () => {
+  const engine = listFalEngines().find(entry => entry.id === 'luma-ray-3-2')!.engine;
+  for (const [submissionMode, expected] of [['reframe', 10], ['v2v', 8]] as const) {
+    const facts = resolveWorkspaceComposerFacts({ engine, form: { durationSec: 10 } as FormState,
+      workflow: { submissionMode, supportsKlingV3Controls: false, supportsKlingV3VoiceControl: false,
+        primaryAudioDurationSec: null, primaryVideoDurationSec: 8 }, prompt: 'Change the room',
+      multiPromptEnabled: false, multiPromptScenes: [], voiceIdsInput: '' });
+    assert.equal(facts.effectiveDurationSec, expected);
+  }
+});

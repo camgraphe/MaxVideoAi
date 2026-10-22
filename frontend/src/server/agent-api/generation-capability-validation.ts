@@ -1,3 +1,4 @@
+import { isLumaSourceVideoMode, validateLumaSourceVideoTiming } from '@/lib/luma-source-video';
 import {
   canonicalizeImageFieldValue,
   getImageCountConstraints,
@@ -378,7 +379,7 @@ function validateDerivedSourceFacts(
         || typeof resolved.durationSec !== 'number'
       ) fail('references', 'reference_invalid');
       if (
-        (request.mode === 'a2v' || request.mode === 'reframe')
+        (request.mode === 'a2v' || (request.mode === 'reframe' && request.engineId !== 'luma-ray-3-2'))
         && request.settings.durationSec !== Math.max(1, Math.ceil(resolved.durationSec))
       ) fail('durationSec');
       if (request.mode === 'retake') {
@@ -704,6 +705,9 @@ function validateTrustedReferenceDuration(
   ) return;
   // Preparation validates role/schema shape before looking up owned media.
   // An asset reference is revalidated with persisted metadata immediately after resolution.
+  if (isLumaSourceVideoMode(candidate.engine.id, request.mode) && field.id === 'video_url' && reference.kind !== 'asset') {
+    fail('references', 'reference_invalid', 'duration_unverified');
+  }
   if (reference.kind === 'asset' && !options.resolvedReferences) return;
   if (reference.kind !== 'asset' || !options.resolvedReferences) {
     if (options.allowUnverifiedReferenceDuration) return;
@@ -717,6 +721,10 @@ function validateTrustedReferenceDuration(
   if (!resolved) fail('references', 'reference_invalid');
   const durationSec = resolved.durationSec;
   const requestedOutputDurationSec = request.settings.durationSec;
+  if (field.id === 'video_url' && validateLumaSourceVideoTiming({ engineId: candidate.engine.id, mode: request.mode,
+    sourceDurationSec: durationSec, durationSec: Number(requestedOutputDurationSec) })) {
+    fail('references', 'reference_invalid', 'duration_unsupported');
+  }
   if (
     typeof durationSec !== 'number'
     || !Number.isFinite(durationSec)

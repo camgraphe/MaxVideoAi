@@ -1,5 +1,16 @@
 # MaxVideoAI : découverte, fluidité et continuité MCP
 
+## Luma source timing — 22 October 2026 source candidate
+
+Ray 3.2 Modify requires a verified owned 5s/10s source matching the selected
+class before estimates and transactional repricing. Reframe accepts sources up
+to 10s and publishes a requested 5s/10s output duration. Discovery distinguishes
+these timing policies and keeps the official Agents generation/edit/reframe
+sources separate from legacy Ray 2 guidance. Guide images retain their existing
+reference behavior. Global instructions and tool descriptor schemas are unchanged.
+No production activation, plugin release or real-host qualification is inferred.
+
+
 ## Keyframe project budgets — 21 October 2026 source candidate
 
 `calculate_project_budget.settings.keyframeIndexes` now carries the optional

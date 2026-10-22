@@ -116,6 +116,25 @@ test('Luma Agents submission records a direct accepted provider attempt', async 
   assert.equal(logEvents.some((event) => event.kind === 'accepted'), true);
 });
 
+test('accepted Luma HDR/EXR attempt records the cost of the actual output flags', async () => {
+  const { queries, queryFn } = createQueryRecorder();
+  const { params } = baseParams({
+    advancedDirectOnlyEnabled: true,
+    falPayload: { ...falPayload, loop: false, extraInputValues: { hdr: 'true', exr_export: true } },
+    deps: { queryFn, getLumaAgentsClientFn: () => ({
+      createGeneration: async payload => {
+        assert.equal(payload.video.hdr, true);
+        assert.equal(payload.video.exr_export, true);
+        return acceptedTask();
+      }, getGeneration: async () => acceptedTask(),
+    }) },
+  });
+  assert.equal((await submitLumaAgentsGenerateTask(params)).ok, true);
+  const accepted = queries.find(entry => /INSERT INTO provider_attempts/.test(entry.sql));
+  assert.ok(accepted);
+  assert.equal(JSON.parse(String(accepted.params[5])).estimatedProviderCostUsd, 0.9);
+});
+
 test('Luma Agents submission routes fal-compatible direct-unsupported payloads straight to fal', async () => {
   const { queries, queryFn } = createQueryRecorder();
   let directCalled = false;

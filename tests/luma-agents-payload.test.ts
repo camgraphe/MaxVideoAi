@@ -292,7 +292,7 @@ test('Luma Ray 3.2 reframe payload maps source, aspect ratio, and source positio
       engineId: 'luma-ray-3-2',
       mode: 'reframe',
       prompt: 'Keep the surfer centered and extend the wave into vertical social framing',
-      durationSec: 8,
+      durationSec: 10,
       durationOption: null,
       aspectRatio: '9:16',
       resolution: '720p',
@@ -317,6 +317,7 @@ test('Luma Ray 3.2 reframe payload maps source, aspect ratio, and source positio
       source: { url: 'https://cdn.maxvideoai.com/source.webm', media_type: 'video/webm' },
       video: {
         resolution: '720p',
+        duration: '10s',
         source_position: {
           x_norm: 0.1,
           y_norm: -0.2,
@@ -377,4 +378,11 @@ test('Luma Ray 3.2 direct payload rejects extend instead of dropping the source 
       error.errorClass === 'invalid_request' &&
       error.code === 'LUMA_AGENTS_EXTEND_UNSUPPORTED'
   );
+});
+
+test('Reframe sends the billed duration when a stale duration label accompanies the request', () => {
+  const payload = buildLumaAgentsVideoPayload({ engineId: 'luma-ray-3-2', mode: 'reframe',
+    prompt: 'Extend the canvas.', durationSec: 10, durationOption: '5s', resolution: '720p',
+    aspectRatio: '16:9', videoUrl: 'https://cdn.maxvideoai.com/source.mp4' });
+  assert.equal(payload.video.duration, '10s');
 });

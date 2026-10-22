@@ -1,3 +1,4 @@
+import { isLumaSourceVideoMode } from '@/lib/luma-source-video';
 import { videoDuration } from '@/lib/generated-video-media-facts';
 import { isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
 import type { MinimaxH3MaxPricingReference } from '@/lib/minimax-h3-max-pricing';
@@ -172,6 +173,15 @@ export async function validateGenerationMediaConstraints(params: {
     getPrivateRuntimeEngineById(params.engineId) ??
     (isMinimaxH3EngineId(params.engineId) ? MINIMAX_H3_ENGINE : undefined);
   if (!engine) return { ok: true };
+  if (isLumaSourceVideoMode(params.engineId, params.mode)) {
+    const sources = params.attachments.filter((attachment) =>
+      attachment.kind === 'video' || attachment.slotId?.trim() === 'video_url');
+    if (sources.length !== 1 || sources[0].kind !== 'video'
+      || sources[0].slotId?.trim() !== 'video_url' || !normalizeUrl(sources[0].url)) {
+      return failure({ error: 'MEDIA_METADATA_UNVERIFIED', fieldId: 'video_url',
+        message: 'Select exactly one owned source video in the source video field and remove other video inputs.' });
+    }
+  }
   const combinedModes = params.inputSchema?.constraints?.combinedDurationModes;
   const applyCombinedLimits = !Array.isArray(combinedModes) || combinedModes.includes(params.mode);
   const requiresExactOwnedMedia = params.engineId === 'seedance-2-5' && params.mode === 'v2v';
@@ -296,15 +306,16 @@ export async function validateGenerationMediaConstraints(params: {
   const trustedMediaReferences: MinimaxH3MaxPricingReference[] = [];
   const durationByKindAndUrl = new Map<string, { kind: 'video' | 'audio'; durationSec: number; fieldId: string }>();
   for (const candidate of candidates) {
+    const requiresExactSource = requiresExactOwnedMedia || (isLumaSourceVideoMode(params.engineId, params.mode) && candidate.kind === 'video');
     const matchingRows = rows.filter((row) => {
       const rowUrl = normalizeUrl(row.url);
       const originUrl = normalizeUrl(row.origin_url);
-      return rowUrl === candidate.url || (!requiresExactOwnedMedia && originUrl === candidate.url);
+      return rowUrl === candidate.url || (!requiresExactSource && originUrl === candidate.url);
     });
     const stored =
       (candidate.assetId
         ? matchingRows.find((row) => row.asset_id === candidate.assetId)
-        : undefined) ?? (requiresExactOwnedMedia && candidate.assetId ? undefined : matchingRows[0]);
+        : undefined) ?? (requiresExactSource && candidate.assetId ? undefined : matchingRows[0]);
     const sizeBytes = stored ? normalizeSizeBytes(stored.size_bytes) : null;
     if (!stored || sizeBytes == null) {
       if (candidate.kind === 'image' && !requiresOwnedMedia) continue;
@@ -534,7 +545,8 @@ export async function validateGenerationMediaConstraints(params: {
   return {
     ok: true,
     ...(Object.keys(trustedDurationSecByField).length ? { trustedDurationSecByField } : {}),
-    ...(params.engineId === 'minimax-h3-max'
+    ...(isLumaSourceVideoMode(params.engineId, params.mode)
+      || params.engineId === 'minimax-h3-max'
       || isSeedance2TokenPricing(engine.pricingDetails)
       || typeof params.inputSchema?.constraints?.maxSourcePlusOutputDurationSec === 'number'
       ? { trustedMediaReferences } : {}),

@@ -427,6 +427,17 @@ test('Luma Ray 2 V2V details explain source-derived duration and fixed pricing r
   ]);
 });
 
+test('Ray 3.2 details distinguish inherited Modify timing from requested Reframe duration', async () => {
+  const details = await getAgentModelDetails('luma-ray-3-2', realRegistryDetailsDeps());
+  const modify = details.modes.find(mode => mode.mode === 'v2v')!;
+  const reframe = details.modes.find(mode => mode.mode === 'reframe')!;
+  assert.equal(modify.durationPolicy, 'source_video');
+  assert.equal(modify.references.find(field => field.type === 'video')?.assetRequired, true);
+  assert.equal(modify.references.find(field => field.type === 'video')?.durationSec?.max, 18);
+  assert.equal(reframe.durationPolicy, 'requested');
+  assert.equal(reframe.references.find(field => field.type === 'video')?.durationSec?.max, 10);
+});
+
 test('Luma Ray 3.2 V2V details distinguish one guide frame from ordered edit keyframes', async () => {
   const details = await getAgentModelDetails('luma-ray-3-2', realRegistryDetailsDeps());
   const mode = details.modes.find((candidate) => candidate.mode === 'v2v');
@@ -434,7 +445,7 @@ test('Luma Ray 3.2 V2V details distinguish one guide frame from ordered edit key
   assert.deepEqual(mode.references, [
     {
       type: 'video', roles: ['source'], assetRequired: true,
-      durationSec: { min: null, max: 30, combinedMax: null },
+      durationSec: { min: null, max: 18, combinedMax: null },
       maxSizeMB: 200,
       acceptedMimeTypes: ['video/mp4', 'video/quicktime', 'video/webm', 'video/x-m4v'],
       acceptedFileExtensions: ['mp4', 'mov', 'webm', 'm4v'],

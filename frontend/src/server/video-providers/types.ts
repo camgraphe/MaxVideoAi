@@ -68,6 +68,8 @@ export type ProviderPollInput = {
 export type ProviderPollResult = NormalizedVideoProviderTask;
 
 export type ProviderCostInput = {
+  hdr?: boolean;
+  exrExport?: boolean;
   engineId: string;
   mode?: string | null;
   durationSec: number;

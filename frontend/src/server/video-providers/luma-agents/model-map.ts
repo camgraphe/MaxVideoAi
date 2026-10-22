@@ -84,11 +84,11 @@ function normalizeDurationOption(payload: GeneratePayload): string {
     return normalized;
   }
   if (typeof raw === 'number' && Number.isFinite(raw)) {
-    const duration = Math.trunc(raw);
+    const duration = raw;
     if (duration === 5) return '5s';
     if (duration === 10) return '10s';
   }
-  return '5s';
+  return raw == null ? '5s' : String(raw);
 }
 
 function hasReferenceImages(payload: GeneratePayload): boolean {
@@ -163,8 +163,9 @@ export function resolveLumaAgentsVideoSupport(params: {
     };
   }
 
-  const duration = route.type === 'video_reframe' ? '5s' : normalizeDurationOption(params.falPayload);
-  if (route.type !== 'video_reframe' && !DIRECT_DURATIONS.has(duration)) {
+  const duration = normalizeDurationOption(route.type === 'video' ? params.falPayload
+    : { ...params.falPayload, durationOption: undefined });
+  if (!DIRECT_DURATIONS.has(duration)) {
     return {
       supported: false,
       route,

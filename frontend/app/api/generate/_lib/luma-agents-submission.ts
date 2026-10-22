@@ -425,7 +425,11 @@ export async function submitLumaAgentsGenerateTask(params: {
     });
   }
 
+  const extra = params.falPayload.extraInputValues ?? {};
+  const hdr = booleanValue(extra.hdr);
+  const exrExport = booleanValue(extra.exr_export ?? extra.exrExport);
   const estimate = estimateLumaAgentsVideoCost({
+    hdr, exrExport,
     engineId: params.engineId,
     mode: params.mode,
     durationSec: params.durationSec,
@@ -455,6 +459,7 @@ export async function submitLumaAgentsGenerateTask(params: {
       advancedDirectOnlyEnabled: params.advancedDirectOnlyEnabled,
       advancedDirectOnlyRequest,
       promptLength: params.prompt.length,
+      hdr, exrExport,
       estimatedProviderCostUsd: estimate.providerCostUsd,
     },
     queryFn,

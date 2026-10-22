@@ -33,6 +33,35 @@ const baseJob = {
   created_at: new Date(Date.now() - 60_000).toISOString(),
 };
 
+test('Luma completion mirrors persisted EXR settings into attempt and job cost', async () => {
+  const queries: Array<{ sql: string; params?: unknown[] }> = [];
+  const job = { ...baseJob, duration_sec: 5, settings_snapshot: { inputMode: 'v2v',
+    core: { resolution: '720p' }, advanced: { extraInputValues: { hdr: true, exr_export: 'true' } } } };
+  await runLumaAgentsPoll({ deps: {
+    claimPollFn: allowGenerationPoll,
+    queryFn: async (sql, params) => {
+      queries.push({ sql, params });
+      if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) return [job] as never;
+      if (/FROM provider_attempts/.test(sql)) return [{ id: 23, attempt_index: 1 }] as never;
+      if (/SET status = 'completed'/.test(sql)) return [{ job_id: job.job_id }] as never;
+      return [] as never;
+    },
+    getLumaAgentsClientFn: () => ({ getGeneration: async () => ({ id: 'gen_luma_123', state: 'completed',
+      output: [{ type: 'video', url: 'https://providers.lumalabs.ai/output.mp4' }] }) }),
+    ensureFastStartVideoFn: async () => 'https://media.maxvideoai.com/renders/completed.mp4',
+    detectVideoDimensionsFn: async () => ({ width: 1280, height: 720 }),
+    ensureJobThumbnailFn: async () => 'https://media.maxvideoai.com/renders/thumb.jpg',
+    upsertLegacyJobOutputsFn: async () => undefined,
+    generateAndPersistJobPreviewVideoFn: async () => null,
+    generateAndPersistJobKeyframesFn: async () => [],
+  } });
+  const completed = queries.find(entry => /SET status = 'completed'/.test(entry.sql));
+  assert.ok(completed);
+  assert.equal(JSON.parse(String(completed.params?.[3])).provider_cost_usd, 3.24);
+  const attempt = queries.find(entry => /UPDATE provider_attempts/.test(entry.sql) && /provider_cost_usd/.test(entry.sql));
+  assert.equal(attempt?.params?.[4], 3.24);
+});
+
 test('Luma Agents poll copies provider output before marking the job completed', async () => {
   const queries: Array<{ sql: string; params?: unknown[] }> = [];
   const outputs: unknown[] = [];

@@ -91,7 +91,7 @@ function requiresOwnedReferenceAsset(
     mode === 'a2v'
     || mode === 'retake'
     || mode === 'reframe'
-    || (mode === 'v2v' && isLumaRay2EngineId(engineId))
+    || (mode === 'v2v' && (isLumaRay2EngineId(engineId) || engineId === 'luma-ray-3-2'))
   );
 }
 
@@ -394,7 +394,8 @@ export function projectAgentModelModeDetails(
   const baseControls = {
     durationPolicy: mode === 'a2v'
       ? 'source_audio'
-      : mode === 'reframe' || (isLumaRay2EngineId(candidate.engine.id) && mode === 'v2v')
+      : (mode === 'reframe' && candidate.engine.id !== 'luma-ray-3-2')
+        || (mode === 'v2v' && (isLumaRay2EngineId(candidate.engine.id) || candidate.engine.id === 'luma-ray-3-2'))
         ? 'source_video'
         : 'requested',
     duration: projectDuration(caps, candidate.engine),

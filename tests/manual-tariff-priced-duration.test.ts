@@ -47,7 +47,7 @@ test('automatic timing covers every normalized integer price class without chang
   assert.ok(resolvePublicModelScenario({ ...input, durationOption: 'auto' }));
 });
 
-test('source-timed finite modes cover their actual normalized billing bounds', () => {
+test('finite modes retain every reviewed current and historical billing class', () => {
   const coverage = collectSellableManualTariffCoverage();
   for (const [modelId, mode, max] of [['happy-horse-1-0', 'v2v', 15], ['ltx-2-3', 'a2v', 20],
     ['luma-ray-3-2', 'reframe', 30], ['lumaRay2', 'reframe', 9],
@@ -67,4 +67,10 @@ test('source-timed finite modes cover their actual normalized billing bounds', (
     assert.ok(!coverage.gaps.some(gap => gap.modelId === modelId && gap.reason.startsWith('a2v: nonnumeric')));
     assert.ok(coverage.gaps.some(gap => gap.modelId === modelId && gap.reason.includes('continuous unit')));
   }
+});
+
+test('historical Luma Reframe billing classes do not widen current public output durations', () => {
+  const input = { modelId: 'luma-ray-3-2', mode: 'reframe', resolution: '720p' };
+  for (const durationSec of [5, 10]) assert.ok(resolvePublicModelScenario({ ...input, durationSec }));
+  for (const durationSec of [1, 6, 30]) assert.equal(resolvePublicModelScenario({ ...input, durationSec }), null);
 });
