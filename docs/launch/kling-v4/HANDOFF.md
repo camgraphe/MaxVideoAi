@@ -6,7 +6,7 @@
 
 The latest decision is **fal first for the initial launch**. This supersedes the earlier direct-first sequence. Direct Kling account recovery, an actual direct V4 contract and fallback parity are independent future work. Never infer a direct endpoint from V3 or submit again after an ambiguous accepted attempt.
 
-The user opened the fal integration account in Chrome. Its Kling 4 T2V playground has an enabled Run control; no generation was launched. Four official schemas were refreshed and are semantically unchanged. See `provider-refresh-2026-10-22.md`. Public copy still says API coming soon. A usable playground is not proof of a working queue/API credential or completed paid generation.
+The user opened the fal integration account in Chrome. Its Kling 4 T2V playground has an enabled Run control; no generation was launched. Four official schemas were refreshed and are semantically unchanged. See `provider-refresh-2026-10-22.md`. Fal public copy still says API coming soon. A usable playground is not proof of a working queue/API credential or completed paid generation.
 
 Normal fal list cost plus 30% remains the customer price-authoring basis. There is no activated V4 tariff or approved V4 generation spend. Historical FLUX generation approvals do not authorize this new batch.
 
@@ -18,7 +18,7 @@ Normal fal list cost plus 30% remains the customer price-authoring basis. There 
 - Studio has a shot-plan editor and a bounded persisted revision. Revisions require a new quote and exact confirmation; the ordinary 4000-character chat-message limit is unchanged. Video actions can reference up to 50 existing assets; chat attachments remain 10, with larger subject sets using ready project outputs.
 - Exact original/asset matching, trusted video probing without rounded/default cadence, individual media tolerances and 30s R2V aggregate budget. Every repeated video consumes its own budget occurrence. The conservative 15-visual-source limit includes subject views pending provider clarification.
 - Explicit external-fal Kling importer beside FLUX: private/idempotent adoption, zero financial mutations, immutable journal/original evidence, poster/short-preview hashes and owned reference reconstruction. Raw provider input is preserved, while documented omitted defaults are materialized for replay. Offline inventory and revision-aware admin handoff are in `media-qualification.md`.
-- Normal EN/FR/ES model template remains noindex, with no fabricated media or scores. Existing family URLs, clips and owner ordering are preserved. `seo-linking-plan.md` prepares additive family copy, menus, one useful same-family comparison and selected video SEO; V4 family membership remains media-gated.
+- Normal EN/FR/ES model template remains noindex, with no fabricated media or scores. Existing family URLs, clips and owner ordering are preserved. `seo-linking-plan.md` records implemented additive family copy, bounded menus, New badge, localized catalogue/Best-for/PAYG presentations and the prepared Omni Pro comparison. Selected video SEO remains an admin action after real media exists; V4 family membership remains media-gated.
 
 Provider voice issuance/owned selection is not implemented: arbitrary voice IDs are blocked. The pure provider shape can describe voice binding, but the application must not advertise it as an available owned-voice workflow. No mode has gained certification from fixture tests.
 
@@ -47,3 +47,13 @@ The complete local browser suite subsequently passed 52 tests. CI on `a5c1c9` id
 5. Apply reviewed public linking/media/indexing only after latest checks and explicit release authorization. No merge or production deployment has been performed. Direct recovery can continue separately.
 
 Private identity/recovery evidence remains in `.local/kling-v4/review/account-identity.md`; there is no proof the historical account migrated to the proposed admin mailbox. Existing credentials were not changed. The completed FLUX project is separate and must not be replayed.
+
+## Marketing preparation follow-up
+
+The 22 October follow-up materializes the editorial placements in their existing owners without changing registry publication, execution, pricing or certification. It includes the private localized comparison, one bounded New menu candidate, factual catalogue/Best-for/PAYG copy, and additive family copy guarded by real family membership/readiness. Current public menus and family descriptions remain unchanged; the family onward-link selector also filters a previously unpublished Kling comparison destination. A private successor cannot suppress its public predecessor.
+
+The scoreboard research covers all eleven existing criteria. Independent leaderboards examined contain no V4 row, and Flash reviews are not used to score the full model. The evidence dossier is private to authoring, with no public zero/blank score or borrowed rating. Real original outputs, full attempt logs and criterion observations remain necessary. The film task may supply suitable evidence but a selected YouTube montage alone does not establish performance or reliability.
+
+The localized marketing regression tests, latest branch CI and protected preview results are recorded in the private handoff and PR check ledger. The only earlier f8 CI failure was a Playwright browser-download TLS certificate mismatch before tests; a bounded rerun was requested, with TLS verification preserved. Never describe an uncompleted run as passing.
+
+Local follow-up validation passed TypeScript, lint (six existing warnings), registry/exposure checks, 45 catalogue/navigation rendering tests and 33 marketing/comparison/evidence contract tests. PAYG/family validation and independent review are tracked in the private marketing reports. The broad local `pnpm test:validate` was attempted but interrupted after genuine ENOSPC failures in disposable PostgreSQL and Git fixtures; it is not a passing result. Its one comparison-inventory assertion was updated from 69 to 70 authored documents. Full validation must be read from the latest remote CI, with its build and localized protected-preview checks.
