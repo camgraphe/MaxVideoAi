@@ -7,7 +7,9 @@ Contexte : demande du 22 octobre 2026. Le correctif de sérialisation des durée
 
 Une personne choisit directement une vidéo de son téléphone ou de sa bibliothèque, indique ce qu’elle veut changer et obtient un résultat sans préparer manuellement son fichier dans un autre logiciel. Le parcours doit servir tous les modèles d’édition vidéo disponibles, avec toutes les capacités réellement exécutables de chacun. Un sélecteur de passage doit être partagé, notamment pour choisir quelques secondes dans une vidéo d’une minute.
 
-Conserver l’original importé. Ne pas couper, compresser ni convertir silencieusement la vidéo de l’utilisateur. Une copie de préparation peut être produite par l’application lorsque nécessaire, après présentation du passage retenu et des adaptations. Ce travail ne modifie pas les capacités ni la publication des modèles.
+Préserver les octets de l’original pendant son utilisation ; cela ne constitue pas une promesse d’archivage permanent gratuit. Ne pas couper, compresser ni convertir silencieusement la vidéo de l’utilisateur. Une copie de préparation peut être produite par l’application lorsque nécessaire, après présentation du passage retenu et des adaptations. Les originaux déjà enregistrés en bibliothèque, dont celui de l’essai, gardent leur politique existante. Ce travail ne modifie pas les capacités ni la publication des modèles.
+
+Retour utilisateur sur la proposition : maîtriser le coût cumulé des gros fichiers avant toute hausse du plafond. L’enveloppe initialement proposée de 1 Gio / 120 secondes n’est ni approuvée ni activée ; elle est retirée comme valeur par défaut de la V1.
 
 ## Résultat de l’essai réel
 
@@ -21,14 +23,14 @@ Une seconde limite reste indépendante : notre intégration Luma Modify autorise
 
 ## Parcours proposé
 
-1. **Importer ou choisir.** Un seul contrôle vidéo permet Téléphone/Fichier ou Bibliothèque. L’import conserve les octets originaux, leur identité, le nom et les métadonnées mesurées. Progression, annulation et reprise d’une opération interrompue restent rattachées au bon compte.
+1. **Importer ou choisir.** Un seul contrôle vidéo permet Téléphone/Fichier ou Bibliothèque. Pour un nouveau fichier, ouvrir l’aperçu local et le choix du passage avant le transfert lorsque le navigateur sait le lire. Annoncer la conservation temporaire avant l’import. Le transfert conserve les octets originaux, leur identité, le nom et les métadonnées mesurées. Progression, annulation et reprise d’une opération interrompue restent rattachées au bon compte.
 2. **Voir la source.** Afficher un aperçu dans la bonne orientation, la durée réelle, les dimensions affichées et la présence de son. Le format du fichier n’est présenté que s’il nécessite une adaptation.
 3. **Choisir le passage.** Un composant partagé affiche le lecteur, une bande de vignettes, deux poignées début/fin, les temps éditables et la durée sélectionnée. Les interactions fonctionnent au toucher, au clavier et au lecteur d’écran. Lire uniquement le passage choisi facilite la vérification.
 4. **Appliquer le profil du modèle.** Les durées autorisées, le nombre de sources, la conservation du cadrage et du son et les options avancées proviennent du modèle/mode courant. Un passage trop long reste visible avec une explication et une action pour l’ajuster. Ne pas remettre la sélection à zéro en changeant de modèle.
-5. **Préparer si nécessaire.** L’action affiche par exemple « Utiliser 00:12–00:22 · 10 s » et, si besoin, « Une copie compatible sera préparée. Original conservé ». Compression, orientation, codec et cadence sont des adaptations techniques du dérivé ; la coupe est un choix explicite du passage.
+5. **Préparer si nécessaire.** L’action affiche par exemple « Utiliser 00:12–00:22 · 10 s » et, si besoin, « Une copie compatible sera préparée ». Pour un nouvel import temporaire : « Le fichier complet sera supprimé de nos serveurs après 24 h ; l’extrait sera conservé dans votre bibliothèque ». Pour une source déjà en bibliothèque : « Original conservé ». Compression, orientation, codec et cadence sont des adaptations techniques du dérivé ; la coupe est un choix explicite du passage.
 6. **Décrire, chiffrer, générer.** Le tarif utilise les faits vérifiés du dérivé réellement envoyé. Un échec de préparation ne déclenche jamais de génération. Une fois le rendu terminé, l’avant/après compare exactement le passage source sélectionné au résultat.
 
-Pour un fichier déjà compatible et une sélection couvrant toute sa durée, garder le chemin original sans réencodage.
+Pour un fichier déjà compatible et une sélection couvrant toute sa durée, réutiliser les octets sans réencodage. Si la source était temporaire, réserver son poids dans le quota de bibliothèque puis la promouvoir hors de l’espace temporaire avant de l’utiliser durablement.
 
 ## Ce qui est partagé et ce qui appartient au modèle
 
@@ -64,9 +66,33 @@ Les limites Luma de 5/10 secondes sont aujourd’hui une politique MaxVideoAI li
 
 Conserver `frontend/lib/client-video-upload.ts` comme propriétaire du transport navigateur. Le transport multipart existe déjà ; ne pas le dupliquer pour Luma. La limite d’import par défaut actuelle de 50 Mio et la qualification des originaux plafonnée à 100 Mio ne suffisent pas à promettre l’import de toutes les vidéos 4K d’une minute.
 
-Proposition V1 : import téléphone jusqu’à 1 Gio et 120 secondes, avec contrôle de quota et concurrence par compte ; le passage envoyé reste limité par le modèle. Cette enveloppe exige des téléchargements et sondages sur disque/en streaming dans un worker, et une validation de charge avant activation. Ne pas relever simplement les constantes des chemins actuels qui chargent les octets en mémoire. Les clients MCP gardent leur enveloppe existante tant que leur transport n’est pas étendu explicitement.
+Conserver les plafonds actuels tant que le pilote admin n’a pas mesuré le coût complet, les codecs et la charge. L’objectif reste de sélectionner un passage dans une vidéo d’une minute ; l’extension du plafond doit être bornée par les budgets décrits ci-dessous, pas par la seule capacité du transport. Les fichiers plus lourds exigent des téléchargements et sondages sur disque/en streaming dans un worker. Ne pas relever simplement les constantes des chemins actuels qui chargent les octets en mémoire. Les clients MCP gardent leur enveloppe existante tant que leur transport n’est pas étendu explicitement.
 
 Les faits vérifiés doivent conserver dimensions encodées, rotation/dimensions affichées, durée, cadence rationnelle/variable, codec, espace colorimétrique et audio. Les anciens enregistrements sont qualifiés à la demande sans réécriture globale de la bibliothèque.
+
+### Coût, quotas et conservation proposés
+
+Le stockage actuel est Amazon S3, conformément à `docs/data-platform.md` et `frontend/server/storage.ts`. Le relevé de production du 19 octobre indique `us-east-1` et aucune règle de lifecycle du bucket à cette date ; il ne prouve pas la configuration actuelle ni l’absence de toute purge applicative. Les garanties ci-dessous restent à implémenter et à vérifier.
+
+Le tarif public S3 Standard `us-east-1`, vérifié le 22 octobre 2026 dans le catalogue AWS publié le 15 octobre, est de 0,023 USD/Gio-mois pour les 50 premiers Tio, puis 0,022 USD/Gio-mois jusqu’à 500 Tio. Comparaison illustrative pour un stock conservé pendant un mois complet :
+
+| Stock | Volume facturable | Stockage seul par mois |
+| --- | --- | --- |
+| 10 000 originaux de 1 Gio | 10 000 Gio | 230 USD |
+| 10 000 extraits de 30 Mio | 292,97 Gio | 6,74 USD |
+
+30 Mio est une hypothèse de calcul, pas une taille garantie ni une limite commune aux modèles. Ces montants excluent requêtes, transferts, calcul, rendus, autres copies et taxes. Le stock s’accumule tant qu’il n’y a ni quota ni expiration. Un original de 1 Gio conservé un jour représente environ 0,00077 USD de stockage sur un mois de 30 jours, mais son transfert et sa conversion restent à comptabiliser.
+
+Politique proposée pour les **nouveaux imports du parcours Modify** :
+
+- **Original temporaire pendant 24 h après import.** Stocker dans un espace privé dédié, avec date d’expiration visible. Le fichier sur le téléphone reste intact. Une préparation ne doit pas dépasser cette échéance ; arrêter les opérations expirées et demander un nouvel import si nécessaire. L’extrait admis et son avant/après sont indépendants du fichier complet avant sa purge.
+- **Conservation utile et bornée.** L’extrait réellement utilisé entre dans le quota de bibliothèque ; le résultat suit la politique de bibliothèque existante. Les métadonnées conservent la provenance même après expiration de l’original temporaire. Aucun changement rétroactif sur les originaux déjà en bibliothèque. Conserver volontairement un nouvel original complet exige un choix explicite et de la capacité disponible, pas une copie gratuite automatique.
+- **Quotas vérifiés avant de recevoir les octets.** Réserver atomiquement le volume temporaire et l’enveloppe nécessaire au dérivé, par compte et globalement ; mesurer et réconcilier les octets réels. Additionner les imports concurrents, parties multipart et dérivés. Refuser le transfert ou la préparation en dépassement, avec une action compréhensible ; aucune facturation supplémentaire automatique. Des limites absentes ou invalides ferment l’accès aux imports lourds. Les plafonds commerciaux nécessitent les mesures du pilote avant ouverture publique.
+- **Budget de traitement distinct.** Borner les octets importés par jour, le nombre de préparations, leur durée de calcul, leur concurrence et leurs relances. Réutiliser une préparation identique au sein du même compte. Une limite de stockage ne protège pas contre des milliers de conversions successives. Les qualités HDR et formats lourds restent propres aux modèles ; un dépassement de quota ne doit pas entraîner une dégradation silencieuse.
+- **Purge effective et filet de sécurité.** Nettoyer les imports abandonnés, erreurs, parties incomplètes et dérivés non retenus. Ajouter une expiration S3 à deux jours sur le seul nouvel espace temporaire, en complément de la purge applicative à 24 h, et abandonner les multipart incomplets après un jour. Vérifier les règles et les octets réellement supprimés ; traiter aussi les versions non courantes si le versioning est activé. Ne jamais appliquer cette expiration au préfixe de bibliothèque existant. Une copie retenue doit avoir quitté le périmètre temporaire avant l’expiration.
+- **Mesurer puis couper l’admission.** Suivre coût par import abouti/abandonné, stockage temporaire/durable, trafic, calcul et erreurs de purge. Réutiliser le suivi de coûts S3 existant pour rapprochement, avec des compteurs immédiats pour les quotas : les alertes de facturation différées ne constituent pas un plafond. En cas de budget atteint, bloquer les nouveaux travaux concernés sans supprimer les médias déjà conservés.
+
+Le sélecteur local évite de transférer une vidéo abandonnée avant validation, mais ne garantit pas une coupe locale fiable de tous les MOV/HEVC. Le repli serveur peut donc recevoir le fichier complet temporairement. Préférer une préparation près du bucket, en vérifiant son coût réel, pour éviter des transferts répétés de l’original vers un service externe ; envoyer ensuite au modèle uniquement l’extrait vérifié. Le pilote doit mesurer cette voie avant toute promesse de plafond élevé.
 
 ### Composant et état de sélection
 
@@ -97,6 +123,8 @@ Tests d’acceptation :
 - vidéo de 60 secondes : sélection au milieu et en fin, toucher/clavier, lecture bornée ;
 - iPhone MOV avec rotation, MP4 Android, H.264, HEVC, cadence variable, vidéo muette, piste audio, HDR/SDR ;
 - comportement explicite pour fichier corrompu, codec non supporté et dépassement de quota ;
+- réservations de quota sous imports concurrents, abandon multipart, relances idempotentes et arrêt de l’admission au budget ;
+- expiration d’un original temporaire sans perte de l’extrait retenu, du résultat ou des originaux déjà en bibliothèque ; purge vérifiée des octets et reprise après échec de nettoyage ;
 - copie exacte de 5/10 secondes lorsque le profil l’exige, sans confiance dans une durée déclarée par le navigateur ;
 - matrice des modèles/modes v2v du catalogue effectif, avec options particulières conservées ;
 - changement de modèle, source ou compte pendant import/préparation ; aucun rattachement tardif incorrect ;
@@ -110,6 +138,10 @@ Tests d’acceptation :
 - [Limites et intégration Luma du premier essai](../../operations/2026-10-22-luma-modify-canary.md)
 - [Luma Agents — Video editing](https://docs.agents.lumalabs.ai/guides/videos/editing/)
 - [Luma Agents — Pricing](https://docs.agents.lumalabs.ai/guides/pricing/)
+- [Amazon S3 — Tarifs](https://aws.amazon.com/s3/pricing/)
+- [Amazon S3 — Catalogue tarifaire us-east-1](https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonS3/current/us-east-1/index.json)
+- [Amazon S3 — Lifecycle](https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lifecycle-mgmt.html)
+- [Relevé de configuration du 19 octobre](../../operations/data-transparency-2026-10-19.md)
 
 Cette proposition ne certifie pas un rendu réel et n’autorise aucun appel payant supplémentaire.
 
