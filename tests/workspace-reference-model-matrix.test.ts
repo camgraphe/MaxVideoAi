@@ -56,6 +56,15 @@ function referenceOptions(inputAssets: Record<string, (ReferenceAsset | null)[]>
   };
 }
 
+test('Luma composer exposes one source picker with the selected workflow limit', () => {
+  const luma = engine('luma-ray-3-2');
+  for (const [mode, maxDuration] of [['t2v', 18], ['v2v', 18], ['reframe', 10]] as const) {
+    const fields = summary(luma, mode).assetFields.filter(({ field }) => field.id === 'video_url');
+    assert.equal(fields.length, 1, `${mode} has one source picker`);
+    assert.equal(fields[0].field.maxDurationSec, maxDuration);
+  }
+});
+
 function assertExactFieldOwners(value: EngineCaps, fields: ReturnType<typeof summary>['assetFields']) {
   const realFields = schemaFields(value);
   for (const entry of fields) {

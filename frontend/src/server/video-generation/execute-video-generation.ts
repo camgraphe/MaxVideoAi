@@ -176,7 +176,8 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
   }
   const sourceVideoContext = resolveGenerateSourceVideoContext({
     engineId: engine.id,
-    trustedSourceDurationSec: trustedDurationSecByField.video_url?.length === 1 ? trustedDurationSecByField.video_url[0] : undefined,
+    trustedSourceVideo: attachmentProcessing.trustedMediaReferences?.find(reference =>
+      reference.kind === 'video' && reference.fieldId === 'video_url' && reference.url === sourceInputVideoUrl),
     mode,
     attachments: processedAttachments,
     sourceInputVideoUrl,

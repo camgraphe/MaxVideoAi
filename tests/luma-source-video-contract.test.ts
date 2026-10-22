@@ -6,6 +6,8 @@ import { resolveGenerateSourceVideoContext } from '../frontend/app/api/generate/
 import { priceCanonicalGeneration, priceCanonicalGenerationWithBilling } from '../frontend/src/server/agent-api/generation-pricing';
 import type { CanonicalGenerationRequest } from '../frontend/src/server/agent-api/generation-types';
 import type { ResolvedReference } from '../frontend/src/server/agent-api/reference-types';
+import { validateNormalizedGenerationAttachments } from '../frontend/app/api/generate/_lib/normalized-generation-attachment-validation';
+import { resolveLumaAgentsSubmissionMediaInputs } from '../frontend/app/api/generate/_lib/luma-agents-submission';
 
 const engine = listFalEngines().find(entry => entry.id === 'luma-ray-3-2')!.engine;
 const url = 'https://media.maxvideoai.com/user-assets/luma-user/source.mp4';
@@ -46,14 +48,16 @@ test('execution never trusts a caller attachment duration for Luma Modify', () =
       slotId: 'video_url', url, durationSec: 5 }], sourceInputVideoUrl: url, videoUrls: [url],
     fallbackDurationSec: 5, fallbackDurationLabel: '5s', maxDurationSec: 18 };
   assert.equal(resolveGenerateSourceVideoContext(params).ok, false);
-  assert.equal(resolveGenerateSourceVideoContext({ ...params, trustedSourceDurationSec: 8 }).ok, false);
-  assert.equal(resolveGenerateSourceVideoContext({ ...params, trustedSourceDurationSec: 5 }).ok, true);
+  assert.equal(resolveGenerateSourceVideoContext({ ...params, trustedSourceVideo: { url, durationSec: 8 } }).ok, false);
+  assert.equal(resolveGenerateSourceVideoContext({ ...params, trustedSourceVideo: { url, durationSec: 5 } }).ok, true);
+  assert.equal(resolveGenerateSourceVideoContext({ ...params,
+    trustedSourceVideo: { url: 'https://example.test/different-source.mp4', durationSec: 5 } }).ok, false);
 });
 
 test('Reframe execution bills the selected 10s even with an 8s source', () => {
   const result = resolveGenerateSourceVideoContext({ engineId: engine.id, engineLabel: engine.label,
     mode: 'reframe', attachments: [], sourceInputVideoUrl: url, videoUrls: [url],
-    fallbackDurationSec: 10, fallbackDurationLabel: '10s', trustedSourceDurationSec: 8 });
+    fallbackDurationSec: 10, fallbackDurationLabel: '10s', trustedSourceVideo: { url, durationSec: 8 } });
   assert.deepEqual(result, { ok: true, durationSec: 10, durationLabel: '10s', hasVideoInput: true });
 });
 
@@ -92,3 +96,35 @@ test('Web Luma quote refuses a missing source and never borrows an original URL 
     assert.equal(quotes, 0);
   }
 });
+
+for (const mode of ['v2v', 'reframe'] as const) {
+  test(`${mode} binds provider source to exactly one verified video_url attachment`, async () => {
+    const owned = { name: 'source.mp4', type: 'video/mp4', size: 1000, kind: 'video' as const,
+      assetId: source.assetId, slotId: 'video_url', url };
+    const validate = (attachments: typeof owned[]) => validateNormalizedGenerationAttachments({
+      engineId: engine.id, mode, inputSchema: engine.inputSchema, userId: 'luma-user', attachments,
+      mediaConstraintDeps: { queryFn: async () => [{ asset_id: source.assetId, url, origin_url: null,
+        original_name: 'source.mp4', mime_type: 'video/mp4', size_bytes: 1000,
+        duration_sec: 5, width: 1280, height: 720 }] as never[] },
+    });
+    for (const slotId of ['', 'source_video_url', 'video_urls', 'video_url']) {
+      const result = await validate([{ ...owned, assetId: 'foreign', slotId,
+        url: 'https://example.test/unverified-18s.mp4' }, owned]);
+      assert.equal(result.ok, false, `reject alternate source slot ${slotId || '(missing)'}`);
+    }
+    assert.equal((await validate([owned, owned])).ok, false, 'reject duplicate source occurrences');
+    const result = await validate([owned]);
+    assert.ok(result.ok);
+    const trusted = result.trustedMediaReferences?.find(ref => ref.kind === 'video' && ref.url === result.references.sourceInputVideoUrl);
+    assert.ok(trusted);
+    const context = resolveGenerateSourceVideoContext({ engineId: engine.id, engineLabel: engine.label,
+      mode, attachments: result.attachments, sourceInputVideoUrl: result.references.sourceInputVideoUrl,
+      videoUrls: result.references.videoUrls, fallbackDurationSec: 5,
+      trustedSourceVideo: trusted });
+    assert.ok(context.ok);
+    const media = resolveLumaAgentsSubmissionMediaInputs({ imageUrl: null,
+      falPayload: { engineId: engine.id, mode, durationSec: context.durationSec, inputs: result.attachments } as never });
+    assert.equal(media.sourceVideoUrl, trusted.url);
+    assert.equal(context.durationSec, trusted.durationSec);
+  });
+}

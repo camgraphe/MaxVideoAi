@@ -266,6 +266,8 @@ export function summarizeWorkspaceInputSchema({
         return;
       }
       if (localizedField.type === 'image' || localizedField.type === 'video' || localizedField.type === 'audio') {
+        // Mode-specific definitions can share a slot; cross-mode entry still renders one picker.
+        if (assetFields.some(({ field: existing }) => existing.id === localizedField.id)) return;
         if (isUnifiedKlingO3 && localizedField.id === 'start_image_url') {
           return;
         }

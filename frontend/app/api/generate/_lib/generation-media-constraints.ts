@@ -173,6 +173,15 @@ export async function validateGenerationMediaConstraints(params: {
     getPrivateRuntimeEngineById(params.engineId) ??
     (isMinimaxH3EngineId(params.engineId) ? MINIMAX_H3_ENGINE : undefined);
   if (!engine) return { ok: true };
+  if (isLumaSourceVideoMode(params.engineId, params.mode)) {
+    const sources = params.attachments.filter((attachment) =>
+      attachment.kind === 'video' || attachment.slotId?.trim() === 'video_url');
+    if (sources.length !== 1 || sources[0].kind !== 'video'
+      || sources[0].slotId?.trim() !== 'video_url' || !normalizeUrl(sources[0].url)) {
+      return failure({ error: 'MEDIA_METADATA_UNVERIFIED', fieldId: 'video_url',
+        message: 'Select exactly one owned source video in the source video field and remove other video inputs.' });
+    }
+  }
   const combinedModes = params.inputSchema?.constraints?.combinedDurationModes;
   const applyCombinedLimits = !Array.isArray(combinedModes) || combinedModes.includes(params.mode);
   const requiresExactOwnedMedia = params.engineId === 'seedance-2-5' && params.mode === 'v2v';

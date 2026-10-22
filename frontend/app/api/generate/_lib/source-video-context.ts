@@ -5,7 +5,7 @@ import type { NormalizedAttachment } from './attachments';
 
 type SourceVideoContextParams = {
   engineId?: string;
-  trustedSourceDurationSec?: number;
+  trustedSourceVideo?: { url: string; durationSec?: number | null };
   mode: Mode;
   attachments: NormalizedAttachment[];
   sourceInputVideoUrl?: string;
@@ -45,12 +45,14 @@ type SourceVideoContextResult =
 
 export function resolveGenerateSourceVideoContext(params: SourceVideoContextParams): SourceVideoContextResult {
   if (isLumaSourceVideoMode(params.engineId, params.mode)) {
+    const sourceDurationSec = params.trustedSourceVideo?.url === params.sourceInputVideoUrl
+      ? params.trustedSourceVideo?.durationSec : undefined;
     const message = validateLumaSourceVideoTiming({ engineId: params.engineId, mode: params.mode,
-      sourceDurationSec: params.trustedSourceDurationSec, durationSec: params.fallbackDurationSec });
+      sourceDurationSec, durationSec: params.fallbackDurationSec });
     if (message) return { ok: false, status: 422,
       body: { ok: false, error: 'SOURCE_VIDEO_DURATION_UNSUPPORTED', message },
       metric: { errorCode: 'SOURCE_VIDEO_DURATION_UNSUPPORTED', meta: {
-        sourceDurationSec: params.trustedSourceDurationSec ?? null, mode: params.mode,
+        sourceDurationSec: sourceDurationSec ?? null, mode: params.mode,
         maxDurationSec: params.mode === 'v2v' ? LUMA_MODIFY_SOURCE_MAX_SEC : LUMA_REFRAME_SOURCE_MAX_SEC } } };
     return { ok: true, durationSec: params.fallbackDurationSec,
       durationLabel: `${params.fallbackDurationSec}s`, hasVideoInput: true };

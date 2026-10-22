@@ -16,6 +16,10 @@ automatic trimming is performed. The web quote, execution validation and canonic
 MCP estimate/transaction repricing all verify the source. Guide images remain
 optional; the trial uses none.
 
+The web path accepts exactly one video in `video_url`. Extra, duplicate or
+alternate-slot video inputs are rejected before quoting, and execution binds the
+verified duration to the exact source URL sent to the provider.
+
 Reframe now explicitly sends the selected 5s/10s output duration, as specified by
 the [Reframe guide](https://docs.agents.lumalabs.ai/guides/videos/reframing/).
 Its source can be shorter but must remain within 10s. Reframe is a separate trial.
