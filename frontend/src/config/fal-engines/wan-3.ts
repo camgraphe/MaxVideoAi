@@ -16,6 +16,8 @@ const engine = createWan3Engine({
   perSecondCents: { '480p': 5, '720p': 10, '1080p': 20 },
   perSecondUsd: { '480p': 0.05, '720p': 0.1, '1080p': 0.2 },
 });
+// Production continuity review (21 October): extension returns the new footage only.
+engine.modeCaps={...WAN_3_MODE_CAPS,extend:{...WAN_3_MODE_CAPS.extend!,extensionOutput:'continuation'}};
 
 export const WAN_3_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [{
   id: 'wan-3', marketingName: 'Wan 3', cardTitle: 'Wan 3', provider: 'Alibaba', brandId: 'wan',
@@ -27,7 +29,7 @@ export const WAN_3_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [{
     { mode: 'i2v', falModelId: WAN_3_ENDPOINTS.i2v, ui: WAN_3_MODE_CAPS.i2v! },
     { mode: 'ref2v', falModelId: WAN_3_ENDPOINTS.ref2v, ui: WAN_3_MODE_CAPS.ref2v! },
     { mode: 'v2v', falModelId: WAN_3_ENDPOINTS.v2v, ui: WAN_3_MODE_CAPS.v2v! },
-    { mode: 'extend', falModelId: WAN_3_ENDPOINTS.extend, ui: WAN_3_MODE_CAPS.extend! },
+    { mode: 'extend', falModelId: WAN_3_ENDPOINTS.extend, ui: engine.modeCaps.extend! },
   ],
   defaultFalModelId: WAN_3_ENDPOINTS.t2v,
   seo: { title: 'Wan 3 AI Video Generator | MaxVideoAI', description: 'Generate Wan 3 video from text, images, or mixed references with native audio.', canonicalPath: '/models/wan-3' },

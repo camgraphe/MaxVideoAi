@@ -22378,7 +22378,8 @@
           "fps": 30,
           "audioToggle": true,
           "maxUploadMB": 100,
-          "notes": "Extend exactly one source video with an optional continuation prompt."
+          "notes": "Extend exactly one source video with an optional continuation prompt.",
+          "extensionOutput": "continuation"
         }
       }
     },
@@ -22528,7 +22529,8 @@
           "fps": 30,
           "audioToggle": true,
           "maxUploadMB": 100,
-          "notes": "Extend exactly one source video with an optional continuation prompt."
+          "notes": "Extend exactly one source video with an optional continuation prompt.",
+          "extensionOutput": "continuation"
         }
       }
     ],

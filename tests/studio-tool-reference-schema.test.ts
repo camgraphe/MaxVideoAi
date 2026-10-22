@@ -51,7 +51,7 @@ function compile(properties: Readonly<Record<string, unknown>>) {
     properties, required: Object.keys(properties)} as JsonSchemaType);
 }
 function videoParameters(source: unknown = null, selected: unknown[] = []) {
-  return {...parameters('image_prepare', []), modelId: 'wan-3', mode: 'i2v', source, references: selected};
+  return {...parameters('image_prepare', []), modelId: 'wan-3', mode: 'i2v', source, references: selected,assembleExtension:null};
 }
 function asset(assetId: string) {
   return {type: 'asset', assetId, kind: 'image'};

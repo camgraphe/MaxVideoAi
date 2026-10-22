@@ -17,6 +17,7 @@ type DurationMinCaps = {
 export type EngineUiDurationCaps = DurationEnumCaps | DurationMinCaps;
 
 export interface EngineUiCaps {
+  extensionOutput?:'continuation'|'combined';
   modes: Mode[];
   duration?: EngineUiDurationCaps;
   frames?: number[];

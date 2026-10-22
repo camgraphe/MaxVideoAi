@@ -5,6 +5,7 @@ import {canResumeAssistanceRequest,canStartAssistanceFollowupWithoutChoice} from
 import {useStudioAssistance} from './_hooks/useStudioAssistance';
 import {StudioAssistance} from './_components/StudioAssistance.client';
 import { useImageConversation } from "./_hooks/useImageConversation";
+import {useConversationExtensions} from './_hooks/useConversationExtensions';
 import {ConversationExportQuote} from "./_components/ConversationExportQuote.client";
 import {ConversationTask} from './_components/ConversationTask.client';
 import {STUDIO_TASK_POLICY_VERSION,STUDIO_TASK_PROFILES} from '@/lib/studio/task-budget-contract';
@@ -61,6 +62,7 @@ function StudioImageConversationWorkspace({
   const locale = appLocale === 'fr' ? 'fr' : 'en';
   const t = (en: string, fr: string) => locale === 'fr' ? fr : en;
   const studio = useImageConversation(projectId, accountKey, projectName, locale);
+  const extensions=useConversationExtensions(projectId,accountKey,studio.conversation.turns,editingEnabled===true,studio.refresh);
   const assistance=useStudioAssistance(accountKey,studio.busy);
   const tasksEnabled=studio.conversation.taskPolicyVersion===STUDIO_TASK_POLICY_VERSION;
   const assistanceLoading=tasksEnabled&&!assistance.status;
@@ -220,6 +222,8 @@ function StudioImageConversationWorkspace({
                 {turn.task&&<ConversationTask task={turn.task} projectId={projectId} accountKey={accountKey} locale={locale} onChanged={()=>{void studio.refresh();void assistance.refresh();}} onAssistance={()=>setBudgetPrompt(value=>value+1)} onSimplify={()=>{studio.discardPending();setText(turn.message);shelf.restore(imageTurnRetryInput(turn));composerRegion.current?.querySelector('textarea')?.focus();}}/>}
                 <ImageQuoteCard
                   turn={turn}
+                  assemblyError={extensions.errors[turn.requestId]}
+                  onRetryAssembly={()=>extensions.retry(turn.requestId)}
                   busy={studio.busy}
                   localQa={localQa}
                   locale={locale}
