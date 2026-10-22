@@ -74,7 +74,6 @@ function StudioImageConversationWorkspace({
   const [followupNotice,setFollowupNotice]=useState(false);
   const assistanceBlocked=!!assistance.status?.enabled&&!assistance.status.canContinue;
   const recoveredUsage=canResumeAssistanceRequest(studio.assistanceAction,assistance.status,assistance.error);
-  const luna=assistance.status?.enabled&&assistance.status.mode==='sponsored_luna';
   const exports = useConversationExports(projectId,exportsEnabled);
   const [help, setHelp] = useState(false);
   const [following, setFollowing] = useState(true);
@@ -165,7 +164,6 @@ function StudioImageConversationWorkspace({
           <span>{studio.conversation.projectName}</span>
         </div>
         <div className={styles.headerActions}>
-          <StudioAssistance tasksEnabled={tasksEnabled} {...assistance} locale={locale} conversationBusy={studio.busy} onChoice={afterAssistanceChoice} openSignal={budgetPrompt}/>
           <button ref={helpTrigger} aria-label={t('Studio help','Aide Studio')} onClick={() => setHelp(true)}><HelpCircle size={18}/></button>
           <ConversationProjects accountKey={accountKey} currentProjectId={projectId} locale={locale} onRename={id=>{if(id===projectId)void studio.refresh();}}/>
         </div>
@@ -181,7 +179,7 @@ function StudioImageConversationWorkspace({
             ref={log}
             className={styles.log}
             role="log"
-            aria-label={t('Conversation with Studio', 'Conversation avec Studio')}
+            aria-label={t('Conversation with Milo', 'Conversation avec Milo')}
             aria-live="polite"
             onScroll={() => {
               const el = log.current;
@@ -192,7 +190,7 @@ function StudioImageConversationWorkspace({
             }}
           >
             {studio.loading && <div className={styles.loading} role="status"><span className={styles.loadingMark}/>{t('Opening your workspace…','Ouverture de votre espace…')}</div>}
-            {!studio.loading && !studio.error && !studio.conversation.turns.length && !studio.pending && <ConversationWelcome locale={locale} onDraft={startDraft} onReference={openReferences} hasDraft={!!text.trim()}/>}
+            {!studio.loading && !studio.error && !studio.conversation.turns.length && !studio.pending && <ConversationWelcome locale={locale} onDraft={startDraft} hasDraft={!!text.trim()}/>}
             {studio.conversation.turns.map((turn) => (
               <article key={turn.requestId} className={styles.turn}>
                 <p className={styles.userMessage}>{turn.message}</p>
@@ -336,9 +334,8 @@ function StudioImageConversationWorkspace({
             locale={locale}
           />
           </div>
-          <p className={styles.footnote} role={luna?'status':undefined}>
-            {luna?<>{t('You’re using Luna. For more detailed responses, return to GPT‑6.1 Sol. ','Vous utilisez Luna. Pour des réponses plus abouties, retrouvez GPT‑6.1 Sol. ')}<button type="button" onClick={()=>setBudgetPrompt(value=>value+1)}>{t('Top up Sol','Recharger Sol')}</button>.</>:t('Drop a reference. Follow an idea.', 'Déposez une référence. Suivez une idée.')}
-          </p>
+          <StudioAssistance tasksEnabled={tasksEnabled} {...assistance} locale={locale} conversationBusy={studio.busy} onChoice={afterAssistanceChoice} openSignal={budgetPrompt}/>
+          <p className={styles.footnote}>{t('Review the price before each generation.', 'Vérifiez le prix avant chaque génération.')}</p>
         </div>
         <ConversationMediaShelf projectId={projectId} items={shelf.items} selectedId={shelf.selectedId} expanded={shelf.expanded} attachedIds={references.map(ref=>ref.assetId)} locale={locale} onSelect={shelf.setSelectedId} onToggle={()=>shelf.setExpanded(current=>!current)} onMention={mention} onAttach={shelf.attach} onDetach={detach} onInsert={editingEnabled?asset=>setTimelineInsertion({key:crypto.randomUUID(),asset}):undefined}/>
       </div>

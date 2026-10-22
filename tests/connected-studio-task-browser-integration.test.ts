@@ -17,7 +17,7 @@ import {createStudioImageGenerationService} from '../frontend/src/server/studio/
 
 const selectedImage='ma_'+'e'.repeat(32),selectedImageUrl='https://cdn.maxvideoai.com/studio-local-fixture/selected.webp';
 
-test('Sol starts with 500 included credits and Luna offers discreet top-up on desktop/mobile without work-profile controls',async()=>{
+test('Milo modes preserve model selection, credits, references and explicit consent on desktop and mobile',async()=>{
   const previous=process.env.DATABASE_URL;
   const runtime=await startStudioIntegrationRuntime({mcp:{studioMontageCreation:false},conversation:true,conversationTasks:true,initializeDatabase:async db=>{
     await initializeStudioConnectedFixture(db);
@@ -64,12 +64,16 @@ test('Sol starts with 500 included credits and Luna offers discreet top-up on de
     await page.getByRole('button',{name:'Open library',exact:true}).click();
     await page.getByRole('button',{name:'Choose Selected product',exact:true}).click();
     await page.getByRole('button',{name:'Add to conversation',exact:true}).click();
-    const picker=page.getByRole('group',{name:'Work allowance'}),message=page.getByRole('textbox',{name:'Message Studio'});
-    const selector=page.getByRole('button',{name:'Studio assistance and budget',exact:true});
+    const picker=page.getByRole('group',{name:'Work allowance'}),message=page.getByRole('textbox',{name:'Message Milo'});
+    const selector=page.getByRole('button',{name:'Milo settings and credits',exact:true});
+    const modes=page.getByRole('group',{name:'Milo mode',exact:true});
+    const standard=modes.getByRole('button',{name:'Standard',exact:true}),max=modes.getByRole('button',{name:'Max',exact:true});
     const assistanceBody=await assistance.json();
     assert.equal(assistanceBody.result.selectedModel,'gpt-6.1-sol');assert.equal(assistanceBody.result.credits.included.remaining,500);
-    await expect(selector).toHaveText('Sol');await expect(picker).toHaveCount(0);
-    await expect(page.getByRole('button',{name:'Top up Sol',exact:true})).toHaveCount(0);
+    await expect(max).toHaveAttribute('aria-pressed','true');await expect(picker).toHaveCount(0);
+    const inputBox=await message.boundingBox(),modeBox=await modes.boundingBox();
+    assert.ok(inputBox&&modeBox&&modeBox.y>=inputBox.y+inputBox.height,'Mode control follows the composer');
+    assert.deepEqual(assistanceActions,[],'Loading the control must not switch the default model');
     assert.match(await page.title(),/Studio|MaxVideoAI/);assert.equal(new URL(page.url()).pathname,conversationPath);
     await page.screenshot({path:join(evidence,'sol-start-desktop.png')});
     await page.setViewportSize({width:390,height:844});
@@ -80,32 +84,31 @@ test('Sol starts with 500 included credits and Luna offers discreet top-up on de
     const modelChoices=page.getByRole('group',{name:'Assistant model'}).getByRole('button');
     await expect(modelChoices).toHaveCount(2);await expect(picker).toHaveCount(0);
     await expect(page.getByRole('radio')).toHaveCount(0);
-    await expect(page.getByLabel('Monthly included Sol credits remaining')).toHaveAttribute('value','500');
-    await modelChoices.filter({hasText:'GPT‑6 Luna'}).click();
+    await expect(page.getByLabel('Monthly included Max credits remaining')).toHaveAttribute('value','500');
+    await modelChoices.filter({hasText:'Standard'}).click();
     const lunaSelected=page.waitForResponse(response=>response.url().endsWith('/api/studio/assistance')&&response.request().method()==='POST'&&response.request().postDataJSON().action==='select_luna',{timeout:30_000});
-    await page.getByRole('button',{name:'Continue with GPT‑6 Luna',exact:true}).click();
+    await page.getByRole('button',{name:'Continue with Standard',exact:true}).click();
     const lunaSelection=await lunaSelected,lunaBody=await lunaSelection.json();assert.equal(lunaSelection.status(),200,JSON.stringify(lunaBody));assert.equal(lunaBody.result.selectedModel,'gpt-6-luna');
-    await expect(selector).toHaveText('Luna');await expect(page.getByText('You’re using Luna.',{exact:false})).toBeVisible();
-    const topup=page.getByRole('button',{name:'Top up Sol',exact:true});await expect(topup).toBeVisible();
+    await expect(standard).toHaveAttribute('aria-pressed','true');
+    const topup=max;await expect(topup).toBeVisible();
     await page.setViewportSize({width:390,height:844});await page.screenshot({path:join(evidence,'luna-mobile.png')});await page.setViewportSize({width:1440,height:900});
-    await topup.click();await expect(page.getByText('Your Sol credits',{exact:true})).toBeVisible();await expect(picker).toHaveCount(0);
-    assert.deepEqual(assistanceActions,['select_luna'],'A top-up link only opens options and cannot buy a pack');
+    await topup.click();await expect(page.getByText('Your Max credits',{exact:true})).toBeVisible();await expect(picker).toHaveCount(0);
+    assert.deepEqual(assistanceActions,['select_luna'],'Opening Max only shows its options and cannot buy a pack or switch models');
     await page.getByRole('button',{name:'Close assistance',exact:true}).click();await expect(topup).toBeFocused();
     await topup.click();
     const solSelected=page.waitForResponse(response=>response.url().endsWith('/api/studio/assistance')&&response.request().method()==='POST'&&response.request().postDataJSON().action==='select_sol',{timeout:30_000});
-    await page.getByRole('button',{name:'Continue with GPT‑6.1 Sol',exact:true}).click();
+    await page.getByRole('button',{name:'Continue with Max',exact:true}).click();
     const solSelection=await solSelected,solBody=await solSelection.json();assert.equal(solSelection.status(),200,JSON.stringify(solBody));assert.equal(solBody.result.selectedModel,'gpt-6.1-sol');
-    await expect(selector).toHaveText('Sol');await expect(selector).toBeFocused();await expect(picker).toHaveCount(0);
-    await expect(page.getByText('You’re using Luna.',{exact:false})).toHaveCount(0);
+    await expect(max).toHaveAttribute('aria-pressed','true');await expect(max).toBeFocused();await expect(picker).toHaveCount(0);
     await message.fill('Help shape this film');
-    const send=page.getByRole('button',{name:'Send to Studio',exact:true});await expect(send).toBeEnabled();
+    const send=page.getByRole('button',{name:'Send to Milo',exact:true});await expect(send).toBeEnabled();
     const posted=page.waitForResponse(response=>response.url().endsWith('/image-conversation')&&response.request().method()==='POST');
     await send.click();const submitted=await posted;assert.equal(submitted.status(),200,JSON.stringify(await submitted.json()));
     const sent=JSON.parse(submitted.request().postData()!);assert.equal(sent.taskBudget.profile,'standard');assert.equal(sent.taskBudget.maxCredits,250);
     assert.deepEqual(sent.references,[selectedImage]);
     await expect(page.getByRole('button',{name:'Remove Image 1',exact:true})).toBeVisible();
 
-    const taskCard=page.getByRole('region',{name:'Studio task'});await expect(taskCard.getByText('Waiting for Studio')).toBeVisible();
+    const taskCard=page.getByRole('region',{name:'Studio task'});await expect(taskCard.getByText('Waiting for Milo')).toBeVisible();
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM studio_assistance_calls')).rows[0].n,0);
     const generationFactory=((actor,options)=>({resolveReferences:createStudioImageGenerationService(actor,options).resolveReferences,walletSummary:async()=>({balanceCents:0,currency:'USD'}),catalog:async()=>[],getQuote:async()=>null})) as ImageGenerationFactory;
     let calls=0;
@@ -120,7 +123,7 @@ test('Sol starts with 500 included credits and Luna offers discreet top-up on de
     const resumed=page.waitForResponse(response=>response.url().includes('/conversation-tasks/')&&response.request().method()==='POST');
     await taskCard.getByRole('button',{name:'Continue · same ceiling'}).click();const approved=await resumed;assert.equal(approved.status(),200,JSON.stringify(await approved.json()));
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM studio_task_approvals')).rows[0].n,1);assert.equal(calls,4);
-    await page.reload();await expect(page.getByRole('region',{name:'Studio task'}).getByText('Waiting for Studio')).toBeVisible();assert.equal(calls,4);
+    await page.reload();await expect(page.getByRole('region',{name:'Studio task'}).getByText('Waiting for Milo')).toBeVisible();assert.equal(calls,4);
     await runStudioTaskWorkerOnce({...worker,serviceOptions:{...worker.serviceOptions,createActionResponse:async()=>{calls++;return {id:'finished',model:'gpt-6.1-sol',status:'completed' as const,service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50},output_text:JSON.stringify({reply:'The requested guidance is complete.'}),output:[]};}}});
     await expect(page.getByText('The requested guidance is complete.')).toBeVisible({timeout:15_000});assert.equal(calls,5);
     await page.reload();await expect(page.getByText('The requested guidance is complete.')).toBeVisible();assert.equal(calls,5);
@@ -134,15 +137,15 @@ test('Sol starts with 500 included credits and Luna offers discreet top-up on de
       return {id:'fallback-finished',model:params.model!,status:'completed' as const,service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50},output_text:JSON.stringify({reply:'Continued with the approved framing.'}),output:[]};
     }}});
     await expect(page.getByText('Continued with the approved framing.')).toBeVisible({timeout:15_000});
-    await expect(page.getByRole('region',{name:'Studio task'}).last().getByText('Luna · Included assistance',{exact:false})).toBeVisible();
-    await page.getByRole('region',{name:'Studio task'}).last().getByRole('button',{name:'Top up Sol',exact:true}).click();
-    await expect(page.getByText('Your Sol credits',{exact:true})).toBeVisible();await page.getByRole('button',{name:'Close assistance',exact:true}).click();
+    await expect(page.getByRole('region',{name:'Studio task'}).last().getByText('Standard · Included assistance',{exact:false})).toBeVisible();
+    await page.getByRole('region',{name:'Studio task'}).last().getByRole('button',{name:'Explore Max',exact:true}).click();
+    await expect(page.getByText('Your Max credits',{exact:true})).toBeVisible();await page.getByRole('button',{name:'Close assistance',exact:true}).click();
     await page.reload();await expect(page.getByText('Continued with the approved framing.')).toBeVisible();assert.equal(calls,6);
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int n FROM mcp_generation_quotes')).rows[0].n,0,'Assistance fallback cannot implicitly prepare or confirm generation');
     await page.getByRole('button',{name:'Remove Image 1',exact:true}).click();
     await page.reload();await expect(page.getByRole('button',{name:'Remove Image 1',exact:true})).toHaveCount(0);
     await runtime.database.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=500 WHERE user_id=$1',[STUDIO_FIXTURE_OWNERS[0]]);
-    await page.reload();await expect(picker).toHaveCount(0);await expect(selector).toHaveText('Sol');
+    await page.reload();await expect(picker).toHaveCount(0);await expect(max).toHaveAttribute('aria-pressed','true');
     await message.fill('Continue when no Sol credits remain.');await expect(send).toBeEnabled();
     const zeroPosted=page.waitForResponse(response=>response.url().endsWith('/image-conversation')&&response.request().method()==='POST');
     await send.click();assert.equal((await zeroPosted).status(),200);

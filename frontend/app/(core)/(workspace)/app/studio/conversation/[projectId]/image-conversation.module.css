@@ -130,7 +130,7 @@
 .headerDot {color:var(--studio-accent);}
 .welcome h2 {font-size:clamp(27px,2.5vw,36px);line-height:1.25;letter-spacing:-1.15px;margin:0;font-weight:400;}
 .welcome h2 span {font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:400;color:var(--studio-accent);}
-.welcome > p {font-size:12px;line-height:1.7;color:var(--studio-muted);margin:0;max-width:340px;}
+.welcome > p {font-size:12px;line-height:1.7;color:var(--studio-muted);margin:0;max-width:480px;}
 .starters {display:flex;justify-content:center;flex-wrap:wrap;gap:2px 12px;margin-top:7px;}
 .studio .starters button {display:flex;gap:6px;align-items:center;min-height:36px;padding:4px 0;border:0;border-radius:0;background:transparent;font-size:11px;color:var(--studio-muted);}
 .starters button:hover {color:var(--studio-text);}

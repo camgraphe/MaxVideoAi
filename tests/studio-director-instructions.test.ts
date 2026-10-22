@@ -21,7 +21,7 @@ test('director sends creative purpose, current help and live quote rules with it
       calls++;
       const instructions=String(params.instructions);
       assert.match(instructions,/creative partner/i);
-      assert.match(instructions,/prompt.*single asset.*edit/i);
+      assert.match(instructions,/prompt.*asset.*edit/i);
       assert.match(instructions,/editorialGuidance/);
       assert.match(instructions,/reviewStatus/);
       assert.match(instructions,/Vary.*shot.*subject.*continuity/);
@@ -29,7 +29,7 @@ test('director sends creative purpose, current help and live quote rules with it
       assert.match(instructions,/competitor|provider prices/i);
       assert.match(instructions,/Projects opens/);
       assert.doesNotMatch(instructions,/My projects/);
-      assert.match(instructions,/GPT-6\.1 Sol.*GPT-6 Luna.*Studio assistance/);
+      assert.match(instructions,/Milo modes.*Max: GPT-6\.1 Sol.*Standard: GPT-6 Luna.*Studio assistance/);
       assert.match(instructions,/monthly free credits.*before purchased/);
       assert.match(instructions,/purchase debits.*once.*usage consumes.*credits/);
       assert.match(instructions,/Luna.*no monthly quota.*one active message/);
