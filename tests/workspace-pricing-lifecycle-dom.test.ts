@@ -76,6 +76,29 @@ test('Extend waits for an uploaded source before pricing and revokes the quote w
     assert.equal(f.current.preflightError, undefined);
   } finally { await f.dispose(); }
 });
+for (const { id, engine } of listFalEngines().filter(entry => entry.modes.some(({ mode }) => mode === 'v2v'))) {
+test(`${id}: Modify prices only a ready source and removes the previous quote immediately`, async () => {
+  const f = await mount();
+  try {
+    await f.update({ selectedEngine: { ...engine, modeAvailability: { ...engine.modeAvailability, v2v: { available: true, reason: 'available' } } }, submissionMode: 'v2v',
+      form: { ...f.options.form!, engineId: engine.id, mode: 'v2v' } });
+    await f.tick();
+    assert.equal(f.requests.length, 0);
+    assert.equal(f.current.isPricing, false);
+    assert.equal(f.current.preflightError, undefined);
+    const source = { id: 'source', fieldId: 'video_url', kind: 'video', name: 'source.mp4',
+      type: 'video/mp4', size: 1, previewUrl: 'blob:source', status: 'uploading' } as const;
+    await f.update({ inputAssets: { video_url: [source] } });
+    await f.tick(); assert.equal(f.requests.length, 0);
+    await f.update({ inputAssets: { video_url: [{ ...source, status: 'ready', url: 'https://example.com/source.mp4' }] } });
+    await f.tick(); assert.equal(f.requests.length, 1);
+    await f.respond(0); assert.equal(f.current.price, 1.25);
+    await f.update({ inputAssets: {} });
+    masked(f); await f.tick(); assert.equal(f.requests.length, 1);
+    assert.equal(f.current.preflightError, undefined);
+  } finally { await f.dispose(); }
+});
+}
 test('Edit availability immediately revokes its quote and requests a fresh quote when restored', async () => {
   const f = await mount();
   try {

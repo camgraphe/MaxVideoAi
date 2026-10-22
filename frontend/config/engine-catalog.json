@@ -3631,7 +3631,7 @@
             "id": "video_url",
             "type": "video",
             "label": "Source video",
-            "description": "Modify preserves source timing. Use an owned clip of exactly 5s or 10s and select the matching duration (provider source limit: 18s).",
+            "description": "Upload a video from your device or library, up to 18s. Modify follows the source timing; the price is calculated after import.",
             "modes": [
               "v2v"
             ],
@@ -3673,7 +3673,6 @@
             "modes": [
               "t2v",
               "i2v",
-              "v2v",
               "reframe"
             ]
           },
@@ -4034,13 +4033,6 @@
           "modes": [
             "v2v"
           ],
-          "duration": {
-            "options": [
-              "5s",
-              "10s"
-            ],
-            "default": "5s"
-          },
           "resolution": [
             "540p",
             "720p",
@@ -4054,7 +4046,7 @@
           ],
           "maxUploadMB": 200,
           "audioToggle": false,
-          "notes": "Modify preserves timing. Upload an owned video of exactly 5s or 10s and select the matching duration. Guide frames and keyframes are optional."
+          "notes": "Modify follows the imported video timing, up to 18s. Price appears after import. Guide frames, keyframes and preservation controls are optional."
         }
       },
       {

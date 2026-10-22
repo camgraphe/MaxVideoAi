@@ -1,4 +1,4 @@
-import { isLumaSourceVideoMode, validateLumaSourceVideoTiming } from '@/lib/luma-source-video';
+import { isLumaSourceVideoMode, validateLumaSourceVideoTiming, LUMA_MODIFY_SOURCE_MAX_SEC } from '@/lib/luma-source-video';
 import {
   canonicalizeImageFieldValue,
   getImageCountConstraints,
@@ -189,7 +189,9 @@ function validateVideoModeCaps(
   if (caps.duration && !isVideoDurationSupported(duration, caps.duration, candidate.engine.maxDurationSec)) {
     fail('durationSec');
   }
-  if (!caps.duration && (duration as number) > candidate.engine.maxDurationSec) fail('durationSec');
+  const maximum = request.engineId === 'luma-ray-3-2' && request.mode === 'v2v'
+    ? LUMA_MODIFY_SOURCE_MAX_SEC : candidate.engine.maxDurationSec;
+  if (!caps.duration && (duration as number) > maximum) fail('durationSec');
   const durationField = applicableField(candidate, 'duration', request.mode);
   if (durationField) {
     if (durationField.type === 'enum') {

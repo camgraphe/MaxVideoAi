@@ -20,11 +20,16 @@ export function validateLumaSourceVideoTiming(params: {
   }
   const maximum = params.mode === 'v2v' ? LUMA_MODIFY_SOURCE_MAX_SEC : LUMA_REFRAME_SOURCE_MAX_SEC;
   if (source > maximum) return `Source video must be ${maximum}s or shorter for Luma ${params.mode === 'v2v' ? 'Modify' : 'Reframe'}.`;
-  if (params.durationSec !== 5 && params.durationSec !== 10) return 'Select a 5s or 10s output for Luma.';
-  // Published Modify prices cover these two source lengths only. Do not round
-  // fractional sources or infer an arbitrary-duration supplier price.
-  if (params.mode === 'v2v' && source !== params.durationSec) {
-    return 'Luma Modify keeps the source duration. Trim the source to exactly 5s or 10s and select the matching duration.';
+  if (params.mode === 'reframe' && params.durationSec !== 5 && params.durationSec !== 10) {
+    return 'Select a 5s or 10s output for Luma Reframe.';
   }
   return null;
+}
+
+/** Customer tariff quantity only. Modify sends no duration override to Luma. */
+export function lumaModifyTariffDurationSec(sourceDurationSec: number): number {
+  if (!Number.isFinite(sourceDurationSec) || sourceDurationSec <= 0 || sourceDurationSec > LUMA_MODIFY_SOURCE_MAX_SEC) {
+    throw new Error('A verified Luma Modify source of at most 18s is required.');
+  }
+  return Math.max(5, Math.ceil(sourceDurationSec));
 }

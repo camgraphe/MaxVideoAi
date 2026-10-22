@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { validateCanonicalGenerationCapabilities } from '../frontend/src/server/agent-api/generation-capability-validation';
+import { validateRuntimeRequestSettings } from '../frontend/app/api/generate/_lib/runtime-schema-options';
 import { listFalEngines } from '../frontend/src/config/falEngines';
 import { resolveMediaAwarePreflight } from '../frontend/app/api/preflight/_lib/media-aware-preflight';
 import { resolveGenerateSourceVideoContext } from '../frontend/app/api/generate/_lib/source-video-context';
@@ -22,8 +24,8 @@ function request(mode: 'v2v' | 'reframe', durationSec = 5): CanonicalGenerationR
 }
 
 for (const [mode, measured, requested, ok] of [
-  ['v2v', 5, 5, true], ['v2v', 10, 10, true], ['v2v', 8, 5, false],
-  ['v2v', 10, 5, false], ['v2v', 5.01, 5, false], ['v2v', 18.01, 5, false], ['v2v', null, 5, false],
+  ['v2v', 3.2, 10, true], ['v2v', 5, 5, true], ['v2v', 10, 10, true], ['v2v', 8, 5, true],
+  ['v2v', 10, 5, true], ['v2v', 5.01, 5, true], ['v2v', 17.52, 5, true], ['v2v', 18.01, 5, false], ['v2v', null, 5, false],
   ['reframe', 8, 10, true], ['reframe', 10, 10, true], ['reframe', 11, 10, false],
 ] as const) {
   test(`Web Luma ${mode} measured ${measured}s / selected ${requested}s: ${ok ? 'quotes' : 'refuses before quote'}`, async () => {
@@ -32,7 +34,7 @@ for (const [mode, measured, requested, ok] of [
       engine: engine.id, mode, durationSec: requested, resolution: '720p', aspectRatio: '16:9', fps: 24,
       inputs: [{ assetId: source.assetId, kind: 'video', slotId: 'video_url', url }],
     } }, { getConfiguredEngineFn: async () => engine,
-      computeConfiguredPreflightFn: async input => { quotes++; assert.equal(input.durationSec, requested); return priced; },
+      computeConfiguredPreflightFn: async input => { quotes++; assert.equal(input.durationSec, mode === 'v2v' ? Math.max(5, Math.ceil(measured!)) : requested); return priced; },
       mediaConstraintDeps: { queryFn: async () => [{ asset_id: source.assetId, url, origin_url: null,
         original_name: 'source.mp4', mime_type: 'video/mp4', size_bytes: 1000,
         duration_sec: measured, width: 1280, height: 720 }] as never[] },
@@ -48,7 +50,7 @@ test('execution never trusts a caller attachment duration for Luma Modify', () =
       slotId: 'video_url', url, durationSec: 5 }], sourceInputVideoUrl: url, videoUrls: [url],
     fallbackDurationSec: 5, fallbackDurationLabel: '5s', maxDurationSec: 18 };
   assert.equal(resolveGenerateSourceVideoContext(params).ok, false);
-  assert.equal(resolveGenerateSourceVideoContext({ ...params, trustedSourceVideo: { url, durationSec: 8 } }).ok, false);
+  assert.equal(resolveGenerateSourceVideoContext({ ...params, trustedSourceVideo: { url, durationSec: 8 } }).ok, true);
   assert.equal(resolveGenerateSourceVideoContext({ ...params, trustedSourceVideo: { url, durationSec: 5 } }).ok, true);
   assert.equal(resolveGenerateSourceVideoContext({ ...params,
     trustedSourceVideo: { url: 'https://example.test/different-source.mp4', durationSec: 5 } }).ok, false);
@@ -67,7 +69,7 @@ for (const mode of ['v2v', 'reframe'] as const) {
     const inspect = async () => { quotes++; return priced; };
     const snapshot = async () => { quotes++; return pricing as never; };
     const deps = { computeVideoPreflight: inspect, estimateImage: async () => { throw new Error('Unexpected image'); } };
-    const invalid = mode === 'v2v' ? 8 : 11;
+    const invalid = mode === 'v2v' ? 18.01 : 11;
     for (const refs of [undefined, [], [{ ...source, assetId: 'other' }], [{ ...source, durationSec: null }], [{ ...source, durationSec: invalid }]]) {
       await assert.rejects(priceCanonicalGeneration(request(mode), 'member', deps, { resolvedReferences: refs }));
       await assert.rejects(priceCanonicalGenerationWithBilling(request(mode), 'member',
@@ -128,3 +130,44 @@ for (const mode of ['v2v', 'reframe'] as const) {
     assert.equal(context.durationSec, trusted.durationSec);
   });
 }
+
+for (const durationSec of [5.558333, 8.4, 17.52, 18]) {
+  test(`Luma Modify binds both canonical quotes and execution to measured ${durationSec}s`, async () => {
+    const measuredSource = { ...source, durationSec };
+    const quotes: number[] = [];
+    await priceCanonicalGeneration(request('v2v', 5), 'member', {
+      computeVideoPreflight: async input => { quotes.push(input.durationSec); return priced; },
+      estimateImage: async () => { throw new Error('Unexpected image'); },
+    }, { resolvedReferences: [measuredSource] });
+    await priceCanonicalGenerationWithBilling(request('v2v', 10), 'member', {
+      resolvedEngine: engine, resolvedReferences: [measuredSource],
+    }, async input => { quotes.push(input.durationSec); return pricing as never; });
+    const execution = resolveGenerateSourceVideoContext({ engineId: engine.id, engineLabel: engine.label,
+      mode: 'v2v', attachments: [], sourceInputVideoUrl: url, videoUrls: [url],
+      fallbackDurationSec: 5, trustedSourceVideo: { url, durationSec } });
+    assert.deepEqual(quotes, [Math.ceil(durationSec), Math.ceil(durationSec)]);
+    assert.deepEqual(execution, { ok: true, durationSec: Math.ceil(durationSec),
+      durationLabel: `${Math.ceil(durationSec)}s`, hasVideoInput: true });
+  });
+}
+
+
+test('runtime duration presets do not reject source-timed Modify before owned media resolution', () => {
+  for (const durationSec of [6, 9, 18]) {
+    assert.equal(validateRuntimeRequestSettings({ engine, mode: 'v2v', durationSec }).ok, true);
+  }
+  assert.equal(validateRuntimeRequestSettings({ engine, mode: 't2v', durationSec: 6 }).ok, false);
+});
+
+
+test('canonical capability admission accepts the full Modify source domain', () => {
+  const entry = listFalEngines().find(entry => entry.id === engine.id)!;
+  const candidate = { engine, surface: 'video' as const, publicModes: ['v2v' as const],
+    modeCaps: Object.fromEntries(entry.modes.map(mode => [mode.mode, mode.ui])) };
+  for (const durationSec of [6, 9, 18]) {
+    const input = request('v2v', durationSec);
+    delete input.settings.aspectRatio;
+    assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(input, candidate,
+      { resolvedReferences: [{ ...source, durationSec: durationSec === 18 ? 17.52 : durationSec - 0.2 }] }));
+  }
+});

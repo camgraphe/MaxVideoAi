@@ -1,4 +1,4 @@
-import { isLumaSourceVideoMode, validateLumaSourceVideoTiming, LUMA_MODIFY_SOURCE_MAX_SEC, LUMA_REFRAME_SOURCE_MAX_SEC } from '@/lib/luma-source-video';
+import { isLumaSourceVideoMode, validateLumaSourceVideoTiming, lumaModifyTariffDurationSec, LUMA_MODIFY_SOURCE_MAX_SEC, LUMA_REFRAME_SOURCE_MAX_SEC } from '@/lib/luma-source-video';
 import type { Mode } from '@/types/engines';
 import { resolveSourceVideoDurationSec } from './attachment-references';
 import type { NormalizedAttachment } from './attachments';
@@ -54,8 +54,8 @@ export function resolveGenerateSourceVideoContext(params: SourceVideoContextPara
       metric: { errorCode: 'SOURCE_VIDEO_DURATION_UNSUPPORTED', meta: {
         sourceDurationSec: sourceDurationSec ?? null, mode: params.mode,
         maxDurationSec: params.mode === 'v2v' ? LUMA_MODIFY_SOURCE_MAX_SEC : LUMA_REFRAME_SOURCE_MAX_SEC } } };
-    return { ok: true, durationSec: params.fallbackDurationSec,
-      durationLabel: `${params.fallbackDurationSec}s`, hasVideoInput: true };
+    const durationSec = params.mode === 'v2v' ? lumaModifyTariffDurationSec(sourceDurationSec!) : params.fallbackDurationSec;
+    return { ok: true, durationSec, durationLabel: `${durationSec}s`, hasVideoInput: true };
   }
   const sourceVideoDuration = resolveSourceVideoDurationSec({
     mode: params.mode,

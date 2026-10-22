@@ -1,23 +1,15 @@
 import type { EngineInputSchema } from '@/types/engines';
-import { resolveActiveVideoInputField, VIDEO_MEDIA_FIELD_CANDIDATES } from '@/lib/video-input-schema';
+import { getVideoWorkflowSourceField, getVideoWorkflowSourceState } from '@/lib/video-source-workflow';
 
 export function getVideoExtensionSourceField(inputSchema: EngineInputSchema | undefined) {
-  return resolveActiveVideoInputField({
-    inputSchema, mode: 'extend', type: 'video', candidateFieldIds: VIDEO_MEDIA_FIELD_CANDIDATES.sourceVideo,
-  });
+  return getVideoWorkflowSourceField(inputSchema, 'extend');
 }
 
-/** Upload state is presentation/quote eligibility only; the server still verifies duration and ownership. */
 export function getVideoExtensionSourceState(
   inputSchema: EngineInputSchema | undefined,
   assets: Record<string, ({ kind: string; status?: string } | null)[]>,
-): 'missing' | 'uploading' | 'error' | 'ready' {
-  const field = getVideoExtensionSourceField(inputSchema);
-  if (!field) return 'missing';
-  const sources = (assets[field.id] ?? []).filter(asset => asset?.kind === 'video');
-  if (sources.some(asset => asset?.status === 'uploading')) return 'uploading';
-  if (sources.some(asset => asset?.status === 'error')) return 'error';
-  return sources.filter(asset => asset?.status === 'ready').length >= (field.minCount ?? 1) ? 'ready' : 'missing';
+) {
+  return getVideoWorkflowSourceState(inputSchema, assets, 'extend');
 }
 
 export function videoExtensionCopy(locale: string) {

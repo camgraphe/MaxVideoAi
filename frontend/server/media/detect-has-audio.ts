@@ -36,6 +36,8 @@ type ProbeMetadata = {
     width?: number;
     height?: number;
     disposition?: { attached_pic?: number };
+    side_data_list?: Array<{ rotation?: number }>;
+    tags?: { rotate?: string };
   }>;
   format?: { format_name?: string; duration?: string };
 };
@@ -84,10 +86,15 @@ export function resolveProbedMediaMetadata(
     && (kind !== 'video' || stream.disposition?.attached_pic !== 1))?.duration;
   const durationSec = Number.parseFloat(metadata.format?.duration ?? streamDuration ?? '');
   if (!Number.isFinite(durationSec) || durationSec <= 0) return null;
+  const matrixRotation = videoStream?.side_data_list?.find(entry => Number.isFinite(entry.rotation))?.rotation;
+  const rotation = matrixRotation ?? Number(videoStream?.tags?.rotate ?? 0);
+  const normalizedRotation = ((rotation % 360) + 360) % 360;
+  const swapsAxes = Math.abs(normalizedRotation - 90) < 0.01 || Math.abs(normalizedRotation - 270) < 0.01;
   const dimensions = videoStream
     && Number.isSafeInteger(videoStream.width) && Number(videoStream.width) > 0
     && Number.isSafeInteger(videoStream.height) && Number(videoStream.height) > 0
-    ? { width: videoStream.width!, height: videoStream.height! }
+    ? { width: swapsAxes ? videoStream.height! : videoStream.width!,
+      height: swapsAxes ? videoStream.width! : videoStream.height! }
     : {};
   return { kind, canonicalMime, detectedMime, durationSec: Math.round(durationSec * 1000) / 1000, hasAudio, ...dimensions };
 }
@@ -104,7 +111,7 @@ export async function probeMediaBuffer(
     await writeFile(temporaryFile, mediaBuffer);
     const { stdout } = await execFileAsync(ffprobe.path, [
       '-v', 'error',
-      '-show_entries', 'stream=codec_type,duration,width,height:stream_disposition=attached_pic:format=format_name,duration',
+      '-show_entries', 'stream=codec_type,duration,width,height:stream_disposition=attached_pic:stream_side_data_list:stream_tags=rotate:format=format_name,duration',
       '-of', 'json',
       temporaryFile,
     ], { timeout: timeoutMs, maxBuffer: 1024 * 1024, signal: options.signal });

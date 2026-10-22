@@ -23,7 +23,7 @@ Direct Luma routing is primary only when flags are enabled and the request shape
 Public launch separates fallback-safe generation from Luma-only source-video routes:
 
 - Ray 3.2 generation: `t2v` and `i2v`, 5s/10s, 540p/720p/1080p, loop where valid, public aspect ratios from the app controls, source images for direct image-to-video, and fal-compatible fallback where the fal schema accepts the request shape.
-- Ray 3.2 source-video Modify: `v2v`, one owned MP4/MOV/WebM source clip of exactly 5s/10s, matching the selected duration (18s provider source ceiling), 540p/720p/1080p, optional single guide frame or indexed keyframes, provider strength presets, and no audio generation. Guide frame and Modify keyframes are mutually exclusive.
+- Ray 3.2 source-video Modify: `v2v`, one owned MP4/MOV/WebM source clip up to 18s, including fractional phone recordings; no independent output-duration control, 540p/720p/1080p, optional single guide frame or indexed keyframes, provider strength presets, and no audio generation. Guide frame and Modify keyframes are mutually exclusive.
 - Ray 3.2 Reframe: `reframe`, one owned source clip up to 10s, explicit selected 5s/10s output duration, target aspect ratio, 540p/720p/1080p where supported by the provider constraints, optional source-position controls, and no HDR/EXR.
 - Uni-1 image: `t2i` and `i2i`, 2K output, supported aspect ratios for generation, source image plus references for edit, `auto`/`manga` style, PNG/JPEG, optional web search for generation.
 - Uni-1 Max image: same public controls as Uni-1, with the Max pricing and model route.
@@ -156,18 +156,27 @@ images/public/HDR disabled and does not apply any environment changes itself.
 The video flag gates all eligible direct Ray 3.2 modes for admins; MCP keeps
 public eligibility and is not the admin-canary surface.
 
-`lib/luma-source-video.ts` owns exact Modify timing and the Reframe ceiling.
+`lib/luma-source-video.ts` owns verified Modify source limits, its customer tariff quantity and the Reframe ceiling.
 Web preflight and execution consume server-owned source measurements. Canonical
 estimates and transactional repricing match resolved asset/role/slot facts.
-Modify rejects unknown, fractional, unpriced or mismatched source durations;
-Reframe sends the billed output duration explicitly. Owned source URL matching
+Modify rejects unknown/non-positive timing and sources over 18s, but accepts fractional sources.
+Its provider payload omits `video.duration`, independently of the customer tariff quantity.
+Reframe keeps its separate selected output-duration contract pending its own live qualification. Owned source URL matching
 never substitutes metadata from an origin URL. Optional guide images retain their
 existing reference behavior. The generated catalog and MCP details expose these
 mode-specific limits. Source timestamps are not proof of live provider acceptance.
 
 Direct cost estimates retain HDR/EXR flags at submission and read persisted
 advanced settings at completion. They remain estimates, not invoice reconciliation.
-Retail tariff policy is unchanged. Existing polling shares the enabled/video
+Existing Modify 5s/10s reference amounts remain unchanged. This branch prepares
+new customer tariff classes `max(5, ceil(verified source seconds))`, up to 18,
+using the existing 5s commercial reference proportionally. This is a proposed
+retail reference extension, **not** an inferred Luma invoice rule. A stale duration
+preset cannot override the source-derived class. Active manual pricing must have
+reviewed cells for these new classes; missing cells fail closed. No tariff is
+activated by this code. Direct supplier costs outside published 5s/10s remain
+unknown; the observed 5.558s, 8.4s and 17.52s console charges do not establish an
+account-wide formula. Existing polling shares the enabled/video
 flags: drain or settle accepted jobs before disabling them during rollback.
 
 ## General rollout checklist (separate from the current admin trial)

@@ -24,6 +24,14 @@ keep their own owners. `tests/video-upload-direct.test.ts` guards this shared
 boundary, with behavioral coverage for large MOVs in Studio, library and
 background-removal tests.
 
+The upload probe in `server/media/detect-has-audio.ts` reports display-oriented
+video dimensions: display-matrix rotation takes precedence over legacy rotate
+tags, and quarter turns swap width/height. This fixes portrait phone files whose
+encoded pixels are landscape. Original bytes are not rotated, transcoded or
+trimmed. The shared facts reach library readers and source-inheriting models.
+Existing stored metadata is not repaired on reads; older assets need a verified
+re-import or a separately bounded metadata repair after deployment.
+
 ## Authenticated original downloads
 
 `GET /api/download` authenticates before network work and serves exact original

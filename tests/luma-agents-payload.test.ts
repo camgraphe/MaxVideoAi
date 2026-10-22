@@ -219,7 +219,6 @@ test('Luma Ray 3.2 video-to-video payload maps source and auto Modify edit', () 
       source: { url: 'https://cdn.maxvideoai.com/source.mp4', media_type: 'video/mp4' },
       video: {
         resolution: '720p',
-        duration: '5s',
         edit: { auto_controls: true },
       },
     }
@@ -386,3 +385,16 @@ test('Reframe sends the billed duration when a stale duration label accompanies 
     aspectRatio: '16:9', videoUrl: 'https://cdn.maxvideoai.com/source.mp4' });
   assert.equal(payload.video.duration, '10s');
 });
+
+for (const durationSec of [5.558333, 6, 8.4, 18]) {
+  test(`Modify leaves ${durationSec}s timing to the source, never a generation preset`, () => {
+    const payload = buildLumaAgentsVideoPayload({ engineId: 'luma-ray-3-2', mode: 'v2v',
+      prompt: 'Replace the background while preserving the person', durationSec,
+      durationOption: '5s', resolution: '720p', videoUrl: 'https://cdn.maxvideoai.com/phone.mov',
+      sourceVideoMimeType: 'video/quicktime', imageUrl: 'https://cdn.maxvideoai.com/guide.png',
+      extraInputValues: { edit_face_enabled: true, edit_pose_enabled: true } });
+    assert.equal(Object.hasOwn(payload.video, 'duration'), false);
+    assert.equal(payload.source?.media_type, 'video/quicktime');
+    assert.deepEqual(payload.video.start_frame, { url: 'https://cdn.maxvideoai.com/guide.png' });
+  });
+}

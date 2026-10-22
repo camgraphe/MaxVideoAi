@@ -1225,3 +1225,22 @@ requires an exact owned document/source preparation and durable job confirmation
 Included exports do not debit the wallet or create charge/refund receipts. Earlier
 accepted paid exports retain historical billing; earlier unaccepted paid quotes
 expire on confirmation. General Studio timeline export prices and quotas are unchanged.
+
+
+### Luma Modify source timing — 2026-10-22 candidate
+
+Modify accepts verified owned sources up to 18s, including fractional phone
+recordings. Web preflight, canonical estimates, locked repricing and execution
+all derive the same proposed customer tariff quantity: `max(5, ceil(source))`.
+The 5s minimum and existing 5s/10s reference amounts remain stable. The candidate
+extends the commercial reference proportionally to classes 6–9 and 11–18; this
+is not a verified provider charging formula. Provider payloads omit duration so
+that rounding changes no source bytes or timing. The collector enumerates these
+classes for review; no production tariff cell or activation state is changed.
+An active manual grid without the selected class still fails closed.
+
+Published direct supplier estimates stay limited to documented 5s/10s scenarios.
+Other lengths retain unknown supplier cost. Observed qualification invoices
+(5.558s at 720p: $1.08; 8.4s and 17.52s at 360p: $0.54 each) are dated evidence
+only. Live qualification, complete tariff review and the production lifecycle
+canary remain distinct release requirements. Reframe is unchanged by this slice.

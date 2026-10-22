@@ -133,7 +133,9 @@ export function validateRuntimeRequestSettings(input: {
   const capability = input.engine.modeCaps?.[input.mode]
     ?? deriveRuntimeSchemaCaps(input.engine.inputSchema, input.mode);
 
-  if (input.durationSec !== undefined) {
+  // Modify inherits owned source timing, verified later at the media boundary.
+  const inheritsLumaModifySource = input.engine.id === 'luma-ray-3-2' && input.mode === 'v2v';
+  if (input.durationSec !== undefined && !inheritsLumaModifySource) {
     if (!capability?.duration) return failure('durationSec', input.durationSec, []);
     const decision = durationAllowed(input.durationSec, capability.duration, input.engine.maxDurationSec);
     if (!decision.valid) return failure('durationSec', input.durationSec, decision.allowed);

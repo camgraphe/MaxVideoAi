@@ -66,7 +66,7 @@ const LUMA_RAY_3_2_ENGINE: EngineCaps = {
         id: 'video_url',
         type: 'video',
         label: 'Source video',
-        description: 'Modify preserves source timing. Use an owned clip of exactly 5s or 10s and select the matching duration (provider source limit: 18s).',
+        description: 'Upload a video from your device or library, up to 18s. Modify follows the source timing; the price is calculated after import.',
         modes: ['v2v'],
         requiredInModes: ['v2v'],
         minCount: 1,
@@ -89,7 +89,7 @@ const LUMA_RAY_3_2_ENGINE: EngineCaps = {
         label: 'Duration',
         values: [...LUMA_RAY_32_DURATIONS],
         default: '5s',
-        modes: ['t2v', 'i2v', 'v2v', 'reframe'],
+        modes: ['t2v', 'i2v', 'reframe'],
       },
       {
         id: 'aspect_ratio',
@@ -327,12 +327,11 @@ export const LUMA_RAY_3_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         falModelId: 'luma/agent/ray/v3.2/video-edit',
         ui: {
           modes: ['v2v'],
-          duration: { options: [...LUMA_RAY_32_DURATIONS], default: '5s' },
           resolution: [...LUMA_RAY_32_RESOLUTIONS],
           acceptsImageFormats: [...LUMA_SUPPORTED_IMAGE_FORMATS],
           maxUploadMB: LUMA_RAY_32_VIDEO_MAX_MB,
           audioToggle: false,
-          notes: 'Modify preserves timing. Upload an owned video of exactly 5s or 10s and select the matching duration. Guide frames and keyframes are optional.',
+          notes: 'Modify follows the imported video timing, up to 18s. Price appears after import. Guide frames, keyframes and preservation controls are optional.',
         },
       },
       {

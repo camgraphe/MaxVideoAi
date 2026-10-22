@@ -271,7 +271,7 @@ function buildBillingPricingFactsInternal(
       hdr: booleanAddon(context.addons?.hdr),
       exrExport: booleanAddon(context.addons?.exr_export ?? context.addons?.exrExport),
     });
-    const seconds = mode === 'reframe' ? durationSec : reference.breakdown.duration === '10s' ? 10 : 5;
+    const seconds = reference.breakdown.durationSec;
     return resultFromFacts({
       engineId: engine.id,
       currency,

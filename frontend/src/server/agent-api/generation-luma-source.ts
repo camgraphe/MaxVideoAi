@@ -1,9 +1,9 @@
-import { isLumaSourceVideoMode, validateLumaSourceVideoTiming } from '@/lib/luma-source-video';
+import { isLumaSourceVideoMode, validateLumaSourceVideoTiming, lumaModifyTariffDurationSec } from '@/lib/luma-source-video';
 import type { CanonicalGenerationRequest } from './generation-types';
 import type { ResolvedReference } from './reference-types';
 
 /** Shared by estimates and locked transaction repricing; unresolved URLs cannot establish timing. */
-export function assertCanonicalLumaSourceTiming(request: CanonicalGenerationRequest, resolvedReferences?: readonly ResolvedReference[]): void {
+export function assertCanonicalLumaSourceTiming(request: CanonicalGenerationRequest, resolvedReferences?: readonly ResolvedReference[]): number | undefined {
   if (!isLumaSourceVideoMode(request.engineId, request.mode)) return;
   const sources = request.references.filter(reference => reference.role === 'source');
   const source = sources[0];
@@ -14,4 +14,5 @@ export function assertCanonicalLumaSourceTiming(request: CanonicalGenerationRequ
   const error = validateLumaSourceVideoTiming({ engineId: request.engineId, mode: request.mode,
     sourceDurationSec: matches[0]!.durationSec, durationSec: Number(request.settings.durationSec) });
   if (error) throw new Error(error);
+  return request.mode === 'v2v' ? lumaModifyTariffDurationSec(matches[0]!.durationSec!) : undefined;
 }
