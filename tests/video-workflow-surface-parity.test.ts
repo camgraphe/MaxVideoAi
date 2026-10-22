@@ -41,6 +41,7 @@ for(const [id,mode,settings,expected] of [
   ['kling-o3-pro','v2v',{keepAudio:true},{keep_audio:true}],
   ['gemini-omni-flash','v2v',{promptEditInstruction:'replace_background'},{prompt_edit_instruction:'replace_background'}],
   ['veo-3-1','extend',{compressionQuality:'lossless'},{compression_quality:'lossless'}],
+  ['flux-3','extend',{safetyTolerance:4},{safety_tolerance:4}],
 ] as const)test(`${id} ${mode} exposes and submits its model-specific controls`,()=>{
   const entry=candidate(id),details=projectAgentModelModeDetails(entry,mode);
   for(const key of Object.keys(settings))assert.ok(details.settings.some(s=>s.key===key),key);
@@ -119,4 +120,15 @@ test('MCP derives omitted Modify duration from measured media and preserves exac
   });
   assert.equal(result.request.settings.durationSec,6);
   assert.equal(request.settings.durationSec,undefined,'No caller object mutation');
+});
+
+
+test('Omni direction controls retain free-text instructions beyond a short enum label', async () => {
+  const {prepareGenerationInputSchema} = await import('../frontend/src/server/mcp/tools/prepare-generation');
+  const details = projectAgentModelModeDetails(candidate('gemini-omni-flash'), 'extend');
+  for (const key of ['promptAudioDirection', 'promptCameraDirection', 'promptEditInstruction']) {
+    assert.equal(details.settings.find(setting => setting.key === key)?.type, 'text');
+    assert.ok(prepareGenerationInputSchema.safeParse({ surface:'video',engineId:'gemini-omni-flash',mode:'extend',prompt:'Continue the action',
+      settings:{[key]:'A detailed creative direction. '.repeat(20)} }).success);
+  }
 });

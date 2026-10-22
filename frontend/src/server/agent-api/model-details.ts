@@ -244,6 +244,7 @@ function projectAudio(caps: EngineModeUiCaps, engine: EngineCaps): AgentModelAud
 
 const CANONICAL_SETTING_BY_FIELD_ID: Readonly<Record<string, string>> = Object.freeze({
   keep_audio: 'keepAudio',
+  safety_tolerance: 'safetyTolerance',
   audio_setting: 'audioSetting',
   person_generation: 'personGeneration',
   compression_quality: 'compressionQuality',
@@ -325,7 +326,9 @@ function projectSettings(
       ...(field.description ? { description: field.description } : {}),
       type: field.id === 'multi_prompt'
         ? 'multi_prompt'
-        : booleanSafetyEnum ? 'boolean' : field.type as AgentModelSettingDetails['type'],
+        : booleanSafetyEnum ? 'boolean'
+          : field.type === 'enum' && !field.values?.length ? 'text'
+            : field.type as AgentModelSettingDetails['type'],
       required: field.requiredInModes
         ? field.requiredInModes.includes(toEngineGenerationMode(engine.id, mode))
         : required,

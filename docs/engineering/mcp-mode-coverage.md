@@ -224,7 +224,7 @@ The integer dispatch placeholder must not replace fractional source pricing fact
 
 The canonical settings and paid request adapter also carry Kling `keepAudio`,
 Veo `audioSetting`, `personGeneration`, `compressionQuality` and Omni prompt audio,
-camera and edit-direction controls. Only settings declared for that model and mode
+camera and edit-direction controls as free text, plus FLUX Extend safety tolerance. Only settings declared for that model and mode
 are accepted. Studio preserves the canonical per-role Modify/Extend reference
 capacities; the shared transport ceiling is 66 (64 Luma keyframes, guide and source),
 while per-model counts, combined budgets and source checks remain authoritative.

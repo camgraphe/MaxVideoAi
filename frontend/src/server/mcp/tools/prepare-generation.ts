@@ -22,12 +22,13 @@ const reference = z.discriminatedUnion('kind', [
 ]);
 export const canonicalSettingsSchema = z.object({
   keepAudio: z.boolean().nullable().default(null),
+  safetyTolerance: z.number().int().min(0).max(4).nullable().default(null),
   audioSetting: z.string().trim().min(1).max(128).nullable().default(null),
   personGeneration: z.string().trim().min(1).max(128).nullable().default(null),
   compressionQuality: z.string().trim().min(1).max(128).nullable().default(null),
-  promptAudioDirection: z.string().trim().min(1).max(128).nullable().default(null),
-  promptCameraDirection: z.string().trim().min(1).max(128).nullable().default(null),
-  promptEditInstruction: z.string().trim().min(1).max(128).nullable().default(null),
+  promptAudioDirection: z.string().trim().min(1).max(4096).nullable().default(null),
+  promptCameraDirection: z.string().trim().min(1).max(4096).nullable().default(null),
+  promptEditInstruction: z.string().trim().min(1).max(4096).nullable().default(null),
 
   multiPrompt: z.array(z.object({
     prompt: z.string().trim().min(1).max(512),

@@ -21,7 +21,7 @@ export type GenerationPricingReadDependencies=Pick<PrepareGenerationDependencies
 const PUBLIC_CANONICAL_PARAMETER_FIELDS = new Set([
   'engineId','mode','prompt','settings','references','outputCount',
   'aspectRatio','audio','durationSec','resolution','fps','loop','seed',
-  'keepAudio','audioSetting','personGeneration','compressionQuality',
+  'safetyTolerance','keepAudio','audioSetting','personGeneration','compressionQuality',
   'promptAudioDirection','promptCameraDirection','promptEditInstruction',
   'cameraFixed','cfgScale','contextSec','cropEndX','cropEndY','cropStartX','cropStartY',
   'documentUrl','enablePromptExpansion','guidanceScale','hdr','negativePrompt','numFrames',

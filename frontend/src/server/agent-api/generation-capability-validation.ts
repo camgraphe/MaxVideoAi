@@ -41,6 +41,7 @@ import {
 
 const VIDEO_FIELD_BY_SETTING: Record<string, string> = {
   keepAudio: 'keep_audio',
+  safetyTolerance: 'safety_tolerance',
   audioSetting: 'audio_setting',
   personGeneration: 'person_generation',
   compressionQuality: 'compression_quality',

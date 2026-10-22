@@ -625,7 +625,7 @@ Seedance person-reference notices and the scoped owner Modify preference are fac
 returned by live details, not additions to the global instruction text.
 
 The metadata collector computes policy fingerprint
-`659de7a09be788e02e69ef58899b4cc5802215a2205b1c3bffe56c8aa5b82337`.
+`c7acf97f9f249c3a725d16300f7c2767cb2165ffcac59c8007cef8375fc62fd8`.
 Only that fingerprint changed in the curated fixture; its 70 decisions remain
 unchanged. The local client gate passed 173 tests with one skip and all 70 curated
 scenarios. This is source/SDK evidence, not a production deployment, plugin package

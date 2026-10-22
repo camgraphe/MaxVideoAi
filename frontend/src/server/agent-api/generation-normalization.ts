@@ -69,6 +69,7 @@ const SAFE_SETTING_KEY_PATTERN = /^[A-Za-z][A-Za-z0-9._-]*$/;
 const UNSAFE_CONTROL_CHARACTER_PATTERN = /[\u0000-\u001f\u007f-\u009f]/u;
 const VIDEO_SETTING_KEYS = new Set([
   'keepAudio',
+  'safetyTolerance',
   'audioSetting',
   'personGeneration',
   'compressionQuality',
