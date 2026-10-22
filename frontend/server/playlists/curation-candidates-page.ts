@@ -1,3 +1,4 @@
+import { marketingVideoReader } from '@/server/marketing-media/public-read';
 import { EXAMPLE_OPENING_RATIO_TOLERANCE } from '@/lib/aspect';
 import { query, type QueryExecutor } from '@/lib/db';
 import type { CurationItem } from '@/lib/admin/playlist-curation';
@@ -32,7 +33,7 @@ export async function filterEligibleCurationIds(slug: string, ids: string[], db:
   const aliases = aliasesFor(slug);
   const eligible = new Set<string>();
   for (let offset = 0; offset < ids.length; offset += 500) {
-    const rows = await db.query<{ job_id: string }>(`SELECT job_id FROM app_jobs
+    const rows = await marketingVideoReader(db).query<{ job_id: string }>(`SELECT job_id FROM app_jobs
       WHERE ${CURATION_ELIGIBILITY} AND LOWER(engine_id)=ANY($1::text[]) AND job_id=ANY($2::text[])`,
     [aliases, ids.slice(offset, offset + 500)]);
     rows.forEach(row => eligible.add(row.job_id));
@@ -44,7 +45,7 @@ export async function loadSelectedCurationItems(slug: string, ids: string[], db:
   if (ids.length > 48) throw new CurationError('Select at most 48 videos per window', 400);
   const aliases = aliasesFor(slug);
   if (!ids.length) return [];
-  const rows = await db.query<CandidateRow>(`SELECT ${projection} FROM app_jobs
+  const rows = await marketingVideoReader(db).query<CandidateRow>(`SELECT ${projection} FROM app_jobs
     WHERE ${CURATION_ELIGIBILITY} AND LOWER(engine_id)=ANY($1::text[]) AND job_id=ANY($2::text[])
     ORDER BY array_position($2::text[],job_id) LIMIT 48`, [aliases, ids]);
   return rows.map(mapItem);
@@ -85,7 +86,7 @@ export async function searchCurationCandidatesPage(options: CandidatePageOptions
   const limit = Number.isFinite(options.limit) ? Math.max(1, Math.min(48, Math.floor(options.limit!))) : 48;
   const params = [aliases, q, exactId, format, after !== null, after?.date ?? null, after?.id ?? null, limit];
   // Filter measured dimensions in SQL before count/page selection. Declared ratios only fill missing dimensions.
-  const rows = await db.query<CandidateRow & { total: number; has_more: boolean }>(`WITH eligible AS MATERIALIZED (
+  const rows = await marketingVideoReader(db).query<CandidateRow & { total: number; has_more: boolean }>(`WITH eligible AS MATERIALIZED (
     SELECT job_id,created_at,aspect_ratio,
       CASE WHEN $4::text IS NOT NULL THEN (${videoOutputDimensionSelect('app_jobs', 'width')}) END AS width,
       CASE WHEN $4::text IS NOT NULL THEN (${videoOutputDimensionSelect('app_jobs', 'height')}) END AS height
@@ -124,7 +125,7 @@ export async function listCurationCandidateIdsPage(
   const aliases = aliasesFor(slug);
   const offset = Number.isFinite(options.offset) ? Math.max(0, Math.floor(options.offset)) : 0;
   const limit = Number.isFinite(options.limit) ? Math.max(1, Math.min(500, Math.floor(options.limit))) : 500;
-  const rows = await db.query<{ job_id: string | null; total: number }>(`WITH eligible AS MATERIALIZED (
+  const rows = await marketingVideoReader(db).query<{ job_id: string | null; total: number }>(`WITH eligible AS MATERIALIZED (
     SELECT job_id,created_at FROM app_jobs WHERE ${CURATION_ELIGIBILITY} AND LOWER(engine_id)=ANY($1::text[])
   ), page AS (
     SELECT * FROM eligible ORDER BY created_at DESC,job_id ASC LIMIT $2 OFFSET $3

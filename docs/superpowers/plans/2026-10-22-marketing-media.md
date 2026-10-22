@@ -85,4 +85,4 @@
 
 ## Baseline
 
-Branch starts at `123128d9c` (`origin/main`). Focused existing workspace settings, video SEO, video shares and model curation tests: 12 passed. Previous Luma/Modify work remains on its separate branch/PR498.
+Branch starts at `123128d9c` (`origin/main`). Focused existing workspace settings and model curation tests: 12 passed. SEO/share suites are part of final verification. Previous Luma/Modify work remains on its separate branch/PR498.

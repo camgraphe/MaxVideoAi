@@ -1,7 +1,8 @@
+import { isUserAdmin } from '@/server/admin';
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
-import { getVideoById, updateVideoIndexableForUser } from '@/server/videos';
+import { getVideoById, getPersonalVideoById, updateVideoIndexableForUser } from '@/server/videos';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { canReadVideo } from './_lib/video-read-access';
 import { loadPublicKeyframeRecipeForVideo } from '@/server/model-keyframe-demo';
@@ -28,15 +29,19 @@ export async function GET(_req: NextRequest, props: RouteParams) {
   }
 
   try {
-    const video = await getVideoById(videoId);
+    let video = await getVideoById(videoId);
     if (!video) {
       return privateJson({ ok: false, error: 'Not found' }, 404);
     }
     const viewerId = video.visibility === 'public' ? null : (await getRouteAuthContext(_req)).userId;
-    if (!canReadVideo(video, viewerId)) {
+    const adminCopy = Boolean(video.recreationSnapshot && viewerId && await isUserAdmin(viewerId));
+    if (video.recreationSnapshot && video.visibility === 'private' && !adminCopy) {
+      video = await getPersonalVideoById(videoId);
+    }
+    if (!video || (!adminCopy && !canReadVideo(video, viewerId))) {
       return privateJson({ ok: false, error: 'Not found' }, 404);
     }
-    const keyframeRecipe = video.visibility === 'public'
+    const keyframeRecipe = !video.recreationSnapshot && video.visibility === 'public'
       ? await loadPublicKeyframeRecipeForVideo(video.id, video.engineId) : null;
     return privateJson({ ok: true, video: keyframeRecipe ? { ...video, keyframeRecipe } : video });
   } catch (error) {
@@ -83,7 +88,7 @@ export async function PATCH(req: NextRequest, props: RouteParams) {
     if (!updated) {
       return NextResponse.json({ ok: false, error: 'Not found' }, { status: 404 });
     }
-    const video = await getVideoById(videoId);
+    const video = await getPersonalVideoById(videoId);
     return NextResponse.json({ ok: true, indexable, video });
   } catch (error) {
     console.error('[api/videos/:id] failed to update indexing', error);

@@ -69,10 +69,9 @@ export function prepareMarketingSnapshot(source: MarketingSource): MarketingCopy
   visit(job.keyframe_urls,'keyframes');
   visit(recreationSnapshot.refs,'refs');
   for (const [key,value] of Object.entries(extra)) if (/url(s)?$/i.test(key)) visit(value,`advanced.extraInputValues.${key}`,/video/i.test(key) ? 'video' : /audio/i.test(key) ? 'audio' : 'image');
-  publication.settings_snapshot = { ...recreationSnapshot, marketingMedia: {
-    outputWidth: source.output?.width ?? null, outputHeight: source.output?.height ?? null,
-    playbackVideoUrl: source.output?.playback_video_url ?? job.playback_video_url ?? null,
-  } };
+  publication.settings_snapshot = recreationSnapshot;
+  publication.marketing_output_width = source.output?.width ?? null;
+  publication.marketing_output_height = source.output?.height ?? null;
   return { videoId: text(job.job_id), ownerId: text(job.user_id) || null, fingerprint: marketingSourceFingerprint(source), publication,
     recreationSnapshot, sourceSnapshot: structuredClone(saved), media: [...media.values()] };
 }

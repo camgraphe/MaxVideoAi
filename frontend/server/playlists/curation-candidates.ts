@@ -1,3 +1,4 @@
+import { marketingVideoReader } from '@/server/marketing-media/public-read';
 import { query, type QueryExecutor } from '@/lib/db';
 import type { CurationItem } from '@/lib/admin/playlist-curation';
 import { videoOutputDimensionSelect } from '../videos-query';
@@ -6,7 +7,7 @@ import { getCurationAliases, CurationError } from './curation-store';
 
 export async function listCurationCandidates(slug: string, db: QueryExecutor = { query }, aliases = getCurationAliases(slug)): Promise<CurationItem[]> {
   if (!aliases) throw new CurationError('Automatic curation is not supported for this destination', 400);
-  const rows = await db.query<{
+  const rows = await marketingVideoReader(db).query<{
     job_id: string;
     engine_id: string;
     engine_label: string | null;

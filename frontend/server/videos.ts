@@ -1,3 +1,4 @@
+import { marketingVideoReader } from '@/server/marketing-media/public-read';
 import { listCatalogPage } from './videos-catalog-page';
 import { createCurationReadScope, listPlaylistVideosWithOptions, listCuratedGalleryVideos, type CurationReadScope } from './videos-playlists';
 import { BASE_SELECT, BASE_SELECT_WITH_SETTINGS, PUBLIC_VIDEO_SOURCE_ELIGIBILITY } from './videos-query';
@@ -36,15 +37,21 @@ const PUBLIC_VIDEO_PREDICATE = `
 
 
 export async function getVideoById(videoId: string): Promise<GalleryVideo | null> {
-  const rows = await query<VideoRow>(
+  const rows = await marketingVideoReader({ query }).query<VideoRow>(
     `${BASE_SELECT} WHERE job_id = $1 LIMIT 1`,
     [videoId]
   );
   return rows[0] ? mapGalleryVideoRow(rows[0]) : null;
 }
 
+/** Private account fallback must retain its original ownership and deletion semantics. */
+export async function getPersonalVideoById(videoId: string): Promise<GalleryVideo | null> {
+  const rows = await query<VideoRow>(`${BASE_SELECT} WHERE job_id=$1 LIMIT 1`, [videoId]);
+  return rows[0] ? mapGalleryVideoRow(rows[0]) : null;
+}
+
 export async function getSeoVideoById(videoId: string): Promise<GalleryVideo | null> {
-  const rows = await query<VideoRow>(
+  const rows = await marketingVideoReader({ query }).query<VideoRow>(
     `${BASE_SELECT_WITH_SETTINGS} WHERE job_id = $1 AND ${PUBLIC_VIDEO_PREDICATE} AND ${PUBLIC_VIDEO_SOURCE_ELIGIBILITY} LIMIT 1`,
     [videoId]
   );
@@ -56,7 +63,7 @@ export async function getVideosByIds(videoIds: string[]): Promise<Map<string, Ga
     return new Map();
   }
   const uniqueIds = Array.from(new Set(videoIds));
-  const rows = await query<VideoRow>(
+  const rows = await marketingVideoReader({ query }).query<VideoRow>(
     `${BASE_SELECT} WHERE job_id = ANY($1::text[])`,
     [uniqueIds]
   );
@@ -68,7 +75,7 @@ export async function getSeoVideosByIds(videoIds: string[]): Promise<Map<string,
     return new Map();
   }
   const uniqueIds = Array.from(new Set(videoIds));
-  const rows = await query<VideoRow>(
+  const rows = await marketingVideoReader({ query }).query<VideoRow>(
     `${BASE_SELECT_WITH_SETTINGS} WHERE job_id = ANY($1::text[]) AND ${PUBLIC_VIDEO_PREDICATE} AND ${PUBLIC_VIDEO_SOURCE_ELIGIBILITY}`,
     [uniqueIds]
   );
@@ -87,7 +94,7 @@ export async function getPublicVideosByIds(videoIds: string[]): Promise<Map<stri
     return new Map();
   }
   const uniqueIds = Array.from(new Set(videoIds));
-  const rows = await query<VideoRow>(
+  const rows = await marketingVideoReader({ query }).query<VideoRow>(
     `${BASE_SELECT} WHERE job_id = ANY($1::text[]) AND ${PUBLIC_VIDEO_PREDICATE}`,
     [uniqueIds]
   );
@@ -102,7 +109,7 @@ export async function getPublicVideoIds(videoIds: string[]): Promise<Set<string>
   if (shouldSkipBuildTimeMarketingVideoQueries()) return new Set();
   if (!videoIds.length) return new Set();
   const uniqueIds = Array.from(new Set(videoIds));
-  const rows = await query<{ job_id: string }>(
+  const rows = await marketingVideoReader({ query }).query<{ job_id: string }>(
     `SELECT job_id FROM app_jobs WHERE job_id = ANY($1::text[]) AND ${PUBLIC_VIDEO_PREDICATE}`,
     [uniqueIds]
   );
@@ -111,7 +118,7 @@ export async function getPublicVideoIds(videoIds: string[]): Promise<Set<string>
 
 export async function listPublicVideoPagesForSeoAudit(limit = 1000): Promise<GalleryVideo[]> {
   const safeLimit = Math.max(1, Math.min(5000, Math.floor(limit)));
-  const rows = await query<VideoRow>(
+  const rows = await marketingVideoReader({ query }).query<VideoRow>(
     `${BASE_SELECT_WITH_SETTINGS} WHERE visibility = 'public' ORDER BY created_at DESC LIMIT $1`,
     [safeLimit]
   );
@@ -122,7 +129,7 @@ export async function getLatestVideoByPromptAndEngine(
   prompt: string,
   engineId: string
 ): Promise<GalleryVideo | null> {
-  const rows = await query<VideoRow>(
+  const rows = await marketingVideoReader({ query }).query<VideoRow>(
     `
       ${BASE_SELECT}
       WHERE prompt = $1
@@ -140,7 +147,7 @@ export async function getLatestPublicVideoByPromptAndEngine(
   engineId: string
 ): Promise<GalleryVideo | null> {
   if (shouldSkipBuildTimeMarketingVideoQueries()) return null;
-  const rows = await query<VideoRow>(
+  const rows = await marketingVideoReader({ query }).query<VideoRow>(
     `
       ${BASE_SELECT}
       WHERE prompt = $1
@@ -164,7 +171,7 @@ async function listAllPlaylistVideos(slug: string, curationScope?: CurationReadS
 }
 
 async function listLatest(limit: number): Promise<GalleryVideo[]> {
-  const rows = await query<VideoRow>(
+  const rows = await marketingVideoReader({ query }).query<VideoRow>(
     `
       ${BASE_SELECT}
       WHERE ${PUBLIC_VIDEO_PREDICATE}
@@ -177,7 +184,7 @@ async function listLatest(limit: number): Promise<GalleryVideo[]> {
 }
 
 async function listTrending(limit: number): Promise<GalleryVideo[]> {
-  const rows = await query<VideoRow>(
+  const rows = await marketingVideoReader({ query }).query<VideoRow>(
     `
       ${BASE_SELECT}
       WHERE ${PUBLIC_VIDEO_PREDICATE}
@@ -334,7 +341,7 @@ export async function updateVideoIndexableForUser(
   userId: string,
   indexable: boolean
 ): Promise<boolean> {
-  const rows = await query<{ job_id: string; indexable: boolean | null }>(
+  const rows = await marketingVideoReader({ query }).query<{ job_id: string; indexable: boolean | null }>(
     `UPDATE app_jobs
        SET indexable = $1,
            updated_at = NOW()
