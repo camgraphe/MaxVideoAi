@@ -1,3 +1,4 @@
+import { revalidateMarketingPublication } from '@/server/marketing-media/revalidate';
 import { refreshMarketingThumbnail } from '@/server/marketing-media/thumbnail';
 import { MarketingMediaError } from '@/server/marketing-media/snapshot';
 import { NextRequest, NextResponse } from 'next/server';
@@ -61,6 +62,7 @@ export async function POST(req: NextRequest, props: RouteParams) {
 
   try {
     const marketingThumb = await refreshMarketingThumbnail(videoId, seekSec);
+    if (marketingThumb) await revalidateMarketingPublication(videoId);
     if (marketingThumb) return NextResponse.json({ ok: true, thumbUrl: marketingThumb, seekSec });
     await ensureBillingSchema();
     const rows = await query<ThumbnailRow>(

@@ -134,16 +134,23 @@ test('media values in model-specific inputs are copied while literal prompt text
   );
 });
 
-
 test('promotion retains existing public prompt text while recreation uses the exact saved inputs', () => {
- const source = sourceFixture(); source.job.prompt='Existing published description';
- const plan=prepareMarketingSnapshot(source);
- assert.equal(plan.publication.prompt,'Existing published description');
- assert.equal(plan.recreationSnapshot.prompt,source.job.settings_snapshot.prompt);
+  const source = sourceFixture();
+  source.job.prompt = 'Existing published description';
+  const plan = prepareMarketingSnapshot(source);
+  assert.equal(plan.publication.prompt, 'Existing published description');
+  assert.equal(plan.recreationSnapshot.prompt, source.job.settings_snapshot.prompt);
 });
 
 test('nested credentials in model-specific settings cannot enter a public recreation payload', () => {
- const source=sourceFixture();
- (source.job.settings_snapshot.advanced.extraInputValues as any).configuration={access_token:'private'};
- assert.throws(()=>prepareMarketingSnapshot(source),/credentials/i);
+  const source = sourceFixture();
+  (source.job.settings_snapshot.advanced.extraInputValues as any).configuration = { access_token: 'private' };
+  assert.throws(() => prepareMarketingSnapshot(source), /credentials/i);
+});
+
+test('registered authored demos require their explicit rendition-preserving migration', () => {
+  const source = sourceFixture();
+  source.job.video_url =
+    'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6e299d72-22dd-46f4-8260-4d6887777558.mp4';
+  assert.throws(() => prepareMarketingSnapshot(source), /authored demo/i);
 });

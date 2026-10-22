@@ -1,3 +1,4 @@
+import authoredSources from '@/config/public-video-sources.json';
 import { createHash } from 'node:crypto';
 import type { MarketingMediaFile } from '@/lib/marketing-media';
 
@@ -54,6 +55,11 @@ function safeReference(value: unknown): unknown {
 /** Capture generation inputs, not billing/provider execution records. No defaults are invented. */
 export function prepareMarketingSnapshot(source: MarketingSource): MarketingCopyPlan {
   const job = source.job;
+  if (authoredSources.sources.some((source) => source.url === job.video_url))
+    throw new MarketingMediaError(
+      'This authored demo needs an explicit migration that preserves its prepared playback renditions.',
+      409,
+    );
   if (job.status !== 'completed' || (job.surface && job.surface !== 'video'))
     throw new MarketingMediaError('Only completed videos can be copied.');
   const saved = record(job.settings_snapshot);
@@ -91,7 +97,10 @@ export function prepareMarketingSnapshot(source: MarketingSource): MarketingCopy
       .map((key) => [key, structuredClone(saved[key])]),
   );
   function rejectCredentials(value: unknown): void {
-    if (Array.isArray(value)) { value.forEach(rejectCredentials); return; }
+    if (Array.isArray(value)) {
+      value.forEach(rejectCredentials);
+      return;
+    }
     if (!value || typeof value !== 'object') return;
     for (const [key, item] of Object.entries(value)) {
       if (/secret|password|credential|authorization|api.?key|access.?token|refresh.?token/i.test(key))

@@ -223,6 +223,7 @@ export function ModerationTable({
 
       return (
         <>
+          {surface === 'video' ? <a className={baseClass} href={`/admin/marketing-media?videoId=${encodeURIComponent(video.id)}`}>Marketing copy</a> : null}
           {video.isPublishedOnSite ? (
             <Button
               type="button"

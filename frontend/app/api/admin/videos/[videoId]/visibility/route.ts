@@ -1,3 +1,4 @@
+import { revalidateMarketingPublication } from '@/server/marketing-media/revalidate';
 import { updateMarketingVisibility } from '@/server/marketing-media/manage';
 import { MarketingMediaError } from '@/server/marketing-media/snapshot';
 import { NextRequest, NextResponse } from 'next/server';
@@ -65,6 +66,7 @@ export async function POST(req: NextRequest, props: RouteParams) {
 
   try {
     const marketing = await updateMarketingVisibility(videoId, { visibility: nextVisibility, indexable: nextIndexable });
+    if (marketing) await revalidateMarketingPublication(videoId);
     if (marketing) return NextResponse.json({ ok: true, video: { id: marketing.job_id, visibility: marketing.visibility, indexable: marketing.indexable } });
     values.push(videoId);
     const rows = await query<VisibilityUpdateRow>(
