@@ -59,6 +59,8 @@ test('Milo modes preserve model selection, credits, references and explicit cons
     const evidence=process.env.STUDIO_PROOF_DIRECTORY??'/tmp/studio-sol-review';await mkdir(evidence,{recursive:true});
     const initialBody=await initial.json();assert.equal(initial.status(),200,JSON.stringify(initialBody));assert.ok(initialBody.result.taskPolicyVersion);
     assert.equal(assistance.status(),200,JSON.stringify(await assistance.json()));
+    const cookieReject=page.getByRole('button',{name:'Reject all',exact:true});
+    if(await cookieReject.isVisible())await cookieReject.click();
     await page.route(selectedImageUrl,route=>route.fulfill({contentType:'image/webp',path:'frontend/public/media/mcp/project-demo/watch-static.webp'}));
     await page.route('**/api/media-library/assets?*',route=>route.fulfill({json:{ok:true,assets:[{assetId:selectedImage,kind:'image',name:'Selected product',url:selectedImageUrl}],nextCursor:null}}));
     await page.getByRole('button',{name:'Open library',exact:true}).click();
@@ -75,7 +77,15 @@ test('Milo modes preserve model selection, credits, references and explicit cons
     assert.ok(inputBox&&modeBox&&modeBox.y>=inputBox.y+inputBox.height,'Mode control follows the composer');
     assert.deepEqual(assistanceActions,[],'Loading the control must not switch the default model');
     assert.match(await page.title(),/Studio|MaxVideoAI/);assert.equal(new URL(page.url()).pathname,conversationPath);
+    await expect(page.getByRole('img',{name:'Selected product',exact:true})).toBeVisible();
     await page.screenshot({path:join(evidence,'sol-start-desktop.png')});
+    await page.getByRole('button',{name:'Open MaxVideoAI menu',exact:true}).click();
+    await page.getByRole('button',{name:'Dark',exact:true}).click();
+    await page.getByRole('dialog',{name:'MaxVideoAI',exact:true}).getByRole('button',{name:'Close ×',exact:true}).click();
+    await page.screenshot({path:join(evidence,'milo-dark-desktop.png')});
+    await page.getByRole('button',{name:'Open MaxVideoAI menu',exact:true}).click();
+    await page.getByRole('button',{name:'Light',exact:true}).click();
+    await page.getByRole('dialog',{name:'MaxVideoAI',exact:true}).getByRole('button',{name:'Close ×',exact:true}).click();
     await page.setViewportSize({width:390,height:844});
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true);
     await page.screenshot({path:join(evidence,'sol-start-mobile.png')});
