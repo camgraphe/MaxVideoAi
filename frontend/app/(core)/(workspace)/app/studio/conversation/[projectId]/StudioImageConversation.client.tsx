@@ -266,7 +266,7 @@ function StudioImageConversationWorkspace({
             {studio.busy && (
               <p className={styles.thinking} role="status">
                 <span />
-                {t('Studio is working…', 'Studio travaille…')}
+                {t('Milo is working…', 'Milo travaille…')}
               </p>
             )}
             <div ref={bottom} />
