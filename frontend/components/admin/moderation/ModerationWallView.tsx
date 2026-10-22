@@ -10,11 +10,12 @@ import {
   StatePill,
   formatDate,
   getPublicationLabel,
+  getModerationPreviewUrls,
   isFailedVideo,
 } from '@/components/admin/moderation/moderation-table-utils';
 import type { ModerationBucket, ModerationSurface, ModerationVideo } from '@/components/admin/moderation/moderation-types';
 import { Button, ButtonLink } from '@/components/ui/Button';
-import { isPlaceholderMediaUrl, normalizeMediaUrl } from '@/lib/media';
+import { isPlaceholderMediaUrl } from '@/lib/media';
 
 type ModerationWallViewProps = {
   bucket: ModerationBucket;
@@ -51,8 +52,7 @@ export function ModerationWallView({
         {displayItems.map((video) => {
           const isFailed = isFailedVideo(video);
           const canManagePlaylists = surface === 'video' && !isFailed;
-          const normalizedVideoUrl = video.videoUrl ? normalizeMediaUrl(video.videoUrl) ?? video.videoUrl : undefined;
-          const normalizedThumbUrl = video.thumbUrl ? normalizeMediaUrl(video.thumbUrl) ?? video.thumbUrl : undefined;
+          const { videoUrl: normalizedVideoUrl, thumbUrl: normalizedThumbUrl, animatedImageUrl, unoptimizedThumbnail } = getModerationPreviewUrls(video);
           const hasThumbPreview = Boolean(normalizedThumbUrl && !isPlaceholderMediaUrl(normalizedThumbUrl));
           const hasVideoPreview = Boolean(normalizedVideoUrl);
           const assignedPlaylists = playlistAssignments[video.id] ?? [];
@@ -71,11 +71,14 @@ export function ModerationWallView({
                   {hasThumbPreview && normalizedThumbUrl ? (
                     <Image
                       src={normalizedThumbUrl}
+                      unoptimized={unoptimizedThumbnail}
                       alt="Thumbnail"
                       fill
                       className="object-cover"
                       sizes="(max-width: 768px) 100vw, (max-width: 1536px) 50vw, 33vw"
                     />
+                  ) : animatedImageUrl ? (
+                    <Image src={animatedImageUrl} alt="Tool output" fill unoptimized className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
                   ) : hasVideoPreview ? (
                     <video src={normalizedVideoUrl} className="absolute inset-0 h-full w-full object-cover" muted playsInline preload="metadata" />
                   ) : (
@@ -174,6 +177,7 @@ function SelectedModerationItem({
 }) {
   const selectedIsFailed = isFailedVideo(selectedVideo);
   const canManageSelectedPlaylists = surface === 'video' && !selectedIsFailed;
+  const selectedPreview = getModerationPreviewUrls(selectedVideo);
 
   return (
     <aside className="h-fit rounded-card border border-border bg-surface xl:sticky xl:top-4">
@@ -181,22 +185,29 @@ function SelectedModerationItem({
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Selected item</p>
           <div className="relative aspect-video overflow-hidden rounded-card border border-hairline bg-black">
-            {selectedVideo.videoUrl ? (
+            {selectedPreview.animatedImageUrl ? (
+              <Image src={selectedPreview.animatedImageUrl} alt="Tool output" fill unoptimized className="object-contain" sizes="352px" />
+            ) : selectedPreview.videoUrl ? (
               <video
-                src={normalizeMediaUrl(selectedVideo.videoUrl) ?? selectedVideo.videoUrl}
-                poster={selectedVideo.thumbUrl ? normalizeMediaUrl(selectedVideo.thumbUrl) ?? selectedVideo.thumbUrl : undefined}
+                src={selectedPreview.videoUrl}
+                poster={selectedPreview.thumbUrl}
                 className="absolute inset-0 h-full w-full object-cover"
                 controls
                 muted
                 playsInline
                 preload="metadata"
               />
-            ) : selectedVideo.thumbUrl ? (
-              <Image src={normalizeMediaUrl(selectedVideo.thumbUrl) ?? selectedVideo.thumbUrl} alt="Thumbnail" fill className="object-cover" sizes="352px" />
+            ) : selectedPreview.thumbUrl ? (
+              <Image src={selectedPreview.thumbUrl} alt="Thumbnail" fill unoptimized={selectedPreview.unoptimizedThumbnail} className="object-cover" sizes="352px" />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-xs text-on-media-70">No preview</div>
             )}
           </div>
+          {selectedPreview.originalUrl ? (
+            <a href={selectedPreview.originalUrl} target="_blank" rel="noreferrer" className="inline-flex text-xs font-medium text-text-secondary underline underline-offset-2 hover:text-text-primary">
+              Open original file
+            </a>
+          ) : null}
         </div>
 
         <div className="space-y-3">
