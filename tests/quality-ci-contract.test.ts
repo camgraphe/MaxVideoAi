@@ -60,12 +60,16 @@ test('superseded PR validation is canceled independently from nightly and main v
   assert.equal(workflow.concurrency['cancel-in-progress'], "${{ github.event_name == 'pull_request' }}");
 });
 
-test('exhaustive tariffs retain the full suite on the stable validation image', () => {
+test('database and tariff validation retain their full suites on the stable validation image', () => {
   const workflow = YAML.parse(readFileSync(workflowPath, 'utf8')) as QualityWorkflow;
-  const tariffs = workflow.jobs.tariffs;
-  assert.equal(tariffs['runs-on'], 'ubuntu-24.04');
-  assert.ok(tariffs.steps.some(step => step.uses === './.github/actions/setup-validation-tools'));
-  assert.ok(tariffs.steps.some(step => step.run === 'pnpm run test:validate -- --suite tariffs'));
+  for (const [name, suites] of [['tariffs', ['tariffs']], ['integration', ['integration', 'studio']]] as const) {
+    const job = workflow.jobs[name];
+    assert.equal(job['runs-on'], 'ubuntu-24.04');
+    assert.ok(job.steps.some(step => step.uses === './.github/actions/setup-validation-tools'));
+    for (const suite of suites) {
+      assert.ok(job.steps.some(step => step.run === `pnpm run test:validate -- --suite ${suite}`));
+    }
+  }
 });
 
 test('production Lighthouse measurements run daily or manually instead of racing every main push', () => {

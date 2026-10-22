@@ -23,11 +23,16 @@ PostgreSQL, FFmpeg or Chromium installation. Full runs occur daily at 03:23 UTC 
 on manual dispatch of Quality CI. Network source checks and the optional remote
 runtime audit run on these full runs as non-blocking audits.
 
-The exhaustive tariff lane uses Ubuntu 24.04, keeping its validation toolchain
+The exhaustive tariff and database/media lanes use Ubuntu 24.04, keeping their validation toolchain
 stable during the `ubuntu-latest` migration to 26.04. The 2026-10-22 release checks
 observed prolonged dependency downloads on the new image. The shared PostgreSQL
 17/FFmpeg setup and the complete tariff suite remain required; the runner pin does
 not change coverage or the aggregate Quality CI gate.
+
+On the Milo release candidate, Ubuntu 26.04 spent nearly 22 minutes installing
+PostgreSQL/FFmpeg before the database/media job reached its 25-minute limit.
+Pinning that lane to the same stable image preserves both the complete integration
+suite and the isolated Studio route checks; it does not turn a timeout into a pass.
 
 The fast job has a 30-minute limit, including setup, audits, type checking and
 lint. Its 1,300+ tools-free test files include complete pricing projections;
