@@ -5,6 +5,7 @@ import type { AppLocale } from '@/i18n/locales';
 import { dispatchGaEvent } from '@/lib/analytics/ga-events';
 import { classifyTopupFailure } from '@/lib/analytics/topup-failure';
 import { getEngineModeUnavailableMessage } from '@/lib/engine-mode-availability';
+import { getVideoExtensionSourceState } from '@/lib/video-extension';
 import { formatRateLimitMessage } from '@/lib/wallet/rate-limit-message';
 import type { EngineCaps, Mode, PreflightResponse } from '@/types/engines';
 import type { WorkspaceCopy } from '../_lib/workspace-copy';
@@ -89,8 +90,10 @@ export function useWorkspacePricingGate({
   inputAssets,
 }: UseWorkspacePricingGateOptions): UseWorkspacePricingGateResult {
   const modeUnavailableMessage = getEngineModeUnavailableMessage(selectedEngine, submissionMode, locale);
+  const waitingForExtensionSource = submissionMode === 'extend'
+    && getVideoExtensionSourceState(selectedEngine?.inputSchema, inputAssets) !== 'ready';
   const { preflight, preflightError: quoteError, setPreflightError, isPricing, price, currency } = useWorkspacePreflightQuote({
-    request: form && selectedEngine && !modeUnavailableMessage ? buildWorkspacePreflightRequest({
+    request: form && selectedEngine && !modeUnavailableMessage && !waitingForExtensionSource ? buildWorkspacePreflightRequest({
       form, selectedEngine, memberTier, supportsAudioToggle,
       effectiveDurationSec, voiceControlEnabled, submissionMode, inputAssets,
     }) : null,

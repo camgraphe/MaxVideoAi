@@ -13,7 +13,9 @@ import { ComposerMultiPromptEditor } from '@/components/composer/ComposerMultiPr
 import { ComposerPromotedActionIcon } from '@/components/composer/ComposerPromotedActionIcon';
 import { ComposerGenerationActivity, GenerationSpinner } from '@/components/composer/ComposerGenerationActivity.client';
 import { ComposerGenerationQuote } from '@/components/composer/ComposerGenerationQuote.client';
+import { ComposerNotices } from '@/components/composer/ComposerNotices.client';
 import { hasMissingRequiredComposerAsset } from '@/components/composer/composer-generation';
+import { getVideoExtensionSourceState, videoExtensionCopy } from '@/lib/video-extension';
 import { getWorkspaceAssetFieldRank, getWorkspaceAssetGridClass } from '@/components/composer/composer-layout';
 import { DEFAULT_COMPOSER_COPY, type ComposerCopy } from '@/components/composer/composer-copy';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -82,6 +84,13 @@ export function Composer({
   const promptId = useId();
   const workbenchCopy = workspaceReferenceCopy(locale);
   const workspaceDensity = density === 'workspace';
+  const extensionWorkflow = workspaceDensity && (activeManualMode === 'extend' || caps?.modes?.[0] === 'extend');
+  const extensionCopy = videoExtensionCopy(locale);
+  const extensionSourceState = extensionWorkflow ? getVideoExtensionSourceState(engine.inputSchema, assets) : null;
+  const extensionNotice = extensionSourceState === 'missing' ? extensionCopy.uploadForPrice
+    : extensionSourceState === 'uploading' ? extensionCopy.uploading : null;
+  const extensionQuoteStatus = extensionSourceState === 'missing' ? extensionCopy.awaitingVideo
+    : extensionSourceState === 'uploading' ? extensionCopy.awaitingUpload : undefined;
   const composerCopy = useMemo<ComposerCopy>(() => {
     const localized = t('workspace.generate.composer', DEFAULT_COMPOSER_COPY) as Partial<ComposerCopy> | undefined;
     if (!localized) {
@@ -132,7 +141,7 @@ export function Composer({
     }
   }, [price, currency, isPricing, preflight?.ok]);
   const promptLabel = promptField?.label ?? 'Prompt';
-  const promptDescription = promptField?.description;
+  const promptDescription = extensionWorkflow ? undefined : promptField?.description;
   const negativePromptLabel = negativePromptField?.label ?? 'Negative prompt';
   const negativePromptDescription = negativePromptField?.description;
   const negativePromptValue = (negativePrompt ?? '').trim();
@@ -146,6 +155,7 @@ export function Composer({
     Boolean(disableGenerate) ||
     isLoading ||
     isPricing ||
+    (extensionWorkflow && extensionSourceState !== 'ready') ||
     promptTooLong ||
     (promptRequired && !promptValueReady) ||
     (negativePromptField && negativePromptRequired && !negativePromptValue) ||
@@ -184,7 +194,7 @@ export function Composer({
   const assetFieldLayoutClass = workspaceDensity
     ? getWorkspaceAssetGridClass(orderedAssetFields.length)
     : useLtxAssetGridLayout ? 'grid gap-4 md:grid-cols-2' : 'flex flex-wrap gap-4';
-  const promptPlaceholderValue = workspaceDensity && !promptPlaceholder && !promptPlaceholderWithAsset ? workbenchCopy.placeholder : hasReferenceImage
+  const promptPlaceholderValue = extensionWorkflow ? extensionCopy.prompt : workspaceDensity && !promptPlaceholder && !promptPlaceholderWithAsset ? workbenchCopy.placeholder : hasReferenceImage
     ? promptPlaceholderWithAsset ?? composerCopy.prompt.placeholderWithImage ?? promptPlaceholder ?? composerCopy.prompt.placeholder
     : promptPlaceholder ?? composerCopy.prompt.placeholder;
   const visibleModeToggles = modeToggles && modeToggles.length > 1 ? modeToggles : null;
@@ -223,7 +233,7 @@ export function Composer({
   }, [isLoading]);
   const resolvedGenerateLabel = isLoading
     ? generateLoadingLabel ?? (workspaceDensity ? workbenchCopy.sending : composerCopy.button.loading)
-    : generateLabel ?? composerCopy.button.idle;
+    : generateLabel ?? (extensionWorkflow ? extensionCopy.extend : composerCopy.button.idle);
 
   const composerToolbar = (settingsBar || onGenerate) ? (
               <div className={clsx('app-composer-toolbar border-t border-border/65 dark:border-white/[0.06]', workspaceDensity ? 'px-3 py-1' : 'px-4 py-3')}>
@@ -269,7 +279,7 @@ export function Composer({
                             onClick={handleGenerateClick}
                           >
                             <span className="app-generation-label relative z-10 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-micro">{isLoading && workspaceDensity ? <GenerationSpinner /> : null}{resolvedGenerateLabel}</span>
-                            <ComposerGenerationQuote workspace={workspaceDensity} hasPrice={Boolean(formattedPrice)} isPricing={isPricing}>{formattedPrice ? (
+                            <ComposerGenerationQuote workspace={workspaceDensity} hasPrice={Boolean(formattedPrice)} isPricing={isPricing} waitingLabel={extensionQuoteStatus}>{formattedPrice ? (
                               <span
                                 className={clsx(
                                   'app-generation-price relative z-10 inline-flex items-center rounded-full py-1 text-sm font-semibold normal-case backdrop-blur',
@@ -308,7 +318,7 @@ export function Composer({
       )}
     >
       <div className={workspaceDensity ? 'space-y-2' : 'space-y-4'}>
-        <div hidden={workspaceDensity && !visibleModeToggles && !promptDescription && !workflowNotice && !error} className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div hidden={workspaceDensity && !visibleModeToggles && !promptDescription && !workflowNotice && !extensionNotice && !error} className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1 space-y-3">
             {visibleModeToggles ? (
               <div className="app-mode-switch flex flex-wrap gap-2">
@@ -332,29 +342,13 @@ export function Composer({
                 })}
               </div>
             ) : null}
-            {(promptDescription || workflowNotice || error) && (
-              <div className="space-y-1">
-                {promptDescription ? <p className="text-[12px] text-text-muted">{promptDescription}</p> : null}
-                {workflowNotice ? (
-                  <div className="rounded-input border border-border bg-surface-glass-80 px-3 py-2 text-[12px] text-text-secondary dark:border-white/8 dark:bg-white/[0.04] dark:text-white/70">
-                    {workflowNotice}
-                  </div>
-                ) : null}
-                {error ? (
-                  <div
-                    role="alert"
-                    className="rounded-input border border-error-border bg-error-bg px-3 py-2 text-[13px] whitespace-pre-line text-error"
-                  >
-                    {error}
-                  </div>
-                ) : null}
-              </div>
-            )}
+            <ComposerNotices promptDescription={promptDescription} workflowNotice={workflowNotice} extensionNotice={extensionNotice} error={error} />
           </div>
         </div>
 
         {workspaceDensity && assetFields.length > 0 ? <>
           <WorkspaceReferenceSection engine={engine} caps={caps} assetFields={orderedAssetFields} assets={assets}
+            extensionWorkflow={extensionWorkflow}
             referenceAuthAction={referenceAuthAction}
             onAssetAdd={onAssetAdd} onAssetRemove={onAssetRemove} onNotice={onNotice}
             onOpenLibrary={onOpenLibrary} onAssetUrlSelect={onAssetUrlSelect} referenceWarning={composerCopy.assetSlots.referenceWarning} />

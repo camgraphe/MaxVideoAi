@@ -10,6 +10,8 @@ import { Card } from '@/components/ui/Card';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { CURRENCY_LOCALE } from '@/lib/intl';
+import { GalleryActionButton } from './library/GalleryActionButton.client';
+import { GalleryVideoContinuationActions } from './library/GalleryVideoContinuationActions.client';
 import { GroupedJobCardMenu } from './GroupedJobCardMenu';
 import { shouldWarmVisiblePreview } from './GroupedJobCardMedia';
 import { GroupedJobCardPreviewGrid } from './GroupedJobCardPreviewGrid';
@@ -241,7 +243,15 @@ export function GroupedJobCard({
             </div>
           ) : null}
         </figure>
-        {showMenu && (
+        {menuVariant === 'gallery' && !isImageGroup ? <GalleryVideoContinuationActions group={group} /> : null}
+        {showMenu && (isGalleryRailCard ? (
+          <GalleryActionButton ref={menuButtonRef} label={actionMenuLabel} menuOpen={menuOpen} onClick={event => {
+            event.stopPropagation();
+            setMenuOpen(prev => !prev);
+          }}>
+            <SlidersHorizontal aria-hidden="true" />
+          </GalleryActionButton>
+        ) : (
           <button
             ref={menuButtonRef}
             type="button"
@@ -251,19 +261,15 @@ export function GroupedJobCard({
             }}
             className={clsx(
               'absolute right-3 top-3 flex items-center justify-center rounded-full border shadow-md backdrop-blur-md transition-[background-color,border-color,color,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
-              isGalleryRailCard
-                ? 'h-10 w-10 border-white/25 bg-black/45 text-white/90 hover:scale-[1.04] hover:border-white/45 hover:bg-black/65 hover:text-white'
-                : 'h-8 border-white/70 bg-white/85 text-black/80 hover:bg-white/95',
-              showCompactMenuButton ? 'gap-1.5 px-3 text-[12px] font-semibold' : !isGalleryRailCard && 'w-8'
+              'h-8 border-white/70 bg-white/85 text-black/80 hover:bg-white/95',
+              showCompactMenuButton ? 'gap-1.5 px-3 text-[12px] font-semibold' : 'w-8'
             )}
             aria-haspopup={isRailCard ? 'dialog' : 'menu'}
             aria-expanded={menuOpen}
             aria-label={actionMenuLabel}
             title={actionMenuLabel}
           >
-            {isGalleryRailCard ? (
-              <SlidersHorizontal className="h-[18px] w-[18px]" aria-hidden="true" />
-            ) : showCompactMenuButton ? (
+            {showCompactMenuButton ? (
               <>
                 <span>{actionMenuLabel}</span>
                 <ChevronDown
@@ -279,7 +285,7 @@ export function GroupedJobCard({
               </span>
             )}
           </button>
-        )}
+        ))}
       </div>
       {useRailCaption ? <div className="app-rail-caption">
         <EngineIcon engine={engine ?? undefined} label={hero.engineLabel} size={20} />

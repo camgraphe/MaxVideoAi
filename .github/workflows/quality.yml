@@ -92,7 +92,8 @@ jobs:
     name: Exhaustive financial cutovers
     needs: plan
     if: ${{ needs.plan.outputs.tariffs == 'true' }}
-    runs-on: ubuntu-latest
+    # Keep the validated toolchain stable during the ubuntu-latest 26.04 migration.
+    runs-on: ubuntu-24.04
     # Preserve all 26,818 canonical quotes and atomic failure/recovery checks.
     timeout-minutes: 60
     steps:

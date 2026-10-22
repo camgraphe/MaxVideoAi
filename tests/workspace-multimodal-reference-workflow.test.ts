@@ -83,7 +83,9 @@ for (const id of ['wan-3', 'wan-3-prime']) {
       for (const fieldId of ['video_url', 'reference_image_urls', 'reference_audio_urls']) {
         assert.equal(result.fields.find(({ field }) => field.id === fieldId)?.disabled, false, fieldId);
       }
-      assert.equal(result.fields.find(({ field }) => field.id === 'reference_video_urls')?.disabled, true);
+      const referenceVideos = result.fields.find(({ field }) => field.id === 'reference_video_urls');
+      if (mode === 'extend') assert.equal(referenceVideos, undefined, 'unsupported extension inputs are hidden');
+      else assert.equal(referenceVideos?.disabled, true);
       assert.deepEqual(reconcileReferenceAssets(inputAssets, result.summary.assetFields.map(({ field }) => field), null), inputAssets);
     });
   }

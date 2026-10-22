@@ -83,10 +83,12 @@ test('workspace gallery cards keep their action launcher compact and accessible'
   );
 
   assert.match(cardSource, /const isGalleryRailCard = menuVariant === 'gallery' \|\| menuVariant === 'gallery-image'/);
-  assert.match(cardSource, /isGalleryRailCard \? \(\s*<SlidersHorizontal/);
+  assert.match(cardSource, /isGalleryRailCard \? \(\s*<GalleryActionButton[\s\S]*?<SlidersHorizontal/);
   assert.match(cardSource, /aria-label=\{actionMenuLabel\}/);
   assert.match(cardSource, /title=\{actionMenuLabel\}/);
   assert.match(cardSource, /showCompactMenuButton \? \(\s*<>\s*<span>\{actionMenuLabel\}<\/span>/);
+  assert.match(cardSource, /GalleryVideoContinuationActions group=\{group\}/);
+  assert.doesNotMatch(cardSource, /stageMediaHandoff|listFalEngines|getVideoContinuationEngine/, 'shared media actions retain destination ownership');
 });
 
 test('workspace preview prioritizes its first video cover in completed and pending states', () => {
