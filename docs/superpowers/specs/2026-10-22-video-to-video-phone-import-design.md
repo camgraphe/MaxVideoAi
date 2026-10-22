@@ -3,6 +3,8 @@
 Statut : proposition de conception à relire, pas une fonctionnalité livrée.
 Contexte : demande du 22 octobre 2026. Le correctif de sérialisation des durées est indépendant de cette proposition.
 
+Complément : l’[étude de faisabilité de la bibliothèque et des versions](2026-10-22-media-library-lifecycle-feasibility.md) couvre désormais conservation des rendus, upscaling, corbeille, purge réelle, quotas et ordre de livraison. Elle précise les décisions communes à tous les parcours média et les limites de l’existant.
+
 ## Intention et décisions déjà exprimées
 
 Une personne choisit directement une vidéo de son téléphone ou de sa bibliothèque, indique ce qu’elle veut changer et obtient un résultat sans préparer manuellement son fichier dans un autre logiciel. Le parcours doit servir tous les modèles d’édition vidéo disponibles, avec toutes les capacités réellement exécutables de chacun. Un sélecteur de passage doit être partagé, notamment pour choisir quelques secondes dans une vidéo d’une minute.
@@ -60,7 +62,7 @@ Pour un fichier déjà compatible et une sélection couvrant toute sa durée, r�
 
 Le socle commun ne réduit pas les modèles au plus petit ensemble d’options partagé. Une fonction indisponible dans l’environnement courant ne doit pas être présentée comme exécutable. Les fonctionnalités réservées aux admins restent réservées aux admins.
 
-Le même sélectionneur pourra servir les références vidéo, extensions et autres outils lorsqu’ils ont réellement besoin d’un passage ; leur sémantique propre ne doit pas être convertie artificiellement en mode Modify.
+Le même sélectionneur pourra servir les références vidéo, extensions et autres outils lorsqu’ils ont réellement besoin d’un passage ; leur sémantique propre ne doit pas être convertie artificiellement en mode Modify. L’upscaling doit pouvoir traiter une source entière quand son modèle le permet, sans hériter des durées Luma.
 
 ## Architecture proposée
 
@@ -121,6 +123,8 @@ Les anciennes sélections issues de la bibliothèque restent utilisables. Retire
 
 Créer une opération de préparation asynchrone distincte d’une génération et d’un export Studio payant. Réutiliser les primitives de stockage, d’accès propriétaire, de jobs et FFmpeg après vérification de leurs contrats, sans réutiliser leur facturation par accident.
 
+Les propriétaires existants `frontend/src/server/tools/creator-segment-media.ts` et `creator-sources.ts` offrent déjà des contrats de coupe, validation, provenance et revalidation de source. Réutiliser ces acquis ; leurs traitements en mémoire, le plafond de 100 Mio et la concurrence locale au processus ne suffisent pas à qualifier une préparation générale de gros fichiers téléphone.
+
 Entrée : référence propriétaire de l’original, bornes du passage et profil de préparation versionné. Le serveur recharge les faits, valide les bornes et les capacités puis prépare la copie. Une clé idempotente liée au compte, à l’original, au passage et au profil évite les doublons.
 
 Sortie : un dérivé privé avec faits mesurés, statut et lien de provenance vers l’original. Vérifier les octets obtenus avant de rendre le dérivé sélectionnable. Une relance récupère l’opération existante ; elle ne génère pas une nouvelle vidéo payante.
@@ -131,7 +135,7 @@ Réencodage uniquement si nécessaire : orientation physique correcte, codec/con
 
 Premier lot, indépendant : correction de la sérialisation des durées du workspace, vérifiée sur les valeurs réelles de plusieurs modèles et contre la frontière stricte de préflight. Garder les unités inconnues invalides et Auto inchangé.
 
-Deuxième lot : contrat de capacités et sélecteur partagé, puis préparation serveur et intégration de bout en bout derrière un accès admin. Conserver le devis indisponible tant que le média exact n’est pas prêt.
+Suite : mesurer les objets et références de bibliothèque, fiabiliser la suppression effective, harmoniser la conservation des rendus et réserver la place nécessaire aux résultats payants. Le contrat de capacités et le sélecteur partagé peuvent avancer pendant cet inventaire ; la préparation serveur et l’intégration restent derrière un accès admin jusqu’à validation du socle stockage. Conserver le devis indisponible tant que le média exact n’est pas prêt. L’étude complémentaire précise les étapes avant l’ouverture publique des imports lourds.
 
 Tests d’acceptation :
 - original inchangé ; deux passages d’une même source donnent deux dérivés identifiables ;
