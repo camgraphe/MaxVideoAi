@@ -9,19 +9,19 @@ const COPY = {
     eyebrow: 'Create in conversation', title: 'An idea. A conversation. Your next creation.',
     body: 'Meet Milo, your creative partner in Studio. Describe an idea, add references, and let Milo prepare the prompts and tools for images, video and audio.',
     detail: 'Assistance and media generation have separate costs. Review the generation price before you confirm.',
-    cta: 'Explore Studio', open: 'Open Studio', alt: 'MaxVideoAI Studio with a creative conversation, three image references and a timeline',
+    cta: 'Explore Studio', open: 'Open Studio', alt: 'MaxVideoAI Studio with a creative conversation, a product reference and a timeline',
   },
   fr: {
     eyebrow: 'Créer en conversation', title: 'Une idée. Une conversation. Votre prochaine création.',
     body: 'Découvrez Milo, votre partenaire créatif dans Studio. Décrivez une idée, ajoutez vos références : Milo prépare les prompts et les outils pour vos images, vidéos et créations audio.',
     detail: 'L’assistance et la génération de médias ont des coûts distincts. Vérifiez le prix de la génération avant de confirmer.',
-    cta: 'Découvrir Studio', open: 'Ouvrir Studio', alt: 'Studio MaxVideoAI avec une conversation créative, trois images de référence et une timeline',
+    cta: 'Découvrir Studio', open: 'Ouvrir Studio', alt: 'Studio MaxVideoAI avec une conversation créative, une référence produit et une timeline',
   },
   es: {
     eyebrow: 'Crea conversando', title: 'Una idea. Una conversación. Tu próxima creación.',
     body: 'Descubre Milo, tu compañero creativo en Studio. Describe una idea, añade referencias y deja que Milo prepare los prompts y las herramientas para imágenes, vídeo y audio.',
     detail: 'La asistencia y la generación de medios tienen costes distintos. Revisa el precio de la generación antes de confirmar.',
-    cta: 'Descubrir Studio', open: 'Abrir Studio', alt: 'Studio de MaxVideoAI con una conversación creativa, tres imágenes de referencia y una línea de tiempo',
+    cta: 'Descubrir Studio', open: 'Abrir Studio', alt: 'Studio de MaxVideoAI con una conversación creativa, una referencia de producto y una línea de tiempo',
   },
 };
 
@@ -42,7 +42,7 @@ export function HomeConversationSection({ locale, assistantHref }: { locale: App
             </div>
           </div>
           <Link href={{ pathname: '/studio' }} prefetch={false} className="home-studio-preview" aria-label={copy.cta}>
-            <Image src="/assets/studio/studio-conversation-preview.webp" alt={copy.alt} width={1354} height={832} sizes="(max-width: 900px) 90vw, 720px" loading="lazy" />
+            <Image src="/assets/studio/studio-milo-preview.webp" alt={copy.alt} width={1354} height={832} sizes="(max-width: 900px) 90vw, 720px" loading="lazy" />
           </Link>
         </div>
         {assistantHref ? <HomeAssistantStrip locale={locale} href={assistantHref} /> : null}

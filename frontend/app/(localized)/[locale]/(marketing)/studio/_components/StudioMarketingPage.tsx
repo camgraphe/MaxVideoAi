@@ -6,8 +6,8 @@ import type { AppLocale } from '@/i18n/locales';
 import type { StudioMarketingCopy } from '../_lib/studio-marketing-copy';
 import styles from './studio-marketing.module.css';
 
-// Real connected-project fixture capture, reviewed on 2026-10-04.
-const STUDIO_PREVIEW_IMAGE = '/assets/studio/studio-conversation-preview.webp';
+// Real connected-project fixture capture with Milo; no account data or generated balance.
+const STUDIO_PREVIEW_IMAGE = '/assets/studio/studio-milo-preview.webp';
 const icons = [MessageCircle, Sparkles, PanelsTopLeft];
 
 export function StudioMarketingPage({ copy, locale }: { copy: StudioMarketingCopy; locale: AppLocale }) {
