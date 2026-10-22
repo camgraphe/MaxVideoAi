@@ -327,6 +327,7 @@ export const LUMA_RAY_3_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         falModelId: 'luma/agent/ray/v3.2/video-edit',
         ui: {
           modes: ['v2v'],
+          durationPolicy: 'source_video',
           resolution: [...LUMA_RAY_32_RESOLUTIONS],
           acceptsImageFormats: [...LUMA_SUPPORTED_IMAGE_FORMATS],
           maxUploadMB: LUMA_RAY_32_VIDEO_MAX_MB,

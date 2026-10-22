@@ -1,0 +1,15 @@
+{
+  "reviewedAt": "2026-10-23",
+  "basis": "owner_observation",
+  "mode": "v2v",
+  "scope": "Single iPhone clip changed into a noir scene while retaining the person. Luma used visual guidance; settings differed across models. This is a qualitative owner preference, not a controlled benchmark or a price ranking.",
+  "order": [
+    "luma-ray-3-2",
+    "wan-3-prime",
+    "kling-o3-pro",
+    "wan-3",
+    "kling-o3-standard",
+    "gemini-omni-flash"
+  ],
+  "effectiveAt": "2026-10-22T22:15:54Z"
+}

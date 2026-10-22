@@ -333,3 +333,20 @@ unknown acceptance is never retried: status reports `needsAttention`, and durabl
 reconciliation refunds once after one hour while retaining its audit. Temporary
 provider audio is cleaned after terminal state; owned sequence source audio remains
 available with the document. Apply migrations 70/72/73 explicitly before release.
+
+
+### Modify and Extend capability parity (23 October 2026 candidate)
+
+Studio's visual capability details project canonical per-mode settings, duration
+policy, reference capacities and extension output semantics. The shared attachment
+transport ceiling is 66; it does not replace individual model/role or combined
+reference limits. Image-generation selection retains its existing limit. Do not
+reintroduce a blanket eight-reference clamp for Modify/Extend. Their request paths
+retain owned attachment identity and canonical validation/quote approval.
+
+Recognizable-person notes for Seedance come from `video-workflow-capabilities.ts`
+and render on the quote card in its locale. They remain informational, including
+on Extend, and must not disable the paid confirmation control. Model-discovery
+notes let Studio mention the restriction before preparing a quote. Modify owner
+preferences carry their single-trial scope in mode details; Extend has no inherited
+quality ranking.

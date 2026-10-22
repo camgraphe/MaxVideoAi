@@ -12,7 +12,7 @@ import { CoreSettingsBar } from '../frontend/components/CoreSettingsBar';
 import type { ComposerProps } from '../frontend/components/Composer';
 
 const noop = () => {};
-for (const id of ['wan-3', 'veo-3-1', 'seedance-2-5', 'ltx-2-3', 'flux-3-draft']) {
+for (const { id } of listFalEngines().filter(entry => entry.modes.some(mode => mode.mode === 'extend'))) {
   test(`${id}: Extend puts its source first, guides pricing and only offers meaningful controls`, async () => {
     const require = createRequire(import.meta.url);
     const css = require.extensions['.css'];
@@ -30,7 +30,7 @@ for (const id of ['wan-3', 'veo-3-1', 'seedance-2-5', 'ltx-2-3', 'flux-3-draft']
     const caps = entry.modes.find(({ mode }) => mode === 'extend')!.ui;
     const summary = summarizeWorkspaceInputSchema({ selectedEngine: engine, activeMode: 'extend',
       allowsUnifiedVeoFirstLast: id.startsWith('veo'), isUnifiedHappyHorse: false,
-      isUnifiedSeedance: id.startsWith('seedance'), isUnifiedGeminiOmni: false, uiLocale: 'en' });
+      isUnifiedSeedance: id.startsWith('seedance'), isUnifiedGeminiOmni: id === 'gemini-omni-flash', uiLocale: 'en' });
     const source = summary.assetFields.find(({ field, required }) => field.type === 'video' && required)!;
     const libraryCalls: unknown[] = [];
     const root = createRoot(dom.window.document.getElementById('root')!);
@@ -51,6 +51,7 @@ for (const id of ['wan-3', 'veo-3-1', 'seedance-2-5', 'ltx-2-3', 'flux-3-draft']
       const doc = dom.window.document;
       assert.match(doc.body.textContent ?? '', /Upload the video to extend.*calculate the price/);
       assert.equal(doc.querySelector('[role="alert"]'), null);
+      if (id.startsWith('seedance-2-')) assert.match(doc.querySelector('[role="note"]')?.textContent ?? '', /recognizable person/);
       assert.match(doc.querySelector('.app-generation-quote > .relative')?.textContent ?? '', /Add a video/);
       assert.equal(doc.querySelector<HTMLButtonElement>('.app-generation-action')!.disabled, true);
       const commands = [...doc.querySelectorAll<HTMLButtonElement>('[data-reference-command]')];
@@ -65,9 +66,9 @@ for (const id of ['wan-3', 'veo-3-1', 'seedance-2-5', 'ltx-2-3', 'flux-3-draft']
       assert.deepEqual(libraryCalls, [[source.field.id, 0]]);
       assert.equal(doc.activeElement, commands[0]);
       const settingButton = (label: string) => [...doc.querySelectorAll<HTMLButtonElement>('[data-settings-density] button')].find(button => button.textContent?.startsWith(label));
-      if (id === 'veo-3-1') {
+      if (caps.duration && 'options' in caps.duration && caps.duration.options.length === 1) {
         assert.equal(settingButton('Generated duration'), undefined, 'fixed 7s is not a selector');
-        assert.match(doc.body.textContent ?? '', /7s/);
+        assert.ok(doc.body.textContent?.includes(String(caps.duration.options[0]).replace(/s$/, "") + "s"));
       } else {
         assert.ok(settingButton('Generated duration'));
       }

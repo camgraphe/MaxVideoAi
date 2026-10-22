@@ -1,3 +1,4 @@
+import { videoDurationPolicy, videoInheritsSourceFraming } from '@/lib/video-workflow-capabilities';
 import { isLumaSourceVideoMode, validateLumaSourceVideoTiming, LUMA_MODIFY_SOURCE_MAX_SEC } from '@/lib/luma-source-video';
 import {
   canonicalizeImageFieldValue,
@@ -8,7 +9,7 @@ import {
   resolveRequestedAspectRatio,
   resolveRequestedResolution,
 } from '@/lib/image/inputSchema';
-import type { EngineInputField, EngineModeUiCaps } from '@/types/engines';
+import type { EngineInputField, EngineModeUiCaps, Mode } from '@/types/engines';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import { isLumaRay2EngineId } from '@/lib/luma-ray2';
 import { isGptImageFamilyEngineId, validateGptImage2CustomImageSize } from '@/lib/image/gptImage2';
@@ -39,6 +40,13 @@ import {
 } from '@/lib/media-field-constraints';
 
 const VIDEO_FIELD_BY_SETTING: Record<string, string> = {
+  keepAudio: 'keep_audio',
+  audioSetting: 'audio_setting',
+  personGeneration: 'person_generation',
+  compressionQuality: 'compression_quality',
+  promptAudioDirection: 'prompt_audio_direction',
+  promptCameraDirection: 'prompt_camera_direction',
+  promptEditInstruction: 'prompt_edit_instruction',
   outputFormat: 'output_format',
   returnLastFrame: 'return_last_frame',
   watermark: 'watermark',
@@ -184,24 +192,28 @@ function validateVideoModeCaps(
   if (request.settings.durationOption !== undefined && (request.settings.durationOption !== 'auto'
     || !seedanceAutomaticDurationBounds(candidate.engine.id) || !caps.duration || !('options' in caps.duration)
     || !caps.duration.options.includes('auto'))) fail('durationOption');
-  if (!Number.isSafeInteger(duration) || (duration as number) < 1) fail('durationSec');
-  if (caps.frames) fail('durationSec');
-  if (caps.duration && !isVideoDurationSupported(duration, caps.duration, candidate.engine.maxDurationSec)) {
-    fail('durationSec');
-  }
-  const maximum = request.engineId === 'luma-ray-3-2' && request.mode === 'v2v'
-    ? LUMA_MODIFY_SOURCE_MAX_SEC : candidate.engine.maxDurationSec;
-  if (!caps.duration && (duration as number) > maximum) fail('durationSec');
-  const durationField = applicableField(candidate, 'duration', request.mode);
-  if (durationField) {
-    if (durationField.type === 'enum') {
-      if (
-        !durationField.values?.length
-        || !isVideoDurationSupported(duration, { options: durationField.values })
-      ) fail('durationSec');
-    } else if (durationField.type === 'number') {
-      validateFieldValue(durationField, duration);
-    } else fail('durationSec');
+  const sourceDurationPending = duration === undefined
+    && videoDurationPolicy(candidate.engine, request.mode as Mode, caps) === 'source_video';
+  if (!sourceDurationPending) {
+    if (!Number.isSafeInteger(duration) || (duration as number) < 1) fail('durationSec');
+    if (caps.frames) fail('durationSec');
+    if (caps.duration && !isVideoDurationSupported(duration, caps.duration, candidate.engine.maxDurationSec)) {
+      fail('durationSec');
+    }
+    const maximum = request.engineId === 'luma-ray-3-2' && request.mode === 'v2v'
+      ? LUMA_MODIFY_SOURCE_MAX_SEC : candidate.engine.maxDurationSec;
+    if (!caps.duration && (duration as number) > maximum) fail('durationSec');
+    const durationField = applicableField(candidate, 'duration', request.mode);
+    if (durationField) {
+      if (durationField.type === 'enum') {
+        if (
+          !durationField.values?.length
+          || !isVideoDurationSupported(duration, { options: durationField.values })
+        ) fail('durationSec');
+      } else if (durationField.type === 'number') {
+        validateFieldValue(durationField, duration);
+      } else fail('durationSec');
+    }
   }
 
   const resolution = request.settings.resolution;
@@ -230,7 +242,8 @@ function validateVideoModeCaps(
     candidate.engine.inputSchema,
   );
   const supportedAspectRatios = caps.aspectRatio ?? [];
-  if (supportedAspectRatios.length > 0 && (
+  const sourceFraming = aspectRatio === undefined && videoInheritsSourceFraming(candidate.engine, request.mode as Mode);
+  if (!sourceFraming && supportedAspectRatios.length > 0 && (
     typeof aspectRatio !== 'string'
     || (!supportedAspectRatios.includes(aspectRatio)
       && !supportedAspectRatios.some((value) => String(value) === String(providerAspectRatio)))

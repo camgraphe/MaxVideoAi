@@ -24,7 +24,8 @@ export const MAX_CANONICAL_PROMPT_CHARS = 12_000;
 export const MAX_CANONICAL_SETTING_COUNT = 64;
 export const MAX_CANONICAL_SETTING_STRING_CHARS = 4_096;
 export const MAX_CANONICAL_SETTINGS_JSON_BYTES = 16_384;
-export const MAX_CANONICAL_REFERENCES = 50;
+export {MAX_GENERATION_REFERENCES as MAX_CANONICAL_REFERENCES} from '@/lib/generation-reference-limits';
+import {MAX_GENERATION_REFERENCES as MAX_CANONICAL_REFERENCES} from '@/lib/generation-reference-limits';
 export const MAX_CANONICAL_REFERENCE_URL_CHARS = MAX_CONTROLLED_REFERENCE_URL_CHARS;
 
 const MAX_ENGINE_ID_CHARS = 128;
@@ -67,6 +68,14 @@ const SAFE_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]*$/;
 const SAFE_SETTING_KEY_PATTERN = /^[A-Za-z][A-Za-z0-9._-]*$/;
 const UNSAFE_CONTROL_CHARACTER_PATTERN = /[\u0000-\u001f\u007f-\u009f]/u;
 const VIDEO_SETTING_KEYS = new Set([
+  'keepAudio',
+  'audioSetting',
+  'personGeneration',
+  'compressionQuality',
+  'promptAudioDirection',
+  'promptCameraDirection',
+  'promptEditInstruction',
+
   'outputFormat',
   'returnLastFrame',
   'watermark',

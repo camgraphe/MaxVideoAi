@@ -1,4 +1,5 @@
 'use client';
+import {videoWorkflowNotices} from '@/lib/video-workflow-capabilities';
 /* eslint-disable @next/next/no-img-element */
 
 import { useId, useRef, useState } from 'react';
@@ -104,6 +105,7 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
         </button> : null}
         {assetFields.map((entry) => entry.headerAction ? <span key={entry.field.id}>{entry.headerAction}</span> : null)}
     </div>
+    {videoWorkflowNotices(engine.id,sourceMode ?? '',locale).map(note=><p key={note.code} role="note" className="text-xs text-text-muted">{note.message}</p>)}
     {restrictionReasons.length ? <div id={restrictionId} className="app-reference-restrictions" aria-live="polite">
       {restrictionReasons.map((reason) => <p key={reason}>{referenceAuthAction?.label === reason
         ? <a className="app-reference-signin" href={referenceAuthAction.href}>{reason}</a>

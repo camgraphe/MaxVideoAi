@@ -2385,6 +2385,7 @@
           "modes": [
             "v2v"
           ],
+          "durationPolicy": "source_video",
           "duration": {
             "options": [
               "3s",
@@ -2952,6 +2953,7 @@
           "modes": [
             "v2v"
           ],
+          "durationPolicy": "source_video",
           "notes": "Modify a source clip with optional prompt and reference-image guidance plus provider adherence presets."
         }
       },
@@ -3447,6 +3449,7 @@
           "modes": [
             "v2v"
           ],
+          "durationPolicy": "source_video",
           "notes": "Modify a source clip quickly with the same adherence and reimagination presets exposed in Flash."
         }
       },
@@ -4033,6 +4036,7 @@
           "modes": [
             "v2v"
           ],
+          "durationPolicy": "source_video",
           "resolution": [
             "540p",
             "720p",
@@ -10815,6 +10819,7 @@
           "modes": [
             "v2v"
           ],
+          "durationPolicy": "source_video",
           "resolution": [
             "720p",
             "1080p"

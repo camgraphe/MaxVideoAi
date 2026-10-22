@@ -210,3 +210,39 @@ require the unrelated t2v mode to be enabled. Ordinary `publicModes` remain
 unchanged; the workflow capability adapter projects ModelArk mode caps separately.
 The public-engine policy stays a pure leaf. Current native mode readiness also
 participates in quote catalog revisions.
+
+
+## Modify / Extend parity — 23 October 2026 candidate
+
+The web controls, canonical model details and Studio use
+`lib/video-workflow-capabilities.ts` for source timing and framing. Modify can
+inherit measured duration (Omni/Luma and Seedance 2.5 ModelArk) or request its own
+output duration (including Seedance 2.5 LAS); Extend retains each model's declared
+output duration and continuation/combined-output contract. Canonical preparation
+resolves omitted inherited duration from an owned, verified source before pricing.
+The integer dispatch placeholder must not replace fractional source pricing facts.
+
+The canonical settings and paid request adapter also carry Kling `keepAudio`,
+Veo `audioSetting`, `personGeneration`, `compressionQuality` and Omni prompt audio,
+camera and edit-direction controls. Only settings declared for that model and mode
+are accepted. Studio preserves the canonical per-role Modify/Extend reference
+capacities; the shared transport ceiling is 66 (64 Luma keyframes, guide and source),
+while per-model counts, combined budgets and source checks remain authoritative.
+
+Seedance's recognizable-person advisory is shared by web reference controls,
+canonical details/prepared quotes and Studio quote cards, including Extend. It is
+informational and does not disable a mode. The four paid reference trials all
+returned the provider's person-reference rejection; this is not proof that every
+future reference will be rejected.
+
+`config/video-modify-review.json` records the owner's preference from one iPhone
+noir-edit trial: Luma, Wan 3 Prime, Kling Pro, Wan 3, Kling Standard, Omni. Live mode
+details expose its basis and scope. Recommendations use it only for Modify, after
+explicit choices and requested priorities, with the existing availability and
+capability filters and a 90-day review window. It does not publish admin models,
+rank Extend, certify identity preservation or establish relative prices.
+
+`tests/video-workflow-surface-parity.test.ts` covers discovery, Studio projection,
+canonical requests and paid-body forwarding; the composer DOM matrix covers every
+authored Extend mode. Host catalog refresh after server delivery is separate from
+these source checks; no installed plugin release is implied.

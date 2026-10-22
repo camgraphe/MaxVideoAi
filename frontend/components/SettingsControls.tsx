@@ -1,4 +1,6 @@
 "use client";
+import {useI18n} from '@/lib/i18n/I18nProvider';
+import {videoDurationPolicy,videoInheritsSourceFraming,videoSourceDurationLabel} from '@/lib/video-workflow-capabilities';
 
 import clsx from 'clsx';
 import { Card } from '@/components/ui/Card';
@@ -64,7 +66,9 @@ export function SettingsControls({
   advancedOpen,
   variant = 'full',
 }: SettingsControlsProps) {
+  const {locale}=useI18n();
   const showCore = variant !== 'advanced';
+  const sourceDuration = videoDurationPolicy(engine,mode,caps)==='source_video';
   const inheritsSourceVideo = engine.modeAvailability?.[mode]?.inheritsSourceVideo === true;
   const controlState = useSettingsControlState({
     advancedFields,
@@ -204,9 +208,9 @@ export function SettingsControls({
                 </div>
                 <span className="text-[11px] text-text-muted">{controlsCopy.frames.hint}</span>
               </div>
-            ) : durationManaged || inheritsSourceVideo ? (
+            ) : durationManaged || sourceDuration ? (
               <div className="rounded-input border border-dashed border-border bg-surface-glass-60 p-3 text-[12px] text-text-muted">
-                {resolvedDurationManagedLabel}
+                {sourceDuration ? (inheritsSourceVideo ? resolvedDurationManagedLabel : videoSourceDurationLabel(locale)) : resolvedDurationManagedLabel}
               </div>
             ) : enumeratedDurationOptions && enumeratedDurationOptions.length ? (
               <div className="flex flex-col gap-2 text-sm text-text-secondary">
@@ -313,7 +317,7 @@ export function SettingsControls({
               </p>
             ) : null}
 
-            {showAspectControl && !inheritsSourceVideo && (
+            {showAspectControl && !videoInheritsSourceFraming(engine,mode) && (
               <FieldGroup
                 label={controlsCopy.aspect.label}
                 options={aspectOptions}

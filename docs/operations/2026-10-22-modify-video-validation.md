@@ -93,7 +93,7 @@ scene, preserving the person and substituting an inert prop pistol.
 
 Net MaxVideoAI comparison charge is $6.73 after the confirmed refund. Private
 media, full provider responses, prompts and job identifiers remain outside Git.
-The local results page presents all six outcomes, including the recovered Omni
+The local results page presents all nine outcomes, including the recovered Omni
 file; it explicitly distinguishes recovery from a repaired production library.
 
 ### Omni output and audio corrections
@@ -139,9 +139,11 @@ patch until CI reruns it. The prior full 967-page build predates these final fix
 - Activate reviewed Kling/Luma tariff additions before catalog rollout.
 - Repair the single Omni output and older phone geometry through bounded writes,
   then verify the deployed import → quote → debit → provider → durable-output path.
-- Seedance 2.0/Fast/Mini and legacy/admin variants have code coverage, not paid
-  qualification in this batch. Seedance 2.5 cannot pass this tested person-reference
-  scenario through its current provider restriction.
+- Seedance 2.0/Fast/Mini were subsequently submitted with the approved $6.06 lot;
+  all three returned `seedance_reference_video_blocked` and `refunded_wallet`.
+  Together with 2.5, all four refused this person-reference scenario. Net charge
+  remains $6.73. Legacy/admin variants retain code coverage rather than paid
+  qualification in this batch.
 - All options are preserved; no blanket success claim for every codec, duration,
   identity or audio scenario. Required latest-candidate Quality CI remains mandatory.
 - No deployment, production schema/tariff activation or marketing migration here.
@@ -152,3 +154,17 @@ patch until CI reruns it. The prior full 967-page build predates these final fix
 LTX 2.5 Fast/Pro live discovery currently offers t2v/i2v/a2v, not Modify. Its
 [open-source IC-LoRA workflows](https://github.com/Lightricks/ComfyUI-LTXVideo/blob/master/example_workflows/2.5/README.md)
 include video editing but are not an enabled MaxVideoAI API mode.
+
+
+## Owner review and cross-surface follow-up — 23 October
+
+The owner ranked this trial Luma → Wan 3 Prime → Kling Pro → Wan 3 → Kling Standard
+→ Gemini Omni. This is a single-clip preference, not a controlled benchmark: Luma
+used guidance imagery and settings differed. The mode-scoped discovery record
+preserves that context and does not affect Extend or activation decisions.
+
+The follow-up aligns Modify and Extend settings, references and source-duration
+policy between web, MCP and Studio and adds the Seedance advisory to all three.
+See the [mode coverage contract](../engineering/mcp-mode-coverage.md). The local
+demo's composer is compiled from these branch components; upload, wallet and
+library calls there remain fixtures, not a production end-to-end test.

@@ -1,3 +1,5 @@
+import {videoWorkflowPreference} from '@/lib/video-workflow-review';
+import {videoDurationPolicy,videoWorkflowNotices,videoInheritsSourceFraming} from '@/lib/video-workflow-capabilities';
 import { seedanceWorkflowCandidate } from './seedance-workflow-capabilities';
 import { seedanceWorkflowDiscovery } from './seedance-workflow-discovery';
 import { agentSeedanceWorkflowEnabled } from './seedance-workflow';
@@ -241,6 +243,13 @@ function projectAudio(caps: EngineModeUiCaps, engine: EngineCaps): AgentModelAud
 }
 
 const CANONICAL_SETTING_BY_FIELD_ID: Readonly<Record<string, string>> = Object.freeze({
+  keep_audio: 'keepAudio',
+  audio_setting: 'audioSetting',
+  person_generation: 'personGeneration',
+  compression_quality: 'compressionQuality',
+  prompt_audio_direction: 'promptAudioDirection',
+  prompt_camera_direction: 'promptCameraDirection',
+  prompt_edit_instruction: 'promptEditInstruction',
   camera_fixed: 'cameraFixed',
   cfg_scale: 'cfgScale',
   context: 'contextSec',
@@ -392,12 +401,7 @@ export function projectAgentModelModeDetails(
       : [];
   const referenceRequirement = projectReferenceRequirement(candidate.engine, mode);
   const baseControls = {
-    durationPolicy: mode === 'a2v'
-      ? 'source_audio'
-      : (mode === 'reframe' && candidate.engine.id !== 'luma-ray-3-2')
-        || (mode === 'v2v' && (isLumaRay2EngineId(candidate.engine.id) || candidate.engine.id === 'luma-ray-3-2'))
-        ? 'source_video'
-        : 'requested',
+    durationPolicy: isImage ? 'requested' : videoDurationPolicy(candidate.engine,mode as import('@/types/engines').Mode,caps),
     duration: projectDuration(caps, candidate.engine),
     resolutions: Object.freeze(isImage
       ? imageResolutions.length ? imageResolutions : [getDefaultResolution(candidate.engine, imageMode)]
@@ -411,12 +415,15 @@ export function projectAgentModelModeDetails(
   return Object.freeze({
     mode,
     ...baseControls,
+    ...(videoWorkflowPreference(candidate.engine.id,mode) ? {editorialPreference:videoWorkflowPreference(candidate.engine.id,mode)} : {}),
+    ...(videoWorkflowNotices(candidate.engine.id,mode).length ? {notices:videoWorkflowNotices(candidate.engine.id,mode)} : {}),
+    ...(caps.extensionOutput ? {extensionOutput:caps.extensionOutput} : {}),
     outputCount: Object.freeze({
       min: outputCount.min,
       max: outputCount.max,
       default: outputCount.defaultValue,
     }),
-    settings: Object.freeze([...projectBaseSettings(baseControls), ...projectSettings(candidate.engine, mode),
+    settings: Object.freeze([...projectBaseSettings(baseControls).filter(setting=>!(videoInheritsSourceFraming(candidate.engine,mode as import('@/types/engines').Mode) && setting.key==='aspectRatio')), ...projectSettings(candidate.engine, mode),
       ...(candidate.engine.id.startsWith('seedance-2-') && caps.duration && 'options' in caps.duration && caps.duration.options.includes('auto')
         ? [{key: 'durationOption', type: 'enum' as const, required: false, values: Object.freeze(['auto']), min: null, max: null, default: null}]
         : []),

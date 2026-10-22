@@ -6,7 +6,7 @@ import {conversationAspectRatioSchema,conversationSelectionFields,conversationSe
 import {STUDIO_CONVERSATION_MAX_ATTACHMENTS,conversationPreparationReplyProperty,conversationCreationPromptProperty} from './conversation-creation-contract';
 
 const reply = z.string().min(1).max(2400);
-export const conversationMediaReferenceSchema=z.object({ref:toolAssetRefSchema,role:z.enum(['reference','source','first_frame','last_frame','mask']),slot:z.number().int().min(0).max(49).nullable().optional()}).strict();
+export const conversationMediaReferenceSchema=z.object({ref:toolAssetRefSchema,role:z.enum(['reference','source','first_frame','last_frame','mask']),slot:z.number().int().min(0).max(STUDIO_CONVERSATION_MAX_ATTACHMENTS-1).nullable().optional()}).strict();
 const audioReferences=z.array(z.object({role:z.enum(['source_video','voice_sample']),asset:toolAssetRefSchema}).strict()).max(2).nullable().optional();
 export const studioVideoActionSchema = z.object({
   action: z.literal('video.prepare'), reply, prompt: z.string().min(1).max(12000),
@@ -31,7 +31,7 @@ export function conversationMediaRefProperties(jobOutputs=true,kinds:readonly st
   {type:'object',additionalProperties:false,required:['type','assetId','kind'],properties:{type:{type:'string',enum:['asset']},assetId:{type:'string'},kind:{type:'string',enum:[kind]}}},
   ...(jobOutputs?[{type:'object',additionalProperties:false,required:['type','jobId','outputId','kind'],properties:{type:{type:'string',enum:['job-output']},jobId:{type:'string'},outputId:{type:'string'},kind:{type:'string',enum:[kind]}}}]:[]),
 ])};}
-export function conversationMediaReferencesProperties(jobOutputs=true){return {type:['array','null'],maxItems:STUDIO_CONVERSATION_MAX_ATTACHMENTS,items:{type:'object',additionalProperties:false,required:['ref','role','slot'],properties:{ref:conversationMediaRefProperties(jobOutputs),role:{type:'string',enum:['reference','source','first_frame','last_frame','mask']},slot:{type:['integer','null'],minimum:0,maximum:49,description:'Use an ordered zero-based slot only when model_details permits ordered source/reference media; otherwise null.'}}}};}
+export function conversationMediaReferencesProperties(jobOutputs=true){return {type:['array','null'],maxItems:STUDIO_CONVERSATION_MAX_ATTACHMENTS,items:{type:'object',additionalProperties:false,required:['ref','role','slot'],properties:{ref:conversationMediaRefProperties(jobOutputs),role:{type:'string',enum:['reference','source','first_frame','last_frame','mask']},slot:{type:['integer','null'],minimum:0,maximum:STUDIO_CONVERSATION_MAX_ATTACHMENTS-1,description:'Use an ordered zero-based slot only when model_details permits ordered source/reference media; otherwise null.'}}}};}
 const source={anyOf:[...conversationMediaRefProperties().anyOf,{type:'null'}]};
 const audioReferenceProperties={type:['array','null'],maxItems:2,items:{type:'object',additionalProperties:false,required:['role','asset'],properties:{role:{type:'string',enum:['source_video','voice_sample']},asset:conversationMediaRefProperties(true,['video','audio'])}}};
 export const STUDIO_MEDIA_DIRECTOR_TOOLS = [

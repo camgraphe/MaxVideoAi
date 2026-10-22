@@ -1,3 +1,4 @@
+import {videoDurationPolicy} from '@/lib/video-workflow-capabilities';
 import type { MultiPromptScene } from '@/components/Composer';
 import { buildMultiPromptSummary, MULTI_PROMPT_MIN_SEC, MULTI_PROMPT_MAX_SEC } from './workspace-input-helpers';
 import { getWorkspaceMultiPromptState } from './workspace-multi-prompt-state';
@@ -291,14 +292,8 @@ export function resolveWorkspaceComposerFacts({
   const effectiveDurationSec = (() => {
     if (multiPromptActive) return multiPromptTotalSec;
     if (submissionMode === 'a2v' && typeof primaryAudioDurationSec === 'number') return primaryAudioDurationSec;
-    const hasSeparateOutputDuration = (selectedEngine?.id === 'luma-ray-3-2' && submissionMode === 'reframe')
-      || (selectedEngine && getModeCaps(selectedEngine, submissionMode)?.durationPolicy === 'requested')
-      || (typeof selectedEngine?.inputSchema?.constraints?.maxSourcePlusOutputDurationSec === 'number'
-        && !selectedEngine?.modeAvailability?.[submissionMode]?.inheritsSourceVideo);
-    if ((submissionMode === 'v2v' || submissionMode === 'reframe') && typeof primaryVideoDurationSec === 'number'
-      && !hasSeparateOutputDuration) {
-      return primaryVideoDurationSec;
-    }
+    if (selectedEngine && videoDurationPolicy(selectedEngine,submissionMode,getModeCaps(selectedEngine,submissionMode))==='source_video'
+      && typeof primaryVideoDurationSec==='number') return primaryVideoDurationSec;
     return form?.durationSec ?? 0;
   })();
   return { multiPromptActive, multiPromptTotalSec, multiPromptInvalid, multiPromptError, voiceIds, voiceControlEnabled, promptMaxChars, promptCharLimitExceeded, effectivePrompt, effectiveDurationSec };

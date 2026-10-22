@@ -1,3 +1,4 @@
+import {videoDurationPolicy} from '@/lib/video-workflow-capabilities';
 import {query} from '@/lib/db';
 import {readMediaFacts} from '@/lib/media-identity';
 import {ZodError} from 'zod';
@@ -24,7 +25,6 @@ import {AudioGenerationError} from '@/server/audio/audio-generate-validation';
 import {StudioPreparationInputError,validateStudioPreparationInput} from './conversation-preparation-validation';
 import {validateStudioAudioRequest} from './conversation-audio-generation';
 import type {ResolvedReference} from '@/server/agent-api/reference-types';
-import {isLumaRay2EngineId} from '@/lib/luma-ray2';
 
 export type StudioMediaFactories = {
   image: typeof createStudioImageGenerationService;
@@ -232,7 +232,7 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
           throw new AgentApiError('REFERENCE_INVALID','The attached references changed after Studio reviewed them. Send a new message to review them again.');
       }
     }
-    if(!Object.hasOwn(settings,'durationSec')&&(mode==='a2v'||(mode==='reframe'&&candidate.engine.id!=='luma-ray-3-2')||(mode==='v2v'&&isLumaRay2EngineId(candidate.engine.id)))){
+    if(!Object.hasOwn(settings,'durationSec')&&videoDurationPolicy(candidate.engine,mode,candidate.modeCaps[mode])!=='requested'){
       const duration=resolvedReferences.find(reference=>reference.role==='source')?.durationSec;
       if(typeof duration==='number')derivedSettings={durationSec:Math.max(1,Math.ceil(duration))};
     }

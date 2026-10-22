@@ -612,3 +612,22 @@ does not establish deployment, plugin publication or refreshed host discovery.
 The local client gate passes 173 tests (one real-host case skipped) and 70
 curated selection fixtures; all 256 instruction combinations retain their
 1,998-byte maximum. Real-host discovery measurements remain unrecorded.
+
+
+## Modify / Extend alignment — 23 October 2026 candidate
+
+Preparation and price comparison accept the shared 66-reference transport ceiling
+and explicit ordered slots, with canonical per-model limits still enforced. The
+settings schema carries model-declared audio, compression, person-generation and
+Omni direction controls. Source-timed Modify requests may omit `durationSec`;
+owned measured media resolves it before pricing, preserving fractional source facts.
+Seedance person-reference notices and the scoped owner Modify preference are facts
+returned by live details, not additions to the global instruction text.
+
+The metadata collector computes policy fingerprint
+`659de7a09be788e02e69ef58899b4cc5802215a2205b1c3bffe56c8aa5b82337`.
+Only that fingerprint changed in the curated fixture; its 70 decisions remain
+unchanged. The local client gate passed 173 tests with one skip and all 70 curated
+scenarios. This is source/SDK evidence, not a production deployment, plugin package
+release or installed-host verification. Existing host connections need a catalog
+refresh after server delivery to receive the additive preparation schema.
