@@ -421,8 +421,21 @@ does not replace a draft or start a paid generation. The Luma custom composer
 editor remains active while allowing an incoming video's source role in that
 confirmation. Account changes and unmounts retire pending navigation. Reuse
 these helpers for additional card shortcuts instead of maintaining another model
-list or original resolver. Focused coverage lives in `video-continuation`,
-`media-destination-actions-dom`, and `workspace-recent-media-dom` tests.
+list or original resolver.
+
+`GalleryVideoContinuationActions` projects eligible single video renders into the
+`gallery` presentation of `MediaDestinationActions`, so card shortcuts and the
+popup share the exact same source lookup, catalog and handoff. Multiple-output
+cards retain the popup's explicit output picker; unfinished renders, images and
+public demo cards do not get video shortcuts. `GalleryActionButton` owns the
+compact labeled control for Extend, Modify and the gallery menu, including
+Escape-dismissable tooltips. Hover/focus reveals desktop shortcuts; touch and
+small screens keep them visible. Feedback changes the fixed button's interior
+color, including a contrasting keyboard focus, without an outer ring or scale.
+The shortcuts are siblings of the preview figure, never nested interactive
+controls. Focused coverage lives in `video-continuation`,
+`media-destination-actions-dom`, `gallery-video-continuation-dom`, and
+`workspace-recent-media-dom` tests.
 
 ### Seedance output artifacts — 14 October 2026
 

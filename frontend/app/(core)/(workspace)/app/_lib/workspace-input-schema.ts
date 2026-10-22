@@ -151,6 +151,8 @@ export function summarizeWorkspaceInputSchema({
       })
     : null;
   const appliesToMode = (field: EngineInputField) => {
+    // Extend is an explicit workflow: unified generation inputs must not leak into it.
+    if (activeMode === 'extend') return !field.modes?.length || field.modes.includes(activeMode);
     if (allowsMultimodalReferences
       && (field.type === 'image' || field.type === 'video' || field.type === 'audio')
       && field.modes?.some((mode) => selectedEngine?.modes.includes(mode))) return true;

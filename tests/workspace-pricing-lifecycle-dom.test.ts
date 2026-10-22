@@ -5,6 +5,7 @@ import * as React from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { useWorkspacePricingGate } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspacePricingGate';
+import { listFalEngines } from '../frontend/src/config/falEngines';
 
 type Options = Parameters<typeof useWorkspacePricingGate>[0];
 async function mount() {
@@ -53,6 +54,28 @@ async function mount() {
 function masked(fixture: Awaited<ReturnType<typeof mount>>) {
   assert.ok(fixture.observed.every(value => value.preflight === null && value.price === null));
 }
+test('Extend waits for an uploaded source before pricing and revokes the quote when it is removed', async () => {
+  const f = await mount();
+  try {
+    const engine = listFalEngines().find(entry => entry.id === 'wan-3')!.engine;
+    await f.update({ selectedEngine: engine, submissionMode: 'extend',
+      form: { ...f.options.form!, engineId: engine.id, mode: 'extend' } });
+    await f.tick();
+    assert.equal(f.requests.length, 0);
+    assert.equal(f.current.isPricing, false);
+    assert.equal(f.current.preflightError, undefined);
+    const source = { id: 'source', fieldId: 'video_url', kind: 'video', name: 'source.mp4',
+      type: 'video/mp4', size: 1, previewUrl: 'blob:source', status: 'uploading' } as const;
+    await f.update({ inputAssets: { video_url: [source] } });
+    await f.tick(); assert.equal(f.requests.length, 0);
+    await f.update({ inputAssets: { video_url: [{ ...source, status: 'ready', url: 'https://example.com/source.mp4' }] } });
+    await f.tick(); assert.equal(f.requests.length, 1);
+    await f.respond(0); assert.equal(f.current.price, 1.25);
+    await f.update({ inputAssets: {} });
+    masked(f); await f.tick(); assert.equal(f.requests.length, 1);
+    assert.equal(f.current.preflightError, undefined);
+  } finally { await f.dispose(); }
+});
 test('Edit availability immediately revokes its quote and requests a fresh quote when restored', async () => {
   const f = await mount();
   try {

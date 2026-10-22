@@ -366,7 +366,7 @@ export function WorkspaceComposerSurface({
     [handleExtraInputValueChange, hdrFieldEntry]
   );
   const storyboardLaunchAction = useMemo<ComposerPromotedAction | null>(() => {
-    if (!isStoryboardLaunchEngine(selectedEngine.id)) return null;
+    if (submissionMode === 'extend' || !isStoryboardLaunchEngine(selectedEngine.id)) return null;
     const tooltip =
       uiLocale === 'fr'
         ? 'Ouvre le Storyboarder avant de générer avec Seedance ou Kling.'
@@ -381,7 +381,7 @@ export function WorkspaceComposerSurface({
       icon: 'sparkles',
       onToggle: () => setStoryboardModalOpen(true),
     };
-  }, [selectedEngine.id, uiLocale]);
+  }, [selectedEngine.id, submissionMode, uiLocale]);
   const composerPromotedActions = useMemo(
     () => {
       const actions = buildComposerPromotedActions({

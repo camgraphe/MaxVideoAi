@@ -379,6 +379,7 @@
 @media (max-width: 640px) {
   .app-experience .app-reference-commands .app-reference-command { padding-inline: 6px; }
   .app-experience .app-reference-command-label { max-width: 52px; white-space: normal; text-align: left; line-height: 1.15; }
+  .app-experience [data-extension-workflow="true"] .app-reference-command-label { max-width: 100px; }
 }
 .app-experience .app-reference-restrictions { display: grid; gap: 2px; margin-top: 4px; color: var(--app-muted); font-size: 11px; line-height: 1.35; overflow-wrap: anywhere; }
 .app-experience .app-reference-restrictions p { margin: 0; }
@@ -468,6 +469,30 @@
 .app-experience .app-rail-caption strong { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 550; }
 .app-experience .app-rail-caption > span { flex-shrink: 0; color: var(--app-muted); font-size: 11px; }
 .app-experience .app-rail-media-card > div:first-child > button { min-height: 44px; padding-inline: 10px; font-size: 12px; }
+/* Compact gallery actions: feedback stays inside the fixed visual button. */
+.app-experience .app-rail-media-card > div:first-child button.app-gallery-icon-action { position: relative; display: flex; align-items: center; justify-content: center; width: 32px; height: 44px; min-width: 32px; min-height: 44px; padding: 0; border: 0; background: transparent; outline: none; box-shadow: none; transform: none; cursor: pointer; }
+.app-experience .app-gallery-action-face { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border: 1px solid rgb(78 70 52 / .14); border-radius: 6px; background: rgb(250 249 242 / .94); color: #494532; backdrop-filter: blur(6px); transition: background-color .12s ease, color .12s ease; }
+.app-experience .app-gallery-action-face svg { width: 14px; height: 14px; stroke-width: 1.65; }
+.app-experience .app-gallery-icon-action:is(:hover, :focus, [aria-expanded="true"]) .app-gallery-action-face { background: #e4dcc6; color: #534326; }
+.app-experience .app-gallery-icon-action:focus-visible .app-gallery-action-face { background: #7b6a45; color: #fffdf5; }
+.app-experience .app-gallery-icon-action:active .app-gallery-action-face { background: #6d5e3f; color: #fffdf5; }
+.app-experience .app-gallery-icon-action:disabled { cursor: wait; }
+.app-experience .app-gallery-icon-action:disabled .app-gallery-action-face { opacity: .65; }
+.app-experience .app-rail-media-card > div:first-child button.app-gallery-menu-action { position: absolute; right: 4px; top: 4px; width: 44px; min-width: 44px; }
+.app-experience .app-gallery-menu-action .app-gallery-action-face { width: 30px; height: 30px; border-radius: 7px; }
+.app-experience .app-gallery-continuation-actions { position: absolute; right: 4px; bottom: 0; display: flex; opacity: 0; pointer-events: none; transition: opacity .14s ease; }
+.app-experience .app-rail-media-card > div:first-child:is(:hover, :focus-within) .app-gallery-continuation-actions,
+.app-experience .app-gallery-continuation-actions[data-feedback] { opacity: 1; pointer-events: auto; }
+.app-experience .app-gallery-action-tooltip { position: absolute; right: 0; bottom: 43px; z-index: 20; visibility: hidden; opacity: 0; white-space: nowrap; padding: 5px 8px; border-radius: 5px; background: #302d25; color: #fffdf5; font-size: 11px; font-weight: 500; line-height: 1.4; pointer-events: none; }
+.app-experience .app-gallery-icon-action:is(:hover, :focus):not([data-tooltip-dismissed]) .app-gallery-action-tooltip { visibility: visible; opacity: 1; }
+.app-experience .app-gallery-menu-action .app-gallery-action-tooltip { right: 43px; top: 9px; bottom: auto; }
+.app-experience .app-gallery-action-error { position: absolute; bottom: 44px; right: 0; z-index: 21; width: 184px; padding: 8px; border: 1px solid var(--app-line); border-radius: 6px; background: var(--surface); color: var(--app-ink); font-size: 11px; line-height: 1.4; }
+@media (hover: none), (pointer: coarse), (max-width: 639px) {
+  .app-experience .app-gallery-continuation-actions { opacity: 1; pointer-events: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-experience .app-gallery-continuation-actions, .app-experience .app-gallery-action-face { transition: none; }
+}
 @media (min-width: 720px) and (max-width: 767px) {
   .app-experience .app-results-rail .app-gallery-rail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
   .app-experience .app-results-rail .app-gallery-rail-grid > :not([hidden]) ~ :not([hidden]) { margin-top: 0; }

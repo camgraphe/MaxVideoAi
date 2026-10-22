@@ -13,10 +13,11 @@ import { getWorkspaceFrameCommand } from './workspace-reference-commands';
 import { WorkspaceReferenceInventory } from './WorkspaceReferenceInventory.client';
 import { WorkspaceReferencePopup } from './WorkspaceReferencePopup.client';
 import { resolveWorkspaceReferenceFieldTitle, workspaceReferenceCopy } from './workspace-reference-copy';
+import { getVideoExtensionSourceField, videoExtensionCopy } from '@/lib/video-extension';
 
-type Props = Pick<ComposerProps, 'engine' | 'caps' | 'assetFields' | 'assets' | 'onAssetAdd' | 'onAssetRemove' | 'onNotice' | 'onOpenLibrary' | 'onAssetUrlSelect' | 'referenceAuthAction'> & { referenceWarning: string };
+type Props = Pick<ComposerProps, 'engine' | 'caps' | 'assetFields' | 'assets' | 'onAssetAdd' | 'onAssetRemove' | 'onNotice' | 'onOpenLibrary' | 'onAssetUrlSelect' | 'referenceAuthAction'> & { referenceWarning: string; extensionWorkflow?: boolean };
 
-export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, onAssetAdd, onAssetRemove, onNotice, onOpenLibrary, onAssetUrlSelect, referenceWarning, referenceAuthAction }: Props) {
+export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, onAssetAdd, onAssetRemove, onNotice, onOpenLibrary, onAssetUrlSelect, referenceWarning, referenceAuthAction, extensionWorkflow = false }: Props) {
   const { locale } = useI18n();
   const copy = workspaceReferenceCopy(locale);
   const assetCopy = getLocalizedAssetDropzoneCopy(normalizeUiLocale(locale));
@@ -25,8 +26,14 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
   const [activeCommand, setActiveCommand] = useState<string | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const commandRefs = useRef(new Map<string, HTMLButtonElement>());
+  const extensionCopy = videoExtensionCopy(locale);
+  const sourceField = extensionWorkflow ? getVideoExtensionSourceField(engine.inputSchema) : null;
+  const sourceEntry = assetFields.find(({ field }) => field.id === sourceField?.id);
+  const sourceLabel = (sourceField?.maxCount ?? 1) > 1 ? extensionCopy.sources : extensionCopy.source;
+  const sourceAvailability = getReferenceCommandAvailability(sourceEntry ? [sourceEntry] : [], assets);
+  const sourceCount = sourceEntry ? (assets[sourceEntry.field.id] ?? []).filter(Boolean).length : 0;
   const frames = assetFields.filter((entry) => getWorkspaceFrameCommand(entry, engine));
-  const collections = assetFields.filter((entry) => !getWorkspaceFrameCommand(entry, engine));
+  const collections = assetFields.filter((entry) => !getWorkspaceFrameCommand(entry, engine) && entry !== sourceEntry);
   const orderedFrames = [...frames].sort((a, b) => Number(getWorkspaceFrameCommand(a, engine) === 'end') - Number(getWorkspaceFrameCommand(b, engine) === 'end'));
   const selected = assetFields.flatMap((entry) => (assets[entry.field.id] ?? []).flatMap((asset, slotIndex) => asset ? [{ entry, asset, slotIndex }] : []));
   const selectedCollections = selected.filter(({ entry }) => !getWorkspaceFrameCommand(entry, engine));
@@ -37,8 +44,9 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
     restrictionReasons.push(copy.unavailable);
   }
   const activeFrame = frames.find((entry) => entry.field.id === activeCommand);
-  const popupFields = activeCommand === 'collections' ? collections : activeFrame ? [activeFrame] : [];
-  const popupTitle = activeFrame ? copy[getWorkspaceFrameCommand(activeFrame, engine)!] : copy.title;
+  const activeSource = sourceEntry?.field.id === activeCommand ? sourceEntry : null;
+  const popupFields = activeSource ? [activeSource] : activeCommand === 'collections' ? collections : activeFrame ? [activeFrame] : [];
+  const popupTitle = activeSource ? sourceLabel : activeFrame ? copy[getWorkspaceFrameCommand(activeFrame, engine)!] : extensionWorkflow ? extensionCopy.references : copy.title;
   const close = () => setActiveCommand(null);
   const open = (command: string, trigger: HTMLButtonElement) => {
     triggerRef.current = trigger;
@@ -57,8 +65,19 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
     triggerRef.current?.focus();
     onOpenLibrary?.(field, slotIndex);
   };
-  return <section className="app-workspace-references" aria-label={copy.title}>
+  return <section className="app-workspace-references" data-extension-workflow={extensionWorkflow || undefined} aria-label={copy.title}>
     <div className="app-reference-commands">
+        {sourceEntry ? <button ref={(node) => { if (node) commandRefs.current.set(sourceEntry.field.id, node); else commandRefs.current.delete(sourceEntry.field.id); }}
+          type="button" className={`app-reference-command${sourceAvailability.addDisabled ? ' is-add-disabled' : ''}`}
+          data-reference-command={sourceEntry.field.id} data-add-disabled={sourceAvailability.addDisabled || undefined}
+          aria-disabled={!sourceAvailability.canOpen || undefined} aria-haspopup="dialog" aria-expanded={Boolean(activeSource)}
+          aria-describedby={sourceAvailability.addDisabled ? restrictionId : undefined}
+          title={sourceEntry.disabledReason ?? sourceLabel}
+          onClick={(event) => { if (sourceAvailability.canOpen) open(sourceEntry.field.id, event.currentTarget); }}>
+          <span className="app-reference-command-media"><AppGlyph name="video" /></span>
+          <span className="app-reference-command-label">{sourceLabel}</span>
+          <small>{sourceCount ? `${sourceCount}/${sourceField?.maxCount ?? 1}` : copy.required}</small>
+        </button> : null}
         {orderedFrames.map((entry) => {
           const command = getWorkspaceFrameCommand(entry, engine)!;
           const asset = (assets[entry.field.id] ?? []).find(Boolean);
@@ -76,9 +95,9 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
         })}
         {collections.length ? <button ref={(node) => { if (node) commandRefs.current.set('collections', node); else commandRefs.current.delete('collections'); }} type="button" className={`app-reference-command${collectionAvailability.addDisabled ? ' is-add-disabled' : ''}`} data-reference-command="collections"
           data-add-disabled={collectionAvailability.addDisabled || undefined} aria-disabled={!collectionAvailability.canOpen || undefined}
-          aria-label={collectionAvailability.addDisabled && selectedCollections.length ? copy.manage : copy.add} aria-describedby={[collectionRequired.length ? requiredId : null, collections.some((entry) => entry.disabled) ? restrictionId : null].filter(Boolean).join(' ') || undefined} aria-haspopup="dialog" aria-expanded={activeCommand === 'collections'} onClick={(event) => { if (collectionAvailability.canOpen) open('collections', event.currentTarget); }}>
+          aria-label={collectionAvailability.addDisabled && selectedCollections.length ? copy.manage : extensionWorkflow ? extensionCopy.references : copy.add} aria-describedby={[collectionRequired.length ? requiredId : null, collections.some((entry) => entry.disabled) ? restrictionId : null].filter(Boolean).join(' ') || undefined} aria-haspopup="dialog" aria-expanded={activeCommand === 'collections'} onClick={(event) => { if (collectionAvailability.canOpen) open('collections', event.currentTarget); }}>
           <span className="app-reference-command-media"><AppGlyph name="reference" /></span>
-          <span className="app-reference-command-label">{copy.title}</span>
+          <span className="app-reference-command-label">{extensionWorkflow ? extensionCopy.references : copy.title}</span>
           <span aria-hidden="true">{collectionAvailability.addDisabled && selectedCollections.length ? selectedCollections.length : '+'}</span>
         </button> : null}
         {assetFields.map((entry) => entry.headerAction ? <span key={entry.field.id}>{entry.headerAction}</span> : null)}
@@ -93,7 +112,7 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
       {selectedCollections.slice(0, 3).map(({ entry, asset, slotIndex }) => <div className="app-reference-selected-item" key={`${entry.field.id}-${slotIndex}`}>
         <button className="app-reference-selected-manage" type="button"
           onClick={() => {
-            const command = 'collections';
+            const command = entry === sourceEntry ? entry.field.id : 'collections';
             const trigger = commandRefs.current.get(command);
             if (trigger) open(command, trigger);
           }} aria-label={`${copy.manage} · ${asset.name}`}>
@@ -106,7 +125,7 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
       </div>)}
       {selectedCollections.length > 3 ? <span>+{selectedCollections.length - 3}</span> : null}
     </div> : null}
-    {popupFields.length ? <WorkspaceReferencePopup singleRole={Boolean(activeFrame)} title={popupTitle} closeLabel={copy.close} onClose={close}>
+    {popupFields.length ? <WorkspaceReferencePopup singleRole={Boolean(activeFrame || activeSource)} title={popupTitle} closeLabel={copy.close} onClose={close}>
       <WorkspaceReferenceInventory fields={popupFields} assets={assets} locale={locale} renderField={(entry) => <AssetDropzone key={entry.field.id} {...entry} headerAction={undefined}
         density="workspace" engine={engine} caps={caps}
         assets={assets[entry.field.id] ?? []} onSelect={onAssetAdd} onRemove={removeAsset}

@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, SquarePen } from 'lucide-react';
 import { FEATURES } from '@/content/feature-flags';
 import { useRouter } from 'next/navigation';
 import { authFetch } from '@/lib/authFetch';
@@ -11,9 +11,10 @@ import { creatorCopy } from '@/components/tools/creator/creator-copy';
 import { getVideoContinuationEngine, resolveMediaContinuationOriginal, type VideoContinuationMode } from '@/lib/video-continuation';
 import { useVideoContinuationEngines } from './useVideoContinuationEngines';
 import { mediaActionCopy } from './media-action-copy';
+import { GalleryActionButton } from './GalleryActionButton.client';
 import type { AssetBrowserAsset } from './AssetLibraryBrowser';
 const StudioMediaAction = dynamic(() => import('./StudioMediaAction.client').then(module => module.StudioMediaAction));
-export function MediaDestinationActions({ asset, userId, locale, onNavigate, sourceEngineId, presentation = 'default' }: { asset: AssetBrowserAsset; userId?: string | null; locale: string; onNavigate?: () => void; sourceEngineId?: string | null; presentation?: 'default' | 'creator' }) {
+export function MediaDestinationActions({ asset, userId, locale, onNavigate, sourceEngineId, presentation = 'default' }: { asset: AssetBrowserAsset; userId?: string | null; locale: string; onNavigate?: () => void; sourceEngineId?: string | null; presentation?: 'default' | 'creator' | 'gallery' }) {
   const router = useRouter();
   const copy = mediaActionCopy(locale);
   const [action, setAction] = useState<{ scope: string; pending: boolean; error: boolean } | null>(null);
@@ -45,14 +46,29 @@ export function MediaDestinationActions({ asset, userId, locale, onNavigate, sou
     finally { if (active.current && scopeRef.current === scope) setAction(current => current?.scope === scope ? { ...current, pending: false } : current); }
   };
   const fr = locale.startsWith('fr'), es = locale.startsWith('es');
+  const extendLabel = fr ? 'Prolonger la vidéo' : es ? 'Extender vídeo' : 'Extend video';
+  const modifyLabel = fr ? 'Modifier la vidéo' : es ? 'Modificar vídeo' : 'Modify video';
+  if (presentation === 'gallery') {
+    if (!extendEngine && !modifyEngine) return null;
+    return <div className="app-gallery-continuation-actions" role="group" aria-label={copy.actions} aria-busy={pending} data-feedback={pending || error || undefined}>
+      {extendEngine ? <GalleryActionButton label={extendLabel} disabled={pending} onClick={event => { event.stopPropagation(); void open('video', 'extend'); }}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 5H4v14h8M8 9v6l4-3-4-3M14 12h7m-3-3 3 3-3 3" /></svg>
+      </GalleryActionButton> : null}
+      {modifyEngine ? <GalleryActionButton label={modifyLabel} disabled={pending} onClick={event => { event.stopPropagation(); void open('video', 'v2v'); }}>
+        <SquarePen aria-hidden="true" />
+      </GalleryActionButton> : null}
+      {pending ? <span role="status" className="sr-only">{fr ? 'Préparation…' : es ? 'Preparando…' : 'Preparing…'}</span> : null}
+      {error ? <p role="alert" className="app-gallery-action-error">{copy.error}</p> : null}
+    </div>;
+  }
   const toolLabels = fr ? ['Agrandir', 'Changer l’angle', 'Retirer le fond', 'Restaurer', 'Réduire le bruit', 'Corriger le flou', 'Fluidifier'] : es ? ['Ampliar', 'Cambiar ángulo', 'Quitar fondo', 'Restaurar', 'Reducir ruido', 'Corregir desenfoque', 'Suavizar movimiento'] : ['Upscale', 'Change angle', 'Remove background', 'Restore video', 'Denoise', 'Fix motion blur', 'Smooth motion'];
   const creatorLabels = creatorCopy(locale).titles;
   const destinations = discoverableMediaToolDestinations(asset).filter(destination => destination !== 'upscale');
   const toolButton = (destination: typeof MEDIA_TOOL_DESTINATIONS[number]) => <button key={destination} type="button" disabled={pending} onClick={() => void open(destination)}><AppGlyph name="tools" /><span>{destination in creatorLabels ? creatorLabels[destination as keyof typeof creatorLabels] : toolLabels[MEDIA_TOOL_DESTINATIONS.indexOf(destination)]}</span></button>;
   const primaryTransforms = <>
     <button type="button" disabled={pending} onClick={() => void open('video')}><AppGlyph name="video" /><span>{asset.kind === 'image' ? copy.animate : (fr ? 'Utiliser comme référence' : es ? 'Usar como referencia' : 'Use as reference')}</span></button>
-    {extendEngine ? <button type="button" disabled={pending} onClick={() => void open('video', 'extend')}><AppGlyph name="video" /><span>{fr ? 'Prolonger la vidéo' : es ? 'Extender vídeo' : 'Extend video'}</span></button> : null}
-    {modifyEngine ? <button type="button" disabled={pending} onClick={() => void open('video', 'v2v')}><AppGlyph name="video" /><span>{fr ? 'Modifier la vidéo' : es ? 'Modificar vídeo' : 'Modify video'}</span></button> : null}
+    {extendEngine ? <button type="button" disabled={pending} onClick={() => void open('video', 'extend')}><AppGlyph name="video" /><span>{extendLabel}</span></button> : null}
+    {modifyEngine ? <button type="button" disabled={pending} onClick={() => void open('video', 'v2v')}><AppGlyph name="video" /><span>{modifyLabel}</span></button> : null}
     {supportsMediaDestination(asset, 'image') ? <button type="button" disabled={pending} onClick={() => void open('image')}><AppGlyph name="image" /><span>{fr ? 'Créer à partir de cette image' : es ? 'Crear con esta imagen' : 'Create with this image'}</span></button> : null}
     {supportsMediaDestination(asset, 'upscale') ? toolButton('upscale') : null}
   </>;
