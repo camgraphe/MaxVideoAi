@@ -267,12 +267,15 @@ function validateVideoModeCaps(
     const field = applicableField(candidate, fieldId, request.mode);
     if (!field) fail(setting);
     if (setting === 'multiPrompt') {
-      if (!Array.isArray(value) || value.length < 1 || value.length > 6) fail(setting);
+      const v4 = request.engineId === 'kling-v4';
+      if (!Array.isArray(value) || value.length < 1 || value.length > (v4 ? 30 : 6)) fail(setting);
       const total = value.reduce((sum, scene) => sum + scene.durationSec, 0);
       if (
         request.prompt.length > 0
         || total !== request.settings.durationSec
-        || value.some((scene) => !scene.prompt || scene.prompt.length > 512)
+        || value.some((scene) => !scene.prompt || scene.prompt.length > 512
+          || !Number.isInteger(scene.durationSec) || scene.durationSec < 1 || scene.durationSec > (v4 ? 30 : 15))
+        || (v4 && (total < 3 || total > 30))
       ) fail(setting);
       continue;
     }
@@ -770,7 +773,10 @@ function validateCombinedReferenceDurations(
       ) fail('references', 'reference_invalid', 'duration_unverified');
       durations.set(resolved.storageUrl, resolved.durationSec);
     }
-    const total = [...durations.values()].reduce((sum, durationSec) => sum + durationSec, 0);
+    // V4 billing/limits count every submitted occurrence; never deduplicate repeated video inputs.
+    const total = request.engineId === 'kling-v4'
+      ? options.resolvedReferences.filter(reference=>reference.mediaKind===kind).reduce((sum,reference)=>sum+(reference.durationSec ?? 0),0)
+      : [...durations.values()].reduce((sum, durationSec) => sum + durationSec, 0);
     if (total > limit) fail('references', 'reference_invalid', 'combined_duration_exceeded');
   }
 }
@@ -805,6 +811,7 @@ function validateReferences(
   candidate: AgentPublicGenerationEngine,
   options: GenerationCapabilityValidationOptions,
 ): void {
+  if (request.engineId==='kling-v4' && request.references.some(reference=>reference.kind!=='asset')) fail('references','reference_invalid');
   if (candidate.surface === 'image') {
     const constraints = getReferenceConstraints(candidate.engine, request.mode as ImageGenerationMode);
     const generationReferences = request.references.filter((reference) => reference.role !== 'mask');
@@ -830,9 +837,20 @@ function validateReferences(
       if (matchingReferences.length !== 1) fail('references', 'reference_invalid');
     }
   }
+  const subjectKinds = new Map<number, 'image' | 'video'>();
+  for (const subject of request.subjects ?? []) {
+    if (request.engineId !== 'kling-v4' || !['ref2v','v2v'].includes(request.mode)) fail('subjects');
+    for (const slot of subject.kind === 'video' ? [subject.referenceSlot] : [subject.frontalReferenceSlot, ...subject.referenceSlots]) {
+      subjectKinds.set(slot, subject.kind);
+    }
+  }
   const selectedFields: EngineInputField[][] = [];
   const counts = new Map<EngineInputField, number>();
   for (const reference of request.references) {
+    const subjectKind = reference.role === 'reference' && reference.slot !== undefined ? subjectKinds.get(reference.slot) : undefined;
+    if (subjectKind && (reference.kind !== 'asset' || (options.resolvedReferences && resolvedMediaKind(reference, options) !== subjectKind))) {
+      fail('subjects', 'reference_invalid');
+    }
     const fields = fieldsForReference(
       request,
       candidate,
@@ -843,7 +861,7 @@ function validateReferences(
     validateTrustedReferenceDuration(request, reference, fields, candidate, options);
     validateTrustedAudioFormat(reference, fields, candidate, options);
     // H3's executable references already require owned, measured originals.
-    const minimumImageSide = candidate.engine.id === 'minimax-h3'
+    const minimumImageSide = ['minimax-h3', 'kling-v4'].includes(candidate.engine.id)
       ? candidate.engine.inputSchema?.constraints?.minImageSidePx : undefined;
     if (fields.length === 1 && fields[0]!.type === 'image'
       && typeof minimumImageSide === 'number' && minimumImageSide > 0 && options.resolvedReferences) {
@@ -871,7 +889,7 @@ function validateReferences(
       }
     }
     selectedFields.push(fields);
-    if (fields.length === 1) {
+    if (fields.length === 1 && !subjectKind) {
       const field = fields[0]!;
       counts.set(field, (counts.get(field) ?? 0) + 1);
     }
@@ -929,6 +947,12 @@ function validateReferences(
       reference.role === 'first_frame'
       && selectedFields[index]?.some((field) => field.type === 'image'))
   ) fail('prompt');
+  if (request.engineId === 'kling-v4' && request.mode === 'ref2v') {
+    const flatImages = request.references.filter((reference,index)=>
+      !(reference.role==='reference' && reference.slot!==undefined && subjectKinds.has(reference.slot))
+      && selectedFields[index]?.length===1 && selectedFields[index][0].type==='image');
+    if (flatImages.length>10) fail('references','reference_invalid');
+  }
   validateReferenceBudget(request, candidate, selectedFields);
   validateCombinedReferenceDurations(request, candidate, options);
 }

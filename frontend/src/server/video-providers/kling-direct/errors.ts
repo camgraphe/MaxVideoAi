@@ -120,10 +120,14 @@ export function shouldFallbackFromKlingDirectSubmit(params: {
   error: unknown;
   fallbackToFalEnabled: boolean;
   fallbackOnCreditsDepletedEnabled?: boolean;
+  /** V4 preparation must recover ambiguous submissions instead of creating a second paid job. */
+  requireDefiniteRejection?: boolean;
 }): boolean {
   if (!params.fallbackToFalEnabled) return false;
   if (params.acceptedProviderJobId) return false;
   const normalized = classifyKlingDirectError(params.error);
+  if (params.requireDefiniteRejection &&
+    normalized.errorClass !== 'rate_limited' && normalized.errorClass !== 'insufficient_provider_credits') return false;
   if (normalized.fallbackEligible) return true;
   return (
     params.fallbackOnCreditsDepletedEnabled === true &&

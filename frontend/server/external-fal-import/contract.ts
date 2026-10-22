@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import { buildFlux3MaxFalRequest, resolveFlux3MaxEndpoint } from '@/lib/flux-3-max';
+import { parseKlingV4ExternalFalImport, type KlingV4ExternalFalImport } from './kling-v4';
 import { EXTERNAL_FAL_IMPORT_ORIGIN } from '../app-job-origin';
 
 const sha = z.string().regex(/^[a-f0-9]{64}$/);
@@ -24,7 +25,8 @@ const schema = z.object({
     storedRepresentation: z.object({ transform: z.literal('canonical-png-normalization-v1'), sha256: sha }).strict().optional(),
   }).strict()).max(10),
 }).strict();
-export type ExternalFalImport = z.infer<typeof schema>;
+export type FluxExternalFalImport = z.infer<typeof schema>;
+export type ExternalFalImport = FluxExternalFalImport | KlingV4ExternalFalImport;
 
 export function canonicalImportJson(value: unknown): string {
   if (Array.isArray(value)) return '[' + value.map(canonicalImportJson).join(',') + ']';
@@ -35,6 +37,7 @@ export function canonicalImportJson(value: unknown): string {
 export function importDigest(value: unknown): string { return createHash('sha256').update(canonicalImportJson(value)).digest('hex'); }
 
 export function parseExternalFalImport(value: unknown): ExternalFalImport {
+  if (value && typeof value === 'object' && 'engineId' in value && value.engineId === 'kling-v4') return parseKlingV4ExternalFalImport(value);
   const parsed = schema.parse(value);
   const input = parsed.providerInput;
   if (parsed.endpoint !== resolveFlux3MaxEndpoint(parsed.mode)) throw new Error('IMPORT_ENDPOINT_MODE_MISMATCH');

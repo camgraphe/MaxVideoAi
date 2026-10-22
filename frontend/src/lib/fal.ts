@@ -18,6 +18,7 @@ import {
 import { getFalWebhookUrl } from '@/lib/fal-webhook-url';
 import { submitFalQueueOnce } from '@/lib/fal-queue-submit';
 import type { GenerateHooks, GeneratePayload, GenerateResult } from '@/lib/fal-types';
+import { assertKlingV4ReleaseReady } from '@/server/video-generation/kling-v4-release-policy';
 
 export { FalGenerationError } from '@/lib/fal-error';
 export {
@@ -30,6 +31,7 @@ export type { GenerateAttachment, GenerateHooks, GeneratePayload, GenerateResult
 let warnedMissingWebhookUrl = false;
 
 export async function generateVideo(payload: GeneratePayload, hooks?: GenerateHooks): Promise<GenerateResult> {
+  assertKlingV4ReleaseReady(payload.engineId);
   const provider = getResultProviderMode();
   if (!ENV.FAL_API_KEY) {
     throw new Error('FAL_API_KEY is missing');

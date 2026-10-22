@@ -6,6 +6,12 @@ type ModelGuidance = { tag: LocalizedText; reason: LocalizedText; limit: Localiz
 // Editorial interpretation of live model contracts, checked 2026-10-19.
 // These are workflow differences, not measured quality or speed rankings.
 export const MODEL_GUIDANCE: Record<string, ModelGuidance> = {
+  // fal V4 contract reviewed 2026-10-22; entry does not select or publish the model.
+  'kling-v4': {
+    tag: text('Give each shot its own direction', 'Diriger chaque plan', 'Dirigir cada plano'),
+    reason: text('Generate a 3–30 second scene from text, an image or references, with a prompt and duration for each shot. Reference mode accepts image or video subjects; editing uses a separate source-video workflow.', 'Générez une scène de 3 à 30 secondes depuis un texte, une image ou des références, avec un prompt et une durée par plan. Le mode références accepte des sujets image ou vidéo ; l’édition utilise une vidéo source distincte.', 'Genera una escena de 3 a 30 segundos desde texto, una imagen o referencias, con un prompt y duración por plano. El modo de referencias acepta sujetos de imagen o video; la edición utiliza un flujo aparte con video fuente.'),
+    limit: text('Output is 720p or 1080p. Editing has no shot plan, and owned voice selection is not available. Native audio is directed through the prompt, without an audio on/off control.', 'La sortie est en 720p ou 1080p. L’édition n’a pas de découpage par plans et la sélection de voix personnelle n’est pas disponible. L’audio natif se dirige dans le prompt, sans interrupteur audio.', 'La salida es 720p o 1080p. La edición no incluye un plan de planos y no hay selección de voces propias. El audio nativo se dirige mediante el prompt, sin control para activarlo o desactivarlo.'),
+  },
   'gemini-omni-flash': {
     tag: text("Revise a short scene", "Reprendre une scène courte", "Revisar una escena corta"),
     reason: text("Create 3–10 second scenes, guide them with images, or edit and extend a supplied clip, with output options up to 4K.", "Créez des scènes de 3 à 10 secondes, guidez-les avec des images ou retravaillez un clip source, avec des options jusqu’en 4K.", "Crea escenas de 3 a 10 segundos, guíalas con imágenes o edita y extiende un clip, con opciones hasta 4K."),

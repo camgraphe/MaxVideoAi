@@ -31,6 +31,7 @@ export type AcceptedDurableModelAsset = {
   sourceAssetIds: readonly string[];
   videoUrl: string;
   thumbnailUrl: string;
+  previewVideoUrl?: string;
   width: number;
   height: number;
   durationSec: number;
@@ -215,6 +216,19 @@ function parseAcceptedDurableModelAssetForWave(
     if (!sourceRule || value.sourceKind !== sourceRule.sourceKind ||
       value.sourceAssetIds.length < sourceRule.minCount || value.sourceAssetIds.length > sourceRule.maxCount) return null;
   }
+  if (waveId === 'kling-v4') {
+    const rules: Record<string, LaunchSourceRule> = {
+      t2v: { sourceKind: 'text', minCount: 0, maxCount: 0 },
+      i2v: { sourceKind: 'image', minCount: 1, maxCount: 2 },
+      // Flat ownership IDs cover references and each element's component assets.
+      ref2v: { sourceKind: 'references', minCount: 1, maxCount: 43 },
+      v2v: { sourceKind: 'video', minCount: 1, maxCount: 39 },
+    };
+    const sourceRule = rules[value.mode];
+    if (!sourceRule || value.sourceKind !== sourceRule.sourceKind ||
+      value.sourceAssetIds.length < sourceRule.minCount || value.sourceAssetIds.length > sourceRule.maxCount ||
+      !isDurableMediaUrl(value.previewVideoUrl)) return null;
+  }
 
   return {
     waveId,
@@ -231,6 +245,7 @@ function parseAcceptedDurableModelAssetForWave(
     sourceAssetIds: [...value.sourceAssetIds],
     videoUrl: value.videoUrl,
     thumbnailUrl: value.thumbnailUrl,
+    ...(waveId === 'kling-v4' ? { previewVideoUrl: value.previewVideoUrl as string } : {}),
     width: value.width,
     height: value.height,
     durationSec: value.durationSec,

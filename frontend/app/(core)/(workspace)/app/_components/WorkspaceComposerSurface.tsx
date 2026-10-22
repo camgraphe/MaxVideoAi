@@ -13,6 +13,8 @@ import { CoreIterationsControl, CoreSettingsBar } from '@/components/CoreSetting
 import { SettingsControls } from '@/components/SettingsControls';
 // Subject slots occupy the initial form. A nested lazy boundary inserts the
 // panel late and moves the mobile results rail.
+import { getWorkspaceKlingV4ActiveAssets, getWorkspaceKlingV4MediaError } from '../_lib/workspace-kling-v4-media';
+import { buildKlingElementsPayload } from '../_lib/workspace-generation-inputs';
 import { KlingElementsBuilder, type KlingElementState, type KlingElementsBuilderProps } from '@/components/KlingElementsBuilder';
 import { Button } from '@/components/ui/Button';
 import { getLocalizedModeLabel } from '@/lib/ltx-localization';
@@ -296,6 +298,23 @@ export function WorkspaceComposerSurface({
   const showFlux3MaxKeyframeEditor = selectedEngine.id === 'flux-3-max' && submissionMode === 'ref2v';
   const showLumaRay32KeyframeEditor = selectedEngine.id === 'luma-ray-3-2' && submissionMode === 'v2v';
   const showOmniStudioPanel = selectedEngine.id === 'gemini-omni-flash';
+  const isKlingV4 = selectedEngine.id === 'kling-v4';
+  const klingV4Error = useMemo(() => {
+    if (!isKlingV4) return null;
+    const elements = buildKlingElementsPayload({
+      selectedEngineId: selectedEngine.id, supportsKlingV3Controls, submissionMode, klingElements,
+    });
+    if (!elements.ok) return elements.message;
+    if (!multiPromptActive && (!Number.isInteger(form.durationSec) || form.durationSec < 3 || form.durationSec > 30)) {
+      return 'Kling 4.0 output duration must be 3–30 whole seconds.';
+    }
+    return getWorkspaceKlingV4MediaError({ mode: submissionMode, inputAssets, klingElements });
+  }, [isKlingV4, selectedEngine.id, supportsKlingV3Controls, submissionMode, klingElements, multiPromptActive, form.durationSec, inputAssets]);
+  const activeKlingV4Fields = isKlingV4 ? Object.keys(getWorkspaceKlingV4ActiveAssets(submissionMode, inputAssets)) : [];
+  const hasInactiveKlingV4Media = isKlingV4 && (
+    Object.entries(inputAssets).some(([field, assets]) => !activeKlingV4Fields.includes(field) && assets.some(Boolean)) ||
+    ((submissionMode === 't2v' || submissionMode === 'i2v') && klingElements.some((element) => element.frontal || element.video || element.references.some(Boolean)))
+  );
   const showMultiPrompt = supportsWorkspaceMultiPrompt(selectedEngine, submissionMode);
   const hdrFieldEntry = useMemo(
     () =>
@@ -432,10 +451,10 @@ export function WorkspaceComposerSurface({
     advancedFields.length
   );
   const showKlingElementsBuilder =
-    supportsKlingV3Controls &&
-    (isUnifiedKlingO3 || activeMode === 'i2v' || activeMode === 'ref2v');
+    (isKlingV4 && (submissionMode === 'ref2v' || submissionMode === 'v2v')) ||
+    (supportsKlingV3Controls && (isUnifiedKlingO3 || activeMode === 'i2v' || activeMode === 'ref2v'));
   const showExtraFields = Boolean(
-    showLumaRay32KeyframeEditor || showFlux3MaxKeyframeEditor ||
+    klingV4Error || showLumaRay32KeyframeEditor || showFlux3MaxKeyframeEditor ||
     showOmniStudioPanel ||
     showRetakeWorkflowAction ||
     showKlingElementsBuilder ||
@@ -446,7 +465,7 @@ export function WorkspaceComposerSurface({
   const automaticPricingNote = getSeedanceAutomaticPricingNote({ engineId: selectedEngine.id, mode: submissionMode,
     durationOption: form.durationOption, aspectRatio: form.aspectRatio, locale: uiLocale, inheritsSourceVideo });
   const resolvedWorkflowNotice = modeUnavailableMessage ?? klingO3UnsupportedVideoReason
-    ?? ([composerWorkflowNotice, automaticPricingNote].filter(Boolean).join(' ') || undefined);
+    ?? ([composerWorkflowNotice, automaticPricingNote, hasInactiveKlingV4Media ? 'Media from other modes stays saved. Only this mode’s references will be used.' : null].filter(Boolean).join(' ') || undefined);
 
   const handleAudioChange = useCallback(
     (audio: boolean) => {
@@ -522,7 +541,9 @@ export function WorkspaceComposerSurface({
                 scenes: multiPromptScenes,
                 totalDurationSec: multiPromptTotalSec,
                 minDurationSec: MULTI_PROMPT_MIN_SEC,
-                maxDurationSec: MULTI_PROMPT_MAX_SEC,
+                maxDurationSec: isKlingV4 ? 30 : MULTI_PROMPT_MAX_SEC,
+                minSceneDurationSec: isKlingV4 ? 1 : undefined,
+                strictIntegerDurations: isKlingV4,
                 maxPromptChars: KLING_MULTI_PROMPT_SCENE_MAX_CHARS,
                 onToggle: setMultiPromptEnabled,
                 onAddScene: handleMultiPromptAddScene,
@@ -532,9 +553,10 @@ export function WorkspaceComposerSurface({
               }
             : null
         }
-        disableGenerate={Boolean(modeUnavailableMessage) || quoteUnavailable || draftSettingsLocked || multiPromptInvalid || audioWorkflowUnsupported || Boolean(klingO3UnsupportedVideoReason)}
+        disableGenerate={Boolean(klingV4Error) || Boolean(modeUnavailableMessage) || quoteUnavailable || draftSettingsLocked || multiPromptInvalid || audioWorkflowUnsupported || Boolean(klingO3UnsupportedVideoReason)}
         extraFields={showExtraFields ? (
           <>
+            {klingV4Error ? <p role="alert" className="text-xs text-error">{klingV4Error}</p> : null}
             {showLumaRay32KeyframeEditor || showFlux3MaxKeyframeEditor ? (
               <LumaRay32KeyframeEditor
                 uiLocale={uiLocale}
@@ -582,6 +604,7 @@ export function WorkspaceComposerSurface({
             {showKlingElementsBuilder ? (
               <KlingElementsBuilder
                 elements={klingElements}
+                variant={isKlingV4 ? submissionMode === 'v2v' ? 'kling-v4-edit' : 'kling-v4-reference' : 'legacy'}
                 onAddElement={handleKlingElementAdd}
                 onRemoveElement={handleKlingElementRemove}
                 onAddAsset={handleKlingElementAssetAdd}

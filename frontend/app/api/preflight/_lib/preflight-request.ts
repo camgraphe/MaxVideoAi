@@ -65,6 +65,15 @@ const persistedReferenceSchema = z.object({
   }),
 }).strict();
 
+const ownedId = z.string().trim().min(1).max(256);
+const ownedUrl = z.string().trim().url().max(2_048);
+const ownedKlingSubject = z.union([
+  z.object({ frontalAssetId: ownedId, frontalImageUrl: ownedUrl,
+    referenceAssetIds: z.array(ownedId).min(1).max(3), referenceImageUrls: z.array(ownedUrl).min(1).max(3),
+    id: ownedId.optional() }).strict().refine(s => s.referenceAssetIds.length === s.referenceImageUrls.length),
+  z.object({ videoAssetId: ownedId, videoUrl: ownedUrl, id: ownedId.optional() }).strict(),
+]);
+
 const preflightRequestSchema = z.object({
   seedanceWorkflow: z.discriminatedUnion('step', [z.object({ step: z.literal('draft') }).strict(),
     z.object({ step: z.literal('final'), draftJobId: z.string().min(1).max(255).regex(/^\S+$/u) }).strict()]).optional(),
@@ -81,9 +90,12 @@ const preflightRequestSchema = z.object({
   hasVideoInput: z.boolean().optional(),
   voiceControl: z.boolean().optional(),
   inputs: z.array(persistedReferenceSchema).max(MAX_PREFLIGHT_INPUTS).optional(),
+  elements: z.array(ownedKlingSubject).max(7).optional(),
   extraInputValues: extraInputValuesSchema.optional(),
   user: z.object({ memberTier: z.string().trim().min(1).max(32).optional() }).strict().optional(),
-}).strict();
+}).strict().refine(request => request.elements === undefined
+  || (request.engine === 'kling-v4' && ['ref2v', 'v2v'].includes(request.mode)
+    && request.elements.filter(e => 'videoUrl' in e).length <= (request.mode === 'v2v' ? 0 : 3)));
 
 type PreflightRequestFailure = {
   ok: false;

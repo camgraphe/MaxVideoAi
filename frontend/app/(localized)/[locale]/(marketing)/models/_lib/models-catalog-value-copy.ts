@@ -9,6 +9,7 @@ export const USE_CASE_MAP: Record<string, string> = {
   'veo-3-1-fast': 'fast ad cuts with first/last and extend workflows',
   'veo-3-1-lite': 'budget Veo drafts with start-image and first/last control',
   'seedance-1-5-pro': 'cinematic motion with camera lock',
+  'kling-v4': 'multi-shot scenes, visual references, and source-video editing',
   'kling-2-6-pro': 'motion-realistic cinematic clips',
   'kling-3-standard': 'multi-shot cinematic sequences with voice control',
   'kling-3-pro': 'multi-shot cinematic sequences with voice control',
@@ -37,7 +38,13 @@ export const USE_CASE_MAP: Record<string, string> = {
 };
 
 export const MODEL_CARD_DESCRIPTION_OVERRIDES: Partial<Record<AppLocale, Record<string, string>>> = {
+  en: {
+    'kling-v4':
+      'Multi-shot scenes from text, images or references, plus source-video editing. Generate 3–30 seconds at 720p or 1080p with native audio.',
+  },
   fr: {
+    'kling-v4':
+      'Scènes multi-plans depuis un texte, des images ou des références, et édition vidéo. Génération de 3 à 30 s en 720p ou 1080p avec audio natif.',
     'seedance-2-0':
       'Idéal pour des vidéos multi-plans premium, avec audio natif, synchronisation labiale précise et mouvement réaliste.',
     'seedance-2-0-fast':
@@ -92,6 +99,8 @@ export const MODEL_CARD_DESCRIPTION_OVERRIDES: Partial<Record<AppLocale, Record<
       'Idéal pour créer des références propres avant Seedance, des packshots produit et des visuels publicitaires contrôlés.',
   },
   es: {
+    'kling-v4':
+      'Escenas de varios planos desde texto, imágenes o referencias, y edición de video. Generación de 3 a 30 s en 720p o 1080p con audio nativo.',
     'seedance-2-0':
       'Ideal para videos multi-planos premium, con audio nativo y mayor realismo de movimiento, con fuerte audio y lip sync, y alta calidad visual.',
     'seedance-2-0-fast':

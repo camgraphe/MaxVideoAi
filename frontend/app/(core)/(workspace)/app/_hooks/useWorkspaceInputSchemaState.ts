@@ -98,6 +98,7 @@ export function useWorkspaceInputSchemaState({
 
   useEffect(() => {
     if (!hydrationReady || !selectedEngine) return;
+    if (selectedEngine.id === 'kling-v4') return;
     const activeFields = inputSchemaSummary.assetFields.map((entry) => entry.field);
     const referenceBudget = resolveEngineReferenceBudget(
       selectedEngine?.inputSchema,

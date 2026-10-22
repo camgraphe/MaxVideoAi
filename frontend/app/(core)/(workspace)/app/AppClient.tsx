@@ -198,7 +198,7 @@ export default function AppClientPage({
     effectiveDurationSec: composer.effectiveDurationSec,
     voiceControlEnabled: composer.voiceControlEnabled,
     submissionMode: composer.submissionMode,
-    inputAssets: assets.inputAssets,
+    inputAssets: assets.inputAssets, klingElements: routeForm.klingElements,
   });
   const generation = useWorkspaceGenerationRunner({
     audioWorkflowUnsupported: composer.audioWorkflowUnsupported,

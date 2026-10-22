@@ -1,3 +1,4 @@
+import {studioShotPlanRevisionSchema} from './shot-plan-revision';
 import type {SeedanceEditSourceFacts} from '../seedance-edit-source';
 import { z } from "zod";
 import {studioPreparedAnalysisSchema,type StudioPreparedAnalysis} from '@/lib/studio/media-analysis-contract';
@@ -21,6 +22,7 @@ export const imageTurnInputSchema = z
   .object({
     requestId: z.string().uuid(),
     message: z.string().trim().min(1).max(4000),
+    shotPlanRevision:studioShotPlanRevisionSchema.optional(),
     references: z.array(z.string().regex(/^ma_[a-f0-9]{32}$/)).max(STUDIO_CONVERSATION_MAX_ATTACHMENTS),
     attachments: z.array(toolAssetRefSchema.refine(ref => ref.type === 'asset' && ref.kind !== 'image')).max(STUDIO_CONVERSATION_MAX_ATTACHMENTS).optional(),
     referenceMentions: z.array(studioReferenceMentionSchema).max(STUDIO_CONVERSATION_MAX_ATTACHMENTS).optional(),
@@ -62,6 +64,7 @@ export type ImageDraft = z.infer<typeof imageDraftSchema>;
 export type ImageConversationTurn = {
   requestId: string;
   message: string;
+  shotPlanRevision?:ImageTurnInput['shotPlanRevision'];
   references: string[];
   attachments?: ImageTurnInput['attachments'];
   referenceMentions?: ImageTurnInput['referenceMentions'];
@@ -104,6 +107,7 @@ export function draftSurface(draft: ImageDraft | null) {return draft?.media?.act
 /** Reproduce the saved immutable request, including renewal identity, in a fresh tab. */
 export function imageTurnRetryInput(turn: ImageConversationTurn): ImageTurnInput {
   return {requestId: turn.requestId,message: turn.message,references: turn.references,
+    ...(turn.shotPlanRevision?{shotPlanRevision:turn.shotPlanRevision}:{}),
     ...(turn.attachments ? {attachments: turn.attachments} : {}),
     ...(turn.referenceMentions ? {referenceMentions: turn.referenceMentions} : {}),
     ...(turn.taskBudget ? {taskBudget:turn.taskBudget} : {}),

@@ -59,6 +59,7 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, form, inputAs
     Boolean(selectedEngine?.id.startsWith('kling-o3-'));
 
   const supportsKlingV3VoiceControl = false;
+  const supportsKlingV4Controls = selectedEngine?.id === 'kling-v4';
 
   const isSeedance = selectedEngine?.id === 'seedance-1-5-pro';
 
@@ -114,6 +115,7 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, form, inputAs
 
   const implicitMode = (() => {
     if (!selectedEngine) return form?.mode ?? 't2v';
+    if (supportsKlingV4Controls) return form && selectedEngine.modes.includes(form.mode) ? form.mode : 't2v';
     if (isUnifiedSeedance) {
       return getUnifiedSeedanceMode(inputAssets);
     }
@@ -157,6 +159,7 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, form, inputAs
   const activeManualMode = (() => {
     if (!selectedEngine) return null;
     const currentMode = form?.mode ?? null;
+    if (supportsKlingV4Controls) return currentMode && selectedEngine.modes.includes(currentMode) ? currentMode : 't2v';
     if (isUnifiedSeedance) {
       return currentMode === 'extend' && isWorkspaceModeAvailable(selectedEngine, currentMode) ? currentMode : null;
     }
@@ -270,12 +273,14 @@ export function resolveWorkspaceComposerFacts({
   voiceIdsInput: string;
 }) {
   const { supportsKlingV3Controls, supportsKlingV3VoiceControl, submissionMode, primaryAudioDurationSec, primaryVideoDurationSec } = workflow;
-  const multiPromptActive = Boolean(supportsKlingV3Controls && multiPromptEnabled);
+  const supportsKlingV4Controls = selectedEngine?.id === 'kling-v4';
+  const multiPromptActive = Boolean((supportsKlingV3Controls || (supportsKlingV4Controls && submissionMode !== 'v2v')) && multiPromptEnabled);
   const multiPromptState = getWorkspaceMultiPromptState({
     active: multiPromptActive,
     scenes: multiPromptScenes,
     minDurationSec: MULTI_PROMPT_MIN_SEC,
-    maxDurationSec: MULTI_PROMPT_MAX_SEC,
+    maxDurationSec: supportsKlingV4Controls ? 30 : MULTI_PROMPT_MAX_SEC,
+    strictIntegerDurations: supportsKlingV4Controls,
   });
   const multiPromptTotalSec = multiPromptState.totalDurationSec;
   const multiPromptInvalid = multiPromptState.invalid;
@@ -290,6 +295,7 @@ export function resolveWorkspaceComposerFacts({
   const effectivePrompt = multiPromptActive ? buildMultiPromptSummary(multiPromptScenes) : prompt;
   const effectiveDurationSec = (() => {
     if (multiPromptActive) return multiPromptTotalSec;
+    if (supportsKlingV4Controls) return form?.durationSec ?? 0;
     if (submissionMode === 'a2v' && typeof primaryAudioDurationSec === 'number') return primaryAudioDurationSec;
     const hasSeparateOutputDuration = typeof selectedEngine?.inputSchema?.constraints?.maxSourcePlusOutputDurationSec === 'number'
       && !selectedEngine?.modeAvailability?.[submissionMode]?.inheritsSourceVideo;

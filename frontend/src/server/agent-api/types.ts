@@ -211,6 +211,7 @@ export type AgentModelModeDetails = Readonly<{
   settings: readonly AgentModelSettingDetails[];
   imageSize?: AgentModelImageSizeConstraints;
   references: readonly AgentModelReferenceFieldDetails[];
+  subjects?: Readonly<{max:7;maxVideo:0|3;maxVoiced:3;voiceBinding:'unavailable';identity:'owned_reference_slots';imageViews:Readonly<{min:1;max:3}>}>;
   referenceRequirement?: Readonly<{
     min: number;
     alternatives: readonly Readonly<{

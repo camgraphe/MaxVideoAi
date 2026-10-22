@@ -85,6 +85,7 @@ export function buildWorkspaceGeneratePayload(
   const resolvedDurationLabel =
     options.lumaContext.isLumaRay2GenerateWorkflow && options.lumaContext.lumaDuration
       ? options.lumaContext.lumaDuration.label
+      : options.selectedEngineId === 'kling-v4' ? options.effectiveDurationSec
       : options.selectedEngineId === 'luma-ray-3-2'
         ? toLumaRay2DurationLabel(options.effectiveDurationSec) ??
           options.form.durationOption ??
@@ -118,12 +119,12 @@ export function buildWorkspaceGeneratePayload(
 
   const payload: WorkspaceGeneratePayload = {
     engineId: options.selectedEngineId,
-    prompt: options.trimmedPrompt,
+    prompt: options.selectedEngineId === 'kling-v4' && options.multiPromptPayload?.length ? '' : options.trimmedPrompt,
     mode: options.submissionMode,
     durationSec: resolvedDurationSeconds,
     membershipTier: 'Member',
     payment: { mode: options.paymentMode },
-    cfgScale: typeof options.cfgScale === 'number' ? options.cfgScale : undefined,
+    cfgScale: options.selectedEngineId !== 'kling-v4' && typeof options.cfgScale === 'number' ? options.cfgScale : undefined,
     ...(options.selectedEngineId.startsWith('sora-2')
       ? { variant: options.selectedEngineId === 'sora-2-pro' ? 'sora2pro' : 'sora2' }
       : {}),
@@ -143,6 +144,7 @@ export function buildWorkspaceGeneratePayload(
     ...(options.endImageUrl ? { endImageUrl: options.endImageUrl } : {}),
     ...(Object.keys(options.extraInputValues).length ? { extraInputValues: options.extraInputValues } : {}),
     ...(options.multiPromptPayload && options.multiPromptPayload.length ? { multiPrompt: options.multiPromptPayload } : {}),
+    ...(options.selectedEngineId === 'kling-v4' && options.klingElementsPayload ? { elements: options.klingElementsPayload } : {}),
     ...(options.supportsKlingV3Controls
       ? {
           shotType: options.activeMode === 'i2v' ? 'customize' : options.shotType,
@@ -165,7 +167,7 @@ export function buildWorkspaceGeneratePayload(
     etaLabel: options.etaLabel,
     visibility: 'private',
     indexable: false,
-    ...(typeof options.form.loop === 'boolean' ? { loop: options.form.loop } : {}),
+    ...(options.selectedEngineId !== 'kling-v4' && typeof options.form.loop === 'boolean' ? { loop: options.form.loop } : {}),
   };
 
   return {

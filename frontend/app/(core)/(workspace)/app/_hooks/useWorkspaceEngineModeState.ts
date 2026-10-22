@@ -313,7 +313,7 @@ export function useWorkspaceEngineModeState({
   const handleModeChange = useCallback(
     (mode: Mode) => {
       if (!selectedEngine) return;
-      if (!workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(selectedEngine, mode)) return;
+      if (selectedEngine.id === 'kling-v4' ? !selectedEngine.modes.includes(mode) : !workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(selectedEngine, mode)) return;
       const nextMode = getPreferredEngineMode(selectedEngine, mode);
       setForm((current) => coerceFormState(selectedEngine, nextMode, current ? { ...current, mode: nextMode } : null));
     },
@@ -355,7 +355,7 @@ export function useWorkspaceEngineModeState({
         showNotice(workflowCopy.removeAudioToUseEdit);
         return;
       }
-      if (mode && (!workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(selectedEngine, mode))) return;
+      if (mode && (selectedEngine.id === 'kling-v4' ? !selectedEngine.modes.includes(mode) : !workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(selectedEngine, mode))) return;
       const nextMode = mode ?? implicitMode;
       setForm((current) =>
         coerceFormState(selectedEngine, nextMode, current ? { ...current, mode: nextMode } : null)

@@ -1,4 +1,5 @@
 import type { GeneratePayload, GenerateResult } from '@/lib/fal';
+import { isKlingV4EngineId } from '@/lib/kling-v4';
 import type { Mode, PricingSnapshot, ProviderClientErrorPolicy } from '@/types/engines';
 import { query } from '@/lib/db';
 import { getKlingDirectClient } from '@/server/video-providers/kling-direct/client';
@@ -423,6 +424,7 @@ export async function submitKlingDirectGenerateTask(params: {
         error,
         fallbackToFalEnabled: params.fallbackToFalEnabled,
         fallbackOnCreditsDepletedEnabled: params.fallbackOnCreditsDepletedEnabled,
+        requireDefiniteRejection: isKlingV4EngineId(params.falPayload.engineId),
       }) && isKlingDirectFalFallbackCompatible(params.falPayload);
     await markProviderAttemptFailed({
       attemptId: klingAttempt.id,

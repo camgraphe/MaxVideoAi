@@ -59,8 +59,12 @@ test('workspace pricing and auth gate orchestration is owned by route-local modu
   assert.match(hookSource, /useWorkspacePreflightQuote/);
   assert.match(hookSource, /buildWorkspacePreflightRequest/);
   assert.doesNotMatch(hookSource, /runPreflight|buildWorkspacePreflightInputs/);
-  assert.match(requestSource, /import \{ buildWorkspacePreflightInputs \} from '\.\/workspace-generation-inputs';/);
-  assert.match(requestSource, /buildWorkspacePreflightInputs\(inputAssets\)/);
+  assert.match(requestSource, /import\s*\{[^}]*\bbuildWorkspacePreflightInputs\b[^}]*\}\s*from '\.\/workspace-generation-inputs';/);
+  assert.match(requestSource, /import\s*\{[^}]*\bbuildKlingElementsPayload\b[^}]*\}\s*from '\.\/workspace-generation-inputs';/);
+  assert.match(requestSource, /const activeAssets = isKlingV4 \? getWorkspaceKlingV4ActiveAssets\(submissionMode, inputAssets\) : inputAssets;/);
+  assert.match(requestSource, /buildWorkspacePreflightInputs\(activeAssets\)/);
+  assert.match(requestSource, /buildKlingElementsPayload\(\{/);
+  assert.doesNotMatch(requestSource, /function (buildWorkspacePreflightInputs|buildKlingElementsPayload)\(/);
   assert.match(requestSource, /workspaceModeSupportsRequestField/);
   assert.doesNotMatch(requestSource, /iterations|runPreflight|useEffect/);
   assert.match(quoteSource, /runPreflight\(payload, \{ accessToken \}\)/);

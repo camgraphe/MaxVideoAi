@@ -1,5 +1,5 @@
 export type ModelLaunchWave = {
-  id: 'p0' | 'p1' | 'flux-3-max';
+  id: 'p0' | 'p1' | 'flux-3-max' | 'kling-v4';
   sourceManifest: string;
   models: readonly {
     modelId: string;
@@ -38,6 +38,11 @@ export const MODEL_LAUNCH_WAVES = [
     id: 'flux-3-max',
     sourceManifest: 'docs/model-launch/flux-3-max-video-example-pack.json',
     models: [{ modelId: 'flux-3-max', familyId: 'flux', requiredVideos: 2 }],
+  },
+  {
+    id: 'kling-v4',
+    sourceManifest: 'docs/model-launch/kling-v4-video-example-pack.json',
+    models: [{ modelId: 'kling-v4', familyId: 'kling', requiredVideos: 2 }],
   },
 ] as const satisfies readonly ModelLaunchWave[];
 

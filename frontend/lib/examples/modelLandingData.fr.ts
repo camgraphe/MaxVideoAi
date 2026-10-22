@@ -1,6 +1,14 @@
 import { getEvergreenExampleFamilyCopy } from './family-overview';
 import type { CanonicalExampleModelSlug, LocalizedModelDescriptor } from '@/lib/examples/modelLandingTypes';
 
+// Appliqué après validation de la publication et des médias dans la famille Kling.
+export const FR_KLING_V4_ADDITION = {
+  summary: 'Kling 4.0 ajoute des scènes de 3 à 30 secondes en 720p ou 1080p, un prompt et une durée par plan, des références de sujets image ou vidéo et un mode distinct d’édition sur vidéo source. Les exemples Kling précédents gardent leur modèle d’origine et leurs réglages.',
+  promptPatterns: 'Avec Kling 4.0, choisissez un prompt unique ou décrivez chaque plan avec sa durée. Donnez un rôle clair à chaque référence et dirigez les dialogues, ambiances et effets dans le prompt. Le découpage multi-plans ne s’applique pas à l’édition vidéo.',
+  strengthsLimits: 'Kling 4.0 est limité au 720p et au 1080p dans ce parcours ; il ne reprend pas les options 4K des autres variantes Kling. L’audio natif n’a pas d’interrupteur. Vérifiez le rôle des références et chaque raccord avant de reprendre un réglage.',
+  faq: [{ question: 'Comment comparer Kling 4.0 aux exemples Kling précédents ?', answer: 'Conservez le nom du modèle, le prompt et les réglages associés à chaque clip d’origine. Kling 4.0 propose des générations de 3 à 30 secondes, des prompts avec durée par plan, des références visuelles et l’édition d’une vidéo source en 720p ou 1080p. Les versions précédentes ont leurs propres limites. Comparez les clips complets à réglages équivalents et vérifiez un nouveau devis avant de générer.' }],
+} satisfies Pick<LocalizedModelDescriptor, 'summary' | 'promptPatterns' | 'strengthsLimits' | 'faq'>;
+
 export const FR_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedModelDescriptor>> = {
   sora: {
     "metaTitle": "Exemples historiques Sora | MaxVideoAI",

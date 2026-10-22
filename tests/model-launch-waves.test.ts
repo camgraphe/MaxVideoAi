@@ -70,6 +70,7 @@ test('a missing P1 manifest preserves validated P0 readiness and marks P1 unread
       },
       { waveId: 'p1', sourceStatus: 'missing', models: [] },
       { waveId: 'flux-3-max', sourceStatus: 'missing', models: [] },
+      { waveId: 'kling-v4', sourceStatus: 'missing', models: [] },
     ],
   );
   assert.deepEqual(

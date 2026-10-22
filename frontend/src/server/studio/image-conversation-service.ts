@@ -216,6 +216,7 @@ export function createImageConversationService(
     return {
       requestId: turn.request_id,
       message: turn.input_json.message,
+      ...(turn.input_json.shotPlanRevision?{shotPlanRevision:turn.input_json.shotPlanRevision}:{}),
       references: turn.input_json.references,
       ...(turn.input_json.attachments ? {attachments: turn.input_json.attachments} : {}),
       ...(turn.input_json.referenceMentions ? {referenceMentions: turn.input_json.referenceMentions} : {}),

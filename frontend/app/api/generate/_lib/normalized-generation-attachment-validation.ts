@@ -6,6 +6,8 @@ import {
   type GenerationMediaConstraintValidationResult,
 } from './generation-media-constraints';
 import type { ResolvedReference } from '@/server/agent-api/reference-types';
+import type { MaxVideoProviderElement } from '@/lib/video-provider-elements';
+import { validateKlingV4OwnedMedia } from './kling-v4-owned-media';
 
 export type NormalizedGenerationAttachmentValidationParams = Omit<
   Parameters<typeof deriveGenerationAttachmentReferences>[0],
@@ -15,6 +17,7 @@ export type NormalizedGenerationAttachmentValidationParams = Omit<
   userId: string;
   mediaConstraintDeps?: Parameters<typeof validateGenerationMediaConstraints>[0]['deps'];
   trustedResolvedReferences?: readonly ResolvedReference[];
+  elements?: readonly MaxVideoProviderElement[];
 };
 
 type MediaConstraintFailure = Extract<
@@ -35,12 +38,30 @@ export type NormalizedGenerationAttachmentValidationResult =
 export async function validateNormalizedGenerationAttachments(
   params: NormalizedGenerationAttachmentValidationParams,
 ): Promise<NormalizedGenerationAttachmentValidationResult> {
-  const { attachments, userId, mediaConstraintDeps, trustedResolvedReferences, ...referenceParams } = params;
+  const { attachments, userId, mediaConstraintDeps, trustedResolvedReferences, elements, ...referenceParams } = params;
   const references = deriveGenerationAttachmentReferences({
     ...referenceParams,
     attachments,
   });
-  const mediaConstraints = await validateGenerationMediaConstraints({
+  if (params.engineId === 'kling-v4') {
+    const directImages: Array<[string, unknown]> = [
+      ['image_url', params.imageUrl], ['image_url', params.image_url],
+      ['end_image_url', params.endImageUrl],
+      ...[params.referenceImages, params.reference_images].flatMap(values => Array.isArray(values)
+        ? values.map(value => ['image_urls', value] as [string, unknown]) : []),
+    ];
+    const conflicting = directImages.some(([slotId, value]) => typeof value === 'string' && value.trim()
+      && !attachments.some(a => a.kind === 'image' && a.slotId === slotId && a.url?.trim() === value.trim()));
+    if (conflicting || references.referenceProvenanceIssues.length) {
+      return { ok: false, status: 422,
+        body: { ok: false, error: 'MEDIA_METADATA_UNVERIFIED', field: 'references', message: 'Each Kling 4 reference must match an owned original in its selected role.' },
+        metric: { errorCode: 'MEDIA_METADATA_UNVERIFIED', meta: { field: 'references' } } };
+    }
+  }
+  const mediaConstraints = params.engineId === 'kling-v4'
+    ? await validateKlingV4OwnedMedia({ mode: params.mode, userId, attachments, elements,
+      referenceMediaItems: references.referenceMediaItems, trustedResolvedReferences, deps: mediaConstraintDeps })
+    : await validateGenerationMediaConstraints({
     engineId: params.engineId,
     mode: params.mode,
     userId,

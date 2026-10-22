@@ -172,7 +172,8 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
     .map((attachment) => attachment.url!.trim())
     .filter((url) => url.length > 0);
   const directImageReferences = normalizeStringList(referenceImagesInput);
-  const normalizedReferenceImages = params.engineId === 'flux-3-max' && params.mode === 'ref2v'
+  const normalizedReferenceImages = (params.engineId === 'flux-3-max' && params.mode === 'ref2v')
+    || (params.engineId === 'kling-v4' && ['ref2v', 'v2v'].includes(params.mode))
     ? mergeOrderedImageProjections(directImageReferences, attachmentReferenceImageUrls)
     : Array.from(new Set([...directImageReferences, ...attachmentReferenceImageUrls]));
   const sourceOrderedEdit = params.mode === 'v2v' && ['seedance-2-5','seedance-2-0','seedance-2-0-fast','seedance-2-0-mini'].includes(params.engineId);

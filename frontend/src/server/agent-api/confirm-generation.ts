@@ -438,6 +438,7 @@ async function confirmationTransaction(
         quote.request,
         catalogRevision,
         membership,
+        resolvedReferences,
       ), ...seedanceWorkflowQuoteBinding(inherited.workflow) }, principal, resolvedReferences);
     } catch {
       if (includedTrial) trialNotEligible();

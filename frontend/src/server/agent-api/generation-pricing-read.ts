@@ -6,7 +6,7 @@ import type {MembershipPricingContext} from '@/server/membership/user-membership
 import {computeGenerationCatalogRevision} from './catalog-revision';
 import {AgentApiError,withMediaNeutralReferenceMessage} from './errors';
 import {GenerationCapabilityError,validateCanonicalGenerationCapabilities,type ReferenceConstraintFailure} from './generation-capability-validation';
-import {requireGenerationActor,type GenerationActor} from './generation-actor';
+import {requireGenerationActor,studioReferenceFingerprint,type GenerationActor} from './generation-actor';
 import type {CanonicalGenerationRequest} from './generation-types';
 import type {AgentPublicGenerationEngine} from './model-catalog';
 import type {GenerationPricingResult} from './generation-pricing';
@@ -113,6 +113,7 @@ export function buildGenerationPricingSnapshot(
   request: CanonicalGenerationRequest,
   catalogRevision: string,
   membership: MembershipPricingContext,
+  resolvedReferences: readonly ResolvedReference[] = [],
 ): Record<string, unknown> {
   if (
     !Number.isSafeInteger(pricing.priceCents)
@@ -150,6 +151,7 @@ export function buildGenerationPricingSnapshot(
     engineId: request.engineId,
     membership,
     canonicalPricing: canonicalRecord,
+    ...(request.engineId==='kling-v4'?{klingV4ReferenceFingerprint:studioReferenceFingerprint(resolvedReferences)}:{}),
   };
 }
 
@@ -224,7 +226,7 @@ export async function readGenerationPricing(request: CanonicalGenerationRequest,
       'The selected settings cannot be priced for this model.',
     );
   }
-  const pricingSnapshot = { ...buildGenerationPricingSnapshot(pricing, request, catalogRevision, membership),
+  const pricingSnapshot = { ...buildGenerationPricingSnapshot(pricing, request, catalogRevision, membership, resolvedReferences),
     ...seedanceWorkflowQuoteBinding(inherited.workflow) };
   return {pricing, pricingSnapshot, resolvedReferences, catalogRevision, request, workflow: inherited.workflow, resolvedEngine: candidate.engine};
 }

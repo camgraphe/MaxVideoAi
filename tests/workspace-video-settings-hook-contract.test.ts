@@ -70,3 +70,17 @@ test('workspace video settings hydration is owned by a route-local hook', () => 
   const settingsLineCount = settingsSource.split('\n').length;
   assert.ok(settingsLineCount <= 430, `workspace-video-settings should stay below 430 lines after job media extraction, got ${settingsLineCount}`);
 });
+
+
+test('Kling subject snapshot parsing stays in a pure helper outside settings orchestration', () => {
+  const directory = path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/_lib');
+  const settingsSource = fs.readFileSync(path.join(directory, 'workspace-video-settings.ts'), 'utf8');
+  const elementsPath = path.join(directory, 'workspace-video-settings-kling-elements.ts');
+  assert.ok(fs.existsSync(elementsPath), 'Kling subject snapshot readers should have their own responsibility');
+  const elementsSource = fs.readFileSync(elementsPath, 'utf8');
+  assert.match(settingsSource, /import \{ readSnapshotKlingElements \} from '\.\/workspace-video-settings-kling-elements';/);
+  assert.match(settingsSource, /readSnapshotKlingElements\(refs\.elements,/);
+  assert.doesNotMatch(settingsSource, /function (buildKlingAssetFromUrl|readKlingV4SnapshotElements|readSnapshotKlingElements)\(/);
+  assert.match(elementsSource, /export function readSnapshotKlingElements/);
+  assert.doesNotMatch(elementsSource, /\b(localStorage|sessionStorage|useEffect|fetch)\b/);
+});

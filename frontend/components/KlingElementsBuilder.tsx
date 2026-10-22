@@ -25,6 +25,11 @@ export type KlingElementAsset = {
   status: 'uploading' | 'ready' | 'error';
   error?: string;
   url?: string;
+  width?: number | null;
+  height?: number | null;
+  size?: number | null;
+  durationSec?: number | null;
+  type?: string | null;
 };
 
 export type KlingElementState = {
@@ -32,10 +37,13 @@ export type KlingElementState = {
   frontal: KlingElementAsset | null;
   references: (KlingElementAsset | null)[];
   video: KlingElementAsset | null;
+  /** Legacy snapshots may contain an ID; it is not a verified owned voice binding. */
+  voiceId?: string;
 };
 
 export interface KlingElementsBuilderProps {
   elements: KlingElementState[];
+  variant?: 'legacy' | 'kling-v4-reference' | 'kling-v4-edit';
   onAddElement: () => void;
   onRemoveElement: (id: string) => void;
   onAddAsset: (elementId: string, slot: 'frontal' | 'reference' | 'video', file: File, index?: number) => void;
@@ -241,6 +249,7 @@ function AssetSlot({
 
 export function KlingElementsBuilder({
   elements,
+  variant = 'legacy',
   onAddElement,
   onRemoveElement,
   onAddAsset,
@@ -252,6 +261,9 @@ export function KlingElementsBuilder({
 }: KlingElementsBuilderProps) {
   const { locale } = useI18n();
   const assetCopy = useMemo(() => getLocalizedAssetDropzoneCopy(normalizeUiLocale(locale)), [locale]);
+  const isV4 = variant !== 'legacy';
+  const isV4Edit = variant === 'kling-v4-edit';
+  const videoCount = elements.filter((element) => element.video).length;
   const referenceSlots = useMemo(() => Math.max(1, maxReferenceImages), [maxReferenceImages]);
 
   return (
@@ -272,18 +284,19 @@ export function KlingElementsBuilder({
           size="sm"
           variant="outline"
           onClick={onAddElement}
-          disabled={disableAdd}
+          disabled={disableAdd || (isV4 && elements.length >= 7)}
           className="min-h-0 h-auto px-3 py-1.5 text-[11px] uppercase tracking-micro"
         >
           + Subject
         </Button>
       </div>
+      {isV4 ? <p className="text-xs text-text-muted">Up to seven subjects{isV4Edit ? '; image subjects only for Edit.' : ', including at most three video subjects.'} Voices require an owned fal voice binding. Voice selection is unavailable until a verified binding can be selected.{!isV4Edit ? ' Use at most 15 visual assets across references and subject views.' : ''}</p> : null}
       <div className="space-y-4">
         {elements.map((element, index) => (
           <div key={element.id} className="rounded-input border border-border bg-surface-2 p-3">
             <div className="flex items-center justify-between">
               <span className="text-[12px] uppercase tracking-micro text-text-muted">Subject {index + 1}</span>
-              {elements.length > 1 && (
+              {(elements.length > 1 || isV4) && (
                 <Button
                   type="button"
                   size="sm"
@@ -295,8 +308,11 @@ export function KlingElementsBuilder({
                 </Button>
               )}
             </div>
+            {isV4 && element.voiceId !== undefined ? <p role="alert" className="mt-2 text-xs text-error">This saved voice ID is not a verified owned fal binding. Remove and recreate this subject before generating.</p> : null}
             <div className="mt-3 grid grid-gap-sm md:grid-cols-2">
               <AssetSlot
+                disabled={isV4 && Boolean(element.video)}
+                disabledReason={isV4 && element.video ? 'Remove the video before using image views.' : undefined}
                 label="Frontal image"
                 asset={element.frontal}
                 accept="image/*"
@@ -309,7 +325,7 @@ export function KlingElementsBuilder({
                     : undefined
                 }
               />
-              <AssetSlot
+              {(!isV4Edit || element.video) ? <AssetSlot
                 label="Video reference"
                 asset={element.video}
                 accept="video/*"
@@ -321,15 +337,17 @@ export function KlingElementsBuilder({
                     ? () => onOpenLibrary(element.id, 'video')
                     : undefined
                 }
-                disabled={Boolean(videoReferenceDisabledReason)}
-                disabledReason={videoReferenceDisabledReason}
-              />
+                disabled={Boolean(videoReferenceDisabledReason) || (isV4 && (isV4Edit || Boolean(element.frontal || element.references.some(Boolean)) || (!element.video && videoCount >= 3)))}
+                disabledReason={videoReferenceDisabledReason ?? (isV4Edit ? 'Edit accepts image subjects only; remove this video subject.' : isV4 && (element.frontal || element.references.some(Boolean)) ? 'Remove image views before using a video.' : isV4 && !element.video && videoCount >= 3 ? 'At most three video subjects are supported.' : undefined)}
+              /> : null}
             </div>
             <div className="mt-3 grid grid-gap-sm md:grid-cols-3">
               {Array.from({ length: referenceSlots }).map((_, slotIndex) => (
                 <AssetSlot
                   key={`${element.id}-ref-${slotIndex}`}
                   label={`Reference ${slotIndex + 1}`}
+                  disabled={isV4 && Boolean(element.video)}
+                  disabledReason={isV4 && element.video ? 'Remove the video before using image views.' : undefined}
                   asset={element.references[slotIndex] ?? null}
                   accept="image/*"
                   assetCopy={assetCopy}

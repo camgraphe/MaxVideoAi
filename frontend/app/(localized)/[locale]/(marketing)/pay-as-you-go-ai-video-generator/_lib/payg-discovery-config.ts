@@ -8,6 +8,7 @@ export type PaygDiscoveryConfigs = {
 };
 
 const PRICE_LOOKUP_CONFIGS = [
+  { id: 'kling-v4', presetId: '5s-720p' },
   { id: 'gemini-omni-flash', presetId: '5s-720p' },
   { id: 'kling-3-turbo-pro', presetId: '8s-1080p' },
   { id: 'kling-3-turbo-standard', presetId: '5s-720p' },
@@ -28,6 +29,7 @@ const PRICE_LOOKUP_CONFIGS = [
 ] as const satisfies PaygDiscoveryConfigs['priceLookups'];
 
 const PREFERRED_EXAMPLES = [
+  { id: 'kling-v4', presetId: '5s-720p' },
   { id: 'gemini-omni-flash', presetId: '5s-720p' },
   { id: 'kling-3-turbo-pro', presetId: '8s-1080p' },
   { id: 'kling-3-turbo-standard', presetId: '5s-720p' },
@@ -45,6 +47,7 @@ const PREFERRED_EXAMPLES = [
 ] as const satisfies PaygDiscoveryConfigs['examples'];
 
 const SUPPORTED_MODEL_CONFIGS = [
+  { id: 'kling-v4', fallbackLabel: 'Kling 4.0' },
   { id: 'seedance-2-5', fallbackHref: '/models/seedance-2-5', fallbackLabel: 'Seedance 2.5' },
   { id: 'gemini-omni-flash', fallbackHref: '/models/gemini-omni-flash', fallbackLabel: 'Gemini Omni Flash 1.1' },
   { id: 'kling-3-turbo-pro', fallbackLabel: 'Kling 3.0 Turbo Pro' },
