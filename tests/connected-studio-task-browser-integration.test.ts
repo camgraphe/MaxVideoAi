@@ -71,6 +71,8 @@ test('Milo modes preserve model selection, credits, references and explicit cons
     await page.getByRole('button',{name:'Open library',exact:true}).click();
     await page.getByRole('button',{name:'Choose Selected product',exact:true}).click();
     await page.getByRole('button',{name:'Add to conversation',exact:true}).click();
+    await page.reload({waitUntil:'domcontentloaded'});
+    await expect(page.getByRole('button',{name:'Remove Image 1',exact:true})).toBeVisible();
     const picker=page.getByRole('group',{name:'Work allowance'}),message=page.getByRole('textbox',{name:'Message Milo'});
     const selector=page.getByRole('button',{name:'Milo settings and credits',exact:true});
     const modes=page.getByRole('group',{name:'Milo mode',exact:true});
@@ -82,7 +84,7 @@ test('Milo modes preserve model selection, credits, references and explicit cons
     assert.ok(inputBox&&modeBox&&modeBox.y>=inputBox.y+inputBox.height,'Mode control follows the composer');
     assert.deepEqual(assistanceActions,[],'Loading the control must not switch the default model');
     assert.match(await page.title(),/Studio|MaxVideoAI/);assert.equal(new URL(page.url()).pathname,conversationPath);
-    await expect(page.getByRole('img',{name:'Selected product',exact:true})).toBeVisible();
+    await expect(page.getByRole('img',{name:'Selected product',exact:true})).toBeVisible({timeout:30_000});
     await page.screenshot({path:join(evidence,'sol-start-desktop.png')});
     await page.getByRole('button',{name:'Open MaxVideoAI menu',exact:true}).click();
     await page.getByRole('button',{name:'Dark',exact:true}).click();
