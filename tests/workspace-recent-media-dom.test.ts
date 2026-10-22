@@ -12,6 +12,8 @@ import { RECENT_MEDIA_DRAG_TYPE } from '../frontend/app/(core)/(workspace)/app/_
 import { WorkspaceRecentRoleDialog } from '../frontend/app/(core)/(workspace)/app/_components/WorkspaceRecentRoleDialog.client';
 import type { UserAsset } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-assets';
 import type { AssetFieldConfig } from '../frontend/components/Composer';
+import { SearchParamsContext } from 'next/dist/shared/lib/hooks-client-context.shared-runtime';
+import { stageMediaHandoff } from '../frontend/lib/media-handoff';
 
 async function harness() {
   const dom = new JSDOM('<button id="opener">Recents</button><div id="root"></div>', { url: 'http://localhost', pretendToBeVisual: true });
@@ -26,6 +28,38 @@ async function harness() {
     close: async () => { await act(async () => root.unmount()); await session.restore(); dom.window.close(); for (const [key, descriptor] of saved) { if (descriptor) Object.defineProperty(globalThis, key, descriptor); else Reflect.deleteProperty(globalThis, key); } } };
 }
 const image: UserAsset = { id: 'out1', url: '/assets/source.png?signature=secret', kind: 'image', mime: 'image/png', size: 1000 };
+
+test('an incoming Modify video can enter the Luma source role while its custom editor remains enabled', async () => {
+  const h = await harness();
+  h.session.setUserId('modify-owner');
+  const oldFetch = globalThis.fetch;
+  globalThis.fetch = async () => Response.json({ ok: true, outputs: [] });
+  const video = { id: 'video-output', source: 'recent', sourceOutputId: 'video-output', jobId: 'job-source', kind: 'video' as const,
+    url: 'https://media.example/exact-original.mp4', mime: 'video/mp4', durationSec: 5, size: 1000 };
+  const field = { id: 'video_url', type: 'video' as const, label: 'Source video', modes: ['v2v' as const], maxCount: 1, maxDurationSec: 18 };
+  const inserted: unknown[] = [];
+  try {
+    stageMediaHandoff(h.dom.window.sessionStorage, 'modify-owner', video, 'video', 'incoming-modify');
+    await h.render(React.createElement(SWRConfig, { value: { provider: () => new Map() } },
+      React.createElement(SearchParamsContext.Provider, { value: new URLSearchParams('media=incoming-modify&engine=luma-ray-3-2&mode=v2v') },
+        React.createElement(WorkspaceRecentReferences, {
+          userId: 'modify-owner', locale: 'en', engineId: 'luma-ray-3-2', mode: 'v2v', fields: [{ field, required: true }], inputAssets: {},
+          inputSchema: { required: [field] },
+          availability: { inputAssets: {}, isUnifiedSeedance: false, isUnifiedKlingO3: false, klingO3VideoToVideoSupported: true, hasAnyVideoInput: false,
+            guestUploadLockedReason: null, workflowCopy: { clearReferencesToUseStartEnd: '', clearStartEndToUseReferences: '' },
+            showOmniStudioPanel: false, showLumaRay32KeyframeEditor: true },
+          onInsert: async (selectedField, selectedAsset) => { inserted.push({ field: selectedField.id, url: selectedAsset.url }); },
+          children: () => null,
+        }))));
+    await h.flush();
+    const add = h.dom.window.document.querySelector<HTMLButtonElement>('.app-recent-insert');
+    assert.ok(add, 'custom editor must not hide the source role from the incoming video');
+    assert.equal(add.disabled, false);
+    assert.equal(inserted.length, 0, 'opening never overwrites existing input silently');
+    await act(async () => add.click());
+    assert.deepEqual(inserted, [{ field: 'video_url', url: video.url }]);
+  } finally { globalThis.fetch = oldFetch; await h.close(); }
+});
 
 test('actual SWR recents deduplicate the shared page and suppress old account/filter responses and logout data', async () => {
   const h = await harness();

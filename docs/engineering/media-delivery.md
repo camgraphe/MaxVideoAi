@@ -401,6 +401,42 @@ Angle's public orbit prepares the other three views after its existing idle boun
 
 The first orbit view uses the still-image style in server HTML and through hydration. Enable the existing entrance transition only after a button, keyboard or drag action changes the view; returning to the initial view remains an interaction. Keep reduced-motion handling and image-error fallback intact. An opacity-zero entrance can defer the LCP observation well beyond the image download, so do not infer render speed from image bytes alone.
 
+### Video continuation from owned media
+
+`MediaDestinationActions` exposes Extend and Modify from the authenticated,
+account-scoped `/api/engines` catalog through `useVideoContinuationEngines`.
+Degraded or static fallback catalogs must not expose private model modes. Shared
+`getVideoContinuationEngine` selects a currently available destination with a
+compatible video role and known media constraints. The source generator is a
+preference, except for Veo's existing source requirement for extension. This is
+navigation eligibility; the destination and server still validate complete source
+facts, model-specific rules and the current quote before generation.
+
+`resolveMediaContinuationOriginal` resolves a gallery selection by its exact
+ready original URL and job, never by the first output or a playback derivative.
+Actions stage the existing account-bound, expiring, single-use media handoff and
+open `/app` with `engine` and `mode=v2v` or `mode=extend`. The destination offers
+its existing role confirmation before inserting the selected original; this
+does not replace a draft or start a paid generation. The Luma custom composer
+editor remains active while allowing an incoming video's source role in that
+confirmation. Account changes and unmounts retire pending navigation. Reuse
+these helpers for additional card shortcuts instead of maintaining another model
+list or original resolver.
+
+`GalleryVideoContinuationActions` projects eligible single video renders into the
+`gallery` presentation of `MediaDestinationActions`, so card shortcuts and the
+popup share the exact same source lookup, catalog and handoff. Multiple-output
+cards retain the popup's explicit output picker; unfinished renders, images and
+public demo cards do not get video shortcuts. `GalleryActionButton` owns the
+compact labeled control for Extend, Modify and the gallery menu, including
+Escape-dismissable tooltips. Hover/focus reveals desktop shortcuts; touch and
+small screens keep them visible. Feedback changes the fixed button's interior
+color, including a contrasting keyboard focus, without an outer ring or scale.
+The shortcuts are siblings of the preview figure, never nested interactive
+controls. Focused coverage lives in `video-continuation`,
+`media-destination-actions-dom`, `gallery-video-continuation-dom`, and
+`workspace-recent-media-dom` tests.
+
 ### Seedance output artifacts — 14 October 2026
 
 BytePlus completion preserves requested MOV and Seedance 2.5 1080p MP4 originals

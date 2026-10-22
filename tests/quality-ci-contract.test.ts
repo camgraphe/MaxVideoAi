@@ -23,6 +23,7 @@ type QualityWorkflow = {
     if?: string;
     steps: WorkflowStep[];
     'timeout-minutes'?: number;
+    'runs-on'?: string;
   }>;
 };
 
@@ -57,6 +58,14 @@ test('superseded PR validation is canceled independently from nightly and main v
   assert.match(workflow.concurrency.group, /github.event.pull_request.number/);
   assert.match(workflow.concurrency.group, /github.event_name/);
   assert.equal(workflow.concurrency['cancel-in-progress'], "${{ github.event_name == 'pull_request' }}");
+});
+
+test('exhaustive tariffs retain the full suite on the stable validation image', () => {
+  const workflow = YAML.parse(readFileSync(workflowPath, 'utf8')) as QualityWorkflow;
+  const tariffs = workflow.jobs.tariffs;
+  assert.equal(tariffs['runs-on'], 'ubuntu-24.04');
+  assert.ok(tariffs.steps.some(step => step.uses === './.github/actions/setup-validation-tools'));
+  assert.ok(tariffs.steps.some(step => step.run === 'pnpm run test:validate -- --suite tariffs'));
 });
 
 test('production Lighthouse measurements run daily or manually instead of racing every main push', () => {

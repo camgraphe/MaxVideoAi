@@ -23,6 +23,12 @@ PostgreSQL, FFmpeg or Chromium installation. Full runs occur daily at 03:23 UTC 
 on manual dispatch of Quality CI. Network source checks and the optional remote
 runtime audit run on these full runs as non-blocking audits.
 
+The exhaustive tariff lane uses Ubuntu 24.04, keeping its validation toolchain
+stable during the `ubuntu-latest` migration to 26.04. The 2026-10-22 release checks
+observed prolonged dependency downloads on the new image. The shared PostgreSQL
+17/FFmpeg setup and the complete tariff suite remain required; the runner pin does
+not change coverage or the aggregate Quality CI gate.
+
 The fast job has a 30-minute limit, including setup, audits, type checking and
 lint. Its 1,300+ tools-free test files include complete pricing projections;
 the former 20-minute job limit canceled a still-progressing suite on hosted

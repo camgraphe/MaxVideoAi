@@ -35,9 +35,12 @@ export function buildWorkspacePreflightRequest({
     fieldId: 'aspect_ratio',
     mode: submissionMode,
   });
-  // Duration enums retain string values in the form; preflight expects numeric seconds or auto.
-  const durationOption = typeof form.durationOption === 'string' && /^\d+(?:\.\d+)?$/.test(form.durationOption.trim())
-    ? Number(form.durationOption)
+  // Duration controls retain provider enums such as "5s"; the API accepts seconds or auto.
+  const durationSeconds = typeof form.durationOption === 'string'
+    ? form.durationOption.trim().match(/^(\d+(?:\.\d+)?)s?$/)
+    : null;
+  const durationOption = durationSeconds
+    ? Number(durationSeconds[1])
     : form.durationOption;
 
   return {
