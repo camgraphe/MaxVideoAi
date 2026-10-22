@@ -168,3 +168,13 @@ policy between web, MCP and Studio and adds the Seedance advisory to all three.
 See the [mode coverage contract](../engineering/mcp-mode-coverage.md). The local
 demo's composer is compiled from these branch components; upload, wallet and
 library calls there remain fixtures, not a production end-to-end test.
+
+
+The first broad parity run completed 9,664 checks: 9,647 passed, 13 failed and
+four skipped. Five failures used the pre-update MCP fingerprint; the refreshed
+client gate passed. Seven failures retained the old Studio attachment/slot
+ceiling; the updated boundary tests still reject one above the shared maximum
+and preserve per-model limits. All 39 affected capacity/Studio checks passed.
+The remaining initial-tariff-cutover test rejected a code-revision change because
+a commit was created while that long test was running. Its binding check is
+preserved; financial qualification requires the stable candidate's CI run.

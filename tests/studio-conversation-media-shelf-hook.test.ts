@@ -1,3 +1,4 @@
+import { STUDIO_CONVERSATION_MAX_ATTACHMENTS } from '../frontend/lib/studio/conversation-creation-contract';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {JSDOM} from 'jsdom';
@@ -67,21 +68,21 @@ function currentInput(view:Awaited<ReturnType<typeof mount>>):ImageTurnInput {
     referenceMentions:refs.map(({assetId,label})=>({assetId,label}))};
 }
 
-test('duplicate media stays one exact attachment; ten is enforced and detach/reattach retains its label',async()=>{
+test('duplicate media stays one exact attachment; the shared attachment ceiling is enforced and detach/reattach retains its label',async()=>{
   const view=await mount();
   try {
     await act(async()=>{view.state.attach(asset(1));view.state.attach({...asset(1),name:'renamed.png'});});
     assert.equal(view.state.references.length,1);
     assert.equal(view.state.items.length,1);
     assert.equal(view.state.references[0].label,'Image 1');
-    await act(async()=>{for(let index=2;index<=10;index++)view.state.attach(asset(index));});
-    await act(async()=>{assert.equal(view.state.attach(asset(11)),null);});
-    assert.equal(view.state.references.length,10);
-    assert.equal(view.state.items.length,10);
-    assert.match(view.state.error??'',/ten/);
+    await act(async()=>{for(let index=2;index<=STUDIO_CONVERSATION_MAX_ATTACHMENTS;index++)view.state.attach(asset(index));});
+    await act(async()=>{assert.equal(view.state.attach(asset(STUDIO_CONVERSATION_MAX_ATTACHMENTS+1)),null);});
+    assert.equal(view.state.references.length,STUDIO_CONVERSATION_MAX_ATTACHMENTS);
+    assert.equal(view.state.items.length,STUDIO_CONVERSATION_MAX_ATTACHMENTS);
+    assert.ok(view.state.error?.includes(String(STUDIO_CONVERSATION_MAX_ATTACHMENTS)));
     await act(async()=>{view.state.detach(asset(1).assetId);view.state.attach(asset(1));});
     assert.equal(view.state.references.at(-1)?.label,'Image 1');
-    assert.equal(view.state.items.length,10);
+    assert.equal(view.state.items.length,STUDIO_CONVERSATION_MAX_ATTACHMENTS);
     assert.equal(imageTurnInputSchema.safeParse(currentInput(view)).success,true);
   }finally{await view.close();}
 });
@@ -145,9 +146,9 @@ test('an unsupported or over-cap upload batch fails before importing any file',a
     assert.equal(view.requests.length,0);
     assert.deepEqual(view.state.references.map(item=>item.assetId),[asset(1).assetId]);
     assert.match(view.state.error??'',/supported/);
-    await act(async()=>view.state.upload(Array.from({length:10},()=>view.file())));
+    await act(async()=>view.state.upload(Array.from({length:STUDIO_CONVERSATION_MAX_ATTACHMENTS},()=>view.file())));
     assert.equal(view.requests.length,0);
-    assert.match(view.state.error??'',/ten/);
+    assert.ok(view.state.error?.includes(String(STUDIO_CONVERSATION_MAX_ATTACHMENTS)));
     assert.equal(view.state.uploading,false);
   }finally{await view.close();}
 });

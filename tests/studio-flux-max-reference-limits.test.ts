@@ -9,14 +9,14 @@ import {requireStudioGenerationRequest} from '../frontend/src/server/agent-api/g
 import {normalizeGenerationRequest} from '../frontend/src/server/agent-api/generation-normalization';
 import {studioVisualCapabilityDetails} from '../frontend/src/server/studio/conversation-capabilities';
 
-const refs=Array.from({length:11},(_,index)=>({type:'asset' as const,kind:'image' as const,assetId:'ma_'+index.toString(16).padStart(32,'0')}));
+const refs=Array.from({length:67},(_,index)=>({type:'asset' as const,kind:'image' as const,assetId:'ma_'+index.toString(16).padStart(32,'0')}));
 const selected=refs.map((ref,slot)=>({ref,role:'reference' as const,slot}));
 const request=(engineId:string,count:number,surface:'image'|'video'='video',mode='ref2v')=>normalizeGenerationRequest({surface,engineId,mode:mode as never,prompt:'Use each visual anchor.',settings:{},outputCount:1,references:refs.slice(0,count).map((ref,slot)=>({kind:'asset' as const,assetId:ref.assetId,role:'reference' as const,...(engineId==='flux-3-max'&&mode==='ref2v'?{slot}:{})}))});
 
-test('Studio attaches and previews ten exact images before model selection, with a bounded envelope',()=>{
-  const input={requestId:'00000000-0000-4000-8000-000000000001',message:'Use every image.',references:refs.slice(0,10).map(ref=>ref.assetId)};
+test('Studio attaches and previews 66 exact media before model selection, with a bounded envelope',()=>{
+  const input={requestId:'00000000-0000-4000-8000-000000000001',message:'Use every image.',references:refs.slice(0,66).map(ref=>ref.assetId)};
   assert.equal(imageTurnInputSchema.safeParse(input).success,true);
-  assert.equal(conversationReferencePreviewsSchema.safeParse({refs:refs.slice(0,10)}).success,true);
+  assert.equal(conversationReferencePreviewsSchema.safeParse({refs:refs.slice(0,66)}).success,true);
   assert.equal(imageTurnInputSchema.safeParse({...input,references:refs.map(ref=>ref.assetId)}).success,false);
   assert.equal(conversationReferencePreviewsSchema.safeParse({refs}).success,false);
   assert.equal(imageTurnInputSchema.safeParse({...input,references:[...input.references.slice(0,9),input.references[0]]}).success,false);
@@ -41,5 +41,5 @@ test('Studio model details retain canonical Max keyframe capacity and existing m
   const max=details('flux-3-max');
   assert.equal(max.maxReferences,10);
   assert.equal(max.modes.find(mode=>mode.mode==='ref2v')?.references[0]?.max,10);
-  assert.equal(details('wan-3').maxReferences,8);
+  assert.equal(details('wan-3').maxReferences,16);
 });
