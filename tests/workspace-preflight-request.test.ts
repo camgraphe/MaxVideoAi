@@ -28,6 +28,43 @@ test('workspace sends Auto duration to preflight instead of quoting a stale nume
   assert.equal(request.durationOption, 'auto');
   assert.equal(parsePreflightRequestPayload(request).ok, true);
 });
+
+for (const [engineId, mode, selectedDuration, seconds] of [
+  ['luma-ray-3-2', 'v2v', '5s', 5],
+  ['luma-ray-3-2', 'reframe', '10s', 10],
+  ['luma-ray-3-2', 't2v', '5s', 5],
+  ['luma-ray-3-2', 'i2v', '10s', 10],
+  ['gemini-omni-flash', 'v2v', '3s', 3],
+  ['gemini-omni-flash', 'v2v', '10s', 10],
+  ['kling-o3-standard', 'v2v', '5', 5],
+  ['seedance-2-5', 'v2v', '15', 15],
+] as const) {
+  test(`${engineId} ${mode} duration selection ${selectedDuration} reaches the strict preflight boundary`, () => {
+    const input = options();
+    input.selectedEngine = getFalEngineById(engineId)!.engine;
+    input.submissionMode = mode;
+    input.form = coerceFormState(input.selectedEngine, mode, null);
+    // The duration control preserves the selected enum string in form state.
+    input.form.durationOption = selectedDuration;
+    input.form.durationSec = seconds;
+    input.effectiveDurationSec = seconds;
+    const request = JSON.parse(JSON.stringify(buildWorkspacePreflightRequest(input)));
+    const parsed = parsePreflightRequestPayload(request);
+    assert.equal(parsed.ok, true, JSON.stringify(parsed));
+    assert.equal(request.durationOption, seconds);
+    assert.equal(request.durationSec, seconds);
+    assert.equal(input.form.durationOption, selectedDuration, 'Quoting must not mutate the editor.');
+  });
+}
+
+test('preflight duration normalization does not reinterpret malformed or non-second units', () => {
+  for (const value of ['5seconds', '5ms', '5s junk', '-5s', '0s', 'NaN', 'Infinity']) {
+    const input = options();
+    input.form.durationOption = value;
+    const request = JSON.parse(JSON.stringify(buildWorkspacePreflightRequest(input)));
+    assert.equal(parsePreflightRequestPayload(request).ok, false, value);
+  }
+});
 for (const mode of ['t2v', 'ref2v'] as const) {
   for (const durationSec of [8, 16]) {
     test(`Max ${mode} ${durationSec}s workspace duration passes the API preflight schema`, () => {
