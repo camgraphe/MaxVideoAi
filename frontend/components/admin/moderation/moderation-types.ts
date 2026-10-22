@@ -29,6 +29,8 @@ export type ModerationVideo = {
   prompt: string;
   thumbUrl?: string;
   videoUrl?: string;
+  originalUrl?: string;
+  canPublish?: boolean;
   aspectRatio?: string;
   createdAt: string;
   visibility: 'public' | 'private';

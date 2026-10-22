@@ -128,16 +128,29 @@ Move out of `page.tsx`:
 
 Moderation keeps Video, Image and Audio on the primary line. A collapsed Tools
 control exposes Upscale, Background removal, Character, Storyboard, Angle,
-Restore video, Denoise, Fix blur and Smooth motion. The selected tool stays in
+Restore video, Denoise, Fix blur, Smooth motion, Subtitles, Lip Sync, Product Photo
+Editor, Product Video Editor and Motion Transfer. The selected tool stays in
 the context label when the panel is collapsed; publication buckets and paging
 retain that filter. Selecting a primary media type closes the panel.
 
 `frontend/lib/admin/moderation-filters.ts` owns the shared filter identities and
 labels. `frontend/server/admin-moderation-filters.ts` owns the SQL projection,
 including legacy tool prefixes and the individual `settings_snapshot.toolId`
-values stored under `surface = 'tool'`. The authenticated pending-media route
+values in settings or the canonical pricing snapshot. Creator operations may
+retain an Image/Video job surface; they are selected by their persisted tool ID.
+Subtitles includes rendered exports, rather than transcription-only documents.
+`admin-moderation-creator-results.ts` overlays finalized creator results through
+their exact operation/quote/job owner join, rather than showing the intermediate
+model render. It uses the existing owned-media access projection with four
+concurrent reads and never falls back to inaccessible private originals.
+The authenticated pending-media route
 retains publication buckets, hidden/failure exclusions, pagination and response
 mapping. The filters do not publish media or change customer visibility.
+Creator filters reject failed finalizations before pagination, even when the
+underlying model job is completed. Their finalized-file views are read-only:
+publishing the intermediate `app_jobs` media must not be offered as publishing
+the reviewed final asset. Subtitles projects its saved export reference through
+the same owned-media access owner, including the real export thumbnail.
 Tool GIF exports stored in `video_url` render as unoptimized animated images in
 the wall, inspector and table. The inspector retains an original-file link for
 formats the browser cannot decode; originals and stored thumbnails are unchanged.
@@ -146,6 +159,9 @@ formats the browser cannot decode; originals and stored thumbnails are unchanged
 shapes on disposable PostgreSQL; `tests/admin-moderation-tools-browser.test.ts`
 checks the actual header's selection, keyboard disclosure, pending state and
 mobile layout. Publication failures and incidents remain in Jobs.
+The catalog coverage guard includes both `TOOLBOX` and `CREATOR_TOOLBOX` so a
+released tool cannot silently lose its moderation filter. Creator-result tests
+exercise final/private output presentation separately from stored source jobs.
 
 ## Detail Pages
 

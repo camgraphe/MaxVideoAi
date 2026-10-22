@@ -52,7 +52,7 @@ export function ModerationTableView({
         <tbody className="divide-y divide-border">
           {displayItems.map((video) => {
             const isFailed = isFailedVideo(video);
-            const { videoUrl: normalizedVideoUrl, thumbUrl: normalizedThumbUrl, animatedImageUrl } = getModerationPreviewUrls(video);
+            const { videoUrl: normalizedVideoUrl, thumbUrl: normalizedThumbUrl, animatedImageUrl, unoptimizedThumbnail } = getModerationPreviewUrls(video);
             const hasThumbPreview = Boolean(normalizedThumbUrl && !isPlaceholderMediaUrl(normalizedThumbUrl));
             const hasVideoPreview = Boolean(normalizedVideoUrl);
             const posterUrl = hasThumbPreview ? normalizedThumbUrl : undefined;
@@ -77,7 +77,7 @@ export function ModerationTableView({
                         preload="metadata"
                       />
                     ) : hasThumbPreview && normalizedThumbUrl ? (
-                      <Image src={normalizedThumbUrl} alt="Thumbnail" fill className="object-cover" sizes="160px" />
+                      <Image src={normalizedThumbUrl} alt="Thumbnail" fill unoptimized={unoptimizedThumbnail} className="object-cover" sizes="160px" />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-xs text-on-media-70">No preview</div>
                     )}

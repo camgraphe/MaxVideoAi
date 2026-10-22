@@ -10,8 +10,8 @@ import tailwindConfig from '../frontend/tailwind.config';
 
 const frontend = join(process.cwd(), 'frontend');
 const requireFrontend = createRequire(join(frontend, 'package.json'));
-const toolLabels = ['Upscale', 'Background removal', 'Character', 'Storyboard', 'Angle', 'Restore video', 'Denoise', 'Fix blur', 'Smooth motion'];
-const toolIds = ['upscale', 'background-removal', 'character', 'storyboard', 'angle', 'restore-video', 'denoise', 'fix-blur', 'smooth-motion'];
+const toolLabels = ['Upscale', 'Background removal', 'Character', 'Storyboard', 'Angle', 'Restore video', 'Denoise', 'Fix blur', 'Smooth motion', 'Subtitles', 'Lip Sync', 'Product Photo Editor', 'Product Video Editor', 'Motion Transfer'];
+const toolIds = ['upscale', 'background-removal', 'character', 'storyboard', 'angle', 'restore-video', 'denoise', 'fix-blur', 'smooth-motion', 'subtitles', 'lip-sync', 'product-photo-editor', 'product-video-editor', 'motion-transfer'];
 
 test('moderation exposes each tool through one collapsible control without losing the active filter', { timeout: 120_000 }, async () => {
   const source = `
@@ -75,11 +75,11 @@ test('moderation exposes each tool through one collapsible control without losin
         assert.equal(await page.getByLabel('Current filter').textContent(), `${toolIds[index]}:not-published`);
       }
       await page.getByRole('button', { name: 'All', exact: true }).click();
-      assert.equal(await page.getByLabel('Current filter').textContent(), 'smooth-motion:all');
+      assert.equal(await page.getByLabel('Current filter').textContent(), 'motion-transfer:all');
       await tools.click();
       assert.equal(await tools.getAttribute('aria-expanded'), 'false');
-      assert.equal(await page.getByRole('button', { name: 'Smooth motion', exact: true }).count(), 0);
-      assert.match(await page.locator('header').innerText(), /Smooth motion/);
+      assert.equal(await page.getByRole('button', { name: 'Motion Transfer', exact: true }).count(), 0);
+      assert.match(await page.locator('header').innerText(), /Motion Transfer/);
       await tools.click();
       await page.getByRole('button', { name: 'Toggle loading' }).click();
       assert.equal(await page.getByRole('button', { name: 'Upscale', exact: true }).isDisabled(), true);

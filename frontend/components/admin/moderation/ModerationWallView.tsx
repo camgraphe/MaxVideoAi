@@ -15,7 +15,7 @@ import {
 } from '@/components/admin/moderation/moderation-table-utils';
 import type { ModerationBucket, ModerationSurface, ModerationVideo } from '@/components/admin/moderation/moderation-types';
 import { Button, ButtonLink } from '@/components/ui/Button';
-import { isPlaceholderMediaUrl, normalizeMediaUrl } from '@/lib/media';
+import { isPlaceholderMediaUrl } from '@/lib/media';
 
 type ModerationWallViewProps = {
   bucket: ModerationBucket;
@@ -52,7 +52,7 @@ export function ModerationWallView({
         {displayItems.map((video) => {
           const isFailed = isFailedVideo(video);
           const canManagePlaylists = surface === 'video' && !isFailed;
-          const { videoUrl: normalizedVideoUrl, thumbUrl: normalizedThumbUrl, animatedImageUrl } = getModerationPreviewUrls(video);
+          const { videoUrl: normalizedVideoUrl, thumbUrl: normalizedThumbUrl, animatedImageUrl, unoptimizedThumbnail } = getModerationPreviewUrls(video);
           const hasThumbPreview = Boolean(normalizedThumbUrl && !isPlaceholderMediaUrl(normalizedThumbUrl));
           const hasVideoPreview = Boolean(normalizedVideoUrl);
           const assignedPlaylists = playlistAssignments[video.id] ?? [];
@@ -71,6 +71,7 @@ export function ModerationWallView({
                   {hasThumbPreview && normalizedThumbUrl ? (
                     <Image
                       src={normalizedThumbUrl}
+                      unoptimized={unoptimizedThumbnail}
                       alt="Thumbnail"
                       fill
                       className="object-cover"
@@ -189,15 +190,15 @@ function SelectedModerationItem({
             ) : selectedPreview.videoUrl ? (
               <video
                 src={selectedPreview.videoUrl}
-                poster={selectedVideo.thumbUrl ? normalizeMediaUrl(selectedVideo.thumbUrl) ?? selectedVideo.thumbUrl : undefined}
+                poster={selectedPreview.thumbUrl}
                 className="absolute inset-0 h-full w-full object-cover"
                 controls
                 muted
                 playsInline
                 preload="metadata"
               />
-            ) : selectedVideo.thumbUrl ? (
-              <Image src={normalizeMediaUrl(selectedVideo.thumbUrl) ?? selectedVideo.thumbUrl} alt="Thumbnail" fill className="object-cover" sizes="352px" />
+            ) : selectedPreview.thumbUrl ? (
+              <Image src={selectedPreview.thumbUrl} alt="Thumbnail" fill unoptimized={selectedPreview.unoptimizedThumbnail} className="object-cover" sizes="352px" />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-xs text-on-media-70">No preview</div>
             )}

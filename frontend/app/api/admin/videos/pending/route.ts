@@ -3,8 +3,9 @@ import { isDatabaseConfigured, query } from '@/lib/db';
 import { requireAdmin, adminErrorToResponse } from '@/server/admin';
 import { normalizeMediaUrl } from '@/lib/media';
 import { getSeoWatchStates } from '@/server/video-seo';
-import { parseModerationSurface as parseSurface, type ModerationSurface } from '@/lib/admin/moderation-filters';
+import { isCreatorModerationSurface, parseModerationSurface as parseSurface, type ModerationSurface } from '@/lib/admin/moderation-filters';
 import { buildModerationSurfaceFilterClause as buildSurfaceFilterClause } from '@/server/admin-moderation-filters';
+import { readModerationCreatorResults } from '@/server/admin-moderation-creator-results';
 
 type PendingVideoRow = {
   job_id: string;
@@ -142,6 +143,8 @@ export async function GET(req: NextRequest) {
     const hasMore = rows.length > limit;
     const slice = hasMore ? rows.slice(0, limit) : rows;
     const videoIds = slice.map((row) => row.job_id);
+    const isCreatorFilter = isCreatorModerationSurface(surface);
+    const creatorResults = isCreatorFilter ? await readModerationCreatorResults(videoIds, surface) : null;
     const assignmentRows = videoIds.length
       ? await query<PlaylistAssignmentRow>(
           `
@@ -164,21 +167,26 @@ export async function GET(req: NextRequest) {
     }, {});
 
     const videos = slice.map((row) => {
+      const creator = creatorResults?.get(row.job_id);
+      const videoUrl = isCreatorFilter ? creator?.videoUrl : row.video_url;
+      const thumbUrl = isCreatorFilter ? creator?.thumbUrl : row.thumb_url;
       const visibility = row.visibility === 'private' ? 'private' : 'public';
       const indexable = row.indexable ?? true;
       const publicationState = resolvePublicationState(row);
       return {
         id: row.job_id,
         userId: row.user_id ?? null,
-        status: row.status ?? null,
+        status: creator?.status ?? row.status ?? null,
         message: row.message ?? undefined,
         updatedAt: row.updated_at,
         engineId: row.engine_id,
         engineLabel: row.engine_label,
-        durationSec: row.duration_sec,
+        durationSec: creator?.durationSec ?? row.duration_sec,
         prompt: row.prompt,
-        thumbUrl: normalizeMediaUrl(row.thumb_url) ?? undefined,
-        videoUrl: row.video_url ? normalizeMediaUrl(row.video_url) ?? undefined : undefined,
+        thumbUrl: isCreatorFilter ? thumbUrl ?? undefined : normalizeMediaUrl(thumbUrl) ?? undefined,
+        videoUrl: isCreatorFilter ? videoUrl ?? undefined : normalizeMediaUrl(videoUrl) ?? undefined,
+        originalUrl: creator?.originalUrl ?? undefined,
+        canPublish: !isCreatorFilter,
         aspectRatio: row.aspect_ratio ?? undefined,
         createdAt: row.created_at,
         visibility,

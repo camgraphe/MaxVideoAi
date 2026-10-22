@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { ModerationWallView } from '../frontend/components/admin/moderation/ModerationWallView';
 import { ModerationTableView } from '../frontend/components/admin/moderation/ModerationTableView';
 import type { ModerationVideo } from '../frontend/components/admin/moderation/moderation-types';
+import { getModerationPreviewUrls } from '../frontend/components/admin/moderation/moderation-table-utils';
 
 Object.assign(globalThis, { React });
 const noop = () => {};
@@ -32,3 +33,20 @@ for (const [extension, tag] of [['gif?token=preserved', 'img'], ['mp4', 'video']
     }
   });
 }
+
+test('signed creator image grants retain their exact host and bypass the public image optimizer', () => {
+  const previous = { bucket: process.env.S3_BUCKET, region: process.env.S3_REGION, base: process.env.S3_PUBLIC_BASE_URL };
+  Object.assign(process.env, { S3_BUCKET: 'private-bucket', S3_REGION: 'eu-west-1', S3_PUBLIC_BASE_URL: 'https://media.maxvideoai.com' });
+  try {
+    const url = 'https://private-bucket.s3.eu-west-1.amazonaws.com/files/photo.png?X-Amz-Signature=test';
+    const preview = getModerationPreviewUrls({ originalUrl: url, thumbUrl: url });
+    assert.equal(preview.originalUrl, url);
+    assert.equal(preview.thumbUrl, url);
+    assert.equal(preview.videoUrl, undefined);
+    assert.equal(preview.unoptimizedThumbnail, true);
+  } finally {
+    for (const [key, value] of Object.entries({ S3_BUCKET: previous.bucket, S3_REGION: previous.region, S3_PUBLIC_BASE_URL: previous.base })) {
+      if (value === undefined) delete process.env[key]; else process.env[key] = value;
+    }
+  }
+});
