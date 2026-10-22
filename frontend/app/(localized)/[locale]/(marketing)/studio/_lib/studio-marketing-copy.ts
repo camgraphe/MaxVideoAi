@@ -23,10 +23,10 @@ export type StudioMarketingCopy = {
 
 const copy: Record<AppLocale, StudioMarketingCopy> = {
   en: {
-    meta: { title: 'Studio — a creative conversation for image, video and audio', description: 'Create images, videos and audio in MaxVideoAI Studio. Work with references, review generation quotes, edit your timeline and download individual creations.' },
+    meta: { title: 'AI Creative Studio for Video, Images & Audio | MaxVideoAI', description: 'Create images, videos and audio in MaxVideoAI Studio. Work with references, review generation quotes, edit your timeline and download individual creations.' },
     eyebrow: 'MaxVideoAI Studio',
-    title: 'From a product brief\nto an image or clip.',
-    introduction: 'Bring a product brief or reference. Milo helps shape the idea and prepares the prompts and tools. Review the exact quote, then create one image or short clip.',
+    title: 'Create, edit, explore.\nJust ask Milo.',
+    introduction: 'Turn your ideas into AI videos, images and audio. Milo handles the prompts and brings the tools together in one conversation.',
     primaryCta: 'Open Studio', secondaryCta: 'Explore the workflow',
     accessNote: 'Sign in or create a MaxVideoAI account to start a conversation in Studio.',
     costNote: 'Milo Max uses included or purchased assistance credits. Media generation has its own quote to review and confirm.',
@@ -56,9 +56,9 @@ const copy: Record<AppLocale, StudioMarketingCopy> = {
     closing: { title: 'Give your next idea some space.', body: 'Sign in or create an account, then start a new conversation in Studio.' },
   },
   fr: {
-    meta: { title: 'Studio — créer des images, vidéos et audio en dialogue', description: 'Créez des images, vidéos et audio dans MaxVideoAI Studio. Travaillez avec vos références, vérifiez les devis, montez votre timeline et téléchargez vos créations individuelles.' },
-    eyebrow: 'MaxVideoAI Studio', title: 'Du brief produit\nà l’image ou au clip.',
-    introduction: 'Apportez un brief produit ou une référence. Milo affine votre idée et prépare les prompts et les outils. Vérifiez le devis exact, puis créez une image ou un clip court.',
+    meta: { title: 'Studio créatif IA pour vidéos, images et audio | MaxVideoAI', description: 'Créez des images, vidéos et audio dans MaxVideoAI Studio. Travaillez avec vos références, vérifiez les devis, montez votre timeline et téléchargez vos créations individuelles.' },
+    eyebrow: 'MaxVideoAI Studio', title: 'Créez, modifiez, explorez.\nDemandez à Milo.',
+    introduction: 'Transformez vos idées en vidéos, images et audio grâce à l’IA. Milo s’occupe des prompts et réunit les outils dans une seule conversation.',
     primaryCta: 'Ouvrir Studio', secondaryCta: 'Découvrir le parcours',
     accessNote: 'Connectez-vous ou créez un compte MaxVideoAI pour démarrer une conversation dans Studio.',
     costNote: 'Milo Max utilise des crédits d’assistance inclus ou achetés. Chaque génération de médias a son devis à vérifier et confirmer.',
@@ -88,9 +88,9 @@ const copy: Record<AppLocale, StudioMarketingCopy> = {
     closing: { title: 'Faites de la place à votre prochaine idée.', body: 'Connectez-vous ou créez un compte, puis démarrez une nouvelle conversation dans Studio.' },
   },
   es: {
-    meta: { title: 'Studio — crea imágenes, vídeos y audio conversando', description: 'Crea imágenes, vídeos y audio en MaxVideoAI Studio. Trabaja con referencias, revisa presupuestos, edita tu línea de tiempo y descarga tus creaciones individuales.' },
-    eyebrow: 'MaxVideoAI Studio', title: 'Del brief de producto\na una imagen o clip.',
-    introduction: 'Trae un brief de producto o una referencia. Milo da forma a tu idea y prepara los prompts y las herramientas. Revisa el precio exacto y crea una imagen o un clip corto.',
+    meta: { title: 'Studio creativo con IA para vídeo, imágenes y audio | MaxVideoAI', description: 'Crea imágenes, vídeos y audio en MaxVideoAI Studio. Trabaja con referencias, revisa presupuestos, edita tu línea de tiempo y descarga tus creaciones individuales.' },
+    eyebrow: 'MaxVideoAI Studio', title: 'Crea, edita, explora.\nSolo pídeselo a Milo.',
+    introduction: 'Convierte tus ideas en vídeos, imágenes y audio con IA. Milo se encarga de los prompts y reúne las herramientas en una sola conversación.',
     primaryCta: 'Abrir Studio', secondaryCta: 'Explorar el proceso',
     accessNote: 'Inicia sesión o crea una cuenta de MaxVideoAI para empezar una conversación en Studio.',
     costNote: 'Milo Max utiliza créditos de asistencia incluidos o comprados. Cada generación de medios tiene su propio presupuesto para revisar y confirmar.',
