@@ -927,6 +927,13 @@ Billing facts now apply the same idempotent mode-specific engine rate projection
 
 Manual duration and `output_seconds` now project the factual billed quantity, retaining requested/automatic/inherited timing in the context. Reviewed automatic Flux, LTX 2.5 and Seedance modes cover their normalized integer classes. Source-timed Ray Reframe, Happy Horse edit and LTX 2.3 audio modes use their existing factual bounds; unbounded Luma Ray 2 Modify timing remains a unit-tariff gate. Explicit public durations still respect numeric catalog choices; `durationOption: auto` selects automatic billing classes without publishing unsupported explicit durations.
 
+The October 22 Ray 3.2 correction restricts new Reframe outputs to explicit 5s/10s,
+independent of its verified source (at most 10s). Studio preserves the selected or
+default output duration. The audit collector retains all historical 1..30s Reframe
+tariff classes for complete cutover/replay coverage; the public quote resolver
+rejects those historical durations outside 5s/10s. This does not remove tariff
+cells, rewrite paid snapshots, or reduce the exhaustive financial matrix.
+
 Ray 3.2 SDR, HDR and HDR + EXR are separate supported tariff variants. Validated generation extras now feed the same priced-effect projection as preflight and direct checkout. Captured direct payments bind HDR/EXR, with missing historical flags retaining SDR semantics. This fixes an existing advanced-effect final-billing omission: at 5s/720p, SDR stays 130 cents, HDR is 260 and HDR + EXR is 390 under the current default rule. Historical paid snapshots are unchanged; this correction is explicitly separate from a zero-delta manual cutover. Unsupported 540p/10s HDR and EXR without HDR remain unavailable.
 
 The private timing capture contains 18,287 quotes with zero quote gaps and 14 remaining capability gates. Global activation and existing prepared data remain unchanged. Production parity is still a distinct release gate.

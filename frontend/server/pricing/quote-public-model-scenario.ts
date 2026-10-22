@@ -101,6 +101,8 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
   const entry = getFalEngineById(model.id);
   const mode = entry?.modes.find(candidate => candidate.mode === input.mode);
   if (!mode || (!gptImage && input.customImageSize !== undefined)) return null;
+  // Historical tariff coverage must not reopen unsupported provider durations.
+  if (model.id === 'luma-ray-3-2' && mode.mode === 'reframe' && ![5, 10].includes(input.durationSec)) return null;
   if (entry!.id === 'seedance-2-5' && mode.mode === 'v2v'
     && !getBytePlusSeedanceModeResolutions(entry!.id, mode.mode, mode.ui.resolution ?? entry!.engine.resolutions,
       resolveBytePlusTransport(entry!.id, mode.mode))

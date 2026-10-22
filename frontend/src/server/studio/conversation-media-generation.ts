@@ -232,7 +232,7 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
           throw new AgentApiError('REFERENCE_INVALID','The attached references changed after Studio reviewed them. Send a new message to review them again.');
       }
     }
-    if(!Object.hasOwn(settings,'durationSec')&&(mode==='a2v'||mode==='reframe'||(mode==='v2v'&&isLumaRay2EngineId(candidate.engine.id)))){
+    if(!Object.hasOwn(settings,'durationSec')&&(mode==='a2v'||(mode==='reframe'&&candidate.engine.id!=='luma-ray-3-2')||(mode==='v2v'&&isLumaRay2EngineId(candidate.engine.id)))){
       const duration=resolvedReferences.find(reference=>reference.role==='source')?.durationSec;
       if(typeof duration==='number')derivedSettings={durationSec:Math.max(1,Math.ceil(duration))};
     }

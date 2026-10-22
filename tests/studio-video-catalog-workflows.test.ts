@@ -26,17 +26,17 @@ export const videoCatalog=()=>listPublicAgentGenerationEngines({listEngines:asyn
 const ids={image:'ma_'+'1'.repeat(32),video:'ma_'+'2'.repeat(32),audio:'ma_'+'3'.repeat(32)};
 const ref=(kind:keyof typeof ids):ToolAssetRef=>({type:'asset',kind,assetId:ids[kind]});
 const input={requestId:'123e4567-e89b-42d3-a456-426614174000',message:'Use these exact owned media.',references:[ids.image],attachments:[ref('video'),ref('audio')]};
-function resolved(kind:keyof typeof ids,role:ResolvedReference['role']='source',slot?:number):ResolvedReference {
-  return {assetId:ids[kind],mediaKind:kind,role,...(slot===undefined?{}:{slot}),storageUrl:`https://cdn.maxvideoai.com/owned.${kind==='image'?'png':kind==='video'?'mp4':'wav'}`,mimeType:kind==='image'?'image/png':kind==='video'?'video/mp4':'audio/wav',width:kind==='audio'?null:1920,height:kind==='audio'?null:1080,durationSec:kind==='image'?null:12,sizeBytes:4096,originalName:`owned.${kind==='image'?'png':kind==='video'?'mp4':'wav'}`};
+function resolved(kind:keyof typeof ids,role:ResolvedReference['role']='source',slot?:number,durationSec=12):ResolvedReference {
+  return {assetId:ids[kind],mediaKind:kind,role,...(slot===undefined?{}:{slot}),storageUrl:`https://cdn.maxvideoai.com/owned.${kind==='image'?'png':kind==='video'?'mp4':'wav'}`,mimeType:kind==='image'?'image/png':kind==='video'?'video/mp4':'audio/wav',width:kind==='audio'?null:1920,height:kind==='audio'?null:1080,durationSec:kind==='image'?null:durationSec,sizeBytes:4096,originalName:`owned.${kind==='image'?'png':kind==='video'?'mp4':'wav'}`};
 }
-function dependencies(events:string[]=[]) {return {resolveMedia:async(_userId:string,raw:unknown)=>{const r=toolAssetRefSchema.parse(raw);events.push('resolve:'+r.kind);const facts=resolved(r.kind);return {id:r.type==='asset'?r.assetId:r.outputId,ref:r,kind:r.kind,url:facts.storageUrl,mime:facts.mimeType,mediaFacts:{source:'probe' as const,width:facts.width??undefined,height:facts.height??undefined,durationSec:facts.durationSec??undefined},sizeBytes:facts.sizeBytes,originalName:facts.originalName??undefined,thumbUrl:null,previewUrl:null,originalAccess:{type:'external' as const}};},saveOutput:async(identity:{userId:string;jobId:string;outputId:string})=>{events.push('save');return {id:ids.video,publicId:ids.video,userId:identity.userId,kind:'video' as const,url:resolved('video').storageUrl,thumbUrl:null,previewUrl:null,mimeType:'video/mp4',width:1920,height:1080,sizeBytes:4096,durationSec:12,source:'saved_job_output' as const,sourceJobId:identity.jobId,sourceOutputId:identity.outputId,status:'ready',metadata:{originUrl:resolved('video').storageUrl}};},readProjectMedia:async()=>[]};}
+function dependencies(events:string[]=[],durationSec=12) {return {resolveMedia:async(_userId:string,raw:unknown)=>{const r=toolAssetRefSchema.parse(raw);events.push('resolve:'+r.kind);const facts=resolved(r.kind,'source',undefined,durationSec);return {id:r.type==='asset'?r.assetId:r.outputId,ref:r,kind:r.kind,url:facts.storageUrl,mime:facts.mimeType,mediaFacts:{source:'probe' as const,width:facts.width??undefined,height:facts.height??undefined,durationSec:facts.durationSec??undefined},sizeBytes:facts.sizeBytes,originalName:facts.originalName??undefined,thumbUrl:null,previewUrl:null,originalAccess:{type:'external' as const}};},saveOutput:async(identity:{userId:string;jobId:string;outputId:string})=>{events.push('save');return {id:ids.video,publicId:ids.video,userId:identity.userId,kind:'video' as const,url:resolved('video').storageUrl,thumbUrl:null,previewUrl:null,mimeType:'video/mp4',width:1920,height:1080,sizeBytes:4096,durationSec:12,source:'saved_job_output' as const,sourceJobId:identity.jobId,sourceOutputId:identity.outputId,status:'ready',metadata:{originUrl:resolved('video').storageUrl}};},readProjectMedia:async()=>[]};}
 const fixtures=[
   {engineId:'wan-3',mode:'extend',kind:'video',settings:{durationSec:5,resolution:'720p',aspectRatio:'16:9'}},
   {engineId:'wan-3',mode:'v2v',kind:'video',settings:{durationSec:5,resolution:'720p',aspectRatio:'16:9'}},
   {engineId:'wan-2-6',mode:'r2v',kind:'video',role:'reference',settings:{durationSec:5,resolution:'1080p',aspectRatio:'16:9'}},
   {engineId:'ltx-2-3',mode:'a2v',kind:'audio',settings:{durationSec:12,resolution:'1080p'}},
   {engineId:'ltx-2-3',mode:'retake',kind:'video',settings:{durationSec:5,resolution:'1080p',startTimeSec:3,retakeMode:'replace_audio_and_video'}},
-  {engineId:'luma-ray-3-2',mode:'reframe',kind:'video',settings:{durationSec:12,resolution:'720p',aspectRatio:'9:16',sourcePositionX:0.1,sourcePositionY:-0.2,sourcePositionWidth:0.8,sourcePositionHeight:1}},
+  {engineId:'luma-ray-3-2',mode:'reframe',kind:'video',settings:{durationSec:10,resolution:'720p',aspectRatio:'9:16',sourcePositionX:0.1,sourcePositionY:-0.2,sourcePositionWidth:0.8,sourcePositionHeight:1}},
 ] as const;
 test('Studio video discovery retains every executable public transport-neutral tuple',async()=>{
   const canonical=(await videoCatalog()).filter(e=>e.surface==='video');
@@ -50,12 +50,23 @@ for(const fixture of fixtures)test(`${fixture.engineId} ${fixture.mode} uses own
   const catalog=await videoCatalog();const factory=()=>({catalog:async()=>catalog});
   const action={action:'video.prepare',reply:'Review this quote.',prompt:input.message,aspectRatio:'16:9',source:null,modelId:fixture.engineId,mode:fixture.mode,settings:Object.entries(fixture.settings).map(([name,value])=>({name,value})),references:[{ref:ref(fixture.kind),role:'role' in fixture?fixture.role:'source',slot:null}],outputCount:1};
   assert.equal(studioVideoActionSchema.safeParse(action).success,true);
-  const before=structuredClone(action);const request=await studioMediaRequest(actor,action as never,input,{video:factory} as never,true,dependencies()) as CanonicalGenerationRequest;
+  const before=structuredClone(action);const request=await studioMediaRequest(actor,action as never,input,{video:factory} as never,true,dependencies([],fixture.engineId==='luma-ray-3-2'?8:12)) as CanonicalGenerationRequest;
   assert.deepEqual(action,before);assert.equal(request.engineId,fixture.engineId);assert.equal(request.mode,fixture.mode);requireStudioGenerationRequest(request);
-  const candidate=catalog.find(c=>c.engine.id===fixture.engineId)!;const refs=[resolved(fixture.kind,'role' in fixture?fixture.role:'source',request.references[0].slot)];
+  const candidate=catalog.find(c=>c.engine.id===fixture.engineId)!;const refs=[resolved(fixture.kind,'role' in fixture?fixture.role:'source',request.references[0].slot,fixture.engineId==='luma-ray-3-2'?8:12)];
   validateCanonicalGenerationCapabilities(request,candidate,{resolvedReferences:refs});
   const body=buildPaidVideoRequestBody({quoteId:input.requestId,request,engine:candidate.engine,resolvedReferences:refs,canonicalPricing:{membershipTier:'member'}});
   assert.equal(body[fixture.kind==='audio'?'audioUrl':fixture.mode==='r2v'?'referenceVideos':'videoUrl'] instanceof Array?(body.referenceVideos as string[])[0]:body[fixture.kind==='audio'?'audioUrl':'videoUrl'],refs[0].storageUrl);
+});
+test('Luma Reframe keeps selected or default output timing independent of its owned source',async()=>{
+  const catalog=await videoCatalog();const factories={video:()=>({catalog:async()=>catalog})} as unknown as StudioMediaFactories;
+  for(const selected of [undefined,5,10]){
+    const action={action:'video.prepare',reply:'Review.',prompt:'Expand the background.',aspectRatio:'9:16',source:null,modelId:'luma-ray-3-2',mode:'reframe',settings:[{name:'resolution',value:'720p'},...(selected===undefined?[]:[{name:'durationSec',value:selected}])],references:[{ref:ref('video'),role:'source',slot:null}]};
+    const request=await studioMediaRequest(actor,action as never,input,factories,true,dependencies([],8)) as CanonicalGenerationRequest;
+    assert.equal(request.settings.durationSec,selected??5);
+    const events:string[]=[];
+    await assert.rejects(validateStudioMediaRequest(actor,action as never,input,factories,true,dependencies(events,11)),{code:'REFERENCE_INVALID'});
+    assert.equal(events.includes('save'),false);
+  }
 });
 test('invalid temporal range and unattached or wrong-kind video sources fail before promotion',async()=>{
   const catalog=await videoCatalog();const factories={video:()=>({catalog:async()=>catalog})} as unknown as StudioMediaFactories;
@@ -76,7 +87,7 @@ test('every certified video tuple preserves its authored request and provider me
   const catalog=await workflowCatalog();const factories={video:()=>({catalog:async()=>catalog})} as unknown as StudioMediaFactories;
   for(const candidate of catalog)for(const mode of candidate.publicModes)await t.test(candidate.engine.id+' '+mode,async()=>{
     const action=workflowAction(candidate,mode);
-    const request=await studioMediaRequest(workflowActor,action,workflowInput,factories,true,{resolveMedia:async(_userId,raw)=>{const ref=toolAssetRefSchema.parse(raw);const media=workflowReference(ref.kind,'source');return {kind:media.mediaKind,url:media.storageUrl,mime:media.mimeType,width:media.width,height:media.height,durationSec:media.durationSec,sizeBytes:media.sizeBytes,originalName:media.originalName} as never;}}) as CanonicalGenerationRequest;
+    const request=await studioMediaRequest(workflowActor,action,workflowInput,factories,true,{resolveMedia:async(_userId,raw)=>{const ref=toolAssetRefSchema.parse(raw);const media=workflowReference(ref.kind,'source',undefined,candidate.engine.id);return {kind:media.mediaKind,url:media.storageUrl,mime:media.mimeType,width:media.width,height:media.height,durationSec:media.durationSec,sizeBytes:media.sizeBytes,originalName:media.originalName} as never;}}) as CanonicalGenerationRequest;
     const refs=workflowResolved(request,action);requireStudioGenerationRequest(request);validateCanonicalGenerationCapabilities(request,candidate,{resolvedReferences:refs});
     assert.equal(request.engineId,candidate.engine.id);assert.equal(request.mode,mode);
     for(const setting of action.settings??[])assert.equal(request.settings[setting.name],setting.value,setting.name);
