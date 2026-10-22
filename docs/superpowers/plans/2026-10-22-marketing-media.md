@@ -33,56 +33,64 @@
 **Files:** `frontend/server/marketing-media/snapshot.ts`, `frontend/lib/marketing-media.ts`, `tests/marketing-media-snapshot.test.ts`.
 **Interfaces:** `prepareMarketingSnapshot(source): MarketingCopyPlan`; `completeMarketingSnapshot(plan, copies): MarketingPublication`. The plan contains a bounded deduplicated media list and exact safe recreation settings. Completed publication rewrites only media references to verified copies.
 
-- [ ] Write tests for prompt/core/advanced parity, references/roles/sparse slots, duplicate URLs, missing snapshots, nonportable provider state and rejection of unprepared files.
-- [ ] Run focused test; observe missing implementation failure.
-- [ ] Implement pure capture and completion; keep source snapshot/provenance separate from the public recreation payload.
-- [ ] Run tests and commit.
+- [x] Write tests for prompt/core/advanced parity, references/roles/sparse slots, duplicate URLs, missing snapshots, nonportable provider state and rejection of unprepared files.
+- [x] Run focused test; observe missing implementation failure.
+- [x] Implement pure capture and completion; keep source snapshot/provenance separate from the public recreation payload.
+- [x] Run tests and commit.
 
 ## Task 2: Durable storage and transactional promotion
 
 **Files:** `neon/migrations/78_marketing_media.sql`, `frontend/server/marketing-media/{store,copy,storage}.ts`, `tests/marketing-media-{copy,postgres}.test.ts`.
 **Interfaces:** `promoteMarketingVideo({videoId, actorId, permissionConfirmed}, dependencies?)`; admin list/detail and guarded deletion services; dependencies use the existing query/transaction/storage boundaries.
 
-- [ ] Write disposable PostgreSQL and storage-boundary tests: idempotency, incomplete copy, changed/deleted source, reference preservation, permission and active-placement deletion denial.
-- [ ] Observe failures, implement site-owned bounded exact-byte copies and guarded atomic ready transition, then pass the suite.
-- [ ] Capture original metadata and source fingerprint; keep prepared failures recoverable, never alter customer jobs/assets or billing.
-- [ ] Commit with validation evidence.
+- [x] Write disposable PostgreSQL and storage-boundary tests: idempotency, incomplete copy, changed/deleted source, reference preservation, permission and active-placement deletion denial.
+- [x] Observe failures, implement site-owned bounded exact-byte copies and guarded atomic ready transition, then pass the suite.
+- [x] Capture original metadata and source fingerprint; keep prepared failures recoverable, never alter customer jobs/assets or billing.
+- [x] Commit with validation evidence.
 
 ## Task 3: Public compatibility and complete reuse
 
 **Files:** `frontend/server/marketing-media/public-read.ts`, existing `videos*`, public playlist/starter read owners, `frontend/lib/video-preview-group.ts`, `WorkspaceSharedVideoSnapshot` helper and shared-video hydration hook; related tests.
 **Interfaces:** `marketingVideoReader(db)` overlays ready publications under the original `app_jobs` read identity without extra read round-trips. `recreationSnapshot` is an explicit sanitized DTO property, independent of private job reads.
 
-- [ ] Write enabled/disabled projection tests, delete source rows/assets and verify watch/catalog/playlist/SEO identity and settings remain intact.
-- [ ] Implement overlay only at explicit public/admin-public read boundaries; preserve ordinary account/job reads.
-- [ ] Hydrate complete published snapshots on normal reuse, while retaining `remix=1` comparison behavior and current quote calculation.
-- [ ] Run focused DB, workspace and SEO tests; commit.
+- [x] Write enabled/disabled projection tests, delete source rows/assets and verify watch/catalog/playlist/SEO identity and settings remain intact.
+- [x] Implement overlay only at explicit public/admin-public read boundaries; preserve ordinary account/job reads.
+- [x] Hydrate complete published snapshots on normal reuse, while retaining `remix=1` comparison behavior and current quote calculation.
+- [x] Run focused DB, workspace and SEO tests; commit.
 
 ## Task 4: Existing admin write compatibility and placements
 
 **Files:** marketing placement inventory/service, existing admin video visibility/moderation/thumbnail boundaries and curation save guard; tests.
 **Interfaces:** Existing actions keep their URLs and target a marketing publication when present. Inventory reports public playlists, homepage, watch/editorial and authored static usages; active placements protect marketing deletion.
 
-- [ ] Write tests for visibility/moderation routing, multiple placements, stale curation saves and source-independent share/read behavior.
-- [ ] Add bounded guards and snapshot updates without changing SEO approval semantics or original source records.
-- [ ] Run compatibility tests and commit.
+- [x] Write tests for visibility/moderation routing, multiple placements, stale curation saves and source-independent share/read behavior.
+- [x] Add bounded guards and snapshot updates without changing SEO approval semantics or original source records.
+- [x] Run compatibility tests and commit.
 
 ## Task 5: Simple admin library
 
 **Files:** new `/admin/marketing-media` page and route-local client, `/api/admin/marketing-media` collection/item endpoints, `frontend/lib/admin/navigation.ts`, contextual admin entry action; DOM/browser tests.
 **Interfaces:** Single “Ajouter aux médias marketing” operation by video ID/link, explicit permission acknowledgement for externally sourced/customer media, list with preview/prompt/reuse and discreet placement icon. No customer UI changes.
 
-- [ ] Test admin authorization, loading/error/retry, duplicate submission, copy/reuse and placement-protected deletion.
-- [ ] Implement existing admin shell and controls; never fetch original videos until Play.
-- [ ] Smoke-test real components on desktop/mobile and existing admin navigation; commit.
+- [x] Test admin authorization, loading/error/retry, duplicate submission, copy/reuse and placement-protected deletion.
+- [x] Implement existing admin shell and controls; never fetch original videos until Play.
+- [x] Smoke-test real components on desktop/mobile and existing admin navigation; commit.
 
 ## Task 6: Verification, documentation and delivery preparation
 
-- [ ] Document storage ownership, activation/migration/rollback and exact route/SEO compatibility gates in `docs/engineering/marketing-media.md`.
-- [ ] Run focused tests, PostgreSQL integrations, TypeScript, frontend lint, exposure guard, production build and relevant existing public/browser suites. Broaden only for unresolved concerns.
-- [ ] Independently review the complete branch, fix substantive findings with failing-then-passing tests, and record limitations.
+- [x] Document storage ownership, activation/migration/rollback and exact route/SEO compatibility gates in `docs/engineering/marketing-media.md`.
+- [x] Run focused tests, PostgreSQL integrations, TypeScript, frontend lint, exposure guard, production build and relevant existing public/browser suites. Broaden only for unresolved concerns.
+- [x] Independently review the complete branch, fix substantive findings with failing-then-passing tests, and record limitations.
 - [ ] Commit, push a dedicated PR and attach it. Leave production unchanged until normal reviewed delivery.
 
 ## Baseline
 
 Branch starts at `123128d9c` (`origin/main`). Focused existing workspace settings and model curation tests: 12 passed. SEO/share suites are part of final verification. Previous Luma/Modify work remains on its separate branch/PR498.
+
+## Verification record — 2026-10-22
+
+The independent whole-branch review found four lifecycle/source-independence issues. Regression tests first reproduced all four, then passed after fixes: never-ready cleanup preserves legacy visibility and placements, effective fallback posters are copied and fingerprinted, stale editorial approvals cannot target retired publications, and authenticated personal owners retain reuse access after marketing deletion. Additional regressions cover nested provider media fields and existing moderation actions during an incomplete preparation.
+
+TypeScript, frontend lint (six existing warnings, no errors), exposure checks and the production build pass. PostgreSQL 17 exercises real publication, deletion and catalog/watch readers. Browser fixtures cover 390/1440 widths and no original MP4 request before Play. Built-app smoke checks returned 401 for unauthenticated new admin API actions and 200 with existing canonical/hreflang/JSON-LD output for examples and localized/family examples. No public page-route, redirect or sitemap owner was changed.
+
+Production activation remains deliberately disabled. Migration 78, the server feature flag, storage/CDN checks and normal reviewed deployment are still required before live use. Registered authored demos require their separate rendition-preserving migration; the feature refuses to silently replace them.

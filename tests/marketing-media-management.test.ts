@@ -6,8 +6,9 @@ import type { QueryExecutor } from '../frontend/src/lib/db';
 import { deleteMarketingVideo, updateMarketingVisibility } from '../frontend/server/marketing-media/manage';
 import { listMarketingPlacements } from '../frontend/server/marketing-media/placements';
 import { readMarketingRow } from '../frontend/server/marketing-media/store';
+import { marketingVideoReader } from '../frontend/server/marketing-media/public-read';
 
-test('marketing deletion protects placements, leaves the personal source intact and rejects stale placement writes', async () => {
+test('marketing deletion protects placements, leaves the personal source intact and rejects stale placement writes', async (t) => {
   const db = await startDisposablePostgres('marketing-management');
   const query: QueryExecutor['query'] = async (sql, params) => (await db.pool.query(sql, params as any[])).rows;
   const transaction = async <T>(run: (executor: QueryExecutor) => Promise<T>): Promise<T> => {
@@ -61,6 +62,41 @@ test('marketing deletion protects placements, leaves the personal source intact 
     await assert.rejects(query(`INSERT INTO playlist_items VALUES('gallery','stable')`), /marketing media/i);
     assert.equal(await deleteMarketingVideo('stable', deps), true);
     assert.equal(purged.length, 1, 'deleted operation is idempotent');
+    await t.test('stale editorial writes cannot publish a deleted marketing identity', async () => {
+      await assert.rejects(query(`INSERT INTO video_seo_pages VALUES('stable','approved')`), /marketing media/i);
+      await query(`INSERT INTO video_seo_pages VALUES('stable','disabled')`);
+      await assert.rejects(
+        query(`UPDATE video_seo_pages SET seo_status='approved' WHERE video_id='stable'`),
+        /marketing media/i,
+      );
+      await query(`UPDATE video_seo_pages SET seo_status='disabled' WHERE video_id='stable'`);
+    });
+    await t.test(
+      'cleaning up a never-ready attempt preserves its legacy source and placements throughout',
+      async () => {
+        await query(`INSERT INTO app_jobs VALUES('failed','https://media.example/failed.mp4');
+        INSERT INTO playlist_items VALUES('gallery','failed');
+        INSERT INTO marketing_media(video_id,copy_id,state,source_fingerprint,source_snapshot,source_record,attempt_id,copied_by)
+        VALUES('failed',gen_random_uuid(),'failed','f','{}','{}',gen_random_uuid(),'admin')`);
+        const reader = marketingVideoReader({ query }, true);
+        const visible = async () => (await reader.query(`SELECT job_id FROM app_jobs WHERE job_id='failed'`)).length;
+        assert.equal(await visible(), 1);
+        await assert.rejects(deleteMarketingVideo('failed', deps, { publicationOnly: true }), /preparation/i);
+        assert.equal(
+          await deleteMarketingVideo('failed', {
+            ...deps,
+            purge: async () => {
+              assert.equal(await visible(), 1, 'an in-progress cleanup never hides the legacy source');
+              await query(`INSERT INTO homepage_sections VALUES('legacy','failed')`);
+            },
+          }),
+          true,
+        );
+        assert.equal(await visible(), 1);
+        assert.equal(await readMarketingRow('failed', { query }), null, 'cleanup permits a fresh copy later');
+        assert.equal((await query(`SELECT * FROM playlist_items WHERE video_id='failed'`)).length, 1);
+      },
+    );
   } finally {
     await db.cleanup();
   }

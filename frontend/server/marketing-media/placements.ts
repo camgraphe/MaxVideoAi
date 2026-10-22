@@ -18,6 +18,8 @@ export async function listMarketingPlacements(
   db: QueryExecutor = { query },
   tables?: Set<string>,
 ): Promise<MarketingPlacement[]> {
+  // Never-ready files do not own the original's existing public placements.
+  if (row.state !== 'ready' && !row.tombstone) return [];
   const available = tables ?? (await marketingPlacementTables(db));
   const result: MarketingPlacement[] = [];
   if (row.publication.visibility === 'public')

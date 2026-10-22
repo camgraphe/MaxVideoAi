@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import test from 'node:test';
@@ -29,6 +29,7 @@ test('admin video removal is atomic under pool contention and preserves unrelate
       const mocks:Record<string,string>={
         '@/server/admin':`import{NextResponse}from'next/server';export async function requireAdmin(){if(!globalThis.__adminDelete.authorized)throw Error('denied')};export const adminErrorToResponse=()=>NextResponse.json({ok:false},{status:403});`,
         '@/lib/schema':`export async function ensureBillingSchema(){}`,
+        '@/server/storage':`export async function purgeMarketingStorageObjects(){throw Error('A legacy removal must not purge marketing storage')}`,
         '@/lib/db':`export * from ${JSON.stringify(dbPath)};import * as real from ${JSON.stringify(dbPath)};
           export async function query(sql,params){globalThis.__adminDelete.statements.push(sql);const rows=await real.query(sql,params);if(sql==='BEGIN')globalThis.__adminDelete.held=await real.getDb().connect();return rows;}
           export async function withDbTransaction(fn){return real.withDbTransaction(async(ex,client)=>{
@@ -88,5 +89,15 @@ test('admin video removal is atomic under pool contention and preserves unrelate
   await t.test('authorization fails before schema or record access',async()=>{
     fixture.authorized=false;fixture.statements.length=0;
     assert.equal((await remove()).status,403);assert.deepEqual(fixture.statements,[]);fixture.authorized=true;
+  });
+  await t.test('a failed marketing preparation cannot masquerade as successful source moderation',async()=>{
+    await pg.pool.query(readFileSync('neon/migrations/78_marketing_media.sql','utf8'));
+    await reset();
+    await pg.pool.query(`INSERT INTO marketing_media(video_id,copy_id,state,source_fingerprint,source_snapshot,source_record,attempt_id,copied_by)
+      VALUES('audit-video',gen_random_uuid(),'failed','f','{}','{}',gen_random_uuid(),'admin')`);
+    const before=await snapshot(),previous=process.env.MARKETING_MEDIA_ENABLED;
+    process.env.MARKETING_MEDIA_ENABLED='1';
+    try{const response=await remove();assert.equal(response.status,409);assert.match((await response.json()).error,/preparation/i);assert.deepEqual(await snapshot(),before);}
+    finally{if(previous===undefined)delete process.env.MARKETING_MEDIA_ENABLED;else process.env.MARKETING_MEDIA_ENABLED=previous;}
   });
 });

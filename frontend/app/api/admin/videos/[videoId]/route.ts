@@ -26,7 +26,7 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ videoI
   }
 
   try {
-    if (await deleteMarketingVideo(videoId)) return NextResponse.json({ ok: true });
+    if (await deleteMarketingVideo(videoId, undefined, { publicationOnly: true })) return NextResponse.json({ ok: true });
     await ensureBillingSchema();
     const removed = await withDbTransaction(async (executor) => {
       const owned = await executor.query<{ job_id: string }>(

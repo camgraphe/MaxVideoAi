@@ -1,12 +1,13 @@
 import { query, type QueryExecutor } from '@/lib/db';
 import type { MarketingMediaFile, MarketingMediaItem } from '@/lib/marketing-media';
-import { PUBLIC_VIDEO_SOURCE_ELIGIBILITY } from '@/server/videos-query';
+import { imageThumbFallbackSelect, PUBLIC_VIDEO_SOURCE_ELIGIBILITY } from '@/server/videos-query';
 import { record, type MarketingSource } from './snapshot';
 
 export type MarketingRow = {
   video_id: string;
   copy_id: string;
   state: MarketingMediaItem['state'];
+  tombstone: boolean;
   source_user_id: string | null;
   source_fingerprint: string;
   source_snapshot: Record<string, unknown>;
@@ -40,6 +41,7 @@ export async function readMarketingRow(
 export async function readMarketingSource(videoId: string, db: QueryExecutor): Promise<MarketingSource | null> {
   const rows = await db.query<MarketingSource>(
     `SELECT to_jsonb(app_jobs) AS job,
+   COALESCE(NULLIF(app_jobs.thumb_url,''), (${imageThumbFallbackSelect('app_jobs')})) AS poster_url,
    (SELECT to_jsonb(o) FROM job_outputs o WHERE o.job_id=app_jobs.job_id AND o.kind='video'
     AND COALESCE(o.url,o.storage_url)=app_jobs.video_url AND o.status NOT IN ('deleted','failed') ORDER BY o.position,o.created_at LIMIT 1) AS output
    FROM app_jobs WHERE job_id=$1 AND ${PUBLIC_VIDEO_SOURCE_ELIGIBILITY} LIMIT 1`,

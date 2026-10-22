@@ -38,7 +38,11 @@ export async function updateMarketingVisibility(
 }
 
 /** Resumable deletion only removes this publication's own namespace. Never a customer asset. */
-export async function deleteMarketingVideo(videoId: string, dependencies = defaults()): Promise<boolean> {
+export async function deleteMarketingVideo(
+  videoId: string,
+  dependencies = defaults(),
+  options: { publicationOnly?: boolean } = {},
+): Promise<boolean> {
   if (!dependencies.enabled) return false;
   const row = await dependencies.transaction(async (db) => {
     const tables = await marketingPlacementTables(db);
@@ -47,6 +51,8 @@ export async function deleteMarketingVideo(videoId: string, dependencies = defau
     const current = await readMarketingRow(videoId, db, true);
     if (!current) return null;
     if (current.state === 'deleted') return current;
+    if (options.publicationOnly && current.state !== 'ready' && !current.tombstone)
+      throw new MarketingMediaError('Finish or remove the marketing preparation before moderating this source.', 409);
     if (current.state === 'copying' && current.lease_until && new Date(current.lease_until).getTime() > Date.now())
       throw new MarketingMediaError('Wait for the current copy to finish.', 409);
     const placements = await listMarketingPlacements(current, db, tables);
@@ -56,7 +62,7 @@ export async function deleteMarketingVideo(videoId: string, dependencies = defau
         409,
       );
     const [claimed] = await db.query<MarketingRow>(
-      `UPDATE marketing_media SET state='deleting',lease_until=NULL,updated_at=now() WHERE video_id=$1 RETURNING *`,
+      `UPDATE marketing_media SET tombstone=tombstone OR state='ready',state='deleting',lease_until=NULL,updated_at=now() WHERE video_id=$1 RETURNING *`,
       [videoId],
     );
     return claimed;
@@ -64,6 +70,13 @@ export async function deleteMarketingVideo(videoId: string, dependencies = defau
   if (!row) return false;
   if (row.state === 'deleted') return true;
   await dependencies.purge(row.copy_id);
+  if (!row.tombstone) {
+    await dependencies.db.query(
+      `DELETE FROM marketing_media WHERE video_id=$1 AND copy_id=$2 AND state='deleting' AND NOT tombstone`,
+      [videoId, row.copy_id],
+    );
+    return true;
+  }
   await dependencies.db.query(
     `UPDATE marketing_media SET state='deleted',publication='{}',recreation_snapshot='{}',files='[]',size_bytes=0,
   source_record='{}',source_snapshot='{}',last_error=NULL,updated_at=now() WHERE video_id=$1 AND state='deleting'`,

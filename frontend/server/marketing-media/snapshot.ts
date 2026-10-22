@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import type { MarketingMediaFile } from '@/lib/marketing-media';
 
 type RecordValue = Record<string, unknown>;
-export type MarketingSource = { job: RecordValue; output?: RecordValue | null };
+export type MarketingSource = { job: RecordValue; output?: RecordValue | null; poster_url?: string | null };
 export type MarketingCopyPlan = {
   videoId: string;
   ownerId: string | null;
@@ -26,6 +26,7 @@ export const record = (value: unknown): RecordValue =>
   value && typeof value === 'object' && !Array.isArray(value) ? (value as RecordValue) : {};
 const text = (value: unknown) => (typeof value === 'string' ? value : '');
 const portableRefKeys = new Set(['assetId', 'sourceOutputId', 'sourceJobId', 'userId', 'ownerId', 'jobId']);
+const literalKeys = new Set(['prompt', 'negativePrompt', 'negative_prompt', 'name', 'label', 'description']);
 function canonical(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(canonical);
   if (value && typeof value === 'object')
@@ -137,6 +138,7 @@ export function prepareMarketingSnapshot(source: MarketingSource): MarketingCopy
       .map((key) => [key, structuredClone(job[key])]),
   );
   publication.prompt = typeof job.prompt === 'string' ? job.prompt : saved.prompt;
+  publication.thumb_url = text(job.thumb_url) || source.poster_url || null;
   publication.user_id = null;
   publication.status = 'completed';
   publication.surface = 'video';
@@ -164,7 +166,8 @@ export function prepareMarketingSnapshot(source: MarketingSource): MarketingCopy
       const ownKind = record(value).kind;
       const hint = ownKind === 'video' || ownKind === 'audio' ? ownKind : kind;
       for (const [key, item] of Object.entries(value))
-        visit(item, `${path}.${key}`, /video/i.test(key) ? 'video' : /audio/i.test(key) ? 'audio' : hint);
+        if (!literalKeys.has(key))
+          visit(item, `${path}.${key}`, /video/i.test(key) ? 'video' : /audio/i.test(key) ? 'audio' : hint);
       return;
     }
     if (typeof value === 'string' && (/^(https?:|blob:|data:|file:)/i.test(value) || /url(s)?$/i.test(path)))
@@ -172,18 +175,12 @@ export function prepareMarketingSnapshot(source: MarketingSource): MarketingCopy
   }
   if (!text(job.video_url) || !text(job.job_id)) throw new MarketingMediaError('The original video is missing.');
   add(job.video_url, 'original', 'video');
-  add(job.thumb_url, 'poster', 'image');
+  add(publication.thumb_url, 'poster', 'image');
   add(job.preview_video_url, 'preview', 'video');
   add(source.output?.playback_video_url ?? job.playback_video_url, 'playback', 'video');
   visit(job.keyframe_urls, 'keyframes');
   visit(recreationSnapshot.refs, 'refs');
-  for (const [key, value] of Object.entries(extra))
-    if (/url(s)?$/i.test(key))
-      visit(
-        value,
-        `advanced.extraInputValues.${key}`,
-        /video/i.test(key) ? 'video' : /audio/i.test(key) ? 'audio' : 'image',
-      );
+  visit(extra, 'advanced.extraInputValues');
   publication.settings_snapshot = recreationSnapshot;
   publication.marketing_output_width = source.output?.width ?? null;
   publication.marketing_output_height = source.output?.height ?? null;
@@ -211,10 +208,7 @@ export function completeMarketingSnapshot(plan: MarketingCopyPlan, copies: Marke
   )
     throw new MarketingMediaError('The marketing copy is incomplete.', 409);
   function rewrite(value: unknown, key = ''): unknown {
-    if (typeof value === 'string')
-      return ['prompt', 'negativePrompt', 'name', 'label', 'description'].includes(key)
-        ? value
-        : (map.get(value)?.url ?? value);
+    if (typeof value === 'string') return literalKeys.has(key) ? value : (map.get(value)?.url ?? value);
     if (Array.isArray(value)) return value.map((item) => rewrite(item, key));
     if (value && typeof value === 'object')
       return Object.fromEntries(Object.entries(value).map(([name, item]) => [name, rewrite(item, name)]));

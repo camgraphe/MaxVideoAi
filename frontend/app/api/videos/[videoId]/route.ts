@@ -30,13 +30,13 @@ export async function GET(_req: NextRequest, props: RouteParams) {
 
   try {
     let video = await getVideoById(videoId);
-    if (!video) {
-      return privateJson({ ok: false, error: 'Not found' }, 404);
-    }
-    const viewerId = video.visibility === 'public' ? null : (await getRouteAuthContext(_req)).userId;
-    const adminCopy = Boolean(video.recreationSnapshot && viewerId && await isUserAdmin(viewerId));
-    if (video.recreationSnapshot && video.visibility === 'private' && !adminCopy) {
-      video = await getPersonalVideoById(videoId);
+    const viewerId = video?.visibility === 'public' ? null : (await getRouteAuthContext(_req)).userId;
+    const adminCopy = Boolean(video?.recreationSnapshot && viewerId && await isUserAdmin(viewerId));
+    if (!video || (video.recreationSnapshot && video.visibility === 'private' && !adminCopy)) {
+      // Retiring a site publication must not remove its owner's personal reuse link,
+      // nor resurrect a once-public personal source for other viewers.
+      const personal = viewerId ? await getPersonalVideoById(videoId) : null;
+      video = personal?.userId === viewerId ? personal : null;
     }
     if (!video || (!adminCopy && !canReadVideo(video, viewerId))) {
       return privateJson({ ok: false, error: 'Not found' }, 404);

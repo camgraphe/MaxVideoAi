@@ -13,7 +13,8 @@ export function marketingVideoReader(
       SELECT legacy.*, NULL::jsonb AS marketing_recreation_snapshot,
         NULL::integer AS marketing_output_width, NULL::integer AS marketing_output_height
       FROM public.app_jobs legacy WHERE NOT EXISTS (
-        SELECT 1 FROM marketing_media m WHERE m.video_id=legacy.job_id AND m.state IN ('ready','deleting','deleted')
+        SELECT 1 FROM marketing_media m WHERE m.video_id=legacy.job_id
+          AND (m.state='ready' OR (m.tombstone AND m.state IN ('deleting','deleted')))
       )
       UNION ALL
       SELECT (jsonb_populate_record(NULL::public.app_jobs,m.publication)).*, m.recreation_snapshot,

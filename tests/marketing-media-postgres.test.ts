@@ -120,6 +120,46 @@ test('marketing promotion survives source deletion and rejects incomplete, stale
       );
       assert.equal(result.state, 'ready');
     });
+    await t.test(
+      'the effective fallback poster is copied and fingerprinted independently of personal outputs',
+      async () => {
+        await insert('fallback-poster');
+        await query(`UPDATE app_jobs SET thumb_url='' WHERE job_id='fallback-poster';
+        INSERT INTO job_outputs(id,job_id,kind,status,url) VALUES('cover','fallback-poster','image','ready','https://media.example/cover.jpg')`);
+        const ready = await promoteMarketingVideo(
+          { videoId: 'fallback-poster', actorId: 'owner', permissionConfirmed: false },
+          deps,
+        );
+        assert.match(ready.thumbUrl ?? '', /marketing-media/);
+        const [stored] = await query<any>(`SELECT * FROM marketing_media WHERE video_id='fallback-poster'`);
+        assert.ok(stored.files.some((file: any) => file.sourceUrl === 'https://media.example/cover.jpg'));
+        await query(`DELETE FROM job_outputs WHERE job_id='fallback-poster'`);
+        assert.equal(
+          (
+            await query<any>(
+              `SELECT publication->>'thumb_url' AS poster FROM marketing_media WHERE video_id='fallback-poster'`,
+            )
+          )[0].poster,
+          ready.thumbUrl,
+        );
+        await insert('stale-poster');
+        await query(`UPDATE app_jobs SET thumb_url=NULL WHERE job_id='stale-poster';
+        INSERT INTO job_outputs(id,job_id,kind,status,url) VALUES('stale-cover','stale-poster','image','ready','https://media.example/old-cover.jpg')`);
+        await assert.rejects(
+          promoteMarketingVideo(
+            { videoId: 'stale-poster', actorId: 'owner', permissionConfirmed: false },
+            {
+              ...deps,
+              copyFile: async (file: any, context: any) => {
+                await query(`UPDATE job_outputs SET url='https://media.example/new-cover.jpg' WHERE id='stale-cover'`);
+                return copyFile(file, context);
+              },
+            },
+          ),
+          /changed/i,
+        );
+      },
+    );
     await t.test('source edits and deletion during copying reject activation', async () => {
       for (const deleted of [false, true]) {
         const id = deleted ? 'deleted-during-copy' : 'changed-during-copy';

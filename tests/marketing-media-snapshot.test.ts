@@ -142,6 +142,32 @@ test('promotion retains existing public prompt text while recreation uses the ex
   assert.equal(plan.recreationSnapshot.prompt, source.job.settings_snapshot.prompt);
 });
 
+test('model-specific media fields without a URL suffix are detached while textual descriptions remain exact', () => {
+  const source = sourceFixture();
+  const extras = source.job.settings_snapshot.advanced.extraInputValues as any;
+  extras.input_image = 'https://media.example/provider-image.png';
+  extras.elements = [{ video: 'https://media.example/element.mp4', description: 'https://example.com/literal' }];
+  const plan = prepareMarketingSnapshot(source);
+  assert.ok(plan.media.some((file) => file.sourceUrl === extras.input_image));
+  assert.ok(plan.media.some((file) => file.sourceUrl === extras.elements[0].video && file.kind === 'video'));
+  assert.ok(!plan.media.some((file) => file.sourceUrl === extras.elements[0].description));
+  const result = completeMarketingSnapshot(
+    plan,
+    plan.media.map((file, index) => ({
+      sourceUrl: file.sourceUrl,
+      url: `https://media.example/marketing-media/copy/${index}`,
+      key: `marketing-media/copy/${index}`,
+      sizeBytes: 1,
+      mime: 'image/png',
+      sha256: 'a'.repeat(64),
+    })),
+  );
+  const copied = (result.recreationSnapshot.advanced as any).extraInputValues;
+  assert.match(copied.input_image, /marketing-media/);
+  assert.match(copied.elements[0].video, /marketing-media/);
+  assert.equal(copied.elements[0].description, extras.elements[0].description);
+});
+
 test('nested credentials in model-specific settings cannot enter a public recreation payload', () => {
   const source = sourceFixture();
   (source.job.settings_snapshot.advanced.extraInputValues as any).configuration = { access_token: 'private' };
