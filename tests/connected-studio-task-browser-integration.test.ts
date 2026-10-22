@@ -50,6 +50,11 @@ test('Milo modes preserve model selection, credits, references and explicit cons
       assert.equal(prepared.status(),200,`Studio fixture preparation failed: ${path}`);
       await prepared.dispose();
     }
+    const preparedReferences=await owned.context.request.post(runtime.browserOrigin+`/api/studio/projects/${project.projectId}/reference-previews`,{
+      data:{refs:[{type:'asset',assetId:selectedImage,kind:'image'}]},headers:{origin:runtime.browserOrigin},timeout:90_000,
+    });
+    assert.equal(preparedReferences.status(),200,'Owned reference previews must be ready before visual checks');
+    await preparedReferences.dispose();
     const loaded=page.waitForResponse(response=>response.url().endsWith('/image-conversation')&&response.request().method()==='GET',{timeout:30_000});
     const assistanceLoaded=page.waitForResponse(response=>response.url().endsWith('/api/studio/assistance')&&response.request().method()==='GET',{timeout:30_000});
     const [,initial,assistance]=await Promise.all([
