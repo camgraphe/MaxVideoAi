@@ -25,15 +25,24 @@ remain disabled; neither approval implies the other. `assistance-policy.ts` sele
 monthly credits and Luna fair use; the public contract lives in
 `frontend/src/lib/studio/assistance-contract.ts`.
 
-Studio starts on GPT‑6.1 Sol with the existing 500 included credits. The compact
-model selector offers exactly GPT‑6.1 Sol and GPT‑6 Luna; new Luna requests keep the current high-reasoning policy.
-There is no public Quick/Standard/Complex picker. New requests use the existing
-internal Standard work bounds; stored task profiles and approvals remain valid.
-While Luna is selected, a discreet sentence below the composer opens Sol credits.
-A Luna task, including a funding fallback, also offers a small Sol top-up link.
+Studio presents its assistant as Milo. The compact Standard / Max controls below
+the composer open the existing settings and credits dialog; opening it does not
+select a model or buy credits. Max maps to GPT‑6.1 Sol and remains the default with
+the existing 500 included credits. Standard maps to GPT‑6 Luna and keeps the
+current high-reasoning policy. These public mode names do not rename stored task
+profiles: there is no public Quick/Standard/Complex work-profile picker. New
+requests use the existing internal Standard work bounds; stored profiles and
+approvals remain valid. A Standard task, including a funding fallback, offers an
+Explore Max link. Assistance details stay in the dialog rather than an extra
+explanatory sentence below the composer.
 Complex requests may receive a brief contextual recommendation in the chat.
 Credits and pack purchases remain in the on-demand assistance dialog, with
 explicit purchase confirmation. No default-model migration is required.
+
+New purchase receipts say `Milo Max credit pack`. Historical receipt descriptions,
+`studio_assistance_pack`, tariff versions, model IDs and idempotency keys are not
+renamed or migrated. The homepage, Studio landing and pricing/PAYG copy use the
+same public names while retaining the underlying model names in pricing details.
 
 GPT‑6.1 Sol receives **500 free credits per UTC calendar month**. 1,000 credits
 represent USD $1 of customer usage, not 1,000 raw model tokens. Free credits do not

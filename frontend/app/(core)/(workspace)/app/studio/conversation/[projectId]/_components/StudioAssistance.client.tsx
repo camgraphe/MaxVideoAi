@@ -27,7 +27,6 @@ export function StudioAssistance(props:Props) {
         </div>
         <button type="button" ref={trigger} className={styles.trigger} aria-haspopup="dialog" aria-expanded={open} aria-label={t('Milo settings and credits','Réglages et crédits Milo')} onClick={event=>show(event.currentTarget)}><Info size={16}/></button>
       </div>
-      <p className={styles.modeHint}>{t('Standard for everyday tasks. Max for complex requests.','Standard au quotidien. Max pour les demandes complexes.')}</p>
     </div>
     {open&&(status?.credits?<StudioAssistanceCreditsDialog {...props} initialView={requestedView} trigger={returnFocus} fallbackTrigger={trigger} onClose={close}/>:<AssistanceDialog {...props} trigger={returnFocus} fallbackTrigger={trigger} onClose={close}/>)}
   </>;

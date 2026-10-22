@@ -30,7 +30,7 @@ test('Milo modes preserve model selection, credits, references and explicit cons
   process.env.DATABASE_URL=runtime.database.databaseUrl;
   let browser:Awaited<ReturnType<typeof startStudioConnectedBrowserFixture>>|undefined;
   try{
-    const project=await createStudioConversationProject({userId:STUDIO_FIXTURE_OWNERS[0]},{name:'Task allowance',idempotencyKey:randomUUID()},{featureEnabled:true});
+    const project=await createStudioConversationProject({userId:STUDIO_FIXTURE_OWNERS[0]},{name:'Product study',idempotencyKey:randomUUID()},{featureEnabled:true});
     const session=runtime.auth.createSession(STUDIO_FIXTURE_OWNERS[0],{clientId:'task-browser-fixture'});
     browser=await startStudioConnectedBrowserFixture({runtime,browserName:'chromium'});
     const owned=await browser.newContext(session,{viewport:{width:1440,height:900},locale:'en-US',reducedMotion:'reduce'}),page=owned.page;
@@ -86,6 +86,7 @@ test('Milo modes preserve model selection, credits, references and explicit cons
     assert.match(await page.title(),/Studio|MaxVideoAI/);assert.equal(new URL(page.url()).pathname,conversationPath);
     await expect(page.getByRole('img',{name:'Selected product',exact:true})).toBeVisible({timeout:30_000});
     await page.screenshot({path:join(evidence,'sol-start-desktop.png')});
+    await page.screenshot({path:join(evidence,'studio-milo-preview.png'),clip:{x:86,y:68,width:1354,height:832}});
     await page.getByRole('button',{name:'Open MaxVideoAI menu',exact:true}).click();
     await page.getByRole('button',{name:'Dark',exact:true}).click();
     await page.getByRole('dialog',{name:'MaxVideoAI',exact:true}).getByRole('button',{name:'Close ×',exact:true}).click();

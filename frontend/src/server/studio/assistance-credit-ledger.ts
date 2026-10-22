@@ -35,8 +35,8 @@ export async function existingStudioCreditPurchase(tx:TransactionQueryExecutor,u
 }
 export async function purchaseStudioCreditPack(tx:TransactionQueryExecutor,userId:string,choice:{purchaseKey:string;amountCents:number;tariffVersion:string}){
   const id=randomUUID();
-  const debit=await reserveWalletChargeInExecutor(tx,{userId,amountCents:choice.amountCents,currency:'USD',description:'GPT-6.1 Sol credit pack',jobId:'studio-sol-pack:'+id,surface:'tool',billingProductKey:'studio_assistance_pack',pricingSnapshotJson:JSON.stringify({tariff:STUDIO_ASSISTANCE_CREDIT_TARIFF,credits:choice.amountCents*creditsPerCent,creditsPerDollar:STUDIO_SOL_CREDITS_PER_DOLLAR,purchaseKey:choice.purchaseKey}),applicationFeeCents:null,vendorAccountId:null},{preferredCurrency:null});
-  if(!debit.ok)throw new AgentApiError('INSUFFICIENT_FUNDS','Your MaxVideoAI balance cannot fund this Sol pack. Top up your balance before purchasing.');
+  const debit=await reserveWalletChargeInExecutor(tx,{userId,amountCents:choice.amountCents,currency:'USD',description:'Milo Max credit pack',jobId:'studio-sol-pack:'+id,surface:'tool',billingProductKey:'studio_assistance_pack',pricingSnapshotJson:JSON.stringify({tariff:STUDIO_ASSISTANCE_CREDIT_TARIFF,credits:choice.amountCents*creditsPerCent,creditsPerDollar:STUDIO_SOL_CREDITS_PER_DOLLAR,purchaseKey:choice.purchaseKey}),applicationFeeCents:null,vendorAccountId:null},{preferredCurrency:null});
+  if(!debit.ok)throw new AgentApiError('INSUFFICIENT_FUNDS','Your MaxVideoAI balance cannot fund this Max pack. Top up your balance before purchasing.');
   await tx.query(`INSERT INTO studio_assistance_credit_lots(id,user_id,kind,total_credits,amount_cents,purchase_key,tariff_version,receipt_id) VALUES($1,$2,'purchased',$3,$4,$5,$6,$7)`,[id,userId,choice.amountCents*creditsPerCent,choice.amountCents,choice.purchaseKey,choice.tariffVersion,debit.receiptId]);
 }
 export type CreditReservation={allocations:Array<{lotId:string;credits:number}>;quotedCents:number;sponsoredNanoUsd:number};

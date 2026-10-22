@@ -228,8 +228,8 @@ export const enPayAsYouGoContent = {
           "body": "These have no cash value and are not refundable. Check the specific offer for its validity conditions; if none are stated, ask support before assuming the media-credit or Studio rules apply."
         },
         {
-          "title": "Studio assistance credits",
-          "body": "GPT-6.1 Sol includes 500 credits per UTC calendar month. Unused included credits do not carry over. Purchased Sol packs accumulate without expiry or automatic refill. Each pack purchase is confirmed and funded from your MaxVideoAI wallet. Media generation has its own separate quote. GPT-6 Luna has no extra assistance fee, subject to request limits and service availability."
+          "title": "Milo assistance credits",
+          "body": "Milo Max (GPT-6.1 Sol) includes 500 credits per UTC calendar month. Unused included credits do not carry over. Purchased Max packs accumulate without expiry or automatic refill. Each pack purchase is confirmed and funded from your MaxVideoAI wallet. Media generation has its own separate quote. Standard (GPT-6 Luna) has no extra assistance fee, subject to request limits and service availability."
         }
       ],
       "links": {

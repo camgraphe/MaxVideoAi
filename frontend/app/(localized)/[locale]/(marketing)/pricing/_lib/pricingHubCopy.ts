@@ -349,8 +349,8 @@ const en: PricingHubCopy = {
           "body": "These have no cash value and are not refundable. Check the specific offer for its validity conditions; if none are stated, ask support before assuming the media-credit or Studio rules apply."
         },
         {
-          "title": "Studio assistance credits",
-          "body": "GPT-6.1 Sol includes 500 credits per UTC calendar month. Unused included credits do not carry over. Purchased Sol packs accumulate without expiry or automatic refill. Each pack purchase is confirmed and funded from your MaxVideoAI wallet. Media generation has its own separate quote. GPT-6 Luna has no extra assistance fee, subject to request limits and service availability."
+          "title": "Milo assistance credits",
+          "body": "Milo Max (GPT-6.1 Sol) includes 500 credits per UTC calendar month. Unused included credits do not carry over. Purchased Max packs accumulate without expiry or automatic refill. Each pack purchase is confirmed and funded from your MaxVideoAI wallet. Media generation has its own separate quote. Standard (GPT-6 Luna) has no extra assistance fee, subject to request limits and service availability."
         }
       ],
       "links": {
@@ -564,8 +564,8 @@ const fr: PricingHubCopy = {
           "body": "Ils n’ont pas de valeur monétaire et ne sont pas remboursables. Consultez les conditions de validité de l’offre ; si elles ne sont pas précisées, contactez l’assistance avant de leur appliquer les règles des crédits média ou de Studio."
         },
         {
-          "title": "Crédits d’assistance Studio",
-          "body": "GPT-6.1 Sol inclut 500 crédits par mois civil UTC. Les crédits inclus non utilisés ne sont pas reportés. Les packs Sol achetés se cumulent sans expiration ni recharge automatique. Chaque achat de pack est confirmé et financé depuis votre portefeuille MaxVideoAI. La génération média a son propre devis distinct. GPT-6 Luna n’entraîne pas de frais d’assistance supplémentaires, sous réserve des limites de requête et de la disponibilité du service."
+          "title": "Crédits d’assistance Milo",
+          "body": "Milo Max (GPT-6.1 Sol) inclut 500 crédits par mois civil UTC. Les crédits inclus non utilisés ne sont pas reportés. Les packs Max achetés se cumulent sans expiration ni recharge automatique. Chaque achat de pack est confirmé et financé depuis votre portefeuille MaxVideoAI. La génération média a son propre devis distinct. Standard (GPT-6 Luna) n’entraîne pas de frais d’assistance supplémentaires, sous réserve des limites de requête et de la disponibilité du service."
         }
       ],
       "links": {
@@ -779,8 +779,8 @@ const es: PricingHubCopy = {
           "body": "No tienen valor en efectivo y no son reembolsables. Consulta las condiciones de validez de la oferta; si no se indican, pregunta a soporte antes de aplicar las reglas de los créditos de medios o de Studio."
         },
         {
-          "title": "Créditos de asistencia de Studio",
-          "body": "GPT-6.1 Sol incluye 500 créditos por mes natural UTC. Los créditos incluidos no usados no se acumulan. Los paquetes Sol comprados se acumulan sin caducidad ni recarga automática. Cada compra de paquete se confirma y se financia desde tu monedero MaxVideoAI. La generación de medios tiene su propia cotización. GPT-6 Luna no tiene coste adicional de asistencia, sujeto a límites de solicitudes y disponibilidad del servicio."
+          "title": "Créditos de asistencia de Milo",
+          "body": "Milo Max (GPT-6.1 Sol) incluye 500 créditos por mes natural UTC. Los créditos incluidos no usados no se acumulan. Los paquetes Max comprados se acumulan sin caducidad ni recarga automática. Cada compra de paquete se confirma y se financia desde tu monedero MaxVideoAI. La generación de medios tiene su propia cotización. Standard (GPT-6 Luna) no tiene coste adicional de asistencia, sujeto a límites de solicitudes y disponibilidad del servicio."
         }
       ],
       "links": {

@@ -45,7 +45,7 @@ export function createStudioTaskService(actor:StudioGenerationActor,dependencies
         if(input.taskBudget!.model&&input.taskBudget!.model!==account.selected_model||input.taskBudget!.assistanceRevision!==undefined&&input.taskBudget!.assistanceRevision!==Number(account.revision))throw new AgentApiError('CONFIRMATION_REQUIRED','Refresh the selected model and assistance policy before sending.');
         await noOtherActive(tx,input.requestId);
         const assistance=await openStudioAssistanceTurn(actor,input.requestId,policy,tx);
-        let profile;try{profile=studioTaskProfileForModel(input.taskBudget!,assistance.model);}catch{throw new AgentApiError('CONFIRMATION_REQUIRED','Select Sol and confirm the complex ceiling before sending.');}
+        let profile;try{profile=studioTaskProfileForModel(input.taskBudget!,assistance.model);}catch{throw new AgentApiError('CONFIRMATION_REQUIRED','Select Max and confirm the complex ceiling before sending.');}
         const count=(await tx.query<{n:number}>(`SELECT count(*)::int n FROM (
           SELECT t.request_id FROM studio_image_turns t WHERE t.user_id=$1 AND t.created_at>clock_timestamp()-interval '1 hour'
             AND NOT EXISTS(SELECT 1 FROM studio_task_segments s WHERE s.user_id=t.user_id AND s.project_id=t.project_id AND s.request_id=t.request_id)
