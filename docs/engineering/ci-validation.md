@@ -23,6 +23,11 @@ PostgreSQL, FFmpeg or Chromium installation. Full runs occur daily at 03:23 UTC 
 on manual dispatch of Quality CI. Network source checks and the optional remote
 runtime audit run on these full runs as non-blocking audits.
 
+The fast job has a 30-minute limit, including setup, audits, type checking and
+lint. Its 1,300+ tools-free test files include complete pricing projections;
+the former 20-minute job limit canceled a still-progressing suite on hosted
+runners. This time allowance does not change lane selection or test coverage.
+
 ## Change selection and conservative fallback
 
 `scripts/select-ci-validation.mjs` compares the entire PR against its base using
