@@ -75,6 +75,23 @@ Avant suppression, distinguer :
 
 Le panneau annonce les octets réellement récupérables après toutes les références utiles, pas seulement la somme des cartes sélectionnées. Les fichiers conservés par une autre référence restent comptés. La corbeille propose « Restaurer » et « Supprimer définitivement » ; cette dernière action affiche « Suppression en cours » puis confirme la libération. Archiver ou masquer un élément de l’historique ne libère pas de stockage.
 
+### Médias déjà publiés dans les galeries ou sur le site
+
+La publication constitue une dépendance à inventorier avant toute suppression, y compris le simple passage en corbeille. Dans le code actuel, les effets ne sont pas uniformes :
+
+- Le [catalogue public](../../../frontend/server/videos-catalog-page.ts) applique le [filtre de source disponible](../../../frontend/server/videos-query.ts). Si un `media_asset` supprimé correspond exactement au compte et à l’URL du rendu publié, ce rendu devient inéligible dans ces lecteurs, même si le fichier S3 existe encore. Certaines autres lectures ne vérifient que visibilité/indexabilité : ne pas présumer un retrait immédiat de toutes les surfaces.
+- Le [catalogue des sources de démonstration](../../../frontend/config/public-video-sources.json) référence aussi directement des URL de rendus et de fichiers de bibliothèque. Une suppression physique peut casser une démonstration de page d’accueil ou de modèle sans modification de sa configuration.
+- Les [lecteurs publics](../../../frontend/lib/public-video-playback.ts) peuvent utiliser une version optimisée, l’original ou son repli. Un aperçu restant accessible ne prouve donc pas que la lecture Original ou le téléchargement fonctionne encore. Les caches peuvent différer l’apparition du problème.
+- Les [liens de partage](../../engineering/video-sharing.md) sont distincts des publications éditoriales. Ils suivent une source précise ; leur révocation doit être cohérente avec toutes les projections de suppression. Une URL média directe déjà diffusée n’est pas révoquée par la seule désactivation de la page de partage.
+
+**Protection immédiate à prévoir :** montrer « Utilisé sur le site » avec les galeries/pages concernées, puis refuser la suppression destructive ou la corbeille qui retirerait la source publiée. Un administrateur doit d’abord retirer la publication, la remplacer ou la rendre autonome. Le contrôle est serveur et revalidé au moment de supprimer ; il couvre original, poster, aperçu et médias d’un avant/après. Supprimer une source ayant uniquement servi au calcul d’un rendu autonome reste un autre cas : cette provenance ne constitue pas à elle seule un usage public des octets.
+
+**Cible pour les démonstrations choisies par MaxVideoAI :** créer une publication autonome dans un espace média du site, avec original publié, dérivés nécessaires et métadonnées indépendantes de l’état supprimé du média personnel. Une simple copie MP4 laissant le lecteur dépendre de l’ancien `media_asset` ou job ne suffit pas. La publication est imputée au budget du site ; le nettoyage personnel peut alors libérer le quota utilisateur sans casser le site. Ce choix peut ajouter une copie physique, à réserver aux médias réellement sélectionnés pour publication et à compter explicitement. Une publication de contenu client reste un acte distinct avec accord explicite, conformément au guide de partage ; aucune copie publique automatique lors d’un import ou d’une suppression.
+
+Pour l’existant, inventorier et migrer les usages publics par lots vérifiés avant d’ouvrir la purge générale. Lors d’un retrait ou remplacement, mettre à jour les playlists, les références de page, les lecteurs/watch pages et leurs métadonnées, puis invalider les caches applicatifs concernés. Vérifier les URL de média et leurs réponses HTTP/Range ainsi que les liens de téléchargement. Pour une révocation de publication, prévoir aussi le traitement des copies et caches publics concernés ; une disparition dans la grille ne prouve pas une révocation de toutes les URL diffusées.
+
+Tests spécifiques : suppression refusée avant toute mutation lorsqu’une référence publique existe ; conservation des démonstrations après nettoyage personnel une fois leur publication autonome ; retrait cohérent d’une publication et de ses lecteurs ; concurrence entre publication et purge ; absence de faux succès liée à un aperçu ou cache encore chaud.
+
 ## Faisabilité dans le code actuel
 
 | Constat vérifié | Conséquence |
@@ -136,7 +153,7 @@ Les budgets internes doivent borner séparément volume conservé, entrées quot
 | Lot | Résultat concret | Condition de passage |
 | --- | --- | --- |
 | 1. Inventaire et mesure | Registre initial, tailles manquantes, doublons physiques, usages de projets, coût par cohorte ; calcul sans enforcement public | Rapprocher objets S3 et références applicatives ; expliquer les écarts avant de compter ou supprimer |
-| 2. Conservation et libération d’espace | Politique uniforme des rendus, purge relançable, corbeille, compteur, tri par poids, sélection multiple et protection des usages | Prouver les octets supprimés, la restauration et la survie des versions non sélectionnées ; traiter l’exception ProRes |
+| 2. Conservation et libération d’espace | Politique uniforme des rendus, purge relançable, corbeille, compteur, tri par poids, sélection multiple et protection des usages privés/publics | Prouver les octets supprimés, la restauration et la survie des versions non sélectionnées ; protéger les publications existantes et traiter l’exception ProRes |
 | 3. Import et préparation vidéo partagés | Sélecteur, profils propres aux modèles, adaptation serveur, provenance et réservations ; pilote admin | iPhone/Android réels, vidéo d’une minute, mémoire/concurrence bornées et aucune facturation avant média prêt |
 | 4. Ouverture publique progressive | Quota commercial annoncé, alerte à 90 %, admission/réservations actives, métriques et coupe-circuit | Coûts mesurés et marge de livraison démontrée ; aucun changement rétroactif silencieux |
 
