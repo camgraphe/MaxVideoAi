@@ -2,6 +2,7 @@ import { factsFromProbe } from '../frontend/lib/generated-video-media-facts';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import ts from '../frontend/node_modules/typescript/lib/typescript.js';
 
 import {
   validateGenerationMediaConstraints,
@@ -205,7 +206,19 @@ test('audio uploads persist trusted duration metadata for MiniMax H3 references'
   assert.match(storageSource, /probeMediaBuffer/);
   assert.match(storageSource, /const metadata\s*=\s*\{[^}]*durationSec/s);
   assert.match(storageSource, /recordUserAsset\(\{[\s\S]*metadata,/s);
-  assert.match(storageSource, /ensureReusableAsset\(\{[^}]*durationSec:\s*duration\.durationSec/s);
+  const parsed = ts.createSourceFile('store-media-upload.ts', storageSource, ts.ScriptTarget.Latest, true);
+  const calls: ts.CallExpression[] = [];
+  const visit = (node: ts.Node): void => {
+    if (ts.isCallExpression(node) && node.expression.getText(parsed) === 'dependencies.ensureReusableAsset') calls.push(node);
+    ts.forEachChild(node, visit);
+  };
+  visit(parsed);
+  assert.equal(calls.length, 1);
+  const options = calls[0].arguments[0];
+  assert.ok(ts.isObjectLiteralExpression(options));
+  const duration = options.properties.find(property => ts.isPropertyAssignment(property) && property.name.getText(parsed) === 'durationSec');
+  assert.ok(duration && ts.isPropertyAssignment(duration));
+  assert.equal(duration.initializer.getText(parsed), 'duration.durationSec');
   assert.match(routeSource, /asset:\s*\{[^}]*durationSec:\s*stored\.durationSec/s);
 });
 
