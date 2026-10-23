@@ -653,7 +653,7 @@ test('workspace exposes Veo 3.1 manual modes by variant', () => {
   assert.deepEqual(getEngineModeOptions(veoLite), ['extend']);
 });
 
-test('workspace treats Kling 3.0 Omni as one unified inferred composer', () => {
+test('workspace keeps Kling Omni creation unified and exposes supported Modify separately', () => {
   const klingO3Pro = listFalEngines().find((entry) => entry.id === 'kling-o3-pro')?.engine;
   const klingO34k = listFalEngines().find((entry) => entry.id === 'kling-o3-4k')?.engine;
 
@@ -661,7 +661,7 @@ test('workspace treats Kling 3.0 Omni as one unified inferred composer', () => {
   assert.ok(klingO34k);
   assert.equal(getEngineModeOptions(klingO3Pro), undefined);
   assert.equal(getEngineModeOptions(klingO34k), undefined);
-  assert.equal(
+  assert.deepEqual(
     buildComposerModeToggles({
       selectedEngine: klingO3Pro,
       audioWorkflowLocked: false,
@@ -673,8 +673,8 @@ test('workspace treats Kling 3.0 Omni as one unified inferred composer', () => {
         audioLocked: 'Audio locked',
         audioLockedFallback: 'Audio locked',
       },
-    }),
-    undefined
+    })?.map(({ mode }) => mode),
+    [null, 'v2v']
   );
   assert.equal(
     buildComposerModeToggles({
