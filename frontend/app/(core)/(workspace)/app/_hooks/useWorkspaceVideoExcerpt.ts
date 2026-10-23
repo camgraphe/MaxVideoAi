@@ -3,11 +3,10 @@
 import { useCallback, useLayoutEffect, useRef } from 'react';
 import type { EngineCaps, EngineInputField, Mode } from '@/types/engines';
 import {
-  getVideoExcerptLimits,
+  getMediaExcerptLimits,
   validateVideoExcerptRange,
   type VideoExcerptRange,
 } from '@/lib/video-excerpt';
-import { isVideoSourceWorkflow } from '@/lib/video-source-workflow';
 import { requestVideoExcerpt, requestVideoExcerptSource } from '@/lib/client-video-excerpt';
 import { settleReferenceAssetReservation, type ReferenceAsset } from '../_lib/workspace-assets';
 import type { CommitInputAssetMutation, WorkspaceInputAssetState } from './useWorkspaceAssetState';
@@ -115,14 +114,15 @@ export function useWorkspaceVideoExcerpt({
         return;
       }
       cancel();
-      if (!valid() || generation.current !== epoch || !engine || !isVideoSourceWorkflow(mode)) return;
-      const limits = getVideoExcerptLimits(engine, mode);
+      if (!valid() || generation.current !== epoch || !engine) return;
+      const limits = getMediaExcerptLimits(engine, mode, field.id);
       if (limits?.sourceFieldId !== field.id) return;
       commitInputAssetMutation((previous) => {
         const source = previous[field.id]?.[index];
         if (
           !source ||
-          source.kind !== 'video' ||
+          (source.kind !== 'video' && source.kind !== 'audio') ||
+          source.kind !== field.type ||
           source.status !== 'ready' ||
           !source.url ||
           !source.durationSec ||
@@ -143,7 +143,7 @@ export function useWorkspaceVideoExcerpt({
       if (!session) return;
       const source = session.original;
       const original = source.excerptSource ?? {
-        ref: source.ref ?? { type: 'asset' as const, assetId: source.assetId!, kind: 'video' as const },
+        ref: source.ref ?? { type: 'asset' as const, assetId: source.assetId!, kind: source.kind as 'video' | 'audio' },
         previewUrl: source.previewUrl,
       };
       // Local uploads already hold the complete original. Gallery previews may be shorter;
@@ -168,19 +168,18 @@ export function useWorkspaceVideoExcerpt({
         !session.current() ||
         session.field.id !== field.id ||
         session.index !== index ||
-        !engine ||
-        !isVideoSourceWorkflow(mode)
+        !engine
       )
         throw new Error('Select the source again.');
       if (session.operation) throw new Error('Preparation already in progress.');
-      const limits = getVideoExcerptLimits(engine, mode);
+      const limits = getMediaExcerptLimits(engine, mode, field.id);
       if (!limits || limits.sourceFieldId !== field.id)
         throw new Error('This source workflow is unavailable.');
       const source = session.original;
       const original = source.excerptSource ?? {
         id: source.id,
         assetId: source.assetId,
-        ref: source.ref ?? { type: 'asset' as const, assetId: source.assetId!, kind: 'video' as const },
+        ref: source.ref ?? { type: 'asset' as const, assetId: source.assetId!, kind: source.kind as 'video' | 'audio' },
         url: source.url!,
         previewUrl: source.previewUrl,
         durationSec: source.durationSec!,
@@ -230,7 +229,7 @@ export function useWorkspaceVideoExcerpt({
       }
       try {
         const result = await requestVideoExcerpt(
-          { source: original.ref, engineId: engine.id, mode, range },
+          { source: original.ref, engineId: engine.id, mode, fieldId: field.id, range },
           operation.request
         );
         if (editor.current !== session || !session.current()) return;
@@ -244,7 +243,7 @@ export function useWorkspaceVideoExcerpt({
           previewUrl: asset.previewUrl ?? asset.url,
           durationSec: asset.durationSec,
           size: asset.size ?? source.size,
-          type: asset.mime ?? 'video/mp4',
+          type: asset.mime ?? (source.kind === 'audio' ? 'audio/wav' : 'video/mp4'),
           width: asset.width,
           height: asset.height,
           name: asset.name ?? source.name,

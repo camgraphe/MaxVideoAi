@@ -353,7 +353,7 @@ test('workspace upload context and trusted generation validation are wired befor
   assert.match(dropzoneSource, /validateEngineAudioFile/);
   assert.match(dropzoneHelpersSource, /validateMediaFileAgainstConstraint/);
   assert.match(workspaceUploadSource, /formData\.append\('engineId', engineId\)/);
-  assert.match(workspaceUploadSource, /formData\.append\('mode', preferredMode\)/);
+  assert.match(workspaceUploadSource, /formData\.append\('mode', uploadMode\)/);
   assert.match(workspaceUploadSource, /formData\.append\('fieldId', field\.id\)/);
   const constraintValidation = videoGenerationSource.indexOf('await processAndValidateGenerationAttachments(attachmentParams)');
   const billingPreflight = videoGenerationSource.indexOf('const billingPreflight = trustedIncludedTrialBilling');

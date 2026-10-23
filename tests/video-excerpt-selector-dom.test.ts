@@ -159,7 +159,7 @@ for (const density of ['workspace', 'default'])
       assert.match(generate().textContent, /1\.25/);
       await w.fx.act(async () =>
         buttons()
-          .find((button) => button.textContent === 'Choose excerpt')
+          .find((button) => button.textContent === 'Choose start and end')
           .click()
       );
       assert.equal(generate().disabled, true);
@@ -189,7 +189,7 @@ test('every selected source retains an excerpt action beyond the compact summary
     await w.fx.act(async () => w.fx.render());
     assert.equal(
       [...w.document.querySelectorAll('button')].filter(
-        (button: any) => button.textContent === 'Choose excerpt'
+        (button: any) => button.textContent === 'Choose start and end'
       ).length,
       4
     );
@@ -311,7 +311,7 @@ test('shared Composer waits for owned full-timeline access and never plays the g
  w.eval(await composerBundle);
  try{
   await w.fx.act(async()=>w.fx.render());
-  const choose=[...w.document.querySelectorAll('button')].find((b:any)=>b.textContent==='Choose excerpt') as any;
+  const choose=[...w.document.querySelectorAll('button')].find((b:any)=>b.textContent==='Choose start and end') as any;
   await w.fx.act(async()=>choose.click());
   assert.equal(w.document.querySelector('[role=dialog] video'),null);
   assert.match(w.document.querySelector('[role=dialog]').textContent,/Opening original/);

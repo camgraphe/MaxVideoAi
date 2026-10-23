@@ -55,6 +55,7 @@ export type AssetFieldConfig = {
 };
 
 export type AssetUploadMeta = {
+  prepareExcerpt?: boolean;
   durationSec?: number;
   width?: number;
   height?: number;

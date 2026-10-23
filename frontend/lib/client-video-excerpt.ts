@@ -1,7 +1,7 @@
 import type { UploadedVideoAsset } from '@/lib/client-video-upload';
 import type { ToolAssetRef } from '@/lib/toolbox/contract';
 import type { VideoExcerptRange } from '@/lib/video-excerpt';
-import type { VideoSourceWorkflow } from '@/lib/video-source-workflow';
+import type { Mode } from '@/types/engines';
 
 /** Machine-readable failure; user copy is localized by the shared selector. */
 export class VideoExcerptRequestError extends Error {
@@ -46,10 +46,10 @@ async function requestExcerptJson(
 }
 
 export async function requestVideoExcerpt(
-  input: { source: ToolAssetRef; engineId: string; mode: VideoSourceWorkflow; range: VideoExcerptRange },
+  input: { source: ToolAssetRef; engineId: string; mode: Mode; fieldId?: string; range: VideoExcerptRange },
   request: typeof fetch
 ) {
-  const { result, status } = await requestExcerptJson('/api/uploads/video/excerpt', input, request);
+  const { result, status } = await requestExcerptJson(`/api/uploads/${input.source.kind === 'audio' ? 'audio' : 'video'}/excerpt`, input, request);
   const asset = result.asset as UploadedVideoAsset;
   if (!asset?.id || !asset.url || !Number.isFinite(asset.durationSec) || asset.durationSec! <= 0)
     throw new VideoExcerptRequestError('MALFORMED_RESPONSE', status);
@@ -58,7 +58,7 @@ export async function requestVideoExcerpt(
 
 
 export async function requestVideoExcerptSource(source: ToolAssetRef, request: typeof fetch): Promise<string> {
-  const { result, status } = await requestExcerptJson('/api/uploads/video/excerpt/source', { source }, request);
+  const { result, status } = await requestExcerptJson(`/api/uploads/${source.kind === 'audio' ? 'audio' : 'video'}/excerpt/source`, { source }, request);
   if (typeof result.previewUrl !== 'string' || !/^https?:\/\//.test(result.previewUrl))
     throw new VideoExcerptRequestError('MALFORMED_RESPONSE', status);
   return result.previewUrl;

@@ -2,10 +2,9 @@
 
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { ComposerProps, ComposerAttachment } from '@/components/composer/composer-types';
-import type { EngineInputField } from '@/types/engines';
-import { getVideoExcerptLimits } from '@/lib/video-excerpt';
+import type { EngineInputField, Mode } from '@/types/engines';
+import { getMediaExcerptLimits } from '@/lib/video-excerpt';
 import { videoExcerptCopy } from '@/lib/video-excerpt-copy';
-import type { VideoSourceWorkflow } from '@/lib/video-source-workflow';
 
 const Selector = lazy(() =>
   import('./VideoExcerptSelector.client').then((module) => ({ default: module.VideoExcerptSelector }))
@@ -14,7 +13,7 @@ type Props = Pick<ComposerProps, 'engine' | 'onPrepareVideoExcerpt' | 'onVideoEx
   field: EngineInputField;
   index: number;
   asset: ComposerAttachment;
-  mode: VideoSourceWorkflow;
+  mode: Mode;
   locale: string;
 };
 /** The parent keys the surviving trigger by model/mode/slot; the dialog is also fenced by URL. */
@@ -30,11 +29,12 @@ export function VideoExcerptControl({
 }: Props) {
   const [selection, setSelection] = useState<ComposerAttachment | null>(null);
   const copy = videoExcerptCopy(locale);
-  const limits = getVideoExcerptLimits(engine, mode);
+  const limits = getMediaExcerptLimits(engine, mode, field.id);
   // Retire selection even when a source changes away and later returns to the same URL.
   useLayoutEffect(() => setSelection(null), [asset.url]);
   if (
     !limits ||
+    asset.kind !== field.type ||
     limits.sourceFieldId !== field.id ||
     !onPrepareVideoExcerpt ||
     !asset.url ||
@@ -84,7 +84,7 @@ function VideoExcerptSession({
   });
   const active = useRef<object | null>(null);
   const copy = videoExcerptCopy(locale);
-  const limits = getVideoExcerptLimits(engine, mode)!;
+  const limits = getMediaExcerptLimits(engine, mode, field.id)!;
   useEffect(() => {
     const session = {};
     active.current = session;
@@ -106,6 +106,7 @@ function VideoExcerptSession({
   return (
     <Suspense fallback={<button type="button" onClick={onClose}>{copy.cancel}</button>}>
       <Selector
+        mediaKind={asset.kind === 'audio' ? 'audio' : 'video'}
         previewUrl={preview.url}
         previewPending={preview.pending}
         previewError={preview.error}

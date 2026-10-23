@@ -251,6 +251,7 @@ test('explicit apply reserves once and inserts measured canonical derivative wit
       source: source.ref,
       engineId: 'luma-ray-3-2',
       mode: 'v2v',
+      fieldId: 'video_url',
       range: { startSec: 20, endSec: 38 },
     });
     assert.equal(new Headers(f.requests[0].init.headers).get('Authorization'), 'Bearer token-A');

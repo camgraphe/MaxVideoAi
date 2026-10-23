@@ -42,7 +42,7 @@ test('both shared excerpt surfaces restore keyboard focus after Apply, Cancel an
   for(const width of [1440,390,320]){
   await page.setViewportSize({width,height:1000});
   for(const action of ['Cancel','Escape','Apply']){
-   const opener=page.getByRole('button',{name:'Choose excerpt',exact:true});
+   const opener=page.getByRole('button',{name:'Choose start and end',exact:true});
    const box=await opener.boundingBox();assert.ok(box);
    assert.equal(await opener.evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));}),true,'excerpt action must not be covered by Remove');
    await opener.focus();await page.keyboard.press('Enter');
@@ -66,7 +66,7 @@ test('both shared excerpt surfaces restore keyboard focus after Apply, Cancel an
   for(const change of ['source','model','account']){
    await page.reload();await page.waitForLoadState('networkidle');mediaRequests.length=0;
    await page.evaluate(()=>{(window as any).holdPreparation=true;});
-   let opener=page.getByRole('button',{name:'Choose excerpt',exact:true});
+   let opener=page.getByRole('button',{name:'Choose start and end',exact:true});
    await opener.focus();await page.keyboard.press('Enter');
    let dialog=page.getByRole('dialog');await dialog.locator('video').waitFor();mediaRequests.length=0;
    await dialog.getByRole('spinbutton',{name:'Start (seconds)',exact:true}).fill('1');
@@ -75,7 +75,7 @@ test('both shared excerpt surfaces restore keyboard focus after Apply, Cancel an
    await page.waitForFunction(()=>Boolean((window as any).finishPreparation));
    await page.evaluate(change=>(window as any).fixture.replace(change),change);
    await dialog.waitFor({state:'hidden'});
-   opener=page.getByRole('button',{name:'Choose excerpt',exact:true});
+   opener=page.getByRole('button',{name:'Choose start and end',exact:true});
    await opener.focus();await page.keyboard.press('Enter');
    dialog=page.getByRole('dialog');await dialog.locator('video').waitFor();
    await page.waitForFunction(()=>document.querySelector('[role=dialog]')?.contains(document.activeElement));

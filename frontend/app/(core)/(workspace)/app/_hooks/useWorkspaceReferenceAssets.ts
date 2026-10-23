@@ -275,7 +275,7 @@ export function useWorkspaceReferenceAssets({
       field: EngineInputField,
       file: File,
       slotIndex?: number,
-      meta?: { durationSec?: number; width?: number; height?: number },
+      meta?: { durationSec?: number; width?: number; height?: number; prepareExcerpt?: boolean },
     ) => {
       if (!valid()) return;
       const blockedMessage = getSeedanceFieldBlockedMessage(field);
@@ -334,8 +334,10 @@ export function useWorkspaceReferenceAssets({
                   formData.append('file', preparedFile, preparedFile.name);
                   if (field.type === 'audio' && engineId) {
                     formData.append('engineId', engineId);
-                    formData.append('mode', preferredMode);
+                    const uploadMode = !field.modes?.length || field.modes.includes(preferredMode) ? preferredMode : field.modes[0];
+                    formData.append('mode', uploadMode);
                     formData.append('fieldId', field.id);
+                    if (meta?.prepareExcerpt) formData.append('prepareExcerpt', '1');
                   }
                   const uploadEndpoint =
                     field.type === 'audio' ? '/api/uploads/audio' : '/api/uploads/image';

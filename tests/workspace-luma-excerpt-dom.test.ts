@@ -80,7 +80,7 @@ test('specialized Luma source opens and applies the real excerpt flow without ch
     assert.equal(f.w.probe.sourceState, 'error', 'the uncut 60-second source is not generation-ready');
     const beforeKeyframes = JSON.stringify(f.w.probe.inputAssets.edit_keyframe_urls);
     const beforeOptions = JSON.stringify(f.w.probe.form.extraInputValues);
-    const choose = f.button('Choose excerpt');
+    const choose = f.button('Choose start and end');
     assert.ok(choose, 'the actual specialized source must expose the shared excerpt control');
     await f.w.fx.act(async () => choose.click());
     assert.equal(f.w.probe.sourceState, 'uploading', 'opening masks source eligibility through the existing route hook');
@@ -93,7 +93,7 @@ test('specialized Luma source opens and applies the real excerpt flow without ch
     assert.equal(f.w.probe.sourceState, 'error');
     assert.equal(f.requests.length, 0, 'cancelling performs no preparation');
 
-    await f.w.fx.act(async () => f.button('Choose excerpt')!.click());
+    await f.w.fx.act(async () => f.button('Choose start and end')!.click());
     for (const [label, value] of [['Start (seconds)', '20'], ['End (seconds)', '38']]) {
       const input = f.w.document.querySelector(`input[aria-label="${label}"]`);
       assert.ok(input);
@@ -108,7 +108,7 @@ test('specialized Luma source opens and applies the real excerpt flow without ch
     assert.equal(f.requests.length, 1);
     assert.equal(f.requests[0].url, '/api/uploads/video/excerpt');
     assert.deepEqual(JSON.parse(String(f.requests[0].init.body)), {
-      source: source.ref, engineId: 'luma-ray-3-2', mode: 'v2v', range: { startSec: 20, endSec: 38 },
+      source: source.ref, engineId: 'luma-ray-3-2', mode: 'v2v', fieldId: 'video_url', range: { startSec: 20, endSec: 38 },
     });
     assert.equal(f.w.probe.inputAssets.video_url[0].status, 'uploading');
     await f.w.fx.act(async () => f.requests[0].response.resolve({ ok: true, json: async () => ({ ok: true, asset: {
@@ -123,7 +123,7 @@ test('specialized Luma source opens and applies the real excerpt flow without ch
     assert.equal(f.w.probe.inputAssets.video_url[0].excerptSource.url, source.url);
     assert.equal(JSON.stringify(f.w.probe.inputAssets.edit_keyframe_urls), beforeKeyframes);
     assert.equal(JSON.stringify(f.w.probe.form.extraInputValues), beforeOptions);
-    assert.ok(f.button('Choose excerpt'), 'the trigger survives source replacement for subsequent edits');
+    assert.ok(f.button('Choose start and end'), 'the trigger survives source replacement for subsequent edits');
   } finally { await f.dispose(); }
 });
 

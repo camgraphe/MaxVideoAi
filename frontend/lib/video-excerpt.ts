@@ -1,5 +1,6 @@
-import type { EngineCaps } from '@/types/engines';
-import { getVideoWorkflowSourceField, type VideoSourceWorkflow } from '@/lib/video-source-workflow';
+import type { EngineCaps, Mode } from '@/types/engines';
+import { getVideoWorkflowSourceField, isVideoSourceWorkflow, type VideoSourceWorkflow } from '@/lib/video-source-workflow';
+import { resolveEngineMediaFieldConstraint, validateMediaFileAgainstConstraint } from '@/lib/media-field-constraints';
 import { videoDurationPolicy } from '@/lib/video-workflow-capabilities';
 
 // Operational budgets apply only to excerpt preparation, never model generation.
@@ -29,6 +30,47 @@ export function getVideoExcerptLimits(engine: EngineCaps, mode: VideoSourceWorkf
       ?? positive(engine.inputSchema?.constraints?.maxVideoSizeMB),
     durationPolicy: videoDurationPolicy(engine, mode),
   };
+}
+
+/** The selected slot owns preparation policy, including reference clips in Create. */
+export function getMediaExcerptLimits(engine: EngineCaps, mode: Mode, fieldId: string): VideoExcerptLimits | null {
+  if (!engine.modes.includes(mode) || engine.modeAvailability?.[mode]?.available === false) return null;
+  const field = [...(engine.inputSchema?.required ?? []), ...(engine.inputSchema?.optional ?? [])]
+    .find(value => value.id === fieldId && (value.type === 'video' || value.type === 'audio')
+      && (!value.modes?.length || value.modes.includes(mode)));
+  if (!field) return null;
+  const constraint = resolveEngineMediaFieldConstraint({ engine, field });
+  const audio = field.type === 'audio';
+  // Do not offer preparation when our output format is not accepted by this field.
+  if (!validateMediaFileAgainstConstraint({ name: audio ? 'excerpt.wav' : 'excerpt.mp4',
+    mimeType: audio ? 'audio/wav' : 'video/mp4', sizeBytes: 1, constraint }).ok) return null;
+  if (!audio && isVideoSourceWorkflow(mode) && getVideoWorkflowSourceField(engine.inputSchema, mode)?.id === fieldId)
+    return getVideoExcerptLimits(engine, mode);
+  return {
+    sourceFieldId: fieldId,
+    minDurationSec: positive(field.minDurationSec),
+    maxDurationSec: positive(field.maxDurationSec) ?? positive(audio ? engine.inputLimits?.audioMaxDurationSec : engine.inputLimits?.videoMaxDurationSec)
+      ?? positive(audio ? engine.inputSchema?.constraints?.maxAudioDurationSec : engine.inputSchema?.constraints?.maxVideoDurationSec),
+    maxSizeMB: positive(constraint.maxSizeMB),
+    durationPolicy: videoDurationPolicy(engine, mode),
+  };
+}
+
+export function mediaExcerptNeedsSelection(engine: EngineCaps, mode: Mode,
+  assets: Record<string, ({ durationSec?: number | null; excerptEditing?: boolean } | null)[]>) {
+  return Object.entries(assets).some(([fieldId, entries]) => {
+    const limits = getMediaExcerptLimits(engine, mode, fieldId);
+    return entries.some(asset => asset?.excerptEditing || (limits && typeof asset?.durationSec === 'number'
+      && ((limits.minDurationSec !== null && asset.durationSec < limits.minDurationSec)
+        || (limits.maxDurationSec !== null && asset.durationSec > limits.maxDurationSec))));
+  });
+}
+
+/** Unified Create can import a reference before its presence selects ref2v/a2v. */
+export function getMediaExcerptImportMode(engine: EngineCaps, mode: Mode, fieldId: string): Mode | null {
+  if (getMediaExcerptLimits(engine, mode, fieldId)) return mode;
+  if (!['t2v', 'i2v', 'ref2v', 'fl2v'].includes(mode)) return null;
+  return (['ref2v', 'a2v', 'i2v', 't2v'] as Mode[]).find(candidate => getMediaExcerptLimits(engine, candidate, fieldId)) ?? null;
 }
 
 export function validateVideoExcerptRange(range: VideoExcerptRange, sourceDurationSec: number, limits: VideoExcerptLimits): VideoExcerptRange {

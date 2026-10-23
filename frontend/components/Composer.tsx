@@ -88,7 +88,7 @@ export function Composer({
   const promptId = useId();
   const workbenchCopy = workspaceReferenceCopy(locale);
   const workspaceDensity = density === 'workspace';
-  const { excerptEditorOpen, handleExcerptEditorChange, extensionWorkflow, sourceMode, videoSourceWorkflow, extensionCopy, extensionSourceState, extensionNotice, extensionQuoteStatus } = useComposerVideoSourceWorkflow({ engine, assets, activeManualMode, caps, onPrepareVideoExcerpt, onVideoExcerptEditorChange, workspaceDensity, locale });
+  const { excerptNeedsRange, excerptEditorOpen, handleExcerptEditorChange, extensionWorkflow, sourceMode, videoSourceWorkflow, extensionCopy, extensionSourceState, extensionNotice, extensionQuoteStatus } = useComposerVideoSourceWorkflow({ engine, assets, activeManualMode, caps, onPrepareVideoExcerpt, onVideoExcerptEditorChange, workspaceDensity, locale });
   const composerCopy = useMemo<ComposerCopy>(() => {
     const localized = t('workspace.generate.composer', DEFAULT_COMPOSER_COPY) as Partial<ComposerCopy> | undefined;
     if (!localized) {
@@ -131,13 +131,13 @@ export function Composer({
   const [isPulseVisible, setIsPulseVisible] = useState(false);
   const animationTimeoutRef = useRef<number | null>(null);
   const formattedPrice = useMemo(() => {
-    if (price == null || isPricing || excerptEditorOpen || (videoSourceWorkflow && extensionSourceState !== 'ready') || preflight?.ok === false) return null;
+    if (price == null || isPricing || excerptEditorOpen || excerptNeedsRange || (videoSourceWorkflow && extensionSourceState !== 'ready') || preflight?.ok === false) return null;
     try {
       return new Intl.NumberFormat(CURRENCY_LOCALE, { style: 'currency', currency }).format(price);
     } catch {
       return `${currency} ${price.toFixed(2)}`;
     }
-  }, [price, currency, isPricing, preflight?.ok, videoSourceWorkflow, extensionSourceState, excerptEditorOpen]);
+  }, [price, currency, isPricing, preflight?.ok, videoSourceWorkflow, extensionSourceState, excerptEditorOpen, excerptNeedsRange]);
   const promptLabel = promptField?.label ?? 'Prompt';
   const promptDescription = videoSourceWorkflow ? undefined : promptField?.description;
   const negativePromptLabel = negativePromptField?.label ?? 'Negative prompt';
@@ -151,7 +151,7 @@ export function Composer({
   const missingRequiredAsset = hasMissingRequiredComposerAsset(assetFields, assets);
   const isGenerateDisabled =
     Boolean(disableGenerate) ||
-    excerptEditorOpen ||
+    excerptEditorOpen || excerptNeedsRange ||
     isLoading ||
     isPricing ||
     (videoSourceWorkflow && extensionSourceState !== 'ready') ||

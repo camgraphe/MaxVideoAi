@@ -2,7 +2,7 @@
 
 import { useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Pause, Play, Scissors, X } from 'lucide-react';
+import { Pause, Play, Scissors, Music2, X } from 'lucide-react';
 import { VideoExcerptTimeline, excerptTime } from './VideoExcerptTimeline.client';
 import { useVideoExcerptFilmstrip } from './useVideoExcerptFilmstrip';
 import { videoExcerptStyles } from './video-excerpt-styles';
@@ -15,6 +15,7 @@ import {
 } from '@/lib/video-excerpt';
 
 export type VideoExcerptSelectorProps = {
+  mediaKind?: 'video' | 'audio';
   previewUrl: string;
   previewPending?: boolean;
   previewError?: unknown;
@@ -28,6 +29,7 @@ export type VideoExcerptSelectorProps = {
 
 /** Range preview is local. Only the explicit apply action may prepare owned media. */
 export function VideoExcerptSelector({
+  mediaKind = 'video',
   previewUrl,
   previewPending = false,
   previewError,
@@ -38,7 +40,8 @@ export function VideoExcerptSelector({
   onApply,
   onCancel,
 }: VideoExcerptSelectorProps) {
-  const copy = videoExcerptCopy(locale);
+  const copy = videoExcerptCopy(locale, mediaKind);
+  const Media = mediaKind === 'audio' ? 'audio' : 'video';
   const titleId = useId();
   const hintId = useId();
   const [start, setStart] = useState(String(initialRange?.startSec ?? 0));
@@ -46,13 +49,13 @@ export function VideoExcerptSelector({
   const [busy, setBusy] = useState(false);
   const pending = useRef(false);
   const [error, setError] = useState<string | null>(null);
-  const video = useRef<HTMLVideoElement>(null);
+  const video = useRef<HTMLMediaElement | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [previewIntent, setPreviewIntent] = useState(false);
   const pendingSeek = useRef<number | null>(null);
   const previewRequested = useRef(false);
-  const frames = useVideoExcerptFilmstrip(previewUrl, durationSec, previewIntent);
+  const frames = useVideoExcerptFilmstrip(previewUrl, durationSec, previewIntent && mediaKind === 'video');
   const { dialogRef, onDialogKeyDown } = useAccessibleModal({ onClose: onCancel });
   const range = { startSec: start.trim() ? Number(start) : NaN, endSec: end.trim() ? Number(end) : NaN };
   // Playback may inspect a source before its selected length meets the model policy.
@@ -102,7 +105,7 @@ export function VideoExcerptSelector({
     try {
       await onApply(range);
     } catch (failure) {
-      setError(videoExcerptFailureMessage(failure, locale));
+      setError(videoExcerptFailureMessage(failure, locale, mediaKind));
     } finally {
       pending.current = false;
       setBusy(false);
@@ -130,9 +133,10 @@ export function VideoExcerptSelector({
           <div><span className="video-excerpt-eyebrow"><Scissors size={13} aria-hidden="true" />{copy.timeline}</span><h2 id={titleId}>{copy.title}</h2></div>
           <button type="button" className="video-excerpt-close" aria-label={copy.close} onClick={onCancel}><X size={19} aria-hidden="true" /></button>
         </header>
-        <div className="video-excerpt-stage">
-        {previewUrl ? <video
-          ref={video}
+        <div className="video-excerpt-stage" style={mediaKind === 'audio' ? { aspectRatio: 'auto', height: 80, minHeight: 80 } : undefined}>
+        {mediaKind === 'audio' ? <span className="video-excerpt-stage-mark" aria-hidden="true"><Music2 size={26} /></span> : null}
+        {previewUrl ? <Media
+          ref={(node) => { video.current = node; }}
           src={previewUrl}
           playsInline
           preload="none"
@@ -160,7 +164,7 @@ export function VideoExcerptSelector({
           }}
           onSeeked={(event) => setCurrentTime(event.currentTarget.currentTime)}
         /> : null}
-        {!previewIntent && !previewPending ? <span className="video-excerpt-stage-mark" aria-hidden="true"><Play size={27} strokeWidth={1.5}/></span> : null}
+        {mediaKind === 'video' && !previewIntent && !previewPending ? <span className="video-excerpt-stage-mark" aria-hidden="true"><Play size={27} strokeWidth={1.5}/></span> : null}
         </div>
         <div className="video-excerpt-transport">
           <button type="button" className="video-excerpt-play" aria-label={playing ? copy.pause : copy.play} disabled={busy || !previewUrl || previewPending || Boolean(previewError)} onClick={()=>{
@@ -173,7 +177,7 @@ export function VideoExcerptSelector({
           <div className="video-excerpt-time"><strong>{excerptTime(currentTime)}</strong><span>/ {excerptTime(durationSec)}</span></div>
         </div>
         {previewPending ? <p role="status">{copy.loadingPreview}</p> : null}
-        {previewError ? <p role="alert">{videoExcerptFailureMessage(previewError, locale)}</p> : null}
+        {previewError ? <p role="alert">{videoExcerptFailureMessage(previewError, locale, mediaKind)}</p> : null}
         <VideoExcerptTimeline durationSec={durationSec} range={range} currentTime={currentTime} disabled={busy || !previewUrl || previewPending || Boolean(previewError)} copy={copy} frames={frames} onSeek={seek} onRangeChange={(next, time)=>{
           setError(null);setStart(String(next.startSec));setEnd(String(next.endSec));seek(time);
         }}/>

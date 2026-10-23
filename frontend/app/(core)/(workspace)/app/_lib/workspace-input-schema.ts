@@ -19,6 +19,7 @@ import {
 } from './workspace-engine-helpers';
 import type { FormState } from './workspace-form-state';
 import { getEngineModeUnavailableMessage, isEngineModeRuntimeAvailable } from '@/lib/engine-mode-availability';
+import { isVideoSourceWorkflow } from '@/lib/video-source-workflow';
 
 export type WorkspaceInputFieldEntry = {
   field: EngineInputField;
@@ -151,8 +152,9 @@ export function summarizeWorkspaceInputSchema({
       })
     : null;
   const appliesToMode = (field: EngineInputField) => {
-    // Extend is an explicit workflow: unified generation inputs must not leak into it.
-    if (activeMode === 'extend') return !field.modes?.length || field.modes.includes(activeMode);
+    // Source-video workflows keep their own inputs, including supported optional references.
+    // Cross-mode creation fields must not leak into Modify, Extend or Reframe.
+    if (isVideoSourceWorkflow(activeMode)) return !field.modes?.length || field.modes.includes(activeMode);
     if (allowsMultimodalReferences
       && (field.type === 'image' || field.type === 'video' || field.type === 'audio')
       && field.modes?.some((mode) => selectedEngine?.modes.includes(mode))) return true;
@@ -270,7 +272,7 @@ export function summarizeWorkspaceInputSchema({
       if (localizedField.type === 'image' || localizedField.type === 'video' || localizedField.type === 'audio') {
         // Mode-specific definitions can share a slot; cross-mode entry still renders one picker.
         if (assetFields.some(({ field: existing }) => existing.id === localizedField.id)) return;
-        if (isUnifiedKlingO3 && localizedField.id === 'start_image_url') {
+        if (isUnifiedKlingO3 && !isVideoSourceWorkflow(activeMode) && localizedField.id === 'start_image_url') {
           return;
         }
         const role = resolveAssetFieldRole(localizedField, required);

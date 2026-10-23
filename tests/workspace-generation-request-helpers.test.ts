@@ -704,7 +704,7 @@ test('workspace treats Kling 3.0 Omni as one unified inferred composer', () => {
 
   assert.deepEqual(
     v2vSchema.assetFields.map(({ field }) => field.id),
-    ['image_urls', 'image_url', 'end_image_url', 'video_url']
+    ['image_urls', 'video_url']
   );
   assert.ok(v2vSchema.secondaryFields.some(({ field }) => field.id === 'keep_audio' && field.type === 'boolean'));
 

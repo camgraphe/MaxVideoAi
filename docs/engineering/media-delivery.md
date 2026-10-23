@@ -979,10 +979,11 @@ asset-transfer evidence, not a claim about production Core Web Vitals. The
 original image remains available for historical review. Reference behavior and
 media originals are unchanged.
 
-### Workspace video excerpt selection
+### Workspace video and audio passage selection
 
 `VideoExcerptSelector.client.tsx` is the shared, lazy manual range dialog for
-Modify, Extend and Reframe sources. `VideoExcerptControl.client.tsx` owns its
+Modify, Extend and Reframe sources, plus supported video/audio reference slots in
+Create. `VideoExcerptControl.client.tsx` owns its
 presentation session; both workspace and default composer reference surfaces use
 it. Opening, moving a control and cancelling create no media. Exact numeric ends
 retain measured fractional duration; an unchanged full range is a no-op.
@@ -997,7 +998,8 @@ session or steal its focus.
 `useWorkspaceVideoExcerpt` owns account/model/mode/source fencing, explicit abort,
 atomic upload reservation and rollback/settlement. It composes the existing owned
 upload operation, never ambient-cookie authorization. Apply calls the trusted
-`/api/uploads/video/excerpt` endpoint and replaces only the selected slot with the
+`/api/uploads/video/excerpt` or `/api/uploads/audio/excerpt` endpoint (by actual
+media kind), passing the declared `fieldId`, and replaces only that slot with the
 actual measured owned result. Original/range lineage supports subsequent edits
 against the original. Blob previews needed by that lineage survive replacement
 and are released when no selected lineage uses them, on account change or unmount.
@@ -1040,9 +1042,22 @@ its validated provider payload (source, start/end frames and edit keyframes)
 through owned-media access, as Fal already does at its transport boundary.
 Provider grants never replace stored identities or survive in attempt diagnostics.
 
-`getVideoExcerptLimits` remains the model source-policy owner. Import relaxation
-is explicit and restricted to the active source field, within preparation duration
-and existing byte/upload bounds. A long uncut source stays selectable but cannot
+`getVideoExcerptLimits` remains the model source-policy owner. `getMediaExcerptLimits`
+resolves any temporal reference against its exact engine, active mode and declared
+field, retaining its MIME, size and duration policy. It never borrows another mode’s
+references or uses requested output duration to shorten a reference. Only slots
+accepting the prepared format (MP4 video or WAV audio) offer preparation.
+`getMediaExcerptImportMode` lets unified Create import a declared reference before
+its presence selects `ref2v`/`a2v`; Modify/Extend cannot borrow creation-only slots.
+`workspace-input-schema.ts` filters source workflows before unified creation
+expansion. Wan 3/Prime present Create, Modify and Extend; restored `ref2v` inputs
+still select Create and submit `ref2v`. Model schema, provider modes and legitimate
+optional image/audio references remain authoritative.
+
+Import relaxation is explicit and restricted to the selected temporal field, within
+preparation duration and existing byte/upload bounds. Audio multipart uploads pass
+`prepareExcerpt=1` only from a range-enabled slot and use a mode actually declaring
+that slot, even before Create infers it. No model generation limits are raised. A long uncut source stays selectable but cannot
 receive a quote or generate outside its model limits. Editor state also masks
 quotes/Generate immediately. Prepared facts flow through ordinary preflight inputs
 and existing inherited/requested duration projection; output settings and tariffs
@@ -1052,7 +1067,8 @@ not persisted by the workspace's form/prompt draft-storage owner.
 
 Excerpt preview access resolves the owned original through
 `server/video-excerpts/source-access.ts` and the authenticated, same-origin
-`/api/uploads/video/excerpt/source` adapter. The request accepts an asset/job-output
+`/api/uploads/video/excerpt/source` or `/api/uploads/audio/excerpt/source` adapter,
+with exact media-kind validation. The request accepts an asset/job-output
 reference, never a URL to sign. `createConversationMediaReadAccess` provides the
 short-lived full-timeline URL. Gallery previews remain unchanged and may be shorter
 than the source; they are not valid excerpt timelines. The workspace's initiating
@@ -1116,3 +1132,41 @@ fixture in `tests/video-excerpt-browser.test.ts` verifies decoded frames, mouse 
 touch interaction, paused seeking, zoom, source geometry, short mobile viewports,
 no initial media request, and shared modal focus/session fencing. This does not
 certify physical-device VoiceOver/TalkBack behavior or provider CORS availability.
+
+
+Audio preparation lives in `server/video-excerpts/audio-media.ts` and
+`prepare-audio.ts`. It uses the same owned resolver, signed reads, bounded downloader,
+concurrency slot, account fencing and private storage scope as video. Real bytes
+must contain mono/stereo audio, with no video stream except an attached cover, and
+fit the 100 MiB / 180-second preparation envelope. FFmpeg emits a distinct 48 kHz
+PCM WAV up to 60 seconds, preserving channels and checking output timing within
+one sample. These worker budgets do not restrict untrimmed generation accepted by
+a model. The stored `audioExcerpt` lineage retains original identity, range,
+source/output facts and hashes, never a signed URL. The distinct
+`audio-excerpt-private-v3` identity uses the already protected
+`video-excerpts-private-v3-` storage leaves; no bucket policy expansion or existing
+asset mutation is needed. Reauthorization checks source and active input policy
+before and after persistence. Full-original reset remains a no-op or identity
+restoration, not a second encode.
+
+Audio uses the same range handles, numeric inputs and manual playback, with no
+video filmstrip decoding. `mediaExcerptNeedsSelection` masks quotes and Generate
+while any eligible slot is being edited or exceeds that field’s duration policy.
+Prepared measured facts enter the normal quote/request flow. All localized errors
+refer to the correct media kind.
+
+Coverage: `workspace-modify-inputs` and `workspace-extend-inputs` iterate the actual
+model/mode schema; `media-reference-excerpt` covers per-slot/import policy;
+`workspace-reference-excerpt-dom` runs the shared control and real workspace hook
+for audio/video reference apply/cancel; `audio-excerpt-media` exercises real FFmpeg
+samples and unchanged originals; `audio-excerpt-prepare` verifies ownership,
+reauthorization, distinct private persistence and lineage. Browser review must
+include mobile and desktop range controls and ensure no frame selectors leak into
+source modes. Existing video keyboard/touch, preview and cancellation tests remain.
+
+Audio’s existing upload endpoint still uses multipart through the application
+server; range preparation does not add chunked transport or increase the hosting
+request-body ceiling. Large audio imports require a separate transport change.
+Before public delivery of the new audio route, qualify its deployed FFmpeg bundle,
+authenticated read/prepare flow and private Range responses on the Git preview;
+local encoder/adapter tests alone are not deployment qualification.

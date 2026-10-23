@@ -26,6 +26,7 @@ import {
 import {
   isUnifiedMinimaxH3EngineId,
 } from './minimax-h3-unified-workflow';
+import { isVideoSourceWorkflow } from '@/lib/video-source-workflow';
 import {
   getWorkspaceMediaFields,
   hasMultimodalReferenceFields,
@@ -163,7 +164,8 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, form, inputAs
     }
     if (isUnifiedKlingO3) return null;
     if (isUnifiedGeminiOmni) return null;
-    if (hasMultimodalReferences && currentMode
+    if ((selectedEngine.id === 'wan-3' || selectedEngine.id === 'wan-3-prime') && currentMode === 'ref2v') return null;
+    if (hasMultimodalReferences && currentMode && !isVideoSourceWorkflow(currentMode)
       && !workspaceAssetsSupportMode(mediaFields, inputAssets, currentMode)) return null;
     if (referenceInputStatus.hasAudio
       && (!currentMode || !workspaceAssetsSupportMode(mediaFields, inputAssets, currentMode, 'audio'))) return null;
