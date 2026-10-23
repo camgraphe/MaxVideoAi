@@ -34,6 +34,12 @@ lint. Its 1,300+ tools-free test files include complete pricing projections;
 the former 20-minute job limit canceled a still-progressing suite on hosted
 runners. This time allowance does not change lane selection or test coverage.
 
+The browser job has a 45-minute limit, including tool installation and the admin
+smoke suite. On 2026-10-23, Ubuntu 24.04 package downloads alone exceeded 18
+minutes, leaving insufficient time under the former 25-minute limit for the
+complete browser suite. The additional time preserves all required steps and
+their failure behavior; it does not turn failed or canceled tests into a pass.
+
 ## Change selection and conservative fallback
 
 `scripts/select-ci-validation.mjs` compares the entire PR against its base using
