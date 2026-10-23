@@ -1051,7 +1051,9 @@ accepting the prepared format (MP4 video or WAV audio) offer preparation.
 its presence selects `ref2v`/`a2v`; Modify/Extend cannot borrow creation-only slots.
 `workspace-input-schema.ts` filters source workflows before unified creation
 expansion. Wan 3/Prime present Create, Modify and Extend; restored `ref2v` inputs
-still select Create and submit `ref2v`. Model schema, provider modes and legitimate
+still select Create and submit `ref2v`. Their document/web URL options remain
+available from empty Create and select `ref2v` when filled; an empty Create without
+references uses `t2v`. Model schema, provider modes and legitimate
 optional image/audio references remain authoritative.
 
 Import relaxation is explicit and restricted to the selected temporal field, within

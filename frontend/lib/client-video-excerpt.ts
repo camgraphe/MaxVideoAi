@@ -49,7 +49,8 @@ export async function requestVideoExcerpt(
   input: { source: ToolAssetRef; engineId: string; mode: Mode; fieldId?: string; range: VideoExcerptRange },
   request: typeof fetch
 ) {
-  const { result, status } = await requestExcerptJson(`/api/uploads/${input.source.kind === 'audio' ? 'audio' : 'video'}/excerpt`, input, request);
+  const path = input.source.kind === 'audio' ? '/api/uploads/audio/excerpt' : '/api/uploads/video/excerpt';
+  const { result, status } = await requestExcerptJson(path, input, request);
   const asset = result.asset as UploadedVideoAsset;
   if (!asset?.id || !asset.url || !Number.isFinite(asset.durationSec) || asset.durationSec! <= 0)
     throw new VideoExcerptRequestError('MALFORMED_RESPONSE', status);
@@ -58,7 +59,8 @@ export async function requestVideoExcerpt(
 
 
 export async function requestVideoExcerptSource(source: ToolAssetRef, request: typeof fetch): Promise<string> {
-  const { result, status } = await requestExcerptJson(`/api/uploads/${source.kind === 'audio' ? 'audio' : 'video'}/excerpt/source`, { source }, request);
+  const path = source.kind === 'audio' ? '/api/uploads/audio/excerpt/source' : '/api/uploads/video/excerpt/source';
+  const { result, status } = await requestExcerptJson(path, { source }, request);
   if (typeof result.previewUrl !== 'string' || !/^https?:\/\//.test(result.previewUrl))
     throw new VideoExcerptRequestError('MALFORMED_RESPONSE', status);
   return result.previewUrl;

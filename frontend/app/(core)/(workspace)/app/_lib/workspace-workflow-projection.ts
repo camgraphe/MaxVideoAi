@@ -138,6 +138,11 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, form, inputAs
         supportsVideoEdit: supportsHappyHorseVideoEdit(selectedEngine.id),
       });
     }
+    if ((selectedEngine.id === 'wan-3' || selectedEngine.id === 'wan-3-prime')
+      && ['file_url', 'web_url'].some(id => {
+        const value = form?.extraInputValues?.[id];
+        return typeof value === 'string' && value.trim().length > 0;
+      }) && isWorkspaceModeAvailable(selectedEngine, 'ref2v')) return 'ref2v';
     if (hasMultimodalReferences) {
       const mode = resolveMultimodalReferenceMode(selectedEngine, inputAssets);
       if (mode) return mode;
