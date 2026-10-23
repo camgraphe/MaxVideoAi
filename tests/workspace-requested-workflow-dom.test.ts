@@ -59,8 +59,9 @@ async function mount(initialEngine = 'wan-3') {
     get route() { return route; }, get workflow() { return workflow; },
     async navigate(next: string) { search = next; await act(async () => render()); },
     async ready(value: boolean) { ready = value; await act(async () => render()); },
-    async source(status: 'uploading' | 'ready') {
-      assets = { video_url: [{ id: 'source', fieldId: 'video_url', kind: 'video', name: 'Source.mp4', size: 1000,
+    async clearSources() { assets = {}; await act(async () => render()); },
+    async source(status: 'uploading' | 'ready', fieldId = 'video_url') {
+      assets = { [fieldId]: [{ id: 'source', fieldId, kind: 'video', name: 'Source.mp4', size: 1000,
         type: 'video/mp4', status, assetId: 'owned-source', durationSec: status === 'ready' ? 8 : null,
         url: 'https://example.test/original.mp4', previewUrl: 'https://example.test/preview.mp4' }] };
       await act(async () => render());
@@ -85,6 +86,77 @@ test('same-model gallery Extend stays selected through source preparation and qu
     assert.equal(view.route.form?.mode, 'extend');
     assert.equal(view.workflow.submissionMode, 'extend');
     assert.equal(view.route.prompt, 'Keep this authored prompt');
+  } finally { await view.close(); }
+});
+
+for (const id of ['seedance-2-5', 'seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini']) {
+  test(`${id}: Create, Modify and Extend remain selectable before and after source preparation`, async () => {
+    const view = await mount(id);
+    try {
+      assert.deepEqual(view.workflow.composerModeToggles?.map(({ mode }) => mode), [null, 'v2v', 'extend']);
+      assert.equal(view.workflow.submissionMode, 't2v');
+      await act(async () => view.workflow.handleComposerModeToggle('v2v'));
+      assert.equal(view.workflow.activeManualMode, 'v2v', 'empty Modify must wait for its source, not return to Create');
+      assert.equal(view.workflow.submissionMode, 'v2v');
+      await view.source('uploading');
+      assert.equal(view.workflow.submissionMode, 'v2v');
+      await view.source('ready');
+      assert.equal(view.workflow.submissionMode, 'v2v');
+      await view.clearSources();
+      assert.equal(view.workflow.submissionMode, 'v2v', 'removing a source retains the explicit workflow');
+      await act(async () => view.workflow.handleComposerModeToggle(null));
+      assert.equal(view.workflow.submissionMode, 't2v');
+      await view.source('ready', 'video_urls');
+      assert.equal(view.workflow.submissionMode, 'ref2v', 'video references still belong to unified Create');
+      assert.equal(view.workflow.activeManualMode, null);
+      await view.clearSources();
+      await act(async () => view.workflow.handleComposerModeToggle('extend'));
+      assert.equal(view.workflow.submissionMode, 'extend');
+      await view.source('uploading', 'extension_source_videos');
+      assert.equal(view.workflow.submissionMode, 'extend');
+      await view.source('ready', 'extension_source_videos');
+      assert.equal(view.workflow.submissionMode, 'extend');
+      await view.clearSources();
+      await act(async () => view.workflow.handleComposerModeToggle(null));
+      assert.equal(view.workflow.submissionMode, 't2v');
+      await view.navigate(`engine=${id}&mode=v2v&media=gallery-source`);
+      assert.equal(view.workflow.submissionMode, 'v2v', 'gallery links must select Modify before their media arrives');
+      assert.equal(view.route.prompt, 'Keep this authored prompt');
+    } finally { await view.close(); }
+  });
+}
+
+for (const id of ['kling-o3-standard', 'kling-o3-pro']) {
+  test(`${id}: Modify is explicit and does not invent an Extend capability`, async () => {
+    const view = await mount(id);
+    try {
+      assert.deepEqual(view.workflow.composerModeToggles?.map(({ mode }) => mode), [null, 'v2v']);
+      await act(async () => view.workflow.handleComposerModeToggle('v2v'));
+      assert.equal(view.workflow.submissionMode, 'v2v');
+      assert.equal(view.workflow.activeManualMode, 'v2v');
+      await view.source('uploading');
+      assert.equal(view.workflow.submissionMode, 'v2v');
+      await view.source('ready');
+      assert.equal(view.workflow.submissionMode, 'v2v');
+      await view.clearSources();
+      assert.equal(view.workflow.submissionMode, 'v2v');
+      await act(async () => view.workflow.handleComposerModeToggle(null));
+      assert.equal(view.workflow.submissionMode, 't2v');
+      await view.navigate(`engine=${id}&mode=v2v&media=gallery-source`);
+      assert.equal(view.workflow.submissionMode, 'v2v');
+      assert.equal(view.route.prompt, 'Keep this authored prompt');
+    } finally { await view.close(); }
+  });
+}
+
+test('Kling Omni 4K cannot select unsupported Modify or Extend', async () => {
+  const view = await mount('kling-o3-4k');
+  try {
+    assert.ok(!view.workflow.composerModeToggles?.some(({ mode }) => mode === 'v2v' || mode === 'extend'));
+    await act(async () => view.workflow.handleComposerModeToggle('v2v'));
+    assert.equal(view.workflow.submissionMode, 't2v');
+    await act(async () => view.workflow.handleComposerModeToggle('extend'));
+    assert.equal(view.workflow.submissionMode, 't2v');
   } finally { await view.close(); }
 });
 

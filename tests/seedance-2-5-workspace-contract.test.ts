@@ -58,7 +58,7 @@ test('Seedance 2.5 uses the unified Seedance composer for all five supported mod
         audioLockedFallback: 'Audio locked',
       },
     })?.map(({ mode }) => mode),
-    [null, 'extend'],
+    [null, 'v2v', 'extend'],
   );
   assert.equal(getWorkspaceAssetFieldRank(entry.id, 'video_url'), 2);
 

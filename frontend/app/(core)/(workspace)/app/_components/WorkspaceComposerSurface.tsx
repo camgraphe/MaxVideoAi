@@ -370,7 +370,7 @@ export function WorkspaceComposerSurface({
     [handleExtraInputValueChange, hdrFieldEntry]
   );
   const storyboardLaunchAction = useMemo<ComposerPromotedAction | null>(() => {
-    if (submissionMode === 'extend' || !isStoryboardLaunchEngine(selectedEngine.id)) return null;
+    if (!['t2v', 'i2v', 'ref2v', 'fl2v'].includes(submissionMode) || !isStoryboardLaunchEngine(selectedEngine.id)) return null;
     const tooltip =
       uiLocale === 'fr'
         ? 'Ouvre le Storyboarder avant de générer avec Seedance ou Kling.'

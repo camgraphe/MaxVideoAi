@@ -240,6 +240,6 @@ test('workspace exposes Seedance 2.0 Mini extension as an explicit composer mode
     },
   });
 
-  assert.deepEqual(toggles?.map(({ mode }) => mode), [null, 'extend']);
-  assert.deepEqual(toggles?.map(({ label }) => label), ['Generate Video', 'Extend Video']);
+  assert.deepEqual(toggles?.map(({ mode }) => mode), [null, 'v2v', 'extend']);
+  assert.deepEqual(toggles?.map(({ label }) => label), ['Generate Video', 'Modify Video', 'Extend Video']);
 });

@@ -8,6 +8,8 @@ import {
   resolveGeminiOmniUnifiedMode,
 } from '../frontend/app/(core)/(workspace)/app/_lib/gemini-omni-unified-workflow.ts';
 import { summarizeWorkspaceInputSchema } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-input-schema.ts';
+import { coerceFormState } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers.ts';
+import { resolveWorkspaceWorkflow } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-workflow-projection.ts';
 import type { ReferenceAsset } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-assets.ts';
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 
@@ -97,19 +99,19 @@ test('Gemini Omni unified workflow routes from media assets and refine state', (
   );
 });
 
-test('Gemini Omni engine mode ignores stale stored manual modes', () => {
+test('Gemini Omni ignores stale Create modes while retaining explicit Modify and Extend', () => {
   assert.match(readFileSync(engineModeHookPath, 'utf8'), /resolveWorkspaceWorkflow/);
-  const source = readFileSync('frontend/app/(core)/(workspace)/app/_lib/workspace-workflow-projection.ts', 'utf8');
-  const activeManualModeSource = source.slice(
-    source.indexOf('const activeManualMode ='),
-    source.indexOf('const activeMode: Mode')
-  );
-  const geminiGuardIndex = activeManualModeSource.indexOf('if (isUnifiedGeminiOmni) return null;');
-  const referenceManualModeIndex = activeManualModeSource.indexOf("currentMode === 'ref2v'");
-
-  assert.match(activeManualModeSource, /if \(isUnifiedGeminiOmni\) return null;/);
-  assert.ok(geminiGuardIndex > -1 && referenceManualModeIndex > -1);
-  assert.ok(geminiGuardIndex < referenceManualModeIndex, 'Gemini Omni must bypass stored ref2v before generic manual modes');
+  const engine = getGeminiOmniEngine();
+  for (const mode of ['t2v', 'i2v', 'ref2v', 'fl2v', 'retake', 'v2v', 'extend'] as const) {
+    const form = coerceFormState(engine, mode, null);
+    const explicitSourceMode = mode === 'v2v' || mode === 'extend';
+    const workflow = resolveWorkspaceWorkflow({ engine, form, inputAssets: {}, klingElements: [] });
+    assert.equal(workflow.activeManualMode, explicitSourceMode ? mode : null);
+    assert.equal(workflow.submissionMode, explicitSourceMode ? mode : 't2v');
+    form.extraInputValues.previous_interaction_id = 'interactions/abc123';
+    const refine = resolveWorkspaceWorkflow({ engine, form, inputAssets: {}, klingElements: [] });
+    assert.equal(refine.submissionMode, explicitSourceMode ? mode : 'retake', 'Refine remains inferred from its interaction');
+  }
 });
 
 test('Gemini Omni unified schema keeps media slots visible from text and refine modes', () => {

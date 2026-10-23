@@ -84,3 +84,17 @@ test('available Draft preserves normal generation until selected, then uses the 
     } finally { dom.window.close(); }
   }
 });
+
+test('Storyboard creation action stays available in Create but does not distract from Modify or Extend', () => {
+  const controls = { available: false, selected: false, phase: 'setup', live: true, toggle: noop, generate: noop } as const;
+  for (const id of ['seedance-2-5', 'seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'kling-o3-pro', 'kling-o3-standard']) {
+    for (const mode of ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'] as const) {
+      if (!engines.find(engine => engine.id === id)!.modes.includes(mode)) continue;
+      const dom = composer(id, controls, mode);
+      try {
+        const storyboard = [...dom.window.document.querySelectorAll('button')].some(button => button.textContent?.trim() === 'Storyboard');
+        assert.equal(storyboard, ['t2v', 'i2v', 'ref2v'].includes(mode), `${id}/${mode}`);
+      } finally { dom.window.close(); }
+    }
+  }
+});
