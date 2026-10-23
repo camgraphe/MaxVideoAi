@@ -67,7 +67,7 @@ test('analysis has owned quotes, shared funding and durable exactly-once provide
   funding=await chooseStudioAssistance(actor.userId,{action:'disable_paid',expectedRevision:funding.revision},assistancePolicy);
   await pg.pool.query("UPDATE studio_assistance_credit_lots SET consumed_credits=total_credits WHERE user_id=$1 AND kind='included'",[actor.userId]);
   const paid=await service.prepare(request,randomUUID());
-  await assert.rejects(service.confirm({...confirmation,analysisId:paid.analysisId}),/paused|available Sol credits/i);
+  await assert.rejects(service.confirm({...confirmation,analysisId:paid.analysisId}),/paused|available Max credits/i);
   await chooseStudioAssistance(actor.userId,{action:'resume_paid',tariffVersion:funding.tariff.version,expectedRevision:funding.revision},assistancePolicy);
   await service.confirm({...confirmation,analysisId:paid.analysisId});await runStudioAnalysisWorkerOnce(worker);assert.equal(calls,3);
   const unknown=await service.prepare(request,randomUUID());await service.confirm({...confirmation,analysisId:unknown.analysisId});

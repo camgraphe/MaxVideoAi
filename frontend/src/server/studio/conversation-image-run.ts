@@ -1,3 +1,4 @@
+import {readStudioCreditCompletion} from './assistance-credit-budget';
 import {studioConversationLanguage} from './conversation-language';
 import {assertStudioTaskExecution,setStudioTaskPhase,type StudioTaskExecution} from "./tasks/execution";
 import {StudioTaskStop} from "./tasks/policy";
@@ -237,16 +238,16 @@ export async function runStudioImageActions(options: {
         params.max_output_tokens=Math.min(params.max_output_tokens??2200,2200);
         params.reasoning={effort:params.reasoning?.effort==='low'?'low':'medium'};
         checkpointOptions?.prepareLunaInput?.();
-        params.instructions=(params.instructions??'')+'\nStudio has continued this task with sponsored GPT-6 Luna because the next Sol call could not be funded. Continue the remaining client request from the saved work. This assistance change does not authorize a different generation model, a credit purchase or a media confirmation.';
+        params.instructions=(params.instructions??'')+'\nMilo has continued this task in Standard (GPT-6 Luna) because the next Max call could not be funded. Continue the remaining client request from the saved work. This assistance change does not authorize a different generation model, a credit purchase or a media confirmation.';
       }
       if (!options.countInputTokens && options.createResponse) throw new AgentApiError('ENGINE_UNAVAILABLE','Offline Studio metering requires an injected token counter.');
       const inputTokens = options.countInputTokens ? await options.countInputTokens(params) : (await new OpenAI({apiKey: process.env.OPENAI_API_KEY,maxRetries: 0,timeout: 15000}).responses.inputTokens.count(studioTokenCountInput(params))).input_tokens;
       if (!Number.isSafeInteger(inputTokens) || inputTokens < 0 || inputTokens > 272000) throw new AgentApiError('PARAMETER_INVALID','This Studio context exceeds the supported assistance limit.');
       if(options.taskExecution&&inputTokens>options.taskExecution.profile.maxInputTokens)throw new StudioTaskStop("context","The current context exceeds this task allowance.");
       const outputTokens=params.max_output_tokens??2200;
-      if(currentModel==='gpt-6.1-sol')solBounds={inputTokens,outputTokens};
+      if(currentModel==='gpt-6.1-sol')solBounds={inputTokens,outputTokens,allowCreditCompletion:true};
       return {policy,inputTokens,outputTokens,lunaFallback};
-    }} : undefined, {replayOnly: options.responseReplayOnly || checkpointOptions?.replayOnly});
+    },applyReservation:call=>{if(params)params.max_output_tokens=call.output_token_bound;if(readStudioCreditCompletion(call.pricing_snapshot))checkpointOptions?.onCreditCompletion?.();}} : undefined, {replayOnly: options.responseReplayOnly || checkpointOptions?.replayOnly});
       try{return await checkpoint();}
       catch(error){
         const action=error instanceof AgentApiError?error.nextAction:undefined;

@@ -57,6 +57,16 @@ Reviewed 2026-10-05. Studio has one public conversational interface. The private
 
 ## Public presentation and current availability
 
+Studio presents its assistant as **Milo**. The composer’s Standard / Max controls
+open the existing assistance review dialog: Standard maps to `gpt-6-luna` and Max
+to `gpt-6.1-sol`. The information button opens settings and credits; technical
+model names remain available in pricing details. These are presentation names,
+not new model identities, task profiles, defaults or financial policy versions.
+Opening a mode does not select it, enable purchased usage or buy credits. Those
+actions retain their explicit confirmations and revision checks. Welcome starters
+only fill an editable draft; reference selection and media-side tools keep their
+existing behavior.
+
 The owner approved removing Studio's beta presentation on 2026-10-05. Marketing and navigation present Studio's creative conversation, image/video/audio creation, references, timeline editing and individual original-media access. Keep Sol/Luna assistance and media-generation quotes distinct, with their existing explicit spending confirmations. The production check at 2026-10-05T13:18:40Z confirmed assistance enabled under `studio-credits-2026-10-05-v2`: included monthly Sol credits precede purchased cumulative packs from the wallet; Luna has no monthly quota and retains request limits and sponsored availability. Marketing uses these current terms without hardcoded tariffs. The legacy one-time allowance uses introductory wording only when historical policy renders that interface; its frozen contracts remain unchanged. See [Studio assistance economics](studio-assistance-economics.md).
 
 A coordinated read-only production check at 2026-10-05T13:08:15Z confirmed conversation, actions, media and editing enabled, and `STUDIO_CONVERSATION_EXPORTS_ENABLED=false`. The public page does not promise an assembled sequence MP4. Unavailable-feature guidance belongs to the context where the user requests that feature. Individual results expose their owned original through `ConversationMedia.client.tsx` and remain in the media library.

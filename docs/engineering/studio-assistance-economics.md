@@ -25,15 +25,24 @@ remain disabled; neither approval implies the other. `assistance-policy.ts` sele
 monthly credits and Luna fair use; the public contract lives in
 `frontend/src/lib/studio/assistance-contract.ts`.
 
-Studio starts on GPT‑6.1 Sol with the existing 500 included credits. The compact
-model selector offers exactly GPT‑6.1 Sol and GPT‑6 Luna; new Luna requests keep the current high-reasoning policy.
-There is no public Quick/Standard/Complex picker. New requests use the existing
-internal Standard work bounds; stored task profiles and approvals remain valid.
-While Luna is selected, a discreet sentence below the composer opens Sol credits.
-A Luna task, including a funding fallback, also offers a small Sol top-up link.
+Studio presents its assistant as Milo. The compact Standard / Max controls below
+the composer open the existing settings and credits dialog; opening it does not
+select a model or buy credits. Max maps to GPT‑6.1 Sol and remains the default with
+the existing 500 included credits. Standard maps to GPT‑6 Luna and keeps the
+current high-reasoning policy. These public mode names do not rename stored task
+profiles: there is no public Quick/Standard/Complex work-profile picker. New
+requests use the existing internal Standard work bounds; stored profiles and
+approvals remain valid. A Standard task, including a funding fallback, offers an
+Explore Max link. Assistance details stay in the dialog rather than an extra
+explanatory sentence below the composer.
 Complex requests may receive a brief contextual recommendation in the chat.
 Credits and pack purchases remain in the on-demand assistance dialog, with
 explicit purchase confirmation. No default-model migration is required.
+
+New purchase receipts say `Milo Max credit pack`. Historical receipt descriptions,
+`studio_assistance_pack`, tariff versions, model IDs and idempotency keys are not
+renamed or migrated. The homepage, Studio landing and pricing/PAYG copy use the
+same public names while retaining the underlying model names in pricing details.
 
 GPT‑6.1 Sol receives **500 free credits per UTC calendar month**. 1,000 credits
 represent USD $1 of customer usage, not 1,000 raw model tokens. Free credits do not
@@ -91,6 +100,36 @@ message quote. It **never debits the wallet a second time**. Purchases use
 `studio_assistance`. Do not add pack purchase debits to credit usage as two customer
 charges. Credit funding stores total quoted/settled customer cents (including free
 usage); the call's `charged_cents` records only the purchased portion consumed.
+
+The 2026-10-23 completion policy lets an owned Max task use its final positive
+balance without reducing the requested output allowance. Under the account lock,
+the customer reservation is capped at spendable credits and the remaining task
+monetary ceiling. MaxVideoAI sponsors any excess and conservatively reserves the
+full supplier exposure against the existing campaign, including purchased-only
+balances. Normal profile input/output/call/time limits still apply.
+
+`assistance-credit-budget.ts` validates the versioned `creditCompletion` marker in
+`pricing_snapshot`. The immutable funding `quoted_cents` is the authoritative
+customer cap; the snapshot is mutable until settlement. Settlement bills only
+actual incremental usage up to that cap and records the per-call gift separately.
+Cumulative tariff accounting subtracts both charged and gifted amounts, so a later
+purchase or explicitly continued segment never bills the gift back. Task ceilings
+count actual customer charges only. A shorter response releases unused credits;
+zero is a lower bound, not a forced debit. The existing upward cent rounding means
+balances change in multiples of 10 credits. There is no new tariff, negative balance,
+automatic pack purchase or second wallet charge.
+
+At zero spendable credits or zero remaining customer task allowance, sponsored
+Standard can continue within the existing task resource limits. A final Max output
+that still reaches its full output bound can use another existing step; incomplete
+tools are discarded and mandatory first film comparisons remain required. Saved
+completion authorization and output bounds survive checkpoint replay. Unknown
+usage remains held until recovery or support resolution; waived calls stay excluded
+from future customer tariff accounting. Non-task legacy calls retain fixed bounds.
+Unavailable campaigns, paused purchased usage and request limits still apply.
+Same-ceiling continuation remains available after legitimate step/time/budget pauses.
+Explicit media-analysis quotes
+and historical financial evidence are unaffected.
 
 GPT‑6 Luna has **no monthly per-account quota**. The existing owned conversation
 lease admits one active message per account. Reservation also refuses another

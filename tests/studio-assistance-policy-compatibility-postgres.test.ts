@@ -164,9 +164,9 @@ test('real v1 calls, paid checkpoints and support survive delivery before migrat
     const policy=studioAssistancePolicy({...env,STUDIO_ASSISTANCE_APPROVED_POLICY:creditVersion});
     const status=await readStudioAssistanceStatus(old.actor.userId,policy);
     assert.equal(status.policyVersion,creditVersion);assert.equal(status.paid.enabled,false);assert.equal(status.mode,'included_sol');assert.equal(status.credits?.purchased.total,0);
-    await assert.rejects(chooseStudioAssistance(old.actor.userId,{action:'authorize_paid',budgetCents:100,expectedRevision:status.revision,tariffVersion:STUDIO_ASSISTANCE_TARIFF.version},policy),/Sol pack/);
+    await assert.rejects(chooseStudioAssistance(old.actor.userId,{action:'authorize_paid',budgetCents:100,expectedRevision:status.revision,tariffVersion:STUDIO_ASSISTANCE_TARIFF.version},policy),/Max pack/);
     const purchase={action:'purchase_pack' as const,amountCents:200 as const,purchaseKey:randomUUID(),expectedRevision:status.revision,tariffVersion:STUDIO_ASSISTANCE_CREDIT_TARIFF.version};
-    await assert.rejects(chooseStudioAssistance(old.actor.userId,{...purchase,tariffVersion:STUDIO_ASSISTANCE_TARIFF.version},policy),/current Sol pack tariff/);
+    await assert.rejects(chooseStudioAssistance(old.actor.userId,{...purchase,tariffVersion:STUDIO_ASSISTANCE_TARIFF.version},policy),/current Max pack tariff/);
     const paid=await chooseStudioAssistance(old.actor.userId,purchase,policy);await chooseStudioAssistance(old.actor.userId,purchase,policy);
     assert.equal(paid.paid.enabled,true);assert.equal(paid.credits?.purchased.remaining,2000);
     assert.equal((await pg.pool.query<{n:number}>("SELECT count(*)::int n FROM app_receipts WHERE user_id=$1 AND billing_product_key='studio_assistance_pack'",[old.actor.userId])).rows[0].n,1);

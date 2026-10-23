@@ -11,13 +11,13 @@ import {chooseStudioAssistance,readStudioAssistanceStatus,reserveStudioAssistanc
 const generationFactory=(()=>({resolveReferences:async()=>[],walletSummary:async()=>({balanceCents:0,currency:'USD'}),catalog:async()=>[],getQuote:async()=>null})) as unknown as ImageGenerationFactory;
 const response=(model:string,id:string)=>({id,model,status:'completed' as const,service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50},output_text:JSON.stringify({reply:'Continued from the saved project.'}),output:[]});
 
-test('120 remaining Sol credits automatically continue a complex request with sponsored Luna',async t=>{
+test('a large input context with zero remaining Max credits continues with sponsored Standard',async t=>{
   const f=await studioTaskFixture(t),actor=await f.actor(),service=createStudioTaskService(actor,{enabled:true,assistancePolicy:f.policy});
   const input=f.input('complex','Keep the approved vertical framing and continue.');await service.enqueue(input);
-  await f.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=380 WHERE user_id=$1',[actor.userId]);
+  await f.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=500 WHERE user_id=$1',[actor.userId]);
   const counted:string[]=[],models:string[]=[];
   const worker={enabled:true,assistancePolicy:f.policy,serviceOptions:{generationFactory,
-    countInputTokens:async params=>{counted.push(params.model!);return 100;},
+    countInputTokens:async params=>{counted.push(params.model!);return params.model==='gpt-6.1-sol'?30000:100;},
     createActionResponse:async params=>{models.push(params.model!);assert.equal(params.max_output_tokens,2200);assert.equal(params.reasoning?.effort,'medium');assert.match(JSON.stringify(params.input),/approved vertical framing/);return response(params.model!,'luna-funded');}}};
   assert.equal(await runStudioTaskWorkerOnce(worker),true);
   const task=await service.read(input.requestId);
@@ -26,7 +26,7 @@ test('120 remaining Sol credits automatically continue a complex request with sp
   assert.deepEqual(counted,['gpt-6.1-sol','gpt-6-luna'],'Count the actual Luna request before reserving it');assert.deepEqual(models,['gpt-6-luna']);
   const call=(await f.pool.query('SELECT model,mode,charged_cents FROM studio_assistance_calls WHERE user_id=$1',[actor.userId])).rows;
   assert.deepEqual(call,[{model:'gpt-6-luna',mode:'sponsored_luna',charged_cents:0}]);
-  assert.equal(Number((await f.pool.query('SELECT consumed_credits FROM studio_assistance_credit_lots WHERE user_id=$1',[actor.userId])).rows[0].consumed_credits),380);
+  assert.equal(Number((await f.pool.query('SELECT consumed_credits FROM studio_assistance_credit_lots WHERE user_id=$1',[actor.userId])).rows[0].consumed_credits),500);
   assert.equal((await f.pool.query('SELECT model FROM studio_tasks WHERE request_id=$1',[input.requestId])).rows[0].model,'gpt-6.1-sol','Keep the original authorization immutable');
   assert.equal((await f.pool.query('SELECT paid_enabled FROM studio_assistance_accounts WHERE user_id=$1',[actor.userId])).rows[0].paid_enabled,false);
   assert.equal((await f.pool.query("SELECT count(*)::int n FROM app_receipts WHERE type='charge'")).rows[0].n,0);
@@ -38,7 +38,7 @@ test('a mid-request funding stop keeps the Sol tool result in the Luna context a
   const input=f.input('standard','Remember that the artwork must remain centered.');await service.enqueue(input);
   let counts=0;const models:string[]=[];
   await runStudioTaskWorkerOnce({enabled:true,assistancePolicy:f.policy,serviceOptions:{generationFactory,
-    countInputTokens:async()=>{if(++counts===2)await f.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=480 WHERE user_id=$1',[actor.userId]);return 100;},
+    countInputTokens:async()=>{if(++counts===2){await f.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=500 WHERE user_id=$1',[actor.userId]);return 10000;}return 100;},
     createActionResponse:async params=>{
       models.push(params.model!);
       if(models.length===1)return {...response(params.model!,'sol-memory'),output_text:'',output:[{type:'reasoning' as const,id:'private-sol-reasoning',summary:[],encrypted_content:'opaque-sol-reasoning'},{type:'function_call' as const,id:'fc-sol-memory',status:'completed' as const,name:'project_remember',call_id:'saved-framing',arguments:JSON.stringify({revision:0,brief:'Centered artwork',decisions:['Approved padding; preserve the artwork.'],projectTitle:null})}]};
@@ -55,11 +55,11 @@ test('a mid-request funding stop keeps the Sol tool result in the Luna context a
 test('resuming a previously paused Sol task with go falls back without changing its frozen model',async t=>{
   const f=await studioTaskFixture(t),actor=await f.actor(),service=createStudioTaskService(actor,{enabled:true,assistancePolicy:f.policy});
   const input=f.input('complex');await service.enqueue(input);
-  await f.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=380 WHERE user_id=$1',[actor.userId]);
+  await f.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=500 WHERE user_id=$1',[actor.userId]);
   await f.pool.query("UPDATE studio_tasks SET state='paused',phase='paused',error='funding' WHERE request_id=$1",[input.requestId]);
   const approvalId=randomUUID();await service.resume({requestId:input.requestId,approvalId,expectedRevision:0,action:'continue',maxCredits:500,policyVersion:STUDIO_TASK_POLICY_VERSION,confirmed:true});
   const models:string[]=[];
-  await runStudioTaskWorkerOnce({enabled:true,assistancePolicy:f.policy,serviceOptions:{generationFactory,countInputTokens:async()=>100,createActionResponse:async params=>{models.push(params.model!);return response(params.model!,'resumed-luna');}}});
+  await runStudioTaskWorkerOnce({enabled:true,assistancePolicy:f.policy,serviceOptions:{generationFactory,countInputTokens:async params=>params.model==='gpt-6.1-sol'?30000:100,createActionResponse:async params=>{models.push(params.model!);return response(params.model!,'resumed-luna');}}});
   assert.equal((await service.read(input.requestId)).state,'completed');assert.deepEqual(models,['gpt-6-luna']);
   assert.equal((await f.pool.query('SELECT request_id FROM studio_assistance_calls WHERE user_id=$1',[actor.userId])).rows[0].request_id,approvalId);
 });
@@ -71,7 +71,7 @@ test('unknown Sol usage and campaign exhaustion cannot dispatch a Luna replaceme
   await runStudioTaskWorkerOnce(worker);assert.equal((await service.read(input.requestId)).state,'unknown');assert.equal(calls,1);
   assert.equal(await runStudioTaskWorkerOnce(worker),false);assert.equal(calls,1);
   const other=await f.actor(),second=createStudioTaskService(other,{enabled:true,assistancePolicy:f.policy}),next=f.input('complex');await second.enqueue(next);
-  await f.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=380 WHERE user_id=$1',[other.userId]);
+  await f.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=500 WHERE user_id=$1',[other.userId]);
   await f.pool.query('UPDATE studio_assistance_campaigns SET limit_nano_usd=1');
   await runStudioTaskWorkerOnce({...worker,scope:{...other,requestId:next.requestId}});
   assert.equal((await second.read(next.requestId)).state,'paused');assert.equal(calls,1,'Unavailable sponsored funding stops before the Luna call');
@@ -80,9 +80,9 @@ test('unknown Sol usage and campaign exhaustion cannot dispatch a Luna replaceme
 test('Luna stays selected for later steps and continuation even if Sol credits become available again',async t=>{
   const f=await studioTaskFixture(t),actor=await f.actor(),service=createStudioTaskService(actor,{enabled:true,assistancePolicy:f.policy});
   const input=f.input('quick');await service.enqueue(input);
-  await f.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=480 WHERE user_id=$1',[actor.userId]);
+  await f.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=500 WHERE user_id=$1',[actor.userId]);
   const models:string[]=[];
-  const worker={enabled:true,assistancePolicy:f.policy,serviceOptions:{generationFactory,countInputTokens:async()=>100,createActionResponse:async params=>{
+  const worker={enabled:true,assistancePolicy:f.policy,serviceOptions:{generationFactory,countInputTokens:async params=>params.model==='gpt-6.1-sol'?10000:100,createActionResponse:async params=>{
     models.push(params.model!);return {...response(params.model!,'luna-read-'+models.length),output_text:'',output:[{type:'function_call' as const,name:'project_read',call_id:'luna-read-'+models.length,arguments:'{}'}]};
   }}};
   await runStudioTaskWorkerOnce(worker);const paused=await service.read(input.requestId);assert.equal(paused.state,'paused');assert.equal(paused.error,'steps');assert.equal(paused.model,'gpt-6-luna');
@@ -115,10 +115,10 @@ test('the ledger refuses a fabricated Luna fallback when the original Sol reserv
 
 test('a saved Luna response is settled and replayed without a second call after a lost settlement',async t=>{
   const f=await studioTaskFixture(t),actor=await f.actor(),service=createStudioTaskService(actor,{enabled:true,assistancePolicy:f.policy}),input=f.input('complex');await service.enqueue(input);
-  await f.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=380 WHERE user_id=$1',[actor.userId]);let calls=0;
+  await f.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=500 WHERE user_id=$1',[actor.userId]);let calls=0;
   await f.pool.query(`CREATE FUNCTION lose_luna_settlement() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'Controlled Luna settlement failure'; END; $$;
     CREATE TRIGGER lose_luna_settlement BEFORE UPDATE ON studio_assistance_calls FOR EACH ROW WHEN (NEW.model='gpt-6-luna' AND NEW.state='settled') EXECUTE FUNCTION lose_luna_settlement();`);
-  const worker={enabled:true,assistancePolicy:f.policy,serviceOptions:{generationFactory,countInputTokens:async()=>100,createActionResponse:async params=>{calls++;return response(params.model!,'saved-luna');}}};
+  const worker={enabled:true,assistancePolicy:f.policy,serviceOptions:{generationFactory,countInputTokens:async params=>params.model==='gpt-6.1-sol'?30000:100,createActionResponse:async params=>{calls++;return response(params.model!,'saved-luna');}}};
   await runStudioTaskWorkerOnce(worker);assert.equal((await service.read(input.requestId)).state,'unknown');assert.equal(calls,1);
   await f.pool.query('DROP TRIGGER lose_luna_settlement ON studio_assistance_calls; DROP FUNCTION lose_luna_settlement()');
   await runStudioTaskWorkerOnce({...worker,enabled:false,serviceOptions:{...worker.serviceOptions,createActionResponse:async()=>{throw new Error('Saved Luna output must not be repurchased');}}});
@@ -128,8 +128,8 @@ test('a saved Luna response is settled and replayed without a second call after 
 
 test('Luna tool round trips retain their own reasoning and native function-call identities',async t=>{
   const f=await studioTaskFixture(t),actor=await f.actor(),service=createStudioTaskService(actor,{enabled:true,assistancePolicy:f.policy}),input=f.input('complex');await service.enqueue(input);
-  await f.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=380 WHERE user_id=$1',[actor.userId]);let calls=0;
-  await runStudioTaskWorkerOnce({enabled:true,assistancePolicy:f.policy,serviceOptions:{generationFactory,countInputTokens:async()=>100,createActionResponse:async params=>{
+  await f.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=500 WHERE user_id=$1',[actor.userId]);let calls=0;
+  await runStudioTaskWorkerOnce({enabled:true,assistancePolicy:f.policy,serviceOptions:{generationFactory,countInputTokens:async params=>params.model==='gpt-6.1-sol'?30000:100,createActionResponse:async params=>{
     assert.equal(params.model,'gpt-6-luna');
     assert.equal(params.max_output_tokens,2200,'Each fallback round keeps its recorded output allowance');
     assert.equal(params.reasoning?.effort,'medium','Each fallback round keeps its recorded reasoning allowance');

@@ -27,7 +27,8 @@ test('a live expired worker reports its late waived response without reopening o
 });
 test('support waiver closes the unknown task, releases account blocking and fences late completion',async t=>{
   const f=await studioTaskFixture(t),actor=await f.actor(),s=createStudioTaskService(actor,{enabled:true,assistancePolicy:f.policy}),input=f.input();await s.enqueue(input);
-  let calls=0;const worker={enabled:true,assistancePolicy:f.policy,serviceOptions:{generationFactory,countInputTokens:async()=>100,createActionResponse:async()=>{calls++;throw new Error('Lost supplier response');}}};
+  await f.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=460 WHERE user_id=$1',[actor.userId]);
+  let calls=0;const worker={enabled:true,assistancePolicy:f.policy,serviceOptions:{generationFactory,countInputTokens:async()=>8000,createActionResponse:async()=>{calls++;throw new Error('Lost supplier response');}}};
   await runStudioTaskWorkerOnce(worker);assert.equal((await s.read(input.requestId)).state,'unknown');
   const call=(await f.pool.query('SELECT id FROM studio_assistance_calls WHERE request_id=$1',[input.requestId])).rows[0];
   const old=(await f.pool.query('SELECT worker_id FROM studio_tasks WHERE request_id=$1',[input.requestId])).rows[0].worker_id;
@@ -37,7 +38,8 @@ test('support waiver closes the unknown task, releases account blocking and fenc
   assert.equal((await applyStudioAssistanceResolution(approval)).applied,false);
   // This is the production worker's final update fence: the revoked worker cannot reopen it.
   assert.equal((await f.pool.query("UPDATE studio_tasks SET state='completed',phase='done' WHERE request_id=$1 AND worker_id=$2 AND state IN ('running','unknown') RETURNING request_id",[input.requestId,old])).rowCount,0);
-  await settleStudioAssistanceCall(call.id,actor.userId,response);
+  await settleStudioAssistanceCall(call.id,actor.userId,{...response,usage:{input_tokens:8000,input_tokens_details:{cached_tokens:0},output_tokens:2200}});
+  assert.equal((await f.pool.query('SELECT total_credits-consumed_credits remaining FROM studio_assistance_credit_lots WHERE user_id=$1',[actor.userId])).rows[0].remaining,'40');
   assert.equal((await s.read(input.requestId)).state,'failed');assert.equal((await s.read(input.requestId)).consumedCredits,0,'Late known usage cannot charge a waived reservation');
   assert.equal(await runStudioTaskWorkerOnce(worker),false);assert.equal(calls,1);
   assert.equal((await s.enqueue(f.input())).state,'queued','Support closeout releases the account for a new explicit task');

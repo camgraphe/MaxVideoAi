@@ -18,21 +18,21 @@ test('assistance choice requires a click, preserves tariff revision, and restore
    const render=async(value=status)=>act(async()=>root.render(React.createElement(StudioAssistance,{status:value,locale:'en',busy:false,error:null,conversationBusy:false,choose:async choice=>{choices.push(choice);return true;},refresh:async()=>{},onChoice:()=>changed++})));
    const button=(name:string)=>Array.from(dom.window.document.querySelectorAll('button')).find(el=>(el.getAttribute('aria-label')??el.textContent??'').trim()===name)!;
    await render();assert.deepEqual(choices,[]);
-   await act(async()=>button('Studio assistance and budget').click());assert.deepEqual(choices,[]);
+   await act(async()=>button('Milo settings and credits').click());assert.deepEqual(choices,[]);
    assert.match(dom.window.document.querySelector('dialog')?.textContent ?? '', /One-time introductory allowance\. Does not renew automatically\./);
    assert.doesNotMatch(dom.window.document.querySelector('dialog')?.textContent ?? '', /preview allowance/i);
    assert.equal(button('$20.00'),undefined);
    await act(async()=>button('Authorize $5.00 more').click());
    assert.deepEqual(choices,[{action:'authorize_paid',budgetCents:800,tariffVersion:status.tariff.version,expectedRevision:3}]);
-   assert.equal(changed,1);assert.equal(dom.window.document.activeElement,button('Studio assistance and budget'));
-   await act(async()=>button('Studio assistance and budget').click());
-   const luna=Array.from(dom.window.document.querySelectorAll('button')).find(el=>el.textContent?.startsWith('Continue with Luna'))!;
+   assert.equal(changed,1);assert.equal(dom.window.document.activeElement,button('Milo settings and credits'));
+   await act(async()=>button('Milo settings and credits').click());
+   const luna=Array.from(dom.window.document.querySelectorAll('button')).find(el=>el.textContent?.startsWith('Continue with Standard'))!;
    await act(async()=>luna.click());assert.deepEqual(choices[1],{action:'select_luna',expectedRevision:3});
    await render({...status,paid:{...status.paid,enabled:false,authorizedCents:2000,spentCents:0,reservedCents:0,remainingCents:2000,maxAdditionalBudgetCents:0}});
-   await act(async()=>button('Studio assistance and budget').click());
-   const resume=button('Resume authorized Sol · $20.00');assert.ok(resume,'a stopped full budget can resume without increasing authorization');
+   await act(async()=>button('Milo settings and credits').click());
+   const resume=button('Resume authorized Max · $20.00');assert.ok(resume,'a stopped full budget can resume without increasing authorization');
    await act(async()=>resume.click());assert.deepEqual(choices[2],{action:'authorize_paid',budgetCents:2000,tariffVersion:status.tariff.version,expectedRevision:3});
-   await render({...status,unresolvedCalls:1});await act(async()=>button('Studio assistance and budget').click());assert.equal(button('Authorize $5.00 more').disabled,true);
+   await render({...status,unresolvedCalls:1});await act(async()=>button('Milo settings and credits').click());assert.equal(button('Authorize $5.00 more').disabled,true);
    await render({...status,enabled:false});assert.equal(dom.window.document.querySelector('button'),null);
  }finally{await act(async()=>root.unmount());dom.window.close();for(const[key,value]of previous){if(value)Object.defineProperty(globalThis,key,value);else Reflect.deleteProperty(globalThis,key);}if(oldCss)require.extensions['.css']=oldCss;else delete require.extensions['.css'];}
 });

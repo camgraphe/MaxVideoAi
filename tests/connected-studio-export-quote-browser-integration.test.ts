@@ -92,7 +92,7 @@ test('native export quote stays accessible on mobile and recovers one identity a
     await page.getByRole('button',{name:'Light',exact:true}).click();
     await page.getByRole('dialog',{name:'MaxVideoAI',exact:true}).getByRole('button',{name:'Close ×',exact:true}).click();
     await expect(page.locator('[data-tone]')).toHaveAttribute('data-tone','olive');
-    await expect(page.getByRole('textbox',{name:'Message Studio',exact:true})).toBeVisible();
+    await expect(page.getByRole('textbox',{name:'Message Milo',exact:true})).toBeVisible();
     const box=await card.boundingBox();
     assert.ok(box&&box.x>=0&&box.x+box.width<=390,'The quote fits the mobile chat.');
     await card.getByRole('button',{name:'Confirm export · Free',exact:true}).click();

@@ -16,13 +16,13 @@ export const studioTaskProfileSchema=z.enum(['quick','standard','complex']);
 const credits=z.number().int().min(0).max(STUDIO_TASK_MAX_CREDITS).multipleOf(10);
 export const studioTaskSelectionSchema=z.object({profile:studioTaskProfileSchema,maxCredits:credits,policyVersion,confirmedComplex:z.literal(true).optional(),model:z.enum(['gpt-6.1-sol','gpt-6-luna']).optional(),assistanceRevision:z.number().int().nonnegative().optional()}).strict().superRefine((value,ctx)=>{
   if(value.maxCredits!==STUDIO_TASK_PROFILES[value.profile].maxCredits)ctx.addIssue({code:'custom',message:'Review the exact profile ceiling.'});
-  if(value.profile==='complex'&&!value.confirmedComplex)ctx.addIssue({code:'custom',message:'Confirm the complex Sol ceiling before sending.'});
+  if(value.profile==='complex'&&!value.confirmedComplex)ctx.addIssue({code:'custom',message:'Confirm the complex Max ceiling before sending.'});
 });
 export type StudioTaskSelection=z.infer<typeof studioTaskSelectionSchema>;
 export type StudioTaskProfile=keyof typeof STUDIO_TASK_PROFILES;
 export function studioTaskProfileForModel(selection:StudioTaskSelection,model:StudioAssistantModel) {
   const reviewed=studioTaskSelectionSchema.parse(selection);
-  if(reviewed.profile==='complex'&&model!=='gpt-6.1-sol')throw new Error('Select Sol before confirming a complex task.');
+  if(reviewed.profile==='complex'&&model!=='gpt-6.1-sol')throw new Error('Select Max before confirming a complex task.');
   const profile=STUDIO_TASK_PROFILES[reviewed.profile];
   return model==='gpt-6-luna'&&reviewed.policyVersion===STUDIO_TASK_POLICY_VERSION
     ? {...profile,reasoning:'high' as const,maxOutputTokens:6000 as const}

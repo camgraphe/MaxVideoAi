@@ -3,6 +3,7 @@ import test from 'node:test';
 import {createStudioConversationDirector} from '../frontend/src/server/studio/conversation-director';
 import {actionFromTool} from '../frontend/lib/studio/conversation-action-contract';
 import {studioExplicitFilmDuration} from '../frontend/src/server/studio/conversation-intent';
+import {STUDIO_TASK_PROFILES} from '../frontend/src/lib/studio/task-budget-contract';
 
 const context={message:'HEY!',references:[],history:[],project:{name:'Film',revision:0,memory:{revision:0,brief:'',decisions:[]}},
   execute:async()=>{throw new Error('A greeting must not execute actions.');},
@@ -58,6 +59,18 @@ test('film duration is an explicit bounded total, separate from the per-clip dur
   const args={surface:'video',mode:'t2v',prompt:'Bambi Rally',settings:[{name:'durationSec',value:10}],references:[],baselineModelId:null,candidateModelIds:null,outputCount:1,filmDurationSec:100};
   assert.equal((actionFromTool('pricing_compare',args) as {filmDurationSec?:number}).filmDurationSec,100);
   for(const extra of [{filmDurationSec:-1},{filmDurationSec:90000},{confirmed:true},{priceCents:45}])assert.throws(()=>actionFromTool('pricing_compare',{...args,...extra}));
+});
+
+test('a credit-limited first response cannot skip required film comparison on the next step',async()=>{
+  let calls=0,actions=0;
+  const director=createStudioConversationDirector({mediaEnabled:true,taskExecution:{taskRequestId:'task',segmentRequestId:'task',workerId:'worker',profile:STUDIO_TASK_PROFILES.standard,maxCalls:4,deadlineAt:new Date(Date.now()+60000),enabled:true},createResponse:async params=>{
+    calls++;assert.deepEqual(params.tool_choice,{type:'function',name:'pricing_compare'});
+    assert.deepEqual(params.tools?.map(tool=>tool.type==='function'?tool.name:tool.type),['pricing_compare']);
+    if(calls===1)return {id:'bounded',model:'gpt-6.1-sol',status:'incomplete',incomplete_details:{reason:'max_output_tokens'},service_tier:'default',usage:null,output:[],output_text:''};
+    return {id:'standard',model:'gpt-6-luna',status:'completed',service_tier:'default',usage:null,output_text:'',output:[{type:'function_call',name:'project_read',call_id:'bypass',arguments:'{}'}]};
+  }});
+  await assert.rejects(director({...context,message:'Create a 100-second film',checkpoint:async(index,create,params)=>{if(index===0&&params)params.max_output_tokens=475;return create();},execute:async()=>{actions++;throw new Error('Unreviewed action');}}),/Compare the complete film/);
+  assert.equal(calls,2);assert.equal(actions,0);
 });
 
 test('whole-film comparison ends with priced variants even when Quick cannot fund a follow-up response',async()=>{
