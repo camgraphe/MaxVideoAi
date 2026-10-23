@@ -423,8 +423,8 @@ test('MCP montage opens the current conversation with private playback, durable 
     await expect(projects.getByRole('alert')).toContainText('Try again to recover the same project.');
     await projects.getByRole('button', { name: 'Try again', exact: true }).click();
     await expect(page).toHaveURL(`${runtime.browserOrigin}/app/studio/conversation/${newProjectId}`);
-    await expect(page.getByRole('heading', { name: 'What shall we create?', exact: true })).toBeVisible();
-    await expect(page.getByRole('textbox', { name: 'Message Studio', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'What would you like to do?', exact: true })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: 'Message Milo', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Open timeline', exact: true })).toBeVisible();
     assert.equal(createAttempts.length, 2);
     assert.deepEqual(createAttempts[0], createAttempts[1]);

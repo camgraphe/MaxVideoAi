@@ -12,7 +12,7 @@ test('client ceilings are exact, complex is explicit, and legacy messages stay v
   for(const value of [{...standard,maxCredits:500},{...standard,autoRecharge:true},{...standard,profile:'complex',maxCredits:500}])assert.equal(studioTaskSelectionSchema.safeParse(value).success,false);
   const complex=studioTaskSelectionSchema.parse({profile:'complex',maxCredits:500,policyVersion:STUDIO_TASK_POLICY_VERSION,confirmedComplex:true});
   assert.equal(studioTaskProfileForModel(complex,'gpt-6.1-sol').maxCalls,8);
-  assert.throws(()=>studioTaskProfileForModel(complex,'gpt-6-luna'),/Sol/);
+  assert.throws(()=>studioTaskProfileForModel(complex,'gpt-6-luna'),/Max/);
   const input={requestId:randomUUID(),message:'Create the requested image',references:[]};
   assert.deepEqual(imageTurnInputSchema.parse(input),input);
   assert.deepEqual(imageTurnInputSchema.parse({...input,taskBudget:standard}).taskBudget,standard);

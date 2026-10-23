@@ -60,7 +60,7 @@ export function createStudioAnalysisService(actor:StudioGenerationActor,dependen
         if(chat.length)throw new AgentApiError('SPENDING_LIMIT_EXCEEDED','Finish or recover the current Studio message first.');
         await ensureStudioMonthlyCredits(tx,actor.userId);
         const plan=await planStudioCreditReservation(tx,actor.userId,run.quote_json.maxCredits/10,Number(run.reserved_supplier_nano_usd),account.paid_enabled&&account.tariff_version===STUDIO_ASSISTANCE_CREDIT_TARIFF.version);
-        if(!plan)throw new AgentApiError('SPENDING_LIMIT_EXCEEDED','This analysis exceeds your available Sol credits. Purchased credits remain paused unless you resume them.');
+        if(!plan)throw new AgentApiError('SPENDING_LIMIT_EXCEEDED','This analysis exceeds your available Max credits. Purchased credits remain paused unless you resume them.');
         if(plan.sponsoredNanoUsd>await campaignRemaining(tx,assistance))throw new AgentApiError('SPENDING_LIMIT_EXCEEDED','Included Studio analysis is temporarily unavailable.');
         await reserveStudioCredits(tx,run.id,plan,'analysis');
         await tx.query("UPDATE studio_media_analysis_runs SET state='queued',confirmed_at=clock_timestamp() WHERE id=$1",[run.id]);

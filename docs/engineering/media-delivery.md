@@ -961,3 +961,14 @@ input, SWR and transport with synthetic sessions/HTTP boundaries. It covers
 session races, unmount, in-flight parts, character cache isolation, and measured
 multipart bodies for 1, 8 and 20 MiB files. These are browser-DOM/transport tests,
 not paid generations or a claim of live storage validation.
+
+### Milo Studio preview
+
+`studio-milo-preview.webp` is a real isolated connected-task capture from
+`connected-studio-task-browser-integration.test.ts`, cropped to the workspace.
+It replaces the displayed old capture on home and the Studio landing without
+changing their 1354 × 832 geometry, responsive sizes, lazy home loading or Studio
+priority. The WebP is 25,310 bytes versus 48,132 for the previous image; this is
+asset-transfer evidence, not a claim about production Core Web Vitals. The
+original image remains available for historical review. Reference behavior and
+media originals are unchanged.

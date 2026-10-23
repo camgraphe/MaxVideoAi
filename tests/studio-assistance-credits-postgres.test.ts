@@ -22,6 +22,8 @@ test('Sol packs debit once, accumulate, and reserve free credits before purchase
   const first={action:'purchase_pack' as const,amountCents:200 as const,tariffVersion:status.tariff.version,expectedRevision:0,purchaseKey:randomUUID()};
   const duplicate=await Promise.all([ledger.chooseStudioAssistance('owner',first,policy),ledger.chooseStudioAssistance('owner',first,policy)]);
   status=duplicate[0];
+  const receipt=(await pg.pool.query("SELECT description,billing_product_key,amount_cents FROM app_receipts WHERE user_id='owner' AND type='charge'")).rows;
+  assert.deepEqual(receipt,[{description:'Milo Max credit pack',billing_product_key:'studio_assistance_pack',amount_cents:200}],'The renamed pack keeps its financial identity and charges once');
   assert.equal(status.credits?.purchased.remaining,2000);
   await ledger.chooseStudioAssistance('owner',first,policy);
   assert.equal((await pg.pool.query("SELECT sum(CASE WHEN type='charge' THEN -amount_cents ELSE amount_cents END)::int balance FROM app_receipts WHERE user_id='owner'")).rows[0].balance,1800);

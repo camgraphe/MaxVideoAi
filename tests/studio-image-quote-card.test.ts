@@ -196,7 +196,7 @@ test("a completed creation stays ready while Studio answers another message", as
   try {
     const text = view.dom.window.document.body.textContent ?? "";
     assert.match(text, /Creation ready/);
-    assert.doesNotMatch(text, /Studio is working/);
+    assert.doesNotMatch(text, /Milo is working/);
     assert.equal(buttonMatching(view.dom.window.document, /Create|Renew|Retry/i), null);
   } finally { await view.close(); }
 });

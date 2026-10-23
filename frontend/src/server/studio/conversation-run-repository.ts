@@ -116,14 +116,15 @@ export async function completeStudioAction(actor: StudioGenerationActor, turn: S
 }
 
 /** Checkpoint each paid text request before dispatch and its complete output before any action. */
-export async function checkpointStudioResponse(actor: StudioGenerationActor, turn: StoredImageTurn, index: number, create: () => Promise<StudioDirectorResponse>, meter?: {prepare(): Promise<{inputTokens: number;outputTokens: number;policy: StudioAssistancePolicy;lunaFallback?:StudioLunaFallback}>}, options: {replayOnly?: boolean} = {}): Promise<StudioDirectorResponse> {
+export async function checkpointStudioResponse(actor: StudioGenerationActor, turn: StoredImageTurn, index: number, create: () => Promise<StudioDirectorResponse>, meter?: {prepare(): Promise<{inputTokens: number;outputTokens: number;policy: StudioAssistancePolicy;lunaFallback?:StudioLunaFallback}>;applyReservation?(call:Pick<AssistanceCall,'output_token_bound'|'pricing_snapshot'>):void}, options: {replayOnly?: boolean} = {}): Promise<StudioDirectorResponse> {
   const scope = [actor.userId, actor.projectId, turn.request_id, turn.lease_id, index];
   const prior = (await query<{response_json: StudioDirectorResponse}>(`SELECT response_json FROM studio_conversation_responses
     WHERE user_id=$1 AND project_id=$2 AND request_id=$3 AND response_index=$4 AND state='reported' ORDER BY created_at DESC LIMIT 1`, [actor.userId, actor.projectId, turn.request_id, index]))[0];
   if (prior) {
     if (meter) {
-      const savedCall = (await query<{id: string}>(`SELECT id FROM studio_assistance_calls WHERE user_id=$1 AND project_id=$2 AND request_id=$3 AND response_index=$4 AND (response_id=$5 OR state<>'settled') ORDER BY created_at DESC LIMIT 1`, [actor.userId,actor.projectId,turn.request_id,index,prior.response_json.id]))[0];
+      const savedCall = (await query<{id: string;output_token_bound:number;pricing_snapshot:unknown}>(`SELECT id,output_token_bound,pricing_snapshot FROM studio_assistance_calls WHERE user_id=$1 AND project_id=$2 AND request_id=$3 AND response_index=$4 AND (response_id=$5 OR state<>'settled') ORDER BY created_at DESC LIMIT 1`, [actor.userId,actor.projectId,turn.request_id,index,prior.response_json.id]))[0];
       if (savedCall && !await settleStudioAssistanceCall(savedCall.id,actor.userId,prior.response_json)) assistanceError('usage_unresolved','Provider usage for this saved response is unresolved.');
+      if(savedCall)meter.applyReservation?.(savedCall);
     }
     if (isReplayableStudioResponse(prior.response_json)) return prior.response_json;
   }
@@ -141,10 +142,11 @@ export async function checkpointStudioResponse(actor: StudioGenerationActor, tur
       AND EXISTS (SELECT 1 FROM studio_projects p WHERE p.id=t.project_id AND p.user_id=t.user_id AND p.deleted_at IS NULL)
     ON CONFLICT DO NOTHING RETURNING lease_id`, scope);
     if (!start.length) throw new AgentApiError('PARAMETER_INVALID', 'This model step is already in progress or superseded.');
-    if (bounds) assistanceCall = await reserveStudioAssistanceCall({userId: actor.userId,projectId: actor.projectId,requestId: turn.request_id,leaseId: turn.lease_id,index,inputTokens: bounds.inputTokens,outputTokens: bounds.outputTokens,lunaFallback:bounds.lunaFallback},bounds.policy,tx);
+    if (bounds) assistanceCall = await reserveStudioAssistanceCall({userId: actor.userId,projectId: actor.projectId,requestId: turn.request_id,leaseId: turn.lease_id,index,inputTokens: bounds.inputTokens,outputTokens: bounds.outputTokens,lunaFallback:bounds.lunaFallback,allowCreditCompletion:!!meter?.applyReservation},bounds.policy,tx);
   });
   const began = performance.now();
   try {
+    if(assistanceCall)meter?.applyReservation?.(assistanceCall);
     const response = await create();
     const saved = await query(`UPDATE studio_conversation_responses SET state='reported',response_id=$6,response_json=$7::jsonb,elapsed_ms=$8
       WHERE user_id=$1 AND project_id=$2 AND request_id=$3 AND lease_id=$4 AND response_index=$5 AND state='started' RETURNING lease_id`,

@@ -43,3 +43,14 @@ test('Studio public entry carries the requested language through account entry w
   assert.equal(destination.searchParams.get('lang'), null);
   assert.equal(destination.pathname, '/app/studio');
 });
+
+
+test('general Studio entry opens a neutral conversation in each language', async () => {
+  for (const lang of ['en', 'fr', 'es']) {
+    const response = await handleStudioMarketingEntry(new NextRequest(`http://localhost/api/studio/marketing-entry?lang=${lang}`), async () => ({ok:false,status:401,error:'UNAUTHORIZED'}));
+    const target = new URL(response.headers.get('location')!, 'https://maxvideoai.local');
+    assert.equal(target.pathname, '/app/studio');
+    assert.equal(target.searchParams.get('lang'), lang);
+    assert.equal(target.searchParams.get('starter'), null);
+  }
+});

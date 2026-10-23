@@ -65,11 +65,11 @@ export function ImageConversationComposer({
       <textarea
         ref={textarea}
         rows={1}
-        aria-label={t('Message Studio', 'Message à Studio', 'Mensaje a Studio')}
+        aria-label={t('Message Milo', 'Message à Milo', 'Mensaje a Milo')}
         value={text}
         readOnly={readOnly}
         onChange={(event) => onTextChange(event.target.value)}
-        placeholder={t('Describe your idea…', 'Décrivez votre idée…', 'Describe tu idea…')}
+        placeholder={t('Tell Milo what you have in mind…', 'Dites à Milo ce que vous avez en tête…', 'Cuéntale a Milo lo que tienes en mente…')}
         maxLength={4000}
         aria-invalid={tooLong || undefined}
         aria-describedby={tooLong ? lengthNoticeId : undefined}
@@ -90,7 +90,7 @@ export function ImageConversationComposer({
         className={styles.send}
         type="submit"
         disabled={!canSend}
-        aria-label={t('Send to Studio', 'Envoyer à Studio', 'Enviar a Studio')}
+        aria-label={t('Send to Milo', 'Envoyer à Milo', 'Enviar a Milo')}
       >
         <ArrowUp size={20} />
       </button>

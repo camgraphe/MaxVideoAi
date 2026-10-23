@@ -161,6 +161,11 @@ manual runs use separate concurrency groups and do not cancel the PR's check.
 Before merge, wait for Quality CI on the latest candidate and follow the normal
 production alignment checks in `docs/deployment/github-vercel.md`.
 
+On the Milo release candidate, Ubuntu 26.04 spent nearly 22 minutes installing
+PostgreSQL/FFmpeg before the database/media job reached its 25-minute limit.
+Pinning that lane to the same stable image preserves both the complete integration
+suite and the isolated Studio route checks; it does not turn a timeout into a pass.
+
 `frontend/next.config.js` explicitly enables `experimental.webpackBuildWorker`
 because next-intl adds a custom Webpack hook, which disables Next 15's automatic
 worker selection. This is a build-memory mitigation; it does not establish the
