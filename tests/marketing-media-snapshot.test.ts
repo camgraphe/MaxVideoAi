@@ -180,3 +180,26 @@ test('registered authored demos require their explicit rendition-preserving migr
     'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6e299d72-22dd-46f4-8260-4d6887777558.mp4';
   assert.throws(() => prepareMarketingSnapshot(source), /authored demo/i);
 });
+
+test('managed S3 aliases cannot detach an authored demo from its prepared playback renditions', () => {
+  const previous = { bucket: process.env.S3_BUCKET, region: process.env.S3_REGION, base: process.env.S3_PUBLIC_BASE_URL };
+  process.env.S3_BUCKET = 'marketing-identity-fixture';
+  process.env.S3_REGION = 'us-east-1';
+  process.env.S3_PUBLIC_BASE_URL = 'https://media.maxvideoai.com';
+  const path = '/renders/301cc489-d689-477f-94c4-0b051deda0bc/6e299d72-22dd-46f4-8260-4d6887777558.mp4';
+  try {
+    for (const host of ['marketing-identity-fixture.s3.amazonaws.com', 'marketing-identity-fixture.s3.us-east-1.amazonaws.com']) {
+      const source = sourceFixture();
+      source.job.video_url = `https://${host}${path}`;
+      assert.throws(() => prepareMarketingSnapshot(source), /authored demo/i, host);
+    }
+    const unrelated = sourceFixture();
+    unrelated.job.video_url = `https://another-bucket.s3.amazonaws.com${path}`;
+    assert.equal(prepareMarketingSnapshot(unrelated).media[0].sourceUrl, unrelated.job.video_url);
+  } finally {
+    for (const [key, value] of Object.entries({ S3_BUCKET: previous.bucket, S3_REGION: previous.region, S3_PUBLIC_BASE_URL: previous.base })) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
+});

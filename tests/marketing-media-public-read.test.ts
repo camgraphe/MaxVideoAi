@@ -3,8 +3,10 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { startDisposablePostgres } from './helpers/disposable-postgres';
 import { marketingVideoReader } from '../frontend/server/marketing-media/public-read';
+import { readLegacyPlaylistVideos } from '../frontend/server/playlists/legacy-video-reader';
 import {
   BASE_SELECT,
+  BASE_SELECT_FOR_REUSE,
   BASE_SELECT_WITH_SETTINGS,
   PUBLIC_VIDEO_SOURCE_ELIGIBILITY,
 } from '../frontend/server/videos-query';
@@ -23,10 +25,12 @@ test('public read overlay preserves page IDs, eligibility, settings and dimensio
    aspect_ratio text,has_audio boolean,can_upscale boolean,created_at timestamptz,visibility text,indexable boolean,featured boolean,featured_order int,final_price_cents int,currency text,pricing_snapshot jsonb,settings_snapshot jsonb,status text,surface text);
    CREATE TABLE job_outputs(job_id text,kind text,status text,width int,height int,position int,created_at timestamptz,thumb_url text,url text,storage_url text);
    CREATE TABLE media_assets(user_id text,url text,status text,deleted_at timestamptz);
-   CREATE TABLE playlist_items(video_id text,order_index int);
+   CREATE TABLE playlists(id text PRIMARY KEY,slug text,is_public boolean);
+   CREATE TABLE playlist_items(video_id text,order_index int,playlist_id text DEFAULT 'playlist');
+   INSERT INTO playlists VALUES('playlist','marketing-fixture',true);
    INSERT INTO app_jobs(job_id,user_id,engine_id,engine_label,prompt,video_url,thumb_url,status,surface,visibility,indexable,duration_sec,created_at)
     VALUES('stable-page','owner','luma-ray-3-2','Luma','Exact prompt','https://media.example/personal.mp4','https://media.example/personal.jpg','completed','video','public',true,5,'2026-10-22');
-   INSERT INTO playlist_items VALUES('stable-page',7);`);
+   INSERT INTO playlist_items(video_id,order_index) VALUES('stable-page',7);`);
     const legacy = marketingVideoReader(executor, false);
     assert.equal(
       (await legacy.query<VideoRow>(BASE_SELECT))[0].job_id,
@@ -65,6 +69,17 @@ test('public read overlay preserves page IDs, eligibility, settings and dimensio
     const rows = await reader.query<VideoRow>(`${BASE_SELECT} WHERE ${PUBLIC_VIDEO_SOURCE_ELIGIBILITY}`);
     assert.equal(rows.length, 1, 'one publication, no duplicate in a gallery');
     assert.equal(rows[0].video_url, 'https://media.example/marketing-media/original.mp4');
+    assert.equal(rows[0].recreation_snapshot, undefined, 'gallery reads must not transport the complete reuse recipe');
+    const previousFlag = process.env.MARKETING_MEDIA_ENABLED;
+    process.env.MARKETING_MEDIA_ENABLED = '1';
+    try {
+      const playlist = await readLegacyPlaylistVideos({ slug: 'marketing-fixture' }, executor);
+      assert.equal(playlist[0].id, 'stable-page');
+      assert.equal(playlist[0].recreationSnapshot, undefined, 'direct playlist cards also omit the full recipe');
+    } finally {
+      if (previousFlag === undefined) delete process.env.MARKETING_MEDIA_ENABLED;
+      else process.env.MARKETING_MEDIA_ENABLED = previousFlag;
+    }
     await executor.query(
       `INSERT INTO media_assets VALUES('owner','https://media.example/personal.mp4','deleted',now());DELETE FROM job_outputs;DELETE FROM app_jobs`,
     );
@@ -79,6 +94,12 @@ test('public read overlay preserves page IDs, eligibility, settings and dimensio
     assert.deepEqual([video.outputWidth, video.outputHeight], [1080, 1920]);
     const hydrated = buildVideoSettingsSnapshotFromSharedVideo(video as SharedVideoPreview);
     assert.deepEqual(hydrated, snapshot, 'the original generation settings replace the old derived t2v fallback');
+    const [reuseRow] = await reader.query<VideoRow>(`${BASE_SELECT_FOR_REUSE} WHERE job_id=$1`, ['stable-page']);
+    assert.deepEqual(
+      buildVideoSettingsSnapshotFromSharedVideo(mapGalleryVideoRow(reuseRow) as SharedVideoPreview),
+      snapshot,
+      'the single-video app handoff retains the full recipe independently of the slim gallery projection',
+    );
     const [membership] = await reader.query<any>(
       `WITH selected AS (SELECT video_id FROM playlist_items) SELECT job_id FROM app_jobs JOIN selected ON selected.video_id=app_jobs.job_id`,
     );

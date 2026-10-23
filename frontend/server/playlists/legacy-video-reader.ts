@@ -29,7 +29,7 @@ export async function readLegacyPlaylistVideos({slug,limit,engineAliases}: {slug
     `
       SELECT aj.job_id, aj.user_id, aj.engine_id, aj.engine_label, aj.duration_sec, aj.prompt,
              COALESCE(NULLIF(aj.thumb_url, ''), (${imageThumbFallbackSelect('aj')})) AS thumb_url,
-             to_jsonb(aj)->'marketing_recreation_snapshot' AS recreation_snapshot, aj.video_url, to_jsonb(aj)->>'preview_video_url' AS preview_video_url, to_jsonb(aj)->'keyframe_urls' AS keyframe_urls,
+             aj.video_url, to_jsonb(aj)->>'preview_video_url' AS preview_video_url, to_jsonb(aj)->'keyframe_urls' AS keyframe_urls,
              aj.aspect_ratio, (${videoOutputDimensionSelect('aj', 'width')}) AS output_width, (${videoOutputDimensionSelect('aj', 'height')}) AS output_height,
              aj.has_audio, aj.can_upscale, aj.created_at, aj.visibility,
              aj.indexable, aj.featured, aj.featured_order, aj.final_price_cents, aj.currency, aj.pricing_snapshot, pi.order_index

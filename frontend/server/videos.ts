@@ -1,7 +1,7 @@
 import { marketingVideoReader } from '@/server/marketing-media/public-read';
 import { listCatalogPage } from './videos-catalog-page';
 import { createCurationReadScope, listPlaylistVideosWithOptions, listCuratedGalleryVideos, type CurationReadScope } from './videos-playlists';
-import { BASE_SELECT, BASE_SELECT_WITH_SETTINGS, PUBLIC_VIDEO_SOURCE_ELIGIBILITY } from './videos-query';
+import { BASE_SELECT, BASE_SELECT_FOR_REUSE, BASE_SELECT_WITH_SETTINGS, PUBLIC_VIDEO_SOURCE_ELIGIBILITY } from './videos-query';
 import { getLocalPublicExample, isLocalPublicExamplesEnabled, listLocalPublicExamples } from './local-public-examples';
 import { query } from '@/lib/db';
 import { getDiscoverableExampleEngineAliases } from '@/lib/examples/discovery';
@@ -38,7 +38,7 @@ const PUBLIC_VIDEO_PREDICATE = `
 
 export async function getVideoById(videoId: string): Promise<GalleryVideo | null> {
   const rows = await marketingVideoReader({ query }).query<VideoRow>(
-    `${BASE_SELECT} WHERE job_id = $1 LIMIT 1`,
+    `${BASE_SELECT_FOR_REUSE} WHERE job_id = $1 LIMIT 1`,
     [videoId]
   );
   return rows[0] ? mapGalleryVideoRow(rows[0]) : null;

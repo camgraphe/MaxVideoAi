@@ -32,6 +32,10 @@ trimmed. The shared facts reach library readers and source-inheriting models.
 Existing stored metadata is not repaired on reads; older assets need a verified
 re-import or a separately bounded metadata repair after deployment.
 
+## Marketing-copy delivery
+
+Marketing-copy delivery and the public-rendition CLI share the bounded HTTP verifier in `server/media/public-http-readiness.ts`. The CLI retains its allowed-source and MP4-prefix checks; copies additionally compare source prefix/suffix bytes. This shared verification does not alter original/download URLs, playback policy or the browser rendition projection. See `marketing-media.md` for the independent-publication and catalog/reuse read boundaries.
+
 ## Generated Omni outputs
 
 Generated Omni outputs are selected only from `model_output` steps; the

@@ -3,6 +3,7 @@ import { createOwnedMediaReadUrl } from '@/server/owned-media-read-access';
 import { headerValue, openPublicHttpsResponse } from '@/server/public-media-transport';
 import { getStorageObjectMetadata, ownedMediaStorageKeyForUrl, uploadFileBufferToKey } from '@/server/storage';
 import type { MarketingMediaFile } from '@/lib/marketing-media';
+import { verifyPublicMediaHttp, type PublicMediaExpectation } from '@/server/media/public-http-readiness';
 import { MarketingMediaError, type MarketingCopyPlan } from './snapshot';
 
 export type MarketingFileContext = {
@@ -31,7 +32,7 @@ type Dependencies = {
   readUrl: (input: { url: string; userId: string | null }) => Promise<string>;
   open: typeof openPublicHttpsResponse;
   put: typeof uploadFileBufferToKey;
-  verify: (url: string, size: number, signal: AbortSignal) => Promise<boolean>;
+  verify: (url: string, expected: PublicMediaExpectation, signal: AbortSignal) => Promise<boolean>;
 };
 const defaults: Dependencies = {
   readUrl: (input) =>
@@ -50,13 +51,9 @@ const defaults: Dependencies = {
       return { key: input.key, url: buildPublicStorageUrl(input.key) };
     }
   },
-  verify: async (url, size, signal) => {
-    const response = await fetch(url, {
-      method: 'HEAD',
-      cache: 'no-store',
-      signal: AbortSignal.any([signal, AbortSignal.timeout(10_000)]),
-    });
-    return response.ok && Number(response.headers.get('content-length')) === size;
+  verify: async (url, expected, signal) => {
+    await verifyPublicMediaHttp(url, expected, { signal });
+    return true;
   },
 };
 
@@ -64,8 +61,9 @@ const defaults: Dependencies = {
 export async function copyMarketingMediaFile(
   file: MarketingCopyPlan['media'][number],
   context: MarketingFileContext,
-  dependencies: Dependencies = defaults,
+  overrides: Partial<Dependencies> = {},
 ): Promise<MarketingMediaFile> {
+  const dependencies = { ...defaults, ...overrides };
   const limit = Math.min(MAX_FILE_BYTES, context.remainingBytes);
   const source = await dependencies.readUrl({ url: file.sourceUrl, userId: context.ownerId });
   const signal = AbortSignal.any([context.signal, AbortSignal.timeout(60_000)]);
@@ -98,7 +96,9 @@ export async function copyMarketingMediaFile(
       cacheControl: 'public, max-age=31536000, immutable',
       signal,
     });
-    if (!(await dependencies.verify(stored.url, size, signal)))
+    if (!(await dependencies.verify(stored.url, {
+      bytes: size, mime, prefix: data.subarray(0, 32), suffix: data.subarray(Math.max(0, size - 32)),
+    }, signal)))
       throw new MarketingMediaError('The copied file is not publicly readable yet. Retry the copy.');
     return { sourceUrl: file.sourceUrl, url: stored.url, key: stored.key, sizeBytes: size, mime, sha256 };
   } finally {

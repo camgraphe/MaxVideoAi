@@ -1,4 +1,4 @@
-import { marketingVideoReader } from '@/server/marketing-media/public-read';
+import { marketingCatalogReader } from '@/server/marketing-media/public-read';
 import { query, type QueryExecutor } from '@/lib/db';
 import { getDiscoverableExampleEngineAliases } from '@/lib/examples/discovery';
 import { getExampleFamilyEngineAliases, getExampleFamilyIds } from '@/lib/model-families';
@@ -55,7 +55,7 @@ function catalogSql(sort: ExampleSort, withCuration: boolean, idsOnly = false, o
       AND (s.source_rank=0 OR NOT EXISTS (SELECT 1 FROM sources WHERE source_rank=0 AND mode IS NOT NULL))
       AND NOT EXISTS (SELECT 1 FROM sources parent WHERE parent.slug=s.parent_slug AND parent.mode IS NOT NULL)
   ), eligible AS NOT MATERIALIZED (
-    SELECT job_id,engine_id,engine_label,created_at,duration_sec${includeVersionSamples ? `,${HAS_PROMPT_SQL} AS has_prompt` : ''} FROM app_jobs
+    SELECT job_id,engine_id,engine_label,created_at,duration_sec${includeVersionSamples ? `,${HAS_PROMPT_SQL} AS has_prompt` : ''} FROM catalog_jobs AS app_jobs
     WHERE ${CURATION_ELIGIBILITY} AND LOWER(engine_id)=ANY($2::text[])
   ), memberships AS (
     SELECT j.*,s.source_rank,CASE WHEN pi.order_index IS NULL THEN 1 ELSE 0 END AS selection_group,
@@ -116,12 +116,12 @@ async function readCatalogRows(options: CatalogPageOptions, idsOnly: boolean, db
          UNION ALL SELECT 'next' AS preview_variant,next_page.* FROM (${catalogSql(options.sort, true, true, true)}) next_page
          ORDER BY preview_variant,preview_ordinal`
       : catalogSql(options.sort, true, idsOnly, Boolean(options.curationOverride), options.includeVersionSamples);
-    result = await marketingVideoReader(db).query<CatalogRow>(sql, params);
+    result = await marketingCatalogReader(db).query<CatalogRow>(sql, params);
   } catch (error) {
     // Missing optional curation storage is the only schema error that permits fallback.
     const failure = error as { code?: string; message?: string };
     if (options.curationOverride || failure.code !== '42P01' || !failure.message?.includes('playlist_curations')) throw error;
-    result = await marketingVideoReader(db).query<CatalogRow>(catalogSql(options.sort, false, idsOnly, false, options.includeVersionSamples), params);
+    result = await marketingCatalogReader(db).query<CatalogRow>(catalogSql(options.sort, false, idsOnly, false, options.includeVersionSamples), params);
   }
   return result;
 }

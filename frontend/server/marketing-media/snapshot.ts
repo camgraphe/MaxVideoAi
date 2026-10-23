@@ -1,6 +1,7 @@
 import authoredSources from '@/config/public-video-sources.json';
 import { createHash } from 'node:crypto';
 import type { MarketingMediaFile } from '@/lib/marketing-media';
+import { normalizeMediaUrl } from '@/lib/media';
 
 type RecordValue = Record<string, unknown>;
 export type MarketingSource = { job: RecordValue; output?: RecordValue | null; poster_url?: string | null };
@@ -56,7 +57,8 @@ function safeReference(value: unknown): unknown {
 /** Capture generation inputs, not billing/provider execution records. No defaults are invented. */
 export function prepareMarketingSnapshot(source: MarketingSource): MarketingCopyPlan {
   const job = source.job;
-  if (authoredSources.sources.some((source) => source.url === job.video_url))
+  const originalUrl = normalizeMediaUrl(text(job.video_url));
+  if (originalUrl && authoredSources.sources.some((source) => normalizeMediaUrl(source.url) === originalUrl))
     throw new MarketingMediaError(
       'This authored demo needs an explicit migration that preserves its prepared playback renditions.',
       409,

@@ -21,7 +21,7 @@ export const videoOutputDimensionSelect = (jobAlias: string, column: 'width' | '
 export const BASE_SELECT = `
   SELECT job_id, user_id, engine_id, engine_label, duration_sec, prompt,
          COALESCE(NULLIF(thumb_url, ''), (${imageThumbFallbackSelect('app_jobs')})) AS thumb_url,
-         video_url, to_jsonb(app_jobs)->'marketing_recreation_snapshot' AS recreation_snapshot,
+         video_url,
          to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url,
          to_jsonb(app_jobs)->'keyframe_urls' AS keyframe_urls,
          aspect_ratio, (${videoOutputDimensionSelect('app_jobs', 'width')}) AS output_width, (${videoOutputDimensionSelect('app_jobs', 'height')}) AS output_height,
@@ -30,6 +30,12 @@ export const BASE_SELECT = `
          (to_jsonb(app_jobs)->'settings_snapshot') #>> '{core,resolution}' AS requested_resolution
   FROM app_jobs
 `;
+
+/** Only the single-video reuse reader needs the complete independent recipe. */
+export const BASE_SELECT_FOR_REUSE = BASE_SELECT.replace(
+  'FROM app_jobs',
+  ", to_jsonb(app_jobs)->'marketing_recreation_snapshot' AS recreation_snapshot FROM app_jobs",
+);
 
 export const BASE_SELECT_WITH_SETTINGS = `
   SELECT job_id, user_id, engine_id, engine_label, duration_sec, prompt,
