@@ -46,6 +46,15 @@ const KLING_2_5_TURBO_ENGINE: EngineCaps = {
     ],
     optional: [
       {
+        id: 'end_image_url',
+        type: 'image',
+        label: 'End image',
+        modes: ['i2v'],
+        minCount: 0,
+        maxCount: 1,
+        source: 'either',
+      },
+      {
         id: 'duration_seconds',
         type: 'enum',
         label: 'Duration (seconds)',

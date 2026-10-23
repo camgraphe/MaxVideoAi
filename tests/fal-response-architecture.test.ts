@@ -45,6 +45,8 @@ test('fal generation delegates payload, model, webhook, error, and type ownershi
   assert.match(falSource, /from '@\/lib\/fal-types'/);
 
   assert.match(requestBodySource, /export function buildFalGenerationRequest/);
+  assert.match(requestBodySource, /from '@\/lib\/fal-legacy-video-contracts'/);
+  assert.match(requestBodySource, /applyFalLegacyVideoContracts\(payload, requestBody\)/);
   assert.match(modelHelpersSource, /export function resolveFalModelSlug/);
   assert.match(modelHelpersSource, /export function normalizeFalDurationValueForModel/);
   assert.match(modelHelpersSource, /export function resolveFalVideoResolutionInput/);

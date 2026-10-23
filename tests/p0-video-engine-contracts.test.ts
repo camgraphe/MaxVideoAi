@@ -190,7 +190,7 @@ test('LTX 2.5 variants preserve mixed duration, 2160p, camera and audio schema f
       'generate_audio', 'camera_motion',
     ].sort());
     assert.deepEqual(fieldsFor(id, 'a2v').map(({ id: fieldId }) => fieldId).sort(), [
-      'audio_url', 'prompt', 'image_url', 'aspect_ratio', 'guidance_scale',
+      'audio_url', 'prompt', 'image_url', 'aspect_ratio',
     ].sort());
     assert.deepEqual(field(id, 't2v', 'duration').values, expected[id].duration);
     assert.deepEqual(field(id, 't2v', 'resolution').values, expected[id].resolutions);

@@ -1,3 +1,4 @@
+import { applyFalLegacyVideoContracts } from '@/lib/fal-legacy-video-contracts';
 import {
   getLumaRay2DurationInfo,
   isLumaRay2EngineId,
@@ -443,6 +444,8 @@ export function buildFalGenerationRequest(
     // Kling v3 expects prompt or multi_prompt, not both.
     delete requestBody.prompt;
   }
+
+  applyFalLegacyVideoContracts(payload, requestBody);
 
   const metadataPayload: Record<string, unknown> = {};
   if (payload.jobId) {

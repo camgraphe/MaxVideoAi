@@ -5339,6 +5339,17 @@
         ],
         "optional": [
           {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End image",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
             "id": "duration_seconds",
             "type": "enum",
             "label": "Duration (seconds)",
@@ -5691,6 +5702,17 @@
         ],
         "optional": [
           {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End image",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
             "id": "duration",
             "type": "enum",
             "label": "Duration (seconds)",
@@ -5704,6 +5726,9 @@
             "id": "aspect_ratio",
             "type": "enum",
             "label": "Aspect ratio",
+            "modes": [
+              "t2v"
+            ],
             "values": [
               "16:9",
               "9:16",
@@ -5740,15 +5765,13 @@
             "id": "cfg_scale",
             "type": "number",
             "label": "CFG scale",
+            "modes": [
+              "t2v"
+            ],
             "min": 0,
             "max": 1,
             "step": 0.05,
             "default": 0.5
-          },
-          {
-            "id": "seed",
-            "type": "number",
-            "label": "Seed"
           }
         ],
         "constraints": {
@@ -16524,17 +16547,6 @@
               "t2v",
               "i2v"
             ]
-          },
-          {
-            "id": "guidance_scale",
-            "type": "number",
-            "label": "Guidance scale",
-            "description": "Adjust prompt adherence for LTX 2.3 Fast.",
-            "modes": [
-              "i2v"
-            ],
-            "min": 1,
-            "max": 50
           }
         ],
         "constraints": {
@@ -16985,9 +16997,8 @@
             "id": "guidance_scale",
             "type": "number",
             "label": "Guidance scale",
-            "description": "Adjust prompt adherence for LTX 2.3.",
+            "description": "Adjust prompt adherence for audio-to-video.",
             "modes": [
-              "i2v",
               "a2v"
             ],
             "min": 1,
@@ -23612,17 +23623,6 @@
               "static",
               "focus_shift"
             ]
-          },
-          {
-            "id": "guidance_scale",
-            "type": "number",
-            "label": "Guidance scale",
-            "modes": [
-              "a2v"
-            ],
-            "min": 1,
-            "max": 50,
-            "description": "Provider conditional default: 5 without image_url, 9 with image_url."
           }
         ],
         "constraints": {
@@ -24212,17 +24212,6 @@
               "static",
               "focus_shift"
             ]
-          },
-          {
-            "id": "guidance_scale",
-            "type": "number",
-            "label": "Guidance scale",
-            "modes": [
-              "a2v"
-            ],
-            "min": 1,
-            "max": 50,
-            "description": "Provider conditional default: 5 without image_url, 9 with image_url."
           }
         ],
         "constraints": {

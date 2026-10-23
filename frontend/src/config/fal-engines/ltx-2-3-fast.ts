@@ -90,15 +90,6 @@ const LTX_2_3_FAST_ENGINE: EngineCaps = {
         default: 'true',
         modes: ['t2v', 'i2v'],
       },
-      {
-        id: 'guidance_scale',
-        type: 'number',
-        label: 'Guidance scale',
-        description: 'Adjust prompt adherence for LTX 2.3 Fast.',
-        modes: ['i2v'],
-        min: 1,
-        max: 50,
-      },
     ],
     constraints: {
       supportedFormats: ['jpg', 'jpeg', 'png', 'webp', 'avif', 'heif'],
