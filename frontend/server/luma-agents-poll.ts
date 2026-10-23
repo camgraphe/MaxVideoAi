@@ -27,6 +27,7 @@ import {
   resolveLumaAgentsModelRoute,
 } from '@/server/video-providers/luma-agents/model-map';
 import { normalizeLumaAgentsGeneration } from '@/server/video-providers/luma-agents/response';
+import { sanitizeProviderMediaDiagnostics } from '@/server/provider-media-diagnostics';
 import {
   findProviderAttemptForJob,
   markProviderAttemptFailed,
@@ -155,7 +156,9 @@ function buildCostBreakdown(job: LumaAgentsPendingJob) {
 
 function normalizePolledGeneration(raw: unknown, providerJobId: string): NormalizedVideoProviderTask {
   const record = asRecord(raw);
-  return normalizeLumaAgentsGeneration(record && 'raw' in record ? record.raw : raw, providerJobId);
+  const task = normalizeLumaAgentsGeneration(record && 'raw' in record ? record.raw : raw, providerJobId);
+  // Keep the exact output URL for copying; only diagnostics may lose their transient grants.
+  return { ...task, raw: sanitizeProviderMediaDiagnostics(task.raw) };
 }
 
 async function recordWalletRefundOnce(job: LumaAgentsPendingJob, reason: string, queryFn: QueryFn) {
@@ -577,7 +580,7 @@ export async function runLumaAgentsPoll(options: { jobId?: string; deps?: LumaAg
       }
       updates += 1;
     } catch (error) {
-      const normalized = classifyLumaAgentsError(error);
+      const normalized = sanitizeProviderMediaDiagnostics(classifyLumaAgentsError(error)) as ReturnType<typeof classifyLumaAgentsError>;
       console.warn('[luma-agents-poll] status fetch failed', {
         jobId: job.job_id,
         providerJobId: job.provider_job_id,

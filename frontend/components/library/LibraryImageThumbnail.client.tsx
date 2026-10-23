@@ -10,8 +10,8 @@ export function LibraryImageThumbnail({ asset, alt = '', className }: {
   className?: string;
 }) {
   const [failedThumbnail, setFailedThumbnail] = useState<string | null>(null);
-  const thumbnail = asset.thumbUrl || null;
-  const displaySrc = thumbnail && thumbnail !== failedThumbnail ? thumbnail : asset.url;
+  const thumbnail = asset.thumbnailAccessUrl || asset.thumbUrl || null;
+  const displaySrc = thumbnail && thumbnail !== failedThumbnail ? thumbnail : asset.accessUrl ?? asset.url;
 
   return (
     // Stored thumbnails can be private or signed: never send them to Next Image.

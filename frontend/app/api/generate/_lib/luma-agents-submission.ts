@@ -14,6 +14,8 @@ import {
   resolveLumaAgentsVideoSupport,
 } from '@/server/video-providers/luma-agents/model-map';
 import { buildLumaAgentsVideoPayload } from '@/server/video-providers/luma-agents/payload';
+import { createLumaAgentsMediaTransport } from '@/server/video-providers/luma-agents/media-access';
+import { sanitizeProviderMediaDiagnostics } from '@/server/provider-media-diagnostics';
 import {
   createProviderAttempt,
   linkProviderFallbackAttempt,
@@ -466,6 +468,7 @@ export async function submitLumaAgentsGenerateTask(params: {
   });
 
   let acceptedProviderJobId: string | null = null;
+  let sanitizeDiagnostics: (value: unknown) => unknown = sanitizeProviderMediaDiagnostics;
   try {
     const payload = buildLumaAgentsVideoPayload({
       engineId: params.engineId,
@@ -485,7 +488,9 @@ export async function submitLumaAgentsGenerateTask(params: {
       extraInputValues: params.falPayload.extraInputValues ?? null,
       advancedDirectOnlyEnabled: params.advancedDirectOnlyEnabled,
     });
-    const task = await getLumaAgentsClientFn().createGeneration(payload, { requestId: params.jobId });
+    const transport = await createLumaAgentsMediaTransport({ payload, userId: params.userId });
+    sanitizeDiagnostics = transport.sanitize;
+    const task = await getLumaAgentsClientFn().createGeneration(transport.payload, { requestId: params.jobId });
     acceptedProviderJobId = task.providerJobId;
     if (!acceptedProviderJobId) {
       throw new LumaAgentsError('Luma Agents response did not include a generation id.', {
@@ -497,7 +502,7 @@ export async function submitLumaAgentsGenerateTask(params: {
     await markProviderAttemptAccepted({
       attemptId: lumaAttempt.id,
       providerJobId: acceptedProviderJobId,
-      responseSnapshot: task.raw,
+      responseSnapshot: sanitizeDiagnostics(task.raw),
       queryFn,
     });
     const status = task.status === 'running' ? 'running' : 'queued';
@@ -547,7 +552,7 @@ export async function submitLumaAgentsGenerateTask(params: {
       },
     };
   } catch (error) {
-    const normalized = classifyLumaAgentsError(error);
+    const normalized = sanitizeDiagnostics(classifyLumaAgentsError(error)) as ReturnType<typeof classifyLumaAgentsError>;
     const fallbackEligible = shouldFallbackFromLumaAgentsSubmit({
       acceptedProviderJobId,
       error,

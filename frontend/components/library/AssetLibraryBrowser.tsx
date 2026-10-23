@@ -1,5 +1,7 @@
 'use client';
 
+import type { MediaReadAccess } from '@/lib/media-read-access';
+
 import clsx from 'clsx';
 import { ReferenceLibraryPicker, type ReferencePickerSelection } from './ReferenceLibraryPicker.client';
 import Link from 'next/link';
@@ -21,7 +23,7 @@ export type AssetLibrarySource =
   | 'angle'
   | 'upscale';
 
-export type AssetBrowserAsset = {
+export type AssetBrowserAsset = MediaReadAccess & {
   id: string;
   url: string;
   thumbUrl?: string | null;
@@ -387,32 +389,32 @@ function AssetLibraryCollection({
                         key={asset.id}
                         className="app-library-asset overflow-hidden rounded-card border border-border/70 bg-surface shadow-card transition hover:border-text-primary/60"
                         onMouseEnter={() => {
-                          if (!isPageLayout && asset.kind === 'video' && asset.previewUrl && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) setActivePreviewId(asset.id);
+                          if (!isPageLayout && asset.kind === 'video' && (asset.previewAccessUrl || asset.previewUrl) && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) setActivePreviewId(asset.id);
                         }}
                         onMouseLeave={() => {
-                          if (!isPageLayout && asset.kind === 'video' && asset.previewUrl) setActivePreviewId((current) => (current === asset.id ? null : current));
+                          if (!isPageLayout && asset.kind === 'video' && (asset.previewAccessUrl || asset.previewUrl)) setActivePreviewId((current) => (current === asset.id ? null : current));
                         }}
                         onFocusCapture={() => {
-                          if (!isPageLayout && asset.kind === 'video' && asset.previewUrl && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) setActivePreviewId(asset.id);
+                          if (!isPageLayout && asset.kind === 'video' && (asset.previewAccessUrl || asset.previewUrl) && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) setActivePreviewId(asset.id);
                         }}
                         onBlurCapture={() => {
-                          if (!isPageLayout && asset.kind === 'video' && asset.previewUrl) setActivePreviewId((current) => (current === asset.id ? null : current));
+                          if (!isPageLayout && asset.kind === 'video' && (asset.previewAccessUrl || asset.previewUrl)) setActivePreviewId((current) => (current === asset.id ? null : current));
                         }}
                       >
                         <div className="relative bg-placeholder" style={{ aspectRatio: '16 / 9' }}>
                           {asset.kind === 'video' ? (
                             <>
                               {asset.thumbUrl ? (
-                                <LibraryImageThumbnail asset={{ ...asset, url: asset.thumbUrl }} className="absolute inset-0 h-full w-full object-cover" />
+                                <LibraryImageThumbnail asset={{ url: asset.thumbnailAccessUrl ?? asset.thumbUrl }} className="absolute inset-0 h-full w-full object-cover" />
                               ) : (
                                 <div className="flex h-full w-full items-center justify-center bg-surface-2 text-text-secondary">
                                   <Film className="h-8 w-8" aria-hidden />
                                 </div>
                               )}
-                              {asset.previewUrl && activePreviewId === asset.id ? (
+                              {(asset.previewAccessUrl || asset.previewUrl) && activePreviewId === asset.id ? (
                                 <video
-                                  src={activePreviewId === asset.id ? asset.previewUrl : undefined}
-                                  poster={asset.thumbUrl ?? undefined}
+                                  src={activePreviewId === asset.id ? asset.previewAccessUrl ?? asset.previewUrl ?? undefined : undefined}
+                                  poster={asset.thumbnailAccessUrl ?? asset.thumbUrl ?? undefined}
                                   muted
                                   loop
                                   playsInline
@@ -430,7 +432,7 @@ function AssetLibraryCollection({
                               <div className="flex h-12 w-12 items-center justify-center rounded-full border border-border bg-surface text-brand shadow-card">
                                 <AudioWaveform className="h-6 w-6" aria-hidden />
                               </div>
-                              {!isPageLayout ? <audio src={asset.url} controls preload="none" className="w-full max-w-[260px]" /> : null}
+                              {!isPageLayout ? <audio src={asset.accessUrl ?? asset.url} controls preload="none" className="w-full max-w-[260px]" /> : null}
                             </div>
                           ) : (
                             <LibraryImageThumbnail asset={asset} className="absolute inset-0 h-full w-full object-cover" />

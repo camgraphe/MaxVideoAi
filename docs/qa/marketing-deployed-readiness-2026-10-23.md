@@ -140,3 +140,40 @@ under `output/marketing-media/release-qualification-2026-10-23/`:
 `neon-qualification.json`, `guard-checks.sql`,
 `schema-fingerprint.sql` and `row-fingerprint.sql`.
 
+## Deployed preview pilot — 15:28 UTC
+
+The Git preview for `1cff8c84f3e79fbbae7a8cfc9917ecc84e9dd2fc`
+(`dpl_CzRwTgM9tomZbNdcjczXSKVQiUHP`) includes the branch-only database
+binding and marketing flag. Its authenticated admin endpoint returned an empty
+marketing collection before the pilot, and a production-only Studio job remained
+absent. One existing public admin-owned video was copied through the deployed
+admin endpoint; no private customer material was published.
+
+- Public identity: `job_external_fal_a956d2dd0c93fc85775b7d6669fc97af3d18d367`.
+- Ready copy: `1323abd0-505e-4b9a-b9a9-6028c760b85a`.
+- Three files, 6,641,833 total bytes, complete byte/SHA-256 equality with sources.
+- Original, poster and preview return HEAD 200, beginning/end Range 206 and
+  immutable caching. The optimized poster returns an 11,178-byte JPEG.
+- Source job/output/media snapshots and both existing curations are unchanged.
+- The complete recipe remains Flux 3 Max, text-to-video, 18 seconds, 720p,
+  requested 16:9, audio enabled, 24 fps, seed 2116949648, reasoning `high`,
+  iteration 1, full 1,243-character prompt, null negative prompt and no references.
+  The measured video geometry is 1280×704 (20:11), unchanged by copying.
+- Public API, both filtered example galleries, canonical and watch/app/Studio
+  links retain their identities; private provider import data stays excluded.
+
+Actual Chrome checks used desktop 1440×900 and mobile 390×844 viewports.
+Before Play the reader remained at `readyState=0`, time zero and `preload=none`.
+Both played to the measured 18.041667-second end with 1280×704 decoded frames,
+`readyState=4` and no video error. The native seek control remained functional;
+the mobile document had no horizontal overflow. Screenshots and the deployment
+request evidence are retained outside Git by the release operator. These are
+responsive browser and HTTP checks, not physical-device or field Core Web Vitals
+certification. Production remains unchanged at this checkpoint.
+
+The real authenticated “Use prompt in app” action on the branch preview also
+restored the complete prompt, Flux 3 Max, Generate Video, 18 seconds, 720p,
+16:9, audio On and one output. Opening Options confirmed seed `2116949648`
+and reasoning `high`. No generation was submitted. The saved reuse screenshot
+records these controls alongside the preview wallet and generation form.
+

@@ -1,3 +1,4 @@
+import type { MediaReadAccess } from '@/lib/media-read-access';
 import type { ComposerAttachment, AssetFieldConfig } from '@/components/Composer';
 import type { KlingElementAsset, KlingElementState } from '@/components/KlingElementsBuilder';
 import {
@@ -44,7 +45,7 @@ export type ReferenceAssetInsertionResult =
       replacedAsset?: undefined;
     };
 
-export type UserAsset = {
+export type UserAsset = MediaReadAccess & {
   assetId?: string;
   ref?: ComposerAttachment['ref'];
   id: string;
@@ -129,6 +130,10 @@ export function normalizeAssetLibraryPayload(
           url: asset.url,
           thumbUrl: asset.thumbUrl ?? null,
           previewUrl: asset.previewUrl ?? null,
+          accessUrl: asset.accessUrl,
+          thumbnailAccessUrl: asset.thumbnailAccessUrl,
+          previewAccessUrl: asset.previewAccessUrl,
+          playbackAccessUrl: asset.playbackAccessUrl,
           kind: asset.kind === 'audio' || asset.kind === 'video' || asset.kind === 'image'
             ? asset.kind : mime?.startsWith('audio/') ? 'audio' : mime?.startsWith('video/') ? 'video' : 'image',
           width: asset.width ?? null,
@@ -212,7 +217,7 @@ export function buildReferenceAssetFromLibraryAsset(field: EngineInputField, ass
   return {
     id: asset.id || `library_${Date.now().toString(36)}`,
     fieldId: field.id,
-    previewUrl: field.type === 'video' ? asset.previewUrl ?? asset.url : asset.url,
+    previewUrl: field.type === 'video' ? asset.previewAccessUrl ?? asset.previewUrl ?? asset.accessUrl ?? asset.url : asset.accessUrl ?? asset.url,
     kind: field.type === 'video' ? 'video' : field.type === 'audio' ? 'audio' : 'image',
     name: asset.url.split('/').pop() ?? (field.type === 'video' ? 'Video' : field.type === 'audio' ? 'Audio' : 'Image'),
     size: asset.size ?? 0,
@@ -494,7 +499,9 @@ export function buildKlingLibraryAsset(asset: UserAsset): KlingElementAsset {
   return {
     id: asset.id || `library_${Date.now().toString(36)}`,
     assetId: asset.id,
-    previewUrl: asset.previewUrl ?? asset.thumbUrl ?? asset.url,
+    previewUrl: isVideo
+      ? asset.previewAccessUrl ?? asset.previewUrl ?? asset.accessUrl ?? asset.url
+      : asset.previewAccessUrl ?? asset.previewUrl ?? asset.thumbnailAccessUrl ?? asset.thumbUrl ?? asset.accessUrl ?? asset.url,
     kind: isVideo ? 'video' : 'image',
     name: asset.url.split('/').pop() ?? (isVideo ? 'Video' : 'Image'),
     status: 'ready',
