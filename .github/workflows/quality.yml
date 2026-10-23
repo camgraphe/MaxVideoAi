@@ -113,8 +113,8 @@ jobs:
     if: ${{ needs.plan.outputs.browser == 'true' }}
     # Playwright 1.59.1 supports Ubuntu 24.04; ubuntu-latest can resolve to 26.04.
     runs-on: ubuntu-24.04
-    # Allow slow hosted-runner package downloads plus the full browser/admin suites.
-    timeout-minutes: 45
+    # Connected browser tests take ~11 minutes before the admin smoke suite starts.
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v5
