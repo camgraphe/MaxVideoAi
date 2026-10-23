@@ -15,6 +15,8 @@ import { ComposerGenerationActivity, GenerationSpinner } from '@/components/comp
 import { ComposerGenerationQuote } from '@/components/composer/ComposerGenerationQuote.client';
 import { ComposerNotices } from '@/components/composer/ComposerNotices.client';
 import { hasMissingRequiredComposerAsset } from '@/components/composer/composer-generation';
+import { videoExcerptCopy } from '@/lib/video-excerpt-copy';
+import { getVideoExcerptLimits } from '@/lib/video-excerpt';
 import { videoExtensionCopy } from '@/lib/video-extension';
 import { getVideoWorkflowSourceState, isVideoSourceWorkflow, videoModifyCopy } from '@/lib/video-source-workflow';
 import { getWorkspaceAssetFieldRank, getWorkspaceAssetGridClass } from '@/components/composer/composer-layout';
@@ -59,6 +61,8 @@ export function Composer({
   referenceAuthAction,
   assets,
   onAssetAdd,
+  onPrepareVideoExcerpt,
+  onVideoExcerptEditorChange,
   onAssetRemove,
   onNotice,
   onOpenLibrary,
@@ -82,17 +86,23 @@ export function Composer({
   pendingGenerations = [],
 }: ComposerProps) {
   const { t, locale } = useI18n();
+  const [excerptEditorOpen, setExcerptEditorOpen] = useState(false);
+  const handleExcerptEditorChange = useCallback<NonNullable<ComposerProps['onVideoExcerptEditorChange']>>((field, index, open) => {
+    setExcerptEditorOpen(open);
+    onVideoExcerptEditorChange?.(field, index, open);
+  }, [onVideoExcerptEditorChange]);
+  const excerptCopy = videoExcerptCopy(locale);
   const promptId = useId();
   const workbenchCopy = workspaceReferenceCopy(locale);
   const workspaceDensity = density === 'workspace';
   const extensionWorkflow = workspaceDensity && (activeManualMode === 'extend' || caps?.modes?.[0] === 'extend');
   const sourceMode = activeManualMode ?? caps?.modes?.[0];
-  const videoSourceWorkflow = workspaceDensity && isVideoSourceWorkflow(sourceMode) ? sourceMode : undefined;
+  const videoSourceWorkflow = (workspaceDensity || Boolean(onPrepareVideoExcerpt)) && isVideoSourceWorkflow(sourceMode) ? sourceMode : undefined;
   const extensionCopy = extensionWorkflow ? videoExtensionCopy(locale) : videoModifyCopy(locale, sourceMode === 'reframe');
-  const extensionSourceState = videoSourceWorkflow ? getVideoWorkflowSourceState(engine.inputSchema, assets, videoSourceWorkflow) : null;
-  const extensionNotice = extensionSourceState === 'missing' ? extensionCopy.uploadForPrice
+  const extensionSourceState = videoSourceWorkflow ? getVideoWorkflowSourceState(engine.inputSchema, assets, videoSourceWorkflow, getVideoExcerptLimits(engine, videoSourceWorkflow)) : null;
+  const extensionNotice = excerptEditorOpen ? excerptCopy.quote : extensionSourceState === 'error' && onPrepareVideoExcerpt ? excerptCopy.requires : extensionSourceState === 'missing' ? extensionCopy.uploadForPrice
     : extensionSourceState === 'uploading' ? extensionCopy.uploading : null;
-  const extensionQuoteStatus = extensionSourceState === 'missing' ? extensionCopy.awaitingVideo
+  const extensionQuoteStatus = excerptEditorOpen ? excerptCopy.editing : extensionSourceState === 'missing' ? extensionCopy.awaitingVideo
     : extensionSourceState === 'uploading' ? extensionCopy.awaitingUpload : undefined;
   const composerCopy = useMemo<ComposerCopy>(() => {
     const localized = t('workspace.generate.composer', DEFAULT_COMPOSER_COPY) as Partial<ComposerCopy> | undefined;
@@ -136,13 +146,13 @@ export function Composer({
   const [isPulseVisible, setIsPulseVisible] = useState(false);
   const animationTimeoutRef = useRef<number | null>(null);
   const formattedPrice = useMemo(() => {
-    if (price == null || isPricing || preflight?.ok === false) return null;
+    if (price == null || isPricing || excerptEditorOpen || (videoSourceWorkflow && extensionSourceState !== 'ready') || preflight?.ok === false) return null;
     try {
       return new Intl.NumberFormat(CURRENCY_LOCALE, { style: 'currency', currency }).format(price);
     } catch {
       return `${currency} ${price.toFixed(2)}`;
     }
-  }, [price, currency, isPricing, preflight?.ok]);
+  }, [price, currency, isPricing, preflight?.ok, videoSourceWorkflow, extensionSourceState, excerptEditorOpen]);
   const promptLabel = promptField?.label ?? 'Prompt';
   const promptDescription = videoSourceWorkflow ? undefined : promptField?.description;
   const negativePromptLabel = negativePromptField?.label ?? 'Negative prompt';
@@ -156,6 +166,7 @@ export function Composer({
   const missingRequiredAsset = hasMissingRequiredComposerAsset(assetFields, assets);
   const isGenerateDisabled =
     Boolean(disableGenerate) ||
+    excerptEditorOpen ||
     isLoading ||
     isPricing ||
     (videoSourceWorkflow && extensionSourceState !== 'ready') ||
@@ -353,6 +364,7 @@ export function Composer({
           <WorkspaceReferenceSection engine={engine} caps={caps} assetFields={orderedAssetFields} assets={assets}
             extensionWorkflow={extensionWorkflow} videoSourceWorkflow={videoSourceWorkflow}
             referenceAuthAction={referenceAuthAction}
+            onPrepareVideoExcerpt={onPrepareVideoExcerpt} onVideoExcerptEditorChange={handleExcerptEditorChange}
             onAssetAdd={onAssetAdd} onAssetRemove={onAssetRemove} onNotice={onNotice}
             onOpenLibrary={onOpenLibrary} onAssetUrlSelect={onAssetUrlSelect} referenceWarning={composerCopy.assetSlots.referenceWarning} />
           {showSoraImageWarning ? <p className="text-xs text-text-muted" role="note">Real people — including public figures — cannot be generated. Input images with faces of humans are currently rejected. OpenAI</p> : null}
@@ -450,7 +462,8 @@ export function Composer({
                 assetFieldLayoutClass
               )}
             >
-              <ComposerReferenceFields orderedAssetFields={orderedAssetFields} engine={engine} caps={caps} assets={assets}
+              <ComposerReferenceFields videoSourceWorkflow={videoSourceWorkflow} orderedAssetFields={orderedAssetFields} engine={engine} caps={caps} assets={assets}
+                onPrepareVideoExcerpt={onPrepareVideoExcerpt} onVideoExcerptEditorChange={handleExcerptEditorChange}
                 onAssetAdd={onAssetAdd} onAssetRemove={onAssetRemove} onNotice={onNotice}
                 onOpenLibrary={onOpenLibrary} onAssetUrlSelect={onAssetUrlSelect} referenceWarning={composerCopy.assetSlots.referenceWarning} />
             </div>

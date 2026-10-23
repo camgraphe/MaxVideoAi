@@ -104,6 +104,8 @@ type WorkspaceComposerSurfaceProps = {
   composerWorkflowNotice: string | null;
   pendingGenerations: ComposerProps['pendingGenerations'];
   handleAssetAdd: NonNullable<ComposerProps['onAssetAdd']>;
+  handlePrepareVideoExcerpt: NonNullable<ComposerProps['onPrepareVideoExcerpt']>;
+  handleVideoExcerptEditorChange: NonNullable<ComposerProps['onVideoExcerptEditorChange']>;
   handleAssetRemove: NonNullable<ComposerProps['onAssetRemove']>;
   handleOpenAssetLibrary: NonNullable<ComposerProps['onOpenLibrary']>;
   showNotice: (message: string) => void;
@@ -232,6 +234,8 @@ export function WorkspaceComposerSurface({
   composerWorkflowNotice,
   pendingGenerations,
   handleAssetAdd,
+  handlePrepareVideoExcerpt,
+  handleVideoExcerptEditorChange,
   handleAssetRemove,
   handleOpenAssetLibrary,
   showNotice,
@@ -512,6 +516,8 @@ export function WorkspaceComposerSurface({
         referenceAuthAction={referenceAuthAction}
         assets={composerAssets}
         onAssetAdd={handleAssetAdd}
+        onPrepareVideoExcerpt={handlePrepareVideoExcerpt}
+        onVideoExcerptEditorChange={handleVideoExcerptEditorChange}
         onAssetRemove={handleAssetRemove}
         onNotice={showNotice}
         onOpenLibrary={handleOpenAssetLibrary}

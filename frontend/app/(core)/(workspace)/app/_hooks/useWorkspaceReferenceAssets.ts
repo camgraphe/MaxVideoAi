@@ -381,7 +381,9 @@ export function useWorkspaceReferenceAssets({
                 height: assetResponse.height ?? entry.height,
                 size: assetResponse.size ?? entry.size,
                 type: assetResponse.mime ?? entry.type,
-                assetId: assetResponse.id,
+                assetId: 'assetId' in assetResponse ? assetResponse.assetId ?? assetResponse.id : assetResponse.id,
+                ref: 'ref' in assetResponse ? assetResponse.ref : undefined,
+                durationSec: 'durationSec' in assetResponse ? assetResponse.durationSec ?? entry.durationSec : entry.durationSec,
               };
             });
             return { ...previous, [field.id]: next };

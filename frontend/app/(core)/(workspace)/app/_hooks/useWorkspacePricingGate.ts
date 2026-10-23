@@ -4,6 +4,7 @@ import { useHostedWalletCheckout } from '@/hooks/useHostedWalletCheckout';
 import type { AppLocale } from '@/i18n/locales';
 import { dispatchGaEvent } from '@/lib/analytics/ga-events';
 import { classifyTopupFailure } from '@/lib/analytics/topup-failure';
+import { getVideoExcerptLimits } from '@/lib/video-excerpt';
 import { getEngineModeUnavailableMessage } from '@/lib/engine-mode-availability';
 import { getVideoWorkflowSourceField, getVideoWorkflowSourceState, isVideoSourceWorkflow } from '@/lib/video-source-workflow';
 import { formatRateLimitMessage } from '@/lib/wallet/rate-limit-message';
@@ -92,7 +93,7 @@ export function useWorkspacePricingGate({
   const modeUnavailableMessage = getEngineModeUnavailableMessage(selectedEngine, submissionMode, locale);
   const waitingForVideoSource = isVideoSourceWorkflow(submissionMode)
     && Boolean(getVideoWorkflowSourceField(selectedEngine?.inputSchema, submissionMode))
-    && getVideoWorkflowSourceState(selectedEngine?.inputSchema, inputAssets, submissionMode) !== 'ready';
+    && getVideoWorkflowSourceState(selectedEngine?.inputSchema, inputAssets, submissionMode, selectedEngine ? getVideoExcerptLimits(selectedEngine, submissionMode) : null) !== 'ready';
   const { preflight, preflightError: quoteError, setPreflightError, isPricing, price, currency } = useWorkspacePreflightQuote({
     request: form && selectedEngine && !modeUnavailableMessage && !waitingForVideoSource ? buildWorkspacePreflightRequest({
       form, selectedEngine, memberTier, supportsAudioToggle,

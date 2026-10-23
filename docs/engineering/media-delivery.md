@@ -976,3 +976,29 @@ priority. The WebP is 25,310 bytes versus 48,132 for the previous image; this is
 asset-transfer evidence, not a claim about production Core Web Vitals. The
 original image remains available for historical review. Reference behavior and
 media originals are unchanged.
+
+### Workspace video excerpt selection
+
+`VideoExcerptSelector.client.tsx` is the shared, lazy manual range dialog for
+Modify, Extend and Reframe sources. `VideoExcerptControl.client.tsx` owns its
+presentation session; both workspace and default composer reference surfaces use
+it. Opening, moving a control and cancelling create no media. Exact numeric ends
+retain measured fractional duration; an unchanged full range is a no-op.
+
+`useWorkspaceVideoExcerpt` owns account/model/mode/source fencing, explicit abort,
+atomic upload reservation and rollback/settlement. It composes the existing owned
+upload operation, never ambient-cookie authorization. Apply calls the trusted
+`/api/uploads/video/excerpt` endpoint and replaces only the selected slot with the
+actual measured owned result. Original/range lineage supports subsequent edits
+against the original. Blob previews needed by that lineage survive replacement
+and are released when no selected lineage uses them, on account change or unmount.
+Temporary signed previews remain distinct from canonical URL/ref identity.
+
+`getVideoExcerptLimits` remains the model source-policy owner. Import relaxation
+is explicit and restricted to the active source field, within preparation duration
+and existing byte/upload bounds. A long uncut source stays selectable but cannot
+receive a quote or generate outside its model limits. Editor state also masks
+quotes/Generate immediately. Prepared facts flow through ordinary preflight inputs
+and existing inherited/requested duration projection; output settings and tariffs
+have no excerpt-specific calculation. Input assets and transient editor state are
+not persisted by the workspace's form/prompt draft-storage owner.

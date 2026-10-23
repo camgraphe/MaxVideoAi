@@ -90,6 +90,8 @@ export function WorkspaceAppReadyView({
     fetchAssetLibrary,
     loadMoreAssetLibrary,
     handleAssetAdd,
+    handlePrepareVideoExcerpt,
+    handleVideoExcerptEditorChange,
     handleAssetLibrarySourceChange,
     handleAssetRemove,
     handleDeleteLibraryAsset,
@@ -365,6 +367,8 @@ export function WorkspaceAppReadyView({
             composerWorkflowNotice={composerWorkflowNotice}
             pendingGenerations={pendingGenerations}
             handleAssetAdd={handleAssetAdd}
+            handlePrepareVideoExcerpt={handlePrepareVideoExcerpt}
+            handleVideoExcerptEditorChange={handleVideoExcerptEditorChange}
             handleAssetRemove={handleAssetRemove}
             handleOpenAssetLibrary={handleOpenAssetLibrary}
             showNotice={showNotice}

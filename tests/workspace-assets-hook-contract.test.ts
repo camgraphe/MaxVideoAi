@@ -50,3 +50,16 @@ test('workspace asset workflow is owned by a route-local hook', () => {
   assert.match(referenceAssetsHookSource, /const handleAssetAdd = useCallback/);
   assert.match(klingAssetsHookSource, /const handleKlingElementAssetAdd = useCallback/);
 });
+
+test('excerpt preparation stays in a route-local owner and all composer surfaces receive its controls', () => {
+  const root = process.cwd();
+  const owner = fs.readFileSync(path.join(root, 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceVideoExcerpt.ts'), 'utf8');
+  const assets = fs.readFileSync(path.join(root, 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceAssets.ts'), 'utf8');
+  const composer = fs.readFileSync(path.join(root, 'frontend/components/Composer.tsx'), 'utf8');
+  assert.match(assets, /useWorkspaceVideoExcerpt\(\{/);
+  assert.match(owner, /useWorkspaceUploadOperation/);
+  assert.match(owner, /settleReferenceAssetReservation/);
+  assert.match(owner, /requestVideoExcerpt/);
+  assert.doesNotMatch(composer, /api\/uploads\/video\/excerpt/);
+  assert.equal((composer.match(/onPrepareVideoExcerpt=\{onPrepareVideoExcerpt\}/g) ?? []).length, 2);
+});

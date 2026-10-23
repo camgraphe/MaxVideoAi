@@ -1,4 +1,5 @@
 'use client';
+import { VideoExcerptControl } from '@/components/media/VideoExcerptControl.client';
 import {videoWorkflowNotices} from '@/lib/video-workflow-capabilities';
 /* eslint-disable @next/next/no-img-element */
 
@@ -17,9 +18,9 @@ import { resolveWorkspaceReferenceFieldTitle, workspaceReferenceCopy } from './w
 import { videoExtensionCopy } from '@/lib/video-extension';
 import { getVideoWorkflowSourceField, videoModifyCopy, type VideoSourceWorkflow } from '@/lib/video-source-workflow';
 
-type Props = Pick<ComposerProps, 'engine' | 'caps' | 'assetFields' | 'assets' | 'onAssetAdd' | 'onAssetRemove' | 'onNotice' | 'onOpenLibrary' | 'onAssetUrlSelect' | 'referenceAuthAction'> & { referenceWarning: string; extensionWorkflow?: boolean; videoSourceWorkflow?: VideoSourceWorkflow };
+type Props = Pick<ComposerProps, 'engine' | 'caps' | 'assetFields' | 'assets' | 'onPrepareVideoExcerpt' | 'onVideoExcerptEditorChange' | 'onAssetAdd' | 'onAssetRemove' | 'onNotice' | 'onOpenLibrary' | 'onAssetUrlSelect' | 'referenceAuthAction'> & { referenceWarning: string; extensionWorkflow?: boolean; videoSourceWorkflow?: VideoSourceWorkflow };
 
-export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, onAssetAdd, onAssetRemove, onNotice, onOpenLibrary, onAssetUrlSelect, referenceWarning, referenceAuthAction, extensionWorkflow = false, videoSourceWorkflow }: Props) {
+export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, onPrepareVideoExcerpt, onVideoExcerptEditorChange, onAssetAdd, onAssetRemove, onNotice, onOpenLibrary, onAssetUrlSelect, referenceWarning, referenceAuthAction, extensionWorkflow = false, videoSourceWorkflow }: Props) {
   const { locale } = useI18n();
   const copy = workspaceReferenceCopy(locale);
   const assetCopy = getLocalizedAssetDropzoneCopy(normalizeUiLocale(locale));
@@ -40,6 +41,7 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
   const orderedFrames = [...frames].sort((a, b) => Number(getWorkspaceFrameCommand(a, engine) === 'end') - Number(getWorkspaceFrameCommand(b, engine) === 'end'));
   const selected = assetFields.flatMap((entry) => (assets[entry.field.id] ?? []).flatMap((asset, slotIndex) => asset ? [{ entry, asset, slotIndex }] : []));
   const selectedCollections = selected.filter(({ entry }) => !getWorkspaceFrameCommand(entry, engine));
+  const visibleCollections = selectedCollections.filter(({ entry }, index) => index < 3 || Boolean(onPrepareVideoExcerpt && entry === sourceEntry));
   const collectionRequired = collections.filter((entry) => entry.required && (assets[entry.field.id] ?? []).filter(Boolean).length < (entry.field.minCount ?? 1));
   const collectionAvailability = getReferenceCommandAvailability(collections, assets);
   const restrictionReasons = getReferenceCommandAvailability(assetFields, assets).reasons;
@@ -113,7 +115,7 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
     </div> : null}
     {collectionRequired.length ? <p id={requiredId} className="app-reference-required">{copy.required} · {collectionRequired.map(({ field, role }) => resolveWorkspaceReferenceFieldTitle(field, role ?? 'generic', locale) || copy.kinds[field.type === 'audio' ? 'audio' : field.type === 'video' ? 'video' : 'image']).join(', ')}</p> : null}
     {selectedCollections.length ? <div className="app-reference-selected-summary">
-      {selectedCollections.slice(0, 3).map(({ entry, asset, slotIndex }) => <div className="app-reference-selected-item" key={`${entry.field.id}-${slotIndex}`}>
+      {visibleCollections.map(({ entry, asset, slotIndex }) => <div className="app-reference-selected-item" key={`${entry.field.id}-${slotIndex}`}>
         <button className="app-reference-selected-manage" type="button"
           onClick={() => {
             const command = entry === sourceEntry ? entry.field.id : 'collections';
@@ -123,14 +125,18 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
           {asset.kind === 'image' ? <img src={asset.previewUrl} alt="" loading="lazy" /> : <AppGlyph name={asset.kind} />}
           <span>{asset.name}</span>{asset.status === 'uploading' ? <small role="status">…</small> : asset.status === 'error' ? <small role="alert">{asset.error ?? '!'}</small> : null}
         </button>
+        {entry === sourceEntry && sourceMode && (asset.status === 'ready' || asset.excerptEditing) ? <VideoExcerptControl
+          key={`${engine.id}:${sourceMode}:${asset.url}`} engine={engine} field={entry.field} index={slotIndex} asset={asset} mode={sourceMode} locale={locale}
+          onPrepareVideoExcerpt={onPrepareVideoExcerpt} onVideoExcerptEditorChange={onVideoExcerptEditorChange} /> : null}
         {onAssetRemove ? <button className="app-reference-selected-remove" type="button" onClick={() => removeAsset(entry.field, slotIndex)} aria-label={`${copy.remove} · ${asset.name}`} title={copy.remove}>
           <span aria-hidden="true">×</span>
         </button> : null}
       </div>)}
-      {selectedCollections.length > 3 ? <span>+{selectedCollections.length - 3}</span> : null}
+      {selectedCollections.length > visibleCollections.length ? <span>+{selectedCollections.length - visibleCollections.length}</span> : null}
     </div> : null}
     {popupFields.length ? <WorkspaceReferencePopup singleRole={Boolean(activeFrame || activeSource)} title={popupTitle} closeLabel={copy.close} onClose={close}>
       <WorkspaceReferenceInventory fields={popupFields} assets={assets} locale={locale} renderField={(entry) => <AssetDropzone key={entry.field.id} {...entry} headerAction={undefined}
+        allowVideoExcerptImport={Boolean(onPrepareVideoExcerpt && entry === sourceEntry)}
         density="workspace" engine={engine} caps={caps}
         assets={assets[entry.field.id] ?? []} onSelect={onAssetAdd} onRemove={removeAsset}
         onError={onNotice} onOpenLibrary={onOpenLibrary ? openLibrary : undefined} onUrlSelect={onAssetUrlSelect} referenceWarning={referenceWarning} />} />

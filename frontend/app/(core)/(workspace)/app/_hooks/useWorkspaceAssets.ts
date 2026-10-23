@@ -1,6 +1,7 @@
 import type { Dispatch, SetStateAction } from 'react';
 import type { KlingElementState } from '@/components/KlingElementsBuilder';
-import type { EngineInputSchema, Mode } from '@/types/engines';
+import { useWorkspaceVideoExcerpt } from './useWorkspaceVideoExcerpt';
+import type { EngineCaps, EngineInputSchema, Mode } from '@/types/engines';
 import { useWorkspaceAssetLibrary } from './useWorkspaceAssetLibrary';
 import type { CommitInputAssetMutation, WorkspaceInputAssetState } from './useWorkspaceAssetState';
 import { useWorkspaceKlingElementAssets } from './useWorkspaceKlingElementAssets';
@@ -13,6 +14,7 @@ type UseWorkspaceAssetsOptions = {
   setInputAssets: Dispatch<SetStateAction<WorkspaceInputAssetState>>;
   commitInputAssetMutation: CommitInputAssetMutation;
   engineId?: string | null;
+  engine?: EngineCaps | null;
   inputSchema?: EngineInputSchema | null;
   preferredMode: Mode;
   workflowCopy: {
@@ -31,6 +33,7 @@ export function useWorkspaceAssets({
   setInputAssets,
   commitInputAssetMutation,
   engineId,
+  engine,
   inputSchema,
   preferredMode,
   workflowCopy,
@@ -96,7 +99,10 @@ export function useWorkspaceAssets({
     setAssetPickerTarget,
   });
 
+  const excerpts = useWorkspaceVideoExcerpt({ accountScope, engine, mode: preferredMode, inputAssets, commitInputAssetMutation });
+
   return {
+    ...excerpts,
     inputAssets,
     setInputAssets,
     assetPickerTarget,

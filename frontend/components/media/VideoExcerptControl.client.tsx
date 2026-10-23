@@ -1,0 +1,95 @@
+'use client';
+
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import type { ComposerProps, ComposerAttachment } from '@/components/composer/composer-types';
+import type { EngineInputField } from '@/types/engines';
+import { getVideoExcerptLimits } from '@/lib/video-excerpt';
+import { videoExcerptCopy } from '@/lib/video-excerpt-copy';
+import type { VideoSourceWorkflow } from '@/lib/video-source-workflow';
+
+const Selector = lazy(() =>
+  import('./VideoExcerptSelector.client').then((module) => ({ default: module.VideoExcerptSelector }))
+);
+type Props = Pick<ComposerProps, 'engine' | 'onPrepareVideoExcerpt' | 'onVideoExcerptEditorChange'> & {
+  field: EngineInputField;
+  index: number;
+  asset: ComposerAttachment;
+  mode: VideoSourceWorkflow;
+  locale: string;
+};
+/** The parent keys this control by source URL and model/mode, so replacement closes its session. */
+export function VideoExcerptControl({
+  engine,
+  field,
+  index,
+  asset,
+  mode,
+  locale,
+  onPrepareVideoExcerpt,
+  onVideoExcerptEditorChange,
+}: Props) {
+  const [selection, setSelection] = useState<ComposerAttachment | null>(null);
+  const copy = videoExcerptCopy(locale);
+  const limits = getVideoExcerptLimits(engine, mode);
+  const sessionCleanup = useRef<(() => void) | null>(null);
+  useEffect(
+    () => () => {
+      sessionCleanup.current?.();
+      sessionCleanup.current = null;
+    },
+    []
+  );
+  if (
+    !limits ||
+    limits.sourceFieldId !== field.id ||
+    !onPrepareVideoExcerpt ||
+    !asset.url ||
+    !asset.durationSec ||
+    !(asset.ref || asset.assetId)
+  )
+    return null;
+  const close = () => {
+    sessionCleanup.current?.();
+    sessionCleanup.current = null;
+    setSelection(null);
+  };
+  const original = selection?.excerptSource;
+  return (
+    <>
+      <button
+        type="button"
+        className="app-reference-command"
+        disabled={asset.status !== 'ready' || Boolean(selection)}
+        onClick={() => {
+          sessionCleanup.current = () => onVideoExcerptEditorChange?.(field, index, false);
+          onVideoExcerptEditorChange?.(field, index, true);
+          setSelection(asset);
+        }}
+      >
+        {copy.choose}
+      </button>
+      {selection ? (
+        <Suspense
+          fallback={
+            <button type="button" onClick={close}>
+              {copy.cancel}
+            </button>
+          }
+        >
+          <Selector
+            previewUrl={original?.previewUrl ?? selection.previewUrl}
+            durationSec={original?.durationSec ?? selection.durationSec!}
+            initialRange={selection.excerptRange}
+            limits={limits}
+            locale={locale}
+            onCancel={close}
+            onApply={async (range) => {
+              await onPrepareVideoExcerpt(field, index, range);
+              close();
+            }}
+          />
+        </Suspense>
+      ) : null}
+    </>
+  );
+}

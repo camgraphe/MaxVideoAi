@@ -16,14 +16,19 @@ export function getVideoWorkflowSourceField(inputSchema: EngineInputSchema | und
 /** Presentation eligibility only. Owned media facts and pricing remain server-authoritative. */
 export function getVideoWorkflowSourceState(
   inputSchema: EngineInputSchema | undefined,
-  assets: Record<string, ({ kind: string; status?: string } | null)[]>,
+  assets: Record<string, ({ kind: string; status?: string; excerptEditing?: boolean; durationSec?: number | null } | null)[]>,
   mode: VideoSourceWorkflow,
+  limits?: { minDurationSec: number | null; maxDurationSec: number | null } | null,
 ): 'missing' | 'uploading' | 'error' | 'ready' {
   const field = getVideoWorkflowSourceField(inputSchema, mode);
   if (!field) return 'missing';
   const sources = (assets[field.id] ?? []).filter(asset => asset?.kind === 'video');
-  if (sources.some(asset => asset?.status === 'uploading')) return 'uploading';
+  if (sources.some(asset => asset?.status === 'uploading' || asset?.excerptEditing)) return 'uploading';
   if (sources.some(asset => asset?.status === 'error')) return 'error';
+  const min = limits?.minDurationSec ?? field.minDurationSec;
+  const max = limits?.maxDurationSec ?? field.maxDurationSec;
+  if (sources.some(asset => typeof asset?.durationSec === 'number' &&
+    ((typeof min === 'number' && asset.durationSec < min) || (typeof max === 'number' && asset.durationSec > max)))) return 'error';
   return sources.filter(asset => asset?.status === 'ready').length >= (field.minCount ?? 1) ? 'ready' : 'missing';
 }
 

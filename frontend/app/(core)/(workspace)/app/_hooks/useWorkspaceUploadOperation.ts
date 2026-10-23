@@ -33,6 +33,7 @@ export function useWorkspaceUploadOperation(
           ...init,
           signal: AbortSignal.timeout(10_000),
         }),
+      cancel: () => controller.abort(),
       finish: () => operations.delete(controller),
     };
   }, [accountScope, valid]);
