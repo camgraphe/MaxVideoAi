@@ -66,3 +66,14 @@ test('the response independently authorizes the saved owned asset',async()=>{
   const {deps}=setup({resolve:async(_user,selected)=>{if((selected as typeof source).assetId===ref.assetId)throw new Error('MEDIA_NOT_AVAILABLE');return media;}});
   await assert.rejects(prepareVideoExcerpt('owner',input,deps));
 });
+
+test('strict model maximum still rejects overlong fractional-frame output before or after persistence',async()=>{
+  for(const storedOverflow of [false,true]) {
+    const {deps}=setup(storedOverflow?{
+      persist:async()=>({id:ref.assetId,assetId:ref.assetId,ref,url:'https://media.example/excerpt.mp4',durationSec:18.018}),
+    }:{
+      trim:async()=>({bytes:Buffer.from('prepared'),facts:{...facts,fps:30000/1001,durationSec:18.018}}),
+    });
+    await assert.rejects(prepareVideoExcerpt('owner',input,deps),/current model source limits/);
+  }
+});

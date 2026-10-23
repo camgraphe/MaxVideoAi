@@ -75,14 +75,19 @@ export function validateStoredVideoExcerptFacts(facts: VideoExcerptFacts, stored
   }
 }
 
-export async function trimVideoExcerptBytes(bytes: Uint8Array, facts: VideoExcerptFacts, range: VideoExcerptRange): Promise<{bytes:Buffer;facts:VideoExcerptFacts}> {
+export async function trimVideoExcerptBytes(bytes: Uint8Array, facts: VideoExcerptFacts, range: VideoExcerptRange, maxDurationSec?: number): Promise<{bytes:Buffer;facts:VideoExcerptFacts}> {
   const length = range.endSec-range.startSec;
   if (!Number.isFinite(range.startSec) || !Number.isFinite(range.endSec) || range.startSec < 0 || length <= 0 || range.endSec > facts.durationSec) throw new VideoExcerptError('PARAMETER_INVALID','Choose a valid start and end within the source video.');
   if (length > VIDEO_EXCERPT_PREPARATION_LIMITS.maxExcerptSec) throw new VideoExcerptError('PREPARATION_LIMIT', 'Choose an excerpt of at most 60 seconds. The full-video workflow remains available.');
+  // A fractional-rate final frame can extend beyond -t (18s at 29.97fps becomes 18.018s).
+  // Cap complete frames at the authored model maximum. Other selections keep their normal
+  // frame rounding, including minimum-length sources which must not be rounded below their minimum.
+  const frameCount = maxDurationSec === undefined ? null : Math.floor(maxDurationSec*facts.fps+1e-8);
+  if (frameCount !== null && frameCount < 1) throw new VideoExcerptError('PARAMETER_INVALID','Choose an excerpt containing at least one complete video frame.');
   return workspace(async directory => {
     const source = join(directory,'source'), output = join(directory,'excerpt.mp4'); await writeFile(source,bytes);
     // FFmpeg autorotates the decoded image; stripping metadata avoids a second display rotation.
-    await exec(await ensureExecutableFfmpegPath(ffmpeg.path), ['-hide_banner','-loglevel','error','-nostdin','-threads','2','-protocol_whitelist','file,pipe','-i',source,'-ss',String(range.startSec),'-t',String(length),'-map',`0:${facts.videoStreamIndex ?? 0}`,'-map','0:a:0?','-map_metadata','-1','-c:v','libx264','-pix_fmt','yuv420p','-preset','veryfast','-crf','18','-threads','2','-c:a','aac','-b:a','192k','-movflags','+faststart','-fs',String(VIDEO_EXCERPT_PREPARATION_LIMITS.maxBytes),'-y',output], {timeout:90_000,maxBuffer:1024*1024});
+    await exec(await ensureExecutableFfmpegPath(ffmpeg.path), ['-hide_banner','-loglevel','error','-nostdin','-threads','2','-protocol_whitelist','file,pipe','-i',source,'-ss',String(range.startSec),'-t',String(length),...(frameCount === null ? [] : ['-frames:v',String(frameCount)]),'-map',`0:${facts.videoStreamIndex ?? 0}`,'-map','0:a:0?','-map_metadata','-1','-c:v','libx264','-r',String(facts.fps),'-pix_fmt','yuv420p','-preset','veryfast','-crf','18','-threads','2','-c:a','aac','-b:a','192k','-movflags','+faststart','-fs',String(VIDEO_EXCERPT_PREPARATION_LIMITS.maxBytes),'-y',output], {timeout:90_000,maxBuffer:1024*1024});
     if ((await stat(output)).size > VIDEO_EXCERPT_PREPARATION_LIMITS.maxBytes) throw limitError();
     const result = await readFile(output), measured = await inspectVideoExcerptBytes(result,'video/mp4');
     validateVideoExcerptOutput(facts,measured,range);
