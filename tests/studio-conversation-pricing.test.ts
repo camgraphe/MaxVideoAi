@@ -158,9 +158,12 @@ test('action executor preserves explicit Edit through comparison candidate filte
  }};
  const execute=createStudioActionExecutor(actor,{enabled:true,readProject:async()=>({} as never),generation:{} as never,mediaEnabled:true,factories:{video:()=>service} as never,
   attachedMedia:[source],prepareImage:async()=>{throw new Error('No preparation');}});
- const result=await execute({action:'pricing.compare',surface:'video',mode:'v2v',operation:'kling-edit',outputCount:1,prompt:'Edit light',settings:[],references:[{ref:{type:'asset',assetId:'clip',kind:'video'},role:'source',slot:null}],baselineModelId:null,candidateModelIds:['kling-o3-standard','wan-3']} as never);
+ for(const baseline of [null,{modelId:'wan-3',settings:[{name:'durationSec',value:5},{name:'resolution',value:'720p'}]}]) {
+ const result=await execute({action:'pricing.compare',surface:'video',mode:'v2v',operation:'kling-edit',outputCount:1,prompt:'Edit light',settings:[],references:[{ref:{type:'asset',assetId:'clip',kind:'video'},role:'source',slot:null}],baselineModelId:baseline?.modelId??null,baselineSettings:baseline?.settings??null,candidateModelIds:['kling-o3-standard','wan-3']} as never);
  assert.equal(result.ok,true,JSON.stringify(result));
  if(!result.ok||result.action!=='pricing.compare')throw new Error('Expected comparison');
  assert.deepEqual(result.data.options.map(option=>[option.modelId,option.operation]),[['kling-o3-standard','kling-edit']]);
- assert.equal(captured.length,1);
+ if(baseline){assert.equal(result.data.baseline,null);assert.ok(result.data.unavailable.some(item=>item.modelId==='wan-3'&&item.baseline===true&&item.code==='PARAMETER_INVALID'));}
+ }
+ assert.equal(captured.length,2);
 });

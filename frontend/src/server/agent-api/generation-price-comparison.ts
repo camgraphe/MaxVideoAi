@@ -60,10 +60,14 @@ export type GenerationPriceComparison = {
 };
 
 type ComparisonCatalogScope=Pick<CanonicalGenerationRequest,'surface'|'mode'> & {operation?:CanonicalGenerationRequest['operation']|null;candidateModelIds?:readonly string[]|null;baselineModelId?:string|null};
+function supportsComparisonOperation(candidate: AgentPublicGenerationEngine, input: ComparisonCatalogScope): boolean {
+  return !input.operation || candidate.engine.operationCaps?.[input.operation]?.mode === input.mode;
+}
+
 function comparisonCandidates(input:ComparisonCatalogScope,catalog:readonly AgentPublicGenerationEngine[]) {
   const explicitIds=new Set([...(input.candidateModelIds??[]),...(input.baselineModelId?[input.baselineModelId]:[])]);
   return catalog.filter(candidate=>candidate.surface===input.surface&&candidate.publicModes.includes(input.mode)
-    &&(!input.operation || candidate.engine.operationCaps?.[input.operation]?.mode === input.mode)
+    &&supportsComparisonOperation(candidate, input)
     &&(!input.candidateModelIds||explicitIds.has(candidate.engine.id))
     &&(explicitIds.has(candidate.engine.id)||isAgentModelRecommendationEligible(candidate.engine.id,getRuntimeModelById(candidate.engine.id)?.lifecycle)));
 }
@@ -162,7 +166,9 @@ export async function compareGenerationPrices(
         candidate.surface === base.surface &&
         candidate.publicModes.includes(base.mode),
     );
-    if (candidate)
+    if (candidate && !supportsComparisonOperation(candidate, input)) {
+      unavailable.push({ modelId: candidate.engine.id, code: 'PARAMETER_INVALID', baseline: true });
+    } else if (candidate)
       scenarios.push({
         candidate,
         settings: input.baselineSettings,

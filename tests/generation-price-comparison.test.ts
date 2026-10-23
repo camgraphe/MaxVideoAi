@@ -549,3 +549,18 @@ test('negative comparison evidence changes when a live prompt limit changes',asy
   assert.equal((await compareGenerationPrices(scenario,actor,dependencies({listPublicEngines:async()=>[large]}))).options.length,1);
   assert.notEqual(generationComparisonCatalogFingerprint(scenario,[small]),generationComparisonCatalogFingerprint(scenario,[large]));
 });
+
+test('an incompatible original baseline is unavailable without losing compatible Edit quotes',async()=>{
+ const priced:string[]=[];
+ const result=await compareGenerationPrices({surface:'video',mode:'v2v',operation:'kling-edit',prompt:'Relight clip',settings:{},
+  references:[{kind:'asset',assetId:'clip',role:'source'}],candidateModelIds:['kling-o3-standard'],baselineModelId:'wan-3',
+  baselineSettings:{durationSec:5,resolution:'720p',aspectRatio:'16:9'}},actor,dependencies({
+  listPublicEngines:async()=>['kling-o3-standard','wan-3'].map(candidate),
+  resolveGenerationReferences:async()=>[{assetId:'clip',role:'source',mediaKind:'video',storageUrl:'https://example.com/clip.mp4',mimeType:'video/mp4',originalName:'clip.mp4',width:1280,height:720,durationSec:5,sizeBytes:1000}],
+  priceGeneration:async(request,tier)=>{priced.push(request.engineId);assert.equal(request.operation,'kling-edit');return {priceCents:123,currency:'USD',membershipTier:tier,pricingSnapshot:{totalCents:123,currency:'USD',membershipTier:tier}};},
+ }));
+ assert.deepEqual(priced,['kling-o3-standard']);
+ assert.deepEqual(result.options.map(option=>[option.modelId,option.operation]),[['kling-o3-standard','kling-edit']]);
+ assert.equal(result.baseline,null);
+ assert.ok(result.unavailable.some(item=>item.modelId==='wan-3'&&item.baseline===true&&item.code==='PARAMETER_INVALID'));
+});
