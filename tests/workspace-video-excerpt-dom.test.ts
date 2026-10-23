@@ -67,7 +67,12 @@ async function mount(durationSec = 60) {
   });
   const requests: any[] = [];
   w.quotes = [];
+  w.sourceReads = [];
   w.fetch = (url: string, init: RequestInit) => {
+    if(url === '/api/uploads/video/excerpt/source') {
+      w.sourceReads.push({url,init});
+      return w.holdSourceRead ? w.holdSourceRead.promise : Promise.resolve({ok:true,json:async()=>({ok:true,previewUrl:'https://example.invalid/signed-full-original'})});
+    }
     if (url === '/api/preflight') {
       w.quotes.push(JSON.parse(String(init.body)));
       return Promise.resolve({ ok: true, json: async () => ({ ok: true, total: 125 }) });
@@ -344,4 +349,40 @@ test('cleanup from another source slot cannot cancel the active excerpt session'
   } finally {
     await f.dispose();
   }
+});
+
+
+test('library excerpt preview reads owned full original and preserves short gallery preview and canonical identity',async()=>{
+ const f=await mount();
+ try{
+  let preview:unknown;
+  await f.w.fx.act(async()=>{preview=await f.w.probe.handleVideoExcerptEditorChange(field,0,true);});
+  assert.equal(preview,'https://example.invalid/signed-full-original');
+  assert.equal(f.w.sourceReads.length,1);
+  const request=f.w.sourceReads[0];
+  assert.deepEqual(JSON.parse(request.init.body),{source:source.ref});
+  assert.equal(request.init.credentials,'omit');
+  assert.equal(new Headers(request.init.headers).get('authorization'),'Bearer token-A');
+  assert.equal(f.w.probe.inputAssets.video_url[0].previewUrl,source.previewUrl);
+  assert.equal(f.w.probe.inputAssets.video_url[0].url,source.url);
+ }finally{await f.dispose();}
+});
+for(const change of ['cancel','model','account','source'])test(`late full-timeline access cannot escape ${change} fencing`,async()=>{
+ const f=await mount();
+ try{
+  f.w.holdSourceRead=deferred<any>();
+  let pending:Promise<unknown>;
+  await f.w.fx.act(async()=>{pending=f.w.probe.handleVideoExcerptEditorChange(field,0,true);pending?.catch(()=>{});});
+  assert.equal(f.w.sourceReads.length,1);
+  if(change==='cancel')await f.cancel();
+  else await f.w.fx.act(async()=>{
+   if(change==='model')f.w.engineId='kling-o3-standard';
+   if(change==='account'){f.w.owner='B';f.w.sessionStorage.setItem('last-known:user-id','B');}
+   if(change==='source')f.w.probe.setInputAssets({video_url:[{...source,id:'other',url:'other'}]});
+   f.w.fx.render();
+  });
+  assert.equal(f.w.sourceReads[0].init.signal.aborted,true);
+  f.w.holdSourceRead.resolve({ok:true,json:async()=>({ok:true,previewUrl:'https://example.invalid/stale-private'})});
+  await assert.rejects(pending!, (e:any)=>e.name==='AbortError');
+ }finally{await f.dispose();}
 });

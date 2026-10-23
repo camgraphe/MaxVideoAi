@@ -14,11 +14,10 @@ import { ComposerPromotedActionIcon } from '@/components/composer/ComposerPromot
 import { ComposerGenerationActivity, GenerationSpinner } from '@/components/composer/ComposerGenerationActivity.client';
 import { ComposerGenerationQuote } from '@/components/composer/ComposerGenerationQuote.client';
 import { ComposerNotices } from '@/components/composer/ComposerNotices.client';
+import { useComposerVideoSourceWorkflow } from '@/components/composer/useComposerVideoSourceWorkflow';
 import { hasMissingRequiredComposerAsset } from '@/components/composer/composer-generation';
-import { videoExcerptCopy } from '@/lib/video-excerpt-copy';
-import { getVideoExcerptLimits } from '@/lib/video-excerpt';
 import { videoExtensionCopy } from '@/lib/video-extension';
-import { getVideoWorkflowSourceState, isVideoSourceWorkflow, videoModifyCopy } from '@/lib/video-source-workflow';
+import { videoModifyCopy } from '@/lib/video-source-workflow';
 import { getWorkspaceAssetFieldRank, getWorkspaceAssetGridClass } from '@/components/composer/composer-layout';
 import { DEFAULT_COMPOSER_COPY, type ComposerCopy } from '@/components/composer/composer-copy';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -86,24 +85,10 @@ export function Composer({
   pendingGenerations = [],
 }: ComposerProps) {
   const { t, locale } = useI18n();
-  const [excerptEditorOpen, setExcerptEditorOpen] = useState(false);
-  const handleExcerptEditorChange = useCallback<NonNullable<ComposerProps['onVideoExcerptEditorChange']>>((field, index, open) => {
-    setExcerptEditorOpen(open);
-    onVideoExcerptEditorChange?.(field, index, open);
-  }, [onVideoExcerptEditorChange]);
-  const excerptCopy = videoExcerptCopy(locale);
   const promptId = useId();
   const workbenchCopy = workspaceReferenceCopy(locale);
   const workspaceDensity = density === 'workspace';
-  const extensionWorkflow = workspaceDensity && (activeManualMode === 'extend' || caps?.modes?.[0] === 'extend');
-  const sourceMode = activeManualMode ?? caps?.modes?.[0];
-  const videoSourceWorkflow = (workspaceDensity || Boolean(onPrepareVideoExcerpt)) && isVideoSourceWorkflow(sourceMode) ? sourceMode : undefined;
-  const extensionCopy = extensionWorkflow ? videoExtensionCopy(locale) : videoModifyCopy(locale, sourceMode === 'reframe');
-  const extensionSourceState = videoSourceWorkflow ? getVideoWorkflowSourceState(engine.inputSchema, assets, videoSourceWorkflow, getVideoExcerptLimits(engine, videoSourceWorkflow)) : null;
-  const extensionNotice = excerptEditorOpen ? excerptCopy.quote : extensionSourceState === 'error' && onPrepareVideoExcerpt ? excerptCopy.requires : extensionSourceState === 'missing' ? extensionCopy.uploadForPrice
-    : extensionSourceState === 'uploading' ? extensionCopy.uploading : null;
-  const extensionQuoteStatus = excerptEditorOpen ? excerptCopy.editing : extensionSourceState === 'missing' ? extensionCopy.awaitingVideo
-    : extensionSourceState === 'uploading' ? extensionCopy.awaitingUpload : undefined;
+  const { excerptEditorOpen, handleExcerptEditorChange, extensionWorkflow, sourceMode, videoSourceWorkflow, extensionCopy, extensionSourceState, extensionNotice, extensionQuoteStatus } = useComposerVideoSourceWorkflow({ engine, assets, activeManualMode, caps, onPrepareVideoExcerpt, onVideoExcerptEditorChange, workspaceDensity, locale });
   const composerCopy = useMemo<ComposerCopy>(() => {
     const localized = t('workspace.generate.composer', DEFAULT_COMPOSER_COPY) as Partial<ComposerCopy> | undefined;
     if (!localized) {

@@ -12,6 +12,8 @@ import {
 
 export type VideoExcerptSelectorProps = {
   previewUrl: string;
+  previewPending?: boolean;
+  previewError?: unknown;
   durationSec: number;
   limits: VideoExcerptLimits;
   locale: string;
@@ -23,6 +25,8 @@ export type VideoExcerptSelectorProps = {
 /** Range preview is local. Only the explicit apply action may prepare owned media. */
 export function VideoExcerptSelector({
   previewUrl,
+  previewPending = false,
+  previewError,
   durationSec,
   limits,
   locale,
@@ -52,7 +56,7 @@ export function VideoExcerptSelector({
     range.endSec <= durationSec
       ? range
       : null;
-  let valid = true;
+  let valid = !previewPending && !previewError;
   try {
     validateVideoExcerptRange(range, durationSec, limits);
   } catch {
@@ -97,7 +101,7 @@ export function VideoExcerptSelector({
         aria-busy={busy}
       >
         <h2 id={titleId}>{copy.title}</h2>
-        <video
+        {previewUrl ? <video
           ref={video}
           src={previewUrl}
           controls
@@ -129,7 +133,9 @@ export function VideoExcerptSelector({
             )
               node.currentTime = previewRange.startSec;
           }}
-        />
+        /> : null}
+        {previewPending ? <p role="status">{copy.loadingPreview}</p> : null}
+        {previewError ? <p role="alert">{videoExcerptFailureMessage(previewError, locale)}</p> : null}
         {(['start', 'end'] as const).map((which) => (
           <div className="video-excerpt-control" key={which}>
             <label>

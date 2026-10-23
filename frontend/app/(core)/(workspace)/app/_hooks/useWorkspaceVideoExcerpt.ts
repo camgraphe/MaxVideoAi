@@ -8,7 +8,7 @@ import {
   type VideoExcerptRange,
 } from '@/lib/video-excerpt';
 import { isVideoSourceWorkflow } from '@/lib/video-source-workflow';
-import { requestVideoExcerpt } from '@/lib/client-video-excerpt';
+import { requestVideoExcerpt, requestVideoExcerptSource } from '@/lib/client-video-excerpt';
 import { settleReferenceAssetReservation, type ReferenceAsset } from '../_lib/workspace-assets';
 import type { CommitInputAssetMutation, WorkspaceInputAssetState } from './useWorkspaceAssetState';
 import { useWorkspaceAssetLifetime } from './useWorkspaceAssetLifetime';
@@ -19,6 +19,7 @@ type Editor = {
   index: number;
   original: ReferenceAsset;
   reservationId?: string;
+  previewOperation?: ReturnType<ReturnType<typeof useWorkspaceUploadOperation>>;
   operation?: ReturnType<ReturnType<typeof useWorkspaceUploadOperation>>;
   current: () => boolean;
 };
@@ -69,6 +70,8 @@ export function useWorkspaceVideoExcerpt({
 
   const restore = useCallback(
     (session: Editor, keepEditing = false) => {
+      session.previewOperation?.cancel();
+      session.previewOperation?.finish();
       session.operation?.cancel();
       session.operation?.finish();
       const original = { ...session.original, ...(keepEditing ? { excerptEditing: true } : {}) };
@@ -103,7 +106,7 @@ export function useWorkspaceVideoExcerpt({
   }, [cancel, inputAssets, epoch]);
 
   const handleVideoExcerptEditorChange = useCallback(
-    (field: EngineInputField, index: number, open: boolean) => {
+    async (field: EngineInputField, index: number, open: boolean) => {
       if (!open) {
         const active = editor.current;
         if (generation.current === epoch && active?.field.id === field.id && active.index === index) cancel();
@@ -134,8 +137,25 @@ export function useWorkspaceVideoExcerpt({
         entries[index] = { ...source, excerptEditing: true };
         return { state: { ...previous, [field.id]: entries } };
       });
+      const session = editor.current;
+      if (!session) return;
+      const source = session.original;
+      const original = source.excerptSource ?? {
+        ref: source.ref ?? { type: 'asset' as const, assetId: source.assetId!, kind: 'video' as const },
+        previewUrl: source.previewUrl,
+      };
+      // Local uploads already hold the complete original. Gallery previews may be shorter;
+      // remote originals always resolve through owned access, including expired signed URLs.
+      if (original.previewUrl.startsWith('blob:')) return original.previewUrl;
+      const operation = beginUpload();
+      session.previewOperation = operation;
+      try {
+        const url = await requestVideoExcerptSource(original.ref, operation.request);
+        if (editor.current !== session || !session.current()) throw new DOMException('Cancelled', 'AbortError');
+        return url;
+      } finally { operation.finish(); }
     },
-    [cancel, commitInputAssetMutation, engine, epoch, mode, valid]
+    [beginUpload, cancel, commitInputAssetMutation, engine, epoch, mode, valid]
   );
 
   const handlePrepareVideoExcerpt = useCallback(

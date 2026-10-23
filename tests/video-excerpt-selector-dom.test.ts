@@ -137,7 +137,7 @@ test('real dropzone accepts long source for excerpt workflow only and keeps prep
 });
 
 const composerBundle = bundleClientFlow(
-  `import React,{act} from 'react';import {createRoot} from 'react-dom/client';import {Composer} from './components/Composer';import {getBaseEngineIncludingHidden} from './src/lib/engines';import {I18nProvider} from './lib/i18n/I18nProvider';const root=createRoot(document.getElementById('root'));const engine=getBaseEngineIncludingHidden('luma-ray-3-2');window.IS_REACT_ACT_ENVIRONMENT=true;window.fx={act,render:()=>root.render(<I18nProvider locale="en" dictionary={{}} fallback={{}}><Composer density={window.density} engine={engine} activeManualMode="v2v" prompt="Edit" onPromptChange={()=>{}} promptRequired price={1.25} currency="USD" isLoading={false} assetFields={[{field:{id:'video_url',type:'video',maxCount:1},required:true}]} assets={{video_url:Array.from({length:window.sourceCount??1},(_,index)=>({id:'original'+index,assetId:'owned'+index,kind:'video',name:'source'+index+'.mp4',size:1,type:'video/mp4',status:'ready',url:'https://example.invalid/original'+index,previewUrl:'https://example.invalid/signed'+index,durationSec:5.558333}))}} onGenerate={()=>window.generated++} onPrepareVideoExcerpt={async()=>{window.applied++;}} /></I18nProvider>),unmount:()=>root.unmount()};`,
+  `import React,{act} from 'react';import {createRoot} from 'react-dom/client';import {Composer} from './components/Composer';import {getBaseEngineIncludingHidden} from './src/lib/engines';import {I18nProvider} from './lib/i18n/I18nProvider';const root=createRoot(document.getElementById('root'));const engine=getBaseEngineIncludingHidden('luma-ray-3-2');window.IS_REACT_ACT_ENVIRONMENT=true;window.fx={act,render:()=>root.render(<I18nProvider locale="en" dictionary={{}} fallback={{}}><Composer density={window.density} engine={engine} activeManualMode="v2v" prompt="Edit" onPromptChange={()=>{}} promptRequired price={1.25} currency="USD" isLoading={false} assetFields={[{field:{id:'video_url',type:'video',maxCount:1},required:true}]} assets={{video_url:Array.from({length:window.sourceCount??1},(_,index)=>({id:'original'+index,assetId:'owned'+index,kind:'video',name:'source'+index+'.mp4',size:1,type:'video/mp4',status:'ready',url:'https://example.invalid/original'+index,previewUrl:'https://example.invalid/signed'+index,durationSec:5.558333}))}} onGenerate={()=>window.generated++} onPrepareVideoExcerpt={async()=>{window.applied++;}} onVideoExcerptEditorChange={(_field,_index,open)=>open?window.sourcePreview:undefined} /></I18nProvider>),unmount:()=>root.unmount()};`,
   {}
 );
 for (const density of ['workspace', 'default'])
@@ -296,3 +296,24 @@ for (const [locale, apply, expected] of [
         await f.dispose();
       }
     });
+
+
+test('shared Composer waits for owned full-timeline access and never plays the gallery preview', async()=>{
+ const dom=createClientFlowDom('/app'),w=dom.window as any;
+ let resolve!: (url:string)=>void;
+ w.sourcePreview=new Promise<string>(done=>{resolve=done;});
+ Object.assign(w,{density:'workspace',generated:0,applied:0});
+ w.HTMLMediaElement.prototype.pause=function(){};
+ w.eval(await composerBundle);
+ try{
+  await w.fx.act(async()=>w.fx.render());
+  const choose=[...w.document.querySelectorAll('button')].find((b:any)=>b.textContent==='Choose excerpt') as any;
+  await w.fx.act(async()=>choose.click());
+  assert.equal(w.document.querySelector('[role=dialog] video'),null);
+  assert.match(w.document.querySelector('[role=dialog]').textContent,/Opening original/);
+  await w.fx.act(async()=>resolve('https://example.invalid/full-original?access=fresh'));
+  assert.equal(w.document.querySelector('[role=dialog] video').src,'https://example.invalid/full-original?access=fresh');
+  assert.equal(w.document.querySelector('[role=dialog] video').preload,'none');
+  assert.equal(w.document.querySelector('[role=dialog] video').autoplay,false);
+ }finally{await w.fx.act(async()=>w.fx.unmount());dom.window.close();}
+});

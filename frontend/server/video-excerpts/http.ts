@@ -26,7 +26,7 @@ async function readExcerptJson(request: NextRequest): Promise<unknown> {
 /** Kept separate from Creator/paid-tool gates: excerpt preparation is an upload action. */
 export function createVideoExcerptPostHandler(dependencies: {
   userId(request:NextRequest):Promise<string|null>;
-  prepare:typeof prepareVideoExcerpt;
+  prepare:(userId:string,value:unknown)=>Promise<object>;
 } = { userId:async request=>(await getRouteAuthContext(request)).userId,prepare:prepareVideoExcerpt }) {
   return async (request:NextRequest):Promise<NextResponse> => {
     if (request.headers.get('origin') !== request.nextUrl.origin || request.headers.get('sec-fetch-site') === 'cross-site') return failure('ORIGIN_INVALID','Use the same-origin upload action.',403);

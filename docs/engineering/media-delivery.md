@@ -1002,3 +1002,32 @@ quotes/Generate immediately. Prepared facts flow through ordinary preflight inpu
 and existing inherited/requested duration projection; output settings and tariffs
 have no excerpt-specific calculation. Input assets and transient editor state are
 not persisted by the workspace's form/prompt draft-storage owner.
+
+
+Excerpt preview access resolves the owned original through
+`server/video-excerpts/source-access.ts` and the authenticated, same-origin
+`/api/uploads/video/excerpt/source` adapter. The request accepts an asset/job-output
+reference, never a URL to sign. `createConversationMediaReadAccess` provides the
+short-lived full-timeline URL. Gallery previews remain unchanged and may be shorter
+than the source; they are not valid excerpt timelines. The workspace's initiating
+account operation fences read responses as well as preparation responses. Local
+upload blobs already contain the whole original and need no access request. Opening
+still fetches no video bytes until explicit Play; access failure is localized and
+Cancel remains available. Canonical source identity never becomes a signed URL.
+
+The excerpt encoder fits a complete frame count to the chosen interval at a
+rational CFR cadence no higher than the measured source rate. Its output interval
+is rounded down to milliseconds (under 1 ms), with an exact matching MP4 video
+track timescale, so a final fractional-rate frame cannot cross an integer tariff
+boundary. Exact integer model minima and maxima remain exact. Intervals shorter
+than one complete source frame fail explicitly. The output bytes, stream facts and
+upload container facts are independently measured; declared metadata is never
+clamped. `h264-aac-v3` lineage separates these bytes from earlier encodings.
+Canonical duration projection, tariff ceilings and strict model source policy are
+unchanged. Fractional-rate, VFR, 120 fps, tiny-clip, minimum and maximum checks live
+in `tests/video-excerpt-{fractional-boundary,media}.test.ts`.
+
+`useComposerVideoSourceWorkflow` owns the shared excerpt presentation mask and
+source-workflow notices. The route hook retains account, reservation, request and
+media ownership. Chromium excerpt coverage verifies keyboard focus restoration,
+manual loading and independently reachable controls for long library filenames.

@@ -212,7 +212,7 @@ export function buildReferenceAssetFromLibraryAsset(field: EngineInputField, ass
   return {
     id: asset.id || `library_${Date.now().toString(36)}`,
     fieldId: field.id,
-    previewUrl: asset.previewUrl ?? asset.url,
+    previewUrl: field.type === 'video' ? asset.previewUrl ?? asset.url : asset.url,
     kind: field.type === 'video' ? 'video' : field.type === 'audio' ? 'audio' : 'image',
     name: asset.url.split('/').pop() ?? (field.type === 'video' ? 'Video' : field.type === 'audio' ? 'Audio' : 'Image'),
     size: asset.size ?? 0,

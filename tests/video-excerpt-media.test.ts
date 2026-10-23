@@ -69,3 +69,23 @@ test('stored container rounding allows one frame while rejecting changed timing,
   assert.throws(()=>validateStoredVideoExcerptFacts(source,{...stored,width:160}));
   assert.throws(()=>validateStoredVideoExcerptFacts(source,{...stored,mediaFacts:{hasAudio:false}}));
 });
+
+test('bounded CFR fitting preserves tiny complete frames, 120fps and VFR timing without crossing selected integer boundaries',async()=>{
+ const directory=await mkdtemp(join(tmpdir(),'excerpt-cadence-'));
+ try{
+  const binary=await ensureExecutableFfmpegPath(ffmpeg.path);
+  for(const [label,rate,filter,length] of [
+   ['tiny','30000/1001',null,0.04],['high-rate','120',null,3],
+   ['variable','30',"select='if(lt(t,1),not(mod(n,2)),1)'",3],
+  ] as const){
+   const path=join(directory,label+'.mp4');
+   await exec(binary,['-v','error','-f','lavfi','-i',`testsrc2=s=160x120:r=${rate}:d=5`,'-f','lavfi','-i','sine=frequency=440:sample_rate=44100:duration=5',...(filter?['-vf',filter,'-vsync','vfr']:[]),'-c:v','libx264','-threads','1','-c:a','aac','-y',path],{timeout:20000});
+   const bytes=await readFile(path),source=await inspectVideoExcerptBytes(bytes,'video/mp4');
+   const result=await trimVideoExcerptBytes(bytes,source,{startSec:0,endSec:length},18);
+   assert.equal(result.facts.durationSec,length,`${label} video timing`);
+   assert.ok(result.facts.fps<=120);assert.ok(result.facts.fps<=source.fps+1e-6);
+   assert.equal(result.facts.hasAudio,true);
+   if(label==='tiny')await assert.rejects(trimVideoExcerptBytes(bytes,source,{startSec:0,endSec:0.001},18),(e:any)=>e.code==='PARAMETER_INVALID');
+  }
+ }finally{await rm(directory,{recursive:true,force:true});}
+});

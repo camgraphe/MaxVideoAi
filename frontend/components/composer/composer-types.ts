@@ -65,7 +65,7 @@ export interface ComposerProps {
   assets: Record<string, (ComposerAttachment | null)[]>;
   onAssetAdd?: (field: EngineInputField, file: File, slotIndex?: number, meta?: AssetUploadMeta) => void;
   onPrepareVideoExcerpt?: (field: EngineInputField, index: number, range: VideoExcerptRange) => Promise<void>;
-  onVideoExcerptEditorChange?: (field: EngineInputField, index: number, open: boolean) => void;
+  onVideoExcerptEditorChange?: (field: EngineInputField, index: number, open: boolean) => void | Promise<string | void>;
   onAssetRemove?: (field: EngineInputField, index: number) => void;
   onNotice?: (message: string) => void;
   onOpenLibrary?: (field: EngineInputField, slotIndex: number) => void;

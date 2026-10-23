@@ -3,6 +3,7 @@ import { VIDEO_EXCERPT_PREPARATION_LIMITS as limits } from '@/lib/video-excerpt'
 export function videoExcerptCopy(locale: string) {
   return locale === 'fr'
     ? {
+        loadingPreview: 'Ouverture de la vidéo originale…',
         editing: 'Choix de l’extrait…',
         requires: 'Choisissez un extrait respectant les limites du modèle pour calculer le prix.',
         choose: 'Choisir un extrait',
@@ -27,6 +28,7 @@ export function videoExcerptCopy(locale: string) {
       }
     : locale === 'es'
       ? {
+          loadingPreview: 'Abriendo el vídeo original…',
           editing: 'Eligiendo fragmento…',
           requires: 'Elige un fragmento dentro de los límites del modelo para calcular el precio.',
           choose: 'Elegir un fragmento',
@@ -50,6 +52,7 @@ export function videoExcerptCopy(locale: string) {
           busyFailure: 'Ya hay una preparación en curso. Inténtalo dentro de un momento.',
         }
       : {
+          loadingPreview: 'Opening original video…',
           editing: 'Choosing excerpt…',
           requires: 'Choose an excerpt within this model’s limits to calculate the price.',
           choose: 'Choose excerpt',

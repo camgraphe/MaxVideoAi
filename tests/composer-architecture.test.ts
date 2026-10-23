@@ -23,6 +23,7 @@ test('composer delegates copy, contracts, multi-prompt, promoted action icon, qu
     assert.ok(existsSync(path), `${path} should exist`);
   }
 
+  assert.match(composerSource, /useComposerVideoSourceWorkflow\(/, 'shared source eligibility and excerpt presentation state have a focused owner');
   assert.match(composerSource, /<ComposerMultiPromptEditor/, 'Composer should compose the focused multi-prompt editor');
   assert.match(composerSource, /<ComposerPromotedActionIcon/, 'Composer should compose the focused promoted action icon');
   assert.match(composerSource, /<ComposerGenerationQuote workspace=\{workspaceDensity\}/, 'workspace quote presentation belongs in the focused owner');

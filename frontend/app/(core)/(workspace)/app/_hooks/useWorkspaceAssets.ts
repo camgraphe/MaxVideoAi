@@ -34,7 +34,7 @@ export function useWorkspaceAssets({
   commitInputAssetMutation,
   engineId,
   engine,
-  inputSchema,
+  inputSchema = engine?.inputSchema,
   preferredMode,
   workflowCopy,
   showNotice,

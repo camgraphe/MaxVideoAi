@@ -29,6 +29,7 @@ export function VideoExcerptControl({
   onVideoExcerptEditorChange,
 }: Props) {
   const [selection, setSelection] = useState<ComposerAttachment | null>(null);
+  const [preview, setPreview] = useState<{ url: string; pending: boolean; error?: unknown }>({ url: '', pending: false });
   const copy = videoExcerptCopy(locale);
   const limits = getVideoExcerptLimits(engine, mode);
   const sessionCleanup = useRef<(() => void) | null>(null);
@@ -58,12 +59,22 @@ export function VideoExcerptControl({
     <>
       <button
         type="button"
-        className="app-reference-command"
-        disabled={asset.status !== 'ready' || Boolean(selection)}
+        className="app-reference-command video-excerpt-trigger"
+        disabled={asset.status !== 'ready'}
+        aria-disabled={Boolean(selection)}
         onClick={() => {
+          if (selection) return;
           sessionCleanup.current = () => onVideoExcerptEditorChange?.(field, index, false);
-          onVideoExcerptEditorChange?.(field, index, true);
+          const session = sessionCleanup.current;
           setSelection(asset);
+          const fallback = asset.excerptSource?.previewUrl ?? asset.previewUrl;
+          const loading = onVideoExcerptEditorChange?.(field, index, true);
+          setPreview({ url: loading ? '' : fallback, pending: Boolean(loading) });
+          if (loading) void loading.then((url) => {
+            if (sessionCleanup.current === session) setPreview({ url: url ?? fallback, pending: false });
+          }, (error: unknown) => {
+            if (sessionCleanup.current === session) setPreview({ url: '', pending: false, error });
+          });
         }}
       >
         {copy.choose}
@@ -77,7 +88,9 @@ export function VideoExcerptControl({
           }
         >
           <Selector
-            previewUrl={original?.previewUrl ?? selection.previewUrl}
+            previewUrl={preview.url}
+            previewPending={preview.pending}
+            previewError={preview.error}
             durationSec={original?.durationSec ?? selection.durationSec!}
             initialRange={selection.excerptRange}
             limits={limits}
