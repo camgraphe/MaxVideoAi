@@ -28,6 +28,7 @@ import { resolveKlingDirectSubmissionMediaInputs } from '../frontend/app/api/gen
 import { buildKlingDirectPayload } from '../frontend/src/server/video-providers/kling-direct/payload.ts';
 import { resolveGoogleVertexOmniSupport } from '../frontend/src/server/video-providers/google-vertex-omni/model-map.ts';
 import { buildGoogleVertexOmniPayload } from '../frontend/src/server/video-providers/google-vertex-omni/payload.ts';
+import { buildPaidVideoRequestBody } from '../frontend/src/server/agent-api/paid-video-request-body.ts';
 import type { EngineInputSchema, Mode } from '../frontend/types/engines.ts';
 
 const root = process.cwd();
@@ -365,6 +366,61 @@ function buildFalMediaPipeline(params: FalMediaPipelineParams) {
     capturedValidationContext,
   };
 }
+
+test('Studio Gemini Omni confirmed reference images survive validation and reach the Google payload', async () => {
+  const entry = listFalEngines().find((candidate) => candidate.id === 'gemini-omni-flash');
+  assert.ok(entry?.engine.inputSchema);
+  for (const count of [2, 3, 10]) {
+    const urls = Array.from({ length: count }, (_, index) => `https://media.maxvideoai.com/reference-${index}.png`);
+    const assetIds = urls.map((_, index) => `ma_${String(index + 1).padStart(32, '0')}`);
+    const body = buildPaidVideoRequestBody({
+      quoteId: 'studio-gemini-reference-quote',
+      engine: entry.engine,
+      canonicalPricing: { membershipTier: 'member' },
+      request: {
+        schemaVersion: 1, surface: 'video', engineId: entry.id, mode: 'ref2v',
+        prompt: 'A continuous camera move preserving the reference subjects.',
+        settings: { durationSec: 7, resolution: '360p', aspectRatio: '16:9', audio: true },
+        references: assetIds.map(assetId => ({ kind: 'asset', assetId, role: 'reference' })),
+        outputCount: 1,
+      },
+      resolvedReferences: assetIds.map((assetId, index) => ({
+        assetId, role: 'reference', mediaKind: 'image', storageUrl: urls[index]!,
+        mimeType: 'image/png', sizeBytes: 1024, width: 1024, height: 1024, durationSec: null,
+      })),
+    });
+    const scenario = buildFalMediaPipeline({
+      engineId: entry.id, defaultModel: entry.defaultFalModelId, mode: 'ref2v',
+      inputSchema: entry.engine.inputSchema, validationDuration: 7,
+      attachments: body.inputs as NormalizedAttachment[],
+      referenceImages: body.referenceImages as string[],
+    });
+    assert.equal(scenario.validation.ok, true, `${count} references: ${JSON.stringify(scenario.validation)}`);
+    assert.deepEqual(scenario.references.normalizedReferenceImages, urls);
+    const payload = await buildGoogleVertexOmniPayload({
+      engineId: entry.id, mode: 'ref2v', prompt: body.prompt as string,
+      aspectRatio: '16:9', durationSec: 7, resolution: '360p',
+      outputGcsUri: 'gs://maxvideoai-vertex/omni-outputs/studio-ref2v/',
+      falPayload: { ...scenario.falPayload, durationSec: 7, resolution: '360p', aspectRatio: '16:9', audio: true },
+    });
+    assert.deepEqual(payload.input.filter(item => item.type === 'image'), urls.map(uri => ({
+      type: 'image', uri, mime_type: 'image/png',
+    })));
+  }
+});
+
+test('Gemini Omni reference validation preserves the required image and ten-image limit', () => {
+  const entry = listFalEngines().find((candidate) => candidate.id === 'gemini-omni-flash');
+  assert.ok(entry?.engine.inputSchema);
+  for (const count of [0, 11]) {
+    const result = validateModeMediaInputs({
+      engineId: entry.id, normalizedMode: 'ref2v', inputSchema: entry.engine.inputSchema,
+      payload: { reference_images: Array.from({ length: count }, (_, i) => `https://media.maxvideoai.com/reference-${i}.png`) },
+    });
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.equal(result.error.field, 'reference_images');
+  }
+});
 
 test('Gemini Omni workspace first/last attachments survive the real Fal request path', async () => {
   const entry = listFalEngines().find((candidate) => candidate.id === 'gemini-omni-flash');
