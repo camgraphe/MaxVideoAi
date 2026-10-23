@@ -77,6 +77,7 @@ export type SeedanceGenerationWorkflow = { step: 'draft' } | { step: 'final'; dr
 
 export type CanonicalGenerationRequest = {
   schemaVersion: 1;
+  elements?: import('@/lib/kling-owned-elements').KlingOwnedElements;
   operation?: import('@/lib/video-operation').VideoOperation;
   surface: CanonicalGenerationSurface;
   engineId: string;

@@ -120,10 +120,17 @@ export const seedanceWorkflowSchema = z.discriminatedUnion('step', [
   z.object({ step: z.literal('final'), draftJobId: z.string().min(1).max(255).regex(/^[A-Za-z0-9][A-Za-z0-9._:-]*$/u) }).strict(),
 ]);
 
+const elementSlot = z.number().int().min(0).max(65);
+const klingOwnedElementsSchema = z.array(z.discriminatedUnion('kind', [
+  z.object({kind:z.literal('images'),frontalSlot:elementSlot,referenceSlots:z.array(elementSlot).min(1).max(3)}).strict(),
+  z.object({kind:z.literal('video'),videoSlot:elementSlot}).strict(),
+])).min(1).max(3).describe('Kling Modify only. Compose owned role=reference slots into subjects. Element slots must be assets; no URLs/provider IDs. Elements plus remaining guidance images: at most four.');
+
 export const prepareGenerationInputSchema = z.object({
   schemaVersion: z.literal(1).nullable().default(null),
   surface: z.enum(['video', 'image']),
   engineId: z.string(),
+  elements: klingOwnedElementsSchema.nullable().optional(),
   operation: z.enum(['kling-reference', 'kling-edit']).nullable().default(null),
   mode: z.enum(CANONICAL_GENERATION_MODES).nullable().default(null),
   prompt: z.string().nullable().default(null),
@@ -140,10 +147,11 @@ export const prepareGenerationInputSchema = z.object({
 function normalizePrepareGenerationInput(
   input: z.output<typeof prepareGenerationInputSchema>,
 ) {
-  return omitNullishToolInput({
-    ...input,
+  const { elements, ...rest } = input;
+  return { ...omitNullishToolInput({
+    ...rest,
     settings: input.settings === null ? null : omitNullishToolInput(input.settings),
-  });
+  }), ...(elements ? {elements} : {}) };
 }
 
 export function registerPrepareGenerationTool(

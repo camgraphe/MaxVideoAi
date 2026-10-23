@@ -1,3 +1,4 @@
+import { isElementReference } from '@/lib/kling-owned-elements';
 import { createHash } from 'node:crypto';
 import { videoOperationTariffIdentity, validateKlingEditSource } from '@/lib/video-operation';
 import type { CanonicalGenerationRequest } from './generation-types';
@@ -22,12 +23,13 @@ export function canonicalOperationSourceDuration(request: CanonicalGenerationReq
 
 export function generationOperationQuoteBinding(request: CanonicalGenerationRequest, references: readonly ResolvedReference[]) {
   const identity = videoOperationTariffIdentity(request.engineId, request.mode, request.operation);
-  if (!identity) return {};
+  const elementsBinding = request.elements ? { elementsFingerprint: createHash('sha256').update(JSON.stringify(references.filter(ref => isElementReference(ref, request.elements)))).digest('hex') } : {};
+  if (!identity) return elementsBinding;
   const sourceDurationSec = canonicalOperationSourceDuration(request, references);
   const sources = references.filter(reference => reference.role === 'source').map(reference => ({
     assetId: reference.assetId, url: reference.storageUrl, durationSec: reference.durationSec,
     width: reference.width, height: reference.height, mimeType: reference.mimeType, sizeBytes: reference.sizeBytes,
   }));
-  return { videoOperation: { ...identity, ...(sourceDurationSec !== undefined ? { sourceDurationSec } : {}),
+  return { ...elementsBinding, videoOperation: { ...identity, ...(sourceDurationSec !== undefined ? { sourceDurationSec } : {}),
     sourceFingerprint: createHash('sha256').update(JSON.stringify(sources)).digest('hex') } };
 }

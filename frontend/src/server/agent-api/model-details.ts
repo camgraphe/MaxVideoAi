@@ -1,3 +1,4 @@
+import { klingOwnedElementsProperty } from '@/lib/kling-owned-elements';
 import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import {videoWorkflowPreference} from '@/lib/video-workflow-review';
 import {videoDurationPolicy,videoWorkflowNotices,videoInheritsSourceFraming} from '@/lib/video-workflow-capabilities';
@@ -421,7 +422,7 @@ export function projectAgentModelModeDetails(
     mode,
     ...(includeOperations && candidate.engine.operationCaps ? { operations: Object.values(candidate.engine.operationCaps).filter(operation => operation.mode === mode).map(operation => {
       const engine = resolveVideoOperationEngine(candidate.engine, mode as import('@/types/engines').Mode, operation.operation);
-      return { operation: operation.operation, label: operation.label, promptRequired: operation.promptRequired,
+      return { operation: operation.operation, label: operation.label, elements: klingOwnedElementsProperty, promptRequired: operation.promptRequired,
         ...projectAgentModelModeDetails({ ...candidate, engine, modeCaps: { ...candidate.modeCaps, ...engine.modeCaps } }, mode, false) };
     }) } : {}),
     ...baseControls,

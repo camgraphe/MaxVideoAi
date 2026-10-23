@@ -1,3 +1,4 @@
+import { validateOwnedKlingElements, isElementReference } from '@/lib/kling-owned-elements';
 import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import { videoDurationPolicy, videoInheritsSourceFraming } from '@/lib/video-workflow-capabilities';
 import { isLumaSourceVideoMode, validateLumaSourceVideoTiming, LUMA_MODIFY_SOURCE_MAX_SEC } from '@/lib/luma-source-video';
@@ -986,7 +987,10 @@ export function validateCanonicalGenerationCapabilities(
   if (!modeCaps) fail('mode');
   if (request.surface === 'video') validateVideoModeCaps(request, modeCaps, candidate);
   else validateImageSettings(request, candidate);
-  validateReferences(request, candidate, options);
-  validateDerivedSourceFacts(request, candidate, options);
-  if (request.surface === 'video') validateVideoExecutionConstraints(request, candidate, options);
+  try { validateOwnedKlingElements(request, options.resolvedReferences); } catch { fail('elements', 'reference_invalid'); }
+  const ordinaryRequest = request.elements ? { ...request, references: request.references.filter(ref => !isElementReference(ref, request.elements)) } : request;
+  const ordinaryOptions = request.elements && options.resolvedReferences ? { ...options, resolvedReferences: options.resolvedReferences.filter(ref => !isElementReference(ref, request.elements)) } : options;
+  validateReferences(ordinaryRequest, candidate, ordinaryOptions);
+  validateDerivedSourceFacts(ordinaryRequest, candidate, ordinaryOptions);
+  if (request.surface === 'video') validateVideoExecutionConstraints(ordinaryRequest, candidate, ordinaryOptions);
 }

@@ -270,7 +270,15 @@ supplier rates are Standard Edit $0.126/s, Pro Edit $0.168/s, and 4K $0.42/s;
 they are published endpoint reference rates, not verified effective invoices.
 Generic Standard/Pro $0.14 base metadata does not replace them.
 
-Site retains existing Kling Elements. Canonical MCP/Studio previously had no
-owned Kling Element request representation; this change retains that boundary
-and exposes supported ordered reference images, without adding unchecked
-provider IDs or ad hoc element JSON. Full Element parity remains separate work.
+Site retains its existing owned Kling Elements. Canonical MCP and Studio now
+compose Elements with typed `elements` entries: `{kind: "images", frontalSlot,
+referenceSlots}` (one to three supporting slots), or `{kind: "video", videoSlot}`.
+Slots are the zero-based ordered `role: "reference"` entries and must resolve to
+owned assets, never HTTPS references or provider IDs. Studio uses its existing
+attached-library and ready-project-output checks and promotion owner. Element
+slots are removed from ordinary guidance images; at most three Elements and four
+Elements plus guidance images are allowed. Every member is owner-resolved again
+at confirmation, and its exact resolved metadata is quote-bound to prevent media
+substitution. Stored intents and canonical requests retain the typed composition.
+The MCP schema and Studio director/pricing schemas expose the same composition;
+model operation details describe it. No second ownership or grant path exists.

@@ -647,3 +647,13 @@ decisions and fixture contract hash. The local client gate passes 173 tests with
 one skip and all 70 curated scenarios. This is offline source/SDK evidence, not
 installed-host or deployment evidence. Existing hosts need a catalog refresh
 following delivery to discover the additive operation schema.
+
+
+The subsequent owned-Elements addition uses strict image/video compositions of
+existing ordered owned reference slots; no URL or provider-ID input was added.
+MCP uses its Zod 4 schema while Studio/canonical validation use Zod 3, with parity
+covered by the Element contract tests. The preparation SDK input schema is now
+11,351 bytes; global instructions and tool description remain unchanged. The
+reviewed fingerprint is
+`18b78f9a22a4a9d892d5daf84fd54d7ba958620b9947882e606e962c3e70dfa8`.
+Curated policy decisions and the fixture contract hash remain unchanged.

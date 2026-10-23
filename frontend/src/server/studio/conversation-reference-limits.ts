@@ -4,6 +4,8 @@ import {STUDIO_CONVERSATION_MAX_ATTACHMENTS,STUDIO_CONVERSATION_MAX_REFERENCES} 
 /** Transport capacity follows authored media fields; canonical role/combined validation still applies. */
 export function studioGenerationReferenceLimit(modelId:string,surface:string,mode:string):number {
   if(surface!=='video'||!['ref2v','v2v','extend'].includes(mode))return STUDIO_CONVERSATION_MAX_REFERENCES;
+  // Three four-image subjects, one guidance image and one source; canonical Element validation owns the combined budget.
+  if(mode==='v2v'&&['kling-o3-standard','kling-o3-pro','kling-o3-4k'].includes(modelId))return 14;
   const engine=getFalEngineById(modelId)?.engine;
   const fields=[...(engine?.inputSchema?.required??[]),...(engine?.inputSchema?.optional??[])].filter(field=>!field.modes||field.modes.some(value=>value===mode));
   if (mode === 'v2v' || mode === 'extend') {

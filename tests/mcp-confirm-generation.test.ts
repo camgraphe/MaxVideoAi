@@ -1426,3 +1426,29 @@ for (const engineId of ['sora-2', 'sora-2-pro']) {
     assert.equal(captures.providerCalls, 0);
   });
 }
+
+// The source and tariff remain unchanged: only a subject asset is substituted.
+// Confirmation must re-resolve and compare that subject before reserving funds.
+test('Kling Element substitution invalidates a prepared quote before reservation', async () => {
+  const { normalizeGenerationRequest } = await import('../frontend/src/server/agent-api/generation-normalization');
+  const { generationOperationQuoteBinding } = await import('../frontend/src/server/agent-api/generation-operation-facts');
+  const request = normalizeGenerationRequest({surface:'video',engineId:'kling-o3-standard',mode:'v2v',operation:'kling-edit',prompt:'Relight subject',settings:{resolution:'720p'},
+    references:[{kind:'asset',assetId:'clip',role:'source'},{kind:'asset',assetId:'front',role:'reference'},{kind:'asset',assetId:'side',role:'reference'}],elements:[{kind:'images',frontalSlot:0,referenceSlots:[1]}]});
+  const engine = listFalEngines().find(entry => entry.engine.id === request.engineId)!.engine;
+  const candidate: AgentPublicGenerationEngine = {engine,surface:'video',publicModes:['v2v'],modeCaps:engine.modeCaps!};
+  const media = request.references.map(ref => ({assetId:ref.kind==='asset'?ref.assetId:'',role:ref.role,slot:ref.slot,
+    mediaKind:ref.role==='source'?'video' as const:'image' as const,storageUrl:`https://example.com/${ref.kind==='asset'?ref.assetId:''}`,
+    width:1280,height:720,durationSec:5,mimeType:ref.role==='source'?'video/mp4':'image/png',sizeBytes:1000,originalName:ref.role==='source'?'clip.mp4':'subject.png'}));
+  const catalogRevision=computeGenerationCatalogRevision([candidate]);
+  const stored=quoteFor(request,{catalogRevision});
+  stored.pricingSnapshot={...stored.pricingSnapshot,catalogRevision,...generationOperationQuoteBinding(request,media)};
+  const {dependencies,captures}=baseDependencies(request,{
+    listPublicEngines:async()=>[candidate],lockOwnedQuote:async()=>({quote:stored,databaseNow:NOW}),
+    resolveGenerationReferences:async()=>media.map(ref=>ref.assetId==='front'?{...ref,storageUrl:'https://example.com/substituted.png'}:ref),
+    resolveRequestExecutability:()=>({executable:true,reason:'available'}),
+  });
+  await expectAgentError(confirmGeneration({quoteId:QUOTE_ID,confirmed:true},principal,dependencies),'QUOTE_EXPIRED');
+  assert.equal(captures.events.includes('pricing'),true,'reaches refreshed quote comparison');
+  assert.equal(captures.events.includes('reserve_video'),false);
+  assert.equal(captures.providerCalls,0);
+});

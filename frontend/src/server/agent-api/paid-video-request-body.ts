@@ -1,3 +1,4 @@
+import { validateOwnedKlingElements, isElementReference } from '@/lib/kling-owned-elements';
 import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import type { PreparedSeedanceWorkflow } from '@/server/seedance-workflow-request';
 import type { EngineCaps } from '@/types/engines';
@@ -240,9 +241,17 @@ export function buildPaidVideoRequestBody(
   if (!supportsAspectRatio(execution)) delete settings.aspectRatio;
   const multiPrompt = projectMultiPrompt(settings);
   const extraInputValues = projectExtraInputValues(settings);
-  const references = materializeReferences(execution);
+  validateOwnedKlingElements(execution.request, execution.resolvedReferences);
+  const allReferences = materializeReferences(execution);
+  const references = allReferences.filter(ref => !isElementReference(ref, execution.request.elements));
+  const elementMedia = (slot: number) => allReferences.find(ref => ref.role === 'reference' && ref.slot === slot)!;
+  const elements = execution.request.elements?.map(element => element.kind === 'video'
+    ? { videoUrl: elementMedia(element.videoSlot).url, videoAssetId: elementMedia(element.videoSlot).assetId }
+    : { frontalImageUrl: elementMedia(element.frontalSlot).url, frontalAssetId: elementMedia(element.frontalSlot).assetId,
+      referenceImageUrls: element.referenceSlots.map(slot => elementMedia(slot).url), referenceAssetIds: element.referenceSlots.map(slot => elementMedia(slot).assetId) });
   const body: Record<string, unknown> = {
     engineId: execution.request.engineId,
+    ...(elements ? {elements} : {}),
     ...(execution.request.operation ? { operation: execution.request.operation } : {}),
     mode: toEngineGenerationMode(execution.request.engineId, execution.request.mode),
     prompt: execution.request.prompt,

@@ -191,7 +191,7 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
     // Validate model/parameters/roles before resolving images or promoting job outputs.
     let derivedSettings:Record<string,number>={};
     const build = (assetIds: string[],correctable=false,resolvedReferences?:ResolvedReference[]) => {try {return canonicalPreparation(() => {
-      const request = normalizeGenerationRequest({schemaVersion: 1, surface: 'video', engineId: candidate.engine.id, mode, prompt: action.prompt, ...(action.operation ? { operation: action.operation } : {}),
+      const request = normalizeGenerationRequest({schemaVersion: 1, surface: 'video', engineId: candidate.engine.id, mode, prompt: action.prompt, ...(action.operation ? { operation: action.operation } : {}), ...(action.elements ? {elements:action.elements}:{}),
         settings: {...videoDefaults(candidate, mode, action.aspectRatio, legacy),...derivedSettings, ...settings},
         references: selections.map((selection, index) => ({kind: 'asset', assetId: assetIds[index], role: selection.role,
           ...(selection.slot === null || selection.slot === undefined ? {} : {slot: selection.slot})})), outputCount: 1});

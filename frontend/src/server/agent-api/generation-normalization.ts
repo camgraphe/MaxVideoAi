@@ -1,3 +1,4 @@
+import { klingOwnedElementsSchema, validateOwnedKlingElements } from '@/lib/kling-owned-elements';
 import { normalizeVideoOperation } from '@/lib/video-operation';
 import { createHash } from 'node:crypto';
 
@@ -53,6 +54,7 @@ const ROLE_ORDER: Record<CanonicalGenerationReferenceRole, number> = {
 const TOP_LEVEL_FIELDS = new Set([
   'schemaVersion',
   'operation',
+  'elements',
   'surface',
   'engineId',
   'mode',
@@ -553,8 +555,12 @@ export function normalizeGenerationRequest(input: unknown): CanonicalGenerationR
     settings.resolution = '480p';
     if (settings.audio === undefined) settings.audio = true;
   }
-  return {
+  let elements;
+  try { elements = input.elements === undefined ? undefined : klingOwnedElementsSchema.parse(input.elements); }
+  catch { fail('elements', 'Invalid owned Kling Element composition.'); }
+  const result: CanonicalGenerationRequest = {
     schemaVersion: 1,
+    ...(elements ? {elements} : {}),
     ...(operation ? { operation } : {}),
     ...(seedanceWorkflow ? { seedanceWorkflow } : {}),
     surface,
@@ -565,6 +571,8 @@ export function normalizeGenerationRequest(input: unknown): CanonicalGenerationR
     references: normalizeReferences(input.references, mode, normalizeEngineId(input.engineId)),
     outputCount: normalizeOutputCount(input.outputCount, surface),
   };
+  try { validateOwnedKlingElements(result); } catch { fail('elements', 'Invalid owned Kling Element composition.'); }
+  return result;
 }
 
 export function serializeCanonicalGenerationRequest(request: CanonicalGenerationRequest): string {
