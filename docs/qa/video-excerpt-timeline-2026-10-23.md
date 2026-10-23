@@ -90,3 +90,44 @@ This was the offline demo's local preparation/quote adapter, with no paid render
 The precision regression additionally verifies selected-body Home/End after a
 7-decimal typed offset: the bounds remain exactly 0 and the source end rather
 than leaving a sub-centisecond movement remainder.
+
+## Final pointer correction
+
+Task review identified that grabbing a handle away from its center could jump the
+endpoint on the first movement. Commit `a27ff5c76` derives the new endpoint from
+the initial bound plus raw pointer displacement, then applies the existing
+non-crossing/source-bound clamps. Focused mouse and touch regressions failed
+before the change and passed after it.
+
+Final covering command:
+`pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/video-excerpt-selector-dom.test.ts tests/video-excerpt-browser.test.ts`
+passed **35/35**, with no failed or skipped tests. Full frontend TypeScript,
+scoped timeline ESLint, and whitespace checks also passed. Broader unchanged
+workspace lifecycle evidence remains the 97-test run above; it was not rerun.
+Task re-review approved the correction without new findings.
+
+The refreshed final demo and desktop screenshot use this corrected bundle.
+`04-final-mobile.png` additionally shows the live playhead within the excerpt.
+A nonblocking usability limitation remains for very short selections in full view:
+the two 44px handle hit regions can overlap the selected-body pointer target.
+Zoom on excerpt and keyboard/numeric controls provide the precise-editing path.
+
+## Completion and review
+
+Independent task review and final aggregate review of
+`127dfe95b..a27ff5c76` approve this visual revision with no remaining Critical or
+Important findings. The narrow-selection hit-region limitation above remains
+nonblocking and is not claimed fixed. The shared backend/model/quote implementation
+was not changed or independently requalified by this visual review. Physical-device
+assistive technology, required remote CI and production release remain outside
+this local qualification.
+
+Design decision: use a single filmstrip timeline beneath the video because
+temporal handles drawn on the image could suggest spatial cropping. This is an
+authorized continuation of the user's request to improve the existing selector.
+If that interaction direction does not suit the user, the rework is confined to
+this reversible UI revision; backend, media ownership and pricing remain intact.
+
+The implementation stays on local `codex/marketing-media`; no push, merge,
+deployment, paid render or production mutation was performed. The existing
+worktree and all unrelated artifacts are retained.

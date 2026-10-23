@@ -32,7 +32,7 @@
 
 **Interfaces:** Preserve VideoExcerptSelectorProps, onApply({startSec,endSec}) and onCancel. Timeline consumes source duration, current range/time, disabled, localized labels and range/seek callbacks. Frame capture consumes preview URL plus explicit activation and yields bounded data/blob thumbnails or an empty usable fallback.
 
-- [ ] Write focused failing tests for single dual-handle track, pointer/touch/keyboard resizing and movement, seek/zoom, exact full reset, invalid current-model range, optional capture cancellation/failure and no eager network.
-- [ ] Implement coherent media stage/transport/timeline/compact numeric row/actions using existing tokens; never duplicate the old sliders visually. Preserve loop playback and all existing Apply/focus/price contracts.
-- [ ] Run affected selector/browser/workspace lifecycle/architecture tests, full frontend TypeScript and scoped lint, exposure and diff checks. Do not rerun unchanged backend/encoder/full fast suites.
-- [ ] Rebuild local demo and exercise real phone/minute at desktop and mobile, capture accepted screenshots, report exact verification and any fallback limitations; commit only scoped source/tests/docs.
+- [x] Write focused failing tests for single dual-handle track, pointer/touch/keyboard resizing and movement, seek/zoom, exact full reset, invalid current-model range, optional capture cancellation/failure and no eager network.
+- [x] Implement coherent media stage/transport/timeline/compact numeric row/actions using existing tokens; never duplicate the old sliders visually. Preserve loop playback and all existing Apply/focus/price contracts.
+- [x] Run affected selector/browser/workspace lifecycle/architecture tests, full frontend TypeScript and scoped lint, exposure and diff checks. Do not rerun unchanged backend/encoder/full fast suites.
+- [x] Rebuild local demo and exercise real phone/minute at desktop and mobile, capture accepted screenshots, report exact verification and any fallback limitations; commit only scoped source/tests/docs.
