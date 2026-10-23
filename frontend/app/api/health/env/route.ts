@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server';
 import { authorizeHealthcheckRequest } from '@/server/ops-auth';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 const REQUIRED_KEYS = [
   'FAL_KEY',
@@ -24,6 +25,10 @@ export async function GET(req: NextRequest) {
   );
 
   return new Response(JSON.stringify(status, null, 2), {
-    headers: { 'content-type': 'application/json' },
+    headers: {
+      'content-type': 'application/json',
+      'cache-control': 'private, no-store',
+      'x-runtime-node-version': process.versions.node,
+    },
   });
 }
