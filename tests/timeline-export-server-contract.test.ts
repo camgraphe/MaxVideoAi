@@ -189,7 +189,7 @@ test('timeline export worker uses Remotion renderer outside route handlers', () 
 test('timeline export worker has a dedicated Docker image and documented env', () => {
   assert.ok(existsSync(workerDockerfilePath), 'dedicated worker Dockerfile should exist');
   const dockerfile = readFileSync(workerDockerfilePath, 'utf8');
-  assert.equal((dockerfile.match(/FROM node:22-bookworm-slim/g) ?? []).length, 2, 'both worker stages should use the project Node 22 runtime');
+  assert.equal((dockerfile.match(/FROM node:22\.23\.4-bookworm-slim/g) ?? []).length, 2, 'both worker stages must use the patched Node 22 runtime');
   assert.equal((dockerfile.match(/ENV COREPACK_HOME="\/corepack"/g) ?? []).length, 2, 'both stages must use the same package-manager cache');
   assert.match(dockerfile, /COPY --from=deps \/corepack \/corepack/, 'package-manager bytes must be present at runtime');
   assert.match(dockerfile, /ENV COREPACK_ENABLE_NETWORK=0/, 'worker startup must not download a package manager');
