@@ -1029,7 +1029,13 @@ track timescale, so a final fractional-rate frame cannot cross an integer tariff
 boundary. Exact integer model minima and maxima remain exact. Intervals shorter
 than one complete source frame fail explicitly. The output bytes, stream facts and
 upload container facts are independently measured; declared metadata is never
-clamped. `h264-aac-v3` lineage separates these bytes from earlier encodings.
+clamped. Audio is encoded as 48 kHz AAC with one 1024-sample priming interval
+(21.34 ms) reserved at the selected end. The bundled Linux muxer otherwise includes
+that delay in container duration and can turn an exact 18-second selection into
+18.006 seconds. The time bound finishes both encoders; a video frame-count stop
+can prematurely flush the audio. Decoded audio is checked within one AAC frame of
+the selected length on both bundled macOS and Linux binaries. `h264-aac-v4` lineage
+separates these bytes from earlier encodings.
 Canonical duration projection, tariff ceilings and strict model source policy are
 unchanged. Fractional-rate, VFR, 120 fps, tiny-clip, minimum and maximum checks live
 in `tests/video-excerpt-{fractional-boundary,media}.test.ts`.

@@ -234,3 +234,41 @@ No push, deployment, production mutation or paid render occurred.
 5. Read the full owned original for the selector instead of a shortened gallery
    preview. This adds a scoped access request and existing signing expiry; it
    does not grant public access or replace the canonical source reference.
+## CI audio boundary correction — 2026-10-23
+
+The first pushed candidate, `f18983a8bcb8558bbd1212ec77ed36972c592b0c`, includes
+main `eb667608ca46a1341a973c49420546b4c0af6cc9`. Its Quality CI exposed two
+real-media failures that did not reproduce with the macOS FFmpeg binary:
+18-second Modify and 10-second Reframe excerpts with 48 kHz audio.
+
+Reproduction with the packaged Linux x64 binary (`20181210-g0e8eb07980`) measured
+exact video streams but container durations of **18.006** and **10.006 seconds**.
+The normal upload probe correctly retained these measured durations. The old AAC
+muxer includes its priming interval in the container duration; a video-frame stop
+can also flush audio prematurely. Silent video passed. The same eight original
+tests reproduced both failures in an isolated Linux container, without cloud
+storage, database access or provider requests.
+
+The correction reserves one 1024-sample priming interval at the end of the 48 kHz
+AAC track and lets the existing time bound finish both encoders. Video cadence,
+orientation and exact selected duration remain measured. Upload facts, model
+maxima, tariff ceilings and quote projection are unchanged. The audio-end allowance
+is approximately **21.34 ms**; decoded audio is explicitly checked against it.
+Lineage is versioned `h264-aac-v4` so earlier prepared bytes are not reused.
+
+Validation of the correction:
+
+- **16/16** real-media tests pass on Linux x64 and **16/16** on macOS ARM64.
+  Coverage includes 44.1/48 kHz inputs, silent media, fractional frame rates,
+  exact minima/maxima, selected audio content, rotation, VFR, 120 fps and a
+  40 ms clip. Newly strengthened container/audio assertions failed before repair.
+- **112/112** focused excerpt/workspace/browser/surface-parity tests pass locally.
+- Frontend TypeScript, scoped encoder ESLint and public-exposure checks pass.
+- The pre-correction candidate's full frontend build passed (968 pages); the
+  correction is server-only and the new commit is subject to full required CI.
+
+Local diagnostic logs remain under `output/video-excerpt-timeline/`; synthetic
+fixtures and private outputs are not committed. The branch remains a draft PR.
+No merge to main, production deployment, paid generation or customer-media write
+is part of this correction. Existing hosting, device and activation limitations
+in the original qualification above still apply.

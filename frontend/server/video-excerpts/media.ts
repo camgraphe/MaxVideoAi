@@ -88,10 +88,16 @@ export async function trimVideoExcerptBytes(bytes: Uint8Array, facts: VideoExcer
   const frameCount = Math.floor(durationMs / 1000 * facts.fps + 1e-8);
   if (frameCount < 1) throw new VideoExcerptError('PARAMETER_INVALID','Choose an excerpt containing at least one complete video frame.');
   const frameRate = `${frameCount * 1000}/${durationMs}`;
+  // The bundled Linux AAC muxer includes its 1024-sample priming frame in the
+  // container duration. Reserve that interval in the encoded audio, not in stored
+  // metadata. Let -t finish both encoders: -frames:v can stop audio before flushing.
+  const audioArgs = facts.hasAudio
+    ? ['-ar','48000','-af',`atrim=end=${range.startSec + durationMs / 1000 - 1024 / 48000}`]
+    : [];
   return workspace(async directory => {
     const source = join(directory,'source'), output = join(directory,'excerpt.mp4'); await writeFile(source,bytes);
     // FFmpeg autorotates the decoded image; stripping metadata avoids a second display rotation.
-    await exec(await ensureExecutableFfmpegPath(ffmpeg.path), ['-hide_banner','-loglevel','error','-nostdin','-threads','2','-protocol_whitelist','file,pipe','-i',source,'-ss',String(range.startSec),'-t',String(durationMs / 1000),'-frames:v',String(frameCount),'-map',`0:${facts.videoStreamIndex ?? 0}`,'-map','0:a:0?','-map_metadata','-1','-c:v','libx264','-r',frameRate,'-video_track_timescale',String(frameCount * 1000),'-pix_fmt','yuv420p','-preset','veryfast','-crf','18','-threads','2','-c:a','aac','-b:a','192k','-movflags','+faststart','-fs',String(VIDEO_EXCERPT_PREPARATION_LIMITS.maxBytes),'-y',output], {timeout:90_000,maxBuffer:1024*1024});
+    await exec(await ensureExecutableFfmpegPath(ffmpeg.path), ['-hide_banner','-loglevel','error','-nostdin','-threads','2','-protocol_whitelist','file,pipe','-i',source,'-ss',String(range.startSec),'-t',String(durationMs / 1000),'-map',`0:${facts.videoStreamIndex ?? 0}`,'-map','0:a:0?','-map_metadata','-1','-c:v','libx264','-r',frameRate,'-video_track_timescale',String(frameCount * 1000),'-pix_fmt','yuv420p','-preset','veryfast','-crf','18','-threads','2','-c:a','aac','-b:a','192k',...audioArgs,'-movflags','+faststart','-fs',String(VIDEO_EXCERPT_PREPARATION_LIMITS.maxBytes),'-y',output], {timeout:90_000,maxBuffer:1024*1024});
     if ((await stat(output)).size > VIDEO_EXCERPT_PREPARATION_LIMITS.maxBytes) throw limitError();
     const result = await readFile(output), measured = await inspectVideoExcerptBytes(result,'video/mp4');
     validateVideoExcerptOutput(facts,measured,range);

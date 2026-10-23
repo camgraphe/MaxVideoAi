@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import ffmpeg from '../frontend/node_modules/@ffmpeg-installer/ffmpeg';
@@ -17,16 +17,17 @@ import { priceCanonicalGeneration } from '../frontend/src/server/agent-api/gener
 import { calculateLumaRay32DirectPrice } from '../frontend/src/lib/luma-agents-pricing';
 import type { StudioResolvedMedia } from '../frontend/src/server/studio/media-resolver';
 const exec=promisify(execFile);
-for (const [fps,engineId,mode,selected,maximum,hasAudio] of [
+for (const [fps,engineId,mode,selected,maximum,hasAudio,sampleRate=48000] of [
   ['30000/1001','luma-ray-3-2','v2v',6,18,true],['24000/1001','luma-ray-3-2','v2v',6,18,true],
   ['30000/1001','luma-ray-3-2','v2v',5.999,18,true],['24000/1001','luma-ray-3-2','v2v',6.001,18,true],
   ['30000/1001','luma-ray-3-2','v2v',18,18,true],['30000/1001','luma-ray-3-2','v2v',18,18,false],['24000/1001','luma-ray-3-2','reframe',10,10,true],['30000/1001','kling-o3-standard','v2v',3,10,true],
+  ['30000/1001','luma-ray-3-2','v2v',18,18,true,44100],['24000/1001','luma-ray-3-2','reframe',10,10,true,44100],
 ] as const) {
-  test(`real ${fps} ${hasAudio?'audible':'silent'} excerpt at ${mode} ${selected}s selection stays inside the measured and persisted boundary`,async context=>{
+  test(`real ${fps} ${hasAudio?`${sampleRate}Hz audible`:'silent'} excerpt at ${mode} ${selected}s selection stays inside the measured and persisted boundary`,async context=>{
     const directory=await mkdtemp(join(tmpdir(),'excerpt-fractional-'));
     try {
       const path=join(directory,'source.mp4');
-      await exec(await ensureExecutableFfmpegPath(ffmpeg.path),['-v','error','-f','lavfi','-i',`color=c=blue:s=160x120:r=${fps}:d=25`,...(hasAudio?['-f','lavfi','-i','sine=frequency=440:sample_rate=48000:duration=25']:[]),'-c:v','libx264','-threads','1',...(hasAudio?['-c:a','aac']:['-an']),'-y',path],{timeout:20000});
+      await exec(await ensureExecutableFfmpegPath(ffmpeg.path),['-v','error','-f','lavfi','-i',`color=c=blue:s=160x120:r=${fps}:d=25`,...(hasAudio?['-f','lavfi','-i',`sine=frequency=440:sample_rate=${sampleRate}:duration=25`]:[]),'-c:v','libx264','-threads','1',...(hasAudio?['-c:a','aac']:['-an']),'-y',path],{timeout:20000});
       const original=await readFile(path),originalFacts=await inspectVideoExcerptBytes(original,'video/mp4');
       const source={type:'asset' as const,kind:'video' as const,assetId:'ma_11111111111111111111111111111111'};
       const preparedRef={...source,assetId:'ma_22222222222222222222222222222222'};
@@ -48,10 +49,16 @@ for (const [fps,engineId,mode,selected,maximum,hasAudio] of [
           assert.ok(facts.durationSec<=maximum,`video stream ${facts.durationSec} exceeds ${maximum}`);
           assert.ok(Math.abs(selected-facts.durationSec)<=1/originalFacts.fps+0.001);
           const stored=await store({userId:owner,bytes,fileName:'excerpt.mp4',declaredMime:'video/mp4',metadata:{videoExcerpt:lineage}});persists++;
+          context.diagnostic(`selected=${selected}s video=${facts.durationSec}s stored=${stored.durationSec}s duration-ceiling=${Math.ceil(stored.durationSec)}s`);
+          assert.equal(stored.durationSec,selected,'AAC priming must not lengthen the stored container past the selection');
           assert.ok(stored.durationSec<=maximum,`stored duration ${stored.durationSec} exceeds ${maximum}`);
           assert.ok(Math.abs(selected-stored.durationSec)<=1/originalFacts.fps+0.001);
           assert.equal(stored.mediaFacts?.hasAudio,hasAudio);
-          context.diagnostic(`selected=${selected}s video=${facts.durationSec}s stored=${stored.durationSec}s duration-ceiling=${Math.ceil(stored.durationSec)}s`);
+          if(hasAudio){
+            const preparedPath=join(directory,'prepared.mp4');await writeFile(preparedPath,bytes);
+            const pcm=(await exec(await ensureExecutableFfmpegPath(ffmpeg.path),['-v','error','-i',preparedPath,'-map','0:a:0','-ac','1','-ar','48000','-f','f32le','pipe:1'],{encoding:'buffer',timeout:15000,maxBuffer:4*1024*1024})).stdout;
+            assert.ok(Math.abs(pcm.length/4/48000-selected)<=1024/48000+0.001,'selected audio must remain within one AAC frame');
+          }
           persisted={...media,id:'prepared',ref:preparedRef,url:stored.storageUrl,durationSec:stored.durationSec,mediaFacts:stored.mediaFacts};
           return{id:stored.legacyAssetId,...canonicalMediaAssetFields(stored.assetId,'video'),url:stored.storageUrl,durationSec:stored.durationSec,mediaFacts:stored.mediaFacts};
         },

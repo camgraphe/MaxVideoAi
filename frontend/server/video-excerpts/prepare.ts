@@ -64,7 +64,7 @@ export async function prepareVideoExcerpt(userId: string, value: unknown, depend
         if (currentLimits.maxSizeMB && result.bytes.length > currentLimits.maxSizeMB*1024*1024) throw new VideoExcerptError('PREPARATION_LIMIT','The prepared excerpt exceeds this model’s source file size limit. Choose a shorter excerpt.');
       };
       await reauthorize();
-      const asset = await deps.persist(userId,result.bytes,result.facts,{version:1,encoder:'h264-aac-v3',source:input.source,range,engineId:input.engineId,mode:input.mode,
+      const asset = await deps.persist(userId,result.bytes,result.facts,{version:1,encoder:'h264-aac-v4',source:input.source,range,engineId:input.engineId,mode:input.mode,
         sourceFingerprint:snapshot,sourceSha256:createHash('sha256').update(downloaded.bytes).digest('hex'),sourceFacts,outputFacts:result.facts});
       if (!asset.ref || asset.ref.kind !== 'video' || JSON.stringify(asset.ref) === JSON.stringify(input.source)) throw new VideoExcerptError('PREPARATION_FAILED','The excerpt could not be saved as a distinct video.');
       outputDuration = asset.durationSec ?? Number.NaN;
